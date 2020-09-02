@@ -1,10 +1,15 @@
 #include "fraction.h"
-#include <QStringList>
+#include <vector>
 #include <math.h>
-#include <QDebug>
+#include <fmt/core.h>
+#include "util.h"
+
+namespace craso::numeric {
+
+using craso::util::tokenize;
 
 template<typename F, typename I>
-std::tuple<I, I> asIntegerRatio(F f, I max_denominator)
+std::tuple<I, I> as_integer_ratio(F f, I max_denominator)
 {
     I a, h[3] = { 0, 1, 0 }, k[3] = { 1, 0, 0 };
     I x, d, n = 1;
@@ -53,17 +58,17 @@ Fraction::Fraction(int64_t numerator) : m_numerator(numerator)
 
 }
 
-Fraction::Fraction(const QString& expr)
+Fraction::Fraction(const std::string& expr)
 {
-    if(expr.contains("/")) {
-        auto tokens = expr.trimmed().split("/");
-        double numerator = tokens[0].toDouble();
-        double denominator = tokens[1].toDouble();
+    if(expr.find('/') != std::string::npos) {
+        auto tokens = tokenize(expr, "/");
+        double numerator = std::stod(tokens[0]);
+        double denominator = std::stod(tokens[1]);
         Fraction f = (Fraction(numerator) / Fraction(denominator)).simplify();
         m_numerator = f.m_numerator;
         m_denominator = f.m_denominator;
     } else {
-        Fraction f = Fraction(expr.toDouble()).simplify();
+        Fraction f = Fraction(std::stod(expr)).simplify();
         m_numerator = f.m_numerator;
         m_denominator = f.m_denominator;
     }
@@ -71,17 +76,11 @@ Fraction::Fraction(const QString& expr)
 
 Fraction::Fraction(double value)
 {
-    std::tie(m_numerator, m_denominator) = asIntegerRatio<double, int64_t>(value, 1000000);
+    std::tie(m_numerator, m_denominator) = as_integer_ratio<double, int64_t>(value, 1000000);
 }
 
-double Fraction::toDouble() const {
-    return static_cast<double>(m_numerator) / m_denominator;
-}
-
-QString Fraction::toString() const {
-    return QString("%1/%2")
-        .arg(m_numerator)
-        .arg(m_denominator);
+std::string Fraction::to_string() const {
+    return fmt::format("{}/{}", m_numerator, m_denominator);
 }
 
 const Fraction Fraction::simplify() const
@@ -90,30 +89,30 @@ const Fraction Fraction::simplify() const
     return Fraction(m_numerator / gcd, m_denominator / gcd);
 }
 
-const Fraction Fraction::limitDenominator(int64_t max_denominator) const
+const Fraction Fraction::limit_denominator(int64_t max_denominator) const
 {
 
     /*
-        # Algorithm notes: For any real number x, define a *best upper
-        # approximation* to x to be a rational number p/q such that:
-        #
-        #   (1) p/q >= x, and
-        #   (2) if p/q > r/s >= x then s > q, for any rational r/s.
-        #
-        # Define *best lower approximation* similarly.  Then it can be
-        # proved that a rational number is a best upper or lower
-        # approximation to x if, and only if, it is a convergent or
-        # semiconvergent of the (unique shortest) continued fraction
-        # associated to x.
-        #
-        # To find a best rational approximation with denominator <= M,
-        # we find the best upper and lower approximations with
-        # denominator <= M and take whichever of these is closer to x.
-        # In the event of a tie, the bound with smaller denominator is
-        # chosen.  If both denominators are equal (which can happen
-        # only when max_denominator == 1 and self is midway between
-        # two int64_tegers) the lower bound---i.e., the floor of self, is
-        # taken.
+     Algorithm notes: For any real number x, define a *best upper
+     approximation* to x to be a rational number p/q such that:
+    
+       (1) p/q >= x, and
+       (2) if p/q > r/s >= x then s > q, for any rational r/s.
+    
+     Define *best lower approximation* similarly.  Then it can be
+     proved that a rational number is a best upper or lower
+     approximation to x if, and only if, it is a convergent or
+     semiconvergent of the (unique shortest) continued fraction
+     associated to x.
+    
+     To find a best rational approximation with denominator <= M,
+     we find the best upper and lower approximations with
+     denominator <= M and take whichever of these is closer to x.
+     In the event of a tie, the bound with smaller denominator is
+     chosen.  If both denominators are equal (which can happen
+     only when max_denominator == 1 and self is midway between
+     two int64_tegers) the lower bound---i.e., the floor of self, is
+     taken.
     */
     if (m_denominator <= max_denominator) return Fraction(m_numerator, m_denominator);
 
@@ -225,10 +224,11 @@ bool Fraction::operator==(int64_t n) const
 
 bool Fraction::operator<(const Fraction& other) const
 {
-    return toDouble() < other.toDouble();
+    return cast<double>() < other.cast<double>();
 }
 
 bool Fraction::operator<=(const Fraction& other) const
 {
-    return toDouble() <= other.toDouble();
+    return cast<double>() <= other.cast<double>();
+}
 }

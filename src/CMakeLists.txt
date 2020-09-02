@@ -12,6 +12,8 @@ add_executable(craso
 )
 
 target_link_libraries(craso PRIVATE Eigen3::Eigen Boost::graph)
-target_include_directories(craso PRIVATE ${CRASO_INCLUDE_DIR})
-target_include_directories(craso PUBLIC ${GEMMI_INCLUDE_DIRS})
+target_include_directories(craso PRIVATE 
+    ${CRASO_INCLUDE_DIR} ${FMT_INCLUDE_DIR}
+    ${GEMMI_INCLUDE_DIR}
+)
 target_compile_features(craso PRIVATE cxx_std_17)
