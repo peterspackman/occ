@@ -1,0 +1,3 @@
+[submodule "3rdparty/gemmi"]
+	path = 3rdparty/gemmi
+	url = https://github.com/project-gemmi/gemmi.git
