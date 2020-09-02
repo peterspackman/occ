@@ -1,10 +1,14 @@
+#include <regex>
 #include "symmetryoperation.h"
-#include <QRegularExpression>
 #include "fraction.h"
+#include "util.h"
 
 namespace craso::crystal {
 
-void decodeInteger(int code, Eigen::Matrix4d& seitz)
+using craso::numeric::Fraction;
+using craso::util::tokenize;
+
+void decode_int(int code, Matrix4d& seitz)
 {
     /*Decode an integer encoded symmetry operation.
 
@@ -37,46 +41,46 @@ void decodeInteger(int code, Eigen::Matrix4d& seitz)
     }
 }
 
-QStringList getSymbols(QString s) {
-    QStringList symbols;
-    QRegularExpression re(".*?([+-]*[xyzXYZ0-9/\\.]+)");
-    auto i = re.globalMatch(s);
-    while(i.hasNext()) {
-        auto match = i.next();
-        symbols << QString(match.captured(1));
+std::vector<std::string> get_symbols(std::string s) {
+    std::vector<std::string> symbols;
+    std::regex re(".*?([+-]*[xyzXYZ0-9/\\.]+)");
+    auto matches_begin = std::sregex_iterator(s.begin(), s.end(), re);
+    auto matches_end = std::sregex_iterator();
+    for(std::sregex_iterator it = matches_begin; it != matches_end; ++it)
+    {
+        std::smatch match = *it;
+        symbols.push_back(match.str());
     }
     return symbols;
 }
 
-void decodeString(QString code, Eigen::Matrix4d& seitz)
+void decode_string(std::string code, Matrix4d& seitz)
 {
     seitz.fill(0.0);
-    QStringList tokens = code.toLower().replace(" ", "").split(",");
+    auto tokens = tokenize(code, ",");
     int i = 0;
     int idx = 0;
     for (const auto& x: tokens)
     {
         int fac = 1;
-        auto symbols = getSymbols(x);
+        auto symbols = get_symbols(x);
         for(const auto& symbol: symbols)
         {
-            if(symbol.contains("x")) {
+            fac = (symbol.find('-') != std::string::npos) ? -1 : 1;
+            if(symbol.find('x') != std::string::npos) {
                 idx = 0;
-                fac = symbol.contains("-x") ? -1 : 1;
                 seitz(i, idx) = fac;
             }
-            else if(symbol.contains("y")) {
+            else if(symbol.find('y') != std::string::npos) {
                 idx = 1;
-                fac = symbol.contains("-y") ? -1 : 1;
                 seitz(i, idx) = fac;
             }
-            else if(symbol.contains("z")) {
+            else if(symbol.find('z') != std::string::npos) {
                 idx = 2;
-                fac = symbol.contains("-z") ? -1 : 1;
                 seitz(i, idx) = fac;
             }
             else {
-                seitz(i, 3) = fmod(Fraction(symbol).toDouble(), 1.0);
+                seitz(i, 3) = fmod(Fraction(symbol).cast<double>(), 1.0);
             }
         }
         i++;
@@ -85,18 +89,18 @@ void decodeString(QString code, Eigen::Matrix4d& seitz)
     seitz(3, 3) = 1.0;
 }
 
-QString encodeString(const Eigen::Matrix4d& seitz) {
+std::string encode_string(const Matrix4d& seitz) {
     /* Encode a rotation matrix (of -1, 0, 1s) and (rational) translation vector
     into string form e.g. 1/2-x,z-1/3,-y-1/6
     */
-
-    QString symbols = "xyz";
-    QStringList res;
+    using craso::util::join;
+    std::string symbols = "xyz";
+    std::vector<std::string> res;
     for (int i = 0; i < 3; i++) {
-        auto t = Fraction(seitz(i, 3)).limitDenominator(12);
-        QString v = "";
+        auto t = Fraction(seitz(i, 3)).limit_denominator(12);
+        std::string v = "";
         if (!(t == 0)) {
-            v += t.toString();
+            v += t.to_string();
         }
         for (int j = 0; j < 3; j++) {
             auto c = seitz(i, j);
@@ -107,13 +111,12 @@ QString encodeString(const Eigen::Matrix4d& seitz) {
                 v += "+" + symbols[j];
             }
         }
-        res.append(v);
+        res.push_back(v);
     }
-    return res.join(",");
-
+    return join(res, ",");
 }
 
-int encodeInteger(const Eigen::Matrix4d& seitz) {
+int encode_int(const Matrix4d& seitz) {
     /* Encode an integer encoded symmetry from a rotation matrix and translation
     vector.
 
@@ -147,25 +150,18 @@ SymmetryOperation::SymmetryOperation(int code)
     set_from_int(code);
 }
 
-SymmetryOperation::SymmetryOperation(const QString& str)
+SymmetryOperation::SymmetryOperation(const std::string& str)
 {
     set_from_string(str);
 }
 
-int SymmetryOperation::integerCode() const
-{
-    return m_int;
-}
-
-SymmetryOperation SymmetryOperation::translated(const QVector3D& t) const
+SymmetryOperation SymmetryOperation::translated(const Vector3d& t) const
 {
     SymmetryOperation result = *this;
-    result.m_seitz(0, 3) += t[0];
-    result.m_seitz(1, 3) += t[1];
-    result.m_seitz(2, 3) += t[2];
+    result.m_seitz.col(3) += t;
     result.update_from_seitz();
-    result.m_str = encodeString(result.m_seitz);
-    result.m_int = encodeInteger(result.m_seitz);
+    result.m_str = encode_string(result.m_seitz);
+    result.m_int = encode_int(result.m_seitz);
     return result;
 }
 
@@ -174,8 +170,8 @@ SymmetryOperation SymmetryOperation::inverted() const
     SymmetryOperation result = *this;
     result.m_seitz.block(0, 0, 3, 4) *= -1;
     result.update_from_seitz();
-    result.m_str = encodeString(result.m_seitz);
-    result.m_int = encodeInteger(result.m_seitz);
+    result.m_str = encode_string(result.m_seitz);
+    result.m_int = encode_int(result.m_seitz);
     return result;
 }
 
@@ -183,32 +179,23 @@ void SymmetryOperation::set_from_int(int code)
 {
     if(code == m_int) return;
     m_int = code;
-    decodeInteger(code, m_seitz);
+    decode_int(code, m_seitz);
     update_from_seitz();
-    m_str = encodeString(m_seitz);
+    m_str = encode_string(m_seitz);
 }
 
-void SymmetryOperation::set_from_string(const QString &code) {
+void SymmetryOperation::set_from_string(const std::string &code) {
     if(code == m_str) return;
-    decodeString(code, m_seitz);
+    decode_string(code, m_seitz);
     m_str = code;
     update_from_seitz();
-    m_int = encodeInteger(m_seitz);
+    m_int = encode_int(m_seitz);
 }
 
 void SymmetryOperation::update_from_seitz()
 {
-    m_seitzf = m_seitz.cast<float>();
-    m_rotationf = m_seitzf.block(0, 0, m_rotationf.rows(), m_rotationf.cols());
     m_rotation = m_seitz.block(0, 0, m_rotation.rows(), m_rotation.cols());
     m_translation = m_seitz.block(0, 3, m_translation.rows(), m_translation.cols());
-}
-
-Eigen::Matrix3Xd SymmetryOperation::apply(const Eigen::Matrix3Xd &frac) const
-{
-    Eigen::Matrix3Xd tmp = m_rotation * frac;
-    tmp.colwise() += m_translation;
-    return tmp;
 }
 
 }

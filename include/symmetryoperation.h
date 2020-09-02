@@ -4,27 +4,32 @@
 
 namespace craso::crystal {
 
+using Eigen::Matrix3d;
+using Eigen::Matrix4d;
+using Eigen::Vector3d;
+using Eigen::Matrix3Xd;
+
+
 class SymmetryOperation
 {
-    using Eigen::Matrix3d;
-    using Eigen::Matrix4d;
-    using Eigen::Vector3d;
-    using Eigen::Matrix3Xd;
-
 public:
-    SymmetryOperation(const QString&);
+    SymmetryOperation(const std::string&);
     SymmetryOperation(int);
 
     int to_int() const { return m_int; }
     void set_from_int(int);
 
     const std::string& to_string() const { return m_str; }
-    void set_from_string(const QString&);
+    void set_from_string(const std::string&);
     SymmetryOperation inverted() const;
     SymmetryOperation translated(const Vector3d&) const;
     bool is_identity() const { return m_int == 16484; }
 
-    auto apply(const Matrix3Xd&) const;
+    auto apply(const Matrix3Xd& frac) const {
+        Eigen::Matrix3Xd tmp = m_rotation * frac;
+        tmp.colwise() += m_translation;
+        return tmp;
+    }
 
     const auto& seitz() const { return m_seitz; }
     const auto& rotation() const { return m_rotation; }
