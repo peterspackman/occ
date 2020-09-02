@@ -1,67 +1,67 @@
 #include "unitcell.h"
 #include <cmath>
 
-
+namespace craso::crystal {
 UnitCell::UnitCell(const Eigen::Vector3d& lengths, const Eigen::Vector3d& angles) : m_lengths{lengths}, m_angles{angles}
 {
-    updateCellMatrices();
+    update_cell_matrices();
 }
 
 UnitCell::UnitCell(double a, double b, double c, double alpha, double beta, double gamma) :
     m_lengths{a, b, c}, m_angles{alpha, beta, gamma}
 {
-    updateCellMatrices();
+    update_cell_matrices();
 }
 
-void UnitCell::setA(double a)
+void UnitCell::set_a(double a)
 {
     if(a >= 0.0) {
         m_lengths(0) = a;
-        updateCellMatrices();
+        update_cell_matrices();
     }
 }
 
-void UnitCell::setB(double b)
+void UnitCell::set_b(double b)
 {
     if(b >= 0.0) {
         m_lengths[1] = b;
-        updateCellMatrices();
+        update_cell_matrices();
     }
 }
 
-void UnitCell::setC(double c)
+void UnitCell::set_c(double c)
 {
     if(c >= 0.0) {
         m_lengths[2] = c;
-        updateCellMatrices();
+        update_cell_matrices();
     }
 }
 
-void UnitCell::setAlpha(double a)
+void UnitCell::set_alpha(double a)
 {
     if(a >= 0.0) {
         m_angles[0] = a;
-        updateCellMatrices();
+        update_cell_matrices();
     }
 }
 
-void UnitCell::setBeta(double b)
+void UnitCell::set_beta(double b)
 {
     if(b >= 0.0) {
         m_angles[1] = b;
-        updateCellMatrices();
+        update_cell_matrices();
     }
 }
 
-void UnitCell::setGamma(double c)
+void UnitCell::set_gamma(double c)
 {
     if(c >= 0.0) {
         m_angles[2] = c;
-        updateCellMatrices();
+        update_cell_matrices();
     }
 }
 
-void UnitCell::updateCellMatrices()
+void UnitCell::update_cell_matrices()
 {
     for(int i = 0; i < 3; i++) {
         m_sin[i] = sin(m_angles[i]);
@@ -86,52 +86,51 @@ void UnitCell::updateCellMatrices()
          a * b * sg / m_volume;
 
     m_inverse = m_reciprocal.transpose();
-    m_directf = m_direct.cast<float>();
-    m_inversef = m_inversef.cast<float>();
-    m_reciprocalf = m_reciprocalf.cast<float>();
 }
 
-bool UnitCell::isCubic() const
+bool UnitCell::is_cubic() const
 {
-    return _abc_close() && isOrthogonal();
+    return _abc_close() && is_orthogonal();
 }
 
-bool UnitCell::isTriclinic() const
+bool UnitCell::is_triclinic() const
 {
     return _abc_different() && _a_abc_different();
 }
 
-bool UnitCell::isMonoclinic() const
+bool UnitCell::is_monoclinic() const
 {
     return _a_ac_close() && _abc_different();
 }
 
-bool UnitCell::isOrthorhombic() const
+bool UnitCell::is_orthorhombic() const
 {
-    return isOrthogonal() && _abc_different();
+    return is_orthogonal() && _abc_different();
 }
 
-bool UnitCell::isTetragonal() const
+bool UnitCell::is_tetragonal() const
 {
-    return _ab_close() && !_ac_close() && isOrthogonal();
+    return _ab_close() && !_ac_close() && is_orthogonal();
 }
 
-bool UnitCell::isRhombohedral() const
+bool UnitCell::is_rhombohedral() const
 {
     return _abc_close() && _a_abc_close() && ! _a_90();
 }
 
-bool UnitCell::isHexagonal() const
+bool UnitCell::is_hexagonal() const
 {
     return _ab_close() && !_ac_close() && _a_90() && isclose(m_angles[2], 2 * M_PI / 3);
 }
 
-QString UnitCell::cellTypeString() const {
-    if(isCubic()) return "cubic";
-    if(isRhombohedral()) return "rhombohedral";
-    if(isHexagonal()) return "hexagonal";
-    if(isTetragonal()) return "tetragonal";
-    if(isOrthorhombic()) return "orthorhombic";
-    if(isMonoclinic()) return "monoclinic";
+std::string UnitCell::cell_type() const {
+    if(is_cubic()) return "cubic";
+    if(is_rhombohedral()) return "rhombohedral";
+    if(is_hexagonal()) return "hexagonal";
+    if(is_tetragonal()) return "tetragonal";
+    if(is_orthorhombic()) return "orthorhombic";
+    if(is_monoclinic()) return "monoclinic";
     return "triclinic";
+}
+
 }
