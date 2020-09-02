@@ -1,46 +1,50 @@
 #pragma once
-#include <QString>
+#include <string>
 #include <Eigen/Dense>
-#include <QMatrix4x4>
-#include <QMatrix3x3>
-#include <QVector3D>
+
+namespace craso::crystal {
 
 class SymmetryOperation
 {
+    using Eigen::Matrix3d;
+    using Eigen::Matrix4d;
+    using Eigen::Vector3d;
+    using Eigen::Matrix3Xd;
 
 public:
     SymmetryOperation(const QString&);
     SymmetryOperation(int);
 
-    int integerCode() const;
-    int toInt() const { return integerCode(); }
-    void setIntegerCode(int);
+    int to_int() const { return m_int; }
+    void set_from_int(int);
 
-    const QString& stringCode() const;
-    void setStringCode(const QString&);
+    const std::string& to_string() const { return m_str; }
+    void set_from_string(const QString&);
     SymmetryOperation inverted() const;
-    SymmetryOperation translated(const QVector3D&) const;
-    bool isIdentity() const { return m_intCode == 16484; }
+    SymmetryOperation translated(const Vector3d&) const;
+    bool is_identity() const { return m_int == 16484; }
 
-    Eigen::Matrix3Xd apply(const Eigen::Matrix3Xd&) const;
-    const QMatrix4x4 seitz() const { return QMatrix4x4(m_seitzf.data()); }
-    const QMatrix3x3 rotation() const { return QMatrix3x3(m_rotationf.data()); }
-    const QVector3D translation() const { return QVector3D(m_seitzf(0, 3), m_seitzf(1, 3), m_seitzf(2, 3)); }
+    auto apply(const Matrix3Xd&) const;
+
+    const auto& seitz() const { return m_seitz; }
+    const auto& rotation() const { return m_rotation; }
+    const auto& translation() const { return m_translation; }
+
     // Operators
-    Eigen::Matrix3Xd operator()(const Eigen::Matrix3Xd& frac) const { return apply(frac); }
-    bool operator==(const SymmetryOperation& other) const { return m_intCode == other.m_intCode; }
-    bool operator<(const SymmetryOperation& other) const { return m_intCode < other.m_intCode; }
-    bool operator>(const SymmetryOperation& other) const { return m_intCode > other.m_intCode; }
-    bool operator<=(const SymmetryOperation& other) const { return m_intCode <= other.m_intCode; }
-    bool operator>=(const SymmetryOperation& other) const { return m_intCode >= other.m_intCode; }
+    auto operator()(const Matrix3Xd& frac) const { return apply(frac); }
+    bool operator==(const SymmetryOperation& other) const { return m_int == other.m_int; }
+    bool operator<(const SymmetryOperation& other) const { return m_int < other.m_int; }
+    bool operator>(const SymmetryOperation& other) const { return m_int > other.m_int; }
+    bool operator<=(const SymmetryOperation& other) const { return m_int <= other.m_int; }
+    bool operator>=(const SymmetryOperation& other) const { return m_int >= other.m_int; }
 private:
-    void updateFromSeitz();
-    int m_intCode;
-    QString m_stringCode;
-    Eigen::Matrix4d m_seitz;
+    void update_from_seitz();
+    int m_int;
+    std::string m_str;
+    Matrix4d m_seitz;
     // above is the core data, this is just convenience
-    Eigen::Matrix4f m_seitzf;
-    Eigen::Matrix3d m_rotation;
-    Eigen::Matrix3f m_rotationf;
-    Eigen::Vector3d m_translation;
+    Matrix3d m_rotation;
+    Vector3d m_translation;
 };
+
+}

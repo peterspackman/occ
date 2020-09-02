@@ -2,6 +2,8 @@
 #include <QRegularExpression>
 #include "fraction.h"
 
+namespace craso::crystal {
+
 void decodeInteger(int code, Eigen::Matrix4d& seitz)
 {
     /*Decode an integer encoded symmetry operation.
@@ -142,17 +144,17 @@ int encodeInteger(const Eigen::Matrix4d& seitz) {
 
 SymmetryOperation::SymmetryOperation(int code)
 {
-    setIntegerCode(code);
+    set_from_int(code);
 }
 
 SymmetryOperation::SymmetryOperation(const QString& str)
 {
-    setStringCode(str);
+    set_from_string(str);
 }
 
 int SymmetryOperation::integerCode() const
 {
-    return m_intCode;
+    return m_int;
 }
 
 SymmetryOperation SymmetryOperation::translated(const QVector3D& t) const
@@ -161,9 +163,9 @@ SymmetryOperation SymmetryOperation::translated(const QVector3D& t) const
     result.m_seitz(0, 3) += t[0];
     result.m_seitz(1, 3) += t[1];
     result.m_seitz(2, 3) += t[2];
-    result.updateFromSeitz();
-    result.m_stringCode = encodeString(result.m_seitz);
-    result.m_intCode = encodeInteger(result.m_seitz);
+    result.update_from_seitz();
+    result.m_str = encodeString(result.m_seitz);
+    result.m_int = encodeInteger(result.m_seitz);
     return result;
 }
 
@@ -171,35 +173,30 @@ SymmetryOperation SymmetryOperation::inverted() const
 {
     SymmetryOperation result = *this;
     result.m_seitz.block(0, 0, 3, 4) *= -1;
-    result.updateFromSeitz();
-    result.m_stringCode = encodeString(result.m_seitz);
-    result.m_intCode = encodeInteger(result.m_seitz);
+    result.update_from_seitz();
+    result.m_str = encodeString(result.m_seitz);
+    result.m_int = encodeInteger(result.m_seitz);
     return result;
 }
 
-void SymmetryOperation::setIntegerCode(int code)
+void SymmetryOperation::set_from_int(int code)
 {
-    if(code == m_intCode) return;
-    m_intCode = code;
+    if(code == m_int) return;
+    m_int = code;
     decodeInteger(code, m_seitz);
-    updateFromSeitz();
-    m_stringCode = encodeString(m_seitz);
+    update_from_seitz();
+    m_str = encodeString(m_seitz);
 }
 
-const QString& SymmetryOperation::stringCode() const
-{
-    return m_stringCode;
-}
-
-void SymmetryOperation::setStringCode(const QString &code) {
-    if(code == m_stringCode) return;
+void SymmetryOperation::set_from_string(const QString &code) {
+    if(code == m_str) return;
     decodeString(code, m_seitz);
-    m_stringCode = code;
-    updateFromSeitz();
-    m_intCode = encodeInteger(m_seitz);
+    m_str = code;
+    update_from_seitz();
+    m_int = encodeInteger(m_seitz);
 }
 
-void SymmetryOperation::updateFromSeitz()
+void SymmetryOperation::update_from_seitz()
 {
     m_seitzf = m_seitz.cast<float>();
     m_rotationf = m_seitzf.block(0, 0, m_rotationf.rows(), m_rotationf.cols());
@@ -212,4 +209,6 @@ Eigen::Matrix3Xd SymmetryOperation::apply(const Eigen::Matrix3Xd &frac) const
     Eigen::Matrix3Xd tmp = m_rotation * frac;
     tmp.colwise() += m_translation;
     return tmp;
+}
+
 }
