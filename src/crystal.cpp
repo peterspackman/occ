@@ -133,7 +133,7 @@ const PeriodicBondGraph& Crystal::unit_cell_connectivity() const
     return m_bond_graph;
 }
 
-const std::vector<Molecule>& Crystal::unit_cell_molecules() const {
+const std::vector<craso::chem::Molecule>& Crystal::unit_cell_molecules() const {
 
     auto g = unit_cell_connectivity();
     auto atoms = unit_cell_atoms();
@@ -186,8 +186,8 @@ const std::vector<Molecule>& Crystal::unit_cell_molecules() const {
             }
         }
         positions += shifts;
-        Molecule m(atomic_numbers, to_cartesian(positions));
-        m.setBonds(bonds);
+        craso::chem::Molecule m(atomic_numbers, to_cartesian(positions));
+        m.set_bonds(bonds);
         m_unit_cell_molecules.push_back(m);
     }
     return m_unit_cell_molecules;

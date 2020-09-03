@@ -39,7 +39,7 @@ static inline std::vector<std::string> tokenize(
     return tokens;
 }
 
-std::string join(const std::vector<std::string>& seq, const std::string& sep)
+static inline std::string join(const std::vector<std::string>& seq, const std::string& sep)
 {
     std::string res;
     for(size_t i = 0; i < seq.size(); ++i)

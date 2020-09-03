@@ -56,7 +56,7 @@ public:
     AtomSlab slab(const HKL&, const HKL&) const;
     const AtomSlab& unit_cell_atoms() const;
     const PeriodicBondGraph& unit_cell_connectivity() const;
-    const std::vector<Molecule>& unit_cell_molecules() const;
+    const std::vector<craso::chem::Molecule>& unit_cell_molecules() const;
 private:
     AsymmetricUnit m_asymmetric_unit;
     SpaceGroup m_space_group;
@@ -65,7 +65,7 @@ private:
     mutable AtomSlab m_unit_cell_atoms;
     mutable bool m_unit_cell_atoms_needs_update{true};
     mutable bool m_unit_cell_connectivity_needs_update{true};
-    mutable std::vector<Molecule> m_unit_cell_molecules{};
+    mutable std::vector<craso::chem::Molecule> m_unit_cell_molecules{};
 };
 
 }

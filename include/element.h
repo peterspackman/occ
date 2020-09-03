@@ -142,6 +142,7 @@ public:
     inline float vdwRadius() const { return m_data->vdwRadius; }
     inline int atomicNumber() const { return m_data->atomicNumber; }
     inline int n() const { return m_data->atomicNumber; }
+    bool operator<(const Element& rhs) const { return m_data->atomicNumber < rhs.m_data->atomicNumber; }
 private:
     const ElementData *m_data;
 };

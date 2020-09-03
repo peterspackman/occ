@@ -1,16 +1,18 @@
 #pragma once
-#include <QMap>
-#include <QString>
-#include <QRegularExpression>
-#include <QTextStream>
+#include <map>
+#include <string>
+#include <regex>
+#include <iostream>
 #include "crystal.h"
 #include <gemmi/cif.hpp>
 
+namespace craso::io {
+
 struct AtomData {
-    QString element;
-    QString site_label;
-    QString residue_name;
-    QString chain_id;
+    std::string element;
+    std::string site_label;
+    std::string residue_name;
+    std::string chain_id;
     int residue_number;
     double position[3];
 };
@@ -31,17 +33,17 @@ struct CellData {
 
 struct SymmetryData {
     int number{-1};
-    QString nameHM{"Not set"};
-    QString nameHall{"Not set"};
-    QVector<QString> symops;
-    size_t symopCount() const {
-        return symops.length();
+    std::string nameHM{"Not set"};
+    std::string nameHall{"Not set"};
+    std::vector<std::string> symops;
+    size_t num_symops() const {
+        return symops.size();
     }
     bool valid() const {
         if(number > 0) return true;
         if(nameHM != "Not set") return true;
         if(nameHall != "Not set") return true;
-        if(symopCount() > 0) return true;
+        if(num_symops() > 0) return true;
         return false;
     }
 
@@ -51,22 +53,23 @@ class CifParser
 {
 public:
     CifParser();
-    void dump();
-    const QVector<AtomData>& atomData() const { return m_atoms; }
-    const SymmetryData& symmetryData() const { return m_sym; }
-    const CellData& cellData() const { return m_cell; }
-    bool symmetryValid() const { return m_sym.valid(); }
-    bool cellValid() const { return m_cell.valid(); }
-    bool crystalValid() const { return symmetryValid() && cellValid(); }
-    const QString& failureDescription() const { return m_failureDescription; }
-    size_t atomCount() const { return m_atoms.length(); }
-    Crystal* parseCrystal(const QString&);
+    const std::vector<AtomData>& atom_data() const { return m_atoms; }
+    const SymmetryData& symmetry_data() const { return m_sym; }
+    const CellData& cell_data() const { return m_cell; }
+    bool symmetry_valid() const { return m_sym.valid(); }
+    bool cell_valid() const { return m_cell.valid(); }
+    bool crystal_valid() const { return symmetry_valid() && cell_valid(); }
+    const std::string& failure_description() const { return m_failure_desc; }
+    size_t num_atoms() const { return m_atoms.size(); }
+    std::optional<craso::crystal::Crystal> parse_crystal(const std::string&);
 private:
-    void extractAtomSites(const gemmi::cif::Loop&);
-    void extractCellParameter(const gemmi::cif::Pair&);
-    void extractSymmetryOperations(const gemmi::cif::Loop&);
-    QString m_failureDescription;
-    QVector<AtomData> m_atoms;
+    void extract_atom_sites(const gemmi::cif::Loop&);
+    void extract_cell_parameter(const gemmi::cif::Pair&);
+    void extract_symmetry_operations(const gemmi::cif::Loop&);
+    std::string m_failure_desc;
+    std::vector<AtomData> m_atoms;
     SymmetryData m_sym;
     CellData m_cell;
 };
+
+}
