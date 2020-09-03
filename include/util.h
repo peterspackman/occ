@@ -5,8 +5,19 @@
 #include <cctype>
 #include <locale>
 #include <string>
+#include <Eigen/Dense>
 
 namespace craso::util {
+
+template<typename TA, typename TB>
+bool all_close(
+    const Eigen::DenseBase<TA>& a, const Eigen::DenseBase<TB>& b,
+    const typename TA::RealScalar& rtol = Eigen::NumTraits<typename TA::RealScalar>::dummy_precision(),
+    const typename TA::RealScalar& atol = Eigen::NumTraits<typename TA::RealScalar>::epsilon())
+{
+    return ((a.derived() - b.derived()).array().abs()
+            <= (atol + rtol * b.derived().array().abs())).all();
+}
 
 template<typename T>
 constexpr bool isclose(T a, T b, T rtol=1e-5, T atol=1e-8)
