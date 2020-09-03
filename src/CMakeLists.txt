@@ -1,9 +1,8 @@
-add_executable(craso
+add_library(craso
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodicbondgraph.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"

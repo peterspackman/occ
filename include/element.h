@@ -1,5 +1,4 @@
 #pragma once
-#include <map>
 #include <string>
 #include <vector>
 #define ELEMENT_MAX 103
@@ -10,12 +9,14 @@ struct ElementData
 {
     ElementData(int n, const std::string& nm, const std::string& sym, float cov, float vdw, float m) :
         atomicNumber(n), name(nm), symbol(sym), covRadius(cov), vdwRadius(vdw), mass(m) {}
-    const int atomicNumber;
-    const std::string name;
-    const std::string symbol;
-    const float covRadius;
-    const float vdwRadius;
-    const float mass;
+    ElementData(const ElementData& o) : atomicNumber(o.atomicNumber), name(o.name), symbol(o.symbol),
+        covRadius(o.covRadius), vdwRadius(o.vdwRadius), mass(o.mass) {}
+    int atomicNumber;
+    std::string name;
+    std::string symbol;
+    float covRadius;
+    float vdwRadius;
+    float mass;
 };
 
 static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] =
@@ -125,7 +126,6 @@ static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] =
     {102, "nobelium", "No", 1.50f, 2.00f, 259.0f},
     {103, "lawrencium", "Lr", 1.50f, 2.00f, 262.0f}
 };
-static std::map<std::string, const ElementData*> ELEMENT_MAP;
 
 class Element
 {
@@ -133,18 +133,18 @@ public:
     Element() = default;
     Element(const std::string&);
     Element(int);
-    inline const std::string& symbol() const { return m_data->symbol; }
-    inline const std::string& name() const { return m_data->name; }
-    inline float mass() const { return m_data->mass; }
-    inline float cov() const { return m_data->covRadius; }
-    inline float covalentRadius() const { return m_data->covRadius; }
-    inline float vdw() const { return m_data->vdwRadius; }
-    inline float vdwRadius() const { return m_data->vdwRadius; }
-    inline int atomicNumber() const { return m_data->atomicNumber; }
-    inline int n() const { return m_data->atomicNumber; }
-    bool operator<(const Element& rhs) const { return m_data->atomicNumber < rhs.m_data->atomicNumber; }
+    inline const std::string& symbol() const { return m_data.symbol; }
+    inline const std::string& name() const { return m_data.name; }
+    inline float mass() const { return m_data.mass; }
+    inline float cov() const { return m_data.covRadius; }
+    inline float covalentRadius() const { return m_data.covRadius; }
+    inline float vdw() const { return m_data.vdwRadius; }
+    inline float vdwRadius() const { return m_data.vdwRadius; }
+    inline int atomicNumber() const { return m_data.atomicNumber; }
+    inline int n() const { return m_data.atomicNumber; }
+    bool operator<(const Element& rhs) const { return m_data.atomicNumber < rhs.m_data.atomicNumber; }
 private:
-    const ElementData *m_data;
+    ElementData m_data;
 };
 
 

@@ -5,15 +5,21 @@
 
 namespace craso::chem {
 
-Element::Element(int atomicNumber) : m_data(&ELEMENTDATA_TABLE[atomicNumber])
+Element::Element(int atomicNumber) : m_data(ELEMENTDATA_TABLE[atomicNumber])
 {}
 
-Element::Element(const std::string& s) : m_data(&ELEMENTDATA_TABLE[0])
+Element::Element(const std::string& s) : m_data(ELEMENTDATA_TABLE[0])
 {
     //capitalize the symbol first
     auto symbol = craso::util::trim_copy(s);
-    craso::util::capitalize(symbol);
-    m_data = ELEMENT_MAP.at(symbol);
+    auto capitalized = craso::util::capitalize_copy(s);
+    for(size_t i = 1; i < ELEMENT_MAX; i++) {
+        const auto dat = ELEMENTDATA_TABLE[i];
+        if(symbol == dat.symbol) {
+            m_data = dat;
+            return;
+        }
+    }
 }
 
 std::string chemical_formula(const std::vector<Element>& els)
