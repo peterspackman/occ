@@ -1,67 +1,70 @@
 #include "crystal.h"
 #include "element.h"
 #include <Eigen/Dense>
-#include <QDebug>
 #include "kdtree.h"
 #include <iostream>
 
+namespace craso::crystal {
+
+using craso::graph::PeriodicBondGraph;
+
 Crystal::Crystal(const AsymmetricUnit& asym, const SpaceGroup& sg, const UnitCell& uc) :
-    m_asymmetricUnit(asym), m_spaceGroup(sg), m_unitCell(uc)
+    m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc)
 {
 
 }
 
-QString AsymmetricUnit::chemicalFormula() const
+std::string AsymmetricUnit::chemical_formula() const
 {
-    QVector<Elements::Element> els;
-    for(int i = 0; i < atomicNumbers.size(); i++) {
-        els.push_back(Elements::Element(atomicNumbers[i]));
+    std::vector<craso::chem::Element> els;
+    for(int i = 0; i < atomic_numbers.size(); i++) {
+        els.push_back(craso::chem::Element(atomic_numbers[i]));
     }
-    return Elements::chemicalFormula(els);
+    return craso::chem::chemical_formula(els);
 }
 
-Eigen::VectorXd AsymmetricUnit::covalentRadii() const
+Eigen::VectorXd AsymmetricUnit::covalent_radii() const
 {
-    Eigen::VectorXd result(atomicNumbers.size());
-    for(int i = 0; i < atomicNumbers.size(); i++) {
-        result(i) = Elements::Element(atomicNumbers(i)).covalentRadius();
+    Eigen::VectorXd result(atomic_numbers.size());
+    for(int i = 0; i < atomic_numbers.size(); i++) {
+        result(i) = craso::chem::Element(atomic_numbers(i)).covalentRadius();
     }
     return result;
 }
 
-const AtomSlab& Crystal::unitCellAtoms() const
+const AtomSlab& Crystal::unit_cell_atoms() const
 {
-    if(!m_unitCellAtomsNeedUpdate) return m_unitCellAtoms;
+    if(!m_unit_cell_atoms_needs_update) return m_unit_cell_atoms;
     // TODO merge sites
-    const auto& pos = m_asymmetricUnit.positions;
-    const auto& atoms = m_asymmetricUnit.atomicNumbers;
-    const int natom = numSites();
-    const int nsymops = symmetryOperations().length();
-    Eigen::VectorXd occupation = m_asymmetricUnit.occupations.replicate(nsymops, 1);
+    const auto& pos = m_asymmetric_unit.positions;
+    const auto& atoms = m_asymmetric_unit.atomic_numbers;
+    const int natom = num_sites();
+    const int nsymops = symmetry_operations().size();
+    Eigen::VectorXd occupation = m_asymmetric_unit.occupations.replicate(nsymops, 1);
     Eigen::VectorXi uc_nums = atoms.replicate(nsymops, 1);
-    Eigen::VectorXi asymIndex = Eigen::VectorXi::LinSpaced(natom, 0, natom).replicate(nsymops, 1);
+    Eigen::VectorXi asym_idx = Eigen::VectorXi::LinSpaced(natom, 0, natom).replicate(nsymops, 1);
     Eigen::VectorXi sym;
     Eigen::Matrix3Xd uc_pos;
-    std::tie(sym, uc_pos) = m_spaceGroup.applyAllSymmetryOperations(pos);
+    std::tie(sym, uc_pos) = m_space_group.apply_all_symmetry_operations(pos);
     uc_pos = uc_pos.unaryExpr([](const double x) { return fmod(x + 7.0, 1.0); });
-    m_unitCellAtoms = AtomSlab{uc_pos, m_unitCell.toCartesian(uc_pos), asymIndex, uc_nums, sym};
-    m_unitCellAtomsNeedUpdate = false;
-    return m_unitCellAtoms;
+    m_unit_cell_atoms = AtomSlab{uc_pos, m_unit_cell.to_cartesian(uc_pos), asym_idx, uc_nums, sym};
+    m_unit_cell_atoms_needs_update = false;
+    return m_unit_cell_atoms;
 }
 
 AtomSlab Crystal::slab(const HKL &lower, const HKL &upper) const
 {
     int ncells = (upper.h - lower.h + 1) * (upper.k - lower.k + 1) * (upper.l - lower.l + 1);
-    const AtomSlab& uc_atoms = unitCellAtoms();
+    const AtomSlab& uc_atoms = unit_cell_atoms();
     const size_t n_uc = uc_atoms.size();
     AtomSlab result;
-    const int rows = uc_atoms.fracPos.rows();
-    const int cols = uc_atoms.fracPos.cols();
-    result.fracPos.resize(3, ncells * n_uc);
-    result.fracPos.block(0, 0, rows, cols) = uc_atoms.fracPos;
-    result.asymIndex = uc_atoms.asymIndex.replicate(ncells, 1);
+    const int rows = uc_atoms.frac_pos.rows();
+    const int cols = uc_atoms.frac_pos.cols();
+    result.frac_pos.resize(3, ncells * n_uc);
+    result.frac_pos.block(0, 0, rows, cols) = uc_atoms.frac_pos;
+    result.asym_idx = uc_atoms.asym_idx.replicate(ncells, 1);
     result.symop = uc_atoms.symop.replicate(ncells, 1);
-    result.atomicNumbers = uc_atoms.atomicNumbers.replicate(ncells, 1);
+    result.atomic_numbers = uc_atoms.atomic_numbers.replicate(ncells, 1);
     int offset = n_uc;
     for(int h = lower.h; h <= upper.h; h++)
     {
@@ -70,36 +73,36 @@ AtomSlab Crystal::slab(const HKL &lower, const HKL &upper) const
             for(int l = lower.l; l <= upper.l; l++)
             {
                 if(h == 0 && k == 0 && l == 0) continue;
-                auto tmp = uc_atoms.fracPos;
+                auto tmp = uc_atoms.frac_pos;
                 tmp.colwise() += Eigen::Vector3d{
                     static_cast<double>(h),
                     static_cast<double>(k),
                     static_cast<double>(l)
                 };
-                result.fracPos.block(0, offset, rows, cols) = tmp;
+                result.frac_pos.block(0, offset, rows, cols) = tmp;
                 offset += n_uc;
             }
         }
     }
-    result.cartPos = toCartesian(result.fracPos);
+    result.cart_pos = to_cartesian(result.frac_pos);
     return result;
 }
 
-const PeriodicBondGraph& Crystal::unitCellConnectivity() const
+const PeriodicBondGraph& Crystal::unit_cell_connectivity() const
 {
-    if(!m_unitCellConnectivityNeedUpdate) return m_bondGraph;
+    if(!m_unit_cell_connectivity_needs_update) return m_bond_graph;
     auto s = slab({-1, -1, -1}, {1, 1, 1});
-    size_t n_asym = numSites();
-    size_t n_uc = n_asym * m_spaceGroup.symmetryOperations().size();
-    cx::KDTree<double> tree(s.cartPos.rows(), s.cartPos, cx::max_leaf);
+    size_t n_asym = num_sites();
+    size_t n_uc = n_asym * m_space_group.symmetry_operations().size();
+    cx::KDTree<double> tree(s.cart_pos.rows(), s.cart_pos, cx::max_leaf);
     tree.index->buildIndex();
-    auto covalent_radii = m_asymmetricUnit.covalentRadii();
+    auto covalent_radii = m_asymmetric_unit.covalent_radii();
     double max_cov = covalent_radii.maxCoeff();
     std::vector<std::pair<size_t, double>> idxs_dists;
     nanoflann::RadiusResultSet results((max_cov * 2 + 0.4) * (max_cov * 2 + 0.4), idxs_dists);
 
     for(size_t uc_idx_l = 0; uc_idx_l < n_uc; uc_idx_l++) {
-        double *q = s.cartPos.col(uc_idx_l).data();
+        double *q = s.cart_pos.col(uc_idx_l).data();
         size_t asym_idx_l = uc_idx_l % n_asym;
         double cov_a = covalent_radii(asym_idx_l);
         tree.index->findNeighbors(results, q, nanoflann::SearchParams());
@@ -113,9 +116,9 @@ const PeriodicBondGraph& Crystal::unitCellConnectivity() const
             size_t asym_idx_r = uc_idx_r % n_asym;
             double cov_b = covalent_radii(asym_idx_r);
             if(d < ((cov_a + cov_b + 0.4) * (cov_a + cov_b + 0.4))) {
-                auto pos = s.fracPos.col(idx);
+                auto pos = s.frac_pos.col(idx);
 
-                m_bondGraph.addBond(PeriodicBondGraph::Edge{
+                m_bond_graph.add_bond(PeriodicBondGraph::Edge{
                                         sqrt(d),
                                         uc_idx_l, uc_idx_r,
                                         asym_idx_l, asym_idx_r,
@@ -127,33 +130,25 @@ const PeriodicBondGraph& Crystal::unitCellConnectivity() const
         }
         results.clear();
     }
-    qDebug() << "n_uc:" << n_uc;
-    qDebug() << "n_asym:" << n_asym;
-    qDebug() << "n_bonds:" << m_bondGraph.numEdges();
-    for(const auto& x: m_bondGraph.neighbors(0))
-    {
-        qDebug() << "Neighbours: 0" << x;
-    }
-    return m_bondGraph;
+    return m_bond_graph;
 }
 
-const QVector<Molecule>& Crystal::unitCellMolecules() const {
+const std::vector<Molecule>& Crystal::unit_cell_molecules() const {
 
-    auto g = unitCellConnectivity();
-    auto atoms = unitCellAtoms();
-    auto [n, components] = g.connectedComponents();
-    qDebug() << "components:\n" << components;
-    QVector<HKL> shifts_vec(components.size());
-    QVector<int> predecessors(components.size());
-    QVector<QVector<int>> groups(n);
-    for(int i = 0; i < components.size(); i++) {
+    auto g = unit_cell_connectivity();
+    auto atoms = unit_cell_atoms();
+    auto [n, components] = g.connected_components();
+    std::vector<HKL> shifts_vec(components.size());
+    std::vector<int> predecessors(components.size());
+    std::vector<std::vector<int>> groups(n);
+    for(size_t i = 0; i < components.size(); i++) {
         predecessors[i] = -1;
         groups[components[i]].push_back(i);
     }
 
     struct Vis : public boost::default_bfs_visitor
     {
-        Vis(QVector<HKL>& hkl, QVector<int>& pred) : m_hkl(hkl), m_p(pred) {}
+        Vis(std::vector<HKL>& hkl, std::vector<int>& pred) : m_hkl(hkl), m_p(pred) {}
         void tree_edge(PeriodicBondGraph::edge_t e, const PeriodicBondGraph::GraphContainer& g)
         {
             m_p[e.m_target] = e.m_source;
@@ -163,41 +158,39 @@ const QVector<Molecule>& Crystal::unitCellMolecules() const {
             m_hkl[e.m_target].k = hkls.k + prop.k;
             m_hkl[e.m_target].l = hkls.l + prop.l;
         }
-        QVector<HKL>& m_hkl;
-        QVector<int>& m_p;
+        std::vector<HKL>& m_hkl;
+        std::vector<int>& m_p;
     };
 
     for(const auto& group : groups) {
         auto root = group[0];
-        Eigen::VectorXi atomicNumbers(group.size());
+        Eigen::VectorXi atomic_numbers(group.size());
         Eigen::Matrix3Xd positions(3, group.size());
         Eigen::Matrix3Xd shifts(3, group.size());
         shifts.setZero();
         boost::breadth_first_search(
-              g.graph(), g.vertexHandle(root),
+              g.graph(), g.vertex_handle(root),
               boost::visitor(Vis(shifts_vec, predecessors))
         );
-        QVector<QPair<size_t, size_t>> bonds;
-        for(int i = 0; i < group.size(); i++) {
+        std::vector<std::pair<size_t, size_t>> bonds;
+        for(size_t i = 0; i < group.size(); i++) {
             size_t uc_idx = group[i];
-            atomicNumbers(i) = atoms.atomicNumbers(uc_idx);
-            positions.col(i) = atoms.fracPos.col(uc_idx);
+            atomic_numbers(i) = atoms.atomic_numbers(uc_idx);
+            positions.col(i) = atoms.frac_pos.col(uc_idx);
             shifts(0, i) = shifts_vec[uc_idx].h;
             shifts(1, i) = shifts_vec[uc_idx].k;
             shifts(2, i) = shifts_vec[uc_idx].l;
             for(const auto& n: g.neighbors(uc_idx)) {
                 size_t group_idx = std::distance(group.begin(), std::find(group.begin(), group.end(), n));
-                bonds.push_back(QPair(i, group_idx));
+                bonds.push_back(std::pair(i, group_idx));
             }
         }
         positions += shifts;
-        Molecule m(atomicNumbers, toCartesian(positions));
+        Molecule m(atomic_numbers, to_cartesian(positions));
         m.setBonds(bonds);
-        m_unitCellMolecules.append(m);
+        m_unit_cell_molecules.push_back(m);
     }
-    for(const auto& m : m_unitCellMolecules) {
-        qDebug() << "Molecule:";
-        m.dump();
-    }
-    return m_unitCellMolecules;
+    return m_unit_cell_molecules;
+}
+
 }

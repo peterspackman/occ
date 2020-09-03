@@ -45,12 +45,12 @@ public:
     const auto& direct() const { return m_direct; }
     const auto& reciprocal() const { return m_reciprocal; }
     const auto& inverse() const { return m_inverse; }
-    const auto a_vector() const { return m_direct.col(0); }
-    const auto b_vector() const { return m_direct.col(1); }
-    const auto c_vector() const { return m_direct.col(2); }
-    const auto a_star_vector() const { return m_reciprocal.col(0); }
-    const auto b_star_vector() const { return m_reciprocal.col(1); }
-    const auto c_star_vector() const { return m_reciprocal.col(2); }
+    auto a_vector() const { return m_direct.col(0); }
+    auto b_vector() const { return m_direct.col(1); }
+    auto c_vector() const { return m_direct.col(2); }
+    auto a_star_vector() const { return m_reciprocal.col(0); }
+    auto b_star_vector() const { return m_reciprocal.col(1); }
+    auto c_star_vector() const { return m_reciprocal.col(2); }
 
 private:
     void update_cell_matrices();

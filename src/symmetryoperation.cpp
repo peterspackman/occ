@@ -105,10 +105,10 @@ std::string encode_string(const Matrix4d& seitz) {
         for (int j = 0; j < 3; j++) {
             auto c = seitz(i, j);
             if (c < 0) {
-                v += "-" + symbols[j];
+                v += "-" + symbols.substr(j, 1);
             }
             else if (c > 0) {
-                v += "+" + symbols[j];
+                v += "+" + symbols.substr(j, 1);
             }
         }
         res.push_back(v);
@@ -158,7 +158,7 @@ SymmetryOperation::SymmetryOperation(const std::string& str)
 SymmetryOperation SymmetryOperation::translated(const Vector3d& t) const
 {
     SymmetryOperation result = *this;
-    result.m_seitz.col(3) += t;
+    result.m_seitz.block(0, 3, 3, 1) += t;
     result.update_from_seitz();
     result.m_str = encode_string(result.m_seitz);
     result.m_int = encode_int(result.m_seitz);

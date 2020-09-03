@@ -1,68 +1,71 @@
 #pragma once
 #include <Eigen/Core>
-#include <Eigen/SparseCore>
-#include <QVector>
-#include <QString>
+#include <vector>
 #include "spacegroup.h"
 #include "unitcell.h"
 #include "periodicbondgraph.h"
 #include "molecule.h"
+
+namespace craso::crystal {
+
+using craso::graph::PeriodicBondGraph;
 
 struct HKL {
     int h{0}, k{0}, l{0};
 };
 
 struct AtomSlab {
-    Eigen::Matrix3Xd fracPos;
-    Eigen::Matrix3Xd cartPos;
-    Eigen::VectorXi asymIndex;
-    Eigen::VectorXi atomicNumbers;
+    Eigen::Matrix3Xd frac_pos;
+    Eigen::Matrix3Xd cart_pos;
+    Eigen::VectorXi asym_idx;
+    Eigen::VectorXi atomic_numbers;
     Eigen::VectorXi symop;
     void resize(size_t n) {
-        fracPos.resize(3, n);
-        cartPos.resize(3, n);
-        asymIndex.resize(n);
-        atomicNumbers.resize(n);
+        frac_pos.resize(3, n);
+        cart_pos.resize(3, n);
+        asym_idx.resize(n);
+        atomic_numbers.resize(n);
         symop.resize(n);
     }
-    size_t size() const { return fracPos.cols(); }
+    size_t size() const { return frac_pos.cols(); }
 };
 
 struct AsymmetricUnit
 {
     Eigen::Matrix3Xd positions;
-    Eigen::VectorXi atomicNumbers;
+    Eigen::VectorXi atomic_numbers;
     Eigen::VectorXd occupations;
-    QVector<QString> labels;
-    QString chemicalFormula() const;
-    Eigen::VectorXd covalentRadii() const;
+    std::vector<std::string> labels;
+    std::string chemical_formula() const;
+    Eigen::VectorXd covalent_radii() const;
 };
 
 class Crystal
 {
 public:
     Crystal(const AsymmetricUnit&, const SpaceGroup&, const UnitCell&);
-    const QVector<QString>& labels() const { return m_asymmetricUnit.labels; }
-    const Eigen::Matrix3Xd& frac() const { return m_asymmetricUnit.positions; }
-    inline auto toFractional(const Eigen::Matrix3Xd& p) const { return m_unitCell.toFractional(p); }
-    inline auto toCartesian(const Eigen::Matrix3Xd& p) const { return m_unitCell.toCartesian(p); }
-    inline int numSites() const { return m_asymmetricUnit.atomicNumbers.size(); }
-    inline const QVector<SymmetryOperation>& symmetryOperations() const { return m_spaceGroup.symmetryOperations(); }
-    const SpaceGroup& spaceGroup() const { return m_spaceGroup; }
-    const AsymmetricUnit& asymmetricUnit() const { return m_asymmetricUnit; }
-    const UnitCell& unitCell() const { return m_unitCell; }
+    const std::vector<std::string>& labels() const { return m_asymmetric_unit.labels; }
+    const Eigen::Matrix3Xd& frac() const { return m_asymmetric_unit.positions; }
+    inline auto to_fractional(const Eigen::Matrix3Xd& p) const { return m_unit_cell.to_fractional(p); }
+    inline auto to_cartesian(const Eigen::Matrix3Xd& p) const { return m_unit_cell.to_cartesian(p); }
+    inline int num_sites() const { return m_asymmetric_unit.atomic_numbers.size(); }
+    inline const std::vector<SymmetryOperation>& symmetry_operations() const { return m_space_group.symmetry_operations(); }
+    const SpaceGroup& space_group() const { return m_space_group; }
+    const AsymmetricUnit& asymmetric_unit() const { return m_asymmetric_unit; }
+    const UnitCell& unit_cell() const { return m_unit_cell; }
     AtomSlab slab(const HKL&, const HKL&) const;
-    const AtomSlab& unitCellAtoms() const;
-    const PeriodicBondGraph& unitCellConnectivity() const;
-    const QVector<Molecule>& unitCellMolecules() const;
+    const AtomSlab& unit_cell_atoms() const;
+    const PeriodicBondGraph& unit_cell_connectivity() const;
+    const std::vector<Molecule>& unit_cell_molecules() const;
 private:
-    AsymmetricUnit m_asymmetricUnit;
-    SpaceGroup m_spaceGroup;
-    UnitCell m_unitCell;
-    mutable PeriodicBondGraph m_bondGraph;
-    mutable AtomSlab m_unitCellAtoms;
-    mutable bool m_unitCellAtomsNeedUpdate{true};
-    mutable bool m_unitCellConnectivityNeedUpdate{true};
-    mutable QVector<Molecule> m_unitCellMolecules{};
+    AsymmetricUnit m_asymmetric_unit;
+    SpaceGroup m_space_group;
+    UnitCell m_unit_cell;
+    mutable PeriodicBondGraph m_bond_graph;
+    mutable AtomSlab m_unit_cell_atoms;
+    mutable bool m_unit_cell_atoms_needs_update{true};
+    mutable bool m_unit_cell_connectivity_needs_update{true};
+    mutable std::vector<Molecule> m_unit_cell_molecules{};
 };
 
+}

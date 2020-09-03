@@ -1,46 +1,42 @@
 #include "element.h"
-#include <QDebug>
-using namespace Elements;
+#include <algorithm>
+#include <sstream>
+#include "util.h"
+
+namespace craso::chem {
 
 Element::Element(int atomicNumber) : m_data(&ELEMENTDATA_TABLE[atomicNumber])
 {}
 
-Element::Element(const QString& s) : m_data(&ELEMENTDATA_TABLE[0])
+Element::Element(const std::string& s) : m_data(&ELEMENTDATA_TABLE[0])
 {
     //capitalize the symbol first
-    auto symbol = s.trimmed();
-    symbol = symbol.toLower();
-    symbol[0] = symbol[0].toUpper();
-    auto ptr = ELEMENT_MAP.value(symbol, nullptr);
-    if (ptr != nullptr) {
-        m_data = ptr;
-        return;
-    }
-    int idx = 0;
-    for(const auto& el : ELEMENTDATA_TABLE) {
-        if (symbol == el.symbol) {
-            auto ptr = &ELEMENTDATA_TABLE[idx];
-            ELEMENT_MAP[symbol] = ptr;
-            m_data = ptr;
-            break;
-        }
-        idx++;
-    }
+    auto symbol = craso::util::trim_copy(s);
+    craso::util::capitalize(symbol);
+    m_data = ELEMENT_MAP.at(symbol);
 }
 
-QString Elements::chemicalFormula(const QVector<Element>& els)
+std::string chemical_formula(const std::vector<Element>& els)
 {
-    QMap<QString, int> counts;
-    for(const auto& el : els) {
-        counts[el.symbol()]++;
+    std::vector<Element> el_sorted;
+    for(const auto& el : els) el_sorted.push_back(el);
+
+    std::sort(el_sorted.begin(), el_sorted.end());
+    std::string result;
+    int count = 1;
+    std::string symbol;
+    for(const auto& el : el_sorted) {
+        if(el.symbol() == symbol) count++;
+        else {
+            result += symbol;
+            if(count > 1) result += std::to_string(count);
+            count = 1;
+            symbol = el.symbol();
+        }
     }
-    QStringList components;
-    for(const auto& key : counts.keys()) {
-        QString comp = key;
-        auto count = counts[key];
-        if (count > 1) comp += QString::number(count);
-        components.push_back(comp);
-    }
-    components.sort();
-    return components.join("");
+    result += symbol;
+    if(count > 1) result += std::to_string(count);
+    return result;
+}
+
 }

@@ -1,12 +1,14 @@
 #include "periodicbondgraph.h"
 
+namespace craso::graph {
+
 PeriodicBondGraph::PeriodicBondGraph()
 {
 }
 
-void PeriodicBondGraph::addBond(const Edge &new_edge) {
+void PeriodicBondGraph::add_bond(const Edge &new_edge) {
     size_t n = std::max(new_edge.source, new_edge.target);
-    for(size_t i = numVertices(); i <= n; i++) {
+    for(size_t i = num_vertices(); i <= n; i++) {
         vertex_t v = boost::add_vertex(m_graph);
         m_vertices.push_back(v);
         m_graph[v].uc_idx = i;
@@ -37,20 +39,22 @@ void PeriodicBondGraph::addBond(const Edge &new_edge) {
     e2.l = - new_edge.l;
 }
 
-bool PeriodicBondGraph::isBonded(VIndex i, VIndex j) const
+bool PeriodicBondGraph::is_bonded(VIndex i, VIndex j) const
 {
     edge_t e; bool b;
     std::tie(e, b) = boost::edge(m_vertices[i], m_vertices[j], m_graph);
     return b;
 }
 
-QVector<PeriodicBondGraph::VIndex> PeriodicBondGraph::neighbors(VIndex i) const
+std::vector<PeriodicBondGraph::VIndex> PeriodicBondGraph::neighbors(VIndex i) const
 {
-    QVector<size_t> n;
+    std::vector<size_t> n;
     typename boost::graph_traits<GraphContainer>::adjacency_iterator vi, vi_end;
     for(std::tie(vi, vi_end) = boost::adjacent_vertices(m_vertices[i], m_graph); vi != vi_end; ++vi)
     {
         n.push_back(m_graph[*vi].uc_idx);
     }
     return n;
+}
+
 }

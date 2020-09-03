@@ -1,9 +1,11 @@
 #pragma once
-#include <QVector>
+#include <vector>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/connected_components.hpp>
+
+namespace craso::graph {
 
 class PeriodicBondGraph {
 public:
@@ -35,14 +37,14 @@ public:
 
     void clear() { m_graph.clear(); m_vertices.clear(); m_edges.clear(); }
 
-    void addBond(const Edge&);
-    bool isBonded(VIndex i, VIndex j) const;
-    size_t numEdges() const { return m_edges.size(); }
-    size_t numVertices() const { return m_vertices.size(); }
-    inline vertex_t vertexHandle(VIndex i) const { return m_vertices[i]; }
+    void add_bond(const Edge&);
+    bool is_bonded(VIndex i, VIndex j) const;
+    size_t num_edges() const { return m_edges.size(); }
+    size_t num_vertices() const { return m_vertices.size(); }
+    inline vertex_t vertex_handle(VIndex i) const { return m_vertices[i]; }
     vertex_range_t vertices() const { return boost::vertices(m_graph); }
     edge_range_t edges() const { return boost::edges(m_graph); }
-    QVector<VIndex> neighbors(VIndex i) const;
+    std::vector<VIndex> neighbors(VIndex i) const;
     std::optional<Edge> edge(VIndex i, VIndex j) {
         auto [e, b] = boost::edge(m_vertices[i], m_vertices[j], m_graph);
         if(b) return m_graph[e];
@@ -50,13 +52,15 @@ public:
     }
     auto& graph() { return m_graph; }
 
-    auto connectedComponents() const {
-        QVector<int> component(boost::num_vertices(m_graph));
+    auto connected_components() const {
+        std::vector<int> component(boost::num_vertices(m_graph));
         int num_components = boost::connected_components(m_graph, &component[0]);
         return std::make_pair(num_components, component);
     }
 private:
-    QVector<vertex_t> m_vertices;
-    QVector<edge_t> m_edges;
+    std::vector<vertex_t> m_vertices;
+    std::vector<edge_t> m_edges;
     GraphContainer m_graph;
 };
+
+}
