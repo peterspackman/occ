@@ -8,14 +8,14 @@ namespace craso::chem {
 struct ElementData
 {
     ElementData(int n, const std::string& nm, const std::string& sym, float cov, float vdw, float m) :
-        atomicNumber(n), name(nm), symbol(sym), covRadius(cov), vdwRadius(vdw), mass(m) {}
-    ElementData(const ElementData& o) : atomicNumber(o.atomicNumber), name(o.name), symbol(o.symbol),
-        covRadius(o.covRadius), vdwRadius(o.vdwRadius), mass(o.mass) {}
-    int atomicNumber;
+        atomic_number(n), name(nm), symbol(sym), cov_radius(cov), vdw_radius(vdw), mass(m) {}
+    ElementData(const ElementData& o) : atomic_number(o.atomic_number), name(o.name), symbol(o.symbol),
+        cov_radius(o.cov_radius), vdw_radius(o.vdw_radius), mass(o.mass) {}
+    int atomic_number;
     std::string name;
     std::string symbol;
-    float covRadius;
-    float vdwRadius;
+    float cov_radius;
+    float vdw_radius;
     float mass;
 };
 
@@ -136,13 +136,17 @@ public:
     inline const std::string& symbol() const { return m_data.symbol; }
     inline const std::string& name() const { return m_data.name; }
     inline float mass() const { return m_data.mass; }
-    inline float cov() const { return m_data.covRadius; }
-    inline float covalentRadius() const { return m_data.covRadius; }
-    inline float vdw() const { return m_data.vdwRadius; }
-    inline float vdwRadius() const { return m_data.vdwRadius; }
-    inline int atomicNumber() const { return m_data.atomicNumber; }
-    inline int n() const { return m_data.atomicNumber; }
-    bool operator<(const Element& rhs) const { return m_data.atomicNumber < rhs.m_data.atomicNumber; }
+    inline float cov() const { return m_data.cov_radius; }
+    inline float covalentRadius() const { return m_data.cov_radius; }
+    inline float vdw() const { return m_data.vdw_radius; }
+    inline float vdwRadius() const { return m_data.vdw_radius; }
+    inline int atomicNumber() const { return m_data.atomic_number; }
+    inline int n() const { return m_data.atomic_number; }
+    bool operator<(const Element& rhs) const { return m_data.atomic_number < rhs.m_data.atomic_number; }
+    bool operator>(const Element& rhs) const { return m_data.atomic_number > rhs.m_data.atomic_number; }
+    bool operator==(const Element& rhs) const { return m_data.atomic_number == rhs.m_data.atomic_number; }
+    bool operator!=(const Element& rhs) const { return m_data.atomic_number != rhs.m_data.atomic_number; }
+
 private:
     ElementData m_data;
 };
