@@ -4,7 +4,6 @@ add_library(craso
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/periodicbondgraph.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.cpp"

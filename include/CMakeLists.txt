@@ -6,7 +6,7 @@ set(CRASO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/logger.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/periodicbondgraph.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.h"

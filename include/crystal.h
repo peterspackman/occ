@@ -3,7 +3,7 @@
 #include <vector>
 #include "spacegroup.h"
 #include "unitcell.h"
-#include "periodicbondgraph.h"
+#include "bondgraph.h"
 #include "molecule.h"
 
 namespace craso::crystal {
@@ -61,6 +61,7 @@ private:
     AsymmetricUnit m_asymmetric_unit;
     SpaceGroup m_space_group;
     UnitCell m_unit_cell;
+    mutable std::vector<PeriodicBondGraph::vertex_t> m_bond_graph_vertices;
     mutable PeriodicBondGraph m_bond_graph;
     mutable AtomSlab m_unit_cell_atoms;
     mutable bool m_unit_cell_atoms_needs_update{true};

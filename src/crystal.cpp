@@ -6,7 +6,7 @@
 
 namespace craso::crystal {
 
-using craso::graph::PeriodicBondGraph;
+using craso::graph::BondGraph;
 
 Crystal::Crystal(const AsymmetricUnit& asym, const SpaceGroup& sg, const UnitCell& uc) :
     m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc)
@@ -101,6 +101,10 @@ const PeriodicBondGraph& Crystal::unit_cell_connectivity() const
     std::vector<std::pair<size_t, double>> idxs_dists;
     nanoflann::RadiusResultSet results((max_cov * 2 + 0.4) * (max_cov * 2 + 0.4), idxs_dists);
 
+    for(size_t i = 0; i < n_uc; i++) {
+        m_bond_graph_vertices.push_back(m_bond_graph.add_vertex(craso::graph::PeriodicVertex{i}));
+    }
+
     for(size_t uc_idx_l = 0; uc_idx_l < n_uc; uc_idx_l++) {
         double *q = s.cart_pos.col(uc_idx_l).data();
         size_t asym_idx_l = uc_idx_l % n_asym;
@@ -117,15 +121,24 @@ const PeriodicBondGraph& Crystal::unit_cell_connectivity() const
             double cov_b = covalent_radii(asym_idx_r);
             if(d < ((cov_a + cov_b + 0.4) * (cov_a + cov_b + 0.4))) {
                 auto pos = s.frac_pos.col(idx);
-
-                m_bond_graph.add_bond(PeriodicBondGraph::Edge{
-                                        sqrt(d),
-                                        uc_idx_l, uc_idx_r,
-                                        asym_idx_l, asym_idx_r,
-                                        static_cast<int>(floor(pos(0))),
-                                        static_cast<int>(floor(pos(1))),
-                                        static_cast<int>(floor(pos(2)))
-                                    });
+                craso::graph::PeriodicEdge left_right{
+                    sqrt(d),
+                    uc_idx_l, uc_idx_r,
+                    asym_idx_l, asym_idx_r,
+                    static_cast<int>(floor(pos(0))),
+                    static_cast<int>(floor(pos(1))),
+                    static_cast<int>(floor(pos(2)))
+                };
+                m_bond_graph.add_edge(m_bond_graph_vertices[uc_idx_l], m_bond_graph_vertices[uc_idx_r], left_right);
+                craso::graph::PeriodicEdge right_left{
+                    sqrt(d),
+                    uc_idx_r, uc_idx_l,
+                    asym_idx_r, asym_idx_l,
+                    -static_cast<int>(floor(pos(0))),
+                    -static_cast<int>(floor(pos(1))),
+                    -static_cast<int>(floor(pos(2)))
+                };
+                m_bond_graph.add_edge(m_bond_graph_vertices[uc_idx_r], m_bond_graph_vertices[uc_idx_l], right_left);
             }
         }
         results.clear();
@@ -169,7 +182,7 @@ const std::vector<craso::chem::Molecule>& Crystal::unit_cell_molecules() const {
         Eigen::Matrix3Xd shifts(3, group.size());
         shifts.setZero();
         boost::breadth_first_search(
-              g.graph(), g.vertex_handle(root),
+              g.graph(), m_bond_graph_vertices[root],
               boost::visitor(Vis(shifts_vec, predecessors))
         );
         std::vector<std::pair<size_t, size_t>> bonds;
@@ -180,8 +193,8 @@ const std::vector<craso::chem::Molecule>& Crystal::unit_cell_molecules() const {
             shifts(0, i) = shifts_vec[uc_idx].h;
             shifts(1, i) = shifts_vec[uc_idx].k;
             shifts(2, i) = shifts_vec[uc_idx].l;
-            for(const auto& n: g.neighbors(uc_idx)) {
-                size_t group_idx = std::distance(group.begin(), std::find(group.begin(), group.end(), n));
+            for(const auto& n: g.neighbor_list(m_bond_graph_vertices[uc_idx])) {
+                size_t group_idx = std::distance(group.begin(), std::find(group.begin(), group.end(), n.uc_idx));
                 bonds.push_back(std::pair(i, group_idx));
             }
         }
