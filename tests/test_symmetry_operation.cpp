@@ -1,6 +1,5 @@
 #include "symmetryoperation.h"
 #include "util.h"
-#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
 using craso::crystal::SymmetryOperation;

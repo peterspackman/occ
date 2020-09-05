@@ -130,7 +130,7 @@ static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] =
 class Element
 {
 public:
-    Element() = default;
+    Element() = delete;
     Element(const std::string&);
     Element(int);
     inline const std::string& symbol() const { return m_data.symbol; }

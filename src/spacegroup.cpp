@@ -5,6 +5,10 @@ namespace craso::crystal {
 SpaceGroup::SpaceGroup(const std::string& symbol)
 {
     m_sgdata = gemmi::find_spacegroup_by_name(symbol);
+    for(const auto& op: m_sgdata->operations())
+    {
+        m_symops.push_back(SymmetryOperation(op.triplet()));
+    }
 }
 
 SpaceGroup::SpaceGroup(const std::vector<SymmetryOperation>& symops) : m_symops(symops)
@@ -38,7 +42,7 @@ std::pair<VectorXi, Matrix3Xd> SpaceGroup::apply_all_symmetry_operations(const E
     int nSymops = m_symops.size();
     Eigen::Matrix3Xd transformed(3, nSites * nSymops);
     Eigen::VectorXi generators(nSites * nSymops);
-    transformed.block(0, 0, 3, nSites) = frac;
+    transformed.block(0, 0, 3, nSites) = frac.block(0, 0, 3, nSites);
     for(int i = 0; i < nSites; i++) {
         generators(i) = 16484;
     }
