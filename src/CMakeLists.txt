@@ -10,7 +10,7 @@ add_library(craso
     ${CRASO_INCLUDE_FILES}
 )
 
-target_link_libraries(craso PRIVATE Eigen3::Eigen Boost::graph fmt::fmt)
+target_link_libraries(craso PRIVATE Eigen3::Eigen Boost::graph fmt::fmt OpenMP::OpenMP_CXX)
 target_include_directories(craso PRIVATE 
     ${CRASO_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
