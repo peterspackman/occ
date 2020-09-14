@@ -23,7 +23,7 @@ public:
     using edge_range_t = std::pair<edge_iter, edge_iter>;
     using edge_property_t = typename boost::edge_bundle_type<GraphContainer>::type;
     using vertex_property_t = typename boost::vertex_bundle_type<GraphContainer>::type;
-    BondGraph();
+    BondGraph() {}
 
     void clear() { m_graph.clear(); }
 
@@ -90,5 +90,4 @@ struct PeriodicVertex {
 };
 
 using PeriodicBondGraph = BondGraph<PeriodicVertex, PeriodicEdge>;
-
 }

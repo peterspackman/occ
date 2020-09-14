@@ -14,11 +14,14 @@ target_link_libraries(craso
     PUBLIC 
     Eigen3::Eigen Boost::graph fmt::fmt 
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
-    cint
+    Libint2::cxx
 )
 target_include_directories(craso PUBLIC 
     ${CRASO_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
-    ${LIBCINT_INCLUDE_DIR}
 )
 target_compile_features(craso PUBLIC cxx_std_17)
+
+
+add_executable(hf "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
+target_link_libraries(hf PUBLIC craso)

@@ -4,6 +4,3 @@
 [submodule "3rdparty/fmt"]
 	path = 3rdparty/fmt
 	url = https://github.com/fmtlib/fmt
-[submodule "3rdparty/libcint"]
-	path = 3rdparty/libcint
-	url = https://github.com/sunqm/libcint
