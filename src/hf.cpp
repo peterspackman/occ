@@ -1,6 +1,7 @@
 #include "hf.h"
 #include "parallel.h"
 #include <Eigen/Dense>
+#include <libint2/chemistry/sto3g_atomic_density.h>
 
 namespace craso::hf
 {
@@ -119,9 +120,60 @@ namespace craso::hf
         std::cout << "done (" << timer.read(0) << " s)" << std::endl;
     }
 
-HartreeFock::HartreeFock(const BasisSet &basis) : m_basis(basis)
-{
-    std::tie(m_shellpair_list, m_shellpair_data) = compute_shellpairs(m_basis);
-}
+    HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms, const BasisSet &basis) : m_atoms(atoms), m_basis(basis)
+    {
+        std::tie(m_shellpair_list, m_shellpair_data) = compute_shellpairs(m_basis);
+        for (const auto &a : m_atoms)
+        {
+            m_num_e += a.atomic_number;
+        }
+        m_num_e -= m_charge;
+    }
 
+    double HartreeFock::nuclear_repulsion_energy() const
+    {
+        double enuc = 0.0;
+        for (auto i = 0; i < m_atoms.size(); i++)
+            for (auto j = i + 1; j < m_atoms.size(); j++)
+            {
+                auto xij = m_atoms[i].x - m_atoms[j].x;
+                auto yij = m_atoms[i].y - m_atoms[j].y;
+                auto zij = m_atoms[i].z - m_atoms[j].z;
+                auto r2 = xij * xij + yij * yij + zij * zij;
+                auto r = sqrt(r2);
+                enuc += m_atoms[i].atomic_number * m_atoms[j].atomic_number / r;
+            }
+        return enuc;
+    }
+
+    RowMajorMatrix HartreeFock::compute_soad() const
+    {
+        // computes Superposition-Of-Atomic-Densities guess for the molecular density
+        // matrix
+        // in minimal basis; occupies subshells by smearing electrons evenly over the
+        // orbitals
+        // compute number of atomic orbitals
+        size_t nao = 0;
+        for (const auto &atom : m_atoms)
+        {
+            const auto Z = atom.atomic_number;
+            nao += libint2::sto3g_num_ao(Z);
+        }
+
+        // compute the minimal basis density
+        RowMajorMatrix D = RowMajorMatrix::Zero(nao, nao);
+        size_t ao_offset = 0; // first AO of this atom
+        for (const auto &atom : m_atoms)
+        {
+            const auto Z = atom.atomic_number;
+            const auto &occvec = libint2::sto3g_ao_occupation_vector(Z);
+            for (const auto &occ : occvec)
+            {
+                D(ao_offset, ao_offset) = occ;
+                ++ao_offset;
+            }
+        }
+
+        return D * 0.5; // we use densities normalized to # of electrons/2
+    }
 } // namespace craso::hf

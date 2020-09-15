@@ -56,6 +56,7 @@
 #include <omp.h>
 #include "molecule.h"
 #include "parallel.h"
+#include "hf.h"
 
 /// to use precomputed shell pair data must decide on max precision a priori
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;

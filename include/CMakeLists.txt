@@ -4,6 +4,7 @@ set(CRASO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/element.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ints.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/logger.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
