@@ -55,6 +55,7 @@
 
 #include <omp.h>
 #include "molecule.h"
+#include "parallel.h"
 
 /// to use precomputed shell pair data must decide on max precision a priori
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
@@ -212,7 +213,7 @@ int main(int argc, char* argv[]) {
 
     // set up thread pool
     {
-      using libint2::nthreads;
+      using craso::parallel::nthreads;
       auto nthreads_cstr = getenv("OMP_NUM_THREADS");
       nthreads = 1;
       if (nthreads_cstr && strcmp(nthreads_cstr, "")) {
@@ -900,7 +901,7 @@ std::array<Matrix, libint2::operator_traits<obtype>::nopers> compute_1body_ints(
     const BasisSet& obs, OperatorParams oparams) {
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
   typedef std::array<Matrix, libint2::operator_traits<obtype>::nopers>
       result_type;
   const unsigned int nopers = libint2::operator_traits<obtype>::nopers;
@@ -958,7 +959,7 @@ std::array<Matrix, libint2::operator_traits<obtype>::nopers> compute_1body_ints(
     }
   };  // compute lambda
 
-  libint2::parallel_do(compute);
+  craso::parallel::parallel_do(compute);
 
   return result;
 }
@@ -968,7 +969,7 @@ template <Operator obtype>
 std::vector<Matrix> compute_1body_ints_deriv(unsigned deriv_order,
                                              const BasisSet& obs,
                                              const std::vector<Atom>& atoms) {
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
   const auto n = obs.nbf();
   const auto nshells = obs.size();
   constexpr auto nopers = libint2::operator_traits<obtype>::nopers;
@@ -1164,7 +1165,7 @@ std::vector<Matrix> compute_1body_ints_deriv(unsigned deriv_order,
     }    // s1
   };  // compute lambda
 
-  libint2::parallel_do(compute);
+  craso::parallel::parallel_do(compute);
 
   return result;
 }
@@ -1183,7 +1184,7 @@ Matrix compute_schwarz_ints(
 
   // construct the 2-electron repulsion integrals engine
   using libint2::Engine;
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
   std::vector<Engine> engines(nthreads);
 
   // !!! very important: cannot screen primitives in Schwarz computation !!!
@@ -1232,7 +1233,7 @@ Matrix compute_schwarz_ints(
     }
   };  // thread lambda
 
-  libint2::parallel_do(compute);
+  craso::parallel::parallel_do(compute);
 
   timer.stop(0);
   std::cout << "done (" << timer.read(0) << " s)" << std::endl;
@@ -1254,7 +1255,7 @@ compute_shellpairs(const BasisSet& bs1,
   const auto nsh2 = bs2.size();
   const auto bs1_equiv_bs2 = (&bs1 == &bs2);
 
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
 
   // construct the 2-electron repulsion integrals engine
   using libint2::Engine;
@@ -1314,7 +1315,7 @@ compute_shellpairs(const BasisSet& bs1,
     }
   };  // end of compute
 
-  libint2::parallel_do(compute);
+  craso::parallel::parallel_do(compute);
 
   // resort shell list in increasing order, i.e. splist[s][s1] < splist[s][s2] if s1 < s2
   // N.B. only parallelized over 1 shell index
@@ -1327,7 +1328,7 @@ compute_shellpairs(const BasisSet& bs1,
     }
   };  // end of sort
 
-  libint2::parallel_do(sort);
+  craso::parallel::parallel_do(sort);
 
   // compute shellpair data assuming that we are computing to default_epsilon
   // N.B. only parallelized over 1 shell index
@@ -1343,7 +1344,7 @@ compute_shellpairs(const BasisSet& bs1,
     }
   };  // end of make_spdata
 
-  libint2::parallel_do(make_spdata);
+  craso::parallel::parallel_do(make_spdata);
 
   timer.stop(0);
   std::cout << "done (" << timer.read(0) << " s)" << std::endl;
@@ -1431,7 +1432,7 @@ std::tuple<Matrix, Matrix, double> conditioning_orthogonalizer(
 }
 
 Matrix compute_2body_2index_ints(const BasisSet& bs) {
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
   const auto n = bs.nbf();
   const auto nshells = bs.size();
   Matrix result = Matrix::Zero(n, n);
@@ -1483,7 +1484,7 @@ Matrix compute_2body_2index_ints(const BasisSet& bs) {
     }
   };  // compute lambda
 
-  libint2::parallel_do(compute);
+  craso::parallel::parallel_do(compute);
 
   return result;
 }
@@ -1492,7 +1493,7 @@ Matrix compute_2body_fock(const BasisSet& obs, const Matrix& D,
                           double precision, const Matrix& Schwarz) {
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
   std::vector<Matrix> G(nthreads, Matrix::Zero(n, n));
 
   const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
@@ -1665,7 +1666,7 @@ Matrix compute_2body_fock(const BasisSet& obs, const Matrix& D,
 
   };  // end of lambda
 
-  libint2::parallel_do(lambda);
+  craso::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -1700,7 +1701,7 @@ std::vector<Matrix> compute_2body_fock_deriv(const BasisSet& obs,
   const auto nderiv = libint2::num_geometrical_derivatives(
       atoms.size(), deriv_order);  // total # of derivs
   const auto ncoords_times_two = (atoms.size() * 3) * 2;
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
   std::vector<Matrix> G(nthreads * nderiv, Matrix::Zero(n, n));
 
   const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
@@ -1923,7 +1924,7 @@ std::vector<Matrix> compute_2body_fock_deriv(const BasisSet& obs,
 
   };  // end of lambda
 
-  libint2::parallel_do(lambda);
+  craso::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t t = 1; t != nthreads; ++t) {
@@ -1962,7 +1963,7 @@ Matrix compute_2body_fock_general(const BasisSet& obs, const Matrix& D,
   const auto n_D = D_bs.nbf();
   assert(D.cols() == D.rows() && D.cols() == n_D);
 
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
   std::vector<Matrix> G(nthreads, Matrix::Zero(n, n));
 
   // construct the 2-electron repulsion integrals engine
@@ -2069,7 +2070,7 @@ Matrix compute_2body_fock_general(const BasisSet& obs, const Matrix& D,
 
   };  // thread lambda
 
-  libint2::parallel_do(lambda);
+  craso::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -2084,7 +2085,7 @@ Matrix compute_2body_fock_general(const BasisSet& obs, const Matrix& D,
 
 Matrix DFFockEngine::compute_2body_fock_dfC(const Matrix& Cocc) {
 
-  using libint2::nthreads;
+  using craso::parallel::nthreads;
 
   const auto n = obs.nbf();
   const auto ndf = dfbs.nbf();
@@ -2173,7 +2174,7 @@ Matrix DFFockEngine::compute_2body_fock_dfC(const Matrix& Cocc) {
 
     };  // lambda
 
-    libint2::parallel_do(lambda);
+    craso::parallel::parallel_do(lambda);
 
     wall_timer.stop(0);
 
