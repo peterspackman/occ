@@ -19,6 +19,22 @@ compute_shellpairs(const BasisSet& bs1,
                    const BasisSet& bs2 = BasisSet(),
                    double threshold = 1e-12);
 
+std::tuple<RowMajorMatrix, RowMajorMatrix, double> conditioning_orthogonalizer(const RowMajorMatrix& S, double S_condition_number_threshold);
+
+// returns {X,X^{-1},rank,A_condition_number,result_A_condition_number}, where
+// X is the generalized square-root-inverse such that X.transpose() * A * X = I
+//
+// if symmetric is true, produce "symmetric" sqrtinv: X = U . A_evals_sqrtinv .
+// U.transpose()),
+// else produce "canonical" sqrtinv: X = U . A_evals_sqrtinv
+// where U are eigenvectors of A
+// rows and cols of symmetric X are equivalent; for canonical X the rows are
+// original basis (AO),
+// cols are transformed basis ("orthogonal" AO)
+//
+// A is conditioned to max_condition_number
+std::tuple<RowMajorMatrix, RowMajorMatrix, size_t, double, double> gensqrtinv(const RowMajorMatrix& S, bool symmetric = false, double max_condition_number = 1e8);
+
 class HartreeFock {
 public:
     HartreeFock(const std::vector<libint2::Atom>& atoms, const BasisSet& basis);
@@ -49,6 +65,8 @@ public:
 
     RowMajorMatrix compute_2body_fock(double precision = std::numeric_limits<double>::epsilon(),  const RowMajorMatrix& Schwarz = RowMajorMatrix()) const;
     RowMajorMatrix compute_shellblock_norm(const RowMajorMatrix& A) const;
+
+    void compute_initial_guess();
 
 private:
     std::vector<libint2::Atom> m_atoms;

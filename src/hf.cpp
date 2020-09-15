@@ -6,6 +6,77 @@
 namespace craso::hf
 {
 
+    std::tuple<RowMajorMatrix, RowMajorMatrix, size_t, double, double> gensqrtinv(const RowMajorMatrix &S, bool symmetric, double max_condition_number)
+    {
+        Eigen::SelfAdjointEigenSolver<RowMajorMatrix> eig_solver(S);
+        auto U = eig_solver.eigenvectors();
+        auto s = eig_solver.eigenvalues();
+        auto s_max = s.maxCoeff();
+        auto condition_number = std::min(
+            s_max / std::max(s.minCoeff(), std::numeric_limits<double>::min()),
+            1.0 / std::numeric_limits<double>::epsilon());
+        auto threshold = s_max / max_condition_number;
+        long n = s.rows();
+        long n_cond = 0;
+        for (long i = n - 1; i >= 0; --i)
+        {
+            if (s(i) >= threshold)
+            {
+                ++n_cond;
+            }
+            else
+                i = 0; // skip rest since eigenvalues are in ascending order
+        }
+
+        auto sigma = s.bottomRows(n_cond);
+        auto result_condition_number = sigma.maxCoeff() / sigma.minCoeff();
+        auto sigma_sqrt = sigma.array().sqrt().matrix().asDiagonal();
+        auto sigma_invsqrt = sigma.array().sqrt().inverse().matrix().asDiagonal();
+
+        // make canonical X/Xinv
+        auto U_cond = U.block(0, n - n_cond, n, n_cond);
+        RowMajorMatrix X = U_cond * sigma_invsqrt;
+        RowMajorMatrix Xinv = U_cond * sigma_sqrt;
+        // convert to symmetric, if needed
+        if (symmetric)
+        {
+            X = X * U_cond.transpose();
+            Xinv = Xinv * U_cond.transpose();
+        }
+        return std::make_tuple(X, Xinv, size_t(n_cond), condition_number,
+                               result_condition_number);
+    }
+
+    std::tuple<RowMajorMatrix, RowMajorMatrix, double> conditioning_orthogonalizer(const RowMajorMatrix &S, double S_condition_number_threshold)
+    {
+        size_t obs_rank;
+        double S_condition_number;
+        double XtX_condition_number;
+        RowMajorMatrix X, Xinv;
+
+        assert(S.rows() == S.cols());
+
+        std::tie(X, Xinv, obs_rank, S_condition_number, XtX_condition_number) =
+            gensqrtinv(S, false, S_condition_number_threshold);
+        auto obs_nbf_omitted = (long)S.rows() - (long)obs_rank;
+        std::cout << "overlap condition number = " << S_condition_number;
+        if (obs_nbf_omitted > 0)
+            std::cout << " (dropped " << obs_nbf_omitted << " "
+                      << (obs_nbf_omitted > 1 ? "fns" : "fn") << " to reduce to "
+                      << XtX_condition_number << ")";
+        std::cout << std::endl;
+
+        if (obs_nbf_omitted > 0)
+        {
+            RowMajorMatrix should_be_I = X.transpose() * S * X;
+            RowMajorMatrix I = RowMajorMatrix::Identity(should_be_I.rows(), should_be_I.cols());
+            std::cout << "||X^t * S * X - I||_2 = " << (should_be_I - I).norm()
+                      << " (should be 0)" << std::endl;
+        }
+
+        return std::make_tuple(X, Xinv, XtX_condition_number);
+    }
+
     HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms, const BasisSet &basis) : m_atoms(atoms), m_basis(basis)
     {
         if (!libint2::initialized())
@@ -182,235 +253,65 @@ namespace craso::hf
 
     RowMajorMatrix HartreeFock::compute_shellblock_norm(const RowMajorMatrix &A) const
     {
-        const auto nsh = m_basis.size();
-        RowMajorMatrix Ash(nsh, nsh);
-
-        auto shell2bf = m_basis.shell2bf();
-        for (size_t s1 = 0; s1 != nsh; ++s1)
-        {
-            const auto &s1_first = shell2bf[s1];
-            const auto &s1_size = m_basis.at(s1).size();
-            for (size_t s2 = 0; s2 != nsh; ++s2)
-            {
-                const auto &s2_first = shell2bf[s2];
-                const auto &s2_size = m_basis.at(s2).size();
-
-                Ash(s1, s2) = A.block(s1_first, s2_first, s1_size, s2_size)
-                                  .lpNorm<Eigen::Infinity>();
-            }
-        }
-
-        return Ash;
+        return craso::ints::compute_shellblock_norm(m_basis, A);
     }
 
     RowMajorMatrix HartreeFock::compute_2body_fock(double precision, const RowMajorMatrix &Schwarz) const
     {
-        const auto n = m_basis.nbf();
-        const auto nshells = m_basis.size();
-        using craso::parallel::nthreads;
-        std::vector<RowMajorMatrix> G(nthreads, RowMajorMatrix::Zero(n, n));
+        return craso::ints::compute_2body_fock(m_basis, m_shellpair_list, m_shellpair_data, m_density, precision, Schwarz);
+    }
 
-        const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
-        RowMajorMatrix D_shblk_norm = compute_shellblock_norm(m_density); // RowMajorMatrix of infty-norms of shell blocks
-
-        auto fock_precision = precision;
-        // engine precision controls primitive truncation, assume worst-case scenario
-        // (all primitive combinations add up constructively)
-        auto max_nprim = m_basis.max_nprim();
-        auto max_nprim4 = max_nprim * max_nprim * max_nprim * max_nprim;
-        auto engine_precision = std::min(fock_precision / D_shblk_norm.maxCoeff(),
-                                         std::numeric_limits<double>::epsilon()) /
-                                max_nprim4;
-        assert(engine_precision > max_engine_precision &&
-               "using precomputed shell pair data limits the max engine precision"
-               " ... make max_engine_precision smalle and recompile");
-
-        // construct the 2-electron repulsion integrals engine pool
-        using libint2::Engine;
-        using libint2::Operator;
-        using libint2::BraKet;
-        std::vector<Engine> engines(nthreads);
-        engines[0] = Engine(Operator::coulomb, m_basis.max_nprim(), m_basis.max_l(), 0);
-        engines[0].set_precision(engine_precision); // shellset-dependent precision
-                                                    // control will likely break
-                                                    // positive definiteness
-                                                    // stick with this simple recipe
-        //std::cout << "compute_2body_fock:precision = " << precision << std::endl;
-        //std::cout << "Engine::precision = " << engines[0].precision() << std::endl;
-        for (size_t i = 1; i != nthreads; ++i)
+    void HartreeFock::compute_initial_guess()
+    {
+        int ndocc = m_num_e / 2;
+        const auto tstart = std::chrono::high_resolution_clock::now();
+        auto S = compute_overlap_integrals();
+        auto T = compute_kinetic_energy_integrals();
+        auto V = compute_nuclear_attraction_integrals();
+        RowMajorMatrix H = T + V;
+        RowMajorMatrix C;
+        RowMajorMatrix C_occ;
+        auto D_minbs = compute_soad(); // compute guess in minimal basis
+        BasisSet minbs("STO-3G", m_atoms);
+        if (minbs == m_basis)
+            m_density = D_minbs;
+        else
         {
-            engines[i] = engines[0];
+            // compute orthogonalizer X such that X.transpose() . S . X = I
+            RowMajorMatrix X, Xinv;
+            double XtX_condition_number; // condition number of "re-conditioned"
+                                         // overlap obtained as Xinv.transpose() . Xinv
+            // one should think of columns of Xinv as the conditioned basis
+            // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose() .
+            // X)
+            // by default assume can manage to compute with condition number of S <=
+            // 1/eps
+            // this is probably too optimistic, but in well-behaved cases even 10^11 is
+            // OK
+            double S_condition_number_threshold =
+                1.0 / std::numeric_limits<double>::epsilon();
+            std::tie(X, Xinv, XtX_condition_number) =
+                conditioning_orthogonalizer(S, S_condition_number_threshold);
+            // if basis != minimal basis, map non-representable SOAD guess
+            // into the AO basis
+            // by diagonalizing a Fock matrix
+            std::cout << "projecting SOAD into AO basis ... ";
+            auto F = H;
+            F += craso::ints::compute_2body_fock_general(m_basis, D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
+
+            // solve F C = e S C by (conditioned) transformation to F' C' = e C',
+            // where
+            // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
+            Eigen::SelfAdjointEigenSolver<RowMajorMatrix> eig_solver(X.transpose() * F * X);
+            C = X * eig_solver.eigenvectors();
+
+            // compute density, D = C(occ) . C(occ)T
+            C_occ = C.leftCols(ndocc);
+            m_density = C_occ * C_occ.transpose();
+
+            const auto tstop = std::chrono::high_resolution_clock::now();
+            const std::chrono::duration<double> time_elapsed = tstop - tstart;
+            std::cout << "done (" << time_elapsed.count() << " s)" << std::endl;
         }
-        std::atomic<size_t> num_ints_computed{0};
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-        std::vector<libint2::Timers<1>> timers(nthreads);
-#endif
-
-        auto shell2bf = m_basis.shell2bf();
-
-        auto lambda = [&](int thread_id) {
-            auto &engine = engines[thread_id];
-            auto &g = G[thread_id];
-            const auto &buf = engine.results();
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            auto &timer = timers[thread_id];
-            timer.clear();
-            timer.set_now_overhead(25);
-#endif
-
-            // loop over permutationally-unique set of shells
-            for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1)
-            {
-                auto bf1_first = shell2bf[s1]; // first basis function in this shell
-                auto n1 = m_basis[s1].size();      // number of basis functions in this shell
-
-                auto sp12_iter = m_shellpair_data.at(s1).begin();
-
-                for (const auto &s2 : m_shellpair_list.at(s1))
-                {
-                    auto bf2_first = shell2bf[s2];
-                    auto n2 = m_basis[s2].size();
-
-                    const auto *sp12 = sp12_iter->get();
-                    ++sp12_iter;
-
-                    const auto Dnorm12 = do_schwarz_screen ? D_shblk_norm(s1, s2) : 0.;
-
-                    for (auto s3 = 0; s3 <= s1; ++s3)
-                    {
-                        auto bf3_first = shell2bf[s3];
-                        auto n3 = m_basis[s3].size();
-
-                        const auto Dnorm123 =
-                            do_schwarz_screen
-                                ? std::max(D_shblk_norm(s1, s3),
-                                           std::max(D_shblk_norm(s2, s3), Dnorm12))
-                                : 0.;
-
-                        auto sp34_iter = m_shellpair_data.at(s3).begin();
-
-                        const auto s4_max = (s1 == s3) ? s2 : s3;
-                        for (const auto &s4 : m_shellpair_list.at(s3))
-                        {
-                            if (s4 > s4_max)
-                                break; // for each s3, s4 are stored in monotonically increasing
-                                       // order
-
-                            // must update the iter even if going to skip s4
-                            const auto *sp34 = sp34_iter->get();
-                            ++sp34_iter;
-
-                            if ((s1234++) % nthreads != thread_id)
-                                continue;
-
-                            const auto Dnorm1234 =
-                                do_schwarz_screen
-                                    ? std::max(
-                                          D_shblk_norm(s1, s4),
-                                          std::max(D_shblk_norm(s2, s4),
-                                                   std::max(D_shblk_norm(s3, s4), Dnorm123)))
-                                    : 0.;
-
-                            if (do_schwarz_screen &&
-                                Dnorm1234 * Schwarz(s1, s2) * Schwarz(s3, s4) <
-                                    fock_precision)
-                                continue;
-
-                            auto bf4_first = shell2bf[s4];
-                            auto n4 = m_basis[s4].size();
-
-                            num_ints_computed += n1 * n2 * n3 * n4;
-
-                            // compute the permutational degeneracy (i.e. # of equivalents) of
-                            // the given shell set
-                            auto s12_deg = (s1 == s2) ? 1 : 2;
-                            auto s34_deg = (s3 == s4) ? 1 : 2;
-                            auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
-                            auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-                            timer.start(0);
-#endif
-
-                            engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
-                                m_basis[s1], m_basis[s2], m_basis[s3], m_basis[s4], sp12, sp34);
-                            const auto *buf_1234 = buf[0];
-                            if (buf_1234 == nullptr)
-                                continue; // if all integrals screened out, skip to next quartet
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-                            timer.stop(0);
-#endif
-
-                            // 1) each shell set of integrals contributes up to 6 shell sets of
-                            // the Fock RowMajorMatrix:
-                            //    F(a,b) += (ab|cd) * D(c,d)
-                            //    F(c,d) += (ab|cd) * D(a,b)
-                            //    F(b,d) -= 1/4 * (ab|cd) * D(a,c)
-                            //    F(b,c) -= 1/4 * (ab|cd) * D(a,d)
-                            //    F(a,c) -= 1/4 * (ab|cd) * D(b,d)
-                            //    F(a,d) -= 1/4 * (ab|cd) * D(b,c)
-                            // 2) each permutationally-unique integral (shell set) must be
-                            // scaled by its degeneracy,
-                            //    i.e. the number of the integrals/sets equivalent to it
-                            // 3) the end result must be symmetrized
-                            for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1)
-                            {
-                                const auto bf1 = f1 + bf1_first;
-                                for (auto f2 = 0; f2 != n2; ++f2)
-                                {
-                                    const auto bf2 = f2 + bf2_first;
-                                    for (auto f3 = 0; f3 != n3; ++f3)
-                                    {
-                                        const auto bf3 = f3 + bf3_first;
-                                        for (auto f4 = 0; f4 != n4; ++f4, ++f1234)
-                                        {
-                                            const auto bf4 = f4 + bf4_first;
-
-                                            const auto value = buf_1234[f1234];
-
-                                            const auto value_scal_by_deg = value * s1234_deg;
-
-                                            g(bf1, bf2) += m_density(bf3, bf4) * value_scal_by_deg;
-                                            g(bf3, bf4) += m_density(bf1, bf2) * value_scal_by_deg;
-                                            g(bf1, bf3) -= 0.25 * m_density(bf2, bf4) * value_scal_by_deg;
-                                            g(bf2, bf4) -= 0.25 * m_density(bf1, bf3) * value_scal_by_deg;
-                                            g(bf1, bf4) -= 0.25 * m_density(bf2, bf3) * value_scal_by_deg;
-                                            g(bf2, bf3) -= 0.25 * m_density(bf1, bf4) * value_scal_by_deg;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }; // end of lambda
-
-        craso::parallel::parallel_do(lambda);
-
-        // accumulate contributions from all threads
-        for (size_t i = 1; i != nthreads; ++i)
-        {
-            G[0] += G[i];
-        }
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-        double time_for_ints = 0.0;
-        for (auto &t : timers)
-        {
-            time_for_ints += t.read(0);
-        }
-        std::cout << "time for integrals = " << time_for_ints << std::endl;
-        for (int t = 0; t != nthreads; ++t)
-            engines[t].print_timers();
-        std::cout << "# of integrals = " << num_ints_computed << std::endl;
-#endif
-
-        // symmetrize the result and return
-        RowMajorMatrix GG = 0.5 * (G[0] + G[0].transpose());
-        return GG;
     }
 } // namespace craso::hf
