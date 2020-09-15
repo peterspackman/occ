@@ -78,7 +78,6 @@ using libint2::BasisSet;
 using libint2::Operator;
 using libint2::BraKet;
 
-std::vector<Atom> read_geometry(const std::string& filename);
 Matrix compute_soad(const std::vector<Atom>& atoms);
 // computes norm of shell-blocks of A
 Matrix compute_shellblock_norm(const BasisSet& obs, const Matrix& A);
@@ -818,35 +817,6 @@ int main(int argc, char* argv[]) {
   }
 
   return 0;
-}
-
-std::vector<Atom> read_geometry(const std::string& filename) {
-  std::cout << "Will read geometry from " << filename << std::endl;
-  std::ifstream is(filename);
-  if (not is.good()) {
-    char errmsg[256] = "Could not open file ";
-    strncpy(errmsg + 20, filename.c_str(), 235);
-    errmsg[255] = '\0';
-    throw std::runtime_error(errmsg);
-  }
-
-  // to prepare for MPI parallelization, we will read the entire file into a
-  // string that can be
-  // broadcast to everyone, then converted to an std::istringstream object that
-  // can be used just like std::ifstream
-  std::ostringstream oss;
-  oss << is.rdbuf();
-  // use ss.str() to get the entire contents of the file as an std::string
-  // broadcast
-  // then make an std::istringstream in each process
-  std::istringstream iss(oss.str());
-
-  // check the extension: if .xyz, assume the standard XYZ format, otherwise
-  // throw an exception
-  if (filename.rfind(".xyz") != std::string::npos)
-    return libint2::read_dotxyz(iss);
-  else
-    throw "only .xyz files are accepted";
 }
 
 // computes Superposition-Of-Atomic-Densities guess for the molecular density
