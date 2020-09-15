@@ -85,7 +85,7 @@ namespace craso::ints
         return result;
     }
 
-template <Operator obtype>
+    template <Operator obtype>
     std::vector<RowMajorMatrix> compute_1body_ints_deriv(unsigned deriv_order,
                                                          const BasisSet &obs,
                                                          const shellpair_list_t &shellpair_list,
@@ -315,7 +315,7 @@ template <Operator obtype>
         return result;
     }
 
-template <libint2::Operator Kernel>
+    template <libint2::Operator Kernel>
     RowMajorMatrix compute_schwarz_ints(
         const BasisSet &bs1, const BasisSet &_bs2, bool use_2norm,
         typename libint2::operator_traits<Kernel>::oper_params_type params)
@@ -381,4 +381,6 @@ template <libint2::Operator Kernel>
 
         return K;
     }
+
+
 } // namespace craso::ints

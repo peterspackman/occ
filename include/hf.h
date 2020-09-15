@@ -47,6 +47,9 @@ public:
         return compute_1body_ints_deriv<Operator::overlap>(derivative, m_basis, m_shellpair_list, m_atoms);
     }
 
+    RowMajorMatrix compute_2body_fock(double precision = std::numeric_limits<double>::epsilon(),  const RowMajorMatrix& Schwarz = RowMajorMatrix()) const;
+    RowMajorMatrix compute_shellblock_norm(const RowMajorMatrix& A) const;
+
 private:
     std::vector<libint2::Atom> m_atoms;
     BasisSet m_basis;
@@ -55,6 +58,11 @@ private:
     shellpair_list_t m_shellpair_list;  // shellpair list for OBS
     shellpair_data_t m_shellpair_data;  // shellpair data for OBS
 
+    RowMajorMatrix m_density;
+    RowMajorMatrix m_fock;
+    RowMajorMatrix m_kinetic;
+    RowMajorMatrix m_overlap;
+    RowMajorMatrix m_nuclear;
 };
 
 }
