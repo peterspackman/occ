@@ -8,6 +8,7 @@ namespace craso::hf
 
     HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms, const BasisSet &basis) : m_atoms(atoms), m_basis(basis)
     {
+        if(!libint2::initialized()) libint2::initialize();
         std::tie(m_shellpair_list, m_shellpair_data) = compute_shellpairs(m_basis);
         for (const auto &a : m_atoms)
         {
@@ -129,6 +130,7 @@ namespace craso::hf
 
         timer.stop(0);
         std::cout << "done (" << timer.read(0) << " s)" << std::endl;
+        return std::make_tuple(splist,spdata);
     }
 
     double HartreeFock::nuclear_repulsion_energy() const

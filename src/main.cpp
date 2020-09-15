@@ -193,6 +193,7 @@ int main(int argc, char* argv[]) {
   using std::cerr;
   using std::endl;
   using craso::chem::Molecule;
+  using craso::hf::HartreeFock;
 
   try {
     /*** =========================== ***/
@@ -233,19 +234,6 @@ int main(int argc, char* argv[]) {
     cout << nelectron << " electrons" << endl;
     auto ndocc = nelectron / 2;
 
-    // compute the nuclear repulsion energy
-    auto enuc = 0.0;
-    for (auto i = 0; i < atoms.size(); i++)
-      for (auto j = i + 1; j < atoms.size(); j++) {
-        auto xij = atoms[i].x - atoms[j].x;
-        auto yij = atoms[i].y - atoms[j].y;
-        auto zij = atoms[i].z - atoms[j].z;
-        auto r2 = xij * xij + yij * yij + zij * zij;
-        auto r = sqrt(r2);
-        enuc += atoms[i].atomic_number * atoms[j].atomic_number / r;
-      }
-    cout << "Nuclear repulsion energy:  " << enuc << endl;
-
     libint2::Shell::do_enforce_unit_normalization(false);
 
     cout << "Atomic Cartesian coordinates (a.u.):" << endl;
@@ -255,6 +243,12 @@ int main(int argc, char* argv[]) {
 
     BasisSet obs(basisname, atoms);
     cout << "orbital basis set rank = " << obs.nbf() << endl;
+
+    HartreeFock hf(atoms, obs);
+
+    // compute the nuclear repulsion energy
+    auto enuc = hf.nuclear_repulsion_energy();
+    cout << "Nuclear repulsion energy:  " << enuc << endl;
 
 #ifdef HAVE_DENSITY_FITTING
     BasisSet dfbs;
@@ -284,9 +278,9 @@ int main(int argc, char* argv[]) {
     }
 
     // compute one-body integrals
-    auto S = compute_1body_ints<Operator::overlap>(obs)[0];
-    auto T = compute_1body_ints<Operator::kinetic>(obs)[0];
-    auto V = compute_1body_ints<Operator::nuclear>(obs, libint2::make_point_charges(atoms))[0];
+    auto S = hf.compute_overlap_integrals();
+    auto T = hf.compute_kinetic_energy_integrals();
+    auto V = hf.compute_nuclear_attraction_integrals();
     Matrix H = T + V;
     T.resize(0, 0);
     V.resize(0, 0);

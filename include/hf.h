@@ -46,7 +46,7 @@ public:
     auto compute_overlap_derivatives(unsigned derivative) {
         return compute_1body_ints_deriv<Operator::overlap>(derivative, m_basis, m_shellpair_list, m_atoms);
     }
-    
+
 private:
     std::vector<libint2::Atom> m_atoms;
     BasisSet m_basis;
