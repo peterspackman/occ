@@ -77,9 +77,9 @@ namespace craso::ints
 
     template <Operator obtype>
     std::vector<RowMajorMatrix> compute_1body_ints_deriv(unsigned deriv_order,
-                                                 const BasisSet &obs,
-                                                 const shellpair_list_t &shellpair_list,
-                                                 const std::vector<libint2::Atom> &atoms)
+                                                         const BasisSet &obs,
+                                                         const shellpair_list_t &shellpair_list,
+                                                         const std::vector<libint2::Atom> &atoms)
     {
         using craso::parallel::nthreads;
         const auto n = obs.nbf();
@@ -163,7 +163,7 @@ namespace craso::ints
                         else
                             result[op].block(bf1, bf2, n1, n2) += scale * buf_mat;
                         if (s1 != s2)
-                        {   // if s1 >= s2, copy {s1,s2} to the corresponding
+                        { // if s1 >= s2, copy {s1,s2} to the corresponding
                             // {s2,s1} block, note the transpose!
                             if (scale == 1.0)
                                 result[op].block(bf2, bf1, n2, n1) += buf_mat.transpose();
@@ -304,4 +304,72 @@ namespace craso::ints
 
         return result;
     }
+
+    template <libint2::Operator Kernel>
+    RowMajorMatrix compute_schwarz_ints(
+        const BasisSet &bs1, const BasisSet &_bs2, bool use_2norm,
+        typename libint2::operator_traits<Kernel>::oper_params_type params)
+    {
+        const BasisSet &bs2 = (_bs2.empty() ? bs1 : _bs2);
+        const auto nsh1 = bs1.size();
+        const auto nsh2 = bs2.size();
+        const auto bs1_equiv_bs2 = (&bs1 == &bs2);
+
+        RowMajorMatrix K = RowMajorMatrix::Zero(nsh1, nsh2);
+
+        // construct the 2-electron repulsion integrals engine
+        using craso::parallel::nthreads;
+        using libint2::Engine;
+        using libint2::BraKet;
+        
+        std::vector<Engine> engines(nthreads);
+
+        // !!! very important: cannot screen primitives in Schwarz computation !!!
+        auto epsilon = 0.;
+        engines[0] = Engine(Kernel, std::max(bs1.max_nprim(), bs2.max_nprim()),
+                            std::max(bs1.max_l(), bs2.max_l()), 0, epsilon, params);
+        for (size_t i = 1; i != nthreads; ++i)
+        {
+            engines[i] = engines[0];
+        }
+
+        auto compute = [&](int thread_id) {
+            const auto &buf = engines[thread_id].results();
+
+            // loop over permutationally-unique set of shells
+            for (auto s1 = 0l, s12 = 0l; s1 != nsh1; ++s1)
+            {
+                auto n1 = bs1[s1].size(); // number of basis functions in this shell
+
+                auto s2_max = bs1_equiv_bs2 ? s1 : nsh2 - 1;
+                for (auto s2 = 0; s2 <= s2_max; ++s2, ++s12)
+                {
+                    if (s12 % nthreads != thread_id)
+                        continue;
+
+                    auto n2 = bs2[s2].size();
+                    auto n12 = n1 * n2;
+
+                    engines[thread_id].compute2<Kernel, BraKet::xx_xx, 0>(bs1[s1], bs2[s2],
+                                                                          bs1[s1], bs2[s2]);
+                    assert(buf[0] != nullptr &&
+                           "to compute Schwarz ints turn off primitive screening");
+
+                    // to apply Schwarz inequality to individual integrals must use the diagonal elements
+                    // to apply it to sets of functions (e.g. shells) use the whole shell-set of ints here
+                    Eigen::Map<const RowMajorMatrix> buf_mat(buf[0], n12, n12);
+                    auto norm2 = use_2norm ? buf_mat.norm()
+                                           : buf_mat.lpNorm<Eigen::Infinity>();
+                    K(s1, s2) = std::sqrt(norm2);
+                    if (bs1_equiv_bs2)
+                        K(s2, s1) = K(s1, s2);
+                }
+            }
+        }; // thread lambda
+
+        craso::parallel::parallel_do(compute);
+
+        return K;
+    }
+
 } // namespace craso::ints
