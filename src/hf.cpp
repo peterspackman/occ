@@ -6,6 +6,17 @@
 namespace craso::hf
 {
 
+    HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms, const BasisSet &basis) : m_atoms(atoms), m_basis(basis)
+    {
+        std::tie(m_shellpair_list, m_shellpair_data) = compute_shellpairs(m_basis);
+        for (const auto &a : m_atoms)
+        {
+            m_num_e += a.atomic_number;
+        }
+        m_num_e -= m_charge;
+    }
+
+
     std::tuple<shellpair_list_t, shellpair_data_t>
     compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2, const double threshold)
     {
@@ -118,16 +129,6 @@ namespace craso::hf
 
         timer.stop(0);
         std::cout << "done (" << timer.read(0) << " s)" << std::endl;
-    }
-
-    HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms, const BasisSet &basis) : m_atoms(atoms), m_basis(basis)
-    {
-        std::tie(m_shellpair_list, m_shellpair_data) = compute_shellpairs(m_basis);
-        for (const auto &a : m_atoms)
-        {
-            m_num_e += a.atomic_number;
-        }
-        m_num_e -= m_charge;
     }
 
     double HartreeFock::nuclear_repulsion_energy() const

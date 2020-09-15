@@ -9,6 +9,7 @@ using craso::ints::shellpair_list_t;
 using craso::ints::shellpair_data_t;
 using craso::ints::RowMajorMatrix;
 using craso::ints::compute_1body_ints;
+using craso::ints::compute_1body_ints_deriv;
 
 /// to use precomputed shell pair data must decide on max precision a priori
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
@@ -34,6 +35,18 @@ public:
         return compute_1body_ints<Operator::nuclear>(m_basis,  m_shellpair_list, libint2::make_point_charges(m_atoms))[0];
     }
 
+    auto compute_kinetic_energy_derivatives(unsigned derivative) {
+        return compute_1body_ints_deriv<Operator::kinetic>(derivative, m_basis, m_shellpair_list, m_atoms);
+    }
+
+    auto compute_nuclear_attraction_derivatives(unsigned derivative) {
+        return compute_1body_ints_deriv<Operator::nuclear>(derivative, m_basis, m_shellpair_list, m_atoms);
+    }
+
+    auto compute_overlap_derivatives(unsigned derivative) {
+        return compute_1body_ints_deriv<Operator::overlap>(derivative, m_basis, m_shellpair_list, m_atoms);
+    }
+    
 private:
     std::vector<libint2::Atom> m_atoms;
     BasisSet m_basis;

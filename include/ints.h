@@ -14,4 +14,10 @@ namespace craso::ints {
     template <Operator obtype, typename OperatorParams = typename libint2::operator_traits<obtype>::oper_params_type>
     std::array<RowMajorMatrix, libint2::operator_traits<obtype>::nopers> 
     compute_1body_ints(const BasisSet& obs, const shellpair_list_t shellpair_list, OperatorParams oparams = OperatorParams());
+
+
+    template <Operator obtype>
+    std::vector<RowMajorMatrix> compute_1body_ints_deriv(
+        unsigned deriv_order, const BasisSet& obs, const shellpair_list_t &shellpair_list,
+        const std::vector<libint2::Atom>& atoms);
 }
