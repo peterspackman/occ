@@ -49,10 +49,8 @@ namespace craso::scf
             // 1/eps
             // this is probably too optimistic, but in well-behaved cases even 10^11 is
             // OK
-            double S_condition_number_threshold =
-                1.0 / std::numeric_limits<double>::epsilon();
-            std::tie(X, Xinv, XtX_condition_number) =
-                conditioning_orthogonalizer(S, S_condition_number_threshold);
+            double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
+            std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S, S_condition_number_threshold);
             T = m_procedure.compute_kinetic_matrix();
             V = m_procedure.compute_nuclear_attraction_matrix();
             H = T + V;
