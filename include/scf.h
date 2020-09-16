@@ -41,27 +41,29 @@ namespace craso::scf
         {
             const auto tstart = std::chrono::high_resolution_clock::now();
             S = m_procedure.compute_overlap_matrix();
+            // compute orthogonalizer X such that X.transpose() . S . X = I
+            // one should think of columns of Xinv as the conditioned basis
+            // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose() .
+            // X)
+            // by default assume can manage to compute with condition number of S <=
+            // 1/eps
+            // this is probably too optimistic, but in well-behaved cases even 10^11 is
+            // OK
+            double S_condition_number_threshold =
+                1.0 / std::numeric_limits<double>::epsilon();
+            std::tie(X, Xinv, XtX_condition_number) =
+                conditioning_orthogonalizer(S, S_condition_number_threshold);
             T = m_procedure.compute_kinetic_matrix();
             V = m_procedure.compute_nuclear_attraction_matrix();
             H = T + V;
             auto D_minbs = m_procedure.compute_soad(); // compute guess in minimal basis
             libint2::BasisSet minbs("STO-3G", m_procedure.atoms());
-            if (minbs == m_procedure.basis())
+
+            if (minbs == m_procedure.basis()) {
                 D = D_minbs;
+            }
             else
             {
-                // compute orthogonalizer X such that X.transpose() . S . X = I
-                // one should think of columns of Xinv as the conditioned basis
-                // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose() .
-                // X)
-                // by default assume can manage to compute with condition number of S <=
-                // 1/eps
-                // this is probably too optimistic, but in well-behaved cases even 10^11 is
-                // OK
-                double S_condition_number_threshold =
-                    1.0 / std::numeric_limits<double>::epsilon();
-                std::tie(X, Xinv, XtX_condition_number) =
-                    conditioning_orthogonalizer(S, S_condition_number_threshold);
                 // if basis != minimal basis, map non-representable SOAD guess
                 // into the AO basis
                 // by diagonalizing a Fock matrix
