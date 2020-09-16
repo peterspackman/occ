@@ -3,13 +3,14 @@ add_library(craso
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     ${CRASO_INCLUDE_FILES}
 )
 

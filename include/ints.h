@@ -319,10 +319,12 @@ namespace craso::ints
         return result;
     }
 
-    template <libint2::Operator Kernel>
+    template <libint2::Operator Kernel = libint2::Operator::coulomb>
     RowMajorMatrix compute_schwarz_ints(
-        const BasisSet &bs1, const BasisSet &_bs2, bool use_2norm,
-        typename libint2::operator_traits<Kernel>::oper_params_type params)
+        const BasisSet& bs1, const BasisSet& _bs2 = BasisSet(),
+        bool use_2norm = false,  // use infty norm by default
+        typename libint2::operator_traits<Kernel>::oper_params_type params = libint2::operator_traits<Kernel>::default_params())
+
     {
         const BasisSet &bs2 = (_bs2.empty() ? bs1 : _bs2);
         const auto nsh1 = bs1.size();

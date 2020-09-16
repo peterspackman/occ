@@ -1,86 +1,13 @@
 #include "hf.h"
 #include "parallel.h"
-#include <Eigen/Dense>
+#include <fmt/core.h>
 #include <libint2/chemistry/sto3g_atomic_density.h>
 
 namespace craso::hf
 {
 
-    std::tuple<RowMajorMatrix, RowMajorMatrix, size_t, double, double> gensqrtinv(const RowMajorMatrix &S, bool symmetric, double max_condition_number)
-    {
-        Eigen::SelfAdjointEigenSolver<RowMajorMatrix> eig_solver(S);
-        auto U = eig_solver.eigenvectors();
-        auto s = eig_solver.eigenvalues();
-        auto s_max = s.maxCoeff();
-        auto condition_number = std::min(
-            s_max / std::max(s.minCoeff(), std::numeric_limits<double>::min()),
-            1.0 / std::numeric_limits<double>::epsilon());
-        auto threshold = s_max / max_condition_number;
-        long n = s.rows();
-        long n_cond = 0;
-        for (long i = n - 1; i >= 0; --i)
-        {
-            if (s(i) >= threshold)
-            {
-                ++n_cond;
-            }
-            else
-                i = 0; // skip rest since eigenvalues are in ascending order
-        }
-
-        auto sigma = s.bottomRows(n_cond);
-        auto result_condition_number = sigma.maxCoeff() / sigma.minCoeff();
-        auto sigma_sqrt = sigma.array().sqrt().matrix().asDiagonal();
-        auto sigma_invsqrt = sigma.array().sqrt().inverse().matrix().asDiagonal();
-
-        // make canonical X/Xinv
-        auto U_cond = U.block(0, n - n_cond, n, n_cond);
-        RowMajorMatrix X = U_cond * sigma_invsqrt;
-        RowMajorMatrix Xinv = U_cond * sigma_sqrt;
-        // convert to symmetric, if needed
-        if (symmetric)
-        {
-            X = X * U_cond.transpose();
-            Xinv = Xinv * U_cond.transpose();
-        }
-        return std::make_tuple(X, Xinv, size_t(n_cond), condition_number,
-                               result_condition_number);
-    }
-
-    std::tuple<RowMajorMatrix, RowMajorMatrix, double> conditioning_orthogonalizer(const RowMajorMatrix &S, double S_condition_number_threshold)
-    {
-        size_t obs_rank;
-        double S_condition_number;
-        double XtX_condition_number;
-        RowMajorMatrix X, Xinv;
-
-        assert(S.rows() == S.cols());
-
-        std::tie(X, Xinv, obs_rank, S_condition_number, XtX_condition_number) =
-            gensqrtinv(S, false, S_condition_number_threshold);
-        auto obs_nbf_omitted = (long)S.rows() - (long)obs_rank;
-        std::cout << "overlap condition number = " << S_condition_number;
-        if (obs_nbf_omitted > 0)
-            std::cout << " (dropped " << obs_nbf_omitted << " "
-                      << (obs_nbf_omitted > 1 ? "fns" : "fn") << " to reduce to "
-                      << XtX_condition_number << ")";
-        std::cout << std::endl;
-
-        if (obs_nbf_omitted > 0)
-        {
-            RowMajorMatrix should_be_I = X.transpose() * S * X;
-            RowMajorMatrix I = RowMajorMatrix::Identity(should_be_I.rows(), should_be_I.cols());
-            std::cout << "||X^t * S * X - I||_2 = " << (should_be_I - I).norm()
-                      << " (should be 0)" << std::endl;
-        }
-
-        return std::make_tuple(X, Xinv, XtX_condition_number);
-    }
-
     HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms, const BasisSet &basis) : m_atoms(atoms), m_basis(basis)
     {
-        if (!libint2::initialized())
-            libint2::initialize();
         std::tie(m_shellpair_list, m_shellpair_data) = compute_shellpairs(m_basis);
         for (const auto &a : m_atoms)
         {
@@ -112,7 +39,7 @@ namespace craso::hf
             engines.push_back(engines[0]);
         }
 
-        std::cout << "computing non-negligible shell-pair list ... ";
+        fmt::print("computing non-negligible shell-pair list ... ");
 
         libint2::Timers<1> timer;
         timer.set_now_overhead(25);
@@ -200,7 +127,7 @@ namespace craso::hf
         craso::parallel::parallel_do(make_spdata);
 
         timer.stop(0);
-        std::cout << "done (" << timer.read(0) << " s)" << std::endl;
+        fmt::print(" {:.6f} s\n", timer.read(0));
         return std::make_tuple(splist, spdata);
     }
 
@@ -256,62 +183,10 @@ namespace craso::hf
         return craso::ints::compute_shellblock_norm(m_basis, A);
     }
 
-    RowMajorMatrix HartreeFock::compute_2body_fock(double precision, const RowMajorMatrix &Schwarz) const
+    RowMajorMatrix HartreeFock::compute_2body_fock(const RowMajorMatrix& D,
+            double precision, const RowMajorMatrix &Schwarz) const
     {
-        return craso::ints::compute_2body_fock(m_basis, m_shellpair_list, m_shellpair_data, m_density, precision, Schwarz);
+        return craso::ints::compute_2body_fock(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
     }
-
-    void HartreeFock::compute_initial_guess()
-    {
-        int ndocc = m_num_e / 2;
-        const auto tstart = std::chrono::high_resolution_clock::now();
-        auto S = compute_overlap_integrals();
-        auto T = compute_kinetic_energy_integrals();
-        auto V = compute_nuclear_attraction_integrals();
-        RowMajorMatrix H = T + V;
-        RowMajorMatrix C;
-        RowMajorMatrix C_occ;
-        auto D_minbs = compute_soad(); // compute guess in minimal basis
-        BasisSet minbs("STO-3G", m_atoms);
-        if (minbs == m_basis)
-            m_density = D_minbs;
-        else
-        {
-            // compute orthogonalizer X such that X.transpose() . S . X = I
-            RowMajorMatrix X, Xinv;
-            double XtX_condition_number; // condition number of "re-conditioned"
-                                         // overlap obtained as Xinv.transpose() . Xinv
-            // one should think of columns of Xinv as the conditioned basis
-            // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose() .
-            // X)
-            // by default assume can manage to compute with condition number of S <=
-            // 1/eps
-            // this is probably too optimistic, but in well-behaved cases even 10^11 is
-            // OK
-            double S_condition_number_threshold =
-                1.0 / std::numeric_limits<double>::epsilon();
-            std::tie(X, Xinv, XtX_condition_number) =
-                conditioning_orthogonalizer(S, S_condition_number_threshold);
-            // if basis != minimal basis, map non-representable SOAD guess
-            // into the AO basis
-            // by diagonalizing a Fock matrix
-            std::cout << "projecting SOAD into AO basis ... ";
-            auto F = H;
-            F += craso::ints::compute_2body_fock_general(m_basis, D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
-
-            // solve F C = e S C by (conditioned) transformation to F' C' = e C',
-            // where
-            // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-            Eigen::SelfAdjointEigenSolver<RowMajorMatrix> eig_solver(X.transpose() * F * X);
-            C = X * eig_solver.eigenvectors();
-
-            // compute density, D = C(occ) . C(occ)T
-            C_occ = C.leftCols(ndocc);
-            m_density = C_occ * C_occ.transpose();
-
-            const auto tstop = std::chrono::high_resolution_clock::now();
-            const std::chrono::duration<double> time_elapsed = tstop - tstart;
-            std::cout << "done (" << time_elapsed.count() << " s)" << std::endl;
-        }
-    }
+    
 } // namespace craso::hf

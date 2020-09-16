@@ -19,37 +19,23 @@ compute_shellpairs(const BasisSet& bs1,
                    const BasisSet& bs2 = BasisSet(),
                    double threshold = 1e-12);
 
-std::tuple<RowMajorMatrix, RowMajorMatrix, double> conditioning_orthogonalizer(const RowMajorMatrix& S, double S_condition_number_threshold);
-
-// returns {X,X^{-1},rank,A_condition_number,result_A_condition_number}, where
-// X is the generalized square-root-inverse such that X.transpose() * A * X = I
-//
-// if symmetric is true, produce "symmetric" sqrtinv: X = U . A_evals_sqrtinv .
-// U.transpose()),
-// else produce "canonical" sqrtinv: X = U . A_evals_sqrtinv
-// where U are eigenvectors of A
-// rows and cols of symmetric X are equivalent; for canonical X the rows are
-// original basis (AO),
-// cols are transformed basis ("orthogonal" AO)
-//
-// A is conditioned to max_condition_number
-std::tuple<RowMajorMatrix, RowMajorMatrix, size_t, double, double> gensqrtinv(const RowMajorMatrix& S, bool symmetric = false, double max_condition_number = 1e8);
-
 class HartreeFock {
 public:
     HartreeFock(const std::vector<libint2::Atom>& atoms, const BasisSet& basis);
     const auto& shellpair_list() const { return m_shellpair_list; }
     const auto& shellpair_data() const { return m_shellpair_data; }
+    const auto& atoms() const { return m_atoms; }
+    const auto& basis() const { return m_basis; }
+
     void set_system_charge(int charge) { m_num_e += m_charge; m_charge = charge; m_num_e -= m_charge; }
     int system_charge() const { return m_charge; }
     int num_e() const { return m_num_e; }
+
     double nuclear_repulsion_energy() const;
     RowMajorMatrix compute_soad() const;
-    auto compute_kinetic_energy_integrals() const { return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0]; }
-    auto compute_overlap_integrals() const { return compute_1body_ints<Operator::overlap>(m_basis, m_shellpair_list)[0]; }
-    auto compute_nuclear_attraction_integrals() const {
-        return compute_1body_ints<Operator::nuclear>(m_basis,  m_shellpair_list, libint2::make_point_charges(m_atoms))[0];
-    }
+    auto compute_kinetic_matrix() { return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0]; }
+    auto compute_overlap_matrix() { return compute_1body_ints<Operator::overlap>(m_basis, m_shellpair_list)[0]; }
+    auto compute_nuclear_attraction_matrix() { return compute_1body_ints<Operator::nuclear>(m_basis,  m_shellpair_list, libint2::make_point_charges(m_atoms))[0]; }
 
     auto compute_kinetic_energy_derivatives(unsigned derivative) {
         return compute_1body_ints_deriv<Operator::kinetic>(derivative, m_basis, m_shellpair_list, m_atoms);
@@ -63,24 +49,17 @@ public:
         return compute_1body_ints_deriv<Operator::overlap>(derivative, m_basis, m_shellpair_list, m_atoms);
     }
 
-    RowMajorMatrix compute_2body_fock(double precision = std::numeric_limits<double>::epsilon(),  const RowMajorMatrix& Schwarz = RowMajorMatrix()) const;
+    RowMajorMatrix compute_2body_fock(const RowMajorMatrix& D, double precision = std::numeric_limits<double>::epsilon(),  const RowMajorMatrix& Schwarz = RowMajorMatrix()) const;
     RowMajorMatrix compute_shellblock_norm(const RowMajorMatrix& A) const;
-
-    void compute_initial_guess();
+    auto compute_schwarz_ints() { return craso::ints::compute_schwarz_ints<>(m_basis); }
 
 private:
-    std::vector<libint2::Atom> m_atoms;
-    BasisSet m_basis;
     int m_charge{0};
     int m_num_e{0};
+    std::vector<libint2::Atom> m_atoms;
+    BasisSet m_basis;
     shellpair_list_t m_shellpair_list;  // shellpair list for OBS
     shellpair_data_t m_shellpair_data;  // shellpair data for OBS
-
-    RowMajorMatrix m_density;
-    RowMajorMatrix m_fock;
-    RowMajorMatrix m_kinetic;
-    RowMajorMatrix m_overlap;
-    RowMajorMatrix m_nuclear;
 };
 
 }
