@@ -2,8 +2,9 @@
 #include "hf.h"
 #include "scf.h"
 #include <fmt/core.h>
+#include "cxxopts.hpp"
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char** argv) {
     using std::cout;
     using std::cerr;
     using std::endl;
@@ -11,26 +12,33 @@ int main(int argc, char* argv[]) {
     using craso::hf::HartreeFock;
     using craso::scf::SCF;
 
+    cxxopts::Options options("craso", "A quantum chemistry program for molecular crystals");
+    options.add_options()
+        ("b,basis", "Basis set name", cxxopts::value<std::string>()->default_value("3-21G"))
+        ("j,nthreads", "Number of threads", cxxopts::value<int>()->default_value("1"))
+        ("i,input", "Input file geometry", cxxopts::value<std::string>())
+        ("h,help", "Print this help message")
+    ;
+    
+    auto result = options.parse(argc, argv);
+    if(result.count("help") || !(result.count("input")))
+    {
+        fmt::print("{}\n", options.help());
+        return 0;
+    }
+
 
     try {
         libint2::Shell::do_enforce_unit_normalization(false);
         if (!libint2::initialized()) libint2::initialize();
-        const auto filename = (argc > 1) ? argv[1] : "h2o.xyz";
-        const auto basisname = (argc > 2) ? argv[2] : "6-31g*";
+        const auto filename = result["input"].as<std::string>();
+        const auto basisname = result["basis"].as<std::string>();
         Molecule m = craso::chem::read_xyz_file(filename);
 
-        {
-            using craso::parallel::nthreads;
-            auto nthreads_cstr = getenv("OMP_NUM_THREADS");
-            nthreads = 1;
-            if (nthreads_cstr && strcmp(nthreads_cstr, "")) {
-                std::istringstream iss(nthreads_cstr);
-                iss >> nthreads;
-                if (nthreads > 1 << 16 || nthreads <= 0) nthreads = 1;
-            }
-            omp_set_num_threads(nthreads);
-            fmt::print("Using {} threads\n", nthreads);
-        }
+        using craso::parallel::nthreads;
+        nthreads = result["nthreads"].as<int>();
+        omp_set_num_threads(nthreads);
+        fmt::print("Using {} threads\n", nthreads);
         fmt::print("Geometry loaded from {}\n", filename);
         fmt::print("Using {} basis on all atoms\n", basisname);
 

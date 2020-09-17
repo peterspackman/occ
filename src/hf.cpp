@@ -39,7 +39,7 @@ namespace craso::hf
             engines.push_back(engines[0]);
         }
 
-        fmt::print("computing non-negligible shell-pair list ... ");
+        fmt::print("Computing non-negligible shell-pair list ");
 
         libint2::Timers<1> timer;
         timer.set_now_overhead(25);

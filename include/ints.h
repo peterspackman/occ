@@ -2,7 +2,9 @@
 #include <unordered_map>
 #include <vector>
 #include <array>
-#include <libint2.hpp>
+#include <libint2/shell.h>
+#include <libint2/basis.h>
+#include <libint2/engine.h>
 #include "parallel.h"
 
 namespace craso::ints
