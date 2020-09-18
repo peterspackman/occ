@@ -13,16 +13,16 @@ TEST_CASE("Water SCF", "[scf]")
     libint2::Shell::do_enforce_unit_normalization(false);
     SECTION("Initialize") {
         std::vector<libint2::Atom> atoms{
-            {8,  -0.7021961, -0.0560603,  0.0099423},
-            {1,  -1.0221932,  0.8467758, -0.0114887},
-            {1,   0.2575211,  0.0421215,  0.0052190}
+            {8, -1.32695761, -0.10593856, 0.01878821},
+            {1, -1.93166418, 1.60017351, -0.02171049},
+            {1, 0.48664409, 0.07959806, 0.00986248}
         };
 
         libint2::BasisSet obs("STO-3G", atoms);
         HartreeFock hf(atoms, obs);
         craso::scf::SCF<HartreeFock> scf(hf);
         double e = scf.compute_scf_energy();
-        REQUIRE(e == Approx(-73.241652074251).epsilon(1e-8));
+        REQUIRE(e == Approx(-74.963706080054).epsilon(1e-8));
     }
 
 }
