@@ -6,6 +6,7 @@
 #include <libint2/basis.h>
 #include <libint2/engine.h>
 #include "parallel.h"
+#include "linear_algebra.h"
 
 namespace craso::ints
 {
@@ -13,25 +14,25 @@ namespace craso::ints
     using libint2::Operator;
     using libint2::BraKet;
     using libint2::Shell;
+    using craso::MatRM;
 
     using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
     using shellpair_data_t = std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>; // in same order as shellpair_list_t
-    using RowMajorMatrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 
     template <Operator obtype, typename OperatorParams = typename libint2::operator_traits<obtype>::oper_params_type>
-    std::array<RowMajorMatrix, libint2::operator_traits<obtype>::nopers>
+    std::array<MatRM, libint2::operator_traits<obtype>::nopers>
     compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list, OperatorParams oparams = OperatorParams())
     {
         const auto n = obs.nbf();
         const auto nshells = obs.size();
         using craso::parallel::nthreads;
-        typedef std::array<RowMajorMatrix, libint2::operator_traits<obtype>::nopers>
+        typedef std::array<MatRM, libint2::operator_traits<obtype>::nopers>
             result_type;
         const unsigned int nopers = libint2::operator_traits<obtype>::nopers;
         result_type result;
         for (auto &r : result)
-            r = RowMajorMatrix::Zero(n, n);
+            r = MatRM::Zero(n, n);
 
         // construct the 1-body integrals engine
         std::vector<libint2::Engine> engines(nthreads);
@@ -76,9 +77,9 @@ namespace craso::ints
 
                     for (unsigned int op = 0; op != nopers; ++op)
                     {
-                        // "map" buffer to a const Eigen RowMajorMatrix, and copy it to the
+                        // "map" buffer to a const Eigen MatRM, and copy it to the
                         // corresponding blocks of the result
-                        Eigen::Map<const RowMajorMatrix> buf_mat(buf[op], n1, n2);
+                        Eigen::Map<const MatRM> buf_mat(buf[op], n1, n2);
                         result[op].block(bf1, bf2, n1, n2) = buf_mat;
                         if (s1 != s2) // if s1 >= s2, copy {s1,s2} to the corresponding
                                       // {s2,s1} block, note the transpose!
@@ -92,7 +93,7 @@ namespace craso::ints
     }
 
     template <Operator obtype>
-    std::vector<RowMajorMatrix> compute_1body_ints_deriv(unsigned deriv_order,
+    std::vector<MatRM> compute_1body_ints_deriv(unsigned deriv_order,
                                                          const BasisSet &obs,
                                                          const shellpair_list_t &shellpair_list,
                                                          const std::vector<libint2::Atom> &atoms)
@@ -103,10 +104,10 @@ namespace craso::ints
         constexpr auto nopers = libint2::operator_traits<obtype>::nopers;
         const auto nresults =
             nopers * libint2::num_geometrical_derivatives(atoms.size(), deriv_order);
-        typedef std::vector<RowMajorMatrix> result_type;
+        typedef std::vector<MatRM> result_type;
         result_type result(nresults);
         for (auto &r : result)
-            r = RowMajorMatrix::Zero(n, n);
+            r = MatRM::Zero(n, n);
 
         // construct the 1-body integrals engine
         std::vector<libint2::Engine> engines(nthreads);
@@ -173,7 +174,7 @@ namespace craso::ints
                                                     double scale = 1.0) {
                         // "map" buffer to a const Eigen Matrix, and copy it to the
                         // corresponding blocks of the result
-                        Eigen::Map<const RowMajorMatrix> buf_mat(buf[idx], n1, n2);
+                        Eigen::Map<const MatRM> buf_mat(buf[idx], n1, n2);
                         if (scale == 1.0)
                             result[op].block(bf1, bf2, n1, n2) += buf_mat;
                         else
@@ -322,7 +323,7 @@ namespace craso::ints
     }
 
     template <libint2::Operator Kernel = libint2::Operator::coulomb>
-    RowMajorMatrix compute_schwarz_ints(
+    MatRM compute_schwarz_ints(
         const BasisSet& bs1, const BasisSet& _bs2 = BasisSet(),
         bool use_2norm = false,  // use infty norm by default
         typename libint2::operator_traits<Kernel>::oper_params_type params = libint2::operator_traits<Kernel>::default_params())
@@ -333,7 +334,7 @@ namespace craso::ints
         const auto nsh2 = bs2.size();
         const auto bs1_equiv_bs2 = (&bs1 == &bs2);
 
-        RowMajorMatrix K = RowMajorMatrix::Zero(nsh1, nsh2);
+        MatRM K = MatRM::Zero(nsh1, nsh2);
 
         // construct the 2-electron repulsion integrals engine
         using craso::parallel::nthreads;
@@ -375,7 +376,7 @@ namespace craso::ints
 
                     // to apply Schwarz inequality to individual integrals must use the diagonal elements
                     // to apply it to sets of functions (e.g. shells) use the whole shell-set of ints here
-                    Eigen::Map<const RowMajorMatrix> buf_mat(buf[0], n12, n12);
+                    Eigen::Map<const MatRM> buf_mat(buf[0], n12, n12);
                     auto norm2 = use_2norm ? buf_mat.norm()
                                            : buf_mat.lpNorm<Eigen::Infinity>();
                     K(s1, s2) = std::sqrt(norm2);
@@ -390,26 +391,26 @@ namespace craso::ints
         return K;
     }
 
-    RowMajorMatrix compute_shellblock_norm(const BasisSet& obs, const RowMajorMatrix& A);
-    RowMajorMatrix compute_2body_2index_ints(const BasisSet&);
-    RowMajorMatrix compute_2body_fock(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-                                      const shellpair_data_t &shellpair_data, const RowMajorMatrix &D,
+    MatRM compute_shellblock_norm(const BasisSet& obs, const MatRM& A);
+    MatRM compute_2body_2index_ints(const BasisSet&);
+    MatRM compute_2body_fock(const BasisSet &obs, const shellpair_list_t &shellpair_list,
+                                      const shellpair_data_t &shellpair_data, const MatRM &D,
                                       double precision = std::numeric_limits<double>::epsilon(), // discard contributions smaller than this
-                                      const RowMajorMatrix &Schwarz = RowMajorMatrix() // K_ij = sqrt(||(ij|ij)||_\infty); if
+                                      const MatRM &Schwarz = MatRM() // K_ij = sqrt(||(ij|ij)||_\infty); if
                                                                        // empty, do not Schwarz screen
     );
 
-    RowMajorMatrix compute_2body_fock_general(const BasisSet &obs, const RowMajorMatrix &D,
+    MatRM compute_2body_fock_general(const BasisSet &obs, const MatRM &D,
                                               const BasisSet &D_bs, bool D_is_shelldiagonal,
                                               double precision = std::numeric_limits<double>::epsilon());
 
     template <unsigned deriv_order>
-    std::vector<RowMajorMatrix> compute_2body_fock_deriv(const BasisSet &obs,
+    std::vector<MatRM> compute_2body_fock_deriv(const BasisSet &obs,
                                       const shellpair_list_t &shellpair_list,
                                       const shellpair_data_t &shellpair_data,
                                       const std::vector<libint2::Atom> &atoms,
-                                      const RowMajorMatrix &D, double precision,
-                                      const RowMajorMatrix &Schwarz)
+                                      const MatRM &D, double precision,
+                                      const MatRM &Schwarz)
     {
         const auto n = obs.nbf();
         const auto nshells = obs.size();
@@ -419,10 +420,10 @@ namespace craso::ints
             atoms.size(), deriv_order); // total # of derivs
         const auto ncoords_times_two = (atoms.size() * 3) * 2;
         using craso::parallel::nthreads;
-        std::vector<RowMajorMatrix> G(nthreads * nderiv, RowMajorMatrix::Zero(n, n));
+        std::vector<MatRM> G(nthreads * nderiv, MatRM::Zero(n, n));
 
         const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
-        RowMajorMatrix D_shblk_norm =
+        MatRM D_shblk_norm =
             compute_shellblock_norm(obs, D); // matrix of infty-norms of shell blocks
 
         auto fock_precision = precision;
@@ -683,7 +684,7 @@ namespace craso::ints
             engines[t].print_timers();
 #endif
 
-        std::vector<RowMajorMatrix> GG(nderiv);
+        std::vector<MatRM> GG(nderiv);
         for (auto d = 0; d != nderiv; ++d)
         {
             GG[d] = 0.5 * (G[d] + G[d].transpose());

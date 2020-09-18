@@ -2,10 +2,11 @@
 #include "spacegroup.h"
 #include "catch.hpp"
 #include <iostream>
-#include <Eigen/Dense>
 
 using craso::crystal::SpaceGroup;
 using craso::util::all_close;
+using craso::Mat3N;
+using craso::MatN3;
 
 
 TEST_CASE("SpaceGroup constructor", "[space_group]")
@@ -19,7 +20,7 @@ TEST_CASE("SpaceGroup constructor", "[space_group]")
 
 TEST_CASE("Spacegroup symops", "[space_group]")
 {
-    Eigen::MatrixX3d coords(8, 3);
+    MatN3 coords(8, 3);
     coords <<
     1.650999999999999968e-01, 2.857999999999999985e-01, 1.708999999999999964e-01,
     8.939999999999999336e-02, 3.761999999999999789e-01, 3.481000000000000205e-01,
@@ -32,7 +33,7 @@ TEST_CASE("Spacegroup symops", "[space_group]")
 
     REQUIRE(coords(0, 2) == 1.708999999999999964e-01);
 
-    Eigen::MatrixX3d coords_expected(32, 3);
+    MatN3 coords_expected(32, 3);
     coords_expected <<
         1.650999999999999968e-01, 2.857999999999999985e-01, 1.708999999999999964e-01,
         8.939999999999999336e-02, 3.761999999999999789e-01, 3.481000000000000205e-01,
@@ -68,7 +69,7 @@ TEST_CASE("Spacegroup symops", "[space_group]")
         2.529000000000000137e-01, 1.296999999999999820e-01, 6.769000000000000572e-01;
     
     SpaceGroup sg14("P21/c");
-    Eigen::Matrix3Xd asym(coords.transpose());
+    Mat3N asym(coords.transpose());
     auto [symops, expanded] = sg14.apply_all_symmetry_operations(asym);
     std::cout << "Value - expected\n" << expanded.transpose() - coords_expected;
     REQUIRE(all_close(expanded.transpose(), coords_expected, 1e-3, 1e-3));

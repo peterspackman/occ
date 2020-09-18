@@ -2,7 +2,8 @@
 #include <cmath>
 
 namespace craso::crystal {
-UnitCell::UnitCell(const Eigen::Vector3d& lengths, const Eigen::Vector3d& angles) : m_lengths{lengths}, m_angles{angles}
+
+UnitCell::UnitCell(const Vec3& lengths, const Vec3& angles) : m_lengths{lengths}, m_angles{angles}
 {
     update_cell_matrices();
 }

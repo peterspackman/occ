@@ -75,7 +75,7 @@ namespace craso::hf
                     {
                         auto n2 = bs2[s2].size();
                         engines[thread_id].compute(bs1[s1], bs2[s2]);
-                        Eigen::Map<const RowMajorMatrix> buf_mat(buf[0], n1, n2);
+                        Eigen::Map<const MatRM> buf_mat(buf[0], n1, n2);
                         auto norm = buf_mat.norm();
                         significant = (norm >= threshold);
                     }
@@ -147,7 +147,7 @@ namespace craso::hf
         return enuc;
     }
 
-    RowMajorMatrix HartreeFock::compute_soad() const
+    MatRM HartreeFock::compute_soad() const
     {
         // computes Superposition-Of-Atomic-Densities guess for the molecular density
         // matrix
@@ -162,7 +162,7 @@ namespace craso::hf
         }
 
         // compute the minimal basis density
-        RowMajorMatrix D = RowMajorMatrix::Zero(nao, nao);
+        MatRM D = MatRM::Zero(nao, nao);
         size_t ao_offset = 0; // first AO of this atom
         for (const auto &atom : m_atoms)
         {
@@ -178,13 +178,13 @@ namespace craso::hf
         return D * 0.5; // we use densities normalized to # of electrons/2
     }
 
-    RowMajorMatrix HartreeFock::compute_shellblock_norm(const RowMajorMatrix &A) const
+    MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const
     {
         return craso::ints::compute_shellblock_norm(m_basis, A);
     }
 
-    RowMajorMatrix HartreeFock::compute_2body_fock(const RowMajorMatrix& D,
-            double precision, const RowMajorMatrix &Schwarz) const
+    MatRM HartreeFock::compute_2body_fock(const MatRM& D,
+            double precision, const MatRM &Schwarz) const
     {
         return craso::ints::compute_2body_fock(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
     }

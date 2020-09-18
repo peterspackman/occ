@@ -8,7 +8,7 @@ namespace craso::crystal {
 using craso::numeric::Fraction;
 using craso::util::tokenize;
 
-void decode_int(int code, Matrix4d& seitz)
+void decode_int(int code, Mat4& seitz)
 {
     /*Decode an integer encoded symmetry operation.
 
@@ -54,7 +54,7 @@ std::vector<std::string> get_symbols(std::string s) {
     return symbols;
 }
 
-void decode_string(std::string code, Matrix4d& seitz)
+void decode_string(std::string code, Mat4& seitz)
 {
     seitz.fill(0.0);
     auto tokens = tokenize(code, ",");
@@ -89,7 +89,7 @@ void decode_string(std::string code, Matrix4d& seitz)
     seitz(3, 3) = 1.0;
 }
 
-std::string encode_string(const Matrix4d& seitz) {
+std::string encode_string(const Mat4& seitz) {
     /* Encode a rotation matrix (of -1, 0, 1s) and (rational) translation vector
     into string form e.g. 1/2-x,z-1/3,-y-1/6
     */
@@ -116,7 +116,7 @@ std::string encode_string(const Matrix4d& seitz) {
     return join(res, ",");
 }
 
-int encode_int(const Matrix4d& seitz) {
+int encode_int(const Mat4& seitz) {
     /* Encode an integer encoded symmetry from a rotation matrix and translation
     vector.
 
@@ -155,7 +155,7 @@ SymmetryOperation::SymmetryOperation(const std::string& str)
     set_from_string(str);
 }
 
-SymmetryOperation SymmetryOperation::translated(const Vector3d& t) const
+SymmetryOperation SymmetryOperation::translated(const Vec3& t) const
 {
     SymmetryOperation result = *this;
     result.m_seitz.block(0, 3, 3, 1) += t;

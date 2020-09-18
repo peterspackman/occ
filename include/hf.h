@@ -7,7 +7,7 @@ using craso::ints::BasisSet;
 using craso::ints::Operator;
 using craso::ints::shellpair_list_t;
 using craso::ints::shellpair_data_t;
-using craso::ints::RowMajorMatrix;
+using craso::MatRM;
 using craso::ints::compute_1body_ints;
 using craso::ints::compute_1body_ints_deriv;
 
@@ -32,7 +32,7 @@ public:
     int num_e() const { return m_num_e; }
 
     double nuclear_repulsion_energy() const;
-    RowMajorMatrix compute_soad() const;
+    MatRM compute_soad() const;
     auto compute_kinetic_matrix() { return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0]; }
     auto compute_overlap_matrix() { return compute_1body_ints<Operator::overlap>(m_basis, m_shellpair_list)[0]; }
     auto compute_nuclear_attraction_matrix() { return compute_1body_ints<Operator::nuclear>(m_basis,  m_shellpair_list, libint2::make_point_charges(m_atoms))[0]; }
@@ -49,8 +49,8 @@ public:
         return compute_1body_ints_deriv<Operator::overlap>(derivative, m_basis, m_shellpair_list, m_atoms);
     }
 
-    RowMajorMatrix compute_2body_fock(const RowMajorMatrix& D, double precision = std::numeric_limits<double>::epsilon(),  const RowMajorMatrix& Schwarz = RowMajorMatrix()) const;
-    RowMajorMatrix compute_shellblock_norm(const RowMajorMatrix& A) const;
+    MatRM compute_2body_fock(const MatRM& D, double precision = std::numeric_limits<double>::epsilon(),  const MatRM& Schwarz = MatRM()) const;
+    MatRM compute_shellblock_norm(const MatRM& A) const;
     auto compute_schwarz_ints() { return craso::ints::compute_schwarz_ints<>(m_basis); }
 
 private:

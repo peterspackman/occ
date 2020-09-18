@@ -2,7 +2,7 @@
 
 namespace craso::ints
 {
-    RowMajorMatrix compute_2body_2index_ints(const BasisSet &bs)
+    MatRM compute_2body_2index_ints(const BasisSet &bs)
     {
         using craso::parallel::nthreads;
         using libint2::Engine;
@@ -11,7 +11,7 @@ namespace craso::ints
 
         const auto n = bs.nbf();
         const auto nshells = bs.size();
-        RowMajorMatrix result = RowMajorMatrix::Zero(n, n);
+        MatRM result = MatRM::Zero(n, n);
 
         // build engines for each thread
 
@@ -54,7 +54,7 @@ namespace craso::ints
 
                     // "map" buffer to a const Eigen Matrix, and copy it to the
                     // corresponding blocks of the result
-                    Eigen::Map<const RowMajorMatrix> buf_mat(buf[0], n1, n2);
+                    Eigen::Map<const MatRM> buf_mat(buf[0], n1, n2);
                     result.block(bf1, bf2, n1, n2) = buf_mat;
                     if (s1 != s2) // if s1 >= s2, copy {s1,s2} to the corresponding {s2,s1}
                                   // block, note the transpose!
@@ -68,10 +68,10 @@ namespace craso::ints
         return result;
     }
 
-    RowMajorMatrix compute_shellblock_norm(const BasisSet &obs, const RowMajorMatrix &A)
+    MatRM compute_shellblock_norm(const BasisSet &obs, const MatRM &A)
     {
         const auto nsh = obs.size();
-        RowMajorMatrix Ash(nsh, nsh);
+        MatRM Ash(nsh, nsh);
 
         auto shell2bf = obs.shell2bf();
         for (size_t s1 = 0; s1 != nsh; ++s1)
@@ -91,18 +91,18 @@ namespace craso::ints
         return Ash;
     }
 
-    RowMajorMatrix compute_2body_fock(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-                                      const shellpair_data_t &shellpair_data, const RowMajorMatrix &D,
+    MatRM compute_2body_fock(const BasisSet &obs, const shellpair_list_t &shellpair_list,
+                                      const shellpair_data_t &shellpair_data, const MatRM &D,
                                       double precision,
-                                      const RowMajorMatrix &Schwarz)
+                                      const MatRM &Schwarz)
     {
         const auto n = obs.nbf();
         const auto nshells = obs.size();
         using craso::parallel::nthreads;
-        std::vector<RowMajorMatrix> G(nthreads, RowMajorMatrix::Zero(n, n));
+        std::vector<MatRM> G(nthreads, MatRM::Zero(n, n));
 
         const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
-        RowMajorMatrix D_shblk_norm =
+        MatRM D_shblk_norm =
             compute_shellblock_norm(obs, D); // matrix of infty-norms of shell blocks
 
         auto fock_precision = precision;
@@ -300,11 +300,11 @@ namespace craso::ints
 #endif
 
         // symmetrize the result and return
-        RowMajorMatrix GG = 0.5 * (G[0] + G[0].transpose());
+        MatRM GG = 0.5 * (G[0] + G[0].transpose());
         return GG;
     }
 
-    RowMajorMatrix compute_2body_fock_general(const BasisSet &obs, const RowMajorMatrix &D,
+    MatRM compute_2body_fock_general(const BasisSet &obs, const MatRM &D,
                                               const BasisSet &D_bs, bool D_is_shelldiagonal,
                                               double precision)
     {
@@ -314,7 +314,7 @@ namespace craso::ints
         assert(D.cols() == D.rows() && D.cols() == n_D);
 
         using craso::parallel::nthreads;
-        std::vector<RowMajorMatrix> G(nthreads, RowMajorMatrix::Zero(n, n));
+        std::vector<MatRM> G(nthreads, MatRM::Zero(n, n));
 
         // construct the 2-electron repulsion integrals engine
         using libint2::Engine;

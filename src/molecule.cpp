@@ -4,7 +4,7 @@
 
 namespace craso::chem {
 
-Molecule::Molecule(const Eigen::VectorXi& nums, const Eigen::Matrix3Xd& pos) :
+Molecule::Molecule(const IVec& nums, const Mat3N& pos) :
     m_atomicNumbers(nums), m_positions(pos)
 {
     for(size_t i = 0; i < size(); i++) {

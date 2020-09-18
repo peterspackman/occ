@@ -36,12 +36,12 @@ bool SpaceGroup::has_H_R_choice() const
     }
 }
 
-std::pair<VectorXi, Matrix3Xd> SpaceGroup::apply_all_symmetry_operations(const Eigen::Matrix3Xd& frac) const
+std::pair<IVec, Mat3N> SpaceGroup::apply_all_symmetry_operations(const Mat3N& frac) const
 {
     int nSites = frac.cols();
     int nSymops = m_symops.size();
-    Eigen::Matrix3Xd transformed(3, nSites * nSymops);
-    Eigen::VectorXi generators(nSites * nSymops);
+    Mat3N transformed(3, nSites * nSymops);
+    IVec generators(nSites * nSymops);
     transformed.block(0, 0, 3, nSites) = frac.block(0, 0, 3, nSites);
     for(int i = 0; i < nSites; i++) {
         generators(i) = 16484;

@@ -1,20 +1,20 @@
 #pragma once
 
-#include <Eigen/Dense>
+#include "linear_algebra.h"
 #include <string>
 #include "util.h"
 
 namespace craso::crystal {
-using Eigen::Matrix3d;
-using Eigen::Vector3d;
-using Eigen::Matrix3Xd;
+using craso::Mat3;
+using craso::Vec3;
+using craso::Mat3N;
 using craso::util::isclose;
 
 class UnitCell
 {
 public:
-    UnitCell(double, double, double, double, double, double);
-    UnitCell(const Vector3d&, const Vector3d&);
+    UnitCell(double a, double b, double c, double alpha, double beta, double gamma);
+    UnitCell(const Vec3& lengths, const Vec3& angles);
 
     double a() const { return m_lengths[0]; }
     double b() const { return m_lengths[1]; }
@@ -39,8 +39,8 @@ public:
     bool is_orthogonal() const { return _a_90() && _b_90() && _c_90(); }
     std::string cell_type() const;
 
-    auto to_cartesian(const Matrix3Xd& coords) const { return m_direct * coords; }
-    auto to_fractional(const Matrix3Xd& coords) const { return m_inverse * coords; }
+    auto to_cartesian(const Mat3N& coords) const { return m_direct * coords; }
+    auto to_fractional(const Mat3N& coords) const { return m_inverse * coords; }
 
     const auto& direct() const { return m_direct; }
     const auto& reciprocal() const { return m_reciprocal; }
@@ -68,14 +68,14 @@ private:
     inline bool _b_90() const { return isclose(m_angles(1), M_PI/2); }
     inline bool _c_90() const { return isclose(m_angles(2), M_PI/2); }
 
-    Eigen::Vector3d m_lengths;
-    Eigen::Vector3d m_angles;
-    Eigen::Vector3d m_sin;
-    Eigen::Vector3d m_cos;
+    Vec3 m_lengths;
+    Vec3 m_angles;
+    Vec3 m_sin;
+    Vec3 m_cos;
     double m_volume = 0.0;
 
-    Eigen::Matrix3d m_direct;
-    Eigen::Matrix3d m_inverse;
-    Eigen::Matrix3d m_reciprocal;
+    Mat3 m_direct;
+    Mat3 m_inverse;
+    Mat3 m_reciprocal;
 };
 }

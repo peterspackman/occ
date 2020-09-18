@@ -8,9 +8,9 @@
 namespace craso::scf
 {
 
-    using craso::ints::RowMajorMatrix;
+    using craso::MatRM;
 
-    std::tuple<RowMajorMatrix, RowMajorMatrix, double> conditioning_orthogonalizer(const RowMajorMatrix& S, double S_condition_number_threshold);
+    std::tuple<MatRM, MatRM, double> conditioning_orthogonalizer(const MatRM& S, double S_condition_number_threshold);
 
     // returns {X,X^{-1},rank,A_condition_number,result_A_condition_number}, where
     // X is the generalized square-root-inverse such that X.transpose() * A * X = I
@@ -24,7 +24,7 @@ namespace craso::scf
     // cols are transformed basis ("orthogonal" AO)
     //
     // A is conditioned to max_condition_number
-    std::tuple<RowMajorMatrix, RowMajorMatrix, size_t, double, double> gensqrtinv(const RowMajorMatrix& S, bool symmetric = false, double max_condition_number = 1e8);
+    std::tuple<MatRM, MatRM, size_t, double, double> gensqrtinv(const MatRM& S, bool symmetric = false, double max_condition_number = 1e8);
 
 
     template <typename Procedure>
@@ -72,7 +72,7 @@ namespace craso::scf
                 // solve F C = e S C by (conditioned) transformation to F' C' = e C',
                 // where
                 // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-                Eigen::SelfAdjointEigenSolver<RowMajorMatrix> eig_solver(X.transpose() * F * X);
+                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
                 C = X * eig_solver.eigenvectors();
 
                 // compute density, D = C(occ) . C(occ)T
@@ -93,9 +93,9 @@ namespace craso::scf
             compute_initial_guess();
             K = m_procedure.compute_schwarz_ints();
             enuc = m_procedure.nuclear_repulsion_energy();
-            RowMajorMatrix D_diff;
+            MatRM D_diff;
             auto n2 = D.cols() * D.rows();
-            RowMajorMatrix evals;
+            MatRM evals;
 
             fmt::print("Beginning SCF\n");
             total_time = 0.0;
@@ -106,7 +106,7 @@ namespace craso::scf
 
                 // Last iteration's energy and density
                 auto ehf_last = ehf;
-                RowMajorMatrix D_last = D;
+                MatRM D_last = D;
 
                 if (not incremental_Fbuild_started &&
                     rms_error < start_incremental_F_threshold)
@@ -142,13 +142,13 @@ namespace craso::scf
                 ediff_rel = std::abs((ehf - ehf_last) / ehf);
 
                 // compute SCF error
-                RowMajorMatrix FD_comm = F * D * S - S * D * F;
+                MatRM FD_comm = F * D * S - S * D * F;
                 rms_error = FD_comm.norm() / n2;
                 if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
                     reset_incremental_fock_formation = true;
 
                 // DIIS extrapolate F
-                RowMajorMatrix F_diis = F; // extrapolated F cannot be used in incremental Fock
+                MatRM F_diis = F; // extrapolated F cannot be used in incremental Fock
                                    // build; only used to produce the density
                                    // make a copy of the unextrapolated matrix
                 diis.extrapolate(F_diis, FD_comm);
@@ -156,7 +156,7 @@ namespace craso::scf
                 // solve F C = e S C by (conditioned) transformation to F' C' = e C',
                 // where
                 // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-                Eigen::SelfAdjointEigenSolver<RowMajorMatrix> eig_solver(X.transpose() * F_diis *
+                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F_diis *
                                                                  X);
                 evals = eig_solver.eigenvalues();
                 C = X * eig_solver.eigenvectors();
@@ -192,14 +192,14 @@ namespace craso::scf
         double enuc{0.0};
         double ehf{0.0};
         double total_time{0.0};
-        libint2::DIIS<RowMajorMatrix> diis; // start DIIS on second iteration
+        libint2::DIIS<MatRM> diis; // start DIIS on second iteration
 
         bool reset_incremental_fock_formation = false;
         bool incremental_Fbuild_started = false;
         double start_incremental_F_threshold = 1e-5;
         double next_reset_threshold = 0.0;
         size_t last_reset_iteration = 0;
-        RowMajorMatrix D, S, T, V, H, K, X, Xinv, C, C_occ, F;
+        MatRM D, S, T, V, H, K, X, Xinv, C, C_occ, F;
         double XtX_condition_number;
         bool verbose{false};
     };

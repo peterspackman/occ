@@ -1,25 +1,28 @@
 #pragma once
-#include <Eigen/Core>
 #include <vector>
 #include "spacegroup.h"
 #include "unitcell.h"
 #include "bondgraph.h"
 #include "molecule.h"
+#include "linear_algebra.h"
 
 namespace craso::crystal {
 
 using craso::graph::PeriodicBondGraph;
+using craso::Mat3N;
+using craso::IVec;
+using craso::chem::Molecule;
 
 struct HKL {
     int h{0}, k{0}, l{0};
 };
 
 struct AtomSlab {
-    Eigen::Matrix3Xd frac_pos;
-    Eigen::Matrix3Xd cart_pos;
-    Eigen::VectorXi asym_idx;
-    Eigen::VectorXi atomic_numbers;
-    Eigen::VectorXi symop;
+    Mat3N frac_pos;
+    Mat3N cart_pos;
+    IVec asym_idx;
+    IVec atomic_numbers;
+    IVec symop;
     void resize(size_t n) {
         frac_pos.resize(3, n);
         cart_pos.resize(3, n);
@@ -32,12 +35,12 @@ struct AtomSlab {
 
 struct AsymmetricUnit
 {
-    Eigen::Matrix3Xd positions;
-    Eigen::VectorXi atomic_numbers;
-    Eigen::VectorXd occupations;
+    Mat3N positions;
+    IVec atomic_numbers;
+    Vec occupations;
     std::vector<std::string> labels;
     std::string chemical_formula() const;
-    Eigen::VectorXd covalent_radii() const;
+    Vec covalent_radii() const;
 };
 
 class Crystal
@@ -45,9 +48,9 @@ class Crystal
 public:
     Crystal(const AsymmetricUnit&, const SpaceGroup&, const UnitCell&);
     const std::vector<std::string>& labels() const { return m_asymmetric_unit.labels; }
-    const Eigen::Matrix3Xd& frac() const { return m_asymmetric_unit.positions; }
-    inline auto to_fractional(const Eigen::Matrix3Xd& p) const { return m_unit_cell.to_fractional(p); }
-    inline auto to_cartesian(const Eigen::Matrix3Xd& p) const { return m_unit_cell.to_cartesian(p); }
+    const Mat3N& frac() const { return m_asymmetric_unit.positions; }
+    inline auto to_fractional(const Mat3N& p) const { return m_unit_cell.to_fractional(p); }
+    inline auto to_cartesian(const Mat3N& p) const { return m_unit_cell.to_cartesian(p); }
     inline int num_sites() const { return m_asymmetric_unit.atomic_numbers.size(); }
     inline const std::vector<SymmetryOperation>& symmetry_operations() const { return m_space_group.symmetry_operations(); }
     const SpaceGroup& space_group() const { return m_space_group; }
@@ -56,7 +59,7 @@ public:
     AtomSlab slab(const HKL&, const HKL&) const;
     const AtomSlab& unit_cell_atoms() const;
     const PeriodicBondGraph& unit_cell_connectivity() const;
-    const std::vector<craso::chem::Molecule>& unit_cell_molecules() const;
+    const std::vector<Molecule>& unit_cell_molecules() const;
 private:
     AsymmetricUnit m_asymmetric_unit;
     SpaceGroup m_space_group;
@@ -66,7 +69,7 @@ private:
     mutable AtomSlab m_unit_cell_atoms;
     mutable bool m_unit_cell_atoms_needs_update{true};
     mutable bool m_unit_cell_connectivity_needs_update{true};
-    mutable std::vector<craso::chem::Molecule> m_unit_cell_molecules{};
+    mutable std::vector<Molecule> m_unit_cell_molecules{};
 };
 
 }

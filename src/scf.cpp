@@ -2,9 +2,9 @@
 
 namespace craso::scf {
 
-    std::tuple<RowMajorMatrix, RowMajorMatrix, size_t, double, double> gensqrtinv(const RowMajorMatrix &S, bool symmetric, double max_condition_number)
+    std::tuple<MatRM, MatRM, size_t, double, double> gensqrtinv(const MatRM &S, bool symmetric, double max_condition_number)
     {
-        Eigen::SelfAdjointEigenSolver<RowMajorMatrix> eig_solver(S);
+        Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(S);
         auto U = eig_solver.eigenvectors();
         auto s = eig_solver.eigenvalues();
         auto s_max = s.maxCoeff();
@@ -31,8 +31,8 @@ namespace craso::scf {
 
         // make canonical X/Xinv
         auto U_cond = U.block(0, n - n_cond, n, n_cond);
-        RowMajorMatrix X = U_cond * sigma_invsqrt;
-        RowMajorMatrix Xinv = U_cond * sigma_sqrt;
+        MatRM X = U_cond * sigma_invsqrt;
+        MatRM Xinv = U_cond * sigma_sqrt;
         // convert to symmetric, if needed
         if (symmetric)
         {
@@ -43,12 +43,12 @@ namespace craso::scf {
                                result_condition_number);
     }
 
-    std::tuple<RowMajorMatrix, RowMajorMatrix, double> conditioning_orthogonalizer(const RowMajorMatrix &S, double S_condition_number_threshold)
+    std::tuple<MatRM, MatRM, double> conditioning_orthogonalizer(const MatRM &S, double S_condition_number_threshold)
     {
         size_t obs_rank;
         double S_condition_number;
         double XtX_condition_number;
-        RowMajorMatrix X, Xinv;
+        MatRM X, Xinv;
 
         assert(S.rows() == S.cols());
 
@@ -68,8 +68,8 @@ namespace craso::scf {
 
         if (obs_nbf_omitted > 0)
         {
-            RowMajorMatrix should_be_I = X.transpose() * S * X;
-            RowMajorMatrix I = RowMajorMatrix::Identity(should_be_I.rows(), should_be_I.cols());
+            MatRM should_be_I = X.transpose() * S * X;
+            MatRM I = MatRM::Identity(should_be_I.rows(), should_be_I.cols());
             fmt::print("||X^t * S * X - I||_2 = {} (should be 0)\n", (should_be_I - I).norm());
         }
 
