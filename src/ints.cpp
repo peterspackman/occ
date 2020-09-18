@@ -125,8 +125,6 @@ namespace craso::ints
                                                     // control will likely break
                                                     // positive definiteness
                                                     // stick with this simple recipe
-        //std::cout << "compute_2body_fock:precision = " << precision << std::endl;
-        //std::cout << "Engine::precision = " << engines[0].precision() << std::endl;
         for (size_t i = 1; i != nthreads; ++i)
         {
             engines[i] = engines[0];
@@ -446,4 +444,251 @@ namespace craso::ints
         return 0.5 * (G[0] + G[0].transpose());
     }
 
+    std::pair<MatRM, MatRM>
+    compute_2body_fock_unrestricted(const BasisSet& obs, const shellpair_list_t& shellpair_list,
+                                    const shellpair_data_t &shellpair_data, const MatRM &Da,
+                                    const MatRM &Db, double precision, const MatRM &Schwarz)
+    {
+        const auto n = obs.nbf();
+        const auto nshells = obs.size();
+        using craso::parallel::nthreads;
+        std::vector<MatRM> Ga(nthreads, MatRM::Zero(n, n));
+        std::vector<MatRM> Gb(nthreads, MatRM::Zero(n, n));
+
+        const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
+        MatRM D_shblk_norm_a =
+            compute_shellblock_norm(obs, Da); // matrix of infty-norms of shell blocks
+
+        MatRM D_shblk_norm_b =
+            compute_shellblock_norm(obs, Db); // matrix of infty-norms of shell blocks
+
+        auto fock_precision = precision;
+        // engine precision controls primitive truncation, assume worst-case scenario
+        // (all primitive combinations add up constructively)
+        auto max_nprim = obs.max_nprim();
+        auto max_nprim4 = max_nprim * max_nprim * max_nprim * max_nprim;
+        auto max_coeff_a = D_shblk_norm_a.maxCoeff();
+        auto max_coeff_b = D_shblk_norm_b.maxCoeff();
+        auto engine_precision = std::min(fock_precision / std::max(max_coeff_a, max_coeff_b),
+                                         std::numeric_limits<double>::epsilon()) /
+                                max_nprim4;
+        assert(engine_precision > max_engine_precision &&
+               "using precomputed shell pair data limits the max engine precision"
+               " ... make max_engine_precision smalle and recompile");
+
+        // construct the 2-electron repulsion integrals engine pool
+        using libint2::Engine;
+        std::vector<Engine> engines(nthreads);
+        engines[0] = Engine(Operator::coulomb, obs.max_nprim(), obs.max_l(), 0);
+        engines[0].set_precision(engine_precision); // shellset-dependent precision
+                                                    // control will likely break
+                                                    // positive definiteness
+                                                    // stick with this simple recipe
+        for (size_t i = 1; i != nthreads; ++i)
+        {
+            engines[i] = engines[0];
+        }
+        std::atomic<size_t> num_ints_computed{0};
+
+#if defined(REPORT_INTEGRAL_TIMINGS)
+        std::vector<libint2::Timers<1>> timers(nthreads);
+#endif
+
+        auto shell2bf = obs.shell2bf();
+
+        auto lambda = [&](int thread_id) {
+            auto &engine = engines[thread_id];
+            auto &ga = Ga[thread_id];
+            auto &gb = Gb[thread_id];
+            const auto &buf = engine.results();
+
+#if defined(REPORT_INTEGRAL_TIMINGS)
+            auto &timer = timers[thread_id];
+            timer.clear();
+            timer.set_now_overhead(25);
+#endif
+
+            // loop over permutationally-unique set of shells
+            for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1)
+            {
+                auto bf1_first = shell2bf[s1]; // first basis function in this shell
+                auto n1 = obs[s1].size();      // number of basis functions in this shell
+
+                auto sp12_iter = shellpair_data.at(s1).begin();
+
+                for (const auto &s2 : shellpair_list.at(s1))
+                {
+                    auto bf2_first = shell2bf[s2];
+                    auto n2 = obs[s2].size();
+
+                    const auto *sp12 = sp12_iter->get();
+                    ++sp12_iter;
+
+                    const auto d_n12_a = D_shblk_norm_a(s1, s2);
+                    const auto d_n12_b = D_shblk_norm_b(s1, s2);
+                    const auto Dnorm12_a = do_schwarz_screen ? d_n12_a : 0.;
+                    const auto Dnorm12_b = do_schwarz_screen ? d_n12_b : 0.;
+
+                    for (auto s3 = 0; s3 <= s1; ++s3)
+                    {
+                        auto bf3_first = shell2bf[s3];
+                        auto n3 = obs[s3].size();
+
+                        const auto Dnorm123_a =
+                            do_schwarz_screen
+                                ? std::max(D_shblk_norm_a(s1, s3),
+                                           std::max(D_shblk_norm_a(s2, s3), Dnorm12_a))
+                                : 0.;
+                        const auto Dnorm123_b =
+                            do_schwarz_screen
+                                ? std::max(D_shblk_norm_b(s1, s3),
+                                           std::max(D_shblk_norm_b(s2, s3), Dnorm12_b))
+                                : 0.;
+
+                        auto sp34_iter = shellpair_data.at(s3).begin();
+
+                        const auto s4_max = (s1 == s3) ? s2 : s3;
+                        for (const auto &s4 : shellpair_list.at(s3))
+                        {
+                            if (s4 > s4_max)
+                                break; // for each s3, s4 are stored in monotonically increasing
+                                       // order
+
+                            // must update the iter even if going to skip s4
+                            const auto *sp34 = sp34_iter->get();
+                            ++sp34_iter;
+
+                            if ((s1234++) % nthreads != thread_id)
+                                continue;
+
+                            const auto Dnorm1234_a =
+                                do_schwarz_screen
+                                    ? std::max(
+                                          D_shblk_norm_a(s1, s4),
+                                          std::max(D_shblk_norm_a(s2, s4),
+                                                   std::max(D_shblk_norm_a(s3, s4), Dnorm123_a)))
+                                    : 0.;
+                            const auto Dnorm1234_b =
+                                do_schwarz_screen
+                                    ? std::max(
+                                          D_shblk_norm_b(s1, s4),
+                                          std::max(D_shblk_norm_b(s2, s4),
+                                                   std::max(D_shblk_norm_b(s3, s4), Dnorm123_b)))
+                                    : 0.;
+
+                            bool skip_alpha = (do_schwarz_screen &&
+                                    Dnorm1234_a * Schwarz(s1, s2) * Schwarz(s3, s4) <
+                                        fock_precision);
+                            bool skip_beta = (do_schwarz_screen &&
+                                    Dnorm1234_b * Schwarz(s1, s2) * Schwarz(s3, s4) <
+                                        fock_precision);
+
+                            if (skip_alpha && skip_beta) continue;
+
+                            auto bf4_first = shell2bf[s4];
+                            auto n4 = obs[s4].size();
+
+                            num_ints_computed += n1 * n2 * n3 * n4;
+
+                            // compute the permutational degeneracy (i.e. # of equivalents) of
+                            // the given shell set
+                            auto s12_deg = (s1 == s2) ? 1 : 2;
+                            auto s34_deg = (s3 == s4) ? 1 : 2;
+                            auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
+                            auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+#if defined(REPORT_INTEGRAL_TIMINGS)
+                            timer.start(0);
+#endif
+
+                            engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
+                                obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
+                            const auto *buf_1234 = buf[0];
+                            if (buf_1234 == nullptr)
+                                continue; // if all integrals screened out, skip to next quartet
+
+#if defined(REPORT_INTEGRAL_TIMINGS)
+                            timer.stop(0);
+#endif
+
+                            // 1) each shell set of integrals contributes up to 6 shell sets of
+                            // the Fock matrix:
+                            //    F(a,b) += (ab|cd) * D(c,d)
+                            //    F(c,d) += (ab|cd) * D(a,b)
+                            //    F(b,d) -= 1/4 * (ab|cd) * D(a,c)
+                            //    F(b,c) -= 1/4 * (ab|cd) * D(a,d)
+                            //    F(a,c) -= 1/4 * (ab|cd) * D(b,d)
+                            //    F(a,d) -= 1/4 * (ab|cd) * D(b,c)
+                            // 2) each permutationally-unique integral (shell set) must be
+                            // scaled by its degeneracy,
+                            //    i.e. the number of the integrals/sets equivalent to it
+                            // 3) the end result must be symmetrized
+                            for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1)
+                            {
+                                const auto bf1 = f1 + bf1_first;
+                                for (auto f2 = 0; f2 != n2; ++f2)
+                                {
+                                    const auto bf2 = f2 + bf2_first;
+                                    for (auto f3 = 0; f3 != n3; ++f3)
+                                    {
+                                        const auto bf3 = f3 + bf3_first;
+                                        for (auto f4 = 0; f4 != n4; ++f4, ++f1234)
+                                        {
+                                            const auto bf4 = f4 + bf4_first;
+
+                                            const auto value = buf_1234[f1234];
+
+                                            const auto value_scal_by_deg = value * s1234_deg;
+
+                                            ga(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
+                                            ga(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
+                                            gb(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
+                                            gb(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
+
+                                            ga(bf1, bf3) -= 0.25 * Da(bf2, bf4) * value_scal_by_deg;
+                                            ga(bf2, bf4) -= 0.25 * Da(bf1, bf3) * value_scal_by_deg;
+                                            ga(bf1, bf4) -= 0.25 * Da(bf2, bf3) * value_scal_by_deg;
+                                            ga(bf2, bf3) -= 0.25 * Da(bf1, bf4) * value_scal_by_deg;
+                                            gb(bf1, bf3) -= 0.25 * Db(bf2, bf4) * value_scal_by_deg;
+                                            gb(bf2, bf4) -= 0.25 * Db(bf1, bf3) * value_scal_by_deg;
+                                            gb(bf1, bf4) -= 0.25 * Db(bf2, bf3) * value_scal_by_deg;
+                                            gb(bf2, bf3) -= 0.25 * Db(bf1, bf4) * value_scal_by_deg;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }; // end of lambda
+
+        craso::parallel::parallel_do(lambda);
+
+        // accumulate contributions from all threads
+        for (size_t i = 1; i != nthreads; ++i)
+        {
+            Ga[0] += Ga[i];
+            Gb[0] += Gb[i];
+        }
+
+#if defined(REPORT_INTEGRAL_TIMINGS)
+        double time_for_ints = 0.0;
+        for (auto &t : timers)
+        {
+            time_for_ints += t.read(0);
+        }
+        std::cout << "time for integrals = " << time_for_ints << std::endl;
+        for (int t = 0; t != nthreads; ++t)
+            engines[t].print_timers();
+        std::cout << "# of integrals = " << num_ints_computed << std::endl;
+#endif
+
+        // symmetrize the result and return
+        MatRM GGa = 0.5 * (Ga[0] + Ga[0].transpose());
+        MatRM GGb = 0.5 * (Gb[0] + Gb[0].transpose());
+        return std::make_pair(GGa, GGb);
+    }
+
+            
 } // namespace craso::ints

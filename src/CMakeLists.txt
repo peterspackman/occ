@@ -1,4 +1,4 @@
-add_library(craso
+add_library(craso STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
