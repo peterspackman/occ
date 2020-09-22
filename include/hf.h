@@ -32,7 +32,6 @@ public:
     int num_e() const { return m_num_e; }
 
     double nuclear_repulsion_energy() const;
-    MatRM compute_soad() const;
     auto compute_kinetic_matrix() { return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0]; }
     auto compute_overlap_matrix() { return compute_1body_ints<Operator::overlap>(m_basis, m_shellpair_list)[0]; }
     auto compute_nuclear_attraction_matrix() { return compute_1body_ints<Operator::nuclear>(m_basis,  m_shellpair_list, libint2::make_point_charges(m_atoms))[0]; }
@@ -50,6 +49,7 @@ public:
     }
 
     MatRM compute_2body_fock(const MatRM& D, double precision = std::numeric_limits<double>::epsilon(),  const MatRM& Schwarz = MatRM()) const;
+    std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(const MatRM& Da, const MatRM& Db, double precision = std::numeric_limits<double>::epsilon(),  const MatRM& Schwarz = MatRM()) const;
     MatRM compute_shellblock_norm(const MatRM& A) const;
     auto compute_schwarz_ints() { return craso::ints::compute_schwarz_ints<>(m_basis); }
 

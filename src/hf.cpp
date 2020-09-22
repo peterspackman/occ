@@ -1,7 +1,6 @@
 #include "hf.h"
 #include "parallel.h"
 #include <fmt/core.h>
-#include <libint2/chemistry/sto3g_atomic_density.h>
 
 namespace craso::hf
 {
@@ -147,37 +146,6 @@ namespace craso::hf
         return enuc;
     }
 
-    MatRM HartreeFock::compute_soad() const
-    {
-        // computes Superposition-Of-Atomic-Densities guess for the molecular density
-        // matrix
-        // in minimal basis; occupies subshells by smearing electrons evenly over the
-        // orbitals
-        // compute number of atomic orbitals
-        size_t nao = 0;
-        for (const auto &atom : m_atoms)
-        {
-            const auto Z = atom.atomic_number;
-            nao += libint2::sto3g_num_ao(Z);
-        }
-
-        // compute the minimal basis density
-        MatRM D = MatRM::Zero(nao, nao);
-        size_t ao_offset = 0; // first AO of this atom
-        for (const auto &atom : m_atoms)
-        {
-            const auto Z = atom.atomic_number;
-            const auto &occvec = libint2::sto3g_ao_occupation_vector(Z);
-            for (const auto &occ : occvec)
-            {
-                D(ao_offset, ao_offset) = occ;
-                ++ao_offset;
-            }
-        }
-
-        return D * 0.5; // we use densities normalized to # of electrons/2
-    }
-
     MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const
     {
         return craso::ints::compute_shellblock_norm(m_basis, A);
@@ -188,5 +156,14 @@ namespace craso::hf
     {
         return craso::ints::compute_2body_fock(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
     }
+
+    std::pair<MatRM, MatRM> HartreeFock::compute_2body_fock_unrestricted(const MatRM& Da, const MatRM& Db,
+            double precision, const MatRM &Schwarz) const
+    {
+        return craso::ints::compute_2body_fock_unrestricted(m_basis, m_shellpair_list, m_shellpair_data, Da, Db, precision, Schwarz);
+    }
+
+
+
     
 } // namespace craso::hf

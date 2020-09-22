@@ -13,6 +13,12 @@ namespace craso {
     using Mat3 = Eigen::Matrix3d;
     using Mat4 = Eigen::Matrix4d;
 
+    using CMat = Eigen::MatrixXcd;
+    using CMat3N = Eigen::MatrixX3cd;
+    using CMatN3 = Eigen::Matrix3Xcd;
+    using CMat3 = Eigen::Matrix3cd;
+    using CMat4 = Eigen::Matrix4cd;
+
     using DMat = Eigen::MatrixXd;
     using DMat3N = Eigen::Matrix3Xd;
     using DMatN3 = Eigen::MatrixX3d;

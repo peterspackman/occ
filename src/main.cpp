@@ -18,6 +18,7 @@ int main(int argc, const char** argv) {
         ("j,nthreads", "Number of threads", cxxopts::value<int>()->default_value("1"))
         ("i,input", "Input file geometry", cxxopts::value<std::string>())
         ("h,help", "Print this help message")
+        ("uhf", "Use unrestricted")
     ;
     
     auto result = options.parse(argc, argv);
@@ -34,6 +35,7 @@ int main(int argc, const char** argv) {
         const auto filename = result["input"].as<std::string>();
         const auto basisname = result["basis"].as<std::string>();
         Molecule m = craso::chem::read_xyz_file(filename);
+        bool unrestricted = result.count("uhf");
 
         using craso::parallel::nthreads;
         nthreads = result["nthreads"].as<int>();
@@ -47,7 +49,9 @@ int main(int argc, const char** argv) {
         fmt::print("Orbital basis set rank = {}\n", obs.nbf());
 
         HartreeFock hf(m.atoms(), obs);
-        craso::scf::SCF<HartreeFock> scf(hf);
+        craso::scf::SCFKind scf_kind = craso::scf::SCFKind::rhf;
+        if(unrestricted) scf_kind = craso::scf::SCFKind::uhf;
+        craso::scf::SCF<HartreeFock> scf(hf, scf_kind);
         double e = scf.compute_scf_energy();
         fmt::print("Total Energy (SCF): {:20.12f} hartree\n", e);
 
