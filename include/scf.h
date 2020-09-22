@@ -44,6 +44,8 @@ namespace craso::scf
             n_alpha = nelectrons - n_beta;
         }
 
+        const auto multiplicity() const { return n_alpha - n_beta + 1; }
+
         const auto& atoms() const { return m_procedure.atoms(); }
 
         MatRM compute_soad() const
@@ -102,8 +104,8 @@ namespace craso::scf
                     D = D_minbs;
                 }
                 if(scf_kind == SCFKind::uhf) {
-                    Da = D_minbs;
-                    Db = D_minbs;
+                    Da = D_minbs * 0.5;
+                    Db = D_minbs * 0.5;
                 }
             }
             else
@@ -119,14 +121,11 @@ namespace craso::scf
                     D = C_occ * C_occ.transpose();
                 }
                 if(scf_kind == SCFKind::uhf) {
-                    F = H;
-                    F += craso::ints::compute_2body_fock_general(m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
-                    Fa = F;
-                    Fb = F;
+                    Fa = H; Fb = H;
+                    Da = D_minbs * 0.5;
                     Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_a(X.transpose() * Fa * X);
                     Ca = X * eig_solver_a.eigenvectors();
-                    Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_b(X.transpose() * Fb * X);
-                    Cb = X * eig_solver_b.eigenvectors();
+                    Cb = Ca;
                     Ca_occ = Ca.leftCols(n_alpha);
                     Cb_occ = Cb.leftCols(n_beta);
                     Da = Ca_occ * Ca_occ.transpose() * 0.5;

@@ -54,6 +54,7 @@ int main(int argc, const char** argv) {
         craso::scf::SCFKind scf_kind = craso::scf::SCFKind::rhf;
         if(unrestricted) scf_kind = craso::scf::SCFKind::uhf;
         craso::scf::SCF<HartreeFock> scf(hf, scf_kind);
+        fmt::print("Multiplicity: {}\n", scf.multiplicity());
         double e = scf.compute_scf_energy();
         fmt::print("Total Energy (SCF): {:20.12f} hartree\n", e);
         if (unrestricted) {
