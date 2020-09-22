@@ -2,7 +2,9 @@
 #include "hf.h"
 #include "scf.h"
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include "cxxopts.hpp"
+#include <iostream>
 
 int main(int argc, const char** argv) {
     using std::cout;
@@ -54,6 +56,12 @@ int main(int argc, const char** argv) {
         craso::scf::SCF<HartreeFock> scf(hf, scf_kind);
         double e = scf.compute_scf_energy();
         fmt::print("Total Energy (SCF): {:20.12f} hartree\n", e);
+        if (unrestricted) {
+            fmt::print("Density Matrix (alpha)\n{}\n", scf.Da);
+            fmt::print("Density Matrix (beta)\n{}\n", scf.Db);
+            fmt::print("Fock Matrix (alpha)\n{}\n", scf.Fa);
+            fmt::print("Fock Matrix (beta)\n{}\n", scf.Fb);
+        }
 
     }
     catch (const char* ex) {

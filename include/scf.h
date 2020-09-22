@@ -5,6 +5,7 @@
 #include <libint2/chemistry/sto3g_atomic_density.h>
 #include <Eigen/Dense>
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 
 namespace craso::scf
 {
@@ -35,7 +36,7 @@ namespace craso::scf
     template <typename Procedure>
     struct SCF
     {
-        SCF(Procedure &procedure, SCFKind kind = SCFKind::rhf) : m_procedure(procedure), diis(2)
+        SCF(Procedure &procedure, SCFKind kind = SCFKind::rhf) : m_procedure(procedure), diis_a(2), diis_b(2)
         {
             scf_kind = kind;
             nelectrons = m_procedure.num_e();
@@ -111,25 +112,25 @@ namespace craso::scf
                 // into the AO basis
                 // by diagonalizing a Fock matrix
                 if(verbose) fmt::print("Projecting SOAD into atomic orbital basis: ");
-                F = H;
-                F += craso::ints::compute_2body_fock_general(m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
-
-                // solve F C = e S C by (conditioned) transformation to F' C' = e C',
-                // where
-                // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
-                C = X * eig_solver.eigenvectors();
-
-                // compute density, D = C(occ) . C(occ)T
                 if(scf_kind == SCFKind::rhf) {
+                    F = H;
+                    F += craso::ints::compute_2body_fock_general(m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
                     C_occ = C.leftCols(n_alpha);
                     D = C_occ * C_occ.transpose();
                 }
-                if (scf_kind == SCFKind::uhf) {
-                    Ca_occ = C.leftCols(n_alpha);
-                    Cb_occ = C.leftCols(n_beta);
-                    Da = Ca_occ * Ca_occ.transpose();
-                    Db = Cb_occ * Cb_occ.transpose();
+                if(scf_kind == SCFKind::uhf) {
+                    F = H;
+                    F += craso::ints::compute_2body_fock_general(m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
+                    Fa = F;
+                    Fb = F;
+                    Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_a(X.transpose() * Fa * X);
+                    Ca = X * eig_solver_a.eigenvectors();
+                    Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_b(X.transpose() * Fb * X);
+                    Cb = X * eig_solver_b.eigenvectors();
+                    Ca_occ = Ca.leftCols(n_alpha);
+                    Cb_occ = Cb.leftCols(n_beta);
+                    Da = Ca_occ * Ca_occ.transpose() * 0.5;
+                    Db = Cb_occ * Cb_occ.transpose() * 0.5;
                 }
 
                 const auto tstop = std::chrono::high_resolution_clock::now();
@@ -209,7 +210,7 @@ namespace craso::scf
                 MatRM F_diis = F; // extrapolated F cannot be used in incremental Fock
                                    // build; only used to produce the density
                                    // make a copy of the unextrapolated matrix
-                diis.extrapolate(F_diis, FD_comm);
+                diis_a.extrapolate(F_diis, FD_comm);
 
                 // solve F C = e S C by (conditioned) transformation to F' C' = e C',
                 // where
@@ -237,6 +238,10 @@ namespace craso::scf
 
             } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
             fmt::print("SCF complete in {:.6f} s wall time\n", total_time);
+            fmt::print("Kinetic energy: {}\n", D.cwiseProduct(T).sum());
+            fmt::print("Nuclear attraction energy: {}\n", D.cwiseProduct(V).sum());
+            fmt::print("1e energy: {}\n", D.cwiseProduct(H).sum());
+            fmt::print("2e energy: {}\n", D.cwiseProduct(F).sum());
             return ehf + enuc;
         }
 
@@ -313,10 +318,10 @@ namespace craso::scf
 
                 // DIIS extrapolate F
                 MatRM Fa_diis = Fa; 
-                diis.extrapolate(Fa_diis, FD_comm_a);
+                diis_a.extrapolate(Fa_diis, FD_comm_a);
 
                 MatRM Fb_diis = Fb; 
-                diis.extrapolate(Fb_diis, FD_comm_b);
+                diis_b.extrapolate(Fb_diis, FD_comm_b);
 
                 // solve F C = e S C by (conditioned) transformation to F' C' = e C',
                 // where
@@ -331,14 +336,12 @@ namespace craso::scf
 
                 // compute density, D = C(occ) . C(occ)T
                 Ca_occ = Ca.leftCols(n_alpha);
-                Da = Ca_occ * Ca_occ.transpose();
+                Da = Ca_occ * Ca_occ.transpose() * 0.5;
                 Da_diff = Da - Da_last;
                 // beta
                 Cb_occ = Cb.leftCols(n_beta);
-                Db = Cb_occ * Cb_occ.transpose();
+                Db = Cb_occ * Cb_occ.transpose() * 0.5;
                 Db_diff = Db - Db_last;
-
-
 
                 const auto tstop = std::chrono::high_resolution_clock::now();
                 const std::chrono::duration<double> time_elapsed = tstop - tstart;
@@ -353,6 +356,16 @@ namespace craso::scf
 
             } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
             fmt::print("SCF complete in {:.6f} s wall time\n", total_time);
+            double Ek = Da.cwiseProduct(T).sum() + Db.cwiseProduct(T).sum();
+            double Een = Da.cwiseProduct(V).sum() + Db.cwiseProduct(V).sum();
+            double E_1e = Da.cwiseProduct(H).sum() + Db.cwiseProduct(H).sum();
+            double E_2e = Da.cwiseProduct(Fa).sum() + Db.cwiseProduct(Fb).sum();
+            fmt::print("E_nn: {}\n", enuc);
+            fmt::print("E_k : {}\n", Ek);
+            fmt::print("E_en: {}\n", Een);
+            fmt::print("E_1e: {}\n", E_1e);
+            fmt::print("E_2e: {}\n", E_2e);
+            fmt::print("E_ee: {}\n", E_2e + E_1e);
             return ehf + enuc;
         }
 
@@ -369,7 +382,8 @@ namespace craso::scf
         double enuc{0.0};
         double ehf{0.0};
         double total_time{0.0};
-        libint2::DIIS<MatRM> diis; // start DIIS on second iteration
+        libint2::DIIS<MatRM> diis_a; // start DIIS on second iteration
+        libint2::DIIS<MatRM> diis_b; // start DIIS on second iteration
 
         bool reset_incremental_fock_formation = false;
         bool incremental_Fbuild_started = false;

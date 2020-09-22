@@ -640,19 +640,24 @@ namespace craso::ints
 
                                             const auto value_scal_by_deg = value * s1234_deg;
 
+
+                                            // F_a = J_a + J_b - K_a
+                                            // F_b = J_a + J_b - K_b
                                             ga(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
                                             ga(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
+
                                             gb(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
                                             gb(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
 
-                                            ga(bf1, bf3) -= 0.25 * Da(bf2, bf4) * value_scal_by_deg;
-                                            ga(bf2, bf4) -= 0.25 * Da(bf1, bf3) * value_scal_by_deg;
-                                            ga(bf1, bf4) -= 0.25 * Da(bf2, bf3) * value_scal_by_deg;
-                                            ga(bf2, bf3) -= 0.25 * Da(bf1, bf4) * value_scal_by_deg;
-                                            gb(bf1, bf3) -= 0.25 * Db(bf2, bf4) * value_scal_by_deg;
-                                            gb(bf2, bf4) -= 0.25 * Db(bf1, bf3) * value_scal_by_deg;
-                                            gb(bf1, bf4) -= 0.25 * Db(bf2, bf3) * value_scal_by_deg;
-                                            gb(bf2, bf3) -= 0.25 * Db(bf1, bf4) * value_scal_by_deg;
+                                            ga(bf1, bf3) -= 0.5 * Da(bf2, bf4) * value_scal_by_deg;
+                                            ga(bf2, bf4) -= 0.5 * Da(bf1, bf3) * value_scal_by_deg;
+                                            ga(bf1, bf4) -= 0.5 * Da(bf2, bf3) * value_scal_by_deg;
+                                            ga(bf2, bf3) -= 0.5 * Da(bf1, bf4) * value_scal_by_deg;
+
+                                            gb(bf1, bf3) -= 0.5 * Db(bf2, bf4) * value_scal_by_deg;
+                                            gb(bf2, bf4) -= 0.5 * Db(bf1, bf3) * value_scal_by_deg;
+                                            gb(bf1, bf4) -= 0.5 * Db(bf2, bf3) * value_scal_by_deg;
+                                            gb(bf2, bf3) -= 0.5 * Db(bf1, bf4) * value_scal_by_deg;
                                         }
                                     }
                                 }
