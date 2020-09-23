@@ -157,10 +157,24 @@ namespace craso::hf
         return craso::ints::compute_2body_fock(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
     }
 
+    std::pair<MatRM, MatRM> HartreeFock::compute_JK(const MatRM& D,
+            double precision, const MatRM &Schwarz) const
+    {
+        return craso::ints::compute_JK(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+    }
+
+
     std::pair<MatRM, MatRM> HartreeFock::compute_2body_fock_unrestricted(const MatRM& Da, const MatRM& Db,
             double precision, const MatRM &Schwarz) const
     {
         return craso::ints::compute_2body_fock_unrestricted(m_basis, m_shellpair_list, m_shellpair_data, Da, Db, precision, Schwarz);
+    }
+
+
+    std::tuple<MatRM, MatRM, MatRM, MatRM> HartreeFock::compute_JK_unrestricted(const MatRM& Da, const MatRM& Db,
+            double precision, const MatRM &Schwarz) const
+    {
+        return craso::ints::compute_JK_unrestricted(m_basis, m_shellpair_list, m_shellpair_data, Da, Db, precision, Schwarz);
     }
 
 

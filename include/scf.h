@@ -337,12 +337,12 @@ namespace craso::scf
                     std::min(1e-3 / XtX_condition_number, 1e-7),
                     std::max(rms_error / 1e4, std::numeric_limits<double>::epsilon()));
                 const auto precision_F = std::min(precision_Fa, precision_Fb);
-                MatRM Fa_tmp, Fb_tmp;
-                std::tie(Fa_tmp, Fb_tmp) = m_procedure.compute_2body_fock_unrestricted(
+                MatRM Ja, Jb, Ka, Kb;
+                std::tie(Ja, Jb, Ka, Kb) = m_procedure.compute_JK_unrestricted(
                     Da_diff, Db_diff, precision_F, K
                 );
-                Fa += Fa_tmp;
-                Fb += Fb_tmp;
+                Fa += Ja + Jb - Ka;
+                Fb += Ja + Jb - Kb;
 
                 // compute HF energy with the non-extrapolated Fock matrix
                 ehf = Da.cwiseProduct(H + Fa).sum() + Db.cwiseProduct(H + Fb).sum();
