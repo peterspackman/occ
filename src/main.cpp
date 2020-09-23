@@ -21,6 +21,8 @@ int main(int argc, const char** argv) {
         ("i,input", "Input file geometry", cxxopts::value<std::string>())
         ("h,help", "Print this help message")
         ("uhf", "Use unrestricted")
+        ("multiplicity", "Set the multiplicity of the system", cxxopts::value<int>()->default_value("1"))
+        ("c,charge", "Set the total system charge", cxxopts::value<int>()->default_value("0"))
     ;
     
     auto result = options.parse(argc, argv);
@@ -36,8 +38,10 @@ int main(int argc, const char** argv) {
         if (!libint2::initialized()) libint2::initialize();
         const auto filename = result["input"].as<std::string>();
         const auto basisname = result["basis"].as<std::string>();
+        const auto multiplicity = result["multiplicity"].as<int>();
+        const auto charge = result["charge"].as<int>();
         Molecule m = craso::chem::read_xyz_file(filename);
-        bool unrestricted = result.count("uhf");
+        bool unrestricted = result.count("uhf") || (multiplicity != 1);
 
         using craso::parallel::nthreads;
         nthreads = result["nthreads"].as<int>();
@@ -54,10 +58,16 @@ int main(int argc, const char** argv) {
         craso::scf::SCFKind scf_kind = craso::scf::SCFKind::rhf;
         if(unrestricted) scf_kind = craso::scf::SCFKind::uhf;
         craso::scf::SCF<HartreeFock> scf(hf, scf_kind);
+        scf.set_multiplicity(multiplicity);
+        scf.set_charge(charge);
         fmt::print("Multiplicity: {}\n", scf.multiplicity());
+        fmt::print("n_alpha: {}\n", scf.n_alpha);
+        fmt::print("n_beta: {}\n", scf.n_beta);
         double e = scf.compute_scf_energy();
         fmt::print("Total Energy (SCF): {:20.12f} hartree\n", e);
-        if (unrestricted) {
+        fmt::print("Orbital energies alpha:\n{}\n", scf.orbital_energies_alpha);
+        fmt::print("Orbital energies beta:\n{}\n", scf.orbital_energies_beta);
+        if (false) {
             fmt::print("Density Matrix (alpha)\n{}\n", scf.Da);
             fmt::print("Density Matrix (beta)\n{}\n", scf.Db);
             fmt::print("Fock Matrix (alpha)\n{}\n", scf.Fa);

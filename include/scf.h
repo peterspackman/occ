@@ -39,12 +39,39 @@ namespace craso::scf
         SCF(Procedure &procedure, SCFKind kind = SCFKind::rhf) : m_procedure(procedure), diis_a(2), diis_b(2)
         {
             scf_kind = kind;
-            nelectrons = m_procedure.num_e();
-            n_beta = nelectrons / 2;
-            n_alpha = nelectrons - n_beta;
+            n_electrons = m_procedure.num_e();
+            n_beta = n_electrons / 2;
+            n_alpha = n_electrons - n_beta;
+            n_unpaired_electrons = n_alpha - n_beta;
+        }
+
+        int charge() const {
+            double nuclear_charge = 0.0;
+            for(const auto& atom: atoms())
+            {
+                nuclear_charge += atom.atomic_number;
+            }
+            return nuclear_charge - n_electrons;
+        }
+
+        void set_charge(int c) {
+            int current_charge = charge();
+            if (c != current_charge) {
+                n_electrons -= c - current_charge;
+                n_beta = (n_electrons - n_unpaired_electrons) / 2;
+                n_alpha = n_electrons - n_beta;
+            }
         }
 
         const auto multiplicity() const { return n_alpha - n_beta + 1; }
+
+        void set_multiplicity(int mult) {
+            if(mult != multiplicity()) {
+                n_unpaired_electrons = mult - 1;
+                n_beta = (n_electrons - n_unpaired_electrons) / 2;
+                n_alpha = n_electrons - n_beta;
+            }
+        }
 
         const auto& atoms() const { return m_procedure.atoms(); }
 
@@ -76,6 +103,15 @@ namespace craso::scf
                 }
             }
 
+            int c = charge();
+
+            // smear the charge across all shells
+            if (c != 0) {
+                double v = static_cast<double>(c) / D.rows();
+                for(int i = 0; i < D.rows(); i++) {
+                    D(i,i) -= v;
+                }
+            }
             return D * 0.5; // we use densities normalized to # of electrons/2
         }
 
@@ -97,7 +133,7 @@ namespace craso::scf
             V = m_procedure.compute_nuclear_attraction_matrix();
             H = T + V;
             auto D_minbs = compute_soad(); // compute guess in minimal basis
-            libint2::BasisSet minbs("STO-3G", m_procedure.atoms());
+            libint2::BasisSet minbs("STO-3G", atoms());
 
             if (minbs == m_procedure.basis()) {
                 if(scf_kind == SCFKind::rhf) {
@@ -117,13 +153,16 @@ namespace craso::scf
                 if(scf_kind == SCFKind::rhf) {
                     F = H;
                     F += craso::ints::compute_2body_fock_general(m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
+                    Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
+                    C = X * eig_solver.eigenvectors();
                     C_occ = C.leftCols(n_alpha);
                     D = C_occ * C_occ.transpose();
                 }
                 if(scf_kind == SCFKind::uhf) {
-                    Fa = H; Fb = H;
-                    Da = D_minbs * 0.5;
+                    Fa = H;
+                    //Fa += craso::ints::compute_2body_fock_general(m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
                     Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_a(X.transpose() * Fa * X);
+                    Fb = Fa;
                     Ca = X * eig_solver_a.eigenvectors();
                     Cb = Ca;
                     Ca_occ = Ca.leftCols(n_alpha);
@@ -254,7 +293,6 @@ namespace craso::scf
             MatRM Da_diff, Db_diff;
             auto n2a = Da.cols() * Da.rows();
             auto n2b = Db.cols() * Db.rows();
-            MatRM evals_a, evals_b;
 
             fmt::print("Beginning SCF\n");
             total_time = 0.0;
@@ -300,7 +338,9 @@ namespace craso::scf
                     std::max(rms_error / 1e4, std::numeric_limits<double>::epsilon()));
                 const auto precision_F = std::min(precision_Fa, precision_Fb);
                 MatRM Fa_tmp, Fb_tmp;
-                std::tie(Fa_tmp, Fb_tmp) = m_procedure.compute_2body_fock_unrestricted(Da_diff, Db_diff, precision_F, K);
+                std::tie(Fa_tmp, Fb_tmp) = m_procedure.compute_2body_fock_unrestricted(
+                    Da_diff, Db_diff, precision_F, K
+                );
                 Fa += Fa_tmp;
                 Fb += Fb_tmp;
 
@@ -311,7 +351,10 @@ namespace craso::scf
                 // compute SCF error
                 MatRM FD_comm_a = Fa * Da * S - S * Da * Fa;
                 MatRM FD_comm_b = Fb * Db * S - S * Db * Fb;
-                rms_error = FD_comm_a.norm() / n2a + FD_comm_b.norm() / n2b;
+                rms_error = std::max(
+                    FD_comm_a.norm() / n2a,
+                    FD_comm_b.norm() / n2b
+                );
                 if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
                     reset_incremental_fock_formation = true;
 
@@ -325,12 +368,16 @@ namespace craso::scf
                 // solve F C = e S C by (conditioned) transformation to F' C' = e C',
                 // where
                 // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_a(X.transpose() * Fa_diis * X);
-                evals_a = eig_solver_a.eigenvalues();
-                Ca = X * eig_solver_a.eigenvectors();
+                Eigen::SelfAdjointEigenSolver<MatRM> eig_alpha(
+                    X.transpose() * Fa_diis * X
+                );
+                orbital_energies_alpha = eig_alpha.eigenvalues();
+                Ca = X * eig_alpha.eigenvectors();
 
-                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_b(X.transpose() * Fb_diis * X);
-                evals_b = eig_solver_b.eigenvalues();
+                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_b(
+                        X.transpose() * Fb_diis * X
+                );
+                orbital_energies_beta = eig_solver_b.eigenvalues();
                 Cb = X * eig_solver_b.eigenvectors();
 
                 // compute density, D = C(occ) . C(occ)T
@@ -370,11 +417,12 @@ namespace craso::scf
 
         Procedure &m_procedure;
         SCFKind scf_kind{SCFKind::rhf};
-        int nelectrons{0};
+        int n_electrons{0};
         int n_alpha{0};
         int n_beta{0};
+        int n_unpaired_electrons{0};
         int maxiter{100};
-        double conv = 1e-12;
+        double conv = 1e-10;
         int iter = 0;
         double rms_error = 1.0;
         double ediff_rel = 0.0;
@@ -392,6 +440,7 @@ namespace craso::scf
         MatRM D, S, T, V, H, K, X, Xinv, C, C_occ, F;
         MatRM Da, Ca, Ca_occ, Fa;
         MatRM Db, Cb, Cb_occ, Fb;
+        Vec orbital_energies_alpha, orbital_energies_beta;
         double XtX_condition_number;
         bool verbose{false};
     };

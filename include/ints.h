@@ -400,6 +400,13 @@ namespace craso::ints
                                                                        // empty, do not Schwarz screen
     );
 
+    std::pair<MatRM, MatRM> compute_JK(const BasisSet &obs, const shellpair_list_t &shellpair_list,
+                                       const shellpair_data_t &shellpair_data, const MatRM &D,
+                                       double precision = std::numeric_limits<double>::epsilon(),
+                                       const MatRM &Schwarz = MatRM() 
+    );
+
+
     std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(const BasisSet &obs, const shellpair_list_t &shellpair_list,
                                       const shellpair_data_t &shellpair_data, const MatRM &Da, const MatRM &Db,
                                       double precision = std::numeric_limits<double>::epsilon(), // discard contributions smaller than this
