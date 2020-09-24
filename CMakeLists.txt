@@ -11,6 +11,7 @@ find_package(Eigen3 CONFIG REQUIRED)
 find_package(Boost COMPONENTS graph)
 find_package(OpenMP REQUIRED)
 find_package(Libint2 REQUIRED)
+find_package(Libxc REQUIRED)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/fmt")
 set(GEMMI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gemmi/include")

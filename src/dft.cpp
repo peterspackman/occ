@@ -2,6 +2,7 @@
 #include "molecule.h"
 #include "numgrid.h"
 #include <fmt/core.h>
+#include "xc.h"
 
 namespace craso::dft {
 
