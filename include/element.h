@@ -5,22 +5,23 @@
 
 namespace craso::chem {
 
-struct ElementData
-{
-    ElementData(int n, const std::string& nm, const std::string& sym, float cov, float vdw, float m) :
-        atomic_number(n), name(nm), symbol(sym), cov_radius(cov), vdw_radius(vdw), mass(m) {}
-    ElementData(const ElementData& o) : atomic_number(o.atomic_number), name(o.name), symbol(o.symbol),
+struct ElementData {
+  ElementData(int n, const std::string &nm, const std::string &sym, float cov,
+              float vdw, float m)
+      : atomic_number(n), name(nm), symbol(sym), cov_radius(cov),
+        vdw_radius(vdw), mass(m) {}
+  ElementData(const ElementData &o)
+      : atomic_number(o.atomic_number), name(o.name), symbol(o.symbol),
         cov_radius(o.cov_radius), vdw_radius(o.vdw_radius), mass(o.mass) {}
-    int atomic_number;
-    std::string name;
-    std::string symbol;
-    float cov_radius;
-    float vdw_radius;
-    float mass;
+  int atomic_number;
+  std::string name;
+  std::string symbol;
+  float cov_radius;
+  float vdw_radius;
+  float mass;
 };
 
-static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] =
-{
+static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] = {
     {0, "Dummy", "Xx", 0.0f, 0.0f, 0.0f},
     {1, "hydrogen", "H", 0.23f, 1.09f, 1.00794f},
     {2, "helium", "He", 1.50f, 1.40f, 4.002602f},
@@ -124,34 +125,39 @@ static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] =
     {100, "fermium", "Fm", 1.50f, 2.00f, 257.0f},
     {101, "mendelevium", "Md", 1.50f, 2.00f, 258.0f},
     {102, "nobelium", "No", 1.50f, 2.00f, 259.0f},
-    {103, "lawrencium", "Lr", 1.50f, 2.00f, 262.0f}
-};
+    {103, "lawrencium", "Lr", 1.50f, 2.00f, 262.0f}};
 
-class Element
-{
+class Element {
 public:
-    Element() = delete;
-    Element(const std::string&);
-    Element(int);
-    inline const std::string& symbol() const { return m_data.symbol; }
-    inline const std::string& name() const { return m_data.name; }
-    inline float mass() const { return m_data.mass; }
-    inline float cov() const { return m_data.cov_radius; }
-    inline float covalentRadius() const { return m_data.cov_radius; }
-    inline float vdw() const { return m_data.vdw_radius; }
-    inline float vdwRadius() const { return m_data.vdw_radius; }
-    inline int atomicNumber() const { return m_data.atomic_number; }
-    inline int n() const { return m_data.atomic_number; }
-    bool operator<(const Element& rhs) const { return m_data.atomic_number < rhs.m_data.atomic_number; }
-    bool operator>(const Element& rhs) const { return m_data.atomic_number > rhs.m_data.atomic_number; }
-    bool operator==(const Element& rhs) const { return m_data.atomic_number == rhs.m_data.atomic_number; }
-    bool operator!=(const Element& rhs) const { return m_data.atomic_number != rhs.m_data.atomic_number; }
+  Element() = delete;
+  Element(const std::string &);
+  Element(int);
+  inline const std::string &symbol() const { return m_data.symbol; }
+  inline const std::string &name() const { return m_data.name; }
+  inline float mass() const { return m_data.mass; }
+  inline float cov() const { return m_data.cov_radius; }
+  inline float covalentRadius() const { return m_data.cov_radius; }
+  inline float vdw() const { return m_data.vdw_radius; }
+  inline float vdwRadius() const { return m_data.vdw_radius; }
+  inline int atomicNumber() const { return m_data.atomic_number; }
+  inline int n() const { return m_data.atomic_number; }
+  bool operator<(const Element &rhs) const {
+    return m_data.atomic_number < rhs.m_data.atomic_number;
+  }
+  bool operator>(const Element &rhs) const {
+    return m_data.atomic_number > rhs.m_data.atomic_number;
+  }
+  bool operator==(const Element &rhs) const {
+    return m_data.atomic_number == rhs.m_data.atomic_number;
+  }
+  bool operator!=(const Element &rhs) const {
+    return m_data.atomic_number != rhs.m_data.atomic_number;
+  }
 
 private:
-    ElementData m_data;
+  ElementData m_data;
 };
 
+std::string chemical_formula(const std::vector<Element> &);
 
-std::string chemical_formula(const std::vector<Element>&);
-
-}
+} // namespace craso::chem
