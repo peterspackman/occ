@@ -1142,10 +1142,10 @@ namespace craso::ints
         // accumulate contributions from all threads
         for (size_t i = 1; i != nthreads; ++i)
         {
-            Ka[0] += Ja[i];
-            Ja[0] += Kb[i];
-            Kb[0] += Jb[i];
-            Jb[0] += Kb[i];
+            Ja[0] += Ja[i];
+            Ka[0] += Ka[i];
+            Jb[0] += Jb[i];
+            Kb[0] += Kb[i];
         }
 
 #if defined(REPORT_INTEGRAL_TIMINGS)
