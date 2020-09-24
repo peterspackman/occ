@@ -11,10 +11,6 @@ namespace craso::scf
 {
 
     using craso::MatRM;
-    enum class SCFKind {
-        rhf,
-        uhf 
-    };
 
     std::tuple<MatRM, MatRM, double> conditioning_orthogonalizer(const MatRM& S, double S_condition_number_threshold);
 
@@ -34,15 +30,14 @@ namespace craso::scf
 
 
     template <typename Procedure>
-    struct SCF
+    struct UnrestrictedSCF
     {
-        SCF(Procedure &procedure, SCFKind kind = SCFKind::rhf) : m_procedure(procedure), diis_a(2), diis_b(2)
+        UnrestrictedSCF(Procedure &procedure, int diis_start = 2) : m_procedure(procedure), diis_a(diis_start), diis_b(diis_start)
         {
-            scf_kind = kind;
+            set_charge(0);
+            set_multiplicity(1);
             n_electrons = m_procedure.num_e();
-            n_beta = n_electrons / 2;
-            n_alpha = n_electrons - n_beta;
-            n_unpaired_electrons = n_alpha - n_beta;
+            n_alpha = n_electrons / 2;
         }
 
         int charge() const {
@@ -75,7 +70,7 @@ namespace craso::scf
 
         const auto& atoms() const { return m_procedure.atoms(); }
 
-        MatRM compute_soad() const
+        std::pair<MatRM, MatRM> compute_soad() const
         {
             // computes Superposition-Of-Atomic-Densities guess for the molecular density
             // matrix
@@ -90,7 +85,7 @@ namespace craso::scf
             }
 
             // compute the minimal basis density
-            MatRM D = MatRM::Zero(nao, nao);
+            MatRM Da = MatRM::Zero(nao, nao);
             size_t ao_offset = 0; // first AO of this atom
             for (const auto &atom : atoms())
             {
@@ -98,21 +93,31 @@ namespace craso::scf
                 const auto &occvec = libint2::sto3g_ao_occupation_vector(Z);
                 for (const auto &occ : occvec)
                 {
-                    D(ao_offset, ao_offset) = occ;
+                    Da(ao_offset, ao_offset) = occ;
                     ++ao_offset;
                 }
             }
 
             int c = charge();
 
+            Da *= 0.5;
+            MatRM Db = Da;
             // smear the charge across all shells
-            if (c != 0) {
-                double v = static_cast<double>(c) / D.rows();
-                for(int i = 0; i < D.rows(); i++) {
-                    D(i,i) -= v;
+            if(n_unpaired_electrons != 0) {
+                double v = static_cast<double>(n_unpaired_electrons) / Db.rows();
+                for(int i = 0; i < Db.rows(); i++) {
+                    Db(i,i) -= v;
                 }
             }
-            return D * 0.5; // we use densities normalized to # of electrons/2
+
+            if (c != 0) {
+                double v = static_cast<double>(c) / Da.rows();
+                for(int i = 0; i < Da.rows(); i++) {
+                    Da(i,i) -= v;
+                    Db(i,i) -= v;
+                }
+            }
+            return std::make_pair(Da, Db); // we use densities normalized to # of electrons/2
         }
 
         void compute_initial_guess()
@@ -132,17 +137,13 @@ namespace craso::scf
             T = m_procedure.compute_kinetic_matrix();
             V = m_procedure.compute_nuclear_attraction_matrix();
             H = T + V;
-            auto D_minbs = compute_soad(); // compute guess in minimal basis
+            MatRM Da_minbs, Db_minbs;
+            std::tie(Da_minbs, Db_minbs) = compute_soad(); // compute guess in minimal basis
             libint2::BasisSet minbs("STO-3G", atoms());
 
             if (minbs == m_procedure.basis()) {
-                if(scf_kind == SCFKind::rhf) {
-                    D = D_minbs;
-                }
-                if(scf_kind == SCFKind::uhf) {
-                    Da = D_minbs * 0.5;
-                    Db = D_minbs * 0.5;
-                }
+                Da = Da_minbs * 0.5;
+                Db = Db_minbs * 0.5;
             }
             else
             {
@@ -150,26 +151,18 @@ namespace craso::scf
                 // into the AO basis
                 // by diagonalizing a Fock matrix
                 if(verbose) fmt::print("Projecting SOAD into atomic orbital basis: ");
-                if(scf_kind == SCFKind::rhf) {
-                    F = H;
-                    F += craso::ints::compute_2body_fock_general(m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
-                    Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
-                    C = X * eig_solver.eigenvectors();
-                    C_occ = C.leftCols(n_alpha);
-                    D = C_occ * C_occ.transpose();
-                }
-                if(scf_kind == SCFKind::uhf) {
-                    Fa = H;
-                    //Fa += craso::ints::compute_2body_fock_general(m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon());
-                    Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_a(X.transpose() * Fa * X);
-                    Fb = Fa;
-                    Ca = X * eig_solver_a.eigenvectors();
-                    Cb = Ca;
-                    Ca_occ = Ca.leftCols(n_alpha);
-                    Cb_occ = Cb.leftCols(n_beta);
-                    Da = Ca_occ * Ca_occ.transpose() * 0.5;
-                    Db = Cb_occ * Cb_occ.transpose() * 0.5;
-                }
+                Fa = H; Fb = H;
+                Fa += craso::ints::compute_2body_fock_general(m_procedure.basis(), Da_minbs, minbs, true, std::numeric_limits<double>::epsilon());
+                Fb += craso::ints::compute_2body_fock_general(m_procedure.basis(), Db_minbs, minbs, true, std::numeric_limits<double>::epsilon());
+                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_a(X.transpose() * Fa * X);
+                Ca = X * eig_solver_a.eigenvectors();
+                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_b(X.transpose() * Fb * X);
+                Ca = X * eig_solver_a.eigenvectors();
+                Cb = X * eig_solver_b.eigenvectors();
+                Ca_occ = Ca.leftCols(n_alpha);
+                Cb_occ = Cb.leftCols(n_beta);
+                Da = Ca_occ * Ca_occ.transpose() * 0.5;
+                Db = Cb_occ * Cb_occ.transpose() * 0.5;
 
                 const auto tstop = std::chrono::high_resolution_clock::now();
                 const std::chrono::duration<double> time_elapsed = tstop - tstart;
@@ -178,112 +171,6 @@ namespace craso::scf
         }
 
         double compute_scf_energy()
-        {
-            if(scf_kind == SCFKind::rhf) return compute_scf_energy_restricted();
-            if (scf_kind == SCFKind::uhf) return compute_scf_energy_unrestricted();
-        }
-
-        double compute_scf_energy_restricted()
-        {
-            // compute one-body integrals
-            // count the number of electrons
-            compute_initial_guess();
-            K = m_procedure.compute_schwarz_ints();
-            enuc = m_procedure.nuclear_repulsion_energy();
-            MatRM D_diff;
-            auto n2 = D.cols() * D.rows();
-            MatRM evals;
-
-            fmt::print("Beginning SCF\n");
-            total_time = 0.0;
-            do
-            {
-                const auto tstart = std::chrono::high_resolution_clock::now();
-                ++iter;
-
-                // Last iteration's energy and density
-                auto ehf_last = ehf;
-                MatRM D_last = D;
-
-                if (not incremental_Fbuild_started &&
-                    rms_error < start_incremental_F_threshold)
-                {
-                    incremental_Fbuild_started = true;
-                    reset_incremental_fock_formation = false;
-                    last_reset_iteration = iter - 1;
-                    next_reset_threshold = rms_error / 1e1;
-                    if (verbose) fmt::print("Starting incremental fock build\n");
-                }
-                if (reset_incremental_fock_formation || not incremental_Fbuild_started)
-                {
-                    F = H;
-                    D_diff = D;
-                }
-                if (reset_incremental_fock_formation && incremental_Fbuild_started)
-                {
-                    reset_incremental_fock_formation = false;
-                    last_reset_iteration = iter;
-                    next_reset_threshold = rms_error / 1e1;
-                    if (verbose) fmt::print("Resetting incremental fock build\n");
-                }
-
-                // build a new Fock matrix
-                // totally empirical precision variation, involves the condition number
-                const auto precision_F = std::min(
-                    std::min(1e-3 / XtX_condition_number, 1e-7),
-                    std::max(rms_error / 1e4, std::numeric_limits<double>::epsilon()));
-                F += m_procedure.compute_2body_fock(D_diff, precision_F, K);
-
-                // compute HF energy with the non-extrapolated Fock matrix
-                ehf = D.cwiseProduct(H + F).sum();
-                ediff_rel = std::abs((ehf - ehf_last) / ehf);
-
-                // compute SCF error
-                MatRM FD_comm = F * D * S - S * D * F;
-                rms_error = FD_comm.norm() / n2;
-                if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
-                    reset_incremental_fock_formation = true;
-
-                // DIIS extrapolate F
-                MatRM F_diis = F; // extrapolated F cannot be used in incremental Fock
-                                   // build; only used to produce the density
-                                   // make a copy of the unextrapolated matrix
-                diis_a.extrapolate(F_diis, FD_comm);
-
-                // solve F C = e S C by (conditioned) transformation to F' C' = e C',
-                // where
-                // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F_diis *
-                                                                 X);
-                evals = eig_solver.eigenvalues();
-                C = X * eig_solver.eigenvectors();
-
-                // compute density, D = C(occ) . C(occ)T
-                C_occ = C.leftCols(n_alpha);
-                D = C_occ * C_occ.transpose();
-                D_diff = D - D_last;
-
-                const auto tstop = std::chrono::high_resolution_clock::now();
-                const std::chrono::duration<double> time_elapsed = tstop - tstart;
-
-                if (iter == 1) {
-                    fmt::print("{:>6s} {: >20s} {: >20s} {: >20s} {: >10s}\n",
-                            "cycle", "energy", "D(E)/E", "rms([F,D])/nn", "time");
-                }
-                fmt::print("{:>6d} {:>20.12f} {:>20.12e} {:>20.12e} {:>10.5f}\n", iter, ehf + enuc,
-                       ediff_rel, rms_error, time_elapsed.count());
-                total_time += time_elapsed.count();
-
-            } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
-            fmt::print("SCF complete in {:.6f} s wall time\n", total_time);
-            fmt::print("Kinetic energy: {}\n", D.cwiseProduct(T).sum());
-            fmt::print("Nuclear attraction energy: {}\n", D.cwiseProduct(V).sum());
-            fmt::print("1e energy: {}\n", D.cwiseProduct(H).sum());
-            fmt::print("2e energy: {}\n", D.cwiseProduct(F).sum());
-            return ehf + enuc;
-        }
-
-        double compute_scf_energy_unrestricted()
         {
             // compute one-body integrals
             // count the number of electrons
@@ -305,8 +192,7 @@ namespace craso::scf
                 auto ehf_last = ehf;
                 MatRM Da_last = Da, Db_last = Db;
 
-                if (not incremental_Fbuild_started &&
-                    rms_error < start_incremental_F_threshold)
+                if(!incremental_Fbuild_started && rms_error < start_incremental_F_threshold)
                 {
                     incremental_Fbuild_started = true;
                     reset_incremental_fock_formation = false;
@@ -406,17 +292,18 @@ namespace craso::scf
             double Een = Da.cwiseProduct(V).sum() + Db.cwiseProduct(V).sum();
             double E_1e = Da.cwiseProduct(H).sum() + Db.cwiseProduct(H).sum();
             double E_2e = Da.cwiseProduct(Fa).sum() + Db.cwiseProduct(Fb).sum();
-            fmt::print("E_nn: {}\n", enuc);
-            fmt::print("E_k : {}\n", Ek);
-            fmt::print("E_en: {}\n", Een);
-            fmt::print("E_1e: {}\n", E_1e);
-            fmt::print("E_2e: {}\n", E_2e);
-            fmt::print("E_ee: {}\n", E_2e + E_1e);
+            fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_k", Ek);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_en", Een);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_1e", E_1e);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_2e", E_2e);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_ee", E_1e + E_2e);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", ehf + enuc);
             return ehf + enuc;
         }
 
         Procedure &m_procedure;
-        SCFKind scf_kind{SCFKind::rhf};
         int n_electrons{0};
         int n_alpha{0};
         int n_beta{0};
@@ -437,10 +324,247 @@ namespace craso::scf
         double start_incremental_F_threshold = 1e-5;
         double next_reset_threshold = 0.0;
         size_t last_reset_iteration = 0;
-        MatRM D, S, T, V, H, K, X, Xinv, C, C_occ, F;
+        MatRM S, H, T, V, K, X, Xinv;
         MatRM Da, Ca, Ca_occ, Fa;
         MatRM Db, Cb, Cb_occ, Fb;
         Vec orbital_energies_alpha, orbital_energies_beta;
+        double XtX_condition_number;
+        bool verbose{false};
+
+    };
+
+    template <typename Procedure>
+    struct RestrictedSCF
+    {
+        RestrictedSCF(Procedure &procedure, int diis_start = 2) : m_procedure(procedure), diis(diis_start)
+        {
+            n_electrons = m_procedure.num_e();
+            n_occ = n_electrons / 2;
+        }
+
+        int charge() const {
+            double nuclear_charge = 0.0;
+            for(const auto& atom: atoms())
+            {
+                nuclear_charge += atom.atomic_number;
+            }
+            return nuclear_charge - n_electrons;
+        }
+
+        void set_charge(int c) {
+            int current_charge = charge();
+            if (c != current_charge) {
+                n_electrons -= c - current_charge;
+                n_occ= n_electrons / 2;
+            }
+        }
+
+        const auto& atoms() const { return m_procedure.atoms(); }
+
+        MatRM compute_soad() const
+        {
+            // computes Superposition-Of-Atomic-Densities guess for the molecular density
+            // matrix
+            // in minimal basis; occupies subshells by smearing electrons evenly over the
+            // orbitals
+            // compute number of atomic orbitals
+            size_t nao = 0;
+            for (const auto &atom : atoms())
+            {
+                const auto Z = atom.atomic_number;
+                nao += libint2::sto3g_num_ao(Z);
+            }
+
+            // compute the minimal basis density
+            MatRM D = MatRM::Zero(nao, nao);
+            size_t ao_offset = 0; // first AO of this atom
+            for (const auto &atom : atoms())
+            {
+                const auto Z = atom.atomic_number;
+                const auto &occvec = libint2::sto3g_ao_occupation_vector(Z);
+                for (const auto &occ : occvec)
+                {
+                    D(ao_offset, ao_offset) = occ;
+                    ++ao_offset;
+                }
+            }
+
+            int c = charge();
+            // smear the charge across all shells
+            if (c != 0) {
+                double v = static_cast<double>(c) / D.rows();
+                for(int i = 0; i < D.rows(); i++) {
+                    D(i,i) -= v;
+                }
+            }
+            return D * 0.5; // we use densities normalized to # of electrons/2
+        }
+
+        void compute_initial_guess()
+        {
+            const auto tstart = std::chrono::high_resolution_clock::now();
+            S = m_procedure.compute_overlap_matrix();
+            // compute orthogonalizer X such that X.transpose() . S . X = I
+            // one should think of columns of Xinv as the conditioned basis
+            // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose() .
+            // X)
+            // by default assume can manage to compute with condition number of S <=
+            // 1/eps
+            // this is probably too optimistic, but in well-behaved cases even 10^11 is
+            // OK
+            double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
+            std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S, S_condition_number_threshold);
+            T = m_procedure.compute_kinetic_matrix();
+            V = m_procedure.compute_nuclear_attraction_matrix();
+            H = T + V;
+            auto D_minbs = compute_soad(); // compute guess in minimal basis
+            libint2::BasisSet minbs("STO-3G", atoms());
+
+            if (minbs == m_procedure.basis()) {
+                D = D_minbs;
+            }
+            else
+            {
+                // if basis != minimal basis, map non-representable SOAD guess
+                // into the AO basis
+                // by diagonalizing a Fock matrix
+                if(verbose) fmt::print("Projecting SOAD into atomic orbital basis: ");
+                F = H;
+                F += craso::ints::compute_2body_fock_general(
+                    m_procedure.basis(), D_minbs, minbs, true, std::numeric_limits<double>::epsilon()
+                );
+                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
+                C = X * eig_solver.eigenvectors();
+                C_occ = C.leftCols(n_occ);
+                D = C_occ * C_occ.transpose();
+                const auto tstop = std::chrono::high_resolution_clock::now();
+                const std::chrono::duration<double> time_elapsed = tstop - tstart;
+                if(verbose) fmt::print("{:.5f} s\n", time_elapsed.count());
+            }
+        }
+
+        double compute_scf_energy()
+        {
+            // compute one-body integrals
+            // count the number of electrons
+            compute_initial_guess();
+            K = m_procedure.compute_schwarz_ints();
+            enuc = m_procedure.nuclear_repulsion_energy();
+            MatRM D_diff;
+            auto n2 = D.cols() * D.rows();
+            MatRM evals;
+
+            fmt::print("Beginning SCF\n");
+            total_time = 0.0;
+            do
+            {
+                const auto tstart = std::chrono::high_resolution_clock::now();
+                ++iter;
+
+                // Last iteration's energy and density
+                auto ehf_last = ehf;
+                MatRM D_last = D;
+
+                if (not incremental_Fbuild_started &&
+                    rms_error < start_incremental_F_threshold)
+                {
+                    incremental_Fbuild_started = true;
+                    reset_incremental_fock_formation = false;
+                    last_reset_iteration = iter - 1;
+                    next_reset_threshold = rms_error / 1e1;
+                    if (verbose) fmt::print("Starting incremental fock build\n");
+                }
+                if (reset_incremental_fock_formation || not incremental_Fbuild_started)
+                {
+                    F = H;
+                    D_diff = D;
+                }
+                if (reset_incremental_fock_formation && incremental_Fbuild_started)
+                {
+                    reset_incremental_fock_formation = false;
+                    last_reset_iteration = iter;
+                    next_reset_threshold = rms_error / 1e1;
+                    if (verbose) fmt::print("Resetting incremental fock build\n");
+                }
+
+                // build a new Fock matrix
+                // totally empirical precision variation, involves the condition number
+                const auto precision_F = std::min(
+                    std::min(1e-3 / XtX_condition_number, 1e-7),
+                    std::max(rms_error / 1e4, std::numeric_limits<double>::epsilon()));
+                F += m_procedure.compute_2body_fock(D_diff, precision_F, K);
+
+                // compute HF energy with the non-extrapolated Fock matrix
+                ehf = D.cwiseProduct(H + F).sum();
+                ediff_rel = std::abs((ehf - ehf_last) / ehf);
+
+                // compute SCF error
+                MatRM FD_comm = F * D * S - S * D * F;
+                rms_error = FD_comm.norm() / n2;
+                if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
+                    reset_incremental_fock_formation = true;
+
+                // DIIS extrapolate F
+                MatRM F_diis = F; // extrapolated F cannot be used in incremental Fock
+                                   // build; only used to produce the density
+                                   // make a copy of the unextrapolated matrix
+                diis.extrapolate(F_diis, FD_comm);
+
+                // solve F C = e S C by (conditioned) transformation to F' C' = e C',
+                // where
+                // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
+                Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F_diis * X);
+                evals = eig_solver.eigenvalues();
+                C = X * eig_solver.eigenvectors();
+
+                // compute density, D = C(occ) . C(occ)T
+                C_occ = C.leftCols(n_occ);
+                D = C_occ * C_occ.transpose();
+                D_diff = D - D_last;
+
+                const auto tstop = std::chrono::high_resolution_clock::now();
+                const std::chrono::duration<double> time_elapsed = tstop - tstart;
+
+                if (iter == 1) {
+                    fmt::print("{:>6s} {: >20s} {: >20s} {: >20s} {: >10s}\n",
+                            "cycle", "energy", "D(E)/E", "rms([F,D])/nn", "time");
+                }
+                fmt::print("{:>6d} {:>20.12f} {:>20.12e} {:>20.12e} {:>10.5f}\n", iter, ehf + enuc,
+                       ediff_rel, rms_error, time_elapsed.count());
+                total_time += time_elapsed.count();
+
+            } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
+            fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_k", D.cwiseProduct(T).sum());
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_en", D.cwiseProduct(V).sum());
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_1e", D.cwiseProduct(H).sum());
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_2e", D.cwiseProduct(F).sum());
+            fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", ehf + enuc);
+            return ehf + enuc;
+        }
+
+        Procedure &m_procedure;
+        int n_electrons{0};
+        int n_occ{0};
+        int n_beta{0};
+        int n_unpaired_electrons{0};
+        int maxiter{100};
+        double conv = 1e-10;
+        int iter = 0;
+        double rms_error = 1.0;
+        double ediff_rel = 0.0;
+        double enuc{0.0};
+        double ehf{0.0};
+        double total_time{0.0};
+        libint2::DIIS<MatRM> diis; // start DIIS on second iteration
+        bool reset_incremental_fock_formation = false;
+        bool incremental_Fbuild_started = false;
+        double start_incremental_F_threshold = 1e-5;
+        double next_reset_threshold = 0.0;
+        size_t last_reset_iteration = 0;
+        MatRM D, S, T, V, H, K, X, Xinv, C, C_occ, F;
+        Vec orbital_energies;
         double XtX_condition_number;
         bool verbose{false};
     };

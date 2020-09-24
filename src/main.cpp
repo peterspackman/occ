@@ -12,7 +12,8 @@ int main(int argc, const char** argv) {
     using std::endl;
     using craso::chem::Molecule;
     using craso::hf::HartreeFock;
-    using craso::scf::SCF;
+    using craso::scf::UnrestrictedSCF;
+    using craso::scf::RestrictedSCF;
 
     cxxopts::Options options("craso", "A quantum chemistry program for molecular crystals");
     options.add_options()
@@ -41,6 +42,11 @@ int main(int argc, const char** argv) {
         const auto multiplicity = result["multiplicity"].as<int>();
         const auto charge = result["charge"].as<int>();
         Molecule m = craso::chem::read_xyz_file(filename);
+
+        fmt::print("Geometry\n");
+        for(const auto &atom: m.atoms()) {
+            fmt::print("{:3d} {:10.6f} {:10.6f} {:10.6f}\n", atom.atomic_number, atom.x, atom.y, atom.z);
+        }
         bool unrestricted = result.count("uhf") || (multiplicity != 1);
 
         using craso::parallel::nthreads;
@@ -55,23 +61,18 @@ int main(int argc, const char** argv) {
         fmt::print("Orbital basis set rank = {}\n", obs.nbf());
 
         HartreeFock hf(m.atoms(), obs);
-        craso::scf::SCFKind scf_kind = craso::scf::SCFKind::rhf;
-        if(unrestricted) scf_kind = craso::scf::SCFKind::uhf;
-        craso::scf::SCF<HartreeFock> scf(hf, scf_kind);
-        scf.set_multiplicity(multiplicity);
-        scf.set_charge(charge);
-        fmt::print("Multiplicity: {}\n", scf.multiplicity());
-        fmt::print("n_alpha: {}\n", scf.n_alpha);
-        fmt::print("n_beta: {}\n", scf.n_beta);
-        double e = scf.compute_scf_energy();
-        fmt::print("Total Energy (SCF): {:20.12f} hartree\n", e);
-        fmt::print("Orbital energies alpha:\n{}\n", scf.orbital_energies_alpha);
-        fmt::print("Orbital energies beta:\n{}\n", scf.orbital_energies_beta);
-        if (false) {
-            fmt::print("Density Matrix (alpha)\n{}\n", scf.Da);
-            fmt::print("Density Matrix (beta)\n{}\n", scf.Db);
-            fmt::print("Fock Matrix (alpha)\n{}\n", scf.Fa);
-            fmt::print("Fock Matrix (beta)\n{}\n", scf.Fb);
+        if(unrestricted) {
+            UnrestrictedSCF<HartreeFock> scf(hf);
+            scf.set_multiplicity(multiplicity);
+            scf.set_charge(charge);
+            fmt::print("Multiplicity: {}\n", scf.multiplicity());
+            fmt::print("n_alpha: {}\n", scf.n_alpha);
+            fmt::print("n_beta: {}\n", scf.n_beta);
+            double e = scf.compute_scf_energy();
+        }
+        else {
+            RestrictedSCF<HartreeFock> scf(hf);
+            double e = scf.compute_scf_energy();
         }
 
     }
