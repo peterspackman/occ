@@ -22,6 +22,9 @@ TEST_CASE("Water DFT grid", "[dft]")
         grid.set_max_angular_points(20);
         auto pts = grid.grid_points(0);
         assert(pts.cols() == 1564);
+        auto hpts_a = grid.grid_points(1);
+        auto hpts_b = grid.grid_points(1);
+        assert(hpts_a.cols() == hpts_b.cols());
     }
 
 }
