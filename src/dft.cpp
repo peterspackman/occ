@@ -1,23 +1,70 @@
 #include "dft.h"
-#include "molecule.h"
+#include <libint2/basis.h>
+#include <libint2/atom.h>
 #include "numgrid.h"
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include "xc.h"
 
 namespace craso::dft {
 
-DFTGrid::DFTGrid(const craso::chem::Molecule &mol) : m_atomic_numbers(mol.atomic_numbers()),
-    m_alpha_max(mol.size()), m_l_max(mol.size()), m_x(mol.size()), m_y(mol.size()), m_z(mol.size())
+DFTGrid::DFTGrid(
+        const libint2::BasisSet &basis,
+        const std::vector<libint2::Atom> &atoms) : m_atomic_numbers(atoms.size()),
+    m_alpha_max(atoms.size()), m_l_max(atoms.size()), m_x(atoms.size()), m_y(atoms.size()),
+    m_z(atoms.size())
 {
-    m_l_max = craso::IVec::Constant(m_l_max.rows(), m_l_max.cols(), 2);
-    m_alpha_min = craso::Mat::Constant(mol.size(), m_l_max.maxCoeff(), 0.3);
-    m_alpha_max = craso::Mat::Constant(m_alpha_max.rows(), m_alpha_max.cols(), 11720.0);
-    const auto& pos = mol.positions();
-    m_x = pos.row(0);
-    m_y = pos.row(1);
-    m_z = pos.row(2);
-}
+    int i = 0;
+    const auto atom_map = basis.atom2shell(atoms);
 
+    std::vector<std::vector<double>> min_alpha;
+    for(const auto &atom : atoms) {
+        m_atomic_numbers(i) = atom.atomic_number;
+        m_x(i) = atom.x;
+        m_y(i) = atom.y;
+        m_z(i) = atom.z;
+        std::vector<double> atom_min_alpha;
+        double max_alpha = 0.0;
+        int max_l = 0;
+        for(const auto& shell_idx: atom_map[i])
+        {
+            const auto& shell = basis[shell_idx];
+            int j = 0;
+            for (const auto& contraction: shell.contr) {
+                int l = contraction.l;
+                max_l = std::max(max_l, l);
+                j++;
+            }
+
+            for (int i = atom_min_alpha.size(); i < max_l + 1; i++) {
+                atom_min_alpha.push_back(std::numeric_limits<double>::max());
+            }
+            j = 0; 
+            for (const auto& contraction: shell.contr) {
+                int l = contraction.l;
+                atom_min_alpha[l] = std::min(shell.alpha[j], atom_min_alpha[l]);
+                j++;
+            }
+
+            for(const double alpha: shell.alpha) {
+                max_alpha = std::max(alpha, max_alpha);
+            }
+        }
+        min_alpha.push_back(atom_min_alpha);
+        m_alpha_max(i) = max_alpha;
+        m_l_max(i) = max_l;
+        i++;
+    }
+    m_alpha_min = craso::Mat::Zero(atoms.size(), m_l_max.maxCoeff() + 1);
+    for(int i = 0; i < min_alpha.size(); i++) {
+        for(int j = 0; j < min_alpha[i].size(); j++) {
+            m_alpha_min(i, j) = min_alpha[i][j];
+        }
+    }
+    fmt::print("m_l_max\n{}\n", m_l_max);
+    fmt::print("m_alpha_max\n{}\n", m_alpha_max);
+    fmt::print("m_alpha_min\n{}\n", m_alpha_min);
+}
 
 Mat4N DFTGrid::grid_points(size_t idx) const
 {

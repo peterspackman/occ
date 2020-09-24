@@ -1,9 +1,12 @@
 #pragma once
 #include "linear_algebra.h"
 #include "numgrid.h"
+#include <vector>
 
-namespace craso::chem {
-class Molecule;
+
+namespace libint2 {
+class BasisSet;
+class Atom;
 }
 
 namespace craso::dft {
@@ -16,7 +19,7 @@ using craso::IVec;
 
 class DFTGrid {
 public:
-    DFTGrid(const craso::chem::Molecule& mol);
+    DFTGrid(const libint2::BasisSet&, const std::vector<libint2::Atom>&);
     const auto& atomic_numbers() const { return m_atomic_numbers; }
     const auto n_atoms() const { return m_atomic_numbers.size(); }
     Mat4N grid_points(size_t idx) const;
