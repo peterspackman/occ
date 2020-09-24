@@ -14,6 +14,7 @@ find_package(Libint2 REQUIRED)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/fmt")
 set(GEMMI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gemmi/include")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/numgrid")
 
 add_subdirectory(include)
 add_subdirectory(src)

@@ -5,6 +5,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <iostream>
+#include "numgrid.h"
 
 int main(int argc, const char **argv) {
   using craso::chem::Molecule;

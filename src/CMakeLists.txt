@@ -1,6 +1,7 @@
 add_library(craso STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dft.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
@@ -19,6 +20,7 @@ target_link_libraries(craso
     Eigen3::Eigen Boost::graph fmt::fmt 
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
     Libint2::cxx
+    numgrid-objects
 )
 target_include_directories(craso PUBLIC 
     ${CRASO_INCLUDE_DIR} 

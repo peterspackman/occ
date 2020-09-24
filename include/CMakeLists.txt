@@ -1,6 +1,7 @@
 set(CRASO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dft.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.h"

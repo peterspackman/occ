@@ -16,6 +16,8 @@ using Mat3N = Eigen::Matrix3Xd;
 using MatN3 = Eigen::MatrixX3d;
 using Mat3 = Eigen::Matrix3d;
 using Mat4 = Eigen::Matrix4d;
+using Mat4N = Eigen::Matrix4Xd;
+using MatN4 = Eigen::MatrixX4d;
 
 using CMat = Eigen::MatrixXcd;
 using CMat3N = Eigen::MatrixX3cd;
