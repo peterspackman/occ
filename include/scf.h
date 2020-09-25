@@ -1,10 +1,10 @@
 #pragma once
 #include "ints.h"
+#include "diis.h"
 #include <Eigen/Dense>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <libint2/chemistry/sto3g_atomic_density.h>
-#include <libint2/diis.h>
 #include <tuple>
 
 namespace craso::scf {
@@ -33,7 +33,7 @@ gensqrtinv(const MatRM &S, bool symmetric = false,
 
 template <typename Procedure> struct UnrestrictedSCF {
   UnrestrictedSCF(Procedure &procedure, int diis_start = 2)
-      : m_procedure(procedure), diis_a(diis_start), diis_b(diis_start) {
+      : m_procedure(procedure), diis(diis_start) {
     set_charge(0);
     set_multiplicity(1);
     n_electrons = m_procedure.num_e();
@@ -236,16 +236,23 @@ template <typename Procedure> struct UnrestrictedSCF {
       // compute SCF error
       MatRM FD_comm_a = Fa * Da * S - S * Da * Fa;
       MatRM FD_comm_b = Fb * Db * S - S * Db * Fb;
-      rms_error = std::max(FD_comm_a.norm() / n2a, FD_comm_b.norm() / n2b);
+
+      MatRM F_diis(Fa.rows() + Fb.rows(), Fa.cols());
+      MatRM FD_comm(FD_comm_a.rows() + FD_comm_b.rows(), FD_comm_a.cols());
+      F_diis.block(0, 0, Fa.rows(), Fa.cols()) = Fa;
+      F_diis.block(Fa.rows(), 0, Fa.rows(), Fa.cols()) = Fb;
+      FD_comm.block(0, 0, FD_comm_a.rows(), FD_comm_a.cols()) = FD_comm_a;
+      FD_comm.block(FD_comm_a.rows(), 0, FD_comm_b.rows(), FD_comm_b.cols()) = FD_comm_b;
+
+      rms_error = FD_comm.norm() / FD_comm.size();
       if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
         reset_incremental_fock_formation = true;
 
       // DIIS extrapolate F
-      MatRM Fa_diis = Fa;
-      diis_a.extrapolate(Fa_diis, FD_comm_a);
+      diis.extrapolate(F_diis, FD_comm);
 
-      MatRM Fb_diis = Fb;
-      diis_b.extrapolate(Fb_diis, FD_comm_b);
+      MatRM Fa_diis = F_diis.block(0, 0, Fa.rows(), Fa.cols());
+      MatRM Fb_diis = F_diis.block(Fa.rows(), 0, Fa.rows(), Fa.cols());
 
       // solve F C = e S C by (conditioned) transformation to F' C' = e C',
       // where
@@ -325,8 +332,7 @@ template <typename Procedure> struct UnrestrictedSCF {
   double enuc{0.0};
   double ehf{0.0};
   double total_time{0.0};
-  libint2::DIIS<MatRM> diis_a; // start DIIS on second iteration
-  libint2::DIIS<MatRM> diis_b; // start DIIS on second iteration
+  craso::diis::DIIS<MatRM> diis; // start DIIS on second iteration
 
   bool reset_incremental_fock_formation = false;
   bool incremental_Fbuild_started = false;
@@ -566,7 +572,7 @@ template <typename Procedure> struct RestrictedSCF {
   double enuc{0.0};
   double ehf{0.0};
   double total_time{0.0};
-  libint2::DIIS<MatRM> diis; // start DIIS on second iteration
+  craso::diis::DIIS<MatRM> diis; // start DIIS on second iteration
   bool reset_incremental_fock_formation = false;
   bool incremental_Fbuild_started = false;
   double start_incremental_F_threshold = 1e-5;
