@@ -325,7 +325,7 @@ template <typename Procedure> struct UnrestrictedSCF {
   int n_beta{0};
   int n_unpaired_electrons{0};
   int maxiter{100};
-  double conv = 1e-10;
+  double conv = 1e-8;
   int iter = 0;
   double rms_error = 1.0;
   double ediff_rel = 0.0;
@@ -368,6 +368,10 @@ template <typename Procedure> struct RestrictedSCF {
       n_electrons -= c - current_charge;
       n_occ = n_electrons / 2;
     }
+    if (2 * (n_electrons / 2) != n_electrons)
+        throw std::runtime_error(
+            fmt::format("Can't set system charge of {} for restricted scf (n_e = {} is not even)", c, n_electrons)
+        );
   }
 
   const auto &atoms() const { return m_procedure.atoms(); }
@@ -565,7 +569,7 @@ template <typename Procedure> struct RestrictedSCF {
   int n_occ{0};
   int n_unpaired_electrons{0};
   int maxiter{100};
-  double conv = 1e-10;
+  double conv = 1e-8;
   int iter = 0;
   double rms_error = 1.0;
   double ediff_rel = 0.0;

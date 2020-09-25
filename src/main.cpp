@@ -65,6 +65,7 @@ int main(int argc, const char **argv) {
     HartreeFock hf(m.atoms(), obs);
     if (unrestricted) {
       UnrestrictedSCF<HartreeFock> scf(hf, diis_iter);
+      scf.conv = 1e-12;
       scf.set_multiplicity(multiplicity);
       scf.set_charge(charge);
       fmt::print("Multiplicity: {}\n", scf.multiplicity());
@@ -74,18 +75,20 @@ int main(int argc, const char **argv) {
       scf.print_orbital_energies();
     } else {
       RestrictedSCF<HartreeFock> scf(hf, diis_iter);
+      scf.conv = 1e-12;
+      scf.set_charge(charge);
       double e = scf.compute_scf_energy();
       scf.print_orbital_energies();
     }
 
   } catch (const char *ex) {
-    fmt::print("Caught exception when performing HF calculation:  {}\n", ex);
+    fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);
     return 1;
   } catch (std::string &ex) {
-    fmt::print("Caught exception when performing HF calculation:  {}\n", ex);
+    fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);
     return 1;
   } catch (std::exception &ex) {
-    fmt::print("Caught exception when performing HF calculation:  {}\n",
+    fmt::print("Caught exception when performing HF calculation:\n**{}**\n",
                ex.what());
     return 1;
   } catch (...) {
