@@ -12,6 +12,7 @@ int main(int argc, const char **argv) {
   using craso::hf::HartreeFock;
   using craso::scf::RestrictedSCF;
   using craso::scf::UnrestrictedSCF;
+  using craso::scf::GeneralSCF;
   using std::cerr;
   using std::cout;
   using std::endl;
@@ -22,7 +23,9 @@ int main(int argc, const char **argv) {
       ("b,basis", "Basis set name", cxxopts::value<std::string>()->default_value("3-21G"))
       ("j,nthreads", "Number of threads", cxxopts::value<int>()->default_value("1"))
       ("i,input", "Input file geometry", cxxopts::value<std::string>())
-      ("h,help", "Print this help message")("uhf", "Use unrestricted")
+      ("h,help", "Print this help message")
+      ("general", "Use general")
+      ("uhf", "Use unrestricted")
       ("multiplicity", "Set the multiplicity of the system", cxxopts::value<int>()->default_value("1"))
       ("c,charge", "Set the total system charge", cxxopts::value<int>()->default_value("0"))
       ("diis-iteration", "Set the total system charge", cxxopts::value<int>()->default_value("2"));
@@ -50,6 +53,7 @@ int main(int argc, const char **argv) {
                  atom.x, atom.y, atom.z);
     }
     bool unrestricted = result.count("uhf") || (multiplicity != 1);
+    bool general = result.count("general");
 
     using craso::parallel::nthreads;
     nthreads = result["nthreads"].as<int>();
@@ -72,13 +76,19 @@ int main(int argc, const char **argv) {
       fmt::print("n_alpha: {}\n", scf.n_alpha);
       fmt::print("n_beta: {}\n", scf.n_beta);
       double e = scf.compute_scf_energy();
-      scf.print_orbital_energies();
-    } else {
+      //scf.print_orbital_energies();
+    } else if (general) {
+      GeneralSCF<HartreeFock> scf(hf, diis_iter);
+      scf.conv = 1e-12;
+      scf.set_charge(charge);
+      double e = scf.compute_scf_energy();
+    } else
+    {
       RestrictedSCF<HartreeFock> scf(hf, diis_iter);
       scf.conv = 1e-12;
       scf.set_charge(charge);
       double e = scf.compute_scf_energy();
-      scf.print_orbital_energies();
+      //scf.print_orbital_energies();
     }
 
   } catch (const char *ex) {

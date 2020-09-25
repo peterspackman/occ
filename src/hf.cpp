@@ -167,4 +167,11 @@ HartreeFock::compute_JK_unrestricted(const MatRM &Da, const MatRM &Db,
       m_basis, m_shellpair_list, m_shellpair_data, Da, Db, precision, Schwarz);
 }
 
+
+MatRM HartreeFock::compute_2body_fock_general(const MatRM &D, double precision,
+                                      const MatRM &Schwarz) const {
+  return craso::ints::compute_2body_fock_general(
+      m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+}
+
 } // namespace craso::hf

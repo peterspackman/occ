@@ -100,6 +100,4 @@ Mat4N DFTGrid::grid_points(size_t idx) const
     numgrid_free_atom_grid(ctx);
     return pts.transpose();
 }
-
-
 }

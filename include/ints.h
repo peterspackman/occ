@@ -393,13 +393,24 @@ std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
                                    // empty, do not Schwarz screen
 );
 
+MatRM compute_2body_fock_general(
+    const BasisSet &obs, const shellpair_list_t &shellpair_list,
+    const shellpair_data_t &shellpair_data, const MatRM &Da,
+    double precision = std::numeric_limits<
+        double>::epsilon(),        // discard contributions smaller than this
+    const MatRM &Schwarz = MatRM() // K_ij = sqrt(||(ij|ij)||_\infty); if
+                                   // empty, do not Schwarz screen
+);
+
+
+
 std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
     const BasisSet &obs, const shellpair_list_t &shellpair_list,
     const shellpair_data_t &shellpair_data, const MatRM &Da, const MatRM &Db,
     double precision = std::numeric_limits<double>::epsilon(),
     const MatRM &Schwarz = MatRM());
 
-MatRM compute_2body_fock_general(
+MatRM compute_2body_fock_mixed_basis(
     const BasisSet &obs, const MatRM &D, const BasisSet &D_bs,
     bool D_is_shelldiagonal,
     double precision = std::numeric_limits<double>::epsilon());

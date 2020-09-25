@@ -65,19 +65,29 @@ public:
   compute_2body_fock(const MatRM &D,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const MatRM &Schwarz = MatRM()) const;
+
   std::pair<MatRM, MatRM>
   compute_JK(const MatRM &D,
              double precision = std::numeric_limits<double>::epsilon(),
              const MatRM &Schwarz = MatRM()) const;
+
   std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
       const MatRM &Da, const MatRM &Db,
       double precision = std::numeric_limits<double>::epsilon(),
       const MatRM &Schwarz = MatRM()) const;
+
+  MatRM
+  compute_2body_fock_general(const MatRM &D,
+                     double precision = std::numeric_limits<double>::epsilon(),
+                     const MatRM &Schwarz = MatRM()) const;
+
   std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
       const MatRM &Da, const MatRM &Db,
       double precision = std::numeric_limits<double>::epsilon(),
       const MatRM &Schwarz = MatRM()) const;
+
   MatRM compute_shellblock_norm(const MatRM &A) const;
+
   auto compute_schwarz_ints() {
     return craso::ints::compute_schwarz_ints<>(m_basis);
   }
