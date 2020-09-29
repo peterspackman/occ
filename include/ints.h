@@ -402,7 +402,11 @@ MatRM compute_2body_fock_general(
                                    // empty, do not Schwarz screen
 );
 
-
+std::pair<MatRM, MatRM>
+compute_JK_general(const BasisSet &obs, const shellpair_list_t &shellpair_list,
+           const shellpair_data_t &shellpair_data, const MatRM &D,
+           double precision = std::numeric_limits<double>::epsilon(),
+           const MatRM &Schwarz = MatRM());
 
 std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
     const BasisSet &obs, const shellpair_list_t &shellpair_list,

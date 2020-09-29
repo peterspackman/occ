@@ -655,6 +655,7 @@ template <typename Procedure> struct GeneralSCF {
     S = MatRM::Zero(s_xx.rows() * 2, s_xx.cols() * 2);
     S.block(0, 0, s_xx.rows(), s_xx.cols()) = s_xx;
     S.block(s_xx.rows(), s_xx.cols(), s_xx.rows(), s_xx.cols()) = s_xx;
+    fmt::print("\nOverlap matrix\n{}\n", S);
 
     // compute orthogonalizer X such that X.transpose() . S . X = I
     // one should think of columns of Xinv as the conditioned basis
@@ -668,9 +669,16 @@ template <typename Procedure> struct GeneralSCF {
         1.0 / std::numeric_limits<double>::epsilon();
     std::tie(X, Xinv, XtX_condition_number) =
         conditioning_orthogonalizer(S, S_condition_number_threshold);
-    T = m_procedure.compute_kinetic_matrix();
-    V = m_procedure.compute_nuclear_attraction_matrix();
+    auto t_xx = m_procedure.compute_kinetic_matrix();
+    T = MatRM::Zero(t_xx.rows() * 2, t_xx.cols() * 2);
+    T.block(0, 0, t_xx.rows(), t_xx.cols()) = t_xx;
+    T.block(t_xx.rows(), t_xx.cols(), t_xx.rows(), t_xx.cols()) = t_xx;
+    auto v_xx = m_procedure.compute_nuclear_attraction_matrix();
+    V = MatRM::Zero(v_xx.rows() * 2, v_xx.cols() * 2);
+    V.block(0, 0, v_xx.rows(), v_xx.cols()) = v_xx;
+    V.block(v_xx.rows(), v_xx.cols(), v_xx.rows(), v_xx.cols()) = v_xx;
     H = T + V;
+    fmt::print("\nCore hamiltonian matrix\n{}\n", H);
     auto D_minbs = compute_soad(); // compute guess in minimal basis
     libint2::BasisSet minbs("STO-3G", atoms());
 
@@ -678,7 +686,6 @@ template <typename Procedure> struct GeneralSCF {
       D = MatRM::Zero(S.rows(), S.cols());
       D.block(0, 0, D_minbs.rows(), D_minbs.cols()) = D_minbs;
       D.block(D_minbs.rows(), D_minbs.cols(), D_minbs.rows(), D_minbs.cols()) = D_minbs;
-      D *= 0.5;
     if (n_occ * 2 <  n_electrons) n_occ += 1;
     } else {
       // if basis != minimal basis, map non-representable SOAD guess
@@ -686,7 +693,7 @@ template <typename Procedure> struct GeneralSCF {
       // by diagonalizing a Fock matrix
       if (verbose)
         fmt::print("Projecting SOAD into atomic orbital basis: ");
-      F = H.replicate(2, 2);
+      F = H;
       MatRM tmp = craso::ints::compute_2body_fock_mixed_basis(
           m_procedure.basis(), D_minbs, minbs, true,
           std::numeric_limits<double>::epsilon());
@@ -695,12 +702,13 @@ template <typename Procedure> struct GeneralSCF {
       Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
       C = X * eig_solver.eigenvectors();
       C_occ = C.leftCols(n_occ);
-      D = C_occ * C_occ.transpose() * 0.25;
+      D = C_occ * C_occ.transpose();
       const auto tstop = std::chrono::high_resolution_clock::now();
       const std::chrono::duration<double> time_elapsed = tstop - tstart;
       if (verbose)
         fmt::print("{:.5f} s\n", time_elapsed.count());
     }
+    D *= 0.5;
   }
 
   double compute_scf_energy() {
@@ -730,7 +738,7 @@ template <typename Procedure> struct GeneralSCF {
           fmt::print("Starting incremental fock build\n");
       }
       if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
-        F = H.replicate(2, 2);
+        F = H;
         D_diff = D;
       }
       if (reset_incremental_fock_formation && incremental_Fbuild_started) {
@@ -751,7 +759,7 @@ template <typename Procedure> struct GeneralSCF {
       );
 
       // compute HF energy with the non-extrapolated Fock matrix
-      ehf = D.cwiseProduct(H.replicate(2, 2) + F).sum();
+      ehf = D.cwiseProduct(H + F).sum();
       ediff_rel = std::abs((ehf - ehf_last) / ehf);
 
       // compute SCF error
@@ -776,7 +784,7 @@ template <typename Procedure> struct GeneralSCF {
 
       // compute density, D = C(occ) . C(occ)T
       C_occ = C.leftCols(n_occ);
-      D = C_occ * C_occ.transpose() * 0.25;
+      D = C_occ * C_occ.transpose() * 0.5;
       D_diff = D - D_last;
 
       const auto tstop = std::chrono::high_resolution_clock::now();
@@ -791,15 +799,19 @@ template <typename Procedure> struct GeneralSCF {
       total_time += time_elapsed.count();
 
     }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
+    const auto[J_m, K_m] = m_procedure.compute_JK_general(D, std::numeric_limits<double>::epsilon(), K);
     fmt::print("Density:\n{}\n", D);
+    fmt::print("J\n{}\n", J_m);
+    fmt::print("K\n{}\n", K_m);
     fmt::print("Fock:\n{}\n", F);
+    fmt::print("Fock:\n{}\n", J_m + K_m + H);
     fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   D.cwiseProduct(T.replicate(2, 2)).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_en",  D.cwiseProduct(V.replicate(2, 2)).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  D.cwiseProduct(H.replicate(2, 2)).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   D.cwiseProduct(T).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_en",  D.cwiseProduct(V).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  D.cwiseProduct(H).sum());
     fmt::print("{:10s} {:20.12f} hartree\n", "E_2e",  D.cwiseProduct(F).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", ehf + enuc);
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", (ehf + enuc));
     return ehf + enuc;
   }
 
