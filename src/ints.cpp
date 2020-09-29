@@ -1495,33 +1495,33 @@ std::pair<MatRM, MatRM> compute_JK_general(
                     j(n + bf1, n + bf2) += D(n + bf3, n + bf4) * value_scal_by_deg;
                     j(n + bf3, n + bf4) += D(n + bf1, n + bf2) * value_scal_by_deg;
 
-                    k(bf1, bf3) -= D(bf2, bf4) * value_scal_by_deg;
-                    k(bf2, bf4) -= D(bf1, bf3) * value_scal_by_deg;
-                    k(bf1, bf4) -= D(bf2, bf3) * value_scal_by_deg;
-                    k(bf2, bf3) -= D(bf1, bf4) * value_scal_by_deg;
+                    k(bf1, bf3) += D(bf2, bf4) * value_scal_by_deg;
+                    k(bf2, bf4) += D(bf1, bf3) * value_scal_by_deg;
+                    k(bf1, bf4) += D(bf2, bf3) * value_scal_by_deg;
+                    k(bf2, bf3) += D(bf1, bf4) * value_scal_by_deg;
 
-                    k(n + bf1, n + bf3) -= D(n + bf2, n + bf4) * value_scal_by_deg;
-                    k(n + bf2, n + bf4) -= D(n + bf1, n + bf3) * value_scal_by_deg;
-                    k(n + bf1, n + bf4) -= D(n + bf2, n + bf3) * value_scal_by_deg;
-                    k(n + bf2, n + bf3) -= D(n + bf1, n + bf4) * value_scal_by_deg;
+                    k(n + bf1, n + bf3) += D(n + bf2, n + bf4) * value_scal_by_deg;
+                    k(n + bf2, n + bf4) += D(n + bf1, n + bf3) * value_scal_by_deg;
+                    k(n + bf1, n + bf4) += D(n + bf2, n + bf3) * value_scal_by_deg;
+                    k(n + bf2, n + bf3) += D(n + bf1, n + bf4) * value_scal_by_deg;
 
-                    k(n + bf1, bf3) -= D(n + bf2, bf4) * value_scal_by_deg;
-                    k(n + bf2, bf4) -= D(n + bf1, bf3) * value_scal_by_deg;
-                    k(n + bf1, bf4) -= D(n + bf2, bf3) * value_scal_by_deg;
-                    k(n + bf2, bf3) -= D(n + bf1, bf4) * value_scal_by_deg;
-                    k(bf1, n + bf3) -= D(n + bf2, bf4) * value_scal_by_deg;
-                    k(bf2, n + bf4) -= D(n + bf1, bf3) * value_scal_by_deg;
-                    k(bf1, n + bf4) -= D(n + bf2, bf3) * value_scal_by_deg;
-                    k(bf2, n + bf3) -= D(n + bf1, bf4) * value_scal_by_deg;
+                    k(n + bf1, bf3) += D(n + bf2, bf4) * value_scal_by_deg;
+                    k(n + bf2, bf4) += D(n + bf1, bf3) * value_scal_by_deg;
+                    k(n + bf1, bf4) += D(n + bf2, bf3) * value_scal_by_deg;
+                    k(n + bf2, bf3) += D(n + bf1, bf4) * value_scal_by_deg;
+                    k(bf1, n + bf3) += D(n + bf2, bf4) * value_scal_by_deg;
+                    k(bf2, n + bf4) += D(n + bf1, bf3) * value_scal_by_deg;
+                    k(bf1, n + bf4) += D(n + bf2, bf3) * value_scal_by_deg;
+                    k(bf2, n + bf3) += D(n + bf1, bf4) * value_scal_by_deg;
 
-                    k(n + bf1, bf3) -= D(bf2, n + bf4) * value_scal_by_deg;
-                    k(n + bf2, bf4) -= D(bf1, n + bf3) * value_scal_by_deg;
-                    k(n + bf1, bf4) -= D(bf2, n + bf3) * value_scal_by_deg;
-                    k(n + bf2, bf3) -= D(bf1, n + bf4) * value_scal_by_deg;
-                    k(bf1, n + bf3) -= D(bf2, n + bf4) * value_scal_by_deg;
-                    k(bf2, n + bf4) -= D(bf1, n + bf3) * value_scal_by_deg;
-                    k(bf1, n + bf4) -= D(bf2, n + bf3) * value_scal_by_deg;
-                    k(bf2, n + bf3) -= D(bf1, n + bf4) * value_scal_by_deg;
+                    k(n + bf1, bf3) += D(bf2, n + bf4) * value_scal_by_deg;
+                    k(n + bf2, bf4) += D(bf1, n + bf3) * value_scal_by_deg;
+                    k(n + bf1, bf4) += D(bf2, n + bf3) * value_scal_by_deg;
+                    k(n + bf2, bf3) += D(bf1, n + bf4) * value_scal_by_deg;
+                    k(bf1, n + bf3) += D(bf2, n + bf4) * value_scal_by_deg;
+                    k(bf2, n + bf4) += D(bf1, n + bf3) * value_scal_by_deg;
+                    k(bf1, n + bf4) += D(bf2, n + bf3) * value_scal_by_deg;
+                    k(bf2, n + bf3) += D(bf1, n + bf4) * value_scal_by_deg;
                   }
                 }
               }

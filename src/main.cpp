@@ -67,7 +67,12 @@ int main(int argc, const char **argv) {
     fmt::print("Orbital basis set rank = {}\n", obs.nbf());
 
     HartreeFock hf(m.atoms(), obs);
-    if (unrestricted) {
+    if (general) {
+      GeneralSCF<HartreeFock> scf(hf, diis_iter);
+      scf.conv = 1e-12;
+      scf.set_charge(charge);
+      double e = scf.compute_scf_energy();
+    } else if (unrestricted) {
       UnrestrictedSCF<HartreeFock> scf(hf, diis_iter);
       scf.conv = 1e-12;
       scf.set_multiplicity(multiplicity);
@@ -77,11 +82,7 @@ int main(int argc, const char **argv) {
       fmt::print("n_beta: {}\n", scf.n_beta);
       double e = scf.compute_scf_energy();
       //scf.print_orbital_energies();
-    } else if (general) {
-      GeneralSCF<HartreeFock> scf(hf, diis_iter);
-      scf.conv = 1e-12;
-      scf.set_charge(charge);
-      double e = scf.compute_scf_energy();
+
     } else
     {
       RestrictedSCF<HartreeFock> scf(hf, diis_iter);

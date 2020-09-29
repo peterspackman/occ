@@ -655,7 +655,6 @@ template <typename Procedure> struct GeneralSCF {
     S = MatRM::Zero(s_xx.rows() * 2, s_xx.cols() * 2);
     S.block(0, 0, s_xx.rows(), s_xx.cols()) = s_xx;
     S.block(s_xx.rows(), s_xx.cols(), s_xx.rows(), s_xx.cols()) = s_xx;
-    fmt::print("\nOverlap matrix\n{}\n", S);
 
     // compute orthogonalizer X such that X.transpose() . S . X = I
     // one should think of columns of Xinv as the conditioned basis
@@ -678,7 +677,6 @@ template <typename Procedure> struct GeneralSCF {
     V.block(0, 0, v_xx.rows(), v_xx.cols()) = v_xx;
     V.block(v_xx.rows(), v_xx.cols(), v_xx.rows(), v_xx.cols()) = v_xx;
     H = T + V;
-    fmt::print("\nCore hamiltonian matrix\n{}\n", H);
     auto D_minbs = compute_soad(); // compute guess in minimal basis
     libint2::BasisSet minbs("STO-3G", atoms());
 
@@ -694,21 +692,16 @@ template <typename Procedure> struct GeneralSCF {
       if (verbose)
         fmt::print("Projecting SOAD into atomic orbital basis: ");
       F = H;
-      MatRM tmp = craso::ints::compute_2body_fock_mixed_basis(
-          m_procedure.basis(), D_minbs, minbs, true,
-          std::numeric_limits<double>::epsilon());
       int N = F.rows() / 2, M = F.cols() / 2;
-      F += tmp.replicate(2, 2);
       Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
       C = X * eig_solver.eigenvectors();
       C_occ = C.leftCols(n_occ);
-      D = C_occ * C_occ.transpose();
+      D = C_occ * C_occ.transpose() * 0.5;
       const auto tstop = std::chrono::high_resolution_clock::now();
       const std::chrono::duration<double> time_elapsed = tstop - tstart;
       if (verbose)
         fmt::print("{:.5f} s\n", time_elapsed.count());
     }
-    D *= 0.5;
   }
 
   double compute_scf_energy() {
@@ -799,12 +792,6 @@ template <typename Procedure> struct GeneralSCF {
       total_time += time_elapsed.count();
 
     }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
-    const auto[J_m, K_m] = m_procedure.compute_JK_general(D, std::numeric_limits<double>::epsilon(), K);
-    fmt::print("Density:\n{}\n", D);
-    fmt::print("J\n{}\n", J_m);
-    fmt::print("K\n{}\n", K_m);
-    fmt::print("Fock:\n{}\n", F);
-    fmt::print("Fock:\n{}\n", J_m + K_m + H);
     fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   D.cwiseProduct(T).sum());
