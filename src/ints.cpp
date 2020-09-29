@@ -1264,36 +1264,36 @@ MatRM compute_2body_fock_general(
 
                     g(bf1, bf2) += D(bf3, bf4) * value_scal_by_deg;
                     g(bf3, bf4) += D(bf1, bf2) * value_scal_by_deg;
-                    g(2*bf1, 2*bf2) += D(2*bf3, 2*bf4) * value_scal_by_deg;
-                    g(2*bf3, 2*bf4) += D(2*bf1, 2*bf2) * value_scal_by_deg;
+                    g(n + bf1, n + bf2) += D(n + bf3, n + bf4) * value_scal_by_deg;
+                    g(n + bf3, n + bf4) += D(n + bf1, n + bf2) * value_scal_by_deg;
 
                     g(bf1, bf3) -= 0.25 * D(bf2, bf4) * value_scal_by_deg;
                     g(bf2, bf4) -= 0.25 * D(bf1, bf3) * value_scal_by_deg;
                     g(bf1, bf4) -= 0.25 * D(bf2, bf3) * value_scal_by_deg;
                     g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value_scal_by_deg;
 
-                    g(2*bf1, 2*bf3) -= 0.25 * D(2*bf2, 2*bf4) * value_scal_by_deg;
-                    g(2*bf2, 2*bf4) -= 0.25 * D(2*bf1, 2*bf3) * value_scal_by_deg;
-                    g(2*bf1, 2*bf4) -= 0.25 * D(2*bf2, 2*bf3) * value_scal_by_deg;
-                    g(2*bf2, 2*bf3) -= 0.25 * D(2*bf1, 2*bf4) * value_scal_by_deg;
+                    g(n + bf1, n + bf3) -= 0.25 * D(n + bf2, n + bf4) * value_scal_by_deg;
+                    g(n + bf2, n + bf4) -= 0.25 * D(n + bf1, n + bf3) * value_scal_by_deg;
+                    g(n + bf1, n + bf4) -= 0.25 * D(n + bf2, n + bf3) * value_scal_by_deg;
+                    g(n + bf2, n + bf3) -= 0.25 * D(n + bf1, n + bf4) * value_scal_by_deg;
 
-                    g(2*bf1, bf3) -= 0.25 * D(2*bf2, bf4) * value_scal_by_deg;
-                    g(2*bf2, bf4) -= 0.25 * D(2*bf1, bf3) * value_scal_by_deg;
-                    g(2*bf1, bf4) -= 0.25 * D(2*bf2, bf3) * value_scal_by_deg;
-                    g(2*bf2, bf3) -= 0.25 * D(2*bf1, bf4) * value_scal_by_deg;
-                    g(bf1, 2*bf3) -= 0.25 * D(2*bf2, bf4) * value_scal_by_deg;
-                    g(bf2, 2*bf4) -= 0.25 * D(2*bf1, bf3) * value_scal_by_deg;
-                    g(bf1, 2*bf4) -= 0.25 * D(2*bf2, bf3) * value_scal_by_deg;
-                    g(bf2, 2*bf3) -= 0.25 * D(2*bf1, bf4) * value_scal_by_deg;
+                    g(n + bf1, bf3) -= 0.25 * D(n + bf2, bf4) * value_scal_by_deg;
+                    g(n + bf2, bf4) -= 0.25 * D(n + bf1, bf3) * value_scal_by_deg;
+                    g(n + bf1, bf4) -= 0.25 * D(n + bf2, bf3) * value_scal_by_deg;
+                    g(n + bf2, bf3) -= 0.25 * D(n + bf1, bf4) * value_scal_by_deg;
+                    g(bf1, n + bf3) -= 0.25 * D(n + bf2, bf4) * value_scal_by_deg;
+                    g(bf2, n + bf4) -= 0.25 * D(n + bf1, bf3) * value_scal_by_deg;
+                    g(bf1, n + bf4) -= 0.25 * D(n + bf2, bf3) * value_scal_by_deg;
+                    g(bf2, n + bf3) -= 0.25 * D(n + bf1, bf4) * value_scal_by_deg;
 
-                    g(2*bf1, bf3) -= 0.25 * D(bf2, 2*bf4) * value_scal_by_deg;
-                    g(2*bf2, bf4) -= 0.25 * D(bf1, 2*bf3) * value_scal_by_deg;
-                    g(2*bf1, bf4) -= 0.25 * D(bf2, 2*bf3) * value_scal_by_deg;
-                    g(2*bf2, bf3) -= 0.25 * D(bf1, 2*bf4) * value_scal_by_deg;
-                    g(bf1, 2*bf3) -= 0.25 * D(bf2, 2*bf4) * value_scal_by_deg;
-                    g(bf2, 2*bf4) -= 0.25 * D(bf1, 2*bf3) * value_scal_by_deg;
-                    g(bf1, 2*bf4) -= 0.25 * D(bf2, 2*bf3) * value_scal_by_deg;
-                    g(bf2, 2*bf3) -= 0.25 * D(bf1, 2*bf4) * value_scal_by_deg;
+                    g(n + bf1, bf3) -= 0.25 * D(bf2, n + bf4) * value_scal_by_deg;
+                    g(n + bf2, bf4) -= 0.25 * D(bf1, n + bf3) * value_scal_by_deg;
+                    g(n + bf1, bf4) -= 0.25 * D(bf2, n + bf3) * value_scal_by_deg;
+                    g(n + bf2, bf3) -= 0.25 * D(bf1, n + bf4) * value_scal_by_deg;
+                    g(bf1, n + bf3) -= 0.25 * D(bf2, n + bf4) * value_scal_by_deg;
+                    g(bf2, n + bf4) -= 0.25 * D(bf1, n + bf3) * value_scal_by_deg;
+                    g(bf1, n + bf4) -= 0.25 * D(bf2, n + bf3) * value_scal_by_deg;
+                    g(bf2, n + bf3) -= 0.25 * D(bf1, n + bf4) * value_scal_by_deg;
                   }
                 }
               }

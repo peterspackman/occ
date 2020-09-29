@@ -541,6 +541,8 @@ template <typename Procedure> struct RestrictedSCF {
       total_time += time_elapsed.count();
 
     } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
+    fmt::print("Density\n{}\n", D);
+    fmt::print("Fock\n{}\n", F);
     fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_k", D.cwiseProduct(T).sum());
@@ -593,8 +595,7 @@ template <typename Procedure> struct GeneralSCF {
   GeneralSCF(Procedure &procedure, int diis_start = 2)
       : m_procedure(procedure), diis(diis_start) {
     n_electrons = m_procedure.num_e();
-    n_occ = n_electrons / 2;
-    if(n_occ * 2 < n_electrons) n_occ += 1;
+    n_occ = n_electrons;
   }
 
   int charge() const {
@@ -609,9 +610,8 @@ template <typename Procedure> struct GeneralSCF {
     int current_charge = charge();
     if (c != current_charge) {
       n_electrons -= c - current_charge;
-      n_occ = n_electrons / 2;
+      n_occ = n_electrons;
     }
-    if (n_occ * 2 <  n_electrons) n_occ += 1;
   }
 
   const auto &atoms() const { return m_procedure.atoms(); }
@@ -651,7 +651,10 @@ template <typename Procedure> struct GeneralSCF {
 
   void compute_initial_guess() {
     const auto tstart = std::chrono::high_resolution_clock::now();
-    S = m_procedure.compute_overlap_matrix();
+    auto s_xx = m_procedure.compute_overlap_matrix();
+    S = MatRM::Zero(s_xx.rows() * 2, s_xx.cols() * 2);
+    S.block(0, 0, s_xx.rows(), s_xx.cols()) = s_xx;
+    S.block(s_xx.rows(), s_xx.cols(), s_xx.rows(), s_xx.cols()) = s_xx;
 
     // compute orthogonalizer X such that X.transpose() . S . X = I
     // one should think of columns of Xinv as the conditioned basis
@@ -673,9 +676,10 @@ template <typename Procedure> struct GeneralSCF {
 
     if (minbs == m_procedure.basis()) {
       D = MatRM::Zero(S.rows(), S.cols());
-      D.block(0, 0, D_minbs.rows(), D_minbs.cols()) = D_minbs * 0.5;
-      D.block(D_minbs.rows(), D_minbs.cols(), D_minbs.rows(), D_minbs.cols()) = D_minbs * 0.5;
-
+      D.block(0, 0, D_minbs.rows(), D_minbs.cols()) = D_minbs;
+      D.block(D_minbs.rows(), D_minbs.cols(), D_minbs.rows(), D_minbs.cols()) = D_minbs;
+      D *= 0.5;
+    if (n_occ * 2 <  n_electrons) n_occ += 1;
     } else {
       // if basis != minimal basis, map non-representable SOAD guess
       // into the AO basis
@@ -685,14 +689,13 @@ template <typename Procedure> struct GeneralSCF {
       F = H.replicate(2, 2);
       MatRM tmp = craso::ints::compute_2body_fock_mixed_basis(
           m_procedure.basis(), D_minbs, minbs, true,
-          std::numeric_limits<double>::epsilon()) * 0.5;
+          std::numeric_limits<double>::epsilon());
       int N = F.rows() / 2, M = F.cols() / 2;
-      F.block(0, 0, N, M) += tmp;
-      F.block(N, M, N, M) = F.block(0, 0, N, M);
-      Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose().replicate(2, 2) * F * X.replicate(2, 2));
-      C = X.replicate(2, 2) * eig_solver.eigenvectors();
+      F += tmp.replicate(2, 2);
+      Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
+      C = X * eig_solver.eigenvectors();
       C_occ = C.leftCols(n_occ);
-      D = C_occ * C_occ.transpose();
+      D = C_occ * C_occ.transpose() * 0.25;
       const auto tstop = std::chrono::high_resolution_clock::now();
       const std::chrono::duration<double> time_elapsed = tstop - tstart;
       if (verbose)
@@ -748,11 +751,11 @@ template <typename Procedure> struct GeneralSCF {
       );
 
       // compute HF energy with the non-extrapolated Fock matrix
-      ehf = D.cwiseProduct(H.replicate(2, 2) + F).sum() * 0.25;
+      ehf = D.cwiseProduct(H.replicate(2, 2) + F).sum();
       ediff_rel = std::abs((ehf - ehf_last) / ehf);
 
       // compute SCF error
-      MatRM FD_comm = F * D * S.replicate(2, 2) - S.replicate(2, 2) * D * F;
+      MatRM FD_comm = F * D * S - S * D * F;
       rms_error = FD_comm.norm() / FD_comm.size();
       if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
         reset_incremental_fock_formation = true;
@@ -766,14 +769,14 @@ template <typename Procedure> struct GeneralSCF {
       // solve F C = e S C by (conditioned) transformation to F' C' = e C',
       // where
       // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-      Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose().replicate(2, 2) * F_diis *
-                                                      X.replicate(2, 2));
+      Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F_diis *
+                                                      X);
       orbital_energies = eig_solver.eigenvalues();
-      C = X.replicate(2, 2) * eig_solver.eigenvectors();
+      C = X * eig_solver.eigenvectors();
 
       // compute density, D = C(occ) . C(occ)T
       C_occ = C.leftCols(n_occ);
-      D = C_occ * C_occ.transpose();
+      D = C_occ * C_occ.transpose() * 0.25;
       D_diff = D - D_last;
 
       const auto tstop = std::chrono::high_resolution_clock::now();
@@ -787,13 +790,15 @@ template <typename Procedure> struct GeneralSCF {
                  ehf + enuc, ediff_rel, rms_error, time_elapsed.count());
       total_time += time_elapsed.count();
 
-    } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
+    }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
+    fmt::print("Density:\n{}\n", D);
+    fmt::print("Fock:\n{}\n", F);
     fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_k", 0.25 * D.cwiseProduct(T.replicate(2, 2)).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_en", 0.25 * D.cwiseProduct(V.replicate(2, 2)).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e", 0.25 * D.cwiseProduct(H.replicate(2, 2)).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_2e", 0.25 * D.cwiseProduct(F).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   D.cwiseProduct(T.replicate(2, 2)).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_en",  D.cwiseProduct(V.replicate(2, 2)).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  D.cwiseProduct(H.replicate(2, 2)).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_2e",  D.cwiseProduct(F).sum());
     fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", ehf + enuc);
     return ehf + enuc;
   }
