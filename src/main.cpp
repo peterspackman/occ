@@ -7,8 +7,19 @@
 #include <iostream>
 #include "numgrid.h"
 
+void print_header()
+{
+    fmt::print("----------------------------------------------------\n");
+    fmt::print("  craso - quantum chemistry and crystal structures  \n");
+    fmt::print("\n\n     Copyright: Peter Spackman 2020\n\n");
+    fmt::print("----------------------------------------------------\n");
+
+}
+
+
 int main(int argc, const char **argv) {
   using craso::chem::Molecule;
+  using craso::chem::Element;
   using craso::hf::HartreeFock;
   using craso::scf::RestrictedSCF;
   using craso::scf::UnrestrictedSCF;
@@ -35,6 +46,7 @@ int main(int argc, const char **argv) {
     fmt::print("{}\n", options.help());
     return 0;
   }
+  print_header();
 
   try {
     libint2::Shell::do_enforce_unit_normalization(false);
@@ -47,9 +59,9 @@ int main(int argc, const char **argv) {
     const auto diis_iter = result["diis-iteration"].as<int>();
     Molecule m = craso::chem::read_xyz_file(filename);
 
-    fmt::print("Geometry\n");
+    fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", filename, "el", "x", "y", "z");
     for (const auto &atom : m.atoms()) {
-      fmt::print("{:3d} {:10.6f} {:10.6f} {:10.6f}\n", atom.atomic_number,
+      fmt::print("{:3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                  atom.x, atom.y, atom.z);
     }
     bool unrestricted = result.count("uhf") || (multiplicity != 1);
@@ -58,33 +70,33 @@ int main(int argc, const char **argv) {
     using craso::parallel::nthreads;
     nthreads = result["nthreads"].as<int>();
     omp_set_num_threads(nthreads);
-    fmt::print("Using {} threads\n", nthreads);
-    fmt::print("Geometry loaded from {}\n", filename);
-    fmt::print("Using {} basis on all atoms\n", basisname);
+    fmt::print("{:12s} {:>12d}\n", "threads", nthreads);
+    fmt::print("{:12s} {:>12d}\n", "eigen", Eigen::nbThreads());
+    fmt::print("{:12s} {:>12s}\n", "basis", basisname);
 
     libint2::BasisSet obs(basisname, m.atoms());
 
-    fmt::print("Orbital basis set rank = {}\n", obs.nbf());
+    fmt::print("{:12s} {:>12d}\n", "n_bf", obs.nbf());
 
     HartreeFock hf(m.atoms(), obs);
     if (general) {
+      fmt::print("{:12s} {:>12s}\n", "procedure", "ghf");
       GeneralSCF<HartreeFock> scf(hf, diis_iter);
       scf.conv = 1e-12;
       scf.set_charge(charge);
       double e = scf.compute_scf_energy();
     } else if (unrestricted) {
+      fmt::print("{:12s} {:>12s}\n", "procedure", "uhf");
       UnrestrictedSCF<HartreeFock> scf(hf, diis_iter);
       scf.conv = 1e-12;
       scf.set_multiplicity(multiplicity);
       scf.set_charge(charge);
-      fmt::print("Multiplicity: {}\n", scf.multiplicity());
-      fmt::print("n_alpha: {}\n", scf.n_alpha);
-      fmt::print("n_beta: {}\n", scf.n_beta);
       double e = scf.compute_scf_energy();
       //scf.print_orbital_energies();
 
     } else
     {
+      fmt::print("{:12s} {:>12s}\n", "procedure", "rhf");
       RestrictedSCF<HartreeFock> scf(hf, diis_iter);
       scf.conv = 1e-12;
       scf.set_charge(charge);

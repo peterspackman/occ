@@ -541,8 +541,6 @@ template <typename Procedure> struct RestrictedSCF {
       total_time += time_elapsed.count();
 
     } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
-    fmt::print("Density\n{}\n", D);
-    fmt::print("Fock\n{}\n", F);
     fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_k", D.cwiseProduct(T).sum());
