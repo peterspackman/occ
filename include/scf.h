@@ -1,7 +1,7 @@
 #pragma once
 #include "ints.h"
 #include "diis.h"
-#include <Eigen/Dense>
+#include "linear_algebra.h"
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <libint2/chemistry/sto3g_atomic_density.h>

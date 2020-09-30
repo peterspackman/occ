@@ -19,7 +19,7 @@ target_link_libraries(craso
     PUBLIC 
     Eigen3::Eigen Boost::graph fmt::fmt 
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
-    Libint2::cxx
+    Libint2::cxx LAPACK::LAPACK
     Libxc::xc
     numgrid-objects
 )

@@ -1,5 +1,5 @@
 #pragma once
-#include <Eigen/Dense>
+#include "linear_algebra.h"
 #include <algorithm>
 #include <cctype>
 #include <cmath>
