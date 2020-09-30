@@ -2,8 +2,8 @@
 #include "util.h"
 #include "catch.hpp"
 
-using craso::crystal::SymmetryOperation;
-using craso::util::all_close;
+using tonto::crystal::SymmetryOperation;
+using tonto::util::all_close;
 
 TEST_CASE("SymmetryOperation constructor", "[symmetry_operation]")
 {

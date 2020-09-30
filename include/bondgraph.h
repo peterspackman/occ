@@ -5,7 +5,7 @@
 #include <boost/graph/depth_first_search.hpp>
 #include <vector>
 
-namespace craso::graph {
+namespace tonto::graph {
 
 template <typename Vertex, typename Edge> class BondGraph {
 public:
@@ -101,4 +101,4 @@ struct PeriodicVertex {
 };
 
 using PeriodicBondGraph = BondGraph<PeriodicVertex, PeriodicEdge>;
-} // namespace craso::graph
+} // namespace tonto::graph

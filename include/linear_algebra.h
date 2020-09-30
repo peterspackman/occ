@@ -1,7 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 
-namespace craso {
+namespace tonto {
 using DMatRM =
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 using MatRM =
@@ -39,4 +39,4 @@ using DVec3 = Eigen::Vector3d;
 
 using IVec = Eigen::VectorXi;
 
-}; // namespace craso
+}; // namespace tonto

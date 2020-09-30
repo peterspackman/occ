@@ -6,7 +6,7 @@
 #include <fmt/ostream.h>
 #include "xc.h"
 
-namespace craso::dft {
+namespace tonto::dft {
 
 DFTGrid::DFTGrid(
         const libint2::BasisSet &basis,
@@ -55,7 +55,7 @@ DFTGrid::DFTGrid(
         m_l_max(i) = max_l;
         i++;
     }
-    m_alpha_min = craso::Mat::Zero(atoms.size(), m_l_max.maxCoeff() + 1);
+    m_alpha_min = tonto::Mat::Zero(atoms.size(), m_l_max.maxCoeff() + 1);
     for(int i = 0; i < min_alpha.size(); i++) {
         for(int j = 0; j < min_alpha[i].size(); j++) {
             m_alpha_min(i, j) = min_alpha[i][j];

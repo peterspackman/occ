@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace craso::util {
+namespace tonto::util {
 
 template <typename TA, typename TB>
 bool all_close(const Eigen::DenseBase<TA> &a, const Eigen::DenseBase<TB> &b,
@@ -121,4 +121,4 @@ static inline std::string to_upper_copy(std::string s) {
   to_upper(s);
   return s;
 }
-} // namespace craso::util
+} // namespace tonto::util

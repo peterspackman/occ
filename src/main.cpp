@@ -9,27 +9,51 @@
 
 void print_header()
 {
-    fmt::print("----------------------------------------------------\n");
-    fmt::print("  craso - quantum chemistry and crystal structures  \n");
-    fmt::print("\n\n     Copyright: Peter Spackman 2020\n\n");
-    fmt::print("----------------------------------------------------\n");
+    fmt::print(R"(
 
+
+              ,d                               ,d               
+              88                               88               
+            MM88MMM  ,adPPYba,   8b,dPPYba,  MM88MMM  ,adPPYba, 
+              88    a8"     "8a  88P'   `"8a   88    a8"     "8a
+              88    8b       d8  88       88   88    8b       d8
+              88,   "8a,   ,a8"  88       88   88,   "8a,   ,a8"
+              "Y888  `"YbbdP"'   88       88   "Y888  `"YbbdP"' 
+
+
+
+    Copyright (C) 2020
+    Peter Spackman - Primary Developer
+    Dylan Jayatilaka 
+
+Tonto also uses the following libraries:
+
+    eigen        - Linear Algebra
+    libint2      - Electron integrals using GTOs
+    numgrid      - DFT grids
+    libxc        - Density functional implementations
+    boost::graph - Graph implementation
+    OpenMP       - Multithreading
+    fmt          - String formatting
+    spdlog       - Logging
+
+)");
 }
 
 
 int main(int argc, const char **argv) {
-  using craso::chem::Molecule;
-  using craso::chem::Element;
-  using craso::hf::HartreeFock;
-  using craso::scf::RestrictedSCF;
-  using craso::scf::UnrestrictedSCF;
-  using craso::scf::GeneralSCF;
+  using tonto::chem::Molecule;
+  using tonto::chem::Element;
+  using tonto::hf::HartreeFock;
+  using tonto::scf::RestrictedSCF;
+  using tonto::scf::UnrestrictedSCF;
+  using tonto::scf::GeneralSCF;
   using std::cerr;
   using std::cout;
   using std::endl;
 
   cxxopts::Options options(
-      "craso", "A quantum chemistry program for molecular crystals");
+      "tonto", "A quantum chemistry program for molecular crystals");
   options.add_options()
       ("b,basis", "Basis set name", cxxopts::value<std::string>()->default_value("3-21G"))
       ("j,nthreads", "Number of threads", cxxopts::value<int>()->default_value("1"))
@@ -55,36 +79,36 @@ int main(int argc, const char **argv) {
     const auto basisname = result["basis"].as<std::string>();
     const auto multiplicity = result["multiplicity"].as<int>();
     const auto charge = result["charge"].as<int>();
-    Molecule m = craso::chem::read_xyz_file(filename);
+    Molecule m = tonto::chem::read_xyz_file(filename);
 
-    fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", filename, "el", "x", "y", "z");
+    fmt::print("Input geometry ({})\n    {:3s} {:^10s} {:^10s} {:^10s}\n", filename, "sym", "x", "y", "z");
     for (const auto &atom : m.atoms()) {
-      fmt::print("{:3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
+      fmt::print("    {:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                  atom.x, atom.y, atom.z);
     }
     bool unrestricted = result.count("uhf") || (multiplicity != 1);
     bool general = result.count("ghf");
 
-    using craso::parallel::nthreads;
+    using tonto::parallel::nthreads;
     nthreads = result["nthreads"].as<int>();
     omp_set_num_threads(nthreads);
-    fmt::print("{:12s} {:>12d}\n", "threads", nthreads);
-    fmt::print("{:12s} {:>12d}\n", "eigen", Eigen::nbThreads());
-    fmt::print("{:12s} {:>12s}\n", "basis", basisname);
+    fmt::print("\n    {:12s} {:>12d}\n", "threads", nthreads);
+    fmt::print("    {:12s} {:>12d}\n", "eigen", Eigen::nbThreads());
+    fmt::print("    {:12s} {:>12s}\n", "basis", basisname);
 
     libint2::BasisSet obs(basisname, m.atoms());
 
-    fmt::print("{:12s} {:>12d}\n", "n_bf", obs.nbf());
+    fmt::print("    {:12s} {:>12d}\n", "n_bf", obs.nbf());
 
     HartreeFock hf(m.atoms(), obs);
     if (general) {
-      fmt::print("{:12s} {:>12s}\n", "procedure", "ghf");
+      fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
       GeneralSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;
       scf.set_charge(charge);
       double e = scf.compute_scf_energy();
     } else if (unrestricted) {
-      fmt::print("{:12s} {:>12s}\n", "procedure", "uhf");
+      fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
       UnrestrictedSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;
       scf.set_multiplicity(multiplicity);
@@ -94,7 +118,7 @@ int main(int argc, const char **argv) {
 
     } else
     {
-      fmt::print("{:12s} {:>12s}\n", "procedure", "rhf");
+      fmt::print("    {:12s} {:>12s}\n", "procedure", "rhf");
       RestrictedSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;
       scf.set_charge(charge);

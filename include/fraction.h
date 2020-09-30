@@ -2,7 +2,7 @@
 #include <numeric>
 #include <string>
 
-namespace craso::numeric {
+namespace tonto::numeric {
 
 class Fraction {
 
@@ -37,4 +37,4 @@ private:
   int64_t m_denominator{1};
 };
 
-} // namespace craso::numeric
+} // namespace tonto::numeric

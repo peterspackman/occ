@@ -4,7 +4,7 @@
 #include <gemmi/numb.hpp>
 #include <iostream>
 
-namespace craso::io {
+namespace tonto::io {
 
 CifParser::CifParser() {}
 
@@ -39,11 +39,11 @@ void CifParser::extract_cell_parameter(const gemmi::cif::Pair &pair) {
   else if (tag == "_cell_length_c")
     m_cell.c = gemmi::cif::as_number(pair.back());
   else if (tag == "_cell_angle_alpha")
-    m_cell.alpha = craso::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.alpha = tonto::util::deg2rad(gemmi::cif::as_number(pair.back()));
   else if (tag == "_cell_angle_beta")
-    m_cell.beta = craso::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.beta = tonto::util::deg2rad(gemmi::cif::as_number(pair.back()));
   else if (tag == "_cell_angle_gamma")
-    m_cell.gamma = craso::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.gamma = tonto::util::deg2rad(gemmi::cif::as_number(pair.back()));
 }
 
 void CifParser::extract_symmetry_operations(const gemmi::cif::Loop &loop) {
@@ -57,7 +57,7 @@ void CifParser::extract_symmetry_operations(const gemmi::cif::Loop &loop) {
   }
 }
 
-std::optional<craso::crystal::Crystal>
+std::optional<tonto::crystal::Crystal>
 CifParser::parse_crystal(const std::string &filename) {
   try {
     auto doc = gemmi::cif::read_file(filename);
@@ -82,7 +82,7 @@ CifParser::parse_crystal(const std::string &filename) {
       m_failure_desc = "Missing symmetry data";
       return std::nullopt;
     }
-    craso::crystal::AsymmetricUnit asym;
+    tonto::crystal::AsymmetricUnit asym;
     if (num_atoms() > 0) {
       asym.atomic_numbers.conservativeResize(num_atoms());
       asym.positions.conservativeResize(3, num_atoms());
@@ -92,29 +92,29 @@ CifParser::parse_crystal(const std::string &filename) {
         asym.positions(0, i) = atom.position[0];
         asym.positions(1, i) = atom.position[1];
         asym.positions(2, i) = atom.position[2];
-        asym.atomic_numbers(i) = craso::chem::Element(atom.element).n();
+        asym.atomic_numbers(i) = tonto::chem::Element(atom.element).n();
         asym.labels.push_back(atom.site_label);
         i++;
       }
     }
-    craso::crystal::UnitCell uc(m_cell.a, m_cell.b, m_cell.c, m_cell.alpha,
+    tonto::crystal::UnitCell uc(m_cell.a, m_cell.b, m_cell.c, m_cell.alpha,
                                 m_cell.beta, m_cell.gamma);
-    std::vector<craso::crystal::SymmetryOperation> symops;
+    std::vector<tonto::crystal::SymmetryOperation> symops;
     if (m_sym.num_symops() > 0) {
       for (const auto &s : m_sym.symops) {
-        symops.push_back(craso::crystal::SymmetryOperation(s));
+        symops.push_back(tonto::crystal::SymmetryOperation(s));
       }
     }
     if (symops.size() > 0) {
-      auto sg = craso::crystal::SpaceGroup(symops);
-      return craso::crystal::Crystal(asym, sg, uc);
+      auto sg = tonto::crystal::SpaceGroup(symops);
+      return tonto::crystal::Crystal(asym, sg, uc);
     }
-    craso::crystal::SpaceGroup sg("P 1");
-    return craso::crystal::Crystal(asym, sg, uc);
+    tonto::crystal::SpaceGroup sg("P 1");
+    return tonto::crystal::Crystal(asym, sg, uc);
   } catch (const std::exception &e) {
     m_failure_desc = e.what();
     return std::nullopt;
   }
 }
 
-} // namespace craso::io
+} // namespace tonto::io

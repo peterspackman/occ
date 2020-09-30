@@ -4,7 +4,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-namespace craso::diis {
+namespace tonto::diis {
 
 template <typename T>
 struct diis_traits;

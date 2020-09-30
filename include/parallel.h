@@ -1,7 +1,7 @@
 #pragma once
 #include <omp.h>
 
-namespace craso::parallel {
+namespace tonto::parallel {
 inline int nthreads = 1;
 
 /// fires off \c nthreads instances of lambda in parallel
@@ -13,4 +13,4 @@ template <typename Lambda> void parallel_do(Lambda &lambda) {
   }
 }
 
-} // namespace craso::parallel
+} // namespace tonto::parallel

@@ -6,10 +6,10 @@
 #include <tuple>
 #include <vector>
 
-namespace craso::crystal {
+namespace tonto::crystal {
 
-using craso::IVec;
-using craso::Mat3N;
+using tonto::IVec;
+using tonto::Mat3N;
 
 using SGData = gemmi::SpaceGroup;
 
@@ -31,4 +31,4 @@ private:
   std::vector<SymmetryOperation> m_symops;
 };
 
-} // namespace craso::crystal
+} // namespace tonto::crystal

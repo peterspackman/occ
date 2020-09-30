@@ -17,7 +17,7 @@ TEST_CASE("Water DFT grid", "[dft]")
     libint2::BasisSet basis("3-21G", atoms);
 
     SECTION("Grid generation") {
-        craso::dft::DFTGrid grid(basis, atoms);
+        tonto::dft::DFTGrid grid(basis, atoms);
         grid.set_min_angular_points(12);
         grid.set_max_angular_points(20);
         auto pts = grid.grid_points(0);

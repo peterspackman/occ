@@ -3,10 +3,10 @@
 #include "catch.hpp"
 #include <iostream>
 
-using craso::crystal::SpaceGroup;
-using craso::util::all_close;
-using craso::Mat3N;
-using craso::MatN3;
+using tonto::crystal::SpaceGroup;
+using tonto::util::all_close;
+using tonto::Mat3N;
+using tonto::MatN3;
 
 
 TEST_CASE("SpaceGroup constructor", "[space_group]")

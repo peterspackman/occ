@@ -2,7 +2,7 @@
 #include <Eigen/Core>
 #include <fstream>
 
-namespace craso::chem {
+namespace tonto::chem {
 
 Molecule::Molecule(const IVec &nums, const Mat3N &pos)
     : m_atomicNumbers(nums), m_positions(pos) {
@@ -57,4 +57,4 @@ Molecule read_xyz_file(const std::string &filename) {
     throw "only .xyz files are accepted";
 }
 
-} // namespace craso::chem
+} // namespace tonto::chem

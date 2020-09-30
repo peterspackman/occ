@@ -3,9 +3,9 @@
 #include "linear_algebra.h"
 #include <libint2/atom.h>
 
-namespace craso::chem {
-using craso::IVec;
-using craso::Mat3N;
+namespace tonto::chem {
+using tonto::IVec;
+using tonto::Mat3N;
 
 class Molecule {
 public:
@@ -47,4 +47,4 @@ private:
 
 Molecule read_xyz_file(const std::string &);
 
-} // namespace craso::chem
+} // namespace tonto::chem

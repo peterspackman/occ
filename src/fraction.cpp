@@ -4,9 +4,9 @@
 #include <math.h>
 #include <vector>
 
-namespace craso::numeric {
+namespace tonto::numeric {
 
-using craso::util::tokenize;
+using tonto::util::tokenize;
 
 template <typename F, typename I>
 std::tuple<I, I> as_integer_ratio(F f, I max_denominator) {
@@ -231,4 +231,4 @@ bool Fraction::operator<(const Fraction &other) const {
 bool Fraction::operator<=(const Fraction &other) const {
   return cast<double>() <= other.cast<double>();
 }
-} // namespace craso::numeric
+} // namespace tonto::numeric

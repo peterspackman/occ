@@ -2,7 +2,7 @@
 #include "parallel.h"
 #include <fmt/core.h>
 
-namespace craso::hf {
+namespace tonto::hf {
 
 HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms,
                          const BasisSet &basis)
@@ -23,7 +23,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
   const auto nsh2 = bs2.size();
   const auto bs1_equiv_bs2 = (&bs1 == &bs2);
 
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
 
   // construct the 2-electron repulsion integrals engine
   using libint2::Engine;
@@ -83,7 +83,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     }
   }; // end of compute
 
-  craso::parallel::parallel_do(compute);
+  tonto::parallel::parallel_do(compute);
 
   // resort shell list in increasing order, i.e. splist[s][s1] < splist[s][s2]
   // if s1 < s2 N.B. only parallelized over 1 shell index
@@ -96,7 +96,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     }
   }; // end of sort
 
-  craso::parallel::parallel_do(sort);
+  tonto::parallel::parallel_do(sort);
 
   // compute shellpair data assuming that we are computing to default_epsilon
   // N.B. only parallelized over 1 shell index
@@ -113,7 +113,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     }
   }; // end of make_spdata
 
-  craso::parallel::parallel_do(make_spdata);
+  tonto::parallel::parallel_do(make_spdata);
 
   timer.stop(0);
   fmt::print(" {:.6f} s\n", timer.read(0));
@@ -135,19 +135,19 @@ double HartreeFock::nuclear_repulsion_energy() const {
 }
 
 MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const {
-  return craso::ints::compute_shellblock_norm(m_basis, A);
+  return tonto::ints::compute_shellblock_norm(m_basis, A);
 }
 
 MatRM HartreeFock::compute_2body_fock(const MatRM &D, double precision,
                                       const MatRM &Schwarz) const {
-  return craso::ints::compute_2body_fock(
+  return tonto::ints::compute_2body_fock(
       m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
 }
 
 std::pair<MatRM, MatRM> HartreeFock::compute_JK(const MatRM &D,
                                                 double precision,
                                                 const MatRM &Schwarz) const {
-  return craso::ints::compute_JK(m_basis, m_shellpair_list, m_shellpair_data, D,
+  return tonto::ints::compute_JK(m_basis, m_shellpair_list, m_shellpair_data, D,
                                  precision, Schwarz);
 }
 
@@ -155,7 +155,7 @@ std::pair<MatRM, MatRM>
 HartreeFock::compute_2body_fock_unrestricted(const MatRM &Da, const MatRM &Db,
                                              double precision,
                                              const MatRM &Schwarz) const {
-  return craso::ints::compute_2body_fock_unrestricted(
+  return tonto::ints::compute_2body_fock_unrestricted(
       m_basis, m_shellpair_list, m_shellpair_data, Da, Db, precision, Schwarz);
 }
 
@@ -163,21 +163,21 @@ std::tuple<MatRM, MatRM, MatRM, MatRM>
 HartreeFock::compute_JK_unrestricted(const MatRM &Da, const MatRM &Db,
                                      double precision,
                                      const MatRM &Schwarz) const {
-  return craso::ints::compute_JK_unrestricted(
+  return tonto::ints::compute_JK_unrestricted(
       m_basis, m_shellpair_list, m_shellpair_data, Da, Db, precision, Schwarz);
 }
 
 
 MatRM HartreeFock::compute_2body_fock_general(const MatRM &D, double precision,
                                       const MatRM &Schwarz) const {
-  return craso::ints::compute_2body_fock_general(
+  return tonto::ints::compute_2body_fock_general(
       m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
 }
 
 std::pair<MatRM, MatRM> HartreeFock::compute_JK_general(const MatRM &D,
                                                 double precision,
                                                 const MatRM &Schwarz) const {
-  return craso::ints::compute_JK_general(m_basis, m_shellpair_list, m_shellpair_data, D,
+  return tonto::ints::compute_JK_general(m_basis, m_shellpair_list, m_shellpair_data, D,
                                  precision, Schwarz);
 }
-} // namespace craso::hf
+} // namespace tonto::hf

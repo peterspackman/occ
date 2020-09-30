@@ -7,9 +7,9 @@
 #include <libint2/chemistry/sto3g_atomic_density.h>
 #include <tuple>
 
-namespace craso::scf {
+namespace tonto::scf {
 
-using craso::MatRM;
+using tonto::MatRM;
 
 std::tuple<MatRM, MatRM, double>
 conditioning_orthogonalizer(const MatRM &S,
@@ -148,10 +148,10 @@ template <typename Procedure> struct UnrestrictedSCF {
         fmt::print("Projecting SOAD into atomic orbital basis: ");
       Fa = H;
       Fb = H;
-      Fa += craso::ints::compute_2body_fock_mixed_basis(
+      Fa += tonto::ints::compute_2body_fock_mixed_basis(
           m_procedure.basis(), Da_minbs, minbs, true,
           std::numeric_limits<double>::epsilon());
-      Fb += craso::ints::compute_2body_fock_mixed_basis(
+      Fb += tonto::ints::compute_2body_fock_mixed_basis(
           m_procedure.basis(), Db_minbs, minbs, true,
           std::numeric_limits<double>::epsilon());
       Eigen::SelfAdjointEigenSolver<MatRM> eig_solver_a(X.transpose() * Fa * X);
@@ -332,7 +332,7 @@ template <typename Procedure> struct UnrestrictedSCF {
   double enuc{0.0};
   double ehf{0.0};
   double total_time{0.0};
-  craso::diis::DIIS<MatRM> diis; // start DIIS on second iteration
+  tonto::diis::DIIS<MatRM> diis; // start DIIS on second iteration
 
   bool reset_incremental_fock_formation = false;
   bool incremental_Fbuild_started = false;
@@ -439,7 +439,7 @@ template <typename Procedure> struct RestrictedSCF {
       if (verbose)
         fmt::print("Projecting SOAD into atomic orbital basis: ");
       F = H;
-      F += craso::ints::compute_2body_fock_mixed_basis(
+      F += tonto::ints::compute_2body_fock_mixed_basis(
           m_procedure.basis(), D_minbs, minbs, true,
           std::numeric_limits<double>::epsilon());
       Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
@@ -576,7 +576,7 @@ template <typename Procedure> struct RestrictedSCF {
   double enuc{0.0};
   double ehf{0.0};
   double total_time{0.0};
-  craso::diis::DIIS<MatRM> diis; // start DIIS on second iteration
+  tonto::diis::DIIS<MatRM> diis; // start DIIS on second iteration
   bool reset_incremental_fock_formation = false;
   bool incremental_Fbuild_started = false;
   double start_incremental_F_threshold = 1e-5;
@@ -825,7 +825,7 @@ template <typename Procedure> struct GeneralSCF {
   double enuc{0.0};
   double ehf{0.0};
   double total_time{0.0};
-  craso::diis::DIIS<MatRM> diis; // start DIIS on second iteration
+  tonto::diis::DIIS<MatRM> diis; // start DIIS on second iteration
   bool reset_incremental_fock_formation = false;
   bool incremental_Fbuild_started = false;
   double start_incremental_F_threshold = 1e-5;
@@ -836,4 +836,4 @@ template <typename Procedure> struct GeneralSCF {
   double XtX_condition_number;
   bool verbose{false};
 };
-} // namespace craso::scf
+} // namespace tonto::scf

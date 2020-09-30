@@ -3,10 +3,10 @@
 #include "util.h"
 #include <regex>
 
-namespace craso::crystal {
+namespace tonto::crystal {
 
-using craso::numeric::Fraction;
-using craso::util::tokenize;
+using tonto::numeric::Fraction;
+using tonto::util::tokenize;
 
 void decode_int(int code, Mat4 &seitz) {
   /*Decode an integer encoded symmetry operation.
@@ -85,7 +85,7 @@ std::string encode_string(const Mat4 &seitz) {
   /* Encode a rotation matrix (of -1, 0, 1s) and (rational) translation vector
   into string form e.g. 1/2-x,z-1/3,-y-1/6
   */
-  using craso::util::join;
+  using tonto::util::join;
   std::string symbols = "xyz";
   std::vector<std::string> res;
   for (int i = 0; i < 3; i++) {
@@ -184,4 +184,4 @@ void SymmetryOperation::update_from_seitz() {
       m_seitz.block(0, 3, m_translation.rows(), m_translation.cols());
 }
 
-} // namespace craso::crystal
+} // namespace tonto::crystal

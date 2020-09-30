@@ -8,8 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
-namespace craso::ints {
-using craso::MatRM;
+namespace tonto::ints {
+using tonto::MatRM;
 using libint2::BasisSet;
 using libint2::BraKet;
 using libint2::Operator;
@@ -28,7 +28,7 @@ compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list,
                    OperatorParams oparams = OperatorParams()) {
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   typedef std::array<MatRM, libint2::operator_traits<obtype>::nopers>
       result_type;
   const unsigned int nopers = libint2::operator_traits<obtype>::nopers;
@@ -86,7 +86,7 @@ compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list,
       }
     }
   }; // compute lambda
-  craso::parallel::parallel_do(compute);
+  tonto::parallel::parallel_do(compute);
   return result;
 }
 
@@ -95,7 +95,7 @@ std::vector<MatRM>
 compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
                          const shellpair_list_t &shellpair_list,
                          const std::vector<libint2::Atom> &atoms) {
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   const auto n = obs.nbf();
   const auto nshells = obs.size();
   constexpr auto nopers = libint2::operator_traits<obtype>::nopers;
@@ -294,7 +294,7 @@ compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
     }   // s1
   };    // compute lambda
 
-  craso::parallel::parallel_do(compute);
+  tonto::parallel::parallel_do(compute);
 
   return result;
 }
@@ -315,7 +315,7 @@ MatRM compute_schwarz_ints(
   MatRM K = MatRM::Zero(nsh1, nsh2);
 
   // construct the 2-electron repulsion integrals engine
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   using libint2::BraKet;
   using libint2::Engine;
 
@@ -362,7 +362,7 @@ MatRM compute_schwarz_ints(
     }
   }; // thread lambda
 
-  craso::parallel::parallel_do(compute);
+  tonto::parallel::parallel_do(compute);
 
   return K;
 }
@@ -432,7 +432,7 @@ std::vector<MatRM> compute_2body_fock_deriv(
   const auto nderiv = libint2::num_geometrical_derivatives(
       atoms.size(), deriv_order); // total # of derivs
   const auto ncoords_times_two = (atoms.size() * 3) * 2;
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   std::vector<MatRM> G(nthreads * nderiv, MatRM::Zero(n, n));
 
   const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
@@ -654,7 +654,7 @@ std::vector<MatRM> compute_2body_fock_deriv(
     }
   }; // end of lambda
 
-  craso::parallel::parallel_do(lambda);
+  tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t t = 1; t != nthreads; ++t) {
@@ -683,4 +683,4 @@ std::vector<MatRM> compute_2body_fock_deriv(
   // symmetrize the result and return
   return GG;
 }
-} // namespace craso::ints
+} // namespace tonto::ints

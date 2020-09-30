@@ -3,7 +3,7 @@
 #include <vector>
 #define ELEMENT_MAX 103
 
-namespace craso::chem {
+namespace tonto::chem {
 
 struct ElementData {
   ElementData(int n, const std::string &nm, const std::string &sym, float cov,
@@ -160,4 +160,4 @@ private:
 
 std::string chemical_formula(const std::vector<Element> &);
 
-} // namespace craso::chem
+} // namespace tonto::chem

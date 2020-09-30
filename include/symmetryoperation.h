@@ -2,12 +2,12 @@
 #include "linear_algebra.h"
 #include <string>
 
-namespace craso::crystal {
+namespace tonto::crystal {
 
-using craso::Mat3;
-using craso::Mat3N;
-using craso::Mat4;
-using craso::Vec3;
+using tonto::Mat3;
+using tonto::Mat3N;
+using tonto::Mat4;
+using tonto::Vec3;
 
 class SymmetryOperation {
 public:
@@ -61,4 +61,4 @@ private:
   Vec3 m_translation;
 };
 
-} // namespace craso::crystal
+} // namespace tonto::crystal

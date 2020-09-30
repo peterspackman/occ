@@ -1,6 +1,6 @@
 #include "scf.h"
 
-namespace craso::scf {
+namespace tonto::scf {
 
 std::tuple<MatRM, MatRM, size_t, double, double>
 gensqrtinv(const MatRM &S, bool symmetric, double max_condition_number) {
@@ -69,4 +69,4 @@ conditioning_orthogonalizer(const MatRM &S,
   return std::make_tuple(X, Xinv, XtX_condition_number);
 }
 
-} // namespace craso::scf
+} // namespace tonto::scf

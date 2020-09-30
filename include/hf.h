@@ -1,15 +1,15 @@
 #pragma once
 #include "ints.h"
 
-namespace craso::hf {
+namespace tonto::hf {
 
-using craso::MatRM;
-using craso::ints::BasisSet;
-using craso::ints::compute_1body_ints;
-using craso::ints::compute_1body_ints_deriv;
-using craso::ints::Operator;
-using craso::ints::shellpair_data_t;
-using craso::ints::shellpair_list_t;
+using tonto::MatRM;
+using tonto::ints::BasisSet;
+using tonto::ints::compute_1body_ints;
+using tonto::ints::compute_1body_ints_deriv;
+using tonto::ints::Operator;
+using tonto::ints::shellpair_data_t;
+using tonto::ints::shellpair_list_t;
 
 /// to use precomputed shell pair data must decide on max precision a priori
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
@@ -94,7 +94,7 @@ public:
   MatRM compute_shellblock_norm(const MatRM &A) const;
 
   auto compute_schwarz_ints() {
-    return craso::ints::compute_schwarz_ints<>(m_basis);
+    return tonto::ints::compute_schwarz_ints<>(m_basis);
   }
 
 private:
@@ -106,4 +106,4 @@ private:
   shellpair_data_t m_shellpair_data; // shellpair data for OBS
 };
 
-} // namespace craso::hf
+} // namespace tonto::hf

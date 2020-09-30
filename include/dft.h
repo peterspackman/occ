@@ -9,13 +9,13 @@ class BasisSet;
 class Atom;
 }
 
-namespace craso::dft {
+namespace tonto::dft {
 
-using craso::Mat3N;
-using craso::MatRM;
-using craso::Mat4N;
-using craso::Vec;
-using craso::IVec;
+using tonto::Mat3N;
+using tonto::MatRM;
+using tonto::Mat4N;
+using tonto::Vec;
+using tonto::IVec;
 
 class DFTGrid {
 public:

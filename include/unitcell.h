@@ -4,11 +4,11 @@
 #include "util.h"
 #include <string>
 
-namespace craso::crystal {
-using craso::Mat3;
-using craso::Mat3N;
-using craso::Vec3;
-using craso::util::isclose;
+namespace tonto::crystal {
+using tonto::Mat3;
+using tonto::Mat3N;
+using tonto::Vec3;
+using tonto::util::isclose;
 
 class UnitCell {
 public:
@@ -86,4 +86,4 @@ private:
   Mat3 m_inverse;
   Mat3 m_reciprocal;
 };
-} // namespace craso::crystal
+} // namespace tonto::crystal

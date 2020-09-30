@@ -4,26 +4,26 @@
 #include <Eigen/Dense>
 #include <iostream>
 
-namespace craso::crystal {
+namespace tonto::crystal {
 
-using craso::graph::BondGraph;
+using tonto::graph::BondGraph;
 
 Crystal::Crystal(const AsymmetricUnit &asym, const SpaceGroup &sg,
                  const UnitCell &uc)
     : m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc) {}
 
 std::string AsymmetricUnit::chemical_formula() const {
-  std::vector<craso::chem::Element> els;
+  std::vector<tonto::chem::Element> els;
   for (int i = 0; i < atomic_numbers.size(); i++) {
-    els.push_back(craso::chem::Element(atomic_numbers[i]));
+    els.push_back(tonto::chem::Element(atomic_numbers[i]));
   }
-  return craso::chem::chemical_formula(els);
+  return tonto::chem::chemical_formula(els);
 }
 
 Eigen::VectorXd AsymmetricUnit::covalent_radii() const {
   Eigen::VectorXd result(atomic_numbers.size());
   for (int i = 0; i < atomic_numbers.size(); i++) {
-    result(i) = craso::chem::Element(atomic_numbers(i)).covalentRadius();
+    result(i) = tonto::chem::Element(atomic_numbers(i)).covalentRadius();
   }
   return result;
 }
@@ -99,7 +99,7 @@ const PeriodicBondGraph &Crystal::unit_cell_connectivity() const {
 
   for (size_t i = 0; i < n_uc; i++) {
     m_bond_graph_vertices.push_back(
-        m_bond_graph.add_vertex(craso::graph::PeriodicVertex{i}));
+        m_bond_graph.add_vertex(tonto::graph::PeriodicVertex{i}));
   }
 
   for (size_t uc_idx_l = 0; uc_idx_l < n_uc; uc_idx_l++) {
@@ -120,7 +120,7 @@ const PeriodicBondGraph &Crystal::unit_cell_connectivity() const {
       double cov_b = covalent_radii(asym_idx_r);
       if (d < ((cov_a + cov_b + 0.4) * (cov_a + cov_b + 0.4))) {
         auto pos = s.frac_pos.col(idx);
-        craso::graph::PeriodicEdge left_right{sqrt(d),
+        tonto::graph::PeriodicEdge left_right{sqrt(d),
                                               uc_idx_l,
                                               uc_idx_r,
                                               asym_idx_l,
@@ -130,7 +130,7 @@ const PeriodicBondGraph &Crystal::unit_cell_connectivity() const {
                                               static_cast<int>(floor(pos(2)))};
         m_bond_graph.add_edge(m_bond_graph_vertices[uc_idx_l],
                               m_bond_graph_vertices[uc_idx_r], left_right);
-        craso::graph::PeriodicEdge right_left{sqrt(d),
+        tonto::graph::PeriodicEdge right_left{sqrt(d),
                                               uc_idx_r,
                                               uc_idx_l,
                                               asym_idx_r,
@@ -147,7 +147,7 @@ const PeriodicBondGraph &Crystal::unit_cell_connectivity() const {
   return m_bond_graph;
 }
 
-const std::vector<craso::chem::Molecule> &Crystal::unit_cell_molecules() const {
+const std::vector<tonto::chem::Molecule> &Crystal::unit_cell_molecules() const {
 
   auto g = unit_cell_connectivity();
   auto atoms = unit_cell_atoms();
@@ -199,11 +199,11 @@ const std::vector<craso::chem::Molecule> &Crystal::unit_cell_molecules() const {
       }
     }
     positions += shifts;
-    craso::chem::Molecule m(atomic_numbers, to_cartesian(positions));
+    tonto::chem::Molecule m(atomic_numbers, to_cartesian(positions));
     m.set_bonds(bonds);
     m_unit_cell_molecules.push_back(m);
   }
   return m_unit_cell_molecules;
 }
 
-} // namespace craso::crystal
+} // namespace tonto::crystal

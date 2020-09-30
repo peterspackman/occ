@@ -1,8 +1,8 @@
 #include "ints.h"
 
-namespace craso::ints {
+namespace tonto::ints {
 MatRM compute_2body_2index_ints(const BasisSet &bs) {
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   using libint2::BraKet;
   using libint2::Engine;
   using libint2::Shell;
@@ -58,7 +58,7 @@ MatRM compute_2body_2index_ints(const BasisSet &bs) {
     }
   }; // compute lambda
 
-  craso::parallel::parallel_do(compute);
+  tonto::parallel::parallel_do(compute);
 
   return result;
 }
@@ -89,7 +89,7 @@ MatRM compute_2body_fock(const BasisSet &obs,
                          double precision, const MatRM &Schwarz) {
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   std::vector<MatRM> G(nthreads, MatRM::Zero(n, n));
 
   const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
@@ -258,7 +258,7 @@ MatRM compute_2body_fock(const BasisSet &obs,
     }
   }; // end of lambda
 
-  craso::parallel::parallel_do(lambda);
+  tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -288,7 +288,7 @@ std::pair<MatRM, MatRM> compute_JK(const BasisSet &obs,
                                    const MatRM &Schwarz) {
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   std::vector<MatRM> J(nthreads, MatRM::Zero(n, n));
   std::vector<MatRM> K(nthreads, MatRM::Zero(n, n));
 
@@ -459,7 +459,7 @@ std::pair<MatRM, MatRM> compute_JK(const BasisSet &obs,
     }
   }; // end of lambda
 
-  craso::parallel::parallel_do(lambda);
+  tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -493,7 +493,7 @@ MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
   const auto n_D = D_bs.nbf();
   assert(D.cols() == D.rows() && D.cols() == n_D);
 
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   std::vector<MatRM> G(nthreads, MatRM::Zero(n, n));
 
   // construct the 2-electron repulsion integrals engine
@@ -599,7 +599,7 @@ MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
     }
   }; // thread lambda
 
-  craso::parallel::parallel_do(lambda);
+  tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -616,7 +616,7 @@ std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
     double precision, const MatRM &Schwarz) {
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   std::vector<MatRM> Ga(nthreads, MatRM::Zero(n, n));
   std::vector<MatRM> Gb(nthreads, MatRM::Zero(n, n));
 
@@ -829,7 +829,7 @@ std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
     }
   }; // end of lambda
 
-  craso::parallel::parallel_do(lambda);
+  tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -860,7 +860,7 @@ std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
     double precision, const MatRM &Schwarz) {
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   std::vector<MatRM> Ja(nthreads, MatRM::Zero(n, n)),
       Ka(nthreads, MatRM::Zero(n, n));
   std::vector<MatRM> Jb(nthreads, MatRM::Zero(n, n)),
@@ -1073,7 +1073,7 @@ std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
     }
   }; // end of lambda
 
-  craso::parallel::parallel_do(lambda);
+  tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -1109,7 +1109,7 @@ MatRM compute_2body_fock_general(
 
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   std::vector<MatRM> G(nthreads, MatRM::Zero(D.rows(), D.cols()));
 
   const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
@@ -1304,7 +1304,7 @@ MatRM compute_2body_fock_general(
     }
   }; // end of lambda
 
-  craso::parallel::parallel_do(lambda);
+  tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -1335,7 +1335,7 @@ std::pair<MatRM, MatRM> compute_JK_general(
 
   const auto n = obs.nbf();
   const auto nshells = obs.size();
-  using craso::parallel::nthreads;
+  using tonto::parallel::nthreads;
   std::vector<MatRM> J(nthreads, MatRM::Zero(D.rows(), D.cols()));
   std::vector<MatRM> K(nthreads, MatRM::Zero(D.rows(), D.cols()));
 
@@ -1532,7 +1532,7 @@ std::pair<MatRM, MatRM> compute_JK_general(
     }
   }; // end of lambda
 
-  craso::parallel::parallel_do(lambda);
+  tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
@@ -1557,4 +1557,4 @@ std::pair<MatRM, MatRM> compute_JK_general(
   return std::make_pair(JJ, KK);
 }
 
-} // namespace craso::ints
+} // namespace tonto::ints

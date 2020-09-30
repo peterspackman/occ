@@ -6,7 +6,7 @@
 #include <regex>
 #include <string>
 
-namespace craso::io {
+namespace tonto::io {
 
 struct AtomData {
   std::string element;
@@ -67,7 +67,7 @@ public:
   bool crystal_valid() const { return symmetry_valid() && cell_valid(); }
   const std::string &failure_description() const { return m_failure_desc; }
   size_t num_atoms() const { return m_atoms.size(); }
-  std::optional<craso::crystal::Crystal> parse_crystal(const std::string &);
+  std::optional<tonto::crystal::Crystal> parse_crystal(const std::string &);
 
 private:
   void extract_atom_sites(const gemmi::cif::Loop &);
@@ -79,4 +79,4 @@ private:
   CellData m_cell;
 };
 
-} // namespace craso::io
+} // namespace tonto::io

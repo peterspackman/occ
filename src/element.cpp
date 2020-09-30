@@ -3,14 +3,14 @@
 #include <algorithm>
 #include <sstream>
 
-namespace craso::chem {
+namespace tonto::chem {
 
 Element::Element(int atomicNumber) : m_data(ELEMENTDATA_TABLE[atomicNumber]) {}
 
 Element::Element(const std::string &s) : m_data(ELEMENTDATA_TABLE[0]) {
   // capitalize the symbol first
-  auto symbol = craso::util::trim_copy(s);
-  auto capitalized = craso::util::capitalize_copy(s);
+  auto symbol = tonto::util::trim_copy(s);
+  auto capitalized = tonto::util::capitalize_copy(s);
   for (size_t i = 1; i < ELEMENT_MAX; i++) {
     const auto dat = ELEMENTDATA_TABLE[i];
     if (symbol == dat.symbol) {
@@ -46,4 +46,4 @@ std::string chemical_formula(const std::vector<Element> &els) {
   return result;
 }
 
-} // namespace craso::chem
+} // namespace tonto::chem
