@@ -35,11 +35,10 @@ int main(int argc, const char **argv) {
       ("j,nthreads", "Number of threads", cxxopts::value<int>()->default_value("1"))
       ("i,input", "Input file geometry", cxxopts::value<std::string>())
       ("h,help", "Print this help message")
-      ("general", "Use general")
+      ("ghf", "Use general")
       ("uhf", "Use unrestricted")
       ("multiplicity", "Set the multiplicity of the system", cxxopts::value<int>()->default_value("1"))
-      ("c,charge", "Set the total system charge", cxxopts::value<int>()->default_value("0"))
-      ("diis-iteration", "Set the total system charge", cxxopts::value<int>()->default_value("2"));
+      ("c,charge", "Set the total system charge", cxxopts::value<int>()->default_value("0"));
 
   auto result = options.parse(argc, argv);
   if (result.count("help") || !(result.count("input"))) {
@@ -56,7 +55,6 @@ int main(int argc, const char **argv) {
     const auto basisname = result["basis"].as<std::string>();
     const auto multiplicity = result["multiplicity"].as<int>();
     const auto charge = result["charge"].as<int>();
-    const auto diis_iter = result["diis-iteration"].as<int>();
     Molecule m = craso::chem::read_xyz_file(filename);
 
     fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", filename, "el", "x", "y", "z");
@@ -65,7 +63,7 @@ int main(int argc, const char **argv) {
                  atom.x, atom.y, atom.z);
     }
     bool unrestricted = result.count("uhf") || (multiplicity != 1);
-    bool general = result.count("general");
+    bool general = result.count("ghf");
 
     using craso::parallel::nthreads;
     nthreads = result["nthreads"].as<int>();
@@ -81,13 +79,13 @@ int main(int argc, const char **argv) {
     HartreeFock hf(m.atoms(), obs);
     if (general) {
       fmt::print("{:12s} {:>12s}\n", "procedure", "ghf");
-      GeneralSCF<HartreeFock> scf(hf, diis_iter);
+      GeneralSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;
       scf.set_charge(charge);
       double e = scf.compute_scf_energy();
     } else if (unrestricted) {
       fmt::print("{:12s} {:>12s}\n", "procedure", "uhf");
-      UnrestrictedSCF<HartreeFock> scf(hf, diis_iter);
+      UnrestrictedSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;
       scf.set_multiplicity(multiplicity);
       scf.set_charge(charge);
@@ -97,7 +95,7 @@ int main(int argc, const char **argv) {
     } else
     {
       fmt::print("{:12s} {:>12s}\n", "procedure", "rhf");
-      RestrictedSCF<HartreeFock> scf(hf, diis_iter);
+      RestrictedSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;
       scf.set_charge(charge);
       double e = scf.compute_scf_energy();

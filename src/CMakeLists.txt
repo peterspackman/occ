@@ -1,4 +1,4 @@
-add_library(craso STATIC
+add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.cpp"
@@ -12,10 +12,10 @@ add_library(craso STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.cpp"
-    ${CRASO_INCLUDE_FILES}
+    ${TONTO_INCLUDE_FILES}
 )
 
-target_link_libraries(craso 
+target_link_libraries(tonto 
     PUBLIC 
     Eigen3::Eigen Boost::graph fmt::fmt 
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
@@ -23,12 +23,12 @@ target_link_libraries(craso
     Libxc::xc
     numgrid-objects
 )
-target_include_directories(craso PUBLIC 
-    ${CRASO_INCLUDE_DIR} 
+target_include_directories(tonto PUBLIC 
+    ${TONTO_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
 )
-target_compile_features(craso PUBLIC cxx_std_17)
+target_compile_features(tonto PUBLIC cxx_std_17)
 
 
 add_executable(hf "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
-target_link_libraries(hf PUBLIC craso)
+target_link_libraries(hf PUBLIC tonto)
