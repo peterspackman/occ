@@ -32,6 +32,7 @@ Tonto also uses the following libraries:
     libint2      - Electron integrals using GTOs
     numgrid      - DFT grids
     libxc        - Density functional implementations
+    gemmi        - CIF parsing & structure refinement
     boost::graph - Graph implementation
     OpenMP       - Multithreading
     fmt          - String formatting
