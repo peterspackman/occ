@@ -38,5 +38,6 @@ using DVec = Eigen::VectorXd;
 using DVec3 = Eigen::Vector3d;
 
 using IVec = Eigen::VectorXi;
+using IVec3 = Eigen::Vector3i;
 
 }; // namespace tonto

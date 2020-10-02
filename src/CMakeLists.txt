@@ -1,10 +1,12 @@
 add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gto.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
