@@ -9,6 +9,9 @@ namespace libint2 {
 
 namespace tonto::density {
     tonto::Vec eval_gto(const libint2::Shell &s1, const double x[3]);
+    tonto::Mat evaluate_gtos(
+            const libint2::BasisSet &basis, const std::vector<libint2::Atom> &atoms,
+            const tonto::Mat4N &grid_pts);
     tonto::Vec evaluate(
             const libint2::BasisSet &basis, const std::vector<libint2::Atom> &atoms,
             const tonto::MatRM& D, const tonto::Mat4N &grid_pts);

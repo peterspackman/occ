@@ -131,7 +131,6 @@ int main(int argc, const char **argv) {
       scf.conv = 1e-12;
       scf.set_charge(charge);
       double e = scf.compute_scf_energy();
-      fmt::print("D:\n{}\n", scf.D);
       //scf.print_orbital_energies();
     }
 

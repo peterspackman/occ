@@ -3,44 +3,57 @@
 #include <libint2/basis.h>
 #include <libint2/atom.h>
 #include <libint2/cartesian.h>
-#include <fmt/core.h>
-#include <fmt/ostream.h>
-
 
 namespace tonto::density {
 
 tonto::Vec eval_gto(const libint2::Shell &s1, const double x[3])
 {
     tonto::Vec result = tonto::Vec::Zero(s1.size());
-    double x1 = x[0] - s1.O[0];
-    double x2 = x[1] - s1.O[1];
-    double x3 = x[2] - s1.O[2];
-    double r2 = x1 * x1 + x2 * x2 + x3 * x3;
+    double dx = x[0] - s1.O[0];
+    double dy = x[1] - s1.O[1];
+    double dz = x[2] - s1.O[2];
+    double r2 = dx * dx + dy * dy + dz * dz;
     for(size_t i = 0; i < s1.nprim(); ++i)
     {
         double alpha = s1.alpha[i];
-        double e = exp(-alpha * r2);
+        double expfac = exp(-alpha * r2);
         for(const auto& contr: s1.contr)
         {
             const double coeff = contr.coeff[i];
-            if(contr.l == 0) {
-                result(0) += coeff * e;
-                continue;
-            }
             int l = 0, m = 0, n = 0;
             int offset = 0;
             FOR_CART(l, m, n, contr.l);
-                double tmp = coeff * e;
-                double xfac = 1.0, yfac = 1.0, zfac = 1.0;
-                for(int ii = 0; ii < l; ii++) xfac *= x1;
-                for(int ii = 0; ii < m; ii++) yfac *= x2;
-                for(int ii = 0; ii < n; ii++) zfac *= x3;
-                result(offset) += xfac * yfac * zfac * tmp;
+                double tmp = coeff * expfac;
+                for(int px = 0; px < l; px++) tmp *= dx;
+                for(int py = 0; py < m; py++) tmp *= dy;
+                for(int pz = 0; pz < n; pz++) tmp *= dz;
+                result(offset) += tmp;
                 offset++;
             END_FOR_CART
         }
     }
     return result;
+}
+
+tonto::Mat evaluate_gtos(
+    const libint2::BasisSet &basis,
+    const std::vector<libint2::Atom> &atoms,
+    const tonto::Mat4N &grid_pts)
+{
+    const auto nshells = basis.size();
+    tonto::Mat gto_vals = tonto::Mat::Zero(basis.nbf(), grid_pts.cols());
+    auto shell2bf = basis.shell2bf();
+    for(auto i = 0; i < nshells; i++)
+    {
+        const auto& s1 = basis[i];
+        size_t bf = shell2bf[i];
+        size_t n_bf = s1.size();
+        for(auto pt = 0; pt < grid_pts.cols(); pt++)
+        {
+            gto_vals.block(bf, pt, n_bf, 1) += eval_gto(s1, grid_pts.col(pt).data());
+        }
+    }
+    return gto_vals;
 }
 
 tonto::Vec evaluate(
@@ -50,25 +63,11 @@ tonto::Vec evaluate(
     const tonto::Mat4N &grid_pts)
 {
     tonto::Vec rho = tonto::Vec::Zero(grid_pts.cols());
-    const auto nshells = basis.size();
-    tonto::Mat rho_s = tonto::Mat::Zero(D.rows(), grid_pts.cols());
-    auto shell2bf = basis.shell2bf();
-    for(auto i = 0; i < nshells; i++)
-    {
-        const auto& s1 = basis[i];
-        size_t bf = shell2bf[i];
-        size_t n_bf = s1.size();
-        fmt::print("{}, bf_start {} n_bf {}\n", s1, bf, n_bf);
-        for(auto pt = 0; pt < grid_pts.cols(); pt++)
-        {
-            rho_s.block(bf, pt, n_bf, 1) += eval_gto(s1, grid_pts.col(pt).data());
-        }
-    }
-    fmt::print("rho_s\n{}\n", rho_s);
-    for(int bf1 = 0; bf1 < rho_s.rows(); bf1++) {
-        for(int bf2 = bf1; bf2 < rho_s.rows(); bf2++) {
-            if(bf1 == bf2) rho.array() += D(bf1, bf2) * rho_s.row(bf1).array() * rho_s.row(bf2).array();
-            else rho.array() += 2 * D(bf1, bf2) * rho_s.row(bf1).array() * rho_s.row(bf2).array();
+    auto gto_vals = evaluate_gtos(basis, atoms, grid_pts);
+    for(int bf1 = 0; bf1 < gto_vals.rows(); bf1++) {
+        for(int bf2 = bf1; bf2 < gto_vals.rows(); bf2++) {
+            if(bf1 == bf2) rho.array() += D(bf1, bf2) * gto_vals.row(bf1).array() * gto_vals.row(bf2).array();
+            else rho.array() += 2 * D(bf1, bf2) * gto_vals.row(bf1).array() * gto_vals.row(bf2).array();
         }
     }
     return rho;

@@ -2,8 +2,6 @@
 #include <libint2/basis.h>
 #include <libint2/atom.h>
 #include "numgrid.h"
-#include <fmt/core.h>
-#include <fmt/ostream.h>
 #include "xc.h"
 
 namespace tonto::dft {
@@ -61,9 +59,6 @@ DFTGrid::DFTGrid(
             m_alpha_min(i, j) = min_alpha[i][j];
         }
     }
-    fmt::print("m_l_max\n{}\n", m_l_max);
-    fmt::print("m_alpha_max\n{}\n", m_alpha_max);
-    fmt::print("m_alpha_min\n{}\n", m_alpha_min);
 }
 
 Mat4N DFTGrid::grid_points(size_t idx) const
@@ -79,10 +74,7 @@ Mat4N DFTGrid::grid_points(size_t idx) const
     );
     int num_points = numgrid_get_num_grid_points(ctx);
 
-    fmt::print("{} points in grid on atom {}\n", num_points, idx);
     Mat pts(num_points, 4);
-    fmt::print("Points: ({} {})\n", pts.rows(), pts.cols());
-
     numgrid_get_grid(
         ctx,
         n_atoms(),
