@@ -2,7 +2,8 @@
 #include "linear_algebra.h"
 #include "numgrid.h"
 #include <vector>
-
+#include <xc.h>
+#include <string>
 
 namespace libint2 {
 class BasisSet;
@@ -40,4 +41,12 @@ private:
     MatRM m_alpha_min;
 };
 
+
+class DensityFunctional {
+public:
+    DensityFunctional(const std::string&);
+private:
+    xc_func_type m_exchange;
+    xc_func_type m_correlation;
+};
 }

@@ -92,4 +92,11 @@ MatN4 DFTGrid::grid_points(size_t idx) const
     numgrid_free_atom_grid(ctx);
     return pts;
 }
+
+DensityFunctional::DensityFunctional(const std::string& name)
+{
+    xc_func_init(&m_exchange, XC_LDA_X, XC_UNPOLARIZED);
+    xc_func_init(&m_correlation, XC_LDA_C_VWN, XC_UNPOLARIZED);
+}
+
 }

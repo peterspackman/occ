@@ -6,11 +6,16 @@
 #include <fmt/ostream.h>
 #include <iostream>
 #include "numgrid.h"
-
+#include <xc.h>
 #include "gto.h"
 
 void print_header()
 {
+    int vmajor, vminor, vmicro;
+    xc_version(&vmajor, &vminor, &vmicro);
+    const auto xc_version_string = fmt::format("{}.{}.{}", vmajor, vminor, vmicro);
+    const auto eigen_version_string = fmt::format("{}.{}.{}", EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION, EIGEN_MINOR_VERSION);
+
     fmt::print(R"(
 
 
@@ -30,17 +35,17 @@ void print_header()
 
 Tonto also uses the following libraries:
 
-    eigen        - Linear Algebra
+    eigen        - Linear Algebra (v {})
     libint2      - Electron integrals using GTOs
     numgrid      - DFT grids
-    libxc        - Density functional implementations
+    libxc        - Density functional implementations (v {})
     gemmi        - CIF parsing & structure refinement
     boost::graph - Graph implementation
     OpenMP       - Multithreading
     fmt          - String formatting
     spdlog       - Logging
 
-)");
+)", eigen_version_string, xc_version_string);
 }
 
 
@@ -102,11 +107,6 @@ int main(int argc, const char **argv) {
     libint2::BasisSet obs(basisname, m.atoms());
 
     fmt::print("    {:12s} {:>12d}\n", "n_bf", obs.nbf());
-    fmt::print("Basis:\n");
-    for(size_t i = 0; i < obs.size(); i++)
-    {
-        fmt::print("{}: {}\n", i, obs[i]);
-    }
 
     HartreeFock hf(m.atoms(), obs);
     if (general) {
