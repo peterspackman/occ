@@ -54,14 +54,14 @@ DFTGrid::DFTGrid(
         i++;
     }
     m_alpha_min = tonto::Mat::Zero(atoms.size(), m_l_max.maxCoeff() + 1);
-    for(int i = 0; i < min_alpha.size(); i++) {
-        for(int j = 0; j < min_alpha[i].size(); j++) {
+    for(size_t i = 0; i < min_alpha.size(); i++) {
+        for(size_t j = 0; j < min_alpha[i].size(); j++) {
             m_alpha_min(i, j) = min_alpha[i][j];
         }
     }
 }
 
-Mat4N DFTGrid::grid_points(size_t idx) const
+MatN4 DFTGrid::grid_points(size_t idx) const
 {
     assert(idx < m_atomic_numbers.size());
     context_t *ctx = numgrid_new_atom_grid(
@@ -90,6 +90,6 @@ Mat4N DFTGrid::grid_points(size_t idx) const
     );
 
     numgrid_free_atom_grid(ctx);
-    return pts.transpose();
+    return pts;
 }
 }

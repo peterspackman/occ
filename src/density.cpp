@@ -6,24 +6,22 @@
 
 namespace tonto::density {
 
-tonto::Vec eval_gto(const libint2::Shell &s1, const double x[3])
+tonto::Vec eval_shell(const libint2::Shell &shell, const tonto::Vec4& dists)
 {
-    tonto::Vec result = tonto::Vec::Zero(s1.size());
-    double dx = x[0] - s1.O[0];
-    double dy = x[1] - s1.O[1];
-    double dz = x[2] - s1.O[2];
-    double r2 = dx * dx + dy * dy + dz * dz;
-    for(size_t i = 0; i < s1.nprim(); ++i)
+    double dx = dists(0); double dy = dists(1); double dz = dists(2); double r2 = dists(3);
+
+    tonto::Vec result = tonto::Vec::Zero(shell.size());
+    for(size_t i = 0; i < shell.nprim(); ++i)
     {
-        double alpha = s1.alpha[i];
+        double alpha = shell.alpha[i];
         double expfac = exp(-alpha * r2);
-        for(const auto& contr: s1.contr)
+        for(const auto& contr: shell.contr)
         {
-            const double coeff = contr.coeff[i];
-            int l = 0, m = 0, n = 0;
-            int offset = 0;
-            FOR_CART(l, m, n, contr.l);
-                double tmp = coeff * expfac;
+            const double coeff{contr.coeff[i]};
+            int l, m, n;
+            int offset{0};
+            FOR_CART(l, m, n, contr.l)
+                double tmp{coeff * expfac};
                 for(int px = 0; px < l; px++) tmp *= dx;
                 for(int py = 0; py < m; py++) tmp *= dy;
                 for(int pz = 0; pz < n; pz++) tmp *= dz;
@@ -38,19 +36,33 @@ tonto::Vec eval_gto(const libint2::Shell &s1, const double x[3])
 tonto::Mat evaluate_gtos(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
-    const tonto::Mat4N &grid_pts)
+    const tonto::MatN4 &grid_pts)
 {
-    const auto nshells = basis.size();
-    tonto::Mat gto_vals = tonto::Mat::Zero(basis.nbf(), grid_pts.cols());
+    const auto natoms = atoms.size();
+    const auto npts = grid_pts.rows();
+    tonto::Mat gto_vals = tonto::Mat::Zero(basis.nbf(), grid_pts.rows());
     auto shell2bf = basis.shell2bf();
-    for(auto i = 0; i < nshells; i++)
+    auto atom2shell = basis.atom2shell(atoms);
+
+    for(size_t i = 0; i < natoms; i++)
     {
-        const auto& s1 = basis[i];
-        size_t bf = shell2bf[i];
-        size_t n_bf = s1.size();
-        for(auto pt = 0; pt < grid_pts.cols(); pt++)
-        {
-            gto_vals.block(bf, pt, n_bf, 1) += eval_gto(s1, grid_pts.col(pt).data());
+        const auto& atom = atoms[i];
+        tonto::MatN4 dists(npts, 4);
+        for(auto pt = 0; pt < npts; pt++) {
+            double dx = grid_pts(pt, 0) - atom.x;
+            double dy = grid_pts(pt, 1) - atom.y;
+            double dz = grid_pts(pt, 2) - atom.z;
+            double r2 = dx * dx + dy * dy + dz * dz;
+            dists(pt, 0) = dx; dists(pt, 1) = dy; dists(pt, 2) = dz; dists(pt, 3) = r2;
+        }
+        for(const auto& shell_idx: atom2shell[i]) {
+            const auto& shell = basis[shell_idx];
+            size_t bf = shell2bf[shell_idx];
+            size_t n_bf = shell.size();
+            for(auto pt = 0; pt < grid_pts.rows(); pt++)
+            {
+                gto_vals.block(bf, pt, n_bf, 1) += eval_shell(shell, dists.row(pt));
+            }
         }
     }
     return gto_vals;
@@ -60,9 +72,9 @@ tonto::Vec evaluate(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
     const tonto::MatRM& D,
-    const tonto::Mat4N &grid_pts)
+    const tonto::MatN4 &grid_pts)
 {
-    tonto::Vec rho = tonto::Vec::Zero(grid_pts.cols());
+    tonto::Vec rho = tonto::Vec::Zero(grid_pts.rows());
     auto gto_vals = evaluate_gtos(basis, atoms, grid_pts);
     for(int bf1 = 0; bf1 < gto_vals.rows(); bf1++) {
         for(int bf2 = bf1; bf2 < gto_vals.rows(); bf2++) {

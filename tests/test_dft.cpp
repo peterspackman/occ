@@ -27,10 +27,10 @@ TEST_CASE("Water DFT grid", "[dft]")
         grid.set_min_angular_points(12);
         grid.set_max_angular_points(20);
         auto pts = grid.grid_points(0);
-        assert(pts.cols() == 1564);
+        assert(pts.rows() == 1564);
         auto hpts_a = grid.grid_points(1);
         auto hpts_b = grid.grid_points(1);
-        assert(hpts_a.cols() == hpts_b.cols());
+        assert(hpts_a.rows() == hpts_b.rows());
     }
 
     std::vector<libint2::Atom> atomsH2{
@@ -40,11 +40,10 @@ TEST_CASE("Water DFT grid", "[dft]")
     libint2::BasisSet basisH2("sto-3g", atomsH2);
 
     tonto::MatRM DH2 = tonto::MatRM::Constant(2, 2, 0.8394261);
-    tonto::Mat4N pts(4, 3);
-    pts << 1, 0, 0,
-           0, 1, 0,
-           0, 0, 1,
-           1, 1, 1;
+    tonto::MatN4 pts(3, 4);
+    pts << 1, 0, 0, 1,
+           0, 1, 0, 1,
+           0, 0, 1, 1;
 
     SECTION("Density H2/STO-3G") {
         tonto::Vec expected_rho(3);
@@ -98,14 +97,12 @@ TEST_CASE("Water DFT grid", "[dft]")
             -0.0122251, 0.0144757, 0.114164, 0.00764228, -0.000462594, 0.0285497, 0.11431, 0.0194102, -0.000752321, -0.0233096, -0.0266874, 0.0846396, 0.0598386,
             0.0116199, -0.00394649, 0.0889713, 0.00177756, -0.000257767, -0.0295861, 0.0886869, 0.0106733, -0.000475831, -0.0269691, -0.0225519, 0.0598386, 0.0468541;
         tonto::dft::DFTGrid grid(basis, atoms);
-        grid.set_min_angular_points(31);
-        grid.set_max_angular_points(131);
         double total_density = 0.0;
 
         for(size_t i = 0; i < atoms.size(); i++) {
             auto pts = grid.grid_points(i);
             auto rho = tonto::density::evaluate(basis, atoms, D_h2o, pts);
-            total_density += rho.dot(pts.row(3));
+            total_density += rho.dot(pts.col(3));
         }
         fmt::print("Total density: {:20.14f}\n", total_density);
         REQUIRE(total_density * 2 == Approx(10.0));

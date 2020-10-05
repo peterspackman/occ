@@ -33,6 +33,7 @@ using DMat4 = Eigen::Matrix4d;
 
 using Vec = Eigen::VectorXd;
 using Vec3 = Eigen::Vector3d;
+using Vec4 = Eigen::Vector4d;
 
 using DVec = Eigen::VectorXd;
 using DVec3 = Eigen::Vector3d;
