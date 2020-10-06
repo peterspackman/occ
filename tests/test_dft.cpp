@@ -108,5 +108,20 @@ TEST_CASE("Water DFT grid", "[dft]")
         REQUIRE(total_density * 2 == Approx(10.0));
     }
 
+    SECTION("DFT LDA") {
+        tonto::Vec rho(3);
+        rho << 1.0, 0.5, 0.3;
+        tonto::Vec expected(3);
+        expected << -0.7385587663820224, -0.586194481347579, -0.49441557378816503;
+        fmt::print("LDA exchange functiona\nl");
+        tonto::dft::DensityFunctional lda("LDA");
+        REQUIRE(lda.family_string() == "LDA");
+        REQUIRE(lda.kind_string() == "exchange");
+        auto e = lda.energy(rho);
+        fmt::print("desired: {:20.14f} {:20.14f} {:20.14f}\n", expected(0), expected(1), expected(2));
+        fmt::print("found:   {:20.14f} {:20.14f} {:20.14f}\n", e(0), e(1), e(2));
+        REQUIRE(tonto::util::all_close(e, expected));
+    }
+
 
 }

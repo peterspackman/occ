@@ -8,13 +8,21 @@
 #include "numgrid.h"
 #include <xc.h>
 #include "gto.h"
+#include "gemmi/version.hpp"
+#include "boost/version.hpp"
 
 void print_header()
 {
-    int vmajor, vminor, vmicro;
-    xc_version(&vmajor, &vminor, &vmicro);
-    const auto xc_version_string = fmt::format("{}.{}.{}", vmajor, vminor, vmicro);
+    const std::string xc_version_string{XC_VERSION};
     const auto eigen_version_string = fmt::format("{}.{}.{}", EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION, EIGEN_MINOR_VERSION);
+    const std::string libint_version_string{LIBINT_VERSION};
+    const std::string numgrid_verison_string{numgrid_get_version()};
+    const std::string gemmi_version_string{GEMMI_VERSION};
+    const std::string boost_version_string{BOOST_LIB_VERSION};
+    const int fmt_major = FMT_VERSION / 10000;
+    const int fmt_minor = (FMT_VERSION % 10000) / 100;
+    const int fmt_patch = (FMT_VERSION % 100);
+    const std::string fmt_version_string = fmt::format("{}.{}.{}", fmt_major, fmt_minor, fmt_patch);
 
     fmt::print(R"(
 
@@ -33,19 +41,20 @@ void print_header()
     Peter Spackman - Primary Developer
     Dylan Jayatilaka 
 
-Tonto also uses the following libraries:
+This version of tonto also uses the following third party libraries:
 
     eigen        - Linear Algebra (v {})
-    libint2      - Electron integrals using GTOs
-    numgrid      - DFT grids
+    libint2      - Electron integrals using GTOs (v {})
+    numgrid      - DFT grids (v {})
     libxc        - Density functional implementations (v {})
-    gemmi        - CIF parsing & structure refinement
-    boost::graph - Graph implementation
+    gemmi        - CIF parsing & structure refinement (v {})
+    boost::graph - Graph implementation (v {})
     OpenMP       - Multithreading
-    fmt          - String formatting
+    fmt          - String formatting (v {})
     spdlog       - Logging
 
-)", eigen_version_string, xc_version_string);
+)", eigen_version_string, libint_version_string, numgrid_verison_string, xc_version_string,
+    gemmi_version_string, boost_version_string, fmt_version_string);
 }
 
 
