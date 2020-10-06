@@ -7,10 +7,17 @@
 
 namespace tonto::density {
 
-void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>& dists, Eigen::Ref<tonto::Mat>& result)
+inline int num_components(int deriv_order) {
+    switch(deriv_order) {
+    case 0: return 1;
+    case 1: return 4;
+    case 2: return 10;
+    }
+}
+
+void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>& dists, Eigen::Ref<tonto::Mat>& result, int derivative)
 {
     double dx = dists(0, 0); double dy = dists(0, 1); double dz = dists(0, 2); double r2 = dists(0, 3);
-    bool do_gradients = result.cols() > 1;
     for(size_t i = 0; i < shell.nprim(); ++i)
     {
         double alpha = shell.alpha[i];
@@ -26,12 +33,31 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
                 for(int py = 0; py < m; py++) tmp *= dy;
                 for(int pz = 0; pz < n; pz++) tmp *= dz;
                 result(offset, 0) += tmp;
+                double ddx, ddy, ddz, pdx, pdy, pdz;
+                if(derivative >=1) {
+                    pdx = (l / dx - 2 * alpha * dx);
+                    pdy = (m / dy - 2 * alpha * dy);
+                    pdz = (n / dz - 2 * alpha * dz);
+                    ddx = tmp * pdx;
+                    ddy = tmp * pdy;
+                    ddz = tmp * pdz;
+                    result(offset, 1) += ddx;
+                    result(offset, 2) += ddy;
+                    result(offset, 3) += ddz;
+                }
+                if(derivative >= 2) {
+                    double pdx2 = (-l / (dx * dx) - 2 * alpha);
+                    double pdy2 = (-m / (dy * dy) - 2 * alpha);
+                    double pdz2 = (-n / (dz * dz) - 2 * alpha);
+                    result(offset, 4) += ddx * pdx + tmp * pdx2;
+                    result(offset, 5) += ddx * pdy;
+                    result(offset, 6) += ddx * pdz;
+                    result(offset, 7) += ddy * pdy + tmp * pdy2;
+                    result(offset, 8) += ddy * pdz;
+                    result(offset, 9) += ddz * pdz + tmp * pdz2;
+                }
                 offset++;
             END_FOR_CART
-            /*
-             * df/dx = (l / x - 2 \alpha x) * f(x)
-             * df2/dx2 = ((l - 1)/x - 2 \alpha x) * f(x)
-             */
         }
     }
 }
@@ -39,11 +65,12 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
 tonto::Mat evaluate_gtos(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
-    const tonto::MatN4 &grid_pts)
+    const tonto::MatN4 &grid_pts, int derivative)
 {
     const auto natoms = atoms.size();
     const auto npts = grid_pts.rows();
-    tonto::Mat gto_vals = tonto::Mat::Zero(basis.nbf(), grid_pts.rows());
+    int n_components = num_components(derivative);
+    tonto::Mat gto_vals = tonto::Mat::Zero(basis.nbf(), grid_pts.rows() * n_components);
     auto shell2bf = basis.shell2bf();
     auto atom2shell = basis.atom2shell(atoms);
 
@@ -64,8 +91,8 @@ tonto::Mat evaluate_gtos(
             size_t n_bf = shell.size();
             for(auto pt = 0; pt < grid_pts.rows(); pt++)
             {
-                Eigen::Ref<tonto::Mat> block(gto_vals.block(bf, pt, n_bf, 1));
-                eval_shell(shell, dists.row(pt), block);
+                Eigen::Ref<tonto::Mat> block(gto_vals.block(bf, pt * n_components, n_bf, n_components));
+                eval_shell(shell, dists.row(pt), block, derivative);
             }
         }
     }
@@ -76,10 +103,12 @@ tonto::Vec evaluate(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
     const tonto::MatRM& D,
-    const tonto::MatN4 &grid_pts)
+    const tonto::MatN4 &grid_pts,
+    int derivative)
 {
-    tonto::Vec rho = tonto::Vec::Zero(grid_pts.rows());
-    auto gto_vals = evaluate_gtos(basis, atoms, grid_pts);
+    int n_components = num_components(derivative);
+    tonto::Vec rho = tonto::Vec::Zero(grid_pts.rows()* n_components);
+    auto gto_vals = evaluate_gtos(basis, atoms, grid_pts, derivative);
     for(int bf1 = 0; bf1 < gto_vals.rows(); bf1++) {
         for(int bf2 = bf1; bf2 < gto_vals.rows(); bf2++) {
             if(bf1 == bf2) rho.array() += D(bf1, bf2) * gto_vals.row(bf1).array() * gto_vals.row(bf2).array();

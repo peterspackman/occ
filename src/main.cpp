@@ -7,7 +7,6 @@
 #include <iostream>
 #include "numgrid.h"
 #include <xc.h>
-#include "gto.h"
 #include "gemmi/version.hpp"
 #include "boost/version.hpp"
 
@@ -114,9 +113,8 @@ int main(int argc, const char **argv) {
     fmt::print("    {:12s} {:>12s}\n", "basis", basisname);
 
     libint2::BasisSet obs(basisname, m.atoms());
-
+    obs.set_pure(false);
     fmt::print("    {:12s} {:>12d}\n", "n_bf", obs.nbf());
-
     HartreeFock hf(m.atoms(), obs);
     if (general) {
       fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
@@ -132,7 +130,6 @@ int main(int argc, const char **argv) {
       scf.set_charge(charge);
       double e = scf.compute_scf_energy();
       //scf.print_orbital_energies();
-
     } else
     {
       fmt::print("    {:12s} {:>12s}\n", "procedure", "rhf");
