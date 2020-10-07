@@ -14,10 +14,6 @@ using tonto::ints::shellpair_list_t;
 /// to use precomputed shell pair data must decide on max precision a priori
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 
-std::tuple<shellpair_list_t, shellpair_data_t>
-compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2 = BasisSet(),
-                   double threshold = 1e-12);
-
 class HartreeFock {
 public:
   HartreeFock(const std::vector<libint2::Atom> &atoms, const BasisSet &basis);

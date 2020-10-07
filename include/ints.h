@@ -20,6 +20,10 @@ using shellpair_data_t = std::vector<std::vector<
     std::shared_ptr<libint2::ShellPair>>>; // in same order as shellpair_list_t
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 
+std::tuple<shellpair_list_t, shellpair_data_t>
+compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2 = BasisSet(),
+                   double threshold = 1e-12);
+
 template <Operator obtype,
           typename OperatorParams =
               typename libint2::operator_traits<obtype>::oper_params_type>

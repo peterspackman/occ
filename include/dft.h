@@ -87,5 +87,6 @@ private:
     tonto::hf::HartreeFock m_hf;
     DFTGrid m_grid;
     std::vector<DensityFunctional> m_funcs;
+    std::vector<tonto::MatN4> m_atom_grids;
 };
 }

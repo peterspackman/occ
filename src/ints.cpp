@@ -1,4 +1,5 @@
 #include "ints.h"
+#include "logger.h"
 
 namespace tonto::ints {
 MatRM compute_2body_2index_ints(const BasisSet &bs) {
@@ -31,11 +32,11 @@ MatRM compute_2body_2index_ints(const BasisSet &bs) {
     // loop over unique shell pairs, {s1,s2} such that s1 >= s2
     // this is due to the permutational symmetry of the real integrals over
     // Hermitian operators: (1|2) = (2|1)
-    for (auto s1 = 0l, s12 = 0l; s1 != nshells; ++s1) {
+    for (size_t s1 = 0, s12 = 0; s1 != nshells; ++s1) {
       auto bf1 = shell2bf[s1]; // first basis function in this shell
       auto n1 = bs[s1].size();
 
-      for (auto s2 = 0; s2 <= s1; ++s2, ++s12) {
+      for (size_t s2 = 0; s2 <= s1; ++s2, ++s12) {
         if (s12 % nthreads != thread_id)
           continue;
 
@@ -61,6 +62,112 @@ MatRM compute_2body_2index_ints(const BasisSet &bs) {
   tonto::parallel::parallel_do(compute);
 
   return result;
+}
+
+std::tuple<shellpair_list_t, shellpair_data_t>
+compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
+                   const double threshold) {
+  using libint2::Operator;
+  const BasisSet &bs2 = (_bs2.empty() ? bs1 : _bs2);
+  const auto nsh1 = bs1.size();
+  const auto nsh2 = bs2.size();
+  const auto bs1_equiv_bs2 = (&bs1 == &bs2);
+
+  using tonto::parallel::nthreads;
+
+  // construct the 2-electron repulsion integrals engine
+  using libint2::Engine;
+  std::vector<Engine> engines;
+  engines.reserve(nthreads);
+  engines.emplace_back(Operator::overlap,
+                       std::max(bs1.max_nprim(), bs2.max_nprim()),
+                       std::max(bs1.max_l(), bs2.max_l()), 0);
+  for (size_t i = 1; i != nthreads; ++i) {
+    engines.push_back(engines[0]);
+  }
+
+  tonto::log::debug("start computing non-negligible shell-pair list");
+
+  libint2::Timers<1> timer;
+  timer.set_now_overhead(25);
+  timer.start(0);
+
+  shellpair_list_t splist;
+
+  std::mutex mx;
+
+  auto compute = [&](int thread_id) {
+    auto &engine = engines[thread_id];
+    const auto &buf = engine.results();
+
+    // loop over permutationally-unique set of shells
+    for (auto s1 = 0l, s12 = 0l; s1 != nsh1; ++s1) {
+      mx.lock();
+      if (splist.find(s1) == splist.end())
+        splist.insert(std::make_pair(s1, std::vector<size_t>()));
+      mx.unlock();
+
+      auto n1 = bs1[s1].size(); // number of basis functions in this shell
+
+      auto s2_max = bs1_equiv_bs2 ? s1 : nsh2 - 1;
+      for (auto s2 = 0; s2 <= s2_max; ++s2, ++s12) {
+        if (s12 % nthreads != thread_id)
+          continue;
+
+        auto on_same_center = (bs1[s1].O == bs2[s2].O);
+        bool significant = on_same_center;
+        if (not on_same_center) {
+          auto n2 = bs2[s2].size();
+          engines[thread_id].compute(bs1[s1], bs2[s2]);
+          Eigen::Map<const MatRM> buf_mat(buf[0], n1, n2);
+          auto norm = buf_mat.norm();
+          significant = (norm >= threshold);
+        }
+
+        if (significant) {
+          mx.lock();
+          splist[s1].emplace_back(s2);
+          mx.unlock();
+        }
+      }
+    }
+  }; // end of compute
+
+  tonto::parallel::parallel_do(compute);
+
+  // resort shell list in increasing order, i.e. splist[s][s1] < splist[s][s2]
+  // if s1 < s2 N.B. only parallelized over 1 shell index
+  auto sort = [&](int thread_id) {
+    for (auto s1 = 0l; s1 != nsh1; ++s1) {
+      if (s1 % nthreads == thread_id) {
+        auto &list = splist[s1];
+        std::sort(list.begin(), list.end());
+      }
+    }
+  }; // end of sort
+
+  tonto::parallel::parallel_do(sort);
+
+  // compute shellpair data assuming that we are computing to default_epsilon
+  // N.B. only parallelized over 1 shell index
+  const auto ln_max_engine_precision = std::log(max_engine_precision);
+  shellpair_data_t spdata(splist.size());
+  auto make_spdata = [&](int thread_id) {
+    for (auto s1 = 0l; s1 != nsh1; ++s1) {
+      if (s1 % nthreads == thread_id) {
+        for (const auto &s2 : splist[s1]) {
+          spdata[s1].emplace_back(std::make_shared<libint2::ShellPair>(
+              bs1[s1], bs2[s2], ln_max_engine_precision));
+        }
+      }
+    }
+  }; // end of make_spdata
+
+  tonto::parallel::parallel_do(make_spdata);
+
+  timer.stop(0);
+  tonto::log::debug("done computing non-negligible shell-pair list ({:.6f} s)\n", timer.read(0));
+  return std::make_tuple(splist, spdata);
 }
 
 MatRM compute_shellblock_norm(const BasisSet &obs, const MatRM &A) {
@@ -121,25 +228,14 @@ MatRM compute_2body_fock(const BasisSet &obs,
   }
   std::atomic<size_t> num_ints_computed{0};
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  std::vector<libint2::Timers<1>> timers(nthreads);
-#endif
-
   auto shell2bf = obs.shell2bf();
 
   auto lambda = [&](int thread_id) {
     auto &engine = engines[thread_id];
     auto &g = G[thread_id];
     const auto &buf = engine.results();
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-    auto &timer = timers[thread_id];
-    timer.clear();
-    timer.set_now_overhead(25);
-#endif
-
     // loop over permutationally-unique set of shells
-    for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1) {
+    for (size_t s1 = 0, s1234 = 0; s1 != nshells; ++s1) {
       auto bf1_first = shell2bf[s1]; // first basis function in this shell
       auto n1 = obs[s1].size();      // number of basis functions in this shell
 
@@ -203,20 +299,11 @@ MatRM compute_2body_fock(const BasisSet &obs,
             auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
             auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.start(0);
-#endif
-
             engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
                 obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
             const auto *buf_1234 = buf[0];
             if (buf_1234 == nullptr)
               continue; // if all integrals screened out, skip to next quartet
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.stop(0);
-#endif
-
             // 1) each shell set of integrals contributes up to 6 shell sets of
             // the Fock matrix:
             //    F(a,b) += (ab|cd) * D(c,d)
@@ -261,21 +348,9 @@ MatRM compute_2body_fock(const BasisSet &obs,
   tonto::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
-  for (size_t i = 1; i != nthreads; ++i) {
+  for (auto i = 1; i < nthreads; ++i) {
     G[0] += G[i];
   }
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  double time_for_ints = 0.0;
-  for (auto &t : timers) {
-    time_for_ints += t.read(0);
-  }
-  std::cout << "time for integrals = " << time_for_ints << std::endl;
-  for (int t = 0; t != nthreads; ++t)
-    engines[t].print_timers();
-  std::cout << "# of integrals = " << num_ints_computed << std::endl;
-#endif
-
   // symmetrize the result and return
   MatRM GG = 0.5 * (G[0] + G[0].transpose());
   return GG;
@@ -320,11 +395,6 @@ std::pair<MatRM, MatRM> compute_JK(const BasisSet &obs,
     engines[i] = engines[0];
   }
   std::atomic<size_t> num_ints_computed{0};
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  std::vector<libint2::Timers<1>> timers(nthreads);
-#endif
-
   auto shell2bf = obs.shell2bf();
 
   auto lambda = [&](int thread_id) {
@@ -332,12 +402,6 @@ std::pair<MatRM, MatRM> compute_JK(const BasisSet &obs,
     auto &j = J[thread_id];
     auto &k = K[thread_id];
     const auto &buf = engine.results();
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-    auto &timer = timers[thread_id];
-    timer.clear();
-    timer.set_now_overhead(25);
-#endif
 
     // loop over permutationally-unique set of shells
     for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1) {
@@ -404,19 +468,12 @@ std::pair<MatRM, MatRM> compute_JK(const BasisSet &obs,
             auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
             auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.start(0);
-#endif
 
             engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
                 obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
             const auto *buf_1234 = buf[0];
             if (buf_1234 == nullptr)
               continue; // if all integrals screened out, skip to next quartet
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.stop(0);
-#endif
 
             // 1) each shell set of integrals contributes up to 6 shell sets of
             // the Fock matrix:
@@ -467,17 +524,6 @@ std::pair<MatRM, MatRM> compute_JK(const BasisSet &obs,
     K[0] += K[i];
   }
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  double time_for_ints = 0.0;
-  for (auto &t : timers) {
-    time_for_ints += t.read(0);
-  }
-  std::cout << "time for integrals = " << time_for_ints << std::endl;
-  for (int t = 0; t != nthreads; ++t)
-    engines[t].print_timers();
-  std::cout << "# of integrals = " << num_ints_computed << std::endl;
-#endif
-
   // symmetrize the result and return
   MatRM JJ = 0.5 * (J[0] + J[0].transpose());
   MatRM KK = 0.5 * (K[0] + K[0].transpose());
@@ -523,23 +569,12 @@ MatRM compute_J(const BasisSet &obs,
     engines[i] = engines[0];
   }
   std::atomic<size_t> num_ints_computed{0};
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  std::vector<libint2::Timers<1>> timers(nthreads);
-#endif
-
   auto shell2bf = obs.shell2bf();
 
   auto lambda = [&](int thread_id) {
     auto &engine = engines[thread_id];
     auto &j = J[thread_id];
     const auto &buf = engine.results();
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-    auto &timer = timers[thread_id];
-    timer.clear();
-    timer.set_now_overhead(25);
-#endif
 
     // loop over permutationally-unique set of shells
     for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1) {
@@ -606,19 +641,11 @@ MatRM compute_J(const BasisSet &obs,
             auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
             auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.start(0);
-#endif
-
             engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
                 obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
             const auto *buf_1234 = buf[0];
             if (buf_1234 == nullptr)
               continue; // if all integrals screened out, skip to next quartet
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.stop(0);
-#endif
 
             // 1) each shell set of integrals contributes up to 6 shell sets of
             // the Fock matrix:
@@ -663,18 +690,6 @@ MatRM compute_J(const BasisSet &obs,
   for (size_t i = 1; i != nthreads; ++i) {
     J[0] += J[i];
   }
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  double time_for_ints = 0.0;
-  for (auto &t : timers) {
-    time_for_ints += t.read(0);
-  }
-  std::cout << "time for integrals = " << time_for_ints << std::endl;
-  for (int t = 0; t != nthreads; ++t)
-    engines[t].print_timers();
-  std::cout << "# of integrals = " << num_ints_computed << std::endl;
-#endif
-
   // symmetrize the result and return
   MatRM JJ = 0.5 * (J[0] + J[0].transpose());
   return JJ;
@@ -851,10 +866,6 @@ std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
   }
   std::atomic<size_t> num_ints_computed{0};
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  std::vector<libint2::Timers<1>> timers(nthreads);
-#endif
-
   auto shell2bf = obs.shell2bf();
 
   auto lambda = [&](int thread_id) {
@@ -862,13 +873,6 @@ std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
     auto &ga = Ga[thread_id];
     auto &gb = Gb[thread_id];
     const auto &buf = engine.results();
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-    auto &timer = timers[thread_id];
-    timer.clear();
-    timer.set_now_overhead(25);
-#endif
-
     // loop over permutationally-unique set of shells
     for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1) {
       auto bf1_first = shell2bf[s1]; // first basis function in this shell
@@ -955,19 +959,11 @@ std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
             auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
             auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.start(0);
-#endif
-
             engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
                 obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
             const auto *buf_1234 = buf[0];
             if (buf_1234 == nullptr)
               continue; // if all integrals screened out, skip to next quartet
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.stop(0);
-#endif
 
             // 1) each shell set of integrals contributes up to 6 shell sets of
             // the Fock matrix:
@@ -1033,17 +1029,6 @@ std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
     Gb[0] += Gb[i];
   }
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  double time_for_ints = 0.0;
-  for (auto &t : timers) {
-    time_for_ints += t.read(0);
-  }
-  std::cout << "time for integrals = " << time_for_ints << std::endl;
-  for (int t = 0; t != nthreads; ++t)
-    engines[t].print_timers();
-  std::cout << "# of integrals = " << num_ints_computed << std::endl;
-#endif
-
   // symmetrize the result and return
   MatRM GGa = 0.5 * (Ga[0] + Ga[0].transpose());
   MatRM GGb = 0.5 * (Gb[0] + Gb[0].transpose());
@@ -1097,10 +1082,6 @@ std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
   }
   std::atomic<size_t> num_ints_computed{0};
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  std::vector<libint2::Timers<1>> timers(nthreads);
-#endif
-
   auto shell2bf = obs.shell2bf();
 
   auto lambda = [&](int thread_id) {
@@ -1110,12 +1091,6 @@ std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
     auto &jb = Jb[thread_id];
     auto &kb = Kb[thread_id];
     const auto &buf = engine.results();
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-    auto &timer = timers[thread_id];
-    timer.clear();
-    timer.set_now_overhead(25);
-#endif
 
     // loop over permutationally-unique set of shells
     for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1) {
@@ -1203,19 +1178,12 @@ std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
             auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
             auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.start(0);
-#endif
 
             engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
                 obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
             const auto *buf_1234 = buf[0];
             if (buf_1234 == nullptr)
               continue; // if all integrals screened out, skip to next quartet
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.stop(0);
-#endif
 
             // 1) each shell set of integrals contributes up to 6 shell sets of
             // the Fock matrix:
@@ -1279,17 +1247,6 @@ std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
     Kb[0] += Kb[i];
   }
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  double time_for_ints = 0.0;
-  for (auto &t : timers) {
-    time_for_ints += t.read(0);
-  }
-  std::cout << "time for integrals = " << time_for_ints << std::endl;
-  for (int t = 0; t != nthreads; ++t)
-    engines[t].print_timers();
-  std::cout << "# of integrals = " << num_ints_computed << std::endl;
-#endif
-
   // symmetrize the result and return
   MatRM JJa = 0.5 * (Ja[0] + Ja[0].transpose());
   MatRM JJb = 0.5 * (Jb[0] + Jb[0].transpose());
@@ -1337,23 +1294,12 @@ MatRM compute_2body_fock_general(
   }
   std::atomic<size_t> num_ints_computed{0};
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  std::vector<libint2::Timers<1>> timers(nthreads);
-#endif
-
   auto shell2bf = obs.shell2bf();
 
   auto lambda = [&](int thread_id) {
     auto &engine = engines[thread_id];
     auto &g = G[thread_id];
     const auto &buf = engine.results();
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-    auto &timer = timers[thread_id];
-    timer.clear();
-    timer.set_now_overhead(25);
-#endif
-
     // loop over permutationally-unique set of shells
     for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1) {
       auto bf1_first = shell2bf[s1]; // first basis function in this shell
@@ -1418,20 +1364,11 @@ MatRM compute_2body_fock_general(
             auto s34_deg = (s3 == s4) ? 1 : 2;
             auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
             auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.start(0);
-#endif
-
             engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
                 obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
             const auto *buf_1234 = buf[0];
             if (buf_1234 == nullptr)
               continue; // if all integrals screened out, skip to next quartet
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.stop(0);
-#endif
 
             // 1) each shell set of integrals contributes up to 6 shell sets of
             // the Fock matrix:
@@ -1507,17 +1444,6 @@ MatRM compute_2body_fock_general(
     G[0] += G[i];
   }
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  double time_for_ints = 0.0;
-  for (auto &t : timers) {
-    time_for_ints += t.read(0);
-  }
-  std::cout << "time for integrals = " << time_for_ints << std::endl;
-  for (int t = 0; t != nthreads; ++t)
-    engines[t].print_timers();
-  std::cout << "# of integrals = " << num_ints_computed << std::endl;
-#endif
-
   // symmetrize the result and return
   MatRM GG = 0.5 * (G[0] + G[0].transpose());
   return GG;
@@ -1563,11 +1489,6 @@ std::pair<MatRM, MatRM> compute_JK_general(
     engines[i] = engines[0];
   }
   std::atomic<size_t> num_ints_computed{0};
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  std::vector<libint2::Timers<1>> timers(nthreads);
-#endif
-
   auto shell2bf = obs.shell2bf();
 
   auto lambda = [&](int thread_id) {
@@ -1575,13 +1496,6 @@ std::pair<MatRM, MatRM> compute_JK_general(
     auto &j = J[thread_id];
     auto &k = K[thread_id];
     const auto &buf = engine.results();
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-    auto &timer = timers[thread_id];
-    timer.clear();
-    timer.set_now_overhead(25);
-#endif
-
     // loop over permutationally-unique set of shells
     for (auto s1 = 0l, s1234 = 0l; s1 != nshells; ++s1) {
       auto bf1_first = shell2bf[s1]; // first basis function in this shell
@@ -1647,20 +1561,11 @@ std::pair<MatRM, MatRM> compute_JK_general(
             auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
             auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.start(0);
-#endif
-
             engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
                 obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
             const auto *buf_1234 = buf[0];
             if (buf_1234 == nullptr)
               continue; // if all integrals screened out, skip to next quartet
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-            timer.stop(0);
-#endif
-
             // 1) each shell set of integrals contributes up to 6 shell sets of
             // the Fock matrix:
             //    F(a,b) += (ab|cd) * D(c,d)
@@ -1735,18 +1640,6 @@ std::pair<MatRM, MatRM> compute_JK_general(
     J[0] += J[i];
     K[0] += K[i];
   }
-
-#if defined(REPORT_INTEGRAL_TIMINGS)
-  double time_for_ints = 0.0;
-  for (auto &t : timers) {
-    time_for_ints += t.read(0);
-  }
-  std::cout << "time for integrals = " << time_for_ints << std::endl;
-  for (int t = 0; t != nthreads; ++t)
-    engines[t].print_timers();
-  std::cout << "# of integrals = " << num_ints_computed << std::endl;
-#endif
-
   // symmetrize the result and return
   MatRM JJ = (J[0] + J[0].transpose());
   MatRM KK = 0.25 * (K[0] + K[0].transpose());

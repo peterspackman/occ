@@ -21,7 +21,8 @@ add_library(tonto STATIC
 
 target_link_libraries(tonto 
     PUBLIC 
-    Eigen3::Eigen Boost::graph fmt::fmt 
+    Eigen3::Eigen Boost::graph
+    fmt::fmt spdlog::spdlog
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
     Libint2::cxx LAPACK::LAPACK
     Libxc::xc

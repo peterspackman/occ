@@ -19,6 +19,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/timings.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/util.h"
     # third party

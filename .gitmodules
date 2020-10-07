@@ -7,3 +7,6 @@
 [submodule "3rdparty/numgrid"]
 	path = 3rdparty/numgrid
 	url = https://github.com/dftlibs/numgrid
+[submodule "3rdparty/spdlog"]
+	path = 3rdparty/spdlog
+	url = https://github.com/gabime/spdlog

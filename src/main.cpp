@@ -1,3 +1,4 @@
+#include "logger.h"
 #include "cxxopts.hpp"
 #include "hf.h"
 #include "molecule.h"
@@ -9,6 +10,7 @@
 #include <xc.h>
 #include "gemmi/version.hpp"
 #include "boost/version.hpp"
+#include "dft.h"
 
 void print_header()
 {
@@ -22,6 +24,7 @@ void print_header()
     const int fmt_minor = (FMT_VERSION % 10000) / 100;
     const int fmt_patch = (FMT_VERSION % 100);
     const std::string fmt_version_string = fmt::format("{}.{}.{}", fmt_major, fmt_minor, fmt_patch);
+    const std::string spdlog_version_string = fmt::format("{}.{}.{}", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 
     fmt::print(R"(
 
@@ -50,10 +53,10 @@ This version of tonto also uses the following third party libraries:
     boost::graph - Graph implementation (v {})
     OpenMP       - Multithreading
     fmt          - String formatting (v {})
-    spdlog       - Logging
+    spdlog       - Logging (v {})
 
 )", eigen_version_string, libint_version_string, numgrid_verison_string, xc_version_string,
-    gemmi_version_string, boost_version_string, fmt_version_string);
+    gemmi_version_string, boost_version_string, fmt_version_string, spdlog_version_string);
 }
 
 
@@ -80,6 +83,7 @@ int main(int argc, const char **argv) {
       ("multiplicity", "Set the multiplicity of the system", cxxopts::value<int>()->default_value("1"))
       ("c,charge", "Set the total system charge", cxxopts::value<int>()->default_value("0"));
 
+  tonto::log::set_level(tonto::log::level::debug);
   auto result = options.parse(argc, argv);
   if (result.count("help") || !(result.count("input"))) {
     fmt::print("{}\n", options.help());

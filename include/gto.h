@@ -6,7 +6,6 @@
 #include <array>
 #include <libint2/cgshell_ordering.h>
 #include <libint2/shgshell_ordering.h>
-#include <fmt/core.h>
 
 namespace tonto::gto {
 
