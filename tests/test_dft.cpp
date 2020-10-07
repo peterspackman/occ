@@ -122,6 +122,11 @@ TEST_CASE("Water DFT grid", "[dft]")
         fmt::print("desired: {:20.14f} {:20.14f} {:20.14f}\n", expected(0), expected(1), expected(2));
         fmt::print("found:   {:20.14f} {:20.14f} {:20.14f}\n", e(0), e(1), e(2));
         REQUIRE(tonto::util::all_close(e, expected));
+        tonto::Vec rho2 = tonto::Vec::Random(10);
+        rho2.array() = rho2.array().abs();
+        auto v = lda.potential(rho2);
+        fmt::print("rho2:\n{}\n", rho2);
+        fmt::print("potential:\n{}\n", v);
     }
 
 

@@ -1,4 +1,5 @@
 #include "scf.h"
+#include "logger.h"
 
 namespace tonto::scf {
 
@@ -52,9 +53,10 @@ conditioning_orthogonalizer(const MatRM &S,
   std::tie(X, Xinv, obs_rank, S_condition_number, XtX_condition_number) =
       gensqrtinv(S, false, S_condition_number_threshold);
   auto obs_nbf_omitted = (long)S.rows() - (long)obs_rank;
-  fmt::print("Overlap condition number = {}", S_condition_number);
+  tonto::log::debug("Overlap condition number = {}", S_condition_number);
+
   if (obs_nbf_omitted > 0) {
-    fmt::print(" (dropped {} {} to reduce to {})", obs_nbf_omitted,
+    tonto::log::debug(" (dropped {} {} to reduce to {})", obs_nbf_omitted,
                obs_nbf_omitted > 1 ? "fns" : "fn", XtX_condition_number);
   }
   std::cout << std::endl;
@@ -62,7 +64,7 @@ conditioning_orthogonalizer(const MatRM &S,
   if (obs_nbf_omitted > 0) {
     MatRM should_be_I = X.transpose() * S * X;
     MatRM I = MatRM::Identity(should_be_I.rows(), should_be_I.cols());
-    fmt::print("||X^t * S * X - I||_2 = {} (should be 0)\n",
+    tonto::log::debug("||X^t * S * X - I||_2 = {} (should be 0)\n",
                (should_be_I - I).norm());
   }
 

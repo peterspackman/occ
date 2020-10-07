@@ -6,15 +6,6 @@
 
 namespace tonto::density {
 
-inline int num_components(int deriv_order) {
-    switch(deriv_order) {
-    case 0: return 1;
-    case 1: return 4;
-    case 2: return 10;
-    }
-    return 1;
-}
-
 void eval_shell_S(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>& dists, Eigen::Ref<tonto::Mat>& result, int derivative)
 {
     double dx = dists(0, 0); double dy = dists(0, 1); double dz = dists(0, 2); double r2 = dists(0, 3);

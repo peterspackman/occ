@@ -43,7 +43,7 @@ public:
     int system_charge() const { return m_hf.system_charge(); }
     int num_e() const { return m_hf.num_e(); }
 
-    double nuclear_repulsion_energy() const;
+    double nuclear_repulsion_energy() const { return m_hf.nuclear_repulsion_energy(); }
     auto compute_kinetic_matrix() {
       return m_hf.compute_kinetic_matrix();
     }

@@ -80,6 +80,7 @@ int main(int argc, const char **argv) {
       ("h,help", "Print this help message")
       ("ghf", "Use general")
       ("uhf", "Use unrestricted")
+      ("dft", "Use DFT")
       ("multiplicity", "Set the multiplicity of the system", cxxopts::value<int>()->default_value("1"))
       ("c,charge", "Set the total system charge", cxxopts::value<int>()->default_value("0"));
 
@@ -108,6 +109,7 @@ int main(int argc, const char **argv) {
     }
     bool unrestricted = result.count("uhf") || (multiplicity != 1);
     bool general = result.count("ghf");
+    bool dft = result.count("dft");
 
     using tonto::parallel::nthreads;
     nthreads = result["nthreads"].as<int>();
@@ -120,7 +122,12 @@ int main(int argc, const char **argv) {
     obs.set_pure(false);
     fmt::print("    {:12s} {:>12d}\n", "n_bf", obs.nbf());
     HartreeFock hf(m.atoms(), obs);
-    if (general) {
+    if (dft) {
+      fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
+      tonto::dft::DFT rks("LDA", obs, m.atoms());
+      RestrictedSCF<tonto::dft::DFT> scf(rks);
+      double e = scf.compute_scf_energy();
+    } else if (general) {
       fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
       GeneralSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;
