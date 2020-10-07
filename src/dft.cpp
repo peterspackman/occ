@@ -53,16 +53,13 @@ MatRM DFT::compute_2body_fock(const MatRM &D, double precision, const MatRM &Sch
         tonto::Mat gto_vals;
         std::tie(rho, gto_vals) = evaluate_density_and_gtos(basis, atoms, D, pts, 0);
         rho.array() = rho.array() * 2;
-        fmt::print("n_funcs: {}, rho max: {}, rho.shape {} {}\n", m_funcs.size(), rho.maxCoeff(), rho.rows(), rho.cols());
-        fmt::print("rho(0): {} rho.data()[0] {}\n", rho[0], rho.data()[0]);
         tonto::Vec v = m_funcs[0].potential(rho);
         v.array() *= pts.col(3).array();
-        fmt::print("v_max = {} v_min = {}, v.shape {} {}\n", v.maxCoeff(), v.minCoeff(), v.rows(), v.cols());
         for(size_t bf1 = 0; bf1 < nbf; bf1++) {
             const auto x1 = gto_vals.row(bf1);
             for(size_t bf2 = bf1; bf2 < nbf; bf2++) {
                 const auto x2 = gto_vals.row(bf2);
-                double coeff = (x1.array() * x2.array() * v.array()).sum();
+                double coeff = (x1 * v * x2).array().sum();
                 J(bf1, bf2) += coeff;
                 if(bf1 != bf2) J(bf2, bf1) += coeff;
             }

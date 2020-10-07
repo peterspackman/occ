@@ -24,7 +24,7 @@ target_link_libraries(tonto
     Eigen3::Eigen Boost::graph
     fmt::fmt spdlog::spdlog
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
-    Libint2::cxx LAPACK::LAPACK
+    Libint2::cxx ${LAPACK_LIBRARIES}
     Libxc::xc
     numgrid-objects
 )

@@ -94,8 +94,7 @@ int main(int argc, const char **argv) {
 
   try {
     libint2::Shell::do_enforce_unit_normalization(false);
-    if (!libint2::initialized())
-      libint2::initialize();
+    libint2::initialize();
     const auto filename = result["input"].as<std::string>();
     const auto basisname = result["basis"].as<std::string>();
     const auto multiplicity = result["multiplicity"].as<int>();

@@ -2,6 +2,7 @@
 #include "linear_algebra.h"
 #include <string>
 #include <xc.h>
+#include <memory>
 
 namespace tonto::dft {
 
@@ -28,10 +29,9 @@ public:
     };
 
     DensityFunctional(const std::string&);
-    ~DensityFunctional();
 
-    Family family() const { return static_cast<Family>(m_func.info->family); }
-    Kind kind() const { return static_cast<Kind>(m_func.info->kind); }
+    Family family() const { return static_cast<Family>(m_func.get()->info->family); }
+    Kind kind() const { return static_cast<Kind>(m_func.get()->info->kind); }
 
     std::string kind_string() const {
         switch(kind()) {
@@ -57,7 +57,8 @@ public:
         }
     }
 private:
-    xc_func_type m_func;
+    std::string m_func_name;
+    std::unique_ptr<xc_func_type> m_func;
 };
 
 }
