@@ -378,6 +378,12 @@ MatRM compute_2body_fock(
                                    // empty, do not Schwarz screen
 );
 
+MatRM
+compute_J(const BasisSet &obs, const shellpair_list_t &shellpair_list,
+          const shellpair_data_t &shellpair_data, const MatRM &D,
+          double precision = std::numeric_limits<double>::epsilon(),
+          const MatRM &Schwarz = MatRM());
+
 std::pair<MatRM, MatRM>
 compute_JK(const BasisSet &obs, const shellpair_list_t &shellpair_list,
            const shellpair_data_t &shellpair_data, const MatRM &D,

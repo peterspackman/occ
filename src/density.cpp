@@ -13,7 +13,47 @@ inline int num_components(int deriv_order) {
     case 1: return 4;
     case 2: return 10;
     }
+    return 1;
 }
+
+void eval_shell_S(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>& dists, Eigen::Ref<tonto::Mat>& result, int derivative)
+{
+    double dx = dists(0, 0); double dy = dists(0, 1); double dz = dists(0, 2); double r2 = dists(0, 3);
+    for(size_t i = 0; i < shell.nprim(); ++i)
+    {
+        double alpha = shell.alpha[i];
+        double expfac = exp(-alpha * r2);
+        for(const auto& contr: shell.contr)
+        {
+            const double coeff{contr.coeff[i]};
+            double tmp = coeff * expfac;
+            double a2;
+            double ddx, pdx, ddy, pdy, ddz, pdz;
+            result(0, 0) += tmp;
+            if(derivative >=1) {
+                a2 = 2 * alpha;
+                pdx = (a2 * dx);
+                pdy = (a2 * dy);
+                pdz = (a2 * dz);
+                ddx = tmp * pdx;
+                ddy = tmp * pdy;
+                ddz = tmp * pdz;
+                result(0, 1) += ddx;
+                result(0, 2) += ddy;
+                result(0, 3) += ddz;
+            }
+            if(derivative >= 2) {
+                result(0, 4) += ddx * pdx - a2 * tmp;
+                result(0, 5) += ddx * pdy;
+                result(0, 6) += ddx * pdz;
+                result(0, 7) += ddy * pdy - a2 * tmp;
+                result(0, 8) += ddy * pdz;
+                result(0, 9) += ddz * pdz - a2 * tmp;
+            }
+        }
+    }
+}
+
 
 void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>& dists, Eigen::Ref<tonto::Mat>& result, int derivative)
 {

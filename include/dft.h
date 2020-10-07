@@ -1,9 +1,11 @@
 #pragma once
 #include "linear_algebra.h"
-#include "numgrid.h"
 #include <vector>
-#include <xc.h>
 #include <string>
+#include "dft_grid.h"
+#include "density_functional.h"
+#include "ints.h"
+#include "hf.h"
 
 namespace libint2 {
 class BasisSet;
@@ -17,77 +19,73 @@ using tonto::MatRM;
 using tonto::MatN4;
 using tonto::Vec;
 using tonto::IVec;
+using tonto::MatRM;
+using tonto::ints::BasisSet;
+using tonto::ints::compute_1body_ints;
+using tonto::ints::compute_1body_ints_deriv;
+using tonto::ints::Operator;
+using tonto::ints::shellpair_data_t;
+using tonto::ints::shellpair_list_t;
 
-class DFTGrid {
+
+class DFT {
+
 public:
-    DFTGrid(const libint2::BasisSet&, const std::vector<libint2::Atom>&);
-    const auto& atomic_numbers() const { return m_atomic_numbers; }
-    const auto n_atoms() const { return m_atomic_numbers.size(); }
-    MatN4 grid_points(size_t idx) const;
-    void set_radial_precision(double prec) { m_radial_precision = prec; }
-    void set_min_angular_points(size_t n) { m_min_angular = n; }
-    void set_max_angular_points(size_t n) { m_max_angular = n; }
+    DFT(const std::string&, const libint2::BasisSet&, const std::vector<libint2::Atom>&);
+    const auto &shellpair_list() const { return m_hf.shellpair_list(); }
+    const auto &shellpair_data() const { return m_hf.shellpair_data(); }
+    const auto &atoms() const { return m_hf.atoms(); }
+    const auto &basis() const { return m_hf.basis(); }
 
-private:
-    double m_radial_precision{1e-12};
-    size_t m_min_angular{86};
-    size_t m_max_angular{302};
-    IVec m_l_max;
-    Vec m_x;
-    Vec m_y;
-    Vec m_z;
-    IVec m_atomic_numbers;
-    Vec m_alpha_max;
-    MatRM m_alpha_min;
-};
+    void set_system_charge(int charge) {
+        m_hf.set_system_charge(charge);
+    }
+    int system_charge() const { return m_hf.system_charge(); }
+    int num_e() const { return m_hf.num_e(); }
 
-
-class DensityFunctional {
-public:
-    enum Family {
-        LDA = XC_FAMILY_LDA,
-        GGA = XC_FAMILY_GGA,
-        HGGA = XC_FAMILY_HYB_GGA,
-        MGGA = XC_FAMILY_MGGA,
-        HMGGA = XC_FAMILY_HYB_MGGA
-    };
-    enum Kind {
-        Exchange = XC_EXCHANGE,
-        Correlation = XC_CORRELATION,
-        ExchangeCorrelation = XC_EXCHANGE_CORRELATION,
-        Kinetic = XC_KINETIC
-    };
-
-    DensityFunctional(const std::string&);
-    ~DensityFunctional();
-
-    Family family() const { return static_cast<Family>(m_func.info->family); }
-    Kind kind() const { return static_cast<Kind>(m_func.info->kind); }
-
-    std::string kind_string() const {
-        switch(kind()) {
-        case Exchange: return "exchange";
-        case Correlation: return "correlation";
-        case ExchangeCorrelation: return "exchange-correlation";
-        case Kinetic: return "kinetic";
-        default: return "unknown kind";
-        }
+    double nuclear_repulsion_energy() const;
+    auto compute_kinetic_matrix() {
+      return m_hf.compute_kinetic_matrix();
+    }
+    auto compute_overlap_matrix() {
+      return m_hf.compute_overlap_matrix();
+    }
+    auto compute_nuclear_attraction_matrix() {
+      return m_hf.compute_nuclear_attraction_matrix();
     }
 
-    tonto::Vec energy(const tonto::Vec& rho) const;
-    tonto::Vec potential(const tonto::Vec& rho) const;
-
-    std::string family_string() const {
-        switch(family()) {
-        case LDA: return "LDA";
-        case GGA: return "GGA";
-        case HGGA: return "hybrid GGA";
-        case MGGA: return "meta-GGA";
-        case HMGGA: return "hybrid meta-GGA";
-        default: return "unknown family";
-        }
+    auto compute_kinetic_energy_derivatives(unsigned derivative) {
+      return m_hf.compute_kinetic_energy_derivatives(derivative);
     }
+
+    auto compute_nuclear_attraction_derivatives(unsigned derivative) {
+      return m_hf.compute_nuclear_attraction_derivatives(derivative);
+    }
+
+    auto compute_overlap_derivatives(unsigned derivative) {
+      return m_hf.compute_overlap_derivatives(derivative);
+    }
+
+    MatRM compute_shellblock_norm(const MatRM &A) const {
+        return m_hf.compute_shellblock_norm(A);
+    }
+
+    auto compute_schwarz_ints() {
+      return m_hf.compute_schwarz_ints();
+    }
+
+    MatRM
+    compute_2body_fock(const MatRM &D,
+                       double precision = std::numeric_limits<double>::epsilon(),
+                       const MatRM &Schwarz = MatRM()) const;
+
+    std::pair<MatRM, MatRM>
+    compute_JK(const MatRM &D,
+               double precision = std::numeric_limits<double>::epsilon(),
+               const MatRM &Schwarz = MatRM()) const;
 private:
-    xc_func_type m_func;
+    tonto::hf::HartreeFock m_hf;
+    DFTGrid m_grid;
+    std::vector<DensityFunctional> m_funcs;
 };
 }

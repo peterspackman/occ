@@ -151,6 +151,12 @@ std::pair<MatRM, MatRM> HartreeFock::compute_JK(const MatRM &D,
                                  precision, Schwarz);
 }
 
+MatRM HartreeFock::compute_J(const MatRM &D, double precision,
+                             const MatRM &Schwarz) const {
+  return tonto::ints::compute_J(
+      m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+}
+
 std::pair<MatRM, MatRM>
 HartreeFock::compute_2body_fock_unrestricted(const MatRM &Da, const MatRM &Db,
                                              double precision,
