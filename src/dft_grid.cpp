@@ -1,6 +1,7 @@
 #include "dft_grid.h"
 #include <libint2/basis.h>
 #include <libint2/atom.h>
+#include <fmt/core.h>
 
 namespace tonto::dft {
 
@@ -88,6 +89,7 @@ MatN4 DFTGrid::grid_points(size_t idx) const
     );
 
     numgrid_free_atom_grid(ctx);
+    fmt::print("grid_weights sum {}\n", pts.col(3).array().sum());
     return pts;
 }
 

@@ -30,6 +30,10 @@ public:
   int system_charge() const { return m_charge; }
   int num_e() const { return m_num_e; }
 
+  double two_electron_energy_alpha() const { return m_e_alpha; }
+  double two_electron_energy_beta() const { return m_e_beta; }
+  double two_electron_energy() const { return m_e_alpha + m_e_beta; }
+
   double nuclear_repulsion_energy() const;
   auto compute_kinetic_matrix() {
     return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0];
@@ -105,6 +109,8 @@ private:
   BasisSet m_basis;
   shellpair_list_t m_shellpair_list; // shellpair list for OBS
   shellpair_data_t m_shellpair_data; // shellpair data for OBS
+  mutable double m_e_alpha{0};
+  mutable double m_e_beta{0};
 };
 
 } // namespace tonto::hf

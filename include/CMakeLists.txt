@@ -15,6 +15,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/logger.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.h"
@@ -22,6 +23,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/util.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.h"
     # third party
     "${CMAKE_CURRENT_SOURCE_DIR}/cxxopts.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/nanoflann.hpp"

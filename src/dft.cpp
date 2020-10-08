@@ -44,28 +44,56 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
 MatRM DFT::compute_2body_fock(const MatRM &D, double precision, const MatRM &Schwarz) const
 {
     auto J = m_hf.compute_J(D, precision, Schwarz);
+    tonto::MatRM K = tonto::MatRM::Zero(J.rows(), J.cols());
     const auto& basis = m_hf.basis();
     const auto& atoms = m_hf.atoms();
     size_t nbf = basis.nbf();
-    fmt::print("xc_func: {}\n", m_funcs[0].family_string());
+    double total_density{0.0};
+    m_e_alpha = 0.0;
+    auto D2 = 2 * D;
     for(const auto& pts : m_atom_grids) {
+        size_t npt = pts.rows();
         tonto::Vec rho;
         tonto::Mat gto_vals;
-        std::tie(rho, gto_vals) = evaluate_density_and_gtos(basis, atoms, D, pts, 0);
-        rho.array() = rho.array() * 2;
-        tonto::Vec v = m_funcs[0].potential(rho);
-        v.array() *= pts.col(3).array();
+        std::tie(rho, gto_vals) = evaluate_density_and_gtos(basis, atoms, D2, pts, 0);
+        tonto::Vec v = tonto::Vec::Zero(rho.rows(), rho.cols());
+        tonto::Vec e = tonto::Vec::Zero(rho.rows(), rho.cols());
+        for(const auto& func: m_funcs) {
+            func.add_energy_potential(rho, e, v);
+        }
+        // add weights contribution
+        auto vwt = v.array() * pts.col(3).array();
+        auto ewt = e.array() * pts.col(3).array();
+        total_density += (rho.array() * pts.col(3).array()).array().sum();
         for(size_t bf1 = 0; bf1 < nbf; bf1++) {
-            const auto x1 = gto_vals.row(bf1);
             for(size_t bf2 = bf1; bf2 < nbf; bf2++) {
-                const auto x2 = gto_vals.row(bf2);
-                double coeff = (x1 * v * x2).array().sum();
-                J(bf1, bf2) += coeff;
-                if(bf1 != bf2) J(bf2, bf1) += coeff;
+                double val = 0.0;
+                double wal = 0.0;
+                double Dab = D2(bf1, bf2);
+                for(size_t pt = 0; pt < npt; pt++) {
+                    double gab = gto_vals(bf1, pt) * gto_vals(bf2, pt);
+                    val += gab * vwt(pt);
+                    wal += gab * ewt(pt);
+                }
+                m_e_alpha += Dab * wal;
+                K(bf1, bf2) += val;
+                if(bf1 != bf2) {
+                    K(bf2, bf1) += val;
+                    m_e_alpha += Dab * wal;
+                }
             }
         }
     }
-    return J;
+    /*
+    for(size_t bf1 = 0; bf1 < nbf; bf1++) {
+        for(size_t bf2 = bf1; bf2 < nbf; bf2++) {
+            K(bf2, bf1) = K(bf1, bf2);
+        }
+    }*/
+    m_e_alpha += D.cwiseProduct(J).sum();
+    fmt::print("Integrated density {}\n", total_density);
+    auto F = J + K;
+    return F;
 }
 
 std::pair<MatRM, MatRM> DFT::compute_JK(const MatRM &D, double precision, const MatRM &Schwarz) const

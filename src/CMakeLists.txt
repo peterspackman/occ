@@ -11,11 +11,13 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
     ${TONTO_INCLUDE_FILES}
 )
 

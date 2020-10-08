@@ -43,6 +43,10 @@ public:
     int system_charge() const { return m_hf.system_charge(); }
     int num_e() const { return m_hf.num_e(); }
 
+    double two_electron_energy() const { return m_e_alpha + m_e_beta; }
+    double two_electron_energy_alpha() const { return m_e_alpha; }
+    double two_electron_energy_beta() const { return m_e_beta; }
+
     double nuclear_repulsion_energy() const { return m_hf.nuclear_repulsion_energy(); }
     auto compute_kinetic_matrix() {
       return m_hf.compute_kinetic_matrix();
@@ -88,5 +92,7 @@ private:
     DFTGrid m_grid;
     std::vector<DensityFunctional> m_funcs;
     std::vector<tonto::MatN4> m_atom_grids;
+    mutable double m_e_alpha;
+    mutable double m_e_beta;
 };
 }

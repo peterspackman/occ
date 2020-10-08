@@ -33,8 +33,10 @@ MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const {
 
 MatRM HartreeFock::compute_2body_fock(const MatRM &D, double precision,
                                       const MatRM &Schwarz) const {
-  return tonto::ints::compute_2body_fock(
+  auto F = tonto::ints::compute_2body_fock(
       m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+  m_e_alpha = D.cwiseProduct(F).sum();
+  return F;
 }
 
 std::pair<MatRM, MatRM> HartreeFock::compute_JK(const MatRM &D,

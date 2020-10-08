@@ -42,9 +42,12 @@ public:
         default: return "unknown kind";
         }
     }
-
+    void add_energy(const tonto::Vec& rho, tonto::Vec& e) const;
     tonto::Vec energy(const tonto::Vec& rho) const;
+    void add_potential(const tonto::Vec& rho, tonto::Vec& v) const;
     tonto::Vec potential(const tonto::Vec& rho) const;
+    void add_energy_potential(const tonto::Vec& rho, tonto::Vec& e, tonto::Vec& v) const;
+    std::pair<tonto::Vec, tonto::Vec> energy_potential(const tonto::Vec& rho) const;
 
     std::string family_string() const {
         switch(family()) {

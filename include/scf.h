@@ -501,7 +501,7 @@ template <typename Procedure> struct RestrictedSCF {
       F += m_procedure.compute_2body_fock(D_diff, precision_F, K);
 
       // compute HF energy with the non-extrapolated Fock matrix
-      ehf = D.cwiseProduct(H + F).sum();
+      ehf = 2 * D.cwiseProduct(H).sum() + enuc + m_procedure.two_electron_energy();
       ediff_rel = std::abs((ehf - ehf_last) / ehf);
 
       // compute SCF error
@@ -537,18 +537,19 @@ template <typename Procedure> struct RestrictedSCF {
                    "energy", "D(E)/E", "rms([F,D])/nn", "time");
       }
       fmt::print("{:>6d} {:>20.12f} {:>20.12e} {:>20.12e} {:>10.5f}\n", iter,
-                 ehf + enuc, ediff_rel, rms_error, time_elapsed.count());
+                 ehf, ediff_rel, rms_error, time_elapsed.count());
       total_time += time_elapsed.count();
 
     } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
+    double e1e = 2 * D.cwiseProduct(H).sum();
     fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_k", D.cwiseProduct(T).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_en", D.cwiseProduct(V).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_en", e1e);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_1e", D.cwiseProduct(H).sum());
     fmt::print("{:10s} {:20.12f} hartree\n", "E_2e", D.cwiseProduct(F).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", ehf + enuc);
-    return ehf + enuc;
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", ehf);
+    return ehf;
   }
 
   void print_orbital_energies() {
