@@ -6,7 +6,9 @@ namespace tonto::dft {
 DensityFunctional::DensityFunctional(const std::string& name)
 {
     m_func = std::unique_ptr<xc_func_type>(new xc_func_type);
-    int err = xc_func_init(m_func.get(), XC_LDA_X, XC_UNPOLARIZED);
+    m_func_name = name;
+    int func_id = functional_id(name);
+    int err = xc_func_init(m_func.get(), func_id, XC_UNPOLARIZED);
 }
 
 void DensityFunctional::add_energy(const tonto::Vec& rho, tonto::Vec& e) const
@@ -39,6 +41,12 @@ void DensityFunctional::add_potential(const tonto::Vec& rho, tonto::Vec& v) cons
     }
 }
 
+tonto::Vec DensityFunctional::potential(const tonto::Vec& rho) const {
+    tonto::Vec v = tonto::Vec::Zero(rho.rows(), rho.cols());
+    add_potential(rho, v);
+    return v;
+}
+
 void DensityFunctional::add_energy_potential(const tonto::Vec& rho, tonto::Vec& e, tonto::Vec& v) const
 {
     int n_pts = rho.rows();
@@ -56,6 +64,16 @@ std::pair<tonto::Vec, tonto::Vec> DensityFunctional::energy_potential(const tont
     tonto::Vec v = tonto::Vec::Zero(rho.rows(), rho.cols());
     add_energy_potential(rho, e, v);
     return std::make_pair(e, v);
+}
+
+int DensityFunctional::functional_id(const std::string& name) {
+    if (name == "lda" || name == "slater" || name == "S") {
+        return XC_LDA_X;
+    }
+    if (name == "VWN5" || name == "vwn5" || name == "vwn") {
+        return XC_LDA_C_VWN;
+    }
+    throw std::runtime_error(fmt::format("Unknown functional name '{}'", name));
 }
 
 }

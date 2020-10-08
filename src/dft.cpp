@@ -37,7 +37,12 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
     tonto::log::debug("finished calculating atom grids");
-    m_funcs.push_back(DensityFunctional("LDA"));
+    m_funcs.push_back(DensityFunctional("lda"));
+    m_funcs.push_back(DensityFunctional("vwn"));
+
+    for(const auto& func: m_funcs) {
+        fmt::print("Functional: {} {} {}\n", func.name(), func.kind_string(), func.family_string());
+    }
 }
 
 
@@ -56,10 +61,11 @@ MatRM DFT::compute_2body_fock(const MatRM &D, double precision, const MatRM &Sch
         tonto::Vec rho;
         tonto::Mat gto_vals;
         std::tie(rho, gto_vals) = evaluate_density_and_gtos(basis, atoms, D2, pts, 0);
-        tonto::Vec v = tonto::Vec::Zero(rho.rows(), rho.cols());
-        tonto::Vec e = tonto::Vec::Zero(rho.rows(), rho.cols());
+        tonto::Vec v = tonto::Vec::Zero(rho.rows()), e = tonto::Vec::Zero(rho.rows());
+        tonto::Vec vtmp(rho.rows()), etmp(rho.rows());
         for(const auto& func: m_funcs) {
-            func.add_energy_potential(rho, e, v);
+            func.add_energy_potential(rho, etmp, vtmp);
+            v += vtmp; e += etmp;
         }
         // add weights contribution
         auto vwt = v.array() * pts.col(3).array();
@@ -84,14 +90,7 @@ MatRM DFT::compute_2body_fock(const MatRM &D, double precision, const MatRM &Sch
             }
         }
     }
-    /*
-    for(size_t bf1 = 0; bf1 < nbf; bf1++) {
-        for(size_t bf2 = bf1; bf2 < nbf; bf2++) {
-            K(bf2, bf1) = K(bf1, bf2);
-        }
-    }*/
     m_e_alpha += D.cwiseProduct(J).sum();
-    fmt::print("Integrated density {}\n", total_density);
     auto F = J + K;
     return F;
 }

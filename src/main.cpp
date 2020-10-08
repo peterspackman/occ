@@ -127,7 +127,6 @@ int main(int argc, const char **argv) {
       RestrictedSCF<tonto::dft::DFT> scf(rks);
       scf.start_incremental_F_threshold = 0.0;
       double e = scf.compute_scf_energy();
-      fmt::print("Fock\n{}\n", scf.F);
     } else if (general) {
       fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
       GeneralSCF<HartreeFock> scf(hf);

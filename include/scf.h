@@ -464,6 +464,8 @@ template <typename Procedure> struct RestrictedSCF {
 
     fmt::print("Beginning SCF\n");
     total_time = 0.0;
+    double e2e = 0.0;
+    double e1e = 0.0;
     do {
       const auto tstart = std::chrono::high_resolution_clock::now();
       ++iter;
@@ -484,6 +486,7 @@ template <typename Procedure> struct RestrictedSCF {
       if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
         F = H;
         D_diff = D;
+        e2e = 0.0;
       }
       if (reset_incremental_fock_formation && incremental_Fbuild_started) {
         reset_incremental_fock_formation = false;
@@ -501,7 +504,10 @@ template <typename Procedure> struct RestrictedSCF {
       F += m_procedure.compute_2body_fock(D_diff, precision_F, K);
 
       // compute HF energy with the non-extrapolated Fock matrix
-      ehf = 2 * D.cwiseProduct(H).sum() + enuc + m_procedure.two_electron_energy();
+      e2e += m_procedure.two_electron_energy();
+      e1e = 2 * D.cwiseProduct(H).sum();
+      ehf = e1e + enuc + e2e;
+
       ediff_rel = std::abs((ehf - ehf_last) / ehf);
 
       // compute SCF error
@@ -541,7 +547,6 @@ template <typename Procedure> struct RestrictedSCF {
       total_time += time_elapsed.count();
 
     } while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
-    double e1e = 2 * D.cwiseProduct(H).sum();
     fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_k", D.cwiseProduct(T).sum());

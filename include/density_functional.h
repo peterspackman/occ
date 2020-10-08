@@ -33,6 +33,7 @@ public:
     Family family() const { return static_cast<Family>(m_func.get()->info->family); }
     Kind kind() const { return static_cast<Kind>(m_func.get()->info->kind); }
 
+    const std::string& name() const { return m_func_name; }
     std::string kind_string() const {
         switch(kind()) {
         case Exchange: return "exchange";
@@ -59,6 +60,7 @@ public:
         default: return "unknown family";
         }
     }
+    static int functional_id(const std::string&);
 private:
     std::string m_func_name;
     std::unique_ptr<xc_func_type> m_func;
