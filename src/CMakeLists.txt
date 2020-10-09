@@ -37,5 +37,5 @@ target_include_directories(tonto PUBLIC
 target_compile_features(tonto PUBLIC cxx_std_17)
 
 
-add_executable(hf "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
-target_link_libraries(hf PUBLIC tonto)
+add_executable(tontox "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
+target_link_libraries(tontox PUBLIC tonto)

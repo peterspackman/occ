@@ -115,7 +115,7 @@ TEST_CASE("Water DFT grid", "[dft]")
         tonto::Vec expected(3);
         expected << -0.7385587663820224, -0.586194481347579, -0.49441557378816503;
         fmt::print("LDA exchange functional\n");
-        tonto::dft::DensityFunctional lda("LDA");
+        tonto::dft::DensityFunctional lda("xc_lda_x");
         REQUIRE(lda.family_string() == "LDA");
         REQUIRE(lda.kind_string() == "exchange");
         auto e = lda.energy(rho);
@@ -153,6 +153,11 @@ TEST_CASE("Water DFT grid", "[dft]")
         auto rho2 = tonto::density::evaluate(basis, atoms, D_h2o, pts, 2);
         Eigen::Map<tonto::Mat> derivs2(rho2.data(), 10, pts.rows());
         fmt::print("found:\n{}\n", derivs2);
+    }
+
+    SECTION("Functionals") {
+        tonto::dft::DensityFunctional func("xc_gga_x_pbe");
+        REQUIRE(func.id() == tonto::dft::DensityFunctional::Identifier::gga_x_pbe);
     }
 /*
     SECTION("Benchmarks"){

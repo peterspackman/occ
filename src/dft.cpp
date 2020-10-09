@@ -31,8 +31,8 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     m_hf(atoms, basis), m_grid(basis, atoms)
 {
     tonto::log::debug("start calculating atom grids... ");
-    m_grid.set_max_angular_points(131);
-    m_grid.set_min_angular_points(33);
+    m_grid.set_max_angular_points(590);
+    m_grid.set_min_angular_points(99);
     for(size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
