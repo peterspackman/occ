@@ -408,6 +408,18 @@ public:
         default: return "unknown kind";
         }
     }
+
+    int derivative_order() const {
+        switch(family()) {
+        case LDA: return 0;
+        case GGA:
+        case HGGA: return 1;
+        case MGGA:
+        case HMGGA: return 2;
+        default: return 0;
+        }
+    }
+
     void add_energy(const tonto::Vec& rho, tonto::Vec& e) const;
     tonto::Vec energy(const tonto::Vec& rho) const;
     void add_potential(const tonto::Vec& rho, tonto::Vec& v) const;

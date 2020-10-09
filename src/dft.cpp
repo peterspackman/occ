@@ -27,6 +27,14 @@ std::pair<tonto::Vec, tonto::Mat> evaluate_density_and_gtos(
     return std::make_pair(rho, gto_vals);
 }
 
+int DFT::density_derivative() const {
+    int deriv = 0;
+    for(const auto& func: m_funcs) {
+        deriv = std::max(deriv, func.derivative_order());
+    }
+    return deriv;
+}
+
 DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::vector<libint2::Atom>& atoms) :
     m_hf(atoms, basis), m_grid(basis, atoms)
 {
@@ -56,11 +64,12 @@ MatRM DFT::compute_2body_fock(const MatRM &D, double precision, const MatRM &Sch
     double total_density{0.0};
     m_e_alpha = 0.0;
     auto D2 = 2 * D;
+    int deriv = density_derivative();
     for(const auto& pts : m_atom_grids) {
         size_t npt = pts.rows();
         tonto::Vec rho;
         tonto::Mat gto_vals;
-        std::tie(rho, gto_vals) = evaluate_density_and_gtos(basis, atoms, D2, pts, 0);
+        std::tie(rho, gto_vals) = evaluate_density_and_gtos(basis, atoms, D2, pts, deriv);
         tonto::Vec v = tonto::Vec::Zero(rho.rows()), e = tonto::Vec::Zero(rho.rows());
         tonto::Vec vtmp(rho.rows()), etmp(rho.rows());
         for(const auto& func: m_funcs) {

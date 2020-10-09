@@ -47,6 +47,8 @@ public:
     double two_electron_energy_alpha() const { return m_e_alpha; }
     double two_electron_energy_beta() const { return m_e_beta; }
 
+    int density_derivative() const;
+
     double nuclear_repulsion_energy() const { return m_hf.nuclear_repulsion_energy(); }
     auto compute_kinetic_matrix() {
       return m_hf.compute_kinetic_matrix();
