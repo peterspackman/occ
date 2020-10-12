@@ -90,6 +90,10 @@ public:
                double precision = std::numeric_limits<double>::epsilon(),
                const MatRM &Schwarz = MatRM()) const;
 private:
+    MatRM compute_2body_fock_d0(const MatRM&, double, const MatRM&) const;
+    MatRM compute_2body_fock_d1(const MatRM&, double, const MatRM&) const;
+    MatRM compute_2body_fock_d2(const MatRM&, double, const MatRM&) const;
+
     tonto::hf::HartreeFock m_hf;
     DFTGrid m_grid;
     std::vector<DensityFunctional> m_funcs;

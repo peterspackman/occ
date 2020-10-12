@@ -10,7 +10,7 @@ namespace tonto::dft {
 using tonto::Vec;
 using tonto::IVec;
 using tonto::MatRM;
-
+using tonto::Array;
 
 class DensityFunctional {
 public:
@@ -393,6 +393,43 @@ public:
         Kinetic = XC_KINETIC
     };
 
+    struct Result {
+        Result() {}
+        Result(int num_points, Family fam) {
+            exc.resize(num_points);
+            vrho.resize(num_points);
+            if(fam == GGA) {
+                vsigma.resize(num_points);
+            }
+        }
+        Array exc;
+        Array vrho;
+        Array vsigma;
+        Array vlapl;
+        Array vtau;
+        Result& operator +=(const Result& right) {
+            exc += right.exc;
+            vrho += right.vrho;
+            vsigma += right.vsigma;
+            vlapl += right.vlapl;
+            vtau += right.vtau;
+            return *this;
+        }
+    };
+
+    struct Params {
+        Params() {}
+        Params(int n, Family fam = LDA) {
+            rho.resize(n);
+            if(fam == GGA) sigma.resize(n);
+        }
+        Array rho;
+        Array sigma;
+        Array lapl;
+        Array tau;
+        inline int num_points() const { return rho.rows(); }
+    };
+
     DensityFunctional(const std::string&, bool polarized = false);
 
     Family family() const { return static_cast<Family>(m_func.get()->info->family); }
@@ -420,13 +457,7 @@ public:
         }
     }
 
-    void add_energy(const tonto::Vec& rho, tonto::Vec& e) const;
-    tonto::Vec energy(const tonto::Vec& rho) const;
-    void add_potential(const tonto::Vec& rho, tonto::Vec& v) const;
-    tonto::Vec potential(const tonto::Vec& rho) const;
-    void add_energy_potential(const tonto::Vec& rho, tonto::Vec& e, tonto::Vec& v) const;
-    std::pair<tonto::Vec, tonto::Vec> energy_potential(const tonto::Vec& rho) const;
-
+    Result evaluate(const Params& params) const;
 
     std::string family_string() const {
         switch(family()) {
@@ -440,6 +471,7 @@ public:
     }
     static int functional_id(const std::string&);
 private:
+    mutable Array m_workarray_en, m_workarray_pot, m_workarray_vrho, m_workarray_vsigma, m_workarray_vlapl, m_workarray_vtau;
     Identifier m_func_id;
     bool m_polarized{false};
     std::string m_func_name;

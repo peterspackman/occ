@@ -110,23 +110,24 @@ TEST_CASE("Water DFT grid", "[dft]")
     }
 
     SECTION("DFT LDA") {
-        tonto::Vec rho(3);
-        rho << 1.0, 0.5, 0.3;
-        tonto::Vec expected(3);
+        tonto::dft::DensityFunctional::Params params(3);
+        params.rho << 1.0, 0.5, 0.3;
+        tonto::Array expected(3);
         expected << -0.7385587663820224, -0.586194481347579, -0.49441557378816503;
         fmt::print("LDA exchange functional\n");
         tonto::dft::DensityFunctional lda("xc_lda_x");
         REQUIRE(lda.family_string() == "LDA");
         REQUIRE(lda.kind_string() == "exchange");
-        auto e = lda.energy(rho);
+        auto e = lda.evaluate(params);
         fmt::print("desired: {:20.14f} {:20.14f} {:20.14f}\n", expected(0), expected(1), expected(2));
-        fmt::print("found:   {:20.14f} {:20.14f} {:20.14f}\n", e(0), e(1), e(2));
-        REQUIRE(tonto::util::all_close(e, expected));
-        tonto::Vec rho2 = tonto::Vec::Random(10);
-        rho2.array() = rho2.array().abs();
-        auto v = lda.potential(rho2);
-        fmt::print("rho2:\n{}\n", rho2);
-        fmt::print("potential:\n{}\n", v);
+        fmt::print("found:   {:20.14f} {:20.14f} {:20.14f}\n", e.exc(0), e.exc(1), e.exc(2));
+        REQUIRE(tonto::util::all_close(e.exc, expected));
+        tonto::dft::DensityFunctional::Params params2;
+        params2.rho = tonto::Array::Random(10, 1);
+        params2.rho = params2.rho.abs();
+        auto v = lda.evaluate(params2);
+        fmt::print("rho2:\n{}\n", params2.rho);
+        fmt::print("potential:\n{}\n", v.vrho);
     }
 
 

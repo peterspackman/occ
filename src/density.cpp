@@ -48,6 +48,7 @@ void eval_shell_S(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat
 void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>& dists, Eigen::Ref<tonto::Mat>& result, int derivative)
 {
     double dx = dists(0, 0); double dy = dists(0, 1); double dz = dists(0, 2); double r2 = dists(0, 3);
+    bool dx0 = (dx == 0.0), dy0 = (dy == 0), dz0 = (dz == 0);
     for(size_t i = 0; i < shell.nprim(); ++i)
     {
         double alpha = shell.alpha[i];
@@ -65,9 +66,9 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
                 result(offset, 0) += tmp;
                 double ddx, ddy, ddz, pdx, pdy, pdz;
                 if(derivative >=1) {
-                    pdx = (l / dx - 2 * alpha * dx);
-                    pdy = (m / dy - 2 * alpha * dy);
-                    pdz = (n / dz - 2 * alpha * dz);
+                    pdx = (dx0) ? 0.0 : (l / dx - 2 * alpha * dx);
+                    pdy = (dy0) ? 0.0 : (m / dy - 2 * alpha * dy);
+                    pdz = (dz0) ? 0.0 : (n / dz - 2 * alpha * dz);
                     ddx = tmp * pdx;
                     ddy = tmp * pdy;
                     ddz = tmp * pdz;
@@ -76,9 +77,9 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
                     result(offset, 3) += ddz;
                 }
                 if(derivative >= 2) {
-                    double pdx2 = (-l / (dx * dx) - 2 * alpha);
-                    double pdy2 = (-m / (dy * dy) - 2 * alpha);
-                    double pdz2 = (-n / (dz * dz) - 2 * alpha);
+                    double pdx2 = dx0 ? 0.0 : (-l / (dx * dx) - 2 * alpha);
+                    double pdy2 = dy0 ? 0.0 : (-m / (dy * dy) - 2 * alpha);
+                    double pdz2 = dz0 ? 0.0 : (-n / (dz * dz) - 2 * alpha);
                     result(offset, 4) += ddx * pdx + tmp * pdx2;
                     result(offset, 5) += ddx * pdy;
                     result(offset, 6) += ddx * pdz;

@@ -11,6 +11,11 @@ using IMatRM =
 using FMatRM =
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
+using Array = Eigen::ArrayXd;
+using DArray = Eigen::ArrayXd;
+using CArray = Eigen::ArrayXcd;
+using IArray = Eigen::ArrayXi;
+
 using Mat = Eigen::MatrixXd;
 using Mat3N = Eigen::Matrix3Xd;
 using MatN3 = Eigen::MatrixX3d;
