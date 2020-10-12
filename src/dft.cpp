@@ -46,8 +46,8 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
     tonto::log::debug("finished calculating atom grids");
-    m_funcs.push_back(DensityFunctional("xc_gga_x_pbe"));
-    m_funcs.push_back(DensityFunctional("xc_gga_c_pbe"));
+    m_funcs.push_back(DensityFunctional("xc_lda_x"));
+    m_funcs.push_back(DensityFunctional("xc_lda_c_vwn"));
 
     for(const auto& func: m_funcs) {
         fmt::print("Functional: {} {} {}\n", func.name(), func.kind_string(), func.family_string());
@@ -82,8 +82,6 @@ MatRM DFT::compute_2body_fock_d0(const MatRM &D, double precision, const MatRM &
         tonto::Vec rho;
         tonto::Mat gto_vals;
         std::tie(rho, gto_vals) = evaluate_density_and_gtos<0>(basis, atoms, D2, pts);
-        tonto::Array v = tonto::Array::Zero(rho.rows(), 1),
-                e = tonto::Array::Zero(rho.rows(), 1);
         DensityFunctional::Result res(npt, DensityFunctional::Family::LDA);
         params.rho = rho;
         for(const auto& func: m_funcs) {
@@ -112,6 +110,7 @@ MatRM DFT::compute_2body_fock_d0(const MatRM &D, double precision, const MatRM &
             }
         }
     }
+    fmt::print("Total density {}\n", total_density);
     m_e_alpha += D.cwiseProduct(J).sum();
     auto F = J + K;
     return F;
@@ -140,14 +139,14 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         for(Eigen::Index i = 0; i < rho.rows(); i++) {
             params.sigma(i) = rho(i, 1) * rho(i, 1) + rho(i, 2) * rho(i, 2) + rho(i, 3) * rho(i, 3);
         }
-        DensityFunctional::Result res(npt, DensityFunctional::Family::LDA);
+        DensityFunctional::Result res(npt, DensityFunctional::Family::GGA);
         for(const auto& func: m_funcs) {
             res += func.evaluate(params);
         }
         // add weights contribution
         auto vwt = res.vrho * pts.col(3).array();
         auto ewt = res.exc * pts.col(3).array();
-        auto vsigmawt = res.exc * pts.col(3).array();
+        auto vsigmawt = res.vsigma * pts.col(3).array();
         total_density += (params.rho * pts.col(3).array()).array().sum();
         for(size_t bf1 = 0; bf1 < nbf; bf1++) {
             for(size_t bf2 = bf1; bf2 < nbf; bf2++) {
@@ -160,7 +159,9 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
                     double ga = gto_vals(bf1, pt), gb = gto_vals(bf2, pt);
                     double gab = ga * gb;
                     val += gab * vwt(pt) + 2 * vsigmawt(pt) * (
-                        ga * (rho(pt, 1) * gbx + rho(pt, 2) * gby + rho(pt, 3) * gbz));
+                        ga * (rho(pt, 1) * gbx + rho(pt, 2) * gby + rho(pt, 3) * gbz) +
+                        gb * (rho(pt, 1) * gax + rho(pt, 2) * gay + rho(pt, 3) * gaz)
+                    );
                     wal += gab * ewt(pt);
                 }
                 m_e_alpha += Dab * wal;

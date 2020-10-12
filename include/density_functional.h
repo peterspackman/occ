@@ -408,11 +408,16 @@ public:
         Array vlapl;
         Array vtau;
         Result& operator +=(const Result& right) {
-            exc += right.exc;
-            vrho += right.vrho;
-            vsigma += right.vsigma;
-            vlapl += right.vlapl;
-            vtau += right.vtau;
+            if(exc.size() == 0) exc = right.exc;
+            else exc += right.exc;
+            if(vrho.size() == 0) vrho = right.vrho;
+            else vrho += right.vrho;
+            if(vsigma.size() == 0) vsigma = right.vsigma;
+            else vsigma += right.vsigma;
+            if(vlapl.size() == 0) vlapl = right.vlapl;
+            else vlapl += right.vlapl;
+            if(vtau.size() == 0) vtau = right.vtau;
+            else vtau += right.vtau;
             return *this;
         }
     };
@@ -471,7 +476,6 @@ public:
     }
     static int functional_id(const std::string&);
 private:
-    mutable Array m_workarray_en, m_workarray_pot, m_workarray_vrho, m_workarray_vsigma, m_workarray_vlapl, m_workarray_vtau;
     Identifier m_func_id;
     bool m_polarized{false};
     std::string m_func_name;
