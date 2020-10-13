@@ -396,10 +396,10 @@ public:
     struct Result {
         Result() {}
         Result(int num_points, Family fam) {
-            exc.resize(num_points);
-            vrho.resize(num_points);
+            exc = Array::Zero(num_points, 1);
+            vrho = Array::Zero(num_points, 1);
             if(fam == GGA) {
-                vsigma.resize(num_points);
+                vsigma = Array::Zero(num_points, 1);
             }
         }
         Array exc;

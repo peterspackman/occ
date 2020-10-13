@@ -16,7 +16,11 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
 {
     int n_pts = params.num_points();
     Family fam = family();
-    Result result(n_pts, fam);
+    Result result;
+    int nvrho = m_func.get()->n_vrho;
+    int nexc = m_func.get()->n_zk;
+    result.vrho.resize(n_pts * nvrho);
+    result.exc.resize(n_pts * nexc);
     switch(fam) {
     case LDA: {
         xc_lda_exc_vxc(m_func.get(), n_pts, params.rho.data(), result.exc.data(), result.vrho.data());
@@ -24,6 +28,8 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
     }
     case GGA: {
         assert(("Sigma array must be provided for GGA functionals", params.sigma.cols() > 0));
+        int nvsigma = m_func.get()->n_vsigma;
+        result.vsigma.resize(n_pts * nvsigma);
         xc_gga_exc_vxc(m_func.get(), n_pts, params.rho.data(), params.sigma.data(), result.exc.data(), result.vrho.data(), result.vsigma.data());
         break;
     }
@@ -33,12 +39,6 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
 }
 
 int DensityFunctional::functional_id(const std::string& name) {
-    if (name == "lda" || name == "slater" || name == "S") {
-        return XC_LDA_X;
-    }
-    if (name == "VWN5" || name == "vwn5" || name == "vwn") {
-        return XC_LDA_C_VWN;
-    }
     int func = xc_functional_get_number(name.c_str());
     if(func == 0) throw std::runtime_error(fmt::format("Unknown functional name {}", name));
     return func;

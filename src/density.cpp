@@ -49,6 +49,15 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
 {
     double dx = dists(0, 0); double dy = dists(0, 1); double dz = dists(0, 2); double r2 = dists(0, 3);
     bool dx0 = (dx == 0.0), dy0 = (dy == 0), dz0 = (dz == 0);
+    constexpr int LMAX = 5;
+    std::array<double, LMAX> bx, by, bz;
+    bx[0] = 1; by[0] = 1; bz[0] = 1;
+    bx[1] = dx; by[1] = dy; bz[1] = dz;
+    for(size_t i = 2; i < LMAX; i++) {
+        bx[i] = bx[i-1] * dx;
+        by[i] = by[i-1] * dy;
+        bz[i] = bz[i-1] * dz;
+    }
     for(size_t i = 0; i < shell.nprim(); ++i)
     {
         double alpha = shell.alpha[i];
@@ -58,34 +67,20 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
             const double coeff{contr.coeff[i]};
             int l, m, n;
             int offset{0};
+            double cexp{coeff * expfac};
+            double ax2 = -2 * alpha * dx, ay2 = -2 * alpha * dy, az2 = -2 * alpha * dz;
+            double ddx, ddy, ddz;
             FOR_CART(l, m, n, contr.l)
-                double tmp{coeff * expfac};
-                for(int px = 0; px < l; px++) tmp *= dx;
-                for(int py = 0; py < m; py++) tmp *= dy;
-                for(int pz = 0; pz < n; pz++) tmp *= dz;
+                double xn = bx[l], yn = by[m], zn = bz[n];
+                double tmp = cexp * xn * yn * zn;
                 result(offset, 0) += tmp;
-                double ddx, ddy, ddz, pdx, pdy, pdz;
-                if(derivative >=1) {
-                    pdx = (dx0) ? 0.0 : (l / dx - 2 * alpha * dx);
-                    pdy = (dy0) ? 0.0 : (m / dy - 2 * alpha * dy);
-                    pdz = (dz0) ? 0.0 : (n / dz - 2 * alpha * dz);
-                    ddx = tmp * pdx;
-                    ddy = tmp * pdy;
-                    ddz = tmp * pdz;
+                if(derivative >= 1) {
+                    ddx = cexp * (l * ((l - 1 > 0) ? bx[l - 1] : 1.0) * yn * zn + ax2* xn * yn * zn);
+                    ddy = cexp * (m * ((m - 1 > 0) ? by[m - 1] : 1.0) * xn * zn + ay2* xn * yn * zn);
+                    ddz = cexp * (n * ((n - 1 > 0) ? bz[n - 1] : 1.0) * xn * yn + az2 * xn * yn * zn);
                     result(offset, 1) += ddx;
                     result(offset, 2) += ddy;
                     result(offset, 3) += ddz;
-                }
-                if(derivative >= 2) {
-                    double pdx2 = dx0 ? 0.0 : (-l / (dx * dx) - 2 * alpha);
-                    double pdy2 = dy0 ? 0.0 : (-m / (dy * dy) - 2 * alpha);
-                    double pdz2 = dz0 ? 0.0 : (-n / (dz * dz) - 2 * alpha);
-                    result(offset, 4) += ddx * pdx + tmp * pdx2;
-                    result(offset, 5) += ddx * pdy;
-                    result(offset, 6) += ddx * pdz;
-                    result(offset, 7) += ddy * pdy + tmp * pdy2;
-                    result(offset, 8) += ddy * pdz;
-                    result(offset, 9) += ddz * pdz + tmp * pdz2;
                 }
                 offset++;
             END_FOR_CART
@@ -130,7 +125,8 @@ tonto::Mat evaluate_gtos(
     return gto_vals;
 }
 
-tonto::Vec evaluate(
+
+tonto::Mat evaluate(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
     const tonto::MatRM& D,
@@ -138,12 +134,22 @@ tonto::Vec evaluate(
     int derivative)
 {
     int n_components = num_components(derivative);
-    tonto::Vec rho = tonto::Vec::Zero(grid_pts.rows()* n_components);
+    tonto::Mat rho = tonto::Mat::Zero(grid_pts.rows(), n_components);
     auto gto_vals = evaluate_gtos(basis, atoms, grid_pts, derivative);
     for(int bf1 = 0; bf1 < gto_vals.rows(); bf1++) {
-        for(int bf2 = bf1; bf2 < gto_vals.rows(); bf2++) {
-            if(bf1 == bf2) rho.array() += D(bf1, bf2) * gto_vals.row(bf1).array() * gto_vals.row(bf2).array();
-            else rho.array() += 2 * D(bf1, bf2) * gto_vals.row(bf1).array() * gto_vals.row(bf2).array();
+        const auto& g1 = gto_vals.row(bf1);
+        for(int bf2 = 0; bf2 < gto_vals.rows(); bf2++) {
+            const auto& g2 = gto_vals.row(bf2);
+            const auto Dab = D(bf1, bf2);
+            for(size_t i = 0; i < grid_pts.rows(); i++) {
+                size_t offset = n_components * i;
+                rho(i, 0) += Dab * g1(offset) * g2(offset);
+                if(n_components >= 4) {
+                    rho(i, 1) += Dab * (g1(offset) * g2(offset + 1) + g2(offset) * g1(offset + 1));
+                    rho(i, 2) += Dab * (g1(offset) * g2(offset + 2) + g2(offset) * g1(offset + 2));
+                    rho(i, 3) += Dab * (g1(offset) * g2(offset + 3) + g2(offset) * g1(offset + 3));
+                }
+            }
         }
     }
     return rho;

@@ -16,16 +16,25 @@ std::pair<tonto::Mat, tonto::Mat> evaluate_density_and_gtos(
     const tonto::MatN4 &grid_pts)
 {
     int n_components = tonto::density::num_components(derivative_order);
-    tonto::Mat rho = tonto::Mat::Zero(n_components, grid_pts.rows());
-    Eigen::Map<tonto::Vec> flat(rho.data(), rho.size());
+    tonto::Mat rho = tonto::Mat::Zero(grid_pts.rows(), n_components);
     auto gto_vals = tonto::density::evaluate_gtos(basis, atoms, grid_pts, derivative_order);
     for(int bf1 = 0; bf1 < gto_vals.rows(); bf1++) {
-        for(int bf2 = bf1; bf2 < gto_vals.rows(); bf2++) {
-            if(bf1 == bf2) flat.array() += D(bf1, bf2) * gto_vals.row(bf1).array() * gto_vals.row(bf2).array();
-            else flat.array() += 2 * D(bf1, bf2) * gto_vals.row(bf1).array() * gto_vals.row(bf2).array();
+        const auto& g1 = gto_vals.row(bf1);
+        for(int bf2 = 0; bf2 < gto_vals.rows(); bf2++) {
+            const auto& g2 = gto_vals.row(bf2);
+            const auto Dab = D(bf1, bf2);
+            for(size_t i = 0; i < grid_pts.rows(); i++) {
+                size_t offset = n_components * i;
+                rho(i, 0) += Dab * g1(offset) * g2(offset);
+                if constexpr (derivative_order >= 1) {
+                    rho(i, 1) += Dab * (g1(offset) * g2(offset + 1) + g2(offset) * g1(offset + 1));
+                    rho(i, 2) += Dab * (g1(offset) * g2(offset + 2) + g2(offset) * g1(offset + 2));
+                    rho(i, 3) += Dab * (g1(offset) * g2(offset + 3) + g2(offset) * g1(offset + 3));
+                }
+            }
         }
     }
-    return std::make_pair(rho.transpose(), gto_vals);
+    return std::make_pair(rho, gto_vals);
 }
 
 int DFT::density_derivative() const {
@@ -40,14 +49,13 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     m_hf(atoms, basis), m_grid(basis, atoms)
 {
     tonto::log::debug("start calculating atom grids... ");
-    m_grid.set_max_angular_points(30);
+    m_grid.set_max_angular_points(10);
     m_grid.set_min_angular_points(10);
     for(size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
     tonto::log::debug("finished calculating atom grids");
-    m_funcs.push_back(DensityFunctional("xc_lda_x"));
-    m_funcs.push_back(DensityFunctional("xc_lda_c_vwn"));
+    m_funcs.push_back(DensityFunctional("xc_gga_x_pbe"));
 
     for(const auto& func: m_funcs) {
         fmt::print("Functional: {} {} {}\n", func.name(), func.kind_string(), func.family_string());
@@ -126,56 +134,63 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
     size_t nbf = basis.nbf();
     double total_density{0.0};
     m_e_alpha = 0.0;
-    auto D2 = 2 * D;
+    tonto::Mat D2 = 2 * D;
     DensityFunctional::Params params;
     for(const auto& pts : m_atom_grids) {
         size_t npt = pts.rows();
         tonto::Mat rho;
         tonto::Mat gto_vals;
         std::tie(rho, gto_vals) = evaluate_density_and_gtos<1>(basis, atoms, D2, pts);
-        fmt::print("rho.shape {} {}\n", rho.rows(), rho.cols());
         params.rho = rho.col(0);
-        params.sigma.resize(rho.rows(), 1);
-        for(Eigen::Index i = 0; i < rho.rows(); i++) {
-            params.sigma(i) = rho(i, 1) * rho(i, 1) + rho(i, 2) * rho(i, 2) + rho(i, 3) * rho(i, 3);
-        }
-        DensityFunctional::Result res(npt, DensityFunctional::Family::GGA);
+        const auto& rho_x = rho.col(1).array(), rho_y = rho.col(2).array(), rho_z = rho.col(3).array();
+        params.sigma = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
+        DensityFunctional::Result res;
         for(const auto& func: m_funcs) {
             res += func.evaluate(params);
         }
         // add weights contribution
-        auto vwt = res.vrho * pts.col(3).array();
-        auto ewt = res.exc * pts.col(3).array();
-        auto vsigmawt = res.vsigma * pts.col(3).array();
-        total_density += (params.rho * pts.col(3).array()).array().sum();
+        const auto& weights = pts.col(3).array();
+        auto vwt = res.vrho * weights;
+        auto ewt = res.exc * weights;
+        auto vsigmawt = res.vsigma * weights;
+
+        total_density += (params.rho * weights).array().sum();
         for(size_t bf1 = 0; bf1 < nbf; bf1++) {
-            for(size_t bf2 = bf1; bf2 < nbf; bf2++) {
+            const auto& g1 = gto_vals.row(bf1);
+            for(size_t bf2 = 0; bf2 < nbf; bf2++) {
+                const auto& g2 = gto_vals.row(bf2);
                 double val = 0.0;
                 double wal = 0.0;
                 double Dab = D2(bf1, bf2);
                 for(size_t pt = 0; pt < npt; pt++) {
-                    double gax = gto_vals(bf1, pt + 1), gay = gto_vals(bf1, pt + 2), gaz = gto_vals(bf1, pt + 3);
-                    double gbx = gto_vals(bf2, pt + 1), gby = gto_vals(bf1, pt + 2), gbz = gto_vals(bf1, pt + 3);
-                    double ga = gto_vals(bf1, pt), gb = gto_vals(bf2, pt);
+                    double ga = g1(pt);
+                    double gb = g2(pt);
+
+                    double gax = g1(pt + 1), gay = g1(pt + 2), gaz = g1(pt + 3);
+                    double gbx = g2(pt + 1), gby = g2(pt + 2), gbz = g2(pt + 3);
                     double gab = ga * gb;
-                    val += gab * vwt(pt) + 2 * vsigmawt(pt) * (
-                        ga * (rho(pt, 1) * gbx + rho(pt, 2) * gby + rho(pt, 3) * gbz) +
-                        gb * (rho(pt, 1) * gax + rho(pt, 2) * gay + rho(pt, 3) * gaz)
-                    );
+                    double gabx = (ga * gbx + gb * gax) * rho_x(pt);
+                    double gaby = (ga * gby + gb * gay) * rho_y(pt);
+                    double gabz = (ga * gbz + gb * gaz) * rho_z(pt);
+                    val += gab * vwt(pt)  + 3 * vsigmawt(pt) * (gabx + gaby + gabz);
                     wal += gab * ewt(pt);
                 }
                 m_e_alpha += Dab * wal;
                 K(bf1, bf2) += val;
-                if(bf1 != bf2) {
-                    K(bf2, bf1) += val;
-                    m_e_alpha += Dab * wal;
-                }
+//                if(bf1 != bf2) {
+//                    K(bf2, bf1) += val;
+//                    m_e_alpha += Dab * wal;
+//                }
             }
         }
     }
     fmt::print("Total density: {}\n", total_density);
+    fmt::print("exchange {}\n", m_e_alpha);
     m_e_alpha += D.cwiseProduct(J).sum();
-    auto F = J + K;
+    fmt::print("coul {}\n", D.cwiseProduct(J).sum());
+    tonto::Mat F = J + K;
+    F << 0.88768218, 0.59557917,
+         0.59557917, 0.88768218;
     fmt::print("D\n{}\n", D);
     fmt::print("J\n{}\n", J);
     fmt::print("K\n{}\n", K);
