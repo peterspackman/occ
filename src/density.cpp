@@ -88,6 +88,135 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
     }
 }
 
+void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, const tonto::MatN4& dists, tonto::Mat& result, int derivative)
+{
+    size_t n_pt = dists.rows();
+    size_t n_prim = shell.nprim();
+    size_t n_components = num_components(derivative);
+    constexpr size_t LMAX{5};
+    for(const auto& contraction: shell.contr) {
+        switch (contraction.l) {
+        case 0: {
+            for(size_t n = 0; n < n_pt; n++) {
+                double x = dists(n, 0);
+                double y = dists(n, 1);
+                double z = dists(n, 2);
+                double r2 = dists(n, 3);
+                size_t offset = n * n_components;
+                double cc_exp_r2 = 0.0;
+                double g1{0.0};
+                for(int i = 0; i < n_prim; i++) {
+                    double cexp = contraction.coeff[i] * exp(- shell.alpha[i] * r2);
+                    cc_exp_r2 += cexp;
+                    if (derivative > 0) {
+                        g1 += shell.alpha[i] * cexp;
+                    }
+                }
+                g1 *= -2;
+
+                result(bf, offset) += cc_exp_r2;
+                if ( derivative > 0)
+                {
+                    result(bf, offset + 1) += g1 * x;
+                    result(bf, offset + 2) += g1 * y;
+                    result(bf, offset + 3) += g1 * z;
+                }
+            }
+            break;
+        }
+        case 1: {
+            for (size_t n = 0; n < n_pt; n++) {
+                double x = dists(n, 0);
+                double y = dists(n, 1);
+                double z = dists(n, 2);
+                double r2 = dists(n, 3);
+                size_t offset = n * n_components;
+                double g0 = 0.0;
+                double g1{0.0};
+                for(int i = 0; i < n_prim; i++) {
+                    double cexp = contraction.coeff[i] * exp(- shell.alpha[i] * r2);
+                    g0 += cexp;
+                    if (derivative > 0) {
+                        g1 += shell.alpha[i] * cexp;
+                    }
+                }
+                g1 *= -2;
+                double g1x = g1 * x;
+                double g1y = g1 * y;
+                double g1z = g1 * z;
+                result(bf, offset) += x * g0;
+                result(bf + 1, offset) += y * g0;
+                result(bf + 2, offset) += z * g0;
+                if(derivative > 0) {
+                    result(bf, offset + 1) += g0 + x*g1x;
+                    result(bf, offset + 2) += x * g1y;
+                    result(bf, offset + 3) += x * g1z;
+                    result(bf + 1, offset + 1) += y*g1x;
+                    result(bf + 1, offset + 2) += g0 + y * g1y;
+                    result(bf + 1, offset + 3) += y * g1z;
+                    result(bf + 2, offset + 1) += z * g1x;
+                    result(bf + 2, offset + 2) += z * g1y;
+                    result(bf + 2, offset + 3) += g0 + z * g1z;
+                }
+            }
+            break;
+        }
+        default: {
+            std::array<double, LMAX> bx, by, bz, gxb, gyb, gzb;
+            bx[0] = 1.0; by[0] = 1.0; bz[0] = 1.0;
+            for (size_t n = 0; n < n_pt; n++) {
+                double x = dists(n, 0);
+                double y = dists(n, 1);
+                double z = dists(n, 2);
+                double r2 = dists(n, 3);
+                size_t offset = n * n_components;
+                double g0 = 0.0;
+                double g1{0.0};
+                for(int i = 0; i < n_prim; i++) {
+                    double cexp = contraction.coeff[i] * exp(- shell.alpha[i] * r2);
+                    g0 += cexp;
+                    if (derivative > 0) {
+                        g1 += shell.alpha[i] * cexp;
+                    }
+                }
+                g1 *= -2;
+                double g1x = g1 * x;
+                double g1y = g1 * y;
+                double g1z = g1 * z;
+                double g1xx = g1x * x;
+                double g1yy = g1y * y;
+                double g1zz = g1z * z;
+                double bxb = x, byb = y, bzb = z;
+                bx[1] = x; by[1] = y; bz[1] = z;
+                gxb[0] = g1x; gyb[0] = g1y; gzb[0] = g1z;
+                gxb[1] = g0 + g1xx; gyb[1] = g0 + g1yy; gzb[1] = g0 + g1zz;
+
+                for(size_t b = 2; b <= contraction.l; b++) {
+                    gxb[b] = (b * g0 + g1xx) * bxb;
+                    gyb[b] = (b * g0 + g1yy) * byb;
+                    gzb[b] = (b * g0 + g1zz) * bzb;
+                    bxb *= x; byb *= y; bzb *= z;
+                    bx[b] = bxb; by[b] = byb; bz[b] = bzb;
+                }
+                int L, M, N;
+                size_t lmn = 0;
+                FOR_CART(L, M, N, contraction.l)
+                    bxb = bx[L]; byb = by[M]; bzb = bz[N];
+                    double by_bz = byb * bzb;
+                    result(bf + lmn, offset) = bxb * by_bz * g0;
+                    if(derivative > 0) {
+                        result(bf + lmn, offset + 1) = gxb[L] * by_bz;
+                        result(bf + lmn, offset + 2) = bxb * gyb[M] * bzb;
+                        result(bf + lmn, offset + 3) = bxb * byb * gzb[N];
+                    }
+                    lmn++;
+                END_FOR_CART
+            }
+        }
+        }
+    }
+}
+
 tonto::Mat evaluate_gtos(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
@@ -115,11 +244,7 @@ tonto::Mat evaluate_gtos(
             const auto& shell = basis[shell_idx];
             size_t bf = shell2bf[shell_idx];
             size_t n_bf = shell.size();
-            for(auto pt = 0; pt < grid_pts.rows(); pt++)
-            {
-                Eigen::Ref<tonto::Mat> block(gto_vals.block(bf, pt * n_components, n_bf, n_components));
-                eval_shell(shell, dists.row(pt), block, derivative);
-            }
+            eval_shell_points(bf, n_bf, shell, dists, gto_vals, derivative);
         }
     }
     return gto_vals;
