@@ -145,6 +145,8 @@ TEST_CASE("Water DFT grid", "[dft]")
                     0.09305658, -0.07005863, 0, 0.9796981, 0.09305658, 0, -0.07005863, 0.9796981, 0.48464641, 0, 0, 0.57037312;
         fmt::print("Expected:\n{}\n", expected.transpose());
         fmt::print("GTO values H2/STO-3G:\n{}\n", gto_vals.transpose());
+        auto phi = Eigen::Map<Eigen::MatrixXd, 0, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>(gto_vals.data(), basis.size(), pts.size(), {pts.size() * 4, 4});
+        fmt::print("phi:\n{}\n");
     }
 
     SECTION("Density Gradients H2/3-21G") {
