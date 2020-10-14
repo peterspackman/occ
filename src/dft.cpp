@@ -54,8 +54,8 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
     tonto::log::debug("finished calculating atom grids");
-    m_funcs.push_back(DensityFunctional("xc_gga_x_pbe"));
-    m_funcs.push_back(DensityFunctional("xc_gga_c_pbe"));
+    m_funcs.push_back(DensityFunctional("xc_gga_x_b88"));
+    m_funcs.push_back(DensityFunctional("xc_gga_c_lyp"));
 
     for(const auto& func: m_funcs) {
         fmt::print("Functional: {} {} {}\n", func.name(), func.kind_string(), func.family_string());
@@ -152,9 +152,9 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         tonto::Mat phi_z = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 3 * gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
         for(size_t bf = 0; bf < nbf; bf++) {
             phi.row(bf).array() *= vsigmawt;
-            phi_x.row(bf).array() *= rho_x;
-            phi_y.row(bf).array() *= rho_y;
-            phi_z.row(bf).array() *= rho_z;
+            phi_x.row(bf).array() *= 2 * rho_x;
+            phi_y.row(bf).array() *= 2 * rho_y;
+            phi_z.row(bf).array() *= 2 * rho_z;
         }
         tonto::Mat ktmp((phi * phi_x.transpose()) + (phi * phi_y.transpose()) + (phi * phi_z.transpose()));
         tonto::Mat KK = ktmp + ktmp.transpose();

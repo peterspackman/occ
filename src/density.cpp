@@ -266,13 +266,13 @@ tonto::Mat evaluate(
         for(int bf2 = 0; bf2 < gto_vals.rows(); bf2++) {
             const auto& g2 = gto_vals.row(bf2);
             const auto Dab = D(bf1, bf2);
-            for(size_t i = 0; i < grid_pts.rows(); i++) {
-                size_t offset = n_components * i;
-                rho(i, 0) += Dab * g1(offset) * g2(offset);
+            for(size_t pt = 0; pt < grid_pts.rows(); pt++) {
+                size_t offset = n_components * pt;
+                rho(pt, 0) += Dab * g1(offset) * g2(offset);
                 if(n_components >= 4) {
-                    rho(i, 1) += Dab * (g1(offset) * g2(offset + 1) + g2(offset) * g1(offset + 1));
-                    rho(i, 2) += Dab * (g1(offset) * g2(offset + 2) + g2(offset) * g1(offset + 2));
-                    rho(i, 3) += Dab * (g1(offset) * g2(offset + 3) + g2(offset) * g1(offset + 3));
+                    rho(pt, 1) += Dab * (g1(offset) * g2(offset + 1) + g2(offset) * g1(offset + 1));
+                    rho(pt, 2) += Dab * (g1(offset) * g2(offset + 2) + g2(offset) * g1(offset + 2));
+                    rho(pt, 3) += Dab * (g1(offset) * g2(offset + 3) + g2(offset) * g1(offset + 3));
                 }
             }
         }
