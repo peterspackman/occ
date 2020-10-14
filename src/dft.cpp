@@ -49,14 +49,14 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     m_hf(atoms, basis), m_grid(basis, atoms)
 {
     tonto::log::debug("start calculating atom grids... ");
-    m_grid.set_max_angular_points(530);
-    m_grid.set_min_angular_points(88);
+    m_grid.set_max_angular_points(80);
+    m_grid.set_min_angular_points(30);
     for(size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
     tonto::log::debug("finished calculating atom grids");
-    m_funcs.push_back(DensityFunctional("xc_gga_x_pbe"));
-    m_funcs.push_back(DensityFunctional("xc_gga_c_pbe"));
+    m_funcs.push_back(DensityFunctional("xc_lda_x"));
+    m_funcs.push_back(DensityFunctional("xc_lda_c_vwn"));
 
     for(const auto& func: m_funcs) {
         fmt::print("Functional: {} {} {}\n", func.name(), func.kind_string(), func.family_string());
@@ -88,7 +88,7 @@ MatRM DFT::compute_2body_fock_d0(const MatRM &D, double precision, const MatRM &
     DensityFunctional::Params params;
     for(const auto& pts : m_atom_grids) {
         size_t npt = pts.rows();
-        tonto::Vec rho;
+        tonto::Mat rho;
         tonto::Mat gto_vals;
         std::tie(rho, gto_vals) = evaluate_density_and_gtos<0>(basis, atoms, D2, pts);
         DensityFunctional::Result res(npt, DensityFunctional::Family::LDA);
@@ -101,23 +101,13 @@ MatRM DFT::compute_2body_fock_d0(const MatRM &D, double precision, const MatRM &
         auto ewt = res.exc.array() * pts.col(3).array();
         total_density += (params.rho.array() * pts.col(3).array()).array().sum();
         m_e_alpha += (params.rho * ewt).sum();
-        for(size_t bf1 = 0; bf1 < nbf; bf1++) {
-            const auto& g1 = gto_vals.row(bf1);
-            for(size_t bf2 = bf1; bf2 < nbf; bf2++) {
-                const auto& g2 = gto_vals.row(bf2);
-                double val = 0.0;
-                for(size_t pt = 0; pt < npt; pt++) {
-                    double gab = g1(pt) * g2(pt);
-                    val += gab * vwt(pt);
-                }
-                K(bf1, bf2) += val;
-                if(bf1 != bf2) {
-                    K(bf2, bf1) += val;
-                }
-            }
+        tonto::Mat phi_vrho = gto_vals;
+        for(size_t bf = 0; bf < nbf; bf++) {
+            phi_vrho.row(bf).array() *= vwt;
         }
+        K.noalias() = (gto_vals * phi_vrho.transpose());
     }
-    fmt::print("Total density {}\n", total_density);
+//    fmt::print("Total density {}\n", total_density);
     m_e_alpha += D.cwiseProduct(J).sum();
     auto F = J + K;
     return F;
@@ -137,7 +127,7 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
     DensityFunctional::Params params;
     for(const auto& pts : m_atom_grids) {
         size_t npt = pts.rows();
-        tonto::Vec rho;
+        tonto::Mat rho;
         tonto::Mat gto_vals;
         std::tie(rho, gto_vals) = evaluate_density_and_gtos<1>(basis, atoms, D2, pts);
         params.rho = rho.col(0);
@@ -153,21 +143,25 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         auto vsigmawt = res.vsigma.array() * pts.col(3).array();
         total_density += (params.rho.array() * pts.col(3).array()).array().sum();
         m_e_alpha += (params.rho * ewt).sum();
-        for(size_t bf1 = 0; bf1 < nbf; bf1++) {
-            const auto& g1 = gto_vals.row(bf1);
-            for(size_t bf2 = bf1; bf2 < nbf; bf2++) {
-                const auto& g2 = gto_vals.row(bf2);
-                double val = 0.0;
-                for(size_t pt = 0; pt < npt; pt++) {
-                    val += g1(pt) * g2(pt) * vwt(pt);
-                }
-                K(bf1, bf2) += val;
-                if(bf1 != bf2) {
-                    K(bf2, bf1) += val;
-                }
-            }
+        tonto::Mat phi = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data(), nbf, npt, {4 * gto_vals.rows()});
+        tonto::Mat phi_vrho = phi;
+        for(size_t bf = 0; bf < nbf; bf++) {
+            phi_vrho.row(bf).array() *= vwt;
         }
-
+        tonto::Mat phi_x = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + nbf, nbf, npt, {4 * gto_vals.rows()});
+        tonto::Mat phi_y = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 2*nbf, nbf, npt, {4 * gto_vals.rows()});
+        tonto::Mat phi_z = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 3*nbf, nbf, npt, {4 * gto_vals.rows()});
+        size_t phi_rows = phi.rows(), phi_cols = phi.cols();
+        for(size_t bf = 0; bf < nbf; bf++) {
+            phi.row(bf).array() *= vsigmawt;
+            phi_x.row(bf).array() *= rho_x;
+            phi_y.row(bf).array() *= rho_y;
+            phi_z.row(bf).array() *= rho_z;
+        }
+        K.noalias() = (phi * phi_vrho.transpose());
+        K.noalias() += (phi * phi_x.transpose());
+        K.noalias() += (phi * phi_y.transpose());
+        K.noalias() += (phi * phi_z.transpose());
     }
     fmt::print("Total density: {}\n", total_density);
     fmt::print("exchange {}\n", m_e_alpha);

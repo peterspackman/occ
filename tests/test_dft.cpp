@@ -145,8 +145,16 @@ TEST_CASE("Water DFT grid", "[dft]")
                     0.09305658, -0.07005863, 0, 0.9796981, 0.09305658, 0, -0.07005863, 0.9796981, 0.48464641, 0, 0, 0.57037312;
         fmt::print("Expected:\n{}\n", expected.transpose());
         fmt::print("GTO values H2/STO-3G:\n{}\n", gto_vals.transpose());
-        auto phi = Eigen::Map<Eigen::MatrixXd, 0, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>(gto_vals.data(), basis.size(), pts.size(), {pts.size() * 4, 4});
-        fmt::print("phi:\n{}\n");
+        auto phi = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data(), gto_vals.rows(), pts.rows(), {4 * gto_vals.rows()});
+        auto phi_x = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + gto_vals.rows(), gto_vals.rows(), pts.rows(), {4 * gto_vals.rows()});
+        auto phi_y = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 2*gto_vals.rows(), gto_vals.rows(), pts.rows(), {4 * gto_vals.rows()});
+        auto phi_z = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 3*gto_vals.rows(), gto_vals.rows(), pts.rows(), {4 * gto_vals.rows()});
+
+        fmt::print("phi:\n{}\n", phi.transpose());
+        fmt::print("phi_x:\n{}\n", phi_x.transpose());
+        fmt::print("phi_y:\n{}\n", phi_y.transpose());
+        fmt::print("phi_z:\n{}\n", phi_z.transpose());
+
     }
 
     SECTION("Density Gradients H2/3-21G") {
