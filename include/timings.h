@@ -64,7 +64,9 @@ private:
     duration_t m_overhead;
 };
 
-static time_point_t start(category cat);
-static duration_t stop(category cat);
+time_point_t start(category cat);
+duration_t stop(category cat);
+double total(category cat);
+void clear_all();
 
 }

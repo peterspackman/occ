@@ -5,6 +5,8 @@
 #include <fmt/ostream.h>
 #include "logger.h"
 #include "density.h"
+#include "timings.h"
+
 namespace tonto::dft {
 
 template<int derivative_order>
@@ -22,6 +24,7 @@ std::pair<tonto::Mat, tonto::Mat> evaluate_density_and_gtos(
         for(int bf2 = 0; bf2 < gto_vals.rows(); bf2++) {
             const auto& g2 = gto_vals.row(bf2);
             const auto Dab = D(bf1, bf2);
+            #pragma omp parallel for
             for(size_t i = 0; i < grid_pts.rows(); i++) {
                 size_t offset = n_components * i;
                 rho(i, 0) += Dab * g1(offset) * g2(offset);
@@ -118,6 +121,7 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
     m_e_alpha = 0.0;
     double ecoul, exc;
     double exchange_factor = exact_exchange_factor();
+    tonto::timing::start(tonto::timing::category::ints);
     if(exchange_factor != 0.0) {
         std::tie(F, K) = m_hf.compute_JK(D, precision, Schwarz);
         ecoul = D.cwiseProduct(F).sum();
@@ -127,6 +131,7 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
     else {
         F = m_hf.compute_J(D, precision, Schwarz);
     }
+    tonto::timing::stop(tonto::timing::category::ints);
     K = tonto::MatRM::Zero(F.rows(), F.cols());
     const auto& basis = m_hf.basis();
     const auto& atoms = m_hf.atoms();
@@ -138,14 +143,19 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         size_t npt = pts.rows();
         tonto::Mat rho;
         tonto::Mat gto_vals;
+        tonto::timing::start(tonto::timing::category::grid);
         std::tie(rho, gto_vals) = evaluate_density_and_gtos<1>(basis, atoms, D2, pts);
+        tonto::timing::stop(tonto::timing::category::grid);
         params.rho = rho.col(0);
         const auto& rho_x = rho.col(1).array(), rho_y = rho.col(2).array(), rho_z = rho.col(3).array();
         params.sigma = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
         DensityFunctional::Result res(npt, DensityFunctional::Family::GGA);
+        tonto::timing::start(tonto::timing::category::dft);
+        #pragma omp parallel for
         for(const auto& func: m_funcs) {
             res += func.evaluate(params);
         }
+        tonto::timing::stop(tonto::timing::category::dft);
         // add weights contribution
         auto vwt = res.vrho.array() * pts.col(3).array();
         auto ewt = res.exc.array() * pts.col(3).array();
@@ -154,6 +164,7 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         m_e_alpha += (params.rho * ewt).sum();
         tonto::Mat phi = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data(), nbf, npt, {4 * gto_vals.rows()});
         tonto::Mat phi_vrho = phi;
+        #pragma omp parallel for
         for(size_t bf = 0; bf < nbf; bf++) {
             phi_vrho.row(bf).array() *= vwt;
         }
@@ -161,6 +172,7 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         tonto::Mat phi_x = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
         tonto::Mat phi_y = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 2 * gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
         tonto::Mat phi_z = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 3 * gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
+        #pragma omp parallel for
         for(size_t bf = 0; bf < nbf; bf++) {
             phi.row(bf).array() *= vsigmawt;
             phi_x.row(bf).array() *= 2 * rho_x;
@@ -172,6 +184,11 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         K.noalias() += KK;
     }
     //tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}", ecoul, exc, m_e_alpha);
+    fmt::print("\nGTO  {:10.5f}\nfunc {:10.5f}\nfock {:10.5f}\n\n",
+                      tonto::timing::total(tonto::timing::category::grid),
+                      tonto::timing::total(tonto::timing::category::dft),
+                      tonto::timing::total(tonto::timing::category::ints));
+    tonto::timing::clear_all();
     m_e_alpha += D.cwiseProduct(F).sum();
     F += K;
     return F;

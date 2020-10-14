@@ -17,8 +17,15 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
     int n_pts = params.num_points();
     Family fam = family();
     Result result;
-    int nvrho = m_func.get()->n_vrho;
-    int nexc = m_func.get()->n_zk;
+#if XC_MAJOR_VERSION >= 5
+    const int nvrho = m_func.get()->dim.vrho;
+    const int nexc = m_func.get()->dim.zk;
+    const int nvsigma = m_func.get()->dim.vsigma;
+#else
+    const int nvrho = m_func.get()->n_vrho;
+    const int nexc = m_func.get()->n_zk;
+    const int nvsigma = m_func.get()->n_vsigma;
+#endif
     result.vrho.resize(n_pts * nvrho);
     result.exc.resize(n_pts * nexc);
     switch(fam) {
@@ -29,7 +36,6 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
     case HGGA:
     case GGA: {
         assert(("Sigma array must be provided for GGA functionals", params.sigma.cols() > 0));
-        int nvsigma = m_func.get()->n_vsigma;
         result.vsigma.resize(n_pts * nvsigma);
         xc_gga_exc_vxc(m_func.get(), n_pts, params.rho.data(), params.sigma.data(), result.exc.data(), result.vrho.data(), result.vsigma.data());
         break;

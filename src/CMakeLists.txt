@@ -16,6 +16,7 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/timings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
     ${TONTO_INCLUDE_FILES}

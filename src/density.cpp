@@ -97,6 +97,7 @@ void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, cons
     for(const auto& contraction: shell.contr) {
         switch (contraction.l) {
         case 0: {
+            #pragma omp parallel for
             for(size_t n = 0; n < n_pt; n++) {
                 double x = dists(n, 0);
                 double y = dists(n, 1);
@@ -125,6 +126,7 @@ void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, cons
             break;
         }
         case 1: {
+            #pragma omp parallel for
             for (size_t n = 0; n < n_pt; n++) {
                 double x = dists(n, 0);
                 double y = dists(n, 1);
@@ -164,6 +166,7 @@ void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, cons
         default: {
             std::array<double, LMAX> bx, by, bz, gxb, gyb, gzb;
             bx[0] = 1.0; by[0] = 1.0; bz[0] = 1.0;
+            #pragma omp parallel for private(bx, by, bz, gxb, gyb, gzb)
             for (size_t n = 0; n < n_pt; n++) {
                 double x = dists(n, 0);
                 double y = dists(n, 1);
@@ -233,6 +236,7 @@ tonto::Mat evaluate_gtos(
     {
         const auto& atom = atoms[i];
         tonto::MatN4 dists(npts, 4);
+        #pragma omp parallel for
         for(auto pt = 0; pt < npts; pt++) {
             double dx = grid_pts(pt, 0) - atom.x;
             double dy = grid_pts(pt, 1) - atom.y;

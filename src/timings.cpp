@@ -14,4 +14,14 @@ duration_t stop(category cat)
     return sw.stop(static_cast<size_t>(cat));
 }
 
+double total(category cat)
+{
+    return sw.read(static_cast<size_t>(cat));
+}
+
+void clear_all()
+{
+    sw.clear_all();
+}
+
 }
