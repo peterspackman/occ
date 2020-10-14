@@ -502,10 +502,10 @@ std::pair<MatRM, MatRM> compute_JK(const BasisSet &obs,
 
                     j(bf1, bf2) += D(bf3, bf4) * value_scal_by_deg;
                     j(bf3, bf4) += D(bf1, bf2) * value_scal_by_deg;
-                    k(bf1, bf3) = 0.25 * D(bf2, bf4) * value_scal_by_deg;
-                    k(bf2, bf4) = 0.25 * D(bf1, bf3) * value_scal_by_deg;
-                    k(bf1, bf4) = 0.25 * D(bf2, bf3) * value_scal_by_deg;
-                    k(bf2, bf3) = 0.25 * D(bf1, bf4) * value_scal_by_deg;
+                    k(bf1, bf3) += 0.25 * D(bf2, bf4) * value_scal_by_deg;
+                    k(bf2, bf4) += 0.25 * D(bf1, bf3) * value_scal_by_deg;
+                    k(bf1, bf4) += 0.25 * D(bf2, bf3) * value_scal_by_deg;
+                    k(bf2, bf3) += 0.25 * D(bf1, bf4) * value_scal_by_deg;
                   }
                 }
               }

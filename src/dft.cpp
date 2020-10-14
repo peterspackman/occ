@@ -54,12 +54,11 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
     tonto::log::debug("finished calculating atom grids");
-    m_funcs.push_back(DensityFunctional("xc_gga_x_b88"));
-    m_funcs.push_back(DensityFunctional("xc_gga_c_lyp"));
-
+    m_funcs.push_back(DensityFunctional("xc_hyb_gga_xc_b3lyp"));
     for(const auto& func: m_funcs) {
-        fmt::print("Functional: {} {} {}\n", func.name(), func.kind_string(), func.family_string());
+        tonto::log::debug("Functional: {} {} {}, exact exchange = {}", func.name(), func.kind_string(), func.family_string(), func.exact_exchange_factor());
     }
+    tonto::log::debug("Total exchange factor: {}", exact_exchange_factor());
 }
 
 
@@ -114,13 +113,25 @@ MatRM DFT::compute_2body_fock_d0(const MatRM &D, double precision, const MatRM &
 
 MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &Schwarz) const
 {
-    auto J = m_hf.compute_J(D, precision, Schwarz);
-    tonto::MatRM K = tonto::MatRM::Zero(J.rows(), J.cols());
+    tonto::MatRM K, F;
+    m_e_alpha = 0.0;
+    double ecoul, exc;
+    double exchange_factor = exact_exchange_factor();
+    if(exchange_factor != 0.0) {
+        std::tie(F, K) = m_hf.compute_JK(D, precision, Schwarz);
+        ecoul = D.cwiseProduct(F).sum();
+        exc = - D.cwiseProduct(K).sum() * exchange_factor;
+        fmt::print("Exact K:\n{}\n", K);
+        F -= K * exchange_factor;
+    }
+    else {
+        F = m_hf.compute_J(D, precision, Schwarz);
+    }
+    K = tonto::MatRM::Zero(F.rows(), F.cols());
     const auto& basis = m_hf.basis();
     const auto& atoms = m_hf.atoms();
     size_t nbf = basis.nbf();
     double total_density{0.0};
-    m_e_alpha = 0.0;
     auto D2 = 2 * D;
     DensityFunctional::Params params;
     for(const auto& pts : m_atom_grids) {
@@ -160,8 +171,11 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         tonto::Mat KK = ktmp + ktmp.transpose();
         K.noalias() += KK;
     }
-    m_e_alpha += D.cwiseProduct(J).sum();
-    tonto::Mat F = J + K;
+    tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}", ecoul, exc, m_e_alpha);
+    m_e_alpha += D.cwiseProduct(F).sum();
+    F += K;
+    fmt::print("D\n{}\n", D);
+    fmt::print("F\n{}\n", F);
     return F;
 }
 

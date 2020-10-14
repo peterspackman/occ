@@ -48,6 +48,10 @@ public:
     double two_electron_energy_beta() const { return m_e_beta; }
 
     int density_derivative() const;
+    double exact_exchange_factor() const {
+        return std::accumulate(m_funcs.begin(), m_funcs.end(), 0.0,
+                               [&](double a, const auto& v) { return a + v.exact_exchange_factor(); });
+    }
 
     double nuclear_repulsion_energy() const { return m_hf.nuclear_repulsion_energy(); }
     auto compute_kinetic_matrix() {

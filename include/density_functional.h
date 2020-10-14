@@ -446,6 +446,10 @@ public:
         }
     }
 
+    double exact_exchange_factor() const {
+        return xc_hyb_exx_coef(m_func.get());
+    }
+
     int derivative_order() const {
         switch(family()) {
         case LDA: return 0;

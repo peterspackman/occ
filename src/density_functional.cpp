@@ -26,6 +26,7 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
         xc_lda_exc_vxc(m_func.get(), n_pts, params.rho.data(), result.exc.data(), result.vrho.data());
         break;
     }
+    case HGGA:
     case GGA: {
         assert(("Sigma array must be provided for GGA functionals", params.sigma.cols() > 0));
         int nvsigma = m_func.get()->n_vsigma;
