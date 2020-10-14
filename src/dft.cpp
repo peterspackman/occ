@@ -53,7 +53,8 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     for(size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
-    tonto::log::debug("finished calculating atom grids");
+    size_t num_grid_points = std::accumulate(m_atom_grids.begin(), m_atom_grids.end(), 0.0, [&](double tot, const auto& grid) { return tot + grid.rows(); });
+    tonto::log::debug("finished calculating atom grids ({} points)", num_grid_points);
     m_funcs.push_back(DensityFunctional("xc_hyb_gga_xc_b3lyp"));
     for(const auto& func: m_funcs) {
         tonto::log::debug("Functional: {} {} {}, exact exchange = {}", func.name(), func.kind_string(), func.family_string(), func.exact_exchange_factor());
@@ -121,7 +122,6 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         std::tie(F, K) = m_hf.compute_JK(D, precision, Schwarz);
         ecoul = D.cwiseProduct(F).sum();
         exc = - D.cwiseProduct(K).sum() * exchange_factor;
-        fmt::print("Exact K:\n{}\n", K);
         F -= K * exchange_factor;
     }
     else {
@@ -171,11 +171,9 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         tonto::Mat KK = ktmp + ktmp.transpose();
         K.noalias() += KK;
     }
-    tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}", ecoul, exc, m_e_alpha);
+    //tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}", ecoul, exc, m_e_alpha);
     m_e_alpha += D.cwiseProduct(F).sum();
     F += K;
-    fmt::print("D\n{}\n", D);
-    fmt::print("F\n{}\n", F);
     return F;
 }
 
