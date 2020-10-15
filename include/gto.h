@@ -9,6 +9,7 @@
 #include <libint2/shgshell_ordering.h>
 #include "timings.h"
 #include <fmt/core.h>
+#include "logger.h"
 
 namespace tonto::gto {
 
@@ -154,6 +155,7 @@ void add_shell_contribution(size_t bf, const libint2::Shell &shell, const tonto:
                 double r2 = dists(3, pt);
                 double g0 = 0.0;
                 double g1{0.0};
+                #pragma omp simd
                 for(int i = 0; i < n_prim; i++) {
                     double cexp = contraction.coeff[i] * exp(- shell.alpha[i] * r2);
                     g0 += cexp;

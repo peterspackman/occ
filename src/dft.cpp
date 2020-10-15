@@ -116,13 +116,13 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
     K = tonto::MatRM::Zero(F.rows(), F.cols());
     const auto& basis = m_hf.basis();
     const auto& atoms = m_hf.atoms();
+    constexpr size_t BLOCKSIZE = 1024;
     size_t nbf = basis.nbf();
     double total_density{0.0};
     auto D2 = 2 * D;
     DensityFunctional::Params params;
     for(const auto& [pts, weights] : m_atom_grids) {
         size_t npt = pts.cols();
-        // Need to sort out Row/Column Major mixing...
         tonto::timing::start(tonto::timing::category::grid);
         const auto [rho, gto_vals] = evaluate_density_and_gtos<1>(basis, atoms, D2, pts);
         tonto::timing::stop(tonto::timing::category::grid);
@@ -135,7 +135,6 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
             res += func.evaluate(params);
         }
         tonto::timing::stop(tonto::timing::category::dft);
-        // add weights contribution
         Vec vwt = res.vrho.array() * weights.array();
         Vec ewt = res.exc.array() * weights.array();
         Vec vsigmawt = res.vsigma.array() * weights.array();
