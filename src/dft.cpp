@@ -124,16 +124,18 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         size_t npt = pts.cols();
         // Need to sort out Row/Column Major mixing...
         tonto::timing::start(tonto::timing::category::grid);
-        auto [rho, gto_vals] = evaluate_density_and_gtos<1>(basis, atoms, D2, pts);
+        const auto [rho, gto_vals] = evaluate_density_and_gtos<1>(basis, atoms, D2, pts);
         tonto::timing::stop(tonto::timing::category::grid);
         params.rho = rho.col(0);
         const auto& rho_x = rho.col(1).array(), rho_y = rho.col(2).array(), rho_z = rho.col(3).array();
         params.sigma = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
+        fmt::print("Sums: \nrho = {:10.5f}, rho_x = {:10.5f}, rho_y = {:10.5f}, rho_z = {:10.5f}\n", params.rho.array().sum(), rho_x.sum(), rho_y.sum(), rho_z.sum());
         DensityFunctional::Result res(npt, DensityFunctional::Family::GGA);
         tonto::timing::start(tonto::timing::category::dft);
         for(const auto& func: m_funcs) {
             res += func.evaluate(params);
         }
+        fmt::print("exc = {:10.5f}, vrho = {:10.5f}, vsigma = {:10.5f}\n", res.exc.array().sum(), res.vrho.array().sum(), res.vsigma.array().sum());
         tonto::timing::stop(tonto::timing::category::dft);
         // add weights contribution
         Vec vwt = res.vrho.array() * weights.array();
@@ -163,16 +165,17 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         tonto::MatRM KK = KLDA + ktmp + ktmp.transpose();
         K.noalias() += KK;
     }
-    fmt::print("K\n{}\n", K);
-    tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_e_alpha, m_e_alpha + exc);
-    fmt::print("\nGTO  {:10.5f}\nfunc {:10.5f}\nfock {:10.5f}\n\n",
-                      tonto::timing::total(tonto::timing::category::grid),
-                      tonto::timing::total(tonto::timing::category::dft),
-                      tonto::timing::total(tonto::timing::category::ints));
+    fmt::print("Total density: {}\n", total_density);
+//    fmt::print("K\n{}\n", K);
+ //   tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_e_alpha, m_e_alpha + exc);
+//    fmt::print("\nGTO  {:10.5f}\nfunc {:10.5f}\nfock {:10.5f}\n\n",
+//                      tonto::timing::total(tonto::timing::category::grid),
+ //                     tonto::timing::total(tonto::timing::category::dft),
+  //                    tonto::timing::total(tonto::timing::category::ints));
     tonto::timing::clear_all();
     m_e_alpha += D.cwiseProduct(F).sum();
     F += K;
-    fmt::print("F\n{}\n", F);
+   // fmt::print("F\n{}\n", F);
     return F;
 }
 
