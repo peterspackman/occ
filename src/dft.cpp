@@ -6,37 +6,20 @@
 #include "logger.h"
 #include "density.h"
 #include "timings.h"
+#include "gto.h"
 
 namespace tonto::dft {
 
 template<int derivative_order>
-std::pair<tonto::Mat, tonto::Mat> evaluate_density_and_gtos(
+std::pair<tonto::Mat, tonto::gto::GTOValues<derivative_order>> evaluate_density_and_gtos(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
     const tonto::MatRM& D,
-    const tonto::MatN4 &grid_pts)
+    const tonto::Mat4N &grid_pts)
 {
-    int n_components = tonto::density::num_components(derivative_order);
-    tonto::Mat rho = tonto::Mat::Zero(grid_pts.rows(), n_components);
-    auto gto_vals = tonto::density::evaluate_gtos(basis, atoms, grid_pts, derivative_order);
-    for(int bf1 = 0; bf1 < gto_vals.rows(); bf1++) {
-        const auto& g1 = gto_vals.row(bf1);
-        for(int bf2 = 0; bf2 < gto_vals.rows(); bf2++) {
-            const auto& g2 = gto_vals.row(bf2);
-            const auto Dab = D(bf1, bf2);
-            #pragma omp parallel for
-            for(size_t i = 0; i < grid_pts.rows(); i++) {
-                size_t offset = n_components * i;
-                rho(i, 0) += Dab * g1(offset) * g2(offset);
-                if constexpr (derivative_order >= 1) {
-                    rho(i, 1) += Dab * (g1(offset) * g2(offset + 1) + g2(offset) * g1(offset + 1));
-                    rho(i, 2) += Dab * (g1(offset) * g2(offset + 2) + g2(offset) * g1(offset + 2));
-                    rho(i, 3) += Dab * (g1(offset) * g2(offset + 3) + g2(offset) * g1(offset + 3));
-                }
-            }
-        }
-    }
-    return std::make_pair(rho, gto_vals);
+    auto gto_values = tonto::gto::evaluate_basis_on_grid<derivative_order>(basis, atoms, grid_pts);
+    auto rho = tonto::density::evaluate_density<derivative_order>(D, gto_values);
+    return {rho, gto_values};
 }
 
 int DFT::density_derivative() const {
@@ -54,7 +37,7 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     m_grid.set_max_angular_points(530);
     m_grid.set_min_angular_points(80);
     for(size_t i = 0; i < atoms.size(); i++) {
-        m_atom_grids.push_back(m_grid.grid_points(i));
+        m_atom_grids.push_back(m_grid.grid_points(i).transpose());
     }
     size_t num_grid_points = std::accumulate(m_atom_grids.begin(), m_atom_grids.end(), 0.0, [&](double tot, const auto& grid) { return tot + grid.rows(); });
     tonto::log::debug("finished calculating atom grids ({} points)", num_grid_points);
@@ -90,9 +73,7 @@ MatRM DFT::compute_2body_fock_d0(const MatRM &D, double precision, const MatRM &
     DensityFunctional::Params params;
     for(const auto& pts : m_atom_grids) {
         size_t npt = pts.rows();
-        tonto::Mat rho;
-        tonto::Mat gto_vals;
-        std::tie(rho, gto_vals) = evaluate_density_and_gtos<0>(basis, atoms, D2, pts);
+        auto [rho, gto_vals] = evaluate_density_and_gtos<0>(basis, atoms, D2, pts);
         DensityFunctional::Result res(npt, DensityFunctional::Family::LDA);
         params.rho = rho.col(0);
         for(const auto& func: m_funcs) {
@@ -103,11 +84,11 @@ MatRM DFT::compute_2body_fock_d0(const MatRM &D, double precision, const MatRM &
         auto ewt = res.exc.array() * pts.col(3).array();
         total_density += (params.rho.array() * pts.col(3).array()).array().sum();
         m_e_alpha += (params.rho * ewt).sum();
-        tonto::Mat phi_vrho = gto_vals;
+        tonto::Mat phi_vrho = gto_vals.phi;
         for(size_t bf = 0; bf < nbf; bf++) {
-            phi_vrho.row(bf).array() *= vwt;
+            phi_vrho.col(bf).array() *= vwt;
         }
-        K.noalias() += (gto_vals * phi_vrho.transpose());
+        K.noalias() += (gto_vals.phi * phi_vrho.transpose());
     }
 //    fmt::print("Total density {}\n", total_density);
     m_e_alpha += D.cwiseProduct(J).sum();
@@ -160,7 +141,7 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         auto vsigmawt = res.vsigma.array() * pts.col(3).array();
         total_density += (params.rho.array() * pts.col(3).array()).array().sum();
         m_e_alpha += (params.rho * ewt).sum();
-        tonto::Mat phi = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data(), nbf, npt, {4 * gto_vals.rows()});
+        tonto::Mat& phi = gto_vals.phi;
         tonto::Mat phi_vrho = phi;
         #pragma omp parallel for
         for(size_t bf = 0; bf < nbf; bf++) {
@@ -168,15 +149,15 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         }
         K += phi * phi_vrho.transpose();
         // especially here
-        tonto::Mat phi_x = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
-        tonto::Mat phi_y = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 2 * gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
-        tonto::Mat phi_z = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 3 * gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
+        tonto::Mat& phi_x = gto_vals.phi_x;
+        tonto::Mat& phi_y = gto_vals.phi_y;
+        tonto::Mat& phi_z = gto_vals.phi_z;
         #pragma omp parallel for
         for(size_t bf = 0; bf < nbf; bf++) {
-            phi.row(bf).array() *= vsigmawt;
-            phi_x.row(bf).array() *= 2 * rho_x;
-            phi_y.row(bf).array() *= 2 * rho_y;
-            phi_z.row(bf).array() *= 2 * rho_z;
+            phi.col(bf).array() *= vsigmawt;
+            phi_x.col(bf).array() *= 2 * rho_x;
+            phi_y.col(bf).array() *= 2 * rho_y;
+            phi_z.col(bf).array() *= 2 * rho_z;
         }
         tonto::Mat ktmp((phi * phi_x.transpose()) + (phi * phi_y.transpose()) + (phi * phi_z.transpose()));
         tonto::Mat KK = ktmp + ktmp.transpose();
