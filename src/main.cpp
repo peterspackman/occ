@@ -1,5 +1,5 @@
 #include "logger.h"
-#include "cxxopts.hpp"
+#include "argparse.hpp"
 #include "hf.h"
 #include "molecule.h"
 #include "scf.h"
@@ -71,34 +71,53 @@ int main(int argc, const char **argv) {
   using std::cout;
   using std::endl;
 
-  cxxopts::Options options(
-      "tonto", "A quantum chemistry program for molecular crystals");
-  options.add_options()
-      ("b,basis", "Basis set name", cxxopts::value<std::string>()->default_value("3-21G"))
-      ("j,nthreads", "Number of threads", cxxopts::value<int>()->default_value("1"))
-      ("i,input", "Input file geometry", cxxopts::value<std::string>())
-      ("h,help", "Print this help message")
-      ("ghf", "Use general")
-      ("uhf", "Use unrestricted")
-      ("dft", "Use DFT")
-      ("multiplicity", "Set the multiplicity of the system", cxxopts::value<int>()->default_value("1"))
-      ("c,charge", "Set the total system charge", cxxopts::value<int>()->default_value("0"));
+  argparse::ArgumentParser parser("tonto");
+  parser.add_argument("input").help("Input file geometry");
+  parser.add_argument("-b", "--basis").help("Basis set name")
+      .default_value(std::string("3-21G"));
+  parser.add_argument("-j", "--threads")
+      .help("Number of threads")
+      .default_value(1)
+      .action([](const std::string& value) { return std::stoi(value); });
+  parser.add_argument("--method")
+      .default_value(std::string("rhf"))
+      .action([](const std::string& value) {
+          static const std::vector<std::string> choices = {"rhf", "rks", "uhf", "ghf"};
+          if(std::find(choices.begin(), choices.end(), value) != choices.end()) {
+              return value;
+          }
+          return std::string("rhf");
+      });
+
+  parser.add_argument("-c", "--charge")
+      .help("System charge")
+      .default_value(0)
+      .action([](const std::string& value) { return std::stoi(value); });
+
+  parser.add_argument("-m", "--multiplicity")
+      .help("System multiplicity")
+      .default_value(1)
+      .action([](const std::string& value) { return std::stoi(value); });
 
   tonto::log::set_level(tonto::log::level::debug);
-  auto result = options.parse(argc, argv);
-  if (result.count("help") || !(result.count("input"))) {
-    fmt::print("{}\n", options.help());
-    return 0;
+  try {
+      parser.parse_args(argc, argv);
   }
+  catch (const std::runtime_error& err) {
+      tonto::log::error("error when parsing command line arguments: {}", err.what());
+      fmt::print("{}", parser);
+      exit(1);
+  }
+
   print_header();
 
   try {
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
-    const auto filename = result["input"].as<std::string>();
-    const auto basisname = result["basis"].as<std::string>();
-    const auto multiplicity = result["multiplicity"].as<int>();
-    const auto charge = result["charge"].as<int>();
+    const auto filename = parser.get<std::string>("input");
+    const auto basisname = parser.get<std::string>("--basis");
+    const auto multiplicity = parser.get<int>("--multiplicity");
+    const auto charge = parser.get<int>("--charge");
     Molecule m = tonto::chem::read_xyz_file(filename);
 
     fmt::print("Input geometry ({})\n    {:3s} {:^10s} {:^10s} {:^10s}\n", filename, "sym", "x", "y", "z");
@@ -106,14 +125,12 @@ int main(int argc, const char **argv) {
       fmt::print("    {:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                  atom.x, atom.y, atom.z);
     }
-    bool unrestricted = result.count("uhf") || (multiplicity != 1);
-    bool general = result.count("ghf");
-    bool dft = result.count("dft");
-
+    const auto method = parser.get<std::string>("--method");
     using tonto::parallel::nthreads;
-    nthreads = result["nthreads"].as<int>();
+    nthreads = parser.get<int>("--threads");
     omp_set_num_threads(nthreads);
     fmt::print("\n    {:12s} {:>12d}\n", "threads", nthreads);
+    fmt::print("    {:12s} {:>12s}\n", "method", method);
     fmt::print("    {:12s} {:>12d}\n", "eigen", Eigen::nbThreads());
     fmt::print("    {:12s} {:>12s}\n", "basis", basisname);
 
@@ -121,19 +138,19 @@ int main(int argc, const char **argv) {
     obs.set_pure(false);
     fmt::print("    {:12s} {:>12d}\n", "n_bf", obs.nbf());
     HartreeFock hf(m.atoms(), obs);
-    if (dft) {
+    if (method == "rks") {
       fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
       tonto::dft::DFT rks("LDA", obs, m.atoms());
       RestrictedSCF<tonto::dft::DFT> scf(rks);
       scf.start_incremental_F_threshold = 0.0;
       double e = scf.compute_scf_energy();
-    } else if (general) {
+    } else if (method == "ghf") {
       fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
       GeneralSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;
       scf.set_charge(charge);
       double e = scf.compute_scf_energy();
-    } else if (unrestricted) {
+    } else if (method == "rhf") {
       fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
       UnrestrictedSCF<HartreeFock> scf(hf);
       scf.conv = 1e-12;

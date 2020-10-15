@@ -26,3 +26,26 @@ TEST_CASE("GTO vals H2/STO-3G") {
     auto rho = tonto::density::evaluate_density_on_grid<1>(basis, atoms, D, grid_pts);
     fmt::print("Rho\n{}\n", rho);
 }
+
+TEST_CASE("GTO vals H2/3-21G") {
+    std::vector<libint2::Atom> atoms {
+        {1, 0.0, 0.0, 0.0},
+        {1, 0.0, 0.0, 1.398397}
+    };
+    libint2::BasisSet basis("3-21G", atoms);
+    auto grid_pts = tonto::Mat::Identity(3, 4);
+    auto gto_values = tonto::gto::evaluate_basis_on_grid<1>(basis, atoms, grid_pts);
+    fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
+    fmt::print("phi_x\n{}\n", gto_values.phi_x);
+    fmt::print("phi_y\n{}\n", gto_values.phi_y);
+    fmt::print("phi_z\n{}\n", gto_values.phi_z);
+
+    tonto::MatRM D(4, 4);
+    D << 0.175416203439, 0.181496024303, 0.175416203439, 0.181496024303,
+         0.181496024303, 0.187786568128, 0.181496024303, 0.187786568128,
+         0.175416203439, 0.181496024303, 0.175416203439, 0.181496024303,
+         0.181496024303, 0.187786568128, 0.181496024303, 0.187786568128;
+
+    auto rho = tonto::density::evaluate_density_on_grid<1>(basis, atoms, D, grid_pts);
+    fmt::print("Rho\n{}\n", rho);
+}
