@@ -88,7 +88,8 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
     }
 }
 
-void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, const tonto::MatN4& dists, tonto::Mat& result, int derivative)
+void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, const tonto::MatN4& dists,
+                       tonto::Mat& result, const Eigen::Array<bool, Eigen::Dynamic, 1>& mask, int derivative)
 {
     size_t n_pt = dists.rows();
     size_t n_prim = shell.nprim();
@@ -99,6 +100,7 @@ void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, cons
         case 0: {
             #pragma omp parallel for
             for(size_t n = 0; n < n_pt; n++) {
+                if(!mask(n)) continue;
                 double x = dists(n, 0);
                 double y = dists(n, 1);
                 double z = dists(n, 2);
@@ -128,6 +130,7 @@ void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, cons
         case 1: {
             #pragma omp parallel for
             for (size_t n = 0; n < n_pt; n++) {
+                if(!mask(n)) continue;
                 double x = dists(n, 0);
                 double y = dists(n, 1);
                 double z = dists(n, 2);
@@ -168,6 +171,7 @@ void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, cons
             bx[0] = 1.0; by[0] = 1.0; bz[0] = 1.0;
             #pragma omp parallel for private(bx, by, bz, gxb, gyb, gzb)
             for (size_t n = 0; n < n_pt; n++) {
+                if(!mask(n)) continue;
                 double x = dists(n, 0);
                 double y = dists(n, 1);
                 double z = dists(n, 2);
@@ -231,11 +235,13 @@ tonto::Mat evaluate_gtos(
     tonto::Mat gto_vals = tonto::Mat::Zero(basis.nbf(), grid_pts.rows() * n_components);
     auto shell2bf = basis.shell2bf();
     auto atom2shell = basis.atom2shell(atoms);
+    constexpr auto EXPCUTOFF{50};
 
     for(size_t i = 0; i < natoms; i++)
     {
         const auto& atom = atoms[i];
         tonto::MatN4 dists(npts, 4);
+        Eigen::Array<bool, Eigen::Dynamic, 1> mask(npts);
         #pragma omp parallel for
         for(auto pt = 0; pt < npts; pt++) {
             double dx = grid_pts(pt, 0) - atom.x;
@@ -248,7 +254,17 @@ tonto::Mat evaluate_gtos(
             const auto& shell = basis[shell_idx];
             size_t bf = shell2bf[shell_idx];
             size_t n_bf = shell.size();
-            eval_shell_points(bf, n_bf, shell, dists, gto_vals, derivative);
+            #pragma omp parallel for
+            for(size_t pt = 0; pt < npts; pt++) {
+                mask(pt) = false;
+                for(size_t prim = 0; prim < shell.nprim(); prim++) {
+                    if((shell.alpha[prim] * dists(pt, 3) - shell.max_ln_coeff[prim]) < EXPCUTOFF) {
+                        mask(pt) = true;
+                        break;
+                    }
+                }
+            }
+            eval_shell_points(bf, n_bf, shell, dists, gto_vals, mask, derivative);
         }
     }
     return gto_vals;

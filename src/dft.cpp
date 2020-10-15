@@ -151,7 +151,6 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         params.sigma = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
         DensityFunctional::Result res(npt, DensityFunctional::Family::GGA);
         tonto::timing::start(tonto::timing::category::dft);
-        #pragma omp parallel for
         for(const auto& func: m_funcs) {
             res += func.evaluate(params);
         }
