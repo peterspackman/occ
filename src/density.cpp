@@ -3,6 +3,8 @@
 #include <libint2/basis.h>
 #include <libint2/atom.h>
 #include <libint2/cartesian.h>
+#include "timings.h"
+#include <fmt/core.h>
 
 namespace tonto::density {
 
@@ -89,7 +91,7 @@ void eval_shell(const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>&
 }
 
 void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, const tonto::MatN4& dists,
-                       tonto::Mat& result, const Eigen::Array<bool, Eigen::Dynamic, 1>& mask, int derivative)
+                       tonto::MatRM& result, const Eigen::Array<bool, Eigen::Dynamic, 1>& mask, int derivative)
 {
     size_t n_pt = dists.rows();
     size_t n_prim = shell.nprim();
@@ -224,15 +226,16 @@ void eval_shell_points(size_t bf, size_t n_bf, const libint2::Shell &shell, cons
     }
 }
 
-tonto::Mat evaluate_gtos(
+tonto::MatRM evaluate_gtos(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
     const tonto::MatN4 &grid_pts, int derivative)
 {
+    tonto::timing::start(tonto::timing::category::la);
     const auto natoms = atoms.size();
     const auto npts = grid_pts.rows();
     int n_components = num_components(derivative);
-    tonto::Mat gto_vals = tonto::Mat::Zero(basis.nbf(), grid_pts.rows() * n_components);
+    tonto::MatRM gto_vals = tonto::MatRM::Zero(basis.nbf(), grid_pts.rows() * n_components);
     auto shell2bf = basis.shell2bf();
     auto atom2shell = basis.atom2shell(atoms);
     constexpr auto EXPCUTOFF{50};
@@ -242,11 +245,12 @@ tonto::Mat evaluate_gtos(
         const auto& atom = atoms[i];
         tonto::MatN4 dists(npts, 4);
         Eigen::Array<bool, Eigen::Dynamic, 1> mask(npts);
+        double atom_x = atom.x, atom_y = atom.y, atom_z = atom.z;
         #pragma omp parallel for
         for(auto pt = 0; pt < npts; pt++) {
-            double dx = grid_pts(pt, 0) - atom.x;
-            double dy = grid_pts(pt, 1) - atom.y;
-            double dz = grid_pts(pt, 2) - atom.z;
+            double dx = grid_pts(pt, 0) - atom_x;
+            double dy = grid_pts(pt, 1) - atom_y;
+            double dz = grid_pts(pt, 2) - atom_z;
             double r2 = dx * dx + dy * dy + dz * dz;
             dists(pt, 0) = dx; dists(pt, 1) = dy; dists(pt, 2) = dz; dists(pt, 3) = r2;
         }
@@ -267,6 +271,8 @@ tonto::Mat evaluate_gtos(
             eval_shell_points(bf, n_bf, shell, dists, gto_vals, mask, derivative);
         }
     }
+    tonto::timing::stop(tonto::timing::category::la);
+    fmt::print("evaluate_gtos: {:10.5f}\n", tonto::timing::total(tonto::timing::category::la));
     return gto_vals;
 }
 

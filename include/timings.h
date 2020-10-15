@@ -13,6 +13,7 @@ enum category {
     la,
     grid,
     dft,
+    gto,
     _group_count
 };
 

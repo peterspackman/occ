@@ -141,10 +141,9 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
     DensityFunctional::Params params;
     for(const auto& pts : m_atom_grids) {
         size_t npt = pts.rows();
-        tonto::Mat rho;
-        tonto::Mat gto_vals;
+        // Need to sort out Row/Column Major mixing...
         tonto::timing::start(tonto::timing::category::grid);
-        std::tie(rho, gto_vals) = evaluate_density_and_gtos<1>(basis, atoms, D2, pts);
+        auto [rho, gto_vals] = evaluate_density_and_gtos<1>(basis, atoms, D2, pts);
         tonto::timing::stop(tonto::timing::category::grid);
         params.rho = rho.col(0);
         const auto& rho_x = rho.col(1).array(), rho_y = rho.col(2).array(), rho_z = rho.col(3).array();
@@ -168,6 +167,7 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
             phi_vrho.row(bf).array() *= vwt;
         }
         K += phi * phi_vrho.transpose();
+        // especially here
         tonto::Mat phi_x = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
         tonto::Mat phi_y = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 2 * gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
         tonto::Mat phi_z = Eigen::Map<tonto::Mat, 0, Eigen::OuterStride<>>(gto_vals.data() + 3 * gto_vals.rows(), nbf, npt, {4 * gto_vals.rows()});
