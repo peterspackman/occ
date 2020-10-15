@@ -21,7 +21,7 @@ public:
     DFTGrid(const libint2::BasisSet&, const std::vector<libint2::Atom>&);
     const auto& atomic_numbers() const { return m_atomic_numbers; }
     const auto n_atoms() const { return m_atomic_numbers.size(); }
-    MatN4 grid_points(size_t idx) const;
+    std::pair<Mat3N, Vec> grid_points(size_t idx) const;
     void set_radial_precision(double prec) { m_radial_precision = prec; }
     void set_min_angular_points(size_t n) { m_min_angular = n; }
     void set_max_angular_points(size_t n) { m_max_angular = n; }

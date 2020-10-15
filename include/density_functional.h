@@ -391,28 +391,28 @@ public:
     struct Result {
         Result() {}
         Result(int num_points, Family fam) {
-            exc = Array::Zero(num_points, 1);
-            vrho = Array::Zero(num_points, 1);
+            exc = Vec::Zero(num_points);
+            vrho = Vec::Zero(num_points);
             if(fam == GGA) {
-                vsigma = Array::Zero(num_points, 1);
+                vsigma = Vec::Zero(num_points);
             }
         }
-        Array exc;
-        Array vrho;
-        Array vsigma;
-        Array vlapl;
-        Array vtau;
+        Vec exc;
+        Vec vrho;
+        Vec vsigma;
+        Vec vlapl;
+        Vec vtau;
         Result& operator +=(const Result& right) {
             if(exc.size() == 0) exc = right.exc;
-            else exc += right.exc;
+            else exc.array() += right.exc.array();
             if(vrho.size() == 0) vrho = right.vrho;
-            else vrho += right.vrho;
+            else vrho.array() += right.vrho.array();
             if(vsigma.size() == 0) vsigma = right.vsigma;
-            else vsigma += right.vsigma;
+            else vsigma.array() += right.vsigma.array();
             if(vlapl.size() == 0) vlapl = right.vlapl;
-            else vlapl += right.vlapl;
+            else vlapl.array() += right.vlapl.array();
             if(vtau.size() == 0) vtau = right.vtau;
-            else vtau += right.vtau;
+            else vtau.array() += right.vtau.array();
             return *this;
         }
     };
@@ -423,10 +423,10 @@ public:
             rho.resize(n);
             if(fam == GGA) sigma.resize(n);
         }
-        Array rho;
-        Array sigma;
-        Array lapl;
-        Array tau;
+        Vec rho;
+        Vec sigma;
+        Vec lapl;
+        Vec tau;
         inline int num_points() const { return rho.rows(); }
     };
 
@@ -447,7 +447,11 @@ public:
     }
 
     double exact_exchange_factor() const {
-        return xc_hyb_exx_coef(m_func.get());
+        switch (family()) {
+        case HGGA:
+        case HMGGA: return xc_hyb_exx_coef(m_func.get());
+        default: return 0;
+        }
     }
 
     int derivative_order() const {

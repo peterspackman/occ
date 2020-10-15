@@ -60,7 +60,7 @@ DFTGrid::DFTGrid(
     }
 }
 
-MatN4 DFTGrid::grid_points(size_t idx) const
+std::pair<Mat3N, Vec> DFTGrid::grid_points(size_t idx) const
 {
     assert(idx < m_atomic_numbers.size());
     context_t *ctx = numgrid_new_atom_grid(
@@ -73,7 +73,8 @@ MatN4 DFTGrid::grid_points(size_t idx) const
     );
     int num_points = numgrid_get_num_grid_points(ctx);
 
-    Mat pts(num_points, 4);
+    Mat pts(num_points, 3);
+    Vec weights(num_points);
     numgrid_get_grid(
         ctx,
         n_atoms(),
@@ -85,11 +86,11 @@ MatN4 DFTGrid::grid_points(size_t idx) const
         pts.col(0).data(),
         pts.col(1).data(),
         pts.col(2).data(),
-        pts.col(3).data()
+        weights.data()
     );
 
     numgrid_free_atom_grid(ctx);
-    return pts;
+    return {pts.transpose(), weights};
 }
 
 }

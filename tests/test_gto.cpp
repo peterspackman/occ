@@ -14,7 +14,7 @@ TEST_CASE("GTO vals H2/STO-3G") {
         {1, 0.0, 0.0, 1.398397}
     };
     libint2::BasisSet basis("sto-3g", atoms);
-    auto grid_pts = tonto::Mat::Identity(3, 3);
+    auto grid_pts = tonto::Mat::Identity(3, 4);
     auto gto_values = tonto::gto::evaluate_basis_on_grid<1>(basis, atoms, grid_pts);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
@@ -24,5 +24,5 @@ TEST_CASE("GTO vals H2/STO-3G") {
     tonto::MatRM D(2, 2);
     D.setConstant(0.60245569);
     auto rho = tonto::density::evaluate_density_on_grid<1>(basis, atoms, D, grid_pts);
-    fmt::print("Rho\n{}\n", rho.transpose());
+    fmt::print("Rho\n{}\n", rho);
 }

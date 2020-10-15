@@ -115,8 +115,8 @@ GTOValues<max_derivative> evaluate_basis_on_grid(const libint2::BasisSet &basis,
                                          const tonto::Mat &grid_pts)
 {
     tonto::timing::start(tonto::timing::category::gto);
-    size_t nbf = basis.size();
-    size_t npts = grid_pts.rows();
+    size_t nbf = basis.nbf();
+    size_t npts = grid_pts.cols();
     size_t natoms = atoms.size();
     GTOValues<max_derivative> gto_values(nbf, npts);
     gto_values.set_zero();
@@ -130,15 +130,17 @@ GTOValues<max_derivative> evaluate_basis_on_grid(const libint2::BasisSet &basis,
         tonto::Mat dists(4, npts);
         tonto::MaskArray mask(npts);
         tonto::Vec3 xyz(atom.x, atom.y, atom.z);
-        dists.block(0, 0, 3, npts) = grid_pts.colwise() - xyz;
+
+        dists.block(0, 0, 3, npts) = grid_pts.block(0, 0, 3, npts).colwise() - xyz;
         dists.row(3) = dists.block(0, 0, 3, npts).colwise().squaredNorm();
         for(const auto& shell_idx: atom2shell[i]) {
             const auto& shell = basis[shell_idx];
             size_t bf = shell2bf[shell_idx];
             for(size_t pt = 0; pt < npts; pt++) {
-                mask(pt) = false;
+                mask(pt) = true;
+                continue;
                 for(size_t prim = 0; prim < shell.nprim(); prim++) {
-                    if((shell.alpha[prim] * dists(pt, 3) - shell.max_ln_coeff[prim]) < EXPCUTOFF) {
+                    if((shell.alpha[prim] * dists(3, pt) - shell.max_ln_coeff[prim]) < EXPCUTOFF) {
                         mask(pt) = true;
                         break;
                     }
