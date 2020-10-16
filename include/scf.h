@@ -1090,7 +1090,7 @@ struct SCF {
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   D.cwiseProduct(T).sum());
     fmt::print("{:10s} {:20.12f} hartree\n", "E_en",  D.cwiseProduct(V).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  D.cwiseProduct(H).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  2 * D.cwiseProduct(H).sum());
     fmt::print("{:10s} {:20.12f} hartree\n", "E_2e",  D.cwiseProduct(F).sum());
     fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", (ehf + enuc));
     return ehf + enuc;
