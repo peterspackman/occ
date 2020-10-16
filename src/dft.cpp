@@ -192,7 +192,15 @@ std::vector<DensityFunctional> parse_method(const std::string& method_string)
     tonto::util::to_lower(method);
     auto tokens = tonto::util::tokenize(method_string, " ");
     for(const auto& token: tokens) {
-        funcs.push_back(DensityFunctional(token));
+        if(token == "pbe") {
+            funcs.push_back(DensityFunctional("xc_gga_x_pbe"));
+            funcs.push_back(DensityFunctional("xc_gga_c_pbe"));
+        }
+        else if(token == "blyp") {
+            funcs.push_back(DensityFunctional("xc_gga_x_b88"));
+            funcs.push_back(DensityFunctional("xc_gga_c_lyp"));
+        }
+        else funcs.push_back(DensityFunctional(token));
     }
     return funcs;
 }

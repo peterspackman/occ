@@ -29,158 +29,153 @@ void print_header()
     fmt::print(R"(
 
 
-              ,d                               ,d               
-              88                               88               
-            MM88MMM  ,adPPYba,   8b,dPPYba,  MM88MMM  ,adPPYba, 
-              88    a8"     "8a  88P'   `"8a   88    a8"     "8a
-              88    8b       d8  88       88   88    8b       d8
-              88,   "8a,   ,a8"  88       88   88,   "8a,   ,a8"
-              "Y888  `"YbbdP"'   88       88   "Y888  `"YbbdP"' 
+               ,d                               ,d
+               88                               88
+               MM88MMM  ,adPPYba,   8b,dPPYba,  MM88MMM  ,adPPYba,
+               88    a8"     "8a  88P'   `"8a   88    a8"     "8a
+               88    8b       d8  88       88   88    8b       d8
+               88,   "8a,   ,a8"  88       88   88,   "8a,   ,a8"
+               "Y888  `"YbbdP"'   88       88   "Y888  `"YbbdP"'
 
 
 
-    Copyright (C) 2020
-    Peter Spackman - Primary Developer
-    Dylan Jayatilaka 
+               Copyright (C) 2020
+               Peter Spackman - Primary Developer
+               Dylan Jayatilaka
 
-This version of tonto also uses the following third party libraries:
+               This version of tonto also uses the following third party libraries:
 
-    eigen        - Linear Algebra (v {})
-    libint2      - Electron integrals using GTOs (v {})
-    numgrid      - DFT grids (v {})
-    libxc        - Density functional implementations (v {})
-    gemmi        - CIF parsing & structure refinement (v {})
-    boost::graph - Graph implementation (v {})
-    OpenMP       - Multithreading
-    fmt          - String formatting (v {})
-    spdlog       - Logging (v {})
+               eigen        - Linear Algebra (v {})
+               libint2      - Electron integrals using GTOs (v {})
+               numgrid      - DFT grids (v {})
+               libxc        - Density functional implementations (v {})
+               gemmi        - CIF parsing & structure refinement (v {})
+               boost::graph - Graph implementation (v {})
+               OpenMP       - Multithreading
+               fmt          - String formatting (v {})
+               spdlog       - Logging (v {})
 
-)", eigen_version_string, libint_version_string, numgrid_verison_string, xc_version_string,
-    gemmi_version_string, boost_version_string, fmt_version_string, spdlog_version_string);
+               )", eigen_version_string, libint_version_string, numgrid_verison_string, xc_version_string,
+               gemmi_version_string, boost_version_string, fmt_version_string, spdlog_version_string);
 }
 
 
 int main(int argc, const char **argv) {
-  using tonto::chem::Molecule;
-  using tonto::chem::Element;
-  using tonto::hf::HartreeFock;
-  using tonto::scf::RestrictedSCF;
-  using tonto::scf::UnrestrictedSCF;
-  using tonto::scf::GeneralSCF;
-  using std::cerr;
-  using std::cout;
-  using std::endl;
+    using tonto::chem::Molecule;
+    using tonto::chem::Element;
+    using tonto::hf::HartreeFock;
+    using tonto::scf::RestrictedSCF;
+    using tonto::scf::UnrestrictedSCF;
+    using tonto::scf::GeneralSCF;
+    using std::cerr;
+    using std::cout;
+    using std::endl;
 
-  argparse::ArgumentParser parser("tonto");
-  parser.add_argument("input").help("Input file geometry");
-  parser.add_argument("-b", "--basis").help("Basis set name")
-      .default_value(std::string("3-21G"));
-  parser.add_argument("-j", "--threads")
-      .help("Number of threads")
-      .default_value(1)
-      .action([](const std::string& value) { return std::stoi(value); });
-  parser.add_argument("--method")
-      .default_value(std::string("rhf"))
-      .action([](const std::string& value) {
-          static const std::vector<std::string> choices = {"rhf", "rks", "uhf", "ghf"};
-          if(std::find(choices.begin(), choices.end(), value) != choices.end()) {
-              return value;
-          }
-          return std::string("rhf");
-      });
+    argparse::ArgumentParser parser("tonto");
+    parser.add_argument("input").help("Input file geometry");
+    parser.add_argument("-b", "--basis").help("Basis set name")
+            .default_value(std::string("3-21G"));
+    parser.add_argument("-j", "--threads")
+            .help("Number of threads")
+            .default_value(1)
+            .action([](const std::string& value) { return std::stoi(value); });
+    parser.add_argument("--method")
+            .default_value(std::string("rhf"));
 
-  parser.add_argument("-c", "--charge")
-      .help("System charge")
-      .default_value(0)
-      .action([](const std::string& value) { return std::stoi(value); });
+    parser.add_argument("-c", "--charge")
+            .help("System charge")
+            .default_value(0)
+            .action([](const std::string& value) { return std::stoi(value); });
 
-  parser.add_argument("-m", "--multiplicity")
-      .help("System multiplicity")
-      .default_value(1)
-      .action([](const std::string& value) { return std::stoi(value); });
+    parser.add_argument("-m", "--multiplicity")
+            .help("System multiplicity")
+            .default_value(1)
+            .action([](const std::string& value) { return std::stoi(value); });
 
-  tonto::log::set_level(tonto::log::level::debug);
-  try {
-      parser.parse_args(argc, argv);
-  }
-  catch (const std::runtime_error& err) {
-      tonto::log::error("error when parsing command line arguments: {}", err.what());
-      fmt::print("{}", parser);
-      exit(1);
-  }
-
-  print_header();
-
-  try {
-    libint2::Shell::do_enforce_unit_normalization(false);
-    libint2::initialize();
-    const auto filename = parser.get<std::string>("input");
-    const auto basisname = parser.get<std::string>("--basis");
-    const auto multiplicity = parser.get<int>("--multiplicity");
-    const auto charge = parser.get<int>("--charge");
-    Molecule m = tonto::chem::read_xyz_file(filename);
-
-    fmt::print("Input geometry ({})\n    {:3s} {:^10s} {:^10s} {:^10s}\n", filename, "sym", "x", "y", "z");
-    for (const auto &atom : m.atoms()) {
-      fmt::print("    {:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
-                 atom.x, atom.y, atom.z);
+    tonto::log::set_level(tonto::log::level::debug);
+    try {
+        parser.parse_args(argc, argv);
     }
-    const auto method = parser.get<std::string>("--method");
-    using tonto::parallel::nthreads;
-    nthreads = parser.get<int>("--threads");
-    omp_set_num_threads(nthreads);
-    fmt::print("\n    {:12s} {:>12d}\n", "threads", nthreads);
-    fmt::print("    {:12s} {:>12s}\n", "method", method);
-    fmt::print("    {:12s} {:>12d}\n", "eigen", Eigen::nbThreads());
-    fmt::print("    {:12s} {:>12s}\n", "basis", basisname);
-
-    libint2::BasisSet obs(basisname, m.atoms());
-    obs.set_pure(false);
-    fmt::print("    {:12s} {:>12d}\n", "n_bf", obs.nbf());
-    HartreeFock hf(m.atoms(), obs);
-    if (method == "rks") {
-      fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
-      tonto::dft::DFT rks("pbe", obs, m.atoms());
-      RestrictedSCF<tonto::dft::DFT> scf(rks);
-      scf.start_incremental_F_threshold = 0.0;
-      double e = scf.compute_scf_energy();
-    } else if (method == "ghf") {
-      fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
-      GeneralSCF<HartreeFock> scf(hf);
-      scf.conv = 1e-12;
-      scf.set_charge(charge);
-      double e = scf.compute_scf_energy();
-    } else if (method == "rhf") {
-      fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
-      UnrestrictedSCF<HartreeFock> scf(hf);
-      scf.conv = 1e-12;
-      scf.set_multiplicity(multiplicity);
-      scf.set_charge(charge);
-      double e = scf.compute_scf_energy();
-      //scf.print_orbital_energies();
-    } else
-    {
-      fmt::print("    {:12s} {:>12s}\n", "procedure", "rhf");
-      RestrictedSCF<HartreeFock> scf(hf);
-      scf.conv = 1e-12;
-      scf.set_charge(charge);
-      double e = scf.compute_scf_energy();
-      //scf.print_orbital_energies();
+    catch (const std::runtime_error& err) {
+        tonto::log::error("error when parsing command line arguments: {}", err.what());
+        fmt::print("{}", parser);
+        exit(1);
     }
 
-  } catch (const char *ex) {
-    fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);
-    return 1;
-  } catch (std::string &ex) {
-    fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);
-    return 1;
-  } catch (std::exception &ex) {
-    fmt::print("Caught exception when performing HF calculation:\n**{}**\n",
-               ex.what());
-    return 1;
-  } catch (...) {
-    fmt::print("Unknown exception occurred...\n");
-    return 1;
-  }
-  return 0;
+    print_header();
+
+    try {
+        libint2::Shell::do_enforce_unit_normalization(false);
+        libint2::initialize();
+        const auto filename = parser.get<std::string>("input");
+        const auto basisname = parser.get<std::string>("--basis");
+        const auto multiplicity = parser.get<int>("--multiplicity");
+        const auto charge = parser.get<int>("--charge");
+        Molecule m = tonto::chem::read_xyz_file(filename);
+
+        fmt::print("Input geometry ({})\n    {:3s} {:^10s} {:^10s} {:^10s}\n", filename, "sym", "x", "y", "z");
+        for (const auto &atom : m.atoms()) {
+            fmt::print("    {:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
+                       atom.x, atom.y, atom.z);
+        }
+        const auto method = parser.get<std::string>("--method");
+        using tonto::parallel::nthreads;
+        nthreads = parser.get<int>("--threads");
+        omp_set_num_threads(nthreads);
+        fmt::print("\n    {:12s} {:>12d}\n", "threads", nthreads);
+        fmt::print("    {:12s} {:>12s}\n", "method", method);
+        fmt::print("    {:12s} {:>12d}\n", "eigen", Eigen::nbThreads());
+        fmt::print("    {:12s} {:>12s}\n", "basis", basisname);
+
+        libint2::BasisSet obs(basisname, m.atoms());
+        obs.set_pure(false);
+        fmt::print("    {:12s} {:>12d}\n", "n_bf", obs.nbf());
+        if (method == "rhf") {
+            HartreeFock hf(m.atoms(), obs);
+            fmt::print("    {:12s} {:>12s}\n", "procedure", "rhf");
+            RestrictedSCF<HartreeFock> scf(hf);
+            scf.conv = 1e-12;
+            scf.set_charge(charge);
+            double e = scf.compute_scf_energy();
+            //scf.print_orbital_energies();
+        } else if (method == "ghf") {
+            HartreeFock hf(m.atoms(), obs);
+            fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
+            GeneralSCF<HartreeFock> scf(hf);
+            scf.conv = 1e-12;
+            scf.set_charge(charge);
+            double e = scf.compute_scf_energy();
+        } else if (method == "rhf") {
+            HartreeFock hf(m.atoms(), obs);
+            fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
+            UnrestrictedSCF<HartreeFock> scf(hf);
+            scf.conv = 1e-12;
+            scf.set_multiplicity(multiplicity);
+            scf.set_charge(charge);
+            double e = scf.compute_scf_energy();
+            //scf.print_orbital_energies();
+        } else
+        {
+            fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
+            tonto::dft::DFT rks(method, obs, m.atoms());
+            RestrictedSCF<tonto::dft::DFT> scf(rks);
+            scf.start_incremental_F_threshold = 0.0;
+            double e = scf.compute_scf_energy();
+        }
+
+    } catch (const char *ex) {
+        fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);
+        return 1;
+    } catch (std::string &ex) {
+        fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);
+        return 1;
+    } catch (std::exception &ex) {
+        fmt::print("Caught exception when performing HF calculation:\n**{}**\n",
+                   ex.what());
+        return 1;
+    } catch (...) {
+        fmt::print("Unknown exception occurred...\n");
+        return 1;
+    }
+    return 0;
 }
