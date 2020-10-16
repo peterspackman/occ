@@ -6,8 +6,17 @@
 #include <fmt/ostream.h>
 #include <libint2/chemistry/sto3g_atomic_density.h>
 #include <tuple>
+#include "spinorbital.h"
 
 namespace tonto::scf {
+
+using tonto::qm::SpinorbitalKind;
+using tonto::qm::alpha_alpha_block;
+using tonto::qm::alpha_beta_block;
+using tonto::qm::alpha_block;
+using tonto::qm::beta_alpha_block;
+using tonto::qm::beta_beta_block;
+using tonto::qm::beta_block;
 
 using tonto::MatRM;
 
@@ -842,4 +851,260 @@ template <typename Procedure> struct GeneralSCF {
   double XtX_condition_number;
   bool verbose{false};
 };
+
+
+template <typename Procedure, SpinorbitalKind spinorbital_kind>
+struct SCF {
+  SCF(Procedure &procedure, int diis_start = 2)
+      : m_procedure(procedure), diis(diis_start) {
+    n_electrons = m_procedure.num_e();
+    n_occ = n_electrons;
+  }
+
+  int charge() const {
+    double nuclear_charge = 0.0;
+    for (const auto &atom : atoms()) {
+      nuclear_charge += atom.atomic_number;
+    }
+    return nuclear_charge - n_electrons;
+  }
+
+  void set_charge(int c) {
+    int current_charge = charge();
+    if (c != current_charge) {
+      n_electrons -= c - current_charge;
+      n_occ = n_electrons;
+    }
+  }
+
+  const auto &atoms() const { return m_procedure.atoms(); }
+
+  MatRM compute_soad() const {
+    // computes Superposition-Of-Atomic-Densities guess for the molecular
+    // density matrix in minimal basis; occupies subshells by smearing electrons
+    // evenly over the orbitals compute number of atomic orbitals
+    size_t nao = 0;
+    for (const auto &atom : atoms()) {
+      const auto Z = atom.atomic_number;
+      nao += libint2::sto3g_num_ao(Z);
+    }
+
+    // compute the minimal basis density
+    MatRM D = MatRM::Zero(nao, nao);
+    size_t ao_offset = 0; // first AO of this atom
+    for (const auto &atom : atoms()) {
+      const auto Z = atom.atomic_number;
+      const auto &occvec = libint2::sto3g_ao_occupation_vector(Z);
+      for (const auto &occ : occvec) {
+        D(ao_offset, ao_offset) = occ;
+        ++ao_offset;
+      }
+    }
+
+    int c = charge();
+    // smear the charge across all shells
+    if (c != 0) {
+      double v = static_cast<double>(c) / D.rows();
+      for (int i = 0; i < D.rows(); i++) {
+        D(i, i) -= v;
+      }
+    }
+    return D * 0.5; // we use densities normalized to # of electrons/2
+  }
+
+  void compute_initial_guess() {
+    const auto tstart = std::chrono::high_resolution_clock::now();
+    size_t nbf = m_procedure.basis().nbf();
+    auto [rows, cols] = tonto::qm::density_matrix_dimensions<spinorbital_kind>(nbf);
+    if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
+        S = m_procedure.compute_overlap_matrix();
+        T = m_procedure.compute_kinetic_matrix();
+        V = m_procedure.compute_nuclear_attraction_matrix();
+    }
+    else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+        S = MatRM::Zero(rows, cols);
+        T = MatRM::Zero(rows, cols);
+        V = MatRM::Zero(rows, cols);
+        alpha_alpha_block(nbf, S) = m_procedure.compute_overlap_matrix();
+        alpha_alpha_block(nbf, T) = m_procedure.compute_kinetic_matrix();
+        alpha_alpha_block(nbf, V) = m_procedure.compute_nuclear_attraction_matrix();
+        beta_beta_block(nbf, S) = alpha_alpha_block(nbf, S);
+        beta_beta_block(nbf, T) = alpha_alpha_block(nbf, T);
+        beta_beta_block(nbf, V) = alpha_alpha_block(nbf, V);
+    }
+
+    // compute orthogonalizer X such that X.transpose() . S . X = I
+    // one should think of columns of Xinv as the conditioned basis
+    // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose() .
+    // X)
+    // by default assume can manage to compute with condition number of S <=
+    // 1/eps
+    // this is probably too optimistic, but in well-behaved cases even 10^11 is
+    // OK
+    double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
+    std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S, S_condition_number_threshold);
+
+    auto D_minbs = compute_soad(); // compute guess in minimal basis
+    libint2::BasisSet minbs("STO-3G", atoms());
+
+    if (minbs == m_procedure.basis()) {
+      if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
+          D = D_minbs;
+      }
+      else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+          D = MatRM::Zero(rows, cols);
+          alpha_alpha_block(nbf, D) = D_minbs;
+          beta_beta_block(nbf, D) = D_minbs;
+      }
+    } else {
+      // if basis != minimal basis, map non-representable SOAD guess
+      // into the AO basis
+      // by diagonalizing a Fock matrix
+      if (verbose)
+        fmt::print("Projecting SOAD into atomic orbital basis: ");
+      F = H;
+      Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
+      C = X * eig_solver.eigenvectors();
+      C_occ = C.leftCols(n_occ);
+      D = C_occ * C_occ.transpose() * 0.5;
+      const auto tstop = std::chrono::high_resolution_clock::now();
+      const std::chrono::duration<double> time_elapsed = tstop - tstart;
+      if (verbose)
+        fmt::print("{:.5f} s\n", time_elapsed.count());
+    }
+  }
+
+  double compute_scf_energy() {
+    // compute one-body integrals
+    // count the number of electrons
+    compute_initial_guess();
+    K = m_procedure.compute_schwarz_ints();
+    enuc = m_procedure.nuclear_repulsion_energy();
+    MatRM D_diff;
+    fmt::print("Beginning SCF\n");
+    total_time = 0.0;
+    do {
+      const auto tstart = std::chrono::high_resolution_clock::now();
+      ++iter;
+
+      // Last iteration's energy and density
+      auto ehf_last = ehf;
+      MatRM D_last = D;
+
+      if (not incremental_Fbuild_started &&
+          rms_error < start_incremental_F_threshold) {
+        incremental_Fbuild_started = true;
+        reset_incremental_fock_formation = false;
+        last_reset_iteration = iter - 1;
+        next_reset_threshold = rms_error / 1e1;
+        if (verbose)
+          fmt::print("Starting incremental fock build\n");
+      }
+      if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
+        F = H;
+        D_diff = D;
+      }
+      if (reset_incremental_fock_formation && incremental_Fbuild_started) {
+        reset_incremental_fock_formation = false;
+        last_reset_iteration = iter;
+        next_reset_threshold = rms_error / 1e1;
+        if (verbose)
+          fmt::print("Resetting incremental fock build\n");
+      }
+
+      // build a new Fock matrix
+      // totally empirical precision variation, involves the condition number
+      const auto precision_F = std::min(
+          std::min(1e-3 / XtX_condition_number, 1e-7),
+          std::max(rms_error / 1e4, std::numeric_limits<double>::epsilon()));
+      F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
+
+      // compute HF energy with the non-extrapolated Fock matrix
+      ehf = D.cwiseProduct(H + F).sum();
+      ediff_rel = std::abs((ehf - ehf_last) / ehf);
+
+      // compute SCF error
+      MatRM FD_comm = F * D * S - S * D * F;
+      rms_error = FD_comm.norm() / FD_comm.size();
+      if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
+        reset_incremental_fock_formation = true;
+
+      // DIIS extrapolate F
+      MatRM F_diis = F; // extrapolated F cannot be used in incremental Fock
+      // build; only used to produce the density
+      // make a copy of the unextrapolated matrix
+      diis.extrapolate(F_diis, FD_comm);
+
+      // solve F C = e S C by (conditioned) transformation to F' C' = e C',
+      // where
+      // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
+      Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F_diis *
+                                                      X);
+      orbital_energies = eig_solver.eigenvalues();
+      C = X * eig_solver.eigenvectors();
+
+      // compute density, D = C(occ) . C(occ)T
+      C_occ = C.leftCols(n_occ);
+      D = C_occ * C_occ.transpose() * 0.5;
+      D_diff = D - D_last;
+
+      const auto tstop = std::chrono::high_resolution_clock::now();
+      const std::chrono::duration<double> time_elapsed = tstop - tstart;
+
+      if (iter == 1) {
+        fmt::print("{:>6s} {: >20s} {: >20s} {: >20s} {: >10s}\n", "cycle",
+                   "energy", "D(E)/E", "rms([F,D])/nn", "time");
+      }
+      fmt::print("{:>6d} {:>20.12f} {:>20.12e} {:>20.12e} {:>10.5f}\n", iter,
+                 ehf + enuc, ediff_rel, rms_error, time_elapsed.count());
+      total_time += time_elapsed.count();
+
+    }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
+    fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   D.cwiseProduct(T).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_en",  D.cwiseProduct(V).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  D.cwiseProduct(H).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_2e",  D.cwiseProduct(F).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", (ehf + enuc));
+    return ehf + enuc;
+  }
+
+  void print_orbital_energies() {
+    int n_mo = orbital_energies.size();
+    fmt::print("\nMolecular orbital energies\n");
+    fmt::print("{0:3s}   {1:3s} {2:>16s}\n", "idx", "occ", "energy");
+    for(int i = 0; i < n_mo; i++)
+    {
+        auto s = i < n_occ ? "ab" : " ";
+        fmt::print("{:3d}   {:^3s} {:16.12f}\n",
+            i, s, orbital_energies(i)
+        );
+    }
+  }
+
+  Procedure &m_procedure;
+  int n_electrons{0};
+  int n_occ{0};
+  int n_unpaired_electrons{0};
+  int maxiter{100};
+  double conv = 1e-8;
+  int iter = 0;
+  double rms_error = 1.0;
+  double ediff_rel = 0.0;
+  double enuc{0.0};
+  double ehf{0.0};
+  double total_time{0.0};
+  tonto::diis::DIIS<MatRM> diis; // start DIIS on second iteration
+  bool reset_incremental_fock_formation = false;
+  bool incremental_Fbuild_started = false;
+  double start_incremental_F_threshold = 1e-5;
+  double next_reset_threshold = 0.0;
+  size_t last_reset_iteration = 0;
+  MatRM D, S, T, V, H, K, X, Xinv, C, C_occ, F;
+  Vec orbital_energies;
+  double XtX_condition_number;
+  bool verbose{false};
+};
+
 } // namespace tonto::scf

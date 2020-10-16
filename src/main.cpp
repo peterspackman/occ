@@ -67,6 +67,8 @@ int main(int argc, const char **argv) {
     using tonto::scf::RestrictedSCF;
     using tonto::scf::UnrestrictedSCF;
     using tonto::scf::GeneralSCF;
+    using tonto::scf::SCF;
+    using tonto::qm::SpinorbitalKind;
     using std::cerr;
     using std::cout;
     using std::endl;

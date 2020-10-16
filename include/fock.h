@@ -1,63 +1,17 @@
 #pragma once
 #include "ints.h"
 #include "logger.h"
+#include "spinorbital.h"
 
 namespace tonto::ints {
 using tonto::MatRM;
-
-enum SpinorbitalKind {
-    Restricted,
-    Unrestricted,
-    General
-};
-
-inline auto alpha_block(size_t nbf, tonto::MatRM& mat) {
-    return mat.block(0, 0, nbf, nbf);
-}
-
-inline auto alpha_block(size_t nbf, const tonto::MatRM& mat) {
-    return mat.block(0, 0, nbf, nbf);
-}
-
-inline auto beta_block(size_t nbf, tonto::MatRM& mat) {
-    return mat.block(nbf, 0, nbf, nbf);
-}
-
-inline auto beta_block(size_t nbf, const tonto::MatRM& mat) {
-    return mat.block(nbf, 0, nbf, nbf);
-}
-
-inline auto alpha_alpha_block(size_t nbf, tonto::MatRM& mat) {
-    return mat.block(0, 0, nbf, nbf);
-}
-
-inline auto alpha_alpha_block(size_t nbf, const tonto::MatRM& mat) {
-    return mat.block(0, 0, nbf, nbf);
-}
-
-inline auto alpha_beta_block(size_t nbf, tonto::MatRM& mat) {
-    return mat.block(0, nbf, nbf, nbf);
-}
-
-inline auto alpha_beta_block(size_t nbf, const tonto::MatRM& mat) {
-    return mat.block(0, nbf, nbf, nbf);
-}
-
-inline auto beta_alpha_block(size_t nbf, tonto::MatRM& mat) {
-    return mat.block(nbf, 0, nbf, nbf);
-}
-
-inline auto beta_alpha_block(size_t nbf, const tonto::MatRM& mat) {
-    return mat.block(nbf, 0, nbf, nbf);
-}
-
-inline auto beta_beta_block(size_t nbf, tonto::MatRM& mat) {
-    return mat.block(nbf, nbf, nbf, nbf);
-}
-
-inline auto beta_beta_block(size_t nbf, const tonto::MatRM& mat) {
-    return mat.block(nbf, nbf, nbf, nbf);
-}
+using tonto::qm::SpinorbitalKind;
+using tonto::qm::alpha_alpha_block;
+using tonto::qm::alpha_block;
+using tonto::qm::alpha_beta_block;
+using tonto::qm::beta_alpha_block;
+using tonto::qm::beta_beta_block;
+using tonto::qm::beta_block;
 
 
 template<SpinorbitalKind kind>
@@ -74,11 +28,11 @@ MatRM compute_fock(
     std::vector<MatRM> G(nthreads, MatRM::Zero(D.rows(), D.cols()));
     MatRM D_shblk_norm = compute_shellblock_norm(obs, D.block(0, 0, n, n));
 
-    if constexpr(kind == Unrestricted) {
+    if constexpr(kind == SpinorbitalKind::Unrestricted) {
         assert((D.rows() == 2 * n) && (D.cols() ==n) && "Unrestricted density matrix must be 2 nbf x nbf");
         D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, beta_block(n, D)));
     }
-    else if constexpr(kind == General) {
+    else if constexpr(kind == SpinorbitalKind::General) {
         assert((D.rows() == 2 * n) && (D.cols() ==n) && "General density matrix must be 2 nbf x 2 nbf");
         D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, alpha_beta_block(n, D)));
         D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, beta_alpha_block(n, D)));
@@ -198,7 +152,7 @@ MatRM compute_fock(
                                         const auto value = buf_1234[f1234];
 
                                         const auto value_scal_by_deg = value * s1234_deg;
-                                        if constexpr(kind == Restricted) {
+                                        if constexpr(kind == SpinorbitalKind::Restricted) {
                                             g(bf1, bf2) += D(bf3, bf4) * value_scal_by_deg;
                                             g(bf3, bf4) += D(bf1, bf2) * value_scal_by_deg;
                                             g(bf1, bf3) -= 0.25 * D(bf2, bf4) * value_scal_by_deg;
@@ -206,7 +160,7 @@ MatRM compute_fock(
                                             g(bf1, bf4) -= 0.25 * D(bf2, bf3) * value_scal_by_deg;
                                             g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value_scal_by_deg;
                                         }
-                                        else if constexpr(kind == Unrestricted) {
+                                        else if constexpr(kind == SpinorbitalKind::Unrestricted) {
                                             // J alpha
                                             g(bf1, bf2) += (D(bf3, bf4) + D(n + bf3, bf4)) * value_scal_by_deg;
                                             g(bf3, bf4) += (D(bf1, bf2) + D(n + bf1, bf2)) * value_scal_by_deg;
@@ -224,7 +178,7 @@ MatRM compute_fock(
                                             g(n + bf1, bf4) -= 0.5 * D(n + bf2, bf3) * value_scal_by_deg;
                                             g(n + bf2, bf3) -= 0.5 * D(n + bf1, bf4) * value_scal_by_deg;
                                         }
-                                        else if constexpr(kind == General) {
+                                        else if constexpr(kind == SpinorbitalKind::General) {
                                             g(bf1, bf2) += 2 * D(bf3, bf4) * value_scal_by_deg;
                                             g(bf3, bf4) += 2 * D(bf1, bf2) * value_scal_by_deg;
                                             g(n + bf1, n + bf2) += 2 * D(n + bf3, n + bf4) * value_scal_by_deg;
@@ -276,8 +230,9 @@ MatRM compute_fock(
     }
     // symmetrize the result and return
     MatRM GG(G[0].rows(), G[0].cols());
-    if constexpr(kind == Restricted || kind == General) GG = 0.5 * (G[0] + G[0].transpose());
-    else if constexpr(kind == Unrestricted) {
+    if constexpr(kind == SpinorbitalKind::Restricted || kind == SpinorbitalKind::General)
+        GG = 0.5 * (G[0] + G[0].transpose());
+    else if constexpr(kind == SpinorbitalKind::Unrestricted) {
         alpha_block(n, GG) = 0.5 * (alpha_block(n, G[0]) + alpha_block(n, G[0]).transpose());
         beta_block(n, GG) = 0.5 * (beta_block(n, G[0]) + beta_block(n, G[0]).transpose());
     }

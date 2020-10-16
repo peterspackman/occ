@@ -1,8 +1,10 @@
 #pragma once
-#include "ints.h"
+#include "fock.h"
+#include "spinorbital.h"
 
 namespace tonto::hf {
 
+using tonto::qm::SpinorbitalKind;
 using tonto::MatRM;
 using tonto::ints::BasisSet;
 using tonto::ints::compute_1body_ints;
@@ -35,6 +37,15 @@ public:
   double two_electron_energy() const { return m_e_alpha + m_e_beta; }
 
   double nuclear_repulsion_energy() const;
+
+  MatRM compute_fock(SpinorbitalKind kind, const MatRM &D,
+                    double precision = std::numeric_limits<double>::epsilon(),
+                    const MatRM &Schwarz = MatRM())
+  {
+      if(kind == SpinorbitalKind::General) return tonto::ints::compute_fock<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      return tonto::ints::compute_fock<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+  }
+
   auto compute_kinetic_matrix() {
     return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0];
   }
