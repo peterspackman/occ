@@ -25,7 +25,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/util.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.h"
     # third party
-    "${CMAKE_CURRENT_SOURCE_DIR}/cxxopts.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/argparse.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/nanoflann.hpp"
     PARENT_SCOPE
 )

@@ -407,12 +407,18 @@ public:
             else exc.array() += right.exc.array();
             if(vrho.size() == 0) vrho = right.vrho;
             else vrho.array() += right.vrho.array();
-            if(vsigma.size() == 0) vsigma = right.vsigma;
-            else vsigma.array() += right.vsigma.array();
-            if(vlapl.size() == 0) vlapl = right.vlapl;
-            else vlapl.array() += right.vlapl.array();
-            if(vtau.size() == 0) vtau = right.vtau;
-            else vtau.array() += right.vtau.array();
+            if(right.vsigma.size() > 0) {
+                if(vsigma.size() == 0) vsigma = right.vsigma;
+                else vsigma.array() += right.vsigma.array();
+            }
+            if(right.vlapl.size() > 0) {
+                if(vlapl.size() == 0) vlapl = right.vlapl;
+                else vlapl.array() += right.vlapl.array();
+            }
+            if(right.vtau.size() > 0) {
+                if(vtau.size() == 0) vtau = right.vtau;
+                else vtau.array() += right.vtau.array();
+            }
             return *this;
         }
     };
