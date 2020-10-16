@@ -145,7 +145,7 @@ int main(int argc, const char **argv) {
             scf.conv = 1e-12;
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();
-        } else if (method == "rhf") {
+        } else if (method == "uhf") {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
             UnrestrictedSCF<HartreeFock> scf(hf);

@@ -1,5 +1,6 @@
 #include "hf.h"
 #include "parallel.h"
+#include "fock.h"
 
 namespace tonto::hf {
 
@@ -33,7 +34,7 @@ MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const {
 
 MatRM HartreeFock::compute_2body_fock(const MatRM &D, double precision,
                                       const MatRM &Schwarz) const {
-  auto F = tonto::ints::compute_2body_fock(
+  auto F = tonto::ints::compute_fock<tonto::ints::SpinorbitalKind::Restricted>(
       m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
   m_e_alpha = D.cwiseProduct(F).sum();
   return F;
