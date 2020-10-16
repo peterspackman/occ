@@ -46,8 +46,12 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
 }
 
 int DensityFunctional::functional_id(const std::string& name) {
+    if(name == "lda") return Identifier::lda_x;
+    if(name == "b3lyp") return Identifier::hyb_gga_xc_b3lyp;
+    if(name == "vwn5") return Identifier::lda_c_vwn;
+
     int func = xc_functional_get_number(name.c_str());
-    if(func == 0) throw std::runtime_error(fmt::format("Unknown functional name {}", name));
+    if(func <= 0) throw std::runtime_error(fmt::format("Unknown functional name {}", name));
     return func;
 }
 

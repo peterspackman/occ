@@ -432,10 +432,13 @@ public:
 
     DensityFunctional(const std::string&, bool polarized = false);
 
+    double scale_factor() const { return m_factor; }
+    void set_scale_factor(double fac) { m_factor = fac; }
+
     Family family() const { return static_cast<Family>(m_func.get()->info->family); }
     Kind kind() const { return static_cast<Kind>(m_func.get()->info->kind); }
     Identifier id() const { return static_cast<Identifier>(m_func.get()->info->number); }
-    const std::string& name() const { return m_func_name; }
+    const std::string& name() const { return m_func_name; }    
     std::string kind_string() const {
         switch(kind()) {
         case Exchange: return "exchange";
@@ -479,6 +482,7 @@ public:
     }
     static int functional_id(const std::string&);
 private:
+    double m_factor{1.0};
     Identifier m_func_id;
     bool m_polarized{false};
     std::string m_func_name;

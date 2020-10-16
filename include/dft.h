@@ -28,6 +28,8 @@ using tonto::ints::shellpair_data_t;
 using tonto::ints::shellpair_list_t;
 
 
+std::vector<DensityFunctional> parse_method(const std::string& method_string);
+
 class DFT {
 
 public:

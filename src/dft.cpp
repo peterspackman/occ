@@ -7,6 +7,7 @@
 #include "density.h"
 #include "timings.h"
 #include "gto.h"
+#include "util.h"
 
 namespace tonto::dft {
 
@@ -41,7 +42,7 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     }
     size_t num_grid_points = std::accumulate(m_atom_grids.begin(), m_atom_grids.end(), 0.0, [&](double tot, const auto& grid) { return tot + grid.first.cols(); });
     tonto::log::debug("finished calculating atom grids ({} points)", num_grid_points);
-    m_funcs.push_back(DensityFunctional("XC_HYB_GGA_XC_B3LYP"));
+    m_funcs = parse_method(method);
     for(const auto& func: m_funcs) {
         tonto::log::debug("Functional: {} {} {}, exact exchange = {}", func.name(), func.kind_string(), func.family_string(), func.exact_exchange_factor());
     }
@@ -181,6 +182,19 @@ MatRM DFT::compute_2body_fock_d2(const MatRM &D, double precision, const MatRM &
 std::pair<MatRM, MatRM> DFT::compute_JK(const MatRM &D, double precision, const MatRM &Schwarz) const
 {
     return m_hf.compute_JK(D, precision, Schwarz);
+}
+
+
+std::vector<DensityFunctional> parse_method(const std::string& method_string)
+{
+    std::vector<DensityFunctional> funcs;
+    std::string method = tonto::util::trim_copy(method_string);
+    tonto::util::to_lower(method);
+    auto tokens = tonto::util::tokenize(method_string, " ");
+    for(const auto& token: tokens) {
+        funcs.push_back(DensityFunctional(token));
+    }
+    return funcs;
 }
 
 }
