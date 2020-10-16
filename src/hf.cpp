@@ -72,7 +72,7 @@ HartreeFock::compute_JK_unrestricted(const MatRM &Da, const MatRM &Db,
 
 MatRM HartreeFock::compute_2body_fock_general(const MatRM &D, double precision,
                                       const MatRM &Schwarz) const {
-  return tonto::ints::compute_2body_fock_general(
+  return tonto::ints::compute_fock<tonto::ints::SpinorbitalKind::General>(
       m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
 }
 
