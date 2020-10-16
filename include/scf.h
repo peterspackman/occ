@@ -1,6 +1,7 @@
 #pragma once
 #include "ints.h"
 #include "diis.h"
+#include "logger.h"
 #include "linear_algebra.h"
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -858,7 +859,7 @@ struct SCF {
   SCF(Procedure &procedure, int diis_start = 2)
       : m_procedure(procedure), diis(diis_start) {
     n_electrons = m_procedure.num_e();
-    n_occ = n_electrons;
+    update_occupied_orbital_count();
   }
 
   int charge() const {
@@ -873,7 +874,23 @@ struct SCF {
     int current_charge = charge();
     if (c != current_charge) {
       n_electrons -= c - current_charge;
-      n_occ = n_electrons;
+      update_occupied_orbital_count();
+    }
+  }
+
+  void update_occupied_orbital_count() {
+    if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
+        n_occ = n_electrons / 2;
+        if(2 * (n_electrons / 2) != n_electrons) {
+            throw std::runtime_error(
+                fmt::format(
+                    "Invalid num electrons ({}) for restricted SCF: not even",
+                    n_electrons)
+            );
+        }
+    }
+    else if constexpr (spinorbital_kind == SpinorbitalKind::General) {
+        n_occ = n_electrons;
     }
   }
 
@@ -932,6 +949,7 @@ struct SCF {
         beta_beta_block(nbf, T) = alpha_alpha_block(nbf, T);
         beta_beta_block(nbf, V) = alpha_alpha_block(nbf, V);
     }
+    H = T + V;
 
     // compute orthogonalizer X such that X.transpose() . S . X = I
     // one should think of columns of Xinv as the conditioned basis
@@ -953,24 +971,32 @@ struct SCF {
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
           D = MatRM::Zero(rows, cols);
-          alpha_alpha_block(nbf, D) = D_minbs;
-          beta_beta_block(nbf, D) = D_minbs;
+          alpha_alpha_block(nbf, D) = D_minbs * 0.5;
+          beta_beta_block(nbf, D) = D_minbs * 0.5;
       }
     } else {
       // if basis != minimal basis, map non-representable SOAD guess
       // into the AO basis
       // by diagonalizing a Fock matrix
-      if (verbose)
-        fmt::print("Projecting SOAD into atomic orbital basis: ");
+      tonto::log::debug("Projecting SOAD into atomic orbital basis...");
       F = H;
+      if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
+          F += tonto::ints::compute_2body_fock_mixed_basis(
+              m_procedure.basis(), D_minbs, minbs, true,
+              std::numeric_limits<double>::epsilon()
+          );
+      }
       Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F * X);
       C = X * eig_solver.eigenvectors();
       C_occ = C.leftCols(n_occ);
-      D = C_occ * C_occ.transpose() * 0.5;
+      D = C_occ * C_occ.transpose();
+
+      if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+          D *= 0.5;
+      }
       const auto tstop = std::chrono::high_resolution_clock::now();
       const std::chrono::duration<double> time_elapsed = tstop - tstart;
-      if (verbose)
-        fmt::print("{:.5f} s\n", time_elapsed.count());
+      tonto::log::debug("SOAD projection into AO basis took {:.5f} s", time_elapsed.count());
     }
   }
 
@@ -997,8 +1023,7 @@ struct SCF {
         reset_incremental_fock_formation = false;
         last_reset_iteration = iter - 1;
         next_reset_threshold = rms_error / 1e1;
-        if (verbose)
-          fmt::print("Starting incremental fock build\n");
+        tonto::log::debug("Starting incremental fock build");
       }
       if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
         F = H;
@@ -1008,8 +1033,7 @@ struct SCF {
         reset_incremental_fock_formation = false;
         last_reset_iteration = iter;
         next_reset_threshold = rms_error / 1e1;
-        if (verbose)
-          fmt::print("Resetting incremental fock build\n");
+        tonto::log::debug("Resetting incremental fock build");
       }
 
       // build a new Fock matrix
@@ -1038,14 +1062,16 @@ struct SCF {
       // solve F C = e S C by (conditioned) transformation to F' C' = e C',
       // where
       // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-      Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F_diis *
-                                                      X);
+      Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * F_diis * X);
       orbital_energies = eig_solver.eigenvalues();
       C = X * eig_solver.eigenvectors();
 
       // compute density, D = C(occ) . C(occ)T
       C_occ = C.leftCols(n_occ);
-      D = C_occ * C_occ.transpose() * 0.5;
+      D = C_occ * C_occ.transpose();
+      if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+        D *= 0.5;
+      }
       D_diff = D - D_last;
 
       const auto tstop = std::chrono::high_resolution_clock::now();

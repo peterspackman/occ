@@ -135,7 +135,7 @@ int main(int argc, const char **argv) {
         if (method == "rhf") {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "rhf");
-            RestrictedSCF<HartreeFock> scf(hf);
+            SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
             scf.conv = 1e-12;
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();
@@ -143,7 +143,7 @@ int main(int argc, const char **argv) {
         } else if (method == "ghf") {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
-            GeneralSCF<HartreeFock> scf(hf);
+            SCF<HartreeFock, SpinorbitalKind::General> scf(hf);
             scf.conv = 1e-12;
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();

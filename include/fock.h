@@ -21,7 +21,6 @@ MatRM compute_fock(
     double precision = std::numeric_limits<double>::epsilon(),
     const MatRM &Schwarz = MatRM())
 {
-    tonto::log::debug("In compute_fock: {}", kind);
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     using tonto::parallel::nthreads;
