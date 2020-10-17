@@ -43,6 +43,7 @@ public:
                     const MatRM &Schwarz = MatRM())
   {
       if(kind == SpinorbitalKind::General) return tonto::ints::compute_fock<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      if(kind == SpinorbitalKind::Unrestricted) return tonto::ints::compute_fock<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       return tonto::ints::compute_fock<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
   }
 

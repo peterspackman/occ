@@ -150,10 +150,10 @@ int main(int argc, const char **argv) {
         } else if (method == "uhf") {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
-            UnrestrictedSCF<HartreeFock> scf(hf);
+            SCF<HartreeFock, SpinorbitalKind::Unrestricted> scf(hf);
             scf.conv = 1e-12;
-            scf.set_multiplicity(multiplicity);
-            scf.set_charge(charge);
+            //scf.set_multiplicity(multiplicity);
+            //scf.set_charge(charge);
             double e = scf.compute_scf_energy();
             //scf.print_orbital_energies();
         } else
