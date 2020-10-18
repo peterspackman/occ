@@ -65,6 +65,10 @@ MatRM compute_fock(
     auto lambda = [&](int thread_id) {
         auto &engine = engines[thread_id];
         auto &g = G[thread_id];
+        auto ga = g.alpha();
+        auto gb = g.beta();
+        const auto Da = D.alpha();
+        const auto Db = D.alpha();
         const auto &buf = engine.results();
         // loop over permutationally-unique set of shells
         for (size_t s1 = 0, s1234 = 0; s1 != nshells; ++s1) {
@@ -155,22 +159,26 @@ MatRM compute_fock(
                                             g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value_scal_by_deg;
                                         }
                                         else if constexpr(kind == SpinorbitalKind::Unrestricted) {
-                                            // J alpha
-                                            g(bf1, bf2) += (D(bf3, bf4) + D(n + bf3, bf4)) * value_scal_by_deg;
-                                            g(bf3, bf4) += (D(bf1, bf2) + D(n + bf1, bf2)) * value_scal_by_deg;
-                                            // J beta
-                                            g(n + bf1, bf2) += (D(bf3, bf4) + D(n + bf3, bf4)) * value_scal_by_deg;
-                                            g(n + bf3, bf4) += (D(bf1, bf2) + D(n + bf1, bf2)) * value_scal_by_deg;
-                                            // K alpha
-                                            g(bf1, bf3) -= 0.5 * D(bf2, bf4) * value_scal_by_deg;
-                                            g(bf2, bf4) -= 0.5 * D(bf1, bf3) * value_scal_by_deg;
-                                            g(bf1, bf4) -= 0.5 * D(bf2, bf3) * value_scal_by_deg;
-                                            g(bf2, bf3) -= 0.5 * D(bf1, bf4) * value_scal_by_deg;
-                                            // K beta
-                                            g(n + bf1, bf3) -= 0.5 * D(n + bf2, bf4) * value_scal_by_deg;
-                                            g(n + bf2, bf4) -= 0.5 * D(n + bf1, bf3) * value_scal_by_deg;
-                                            g(n + bf1, bf4) -= 0.5 * D(n + bf2, bf3) * value_scal_by_deg;
-                                            g(n + bf2, bf3) -= 0.5 * D(n + bf1, bf4) * value_scal_by_deg;
+
+                                            ga(bf1, bf2) +=
+                                                (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
+                                            ga(bf3, bf4) +=
+                                                (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
+
+                                            gb(bf1, bf2) +=
+                                                (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
+                                            gb(bf3, bf4) +=
+                                                (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
+
+                                            ga(bf1, bf3) -= 0.5 * Da(bf2, bf4) * value_scal_by_deg;
+                                            ga(bf2, bf4) -= 0.5 * Da(bf1, bf3) * value_scal_by_deg;
+                                            ga(bf1, bf4) -= 0.5 * Da(bf2, bf3) * value_scal_by_deg;
+                                            ga(bf2, bf3) -= 0.5 * Da(bf1, bf4) * value_scal_by_deg;
+
+                                            gb(bf1, bf3) -= 0.5 * Db(bf2, bf4) * value_scal_by_deg;
+                                            gb(bf2, bf4) -= 0.5 * Db(bf1, bf3) * value_scal_by_deg;
+                                            gb(bf1, bf4) -= 0.5 * Db(bf2, bf3) * value_scal_by_deg;
+                                            gb(bf2, bf3) -= 0.5 * Db(bf1, bf4) * value_scal_by_deg;
                                         }
                                         else if constexpr(kind == SpinorbitalKind::General) {
                                             g(bf1, bf2) += 2 * D(bf3, bf4) * value_scal_by_deg;

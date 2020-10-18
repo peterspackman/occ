@@ -861,6 +861,7 @@ struct SCF {
     H = MatRM::Zero(rows, cols);
     F = MatRM::Zero(rows, cols);
     D = MatRM::Zero(rows, cols);
+    C = MatRM::Zero(rows, cols);
     update_occupied_orbital_count();
   }
 
@@ -934,6 +935,9 @@ struct SCF {
     }
     return D_minbs * 0.5; // we use densities normalized to # of electrons/2
   }
+
+  inline int n_alpha() const { return n_occ; }
+  inline int n_beta() const { return n_electrons - n_occ; }
 
   void compute_initial_guess() {
     const auto tstart = std::chrono::high_resolution_clock::now();
@@ -1014,7 +1018,7 @@ struct SCF {
             std::numeric_limits<double>::epsilon()
           );
           F.beta() += tonto::ints::compute_2body_fock_mixed_basis(
-            m_procedure.basis(), D_minbs, minbs, true,
+            m_procedure.basis(), D_minbs *(static_cast<double>(n_beta())/ n_alpha()), minbs, true,
             std::numeric_limits<double>::epsilon()
           );
       }
@@ -1033,8 +1037,8 @@ struct SCF {
           D = C_occ * C_occ.transpose();
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-          D.alpha() = C_occ.block(0, 0, nbf, n_occ) * C_occ.block(0, 0, nbf, n_occ).transpose();
-          D.beta() = C_occ.block(nbf, 0, nbf, n_occ) * C_occ.block(nbf, 0, nbf, n_occ).transpose();
+          D.alpha() = C_occ.block(0, 0, nbf, n_alpha()) * C_occ.block(0, 0, nbf, n_alpha()).transpose();
+          D.beta() = C_occ.block(nbf, 0, nbf, n_beta()) * C_occ.block(nbf, 0, nbf, n_beta()).transpose();
           D *= 0.5;
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
@@ -1049,23 +1053,17 @@ struct SCF {
       if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
           Eigen::SelfAdjointEigenSolver<MatRM> alpha_eig_solver(X.transpose() * fock.alpha() * X);
           Eigen::SelfAdjointEigenSolver<MatRM> beta_eig_solver(X.transpose() * fock.beta() * X);
-          size_t rows, cols;
-          std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
-          C = MatRM(rows, cols);
           C.alpha() = X * alpha_eig_solver.eigenvectors();
           C.beta() = X * beta_eig_solver.eigenvectors();
-          int n_beta = n_electrons - n_occ;
-          int ncols = std::max(n_occ, n_beta);
-          C_occ = MatRM::Zero(rows, ncols);
-          C_occ.block(0, 0, nbf, n_occ) = C.alpha().leftCols(n_occ);
-          C_occ.block(nbf, 0, nbf, n_beta) = C.beta().leftCols(n_beta);
+          C_occ = MatRM::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
+          C_occ.block(0, 0, nbf, n_alpha()) = C.alpha().leftCols(n_alpha());
+          C_occ.block(nbf, 0, nbf, n_beta()) = C.beta().leftCols(n_beta());
       }
       else {
           Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * fock * X);
           C = X * eig_solver.eigenvectors();
           orbital_energies = eig_solver.eigenvalues();
           C_occ = C.leftCols(n_occ);
-          fmt::print("C.shape: {} {} C_occ.shape: {} {}\n", C.rows(), C.cols(), C_occ.rows(), C_occ.cols());
       }
   }
 
@@ -1124,8 +1122,8 @@ struct SCF {
       // compute SCF error
       MatRM FD_comm(F.rows(), F.cols());
       if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-          FD_comm.alpha() + F.alpha() * D.alpha() * S.alpha() - S.alpha() * D.alpha() * F.alpha();
-          FD_comm.beta() + F.beta() * D.beta() * S.beta() - S.beta() * D.beta() * F.beta();
+          FD_comm.alpha() = F.alpha() * D.alpha() * S.alpha() - S.alpha() * D.alpha() * F.alpha();
+          FD_comm.beta() = F.beta() * D.beta() * S.beta() - S.beta() * D.beta() * F.beta();
       }
       else {
           FD_comm = F * D * S - S * D * F;
