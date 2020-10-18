@@ -6,13 +6,6 @@
 namespace tonto::ints {
 using tonto::MatRM;
 using tonto::qm::SpinorbitalKind;
-using tonto::qm::alpha_alpha_block;
-using tonto::qm::alpha_block;
-using tonto::qm::alpha_beta_block;
-using tonto::qm::beta_alpha_block;
-using tonto::qm::beta_beta_block;
-using tonto::qm::beta_block;
-
 
 template<SpinorbitalKind kind>
 MatRM compute_fock(
@@ -29,13 +22,15 @@ MatRM compute_fock(
 
     if constexpr(kind == SpinorbitalKind::Unrestricted) {
         assert((D.rows() == 2 * n) && (D.cols() ==n) && "Unrestricted density matrix must be 2 nbf x nbf");
-        D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, beta_block(n, D)));
+        size_t beta_rows = D.beta().rows();
+        size_t beta_cols = D.beta().cols();
+        D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta()));
     }
     else if constexpr(kind == SpinorbitalKind::General) {
         assert((D.rows() == 2 * n) && (D.cols() ==n) && "General density matrix must be 2 nbf x 2 nbf");
-        D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, alpha_beta_block(n, D)));
-        D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, beta_alpha_block(n, D)));
-        D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, beta_beta_block(n, D)));
+        D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.alpha_beta()));
+        D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta_alpha()));
+        D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta_beta()));
     }
     const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
     double max_coeff = D_shblk_norm.maxCoeff();
@@ -232,8 +227,8 @@ MatRM compute_fock(
     if constexpr(kind == SpinorbitalKind::Restricted || kind == SpinorbitalKind::General)
         GG = 0.5 * (G[0] + G[0].transpose());
     else if constexpr(kind == SpinorbitalKind::Unrestricted) {
-        alpha_block(n, GG) = 0.5 * (alpha_block(n, G[0]) + alpha_block(n, G[0]).transpose());
-        beta_block(n, GG) = 0.5 * (beta_block(n, G[0]) + beta_block(n, G[0]).transpose());
+        GG.alpha() = 0.5 * (G[0].alpha() + G[0].alpha().transpose());
+        GG.beta() = 0.5 * (G[0].beta() + G[0].beta().transpose());
     }
     return GG;
 }

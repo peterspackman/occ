@@ -12,13 +12,7 @@
 namespace tonto::scf {
 
 using tonto::qm::SpinorbitalKind;
-using tonto::qm::alpha_alpha_block;
-using tonto::qm::alpha_beta_block;
-using tonto::qm::alpha_block;
-using tonto::qm::beta_alpha_block;
-using tonto::qm::beta_beta_block;
-using tonto::qm::beta_block;
-
+using tonto::qm::expectation;
 using tonto::MatRM;
 
 std::tuple<MatRM, MatRM, double>
@@ -860,6 +854,13 @@ struct SCF {
       : m_procedure(procedure), diis(diis_start) {
     n_electrons = m_procedure.num_e();
     nbf = m_procedure.basis().nbf();
+    auto [rows, cols] = tonto::qm::matrix_dimensions<spinorbital_kind>(nbf);
+    S = MatRM::Zero(rows, cols);
+    T = MatRM::Zero(rows, cols);
+    V = MatRM::Zero(rows, cols);
+    H = MatRM::Zero(rows, cols);
+    F = MatRM::Zero(rows, cols);
+    D = MatRM::Zero(rows, cols);
     update_occupied_orbital_count();
   }
 
@@ -891,6 +892,9 @@ struct SCF {
             );
         }
     }
+    else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        n_occ = n_electrons / 2;
+    }
     else if constexpr (spinorbital_kind == SpinorbitalKind::General) {
         n_occ = n_electrons;
     }
@@ -909,13 +913,13 @@ struct SCF {
     }
 
     // compute the minimal basis density
-    MatRM D = MatRM::Zero(nao, nao);
+    MatRM D_minbs = MatRM::Zero(nao, nao);
     size_t ao_offset = 0; // first AO of this atom
     for (const auto &atom : atoms()) {
       const auto Z = atom.atomic_number;
       const auto &occvec = libint2::sto3g_ao_occupation_vector(Z);
       for (const auto &occ : occvec) {
-        D(ao_offset, ao_offset) = occ;
+        D_minbs(ao_offset, ao_offset) = occ;
         ++ao_offset;
       }
     }
@@ -923,34 +927,38 @@ struct SCF {
     int c = charge();
     // smear the charge across all shells
     if (c != 0) {
-      double v = static_cast<double>(c) / D.rows();
-      for (int i = 0; i < D.rows(); i++) {
-        D(i, i) -= v;
+      double v = static_cast<double>(c) / D_minbs.rows();
+      for (int i = 0; i < D_minbs.rows(); i++) {
+        D_minbs(i, i) -= v;
       }
     }
-    return D * 0.5; // we use densities normalized to # of electrons/2
+    return D_minbs * 0.5; // we use densities normalized to # of electrons/2
   }
 
   void compute_initial_guess() {
     const auto tstart = std::chrono::high_resolution_clock::now();
-    auto [rows, cols] = tonto::qm::density_matrix_dimensions<spinorbital_kind>(nbf);
-    if constexpr(
-        spinorbital_kind == SpinorbitalKind::Restricted ||
-        spinorbital_kind == SpinorbitalKind::Unrestricted) {
+    if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
+    {
         S = m_procedure.compute_overlap_matrix();
         T = m_procedure.compute_kinetic_matrix();
         V = m_procedure.compute_nuclear_attraction_matrix();
     }
+    else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted)
+    {
+        S.alpha() = m_procedure.compute_overlap_matrix();
+        S.beta() = S.alpha();
+        T.alpha() = m_procedure.compute_kinetic_matrix();
+        T.beta() = T.alpha();
+        V.alpha() = m_procedure.compute_nuclear_attraction_matrix();
+        V.beta() = V.alpha();
+    }
     else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
-        S = MatRM::Zero(rows, cols);
-        T = MatRM::Zero(rows, cols);
-        V = MatRM::Zero(rows, cols);
-        alpha_alpha_block(nbf, S) = m_procedure.compute_overlap_matrix();
-        alpha_alpha_block(nbf, T) = m_procedure.compute_kinetic_matrix();
-        alpha_alpha_block(nbf, V) = m_procedure.compute_nuclear_attraction_matrix();
-        beta_beta_block(nbf, S) = alpha_alpha_block(nbf, S);
-        beta_beta_block(nbf, T) = alpha_alpha_block(nbf, T);
-        beta_beta_block(nbf, V) = alpha_alpha_block(nbf, V);
+        S.alpha_alpha() = m_procedure.compute_overlap_matrix();
+        T.alpha_alpha() = m_procedure.compute_kinetic_matrix();
+        V.alpha_alpha() = m_procedure.compute_nuclear_attraction_matrix();
+        S.beta_beta() = S.alpha_alpha();
+        T.beta_beta() = T.alpha_alpha();
+        V.beta_beta() = V.alpha_alpha();
     }
     H = T + V;
 
@@ -963,7 +971,12 @@ struct SCF {
     // this is probably too optimistic, but in well-behaved cases even 10^11 is
     // OK
     double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
-    std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S, S_condition_number_threshold);
+    if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S.alpha(), S_condition_number_threshold);
+    }
+    else {
+        std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S, S_condition_number_threshold);
+    }
 
     auto D_minbs = compute_soad(); // compute guess in minimal basis
     libint2::BasisSet minbs("STO-3G", atoms());
@@ -974,17 +987,13 @@ struct SCF {
           F = H;
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-          D = MatRM(rows, cols);
-          F = MatRM(rows, cols);
-          alpha_block(nbf, D) = D_minbs * 0.5;
-          beta_block(nbf, D) = D_minbs * 0.5;
-          alpha_block(nbf, F) = H;
-          beta_block(nbf, F) = H;
+          D.alpha() = D_minbs * 0.5;
+          D.beta() = D_minbs * 0.5;
+          F = H;
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
-          D = MatRM::Zero(rows, cols);
-          alpha_alpha_block(nbf, D) = D_minbs * 0.5;
-          beta_beta_block(nbf, D) = D_minbs * 0.5;
+          D.alpha_alpha() = D_minbs * 0.5;
+          D.beta_beta() = D_minbs * 0.5;
           F = H;
       }
     } else {
@@ -1000,13 +1009,11 @@ struct SCF {
           );
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-          D = MatRM(rows, cols);
-          F = MatRM(rows, cols);
-          alpha_block(nbf, F) += tonto::ints::compute_2body_fock_mixed_basis(
+          F.alpha() += tonto::ints::compute_2body_fock_mixed_basis(
             m_procedure.basis(), D_minbs, minbs, true,
             std::numeric_limits<double>::epsilon()
           );
-          beta_block(nbf, F) += tonto::ints::compute_2body_fock_mixed_basis(
+          F.beta() += tonto::ints::compute_2body_fock_mixed_basis(
             m_procedure.basis(), D_minbs, minbs, true,
             std::numeric_limits<double>::epsilon()
           );
@@ -1026,8 +1033,8 @@ struct SCF {
           D = C_occ * C_occ.transpose();
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-          alpha_block(nbf, D) = C_occ.block(0, 0, nbf, n_occ) * C_occ.block(0, 0, nbf, n_occ).transpose();
-          beta_block(nbf, D) = C_occ.block(nbf, 0, nbf, n_occ) * C_occ.block(nbf, 0, nbf, n_occ).transpose();
+          D.alpha() = C_occ.block(0, 0, nbf, n_occ) * C_occ.block(0, 0, nbf, n_occ).transpose();
+          D.beta() = C_occ.block(nbf, 0, nbf, n_occ) * C_occ.block(nbf, 0, nbf, n_occ).transpose();
           D *= 0.5;
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
@@ -1040,15 +1047,18 @@ struct SCF {
       // where
       // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
       if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-          Eigen::SelfAdjointEigenSolver<MatRM> alpha_eig_solver(X.transpose() * alpha_block(nbf, fock) * X);
-          Eigen::SelfAdjointEigenSolver<MatRM> beta_eig_solver(X.transpose() * beta_block(nbf, fock) * X);
-          auto [rows, cols] = tonto::qm::density_matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+          Eigen::SelfAdjointEigenSolver<MatRM> alpha_eig_solver(X.transpose() * fock.alpha() * X);
+          Eigen::SelfAdjointEigenSolver<MatRM> beta_eig_solver(X.transpose() * fock.beta() * X);
+          size_t rows, cols;
+          std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
           C = MatRM(rows, cols);
-          alpha_block(nbf, C) = X * alpha_eig_solver.eigenvectors();
-          beta_block(nbf, C) = X * beta_eig_solver.eigenvectors();
-          C_occ = MatRM(rows, n_occ);
-          C_occ.block(0, 0, nbf, n_occ) = alpha_block(nbf, C).leftCols(n_occ);
-          C_occ.block(nbf, 0, nbf, n_occ) = beta_block(nbf, C).leftCols(n_occ);
+          C.alpha() = X * alpha_eig_solver.eigenvectors();
+          C.beta() = X * beta_eig_solver.eigenvectors();
+          int n_beta = n_electrons - n_occ;
+          int ncols = std::max(n_occ, n_beta);
+          C_occ = MatRM::Zero(rows, ncols);
+          C_occ.block(0, 0, nbf, n_occ) = C.alpha().leftCols(n_occ);
+          C_occ.block(nbf, 0, nbf, n_beta) = C.beta().leftCols(n_beta);
       }
       else {
           Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * fock * X);
@@ -1057,6 +1067,11 @@ struct SCF {
           C_occ = C.leftCols(n_occ);
           fmt::print("C.shape: {} {} C_occ.shape: {} {}\n", C.rows(), C.cols(), C_occ.rows(), C_occ.cols());
       }
+  }
+
+  void update_scf_energy(const MatRM& fock) {
+      ehf = expectation<spinorbital_kind>(D, fock);
+      fmt::print("Ehf: {}\n", ehf);
   }
 
   double compute_scf_energy() {
@@ -1085,13 +1100,7 @@ struct SCF {
         tonto::log::debug("Starting incremental fock build");
       }
       if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
-        if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-            alpha_block(nbf, F) = H;
-            beta_block(nbf, F) = H;
-        }
-        else {
-            F = H;
-        }
+        F = H;
         D_diff = D;
       }
       if (reset_incremental_fock_formation && incremental_Fbuild_started) {
@@ -1109,11 +1118,18 @@ struct SCF {
       F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
 
       // compute HF energy with the non-extrapolated Fock matrix
-      ehf = D.cwiseProduct(H + F).sum();
+      update_scf_energy(H + F);
       ediff_rel = std::abs((ehf - ehf_last) / ehf);
 
       // compute SCF error
-      MatRM FD_comm = F * D * S - S * D * F;
+      MatRM FD_comm(F.rows(), F.cols());
+      if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+          FD_comm.alpha() + F.alpha() * D.alpha() * S.alpha() - S.alpha() * D.alpha() * F.alpha();
+          FD_comm.beta() + F.beta() * D.beta() * S.beta() - S.beta() * D.beta() * F.beta();
+      }
+      else {
+          FD_comm = F * D * S - S * D * F;
+      }
       rms_error = FD_comm.norm() / FD_comm.size();
       if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
         reset_incremental_fock_formation = true;
@@ -1142,10 +1158,10 @@ struct SCF {
     }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
     fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
     fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   D.cwiseProduct(T).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_en",  D.cwiseProduct(V).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  2 * D.cwiseProduct(H).sum());
-    fmt::print("{:10s} {:20.12f} hartree\n", "E_2e",  D.cwiseProduct(F).sum());
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   expectation<spinorbital_kind>(D, T));
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_en",  expectation<spinorbital_kind>(D, V));
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  2 * expectation<spinorbital_kind>(D, H));
+    fmt::print("{:10s} {:20.12f} hartree\n", "E_2e",  expectation<spinorbital_kind>(D, F));
     fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", (ehf + enuc));
     return ehf + enuc;
   }

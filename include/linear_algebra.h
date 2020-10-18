@@ -1,4 +1,5 @@
 #pragma once
+#define EIGEN_MATRIXBASE_PLUGIN "opmatrix.h"
 #include <Eigen/Dense>
 
 namespace tonto {
