@@ -965,7 +965,7 @@ struct SCF {
         V.beta_beta() = V.alpha_alpha();
     }
     H = T + V;
-
+    F = H;
     // compute orthogonalizer X such that X.transpose() . S . X = I
     // one should think of columns of Xinv as the conditioned basis
     // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose() .
@@ -984,21 +984,17 @@ struct SCF {
 
     auto D_minbs = compute_soad(); // compute guess in minimal basis
     libint2::BasisSet minbs("STO-3G", atoms());
-
     if (minbs == m_procedure.basis()) {
       if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
           D = D_minbs;
-          F = H;
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
           D.alpha() = D_minbs * 0.5;
           D.beta() = D_minbs * 0.5;
-          F = H;
       }
       else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
           D.alpha_alpha() = D_minbs * 0.5;
           D.beta_beta() = D_minbs * 0.5;
-          F = H;
       }
     } else {
       // if basis != minimal basis, map non-representable SOAD guess
@@ -1069,7 +1065,6 @@ struct SCF {
 
   void update_scf_energy(const MatRM& fock) {
       ehf = expectation<spinorbital_kind>(D, fock);
-      fmt::print("Ehf: {}\n", ehf);
   }
 
   double compute_scf_energy() {
