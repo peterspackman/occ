@@ -25,6 +25,16 @@ constexpr bool isclose(T a, T b, T rtol = 1e-5, T atol = 1e-8) {
   return abs(a - b) <= (atol + rtol * abs(b));
 }
 
+template <typename T>
+constexpr bool is_even(T a) {
+    return a % 2 == 0;
+}
+
+template <typename T>
+constexpr bool is_odd(T a) {
+    return !is_even(a);
+}
+
 template <typename T> inline auto deg2rad(T x) {
   return static_cast<T>(x * M_PI / 180.0);
 }
