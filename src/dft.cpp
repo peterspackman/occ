@@ -141,25 +141,15 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
         Vec vsigmawt = res.vsigma.array() * weights.array();
         total_density += (params.rho.array() * weights.array()).array().sum();
         m_e_alpha += params.rho.dot(ewt);
-        tonto::MatRM phi = gto_vals.phi;
-        tonto::MatRM phi_vrho = phi;
-        #pragma omp parallel for
-        for(size_t bf = 0; bf < nbf; bf++) {
-            phi_vrho.col(bf).array() *= vwt.array();
-        }
-        tonto::MatRM KLDA = phi.transpose() * phi_vrho;
+        tonto::Mat phi_vrho = gto_vals.phi.array().colwise() * vwt.array();
+
+        tonto::MatRM KLDA = gto_vals.phi.transpose() * phi_vrho;
         // especially here
-        tonto::MatRM phi_x = gto_vals.phi_x;
-        tonto::MatRM phi_y = gto_vals.phi_y;
-        tonto::MatRM phi_z = gto_vals.phi_z;
-        #pragma omp parallel for
-        for(size_t bf = 0; bf < nbf; bf++) {
-            phi.col(bf).array() *= vsigmawt.array();
-            phi_x.col(bf).array() *= 2 * rho_x;
-            phi_y.col(bf).array() *= 2 * rho_y;
-            phi_z.col(bf).array() *= 2 * rho_z;
-        }
-        tonto::Mat ktmp((phi.transpose() * phi_x) + (phi.transpose() * phi_y) + (phi.transpose() * phi_z));
+        tonto::Mat phi_xyz = 2 * (gto_vals.phi_x.array().colwise() * rho_x)
+                           + 2 * (gto_vals.phi_y.array().colwise() * rho_y)
+                           + 2 * (gto_vals.phi_z.array().colwise() * rho_z);
+        tonto::Mat phi_vsigma = gto_vals.phi.array().colwise() * vsigmawt.array();
+        tonto::Mat ktmp = phi_vsigma.transpose() * phi_xyz;
         tonto::MatRM KK = KLDA + ktmp + ktmp.transpose();
         K.noalias() += KK;
     }
