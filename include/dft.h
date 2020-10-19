@@ -5,6 +5,7 @@
 #include "dft_grid.h"
 #include "density_functional.h"
 #include "ints.h"
+#include "spinorbital.h"
 #include "hf.h"
 
 namespace libint2 {
@@ -13,7 +14,7 @@ class Atom;
 }
 
 namespace tonto::dft {
-
+using tonto::qm::SpinorbitalKind;
 using tonto::Mat3N;
 using tonto::MatRM;
 using tonto::MatN4;
@@ -48,6 +49,7 @@ public:
     double two_electron_energy() const { return m_e_alpha + m_e_beta; }
     double two_electron_energy_alpha() const { return m_e_alpha; }
     double two_electron_energy_beta() const { return m_e_beta; }
+    bool usual_scf_energy() const { return false; }
 
     int density_derivative() const;
     double exact_exchange_factor() const {
@@ -84,6 +86,15 @@ public:
 
     auto compute_schwarz_ints() {
       return m_hf.compute_schwarz_ints();
+    }
+
+    MatRM compute_fock(SpinorbitalKind kind, const MatRM &D,
+                      double precision = std::numeric_limits<double>::epsilon(),
+                      const MatRM &Schwarz = MatRM())
+    {
+        if(kind == SpinorbitalKind::General) throw std::runtime_error("GKS not implemented");
+        if(kind == SpinorbitalKind::Unrestricted) throw std::runtime_error("UKS not implemented");
+        return compute_2body_fock(D, precision, Schwarz);
     }
 
     MatRM

@@ -35,7 +35,7 @@ public:
   double two_electron_energy_alpha() const { return m_e_alpha; }
   double two_electron_energy_beta() const { return m_e_beta; }
   double two_electron_energy() const { return m_e_alpha + m_e_beta; }
-
+  bool usual_scf_energy() const { return true; }
   double nuclear_repulsion_energy() const;
 
   MatRM compute_fock(SpinorbitalKind kind, const MatRM &D,

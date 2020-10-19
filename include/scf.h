@@ -890,8 +890,6 @@ struct SCF {
         set_charge_multiplicity(charge(), m);
     }
 
-
-
     void set_charge_multiplicity(int chg, unsigned int mult)
     {
         int current_charge = charge();
@@ -1108,7 +1106,12 @@ struct SCF {
     }
 
     void update_scf_energy(const MatRM& fock) {
-        ehf = expectation<spinorbital_kind>(D, fock);
+        if(m_procedure.usual_scf_energy()) {
+            ehf = expectation<spinorbital_kind>(D, fock);
+        }
+        else {
+            ehf = expectation<spinorbital_kind>(D, H) + m_procedure.two_electron_energy();
+        }
     }
 
     double compute_scf_energy() {
