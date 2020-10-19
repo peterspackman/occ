@@ -51,6 +51,7 @@ struct SCF {
         F = MatRM::Zero(rows, cols);
         D = MatRM::Zero(rows, cols);
         C = MatRM::Zero(rows, cols);
+        orbital_energies = Vec::Zero(rows);
         update_occupied_orbital_count();
     }
 
@@ -280,6 +281,8 @@ struct SCF {
             Eigen::SelfAdjointEigenSolver<MatRM> beta_eig_solver(X.transpose() * fock.beta() * X);
             C.alpha() = X * alpha_eig_solver.eigenvectors();
             C.beta() = X * beta_eig_solver.eigenvectors();
+            orbital_energies.block(0, 0, nbf, 1) = alpha_eig_solver.eigenvalues();
+            orbital_energies.block(nbf, 0, nbf, 1) = beta_eig_solver.eigenvalues();
             C_occ = MatRM::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
             C_occ.block(0, 0, nbf, n_alpha()) = C.alpha().leftCols(n_alpha());
             C_occ.block(nbf, 0, nbf, n_beta()) = C.beta().leftCols(n_beta());
@@ -297,7 +300,6 @@ struct SCF {
             ehf = expectation<spinorbital_kind>(D, fock);
         }
         else {
-            fmt::print("DFT energy: {}\n", m_procedure.two_electron_energy());
             ehf = 2 * expectation<spinorbital_kind>(D, H) + m_procedure.two_electron_energy();
         }
     }
@@ -397,15 +399,32 @@ struct SCF {
     }
 
     void print_orbital_energies() {
-        int n_mo = orbital_energies.size();
-        fmt::print("\nMolecular orbital energies\n");
-        fmt::print("{0:3s}   {1:3s} {2:>16s}\n", "idx", "occ", "energy");
-        for(int i = 0; i < n_mo; i++)
-        {
-            auto s = i < n_occ ? "ab" : " ";
-            fmt::print("{:3d}   {:^3s} {:16.12f}\n",
-                       i, s, orbital_energies(i)
-                       );
+        if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            int n_a = n_alpha(), n_b = n_beta();
+            int n_mo = orbital_energies.size() / 2;
+            fmt::print("\nMolecular orbital energies\n");
+            fmt::print("{0:3s}   {1:3s} {2:>16s}  {1:3s} {2:>16s}\n", "idx", "occ", "energy");
+            for(int i = 0; i < n_mo; i++)
+            {
+                auto s_a = i < n_a ? "a" : " ";
+                auto s_b = i < n_b ? "b" : " ";
+                fmt::print("{:3d}   {:^3s} {:16.12f}  {:^3s} {:16.12f}\n",
+                    i, s_a, orbital_energies(i),
+                    s_b, orbital_energies(nbf + i)
+                );
+            }
+        }
+        else {
+            int n_mo = orbital_energies.size();
+            fmt::print("\nMolecular orbital energies\n");
+            fmt::print("{0:3s}   {1:3s} {2:>16s}\n", "idx", "occ", "energy");
+            for(int i = 0; i < n_mo; i++)
+            {
+                auto s = i < n_occ ? "ab" : " ";
+                fmt::print("{:3d}   {:^3s} {:16.12f}\n",
+                           i, s, orbital_energies(i)
+                           );
+            }
         }
     }
 

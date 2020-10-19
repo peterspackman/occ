@@ -136,7 +136,7 @@ int main(int argc, const char **argv) {
             scf.conv = 1e-12;
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();
-            //scf.print_orbital_energies();
+            scf.print_orbital_energies();
         } else if (method == "ghf") {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
@@ -144,6 +144,7 @@ int main(int argc, const char **argv) {
             scf.conv = 1e-12;
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();
+            scf.print_orbital_energies();
         } else if (method == "uhf") {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
@@ -151,7 +152,7 @@ int main(int argc, const char **argv) {
             scf.conv = 1e-12;
             scf.set_charge_multiplicity(charge, multiplicity);
             double e = scf.compute_scf_energy();
-            //scf.print_orbital_energies();
+            scf.print_orbital_energies();
         } else
         {
             fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
