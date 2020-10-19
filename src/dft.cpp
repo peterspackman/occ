@@ -20,8 +20,8 @@ int DFT::density_derivative() const {
     return deriv;
 }
 
-DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::vector<libint2::Atom>& atoms) :
-    m_hf(atoms, basis), m_grid(basis, atoms)
+DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::vector<libint2::Atom>& atoms, SpinorbitalKind kind) :
+   m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(basis, atoms)
 {
     tonto::log::debug("start calculating atom grids... ");
     m_grid.set_max_angular_points(530);
@@ -31,14 +31,14 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     }
     size_t num_grid_points = std::accumulate(m_atom_grids.begin(), m_atom_grids.end(), 0.0, [&](double tot, const auto& grid) { return tot + grid.first.cols(); });
     tonto::log::debug("finished calculating atom grids ({} points)", num_grid_points);
-    m_funcs = parse_method(method);
+    m_funcs = parse_method(method, m_spinorbital_kind == SpinorbitalKind::Unrestricted);
     for(const auto& func: m_funcs) {
         tonto::log::debug("Functional: {} {} {}, exact exchange = {}", func.name(), func.kind_string(), func.family_string(), func.exact_exchange_factor());
     }
     tonto::log::debug("Total exchange factor: {}", exact_exchange_factor());
 }
 
-std::vector<DensityFunctional> parse_method(const std::string& method_string)
+std::vector<DensityFunctional> parse_method(const std::string& method_string, bool polarized)
 {
     std::vector<DensityFunctional> funcs;
     std::string method = tonto::util::trim_copy(method_string);
@@ -46,14 +46,14 @@ std::vector<DensityFunctional> parse_method(const std::string& method_string)
     auto tokens = tonto::util::tokenize(method_string, " ");
     for(const auto& token: tokens) {
         if(token == "pbe") {
-            funcs.push_back(DensityFunctional("xc_gga_x_pbe"));
-            funcs.push_back(DensityFunctional("xc_gga_c_pbe"));
+            funcs.push_back(DensityFunctional("xc_gga_x_pbe", polarized));
+            funcs.push_back(DensityFunctional("xc_gga_c_pbe", polarized));
         }
         else if(token == "blyp") {
-            funcs.push_back(DensityFunctional("xc_gga_x_b88"));
-            funcs.push_back(DensityFunctional("xc_gga_c_lyp"));
+            funcs.push_back(DensityFunctional("xc_gga_x_b88", polarized));
+            funcs.push_back(DensityFunctional("xc_gga_c_lyp", polarized));
         }
-        else funcs.push_back(DensityFunctional(token));
+        else funcs.push_back(DensityFunctional(token, polarized));
     }
     return funcs;
 }

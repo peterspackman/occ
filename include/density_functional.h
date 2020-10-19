@@ -389,14 +389,6 @@ public:
     };
 
     struct Result {
-        Result() {}
-        Result(int num_points, Family fam) {
-            exc = Vec::Zero(num_points);
-            vrho = Vec::Zero(num_points);
-            if(fam == GGA) {
-                vsigma = Vec::Zero(num_points);
-            }
-        }
         Vec exc;
         Vec vrho;
         Vec vsigma;
@@ -424,11 +416,6 @@ public:
     };
 
     struct Params {
-        Params() {}
-        Params(int n, Family fam = LDA) {
-            rho.resize(n);
-            if(fam == GGA) sigma.resize(n);
-        }
         Vec rho;
         Vec sigma;
         Vec lapl;
