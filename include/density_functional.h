@@ -416,11 +416,11 @@ public:
     };
 
     struct Params {
+        size_t npts{0};
         Vec rho;
         Vec sigma;
         Vec lapl;
         Vec tau;
-        inline int num_points() const { return rho.rows(); }
     };
 
     DensityFunctional(const std::string&, bool polarized = false);

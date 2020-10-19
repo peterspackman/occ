@@ -14,20 +14,11 @@ DensityFunctional::DensityFunctional(const std::string& name, bool polarized) :
 
 DensityFunctional::Result DensityFunctional::evaluate(const Params& params) const
 {
-    int n_pts = params.num_points();
+    int n_pts = params.npts;
     Family fam = family();
     Result result;
-#if XC_MAJOR_VERSION >= 5
-    const int nvrho = m_func.get()->dim.vrho;
-    const int nexc = m_func.get()->dim.zk;
-    const int nvsigma = m_func.get()->dim.vsigma;
-#else
-    const int nvrho = m_func.get()->n_vrho;
-    const int nexc = m_func.get()->n_zk;
-    const int nvsigma = m_func.get()->n_vsigma;
-#endif
-    result.vrho.resize(n_pts * nvrho);
-    result.exc.resize(n_pts * nexc);
+    result.vrho.resizeLike(params.rho);
+    result.exc.resizeLike(params.rho);
     switch(fam) {
     case LDA: {
         xc_lda_exc_vxc(m_func.get(), n_pts, params.rho.data(), result.exc.data(), result.vrho.data());
@@ -36,7 +27,7 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
     case HGGA:
     case GGA: {
         assert(("Sigma array must be provided for GGA functionals", params.sigma.cols() > 0));
-        result.vsigma.resize(n_pts * nvsigma);
+        result.vsigma.resizeLike(params.sigma);
         xc_gga_exc_vxc(m_func.get(), n_pts, params.rho.data(), params.sigma.data(), result.exc.data(), result.vrho.data(), result.vsigma.data());
         break;
     }

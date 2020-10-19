@@ -56,6 +56,16 @@ public:
       return tonto::ints::compute_JK<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
   }
 
+  MatRM compute_J(SpinorbitalKind kind, const MatRM &D,
+                  double precision = std::numeric_limits<double>::epsilon(),
+                  const MatRM &Schwarz = MatRM())
+  {
+      if(kind == SpinorbitalKind::General) return tonto::ints::compute_J<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      if(kind == SpinorbitalKind::Unrestricted) return tonto::ints::compute_J<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      return tonto::ints::compute_J<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+  }
+
+
   auto compute_kinetic_matrix() {
     return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0];
   }
