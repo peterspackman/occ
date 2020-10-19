@@ -10,8 +10,9 @@
 #include "util.h"
 
 namespace tonto::dft {
+using tonto::qm::SpinorbitalKind;
 
-template<int derivative_order>
+template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
 std::pair<tonto::Mat, tonto::gto::GTOValues<derivative_order>> evaluate_density_and_gtos(
     const libint2::BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
@@ -19,7 +20,7 @@ std::pair<tonto::Mat, tonto::gto::GTOValues<derivative_order>> evaluate_density_
     const tonto::Mat &grid_pts)
 {
     auto gto_values = tonto::gto::evaluate_basis_on_grid<derivative_order>(basis, atoms, grid_pts);
-    auto rho = tonto::density::evaluate_density<derivative_order>(D, gto_values);
+    auto rho = tonto::density::evaluate_density<derivative_order, spinorbital_kind>(D, gto_values);
     return {rho, gto_values};
 }
 
@@ -118,7 +119,6 @@ MatRM DFT::compute_2body_fock_d1(const MatRM &D, double precision, const MatRM &
     const auto& basis = m_hf.basis();
     const auto& atoms = m_hf.atoms();
     constexpr size_t BLOCKSIZE = 1024;
-    size_t nbf = basis.nbf();
     double total_density{0.0};
     auto D2 = 2 * D;
     DensityFunctional::Params params;
