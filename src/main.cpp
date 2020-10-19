@@ -64,9 +64,6 @@ int main(int argc, const char **argv) {
     using tonto::chem::Molecule;
     using tonto::chem::Element;
     using tonto::hf::HartreeFock;
-    using tonto::scf::RestrictedSCF;
-    using tonto::scf::UnrestrictedSCF;
-    using tonto::scf::GeneralSCF;
     using tonto::scf::SCF;
     using tonto::qm::SpinorbitalKind;
     using std::cerr;
