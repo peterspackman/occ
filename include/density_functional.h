@@ -428,6 +428,7 @@ public:
     double scale_factor() const { return m_factor; }
     void set_scale_factor(double fac) { m_factor = fac; }
 
+    bool polarized() const { return m_polarized; }
     Family family() const { return static_cast<Family>(m_func.get()->info->family); }
     Kind kind() const { return static_cast<Kind>(m_func.get()->info->kind); }
     Identifier id() const { return static_cast<Identifier>(m_func.get()->info->number); }

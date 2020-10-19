@@ -24,8 +24,8 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
    m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(basis, atoms)
 {
     tonto::log::debug("start calculating atom grids... ");
-    m_grid.set_max_angular_points(10);
-    m_grid.set_min_angular_points(10);
+    m_grid.set_max_angular_points(530);
+    m_grid.set_min_angular_points(80);
     for(size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.grid_points(i));
     }
@@ -33,7 +33,8 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     tonto::log::debug("finished calculating atom grids ({} points)", num_grid_points);
     m_funcs = parse_method(method, m_spinorbital_kind == SpinorbitalKind::Unrestricted);
     for(const auto& func: m_funcs) {
-        tonto::log::debug("Functional: {} {} {}, exact exchange = {}", func.name(), func.kind_string(), func.family_string(), func.exact_exchange_factor());
+        tonto::log::debug("Functional: {} {} {}, exact exchange = {}, polarized = {}",
+                          func.name(), func.kind_string(), func.family_string(), func.exact_exchange_factor(), func.polarized());
     }
     tonto::log::debug("Total exchange factor: {}", exact_exchange_factor());
 }
