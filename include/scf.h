@@ -857,14 +857,14 @@ struct SCF {
         n_electrons = m_procedure.num_e();
         nbf = m_procedure.basis().nbf();
         auto [rows, cols] = tonto::qm::matrix_dimensions<spinorbital_kind>(nbf);
-                S = MatRM::Zero(rows, cols);
-                T = MatRM::Zero(rows, cols);
-                V = MatRM::Zero(rows, cols);
-                H = MatRM::Zero(rows, cols);
-                F = MatRM::Zero(rows, cols);
-                D = MatRM::Zero(rows, cols);
-                C = MatRM::Zero(rows, cols);
-                update_occupied_orbital_count();
+        S = MatRM::Zero(rows, cols);
+        T = MatRM::Zero(rows, cols);
+        V = MatRM::Zero(rows, cols);
+        H = MatRM::Zero(rows, cols);
+        F = MatRM::Zero(rows, cols);
+        D = MatRM::Zero(rows, cols);
+        C = MatRM::Zero(rows, cols);
+        update_occupied_orbital_count();
     }
 
     inline int n_alpha() const { return n_occ; }
@@ -878,17 +878,43 @@ struct SCF {
         return nuclear_charge - n_electrons;
     }
 
+    int multiplicity() const {
+        return n_unpaired_electrons + 1;
+    }
+
     void set_charge(int c) {
-        int current_charge = charge();
-        if (c != current_charge) {
-            n_electrons -= c - current_charge;
-            update_occupied_orbital_count();
-        }
+        set_charge_multiplicity(c, multiplicity());
     }
 
     void set_multiplicity(int m) {
-        n_unpaired_electrons = m - 1;
-        update_occupied_orbital_count();
+        set_charge_multiplicity(charge(), m);
+    }
+
+
+
+    void set_charge_multiplicity(int chg, unsigned int mult)
+    {
+        int current_charge = charge();
+        bool state_changed = false;
+        if(chg != current_charge) {
+            n_electrons -= chg - current_charge;
+            state_changed = true;
+            if(n_electrons < 1) {
+                throw std::runtime_error("Invalid charge: systems with no electrons are not supported");
+            }
+        }
+        if(mult != multiplicity() || state_changed)
+        {
+            state_changed = true;
+            n_unpaired_electrons = mult - 1;
+            if(is_odd(n_electrons + n_unpaired_electrons)) {
+                    throw std::runtime_error(
+                        fmt::format(
+                            "Invalid spin state for {} electrons: number of unpaired electrons ({}) must have the same parity",
+                             n_electrons, n_unpaired_electrons));
+            }
+        }
+        if(state_changed) update_occupied_orbital_count();
     }
 
 
@@ -997,8 +1023,8 @@ struct SCF {
                 D = D_minbs;
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                D.alpha() = D_minbs * 0.5;
-                D.beta() = D_minbs * 0.5;
+                D.alpha() = D_minbs * (static_cast<double>(n_alpha())/ n_electrons);
+                D.beta() = D_minbs * (static_cast<double>(n_beta()) / n_electrons);
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
                 D.alpha_alpha() = D_minbs * 0.5;
@@ -1018,21 +1044,21 @@ struct SCF {
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
                 F.alpha() += tonto::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs, minbs, true,
+                    m_procedure.basis(), D_minbs * (static_cast<double>(n_alpha())/ n_electrons), minbs, true,
                     std::numeric_limits<double>::epsilon()
                 );
                 F.beta() += tonto::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs *(static_cast<double>(n_beta())/ n_alpha()), minbs, true,
+                    m_procedure.basis(), D_minbs * (static_cast<double>(n_beta()) / n_electrons), minbs, true,
                     std::numeric_limits<double>::epsilon()
                 );
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
                 F.alpha_alpha() += tonto::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs, minbs, true,
+                    m_procedure.basis(), D_minbs * (static_cast<double>(n_alpha())/ n_electrons), minbs, true,
                     std::numeric_limits<double>::epsilon()
                 );
                 F.beta_beta() += tonto::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs *(static_cast<double>(n_beta())/ n_alpha()), minbs, true,
+                    m_procedure.basis(), D_minbs * (static_cast<double>(n_beta()) / n_electrons), minbs, true,
                     std::numeric_limits<double>::epsilon()
                 );
             }
@@ -1093,11 +1119,13 @@ struct SCF {
         enuc = m_procedure.nuclear_repulsion_energy();
         MatRM D_diff;
         fmt::print("Beginning SCF\n");
+        if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            fmt::print("n_electrons: {}\nn_alpha: {}\nn_beta: {}\n", n_electrons, n_alpha(), n_beta());
+        }
         total_time = 0.0;
         do {
             const auto tstart = std::chrono::high_resolution_clock::now();
             ++iter;
-
             // Last iteration's energy and density
             auto ehf_last = ehf;
             MatRM D_last = D;

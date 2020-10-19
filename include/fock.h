@@ -68,7 +68,7 @@ MatRM compute_fock(
         auto ga = g.alpha();
         auto gb = g.beta();
         const auto Da = D.alpha();
-        const auto Db = D.alpha();
+        const auto Db = D.beta();
         const auto &buf = engine.results();
         // loop over permutationally-unique set of shells
         for (size_t s1 = 0, s1234 = 0; s1 != nshells; ++s1) {
