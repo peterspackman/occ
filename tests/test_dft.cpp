@@ -34,4 +34,31 @@ TEST_CASE("Water DFT grid", "[dft]")
         assert(hpts_a.cols() == hpts_b.cols());
     }
 
+    SECTION("Density Functional") {
+        tonto::dft::DensityFunctional lda("xc_lda_x");
+        tonto::dft::DensityFunctional lda_u("xc_lda_x", true);
+        tonto::dft::DensityFunctional::Params params(5, tonto::dft::DensityFunctional::Family::LDA, tonto::qm::SpinorbitalKind::Restricted);
+        assert(params.rho.size() == 5);
+        params.rho = tonto::Vec::LinSpaced(5, 0, 1);
+        fmt::print("Rho:\n{}\n", params.rho);
+        auto res = lda.evaluate(params);
+        fmt::print("exc:\n{}\nvrho\n{}\n", res.exc, res.vrho);
+
+        tonto::dft::DensityFunctional::Params params_u(5, tonto::dft::DensityFunctional::Family::LDA, tonto::qm::SpinorbitalKind::Unrestricted);
+        assert(params_u.rho.size() == 10);
+        for(size_t i = 0; i < params.rho.rows(); i++) {
+            params_u.rho(2*i) = params.rho(i);
+            params_u.rho(2*i + 1) = params.rho(i);
+        }
+        fmt::print("Rho interleaved:\n{}\n", params_u.rho);
+        auto res1 = lda_u.evaluate(params_u);
+        fmt::print("exc:\n{}\nvrho\n{}\n", res1.exc, res1.vrho);
+
+        params_u.rho = params.rho.replicate(2, 1);
+        fmt::print("Rho block:\n{}\n", params_u.rho);
+        auto res2 = lda_u.evaluate(params_u);
+        fmt::print("exc:\n{}\nvrho\n{}\n", res2.exc, res2.vrho);
+
+    }
+
 }

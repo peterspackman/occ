@@ -190,18 +190,15 @@ public:
 
             // Weight the arrays by the grid weights
             res.weight_by(weights);
-
             if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                 m_e_alpha += rho.col(0).dot(res.exc);
                 tonto::Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.array();
                 KK = gto_vals.phi.transpose() * phi_vrho;
             } else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                fmt::print("res.exc: {} {}, res.vrho: {} {}, res.vsigma: {} {}\n", res.exc.rows(), res.exc.cols(), res.vrho.rows(), res.vrho.cols(), res.vsigma.rows(), res.vsigma.cols());
                 Stride<Dynamic, 2> stride(npt * 2, 2);
-                res.exc.array() *= params.rho.array();
                 const auto& va = Map<tonto::Vec, 0, Stride<Dynamic, 2>>(res.vrho.data(), npt, 1, stride);
                 const auto& vb = Map<tonto::Vec, 0, Stride<Dynamic, 2>>(res.vrho.data() + 1, npt, 1, stride);
-                m_e_alpha += res.exc.array().sum();
+                m_e_alpha += (res.exc.dot(rho.alpha().col(0))) + (res.exc.dot(rho.beta().col(0)));
                 tonto::Mat phi_vrho_a = gto_vals.phi.array().colwise() * va.array();
                 tonto::Mat phi_vrho_b = gto_vals.phi.array().colwise() * vb.array();
 

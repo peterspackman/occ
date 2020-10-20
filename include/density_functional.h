@@ -1,9 +1,13 @@
 #pragma once
 #include "linear_algebra.h"
 #include <string>
-#include <xc.h>
 #include <memory>
 #include "spinorbital.h"
+#include <fmt/core.h>
+
+extern "C" {
+#include <xc.h>
+}
 
 namespace tonto::dft {
 
@@ -392,6 +396,7 @@ public:
     struct Result {
         Result(size_t npt, Family family, SpinorbitalKind kind) : npts{npt} {
             if(kind == SpinorbitalKind::Restricted) {
+                fmt::print("Result restricted\n");
                 exc = Vec::Zero(npt);
                 vrho = Vec::Zero(npt);
                 if(family == GGA || family == HGGA) {
@@ -399,7 +404,8 @@ public:
                 }
             }
             else {
-                exc = Vec::Zero(2 * npt);
+                fmt::print("Result unrestricted\n");
+                exc = Vec::Zero(npt);
                 vrho = Vec::Zero(2 * npt);
                 if(family == GGA || family == HGGA) {
                     vsigma= Vec::Zero(3 * npt);
@@ -413,9 +419,9 @@ public:
         Vec vlapl;
         Vec vtau;
         Result& operator +=(const Result& right) {
-            if(exc.size() == 0) exc = right.exc;
+            if(exc.size() != right.exc.size()) exc = right.exc;
             else exc.array() += right.exc.array();
-            if(vrho.size() == 0) vrho = right.vrho;
+            if(vrho.size() != right.exc.size()) vrho = right.vrho;
             else vrho.array() += right.vrho.array();
             if(right.vsigma.size() > 0) {
                 if(vsigma.size() == 0) vsigma = right.vsigma;
@@ -432,23 +438,22 @@ public:
             return *this;
         }
         void weight_by(const Vec& weights) {
-            bool unrestricted = npts < exc.size();
+            bool unrestricted = npts < vrho.size();
+            exc.array() *= weights.array();
             if(unrestricted) {
-                using Eigen::Map;
-                using Eigen::Stride;
-                using Eigen::Dynamic;
-                Map<Vec, 0, Stride<Dynamic, 2>>(exc.data(), npts, 1, Stride<Dynamic, 2>(2*npts, 2)).array() *= weights.array();
-                Map<Vec, 0, Stride<Dynamic, 2>>(exc.data() + 1, npts, 1, Stride<Dynamic, 2>(2*npts, 2)).array() *= weights.array();
-                Map<Vec, 0, Stride<Dynamic, 2>>(vrho.data(), npts, 1, Stride<Dynamic, 2>(2*npts, 2)).array() *= weights.array();
-                Map<Vec, 0, Stride<Dynamic, 2>>(vrho.data() + 1, npts, 1, Stride<Dynamic, 2>(2*npts, 2)).array() *= weights.array();
+                for(size_t pt = 0; pt < npts; pt++) {
+                    vrho(2*pt) *= weights(pt);
+                    vrho(2*pt + 1) *= weights(pt);
+                }
                 if(vsigma.size() > 0) {
-                    Map<Vec, 0, Stride<Dynamic, 3>>(vsigma.data(), npts, 1, Stride<Dynamic, 3>(3*npts, 3)).array() *= weights.array();
-                    Map<Vec, 0, Stride<Dynamic, 3>>(vsigma.data() + 1, npts, 1, Stride<Dynamic, 3>(3*npts, 3)).array() *= weights.array();
-                    Map<Vec, 0, Stride<Dynamic, 3>>(vsigma.data() + 2, npts, 1, Stride<Dynamic, 3>(3*npts, 3)).array() *= weights.array();
+                    for(size_t pt = 0; pt < npts; pt++) {
+                        vsigma(3*pt) *= weights(pt);
+                        vsigma(3*pt + 1) *= weights(pt);
+                        vsigma(3*pt + 2) *= weights(pt);
+                    }
                 }
             }
             else {
-                exc.array() *= weights.array();
                 vrho.array() *= weights.array();
                 if(vsigma.size() > 0) vsigma.array() *= weights.array();
             }
@@ -483,9 +488,21 @@ public:
     void set_scale_factor(double fac) { m_factor = fac; }
 
     bool polarized() const { return m_polarized; }
-    Family family() const { return static_cast<Family>(m_func.get()->info->family); }
-    Kind kind() const { return static_cast<Kind>(m_func.get()->info->kind); }
-    Identifier id() const { return static_cast<Identifier>(m_func.get()->info->number); }
+    Family family() const {
+        xc_func_type func;
+        int err = xc_func_init(&func, static_cast<int>(m_func_id), m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+        Family f = static_cast<Family>(func.info->family);
+        xc_func_end(&func);
+        return f;
+    }
+    Kind kind() const {
+        xc_func_type func;
+        int err = xc_func_init(&func, static_cast<int>(m_func_id), m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+        Kind k = static_cast<Kind>(func.info->kind);
+        xc_func_end(&func);
+        return k;
+    }
+    Identifier id() const { return static_cast<Identifier>(m_func_id); }
     const std::string& name() const { return m_func_name; }    
     std::string kind_string() const {
         switch(kind()) {
@@ -500,7 +517,13 @@ public:
     double exact_exchange_factor() const {
         switch (family()) {
         case HGGA:
-        case HMGGA: return xc_hyb_exx_coef(m_func.get());
+        case HMGGA: {
+            xc_func_type func;
+            int err = xc_func_init(&func, static_cast<int>(m_func_id), m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+            double fac = xc_hyb_exx_coef(&func);
+            xc_func_end(&func);
+            return fac;
+        }
         default: return 0;
         }
     }
@@ -534,7 +557,6 @@ private:
     Identifier m_func_id;
     bool m_polarized{false};
     std::string m_func_name;
-    std::unique_ptr<xc_func_type> m_func;
 };
 
 }
