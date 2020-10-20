@@ -147,23 +147,21 @@ public:
             tonto::timing::stop(tonto::timing::category::grid);
 
             if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
-                params.rho = rho.col(0);
+                params.rho.col(0) = rho.col(0);
                 total_density_a += rho.col(0).dot(weights);
             }
             else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
                 // correct assignment
-                Stride<Dynamic, 2> stride(npt * 2, 2);
-                Map<tonto::Mat, 0, Stride<Dynamic, 2>>(params.rho.data(), npt, 1, stride) = rho.alpha().col(0);
-                Map<tonto::Mat, 0, Stride<Dynamic, 2>>(params.rho.data()+1, npt, 1, stride) = rho.beta().col(0);
+                params.rho.col(0) = rho.alpha().col(0);
+                params.rho.col(1) = rho.beta().col(0);
                 total_density_a += rho.alpha().col(0).dot(weights);
                 total_density_b += rho.beta().col(0).dot(weights);
-                assert(params.rho(2) == rho.alpha()(1, 0) && params.rho(3) == rho.beta()(1, 0) && "rho incorrect");
             }
 
             if constexpr(derivative_order > 0) {
                 if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                     const auto& rho_x = rho.col(1).array(), rho_y = rho.col(2).array(), rho_z = rho.col(3).array();
-                    params.sigma = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
+                    params.sigma.col(0) = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
                 }
                 else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
 
@@ -171,11 +169,9 @@ public:
                     const auto& rho_beta = rho.beta();
                     const auto& rho_ax = rho_alpha.col(1).array(), rho_ay = rho_alpha.col(2).array(), rho_az = rho_alpha.col(3).array();
                     const auto& rho_bx = rho_beta.col(1).array(),  rho_by = rho_beta.col(2).array(),  rho_bz = rho_beta.col(3).array();
-                    for(size_t pt = 0; pt < npt; pt++) {
-                        params.sigma(3*pt) = rho_ax(pt) * rho_ax(pt) + rho_ay(pt) * rho_ay(pt) + rho_az(pt) * rho_az(pt);
-                        params.sigma(3*pt + 1) = rho_ax(pt) * rho_bx(pt) + rho_ay(pt) * rho_by(pt) + rho_az(pt) * rho_bz(pt);
-                        params.sigma(3*pt + 2) = rho_bx(pt) * rho_bx(pt) + rho_by(pt) * rho_by(pt) + rho_az(pt) * rho_az(pt);
-                    }
+                    params.sigma.col(0) = rho_ax * rho_ax + rho_ay * rho_ay + rho_az * rho_az;
+                    params.sigma.col(1) = rho_ax * rho_bx + rho_ay * rho_by + rho_az * rho_bz;
+                    params.sigma.col(2) = rho_bx * rho_bx + rho_by * rho_by + rho_bz * rho_bz;
                 }
             }
 
@@ -192,15 +188,12 @@ public:
             res.weight_by(weights);
             if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                 m_e_alpha += rho.col(0).dot(res.exc);
-                tonto::Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.array();
+                tonto::Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
                 KK = gto_vals.phi.transpose() * phi_vrho;
             } else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                Stride<Dynamic, 2> stride(npt * 2, 2);
-                const auto& va = Map<tonto::Vec, 0, Stride<Dynamic, 2>>(res.vrho.data(), npt, 1, stride);
-                const auto& vb = Map<tonto::Vec, 0, Stride<Dynamic, 2>>(res.vrho.data() + 1, npt, 1, stride);
-                m_e_alpha += (res.exc.dot(rho.alpha().col(0))) + (res.exc.dot(rho.beta().col(0)));
-                tonto::Mat phi_vrho_a = gto_vals.phi.array().colwise() * va.array();
-                tonto::Mat phi_vrho_b = gto_vals.phi.array().colwise() * vb.array();
+                m_e_alpha += res.exc.dot(rho.alpha().col(0) + rho.beta().col(0));
+                tonto::Mat phi_vrho_a = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
+                tonto::Mat phi_vrho_b = gto_vals.phi.array().colwise() * res.vrho.col(1).array();
 
                 KK.alpha().noalias() = gto_vals.phi.transpose() * phi_vrho_a;
                 KK.beta().noalias() = gto_vals.phi.transpose() * phi_vrho_b;
@@ -211,18 +204,15 @@ public:
                     tonto::Mat phi_xyz = 2 * (gto_vals.phi_x.array().colwise() * rho.col(1).array())
                                        + 2 * (gto_vals.phi_y.array().colwise() * rho.col(2).array())
                                        + 2 * (gto_vals.phi_z.array().colwise() * rho.col(3).array());
-                    tonto::Mat phi_vsigma = gto_vals.phi.array().colwise() * res.vsigma.array();
+                    tonto::Mat phi_vsigma = gto_vals.phi.array().colwise() * res.vsigma.col(0).array();
                     tonto::Mat ktmp = phi_vsigma.transpose() * phi_xyz;
                     KK.noalias() += ktmp + ktmp.transpose();
 
                 } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
                     tonto::log::debug("Unrestricted K matrix GGA");
-                    const auto& vsigma_aa = Map<tonto::Vec, 0, Stride<Dynamic, 3>>(res.vsigma.data(), npt, 1, Stride<Dynamic, 3>(npt * 3, 3)).array();
-                    const auto& vsigma_ab = Map<tonto::Vec, 0, Stride<Dynamic, 3>>(res.vsigma.data() + 1, npt, 1, Stride<Dynamic, 3>(npt * 3, 3)).array();
-                    const auto& vsigma_bb = Map<tonto::Vec, 0, Stride<Dynamic, 3>>(res.vsigma.data() + 2, npt, 1, Stride<Dynamic, 3>(npt * 3, 3)).array();
-                    tonto::Mat phi_vsigma_aa = gto_vals.phi.array().colwise() * vsigma_aa.array();
-                    tonto::Mat phi_vsigma_ab = gto_vals.phi.array().colwise() * vsigma_ab.array();
-                    tonto::Mat phi_vsigma_bb = gto_vals.phi.array().colwise() * vsigma_bb.array();
+                    tonto::Mat phi_vsigma_aa = gto_vals.phi.array().colwise() * res.vsigma.col(0).array();
+                    tonto::Mat phi_vsigma_ab = gto_vals.phi.array().colwise() * res.vsigma.col(1).array();
+                    tonto::Mat phi_vsigma_bb = gto_vals.phi.array().colwise() * res.vsigma.col(2).array();
 
                     tonto::Mat phi_xyz_a = gto_vals.phi_x.array().colwise() * rho.alpha().col(1).array()
                                          + gto_vals.phi_y.array().colwise() * rho.alpha().col(2).array()

@@ -31,7 +31,7 @@ void print_header()
 
                ,d                               ,d
                88                               88
-               MM88MMM  ,adPPYba,   8b,dPPYba,  MM88MMM  ,adPPYba,
+             MM88MMM  ,adPPYba,   8b,dPPYba,  MM88MMM  ,adPPYba,
                88    a8"     "8a  88P'   `"8a   88    a8"     "8a
                88    8b       d8  88       88   88    8b       d8
                88,   "8a,   ,a8"  88       88   88,   "8a,   ,a8"
@@ -90,6 +90,11 @@ int main(int argc, const char **argv) {
             .help("System multiplicity")
             .default_value(1)
             .action([](const std::string& value) { return std::stoi(value); });
+
+    parser.add_argument("--uks")
+            .help("Use unrestricted dft")
+            .default_value(false)
+            .implicit_value(true);
 
     tonto::log::set_level(tonto::log::level::debug);
     try {
@@ -155,11 +160,20 @@ int main(int argc, const char **argv) {
             scf.print_orbital_energies();
         } else
         {
-            fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
-            tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Unrestricted);
-            SCF<tonto::dft::DFT, SpinorbitalKind::Unrestricted> scf(rks);
-            scf.start_incremental_F_threshold = 0.0;
-            double e = scf.compute_scf_energy();
+            if (parser.get<bool>("--uks")) {
+                fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
+                tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Unrestricted);
+                SCF<tonto::dft::DFT, SpinorbitalKind::Unrestricted> scf(rks);
+                scf.start_incremental_F_threshold = 0.0;
+                double e = scf.compute_scf_energy();
+            }
+            else {
+                fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
+                tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Restricted);
+                SCF<tonto::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
+                scf.start_incremental_F_threshold = 0.0;
+                double e = scf.compute_scf_energy();
+            }
         }
 
     } catch (const char *ex) {

@@ -406,18 +406,16 @@ public:
             else {
                 fmt::print("Result unrestricted\n");
                 exc = Vec::Zero(npt);
-                vrho = Vec::Zero(2 * npt);
+                vrho = MatRM::Zero(npt, 2);
                 if(family == GGA || family == HGGA) {
-                    vsigma= Vec::Zero(3 * npt);
+                    vsigma = MatRM::Zero(npt, 3);
                 }
             }
         }
         size_t npts{0};
         Vec exc;
-        Vec vrho;
-        Vec vsigma;
-        Vec vlapl;
-        Vec vtau;
+        MatRM vrho;
+        MatRM vsigma;
         Result& operator +=(const Result& right) {
             if(exc.size() != right.exc.size()) exc = right.exc;
             else exc.array() += right.exc.array();
@@ -427,35 +425,13 @@ public:
                 if(vsigma.size() == 0) vsigma = right.vsigma;
                 else vsigma.array() += right.vsigma.array();
             }
-            if(right.vlapl.size() > 0) {
-                if(vlapl.size() == 0) vlapl = right.vlapl;
-                else vlapl.array() += right.vlapl.array();
-            }
-            if(right.vtau.size() > 0) {
-                if(vtau.size() == 0) vtau = right.vtau;
-                else vtau.array() += right.vtau.array();
-            }
             return *this;
         }
         void weight_by(const Vec& weights) {
-            bool unrestricted = npts < vrho.size();
             exc.array() *= weights.array();
-            if(unrestricted) {
-                for(size_t pt = 0; pt < npts; pt++) {
-                    vrho(2*pt) *= weights(pt);
-                    vrho(2*pt + 1) *= weights(pt);
-                }
-                if(vsigma.size() > 0) {
-                    for(size_t pt = 0; pt < npts; pt++) {
-                        vsigma(3*pt) *= weights(pt);
-                        vsigma(3*pt + 1) *= weights(pt);
-                        vsigma(3*pt + 2) *= weights(pt);
-                    }
-                }
-            }
-            else {
-                vrho.array() *= weights.array();
-                if(vsigma.size() > 0) vsigma.array() *= weights.array();
+            vrho.array().colwise() *= weights.array();
+            if(vsigma.size() > 0) {
+                vsigma.array().colwise() *= weights.array();
             }
         }
     };
@@ -463,23 +439,21 @@ public:
     struct Params {
         Params(size_t npt, Family family, SpinorbitalKind kind) : npts(npt) {
             if(kind == SpinorbitalKind::Restricted) {
-                rho.resize(npt);
+                rho.resize(npt, 1);
                 if(family == GGA || family == HGGA) {
-                    sigma.resize(npt);
+                    sigma.resize(npt, 1);
                 }
             }
             else {
-                rho.resize(2 * npt);
+                rho.resize(npt, 2);
                 if(family == GGA || family == HGGA) {
-                    sigma.resize(3 * npt);
+                    sigma.resize(npt, 3);
                 }
             }
         }
         size_t npts{0};
-        Vec rho;
-        Vec sigma;
-        Vec lapl;
-        Vec tau;
+        MatRM rho;
+        MatRM sigma;
     };
 
     DensityFunctional(const std::string&, bool polarized = false);
