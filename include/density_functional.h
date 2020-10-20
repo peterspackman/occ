@@ -401,6 +401,7 @@ public:
                 vrho = Vec::Zero(npt);
                 if(family == GGA || family == HGGA) {
                     vsigma = Vec::Zero(npt);
+                    have_vsigma = true;
                 }
             }
             else {
@@ -409,20 +410,22 @@ public:
                 vrho = MatRM::Zero(npt, 2);
                 if(family == GGA || family == HGGA) {
                     vsigma = MatRM::Zero(npt, 3);
+                    have_vsigma = true;
                 }
             }
         }
         size_t npts{0};
+        bool have_vsigma{false};
         Vec exc;
         MatRM vrho;
         MatRM vsigma;
         Result& operator +=(const Result& right) {
-            if(exc.size() != right.exc.size()) exc = right.exc;
-            else exc.array() += right.exc.array();
-            if(vrho.size() != right.exc.size()) vrho = right.vrho;
-            else vrho.array() += right.vrho.array();
-            if(right.vsigma.size() > 0) {
-                if(vsigma.size() == 0) vsigma = right.vsigma;
+            fmt::print("Adding: {} + {} ", exc(0), right.exc(0));
+            exc.array() += right.exc.array();
+            fmt::print("= {}\n", exc(0));
+            vrho.array() += right.vrho.array();
+            if(right.have_vsigma) {
+                if(!have_vsigma) vsigma = right.vsigma;
                 else vsigma.array() += right.vsigma.array();
             }
             return *this;

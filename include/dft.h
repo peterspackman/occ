@@ -108,9 +108,6 @@ public:
     template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
     MatRM compute_fock_dft(const MatRM &D, double precision, const MatRM& Schwarz)
     {
-        using Eigen::Map;
-        using Eigen::Stride;
-        using Eigen::Dynamic;
         tonto::MatRM K, F;
         m_e_alpha = 0.0;
         double ecoul, exc;
