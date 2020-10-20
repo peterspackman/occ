@@ -156,8 +156,8 @@ int main(int argc, const char **argv) {
         } else
         {
             fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
-            tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Unrestricted);
-            SCF<tonto::dft::DFT, SpinorbitalKind::Unrestricted> scf(rks);
+            tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Restricted);
+            SCF<tonto::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
             scf.start_incremental_F_threshold = 0.0;
             double e = scf.compute_scf_energy();
         }

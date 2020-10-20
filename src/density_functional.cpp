@@ -16,9 +16,7 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
 {
     int n_pts = params.npts;
     Family fam = family();
-    Result result;
-    result.vrho.resizeLike(params.rho);
-    result.exc.resizeLike(params.rho);
+    Result result(params.npts, family(), polarized() ? SpinorbitalKind::Unrestricted : SpinorbitalKind::Restricted);
     switch(fam) {
     case LDA: {
         xc_lda_exc_vxc(m_func.get(), n_pts, params.rho.data(), result.exc.data(), result.vrho.data());
@@ -27,7 +25,6 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
     case HGGA:
     case GGA: {
         assert(("Sigma array must be provided for GGA functionals", params.sigma.cols() > 0));
-        result.vsigma.resizeLike(params.sigma);
         xc_gga_exc_vxc(m_func.get(), n_pts, params.rho.data(), params.sigma.data(), result.exc.data(), result.vrho.data(), result.vsigma.data());
         break;
     }

@@ -3,10 +3,11 @@
 #include <string>
 #include <xc.h>
 #include <memory>
+#include "spinorbital.h"
 
 namespace tonto::dft {
 
-
+using tonto::qm::SpinorbitalKind;
 using tonto::Vec;
 using tonto::IVec;
 using tonto::MatRM;
@@ -389,6 +390,23 @@ public:
     };
 
     struct Result {
+        Result(size_t npt, Family family, SpinorbitalKind kind) : npts{npt} {
+            if(kind == SpinorbitalKind::Restricted) {
+                exc = Vec::Zero(npt);
+                vrho = Vec::Zero(npt);
+                if(family == GGA || family == HGGA) {
+                    vsigma = Vec::Zero(npt);
+                }
+            }
+            else {
+                exc = Vec::Zero(2 * npt);
+                vrho = Vec::Zero(2 * npt);
+                if(family == GGA || family == HGGA) {
+                    vsigma= Vec::Zero(3 * npt);
+                }
+            }
+        }
+        size_t npts{0};
         Vec exc;
         Vec vrho;
         Vec vsigma;
@@ -413,9 +431,45 @@ public:
             }
             return *this;
         }
+        void weight_by(const Vec& weights) {
+            bool unrestricted = npts < exc.size();
+            if(unrestricted) {
+                using Eigen::Map;
+                using Eigen::Stride;
+                using Eigen::Dynamic;
+                Map<Vec, 0, Stride<Dynamic, 2>>(exc.data(), npts, 1, Stride<Dynamic, 2>(2*npts, 2)).array() *= weights.array();
+                Map<Vec, 0, Stride<Dynamic, 2>>(exc.data() + 1, npts, 1, Stride<Dynamic, 2>(2*npts, 2)).array() *= weights.array();
+                Map<Vec, 0, Stride<Dynamic, 2>>(vrho.data(), npts, 1, Stride<Dynamic, 2>(2*npts, 2)).array() *= weights.array();
+                Map<Vec, 0, Stride<Dynamic, 2>>(vrho.data() + 1, npts, 1, Stride<Dynamic, 2>(2*npts, 2)).array() *= weights.array();
+                if(vsigma.size() > 0) {
+                    Map<Vec, 0, Stride<Dynamic, 3>>(vsigma.data(), npts, 1, Stride<Dynamic, 3>(3*npts, 3)).array() *= weights.array();
+                    Map<Vec, 0, Stride<Dynamic, 3>>(vsigma.data() + 1, npts, 1, Stride<Dynamic, 3>(3*npts, 3)).array() *= weights.array();
+                    Map<Vec, 0, Stride<Dynamic, 3>>(vsigma.data() + 2, npts, 1, Stride<Dynamic, 3>(3*npts, 3)).array() *= weights.array();
+                }
+            }
+            else {
+                exc.array() *= weights.array();
+                vrho.array() *= weights.array();
+                if(vsigma.size() > 0) vsigma.array() *= weights.array();
+            }
+        }
     };
 
     struct Params {
+        Params(size_t npt, Family family, SpinorbitalKind kind) : npts(npt) {
+            if(kind == SpinorbitalKind::Restricted) {
+                rho.resize(npt);
+                if(family == GGA || family == HGGA) {
+                    sigma.resize(npt);
+                }
+            }
+            else {
+                rho.resize(2 * npt);
+                if(family == GGA || family == HGGA) {
+                    sigma.resize(3 * npt);
+                }
+            }
+        }
         size_t npts{0};
         Vec rho;
         Vec sigma;
