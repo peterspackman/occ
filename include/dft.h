@@ -195,7 +195,7 @@ public:
                 tonto::Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
                 KK = gto_vals.phi.transpose() * phi_vrho;
             } else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                m_e_alpha += res.exc.dot(rho.alpha().col(0) + rho.beta().col(0));
+                m_e_alpha += res.exc.dot(rho.alpha().col(0)) + res.exc.dot(rho.beta().col(0));
                 tonto::Mat phi_vrho_a = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
                 tonto::Mat phi_vrho_b = gto_vals.phi.array().colwise() * res.vrho.col(1).array();
 
@@ -214,18 +214,19 @@ public:
 
                 } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
                     tonto::log::debug("Unrestricted K matrix GGA");
-                    tonto::Mat phi_vsigma_aa = gto_vals.phi.array().colwise() * res.vsigma.col(0).array();
-                    tonto::Mat phi_vsigma_ab = gto_vals.phi.array().colwise() * res.vsigma.col(1).array();
-                    tonto::Mat phi_vsigma_bb = gto_vals.phi.array().colwise() * res.vsigma.col(2).array();
+                    tonto::Mat ga = rho.alpha().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array()) +
+                                    rho.beta().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
+                    tonto::Mat gb = rho.beta().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(2).array()) +
+                                    rho.alpha().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
 
-                    tonto::Mat phi_xyz_a = gto_vals.phi_x.array().colwise() * rho.alpha().col(1).array()
-                                         + gto_vals.phi_y.array().colwise() * rho.alpha().col(2).array()
-                                         + gto_vals.phi_z.array().colwise() * rho.alpha().col(3).array();
-                    tonto::Mat phi_xyz_b = gto_vals.phi_x.array().colwise() * rho.beta().col(1).array()
-                                         + gto_vals.phi_y.array().colwise() * rho.beta().col(2).array()
-                                         + gto_vals.phi_z.array().colwise() * rho.beta().col(3).array();
-                    tonto::Mat ktmp_a = 2 * (phi_vsigma_aa.transpose() * phi_xyz_a) + (phi_vsigma_ab.transpose() * phi_xyz_b);
-                    tonto::Mat ktmp_b = 2 * (phi_vsigma_bb.transpose() * phi_xyz_b) + (phi_vsigma_ab.transpose() * phi_xyz_a);
+                    tonto::Mat gamma_a = gto_vals.phi_x.array().colwise() * ga.col(0).array()
+                                       + gto_vals.phi_y.array().colwise() * ga.col(1).array()
+                                       + gto_vals.phi_z.array().colwise() * ga.col(2).array();
+                    tonto::Mat gamma_b = gto_vals.phi_x.array().colwise() * gb.col(0).array()
+                                       + gto_vals.phi_y.array().colwise() * gb.col(1).array()
+                                       + gto_vals.phi_z.array().colwise() * gb.col(2).array();
+                    tonto::Mat ktmp_a = (gto_vals.phi.transpose() * gamma_a);
+                    tonto::Mat ktmp_b = (gto_vals.phi.transpose() * gamma_b);
                     KK.alpha().noalias() += ktmp_a + ktmp_a.transpose();
                     KK.beta().noalias() += ktmp_b + ktmp_b.transpose();
                 }
