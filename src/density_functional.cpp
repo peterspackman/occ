@@ -4,7 +4,7 @@
 namespace tonto::dft {
 
 DensityFunctional::DensityFunctional(const std::string& name, bool polarized) :
-    m_func_name(name), m_polarized(polarized)
+   m_polarized(polarized), m_func_name(name)
 {
     int func_id = functional_id(name);
     m_func_id = static_cast<Identifier>(func_id);
@@ -18,7 +18,6 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
     xc_func_type func;
 
     int err = xc_func_init(&func, static_cast<int>(m_func_id), m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
-    fmt::print("Err: {}\n", err);
     switch(fam) {
     case LDA: {
         xc_lda_exc_vxc(&func, n_pts, params.rho.data(), result.exc.data(), result.vrho.data());

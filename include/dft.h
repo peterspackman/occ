@@ -157,18 +157,25 @@ public:
 
             if constexpr(derivative_order > 0) {
                 if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
-                    const auto& rho_x = rho.col(1).array(), rho_y = rho.col(2).array(), rho_z = rho.col(3).array();
-                    params.sigma.col(0) = rho_x * rho_x + rho_y * rho_y + rho_z * rho_z;
+                    const auto& dx_rho = rho.col(1).array(), dy_rho = rho.col(2).array(), dz_rho = rho.col(3).array();
+                    params.sigma.col(0) = dx_rho * dx_rho + dy_rho * dy_rho + dz_rho * dz_rho;
                 }
                 else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
 
                     const auto& rho_alpha = rho.alpha();
                     const auto& rho_beta = rho.beta();
-                    const auto& rho_ax = rho_alpha.col(1).array(), rho_ay = rho_alpha.col(2).array(), rho_az = rho_alpha.col(3).array();
-                    const auto& rho_bx = rho_beta.col(1).array(),  rho_by = rho_beta.col(2).array(),  rho_bz = rho_beta.col(3).array();
-                    params.sigma.col(0) = rho_ax * rho_ax + rho_ay * rho_ay + rho_az * rho_az;
-                    params.sigma.col(1) = rho_ax * rho_bx + rho_ay * rho_by + rho_az * rho_bz;
-                    params.sigma.col(2) = rho_bx * rho_bx + rho_by * rho_by + rho_bz * rho_bz;
+                    const auto& dx_rho_a = rho_alpha.col(1).array();
+                    const auto& dy_rho_a = rho_alpha.col(2).array();
+                    const auto& dz_rho_a = rho_alpha.col(3).array();
+                    const auto& dx_rho_b = rho_beta.col(1).array();
+                    const auto& dy_rho_b = rho_beta.col(2).array();
+                    const auto& dz_rho_b = rho_beta.col(3).array();
+                    params.sigma.col(0) = dx_rho_a * dx_rho_a + dy_rho_a * dy_rho_a + dz_rho_a * dz_rho_a;
+                    params.sigma.col(1) = dx_rho_a * dx_rho_b + dy_rho_a * dy_rho_b + dz_rho_a * dz_rho_b;
+                    params.sigma.col(2) = dx_rho_b * dx_rho_b + dy_rho_b * dy_rho_b + dz_rho_b * dz_rho_b;
+                    fmt::print("Sigma:\n{}\n", params.sigma.block(0, 0, 4, 3));
+                    fmt::print("d rho_a:\n{}\n", rho_alpha.block(0, 1, 4, 3));
+                    fmt::print("d rho_b:\n{}\n", rho_alpha.block(0, 1, 4, 3));
                 }
             }
 

@@ -64,8 +64,8 @@ TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
     fmt::print("phi_z\n{}\n", gto_values.phi_z);
 
     tonto::MatRM D(4, 2);
-    D.block(0, 0, 2, 2).setConstant(0.60245569);
-    D.block(2, 0, 2, 2).setConstant(0.301277);
+    D.block(0, 0, 2, 2).setConstant(0.30122784);
+    D.block(2, 0, 2, 2).setConstant(0.30122784);
     auto rho = tonto::density::evaluate_density_on_grid<1, tonto::qm::SpinorbitalKind::Unrestricted>(basis, atoms, D, grid_pts);
     fmt::print("Rho alpha\n{}\n", rho.alpha());
     fmt::print("Rho beta\n{}\n", rho.beta());

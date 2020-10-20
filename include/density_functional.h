@@ -396,7 +396,6 @@ public:
     struct Result {
         Result(size_t npt, Family family, SpinorbitalKind kind) : npts{npt} {
             if(kind == SpinorbitalKind::Restricted) {
-                fmt::print("Result restricted\n");
                 exc = Vec::Zero(npt);
                 vrho = Vec::Zero(npt);
                 if(family == GGA || family == HGGA) {
@@ -405,7 +404,6 @@ public:
                 }
             }
             else {
-                fmt::print("Result unrestricted\n");
                 exc = Vec::Zero(npt);
                 vrho = MatRM::Zero(npt, 2);
                 if(family == GGA || family == HGGA) {
@@ -420,9 +418,7 @@ public:
         MatRM vrho;
         MatRM vsigma;
         Result& operator +=(const Result& right) {
-            fmt::print("Adding: {} + {} ", exc(0), right.exc(0));
             exc.array() += right.exc.array();
-            fmt::print("= {}\n", exc(0));
             vrho.array() += right.vrho.array();
             if(right.have_vsigma) {
                 if(!have_vsigma) vsigma = right.vsigma;
