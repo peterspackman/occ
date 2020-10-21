@@ -48,4 +48,21 @@ using DVec3 = Eigen::Vector3d;
 using IVec = Eigen::VectorXi;
 using IVec3 = Eigen::Vector3i;
 
+std::tuple<MatRM, MatRM, double> conditioning_orthogonalizer(const MatRM&, double);
+
+// returns {X,X^{-1},rank,A_condition_number,result_A_condition_number}, where
+// X is the generalized square-root-inverse such that X.transpose() * A * X = I
+//
+// if symmetric is true, produce "symmetric" sqrtinv: X = U . A_evals_sqrtinv .
+// U.transpose()),
+// else produce "canonical" sqrtinv: X = U . A_evals_sqrtinv
+// where U are eigenvectors of A
+// rows and cols of symmetric X are equivalent; for canonical X the rows are
+// original basis (AO),
+// cols are transformed basis ("orthogonal" AO)
+//
+// A is conditioned to max_condition_number
+std::tuple<MatRM, MatRM, size_t, double, double>
+gensqrtinv(const MatRM&, bool symmetric = false, double max_condition_number = 1e8);
+
 }; // namespace tonto

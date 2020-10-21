@@ -10,6 +10,7 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/gto.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
@@ -28,6 +29,7 @@ target_link_libraries(tonto
     fmt::fmt spdlog::spdlog
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
     Libint2::cxx ${LAPACK_LIBRARIES}
+    BTAS::BTAS
     Libxc::xc
     numgrid-objects
 )
