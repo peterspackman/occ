@@ -8,6 +8,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 find_package(LAPACK REQUIRED)
+find_package(BLAS REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(Boost COMPONENTS graph)
 find_package(OpenMP REQUIRED)

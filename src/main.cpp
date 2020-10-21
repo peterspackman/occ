@@ -138,32 +138,27 @@ int main(int argc, const char **argv) {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "rhf");
             SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
-            scf.conv = 1e-12;
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();
-            scf.print_orbital_energies();
         } else if (method == "ghf") {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
             SCF<HartreeFock, SpinorbitalKind::General> scf(hf);
-            scf.conv = 1e-12;
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();
-            scf.print_orbital_energies();
         } else if (method == "uhf") {
             HartreeFock hf(m.atoms(), obs);
             fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
             SCF<HartreeFock, SpinorbitalKind::Unrestricted> scf(hf);
-            scf.conv = 1e-12;
             scf.set_charge_multiplicity(charge, multiplicity);
             double e = scf.compute_scf_energy();
-            scf.print_orbital_energies();
         } else
         {
             if (parser.get<bool>("--uks")) {
                 fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
                 tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Unrestricted);
                 SCF<tonto::dft::DFT, SpinorbitalKind::Unrestricted> scf(rks);
+                scf.set_charge_multiplicity(charge, multiplicity);
                 scf.start_incremental_F_threshold = 0.0;
                 double e = scf.compute_scf_energy();
             }
@@ -171,6 +166,7 @@ int main(int argc, const char **argv) {
                 fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
                 tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Restricted);
                 SCF<tonto::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
+                scf.set_charge_multiplicity(charge, multiplicity);
                 scf.start_incremental_F_threshold = 0.0;
                 double e = scf.compute_scf_energy();
             }
