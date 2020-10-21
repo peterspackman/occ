@@ -202,11 +202,11 @@ public:
 
             if constexpr(derivative_order > 0) {
                 if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
-                    tonto::Mat phi_xyz = 2 * (gto_vals.phi_x.array().colwise() * rho.col(1).array())
-                                       + 2 * (gto_vals.phi_y.array().colwise() * rho.col(2).array())
-                                       + 2 * (gto_vals.phi_z.array().colwise() * rho.col(3).array());
-                    tonto::Mat phi_vsigma = gto_vals.phi.array().colwise() * res.vsigma.col(0).array();
-                    tonto::Mat ktmp = phi_vsigma.transpose() * phi_xyz;
+                    tonto::Mat g = rho.block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array());
+                    tonto::Mat gamma = gto_vals.phi_x.array().colwise() * g.col(0).array()
+                                     + gto_vals.phi_y.array().colwise() * g.col(1).array()
+                                     + gto_vals.phi_z.array().colwise() * g.col(2).array();
+                    tonto::Mat ktmp = gto_vals.phi.transpose() * gamma;
                     KK.noalias() += ktmp + ktmp.transpose();
 
                 } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
