@@ -30,7 +30,6 @@ target_link_libraries(tonto
     fmt::fmt spdlog::spdlog
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
     Libint2::cxx ${LAPACK_LIBRARIES}
-    BTAS::BTAS
     Libxc::xc
     numgrid-objects
 )
