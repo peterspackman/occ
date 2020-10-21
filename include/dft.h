@@ -131,7 +131,6 @@ public:
         double total_density_a{0.0}, total_density_b{0.0};
         auto D2 = 2 * D;
         DensityFunctional::Family family{DensityFunctional::Family::LDA};
-        fmt::print("D2:\n{}\n", D2);
         if constexpr (derivative_order == 1) {
             family = DensityFunctional::Family::GGA;
         }
@@ -155,17 +154,11 @@ public:
                 total_density_b += rho.beta().col(0).dot(weights);
             }
 
-            fmt::print("Grid_pts:\n{}\n", pts.leftCols(4));
-            fmt::print("Grid weights\n{}\n", weights.topRows(4));
 
             if constexpr(derivative_order > 0) {
-                fmt::print("phi\n{}\nphi_x\n{}\nphi_y\n{}\nphi_z\n{}\n", gto_vals.phi.topRows(4), gto_vals.phi_x.topRows(4), gto_vals.phi_y.topRows(4), gto_vals.phi_z.topRows(4));
                 if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                     const auto& dx_rho = rho.col(1).array(), dy_rho = rho.col(2).array(), dz_rho = rho.col(3).array();
                     params.sigma.col(0) = dx_rho * dx_rho + dy_rho * dy_rho + dz_rho * dz_rho;
-                    fmt::print("Sigma:\n{}\n", params.sigma.block(0, 0, 4, 1));
-                    fmt::print("rho_a:\n{}\n", rho.block(0, 0, 4, 4));
-                    fmt::print("rho_b:\n{}\n", rho.block(0, 0, 4, 4));
                 }
                 else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
 
@@ -180,9 +173,6 @@ public:
                     params.sigma.col(0) = dx_rho_a * dx_rho_a + dy_rho_a * dy_rho_a + dz_rho_a * dz_rho_a;
                     params.sigma.col(1) = dx_rho_a * dx_rho_b + dy_rho_a * dy_rho_b + dz_rho_a * dz_rho_b;
                     params.sigma.col(2) = dx_rho_b * dx_rho_b + dy_rho_b * dy_rho_b + dz_rho_b * dz_rho_b;
-                    fmt::print("Sigma:\n{}\n", params.sigma.block(0, 0, 4, 3));
-                    fmt::print("d rho_a:\n{}\n", rho_alpha.block(0, 0, 4, 4));
-                    fmt::print("d rho_b:\n{}\n", rho_alpha.block(0, 0, 4, 4));
                 }
             }
 
@@ -191,8 +181,6 @@ public:
             for(const auto& func: m_funcs) {
                 res += func.evaluate(params);
             }
-            fmt::print("Vrho:\n{}\n", res.vrho.topRows(4));
-            fmt::print("Vsigma:\n{}\n", res.vsigma.topRows(4));
             tonto::timing::stop(tonto::timing::category::dft);
 
             tonto::MatRM KK = tonto::MatRM::Zero(K.rows(), K.cols());
@@ -222,7 +210,6 @@ public:
                     KK.noalias() += ktmp + ktmp.transpose();
 
                 } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                    tonto::log::debug("Unrestricted K matrix GGA");
                     tonto::Mat ga = rho.alpha().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array()) +
                                     rho.beta().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
                     tonto::Mat gb = rho.beta().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(2).array()) +
@@ -242,7 +229,7 @@ public:
             }
             K.noalias() += KK;
         }
-        tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_e_alpha, m_e_alpha + exc);
+        //tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_e_alpha, m_e_alpha + exc);
         fmt::print("Total density: alpha = {} beta = {}\nGTO  {:10.5f}\nfunc {:10.5f}\nfock {:10.5f}\n\n",
                    total_density_a, total_density_b,
                         tonto::timing::total(tonto::timing::category::grid),
@@ -251,9 +238,6 @@ public:
         tonto::timing::clear_all();
         m_e_alpha += exc + ecoul;
         F += K;
-        fmt::print("D:\n{}\n", D);
-        fmt::print("K:\n{}\n", K);
-        fmt::print("F:\n{}\n", F);
         return F;
     }
 
