@@ -27,17 +27,17 @@ namespace tonto::density {
              *  Map<tonto::Mat, 0, Stride<Dynamic, 2>>(rho.col(1).data(), Dphi.rows(), Dphi.cols(), Stride<Dynamic, 2>(2*Dphi.rows(), 2)) = RHS
              */
             if constexpr(max_derivative > 0) {
-                rho.block(0, 1, Dphi.rows(), 1).array() = (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-                rho.block(0, 2, Dphi.rows(), 1).array() = (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-                rho.block(0, 3, Dphi.rows(), 1).array() = (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+                rho.block(0, 1, Dphi.rows(), 1).array() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
+                rho.block(0, 2, Dphi.rows(), 1).array() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
+                rho.block(0, 3, Dphi.rows(), 1).array() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
             }
             // beta part
             Dphi = gto_values.phi * D.beta();
             rho.block(Dphi.rows(), 0, Dphi.rows(), 1).array() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
             if constexpr(max_derivative > 0) {
-                rho.block(Dphi.rows(), 1, Dphi.rows(), 1).array() = (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-                rho.block(Dphi.rows(), 2, Dphi.rows(), 1).array() = (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-                rho.block(Dphi.rows(), 3, Dphi.rows(), 1).array() = (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+                rho.block(Dphi.rows(), 1, Dphi.rows(), 1).array() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
+                rho.block(Dphi.rows(), 2, Dphi.rows(), 1).array() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
+                rho.block(Dphi.rows(), 3, Dphi.rows(), 1).array() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
             }
             return rho;
         }
