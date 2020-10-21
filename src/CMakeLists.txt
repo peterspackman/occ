@@ -2,6 +2,7 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/density.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/density_functional.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.cpp"

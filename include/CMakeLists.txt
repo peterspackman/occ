@@ -2,6 +2,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/density.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/density_functional.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.h"
