@@ -8,8 +8,8 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
 
   using tonto::parallel::nthreads;
 
-  const auto n = obs.nbf();
-  const auto ndf = dfbs.nbf();
+  const size_t n = obs.nbf();
+  const size_t ndf = dfbs.nbf();
 
   // using first time? compute 3-center ints and transform to inv sqrt
   // representation
@@ -34,7 +34,8 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
     auto shell2bf = obs.shell2bf();
     auto shell2bf_df = dfbs.shell2bf();
 
-    Eigen::Tensor<double, 3> Zxy{ndf, n, n};
+    std::array<size_t, 3> Zxy_dims{ndf, n, n};
+    std::vector<double> Zxy(ndf * n * n);
 
     auto lambda = [&](int thread_id) {
 
@@ -64,9 +65,15 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
             if (buf == nullptr)
               continue;
 
-            Eigen::Sizes<3> lower_bound(bf1_first, bf2_first, bf3_first);
-            Eigen::Sizes<3> nbf123(n1, n2, n3);
-            Zxy.slice(lower_bound, nbf123) = Eigen::TensorMap<const Eigen::Tensor<const double, 3>>(buf, n1, n2, n3);
+            size_t offset = 0;
+            for(size_t i = bf1_first; i < bf1_first + n1; i++) {
+                for(size_t j = bf2_first; j < bf2_first + n2; j++) {
+                    for(size_t k = bf3_first; k < bf3_first + n3; k++) {
+                        Zxy[i * ndf + j * n + k] = buf[offset];
+                        offset++;
+                    }
+                }
+            }
           }  // s3
         }    // s2
       }      // s1
@@ -89,34 +96,102 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
     //  std::cout << "||V^-1 - L^-1^t L^-1|| = " << (V.inverse() - Linv_t *
     //  Linv_t.transpose()).norm() << std::endl;
 
-    Eigen::Tensor<double, 2> K(ndf, ndf);
+    std::array<size_t, 2> K_dims{ndf, ndf};
+    std::vector<double> K(ndf * ndf);
     std::copy(Linv_t.data(), Linv_t.data() + ndf * ndf, K.data());
 
-    xyK = Eigen::Tensor<double, 3>(n, n, ndf);
-
-    Eigen::array<Eigen::IndexPair<int>, 1> product_dims = {Eigen::IndexPair<int>(0, 0)};
-    xyK = Zxy.contract(K, product_dims);
-    Zxy = Eigen::Tensor<double, 3>(0, 0, 0);  // release memory
+    xyK_dims = {n, n, ndf};
+    xyK.reserve(n * n * ndf);
+    std::fill(xyK.begin(), xyK.end(), 0.0);
+    // xyK(j,k,l) = Zxy(i,j,k) * K(i,l)
+    for(size_t i = 0; i < K_dims[0]; i++) {
+        for(size_t j = 0; j < Zxy_dims[1]; j++) {
+            size_t jZxy = i * Zxy_dims[1] + j;
+            for(size_t k = 0; k < Zxy_dims[2]; k++) {
+                size_t kxyK = j * xyK_dims[1] + k;
+                size_t kZxy = jZxy * Zxy_dims[2] * k;
+                for(size_t l = 0; l < K_dims[1]; l++) {
+                    size_t lxyK = kxyK * xyK_dims[2] + l;
+                    size_t lK = i * K_dims[1] + l;
+                    xyK[lxyK] = xyK[lxyK] + Zxy[kZxy] * K[lK];
+                }
+            }
+        }
+    }
   }  // if (xyK.size() == 0)
 
   // compute exchange
-  const auto nocc = Cocc.cols();
-  Eigen::Tensor<double, 2> Co{n, nocc};
-  std::copy(Cocc.data(), Cocc.data() + n * nocc, Co.data());
-  Eigen::array<Eigen::IndexPair<int>, 1> dims1 = {Eigen::IndexPair<int>(1, 1)};
-  Eigen::array<int, 2> shuf1({1, 2});
-  Eigen::Tensor<double, 3> xiK = xyK.contract(Co, dims1).shuffle(shuf1);
+  const size_t nocc = Cocc.cols();
+  const double * Co = Cocc.data();
+  std::array<size_t, 2> Co_dims{n, nocc};
+  std::array<size_t, 3> xiK_dims{xyK_dims[0], Co_dims[1], xyK_dims[2]};
+  std::vector<double> xiK(xiK_dims[0] * xiK_dims[1] * xiK_dims[2], 0.0);
 
+  // xiK(i,l,k) = xyK(i,j,k) * Co(j,l)
+  for(size_t i = 0; i < xyK_dims[0]; i++) {
+      for(size_t j = 0; j < Co_dims[0]; j++) {
+          size_t jxyK = i * xyK_dims[1] + j;
+          for(size_t l = 0; l < Co_dims[1]; l++) {
+              size_t lxiK = i * xiK_dims[1] + l;
+              size_t lCo = j * Co_dims[1] + l;
+              for(size_t k = 0; k < xyK_dims[2]; k++) {
+                  size_t kxiK = lxiK * xiK_dims[2] + k;
+                  size_t kxyK = jxyK * xyK_dims[2] + k;
+                  xiK[kxiK] = xiK[kxiK] + xyK[kxyK] * Co[lCo];
+              }
+          }
+      }
+  }
+
+  std::array<size_t, 2> G_dims{xiK_dims[0], xiK_dims[0]};
+  std::vector<double> G(G_dims[0] * G_dims[1]);
   //exchange
-  Eigen::array<Eigen::IndexPair<int>, 2> dims2 = {Eigen::IndexPair<int>(1, 1), Eigen::IndexPair<int>(2, 2)};
-  Eigen::Tensor<double, 2> G = xiK.contract(xiK, dims2);
+  // G(i,l) = xiK(i,j,k) * xiK(l,j,k)
+  for(size_t i = 0; i < xiK_dims[0]; i++) {
+      for(size_t l = 0; l < xiK_dims[0]; l++) {
+          size_t lG = i * G_dims[1] + l;
+          double tjG_val = 0.0;
+          for(size_t j = 0; j < xiK_dims[1]; j++) {
+              size_t jxiK = i * xiK_dims[1] + j;
+              size_t jxiK0 = l * xiK_dims[1] + j;
+              for(size_t k = 0; k < xiK_dims[2]; k++) {
+                  size_t kxiK = jxiK * xiK_dims[2] + k;
+                  size_t kxiK0 = jxiK0 * xiK_dims[2] + k;
+                  tjG_val += xiK[kxiK] * xiK[kxiK0];
+              }
+          }
+          G[lG] = tjG_val;
+      }
+  }
 
   //coulomb
-  Eigen::array<Eigen::IndexPair<int>, 2> dims3 = {Eigen::IndexPair<int>(0, 0), Eigen::IndexPair<int>(1, 1)};
-  Eigen::Tensor<double, 1> Jtmp = xiK.contract(Co, dims3);
-  Eigen::array<Eigen::IndexPair<int>, 1> dims4 = {Eigen::IndexPair<int>(2, 0)};
-  G = G - 2 * xyK.contract(Jtmp, dims4);
-
+  //J(k) = xiK(i,j,k) * Co(i,j)
+  size_t J_dim = xiK_dims[2];
+  std::vector<double> J(J_dim, 0);
+  for(size_t i = 0; i < Co_dims[0]; i++) {
+      for(size_t j = 0; j < Co_dims[1]; j++) {
+          size_t jxiK = i * xiK_dims[1] + j;
+          size_t jCo = i * Co_dims[1] + j;
+          for(size_t k = 0; k < xiK_dims[2]; k++) {
+              size_t kxiK = jxiK * xiK_dims[2] + k;
+              J[k] = J[k] + xiK[kxiK] * Co[jCo];
+          }
+      }
+  }
+  // G(i,j) = 2 * xyK(i,j,k) * J(k) - G(i,j)
+  for(size_t i = 0; i < G_dims[0]; i++) {
+      for(size_t j = 0; j < G_dims[1]; j++) {
+          size_t jG = i * G_dims[1] + j;
+          size_t jxyK = i * xyK_dims[1] + j;
+          size_t jG0 = i * G_dims[1] + j;
+          double tk_val = 0.0;
+          for(size_t k = 0; k < J_dim; k++) {
+              size_t kxyK = jxyK * xyK_dims[2] + k;
+              tk_val += (2 * xyK[kxyK] * J[k]);
+          }
+          G[jG] = tk_val - G[jG0];
+      }
+  }
   // copy result to an Eigen::Matrix
   tonto::MatRM result(n, n);
   std::copy(G.data(), G.data() + G.size(), result.data());
