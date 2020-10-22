@@ -118,6 +118,7 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
             }
         }
     }
+    Zxy.clear();
   }  // if (xyK.size() == 0)
 
   // compute exchange
