@@ -12,9 +12,11 @@
 #include "density_fitting.h"
 #include <optional>
 #include "wavefunction.h"
+#include "util.h"
 
 namespace tonto::scf {
 
+using tonto::util::human_readable_size;
 using tonto::conditioning_orthogonalizer;
 using tonto::qm::SpinorbitalKind;
 using tonto::qm::expectation;
@@ -86,6 +88,9 @@ struct SCF {
         if(spinorbital_kind != SpinorbitalKind::Restricted) throw std::runtime_error("Density fitting only implemented for RHF");
         libint2::BasisSet df_basis(name, m_procedure.atoms());
         libint2::BasisSet basis = m_procedure.basis();
+        fmt::print("Loaded density-fitting basis-set ({}), {} shells, {} basis functions\n", name, df_basis.size(), libint2::nbf(df_basis));
+        fmt::print("Storing DF overlap integrals requires {}\n",
+                   human_readable_size(libint2::nbf(basis) * libint2::nbf(df_basis) * libint2::nbf(df_basis) * sizeof(double), "B"));
         df_engine.emplace(basis, df_basis);
     }
 

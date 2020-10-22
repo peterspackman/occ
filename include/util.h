@@ -6,6 +6,7 @@
 #include <locale>
 #include <string>
 #include <vector>
+#include <fmt/core.h>
 
 namespace tonto::util {
 
@@ -131,4 +132,19 @@ static inline std::string to_upper_copy(std::string s) {
   to_upper(s);
   return s;
 }
+
+template<typename T>
+std::string human_readable_size(T number, const std::string& suffix)
+{
+    double num = static_cast<double>(number);
+    const auto units = {"", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"};
+    for(const auto& unit: units) {
+        if (abs(num) < 1024.0) {
+            return fmt::format("{:3.2f}{}{}", num, unit, suffix);
+        }
+        num /= 1024.0;
+    }
+    return fmt::format("{:.1f}{}{}", num, "Yi", suffix);
+}
+
 } // namespace tonto::util

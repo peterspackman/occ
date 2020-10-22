@@ -166,7 +166,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
   tonto::parallel::parallel_do(make_spdata);
 
   timer.stop(0);
-  tonto::log::debug("done computing non-negligible shell-pair list ({:.6f} s)\n", timer.read(0));
+  tonto::log::debug("computed non-negligible shell-pair list in {:.6f} s", timer.read(0));
   return std::make_tuple(splist, spdata);
 }
 

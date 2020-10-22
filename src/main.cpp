@@ -119,26 +119,25 @@ int main(int argc, const char **argv) {
         const auto charge = parser.get<int>("--charge");
         Molecule m = tonto::chem::read_xyz_file(filename);
 
-        fmt::print("Input geometry ({})\n    {:3s} {:^10s} {:^10s} {:^10s}\n", filename, "sym", "x", "y", "z");
+        fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", filename, "sym", "x", "y", "z");
         for (const auto &atom : m.atoms()) {
-            fmt::print("    {:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
+            fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                        atom.x, atom.y, atom.z);
         }
         const auto method = parser.get<std::string>("--method");
         using tonto::parallel::nthreads;
         nthreads = parser.get<int>("--threads");
         omp_set_num_threads(nthreads);
-        fmt::print("\n    {:12s} {:>12d}\n", "threads", nthreads);
-        fmt::print("    {:12s} {:>12s}\n", "method", method);
-        fmt::print("    {:12s} {:>12d}\n", "eigen", Eigen::nbThreads());
-        fmt::print("    {:12s} {:>12s}\n", "basis", basisname);
+        fmt::print("\nParallelization: {} OpenMP threads, {} Eigen threads\n", nthreads, Eigen::nbThreads());
+        fmt::print("Input method string: '{}'\n", method);
+        fmt::print("Input basis name: '{}'\n", basisname);
 
-        libint2::BasisSet obs(basisname, m.atoms());
-        obs.set_pure(false);
-        fmt::print("    {:12s} {:>12d}\n", "n_bf", obs.nbf());
+        libint2::BasisSet basis(basisname, m.atoms());
+        basis.set_pure(false);
+        fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
         if (method == "rhf") {
-            HartreeFock hf(m.atoms(), obs);
-            fmt::print("    {:12s} {:>12s}\n", "procedure", "rhf");
+            HartreeFock hf(m.atoms(), basis);
+            tonto::log::debug("Initializing restricted SCF");
             SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
             scf.set_charge(charge);
             if(auto dfbasis = parser.present("--df-basis")) {
@@ -146,30 +145,30 @@ int main(int argc, const char **argv) {
             }
             double e = scf.compute_scf_energy();
         } else if (method == "ghf") {
-            HartreeFock hf(m.atoms(), obs);
-            fmt::print("    {:12s} {:>12s}\n", "procedure", "ghf");
+            HartreeFock hf(m.atoms(), basis);
+            tonto::log::debug("Initializing general SCF");
             SCF<HartreeFock, SpinorbitalKind::General> scf(hf);
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();
         } else if (method == "uhf") {
-            HartreeFock hf(m.atoms(), obs);
-            fmt::print("    {:12s} {:>12s}\n", "procedure", "uhf");
+            HartreeFock hf(m.atoms(), basis);
+            tonto::log::debug("Initializing unrestricted SCF");
             SCF<HartreeFock, SpinorbitalKind::Unrestricted> scf(hf);
             scf.set_charge_multiplicity(charge, multiplicity);
             double e = scf.compute_scf_energy();
         } else
         {
             if (parser.get<bool>("--uks")) {
-                fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
-                tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Unrestricted);
+                tonto::log::debug("Initializing unrestricted DFT");
+                tonto::dft::DFT rks(method, basis, m.atoms(), SpinorbitalKind::Unrestricted);
                 SCF<tonto::dft::DFT, SpinorbitalKind::Unrestricted> scf(rks);
                 scf.set_charge_multiplicity(charge, multiplicity);
                 scf.start_incremental_F_threshold = 0.0;
                 double e = scf.compute_scf_energy();
             }
             else {
-                fmt::print("    {:12s} {:>12s}\n", "procedure", "rks");
-                tonto::dft::DFT rks(method, obs, m.atoms(), SpinorbitalKind::Restricted);
+                tonto::log::debug("Initializing restricted DFT");
+                tonto::dft::DFT rks(method, basis, m.atoms(), SpinorbitalKind::Restricted);
                 SCF<tonto::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
                 scf.set_charge_multiplicity(charge, multiplicity);
                 scf.start_incremental_F_threshold = 0.0;

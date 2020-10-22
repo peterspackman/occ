@@ -114,7 +114,6 @@ public:
         m_e_alpha = 0.0;
         double ecoul, exc;
         double exchange_factor = exact_exchange_factor();
-        tonto::timing::start(tonto::timing::category::ints);
         if(exchange_factor != 0.0) {
             std::tie(F, K) = m_hf.compute_JK(spinorbital_kind, D, precision, Schwarz);
             ecoul = expectation<spinorbital_kind>(D, F);
@@ -125,7 +124,6 @@ public:
             F = m_hf.compute_J(spinorbital_kind, D, precision, Schwarz);
             ecoul = expectation<spinorbital_kind>(D, F);
         }
-        tonto::timing::stop(tonto::timing::category::ints);
         K = tonto::MatRM::Zero(F.rows(), F.cols());
         const auto& basis = m_hf.basis();
         const auto& atoms = m_hf.atoms();
