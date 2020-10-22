@@ -9,6 +9,7 @@
 #include <tuple>
 #include "spinorbital.h"
 #include "util.h"
+#include "density_fitting.h"
 
 namespace tonto::scf {
 
@@ -329,7 +330,14 @@ struct SCF {
                         std::min(1e-3 / XtX_condition_number, 1e-7),
                         std::max(rms_error / 1e4, std::numeric_limits<double>::epsilon()));
             F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
-
+            /*
+            // code for testing DF implementation is working
+            {
+                libint2::BasisSet dfbs("def2-svp-jk", m_procedure.atoms());
+                tonto::df::DFFockEngine dfe(m_procedure.basis(), dfbs);
+                tonto::MatRM fock_df = dfe.compute_2body_fock_dfC(C_occ);
+                fmt::print("Fock\n:{}\n\n\nFockDF\n{}\n", F, fock_df);
+            }*/
             // compute HF energy with the non-extrapolated Fock matrix
             update_scf_energy(H + F);
             ediff_rel = std::abs((ehf - ehf_last) / ehf);

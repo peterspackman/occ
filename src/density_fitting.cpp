@@ -69,7 +69,7 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
             for(size_t i = bf1_first; i < bf1_first + n1; i++) {
                 for(size_t j = bf2_first; j < bf2_first + n2; j++) {
                     for(size_t k = bf3_first; k < bf3_first + n3; k++) {
-                        Zxy[i * ndf + j * n + k] = buf[offset];
+                        Zxy[k + n * (j + n * i)] = buf[offset];
                         offset++;
                     }
                 }
@@ -101,7 +101,7 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
     std::copy(Linv_t.data(), Linv_t.data() + ndf * ndf, K.data());
 
     xyK_dims = {n, n, ndf};
-    xyK.reserve(n * n * ndf);
+    xyK.resize(n * n * ndf);
     std::fill(xyK.begin(), xyK.end(), 0.0);
     // xyK(j,k,l) = Zxy(i,j,k) * K(i,l)
     for(size_t i = 0; i < K_dims[0]; i++) {
@@ -109,7 +109,7 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
             size_t jZxy = i * Zxy_dims[1] + j;
             for(size_t k = 0; k < Zxy_dims[2]; k++) {
                 size_t kxyK = j * xyK_dims[1] + k;
-                size_t kZxy = jZxy * Zxy_dims[2] * k;
+                size_t kZxy = jZxy * Zxy_dims[2] + k;
                 for(size_t l = 0; l < K_dims[1]; l++) {
                     size_t lxyK = kxyK * xyK_dims[2] + l;
                     size_t lK = i * K_dims[1] + l;
