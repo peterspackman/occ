@@ -10,6 +10,7 @@
 #include "spinorbital.h"
 #include "util.h"
 #include "density_fitting.h"
+#include <optional>
 
 namespace tonto::scf {
 
@@ -50,6 +51,14 @@ struct SCF {
 
     int multiplicity() const {
         return n_unpaired_electrons + 1;
+    }
+
+    void set_density_fitting_basis(const std::string& name)
+    {
+        if(spinorbital_kind != SpinorbitalKind::Restricted) throw std::runtime_error("Density fitting only implemented for RHF");
+        libint2::BasisSet df_basis(name, m_procedure.atoms());
+        libint2::BasisSet basis = m_procedure.basis();
+        df_engine.emplace(basis, df_basis);
     }
 
     void set_charge(int c) {
@@ -329,7 +338,12 @@ struct SCF {
             const auto precision_F = std::min(
                         std::min(1e-3 / XtX_condition_number, 1e-7),
                         std::max(rms_error / 1e4, std::numeric_limits<double>::epsilon()));
-            F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
+            if(df_engine == std::nullopt) {
+                F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
+            }
+            else {
+                F = H + (*df_engine).compute_2body_fock_dfC(C_occ);
+            }
             /*
             // code for testing DF implementation is working
             {
@@ -440,6 +454,7 @@ struct SCF {
     Vec orbital_energies;
     double XtX_condition_number;
     bool verbose{false};
+    std::optional<tonto::df::DFFockEngine> df_engine;
 };
 
 } // namespace tonto::scf

@@ -7,8 +7,8 @@ namespace tonto::df {
 using libint2::BasisSet;
 
 struct DFFockEngine {
-  const BasisSet& obs;
-  const BasisSet& dfbs;
+  BasisSet obs;
+  BasisSet dfbs;
   DFFockEngine(const BasisSet& _obs, const BasisSet& _dfbs)
       : obs(_obs), dfbs(_dfbs) {}
 

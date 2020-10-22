@@ -96,6 +96,8 @@ int main(int argc, const char **argv) {
             .default_value(false)
             .implicit_value(true);
 
+    parser.add_argument("-df", "--df-basis").help("Density fitting basis name");
+
     tonto::log::set_level(tonto::log::level::debug);
     try {
         parser.parse_args(argc, argv);
@@ -139,6 +141,9 @@ int main(int argc, const char **argv) {
             fmt::print("    {:12s} {:>12s}\n", "procedure", "rhf");
             SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
             scf.set_charge(charge);
+            if(auto dfbasis = parser.present("--df-basis")) {
+                scf.set_density_fitting_basis(*dfbasis);
+            }
             double e = scf.compute_scf_energy();
         } else if (method == "ghf") {
             HartreeFock hf(m.atoms(), obs);
