@@ -8,12 +8,16 @@ using clock_t = std::chrono::high_resolution_clock;
 using time_point_t = std::chrono::time_point<clock_t>;
 
 enum category {
-    ints,
+    ints1e,
+    ints2e,
     io,
     la,
     grid,
     dft,
     gto,
+    fock,
+    df,
+    global,
     _group_count
 };
 

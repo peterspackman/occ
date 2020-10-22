@@ -11,6 +11,7 @@
 #include "util.h"
 #include "density_fitting.h"
 #include <optional>
+#include "wavefunction.h"
 
 namespace tonto::scf {
 
@@ -22,11 +23,38 @@ using tonto::util::is_odd;
 
 template <typename Procedure, SpinorbitalKind spinorbital_kind>
 struct SCF {
+    struct EnergyComponents
+    {
+        double coulomb{0.0};
+        double exchange{0.0};
+        double correlation{0.0};
+        double exchange_repulsion{0.0};
+        double nuclear_repulsion{0.0};
+        double nuclear_attraction{0.0};
+        double kinetic{0.0};
+        double one_electron{0.0};
+        double two_electron{0.0};
+        double electronic{0.0};
+        double total{0.0};
+        std::string energy_table_string() const {
+            return fmt::format(
+                "{:20s} {:>20s}\n\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n",
+                "Component", "Energy (Hartree)",
+                "Nuclear repulsion", nuclear_repulsion,
+                "Nuclear attraction", nuclear_attraction,
+                "Kinetic (electrons)", kinetic,
+                "One-electron", one_electron,
+                "Two-electron", two_electron,
+                "Total", total);
+        }
+    };
+
     SCF(Procedure &procedure, int diis_start = 2)
         : m_procedure(procedure), diis(diis_start) {
         n_electrons = m_procedure.num_e();
         nbf = m_procedure.basis().nbf();
-        auto [rows, cols] = tonto::qm::matrix_dimensions<spinorbital_kind>(nbf);
+        size_t rows, cols;
+        std::tie(rows, cols) = tonto::qm::matrix_dimensions<spinorbital_kind>(nbf);
         S = MatRM::Zero(rows, cols);
         T = MatRM::Zero(rows, cols);
         V = MatRM::Zero(rows, cols);
@@ -288,10 +316,20 @@ struct SCF {
 
     void update_scf_energy(const MatRM& fock) {
         if(m_procedure.usual_scf_energy()) {
-            ehf = expectation<spinorbital_kind>(D, fock);
+            energy.electronic = expectation<spinorbital_kind>(D, fock);
         }
         else {
-            ehf = 2 * expectation<spinorbital_kind>(D, H) + m_procedure.two_electron_energy();
+            energy.electronic = 2 * expectation<spinorbital_kind>(D, H) + m_procedure.two_electron_energy();
+        }
+        energy.total = energy.electronic + energy.nuclear_repulsion;
+
+    }
+
+    std::string scf_kind() const {
+        switch(spinorbital_kind) {
+        case SpinorbitalKind::Unrestricted: return "unrestricted";
+        case SpinorbitalKind::General: return "general";
+        default: return "restricted";
         }
     }
 
@@ -300,9 +338,9 @@ struct SCF {
         // count the number of electrons
         compute_initial_guess();
         K = m_procedure.compute_schwarz_ints();
-        enuc = m_procedure.nuclear_repulsion_energy();
+        energy.nuclear_repulsion = m_procedure.nuclear_repulsion_energy();
         MatRM D_diff;
-        fmt::print("Beginning SCF\n");
+        fmt::print("Starting {} SCF iterations\n\n", scf_kind());
         if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
             fmt::print("n_electrons: {}\nn_alpha: {}\nn_beta: {}\n", n_electrons, n_alpha(), n_beta());
         }
@@ -311,7 +349,7 @@ struct SCF {
             const auto tstart = std::chrono::high_resolution_clock::now();
             ++iter;
             // Last iteration's energy and density
-            auto ehf_last = ehf;
+            auto ehf_last = energy.electronic;
             MatRM D_last = D;
 
             if (not incremental_Fbuild_started &&
@@ -354,7 +392,7 @@ struct SCF {
             }*/
             // compute HF energy with the non-extrapolated Fock matrix
             update_scf_energy(H + F);
-            ediff_rel = std::abs((ehf - ehf_last) / ehf);
+            ediff_rel = std::abs((energy.electronic - ehf_last) / energy.electronic);
 
             // compute SCF error
             MatRM FD_comm(F.rows(), F.cols());
@@ -387,18 +425,17 @@ struct SCF {
                            "energy", "D(E)/E", "rms([F,D])/nn", "time");
             }
             fmt::print("{:>6d} {:>20.12f} {:>20.12e} {:>20.12e} {:>10.5f}\n", iter,
-                       ehf + enuc, ediff_rel, rms_error, time_elapsed.count());
+                       energy.total, ediff_rel, rms_error, time_elapsed.count());
             total_time += time_elapsed.count();
 
         }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
-        fmt::print("{:10s} {:20.12f} seconds\n", "SCF took", total_time);
-        fmt::print("{:10s} {:20.12f} hartree\n", "E_nn", enuc);
-        fmt::print("{:10s} {:20.12f} hartree\n", "E_k",   expectation<spinorbital_kind>(D, T));
-        fmt::print("{:10s} {:20.12f} hartree\n", "E_en",  expectation<spinorbital_kind>(D, V));
-        fmt::print("{:10s} {:20.12f} hartree\n", "E_1e",  2 * expectation<spinorbital_kind>(D, H));
-        fmt::print("{:10s} {:20.12f} hartree\n", "E_2e",  expectation<spinorbital_kind>(D, F));
-        fmt::print("{:10s} {:20.12f} hartree\n", "E_tot", (ehf + enuc));
-        return ehf + enuc;
+        energy.kinetic = expectation<spinorbital_kind>(D, T);
+        energy.one_electron = 2 * expectation<spinorbital_kind>(D, H);
+        energy.nuclear_attraction = expectation<spinorbital_kind>(D, V);
+        energy.two_electron = energy.electronic - energy.one_electron;
+        fmt::print("\n{} SCF converged after {} seconds\n\n", scf_kind(), total_time);
+        fmt::print(energy.energy_table_string());
+        return energy.total;
     }
 
     void print_orbital_energies() {
@@ -435,14 +472,13 @@ struct SCF {
     int n_electrons{0};
     int n_occ{0};
     int n_unpaired_electrons{0};
+    EnergyComponents energy;
     int maxiter{100};
     size_t nbf{0};
     double conv = 1e-8;
     int iter = 0;
     double rms_error = 1.0;
     double ediff_rel = 0.0;
-    double enuc{0.0};
-    double ehf{0.0};
     double total_time{0.0};
     tonto::diis::DIIS<MatRM> diis; // start DIIS on second iteration
     bool reset_incremental_fock_formation = false;
@@ -453,7 +489,6 @@ struct SCF {
     MatRM D, S, T, V, H, K, X, Xinv, C, C_occ, F;
     Vec orbital_energies;
     double XtX_condition_number;
-    bool verbose{false};
     std::optional<tonto::df::DFFockEngine> df_engine;
 };
 
