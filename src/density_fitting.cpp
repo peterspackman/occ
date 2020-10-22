@@ -108,13 +108,13 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
   Eigen::Tensor<double, 3> xiK = xyK.contract(Co, dims1).shuffle(shuf1);
 
   //exchange
-  Eigen::array<Eigen::IndexPair<int>, 2> dims2 = {Eigen::IndexPair<int>({1, 1}), Eigen::IndexPair<int>({2, 2})};
+  Eigen::array<Eigen::IndexPair<int>, 2> dims2 = {Eigen::IndexPair<int>(1, 1), Eigen::IndexPair<int>(2, 2)};
   Eigen::Tensor<double, 2> G = xiK.contract(xiK, dims2);
 
   //coulomb
-  Eigen::array<Eigen::IndexPair<int>, 2> dims3 = {Eigen::IndexPair<int>({0, 0}), Eigen::IndexPair<int>({1, 1})};
+  Eigen::array<Eigen::IndexPair<int>, 2> dims3 = {Eigen::IndexPair<int>(0, 0), Eigen::IndexPair<int>(1, 1)};
   Eigen::Tensor<double, 1> Jtmp = xiK.contract(Co, dims3);
-  Eigen::array<Eigen::IndexPair<int>, 1> dims4 = {Eigen::IndexPair<int>({2, 0})};
+  Eigen::array<Eigen::IndexPair<int>, 1> dims4 = {Eigen::IndexPair<int>(2, 0)};
   G = G - 2 * xyK.contract(Jtmp, dims4);
 
   // copy result to an Eigen::Matrix
