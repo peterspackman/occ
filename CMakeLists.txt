@@ -14,7 +14,6 @@ find_package(Boost COMPONENTS graph)
 find_package(OpenMP REQUIRED)
 find_package(Libint2 REQUIRED)
 find_package(Libxc REQUIRED)
-find_package(xtensor REQUIRED)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/fmt" EXCLUDE_FROM_ALL)
 set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "Use fmt from 3rdparty directory" FORCE)
