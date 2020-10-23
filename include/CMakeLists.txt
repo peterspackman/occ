@@ -15,6 +15,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/logger.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.h"

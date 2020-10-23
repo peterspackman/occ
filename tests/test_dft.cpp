@@ -12,6 +12,7 @@
 #include "density.h"
 #include "gto.h"
 #include "util.h"
+#include "lebedev.h"
 
 TEST_CASE("Water DFT grid", "[dft]")
 {
@@ -28,10 +29,10 @@ TEST_CASE("Water DFT grid", "[dft]")
         grid.set_min_angular_points(12);
         grid.set_max_angular_points(20);
         auto [pts, weights] = grid.grid_points(0);
-        assert(pts.cols() == 1564);
+        REQUIRE(pts.cols() == 1564);
         auto [hpts_a, weights_a] = grid.grid_points(1);
         auto [hpts_b, weights_b] = grid.grid_points(1);
-        assert(hpts_a.cols() == hpts_b.cols());
+        REQUIRE(hpts_a.cols() == hpts_b.cols());
     }
 
 }
@@ -40,14 +41,14 @@ TEST_CASE("Density Functional", "[lda]") {
     tonto::dft::DensityFunctional lda("xc_lda_x");
     tonto::dft::DensityFunctional lda_u("xc_lda_x", true);
     tonto::dft::DensityFunctional::Params params(5, tonto::dft::DensityFunctional::Family::LDA, tonto::qm::SpinorbitalKind::Restricted);
-    assert(params.rho.size() == 5);
+    REQUIRE(params.rho.size() == 5);
     params.rho = tonto::Vec::LinSpaced(5, 0, 1);
     fmt::print("Rho:\n{}\n", params.rho);
     auto res = lda.evaluate(params);
     fmt::print("exc:\n{}\nvrho\n{}\n", res.exc, res.vrho);
 
     tonto::dft::DensityFunctional::Params params_u(5, tonto::dft::DensityFunctional::Family::LDA, tonto::qm::SpinorbitalKind::Unrestricted);
-    assert(params_u.rho.size() == 10);
+    REQUIRE(params_u.rho.size() == 10);
     for(size_t i = 0; i < params.rho.rows(); i++) {
         params_u.rho(2*i) = params.rho(i);
         params_u.rho(2*i + 1) = params.rho(i);
@@ -77,7 +78,7 @@ TEST_CASE("gga", "[gga]") {
            1.508591677559790178e-01, -0.000000000000000000e+00, -0.000000000000000000e+00, 1.303514966003518905e-01,
            1.775122853194434636e-01, -0.000000000000000000e+00, -0.000000000000000000e+00, 7.842601108050306635e-02;
     tonto::dft::DensityFunctional::Params params(4, tonto::dft::DensityFunctional::Family::GGA, tonto::qm::SpinorbitalKind::Restricted);
-    assert(params.rho.size() == 4);
+    REQUIRE(params.rho.size() == 4);
     params.rho.col(0) = rho.alpha().col(0);
     auto rho_a = rho.alpha(), rho_b = rho.beta();
     fmt::print("Rho_a:\n{}\n", rho_a);
@@ -88,10 +89,10 @@ TEST_CASE("gga", "[gga]") {
 
     tonto::Vec expected_exc(4);
     expected_exc << -0.27851489, -0.27851489, -0.39899553, -0.41654061;
-    assert(all_close(expected_exc, res.exc, 1e-6));
+    REQUIRE(all_close(expected_exc, res.exc, 1e-6));
 
     tonto::dft::DensityFunctional::Params params_u(4, tonto::dft::DensityFunctional::Family::GGA, tonto::qm::SpinorbitalKind::Unrestricted);
-    assert(params_u.rho.size() == 8);
+    REQUIRE(params_u.rho.size() == 8);
     params_u.rho.col(0) = rho_a.col(0);
     params_u.rho.col(1) = rho_b.col(0);
     params_u.sigma.col(0) = rho_a.col(1).array() * rho_a.col(1).array() + rho_a.col(2).array() * rho_a.col(2).array() + rho_a.col(3).array() * rho_a.col(3).array();
@@ -101,5 +102,11 @@ TEST_CASE("gga", "[gga]") {
     fmt::print("\n\nRho interleaved:\n{}\nsigma\n{}\n", params_u.rho, params_u.sigma);
     auto res1 = gga_u.evaluate(params_u);
     fmt::print("exc:\n{}\nvrho\n{}\nvsigma\n{}\n", res1.exc, res1.vrho, res1.vsigma);
-    assert(all_close(expected_exc, res1.exc, 1e-6));
+   // assert(all_close(expected_exc, res1.exc, 1e-6));
+}
+
+TEST_CASE("lebedev", "[grid]")
+{
+    auto grid = tonto::grid::lebedev(110);
+    fmt::print("grid:\n{}\n", grid);
 }

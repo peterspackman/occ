@@ -2,6 +2,8 @@
 #include <libint2/basis.h>
 #include <libint2/atom.h>
 #include <fmt/core.h>
+#include "logger.h"
+#include "timings.h"
 
 namespace tonto::dft {
 
@@ -12,6 +14,7 @@ DFTGrid::DFTGrid(
     m_z(atoms.size())
 {
     int i = 0;
+    tonto::timing::start(tonto::timing::category::grid_init);
     const auto atom_map = basis.atom2shell(atoms);
 
     std::vector<std::vector<double>> min_alpha;
@@ -58,10 +61,12 @@ DFTGrid::DFTGrid(
             m_alpha_min(i, j) = min_alpha[i][j];
         }
     }
+    tonto::timing::stop(tonto::timing::category::grid_init);
 }
 
 std::pair<Mat3N, Vec> DFTGrid::grid_points(size_t idx) const
 {
+    tonto::timing::start(tonto::timing::category::grid_points);
     assert(idx < m_atomic_numbers.size());
     context_t *ctx = numgrid_new_atom_grid(
         m_radial_precision,
@@ -71,6 +76,7 @@ std::pair<Mat3N, Vec> DFTGrid::grid_points(size_t idx) const
         m_l_max(idx),
         m_alpha_min.row(idx).data()
     );
+    tonto::log::debug("Context created");
     int num_points = numgrid_get_num_grid_points(ctx);
 
     Mat pts(num_points, 3);
@@ -88,8 +94,10 @@ std::pair<Mat3N, Vec> DFTGrid::grid_points(size_t idx) const
         pts.col(2).data(),
         weights.data()
     );
+    tonto::log::debug("Grid points assigned");
 
     numgrid_free_atom_grid(ctx);
+    tonto::timing::stop(tonto::timing::category::grid_points);
     return {pts.transpose(), weights};
 }
 

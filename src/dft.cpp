@@ -32,6 +32,8 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
     }
     size_t num_grid_points = std::accumulate(m_atom_grids.begin(), m_atom_grids.end(), 0.0, [&](double tot, const auto& grid) { return tot + grid.first.cols(); });
     tonto::log::debug("finished calculating atom grids ({} points)", num_grid_points);
+    tonto::log::debug("Grid initialization took {} seconds", tonto::timing::total(tonto::timing::grid_init));
+    tonto::log::debug("Grid point creation took {} seconds", tonto::timing::total(tonto::timing::grid_points));
     m_funcs = parse_method(method, m_spinorbital_kind == SpinorbitalKind::Unrestricted);
     for(const auto& func: m_funcs) {
         tonto::log::debug("Functional: {} {} {}, exact exchange = {}, polarized = {}",
