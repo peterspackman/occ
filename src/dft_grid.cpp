@@ -7,6 +7,85 @@
 
 namespace tonto::dft {
 
+const std::array<uint_fast16_t, 33> lebedev_grid_levels {
+    1, 6, 14, 26, 38,
+    50, 74, 86, 110, 146,
+    170, 194, 230, 266, 302,
+    350, 434, 590, 770, 974,
+    1202, 1454, 1730, 2030, 2354,
+    2702, 3074, 3470, 3890, 4334,
+    4802, 5294, 5810
+};
+
+// Need to multiple by (1.0 / BOHR) to get the real RADII_BRAGG
+const std::array<double, 131> bragg_radii = {
+    0.35,                                     1.40,              // 1s
+    1.45, 1.05, 0.85, 0.70, 0.65, 0.60, 0.50, 1.50,              // 2s2p
+    1.80, 1.50, 1.25, 1.10, 1.00, 1.00, 1.00, 1.80,              // 3s3p
+    2.20, 1.80,                                                  // 4s
+    1.60, 1.40, 1.35, 1.40, 1.40, 1.40, 1.35, 1.35, 1.35, 1.35,  // 3d
+                1.30, 1.25, 1.15, 1.15, 1.15, 1.90,              // 4p
+    2.35, 2.00,                                                  // 5s
+    1.80, 1.55, 1.45, 1.45, 1.35, 1.30, 1.35, 1.40, 1.60, 1.55,  // 4d
+                1.55, 1.45, 1.45, 1.40, 1.40, 2.10,              // 5p
+    2.60, 2.15,                                                  // 6s
+    1.95, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85,                    // La, Ce-Eu
+    1.80, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75,              // Gd, Tb-Lu
+          1.55, 1.45, 1.35, 1.35, 1.30, 1.35, 1.35, 1.35, 1.50,  // 5d
+                1.90, 1.80, 1.60, 1.90, 1.45, 2.10,              // 6p
+    1.80, 2.15,                                                  // 7s
+    1.95, 1.80, 1.80, 1.75, 1.75, 1.75, 1.75,
+    1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75,
+    1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75,
+                1.75, 1.75, 1.75, 1.75, 1.75, 1.75,
+    1.75, 1.75,
+    1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75
+};
+
+
+tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial)
+{
+    std::array<int, 5> lebedev_level{4, 5, 5, 5, 4};
+    tonto::IVec angular_grids(num_radial);
+    if(max_angular < 50) {
+        angular_grids.setConstant(max_angular);
+    }
+    else {
+        size_t i;
+        for(i = 6; i < lebedev_grid_levels.size(); i++) {
+            if(lebedev_grid_levels[i] == max_angular) break;
+        }
+        lebedev_level[1] = 6;
+        lebedev_level[2] = i - 1;
+        lebedev_level[3] = i;
+        lebedev_level[4] = i + 1;
+    }
+
+    std::array<double, 4> alphas;
+    if(nuclear_charge <= 2) {
+        alphas = {0.25, 0.5, 1.0, 4.5};
+    }
+    else if(nuclear_charge <= 10)
+    {
+        alphas = {0.16666667, 0.5, 0.9, 3.5};
+    }
+    else {
+        alphas =  {0.1, 0.4, 0.8, 2.5};
+    }
+    constexpr double bohr{0.52917721092};
+    double radius = bragg_radii[nuclear_charge - 1] / bohr;
+    for(size_t i = 0; i < num_radial; i++)
+    {
+        double scale = angular_grids(i) / radius;
+        size_t place;
+        for(place = 0; place < 4; place++)
+            if(scale <= alphas[place]) break;
+        angular_grids(i) = lebedev_grid_levels[lebedev_level[place]];
+    }
+    return angular_grids;
+}
+
+
 DFTGrid::DFTGrid(
         const libint2::BasisSet &basis,
         const std::vector<libint2::Atom> &atoms) : m_atomic_numbers(atoms.size()),

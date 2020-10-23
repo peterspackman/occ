@@ -105,8 +105,3 @@ TEST_CASE("gga", "[gga]") {
    // assert(all_close(expected_exc, res1.exc, 1e-6));
 }
 
-TEST_CASE("lebedev", "[grid]")
-{
-    auto grid = tonto::grid::lebedev(110);
-    fmt::print("grid:\n{}\n", grid);
-}

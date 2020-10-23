@@ -28,7 +28,7 @@ public:
 
 private:
     double m_radial_precision{1e-12};
-    size_t m_min_angular{86};
+    size_t m_min_angular{50};
     size_t m_max_angular{302};
     IVec m_l_max;
     Vec m_x;

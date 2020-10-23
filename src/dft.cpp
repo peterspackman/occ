@@ -24,8 +24,8 @@ DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::v
    m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(basis, atoms)
 {
     tonto::log::debug("start calculating atom grids... ");
-    m_grid.set_max_angular_points(530);
-    m_grid.set_min_angular_points(80);
+    m_grid.set_max_angular_points(302);
+    m_grid.set_min_angular_points(50);
     m_grid.set_radial_precision(1e-12);
     for(size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.grid_points(i));
