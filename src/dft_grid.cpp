@@ -86,13 +86,11 @@ tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_
     return angular_grids;
 }
 
-std::pair<tonto::Vec, tonto::Vec>
-generate_becke_radial_grid(size_t num_points, const double rm = 1.0)
+RadialGrid generate_becke_radial_grid(size_t num_points, double rm)
 {
     double pi_npt1 = M_PI / (num_points + 1);
     double rm3 = rm * rm * rm;
-    tonto::Vec points(num_points);
-    tonto::Vec weights(num_points);
+    RadialGrid result(num_points);
     for(size_t i = 1; i <= num_points; i++)
     {
         double radx = cos(i * pi_npt1);
@@ -100,40 +98,33 @@ generate_becke_radial_grid(size_t num_points, const double rm = 1.0)
         double tmp0 = pow(1 + radx, 2.5);
         double tmp1 = pow(1 - radx, 3.5);
         double radw = (2 * pi_npt1) * rm3 * tmp0 / tmp1;
-        points(num_points - i) = radr;
-        points(num_points - i) = radw;
+        result.points(num_points - i) = radr;
+        result.weights(num_points - i) = radw;
     }
-    return {points, weights};
+    return result;
 }
 
-std::pair<Mat3N, Vec>
-generate_atom_grid(size_t atomic_number)
+AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points, size_t radial_points)
 {
     const double rm = 1.0;
-    const size_t max_radial_points = 65;
-    const size_t max_angular_points = 302;
-    tonto::Mat3N points(3, max_radial_points * max_angular_points);
-    tonto::Vec weights(max_radial_points * max_angular_points);
+    AtomGrid result(radial_points * max_angular_points);
 
     size_t num_points = 0;
-    tonto::Vec radial_points, radial_weights;
-    size_t n_radial = max_radial_points;
+    size_t n_radial = radial_points;
     if(atomic_number <= 10) n_radial = 50;
     if(atomic_number <= 2) n_radial = 35;
-    std::tie(radial_points, radial_weights) = generate_becke_radial_grid(n_radial, rm);
-    tonto::IVec n_angular = prune_nwchem_scheme(atomic_number, max_angular_points, n_radial, radial_points);
+    RadialGrid radial = generate_becke_radial_grid(n_radial, rm);
+    tonto::IVec n_angular = prune_nwchem_scheme(atomic_number, max_angular_points, n_radial, radial.points);
     for(size_t i = 0; i < n_radial; i++)
     {
         auto lebedev = tonto::grid::lebedev(n_angular(i));
-        lebedev.leftCols(3) *= radial_points(i);
-        lebedev.col(4) *= 4 * M_PI;
-        points.block(0, num_points, lebedev.rows(), 3) = lebedev.leftCols(3);
-        weights.segment(num_points, num_points + lebedev.rows()) = lebedev.col(3);
+        result.points.block(0, num_points, 3, lebedev.rows()) = lebedev.leftCols(3).transpose() * radial.points(i);
+        result.weights.block(num_points, 0, lebedev.rows(), 1) = lebedev.col(3) * 4 * M_PI * radial.weights(i);
         num_points += lebedev.rows();
     }
-    points.conservativeResize(3, num_points);
-    weights.conservativeResize(num_points);
-    return {points, weights};
+    result.points.conservativeResize(3, num_points);
+    result.weights.conservativeResize(num_points);
+    return result;
 }
 
 DFTGrid::DFTGrid(

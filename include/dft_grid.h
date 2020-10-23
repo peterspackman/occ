@@ -1,6 +1,7 @@
 #pragma once
 #include "linear_algebra.h"
 #include "numgrid.h"
+#include <vector>
 
 namespace libint2 {
 class BasisSet;
@@ -37,5 +38,37 @@ private:
     IVec m_atomic_numbers;
     Vec m_alpha_max;
     MatRM m_alpha_min;
+};
+
+struct AtomGrid
+{
+    AtomGrid() {}
+    AtomGrid(size_t num_points) : points(3, num_points), weights(num_points) {}
+    uint_fast8_t atomic_number;
+    Mat3N points;
+    Vec weights;
+};
+
+struct RadialGrid
+{
+    RadialGrid() {}
+    RadialGrid(size_t num_points) : points(num_points), weights(num_points) {}
+    Vec points;
+    Vec weights;
+};
+
+tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii);
+RadialGrid generate_becke_radial_grid(size_t num_points, double rm = 1.0);
+AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points = 302, size_t radial_points = 65);
+
+class MolecularGrid
+{
+public:
+    MolecularGrid(const std::vector<libint2::Atom>&);
+
+private:
+    std::vector<AtomGrid> m_unique_atom_grids;
+    Mat3N m_points;
+    Vec m_weights;
 };
 }
