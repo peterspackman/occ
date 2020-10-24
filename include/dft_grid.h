@@ -44,6 +44,7 @@ struct AtomGrid
 {
     AtomGrid() {}
     AtomGrid(size_t num_points) : points(3, num_points), weights(num_points) {}
+    inline size_t num_points() const { return weights.size(); }
     uint_fast8_t atomic_number;
     Mat3N points;
     Vec weights;
@@ -53,12 +54,15 @@ struct RadialGrid
 {
     RadialGrid() {}
     RadialGrid(size_t num_points) : points(num_points), weights(num_points) {}
+    inline size_t num_points() const { return weights.size(); }
     Vec points;
     Vec weights;
 };
 
 tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii);
 RadialGrid generate_becke_radial_grid(size_t num_points, double rm = 1.0);
+RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge);
+RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points);
 AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points = 302, size_t radial_points = 65);
 
 class MolecularGrid

@@ -43,6 +43,77 @@ const std::array<double, 131> bragg_radii = {
     1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75
 };
 
+tonto::Vec becke_partition(const tonto::Vec &w)
+{
+    tonto::Vec result = w;
+    for(size_t i = 0; i < 3; i++)
+    {
+        result(i) = (3 - result(i) * result(i)) * result(i) * 0.5;
+    }
+    return result;
+}
+
+tonto::Vec stratmann_scuseria_partition(const tonto::Vec &w)
+{
+    tonto::Vec result;
+    constexpr double a = 0.64;
+    for(size_t i = 0; i < w.size(); i++)
+    {
+        double ma = w(i) / a;
+        double ma2 = ma * ma;
+        double det = ma/16 * (35 + ma2 * (-35 + ma2 * (21 - 5 * ma2)));
+        result(i) = (det <= a) ? -1 : 1;
+    }
+    return result;
+}
+
+tonto::Mat interatomic_distances(const std::vector<libint2::Atom> & atoms)
+{
+    size_t natoms = atoms.size();
+    tonto::Mat dists(natoms, natoms);
+    for (size_t i = 0; i < natoms; i++)
+    {
+        dists(i, i) = 0;
+        for(size_t j = i + 1; j < natoms; j++) 
+        {
+            double dx = atoms[i].x - atoms[j].x;
+            double dy = atoms[i].y - atoms[j].y;
+            double dz = atoms[i].z - atoms[j].z;
+            dists(i, j) = sqrt(dx*dx + dy*dy + dz*dz);
+            dists(j, i) = dists(i, j);
+        }
+    }
+    return dists;
+}
+
+AtomGrid partitioned_atom_grid(size_t atom_idx, const std::vector<libint2::Atom>& atoms, const AtomGrid &atom_type_grid)
+{
+    size_t natoms = atoms.size();
+    const tonto::Mat dists = interatomic_distances(atoms);
+    tonto::Vec3 center(atoms[atom_idx].x, atoms[atom_idx].y, atoms[atom_idx].z);
+    AtomGrid grid = atom_type_grid;
+    grid.points.colwise() += center;
+    tonto::Mat grid_dists(natoms, grid.num_points());
+    for(size_t i = 0; i < natoms; i++) 
+    {
+        tonto::Vec3 xyz(atoms[i].x, atoms[i].y, atoms[i].z);
+        grid_dists.row(i) = (grid.points.colwise() - xyz).colwise().norm();
+    }
+    tonto::Mat becke_weights = tonto::Mat::Ones(natoms, grid.num_points());
+    for(size_t i = 0; i < natoms; i++)
+    {
+        for(size_t j = 0; j < i; j++)
+        {
+            tonto::Vec w = (1 / dists(i, j)) * (grid_dists.row(i).array()  - grid_dists.row(j).array());
+            w = becke_partition(w);
+            becke_weights.row(i).array() *= 0.5 * (1 - w.array());
+            becke_weights.row(j).array() *= 0.5 * (1 + w.array());
+        }
+    }
+    grid.weights.array() *= becke_weights.row(atom_idx).array() * (1 / becke_weights.array().rowwise().sum());
+
+    return grid;
+}
 
 tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii)
 {
