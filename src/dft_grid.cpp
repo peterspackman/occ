@@ -86,6 +86,33 @@ tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_
     return angular_grids;
 }
 
+// Mura-Knowles [JCP 104, 9848 (1996) - doi:10.1063/1.471749] log3 quadrature
+RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge)
+{
+    RadialGrid result(num_points);
+    double far = 5.2;
+    switch(charge) {
+    case 3:
+    case 4:
+    case 11:
+    case 12:
+    case 19:
+    case 20:
+        far = 7;
+        break;
+    }
+    for(size_t i = 0; i < num_points; i++)
+    {
+        double x = (i + 0.5) / num_points;
+        double x2 = x * x;
+        double x3 = x2 * x;
+        result.points(i) = - far * std::log(1 - x3);
+        result.weights(i) = far * x2 / ((1 - x3) * num_points);
+    }
+    return result;
+}
+
+// Becke [JCP 88, 2547 (1988) - doi:10.1063/1.454033] quadrature
 RadialGrid generate_becke_radial_grid(size_t num_points, double rm)
 {
     double pi_npt1 = M_PI / (num_points + 1);
@@ -100,6 +127,24 @@ RadialGrid generate_becke_radial_grid(size_t num_points, double rm)
         double radw = (2 * pi_npt1) * rm3 * tmp0 / tmp1;
         result.points(num_points - i) = radr;
         result.weights(num_points - i) = radw;
+    }
+    return result;
+}
+
+// Treutler-Alrichs [JCP 102, 346 (1995) - doi:10.1063/1.469408] M4 quadrature
+RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points)
+{
+    RadialGrid result(num_points);
+    double step = M_PI / (num_points + 1);
+    double ln2 = 1 / std::log(2);
+    for(size_t i = 1; i <= num_points; i++)
+    {
+        double x = cos(i * step);
+        double tmp1 = ln2 * pow((1 + x), 0.6);
+        double tmp2 = std::log((1 - x) / 2);
+        result.points(num_points - i) = - tmp1 * tmp2;
+        result.weights(num_points - i) =
+            step * sin(i * step) * tmp1 * (-0.6 / (1 + x) * tmp2  + 1 / (1 - x));
     }
     return result;
 }
