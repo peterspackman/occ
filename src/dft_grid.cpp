@@ -211,6 +211,7 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points, siz
         result.weights.block(num_points, 0, lebedev.rows(), 1) = lebedev.col(3) * 4 * M_PI * radial.weights(i);
         num_points += lebedev.rows();
     }
+    result.atomic_number = atomic_number;
     result.points.conservativeResize(3, num_points);
     result.weights.conservativeResize(num_points);
     return result;
