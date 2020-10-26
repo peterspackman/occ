@@ -86,34 +86,7 @@ tonto::Mat interatomic_distances(const std::vector<libint2::Atom> & atoms)
     return dists;
 }
 
-AtomGrid partitioned_atom_grid(size_t atom_idx, const std::vector<libint2::Atom>& atoms, const AtomGrid &atom_type_grid)
-{
-    size_t natoms = atoms.size();
-    const tonto::Mat dists = interatomic_distances(atoms);
-    tonto::Vec3 center(atoms[atom_idx].x, atoms[atom_idx].y, atoms[atom_idx].z);
-    AtomGrid grid = atom_type_grid;
-    grid.points.colwise() += center;
-    tonto::Mat grid_dists(natoms, grid.num_points());
-    for(size_t i = 0; i < natoms; i++) 
-    {
-        tonto::Vec3 xyz(atoms[i].x, atoms[i].y, atoms[i].z);
-        grid_dists.row(i) = (grid.points.colwise() - xyz).colwise().norm();
-    }
-    tonto::Mat becke_weights = tonto::Mat::Ones(natoms, grid.num_points());
-    for(size_t i = 0; i < natoms; i++)
-    {
-        for(size_t j = 0; j < i; j++)
-        {
-            tonto::Vec w = (1 / dists(i, j)) * (grid_dists.row(i).array()  - grid_dists.row(j).array());
-            w = becke_partition(w);
-            becke_weights.row(i).array() *= 0.5 * (1 - w.array());
-            becke_weights.row(j).array() *= 0.5 * (1 + w.array());
-        }
-    }
-    grid.weights.array() *= becke_weights.row(atom_idx).array() * (1 / becke_weights.array().rowwise().sum());
 
-    return grid;
-}
 
 tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii)
 {
@@ -337,4 +310,66 @@ std::pair<Mat3N, Vec> DFTGrid::grid_points(size_t idx) const
     return {pts.transpose(), weights};
 }
 
+
+MolecularGrid::MolecularGrid(const std::vector<libint2::Atom> &atoms) : m_atomic_numbers(atoms.size()), m_positions(3, atoms.size())
+{
+    size_t natom = atoms.size();
+    std::vector<int> unique_atoms;
+    for(size_t i = 0; i < natom; i++) {
+        m_atomic_numbers(i) = atoms[i].atomic_number;
+        unique_atoms.push_back(atoms[i].atomic_number);
+        m_positions(0, i) = atoms[i].x;
+        m_positions(1, i) = atoms[i].y;
+        m_positions(2, i) = atoms[i].z;
+    }
+    std::sort(unique_atoms.begin(), unique_atoms.end());
+    unique_atoms.erase(std::unique(unique_atoms.begin(), unique_atoms.end()), unique_atoms.end());
+    fmt::print("Unique atoms:");
+    for(const auto& atom: unique_atoms) {
+        fmt::print(" {}", atom);
+        m_unique_atom_grids.emplace_back(generate_atom_grid(atom, m_angular_points, m_radial_points));
+    }
+    m_dists = interatomic_distances(atoms);
+    fmt::print("\n");
 }
+
+AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
+{
+
+    size_t natoms = n_atoms();
+    tonto::Vec3 center = m_positions.col(atom_idx);
+    const size_t atomic_number = m_atomic_numbers(atom_idx);
+    AtomGrid grid;
+    for(const auto& ugrid: m_unique_atom_grids) {
+        if (ugrid.atomic_number == m_atomic_numbers(atom_idx)) {
+            grid = ugrid;
+        }
+    }
+    if(grid.atomic_number < 0) throw std::runtime_error("Unique atom grids not calculated");
+
+    grid.points.colwise() += center;
+    tonto::Mat grid_dists(natoms, grid.num_points());
+    for(size_t i = 0; i < natoms; i++)
+    {
+        tonto::Vec3 xyz = m_positions.col(i);
+        grid_dists.row(i) = (grid.points.colwise() - xyz).colwise().norm();
+    }
+    tonto::Mat becke_weights = tonto::Mat::Ones(natoms, grid.num_points());
+    for(size_t i = 0; i < natoms; i++)
+    {
+        for(size_t j = 0; j < i; j++)
+        {
+            tonto::Vec w = (1 / m_dists(i, j)) * (grid_dists.row(i).array()  - grid_dists.row(j).array());
+            w = becke_partition(w);
+            becke_weights.row(i).array() *= 0.5 * (1 - w.array());
+            becke_weights.row(j).array() *= 0.5 * (1 + w.array());
+        }
+    }
+    grid.weights.array() *= becke_weights.row(atom_idx).array() * (1 / becke_weights.array().rowwise().sum());
+
+    return grid;
+}
+
+}
+
+

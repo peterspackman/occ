@@ -69,9 +69,18 @@ class MolecularGrid
 {
 public:
     MolecularGrid(const std::vector<libint2::Atom>&);
-
+    void set_angular_points(size_t n);
+    void set_radial_points(size_t n);
+    const auto n_atoms() const { return m_atomic_numbers.size(); }
+    AtomGrid generate_partitioned_atom_grid(size_t atom_idx) const;
 private:
+    tonto::IVec m_atomic_numbers;
+    Mat3N m_positions;
+    Mat m_dists;
     std::vector<AtomGrid> m_unique_atom_grids;
+    size_t m_angular_points{302};
+    size_t m_radial_points{65};
+    std::vector<std::pair<size_t, size_t>> m_grid_atom_blocks;
     Mat3N m_points;
     Vec m_weights;
 };
