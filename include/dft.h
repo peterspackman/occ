@@ -138,7 +138,9 @@ public:
         std::vector<tonto::MatRM> Kt(tonto::parallel::nthreads, tonto::Mat::Zero(D.rows(), D.cols()));
         std::vector<double> energies(tonto::parallel::nthreads, 0.0);
         const auto& funcs = m_funcs;
-        for(const auto& [atom_pts, atom_weights] : m_atom_grids) {
+        for(const auto& atom_grid : m_atom_grids) {
+            const auto& atom_pts = atom_grid.points;
+            const auto& atom_weights = atom_grid.weights;
             const size_t npt_total = atom_pts.cols();
             const size_t num_blocks = npt_total / BLOCKSIZE + 1;
 
@@ -245,7 +247,7 @@ public:
             tonto::parallel::parallel_do(lambda);
             //tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_e_alpha, m_e_alpha + exc);
         }
-
+        tonto::log::debug("Total density: alpha = {} beta = {}", total_density_a, total_density_b);
         for(size_t i = 0; i < nthreads; i++) {
             K += Kt[i];
             m_e_alpha += energies[i];
@@ -281,9 +283,9 @@ private:
 
     SpinorbitalKind m_spinorbital_kind;
     tonto::hf::HartreeFock m_hf;
-    DFTGrid m_grid;
+    MolecularGrid m_grid;
     std::vector<DensityFunctional> m_funcs;
-    std::vector<std::pair<tonto::Mat3N, tonto::Vec>> m_atom_grids;
+    std::vector<AtomGrid> m_atom_grids;
     mutable double m_e_alpha;
     mutable double m_e_beta;
 };

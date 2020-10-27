@@ -21,16 +21,16 @@ int DFT::density_derivative() const {
 }
 
 DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::vector<libint2::Atom>& atoms, SpinorbitalKind kind) :
-   m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(basis, atoms)
+   m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(atoms)
 {
     tonto::log::debug("start calculating atom grids... ");
-    m_grid.set_max_angular_points(302);
-    m_grid.set_min_angular_points(50);
-    m_grid.set_radial_precision(1e-12);
+//    m_grid.set_max_angular_points(302);
+//    m_grid.set_min_angular_points(50);
+//    m_grid.set_radial_precision(1e-12);
     for(size_t i = 0; i < atoms.size(); i++) {
-        m_atom_grids.push_back(m_grid.grid_points(i));
+        m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
-    size_t num_grid_points = std::accumulate(m_atom_grids.begin(), m_atom_grids.end(), 0.0, [&](double tot, const auto& grid) { return tot + grid.first.cols(); });
+    size_t num_grid_points = std::accumulate(m_atom_grids.begin(), m_atom_grids.end(), 0.0, [&](double tot, const auto& grid) { return tot + grid.points.cols(); });
     tonto::log::debug("finished calculating atom grids ({} points)", num_grid_points);
     tonto::log::debug("Grid initialization took {} seconds", tonto::timing::total(tonto::timing::grid_init));
     tonto::log::debug("Grid point creation took {} seconds", tonto::timing::total(tonto::timing::grid_points));

@@ -2,6 +2,7 @@
 #include <libint2/basis.h>
 #include <libint2/atom.h>
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include "logger.h"
 #include "timings.h"
 #include "lebedev.h"
@@ -19,7 +20,7 @@ const std::array<uint_fast16_t, 33> lebedev_grid_levels {
 };
 
 // Need to multiple by (1.0 / BOHR) to get the real RADII_BRAGG
-const std::array<double, 131> bragg_radii = {
+constexpr std::array<double, 131> bragg_radii = {
     0.35,                                     1.40,              // 1s
     1.45, 1.05, 0.85, 0.70, 0.65, 0.60, 0.50, 1.50,              // 2s2p
     1.80, 1.50, 1.25, 1.10, 1.00, 1.00, 1.00, 1.80,              // 3s3p
@@ -87,26 +88,30 @@ tonto::Mat interatomic_distances(const std::vector<libint2::Atom> & atoms)
 }
 
 
-
 tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii)
 {
-    std::array<int, 5> lebedev_level{4, 5, 5, 5, 4};
+    std::array<int, 5> lebedev_level;
     tonto::IVec angular_grids(num_radial);
     if(max_angular < 50) {
         angular_grids.setConstant(max_angular);
+        return angular_grids;
+    }
+    else if (max_angular == 50) {
+        lebedev_level = {5, 6, 6, 6, 5};
     }
     else {
         size_t i;
         for(i = 6; i < lebedev_grid_levels.size(); i++) {
             if(lebedev_grid_levels[i] == max_angular) break;
         }
+        lebedev_level[0] = 5;
         lebedev_level[1] = 6;
         lebedev_level[2] = i - 1;
         lebedev_level[3] = i;
-        lebedev_level[4] = i + 1;
+        lebedev_level[4] = i - 1;
     }
 
-    std::array<double, 4> alphas;
+    std::array<double, 4> alphas{0.1, 0.4, 0.8, 2.5};
     if(nuclear_charge <= 2) {
         alphas = {0.25, 0.5, 1.0, 4.5};
     }
@@ -114,20 +119,30 @@ tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_
     {
         alphas = {0.16666667, 0.5, 0.9, 3.5};
     }
-    else {
-        alphas =  {0.1, 0.4, 0.8, 2.5};
-    }
+
     constexpr double bohr{0.52917721092};
     double radius = bragg_radii[nuclear_charge - 1] / bohr;
     for(size_t i = 0; i < num_radial; i++)
     {
         double scale = radii(i) / radius;
-        size_t place;
-        for(place = 0; place < 4; place++)
-            if(scale <= alphas[place]) break;
+        size_t place = std::distance(
+            alphas.begin(),
+            std::find_if(alphas.begin(), alphas.end(),
+                         [scale](double x) { return x > scale; })
+        );
         angular_grids(i) = lebedev_grid_levels[lebedev_level[place]];
     }
     return angular_grids;
+}
+
+RadialGrid generate_gauss_chebyshev_radial_grid(size_t num_points)
+{
+    RadialGrid result(num_points);
+    result.points.setLinSpaced(num_points, 1, num_points * 2 - 1);
+    result.points.array() *= M_PI / (2 * num_points);
+    result.points.array() = result.points.array().cos();
+    result.weights.setConstant(M_PI / num_points);
+    return result;
 }
 
 // Mura-Knowles [JCP 104, 9848 (1996) - doi:10.1063/1.471749] log3 quadrature
@@ -151,7 +166,7 @@ RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge)
         double x2 = x * x;
         double x3 = x2 * x;
         result.points(i) = - far * std::log(1 - x3);
-        result.weights(i) = far * x2 / ((1 - x3) * num_points);
+        result.weights(i) = far * 3 * x2 / ((1 - x3) * num_points);
     }
     return result;
 }
@@ -159,18 +174,13 @@ RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge)
 // Becke [JCP 88, 2547 (1988) - doi:10.1063/1.454033] quadrature
 RadialGrid generate_becke_radial_grid(size_t num_points, double rm)
 {
-    double pi_npt1 = M_PI / (num_points + 1);
-    double rm3 = rm * rm * rm;
-    RadialGrid result(num_points);
-    for(size_t i = 1; i <= num_points; i++)
+    RadialGrid result = generate_gauss_chebyshev_radial_grid(num_points);
+    for(size_t i = 0; i < num_points; i++)
     {
-        double radx = cos(i * pi_npt1);
-        double radr = rm * (1 + radx) / (1 - radx);
-        double tmp0 = pow(1 + radx, 2.5);
-        double tmp1 = pow(1 - radx, 3.5);
-        double radw = (2 * pi_npt1) * rm3 * tmp0 / tmp1;
-        result.points(num_points - i) = radr;
-        result.weights(num_points - i) = radw;
+        double tp1 = 1 + result.points(i);
+        double tm1 = 1 - result.points(i);
+        result.points(i) = (tp1 / tm1) * rm;
+        result.weights(i) *= 2 / (tm1 * tm1) * rm;
     }
     return result;
 }
@@ -200,15 +210,17 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points, siz
 
     size_t num_points = 0;
     size_t n_radial = radial_points;
-    if(atomic_number <= 10) n_radial = 50;
-    if(atomic_number <= 2) n_radial = 35;
-    RadialGrid radial = generate_becke_radial_grid(n_radial, rm);
+    RadialGrid radial = generate_treutler_alrichs_radial_grid(n_radial);
+    //checked up to here
+    radial.weights.array() *= 4 * M_PI * radial.points.array() * radial.points.array();
     tonto::IVec n_angular = prune_nwchem_scheme(atomic_number, max_angular_points, n_radial, radial.points);
     for(size_t i = 0; i < n_radial; i++)
     {
         auto lebedev = tonto::grid::lebedev(n_angular(i));
-        result.points.block(0, num_points, 3, lebedev.rows()) = lebedev.leftCols(3).transpose() * radial.points(i);
-        result.weights.block(num_points, 0, lebedev.rows(), 1) = lebedev.col(3) * 4 * M_PI * radial.weights(i);
+        double r = radial.points(i);
+        double w = radial.weights(i);
+        result.points.block(0, num_points, 3, lebedev.rows()) = lebedev.leftCols(3).transpose() * r;
+        result.weights.block(num_points, 0, lebedev.rows(), 1) = lebedev.col(3) *  w;
         num_points += lebedev.rows();
     }
     result.atomic_number = atomic_number;
@@ -341,6 +353,7 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
     tonto::Vec3 center = m_positions.col(atom_idx);
     const size_t atomic_number = m_atomic_numbers(atom_idx);
     AtomGrid grid;
+    grid.atomic_number = -1;
     for(const auto& ugrid: m_unique_atom_grids) {
         if (ugrid.atomic_number == m_atomic_numbers(atom_idx)) {
             grid = ugrid;
@@ -349,24 +362,24 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
     if(grid.atomic_number < 0) throw std::runtime_error("Unique atom grids not calculated");
 
     grid.points.colwise() += center;
-    tonto::Mat grid_dists(natoms, grid.num_points());
+    tonto::Mat grid_dists(grid.num_points(), natoms);
     for(size_t i = 0; i < natoms; i++)
     {
         tonto::Vec3 xyz = m_positions.col(i);
-        grid_dists.row(i) = (grid.points.colwise() - xyz).colwise().norm();
+        grid_dists.col(i) = (grid.points.colwise() - xyz).colwise().norm();
     }
-    tonto::Mat becke_weights = tonto::Mat::Ones(natoms, grid.num_points());
+    tonto::Mat becke_weights = tonto::Mat::Ones(grid.num_points(), natoms);
     for(size_t i = 0; i < natoms; i++)
     {
         for(size_t j = 0; j < i; j++)
         {
-            tonto::Vec w = (1 / m_dists(i, j)) * (grid_dists.row(i).array()  - grid_dists.row(j).array());
+            tonto::Vec w = (1 / m_dists(i, j)) * (grid_dists.col(i).array()  - grid_dists.col(j).array());
             w = becke_partition(w);
-            becke_weights.row(i).array() *= 0.5 * (1 - w.array());
-            becke_weights.row(j).array() *= 0.5 * (1 + w.array());
+            becke_weights.col(i).array() *= 0.5 * (1 - w.array());
+            becke_weights.col(j).array() *= 0.5 * (1 + w.array());
         }
     }
-    grid.weights.array() *= becke_weights.row(atom_idx).array() * (1 / becke_weights.array().rowwise().sum());
+    grid.weights.array() *= becke_weights.col(atom_idx).array() * (1 / becke_weights.array().rowwise().sum());
 
     return grid;
 }
