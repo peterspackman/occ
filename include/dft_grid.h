@@ -64,12 +64,13 @@ RadialGrid generate_becke_radial_grid(size_t num_points, double rm = 1.0);
 RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge);
 RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points);
 RadialGrid generate_gauss_chebyshev_radial_grid(size_t num_points);
+RadialGrid generate_lmg_radial_grid(double radial_precision, double alpha_max, const tonto::Vec& alpha_min);
 AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points = 590, size_t radial_points = 82);
 
 class MolecularGrid
 {
 public:
-    MolecularGrid(const std::vector<libint2::Atom>&);
+    MolecularGrid(const libint2::BasisSet&, const std::vector<libint2::Atom>&);
     void set_angular_points(size_t n);
     void set_radial_points(size_t n);
     const auto n_atoms() const { return m_atomic_numbers.size(); }
@@ -84,5 +85,8 @@ private:
     std::vector<std::pair<size_t, size_t>> m_grid_atom_blocks;
     Mat3N m_points;
     Vec m_weights;
+    IVec m_l_max;
+    Vec m_alpha_max;
+    MatRM m_alpha_min;
 };
 }

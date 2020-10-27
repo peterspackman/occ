@@ -21,7 +21,7 @@ int DFT::density_derivative() const {
 }
 
 DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::vector<libint2::Atom>& atoms, SpinorbitalKind kind) :
-   m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(atoms)
+   m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(basis, atoms)
 {
     tonto::log::debug("start calculating atom grids... ");
 //    m_grid.set_max_angular_points(302);

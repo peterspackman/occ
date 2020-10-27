@@ -3,7 +3,7 @@
 #include "lebedev.h"
 #include "dft_grid.h"
 #include <fmt/ostream.h>
-#include <libint2/atom.h>
+#include <libint2/basis.h>
 #include "util.h"
 
 using tonto::util::all_close;
@@ -135,7 +135,8 @@ TEST_CASE("atom grid", "[grid]")
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.39839733}
     };
-    tonto::dft::MolecularGrid mgrid(atoms);
+    libint2::BasisSet basis("sto-3g", atoms);
+    tonto::dft::MolecularGrid mgrid(basis, atoms);
 
     auto grid = mgrid.generate_partitioned_atom_grid(0);
     //fmt::print("{}\n{}\n", grid.points, grid.atomic_number);

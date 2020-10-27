@@ -145,6 +145,121 @@ RadialGrid generate_gauss_chebyshev_radial_grid(size_t num_points)
     return result;
 }
 
+
+// TCA 106, 178 (2001), eq. 25
+// we evaluate r_inner for s functions
+double lmg_inner(const double max_error, const double alpha_inner)
+{
+    int m = 0;
+    double d = 1.9;
+
+    double r = d - std::log(1.0 / max_error);
+    r = r * 2.0 / (m + 3.0);
+    r = std::exp(r) / (alpha_inner);
+    r = std::sqrt(r);
+
+    return r;
+}
+
+// TCA 106, 178 (2001), eq. 19
+double lmg_outer(const double max_error,
+                   const double alpha_outer,
+                   const int l,
+                   const double guess)
+{
+    int m = 2 * l;
+    double r = guess;
+    double r_old = 1.0e50;
+    double c, a, e;
+    double step = 0.5;
+    double sign, sign_old;
+    double f = 1.0e50;
+
+    (f > max_error) ? (sign = 1.0) : (sign = -1.0);
+
+    while (std::fabs(r_old - r) > 1e-14)
+    {
+        c = tgamma((m + 3.0) / 2.0);
+        a = std::pow(alpha_outer * r * r, (m + 1.0) / 2.0);
+        e = std::exp(-alpha_outer * r * r);
+        f = c * a * e;
+
+        sign_old = sign;
+        (f > max_error) ? (sign = 1.0) : (sign = -1.0);
+        if (r < 0.0)
+            sign = 1.0;
+        if (sign != sign_old)
+            step *= 0.1;
+
+        r_old = r;
+        r += sign * step;
+    }
+
+    return r;
+}
+
+// TCA 106, 178 (2001), eqs. 17 and 18
+double lmg_h(const double max_error, const int l, const double guess)
+{
+    int m = 2 * l;
+    double h = guess;
+    double h_old = 1.0e50;
+    double step = 0.1 * guess;
+    double sign, sign_old;
+    double f = 1.0e50;
+    double c0, cm, p0, e0, pm, rd0;
+
+    (f > max_error) ? (sign = -1.0) : (sign = 1.0);
+
+    while (std::fabs(h_old - h) > 1e-14)
+    {
+        c0 = 4.0 * std::sqrt(2.0) * M_PI;
+        cm = tgamma(3.0 / 2.0) / tgamma((m + 3.0) / 2.0);
+        p0 = 1.0 / h;
+        e0 = std::exp(-M_PI * M_PI / (2.0 * h));
+        pm = std::pow(M_PI / h, m / 2.0);
+        rd0 = c0 * p0 * e0;
+        f = cm * pm * rd0;
+
+        sign_old = sign;
+        (f > max_error) ? (sign = -1.0) : (sign = 1.0);
+        if (h < 0.0)
+            sign = 1.0;
+        if (sign != sign_old)
+            step *= 0.1;
+
+        h_old = h;
+        h += sign * step;
+    }
+
+    return h;
+}
+
+RadialGrid generate_lmg_radial_grid(size_t atomic_number, double radial_precision, double alpha_max, size_t l_max, const tonto::Vec& alpha_min)
+{
+    double r_inner = lmg_inner(radial_precision, 2 * alpha_max);
+    double h = std::numeric_limits<double>::max();
+    double r_outer = 0.0;
+    double br = bragg_radii[atomic_number - 1];
+    for(size_t i = 0; i <= l_max; i++) {
+        if(alpha_min[i] > 0.0) {
+            r_outer = std::max(r_outer, lmg_outer(radial_precision, alpha_min(i), i, 4.0 * br));
+            assert(r_outer > r_inner);
+            h = std::min(h, lmg_h(radial_precision, i, 0.1 * (r_outer - r_inner)));
+        }
+    }
+
+    double c = r_inner / (std::exp(h) - 1.0);
+    size_t num_radial = static_cast<size_t>(std::log(1 + (r_outer / c))/h);
+    RadialGrid result(num_radial);
+    for(size_t i = 0; i < num_radial; i++)
+    {
+        result.points(i) = c * (std::exp((i + 1) * h) - 1.0);
+        result.weights(i) = (result.points(i) + c) * h;
+    }
+    return result;
+}
+
 // Mura-Knowles [JCP 104, 9848 (1996) - doi:10.1063/1.471749] log3 quadrature
 RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge)
 {
@@ -211,7 +326,6 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points, siz
     size_t num_points = 0;
     size_t n_radial = radial_points;
     RadialGrid radial = generate_treutler_alrichs_radial_grid(n_radial);
-    //checked up to here
     radial.weights.array() *= 4 * M_PI * radial.points.array() * radial.points.array();
     tonto::IVec n_angular = prune_nwchem_scheme(atomic_number, max_angular_points, n_radial, radial.points);
     for(size_t i = 0; i < n_radial; i++)
@@ -324,26 +438,56 @@ std::pair<Mat3N, Vec> DFTGrid::grid_points(size_t idx) const
 }
 
 
-MolecularGrid::MolecularGrid(const std::vector<libint2::Atom> &atoms) : m_atomic_numbers(atoms.size()), m_positions(3, atoms.size())
+MolecularGrid::MolecularGrid(const libint2::BasisSet &basis, const std::vector<libint2::Atom> &atoms) :
+    m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()), m_alpha_max(atoms.size()), m_l_max(atoms.size()),
+    m_alpha_min(basis.max_l() + 1, atoms.size())
 {
     size_t natom = atoms.size();
     std::vector<int> unique_atoms;
+    const auto atom_map = basis.atom2shell(atoms);
     for(size_t i = 0; i < natom; i++) {
         m_atomic_numbers(i) = atoms[i].atomic_number;
         unique_atoms.push_back(atoms[i].atomic_number);
         m_positions(0, i) = atoms[i].x;
         m_positions(1, i) = atoms[i].y;
         m_positions(2, i) = atoms[i].z;
+        std::vector<double> atom_min_alpha;
+        double max_alpha = 0.0;
+        int max_l = 0;
+        for(const auto& shell_idx: atom_map[i])
+        {
+            const auto& shell = basis[shell_idx];
+            int j = 0;
+            for (const auto& contraction: shell.contr) {
+                int l = contraction.l;
+                max_l = std::max(max_l, l);
+                j++;
+            }
+
+            for (int i = atom_min_alpha.size(); i < max_l + 1; i++) {
+                atom_min_alpha.push_back(std::numeric_limits<double>::max());
+            }
+            j = 0;
+            for (const auto& contraction: shell.contr) {
+                int l = contraction.l;
+                atom_min_alpha[l] = std::min(shell.alpha[j], atom_min_alpha[l]);
+                j++;
+            }
+
+            for(const double alpha: shell.alpha) {
+                max_alpha = std::max(alpha, max_alpha);
+            }
+        }
+        for(int l = 0; l <= max_l; l++) m_alpha_min(l, i) = atom_min_alpha[l];
+        m_alpha_max(i) = max_alpha;
+        m_l_max(i) = max_l;
     }
     std::sort(unique_atoms.begin(), unique_atoms.end());
     unique_atoms.erase(std::unique(unique_atoms.begin(), unique_atoms.end()), unique_atoms.end());
-    fmt::print("Unique atoms:");
     for(const auto& atom: unique_atoms) {
-        fmt::print(" {}", atom);
         m_unique_atom_grids.emplace_back(generate_atom_grid(atom, m_angular_points, m_radial_points));
     }
     m_dists = interatomic_distances(atoms);
-    fmt::print("\n");
 }
 
 AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
