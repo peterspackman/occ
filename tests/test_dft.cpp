@@ -14,29 +14,6 @@
 #include "util.h"
 #include "lebedev.h"
 
-TEST_CASE("Water DFT grid", "[dft]")
-{
-
-    std::vector<libint2::Atom> atoms{
-        {8, -1.32695761, -0.10593856, 0.01878821},
-        {1, -1.93166418, 1.60017351, -0.02171049},
-        {1, 0.48664409, 0.07959806, 0.00986248}
-    };
-    libint2::BasisSet basis("3-21G", atoms);
-
-    SECTION("Grid generation", "[grid]") {
-        tonto::dft::DFTGrid grid(basis, atoms);
-        grid.set_min_angular_points(12);
-        grid.set_max_angular_points(20);
-        auto [pts, weights] = grid.grid_points(0);
-        REQUIRE(pts.cols() == 1564);
-        auto [hpts_a, weights_a] = grid.grid_points(1);
-        auto [hpts_b, weights_b] = grid.grid_points(1);
-        REQUIRE(hpts_a.cols() == hpts_b.cols());
-    }
-
-}
-
 TEST_CASE("Density Functional", "[lda]") {
     tonto::dft::DensityFunctional lda("xc_lda_x");
     tonto::dft::DensityFunctional lda_u("xc_lda_x", true);

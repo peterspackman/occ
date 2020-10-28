@@ -19,6 +19,20 @@ const std::array<uint_fast16_t, 33> lebedev_grid_levels {
     4802, 5294, 5810
 };
 
+
+uint_fast16_t angular_order(uint_fast16_t n)
+{
+    for (int i = 0; i < 33; i++)
+    {
+        auto m = lebedev_grid_levels[i];
+        if (m >= n) return m;
+    }
+
+    throw std::runtime_error("Request number of angular points too exceeds 5810");
+    // unreachable
+    return 1;
+}
+
 // Need to multiple by (1.0 / BOHR) to get the real RADII_BRAGG
 constexpr std::array<double, 131> bragg_radii = {
     0.35,                                     1.40,              // 1s
@@ -49,16 +63,16 @@ tonto::Vec becke_partition(const tonto::Vec &w)
     tonto::Vec result = w;
     for(size_t i = 0; i < 3; i++)
     {
-        result(i) = (3 - result(i) * result(i)) * result(i) * 0.5;
+        result.array() = (3 - result.array() * result.array()) * result.array() * 0.5;
     }
     return result;
 }
 
 tonto::Vec stratmann_scuseria_partition(const tonto::Vec &w)
 {
-    tonto::Vec result;
+    tonto::Vec result(w.rows());
     constexpr double a = 0.64;
-    for(size_t i = 0; i < w.size(); i++)
+    for(size_t i = 0; i < w.rows(); i++)
     {
         double ma = w(i) / a;
         double ma2 = ma * ma;
@@ -133,6 +147,27 @@ tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_
         angular_grids(i) = lebedev_grid_levels[lebedev_level[place]];
     }
     return angular_grids;
+}
+
+tonto::IVec prune_numgrid_scheme(size_t atomic_number, size_t max_angular, size_t min_angular, const tonto::Vec &radii)
+{
+    tonto::IVec result(radii.rows());
+    constexpr double bohr{0.52917721092};
+    double rb = bragg_radii[atomic_number - 1] / (5 * bohr);
+    for(int i = 0; i < radii.rows(); i++)
+    {
+        double r = radii(i);
+        size_t num_angular = max_angular;
+        if (r < rb)
+        {
+            num_angular = static_cast<size_t>(max_angular * (r / rb));
+            num_angular = angular_order(num_angular);
+            if (num_angular < min_angular)
+                num_angular = min_angular;
+        }
+        result(i) = num_angular;
+    }
+    return result;
 }
 
 RadialGrid generate_gauss_chebyshev_radial_grid(size_t num_points)
@@ -238,24 +273,36 @@ double lmg_h(const double max_error, const int l, const double guess)
 RadialGrid generate_lmg_radial_grid(size_t atomic_number, double radial_precision, double alpha_max, size_t l_max, const tonto::Vec& alpha_min)
 {
     double r_inner = lmg_inner(radial_precision, 2 * alpha_max);
-    double h = std::numeric_limits<double>::max();
+    double h = std::numeric_limits<float>::max();
     double r_outer = 0.0;
     double br = bragg_radii[atomic_number - 1];
-    for(size_t i = 0; i <= l_max; i++) {
+    for(int i = 0; i <= l_max; i++) {
         if(alpha_min[i] > 0.0) {
-            r_outer = std::max(r_outer, lmg_outer(radial_precision, alpha_min(i), i, 4.0 * br));
+            r_outer = std::max(
+                r_outer,
+                lmg_outer(
+                    radial_precision,
+                    alpha_min(i),
+                    i, 4.0 * br
+                )
+            );
             assert(r_outer > r_inner);
-            h = std::min(h, lmg_h(radial_precision, i, 0.1 * (r_outer - r_inner)));
+            h = std::min(
+                h,
+                lmg_h(radial_precision, i, 0.1 * (r_outer - r_inner))
+            );
         }
     }
-
+    assert(r_outer > h);
     double c = r_inner / (std::exp(h) - 1.0);
-    size_t num_radial = static_cast<size_t>(std::log(1 + (r_outer / c))/h);
+    size_t num_radial = static_cast<int>(std::log(1.0 + (r_outer / c)) / h);
+    fmt::print("alpha_min =\n{}\n alpha_max = {} num_radial = {}\n", alpha_min, alpha_max, num_radial);
     RadialGrid result(num_radial);
-    for(size_t i = 0; i < num_radial; i++)
+    for(int i = 0; i < num_radial; i++)
     {
-        result.points(i) = c * (std::exp((i + 1) * h) - 1.0);
-        result.weights(i) = (result.points(i) + c) * h;
+        double r = c * (std::exp((i + 1) * h) - 1.0);
+        result.points(i) = r;
+        result.weights(i) = (result.points(i) + c) * h * r * r;
     }
     return result;
 }
@@ -343,101 +390,6 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points, siz
     return result;
 }
 
-DFTGrid::DFTGrid(
-        const libint2::BasisSet &basis,
-        const std::vector<libint2::Atom> &atoms) : m_atomic_numbers(atoms.size()),
-    m_alpha_max(atoms.size()), m_l_max(atoms.size()), m_x(atoms.size()), m_y(atoms.size()),
-    m_z(atoms.size())
-{
-    int i = 0;
-    tonto::timing::start(tonto::timing::category::grid_init);
-    const auto atom_map = basis.atom2shell(atoms);
-
-    std::vector<std::vector<double>> min_alpha;
-    for(const auto &atom : atoms) {
-        m_atomic_numbers(i) = atom.atomic_number;
-        m_x(i) = atom.x;
-        m_y(i) = atom.y;
-        m_z(i) = atom.z;
-        std::vector<double> atom_min_alpha;
-        double max_alpha = 0.0;
-        int max_l = 0;
-        for(const auto& shell_idx: atom_map[i])
-        {
-            const auto& shell = basis[shell_idx];
-            int j = 0;
-            for (const auto& contraction: shell.contr) {
-                int l = contraction.l;
-                max_l = std::max(max_l, l);
-                j++;
-            }
-
-            for (int i = atom_min_alpha.size(); i < max_l + 1; i++) {
-                atom_min_alpha.push_back(std::numeric_limits<double>::max());
-            }
-            j = 0;
-            for (const auto& contraction: shell.contr) {
-                int l = contraction.l;
-                atom_min_alpha[l] = std::min(shell.alpha[j], atom_min_alpha[l]);
-                j++;
-            }
-
-            for(const double alpha: shell.alpha) {
-                max_alpha = std::max(alpha, max_alpha);
-            }
-        }
-        min_alpha.push_back(atom_min_alpha);
-        m_alpha_max(i) = max_alpha;
-        m_l_max(i) = max_l;
-        i++;
-    }
-    m_alpha_min = tonto::Mat::Zero(atoms.size(), m_l_max.maxCoeff() + 1);
-    for(size_t i = 0; i < min_alpha.size(); i++) {
-        for(size_t j = 0; j < min_alpha[i].size(); j++) {
-            m_alpha_min(i, j) = min_alpha[i][j];
-        }
-    }
-    tonto::timing::stop(tonto::timing::category::grid_init);
-}
-
-std::pair<Mat3N, Vec> DFTGrid::grid_points(size_t idx) const
-{
-    tonto::timing::start(tonto::timing::category::grid_points);
-    assert(idx < m_atomic_numbers.size());
-    context_t *ctx = numgrid_new_atom_grid(
-        m_radial_precision,
-        m_min_angular, m_max_angular,
-        m_atomic_numbers(idx),
-        m_alpha_max(idx),
-        m_l_max(idx),
-        m_alpha_min.row(idx).data()
-    );
-    tonto::log::debug("Context created");
-    int num_points = numgrid_get_num_grid_points(ctx);
-
-    Mat pts(num_points, 3);
-    Vec weights(num_points);
-    numgrid_get_grid(
-        ctx,
-        n_atoms(),
-        idx,
-        m_x.data(),
-        m_y.data(),
-        m_z.data(),
-        m_atomic_numbers.data(),
-        pts.col(0).data(),
-        pts.col(1).data(),
-        pts.col(2).data(),
-        weights.data()
-    );
-    tonto::log::debug("Grid points assigned");
-
-    numgrid_free_atom_grid(ctx);
-    tonto::timing::stop(tonto::timing::category::grid_points);
-    return {pts.transpose(), weights};
-}
-
-
 MolecularGrid::MolecularGrid(const libint2::BasisSet &basis, const std::vector<libint2::Atom> &atoms) :
     m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()), m_alpha_max(atoms.size()), m_l_max(atoms.size()),
     m_alpha_min(basis.max_l() + 1, atoms.size())
@@ -485,7 +437,7 @@ MolecularGrid::MolecularGrid(const libint2::BasisSet &basis, const std::vector<l
     std::sort(unique_atoms.begin(), unique_atoms.end());
     unique_atoms.erase(std::unique(unique_atoms.begin(), unique_atoms.end()), unique_atoms.end());
     for(const auto& atom: unique_atoms) {
-        m_unique_atom_grids.emplace_back(generate_atom_grid(atom, m_angular_points, m_radial_points));
+        m_unique_atom_grids.emplace_back(generate_lmg_atom_grid(atom));
     }
     m_dists = interatomic_distances(atoms);
 }
@@ -513,19 +465,70 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
         grid_dists.col(i) = (grid.points.colwise() - xyz).colwise().norm();
     }
     tonto::Mat becke_weights = tonto::Mat::Ones(grid.num_points(), natoms);
+    constexpr double bohr{0.52917721092};
     for(size_t i = 0; i < natoms; i++)
     {
+        double r_i = bragg_radii[m_atomic_numbers(i) - 1] / bohr;
         for(size_t j = 0; j < i; j++)
         {
-            tonto::Vec w = (1 / m_dists(i, j)) * (grid_dists.col(i).array()  - grid_dists.col(j).array());
+            double r_j = bragg_radii[m_atomic_numbers(j) - 1] / bohr;
+            tonto::Vec w = (grid_dists.col(i).array()  - grid_dists.col(j).array()) / m_dists(i, j);
+            if(std::fabs(r_i - r_j) > 1e-14) {
+                double xi = sqrt(r_i / r_j);
+                double u_ij = (xi - 1) / (xi + 1);
+                double a_ij = u_ij / (u_ij * u_ij - 1.0);
+                w.array() += a_ij * (1 - w.array() * w.array());
+            }
             w = becke_partition(w);
-            becke_weights.col(i).array() *= 0.5 * (1 - w.array());
-            becke_weights.col(j).array() *= 0.5 * (1 + w.array());
+            for(size_t idx = 0; idx < w.rows(); idx++)
+            {
+                double v = w(idx);
+                if(std::fabs(1.0 - v) < 1e-14) {
+                    becke_weights(idx, i) = 0.0;
+                }
+                else {
+                    becke_weights(idx, i) *= 0.5 * (1.0 - v);
+                    becke_weights(idx, j) *= 0.5 * (1.0 + v);
+                }
+            }
         }
     }
-    grid.weights.array() *= becke_weights.col(atom_idx).array() * (1 / becke_weights.array().rowwise().sum());
+    grid.weights.array() *= becke_weights.col(atom_idx).array() / becke_weights.array().rowwise().sum();
 
     return grid;
+}
+
+AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number, size_t max_angular_points, double radial_precision)
+{
+    size_t num_points = 0;
+    size_t atom_idx;
+    for(atom_idx = 0; atom_idx < n_atoms(); ++atom_idx)
+    {
+        if(m_atomic_numbers(atom_idx) == atomic_number) break;
+    }
+    assert(atom_idx < n_atoms());
+    double alpha_max = m_alpha_max(atom_idx);
+    size_t l_max = m_l_max(atom_idx);
+    const tonto::Vec& alpha_min = m_alpha_min.col(atom_idx);
+    RadialGrid radial = generate_lmg_radial_grid(atomic_number, radial_precision, alpha_max, l_max, alpha_min);
+    size_t n_radial = radial.points.rows();
+    fmt::print("Num radial points: {}\n", n_radial);
+    AtomGrid result(n_radial * max_angular_points);
+    radial.weights.array() *= 4 * M_PI;
+    tonto::IVec n_angular = prune_numgrid_scheme(atomic_number, max_angular_points, m_min_angular, radial.points);
+    for(size_t i = 0; i < n_radial; i++)
+    {
+        auto lebedev = tonto::grid::lebedev(n_angular(i));
+        double r = radial.points(i);
+        double w = radial.weights(i);
+        result.points.block(0, num_points, 3, lebedev.rows()) = lebedev.leftCols(3).transpose() * r;
+        result.weights.block(num_points, 0, lebedev.rows(), 1) = lebedev.col(3) *  w;
+        num_points += lebedev.rows();
+    }
+    result.atomic_number = atomic_number;
+    result.points.conservativeResize(3, num_points);
+    result.weights.conservativeResize(num_points);
+    return result;
 }
 
 }

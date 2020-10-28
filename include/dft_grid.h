@@ -17,29 +17,6 @@ using tonto::Vec;
 using tonto::IVec;
 using tonto::MatRM;
 
-class DFTGrid {
-public:
-    DFTGrid(const libint2::BasisSet&, const std::vector<libint2::Atom>&);
-    const auto& atomic_numbers() const { return m_atomic_numbers; }
-    const auto n_atoms() const { return m_atomic_numbers.size(); }
-    std::pair<Mat3N, Vec> grid_points(size_t idx) const;
-    void set_radial_precision(double prec) { m_radial_precision = prec; }
-    void set_min_angular_points(size_t n) { m_min_angular = n; }
-    void set_max_angular_points(size_t n) { m_max_angular = n; }
-
-private:
-    double m_radial_precision{1e-12};
-    size_t m_min_angular{50};
-    size_t m_max_angular{302};
-    IVec m_l_max;
-    Vec m_x;
-    Vec m_y;
-    Vec m_z;
-    IVec m_atomic_numbers;
-    Vec m_alpha_max;
-    MatRM m_alpha_min;
-};
-
 struct AtomGrid
 {
     AtomGrid() {}
@@ -60,6 +37,7 @@ struct RadialGrid
 };
 
 tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii);
+tonto::IVec prune_numgrid_scheme(size_t nuclear_charge, size_t max_angular, size_t min_angular, const tonto::Vec& radii);
 RadialGrid generate_becke_radial_grid(size_t num_points, double rm = 1.0);
 RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge);
 RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points);
@@ -75,12 +53,14 @@ public:
     void set_radial_points(size_t n);
     const auto n_atoms() const { return m_atomic_numbers.size(); }
     AtomGrid generate_partitioned_atom_grid(size_t atom_idx) const;
+    AtomGrid generate_lmg_atom_grid(size_t atomic_number, size_t max_angular_points = 590, double radial_precision = 1e-12);
 private:
     tonto::IVec m_atomic_numbers;
     Mat3N m_positions;
     Mat m_dists;
     std::vector<AtomGrid> m_unique_atom_grids;
-    size_t m_angular_points{302};
+    size_t m_max_angular{302};
+    size_t m_min_angular{50};
     size_t m_radial_points{65};
     std::vector<std::pair<size_t, size_t>> m_grid_atom_blocks;
     Mat3N m_points;
