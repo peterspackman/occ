@@ -68,6 +68,7 @@ public:
     double two_electron_energy_alpha() const { return m_e_alpha; }
     double two_electron_energy_beta() const { return m_e_beta; }
     bool usual_scf_energy() const { return false; }
+    bool supports_incremental_fock_build() const { return false; }
 
     int density_derivative() const;
     double exact_exchange_factor() const {

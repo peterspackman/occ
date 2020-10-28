@@ -1,8 +1,6 @@
 #include "dft_grid.h"
 #include <libint2/basis.h>
 #include <libint2/atom.h>
-#include <fmt/core.h>
-#include <fmt/ostream.h>
 #include "logger.h"
 #include "timings.h"
 #include "lebedev.h"
@@ -296,7 +294,6 @@ RadialGrid generate_lmg_radial_grid(size_t atomic_number, double radial_precisio
     assert(r_outer > h);
     double c = r_inner / (std::exp(h) - 1.0);
     size_t num_radial = static_cast<int>(std::log(1.0 + (r_outer / c)) / h);
-    fmt::print("alpha_min =\n{}\n alpha_max = {} num_radial = {}\n", alpha_min, alpha_max, num_radial);
     RadialGrid result(num_radial);
     for(int i = 0; i < num_radial; i++)
     {
@@ -394,6 +391,7 @@ MolecularGrid::MolecularGrid(const libint2::BasisSet &basis, const std::vector<l
     m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()), m_alpha_max(atoms.size()), m_l_max(atoms.size()),
     m_alpha_min(basis.max_l() + 1, atoms.size())
 {
+    tonto::timing::start(tonto::timing::category::grid_init);
     size_t natom = atoms.size();
     std::vector<int> unique_atoms;
     const auto atom_map = basis.atom2shell(atoms);
@@ -440,11 +438,12 @@ MolecularGrid::MolecularGrid(const libint2::BasisSet &basis, const std::vector<l
         m_unique_atom_grids.emplace_back(generate_lmg_atom_grid(atom));
     }
     m_dists = interatomic_distances(atoms);
+    tonto::timing::stop(tonto::timing::category::grid_init);
 }
 
 AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
 {
-
+    tonto::timing::start(tonto::timing::category::grid_points);
     size_t natoms = n_atoms();
     tonto::Vec3 center = m_positions.col(atom_idx);
     const size_t atomic_number = m_atomic_numbers(atom_idx);
@@ -496,7 +495,7 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
         }
     }
     grid.weights.array() *= becke_weights.col(atom_idx).array() / becke_weights.array().rowwise().sum();
-
+    tonto::timing::stop(tonto::timing::category::grid_points);
     return grid;
 }
 
@@ -514,7 +513,6 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number, size_t max_
     const tonto::Vec& alpha_min = m_alpha_min.col(atom_idx);
     RadialGrid radial = generate_lmg_radial_grid(atomic_number, radial_precision, alpha_max, l_max, alpha_min);
     size_t n_radial = radial.points.rows();
-    fmt::print("Num radial points: {}\n", n_radial);
     AtomGrid result(n_radial * max_angular_points);
     radial.weights.array() *= 4 * M_PI;
     tonto::IVec n_angular = prune_numgrid_scheme(atomic_number, max_angular_points, m_min_angular, radial.points);

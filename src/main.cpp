@@ -10,6 +10,7 @@
 #include "gemmi/version.hpp"
 #include "boost/version.hpp"
 #include "dft.h"
+#include <spdlog/cfg/env.h>
 
 void print_header()
 {
@@ -27,33 +28,32 @@ void print_header()
     fmt::print(R"(
 
 
-               ,d                               ,d
-               88                               88
-             MM88MMM  ,adPPYba,   8b,dPPYba,  MM88MMM  ,adPPYba,
-               88    a8"     "8a  88P'   `"8a   88    a8"     "8a
-               88    8b       d8  88       88   88    8b       d8
-               88,   "8a,   ,a8"  88       88   88,   "8a,   ,a8"
-               "Y888  `"YbbdP"'   88       88   "Y888  `"YbbdP"'
+   ,d                               ,d
+   88                               88
+ MM88MMM  ,adPPYba,   8b,dPPYba,  MM88MMM  ,adPPYba,
+   88    a8"     "8a  88P'   `"8a   88    a8"     "8a
+   88    8b       d8  88       88   88    8b       d8
+   88,   "8a,   ,a8"  88       88   88,   "8a,   ,a8"
+   "Y888  `"YbbdP"'   88       88   "Y888  `"YbbdP"'
 
 
+Copyright (C) 2020
+Peter Spackman - Primary Developer
+Dylan Jayatilaka
 
-               Copyright (C) 2020
-               Peter Spackman - Primary Developer
-               Dylan Jayatilaka
+This version of tonto also uses the following third party libraries:
 
-               This version of tonto also uses the following third party libraries:
+eigen        - Linear Algebra (v {})
+libint2      - Electron integrals using GTOs (v {})
+libxc        - Density functional implementations (v {})
+gemmi        - CIF parsing & structure refinement (v {})
+boost::graph - Graph implementation (v {})
+OpenMP       - Multithreading
+fmt          - String formatting (v {})
+spdlog       - Logging (v {})
 
-               eigen        - Linear Algebra (v {})
-               libint2      - Electron integrals using GTOs (v {})
-               libxc        - Density functional implementations (v {})
-               gemmi        - CIF parsing & structure refinement (v {})
-               boost::graph - Graph implementation (v {})
-               OpenMP       - Multithreading
-               fmt          - String formatting (v {})
-               spdlog       - Logging (v {})
-
-               )", eigen_version_string, libint_version_string, xc_version_string,
-               gemmi_version_string, boost_version_string, fmt_version_string, spdlog_version_string);
+)", eigen_version_string, libint_version_string, xc_version_string,
+    gemmi_version_string, boost_version_string, fmt_version_string, spdlog_version_string);
 }
 
 
@@ -93,6 +93,7 @@ int main(int argc, const char **argv) {
             .default_value(false)
             .implicit_value(true);
 
+
     parser.add_argument("-df", "--df-basis").help("Density fitting basis name");
 
     tonto::log::set_level(tonto::log::level::debug);
@@ -104,6 +105,7 @@ int main(int argc, const char **argv) {
         fmt::print("{}", parser);
         exit(1);
     }
+    spdlog::set_level(spdlog::level::info);
 
     print_header();
 
