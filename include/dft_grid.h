@@ -1,6 +1,5 @@
 #pragma once
 #include "linear_algebra.h"
-#include "numgrid.h"
 #include <vector>
 
 namespace libint2 {

@@ -473,6 +473,8 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
         {
             double r_j = bragg_radii[m_atomic_numbers(j) - 1] / bohr;
             tonto::Vec w = (grid_dists.col(i).array()  - grid_dists.col(j).array()) / m_dists(i, j);
+
+            // treutler alrichs adjustment to bragg radii
             if(std::fabs(r_i - r_j) > 1e-14) {
                 double xi = sqrt(r_i / r_j);
                 double u_ij = (xi - 1) / (xi + 1);

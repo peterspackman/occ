@@ -32,7 +32,6 @@ target_link_libraries(tonto
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
     Libint2::cxx ${LAPACK_LIBRARIES}
     Libxc::xc
-    numgrid-objects
 )
 target_include_directories(tonto PUBLIC 
     ${TONTO_INCLUDE_DIR} 
