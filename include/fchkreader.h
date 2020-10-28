@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include "linear_algebra.h"
+#include <libint2/basis.h>
 
 namespace tonto::io {
 
@@ -19,6 +20,7 @@ public:
         std::vector<double> primitive_exponents;
         std::vector<double> contraction_coefficients;
         std::vector<double> shell_coordinates;
+        void print();
     };
 
     enum LineLabel {
@@ -76,6 +78,10 @@ public:
     inline auto beta_mo_energies() const {
         return Eigen::Map<const tonto::Vec, 0>(m_beta_mo_energies.data(), m_beta_mo_energies.size());
     }
+
+    std::vector<libint2::Atom> atoms() const;
+
+    libint2::BasisSet libint_basis() const;
 
 private:
     void parse(std::istream&);

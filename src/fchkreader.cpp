@@ -158,4 +158,60 @@ void FchkReader::parse(std::istream& stream)
     }
 }
 
+std::vector<libint2::Atom> FchkReader::atoms() const {
+    std::vector<libint2::Atom> atoms;
+    atoms.reserve(m_atomic_numbers.size());
+    for(size_t i = 0; i < m_atomic_numbers.size(); i++)
+    {
+        atoms.emplace_back(libint2::Atom{m_atomic_numbers[i], m_atomic_positions[3*i], m_atomic_positions[3*i + 1], m_atomic_positions[3*i + 2]});
+    }
+    return atoms;
+}
+
+libint2::BasisSet FchkReader::libint_basis() const {
+    size_t num_shells = m_basis.num_shells;
+    libint2::BasisSet basis_set;
+    size_t primitive_offset;
+    for(size_t i = 0; i < num_shells; i++) {
+        int l = m_basis.shell_types[i];
+        bool pure = true;
+        size_t nprim = m_basis.primitives_per_shell[i];
+        libint2::svector<double> alpha(nprim);
+        libint2::svector<double> coeffs(nprim);
+        std::array<double, 3> position;
+        std::copy(m_basis.contraction_coefficients.begin() + primitive_offset, m_basis.contraction_coefficients.begin() + primitive_offset + nprim, coeffs.begin());
+        std::copy(m_basis.primitive_exponents.begin() + primitive_offset, m_basis.primitive_exponents.begin() + primitive_offset + nprim, alpha.begin());
+        std::copy(m_basis.shell_coordinates.begin() + 3 * i, m_basis.shell_coordinates.begin() + 3 * (i + 1), position.begin());
+        libint2::Shell::Contraction c{l, pure, coeffs};
+        basis_set.emplace_back(libint2::Shell(alpha, {c}, position));
+        primitive_offset += nprim;
+    }
+    return basis_set;
+}
+
+void FchkReader::FchkBasis::print()
+{
+    size_t contraction_offset{0};
+    size_t primitive_offset{0};
+    for(size_t i = 0; i < num_shells; i++) {
+        fmt::print("Shell {} on atom {}\n", i, shell2atom[i] - 1);
+        fmt::print("Position: {:10.5f} {:10.5f} {:10.5f}\n", shell_coordinates[3 * i], shell_coordinates[3 * i + 1], shell_coordinates[3 * i + 2]);
+        fmt::print("Angular momentum: {}\n", shell_types[i]);
+        size_t num_primitives = primitives_per_shell[i];
+        fmt::print("Primitives Gaussians: {}\n", num_primitives);
+        fmt::print("Primitive exponents:");
+        for(size_t i = 0; i < num_primitives; i++) {
+            fmt::print(" {}", primitive_exponents[primitive_offset]);
+            primitive_offset++;
+        }
+        fmt::print("\n");
+        fmt::print("Contraction coefficients:");
+        for(size_t i = 0; i < num_primitives; i++) {
+            fmt::print(" {}", contraction_coefficients[contraction_offset]);
+            contraction_offset++;
+        }
+        fmt::print("\n");
+    }
+}
+
 }

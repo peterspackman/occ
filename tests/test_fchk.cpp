@@ -179,4 +179,7 @@ TEST_CASE("H2 fchk", "[read]")
     fmt::print("Alpha MO energies:\n{}\n", reader.alpha_mo_energies());
     fmt::print("Positions:\n{}\n", reader.atomic_positions());
     REQUIRE(reader.basis().primitive_exponents[0] == Approx(3.42525091));
+
+    tonto::io::FchkReader::FchkBasis basis = reader.basis();
+    basis.print();
 }
