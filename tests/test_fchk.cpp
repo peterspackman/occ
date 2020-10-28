@@ -1,6 +1,7 @@
 #include "catch.hpp"
 #include "fchkreader.h"
 #include <sstream>
+#include <fmt/ostream.h>
 
 const char* fchk_contents = R"(h2
 SP        RB3LYP                                                      STO-3G
@@ -174,4 +175,7 @@ TEST_CASE("H2 fchk", "[read]")
     tonto::io::FchkReader reader(fchk);
     REQUIRE(reader.num_alpha() == 1);
     REQUIRE(reader.num_basis_functions() == 2);
+    fmt::print("Alpha MOs:\n{}\n", reader.alpha_mo_coefficients());
+    fmt::print("Alpha MO energies:\n{}\n", reader.alpha_mo_energies());
+    fmt::print("Positions:\n{}\n", reader.atomic_positions());
 }
