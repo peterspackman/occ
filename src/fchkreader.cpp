@@ -68,6 +68,14 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string& line) const
     if(startswith(lt, "Beta MO coefficients", false)) return BetaMO;
     if(startswith(lt, "Alpha Orbital Energies", false)) return AlphaMOEnergies;
     if(startswith(lt, "Alpha Orbital Energies", false)) return BetaMOEnergies;
+    if(startswith(lt, "Number of contracted shells", false)) return NumShells;
+    if(startswith(lt, "Number of primitive shells", false)) return NumPrimitiveShells;
+    if(startswith(lt, "Shell types", false)) return ShellTypes;
+    if(startswith(lt, "Number of primitives per shell", false)) return PrimitivesPerShell;
+    if(startswith(lt, "Shell to atom map", false)) return ShellToAtomMap;
+    if(startswith(lt, "Primitive exponents", false)) return PrimitiveExponents;
+    if(startswith(lt, "Contraction coefficients", false)) return ContractionCoefficients;
+    if(startswith(lt, "Coordinates of each shell", false)) return ShellCoordinates;
     return Unknown;
 }
 
@@ -114,6 +122,36 @@ void FchkReader::parse(std::istream& stream)
         case BetaMOEnergies:
             scn::scan(line, "Alpha Orbital Energies R N= {}", count);
             read_matrix_block<double>(stream, m_beta_mo_energies, count);
+            break;
+        case NumShells:
+            scn::scan(line, "Number of contracted shells I {}", m_basis.num_shells);
+            break;
+        case NumPrimitiveShells:
+            scn::scan(line, "Number of primitive shells I {}", m_basis.num_primitives);
+            break;
+        case ShellTypes:
+            scn::scan(line, "Shell types I N= {}", count);
+            read_matrix_block<int>(stream, m_basis.shell_types, count);
+            break;
+        case PrimitivesPerShell:
+            scn::scan(line, "Number of primitives per shell I N= {}", count);
+            read_matrix_block<int>(stream, m_basis.primitives_per_shell, count);
+            break;
+        case ShellToAtomMap:
+            scn::scan(line, "Shell to atom map I N= {}", count);
+            read_matrix_block<int>(stream, m_basis.shell2atom, count);
+            break;
+        case PrimitiveExponents:
+            scn::scan(line, "Primitive exponents R N= {}", count);
+            read_matrix_block<double>(stream, m_basis.primitive_exponents, count);
+            break;
+        case ContractionCoefficients:
+            scn::scan(line, "Contraction coefficients R N= {}", count);
+            read_matrix_block<double>(stream, m_basis.contraction_coefficients, count);
+            break;
+        case ShellCoordinates:
+            scn::scan(line, "Coordinates of each shell R N= {}", count);
+            read_matrix_block<double>(stream, m_basis.shell_coordinates, count);
             break;
         default: continue;
         }

@@ -9,19 +9,38 @@ namespace tonto::io {
 class FchkReader
 {
 public:
-    enum LineLabel {
-      Unknown,
-      NumElectrons,
-      AtomicNumbers,
-      AtomicPositions,
-      NumBasisFunctions,
-      NumAlpha,
-      NumBeta,
-      AlphaMO,
-      BetaMO,
-      AlphaMOEnergies,
-      BetaMOEnergies,
 
+    struct FchkBasis {
+        size_t num_shells;
+        size_t num_primitives;
+        std::vector<int> shell_types;
+        std::vector<int> primitives_per_shell;
+        std::vector<int> shell2atom;
+        std::vector<double> primitive_exponents;
+        std::vector<double> contraction_coefficients;
+        std::vector<double> shell_coordinates;
+    };
+
+    enum LineLabel {
+        Unknown,
+        NumElectrons,
+        AtomicNumbers,
+        AtomicPositions,
+        NumBasisFunctions,
+        NumAlpha,
+        NumBeta,
+        AlphaMO,
+        BetaMO,
+        AlphaMOEnergies,
+        BetaMOEnergies,
+        ShellToAtomMap,
+        PrimitiveExponents,
+        ContractionCoefficients,
+        ShellCoordinates,
+        PrimitivesPerShell,
+        NumShells,
+        NumPrimitiveShells,
+        ShellTypes,
     };
 
     FchkReader(const std::string& filename);
@@ -75,6 +94,7 @@ private:
     std::vector<double> m_alpha_mo_energies;
     std::vector<double> m_beta_mos;
     std::vector<double> m_beta_mo_energies;
+    FchkBasis m_basis;
 };
 
 }
