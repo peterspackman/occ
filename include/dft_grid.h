@@ -52,7 +52,7 @@ public:
     void set_radial_points(size_t n);
     const auto n_atoms() const { return m_atomic_numbers.size(); }
     AtomGrid generate_partitioned_atom_grid(size_t atom_idx) const;
-    AtomGrid generate_lmg_atom_grid(size_t atomic_number, size_t max_angular_points = 590, double radial_precision = 1e-12);
+    AtomGrid generate_lmg_atom_grid(size_t atomic_number, size_t max_angular_points = 302, double radial_precision = 1e-12);
 private:
     tonto::IVec m_atomic_numbers;
     Mat3N m_positions;

@@ -137,6 +137,8 @@ public:
 
         std::vector<tonto::MatRM> Kt(tonto::parallel::nthreads, tonto::Mat::Zero(D.rows(), D.cols()));
         std::vector<double> energies(tonto::parallel::nthreads, 0.0);
+        std::vector<double> alpha_densities(tonto::parallel::nthreads, 0.0);
+        std::vector<double> beta_densities(tonto::parallel::nthreads, 0.0);
         const auto& funcs = m_funcs;
         for(const auto& atom_grid : m_atom_grids) {
             const auto& atom_pts = atom_grid.points;
@@ -160,14 +162,14 @@ public:
 
                     if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
                         params.rho.col(0) = rho.col(0);
-                        total_density_a += rho.col(0).dot(weights_block);
+                        alpha_densities[thread_id] += rho.col(0).dot(weights_block);
                     }
                     else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
                         // correct assignment
                         params.rho.col(0) = rho.alpha().col(0);
                         params.rho.col(1) = rho.beta().col(0);
-                        total_density_a += rho.alpha().col(0).dot(weights_block);
-                        total_density_b += rho.beta().col(0).dot(weights_block);
+                        alpha_densities[thread_id] += rho.alpha().col(0).dot(weights_block);
+                        beta_densities[thread_id] += rho.beta().col(0).dot(weights_block);
                     }
 
 
@@ -247,11 +249,13 @@ public:
             tonto::parallel::parallel_do(lambda);
             //tonto::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_e_alpha, m_e_alpha + exc);
         }
-        tonto::log::debug("Total density: alpha = {} beta = {}", total_density_a, total_density_b);
         for(size_t i = 0; i < nthreads; i++) {
             K += Kt[i];
             m_e_alpha += energies[i];
+            total_density_a += alpha_densities[i];
+            total_density_b += beta_densities[i];
         }
+        tonto::log::debug("Total density: alpha = {} beta = {}", total_density_a, total_density_b);
         m_e_alpha += exc + ecoul;
         F += K;
         return F;
