@@ -51,6 +51,8 @@ public:
     inline auto num_alpha() const { return m_num_alpha; }
     inline auto num_beta() const { return m_num_beta; }
 
+    inline const auto basis() const { return m_basis; }
+
     inline auto atomic_numbers() const {
         return Eigen::Map<const tonto::IVec, 0>(m_atomic_numbers.data(), m_atomic_numbers.size());
     }
