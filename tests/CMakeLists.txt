@@ -8,8 +8,10 @@ endfunction()
 
 create_catch_test(test_dft.cpp)
 create_catch_test(test_element.cpp)
+create_catch_test(test_fchk.cpp)
+create_catch_test(test_grid.cpp)
+create_catch_test(test_gto.cpp)
 create_catch_test(test_scf.cpp)
 create_catch_test(test_space_group.cpp)
 create_catch_test(test_symmetry_operation.cpp)
-create_catch_test(test_gto.cpp)
-create_catch_test(test_grid.cpp)
+

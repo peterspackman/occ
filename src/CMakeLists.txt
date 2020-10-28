@@ -7,12 +7,14 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gto.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
@@ -32,6 +34,7 @@ target_link_libraries(tonto
     OpenMP::OpenMP_CXX ${BLAS_LIBRARIES}
     Libint2::cxx ${LAPACK_LIBRARIES}
     Libxc::xc
+    scn::scn
 )
 target_include_directories(tonto PUBLIC 
     ${TONTO_INCLUDE_DIR} 
