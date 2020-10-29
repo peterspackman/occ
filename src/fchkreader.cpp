@@ -1,7 +1,7 @@
 #include "fchkreader.h"
 #include "util.h"
 #include <scn/scn.h>
-#include <fmt/core.h>
+#include <fmt/ostream.h>
 
 namespace tonto::io {
 
@@ -10,7 +10,7 @@ using tonto::qm::BasisSet;
 
 
 template<typename T>
-void read_matrix_block(std::istream& stream, std::vector<T>& destination, size_t count, size_t values_per_line = 5)
+void read_matrix_block(std::istream& stream, std::vector<T>& destination, size_t count)
 {
     destination.reserve(count);
     std::string line;
@@ -284,7 +284,7 @@ tonto::MatRM FchkReader::scf_density_matrix() const
     tonto::MatRM dm(nbf, nbf);
     size_t idx = 0;
     for(size_t i = 0; i < nbf; i++) {
-        for(size_t j = i; j < nbf; j++) {
+        for(size_t j = 0; j <= i; j++) {
             if(i != j) dm(j, i) = m_scf_density[idx];
             dm(i, j) = m_scf_density[idx];
             idx++;

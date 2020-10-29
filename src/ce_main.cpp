@@ -67,6 +67,7 @@ int main(int argc, const char **argv) {
     tonto::MatRM DA = 0.5 * fchk_a.scf_density_matrix();
     tonto::MatRM DB = 0.5 * fchk_b.scf_density_matrix();
     tonto::log::info("Finished reading SCF density matrices");
+    fmt::print("DA:\n{}\nDB:\n{}\n", DA, DB);
     tonto::log::info("Matrices are the same: {}", all_close(DA, DB, 1e-05));
     tonto::hf::HartreeFock hf_a(fchk_a.atoms(), fchk_a.basis_set());
     tonto::hf::HartreeFock hf_b(fchk_b.atoms(), fchk_b.basis_set());
