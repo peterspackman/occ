@@ -76,6 +76,7 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string& line) const
     if(startswith(lt, "Shell to atom map", false)) return ShellToAtomMap;
     if(startswith(lt, "Primitive exponents", false)) return PrimitiveExponents;
     if(startswith(lt, "Contraction coefficients", false)) return ContractionCoefficients;
+    if(startswith(lt, "P(S=P) Contraction coefficients", false)) return SPContractionCoefficients;
     if(startswith(lt, "Coordinates of each shell", false)) return ShellCoordinates;
     if(startswith(lt, "Total SCF Density", false)) return SCFDensity;
     if(startswith(lt, "Total MP2 Density", false)) return MP2Density;
@@ -153,6 +154,10 @@ void FchkReader::parse(std::istream& stream)
             scn::scan(line, "Contraction coefficients R N= {}", count);
             read_matrix_block<double>(stream, m_basis.contraction_coefficients, count);
             break;
+        case SPContractionCoefficients:
+            scn::scan(line, "P(S=P) Contraction coefficients R N= {}", count);
+            read_matrix_block<double>(stream, m_basis.sp_contraction_coefficients, count);
+            break;
         case ShellCoordinates:
             scn::scan(line, "Coordinates of each shell R N= {}", count);
             read_matrix_block<double>(stream, m_basis.shell_coordinates, count);
@@ -184,23 +189,30 @@ BasisSet FchkReader::basis_set() const {
     size_t num_shells = m_basis.num_shells;
     BasisSet bs;
     size_t primitive_offset{0};
+    constexpr int SP_SHELL{-1};
     for(size_t i = 0; i < num_shells; i++) {
         // shell types: 0=s, 1=p, -1=sp, 2=6d, -2=5d, 3=10f, -3=7f
         int shell_type = m_basis.shell_types[i];
-
         int l = std::abs(shell_type);
         // normally shell type < -1 will be pure
         auto pure = false;
+
         size_t nprim = m_basis.primitives_per_shell[i];
-        libint2::svector<double> alpha;
-        libint2::svector<double> coeffs;
-        std::array<double, 3> position;
-        for(size_t prim = 0; prim < nprim; prim++) {
-            alpha.emplace_back(m_basis.primitive_exponents[primitive_offset + prim]);
-            coeffs.emplace_back(m_basis.contraction_coefficients[primitive_offset + prim]);
-        }
-        std::copy(m_basis.shell_coordinates.begin() + 3 * i, m_basis.shell_coordinates.begin() + 3 * (i + 1), position.begin());
-        if(shell_type == -1) {
+        std::array<double, 3> position{
+            m_basis.shell_coordinates[3 * i],
+            m_basis.shell_coordinates[3 * i + 1],
+            m_basis.shell_coordinates[3 * i + 2],
+        };
+
+        if(shell_type == SP_SHELL) {
+            libint2::svector<double> alpha;
+            libint2::svector<double> coeffs;
+            libint2::svector<double> pcoeffs;
+            for(size_t prim = 0; prim < nprim; prim++) {
+                alpha.emplace_back(m_basis.primitive_exponents[primitive_offset + prim]);
+                coeffs.emplace_back(m_basis.contraction_coefficients[primitive_offset + prim]);
+                pcoeffs.emplace_back(m_basis.sp_contraction_coefficients[primitive_offset + prim]);
+            }
             //sp shell
             bs.emplace_back(libint2::Shell{
                                 std::move(alpha),
@@ -212,12 +224,18 @@ BasisSet FchkReader::basis_set() const {
             bs.emplace_back(libint2::Shell{
                                 std::move(alpha),
                                 {
-                                    {l, pure, std::move(coeffs)},
+                                    {1, pure, std::move(pcoeffs)},
                                 },
                                 {std::move(position)}
                             });
         }
         else {
+            libint2::svector<double> alpha;
+            libint2::svector<double> coeffs;
+            for(size_t prim = 0; prim < nprim; prim++) {
+                alpha.emplace_back(m_basis.primitive_exponents[primitive_offset + prim]);
+                coeffs.emplace_back(m_basis.contraction_coefficients[primitive_offset + prim]);
+            }
             bs.emplace_back(libint2::Shell{
                                 std::move(alpha),
                                 {

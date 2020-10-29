@@ -19,6 +19,7 @@ public:
         std::vector<int> shell2atom;
         std::vector<double> primitive_exponents;
         std::vector<double> contraction_coefficients;
+        std::vector<double> sp_contraction_coefficients;
         std::vector<double> shell_coordinates;
         void print();
     };
@@ -38,6 +39,7 @@ public:
         ShellToAtomMap,
         PrimitiveExponents,
         ContractionCoefficients,
+        SPContractionCoefficients,
         ShellCoordinates,
         PrimitivesPerShell,
         NumShells,
