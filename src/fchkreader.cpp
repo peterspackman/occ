@@ -215,11 +215,11 @@ BasisSet FchkReader::basis_set() const {
             }
             //sp shell
             bs.emplace_back(libint2::Shell{
-                                std::move(alpha),
+                                alpha,
                                 {
                                     {0, pure, std::move(coeffs)},
                                 },
-                                {std::move(position)}
+                                {position}
                             });
             bs.emplace_back(libint2::Shell{
                                 std::move(alpha),
