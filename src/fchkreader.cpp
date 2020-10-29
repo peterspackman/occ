@@ -189,7 +189,8 @@ BasisSet FchkReader::basis_set() const {
         int shell_type = m_basis.shell_types[i];
 
         int l = std::abs(shell_type);
-        auto pure = (l > 1) && (shell_type < 0);
+        // normally shell type < -1 will be pure
+        auto pure = false;
         size_t nprim = m_basis.primitives_per_shell[i];
         libint2::svector<double> alpha;
         libint2::svector<double> coeffs;
@@ -205,7 +206,13 @@ BasisSet FchkReader::basis_set() const {
                                 std::move(alpha),
                                 {
                                     {0, pure, std::move(coeffs)},
-                                    {l, pure, std::move(coeffs)}
+                                },
+                                {std::move(position)}
+                            });
+            bs.emplace_back(libint2::Shell{
+                                std::move(alpha),
+                                {
+                                    {l, pure, std::move(coeffs)},
                                 },
                                 {std::move(position)}
                             });
@@ -254,7 +261,7 @@ tonto::MatRM FchkReader::scf_density_matrix() const
 {
 
     size_t nbf{num_basis_functions()};
-    assert(nbf * (nbf - 1) == m_scf_density.size());
+    assert(nbf * (nbf + 1) / 2 == m_scf_density.size());
     tonto::MatRM dm(nbf, nbf);
     size_t idx = 0;
     for(size_t i = 0; i < nbf; i++) {

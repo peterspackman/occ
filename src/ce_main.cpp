@@ -3,8 +3,13 @@
 #include "fchkreader.h"
 #include <fmt/ostream.h>
 #include "hf.h"
+#include "spinorbital.h"
+#include "element.h"
 
 using tonto::io::FchkReader;
+using tonto::qm::SpinorbitalKind;
+using tonto::qm::expectation;
+using tonto::chem::Element;
 
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("ce");
@@ -13,6 +18,11 @@ int main(int argc, const char **argv) {
 
     parser.add_argument("--model")
             .default_value(std::string("ce-b3lyp"));
+    parser.add_argument("-j", "--threads")
+            .help("Number of threads")
+            .default_value(1)
+            .action([](const std::string& value) { return std::stoi(value); });
+
 
     tonto::log::set_level(tonto::log::level::debug);
     try {
@@ -23,17 +33,60 @@ int main(int argc, const char **argv) {
         fmt::print("{}", parser);
         exit(1);
     }
+
+    using tonto::parallel::nthreads;
+    nthreads = parser.get<int>("--threads");
+    omp_set_num_threads(nthreads);
+
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
+
+    SpinorbitalKind kind_a = SpinorbitalKind::Restricted;
+    SpinorbitalKind kind_b = SpinorbitalKind::Restricted;
 
     const std::string fchk_filename_a = parser.get<std::string>("fchk_a");
     const std::string fchk_filename_b = parser.get<std::string>("fchk_b");
     FchkReader fchk_a(fchk_filename_a);
-    tonto::log::info("Opened fchk file: {}", fchk_filename_a);
+    tonto::log::info("Parsed fchk file: {}", fchk_filename_a);
+    fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_a, "sym", "x", "y", "z");
+    for (const auto &atom : fchk_a.atoms()) {
+        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
+                   atom.x, atom.y, atom.z);
+    }
     FchkReader fchk_b(fchk_filename_b);
-    tonto::log::info("Opened fchk file: {}", fchk_filename_b);
+    tonto::log::info("Parsed fchk file: {}", fchk_filename_b);
+    fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_b, "sym", "x", "y", "z");
+    for (const auto &atom : fchk_b.atoms()) {
+        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
+                   atom.x, atom.y, atom.z);
+    }
+    tonto::MatRM DA = 0.5 * fchk_a.scf_density_matrix();
+    tonto::MatRM DB = 0.5 * fchk_b.scf_density_matrix();
+    tonto::log::info("Finished reading SCF density matrices");
 
     tonto::hf::HartreeFock hf_a(fchk_a.atoms(), fchk_a.basis_set());
     tonto::hf::HartreeFock hf_b(fchk_b.atoms(), fchk_b.basis_set());
 
+    tonto::MatRM JA, KA, JB, KB, VA, VB, TA, TB, HA, HB;
+    VA = hf_a.compute_nuclear_attraction_matrix();
+    TA = hf_a.compute_kinetic_matrix();
+    HA = VA + TA;
+    tonto::log::info("Computed core hamiltonian for A, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, HA));
+    VB = hf_b.compute_nuclear_attraction_matrix();
+    TB = hf_b.compute_kinetic_matrix();
+    HB = VB + TB;
+    tonto::log::info("Computed core hamiltonian for B, energy = {}", expectation<SpinorbitalKind::Restricted>(DB, HB));
+    std::tie(JA, KA) = hf_a.compute_JK(kind_a, DA);
+    tonto::log::info("Computed JK matrices for molecule A");
+    tonto::log::info("Coulomb: {}, Exchange: {}",
+        expectation<SpinorbitalKind::Restricted>(DA, JA),
+        expectation<SpinorbitalKind::Restricted>(DA, KA)
+    );
+
+    std::tie(JB, KB) = hf_a.compute_JK(kind_b, DB);
+    tonto::log::info("Computed JK matrices for molecule B");
+    tonto::log::info("Coulomb: {}, Exchange: {}",
+        expectation<SpinorbitalKind::Restricted>(DB, JB),
+        expectation<SpinorbitalKind::Restricted>(DB, KB)
+    );
 }
