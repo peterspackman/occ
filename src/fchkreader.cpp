@@ -171,7 +171,7 @@ std::vector<libint2::Atom> FchkReader::atoms() const {
 libint2::BasisSet FchkReader::libint_basis() const {
     size_t num_shells = m_basis.num_shells;
     libint2::BasisSet basis_set;
-    size_t primitive_offset;
+    size_t primitive_offset{0};
     for(size_t i = 0; i < num_shells; i++) {
         int l = m_basis.shell_types[i];
         bool pure = true;
