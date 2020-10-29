@@ -173,18 +173,48 @@ BasisSet FchkReader::basis_set() const {
     size_t num_shells = m_basis.num_shells;
     BasisSet bs;
     size_t primitive_offset{0};
+    bool force_cartesian_d = false;
     for(size_t i = 0; i < num_shells; i++) {
-        int l = m_basis.shell_types[i];
-        bool pure = true;
+        // shell types: 0=s, 1=p, -1=sp, 2=6d, -2=5d, 3=10f, -3=7f
+        int shell_type = m_basis.shell_types[i];
+
+        int l = std::abs(shell_type);
+        auto pure = (l > 1) && (shell_type < 0);
         size_t nprim = m_basis.primitives_per_shell[i];
-        libint2::svector<double> alpha(nprim);
-        libint2::svector<double> coeffs(nprim);
+        libint2::svector<double> alpha;
+        libint2::svector<double> coeffs;
         std::array<double, 3> position;
-        std::copy(m_basis.contraction_coefficients.begin() + primitive_offset, m_basis.contraction_coefficients.begin() + primitive_offset + nprim, coeffs.begin());
-        std::copy(m_basis.primitive_exponents.begin() + primitive_offset, m_basis.primitive_exponents.begin() + primitive_offset + nprim, alpha.begin());
+        for(size_t prim = 0; prim < nprim; prim++) {
+            alpha.emplace_back(m_basis.primitive_exponents[primitive_offset + prim]);
+            coeffs.emplace_back(m_basis.contraction_coefficients[primitive_offset + prim]);
+        }
         std::copy(m_basis.shell_coordinates.begin() + 3 * i, m_basis.shell_coordinates.begin() + 3 * (i + 1), position.begin());
-        libint2::Shell::Contraction c{l, pure, coeffs};
-        bs.emplace_back(libint2::Shell(alpha, {c}, position));
+        if(shell_type == -1) {
+            //sp shell
+            bs.emplace_back(libint2::Shell{
+                                std::move(alpha),
+                                {
+                                    {0, pure, std::move(coeffs)}
+                                },
+                                {std::move(position)}
+                            });
+            bs.emplace_back(libint2::Shell{
+                                std::move(alpha),
+                                {
+                                    {l, pure, std::move(coeffs)}
+                                },
+                                {std::move(position)}
+                            });
+        }
+        else {
+            bs.emplace_back(libint2::Shell{
+                                std::move(alpha),
+                                {
+                                    {l, pure, std::move(coeffs)}
+                                },
+                                {std::move(position)}
+                            });
+        }
         primitive_offset += nprim;
     }
     bs.update();

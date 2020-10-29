@@ -71,7 +71,7 @@ class BasisSet : public std::vector<libint2::Shell> {
       m_nbf(other.m_nbf),
       m_max_nprim(other.m_max_nprim),
       m_max_l(other.m_max_l),
-      shell2bf_(std::move(other.shell2bf_))
+      m_shell2bf(std::move(other.m_shell2bf))
     {
     }
     ~BasisSet() = default;
@@ -203,7 +203,7 @@ class BasisSet : public std::vector<libint2::Shell> {
     /// @return the map from shell index to index of the first basis function from this shell
     /// \note basis functions are ordered as shells, i.e. shell2bf[i] >= shell2bf[j] iff i >= j
     const std::vector<size_t>& shell2bf() const {
-      return shell2bf_;
+      return m_shell2bf;
     }
     /// Computes the map from this object's shells to the corresponding atoms in \c atoms. If no atom matches the origin of a shell, it is mapped to -1.
     /// @note coordinates must match \em exactly , i.e. shell2atom[k] == l iff atoms[l].x == *this[k].O[0] && atoms[l].y == *this[k].O[1] &&  atoms[l].z == *this[k].O[2]
@@ -261,7 +261,7 @@ class BasisSet : public std::vector<libint2::Shell> {
       m_nbf = tonto::qm::nbf(*this);
       m_max_nprim = tonto::qm::max_nprim(*this);
       m_max_l = tonto::qm::max_l(*this);
-      shell2bf_ = compute_shell2bf(*this);
+      m_shell2bf = compute_shell2bf(*this);
     }
 
   private:
@@ -269,7 +269,7 @@ class BasisSet : public std::vector<libint2::Shell> {
     long m_nbf;
     size_t m_max_nprim;
     int m_max_l;
-    std::vector<size_t> shell2bf_;
+    std::vector<size_t> m_shell2bf;
 
 
 

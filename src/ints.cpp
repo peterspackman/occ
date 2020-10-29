@@ -101,7 +101,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     const auto &buf = engine.results();
 
     // loop over permutationally-unique set of shells
-    for (auto s1 = 0l, s12 = 0l; s1 != nsh1; ++s1) {
+    for (size_t s1 = 0, s12 = 0; s1 != nsh1; ++s1) {
       mx.lock();
       if (splist.find(s1) == splist.end())
         splist.insert(std::make_pair(s1, std::vector<size_t>()));
@@ -110,7 +110,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
       auto n1 = bs1[s1].size(); // number of basis functions in this shell
 
       auto s2_max = bs1_equiv_bs2 ? s1 : nsh2 - 1;
-      for (auto s2 = 0; s2 <= s2_max; ++s2, ++s12) {
+      for (size_t s2 = 0; s2 <= s2_max; ++s2, ++s12) {
         if (s12 % nthreads != thread_id)
           continue;
 
