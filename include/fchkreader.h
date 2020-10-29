@@ -21,7 +21,7 @@ public:
         std::vector<double> contraction_coefficients;
         std::vector<double> sp_contraction_coefficients;
         std::vector<double> shell_coordinates;
-        void print();
+        void print() const;
     };
 
     enum LineLabel {

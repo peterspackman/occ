@@ -5,11 +5,13 @@
 #include "hf.h"
 #include "spinorbital.h"
 #include "element.h"
+#include "util.h"
 
 using tonto::io::FchkReader;
 using tonto::qm::SpinorbitalKind;
 using tonto::qm::expectation;
 using tonto::chem::Element;
+using tonto::util::all_close;
 
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("ce");
@@ -53,6 +55,7 @@ int main(int argc, const char **argv) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                    atom.x, atom.y, atom.z);
     }
+    fchk_a.basis().print();
     FchkReader fchk_b(fchk_filename_b);
     tonto::log::info("Parsed fchk file: {}", fchk_filename_b);
     fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_b, "sym", "x", "y", "z");
@@ -60,20 +63,25 @@ int main(int argc, const char **argv) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                    atom.x, atom.y, atom.z);
     }
+    fchk_b.basis().print();
     tonto::MatRM DA = 0.5 * fchk_a.scf_density_matrix();
     tonto::MatRM DB = 0.5 * fchk_b.scf_density_matrix();
     tonto::log::info("Finished reading SCF density matrices");
-
+    tonto::log::info("Matrices are the same: {}", all_close(DA, DB, 1e-05));
     tonto::hf::HartreeFock hf_a(fchk_a.atoms(), fchk_a.basis_set());
     tonto::hf::HartreeFock hf_b(fchk_b.atoms(), fchk_b.basis_set());
 
     tonto::MatRM JA, KA, JB, KB, VA, VB, TA, TB, HA, HB;
     VA = hf_a.compute_nuclear_attraction_matrix();
+    tonto::log::info("Computed nuclear attraction for B, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, VA));
     TA = hf_a.compute_kinetic_matrix();
+    tonto::log::info("Computed kinetic energy for B, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, TA));
     HA = VA + TA;
     tonto::log::info("Computed core hamiltonian for A, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, HA));
     VB = hf_b.compute_nuclear_attraction_matrix();
+    tonto::log::info("Computed nuclear attraction for B, energy = {}", expectation<SpinorbitalKind::Restricted>(DB, VB));
     TB = hf_b.compute_kinetic_matrix();
+    tonto::log::info("Computed kinetic energy for B, energy = {}", expectation<SpinorbitalKind::Restricted>(DB, TB));
     HB = VB + TB;
     tonto::log::info("Computed core hamiltonian for B, energy = {}", expectation<SpinorbitalKind::Restricted>(DB, HB));
     std::tie(JA, KA) = hf_a.compute_JK(kind_a, DA);

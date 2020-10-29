@@ -14,7 +14,7 @@ void read_matrix_block(std::istream& stream, std::vector<T>& destination, size_t
 {
     destination.reserve(count);
     std::string line;
-    for(size_t i = 0; i < count; i+= values_per_line)
+    while(destination.size() < count)
     {
         std::getline(stream, line);
         scn::scan_list(line, destination);
@@ -247,10 +247,11 @@ BasisSet FchkReader::basis_set() const {
         primitive_offset += nprim;
     }
     bs.update();
+    bs.set_pure(false);
     return bs;
 }
 
-void FchkReader::FchkBasis::print()
+void FchkReader::FchkBasis::print() const
 {
     size_t contraction_offset{0};
     size_t primitive_offset{0};
