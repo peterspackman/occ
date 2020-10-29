@@ -1,6 +1,5 @@
 #pragma once
-#include <libint2/shell.h>
-#include <libint2/basis.h>
+#include "basisset.h"
 #include "linear_algebra.h"
 #include <string>
 #include <vector>
@@ -12,6 +11,8 @@
 #include "logger.h"
 
 namespace tonto::gto {
+
+using tonto::qm::BasisSet;
 
 template<size_t max_derivative>
 struct GTOValues {
@@ -204,7 +205,7 @@ void add_shell_contribution(size_t bf, const libint2::Shell &shell, const tonto:
 }
 
 template<size_t max_derivative>
-GTOValues<max_derivative> evaluate_basis_on_grid(const libint2::BasisSet &basis,
+GTOValues<max_derivative> evaluate_basis_on_grid(const BasisSet &basis,
                                          const std::vector<libint2::Atom> &atoms,
                                          const tonto::Mat &grid_pts)
 {

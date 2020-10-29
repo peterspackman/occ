@@ -2,15 +2,14 @@
 #include "linear_algebra.h"
 #include "parallel.h"
 #include <array>
-#include <libint2/basis.h>
 #include <libint2/engine.h>
-#include <libint2/shell.h>
+#include "basisset.h"
 #include <unordered_map>
 #include <vector>
 
 namespace tonto::ints {
 using tonto::MatRM;
-using libint2::BasisSet;
+using tonto::qm::BasisSet;
 using libint2::BraKet;
 using libint2::Operator;
 using libint2::Shell;

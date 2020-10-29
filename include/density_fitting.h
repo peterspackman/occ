@@ -4,7 +4,7 @@
 
 
 namespace tonto::df {
-using libint2::BasisSet;
+using tonto::qm::BasisSet;
 
 struct DFFockEngine {
   BasisSet obs;

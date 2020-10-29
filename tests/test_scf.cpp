@@ -6,6 +6,7 @@
 
 using tonto::hf::HartreeFock;
 using tonto::qm::SpinorbitalKind;
+using tonto::qm::BasisSet;
 
 TEST_CASE("Water SCF", "[scf]")
 {
@@ -18,7 +19,7 @@ TEST_CASE("Water SCF", "[scf]")
     };
 
     SECTION("STO-3G") {
-        libint2::BasisSet obs("STO-3G", atoms);
+        BasisSet obs("STO-3G", atoms);
         HartreeFock hf(atoms, obs);
         tonto::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
         double e = scf.compute_scf_energy();
@@ -26,7 +27,7 @@ TEST_CASE("Water SCF", "[scf]")
     }
 
     SECTION("3-21G") {
-        libint2::BasisSet obs("3-21G", atoms);
+        BasisSet obs("3-21G", atoms);
         HartreeFock hf(atoms, obs);
         tonto::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
         double e = scf.compute_scf_energy();

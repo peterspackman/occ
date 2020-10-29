@@ -1,4 +1,5 @@
 set(TONTO_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/basisset.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/density.h"

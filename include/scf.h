@@ -22,6 +22,7 @@ using tonto::qm::SpinorbitalKind;
 using tonto::qm::expectation;
 using tonto::MatRM;
 using tonto::util::is_odd;
+using tonto::qm::BasisSet;
 
 template <typename Procedure, SpinorbitalKind spinorbital_kind>
 struct SCF {
@@ -86,11 +87,11 @@ struct SCF {
     void set_density_fitting_basis(const std::string& name)
     {
         if(spinorbital_kind != SpinorbitalKind::Restricted) throw std::runtime_error("Density fitting only implemented for RHF");
-        libint2::BasisSet df_basis(name, m_procedure.atoms());
-        libint2::BasisSet basis = m_procedure.basis();
-        fmt::print("Loaded density-fitting basis-set ({}), {} shells, {} basis functions\n", name, df_basis.size(), libint2::nbf(df_basis));
+        BasisSet df_basis(name, m_procedure.atoms());
+        BasisSet basis = m_procedure.basis();
+        fmt::print("Loaded density-fitting basis-set ({}), {} shells, {} basis functions\n", name, df_basis.size(), tonto::qm::nbf(df_basis));
         fmt::print("Storing DF overlap integrals requires {}\n",
-                   human_readable_size(libint2::nbf(basis) * libint2::nbf(df_basis) * libint2::nbf(df_basis) * sizeof(double), "B"));
+                   human_readable_size(tonto::qm::nbf(basis) * tonto::qm::nbf(df_basis) * tonto::qm::nbf(df_basis) * sizeof(double), "B"));
         df_engine.emplace(basis, df_basis);
     }
 
@@ -227,7 +228,7 @@ struct SCF {
         }
 
         auto D_minbs = compute_soad(); // compute guess in minimal basis
-        libint2::BasisSet minbs("STO-3G", atoms());
+        BasisSet minbs("STO-3G", atoms());
         if (minbs == m_procedure.basis()) {
             if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                 D = D_minbs;
@@ -390,7 +391,7 @@ struct SCF {
             /*
             // code for testing DF implementation is working
             {
-                libint2::BasisSet dfbs("def2-svp-jk", m_procedure.atoms());
+                BasisSet dfbs("def2-svp-jk", m_procedure.atoms());
                 tonto::df::DFFockEngine dfe(m_procedure.basis(), dfbs);
                 tonto::MatRM fock_df = dfe.compute_2body_fock_dfC(C_occ);
                 fmt::print("Fock\n:{}\n\n\nFockDF\n{}\n", F, fock_df);

@@ -2,6 +2,7 @@
 #include "argparse.hpp"
 #include "fchkreader.h"
 #include <fmt/ostream.h>
+#include "hf.h"
 
 using tonto::io::FchkReader;
 
@@ -22,10 +23,17 @@ int main(int argc, const char **argv) {
         fmt::print("{}", parser);
         exit(1);
     }
+    libint2::Shell::do_enforce_unit_normalization(false);
+    libint2::initialize();
+
     const std::string fchk_filename_a = parser.get<std::string>("fchk_a");
     const std::string fchk_filename_b = parser.get<std::string>("fchk_b");
     FchkReader fchk_a(fchk_filename_a);
     tonto::log::info("Opened fchk file: {}", fchk_filename_a);
     FchkReader fchk_b(fchk_filename_b);
     tonto::log::info("Opened fchk file: {}", fchk_filename_b);
+
+    tonto::hf::HartreeFock hf_a(fchk_a.atoms(), fchk_a.basis_set());
+    tonto::hf::HartreeFock hf_b(fchk_b.atoms(), fchk_b.basis_set());
+
 }

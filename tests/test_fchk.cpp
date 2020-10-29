@@ -183,7 +183,7 @@ TEST_CASE("H2 fchk", "[read]")
     tonto::io::FchkReader::FchkBasis basis = reader.basis();
     basis.print();
     fmt::print("Libint2 basis:\n");
-    for(const auto& shell: reader.libint_basis())
+    for(const auto& shell: reader.basis_set())
     {
         fmt::print("\n{}\n", shell);
     }

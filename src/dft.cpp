@@ -11,6 +11,7 @@
 
 namespace tonto::dft {
 using tonto::qm::SpinorbitalKind;
+using tonto::qm::BasisSet;
 
 int DFT::density_derivative() const {
     int deriv = 0;
@@ -20,7 +21,7 @@ int DFT::density_derivative() const {
     return deriv;
 }
 
-DFT::DFT(const std::string& method, const libint2::BasisSet& basis, const std::vector<libint2::Atom>& atoms, SpinorbitalKind kind) :
+DFT::DFT(const std::string& method, const BasisSet& basis, const std::vector<libint2::Atom>& atoms, SpinorbitalKind kind) :
    m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(basis, atoms)
 {
     tonto::log::debug("start calculating atom grids... ");

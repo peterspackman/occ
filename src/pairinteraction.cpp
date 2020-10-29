@@ -1,6 +1,9 @@
 #include "pairinteraction.h"
+#include "basisset.h"
 
 namespace tonto::interaction {
+
+using tonto::qm::BasisSet;
 
 PairInteraction::PairInteraction(const std::shared_ptr<tonto::qm::Wavefunction>& w1,
                                  const std::shared_ptr<tonto::qm::Wavefunction>& w2) : m_wfn_a(w1), m_wfn_b(w2), m_wfn()
@@ -10,7 +13,7 @@ PairInteraction::PairInteraction(const std::shared_ptr<tonto::qm::Wavefunction>&
     std::vector<libint2::Atom> res_atoms = a1;
     res_atoms.reserve(a1.size() + a1.size());
     res_atoms.insert(res_atoms.end(), a2.begin(), a2.end());
-    libint2::BasisSet res_basis = b1;
+    BasisSet res_basis = b1;
     res_basis.reserve(b1.size() + b2.size());
     res_basis.insert(res_basis.end(), b2.begin(), b2.end());
     m_wfn = tonto::qm::Wavefunction(res_basis, res_atoms);

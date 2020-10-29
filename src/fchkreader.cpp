@@ -6,6 +6,7 @@
 namespace tonto::io {
 
 using tonto::util::trim_copy;
+using tonto::qm::BasisSet;
 
 
 template<typename T>
@@ -168,9 +169,9 @@ std::vector<libint2::Atom> FchkReader::atoms() const {
     return atoms;
 }
 
-libint2::BasisSet FchkReader::libint_basis() const {
+BasisSet FchkReader::basis_set() const {
     size_t num_shells = m_basis.num_shells;
-    libint2::BasisSet basis_set;
+    BasisSet bs;
     size_t primitive_offset{0};
     for(size_t i = 0; i < num_shells; i++) {
         int l = m_basis.shell_types[i];
@@ -183,10 +184,11 @@ libint2::BasisSet FchkReader::libint_basis() const {
         std::copy(m_basis.primitive_exponents.begin() + primitive_offset, m_basis.primitive_exponents.begin() + primitive_offset + nprim, alpha.begin());
         std::copy(m_basis.shell_coordinates.begin() + 3 * i, m_basis.shell_coordinates.begin() + 3 * (i + 1), position.begin());
         libint2::Shell::Contraction c{l, pure, coeffs};
-        basis_set.emplace_back(libint2::Shell(alpha, {c}, position));
+        bs.emplace_back(libint2::Shell(alpha, {c}, position));
         primitive_offset += nprim;
     }
-    return basis_set;
+    bs.update();
+    return bs;
 }
 
 void FchkReader::FchkBasis::print()

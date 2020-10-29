@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 #include "linear_algebra.h"
-#include <libint2/basis.h>
+#include "basisset.h"
 
 namespace tonto::io {
 
@@ -81,7 +81,7 @@ public:
 
     std::vector<libint2::Atom> atoms() const;
 
-    libint2::BasisSet libint_basis() const;
+    tonto::qm::BasisSet basis_set() const;
 
 private:
     void parse(std::istream&);

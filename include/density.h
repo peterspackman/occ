@@ -5,6 +5,8 @@
 
 namespace tonto::density {
     using tonto::qm::SpinorbitalKind;
+    using tonto::qm::BasisSet;
+
     constexpr int num_components(int deriv_order) {
         switch(deriv_order) {
         case 0: return 1;
@@ -56,7 +58,7 @@ namespace tonto::density {
 
     template<size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
     tonto::Mat evaluate_density_on_grid(
-        const libint2::BasisSet &basis, const std::vector<libint2::Atom> &atoms,
+        const BasisSet &basis, const std::vector<libint2::Atom> &atoms,
         const tonto::MatRM& D, const tonto::Mat &grid_pts)
     {
         auto gto_values = tonto::gto::evaluate_basis_on_grid<max_derivative>(basis, atoms, grid_pts);

@@ -1,19 +1,20 @@
 #include "catch.hpp"
 #include "dft.h"
-#include <libint2/basis.h>
-#include <libint2/atom.h>
+#include "basisset.h"
 #include <vector>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include "gto.h"
 #include "density.h"
 
+using tonto::qm::BasisSet;
+
 TEST_CASE("GTO vals H2/STO-3G") {
     std::vector<libint2::Atom> atoms {
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.398397}
     };
-    libint2::BasisSet basis("sto-3g", atoms);
+    BasisSet basis("sto-3g", atoms);
     auto grid_pts = tonto::Mat::Identity(3, 4);
     auto gto_values = tonto::gto::evaluate_basis_on_grid<1>(basis, atoms, grid_pts);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
@@ -32,7 +33,7 @@ TEST_CASE("GTO vals H2/3-21G") {
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.398397}
     };
-    libint2::BasisSet basis("3-21G", atoms);
+    BasisSet basis("3-21G", atoms);
     auto grid_pts = tonto::Mat::Identity(3, 4);
     auto gto_values = tonto::gto::evaluate_basis_on_grid<1>(basis, atoms, grid_pts);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
@@ -55,7 +56,7 @@ TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.398397}
     };
-    libint2::BasisSet basis("sto-3g", atoms);
+    BasisSet basis("sto-3g", atoms);
     auto grid_pts = tonto::Mat::Identity(3, 4);
     auto gto_values = tonto::gto::evaluate_basis_on_grid<1>(basis, atoms, grid_pts);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);

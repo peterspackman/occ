@@ -11,15 +11,12 @@
 #include "gto.h"
 #include "density.h"
 #include "parallel.h"
-
-namespace libint2 {
-class BasisSet;
-class Atom;
-}
+#include "basisset.h"
 
 namespace tonto::dft {
 using tonto::qm::SpinorbitalKind;
 using tonto::qm::expectation;
+using tonto::qm::BasisSet;
 
 using tonto::Mat3N;
 using tonto::MatRM;
@@ -39,7 +36,7 @@ std::vector<DensityFunctional> parse_method(const std::string& method_string, bo
 
 template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
 std::pair<tonto::Mat, tonto::gto::GTOValues<derivative_order>> evaluate_density_and_gtos(
-    const libint2::BasisSet &basis,
+    const BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
     const tonto::MatRM& D,
     const tonto::Mat &grid_pts)
@@ -52,7 +49,7 @@ std::pair<tonto::Mat, tonto::gto::GTOValues<derivative_order>> evaluate_density_
 class DFT {
 
 public:
-    DFT(const std::string&, const libint2::BasisSet&, const std::vector<libint2::Atom>&, const SpinorbitalKind kind = SpinorbitalKind::Restricted);
+    DFT(const std::string&, const BasisSet&, const std::vector<libint2::Atom>&, const SpinorbitalKind kind = SpinorbitalKind::Restricted);
     const auto &shellpair_list() const { return m_hf.shellpair_list(); }
     const auto &shellpair_data() const { return m_hf.shellpair_data(); }
     const auto &atoms() const { return m_hf.atoms(); }

@@ -6,6 +6,7 @@
 #include "lebedev.h"
 
 namespace tonto::dft {
+using tonto::qm::BasisSet;
 
 const std::array<uint_fast16_t, 33> lebedev_grid_levels {
     1, 6, 14, 26, 38,
@@ -387,7 +388,7 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points, siz
     return result;
 }
 
-MolecularGrid::MolecularGrid(const libint2::BasisSet &basis, const std::vector<libint2::Atom> &atoms) :
+MolecularGrid::MolecularGrid(const BasisSet &basis, const std::vector<libint2::Atom> &atoms) :
     m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()), m_alpha_max(atoms.size()), m_l_max(atoms.size()),
     m_alpha_min(basis.max_l() + 1, atoms.size())
 {

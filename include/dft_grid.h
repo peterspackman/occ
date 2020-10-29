@@ -1,11 +1,7 @@
 #pragma once
 #include "linear_algebra.h"
 #include <vector>
-
-namespace libint2 {
-class BasisSet;
-class Atom;
-}
+#include "basisset.h"
 
 namespace tonto::dft {
 
@@ -15,6 +11,7 @@ using tonto::MatN4;
 using tonto::Vec;
 using tonto::IVec;
 using tonto::MatRM;
+using tonto::qm::BasisSet;
 
 struct AtomGrid
 {
@@ -47,7 +44,7 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points = 59
 class MolecularGrid
 {
 public:
-    MolecularGrid(const libint2::BasisSet&, const std::vector<libint2::Atom>&);
+    MolecularGrid(const BasisSet&, const std::vector<libint2::Atom>&);
     void set_angular_points(size_t n);
     void set_radial_points(size_t n);
     const auto n_atoms() const { return m_atomic_numbers.size(); }

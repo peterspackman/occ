@@ -131,7 +131,7 @@ int main(int argc, const char **argv) {
         fmt::print("Input method string: '{}'\n", method);
         fmt::print("Input basis name: '{}'\n", basisname);
 
-        libint2::BasisSet basis(basisname, m.atoms());
+        tonto::qm::BasisSet basis(basisname, m.atoms());
         basis.set_pure(false);
         fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
         if (method == "rhf") {
