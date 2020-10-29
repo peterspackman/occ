@@ -43,6 +43,8 @@ public:
         NumShells,
         NumPrimitiveShells,
         ShellTypes,
+        SCFDensity,
+        MP2Density,
     };
 
     FchkReader(const std::string& filename);
@@ -79,6 +81,9 @@ public:
         return Eigen::Map<const tonto::Vec, 0>(m_beta_mo_energies.data(), m_beta_mo_energies.size());
     }
 
+    tonto::MatRM scf_density_matrix() const;
+    tonto::MatRM mp2_density_matrix() const;
+
     std::vector<libint2::Atom> atoms() const;
 
     tonto::qm::BasisSet basis_set() const;
@@ -102,6 +107,8 @@ private:
     std::vector<double> m_alpha_mo_energies;
     std::vector<double> m_beta_mos;
     std::vector<double> m_beta_mo_energies;
+    std::vector<double> m_scf_density;
+    std::vector<double> m_mp2_density;
     FchkBasis m_basis;
 };
 

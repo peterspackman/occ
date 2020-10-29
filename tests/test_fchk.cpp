@@ -187,4 +187,8 @@ TEST_CASE("H2 fchk", "[read]")
     {
         fmt::print("\n{}\n", shell);
     }
+    auto density = reader.scf_density_matrix();
+    fmt::print("Density matrix\n{}\n", density);
+
+    REQUIRE(density(1, 0) == Approx(0.602456));
 }

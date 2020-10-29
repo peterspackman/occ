@@ -77,6 +77,9 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string& line) const
     if(startswith(lt, "Primitive exponents", false)) return PrimitiveExponents;
     if(startswith(lt, "Contraction coefficients", false)) return ContractionCoefficients;
     if(startswith(lt, "Coordinates of each shell", false)) return ShellCoordinates;
+    if(startswith(lt, "Total SCF Density", false)) return SCFDensity;
+    if(startswith(lt, "Total MP2 Density", false)) return MP2Density;
+
     return Unknown;
 }
 
@@ -154,6 +157,14 @@ void FchkReader::parse(std::istream& stream)
             scn::scan(line, "Coordinates of each shell R N= {}", count);
             read_matrix_block<double>(stream, m_basis.shell_coordinates, count);
             break;
+        case SCFDensity:
+            scn::scan(line, "Total SCF Density R N= {}", count);
+            read_matrix_block<double>(stream, m_scf_density, count);
+            break;
+        case MP2Density:
+            scn::scan(line, "Total MP2 Density R N= {}", count);
+            read_matrix_block<double>(stream, m_mp2_density, count);
+            break;
         default: continue;
         }
     }
@@ -173,7 +184,6 @@ BasisSet FchkReader::basis_set() const {
     size_t num_shells = m_basis.num_shells;
     BasisSet bs;
     size_t primitive_offset{0};
-    bool force_cartesian_d = false;
     for(size_t i = 0; i < num_shells; i++) {
         // shell types: 0=s, 1=p, -1=sp, 2=6d, -2=5d, 3=10f, -3=7f
         int shell_type = m_basis.shell_types[i];
@@ -194,13 +204,7 @@ BasisSet FchkReader::basis_set() const {
             bs.emplace_back(libint2::Shell{
                                 std::move(alpha),
                                 {
-                                    {0, pure, std::move(coeffs)}
-                                },
-                                {std::move(position)}
-                            });
-            bs.emplace_back(libint2::Shell{
-                                std::move(alpha),
-                                {
+                                    {0, pure, std::move(coeffs)},
                                     {l, pure, std::move(coeffs)}
                                 },
                                 {std::move(position)}
@@ -244,6 +248,40 @@ void FchkReader::FchkBasis::print()
         }
         fmt::print("\n");
     }
+}
+
+tonto::MatRM FchkReader::scf_density_matrix() const
+{
+
+    size_t nbf{num_basis_functions()};
+    assert(nbf * (nbf - 1) == m_scf_density.size());
+    tonto::MatRM dm(nbf, nbf);
+    size_t idx = 0;
+    for(size_t i = 0; i < nbf; i++) {
+        for(size_t j = i; j < nbf; j++) {
+            if(i != j) dm(j, i) = m_scf_density[idx];
+            dm(i, j) = m_scf_density[idx];
+            idx++;
+        }
+    }
+    return dm;
+}
+
+tonto::MatRM FchkReader::mp2_density_matrix() const
+{
+
+    size_t nbf{num_basis_functions()};
+    assert(nbf * (nbf - 1) == m_mp2_density.size());
+    tonto::MatRM dm(nbf, nbf);
+    size_t idx = 0;
+    for(size_t i = 0; i < nbf; i++) {
+        for(size_t j = i; j < nbf; j++) {
+            if(i != j) dm(j, i) = m_mp2_density[idx];
+            dm(i, j) = m_mp2_density[idx];
+            idx++;
+        }
+    }
+    return dm;
 }
 
 }
