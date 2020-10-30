@@ -74,7 +74,7 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string& line) const
     if(startswith(lt, "Number of contracted shells", false)) return NumShells;
     if(startswith(lt, "Number of primitive shells", false)) return NumPrimitiveShells;
     if(startswith(lt, "Shell types", false)) return ShellTypes;
-    if(startswith(lt, "Number of primitives pehttps://gaussian.com/interfacing/r shell", false)) return PrimitivesPerShell;
+    if(startswith(lt, "Number of primitives per shell", false)) return PrimitivesPerShell;
     if(startswith(lt, "Shell to atom map", false)) return ShellToAtomMap;
     if(startswith(lt, "Primitive exponents", false)) return PrimitiveExponents;
     if(startswith(lt, "Contraction coefficients", false)) return ContractionCoefficients;
@@ -98,7 +98,7 @@ void FchkReader::parse(std::istream& stream)
             scn::scan(line, "Number of electrons I {}", m_num_electrons);
             break;
         case NumBasisFunctions:
-            scn::scan(line, "Number of basis fhttps://gaussian.com/interfacing/unctions I {}", m_num_basis_functions);
+            scn::scan(line, "Number of basis functions I {}", m_num_basis_functions);
             break;
         case NumAlpha:
             scn::scan(line, "Number of alpha electrons I {}", m_num_alpha);
@@ -110,7 +110,7 @@ void FchkReader::parse(std::istream& stream)
             scn::scan(line, "Atomic numbers I N= {}", count);
             read_matrix_block<int>(stream, m_atomic_numbers, count);
             break;
-        case AtomicPositions:https://gaussian.com/interfacing/
+        case AtomicPositions:
             scn::scan(line, "Current cartesian coordinates R N= {}", count);
             read_matrix_block<double>(stream, m_atomic_positions, count);
             break;
@@ -134,7 +134,7 @@ void FchkReader::parse(std::istream& stream)
             scn::scan(line, "Number of contracted shells I {}", m_basis.num_shells);
             break;
         case NumPrimitiveShells:
-            scn::scan(line, "Number of primitihttps://gaussian.com/interfacing/ve shells I {}", m_basis.num_primitives);
+            scn::scan(line, "Number of primitive shells I {}", m_basis.num_primitives);
             break;
         case ShellTypes:
             scn::scan(line, "Shell types I N= {}", count);
@@ -281,19 +281,7 @@ void FchkReader::FchkBasis::print() const
 tonto::MatRM FchkReader::scf_density_matrix() const
 {
 
-    size_t nbf{num_basis_functions()};
-    assert(nbf * (nbf + 1) / 2 == m_scf_density.size());
-    tonto::MatRM dm(nbf, nbf);
-    size_t idx = 0;
-    for(size_t i = 0; i < nbf; i++) {
-        for(size_t j = 0; j <= i; j++) {
-            if(i != j) dm(j, i) = m_scf_density[idx];
-            dm(i, j) = m_scf_density[idx];
-            idx++;
-        }
-    }
-    fmt::print("MO Coefficients:\n{}\n", alpha_mo_coefficients());
-    tonto::Mat C_occ = alpha_mo_coefficients().leftCols(m_num_alpha);
+    tonto::MatRM C_occ = alpha_mo_coefficients().leftCols(m_num_alpha);
     return C_occ * C_occ.transpose();
 }
 
@@ -364,13 +352,13 @@ void FchkReader::reorder_mo_coefficients_from_gaussian_convention(const tonto::q
             tonto::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
             continue;
         }
-        uint_fast8_t xp, yp, zp;
-        size_t current_idx{0};
+        int xp, yp, zp;
+        size_t our_idx{0};
         FOR_CART(xp, yp, zp, l)
-            xyz v{xp, yp, zp};
+            xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp), static_cast<uint_fast8_t>(zp)};
             size_t gaussian_idx = index_of(v, gaussian_order);
-            mo.row(bf_first + gaussian_idx).swap(mo.row(bf_first + current_idx));
-            current_idx++;
+            mo.row(bf_first + gaussian_idx).swap(mo.row(bf_first + our_idx));
+            our_idx++;
         END_FOR_CART
     }
 }

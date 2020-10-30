@@ -6,12 +6,15 @@
 #include "spinorbital.h"
 #include "element.h"
 #include "util.h"
+#include "gto.h"
 
 using tonto::io::FchkReader;
 using tonto::qm::SpinorbitalKind;
 using tonto::qm::expectation;
 using tonto::chem::Element;
 using tonto::util::all_close;
+using tonto::util::join;
+using tonto::gto::shell_component_labels;
 
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("ce");
@@ -67,14 +70,21 @@ int main(int argc, const char **argv) {
     }
     for(const auto&shell : fchk_b.basis_set()) {
         fmt::print("\n{}\n", shell);
+        fmt::print("Components: {}\n", join(shell_component_labels(shell.contr[0].l), " "));
     }
 
-    auto basis_a = tonto::qm::BasisSet("sto-3g", fchk_a.atoms());
-    auto basis_b = tonto::qm::BasisSet("sto-3g", fchk_b.atoms());
-    tonto::MatRM DA = fchk_a.scf_density_matrix();
-    tonto::MatRM DB = fchk_b.scf_density_matrix();
+    auto basis_a = fchk_a.basis_set();
+    auto basis_b = fchk_b.basis_set();
+    tonto::MatRM CA = fchk_a.alpha_mo_coefficients();
+    FchkReader::reorder_mo_coefficients_from_gaussian_convention(basis_a, CA);
+    tonto::MatRM CA_occ = CA.leftCols(fchk_a.num_alpha());
+    tonto::MatRM DA = CA_occ * CA_occ.transpose();
+    tonto::MatRM CB = fchk_b.alpha_mo_coefficients();
+    FchkReader::reorder_mo_coefficients_from_gaussian_convention(basis_b, CB);
+    tonto::MatRM CB_occ = CB.leftCols(fchk_a.num_alpha());
+    tonto::MatRM DB = CB_occ * CB_occ.transpose();
+
     tonto::log::info("Finished reading SCF density matrices");
-    fmt::print("DA:\n{}\nDB:\n{}\n", DA, DB);
     tonto::log::info("Matrices are the same: {}", all_close(DA, DB, 1e-05));
     tonto::hf::HartreeFock hf_a(fchk_a.atoms(), basis_a);
     tonto::hf::HartreeFock hf_b(fchk_b.atoms(), basis_b);
@@ -99,7 +109,6 @@ int main(int argc, const char **argv) {
         expectation<SpinorbitalKind::Restricted>(DA, KA)
     );
     tonto::MatRM fock_A = hf_a.compute_fock(kind_a, DA);
-    tonto::log::info("2 body fock A:\n{}\nEnergy: {}\n", fock_A, expectation<SpinorbitalKind::Restricted>(DA, fock_A));
     std::tie(JB, KB) = hf_b.compute_JK(kind_b, DB);
     tonto::log::info("Computed JK matrices for molecule B");
     tonto::log::info("Coulomb: {}, Exchange: {}",
@@ -107,6 +116,5 @@ int main(int argc, const char **argv) {
         expectation<SpinorbitalKind::Restricted>(DB, KB)
     );
     tonto::MatRM fock_B = hf_b.compute_fock(kind_b, DB);
-    tonto::log::info("2 body fock B:\n{}\nEnergy: {}\n", fock_B, expectation<SpinorbitalKind::Restricted>(DB, fock_B));
 
 }

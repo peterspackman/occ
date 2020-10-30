@@ -14,6 +14,28 @@ namespace tonto::gto {
 
 using tonto::qm::BasisSet;
 
+const inline char shell_labels[] = "SPDFGHIKMNOQRTUVWXYZ";
+
+inline std::string component_label(int i, int j, int k, int l) {
+    std::string label{shell_labels[l]};
+    for(int c = 0; c < i; c++) label += "x";
+    for(int c = 0; c < j; c++) label += "y";
+    for(int c = 0; c < k; c++) label += "z";
+    return label;
+}
+
+inline std::vector<std::string> shell_component_labels(int l)
+{
+    if(l == 0) return {std::string{shell_labels[0]}};
+    int i, j, k;
+
+    std::vector<std::string> labels;
+    FOR_CART(i, j, k, l)
+        labels.push_back(component_label(i, j, k, l));
+    END_FOR_CART
+    return labels;
+}
+
 template<size_t max_derivative>
 struct GTOValues {
     GTOValues(size_t nbf, size_t npts) : phi(npts, nbf) {}
