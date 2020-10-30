@@ -42,7 +42,7 @@ public:
 
   MatRM compute_fock(SpinorbitalKind kind, const MatRM &D,
                     double precision = std::numeric_limits<double>::epsilon(),
-                    const MatRM &Schwarz = MatRM())
+                    const MatRM &Schwarz = MatRM()) const
   {
       if(kind == SpinorbitalKind::General) return tonto::ints::compute_fock<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       if(kind == SpinorbitalKind::Unrestricted) return tonto::ints::compute_fock<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
@@ -51,7 +51,7 @@ public:
 
   std::pair<MatRM, MatRM> compute_JK(SpinorbitalKind kind, const MatRM &D,
                     double precision = std::numeric_limits<double>::epsilon(),
-                    const MatRM &Schwarz = MatRM())
+                    const MatRM &Schwarz = MatRM()) const
   {
       if(kind == SpinorbitalKind::General) return tonto::ints::compute_JK<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       if(kind == SpinorbitalKind::Unrestricted) return tonto::ints::compute_JK<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
@@ -60,7 +60,7 @@ public:
 
   MatRM compute_J(SpinorbitalKind kind, const MatRM &D,
                   double precision = std::numeric_limits<double>::epsilon(),
-                  const MatRM &Schwarz = MatRM())
+                  const MatRM &Schwarz = MatRM()) const
   {
       if(kind == SpinorbitalKind::General) return tonto::ints::compute_J<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       if(kind == SpinorbitalKind::Unrestricted) return tonto::ints::compute_J<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);

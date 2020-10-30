@@ -281,6 +281,7 @@ public:
         default: throw std::runtime_error("Not implemented: DFT for General spinorbitals");
         }
     }
+    const auto& hf() const { return m_hf; }
 private:
 
     SpinorbitalKind m_spinorbital_kind;

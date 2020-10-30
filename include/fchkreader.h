@@ -89,7 +89,7 @@ public:
     std::vector<libint2::Atom> atoms() const;
 
     tonto::qm::BasisSet basis_set() const;
-
+    static void reorder_mo_coefficients_from_gaussian_convention(const tonto::qm::BasisSet&, tonto::MatRM&);
 private:
     void parse(std::istream&);
     void open(const std::string& filename);

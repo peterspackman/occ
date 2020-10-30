@@ -2,6 +2,8 @@
 #include "util.h"
 #include <scn/scn.h>
 #include <fmt/ostream.h>
+#include <libint2/cgshell_ordering.h>
+#include "logger.h"
 
 namespace tonto::io {
 
@@ -72,7 +74,7 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string& line) const
     if(startswith(lt, "Number of contracted shells", false)) return NumShells;
     if(startswith(lt, "Number of primitive shells", false)) return NumPrimitiveShells;
     if(startswith(lt, "Shell types", false)) return ShellTypes;
-    if(startswith(lt, "Number of primitives per shell", false)) return PrimitivesPerShell;
+    if(startswith(lt, "Number of primitives pehttps://gaussian.com/interfacing/r shell", false)) return PrimitivesPerShell;
     if(startswith(lt, "Shell to atom map", false)) return ShellToAtomMap;
     if(startswith(lt, "Primitive exponents", false)) return PrimitiveExponents;
     if(startswith(lt, "Contraction coefficients", false)) return ContractionCoefficients;
@@ -96,7 +98,7 @@ void FchkReader::parse(std::istream& stream)
             scn::scan(line, "Number of electrons I {}", m_num_electrons);
             break;
         case NumBasisFunctions:
-            scn::scan(line, "Number of basis functions I {}", m_num_basis_functions);
+            scn::scan(line, "Number of basis fhttps://gaussian.com/interfacing/unctions I {}", m_num_basis_functions);
             break;
         case NumAlpha:
             scn::scan(line, "Number of alpha electrons I {}", m_num_alpha);
@@ -108,7 +110,7 @@ void FchkReader::parse(std::istream& stream)
             scn::scan(line, "Atomic numbers I N= {}", count);
             read_matrix_block<int>(stream, m_atomic_numbers, count);
             break;
-        case AtomicPositions:
+        case AtomicPositions:https://gaussian.com/interfacing/
             scn::scan(line, "Current cartesian coordinates R N= {}", count);
             read_matrix_block<double>(stream, m_atomic_positions, count);
             break;
@@ -132,7 +134,7 @@ void FchkReader::parse(std::istream& stream)
             scn::scan(line, "Number of contracted shells I {}", m_basis.num_shells);
             break;
         case NumPrimitiveShells:
-            scn::scan(line, "Number of primitive shells I {}", m_basis.num_primitives);
+            scn::scan(line, "Number of primitihttps://gaussian.com/interfacing/ve shells I {}", m_basis.num_primitives);
             break;
         case ShellTypes:
             scn::scan(line, "Shell types I N= {}", count);
@@ -290,7 +292,9 @@ tonto::MatRM FchkReader::scf_density_matrix() const
             idx++;
         }
     }
-    return dm;
+    fmt::print("MO Coefficients:\n{}\n", alpha_mo_coefficients());
+    tonto::Mat C_occ = alpha_mo_coefficients().leftCols(m_num_alpha);
+    return C_occ * C_occ.transpose();
 }
 
 tonto::MatRM FchkReader::mp2_density_matrix() const
@@ -308,6 +312,67 @@ tonto::MatRM FchkReader::mp2_density_matrix() const
         }
     }
     return dm;
+}
+
+template<typename T>
+size_t index_of(T x, const std::vector<T>& vec)
+{
+    return std::distance(vec.begin(),
+        std::find(vec.begin(), vec.end(), x)
+    );
+}
+
+
+void FchkReader::reorder_mo_coefficients_from_gaussian_convention(const tonto::qm::BasisSet& basis, tonto::MatRM& mo)
+{
+    // no reordering should occur unless there are d, f, g, h etc. functions
+    if(tonto::qm::max_l(basis) < 2) return;
+    struct xyz {
+        uint_fast8_t x{0};
+        uint_fast8_t y{0};
+        uint_fast8_t z{0};
+        bool operator ==(const xyz& rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
+    };
+
+    auto shell2bf = basis.shell2bf();
+    for(size_t i = 0; i < basis.size(); i++)
+    {
+        const auto& shell = basis[i];
+        int l = shell.contr[0].l;
+        if(l < 2) continue;
+        size_t bf_first = shell2bf[i];
+        std::vector<xyz> gaussian_order;
+        switch(l) {
+        case 2:
+            gaussian_order = {
+                // xx, yy, zz, xy, xz, yz
+                {2, 0, 0}, {0, 2, 0}, {0, 0, 2},
+                {1, 1, 0}, {1, 0, 1}, {0, 1, 1}
+            };
+            break;
+        case 3:
+            gaussian_order = {
+                // xxx, yyy, zzz, xyy, xxy, xxz, xzz, yzz, yyz, xyz
+                {3, 0, 0}, {0, 3, 0}, {0, 0, 3},
+                {1, 2, 0}, {2, 1, 0}, {2, 0 , 1},
+                {1, 0, 2}, {0, 1, 2}, {0, 2, 1},
+                {1, 1, 1}
+            };
+            break;
+        }
+        if (gaussian_order.size() == 0) {
+            tonto::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
+            continue;
+        }
+        uint_fast8_t xp, yp, zp;
+        size_t current_idx{0};
+        FOR_CART(xp, yp, zp, l)
+            xyz v{xp, yp, zp};
+            size_t gaussian_idx = index_of(v, gaussian_order);
+            mo.row(bf_first + gaussian_idx).swap(mo.row(bf_first + current_idx));
+            current_idx++;
+        END_FOR_CART
+    }
 }
 
 }

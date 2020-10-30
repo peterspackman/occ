@@ -55,7 +55,9 @@ int main(int argc, const char **argv) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                    atom.x, atom.y, atom.z);
     }
-    fchk_a.basis().print();
+    for(const auto&shell : fchk_a.basis_set()) {
+        fmt::print("\n{}\n", shell);
+    }
     FchkReader fchk_b(fchk_filename_b);
     tonto::log::info("Parsed fchk file: {}", fchk_filename_b);
     fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_b, "sym", "x", "y", "z");
@@ -63,20 +65,25 @@ int main(int argc, const char **argv) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                    atom.x, atom.y, atom.z);
     }
-    fchk_b.basis().print();
-    tonto::MatRM DA = 0.5 * fchk_a.scf_density_matrix();
-    tonto::MatRM DB = 0.5 * fchk_b.scf_density_matrix();
+    for(const auto&shell : fchk_b.basis_set()) {
+        fmt::print("\n{}\n", shell);
+    }
+
+    auto basis_a = tonto::qm::BasisSet("sto-3g", fchk_a.atoms());
+    auto basis_b = tonto::qm::BasisSet("sto-3g", fchk_b.atoms());
+    tonto::MatRM DA = fchk_a.scf_density_matrix();
+    tonto::MatRM DB = fchk_b.scf_density_matrix();
     tonto::log::info("Finished reading SCF density matrices");
     fmt::print("DA:\n{}\nDB:\n{}\n", DA, DB);
     tonto::log::info("Matrices are the same: {}", all_close(DA, DB, 1e-05));
-    tonto::hf::HartreeFock hf_a(fchk_a.atoms(), fchk_a.basis_set());
-    tonto::hf::HartreeFock hf_b(fchk_b.atoms(), fchk_b.basis_set());
+    tonto::hf::HartreeFock hf_a(fchk_a.atoms(), basis_a);
+    tonto::hf::HartreeFock hf_b(fchk_b.atoms(), basis_b);
 
     tonto::MatRM JA, KA, JB, KB, VA, VB, TA, TB, HA, HB;
     VA = hf_a.compute_nuclear_attraction_matrix();
-    tonto::log::info("Computed nuclear attraction for B, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, VA));
+    tonto::log::info("Computed nuclear attraction for A, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, VA));
     TA = hf_a.compute_kinetic_matrix();
-    tonto::log::info("Computed kinetic energy for B, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, TA));
+    tonto::log::info("Computed kinetic energy for A, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, TA));
     HA = VA + TA;
     tonto::log::info("Computed core hamiltonian for A, energy = {}", expectation<SpinorbitalKind::Restricted>(DA, HA));
     VB = hf_b.compute_nuclear_attraction_matrix();
@@ -91,11 +98,15 @@ int main(int argc, const char **argv) {
         expectation<SpinorbitalKind::Restricted>(DA, JA),
         expectation<SpinorbitalKind::Restricted>(DA, KA)
     );
-
-    std::tie(JB, KB) = hf_a.compute_JK(kind_b, DB);
+    tonto::MatRM fock_A = hf_a.compute_fock(kind_a, DA);
+    tonto::log::info("2 body fock A:\n{}\nEnergy: {}\n", fock_A, expectation<SpinorbitalKind::Restricted>(DA, fock_A));
+    std::tie(JB, KB) = hf_b.compute_JK(kind_b, DB);
     tonto::log::info("Computed JK matrices for molecule B");
     tonto::log::info("Coulomb: {}, Exchange: {}",
         expectation<SpinorbitalKind::Restricted>(DB, JB),
         expectation<SpinorbitalKind::Restricted>(DB, KB)
     );
+    tonto::MatRM fock_B = hf_b.compute_fock(kind_b, DB);
+    tonto::log::info("2 body fock B:\n{}\nEnergy: {}\n", fock_B, expectation<SpinorbitalKind::Restricted>(DB, fock_B));
+
 }

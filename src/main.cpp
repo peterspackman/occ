@@ -172,6 +172,12 @@ int main(int argc, const char **argv) {
                 scf.set_charge_multiplicity(charge, multiplicity);
                 scf.start_incremental_F_threshold = 0.0;
                 double e = scf.compute_scf_energy();
+                fmt::print("MO coefficients:\n{}\n", scf.C);
+                fmt::print("Density Matrix:\n{}\n", scf.D);
+                for (const auto& shell: basis) {
+                    fmt::print("\n{}\n", shell);
+                }
+                fmt::print("Fock matrix\n{}\n", rks.hf().compute_fock(SpinorbitalKind::Restricted, scf.D));
             }
         }
 
