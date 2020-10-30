@@ -21,7 +21,26 @@ using tonto::Vec;
 using tonto::interaction::merge_molecular_orbitals;
 using tonto::interaction::merge_basis_sets;
 using tonto::interaction::merge_atoms;
+using tonto::qm::BasisSet;
 
+struct Energy {
+    double coulomb{0};
+    double exchange{0};
+    double nuclear_repulsion{0};
+    double nuclear_attraction{0};
+    double kinetic{0};
+    double core{0};
+};
+
+struct Wavefunction {
+    BasisSet basis;
+    int num_occ;
+    int num_electrons;
+    std::vector<libint2::Atom> atoms;
+    MatRM C, C_occ, D, T, V, H, J, K;
+    Vec mo_energies;
+    Energy energy;
+};
 
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("ce");
@@ -74,81 +93,81 @@ int main(int argc, const char **argv) {
                    atom.x, atom.y, atom.z);
     }
 
-    auto basis_a = fchk_a.basis_set();
-    auto basis_b = fchk_b.basis_set();
-    MatRM CA = fchk_a.alpha_mo_coefficients();
-    FchkReader::reorder_mo_coefficients_from_gaussian_convention(basis_a, CA);
-    MatRM CA_occ = CA.leftCols(fchk_a.num_alpha());
-    MatRM DA = CA_occ * CA_occ.transpose();
-    MatRM CB = fchk_b.alpha_mo_coefficients();
-    FchkReader::reorder_mo_coefficients_from_gaussian_convention(basis_b, CB);
-    MatRM CB_occ = CB.leftCols(fchk_a.num_alpha());
-    MatRM DB = CB_occ * CB_occ.transpose();
+    Wavefunction A, B, AB;
+    A.num_occ = fchk_a.num_alpha();
+    B.num_occ = fchk_b.num_alpha();
+
+    A.basis = fchk_a.basis_set();
+    B.basis = fchk_b.basis_set();
+    A.atoms = fchk_a.atoms();
+    B.atoms = fchk_b.atoms();
+
+    A.C = fchk_a.alpha_mo_coefficients();
+    FchkReader::reorder_mo_coefficients_from_gaussian_convention(A.basis, A.C);
+    A.C_occ = A.C.leftCols(A.num_occ);
+    A.D = A.C_occ * A.C_occ.transpose();
+
+    B.C = fchk_b.alpha_mo_coefficients();
+    FchkReader::reorder_mo_coefficients_from_gaussian_convention(B.basis, B.C);
+    B.C_occ = B.C.leftCols(B.num_occ);
+    B.D = B.C_occ * B.C_occ.transpose();
+
     tonto::log::info("Finished reading SCF density matrices");
-    tonto::log::info("Matrices are the same: {}", all_close(DA, DB, 1e-05));
-    tonto::hf::HartreeFock hf_a(fchk_a.atoms(), basis_a);
-    tonto::hf::HartreeFock hf_b(fchk_b.atoms(), basis_b);
+    tonto::log::info("Matrices are the same: {}", all_close(A.D, B.D, 1e-05));
+    tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
+    tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
 
-    MatRM JA, KA, JB, KB, VA, VB, TA, TB, HA, HB;
-    VA = hf_a.compute_nuclear_attraction_matrix();
-    double e_nuc_a = expectation<SpinorbitalKind::Restricted>(DA, VA);
-    tonto::log::info("Computed nuclear attraction for A, energy = {}", e_nuc_a);
-    TA = hf_a.compute_kinetic_matrix();
-    double e_kinetic_a = expectation<SpinorbitalKind::Restricted>(DA, TA);
-    tonto::log::info("Computed kinetic energy for A, energy = {}", e_kinetic_a);
-    HA = VA + TA;
-    double e_core_a = expectation<SpinorbitalKind::Restricted>(DA, HA);
-    tonto::log::info("Computed core hamiltonian for A, energy = {}", e_core_a);
+    A.V = hf_a.compute_nuclear_attraction_matrix();
+    A.energy.nuclear_attraction = expectation<SpinorbitalKind::Restricted>(A.D, A.V);
 
-    VB = hf_a.compute_nuclear_attraction_matrix();
-    double e_nuc_b = expectation<SpinorbitalKind::Restricted>(DB, VB);
-    tonto::log::info("Computed nuclear attraction for B, energy = {}", e_nuc_b);
-    TB = hf_a.compute_kinetic_matrix();
-    double e_kinetic_b = expectation<SpinorbitalKind::Restricted>(DB, TB);
-    tonto::log::info("Computed kinetic energy for B, energy = {}", e_kinetic_b);
-    HB = VB + TB;
-    double e_core_b = expectation<SpinorbitalKind::Restricted>(DB, HB);
-    tonto::log::info("Computed core hamiltonian for B, energy = {}", e_core_b);
+    tonto::log::info("Computed nuclear attraction for A, energy = {}", A.energy.nuclear_attraction);
+    A.T = hf_a.compute_kinetic_matrix();
+    A.energy.kinetic = expectation<SpinorbitalKind::Restricted>(A.D, A.T);
+    tonto::log::info("Computed kinetic energy for A, energy = {}", A.energy.kinetic);
+    A.H = A.V + A.T;
+    A.energy.core = expectation<SpinorbitalKind::Restricted>(A.D, A.H);
+    tonto::log::info("Computed core hamiltonian for A, energy = {}", A.energy.core);
 
-    std::tie(JA, KA) = hf_a.compute_JK(kind_a, DA);
+    B.V = hf_b.compute_nuclear_attraction_matrix();
+    B.energy.nuclear_attraction = expectation<SpinorbitalKind::Restricted>(B.D, B.V);
+    tonto::log::info("Computed nuclear attraction for B, energy = {}", B.energy.nuclear_attraction);
+    B.T = hf_b.compute_kinetic_matrix();
+    B.energy.kinetic = expectation<SpinorbitalKind::Restricted>(B.D, B.T);
+    tonto::log::info("Computed kinetic energy for B, energy = {}", B.energy.kinetic);
+    B.H = B.V + B.T;
+    B.energy.core = expectation<SpinorbitalKind::Restricted>(B.D, B.H);
+    tonto::log::info("Computed core hamiltonian for B, energy = {}", B.energy.core);
+
+    std::tie(A.J, A.K) = hf_a.compute_JK(kind_a, A.D);
     tonto::log::info("Computed JK matrices for molecule A");
-    double coul_a = expectation<SpinorbitalKind::Restricted>(DA, JA);
-    double exchange_a = expectation<SpinorbitalKind::Restricted>(DA, KA);
-    tonto::log::info("Coulomb: {}, Exchange: {}", coul_a, exchange_a);
+    A.energy.coulomb = expectation<SpinorbitalKind::Restricted>(A.D, A.J);
+    A.energy.exchange = expectation<SpinorbitalKind::Restricted>(A.D, A.K);
+    tonto::log::info("Coulomb: {}, Exchange: {}", A.energy.coulomb, A.energy.exchange);
 
-    std::tie(JB, KB) = hf_b.compute_JK(kind_b, DB);
+    std::tie(B.J, B.K) = hf_b.compute_JK(kind_b, B.D);
     tonto::log::info("Computed JK matrices for molecule B");
-    double coul_b = expectation<SpinorbitalKind::Restricted>(DB, JB);
-    double exchange_b = expectation<SpinorbitalKind::Restricted>(DB, KB);
-    tonto::log::info("Coulomb: {}, Exchange: {}", coul_b, exchange_b);
+    B.energy.coulomb = expectation<SpinorbitalKind::Restricted>(B.D, B.J);
+    B.energy.exchange = expectation<SpinorbitalKind::Restricted>(B.D, B.K);
+    tonto::log::info("Coulomb: {}, Exchange: {}", B.energy.coulomb, B.energy.exchange);
 
-    tonto::Vec e_a = fchk_a.alpha_mo_energies();
-    tonto::Vec e_b = fchk_b.alpha_mo_energies();
-    MatRM CAB, e_ab;
-    std::tie(CAB, e_ab) = merge_molecular_orbitals(CA, CB, e_a, e_b);
-    fmt::print("MO A: {}\n{}\n", e_a.transpose(), CA);
-    fmt::print("MO B: {}\n{}\n", e_b.transpose(), CB);
-    fmt::print("MO AB: {}\n{}\n", e_ab.transpose(), CAB);
-    auto atoms_AB = merge_atoms(fchk_a.atoms(), fchk_b.atoms());
+    A.mo_energies = fchk_a.alpha_mo_energies();
+    B.mo_energies = fchk_b.alpha_mo_energies();
+    std::tie(AB.C, AB.mo_energies) = merge_molecular_orbitals(A.C, B.C, A.mo_energies, B.mo_energies);
+    fmt::print("MO A: {}\n{}\n", A.mo_energies.transpose(), A.C);
+    fmt::print("MO B: {}\n{}\n", B.mo_energies.transpose(), B.C);
+    fmt::print("MO AB: {}\n{}\n", AB.mo_energies.transpose(), AB.C);
+    AB.atoms = merge_atoms(A.atoms, B.atoms);
 
     fmt::print("Merged geometry\n{:3s} {:^10s} {:^10s} {:^10s}\n", "sym", "x", "y", "z");
-    for (const auto &atom : atoms_AB) {
+    for (const auto &atom : AB.atoms) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                    atom.x, atom.y, atom.z);
     }
-    auto basis_AB = merge_basis_sets(basis_a, basis_b);
-    auto shell2atom = basis_AB.shell2atom(atoms_AB);
-    for(const auto &atom: shell2atom) {
-        fmt::print(" {}", atom);
-    }
-    fmt::print("\n");
-//    for(const auto& shell: basis_AB) {
-//        fmt::print("{}\n", shell);
-//    }
-    auto hf_AB = tonto::hf::HartreeFock(atoms_AB, basis_AB);
+    AB.basis = merge_basis_sets(A.basis, B.basis);
+    auto hf_AB = tonto::hf::HartreeFock(AB.atoms, AB.basis);
     MatRM S_AB = hf_AB.compute_overlap_matrix();
     fmt::print("S\n{}\n", S_AB);
-    MatRM X_AB, X_inv_AB, DAB, CAB_occ;
+    MatRM X_AB, X_inv_AB;
     double X_AB_condition_number;
     double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
     std::tie(X_AB, X_inv_AB, X_AB_condition_number) = tonto::conditioning_orthogonalizer(S_AB, S_condition_number_threshold);
@@ -156,29 +175,31 @@ int main(int argc, const char **argv) {
 
     fmt::print("X\n{}\n", X_AB);
     fmt::print("X_inv\n{}\n", X_inv_AB);
-    CAB =  CAB * X_inv_AB;
-    CAB_occ = CAB.leftCols(fchk_a.num_alpha() + fchk_b.num_alpha());
-    DAB = CAB_occ * CAB_occ.transpose();
-    fmt::print("DAB\n{}\n", DAB);
-    MatRM JAB, KAB;
+    AB.C =  AB.C * X_inv_AB;
+    AB.num_occ = A.num_occ + B.num_occ;
+    AB.C_occ = AB.C.leftCols(AB.num_occ);
+    AB.D= AB.C_occ * AB.C_occ.transpose();
+    fmt::print("DAB\n{}\n", AB.D);
     auto kind_ab = kind_a;
-    std::tie(JAB, KAB) = hf_AB.compute_JK(kind_ab, DAB);
-    double coul_ab = expectation<SpinorbitalKind::Restricted>(DAB, JAB);
-    double exchange_ab = expectation<SpinorbitalKind::Restricted>(DAB, KAB);
-    tonto::log::info("Coulomb: {}, Exchange: {}", coul_ab, exchange_ab);
+    std::tie(AB.J, AB.K) = hf_AB.compute_JK(kind_ab, AB.D);
+    AB.energy.coulomb = expectation<SpinorbitalKind::Restricted>(AB.D, AB.J);
+    AB.energy.exchange = expectation<SpinorbitalKind::Restricted>(AB.D, AB.K);
+    tonto::log::info("Coulomb: {}, Exchange: {}", AB.energy.coulomb, AB.energy.exchange);
 
-    MatRM VAB = hf_AB.compute_nuclear_attraction_matrix();
-    double e_nuc_ab = expectation<SpinorbitalKind::Restricted>(DAB, VAB);
-    tonto::log::info("Computed nuclear attraction for AB, energy = {}", e_nuc_ab);
-    MatRM TAB = hf_AB.compute_kinetic_matrix();
-    double e_kinetic_ab = expectation<SpinorbitalKind::Restricted>(DAB, TAB);
-    tonto::log::info("Computed kinetic energy for AB, energy = {}", e_kinetic_ab);
-    MatRM HAB = VAB + TAB;
-    double e_core_ab = expectation<SpinorbitalKind::Restricted>(DAB, HAB);
-    tonto::log::info("Computed core hamiltonian for B, energy = {}", e_core_ab);
+    AB.V = hf_AB.compute_nuclear_attraction_matrix();
+    AB.energy.nuclear_attraction = expectation<SpinorbitalKind::Restricted>(AB.D, AB.V);
+    tonto::log::info("Computed nuclear attraction for AB, energy = {}", AB.energy.nuclear_attraction);
+    AB.T = hf_AB.compute_kinetic_matrix();
+    AB.energy.kinetic = expectation<SpinorbitalKind::Restricted>(AB.D, AB.T);
+    tonto::log::info("Computed kinetic energy for AB, energy = {}", AB.energy.kinetic);
+    AB.H = AB.V + AB.T;
+    AB.energy.core = expectation<SpinorbitalKind::Restricted>(AB.D, AB.H);
+    tonto::log::info("Computed core hamiltonian for B, energy = {}", AB.energy.core);
     fmt::print("Differences:\nEcoul = {}\nEexch = {}\nEnuc  = {}\nEkin  = {}\nEcore = {}\n",
-               coul_ab - coul_a - coul_b, exchange_ab - exchange_a - exchange_b,
-               e_nuc_ab - e_nuc_a - e_nuc_b, e_kinetic_ab - e_kinetic_a - e_kinetic_b,
-               e_core_ab - e_core_a - e_core_b);
+               AB.energy.coulomb - A.energy.coulomb - B.energy.coulomb,
+               AB.energy.exchange - A.energy.exchange - B.energy.exchange,
+               AB.energy.nuclear_attraction - A.energy.nuclear_attraction - B.energy.nuclear_attraction,
+               AB.energy.kinetic - A.energy.kinetic - B.energy.kinetic,
+               AB.energy.core - A.energy.core - B.energy.core);
 
 }
