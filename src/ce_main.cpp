@@ -15,6 +15,32 @@ using tonto::chem::Element;
 using tonto::util::all_close;
 using tonto::util::join;
 using tonto::gto::shell_component_labels;
+using tonto::MatRM;
+using tonto::Vec;
+
+std::pair<MatRM, Vec> merge_molecular_orbitals(const MatRM& mo_a, const MatRM& mo_b, const Vec e_a, const Vec e_b)
+{
+    MatRM merged = MatRM::Zero(mo_a.rows() + mo_b.rows(), mo_a.cols() + mo_b.cols());
+    Vec merged_energies(e_a.rows() + e_b.rows());
+    merged_energies.topRows(e_a.rows()) = e_a;
+    merged_energies.bottomRows(e_b.rows()) = e_b;
+    std::vector<Eigen::Index> idxs;
+    idxs.reserve(merged_energies.rows());
+    for(Eigen::Index i = 0; i < merged_energies.rows(); i++) idxs.push_back(i);
+    std::sort(idxs.begin(), idxs.end(), [&merged_energies](Eigen::Index a, Eigen::Index b) { return merged_energies(a) < merged_energies(b); });
+    Vec sorted_energies(merged_energies.rows());
+    for(Eigen::Index i = 0; i < merged_energies.rows(); i++) {
+        Eigen::Index c = idxs[i];
+        sorted_energies(i) = merged_energies(c);
+        if(c >= mo_a.cols()) {
+            merged.col(i).bottomRows(mo_b.rows()) = mo_b.col(c - mo_a.cols());
+        }
+        else {
+            merged.col(i).topRows(mo_a.rows()) = mo_a.col(c);
+        }
+    }
+    return {merged, sorted_energies};
+}
 
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("ce");
@@ -83,7 +109,6 @@ int main(int argc, const char **argv) {
     FchkReader::reorder_mo_coefficients_from_gaussian_convention(basis_b, CB);
     tonto::MatRM CB_occ = CB.leftCols(fchk_a.num_alpha());
     tonto::MatRM DB = CB_occ * CB_occ.transpose();
-
     tonto::log::info("Finished reading SCF density matrices");
     tonto::log::info("Matrices are the same: {}", all_close(DA, DB, 1e-05));
     tonto::hf::HartreeFock hf_a(fchk_a.atoms(), basis_a);
@@ -116,5 +141,12 @@ int main(int argc, const char **argv) {
         expectation<SpinorbitalKind::Restricted>(DB, KB)
     );
     tonto::MatRM fock_B = hf_b.compute_fock(kind_b, DB);
+    tonto::Vec e_a = fchk_a.alpha_mo_energies();
+    tonto::Vec e_b = fchk_b.alpha_mo_energies();
+    tonto::MatRM CAB, e_ab;
+    std::tie(CAB, e_ab) = merge_molecular_orbitals(CA, CB, e_a, e_b);
+    fmt::print("MO A energies:\n{}\nCoeffs:\n{}\n", e_a, CA);
+    fmt::print("MO B energies:\n{}\nCoeffs:\n{}\n", e_b, CB);
+    fmt::print("MO AB energies:\n{}\nCoeffs:\n{}\n", e_ab, CAB);
 
 }
