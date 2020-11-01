@@ -42,6 +42,24 @@ struct Wavefunction {
     Energy energy;
 };
 
+template<SpinorbitalKind kind>
+void compute_energies(Wavefunction& wfn, tonto::hf::HartreeFock& hf)
+{
+    double exchange_factor = - 0.5;
+    if constexpr(kind != SpinorbitalKind::Restricted) exchange_factor = - 1.0;
+    wfn.V = hf.compute_nuclear_attraction_matrix();
+    wfn.energy.nuclear_attraction = expectation<kind>(wfn.D, wfn.V);
+    wfn.T = hf.compute_kinetic_matrix();
+    wfn.energy.kinetic = expectation<kind>(wfn.D, wfn.T);
+    wfn.H = wfn.V + wfn.T;
+    wfn.energy.core = expectation<kind>(wfn.D, wfn.H);
+    std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.D);
+    wfn.energy.coulomb = expectation<kind>(wfn.D, wfn.J);
+    wfn.energy.exchange = exchange_factor * expectation<kind>(wfn.D, wfn.K);
+    wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
+}
+
+
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("ce");
     parser.add_argument("fchk_a").help("Input file fchk A");
@@ -72,8 +90,8 @@ int main(int argc, const char **argv) {
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
 
-    SpinorbitalKind kind_a = SpinorbitalKind::Restricted;
-    SpinorbitalKind kind_b = SpinorbitalKind::Restricted;
+    const SpinorbitalKind kind_a = SpinorbitalKind::Restricted;
+    const SpinorbitalKind kind_b = SpinorbitalKind::Restricted;
 
     const std::string fchk_filename_a = parser.get<std::string>("fchk_a");
     const std::string fchk_filename_b = parser.get<std::string>("fchk_b");
@@ -93,7 +111,7 @@ int main(int argc, const char **argv) {
                    atom.x, atom.y, atom.z);
     }
 
-    Wavefunction A, B, AB;
+    Wavefunction A, B, ABn, ABo;
     A.num_occ = fchk_a.num_alpha();
     B.num_occ = fchk_b.num_alpha();
 
@@ -101,6 +119,8 @@ int main(int argc, const char **argv) {
     B.basis = fchk_b.basis_set();
     A.atoms = fchk_a.atoms();
     B.atoms = fchk_b.atoms();
+
+    double exchange_factor = 0.5;
 
     A.C = fchk_a.alpha_mo_coefficients();
     FchkReader::reorder_mo_coefficients_from_gaussian_convention(A.basis, A.C);
@@ -117,54 +137,28 @@ int main(int argc, const char **argv) {
     tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
     tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
 
-    A.V = hf_a.compute_nuclear_attraction_matrix();
-    A.energy.nuclear_attraction = expectation<SpinorbitalKind::Restricted>(A.D, A.V);
-
-    tonto::log::info("Computed nuclear attraction for A, energy = {}", A.energy.nuclear_attraction);
-    A.T = hf_a.compute_kinetic_matrix();
-    A.energy.kinetic = expectation<SpinorbitalKind::Restricted>(A.D, A.T);
-    tonto::log::info("Computed kinetic energy for A, energy = {}", A.energy.kinetic);
-    A.H = A.V + A.T;
-    A.energy.core = expectation<SpinorbitalKind::Restricted>(A.D, A.H);
-    tonto::log::info("Computed core hamiltonian for A, energy = {}", A.energy.core);
-
-    B.V = hf_b.compute_nuclear_attraction_matrix();
-    B.energy.nuclear_attraction = expectation<SpinorbitalKind::Restricted>(B.D, B.V);
-    tonto::log::info("Computed nuclear attraction for B, energy = {}", B.energy.nuclear_attraction);
-    B.T = hf_b.compute_kinetic_matrix();
-    B.energy.kinetic = expectation<SpinorbitalKind::Restricted>(B.D, B.T);
-    tonto::log::info("Computed kinetic energy for B, energy = {}", B.energy.kinetic);
-    B.H = B.V + B.T;
-    B.energy.core = expectation<SpinorbitalKind::Restricted>(B.D, B.H);
-    tonto::log::info("Computed core hamiltonian for B, energy = {}", B.energy.core);
-
-    std::tie(A.J, A.K) = hf_a.compute_JK(kind_a, A.D);
-    tonto::log::info("Computed JK matrices for molecule A");
-    A.energy.coulomb = expectation<SpinorbitalKind::Restricted>(A.D, A.J);
-    A.energy.exchange = expectation<SpinorbitalKind::Restricted>(A.D, A.K);
-    tonto::log::info("Coulomb: {}, Exchange: {}", A.energy.coulomb, A.energy.exchange);
-
-    std::tie(B.J, B.K) = hf_b.compute_JK(kind_b, B.D);
-    tonto::log::info("Computed JK matrices for molecule B");
-    B.energy.coulomb = expectation<SpinorbitalKind::Restricted>(B.D, B.J);
-    B.energy.exchange = expectation<SpinorbitalKind::Restricted>(B.D, B.K);
-    tonto::log::info("Coulomb: {}, Exchange: {}", B.energy.coulomb, B.energy.exchange);
-
     A.mo_energies = fchk_a.alpha_mo_energies();
     B.mo_energies = fchk_b.alpha_mo_energies();
-    std::tie(AB.C, AB.mo_energies) = merge_molecular_orbitals(A.C, B.C, A.mo_energies, B.mo_energies);
+
+    compute_energies<kind_a>(A, hf_a);
+    compute_energies<kind_b>(B, hf_b);
+
+    std::tie(ABn.C, ABn.mo_energies) = merge_molecular_orbitals(A.C, B.C, A.mo_energies, B.mo_energies);
     fmt::print("MO A: {}\n{}\n", A.mo_energies.transpose(), A.C);
     fmt::print("MO B: {}\n{}\n", B.mo_energies.transpose(), B.C);
-    fmt::print("MO AB: {}\n{}\n", AB.mo_energies.transpose(), AB.C);
-    AB.atoms = merge_atoms(A.atoms, B.atoms);
+    fmt::print("MO ABn: {}\n{}\n", ABn.mo_energies.transpose(), ABn.C);
+    ABn.atoms = merge_atoms(A.atoms, B.atoms);
+    ABo.atoms = ABn.atoms;
 
     fmt::print("Merged geometry\n{:3s} {:^10s} {:^10s} {:^10s}\n", "sym", "x", "y", "z");
-    for (const auto &atom : AB.atoms) {
+    for (const auto &atom : ABn.atoms) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                    atom.x, atom.y, atom.z);
     }
-    AB.basis = merge_basis_sets(A.basis, B.basis);
-    auto hf_AB = tonto::hf::HartreeFock(AB.atoms, AB.basis);
+    ABn.basis = merge_basis_sets(A.basis, B.basis);
+    auto hf_AB = tonto::hf::HartreeFock(ABn.atoms, ABn.basis);
+
+
     MatRM S_AB = hf_AB.compute_overlap_matrix();
     fmt::print("S\n{}\n", S_AB);
     MatRM X_AB, X_inv_AB;
@@ -175,31 +169,31 @@ int main(int argc, const char **argv) {
 
     fmt::print("X\n{}\n", X_AB);
     fmt::print("X_inv\n{}\n", X_inv_AB);
-    AB.C =  AB.C * X_inv_AB;
-    AB.num_occ = A.num_occ + B.num_occ;
-    AB.C_occ = AB.C.leftCols(AB.num_occ);
-    AB.D= AB.C_occ * AB.C_occ.transpose();
-    fmt::print("DAB\n{}\n", AB.D);
-    auto kind_ab = kind_a;
-    std::tie(AB.J, AB.K) = hf_AB.compute_JK(kind_ab, AB.D);
-    AB.energy.coulomb = expectation<SpinorbitalKind::Restricted>(AB.D, AB.J);
-    AB.energy.exchange = expectation<SpinorbitalKind::Restricted>(AB.D, AB.K);
-    tonto::log::info("Coulomb: {}, Exchange: {}", AB.energy.coulomb, AB.energy.exchange);
+    ABo.C =  ABn.C * X_inv_AB;
+    ABn.num_occ = A.num_occ + B.num_occ;
+    ABo.num_occ = ABn.num_occ;
 
-    AB.V = hf_AB.compute_nuclear_attraction_matrix();
-    AB.energy.nuclear_attraction = expectation<SpinorbitalKind::Restricted>(AB.D, AB.V);
-    tonto::log::info("Computed nuclear attraction for AB, energy = {}", AB.energy.nuclear_attraction);
-    AB.T = hf_AB.compute_kinetic_matrix();
-    AB.energy.kinetic = expectation<SpinorbitalKind::Restricted>(AB.D, AB.T);
-    tonto::log::info("Computed kinetic energy for AB, energy = {}", AB.energy.kinetic);
-    AB.H = AB.V + AB.T;
-    AB.energy.core = expectation<SpinorbitalKind::Restricted>(AB.D, AB.H);
-    tonto::log::info("Computed core hamiltonian for B, energy = {}", AB.energy.core);
-    fmt::print("Differences:\nEcoul = {}\nEexch = {}\nEnuc  = {}\nEkin  = {}\nEcore = {}\n",
-               AB.energy.coulomb - A.energy.coulomb - B.energy.coulomb,
-               AB.energy.exchange - A.energy.exchange - B.energy.exchange,
-               AB.energy.nuclear_attraction - A.energy.nuclear_attraction - B.energy.nuclear_attraction,
-               AB.energy.kinetic - A.energy.kinetic - B.energy.kinetic,
-               AB.energy.core - A.energy.core - B.energy.core);
+    ABn.C_occ = ABn.C.leftCols(ABn.num_occ);
+    ABo.C_occ = ABo.C.leftCols(ABo.num_occ);
 
+    ABn.D= ABn.C_occ * ABn.C_occ.transpose();
+    fmt::print("DABb\n{}\n", ABn.D);
+    ABo.D= ABo.C_occ * ABo.C_occ.transpose();
+    fmt::print("DABb\n{}\n", ABo.D);
+    const auto kind_ab = kind_a;
+
+    compute_energies<kind_ab>(ABn, hf_AB);
+    compute_energies<kind_ab>(ABo, hf_AB);
+
+    Energy E_ABn;
+    E_ABn.coulomb = ABn.energy.coulomb - (A.energy.coulomb + B.energy.coulomb);
+    E_ABn.exchange = ABn.energy.exchange - (A.energy.exchange + B.energy.exchange);
+    E_ABn.core = ABn.energy.core - (A.energy.core + B.energy.core);
+    double E_coul = E_ABn.coulomb + E_ABn.core + E_ABn.nuclear_repulsion;
+    double E_tot = E_coul + E_ABn.exchange;
+
+    double E_exch_rep = E_ABn.exchange + (ABo.energy.coulomb + ABo.energy.exchange + ABo.energy.core - ABn.energy.coulomb - ABn.energy.exchange - ABn.energy.core);
+
+    fmt::print("E_coul: {}\n", E_coul * 2625.25);
+    fmt::print("E_rep: {}\n", E_exch_rep * 2625.25);
 }
