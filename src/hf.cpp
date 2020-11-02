@@ -82,4 +82,20 @@ std::pair<MatRM, MatRM> HartreeFock::compute_JK_general(const MatRM &D,
   return tonto::ints::compute_JK_general(m_basis, m_shellpair_list, m_shellpair_data, D,
                                  precision, Schwarz);
 }
+
+Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions)
+{
+    Mat3N result = Mat3N::Zero(3, positions.cols());
+    for(const auto& atom: m_atoms)
+    {
+        double Z = atom.atomic_number;
+        Vec3 atom_pos{atom.x, atom.y, atom.z};
+        auto ab = positions.colwise() - atom_pos;
+        auto r = ab.colwise().norm();
+        auto r3 = r.array() * r.array() * r.array();
+        result.array() += (Z * (ab.array().rowwise() / r3));
+    }
+    return result;
+}
+
 } // namespace tonto::hf

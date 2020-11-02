@@ -94,6 +94,8 @@ public:
         derivative, m_basis, m_shellpair_list, m_atoms);
   }
 
+  Mat3N nuclear_electric_field_contribution(const Mat3N&);
+
   MatRM
   compute_2body_fock(const MatRM &D,
                      double precision = std::numeric_limits<double>::epsilon(),

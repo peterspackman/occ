@@ -7,6 +7,7 @@ add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
 create_catch_test(test_dft.cpp)
+create_catch_test(test_electric_field.cpp)
 create_catch_test(test_element.cpp)
 create_catch_test(test_fchk.cpp)
 create_catch_test(test_grid.cpp)
