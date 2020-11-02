@@ -30,6 +30,15 @@ struct Energy {
     double nuclear_attraction{0};
     double kinetic{0};
     double core{0};
+    void print() const {
+        constexpr auto format_string = "{:<10s} {:10.6f}\n";
+        fmt::print(format_string, "E_coul", coulomb);
+        fmt::print(format_string, "E_ex", exchange);
+        fmt::print(format_string, "E_nn", nuclear_repulsion);
+        fmt::print(format_string, "E_en", nuclear_attraction);
+        fmt::print(format_string, "E_kin", kinetic);
+        fmt::print(format_string, "E_1e", core);
+    }
 };
 
 struct Wavefunction {
@@ -45,18 +54,39 @@ struct Wavefunction {
 template<SpinorbitalKind kind>
 void compute_energies(Wavefunction& wfn, tonto::hf::HartreeFock& hf)
 {
-    double exchange_factor = - 0.5;
-    if constexpr(kind != SpinorbitalKind::Restricted) exchange_factor = - 1.0;
     wfn.V = hf.compute_nuclear_attraction_matrix();
-    wfn.energy.nuclear_attraction = expectation<kind>(wfn.D, wfn.V);
+    wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
     wfn.T = hf.compute_kinetic_matrix();
-    wfn.energy.kinetic = expectation<kind>(wfn.D, wfn.T);
+    wfn.energy.kinetic = 2 * expectation<kind>(wfn.D, wfn.T);
     wfn.H = wfn.V + wfn.T;
-    wfn.energy.core = expectation<kind>(wfn.D, wfn.H);
+    wfn.energy.core = 2 * expectation<kind>(wfn.D, wfn.H);
     std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.D);
     wfn.energy.coulomb = expectation<kind>(wfn.D, wfn.J);
-    wfn.energy.exchange = exchange_factor * expectation<kind>(wfn.D, wfn.K);
+    wfn.energy.exchange = - expectation<kind>(wfn.D, wfn.K);
     wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
+}
+
+
+MatRM symmetrically_orthonormalize(const MatRM& mat, const MatRM& metric)
+{
+    MatRM X, X_invT;
+    size_t n_cond;
+    double x_condition_number, condition_number;
+    double threshold = 1.0 / std::numeric_limits<double>::epsilon();
+    MatRM SS = mat.transpose() * metric * mat;
+    std::tie(X, X_invT, n_cond, x_condition_number, condition_number) = tonto::gensqrtinv(SS, true, threshold);
+    return mat * X;
+}
+
+MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overlap, size_t n_occ)
+{
+    MatRM result(mos.rows(), mos.cols());
+    size_t n_virt = mos.cols() - n_occ;
+    MatRM C_occ = mos.leftCols(n_occ);
+    MatRM C_virt = mos.rightCols(n_virt);
+    result.leftCols(n_occ) = symmetrically_orthonormalize(C_occ, overlap);
+    result.rightCols(n_virt) = symmetrically_orthonormalize(C_virt, overlap);
+    return result;
 }
 
 
@@ -120,8 +150,6 @@ int main(int argc, const char **argv) {
     A.atoms = fchk_a.atoms();
     B.atoms = fchk_b.atoms();
 
-    double exchange_factor = 0.5;
-
     A.C = fchk_a.alpha_mo_coefficients();
     FchkReader::reorder_mo_coefficients_from_gaussian_convention(A.basis, A.C);
     A.C_occ = A.C.leftCols(A.num_occ);
@@ -133,7 +161,6 @@ int main(int argc, const char **argv) {
     B.D = B.C_occ * B.C_occ.transpose();
 
     tonto::log::info("Finished reading SCF density matrices");
-    tonto::log::info("Matrices are the same: {}", all_close(A.D, B.D, 1e-05));
     tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
     tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
 
@@ -143,10 +170,33 @@ int main(int argc, const char **argv) {
     compute_energies<kind_a>(A, hf_a);
     compute_energies<kind_b>(B, hf_b);
 
-    std::tie(ABn.C, ABn.mo_energies) = merge_molecular_orbitals(A.C, B.C, A.mo_energies, B.mo_energies);
-    fmt::print("MO A: {}\n{}\n", A.mo_energies.transpose(), A.C);
-    fmt::print("MO B: {}\n{}\n", B.mo_energies.transpose(), B.C);
-    fmt::print("MO ABn: {}\n{}\n", ABn.mo_energies.transpose(), ABn.C);
+    ABn.C = MatRM(A.C.rows() + B.C.rows(), A.C.cols() + B.C.cols());
+    ABn.mo_energies = tonto::Vec(A.mo_energies.rows() + B.mo_energies.rows());
+
+    MatRM C_merged;
+    tonto::Vec energies_merged;
+    ABn.num_occ = A.num_occ + B.num_occ;
+
+    tonto::log::info("Merging occupied orbitals, sorted by energy");
+    // merge occupied orbitals, merging occupied separately from virtual
+    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+        A.C.leftCols(A.num_occ), B.C.leftCols(B.num_occ),
+        A.mo_energies.topRows(A.num_occ), B.mo_energies.topRows(B.num_occ));
+
+
+    ABn.C.leftCols(ABn.num_occ) = C_merged;
+    ABn.mo_energies.topRows(ABn.num_occ) = energies_merged;
+
+    size_t nv_a = A.C.rows() - A.num_occ, nv_b = B.C.rows() - B.num_occ;
+    size_t nv_ab = nv_a + nv_b;
+
+    tonto::log::info("Merging virtual orbitals, sorted by energy");
+    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+        A.C.rightCols(nv_a), B.C.leftCols(nv_b),
+        A.mo_energies.bottomRows(nv_a), B.mo_energies.topRows(nv_b));
+    ABn.C.rightCols(nv_ab) = C_merged;
+    ABn.mo_energies.bottomRows(nv_ab) = energies_merged;
+
     ABn.atoms = merge_atoms(A.atoms, B.atoms);
     ABo.atoms = ABn.atoms;
 
@@ -159,41 +209,43 @@ int main(int argc, const char **argv) {
     auto hf_AB = tonto::hf::HartreeFock(ABn.atoms, ABn.basis);
 
 
+    tonto::log::info("Computing overlap matrix for merged orbitals");
     MatRM S_AB = hf_AB.compute_overlap_matrix();
-    fmt::print("S\n{}\n", S_AB);
-    MatRM X_AB, X_inv_AB;
-    double X_AB_condition_number;
-    double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
-    std::tie(X_AB, X_inv_AB, X_AB_condition_number) = tonto::conditioning_orthogonalizer(S_AB, S_condition_number_threshold);
-    fmt::print("Condition number: {}\n", X_AB_condition_number);
-
-    fmt::print("X\n{}\n", X_AB);
-    fmt::print("X_inv\n{}\n", X_inv_AB);
-    ABo.C =  ABn.C * X_inv_AB;
-    ABn.num_occ = A.num_occ + B.num_occ;
+    tonto::log::info("Orthonormalizing merged orbitals using overlap matrix");
+    ABo.C = symmorthonormalize_molecular_orbitals(ABn.C, S_AB, ABn.num_occ);
     ABo.num_occ = ABn.num_occ;
 
     ABn.C_occ = ABn.C.leftCols(ABn.num_occ);
     ABo.C_occ = ABo.C.leftCols(ABo.num_occ);
 
     ABn.D= ABn.C_occ * ABn.C_occ.transpose();
-    fmt::print("DABb\n{}\n", ABn.D);
     ABo.D= ABo.C_occ * ABo.C_occ.transpose();
-    fmt::print("DABb\n{}\n", ABo.D);
     const auto kind_ab = kind_a;
 
+    tonto::log::info("Computing non-orthogonal merged energies");
     compute_energies<kind_ab>(ABn, hf_AB);
+    tonto::log::info("Computing orthogonal merged energies");
     compute_energies<kind_ab>(ABo, hf_AB);
 
+
     Energy E_ABn;
+    E_ABn.kinetic = ABn.energy.kinetic - (A.energy.kinetic + B.energy.kinetic);
     E_ABn.coulomb = ABn.energy.coulomb - (A.energy.coulomb + B.energy.coulomb);
     E_ABn.exchange = ABn.energy.exchange - (A.energy.exchange + B.energy.exchange);
     E_ABn.core = ABn.energy.core - (A.energy.core + B.energy.core);
-    double E_coul = E_ABn.coulomb + E_ABn.core + E_ABn.nuclear_repulsion;
-    double E_tot = E_coul + E_ABn.exchange;
+    E_ABn.nuclear_attraction = ABn.energy.nuclear_attraction - (A.energy.nuclear_attraction + B.energy.nuclear_attraction);
+    E_ABn.nuclear_repulsion = ABn.energy.nuclear_repulsion - (A.energy.nuclear_repulsion + B.energy.nuclear_repulsion);
+    double E_coul = E_ABn.coulomb + E_ABn.nuclear_attraction + E_ABn.nuclear_repulsion;
+    double eABn = ABn.energy.core + ABn.energy.exchange + ABn.energy.coulomb;
+    double eABo = ABo.energy.core + ABo.energy.exchange + ABo.energy.coulomb;
+    double E_rep = eABo - eABn;
+    double E_XR = E_ABn.exchange + E_rep;
 
-    double E_exch_rep = E_ABn.exchange + (ABo.energy.coulomb + ABo.energy.exchange + ABo.energy.core - ABn.energy.coulomb - ABn.energy.exchange - ABn.energy.core);
+    fmt::print("ABo\n");
+    ABn.energy.print();
+    fmt::print("ABn\n");
+    ABo.energy.print();
 
-    fmt::print("E_coul: {}\n", E_coul * 2625.25);
-    fmt::print("E_rep: {}\n", E_exch_rep * 2625.25);
+    fmt::print("Results\n\nE_coul  {: 12.6f}\n", E_coul * 2625.5);
+    fmt::print("E_rep   {: 12.6f}\n", E_XR * 2625.5);
 }
