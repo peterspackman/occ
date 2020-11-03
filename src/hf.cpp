@@ -32,57 +32,6 @@ MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const {
   return tonto::ints::compute_shellblock_norm(m_basis, A);
 }
 
-MatRM HartreeFock::compute_2body_fock(const MatRM &D, double precision,
-                                      const MatRM &Schwarz) const {
-  auto F = tonto::ints::compute_fock<tonto::ints::SpinorbitalKind::Restricted>(
-      m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-  m_e_alpha = D.cwiseProduct(F).sum();
-  return F;
-}
-
-std::pair<MatRM, MatRM> HartreeFock::compute_JK(const MatRM &D,
-                                                double precision,
-                                                const MatRM &Schwarz) const {
-  return tonto::ints::compute_JK(m_basis, m_shellpair_list, m_shellpair_data, D,
-                                 precision, Schwarz);
-}
-
-MatRM HartreeFock::compute_J(const MatRM &D, double precision,
-                             const MatRM &Schwarz) const {
-  return tonto::ints::compute_J(
-      m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-}
-
-std::pair<MatRM, MatRM>
-HartreeFock::compute_2body_fock_unrestricted(const MatRM &Da, const MatRM &Db,
-                                             double precision,
-                                             const MatRM &Schwarz) const {
-  return tonto::ints::compute_2body_fock_unrestricted(
-      m_basis, m_shellpair_list, m_shellpair_data, Da, Db, precision, Schwarz);
-}
-
-std::tuple<MatRM, MatRM, MatRM, MatRM>
-HartreeFock::compute_JK_unrestricted(const MatRM &Da, const MatRM &Db,
-                                     double precision,
-                                     const MatRM &Schwarz) const {
-  return tonto::ints::compute_JK_unrestricted(
-      m_basis, m_shellpair_list, m_shellpair_data, Da, Db, precision, Schwarz);
-}
-
-
-MatRM HartreeFock::compute_2body_fock_general(const MatRM &D, double precision,
-                                      const MatRM &Schwarz) const {
-  return tonto::ints::compute_fock<tonto::ints::SpinorbitalKind::General>(
-      m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-}
-
-std::pair<MatRM, MatRM> HartreeFock::compute_JK_general(const MatRM &D,
-                                                double precision,
-                                                const MatRM &Schwarz) const {
-  return tonto::ints::compute_JK_general(m_basis, m_shellpair_list, m_shellpair_data, D,
-                                 precision, Schwarz);
-}
-
 Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions)
 {
     Mat3N result = Mat3N::Zero(3, positions.cols());

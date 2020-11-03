@@ -13,7 +13,6 @@
 namespace tonto::gto {
 
 using tonto::qm::BasisSet;
-
 const inline char shell_labels[] = "SPDFGHIKMNOQRTUVWXYZ";
 
 inline std::string component_label(int i, int j, int k, int l) {
@@ -266,6 +265,27 @@ GTOValues<max_derivative> evaluate_basis_on_grid(const BasisSet &basis,
     }
     tonto::timing::stop(tonto::timing::category::gto);
     return gto_values;
+}
+
+
+template<size_t angular_momentum>
+tonto::Mat cartesian_gaussian_rotation_matrix(const tonto::Mat3& rot)
+{
+    if constexpr(angular_momentum == 0)
+    {
+        Mat result(1, 1);
+        result.setConstant(1.0);
+        return result;
+    }
+    else if constexpr(angular_momentum == 1)
+    {
+        return rot;
+    }
+    else if constexpr(angular_momentum == 2)
+    {
+        Mat result(6, 6);
+        return result;
+    }
 }
 
 }

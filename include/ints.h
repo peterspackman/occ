@@ -372,56 +372,6 @@ MatRM compute_schwarz_ints(
 
 MatRM compute_shellblock_norm(const BasisSet &obs, const MatRM &A);
 MatRM compute_2body_2index_ints(const BasisSet &);
-MatRM compute_2body_fock(
-    const BasisSet &obs, const shellpair_list_t &shellpair_list,
-    const shellpair_data_t &shellpair_data, const MatRM &D,
-    double precision = std::numeric_limits<
-        double>::epsilon(),        // discard contributions smaller than this
-    const MatRM &Schwarz = MatRM() // K_ij = sqrt(||(ij|ij)||_\infty); if
-                                   // empty, do not Schwarz screen
-);
-
-MatRM
-compute_J(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-          const shellpair_data_t &shellpair_data, const MatRM &D,
-          double precision = std::numeric_limits<double>::epsilon(),
-          const MatRM &Schwarz = MatRM());
-
-std::pair<MatRM, MatRM>
-compute_JK(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-           const shellpair_data_t &shellpair_data, const MatRM &D,
-           double precision = std::numeric_limits<double>::epsilon(),
-           const MatRM &Schwarz = MatRM());
-
-std::pair<MatRM, MatRM> compute_2body_fock_unrestricted(
-    const BasisSet &obs, const shellpair_list_t &shellpair_list,
-    const shellpair_data_t &shellpair_data, const MatRM &Da, const MatRM &Db,
-    double precision = std::numeric_limits<
-        double>::epsilon(),        // discard contributions smaller than this
-    const MatRM &Schwarz = MatRM() // K_ij = sqrt(||(ij|ij)||_\infty); if
-                                   // empty, do not Schwarz screen
-);
-
-MatRM compute_2body_fock_general(
-    const BasisSet &obs, const shellpair_list_t &shellpair_list,
-    const shellpair_data_t &shellpair_data, const MatRM &Da,
-    double precision = std::numeric_limits<
-        double>::epsilon(),        // discard contributions smaller than this
-    const MatRM &Schwarz = MatRM() // K_ij = sqrt(||(ij|ij)||_\infty); if
-                                   // empty, do not Schwarz screen
-);
-
-std::pair<MatRM, MatRM>
-compute_JK_general(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-           const shellpair_data_t &shellpair_data, const MatRM &D,
-           double precision = std::numeric_limits<double>::epsilon(),
-           const MatRM &Schwarz = MatRM());
-
-std::tuple<MatRM, MatRM, MatRM, MatRM> compute_JK_unrestricted(
-    const BasisSet &obs, const shellpair_list_t &shellpair_list,
-    const shellpair_data_t &shellpair_data, const MatRM &Da, const MatRM &Db,
-    double precision = std::numeric_limits<double>::epsilon(),
-    const MatRM &Schwarz = MatRM());
 
 MatRM compute_2body_fock_mixed_basis(
     const BasisSet &obs, const MatRM &D, const BasisSet &D_bs,
@@ -692,4 +642,8 @@ std::vector<MatRM> compute_2body_fock_deriv(
   // symmetrize the result and return
   return GG;
 }
+
+tonto::Vec compute_electric_potential(const tonto::MatRM& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
+                                      const tonto::Mat3N& positions);
+
 } // namespace tonto::ints
