@@ -147,10 +147,6 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const HartreeFock 
 
     auto fsq_a = field_a.colwise().squaredNorm();
     auto fsq_b = field_b.colwise().squaredNorm();
-    fmt::print("Field at A:\n{}\n", field_a);
-    fmt::print("F^2 A:\n{}\n", fsq_a);
-    fmt::print("Field at B:\n{}\n", field_b);
-    fmt::print("F^2 B:\n{}\n", fsq_b);
     double epol = 0.0;
     for(size_t i = 0; i < fsq_a.rows(); i++)
     {
