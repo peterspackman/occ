@@ -6,6 +6,7 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/density_functional.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/disp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"

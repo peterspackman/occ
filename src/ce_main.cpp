@@ -8,6 +8,7 @@
 #include "util.h"
 #include "gto.h"
 #include "pairinteraction.h"
+#include "disp.h"
 
 using tonto::io::FchkReader;
 using tonto::hf::HartreeFock;
@@ -325,4 +326,9 @@ int main(int argc, const char **argv) {
 
     auto e_pol = compute_polarization_energy(A, hf_a, B, hf_b);
     fmt::print("E_pol   {: 12.6f}\n", e_pol * 2625.5);
+    auto e_disp = tonto::disp::d2_interaction_energy(A.atoms, B.atoms);
+    fmt::print("E_disp  {: 12.6f}\n", e_disp * 2625.5);
+
+    fmt::print("E_tot (CE-B3LYP) {: 12.6f}\n", 
+                tonto::interaction::CE_B3LYP_631Gdp.scaled_total(E_coul, E_XR, e_pol, e_disp) * 2625.5);
 }

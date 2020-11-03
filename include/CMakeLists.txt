@@ -8,6 +8,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/diis.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/disp.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.h"
