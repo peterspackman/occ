@@ -32,7 +32,7 @@ MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const {
   return tonto::ints::compute_shellblock_norm(m_basis, A);
 }
 
-Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions)
+Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions) const
 {
     Mat3N result = Mat3N::Zero(3, positions.cols());
     for(const auto& atom: m_atoms)
@@ -45,6 +45,16 @@ Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions)
         result.array() += (Z * (ab.array().rowwise() / r3));
     }
     return result;
+}
+
+Mat3N HartreeFock::electronic_electric_field_contribution(const MatRM& D, const Mat3N &positions) const
+{
+    return tonto::ints::compute_electric_field(D, m_basis, m_shellpair_list, positions);
+}
+
+Vec HartreeFock::electronic_electric_potential_contribution(const MatRM &D, const Mat3N &positions) const
+{
+    return tonto::ints::compute_electric_potential(D, m_basis, m_shellpair_list, positions);
 }
 
 } // namespace tonto::hf

@@ -94,7 +94,9 @@ public:
         derivative, m_basis, m_shellpair_list, m_atoms);
   }
 
-  Mat3N nuclear_electric_field_contribution(const Mat3N&);
+  Mat3N nuclear_electric_field_contribution(const Mat3N&) const;
+  Mat3N electronic_electric_field_contribution(const MatRM&, const Mat3N&) const;
+  Vec electronic_electric_potential_contribution(const MatRM&, const Mat3N&) const;
 
   MatRM compute_shellblock_norm(const MatRM &A) const;
 
