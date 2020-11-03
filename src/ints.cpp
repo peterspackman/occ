@@ -423,20 +423,21 @@ tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
                     engines[thread_id].compute(obs[s1], obs[s2]);
 
                     Eigen::Map<const MatRM> buf_mat_x(buf[0], n1, n2), buf_mat_y(buf[1], n1, n2), buf_mat_z(buf[2], n1, n2);
-                    xmats[thread_id].block(bf1, bf2, n1, n2) = buf_mat_x;
-                    ymats[thread_id].block(bf1, bf2, n1, n2) = buf_mat_y;
-                    zmats[thread_id].block(bf1, bf2, n1, n2) = buf_mat_z;
+                    Eigen::Map<const MatRM> buf_mat_x2(buf[3], n1, n2), buf_mat_y2(buf[4], n1, n2), buf_mat_z2(buf[5], n1, n2);
+                    xmats[thread_id].block(bf1, bf2, n1, n2) = - (buf_mat_x + buf_mat_x2);
+                    ymats[thread_id].block(bf1, bf2, n1, n2) = - (buf_mat_y + buf_mat_y2);
+                    zmats[thread_id].block(bf1, bf2, n1, n2) = - (buf_mat_z + buf_mat_z2);
                     if (s1 != s2) {
-                        xmats[thread_id].block(bf2, bf1, n2, n1) = buf_mat_x.transpose();
-                        ymats[thread_id].block(bf2, bf1, n2, n1) = buf_mat_y.transpose();
-                        zmats[thread_id].block(bf2, bf1, n2, n1) = buf_mat_z.transpose();
+                        xmats[thread_id].block(bf2, bf1, n2, n1) = - (buf_mat_x + buf_mat_x2).transpose();
+                        ymats[thread_id].block(bf2, bf1, n2, n1) = - (buf_mat_y + buf_mat_y2).transpose();
+                        zmats[thread_id].block(bf2, bf1, n2, n1) = - (buf_mat_z + buf_mat_z2).transpose();
                     }
                 }
 
             }
-            result(0, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, xmats[thread_id]);
-            result(1, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, ymats[thread_id]);
-            result(2, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, zmats[thread_id]);
+            result(0, pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, xmats[thread_id]);
+            result(1, pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, ymats[thread_id]);
+            result(2, pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, zmats[thread_id]);
         }
     };
     tonto::parallel::parallel_do(compute);
