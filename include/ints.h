@@ -646,4 +646,6 @@ std::vector<MatRM> compute_2body_fock_deriv(
 tonto::Vec compute_electric_potential(const tonto::MatRM& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
                                       const tonto::Mat3N& positions);
 
+tonto::Mat3N compute_electric_field(const tonto::MatRM& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
+                                    const tonto::Mat3N& positions);
 } // namespace tonto::ints

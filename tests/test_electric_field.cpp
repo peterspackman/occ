@@ -16,8 +16,11 @@ TEST_CASE("H2/STO-3G") {
     };
     BasisSet basis("sto-3g", atoms);
     tonto::MatRM D(2, 2);
-    D.setConstant(0.3);
-    auto grid_pts = tonto::Mat3N::Random(3, 4);
+    D.setConstant(0.301228);
+    auto grid_pts = tonto::Mat3N(3, 4);
+    grid_pts << 1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 1.0,
+                0.0, 0.0, 1.0, 1.0;
     HartreeFock hf(atoms, basis);
     auto field_values = hf.nuclear_electric_field_contribution(grid_pts);
     fmt::print("Grid points\n{}\n", grid_pts);
@@ -29,4 +32,6 @@ TEST_CASE("H2/STO-3G") {
 
     auto esp = tonto::ints::compute_electric_potential(D, basis, shellpair_list, grid_pts);
     fmt::print("ESP:\n{}\n", esp);
+    auto efield = tonto::ints::compute_electric_field(D, basis, shellpair_list, grid_pts);
+    fmt::print("Electric field:\n{}\n", efield);
 }
