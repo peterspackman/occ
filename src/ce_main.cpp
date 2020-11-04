@@ -153,7 +153,6 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const HartreeFock 
 
     auto fsq_a = field_a.colwise().squaredNorm();
     auto fsq_b = field_b.colwise().squaredNorm();
-    fmt::print("F_sq_A\n{}\n", fsq_a);
     double epol = 0.0;
     for(size_t i = 0; i < wfn_a.atoms.size(); i++)
     {
@@ -161,7 +160,6 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const HartreeFock 
         double pol = Thakkar_atomic_polarizability[n - 1];
         epol += pol * fsq_a(i);
     }
-    fmt::print("F_sq_B\n{}\n", fsq_a);
     for(size_t i = 0; i < wfn_b.atoms.size(); i++)
     {
         size_t n = wfn_b.atoms[i].atomic_number;

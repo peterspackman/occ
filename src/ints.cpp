@@ -383,6 +383,7 @@ tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
 {
     using tonto::parallel::nthreads;
     using tonto::qm::expectation;
+    // seems to be correct for very small molecules but has issues -- use finite differences for now
 
     const auto n = obs.nbf();
     const auto nshells = obs.size();

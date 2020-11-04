@@ -52,13 +52,14 @@ Mat3N HartreeFock::electronic_electric_field_contribution(const MatRM& D, const 
     constexpr bool use_finite_differences = true;
     if constexpr(use_finite_differences) {
         double delta = 1e-8;
-        auto esp = electronic_electric_potential_contribution(D, positions);
         tonto::Mat3N efield_fd(positions.rows(), positions.cols());
         for(size_t i = 0; i < 3; i++) {
             auto pts_delta = positions;
             pts_delta.row(i).array() += delta;
-            auto esp_d = electronic_electric_potential_contribution(D, pts_delta);
-            efield_fd.row(i) = - (esp_d - esp) / delta;
+            auto esp_f = electronic_electric_potential_contribution(D, pts_delta);
+            pts_delta.row(i).array() -= 2 * delta;
+            auto esp_b = electronic_electric_potential_contribution(D, pts_delta);
+            efield_fd.row(i) = - (esp_f - esp_b) / (2 * delta);
         }
         return efield_fd;
     }
