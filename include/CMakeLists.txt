@@ -19,12 +19,15 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/logger.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubes.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubestables.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sparsevoxelgrid.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.h"
@@ -33,6 +36,7 @@ set(TONTO_INCLUDE_FILES
     # third party
     "${CMAKE_CURRENT_SOURCE_DIR}/argparse.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/nanoflann.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/robin_hood.h"
     PARENT_SCOPE
 )
 
