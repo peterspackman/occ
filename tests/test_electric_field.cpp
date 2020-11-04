@@ -43,7 +43,7 @@ TEST_CASE("H2/STO-3G") {
         auto grid_pts_d = grid_pts;
         grid_pts_d.row(i).array() += delta;
         auto esp_d = tonto::ints::compute_electric_potential(D, basis, shellpair_list, grid_pts_d);
-        efield_fd.row(i) = (esp_d - esp) / delta;
+        efield_fd.row(i) = - (esp_d - esp) / delta;
     }
     fmt::print("Electric field FD:\n{}\n", efield_fd);
     REQUIRE(all_close(efield, efield_fd, 1e-5, 1e-5));

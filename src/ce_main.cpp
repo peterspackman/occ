@@ -25,6 +25,8 @@ using tonto::interaction::merge_basis_sets;
 using tonto::interaction::merge_atoms;
 using tonto::qm::BasisSet;
 
+constexpr double kjmol_per_hartree{2625.46};
+
 const std::array<double, 110> Thakkar_atomic_polarizability{
      4.50,   1.38, 164.04,  37.74,  20.43,  11.67,   7.26,   5.24,   3.70,   2.66, 
    162.88,  71.22,  57.79,  37.17,  24.93,  19.37,  14.57,  11.09, 291.10, 157.90, 
@@ -141,21 +143,25 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const HartreeFock 
         bpos(1, i) = wfn_b.atoms[i].y;
         bpos(2, i) = wfn_b.atoms[i].z;
     }
+
+    // fields (incl. sign) have been checked and agree with both finite difference
+    // method and tonto
     tonto::Mat3N field_a = hf_b.electronic_electric_field_contribution(wfn_b.D, apos);
-    field_a -= hf_b.nuclear_electric_field_contribution(apos);
+    field_a += hf_b.nuclear_electric_field_contribution(apos);
     tonto::Mat3N field_b = hf_a.electronic_electric_field_contribution(wfn_a.D, bpos);
-    field_b -= hf_a.nuclear_electric_field_contribution(bpos);
+    field_b += hf_a.nuclear_electric_field_contribution(bpos);
 
     auto fsq_a = field_a.colwise().squaredNorm();
     auto fsq_b = field_b.colwise().squaredNorm();
+
     double epol = 0.0;
-    for(size_t i = 0; i < fsq_a.rows(); i++)
+    for(size_t i = 0; i < wfn_a.atoms.size(); i++)
     {
         size_t n = wfn_a.atoms[i].atomic_number;
         double pol = Thakkar_atomic_polarizability[n - 1];
         epol += pol * fsq_a(i);
     }
-    for(size_t i = 0; i < fsq_b.rows(); i++)
+    for(size_t i = 0; i < wfn_b.atoms.size(); i++)
     {
         size_t n = wfn_b.atoms[i].atomic_number;
         double pol = Thakkar_atomic_polarizability[n - 1];
@@ -321,14 +327,14 @@ int main(int argc, const char **argv) {
     fmt::print("ABn\n");
     ABo.energy.print();
 
-    fmt::print("Results\n\nE_coul  {: 12.6f}\n", E_coul * 2625.5);
-    fmt::print("E_rep   {: 12.6f}\n", E_XR * 2625.5);
+    fmt::print("Results\n\nE_coul  {: 12.6f}\n", E_coul * kjmol_per_hartree);
+    fmt::print("E_rep   {: 12.6f}\n", E_XR * kjmol_per_hartree);
 
     auto e_pol = compute_polarization_energy(A, hf_a, B, hf_b);
-    fmt::print("E_pol   {: 12.6f}\n", e_pol * 2625.5);
+    fmt::print("E_pol   {: 12.6f}\n", e_pol * kjmol_per_hartree);
     auto e_disp = tonto::disp::d2_interaction_energy(A.atoms, B.atoms);
-    fmt::print("E_disp  {: 12.6f}\n", e_disp * 2625.5);
+    fmt::print("E_disp  {: 12.6f}\n", e_disp * kjmol_per_hartree);
 
     fmt::print("E_tot (CE-B3LYP) {: 12.6f}\n", 
-                tonto::interaction::CE_B3LYP_631Gdp.scaled_total(E_coul, E_XR, e_pol, e_disp) * 2625.5);
+                tonto::interaction::CE_B3LYP_631Gdp.scaled_total(E_coul, E_XR, e_pol, e_disp) * kjmol_per_hartree);
 }

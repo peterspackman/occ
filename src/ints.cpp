@@ -435,9 +435,9 @@ tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
                 }
 
             }
-            result(0, pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, xmats[thread_id]);
-            result(1, pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, ymats[thread_id]);
-            result(2, pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, zmats[thread_id]);
+            result(0, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, xmats[thread_id]);
+            result(1, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, ymats[thread_id]);
+            result(2, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, zmats[thread_id]);
         }
     };
     tonto::parallel::parallel_do(compute);
