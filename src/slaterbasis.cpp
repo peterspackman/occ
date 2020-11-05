@@ -30,6 +30,40 @@ Shell::Shell(
     m_n1 = m_n.array().cast<double>() - 1.0;
 }
 
+Shell::Shell(const std::vector<int> &occ, const std::vector<int> &n,
+             const std::vector<double> &z, const std::vector<std::vector<double>> &c) :
+    m_occupation(occ.size()), m_n(n.size()), m_z(z.size())
+{
+    size_t nrows = c.size();
+    size_t ncols = c[0].size();
+    // assume all cols are the same size;
+    m_c = MatRM(nrows, ncols);
+    size_t i = 0;
+    for(const auto& row: c) {
+        for(size_t j = 0; j < row.size(); j++) {
+            if(j >= ncols) break;
+            m_c(i, j) = row[j];
+        }
+        i++;
+    }
+    i = 0;
+    for(const auto& o : occ) {
+        m_occupation(i) = o;
+        i++;
+    }
+    i = 0;
+    for(const auto& num : n) {
+        m_n(i) = num;
+        i++;
+    }
+    i = 0;
+    for(const auto& zz : z) {
+        m_z(i) = zz;
+        i++;
+    }
+    m_n1 = m_n.array().cast<double>() - 1.0;
+}
+
 size_t Shell::n_prim() const {
     return m_z.rows();
 }

@@ -18,6 +18,10 @@ public:
         const Vec&,
         const MatRM&
     );
+    Shell(const std::vector<int>&,
+          const std::vector<int>&,
+          const std::vector<double>&,
+          const std::vector<std::vector<double>>&);
     double rho(double r) const;
     double grad_rho(double r) const;
     Vec rho(const Vec&) const;
