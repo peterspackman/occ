@@ -85,9 +85,15 @@ public:
 
     Brent(func_type func, double tol=1e-8, size_t maxiter=500);
 
+    const auto num_calls() const { return m_num_calls; }
     double xmin() {
         if(m_num_calls < 1) optimize();
         return m_xmin;
+    }
+
+    double f_xmin() {
+        if(m_num_calls < 1) optimize();
+        return m_fval;
     }
 
 private:

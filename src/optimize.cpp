@@ -12,6 +12,7 @@ Brent::Brent(Brent::func_type func, double tolerance, size_t max_iter) :
 
 void Brent::optimize()
 {
+    m_bracket.bracket_function(m_func);
     auto xa = m_bracket.xa;
     auto xb = m_bracket.xb;
     auto xc = m_bracket.xc;
@@ -34,11 +35,11 @@ void Brent::optimize()
     double deltax = 0.0;
     num_calls++;
     size_t iter{0};
+    double rat{0.0};
     while (iter < m_max_iter) {
         double tol1 = m_tolerance * std::abs(x) + min_tol;
         double tol2 = 2 * tol1;
         double xmid = 0.5 * (a + b);
-        double rat = 1.0;
         double u = 0.0;
         if (std::abs(x - xmid) < (tol2 - 0.5 * (b - a))) {
             break;
@@ -66,11 +67,11 @@ void Brent::optimize()
                     if((xmid - x) >= 0) rat = tol1;
                     else rat = -tol1;
                 }
-                else {
-                    if(x >= xmid) deltax = a - x;
-                    else deltax = b - x;
-                    rat = cg * deltax;
-                }
+            }
+            else {
+                if(x >= xmid) deltax = a - x;
+                else deltax = b - x;
+                rat = cg * deltax;
             }
         }
         if (std::abs(rat) < tol1) {
