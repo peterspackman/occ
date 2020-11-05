@@ -20,6 +20,7 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.cpp"
