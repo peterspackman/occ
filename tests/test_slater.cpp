@@ -30,4 +30,20 @@ TEST_CASE("H2/STO-3G") {
     grad_rho_fd = (C.rho(r.array() + 1e-8) - C.rho(r.array() - 1e-8)) / 2e-8;
     REQUIRE(all_close(grad_rho, grad_rho_fd, 1e-5, 1e-5));
 
+
+    tonto::timing::StopWatch<1> sw;
+    Vec rtest = Vec::LinSpaced(100000, 0.01, 5.0);
+    Vec rho_test(rtest.rows());
+    sw.start(0);
+    rho_test = C.rho(rtest);
+    sw.stop(0);
+    fmt::print("Time for {} points vec: {}\n", rho_test.rows(), sw.read(0));
+    sw.clear_all();
+    sw.start(0);
+    for(size_t i = 0; i < rho_test.rows(); i++)
+    {
+        rho_test(i) = C.rho(rtest(i));
+    }
+    sw.stop(0);
+    fmt::print("Time for {} points loop: {}\n", rho_test.rows(), sw.read(0));
 }
