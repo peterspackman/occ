@@ -5,7 +5,7 @@ namespace tonto::slater {
 
 using tonto::IVec;
 using tonto::Vec;
-using tonto::MatRM;
+using tonto::Mat;
 
 Shell::Shell() :
     m_occupation(1),
@@ -24,7 +24,7 @@ Shell::Shell(
         const IVec& occ,
         const IVec& n,
         const Vec& z,
-        const MatRM& c) :
+        const Mat& c) :
     m_occupation(occ), m_n(n), m_z(z), m_c(c)
 {
     m_n1 = m_n.array().cast<double>() - 1.0;
@@ -34,15 +34,15 @@ Shell::Shell(const std::vector<int> &occ, const std::vector<int> &n,
              const std::vector<double> &z, const std::vector<std::vector<double>> &c) :
     m_occupation(occ.size()), m_n(n.size()), m_z(z.size())
 {
-    size_t nrows = c.size();
-    size_t ncols = c[0].size();
+    size_t ncols = c.size();
+    size_t nrows = c[0].size();
     // assume all cols are the same size;
-    m_c = MatRM(nrows, ncols);
+    m_c = Mat(nrows, ncols);
     size_t i = 0;
-    for(const auto& row: c) {
-        for(size_t j = 0; j < row.size(); j++) {
-            if(j >= ncols) break;
-            m_c(i, j) = row[j];
+    for(const auto& col: c) {
+        for(size_t j = 0; j < col.size(); j++) {
+            if(j >= nrows) break;
+            m_c(j, i) = col[j];
         }
         i++;
     }
@@ -69,14 +69,14 @@ size_t Shell::n_prim() const {
 }
 
 size_t Shell::n_orb() const {
-    return m_occupation.rows();
+    return m_occupation.cols();
 }
 
 double Shell::rho(double r) const {
     Vec g = Eigen::pow(r, m_n1.array()) * Eigen::exp(-m_z.array()*r);
     double result = 0;
     for(size_t i = 0; i < n_orb(); i++) {
-        double orb = (m_c.row(i).array() * g.array()).array().sum();
+        double orb = (m_c.col(i).array() * g.array()).array().sum();
         result += m_occupation(i) * orb * orb;
     }
 
@@ -85,9 +85,8 @@ double Shell::rho(double r) const {
 
 double Shell::grad_rho(double r) const {
     double result = 0.0;
-    double rinv = 1/r;
     Vec g = Eigen::pow(r, m_n1.array()) * Eigen::exp(-m_z.array()*r);
-    Vec gprime(g.array() * ((m_n1.array() * rinv) - m_z.array()));
+    Vec gprime(g.array() * (m_n1.array() / r - m_z.array()));
 
     for(size_t i = 0; i < n_orb(); i++) {
         auto ci = m_c.row(i);
@@ -103,12 +102,14 @@ Vec Shell::rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
 
-    for(auto j = 0; j < result.rows(); j++) {
-        Vec val = Eigen::pow(r(j), m_n1.array()) * Eigen::exp(-m_z.array()*r(j));
-        for(size_t i = 0; i < n_orb(); i++) {
-            double orb = (m_c.row(i).array() * val.array()).array().sum();
-            result(j) += m_occupation(i) * orb * orb;
-        }
+    Mat e(m_n1.rows(), r.rows());
+    for(auto i = 0; i < result.rows(); i++) {
+        e.col(i).array() = Eigen::pow(r(i), m_n1.array()) * Eigen::exp(-m_z.array()*r(i));
+    }
+
+    for(size_t i = 0; i < n_orb(); i++) {
+        Vec orb = (e.array().colwise() * m_c.col(i).array()).colwise().sum();
+        result.array() += m_occupation(i) * orb.array() * orb.array();
     }
     return result * (1/(4 * M_PI));
 }
@@ -117,20 +118,20 @@ Vec Shell::rho(const Vec& r) const
 Vec Shell::grad_rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
-    Vec gprime(n_prim()), g(n_prim());
+    Mat e(m_n1.rows(), r.rows());
+    Mat de(m_n1.rows(), r.rows());
 
-    double Rp = 0.0;
-    for(auto p = 0; p < r.rows(); p++) {
-        Rp = r(p);
-        g = Eigen::pow(Rp, m_n1.array()) * Eigen::exp(-m_z.array() * Rp);
-        gprime = g.array() * (m_n1.array()/Rp - m_z.array());
+    for(auto i = 0; i < result.rows(); i++) {
+        e.col(i).array() = Eigen::pow(r(i), m_n1.array()) * Eigen::exp(-m_z.array()*r(i));
+        if(r(i) == 0.0) de.col(i).array() = 0.0;
+        else de.col(i).array() = e.col(i).array() * (m_n1.array() / r(i) - m_z.array());
+    }
 
-        for(size_t i = 0; i < n_orb(); i++) {
-            auto ci = m_c.row(i);
-            auto orb =  g.dot(ci);
-            auto dorb = gprime.dot(ci);
-            result(i) += 2 * m_occupation(i) * orb * dorb;
-        }
+    for(size_t i = 0; i < n_orb(); i++) {
+        auto ci = m_c.col(i).array();
+        Vec orb = (e.array().colwise() * ci).colwise().sum();
+        Vec dorb = (de.array().colwise() * ci).colwise().sum();
+        result.array() += 2 * m_occupation(i) * orb.array() * dorb.array();
     }
     return result * (1/(4 * M_PI));
 }

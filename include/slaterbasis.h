@@ -7,7 +7,7 @@ namespace tonto::slater {
 
 using tonto::IVec;
 using tonto::Vec;
-using tonto::MatRM;
+using tonto::Mat;
 
 class Shell {
 public:
@@ -16,7 +16,7 @@ public:
         const IVec&,
         const IVec&,
         const Vec&,
-        const MatRM&
+        const Mat&
     );
     Shell(const std::vector<int>&,
           const std::vector<int>&,
@@ -33,7 +33,7 @@ private:
     IVec m_n;
     Vec m_n1;
     Vec m_z;
-    MatRM m_c;
+    Mat m_c;
 };
 
 

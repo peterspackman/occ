@@ -6309,7 +6309,7 @@ std::vector<Basis> basis = {
     Cf, Es, Fm, Md, No, Lr
 };
 
-Basis basis_for_element(int atomic_number) {
+Basis basis_for_element(size_t atomic_number) {
     return basis.at(atomic_number - 1);
 }
 

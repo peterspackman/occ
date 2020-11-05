@@ -5,7 +5,7 @@
 #include <fmt/ostream.h>
 #include "timings.h"
 
-TEST_CASE("H2/STO-3G") {
+TEST_CASE("Sphere") {
     using tonto::grid::sparse::voxel_grid;
     using tonto::geom::marching_cubes;
 
