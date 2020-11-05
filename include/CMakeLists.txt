@@ -23,6 +23,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubestables.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/optimize.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.h"

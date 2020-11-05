@@ -17,6 +17,7 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/optimize.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
