@@ -81,13 +81,77 @@ struct Energy {
 };
 
 struct Wavefunction {
+    SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
     BasisSet basis;
     int num_occ;
     int num_electrons;
+    size_t nbf{0};
     std::vector<libint2::Atom> atoms;
     MatRM C, C_occ, D, T, V, H, J, K;
     Vec mo_energies;
     Energy energy;
+
+    size_t n_alpha() const { return num_occ; }
+    size_t n_beta() const { return num_electrons - num_occ; }
+
+    void set_occupied_orbitals()
+    {
+        if(C.size() == 0) { return; }
+        if(spinorbital_kind == SpinorbitalKind::General) {
+            throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
+        }
+        else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            C_occ = MatRM::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
+            C_occ.block(0, 0, nbf, n_alpha()) = C.alpha().leftCols(n_alpha());
+            C_occ.block(nbf, 0, nbf, n_beta()) = C.beta().leftCols(n_beta());
+        }
+        else {
+            C_occ = C.leftCols(num_occ);
+        }
+    }
+
+    void set_molecular_orbitals(const FchkReader& fchk)
+    {
+        size_t rows, cols;
+        nbf = tonto::qm::nbf(basis);
+
+        if(spinorbital_kind == SpinorbitalKind::General) {
+            throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
+        }
+        else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+            C = MatRM(rows, cols);
+            mo_energies = Vec(cols);
+            C.alpha() = fchk.alpha_mo_coefficients();
+            C.beta() = fchk.beta_mo_coefficients();
+            mo_energies.alpha() = fchk.alpha_mo_energies();
+            mo_energies.beta() = fchk.beta_mo_energies();
+            C = fchk.convert_mo_coefficients_from_g09_convention(basis, C);
+        }
+        else {
+            C = fchk.alpha_mo_coefficients();
+            mo_energies = fchk.alpha_mo_energies();
+            C = fchk.convert_mo_coefficients_from_g09_convention(basis, C);
+        }
+        set_occupied_orbitals();
+    }
+
+    void compute_density_matrix() {
+        if(C_occ.size() == 0) {
+            set_occupied_orbitals();
+        }
+        if(spinorbital_kind == SpinorbitalKind::General) {
+            throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
+        }
+        else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            D.alpha() = C_occ.block(0, 0, nbf, n_alpha()) * C_occ.block(0, 0, nbf, n_alpha()).transpose();
+            D.beta() = C_occ.block(nbf, 0, nbf, n_beta()) * C_occ.block(nbf, 0, nbf, n_beta()).transpose();
+            D *= 0.5;
+        }
+        else {
+            D = C_occ * C_occ.transpose();
+        }
+    }
 };
 
 template<SpinorbitalKind kind>
@@ -115,17 +179,6 @@ MatRM symmetrically_orthonormalize(const MatRM& mat, const MatRM& metric)
     MatRM SS = mat.transpose() * metric * mat;
     std::tie(X, X_invT, n_cond, x_condition_number, condition_number) = tonto::gensqrtinv(SS, true, threshold);
     return mat * X;
-}
-
-MatRM make_natural_orbitals(const MatRM& S, const MatRM& D)
-{
-    MatRM X, Xinv;
-    double x_condition_number;
-    double threshold = 1.0 / std::numeric_limits<double>::epsilon();
-
-    std::tie(X, Xinv, x_condition_number) = tonto::conditioning_orthogonalizer(S, threshold);
-    Eigen::SelfAdjointEigenSolver<MatRM> solver(X.transpose() * D * X);
-    return X * solver.eigenvectors();
 }
 
 MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overlap, size_t n_occ)
@@ -240,25 +293,17 @@ int main(int argc, const char **argv) {
     A.basis = fchk_a.basis_set();
     A.atoms = fchk_a.atoms();
     tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
-    auto Ca = fchk_a.alpha_mo_coefficients();
-    A.C.noalias() = fchk_a.convert_mo_coefficients_from_g09_convention(A.basis, Ca);
-    A.C_occ = A.C.leftCols(A.num_occ);
-    A.D = A.C_occ * A.C_occ.transpose();
-    A.mo_energies = fchk_a.alpha_mo_energies();
+    A.set_molecular_orbitals(fchk_a);
     tonto::log::info("Finished reading {}", fchk_filename_a);
-
-
+    A.compute_density_matrix();
 
     B.num_occ = fchk_b.num_alpha();
     B.basis = fchk_b.basis_set();
     B.atoms = fchk_b.atoms();
     tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
-    auto Cb = fchk_b.alpha_mo_coefficients();
-    B.C.noalias() = fchk_b.convert_mo_coefficients_from_g09_convention(B.basis, Cb);
-    B.C_occ = B.C.leftCols(B.num_occ);
-    B.D = B.C_occ * B.C_occ.transpose();
-    B.mo_energies = fchk_b.alpha_mo_energies();
+    B.set_molecular_orbitals(fchk_b);
     tonto::log::info("Finished reading {}", fchk_filename_b);
+    B.compute_density_matrix();
 
     tonto::log::info("Computing monomer energies for {}", fchk_filename_a);
     compute_energies<kind_a>(A, hf_a);
@@ -316,11 +361,8 @@ int main(int argc, const char **argv) {
     ABo.C = symmorthonormalize_molecular_orbitals(ABn.C, S_AB, ABn.num_occ);
     ABo.num_occ = ABn.num_occ;
 
-    ABn.C_occ = ABn.C.leftCols(ABn.num_occ);
-    ABo.C_occ = ABo.C.leftCols(ABo.num_occ);
-
-    ABn.D= ABn.C_occ * ABn.C_occ.transpose();
-    ABo.D= ABo.C_occ * ABo.C_occ.transpose();
+    ABn.compute_density_matrix();
+    ABo.compute_density_matrix();
     const auto kind_ab = kind_a;
 
     tonto::log::info("Computing non-orthogonal merged energies");

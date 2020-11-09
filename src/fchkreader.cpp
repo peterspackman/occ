@@ -338,7 +338,7 @@ double dfac(int l)
 }
 
 
-tonto::MatRM FchkReader::convert_mo_coefficients_from_g09_convention(const tonto::qm::BasisSet& basis, const tonto::MatRM& mo)
+tonto::MatRM FchkReader::convert_mo_coefficients_from_g09_convention(const tonto::qm::BasisSet& basis, const tonto::MatRM& mo) const
 {
     // no reordering should occur unless there are d, f, g, h etc. functions
     if(tonto::qm::max_l(basis) < 2) return mo;
