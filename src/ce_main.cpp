@@ -241,7 +241,7 @@ int main(int argc, const char **argv) {
     A.atoms = fchk_a.atoms();
     tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
     auto Ca = fchk_a.alpha_mo_coefficients();
-    A.C.noalias() = fchk_a.reordered_mo_coefficients_from_gaussian_convention(A.basis, Ca);
+    A.C.noalias() = fchk_a.convert_mo_coefficients_from_g09_convention(A.basis, Ca);
     A.C_occ = A.C.leftCols(A.num_occ);
     A.D = A.C_occ * A.C_occ.transpose();
     A.mo_energies = fchk_a.alpha_mo_energies();
@@ -254,7 +254,7 @@ int main(int argc, const char **argv) {
     B.atoms = fchk_b.atoms();
     tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
     auto Cb = fchk_b.alpha_mo_coefficients();
-    B.C.noalias() = fchk_b.reordered_mo_coefficients_from_gaussian_convention(B.basis, Cb);
+    B.C.noalias() = fchk_b.convert_mo_coefficients_from_g09_convention(B.basis, Cb);
     B.C_occ = B.C.leftCols(B.num_occ);
     B.D = B.C_occ * B.C_occ.transpose();
     B.mo_energies = fchk_b.alpha_mo_energies();
