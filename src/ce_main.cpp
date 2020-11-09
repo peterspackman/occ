@@ -26,6 +26,7 @@ using tonto::interaction::merge_atoms;
 using tonto::qm::BasisSet;
 
 constexpr double kjmol_per_hartree{2625.46};
+MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overlap, size_t n_occ);
 
 const std::array<double, 110> Thakkar_atomic_polarizability{
      4.50,   1.38, 164.04,  37.74,  20.43,  11.67,   7.26,   5.24,   3.70,   2.66, 
@@ -81,18 +82,74 @@ struct Energy {
 };
 
 struct Wavefunction {
+    Wavefunction() {}
+
+    Wavefunction(const FchkReader& fchk) :
+        spinorbital_kind(fchk.spinorbital_kind()),
+        num_alpha(fchk.num_alpha()),
+        num_electrons(fchk.num_electrons()),
+        basis(fchk.basis_set()),
+        nbf(tonto::qm::nbf(basis)),
+        atoms(fchk.atoms())
+    {
+        set_molecular_orbitals(fchk);
+        compute_density_matrix();
+    }
+
+
+    Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b) :
+        num_alpha(wfn_a.num_alpha + wfn_b.num_alpha),
+        basis(merge_basis_sets(wfn_a.basis, wfn_b.basis)),
+        nbf(wfn_a.nbf + wfn_b.nbf),
+        atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms))
+    {
+        spinorbital_kind = (wfn_a.is_restricted() && wfn_b.is_restricted()) ? SpinorbitalKind::Restricted : SpinorbitalKind::Unrestricted;
+
+
+        size_t rows, cols;
+        if(is_restricted()) std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Restricted>(nbf);
+        else std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+        C = MatRM(rows, cols);
+        mo_energies = tonto::Vec(rows);
+
+        // temporaries for merging orbitals
+        MatRM C_merged;
+        tonto::Vec energies_merged;
+        tonto::log::debug("Merging occupied orbitals, sorted by energy");
+
+        // merge occupied orbitals
+        std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+            wfn_a.C.leftCols(wfn_a.num_alpha), wfn_b.C.leftCols(wfn_b.num_alpha),
+            wfn_a.mo_energies.topRows(wfn_a.num_alpha), wfn_b.mo_energies.topRows(wfn_b.num_alpha)
+        );
+        C.leftCols(num_alpha) = C_merged;
+        mo_energies.topRows(num_alpha) = energies_merged;
+
+        // merge virtual orbitals
+        size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha, nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
+        size_t nv_ab = nv_a + nv_b;
+
+        tonto::log::info("Merging virtual orbitals, sorted by energy");
+        std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+            wfn_a.C.rightCols(nv_a), wfn_b.C.rightCols(nv_b),
+            wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
+        C.rightCols(nv_ab) = C_merged;
+        mo_energies.bottomRows(nv_ab) = energies_merged;
+    }
+
+    bool is_restricted() const { return spinorbital_kind == SpinorbitalKind::Restricted; }
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
-    BasisSet basis;
-    int num_occ;
+    int num_alpha;
     int num_electrons;
+    BasisSet basis;
     size_t nbf{0};
     std::vector<libint2::Atom> atoms;
+
+    size_t n_alpha() const { return num_alpha; }
+    size_t n_beta() const { return num_electrons - num_alpha; }
     MatRM C, C_occ, D, T, V, H, J, K;
     Vec mo_energies;
     Energy energy;
-
-    size_t n_alpha() const { return num_occ; }
-    size_t n_beta() const { return num_electrons - num_occ; }
 
     void set_occupied_orbitals()
     {
@@ -106,7 +163,7 @@ struct Wavefunction {
             C_occ.block(nbf, 0, nbf, n_beta()) = C.beta().leftCols(n_beta());
         }
         else {
-            C_occ = C.leftCols(num_occ);
+            C_occ = C.leftCols(num_alpha);
         }
     }
 
@@ -152,6 +209,11 @@ struct Wavefunction {
             D = C_occ * C_occ.transpose();
         }
     }
+
+    void symmetric_orthonormalize_molecular_orbitals(const MatRM& overlap)
+    {
+        C = symmorthonormalize_molecular_orbitals(C, overlap, num_alpha);
+    }
 };
 
 template<SpinorbitalKind kind>
@@ -169,6 +231,12 @@ void compute_energies(Wavefunction& wfn, tonto::hf::HartreeFock& hf)
     wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
 }
 
+
+void compute_energies(Wavefunction &wfn, tonto::hf::HartreeFock &hf)
+{
+    if(wfn.is_restricted()) return compute_energies<SpinorbitalKind::Restricted>(wfn, hf);
+    else return compute_energies<SpinorbitalKind::Unrestricted>(wfn, hf);
+}
 
 MatRM symmetrically_orthonormalize(const MatRM& mat, const MatRM& metric)
 {
@@ -264,9 +332,6 @@ int main(int argc, const char **argv) {
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
 
-    const SpinorbitalKind kind_a = SpinorbitalKind::Restricted;
-    const SpinorbitalKind kind_b = SpinorbitalKind::Restricted;
-
     const std::string fchk_filename_a = parser.get<std::string>("fchk_a");
     const std::string fchk_filename_b = parser.get<std::string>("fchk_b");
     FchkReader fchk_a(fchk_filename_a);
@@ -285,32 +350,21 @@ int main(int argc, const char **argv) {
                    atom.x, atom.y, atom.z);
     }
 
-    Wavefunction A, B, ABn, ABo;
-    MatRM C_merged;
-    tonto::Vec energies_merged;
-
-    A.num_occ = fchk_a.num_alpha();
-    A.basis = fchk_a.basis_set();
-    A.atoms = fchk_a.atoms();
-    tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
-    A.set_molecular_orbitals(fchk_a);
+    Wavefunction A(fchk_a);
     tonto::log::info("Finished reading {}", fchk_filename_a);
-    A.compute_density_matrix();
+    tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
 
-    B.num_occ = fchk_b.num_alpha();
-    B.basis = fchk_b.basis_set();
-    B.atoms = fchk_b.atoms();
-    tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
-    B.set_molecular_orbitals(fchk_b);
+    Wavefunction B(fchk_b);
     tonto::log::info("Finished reading {}", fchk_filename_b);
-    B.compute_density_matrix();
+    tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
 
     tonto::log::info("Computing monomer energies for {}", fchk_filename_a);
-    compute_energies<kind_a>(A, hf_a);
+
+    compute_energies(A, hf_a);
     tonto::log::info("Finished monomer energies for {}", fchk_filename_a);
 
     tonto::log::info("Computing monomer energies for {}", fchk_filename_b);
-    compute_energies<kind_b>(B, hf_b);
+    compute_energies(B, hf_b);
     tonto::log::info("Finished monomer energies for {}", fchk_filename_b);
 
     fmt::print("{} energies\n", fchk_filename_a);
@@ -318,57 +372,28 @@ int main(int argc, const char **argv) {
     fmt::print("{} energies\n", fchk_filename_b);
     B.energy.print();
 
-    ABn.C = MatRM(A.C.rows() + B.C.rows(), A.C.cols() + B.C.cols());
-    ABn.mo_energies = tonto::Vec(A.mo_energies.rows() + B.mo_energies.rows());
 
-    ABn.num_occ = A.num_occ + B.num_occ;
-
-    tonto::log::info("Merging occupied orbitals, sorted by energy");
-    // merge occupied orbitals, merging occupied separately from virtual
-    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-        A.C.leftCols(A.num_occ), B.C.leftCols(B.num_occ),
-        A.mo_energies.topRows(A.num_occ), B.mo_energies.topRows(B.num_occ));
-
-
-    ABn.C.leftCols(ABn.num_occ) = C_merged;
-    ABn.mo_energies.topRows(ABn.num_occ) = energies_merged;
-
-    size_t nv_a = A.C.rows() - A.num_occ, nv_b = B.C.rows() - B.num_occ;
-    size_t nv_ab = nv_a + nv_b;
-
-    tonto::log::info("Merging virtual orbitals, sorted by energy");
-    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-        A.C.rightCols(nv_a), B.C.rightCols(nv_b),
-        A.mo_energies.bottomRows(nv_a), B.mo_energies.bottomRows(nv_b));
-    ABn.C.rightCols(nv_ab) = C_merged;
-    ABn.mo_energies.bottomRows(nv_ab) = energies_merged;
-
-    ABn.atoms = merge_atoms(A.atoms, B.atoms);
-    ABo.atoms = ABn.atoms;
-
+    Wavefunction ABn(A, B);
     fmt::print("Merged geometry\n{:3s} {:^10s} {:^10s} {:^10s}\n", "sym", "x", "y", "z");
     for (const auto &atom : ABn.atoms) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                    atom.x, atom.y, atom.z);
     }
-    ABn.basis = merge_basis_sets(A.basis, B.basis);
     auto hf_AB = tonto::hf::HartreeFock(ABn.atoms, ABn.basis);
 
-
+    Wavefunction ABo = ABn;
     tonto::log::info("Computing overlap matrix for merged orbitals");
     MatRM S_AB = hf_AB.compute_overlap_matrix();
     tonto::log::info("Orthonormalizing merged orbitals using overlap matrix");
-    ABo.C = symmorthonormalize_molecular_orbitals(ABn.C, S_AB, ABn.num_occ);
-    ABo.num_occ = ABn.num_occ;
+    ABo.symmetric_orthonormalize_molecular_orbitals(S_AB);
 
     ABn.compute_density_matrix();
     ABo.compute_density_matrix();
-    const auto kind_ab = kind_a;
 
     tonto::log::info("Computing non-orthogonal merged energies");
-    compute_energies<kind_ab>(ABn, hf_AB);
+    compute_energies(ABn, hf_AB);
     tonto::log::info("Computing orthogonal merged energies");
-    compute_energies<kind_ab>(ABo, hf_AB);
+    compute_energies(ABo, hf_AB);
 
 
     Energy E_ABn;

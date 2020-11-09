@@ -4,6 +4,7 @@
 #include <vector>
 #include "linear_algebra.h"
 #include "basisset.h"
+#include "spinorbital.h"
 
 namespace tonto::io {
 
@@ -54,10 +55,17 @@ public:
 
     inline auto num_basis_functions() const { return m_num_basis_functions; }
     inline auto num_orbitals() const { return m_num_basis_functions; }
+    inline auto num_electrons() const { return m_num_alpha; }
     inline auto num_alpha() const { return m_num_alpha; }
     inline auto num_beta() const { return m_num_beta; }
 
-    inline const auto basis() const { return m_basis; }
+    inline auto spinorbital_kind() const {
+        if((m_num_alpha != m_num_beta) ||
+            (m_beta_mos.size() != 0) ) return tonto::qm::SpinorbitalKind::Unrestricted;
+        return tonto::qm::SpinorbitalKind::Restricted;
+    }
+
+    inline const auto& basis() const { return m_basis; }
 
     inline auto atomic_numbers() const {
         return Eigen::Map<const tonto::IVec, 0>(m_atomic_numbers.data(), m_atomic_numbers.size());

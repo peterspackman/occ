@@ -118,8 +118,6 @@ void FchkReader::parse(std::istream& stream)
         case AlphaMO:
             scn::scan(line, "Alpha MO coefficients R N= {}", count);
             read_matrix_block<double>(stream, m_alpha_mos, count);
-            fmt::print("Sum MOs in fchk_reader: {}\n", std::accumulate(m_alpha_mos.begin(), m_alpha_mos.end(),
-                                                                       decltype(m_alpha_mos)::value_type(0)));
             break;
         case BetaMO:
             scn::scan(line, "Beta MO coefficients R N= {}", count);
