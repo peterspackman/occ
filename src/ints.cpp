@@ -390,9 +390,9 @@ tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
     const auto nresults = libint2::num_geometrical_derivatives(1, 1);
     tonto::Mat3N result(3, positions.cols());
 
-    std::vector<MatRM> xmats(nthreads, MatRM(D.rows(), D.cols()));
-    std::vector<MatRM> ymats(nthreads, MatRM(D.rows(), D.cols()));
-    std::vector<MatRM> zmats(nthreads, MatRM(D.rows(), D.cols()));
+    std::vector<MatRM> xmats(nthreads, MatRM::Zero(D.rows(), D.cols()));
+    std::vector<MatRM> ymats(nthreads, MatRM::Zero(D.rows(), D.cols()));
+    std::vector<MatRM> zmats(nthreads, MatRM::Zero(D.rows(), D.cols()));
 
     // construct the 1-body integrals engine
     std::vector<libint2::Engine> engines(nthreads);

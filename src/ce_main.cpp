@@ -117,6 +117,17 @@ MatRM symmetrically_orthonormalize(const MatRM& mat, const MatRM& metric)
     return mat * X;
 }
 
+MatRM make_natural_orbitals(const MatRM& S, const MatRM& D)
+{
+    MatRM X, Xinv;
+    double x_condition_number;
+    double threshold = 1.0 / std::numeric_limits<double>::epsilon();
+
+    std::tie(X, Xinv, x_condition_number) = tonto::conditioning_orthogonalizer(S, threshold);
+    Eigen::SelfAdjointEigenSolver<MatRM> solver(X.transpose() * D * X);
+    return X * solver.eigenvectors();
+}
+
 MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overlap, size_t n_occ)
 {
     MatRM result(mos.rows(), mos.cols());
@@ -222,39 +233,49 @@ int main(int argc, const char **argv) {
     }
 
     Wavefunction A, B, ABn, ABo;
+    MatRM C_merged;
+    tonto::Vec energies_merged;
+
     A.num_occ = fchk_a.num_alpha();
-    B.num_occ = fchk_b.num_alpha();
-
     A.basis = fchk_a.basis_set();
-    B.basis = fchk_b.basis_set();
     A.atoms = fchk_a.atoms();
-    B.atoms = fchk_b.atoms();
-
-    A.C = fchk_a.alpha_mo_coefficients();
-    A.C = fchk_a.reordered_mo_coefficients_from_gaussian_convention(A.basis, A.C);
+    tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
+    auto Ca = fchk_a.alpha_mo_coefficients();
+    A.C.noalias() = fchk_a.reordered_mo_coefficients_from_gaussian_convention(A.basis, Ca);
     A.C_occ = A.C.leftCols(A.num_occ);
     A.D = A.C_occ * A.C_occ.transpose();
+    A.mo_energies = fchk_a.alpha_mo_energies();
+    tonto::log::info("Finished reading {}", fchk_filename_a);
 
-    B.C = fchk_b.alpha_mo_coefficients();
-    B.C = fchk_b.reordered_mo_coefficients_from_gaussian_convention(B.basis, B.C);
+
+
+    B.num_occ = fchk_b.num_alpha();
+    B.basis = fchk_b.basis_set();
+    B.atoms = fchk_b.atoms();
+    tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
+    auto Cb = fchk_b.alpha_mo_coefficients();
+    B.C.noalias() = fchk_b.reordered_mo_coefficients_from_gaussian_convention(B.basis, Cb);
     B.C_occ = B.C.leftCols(B.num_occ);
     B.D = B.C_occ * B.C_occ.transpose();
-
-    tonto::log::info("Finished reading SCF density matrices");
-    tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
-    tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
-
-    A.mo_energies = fchk_a.alpha_mo_energies();
     B.mo_energies = fchk_b.alpha_mo_energies();
+    tonto::log::info("Finished reading {}", fchk_filename_b);
 
+    tonto::log::info("Computing monomer energies for {}", fchk_filename_a);
     compute_energies<kind_a>(A, hf_a);
+    tonto::log::info("Finished monomer energies for {}", fchk_filename_a);
+
+    tonto::log::info("Computing monomer energies for {}", fchk_filename_b);
     compute_energies<kind_b>(B, hf_b);
+    tonto::log::info("Finished monomer energies for {}", fchk_filename_b);
+
+    fmt::print("{} energies\n", fchk_filename_a);
+    A.energy.print();
+    fmt::print("{} energies\n", fchk_filename_b);
+    B.energy.print();
 
     ABn.C = MatRM(A.C.rows() + B.C.rows(), A.C.cols() + B.C.cols());
     ABn.mo_energies = tonto::Vec(A.mo_energies.rows() + B.mo_energies.rows());
 
-    MatRM C_merged;
-    tonto::Vec energies_merged;
     ABn.num_occ = A.num_occ + B.num_occ;
 
     tonto::log::info("Merging occupied orbitals, sorted by energy");
@@ -272,8 +293,8 @@ int main(int argc, const char **argv) {
 
     tonto::log::info("Merging virtual orbitals, sorted by energy");
     std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-        A.C.rightCols(nv_a), B.C.leftCols(nv_b),
-        A.mo_energies.bottomRows(nv_a), B.mo_energies.topRows(nv_b));
+        A.C.rightCols(nv_a), B.C.rightCols(nv_b),
+        A.mo_energies.bottomRows(nv_a), B.mo_energies.bottomRows(nv_b));
     ABn.C.rightCols(nv_ab) = C_merged;
     ABn.mo_energies.bottomRows(nv_ab) = energies_merged;
 
