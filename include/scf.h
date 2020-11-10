@@ -345,7 +345,7 @@ struct SCF {
         compute_initial_guess();
         K = m_procedure.compute_schwarz_ints();
         energy.nuclear_repulsion = m_procedure.nuclear_repulsion_energy();
-        MatRM D_diff;
+        MatRM D_diff = D;
         fmt::print("Starting {} SCF iterations\n\n", scf_kind());
         if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
             fmt::print("n_electrons: {}\nn_alpha: {}\nn_beta: {}\n", n_electrons, n_alpha(), n_beta());

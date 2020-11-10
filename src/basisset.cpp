@@ -45,4 +45,16 @@ tonto::MatRM rotate_molecular_orbitals(const BasisSet& basis, const tonto::Mat3&
     return result;
 }
 
+
+void rotate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation)
+{
+    for(auto& atom: atoms) {
+        tonto::Vec3 pos{atom.x, atom.y, atom.z};
+        pos = rotation * pos;
+        atom.x = pos(0);
+        atom.y = pos(1);
+        atom.z = pos(2);
+    }
+}
+
 }

@@ -18,16 +18,21 @@ MatRM compute_fock(
     const auto nshells = obs.size();
     using tonto::parallel::nthreads;
     std::vector<MatRM> G(nthreads, MatRM::Zero(D.rows(), D.cols()));
-    MatRM D_shblk_norm = compute_shellblock_norm(obs, D.block(0, 0, n, n));
+    MatRM D_shblk_norm;
 
+    if constexpr(kind == SpinorbitalKind::Restricted) {
+        D_shblk_norm = compute_shellblock_norm(obs, D);
+    }
     if constexpr(kind == SpinorbitalKind::Unrestricted) {
         assert((D.rows() == 2 * n) && (D.cols() ==n) && "Unrestricted density matrix must be 2 nbf x nbf");
+        D_shblk_norm = compute_shellblock_norm(obs, D.alpha());
         size_t beta_rows = D.beta().rows();
         size_t beta_cols = D.beta().cols();
         D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta()));
     }
     else if constexpr(kind == SpinorbitalKind::General) {
         assert((D.rows() == 2 * n) && (D.cols() ==n) && "General density matrix must be 2 nbf x 2 nbf");
+        D_shblk_norm = compute_shellblock_norm(obs, D.alpha_alpha());
         D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.alpha_beta()));
         D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta_alpha()));
         D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta_beta()));
@@ -65,10 +70,6 @@ MatRM compute_fock(
     auto lambda = [&](int thread_id) {
         auto &engine = engines[thread_id];
         auto &g = G[thread_id];
-        auto ga = g.alpha();
-        auto gb = g.beta();
-        const auto Da = D.alpha();
-        const auto Db = D.beta();
         const auto &buf = engine.results();
         // loop over permutationally-unique set of shells
         for (size_t s1 = 0, s1234 = 0; s1 != nshells; ++s1) {
@@ -159,7 +160,10 @@ MatRM compute_fock(
                                             g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value_scal_by_deg;
                                         }
                                         else if constexpr(kind == SpinorbitalKind::Unrestricted) {
-
+                                            auto ga = g.alpha();
+                                            auto gb = g.beta();
+                                            const auto Da = D.alpha();
+                                            const auto Db = D.beta();
                                             ga(bf1, bf2) +=
                                                 (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
                                             ga(bf3, bf4) +=

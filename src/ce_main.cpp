@@ -293,6 +293,11 @@ struct Wavefunction {
         }
     }
 
+    void apply_rotation(const tonto::Mat3& rot)
+    {
+
+    }
+
     void set_molecular_orbitals(const FchkReader& fchk)
     {
         size_t rows, cols;

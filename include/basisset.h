@@ -265,6 +265,14 @@ class BasisSet : public std::vector<libint2::Shell> {
       m_shell2bf = compute_shell2bf(*this);
     }
 
+    void rotate(const tonto::Mat3& rotation) {
+        for(auto& shell: *this)
+        {
+            Eigen::Map<tonto::Vec3, 0> pos(shell.O.data());
+            pos = rotation * pos;
+        }
+    }
+
   private:
     std::string m_name;
     long m_nbf;
@@ -532,18 +540,6 @@ class BasisSet : public std::vector<libint2::Shell> {
       return ref_shells;
     }
 
-    DEPRECATED static size_t nbf(const std::vector<libint2::Shell>& shells) {
-      return libint2::nbf(shells);
-    }
-
-    DEPRECATED static size_t max_nprim(const std::vector<libint2::Shell>& shells) {
-      return libint2::max_nprim(shells);
-    }
-
-    DEPRECATED static int max_l(const std::vector<libint2::Shell>& shells) {
-      return libint2::max_l(shells);
-    }
-
     static std::vector<size_t> compute_shell2bf(const std::vector<libint2::Shell>& shells) {
       std::vector<size_t> result;
       result.reserve(shells.size());
@@ -560,5 +556,14 @@ class BasisSet : public std::vector<libint2::Shell> {
 }; // BasisSet
 
 tonto::MatRM rotate_molecular_orbitals(const BasisSet&, const tonto::Mat3&, const tonto::MatRM&);
+
+void rotate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation);
+
+inline std::vector<libint2::Atom> rotated_atoms(const std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation)
+{
+    auto result = atoms;
+    rotate_atoms(result, rotation);
+    return result;
+}
 
 }
