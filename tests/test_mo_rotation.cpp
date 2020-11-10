@@ -41,7 +41,7 @@ TEST_CASE("Water 3-21G", "[basis]")
     tonto::scf::SCF<tonto::hf::HartreeFock, tonto::qm::SpinorbitalKind::Restricted> scf(hf);
     double e = scf.compute_scf_energy();
     tonto::scf::SCF<tonto::hf::HartreeFock, tonto::qm::SpinorbitalKind::Restricted> scf_rot(hf_rot);
-    double e_rot = scf.compute_scf_energy();
+    double e_rot = scf_rot.compute_scf_energy();
 
     REQUIRE(e == Approx(e_rot));
 }
@@ -69,7 +69,7 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]")
     double e = scf.compute_scf_energy();
     tonto::MatRM mos = scf.C;
     tonto::MatRM D = scf.D;
-    tonto::MatRM rot_mos = tonto::qm::rotate_molecular_orbitals(rot_basis, rotation, mos);
+    tonto::MatRM rot_mos = tonto::qm::rotate_molecular_orbitals(rot_basis, rotation.transpose(), mos);
     tonto::MatRM rot_C_occ = rot_mos.leftCols(scf.n_occ);
     tonto::MatRM rot_D = rot_C_occ * rot_C_occ.transpose();
     double e_en = tonto::qm::expectation<tonto::qm::SpinorbitalKind::Restricted>(D, hf.compute_kinetic_matrix());
