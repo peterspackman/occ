@@ -20,7 +20,7 @@ tonto::MatRM rotate_molecular_orbitals(const BasisSet& basis, const tonto::Mat3&
             continue;
         }
         else if (l == 1) {
-            rot = rotation;
+            rot = tonto::gto::cartesian_gaussian_rotation_matrix<1>(rotation);
         }
         else if (l == 2) {
             rot = tonto::gto::cartesian_gaussian_rotation_matrix<2>(rotation);

@@ -310,7 +310,7 @@ tonto::MatRM cartesian_gaussian_rotation_matrix(const tonto::Mat3 rotation)
                     int u = ix[k], v = jx[k];
                     tmp *= rotation(u, v);
                 }
-                result(i, j) += tmp;
+                result(j, i) += tmp;
             } while(std::next_permutation(jx.begin(), jx.end()));
         }
     }
