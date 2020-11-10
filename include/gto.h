@@ -267,25 +267,53 @@ GTOValues<max_derivative> evaluate_basis_on_grid(const BasisSet &basis,
     return gto_values;
 }
 
-
-template<size_t angular_momentum>
-tonto::Mat cartesian_gaussian_rotation_matrix(const tonto::Mat3& rot)
+template<int angular_momentum>
+std::vector<std::array<int, angular_momentum>> cartesian_gaussian_power_index_arrays()
 {
-    if constexpr(angular_momentum == 0)
-    {
-        Mat result(1, 1);
-        result.setConstant(1.0);
-        return result;
-    }
-    else if constexpr(angular_momentum == 1)
-    {
-        return rot;
-    }
-    else if constexpr(angular_momentum == 2)
-    {
-        Mat result(6, 6);
-        return result;
-    }
+    std::vector<std::array<int, angular_momentum>> result;
+    int l, m, n;
+    FOR_CART(l, m, n, angular_momentum)
+        std::array<int, angular_momentum> powers;
+        int idx = 0;
+        for(int i = 0; i < l; i++) {
+            powers[idx] = 0;
+            idx++;
+        }
+        for(int i = 0; i < m; i++) {
+            powers[idx] = 1;
+            idx++;
+        }
+        for(int i = 0; i < n; i++) {
+            powers[idx] = 2;
+            idx++;
+        }
+        result.push_back(powers);
+    END_FOR_CART
+    return result;
 }
 
+template<int l>
+tonto::MatRM cartesian_gaussian_rotation_matrix(const tonto::Mat3 rotation)
+{
+    constexpr int num_moments = (l + 1) * (l + 2) / 2;
+    tonto::MatRM result = tonto::MatRM::Zero(num_moments, num_moments);
+    auto cg_powers = cartesian_gaussian_power_index_arrays<l>();
+    for(int i = 0; i < num_moments; i++)
+    {
+        const auto ix = cg_powers[i];
+        for(int j = 0; j < num_moments; j++)
+        {
+            std::array<int, l> jx = cg_powers[j];
+            do {
+                double tmp{1};
+                for(int k = 0; k < ix.size(); k++) {
+                    int u = ix[k], v = jx[k];
+                    tmp *= rotation(u, v);
+                }
+                result(i, j) += tmp;
+            } while(std::next_permutation(jx.begin(), jx.end()));
+        }
+    }
+    return result;
+}
 }

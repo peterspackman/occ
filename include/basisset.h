@@ -14,6 +14,7 @@
 
 #include <libint2/shell.h>
 #include <libint2/atom.h>
+#include "linear_algebra.h"
 
 /* this has been modified from libint2::BasisSet
  * due to requirements in construction etc that were not possible
@@ -557,4 +558,7 @@ class BasisSet : public std::vector<libint2::Shell> {
     }
 
 }; // BasisSet
+
+tonto::MatRM rotate_molecular_orbitals(const BasisSet&, const tonto::Mat3&, const tonto::MatRM&);
+
 }

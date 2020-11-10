@@ -6,6 +6,7 @@
 #include <locale>
 #include <string>
 #include <vector>
+#include <numeric>
 #include <fmt/core.h>
 
 namespace tonto::util {
@@ -145,6 +146,22 @@ std::string human_readable_size(T number, const std::string& suffix)
         num /= 1024.0;
     }
     return fmt::format("{:.1f}{}{}", num, "Yi", suffix);
+}
+
+
+static inline int multinomial_coefficient(std::initializer_list<int> args)
+{
+    int result = 1;
+    int numerator = std::accumulate(args.begin(), args.end(), 0);
+
+    for (const auto& k : args) {
+        for(int i = 0; i < k; i++) {
+            result *= numerator;
+            result /= 1 + i;
+            numerator--;
+        }
+    }
+    return result;
 }
 
 } // namespace tonto::util

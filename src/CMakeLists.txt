@@ -1,4 +1,5 @@
 add_library(tonto STATIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/basisset.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/density.cpp"
@@ -43,6 +44,7 @@ target_link_libraries(tonto
 target_include_directories(tonto PUBLIC 
     ${TONTO_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
+    ${FASTOR_INCLUDE_DIR}
 )
 target_compile_features(tonto PUBLIC cxx_std_17)
 

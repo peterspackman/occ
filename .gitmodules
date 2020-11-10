@@ -10,3 +10,6 @@
 [submodule "3rdparty/scnlib"]
 	path = 3rdparty/scnlib
 	url = https://github.com/eliaskosunen/scnlib
+[submodule "3rdparty/Fastor"]
+	path = 3rdparty/Fastor
+	url = https://github.com/romeric/Fastor
