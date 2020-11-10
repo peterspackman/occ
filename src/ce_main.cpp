@@ -285,7 +285,6 @@ struct Wavefunction {
         }
         else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
             C_occ = MatRM::Zero(2 * nbf, std::max(num_alpha, num_beta));
-            fmt::print("C_occ.shape: {} {}\n", C_occ.rows(), C_occ.cols());
             C_occ.block(0, 0, nbf, num_alpha) = C.alpha().leftCols(num_alpha);
             C_occ.block(nbf, 0, nbf, num_beta) = C.beta().leftCols(num_beta);
         }
@@ -326,7 +325,6 @@ struct Wavefunction {
             throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
         }
         else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-            fmt::print("C_occ size: {} {}\n", C_occ.rows(), C_occ.cols());
             size_t rows, cols;
             std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
             D = tonto::MatRM(rows, cols);
