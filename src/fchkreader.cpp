@@ -66,12 +66,13 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string& line) const
     if(startswith(lt, "Atomic numbers", false)) return AtomicNumbers;
     if(startswith(lt, "Current cartesian coordinates", false)) return AtomicPositions;
     if(startswith(lt, "Number of basis functions", false)) return NumBasisFunctions;
+    if(startswith(lt, "Number of electrons", false)) return NumElectrons;
     if(startswith(lt, "Number of alpha electrons", false)) return NumAlpha;
     if(startswith(lt, "Number of beta electrons", false)) return NumBeta;
     if(startswith(lt, "Alpha MO coefficients", false)) return AlphaMO;
     if(startswith(lt, "Beta MO coefficients", false)) return BetaMO;
     if(startswith(lt, "Alpha Orbital Energies", false)) return AlphaMOEnergies;
-    if(startswith(lt, "Alpha Orbital Energies", false)) return BetaMOEnergies;
+    if(startswith(lt, "Beta Orbital Energies", false)) return BetaMOEnergies;
     if(startswith(lt, "Number of contracted shells", false)) return NumShells;
     if(startswith(lt, "Number of primitive shells", false)) return NumPrimitiveShells;
     if(startswith(lt, "Shell types", false)) return ShellTypes;
@@ -128,7 +129,7 @@ void FchkReader::parse(std::istream& stream)
             read_matrix_block<double>(stream, m_alpha_mo_energies, count);
             break;
         case BetaMOEnergies:
-            scn::scan(line, "Alpha Orbital Energies R N= {}", count);
+            scn::scan(line, "Beta Orbital Energies R N= {}", count);
             read_matrix_block<double>(stream, m_beta_mo_energies, count);
             break;
         case NumShells:

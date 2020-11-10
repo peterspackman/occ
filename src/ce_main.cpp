@@ -87,6 +87,7 @@ struct Wavefunction {
     Wavefunction(const FchkReader& fchk) :
         spinorbital_kind(fchk.spinorbital_kind()),
         num_alpha(fchk.num_alpha()),
+        num_beta(fchk.num_beta()),
         num_electrons(fchk.num_electrons()),
         basis(fchk.basis_set()),
         nbf(tonto::qm::nbf(basis)),
@@ -99,54 +100,179 @@ struct Wavefunction {
 
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b) :
         num_alpha(wfn_a.num_alpha + wfn_b.num_alpha),
+        num_beta(wfn_a.num_beta + wfn_b.num_beta),
         basis(merge_basis_sets(wfn_a.basis, wfn_b.basis)),
         nbf(wfn_a.nbf + wfn_b.nbf),
         atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms))
     {
         spinorbital_kind = (wfn_a.is_restricted() && wfn_b.is_restricted()) ? SpinorbitalKind::Restricted : SpinorbitalKind::Unrestricted;
 
-
         size_t rows, cols;
         if(is_restricted()) std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Restricted>(nbf);
         else std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
         C = MatRM(rows, cols);
         mo_energies = tonto::Vec(rows);
-
         // temporaries for merging orbitals
         MatRM C_merged;
         tonto::Vec energies_merged;
         tonto::log::debug("Merging occupied orbitals, sorted by energy");
+        if(wfn_a.is_restricted() && wfn_b.is_restricted())
+        {
+            // merge occupied orbitals
+            std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                wfn_a.C.leftCols(wfn_a.num_alpha), wfn_b.C.leftCols(wfn_b.num_alpha),
+                wfn_a.mo_energies.topRows(wfn_a.num_alpha), wfn_b.mo_energies.topRows(wfn_b.num_alpha)
+            );
+            C.leftCols(num_alpha) = C_merged;
+            mo_energies.topRows(num_alpha) = energies_merged;
 
-        // merge occupied orbitals
-        std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-            wfn_a.C.leftCols(wfn_a.num_alpha), wfn_b.C.leftCols(wfn_b.num_alpha),
-            wfn_a.mo_energies.topRows(wfn_a.num_alpha), wfn_b.mo_energies.topRows(wfn_b.num_alpha)
-        );
-        C.leftCols(num_alpha) = C_merged;
-        mo_energies.topRows(num_alpha) = energies_merged;
+            // merge virtual orbitals
+            size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha, nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
+            size_t nv_ab = nv_a + nv_b;
 
-        // merge virtual orbitals
-        size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha, nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
-        size_t nv_ab = nv_a + nv_b;
+            tonto::log::info("Merging virtual orbitals, sorted by energy");
+            std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                wfn_a.C.rightCols(nv_a), wfn_b.C.rightCols(nv_b),
+                wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
+            C.rightCols(nv_ab) = C_merged;
+            mo_energies.bottomRows(nv_ab) = energies_merged;
+        }
+        else {
+            if(wfn_a.is_restricted()) {
+                { //alpha
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.leftCols(wfn_a.num_alpha), wfn_b.C.alpha().leftCols(wfn_b.num_alpha),
+                        wfn_a.mo_energies.topRows(wfn_a.num_alpha), wfn_b.mo_energies.alpha().topRows(wfn_b.num_alpha)
+                    );
+                    C.alpha().leftCols(num_alpha) = C_merged;
+                    mo_energies.alpha().topRows(num_alpha) = energies_merged;
 
-        tonto::log::info("Merging virtual orbitals, sorted by energy");
-        std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-            wfn_a.C.rightCols(nv_a), wfn_b.C.rightCols(nv_b),
-            wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
-        C.rightCols(nv_ab) = C_merged;
-        mo_energies.bottomRows(nv_ab) = energies_merged;
+                    // merge virtual orbitals
+                    size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha, nv_b = wfn_b.C.alpha().rows() - wfn_b.num_alpha;
+                    size_t nv_ab = nv_a + nv_b;
+
+                    tonto::log::info("Merging virtual orbitals, sorted by energy");
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.rightCols(nv_a), wfn_b.C.alpha().rightCols(nv_b),
+                        wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.alpha().bottomRows(nv_b));
+                    C.alpha().rightCols(nv_ab) = C_merged;
+                    mo_energies.alpha().bottomRows(nv_ab) = energies_merged;
+                }
+                { //beta
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.leftCols(wfn_a.num_beta), wfn_b.C.beta().leftCols(wfn_b.num_beta),
+                        wfn_a.mo_energies.topRows(wfn_a.num_beta), wfn_b.mo_energies.beta().topRows(wfn_b.num_beta)
+                    );
+                    C.beta().leftCols(num_beta) = C_merged;
+                    mo_energies.beta().topRows(num_beta) = energies_merged;
+
+                    // merge virtual orbitals
+                    size_t nv_a = wfn_a.C.rows() - wfn_a.num_beta, nv_b = wfn_b.C.beta().rows() - wfn_b.num_beta;
+                    size_t nv_ab = nv_a + nv_b;
+
+                    tonto::log::info("Merging virtual orbitals, sorted by energy");
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.rightCols(nv_a), wfn_b.C.beta().rightCols(nv_b),
+                        wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.beta().bottomRows(nv_b));
+                    C.beta().rightCols(nv_ab) = C_merged;
+                    mo_energies.beta().bottomRows(nv_ab) = energies_merged;
+                }
+            }
+            else if(wfn_b.is_restricted()) {
+                { //alpha
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.alpha().leftCols(wfn_a.num_alpha), wfn_b.C.leftCols(wfn_b.num_alpha),
+                        wfn_a.mo_energies.alpha().topRows(wfn_a.num_alpha), wfn_b.mo_energies.topRows(wfn_b.num_alpha)
+                    );
+                    C.alpha().leftCols(num_alpha) = C_merged;
+                    mo_energies.alpha().topRows(num_alpha) = energies_merged;
+
+                    // merge virtual orbitals
+                    size_t nv_a = wfn_a.C.alpha().rows() - wfn_a.num_alpha, nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
+                    size_t nv_ab = nv_a + nv_b;
+
+                    tonto::log::info("Merging virtual orbitals, sorted by energy");
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.alpha().rightCols(nv_a), wfn_b.C.rightCols(nv_b),
+                        wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
+                    C.alpha().rightCols(nv_ab) = C_merged;
+                    mo_energies.alpha().bottomRows(nv_ab) = energies_merged;
+                }
+                { //beta
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.beta().leftCols(wfn_a.num_beta), wfn_b.C.leftCols(wfn_b.num_beta),
+                        wfn_a.mo_energies.beta().topRows(wfn_a.num_beta), wfn_b.mo_energies.topRows(wfn_b.num_beta)
+                    );
+                    C.beta().leftCols(num_beta) = C_merged;
+                    mo_energies.beta().topRows(num_beta) = energies_merged;
+
+                    // merge virtual orbitals
+                    size_t nv_a = wfn_a.C.beta().rows() - wfn_a.num_beta, nv_b = wfn_b.C.rows() - wfn_b.num_beta;
+                    size_t nv_ab = nv_a + nv_b;
+
+                    tonto::log::info("Merging virtual orbitals, sorted by energy");
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.beta().rightCols(nv_a), wfn_b.C.rightCols(nv_b),
+                        wfn_a.mo_energies.beta().bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
+                    C.beta().rightCols(nv_ab) = C_merged;
+                    mo_energies.beta().bottomRows(nv_ab) = energies_merged;
+                }
+            }
+            else {
+                { //alpha
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.alpha().leftCols(wfn_a.num_alpha), wfn_b.C.alpha().leftCols(wfn_b.num_alpha),
+                        wfn_a.mo_energies.alpha().topRows(wfn_a.num_alpha), wfn_b.mo_energies.alpha().topRows(wfn_b.num_alpha)
+                    );
+                    C.alpha().leftCols(num_alpha) = C_merged;
+                    mo_energies.alpha().topRows(num_alpha) = energies_merged;
+
+                    // merge virtual orbitals
+                    size_t nv_a = wfn_a.C.alpha().rows() - wfn_a.num_alpha, nv_b = wfn_b.C.alpha().rows() - wfn_b.num_alpha;
+                    size_t nv_ab = nv_a + nv_b;
+
+                    tonto::log::info("Merging virtual orbitals, sorted by energy");
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.alpha().rightCols(nv_a), wfn_b.C.alpha().rightCols(nv_b),
+                        wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.alpha().bottomRows(nv_b));
+                    C.alpha().rightCols(nv_ab) = C_merged;
+                    mo_energies.alpha().bottomRows(nv_ab) = energies_merged;
+                }
+                { //beta
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.beta().leftCols(wfn_a.num_beta), wfn_b.C.beta().leftCols(wfn_b.num_beta),
+                        wfn_a.mo_energies.beta().topRows(wfn_a.num_beta), wfn_b.mo_energies.beta().topRows(wfn_b.num_beta)
+                    );
+                    C.beta().leftCols(num_beta) = C_merged;
+                    mo_energies.beta().topRows(num_beta) = energies_merged;
+
+                    // merge virtual orbitals
+                    size_t nv_a = wfn_a.C.beta().rows() - wfn_a.num_beta, nv_b = wfn_b.C.beta().rows() - wfn_b.num_beta;
+                    size_t nv_ab = nv_a + nv_b;
+
+                    tonto::log::info("Merging virtual orbitals, sorted by energy");
+                    std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
+                        wfn_a.C.beta().rightCols(nv_a), wfn_b.C.beta().rightCols(nv_b),
+                        wfn_a.mo_energies.beta().bottomRows(nv_a), wfn_b.mo_energies.beta().bottomRows(nv_b));
+                    C.beta().rightCols(nv_ab) = C_merged;
+                    mo_energies.beta().bottomRows(nv_ab) = energies_merged;
+                }
+            }
+        }
+        set_occupied_orbitals();
     }
 
     bool is_restricted() const { return spinorbital_kind == SpinorbitalKind::Restricted; }
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
     int num_alpha;
+    int num_beta;
     int num_electrons;
     BasisSet basis;
     size_t nbf{0};
     std::vector<libint2::Atom> atoms;
 
     size_t n_alpha() const { return num_alpha; }
-    size_t n_beta() const { return num_electrons - num_alpha; }
+    size_t n_beta() const { return num_beta; }
     MatRM C, C_occ, D, T, V, H, J, K;
     Vec mo_energies;
     Energy energy;
@@ -158,9 +284,10 @@ struct Wavefunction {
             throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
         }
         else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-            C_occ = MatRM::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
-            C_occ.block(0, 0, nbf, n_alpha()) = C.alpha().leftCols(n_alpha());
-            C_occ.block(nbf, 0, nbf, n_beta()) = C.beta().leftCols(n_beta());
+            C_occ = MatRM::Zero(2 * nbf, std::max(num_alpha, num_beta));
+            fmt::print("C_occ.shape: {} {}\n", C_occ.rows(), C_occ.cols());
+            C_occ.block(0, 0, nbf, num_alpha) = C.alpha().leftCols(num_alpha);
+            C_occ.block(nbf, 0, nbf, num_beta) = C.beta().leftCols(num_beta);
         }
         else {
             C_occ = C.leftCols(num_alpha);
@@ -178,12 +305,13 @@ struct Wavefunction {
         else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
             std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
             C = MatRM(rows, cols);
-            mo_energies = Vec(cols);
+            mo_energies = Vec(rows);
             C.alpha() = fchk.alpha_mo_coefficients();
             C.beta() = fchk.beta_mo_coefficients();
             mo_energies.alpha() = fchk.alpha_mo_energies();
             mo_energies.beta() = fchk.beta_mo_energies();
-            C = fchk.convert_mo_coefficients_from_g09_convention(basis, C);
+            C.alpha() = fchk.convert_mo_coefficients_from_g09_convention(basis, C.alpha());
+            C.beta() = fchk.convert_mo_coefficients_from_g09_convention(basis, C.beta());
         }
         else {
             C = fchk.alpha_mo_coefficients();
@@ -194,15 +322,16 @@ struct Wavefunction {
     }
 
     void compute_density_matrix() {
-        if(C_occ.size() == 0) {
-            set_occupied_orbitals();
-        }
         if(spinorbital_kind == SpinorbitalKind::General) {
             throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
         }
         else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-            D.alpha() = C_occ.block(0, 0, nbf, n_alpha()) * C_occ.block(0, 0, nbf, n_alpha()).transpose();
-            D.beta() = C_occ.block(nbf, 0, nbf, n_beta()) * C_occ.block(nbf, 0, nbf, n_beta()).transpose();
+            fmt::print("C_occ size: {} {}\n", C_occ.rows(), C_occ.cols());
+            size_t rows, cols;
+            std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+            D = tonto::MatRM(rows, cols);
+            D.alpha() = C_occ.block(0, 0, nbf, num_alpha) * C_occ.block(0, 0, nbf, num_alpha).transpose();
+            D.beta() = C_occ.block(nbf, 0, nbf, num_beta) * C_occ.block(nbf, 0, nbf, num_beta).transpose();
             D *= 0.5;
         }
         else {
@@ -212,23 +341,52 @@ struct Wavefunction {
 
     void symmetric_orthonormalize_molecular_orbitals(const MatRM& overlap)
     {
-        C = symmorthonormalize_molecular_orbitals(C, overlap, num_alpha);
+        if(spinorbital_kind == SpinorbitalKind::Restricted)
+        {
+            C = symmorthonormalize_molecular_orbitals(C, overlap, num_alpha);
+        }
+        else {
+            C.alpha() = symmorthonormalize_molecular_orbitals(C.alpha(), overlap, num_alpha);
+            C.beta() = symmorthonormalize_molecular_orbitals(C.beta(), overlap, num_beta);
+        }
+        set_occupied_orbitals();
     }
 };
 
 template<SpinorbitalKind kind>
 void compute_energies(Wavefunction& wfn, tonto::hf::HartreeFock& hf)
 {
-    wfn.V = hf.compute_nuclear_attraction_matrix();
-    wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
-    wfn.T = hf.compute_kinetic_matrix();
-    wfn.energy.kinetic = 2 * expectation<kind>(wfn.D, wfn.T);
-    wfn.H = wfn.V + wfn.T;
-    wfn.energy.core = 2 * expectation<kind>(wfn.D, wfn.H);
-    std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.D);
-    wfn.energy.coulomb = expectation<kind>(wfn.D, wfn.J);
-    wfn.energy.exchange = - expectation<kind>(wfn.D, wfn.K);
-    wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
+    if constexpr(kind == SpinorbitalKind::Restricted) {
+        wfn.V = hf.compute_nuclear_attraction_matrix();
+        wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
+        wfn.T = hf.compute_kinetic_matrix();
+        wfn.energy.kinetic = 2 * expectation<kind>(wfn.D, wfn.T);
+        wfn.H = wfn.V + wfn.T;
+        wfn.energy.core = 2 * expectation<kind>(wfn.D, wfn.H);
+        std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.D);
+        wfn.energy.coulomb = expectation<kind>(wfn.D, wfn.J);
+        wfn.energy.exchange = - expectation<kind>(wfn.D, wfn.K);
+        wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
+    }
+    else {
+        size_t rows, cols;
+        std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(wfn.nbf);
+        wfn.T = MatRM(rows, cols);
+        wfn.V = MatRM(rows, cols);
+        wfn.T.alpha() = hf.compute_kinetic_matrix();
+        wfn.T.beta() = wfn.T.alpha();
+        wfn.V.alpha() = hf.compute_nuclear_attraction_matrix();
+        wfn.V.beta() = wfn.V.alpha();
+        wfn.H = wfn.V + wfn.T;
+        wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
+        wfn.energy.kinetic = 2 * expectation<kind>(wfn.D, wfn.T);
+        wfn.energy.core = 2 * expectation<kind>(wfn.D, wfn.H);
+        std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.D);
+        wfn.energy.coulomb = expectation<kind>(wfn.D, wfn.J);
+        wfn.energy.exchange = - expectation<kind>(wfn.D, wfn.K);
+        wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
+    }
+
 }
 
 

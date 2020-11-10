@@ -55,7 +55,7 @@ public:
 
     inline auto num_basis_functions() const { return m_num_basis_functions; }
     inline auto num_orbitals() const { return m_num_basis_functions; }
-    inline auto num_electrons() const { return m_num_alpha; }
+    inline auto num_electrons() const { return m_num_electrons; }
     inline auto num_alpha() const { return m_num_alpha; }
     inline auto num_beta() const { return m_num_beta; }
 

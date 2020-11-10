@@ -21,8 +21,14 @@ constexpr std::pair<size_t, size_t> matrix_dimensions(size_t nbf) {
 template<SpinorbitalKind kind, typename TA>
 typename TA::Scalar expectation(const TA& left, const TA& right) {
     if constexpr(kind == Unrestricted) {
-        return left.alpha().cwiseProduct(right.alpha()).sum() +
-               left.beta().cwiseProduct(right.beta()).sum();
+        if(right.rows() < left.rows()) {
+            return left.alpha().cwiseProduct(right).sum() +
+                   left.beta().cwiseProduct(right).sum();
+        }
+        else {
+            return left.alpha().cwiseProduct(right.alpha()).sum() +
+                   left.beta().cwiseProduct(right.beta()).sum();
+        }
     }
     else {
         return left.cwiseProduct(right).sum();

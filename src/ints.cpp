@@ -323,6 +323,7 @@ tonto::Vec compute_electric_potential(const tonto::MatRM &D, const BasisSet &obs
 {
     using tonto::qm::expectation;
     const auto n = obs.nbf();
+    const bool unrestricted = D.rows() > n;
     const auto nshells = obs.size();
     using tonto::parallel::nthreads;
     typedef std::array<MatRM, libint2::operator_traits<Operator::nuclear>::nopers>
@@ -335,7 +336,7 @@ tonto::Vec compute_electric_potential(const tonto::MatRM &D, const BasisSet &obs
     for (size_t i = 1; i != nthreads; ++i) {
         engines[i] = engines[0];
     }
-    std::vector<MatRM> opmats(nthreads, MatRM(D.rows(), D.cols()));
+    std::vector<MatRM> opmats(nthreads, MatRM(n, n));
     auto shell2bf = obs.shell2bf();
 
     auto compute = [&](int thread_id) {
@@ -371,7 +372,8 @@ tonto::Vec compute_electric_potential(const tonto::MatRM &D, const BasisSet &obs
                         opmats[thread_id].block(bf2, bf1, n2, n1) = buf_mat.transpose();
                 }
             }
-            result(pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, opmats[thread_id]);
+            if(unrestricted) result(pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Unrestricted>(D, opmats[thread_id]);
+            else result(pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, opmats[thread_id]);
         }
     }; // compute lambda
     tonto::parallel::parallel_do(compute);
@@ -388,11 +390,12 @@ tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     const auto nresults = libint2::num_geometrical_derivatives(1, 1);
+    const bool unrestricted = D.rows() > n;
     tonto::Mat3N result(3, positions.cols());
 
-    std::vector<MatRM> xmats(nthreads, MatRM::Zero(D.rows(), D.cols()));
-    std::vector<MatRM> ymats(nthreads, MatRM::Zero(D.rows(), D.cols()));
-    std::vector<MatRM> zmats(nthreads, MatRM::Zero(D.rows(), D.cols()));
+    std::vector<MatRM> xmats(nthreads, MatRM::Zero(n, n));
+    std::vector<MatRM> ymats(nthreads, MatRM::Zero(n, n));
+    std::vector<MatRM> zmats(nthreads, MatRM::Zero(n, n));
 
     // construct the 1-body integrals engine
     std::vector<libint2::Engine> engines(nthreads);
@@ -436,9 +439,16 @@ tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
                 }
 
             }
-            result(0, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, xmats[thread_id]);
-            result(1, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, ymats[thread_id]);
-            result(2, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, zmats[thread_id]);
+            if (unrestricted) {
+                result(0, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Unrestricted>(D, xmats[thread_id]);
+                result(1, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Unrestricted>(D, ymats[thread_id]);
+                result(2, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Unrestricted>(D, zmats[thread_id]);
+            }
+            else {
+                result(0, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, xmats[thread_id]);
+                result(1, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, ymats[thread_id]);
+                result(2, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, zmats[thread_id]);
+            }
         }
     };
     tonto::parallel::parallel_do(compute);

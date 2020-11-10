@@ -2,12 +2,14 @@
 #include "ints.h"
 #include "wavefunction.h"
 #include "basisset.h"
+#include "spinorbital.h"
 #include <memory>
 
 namespace tonto::interaction {
 using tonto::MatRM;
 using tonto::Vec;
 using tonto::qm::BasisSet;
+using tonto::qm::SpinorbitalKind;
 
 struct CEModelEnergyScaleFactors {
     double coulomb{1.0};

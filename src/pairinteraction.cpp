@@ -2,6 +2,7 @@
 
 namespace tonto::interaction {
 
+
 std::pair<MatRM, Vec> merge_molecular_orbitals(const MatRM& mo_a, const MatRM& mo_b, const Vec& e_a, const Vec& e_b)
 {
     MatRM merged = MatRM::Zero(mo_a.rows() + mo_b.rows(), mo_a.cols() + mo_b.cols());
