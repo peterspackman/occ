@@ -292,6 +292,11 @@ std::vector<std::array<int, angular_momentum>> cartesian_gaussian_power_index_ar
     return result;
 }
 
+
+/*
+ * Result should be R: an MxM rotation matrix for P: a MxN set of coordinates
+ * giving results P' = R P
+ */
 template<int l>
 tonto::MatRM cartesian_gaussian_rotation_matrix(const tonto::Mat3 rotation)
 {
@@ -308,7 +313,7 @@ tonto::MatRM cartesian_gaussian_rotation_matrix(const tonto::Mat3 rotation)
                 double tmp{1};
                 for(int k = 0; k < ix.size(); k++) {
                     int u = ix[k], v = jx[k];
-                    tmp *= rotation(u, v);
+                    tmp *= rotation(v, u);
                 }
                 result(j, i) += tmp;
             } while(std::next_permutation(jx.begin(), jx.end()));

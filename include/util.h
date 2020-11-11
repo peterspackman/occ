@@ -8,6 +8,7 @@
 #include <vector>
 #include <numeric>
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 
 namespace tonto::util {
 
