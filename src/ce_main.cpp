@@ -107,7 +107,7 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const HartreeFock 
 
 
 int main(int argc, const char **argv) {
-    const auto input = toml::parse("ce.toml");
+    const auto input = toml::parse((argc > 1) ? argv[1] : "ce.toml");
     const auto pair_interaction_table = toml::find(input, "interaction");
     const auto global_settings_table = toml::find(input, "global");
 
@@ -118,8 +118,26 @@ int main(int argc, const char **argv) {
     nthreads = toml::find_or<int>(global_settings_table, "threads", 1);
     omp_set_num_threads(nthreads);
 
-    const std::string fchk_filename_a = toml::find_or<std::string>(pair_interaction_table, "A", "a.fchk");
-    const std::string fchk_filename_b = toml::find_or<std::string>(pair_interaction_table, "B", "b.fchk");
+    tonto::Mat3 rotation_a, rotation_b;
+
+    const std::string fchk_filename_a = toml::find_or<std::string>(pair_interaction_table, "monomer_a", "a.fchk");
+    const std::string fchk_filename_b = toml::find_or<std::string>(pair_interaction_table, "monomer_b", "b.fchk");
+
+    if (pair_interaction_table.contains("rotation_a"))
+    {
+        auto rot_array = toml::find(pair_interaction_table, "rotation_a");
+        auto vals = toml::get<toml::array>(rot_array);
+        for(size_t i = 0; i < vals.size(); i++) {
+            auto row = toml::get<std::array<double, 3>>(vals.at(i));
+            for(size_t j = 0; j < row.size(); j++) {
+                rotation_a(i, j) = row[j];
+            }
+        }
+    }
+    else {
+        rotation_a = tonto::Mat3::Identity(3, 3);
+    }
+    fmt::print("Rotation of monomer A:\n{}\n", rotation_a);
 
     FchkReader fchk_a(fchk_filename_a);
     tonto::log::info("Parsed fchk file: {}", fchk_filename_a);
