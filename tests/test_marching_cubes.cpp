@@ -4,10 +4,16 @@
 #include "catch.hpp"
 #include <fmt/ostream.h>
 #include "timings.h"
+#include "gto.h"
+#include "basis.h"
+#include "density.h"
+#include "optimize.h"
+
+using tonto::grid::sparse::voxel_grid;
+using tonto::geom::marching_cubes;
 
 TEST_CASE("Sphere") {
-    using tonto::grid::sparse::voxel_grid;
-    using tonto::geom::marching_cubes;
+
 
     std::function<double(const Eigen::RowVector3d&)> sphere = [](const Eigen::RowVector3d& pt) -> double {
         return 1.0 - pt.squaredNorm();
@@ -19,11 +25,11 @@ TEST_CASE("Sphere") {
     tonto::Vec CS;
 
     // CV will hold the positions of the corners of the sparse voxel grid
-    tonto::Mat CV;
+    tonto::MatRM CV;
 
     // CI is a #cubes x 8 matrix of indices where each row contains the
     // indices into CV of the 8 corners of a cube
-    Eigen::MatrixXi CI;
+    tonto::IMatRM CI;
 
     const double eps = 0.1;
     // Construct the voxel grid, populating CS, CV, and CI

@@ -21,6 +21,7 @@ set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "Use fmt from 3rdparty directory" FORCE)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/spdlog" EXCLUDE_FROM_ALL)
 set(GEMMI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gemmi/include")
 set(FASTOR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/Fastor/")
+set(TOML_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/toml11/")
 
 add_subdirectory(include)
 add_subdirectory(src)

@@ -38,8 +38,11 @@ using DMatN3 = Eigen::MatrixX3d;
 using DMat3 = Eigen::Matrix3d;
 using DMat4 = Eigen::Matrix4d;
 
+using RowVec = Eigen::RowVectorXd;
 using Vec = Eigen::VectorXd;
+using RowVec3 = Eigen::RowVector3d;
 using Vec3 = Eigen::Vector3d;
+using RowVec4 = Eigen::RowVector4d;
 using Vec4 = Eigen::Vector4d;
 
 using DVec = Eigen::VectorXd;

@@ -1,33 +1,52 @@
 #pragma once
 #include "linear_algebra.h"
 #include "basisset.h"
+#include "spinorbital.h"
+#include "fchkreader.h"
 
 namespace tonto::qm {
 
-class Wavefunction {
-public:
-    Wavefunction() {}
-    Wavefunction(const BasisSet& basis, const std::vector<libint2::Atom>& atoms) :
-        m_basis(basis), m_atoms(atoms)
-    {}
+using tonto::MatRM;
+using tonto::Vec;
+using tonto::io::FchkReader;
 
-    const tonto::MatRM& molecular_orbitals() const { return m_C; }
-    const auto& basis() const { return m_basis; }
-    const auto& atoms() const { return m_atoms; }
-    void set_molecular_orbitals(const tonto::MatRM& c) { m_C = c; }
-
-private:
-    BasisSet m_basis;
-    std::vector<libint2::Atom> m_atoms;
-    tonto::MatRM m_C, m_Cocc;
-    tonto::Vec m_orbital_energies;
-    tonto::MatRM m_kinetic_matrix;
-    tonto::MatRM m_nuclear_attraction_matrix;
-    tonto::MatRM m_fock_matrix;
-    tonto::MatRM m_core_hamiltonian;
-    tonto::MatRM m_coulomb_matrix;
-    tonto::MatRM m_exchange_matrix;
-    tonto::MatRM m_overlap_matrix;
+struct Energy {
+    double coulomb{0};
+    double exchange{0};
+    double nuclear_repulsion{0};
+    double nuclear_attraction{0};
+    double kinetic{0};
+    double core{0};
+    void print() const;
 };
 
+struct Wavefunction {
+    Wavefunction() {}
+
+    Wavefunction(const FchkReader& fchk);
+    Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
+
+
+    bool is_restricted() const { return spinorbital_kind == SpinorbitalKind::Restricted; }
+    SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
+    int num_alpha;
+    int num_beta;
+    int num_electrons;
+    BasisSet basis;
+    size_t nbf{0};
+    std::vector<libint2::Atom> atoms;
+
+    size_t n_alpha() const { return num_alpha; }
+    size_t n_beta() const { return num_beta; }
+    MatRM C, C_occ, D, T, V, H, J, K;
+    Vec mo_energies;
+    Energy energy;
+
+    void update_occupied_orbitals();
+    void set_molecular_orbitals(const FchkReader& fchk);
+    void compute_density_matrix();
+    void symmetric_orthonormalize_molecular_orbitals(const MatRM& overlap);
+};
+
+MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overlap, size_t n_occ);
 }

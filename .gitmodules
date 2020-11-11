@@ -13,3 +13,6 @@
 [submodule "3rdparty/Fastor"]
 	path = 3rdparty/Fastor
 	url = https://github.com/romeric/Fastor
+[submodule "3rdparty/toml11"]
+	path = 3rdparty/toml11
+	url = https://github.com/ToruNiina/toml11

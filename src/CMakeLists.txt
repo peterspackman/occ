@@ -46,6 +46,7 @@ target_include_directories(tonto PUBLIC
     ${TONTO_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
     ${FASTOR_INCLUDE_DIR}
+    ${TOML_INCLUDE_DIR}
 )
 target_compile_features(tonto PUBLIC cxx_std_17)
 
