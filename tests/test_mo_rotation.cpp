@@ -20,7 +20,7 @@ TEST_CASE("Basic rotations", "[mo_rotation]")
 }
 
 
-TEST_CASE("Water 3-21G", "[basis]")
+TEST_CASE("Water 3-21G basis set rotation", "[basis]")
 {
     libint2::initialize();
     std::vector<libint2::Atom> atoms{
@@ -75,7 +75,7 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]")
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}
     };
-    tonto::qm::BasisSet basis("cc-pvdz", atoms);
+    tonto::qm::BasisSet basis("def2-tzvp", atoms);
     basis.set_pure(false);
     tonto::Mat3 rotation = Eigen::AngleAxisd(M_PI/3, tonto::Vec3{0, 1, 0}).toRotationMatrix();
     fmt::print("Rotation by:\n{}\n", rotation);
@@ -83,7 +83,7 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]")
     auto hf = tonto::hf::HartreeFock(atoms, basis);
 
     auto rot_atoms = tonto::qm::rotated_atoms(atoms, rotation);
-    auto rot_basis = tonto::qm::BasisSet("cc-pvdz", rot_atoms);
+    auto rot_basis = tonto::qm::BasisSet("def2-tzvp", rot_atoms);
     rot_basis.set_pure(false);
     fmt::print("Distances after rotation:\n{}\n", interatomic_distances(rot_atoms));
     auto hf_rot = tonto::hf::HartreeFock(rot_atoms, rot_basis);
@@ -98,7 +98,7 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]")
     tonto::MatRM rot_D = rot_C_occ * rot_C_occ.transpose();
     double e_en = tonto::qm::expectation<tonto::qm::SpinorbitalKind::Restricted>(D, hf.compute_nuclear_attraction_matrix());
     double e_en_rot = tonto::qm::expectation<tonto::qm::SpinorbitalKind::Restricted>(rot_D, hf_rot.compute_nuclear_attraction_matrix());
-    fmt::print("E_k    : {}\n", e_en);
-    fmt::print("E_k_rot: {}\n", e_en_rot);
+    fmt::print("E_en      {}\n", e_en);
+    fmt::print("E_en'     {}\n", e_en_rot);
     REQUIRE(e_en == Approx(e_en_rot));
 }
