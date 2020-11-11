@@ -105,7 +105,6 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const HartreeFock 
     return e_pol;
 }
 
-
 int main(int argc, const char **argv) {
     const auto input = toml::parse((argc > 1) ? argv[1] : "ce.toml");
     const auto pair_interaction_table = toml::find(input, "interaction");
@@ -118,24 +117,38 @@ int main(int argc, const char **argv) {
     nthreads = toml::find_or<int>(global_settings_table, "threads", 1);
     omp_set_num_threads(nthreads);
 
-    tonto::Mat3 rotation_a, rotation_b;
+    tonto::Mat3 rotation_b;
 
     const std::string fchk_filename_a = toml::find_or<std::string>(pair_interaction_table, "monomer_a", "a.fchk");
     const std::string fchk_filename_b = toml::find_or<std::string>(pair_interaction_table, "monomer_b", "b.fchk");
 
-    if (pair_interaction_table.contains("rotation_a"))
+
+    tonto::Mat3 rotation_a;
+    if(pair_interaction_table.contains("rotation_a"))
     {
-        auto rot_array = toml::find(pair_interaction_table, "rotation_a");
-        auto vals = toml::get<toml::array>(rot_array);
-        for(size_t i = 0; i < vals.size(); i++) {
-            auto row = toml::get<std::array<double, 3>>(vals.at(i));
-            for(size_t j = 0; j < row.size(); j++) {
-                rotation_a(i, j) = row[j];
+        auto arr = toml::find<toml::array>(pair_interaction_table, "rotation_a");
+        if(arr.size() == 9) {
+            for(size_t i = 0; i < 9; i++) {
+                double v = arr[i].is_floating() ? arr[i].as_floating(std::nothrow) :
+                                              static_cast<double>(arr[i].as_integer());
+                rotation_a(i / 3, i % 3) = v;
+            }
+        }
+        else if(arr.size() == 3)
+        {
+            for(size_t i = 0; i < 3; i++){
+                auto row = toml::get<toml::array>(arr[i]);
+                for(size_t j = 0; j < 3; j++)
+                {
+                    double v = row[j].is_floating() ? row[j].as_floating(std::nothrow) :
+                                                  static_cast<double>(row[j].as_integer());
+                    rotation_a(i, j) = v;
+                }
             }
         }
     }
     else {
-        rotation_a = tonto::Mat3::Identity(3, 3);
+        rotation_a = tonto::Mat3::Identity();
     }
     fmt::print("Rotation of monomer A:\n{}\n", rotation_a);
 
