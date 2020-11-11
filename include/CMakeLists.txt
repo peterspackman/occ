@@ -26,6 +26,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/optimize.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/polarization.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.h"

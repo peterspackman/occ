@@ -1,6 +1,16 @@
 #include "basisset.h"
 #include "util.h"
 #include "gto.h"
+#include <cerrno>
+#include <iostream>
+#include <fstream>
+#include <locale>
+#include <vector>
+#include <stdexcept>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace tonto::qm {
 
@@ -377,7 +387,6 @@ void BasisSet::update()
 }
 
 
-
 tonto::MatRM rotate_molecular_orbitals(const BasisSet& basis, const tonto::Mat3& rotation, const tonto::MatRM& C)
 {
     assert(!basis.is_pure());
@@ -389,29 +398,30 @@ tonto::MatRM rotate_molecular_orbitals(const BasisSet& basis, const tonto::Mat3&
         size_t shell_size = shell.size();
         int l = shell.contr[0].l;
         tonto::MatRM rot;
-        if(l < 1) {
+        switch(l) {
+        case 0:
             result.block(bf_first, 0, shell_size, C.cols()).noalias() = C.block(bf_first, 0, shell_size, C.cols());
             continue;
-        }
-        else if (l == 1) {
+        case 1:
             rot = tonto::gto::cartesian_gaussian_rotation_matrix<1>(rotation);
-        }
-        else if (l == 2) {
+            break;
+        case 2:
             rot = tonto::gto::cartesian_gaussian_rotation_matrix<2>(rotation);
-        }
-        else if (l == 3) {
+            break;
+        case 3:
             rot = tonto::gto::cartesian_gaussian_rotation_matrix<3>(rotation);
-        }
-        else if (l == 4) {
+            break;
+        case 4:
             rot = tonto::gto::cartesian_gaussian_rotation_matrix<4>(rotation);
-        }
-        else if (l == 5) {
+            break;
+        case 5:
             rot = tonto::gto::cartesian_gaussian_rotation_matrix<5>(rotation);
-        }
-        else if (l == 6) {
+            break;
+        case 6:
             rot = tonto::gto::cartesian_gaussian_rotation_matrix<6>(rotation);
-        }
-        else {
+            break;
+            // trivial to implement for higher angular momenta, but the template is not instantiated
+        default:
             throw std::runtime_error("MO rotation not implemented for angular momentum > 6");
         }
         result.block(bf_first, 0, shell_size, C.cols()).noalias() = rot * C.block(bf_first, 0, shell_size, C.cols());

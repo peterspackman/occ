@@ -1,17 +1,5 @@
 #pragma once
 #include <libint2/cxxapi.h>
-
-#include <cerrno>
-#include <iostream>
-#include <fstream>
-#include <locale>
-#include <vector>
-#include <stdexcept>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 #include <libint2/shell.h>
 #include <libint2/atom.h>
 #include "linear_algebra.h"

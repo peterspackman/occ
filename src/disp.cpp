@@ -39,7 +39,7 @@ std::array<double, 110> Grimme06_r_6_disp_coeff{
 };
 
 
-double d2_interaction_energy(std::vector<Atom> &atoms_a, std::vector<Atom> &atoms_b)
+double ce_model_dispersion_energy(std::vector<Atom> &atoms_a, std::vector<Atom> &atoms_b)
 {
     /*
     Return Grimmes's D2 dispersion energy between "self" and "atom"s.
