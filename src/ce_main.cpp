@@ -310,13 +310,13 @@ int main(int argc, const char **argv) {
     fmt::print("ABo\n");
     ABo.energy.print();
 
-    fmt::print("Results\n\nE_coul  {: 12.6f}\n", E_coul * kjmol_per_hartree);
-    fmt::print("E_rep   {: 12.6f}\n", E_XR * kjmol_per_hartree);
+    fmt::print("\n\nFinal result\n\nE_coul           {: 12.6f}\n", E_coul * kjmol_per_hartree);
+    fmt::print("E_rep            {: 12.6f}\n", E_XR * kjmol_per_hartree);
 
     auto e_pol = compute_polarization_energy(A, hf_a, B, hf_b);
-    fmt::print("E_pol   {: 12.6f}\n", e_pol * kjmol_per_hartree);
+    fmt::print("E_pol            {: 12.6f}\n", e_pol * kjmol_per_hartree);
     auto e_disp = tonto::disp::ce_model_dispersion_energy(A.atoms, B.atoms);
-    fmt::print("E_disp  {: 12.6f}\n", e_disp * kjmol_per_hartree);
+    fmt::print("E_disp           {: 12.6f}\n", e_disp * kjmol_per_hartree);
 
     if(model_name == "ce-b3lyp")
     {
