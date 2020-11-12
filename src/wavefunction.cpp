@@ -68,7 +68,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
         size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha, nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
         size_t nv_ab = nv_a + nv_b;
 
-        tonto::log::info("Merging virtual orbitals, sorted by energy");
+        tonto::log::debug("Merging virtual orbitals, sorted by energy");
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
             wfn_a.C.rightCols(nv_a), wfn_b.C.rightCols(nv_b),
             wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
@@ -89,7 +89,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha, nv_b = wfn_b.C.alpha().rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::info("Merging virtual orbitals, sorted by energy");
+                tonto::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.rightCols(nv_a), wfn_b.C.alpha().rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.alpha().bottomRows(nv_b));
@@ -108,7 +108,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.rows() - wfn_a.num_beta, nv_b = wfn_b.C.beta().rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::info("Merging virtual orbitals, sorted by energy");
+                tonto::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.rightCols(nv_a), wfn_b.C.beta().rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.beta().bottomRows(nv_b));
@@ -129,7 +129,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.alpha().rows() - wfn_a.num_alpha, nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::info("Merging virtual orbitals, sorted by energy");
+                tonto::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.alpha().rightCols(nv_a), wfn_b.C.rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
@@ -148,7 +148,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.beta().rows() - wfn_a.num_beta, nv_b = wfn_b.C.rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::info("Merging virtual orbitals, sorted by energy");
+                tonto::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.beta().rightCols(nv_a), wfn_b.C.rightCols(nv_b),
                     wfn_a.mo_energies.beta().bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
@@ -169,7 +169,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.alpha().rows() - wfn_a.num_alpha, nv_b = wfn_b.C.alpha().rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::info("Merging virtual orbitals, sorted by energy");
+                tonto::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.alpha().rightCols(nv_a), wfn_b.C.alpha().rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.alpha().bottomRows(nv_b));
@@ -188,7 +188,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.beta().rows() - wfn_a.num_beta, nv_b = wfn_b.C.beta().rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::info("Merging virtual orbitals, sorted by energy");
+                tonto::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.beta().rightCols(nv_a), wfn_b.C.beta().rightCols(nv_b),
                     wfn_a.mo_energies.beta().bottomRows(nv_a), wfn_b.mo_energies.beta().bottomRows(nv_b));

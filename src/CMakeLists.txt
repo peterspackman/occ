@@ -26,6 +26,7 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/thakkar.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.cpp"

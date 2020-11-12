@@ -19,4 +19,4 @@ create_catch_test(test_scf.cpp)
 create_catch_test(test_slater.cpp)
 create_catch_test(test_space_group.cpp)
 create_catch_test(test_symmetry_operation.cpp)
-
+create_catch_test(test_table.cpp)
