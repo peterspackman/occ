@@ -298,4 +298,34 @@ MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overl
 }
 
 
+void Wavefunction::apply_transformation(const tonto::Mat3& rot, const tonto::Vec3& trans)
+{
+    apply_rotation(rot);
+    apply_translation(trans);
+}
+void Wavefunction::apply_translation(const tonto::Vec3& trans)
+{
+    basis.translate(trans);
+    translate_atoms(atoms, trans);
+}
+
+void Wavefunction::apply_rotation(const tonto::Mat3& rot)
+{
+    if(spinorbital_kind == SpinorbitalKind::Restricted)
+    {
+        MatRM rotated = rotate_molecular_orbitals(basis, rot, C);
+        C.noalias() = rotated;
+    }
+    else {
+        MatRM rotated = rotate_molecular_orbitals(basis, rot, C.alpha());
+        C.alpha().noalias() = rotated;
+        rotated = rotate_molecular_orbitals(basis, rot, C.beta());
+        C.beta().noalias() = rotated;
+    }
+    basis.rotate(rot);
+    rotate_atoms(atoms, rot);
+    update_occupied_orbitals();
+    compute_density_matrix();
+}
+
 }

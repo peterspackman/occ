@@ -26,8 +26,17 @@ struct Wavefunction {
     Wavefunction(const FchkReader& fchk);
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
 
-
+    size_t n_alpha() const { return num_alpha; }
+    size_t n_beta() const { return num_beta; }
     bool is_restricted() const { return spinorbital_kind == SpinorbitalKind::Restricted; }
+    void update_occupied_orbitals();
+    void set_molecular_orbitals(const FchkReader& fchk);
+    void compute_density_matrix();
+    void symmetric_orthonormalize_molecular_orbitals(const MatRM& overlap);
+    void apply_transformation(const tonto::Mat3&, const tonto::Vec3&);
+    void apply_rotation(const tonto::Mat3&);
+    void apply_translation(const tonto::Vec3&);
+
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
     int num_alpha;
     int num_beta;
@@ -35,17 +44,11 @@ struct Wavefunction {
     BasisSet basis;
     size_t nbf{0};
     std::vector<libint2::Atom> atoms;
-
-    size_t n_alpha() const { return num_alpha; }
-    size_t n_beta() const { return num_beta; }
     MatRM C, C_occ, D, T, V, H, J, K;
     Vec mo_energies;
     Energy energy;
 
-    void update_occupied_orbitals();
-    void set_molecular_orbitals(const FchkReader& fchk);
-    void compute_density_matrix();
-    void symmetric_orthonormalize_molecular_orbitals(const MatRM& overlap);
+
 };
 
 MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overlap, size_t n_occ);

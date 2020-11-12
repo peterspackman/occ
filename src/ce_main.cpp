@@ -105,6 +105,85 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const HartreeFock 
     return e_pol;
 }
 
+
+namespace impl
+{
+struct rotation
+{
+    Eigen::Matrix3d mat{Eigen::Matrix3d::Identity(3,3)};
+};
+
+struct translation
+{
+    Eigen::Vector3d vec{Eigen::Vector3d::Zero(3)};
+};
+
+}
+
+namespace toml {
+template<>
+struct from<impl::rotation>
+{
+    static impl::rotation from_toml(const value& v)
+    {
+        impl::rotation rot;
+        auto arr = toml::get<toml::array>(v);
+        if(arr.size() == 9) {
+            for(size_t i = 0; i < 9; i++) {
+                double v = arr[i].is_floating() ? arr[i].as_floating(std::nothrow) :
+                                              static_cast<double>(arr[i].as_integer());
+                rot.mat(i / 3, i % 3) = v;
+            }
+        }
+        else if(arr.size() == 3)
+        {
+            for(size_t i = 0; i < 3; i++){
+                auto row = toml::get<toml::array>(arr[i]);
+                for(size_t j = 0; j < 3; j++)
+                {
+                    double v = row[j].is_floating() ? row[j].as_floating(std::nothrow) :
+                                                  static_cast<double>(row[j].as_integer());
+                    rot.mat(i, j) = v;
+                }
+            }
+        }
+        else {
+            std::cerr << toml::format_error(
+            "[error] 3D rotation matrix has invalid length",
+            v, "Expecting a [3, 3] or [9] array of int or double")
+            << std::endl;
+        }
+        return rot;
+    }
+};
+
+template<>
+struct from<impl::translation>
+{
+    static impl::translation from_toml(const value& v)
+    {
+        impl::translation trans;
+        auto arr = toml::get<toml::array>(v);
+        if(arr.size() == 3)
+        {
+            for(size_t i = 0; i < 3; i++) {
+                double v = arr[i].is_floating() ? arr[i].as_floating(std::nothrow) :
+                                              static_cast<double>(arr[i].as_integer());
+                trans.vec(i) = v;
+            }
+        }
+        else
+        {
+            std::cerr << toml::format_error(
+            "[error] 3D translation vector has invalid length",
+            v, "Expecting a [3] array of int or double")
+            << std::endl;
+        }
+        return trans;
+    }
+};
+}
+
 int main(int argc, const char **argv) {
     const auto input = toml::parse((argc > 1) ? argv[1] : "ce.toml");
     const auto pair_interaction_table = toml::find(input, "interaction");
@@ -117,40 +196,18 @@ int main(int argc, const char **argv) {
     nthreads = toml::find_or<int>(global_settings_table, "threads", 1);
     omp_set_num_threads(nthreads);
 
-    tonto::Mat3 rotation_b;
-
     const std::string fchk_filename_a = toml::find_or<std::string>(pair_interaction_table, "monomer_a", "a.fchk");
     const std::string fchk_filename_b = toml::find_or<std::string>(pair_interaction_table, "monomer_b", "b.fchk");
 
-
-    tonto::Mat3 rotation_a;
-    if(pair_interaction_table.contains("rotation_a"))
-    {
-        auto arr = toml::find<toml::array>(pair_interaction_table, "rotation_a");
-        if(arr.size() == 9) {
-            for(size_t i = 0; i < 9; i++) {
-                double v = arr[i].is_floating() ? arr[i].as_floating(std::nothrow) :
-                                              static_cast<double>(arr[i].as_integer());
-                rotation_a(i / 3, i % 3) = v;
-            }
-        }
-        else if(arr.size() == 3)
-        {
-            for(size_t i = 0; i < 3; i++){
-                auto row = toml::get<toml::array>(arr[i]);
-                for(size_t j = 0; j < 3; j++)
-                {
-                    double v = row[j].is_floating() ? row[j].as_floating(std::nothrow) :
-                                                  static_cast<double>(row[j].as_integer());
-                    rotation_a(i, j) = v;
-                }
-            }
-        }
-    }
-    else {
-        rotation_a = tonto::Mat3::Identity();
-    }
+    tonto::Mat3 rotation_a = toml::find_or<impl::rotation>(pair_interaction_table, "rotation_a", impl::rotation{}).mat;
+    tonto::Mat3 rotation_b = toml::find_or<impl::rotation>(pair_interaction_table, "rotation_b", impl::rotation{}).mat;
     fmt::print("Rotation of monomer A:\n{}\n", rotation_a);
+    fmt::print("Rotation of monomer B:\n{}\n", rotation_b);
+
+    tonto::Vec3 translation_a = toml::find_or<impl::translation>(pair_interaction_table, "translation_a", impl::translation{}).vec;
+    tonto::Vec3 translation_b = toml::find_or<impl::translation>(pair_interaction_table, "translation_b", impl::translation{}).vec;
+    fmt::print("Translation of monomer A:\n{}\n", translation_a);
+    fmt::print("Translation of monomer B:\n{}\n", translation_b);
 
     FchkReader fchk_a(fchk_filename_a);
     tonto::log::info("Parsed fchk file: {}", fchk_filename_a);
@@ -170,10 +227,24 @@ int main(int argc, const char **argv) {
 
     Wavefunction A(fchk_a);
     tonto::log::info("Finished reading {}", fchk_filename_a);
+    A.apply_transformation(rotation_a, translation_a);
+
+    fmt::print("Geometry after transformation ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_a, "sym", "x", "y", "z");
+    for (const auto &atom : A.atoms) {
+        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
+                   atom.x, atom.y, atom.z);
+    }
+
     tonto::hf::HartreeFock hf_a(A.atoms, A.basis);
 
     Wavefunction B(fchk_b);
+    B.apply_transformation(rotation_b, translation_b);
     tonto::log::info("Finished reading {}", fchk_filename_b);
+    fmt::print("Geometry after transformation ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_b, "sym", "x", "y", "z");
+    for (const auto &atom : B.atoms) {
+        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
+                   atom.x, atom.y, atom.z);
+    }
     tonto::hf::HartreeFock hf_b(B.atoms, B.basis);
 
     tonto::log::info("Computing monomer energies for {}", fchk_filename_a);
@@ -240,6 +311,6 @@ int main(int argc, const char **argv) {
     auto e_disp = tonto::disp::ce_model_dispersion_energy(A.atoms, B.atoms);
     fmt::print("E_disp  {: 12.6f}\n", e_disp * kjmol_per_hartree);
 
-    fmt::print("E_tot (CE-B3LYP) {: 12.6f}\n", 
+    fmt::print("E_tot (CE-B3LYP) {: 12.6f}\n",
                 tonto::interaction::CE_B3LYP_631Gdp.scaled_total(E_coul, E_XR, e_pol, e_disp) * kjmol_per_hartree);
 }

@@ -430,6 +430,30 @@ tonto::MatRM rotate_molecular_orbitals(const BasisSet& basis, const tonto::Mat3&
 }
 
 
+void BasisSet::rotate(const tonto::Mat3& rotation) {
+    for(auto& shell: *this)
+    {
+        tonto::Vec3 pos{shell.O[0], shell.O[1], shell.O[2]};
+        auto rot_pos = rotation * pos;
+        shell.O[0] = rot_pos(0);
+        shell.O[1] = rot_pos(1);
+        shell.O[2] = rot_pos(2);
+
+    }
+    update();
+}
+
+void BasisSet::translate(const tonto::Vec3& translation) {
+    for(auto& shell: *this)
+    {
+        shell.O[0] += translation(0);
+        shell.O[1] += translation(1);
+        shell.O[2] += translation(2);
+    }
+    update();
+}
+
+
 void rotate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation)
 {
     for(auto& atom: atoms) {
@@ -438,6 +462,15 @@ void rotate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation
         atom.x = pos_rot(0);
         atom.y = pos_rot(1);
         atom.z = pos_rot(2);
+    }
+}
+
+void translate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Vec3& translation)
+{
+    for(auto& atom: atoms) {
+        atom.x += translation(0);
+        atom.y += translation(1);
+        atom.z += translation(2);
     }
 }
 

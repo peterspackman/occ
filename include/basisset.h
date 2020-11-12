@@ -172,13 +172,8 @@ class BasisSet : public std::vector<libint2::Shell> {
 
     void update();
 
-    void rotate(const tonto::Mat3& rotation) {
-        for(auto& shell: *this)
-        {
-            Eigen::Map<tonto::Vec3, 0> pos(shell.O.data());
-            pos = rotation * pos;
-        }
-    }
+    void rotate(const tonto::Mat3& rotation);
+    void translate(const tonto::Vec3& translation);
 
   private:
     std::string m_name;
@@ -237,11 +232,20 @@ class BasisSet : public std::vector<libint2::Shell> {
 tonto::MatRM rotate_molecular_orbitals(const BasisSet&, const tonto::Mat3&, const tonto::MatRM&);
 
 void rotate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation);
+void translate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Vec3& translation);
+
 
 inline std::vector<libint2::Atom> rotated_atoms(const std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation)
 {
     auto result = atoms;
     rotate_atoms(result, rotation);
+    return result;
+}
+
+inline std::vector<libint2::Atom> translated_atoms(const std::vector<libint2::Atom>& atoms, const tonto::Vec3& translation)
+{
+    auto result = atoms;
+    translate_atoms(result, translation);
     return result;
 }
 

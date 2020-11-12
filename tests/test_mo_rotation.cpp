@@ -77,14 +77,16 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]")
     };
     tonto::qm::BasisSet basis("def2-tzvp", atoms);
     basis.set_pure(false);
-    tonto::Mat3 rotation = Eigen::AngleAxisd(M_PI/3, tonto::Vec3{0, 1, 0}).toRotationMatrix();
+    tonto::Mat3 rotation = - tonto::Mat3::Identity();
     fmt::print("Rotation by:\n{}\n", rotation);
     fmt::print("Distances before rotation:\n{}\n", interatomic_distances(atoms));
     auto hf = tonto::hf::HartreeFock(atoms, basis);
 
     auto rot_atoms = tonto::qm::rotated_atoms(atoms, rotation);
-    auto rot_basis = tonto::qm::BasisSet("def2-tzvp", rot_atoms);
-    rot_basis.set_pure(false);
+    tonto::qm::BasisSet rot_basis = basis;
+    rot_basis.rotate(rotation);
+    auto shell2atom = rot_basis.shell2atom(rot_atoms);
+
     fmt::print("Distances after rotation:\n{}\n", interatomic_distances(rot_atoms));
     auto hf_rot = tonto::hf::HartreeFock(rot_atoms, rot_basis);
     REQUIRE(hf.nuclear_repulsion_energy() == Approx(hf_rot.nuclear_repulsion_energy()));
