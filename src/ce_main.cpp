@@ -196,6 +196,7 @@ int main(int argc, const char **argv) {
     nthreads = toml::find_or<int>(global_settings_table, "threads", 1);
     omp_set_num_threads(nthreads);
 
+    const std::string model_name = toml::find_or<std::string>(pair_interaction_table, "model", "ce-b3lyp");
     const std::string fchk_filename_a = toml::find_or<std::string>(pair_interaction_table, "monomer_a", "a.fchk");
     const std::string fchk_filename_b = toml::find_or<std::string>(pair_interaction_table, "monomer_b", "b.fchk");
 
@@ -253,7 +254,13 @@ int main(int argc, const char **argv) {
     tonto::log::info("Finished monomer energies for {}", fchk_filename_a);
 
     tonto::log::info("Computing monomer energies for {}", fchk_filename_b);
-    compute_energies(B, hf_b);
+    if(fchk_filename_a == fchk_filename_b) {
+        tonto::log::info("Skipping computing monomer enegies for B: same source wavefunction as A");
+        B.energy = A.energy;
+    }
+    else {
+        compute_energies(B, hf_b);
+    }
     tonto::log::info("Finished monomer energies for {}", fchk_filename_b);
 
     fmt::print("{} energies\n", fchk_filename_a);
@@ -311,6 +318,19 @@ int main(int argc, const char **argv) {
     auto e_disp = tonto::disp::ce_model_dispersion_energy(A.atoms, B.atoms);
     fmt::print("E_disp  {: 12.6f}\n", e_disp * kjmol_per_hartree);
 
-    fmt::print("E_tot (CE-B3LYP) {: 12.6f}\n",
-                tonto::interaction::CE_B3LYP_631Gdp.scaled_total(E_coul, E_XR, e_pol, e_disp) * kjmol_per_hartree);
+    if(model_name == "ce-b3lyp")
+    {
+        fmt::print("E_tot (CE-B3LYP) {: 12.6f}\n",
+                    tonto::interaction::CE_B3LYP_631Gdp.scaled_total(E_coul, E_XR, e_pol, e_disp) * kjmol_per_hartree);
+    }
+    else if (model_name == "ce-hf")
+    {
+        fmt::print("E_tot (CE-HF)    {: 12.6f}\n",
+                    tonto::interaction::CE_HF_321G.scaled_total(E_coul, E_XR, e_pol, e_disp) * kjmol_per_hartree);
+    }
+    else
+    {
+        fmt::print("E_tot (unscaled) {: 12.6f}\n", (E_coul + E_XR + e_pol + e_disp) * kjmol_per_hartree);
+    }
+
 }
