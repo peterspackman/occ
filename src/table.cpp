@@ -36,7 +36,7 @@ void Table::print() const
     for(const auto& kv: m_columns)
     {
         const std::string& key = kv.first;
-        fmt::print(m_column_config.at(key).format_string, key);
+        fmt::print(m_column_config.at(key).format_string(), key);
     }
     fmt::print("\n");
     for(size_t row = 0; row < num_rows(); row++)
@@ -46,7 +46,7 @@ void Table::print() const
             const std::string& key = kv.first;
             const auto& c = kv.second;
             const auto& config = m_column_config.at(key);
-            fmt::print(config.format_string, (row < c.size()) ? c[row] : config.fill_value);
+            fmt::print(config.format_string(), (row < c.size()) ? c[row] : config.fill_value);
         }
         fmt::print("\n");
     }
