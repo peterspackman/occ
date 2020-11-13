@@ -13,19 +13,20 @@ using tonto::qm::BasisSet;
 using tonto::qm::SpinorbitalKind;
 using tonto::qm::Wavefunction;
 
-struct CEModelEnergyScaleFactors {
-    double coulomb{1.0};
-    double exchange_repulsion{1.0};
-    double polarization{1.0};
-    double dispersion{1.0};
+struct CEParameterizedModel {
+    const double coulomb{1.0};
+    const double exchange_repulsion{1.0};
+    const double polarization{1.0};
+    const double dispersion{1.0};
+    const std::string name{"Unscaled"};
     double scaled_total(double coul, double ex, double pol, double disp) const
     {
         return coulomb * coul + exchange_repulsion * ex + polarization * pol + dispersion * disp;
     }
 };
 
-inline CEModelEnergyScaleFactors CE_HF_321G{1.019, 0.811, 0.651, 0.901};
-inline CEModelEnergyScaleFactors CE_B3LYP_631Gdp{1.0573, 0.6177, 0.7399, 0.8708};
+inline CEParameterizedModel CE_HF_321G{1.019, 0.811, 0.651, 0.901, "CE-HF"};
+inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177, 0.7399, 0.8708, "CE-B3LYP"};
 
 std::pair<MatRM, Vec> merge_molecular_orbitals(const MatRM&, const MatRM&, const Vec&, const Vec&);
 BasisSet merge_basis_sets(const BasisSet&, const BasisSet&);
@@ -52,6 +53,13 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const Procedure &p
 }
 
 
+inline CEParameterizedModel ce_model_from_string(const std::string& s)
+{
+    if(s == "ce-b3lyp") return CE_B3LYP_631Gdp;
+    if(s == "ce-hf") return CE_HF_321G;
+    return CEParameterizedModel{};
+}
+
 struct CEModelInteraction
 {
     struct EnergyComponents {
@@ -61,10 +69,10 @@ struct CEModelInteraction
         double dispersion{0.0};
         double total{0.0};
     };
-    CEModelInteraction(const CEModelEnergyScaleFactors&);
+    CEModelInteraction(const CEParameterizedModel&);
     EnergyComponents operator()(Wavefunction&, Wavefunction&) const;
 private:
-    CEModelEnergyScaleFactors scale_factors;
+    CEParameterizedModel scale_factors;
 };
 
 }

@@ -15,7 +15,6 @@
 using tonto::qm::Wavefunction;
 using tonto::io::FchkReader;
 using tonto::interaction::CEModelInteraction;
-using tonto::chem::Element;
 
 constexpr double kjmol_per_hartree{2625.46};
 
@@ -112,58 +111,26 @@ int main(int argc, const char **argv) {
     const std::string model_name = toml::find_or<std::string>(pair_interaction_table, "model", "ce-b3lyp");
     const std::string fchk_filename_a = toml::find_or<std::string>(pair_interaction_table, "monomer_a", "a.fchk");
     const std::string fchk_filename_b = toml::find_or<std::string>(pair_interaction_table, "monomer_b", "b.fchk");
-
     tonto::Mat3 rotation_a = toml::find_or<impl::rotation>(pair_interaction_table, "rotation_a", impl::rotation{}).mat;
     tonto::Mat3 rotation_b = toml::find_or<impl::rotation>(pair_interaction_table, "rotation_b", impl::rotation{}).mat;
-    fmt::print("Rotation of monomer A:\n{}\n", rotation_a);
-    fmt::print("Rotation of monomer B:\n{}\n", rotation_b);
-
     tonto::Vec3 translation_a = toml::find_or<impl::translation>(pair_interaction_table, "translation_a", impl::translation{}).vec;
     tonto::Vec3 translation_b = toml::find_or<impl::translation>(pair_interaction_table, "translation_b", impl::translation{}).vec;
-    fmt::print("Translation of monomer A:\n{}\n", translation_a);
-    fmt::print("Translation of monomer B:\n{}\n", translation_b);
 
     FchkReader fchk_a(fchk_filename_a);
-    tonto::log::info("Parsed fchk file: {}", fchk_filename_a);
-    fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_a, "sym", "x", "y", "z");
-    for (const auto &atom : fchk_a.atoms()) {
-        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
-                   atom.x, atom.y, atom.z);
-    }
-
     FchkReader fchk_b(fchk_filename_b);
-    tonto::log::info("Parsed fchk file: {}", fchk_filename_b);
-    fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_b, "sym", "x", "y", "z");
-    for (const auto &atom : fchk_b.atoms()) {
-        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
-                   atom.x, atom.y, atom.z);
-    }
 
     Wavefunction A(fchk_a);
-    tonto::log::info("Finished reading {}", fchk_filename_a);
     A.apply_transformation(rotation_a, translation_a);
-
-    fmt::print("Geometry after transformation ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_a, "sym", "x", "y", "z");
-    for (const auto &atom : A.atoms) {
-        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
-                   atom.x, atom.y, atom.z);
-    }
-
     Wavefunction B(fchk_b);
     B.apply_transformation(rotation_b, translation_b);
-    tonto::log::info("Finished reading {}", fchk_filename_b);
-    fmt::print("Geometry after transformation ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", fchk_filename_b, "sym", "x", "y", "z");
-    for (const auto &atom : B.atoms) {
-        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
-                   atom.x, atom.y, atom.z);
-    }
-
-    CEModelInteraction interaction(tonto::interaction::CE_B3LYP_631Gdp);
+    auto model = tonto::interaction::ce_model_from_string(model_name);
+    CEModelInteraction interaction(model);
     auto interaction_energy = interaction(A, B);
-    fmt::print("Total\n");
-    fmt::print("Coulomb             {: 12.6f}\n", interaction_energy.coulomb * kjmol_per_hartree);
-    fmt::print("Exchange-repulsion  {: 12.6f}\n", interaction_energy.exchange_repulsion * kjmol_per_hartree);
-    fmt::print("Polarization        {: 12.6f}\n", interaction_energy.polarization * kjmol_per_hartree);
-    fmt::print("Dispersion          {: 12.6f}\n", interaction_energy.dispersion * kjmol_per_hartree);
-    fmt::print("Scaled total        {: 12.6f}\n", interaction_energy.total * kjmol_per_hartree);
+    fmt::print("Component              Energy (kJ/mol)\n\n");
+    fmt::print("Coulomb               {: 12.6f}\n", interaction_energy.coulomb * kjmol_per_hartree);
+    fmt::print("Exchange-repulsion    {: 12.6f}\n", interaction_energy.exchange_repulsion * kjmol_per_hartree);
+    fmt::print("Polarization          {: 12.6f}\n", interaction_energy.polarization * kjmol_per_hartree);
+    fmt::print("Dispersion            {: 12.6f}\n", interaction_energy.dispersion * kjmol_per_hartree);
+    fmt::print("__________________________________\n");
+    fmt::print("Total {:^8s}        {: 12.6f}\n", model_name, interaction_energy.total * kjmol_per_hartree);
 }

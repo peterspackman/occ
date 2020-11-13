@@ -348,7 +348,7 @@ tonto::MatRM FchkReader::convert_mo_coefficients_from_g09_convention(const tonto
         bool operator ==(const xyz& rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
     };
 
-    tonto::log::info("Reordering MO coefficients from Gaussian ordering to internal convention");
+    tonto::log::debug("Reordering MO coefficients from Gaussian ordering to internal convention");
     auto shell2bf = basis.shell2bf();
     tonto::MatRM result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();

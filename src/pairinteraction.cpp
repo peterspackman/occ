@@ -48,7 +48,7 @@ std::vector<libint2::Atom> merge_atoms(const std::vector<libint2::Atom>& atoms_a
     return merged;
 }
 
-CEModelInteraction::CEModelInteraction(const  CEModelEnergyScaleFactors &facs) : scale_factors(facs)
+CEModelInteraction::CEModelInteraction(const  CEParameterizedModel &facs) : scale_factors(facs)
 {
 
 }
