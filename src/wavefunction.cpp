@@ -328,4 +328,24 @@ void Wavefunction::apply_rotation(const tonto::Mat3& rot)
     compute_density_matrix();
 }
 
+tonto::Mat3N Wavefunction::positions() const
+{
+    tonto::Mat3N pos(3, atoms.size());
+    for(size_t i = 0; i < atoms.size(); i++) {
+        pos(0, i) = atoms[i].x;
+        pos(1, i) = atoms[i].y;
+        pos(2, i) = atoms[i].z;
+    }
+    return pos;
+}
+
+tonto::IVec Wavefunction::atomic_numbers() const
+{
+    tonto::IVec nums(atoms.size());
+    for(size_t i = 0; i < atoms.size(); i++) {
+        nums(i) = atoms[i].atomic_number;
+    }
+    return nums;
+}
+
 }

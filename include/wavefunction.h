@@ -37,6 +37,9 @@ struct Wavefunction {
     void apply_rotation(const tonto::Mat3&);
     void apply_translation(const tonto::Vec3&);
 
+    tonto::Mat3N positions() const;
+    tonto::IVec atomic_numbers() const;
+
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
     int num_alpha;
     int num_beta;
