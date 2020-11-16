@@ -11,11 +11,16 @@
 #include <fstream>
 #include <zlib.h>
 #include <Eigen/Dense>
+#include <type_traits>
 
 namespace enpy {
 
 namespace impl {
 const std::regex numeric_regex("[0-9]+");
+
+template<typename T> struct is_complex : std::false_type {};
+template<typename T> struct is_complex<std::complex<T>> : std::true_type {};
+
 }
 
 inline char host_endian_char()
@@ -24,30 +29,15 @@ inline char host_endian_char()
     return (reinterpret_cast<char *>(&x))[0] ? '<' : '>';
 }
 
-inline char type_char(const std::type_info& t)
+template<typename T>
+constexpr char type_char()
 {
     // floating types
-    if(t == typeid(float)) return 'f';
-    if(t == typeid(double)) return 'f';
-    if(t == typeid(long double)) return 'f';
-    // integral types
-    if(t == typeid(int)) return 'i';
-    if(t == typeid(char)) return 'i';
-    if(t == typeid(short)) return 'i';
-    if(t == typeid(long)) return 'i';
-    if(t == typeid(long long)) return 'i';
-    // unsigned integral types
-    if(t == typeid(unsigned int)) return 'u';
-    if(t == typeid(unsigned char)) return 'u';
-    if(t == typeid(unsigned short)) return 'u';
-    if(t == typeid(unsigned long)) return 'u';
-    if(t == typeid(unsigned long long)) return 'u';
-
-    if(t == typeid(bool)) return 'b';
-
-    if(t == typeid(std::complex<float>)) return 'c';
-    if(t == typeid(std::complex<double>)) return 'c';
-    if(t == typeid(std::complex<long double>)) return 'c';
+    if constexpr(std::is_same<T, bool>::value) return 'b';
+    else if constexpr(std::is_floating_point<T>::value) return 'f';
+    else if constexpr(std::is_unsigned<T>::value) return 'u';
+    else if constexpr(std::is_integral<T>::value) return 'i';
+    else if constexpr(impl::is_complex<T>::value) return 'c';
     return '?';
 }
 
@@ -364,7 +354,7 @@ std::vector<char> create_npy_header(const std::vector<size_t>& shape) {
     std::vector<char> dict;
     dict += "{'descr': '";
     dict += host_endian_char();
-    dict += type_char(typeid(ScalarType));
+    dict += type_char<ScalarType>();
     dict += std::to_string(sizeof(ScalarType));
     dict += "', 'fortran_order': ";
     dict += column_major ? "True" : "False";
