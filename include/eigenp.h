@@ -8,7 +8,7 @@
 #include <regex>
 #include <assert.h>
 #include "robin_hood.h"
-#include <cstdio>
+#include <fstream>
 #include <zlib.h>
 #include <Eigen/Dense>
 
@@ -132,13 +132,14 @@ inline void parse_numpy_header(const std::string header, size_t &word_size, std:
     word_size = std::stoi(str_ws.substr(0, location2));
 }
 
-inline void parse_numpy_header(FILE *fp, size_t &word_size, std::vector<size_t> &shape, bool &fortran_order)
+inline void parse_numpy_header(std::istream& file, size_t &word_size, std::vector<size_t> &shape, bool &fortran_order)
 {
     char buffer[256];
-    size_t res = fread(buffer, sizeof(char), 11, fp);
+    file.read(&buffer[0], 11);
+    size_t res = file.gcount();
     if(res != 11) throw std::runtime_error("Failed fread in parse_numpy_header");
-    std::string header = fgets(buffer, 256, fp);
-    assert(header[header.size() - 1] == '\n');
+    std::string header;
+    std::getline(file, header);
     parse_numpy_header(header, word_size, shape, fortran_order);
 }
 
@@ -151,11 +152,12 @@ inline void parse_numpy_header(unsigned char *buffer, size_t &word_size, std::ve
     parse_numpy_header(header, word_size, shape, fortran_order);
 }
 
-inline void parse_zip_footer(FILE * fp, uint16_t &num_records, size_t &global_header_size, size_t &global_header_offset)
+inline void parse_zip_footer(std::istream& file, uint16_t &num_records, size_t &global_header_size, size_t &global_header_offset)
 {
     std::array<char, 22> footer;
-    fseek(fp, -22, SEEK_END);
-    size_t res = fread(&footer[0], sizeof(char), 22, fp);
+    file.seekg(-22, std::ios_base::end);
+    file.read(&footer[0], 22);
+    size_t res = file.gcount();
     if(res != 22) throw std::runtime_error("Failed fread in parse_zip_footer");
     uint16_t disk_no, disk_start, num_records_on_disk, comment_length;
     disk_no = *(reinterpret_cast<uint16_t *>(&footer[4]));
@@ -171,25 +173,27 @@ inline void parse_zip_footer(FILE * fp, uint16_t &num_records, size_t &global_he
     assert(comment_length == 0);
 }
 
-inline NumpyArray parse_npy_array(FILE *fp)
+inline NumpyArray parse_npy_array(std::istream &file)
 {
     std::vector<size_t> shape;
     size_t word_size;
     bool fortran_order;
-    parse_numpy_header(fp, word_size, shape, fortran_order);
+    parse_numpy_header(file, word_size, shape, fortran_order);
 
     NumpyArray arr(shape, word_size, fortran_order);
-    size_t n = fread(arr.data<char>(), 1, arr.size_bytes(), fp);
+    file.read(arr.data<char>(), arr.size_bytes());
+    size_t n = file.gcount();
     if(n != arr.size_bytes()) throw std::runtime_error("failed fread in parse_npy");
     return arr;
 }
 
-inline NumpyArray parse_npz_array(FILE* fp, uint32_t size_compressed, uint32_t size_decompressed)
+inline NumpyArray parse_npz_array(std::istream &file, uint32_t size_compressed, uint32_t size_decompressed)
 {
 
     std::vector<unsigned char> compressed_buffer(size_compressed);
     std::vector<unsigned char> decompressed_buffer(size_decompressed);
-    size_t nread = fread(&compressed_buffer[0], 1, size_compressed, fp);
+    file.read(reinterpret_cast<char*>(&compressed_buffer[0]), size_compressed);
+    size_t nread = file.gcount();
     if(nread != size_compressed)
         throw std::runtime_error("load_the_npy_file: failed fread");
 
@@ -214,7 +218,7 @@ inline NumpyArray parse_npz_array(FILE* fp, uint32_t size_compressed, uint32_t s
     std::vector<size_t> shape;
     size_t word_size;
     bool fortran_order;
-    parse_numpy_header(&decompressed_buffer[0],word_size,shape,fortran_order);
+    parse_numpy_header(&decompressed_buffer[0], word_size,shape,fortran_order);
 
     NumpyArray array(shape, word_size, fortran_order);
 
@@ -224,15 +228,15 @@ inline NumpyArray parse_npz_array(FILE* fp, uint32_t size_compressed, uint32_t s
 }
 
 npz_type load_npz(const std::string &fname) {
-    FILE* fp = fopen(fname.c_str(),"rb");
-
-    if(!fp) throw std::runtime_error("Error in load_npz: Unable to open file '"+fname+"'");
+    std::ifstream file(fname, std::ios::binary);
+    if(!file.is_open()) throw std::runtime_error("Error in load_npz: Unable to open file '"+fname+"'");
 
     npz_type arrays;
 
     while(true) {
-        std::vector<char> local_header(30);
-        size_t headerres = fread(&local_header[0],sizeof(char),30,fp);
+        std::array<char, 30> local_header;
+        file.read(&local_header[0], 30);
+        size_t headerres = file.gcount();
         if(headerres != 30) throw std::runtime_error("Error in load_npz: failed fread");
 
         //if we've reached the global header, stop reading
@@ -241,7 +245,8 @@ npz_type load_npz(const std::string &fname) {
         //read in the variable name
         uint16_t name_len = *(uint16_t*) &local_header[26];
         std::string varname(name_len, ' ');
-        size_t vname_res = fread(&varname[0],sizeof(char),name_len,fp);
+        file.read(&varname[0], name_len);
+        size_t vname_res = file.gcount();
         if(vname_res != name_len) throw std::runtime_error("Error in load_npz: failed fread");
 
         //erase the lagging .npy
@@ -251,7 +256,8 @@ npz_type load_npz(const std::string &fname) {
         uint16_t extra_field_len = *(uint16_t*) &local_header[28];
         if(extra_field_len > 0) {
             std::vector<char> buff(extra_field_len);
-            size_t efield_res = fread(&buff[0],sizeof(char),extra_field_len,fp);
+            file.read(&buff[0], extra_field_len);
+            size_t efield_res =file.gcount();
             if(efield_res != extra_field_len) throw std::runtime_error("Error in load_npz: failed fread");
         }
 
@@ -259,68 +265,67 @@ npz_type load_npz(const std::string &fname) {
         uint32_t compr_bytes = *reinterpret_cast<uint32_t*>(&local_header[0]+18);
         uint32_t uncompr_bytes = *reinterpret_cast<uint32_t*>(&local_header[0]+22);
 
-        if(compr_method == 0) {arrays[varname] = parse_npy_array(fp);}
-        else {arrays[varname] = parse_npz_array(fp,compr_bytes,uncompr_bytes);}
+        if(compr_method == 0) {arrays[varname] = parse_npy_array(file);}
+        else {arrays[varname] = parse_npz_array(file, compr_bytes,uncompr_bytes);}
     }
-    fclose(fp);
+    file.close();
 
     return arrays;
 }
 
-inline NumpyArray load_npz(const std::string &fname, const std::string &varname)
+inline NumpyArray load_npz(const std::string &fname, const std::string &name)
 {
-    FILE* fp = fopen(fname.c_str(),"rb");
+    std::ifstream file(fname, std::ios::binary);
 
-    if(!fp) throw std::runtime_error("Error in load_npz: Unable to open file '"+fname+"'");
+    if(!file.is_open()) throw std::runtime_error("Error in load_npz: Unable to open file '"+fname+"'");
 
-    while(1) {
-        std::vector<char> local_header(30);
-        size_t header_res = fread(&local_header[0],sizeof(char),30,fp);
-        if(header_res != 30) throw std::runtime_error("Error in load_npz: failed fread");
+    while(true) {
+        std::array<char, 30> local_header;
+        file.read(&local_header[0], 30);
+        size_t headerres = file.gcount();
+        if(headerres != 30) throw std::runtime_error("Error in load_npz: failed fread");
 
         //if we've reached the global header, stop reading
         if(local_header[2] != 0x03 || local_header[3] != 0x04) break;
 
         //read in the variable name
         uint16_t name_len = *(uint16_t*) &local_header[26];
-        std::string vname(name_len,' ');
-        size_t vname_res = fread(&vname[0],sizeof(char),name_len,fp);
+        std::string varname(name_len, ' ');
+        file.read(&varname[0], name_len);
+        size_t vname_res = file.gcount();
         if(vname_res != name_len) throw std::runtime_error("Error in load_npz: failed fread");
-        vname.erase(vname.end()-4,vname.end()); //erase the lagging .npy
+
+        //erase the lagging .npy
+        varname.erase(varname.end() - 4, varname.end());
 
         //read in the extra field
         uint16_t extra_field_len = *(uint16_t*) &local_header[28];
-        fseek(fp,extra_field_len,SEEK_CUR); //skip past the extra field
+        file.seekg(extra_field_len); //skip past the extra field
 
         uint16_t compr_method = *reinterpret_cast<uint16_t*>(&local_header[0]+8);
         uint32_t compr_bytes = *reinterpret_cast<uint32_t*>(&local_header[0]+18);
         uint32_t uncompr_bytes = *reinterpret_cast<uint32_t*>(&local_header[0]+22);
 
-        if(vname == varname) {
-            NumpyArray array  = (compr_method == 0) ? parse_npy_array(fp) : parse_npz_array(fp, compr_bytes, uncompr_bytes);
-            fclose(fp);
+        if(name == varname) {
+            NumpyArray array  = (compr_method == 0) ? parse_npy_array(file) : parse_npz_array(file, compr_bytes, uncompr_bytes);
             return array;
         }
         else {
             //skip past the data
             uint32_t size = *(uint32_t*) &local_header[22];
-            fseek(fp,size,SEEK_CUR);
+            file.seekg(size);
         }
     }
-
-    fclose(fp);
-
     //if we get here, we haven't found the variable in the file
-    throw std::runtime_error("Error in load_npz: Variable name '" + varname + "' not found in '" + fname + "'");
+    throw std::runtime_error("Error in load_npz: Variable name '" + name + "' not found in '" + fname + "'");
 }
 
 inline NumpyArray load_npy(const std::string& fname) {
 
-    FILE* fp = fopen(fname.c_str(), "rb");
+    std::ifstream file(fname, std::ios::binary);
 
-    if(!fp) throw std::runtime_error("Error in load_npy: Unable to open file "+fname);
-    NumpyArray arr = parse_npy_array(fp);
-    fclose(fp);
+    if(!file.is_open()) throw std::runtime_error("Error in load_npy: Unable to open file "+fname);
+    NumpyArray arr = parse_npy_array(file);
 
     return arr;
 }
@@ -391,15 +396,15 @@ std::vector<char> create_npy_header(const std::vector<size_t>& shape) {
 template<typename ScalarType, bool column_major = false>
 inline void save_npy(const std::string &filename, const ScalarType *data, const std::vector<size_t> &shape, const std::string mode = "w")
 {
-    FILE *fp = nullptr;
+    std::fstream file;
     std::vector<size_t> total_shape;
-    if(mode == "a") fp = fopen(filename.c_str(), "r+b");
+    if(mode == "a") file.open(filename, std::ios::binary | std::ios::in | std::ios::out);
 
-    if (fp)
+    if (file.is_open())
     {
         size_t word_size;
         bool fortran_order;
-        parse_numpy_header(fp, word_size, total_shape, fortran_order);
+        parse_numpy_header(file, word_size, total_shape, fortran_order);
         assert(fortran_order == column_major);
 
         if(word_size != sizeof(ScalarType))
@@ -420,17 +425,17 @@ inline void save_npy(const std::string &filename, const ScalarType *data, const 
     }
     else
     {
-        fp = fopen(filename.c_str(), "wb");
+        file.open(filename, std::ios::binary | std::ios::out);
         total_shape = shape;
     }
 
     std::vector<char> header = create_npy_header<ScalarType, column_major>(total_shape);
     size_t num_elements = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<>());
-    fseek(fp, 0, SEEK_SET);
-    fwrite(&header[0], sizeof(char), header.size(), fp);
-    fseek(fp, 0, SEEK_END);
-    fwrite(data, sizeof(ScalarType), num_elements, fp);
-    fclose(fp);
+    file.seekg(0, std::ios_base::beg);
+    file.write(&header[0], header.size());
+    file.seekg(0, std::ios_base::end);
+    file.write(reinterpret_cast<const char *>(data), sizeof(ScalarType) * num_elements);
+    file.close();
 }
 
 
@@ -443,31 +448,31 @@ void save_npz(const std::string &zipname, const std::string &filename, const Sca
     const std::string zfname = filename + ".npy";
 
     //now, on with the show
-    FILE* fp = nullptr;
+    std::fstream file;
     uint16_t nrecs = 0;
     size_t global_header_offset = 0;
     std::vector<char> global_header;
 
-    if(mode == "a") fp = fopen(zipname.c_str(),"r+b");
-
-    if(fp)
+    if(mode == "a") file.open(zipname, std::ios::binary | std::ios::in | std::ios::out);
+    if(file.is_open())
     {
         //zip file exists. we need to add a new npy file to it.
         //first read the footer. this gives us the offset and size of the global header
         //then read and store the global header.
         //below, we will write the the new data at the start of the global header then append the global header and footer below it
         size_t global_header_size;
-        parse_zip_footer(fp,nrecs,global_header_size,global_header_offset);
-        fseek(fp,global_header_offset,SEEK_SET);
+        parse_zip_footer(file, nrecs,global_header_size,global_header_offset);
+        file.seekg(global_header_offset, std::ios_base::beg);
         global_header.resize(global_header_size);
-        size_t res = fread(&global_header[0],sizeof(char),global_header_size,fp);
+        file.read(&global_header[0], global_header_size);
+        size_t res = file.gcount();
         if(res != global_header_size){
             throw std::runtime_error("Error in save_npz: read error while appending to existing zip");
         }
-        fseek(fp,global_header_offset,SEEK_SET);
+        file.seekg(global_header_offset, std::ios_base::beg);
     }
     else {
-        fp = fopen(zipname.c_str(),"wb");
+        file.open(zipname, std::ios::binary | std::ios::out);
     }
 
     std::vector<char> npy_header = create_npy_header<ScalarType, column_major>(shape);
@@ -520,12 +525,11 @@ void save_npz(const std::string &zipname, const std::string &filename, const Sca
     footer += (uint16_t) 0; //zip file comment length
 
     //write everything
-    fwrite(&local_header[0],sizeof(char),local_header.size(),fp);
-    fwrite(&npy_header[0],sizeof(char),npy_header.size(),fp);
-    fwrite(data,sizeof(ScalarType),nels,fp);
-    fwrite(&global_header[0],sizeof(char),global_header.size(),fp);
-    fwrite(&footer[0],sizeof(char),footer.size(),fp);
-    fclose(fp);
+    file.write(&local_header[0], local_header.size());
+    file.write(&npy_header[0], npy_header.size());
+    file.write(reinterpret_cast<const char*>(data), sizeof(ScalarType) * nels);
+    file.write(&global_header[0], global_header.size());
+    file.write(&footer[0], footer.size());
 }
 
 
