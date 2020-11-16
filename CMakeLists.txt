@@ -14,6 +14,7 @@ find_package(Boost COMPONENTS graph)
 find_package(OpenMP REQUIRED)
 find_package(Libint2 REQUIRED)
 find_package(Libxc REQUIRED)
+find_package(ZLIB REQUIRED)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/fmt" EXCLUDE_FROM_ALL)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/scnlib" EXCLUDE_FROM_ALL)
