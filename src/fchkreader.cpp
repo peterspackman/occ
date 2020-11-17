@@ -9,6 +9,7 @@
 namespace tonto::io {
 
 using tonto::util::trim_copy;
+using tonto::util::startswith;
 using tonto::qm::BasisSet;
 
 
@@ -22,15 +23,6 @@ void read_matrix_block(std::istream& stream, std::vector<T>& destination, size_t
         std::getline(stream, line);
         scn::scan_list(line, destination);
     }
-}
-
-inline bool startswith(const std::string& h, const std::string& prefix, bool trimmed = true)
-{
-    if(trimmed) {
-        auto trimmed_str = trim_copy(h);
-        return trimmed_str.rfind(prefix, 0) == 0;
-    }
-    return h.rfind(prefix, 0) == 0;
 }
 
 FchkReader::FchkReader(const std::string& filename)

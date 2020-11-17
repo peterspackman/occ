@@ -21,6 +21,7 @@ set(TONTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubes.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubestables.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/moldenreader.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/optimize.h"

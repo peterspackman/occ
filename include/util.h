@@ -135,6 +135,15 @@ static inline std::string to_upper_copy(std::string s) {
   return s;
 }
 
+inline bool startswith(const std::string& h, const std::string& prefix, bool trimmed = true)
+{
+    if(trimmed) {
+        auto trimmed_str = trim_copy(h);
+        return trimmed_str.rfind(prefix, 0) == 0;
+    }
+    return h.rfind(prefix, 0) == 0;
+}
+
 template<typename T>
 std::string human_readable_size(T number, const std::string& suffix)
 {
