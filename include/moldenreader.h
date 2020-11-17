@@ -25,9 +25,10 @@ public:
     size_t num_electrons() const { return static_cast<size_t>(m_num_electrons); }
 
     size_t num_alpha() const {
+        // note could be an issue in future, should do a better job here
         size_t n = static_cast<size_t>(m_total_alpha_occupation);
         if(m_total_alpha_occupation == m_num_electrons) {
-            if(n % 2 == 2) return n / 2;
+            if(n % 2 == 0) return n / 2;
             return n / 2 + 1;
         }
         return n;

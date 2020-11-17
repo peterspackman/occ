@@ -60,9 +60,12 @@ Wavefunction::Wavefunction(const MoldenReader& molden) :
         C.beta() = molden.beta_mo_coefficients();
         mo_energies.alpha() = molden.alpha_mo_energies();
         mo_energies.beta() = molden.beta_mo_energies();
+        C.alpha() = molden.convert_mo_coefficients_from_molden_convention(basis, C.alpha());
+        C.beta() = molden.convert_mo_coefficients_from_molden_convention(basis, C.beta());
     }
     else {
         C = molden.alpha_mo_coefficients();
+        C = molden.convert_mo_coefficients_from_molden_convention(basis, C);
         mo_energies = molden.alpha_mo_energies();
     }
     update_occupied_orbitals();

@@ -123,7 +123,7 @@ int main(int argc, const char **argv) {
     const auto pair_interaction_table = toml::find(input, "interaction");
     const auto global_settings_table = toml::find(input, "global");
 
-    libint2::Shell::do_enforce_unit_normalization(false);
+    libint2::Shell::do_enforce_unit_normalization(true);
     libint2::initialize();
 
     using tonto::parallel::nthreads;

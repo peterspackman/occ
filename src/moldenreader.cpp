@@ -49,7 +49,7 @@ void MoldenReader::parse(std::istream &stream)
         {
             auto section_name = parse_section_name(line);
             auto section_args = extract_section_args(line);
-            fmt::print("Section: {}\n", section_name);
+            tonto::log::debug("Found section: {}", section_name);
             parse_section(section_name, section_args, stream);
         }
     }
@@ -77,7 +77,7 @@ void MoldenReader::parse_section(const std::string &section_name, const std::opt
 
 void MoldenReader::parse_atoms_section(const std::optional<std::string> &args, std::istream& stream)
 {
-    tonto::log::info("Parsing Atoms section");
+    tonto::log::debug("Parsing Atoms section");
     auto pos = stream.tellg();
     std::string line;
     std::vector<int> idx;
@@ -148,16 +148,17 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3>& position, 
         alpha.push_back(e);
         coeffs.push_back(c);
     }
-    return libint2::Shell(
+    auto shell = libint2::Shell{
         std::move(alpha),
         {{l_from_char(shell_type), pure, std::move(coeffs)},},
         position
-    );
+    };
+    return shell;
 }
 
 void MoldenReader::parse_gto_section(const std::optional<std::string> &args, std::istream &stream)
 {
-    tonto::log::info("Parsing GTO section");
+    tonto::log::debug("Parsing GTO section");
     auto pos = stream.tellg();
     std::string line;
     while(std::getline(stream, line))
@@ -242,7 +243,7 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream)
 
 void MoldenReader::parse_mo_section(const std::optional<std::string> &args, std::istream &stream)
 {
-    tonto::log::info("Parsing MO section");
+    tonto::log::debug("Parsing MO section");
     auto pos = stream.tellg();
     std::string line;
     m_energies_alpha = tonto::Vec(nbf());
@@ -274,7 +275,7 @@ tonto::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const 
         bool operator ==(const xyz& rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
     };
 
-    tonto::log::debug("Reordering MO coefficients from Gaussian ordering to internal convention");
+    tonto::log::debug("Reordering MO coefficients from Molden ordering to internal convention");
     auto shell2bf = basis.shell2bf();
     tonto::MatRM result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
@@ -308,7 +309,7 @@ tonto::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const 
             break;
         }
         if (molden_order.size() == 0) {
-            tonto::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
+            tonto::log::warn("Unknown Molden ordering for shell with angular momentum {}, not reordering", l);
             continue;
         }
 
