@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <string>
 
 namespace tonto::timing {
 
@@ -74,5 +75,8 @@ time_point_t start(category cat);
 duration_t stop(category cat);
 double total(category cat);
 void clear_all();
+
+std::string category_name(category);
+void print_timings();
 
 }

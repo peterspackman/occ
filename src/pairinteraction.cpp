@@ -1,6 +1,7 @@
 #include "pairinteraction.h"
 #include "hf.h"
 #include "disp.h"
+#include "timings.h"
 
 namespace tonto::interaction {
 

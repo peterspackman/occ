@@ -11,6 +11,7 @@
 #include "boost/version.hpp"
 #include "dft.h"
 #include <spdlog/cfg/env.h>
+#include "timings.h"
 
 void print_header()
 {
@@ -95,7 +96,7 @@ int main(int argc, const char **argv) {
 
 
     parser.add_argument("-df", "--df-basis").help("Density fitting basis name");
-
+    tonto::timing::start(tonto::timing::category::global);
     tonto::log::set_level(tonto::log::level::debug);
     try {
         parser.parse_args(argc, argv);
@@ -189,5 +190,7 @@ int main(int argc, const char **argv) {
         fmt::print("Unknown exception occurred...\n");
         return 1;
     }
+    tonto::timing::stop(tonto::timing::global);
+    tonto::timing::print_timings();
     return 0;
 }

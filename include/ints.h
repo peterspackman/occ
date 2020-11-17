@@ -6,6 +6,7 @@
 #include "basisset.h"
 #include <unordered_map>
 #include <vector>
+#include "timings.h"
 
 namespace tonto::ints {
 using tonto::MatRM;
@@ -29,6 +30,7 @@ template <Operator obtype,
 std::array<MatRM, libint2::operator_traits<obtype>::nopers>
 compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list,
                    OperatorParams oparams = OperatorParams()) {
+  tonto::timing::start(tonto::timing::category::ints1e);
   const auto n = obs.nbf();
   const auto nshells = obs.size();
   using tonto::parallel::nthreads;
@@ -90,6 +92,7 @@ compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list,
     }
   }; // compute lambda
   tonto::parallel::parallel_do(compute);
+  tonto::timing::stop(tonto::timing::category::ints1e);
   return result;
 }
 
@@ -98,6 +101,7 @@ std::vector<MatRM>
 compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
                          const shellpair_list_t &shellpair_list,
                          const std::vector<libint2::Atom> &atoms) {
+    tonto::timing::start(tonto::timing::category::ints1e);
   using tonto::parallel::nthreads;
   const auto n = obs.nbf();
   const auto nshells = obs.size();
@@ -298,6 +302,7 @@ compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
   };    // compute lambda
 
   tonto::parallel::parallel_do(compute);
+  tonto::timing::stop(tonto::timing::category::ints1e);
 
   return result;
 }
@@ -310,6 +315,8 @@ MatRM compute_schwarz_ints(
         libint2::operator_traits<Kernel>::default_params())
 
 {
+    tonto::timing::start(tonto::timing::category::ints1e);
+
   const BasisSet &bs2 = (_bs2.empty() ? bs1 : _bs2);
   const auto nsh1 = bs1.size();
   const auto nsh2 = bs2.size();
@@ -366,6 +373,7 @@ MatRM compute_schwarz_ints(
   }; // thread lambda
 
   tonto::parallel::parallel_do(compute);
+  tonto::timing::stop(tonto::timing::category::ints1e);
 
   return K;
 }
@@ -384,6 +392,8 @@ std::vector<MatRM> compute_2body_fock_deriv(
     const shellpair_data_t &shellpair_data,
     const std::vector<libint2::Atom> &atoms, const MatRM &D, double precision,
     const MatRM &Schwarz) {
+    tonto::timing::start(tonto::timing::category::ints2e);
+
   const auto n = obs.nbf();
   const auto nshells = obs.size();
   const auto nderiv_shellset = libint2::num_geometrical_derivatives(
@@ -638,6 +648,7 @@ std::vector<MatRM> compute_2body_fock_deriv(
   }
 
   std::cout << "# of integrals = " << num_ints_computed << std::endl;
+  tonto::timing::stop(tonto::timing::category::ints2e);
 
   // symmetrize the result and return
   return GG;

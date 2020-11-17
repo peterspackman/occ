@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "util.h"
 #include "gto.h"
+#include "timings.h"
 
 namespace tonto::io {
 using tonto::util::trim;
@@ -31,13 +32,17 @@ std::optional<std::string> extract_section_args(const std::string &line)
 
 MoldenReader::MoldenReader(const std::string &filename) : m_filename(filename)
 {
+    tonto::timing::start(tonto::timing::category::io);
     std::ifstream file(filename);
     parse(file);
+    tonto::timing::stop(tonto::timing::category::io);
 }
 
 MoldenReader::MoldenReader(std::istream &file)
 {
+    tonto::timing::start(tonto::timing::category::io);
     parse(file);
+    tonto::timing::stop(tonto::timing::category::io);
 }
 
 void MoldenReader::parse(std::istream &stream)

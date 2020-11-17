@@ -5,6 +5,7 @@
 namespace tonto::ints {
 
 MatRM compute_2body_2index_ints(const BasisSet &bs) {
+    tonto::timing::start(tonto::timing::category::ints2e);
   using tonto::parallel::nthreads;
   using libint2::BraKet;
   using libint2::Engine;
@@ -62,6 +63,7 @@ MatRM compute_2body_2index_ints(const BasisSet &bs) {
   }; // compute lambda
 
   tonto::parallel::parallel_do(compute);
+  tonto::timing::stop(tonto::timing::category::ints2e);
 
   return result;
 }
@@ -69,6 +71,7 @@ MatRM compute_2body_2index_ints(const BasisSet &bs) {
 std::tuple<shellpair_list_t, shellpair_data_t>
 compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
                    const double threshold) {
+    tonto::timing::start(tonto::timing::category::ints1e);
   using libint2::Operator;
   const BasisSet &bs2 = (_bs2.empty() ? bs1 : _bs2);
   const auto nsh1 = bs1.size();
@@ -169,6 +172,8 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
 
   timer.stop(0);
   tonto::log::debug("computed non-negligible shell-pair list in {:.6f} s", timer.read(0));
+  tonto::timing::stop(tonto::timing::category::ints1e);
+
   return std::make_tuple(splist, spdata);
 }
 
@@ -195,6 +200,7 @@ MatRM compute_shellblock_norm(const BasisSet &obs, const MatRM &A) {
 MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
                                  const BasisSet &D_bs, bool D_is_shelldiagonal,
                                  double precision) {
+    tonto::timing::start(tonto::timing::category::ints2e);
 
   const auto n = obs.nbf();
   const auto nshells = obs.size();
@@ -313,6 +319,7 @@ MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
   for (size_t i = 1; i != nthreads; ++i) {
     G[0] += G[i];
   }
+  tonto::timing::stop(tonto::timing::category::ints2e);
 
   // symmetrize the result and return
   return 0.5 * (G[0] + G[0].transpose());
@@ -321,6 +328,8 @@ MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
 tonto::Vec compute_electric_potential(const tonto::MatRM &D, const BasisSet &obs,
                                       const shellpair_list_t &shellpair_list, const tonto::Mat3N &positions)
 {
+    tonto::timing::start(tonto::timing::category::ints1e);
+
     using tonto::qm::expectation;
     const auto n = obs.nbf();
     const bool unrestricted = D.rows() > n;
@@ -377,12 +386,14 @@ tonto::Vec compute_electric_potential(const tonto::MatRM &D, const BasisSet &obs
         }
     }; // compute lambda
     tonto::parallel::parallel_do(compute);
+    tonto::timing::stop(tonto::timing::category::ints1e);
     return result;
 }
 
 tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
                                     const shellpair_list_t &shellpair_list, const tonto::Mat3N &positions)
 {
+    tonto::timing::start(tonto::timing::category::ints1e);
     using tonto::parallel::nthreads;
     using tonto::qm::expectation;
     // seems to be correct for very small molecules but has issues -- use finite differences for now
@@ -452,8 +463,8 @@ tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
         }
     };
     tonto::parallel::parallel_do(compute);
+    tonto::timing::stop(tonto::timing::category::ints1e);
     return result;
-
 }
 
 } // namespace tonto::ints

@@ -14,6 +14,8 @@ MatRM compute_fock(
     double precision = std::numeric_limits<double>::epsilon(),
     const MatRM &Schwarz = MatRM())
 {
+    tonto::timing::start(tonto::timing::category::ints2e);
+    tonto::timing::start(tonto::timing::category::fock);
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     using tonto::parallel::nthreads;
@@ -242,6 +244,8 @@ MatRM compute_fock(
         GG.alpha() = 0.5 * (G[0].alpha() + G[0].alpha().transpose());
         GG.beta() = 0.5 * (G[0].beta() + G[0].beta().transpose());
     }
+    tonto::timing::stop(tonto::timing::category::ints2e);
+    tonto::timing::stop(tonto::timing::category::fock);
     return GG;
 }
 
@@ -253,6 +257,7 @@ std::pair<MatRM, MatRM> compute_JK(
     double precision = std::numeric_limits<double>::epsilon(),
     const MatRM &Schwarz = MatRM())
 {
+    tonto::timing::start(tonto::timing::category::ints2e);
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     using tonto::parallel::nthreads;
@@ -486,6 +491,7 @@ std::pair<MatRM, MatRM> compute_JK(
         KK.alpha() = 0.5 * (K[0].alpha() + K[0].alpha().transpose());
         KK.beta() = 0.5 * (K[0].beta() + K[0].beta().transpose());
     }
+    tonto::timing::stop(tonto::timing::category::ints2e);
     return {JJ, KK};
 }
 
@@ -496,6 +502,7 @@ MatRM compute_J(
     double precision = std::numeric_limits<double>::epsilon(),
     const MatRM &Schwarz = MatRM())
 {
+    tonto::timing::start(tonto::timing::category::ints2e);
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     using tonto::parallel::nthreads;
@@ -679,6 +686,7 @@ MatRM compute_J(
         JJ.alpha() = 0.5 * (J[0].alpha() + J[0].alpha().transpose());
         JJ.beta() = 0.5 * (J[0].beta() + J[0].beta().transpose());
     }
+    tonto::timing::stop(tonto::timing::category::ints2e);
     return JJ;
 }
 }

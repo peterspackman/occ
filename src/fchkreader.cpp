@@ -27,13 +27,17 @@ void read_matrix_block(std::istream& stream, std::vector<T>& destination, size_t
 
 FchkReader::FchkReader(const std::string& filename)
 {
+    tonto::timing::start(tonto::timing::category::io);
     open(filename);
     parse(m_fchk_file);
+    tonto::timing::stop(tonto::timing::category::io);
 }
 
 FchkReader::FchkReader(std::istream& filehandle)
 {
+    tonto::timing::start(tonto::timing::category::io);
     parse(filehandle);
+    tonto::timing::stop(tonto::timing::category::io);
 }
 
 void FchkReader::open(const std::string& filename)

@@ -13,6 +13,7 @@
 #include "polarization.h"
 #include <toml.hpp>
 #include <filesystem>
+#include "timings.h"
 
 using tonto::qm::Wavefunction;
 using tonto::interaction::CEModelInteraction;
@@ -122,7 +123,7 @@ int main(int argc, const char **argv) {
     const auto input = toml::parse((argc > 1) ? argv[1] : "ce.toml");
     const auto pair_interaction_table = toml::find(input, "interaction");
     const auto global_settings_table = toml::find(input, "global");
-
+    tonto::timing::start(tonto::timing::category::global);
     libint2::Shell::do_enforce_unit_normalization(true);
     libint2::initialize();
 
@@ -146,6 +147,8 @@ int main(int argc, const char **argv) {
     auto model = tonto::interaction::ce_model_from_string(model_name);
     CEModelInteraction interaction(model);
     auto interaction_energy = interaction(A, B);
+    tonto::timing::stop(tonto::timing::category::global);
+
     fmt::print("Component              Energy (kJ/mol)\n\n");
     fmt::print("Coulomb               {: 12.6f}\n", interaction_energy.coulomb * kjmol_per_hartree);
     fmt::print("Exchange-repulsion    {: 12.6f}\n", interaction_energy.exchange_repulsion * kjmol_per_hartree);
@@ -153,4 +156,7 @@ int main(int argc, const char **argv) {
     fmt::print("Dispersion            {: 12.6f}\n", interaction_energy.dispersion * kjmol_per_hartree);
     fmt::print("__________________________________\n");
     fmt::print("Total {:^8s}        {: 12.6f}\n", model_name, interaction_energy.total * kjmol_per_hartree);
+
+    fmt::print("\n");
+    tonto::timing::print_timings();
 }
