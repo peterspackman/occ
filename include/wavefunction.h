@@ -3,12 +3,14 @@
 #include "basisset.h"
 #include "spinorbital.h"
 #include "fchkreader.h"
+#include "moldenreader.h"
 
 namespace tonto::qm {
 
 using tonto::MatRM;
 using tonto::Vec;
 using tonto::io::FchkReader;
+using tonto::io::MoldenReader;
 
 struct Energy {
     double coulomb{0};
@@ -24,6 +26,7 @@ struct Wavefunction {
     Wavefunction() {}
 
     Wavefunction(const FchkReader& fchk);
+    Wavefunction(const MoldenReader& fchk);
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
 
     size_t n_alpha() const { return num_alpha; }

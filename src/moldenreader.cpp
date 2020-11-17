@@ -68,6 +68,10 @@ void MoldenReader::parse_section(const std::string &section_name, const std::opt
     {
         parse_mo_section(args, stream);
     }
+    else if (section_name == "5D") {
+        m_basis.set_pure(true);
+        m_pure = true;
+    }
 
 }
 
@@ -77,6 +81,11 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args, s
     auto pos = stream.tellg();
     std::string line;
     std::vector<int> idx;
+    std::string unit = args.value_or("bohr");
+    trim(unit);
+    to_lower(unit);
+    double factor = 1.0;
+    if(startswith(unit, "angs", false)) factor = 0.5291772108;
     while(std::getline(stream, line))
     {
         if(is_section_line(line)) {
@@ -88,6 +97,12 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args, s
         int idx;
         libint2::Atom atom;
         scn::scan_default(line, symbol, idx, atom.atomic_number, atom.x, atom.y, atom.z);
+        if(factor != 1.0)
+        {
+            atom.x *= factor;
+            atom.y *= factor;
+            atom.z *= factor;
+        }
         m_atoms.push_back(atom);
     }
 }
@@ -176,6 +191,7 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream)
 {
     double energy;
     bool alpha;
+    double occupation{0.0};
     std::string line;
     while(std::getline(stream, line))
     {
@@ -193,7 +209,8 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream)
         }
         else if(startswith(line, "Occup", false))
         {
-
+            scn::scan(line, "Occup= {}", occupation);
+            m_num_electrons += occupation;
         }
         else {
             for(size_t i = 0; i < nbf(); i++)
@@ -213,9 +230,15 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream)
             }
             break;
         }
-   }
-   if(alpha) mo_a++;
-   else mo_b++;
+    }
+    if(alpha) {
+        m_total_alpha_occupation += occupation;
+        mo_a++;
+    }
+    else {
+        m_total_beta_occupation += occupation;
+        mo_b++;
+    }
 }
 
 

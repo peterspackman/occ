@@ -14,8 +14,48 @@ class MoldenReader
 public:
     MoldenReader(const std::string&);
     MoldenReader(std::istream&);
-    const auto atoms() const { return m_atoms; }
-    const size_t nbf() const { return m_basis.nbf(); }
+
+    auto spinorbital_kind() const {
+        if(m_total_beta_occupation > 0) return tonto::qm::SpinorbitalKind::Unrestricted;
+        return tonto::qm::SpinorbitalKind::Restricted;
+    }
+    const tonto::qm::BasisSet& basis_set() const { return m_basis; }
+    const std::vector<libint2::Atom>& atoms() const { return m_atoms; }
+    size_t nbf() const { return m_basis.nbf(); }
+    size_t num_electrons() const { return static_cast<size_t>(m_num_electrons); }
+
+    size_t num_alpha() const {
+        size_t n = static_cast<size_t>(m_total_alpha_occupation);
+        if(m_total_alpha_occupation == m_num_electrons) {
+            if(n % 2 == 2) return n / 2;
+            return n / 2 + 1;
+        }
+        return n;
+    }
+
+    const tonto::MatRM& alpha_mo_coefficients() const
+    {
+        return m_molecular_orbitals_alpha;
+    }
+
+    const tonto::MatRM& beta_mo_coefficients() const
+    {
+        return m_molecular_orbitals_beta;
+    }
+
+    const tonto::Vec& alpha_mo_energies() const
+    {
+        return m_energies_alpha;
+    }
+
+    const tonto::Vec& beta_mo_energies() const
+    {
+        return m_energies_beta;
+    }
+
+    size_t num_beta() const {
+        return static_cast<size_t>(m_total_beta_occupation);
+    }
 
 private:
     void parse(std::istream&);
@@ -32,8 +72,10 @@ private:
     tonto::MatRM m_molecular_orbitals_beta;
     tonto::Vec m_energies_alpha;
     tonto::Vec m_energies_beta;
-    size_t m_num_alpha{0};
-    size_t m_num_beta{0};
+    double m_total_alpha_occupation{0};
+    double m_total_beta_occupation{0};
+    double m_num_electrons{0};
+    bool m_pure{false};
 };
 
 }

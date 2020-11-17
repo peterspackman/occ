@@ -36,6 +36,39 @@ Wavefunction::Wavefunction(const FchkReader& fchk) :
     compute_density_matrix();
 }
 
+
+Wavefunction::Wavefunction(const MoldenReader& molden) :
+    spinorbital_kind(molden.spinorbital_kind()),
+    num_alpha(molden.num_alpha()),
+    num_beta(molden.num_beta()),
+    num_electrons(molden.num_electrons()),
+    basis(molden.basis_set()),
+    nbf(molden.nbf()),
+    atoms(molden.atoms())
+{
+    size_t rows, cols;
+    nbf = tonto::qm::nbf(basis);
+
+    if(spinorbital_kind == SpinorbitalKind::General) {
+        throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
+    }
+    else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+        C = MatRM(rows, cols);
+        mo_energies = Vec(rows);
+        C.alpha() = molden.alpha_mo_coefficients();
+        C.beta() = molden.beta_mo_coefficients();
+        mo_energies.alpha() = molden.alpha_mo_energies();
+        mo_energies.beta() = molden.beta_mo_energies();
+    }
+    else {
+        C = molden.alpha_mo_coefficients();
+        mo_energies = molden.alpha_mo_energies();
+    }
+    update_occupied_orbitals();
+    compute_density_matrix();
+}
+
 Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b) :
     num_alpha(wfn_a.num_alpha + wfn_b.num_alpha),
     num_beta(wfn_a.num_beta + wfn_b.num_beta),
