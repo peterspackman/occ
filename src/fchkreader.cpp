@@ -296,42 +296,11 @@ tonto::MatRM FchkReader::mp2_density_matrix() const
     return dm;
 }
 
-template<typename T>
-size_t index_of(T x, const std::vector<T>& vec)
-{
-    return std::distance(vec.begin(),
-        std::find(vec.begin(), vec.end(), x)
-    );
-}
-
-double dfac(int l)
-{
-    switch(l) {
-    case 0:
-        return 1.0;
-    case 1:
-        return 1.0;
-    case 2:
-        return 3.0;
-    case 3:
-        return 15.0;
-    case 4:
-        return 105.0;
-    case 5:
-        return 945.0;
-    default:
-        double result = 10395.0;
-        for(int i = 7; i <= l; i++) {
-            result *= (2 * i - 1);
-        }
-        return result;
-    }
-}
-
 
 tonto::MatRM FchkReader::convert_mo_coefficients_from_g09_convention(const tonto::qm::BasisSet& basis, const tonto::MatRM& mo) const
 {
     // no reordering should occur unless there are d, f, g, h etc. functions
+    using tonto::util::index_of;
     if(tonto::qm::max_l(basis) < 2) return mo;
     struct xyz {
         uint_fast8_t x{0};
@@ -385,7 +354,7 @@ tonto::MatRM FchkReader::convert_mo_coefficients_from_g09_convention(const tonto
             size_t gaussian_idx = index_of(v, gaussian_order);
             tonto::log::debug("Setting row {} <- row {}", our_idx, gaussian_idx);
             result.row(bf_first + our_idx) = mo.row(bf_first + gaussian_idx);
-            double normalization_factor = sqrt(dfac(l) / (dfac(xp) * dfac(yp) * dfac(zp)));
+            double normalization_factor = tonto::gto::cartesian_normalization_factor(xp, yp, zp);
             result.row(bf_first + our_idx) *= normalization_factor;
             our_idx++;
         END_FOR_CART

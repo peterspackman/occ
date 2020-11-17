@@ -57,6 +57,8 @@ public:
         return static_cast<size_t>(m_total_beta_occupation);
     }
 
+    tonto::MatRM convert_mo_coefficients_from_molden_convention(const tonto::qm::BasisSet&, const tonto::MatRM&) const;
+
 private:
     void parse(std::istream&);
     void parse_section(const std::string&, const std::optional<std::string>& args, std::istream&);

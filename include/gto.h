@@ -9,6 +9,7 @@
 #include "timings.h"
 #include <fmt/core.h>
 #include "logger.h"
+#include "util.h"
 
 namespace tonto::gto {
 
@@ -59,6 +60,13 @@ struct GTOValues<1>
     tonto::Mat phi_y;
     tonto::Mat phi_z;
 };
+
+inline double cartesian_normalization_factor(int l, int m, int n)
+{
+    int angular_momenta = l + m + n;
+    using tonto::util::double_factorial;
+    return sqrt(double_factorial(angular_momenta) / (double_factorial(l) * double_factorial(m) * double_factorial(n)));
+}
 
 struct Momenta {
     int l{0};

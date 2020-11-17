@@ -1,6 +1,7 @@
 #include "logger.h"
 #include "argparse.hpp"
 #include "fchkreader.h"
+#include "moldenreader.h"
 #include <fmt/ostream.h>
 #include "hf.h"
 #include "wavefunction.h"
@@ -11,9 +12,9 @@
 #include "disp.h"
 #include "polarization.h"
 #include <toml.hpp>
+#include <filesystem>
 
 using tonto::qm::Wavefunction;
-using tonto::io::FchkReader;
 using tonto::interaction::CEModelInteraction;
 
 constexpr double kjmol_per_hartree{2625.46};
@@ -96,6 +97,27 @@ struct from<impl::translation>
 };
 }
 
+Wavefunction load_wavefunction(const std::string& filename)
+{
+    namespace fs = std::filesystem;
+    using tonto::util::to_lower;
+    std::string ext = fs::path(filename).extension();
+    to_lower(ext);
+    if(ext == ".fchk")
+    {
+        using tonto::io::FchkReader;
+        FchkReader fchk(filename);
+        return Wavefunction(fchk);
+    }
+    if(ext == ".molden")
+    {
+        using tonto::io::MoldenReader;
+        MoldenReader molden(filename);
+        return Wavefunction(molden);
+    }
+    throw std::runtime_error("Unknown file extension when reading wavefunction: " + ext);
+}
+
 int main(int argc, const char **argv) {
     const auto input = toml::parse((argc > 1) ? argv[1] : "ce.toml");
     const auto pair_interaction_table = toml::find(input, "interaction");
@@ -109,19 +131,17 @@ int main(int argc, const char **argv) {
     omp_set_num_threads(nthreads);
 
     const std::string model_name = toml::find_or<std::string>(pair_interaction_table, "model", "ce-b3lyp");
-    const std::string fchk_filename_a = toml::find_or<std::string>(pair_interaction_table, "monomer_a", "a.fchk");
-    const std::string fchk_filename_b = toml::find_or<std::string>(pair_interaction_table, "monomer_b", "b.fchk");
+    const std::string filename_a = toml::find_or<std::string>(pair_interaction_table, "monomer_a", "a.fchk");
+    const std::string filename_b = toml::find_or<std::string>(pair_interaction_table, "monomer_b", "b.fchk");
     tonto::Mat3 rotation_a = toml::find_or<impl::rotation>(pair_interaction_table, "rotation_a", impl::rotation{}).mat;
     tonto::Mat3 rotation_b = toml::find_or<impl::rotation>(pair_interaction_table, "rotation_b", impl::rotation{}).mat;
     tonto::Vec3 translation_a = toml::find_or<impl::translation>(pair_interaction_table, "translation_a", impl::translation{}).vec;
     tonto::Vec3 translation_b = toml::find_or<impl::translation>(pair_interaction_table, "translation_b", impl::translation{}).vec;
 
-    FchkReader fchk_a(fchk_filename_a);
-    FchkReader fchk_b(fchk_filename_b);
 
-    Wavefunction A(fchk_a);
+    Wavefunction A = load_wavefunction(filename_a);
     A.apply_transformation(rotation_a, translation_a);
-    Wavefunction B(fchk_b);
+    Wavefunction B = load_wavefunction(filename_b);
     B.apply_transformation(rotation_b, translation_b);
     auto model = tonto::interaction::ce_model_from_string(model_name);
     CEModelInteraction interaction(model);

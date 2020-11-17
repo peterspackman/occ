@@ -159,6 +159,30 @@ std::string human_readable_size(T number, const std::string& suffix)
 }
 
 
+static inline double double_factorial(int l)
+{
+    switch(l) {
+    case 0:
+        return 1.0;
+    case 1:
+        return 1.0;
+    case 2:
+        return 3.0;
+    case 3:
+        return 15.0;
+    case 4:
+        return 105.0;
+    case 5:
+        return 945.0;
+    default:
+        double result = 10395.0;
+        for(int i = 7; i <= l; i++) {
+            result *= (2 * i - 1);
+        }
+        return result;
+    }
+}
+
 static inline int multinomial_coefficient(std::initializer_list<int> args)
 {
     int result = 1;
@@ -172,6 +196,14 @@ static inline int multinomial_coefficient(std::initializer_list<int> args)
         }
     }
     return result;
+}
+
+template<typename T>
+size_t index_of(T x, const std::vector<T>& vec)
+{
+    return std::distance(vec.begin(),
+        std::find(vec.begin(), vec.end(), x)
+    );
 }
 
 } // namespace tonto::util
