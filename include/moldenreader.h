@@ -28,8 +28,8 @@ public:
         // note could be an issue in future, should do a better job here
         size_t n = static_cast<size_t>(m_total_alpha_occupation);
         if(m_total_alpha_occupation == m_num_electrons) {
-            if(n % 2 == 0) return n / 2;
-            return n / 2 + 1;
+            // beta > alpha in our convention, & this should only occur for restricted
+            return n / 2;
         }
         return n;
     }
