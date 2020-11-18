@@ -34,6 +34,17 @@ public:
         return n;
     }
 
+    size_t num_beta() const {
+        size_t n = static_cast<size_t>(m_total_alpha_occupation);
+        if(m_total_alpha_occupation == m_num_electrons) {
+            // beta > alpha in our convention, & this should only occur for restricted,
+            // might be important for ROHF in future
+            if(n % 2 == 0) return n / 2;
+            else return n / 2 + 1;
+        }
+        return static_cast<size_t>(m_total_beta_occupation);
+    }
+
     const tonto::MatRM& alpha_mo_coefficients() const
     {
         return m_molecular_orbitals_alpha;
@@ -54,9 +65,7 @@ public:
         return m_energies_beta;
     }
 
-    size_t num_beta() const {
-        return static_cast<size_t>(m_total_beta_occupation);
-    }
+
 
     tonto::MatRM convert_mo_coefficients_from_molden_convention(const tonto::qm::BasisSet&, const tonto::MatRM&) const;
 
