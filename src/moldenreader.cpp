@@ -145,6 +145,7 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3>& position, 
     scn::scan_default(line, shell_type, num_primitives, second);
     libint2::svector<double> alpha, coeffs;
     alpha.reserve(num_primitives), coeffs.reserve(num_primitives);
+    int l = l_from_char(shell_type);
     for(int i = 0; i < num_primitives; i++)
     {
         std::getline(stream, line);
@@ -153,9 +154,35 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3>& position, 
         alpha.push_back(e);
         coeffs.push_back(c);
     }
+
+    {
+        double pi2_34 = pow(2*M_PI, 0.75);
+        double norm = 0.0;
+        for(size_t i = 0; i < coeffs.size(); i++)
+        {
+            size_t j;
+            double a = alpha[i];
+            for(j = 0; j < i; j++)
+            {
+                double b = alpha[j];
+                double ab = 2 * sqrt(a*b)/(a + b);
+                norm += 2 * coeffs[i] * coeffs[j] * pow(ab, l + 1.5);
+            }
+            norm += coeffs[i] * coeffs[j];
+        }
+        norm = sqrt(norm) * pi2_34;
+        if(std::abs(pi2_34 - norm) > 1e-4) {
+            for(size_t i = 0; i < coeffs.size(); i++)
+            {
+                tonto::log::debug("Renormalizing coefficients: {} != (2*pi)^(3/4)\n", norm);
+                coeffs[i] /= pow(4*alpha[i], 0.5 * l + 0.75);
+                coeffs[i] = coeffs[i] * pi2_34 / norm;
+            }
+        }
+    }
     auto shell = libint2::Shell{
         std::move(alpha),
-        {{l_from_char(shell_type), pure, std::move(coeffs)},},
+        {{l, pure, std::move(coeffs)},},
         position
     };
     return shell;
