@@ -183,6 +183,30 @@ static inline double double_factorial(int l)
     }
 }
 
+static inline double factorial(int l)
+{
+    switch(l) {
+    case 0:
+        return 1.0;
+    case 1:
+        return 1.0;
+    case 2:
+        return 2.0;
+    case 3:
+        return 6.0;
+    case 4:
+        return 24.0;
+    case 5:
+        return 120.0;
+    default:
+        double result = 720.0;
+        for(int i = 7; i <= l; i++) {
+            result *= i;
+        }
+        return result;
+    }
+}
+
 static inline int multinomial_coefficient(std::initializer_list<int> args)
 {
     int result = 1;

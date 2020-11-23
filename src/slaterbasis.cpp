@@ -1,4 +1,5 @@
 #include "slaterbasis.h"
+#include "util.h"
 #include <fmt/core.h>
 
 namespace tonto::slater {
@@ -101,7 +102,7 @@ double Shell::grad_rho(double r) const {
 Vec Shell::rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
-    Vec e(m_n1.rows());
+    Vec e(n_prim());
     for(size_t i = 0; i < r.rows(); i++) {
         e = Eigen::pow(r(i), m_n1.array()) * Eigen::exp(-m_z.array()*r(i));
         for(size_t j = 0; j < n_orb(); j++) {
@@ -116,7 +117,7 @@ Vec Shell::rho(const Vec& r) const
 Vec Shell::grad_rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
-    Vec e1(m_n1.rows()), e2(m_n1.rows()), e3(m_n1.rows());
+    Vec e1(n_prim()), e2(n_prim()), e3(n_prim());
     for(size_t i = 0; i < r.rows(); i++)
     {
         e3 = -m_z.array()*r(i);
@@ -133,9 +134,32 @@ Vec Shell::grad_rho(const Vec& r) const
     return result;
 }
 
+void Shell::renormalize()
+{
+    using tonto::util::factorial;
+    for(size_t i = 0; i < n_prim(); i++)
+    {
+        double n2 = 2 * m_n(i);
+        double factor = sqrt(2 * m_z(i) / factorial(n2)) * (pow(2 * m_z(i), m_n(i)));
+        m_c.row(i).array() /= factor;
+    }
+}
+
+void Shell::unnormalize()
+{
+    using tonto::util::factorial;
+    for(size_t i = 0; i < n_prim(); i++)
+    {
+        double n2 = 2 * m_n(i);
+        double factor = sqrt(2 * m_z(i) / factorial(n2)) * (pow(2 * m_z(i), m_n(i)));
+        m_c.row(i).array() *= factor;
+    }
+}
+
 Basis::Basis(const std::vector<Shell>& shells) :
     m_shells(shells)
 {
+    unnormalize();
 }
 
 double Basis::rho(double r) const {
@@ -170,6 +194,22 @@ Vec Basis::grad_rho(const Vec& r) const
         result += s.grad_rho(r);
     }
     return result;
+}
+
+void Basis::renormalize()
+{
+    for(auto& sh: m_shells)
+    {
+        sh.renormalize();
+    }
+}
+
+void Basis::unnormalize()
+{
+    for(auto& sh: m_shells)
+    {
+        sh.unnormalize();
+    }
 }
 
 }

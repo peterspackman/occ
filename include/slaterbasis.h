@@ -28,6 +28,8 @@ public:
     Vec grad_rho(const Vec&) const;
     size_t n_prim() const;
     size_t n_orb() const;
+    void renormalize();
+    void unnormalize();
 private:
     IVec m_occupation;
     IVec m_n;
@@ -44,6 +46,8 @@ public:
     double grad_rho(double r) const;
     Vec rho(const Vec&) const;
     Vec grad_rho(const Vec&) const;
+    void renormalize();
+    void unnormalize();
 private:
     std::vector<Shell> m_shells;
 };
