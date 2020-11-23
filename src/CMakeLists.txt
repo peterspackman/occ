@@ -59,3 +59,6 @@ target_link_libraries(tontox PUBLIC tonto)
 
 add_executable(ce "${CMAKE_CURRENT_SOURCE_DIR}/ce_main.cpp")
 target_link_libraries(ce PUBLIC tonto)
+
+add_executable(make_radial_interpolators "${CMAKE_CURRENT_SOURCE_DIR}/make_radial_interpolators.cpp")
+target_link_libraries(make_radial_interpolators PUBLIC tonto)

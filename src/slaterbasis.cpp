@@ -94,22 +94,20 @@ double Shell::grad_rho(double r) const {
         auto dorb = gprime.dot(ci);
         result += 2 * m_occupation(i) * orb * dorb;
     }
-    return result * (1/(4 * M_PI));
+    return result;
 }
 
 
 Vec Shell::rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
-
-    Mat e(m_n1.rows(), r.rows());
-    for(auto i = 0; i < result.rows(); i++) {
-        e.col(i).array() = Eigen::pow(r(i), m_n1.array()) * Eigen::exp(-m_z.array()*r(i));
-    }
-
-    for(size_t i = 0; i < n_orb(); i++) {
-        Vec orb = (e.array().colwise() * m_c.col(i).array()).colwise().sum();
-        result.array() += m_occupation(i) * orb.array() * orb.array();
+    Vec e(m_n1.rows());
+    for(size_t i = 0; i < r.rows(); i++) {
+        e = Eigen::pow(r(i), m_n1.array()) * Eigen::exp(-m_z.array()*r(i));
+        for(size_t j = 0; j < n_orb(); j++) {
+            double orb = (e.array() * m_c.col(j).array()).sum();
+            result(i) += m_occupation(j) * orb * orb;
+        }
     }
     return result * (1/(4 * M_PI));
 }
@@ -118,22 +116,21 @@ Vec Shell::rho(const Vec& r) const
 Vec Shell::grad_rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
-    Mat e(m_n1.rows(), r.rows());
-    Mat de(m_n1.rows(), r.rows());
-
-    for(auto i = 0; i < result.rows(); i++) {
-        e.col(i).array() = Eigen::pow(r(i), m_n1.array()) * Eigen::exp(-m_z.array()*r(i));
-        if(r(i) == 0.0) de.col(i).array() = 0.0;
-        else de.col(i).array() = e.col(i).array() * (m_n1.array() / r(i) - m_z.array());
+    Vec e1(m_n1.rows()), e2(m_n1.rows()), e3(m_n1.rows());
+    for(size_t i = 0; i < r.rows(); i++)
+    {
+        e3 = -m_z.array()*r(i);
+        e2 = Eigen::exp(e3.array());
+        e1 = e2.array() * e3.array();
+        e2.array() = e2.array() *(m_n1.array() - e3.array());
+        for(size_t j = 0; j < n_orb(); j++)
+        {
+            double orb = (e1.array() * m_c.col(j).array()).sum();
+            double dorb = (e2.array() * m_c.col(j).array()).sum();
+            result(i) += 2 * m_occupation(j) * orb * dorb;
+        }
     }
-
-    for(size_t i = 0; i < n_orb(); i++) {
-        auto ci = m_c.col(i).array();
-        Vec orb = (e.array().colwise() * ci).colwise().sum();
-        Vec dorb = (de.array().colwise() * ci).colwise().sum();
-        result.array() += 2 * m_occupation(i) * orb.array() * dorb.array();
-    }
-    return result * (1/(4 * M_PI));
+    return result;
 }
 
 Basis::Basis(const std::vector<Shell>& shells) :

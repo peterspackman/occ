@@ -530,10 +530,12 @@ void save_npy(const std::string &filename, const Eigen::DenseBase<T> &mat, std::
         static_cast<size_t>(mat.rows()), static_cast<size_t>(mat.cols())
     };
     if(mat.IsRowMajor) {
-        save_npy<typename T::Scalar, false>(filename, mat.derived().data(), shape, mode);
+        Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> tmp = mat;
+        save_npy<typename T::Scalar, false>(filename, tmp.data(), shape, mode);
     }
     else {
-        save_npy<typename T::Scalar, true>(filename, mat.derived().data(), shape, mode);
+        Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> tmp = mat;
+        save_npy<typename T::Scalar, true>(filename, tmp.data(), shape, mode);
     }
 }
 
@@ -545,10 +547,12 @@ void save_npz(const std::string &zipname, const std::string &filename, const Eig
         static_cast<size_t>(mat.rows()), static_cast<size_t>(mat.cols())
     };
     if(mat.IsRowMajor) {
-        save_npz<typename T::Scalar, false>(zipname, filename, mat.derived().data(), shape, mode);
+        Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> tmp = mat;
+        save_npz<typename T::Scalar, false>(zipname, filename, tmp.data(), shape, mode);
     }
     else {
-        save_npz<typename T::Scalar, true>(zipname, filename, mat.derived().data(), shape, mode);
+        Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> tmp = mat;
+        save_npz<typename T::Scalar, true>(zipname, filename, tmp.data(), shape, mode);
     }
 }
 
