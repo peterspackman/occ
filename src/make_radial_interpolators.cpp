@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     }
     enpy::save_npy("domain.npy", domain);
     enpy::save_npy("rho.npy", rho);
-    enpy::save_npy("grad_rho", grad_rho);
+    enpy::save_npy("grad_rho.npy", grad_rho);
 
     return 0;
 }

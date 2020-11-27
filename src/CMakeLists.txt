@@ -13,6 +13,7 @@ add_library(tonto STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gto.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/inputfile.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.cpp"

@@ -23,6 +23,7 @@ TEST_CASE("H2/STO-3G") {
     fmt::print("r\n{}\nH.rho\n{}\n", r, rho);
     Vec grad_rho_fd = (H.rho(r.array() + 1e-8) - H.rho(r.array() - 1e-8)) / 2e-8;
     fmt::print("H.grad_rho:\n{}\n", grad_rho);
+    fmt::print("H.grad_rho_fd:\n{}\n", grad_rho_fd);
     REQUIRE(all_close(grad_rho, grad_rho_fd, 1e-5, 1e-5));
     rho = C.rho(r);
     fmt::print("r\n{}\nC.rho\n{}\n", r, rho);

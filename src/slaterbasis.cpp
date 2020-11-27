@@ -7,6 +7,7 @@ namespace tonto::slater {
 using tonto::IVec;
 using tonto::Vec;
 using tonto::Mat;
+constexpr double inv_pi_4 = 1.0 / (4 * M_PI);
 
 Shell::Shell() :
     m_occupation(1),
@@ -81,7 +82,7 @@ double Shell::rho(double r) const {
         result += m_occupation(i) * orb * orb;
     }
 
-    return result * (1/(4 * M_PI));
+    return result * inv_pi_4;
 }
 
 double Shell::grad_rho(double r) const {
@@ -95,7 +96,7 @@ double Shell::grad_rho(double r) const {
         auto dorb = gprime.dot(ci);
         result += 2 * m_occupation(i) * orb * dorb;
     }
-    return result;
+    return result * inv_pi_4;
 }
 
 
@@ -104,34 +105,34 @@ Vec Shell::rho(const Vec& r) const
     Vec result = Vec::Zero(r.rows());
     Vec e(n_prim());
     for(size_t i = 0; i < r.rows(); i++) {
-        e = Eigen::pow(r(i), m_n1.array()) * Eigen::exp(-m_z.array()*r(i));
+        double rp = r(i);
+        e = Eigen::pow(rp, m_n1.array()) * Eigen::exp(-m_z.array() * rp);
         for(size_t j = 0; j < n_orb(); j++) {
             double orb = (e.array() * m_c.col(j).array()).sum();
             result(i) += m_occupation(j) * orb * orb;
         }
     }
-    return result * (1/(4 * M_PI));
+    return result * inv_pi_4;
 }
 
 
 Vec Shell::grad_rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
-    Vec e1(n_prim()), e2(n_prim()), e3(n_prim());
+    Vec g(n_prim()), gprime(n_prim());
     for(size_t i = 0; i < r.rows(); i++)
     {
-        e3 = -m_z.array()*r(i);
-        e2 = Eigen::exp(e3.array());
-        e1 = e2.array() * e3.array();
-        e2.array() = e2.array() *(m_n1.array() - e3.array());
+        double rp = r(i);
+        g = Eigen::pow(rp, m_n1.array()) * Eigen::exp(-m_z.array() * rp);
+        gprime = g.array() * (m_n1.array()/rp - m_z.array());
         for(size_t j = 0; j < n_orb(); j++)
         {
-            double orb = (e1.array() * m_c.col(j).array()).sum();
-            double dorb = (e2.array() * m_c.col(j).array()).sum();
+            double orb = g.dot(m_c.col(j));
+            double dorb = gprime.dot(m_c.col(j));
             result(i) += 2 * m_occupation(j) * orb * dorb;
         }
     }
-    return result;
+    return result * inv_pi_4;
 }
 
 void Shell::renormalize()
