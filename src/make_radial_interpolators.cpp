@@ -4,9 +4,15 @@
 
 int main(int argc, char *argv[])
 {
-    constexpr int num_points = 4096;
-    tonto::Vec domain = tonto::Vec::LinSpaced(num_points, -4, 3);
-    domain = Eigen::exp(domain.array());
+    constexpr int num_points = 101;
+    tonto::Vec domain(num_points);
+    double x = 0.0;
+    for (int i = 0; i < num_points; ++i)
+    {
+        domain(i) = x;
+        x += 0.02;
+    }
+    //domain = Eigen::exp(domain.array());
     auto rho = tonto::MatRM(103, num_points);
     auto grad_rho = tonto::MatRM(103, num_points);
     for(size_t i = 1; i <= 103; i++)

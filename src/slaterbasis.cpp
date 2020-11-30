@@ -71,14 +71,14 @@ size_t Shell::n_prim() const {
 }
 
 size_t Shell::n_orb() const {
-    return m_occupation.cols();
+    return m_occupation.rows();
 }
 
 double Shell::rho(double r) const {
-    Vec g = Eigen::pow(r, m_n1.array()) * Eigen::exp(-m_z.array()*r);
+    Vec e = Eigen::pow(r, m_n1.array()) * Eigen::exp(-m_z.array()*r);
     double result = 0;
     for(size_t i = 0; i < n_orb(); i++) {
-        double orb = (m_c.col(i).array() * g.array()).array().sum();
+        double orb = e.dot(m_c.col(i));
         result += m_occupation(i) * orb * orb;
     }
 
@@ -103,22 +103,33 @@ double Shell::grad_rho(double r) const {
 Vec Shell::rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
+    rho(r, result);
+    return result;
+}
+
+void Shell::rho(const Vec& r, Vec& result) const
+{
     Vec e(n_prim());
-    for(size_t i = 0; i < r.rows(); i++) {
-        double rp = r(i);
+    for(size_t p = 0; p < r.rows(); p++) {
+        double rp = r(p);
         e = Eigen::pow(rp, m_n1.array()) * Eigen::exp(-m_z.array() * rp);
-        for(size_t j = 0; j < n_orb(); j++) {
-            double orb = (e.array() * m_c.col(j).array()).sum();
-            result(i) += m_occupation(j) * orb * orb;
+        for(size_t i = 0; i < n_orb(); i++) {
+            double orb = e.dot(m_c.col(i));
+            result(p) += m_occupation(i) * orb * orb * inv_pi_4;
         }
     }
-    return result * inv_pi_4;
 }
 
 
 Vec Shell::grad_rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
+    grad_rho(r, result);
+    return result;
+}
+
+void Shell::grad_rho(const Vec& r, Vec& result) const
+{
     Vec g(n_prim()), gprime(n_prim());
     for(size_t i = 0; i < r.rows(); i++)
     {
@@ -129,10 +140,9 @@ Vec Shell::grad_rho(const Vec& r) const
         {
             double orb = g.dot(m_c.col(j));
             double dorb = gprime.dot(m_c.col(j));
-            result(i) += 2 * m_occupation(j) * orb * dorb;
+            result(i) += 2 * m_occupation(j) * orb * dorb * inv_pi_4;
         }
     }
-    return result * inv_pi_4;
 }
 
 void Shell::renormalize()
@@ -140,7 +150,7 @@ void Shell::renormalize()
     using tonto::util::factorial;
     for(size_t i = 0; i < n_prim(); i++)
     {
-        double n2 = 2 * m_n(i);
+        int n2 = 2 * m_n(i);
         double factor = sqrt(2 * m_z(i) / factorial(n2)) * (pow(2 * m_z(i), m_n(i)));
         m_c.row(i).array() /= factor;
     }
@@ -151,8 +161,9 @@ void Shell::unnormalize()
     using tonto::util::factorial;
     for(size_t i = 0; i < n_prim(); i++)
     {
-        double n2 = 2 * m_n(i);
-        double factor = sqrt(2 * m_z(i) / factorial(n2)) * (pow(2 * m_z(i), m_n(i)));
+        int n2 = 2 * m_n(i);
+        double z2 = 2 * m_z(i);
+        double factor = sqrt(z2 / factorial(n2)) * pow(z2, m_n(i));
         m_c.row(i).array() *= factor;
     }
 }
@@ -183,7 +194,7 @@ Vec Basis::rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
     for (const auto& s: m_shells) {
-        result += s.rho(r);
+        s.rho(r, result);
     }
     return result;
 }
@@ -192,7 +203,7 @@ Vec Basis::grad_rho(const Vec& r) const
 {
     Vec result = Vec::Zero(r.rows());
     for (const auto& s: m_shells) {
-        result += s.grad_rho(r);
+        s.grad_rho(r, result);
     }
     return result;
 }

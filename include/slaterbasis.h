@@ -25,11 +25,17 @@ public:
     double rho(double r) const;
     double grad_rho(double r) const;
     Vec rho(const Vec&) const;
+    void rho(const Vec&, Vec&) const;
     Vec grad_rho(const Vec&) const;
+    void grad_rho(const Vec&, Vec&) const;
     size_t n_prim() const;
     size_t n_orb() const;
     void renormalize();
     void unnormalize();
+    const auto& occupation() const { return m_occupation; }
+    const auto& n() const { return m_n; }
+    const auto& c() const { return m_c; }
+    const auto& z() const { return m_z; }
 private:
     IVec m_occupation;
     IVec m_n;
@@ -48,6 +54,7 @@ public:
     Vec grad_rho(const Vec&) const;
     void renormalize();
     void unnormalize();
+    const auto& shells() const { return m_shells; }
 private:
     std::vector<Shell> m_shells;
 };
