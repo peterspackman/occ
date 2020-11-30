@@ -1,49 +1,18 @@
+add_subdirectory(tonto/core)
+add_subdirectory(tonto/crystal)
+add_subdirectory(tonto/interaction)
+add_subdirectory(tonto/io)
+add_subdirectory(tonto/qm)
+add_subdirectory(tonto/slater)
+add_subdirectory(tonto/3rdparty)
+
 set(TONTO_INCLUDE_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/basisset.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/crystal.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/density.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/density_functional.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/dft.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/diis.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/disp.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/element.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/fraction.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/fock.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/gto.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/hf.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/inputfile.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ints.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/logger.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubes.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubestables.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/moldenreader.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/optimize.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/polarization.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/scf.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/sparsevoxelgrid.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/table.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/thakkar.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/timings.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/util.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.h"
-    # third party
-    "${CMAKE_CURRENT_SOURCE_DIR}/argparse.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/nanoflann.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/robin_hood.h"
+    ${TONTO_CORE_INCLUDE_FILES}
+    ${TONTO_CRYSTAL_INCLUDE_FILES}
+    ${TONTO_INTERACTION_INCLUDE_FILES}
+    ${TONTO_QM_INCLUDE_FILES}
+    ${TONTO_SLATER_INCLUDE_FILES}
+    ${TONTO_3RDPARTY_INCLUDE_FILES}
     PARENT_SCOPE
 )
 
