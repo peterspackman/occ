@@ -1,5 +1,6 @@
 add_library(tonto_io
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/inputfile.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/moldenreader.cpp"
     ${TONTO_INCLUDE_FILES}
