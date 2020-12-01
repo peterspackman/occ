@@ -21,4 +21,10 @@ TEST_CASE("h2o gaussian input", "[read]")
     std::istringstream inp(contents);
     tonto::io::GaussianInputFile reader(inp);
     REQUIRE(reader.charge == 0);
+    REQUIRE(reader.method == "hf");
+    REQUIRE(reader.basis_name == "3-21g");
+
+    REQUIRE(reader.atomic_positions.size() == 3);
+    REQUIRE(reader.atomic_numbers.size() == 3);
+    REQUIRE(reader.atomic_numbers[2] == 1);
 }

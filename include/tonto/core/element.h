@@ -139,7 +139,7 @@ public:
   inline float covalentRadius() const { return m_data.cov_radius; }
   inline float vdw() const { return m_data.vdw_radius; }
   inline float vdwRadius() const { return m_data.vdw_radius; }
-  inline int atomicNumber() const { return m_data.atomic_number; }
+  inline int atomic_number() const { return m_data.atomic_number; }
   inline int n() const { return m_data.atomic_number; }
   bool operator<(const Element &rhs) const {
     return m_data.atomic_number < rhs.m_data.atomic_number;

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <regex>
 #include <tonto/core/util.h>
+#include <tonto/core/element.h>
 
 namespace tonto::io {
 
@@ -29,6 +30,18 @@ void GaussianInputFile::parse(std::istream &stream)
             parse_route_line(line);
             tonto::log::info("Found route line, breaking");
             break;
+        }
+    }
+    std::getline(stream, line);
+    std::getline(stream, comment);
+    std::getline(stream, line);
+    std::getline(stream, line);
+    parse_charge_multiplicity_line(line);
+    while(std::getline(stream, line)) {
+        trim(line);
+        if(line.empty()) break;
+        else {
+            parse_atom_line(line);
         }
     }
 }
@@ -63,6 +76,21 @@ void GaussianInputFile::parse_route_line(const std::string &line)
         tonto::log::error("Did not find method/basis in route line in gaussian input!");
     }
     tonto::log::info("Found route command: method = {} basis = {}", method, basis_name);
+}
+
+void GaussianInputFile::parse_charge_multiplicity_line(const std::string &line)
+{
+    scn::scan(line, "{} {}", charge, multiplicity);
+}
+
+void GaussianInputFile::parse_atom_line(const std::string &line)
+{
+    double x, y, z;
+    std::string symbol;
+    scn::scan(line, "{} {} {} {}", symbol, x, y, z);
+    atomic_positions.push_back({x, y, z});
+    tonto::chem::Element elem(symbol);
+    atomic_numbers.push_back(elem.atomic_number());
 }
 
 }

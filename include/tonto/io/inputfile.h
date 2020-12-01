@@ -15,16 +15,18 @@ struct GaussianInputFile
     std::vector<std::pair<std::string, std::string>> link0_commands;
     std::string method, basis_name;
     std::vector<std::string> keywords;
-    std::vector<uint_fast8_t> atomic_numbers();
+    std::vector<uint_fast8_t> atomic_numbers;
     std::vector<position> atomic_positions;
     std::string route_tag{"#"};
     std::string comment;
-    uint_fast8_t charge{0}, multiplicity{1};
+    unsigned int charge{0}, multiplicity{1};
 
 private:
     void parse(std::istream&);
     void parse_link0(const std::string&);
     void parse_route_line(const std::string&);
+    void parse_charge_multiplicity_line(const std::string&);
+    void parse_atom_line(const std::string&);
 };
 
 }
