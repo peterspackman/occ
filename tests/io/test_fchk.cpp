@@ -206,4 +206,5 @@ TEST_CASE("Write H2 fchk", "[write]")
     tonto::MatRM identity = tonto::MatRM::Identity(3, 3);
     writer.set_vector("Identity matrix", identity);
     writer.write();
+    REQUIRE(true);
 }

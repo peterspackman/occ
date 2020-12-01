@@ -1,7 +1,7 @@
 set(TEST_MAIN ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cpp)
 set(TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-
+enable_testing()
 add_subdirectory(core)
 add_subdirectory(crystal)
 add_subdirectory(io)
