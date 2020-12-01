@@ -4,6 +4,12 @@
 namespace tonto::io {
 
 namespace impl {
+
+static const std::array<const char *, 15> fchk_type_strings {
+    "SP", "FOPT", "POPT", "FTS", "FSADDLE", "PSADDLE", "FORCE",
+    "FREQ", "SCAN", "GUESS=ONLY", "LST", "STABILITY", "REARCHIVE/MS-RESTART", "MIXED"
+};
+
 void FchkScalarWriter::operator()(int value)
 {
     fmt::print(destination, "{:40s}   I     {:12d}\n", key, value);
@@ -93,6 +99,8 @@ FchkWriter::FchkWriter(std::ostream &stream) : m_dest(stream)
 
 void FchkWriter::write()
 {
+    fmt::print(m_dest, "{:<72s}\n", m_title);
+    fmt::print(m_dest, "{:10s}{:30s}{:30s}\n", impl::fchk_type_strings[m_type], m_method, m_basis_name);
     impl::FchkScalarWriter scalar_writer{m_dest, ""};
     for(const auto& keyval: m_scalars)
     {

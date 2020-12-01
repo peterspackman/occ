@@ -8,6 +8,7 @@
 #include <tonto/3rdparty/robin_hood.h>
 #include <variant>
 #include <vector>
+#include <array>
 
 namespace tonto::io {
 
@@ -52,8 +53,18 @@ struct FchkVectorWriter
 class FchkWriter
 {
 public:
+    enum FchkType {
+        SP, FOPT, POPT, FTS, PTS, FSADDLE, PSADDLE, FORCE, FREQ, SCAN, GUESS_ONLY,
+        LST, STABILITY, REARCHIVE_MS_RESTART, MIXED
+    };
+
     FchkWriter(const std::string& filename);
     FchkWriter(std::ostream&);
+
+    void set_title(const std::string &title) { m_title = title; }
+    void set_fchk_type(FchkType t) { m_type = t; }
+    void set_method(const std::string& method) { m_method = method; }
+    void set_basis_name(const std::string& basis) { m_basis_name = basis; }
 
     template<typename T>
     void set_scalar(const std::string &key, const T &value)
@@ -75,8 +86,6 @@ public:
             m_scalars[key] = std::string(value);
         }
     }
-
-
 
     template<typename T>
     void set_vector(const std::string &key, const Eigen::DenseBase<T> &mat)
@@ -116,8 +125,46 @@ public:
             m_vectors[key] = vals;
         }
     }
+
+    template<typename T>
+    void set_vector(const std::string &key, const std::vector<T> &vec)
+    {
+        if constexpr(std::is_integral<T>::value)
+        {
+            if constexpr(std::is_same<T, bool>::value) {
+                std::vector<bool> vals;
+                vals.reserve(vec.size());
+                for(const auto &x: vec) vals.push_back(x);
+                m_vectors[key] = vals;
+            }
+            else {
+                std::vector<int> vals;
+                vals.reserve(vec.size());
+                for(const auto &x: vec) vals.push_back(static_cast<int>(x));
+                m_vectors[key] = vals;
+            }
+        }
+        else if constexpr(std::is_floating_point<T>::value)
+        {
+            std::vector<double> vals;
+            vals.reserve(vec.size());
+            for(const auto &x: vec) vals.push_back(static_cast<double>(x));
+            m_vectors[key] = vals;
+        }
+        else
+        {
+            std::vector<std::string> vals;
+            for(const auto &x: vec) vals.push_back(std::string(x));
+            m_vectors[key] = vals;
+        }
+    }
+
     void write();
 private:
+    std::string m_title{"fchk produced by tontocpp"};
+    std::string m_method{"unknown_method"};
+    std::string m_basis_name{"unknown_basis"};
+    FchkType m_type{SP};
     robin_hood::unordered_map<std::string, impl::fchk_scalar> m_scalars;
     robin_hood::unordered_map<std::string, impl::fchk_vector> m_vectors;
     std::ofstream m_owned_destination;
