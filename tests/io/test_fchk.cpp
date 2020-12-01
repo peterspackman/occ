@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include <tonto/io/fchkreader.h>
+#include <tonto/io/fchkwriter.h>
 #include <sstream>
 #include <fmt/ostream.h>
 
@@ -191,4 +192,16 @@ TEST_CASE("H2 fchk", "[read]")
     fmt::print("Density matrix\n{}\n", density);
 
     REQUIRE(density(1, 0) == Approx(0.301228));
+}
+
+
+TEST_CASE("Write H2 fchk", "[write]")
+{
+    tonto::io::FchkWriter writer(std::cout);
+    writer.set_scalar("Charge", 0);
+    writer.set_scalar("Multiplicity", 1);
+    writer.set_scalar("Number of electrons", 10);
+    writer.set_scalar("SCF Energy", -76.42165911602731);
+    writer.set_scalar("Test string", std::string("this string"));
+    writer.write();
 }

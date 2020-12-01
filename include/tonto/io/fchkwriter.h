@@ -11,6 +11,8 @@
 
 namespace tonto::io {
 
+
+namespace impl {
 using fchk_vector = std::variant<
     std::vector<double>,
     std::vector<int>,
@@ -25,11 +27,33 @@ using fchk_scalar = std::variant<
     std::string
 >;
 
+struct FchkScalarWriter
+{
+    std::ostream &destination;
+    std::string key;
+    void operator()(int);
+    void operator()(double);
+    void operator()(const std::string&);
+    void operator()(bool);
+};
+
+struct FchkVectorWriter
+{
+    std::ostream &destination;
+    std::string key;
+    void operator()(const std::vector<int>&);
+    void operator()(const std::vector<double>&);
+    void operator()(const std::vector<std::string>&);
+    void operator()(const std::vector<bool>&);
+};
+
+}
+
 class FchkWriter
 {
 public:
     FchkWriter(const std::string& filename);
-    FchkWriter(std::istream&);
+    FchkWriter(std::ostream&);
 
     template<typename T>
     void set_scalar(const std::string &key, const T &value)
@@ -48,9 +72,11 @@ public:
             m_scalars[key] = static_cast<double>(value);
         }
         else {
-            m_scalars[key] = std::to_string(value);
+            m_scalars[key] = std::string(value);
         }
     }
+
+
 
     template<typename T>
     void set_vector(const std::string &key, const Eigen::DenseBase<T> &value)
@@ -87,8 +113,10 @@ public:
     }
     void write();
 private:
-    robin_hood::unordered_map<std::string, fchk_scalar> m_scalars;
-    robin_hood::unordered_map<std::string, fchk_vector> m_vectors;
+    robin_hood::unordered_map<std::string, impl::fchk_scalar> m_scalars;
+    robin_hood::unordered_map<std::string, impl::fchk_vector> m_vectors;
+    std::ofstream m_owned_destination;
+    std::ostream &m_dest;
 };
 
 }
