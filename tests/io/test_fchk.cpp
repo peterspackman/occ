@@ -203,5 +203,7 @@ TEST_CASE("Write H2 fchk", "[write]")
     writer.set_scalar("Number of electrons", 10);
     writer.set_scalar("SCF Energy", -76.42165911602731);
     writer.set_scalar("Test string", std::string("this string"));
+    tonto::MatRM identity = tonto::MatRM::Identity(3, 3);
+    writer.set_vector("Identity matrix", identity);
     writer.write();
 }

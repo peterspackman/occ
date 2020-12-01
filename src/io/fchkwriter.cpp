@@ -33,8 +33,10 @@ void FchkVectorWriter::operator()(const std::vector<int> &values)
     int count = 0;
     for(const auto& value: values) {
         fmt::print(destination, value_format, value);
+        count++;
         if(count % num_per_line == 0) fmt::print(destination, "\n");
     }
+    if(count % num_per_line != 0) fmt::print(destination, "\n");
 }
 
 void FchkVectorWriter::operator()(const std::vector<double> &values)
@@ -45,8 +47,10 @@ void FchkVectorWriter::operator()(const std::vector<double> &values)
     int count = 0;
     for(const auto& value: values) {
         fmt::print(destination, value_format, value);
+        count++;
         if(count % num_per_line == 0) fmt::print(destination, "\n");
     }
+    if(count % num_per_line != 0) fmt::print(destination, "\n");
 }
 
 void FchkVectorWriter::operator()(const std::vector<std::string> &values)
@@ -57,8 +61,10 @@ void FchkVectorWriter::operator()(const std::vector<std::string> &values)
     int count = 0;
     for(const auto& value: values) {
         fmt::print(destination, value_format, value);
+        count++;
         if(count % num_per_line == 0) fmt::print(destination, "\n");
     }
+    if(count % num_per_line != 0) fmt::print(destination, "\n");
 }
 
 void FchkVectorWriter::operator()(const std::vector<bool> &values)
@@ -69,8 +75,10 @@ void FchkVectorWriter::operator()(const std::vector<bool> &values)
     int count = 0;
     for(const auto& value: values) {
         fmt::print(destination, value_format, value);
+        count++;
         if(count % num_per_line == 0) fmt::print(destination, "\n");
     }
+    if(count % num_per_line != 0) fmt::print(destination, "\n");
 }
 }
 
@@ -90,6 +98,13 @@ void FchkWriter::write()
     {
         scalar_writer.key = keyval.first;
         std::visit(scalar_writer, keyval.second);
+    }
+
+    impl::FchkVectorWriter vector_writer{m_dest, ""};
+    for(const auto& keyval: m_vectors)
+    {
+        vector_writer.key = keyval.first;
+        std::visit(vector_writer, keyval.second);
     }
 }
 

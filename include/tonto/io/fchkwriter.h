@@ -79,34 +79,39 @@ public:
 
 
     template<typename T>
-    void set_vector(const std::string &key, const Eigen::DenseBase<T> &value)
+    void set_vector(const std::string &key, const Eigen::DenseBase<T> &mat)
     {
-        const auto ptr = value.data();
-        if constexpr(std::is_integral<T>::value)
+        if constexpr(std::is_integral<typename T::Scalar>::value)
         {
-            if constexpr(std::is_same<decltype(value), bool>::value) {
+            if constexpr(std::is_same<typename T::Scalar, bool>::value) {
                 std::vector<bool> vals;
-                vals.reserve(value.size());
-                for(size_t i = 0; i < value.size(); i++) {
-                    vals.push_back(ptr[i]);
+                vals.reserve(mat.size());
+                for(size_t c = 0; c < mat.cols(); c++) {
+                    for(size_t r = 0; r < mat.rows(); r++) {
+                        vals.push_back(mat(r, c));
+                    }
                 }
                 m_vectors[key] = vals;
             }
             else {
-                std::vector<int> vals(value.size());
-                vals.reserve(value.size());
-                for(size_t i = 0; i < value.size(); i++) {
-                    vals.push_back(static_cast<int>(ptr[i]));
+                std::vector<int> vals;
+                vals.reserve(mat.size());
+                for(size_t c = 0; c < mat.cols(); c++) {
+                    for(size_t r = 0; r < mat.rows(); r++) {
+                        vals.push_back(static_cast<int>(mat(r, c)));
+                    }
                 }
                 m_vectors[key] = vals;
             }
         }
-        else if constexpr(std::is_floating_point<T>::value)
+        else if constexpr(std::is_floating_point<typename T::Scalar>::value)
         {
-            std::vector<double> vals(value.size());
-            vals.reserve(value.size());
-            for(size_t i = 0; i < value.size(); i++) {
-                vals.push_back(static_cast<int>(ptr[i]));
+            std::vector<double> vals;
+            vals.reserve(mat.size());
+            for(size_t c = 0; c < mat.cols(); c++) {
+                for(size_t r = 0; r < mat.rows(); r++) {
+                    vals.push_back(static_cast<double>(mat(r, c)));
+                }
             }
             m_vectors[key] = vals;
         }
