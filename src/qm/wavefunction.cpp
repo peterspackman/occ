@@ -2,6 +2,7 @@
 #include <tonto/qm/wavefunction.h>
 #include <tonto/qm/spinorbital.h>
 #include <tonto/io/fchkreader.h>
+#include <tonto/io/fchkwriter.h>
 #include <tonto/io/moldenreader.h>
 #include <tonto/qm/merge.h>
 #include <fmt/core.h>
@@ -383,6 +384,22 @@ tonto::IVec Wavefunction::atomic_numbers() const
         nums(i) = atoms[i].atomic_number;
     }
     return nums;
+}
+
+void Wavefunction::save(FchkWriter &fchk)
+{
+    fchk.set_scalar("Total SCF Energy", energy.total);
+    fchk.set_vector("Total SCF Density", D);
+    if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        fchk.set_vector("Alpha Orbital Energies", mo_energies.alpha());
+        fchk.set_vector("Alpha MO coefficients", C.alpha());
+        fchk.set_vector("Beta Orbital Energies", mo_energies.beta());
+        fchk.set_vector("Beta MO coefficients", C.beta());
+    }
+    else {
+        fchk.set_vector("Alpha Orbital Energies", mo_energies);
+        fchk.set_vector("Alpha MO coefficients", C);
+    }
 }
 
 }

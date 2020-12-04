@@ -23,6 +23,7 @@ using tonto::qm::expectation;
 using tonto::MatRM;
 using tonto::util::is_odd;
 using tonto::qm::BasisSet;
+using tonto::qm::Wavefunction;
 
 template <typename Procedure, SpinorbitalKind spinorbital_kind>
 struct SCF {
@@ -101,6 +102,31 @@ struct SCF {
 
     void set_multiplicity(int m) {
         set_charge_multiplicity(charge(), m);
+    }
+
+    Wavefunction wavefunction() const {
+        Wavefunction wfn;
+        wfn.atoms = m_procedure.atoms();
+        wfn.basis = m_procedure.basis();
+        wfn.nbf = wfn.basis.nbf();
+        wfn.mo_energies = orbital_energies;
+        wfn.D = D;
+        wfn.C = C;
+        wfn.C_occ = C_occ;
+        wfn.num_alpha = n_alpha();
+        wfn.num_beta = n_beta();
+        wfn.num_electrons = n_electrons;
+        wfn.energy.core = energy.one_electron;
+        wfn.energy.kinetic = energy.kinetic;
+        wfn.energy.nuclear_attraction = energy.nuclear_attraction;
+        wfn.energy.nuclear_repulsion = energy.nuclear_repulsion;
+        wfn.energy.coulomb = energy.coulomb;
+        wfn.energy.exchange = energy.exchange;
+        wfn.energy.total = energy.total;
+        wfn.spinorbital_kind = spinorbital_kind;
+        wfn.T = T;
+        wfn.V = V;
+        return wfn;
     }
 
     void set_charge_multiplicity(int chg, unsigned int mult)

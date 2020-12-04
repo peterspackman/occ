@@ -1,6 +1,7 @@
 #include <tonto/core/logger.h>
 #include <tonto/core/molecule.h>
 #include <tonto/core/timings.h>
+#include <tonto/io/fchkwriter.h>
 #include <tonto/qm/dft.h>
 #include <tonto/qm/hf.h>
 #include <tonto/qm/scf.h>
@@ -64,6 +65,7 @@ int main(int argc, const char **argv) {
     using tonto::hf::HartreeFock;
     using tonto::scf::SCF;
     using tonto::qm::SpinorbitalKind;
+    using tonto::qm::Wavefunction;
     using std::cerr;
     using std::cout;
     using std::endl;
@@ -135,6 +137,7 @@ int main(int argc, const char **argv) {
         tonto::qm::BasisSet basis(basisname, m.atoms());
         basis.set_pure(false);
         fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
+        Wavefunction wfn;
         if (method == "rhf") {
             HartreeFock hf(m.atoms(), basis);
             tonto::log::debug("Initializing restricted SCF");
@@ -144,18 +147,21 @@ int main(int argc, const char **argv) {
                 scf.set_density_fitting_basis(*dfbasis);
             }
             double e = scf.compute_scf_energy();
+            wfn = scf.wavefunction();
         } else if (method == "ghf") {
             HartreeFock hf(m.atoms(), basis);
             tonto::log::debug("Initializing general SCF");
             SCF<HartreeFock, SpinorbitalKind::General> scf(hf);
             scf.set_charge(charge);
             double e = scf.compute_scf_energy();
+            wfn = scf.wavefunction();
         } else if (method == "uhf") {
             HartreeFock hf(m.atoms(), basis);
             tonto::log::debug("Initializing unrestricted SCF");
             SCF<HartreeFock, SpinorbitalKind::Unrestricted> scf(hf);
             scf.set_charge_multiplicity(charge, multiplicity);
             double e = scf.compute_scf_energy();
+            wfn = scf.wavefunction();
         } else
         {
             if (parser.get<bool>("--uks")) {
@@ -165,6 +171,7 @@ int main(int argc, const char **argv) {
                 scf.set_charge_multiplicity(charge, multiplicity);
                 scf.start_incremental_F_threshold = 0.0;
                 double e = scf.compute_scf_energy();
+                wfn = scf.wavefunction();
             }
             else {
                 tonto::log::debug("Initializing restricted DFT");
@@ -173,8 +180,15 @@ int main(int argc, const char **argv) {
                 scf.set_charge_multiplicity(charge, multiplicity);
                 scf.start_incremental_F_threshold = 0.0;
                 double e = scf.compute_scf_energy();
+                wfn = scf.wavefunction();
             }
         }
+        tonto::io::FchkWriter fchk("Test.FChk");
+        fchk.set_title(filename);
+        fchk.set_method(method);
+        fchk.set_basis_name(basisname);
+        wfn.save(fchk);
+        fchk.write();
 
     } catch (const char *ex) {
         fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);

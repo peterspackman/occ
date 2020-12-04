@@ -3,6 +3,7 @@
 #include <tonto/qm/basisset.h>
 #include <tonto/qm/spinorbital.h>
 #include <tonto/io/fchkreader.h>
+#include <tonto/io/fchkwriter.h>
 #include <tonto/io/moldenreader.h>
 
 namespace tonto::qm {
@@ -10,6 +11,7 @@ namespace tonto::qm {
 using tonto::MatRM;
 using tonto::Vec;
 using tonto::io::FchkReader;
+using tonto::io::FchkWriter;
 using tonto::io::MoldenReader;
 
 struct Energy {
@@ -19,6 +21,7 @@ struct Energy {
     double nuclear_attraction{0};
     double kinetic{0};
     double core{0};
+    double total{0};
     void print() const;
 };
 
@@ -42,6 +45,8 @@ struct Wavefunction {
 
     tonto::Mat3N positions() const;
     tonto::IVec atomic_numbers() const;
+
+    void save(FchkWriter&);
 
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
     int num_alpha;
