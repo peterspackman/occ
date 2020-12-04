@@ -66,6 +66,8 @@ public:
     void set_method(const std::string& method) { m_method = method; }
     void set_basis_name(const std::string& basis) { m_basis_name = basis; }
 
+    void set_basis(const tonto::qm::BasisSet&);
+
     template<typename T>
     void set_scalar(const std::string &key, const T &value)
     {

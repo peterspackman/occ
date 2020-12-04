@@ -388,8 +388,20 @@ tonto::IVec Wavefunction::atomic_numbers() const
 
 void Wavefunction::save(FchkWriter &fchk)
 {
+    fchk.set_scalar("Number of atoms", atoms.size());
+    fchk.set_scalar("Charge", charge());
+    fchk.set_scalar("Multiplicity", multiplicity());
     fchk.set_scalar("Total SCF Energy", energy.total);
+    fchk.set_scalar("Number of electrons", num_electrons);
+    fchk.set_scalar("Number of alpha electrons", num_alpha);
+    fchk.set_scalar("Number of beta electrons", num_beta);
+    fchk.set_scalar("Number of basis functions", nbf);
     fchk.set_vector("Total SCF Density", D);
+    tonto::Vec nuclear_charges = atomic_numbers().cast<double>();
+    fchk.set_vector("Atomic numbers", atomic_numbers());
+    fchk.set_vector("Nuclear charges", nuclear_charges);
+    fchk.set_vector("Current cartesian coordinates", positions());
+
     if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
         fchk.set_vector("Alpha Orbital Energies", mo_energies.alpha());
         fchk.set_vector("Alpha MO coefficients", C.alpha());
@@ -400,6 +412,7 @@ void Wavefunction::save(FchkWriter &fchk)
         fchk.set_vector("Alpha Orbital Energies", mo_energies);
         fchk.set_vector("Alpha MO coefficients", C);
     }
+    fchk.set_basis(basis);
 }
 
 }

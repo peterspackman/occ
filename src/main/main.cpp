@@ -183,7 +183,7 @@ int main(int argc, const char **argv) {
                 wfn = scf.wavefunction();
             }
         }
-        tonto::io::FchkWriter fchk("Test.FChk");
+        tonto::io::FchkWriter fchk("test.fchk");
         fchk.set_title(filename);
         fchk.set_method(method);
         fchk.set_basis_name(basisname);
