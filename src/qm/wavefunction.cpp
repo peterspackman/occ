@@ -6,6 +6,7 @@
 #include <tonto/io/moldenreader.h>
 #include <tonto/qm/merge.h>
 #include <fmt/core.h>
+#include <tonto/core/element.h>
 
 namespace tonto::qm {
 
@@ -396,11 +397,24 @@ void Wavefunction::save(FchkWriter &fchk)
     fchk.set_scalar("Number of alpha electrons", num_alpha);
     fchk.set_scalar("Number of beta electrons", num_beta);
     fchk.set_scalar("Number of basis functions", nbf);
-    fchk.set_vector("Total SCF Density", D);
-    tonto::Vec nuclear_charges = atomic_numbers().cast<double>();
-    fchk.set_vector("Atomic numbers", atomic_numbers());
-    fchk.set_vector("Nuclear charges", nuclear_charges);
+    std::vector<double> density_lower_triangle;
+    density_lower_triangle.reserve(D.rows() * (D.rows() - 1) / 2);
+    for(Eigen::Index row = 0; row < D.rows(); row++) {
+        for(Eigen::Index col = 0; col <= row; col++) {
+            density_lower_triangle.push_back(D(row, col) * 2);
+        }
+    }
+    fchk.set_vector("Total SCF Density", density_lower_triangle);
+    // nuclear charges
+    tonto::IVec nums = atomic_numbers();
+    tonto::Vec atomic_prop = nums.cast<double>();
+    fchk.set_vector("Atomic numbers", nums);
+    fchk.set_vector("Nuclear charges", atomic_prop);
     fchk.set_vector("Current cartesian coordinates", positions());
+    // atomic weights
+    for(Eigen::Index i = 0; i < atomic_prop.rows(); i++) atomic_prop(i) = static_cast<double>(tonto::chem::Element(nums(i)).mass());
+    fchk.set_vector("Integer atomic weights", atomic_prop.array().round().cast<int>());
+    fchk.set_vector("Real atomic weights", atomic_prop);
 
     if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
         fchk.set_vector("Alpha Orbital Energies", mo_energies.alpha());
@@ -413,6 +427,15 @@ void Wavefunction::save(FchkWriter &fchk)
         fchk.set_vector("Alpha MO coefficients", C);
     }
     fchk.set_basis(basis);
+
+
+    std::vector<int> shell2atom;
+    shell2atom.reserve(basis.size());
+    for(const auto& x: basis.shell2atom(atoms))
+    {
+        shell2atom.push_back(x + 1);
+    }
+    fchk.set_vector("Shell to atom map", shell2atom);
 }
 
 }

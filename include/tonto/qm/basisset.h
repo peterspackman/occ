@@ -249,4 +249,6 @@ inline std::vector<libint2::Atom> translated_atoms(const std::vector<libint2::At
     return result;
 }
 
+std::vector<size_t> pople_sp_shells(const BasisSet&);
+
 }

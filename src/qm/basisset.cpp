@@ -474,4 +474,48 @@ void translate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Vec3& trans
     }
 }
 
+std::vector<size_t> pople_sp_shells(const BasisSet &basis)
+{
+    std::vector<bool> visited(basis.size(), false);
+    std::vector<size_t> shells(basis.size());
+    size_t current_sp_shell{0};
+    auto same_site = [](const libint2::Shell &sh1, const libint2::Shell &sh2)
+    {
+        return (sh1.O[0] == sh2.O[0]) && (sh1.O[1] == sh2.O[1]) && (sh1.O[2] == sh2.O[2]);
+    };
+
+    auto same_primitives = [](const libint2::Shell &sh1, const libint2::Shell &sh2)
+    {
+        if(sh1.alpha.size() != sh2.alpha.size()) return false;
+        for(size_t i = 0; i < sh1.alpha.size(); i++) {
+            if(sh1.alpha[i] != sh2.alpha[i]) return false;
+        }
+        return true;
+    };
+
+    for(size_t i = 0; i < basis.size(); i++)
+    {
+        if(visited[i]) continue;
+        const auto& sh1 = basis[i];
+        shells[i] = current_sp_shell;
+        visited[i] = true;
+        if(sh1.contr[0].l != 0) continue;
+        // if we have an S shell, look for matching P shells
+        for(size_t j = i + 1; j < basis.size(); j++)
+        {
+            if(visited[j]) continue;
+            const auto& sh2 = basis[j];
+            if(sh2.contr[0].l != 1) continue;
+            if(!same_site(sh1, sh2)) continue;
+            if(same_primitives(sh1, sh2))
+            {
+                shells[j] = current_sp_shell;
+                visited[j] = true;
+            }
+        }
+        current_sp_shell++;
+    }
+    return shells;
+}
+
 }

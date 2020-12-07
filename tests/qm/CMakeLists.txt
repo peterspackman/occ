@@ -6,6 +6,7 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
+create_qm_test(test_basis.cpp)
 create_qm_test(test_dft.cpp)
 create_qm_test(test_electric_field.cpp)
 create_qm_test(test_grid.cpp)

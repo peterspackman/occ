@@ -10,6 +10,91 @@ static const std::array<const char *, 15> fchk_type_strings {
     "FREQ", "SCAN", "GUESS=ONLY", "LST", "STABILITY", "REARCHIVE/MS-RESTART", "MIXED"
 };
 
+static const std::vector<std::string> fchk_key_order {
+    "Number of atoms",
+    "Info1-9",
+    "Full Title",
+    "Route",
+    "Charge",
+    "Multiplicity",
+    "Number of electrons",
+    "Number of alpha electrons",
+    "Number of beta electrons",
+    "Number of basis functions",
+    "Number of independent functions",
+    "Number of point charges in /Mol/",
+    "Number of translation vectors",
+    "Atomic numbers",
+    "Nuclear charges",
+    "Current cartesian coordinates",
+    "Number of symbols in /Mol/",
+    "Force Field",
+    "Atom Types",
+    "Int Atom Types",
+    "MM Charges",
+    "Integer atomic weights",
+    "Real atomic weights",
+    "Atom fragment info",
+    "Atom residue num",
+    "Nuclear spins",
+    "Nuclear ZEff",
+    "Nuclear ZNuc",
+    "Nuclear QMom",
+    "Nuclear GFac",
+    "MicOpt",
+    "Number of residues",
+    "Number of secondary structures",
+    "Number of contracted shells",
+    "Number of primitive shells",
+    "Pure/Cartesian d shells",
+    "Pure/Cartesian f shells",
+    "Highest angular momentum",
+    "Largest degree of contraction",
+    "Shell types",
+    "Number of primitives per shell",
+    "Shell to atom map",
+    "Primitive exponents",
+    "Contraction coefficients",
+    "P(S=P) Contraction coefficients",
+    "Coordinates of each shell",
+    "Constraint Structure",
+    "Num ILSW",
+    "ILSW",
+    "Num RLSW",
+    "RLSW",
+    "MxBond",
+    "NBond",
+    "IBond",
+    "RBond",
+    "Virial ratio",
+    "SCF Energy",
+    "Total Energy",
+    "RMS Density",
+    "External E-field",
+    "IOpCl",
+    "IROHF",
+    "Alpha Orbital Energies",
+    "Alpha MO coefficients",
+    "Beta Orbital Energies",
+    "Beta MO coefficients",
+    "Total SCF Density",
+    "Total MP2 Density",
+    "Mulliken Charges",
+    "ONIOM Charges",
+    "ONIOM Multiplicities",
+    "Atom Layers",
+    "Atom Modifiers",
+    "Atom Modified Types",
+    "Int Atom Modified Types",
+    "Link Atoms",
+    "Atom Modified MM Charges",
+    "Link Distances",
+    "Cartesian Gradient",
+    "Dipole Moment",
+    "Quadrupole Moment",
+    "QEq coupling tensors"
+};
+
 void FchkScalarWriter::operator()(int value)
 {
     fmt::print(destination, "{:40s}   I     {:12d}\n", key, value);
@@ -17,7 +102,7 @@ void FchkScalarWriter::operator()(int value)
 
 void FchkScalarWriter::operator()(double value)
 {
-    fmt::print(destination, "{:40s}   R     {:22.15e}\n", key, value);
+    fmt::print(destination, "{:40s}   R     {:22.15E}\n", key, value);
 }
 
 void FchkScalarWriter::operator()(const std::string &value)
@@ -95,15 +180,31 @@ void FchkWriter::set_basis(const tonto::qm::BasisSet &basis)
     int l_max = 0;
     std::vector<int> shell_types, nprim_per_shell;
     shell_types.reserve(basis.size());
+    std::vector<double> shell_coords;
+    shell_coords.reserve(3 * basis.size());
+    std::vector<double> primitive_exponents, contraction_coefficients;
+    int number_primitive_shells{0};
     for(size_t i = 0; i < basis.size(); i++)
     {
         const auto& sh = basis[i];
-        int l = sh.contr[0].l;
+        const auto& contraction = sh.contr[0];
+        int l = contraction.l;
         l_max = std::max(l, l_max);
-        int nprim = sh.contr[0].size();
+        int nprim = sh.alpha.size();
+        number_primitive_shells += nprim;
         largest_contraction = std::max(nprim, largest_contraction);
         shell_types.push_back(l);
         nprim_per_shell.push_back(nprim);
+        shell_coords.push_back(sh.O[0]);
+        shell_coords.push_back(sh.O[1]);
+        shell_coords.push_back(sh.O[2]);
+        for(size_t p = 0; p < sh.alpha.size(); p++) {
+            primitive_exponents.push_back(sh.alpha[p]);
+        }
+        for(size_t p = 0; p < contraction.coeff.size(); p++) {
+            contraction_coefficients.push_back(contraction.coeff[p]);
+        }
+
     }
     set_scalar("Number of contracted shells", basis.size());
     bool spherical = basis.is_pure();
@@ -112,8 +213,12 @@ void FchkWriter::set_basis(const tonto::qm::BasisSet &basis)
     set_scalar("Highest angular momentum", l_max);
     set_scalar("Largest degree of contraction", largest_contraction);
     set_vector("Shell types", shell_types);
-    set_vector("Number of primitives per shell", shell_types);
-
+    set_vector("Number of primitives per shell", nprim_per_shell);
+    set_scalar("Number of primitive shells", number_primitive_shells);
+    set_vector("Primitive exponents", primitive_exponents);
+    set_vector("Contraction coefficients", contraction_coefficients);
+    set_vector("P(S=P) Contraction coefficients", tonto::Vec::Zero(contraction_coefficients.size()));
+    set_vector("Coordinates of each shell", shell_coords);
 }
 
 FchkWriter::FchkWriter(const std::string &filename) : m_owned_destination(filename), m_dest(m_owned_destination)
@@ -128,19 +233,19 @@ FchkWriter::FchkWriter(std::ostream &stream) : m_dest(stream)
 void FchkWriter::write()
 {
     fmt::print(m_dest, "{:<72s}\n", m_title);
-    fmt::print(m_dest, "{:10s}{:<30s}{:>30s}\n", impl::fchk_type_strings[m_type], m_method, m_basis_name);
+    fmt::print(m_dest, "{:10s} {:<30s} {:>30s}\n", impl::fchk_type_strings[m_type], m_method, m_basis_name);
     impl::FchkScalarWriter scalar_writer{m_dest, ""};
-    for(const auto& keyval: m_scalars)
-    {
-        scalar_writer.key = keyval.first;
-        std::visit(scalar_writer, keyval.second);
-    }
-
     impl::FchkVectorWriter vector_writer{m_dest, ""};
-    for(const auto& keyval: m_vectors)
-    {
-        vector_writer.key = keyval.first;
-        std::visit(vector_writer, keyval.second);
+
+    for(const auto& key: impl::fchk_key_order) {
+        if(m_scalars.contains(key)) {
+            scalar_writer.key = key;
+            std::visit(scalar_writer, m_scalars[key]);
+        }
+        if(m_vectors.contains(key)) {
+            vector_writer.key = key;
+            std::visit(vector_writer, m_vectors[key]);
+        }
     }
 }
 
