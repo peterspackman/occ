@@ -97,7 +97,6 @@ public:
     std::vector<libint2::Atom> atoms() const;
 
     tonto::qm::BasisSet basis_set() const;
-    tonto::MatRM convert_mo_coefficients_from_g09_convention(const tonto::qm::BasisSet&, const tonto::MatRM&) const;
 private:
     void parse(std::istream&);
     void open(const std::string& filename);

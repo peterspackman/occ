@@ -1,11 +1,14 @@
 #include <tonto/core/logger.h>
 #include <tonto/qm/wavefunction.h>
 #include <tonto/qm/spinorbital.h>
+#include <tonto/io/conversion.h>
 #include <tonto/io/fchkreader.h>
 #include <tonto/io/fchkwriter.h>
 #include <tonto/io/moldenreader.h>
 #include <tonto/qm/merge.h>
+#include <tonto/qm/orb.h>
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <tonto/core/element.h>
 
 namespace tonto::qm {
@@ -247,12 +250,10 @@ void Wavefunction::update_occupied_orbitals()
         throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
     }
     else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        C_occ = MatRM::Zero(2 * nbf, std::max(num_alpha, num_beta));
-        C_occ.block(0, 0, nbf, num_alpha) = C.alpha().leftCols(num_alpha);
-        C_occ.block(nbf, 0, nbf, num_beta) = C.beta().leftCols(num_beta);
+        C_occ = tonto::qm::orb::occupied_unrestricted(C, num_alpha, num_beta);
     }
     else {
-        C_occ = C.leftCols(num_alpha);
+        C_occ = tonto::qm::orb::occupied_restricted(C, num_alpha);
     }
 }
 
@@ -272,13 +273,13 @@ void Wavefunction::set_molecular_orbitals(const FchkReader& fchk)
         C.beta() = fchk.beta_mo_coefficients();
         mo_energies.alpha() = fchk.alpha_mo_energies();
         mo_energies.beta() = fchk.beta_mo_energies();
-        C.alpha() = fchk.convert_mo_coefficients_from_g09_convention(basis, C.alpha());
-        C.beta() = fchk.convert_mo_coefficients_from_g09_convention(basis, C.beta());
+        C.alpha() = tonto::io::conversion::orb::from_gaussian(basis, C.alpha());
+        C.beta() = tonto::io::conversion::orb::from_gaussian(basis, C.beta());
     }
     else {
         C = fchk.alpha_mo_coefficients();
         mo_energies = fchk.alpha_mo_energies();
-        C = fchk.convert_mo_coefficients_from_g09_convention(basis, C);
+        C = tonto::io::conversion::orb::from_gaussian(basis, C);
     }
     update_occupied_orbitals();
 }
@@ -288,15 +289,10 @@ void Wavefunction::compute_density_matrix() {
         throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
     }
     else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        size_t rows, cols;
-        std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
-        D = tonto::MatRM(rows, cols);
-        D.alpha() = C_occ.block(0, 0, nbf, num_alpha) * C_occ.block(0, 0, nbf, num_alpha).transpose();
-        D.beta() = C_occ.block(nbf, 0, nbf, num_beta) * C_occ.block(nbf, 0, nbf, num_beta).transpose();
-        D *= 0.5;
+        D = tonto::qm::orb::density_matrix_unrestricted(C_occ, num_alpha, num_beta);
     }
     else {
-        D = C_occ * C_occ.transpose();
+        D = tonto::qm::orb::density_matrix_restricted(C_occ);
     }
 }
 
@@ -392,19 +388,11 @@ void Wavefunction::save(FchkWriter &fchk)
     fchk.set_scalar("Number of atoms", atoms.size());
     fchk.set_scalar("Charge", charge());
     fchk.set_scalar("Multiplicity", multiplicity());
-    fchk.set_scalar("Total SCF Energy", energy.total);
+    fchk.set_scalar("SCF Energy", energy.total);
     fchk.set_scalar("Number of electrons", num_electrons);
     fchk.set_scalar("Number of alpha electrons", num_alpha);
     fchk.set_scalar("Number of beta electrons", num_beta);
     fchk.set_scalar("Number of basis functions", nbf);
-    std::vector<double> density_lower_triangle;
-    density_lower_triangle.reserve(D.rows() * (D.rows() - 1) / 2);
-    for(Eigen::Index row = 0; row < D.rows(); row++) {
-        for(Eigen::Index col = 0; col <= row; col++) {
-            density_lower_triangle.push_back(D(row, col) * 2);
-        }
-    }
-    fchk.set_vector("Total SCF Density", density_lower_triangle);
     // nuclear charges
     tonto::IVec nums = atomic_numbers();
     tonto::Vec atomic_prop = nums.cast<double>();
@@ -416,16 +404,45 @@ void Wavefunction::save(FchkWriter &fchk)
     fchk.set_vector("Integer atomic weights", atomic_prop.array().round().cast<int>());
     fchk.set_vector("Real atomic weights", atomic_prop);
 
+    auto Cfchk = tonto::io::conversion::orb::to_gaussian(basis, C);
+    tonto::MatRM Dfchk;
+
+    std::vector<double> density_lower_triangle, spin_density_lower_triangle;
+
     if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
         fchk.set_vector("Alpha Orbital Energies", mo_energies.alpha());
-        fchk.set_vector("Alpha MO coefficients", C.alpha());
+        fchk.set_vector("Alpha MO coefficients", Cfchk.alpha());
         fchk.set_vector("Beta Orbital Energies", mo_energies.beta());
-        fchk.set_vector("Beta MO coefficients", C.beta());
+        fchk.set_vector("Beta MO coefficients", Cfchk.beta());
+        tonto::MatRM occ_fchk = tonto::qm::orb::occupied_unrestricted(Cfchk, num_alpha, num_beta);
+        Dfchk = tonto::qm::orb::density_matrix_unrestricted(occ_fchk, num_alpha, num_beta);
+
+        density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
+        spin_density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
+        auto da = Dfchk.alpha();
+        auto db = Dfchk.beta();
+        for(Eigen::Index row = 0; row < nbf; row++) {
+            for(Eigen::Index col = 0; col <= row; col++) {
+                double va = da(row, col) * 2, vb = db(row, col) * 2;
+                density_lower_triangle.push_back(va + vb);
+                spin_density_lower_triangle.push_back(vb - va);
+            }
+        }
     }
     else {
         fchk.set_vector("Alpha Orbital Energies", mo_energies);
-        fchk.set_vector("Alpha MO coefficients", C);
+        fchk.set_vector("Alpha MO coefficients", Cfchk);
+        tonto::MatRM occ_fchk = tonto::qm::orb::occupied_restricted(Cfchk, num_alpha);
+        Dfchk = tonto::qm::orb::density_matrix_restricted(occ_fchk);
+        density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
+        for(Eigen::Index row = 0; row < nbf; row++) {
+            for(Eigen::Index col = 0; col <= row; col++) {
+                density_lower_triangle.push_back(Dfchk(row, col) * 2);
+            }
+        }
     }
+    fchk.set_vector("Total SCF Density", density_lower_triangle);
+    if(spin_density_lower_triangle.size() > 0) fchk.set_vector("Spin SCF Density", spin_density_lower_triangle);
     fchk.set_basis(basis);
 
 

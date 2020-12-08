@@ -79,6 +79,8 @@ static const std::vector<std::string> fchk_key_order {
     "Beta MO coefficients",
     "Total SCF Density",
     "Total MP2 Density",
+    "Spin SCF Density",
+    "Spin MP2 Density",
     "Mulliken Charges",
     "ONIOM Charges",
     "ONIOM Multiplicities",
@@ -202,7 +204,7 @@ void FchkWriter::set_basis(const tonto::qm::BasisSet &basis)
             primitive_exponents.push_back(sh.alpha[p]);
         }
         for(size_t p = 0; p < contraction.coeff.size(); p++) {
-            contraction_coefficients.push_back(contraction.coeff[p]);
+            contraction_coefficients.push_back(sh.coeff_normalized(0, p));
         }
 
     }
