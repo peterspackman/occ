@@ -8,6 +8,8 @@
 
 namespace tonto::io {
 
+using tonto::qm::SpinorbitalKind;
+
 GaussianInputFile::GaussianInputFile(const std::string &filename)
 {
     std::ifstream file(filename);
@@ -28,7 +30,7 @@ void GaussianInputFile::parse(std::istream &stream)
         if(line[0] == '%') parse_link0(line);
         else if(line[0] == '#') {
             parse_route_line(line);
-            tonto::log::info("Found route line, breaking");
+            tonto::log::debug("Found route line, breaking");
             break;
         }
     }
@@ -52,7 +54,7 @@ void GaussianInputFile::parse_link0(const std::string &line)
     auto eq = line.find('=');
     std::string cmd = line.substr(1, eq - 1);
     std::string arg = line.substr(eq + 1);
-    tonto::log::info("Found link0 command {} = {}", cmd, arg);
+    tonto::log::debug("Found link0 command {} = {}", cmd, arg);
     link0_commands.push_back({std::move(cmd), std::move(arg)});
 }
 
@@ -75,7 +77,7 @@ void GaussianInputFile::parse_route_line(const std::string &line)
     {
         tonto::log::error("Did not find method/basis in route line in gaussian input!");
     }
-    tonto::log::info("Found route command: method = {} basis = {}", method, basis_name);
+    tonto::log::debug("Found route command: method = {} basis = {}", method, basis_name);
 }
 
 void GaussianInputFile::parse_charge_multiplicity_line(const std::string &line)
@@ -91,6 +93,14 @@ void GaussianInputFile::parse_atom_line(const std::string &line)
     atomic_positions.push_back({x, y, z});
     tonto::chem::Element elem(symbol);
     atomic_numbers.push_back(elem.atomic_number());
+}
+
+
+SpinorbitalKind GaussianInputFile::spinorbital_kind() const
+{
+    if(multiplicity != 1) return SpinorbitalKind::Unrestricted;
+    if(method[0] == 'u') return SpinorbitalKind::Unrestricted;
+    return SpinorbitalKind::Restricted;
 }
 
 }

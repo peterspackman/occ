@@ -3,6 +3,7 @@
 #include <array>
 #include <vector>
 #include <istream>
+#include <tonto/qm/spinorbital.h>
 
 namespace tonto::io {
 
@@ -20,6 +21,8 @@ struct GaussianInputFile
     std::string route_tag{"#"};
     std::string comment;
     unsigned int charge{0}, multiplicity{1};
+    tonto::qm::SpinorbitalKind spinorbital_kind() const;
+
 
 private:
     void parse(std::istream&);

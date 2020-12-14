@@ -1,23 +1,23 @@
-add_executable(tontox "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
-target_link_libraries(tontox
+add_executable(tonto-ng "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
+target_link_libraries(tonto-ng
     PUBLIC
     tonto_qm
 )
-set_target_properties(tontox
+set_target_properties(tonto-ng
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_executable(ce "${CMAKE_CURRENT_SOURCE_DIR}/ce_main.cpp")
-target_link_libraries(ce PUBLIC tonto_interaction)
-set_target_properties(ce
+add_executable(tonto-ng-ce "${CMAKE_CURRENT_SOURCE_DIR}/ce_main.cpp")
+target_link_libraries(tonto-ng-ce PUBLIC tonto_interaction)
+set_target_properties(tonto-ng-ce
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
 add_executable(make_radial_interpolators "${CMAKE_CURRENT_SOURCE_DIR}/make_radial_interpolators.cpp")
 target_link_libraries(make_radial_interpolators PUBLIC tonto_slater)
-set_target_properties(ce
+set_target_properties(make_radial_interpolators
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )

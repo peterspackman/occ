@@ -27,4 +27,5 @@ TEST_CASE("h2o gaussian input", "[read]")
     REQUIRE(reader.atomic_positions.size() == 3);
     REQUIRE(reader.atomic_numbers.size() == 3);
     REQUIRE(reader.atomic_numbers[2] == 1);
+    REQUIRE(reader.spinorbital_kind() == tonto::qm::SpinorbitalKind::Restricted);
 }
