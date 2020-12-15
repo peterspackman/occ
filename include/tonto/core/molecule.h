@@ -2,6 +2,7 @@
 #include <tonto/core/element.h>
 #include <tonto/core/linear_algebra.h>
 #include <libint2/atom.h>
+#include <array>
 
 namespace tonto::chem {
 using tonto::IVec;
@@ -11,6 +12,27 @@ class Molecule {
 public:
   Molecule(const IVec &, const Mat3N &);
   Molecule(const std::vector<libint2::Atom> &atoms);
+
+  template<typename N, typename D>
+  Molecule(const std::vector<N> &nums, const std::vector<std::array<D, 3>> &pos)
+  {
+      size_t num_atoms = std::min(nums.size(), pos.size());
+      m_atomicNumbers = tonto::IVec(num_atoms);
+      m_positions = tonto::Mat3N(3, num_atoms);
+      for(size_t i = 0; i < num_atoms; i++) {
+          m_atomicNumbers(i) = static_cast<int>(nums[i]);
+          m_positions(0, i) = static_cast<double>(pos[i][0]);
+          m_positions(1, i) = static_cast<double>(pos[i][1]);
+          m_positions(2, i) = static_cast<double>(pos[i][2]);
+      }
+      for (size_t i = 0; i < size(); i++) {
+        m_elements.push_back(Element(m_atomicNumbers(i)));
+        m_atoms.push_back(libint2::Atom{m_atomicNumbers(i), m_positions(0, i),
+                                        m_positions(1, i), m_positions(2, i)});
+      }
+      m_name = chemical_formula(m_elements);
+  }
+
   size_t size() const { return m_atomicNumbers.size(); }
 
   void set_name(const std::string &);

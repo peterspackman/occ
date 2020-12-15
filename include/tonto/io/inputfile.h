@@ -9,6 +9,7 @@ namespace tonto::io {
 
 struct GaussianInputFile
 {
+    enum MethodType { HF, DFT, Other };
     using position = std::array<double, 3>;
     GaussianInputFile(const std::string&);
     GaussianInputFile(std::istream&);
@@ -20,6 +21,7 @@ struct GaussianInputFile
     std::vector<position> atomic_positions;
     std::string route_tag{"#"};
     std::string comment;
+    MethodType method_type{Other};
     unsigned int charge{0}, multiplicity{1};
     tonto::qm::SpinorbitalKind spinorbital_kind() const;
 
