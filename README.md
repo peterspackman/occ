@@ -12,11 +12,11 @@ with OpenMP.
 
 Tonto-NG depends on the following libraries:
 
-- libint2
-- libxc
-- Eigen3
-- boost.graph
-- zlib
+- [libint2](https://github.com/evaleev/libint/releases/tag/v2.7.0-beta.6)
+- [libxc](http://www.tddft.org/programs/libxc/down.php?file=5.0.0/libxc-5.0.0.tar.gz)
+- Eigen3 (`eigen3-dev`)
+- boost.graph (`libboost-graph1.65-dev`)
+- zlib (`zlibc`)
 
 It also depends on open source libraries packaged as submodules in the
 git repository:
