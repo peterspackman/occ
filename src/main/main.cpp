@@ -250,7 +250,7 @@ int main(int argc, const char **argv) {
         fmt::print("{}", parser);
         exit(1);
     }
-    spdlog::set_level(spdlog::level::info);
+    spdlog::set_level(spdlog::level::debug);
 
     print_header();
 

@@ -456,9 +456,12 @@ public:
     };
 
     DensityFunctional(const std::string&, bool polarized = false);
+    DensityFunctional(Identifier, bool polarized = false);
 
+    void set_name(const std::string &name) { m_func_name = name; }
     double scale_factor() const { return m_factor; }
     void set_scale_factor(double fac) { m_factor = fac; }
+    void set_exchange_factor(double fac) { m_exchange_factor_override = fac; }
 
     bool polarized() const { return m_polarized; }
     Family family() const {
@@ -488,6 +491,7 @@ public:
     }
 
     double exact_exchange_factor() const {
+        if(m_exchange_factor_override != 0.0) return m_exchange_factor_override;
         switch (family()) {
         case HGGA:
         case HMGGA: {
@@ -526,6 +530,7 @@ public:
     }
     static int functional_id(const std::string&);
 private:
+    double m_exchange_factor_override{0.0};
     double m_factor{1.0};
     Identifier m_func_id;
     bool m_polarized{false};

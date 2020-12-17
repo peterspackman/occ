@@ -3,6 +3,12 @@
 
 namespace tonto::dft {
 
+DensityFunctional::DensityFunctional(DensityFunctional::Identifier id, bool polarized) :
+   m_polarized(polarized), m_func_id(id)
+{
+    m_func_name = std::string(xc_functional_get_name(id));
+}
+
 DensityFunctional::DensityFunctional(const std::string& name, bool polarized) :
    m_polarized(polarized), m_func_name(name)
 {
@@ -36,10 +42,6 @@ DensityFunctional::Result DensityFunctional::evaluate(const Params& params) cons
 }
 
 int DensityFunctional::functional_id(const std::string& name) {
-    if(name == "lda") return Identifier::lda_x;
-    if(name == "b3lyp") return Identifier::hyb_gga_xc_b3lyp;
-    if(name == "vwn5") return Identifier::lda_c_vwn;
-
     int func = xc_functional_get_number(name.c_str());
     if(func <= 0) throw std::runtime_error(fmt::format("Unknown functional name {}", name));
     return func;
