@@ -1,0 +1,7 @@
+set(TONTO_DFT_INCLUDE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/density_functional.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/dft.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lebedev.h
+    PARENT_SCOPE
+)

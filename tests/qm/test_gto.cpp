@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include <tonto/qm/dft.h>
+#include <tonto/core/linear_algebra.h>
 #include <tonto/qm/basisset.h>
 #include <vector>
 #include <fmt/core.h>

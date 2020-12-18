@@ -4,8 +4,8 @@
 #include <tonto/core/timings.h>
 #include <vector>
 #include <string>
-#include <tonto/qm/dft_grid.h>
-#include <tonto/qm/density_functional.h>
+#include <tonto/dft/grid.h>
+#include <tonto/dft/functional.h>
 #include <tonto/qm/ints.h>
 #include <tonto/qm/spinorbital.h>
 #include <tonto/qm/hf.h>

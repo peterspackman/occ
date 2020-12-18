@@ -3,7 +3,7 @@
 #include <tonto/core/timings.h>
 #include <tonto/io/fchkwriter.h>
 #include <tonto/io/inputfile.h>
-#include <tonto/qm/dft.h>
+#include <tonto/dft/dft.h>
 #include <tonto/qm/hf.h>
 #include <tonto/qm/scf.h>
 #include <tonto/3rdparty/argparse.hpp>

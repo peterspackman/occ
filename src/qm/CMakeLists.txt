@@ -2,13 +2,9 @@ add_library(tonto_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/basisset.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/density_functional.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/dft.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gto.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
@@ -20,7 +16,6 @@ target_link_libraries(tonto_qm
     tonto_core
     tonto_io
     Libint2::cxx
-    Libxc::xc
 )
 target_include_directories(tonto_qm PUBLIC 
     ${TONTO_INCLUDE_DIR} 

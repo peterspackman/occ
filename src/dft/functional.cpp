@@ -1,4 +1,4 @@
-#include <tonto/qm/density_functional.h>
+#include <tonto/dft/functional.h>
 #include <tonto/core/logger.h>
 
 namespace tonto::dft {

@@ -2,7 +2,7 @@
 #include <tonto/core/timings.h>
 #include <tonto/core/util.h>
 #include <tonto/qm/density.h>
-#include <tonto/qm/dft.h>
+#include <tonto/dft/dft.h>
 #include <tonto/qm/gto.h>
 #include <libint2/basis.h>
 #include <libint2/atom.h>

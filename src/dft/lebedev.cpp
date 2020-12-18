@@ -124,7 +124,7 @@ ccgk: and the following comments and references for the original of the subrouti
       cvw
  *
  */
-#include <tonto/qm/lebedev.h>
+#include <tonto/dft/lebedev.h>
 #include <math.h> // for sqrt.
 #include <assert.h>
 

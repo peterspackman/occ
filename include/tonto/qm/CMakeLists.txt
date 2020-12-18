@@ -1,16 +1,12 @@
 set(TONTO_QM_INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/basisset.h
     ${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/density_functional.h
     ${CMAKE_CURRENT_SOURCE_DIR}/density.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/dft_grid.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/dft.h
     ${CMAKE_CURRENT_SOURCE_DIR}/diis.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fock.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gto.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hf.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ints.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/lebedev.h
     ${CMAKE_CURRENT_SOURCE_DIR}/merge.h
     ${CMAKE_CURRENT_SOURCE_DIR}/orb.h
     ${CMAKE_CURRENT_SOURCE_DIR}/scf.h

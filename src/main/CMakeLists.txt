@@ -2,6 +2,7 @@ add_executable(tonto-ng "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
 target_link_libraries(tonto-ng
     PUBLIC
     tonto_qm
+    tonto_dft
 )
 set_target_properties(tonto-ng
     PROPERTIES
