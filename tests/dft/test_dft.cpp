@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include "catch.hpp"
-#include <tonto/qm/dft.h>
+#include <tonto/dft/dft.h>
 #include <libint2/basis.h>
 #include <libint2/atom.h>
 #include <libint2.hpp>
@@ -12,7 +12,6 @@
 #include <tonto/qm/density.h>
 #include <tonto/qm/gto.h>
 #include <tonto/core/util.h>
-#include <tonto/qm/lebedev.h>
 
 TEST_CASE("Density Functional", "[lda]") {
     tonto::dft::DensityFunctional lda("xc_lda_x");

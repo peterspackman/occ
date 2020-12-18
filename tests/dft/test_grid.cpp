@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include "catch.hpp"
-#include <tonto/qm/lebedev.h>
-#include <tonto/qm/dft_grid.h>
+#include <tonto/dft/lebedev.h>
+#include <tonto/dft/grid.h>
 #include <fmt/ostream.h>
 #include <tonto/qm/basisset.h>
 #include <tonto/core/util.h>

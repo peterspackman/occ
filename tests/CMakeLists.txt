@@ -3,6 +3,7 @@ set(TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 enable_testing()
 add_subdirectory(core)
+add_subdirectory(dft)
 add_subdirectory(crystal)
 add_subdirectory(io)
 add_subdirectory(interaction)
