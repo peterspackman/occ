@@ -32,8 +32,8 @@ struct RadialGrid
     Vec weights;
 };
 
-tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii);
-tonto::IVec prune_numgrid_scheme(size_t nuclear_charge, size_t max_angular, size_t min_angular, const tonto::Vec& radii);
+IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii);
+IVec prune_numgrid_scheme(size_t nuclear_charge, size_t max_angular, size_t min_angular, const tonto::Vec& radii);
 RadialGrid generate_becke_radial_grid(size_t num_points, double rm = 1.0);
 RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge);
 RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points);

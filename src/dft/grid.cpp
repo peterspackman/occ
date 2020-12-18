@@ -504,8 +504,8 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number)
 {
     size_t num_points = 0;
     size_t atom_idx;
-    m_max_angular = 302;
-    m_min_angular = 80;
+    m_max_angular = 590;
+    m_min_angular = 99;
     m_radial_precision = 1e-12;
     for(atom_idx = 0; atom_idx < n_atoms(); ++atom_idx)
     {
@@ -519,7 +519,7 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number)
     size_t n_radial = radial.points.rows();
     AtomGrid result(n_radial * m_max_angular);
     radial.weights.array() *= 4 * M_PI;
-    tonto::IVec n_angular = prune_numgrid_scheme(atomic_number, m_max_angular, m_min_angular, radial.points);
+    tonto::IVec n_angular = prune_nwchem_scheme(atomic_number, m_max_angular, radial.num_points(), radial.points);
     for(size_t i = 0; i < n_radial; i++)
     {
         auto lebedev = tonto::grid::lebedev(n_angular(i));
