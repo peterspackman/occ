@@ -1,6 +1,6 @@
 #pragma once
 #include <tonto/core/linear_algebra.h>
-#include <tonto/qm/gto.h>
+#include <tonto/gto/gto.h>
 #include <tonto/qm/spinorbital.h>
 
 namespace tonto::density {

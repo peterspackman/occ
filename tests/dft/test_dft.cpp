@@ -9,8 +9,8 @@
 #include <tonto/qm/hf.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <tonto/qm/density.h>
-#include <tonto/qm/gto.h>
+#include <tonto/gto/density.h>
+#include <tonto/gto/gto.h>
 #include <tonto/core/util.h>
 
 TEST_CASE("Density Functional", "[lda]") {

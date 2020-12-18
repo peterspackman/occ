@@ -4,7 +4,7 @@
 #include <scn/scn.h>
 #include <fmt/ostream.h>
 #include <libint2/cgshell_ordering.h>
-#include <tonto/qm/gto.h>
+#include <tonto/gto/gto.h>
 
 namespace tonto::io {
 

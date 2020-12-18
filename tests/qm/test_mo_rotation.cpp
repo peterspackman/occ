@@ -1,5 +1,5 @@
 #include <tonto/core/linear_algebra.h>
-#include <tonto/qm/gto.h>
+#include <tonto/gto/gto.h>
 #include "catch.hpp"
 #include <tonto/core/util.h>
 #include <tonto/qm/basisset.h>

@@ -4,8 +4,8 @@
 #include <vector>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <tonto/qm/gto.h>
-#include <tonto/qm/density.h>
+#include <tonto/gto/gto.h>
+#include <tonto/gto/density.h>
 
 using tonto::qm::BasisSet;
 

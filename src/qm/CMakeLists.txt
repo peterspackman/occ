@@ -1,8 +1,6 @@
 add_library(tonto_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/basisset.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/gto.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.cpp"

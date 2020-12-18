@@ -1,7 +1,7 @@
 #include <tonto/io/conversion.h>
 #include <tonto/core/util.h>
 #include <tonto/core/logger.h>
-#include <tonto/qm/gto.h>
+#include <tonto/gto/gto.h>
 
 namespace tonto::io::conversion {
 

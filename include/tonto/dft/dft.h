@@ -9,8 +9,8 @@
 #include <tonto/qm/ints.h>
 #include <tonto/qm/spinorbital.h>
 #include <tonto/qm/hf.h>
-#include <tonto/qm/gto.h>
-#include <tonto/qm/density.h>
+#include <tonto/gto/gto.h>
+#include <tonto/gto/density.h>
 #include <tonto/qm/basisset.h>
 
 namespace tonto::dft {

@@ -8,7 +8,6 @@
 #include <fmt/ostream.h>
 #include <tonto/qm/hf.h>
 #include <tonto/qm/wavefunction.h>
-#include <tonto/qm/gto.h>
 #include <tonto/interaction/pairinteraction.h>
 #include <tonto/interaction/disp.h>
 #include <tonto/interaction/polarization.h>

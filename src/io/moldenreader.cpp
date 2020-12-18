@@ -3,7 +3,7 @@
 #include <fmt/ostream.h>
 #include <tonto/core/logger.h>
 #include <tonto/core/util.h>
-#include <tonto/qm/gto.h>
+#include <tonto/gto/gto.h>
 #include <tonto/core/timings.h>
 
 namespace tonto::io {

@@ -1,9 +1,9 @@
 #include <tonto/core/logger.h>
 #include <tonto/core/timings.h>
 #include <tonto/core/util.h>
-#include <tonto/qm/density.h>
 #include <tonto/dft/dft.h>
-#include <tonto/qm/gto.h>
+#include <tonto/gto/gto.h>
+#include <tonto/gto/density.h>
 #include <libint2/basis.h>
 #include <libint2/atom.h>
 #include <fmt/core.h>
