@@ -4,6 +4,7 @@
 #include <tonto/3rdparty/robin_hood.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+#include <optional>
 #include <Eigen/Core>
 
 namespace tonto::io {
