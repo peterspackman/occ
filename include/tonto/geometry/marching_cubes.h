@@ -1,10 +1,10 @@
+#pragma once
 #include <vector>
 #include <array>
 #include <tonto/geometry/index_cache.h>
 #include <tonto/core/linear_algebra.h>
 
-namespace tonto::geometry {
-namespace mc {
+namespace tonto::geometry::mc {
 
 namespace tables {
 static const uint8_t CORNERS[8][3] = {
@@ -357,7 +357,7 @@ struct MarchingCubes {
     void extract_normal(const S &source, std::vector<float> &vertices, std::vector<uint32_t> &indices)
     {
         auto fn = [&vertices, &source](const Eigen::Vector3f &vertex) {
-                std::array<float, 3> normal = source.sample_normal(vertex);
+                std::array<float, 3> normal = source.normal(vertex);
                 vertices.push_back(vertex[0]);
                 vertices.push_back(vertex[1]);
                 vertices.push_back(vertex[2]);
@@ -383,7 +383,7 @@ private:
         {
             for(size_t x = 0; x < size; x++)
             {
-                layer0[y * size + x] = source.sample(x * size_inv, y * size_inv, 0.0);
+                layer0[y * size + x] = source(x * size_inv, y * size_inv, 0.0);
             }
         }
 
@@ -399,7 +399,7 @@ private:
             {
                 for(size_t x = 0; x < size; x++)
                 {
-                    layer1[y * size + x] = source.sample(x * size_inv, y * size_inv, (z + 1) * size_inv);
+                    layer1[y * size + x] = source(x * size_inv, y * size_inv, (z + 1) * size_inv);
                 }
             }
 
@@ -463,5 +463,4 @@ private:
 
 };
 
-}
 }

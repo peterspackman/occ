@@ -1,3 +1,4 @@
+#pragma once
 #include <cmath>
 #include <algorithm>
 
@@ -43,6 +44,17 @@ struct MIndex
     MIndex child(uint8_t idx) const;
     MIndex primal(integer_type lvl, integer_type idx) const;
     MIndex dual(integer_type lvl, integer_type idx) const;
+
+    bool operator <(const MIndex& other) const { return code < other.code; }
+    bool operator !=(const MIndex& other) const { return code != other.code; }
+    bool operator ==(const MIndex& other) const { return code == other.code; }
+    bool operator >(const MIndex& other) const { return code > other.code; }
+};
+
+
+struct MIndexHash
+{
+    std::size_t operator()(const tonto::geometry::MIndex& k) const { return static_cast<size_t>(k.code); }
 };
 
 }
