@@ -1,5 +1,7 @@
 add_library(tonto_geometry
+    "${CMAKE_CURRENT_SOURCE_DIR}/index_cache.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/marching_cubes.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/marching_cubes_data.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/morton.cpp"
     ${TONTO_CORE_INCLUDE_FILES}
 )

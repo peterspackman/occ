@@ -7,3 +7,4 @@ add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
 create_geometry_test(test_morton.cpp)
+create_geometry_test(test_mc.cpp)
