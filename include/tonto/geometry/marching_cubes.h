@@ -298,23 +298,24 @@ static const int8_t TRIANGLE_CONNECTION[256][16] = {
 
 namespace impl {
 template<typename E>
-void march_cube(const float values[8], E &edge_func)
+void march_cube(const std::array<float, 8> &values, E &edge_func)
 {
     using namespace tables;
-    size_t cube_index = 0;
+    uint32_t cube_index = 0;
     for(size_t i = 0; i < 8; i++)
     {
-        if (values[i] < 0.0) {
-            cube_index |= 1 << i;
+        if (values[i] <= 0.0) {
+            cube_index |= (1 << i);
         }
     }
+    const auto triangles = TRIANGLE_CONNECTION[cube_index];
 
     for(size_t i = 0; i < 5; i++)
     {
-        if(TRIANGLE_CONNECTION[cube_index][3 * i] < 0) break;
+        if(triangles[3 * i] < 0) break;
         for(size_t j = 0; j < 3; j++)
         {
-            size_t edge = TRIANGLE_CONNECTION[cube_index][3 * i + j];
+            size_t edge = triangles[3 * i + j];
             edge_func(edge);
         }
     }
@@ -337,11 +338,11 @@ T interpolate(T a, T b, float t)
 
 struct MarchingCubes {
     size_t size;
-    std::vector<float> layers[2];
-    MarchingCubes(size_t s) : size(s), layers({std::vector<float>(s * s), std::vector<float>(s * s)}) {}
+    std::vector<float> layer0, layer1;
+    MarchingCubes(size_t s) : size(s), layer0(s * s), layer1(s * s) {}
 
     template<typename S>
-    void extract(const S &source, std::vector<float> &vertices, std::vector<unsigned> &indices)
+    void extract(const S &source, std::vector<float> &vertices, std::vector<uint32_t> &indices)
     {
         auto fn = [&vertices](const Eigen::Vector3f& vertex) {
             vertices.push_back(vertex(0));
@@ -353,7 +354,7 @@ struct MarchingCubes {
     }
 
     template<typename S>
-    void extract_normal(const S &source, std::vector<float> &vertices, std::vector<unsigned> &indices)
+    void extract_normal(const S &source, std::vector<float> &vertices, std::vector<uint32_t> &indices)
     {
         auto fn = [&vertices, &source](const Eigen::Vector3f &vertex) {
                 std::array<float, 3> normal = source.sample_normal(vertex);
@@ -371,26 +372,26 @@ struct MarchingCubes {
 
 private:
     template<typename S, typename E>
-    void extract_impl(const S &source, E &extract_fn, std::vector<unsigned> &indices)
+    void extract_impl(const S &source, E &extract_fn, std::vector<uint32_t> &indices)
     {
         using namespace tables;
         using namespace impl;
         const size_t size_less_one = size - 1;
-        const float size_inv = 1.0 / size;
+        const float size_inv = 1.0 / size_less_one;
 
         for(size_t y = 0; y < size; y++)
         {
             for(size_t x = 0; x < size; x++)
             {
-                layers[0][y * size + x] = source.sample(x * size_inv, y * size_inv, 0.0);
+                layer0[y * size + x] = source.sample(x * size_inv, y * size_inv, 0.0);
             }
         }
 
-        Eigen::Vector3f corners[8];
-        float values[8];
+        std::array<Eigen::Vector3f, 8> corners{Eigen::Vector3f::Zero()};
+        std::array<float, 8> values{0.0f};
 
         IndexCache index_cache(size);
-        unsigned index = 0;
+        uint32_t index = 0;
 
         for(size_t z = 0; z < size; z++)
         {
@@ -398,43 +399,54 @@ private:
             {
                 for(size_t x = 0; x < size; x++)
                 {
-                    layers[1][y * size + x] = source.sample(x * size_inv, y * size_inv, (z+1) * size_inv);
+                    layer1[y * size + x] = source.sample(x * size_inv, y * size_inv, (z + 1) * size_inv);
                 }
             }
 
-            for(size_t y = 0; y < size; y++)
+            for(size_t y = 0; y < size_less_one; y++)
             {
-                for(size_t x = 0; x < size; x++)
+                for(size_t x = 0; x < size_less_one; x++)
                 {
                     for(size_t i = 0; i < 8; i++)
                     {
-                        corners[i](0) = (x + CORNERS[i][0]) * size_inv;
-                        corners[i](1) = (y + CORNERS[i][1]) * size_inv;
-                        corners[i](2) = (z + CORNERS[i][2]) * size_inv;
-                        values[i] = layers[CORNERS[i][2]][(y + CORNERS[i][1]) * size + x + CORNERS[i][2]];
+                        const auto corner = CORNERS[i];
+                        const auto cx = corner[0], cy = corner[1], cz  = corner[2];
+                        corners[i] = {
+                            (x + cx) * size_inv,
+                            (y + cy) * size_inv,
+                            (z + cz) * size_inv
+                        };
+
+                        if(cz == 0)
+                        {
+                            values[i] = layer0[(y + cy) * size + x + cx];
+                        }
+                        else
+                        {
+                            values[i] = layer1[(y + cy) * size + x + cx];
+                        }
                     }
 
                     auto fn = [&extract_fn, &index_cache, &indices, &index, &corners, &values, &x, &y](size_t edge)
                     {
-                        unsigned cached_index = index_cache.get(x, y, edge);
+                        const uint32_t cached_index = index_cache.get(x, y, edge);
                         if(cached_index > 0)
                         {
                             indices.push_back(cached_index);
                         }
                         else
                         {
-                            auto u = EDGE_CONNECTION[edge][0];
-                            auto v = EDGE_CONNECTION[edge][1];
+                            size_t u = EDGE_CONNECTION[edge][0];
+                            size_t v = EDGE_CONNECTION[edge][1];
 
                             index_cache.put(x, y, edge, index);
                             indices.push_back(index);
-                            index++;
+                            index += 1;
                             
-                            auto offset = get_offset(values[u], values[v]);
-                            auto vertex = interpolate(corners[u], corners[v], offset);
+                            float offset = get_offset(values[u], values[v]);
+                            Eigen::Vector3f vertex = interpolate(corners[u], corners[v], offset);
                             extract_fn(vertex);
                         }
-                        
                     };
 
                     march_cube(values, fn);
@@ -444,7 +456,7 @@ private:
             }
             index_cache.advance_layer();
 
-            std::swap(layers[0], layers[1]);
+            std::swap(layer0, layer1);
         }
 
     }
