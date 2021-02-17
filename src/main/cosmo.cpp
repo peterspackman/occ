@@ -21,20 +21,21 @@ struct InputConfiguration {
 };
 
 struct SlaterBasis {
-    const double buffer = 4.0;
+    const double buffer = 3.8;
     std::vector<Eigen::Vector3d> coordinates;
     std::vector<tonto::slater::Basis> basis;
     const Molecule& molecule;
     Eigen::Vector3d origin{0, 0, 0};
     double length;
-    float iso = 0.2;
+    float iso = 0.002;
     mutable int num_calls{0};
+
     SlaterBasis(const Molecule &mol) : molecule(mol)
     {
         auto nums = molecule.atomic_numbers();
         auto pos = molecule.positions();
         Eigen::Vector3d minp = pos.rowwise().minCoeff();
-        Eigen::Vector3d maxp = pos.rowwise().minCoeff();
+        Eigen::Vector3d maxp = pos.rowwise().maxCoeff();
         minp.array() -= buffer;
         maxp.array() += buffer;
         for(size_t i = 0; i < molecule.size(); i++)
@@ -67,8 +68,6 @@ struct SlaterBasis {
 };
 
 int main(int argc, const char **argv) {
-    tonto::timing::start(tonto::timing::category::global);
-
     argparse::ArgumentParser parser("tonto");
     parser.add_argument("input").help("Input file geometry");
     tonto::log::set_level(tonto::log::level::debug);
@@ -95,7 +94,7 @@ int main(int argc, const char **argv) {
 
     
     StopWatch<1> sw;
-    LinearHashedMarchingCubes mc(6);
+    LinearHashedMarchingCubes mc(7);
     SlaterBasis b(m);
 
     std::vector<float> vertices;
