@@ -140,12 +140,13 @@ private:
     {
         using namespace impl;
         EdgeMap index_map;
-        std::array<MIndex, 8> duals;
+        std::array<MIndex, 8> duals{};
         std::array<float, 8> dual_distances{};
+        for(auto& m: duals) m.code = 0;
 
         MIndex key;
         size_t level;
-        const MIndex one;
+        const MIndex one{};
         for(const auto &kv : primal_vertices)
         {
             key = kv.first;
