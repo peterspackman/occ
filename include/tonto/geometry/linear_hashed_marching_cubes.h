@@ -33,8 +33,11 @@ struct LinearHashedMarchingCubes
     using VertexMap = robin_hood::unordered_flat_map<MIndex, size_t, MIndexHash>;
     using EdgeMap = robin_hood::unordered_flat_map<impl::Edge, size_t, impl::EdgeHash>;
     size_t max_depth{6};
+    size_t min_depth{2};
 
-    LinearHashedMarchingCubes(size_t depth) : max_depth(depth) {}
+    LinearHashedMarchingCubes(size_t depth) : max_depth(depth)
+    {
+    }
 
     template<typename S>
     void extract(const S &source, std::vector<float> &vertices, std::vector<uint32_t> &indices)
@@ -80,7 +83,7 @@ private:
         {
             const auto level = key.level();
             const auto size = key.size();
-            return (level < 2) || (((level < max_depth) && (fabs(distance) <= diagonal(size))));
+            return (level < min_depth) || (((level < max_depth) && (fabs(distance) <= diagonal(size * 8))));
         };
 
         auto construct_node = [&](MIndex key) {

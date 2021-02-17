@@ -22,3 +22,16 @@ set_target_properties(make_radial_interpolators
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+add_executable(cosmo "${CMAKE_CURRENT_SOURCE_DIR}/cosmo.cpp")
+target_link_libraries(cosmo
+    PUBLIC
+    tonto_qm
+    tonto_dft
+    tonto_geometry
+    tonto_slater
+)
+set_target_properties(cosmo
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
