@@ -12,7 +12,7 @@ constexpr float sqrt_3 = 1.73205080757;
 struct Edge
 {
     MIndex from, to;
-    Edge(MIndex u, MIndex v) : from(u > v ? v : u), to(v > u ? u : v) {}
+    Edge(MIndex u, MIndex v) : from(u > v ? v : u), to(v > u ? v : u) {}
     bool operator ==(const Edge& other) const {
         return (from == other.from)  && (to == other.to);
     }
@@ -32,7 +32,7 @@ struct LinearHashedMarchingCubes
 {
     using VertexMap = robin_hood::unordered_flat_map<MIndex, size_t, MIndexHash>;
     using EdgeMap = robin_hood::unordered_flat_map<impl::Edge, size_t, impl::EdgeHash>;
-    size_t max_depth{2};
+    size_t max_depth{6};
 
     LinearHashedMarchingCubes(size_t depth) : max_depth(depth) {}
 
@@ -51,7 +51,7 @@ struct LinearHashedMarchingCubes
     void extract_normal(const S &source, std::vector<float> &vertices, std::vector<uint32_t> &indices)
     {
         auto fn = [&vertices, &source](const Eigen::Vector3f &vertex) {
-                std::array<float, 3> normal = source.normal(vertex);
+                auto normal = source.normal(vertex(0), vertex(1), vertex(2));
                 vertices.push_back(vertex[0]);
                 vertices.push_back(vertex[1]);
                 vertices.push_back(vertex[2]);
@@ -106,22 +106,21 @@ private:
         VertexMap primal_vertices;
         auto visitor = [&primal_vertices](const MIndex &key)
         {
-            const auto zero = MIndex{0};
             const auto level = key.level();
             for(uint_fast8_t i = 0; i < 8; i++)
             {
                 auto vertex = key.primal(level, i);
-                if(vertex != zero)
+                if(vertex.code != 0)
                 {
-                    if (!primal_vertices.contains(vertex))
+                    if (primal_vertices.contains(vertex))
                     {
-                        primal_vertices[vertex] = level;
-                    }
-                    else {
-                        auto existing_level = primal_vertices[vertex];
+                        auto existing_level = primal_vertices.at(vertex);
                         if(level > existing_level) {
                             primal_vertices[vertex] = level;
                         }
+                    }
+                    else {
+                        primal_vertices[vertex] = level;
                     }
 
                 }
@@ -183,6 +182,7 @@ private:
     {
         using namespace impl;
         using namespace tables;
+
         std::array<MIndex, 8> reordered_nodes{};
         std::array<Eigen::Vector3f, 8> corners{};
         std::array<float, 8> values;
@@ -200,14 +200,17 @@ private:
             };
             values[i] = distance;
         }
+
         auto edge_fn = [&values, &corners, &reordered_nodes, &index_map, &indices, &base_index, &extract_fn](size_t edge)
         {
             auto u = EDGE_CONNECTION[edge][0];
             auto v = EDGE_CONNECTION[edge][1];
 
             auto edge_key = Edge(reordered_nodes[u], reordered_nodes[v]);
-            if(index_map.contains(edge_key)) {
-                indices.push_back(index_map.at(edge_key));
+            auto search = index_map.find(edge_key);
+            if(search != index_map.end())
+            {
+                indices.push_back(search->second);
             }
             else
             {

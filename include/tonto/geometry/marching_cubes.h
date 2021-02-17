@@ -357,7 +357,7 @@ struct MarchingCubes {
     void extract_normal(const S &source, std::vector<float> &vertices, std::vector<uint32_t> &indices)
     {
         auto fn = [&vertices, &source](const Eigen::Vector3f &vertex) {
-                std::array<float, 3> normal = source.normal(vertex);
+                auto normal = source.normal(vertex(0), vertex(1), vertex(2));
                 vertices.push_back(vertex[0]);
                 vertices.push_back(vertex[1]);
                 vertices.push_back(vertex[2]);

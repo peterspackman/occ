@@ -27,6 +27,7 @@ struct LinearHashedOctree
             auto key = queue.front();
             queue.pop_front();
             auto node = construct_node(key);
+
             if(should_refine(key, node))
             {
                 for(uint_fast8_t i = 0; i < 8; ++i) queue.push_back(key.child(i));
@@ -42,7 +43,7 @@ struct LinearHashedOctree
     template<class V>
     void visit_leaves(V &visitor) const
     {
-        for(auto &key: leaves)
+        for(const auto &key: leaves)
         {
             visitor(key);
         }
@@ -50,8 +51,9 @@ struct LinearHashedOctree
 
     inline std::optional<N> get(MIndex key) const
     {
-        if (nodes.contains(key)) return nodes.at(key);
-        else return std::nullopt;
+        auto search = nodes.find(key);
+        if(search == nodes.end()) return std::nullopt;
+        return search->second;
     }
 };
 
