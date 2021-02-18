@@ -2,6 +2,7 @@
 #include <tonto/core/logger.h>
 #include <tonto/core/molecule.h>
 #include <tonto/core/timings.h>
+#include <tonto/core/eem.h>
 #include <tonto/geometry/linear_hashed_marching_cubes.h>
 #include <tonto/3rdparty/argparse.hpp>
 #include <fmt/core.h>
@@ -9,7 +10,6 @@
 #include <fmt/os.h>
 #include <tonto/slater/thakkar.h>
 #include <tonto/solvent/cosmo.h>
-
 namespace fs = std::filesystem;
 using tonto::chem::Molecule;
 using tonto::chem::Element;
@@ -215,5 +215,10 @@ int main(int argc, const char **argv) {
     auto fout = fmt::output_file("faces.txt");
     fout.print("{}", faces.transpose());
     fmt::print("Surface area: {}\n", areas.sum());
+
+    tonto::Mat3N pos = m.positions();
+    tonto::IVec nums = m.atomic_numbers();
+    tonto::Vec partial_charges = tonto::core::charges::eem_partial_charges(nums, pos);
+    fmt::print("Charges:\n{}\n", partial_charges);
     return 0;
 }

@@ -31,9 +31,6 @@ COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const 
 
     std::vector<std::pair<Vec, Vec>> diis_vecs;
     double energy = 0.0;
-    fmt::print("Max coulomb {}\n", coulomb.maxCoeff());
-    fmt::print("Min coulomb {}\n", coulomb.minCoeff());
-
     tonto::diis::DIIS<Vec> diis;
 
 
