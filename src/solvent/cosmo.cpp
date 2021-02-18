@@ -1,19 +1,18 @@
 #include <tonto/solvent/cosmo.h>
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 
 namespace tonto::solvent {
 
-COSMO::COSMO(double d) : m_dielectric(d) {}
-
-COSMO::Result COSMO::operator()(const Mat3N& positions, const Vec& areas, const Vec& charges)
+COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const Vec &charges) const
 {
     COSMO::Result res;
-    Mat coulomb(positions.rows(), positions.rows());
-    for(size_t i = 0; i < positions.rows(); i++)
+    Mat coulomb(positions.cols(), positions.cols());
+    for(size_t i = 0; i < positions.cols(); i++)
     {
-        for(size_t j = i + 1; j < positions.rows(); j++)
+        for(size_t j = i + 1; j < positions.cols(); j++)
         {
-            coulomb(i, j) = (positions.col(i) - positions.col(j)).norm();
+            coulomb(i, j) = 1.0 / (positions.col(i) - positions.col(j)).norm();
             coulomb(j, i) = coulomb(i, j);
 
         }
@@ -30,9 +29,9 @@ COSMO::Result COSMO::operator()(const Mat3N& positions, const Vec& areas, const 
     double energy = 0.0;
 
 
-    for(size_t k = 0; k < m_max_iterations; k++)
+    for(size_t k = 1; k < m_max_iterations; k++)
     {
-        vpot = (coulomb.array().colwise() * prev.array()).rowwise().sum();
+        vpot = (coulomb.array().colwise() * prev.array()).colwise().sum();
         res.converged = (res.initial.array() - vpot.array()) * d0.array();
         Vec dq = res.converged.array() - prev.array();
 

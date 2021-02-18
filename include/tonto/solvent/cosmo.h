@@ -18,10 +18,11 @@ public:
         double energy;
     };
 
-    COSMO(double dielectric);
-    Result operator()(const Mat3N& positions, const Vec& areas, const Vec& charges);
+    COSMO(double dielectric) : m_dielectric(dielectric) {}
 
-    auto surface_charge(const Vec& charges)
+    Result operator()(const Mat3N&, const Vec&, const Vec&) const;
+
+    auto surface_charge(const Vec& charges) const
     {
         return charges.array() * (m_dielectric - 1) / (m_dielectric + m_x);
     }
