@@ -26,7 +26,7 @@ struct SlaterBasis {
     std::vector<tonto::slater::Basis> basis;
     const Molecule& molecule;
     Eigen::Vector3d origin{0, 0, 0};
-    double length;
+    Eigen::Vector3d lengths{0, 0, 0};
     float iso = 0.002;
     mutable int num_calls{0};
 
@@ -45,8 +45,8 @@ struct SlaterBasis {
             basis.emplace_back(tonto::thakkar::basis_for_element(el));
         }
         origin = minp;
-        length = (maxp - minp).maxCoeff();
-        fmt::print("Bottom left:\n{}\nlength = {}\n", origin, length);
+        lengths = maxp - minp;
+        fmt::print("Bottom left\n{}\nlengths\n{}\n", origin, lengths);
     }
 
     float operator()(float x, float y, float z) const
@@ -54,9 +54,9 @@ struct SlaterBasis {
         num_calls++;
         float result = 0.0;
         Eigen::Vector3d pos{
-            static_cast<double>(x * length + origin(0)),
-            static_cast<double>(y * length + origin(1)),
-            static_cast<double>(z * length + origin(2))
+            static_cast<double>(x * lengths(0) + origin(0)),
+            static_cast<double>(y * lengths(1) + origin(1)),
+            static_cast<double>(z * lengths(2) + origin(2))
         };
         for(size_t i = 0; i < coordinates.size(); i++)
         {
@@ -65,6 +65,48 @@ struct SlaterBasis {
         }
         return iso - result;
     }
+};
+
+struct SASA {
+    Eigen::Matrix3Xf coordinates;
+    Eigen::VectorXf radii;
+    const Molecule& molecule;
+    Eigen::Vector3f origin{0, 0, 0};
+    Eigen::Vector3f lengths{0, 0, 0};
+    float probe_radius = 1.8;
+    mutable int num_calls{0};
+
+    SASA(const Molecule &mol) : molecule(mol)
+    {
+        radii = molecule.vdw_radii().cast<float>();
+        coordinates = molecule.positions().cast<float>();
+        float buffer = probe_radius + radii.maxCoeff() + 0.1;
+        Eigen::Vector3f minp = coordinates.rowwise().minCoeff();
+        Eigen::Vector3f maxp = coordinates.rowwise().maxCoeff();
+        minp.array() -= buffer;
+        maxp.array() += buffer;
+        origin = minp;
+        lengths = maxp - minp;
+        fmt::print("Buffer:{}\nBottom left\n{}\nlengths\n{}\n", buffer,origin, lengths);
+    }
+
+    float operator()(float x, float y, float z) const
+    {
+        num_calls++;
+        float result = 10000.0;
+        Eigen::Vector3f pos{
+            x * lengths(0) + origin(0),
+            y * lengths(1) + origin(1),
+            z * lengths(2) + origin(2)
+        };
+        for(size_t i = 0; i < coordinates.size(); i++)
+        {
+            float r = (pos - coordinates.col(i)).norm();
+            result = std::min(result, r - radii(i) - probe_radius);
+        }
+        return result;
+    }
+
 };
 
 int main(int argc, const char **argv) {
@@ -94,8 +136,11 @@ int main(int argc, const char **argv) {
 
     
     StopWatch<1> sw;
-    LinearHashedMarchingCubes mc(7);
     SlaterBasis b(m);
+    float resolution = 0.2;
+    size_t divisions = std::ceil(b.lengths.maxCoeff() / resolution);
+    fmt::print("Divisions: {}\n", divisions);
+    MarchingCubes mc(divisions);
 
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
@@ -106,7 +151,10 @@ int main(int argc, const char **argv) {
     auto verts = fmt::output_file("verts.txt");
     for(size_t i = 0; i < vertices.size(); i += 3)
     {
-        verts.print("{:20.12f} {:20.12f} {:20.12f}\n", vertices[i], vertices[i + 1], vertices[i + 2]);
+        verts.print("{:20.12f} {:20.12f} {:20.12f}\n",
+                    vertices[i] * b.lengths(0) + b.origin(0),
+                    vertices[i + 1] * b.lengths(1) + b.origin(1),
+                    vertices[i + 2] * b.lengths(2) + b.origin(2));
     }
     auto faces = fmt::output_file("faces.txt");
     for(size_t i = 0; i < indices.size(); i += 3)

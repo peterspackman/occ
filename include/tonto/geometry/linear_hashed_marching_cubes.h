@@ -34,6 +34,7 @@ struct LinearHashedMarchingCubes
     using EdgeMap = robin_hood::unordered_flat_map<impl::Edge, size_t, impl::EdgeHash>;
     size_t max_depth{6};
     size_t min_depth{2};
+    float tolerance{1e-6};
 
     LinearHashedMarchingCubes(size_t depth) : max_depth(depth)
     {
@@ -83,7 +84,7 @@ private:
         {
             const auto level = key.level();
             const auto size = key.size();
-            return (level < min_depth) || (((level < max_depth) && (fabs(distance) <= diagonal(size * 8))));
+            return (level < min_depth) || ((level < max_depth) && (fabs(distance) <= diagonal(size)));
         };
 
         auto construct_node = [&](MIndex key) {

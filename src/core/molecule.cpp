@@ -57,4 +57,14 @@ Molecule read_xyz_file(const std::string &filename) {
     throw "only .xyz files are accepted";
 }
 
+const Vec Molecule::vdw_radii() const
+{
+    Vec radii(size());
+    for(size_t i = 0; i < radii.size(); i++)
+    {
+        radii(i) = static_cast<double>(m_elements[i].vdw());
+    }
+    return radii;
+}
+
 } // namespace tonto::chem

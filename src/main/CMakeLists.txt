@@ -30,6 +30,7 @@ target_link_libraries(cosmo
     tonto_dft
     tonto_geometry
     tonto_slater
+    tonto_solvent
 )
 set_target_properties(cosmo
     PROPERTIES

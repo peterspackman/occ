@@ -7,6 +7,7 @@
 namespace tonto::chem {
 using tonto::IVec;
 using tonto::Mat3N;
+using tonto::Vec;
 
 class Molecule {
 public:
@@ -39,6 +40,7 @@ public:
   const std::string &name() const { return m_name; }
 
   const Mat3N &positions() const { return m_positions; }
+  const Vec vdw_radii() const;
   const IVec &atomic_numbers() const { return m_atomicNumbers; }
 
   void add_bond(size_t l, size_t r) { m_bonds.push_back({l, r}); }
