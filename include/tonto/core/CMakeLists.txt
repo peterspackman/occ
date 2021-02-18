@@ -1,5 +1,6 @@
 set(TONTO_CORE_INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/diis.h
     ${CMAKE_CURRENT_SOURCE_DIR}/eigenp.h
     ${CMAKE_CURRENT_SOURCE_DIR}/element.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fraction.h

@@ -2,8 +2,8 @@
 #include <tonto/core/linear_algebra.h>
 #include <tonto/core/logger.h>
 #include <tonto/core/util.h>
+#include <tonto/core/diis.h>
 #include <tonto/qm/ints.h>
-#include <tonto/qm/diis.h>
 #include <tonto/qm/spinorbital.h>
 #include <tonto/qm/density_fitting.h>
 #include <tonto/qm/wavefunction.h>
