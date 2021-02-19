@@ -3,162 +3,67 @@
 #include <tonto/core/molecule.h>
 #include <tonto/core/timings.h>
 #include <tonto/core/eem.h>
-#include <tonto/geometry/linear_hashed_marching_cubes.h>
 #include <tonto/3rdparty/argparse.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <fmt/os.h>
-#include <tonto/slater/thakkar.h>
 #include <tonto/solvent/cosmo.h>
 #include <tonto/solvent/surface.h>
 #include <tonto/core/units.h>
+#include <tonto/io/fchkwriter.h>
+#include <tonto/dft/dft.h>
+#include <tonto/qm/scf.h>
+#include <tonto/qm/ints.h>
+#include <tonto/io/fchkreader.h>
+
 
 namespace fs = std::filesystem;
 using tonto::chem::Molecule;
 using tonto::chem::Element;
-using tonto::geometry::mc::LinearHashedMarchingCubes;
-using tonto::geometry::mc::MarchingCubes;
 using tonto::timing::StopWatch;
 using tonto::solvent::COSMO;
+using tonto::qm::Wavefunction;
+using tonto::scf::SCF;
+using tonto::qm::SpinorbitalKind;
+
 
 struct InputConfiguration {
     fs::path geometry_filename;
+    std::string method{"b3lyp"};
+    std::string basis_name{"3-21G"};
+    int multiplicity = 1;
+    int charge = 0;
 };
 
-struct SlaterBasis {
-    const double buffer = 4.8;
-    std::vector<Eigen::Vector3d> coordinates;
-    std::vector<tonto::slater::Basis> basis;
-    const Molecule& molecule;
-    Eigen::Vector3d origin{0, 0, 0};
-    Eigen::Vector3d lengths{0, 0, 0};
-    float iso = 0.0002;
-    mutable int num_calls{0};
-
-    SlaterBasis(const Molecule &mol) : molecule(mol)
-    {
-        auto nums = molecule.atomic_numbers();
-        auto pos = molecule.positions();
-        Eigen::Vector3d minp = pos.rowwise().minCoeff();
-        Eigen::Vector3d maxp = pos.rowwise().maxCoeff();
-        minp.array() -= buffer;
-        maxp.array() += buffer;
-        for(size_t i = 0; i < molecule.size(); i++)
-        {
-            int el = nums[i];
-            coordinates.push_back(pos.col(i));
-            basis.emplace_back(tonto::thakkar::basis_for_element(el));
-        }
-        origin = minp;
-        lengths = maxp - minp;
-        fmt::print("Bottom left\n{}\nlengths\n{}\n", origin, lengths);
-    }
-
-    float operator()(float x, float y, float z) const
-    {
-        num_calls++;
-        float result = 0.0;
-        Eigen::Vector3d pos{
-            static_cast<double>(x * lengths(0) + origin(0)),
-            static_cast<double>(y * lengths(1) + origin(1)),
-            static_cast<double>(z * lengths(2) + origin(2))
-        };
-        for(size_t i = 0; i < coordinates.size(); i++)
-        {
-            double r = (pos - coordinates[i]).norm();
-            result += static_cast<float>(basis[i].rho(r));
-        }
-        return iso - result;
-    }
-};
-
-struct SASA {
-    Eigen::Matrix3Xf coordinates;
-    Eigen::VectorXf radii;
-    const Molecule& molecule;
-    Eigen::Vector3f origin{0, 0, 0};
-    Eigen::Vector3f lengths{0, 0, 0};
-    float probe_radius = 1.8;
-    mutable int num_calls{0};
-
-    SASA(const Molecule &mol) : molecule(mol)
-    {
-        radii = molecule.vdw_radii().cast<float>();
-        coordinates = molecule.positions().cast<float>();
-        float buffer = probe_radius + radii.maxCoeff() + 0.1;
-        Eigen::Vector3f minp = coordinates.rowwise().minCoeff();
-        Eigen::Vector3f maxp = coordinates.rowwise().maxCoeff();
-        minp.array() -= buffer;
-        maxp.array() += buffer;
-        origin = minp;
-        lengths = maxp - minp;
-        fmt::print("Buffer:{}\nBottom left\n{}\nlengths\n{}\n", buffer,origin, lengths);
-    }
-
-    float operator()(float x, float y, float z) const
-    {
-        num_calls++;
-        float result = 10000.0;
-        Eigen::Vector3f pos{
-            x * lengths(0) + origin(0),
-            y * lengths(1) + origin(1),
-            z * lengths(2) + origin(2)
-        };
-        for(size_t i = 0; i < coordinates.size(); i++)
-        {
-            float r = (pos - coordinates.col(i)).norm();
-            result = std::min(result, r - radii(i) - probe_radius);
-        }
-        return result;
-    }
-
-};
-
-std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi> as_matrices(const SlaterBasis& b, const std::vector<float>& vertices, const std::vector<uint32_t> indices)
+Wavefunction run_from_xyz_file(const InputConfiguration &config)
 {
-    Eigen::Matrix3Xf verts(3, vertices.size() / 3); 
-    Eigen::Matrix3Xi faces(3, indices.size() / 3);
-    for(size_t i = 0; i < vertices.size(); i += 3)
-    {
-        verts(0, i/3) = vertices[i] * b.lengths(0) + b.origin(0);
-        verts(1, i/3) = vertices[i + 1] * b.lengths(1) + b.origin(1);
-        verts(2, i/3) = vertices[i + 2] * b.lengths(2) + b.origin(2);
-    }
-    for(size_t i = 0; i < indices.size(); i += 3)
-    {
-        faces(0, i/3) = indices[i];
-        faces(1, i/3) = indices[i + 2];
-        faces(2, i/3) = indices[i + 1];
-    }
-    return {verts, faces};
+    std::string filename = config.geometry_filename.string();
+    Molecule m = tonto::chem::read_xyz_file(filename);
+
+    fmt::print("Method: '{}'\n", config.method);
+    fmt::print("Basis set: '{}'\n", config.basis_name);
+
+    tonto::qm::BasisSet basis(config.basis_name, m.atoms());
+    basis.set_pure(false);
+    fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
+    Wavefunction wfn;
+    tonto::dft::DFT rks(config.method, basis, m.atoms(), SpinorbitalKind::Restricted);
+    SCF<tonto::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
+    scf.set_charge_multiplicity(config.charge, config.multiplicity);
+    scf.start_incremental_F_threshold = 0.0;
+    double e = scf.compute_scf_energy();
+    wfn = scf.wavefunction();
+    return wfn;
 }
 
-Eigen::VectorXf calculate_areas(const Eigen::Matrix3Xf &verts, const Eigen::Matrix3Xi &faces)
+tonto::Vec compute_esp(const Wavefunction &wfn, const tonto::Mat3N &points)
 {
-    Eigen::VectorXf face_areas(faces.cols());
-    for(size_t i = 0; i < faces.cols(); i++)
-    {
-        const auto a = verts.col(faces(0, i));
-        const auto b = verts.col(faces(1, i));
-        const auto c = verts.col(faces(2, i));
-        face_areas(i) = ((a - c).cross(b - c)).norm() * 0.5;
-    }
-
-    fmt::print("Surface area (faces): {}\n", face_areas.sum());
-
-    Eigen::VectorXf vertex_areas = Eigen::VectorXf::Zero(verts.cols());
-    Eigen::VectorXf vertex_counts = Eigen::VectorXf::Zero(verts.cols());
-
-    for(size_t i = 0; i < faces.cols(); i++)
-    {
-        vertex_areas(faces(0, i)) += face_areas(i);
-        vertex_areas(faces(1, i)) += face_areas(i);
-        vertex_areas(faces(2, i)) += face_areas(i);
-    }
-
-    vertex_areas.array() /= 3;
-    return vertex_areas;
+    tonto::ints::shellpair_list_t shellpair_list;
+    tonto::ints::shellpair_data_t shellpair_data;
+    std::tie(shellpair_list, shellpair_data) = tonto::ints::compute_shellpairs(wfn.basis);
+    return tonto::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
 }
+
 
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("tonto");
@@ -174,10 +79,15 @@ int main(int argc, const char **argv) {
         exit(1);
     }
 
+    libint2::Shell::do_enforce_unit_normalization(false);
+    libint2::initialize();
     InputConfiguration config;
     config.geometry_filename = parser.get<std::string>("input");
 
     Molecule m = tonto::chem::read_xyz_file(config.geometry_filename);
+    fs::path fchk_path = config.geometry_filename;
+    fchk_path.replace_extension(".fchk");
+
 
     fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n", config.geometry_filename, "sym", "x", "y", "z");
     for (const auto &atom : m.atoms()) {
@@ -185,7 +95,23 @@ int main(int argc, const char **argv) {
                    atom.x, atom.y, atom.z);
     }
 
-    
+    Wavefunction wfn;
+    if(fs::exists(fchk_path)) {
+        using tonto::io::FchkReader;
+        FchkReader fchk(fchk_path.string());
+        wfn = Wavefunction(fchk);
+    }
+    else {
+        wfn = run_from_xyz_file(config);
+        tonto::io::FchkWriter fchk(fchk_path.string());
+        fchk.set_title(fmt::format("{} {}/{} generated by tonto-ng", fchk_path.stem(), config.method, config.basis_name));
+        fchk.set_method(config.method);
+        fchk.set_basis_name(config.basis_name);
+        wfn.save(fchk);
+        fchk.write();
+    }
+
+
     StopWatch<1> sw;
     tonto::Mat3N pos = m.positions();
     tonto::IVec nums = m.atomic_numbers();
@@ -196,24 +122,22 @@ int main(int argc, const char **argv) {
     auto surface = tonto::solvent::surface::solvent_surface(radii, nums, pos);
     sw.stop(0);
     fmt::print("Surface calculated in {}\n", sw.read(0));
+    sw.clear_all();
 
     tonto::Vec areas = surface.areas;
     tonto::Mat3N points = surface.vertices;
-    tonto::Vec charges = tonto::Vec::Zero(areas.rows());
-    tonto::Vec partial_charges = tonto::core::charges::eem_partial_charges(nums, pos);
-    fmt::print("Charges:\n{}\n", partial_charges);
-
-    for(size_t i = 0; i < pos.cols(); i++)
+    sw.start(0);
+    tonto::Vec charges = compute_esp(wfn, points);
+    for(size_t i = 0; i < nums.rows(); i++)
     {
-        auto a = pos.col(i);
-        double q = partial_charges(i);
-        for(size_t j = 0; j < points.cols(); j++)
-        {
-            double r = (points.col(j) - a).norm();
-            charges(j) += q / r;
-        }
+        auto p1 = pos.col(i);
+        double q = nums(i);
+        auto r = (points.colwise() - p1).colwise().norm();
+        charges.array() += q / r.array();
     }
-    fmt::print("Charge distribution: {} - {}\n", charges.minCoeff(), charges.maxCoeff());
+    sw.stop(0);
+    fmt::print("ESP (range = {}, {}) calculated in {}\n", charges.minCoeff(), charges.maxCoeff(), sw.read(0)); 
+
 
     COSMO cosmo(78.40);
     cosmo.set_max_iterations(100);
