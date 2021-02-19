@@ -20,6 +20,7 @@ COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const 
 
         }
     }
+
     coulomb.diagonal().setConstant(0.0);
     Vec d0 = areas.array().sqrt() / 3.8;
     res.initial = surface_charge(charges);
@@ -29,14 +30,13 @@ COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const 
     Vec vpot(coulomb.rows());
     Vec dq(res.initial.rows());
 
-    std::vector<std::pair<Vec, Vec>> diis_vecs;
     double energy = 0.0;
-    tonto::diis::DIIS<Vec> diis;
+    tonto::diis::DIIS<Vec> diis(2, 12);
 
 
     for(size_t k = 1; k < m_max_iterations; k++)
     {
-        vpot = (coulomb.array().colwise() * prev.array()).colwise().sum();
+        vpot.array() = (coulomb.array().colwise() * prev.array()).colwise().sum();
         res.converged = (res.initial.array() - vpot.array()) * d0.array();
         dq.array() = res.converged.array() - prev.array();
         diis.extrapolate(res.converged, dq);

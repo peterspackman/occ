@@ -27,6 +27,7 @@ public:
         return charges.array() * (m_dielectric - 1) / (m_dielectric + m_x);
     }
 
+    void set_max_iterations(size_t max_iter) { m_max_iterations = max_iter; }
 
 private:
     const double m_x{0.5};
@@ -35,6 +36,6 @@ private:
     const double m_diis_tolerance{1e-6};
     const double m_convergence{1e-6};
     const double m_initial_charge_scale_factor = 0.0694;
-    const size_t m_max_iterations{50};
+    size_t m_max_iterations{50};
 };
 }

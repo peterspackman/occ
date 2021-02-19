@@ -10,6 +10,9 @@
 #include <fmt/os.h>
 #include <tonto/slater/thakkar.h>
 #include <tonto/solvent/cosmo.h>
+#include <tonto/solvent/surface.h>
+#include <tonto/core/units.h>
+
 namespace fs = std::filesystem;
 using tonto::chem::Molecule;
 using tonto::chem::Element;
@@ -184,41 +187,46 @@ int main(int argc, const char **argv) {
 
     
     StopWatch<1> sw;
-    SlaterBasis b(m);
-    float resolution = 0.7;
-    size_t divisions = std::ceil(b.lengths.maxCoeff() / resolution);
-    fmt::print("Divisions: {}\n", divisions);
-    MarchingCubes mc(divisions);
-
-    std::vector<float> vertices;
-    std::vector<uint32_t> indices;
-    sw.start(0);
-    mc.extract(b, vertices, indices);
-    sw.stop(0);
-
-    Eigen::Matrix3Xf verts;
-    Eigen::Matrix3Xi faces;
-    std::tie(verts, faces) = as_matrices(b, vertices, indices);
-
-    fmt::print("{} vertices, {} faces in {}\n", verts.cols(), faces.cols(), sw.read(0));
-    fmt::print("{} function calls\n", b.num_calls);
-    auto areas = calculate_areas(verts, faces);
-    tonto::Vec charges = tonto::Vec::Zero(areas.rows());
-    tonto::Vec areasd = areas.cast<double>();
-    tonto::Mat3N points = verts.cast<double>();
-    charges.array() = -0.005;
-
-    COSMO cosmo(78.40);
-    auto result = cosmo(points, areasd, charges);
-    auto vout = fmt::output_file("verts.txt");
-    vout.print("{}", verts.transpose());
-    auto fout = fmt::output_file("faces.txt");
-    fout.print("{}", faces.transpose());
-    fmt::print("Surface area: {}\n", areas.sum());
-
     tonto::Mat3N pos = m.positions();
     tonto::IVec nums = m.atomic_numbers();
+    tonto::Vec radii = m.vdw_radii();
+    radii.array() += 1.2;
+
+    sw.start(0);
+    auto surface = tonto::solvent::surface::solvent_surface(radii, nums, pos);
+    sw.stop(0);
+    fmt::print("Surface calculated in {}\n", sw.read(0));
+
+    tonto::Vec areas = surface.areas;
+    tonto::Mat3N points = surface.vertices;
+    tonto::Vec charges = tonto::Vec::Zero(areas.rows());
     tonto::Vec partial_charges = tonto::core::charges::eem_partial_charges(nums, pos);
     fmt::print("Charges:\n{}\n", partial_charges);
+
+    for(size_t i = 0; i < pos.cols(); i++)
+    {
+        auto a = pos.col(i);
+        double q = partial_charges(i);
+        for(size_t j = 0; j < points.cols(); j++)
+        {
+            double r = (points.col(j) - a).norm();
+            charges(j) += q / r;
+        }
+    }
+    fmt::print("Charge distribution: {} - {}\n", charges.minCoeff(), charges.maxCoeff());
+
+    COSMO cosmo(78.40);
+    cosmo.set_max_iterations(100);
+    auto result = cosmo(points, areas, charges);
+    auto vout = fmt::output_file("points.txt");
+    vout.print("{}", points.transpose());
+    auto cout = fmt::output_file("charges.txt");
+    cout.print("{}", charges);
+    auto vaout = fmt::output_file("areas.txt");
+    vaout.print("{}", areas);
+    fmt::print("Surface area: {}\n", areas.sum());
+
+    fmt::print("Total energy: {} kcal/mol\n", tonto::units::AU_TO_KCAL_PER_MOL * result.energy);
+
     return 0;
 }
