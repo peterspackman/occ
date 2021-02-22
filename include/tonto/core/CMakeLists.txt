@@ -5,6 +5,7 @@ set(TONTO_CORE_INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/eigenp.h
     ${CMAKE_CURRENT_SOURCE_DIR}/element.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fraction.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/kabsch.h
     ${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.h
     ${CMAKE_CURRENT_SOURCE_DIR}/logger.h

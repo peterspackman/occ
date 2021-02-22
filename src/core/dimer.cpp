@@ -1,4 +1,5 @@
 #include <tonto/core/dimer.h>
+#include <tonto/core/kabsch.h>
 
 namespace tonto::chem {
 
@@ -21,9 +22,22 @@ double Dimer::nearest_distance() const
     return 0.0;
 }
 
-std::optional<tonto::Mat> Dimer::symmetry_relation() const
+std::optional<tonto::Mat4> Dimer::symmetry_relation() const
 {
-    return std::nullopt;
+    if(!m_a.comparable_to(m_b)) return std::nullopt;
+    using tonto::Vec3;
+    using tonto::linalg::kabsch_rotation_matrix;
+
+    Vec3 o_a = m_a.centroid();
+    Vec3 o_b = m_b.centroid();
+    Vec3 v_ab = o_b - o_a;
+    Mat3N pos_a = m_a.positions() - o_a;
+    Mat3N pos_b = m_b.positions() - o_b;
+
+    tonto::Mat4 result = tonto::Mat4::Zero();
+    result.block<3, 3>(0, 0) = kabsch_rotation_matrix(pos_a, pos_b);
+    result.block<3, 1>(0, 3) = v_ab;
+    return result;
 }
 
 const Vec Dimer::vdw_radii() const

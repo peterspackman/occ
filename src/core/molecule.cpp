@@ -90,4 +90,15 @@ const tonto::Vec3 Molecule::center_of_mass() const
     return (m_positions.array().rowwise() * masses.array()).rowwise().sum();
 }
 
+
+bool Molecule::comparable_to(const Molecule &other) const
+{
+    if(size() != other.size()) return false;
+    for(size_t i = 0; i < size(); i++)
+    {
+        if(m_atomicNumbers(i) != other.m_atomicNumbers(i)) return false;
+    }
+    return true;
+}
+
 } // namespace tonto::chem

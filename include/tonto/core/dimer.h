@@ -17,7 +17,7 @@ public:
   double centroid_distance() const;
   double center_of_mass_distance() const;
   double nearest_distance() const;
-  std::optional<tonto::Mat> symmetry_relation() const;
+  std::optional<tonto::Mat4> symmetry_relation() const;
 
   const Vec vdw_radii() const;
   IVec atomic_numbers() const;
