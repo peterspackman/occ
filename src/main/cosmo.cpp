@@ -15,6 +15,7 @@
 #include <tonto/qm/scf.h>
 #include <tonto/qm/ints.h>
 #include <tonto/io/fchkreader.h>
+#include <tonto/core/parallel.h>
 
 
 namespace fs = std::filesystem;
@@ -68,6 +69,10 @@ tonto::Vec compute_esp(const Wavefunction &wfn, const tonto::Mat3N &points)
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("tonto");
     parser.add_argument("input").help("Input file geometry");
+    parser.add_argument("-j", "--threads")
+            .help("Number of threads")
+            .default_value(2)
+            .action([](const std::string& value) { return std::stoi(value); });
     tonto::log::set_level(tonto::log::level::debug);
     spdlog::set_level(spdlog::level::debug);
     try {
@@ -83,6 +88,10 @@ int main(int argc, const char **argv) {
     libint2::initialize();
     InputConfiguration config;
     config.geometry_filename = parser.get<std::string>("input");
+    using tonto::parallel::nthreads;
+    nthreads = parser.get<int>("--threads");
+    omp_set_num_threads(nthreads);
+
 
     Molecule m = tonto::chem::read_xyz_file(config.geometry_filename);
     fs::path fchk_path = config.geometry_filename;
@@ -116,7 +125,7 @@ int main(int argc, const char **argv) {
     tonto::Mat3N pos = m.positions();
     tonto::IVec nums = m.atomic_numbers();
     tonto::Vec radii = m.vdw_radii();
-    radii.array() += 1.2;
+    radii.array() += 1.4;
 
     sw.start(0);
     auto surface = tonto::solvent::surface::solvent_surface(radii, nums, pos);

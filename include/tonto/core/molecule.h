@@ -40,8 +40,12 @@ public:
   const std::string &name() const { return m_name; }
 
   const Mat3N &positions() const { return m_positions; }
-  const Vec vdw_radii() const;
   const IVec &atomic_numbers() const { return m_atomicNumbers; }
+  const Vec vdw_radii() const;
+  const Vec atomic_masses() const;
+
+  const tonto::Vec3 centroid() const;
+  const tonto::Vec3 center_of_mass() const;
 
   void add_bond(size_t l, size_t r) { m_bonds.push_back({l, r}); }
   void set_bonds(const std::vector<std::pair<size_t, size_t>> &bonds) {
@@ -52,6 +56,8 @@ public:
     return m_bonds;
   }
   const auto &atoms() const { return m_atoms; }
+  int charge() const { return m_charge; }
+  int multiplicity() const { return m_multiplicity; }
   int num_electrons() const { return m_atomicNumbers.sum() - m_charge; }
   void set_unit_cell_idx(const IVec &idx) { m_uc_idx = idx; }
   void set_asymmetric_unit_idx(const IVec &idx) { m_asym_idx = idx; }

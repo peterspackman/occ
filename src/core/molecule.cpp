@@ -67,4 +67,27 @@ const Vec Molecule::vdw_radii() const
     return radii;
 }
 
+
+const Vec Molecule::atomic_masses() const
+{
+    Vec masses(size());
+    for(size_t i = 0; i < masses.size(); i++)
+    {
+        masses(i) = static_cast<double>(m_elements[i].mass());
+    }
+    return masses;
+}
+
+const tonto::Vec3 Molecule::centroid() const
+{
+    return m_positions.rowwise().mean();
+}
+
+const tonto::Vec3 Molecule::center_of_mass() const
+{
+    tonto::RowVec masses = atomic_masses();
+    masses.array() /= masses.sum();
+    return (m_positions.array().rowwise() * masses.array()).rowwise().sum();
+}
+
 } // namespace tonto::chem

@@ -1,5 +1,6 @@
 add_library(tonto_core
     "${CMAKE_CURRENT_SOURCE_DIR}/eem.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dimer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.cpp"
