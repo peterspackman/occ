@@ -147,4 +147,21 @@ void Molecule::transform(const Mat4 &transform, Origin origin)
     translate(transform.block<3, 1>(0, 3));
 }
 
+
+std::tuple<size_t, size_t, double> Molecule::nearest_atom(const Molecule &other) const
+{
+    std::tuple<size_t, size_t, double> result{0, 0, std::numeric_limits<double>::max()};
+    for(size_t i = 0; i < size(); i++)
+    {
+        const tonto::Vec3& p1 = m_positions.col(i);
+        for(size_t j = 0; j < other.size(); j++)
+        {
+            const tonto::Vec3& p2 = other.m_positions.col(j);
+            double d = (p2 - p1).norm();
+            if(d < std::get<2>(result)) result = {i, j, d};
+        }
+    }
+    return result;
+}
+
 } // namespace tonto::chem

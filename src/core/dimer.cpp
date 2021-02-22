@@ -21,7 +21,7 @@ double Dimer::center_of_mass_distance() const
 
 double Dimer::nearest_distance() const
 {
-    return 0.0;
+    return std::get<2>(m_a.nearest_atom(m_b));
 }
 
 std::optional<tonto::Mat4> Dimer::symmetry_relation() const

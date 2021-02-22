@@ -4,6 +4,7 @@
 #include <libint2/atom.h>
 #include <Eigen/Geometry>
 #include <array>
+#include <tuple>
 
 namespace tonto::chem {
 using tonto::IVec;
@@ -47,6 +48,8 @@ public:
 
   const tonto::Vec3 centroid() const;
   const tonto::Vec3 center_of_mass() const;
+
+  std::tuple<size_t, size_t, double> nearest_atom(const Molecule&) const;
 
   void add_bond(size_t l, size_t r) { m_bonds.push_back({l, r}); }
   void set_bonds(const std::vector<std::pair<size_t, size_t>> &bonds) {
