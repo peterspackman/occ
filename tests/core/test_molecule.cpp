@@ -58,3 +58,31 @@ TEST_CASE("Molecule centroids", "[molecule]")
     fmt::print("Calculated center of mass:\n{}\n\n", calc_com);
     REQUIRE(all_close(expected_com, calc_com, 1e-05, 1e-05));
 }
+
+
+TEST_CASE("Molecule rotation & translation", "[molecule]")
+{
+    
+    tonto::Mat3N pos(3, 3);
+    tonto::IVec nums(3);
+    nums << 8, 1, 1;
+    pos << -1.32695761, -1.93166418, 0.48664409,
+           -0.10593856,  1.60017351, 0.07959806,
+            0.01878821, -0.02171049, 0.00986248;
+    Molecule m(nums, pos);
+
+    Eigen::Affine3d rotation360;
+    rotation360 = Eigen::AngleAxis<double>(M_PI * 2, tonto::Vec3(0, 1, 0));
+
+    m.rotate(rotation360);
+    REQUIRE(all_close(pos, m.positions()));
+
+    Eigen::Affine3d rotation180;
+    rotation180 = Eigen::AngleAxis<double>(M_PI, tonto::Vec3(1, 0, 0));
+    auto expected_pos = pos;
+    expected_pos.bottomRows(2).array() *= -1;
+    m.rotate(rotation180);
+    fmt::print("Rot:\n{}\n", rotation180.linear());
+    fmt::print("Expected:\n{}\nFound:\n{}\n", expected_pos, m.positions());
+    REQUIRE(all_close(expected_pos, m.positions()));
+}

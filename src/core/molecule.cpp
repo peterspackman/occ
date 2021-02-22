@@ -8,18 +8,16 @@ Molecule::Molecule(const IVec &nums, const Mat3N &pos)
     : m_atomicNumbers(nums), m_positions(pos) {
   for (size_t i = 0; i < size(); i++) {
     m_elements.push_back(Element(m_atomicNumbers(i)));
-    m_atoms.push_back(libint2::Atom{m_atomicNumbers(i), m_positions(0, i),
-                                    m_positions(1, i), m_positions(2, i)});
   }
   m_name = chemical_formula(m_elements);
 }
 
 Molecule::Molecule(const std::vector<libint2::Atom> &atoms)
-    : m_atoms(atoms), m_positions(3, atoms.size()),
+    : m_positions(3, atoms.size()),
       m_atomicNumbers(atoms.size()) {
-  m_elements.reserve(m_atoms.size());
-  for (size_t i = 0; i < m_atoms.size(); i++) {
-    const auto &atom = m_atoms[i];
+  m_elements.reserve(atoms.size());
+  for (size_t i = 0; i < atoms.size(); i++) {
+    const auto &atom = atoms[i];
     m_elements.push_back(Element(atom.atomic_number));
     m_atomicNumbers(i) = atom.atomic_number;
     m_positions(0, i) = atom.x;
@@ -55,6 +53,16 @@ Molecule read_xyz_file(const std::string &filename) {
     return Molecule(libint2::read_dotxyz(iss));
   else
     throw "only .xyz files are accepted";
+}
+
+std::vector<libint2::Atom> Molecule::atoms() const
+{
+    std::vector<libint2::Atom> result(size());
+    for (size_t i = 0; i < size(); i++) {
+        result.push_back(libint2::Atom{m_atomicNumbers(i), m_positions(0, i),
+                                       m_positions(1, i), m_positions(2, i)});
+    }
+    return result;
 }
 
 const Vec Molecule::vdw_radii() const
@@ -99,6 +107,27 @@ bool Molecule::comparable_to(const Molecule &other) const
         if(m_atomicNumbers(i) != other.m_atomicNumbers(i)) return false;
     }
     return true;
+}
+
+void Molecule::rotate(const Eigen::Affine3d &rotation)
+{
+    m_positions = rotation.linear() * m_positions;
+}
+
+void Molecule::rotate(const tonto::Mat3 &rotation)
+{
+    m_positions = rotation * m_positions;
+}
+
+void Molecule::translate(const tonto::Vec3 &translation)
+{
+    m_positions.colwise() += translation;
+}
+
+void Molecule::transform(const Mat4 &transform)
+{
+    m_positions = transform.block<3, 3>(0, 0) * m_positions;
+    translate(transform.block<3, 1>(3, 0));
 }
 
 } // namespace tonto::chem

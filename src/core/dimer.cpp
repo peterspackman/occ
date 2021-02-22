@@ -9,12 +9,12 @@ Dimer::Dimer(const std::vector<libint2::Atom> a, const std::vector<libint2::Atom
 
 double Dimer::centroid_distance() const
 {
-    return 0.0;
+    return (m_a.centroid() - m_b.centroid()).norm();
 }
 
 double Dimer::center_of_mass_distance() const
 {
-    return 0.0;
+    return (m_a.center_of_mass() - m_b.center_of_mass()).norm();
 }
 
 double Dimer::nearest_distance() const
@@ -42,17 +42,23 @@ std::optional<tonto::Mat4> Dimer::symmetry_relation() const
 
 const Vec Dimer::vdw_radii() const
 {
-    return Vec();
+    Vec result(m_a.size() + m_b.size());
+    result << m_a.vdw_radii(), m_b.vdw_radii();
+    return result;
 }
 
 IVec Dimer::atomic_numbers() const
 {
-    return IVec();
+    IVec result(m_a.size() + m_b.size());
+    result << m_a.atomic_numbers(), m_b.atomic_numbers();
+    return result;
 }
 
 Mat3N Dimer::positions() const
 {
-    return Mat3N();
+    Mat3N result(3, m_a.size() + m_b.size());
+    result << m_a.positions(), m_b.positions();
+    return result;
 }
 
 }

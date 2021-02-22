@@ -2,6 +2,7 @@
 #include <tonto/core/element.h>
 #include <tonto/core/linear_algebra.h>
 #include <libint2/atom.h>
+#include <Eigen/Geometry>
 #include <array>
 
 namespace tonto::chem {
@@ -28,8 +29,6 @@ public:
       }
       for (size_t i = 0; i < size(); i++) {
         m_elements.push_back(Element(m_atomicNumbers(i)));
-        m_atoms.push_back(libint2::Atom{m_atomicNumbers(i), m_positions(0, i),
-                                        m_positions(1, i), m_positions(2, i)});
       }
       m_name = chemical_formula(m_elements);
   }
@@ -43,7 +42,7 @@ public:
   const IVec &atomic_numbers() const { return m_atomicNumbers; }
   const Vec vdw_radii() const;
   const Vec atomic_masses() const;
-  const auto &atoms() const { return m_atoms; }
+  std::vector<libint2::Atom> atoms() const;
 
   const tonto::Vec3 centroid() const;
   const tonto::Vec3 center_of_mass() const;
@@ -64,6 +63,11 @@ public:
 
   void set_unit_cell_idx(const IVec &idx) { m_uc_idx = idx; }
   void set_asymmetric_unit_idx(const IVec &idx) { m_asym_idx = idx; }
+
+  void rotate(const Eigen::Affine3d&);
+  void rotate(const tonto::Mat3&);
+  void translate(const tonto::Vec3&);
+  void transform(const tonto::Mat4&);
 
 private:
   int m_charge{0};
