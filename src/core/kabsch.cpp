@@ -1,5 +1,4 @@
 #include <tonto/core/kabsch.h>
-#include <fmt/ostream.h>
 #include <Eigen/SVD>
 
 namespace tonto::linalg {
@@ -30,7 +29,6 @@ tonto::Mat3 kabsch_rotation_matrix(const tonto::Mat3N &a, const tonto::Mat3N &b)
     // Calculate the covariance matrix
     tonto::Mat3 cov = a * b.transpose();
 
-    fmt::print("Cov\n{}\n", cov);
 
     // Use singular value decomposition to calculate
     // the optimal rotation matrix
@@ -38,10 +36,6 @@ tonto::Mat3 kabsch_rotation_matrix(const tonto::Mat3N &a, const tonto::Mat3N &b)
     // auto v, s, w = np.linalg.svd(cov)
     tonto::Mat3N u = svd.matrixU();
     tonto::MatN3 v = svd.matrixV();
-
-    fmt::print("\nU\n{}\n", u);
-    fmt::print("\nS\n{}\n", svd.singularValues());
-    fmt::print("\nV\n{}\n", v);
 
     // check the determinant to ensure a right-handed
     // coordinate system

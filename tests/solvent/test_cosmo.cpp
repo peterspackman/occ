@@ -27,6 +27,6 @@ TEST_CASE("COSMO", "[solvent]") {
     fmt::print("InitialFinal charges:\n{}\n", result.initial);
     fmt::print("Converged charges:\n{}\n", result.converged);
 
-    REQUIRE(result.energy == Approx(-1.48692397577355e-05));
+    REQUIRE(result.energy == Approx(-4.2078133e-3));
 
 }

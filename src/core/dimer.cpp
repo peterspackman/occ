@@ -37,8 +37,6 @@ std::optional<tonto::Mat4> Dimer::symmetry_relation() const
     pos_a.colwise() -= o_a;
     Mat3N pos_b = m_b.positions();
     pos_b.colwise() -= o_b;
-    fmt::print("pos_a\n{}\n", pos_a);
-    fmt::print("pos_b\n{}\n", pos_b);
 
     tonto::Mat4 result = tonto::Mat4::Identity();
     result.block<3, 3>(0, 0) = kabsch_rotation_matrix(pos_a, pos_b);
