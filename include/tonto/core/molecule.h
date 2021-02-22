@@ -72,6 +72,10 @@ public:
   void rotate(const tonto::Mat3 &r, Origin o = Cartesian);
   void transform(const tonto::Mat4 &t, Origin o = Cartesian);
   void translate(const tonto::Vec3&);
+  Molecule rotated(const Eigen::Affine3d &r, Origin o = Cartesian) const;
+  Molecule rotated(const tonto::Mat3 &r, Origin o = Cartesian) const;
+  Molecule transformed(const tonto::Mat4 &t, Origin o = Cartesian) const;
+  Molecule translated(const tonto::Vec3&) const;
 
 private:
   int m_charge{0};

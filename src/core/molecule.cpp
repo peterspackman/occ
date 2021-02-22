@@ -114,6 +114,11 @@ void Molecule::rotate(const Eigen::Affine3d &rotation, Origin origin)
     rotate(rotation.linear(), origin);
 }
 
+Molecule Molecule::rotated(const Eigen::Affine3d &rotation, Origin origin) const
+{
+    return rotated(rotation.linear(), origin);
+}
+
 void Molecule::rotate(const tonto::Mat3 &rotation, Origin origin)
 {
     Vec3 O = {0, 0, 0};
@@ -136,9 +141,23 @@ void Molecule::rotate(const tonto::Mat3 &rotation, Origin origin)
     translate(O);
 }
 
+Molecule Molecule::rotated(const tonto::Mat3 &rotation, Origin origin) const
+{
+    Molecule result = *this;
+    result.rotate(rotation, origin);
+    return result;
+}
+
 void Molecule::translate(const tonto::Vec3 &translation)
 {
     m_positions.colwise() += translation;
+}
+
+Molecule Molecule::translated(const tonto::Vec3 &translation) const
+{
+    Molecule result = *this;
+    result.translate(translation);
+    return result;
 }
 
 void Molecule::transform(const Mat4 &transform, Origin origin)
@@ -147,6 +166,12 @@ void Molecule::transform(const Mat4 &transform, Origin origin)
     translate(transform.block<3, 1>(0, 3));
 }
 
+Molecule Molecule::transformed(const Mat4 &transform, Origin origin) const
+{
+    Molecule result = *this;
+    result.transform(transform, origin);
+    return result;
+}
 
 std::tuple<size_t, size_t, double> Molecule::nearest_atom(const Molecule &other) const
 {
