@@ -12,6 +12,7 @@ using tonto::Vec;
 
 class Molecule {
 public:
+  enum Origin { Cartesian, Centroid, CenterOfMass };
   Molecule(const IVec &, const Mat3N &);
   Molecule(const std::vector<libint2::Atom> &atoms);
 
@@ -64,10 +65,10 @@ public:
   void set_unit_cell_idx(const IVec &idx) { m_uc_idx = idx; }
   void set_asymmetric_unit_idx(const IVec &idx) { m_asym_idx = idx; }
 
-  void rotate(const Eigen::Affine3d&);
-  void rotate(const tonto::Mat3&);
+  void rotate(const Eigen::Affine3d &r, Origin o = Cartesian);
+  void rotate(const tonto::Mat3 &r, Origin o = Cartesian);
+  void transform(const tonto::Mat4 &t, Origin o = Cartesian);
   void translate(const tonto::Vec3&);
-  void transform(const tonto::Mat4&);
 
 private:
   int m_charge{0};

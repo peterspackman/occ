@@ -6,6 +6,8 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
+
+create_core_test(test_dimer.cpp)
 create_core_test(test_element.cpp)
 create_core_test(test_marching_cubes.cpp)
 create_core_test(test_molecule.cpp)

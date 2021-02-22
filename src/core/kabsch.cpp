@@ -1,4 +1,5 @@
 #include <tonto/core/kabsch.h>
+#include <fmt/ostream.h>
 #include <Eigen/SVD>
 
 namespace tonto::linalg {
@@ -18,31 +19,36 @@ tonto::Mat3 kabsch_rotation_matrix(const tonto::Mat3N &a, const tonto::Mat3N &b)
     DOI: http://dx.doi.org/10.1107/S0567739476001873
     ```
     Args:
-        A : (N,D) matrix where N is the number of vectors and D
+        A : (3,N) matrix where N is the number of vectors and D
             is the dimension of each vector
-        B : (N,D) matrix where N is the number of
+        B : (3,N) matrix where N is the number of
             vectors and D is the dimension of each vector
     Returns:
         (D,D) rotation matrix where D is the dimension of each vector
     */
 
     // Calculate the covariance matrix
-    auto cov = a.transpose() * b;
+    tonto::Mat3 cov = a * b.transpose();
+
+    fmt::print("Cov\n{}\n", cov);
 
     // Use singular value decomposition to calculate
     // the optimal rotation matrix
     Eigen::JacobiSVD<tonto::Mat> svd(cov, Eigen::ComputeThinU | Eigen::ComputeThinV);
     // auto v, s, w = np.linalg.svd(cov)
-    tonto::Mat u = svd.matrixU();
-    tonto::Mat v = svd.matrixV();
+    tonto::Mat3N u = svd.matrixU();
+    tonto::MatN3 v = svd.matrixV();
+
+    fmt::print("\nU\n{}\n", u);
+    fmt::print("\nS\n{}\n", svd.singularValues());
+    fmt::print("\nV\n{}\n", v);
 
     // check the determinant to ensure a right-handed
     // coordinate system
-    if (u.determinant() * v.determinant() < 0.0)
-    {
-        u.rightCols(1).array() = - u.rightCols(1).array();
-    }
-    return u * v;
+    tonto::Mat d = tonto::Mat::Identity(3, 3);
+    d(2, 2) = (u.determinant() * v.determinant() < 0.0) ? -1 : 1;
+
+    return v * d * u.transpose();
 }
 
 }

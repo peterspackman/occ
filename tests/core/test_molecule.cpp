@@ -62,7 +62,6 @@ TEST_CASE("Molecule centroids", "[molecule]")
 
 TEST_CASE("Molecule rotation & translation", "[molecule]")
 {
-    
     tonto::Mat3N pos(3, 3);
     tonto::IVec nums(3);
     nums << 8, 1, 1;

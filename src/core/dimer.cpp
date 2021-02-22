@@ -1,6 +1,8 @@
 #include <tonto/core/dimer.h>
 #include <tonto/core/kabsch.h>
 
+#include <fmt/ostream.h>
+
 namespace tonto::chem {
 
 Dimer::Dimer(const Molecule &a, const Molecule &b) : m_a(a), m_b(b) {}
@@ -31,10 +33,14 @@ std::optional<tonto::Mat4> Dimer::symmetry_relation() const
     Vec3 o_a = m_a.centroid();
     Vec3 o_b = m_b.centroid();
     Vec3 v_ab = o_b - o_a;
-    Mat3N pos_a = m_a.positions() - o_a;
-    Mat3N pos_b = m_b.positions() - o_b;
+    Mat3N pos_a = m_a.positions();
+    pos_a.colwise() -= o_a;
+    Mat3N pos_b = m_b.positions();
+    pos_b.colwise() -= o_b;
+    fmt::print("pos_a\n{}\n", pos_a);
+    fmt::print("pos_b\n{}\n", pos_b);
 
-    tonto::Mat4 result = tonto::Mat4::Zero();
+    tonto::Mat4 result = tonto::Mat4::Identity();
     result.block<3, 3>(0, 0) = kabsch_rotation_matrix(pos_a, pos_b);
     result.block<3, 1>(0, 3) = v_ab;
     return result;

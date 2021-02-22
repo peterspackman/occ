@@ -109,14 +109,31 @@ bool Molecule::comparable_to(const Molecule &other) const
     return true;
 }
 
-void Molecule::rotate(const Eigen::Affine3d &rotation)
+void Molecule::rotate(const Eigen::Affine3d &rotation, Origin origin)
 {
-    m_positions = rotation.linear() * m_positions;
+    rotate(rotation.linear(), origin);
 }
 
-void Molecule::rotate(const tonto::Mat3 &rotation)
+void Molecule::rotate(const tonto::Mat3 &rotation, Origin origin)
 {
+    Vec3 O = {0, 0, 0};
+    switch(origin)
+    {
+        case Centroid:
+        {
+            O = centroid();
+            break;
+        }
+        case CenterOfMass:
+        {
+            O = center_of_mass();
+            break;
+        }
+        default: break;
+    }
+    translate(-O);
     m_positions = rotation * m_positions;
+    translate(O);
 }
 
 void Molecule::translate(const tonto::Vec3 &translation)
@@ -124,10 +141,10 @@ void Molecule::translate(const tonto::Vec3 &translation)
     m_positions.colwise() += translation;
 }
 
-void Molecule::transform(const Mat4 &transform)
+void Molecule::transform(const Mat4 &transform, Origin origin)
 {
-    m_positions = transform.block<3, 3>(0, 0) * m_positions;
-    translate(transform.block<3, 1>(3, 0));
+    rotate(transform.block<3, 3>(0, 0), origin);
+    translate(transform.block<3, 1>(0, 3));
 }
 
 } // namespace tonto::chem
