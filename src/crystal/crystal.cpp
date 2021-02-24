@@ -8,16 +8,18 @@ namespace tonto::crystal {
 
 using tonto::graph::BondGraph;
 
-Crystal::Crystal(const AsymmetricUnit &asym, const SpaceGroup &sg,
-                 const UnitCell &uc)
-    : m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc) {}
+//Asymmetric unit
+AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums) :
+    positions(frac_pos), atomic_numbers(nums), occupations(nums.rows())
+{
+    occupations.setConstant(1.0);
+}
 
-std::string AsymmetricUnit::chemical_formula() const {
-  std::vector<tonto::chem::Element> els;
-  for (int i = 0; i < atomic_numbers.size(); i++) {
-    els.push_back(tonto::chem::Element(atomic_numbers[i]));
-  }
-  return tonto::chem::chemical_formula(els);
+AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums,
+                               const std::vector<std::string> &site_labels) :
+    positions(frac_pos), atomic_numbers(nums), labels(site_labels), occupations(nums.rows())
+{
+    occupations.setConstant(1.0);
 }
 
 Eigen::VectorXd AsymmetricUnit::covalent_radii() const {
@@ -28,6 +30,15 @@ Eigen::VectorXd AsymmetricUnit::covalent_radii() const {
   return result;
 }
 
+std::string AsymmetricUnit::chemical_formula() const {
+  std::vector<tonto::chem::Element> els;
+  for (int i = 0; i < atomic_numbers.size(); i++) {
+    els.push_back(tonto::chem::Element(atomic_numbers[i]));
+  }
+  return tonto::chem::chemical_formula(els);
+}
+
+// Atom Slab
 const AtomSlab &Crystal::unit_cell_atoms() const {
   if (!m_unit_cell_atoms_needs_update)
     return m_unit_cell_atoms;
@@ -82,6 +93,12 @@ AtomSlab Crystal::slab(const HKL &lower, const HKL &upper) const {
   result.cart_pos = to_cartesian(result.frac_pos);
   return result;
 }
+
+
+Crystal::Crystal(const AsymmetricUnit &asym, const SpaceGroup &sg,
+                 const UnitCell &uc)
+    : m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc) {}
+
 
 const PeriodicBondGraph &Crystal::unit_cell_connectivity() const {
   if (!m_unit_cell_connectivity_needs_update)

@@ -34,6 +34,8 @@ struct AtomSlab {
 };
 
 struct AsymmetricUnit {
+  AsymmetricUnit(const Mat3N&, const IVec&);
+  AsymmetricUnit(const Mat3N&, const IVec&, const std::vector<std::string>&);
   Mat3N positions;
   IVec atomic_numbers;
   Vec occupations;
