@@ -57,10 +57,20 @@ auto ice_ii_asym()
 
 }
 
+void print_asymmetric_unit(const AsymmetricUnit &asym)
+{
+    for(size_t i = 0; i < asym.size(); i++)
+    {
+        fmt::print("{:<6s} {:>3d}   {:.6f} {:.6f} {:.6f}\n", asym.labels[i], asym.atomic_numbers(i),
+                   asym.positions(0, i), asym.positions(1, i), asym.positions(2, i));
+    }
+}
+
 TEST_CASE("Asymmetric unit constructor", "[crystal]")
 {
 
     AsymmetricUnit asym = ice_ii_asym();
+    print_asymmetric_unit(asym);
     REQUIRE(asym.labels.size() == 36);
 }
 

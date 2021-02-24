@@ -42,6 +42,7 @@ struct AsymmetricUnit {
   std::vector<std::string> labels;
   std::string chemical_formula() const;
   Vec covalent_radii() const;
+  size_t size() const { return atomic_numbers.size(); }
 };
 
 class Crystal {
