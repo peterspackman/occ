@@ -2,6 +2,14 @@
 
 namespace tonto::crystal {
 
+
+SpaceGroup::SpaceGroup(int number) {
+  m_sgdata = gemmi::find_spacegroup_by_number(number);
+  for (const auto &op : m_sgdata->operations()) {
+    m_symops.push_back(SymmetryOperation(op.triplet()));
+  }
+}
+
 SpaceGroup::SpaceGroup(const std::string &symbol) {
   m_sgdata = gemmi::find_spacegroup_by_name(symbol);
   for (const auto &op : m_sgdata->operations()) {

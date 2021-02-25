@@ -6,6 +6,7 @@
 using tonto::crystal::Crystal;
 using tonto::crystal::AsymmetricUnit;
 using tonto::crystal::UnitCell;
+using tonto::crystal::SpaceGroup;
 using tonto::util::all_close;
 using tonto::util::deg2rad;
 
@@ -20,7 +21,7 @@ auto ice_ii_asym()
     };
 
     tonto::IVec nums(labels.size());
-    tonto::Mat3N positions(3, labels.size());
+    tonto::Mat positions(labels.size(), 3);
     for(size_t i = 0; i < labels.size(); i++)
     {
         nums(i) = tonto::chem::Element(labels[i]).atomic_number();
@@ -55,7 +56,29 @@ auto ice_ii_asym()
         0.668282913065, 0.522970147212, 0.279203658434, 0.598945325854,
         0.597639149965, 0.257715011998, 0.792566781760, 0.631964289620;
 
-    return AsymmetricUnit(positions, nums, labels);
+    return AsymmetricUnit(positions.transpose(), nums, labels);
+}
+
+auto acetic_asym()
+{
+
+    const std::vector<std::string> labels = {"C1", "C2", "H1", "H2", "H3", "H4", "O1", "O2"};
+    tonto::IVec nums(labels.size());
+    tonto::Mat positions(labels.size(), 3);
+    for(size_t i = 0; i < labels.size(); i++)
+    {
+        nums(i) = tonto::chem::Element(labels[i]).atomic_number();
+    }
+    positions << 
+        0.16510, 0.28580,  0.17090,
+        0.08940, 0.37620,  0.34810,
+        0.18200, 0.05100, -0.11600,
+        0.12800, 0.51000,  0.49100,
+        0.03300, 0.54000,  0.27900,
+        0.05300, 0.16800,  0.42100,
+        0.12870, 0.10750,  0.00000,
+        0.25290, 0.37030,  0.17690;
+    return AsymmetricUnit(positions.transpose(), nums, labels);
 }
 
 void print_asymmetric_unit(const AsymmetricUnit &asym)
@@ -86,7 +109,40 @@ TEST_CASE("UnitCell constructor", "[crystal]")
 
 TEST_CASE("ice_ii molecules", "[crystal]")
 {
-
+    AsymmetricUnit asym = ice_ii_asym();
+    SpaceGroup sg(1);
+    UnitCell cell = tonto::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
+    Crystal ice_ii(asym, sg, cell);
+    fmt::print("Unit cell molecules:\n");
+    for(const auto& mol: ice_ii.unit_cell_molecules())
+    {
+        fmt::print("{}\n", mol.name());
+    }
+    REQUIRE(ice_ii.symmetry_unique_molecules().size() == 12);
+    fmt::print("Asymmetric unit molecules:\n");
+    for(const auto& mol: ice_ii.symmetry_unique_molecules())
+    {
+        fmt::print("{}\n", mol.name());
+    }
 }
 
+TEST_CASE("acetic molecules", "[crystal]")
+{
+    AsymmetricUnit asym = acetic_asym();
+    SpaceGroup sg(33);
+    UnitCell cell = tonto::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
 
+    Crystal acetic(asym, sg, cell);
+    REQUIRE(acetic.unit_cell_molecules().size() == 4);
+    fmt::print("Unit cell molecules:\n");
+    for(const auto& mol: acetic.unit_cell_molecules())
+    {
+        fmt::print("{}\n", mol.name());
+    }
+    REQUIRE(acetic.symmetry_unique_molecules().size() == 1);
+    fmt::print("Asymmetric unit molecules:\n");
+    for(const auto& mol: acetic.symmetry_unique_molecules())
+    {
+        fmt::print("{}\n", mol.name());
+    }
+}

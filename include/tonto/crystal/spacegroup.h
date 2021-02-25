@@ -15,6 +15,7 @@ using SGData = gemmi::SpaceGroup;
 
 class SpaceGroup {
 public:
+  SpaceGroup(int);
   SpaceGroup(const std::string &);
   SpaceGroup(const std::vector<SymmetryOperation> &symops);
   int number() const { return m_sgdata->number; }
