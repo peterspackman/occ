@@ -29,7 +29,6 @@ tonto::Mat3 kabsch_rotation_matrix(const tonto::Mat3N &a, const tonto::Mat3N &b)
     // Calculate the covariance matrix
     tonto::Mat3 cov = a * b.transpose();
 
-
     // Use singular value decomposition to calculate
     // the optimal rotation matrix
     Eigen::JacobiSVD<tonto::Mat> svd(cov, Eigen::ComputeThinU | Eigen::ComputeThinV);
@@ -41,7 +40,6 @@ tonto::Mat3 kabsch_rotation_matrix(const tonto::Mat3N &a, const tonto::Mat3N &b)
     // coordinate system
     tonto::Mat d = tonto::Mat::Identity(3, 3);
     d(2, 2) = (u.determinant() * v.determinant() < 0.0) ? -1 : 1;
-
     return v * d * u.transpose();
 }
 

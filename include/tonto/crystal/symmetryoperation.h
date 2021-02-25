@@ -11,6 +11,7 @@ using tonto::Vec3;
 
 class SymmetryOperation {
 public:
+  SymmetryOperation(const tonto::Mat4 &);
   SymmetryOperation(const std::string &);
   SymmetryOperation(int);
 

@@ -7,6 +7,7 @@ using tonto::crystal::Crystal;
 using tonto::crystal::AsymmetricUnit;
 using tonto::crystal::UnitCell;
 using tonto::crystal::SpaceGroup;
+using tonto::crystal::SymmetryOperation;
 using tonto::util::all_close;
 using tonto::util::deg2rad;
 
@@ -148,4 +149,12 @@ TEST_CASE("acetic molecules", "[crystal]")
 
     auto dimers = acetic.symmetry_unique_dimers(3.8);
     REQUIRE(dimers.size() == 7);
+    fmt::print("Dimers\n");
+    for(const auto& dimer: dimers)
+    {
+        tonto::Mat4 symm = dimer.symmetry_relation().value_or(tonto::Mat4::Identity());
+        symm.col(3).topRows(3) = acetic.to_fractional(symm.col(3).topRows(3));
+        auto symop = SymmetryOperation(symm);
+        fmt::print("{}\n", symop.to_string());
+    }
 }

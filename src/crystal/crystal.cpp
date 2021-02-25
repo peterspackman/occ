@@ -350,7 +350,6 @@ std::vector<tonto::chem::Dimer> Crystal::symmetry_unique_dimers(double radius) c
         std::numeric_limits<int>::max()
     };
     tonto::Vec3 frac_radius = radius / m_unit_cell.lengths().array();
-    fmt::print("Frac radius: {}\n", frac_radius.transpose());
 
     for(size_t i = 0; i < m_asymmetric_unit.size(); i++)
     {
@@ -367,7 +366,6 @@ std::vector<tonto::chem::Dimer> Crystal::symmetry_unique_dimers(double radius) c
     const auto& uc_mols = unit_cell_molecules();
     const auto& asym_mols = symmetry_unique_molecules();
 
-    fmt::print("HKL range ({} {} {}) - ({} {} {})\n", lower.h, lower.k, lower.l, upper.h, upper.k, upper.l);
     for (int h = lower.h; h <= upper.h; h++) {
         for (int k = lower.k; k <= upper.k; k++) {
             for (int l = lower.l; l <= upper.l; l++) {

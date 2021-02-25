@@ -96,9 +96,11 @@ std::string encode_string(const Mat4 &seitz) {
     }
     for (int j = 0; j < 3; j++) {
       auto c = seitz(i, j);
-      if (c < 0) {
+      if (c < -0.1)
+      {
         v += "-" + symbols.substr(j, 1);
-      } else if (c > 0) {
+      } else if (c > 0.1)
+      {
         v += "+" + symbols.substr(j, 1);
       }
     }
@@ -134,6 +136,14 @@ int encode_int(const Mat4 &seitz) {
     shift *= 12;
   }
   return r + t * 19683;
+}
+
+SymmetryOperation::SymmetryOperation(const tonto::Mat4 &seitz) : m_seitz(seitz)
+{
+    m_seitz.block<3, 3>(0, 0).array().round();
+    update_from_seitz();
+    m_str = encode_string(m_seitz);
+    m_int = encode_int(m_seitz);
 }
 
 SymmetryOperation::SymmetryOperation(int code) { set_from_int(code); }

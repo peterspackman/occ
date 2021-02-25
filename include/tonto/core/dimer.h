@@ -14,6 +14,9 @@ public:
   Dimer(const std::vector<libint2::Atom>,
         const std::vector<libint2::Atom>);
 
+  const Molecule& a() const { return m_a; }
+  const Molecule& b() const { return m_a; }
+
   double centroid_distance() const;
   double center_of_mass_distance() const;
   double nearest_distance() const;
