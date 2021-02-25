@@ -5,7 +5,9 @@
 
 using tonto::crystal::Crystal;
 using tonto::crystal::AsymmetricUnit;
+using tonto::crystal::UnitCell;
 using tonto::util::all_close;
+using tonto::util::deg2rad;
 
 
 auto ice_ii_asym()
@@ -54,7 +56,6 @@ auto ice_ii_asym()
         0.597639149965, 0.257715011998, 0.792566781760, 0.631964289620;
 
     return AsymmetricUnit(positions, nums, labels);
-
 }
 
 void print_asymmetric_unit(const AsymmetricUnit &asym)
@@ -66,12 +67,26 @@ void print_asymmetric_unit(const AsymmetricUnit &asym)
     }
 }
 
-TEST_CASE("Asymmetric unit constructor", "[crystal]")
+TEST_CASE("AsymmetricUnit constructor", "[crystal]")
 {
 
     AsymmetricUnit asym = ice_ii_asym();
     print_asymmetric_unit(asym);
     REQUIRE(asym.labels.size() == 36);
+    std::vector<std::string> old_labels = asym.labels;
+    asym.generate_default_labels();
+    print_asymmetric_unit(asym);
+    REQUIRE(old_labels == asym.labels);
+}
+
+TEST_CASE("UnitCell constructor", "[crystal]")
+{
+    UnitCell ice = tonto::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
+}
+
+TEST_CASE("ice_ii molecules", "[crystal]")
+{
+
 }
 
 

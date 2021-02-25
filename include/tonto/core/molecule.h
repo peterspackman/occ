@@ -65,8 +65,15 @@ public:
 
   bool comparable_to(const Molecule&) const;
 
+  void set_asymmetric_molecule_idx(size_t idx) { m_asym_mol_idx = idx; }
+  int asymmetric_molecule_idx() const { return m_asym_mol_idx; }
+
   void set_unit_cell_idx(const IVec &idx) { m_uc_idx = idx; }
   void set_asymmetric_unit_idx(const IVec &idx) { m_asym_idx = idx; }
+  void set_asymmetric_unit_symop(const IVec &symop) { m_asym_symop = symop; }
+  const auto& unit_cell_idx() const { return m_uc_idx; }
+  const auto& asymmetric_unit_idx() const { return m_uc_idx; }
+  const auto& asymmetric_unit_symop() const { return m_uc_idx; }
 
   void rotate(const Eigen::Affine3d &r, Origin o = Cartesian);
   void rotate(const tonto::Mat3 &r, Origin o = Cartesian);
@@ -80,12 +87,14 @@ public:
 private:
   int m_charge{0};
   int m_multiplicity{1};
+  int m_asym_mol_idx{-1};
   std::string m_name{""};
   std::vector<libint2::Atom> m_atoms;
   IVec m_atomicNumbers;
   Mat3N m_positions;
   IVec m_uc_idx;
   IVec m_asym_idx;
+  IVec m_asym_symop;
   std::vector<std::pair<size_t, size_t>> m_bonds;
   std::vector<Element> m_elements;
 };

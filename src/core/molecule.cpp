@@ -1,6 +1,8 @@
 #include <tonto/core/molecule.h>
 #include <Eigen/Core>
 #include <fstream>
+#include <fmt/core.h>
+#include <tonto/core/units.h>
 
 namespace tonto::chem {
 
@@ -20,9 +22,10 @@ Molecule::Molecule(const std::vector<libint2::Atom> &atoms)
     const auto &atom = atoms[i];
     m_elements.push_back(Element(atom.atomic_number));
     m_atomicNumbers(i) = atom.atomic_number;
-    m_positions(0, i) = atom.x;
-    m_positions(1, i) = atom.y;
-    m_positions(2, i) = atom.z;
+    // Internally store in angstroms
+    m_positions(0, i) = atom.x * tonto::units::BOHR_TO_ANGSTROM;
+    m_positions(1, i) = atom.y * tonto::units::BOHR_TO_ANGSTROM;
+    m_positions(2, i) = atom.z * tonto::units::BOHR_TO_ANGSTROM;
   }
   m_name = chemical_formula(m_elements);
 }
@@ -30,10 +33,7 @@ Molecule::Molecule(const std::vector<libint2::Atom> &atoms)
 Molecule read_xyz_file(const std::string &filename) {
   std::ifstream is(filename);
   if (not is.good()) {
-    char errmsg[256] = "Could not open file: ";
-    strncpy(errmsg + 20, filename.c_str(), 235);
-    errmsg[255] = '\0';
-    throw std::runtime_error(errmsg);
+    throw std::runtime_error(fmt::format("Could not open file: '{}'", filename));
   }
 
   // to prepare for MPI parallelization, we will read the entire file into a
@@ -58,9 +58,10 @@ Molecule read_xyz_file(const std::string &filename) {
 std::vector<libint2::Atom> Molecule::atoms() const
 {
     std::vector<libint2::Atom> result(size());
+    using tonto::units::ANGSTROM_TO_BOHR;
     for (size_t i = 0; i < size(); i++) {
-        result.push_back(libint2::Atom{m_atomicNumbers(i), m_positions(0, i),
-                                       m_positions(1, i), m_positions(2, i)});
+        result[i] = {m_atomicNumbers(i), m_positions(0, i) * ANGSTROM_TO_BOHR,
+                     m_positions(1, i) * ANGSTROM_TO_BOHR, m_positions(2, i) * ANGSTROM_TO_BOHR};
     }
     return result;
 }

@@ -121,4 +121,44 @@ std::string UnitCell::cell_type() const {
   return "triclinic";
 }
 
+/*
+ * UnitCell builders
+ */
+
+UnitCell cubic_cell(double length)
+{
+    return UnitCell(length, length, length, M_PI / 2, M_PI / 2, M_PI / 2);
+}
+
+UnitCell rhombohedral_cell(double length, double angle)
+{
+    return UnitCell(length, length, length, angle, angle, angle);
+}
+
+UnitCell tetragonal_cell(double a, double c)
+{
+    return UnitCell(a, a, c, M_PI / 2, M_PI / 2, M_PI / 2);
+}
+
+UnitCell hexagonal_cell(double a, double c)
+{
+    return UnitCell(a, a, c, M_PI / 2, M_PI / 2, 2 * M_PI / 3);
+}
+
+UnitCell orthorhombic_cell(double a, double b, double c)
+{
+    return UnitCell(a, b, c, M_PI / 2, M_PI / 2, M_PI / 2);
+}
+
+UnitCell monoclinic_cell(double a, double b, double c, double angle)
+{
+
+    return UnitCell(a, b, c, M_PI / 2, angle, M_PI / 2);
+}
+
+UnitCell triclinic_cell(double a, double b, double c, double alpha, double beta, double gamma)
+{
+    return UnitCell(a, b, c, alpha, beta, gamma);
+}
+
 } // namespace tonto::crystal

@@ -42,6 +42,7 @@ struct AsymmetricUnit {
   std::vector<std::string> labels;
   std::string chemical_formula() const;
   Vec covalent_radii() const;
+  void generate_default_labels();
   size_t size() const { return atomic_numbers.size(); }
 };
 
@@ -71,17 +72,26 @@ public:
   const AtomSlab &unit_cell_atoms() const;
   const PeriodicBondGraph &unit_cell_connectivity() const;
   const std::vector<Molecule> &unit_cell_molecules() const;
+  const std::vector<Molecule> &symmetry_unique_molecules() const;
 
 private:
   AsymmetricUnit m_asymmetric_unit;
   SpaceGroup m_space_group;
   UnitCell m_unit_cell;
+  void update_unit_cell_molecules() const;
+  void update_symmetry_unique_molecules() const;
+  void update_unit_cell_connectivity() const;
+  void update_unit_cell_atoms() const;
+
   mutable std::vector<PeriodicBondGraph::vertex_t> m_bond_graph_vertices;
   mutable PeriodicBondGraph m_bond_graph;
   mutable AtomSlab m_unit_cell_atoms;
+  mutable bool m_symmetry_unique_molecules_needs_update{true};
   mutable bool m_unit_cell_atoms_needs_update{true};
+  mutable bool m_unit_cell_molecules_needs_update{true};
   mutable bool m_unit_cell_connectivity_needs_update{true};
   mutable std::vector<Molecule> m_unit_cell_molecules{};
+  mutable std::vector<Molecule> m_symmetry_unique_molecules{};
 };
 
 } // namespace tonto::crystal
