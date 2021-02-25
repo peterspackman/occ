@@ -4,6 +4,7 @@
 #include <tonto/core/molecule.h>
 #include <tonto/crystal/spacegroup.h>
 #include <tonto/crystal/unitcell.h>
+#include <tonto/core/dimer.h>
 #include <vector>
 
 namespace tonto::crystal {
@@ -73,6 +74,8 @@ public:
   const PeriodicBondGraph &unit_cell_connectivity() const;
   const std::vector<Molecule> &unit_cell_molecules() const;
   const std::vector<Molecule> &symmetry_unique_molecules() const;
+
+  std::vector<tonto::chem::Dimer> symmetry_unique_dimers(double) const;
 
 private:
   AsymmetricUnit m_asymmetric_unit;

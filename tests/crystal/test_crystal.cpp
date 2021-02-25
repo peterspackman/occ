@@ -145,4 +145,7 @@ TEST_CASE("acetic molecules", "[crystal]")
     {
         fmt::print("{}\n", mol.name());
     }
+
+    auto dimers = acetic.symmetry_unique_dimers(3.8);
+    REQUIRE(dimers.size() == 7);
 }

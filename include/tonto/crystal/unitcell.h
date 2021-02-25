@@ -51,6 +51,7 @@ public:
   auto a_star_vector() const { return m_reciprocal.col(0); }
   auto b_star_vector() const { return m_reciprocal.col(1); }
   auto c_star_vector() const { return m_reciprocal.col(2); }
+  const auto& lengths() const { return m_lengths; }
 
 private:
   void update_cell_matrices();

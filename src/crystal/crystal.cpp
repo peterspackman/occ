@@ -334,4 +334,67 @@ void Crystal::update_symmetry_unique_molecules() const
     m_symmetry_unique_molecules_needs_update = false;
 }
 
+
+std::vector<tonto::chem::Dimer> Crystal::symmetry_unique_dimers(double radius) const
+{
+    std::vector<tonto::chem::Dimer> dimers;
+
+    HKL upper{
+        std::numeric_limits<int>::min(), 
+        std::numeric_limits<int>::min(), 
+        std::numeric_limits<int>::min()
+    };
+    HKL lower{
+        std::numeric_limits<int>::max(), 
+        std::numeric_limits<int>::max(), 
+        std::numeric_limits<int>::max()
+    };
+    tonto::Vec3 frac_radius = radius / m_unit_cell.lengths().array();
+    fmt::print("Frac radius: {}\n", frac_radius.transpose());
+
+    for(size_t i = 0; i < m_asymmetric_unit.size(); i++)
+    {
+        const auto& pos = m_asymmetric_unit.positions.col(i);
+        upper.h = std::max(upper.h, static_cast<int>(ceil(pos(0) + frac_radius(0))));
+        upper.k = std::max(upper.k, static_cast<int>(ceil(pos(1) + frac_radius(1))));
+        upper.l = std::max(upper.l, static_cast<int>(ceil(pos(2) + frac_radius(2))));
+
+        lower.h = std::min(lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
+        lower.k = std::min(lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
+        lower.l = std::min(lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
+    }
+
+    const auto& uc_mols = unit_cell_molecules();
+    const auto& asym_mols = symmetry_unique_molecules();
+
+    fmt::print("HKL range ({} {} {}) - ({} {} {})\n", lower.h, lower.k, lower.l, upper.h, upper.k, upper.l);
+    for (int h = lower.h; h <= upper.h; h++) {
+        for (int k = lower.k; k <= upper.k; k++) {
+            for (int l = lower.l; l <= upper.l; l++) {
+                if (h == 0 && k == 0 && l == 0)
+                    continue;
+                tonto::Vec3 cart_shift = to_cartesian(tonto::Vec3{
+                        static_cast<double>(h), static_cast<double>(k),static_cast<double>(l)});
+                for(const auto& asym_mol: asym_mols)
+                {
+                    for(const auto& uc_mol: uc_mols)
+                    {
+                        auto mol_translated = uc_mol.translated(cart_shift);
+                        double distance = std::get<2>(asym_mol.nearest_atom(mol_translated));
+                        if ((distance < radius) && (distance > 1e-1))
+                        {
+                            tonto::chem::Dimer d(asym_mol, mol_translated);
+                            if(std::any_of(dimers.begin(), dimers.end(),
+                                           [&d](const tonto::chem::Dimer& d2){ return d == d2; })) continue;
+                            dimers.push_back(d);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+    return dimers;
+}
+
 } // namespace tonto::crystal

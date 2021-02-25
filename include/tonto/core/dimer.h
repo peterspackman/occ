@@ -27,6 +27,7 @@ public:
   int charge(int) const { return m_a.charge() + m_b.charge(); };
   int multiplicity(int) const { return m_a.multiplicity() + m_b.multiplicity() - 1; };
 
+  bool operator ==(const Dimer&) const;
 
 private:
   Molecule m_a, m_b;

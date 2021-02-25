@@ -65,4 +65,15 @@ Mat3N Dimer::positions() const
     return result;
 }
 
+bool Dimer::operator ==(const Dimer &rhs) const
+{
+    constexpr double eps = 1e-7;
+    double centroid_diff = abs(centroid_distance() - rhs.centroid_distance());
+    if(centroid_diff > eps) return false;
+    double com_diff = abs(center_of_mass_distance() - rhs.center_of_mass_distance());
+    if(com_diff > eps) return false;
+    double nearest_diff = abs(nearest_distance() - rhs.nearest_distance());
+    return nearest_diff < eps;
+}
+
 }
