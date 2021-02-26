@@ -36,3 +36,19 @@ set_target_properties(cosmo
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+
+add_executable(crystal_interactions "${CMAKE_CURRENT_SOURCE_DIR}/interactions.cpp")
+target_link_libraries(crystal_interactions
+    PUBLIC
+    tonto_qm
+    tonto_dft
+    tonto_solvent
+    tonto_io
+    tonto_crystal
+)
+
+set_target_properties(crystal_interactions
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
