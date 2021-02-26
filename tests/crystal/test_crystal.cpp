@@ -168,12 +168,30 @@ TEST_CASE("acetic molecules", "[crystal]")
         fmt::print("{}\n", mol.name());
     }
 
-    auto dimers = acetic.symmetry_unique_dimers(3.8);
+    auto crystal_dimers = acetic.symmetry_unique_dimers(3.8);
+    const auto &dimers = crystal_dimers.unique_dimers;
     REQUIRE(dimers.size() == 7);
     fmt::print("Dimers\n");
     for(const auto& dimer: dimers)
     {
         auto s_ab = dimer_symop(dimer, acetic);
-        fmt::print("symop = {}\n", s_ab.to_string());
+        fmt::print("R = {:.3f}, symop = {}\n", dimer.nearest_distance(), s_ab.to_string());
     }
+
+    const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
+    for(size_t i = 0; i < mol_neighbors.size(); i++)
+    {
+        const auto& n = mol_neighbors[i];
+        fmt::print("Neighbors for molecule {}\n", i);
+        size_t j = 0;
+        for(const auto& dimer: n)
+        {
+            auto s_ab = dimer_symop(dimer, acetic);
+            fmt::print("R = {:.3f}, symop = {}, unique_idx = {}\n",
+                       dimer.nearest_distance(), s_ab.to_string(),
+                       crystal_dimers.unique_dimer_idx[i][j]);
+            j++;
+        }
+    }
+
 }

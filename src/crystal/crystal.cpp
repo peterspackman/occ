@@ -335,9 +335,12 @@ void Crystal::update_symmetry_unique_molecules() const
 }
 
 
-std::vector<tonto::chem::Dimer> Crystal::symmetry_unique_dimers(double radius) const
+CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
 {
-    std::vector<tonto::chem::Dimer> dimers;
+    using tonto::chem::Dimer;
+    CrystalDimers result;
+    auto &dimers = result.unique_dimers;
+    auto &mol_nbs = result.molecule_neighbors;
 
     HKL upper{
         std::numeric_limits<int>::min(), 
@@ -365,6 +368,8 @@ std::vector<tonto::chem::Dimer> Crystal::symmetry_unique_dimers(double radius) c
 
     const auto& uc_mols = unit_cell_molecules();
     const auto& asym_mols = symmetry_unique_molecules();
+    mol_nbs.resize(asym_mols.size());
+    result.unique_dimer_idx.resize(asym_mols.size());
 
     for (int h = lower.h; h <= upper.h; h++) {
         for (int k = lower.k; k <= upper.k; k++) {
@@ -381,9 +386,10 @@ std::vector<tonto::chem::Dimer> Crystal::symmetry_unique_dimers(double radius) c
                         double distance = std::get<2>(asym_mol.nearest_atom(mol_translated));
                         if ((distance < radius) && (distance > 1e-1))
                         {
-                            tonto::chem::Dimer d(asym_mol, mol_translated);
+                            Dimer d(asym_mol, mol_translated);
+                            mol_nbs[asym_mol.asymmetric_molecule_idx()].push_back(d);
                             if(std::any_of(dimers.begin(), dimers.end(),
-                                           [&d](const tonto::chem::Dimer& d2){ return d == d2; })) continue;
+                                           [&d](const Dimer& d2){ return d == d2; })) continue;
                             dimers.push_back(d);
                         }
                     }
@@ -392,7 +398,24 @@ std::vector<tonto::chem::Dimer> Crystal::symmetry_unique_dimers(double radius) c
             }
         }
     }
-    return dimers;
+
+    auto sort_func = [](const Dimer &a, const Dimer &b)
+    { 
+        return a.nearest_distance() < b.nearest_distance(); 
+    };
+
+    std::sort(dimers.begin(), dimers.end(), sort_func);
+    size_t nb_idx = 0;
+    for(auto &vec: mol_nbs)
+    {
+        std::sort(vec.begin(), vec.end(), sort_func);
+        for(const auto& d: vec) {
+            size_t idx = std::distance(dimers.begin(), std::find(dimers.begin(), dimers.end(), d));
+            result.unique_dimer_idx[nb_idx].push_back(idx);
+        }
+        nb_idx++;
+    }
+    return result;
 }
 
 } // namespace tonto::crystal

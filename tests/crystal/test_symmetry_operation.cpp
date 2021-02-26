@@ -21,5 +21,4 @@ TEST_CASE("SymmetryOperation seitz", "[symmetry_operation]")
         )
     );
     REQUIRE(all_close(id.rotation(), id.inverted().rotation()));
-
 }

@@ -47,6 +47,12 @@ struct AsymmetricUnit {
   size_t size() const { return atomic_numbers.size(); }
 };
 
+struct CrystalDimers {
+    std::vector<tonto::chem::Dimer> unique_dimers;
+    std::vector<std::vector<tonto::chem::Dimer>> molecule_neighbors;
+    std::vector<std::vector<size_t>> unique_dimer_idx;
+};
+
 class Crystal {
 public:
   Crystal(const AsymmetricUnit &, const SpaceGroup &, const UnitCell &);
@@ -75,7 +81,7 @@ public:
   const std::vector<Molecule> &unit_cell_molecules() const;
   const std::vector<Molecule> &symmetry_unique_molecules() const;
 
-  std::vector<tonto::chem::Dimer> symmetry_unique_dimers(double) const;
+  CrystalDimers symmetry_unique_dimers(double) const;
 
 private:
   AsymmetricUnit m_asymmetric_unit;
