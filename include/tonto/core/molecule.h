@@ -40,6 +40,7 @@ public:
   void set_name(const std::string &);
   const std::string &name() const { return m_name; }
 
+  Vec interatomic_distances() const;
   const Mat3N &positions() const { return m_positions; }
   const IVec &atomic_numbers() const { return m_atomicNumbers; }
   const Vec vdw_radii() const;
@@ -83,6 +84,8 @@ public:
   Molecule rotated(const tonto::Mat3 &r, Origin o = Cartesian) const;
   Molecule transformed(const tonto::Mat4 &t, Origin o = Cartesian) const;
   Molecule translated(const tonto::Vec3&) const;
+
+  bool equivalent_to(const Molecule&) const;
 
 private:
   int m_charge{0};

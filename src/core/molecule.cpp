@@ -3,6 +3,7 @@
 #include <fstream>
 #include <fmt/core.h>
 #include <tonto/core/units.h>
+#include <tonto/core/util.h>
 
 namespace tonto::chem {
 
@@ -103,11 +104,7 @@ const tonto::Vec3 Molecule::center_of_mass() const
 bool Molecule::comparable_to(const Molecule &other) const
 {
     if(size() != other.size()) return false;
-    for(size_t i = 0; i < size(); i++)
-    {
-        if(m_atomicNumbers(i) != other.m_atomicNumbers(i)) return false;
-    }
-    return true;
+    return (m_atomicNumbers.array() == other.m_atomicNumbers.array()).all();
 }
 
 void Molecule::rotate(const Eigen::Affine3d &rotation, Origin origin)
@@ -188,6 +185,31 @@ std::tuple<size_t, size_t, double> Molecule::nearest_atom(const Molecule &other)
         }
     }
     return result;
+}
+
+Vec Molecule::interatomic_distances() const
+{
+    //upper triangle of distance matrix
+    size_t N = size();
+    size_t num_idxs = N * (N - 1) / 2;
+    Vec result(num_idxs);
+    size_t idx = 0;
+    for(size_t i = 0; i < N; i++)
+    {
+        for(size_t j = i + 1; j < N; j++)
+        {
+            result(idx++) = (m_positions.col(i) - m_positions.col(j)).norm();
+        }
+    }
+    return result;
+}
+
+bool Molecule::equivalent_to(const Molecule &rhs) const
+{
+    if(!comparable_to(rhs)) return false;
+    auto dists_a = interatomic_distances();
+    auto dists_b = rhs.interatomic_distances();
+    return tonto::util::all_close(dists_a, dists_b, 1e-8, 1e-8);
 }
 
 } // namespace tonto::chem

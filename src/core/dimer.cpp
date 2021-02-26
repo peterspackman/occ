@@ -73,7 +73,13 @@ bool Dimer::operator ==(const Dimer &rhs) const
     double com_diff = abs(center_of_mass_distance() - rhs.center_of_mass_distance());
     if(com_diff > eps) return false;
     double nearest_diff = abs(nearest_distance() - rhs.nearest_distance());
-    return nearest_diff < eps;
+    if(nearest_diff > eps) return false;
+    bool aa_eq = m_a.equivalent_to(rhs.m_a);
+    bool bb_eq = m_b.equivalent_to(rhs.m_b);
+    if(aa_eq && bb_eq) return true;
+    bool ba_eq = m_b.equivalent_to(rhs.m_a);
+    bool ab_eq = m_a.equivalent_to(rhs.m_b);
+    return ab_eq && ba_eq;
 }
 
 }
