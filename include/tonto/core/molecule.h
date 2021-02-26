@@ -72,8 +72,8 @@ public:
   void set_asymmetric_unit_idx(const IVec &idx) { m_asym_idx = idx; }
   void set_asymmetric_unit_symop(const IVec &symop) { m_asym_symop = symop; }
   const auto& unit_cell_idx() const { return m_uc_idx; }
-  const auto& asymmetric_unit_idx() const { return m_uc_idx; }
-  const auto& asymmetric_unit_symop() const { return m_uc_idx; }
+  const auto& asymmetric_unit_idx() const { return m_asym_idx; }
+  const auto& asymmetric_unit_symop() const { return m_asym_symop; }
 
   void rotate(const Eigen::Affine3d &r, Origin o = Cartesian);
   void rotate(const tonto::Mat3 &r, Origin o = Cartesian);

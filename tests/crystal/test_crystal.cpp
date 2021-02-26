@@ -114,6 +114,7 @@ TEST_CASE("ice_ii molecules", "[crystal]")
     SpaceGroup sg(1);
     UnitCell cell = tonto::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
     Crystal ice_ii(asym, sg, cell);
+    REQUIRE(ice_ii.symmetry_operations().size() == 1);
     fmt::print("Unit cell molecules:\n");
     for(const auto& mol: ice_ii.unit_cell_molecules())
     {
@@ -125,6 +126,26 @@ TEST_CASE("ice_ii molecules", "[crystal]")
     {
         fmt::print("{}\n", mol.name());
     }
+}
+
+
+SymmetryOperation dimer_symop(const tonto::chem::Dimer &dimer, const Crystal &crystal)
+{
+    const auto& a = dimer.a();
+    const auto& b = dimer.b();
+
+    int sa_int = a.asymmetric_unit_symop()(0);
+    int sb_int = b.asymmetric_unit_symop()(0);
+
+    SymmetryOperation symop_a(sa_int);
+    SymmetryOperation symop_b(sb_int);
+
+    auto symop_ab = symop_b * symop_a.inverted();
+    tonto::Vec3 c_a = symop_ab(crystal.to_fractional(a.positions())).rowwise().mean();
+    tonto::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
+
+    symop_ab = symop_ab.translated(v_ab);
+    return symop_ab;
 }
 
 TEST_CASE("acetic molecules", "[crystal]")
@@ -152,9 +173,7 @@ TEST_CASE("acetic molecules", "[crystal]")
     fmt::print("Dimers\n");
     for(const auto& dimer: dimers)
     {
-        tonto::Mat4 symm = dimer.symmetry_relation().value_or(tonto::Mat4::Identity());
-        symm.col(3).topRows(3) = acetic.to_fractional(symm.col(3).topRows(3));
-        auto symop = SymmetryOperation(symm);
-        fmt::print("{}\n", symop.to_string());
+        auto s_ab = dimer_symop(dimer, acetic);
+        fmt::print("symop = {}\n", s_ab.to_string());
     }
 }

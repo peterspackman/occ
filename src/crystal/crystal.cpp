@@ -255,7 +255,7 @@ void Crystal::update_unit_cell_molecules() const
     positions += shifts;
     tonto::chem::Molecule m(atomic_numbers, to_cartesian(positions));
     m.set_bonds(bonds);
-    m.set_unit_cell_idx(asym_idxs);
+    m.set_unit_cell_idx(uc_idxs);
     m.set_asymmetric_unit_idx(asym_idxs);
     m.set_asymmetric_unit_symop(symops);
     m_unit_cell_molecules.push_back(m);
