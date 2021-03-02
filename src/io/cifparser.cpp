@@ -129,18 +129,23 @@ CifParser::parse_crystal(const std::string &filename) {
 
     if(m_sym.valid())
     {
-        if (m_sym.symops.size() > 0) {
-          auto sg = tonto::crystal::SpaceGroup(m_sym.symops);
-          return tonto::crystal::Crystal(asym, sg, uc);
-        }
-        else if(m_sym.nameHall != "Not set")
+        if(m_sym.nameHall != "Not set")
         {
           auto sg = tonto::crystal::SpaceGroup(m_sym.nameHall);
+          return tonto::crystal::Crystal(asym, sg, uc);
+        }
+        if(m_sym.nameHM != "Not set")
+        {
+          auto sg = tonto::crystal::SpaceGroup(m_sym.nameHM);
           return tonto::crystal::Crystal(asym, sg, uc);
         }
         else if(m_sym.number > 0)
         {
           auto sg = tonto::crystal::SpaceGroup(m_sym.number);
+          return tonto::crystal::Crystal(asym, sg, uc);
+        }
+        else if (m_sym.symops.size() > 0) {
+          auto sg = tonto::crystal::SpaceGroup(m_sym.symops);
           return tonto::crystal::Crystal(asym, sg, uc);
         }
     }

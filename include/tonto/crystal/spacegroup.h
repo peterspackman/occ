@@ -40,7 +40,7 @@ public:
   std::pair<IVec, Mat3N> apply_all_symmetry_operations(const Mat3N &) const;
 
 private:
-  const SGData *m_sgdata;
+  const SGData *m_sgdata{nullptr};
   std::vector<SymmetryOperation> m_symops;
 };
 
