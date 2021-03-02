@@ -1,4 +1,5 @@
 #include <tonto/crystal/spacegroup.h>
+#include <tonto/core/logger.h>
 
 namespace tonto::crystal {
 
@@ -12,18 +13,63 @@ SpaceGroup::SpaceGroup(int number) {
 
 SpaceGroup::SpaceGroup(const std::string &symbol) {
   m_sgdata = gemmi::find_spacegroup_by_name(symbol);
-  for (const auto &op : m_sgdata->operations()) {
-    m_symops.push_back(SymmetryOperation(op.triplet()));
+  tonto::log::debug("Initializing space group from symbol: {}", symbol);
+  if(m_sgdata != nullptr) 
+  {
+      tonto::log::debug("Found space group: {}", m_sgdata->hm);
+      for (const auto &op : m_sgdata->operations()) {
+        m_symops.push_back(SymmetryOperation(op.triplet()));
+      }
+  }
+  else
+  {
+      tonto::log::error("Could not find matching space group: some data will be missing"); 
+  }
+}
+
+SpaceGroup::SpaceGroup(const std::vector<std::string> &symops)
+{
+  tonto::log::debug("Initializing space group from symops (std::vector<std::string>)");
+  gemmi::GroupOps ops;
+  for (const auto &symop : symops) {
+    ops.sym_ops.push_back(gemmi::parse_triplet(symop));
+  }
+  m_sgdata = gemmi::find_spacegroup_by_ops(ops);
+  if(m_sgdata != nullptr) 
+  {
+      tonto::log::debug("Found space group: {}", m_sgdata->hm);
+      for (const auto &op : m_sgdata->operations()) {
+        m_symops.push_back(SymmetryOperation(op.triplet()));
+      }
+  }
+  else
+  {
+      tonto::log::error("Could not find matching space group: some data will be missing"); 
+      for (const auto &op : symops) {
+        m_symops.push_back(SymmetryOperation(op));
+      }
   }
 }
 
 SpaceGroup::SpaceGroup(const std::vector<SymmetryOperation> &symops)
     : m_symops(symops) {
+  tonto::log::debug("Initializing space group from symops (std::vector<SymmetryOperation>)");
   gemmi::GroupOps ops;
   for (const auto &symop : symops) {
     ops.sym_ops.push_back(gemmi::parse_triplet(symop.to_string()));
   }
   m_sgdata = gemmi::find_spacegroup_by_ops(ops);
+  if(m_sgdata != nullptr) 
+  {
+      tonto::log::debug("Found space group: {}", m_sgdata->hm);
+      for (const auto &op : m_sgdata->operations()) {
+        m_symops.push_back(SymmetryOperation(op.triplet()));
+      }
+  }
+  else
+  {
+      tonto::log::error("Could not find matching space group: some data will be missing"); 
+  }
 }
 
 bool SpaceGroup::has_H_R_choice() const {
