@@ -69,6 +69,16 @@ public:
   void set_asymmetric_molecule_idx(size_t idx) { m_asym_mol_idx = idx; }
   int asymmetric_molecule_idx() const { return m_asym_mol_idx; }
 
+  void set_asymmetric_unit_transformation(const tonto::Mat3 &rot, const tonto::Vec3 &trans)
+  {
+      m_asymmetric_unit_rotation =rot;
+      m_asymmetric_unit_translation = trans;
+  }
+  std::pair<tonto::Mat3, tonto::Vec3> asymmetric_unit_transformation() const
+  {
+      return {m_asymmetric_unit_rotation, m_asymmetric_unit_translation};
+  }
+
   void set_unit_cell_idx(const IVec &idx) { m_uc_idx = idx; }
   void set_asymmetric_unit_idx(const IVec &idx) { m_asym_idx = idx; }
   void set_asymmetric_unit_symop(const IVec &symop) { m_asym_symop = symop; }
@@ -100,6 +110,8 @@ private:
   IVec m_asym_symop;
   std::vector<std::pair<size_t, size_t>> m_bonds;
   std::vector<Element> m_elements;
+  tonto::Mat3 m_asymmetric_unit_rotation = tonto::Mat3::Identity(3, 3);
+  tonto::Vec3 m_asymmetric_unit_translation = tonto::Vec3::Zero(3);
 };
 
 Molecule read_xyz_file(const std::string &);

@@ -46,6 +46,7 @@ target_link_libraries(crystal_interactions
     tonto_solvent
     tonto_io
     tonto_crystal
+    tonto_interaction
 )
 
 set_target_properties(crystal_interactions

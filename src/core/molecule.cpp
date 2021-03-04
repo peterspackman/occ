@@ -137,6 +137,7 @@ void Molecule::rotate(const tonto::Mat3 &rotation, Origin origin)
     translate(-O);
     m_positions = rotation * m_positions;
     translate(O);
+    m_asymmetric_unit_rotation = rotation * m_asymmetric_unit_rotation;
 }
 
 Molecule Molecule::rotated(const tonto::Mat3 &rotation, Origin origin) const
@@ -149,6 +150,7 @@ Molecule Molecule::rotated(const tonto::Mat3 &rotation, Origin origin) const
 void Molecule::translate(const tonto::Vec3 &translation)
 {
     m_positions.colwise() += translation;
+    m_asymmetric_unit_translation += translation;
 }
 
 Molecule Molecule::translated(const tonto::Vec3 &translation) const

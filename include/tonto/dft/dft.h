@@ -110,6 +110,7 @@ public:
         using tonto::parallel::nthreads;
         tonto::MatRM K, F;
         m_e_alpha = 0.0;
+        m_e_beta = 0.0;
         double ecoul, exc;
         double exchange_factor = exact_exchange_factor();
         if(exchange_factor != 0.0) {
@@ -289,7 +290,7 @@ private:
     MolecularGrid m_grid;
     std::vector<DensityFunctional> m_funcs;
     std::vector<AtomGrid> m_atom_grids;
-    mutable double m_e_alpha;
-    mutable double m_e_beta;
+    mutable double m_e_alpha{0.0};
+    mutable double m_e_beta{0.0};
 };
 }

@@ -61,7 +61,7 @@ tonto::MatRM from_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM&
         FOR_CART(xp, yp, zp, l)
             xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp), static_cast<uint_fast8_t>(zp)};
             size_t gaussian_idx = index_of(v, gaussian_order);
-            tonto::log::debug("Setting row {} <- row {}", our_idx, gaussian_idx);
+            tonto::log::debug("Setting row {} <- {} ({}{}{})", our_idx, gaussian_idx, xp, yp, zp);
             result.row(bf_first + our_idx) = mo.row(bf_first + gaussian_idx);
             double normalization_factor = tonto::gto::cartesian_normalization_factor(xp, yp, zp);
             result.row(bf_first + our_idx) *= normalization_factor;
@@ -127,10 +127,10 @@ tonto::MatRM to_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM &m
         FOR_CART(xp, yp, zp, l)
             xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp), static_cast<uint_fast8_t>(zp)};
             size_t gaussian_idx = index_of(v, gaussian_order);
-            tonto::log::debug("Setting row {} <- row {}", our_idx, gaussian_idx);
-            result.row(bf_first + our_idx) = mo.row(bf_first + gaussian_idx);
+            tonto::log::debug("Setting row {} <- {} ({}{}{})", gaussian_idx, our_idx, xp, yp, zp);
+            result.row(bf_first + gaussian_idx) = mo.row(bf_first + our_idx);
             double normalization_factor = tonto::gto::cartesian_normalization_factor(xp, yp, zp);
-            result.row(bf_first + our_idx) *= normalization_factor;
+            result.row(bf_first + gaussian_idx) /= normalization_factor;
             our_idx++;
         END_FOR_CART
     }
