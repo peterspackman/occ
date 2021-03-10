@@ -21,6 +21,7 @@ struct AtomGrid
     uint_fast8_t atomic_number;
     Mat3N points;
     Vec weights;
+    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> atom_mask;
 };
 
 struct RadialGrid

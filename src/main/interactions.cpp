@@ -153,14 +153,6 @@ auto calculate_interaction_energy(const Dimer &dimer, const std::vector<Wavefunc
     CEModelInteraction interaction(model);
 
     auto interaction_energy = interaction(A, B);
-
-    fmt::print("Component              Energy (kJ/mol)\n\n");
-    fmt::print("Coulomb               {: 12.6f}\n", interaction_energy.coulomb * AU_TO_KJ_PER_MOL);
-    fmt::print("Exchange-repulsion    {: 12.6f}\n", interaction_energy.exchange_repulsion * AU_TO_KJ_PER_MOL);
-    fmt::print("Polarization          {: 12.6f}\n", interaction_energy.polarization * AU_TO_KJ_PER_MOL);
-    fmt::print("Dispersion            {: 12.6f}\n", interaction_energy.dispersion * AU_TO_KJ_PER_MOL);
-    fmt::print("__________________________________\n");
-    fmt::print("Total {:^8s}        {: 12.6f}\n", model_name, interaction_energy.total * AU_TO_KJ_PER_MOL);
     return interaction_energy;
 }
 
@@ -171,10 +163,10 @@ int main(int argc, const char **argv) {
             .help("Number of threads")
             .default_value(2)
             .action([](const std::string& value) { return std::stoi(value); });
-    tonto::log::set_level(tonto::log::level::debug);
-    spdlog::set_level(spdlog::level::debug);
+    tonto::log::set_level(tonto::log::level::info);
+    spdlog::set_level(spdlog::level::info);
     using tonto::parallel::nthreads;
-    nthreads = 1;
+    nthreads = parser.get<int>("--threads");
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
 
@@ -200,14 +192,15 @@ int main(int argc, const char **argv) {
         auto crystal_dimers = c.symmetry_unique_dimers(3.8);
         const auto &dimers = crystal_dimers.unique_dimers;
         fmt::print("Dimers\n");
-        size_t ndim = 0;
+        const std::string row_fmt_string = "{:>9.3f} {:>20s} {: 9.3f} {: 9.3f} {: 9.3f} {: 9.3f} | {: 9.3f}\n";
+
+        std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
         for(const auto& dimer: dimers)
         {
             auto s_ab = dimer_symop(dimer, c);
-            write_xyz_dimer(fmt::format("{}_dimer_{}.xyz", basename, ndim), dimer);
-            auto energy = calculate_interaction_energy(dimer, wfns, c);
-            fmt::print("R = {:.3f}, symop = {}, energy = {}\n", dimer.center_of_mass_distance(), s_ab.to_string(), energy.total * AU_TO_KJ_PER_MOL);
-            ndim++;
+            write_xyz_dimer(fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()), dimer);
+            fmt::print("Calculating dimer {}\n", dimer_energies.size());
+            dimer_energies.push_back(calculate_interaction_energy(dimer, wfns, c));
         }
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
@@ -215,15 +208,30 @@ int main(int argc, const char **argv) {
         {
             const auto& n = mol_neighbors[i];
             fmt::print("Neighbors for molecule {}\n", i);
+
+            fmt::print("{:>9s} {:>20s} {:>9s} {:>9s} {:>9s} {:>9s} | {:>9s}\n",
+                       "R", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot");
             size_t j = 0;
+            CEModelInteraction::EnergyComponents total; 
             for(const auto& dimer: n)
             {
-                auto s_ab = dimer_symop(dimer, c);
-                fmt::print("R = {:.3f}, symop = {}, unique_idx = {}\n",
-                           dimer.nearest_distance(), s_ab.to_string(),
-                           crystal_dimers.unique_dimer_idx[i][j]);
+                auto s_ab = dimer_symop(dimer, c).to_string();
+                size_t idx = crystal_dimers.unique_dimer_idx[i][j]; 
+                double r = dimer.nearest_distance();
+                const auto& e = dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];
+                double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
+                    epol = e.polarization_kjmol(), edisp = e.dispersion_kjmol(),
+                    etot = e.total_kjmol();
+                total.coulomb += ecoul;
+                total.exchange_repulsion += erep;
+                total.polarization += epol;
+                total.dispersion += edisp;
+                total.total += etot;
+
+                fmt::print(row_fmt_string, r, s_ab, ecoul, erep, epol, edisp, etot);
                 j++;
             }
+            fmt::print("Total: {:.3f} kJ/mol\n", total.total);
         }
 
      } catch (const char *ex) {
