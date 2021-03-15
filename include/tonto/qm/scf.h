@@ -2,8 +2,8 @@
 #include <tonto/core/linear_algebra.h>
 #include <tonto/core/logger.h>
 #include <tonto/core/util.h>
+#include <tonto/core/diis.h>
 #include <tonto/qm/ints.h>
-#include <tonto/qm/diis.h>
 #include <tonto/qm/spinorbital.h>
 #include <tonto/qm/density_fitting.h>
 #include <tonto/qm/wavefunction.h>
@@ -372,7 +372,10 @@ struct SCF {
         K = m_procedure.compute_schwarz_ints();
         energy.nuclear_repulsion = m_procedure.nuclear_repulsion_energy();
         MatRM D_diff = D;
-        fmt::print("Starting {} SCF iterations\n\n", scf_kind());
+        MatRM D_last;
+        MatRM FD_comm = MatRM::Zero(F.rows(), F.cols());
+        update_scf_energy(F + H);
+        fmt::print("Starting {} SCF iterations (Eguess = {:.12f})\n\n", scf_kind(), energy.total);
         if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
             fmt::print("n_electrons: {}\nn_alpha: {}\nn_beta: {}\n", n_electrons, n_alpha(), n_beta());
         }
@@ -382,7 +385,7 @@ struct SCF {
             ++iter;
             // Last iteration's energy and density
             auto ehf_last = energy.electronic;
-            MatRM D_last = D;
+            D_last = D;
 
             if (not incremental_Fbuild_started &&
                     rms_error < start_incremental_F_threshold) {
@@ -427,7 +430,6 @@ struct SCF {
             ediff_rel = std::abs((energy.electronic - ehf_last) / energy.electronic);
 
             // compute SCF error
-            MatRM FD_comm(F.rows(), F.cols());
             if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
                 FD_comm.alpha() = F.alpha() * D.alpha() * S.alpha() - S.alpha() * D.alpha() * F.alpha();
                 FD_comm.beta() = F.beta() * D.beta() * S.beta() - S.beta() * D.beta() * F.beta();
@@ -440,7 +442,8 @@ struct SCF {
                 reset_incremental_fock_formation = true;
 
             // DIIS extrapolate F
-            MatRM F_diis = F; // extrapolated F cannot be used in incremental Fock
+            MatRM F_diis(F.rows(), F.cols()); // extrapolated F cannot be used in incremental Fock
+            F_diis = F;
             // build; only used to produce the density
             // make a copy of the unextrapolated matrix
             diis.extrapolate(F_diis, FD_comm);

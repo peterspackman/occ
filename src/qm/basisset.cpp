@@ -182,7 +182,7 @@ std::vector<std::string> BasisSet::decompose_name_into_components(std::string na
 std::string BasisSet::data_path()
 {
   std::string path;
-  const char* data_path_env = getenv("LIBINT_DATA_PATH");
+  const char* data_path_env = getenv("TONTO_BASIS_PATH");
   if (data_path_env) {
     path = data_path_env;
   }

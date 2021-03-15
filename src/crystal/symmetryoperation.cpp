@@ -96,15 +96,19 @@ std::string encode_string(const Mat4 &seitz) {
     }
     for (int j = 0; j < 3; j++) {
       auto c = seitz(i, j);
-      if (c < 0) {
+      if (c < -0.1)
+      {
         v += "-" + symbols.substr(j, 1);
-      } else if (c > 0) {
-        v += "+" + symbols.substr(j, 1);
+      } else if (c > 0.1)
+      {
+        if(!(t == 0)) v += "+";
+        v += symbols.substr(j, 1);
       }
     }
     res.push_back(v);
   }
-  return join(res, ",");
+  std::string result = join(res, ",");
+  return result;
 }
 
 int encode_int(const Mat4 &seitz) {
@@ -136,52 +140,45 @@ int encode_int(const Mat4 &seitz) {
   return r + t * 19683;
 }
 
-SymmetryOperation::SymmetryOperation(int code) { set_from_int(code); }
+SymmetryOperation::SymmetryOperation(const tonto::Mat4 &seitz) : m_seitz(seitz)
+{
+}
+
+SymmetryOperation::SymmetryOperation(int code) {
+    decode_int(code, m_seitz);
+}
 
 SymmetryOperation::SymmetryOperation(const std::string &str) {
-  set_from_string(str);
+    decode_string(str, m_seitz);
 }
 
 SymmetryOperation SymmetryOperation::translated(const Vec3 &t) const {
   SymmetryOperation result = *this;
   result.m_seitz.block(0, 3, 3, 1) += t;
-  result.update_from_seitz();
-  result.m_str = encode_string(result.m_seitz);
-  result.m_int = encode_int(result.m_seitz);
   return result;
 }
 
 SymmetryOperation SymmetryOperation::inverted() const {
-  SymmetryOperation result = *this;
-  result.m_seitz.block(0, 0, 3, 4) *= -1;
-  result.update_from_seitz();
-  result.m_str = encode_string(result.m_seitz);
-  result.m_int = encode_int(result.m_seitz);
-  return result;
+    return SymmetryOperation(m_seitz.inverse());
 }
 
-void SymmetryOperation::set_from_int(int code) {
-  if (code == m_int)
-    return;
-  m_int = code;
-  decode_int(code, m_seitz);
-  update_from_seitz();
-  m_str = encode_string(m_seitz);
+Mat3N SymmetryOperation::apply(const Mat3N &positions) const
+{
+    auto rot = rotation();
+    auto trans = translation();
+    Mat3N result = rot * positions;
+    result.colwise() += trans;
+    return result;
 }
 
-void SymmetryOperation::set_from_string(const std::string &code) {
-  if (code == m_str)
-    return;
-  decode_string(code, m_seitz);
-  m_str = code;
-  update_from_seitz();
-  m_int = encode_int(m_seitz);
+std::string SymmetryOperation::to_string() const
+{
+    return encode_string(m_seitz);
 }
 
-void SymmetryOperation::update_from_seitz() {
-  m_rotation = m_seitz.block(0, 0, m_rotation.rows(), m_rotation.cols());
-  m_translation =
-      m_seitz.block(0, 3, m_translation.rows(), m_translation.cols());
+int SymmetryOperation::to_int() const
+{
+    return encode_int(m_seitz);
 }
 
 } // namespace tonto::crystal

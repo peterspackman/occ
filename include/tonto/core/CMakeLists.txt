@@ -1,8 +1,11 @@
 set(TONTO_CORE_INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/diis.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/eem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/eigenp.h
     ${CMAKE_CURRENT_SOURCE_DIR}/element.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fraction.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/kabsch.h
     ${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.h
     ${CMAKE_CURRENT_SOURCE_DIR}/logger.h
@@ -15,6 +18,7 @@ set(TONTO_CORE_INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/sparsevoxelgrid.h
     ${CMAKE_CURRENT_SOURCE_DIR}/table.h
     ${CMAKE_CURRENT_SOURCE_DIR}/timings.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/units.h
     ${CMAKE_CURRENT_SOURCE_DIR}/util.h
     PARENT_SCOPE
 )

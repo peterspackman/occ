@@ -254,6 +254,8 @@ int main(int argc, const char **argv) {
 
     print_header();
 
+
+    const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
     try {
         libint2::Shell::do_enforce_unit_normalization(false);
         libint2::initialize();
@@ -294,17 +296,16 @@ int main(int argc, const char **argv) {
         fchk.write();
 
     } catch (const char *ex) {
-        fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);
+        fmt::print(error_format, ex);
         return 1;
     } catch (std::string &ex) {
-        fmt::print("Caught exception when performing HF calculation:\n**{}**\n", ex);
+        fmt::print(error_format, ex);
         return 1;
     } catch (std::exception &ex) {
-        fmt::print("Caught exception when performing HF calculation:\n**{}**\n",
-                   ex.what());
+        fmt::print(error_format, ex.what());
         return 1;
     } catch (...) {
-        fmt::print("Unknown exception occurred...\n");
+        fmt::print("Exception:\n- Unknown...\n");
         return 1;
     }
     tonto::timing::stop(tonto::timing::global);

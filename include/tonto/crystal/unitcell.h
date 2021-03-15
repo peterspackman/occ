@@ -51,6 +51,7 @@ public:
   auto a_star_vector() const { return m_reciprocal.col(0); }
   auto b_star_vector() const { return m_reciprocal.col(1); }
   auto c_star_vector() const { return m_reciprocal.col(2); }
+  const auto& lengths() const { return m_lengths; }
 
 private:
   void update_cell_matrices();
@@ -86,4 +87,15 @@ private:
   Mat3 m_inverse;
   Mat3 m_reciprocal;
 };
+
+
+UnitCell cubic_cell(double length);
+UnitCell rhombohedral_cell(double length, double angle);
+UnitCell tetragonal_cell(double a, double c);
+UnitCell hexagonal_cell(double a, double c);
+UnitCell orthorhombic_cell(double a, double b, double c);
+UnitCell monoclinic_cell(double a, double b, double c, double angle);
+UnitCell triclinic_cell(double a, double b, double c, double alpha, double beta, double gamma);
+
+
 } // namespace tonto::crystal

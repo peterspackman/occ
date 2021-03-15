@@ -20,6 +20,5 @@ TEST_CASE("SymmetryOperation seitz", "[symmetry_operation]")
             Eigen::Matrix4d::Identity()
         )
     );
-    REQUIRE(all_close(-id.rotation(), id.inverted().rotation()));
-
+    REQUIRE(all_close(id.rotation(), id.inverted().rotation()));
 }

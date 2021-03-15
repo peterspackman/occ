@@ -11,54 +11,48 @@ using tonto::Vec3;
 
 class SymmetryOperation {
 public:
-  SymmetryOperation(const std::string &);
-  SymmetryOperation(int);
+    SymmetryOperation(const tonto::Mat4 &);
+    SymmetryOperation(const std::string &);
+    SymmetryOperation(int);
 
-  int to_int() const { return m_int; }
-  void set_from_int(int);
+    int to_int() const;
+    std::string to_string() const;
 
-  const std::string &to_string() const { return m_str; }
-  void set_from_string(const std::string &);
-  SymmetryOperation inverted() const;
-  SymmetryOperation translated(const Vec3 &) const;
-  bool is_identity() const { return m_int == 16484; }
+    SymmetryOperation inverted() const;
+    SymmetryOperation translated(const Vec3 &) const;
 
-  auto apply(const Mat3N &frac) const {
-    Mat3N tmp = m_rotation * frac;
-    tmp.colwise() += m_translation;
-    return tmp;
-  }
+    bool is_identity() const { return to_int() == 16484; }
 
-  const auto &seitz() const { return m_seitz; }
-  const auto &rotation() const { return m_rotation; }
-  const auto &translation() const { return m_translation; }
+    Mat3N apply(const Mat3N &frac) const;
+    const auto &seitz() const { return m_seitz; }
+    Mat3 rotation() const { return m_seitz.block<3, 3>(0, 0); }
+    Vec3 translation() const { return m_seitz.block<3, 1>(0, 3); }
 
-  // Operators
-  auto operator()(const Mat3N &frac) const { return apply(frac); }
-  bool operator==(const SymmetryOperation &other) const {
-    return m_int == other.m_int;
-  }
-  bool operator<(const SymmetryOperation &other) const {
-    return m_int < other.m_int;
-  }
-  bool operator>(const SymmetryOperation &other) const {
-    return m_int > other.m_int;
-  }
-  bool operator<=(const SymmetryOperation &other) const {
-    return m_int <= other.m_int;
-  }
-  bool operator>=(const SymmetryOperation &other) const {
-    return m_int >= other.m_int;
-  }
+    // Operators
+    auto operator()(const Mat3N &frac) const { return apply(frac); }
+    bool operator==(const SymmetryOperation &other) const {
+        return to_int() == other.to_int();
+    }
+    bool operator<(const SymmetryOperation &other) const {
+        return to_int() < other.to_int();
+    }
+    bool operator>(const SymmetryOperation &other) const {
+        return to_int() > other.to_int();
+    }
+    bool operator<=(const SymmetryOperation &other) const {
+        return to_int() <= other.to_int();
+    }
+    bool operator>=(const SymmetryOperation &other) const {
+        return to_int() >= other.to_int();
+    }
+
+    const SymmetryOperation operator*(const SymmetryOperation &other) const
+    {
+        return SymmetryOperation(seitz() * other.seitz());
+    }
 
 private:
-  void update_from_seitz();
-  int m_int;
-  std::string m_str;
-  Mat4 m_seitz;
-  // above is the core data, this is just convenience
-  Mat3 m_rotation;
-  Vec3 m_translation;
+    Mat4 m_seitz;
 };
 
 } // namespace tonto::crystal

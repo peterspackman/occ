@@ -73,6 +73,7 @@ private:
   void extract_atom_sites(const gemmi::cif::Loop &);
   void extract_cell_parameter(const gemmi::cif::Pair &);
   void extract_symmetry_operations(const gemmi::cif::Loop &);
+  void extract_symmetry_data(const gemmi::cif::Pair &);
   std::string m_failure_desc;
   std::vector<AtomData> m_atoms;
   SymmetryData m_sym;

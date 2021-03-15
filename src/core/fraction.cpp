@@ -8,11 +8,37 @@ namespace tonto::numeric {
 
 using tonto::util::tokenize;
 
+template<typename F, typename I>
+std::pair<I, I> continued_fraction_approximation(F f, F tolerance) {
+    I aprev[2] = {1, 0};
+    I bprev[2] = {0, 1};
+
+    F x = f;
+    while(true) {
+        I n = floor(x);
+        x -= n;
+        x = 1/x;
+
+        I denominator = aprev[0] + n * aprev[1];
+        aprev[0] = aprev[1];
+        aprev[1] = denominator;
+
+        I numerator = bprev[0] + n * bprev[1];
+        bprev[0] = bprev[1];
+        bprev[1] = numerator;
+
+        F approx = static_cast<F>(numerator) / static_cast<F>(denominator);
+        if(abs(approx - f) < tolerance) return {numerator, denominator};
+    }
+}
+
 template <typename F, typename I>
 std::tuple<I, I> as_integer_ratio(F f, I max_denominator) {
+  if(abs(f) < std::numeric_limits<F>::epsilon()) return {0, 1};
   I a, h[3] = {0, 1, 0}, k[3] = {1, 0, 0};
   I x, d, n = 1;
-  I i, neg = 0;
+  I i;
+  bool negative = false;
   I num, denom;
 
   if (max_denominator <= 1) {
@@ -20,7 +46,7 @@ std::tuple<I, I> as_integer_ratio(F f, I max_denominator) {
   }
 
   if (f < 0) {
-    neg = 1;
+    negative = true;
     f = -f;
   }
 
@@ -57,12 +83,19 @@ std::tuple<I, I> as_integer_ratio(F f, I max_denominator) {
     k[1] = k[2];
   }
   denom = k[1];
-  num = neg ? -h[1] : h[1];
+  num = negative ? -h[1] : h[1];
   return {num, denom};
 }
 
 Fraction::Fraction(int64_t numerator, int64_t denominator)
-    : m_numerator(numerator), m_denominator(denominator) {}
+    : m_numerator(numerator), m_denominator(denominator)
+{
+    if(m_denominator < 0)
+    {
+        m_numerator *= -1;
+        m_denominator *= -1;
+    }
+}
 
 Fraction::Fraction(int64_t numerator) : m_numerator(numerator) {}
 
@@ -82,11 +115,11 @@ Fraction::Fraction(const std::string &expr) {
 }
 
 Fraction::Fraction(double value) {
-  std::tie(m_numerator, m_denominator) =
-      as_integer_ratio<double, int64_t>(value, 1000000);
+  std::tie(m_numerator, m_denominator) = continued_fraction_approximation<double, int64_t>(value, 1e-8);
 }
 
 std::string Fraction::to_string() const {
+  if(m_numerator == 0 || m_denominator <= 1) return fmt::format("{}", m_numerator);
   return fmt::format("{}/{}", m_numerator, m_denominator);
 }
 
@@ -119,28 +152,34 @@ const Fraction Fraction::limit_denominator(int64_t max_denominator) const {
    two int64_tegers) the lower bound---i.e., the floor of self, is
    taken.
   */
-  if (m_denominator <= max_denominator)
-    return Fraction(m_numerator, m_denominator);
 
+  if (m_denominator <= max_denominator) return *this;
+
+  bool neg = (m_numerator < 0);
   int64_t p0 = 0, q0 = 1, p1 = 1, q1 = 0;
-  int64_t n = m_numerator, d = m_denominator;
+  int64_t n = neg ? - m_numerator : m_numerator, d = m_denominator;
+
+  
+
   while (true) {
     int64_t a = n / d;
     int64_t q2 = q0 + a * q1;
     if (q2 > max_denominator)
       break;
-    int64_t p0tmp = p0, p1tmp = p1;
-    p0 = p1tmp;
+    int64_t ptmp{p0};
+    p0 = p1;
     q0 = q1;
-    p1 = p0tmp + a * p1tmp;
+    p1 = ptmp + a * p1;
     q1 = q2;
-    int64_t ntmp = n;
+
+    int64_t ntmp{n};
     n = d;
     d = ntmp - a * d;
   }
+
   int64_t k = (max_denominator - q0) / q1;
-  auto bound1 = Fraction(p0 + k * p1, q0 + k * q1);
-  auto bound2 = Fraction(p1, q1);
+  auto bound1 = Fraction(neg ? - (p0 + k * p1) : (p0 + k * p1), q0 + k * q1);
+  auto bound2 = Fraction(neg ? - p1 : p1, q1);
   if ((subtract(bound2).abs()) <= (subtract(bound1).abs())) {
     return bound2;
   } else {

@@ -11,9 +11,10 @@ Element::Element(const std::string &s) : m_data(ELEMENTDATA_TABLE[0]) {
   // capitalize the symbol first
   auto symbol = tonto::util::trim_copy(s);
   auto capitalized = tonto::util::capitalize_copy(s);
-  for (size_t i = 1; i < ELEMENT_MAX; i++) {
+  for (size_t i = ELEMENT_MAX - 1; i > 0; i--) {
     const auto dat = ELEMENTDATA_TABLE[i];
-    if (symbol == dat.symbol) {
+    const size_t N = dat.symbol.size();
+    if (dat.symbol.compare(0, N, symbol, 0, N) == 0) {
       m_data = dat;
       return;
     }

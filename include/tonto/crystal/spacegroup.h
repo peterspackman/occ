@@ -15,11 +15,24 @@ using SGData = gemmi::SpaceGroup;
 
 class SpaceGroup {
 public:
+  SpaceGroup(int);
   SpaceGroup(const std::string &);
+  SpaceGroup(const std::vector<std::string> &);
   SpaceGroup(const std::vector<SymmetryOperation> &symops);
-  int number() const { return m_sgdata->number; }
-  const std::string symbol() const { return m_sgdata->hm; }
-  std::string short_name() const { return m_sgdata->short_name(); }
+  int number() const {
+      if(m_sgdata != nullptr)
+        return m_sgdata->number;
+      return 0;
+  }
+  const std::string symbol() const {
+    if(m_sgdata != nullptr) return m_sgdata->hm;
+    return "XX";
+  }
+  std::string short_name() const {
+    if(m_sgdata != nullptr)
+        return m_sgdata->short_name();
+    return "unknown";
+  }
   const std::vector<SymmetryOperation> &symmetry_operations() const {
     return m_symops;
   }
@@ -27,7 +40,7 @@ public:
   std::pair<IVec, Mat3N> apply_all_symmetry_operations(const Mat3N &) const;
 
 private:
-  const SGData *m_sgdata;
+  const SGData *m_sgdata{nullptr};
   std::vector<SymmetryOperation> m_symops;
 };
 

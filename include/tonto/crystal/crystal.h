@@ -4,6 +4,7 @@
 #include <tonto/core/molecule.h>
 #include <tonto/crystal/spacegroup.h>
 #include <tonto/crystal/unitcell.h>
+#include <tonto/core/dimer.h>
 #include <vector>
 
 namespace tonto::crystal {
@@ -34,12 +35,23 @@ struct AtomSlab {
 };
 
 struct AsymmetricUnit {
+  AsymmetricUnit() {}
+  AsymmetricUnit(const Mat3N&, const IVec&);
+  AsymmetricUnit(const Mat3N&, const IVec&, const std::vector<std::string>&);
   Mat3N positions;
   IVec atomic_numbers;
   Vec occupations;
   std::vector<std::string> labels;
   std::string chemical_formula() const;
   Vec covalent_radii() const;
+  void generate_default_labels();
+  size_t size() const { return atomic_numbers.size(); }
+};
+
+struct CrystalDimers {
+    std::vector<tonto::chem::Dimer> unique_dimers;
+    std::vector<std::vector<tonto::chem::Dimer>> molecule_neighbors;
+    std::vector<std::vector<size_t>> unique_dimer_idx;
 };
 
 class Crystal {
@@ -68,17 +80,28 @@ public:
   const AtomSlab &unit_cell_atoms() const;
   const PeriodicBondGraph &unit_cell_connectivity() const;
   const std::vector<Molecule> &unit_cell_molecules() const;
+  const std::vector<Molecule> &symmetry_unique_molecules() const;
+
+  CrystalDimers symmetry_unique_dimers(double) const;
 
 private:
   AsymmetricUnit m_asymmetric_unit;
   SpaceGroup m_space_group;
   UnitCell m_unit_cell;
+  void update_unit_cell_molecules() const;
+  void update_symmetry_unique_molecules() const;
+  void update_unit_cell_connectivity() const;
+  void update_unit_cell_atoms() const;
+
   mutable std::vector<PeriodicBondGraph::vertex_t> m_bond_graph_vertices;
   mutable PeriodicBondGraph m_bond_graph;
   mutable AtomSlab m_unit_cell_atoms;
+  mutable bool m_symmetry_unique_molecules_needs_update{true};
   mutable bool m_unit_cell_atoms_needs_update{true};
+  mutable bool m_unit_cell_molecules_needs_update{true};
   mutable bool m_unit_cell_connectivity_needs_update{true};
   mutable std::vector<Molecule> m_unit_cell_molecules{};
+  mutable std::vector<Molecule> m_symmetry_unique_molecules{};
 };
 
 } // namespace tonto::crystal

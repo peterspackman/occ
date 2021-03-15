@@ -4,6 +4,7 @@
 #include <tonto/qm/basisset.h>
 #include <tonto/qm/spinorbital.h>
 #include <tonto/interaction/polarization.h>
+#include <tonto/core/units.h>
 #include <memory>
 
 namespace tonto::interaction {
@@ -64,6 +65,11 @@ struct CEModelInteraction
         double polarization{0.0};
         double dispersion{0.0};
         double total{0.0};
+        double coulomb_kjmol() const { return tonto::units::AU_TO_KJ_PER_MOL * coulomb; }
+        double exchange_kjmol() const { return tonto::units::AU_TO_KJ_PER_MOL * exchange_repulsion; }
+        double polarization_kjmol() const { return tonto::units::AU_TO_KJ_PER_MOL * polarization; }
+        double dispersion_kjmol() const { return tonto::units::AU_TO_KJ_PER_MOL * dispersion; }
+        double total_kjmol() const { return tonto::units::AU_TO_KJ_PER_MOL * total; }
     };
     CEModelInteraction(const CEParameterizedModel&);
     EnergyComponents operator()(Wavefunction&, Wavefunction&) const;

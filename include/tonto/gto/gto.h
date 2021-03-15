@@ -260,6 +260,7 @@ GTOValues<max_derivative> evaluate_basis_on_grid(const BasisSet &basis,
         for(const auto& shell_idx: atom2shell[i]) {
             const auto& shell = basis[shell_idx];
             size_t bf = shell2bf[shell_idx];
+            mask.setConstant(false);
             for(size_t pt = 0; pt < npts; pt++) {
                 for(size_t prim = 0; prim < shell.nprim(); prim++) {
                     if((shell.alpha[prim] * dists(3, pt) - shell.max_ln_coeff[prim]) < EXPCUTOFF) {

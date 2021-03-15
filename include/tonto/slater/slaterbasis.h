@@ -47,6 +47,7 @@ private:
 
 class Basis {
 public:
+    Basis() {}
     Basis(const std::vector<Shell>&);
     double rho(double r) const;
     double grad_rho(double r) const;
