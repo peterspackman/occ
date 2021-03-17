@@ -38,8 +38,8 @@ template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKin
 std::pair<tonto::Mat, tonto::gto::GTOValues<derivative_order>> evaluate_density_and_gtos(
     const BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
-    const tonto::MatRM& D,
-    const tonto::Mat &grid_pts)
+    const Eigen::Ref<const tonto::MatRM>& D,
+    const Eigen::Ref<const tonto::Mat> &grid_pts)
 {
     auto gto_values = tonto::gto::evaluate_basis_on_grid<derivative_order>(basis, atoms, grid_pts);
     auto rho = tonto::density::evaluate_density<derivative_order, spinorbital_kind>(D, gto_values);

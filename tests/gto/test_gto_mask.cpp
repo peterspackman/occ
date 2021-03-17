@@ -55,7 +55,7 @@ TEST_CASE("evaluate_basis", "[gto]")
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}
     };
-    BasisSet basis("def2-tzvp", atoms);
+    BasisSet basis("3-21G", atoms);
     basis.set_pure(false);
     tonto::dft::MolecularGrid mgrid(basis, atoms);
     std::vector<tonto::dft::AtomGrid> grids{
