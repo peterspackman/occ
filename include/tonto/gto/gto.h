@@ -100,13 +100,13 @@ inline std::vector<Momenta> cartesian_ordering(int l) {
 namespace impl {
 
 template<size_t max_derivative>
-void add_shell_contribution(size_t bf, const libint2::Shell &shell, const tonto::Mat& dists,
+void add_shell_contribution(size_t bf, const libint2::Shell &shell, const Eigen::Ref<const tonto::Mat>& dists,
                     GTOValues<max_derivative>& result,
-                    const tonto::MaskArray& mask)
+                    const Eigen::Ref<const tonto::MaskArray>& mask)
 {
     size_t n_pt = dists.cols();
     size_t n_prim = shell.nprim();
-    constexpr size_t LMAX{5};
+    constexpr size_t LMAX{8};
     for(const auto& contraction: shell.contr) {
         switch (contraction.l) {
         case 0: {

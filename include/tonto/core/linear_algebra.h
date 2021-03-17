@@ -17,6 +17,7 @@ using DArray = Eigen::ArrayXd;
 using CArray = Eigen::ArrayXcd;
 using IArray = Eigen::ArrayXi;
 using MaskArray = Eigen::Array<bool, Eigen::Dynamic, 1>;
+using MaskMat = Eigen::Array<bool, Eigen::Dynamic, Eigen::Dynamic>;
 
 using Mat = Eigen::MatrixXd;
 using Mat3N = Eigen::Matrix3Xd;
