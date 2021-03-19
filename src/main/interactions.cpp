@@ -100,6 +100,15 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
 
 }
 
+void compute_monomer_energies(std::vector<Wavefunction> &wfns)
+{
+    fmt::print("Computing monomer energies\n");
+    for(auto& wfn : wfns)
+    {
+        HartreeFock hf(wfn.atoms, wfn.basis);
+        tonto::interaction::compute_ce_model_energies(wfn, hf);
+    }
+}
 
 auto calculate_transform(const Wavefunction &wfn, const Molecule &m, const Crystal &c)
 {
@@ -165,8 +174,6 @@ int main(int argc, const char **argv) {
             .action([](const std::string& value) { return std::stoi(value); });
     tonto::log::set_level(tonto::log::level::info);
     spdlog::set_level(spdlog::level::info);
-    using tonto::parallel::nthreads;
-    nthreads = parser.get<int>("--threads");
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
 
@@ -180,6 +187,11 @@ int main(int argc, const char **argv) {
     }
 
 
+    using tonto::parallel::nthreads;
+    nthreads = parser.get<int>("--threads");
+    omp_set_num_threads(nthreads);
+    fmt::print("\nParallelization: {} OpenMP threads, {} Eigen threads\n", nthreads, Eigen::nbThreads());
+
 
     const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
     try {
@@ -189,6 +201,7 @@ int main(int argc, const char **argv) {
         fmt::print("Loaded crystal from {}\n", filename);
         auto molecules = c.symmetry_unique_molecules();
         auto wfns = calculate_wavefunctions(basename , molecules);
+        compute_monomer_energies(wfns);
         auto crystal_dimers = c.symmetry_unique_dimers(3.8);
         const auto &dimers = crystal_dimers.unique_dimers;
         fmt::print("Dimers\n");

@@ -7,6 +7,8 @@
 #include <tonto/core/units.h>
 #include <memory>
 
+
+namespace tonto::hf { class HartreeFock; }
 namespace tonto::interaction {
 using tonto::MatRM;
 using tonto::Vec;
@@ -28,6 +30,8 @@ struct CEParameterizedModel {
 
 inline CEParameterizedModel CE_HF_321G{1.019, 0.811, 0.651, 0.901, "CE-HF"};
 inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177, 0.7399, 0.8708, "CE-B3LYP"};
+
+void compute_ce_model_energies(Wavefunction &wfn, tonto::hf::HartreeFock &hf);
 
 template<typename Procedure>
 double compute_polarization_energy(const Wavefunction &wfn_a, const Procedure &proc_a,

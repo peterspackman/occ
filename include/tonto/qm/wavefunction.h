@@ -65,6 +65,7 @@ struct Wavefunction {
     MatRM C, C_occ, D, T, V, H, J, K;
     Vec mo_energies;
     Energy energy;
+    bool have_energies{false};
 
 
 };

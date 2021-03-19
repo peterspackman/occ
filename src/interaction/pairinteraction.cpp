@@ -16,6 +16,7 @@ CEModelInteraction::CEModelInteraction(const  CEParameterizedModel &facs) : scal
 template<SpinorbitalKind kind>
 void compute_ce_model_energies(Wavefunction& wfn, tonto::hf::HartreeFock& hf)
 {
+    if(wfn.have_energies) return;
     using tonto::qm::expectation;
     using tonto::qm::matrix_dimensions;
     if constexpr(kind == SpinorbitalKind::Restricted) {
@@ -48,7 +49,7 @@ void compute_ce_model_energies(Wavefunction& wfn, tonto::hf::HartreeFock& hf)
         wfn.energy.exchange = - expectation<kind>(wfn.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
     }
-
+    wfn.have_energies = true;
 }
 
 

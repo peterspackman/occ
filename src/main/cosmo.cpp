@@ -49,6 +49,7 @@ Wavefunction run_from_xyz_file(const InputConfiguration &config)
     fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
     Wavefunction wfn;
     tonto::dft::DFT rks(config.method, basis, m.atoms(), SpinorbitalKind::Restricted);
+    rks.set_system_charge(config.charge);
     SCF<tonto::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
     scf.set_charge_multiplicity(config.charge, config.multiplicity);
     scf.start_incremental_F_threshold = 0.0;
@@ -62,6 +63,8 @@ tonto::Vec compute_esp(const Wavefunction &wfn, const tonto::Mat3N &points)
     tonto::ints::shellpair_list_t shellpair_list;
     tonto::ints::shellpair_data_t shellpair_data;
     std::tie(shellpair_list, shellpair_data) = tonto::ints::compute_shellpairs(wfn.basis);
+    auto dout = fmt::output_file("D.txt");
+    dout.print("{}", wfn.D);
     return tonto::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
 }
 
@@ -69,6 +72,11 @@ tonto::Vec compute_esp(const Wavefunction &wfn, const tonto::Mat3N &points)
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("tonto");
     parser.add_argument("input").help("Input file geometry");
+    parser.add_argument("-c", "--charge")
+            .help("Molecular charge")
+            .default_value(0)
+            .action([](const std::string& value) { return std::stoi(value); });
+
     parser.add_argument("-j", "--threads")
             .help("Number of threads")
             .default_value(2)
@@ -90,6 +98,7 @@ int main(int argc, const char **argv) {
     config.geometry_filename = parser.get<std::string>("input");
     using tonto::parallel::nthreads;
     nthreads = parser.get<int>("--threads");
+    config.charge = parser.get<int>("--charge");
     omp_set_num_threads(nthreads);
 
 
@@ -103,6 +112,8 @@ int main(int argc, const char **argv) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
                    atom.x, atom.y, atom.z);
     }
+
+    fmt::print("Charge: {}\n", config.charge);
 
     Wavefunction wfn;
     if(fs::exists(fchk_path)) {
@@ -122,15 +133,16 @@ int main(int argc, const char **argv) {
 
 
     StopWatch<1> sw;
-    tonto::Mat3N pos = m.positions();
+    tonto::Mat3N pos = m.positions() / 0.52917749;
     tonto::IVec nums = m.atomic_numbers();
-    tonto::Vec radii = m.vdw_radii();
-    radii.array() += 1.4;
+    tonto::Vec radii = tonto::solvent::cosmo::solvation_radii(nums);
+    fmt::print("van der Waals radii:\n{}\n", radii);
+    radii.array() /= 0.52917749;
 
     sw.start(0);
     auto surface = tonto::solvent::surface::solvent_surface(radii, nums, pos);
     sw.stop(0);
-    fmt::print("Surface calculated in {}\n", sw.read(0));
+    fmt::print("Surface ({} atoms, {} points) calculated in {}\n", radii.rows(), surface.areas.rows(), sw.read(0));
     sw.clear_all();
 
     tonto::Vec areas = surface.areas;
@@ -150,6 +162,7 @@ int main(int argc, const char **argv) {
 
     COSMO cosmo(78.40);
     cosmo.set_max_iterations(100);
+    cosmo.set_x(0.0);
     auto result = cosmo(points, areas, charges);
     auto vout = fmt::output_file("points.txt");
     vout.print("{}", points.transpose());
@@ -157,7 +170,7 @@ int main(int argc, const char **argv) {
     cout.print("{}", charges);
     auto vaout = fmt::output_file("areas.txt");
     vaout.print("{}", areas);
-    fmt::print("Surface area: {}\n", areas.sum());
+    fmt::print("Surface area: {} angstrom**2\n", areas.sum() * 0.52917749 * 0.52917749);
 
     fmt::print("Total energy: {} kcal/mol\n", tonto::units::AU_TO_KCAL_PER_MOL * result.energy);
 
