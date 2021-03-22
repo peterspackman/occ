@@ -81,6 +81,11 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
     {
         fs::path fchk_path(fmt::format("{}_{}.fchk", basename, index));
         auto dmat = fmt::output_file(fmt::format("{}_{}.txt", basename, index));
+        fmt::print("Molecule ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", index, "sym", "x", "y", "z");
+        for (const auto &atom : m.atoms()) {
+            fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n", Element(atom.atomic_number).symbol(),
+                       atom.x, atom.y, atom.z);
+        }
         if(fs::exists(fchk_path)) {
             using tonto::io::FchkReader;
             FchkReader fchk(fchk_path.string());
@@ -110,6 +115,7 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
             fchk.write();
             wfns.push_back(wfn);
         }
+
         index++;
     }
     return wfns;
@@ -320,13 +326,14 @@ int main(int argc, const char **argv) {
         Crystal c = read_crystal(filename);
         fmt::print("Loaded crystal from {}\n", filename);
         auto molecules = c.symmetry_unique_molecules();
+        auto atoms = c.unit_cell_atoms();
+        return 0;
         fmt::print("{} molecules\n", molecules.size());
         auto wfns = calculate_wavefunctions(basename, molecules);
         auto surfaces = compute_solvent_surfaces(wfns);
         compute_monomer_energies(wfns);
         auto crystal_dimers = c.symmetry_unique_dimers(3.8);
         const auto &dimers = crystal_dimers.unique_dimers;
-        fmt::print("Dimers\n");
         const std::string row_fmt_string = "{:>9.3f} {:>24s} {: 9.3f} {: 9.3f} {: 9.3f} {: 9.3f} | {: 9.3f} | {: 9.3f} | {: 9.3f}\n";
 
         std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
@@ -335,9 +342,11 @@ int main(int argc, const char **argv) {
         {
             auto s_ab = dimer_symop(dimer, c);
             write_xyz_dimer(fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()), dimer);
-            fmt::print("Calculating dimer {}\n", dimer_energies.size());
+            fmt::print("Calculating dimer energies {}/{}\r", dimer_energies.size(), dimers.size());
+            std::cout << std::flush;
             dimer_energies.push_back(calculate_interaction_energy(dimer, wfns, c));
         }
+        fmt::print("Complete {}/{}\n", dimer_energies.size(), dimers.size());
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         for(size_t i = 0; i < mol_neighbors.size(); i++)
