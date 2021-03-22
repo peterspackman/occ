@@ -69,6 +69,7 @@ tonto::Vec compute_esp(const Wavefunction &wfn, const tonto::Mat3N &points)
 }
 
 
+
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("tonto");
     parser.add_argument("input").help("Input file geometry");

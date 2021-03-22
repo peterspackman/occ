@@ -345,12 +345,13 @@ tonto::Vec compute_electric_potential(const tonto::MatRM &D, const BasisSet &obs
     for (size_t i = 1; i != nthreads; ++i) {
         engines[i] = engines[0];
     }
-    std::vector<MatRM> opmats(nthreads, MatRM(n, n));
+    std::vector<MatRM> opmats(nthreads, MatRM::Zero(n, n));
     auto shell2bf = obs.shell2bf();
 
     auto compute = [&](int thread_id) {
         for(size_t pt = 0; pt < positions.cols(); pt++) {
             if (pt % nthreads != thread_id) continue;
+            opmats[thread_id].setZero();
             std::vector<std::pair<double, std::array<double, 3>>> chgs {
                 {1, {positions(0, pt), positions(1, pt), positions(2, pt)}}
             };

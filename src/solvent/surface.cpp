@@ -8,7 +8,7 @@ namespace tonto::solvent::surface
 Surface solvent_surface(const tonto::Vec &radii, const tonto::IVec &atomic_numbers, const tonto::Mat3N &positions)
 {
     const size_t N = atomic_numbers.rows();
-    const size_t npts = 38;
+    const size_t npts = 50;
     const double delta = 0.1889725127952816; // 0.1 Angstrom
     Surface surface;
     surface.vertices = tonto::Mat3N(3, N * npts);

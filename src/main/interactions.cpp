@@ -12,6 +12,8 @@
 #include <tonto/interaction/disp.h>
 #include <tonto/interaction/polarization.h>
 #include <tonto/core/kabsch.h>
+#include <tonto/solvent/cosmo.h>
+#include <tonto/solvent/surface.h>
 #include <filesystem>
 #include <tonto/core/units.h>
 #include <fmt/os.h>
@@ -31,6 +33,18 @@ using tonto::interaction::CEModelInteraction;
 using tonto::chem::Element;
 using tonto::util::all_close;
 using tonto::hf::HartreeFock;
+using tonto::timing::StopWatch;
+using tonto::solvent::COSMO;
+
+
+tonto::Vec compute_esp(const Wavefunction &wfn, const tonto::Mat3N &points)
+{
+    tonto::ints::shellpair_list_t shellpair_list;
+    tonto::ints::shellpair_data_t shellpair_data;
+    std::tie(shellpair_list, shellpair_data) = tonto::ints::compute_shellpairs(wfn.basis);
+    return tonto::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
+}
+
 
 SymmetryOperation dimer_symop(const tonto::chem::Dimer &dimer, const Crystal &crystal)
 {
@@ -62,10 +76,11 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
     const std::string method = "b3lyp";
     const std::string basis_name = "6-31G**";
     std::vector<Wavefunction> wfns;
+    size_t index = 0;
     for(const auto& m: molecules)
     {
-        fs::path fchk_path(fmt::format("{}_0.fchk", basename));
-        auto dmat = fmt::output_file(fmt::format("{}_0.txt", basename));
+        fs::path fchk_path(fmt::format("{}_{}.fchk", basename, index));
+        auto dmat = fmt::output_file(fmt::format("{}_{}.txt", basename, index));
         if(fs::exists(fchk_path)) {
             using tonto::io::FchkReader;
             FchkReader fchk(fchk_path.string());
@@ -95,9 +110,36 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
             fchk.write();
             wfns.push_back(wfn);
         }
+        index++;
     }
     return wfns;
 
+}
+
+auto compute_solvent_surface(const Wavefunction &wfn)
+{
+    StopWatch<1> sw;
+    tonto::Mat3N pos = wfn.positions();
+    tonto::IVec nums = wfn.atomic_numbers();
+    tonto::Vec radii = tonto::solvent::cosmo::solvation_radii(nums);
+    radii.array() /= 0.52917749;
+
+    sw.start(0);
+    auto surface = tonto::solvent::surface::solvent_surface(radii, nums, pos);
+    sw.stop(0);
+    fmt::print("Surface ({} atoms, {} points) calculated in {}\n", radii.rows(), surface.areas.rows(), sw.read(0));
+    sw.clear_all();
+    return surface;
+}
+
+std::vector<tonto::solvent::surface::Surface> compute_solvent_surfaces(const std::vector<Wavefunction> &wfns)
+{
+    std::vector<tonto::solvent::surface::Surface> surfs;
+    for(const auto& wfn: wfns)
+    {
+        surfs.push_back(compute_solvent_surface(wfn));
+    }
+    return surfs;
 }
 
 void compute_monomer_energies(std::vector<Wavefunction> &wfns)
@@ -165,6 +207,84 @@ auto calculate_interaction_energy(const Dimer &dimer, const std::vector<Wavefunc
     return interaction_energy;
 }
 
+std::pair<tonto::IVec, tonto::Mat3N> environment(const std::vector<Dimer> &neighbors)
+{
+    size_t num_atoms = 0;
+    for(const auto &n: neighbors)
+    {
+        num_atoms += n.b().size();
+    }
+
+    tonto::IVec  mol_idx(num_atoms);
+    tonto::Mat3N positions(3, num_atoms);
+    size_t current_idx = 0;
+    size_t i = 0;
+    for(const auto &n: neighbors)
+    {
+        size_t N = n.b().size();
+        mol_idx.block(current_idx, 0, N, 1).array() = i;
+        positions.block(0, current_idx, 3, N) = n.b().positions();
+        current_idx += N;
+        i++;
+    }
+    return {mol_idx, positions};
+}
+
+std::vector<double> compute_solvation_energy_breakdown(
+        const tonto::solvent::surface::Surface& surface, const Wavefunction &wfn,
+        const std::vector<Dimer> &neighbors)
+{
+    StopWatch<1> sw;
+    tonto::Vec areas = surface.areas;
+    tonto::Mat3N points = surface.vertices;
+    tonto::Mat3N pos = wfn.positions();
+    tonto::IVec nums = wfn.atomic_numbers();
+    tonto::Vec radii = tonto::solvent::cosmo::solvation_radii(nums);
+    sw.start(0);
+    tonto::Vec charges = compute_esp(wfn, points);
+    for(size_t i = 0; i < nums.rows(); i++)
+    {
+        auto p1 = pos.col(i);
+        double q = nums(i);
+        auto r = (points.colwise() - p1).colwise().norm();
+        charges.array() += q / r.array();
+    }
+    sw.stop(0);
+    fmt::print("ESP (range = {}, {}) calculated in {}\n", charges.minCoeff(), charges.maxCoeff(), sw.read(0)); 
+
+
+    COSMO cosmo(78.40);
+    cosmo.set_max_iterations(100);
+    cosmo.set_x(0.0);
+    auto result = cosmo(points, areas, charges);
+    auto vout = fmt::output_file("points.txt");
+    vout.print("{}", points.transpose());
+    auto cout = fmt::output_file("charges.txt");
+    cout.print("{}", charges);
+    auto vaout = fmt::output_file("areas.txt");
+    vaout.print("{}", areas);
+    fmt::print("Surface area: {} angstrom**2\n", areas.sum() * 0.52917749 * 0.52917749);
+
+    fmt::print("Total energy: {} kJ/mol\n", AU_TO_KJ_PER_MOL * result.energy);
+
+    std::vector<double> energy_contribution(neighbors.size());
+
+    tonto::IVec mol_idx;
+    tonto::Mat3N neigh_pos;
+    std::tie(mol_idx, neigh_pos) = environment(neighbors);
+    
+    tonto::IVec neighbor_idx(surface.vertices.cols());
+    for(size_t i = 0; i < neighbor_idx.rows(); i++)
+    {
+        tonto::Vec3 x = points.col(i) * 0.52917749;
+        Eigen::Index idx = 0;
+        double r = (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
+        energy_contribution[mol_idx(idx)] += 0.5 * result.converged(i) * result.initial(i);
+    }
+    return energy_contribution;
+}
+
+
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("interactions");
     parser.add_argument("input").help("Input CIF");
@@ -200,14 +320,17 @@ int main(int argc, const char **argv) {
         Crystal c = read_crystal(filename);
         fmt::print("Loaded crystal from {}\n", filename);
         auto molecules = c.symmetry_unique_molecules();
-        auto wfns = calculate_wavefunctions(basename , molecules);
+        fmt::print("{} molecules\n", molecules.size());
+        auto wfns = calculate_wavefunctions(basename, molecules);
+        auto surfaces = compute_solvent_surfaces(wfns);
         compute_monomer_energies(wfns);
         auto crystal_dimers = c.symmetry_unique_dimers(3.8);
         const auto &dimers = crystal_dimers.unique_dimers;
         fmt::print("Dimers\n");
-        const std::string row_fmt_string = "{:>9.3f} {:>20s} {: 9.3f} {: 9.3f} {: 9.3f} {: 9.3f} | {: 9.3f}\n";
+        const std::string row_fmt_string = "{:>9.3f} {:>24s} {: 9.3f} {: 9.3f} {: 9.3f} {: 9.3f} | {: 9.3f} | {: 9.3f} | {: 9.3f}\n";
 
         std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
+
         for(const auto& dimer: dimers)
         {
             auto s_ab = dimer_symop(dimer, c);
@@ -220,12 +343,15 @@ int main(int argc, const char **argv) {
         for(size_t i = 0; i < mol_neighbors.size(); i++)
         {
             const auto& n = mol_neighbors[i];
+            auto solv = compute_solvation_energy_breakdown(surfaces[i], wfns[i], n);
+
             fmt::print("Neighbors for molecule {}\n", i);
 
-            fmt::print("{:>9s} {:>20s} {:>9s} {:>9s} {:>9s} {:>9s} | {:>9s}\n",
-                       "R", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot");
+            fmt::print("{:>9s} {:>24s} {:>9s} {:>9s} {:>9s} {:>9s} | {:>9s} | {:>9s} | {:>9s}\n",
+                       "R", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot", "E_solv", "E_int");
             size_t j = 0;
             CEModelInteraction::EnergyComponents total; 
+
             for(const auto& dimer: n)
             {
                 auto s_ab = dimer_symop(dimer, c).to_string();
@@ -241,7 +367,7 @@ int main(int argc, const char **argv) {
                 total.dispersion += edisp;
                 total.total += etot;
 
-                fmt::print(row_fmt_string, r, s_ab, ecoul, erep, epol, edisp, etot);
+                fmt::print(row_fmt_string, r, s_ab, ecoul, erep, epol, edisp, etot, solv[j] * AU_TO_KJ_PER_MOL, etot + solv[j] * AU_TO_KJ_PER_MOL);
                 j++;
             }
             fmt::print("Total: {:.3f} kJ/mol\n", total.total);
