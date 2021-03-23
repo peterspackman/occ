@@ -33,7 +33,6 @@ using tonto::interaction::CEModelInteraction;
 using tonto::chem::Element;
 using tonto::util::all_close;
 using tonto::hf::HartreeFock;
-using tonto::timing::StopWatch;
 using tonto::solvent::COSMO;
 
 
@@ -124,17 +123,13 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
 
 auto compute_solvent_surface(const Wavefunction &wfn)
 {
-    StopWatch<1> sw;
     tonto::Mat3N pos = wfn.positions();
     tonto::IVec nums = wfn.atomic_numbers();
     tonto::Vec radii = tonto::solvent::cosmo::solvation_radii(nums);
-    radii.array() /= 0.52917749;
+    radii.array() /= BOHR_TO_ANGSTROM;
 
-    sw.start(0);
     auto surface = tonto::solvent::surface::solvent_surface(radii, nums, pos);
-    sw.stop(0);
-    fmt::print("Surface ({} atoms, {} points) calculated in {}\n", radii.rows(), surface.areas.rows(), sw.read(0));
-    sw.clear_all();
+    //fmt::print("Surface ({} atoms, {} points) calculated in {}\n", radii.rows(), surface.areas.rows(), sw.read(0));
     return surface;
 }
 
@@ -240,13 +235,11 @@ std::vector<double> compute_solvation_energy_breakdown(
         const tonto::solvent::surface::Surface& surface, const Wavefunction &wfn,
         const std::vector<Dimer> &neighbors)
 {
-    StopWatch<1> sw;
     tonto::Vec areas = surface.areas;
     tonto::Mat3N points = surface.vertices;
     tonto::Mat3N pos = wfn.positions();
     tonto::IVec nums = wfn.atomic_numbers();
     tonto::Vec radii = tonto::solvent::cosmo::solvation_radii(nums);
-    sw.start(0);
     tonto::Vec charges = compute_esp(wfn, points);
     for(size_t i = 0; i < nums.rows(); i++)
     {
@@ -255,23 +248,14 @@ std::vector<double> compute_solvation_energy_breakdown(
         auto r = (points.colwise() - p1).colwise().norm();
         charges.array() += q / r.array();
     }
-    sw.stop(0);
-    fmt::print("ESP (range = {}, {}) calculated in {}\n", charges.minCoeff(), charges.maxCoeff(), sw.read(0)); 
+    //fmt::print("ESP (range = {}, {}) calculated in {}\n", charges.minCoeff(), charges.maxCoeff(), sw.read(0)); 
 
 
     COSMO cosmo(78.40);
     cosmo.set_max_iterations(100);
-    cosmo.set_x(0.0);
     auto result = cosmo(points, areas, charges);
-    auto vout = fmt::output_file("points.txt");
-    vout.print("{}", points.transpose());
-    auto cout = fmt::output_file("charges.txt");
-    cout.print("{}", charges);
-    auto vaout = fmt::output_file("areas.txt");
-    vaout.print("{}", areas);
-    fmt::print("Surface area: {} angstrom**2\n", areas.sum() * 0.52917749 * 0.52917749);
-
-    fmt::print("Total energy: {} kJ/mol\n", AU_TO_KJ_PER_MOL * result.energy);
+    //fmt::print("Surface area: {} angstrom**2\n", areas.sum() * 0.52917749 * 0.52917749);
+    //fmt::print("Total energy: {} kJ/mol\n", AU_TO_KJ_PER_MOL * result.energy);
 
     std::vector<double> energy_contribution(neighbors.size());
 
@@ -282,7 +266,7 @@ std::vector<double> compute_solvation_energy_breakdown(
     tonto::IVec neighbor_idx(surface.vertices.cols());
     for(size_t i = 0; i < neighbor_idx.rows(); i++)
     {
-        tonto::Vec3 x = points.col(i) * 0.52917749;
+        tonto::Vec3 x = points.col(i) * BOHR_TO_ANGSTROM;
         Eigen::Index idx = 0;
         double r = (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
         energy_contribution[mol_idx(idx)] += 0.5 * result.converged(i) * result.initial(i);
@@ -363,7 +347,7 @@ int main(int argc, const char **argv) {
             {
                 auto s_ab = dimer_symop(dimer, c).to_string();
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j]; 
-                double r = dimer.nearest_distance();
+                double r = dimer.center_of_mass_distance();
                 const auto& e = dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];
                 double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
                     epol = e.polarization_kjmol(), edisp = e.dispersion_kjmol(),

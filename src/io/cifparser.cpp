@@ -17,17 +17,28 @@ void CifParser::extract_atom_sites(const gemmi::cif::Loop &loop) {
   int z_idx = loop.find_tag("_atom_site_fract_z");
   for (size_t i = 0; i < loop.length(); i++) {
     AtomData atom;
-    if (label_idx >= 0)
+    bool info_found = false;
+    if (label_idx >= 0) {
       atom.site_label = loop.val(i, label_idx);
-    if (symbol_idx >= 0)
+      info_found = true;
+    }
+    if (symbol_idx >= 0) {
       atom.element = loop.val(i, symbol_idx);
-    if (x_idx >= 0)
+      info_found = true;
+    }
+    if (x_idx >= 0) {
       atom.position[0] = gemmi::cif::as_number(loop.val(i, x_idx));
-    if (y_idx >= 0)
+      info_found = true;
+    }
+    if (y_idx >= 0) {
       atom.position[1] = gemmi::cif::as_number(loop.val(i, y_idx));
-    if (z_idx >= 0)
+      info_found = true;
+    }
+    if (z_idx >= 0) {
       atom.position[2] = gemmi::cif::as_number(loop.val(i, z_idx));
-    m_atoms.push_back(atom);
+      info_found = true;
+    }
+    if (info_found)  m_atoms.push_back(atom);
   }
 }
 

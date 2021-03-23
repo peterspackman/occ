@@ -67,7 +67,7 @@ COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const 
         double rms_error = sqrt(dq.dot(dq) / dq.rows());
 
         res.energy = -0.5 * res.initial.dot(res.converged);
-        fmt::print("{:3d} {:14.8f} {:9.5f} {:16.9f}\n", k, res.energy, res.converged.sum(), rms_error);
+//        fmt::print("{:3d} {:14.8f} {:9.5f} {:16.9f}\n", k, res.energy, res.converged.sum(), rms_error);
         if(rms_error < m_convergence) break;
         prev.array() = res.converged.array();
     }
