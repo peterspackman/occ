@@ -316,7 +316,7 @@ int main(int argc, const char **argv) {
     using tonto::parallel::nthreads;
     nthreads = parser.get<int>("--threads");
     omp_set_num_threads(nthreads);
-    fmt::print("\nParallelization: {} OpenMP threads, {} Eigen threads\n", nthreads, Eigen::nbThreads());
+    fmt::print("Parallelized over {} OpenMP threads & {} Eigen threads\n", nthreads, Eigen::nbThreads());
 
 
     const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
@@ -326,8 +326,6 @@ int main(int argc, const char **argv) {
         Crystal c = read_crystal(filename);
         fmt::print("Loaded crystal from {}\n", filename);
         auto molecules = c.symmetry_unique_molecules();
-        auto atoms = c.unit_cell_atoms();
-        return 0;
         fmt::print("{} molecules\n", molecules.size());
         auto wfns = calculate_wavefunctions(basename, molecules);
         auto surfaces = compute_solvent_surfaces(wfns);

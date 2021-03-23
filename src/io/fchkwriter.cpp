@@ -210,8 +210,8 @@ void FchkWriter::set_basis(const tonto::qm::BasisSet &basis)
     }
     set_scalar("Number of contracted shells", basis.size());
     bool spherical = basis.is_pure();
-    set_scalar("Pure/Cartesian d shells", spherical ? 1 : 0);
-    set_scalar("Pure/Cartesian f shells", spherical ? 1 : 0);
+    set_scalar("Pure/Cartesian d shells", spherical ? 0 : 1);
+    set_scalar("Pure/Cartesian f shells", spherical ? 0 : 1);
     set_scalar("Highest angular momentum", l_max);
     set_scalar("Largest degree of contraction", largest_contraction);
     set_vector("Shell types", shell_types);

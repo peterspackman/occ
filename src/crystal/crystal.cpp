@@ -63,23 +63,55 @@ const AtomSlab &Crystal::unit_cell_atoms() const {
 
 void Crystal::update_unit_cell_atoms() const
 {
-  // TODO merge sites
-  const auto &pos = m_asymmetric_unit.positions;
-  const auto &atoms = m_asymmetric_unit.atomic_numbers;
-  const int natom = num_sites();
-  const int nsymops = symmetry_operations().size();
-  Eigen::VectorXd occupation =
-      m_asymmetric_unit.occupations.replicate(nsymops, 1);
-  Eigen::VectorXi uc_nums = atoms.replicate(nsymops, 1);
-  Eigen::VectorXi asym_idx =
-      Eigen::VectorXi::LinSpaced(natom, 0, natom).replicate(nsymops, 1);
-  Eigen::VectorXi sym;
-  Eigen::Matrix3Xd uc_pos;
-  std::tie(sym, uc_pos) = m_space_group.apply_all_symmetry_operations(pos);
-  uc_pos = uc_pos.unaryExpr([](const double x) { return fmod(x + 7.0, 1.0); });
-  m_unit_cell_atoms = AtomSlab{uc_pos, m_unit_cell.to_cartesian(uc_pos),
-                               asym_idx, uc_nums, sym};
-  m_unit_cell_atoms_needs_update = false;
+    // TODO merge sites
+    constexpr double merge_tolerance = 1e-2;
+    const auto &pos = m_asymmetric_unit.positions;
+    const auto &atoms = m_asymmetric_unit.atomic_numbers;
+    const int natom = num_sites();
+    const int nsymops = symmetry_operations().size();
+    Eigen::VectorXd occupation =
+        m_asymmetric_unit.occupations.replicate(nsymops, 1);
+    Eigen::VectorXi uc_nums = atoms.replicate(nsymops, 1);
+    Eigen::VectorXi asym_idx =
+        Eigen::VectorXi::LinSpaced(natom, 0, natom).replicate(nsymops, 1);
+    Eigen::VectorXi sym;
+    Eigen::Matrix3Xd uc_pos;
+    std::tie(sym, uc_pos) = m_space_group.apply_all_symmetry_operations(pos);
+    uc_pos = uc_pos.unaryExpr([](const double x) { return fmod(x + 7.0, 1.0); });
+
+    tonto::MaskArray mask(uc_pos.cols());
+    mask.setConstant(false);
+
+    for(size_t i = 0; i < uc_pos.cols(); i++)
+    {
+        if((mask(i))) continue;
+        tonto::Vec3 p = uc_pos.col(i);
+        for(size_t j = i + 1; j < uc_pos.cols(); j++)
+        {
+            double dist = (uc_pos.col(j) - p).norm();
+            if(dist < merge_tolerance) mask(j) = true;
+            if(occupation.rows() > 0) occupation(i) += occupation(j);
+        }
+    }
+    Eigen::VectorXi idxs(uc_pos.cols() - mask.count());
+    size_t n = 0; 
+    tonto::Mat3N uc_pos_masked(3, idxs.rows());
+    for(size_t i = 0; i < uc_pos.cols(); i++)
+    {
+        if(!mask(i)) {
+            idxs(n) = i;
+            uc_pos_masked.col(n) = uc_pos.col(i);
+            n++;
+        } 
+    }
+    m_unit_cell_atoms = AtomSlab{
+        uc_pos_masked,
+        m_unit_cell.to_cartesian(uc_pos_masked),
+        idxs.unaryExpr(asym_idx),
+        idxs.unaryExpr(uc_nums),
+        idxs.unaryExpr(sym)
+    };
+    m_unit_cell_atoms_needs_update = false;
 }
 
 AtomSlab Crystal::slab(const HKL &lower, const HKL &upper) const {
@@ -131,7 +163,7 @@ void Crystal::update_unit_cell_connectivity() const
 {
   auto s = slab({-1, -1, -1}, {1, 1, 1});
   size_t n_asym = num_sites();
-  size_t n_uc = n_asym * m_space_group.symmetry_operations().size();
+  size_t n_uc = m_unit_cell_atoms.size();
   cx::KDTree<double> tree(s.cart_pos.rows(), s.cart_pos, cx::max_leaf);
   tree.index->buildIndex();
   auto covalent_radii = m_asymmetric_unit.covalent_radii();
