@@ -8,6 +8,7 @@
 #include <tonto/geometry/linear_hashed_marching_cubes.h>
 #include <tonto/core/interpolator.h>
 #include <tonto/core/units.h>
+#include <tonto/3rdparty/robin_hood.h>
 
 namespace fs = std::filesystem;
 using tonto::chem::Molecule;
@@ -16,7 +17,6 @@ using tonto::core::Interpolator1D;
 
 struct HirshfeldBasis {
     std::vector<Eigen::Vector3d> coordinates;
-    std::vector<tonto::slater::Basis> basis;
     const Molecule& interior, exterior;
     Eigen::Vector3d origin{0, 0, 0};
     size_t num_interior{0};
@@ -24,6 +24,8 @@ struct HirshfeldBasis {
     float iso = 0.5;
     float fac = 0.5;
     mutable int num_calls{0};
+    std::vector<int> elements;
+    robin_hood::unordered_flat_map<int, Interpolator1D<double, tonto::core::DomainMapping::Log>> interpolators;
 
     HirshfeldBasis(const Molecule &in, Molecule &ext) : interior(in), exterior(ext)
     {
@@ -43,14 +45,28 @@ struct HirshfeldBasis {
         {
             int el = nums_in[i];
             coordinates.push_back(pos_in.col(i));
-            basis.emplace_back(tonto::thakkar::basis_for_element(el));
+            elements.push_back(el);
+            auto search = interpolators.find(el);
+            if(search == interpolators.end())
+            {
+                auto b = tonto::thakkar::basis_for_element(el);
+                auto func = [&b](double x) { return b.rho(x); };
+                interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 256);
+            }
         }
 
         for(size_t i = 0; i < ext.size(); i++)
         {
             int el = nums_ext[i];
+            elements.push_back(el);
             coordinates.push_back(pos_ext.col(i));
-            basis.emplace_back(tonto::thakkar::basis_for_element(el));
+            auto search = interpolators.find(el);
+            if(search == interpolators.end())
+            {
+                auto b = tonto::thakkar::basis_for_element(el);
+                auto func = [&b](double x) { return b.rho(x); };
+                interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 256);
+            }
         }
         origin = minp_in.cwiseMin(minp_ext);
         length = (maxp_in.cwiseMax(maxp_ext) - origin).maxCoeff();
@@ -69,8 +85,10 @@ struct HirshfeldBasis {
         };
         for(size_t i = 0; i < coordinates.size(); i++)
         {
+            int el = elements[i];
             double r = (pos - coordinates[i]).norm();
-            double rho = static_cast<float>(basis[i].rho(r));
+            auto interp = interpolators.at(el);
+            double rho = static_cast<float>(interp(r));
             if(i >= num_interior) tot_e += rho;
             else tot_i += rho;
         }
@@ -224,7 +242,7 @@ int main(int argc, char *argv[])
         }
 
         auto basis = HirshfeldBasis(m1, m2);
-        size_t max_depth = 7;
+        size_t max_depth = 8;
         size_t min_depth = 1;
         fmt::print("Min depth = {}, max depth = {}\n", min_depth, max_depth);
         auto mc = tonto::geometry::mc::LinearHashedMarchingCubes(max_depth);
@@ -253,7 +271,7 @@ int main(int argc, char *argv[])
 
         auto b = tonto::thakkar::basis_for_element(6);
         auto func = [&b](double x) { return b.rho(x); };
-        Interpolator1D<double, tonto::core::DomainMapping::Log> interp(func, 0.1, 20.0, 128);
+        Interpolator1D<double, tonto::core::DomainMapping::Log> interp(func, 0.1, 20.0, 1024);
         fmt::print("v({}) = ({}, {})", 0.4, func(0.4), interp(0.4));
         
         auto basis = SlaterBasis(m);

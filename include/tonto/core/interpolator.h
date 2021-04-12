@@ -14,6 +14,9 @@ class Interpolator1D
 {
 public:
 
+
+Interpolator1D() {}
+
 template<typename F>
 Interpolator1D(const F &f, T left, T right, size_t N)
 {
