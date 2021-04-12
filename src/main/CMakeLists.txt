@@ -53,3 +53,17 @@ set_target_properties(crystal_interactions
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+add_executable(hs "${CMAKE_CURRENT_SOURCE_DIR}/hs.cpp")
+target_link_libraries(hs
+    PUBLIC
+    tonto_geometry
+    tonto_slater
+    tonto_solvent
+)
+set_target_properties(hs
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+
+
