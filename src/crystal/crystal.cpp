@@ -384,7 +384,7 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
         std::numeric_limits<int>::max(), 
         std::numeric_limits<int>::max()
     };
-    tonto::Vec3 frac_radius = radius / m_unit_cell.lengths().array();
+    tonto::Vec3 frac_radius = radius * 2/ m_unit_cell.lengths().array();
 
     for(size_t i = 0; i < m_asymmetric_unit.size(); i++)
     {
@@ -406,8 +406,6 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
     for (int h = lower.h; h <= upper.h; h++) {
         for (int k = lower.k; k <= upper.k; k++) {
             for (int l = lower.l; l <= upper.l; l++) {
-                if (h == 0 && k == 0 && l == 0)
-                    continue;
                 tonto::Vec3 cart_shift = to_cartesian(tonto::Vec3{
                         static_cast<double>(h), static_cast<double>(k),static_cast<double>(l)});
                 for(const auto& asym_mol: asym_mols)

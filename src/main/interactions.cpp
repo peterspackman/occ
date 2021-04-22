@@ -29,6 +29,7 @@ using tonto::qm::BasisSet;
 using tonto::scf::SCF;
 using tonto::units::BOHR_TO_ANGSTROM;
 using tonto::units::AU_TO_KJ_PER_MOL;
+using tonto::units::AU_TO_KCAL_PER_MOL;
 using tonto::interaction::CEModelInteraction;
 using tonto::chem::Element;
 using tonto::util::all_close;
@@ -282,13 +283,19 @@ int main(int argc, const char **argv) {
             .help("Number of threads")
             .default_value(2)
             .action([](const std::string& value) { return std::stoi(value); });
+    parser.add_argument("--radius")
+        .help("Radius (angstroms) for neighbours")
+        .default_value(3.8)
+        .action([](const std::string& value) { return std::stod(value); });
     tonto::log::set_level(tonto::log::level::info);
     spdlog::set_level(spdlog::level::info);
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
+    double radius = 0.0;
 
     try {
         parser.parse_args(argc, argv);
+        radius = parser.get<double>("--radius");
     }
     catch (const std::runtime_error& err) {
         tonto::log::error("error when parsing command line arguments: {}", err.what());
@@ -314,7 +321,7 @@ int main(int argc, const char **argv) {
         auto wfns = calculate_wavefunctions(basename, molecules);
         auto surfaces = compute_solvent_surfaces(wfns);
         compute_monomer_energies(wfns);
-        auto crystal_dimers = c.symmetry_unique_dimers(3.8);
+        auto crystal_dimers = c.symmetry_unique_dimers(radius);
         const auto &dimers = crystal_dimers.unique_dimers;
         const std::string row_fmt_string = "{:>9.3f} {:>24s} {: 9.3f} {: 9.3f} {: 9.3f} {: 9.3f} | {: 9.3f} | {: 9.3f} | {: 9.3f}\n";
 
@@ -358,7 +365,8 @@ int main(int argc, const char **argv) {
                 total.dispersion += edisp;
                 total.total += etot;
 
-                fmt::print(row_fmt_string, r, s_ab, ecoul, erep, epol, edisp, etot, solv[j] * AU_TO_KJ_PER_MOL, etot + solv[j] * AU_TO_KJ_PER_MOL);
+                fmt::print(row_fmt_string, r, s_ab, ecoul, erep, epol, edisp, etot, solv[j] * AU_TO_KJ_PER_MOL,
+                           etot + solv[j] * AU_TO_KJ_PER_MOL);
                 j++;
             }
             fmt::print("Total: {:.3f} kJ/mol\n", total.total);

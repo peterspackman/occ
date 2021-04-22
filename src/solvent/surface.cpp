@@ -30,7 +30,7 @@ Surface solvent_surface(const tonto::Vec &radii, const tonto::IVec &atomic_numbe
     for(size_t i = 0; i < N; i++)
     {
         double r = radii(i) + delta;
-        surface.areas.segment(npts * i, npts) = lebedev_weights * 4 * M_PI * r * r;
+        surface.areas.segment(npts * i, npts) = lebedev_weights * 4 * M_PI * radii(i) * radii(i);
         auto vblock = surface.vertices.block(0, npts * i, 3, npts);
         vblock = lebedev_points * r;
         vblock.colwise() += centered.col(i);

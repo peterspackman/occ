@@ -51,7 +51,7 @@ struct HirshfeldBasis {
             {
                 auto b = tonto::thakkar::basis_for_element(el);
                 auto func = [&b](double x) { return b.rho(x); };
-                interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 256);
+                interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 4096);
             }
         }
 
@@ -65,7 +65,7 @@ struct HirshfeldBasis {
             {
                 auto b = tonto::thakkar::basis_for_element(el);
                 auto func = [&b](double x) { return b.rho(x); };
-                interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 256);
+                interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 4096);
             }
         }
         origin = minp_in.cwiseMin(minp_ext);
@@ -92,7 +92,8 @@ struct HirshfeldBasis {
             if(i >= num_interior) tot_e += rho;
             else tot_i += rho;
         }
-        return fac * (iso - (tot_i/(tot_i + tot_e)));
+        int sign = (tot_i > tot_e) ? 1 : -1;
+        return sign * std::log(tot_i / (tot_i + tot_e));
     }
 };
 
