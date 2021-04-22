@@ -6,6 +6,7 @@
 #include <fmt/ostream.h>
 #include <tonto/core/molecule.h>
 #include <tonto/geometry/linear_hashed_marching_cubes.h>
+#include <tonto/geometry/marching_cubes.h>
 #include <tonto/core/interpolator.h>
 #include <tonto/core/units.h>
 #include <tonto/3rdparty/robin_hood.h>
@@ -17,6 +18,7 @@ using tonto::core::Interpolator1D;
 
 struct HirshfeldBasis {
     std::vector<Eigen::Vector3d> coordinates;
+    double buffer = 6.0;
     const Molecule& interior, exterior;
     Eigen::Vector3d origin{0, 0, 0};
     size_t num_interior{0};
@@ -68,8 +70,9 @@ struct HirshfeldBasis {
                 interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 4096);
             }
         }
-        origin = minp_in.cwiseMin(minp_ext);
-        length = (maxp_in.cwiseMax(maxp_ext) - origin).maxCoeff();
+        origin = minp_in;
+        origin.array() -= buffer;
+        length = (maxp_in - origin).maxCoeff() + buffer;
         fac = 1.0 / length;
         fmt::print("Bottom left\n{}\nlength\n{}\n", origin, length);
     }
@@ -92,8 +95,8 @@ struct HirshfeldBasis {
             if(i >= num_interior) tot_e += rho;
             else tot_i += rho;
         }
-        int sign = (tot_i > tot_e) ? 1 : -1;
-        return sign * std::log(tot_i / (tot_i + tot_e));
+        double v = iso - tot_i / (tot_i + tot_e);
+        return fac * v;
     }
 };
 
@@ -127,7 +130,7 @@ struct SlaterBasis {
         }
         origin = minp;
         length = (maxp - minp).maxCoeff();
-        fac = 1.0 / length;
+        fac = 0.25 / length;
         fmt::print("Bottom left\n{}\nlength\n{}\n", origin, length);
     }
 
@@ -243,8 +246,8 @@ int main(int argc, char *argv[])
         }
 
         auto basis = HirshfeldBasis(m1, m2);
-        size_t max_depth = 8;
-        size_t min_depth = 1;
+        size_t max_depth = 7;
+        size_t min_depth = 3;
         fmt::print("Min depth = {}, max depth = {}\n", min_depth, max_depth);
         auto mc = tonto::geometry::mc::LinearHashedMarchingCubes(max_depth);
         mc.min_depth = min_depth;
