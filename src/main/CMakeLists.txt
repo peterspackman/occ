@@ -1,4 +1,4 @@
-add_executable(occ "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
+add_executable(occ "${CMAKE_CURRENT_SOURCE_DIR}/occ.cpp")
 target_link_libraries(occ
     PUBLIC
     occ_qm
@@ -9,9 +9,9 @@ set_target_properties(occ
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_executable(occ-pair "${CMAKE_CURRENT_SOURCE_DIR}/ce_main.cpp")
-target_link_libraries(occ PUBLIC occ_interaction)
-set_target_properties(occ
+add_executable(occ-pair "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp")
+target_link_libraries(occ-pair PUBLIC occ_interaction)
+set_target_properties(occ-pair
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
