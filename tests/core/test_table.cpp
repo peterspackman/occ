@@ -1,9 +1,9 @@
-#include <tonto/core/table.h>
+#include <occ/core/table.h>
 #include "catch.hpp"
 
 TEST_CASE("Table constructor", "[table]")
 {
-    using tonto::io::Table;
+    using occ::io::Table;
 
     Table t({"test", "columns"});
     std::vector<int> test{1, 2, 3};
@@ -16,7 +16,7 @@ TEST_CASE("Table constructor", "[table]")
 
 TEST_CASE("Table Eigen", "[table]")
 {
-    using tonto::io::Table;
+    using occ::io::Table;
     Eigen::MatrixXd r = Eigen::MatrixXd::Random(4, 3);
     Table t;
 

@@ -1,52 +1,52 @@
-#include <tonto/crystal/crystal.h>
-#include <tonto/io/cifparser.h>
-#include <tonto/3rdparty/argparse.hpp>
-#include <tonto/qm/wavefunction.h>
-#include <tonto/core/logger.h>
-#include <tonto/qm/hf.h>
-#include <tonto/dft/dft.h>
-#include <tonto/qm/scf.h>
-#include <tonto/io/fchkwriter.h>
-#include <tonto/io/fchkreader.h>
-#include <tonto/interaction/pairinteraction.h>
-#include <tonto/interaction/disp.h>
-#include <tonto/interaction/polarization.h>
-#include <tonto/core/kabsch.h>
-#include <tonto/solvent/cosmo.h>
-#include <tonto/solvent/surface.h>
+#include <occ/crystal/crystal.h>
+#include <occ/io/cifparser.h>
+#include <occ/3rdparty/argparse.hpp>
+#include <occ/qm/wavefunction.h>
+#include <occ/core/logger.h>
+#include <occ/qm/hf.h>
+#include <occ/dft/dft.h>
+#include <occ/qm/scf.h>
+#include <occ/io/fchkwriter.h>
+#include <occ/io/fchkreader.h>
+#include <occ/interaction/pairinteraction.h>
+#include <occ/interaction/disp.h>
+#include <occ/interaction/polarization.h>
+#include <occ/core/kabsch.h>
+#include <occ/solvent/cosmo.h>
+#include <occ/solvent/surface.h>
 #include <filesystem>
-#include <tonto/core/units.h>
+#include <occ/core/units.h>
 #include <fmt/os.h>
 
 namespace fs = std::filesystem;
-using tonto::crystal::Crystal;
-using tonto::crystal::SymmetryOperation;
-using tonto::chem::Molecule;
-using tonto::chem::Dimer;
-using tonto::qm::Wavefunction;
-using tonto::qm::SpinorbitalKind;
-using tonto::qm::BasisSet;
-using tonto::scf::SCF;
-using tonto::units::BOHR_TO_ANGSTROM;
-using tonto::units::AU_TO_KJ_PER_MOL;
-using tonto::units::AU_TO_KCAL_PER_MOL;
-using tonto::interaction::CEModelInteraction;
-using tonto::chem::Element;
-using tonto::util::all_close;
-using tonto::hf::HartreeFock;
-using tonto::solvent::COSMO;
+using occ::crystal::Crystal;
+using occ::crystal::SymmetryOperation;
+using occ::chem::Molecule;
+using occ::chem::Dimer;
+using occ::qm::Wavefunction;
+using occ::qm::SpinorbitalKind;
+using occ::qm::BasisSet;
+using occ::scf::SCF;
+using occ::units::BOHR_TO_ANGSTROM;
+using occ::units::AU_TO_KJ_PER_MOL;
+using occ::units::AU_TO_KCAL_PER_MOL;
+using occ::interaction::CEModelInteraction;
+using occ::chem::Element;
+using occ::util::all_close;
+using occ::hf::HartreeFock;
+using occ::solvent::COSMO;
 
 
-tonto::Vec compute_esp(const Wavefunction &wfn, const tonto::Mat3N &points)
+occ::Vec compute_esp(const Wavefunction &wfn, const occ::Mat3N &points)
 {
-    tonto::ints::shellpair_list_t shellpair_list;
-    tonto::ints::shellpair_data_t shellpair_data;
-    std::tie(shellpair_list, shellpair_data) = tonto::ints::compute_shellpairs(wfn.basis);
-    return tonto::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
+    occ::ints::shellpair_list_t shellpair_list;
+    occ::ints::shellpair_data_t shellpair_data;
+    std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(wfn.basis);
+    return occ::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
 }
 
 
-SymmetryOperation dimer_symop(const tonto::chem::Dimer &dimer, const Crystal &crystal)
+SymmetryOperation dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)
 {
     const auto& a = dimer.a();
     const auto& b = dimer.b();
@@ -58,8 +58,8 @@ SymmetryOperation dimer_symop(const tonto::chem::Dimer &dimer, const Crystal &cr
     SymmetryOperation symop_b(sb_int);
 
     auto symop_ab = symop_b * symop_a.inverted();
-    tonto::Vec3 c_a = symop_ab(crystal.to_fractional(a.positions())).rowwise().mean();
-    tonto::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
+    occ::Vec3 c_a = symop_ab(crystal.to_fractional(a.positions())).rowwise().mean();
+    occ::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
 
     symop_ab = symop_ab.translated(v_ab);
     return symop_ab;
@@ -67,7 +67,7 @@ SymmetryOperation dimer_symop(const tonto::chem::Dimer &dimer, const Crystal &cr
 
 Crystal read_crystal(const std::string &filename)
 {
-    tonto::io::CifParser parser;
+    occ::io::CifParser parser;
     return parser.parse_crystal(filename).value();
 }
 
@@ -87,7 +87,7 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
                        atom.x, atom.y, atom.z);
         }
         if(fs::exists(fchk_path)) {
-            using tonto::io::FchkReader;
+            using occ::io::FchkReader;
             FchkReader fchk(fchk_path.string());
             auto wfn = Wavefunction(fchk);
             dmat.print("{}", wfn.D);
@@ -99,16 +99,16 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
             fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
 //            HartreeFock hf(m.atoms(), basis);
 //            SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
-            tonto::dft::DFT rks(method, basis, m.atoms(), SpinorbitalKind::Restricted);
-            SCF<tonto::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
+            occ::dft::DFT rks(method, basis, m.atoms(), SpinorbitalKind::Restricted);
+            SCF<occ::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
 
             scf.set_charge_multiplicity(0, 1);
             scf.start_incremental_F_threshold = 0.0;
             double e = scf.compute_scf_energy();
             auto wfn = scf.wavefunction();
             dmat.print("{}", wfn.D);
-            tonto::io::FchkWriter fchk(fchk_path.string());
-            fchk.set_title(fmt::format("{} {}/{} generated by tonto-ng", fchk_path.stem(), method, basis_name));
+            occ::io::FchkWriter fchk(fchk_path.string());
+            fchk.set_title(fmt::format("{} {}/{} generated by occ-ng", fchk_path.stem(), method, basis_name));
             fchk.set_method(method);
             fchk.set_basis_name(basis_name);
             wfn.save(fchk);
@@ -124,19 +124,19 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
 
 auto compute_solvent_surface(const Wavefunction &wfn)
 {
-    tonto::Mat3N pos = wfn.positions();
-    tonto::IVec nums = wfn.atomic_numbers();
-    tonto::Vec radii = tonto::solvent::cosmo::solvation_radii(nums);
+    occ::Mat3N pos = wfn.positions();
+    occ::IVec nums = wfn.atomic_numbers();
+    occ::Vec radii = occ::solvent::cosmo::solvation_radii(nums);
     radii.array() /= BOHR_TO_ANGSTROM;
 
-    auto surface = tonto::solvent::surface::solvent_surface(radii, nums, pos);
+    auto surface = occ::solvent::surface::solvent_surface(radii, nums, pos);
     //fmt::print("Surface ({} atoms, {} points) calculated in {}\n", radii.rows(), surface.areas.rows(), sw.read(0));
     return surface;
 }
 
-std::vector<tonto::solvent::surface::Surface> compute_solvent_surfaces(const std::vector<Wavefunction> &wfns)
+std::vector<occ::solvent::surface::Surface> compute_solvent_surfaces(const std::vector<Wavefunction> &wfns)
 {
-    std::vector<tonto::solvent::surface::Surface> surfs;
+    std::vector<occ::solvent::surface::Surface> surfs;
     for(const auto& wfn: wfns)
     {
         surfs.push_back(compute_solvent_surface(wfn));
@@ -146,22 +146,26 @@ std::vector<tonto::solvent::surface::Surface> compute_solvent_surfaces(const std
 
 void compute_monomer_energies(std::vector<Wavefunction> &wfns)
 {
-    fmt::print("Computing monomer energies\n");
+    size_t complete = 0;
     for(auto& wfn : wfns)
     {
+        fmt::print("Calculating monomer energies {}/{}\r", complete, wfns.size());
+        std::cout << std::flush;
         HartreeFock hf(wfn.atoms, wfn.basis);
-        tonto::interaction::compute_ce_model_energies(wfn, hf);
+        occ::interaction::compute_ce_model_energies(wfn, hf);
+        complete++;
     }
+    fmt::print("Finished calculating {} unique monomer energies\n", complete);
 }
 
 auto calculate_transform(const Wavefunction &wfn, const Molecule &m, const Crystal &c)
 {
     int sint = m.asymmetric_unit_symop()(0);
     SymmetryOperation symop(sint);
-    tonto::Mat3N positions = wfn.positions() * BOHR_TO_ANGSTROM;
+    occ::Mat3N positions = wfn.positions() * BOHR_TO_ANGSTROM;
 
-    tonto::Mat3 rotation = c.unit_cell().direct() * symop.rotation() * c.unit_cell().inverse();
-    tonto::Vec3 translation = (m.centroid() - (rotation * positions).rowwise().mean()) / BOHR_TO_ANGSTROM;
+    occ::Mat3 rotation = c.unit_cell().direct() * symop.rotation() * c.unit_cell().inverse();
+    occ::Vec3 translation = (m.centroid() - (rotation * positions).rowwise().mean()) / BOHR_TO_ANGSTROM;
     return std::make_pair(rotation, translation);
 }
 
@@ -189,8 +193,8 @@ auto calculate_interaction_energy(const Dimer &dimer, const std::vector<Wavefunc
     auto transform_a = calculate_transform(wfna, mol_A, crystal);
     A.apply_transformation(transform_a.first, transform_a.second);
 
-    tonto::Mat3N pos_A = mol_A.positions();
-    tonto::Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
+    occ::Mat3N pos_A = mol_A.positions();
+    occ::Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
 
     assert(all_close(pos_A, pos_A_t, 1e-5, 1e-5));
 
@@ -201,7 +205,7 @@ auto calculate_interaction_energy(const Dimer &dimer, const std::vector<Wavefunc
     const auto pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
     assert(all_close(pos_A, pos_A_t, 1e-5, 1e-5));
 
-    auto model = tonto::interaction::ce_model_from_string(model_name);
+    auto model = occ::interaction::ce_model_from_string(model_name);
 
     CEModelInteraction interaction(model);
 
@@ -209,7 +213,7 @@ auto calculate_interaction_energy(const Dimer &dimer, const std::vector<Wavefunc
     return interaction_energy;
 }
 
-std::pair<tonto::IVec, tonto::Mat3N> environment(const std::vector<Dimer> &neighbors)
+std::pair<occ::IVec, occ::Mat3N> environment(const std::vector<Dimer> &neighbors)
 {
     size_t num_atoms = 0;
     for(const auto &n: neighbors)
@@ -217,8 +221,8 @@ std::pair<tonto::IVec, tonto::Mat3N> environment(const std::vector<Dimer> &neigh
         num_atoms += n.b().size();
     }
 
-    tonto::IVec  mol_idx(num_atoms);
-    tonto::Mat3N positions(3, num_atoms);
+    occ::IVec  mol_idx(num_atoms);
+    occ::Mat3N positions(3, num_atoms);
     size_t current_idx = 0;
     size_t i = 0;
     for(const auto &n: neighbors)
@@ -233,15 +237,15 @@ std::pair<tonto::IVec, tonto::Mat3N> environment(const std::vector<Dimer> &neigh
 }
 
 std::vector<double> compute_solvation_energy_breakdown(
-        const tonto::solvent::surface::Surface& surface, const Wavefunction &wfn,
+        const occ::solvent::surface::Surface& surface, const Wavefunction &wfn,
         const std::vector<Dimer> &neighbors)
 {
-    tonto::Vec areas = surface.areas;
-    tonto::Mat3N points = surface.vertices;
-    tonto::Mat3N pos = wfn.positions();
-    tonto::IVec nums = wfn.atomic_numbers();
-    tonto::Vec radii = tonto::solvent::cosmo::solvation_radii(nums);
-    tonto::Vec charges = compute_esp(wfn, points);
+    occ::Vec areas = surface.areas;
+    occ::Mat3N points = surface.vertices;
+    occ::Mat3N pos = wfn.positions();
+    occ::IVec nums = wfn.atomic_numbers();
+    occ::Vec radii = occ::solvent::cosmo::solvation_radii(nums);
+    occ::Vec charges = compute_esp(wfn, points);
     for(size_t i = 0; i < nums.rows(); i++)
     {
         auto p1 = pos.col(i);
@@ -260,14 +264,14 @@ std::vector<double> compute_solvation_energy_breakdown(
 
     std::vector<double> energy_contribution(neighbors.size());
 
-    tonto::IVec mol_idx;
-    tonto::Mat3N neigh_pos;
+    occ::IVec mol_idx;
+    occ::Mat3N neigh_pos;
     std::tie(mol_idx, neigh_pos) = environment(neighbors);
     
-    tonto::IVec neighbor_idx(surface.vertices.cols());
+    occ::IVec neighbor_idx(surface.vertices.cols());
     for(size_t i = 0; i < neighbor_idx.rows(); i++)
     {
-        tonto::Vec3 x = points.col(i) * BOHR_TO_ANGSTROM;
+        occ::Vec3 x = points.col(i) * BOHR_TO_ANGSTROM;
         Eigen::Index idx = 0;
         double r = (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
         energy_contribution[mol_idx(idx)] += 0.5 * result.converged(i) * result.initial(i);
@@ -287,7 +291,7 @@ int main(int argc, const char **argv) {
         .help("Radius (angstroms) for neighbours")
         .default_value(3.8)
         .action([](const std::string& value) { return std::stod(value); });
-    tonto::log::set_level(tonto::log::level::info);
+    occ::log::set_level(occ::log::level::info);
     spdlog::set_level(spdlog::level::info);
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
@@ -298,13 +302,13 @@ int main(int argc, const char **argv) {
         radius = parser.get<double>("--radius");
     }
     catch (const std::runtime_error& err) {
-        tonto::log::error("error when parsing command line arguments: {}", err.what());
+        occ::log::error("error when parsing command line arguments: {}", err.what());
         fmt::print("{}", parser);
         exit(1);
     }
 
 
-    using tonto::parallel::nthreads;
+    using occ::parallel::nthreads;
     nthreads = parser.get<int>("--threads");
     omp_set_num_threads(nthreads);
     fmt::print("Parallelized over {} OpenMP threads & {} Eigen threads\n", nthreads, Eigen::nbThreads());
@@ -317,12 +321,19 @@ int main(int argc, const char **argv) {
         Crystal c = read_crystal(filename);
         fmt::print("Loaded crystal from {}\n", filename);
         auto molecules = c.symmetry_unique_molecules();
-        fmt::print("{} molecules\n", molecules.size());
+        fmt::print("Symmetry unique molecules in {}: {}\n", filename, molecules.size());
         auto wfns = calculate_wavefunctions(basename, molecules);
         auto surfaces = compute_solvent_surfaces(wfns);
         compute_monomer_energies(wfns);
         auto crystal_dimers = c.symmetry_unique_dimers(radius);
         const auto &dimers = crystal_dimers.unique_dimers;
+
+        if(dimers.size() < 1)
+        {
+            fmt::print("No dimers found using neighbour radius {:.3f}\n", radius);
+            exit(0);
+        }
+
         const std::string row_fmt_string = "{:>9.3f} {:>24s} {: 9.3f} {: 9.3f} {: 9.3f} {: 9.3f} | {: 9.3f} | {: 9.3f} | {: 9.3f}\n";
 
         std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
@@ -335,7 +346,7 @@ int main(int argc, const char **argv) {
             std::cout << std::flush;
             dimer_energies.push_back(calculate_interaction_energy(dimer, wfns, c));
         }
-        fmt::print("Complete {}/{}\n", dimer_energies.size(), dimers.size());
+        fmt::print("Finished calculating {} unique dimer interaction energies\n", dimer_energies.size());
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         for(size_t i = 0; i < mol_neighbors.size(); i++)

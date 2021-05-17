@@ -1,16 +1,16 @@
-#include <tonto/io/conversion.h>
-#include <tonto/core/util.h>
-#include <tonto/core/logger.h>
-#include <tonto/gto/gto.h>
+#include <occ/io/conversion.h>
+#include <occ/core/util.h>
+#include <occ/core/logger.h>
+#include <occ/gto/gto.h>
 
-namespace tonto::io::conversion {
+namespace occ::io::conversion {
 
 namespace orb {
-tonto::MatRM from_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM& mo)
+occ::MatRM from_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM& mo)
 {
     // no reordering should occur unless there are d, f, g, h etc. functions
-    using tonto::util::index_of;
-    if(tonto::qm::max_l(basis) < 2) return mo;
+    using occ::util::index_of;
+    if(occ::qm::max_l(basis) < 2) return mo;
     struct xyz {
         uint_fast8_t x{0};
         uint_fast8_t y{0};
@@ -18,9 +18,9 @@ tonto::MatRM from_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM&
         bool operator ==(const xyz& rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
     };
 
-    tonto::log::debug("Reordering MO coefficients from Gaussian ordering to internal convention");
+    occ::log::debug("Reordering MO coefficients from Gaussian ordering to internal convention");
     auto shell2bf = basis.shell2bf();
-    tonto::MatRM result(mo.rows(), mo.cols());
+    occ::MatRM result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     for(size_t i = 0; i < basis.size(); i++)
     {
@@ -52,7 +52,7 @@ tonto::MatRM from_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM&
             break;
         }
         if (gaussian_order.size() == 0) {
-            tonto::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
+            occ::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
             continue;
         }
 
@@ -61,9 +61,9 @@ tonto::MatRM from_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM&
         FOR_CART(xp, yp, zp, l)
             xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp), static_cast<uint_fast8_t>(zp)};
             size_t gaussian_idx = index_of(v, gaussian_order);
-            tonto::log::debug("Setting row {} <- {} ({}{}{})", our_idx, gaussian_idx, xp, yp, zp);
+            occ::log::debug("Setting row {} <- {} ({}{}{})", our_idx, gaussian_idx, xp, yp, zp);
             result.row(bf_first + our_idx) = mo.row(bf_first + gaussian_idx);
-            double normalization_factor = tonto::gto::cartesian_normalization_factor(xp, yp, zp);
+            double normalization_factor = occ::gto::cartesian_normalization_factor(xp, yp, zp);
             result.row(bf_first + our_idx) *= normalization_factor;
             our_idx++;
         END_FOR_CART
@@ -72,11 +72,11 @@ tonto::MatRM from_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM&
 }
 
 
-tonto::MatRM to_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM &mo)
+occ::MatRM to_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM &mo)
 {
     // no reordering should occur unless there are d, f, g, h etc. functions
-    using tonto::util::index_of;
-    if(tonto::qm::max_l(basis) < 2) return mo;
+    using occ::util::index_of;
+    if(occ::qm::max_l(basis) < 2) return mo;
     struct xyz {
         uint_fast8_t x{0};
         uint_fast8_t y{0};
@@ -84,9 +84,9 @@ tonto::MatRM to_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM &m
         bool operator ==(const xyz& rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
     };
 
-    tonto::log::debug("Reordering MO coefficients from Gaussian ordering to internal convention");
+    occ::log::debug("Reordering MO coefficients from Gaussian ordering to internal convention");
     auto shell2bf = basis.shell2bf();
-    tonto::MatRM result(mo.rows(), mo.cols());
+    occ::MatRM result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     for(size_t i = 0; i < basis.size(); i++)
     {
@@ -118,7 +118,7 @@ tonto::MatRM to_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM &m
             break;
         }
         if (gaussian_order.size() == 0) {
-            tonto::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
+            occ::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
             continue;
         }
 
@@ -127,9 +127,9 @@ tonto::MatRM to_gaussian(const tonto::qm::BasisSet &basis, const tonto::MatRM &m
         FOR_CART(xp, yp, zp, l)
             xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp), static_cast<uint_fast8_t>(zp)};
             size_t gaussian_idx = index_of(v, gaussian_order);
-            tonto::log::debug("Setting row {} <- {} ({}{}{})", gaussian_idx, our_idx, xp, yp, zp);
+            occ::log::debug("Setting row {} <- {} ({}{}{})", gaussian_idx, our_idx, xp, yp, zp);
             result.row(bf_first + gaussian_idx) = mo.row(bf_first + our_idx);
-            double normalization_factor = tonto::gto::cartesian_normalization_factor(xp, yp, zp);
+            double normalization_factor = occ::gto::cartesian_normalization_factor(xp, yp, zp);
             result.row(bf_first + gaussian_idx) /= normalization_factor;
             our_idx++;
         END_FOR_CART

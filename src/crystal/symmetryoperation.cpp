@@ -1,12 +1,12 @@
-#include <tonto/crystal/symmetryoperation.h>
-#include <tonto/core/fraction.h>
-#include <tonto/core/util.h>
+#include <occ/crystal/symmetryoperation.h>
+#include <occ/core/fraction.h>
+#include <occ/core/util.h>
 #include <regex>
 
-namespace tonto::crystal {
+namespace occ::crystal {
 
-using tonto::numeric::Fraction;
-using tonto::util::tokenize;
+using occ::numeric::Fraction;
+using occ::util::tokenize;
 
 void decode_int(int code, Mat4 &seitz) {
   /*Decode an integer encoded symmetry operation.
@@ -85,7 +85,7 @@ std::string encode_string(const Mat4 &seitz) {
   /* Encode a rotation matrix (of -1, 0, 1s) and (rational) translation vector
   into string form e.g. 1/2-x,z-1/3,-y-1/6
   */
-  using tonto::util::join;
+  using occ::util::join;
   std::string symbols = "xyz";
   std::vector<std::string> res;
   for (int i = 0; i < 3; i++) {
@@ -140,7 +140,7 @@ int encode_int(const Mat4 &seitz) {
   return r + t * 19683;
 }
 
-SymmetryOperation::SymmetryOperation(const tonto::Mat4 &seitz) : m_seitz(seitz)
+SymmetryOperation::SymmetryOperation(const occ::Mat4 &seitz) : m_seitz(seitz)
 {
 }
 
@@ -181,4 +181,4 @@ int SymmetryOperation::to_int() const
     return encode_int(m_seitz);
 }
 
-} // namespace tonto::crystal
+} // namespace occ::crystal

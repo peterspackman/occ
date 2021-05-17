@@ -1,6 +1,6 @@
-#include <tonto/geometry/index_cache.h>
+#include <occ/geometry/index_cache.h>
 
-namespace tonto::geometry {
+namespace occ::geometry {
 
 template<typename T>
 void set_zero(T& t)

@@ -1,14 +1,14 @@
-#include <tonto/io/inputfile.h>
-#include <tonto/core/logger.h>
+#include <occ/io/inputfile.h>
+#include <occ/core/logger.h>
 #include <scn/scn.h>
 #include <fstream>
 #include <regex>
-#include <tonto/core/util.h>
-#include <tonto/core/element.h>
+#include <occ/core/util.h>
+#include <occ/core/element.h>
 
-namespace tonto::io {
+namespace occ::io {
 
-using tonto::qm::SpinorbitalKind;
+using occ::qm::SpinorbitalKind;
 
 GaussianInputFile::GaussianInputFile(const std::string &filename)
 {
@@ -23,14 +23,14 @@ GaussianInputFile::GaussianInputFile(std::istream &stream)
 
 void GaussianInputFile::parse(std::istream &stream)
 {
-    using tonto::util::trim;
+    using occ::util::trim;
     std::string line;
     while(std::getline(stream, line)) {
         trim(line);
         if(line[0] == '%') parse_link0(line);
         else if(line[0] == '#') {
             parse_route_line(line);
-            tonto::log::debug("Found route line, breaking");
+            occ::log::debug("Found route line, breaking");
             break;
         }
     }
@@ -50,18 +50,18 @@ void GaussianInputFile::parse(std::istream &stream)
 
 void GaussianInputFile::parse_link0(const std::string &line)
 {
-    using tonto::util::trim_copy;
+    using occ::util::trim_copy;
     auto eq = line.find('=');
     std::string cmd = line.substr(1, eq - 1);
     std::string arg = line.substr(eq + 1);
-    tonto::log::debug("Found link0 command {} = {}", cmd, arg);
+    occ::log::debug("Found link0 command {} = {}", cmd, arg);
     link0_commands.push_back({std::move(cmd), std::move(arg)});
 }
 
 void GaussianInputFile::parse_route_line(const std::string &line)
 {
-    using tonto::util::to_lower_copy;
-    using tonto::util::trim;
+    using occ::util::to_lower_copy;
+    using occ::util::trim;
     auto ltrim = to_lower_copy(line);
     trim(ltrim);
     if(ltrim.size() == 0) return;
@@ -75,9 +75,9 @@ void GaussianInputFile::parse_route_line(const std::string &line)
     }
     else
     {
-        tonto::log::error("Did not find method/basis in route line in gaussian input!");
+        occ::log::error("Did not find method/basis in route line in gaussian input!");
     }
-    tonto::log::debug("Found route command: method = {} basis = {}", method, basis_name);
+    occ::log::debug("Found route command: method = {} basis = {}", method, basis_name);
     if(method == "hf" || method == "uhf") method_type = MethodType::HF;
     else method_type = MethodType::DFT;
 }
@@ -94,7 +94,7 @@ void GaussianInputFile::parse_atom_line(const std::string &line)
     std::string symbol;
     scn::scan(line, "{} {} {} {}", symbol, x, y, z);
     atomic_positions.push_back({x * bohr, y * bohr, z * bohr});
-    tonto::chem::Element elem(symbol);
+    occ::chem::Element elem(symbol);
     atomic_numbers.push_back(elem.atomic_number());
 }
 

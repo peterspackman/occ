@@ -1,20 +1,20 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include "catch.hpp"
-#include <tonto/qm/basisset.h>
-#include <tonto/gto/gto.h>
-#include <tonto/dft/grid.h>
-#include <tonto/core/util.h>
+#include <occ/qm/basisset.h>
+#include <occ/gto/gto.h>
+#include <occ/dft/grid.h>
+#include <occ/core/util.h>
 #include <fmt/ostream.h>
 
-using tonto::gto::GTOValues;
-using tonto::qm::BasisSet;
-using tonto::util::all_close;
+using occ::gto::GTOValues;
+using occ::qm::BasisSet;
+using occ::util::all_close;
 
 
 
 template<size_t max_derivative, size_t block_size=128>
 void evaluate_basis_on_grid(GTOValues<max_derivative> &gto_values,
-                            tonto::dft::AtomGrid &grid,
+                            occ::dft::AtomGrid &grid,
                             const BasisSet &basis,
                             const std::vector<libint2::Atom> &atoms)
 {
@@ -39,7 +39,7 @@ void evaluate_basis_on_grid(GTOValues<max_derivative> &gto_values,
                 if(!mask(block, shell_idx)) continue;
                 size_t lower = block * block_size;
                 size_t N = std::min(block_size, npts - (block * block_size));
-                tonto::gto::impl::add_shell_contribution_block<max_derivative>(bf, shell, dists, gto_values, lower, N);
+                occ::gto::impl::add_shell_contribution_block<max_derivative>(bf, shell, dists, gto_values, lower, N);
             }
         }
     }
@@ -57,8 +57,8 @@ TEST_CASE("evaluate_basis", "[gto]")
     };
     BasisSet basis("3-21G", atoms);
     basis.set_pure(false);
-    tonto::dft::MolecularGrid mgrid(basis, atoms);
-    std::vector<tonto::dft::AtomGrid> grids{
+    occ::dft::MolecularGrid mgrid(basis, atoms);
+    std::vector<occ::dft::AtomGrid> grids{
         mgrid.generate_partitioned_atom_grid(0),
         mgrid.generate_partitioned_atom_grid(1),
         mgrid.generate_partitioned_atom_grid(2)
@@ -74,7 +74,7 @@ TEST_CASE("evaluate_basis", "[gto]")
     GTOValues<1> values_new(basis.nbf(), grids[0].points.cols());
     values_new.set_zero();
     evaluate_basis_on_grid<1, block_size>(values_new, grids[0], basis, atoms);
-    auto values_old = tonto::gto::evaluate_basis_on_grid<1>(basis, atoms, grids[0].points);
+    auto values_old = occ::gto::evaluate_basis_on_grid<1>(basis, atoms, grids[0].points);
 
 
     REQUIRE(all_close(values_new.phi, values_old.phi));
@@ -90,7 +90,7 @@ TEST_CASE("evaluate_basis", "[gto]")
         return 0;
     };
 
-    std::vector<tonto::MaskMat> masks = {
+    std::vector<occ::MaskMat> masks = {
         screen_basis(basis, atoms, grids[0].points),
         screen_basis(basis, atoms, grids[1].points),
         screen_basis(basis, atoms, grids[2].points)
@@ -112,7 +112,7 @@ TEST_CASE("evaluate_basis", "[gto]")
         GTOValues<1> values(basis.nbf(), grids[0].points.cols());
         for(const auto &grid: grids) {
             values.set_zero();
-            values = tonto::gto::evaluate_basis_on_grid<1>(basis, atoms, grid.points);
+            values = occ::gto::evaluate_basis_on_grid<1>(basis, atoms, grid.points);
             values.set_zero();
         }
         return 0;

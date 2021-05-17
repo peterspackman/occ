@@ -1,17 +1,17 @@
-#include <tonto/core/eigenp.h>
-#include <tonto/slater/thakkar.h>
+#include <occ/core/eigenp.h>
+#include <occ/slater/thakkar.h>
 #include <fmt/core.h>
 
 int main(int argc, char *argv[])
 {
     constexpr int num_points = 4096;
-    tonto::Vec domain = tonto::Vec::LinSpaced(num_points, -4, 3);
+    occ::Vec domain = occ::Vec::LinSpaced(num_points, -4, 3);
     domain = Eigen::exp(domain.array());
-    auto rho = tonto::MatRM(103, num_points);
-    auto grad_rho = tonto::MatRM(103, num_points);
+    auto rho = occ::MatRM(103, num_points);
+    auto grad_rho = occ::MatRM(103, num_points);
     for(size_t i = 1; i <= 103; i++)
     {
-        auto b = tonto::thakkar::basis_for_element(i);
+        auto b = occ::thakkar::basis_for_element(i);
         rho.row(i - 1) = b.rho(domain);
         grad_rho.row(i - 1) = b.grad_rho(domain);
         fmt::print("Atomic number {}\n", i);

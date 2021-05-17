@@ -1,11 +1,11 @@
-#include <tonto/slater/thakkar.h>
+#include <occ/slater/thakkar.h>
 
-namespace tonto::thakkar {
-using tonto::MatRM;
-using tonto::IVec;
-using tonto::Vec;
-using tonto::slater::Basis;
-using tonto::slater::Shell;
+namespace occ::thakkar {
+using occ::MatRM;
+using occ::IVec;
+using occ::Vec;
+using occ::slater::Basis;
+using occ::slater::Shell;
 
 //  H:Thakkar
 //  1S 1

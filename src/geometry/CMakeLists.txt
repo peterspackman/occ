@@ -1,12 +1,12 @@
-add_library(tonto_geometry
+add_library(occ_geometry
     "${CMAKE_CURRENT_SOURCE_DIR}/index_cache.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/marching_cubes.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/marching_cubes_data.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/morton.cpp"
-    ${TONTO_CORE_INCLUDE_FILES}
+    ${OCC_CORE_INCLUDE_FILES}
 )
 
-target_link_libraries(tonto_geometry
+target_link_libraries(occ_geometry
     PUBLIC 
     Boost::graph
     Eigen3::Eigen 
@@ -17,9 +17,9 @@ target_link_libraries(tonto_geometry
     scn::scn
     spdlog::spdlog
 )
-target_include_directories(tonto_geometry PUBLIC 
-    ${TONTO_INCLUDE_DIR} 
+target_include_directories(occ_geometry PUBLIC 
+    ${OCC_INCLUDE_DIR} 
 )
 
-target_compile_features(tonto_geometry PUBLIC cxx_std_17)
+target_compile_features(occ_geometry PUBLIC cxx_std_17)
 

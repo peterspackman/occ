@@ -1,10 +1,10 @@
-#include <tonto/interaction/pairinteraction.h>
-#include <tonto/qm/hf.h>
-#include <tonto/interaction/disp.h>
-#include <tonto/core/timings.h>
-#include <tonto/qm/merge.h>
+#include <occ/interaction/pairinteraction.h>
+#include <occ/qm/hf.h>
+#include <occ/interaction/disp.h>
+#include <occ/core/timings.h>
+#include <occ/qm/merge.h>
 
-namespace tonto::interaction {
+namespace occ::interaction {
 
 
 CEModelInteraction::CEModelInteraction(const  CEParameterizedModel &facs) : scale_factors(facs)
@@ -14,11 +14,11 @@ CEModelInteraction::CEModelInteraction(const  CEParameterizedModel &facs) : scal
 
 
 template<SpinorbitalKind kind>
-void compute_ce_model_energies(Wavefunction& wfn, tonto::hf::HartreeFock& hf)
+void compute_ce_model_energies(Wavefunction& wfn, occ::hf::HartreeFock& hf)
 {
     if(wfn.have_energies) return;
-    using tonto::qm::expectation;
-    using tonto::qm::matrix_dimensions;
+    using occ::qm::expectation;
+    using occ::qm::matrix_dimensions;
     if constexpr(kind == SpinorbitalKind::Restricted) {
         wfn.V = hf.compute_nuclear_attraction_matrix();
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
@@ -53,7 +53,7 @@ void compute_ce_model_energies(Wavefunction& wfn, tonto::hf::HartreeFock& hf)
 }
 
 
-void compute_ce_model_energies(Wavefunction &wfn, tonto::hf::HartreeFock &hf)
+void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf)
 {
     if(wfn.is_restricted()) return compute_ce_model_energies<SpinorbitalKind::Restricted>(wfn, hf);
     else return compute_ce_model_energies<SpinorbitalKind::Unrestricted>(wfn, hf);
@@ -61,9 +61,9 @@ void compute_ce_model_energies(Wavefunction &wfn, tonto::hf::HartreeFock &hf)
 
 CEModelInteraction::EnergyComponents CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const
 {
-    using tonto::hf::HartreeFock;
-    using tonto::qm::Energy;
-    using tonto::disp::ce_model_dispersion_energy;
+    using occ::hf::HartreeFock;
+    using occ::qm::Energy;
+    using occ::disp::ce_model_dispersion_energy;
 
     HartreeFock hf_a(A.atoms, A.basis);
     HartreeFock hf_b(B.atoms, B.basis);

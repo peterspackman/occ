@@ -1,7 +1,7 @@
-#include <tonto/core/timings.h>
+#include <occ/core/timings.h>
 #include <fmt/core.h>
 
-namespace tonto::timing {
+namespace occ::timing {
 
 static StopWatch<static_cast<size_t>(category::_group_count)> sw{};
 

@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include <tonto/io/inputfile.h>
+#include <occ/io/inputfile.h>
 #include <sstream>
 #include <fmt/ostream.h>
 
@@ -19,7 +19,7 @@ H 0.2124040000 2.7681990000 0.7555250000
 TEST_CASE("h2o gaussian input", "[read]")
 {
     std::istringstream inp(contents);
-    tonto::io::GaussianInputFile reader(inp);
+    occ::io::GaussianInputFile reader(inp);
     REQUIRE(reader.charge == 0);
     REQUIRE(reader.method == "hf");
     REQUIRE(reader.basis_name == "3-21g");
@@ -27,5 +27,5 @@ TEST_CASE("h2o gaussian input", "[read]")
     REQUIRE(reader.atomic_positions.size() == 3);
     REQUIRE(reader.atomic_numbers.size() == 3);
     REQUIRE(reader.atomic_numbers[2] == 1);
-    REQUIRE(reader.spinorbital_kind() == tonto::qm::SpinorbitalKind::Restricted);
+    REQUIRE(reader.spinorbital_kind() == occ::qm::SpinorbitalKind::Restricted);
 }

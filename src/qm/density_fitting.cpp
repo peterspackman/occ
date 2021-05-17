@@ -1,12 +1,12 @@
-#include <tonto/qm/density_fitting.h>
-#include <tonto/core/parallel.h>
+#include <occ/qm/density_fitting.h>
+#include <occ/core/parallel.h>
 #include <libint2.hpp>
 
-namespace tonto::df {
+namespace occ::df {
 
-tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
+occ::MatRM DFFockEngine::compute_2body_fock_dfC(const occ::MatRM& Cocc) {
 
-  using tonto::parallel::nthreads;
+  using occ::parallel::nthreads;
 
   const size_t n = obs.nbf();
   const size_t ndf = dfbs.nbf();
@@ -80,14 +80,14 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
 
     };  // lambda
 
-    tonto::parallel::parallel_do(lambda);
+    occ::parallel::parallel_do(lambda);
 
-    tonto::MatRM V = tonto::ints::compute_2body_2index_ints(dfbs);
-    Eigen::LLT<tonto::MatRM> V_LLt(V);
-    tonto::MatRM I = tonto::MatRM::Identity(ndf, ndf);
+    occ::MatRM V = occ::ints::compute_2body_2index_ints(dfbs);
+    Eigen::LLT<occ::MatRM> V_LLt(V);
+    occ::MatRM I = occ::MatRM::Identity(ndf, ndf);
     auto L = V_LLt.matrixL();
-    tonto::MatRM V_L = L;
-    tonto::MatRM Linv_t = L.solve(I).transpose();
+    occ::MatRM V_L = L;
+    occ::MatRM Linv_t = L.solve(I).transpose();
     // check
     //  std::cout << "||V - L L^t|| = " << (V - V_L * V_L.transpose()).norm() <<
     //  std::endl;
@@ -194,7 +194,7 @@ tonto::MatRM DFFockEngine::compute_2body_fock_dfC(const tonto::MatRM& Cocc) {
       }
   }
   // copy result to an Eigen::Matrix
-  tonto::MatRM result(n, n);
+  occ::MatRM result(n, n);
   std::copy(G.data(), G.data() + G.size(), result.data());
   return result;
 }

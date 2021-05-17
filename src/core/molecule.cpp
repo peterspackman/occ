@@ -1,11 +1,11 @@
-#include <tonto/core/molecule.h>
+#include <occ/core/molecule.h>
 #include <Eigen/Core>
 #include <fstream>
 #include <fmt/core.h>
-#include <tonto/core/units.h>
-#include <tonto/core/util.h>
+#include <occ/core/units.h>
+#include <occ/core/util.h>
 
-namespace tonto::chem {
+namespace occ::chem {
 
 Molecule::Molecule(const IVec &nums, const Mat3N &pos)
     : m_atomicNumbers(nums), m_positions(pos) {
@@ -24,9 +24,9 @@ Molecule::Molecule(const std::vector<libint2::Atom> &atoms)
     m_elements.push_back(Element(atom.atomic_number));
     m_atomicNumbers(i) = atom.atomic_number;
     // Internally store in angstroms
-    m_positions(0, i) = atom.x * tonto::units::BOHR_TO_ANGSTROM;
-    m_positions(1, i) = atom.y * tonto::units::BOHR_TO_ANGSTROM;
-    m_positions(2, i) = atom.z * tonto::units::BOHR_TO_ANGSTROM;
+    m_positions(0, i) = atom.x * occ::units::BOHR_TO_ANGSTROM;
+    m_positions(1, i) = atom.y * occ::units::BOHR_TO_ANGSTROM;
+    m_positions(2, i) = atom.z * occ::units::BOHR_TO_ANGSTROM;
   }
   m_name = chemical_formula(m_elements);
 }
@@ -59,7 +59,7 @@ Molecule read_xyz_file(const std::string &filename) {
 std::vector<libint2::Atom> Molecule::atoms() const
 {
     std::vector<libint2::Atom> result(size());
-    using tonto::units::ANGSTROM_TO_BOHR;
+    using occ::units::ANGSTROM_TO_BOHR;
     for (size_t i = 0; i < size(); i++) {
         result[i] = {m_atomicNumbers(i), m_positions(0, i) * ANGSTROM_TO_BOHR,
                      m_positions(1, i) * ANGSTROM_TO_BOHR, m_positions(2, i) * ANGSTROM_TO_BOHR};
@@ -88,14 +88,14 @@ const Vec Molecule::atomic_masses() const
     return masses;
 }
 
-const tonto::Vec3 Molecule::centroid() const
+const occ::Vec3 Molecule::centroid() const
 {
     return m_positions.rowwise().mean();
 }
 
-const tonto::Vec3 Molecule::center_of_mass() const
+const occ::Vec3 Molecule::center_of_mass() const
 {
-    tonto::RowVec masses = atomic_masses();
+    occ::RowVec masses = atomic_masses();
     masses.array() /= masses.sum();
     return (m_positions.array().rowwise() * masses.array()).rowwise().sum();
 }
@@ -117,7 +117,7 @@ Molecule Molecule::rotated(const Eigen::Affine3d &rotation, Origin origin) const
     return rotated(rotation.linear(), origin);
 }
 
-void Molecule::rotate(const tonto::Mat3 &rotation, Origin origin)
+void Molecule::rotate(const occ::Mat3 &rotation, Origin origin)
 {
     Vec3 O = {0, 0, 0};
     switch(origin)
@@ -140,20 +140,20 @@ void Molecule::rotate(const tonto::Mat3 &rotation, Origin origin)
     m_asymmetric_unit_rotation = rotation * m_asymmetric_unit_rotation;
 }
 
-Molecule Molecule::rotated(const tonto::Mat3 &rotation, Origin origin) const
+Molecule Molecule::rotated(const occ::Mat3 &rotation, Origin origin) const
 {
     Molecule result = *this;
     result.rotate(rotation, origin);
     return result;
 }
 
-void Molecule::translate(const tonto::Vec3 &translation)
+void Molecule::translate(const occ::Vec3 &translation)
 {
     m_positions.colwise() += translation;
     m_asymmetric_unit_translation += translation;
 }
 
-Molecule Molecule::translated(const tonto::Vec3 &translation) const
+Molecule Molecule::translated(const occ::Vec3 &translation) const
 {
     Molecule result = *this;
     result.translate(translation);
@@ -178,10 +178,10 @@ std::tuple<size_t, size_t, double> Molecule::nearest_atom(const Molecule &other)
     std::tuple<size_t, size_t, double> result{0, 0, std::numeric_limits<double>::max()};
     for(size_t i = 0; i < size(); i++)
     {
-        const tonto::Vec3& p1 = m_positions.col(i);
+        const occ::Vec3& p1 = m_positions.col(i);
         for(size_t j = 0; j < other.size(); j++)
         {
-            const tonto::Vec3& p2 = other.m_positions.col(j);
+            const occ::Vec3& p2 = other.m_positions.col(j);
             double d = (p2 - p1).norm();
             if(d < std::get<2>(result)) result = {i, j, d};
         }
@@ -211,7 +211,7 @@ bool Molecule::equivalent_to(const Molecule &rhs) const
     if(!comparable_to(rhs)) return false;
     auto dists_a = interatomic_distances();
     auto dists_b = rhs.interatomic_distances();
-    return tonto::util::all_close(dists_a, dists_b, 1e-8, 1e-8);
+    return occ::util::all_close(dists_a, dists_b, 1e-8, 1e-8);
 }
 
-} // namespace tonto::chem
+} // namespace occ::chem

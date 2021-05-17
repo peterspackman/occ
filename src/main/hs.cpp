@@ -1,20 +1,20 @@
-#include <tonto/core/eigenp.h>
-#include <tonto/core/logger.h>
+#include <occ/core/eigenp.h>
+#include <occ/core/logger.h>
 #include <filesystem>
-#include <tonto/3rdparty/argparse.hpp>
-#include <tonto/slater/thakkar.h>
+#include <occ/3rdparty/argparse.hpp>
+#include <occ/slater/thakkar.h>
 #include <fmt/ostream.h>
-#include <tonto/core/molecule.h>
-#include <tonto/geometry/linear_hashed_marching_cubes.h>
-#include <tonto/geometry/marching_cubes.h>
-#include <tonto/core/interpolator.h>
-#include <tonto/core/units.h>
-#include <tonto/3rdparty/robin_hood.h>
+#include <occ/core/molecule.h>
+#include <occ/geometry/linear_hashed_marching_cubes.h>
+#include <occ/geometry/marching_cubes.h>
+#include <occ/core/interpolator.h>
+#include <occ/core/units.h>
+#include <occ/3rdparty/robin_hood.h>
 
 namespace fs = std::filesystem;
-using tonto::chem::Molecule;
-using tonto::chem::Element;
-using tonto::core::Interpolator1D;
+using occ::chem::Molecule;
+using occ::chem::Element;
+using occ::core::Interpolator1D;
 
 struct HirshfeldBasis {
     std::vector<Eigen::Vector3d> coordinates;
@@ -27,7 +27,7 @@ struct HirshfeldBasis {
     float fac = 0.5;
     mutable int num_calls{0};
     std::vector<int> elements;
-    robin_hood::unordered_flat_map<int, Interpolator1D<double, tonto::core::DomainMapping::Log>> interpolators;
+    robin_hood::unordered_flat_map<int, Interpolator1D<double, occ::core::DomainMapping::Log>> interpolators;
 
     HirshfeldBasis(const Molecule &in, Molecule &ext) : interior(in), exterior(ext)
     {
@@ -35,8 +35,8 @@ struct HirshfeldBasis {
         auto pos_in = in.positions();
         auto nums_ext = ext.atomic_numbers();
         auto pos_ext = ext.positions();
-        pos_in.array() *= tonto::units::ANGSTROM_TO_BOHR;
-        pos_ext.array() *= tonto::units::ANGSTROM_TO_BOHR;
+        pos_in.array() *= occ::units::ANGSTROM_TO_BOHR;
+        pos_ext.array() *= occ::units::ANGSTROM_TO_BOHR;
         Eigen::Vector3d minp_in = pos_in.rowwise().minCoeff();
         Eigen::Vector3d maxp_in = pos_in.rowwise().maxCoeff();
         Eigen::Vector3d minp_ext = pos_ext.rowwise().minCoeff();
@@ -51,9 +51,9 @@ struct HirshfeldBasis {
             auto search = interpolators.find(el);
             if(search == interpolators.end())
             {
-                auto b = tonto::thakkar::basis_for_element(el);
+                auto b = occ::thakkar::basis_for_element(el);
                 auto func = [&b](double x) { return b.rho(x); };
-                interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 4096);
+                interpolators[el] = Interpolator1D<double, occ::core::DomainMapping::Log>(func, 0.1, 20.0, 4096);
             }
         }
 
@@ -65,9 +65,9 @@ struct HirshfeldBasis {
             auto search = interpolators.find(el);
             if(search == interpolators.end())
             {
-                auto b = tonto::thakkar::basis_for_element(el);
+                auto b = occ::thakkar::basis_for_element(el);
                 auto func = [&b](double x) { return b.rho(x); };
-                interpolators[el] = Interpolator1D<double, tonto::core::DomainMapping::Log>(func, 0.1, 20.0, 4096);
+                interpolators[el] = Interpolator1D<double, occ::core::DomainMapping::Log>(func, 0.1, 20.0, 4096);
             }
         }
         origin = minp_in;
@@ -105,7 +105,7 @@ struct HirshfeldBasis {
 struct SlaterBasis {
     const double buffer = 5.0;
     std::vector<Eigen::Vector3d> coordinates;
-    std::vector<tonto::slater::Basis> basis;
+    std::vector<occ::slater::Basis> basis;
     const Molecule& molecule;
     Eigen::Vector3d origin{0, 0, 0};
     double length{0.0};
@@ -117,7 +117,7 @@ struct SlaterBasis {
     {
         auto nums = molecule.atomic_numbers();
         auto pos = molecule.positions() ;
-        pos.array() *= tonto::units::ANGSTROM_TO_BOHR;
+        pos.array() *= occ::units::ANGSTROM_TO_BOHR;
         Eigen::Vector3d minp = pos.rowwise().minCoeff();
         Eigen::Vector3d maxp = pos.rowwise().maxCoeff();
         minp.array() -= buffer;
@@ -126,7 +126,7 @@ struct SlaterBasis {
         {
             int el = nums[i];
             coordinates.push_back(pos.col(i));
-            basis.emplace_back(tonto::thakkar::basis_for_element(el));
+            basis.emplace_back(occ::thakkar::basis_for_element(el));
         }
         origin = minp;
         length = (maxp - minp).maxCoeff();
@@ -194,7 +194,7 @@ std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi> as_matrices(const HirshfeldBasis& 
 
 int main(int argc, char *argv[])
 {
-    argparse::ArgumentParser parser("tonto");
+    argparse::ArgumentParser parser("occ");
     parser.add_argument("input").help("Input file geometry");
     parser.add_argument("--minimum-separation", "-s")
             .help("Minimum separation")
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
             .help("Number of threads")
             .default_value(2)
             .action([](const std::string& value) { return std::stoi(value); });
-    tonto::log::set_level(tonto::log::level::debug);
+    occ::log::set_level(occ::log::level::debug);
     spdlog::set_level(spdlog::level::debug);
     fs::path geometry_filename, environment_filename;
     double minimum_separation = 0.05;
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
         maximum_separation = parser.get<double>("--maximum-separation");
     }
     catch (const std::runtime_error& err) {
-        tonto::log::error("error when parsing command line arguments: {}", err.what());
+        occ::log::error("error when parsing command line arguments: {}", err.what());
         fmt::print("{}", parser);
         exit(1);
     }
@@ -230,8 +230,8 @@ int main(int argc, char *argv[])
 
     if(auto environment_geometry = parser.present("--environment")) {
         environment_filename = *environment_geometry;
-        Molecule m1 = tonto::chem::read_xyz_file(geometry_filename);
-        Molecule m2 = tonto::chem::read_xyz_file(environment_filename);
+        Molecule m1 = occ::chem::read_xyz_file(geometry_filename);
+        Molecule m2 = occ::chem::read_xyz_file(environment_filename);
 
         fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n", geometry_filename, "sym", "x", "y", "z");
         for (const auto &atom : m1.atoms()) {
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
         size_t max_depth = 7;
         size_t min_depth = 3;
         fmt::print("Min depth = {}, max depth = {}\n", min_depth, max_depth);
-        auto mc = tonto::geometry::mc::LinearHashedMarchingCubes(max_depth);
+        auto mc = occ::geometry::mc::LinearHashedMarchingCubes(max_depth);
         mc.min_depth = min_depth;
         std::vector<float> vertices;
         std::vector<uint32_t> faces;
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 
     }
     else {
-        Molecule m = tonto::chem::read_xyz_file(geometry_filename);
+        Molecule m = occ::chem::read_xyz_file(geometry_filename);
 
         fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n", geometry_filename, "sym", "x", "y", "z");
         for (const auto &atom : m.atoms()) {
@@ -273,16 +273,16 @@ int main(int argc, char *argv[])
                        atom.x, atom.y, atom.z);
         }
 
-        auto b = tonto::thakkar::basis_for_element(6);
+        auto b = occ::thakkar::basis_for_element(6);
         auto func = [&b](double x) { return b.rho(x); };
-        Interpolator1D<double, tonto::core::DomainMapping::Log> interp(func, 0.1, 20.0, 1024);
+        Interpolator1D<double, occ::core::DomainMapping::Log> interp(func, 0.1, 20.0, 1024);
         fmt::print("v({}) = ({}, {})", 0.4, func(0.4), interp(0.4));
         
         auto basis = SlaterBasis(m);
         size_t max_depth = 7;
         size_t min_depth = 1;
         fmt::print("Min depth = {}, max depth = {}\n", min_depth, max_depth);
-        auto mc = tonto::geometry::mc::LinearHashedMarchingCubes(max_depth);
+        auto mc = occ::geometry::mc::LinearHashedMarchingCubes(max_depth);
         mc.min_depth = min_depth;
         std::vector<float> vertices;
         std::vector<uint32_t> faces;

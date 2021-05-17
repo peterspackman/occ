@@ -1,16 +1,16 @@
-#include <tonto/solvent/cosmo.h>
-#include <tonto/core/diis.h>
+#include <occ/solvent/cosmo.h>
+#include <occ/core/diis.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-namespace tonto::solvent {
+namespace occ::solvent {
 
 namespace cosmo {
 
-tonto::Vec solvation_radii(const tonto::IVec &nums)
+occ::Vec solvation_radii(const occ::IVec &nums)
 {
     // angstroms
-    tonto::Vec result(nums.rows());
+    occ::Vec result(nums.rows());
     static const double radii[17] = {
         1.300, 1.638, 1.404, 1.053, 2.0475, 2.00,  
         1.830, 1.720, 1.720, 1.8018, 1.755, 1.638,  
@@ -55,7 +55,7 @@ COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const 
     Vec dq(res.initial.rows());
 
     double energy = 0.0;
-    tonto::diis::DIIS<Vec> diis(2, 12);
+    occ::diis::DIIS<Vec> diis(2, 12);
 
 
     for(size_t k = 1; k < m_max_iterations; k++)

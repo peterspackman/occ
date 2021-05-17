@@ -1,13 +1,13 @@
-#include <tonto/core/parallel.h>
-#include <tonto/qm/hf.h>
-#include <tonto/qm/fock.h>
+#include <occ/core/parallel.h>
+#include <occ/qm/hf.h>
+#include <occ/qm/fock.h>
 
-namespace tonto::hf {
+namespace occ::hf {
 
 HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms,
                          const BasisSet &basis)
     : m_atoms(atoms), m_basis(basis) {
-  std::tie(m_shellpair_list, m_shellpair_data) = tonto::ints::compute_shellpairs(m_basis);
+  std::tie(m_shellpair_list, m_shellpair_data) = occ::ints::compute_shellpairs(m_basis);
   for (const auto &a : m_atoms) {
     m_num_e += a.atomic_number;
   }
@@ -29,7 +29,7 @@ double HartreeFock::nuclear_repulsion_energy() const {
 }
 
 MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const {
-  return tonto::ints::compute_shellblock_norm(m_basis, A);
+  return occ::ints::compute_shellblock_norm(m_basis, A);
 }
 
 Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions) const
@@ -52,7 +52,7 @@ Mat3N HartreeFock::electronic_electric_field_contribution(const MatRM& D, const 
     constexpr bool use_finite_differences = true;
     if constexpr(use_finite_differences) {
         double delta = 1e-8;
-        tonto::Mat3N efield_fd(positions.rows(), positions.cols());
+        occ::Mat3N efield_fd(positions.rows(), positions.cols());
         for(size_t i = 0; i < 3; i++) {
             auto pts_delta = positions;
             pts_delta.row(i).array() += delta;
@@ -64,13 +64,13 @@ Mat3N HartreeFock::electronic_electric_field_contribution(const MatRM& D, const 
         return efield_fd;
     }
     else {
-        return tonto::ints::compute_electric_field(D, m_basis, m_shellpair_list, positions);
+        return occ::ints::compute_electric_field(D, m_basis, m_shellpair_list, positions);
     }
 }
 
 Vec HartreeFock::electronic_electric_potential_contribution(const MatRM &D, const Mat3N &positions) const
 {
-    return tonto::ints::compute_electric_potential(D, m_basis, m_shellpair_list, positions);
+    return occ::ints::compute_electric_potential(D, m_basis, m_shellpair_list, positions);
 }
 
-} // namespace tonto::hf
+} // namespace occ::hf

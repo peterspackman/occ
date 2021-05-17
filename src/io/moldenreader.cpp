@@ -1,15 +1,15 @@
-#include <tonto/io/moldenreader.h>
+#include <occ/io/moldenreader.h>
 #include <scn/scn.h>
 #include <fmt/ostream.h>
-#include <tonto/core/logger.h>
-#include <tonto/core/util.h>
-#include <tonto/gto/gto.h>
-#include <tonto/core/timings.h>
+#include <occ/core/logger.h>
+#include <occ/core/util.h>
+#include <occ/gto/gto.h>
+#include <occ/core/timings.h>
 
-namespace tonto::io {
-using tonto::util::trim;
-using tonto::util::startswith;
-using tonto::util::to_lower;
+namespace occ::io {
+using occ::util::trim;
+using occ::util::startswith;
+using occ::util::to_lower;
 
 inline bool is_section_line(const std::string &line)
 {
@@ -32,17 +32,17 @@ std::optional<std::string> extract_section_args(const std::string &line)
 
 MoldenReader::MoldenReader(const std::string &filename) : m_filename(filename)
 {
-    tonto::timing::start(tonto::timing::category::io);
+    occ::timing::start(occ::timing::category::io);
     std::ifstream file(filename);
     parse(file);
-    tonto::timing::stop(tonto::timing::category::io);
+    occ::timing::stop(occ::timing::category::io);
 }
 
 MoldenReader::MoldenReader(std::istream &file)
 {
-    tonto::timing::start(tonto::timing::category::io);
+    occ::timing::start(occ::timing::category::io);
     parse(file);
-    tonto::timing::stop(tonto::timing::category::io);
+    occ::timing::stop(occ::timing::category::io);
 }
 
 void MoldenReader::parse(std::istream &stream)
@@ -54,7 +54,7 @@ void MoldenReader::parse(std::istream &stream)
         {
             auto section_name = parse_section_name(line);
             auto section_args = extract_section_args(line);
-            tonto::log::debug("Found section: {}", section_name);
+            occ::log::debug("Found section: {}", section_name);
             parse_section(section_name, section_args, stream);
         }
     }
@@ -82,7 +82,7 @@ void MoldenReader::parse_section(const std::string &section_name, const std::opt
 
 void MoldenReader::parse_atoms_section(const std::optional<std::string> &args, std::istream& stream)
 {
-    tonto::log::debug("Parsing Atoms section");
+    occ::log::debug("Parsing Atoms section");
     auto pos = stream.tellg();
     std::string line;
     std::vector<int> idx;
@@ -139,7 +139,7 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3>& position, 
 {
     std::string line;
     std::getline(stream, line);
-    using tonto::util::double_factorial;
+    using occ::util::double_factorial;
     char shell_type;
     int num_primitives, second;
     scn::scan_default(line, shell_type, num_primitives, second);
@@ -174,7 +174,7 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3>& position, 
         if(std::abs(pi2_34 - norm) > 1e-4) {
             for(size_t i = 0; i < coeffs.size(); i++)
             {
-                tonto::log::debug("Renormalizing coefficients: {} != (2*pi)^(3/4)\n", norm);
+                occ::log::debug("Renormalizing coefficients: {} != (2*pi)^(3/4)\n", norm);
                 coeffs[i] /= pow(4*alpha[i], 0.5 * l + 0.75);
                 coeffs[i] = coeffs[i] * pi2_34 / norm;
             }
@@ -190,7 +190,7 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3>& position, 
 
 void MoldenReader::parse_gto_section(const std::optional<std::string> &args, std::istream &stream)
 {
-    tonto::log::debug("Parsing GTO section");
+    occ::log::debug("Parsing GTO section");
     auto pos = stream.tellg();
     std::string line;
     while(std::getline(stream, line))
@@ -275,13 +275,13 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream)
 
 void MoldenReader::parse_mo_section(const std::optional<std::string> &args, std::istream &stream)
 {
-    tonto::log::debug("Parsing MO section");
+    occ::log::debug("Parsing MO section");
     auto pos = stream.tellg();
     std::string line;
-    m_energies_alpha = tonto::Vec(nbf());
-    m_energies_beta = tonto::Vec(nbf());
-    m_molecular_orbitals_alpha = tonto::MatRM(nbf(), nbf());
-    m_molecular_orbitals_beta = tonto::MatRM(nbf(), nbf());
+    m_energies_alpha = occ::Vec(nbf());
+    m_energies_beta = occ::Vec(nbf());
+    m_molecular_orbitals_alpha = occ::MatRM(nbf(), nbf());
+    m_molecular_orbitals_beta = occ::MatRM(nbf(), nbf());
     size_t num_alpha = 0, num_beta = 0;
     while(std::getline(stream, line))
     {
@@ -295,11 +295,11 @@ void MoldenReader::parse_mo_section(const std::optional<std::string> &args, std:
 }
 
 
-tonto::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const tonto::qm::BasisSet& basis, const tonto::MatRM& mo) const
+occ::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const occ::qm::BasisSet& basis, const occ::MatRM& mo) const
 {
-    using tonto::util::index_of;
+    using occ::util::index_of;
     // no reordering should occur unless there are d, f, g, h etc. functions
-    if(tonto::qm::max_l(basis) < 2) return mo;
+    if(occ::qm::max_l(basis) < 2) return mo;
     struct xyz {
         uint_fast8_t x{0};
         uint_fast8_t y{0};
@@ -307,9 +307,9 @@ tonto::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const 
         bool operator ==(const xyz& rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
     };
 
-    tonto::log::debug("Reordering MO coefficients from Molden ordering to internal convention");
+    occ::log::debug("Reordering MO coefficients from Molden ordering to internal convention");
     auto shell2bf = basis.shell2bf();
-    tonto::MatRM result(mo.rows(), mo.cols());
+    occ::MatRM result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     for(size_t i = 0; i < basis.size(); i++)
     {
@@ -341,7 +341,7 @@ tonto::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const 
             break;
         }
         if (molden_order.size() == 0) {
-            tonto::log::warn("Unknown Molden ordering for shell with angular momentum {}, not reordering", l);
+            occ::log::warn("Unknown Molden ordering for shell with angular momentum {}, not reordering", l);
             continue;
         }
 
@@ -350,9 +350,9 @@ tonto::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const 
         FOR_CART(xp, yp, zp, l)
             xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp), static_cast<uint_fast8_t>(zp)};
             size_t gaussian_idx = index_of(v, molden_order);
-            tonto::log::debug("Setting row {} <- row {}", our_idx, gaussian_idx);
+            occ::log::debug("Setting row {} <- row {}", our_idx, gaussian_idx);
             result.row(bf_first + our_idx) = mo.row(bf_first + gaussian_idx);
-            double normalization_factor = tonto::gto::cartesian_normalization_factor(xp, yp, zp);
+            double normalization_factor = occ::gto::cartesian_normalization_factor(xp, yp, zp);
             result.row(bf_first + our_idx) *= normalization_factor;
             our_idx++;
         END_FOR_CART

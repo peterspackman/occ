@@ -1,6 +1,6 @@
 #include "catch.hpp"
-#include <tonto/io/fchkreader.h>
-#include <tonto/io/fchkwriter.h>
+#include <occ/io/fchkreader.h>
+#include <occ/io/fchkwriter.h>
 #include <sstream>
 #include <fmt/ostream.h>
 
@@ -173,7 +173,7 @@ QEq coupling tensors                       R   N=          12
 TEST_CASE("H2 fchk", "[read]")
 {
     std::istringstream fchk(fchk_contents);
-    tonto::io::FchkReader reader(fchk);
+    occ::io::FchkReader reader(fchk);
     REQUIRE(reader.num_alpha() == 1);
     REQUIRE(reader.num_basis_functions() == 2);
     fmt::print("Alpha MOs:\n{}\n", reader.alpha_mo_coefficients());
@@ -181,7 +181,7 @@ TEST_CASE("H2 fchk", "[read]")
     fmt::print("Positions:\n{}\n", reader.atomic_positions());
     REQUIRE(reader.basis().primitive_exponents[0] == Approx(3.42525091));
 
-    tonto::io::FchkReader::FchkBasis basis = reader.basis();
+    occ::io::FchkReader::FchkBasis basis = reader.basis();
     basis.print();
     fmt::print("Libint2 basis:\n");
     for(const auto& shell: reader.basis_set())
@@ -197,13 +197,13 @@ TEST_CASE("H2 fchk", "[read]")
 
 TEST_CASE("Write H2 fchk", "[write]")
 {
-    tonto::io::FchkWriter writer(std::cout);
+    occ::io::FchkWriter writer(std::cout);
     writer.set_scalar("Charge", 0);
     writer.set_scalar("Multiplicity", 1);
     writer.set_scalar("Number of electrons", 10);
     writer.set_scalar("SCF Energy", -76.42165911602731);
     writer.set_scalar("Test string", std::string("this string"));
-    tonto::MatRM identity = tonto::MatRM::Identity(3, 3);
+    occ::MatRM identity = occ::MatRM::Identity(3, 3);
     writer.set_vector("Identity matrix", identity);
     writer.write();
     REQUIRE(true);

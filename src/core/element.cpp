@@ -1,16 +1,16 @@
-#include <tonto/core/element.h>
-#include <tonto/core/util.h>
+#include <occ/core/element.h>
+#include <occ/core/util.h>
 #include <algorithm>
 #include <sstream>
 
-namespace tonto::chem {
+namespace occ::chem {
 
 Element::Element(int atomicNumber) : m_data(ELEMENTDATA_TABLE[atomicNumber]) {}
 
 Element::Element(const std::string &s) : m_data(ELEMENTDATA_TABLE[0]) {
   // capitalize the symbol first
-  auto symbol = tonto::util::trim_copy(s);
-  auto capitalized = tonto::util::capitalize_copy(s);
+  auto symbol = occ::util::trim_copy(s);
+  auto capitalized = occ::util::capitalize_copy(s);
   for (size_t i = ELEMENT_MAX - 1; i > 0; i--) {
     const auto dat = ELEMENTDATA_TABLE[i];
     const size_t N = dat.symbol.size();
@@ -47,4 +47,4 @@ std::string chemical_formula(const std::vector<Element> &els) {
   return result;
 }
 
-} // namespace tonto::chem
+} // namespace occ::chem

@@ -1,22 +1,22 @@
-#include <tonto/core/logger.h>
-#include <tonto/qm/wavefunction.h>
-#include <tonto/qm/spinorbital.h>
-#include <tonto/io/conversion.h>
-#include <tonto/io/fchkreader.h>
-#include <tonto/io/fchkwriter.h>
-#include <tonto/io/moldenreader.h>
-#include <tonto/qm/merge.h>
-#include <tonto/qm/orb.h>
+#include <occ/core/logger.h>
+#include <occ/qm/wavefunction.h>
+#include <occ/qm/spinorbital.h>
+#include <occ/io/conversion.h>
+#include <occ/io/fchkreader.h>
+#include <occ/io/fchkwriter.h>
+#include <occ/io/moldenreader.h>
+#include <occ/qm/merge.h>
+#include <occ/qm/orb.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <tonto/core/element.h>
+#include <occ/core/element.h>
 
-namespace tonto::qm {
+namespace occ::qm {
 
-using tonto::qm::merge_molecular_orbitals;
-using tonto::qm::merge_basis_sets;
-using tonto::qm::merge_atoms;
-using tonto::io::FchkReader;
+using occ::qm::merge_molecular_orbitals;
+using occ::qm::merge_basis_sets;
+using occ::qm::merge_atoms;
+using occ::io::FchkReader;
 
 void Energy::print() const
 {
@@ -35,7 +35,7 @@ Wavefunction::Wavefunction(const FchkReader& fchk) :
     num_beta(fchk.num_beta()),
     num_electrons(fchk.num_electrons()),
     basis(fchk.basis_set()),
-    nbf(tonto::qm::nbf(basis)),
+    nbf(occ::qm::nbf(basis)),
     atoms(fchk.atoms())
 {
     set_molecular_orbitals(fchk);
@@ -53,13 +53,13 @@ Wavefunction::Wavefunction(const MoldenReader& molden) :
     atoms(molden.atoms())
 {
     size_t rows, cols;
-    nbf = tonto::qm::nbf(basis);
+    nbf = occ::qm::nbf(basis);
 
     if(spinorbital_kind == SpinorbitalKind::General) {
         throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
     }
     else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+        std::tie(rows, cols) = occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
         C = MatRM(rows, cols);
         mo_energies = Vec(rows);
         C.alpha() = molden.alpha_mo_coefficients();
@@ -91,11 +91,11 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     if(is_restricted()) std::tie(rows, cols) = matrix_dimensions<SpinorbitalKind::Restricted>(nbf);
     else std::tie(rows, cols) = matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
     C = MatRM(rows, cols);
-    mo_energies = tonto::Vec(rows);
+    mo_energies = occ::Vec(rows);
     // temporaries for merging orbitals
     MatRM C_merged;
-    tonto::Vec energies_merged;
-    tonto::log::debug("Merging occupied orbitals, sorted by energy");
+    occ::Vec energies_merged;
+    occ::log::debug("Merging occupied orbitals, sorted by energy");
     if(wfn_a.is_restricted() && wfn_b.is_restricted())
     {
         // merge occupied orbitals
@@ -110,7 +110,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
         size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha, nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
         size_t nv_ab = nv_a + nv_b;
 
-        tonto::log::debug("Merging virtual orbitals, sorted by energy");
+        occ::log::debug("Merging virtual orbitals, sorted by energy");
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
             wfn_a.C.rightCols(nv_a), wfn_b.C.rightCols(nv_b),
             wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
@@ -131,7 +131,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha, nv_b = wfn_b.C.alpha().rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::debug("Merging virtual orbitals, sorted by energy");
+                occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.rightCols(nv_a), wfn_b.C.alpha().rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.alpha().bottomRows(nv_b));
@@ -150,7 +150,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.rows() - wfn_a.num_beta, nv_b = wfn_b.C.beta().rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::debug("Merging virtual orbitals, sorted by energy");
+                occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.rightCols(nv_a), wfn_b.C.beta().rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.beta().bottomRows(nv_b));
@@ -171,7 +171,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.alpha().rows() - wfn_a.num_alpha, nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::debug("Merging virtual orbitals, sorted by energy");
+                occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.alpha().rightCols(nv_a), wfn_b.C.rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
@@ -190,7 +190,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.beta().rows() - wfn_a.num_beta, nv_b = wfn_b.C.rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::debug("Merging virtual orbitals, sorted by energy");
+                occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.beta().rightCols(nv_a), wfn_b.C.rightCols(nv_b),
                     wfn_a.mo_energies.beta().bottomRows(nv_a), wfn_b.mo_energies.bottomRows(nv_b));
@@ -211,7 +211,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.alpha().rows() - wfn_a.num_alpha, nv_b = wfn_b.C.alpha().rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::debug("Merging virtual orbitals, sorted by energy");
+                occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.alpha().rightCols(nv_a), wfn_b.C.alpha().rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a), wfn_b.mo_energies.alpha().bottomRows(nv_b));
@@ -230,7 +230,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                 size_t nv_a = wfn_a.C.beta().rows() - wfn_a.num_beta, nv_b = wfn_b.C.beta().rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
-                tonto::log::debug("Merging virtual orbitals, sorted by energy");
+                occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.beta().rightCols(nv_a), wfn_b.C.beta().rightCols(nv_b),
                     wfn_a.mo_energies.beta().bottomRows(nv_a), wfn_b.mo_energies.beta().bottomRows(nv_b));
@@ -250,36 +250,36 @@ void Wavefunction::update_occupied_orbitals()
         throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
     }
     else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        C_occ = tonto::qm::orb::occupied_unrestricted(C, num_alpha, num_beta);
+        C_occ = occ::qm::orb::occupied_unrestricted(C, num_alpha, num_beta);
     }
     else {
-        C_occ = tonto::qm::orb::occupied_restricted(C, num_alpha);
+        C_occ = occ::qm::orb::occupied_restricted(C, num_alpha);
     }
 }
 
 void Wavefunction::set_molecular_orbitals(const FchkReader& fchk)
 {
     size_t rows, cols;
-    nbf = tonto::qm::nbf(basis);
+    nbf = occ::qm::nbf(basis);
 
     if(spinorbital_kind == SpinorbitalKind::General) {
         throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
     }
     else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        std::tie(rows, cols) = tonto::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+        std::tie(rows, cols) = occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
         C = MatRM(rows, cols);
         mo_energies = Vec(rows);
         C.alpha() = fchk.alpha_mo_coefficients();
         C.beta() = fchk.beta_mo_coefficients();
         mo_energies.alpha() = fchk.alpha_mo_energies();
         mo_energies.beta() = fchk.beta_mo_energies();
-        C.alpha() = tonto::io::conversion::orb::from_gaussian(basis, C.alpha());
-        C.beta() = tonto::io::conversion::orb::from_gaussian(basis, C.beta());
+        C.alpha() = occ::io::conversion::orb::from_gaussian(basis, C.alpha());
+        C.beta() = occ::io::conversion::orb::from_gaussian(basis, C.beta());
     }
     else {
         C = fchk.alpha_mo_coefficients();
         mo_energies = fchk.alpha_mo_energies();
-        C = tonto::io::conversion::orb::from_gaussian(basis, C);
+        C = occ::io::conversion::orb::from_gaussian(basis, C);
     }
     update_occupied_orbitals();
 }
@@ -289,10 +289,10 @@ void Wavefunction::compute_density_matrix() {
         throw std::runtime_error("Reading MOs from g09 unsupported for General spinorbitals");
     }
     else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        D = tonto::qm::orb::density_matrix_unrestricted(C_occ, num_alpha, num_beta);
+        D = occ::qm::orb::density_matrix_unrestricted(C_occ, num_alpha, num_beta);
     }
     else {
-        D = tonto::qm::orb::density_matrix_restricted(C_occ);
+        D = occ::qm::orb::density_matrix_restricted(C_occ);
     }
 }
 
@@ -317,7 +317,7 @@ MatRM symmetrically_orthonormalize(const MatRM& mat, const MatRM& metric)
     double x_condition_number, condition_number;
     double threshold = 1.0 / std::numeric_limits<double>::epsilon();
     MatRM SS = mat.transpose() * metric * mat;
-    std::tie(X, X_invT, n_cond, x_condition_number, condition_number) = tonto::gensqrtinv(SS, true, threshold);
+    std::tie(X, X_invT, n_cond, x_condition_number, condition_number) = occ::gensqrtinv(SS, true, threshold);
     return mat * X;
 }
 
@@ -333,18 +333,18 @@ MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overl
 }
 
 
-void Wavefunction::apply_transformation(const tonto::Mat3& rot, const tonto::Vec3& trans)
+void Wavefunction::apply_transformation(const occ::Mat3& rot, const occ::Vec3& trans)
 {
     apply_rotation(rot);
     apply_translation(trans);
 }
-void Wavefunction::apply_translation(const tonto::Vec3& trans)
+void Wavefunction::apply_translation(const occ::Vec3& trans)
 {
     basis.translate(trans);
     translate_atoms(atoms, trans);
 }
 
-void Wavefunction::apply_rotation(const tonto::Mat3& rot)
+void Wavefunction::apply_rotation(const occ::Mat3& rot)
 {
     if(spinorbital_kind == SpinorbitalKind::Restricted)
     {
@@ -363,9 +363,9 @@ void Wavefunction::apply_rotation(const tonto::Mat3& rot)
     compute_density_matrix();
 }
 
-tonto::Mat3N Wavefunction::positions() const
+occ::Mat3N Wavefunction::positions() const
 {
-    tonto::Mat3N pos(3, atoms.size());
+    occ::Mat3N pos(3, atoms.size());
     for(size_t i = 0; i < atoms.size(); i++) {
         pos(0, i) = atoms[i].x;
         pos(1, i) = atoms[i].y;
@@ -374,9 +374,9 @@ tonto::Mat3N Wavefunction::positions() const
     return pos;
 }
 
-tonto::IVec Wavefunction::atomic_numbers() const
+occ::IVec Wavefunction::atomic_numbers() const
 {
-    tonto::IVec nums(atoms.size());
+    occ::IVec nums(atoms.size());
     for(size_t i = 0; i < atoms.size(); i++) {
         nums(i) = atoms[i].atomic_number;
     }
@@ -394,18 +394,18 @@ void Wavefunction::save(FchkWriter &fchk)
     fchk.set_scalar("Number of beta electrons", num_beta);
     fchk.set_scalar("Number of basis functions", nbf);
     // nuclear charges
-    tonto::IVec nums = atomic_numbers();
-    tonto::Vec atomic_prop = nums.cast<double>();
+    occ::IVec nums = atomic_numbers();
+    occ::Vec atomic_prop = nums.cast<double>();
     fchk.set_vector("Atomic numbers", nums);
     fchk.set_vector("Nuclear charges", atomic_prop);
     fchk.set_vector("Current cartesian coordinates", positions());
     // atomic weights
-    for(Eigen::Index i = 0; i < atomic_prop.rows(); i++) atomic_prop(i) = static_cast<double>(tonto::chem::Element(nums(i)).mass());
+    for(Eigen::Index i = 0; i < atomic_prop.rows(); i++) atomic_prop(i) = static_cast<double>(occ::chem::Element(nums(i)).mass());
     fchk.set_vector("Integer atomic weights", atomic_prop.array().round().cast<int>());
     fchk.set_vector("Real atomic weights", atomic_prop);
 
-    auto Cfchk = tonto::io::conversion::orb::to_gaussian(basis, C);
-    tonto::MatRM Dfchk;
+    auto Cfchk = occ::io::conversion::orb::to_gaussian(basis, C);
+    occ::MatRM Dfchk;
 
     std::vector<double> density_lower_triangle, spin_density_lower_triangle;
 
@@ -414,8 +414,8 @@ void Wavefunction::save(FchkWriter &fchk)
         fchk.set_vector("Alpha MO coefficients", Cfchk.alpha());
         fchk.set_vector("Beta Orbital Energies", mo_energies.beta());
         fchk.set_vector("Beta MO coefficients", Cfchk.beta());
-        tonto::MatRM occ_fchk = tonto::qm::orb::occupied_unrestricted(Cfchk, num_alpha, num_beta);
-        Dfchk = tonto::qm::orb::density_matrix_unrestricted(occ_fchk, num_alpha, num_beta);
+        occ::MatRM occ_fchk = occ::qm::orb::occupied_unrestricted(Cfchk, num_alpha, num_beta);
+        Dfchk = occ::qm::orb::density_matrix_unrestricted(occ_fchk, num_alpha, num_beta);
 
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
         spin_density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
@@ -432,8 +432,8 @@ void Wavefunction::save(FchkWriter &fchk)
     else {
         fchk.set_vector("Alpha Orbital Energies", mo_energies);
         fchk.set_vector("Alpha MO coefficients", Cfchk);
-        tonto::MatRM occ_fchk = tonto::qm::orb::occupied_restricted(Cfchk, num_alpha);
-        Dfchk = tonto::qm::orb::density_matrix_restricted(occ_fchk);
+        occ::MatRM occ_fchk = occ::qm::orb::occupied_restricted(Cfchk, num_alpha);
+        Dfchk = occ::qm::orb::density_matrix_restricted(occ_fchk);
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
         for(Eigen::Index row = 0; row < nbf; row++) {
             for(Eigen::Index col = 0; col <= row; col++) {

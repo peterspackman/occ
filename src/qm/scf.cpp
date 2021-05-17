@@ -1,6 +1,6 @@
-#include <tonto/qm/scf.h>
-#include <tonto/core/logger.h>
+#include <occ/qm/scf.h>
+#include <occ/core/logger.h>
 
-namespace tonto::scf {
+namespace occ::scf {
 
-} // namespace tonto::scf
+} // namespace occ::scf

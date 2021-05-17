@@ -1,12 +1,12 @@
-#include <tonto/solvent/cosmo.h>
+#include <occ/solvent/cosmo.h>
 #include <fmt/ostream.h>
-#include <tonto/core/timings.h>
+#include <occ/core/timings.h>
 #include "catch.hpp"
 
-using tonto::solvent::COSMO;
-using tonto::Vec;
-using tonto::Mat;
-using tonto::Mat3N;
+using occ::solvent::COSMO;
+using occ::Vec;
+using occ::Mat;
+using occ::Mat3N;
 
 TEST_CASE("COSMO", "[solvent]") {
 

@@ -1,7 +1,7 @@
-#include <tonto/dft/functional.h>
-#include <tonto/core/logger.h>
+#include <occ/dft/functional.h>
+#include <occ/core/logger.h>
 
-namespace tonto::dft {
+namespace occ::dft {
 
 DensityFunctional::DensityFunctional(DensityFunctional::Identifier id, bool polarized) :
    m_polarized(polarized), m_func_id(id)

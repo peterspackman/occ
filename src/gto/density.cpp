@@ -1,5 +1,5 @@
-#include <tonto/gto/density.h>
+#include <occ/gto/density.h>
 
-namespace tonto::density {
+namespace occ::density {
 
 }

@@ -1,4 +1,4 @@
-add_library(tonto_core
+add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/eem.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dimer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
@@ -11,10 +11,10 @@ add_library(tonto_core
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.cpp"
-    ${TONTO_CORE_INCLUDE_FILES}
+    ${OCC_CORE_INCLUDE_FILES}
 )
 
-target_link_libraries(tonto_core
+target_link_libraries(occ_core
     PUBLIC 
     Boost::graph
     Eigen3::Eigen 
@@ -26,9 +26,9 @@ target_link_libraries(tonto_core
     spdlog::spdlog
     ZLIB::ZLIB
 )
-target_include_directories(tonto_core PUBLIC 
-    ${TONTO_INCLUDE_DIR} 
+target_include_directories(occ_core PUBLIC 
+    ${OCC_INCLUDE_DIR} 
 )
 
-target_compile_features(tonto_core PUBLIC cxx_std_17)
+target_compile_features(occ_core PUBLIC cxx_std_17)
 

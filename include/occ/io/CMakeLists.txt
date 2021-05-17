@@ -1,0 +1,9 @@
+set(OCC_IO_INCLUDE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/cifparser.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/conversion.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/inputfile.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/moldenreader.h
+    PARENT_SCOPE
+)

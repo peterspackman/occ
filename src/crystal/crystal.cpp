@@ -1,13 +1,13 @@
-#include <tonto/crystal/crystal.h>
-#include <tonto/core/kdtree.h>
-#include <tonto/core/element.h>
+#include <occ/crystal/crystal.h>
+#include <occ/core/kdtree.h>
+#include <occ/core/element.h>
 #include <Eigen/Dense>
 #include <iostream>
 #include <fmt/core.h>
 
-namespace tonto::crystal {
+namespace occ::crystal {
 
-using tonto::graph::BondGraph;
+using occ::graph::BondGraph;
 
 //Asymmetric unit
 AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums) :
@@ -26,14 +26,14 @@ AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums,
 
 void AsymmetricUnit::generate_default_labels()
 {
-    tonto::IVec counts(atomic_numbers.maxCoeff() + 1);
+    occ::IVec counts(atomic_numbers.maxCoeff() + 1);
     counts.setConstant(1);
     labels.clear();
     labels.reserve(size());
     for(size_t i = 0; i < size(); i++)
     {
         auto num = atomic_numbers(i);
-        auto symbol = tonto::chem::Element(num).symbol();
+        auto symbol = occ::chem::Element(num).symbol();
         labels.push_back(fmt::format("{}{}", symbol, counts(num)++));
     }
 }
@@ -41,17 +41,17 @@ void AsymmetricUnit::generate_default_labels()
 Eigen::VectorXd AsymmetricUnit::covalent_radii() const {
   Eigen::VectorXd result(atomic_numbers.size());
   for (int i = 0; i < atomic_numbers.size(); i++) {
-    result(i) = tonto::chem::Element(atomic_numbers(i)).covalentRadius();
+    result(i) = occ::chem::Element(atomic_numbers(i)).covalentRadius();
   }
   return result;
 }
 
 std::string AsymmetricUnit::chemical_formula() const {
-  std::vector<tonto::chem::Element> els;
+  std::vector<occ::chem::Element> els;
   for (int i = 0; i < atomic_numbers.size(); i++) {
-    els.push_back(tonto::chem::Element(atomic_numbers[i]));
+    els.push_back(occ::chem::Element(atomic_numbers[i]));
   }
-  return tonto::chem::chemical_formula(els);
+  return occ::chem::chemical_formula(els);
 }
 
 // Atom Slab
@@ -79,13 +79,13 @@ void Crystal::update_unit_cell_atoms() const
     std::tie(sym, uc_pos) = m_space_group.apply_all_symmetry_operations(pos);
     uc_pos = uc_pos.unaryExpr([](const double x) { return fmod(x + 7.0, 1.0); });
 
-    tonto::MaskArray mask(uc_pos.cols());
+    occ::MaskArray mask(uc_pos.cols());
     mask.setConstant(false);
 
     for(size_t i = 0; i < uc_pos.cols(); i++)
     {
         if((mask(i))) continue;
-        tonto::Vec3 p = uc_pos.col(i);
+        occ::Vec3 p = uc_pos.col(i);
         for(size_t j = i + 1; j < uc_pos.cols(); j++)
         {
             double dist = (uc_pos.col(j) - p).norm();
@@ -95,7 +95,7 @@ void Crystal::update_unit_cell_atoms() const
     }
     Eigen::VectorXi idxs(uc_pos.cols() - mask.count());
     size_t n = 0; 
-    tonto::Mat3N uc_pos_masked(3, idxs.rows());
+    occ::Mat3N uc_pos_masked(3, idxs.rows());
     for(size_t i = 0; i < uc_pos.cols(); i++)
     {
         if(!mask(i)) {
@@ -174,7 +174,7 @@ void Crystal::update_unit_cell_connectivity() const
 
   for (size_t i = 0; i < n_uc; i++) {
     m_bond_graph_vertices.push_back(
-        m_bond_graph.add_vertex(tonto::graph::PeriodicVertex{i}));
+        m_bond_graph.add_vertex(occ::graph::PeriodicVertex{i}));
   }
 
   for (size_t uc_idx_l = 0; uc_idx_l < n_uc; uc_idx_l++) {
@@ -195,7 +195,7 @@ void Crystal::update_unit_cell_connectivity() const
       double cov_b = covalent_radii(asym_idx_r);
       if (d < ((cov_a + cov_b + 0.4) * (cov_a + cov_b + 0.4))) {
         auto pos = s.frac_pos.col(idx);
-        tonto::graph::PeriodicEdge left_right{sqrt(d),
+        occ::graph::PeriodicEdge left_right{sqrt(d),
                                               uc_idx_l,
                                               uc_idx_r,
                                               asym_idx_l,
@@ -205,7 +205,7 @@ void Crystal::update_unit_cell_connectivity() const
                                               static_cast<int>(floor(pos(2)))};
         m_bond_graph.add_edge(m_bond_graph_vertices[uc_idx_l],
                               m_bond_graph_vertices[uc_idx_r], left_right);
-        tonto::graph::PeriodicEdge right_left{sqrt(d),
+        occ::graph::PeriodicEdge right_left{sqrt(d),
                                               uc_idx_r,
                                               uc_idx_l,
                                               asym_idx_r,
@@ -222,7 +222,7 @@ void Crystal::update_unit_cell_connectivity() const
   m_unit_cell_connectivity_needs_update = false;
 }
 
-const std::vector<tonto::chem::Molecule> &Crystal::unit_cell_molecules() const {
+const std::vector<occ::chem::Molecule> &Crystal::unit_cell_molecules() const {
     if(m_unit_cell_molecules_needs_update)
         update_unit_cell_molecules();
     return m_unit_cell_molecules;
@@ -261,7 +261,7 @@ void Crystal::update_unit_cell_molecules() const
   for (const auto &group : groups) {
     auto root = group[0];
     Eigen::VectorXi atomic_numbers(group.size());
-    tonto::IVec uc_idxs(group.size()), asym_idxs(group.size()), symops(group.size());
+    occ::IVec uc_idxs(group.size()), asym_idxs(group.size()), symops(group.size());
     Eigen::Matrix3Xd positions(3, group.size());
     Eigen::Matrix3Xd shifts(3, group.size());
     shifts.setZero();
@@ -285,7 +285,7 @@ void Crystal::update_unit_cell_molecules() const
       }
     }
     positions += shifts;
-    tonto::chem::Molecule m(atomic_numbers, to_cartesian(positions));
+    occ::chem::Molecule m(atomic_numbers, to_cartesian(positions));
     m.set_bonds(bonds);
     m.set_unit_cell_idx(uc_idxs);
     m.set_asymmetric_unit_idx(asym_idxs);
@@ -295,7 +295,7 @@ void Crystal::update_unit_cell_molecules() const
   m_unit_cell_molecules_needs_update = false;
 }
 
-const std::vector<tonto::chem::Molecule> &Crystal::symmetry_unique_molecules() const
+const std::vector<occ::chem::Molecule> &Crystal::symmetry_unique_molecules() const
 {
     if(m_symmetry_unique_molecules_needs_update)
         update_symmetry_unique_molecules();
@@ -369,7 +369,7 @@ void Crystal::update_symmetry_unique_molecules() const
 
 CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
 {
-    using tonto::chem::Dimer;
+    using occ::chem::Dimer;
     CrystalDimers result;
     auto &dimers = result.unique_dimers;
     auto &mol_nbs = result.molecule_neighbors;
@@ -384,7 +384,7 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
         std::numeric_limits<int>::max(), 
         std::numeric_limits<int>::max()
     };
-    tonto::Vec3 frac_radius = radius * 2/ m_unit_cell.lengths().array();
+    occ::Vec3 frac_radius = radius * 2/ m_unit_cell.lengths().array();
 
     for(size_t i = 0; i < m_asymmetric_unit.size(); i++)
     {
@@ -406,7 +406,7 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
     for (int h = lower.h; h <= upper.h; h++) {
         for (int k = lower.k; k <= upper.k; k++) {
             for (int l = lower.l; l <= upper.l; l++) {
-                tonto::Vec3 cart_shift = to_cartesian(tonto::Vec3{
+                occ::Vec3 cart_shift = to_cartesian(occ::Vec3{
                         static_cast<double>(h), static_cast<double>(k),static_cast<double>(l)});
                 for(const auto& asym_mol: asym_mols)
                 {
@@ -448,4 +448,4 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
     return result;
 }
 
-} // namespace tonto::crystal
+} // namespace occ::crystal

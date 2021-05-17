@@ -1,16 +1,16 @@
-#include <tonto/core/util.h>
-#include <tonto/core/logger.h>
-#include <tonto/io/fchkreader.h>
+#include <occ/core/util.h>
+#include <occ/core/logger.h>
+#include <occ/io/fchkreader.h>
 #include <scn/scn.h>
 #include <fmt/ostream.h>
 #include <libint2/cgshell_ordering.h>
-#include <tonto/gto/gto.h>
+#include <occ/gto/gto.h>
 
-namespace tonto::io {
+namespace occ::io {
 
-using tonto::util::trim_copy;
-using tonto::util::startswith;
-using tonto::qm::BasisSet;
+using occ::util::trim_copy;
+using occ::util::startswith;
+using occ::qm::BasisSet;
 
 
 template<typename T>
@@ -27,17 +27,17 @@ void read_matrix_block(std::istream& stream, std::vector<T>& destination, size_t
 
 FchkReader::FchkReader(const std::string& filename)
 {
-    tonto::timing::start(tonto::timing::category::io);
+    occ::timing::start(occ::timing::category::io);
     open(filename);
     parse(m_fchk_file);
-    tonto::timing::stop(tonto::timing::category::io);
+    occ::timing::stop(occ::timing::category::io);
 }
 
 FchkReader::FchkReader(std::istream& filehandle)
 {
-    tonto::timing::start(tonto::timing::category::io);
+    occ::timing::start(occ::timing::category::io);
     parse(filehandle);
-    tonto::timing::stop(tonto::timing::category::io);
+    occ::timing::stop(occ::timing::category::io);
 }
 
 void FchkReader::open(const std::string& filename)
@@ -276,19 +276,19 @@ void FchkReader::FchkBasis::print() const
     }
 }
 
-tonto::MatRM FchkReader::scf_density_matrix() const
+occ::MatRM FchkReader::scf_density_matrix() const
 {
 
-    tonto::MatRM C_occ = alpha_mo_coefficients().leftCols(m_num_alpha);
+    occ::MatRM C_occ = alpha_mo_coefficients().leftCols(m_num_alpha);
     return C_occ * C_occ.transpose();
 }
 
-tonto::MatRM FchkReader::mp2_density_matrix() const
+occ::MatRM FchkReader::mp2_density_matrix() const
 {
 
     size_t nbf{num_basis_functions()};
     assert(nbf * (nbf - 1) == m_mp2_density.size());
-    tonto::MatRM dm(nbf, nbf);
+    occ::MatRM dm(nbf, nbf);
     size_t idx = 0;
     for(size_t i = 0; i < nbf; i++) {
         for(size_t j = i; j < nbf; j++) {

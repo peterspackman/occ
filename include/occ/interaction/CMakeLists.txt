@@ -1,0 +1,6 @@
+set(OCC_INTERACTION_INCLUDE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/disp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/polarization.h
+    PARENT_SCOPE
+)

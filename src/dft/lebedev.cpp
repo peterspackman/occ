@@ -124,7 +124,7 @@ ccgk: and the following comments and references for the original of the subrouti
       cvw
  *
  */
-#include <tonto/dft/lebedev.h>
+#include <occ/dft/lebedev.h>
 #include <math.h> // for sqrt.
 #include <assert.h>
 
@@ -5085,7 +5085,7 @@ int make_angular_grid_5810(Eigen::Matrix<double, Eigen::Dynamic, 4, Eigen::RowMa
    return N;
 }
 
-namespace tonto::grid {
+namespace occ::grid {
 
 Eigen::Matrix<double, Eigen::Dynamic, 4, Eigen::RowMajor> lebedev(int num_points)
 {

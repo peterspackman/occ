@@ -1,12 +1,12 @@
-#include <tonto/core/logger.h>
-#include <tonto/qm/ints.h>
-#include <tonto/qm/spinorbital.h>
+#include <occ/core/logger.h>
+#include <occ/qm/ints.h>
+#include <occ/qm/spinorbital.h>
 
-namespace tonto::ints {
+namespace occ::ints {
 
 MatRM compute_2body_2index_ints(const BasisSet &bs) {
-    tonto::timing::start(tonto::timing::category::ints2e);
-  using tonto::parallel::nthreads;
+    occ::timing::start(occ::timing::category::ints2e);
+  using occ::parallel::nthreads;
   using libint2::BraKet;
   using libint2::Engine;
   using libint2::Shell;
@@ -62,8 +62,8 @@ MatRM compute_2body_2index_ints(const BasisSet &bs) {
     }
   }; // compute lambda
 
-  tonto::parallel::parallel_do(compute);
-  tonto::timing::stop(tonto::timing::category::ints2e);
+  occ::parallel::parallel_do(compute);
+  occ::timing::stop(occ::timing::category::ints2e);
 
   return result;
 }
@@ -71,14 +71,14 @@ MatRM compute_2body_2index_ints(const BasisSet &bs) {
 std::tuple<shellpair_list_t, shellpair_data_t>
 compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
                    const double threshold) {
-    tonto::timing::start(tonto::timing::category::ints1e);
+    occ::timing::start(occ::timing::category::ints1e);
   using libint2::Operator;
   const BasisSet &bs2 = (_bs2.empty() ? bs1 : _bs2);
   const auto nsh1 = bs1.size();
   const auto nsh2 = bs2.size();
   const auto bs1_equiv_bs2 = (&bs1 == &bs2);
 
-  using tonto::parallel::nthreads;
+  using occ::parallel::nthreads;
 
   // construct the 2-electron repulsion integrals engine
   using libint2::Engine;
@@ -91,7 +91,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     engines.push_back(engines[0]);
   }
 
-  tonto::log::debug("start computing non-negligible shell-pair list");
+  occ::log::debug("start computing non-negligible shell-pair list");
 
   libint2::Timers<1> timer;
   timer.set_now_overhead(25);
@@ -138,7 +138,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     }
   }; // end of compute
 
-  tonto::parallel::parallel_do(compute);
+  occ::parallel::parallel_do(compute);
 
   // resort shell list in increasing order, i.e. splist[s][s1] < splist[s][s2]
   // if s1 < s2 N.B. only parallelized over 1 shell index
@@ -151,7 +151,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     }
   }; // end of sort
 
-  tonto::parallel::parallel_do(sort);
+  occ::parallel::parallel_do(sort);
 
   // compute shellpair data assuming that we are computing to default_epsilon
   // N.B. only parallelized over 1 shell index
@@ -168,11 +168,11 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     }
   }; // end of make_spdata
 
-  tonto::parallel::parallel_do(make_spdata);
+  occ::parallel::parallel_do(make_spdata);
 
   timer.stop(0);
-  tonto::log::debug("computed non-negligible shell-pair list in {:.6f} s", timer.read(0));
-  tonto::timing::stop(tonto::timing::category::ints1e);
+  occ::log::debug("computed non-negligible shell-pair list in {:.6f} s", timer.read(0));
+  occ::timing::stop(occ::timing::category::ints1e);
 
   return std::make_tuple(splist, spdata);
 }
@@ -200,14 +200,14 @@ MatRM compute_shellblock_norm(const BasisSet &obs, const MatRM &A) {
 MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
                                  const BasisSet &D_bs, bool D_is_shelldiagonal,
                                  double precision) {
-    tonto::timing::start(tonto::timing::category::ints2e);
+    occ::timing::start(occ::timing::category::ints2e);
 
   const auto n = obs.nbf();
   const auto nshells = obs.size();
   const auto n_D = D_bs.nbf();
   assert(D.cols() == D.rows() && D.cols() == n_D);
 
-  using tonto::parallel::nthreads;
+  using occ::parallel::nthreads;
   std::vector<MatRM> G(nthreads, MatRM::Zero(n, n));
 
   // construct the 2-electron repulsion integrals engine
@@ -313,33 +313,33 @@ MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
     }
   }; // thread lambda
 
-  tonto::parallel::parallel_do(lambda);
+  occ::parallel::parallel_do(lambda);
 
   // accumulate contributions from all threads
   for (size_t i = 1; i != nthreads; ++i) {
     G[0] += G[i];
   }
-  tonto::timing::stop(tonto::timing::category::ints2e);
+  occ::timing::stop(occ::timing::category::ints2e);
 
   // symmetrize the result and return
   return 0.5 * (G[0] + G[0].transpose());
 }
 
-tonto::Vec compute_electric_potential(const tonto::MatRM &D, const BasisSet &obs,
-                                      const shellpair_list_t &shellpair_list, const tonto::Mat3N &positions)
+occ::Vec compute_electric_potential(const occ::MatRM &D, const BasisSet &obs,
+                                      const shellpair_list_t &shellpair_list, const occ::Mat3N &positions)
 {
-    tonto::timing::start(tonto::timing::category::ints1e);
+    occ::timing::start(occ::timing::category::ints1e);
 
-    using tonto::qm::expectation;
+    using occ::qm::expectation;
     const auto n = obs.nbf();
     const bool unrestricted = D.rows() > n;
     const auto nshells = obs.size();
-    using tonto::parallel::nthreads;
+    using occ::parallel::nthreads;
     typedef std::array<MatRM, libint2::operator_traits<Operator::nuclear>::nopers>
             result_type;
     const unsigned int nopers = libint2::operator_traits<Operator::nuclear>::nopers;
 
-    tonto::Vec result(positions.cols());
+    occ::Vec result(positions.cols());
     std::vector<libint2::Engine> engines(nthreads);
     engines[0] = libint2::Engine(Operator::nuclear, obs.max_nprim(), obs.max_l(), 0);
     for (size_t i = 1; i != nthreads; ++i) {
@@ -382,28 +382,28 @@ tonto::Vec compute_electric_potential(const tonto::MatRM &D, const BasisSet &obs
                         opmats[thread_id].block(bf2, bf1, n2, n1) = buf_mat.transpose();
                 }
             }
-            if(unrestricted) result(pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Unrestricted>(D, opmats[thread_id]);
-            else result(pt) = 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, opmats[thread_id]);
+            if(unrestricted) result(pt) = 2 * expectation<occ::qm::SpinorbitalKind::Unrestricted>(D, opmats[thread_id]);
+            else result(pt) = 2 * expectation<occ::qm::SpinorbitalKind::Restricted>(D, opmats[thread_id]);
         }
     }; // compute lambda
-    tonto::parallel::parallel_do(compute);
-    tonto::timing::stop(tonto::timing::category::ints1e);
+    occ::parallel::parallel_do(compute);
+    occ::timing::stop(occ::timing::category::ints1e);
     return result;
 }
 
-tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
-                                    const shellpair_list_t &shellpair_list, const tonto::Mat3N &positions)
+occ::Mat3N compute_electric_field(const occ::MatRM &D, const BasisSet &obs,
+                                    const shellpair_list_t &shellpair_list, const occ::Mat3N &positions)
 {
-    tonto::timing::start(tonto::timing::category::ints1e);
-    using tonto::parallel::nthreads;
-    using tonto::qm::expectation;
+    occ::timing::start(occ::timing::category::ints1e);
+    using occ::parallel::nthreads;
+    using occ::qm::expectation;
     // seems to be correct for very small molecules but has issues -- use finite differences for now
 
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     const auto nresults = libint2::num_geometrical_derivatives(1, 1);
     const bool unrestricted = D.rows() > n;
-    tonto::Mat3N result(3, positions.cols());
+    occ::Mat3N result(3, positions.cols());
 
     std::vector<MatRM> xmats(nthreads, MatRM::Zero(n, n));
     std::vector<MatRM> ymats(nthreads, MatRM::Zero(n, n));
@@ -452,20 +452,20 @@ tonto::Mat3N compute_electric_field(const tonto::MatRM &D, const BasisSet &obs,
 
             }
             if (unrestricted) {
-                result(0, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Unrestricted>(D, xmats[thread_id]);
-                result(1, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Unrestricted>(D, ymats[thread_id]);
-                result(2, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Unrestricted>(D, zmats[thread_id]);
+                result(0, pt) = - 2 * expectation<occ::qm::SpinorbitalKind::Unrestricted>(D, xmats[thread_id]);
+                result(1, pt) = - 2 * expectation<occ::qm::SpinorbitalKind::Unrestricted>(D, ymats[thread_id]);
+                result(2, pt) = - 2 * expectation<occ::qm::SpinorbitalKind::Unrestricted>(D, zmats[thread_id]);
             }
             else {
-                result(0, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, xmats[thread_id]);
-                result(1, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, ymats[thread_id]);
-                result(2, pt) = - 2 * expectation<tonto::qm::SpinorbitalKind::Restricted>(D, zmats[thread_id]);
+                result(0, pt) = - 2 * expectation<occ::qm::SpinorbitalKind::Restricted>(D, xmats[thread_id]);
+                result(1, pt) = - 2 * expectation<occ::qm::SpinorbitalKind::Restricted>(D, ymats[thread_id]);
+                result(2, pt) = - 2 * expectation<occ::qm::SpinorbitalKind::Restricted>(D, zmats[thread_id]);
             }
         }
     };
-    tonto::parallel::parallel_do(compute);
-    tonto::timing::stop(tonto::timing::category::ints1e);
+    occ::parallel::parallel_do(compute);
+    occ::timing::stop(occ::timing::category::ints1e);
     return result;
 }
 
-} // namespace tonto::ints
+} // namespace occ::ints

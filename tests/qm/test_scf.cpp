@@ -1,12 +1,12 @@
-#include <tonto/qm/scf.h>
-#include <tonto/qm/hf.h>
+#include <occ/qm/scf.h>
+#include <occ/qm/hf.h>
 #include "catch.hpp"
 #include <iostream>
 #include <vector>
 
-using tonto::hf::HartreeFock;
-using tonto::qm::SpinorbitalKind;
-using tonto::qm::BasisSet;
+using occ::hf::HartreeFock;
+using occ::qm::SpinorbitalKind;
+using occ::qm::BasisSet;
 
 TEST_CASE("Water SCF", "[scf]")
 {
@@ -21,7 +21,7 @@ TEST_CASE("Water SCF", "[scf]")
     SECTION("STO-3G") {
         BasisSet obs("STO-3G", atoms);
         HartreeFock hf(atoms, obs);
-        tonto::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
+        occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
         double e = scf.compute_scf_energy();
         REQUIRE(e == Approx(-74.963706080054).epsilon(1e-8));
     }
@@ -29,7 +29,7 @@ TEST_CASE("Water SCF", "[scf]")
     SECTION("3-21G") {
         BasisSet obs("3-21G", atoms);
         HartreeFock hf(atoms, obs);
-        tonto::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
+        occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
         double e = scf.compute_scf_energy();
         REQUIRE(e == Approx(-75.585325673488).epsilon(1e-8));
     }

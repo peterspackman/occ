@@ -1,7 +1,7 @@
-#include <tonto/core/optimize.h>
+#include <occ/core/optimize.h>
 #include <functional>
 
-namespace tonto::opt {
+namespace occ::opt {
 
 
 Brent::Brent(Brent::func_type func, double tolerance, size_t max_iter) :

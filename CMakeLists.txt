@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16.0)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-project(tonto LANGUAGES CXX)
+project(occ LANGUAGES CXX)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
