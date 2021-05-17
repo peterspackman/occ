@@ -66,4 +66,17 @@ set_target_properties(hs
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+add_executable(occ-elat "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp")
+target_link_libraries(occ-elat
+    PUBLIC
+    occ_qm
+    occ_dft
+    occ_io
+    occ_crystal
+    occ_interaction
+)
 
+set_target_properties(occ-elat
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
