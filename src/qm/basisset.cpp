@@ -1,4 +1,5 @@
 #include <occ/core/util.h>
+#include <occ/core/logger.h>
 #include <occ/qm/basisset.h>
 #include <occ/gto/gto.h>
 #include <cerrno>
@@ -221,8 +222,8 @@ std::string BasisSet::data_path()
     validate_basis_path();
   }
   if (error) {
-    std::ostringstream oss; oss << "BasisSet::data_path(): path \"" << path << "{/basis}\" is not valid";
-    throw std::system_error(ec, oss.str());
+    occ::log::warn("There is a problem with BasisSet::data_path(), the path '{}' is not valid ({})", basis_path, ec.message());
+    basis_path = fs::current_path();
   }
   return basis_path;
 }
