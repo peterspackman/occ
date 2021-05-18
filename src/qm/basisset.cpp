@@ -7,12 +7,15 @@
 #include <locale>
 #include <vector>
 #include <stdexcept>
+#include <filesystem>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 namespace occ::qm {
+
+namespace fs = std::filesystem;
 
 struct canonicalizer {
     char operator()(char c) {
@@ -44,10 +47,14 @@ BasisSet::BasisSet(std::string name,
 
     // read in ALL basis set components
     for(const auto& basis_component_name: basis_component_names) {
-        auto file_dot_g94 = basis_lib_path + "/" + basis_component_name + ".g94";
+        std::string g94_filepath = basis_component_name + ".g94";
+        if(!fs::exists(basis_component_name + ".g94"))
+        {
+            g94_filepath = basis_lib_path + "/" + g94_filepath;
+        }
+        component_basis_sets.emplace_back(read_g94_basis_library(g94_filepath, force_cartesian_d, throw_if_no_match));
 
         // use same cartesian_d convention for all components!
-        component_basis_sets.emplace_back(read_g94_basis_library(file_dot_g94, force_cartesian_d, throw_if_no_match));
     }
 
     // for each atom find the corresponding basis components
