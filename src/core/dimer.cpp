@@ -65,8 +65,25 @@ Mat3N Dimer::positions() const
     return result;
 }
 
+bool Dimer::same_asymmetric_molecule_idxs(const Dimer &rhs) const
+{
+    bool same_idxs = false;
+    const int a1_idx = m_a.asymmetric_molecule_idx();
+    const int b1_idx = m_b.asymmetric_molecule_idx();
+    const int a2_idx = rhs.m_a.asymmetric_molecule_idx();
+    const int b2_idx = rhs.m_b.asymmetric_molecule_idx();
+    if((a1_idx < 0) || (b1_idx < 0) || (a2_idx < 0) || (b2_idx < 0)) same_idxs = true;
+    else
+    {
+        if((a1_idx == a2_idx) && (b1_idx == b2_idx)) same_idxs = true;
+        else if((a1_idx == b2_idx) && (a2_idx == b1_idx)) same_idxs = true;
+    }
+    return same_idxs;
+}
+
 bool Dimer::operator ==(const Dimer &rhs) const
 {
+    if(!same_asymmetric_molecule_idxs(rhs)) return false;
     constexpr double eps = 1e-7;
     double centroid_diff = abs(centroid_distance() - rhs.centroid_distance());
     if(centroid_diff > eps) return false;

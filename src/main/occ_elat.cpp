@@ -34,19 +34,11 @@ using occ::util::all_close;
 using occ::hf::HartreeFock;
 
 
-occ::Vec compute_esp(const Wavefunction &wfn, const occ::Mat3N &points)
-{
-    occ::ints::shellpair_list_t shellpair_list;
-    occ::ints::shellpair_data_t shellpair_data;
-    std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(wfn.basis);
-    return occ::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
-}
-
-
-SymmetryOperation dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)
+std::string dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)
 {
     const auto& a = dimer.a();
     const auto& b = dimer.b();
+    if(a.asymmetric_molecule_idx() != b.asymmetric_molecule_idx()) return "-";
 
     int sa_int = a.asymmetric_unit_symop()(0);
     int sb_int = b.asymmetric_unit_symop()(0);
@@ -59,7 +51,7 @@ SymmetryOperation dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crys
     occ::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
 
     symop_ab = symop_ab.translated(v_ab);
-    return symop_ab;
+    return symop_ab.to_string();
 }
 
 Crystal read_crystal(const std::string &filename)
@@ -231,7 +223,7 @@ int main(int argc, const char **argv) {
     libint2::initialize();
     double radius = 3.8;
     double increment = 3.8;
-    std::string model_name = "ce-b3ylp";
+    std::string model_name = "ce-b3lyp";
 
     try {
         parser.parse_args(argc, argv);
@@ -264,6 +256,7 @@ int main(int argc, const char **argv) {
         fmt::print("Symmetry unique molecules in {}: {}\n", filename, molecules.size());
         auto wfns = calculate_wavefunctions(basename, molecules, model_name);
         compute_monomer_energies(wfns);
+        fmt::print("Calculating symmetry unique dimers\n");
         auto crystal_dimers = c.symmetry_unique_dimers(radius);
         const auto &dimers = crystal_dimers.unique_dimers;
 
@@ -291,7 +284,10 @@ int main(int argc, const char **argv) {
                 if(dimer.nearest_distance() > current_radius) continue;
                 computed[i] = true;
                 auto s_ab = dimer_symop(dimers[i], c);
-                fmt::print("Calculating unique dimer nearest distance = {:.3f}, symop = {}\n", dimer.nearest_distance(), s_ab.to_string()); 
+                fmt::print("Calculating unique dimer ({}, {}) nearest distance = {:.3f}, symop = {}\n", 
+                            dimer.a().asymmetric_molecule_idx(),
+                            dimer.b().asymmetric_molecule_idx(),
+                            dimer.nearest_distance(), s_ab); 
                 dimer_energies[i] = calculate_interaction_energy(dimer, wfns, c, model_name);
                 num_calc++;
             }
@@ -311,7 +307,7 @@ int main(int argc, const char **argv) {
                 for(const auto& dimer: n)
                 {
                     if(dimer.nearest_distance() > current_radius) continue;
-                    auto s_ab = dimer_symop(dimer, c).to_string();
+                    auto s_ab = dimer_symop(dimer, c);
                     size_t idx = crystal_dimers.unique_dimer_idx[i][j]; 
                     double r = dimer.center_of_mass_distance();
                     const auto& e = dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];

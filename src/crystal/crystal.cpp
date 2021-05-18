@@ -164,57 +164,74 @@ void Crystal::update_unit_cell_connectivity() const
   auto s = slab({-1, -1, -1}, {1, 1, 1});
   size_t n_asym = num_sites();
   size_t n_uc = m_unit_cell_atoms.size();
-  cx::KDTree<double> tree(s.cart_pos.rows(), s.cart_pos, cx::max_leaf);
+  occ::Mat3N cart_uc_pos = s.cart_pos.block(0, 0, 3, n_uc);
+  occ::Mat3N cart_neighbor_pos = s.cart_pos.block(0, n_uc, 3, s.cart_pos.cols() - n_uc);
+  cx::KDTree<double> tree(cart_neighbor_pos.rows(), cart_neighbor_pos, cx::max_leaf);
   tree.index->buildIndex();
   auto covalent_radii = m_asymmetric_unit.covalent_radii();
   double max_cov = covalent_radii.maxCoeff();
   std::vector<std::pair<size_t, double>> idxs_dists;
-  nanoflann::RadiusResultSet results((max_cov * 2 + 0.4) * (max_cov * 2 + 0.4),
-                                     idxs_dists);
+  double max_dist = (max_cov * 2 + 0.4) * (max_cov * 2 + 0.4);
+  nanoflann::RadiusResultSet results(max_dist, idxs_dists);
 
   for (size_t i = 0; i < n_uc; i++) {
     m_bond_graph_vertices.push_back(
         m_bond_graph.add_vertex(occ::graph::PeriodicVertex{i}));
   }
 
+  size_t num_connections = 0;
+  auto add_edge = [&](double d, size_t uc_l, size_t uc_r, size_t asym_l, size_t asym_r, const occ::Vec3 &pos)
+  {
+    int h = static_cast<int>(floor(pos(0)));
+    int k = static_cast<int>(floor(pos(1)));
+    int l = static_cast<int>(floor(pos(2)));
+    occ::graph::PeriodicEdge left_right{sqrt(d),
+                                        uc_l,
+                                        uc_r,
+                                        asym_l,
+                                        asym_r,
+                                        h, k, l};
+    m_bond_graph.add_edge(m_bond_graph_vertices[uc_l],
+                          m_bond_graph_vertices[uc_r], left_right);
+    occ::graph::PeriodicEdge right_left{sqrt(d),
+                                          uc_r,
+                                          uc_l,
+                                          asym_r,
+                                          asym_l,
+                                          -h, -k, -l};
+    m_bond_graph.add_edge(m_bond_graph_vertices[uc_r],
+                          m_bond_graph_vertices[uc_l], right_left);
+    num_connections++;
+  };
+
   for (size_t uc_idx_l = 0; uc_idx_l < n_uc; uc_idx_l++) {
-    double *q = s.cart_pos.col(uc_idx_l).data();
-    size_t asym_idx_l = uc_idx_l % n_asym;
+    size_t asym_idx_l = m_unit_cell_atoms.asym_idx(uc_idx_l);
     double cov_a = covalent_radii(asym_idx_l);
+    for(size_t uc_idx_r = uc_idx_l + 1; uc_idx_r < n_uc; uc_idx_r++)
+    {
+        size_t asym_idx_r = m_unit_cell_atoms.asym_idx(uc_idx_r);
+        double cov_b = covalent_radii(asym_idx_r);
+        double d = (cart_uc_pos.col(uc_idx_l) - cart_uc_pos.col(uc_idx_r)).squaredNorm();
+        double threshold = (cov_a + cov_b + 0.4) * (cov_a + cov_b + 0.4);
+        if (d < threshold)
+        {
+            add_edge(d, uc_idx_l, uc_idx_r, asym_idx_l, asym_idx_r, m_unit_cell_atoms.frac_pos.col(uc_idx_r));
+        }
+    }
+    double *q = cart_uc_pos.col(uc_idx_l).data();
     tree.index->findNeighbors(results, q, nanoflann::SearchParams());
     for (const auto &r : idxs_dists) {
       size_t idx;
       double d;
       std::tie(idx, d) = r;
-      if (idx == uc_idx_l)
-        continue;
+      if (idx == uc_idx_l) continue;
       size_t uc_idx_r = idx % n_uc;
-      if (uc_idx_r < uc_idx_l)
-        continue;
-      size_t asym_idx_r = uc_idx_r % n_asym;
+      if (uc_idx_r < uc_idx_l) continue;
+      size_t asym_idx_r = m_unit_cell_atoms.asym_idx(uc_idx_r);
       double cov_b = covalent_radii(asym_idx_r);
       if (d < ((cov_a + cov_b + 0.4) * (cov_a + cov_b + 0.4))) {
-        auto pos = s.frac_pos.col(idx);
-        occ::graph::PeriodicEdge left_right{sqrt(d),
-                                              uc_idx_l,
-                                              uc_idx_r,
-                                              asym_idx_l,
-                                              asym_idx_r,
-                                              static_cast<int>(floor(pos(0))),
-                                              static_cast<int>(floor(pos(1))),
-                                              static_cast<int>(floor(pos(2)))};
-        m_bond_graph.add_edge(m_bond_graph_vertices[uc_idx_l],
-                              m_bond_graph_vertices[uc_idx_r], left_right);
-        occ::graph::PeriodicEdge right_left{sqrt(d),
-                                              uc_idx_r,
-                                              uc_idx_l,
-                                              asym_idx_r,
-                                              asym_idx_l,
-                                              -static_cast<int>(floor(pos(0))),
-                                              -static_cast<int>(floor(pos(1))),
-                                              -static_cast<int>(floor(pos(2)))};
-        m_bond_graph.add_edge(m_bond_graph_vertices[uc_idx_r],
-                              m_bond_graph_vertices[uc_idx_l], right_left);
+        auto pos = s.frac_pos.col(idx + n_uc);
+        add_edge(d, uc_idx_l, uc_idx_r, asym_idx_l, asym_idx_r, pos);
       }
     }
     results.clear();
@@ -354,12 +371,16 @@ void Crystal::update_symmetry_unique_molecules() const
     {
         if(uc_mol.asymmetric_molecule_idx() >= 0) continue;
         const auto uc_mol_asym = uc_mol.asymmetric_unit_idx();
+        const auto uc_mol_size = uc_mol.size();
         for(const auto& asym_mol : m_symmetry_unique_molecules)
         {
-            const auto asym_mol_asym = uc_mol.asymmetric_unit_idx();
+            const auto asym_mol_size = asym_mol.size();
+            if(asym_mol_size != uc_mol_size) continue;
+            const auto asym_mol_asym = asym_mol.asymmetric_unit_idx();
             if((uc_mol_asym.array() == asym_mol_asym.array()).all())
             {
                 uc_mol.set_asymmetric_molecule_idx(asym_mol.asymmetric_molecule_idx());
+                break;
             }
         }
     }
@@ -410,14 +431,16 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
                         static_cast<double>(h), static_cast<double>(k),static_cast<double>(l)});
                 for(const auto& asym_mol: asym_mols)
                 {
+                    int asym_idx_a = asym_mol.asymmetric_molecule_idx();
                     for(const auto& uc_mol: uc_mols)
                     {
+                        int asym_idx_b = uc_mol.asymmetric_molecule_idx();
                         auto mol_translated = uc_mol.translated(cart_shift);
                         double distance = std::get<2>(asym_mol.nearest_atom(mol_translated));
                         if ((distance < radius) && (distance > 1e-1))
                         {
                             Dimer d(asym_mol, mol_translated);
-                            mol_nbs[asym_mol.asymmetric_molecule_idx()].push_back(d);
+                            mol_nbs[asym_idx_a].push_back(d);
                             if(std::any_of(dimers.begin(), dimers.end(),
                                            [&d](const Dimer& d2){ return d == d2; })) continue;
                             dimers.push_back(d);

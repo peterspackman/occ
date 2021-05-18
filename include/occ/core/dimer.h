@@ -30,6 +30,7 @@ public:
   int charge(int) const { return m_a.charge() + m_b.charge(); };
   int multiplicity(int) const { return m_a.multiplicity() + m_b.multiplicity() - 1; };
 
+  bool same_asymmetric_molecule_idxs(const Dimer&) const;
   bool operator ==(const Dimer&) const;
 
 private:
