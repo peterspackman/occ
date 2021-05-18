@@ -45,11 +45,11 @@ occ::Vec compute_esp(const Wavefunction &wfn, const occ::Mat3N &points)
     return occ::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
 }
 
-
-SymmetryOperation dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)
+std::string dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)
 {
     const auto& a = dimer.a();
     const auto& b = dimer.b();
+    if(a.asymmetric_molecule_idx() != b.asymmetric_molecule_idx()) return "-";
 
     int sa_int = a.asymmetric_unit_symop()(0);
     int sb_int = b.asymmetric_unit_symop()(0);
@@ -62,7 +62,7 @@ SymmetryOperation dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crys
     occ::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
 
     symop_ab = symop_ab.translated(v_ab);
-    return symop_ab;
+    return symop_ab.to_string();
 }
 
 Crystal read_crystal(const std::string &filename)
@@ -339,7 +339,6 @@ int main(int argc, const char **argv) {
 
         for(const auto& dimer: dimers)
         {
-            auto s_ab = dimer_symop(dimer, c);
             write_xyz_dimer(fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()), dimer);
             fmt::print("Calculating dimer energies {}/{}\r", dimer_energies.size(), dimers.size());
             std::cout << std::flush;
@@ -362,7 +361,7 @@ int main(int argc, const char **argv) {
 
             for(const auto& dimer: n)
             {
-                auto s_ab = dimer_symop(dimer, c).to_string();
+                auto s_ab = dimer_symop(dimer, c);
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j]; 
                 double r = dimer.center_of_mass_distance();
                 const auto& e = dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];

@@ -16,7 +16,6 @@ add_library(occ_core
 
 target_link_libraries(occ_core
     PUBLIC 
-    Boost::graph
     Eigen3::Eigen 
     fmt::fmt
     ${BLAS_LIBRARIES}
@@ -27,6 +26,7 @@ target_link_libraries(occ_core
 )
 target_include_directories(occ_core PUBLIC 
     ${OCC_INCLUDE_DIR} 
+    ${Boost_INCLUDE_DIRS}
 )
 
 target_compile_features(occ_core PUBLIC cxx_std_17)

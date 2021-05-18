@@ -8,7 +8,6 @@ add_library(occ_geometry
 
 target_link_libraries(occ_geometry
     PUBLIC 
-    Boost::graph
     Eigen3::Eigen 
     fmt::fmt
     ${BLAS_LIBRARIES}
@@ -18,6 +17,7 @@ target_link_libraries(occ_geometry
 )
 target_include_directories(occ_geometry PUBLIC 
     ${OCC_INCLUDE_DIR} 
+    ${Boost_INCLUDE_DIRS}
 )
 
 target_compile_features(occ_geometry PUBLIC cxx_std_17)
