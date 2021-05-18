@@ -1,16 +1,16 @@
-add_library(tonto_slater
+add_library(occ_slater
     "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/thakkar.cpp"
-    ${TONTO_INCLUDE_FILES}
+    ${OCC_INCLUDE_FILES}
 )
 
-target_link_libraries(tonto_slater
+target_link_libraries(occ_slater
     PUBLIC 
-    tonto_core
+    occ_core
 )
 
-target_include_directories(tonto_slater PUBLIC 
-    ${TONTO_INCLUDE_DIR} 
+target_include_directories(occ_slater PUBLIC 
+    ${OCC_INCLUDE_DIR} 
 )
 
-target_compile_features(tonto_slater PUBLIC cxx_std_17)
+target_compile_features(occ_slater PUBLIC cxx_std_17)

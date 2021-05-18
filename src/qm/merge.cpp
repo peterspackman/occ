@@ -1,6 +1,6 @@
-#include <tonto/qm/merge.h>
+#include <occ/qm/merge.h>
 
-namespace tonto::qm {
+namespace occ::qm {
 
 std::pair<MatRM, Vec> merge_molecular_orbitals(const MatRM& mo_a, const MatRM& mo_b, const Vec& e_a, const Vec& e_b)
 {
@@ -29,7 +29,7 @@ std::pair<MatRM, Vec> merge_molecular_orbitals(const MatRM& mo_a, const MatRM& m
 
 BasisSet merge_basis_sets(const BasisSet& basis_a, const BasisSet& basis_b)
 {
-    tonto::qm::BasisSet merged = basis_a;
+    occ::qm::BasisSet merged = basis_a;
     merged.reserve(basis_a.size() + basis_b.size());
     merged.insert(merged.end(), basis_b.begin(), basis_b.end());
     merged.update();

@@ -1,7 +1,7 @@
-#include <tonto/interaction/polarization.h>
+#include <occ/interaction/polarization.h>
 #include <array>
 
-namespace tonto::pol {
+namespace occ::pol {
 
 static const std::array<double, 110> Thakkar_atomic_polarizability{
      4.50,   1.38, 164.04,  37.74,  20.43,  11.67,   7.26,   5.24,   3.70,   2.66,
@@ -38,7 +38,7 @@ static const std::array<double, 110> Charged_atomic_polarizibility{
 };
 
 
-double ce_model_polarization_energy(const tonto::IVec& atomic_numbers, const tonto::Mat3N& field)
+double ce_model_polarization_energy(const occ::IVec& atomic_numbers, const occ::Mat3N& field)
 {
     auto fsq = field.colwise().squaredNorm();
     double epol = 0.0;

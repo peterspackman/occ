@@ -1,8 +1,8 @@
-#include "tonto/geometry/morton.h"
+#include "occ/geometry/morton.h"
 #include "catch.hpp"
 #include <iostream>
 
-using tonto::geometry::MIndex;
+using occ::geometry::MIndex;
 
 TEST_CASE("Morton Index", "[geometry]")
 {

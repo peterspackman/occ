@@ -1,6 +1,6 @@
-#include <tonto/core/eem.h>
+#include <occ/core/eem.h>
 
-namespace tonto::core::charges
+namespace occ::core::charges
 {
 namespace impl {
 std::pair<double, double> params(int atomic_number)
@@ -31,10 +31,10 @@ std::pair<double, double> params(int atomic_number)
 };
 }
 
-tonto::Vec eem_partial_charges(const tonto::IVec &atomic_numbers, tonto::Mat3N &positions, double charge)
+occ::Vec eem_partial_charges(const occ::IVec &atomic_numbers, occ::Mat3N &positions, double charge)
 {
     size_t N = atomic_numbers.rows();
-    tonto::Vec A(N), B(N);
+    occ::Vec A(N), B(N);
 
     double a, b;
     for(size_t i = 0; i < N; i++)
@@ -43,7 +43,7 @@ tonto::Vec eem_partial_charges(const tonto::IVec &atomic_numbers, tonto::Mat3N &
         A(i) = a; B(i) = b;
     }
 
-    tonto::Mat M(N + 1, N + 1);
+    occ::Mat M(N + 1, N + 1);
     M.col(N).setConstant(-1.0);
     M.row(N).setConstant(1.0);
 
@@ -60,7 +60,7 @@ tonto::Vec eem_partial_charges(const tonto::IVec &atomic_numbers, tonto::Mat3N &
     }
     M(N, N) = 0.0;
 
-    tonto::Vec y = tonto::Vec(N + 1);
+    occ::Vec y = occ::Vec(N + 1);
     y.topRows(N).array() = -A.array();
     y(N) = charge;
     return M.householderQr().solve(y).topRows(N);

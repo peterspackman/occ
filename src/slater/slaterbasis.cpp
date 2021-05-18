@@ -1,12 +1,12 @@
-#include <tonto/slater/slaterbasis.h>
-#include <tonto/core/util.h>
+#include <occ/slater/slaterbasis.h>
+#include <occ/core/util.h>
 #include <fmt/core.h>
 
-namespace tonto::slater {
+namespace occ::slater {
 
-using tonto::IVec;
-using tonto::Vec;
-using tonto::Mat;
+using occ::IVec;
+using occ::Vec;
+using occ::Mat;
 constexpr double inv_pi_4 = 1.0 / (4 * M_PI);
 
 Shell::Shell() :
@@ -147,7 +147,7 @@ void Shell::grad_rho(const Vec& r, Vec& result) const
 
 void Shell::renormalize()
 {
-    using tonto::util::factorial;
+    using occ::util::factorial;
     for(size_t i = 0; i < n_prim(); i++)
     {
         int n2 = 2 * m_n(i);
@@ -158,7 +158,7 @@ void Shell::renormalize()
 
 void Shell::unnormalize()
 {
-    using tonto::util::factorial;
+    using occ::util::factorial;
     for(size_t i = 0; i < n_prim(); i++)
     {
         int n2 = 2 * m_n(i);

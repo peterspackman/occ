@@ -1,7 +1,7 @@
-#include <tonto/crystal/spacegroup.h>
-#include <tonto/core/logger.h>
+#include <occ/crystal/spacegroup.h>
+#include <occ/core/logger.h>
 
-namespace tonto::crystal {
+namespace occ::crystal {
 
 
 SpaceGroup::SpaceGroup(int number) {
@@ -13,23 +13,23 @@ SpaceGroup::SpaceGroup(int number) {
 
 SpaceGroup::SpaceGroup(const std::string &symbol) {
   m_sgdata = gemmi::find_spacegroup_by_name(symbol);
-  tonto::log::debug("Initializing space group from symbol: {}", symbol);
+  occ::log::debug("Initializing space group from symbol: {}", symbol);
   if(m_sgdata != nullptr) 
   {
-      tonto::log::debug("Found space group: {}", m_sgdata->hm);
+      occ::log::debug("Found space group: {}", m_sgdata->hm);
       for (const auto &op : m_sgdata->operations()) {
         m_symops.push_back(SymmetryOperation(op.triplet()));
       }
   }
   else
   {
-      tonto::log::error("Could not find matching space group: some data will be missing"); 
+      occ::log::error("Could not find matching space group: some data will be missing"); 
   }
 }
 
 SpaceGroup::SpaceGroup(const std::vector<std::string> &symops)
 {
-  tonto::log::debug("Initializing space group from symops (std::vector<std::string>)");
+  occ::log::debug("Initializing space group from symops (std::vector<std::string>)");
   gemmi::GroupOps ops;
   for (const auto &symop : symops) {
     ops.sym_ops.push_back(gemmi::parse_triplet(symop));
@@ -37,14 +37,14 @@ SpaceGroup::SpaceGroup(const std::vector<std::string> &symops)
   m_sgdata = gemmi::find_spacegroup_by_ops(ops);
   if(m_sgdata != nullptr) 
   {
-      tonto::log::debug("Found space group: {}", m_sgdata->hm);
+      occ::log::debug("Found space group: {}", m_sgdata->hm);
       for (const auto &op : m_sgdata->operations()) {
         m_symops.push_back(SymmetryOperation(op.triplet()));
       }
   }
   else
   {
-      tonto::log::error("Could not find matching space group: some data will be missing"); 
+      occ::log::error("Could not find matching space group: some data will be missing"); 
       for (const auto &op : symops) {
         m_symops.push_back(SymmetryOperation(op));
       }
@@ -53,7 +53,7 @@ SpaceGroup::SpaceGroup(const std::vector<std::string> &symops)
 
 SpaceGroup::SpaceGroup(const std::vector<SymmetryOperation> &symops)
     : m_symops(symops) {
-  tonto::log::debug("Initializing space group from symops (std::vector<SymmetryOperation>)");
+  occ::log::debug("Initializing space group from symops (std::vector<SymmetryOperation>)");
   gemmi::GroupOps ops;
   for (const auto &symop : symops) {
     ops.sym_ops.push_back(gemmi::parse_triplet(symop.to_string()));
@@ -61,14 +61,14 @@ SpaceGroup::SpaceGroup(const std::vector<SymmetryOperation> &symops)
   m_sgdata = gemmi::find_spacegroup_by_ops(ops);
   if(m_sgdata != nullptr) 
   {
-      tonto::log::debug("Found space group: {}", m_sgdata->hm);
+      occ::log::debug("Found space group: {}", m_sgdata->hm);
       for (const auto &op : m_sgdata->operations()) {
         m_symops.push_back(SymmetryOperation(op.triplet()));
       }
   }
   else
   {
-      tonto::log::error("Could not find matching space group: some data will be missing"); 
+      occ::log::error("Could not find matching space group: some data will be missing"); 
   }
 }
 
@@ -108,4 +108,4 @@ SpaceGroup::apply_all_symmetry_operations(const Mat3N &frac) const {
   }
   return {generators, transformed};
 }
-} // namespace tonto::crystal
+} // namespace occ::crystal

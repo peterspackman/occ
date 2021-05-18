@@ -1,0 +1,13 @@
+set(OCC_QM_INCLUDE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/basisset.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/fock.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/hf.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ints.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/merge.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/orb.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/scf.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/spinorbital.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.h
+    PARENT_SCOPE
+)

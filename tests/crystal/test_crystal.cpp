@@ -1,15 +1,15 @@
-#include <tonto/crystal/crystal.h>
-#include <tonto/core/util.h>
+#include <occ/crystal/crystal.h>
+#include <occ/core/util.h>
 #include <fmt/ostream.h>
 #include "catch.hpp"
 
-using tonto::crystal::Crystal;
-using tonto::crystal::AsymmetricUnit;
-using tonto::crystal::UnitCell;
-using tonto::crystal::SpaceGroup;
-using tonto::crystal::SymmetryOperation;
-using tonto::util::all_close;
-using tonto::util::deg2rad;
+using occ::crystal::Crystal;
+using occ::crystal::AsymmetricUnit;
+using occ::crystal::UnitCell;
+using occ::crystal::SpaceGroup;
+using occ::crystal::SymmetryOperation;
+using occ::util::all_close;
+using occ::util::deg2rad;
 
 
 auto ice_ii_asym()
@@ -21,11 +21,11 @@ auto ice_ii_asym()
         "H23", "H24",
     };
 
-    tonto::IVec nums(labels.size());
-    tonto::Mat positions(labels.size(), 3);
+    occ::IVec nums(labels.size());
+    occ::Mat positions(labels.size(), 3);
     for(size_t i = 0; i < labels.size(); i++)
     {
-        nums(i) = tonto::chem::Element(labels[i]).atomic_number();
+        nums(i) = occ::chem::Element(labels[i]).atomic_number();
     }
 
     positions << 
@@ -64,11 +64,11 @@ auto acetic_asym()
 {
 
     const std::vector<std::string> labels = {"C1", "C2", "H1", "H2", "H3", "H4", "O1", "O2"};
-    tonto::IVec nums(labels.size());
-    tonto::Mat positions(labels.size(), 3);
+    occ::IVec nums(labels.size());
+    occ::Mat positions(labels.size(), 3);
     for(size_t i = 0; i < labels.size(); i++)
     {
-        nums(i) = tonto::chem::Element(labels[i]).atomic_number();
+        nums(i) = occ::chem::Element(labels[i]).atomic_number();
     }
     positions << 
         0.16510, 0.28580,  0.17090,
@@ -105,14 +105,14 @@ TEST_CASE("AsymmetricUnit constructor", "[crystal]")
 
 TEST_CASE("UnitCell constructor", "[crystal]")
 {
-    UnitCell ice = tonto::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
+    UnitCell ice = occ::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
 }
 
 TEST_CASE("ice_ii molecules", "[crystal]")
 {
     AsymmetricUnit asym = ice_ii_asym();
     SpaceGroup sg(1);
-    UnitCell cell = tonto::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
+    UnitCell cell = occ::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
     Crystal ice_ii(asym, sg, cell);
     REQUIRE(ice_ii.symmetry_operations().size() == 1);
     fmt::print("Unit cell molecules:\n");
@@ -129,7 +129,7 @@ TEST_CASE("ice_ii molecules", "[crystal]")
 }
 
 
-SymmetryOperation dimer_symop(const tonto::chem::Dimer &dimer, const Crystal &crystal)
+SymmetryOperation dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)
 {
     const auto& a = dimer.a();
     const auto& b = dimer.b();
@@ -141,8 +141,8 @@ SymmetryOperation dimer_symop(const tonto::chem::Dimer &dimer, const Crystal &cr
     SymmetryOperation symop_b(sb_int);
 
     auto symop_ab = symop_b * symop_a.inverted();
-    tonto::Vec3 c_a = symop_ab(crystal.to_fractional(a.positions())).rowwise().mean();
-    tonto::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
+    occ::Vec3 c_a = symop_ab(crystal.to_fractional(a.positions())).rowwise().mean();
+    occ::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
 
     symop_ab = symop_ab.translated(v_ab);
     return symop_ab;
@@ -152,7 +152,7 @@ TEST_CASE("acetic molecules", "[crystal]")
 {
     AsymmetricUnit asym = acetic_asym();
     SpaceGroup sg(33);
-    UnitCell cell = tonto::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
+    UnitCell cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
 
     Crystal acetic(asym, sg, cell);
     REQUIRE(acetic.unit_cell_molecules().size() == 4);

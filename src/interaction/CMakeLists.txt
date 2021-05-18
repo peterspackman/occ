@@ -1,20 +1,20 @@
-add_library(tonto_interaction
+add_library(occ_interaction
     "${CMAKE_CURRENT_SOURCE_DIR}/disp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/polarization.cpp"
-    ${TONTO_INCLUDE_FILES}
+    ${OCC_INCLUDE_FILES}
 )
 
-target_link_libraries(tonto_interaction
+target_link_libraries(occ_interaction
     PUBLIC 
-    tonto_core
-    tonto_crystal
-    tonto_qm
-    tonto_io
+    occ_core
+    occ_crystal
+    occ_qm
+    occ_io
 )
-target_include_directories(tonto_interaction PUBLIC 
-    ${TONTO_INCLUDE_DIR} 
+target_include_directories(occ_interaction PUBLIC 
+    ${OCC_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
 )
 
-target_compile_features(tonto_interaction PUBLIC cxx_std_17)
+target_compile_features(occ_interaction PUBLIC cxx_std_17)

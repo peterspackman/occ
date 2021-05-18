@@ -1,0 +1,6 @@
+set(OCC_3RDPARTY_INCLUDE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/argparse.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nanoflann.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/robin_hood.h
+    PARENT_SCOPE
+)

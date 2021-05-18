@@ -1,11 +1,11 @@
-#include <tonto/core/linear_algebra.h>
+#include <occ/core/linear_algebra.h>
 #include "catch.hpp"
 #include <fmt/ostream.h>
-#include <tonto/core/timings.h>
-#include <tonto/slater/thakkar.h>
-#include <tonto/core/util.h>
+#include <occ/core/timings.h>
+#include <occ/slater/thakkar.h>
+#include <occ/core/util.h>
 
-using tonto::util::all_close;
+using occ::util::all_close;
 
 std::array<double, 38> domain_data{
     0.000000, 0.020000, 0.040000, 0.060000, 0.080000, 0.100000, 0.120000, 0.140000,
@@ -16,9 +16,9 @@ std::array<double, 38> domain_data{
 };
 
 TEST_CASE("Grad and rho consistency") {
-    using tonto::Vec;
-    auto H = tonto::thakkar::basis_for_element(1);
-    auto C = tonto::thakkar::basis_for_element(6);
+    using occ::Vec;
+    auto H = occ::thakkar::basis_for_element(1);
+    auto C = occ::thakkar::basis_for_element(6);
 
     Vec r0(1);
     r0(0) = 0.0;
@@ -42,10 +42,10 @@ TEST_CASE("Grad and rho consistency") {
 
 TEST_CASE("Vector vs. repeated function call")
 {
-    auto Ag = tonto::thakkar::basis_for_element(47);
-    using tonto::Vec;
+    auto Ag = occ::thakkar::basis_for_element(47);
+    using occ::Vec;
 
-    tonto::timing::StopWatch<1> sw;
+    occ::timing::StopWatch<1> sw;
     Vec rtest = Vec::LinSpaced(100000, 0.01, 5.0);
     Vec rho_vec(rtest.rows()), rho_func(rtest.rows());
     sw.start(0);
@@ -64,8 +64,8 @@ TEST_CASE("Vector vs. repeated function call")
 }
 
 TEST_CASE("H") {
-    using tonto::Vec;
-    auto H = tonto::thakkar::basis_for_element(1);
+    using occ::Vec;
+    auto H = occ::thakkar::basis_for_element(1);
     Vec expected(38);
     Eigen::Map<Vec, 0> domain(domain_data.data(), 38);
     expected <<
@@ -82,8 +82,8 @@ TEST_CASE("H") {
 }
 
 TEST_CASE("Ag") {
-    using tonto::Vec;
-    auto Ag = tonto::thakkar::basis_for_element(47);
+    using occ::Vec;
+    auto Ag = occ::thakkar::basis_for_element(47);
     Vec expected(38);
     Eigen::Map<Vec, 0> domain(domain_data.data(), 38);
 

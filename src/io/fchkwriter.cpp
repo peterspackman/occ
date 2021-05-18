@@ -1,7 +1,7 @@
-#include <tonto/io/fchkwriter.h>
+#include <occ/io/fchkwriter.h>
 #include <fmt/ostream.h>
 
-namespace tonto::io {
+namespace occ::io {
 
 namespace impl {
 
@@ -176,7 +176,7 @@ void FchkVectorWriter::operator()(const std::vector<bool> &values)
 }
 
 
-void FchkWriter::set_basis(const tonto::qm::BasisSet &basis)
+void FchkWriter::set_basis(const occ::qm::BasisSet &basis)
 {
     int largest_contraction{0};
     int l_max = 0;
@@ -210,8 +210,8 @@ void FchkWriter::set_basis(const tonto::qm::BasisSet &basis)
     }
     set_scalar("Number of contracted shells", basis.size());
     bool spherical = basis.is_pure();
-    set_scalar("Pure/Cartesian d shells", spherical ? 1 : 0);
-    set_scalar("Pure/Cartesian f shells", spherical ? 1 : 0);
+    set_scalar("Pure/Cartesian d shells", spherical ? 0 : 1);
+    set_scalar("Pure/Cartesian f shells", spherical ? 0 : 1);
     set_scalar("Highest angular momentum", l_max);
     set_scalar("Largest degree of contraction", largest_contraction);
     set_vector("Shell types", shell_types);
@@ -219,7 +219,7 @@ void FchkWriter::set_basis(const tonto::qm::BasisSet &basis)
     set_scalar("Number of primitive shells", number_primitive_shells);
     set_vector("Primitive exponents", primitive_exponents);
     set_vector("Contraction coefficients", contraction_coefficients);
-    set_vector("P(S=P) Contraction coefficients", tonto::Vec::Zero(contraction_coefficients.size()));
+    set_vector("P(S=P) Contraction coefficients", occ::Vec::Zero(contraction_coefficients.size()));
     set_vector("Coordinates of each shell", shell_coords);
 }
 

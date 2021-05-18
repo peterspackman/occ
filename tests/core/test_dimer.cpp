@@ -1,16 +1,16 @@
-#include <tonto/core/dimer.h>
-#include <tonto/core/util.h>
+#include <occ/core/dimer.h>
+#include <occ/core/util.h>
 #include <fmt/ostream.h>
 #include "catch.hpp"
 
-using tonto::chem::Dimer;
-using tonto::chem::Molecule;
-using tonto::util::all_close;
+using occ::chem::Dimer;
+using occ::chem::Molecule;
+using occ::util::all_close;
 
 TEST_CASE("Dimer constructor", "[dimer]")
 {
-    tonto::Mat3N pos(3, 3), pos2(3, 3);
-    tonto::IVec nums(3);
+    occ::Mat3N pos(3, 3), pos2(3, 3);
+    occ::IVec nums(3);
     nums << 8, 1, 1;
     pos << -1.32695761, -1.93166418, 0.48664409,
            -0.10593856,  1.60017351, 0.07959806,
@@ -19,7 +19,7 @@ TEST_CASE("Dimer constructor", "[dimer]")
     Molecule m(nums, pos);
 
     auto masses = m.atomic_masses();
-    tonto::Vec3 expected_masses = {15.994, 1.00794, 1.00794};
+    occ::Vec3 expected_masses = {15.994, 1.00794, 1.00794};
 
     fmt::print("Atomic masses:\n{}\n\n", masses);
     REQUIRE(all_close(masses, expected_masses, 1e-3, 1e-3));
@@ -29,8 +29,8 @@ TEST_CASE("Dimer constructor", "[dimer]")
 
 TEST_CASE("Dimer transform", "[dimer]")
 {
-    tonto::Mat3N pos(3, 3), pos2(3, 3);
-    tonto::IVec nums(3);
+    occ::Mat3N pos(3, 3), pos2(3, 3);
+    occ::IVec nums(3);
     nums << 8, 1, 1;
     pos << -1.32695761, -1.93166418, 0.48664409,
            -0.10593856,  1.60017351, 0.07959806,
@@ -56,8 +56,8 @@ TEST_CASE("Dimer transform", "[dimer]")
 
 TEST_CASE("Dimer separations", "[dimer]")
 {
-    tonto::Mat3N pos(3, 3), pos2(3, 3);
-    tonto::IVec nums(3);
+    occ::Mat3N pos(3, 3), pos2(3, 3);
+    occ::IVec nums(3);
     nums << 8, 1, 1;
     pos << -1.32695761, -1.93166418, 0.48664409,
            -0.10593856,  1.60017351, 0.07959806,

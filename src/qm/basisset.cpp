@@ -1,6 +1,6 @@
-#include <tonto/core/util.h>
-#include <tonto/qm/basisset.h>
-#include <tonto/gto/gto.h>
+#include <occ/core/util.h>
+#include <occ/qm/basisset.h>
+#include <occ/gto/gto.h>
 #include <cerrno>
 #include <iostream>
 #include <fstream>
@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace tonto::qm {
+namespace occ::qm {
 
 struct canonicalizer {
     char operator()(char c) {
@@ -182,7 +182,7 @@ std::vector<std::string> BasisSet::decompose_name_into_components(std::string na
 std::string BasisSet::data_path()
 {
   std::string path;
-  const char* data_path_env = getenv("TONTO_BASIS_PATH");
+  const char* data_path_env = getenv("OCC_BASIS_PATH");
   if (data_path_env) {
     path = data_path_env;
   }
@@ -380,45 +380,45 @@ std::vector<size_t> compute_shell2bf(const std::vector<libint2::Shell>& shells) 
 
 void BasisSet::update()
 {
-    m_nbf = tonto::qm::nbf(*this);
-    m_max_nprim = tonto::qm::max_nprim(*this);
-    m_max_l = tonto::qm::max_l(*this);
+    m_nbf = occ::qm::nbf(*this);
+    m_max_nprim = occ::qm::max_nprim(*this);
+    m_max_l = occ::qm::max_l(*this);
     m_shell2bf = compute_shell2bf(*this);
 }
 
 
-tonto::MatRM rotate_molecular_orbitals(const BasisSet& basis, const tonto::Mat3& rotation, const tonto::MatRM& C)
+occ::MatRM rotate_molecular_orbitals(const BasisSet& basis, const occ::Mat3& rotation, const occ::MatRM& C)
 {
     assert(!basis.is_pure());
     const auto shell2bf = basis.shell2bf();
-    tonto::MatRM result(C.rows(), C.cols());
+    occ::MatRM result(C.rows(), C.cols());
     for(size_t s = 0; s < basis.size(); s++) {
         const auto& shell = basis[s];
         size_t bf_first = shell2bf[s];
         size_t shell_size = shell.size();
         int l = shell.contr[0].l;
-        tonto::MatRM rot;
+        occ::MatRM rot;
         switch(l) {
         case 0:
             result.block(bf_first, 0, shell_size, C.cols()).noalias() = C.block(bf_first, 0, shell_size, C.cols());
             continue;
         case 1:
-            rot = tonto::gto::cartesian_gaussian_rotation_matrix<1>(rotation);
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<1>(rotation);
             break;
         case 2:
-            rot = tonto::gto::cartesian_gaussian_rotation_matrix<2>(rotation);
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<2>(rotation);
             break;
         case 3:
-            rot = tonto::gto::cartesian_gaussian_rotation_matrix<3>(rotation);
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<3>(rotation);
             break;
         case 4:
-            rot = tonto::gto::cartesian_gaussian_rotation_matrix<4>(rotation);
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<4>(rotation);
             break;
         case 5:
-            rot = tonto::gto::cartesian_gaussian_rotation_matrix<5>(rotation);
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<5>(rotation);
             break;
         case 6:
-            rot = tonto::gto::cartesian_gaussian_rotation_matrix<6>(rotation);
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<6>(rotation);
             break;
             // trivial to implement for higher angular momenta, but the template is not instantiated
         default:
@@ -430,10 +430,10 @@ tonto::MatRM rotate_molecular_orbitals(const BasisSet& basis, const tonto::Mat3&
 }
 
 
-void BasisSet::rotate(const tonto::Mat3& rotation) {
+void BasisSet::rotate(const occ::Mat3& rotation) {
     for(auto& shell: *this)
     {
-        tonto::Vec3 pos{shell.O[0], shell.O[1], shell.O[2]};
+        occ::Vec3 pos{shell.O[0], shell.O[1], shell.O[2]};
         auto rot_pos = rotation * pos;
         shell.O[0] = rot_pos(0);
         shell.O[1] = rot_pos(1);
@@ -443,7 +443,7 @@ void BasisSet::rotate(const tonto::Mat3& rotation) {
     update();
 }
 
-void BasisSet::translate(const tonto::Vec3& translation) {
+void BasisSet::translate(const occ::Vec3& translation) {
     for(auto& shell: *this)
     {
         shell.O[0] += translation(0);
@@ -454,10 +454,10 @@ void BasisSet::translate(const tonto::Vec3& translation) {
 }
 
 
-void rotate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation)
+void rotate_atoms(std::vector<libint2::Atom>& atoms, const occ::Mat3& rotation)
 {
     for(auto& atom: atoms) {
-        tonto::Vec3 pos{atom.x, atom.y, atom.z};
+        occ::Vec3 pos{atom.x, atom.y, atom.z};
         auto pos_rot = rotation * pos;
         atom.x = pos_rot(0);
         atom.y = pos_rot(1);
@@ -465,7 +465,7 @@ void rotate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Mat3& rotation
     }
 }
 
-void translate_atoms(std::vector<libint2::Atom>& atoms, const tonto::Vec3& translation)
+void translate_atoms(std::vector<libint2::Atom>& atoms, const occ::Vec3& translation)
 {
     for(auto& atom: atoms) {
         atom.x += translation(0);

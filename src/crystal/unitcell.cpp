@@ -1,7 +1,7 @@
-#include <tonto/crystal/unitcell.h>
+#include <occ/crystal/unitcell.h>
 #include <cmath>
 
-namespace tonto::crystal {
+namespace occ::crystal {
 
 UnitCell::UnitCell(const Vec3 &lengths, const Vec3 &angles)
     : m_lengths{lengths}, m_angles{angles} {
@@ -161,4 +161,4 @@ UnitCell triclinic_cell(double a, double b, double c, double alpha, double beta,
     return UnitCell(a, b, c, alpha, beta, gamma);
 }
 
-} // namespace tonto::crystal
+} // namespace occ::crystal

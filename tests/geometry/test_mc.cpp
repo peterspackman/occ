@@ -1,12 +1,12 @@
-#include "tonto/geometry/marching_cubes.h"
-#include "tonto/geometry/linear_hashed_marching_cubes.h"
+#include "occ/geometry/marching_cubes.h"
+#include "occ/geometry/linear_hashed_marching_cubes.h"
 #include "catch.hpp"
 #include "fmt/core.h"
 #include "fmt/os.h"
-#include <tonto/core/timings.h>
+#include <occ/core/timings.h>
 
-using tonto::geometry::mc::MarchingCubes;
-using tonto::geometry::mc::LinearHashedMarchingCubes;
+using occ::geometry::mc::MarchingCubes;
+using occ::geometry::mc::LinearHashedMarchingCubes;
 
 struct sphere
 {
@@ -50,7 +50,7 @@ TEST_CASE("Marching cubes", "[geometry]")
 {
     MarchingCubes m(128);
     torus s;
-    tonto::timing::StopWatch<1> sw;
+    occ::timing::StopWatch<1> sw;
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
     sw.start(0);
@@ -76,7 +76,7 @@ TEST_CASE("Linear hashed marching cubes", "[geometry]")
     torus s;
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
-    tonto::timing::StopWatch<1> sw;
+    occ::timing::StopWatch<1> sw;
     sw.start(0);
     m.extract(s, vertices, indices);
     sw.stop(0);

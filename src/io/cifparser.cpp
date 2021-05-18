@@ -1,11 +1,11 @@
-﻿#include <tonto/core/element.h>
-#include <tonto/core/util.h>
-#include <tonto/core/logger.h>
-#include <tonto/io/cifparser.h>
+﻿#include <occ/core/element.h>
+#include <occ/core/util.h>
+#include <occ/core/logger.h>
+#include <occ/io/cifparser.h>
 #include <gemmi/numb.hpp>
 #include <iostream>
 
-namespace tonto::io {
+namespace occ::io {
 
 CifParser::CifParser() {}
 
@@ -17,17 +17,28 @@ void CifParser::extract_atom_sites(const gemmi::cif::Loop &loop) {
   int z_idx = loop.find_tag("_atom_site_fract_z");
   for (size_t i = 0; i < loop.length(); i++) {
     AtomData atom;
-    if (label_idx >= 0)
+    bool info_found = false;
+    if (label_idx >= 0) {
       atom.site_label = loop.val(i, label_idx);
-    if (symbol_idx >= 0)
+      info_found = true;
+    }
+    if (symbol_idx >= 0) {
       atom.element = loop.val(i, symbol_idx);
-    if (x_idx >= 0)
+      info_found = true;
+    }
+    if (x_idx >= 0) {
       atom.position[0] = gemmi::cif::as_number(loop.val(i, x_idx));
-    if (y_idx >= 0)
+      info_found = true;
+    }
+    if (y_idx >= 0) {
       atom.position[1] = gemmi::cif::as_number(loop.val(i, y_idx));
-    if (z_idx >= 0)
+      info_found = true;
+    }
+    if (z_idx >= 0) {
       atom.position[2] = gemmi::cif::as_number(loop.val(i, z_idx));
-    m_atoms.push_back(atom);
+      info_found = true;
+    }
+    if (info_found)  m_atoms.push_back(atom);
   }
 }
 
@@ -40,11 +51,11 @@ void CifParser::extract_cell_parameter(const gemmi::cif::Pair &pair) {
   else if (tag == "_cell_length_c")
     m_cell.c = gemmi::cif::as_number(pair.back());
   else if (tag == "_cell_angle_alpha")
-    m_cell.alpha = tonto::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.alpha = occ::util::deg2rad(gemmi::cif::as_number(pair.back()));
   else if (tag == "_cell_angle_beta")
-    m_cell.beta = tonto::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.beta = occ::util::deg2rad(gemmi::cif::as_number(pair.back()));
   else if (tag == "_cell_angle_gamma")
-    m_cell.gamma = tonto::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.gamma = occ::util::deg2rad(gemmi::cif::as_number(pair.back()));
 }
 
 void remove_quotes(std::string &s)
@@ -80,7 +91,7 @@ void CifParser::extract_symmetry_data(const gemmi::cif::Pair &pair) {
     m_sym.number = gemmi::cif::as_number(pair.back());
 }
 
-std::optional<tonto::crystal::Crystal>
+std::optional<occ::crystal::Crystal>
 CifParser::parse_crystal(const std::string &filename) {
   try {
     auto doc = gemmi::cif::read_file(filename);
@@ -109,7 +120,7 @@ CifParser::parse_crystal(const std::string &filename) {
       m_failure_desc = "Missing symmetry data";
       return std::nullopt;
     }
-    tonto::crystal::AsymmetricUnit asym;
+    occ::crystal::AsymmetricUnit asym;
     if (num_atoms() > 0) {
       asym.atomic_numbers.conservativeResize(num_atoms());
       asym.positions.conservativeResize(3, num_atoms());
@@ -119,43 +130,43 @@ CifParser::parse_crystal(const std::string &filename) {
         asym.positions(0, i) = atom.position[0];
         asym.positions(1, i) = atom.position[1];
         asym.positions(2, i) = atom.position[2];
-        asym.atomic_numbers(i) = tonto::chem::Element(atom.element).n();
+        asym.atomic_numbers(i) = occ::chem::Element(atom.element).n();
         asym.labels.push_back(atom.site_label);
         i++;
       }
     }
-    tonto::crystal::UnitCell uc(m_cell.a, m_cell.b, m_cell.c, m_cell.alpha,
+    occ::crystal::UnitCell uc(m_cell.a, m_cell.b, m_cell.c, m_cell.alpha,
                                 m_cell.beta, m_cell.gamma);
 
     if(m_sym.valid())
     {
         if(m_sym.nameHall != "Not set")
         {
-          auto sg = tonto::crystal::SpaceGroup(m_sym.nameHall);
-          return tonto::crystal::Crystal(asym, sg, uc);
+          auto sg = occ::crystal::SpaceGroup(m_sym.nameHall);
+          return occ::crystal::Crystal(asym, sg, uc);
         }
         if(m_sym.nameHM != "Not set")
         {
-          auto sg = tonto::crystal::SpaceGroup(m_sym.nameHM);
-          return tonto::crystal::Crystal(asym, sg, uc);
+          auto sg = occ::crystal::SpaceGroup(m_sym.nameHM);
+          return occ::crystal::Crystal(asym, sg, uc);
         }
         else if(m_sym.number > 0)
         {
-          auto sg = tonto::crystal::SpaceGroup(m_sym.number);
-          return tonto::crystal::Crystal(asym, sg, uc);
+          auto sg = occ::crystal::SpaceGroup(m_sym.number);
+          return occ::crystal::Crystal(asym, sg, uc);
         }
         else if (m_sym.symops.size() > 0) {
-          auto sg = tonto::crystal::SpaceGroup(m_sym.symops);
-          return tonto::crystal::Crystal(asym, sg, uc);
+          auto sg = occ::crystal::SpaceGroup(m_sym.symops);
+          return occ::crystal::Crystal(asym, sg, uc);
         }
     }
-    tonto::crystal::SpaceGroup sg("P 1");
-    return tonto::crystal::Crystal(asym, sg, uc);
+    occ::crystal::SpaceGroup sg("P 1");
+    return occ::crystal::Crystal(asym, sg, uc);
   } catch (const std::exception &e) {
     m_failure_desc = e.what();
-    tonto::log::error("Exception encountered when parsing CIF: {}", m_failure_desc);
+    occ::log::error("Exception encountered when parsing CIF: {}", m_failure_desc);
     return std::nullopt;
   }
 }
 
-} // namespace tonto::io
+} // namespace occ::io

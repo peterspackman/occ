@@ -1,9 +1,9 @@
-#include <tonto/core/dimer.h>
-#include <tonto/core/kabsch.h>
+#include <occ/core/dimer.h>
+#include <occ/core/kabsch.h>
 
 #include <fmt/ostream.h>
 
-namespace tonto::chem {
+namespace occ::chem {
 
 Dimer::Dimer(const Molecule &a, const Molecule &b) : m_a(a), m_b(b) {}
 
@@ -24,11 +24,11 @@ double Dimer::nearest_distance() const
     return std::get<2>(m_a.nearest_atom(m_b));
 }
 
-std::optional<tonto::Mat4> Dimer::symmetry_relation() const
+std::optional<occ::Mat4> Dimer::symmetry_relation() const
 {
     if(!m_a.comparable_to(m_b)) return std::nullopt;
-    using tonto::Vec3;
-    using tonto::linalg::kabsch_rotation_matrix;
+    using occ::Vec3;
+    using occ::linalg::kabsch_rotation_matrix;
 
     Vec3 o_a = m_a.centroid();
     Vec3 o_b = m_b.centroid();
@@ -38,7 +38,7 @@ std::optional<tonto::Mat4> Dimer::symmetry_relation() const
     Mat3N pos_b = m_b.positions();
     pos_b.colwise() -= o_b;
 
-    tonto::Mat4 result = tonto::Mat4::Identity();
+    occ::Mat4 result = occ::Mat4::Identity();
     result.block<3, 3>(0, 0) = kabsch_rotation_matrix(pos_a, pos_b);
     result.block<3, 1>(0, 3) = v_ab;
     return result;

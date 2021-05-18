@@ -1,31 +1,31 @@
 #include <filesystem>
-#include <tonto/core/logger.h>
-#include <tonto/core/molecule.h>
-#include <tonto/core/timings.h>
-#include <tonto/core/eem.h>
-#include <tonto/3rdparty/argparse.hpp>
+#include <occ/core/logger.h>
+#include <occ/core/molecule.h>
+#include <occ/core/timings.h>
+#include <occ/core/eem.h>
+#include <occ/3rdparty/argparse.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <fmt/os.h>
-#include <tonto/solvent/cosmo.h>
-#include <tonto/solvent/surface.h>
-#include <tonto/core/units.h>
-#include <tonto/io/fchkwriter.h>
-#include <tonto/dft/dft.h>
-#include <tonto/qm/scf.h>
-#include <tonto/qm/ints.h>
-#include <tonto/io/fchkreader.h>
-#include <tonto/core/parallel.h>
+#include <occ/solvent/cosmo.h>
+#include <occ/solvent/surface.h>
+#include <occ/core/units.h>
+#include <occ/io/fchkwriter.h>
+#include <occ/dft/dft.h>
+#include <occ/qm/scf.h>
+#include <occ/qm/ints.h>
+#include <occ/io/fchkreader.h>
+#include <occ/core/parallel.h>
 
 
 namespace fs = std::filesystem;
-using tonto::chem::Molecule;
-using tonto::chem::Element;
-using tonto::timing::StopWatch;
-using tonto::solvent::COSMO;
-using tonto::qm::Wavefunction;
-using tonto::scf::SCF;
-using tonto::qm::SpinorbitalKind;
+using occ::chem::Molecule;
+using occ::chem::Element;
+using occ::timing::StopWatch;
+using occ::solvent::COSMO;
+using occ::qm::Wavefunction;
+using occ::scf::SCF;
+using occ::qm::SpinorbitalKind;
 
 
 struct InputConfiguration {
@@ -39,17 +39,18 @@ struct InputConfiguration {
 Wavefunction run_from_xyz_file(const InputConfiguration &config)
 {
     std::string filename = config.geometry_filename.string();
-    Molecule m = tonto::chem::read_xyz_file(filename);
+    Molecule m = occ::chem::read_xyz_file(filename);
 
     fmt::print("Method: '{}'\n", config.method);
     fmt::print("Basis set: '{}'\n", config.basis_name);
 
-    tonto::qm::BasisSet basis(config.basis_name, m.atoms());
+    occ::qm::BasisSet basis(config.basis_name, m.atoms());
     basis.set_pure(false);
     fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
     Wavefunction wfn;
-    tonto::dft::DFT rks(config.method, basis, m.atoms(), SpinorbitalKind::Restricted);
-    SCF<tonto::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
+    occ::dft::DFT rks(config.method, basis, m.atoms(), SpinorbitalKind::Restricted);
+    rks.set_system_charge(config.charge);
+    SCF<occ::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
     scf.set_charge_multiplicity(config.charge, config.multiplicity);
     scf.start_incremental_F_threshold = 0.0;
     double e = scf.compute_scf_energy();
@@ -57,29 +58,37 @@ Wavefunction run_from_xyz_file(const InputConfiguration &config)
     return wfn;
 }
 
-tonto::Vec compute_esp(const Wavefunction &wfn, const tonto::Mat3N &points)
+occ::Vec compute_esp(const Wavefunction &wfn, const occ::Mat3N &points)
 {
-    tonto::ints::shellpair_list_t shellpair_list;
-    tonto::ints::shellpair_data_t shellpair_data;
-    std::tie(shellpair_list, shellpair_data) = tonto::ints::compute_shellpairs(wfn.basis);
-    return tonto::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
+    occ::ints::shellpair_list_t shellpair_list;
+    occ::ints::shellpair_data_t shellpair_data;
+    std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(wfn.basis);
+    auto dout = fmt::output_file("D.txt");
+    dout.print("{}", wfn.D);
+    return occ::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
 }
 
 
+
 int main(int argc, const char **argv) {
-    argparse::ArgumentParser parser("tonto");
+    argparse::ArgumentParser parser("occ");
     parser.add_argument("input").help("Input file geometry");
+    parser.add_argument("-c", "--charge")
+            .help("Molecular charge")
+            .default_value(0)
+            .action([](const std::string& value) { return std::stoi(value); });
+
     parser.add_argument("-j", "--threads")
             .help("Number of threads")
             .default_value(2)
             .action([](const std::string& value) { return std::stoi(value); });
-    tonto::log::set_level(tonto::log::level::debug);
+    occ::log::set_level(occ::log::level::debug);
     spdlog::set_level(spdlog::level::debug);
     try {
         parser.parse_args(argc, argv);
     }
     catch (const std::runtime_error& err) {
-        tonto::log::error("error when parsing command line arguments: {}", err.what());
+        occ::log::error("error when parsing command line arguments: {}", err.what());
         fmt::print("{}", parser);
         exit(1);
     }
@@ -88,12 +97,13 @@ int main(int argc, const char **argv) {
     libint2::initialize();
     InputConfiguration config;
     config.geometry_filename = parser.get<std::string>("input");
-    using tonto::parallel::nthreads;
+    using occ::parallel::nthreads;
     nthreads = parser.get<int>("--threads");
+    config.charge = parser.get<int>("--charge");
     omp_set_num_threads(nthreads);
 
 
-    Molecule m = tonto::chem::read_xyz_file(config.geometry_filename);
+    Molecule m = occ::chem::read_xyz_file(config.geometry_filename);
     fs::path fchk_path = config.geometry_filename;
     fchk_path.replace_extension(".fchk");
 
@@ -104,16 +114,18 @@ int main(int argc, const char **argv) {
                    atom.x, atom.y, atom.z);
     }
 
+    fmt::print("Charge: {}\n", config.charge);
+
     Wavefunction wfn;
     if(fs::exists(fchk_path)) {
-        using tonto::io::FchkReader;
+        using occ::io::FchkReader;
         FchkReader fchk(fchk_path.string());
         wfn = Wavefunction(fchk);
     }
     else {
         wfn = run_from_xyz_file(config);
-        tonto::io::FchkWriter fchk(fchk_path.string());
-        fchk.set_title(fmt::format("{} {}/{} generated by tonto-ng", fchk_path.stem(), config.method, config.basis_name));
+        occ::io::FchkWriter fchk(fchk_path.string());
+        fchk.set_title(fmt::format("{} {}/{} generated by occ-ng", fchk_path.stem(), config.method, config.basis_name));
         fchk.set_method(config.method);
         fchk.set_basis_name(config.basis_name);
         wfn.save(fchk);
@@ -122,21 +134,22 @@ int main(int argc, const char **argv) {
 
 
     StopWatch<1> sw;
-    tonto::Mat3N pos = m.positions();
-    tonto::IVec nums = m.atomic_numbers();
-    tonto::Vec radii = m.vdw_radii();
-    radii.array() += 1.4;
+    occ::Mat3N pos = m.positions() / 0.52917749;
+    occ::IVec nums = m.atomic_numbers();
+    occ::Vec radii = occ::solvent::cosmo::solvation_radii(nums);
+    fmt::print("van der Waals radii:\n{}\n", radii);
+    radii.array() /= 0.52917749;
 
     sw.start(0);
-    auto surface = tonto::solvent::surface::solvent_surface(radii, nums, pos);
+    auto surface = occ::solvent::surface::solvent_surface(radii, nums, pos);
     sw.stop(0);
-    fmt::print("Surface calculated in {}\n", sw.read(0));
+    fmt::print("Surface ({} atoms, {} points) calculated in {}\n", radii.rows(), surface.areas.rows(), sw.read(0));
     sw.clear_all();
 
-    tonto::Vec areas = surface.areas;
-    tonto::Mat3N points = surface.vertices;
+    occ::Vec areas = surface.areas;
+    occ::Mat3N points = surface.vertices;
     sw.start(0);
-    tonto::Vec charges = compute_esp(wfn, points);
+    occ::Vec charges = compute_esp(wfn, points);
     for(size_t i = 0; i < nums.rows(); i++)
     {
         auto p1 = pos.col(i);
@@ -150,6 +163,7 @@ int main(int argc, const char **argv) {
 
     COSMO cosmo(78.40);
     cosmo.set_max_iterations(100);
+    cosmo.set_x(0.0);
     auto result = cosmo(points, areas, charges);
     auto vout = fmt::output_file("points.txt");
     vout.print("{}", points.transpose());
@@ -157,9 +171,9 @@ int main(int argc, const char **argv) {
     cout.print("{}", charges);
     auto vaout = fmt::output_file("areas.txt");
     vaout.print("{}", areas);
-    fmt::print("Surface area: {}\n", areas.sum());
+    fmt::print("Surface area: {} angstrom**2\n", areas.sum() * 0.52917749 * 0.52917749);
 
-    fmt::print("Total energy: {} kcal/mol\n", tonto::units::AU_TO_KCAL_PER_MOL * result.energy);
+    fmt::print("Total energy: {} kcal/mol\n", occ::units::AU_TO_KCAL_PER_MOL * result.energy);
 
     return 0;
 }

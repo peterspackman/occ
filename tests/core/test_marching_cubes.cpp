@@ -1,12 +1,12 @@
-#include <tonto/core/linear_algebra.h>
-#include <tonto/core/sparsevoxelgrid.h>
-#include <tonto/core/marchingcubes.h>
+#include <occ/core/linear_algebra.h>
+#include <occ/core/sparsevoxelgrid.h>
+#include <occ/core/marchingcubes.h>
 #include "catch.hpp"
 #include <fmt/ostream.h>
-#include <tonto/core/timings.h>
+#include <occ/core/timings.h>
 
-using tonto::grid::sparse::voxel_grid;
-using tonto::geom::marching_cubes;
+using occ::grid::sparse::voxel_grid;
+using occ::geom::marching_cubes;
 
 TEST_CASE("Sphere") {
 
@@ -18,18 +18,18 @@ TEST_CASE("Sphere") {
     Eigen::RowVector3d p0(0., 0., 1.);
     // CS will hold one scalar value at each cube vertex corresponding
     // the value of the implicit at that vertex
-    tonto::Vec CS;
+    occ::Vec CS;
 
     // CV will hold the positions of the corners of the sparse voxel grid
-    tonto::MatRM CV;
+    occ::MatRM CV;
 
     // CI is a #cubes x 8 matrix of indices where each row contains the
     // indices into CV of the 8 corners of a cube
-    tonto::IMatRM CI;
+    occ::IMatRM CI;
 
     const double eps = 0.1;
     // Construct the voxel grid, populating CS, CV, and CI
-    tonto::timing::StopWatch<1> sw;
+    occ::timing::StopWatch<1> sw;
     sw.start(0);
     voxel_grid(p0, sphere, eps, CS, CV, CI);
     sw.stop(0);

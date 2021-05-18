@@ -1,3 +1,3 @@
-#include <tonto/core/parallel.h>
+#include <occ/core/parallel.h>
 
-namespace tonto::parallel {} // namespace tonto::parallel
+namespace occ::parallel {} // namespace occ::parallel

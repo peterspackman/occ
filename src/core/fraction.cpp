@@ -1,12 +1,12 @@
-#include <tonto/core/fraction.h>
-#include <tonto/core/util.h>
+#include <occ/core/fraction.h>
+#include <occ/core/util.h>
 #include <fmt/core.h>
 #include <math.h>
 #include <vector>
 
-namespace tonto::numeric {
+namespace occ::numeric {
 
-using tonto::util::tokenize;
+using occ::util::tokenize;
 
 template<typename F, typename I>
 std::pair<I, I> continued_fraction_approximation(F f, F tolerance) {
@@ -270,4 +270,4 @@ bool Fraction::operator<(const Fraction &other) const {
 bool Fraction::operator<=(const Fraction &other) const {
   return cast<double>() <= other.cast<double>();
 }
-} // namespace tonto::numeric
+} // namespace occ::numeric

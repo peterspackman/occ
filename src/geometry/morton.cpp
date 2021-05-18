@@ -1,6 +1,6 @@
-#include <tonto/geometry/morton.h>
+#include <occ/geometry/morton.h>
 
-namespace tonto::geometry {
+namespace occ::geometry {
 
 MIndex MIndex::operator+(const MIndex& other) const
 {

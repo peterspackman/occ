@@ -1,12 +1,12 @@
-#include <tonto/core/util.h>
-#include <tonto/crystal/spacegroup.h>
+#include <occ/core/util.h>
+#include <occ/crystal/spacegroup.h>
 #include "catch.hpp"
 #include <iostream>
 
-using tonto::crystal::SpaceGroup;
-using tonto::util::all_close;
-using tonto::Mat3N;
-using tonto::MatN3;
+using occ::crystal::SpaceGroup;
+using occ::util::all_close;
+using occ::Mat3N;
+using occ::MatN3;
 
 
 TEST_CASE("SpaceGroup constructor", "[space_group]")

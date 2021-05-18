@@ -1,24 +1,24 @@
-add_subdirectory(tonto/core)
-add_subdirectory(tonto/crystal)
-add_subdirectory(tonto/dft)
-add_subdirectory(tonto/geometry)
-add_subdirectory(tonto/gto)
-add_subdirectory(tonto/interaction)
-add_subdirectory(tonto/io)
-add_subdirectory(tonto/qm)
-add_subdirectory(tonto/slater)
-add_subdirectory(tonto/3rdparty)
+add_subdirectory(occ/core)
+add_subdirectory(occ/crystal)
+add_subdirectory(occ/dft)
+add_subdirectory(occ/geometry)
+add_subdirectory(occ/gto)
+add_subdirectory(occ/interaction)
+add_subdirectory(occ/io)
+add_subdirectory(occ/qm)
+add_subdirectory(occ/slater)
+add_subdirectory(occ/3rdparty)
 
-set(TONTO_INCLUDE_FILES
-    ${TONTO_CORE_INCLUDE_FILES}
-    ${TONTO_CRYSTAL_INCLUDE_FILES}
-    ${TONTO_DFT_INCLUDE_FILES}
-    ${TONTO_GTO_INCLUDE_FILES}
-    ${TONTO_INTERACTION_INCLUDE_FILES}
-    ${TONTO_QM_INCLUDE_FILES}
-    ${TONTO_SLATER_INCLUDE_FILES}
-    ${TONTO_3RDPARTY_INCLUDE_FILES}
+set(OCC_INCLUDE_FILES
+    ${OCC_CORE_INCLUDE_FILES}
+    ${OCC_CRYSTAL_INCLUDE_FILES}
+    ${OCC_DFT_INCLUDE_FILES}
+    ${OCC_GTO_INCLUDE_FILES}
+    ${OCC_INTERACTION_INCLUDE_FILES}
+    ${OCC_QM_INCLUDE_FILES}
+    ${OCC_SLATER_INCLUDE_FILES}
+    ${OCC_3RDPARTY_INCLUDE_FILES}
     PARENT_SCOPE
 )
 
-set(TONTO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+set(OCC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)

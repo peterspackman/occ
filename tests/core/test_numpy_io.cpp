@@ -1,10 +1,10 @@
 #include "catch.hpp"
 #include <fmt/ostream.h>
-#include <tonto/core/eigenp.h>
-#include <tonto/core/util.h>
+#include <occ/core/eigenp.h>
+#include <occ/core/util.h>
 #include <cstdio>
 
-using tonto::util::all_close;
+using occ::util::all_close;
 
 
 TEST_CASE("write eigen array", "[numpy]")

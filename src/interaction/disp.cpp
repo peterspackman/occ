@@ -1,8 +1,8 @@
-#include <tonto/interaction/disp.h>
+#include <occ/interaction/disp.h>
 #include <array>
 #include <cmath>
 
-namespace tonto::disp {
+namespace occ::disp {
 using libint2::Atom;
 
 std::array<double, 110> Grimme06_a_6_disp_coeff{

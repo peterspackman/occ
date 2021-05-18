@@ -1,7 +1,7 @@
 #include "catch.hpp"
-#include <tonto/qm/basisset.h>
+#include <occ/qm/basisset.h>
 #include <fmt/ostream.h>
-#include <tonto/core/util.h>
+#include <occ/core/util.h>
 
 TEST_CASE("H2O/6-31G") {
     std::vector<libint2::Atom> atoms{
@@ -9,8 +9,8 @@ TEST_CASE("H2O/6-31G") {
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}
     };
-    tonto::qm::BasisSet basis("6-31G", atoms);
-    auto sp_shells = tonto::qm::pople_sp_shells(basis);
+    occ::qm::BasisSet basis("6-31G", atoms);
+    auto sp_shells = occ::qm::pople_sp_shells(basis);
     for(const auto& x: sp_shells) {
         fmt::print("{}\n", x);
     }

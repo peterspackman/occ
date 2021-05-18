@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include <tonto/io/moldenreader.h>
+#include <occ/io/moldenreader.h>
 #include <sstream>
 #include <fmt/ostream.h>
 
@@ -1308,7 +1308,7 @@ Occup=       0.0000000000
 TEST_CASE("formamide molden", "[read]")
 {
     std::istringstream molden(molden_contents);
-    tonto::io::MoldenReader reader(molden);
+    occ::io::MoldenReader reader(molden);
     for(const auto& atom: reader.atoms())
     {
         fmt::print("{} {} {} {}\n", atom.atomic_number, atom.x, atom.y , atom.z);

@@ -1,12 +1,12 @@
-#include <tonto/dft/grid.h>
+#include <occ/dft/grid.h>
 #include <libint2/basis.h>
 #include <libint2/atom.h>
-#include <tonto/core/logger.h>
-#include <tonto/core/timings.h>
-#include <tonto/dft/lebedev.h>
+#include <occ/core/logger.h>
+#include <occ/core/timings.h>
+#include <occ/dft/lebedev.h>
 
-namespace tonto::dft {
-using tonto::qm::BasisSet;
+namespace occ::dft {
+using occ::qm::BasisSet;
 
 const std::array<uint_fast16_t, 33> lebedev_grid_levels {
     1, 6, 14, 26, 38,
@@ -57,9 +57,9 @@ constexpr std::array<double, 131> bragg_radii = {
     1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75
 };
 
-tonto::Vec becke_partition(const tonto::Vec &w)
+occ::Vec becke_partition(const occ::Vec &w)
 {
-    tonto::Vec result = w;
+    occ::Vec result = w;
     for(size_t i = 0; i < 3; i++)
     {
         result.array() = (3 - result.array() * result.array()) * result.array() * 0.5;
@@ -67,9 +67,9 @@ tonto::Vec becke_partition(const tonto::Vec &w)
     return result;
 }
 
-tonto::Vec stratmann_scuseria_partition(const tonto::Vec &w)
+occ::Vec stratmann_scuseria_partition(const occ::Vec &w)
 {
-    tonto::Vec result(w.rows());
+    occ::Vec result(w.rows());
     constexpr double a = 0.64;
     for(size_t i = 0; i < w.rows(); i++)
     {
@@ -81,10 +81,10 @@ tonto::Vec stratmann_scuseria_partition(const tonto::Vec &w)
     return result;
 }
 
-tonto::Mat interatomic_distances(const std::vector<libint2::Atom> & atoms)
+occ::Mat interatomic_distances(const std::vector<libint2::Atom> & atoms)
 {
     size_t natoms = atoms.size();
-    tonto::Mat dists(natoms, natoms);
+    occ::Mat dists(natoms, natoms);
     for (size_t i = 0; i < natoms; i++)
     {
         dists(i, i) = 0;
@@ -101,10 +101,10 @@ tonto::Mat interatomic_distances(const std::vector<libint2::Atom> & atoms)
 }
 
 
-tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const tonto::Vec& radii)
+occ::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_t num_radial, const occ::Vec& radii)
 {
     std::array<int, 5> lebedev_level;
-    tonto::IVec angular_grids(num_radial);
+    occ::IVec angular_grids(num_radial);
     if(max_angular < 50) {
         angular_grids.setConstant(max_angular);
         return angular_grids;
@@ -148,9 +148,9 @@ tonto::IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular, size_
     return angular_grids;
 }
 
-tonto::IVec prune_numgrid_scheme(size_t atomic_number, size_t max_angular, size_t min_angular, const tonto::Vec &radii)
+occ::IVec prune_numgrid_scheme(size_t atomic_number, size_t max_angular, size_t min_angular, const occ::Vec &radii)
 {
-    tonto::IVec result(radii.rows());
+    occ::IVec result(radii.rows());
     constexpr double bohr{0.52917721092};
     double rb = bragg_radii[atomic_number - 1] / (5 * bohr);
     for(int i = 0; i < radii.rows(); i++)
@@ -269,7 +269,7 @@ double lmg_h(const double max_error, const int l, const double guess)
     return h;
 }
 
-RadialGrid generate_lmg_radial_grid(size_t atomic_number, double radial_precision, double alpha_max, size_t l_max, const tonto::Vec& alpha_min)
+RadialGrid generate_lmg_radial_grid(size_t atomic_number, double radial_precision, double alpha_max, size_t l_max, const occ::Vec& alpha_min)
 {
     double r_inner = lmg_inner(radial_precision, 2 * alpha_max);
     double h = std::numeric_limits<float>::max();
@@ -372,10 +372,10 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points, siz
     size_t n_radial = radial_points;
     RadialGrid radial = generate_treutler_alrichs_radial_grid(n_radial);
     radial.weights.array() *= 4 * M_PI * radial.points.array() * radial.points.array();
-    tonto::IVec n_angular = prune_nwchem_scheme(atomic_number, max_angular_points, n_radial, radial.points);
+    occ::IVec n_angular = prune_nwchem_scheme(atomic_number, max_angular_points, n_radial, radial.points);
     for(size_t i = 0; i < n_radial; i++)
     {
-        auto lebedev = tonto::grid::lebedev(n_angular(i));
+        auto lebedev = occ::grid::lebedev(n_angular(i));
         double r = radial.points(i);
         double w = radial.weights(i);
         result.points.block(0, num_points, 3, lebedev.rows()) = lebedev.leftCols(3).transpose() * r;
@@ -392,7 +392,7 @@ MolecularGrid::MolecularGrid(const BasisSet &basis, const std::vector<libint2::A
     m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()), m_alpha_max(atoms.size()), m_l_max(atoms.size()),
     m_alpha_min(basis.max_l() + 1, atoms.size())
 {
-    tonto::timing::start(tonto::timing::category::grid_init);
+    occ::timing::start(occ::timing::category::grid_init);
     size_t natom = atoms.size();
     std::vector<int> unique_atoms;
     const auto atom_map = basis.atom2shell(atoms);
@@ -439,14 +439,14 @@ MolecularGrid::MolecularGrid(const BasisSet &basis, const std::vector<libint2::A
         m_unique_atom_grids.emplace_back(generate_lmg_atom_grid(atom));
     }
     m_dists = interatomic_distances(atoms);
-    tonto::timing::stop(tonto::timing::category::grid_init);
+    occ::timing::stop(occ::timing::category::grid_init);
 }
 
 AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
 {
-    tonto::timing::start(tonto::timing::category::grid_points);
+    occ::timing::start(occ::timing::category::grid_points);
     size_t natoms = n_atoms();
-    tonto::Vec3 center = m_positions.col(atom_idx);
+    occ::Vec3 center = m_positions.col(atom_idx);
     const size_t atomic_number = m_atomic_numbers(atom_idx);
     AtomGrid grid;
     grid.atomic_number = -1;
@@ -458,13 +458,13 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
     if(grid.atomic_number < 0) throw std::runtime_error("Unique atom grids not calculated");
 
     grid.points.colwise() += center;
-    tonto::Mat grid_dists(grid.num_points(), natoms);
+    occ::Mat grid_dists(grid.num_points(), natoms);
     for(size_t i = 0; i < natoms; i++)
     {
-        tonto::Vec3 xyz = m_positions.col(i);
+        occ::Vec3 xyz = m_positions.col(i);
         grid_dists.col(i) = (grid.points.colwise() - xyz).colwise().norm();
     }
-    tonto::Mat becke_weights = tonto::Mat::Ones(grid.num_points(), natoms);
+    occ::Mat becke_weights = occ::Mat::Ones(grid.num_points(), natoms);
     constexpr double bohr{0.52917721092};
     for(size_t i = 0; i < natoms; i++)
     {
@@ -472,7 +472,7 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
         for(size_t j = 0; j < i; j++)
         {
             double r_j = bragg_radii[m_atomic_numbers(j) - 1] / bohr;
-            tonto::Vec w = (grid_dists.col(i).array()  - grid_dists.col(j).array()) / m_dists(i, j);
+            occ::Vec w = (grid_dists.col(i).array()  - grid_dists.col(j).array()) / m_dists(i, j);
 
             // treutler alrichs adjustment to bragg radii
             if(std::fabs(r_i - r_j) > 1e-14) {
@@ -496,7 +496,7 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const
         }
     }
     grid.weights.array() *= becke_weights.col(atom_idx).array() / becke_weights.array().rowwise().sum();
-    tonto::timing::stop(tonto::timing::category::grid_points);
+    occ::timing::stop(occ::timing::category::grid_points);
     return grid;
 }
 
@@ -514,15 +514,15 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number)
     assert(atom_idx < n_atoms());
     double alpha_max = m_alpha_max(atom_idx);
     size_t l_max = m_l_max(atom_idx);
-    const tonto::Vec& alpha_min = m_alpha_min.col(atom_idx);
+    const occ::Vec& alpha_min = m_alpha_min.col(atom_idx);
     RadialGrid radial = generate_lmg_radial_grid(atomic_number, m_radial_precision, alpha_max, l_max, alpha_min);
     size_t n_radial = radial.points.rows();
     AtomGrid result(n_radial * m_max_angular);
     radial.weights.array() *= 4 * M_PI;
-    tonto::IVec n_angular = prune_nwchem_scheme(atomic_number, m_max_angular, radial.num_points(), radial.points);
+    occ::IVec n_angular = prune_nwchem_scheme(atomic_number, m_max_angular, radial.num_points(), radial.points);
     for(size_t i = 0; i < n_radial; i++)
     {
-        auto lebedev = tonto::grid::lebedev(n_angular(i));
+        auto lebedev = occ::grid::lebedev(n_angular(i));
         double r = radial.points(i);
         double w = radial.weights(i);
         result.points.block(0, num_points, 3, lebedev.rows()) = lebedev.leftCols(3).transpose() * r;
