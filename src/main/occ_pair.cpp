@@ -128,7 +128,6 @@ int main(int argc, const char **argv) {
 
     using occ::parallel::nthreads;
     nthreads = toml::find_or<int>(global_settings_table, "threads", 1);
-    omp_set_num_threads(nthreads);
 
     const std::string model_name = toml::find_or<std::string>(pair_interaction_table, "model", "ce-b3lyp");
     const std::string filename_a = toml::find_or<std::string>(pair_interaction_table, "monomer_a", "a.fchk");

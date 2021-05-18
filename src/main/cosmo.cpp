@@ -100,7 +100,6 @@ int main(int argc, const char **argv) {
     using occ::parallel::nthreads;
     nthreads = parser.get<int>("--threads");
     config.charge = parser.get<int>("--charge");
-    omp_set_num_threads(nthreads);
 
 
     Molecule m = occ::chem::read_xyz_file(config.geometry_filename);

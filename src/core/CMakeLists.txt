@@ -19,7 +19,6 @@ target_link_libraries(occ_core
     Boost::graph
     Eigen3::Eigen 
     fmt::fmt
-    OpenMP::OpenMP_CXX
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}
     scn::scn

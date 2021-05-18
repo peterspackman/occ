@@ -310,7 +310,6 @@ int main(int argc, const char **argv) {
 
     using occ::parallel::nthreads;
     nthreads = parser.get<int>("--threads");
-    omp_set_num_threads(nthreads);
     fmt::print("Parallelized over {} OpenMP threads & {} Eigen threads\n", nthreads, Eigen::nbThreads());
 
 

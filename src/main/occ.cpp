@@ -61,7 +61,6 @@ libint2      - Electron integrals using GTOs (v {})
 libxc        - Density functional implementations (v {})
 gemmi        - CIF parsing & structure refinement (v {})
 boost::graph - Graph implementation (v {})
-openmp       - Multithreading
 fmt          - String formatting (v {})
 spdlog       - Logging (v {})
 
@@ -266,8 +265,7 @@ int main(int argc, const char **argv) {
         }
         using occ::parallel::nthreads;
         nthreads = parser.get<int>("--threads");
-        omp_set_num_threads(nthreads);
-        fmt::print("\nParallelization: {} OpenMP threads, {} Eigen threads\n", nthreads, Eigen::nbThreads());
+        fmt::print("\nParallelization: {} threads, {} Eigen threads\n", nthreads, Eigen::nbThreads());
 
         std::string ext = config.input_file.extension();
         Wavefunction wfn;
