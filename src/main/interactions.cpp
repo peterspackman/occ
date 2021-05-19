@@ -149,7 +149,7 @@ void compute_monomer_energies(std::vector<Wavefunction> &wfns)
     size_t complete = 0;
     for(auto& wfn : wfns)
     {
-        fmt::print("Calculating monomer energies {}/{}\r", complete, wfns.size());
+        fmt::print("Calculating monomer energies {}/{}\n", complete, wfns.size());
         std::cout << std::flush;
         HartreeFock hf(wfn.atoms, wfn.basis);
         occ::interaction::compute_ce_model_energies(wfn, hf);
@@ -333,14 +333,20 @@ int main(int argc, const char **argv) {
             exit(0);
         }
 
-        const std::string row_fmt_string = "{:>9.3f} {:>24s} {: 9.3f} {: 9.3f} {: 9.3f} {: 9.3f} | {: 9.3f} | {: 9.3f} | {: 9.3f}\n";
+        const std::string row_fmt_string = "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
 
         std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
 
+        fmt::print("Calculating unique pair interactions\n");
         for(const auto& dimer: dimers)
         {
+            auto s_ab = dimer_symop(dimer, c);
             write_xyz_dimer(fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()), dimer);
-            fmt::print("Calculating dimer energies {}/{}\r", dimer_energies.size(), dimers.size());
+            fmt::print("Rc: {:.3f} Rn: {:.3f} symop: {}\n", 
+                       dimer.nearest_distance(),
+                       dimer.center_of_mass_distance(),
+                       s_ab); 
+
             std::cout << std::flush;
             dimer_energies.push_back(calculate_interaction_energy(dimer, wfns, c));
         }
@@ -354,8 +360,10 @@ int main(int argc, const char **argv) {
 
             fmt::print("Neighbors for molecule {}\n", i);
 
-            fmt::print("{:>9s} {:>24s} {:>9s} {:>9s} {:>9s} {:>9s} | {:>9s} | {:>9s} | {:>9s}\n",
-                       "R", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot", "E_solv", "E_int");
+            fmt::print("{:>7s} {:>7s} {:>20s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
+                       "Rn", "Rc", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot", "E_solv", "E_int");
+            fmt::print("============================================================================================\n");
+
             size_t j = 0;
             CEModelInteraction::EnergyComponents total; 
 
@@ -363,7 +371,8 @@ int main(int argc, const char **argv) {
             {
                 auto s_ab = dimer_symop(dimer, c);
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j]; 
-                double r = dimer.center_of_mass_distance();
+                double rn = dimer.nearest_distance();
+                double rc = dimer.center_of_mass_distance();
                 const auto& e = dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];
                 double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
                     epol = e.polarization_kjmol(), edisp = e.dispersion_kjmol(),
@@ -374,7 +383,7 @@ int main(int argc, const char **argv) {
                 total.dispersion += edisp;
                 total.total += etot;
 
-                fmt::print(row_fmt_string, r, s_ab, ecoul, erep, epol, edisp, etot, solv[j] * AU_TO_KJ_PER_MOL,
+                fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, erep, epol, edisp, etot, solv[j] * AU_TO_KJ_PER_MOL,
                            etot + solv[j] * AU_TO_KJ_PER_MOL);
                 j++;
             }
