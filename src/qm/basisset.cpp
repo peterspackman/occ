@@ -59,26 +59,33 @@ BasisSet::BasisSet(std::string name,
     }
 
     // for each atom find the corresponding basis components
-    for(auto a=0ul; a<atoms.size(); ++a) {
+    for(auto a=0ul; a<atoms.size(); ++a)
+    {
 
         const std::size_t Z = atoms[a].atomic_number;
 
         // add each component in order
-        for(auto comp_idx=0ul; comp_idx!=component_basis_sets.size(); ++comp_idx) {
+        for(auto comp_idx=0ul; comp_idx!=component_basis_sets.size(); ++comp_idx)
+        {
             const auto& component_basis_set = component_basis_sets[comp_idx];
-            if (!component_basis_set.at(Z).empty()) {  // found? add shells in order
-                for(auto s: component_basis_set.at(Z)) {
+            if (!component_basis_set.at(Z).empty())
+            {  
+                for(auto s: component_basis_set.at(Z))
+                {
                     this->push_back(std::move(s));
                     this->back().move({{atoms[a].x, atoms[a].y, atoms[a].z}});
-                } // shell loop
+                }
             }
-            else if (throw_if_no_match) {  // not found? throw, if needed
-                std::string errmsg(std::string("did not find the basis for this Z in ") +
-                                   basis_lib_path + "/" + basis_component_names[comp_idx] + ".g94");
+            else if (throw_if_no_match)
+            {
+                std::string basis_filename =  basis_lib_path + "/" + basis_component_names[comp_idx] + ".g94";
+                std::string errmsg = fmt::format(
+                    "No matching basis for element (z={}) in {}", Z, basis_filename
+                );
                 throw std::logic_error(errmsg);
             }
-        } // basis component loop
-    } // atom loop
+        }
+    }
 
     update();
 }

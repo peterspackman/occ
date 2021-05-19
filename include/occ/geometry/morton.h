@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <algorithm>
+#include <cstdint>
 
 namespace occ::geometry {
 

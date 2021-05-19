@@ -241,7 +241,7 @@ int main(int argc, const char **argv) {
 
     using occ::parallel::nthreads;
     nthreads = parser.get<int>("--threads");
-    fmt::print("Parallelized over {} OpenMP threads & {} Eigen threads\n", nthreads, Eigen::nbThreads());
+    fmt::print("Parallelized over {} threads & {} Eigen threads\n", nthreads, Eigen::nbThreads());
 
 
     const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
@@ -267,15 +267,18 @@ int main(int argc, const char **argv) {
         std::vector<bool> computed(dimers.size());
         std::vector<CEModelInteraction::EnergyComponents> dimer_energies(dimers.size());
 
-        const std::string row_fmt_string = "{:>9.3f} {:>24s} {: 9.3f} {: 9.3f} {: 9.3f} {: 9.3f} | {: 9.3f}\n";
+        const std::string row_fmt_string = "{:>7.3f} {:>7.3f} {:>20s} {: 8.3f} {: 8.3f} {: 8.3f} {: 8.3f} {: 8.3f}\n";
         double elat{0.0}, prev_elat{0.0};
         double current_radius = std::max(increment, 3.8);
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         size_t num_molecules = mol_neighbors.size();
         size_t cycle{1};
+        size_t num_calc{0};
+        size_t total_pairs{0};
         do {
             prev_elat = elat;
-            size_t num_calc{0};
+            size_t num_calc_prev = num_calc;
+            fmt::print("Calculating unique pair interactions\n");
             for(size_t i = 0; i < dimers.size(); i++)
             {
                 const auto& dimer = dimers[i];
@@ -283,23 +286,26 @@ int main(int argc, const char **argv) {
                 if(dimer.nearest_distance() > current_radius) continue;
                 computed[i] = true;
                 auto s_ab = dimer_symop(dimers[i], c);
-                fmt::print("Calculating unique dimer ({}, {}) nearest distance = {:.3f}, symop = {}\n", 
-                            dimer.a().asymmetric_molecule_idx(),
-                            dimer.b().asymmetric_molecule_idx(),
-                            dimer.nearest_distance(), s_ab); 
+                fmt::print("Rc: {:.3f} Rn: {:.3f} symop: {}\n", 
+                            dimer.nearest_distance(),
+                            dimer.center_of_mass_distance(),
+                            s_ab); 
                 dimer_energies[i] = calculate_interaction_energy(dimer, wfns, c, model_name);
                 num_calc++;
             }
-            fmt::print("Calculated {} new unique dimer interaction energies\n", num_calc);
+            fmt::print("Calculated {} new unique dimer interaction energies\n", num_calc - num_calc_prev);
+            num_calc_prev = num_calc;
 
             double etot{0.0};
+            total_pairs = 0;
             for(size_t i = 0; i < mol_neighbors.size(); i++)
             {
                 const auto& n = mol_neighbors[i];
                 fmt::print("Neighbors for molecule {}\n", i);
 
-                fmt::print("{:>9s} {:>24s} {:>9s} {:>9s} {:>9s} {:>9s} | {:>9s}\n",
-                           "R", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot");
+                fmt::print("{:>7s} {:>7s} {:>20s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s}\n",
+                           "Rn", "Rc", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot");
+                fmt::print("===================================================================================\n");
                 CEModelInteraction::EnergyComponents molecule_total; 
 
                 size_t j = 0;
@@ -308,7 +314,8 @@ int main(int argc, const char **argv) {
                     if(dimer.nearest_distance() > current_radius) continue;
                     auto s_ab = dimer_symop(dimer, c);
                     size_t idx = crystal_dimers.unique_dimer_idx[i][j]; 
-                    double r = dimer.center_of_mass_distance();
+                    double rn = dimer.nearest_distance();
+                    double rc = dimer.center_of_mass_distance();
                     const auto& e = dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];
                     double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
                         epol = e.polarization_kjmol(), edisp = e.dispersion_kjmol(),
@@ -318,10 +325,11 @@ int main(int argc, const char **argv) {
                     molecule_total.polarization += epol;
                     molecule_total.dispersion += edisp;
                     molecule_total.total += etot;
-                    fmt::print(row_fmt_string, r, s_ab, ecoul, erep, epol, edisp, etot);
+                    fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, erep, epol, edisp, etot);
                     j++;
                 }
-                fmt::print("Molecule {} total: {:.3f} kJ/mol\n", i, molecule_total.total);
+                total_pairs += j;
+                fmt::print("Molecule {} total: {:.3f} kJ/mol ({} pairs)\n", i, molecule_total.total, j);
                 etot += molecule_total.total;
             }
             elat = etot * 0.5 / num_molecules;
@@ -329,6 +337,7 @@ int main(int argc, const char **argv) {
             cycle++;
             current_radius += increment;
         } while(abs(elat - prev_elat) > 1.0);
+        fmt::print("Calculated {} unique pair interactions, {} total\n", num_calc, total_pairs);
         fmt::print("Final energy: {:.3f} kJ/mol\n", elat);
 
      } catch (const char *ex) {
