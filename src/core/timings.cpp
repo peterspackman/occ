@@ -28,25 +28,23 @@ void clear_all()
 std::string category_name(category cat)
 {
     switch(cat) {
-    case ints1e: return "integrals 1e";
-    case ints2e: return "integrals 2e";
-    case io: return "file i/o";
+    case ints1e: return "integrals (one-electron)";
+    case ints2e: return "integrals (two-electron)";
+    case io: return "file input/output";
     case la: return "linear algebra";
-    case grid_init: return "dft grid init";
-    case grid_points: return "dft grid points";
-    case dft: return "dft functional";
-    case gto: return "gto evaluation";
-    case gto_dist: return "gto dist evaluation";
-    case gto_mask: return "gto mask evaluation";
-    case gto_shell: return "gto shell evaluation";
-    case gto_s: return "S shell evaluation";
-    case gto_p: return "P shell evaluation";
-    case gto_d: return "D shell evaluation";
-    case gto_f: return "F shell evaluation";
-    case gto_g: return "G shell evaluation";
-    case fock: return "fock build";
-    case df: return "density fitting";
-    case global: return "global";
+    case grid_init: return "DFT grid init";
+    case grid_points: return "DFT grid points";
+    case dft: return "DFT functional evaluation";
+    case gto: return "GTO evaluation (overall)";
+    case gto_dist: return "GTO dist evaluation";
+    case gto_mask: return "GTO mask evaluation";
+    case gto_shell: return "GTO evaluation";
+    case gto_s: return "GTO S-function eval";
+    case gto_p: return "GTO P-function eval";
+    case gto_gen: return "GTO higher order eval";
+    case fock: return "Fock build";
+    case df: return "Density fitting";
+    case global: return "Global (total time)";
     default: return "other";
     }
 }
@@ -67,19 +65,17 @@ void print_timings()
         gto_shell,
         gto_s,
         gto_p,
-        gto_d,
-        gto_f,
-        gto_g,
+        gto_gen,
         fock,
         df,
         global
     };
-    fmt::print("Wall clock time by category\n");
+    fmt::print("Wall clock time by category (s)\n");
     for(const auto& cat : categories)
     {
         auto t = total(cat);
         if(t > 0) {
-            fmt::print("{:<20s} {:12.6f}s\n", category_name(cat), t);
+            fmt::print("{:<30s} {:12.6f}\n", category_name(cat), t);
         }
     }
 }

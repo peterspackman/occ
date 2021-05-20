@@ -8,6 +8,5 @@ endfunction()
 
 create_qm_test(test_basis.cpp)
 create_qm_test(test_electric_field.cpp)
-create_qm_test(test_gto.cpp)
 create_qm_test(test_mo_rotation.cpp)
 create_qm_test(test_scf.cpp)

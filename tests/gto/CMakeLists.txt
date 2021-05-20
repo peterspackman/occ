@@ -7,6 +7,7 @@ add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
 
+create_gto_test(test_gto.cpp)
 if(WITH_BENCHMARKS)
     create_gto_test(test_gto_mask.cpp)
 endif()

@@ -25,9 +25,7 @@ enum category {
     gto_shell,
     gto_s,
     gto_p,
-    gto_d,
-    gto_f,
-    gto_g,
+    gto_gen,
     _group_count
 };
 

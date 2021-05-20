@@ -13,6 +13,7 @@ target_link_libraries(occ_qm
     PUBLIC 
     occ_core
     occ_io
+    occ_gto
     Libint2::cxx
 )
 target_include_directories(occ_qm PUBLIC 
