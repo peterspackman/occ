@@ -36,6 +36,14 @@ std::string category_name(category cat)
     case grid_points: return "dft grid points";
     case dft: return "dft functional";
     case gto: return "gto evaluation";
+    case gto_dist: return "gto dist evaluation";
+    case gto_mask: return "gto mask evaluation";
+    case gto_shell: return "gto shell evaluation";
+    case gto_s: return "S shell evaluation";
+    case gto_p: return "P shell evaluation";
+    case gto_d: return "D shell evaluation";
+    case gto_f: return "F shell evaluation";
+    case gto_g: return "G shell evaluation";
     case fock: return "fock build";
     case df: return "density fitting";
     case global: return "global";
@@ -54,6 +62,14 @@ void print_timings()
         grid_points,
         dft,
         gto,
+        gto_dist,
+        gto_mask,
+        gto_shell,
+        gto_s,
+        gto_p,
+        gto_d,
+        gto_f,
+        gto_g,
         fock,
         df,
         global

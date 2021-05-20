@@ -20,6 +20,14 @@ enum category {
     fock,
     df,
     global,
+    gto_dist,
+    gto_mask,
+    gto_shell,
+    gto_s,
+    gto_p,
+    gto_d,
+    gto_f,
+    gto_g,
     _group_count
 };
 

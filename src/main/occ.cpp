@@ -231,7 +231,7 @@ int main(int argc, const char **argv) {
             .implicit_value(true);
     parser.add_argument("-df", "--df-basis").help("Density fitting basis name");
     occ::timing::start(occ::timing::category::global);
-    occ::log::set_level(occ::log::level::debug);
+    occ::log::set_level(occ::log::level::warn);
     try {
         parser.parse_args(argc, argv);
     }
@@ -240,7 +240,7 @@ int main(int argc, const char **argv) {
         fmt::print("{}", parser);
         exit(1);
     }
-    spdlog::set_level(spdlog::level::debug);
+    spdlog::set_level(spdlog::level::warn);
 
     print_header();
 
