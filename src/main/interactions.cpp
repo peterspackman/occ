@@ -236,9 +236,32 @@ std::pair<occ::IVec, occ::Mat3N> environment(const std::vector<Dimer> &neighbors
     return {mol_idx, positions};
 }
 
+void write_solvation_visualization(const std::string &filename,
+        const occ::solvent::surface::Surface &surface, 
+        const occ::Vec &charges,
+        const occ::IVec &neighbor_idx)
+{
+    std::ofstream f(filename);
+    fmt::print(f, "{}\n", surface.areas.rows());
+    fmt::print(f, "x y z area charge neigh\n");
+    for (size_t i = 0; i < charges.rows(); i++)
+    {
+        fmt::print(f, "{:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12d}\n",
+            surface.vertices(0, i),
+            surface.vertices(1, i),
+            surface.vertices(2, i),
+            surface.areas(i),
+            charges(i),
+            neighbor_idx(i)
+        );
+    }
+
+
+}
+
 std::vector<double> compute_solvation_energy_breakdown(
         const occ::solvent::surface::Surface& surface, const Wavefunction &wfn,
-        const std::vector<Dimer> &neighbors)
+        const std::vector<Dimer> &neighbors, const std::optional<std::string> &output_file)
 {
     occ::Vec areas = surface.areas;
     occ::Mat3N points = surface.vertices;
@@ -264,20 +287,26 @@ std::vector<double> compute_solvation_energy_breakdown(
 
     std::vector<double> energy_contribution(neighbors.size());
 
-    occ::IVec mol_idx;
     occ::Mat3N neigh_pos;
+    occ::IVec mol_idx;
+    occ::IVec neighbor_idx(areas.rows());
     std::tie(mol_idx, neigh_pos) = environment(neighbors);
     
-    occ::IVec neighbor_idx(surface.vertices.cols());
     for(size_t i = 0; i < neighbor_idx.rows(); i++)
     {
         occ::Vec3 x = points.col(i) * BOHR_TO_ANGSTROM;
         Eigen::Index idx = 0;
         double r = (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
         energy_contribution[mol_idx(idx)] += 0.5 * result.converged(i) * result.initial(i);
+        neighbor_idx(i) = mol_idx(idx);
+    }
+    if(output_file)
+    {
+        write_solvation_visualization(*output_file, surface, charges, neighbor_idx);
     }
     return energy_contribution;
 }
+
 
 
 int main(int argc, const char **argv) {
@@ -287,6 +316,9 @@ int main(int argc, const char **argv) {
             .help("Number of threads")
             .default_value(2)
             .action([](const std::string& value) { return std::stoi(value); });
+    parser.add_argument("--vis")
+        .default_value(false)
+        .implicit_value(true);
     parser.add_argument("--radius")
         .help("Radius (angstroms) for neighbours")
         .default_value(3.8)
@@ -296,10 +328,12 @@ int main(int argc, const char **argv) {
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
     double radius = 0.0;
+    bool dump_visualization_files = false;
 
     try {
         parser.parse_args(argc, argv);
         radius = parser.get<double>("--radius");
+        dump_visualization_files = parser.get<bool>("--vis");
     }
     catch (const std::runtime_error& err) {
         occ::log::error("error when parsing command line arguments: {}", err.what());
@@ -356,7 +390,13 @@ int main(int argc, const char **argv) {
         for(size_t i = 0; i < mol_neighbors.size(); i++)
         {
             const auto& n = mol_neighbors[i];
-            auto solv = compute_solvation_energy_breakdown(surfaces[i], wfns[i], n);
+            occ::IVec neighbor_idx;
+            std::optional<std::string> solv_filename{};
+            if(dump_visualization_files)
+            {
+                solv_filename = fmt::format("{}_{}_solvation_vis.xyz", basename, i);
+            }
+            auto solv = compute_solvation_energy_breakdown(surfaces[i], wfns[i], n, solv_filename);
 
             fmt::print("Neighbors for molecule {}\n", i);
 

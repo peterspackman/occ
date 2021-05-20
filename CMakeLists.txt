@@ -5,6 +5,7 @@ project(occ LANGUAGES CXX)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
+    option(WITH_BENCHMARKS "Enable benchmarking tests" OFF)
 endif()
 
 find_package(LAPACK REQUIRED)
