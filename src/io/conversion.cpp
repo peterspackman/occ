@@ -56,9 +56,9 @@ occ::MatRM from_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM& mo)
             continue;
         }
 
-        int xp, yp, zp;
         size_t our_idx{0};
-        FOR_CART(xp, yp, zp, l)
+        auto func = [&](int xp, int yp, int zp, int l)
+        {
             xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp), static_cast<uint_fast8_t>(zp)};
             size_t gaussian_idx = index_of(v, gaussian_order);
             occ::log::debug("Setting row {} <- {} ({}{}{})", our_idx, gaussian_idx, xp, yp, zp);
@@ -66,7 +66,8 @@ occ::MatRM from_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM& mo)
             double normalization_factor = occ::gto::cartesian_normalization_factor(xp, yp, zp);
             result.row(bf_first + our_idx) *= normalization_factor;
             our_idx++;
-        END_FOR_CART
+        };
+        occ::gto::iterate_over_shell<true>(func, l);
     }
     return result;
 }
@@ -122,9 +123,9 @@ occ::MatRM to_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM &mo)
             continue;
         }
 
-        int xp, yp, zp;
         size_t our_idx{0};
-        FOR_CART(xp, yp, zp, l)
+        auto func = [&](int xp, int yp, int zp, int l)
+        {
             xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp), static_cast<uint_fast8_t>(zp)};
             size_t gaussian_idx = index_of(v, gaussian_order);
             occ::log::debug("Setting row {} <- {} ({}{}{})", gaussian_idx, our_idx, xp, yp, zp);
@@ -132,7 +133,8 @@ occ::MatRM to_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM &mo)
             double normalization_factor = occ::gto::cartesian_normalization_factor(xp, yp, zp);
             result.row(bf_first + gaussian_idx) /= normalization_factor;
             our_idx++;
-        END_FOR_CART
+        };
+        occ::gto::iterate_over_shell<true>(func, l);
     }
     return result;
 }
