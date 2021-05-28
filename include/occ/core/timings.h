@@ -26,6 +26,7 @@ enum category {
     gto_s,
     gto_p,
     gto_gen,
+    solvent,
     _group_count
 };
 

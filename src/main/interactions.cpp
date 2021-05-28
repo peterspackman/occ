@@ -14,6 +14,7 @@
 #include <occ/core/kabsch.h>
 #include <occ/solvent/cosmo.h>
 #include <occ/solvent/surface.h>
+#include <occ/solvent/parameters.h>
 #include <filesystem>
 #include <occ/core/units.h>
 #include <fmt/os.h>
@@ -261,7 +262,7 @@ void write_solvation_visualization(const std::string &filename,
 
 std::vector<double> compute_solvation_energy_breakdown(
         const occ::solvent::surface::Surface& surface, const Wavefunction &wfn,
-        const std::vector<Dimer> &neighbors, const std::optional<std::string> &output_file)
+        const std::vector<Dimer> &neighbors, const std::string& solvent, const std::optional<std::string> &output_file)
 {
     occ::Vec areas = surface.areas;
     occ::Mat3N points = surface.vertices;
@@ -279,7 +280,10 @@ std::vector<double> compute_solvation_energy_breakdown(
     //fmt::print("ESP (range = {}, {}) calculated in {}\n", charges.minCoeff(), charges.maxCoeff(), sw.read(0)); 
 
 
-    COSMO cosmo(78.40);
+    double dielectric = 78.40;
+    if(!occ::solvent::dielectric_constant.contains(solvent)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", solvent));
+    dielectric = occ::solvent::dielectric_constant[solvent];
+    COSMO cosmo(dielectric);
     cosmo.set_max_iterations(100);
     auto result = cosmo(points, areas, charges);
     //fmt::print("Surface area: {} angstrom**2\n", areas.sum() * 0.52917749 * 0.52917749);
@@ -319,6 +323,10 @@ int main(int argc, const char **argv) {
     parser.add_argument("--vis")
         .default_value(false)
         .implicit_value(true);
+    parser.add_argument("--solvent")
+        .help("Solvent name")
+        .default_value(std::string("water"))
+        .action([](const std::string& value) { return value; });
     parser.add_argument("--radius")
         .help("Radius (angstroms) for neighbours")
         .default_value(3.8)
@@ -329,11 +337,13 @@ int main(int argc, const char **argv) {
     libint2::initialize();
     double radius = 0.0;
     bool dump_visualization_files = false;
+    std::string solvent{"water"};
 
     try {
         parser.parse_args(argc, argv);
         radius = parser.get<double>("--radius");
         dump_visualization_files = parser.get<bool>("--vis");
+        solvent = parser.get("--solvent");
     }
     catch (const std::runtime_error& err) {
         occ::log::error("error when parsing command line arguments: {}", err.what());
@@ -390,13 +400,12 @@ int main(int argc, const char **argv) {
         for(size_t i = 0; i < mol_neighbors.size(); i++)
         {
             const auto& n = mol_neighbors[i];
-            occ::IVec neighbor_idx;
             std::optional<std::string> solv_filename{};
             if(dump_visualization_files)
             {
                 solv_filename = fmt::format("{}_{}_solvation_vis.xyz", basename, i);
             }
-            auto solv = compute_solvation_energy_breakdown(surfaces[i], wfns[i], n, solv_filename);
+            auto solv = compute_solvation_energy_breakdown(surfaces[i], wfns[i], n, solvent, solv_filename);
 
             fmt::print("Neighbors for molecule {}\n", i);
 

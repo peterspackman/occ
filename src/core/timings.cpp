@@ -44,6 +44,7 @@ std::string category_name(category cat)
     case gto_gen: return "GTO higher order eval";
     case fock: return "Fock build";
     case df: return "Density fitting";
+    case solvent: return "Solvation";
     case global: return "Global (total time)";
     default: return "other";
     }
@@ -68,6 +69,7 @@ void print_timings()
         gto_gen,
         fock,
         df,
+        solvent,
         global
     };
     fmt::print("Wall clock time by category (s)\n");

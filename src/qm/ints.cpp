@@ -326,7 +326,7 @@ MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
 }
 
 occ::Vec compute_electric_potential(const occ::MatRM &D, const BasisSet &obs,
-                                      const shellpair_list_t &shellpair_list, const occ::Mat3N &positions)
+                                    const shellpair_list_t &shellpair_list, const occ::Mat3N &positions)
 {
     occ::timing::start(occ::timing::category::ints1e);
 

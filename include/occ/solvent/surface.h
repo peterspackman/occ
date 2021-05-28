@@ -13,5 +13,4 @@ struct Surface
 
 Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, const occ::Mat3N &positions);
 
-
 }

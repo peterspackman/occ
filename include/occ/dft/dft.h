@@ -12,6 +12,7 @@
 #include <occ/gto/gto.h>
 #include <occ/gto/density.h>
 #include <occ/qm/basisset.h>
+#include <occ/qm/energy_components.h>
 
 namespace occ::dft {
 using occ::qm::SpinorbitalKind;
@@ -65,6 +66,11 @@ public:
     double two_electron_energy_alpha() const { return m_e_alpha; }
     double two_electron_energy_beta() const { return m_e_beta; }
     bool usual_scf_energy() const { return false; }
+    void update_scf_energy(occ::qm::EnergyComponents &energy) const
+    { 
+        energy.two_electron = two_electron_energy();
+        energy.electronic += two_electron_energy();
+    }
     bool supports_incremental_fock_build() const { return false; }
 
     int density_derivative() const;
@@ -74,15 +80,24 @@ public:
     }
 
     double nuclear_repulsion_energy() const { return m_hf.nuclear_repulsion_energy(); }
+
     auto compute_kinetic_matrix() {
       return m_hf.compute_kinetic_matrix();
     }
+
     auto compute_overlap_matrix() {
       return m_hf.compute_overlap_matrix();
     }
+
     auto compute_nuclear_attraction_matrix() {
       return m_hf.compute_nuclear_attraction_matrix();
     }
+    
+    auto compute_point_charge_interaction_matrix(const std::vector<std::pair<double, std::array<double, 3>>> &point_charges)
+    {
+        return m_hf.compute_point_charge_interaction_matrix(point_charges);
+    }
+
 
     auto compute_kinetic_energy_derivatives(unsigned derivative) {
       return m_hf.compute_kinetic_energy_derivatives(derivative);
@@ -283,6 +298,19 @@ public:
         }
     }
     const auto& hf() const { return m_hf; }
+
+    Vec electronic_electric_potential_contribution(const MatRM &D, const Mat3N &pts) const
+    {
+        return m_hf.electronic_electric_potential_contribution(D, pts);
+    }
+
+    Vec nuclear_electric_potential_contribution(const Mat3N &pts) const
+    {
+        return m_hf.nuclear_electric_potential_contribution(pts);
+    }
+
+    void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const MatRM &D, MatRM &H) { return; }
+    
 private:
 
     SpinorbitalKind m_spinorbital_kind;

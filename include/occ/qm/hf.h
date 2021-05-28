@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/qm/fock.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/energy_components.h>
 
 namespace occ::hf {
 
@@ -36,6 +37,7 @@ public:
   double two_electron_energy_beta() const { return m_e_beta; }
   double two_electron_energy() const { return m_e_alpha + m_e_beta; }
   bool usual_scf_energy() const { return true; }
+  void update_scf_energy(occ::qm::EnergyComponents &energy) const { return; }
   bool supports_incremental_fock_build() const { return true; }
 
   double nuclear_repulsion_energy() const;
@@ -79,6 +81,10 @@ public:
         m_basis, m_shellpair_list, libint2::make_point_charges(m_atoms))[0];
   }
 
+  auto compute_point_charge_interaction_matrix(const std::vector<std::pair<double, std::array<double, 3>>> &point_charges) {
+    return compute_1body_ints<Operator::nuclear>(m_basis, m_shellpair_list, point_charges)[0];
+  }
+
   auto compute_kinetic_energy_derivatives(unsigned derivative) {
     return compute_1body_ints_deriv<Operator::kinetic>(
         derivative, m_basis, m_shellpair_list, m_atoms);
@@ -97,12 +103,15 @@ public:
   Mat3N nuclear_electric_field_contribution(const Mat3N&) const;
   Mat3N electronic_electric_field_contribution(const MatRM&, const Mat3N&) const;
   Vec electronic_electric_potential_contribution(const MatRM&, const Mat3N&) const;
+  Vec nuclear_electric_potential_contribution(const Mat3N&) const;
 
   MatRM compute_shellblock_norm(const MatRM &A) const;
 
   auto compute_schwarz_ints() {
     return occ::ints::compute_schwarz_ints<>(m_basis);
   }
+
+  void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const MatRM &D, MatRM &H) { return; }
 
 private:
   int m_charge{0};

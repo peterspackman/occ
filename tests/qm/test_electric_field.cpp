@@ -39,7 +39,6 @@ TEST_CASE("H2/STO-3G") {
     auto esp = occ::ints::compute_electric_potential(D, basis, shellpair_list, grid_pts);
     fmt::print("ESP:\n{}\n", esp);
     REQUIRE(all_close(esp, expected_esp, 1e-5, 1e-5));
-
     occ::Mat expected_efield(field_values.rows(), field_values.cols());
     occ::Mat efield;
 

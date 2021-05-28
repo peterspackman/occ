@@ -7,6 +7,7 @@
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/density_fitting.h>
 #include <occ/qm/wavefunction.h>
+#include <occ/qm/energy_components.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -27,31 +28,6 @@ using occ::qm::Wavefunction;
 
 template <typename Procedure, SpinorbitalKind spinorbital_kind>
 struct SCF {
-    struct EnergyComponents
-    {
-        double coulomb{0.0};
-        double exchange{0.0};
-        double correlation{0.0};
-        double exchange_repulsion{0.0};
-        double nuclear_repulsion{0.0};
-        double nuclear_attraction{0.0};
-        double kinetic{0.0};
-        double one_electron{0.0};
-        double two_electron{0.0};
-        double electronic{0.0};
-        double total{0.0};
-        std::string energy_table_string() const {
-            return fmt::format(
-                "{:20s} {:>20s}\n\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n{:20s} {:20.12f}\n",
-                "Component", "Energy (Hartree)",
-                "Nuclear repulsion", nuclear_repulsion,
-                "Nuclear attraction", nuclear_attraction,
-                "Kinetic (electrons)", kinetic,
-                "One-electron", one_electron,
-                "Two-electron", two_electron,
-                "Total", total);
-        }
-    };
 
     SCF(Procedure &procedure, int diis_start = 2)
         : m_procedure(procedure), diis(diis_start) {
@@ -67,7 +43,6 @@ struct SCF {
         D = MatRM::Zero(rows, cols);
         C = MatRM::Zero(rows, cols);
         orbital_energies = Vec::Zero(rows);
-        update_occupied_orbital_count();
     }
 
     inline int n_alpha() const { return n_occ; }
@@ -133,6 +108,7 @@ struct SCF {
     {
         int current_charge = charge();
         bool state_changed = false;
+        fmt::print("Charge = {}\nMultiplicity = {}\n", chg, mult);
         if(chg != current_charge) {
             n_electrons -= chg - current_charge;
             state_changed = true;
@@ -210,7 +186,57 @@ struct SCF {
         return D_minbs * 0.5; // we use densities normalized to # of electrons/2
     }
 
+    void set_initial_guess_from_wfn(const Wavefunction &wfn)
+    {
+        m_have_initial_guess = true;
+        C = wfn.C;
+        C_occ = wfn.C_occ;
+        orbital_energies = wfn.mo_energies;
+        if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
+        {
+            S = m_procedure.compute_overlap_matrix();
+            T = m_procedure.compute_kinetic_matrix();
+            V = m_procedure.compute_nuclear_attraction_matrix();
+        }
+        else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted)
+        {
+            S.alpha() = m_procedure.compute_overlap_matrix();
+            S.beta() = S.alpha();
+            T.alpha() = m_procedure.compute_kinetic_matrix();
+            T.beta() = T.alpha();
+            V.alpha() = m_procedure.compute_nuclear_attraction_matrix();
+            V.beta() = V.alpha();
+        }
+        else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+            S.alpha_alpha() = m_procedure.compute_overlap_matrix();
+            T.alpha_alpha() = m_procedure.compute_kinetic_matrix();
+            V.alpha_alpha() = m_procedure.compute_nuclear_attraction_matrix();
+            S.beta_beta() = S.alpha_alpha();
+            T.beta_beta() = T.alpha_alpha();
+            V.beta_beta() = V.alpha_alpha();
+        }
+        H = T + V;
+        F = H;
+        // compute orthogonalizer X such that X.transpose() . S . X = I
+        // one should think of columns of Xinv as the conditioned basis
+        // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose() .
+        // X)
+        // by default assume can manage to compute with condition number of S <=
+        // 1/eps
+        // this is probably too optimistic, but in well-behaved cases even 10^11 is
+        // OK
+        double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
+        if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S.alpha(), S_condition_number_threshold);
+        }
+        else {
+            std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S, S_condition_number_threshold);
+        }
+        update_density_matrix();
+    }
+
     void compute_initial_guess() {
+        if(m_have_initial_guess) return;
         const auto tstart = std::chrono::high_resolution_clock::now();
         if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
         {
@@ -346,15 +372,19 @@ struct SCF {
         }
     }
 
-    void update_scf_energy(const MatRM& fock) {
-        if(m_procedure.usual_scf_energy()) {
-            energy.electronic = expectation<spinorbital_kind>(D, fock);
-        }
-        else {
-            energy.electronic = 2 * expectation<spinorbital_kind>(D, H) + m_procedure.two_electron_energy();
-        }
-        energy.total = energy.electronic + energy.nuclear_repulsion;
+    void update_scf_energy() {
 
+        energy.kinetic = 2 * expectation<spinorbital_kind>(D, T);
+        energy.nuclear_attraction = 2 * expectation<spinorbital_kind>(D, V);
+        energy.one_electron = energy.kinetic + energy.nuclear_attraction;
+        energy.electronic = 0.5 * energy.one_electron;
+        if(m_procedure.usual_scf_energy()) {
+            energy.electronic += expectation<spinorbital_kind>(D, F);
+        }
+        m_procedure.update_scf_energy(energy);
+        energy.nuclear_repulsion = m_procedure.nuclear_repulsion_energy();
+        energy.two_electron = energy.electronic - energy.one_electron;
+        energy.total = energy.electronic + energy.nuclear_repulsion + energy.solvation;
     }
 
     std::string scf_kind() const {
@@ -368,13 +398,13 @@ struct SCF {
     double compute_scf_energy() {
         // compute one-body integrals
         // count the number of electrons
+        update_occupied_orbital_count();
         compute_initial_guess();
         K = m_procedure.compute_schwarz_ints();
-        energy.nuclear_repulsion = m_procedure.nuclear_repulsion_energy();
         MatRM D_diff = D;
         MatRM D_last;
         MatRM FD_comm = MatRM::Zero(F.rows(), F.cols());
-        update_scf_energy(F + H);
+        update_scf_energy();
         fmt::print("Starting {} SCF iterations (Eguess = {:.12f})\n\n", scf_kind(), energy.total);
         if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
             fmt::print("n_electrons: {}\nn_alpha: {}\nn_beta: {}\n", n_electrons, n_alpha(), n_beta());
@@ -386,6 +416,8 @@ struct SCF {
             // Last iteration's energy and density
             auto ehf_last = energy.electronic;
             D_last = D;
+            H = T + V;
+            m_procedure.update_core_hamiltonian(spinorbital_kind, D, H);
 
             if (not incremental_Fbuild_started &&
                     rms_error < start_incremental_F_threshold) {
@@ -426,7 +458,7 @@ struct SCF {
                 fmt::print("Fock\n:{}\n\n\nFockDF\n{}\n", F, fock_df);
             }*/
             // compute HF energy with the non-extrapolated Fock matrix
-            update_scf_energy(H + F);
+            update_scf_energy();
             ediff_rel = std::abs((energy.electronic - ehf_last) / energy.electronic);
 
             // compute SCF error
@@ -464,10 +496,6 @@ struct SCF {
             total_time += time_elapsed.count();
 
         }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
-        energy.kinetic = expectation<spinorbital_kind>(D, T);
-        energy.one_electron = 2 * expectation<spinorbital_kind>(D, H);
-        energy.nuclear_attraction = expectation<spinorbital_kind>(D, V);
-        energy.two_electron = energy.electronic - energy.one_electron;
         fmt::print("\n{} SCF converged after {} seconds\n\n", scf_kind(), total_time);
         fmt::print(energy.energy_table_string());
         return energy.total;
@@ -507,7 +535,7 @@ struct SCF {
     int n_electrons{0};
     int n_occ{0};
     int n_unpaired_electrons{0};
-    EnergyComponents energy;
+    occ::qm::EnergyComponents energy;
     int maxiter{100};
     size_t nbf{0};
     double conv = 1e-8;
@@ -525,6 +553,7 @@ struct SCF {
     Vec orbital_energies;
     double XtX_condition_number;
     std::optional<occ::df::DFFockEngine> df_engine;
+    bool m_have_initial_guess{false};
 };
 
 } // namespace occ::scf

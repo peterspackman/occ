@@ -73,4 +73,18 @@ Vec HartreeFock::electronic_electric_potential_contribution(const MatRM &D, cons
     return occ::ints::compute_electric_potential(D, m_basis, m_shellpair_list, positions);
 }
 
+Vec HartreeFock::nuclear_electric_potential_contribution(const Mat3N &positions) const
+{
+    Vec result = Vec::Zero(positions.cols());
+    for(const auto& atom: m_atoms)
+    {
+        double Z = atom.atomic_number;
+        Vec3 atom_pos{atom.x, atom.y, atom.z};
+        auto ab = positions.colwise() - atom_pos;
+        auto r = ab.colwise().norm();
+        result.array() += Z / r.array();
+    }
+    return result;
+}
+
 } // namespace occ::hf

@@ -3,6 +3,7 @@ target_link_libraries(occ
     PUBLIC
     occ_qm
     occ_dft
+    occ_solvent
 )
 set_target_properties(occ
     PROPERTIES
