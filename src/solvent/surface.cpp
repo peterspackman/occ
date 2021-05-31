@@ -2,6 +2,7 @@
 #include <occ/dft/lebedev.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+#include <occ/core/units.h>
 
 namespace occ::solvent::surface
 {
@@ -21,10 +22,10 @@ occ::Mat3 principal_axes(const occ::Mat3N &positions)
 Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, const occ::Mat3N &positions)
 {
     const size_t N = atomic_numbers.rows();
-    const size_t npts = 302;
-    const size_t npts_H = 302;
-    const double solvent_radius = 1.0;
-    const double delta = 0.2 * solvent_radius;
+    const size_t npts = 170;
+    const size_t npts_H = 110;
+    const double solvent_radius = 0.5 * occ::units::ANGSTROM_TO_BOHR;
+    const double delta = 0.1 + solvent_radius;
     Surface surface;
     size_t num_h{0}, num_other{0};
     for(size_t i = 0; i < N; i++)
@@ -47,16 +48,17 @@ Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, 
     auto axes = principal_axes(centered);
     centered = axes.transpose() * centered;
 
-    occ::Vec ri = radii.array() + solvent_radius;
+    occ::Vec ri = radii.array();
 
     size_t num_valid_points{0};
     for(size_t i = 0; i < N; i++)
     {
-        double r = ri(i);
+        double rs = ri(i);
+        double r = rs + delta; 
         if (atomic_numbers(i) == 1)
         {
             tmp_areas.segment(num_valid_points, npts_H) = 
-                h_lebedev_weights * 4 * M_PI * r * r;
+                h_lebedev_weights * 4 * M_PI * rs * rs;
             auto vblock = tmp_vertices.block(0, num_valid_points, 3, npts_H);
             vblock = h_lebedev_points * r;
             vblock.colwise() += centered.col(i);
@@ -66,7 +68,7 @@ Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, 
         else
         {
             tmp_areas.segment(num_valid_points, npts) = 
-                lebedev_weights * 4 * M_PI * r * r;
+                lebedev_weights * 4 * M_PI * rs * rs;
             auto vblock = tmp_vertices.block(0, num_valid_points, 3, npts);
             vblock = lebedev_points * r;
             vblock.colwise() += centered.col(i);
@@ -86,7 +88,7 @@ Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, 
         {
             if(!mask(j) || tmp_atom_index(j) == i) continue;
             double r = (q - tmp_vertices.col(j)).norm();
-            if(r < ri(i)) {
+            if(r < (ri(i) + delta)) {
                 num_valid_points--;
                 mask(j) = false;
             }

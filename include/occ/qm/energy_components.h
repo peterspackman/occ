@@ -25,10 +25,10 @@ struct EnergyComponents
         std::string fmt_string{"{:32s} {:20.12f}\n"};
 
         result += fmt::format("{:32s} {:>20s}\n\n", "Component", "Energy (Hartree)");
-        result += fmt::format(fmt_string, "Nuclear repulsion (NN)", nuclear_repulsion);
-        if(nuclear_attraction != 0.0) result += fmt::format(fmt_string, "Nuclear attraction (V)", nuclear_attraction);
-        if(kinetic != 0.0) result += fmt::format(fmt_string, "Kinetic (T)", kinetic);
-        if(one_electron != 0.0) result += fmt::format(fmt_string, "One-electron (T + V)", one_electron);
+        result += fmt::format(fmt_string, "Nuclear repulsion (E_nn)", nuclear_repulsion);
+        if(nuclear_attraction != 0.0) result += fmt::format(fmt_string, "Nuclear attraction (V_ne)", nuclear_attraction);
+        if(kinetic != 0.0) result += fmt::format(fmt_string, "Kinetic (T_e)", kinetic);
+        if(one_electron != 0.0) result += fmt::format(fmt_string, "One-electron", one_electron);
         if(exchange_correlation != 0.0) result += fmt::format(fmt_string, "Exchange-correlation", solvation);
         if(two_electron != 0.0) result += fmt::format(fmt_string, "Two-electron", two_electron);
         if(solvation != 0.0) result += fmt::format(fmt_string, "Solvation", solvation);

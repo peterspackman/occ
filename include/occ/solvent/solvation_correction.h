@@ -28,55 +28,14 @@ public:
         occ::Vec radii = occ::solvent::cosmo::solvation_radii(nums);
         m_surface = occ::solvent::surface::solvent_surface(radii, nums, pos);
 
-        nwcosmo = occ::Mat(32, 4);
-        nwcosmo << 
-             0.47489957658797588,      0.47489957658797588,       1.6214085751519076,       3.0254455781422177E-002,
-              1.6214085751519074,      0.47489957658797577,      0.47489957658797577,       3.0254455781422614E-002,
-             0.47489957658797577,       1.6214085751519074,      0.47489957658797577,       3.0254455781422284E-002,
-              1.0132497196747725,       1.0132497196747725,       1.0132497196747725,       3.1860206846178983E-002,
-            -0.47489957658797588,      0.47489957658797588,       1.6214085751519076,       3.0254455781422069E-002,
-            -0.47489957658797577,       1.6214085751519074,      0.47489957658797577,       3.0254455781422069E-002,
-             -1.6214085751519074,      0.47489957658797577,      0.47489957658797577,       3.0254455781422177E-002,
-             -1.0132497196747725,       1.0132497196747725,       1.0132497196747725,       3.1860206846179205E-002,
-            -0.47489957658797588,     -0.47489957658797588,       1.6214085751519076,       3.0254455781421739E-002,
-             -1.6214085751519074,     -0.47489957658797577,      0.47489957658797577,       3.0254455781422069E-002,
-            -0.47489957658797577,      -1.6214085751519074,      0.47489957658797577,       3.0254455781422284E-002,
-             -1.0132497196747725,      -1.0132497196747725,       1.0132497196747725,       3.1860206846179531E-002,
-             0.47489957658797588,     -0.47489957658797588,       1.6214085751519076,       3.0254455781422013E-002,
-             0.47489957658797577,      -1.6214085751519074,      0.47489957658797577,       3.0254455781422069E-002,
-              1.6214085751519074,     -0.47489957658797577,      0.47489957658797577,       3.0254455781422232E-002,
-              1.0132497196747725,      -1.0132497196747725,       1.0132497196747725,       3.1860206846179094E-002,
-             0.47489957658797588,      0.47489957658797588,      -1.6214085751519076,       3.0254455781421795E-002,
-              1.6214085751519074,      0.47489957658797577,     -0.47489957658797577,       3.0254455781421906E-002,
-             0.47489957658797577,       1.6214085751519074,     -0.47489957658797577,       3.0254455781422177E-002,
-              1.0132497196747725,       1.0132497196747725,      -1.0132497196747725,       3.1860206846179365E-002,
-            -0.47489957658797588,      0.47489957658797588,      -1.6214085751519076,       3.0254455781422069E-002,
-            -0.47489957658797577,       1.6214085751519074,     -0.47489957658797577,       3.0254455781422503E-002,
-             -1.6214085751519074,      0.47489957658797577,     -0.47489957658797577,       3.0254455781422069E-002,
-             -1.0132497196747725,       1.0132497196747725,      -1.0132497196747725,       3.1860206846179316E-002,
-            -0.47489957658797588,     -0.47489957658797588,      -1.6214085751519076,       3.0254455781422069E-002,
-             -1.6214085751519074,     -0.47489957658797577,     -0.47489957658797577,       3.0254455781422284E-002,
-            -0.47489957658797577,      -1.6214085751519074,     -0.47489957658797577,       3.0254455781422232E-002,
-             -1.0132497196747725,      -1.0132497196747725,      -1.0132497196747725,       3.1860206846178823E-002,
-             0.47489957658797588,     -0.47489957658797588,      -1.6214085751519076,       3.0254455781422069E-002,
-             0.47489957658797577,      -1.6214085751519074,     -0.47489957658797577,       3.0254455781422177E-002,
-              1.6214085751519074,     -0.47489957658797577,     -0.47489957658797577,       3.0254455781422340E-002,
-              1.0132497196747725,      -1.0132497196747725,      -1.0132497196747725,       3.1860206846179094E-002;
-
-        m_surface.vertices = nwcosmo.block(0, 0, 32, 3).transpose() * occ::units::ANGSTROM_TO_BOHR;
-        m_surface.areas = occ::Vec(32);
-        m_surface.areas.setConstant(1.0);
         m_point_charges.reserve(m_surface.vertices.cols());
-        occ::Vec qn = m_proc.nuclear_electric_potential_contribution(m_surface.vertices);
-        auto result = m_solv(m_surface.vertices, m_surface.areas, qn);
-        m_nuclear_solvation_energy = result.energy;
-        fmt::print("Nuclear solvation energy term: {}\n", m_nuclear_solvation_energy);
+        m_qn = m_proc.nuclear_electric_potential_contribution(m_surface.vertices);
+
         for(int i = 0; i < m_surface.vertices.cols(); i++)
         {
             const auto& pt = m_surface.vertices.col(i);
-            m_point_charges.push_back({result.converged(i), {pt(0), pt(1), pt(2)}});
+            m_point_charges.push_back({0.0, {pt(0), pt(1), pt(2)}});
         }
-        m_h = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
     }
 
     const auto &shellpair_list() const { return m_proc.shellpair_list(); }
@@ -112,11 +71,18 @@ public:
     void update_core_hamiltonian(occ::qm::SpinorbitalKind kind, const occ::MatRM &D, occ::MatRM &H)
     {
         occ::timing::start(occ::timing::category::solvent);
-        occ::Vec v = m_proc.electronic_electric_potential_contribution(D, m_surface.vertices);
+        occ::Vec v = - (m_qn + m_proc.electronic_electric_potential_contribution(D, m_surface.vertices));
         auto result = m_solv(m_surface.vertices, m_surface.areas, v);
 
         std::ofstream pts("points.xyz");
-        fmt::print(pts, "{}\n\n", v.rows());
+        fmt::print(pts, "{}\n", v.rows());
+
+        m_nuclear_solvation_energy = m_qn.dot(result.converged);
+        m_solvation_energy = m_nuclear_solvation_energy - result.energy;
+        m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
+        double e_X = 2 * occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(D, m_X);
+
+        fmt::print(pts, "esurf={:12.5f} enuc={:12.5f} eele={:12.5f}\n", result.energy, m_nuclear_solvation_energy, e_X);
 
         for(int i = 0; i < m_point_charges.size(); i++)
         {
@@ -130,12 +96,8 @@ public:
                        );
         }
 
-        m_solvation_energy = result.energy + m_nuclear_solvation_energy;
-        fmt::print("Energy {}\n", result.energy);
-
-        m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
         occ::timing::stop(occ::timing::category::solvent);
-        H += m_h + m_X;
+        H += m_X;
     }
 
 
@@ -154,8 +116,8 @@ private:
     occ::solvent::surface::Surface m_surface;
     std::vector<std::pair<double, std::array<double, 3>>> m_point_charges;
     double m_solvation_energy{0.0}, m_nuclear_solvation_energy{0.0};
-    occ::MatRM m_h, m_X;
-    occ::Mat nwcosmo;
+    occ::MatRM m_X;
+    occ::Vec m_qn;
 };
 
 }

@@ -376,7 +376,7 @@ struct SCF {
 
         energy.kinetic = 2 * expectation<spinorbital_kind>(D, T);
         energy.nuclear_attraction = 2 * expectation<spinorbital_kind>(D, V);
-        energy.one_electron = energy.kinetic + energy.nuclear_attraction;
+        energy.one_electron = 2 * expectation<spinorbital_kind>(D, H);
         energy.electronic = 0.5 * energy.one_electron;
         if(m_procedure.usual_scf_energy()) {
             energy.electronic += expectation<spinorbital_kind>(D, F);

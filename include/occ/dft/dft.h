@@ -68,6 +68,7 @@ public:
     bool usual_scf_energy() const { return false; }
     void update_scf_energy(occ::qm::EnergyComponents &energy) const
     { 
+        energy.electronic *= 2;
         energy.two_electron = two_electron_energy();
         energy.electronic += two_electron_energy();
     }

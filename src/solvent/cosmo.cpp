@@ -2,6 +2,7 @@
 #include <occ/core/diis.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+#include <occ/core/units.h>
 
 namespace occ::solvent {
 
@@ -24,7 +25,7 @@ occ::Vec solvation_radii(const occ::IVec &nums)
         if(n <= 17 && n > 0) r = radii[n - 1];
         result(i) = r;
     }
-    return result;
+    return result * occ::units::ANGSTROM_TO_BOHR;
 }
 
 }
@@ -32,24 +33,24 @@ occ::Vec solvation_radii(const occ::IVec &nums)
 COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const Vec &charges) const
 {
     COSMO::Result res;
-    Mat coulomb(positions.cols(), positions.cols());
+    Mat A(positions.cols(), positions.cols());
     for(size_t i = 0; i < positions.cols(); i++)
     {
         for(size_t j = i + 1; j < positions.cols(); j++)
         {
             double norm = (positions.col(i) - positions.col(j)).norm();
-            if(norm > 1e-3) coulomb(i, j) = 1.0 / norm;
-            else coulomb(i, j) = 0.0;
-            coulomb(j, i) = coulomb(i, j);
+            if(norm > 1e-3) A(i, j) = 1.0 / norm;
+            else A(i, j) = 0.0;
+            A(j, i) = A(i, j);
 
         }
     }
 
-    coulomb.diagonal().setConstant(1.05 * sqrt(590));
+    A.diagonal().array() = 3.8 / areas.array().sqrt();
     res.initial = surface_charge(charges);
     res.converged = Vec(res.initial.rows());
 
-    res.converged = coulomb.llt().solve(res.initial);
+    res.converged = A.llt().solve(res.initial);
     res.energy = - 0.5 * res.initial.dot(res.converged);
     return res;
 }
