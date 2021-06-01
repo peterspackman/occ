@@ -1,6 +1,7 @@
 #include <occ/core/parallel.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/fock.h>
+#include <occ/qm/property_ints.h>
 
 namespace occ::hf {
 
@@ -47,7 +48,7 @@ Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions) c
     return result;
 }
 
-Mat3N HartreeFock::electronic_electric_field_contribution(const MatRM& D, const Mat3N &positions) const
+Mat3N HartreeFock::electronic_electric_field_contribution(SpinorbitalKind kind, const MatRM& D, const Mat3N &positions) const
 {
     constexpr bool use_finite_differences = true;
     if constexpr(use_finite_differences) {
@@ -56,21 +57,34 @@ Mat3N HartreeFock::electronic_electric_field_contribution(const MatRM& D, const 
         for(size_t i = 0; i < 3; i++) {
             auto pts_delta = positions;
             pts_delta.row(i).array() += delta;
-            auto esp_f = electronic_electric_potential_contribution(D, pts_delta);
+            auto esp_f = electronic_electric_potential_contribution(kind, D, pts_delta);
             pts_delta.row(i).array() -= 2 * delta;
-            auto esp_b = electronic_electric_potential_contribution(D, pts_delta);
+            auto esp_b = electronic_electric_potential_contribution(kind, D, pts_delta);
             efield_fd.row(i) = - (esp_f - esp_b) / (2 * delta);
         }
         return efield_fd;
     }
     else {
-        return occ::ints::compute_electric_field(D, m_basis, m_shellpair_list, positions);
+        switch(kind)
+        {
+            case SpinorbitalKind::Restricted:
+                return occ::ints::compute_electric_field<SpinorbitalKind::Restricted>(D, m_basis, m_shellpair_list, positions);
+            case SpinorbitalKind::Unrestricted:
+                return occ::ints::compute_electric_field<SpinorbitalKind::Unrestricted>(D, m_basis, m_shellpair_list, positions);
+            case SpinorbitalKind::General:
+                return occ::ints::compute_electric_field<SpinorbitalKind::General>(D, m_basis, m_shellpair_list, positions);
+        }
     }
 }
 
-Vec HartreeFock::electronic_electric_potential_contribution(const MatRM &D, const Mat3N &positions) const
+Vec HartreeFock::electronic_electric_potential_contribution(SpinorbitalKind kind, const MatRM &D, const Mat3N &positions) const
 {
-    return occ::ints::compute_electric_potential(D, m_basis, m_shellpair_list, positions);
+    switch(kind)
+    {
+        case SpinorbitalKind::Restricted: return occ::ints::compute_electric_potential<SpinorbitalKind::Restricted>(D, m_basis, m_shellpair_list, positions);
+        case SpinorbitalKind::Unrestricted: return occ::ints::compute_electric_potential<SpinorbitalKind::Unrestricted>(D, m_basis, m_shellpair_list, positions);
+        case SpinorbitalKind::General: return occ::ints::compute_electric_potential<SpinorbitalKind::General>(D, m_basis, m_shellpair_list, positions);
+    }
 }
 
 Vec HartreeFock::nuclear_electric_potential_contribution(const Mat3N &positions) const

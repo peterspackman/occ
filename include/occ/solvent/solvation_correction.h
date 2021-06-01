@@ -9,6 +9,7 @@
 
 namespace occ::solvent {
 
+using occ::qm::SpinorbitalKind;
 
 template<typename Proc>
 class SolvationCorrectedProcedure
@@ -68,10 +69,10 @@ public:
     
     auto compute_schwarz_ints() { return m_proc.compute_schwarz_ints(); }
 
-    void update_core_hamiltonian(occ::qm::SpinorbitalKind kind, const occ::MatRM &D, occ::MatRM &H)
+    void update_core_hamiltonian(SpinorbitalKind kind, const occ::MatRM &D, occ::MatRM &H)
     {
         occ::timing::start(occ::timing::category::solvent);
-        occ::Vec v = - (m_qn + m_proc.electronic_electric_potential_contribution(D, m_surface.vertices));
+        occ::Vec v = - (m_qn + m_proc.electronic_electric_potential_contribution(kind, D, m_surface.vertices));
         auto result = m_solv(m_surface.vertices, m_surface.areas, v);
 
         std::ofstream pts("points.xyz");
@@ -80,7 +81,7 @@ public:
         m_nuclear_solvation_energy = m_qn.dot(result.converged);
         m_solvation_energy = m_nuclear_solvation_energy - result.energy;
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
-        double e_X = 2 * occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(D, m_X);
+        double e_X = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, m_X);
 
         fmt::print(pts, "esurf={:12.5f} enuc={:12.5f} eele={:12.5f}\n", result.energy, m_nuclear_solvation_energy, e_X);
 
@@ -97,11 +98,31 @@ public:
         }
 
         occ::timing::stop(occ::timing::category::solvent);
-        H += m_X;
+        switch(kind)
+        {
+            case SpinorbitalKind::Restricted:
+            {
+                H += m_X;
+                break;
+            }
+            case SpinorbitalKind::Unrestricted:
+            {
+                H.alpha() += m_X;
+                H.beta() += m_X;
+            }
+            case SpinorbitalKind::General:
+            {
+                H.alpha_alpha() += m_X;
+                H.alpha_beta() += m_X;
+                H.beta_alpha() += m_X;
+                H.beta_beta() += m_X;
+
+            }
+        }
     }
 
 
-    MatRM compute_fock(occ::qm::SpinorbitalKind kind, const MatRM &D,
+    MatRM compute_fock(SpinorbitalKind kind, const MatRM &D,
                     double precision = std::numeric_limits<double>::epsilon(),
                     const MatRM &Schwarz = MatRM()) const
     {

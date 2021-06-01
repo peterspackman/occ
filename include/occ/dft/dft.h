@@ -300,9 +300,9 @@ public:
     }
     const auto& hf() const { return m_hf; }
 
-    Vec electronic_electric_potential_contribution(const MatRM &D, const Mat3N &pts) const
+    Vec electronic_electric_potential_contribution(occ::qm::SpinorbitalKind kind, const MatRM &D, const Mat3N &pts) const
     {
-        return m_hf.electronic_electric_potential_contribution(D, pts);
+        return m_hf.electronic_electric_potential_contribution(kind, D, pts);
     }
 
     Vec nuclear_electric_potential_contribution(const Mat3N &pts) const

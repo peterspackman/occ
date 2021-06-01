@@ -654,9 +654,4 @@ std::vector<MatRM> compute_2body_fock_deriv(
   return GG;
 }
 
-occ::Vec compute_electric_potential(const occ::MatRM& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
-                                      const occ::Mat3N& positions);
-
-occ::Mat3N compute_electric_field(const occ::MatRM& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
-                                    const occ::Mat3N& positions);
 } // namespace occ::ints
