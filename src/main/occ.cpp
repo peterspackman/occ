@@ -99,11 +99,11 @@ template<typename T, SpinorbitalKind SK>
 Wavefunction run_solvated_method(const Wavefunction &wfn, const InputConfiguration &config)
 {
     using occ::solvent::SolvationCorrectedProcedure;
-    fmt::print("Solvent {}\n", *config.solvent);
     if constexpr(std::is_same<T, DFT>::value)
     {
         DFT rks(config.method, wfn.basis, wfn.atoms, SK);
         SolvationCorrectedProcedure<DFT> proc_solv(rks);
+        proc_solv.set_solvent(*config.solvent);
         SCF<SolvationCorrectedProcedure<DFT>, SK> scf(proc_solv);
         scf.set_charge_multiplicity(config.charge, config.multiplicity);
         scf.start_incremental_F_threshold = 0.0;
@@ -115,6 +115,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn, const InputConfigurati
     {
         T proc(wfn.atoms, wfn.basis);
         SolvationCorrectedProcedure<T> proc_solv(proc);
+        proc_solv.set_solvent(*config.solvent);
         SCF<SolvationCorrectedProcedure<T>, SK> scf(proc_solv);
         scf.set_charge_multiplicity(config.charge, config.multiplicity);
         scf.set_initial_guess_from_wfn(wfn);

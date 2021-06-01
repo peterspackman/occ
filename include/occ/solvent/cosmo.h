@@ -34,6 +34,8 @@ public:
     void set_max_iterations(size_t max_iter) { m_max_iterations = max_iter; }
     void set_x(double x) { m_x = x; }
 
+    double dielectric() const { return m_dielectric; }
+
 private:
     double m_x{0.5};
     size_t m_diis_start{1};

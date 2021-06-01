@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/solvent/surface.h>
 #include <occ/solvent/cosmo.h>
+#include <occ/solvent/parameters.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/energy_components.h>
 #include <occ/core/timings.h>
@@ -134,6 +135,13 @@ public:
                     const MatRM &Schwarz = MatRM()) const
     {
         return m_proc.compute_fock(kind, D, precision, Schwarz);
+    }
+
+    void set_solvent(const std::string &solvent)
+    {
+        if(!occ::solvent::dielectric_constant.contains(solvent)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", solvent));
+        m_solv = COSMO(occ::solvent::dielectric_constant[solvent]);
+        fmt::print("Solvent: {} (dielectric = {})\n", solvent, m_solv.dielectric());
     }
 
 
