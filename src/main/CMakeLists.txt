@@ -24,21 +24,6 @@ set_target_properties(make_radial_interpolators
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_executable(cosmo "${CMAKE_CURRENT_SOURCE_DIR}/cosmo.cpp")
-target_link_libraries(cosmo
-    PUBLIC
-    occ_qm
-    occ_dft
-    occ_geometry
-    occ_slater
-    occ_solvent
-)
-set_target_properties(cosmo
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-
 add_executable(crystal_interactions "${CMAKE_CURRENT_SOURCE_DIR}/interactions.cpp")
 target_link_libraries(crystal_interactions
     PUBLIC

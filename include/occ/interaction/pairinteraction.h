@@ -42,9 +42,9 @@ double compute_polarization_energy(const Wavefunction &wfn_a, const Procedure &p
     auto pos_a = wfn_a.positions();
     auto pos_b = wfn_b.positions();
 
-    occ::Mat3N field_a = proc_b.electronic_electric_field_contribution(wfn_b.D, pos_a);
+    occ::Mat3N field_a = proc_b.electronic_electric_field_contribution(wfn_b.spinorbital_kind, wfn_b.D, pos_a);
     field_a += proc_b.nuclear_electric_field_contribution(pos_a);
-    occ::Mat3N field_b = proc_a.electronic_electric_field_contribution(wfn_a.D, pos_b);
+    occ::Mat3N field_b = proc_a.electronic_electric_field_contribution(wfn_a.spinorbital_kind, wfn_a.D, pos_b);
     field_b += proc_a.nuclear_electric_field_contribution(pos_b);
 
     using occ::pol::ce_model_polarization_energy;

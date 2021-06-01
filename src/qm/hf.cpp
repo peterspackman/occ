@@ -81,9 +81,9 @@ Vec HartreeFock::electronic_electric_potential_contribution(SpinorbitalKind kind
 {
     switch(kind)
     {
-        case SpinorbitalKind::Restricted: return occ::ints::compute_electric_potential<SpinorbitalKind::Restricted>(D, m_basis, m_shellpair_list, positions);
         case SpinorbitalKind::Unrestricted: return occ::ints::compute_electric_potential<SpinorbitalKind::Unrestricted>(D, m_basis, m_shellpair_list, positions);
         case SpinorbitalKind::General: return occ::ints::compute_electric_potential<SpinorbitalKind::General>(D, m_basis, m_shellpair_list, positions);
+        default: return occ::ints::compute_electric_potential<SpinorbitalKind::Restricted>(D, m_basis, m_shellpair_list, positions);
     }
 }
 

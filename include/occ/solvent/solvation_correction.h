@@ -81,7 +81,35 @@ public:
         m_nuclear_solvation_energy = m_qn.dot(result.converged);
         m_solvation_energy = m_nuclear_solvation_energy - result.energy;
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
-        double e_X = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, m_X);
+        double e_X = 0.0;
+
+        switch(kind)
+        {
+            case SpinorbitalKind::Restricted:
+            {
+                e_X = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, H);
+                H += m_X;
+                e_X = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, H) - e_X;
+                break;
+            }
+            case SpinorbitalKind::Unrestricted:
+            {
+                e_X = 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H);
+                H.alpha() += m_X;
+                H.beta() += m_X;
+                e_X = 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H) - e_X;
+                break;
+            }
+            case SpinorbitalKind::General:
+            {
+                e_X = 2 * occ::qm::expectation<SpinorbitalKind::General>(D, H);
+                H.alpha_alpha() += m_X;
+                H.beta_beta() += m_X;
+                e_X = 2 * occ::qm::expectation<SpinorbitalKind::General>(D, H) - e_X;
+                break;
+            }
+        }
+        
 
         fmt::print(pts, "esurf={:12.5f} enuc={:12.5f} eele={:12.5f}\n", result.energy, m_nuclear_solvation_energy, e_X);
 
@@ -98,27 +126,6 @@ public:
         }
 
         occ::timing::stop(occ::timing::category::solvent);
-        switch(kind)
-        {
-            case SpinorbitalKind::Restricted:
-            {
-                H += m_X;
-                break;
-            }
-            case SpinorbitalKind::Unrestricted:
-            {
-                H.alpha() += m_X;
-                H.beta() += m_X;
-            }
-            case SpinorbitalKind::General:
-            {
-                H.alpha_alpha() += m_X;
-                H.alpha_beta() += m_X;
-                H.beta_alpha() += m_X;
-                H.beta_beta() += m_X;
-
-            }
-        }
     }
 
 

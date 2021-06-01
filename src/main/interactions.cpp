@@ -17,6 +17,7 @@
 #include <occ/solvent/parameters.h>
 #include <filesystem>
 #include <occ/core/units.h>
+#include <occ/qm/property_ints.h>
 #include <fmt/os.h>
 
 namespace fs = std::filesystem;
@@ -43,7 +44,15 @@ occ::Vec compute_esp(const Wavefunction &wfn, const occ::Mat3N &points)
     occ::ints::shellpair_list_t shellpair_list;
     occ::ints::shellpair_data_t shellpair_data;
     std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(wfn.basis);
-    return occ::ints::compute_electric_potential(wfn.D, wfn.basis, shellpair_list, points);
+    switch(wfn.spinorbital_kind)
+    {
+        case SpinorbitalKind::General:
+            return occ::ints::compute_electric_potential<SpinorbitalKind::General>(wfn.D, wfn.basis, shellpair_list, points);
+        case SpinorbitalKind::Unrestricted:
+            return occ::ints::compute_electric_potential<SpinorbitalKind::Unrestricted>(wfn.D, wfn.basis, shellpair_list, points);
+        default:
+            return occ::ints::compute_electric_potential<SpinorbitalKind::Restricted>(wfn.D, wfn.basis, shellpair_list, points);
+    }
 }
 
 std::string dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)

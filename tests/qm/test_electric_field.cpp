@@ -1,6 +1,6 @@
 #include "catch.hpp"
 #include <occ/qm/hf.h>
-#include <occ/qm/ints.h>
+#include <occ/qm/property_ints.h>
 #include <occ/qm/basisset.h>
 #include <fmt/ostream.h>
 #include <occ/core/util.h>
@@ -36,7 +36,7 @@ TEST_CASE("H2/STO-3G") {
     occ::ints::shellpair_data_t shellpair_data;
     std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(basis);
 
-    auto esp = occ::ints::compute_electric_potential(D, basis, shellpair_list, grid_pts);
+    auto esp = occ::ints::compute_electric_potential<occ::qm::SpinorbitalKind::Restricted>(D, basis, shellpair_list, grid_pts);
     fmt::print("ESP:\n{}\n", esp);
     REQUIRE(all_close(esp, expected_esp, 1e-5, 1e-5));
     occ::Mat expected_efield(field_values.rows(), field_values.cols());
@@ -51,7 +51,7 @@ TEST_CASE("H2/STO-3G") {
     for(size_t i = 0; i < 3; i++) {
         auto grid_pts_d = grid_pts;
         grid_pts_d.row(i).array() += delta;
-        auto esp_d = occ::ints::compute_electric_potential(D, basis, shellpair_list, grid_pts_d);
+        auto esp_d = occ::ints::compute_electric_potential<occ::qm::SpinorbitalKind::Restricted>(D, basis, shellpair_list, grid_pts_d);
         efield_fd.row(i) = - (esp_d - esp) / delta;
     }
     REQUIRE(all_close(efield_fd, expected_efield, 1e-5, 1e-5));
@@ -59,7 +59,7 @@ TEST_CASE("H2/STO-3G") {
 
 
     if constexpr(LIBINT2_MAX_DERIV_ORDER > 1) {
-        efield = occ::ints::compute_electric_field(D, basis, shellpair_list, grid_pts);
+        efield = occ::ints::compute_electric_field<occ::qm::SpinorbitalKind::Restricted>(D, basis, shellpair_list, grid_pts);
         fmt::print("Electric field:\n{}\n", efield);
         REQUIRE(all_close(efield, expected_efield, 1e-5, 1e-5));
     }

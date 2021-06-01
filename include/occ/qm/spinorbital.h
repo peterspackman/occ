@@ -30,6 +30,16 @@ typename TA::Scalar expectation(const TA& left, const TA& right) {
                    left.beta().cwiseProduct(right.beta()).sum();
         }
     }
+    else if constexpr(kind == General)
+    {
+        if(right.rows() < left.rows()) {
+            return left.alpha_alpha().cwiseProduct(right).sum() +
+                   left.beta_beta().cwiseProduct(right).sum();
+        }
+        else {
+            return left.cwiseProduct(right).sum();
+        }
+    }
     else {
         return left.cwiseProduct(right).sum();
     }
