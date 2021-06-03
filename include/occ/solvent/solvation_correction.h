@@ -1,7 +1,4 @@
 #pragma once
-#include <occ/solvent/surface.h>
-#include <occ/solvent/cosmo.h>
-#include <occ/solvent/parameters.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/energy_components.h>
 #include <occ/core/timings.h>
@@ -10,6 +7,8 @@
 
 #ifdef USING_PCMSolver
 #include "PCMSolver/pcmsolver.h"
+#else
+#include <occ/solvent/cosmo.h>
 #endif
 
 
@@ -20,7 +19,7 @@ using occ::qm::SpinorbitalKind;
 class ContinuumSolvationModel
 {
 public:
-    ContinuumSolvationModel(const std::vector<libint2::Atom>&);
+    ContinuumSolvationModel(const std::vector<libint2::Atom>&, const std::string& solvent = "water");
     ~ContinuumSolvationModel();
 
     void set_solvent(const std::string&);
@@ -49,6 +48,8 @@ private:
     const char * m_surface_potential_label = "OCC_TOTAL_MEP";
     const char * m_asc_label = "OCC_TOTAL_ASC";
     pcmsolver_context_t *m_pcm_context;
+#else
+    COSMO m_cosmo;
 #endif
 };
 
@@ -58,7 +59,7 @@ class SolvationCorrectedProcedure
 {
 public:
     SolvationCorrectedProcedure(Proc &proc) : m_atoms(proc.atoms()), m_proc(proc),
-        m_solv(78.39), m_solvation_model(proc.atoms())
+        m_solvation_model(proc.atoms())
     {
         occ::Mat3N pos(3, m_atoms.size());
         occ::IVec nums(m_atoms.size());
@@ -151,13 +152,6 @@ public:
                 break;
             }
         }
-        
-
-        fmt::print("Surface energy: {}\n", surface_energy);
-        fmt::print("Nuclear energy: {}\n", m_nuclear_solvation_energy);
-        fmt::print("Electronic energy: {}\n", e_X);
-
-
         occ::timing::stop(occ::timing::category::solvent);
     }
 
@@ -171,15 +165,13 @@ public:
 
     void set_solvent(const std::string &solvent)
     {
-        if(!occ::solvent::dielectric_constant.contains(solvent)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", solvent));
-        m_solv = COSMO(occ::solvent::dielectric_constant[solvent]);
+        m_solvation_model.set_solvent(solvent);
     }
 
 
 private:
     const std::vector<libint2::Atom> &m_atoms;
     Proc &m_proc;
-    COSMO m_solv;
     ContinuumSolvationModel m_solvation_model;
     std::vector<std::pair<double, std::array<double, 3>>> m_point_charges;
     double m_solvation_energy{0.0}, m_nuclear_solvation_energy{0.0};

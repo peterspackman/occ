@@ -8,7 +8,7 @@ namespace occ::solvent {
 
 namespace cosmo {
 
-occ::Vec solvation_radii(const occ::IVec &nums)
+Vec solvation_radii(const IVec &nums)
 {
     // angstroms
     occ::Vec result(nums.rows());
@@ -47,7 +47,7 @@ COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const 
     }
 
     A.diagonal().array() = 3.8 / areas.array().sqrt();
-    res.initial = surface_charge(charges);
+    res.initial = -surface_charge(charges);
     res.converged = Vec(res.initial.rows());
 
     res.converged = A.llt().solve(res.initial);
