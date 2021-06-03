@@ -6,17 +6,59 @@
 #include <occ/qm/energy_components.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
+#include <libint2/atom.h>
+
+#ifdef USING_PCMSolver
+#include "PCMSolver/pcmsolver.h"
+#endif
 
 
 namespace occ::solvent {
 
 using occ::qm::SpinorbitalKind;
 
+class ContinuumSolvationModel
+{
+public:
+    ContinuumSolvationModel(const std::vector<libint2::Atom>&);
+    ~ContinuumSolvationModel();
+
+    void set_solvent(const std::string&);
+    const std::string& solvent() const { return m_solvent_name; }
+
+    const Mat3N &nuclear_positions() const { return m_nuclear_positions; } 
+    const Mat3N &surface_positions() const { return m_surface_positions; } 
+    const Vec &surface_areas() const { return m_surface_areas; } 
+    const Vec &nuclear_charges() const { return m_nuclear_charges; } 
+    size_t num_surface_points() const { return m_surface_areas.rows(); }
+    void set_surface_potential(const Vec&);
+    const Vec& apparent_surface_charge();
+
+    double surface_polarization_energy();
+
+private:
+    std::string m_solvent_name{"water"};
+    Mat3N m_nuclear_positions;
+    Vec m_nuclear_charges;
+    Mat3N m_surface_positions;
+    Vec m_surface_areas;
+    Vec m_surface_potential;
+    Vec m_asc;
+    bool m_asc_needs_update{true};
+#ifdef USING_PCMSolver
+    const char * m_surface_potential_label = "OCC_TOTAL_MEP";
+    const char * m_asc_label = "OCC_TOTAL_ASC";
+    pcmsolver_context_t *m_pcm_context;
+#endif
+};
+
+
 template<typename Proc>
 class SolvationCorrectedProcedure
 {
 public:
-    SolvationCorrectedProcedure(Proc &proc) : m_atoms(proc.atoms()), m_proc(proc), m_solv(78.39)
+    SolvationCorrectedProcedure(Proc &proc) : m_atoms(proc.atoms()), m_proc(proc),
+        m_solv(78.39), m_solvation_model(proc.atoms())
     {
         occ::Mat3N pos(3, m_atoms.size());
         occ::IVec nums(m_atoms.size());
@@ -27,15 +69,12 @@ public:
             pos(2, i) = m_atoms[i].z;
             nums(i) = m_atoms[i].atomic_number;
         }
-        occ::Vec radii = occ::solvent::cosmo::solvation_radii(nums);
-        m_surface = occ::solvent::surface::solvent_surface(radii, nums, pos);
+        m_qn = m_proc.nuclear_electric_potential_contribution(m_solvation_model.surface_positions());
+        m_point_charges.reserve(m_qn.rows());
 
-        m_point_charges.reserve(m_surface.vertices.cols());
-        m_qn = m_proc.nuclear_electric_potential_contribution(m_surface.vertices);
-
-        for(int i = 0; i < m_surface.vertices.cols(); i++)
+        for(int i = 0; i < m_solvation_model.num_surface_points(); i++)
         {
-            const auto& pt = m_surface.vertices.col(i);
+            const auto& pt = m_solvation_model.surface_positions().col(i);
             m_point_charges.push_back({0.0, {pt(0), pt(1), pt(2)}});
         }
     }
@@ -73,14 +112,16 @@ public:
     void update_core_hamiltonian(SpinorbitalKind kind, const occ::MatRM &D, occ::MatRM &H)
     {
         occ::timing::start(occ::timing::category::solvent);
-        occ::Vec v = - (m_qn + m_proc.electronic_electric_potential_contribution(kind, D, m_surface.vertices));
-        auto result = m_solv(m_surface.vertices, m_surface.areas, v);
-
-        std::ofstream pts("points.xyz");
-        fmt::print(pts, "{}\n", v.rows());
-
-        m_nuclear_solvation_energy = m_qn.dot(result.converged);
-        m_solvation_energy = m_nuclear_solvation_energy - result.energy;
+        occ::Vec v = (m_qn + m_proc.electronic_electric_potential_contribution(kind, D, m_solvation_model.surface_positions()));
+        m_solvation_model.set_surface_potential(v);
+        auto asc = m_solvation_model.apparent_surface_charge();
+        for(int i = 0; i < m_point_charges.size(); i++)
+        {
+            m_point_charges[i].first = asc(i);
+        }
+        double surface_energy = m_solvation_model.surface_polarization_energy();
+        m_nuclear_solvation_energy = m_qn.dot(asc);
+        m_solvation_energy = m_nuclear_solvation_energy - surface_energy;
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
         double e_X = 0.0;
 
@@ -112,19 +153,10 @@ public:
         }
         
 
-        fmt::print(pts, "esurf={:12.5f} enuc={:12.5f} eele={:12.5f}\n", result.energy, m_nuclear_solvation_energy, e_X);
+        fmt::print("Surface energy: {}\n", surface_energy);
+        fmt::print("Nuclear energy: {}\n", m_nuclear_solvation_energy);
+        fmt::print("Electronic energy: {}\n", e_X);
 
-        for(int i = 0; i < m_point_charges.size(); i++)
-        {
-            m_point_charges[i].first = result.converged(i);
-            fmt::print(pts, "{:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f}\n",
-                       m_surface.vertices(0, i),
-                       m_surface.vertices(1, i),
-                       m_surface.vertices(2, i),
-                       v(i),
-                       result.converged(i)
-                       );
-        }
 
         occ::timing::stop(occ::timing::category::solvent);
     }
@@ -141,7 +173,6 @@ public:
     {
         if(!occ::solvent::dielectric_constant.contains(solvent)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", solvent));
         m_solv = COSMO(occ::solvent::dielectric_constant[solvent]);
-        fmt::print("Solvent: {} (dielectric = {})\n", solvent, m_solv.dielectric());
     }
 
 
@@ -149,7 +180,7 @@ private:
     const std::vector<libint2::Atom> &m_atoms;
     Proc &m_proc;
     COSMO m_solv;
-    occ::solvent::surface::Surface m_surface;
+    ContinuumSolvationModel m_solvation_model;
     std::vector<std::pair<double, std::array<double, 3>>> m_point_charges;
     double m_solvation_energy{0.0}, m_nuclear_solvation_energy{0.0};
     occ::MatRM m_X;

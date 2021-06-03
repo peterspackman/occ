@@ -3,6 +3,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/units.h>
+#include <cstring>
 
 namespace occ::solvent::surface
 {

@@ -154,7 +154,6 @@ occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name)
 Wavefunction run_from_xyz_file(const InputConfiguration &config)
 {
     Molecule m = occ::chem::read_xyz_file(config.input_file.string());
-    
     print_configuration(m, config);
 
     auto basis = load_basis_set(m, config.basis_name);
@@ -174,6 +173,7 @@ Wavefunction run_from_xyz_file(const InputConfiguration &config)
             return run_method<DFT, SpinorbitalKind::Restricted>(m, basis, config);
         }
     }
+
 }
 
 Wavefunction run_from_gaussian_input_file(InputConfiguration &config)
