@@ -243,6 +243,48 @@ double element_pair_prefactor(const SMDSolventParameters &params, ElementPair p)
     }
 }
 
+int get_second_element(ElementPair p)
+{
+    switch(p)
+    {
+        case C_Br: return Br;
+        case C_C: return C;
+        case C_Cl: return Cl;
+        case C_F: return F;
+        case C_H: return H;
+        case C_I: return I;
+        case C_N: return N;
+        case C_O: return O;
+        case C_P: return P;
+        case C_S: return S;
+        case H_C: return C;
+        case H_O: return O;
+        case N_C: return C;
+        case N_C3: return C;
+        case O_C: return C;
+        case O_N: return N;
+        case O_O: return O;
+        case O_P: return P;
+    }
+    return -1;
+}
+
+double element_pair_sum(const SMDSolventParameters &params, int index, ElementPair p, const IVec &nums, const Mat3N &positions, double power)
+{
+    double result{0.0};
+    int z2 = get_second_element(p);
+    double prefactor = element_pair_prefactor(params, p);
+    if(prefactor == 0.0) return prefactor;
+    for(int i = 0; i < nums.rows(); i++)
+    {
+        if(i == index) continue;
+        if(nums(i) != z2) continue;
+        double r = (positions.col(index) - positions.col(i)).norm();
+        result += T_switching_function(p, r);
+    }
+    return std::pow(result, power) * prefactor;
+}
+
 ElementPair get_element_pair(int z1, int z2)
 {
     if(z1 == H)
@@ -293,22 +335,33 @@ ElementPair get_element_pair(int z1, int z2)
     return Other;
 }
 
-double element_pair_sum(const SMDSolventParameters &params, int index, int z2, const IVec &nums, const Mat3N &positions, double power)
+double nitrogen_N_C_term(const SMDSolventParameters &params, int index, const IVec &nums, const Mat3N &positions)
 {
     double result{0.0};
-    ElementPair p = get_element_pair(nums(index), z2);
-    if(p == Other) return result;
-    double prefactor = element_pair_prefactor(params, p);
-    if(prefactor == 0.0) return prefactor;
+    ElementPair p = N_C;
+    int z2 = get_second_element(p);
+    double nc_prefactor = element_pair_prefactor(params, p);
+    if(nc_prefactor == 0.0) return nc_prefactor;
     for(int i = 0; i < nums.rows(); i++)
     {
         if(i == index) continue;
         if(nums(i) != z2) continue;
         double r = (positions.col(index) - positions.col(i)).norm();
-        result += T_switching_function(p, r);
+        double tmp = T_switching_function(p, r);
+        double csum{0.0};
+        for(int j = 0; j < nums.rows(); j++)
+        {
+            if(j == index || j == i) continue;
+            double r = (positions.col(j) - positions.col(i)).norm();
+            ElementPair p2 = get_element_pair(nums(i), nums(j));
+            csum += T_switching_function(p2, r);
+        }
+        result += csum * csum * tmp;
     }
-    return std::pow(result, power) * prefactor;
+    return result * nc_prefactor;
 }
+
+
 
 }
 
@@ -324,26 +377,28 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
         {
             case 1:
             {
-                result(i) += detail::element_pair_sum(params, i, 6, nums, positions, 1);
-                result(i) += detail::element_pair_sum(params, i, 8, nums, positions, 1);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::H_C, nums, positions, 1);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::H_O, nums, positions, 1);
                 break;
             }
             case 6:
             {
-                result(i) += detail::element_pair_sum(params, i, 6, nums, positions, 1);
-                result(i) += detail::element_pair_sum(params, i, 7, nums, positions, 2);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::C_C, nums, positions, 1);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::C_N, nums, positions, 2);
                 break;
             }
             case 7:
             {
+                result(i) += detail::nitrogen_N_C_term(params, i, nums, positions);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::N_C3, nums, positions, 1);
                 break;
             }
             case 8:
             {
-                result(i) += detail::element_pair_sum(params, i, 6, nums, positions, 1);
-                result(i) += detail::element_pair_sum(params, i, 7, nums, positions, 1);
-                result(i) += detail::element_pair_sum(params, i, 8, nums, positions, 1);
-                result(i) += detail::element_pair_sum(params, i, 15, nums, positions, 1);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::O_C, nums, positions, 1);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::O_N, nums, positions, 1);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::O_O, nums, positions, 1);
+                result(i) += detail::element_pair_sum(params, i, detail::ElementPair::O_P, nums, positions, 1);
             }
             default:
                 continue;
