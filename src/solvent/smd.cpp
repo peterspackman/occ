@@ -358,7 +358,7 @@ double nitrogen_N_C_term(const SMDSolventParameters &params, int index, const IV
         }
         result += csum * csum * tmp;
     }
-    return result * nc_prefactor;
+    return std::pow(result, 1.3) * nc_prefactor;
 }
 
 
