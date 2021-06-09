@@ -4,12 +4,19 @@
 namespace occ::solvent
 {
 
-namespace impl {
-struct SMDParameters
+struct SMDSolventParameters
 {
-    double n, n25, alpha, beta, gamma, epsilon, phi, psi;
+    double refractive_index_293K; // refractive index optical frequencies @ 293K
+    double refractive_index_298K; // refractive index optical frequencies @ 298K
+    double acidity; // Abraham's hydrogen bond acidity
+    double basicity; // Abraham's hydrogen bond basicity
+    double gamma; // macroscopic surface tension parameter @298K
+    double dielectric; // dielectric constant @ 298K i.e. relative permittivity
+    double aromaticity; // fraction of non-H solvent atoms that are aromatic carbon
+    double electronegative_halogenicity; // fraction of non-H solvent atoms that are F, Cl or Br
+    bool is_water{false}; // flag if this is water
 };
-}
+
 
 static inline robin_hood::unordered_map<std::string, double> dielectric_constant{
    {"acetic acid", 6.2528},
@@ -196,7 +203,7 @@ static inline robin_hood::unordered_map<std::string, double> dielectric_constant
 /*
  * Parameters taken from https://comp.chem.umn.edu/solvation/mnsddb.pdf
  */
-static inline robin_hood::unordered_map<std::string, impl::SMDParameters> smd_parameters{
+static inline robin_hood::unordered_map<std::string, SMDSolventParameters> smd_solvent_parameters{
     {"1,1,1-trichloroethane", {1.4379, 1.4313, 0.0, 0.09, 36.24, 7.0826, 0.0, 0.60}},
     {"1,1,2-trichloroethane", {1.4717, 1.4689, 0.13, 0.13, 48.97, 7.1937, 0.0, 0.60}},
     {"1,2,4-trimethylbenzene", {1.5048, 1.5024, 0.0, 0.19, 42.03, 2.3653, 0.667, 0.0}},
@@ -230,9 +237,9 @@ static inline robin_hood::unordered_map<std::string, impl::SMDParameters> smd_pa
     {"1-propanol", {1.3850, 1.3837, 0.37, 0.48, 33.57, 20.524, 0.0, 0.0}},
     {"2,2,2-trifluoroethanol", {1.2907, -1, 0.57, 0.25, 42.02, 26.726, 0.0, 0.5}},
     {"2,2,4-trimethylpentane", {1.3915, 1.3889, 0.00, 0.00, 26.38, 1.9358, 0.0, 0.0}},
-    {"2,4-dimethylpentane", {1.3815, 1.3788, 0.0, 0.00, 25.42, 1.8939, 0.000, 0.000}},
-    {"2,4-dimethylpyridine", {1.5010, 1.4985, 0.0, 0.63, 46.86, 9.4176, 0.625, 0.000}},
-    {"2,6-dimethylpyridine", {1.4953, 1.4952, 0.0, 0.63, 44.64, 7.1735, 0.625, 0.000}},
+    {"2,4-dimethylpentane", {1.3815, 1.3788, 0.0, 0.00, 25.42, 1.8939, 0.0, 0.0}},
+    {"2,4-dimethylpyridine", {1.5010, 1.4985, 0.0, 0.63, 46.86, 9.4176, 0.625, 0.0}},
+    {"2,6-dimethylpyridine", {1.4953, 1.4952, 0.0, 0.63, 44.64, 7.1735, 0.625, 0.0}},
     {"2-bromopropane", {1.4251, 1.4219, 0.00, 0.14, 33.46, 9.3610, 0.0, 0.25}},
     {"2-butanol", {1.3978, 1.3949, 0.33, 0.56, 32.44, 15.944, 0.0, 0.0}},
     {"2-chlorobutane", {1.3971, 1.3941, 0.00, 0.12, 31.1, 8.3930, 0.0, 0.2}},
@@ -284,9 +291,9 @@ static inline robin_hood::unordered_map<std::string, impl::SMDParameters> smd_pa
     {"a-chlorotoluene", {1.5391, 0.0, 0.33, 53.04, 6.7175, 0.75, 0.125}},
     {"o-chlorotoluene", {1.5268, 1.5233, 0.00, 0.07, 47.43, 4.6331, 0.75, 0.125}},
     {"m-cresol", {1.5438, 1.5394, 0.57, 0.34, 51.37, 12.44, 0.75, 0.0}},
-    {"o-cresol", {1.5361, 1.5399, 0.52, 0.30, 53.11, 6.76, 0.75, 0.000}},
-    {"cyclohexane", {1.4266, 1.4235, 0.00,0.00, 35.48, 2.0165, 0.000, 0.000}},
-    {"cyclohexanone", {1.4507, 1.4507, 0.00,0.56, 49.76, 15.619, 0.00, 0.000}},
+    {"o-cresol", {1.5361, 1.5399, 0.52, 0.30, 53.11, 6.76, 0.75, 0.0}},
+    {"cyclohexane", {1.4266, 1.4235, 0.00,0.00, 35.48, 2.0165, 0.0, 0.0}},
+    {"cyclohexanone", {1.4507, 1.4507, 0.00,0.56, 49.76, 15.619, 0.00, 0.0}},
     {"cyclopentane", {1.4065, 1.4036, 0.00,0.00, 31.49, 1.9608, 0.0, 0.0}},
     {"cyclopentanol", {1.4530, -1, 0.32,0.56, 46.8, 16.989,  0.0, 0.0}},
     {"cyclopentanone", {1.4366, 1.4347, 0.00,0.52, 47.21, 13.58, 0.0, 0.0}},
@@ -316,8 +323,8 @@ static inline robin_hood::unordered_map<std::string, impl::SMDParameters> smd_pa
     {"ethanol", {1.3611, 1.3593, 0.37,0.48, 31.62, 24.852, 0.0, 0.0}},
     {"ethylethanoate", {1.3723, 1.3704, 0.00,0.45, 33.67, 5.9867, 0.0, 0.0}},
     {"ethylmethanoate", {1.3599, 1.3575, 0.00,0.38, 33.36, 8.3310, 0.0, 0.0}},
-    {"ethylphenylether", {1.5076, 1.5254, 0.00,0.32, 46.65, 4.1797, 0.667, 0.000}},
-    {"ethylbenzene", {1.4959, 1.4932, 0.00,0.15, 41.38, 2.4339, 0.750, 0.000}},
+    {"ethylphenylether", {1.5076, 1.5254, 0.00,0.32, 46.65, 4.1797, 0.667, 0.0}},
+    {"ethylbenzene", {1.4959, 1.4932, 0.00,0.15, 41.38, 2.4339, 0.75, 0.0}},
     {"fluorobenzene", {1.4684, 1.4629, 0.00,0.10, 38.37, 5.42, 0.857, 0.143}},
     {"formamide", {1.4472, 1.4468, 0.62,0.60, 82.08, 108.94, 0.0, 0.0}},
     {"formicacid", {1.3714, 1.3693, 0.75,0.38, 53.44, 51.1, 0.0, 0.0}},
@@ -325,22 +332,22 @@ static inline robin_hood::unordered_map<std::string, impl::SMDParameters> smd_pa
     {"n-hexadecane", {1.4345, 1.4325, 0.00,0.00, 38.93, 2.0402, 0.0, 0.0}},
     {"n-hexane", {1.3749, 1.3722, 0.00,0.00, 25.75, 1.8819, 0.0, 0.0}},
     {"hexanoicacid", {1.4163, 1.4146, 0.60,0.45, 39.65, 2.6, 0.0, 0.0}},
-    {"iodobenzene", {1.6200, 1.6172, 0.00,0.12, 55.72, 4.5470, 0.857, 0.000}},
+    {"iodobenzene", {1.6200, 1.6172, 0.00,0.12, 55.72, 4.5470, 0.857, 0.0}},
     {"iodoethane", {1.5133, 1.5100, 0.00,0.15, 40.96, 7.6177, 0.0, 0.0}},
     {"iodomethane", {1.5380, 1.5270, 0.00,0.13, 43.67, 6.8650, 0.0, 0.0}},
-    {"isopropylbenzene", {1.4915, 1.4889, 0.00,0.16, 39.85, 2.3712, 0.667, 0.000}},
-    {"p-isopropyltoluene", {1.4909, 1.4885, 0.00,0.19, 38.34, 2.2322, 0.600, 0.000}},
-    {"mesitylene", {1.4994, 1.4968, 0.00,0.19, 39.65, 2.2650, 0.667, 0.000}},
+    {"isopropylbenzene", {1.4915, 1.4889, 0.00,0.16, 39.85, 2.3712, 0.667, 0.0}},
+    {"p-isopropyltoluene", {1.4909, 1.4885, 0.00,0.19, 38.34, 2.2322, 0.600, 0.0}},
+    {"mesitylene", {1.4994, 1.4968, 0.00,0.19, 39.65, 2.2650, 0.667, 0.0}},
     {"methanol", {1.3288, 1.3265, 0.43,0.47, 31.77, 32.613,0.0, 0.0}},
-    {"methylbenzoate", {1.5164, 1.5146, 0.00,0.46, 53.5, 6.7367, 0.600, 0.000}},
+    {"methylbenzoate", {1.5164, 1.5146, 0.00,0.46, 53.5, 6.7367, 0.600, 0.0}},
     {"methylbutanoate", {1.3878, 1.3847, 0.00,0.45, 35.44, 5.5607, 0.0, 0.0}},
     {"methylethanoate", {1.3614, 1.3589, 0.00,0.45, 35.59, 6.8615, 0.0, 0.0}},
     {"methylmethanoate", {1.3433, 1.3415, 0.00,0.38, 35.06, 8.8377, 0.0, 0.0}},
     {"methylpropanoate", {1.3775, 1.3742, 0.00,0.45, 35.18, 6.0777, 0.0, 0.0}},
-    {"N-methylaniline", {1.5684, 1.5681, 0.17,0.43, 53.11, 5.9600, 0.750, 0.000}},
+    {"N-methylaniline", {1.5684, 1.5681, 0.17,0.43, 53.11, 5.9600, 0.75, 0.0}},
     {"methylcyclohexane", {1.4231, 1.4206, 0.00,0.00, 33.52, 2.024, 0.0, 0.0}},
     {"N-methylformamide(E/Zmixture)", {1.4319, 1.4310, 0.40,0.55, 55.44, 181.56, 0.0, 0.0}},
-    {"nitrobenzene", {1.5562, 1.5030, 0.00,0.28, 57.54, 34.809, 0.667, 0.000}},
+    {"nitrobenzene", {1.5562, 1.5030, 0.00,0.28, 57.54, 34.809, 0.667, 0.0}},
     {"nitroethane", {1.3917, 1.3897, 0.02,0.33, 46.25, 28.29, 0.0, 0.0}},
     {"nitromethane", {1.3817, 1.3796, 0.06, 0.31, 52.58, 36.562, 0.0, 0.0}},
     {"o-nitrotoluene", {1.5450, 1.5474, 0.0, 0.27, 59.12, 25.669, 0.6, 0.0}},
@@ -371,7 +378,7 @@ static inline robin_hood::unordered_map<std::string, impl::SMDParameters> smd_pa
     {"trichloroethene", {1.4773, 1.4556, 0.08, 0.03, 41.45, 3.422, 0.0, 0.6}},
     {"triethylamine", {1.4010, 1.3980, 0.0, 0.79, 29.1, 2.3832, 0.0, 0.0}},
     {"n-undecane", {1.4398, 1.4151, 0.0, 0.0, 34.85, 1.991, 0.0, 0.0}},
-    {"water", {1.3328, 1.3323, -1.0, -1.0, -1.0, 78.355, -1.0, -1.0}},
+    {"water", {1.3328, 1.3323, -1.0, -1.0, -1.0, 78.355, -1.0, -1.0, true}},
     {"xylene (mixture)", {1.4995, 1.4969, 0.0, 0.16, 41.38, 2.3879, 0.75, 0.0}},
     {"m-xylene", {1.4972, 1.4946, 0.0, 0.16, 40.98, 2.3478, 0.75, 0.0}},
     {"o-xylene", {1.5055, 1.5029, 0.0, 0.16, 42.83, 2.5454, 0.75, 0.0}},

@@ -2,6 +2,7 @@
 #include <fmt/core.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/surface.h>
+#include <occ/core/logger.h>
 
 namespace occ::solvent {
 
@@ -34,7 +35,7 @@ void initialize_pcminput(struct PCMInput *input)
 
 }
 
-void host_writer(const char * message) { fmt::print("{}\n", message); }
+void host_writer(const char * message) { occ::log::debug("PCMSolver\n\n{}\n\n", message); }
 
 #endif
 
@@ -77,6 +78,7 @@ ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom
     m_surface_positions = s.vertices;
     m_surface_areas = s.areas;
 #endif
+    m_surface_atoms = occ::solvent::surface::nearest_atom_index(m_nuclear_positions, m_surface_positions);
     m_surface_potential = Vec::Zero(m_surface_areas.rows());
     m_asc = Vec::Zero(m_surface_areas.rows());
 

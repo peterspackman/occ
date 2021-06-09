@@ -43,6 +43,7 @@ private:
     Vec m_surface_areas;
     Vec m_surface_potential;
     Vec m_asc;
+    IVec m_surface_atoms;
     bool m_asc_needs_update{true};
 #ifdef USING_PCMSolver
     const char * m_surface_potential_label = "OCC_TOTAL_MEP";

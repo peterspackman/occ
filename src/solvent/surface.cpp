@@ -4,23 +4,24 @@
 #include <fmt/ostream.h>
 #include <occ/core/units.h>
 #include <cstring>
+#include <occ/solvent/smd.h>
 
 namespace occ::solvent::surface
 {
 
-occ::Mat3 principal_axes(const occ::Mat3N &positions)
+Mat3 principal_axes(const Mat3N &positions)
 {
-    if(positions.cols() == 1) return occ::Mat3::Identity();
-    Eigen::JacobiSVD<occ::Mat> svd(positions, Eigen::ComputeThinU);
-    occ::Mat3 result = svd.matrixU();
-    occ::Vec proportions = svd.singularValues();
+    if(positions.cols() == 1) return Mat3::Identity();
+    Eigen::JacobiSVD<Mat> svd(positions, Eigen::ComputeThinU);
+    Mat3 result = svd.matrixU();
+    Vec proportions = svd.singularValues();
     if(proportions.rows() < 3) {
         result.col(2) = result.col(0).cross(result.col(1));
     }
     return result;
 }
 
-Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, const occ::Mat3N &positions)
+Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3N &positions)
 {
     const size_t N = atomic_numbers.rows();
     const size_t npts = 170;
@@ -35,21 +36,21 @@ Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, 
         else num_other++;
     }
     size_t pt_count{npts * num_other + num_h * npts_H};
-    auto tmp_vertices = occ::Mat3N(3, pt_count);
-    auto tmp_areas = occ::Vec(pt_count);
-    auto tmp_atom_index = occ::IVec(pt_count);
+    auto tmp_vertices = Mat3N(3, pt_count);
+    auto tmp_areas = Vec(pt_count);
+    auto tmp_atom_index = IVec(pt_count);
     auto grid = occ::grid::lebedev(npts);
     auto hgrid = occ::grid::lebedev(npts_H);
-    occ::Mat3N lebedev_points = grid.leftCols(3).transpose();
-    occ::Mat3N h_lebedev_points = hgrid.leftCols(3).transpose();
-    occ::Vec lebedev_weights = grid.col(3);
-    occ::Vec h_lebedev_weights = hgrid.col(3);
-    occ::Vec3 centroid = positions.rowwise().mean();
-    occ::Mat3N centered = positions.colwise() - centroid;
+    Mat3N lebedev_points = grid.leftCols(3).transpose();
+    Mat3N h_lebedev_points = hgrid.leftCols(3).transpose();
+    Vec lebedev_weights = grid.col(3);
+    Vec h_lebedev_weights = hgrid.col(3);
+    Vec3 centroid = positions.rowwise().mean();
+    Mat3N centered = positions.colwise() - centroid;
     auto axes = principal_axes(centered);
     centered = axes.transpose() * centered;
 
-    occ::Vec ri = radii.array();
+    Vec ri = radii.array();
 
     size_t num_valid_points{0};
     for(size_t i = 0; i < N; i++)
@@ -84,7 +85,7 @@ Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, 
 
     for(size_t i = 0; i < N; i++)
     {
-        occ::Vec3 q = centered.col(i);
+        Vec3 q = centered.col(i);
         for(size_t j = 0; j < tmp_vertices.cols(); j++)
         {
             if(!mask(j) || tmp_atom_index(j) == i) continue;
@@ -96,16 +97,16 @@ Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, 
         }
     }
 
-    occ::Mat3N remaining_points(3, num_valid_points);
-    occ::Vec remaining_weights(num_valid_points);
-    occ::IVec remaining_atom_index(num_valid_points);
+    Mat3N remaining_points(3, num_valid_points);
+    Vec remaining_weights(num_valid_points);
+    IVec remaining_atom_index(num_valid_points);
     size_t j = 0;
     for(size_t i = 0; i < mask.rows(); i++)
     {
         if(mask(i)) {
             size_t atom_idx = tmp_atom_index(i);
-            occ::Vec3 v = tmp_vertices.col(i);
-            occ::Vec3 shift = (v - centered.col(atom_idx));
+            Vec3 v = tmp_vertices.col(i);
+            Vec3 shift = (v - centered.col(atom_idx));
             shift.normalize();
             shift.array() *= delta;
             // shift the position back by delta
@@ -120,6 +121,20 @@ Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, 
     surface.atom_index = remaining_atom_index;
     surface.vertices = (axes * remaining_points).colwise() + centroid;
     return surface;
+}
+
+
+IVec nearest_atom_index(const Mat3N &atom_positions, const Mat3N &element_centers)
+{
+    IVec result(element_centers.cols());
+    Vec3 c, atom;
+    for(int i = 0; i < element_centers.cols(); i++)
+    {
+        Eigen::Index idx{0};
+        double dist = (atom_positions.colwise() - element_centers.col(i)).colwise().squaredNorm().minCoeff(&idx);
+        result(i) = idx;
+    }
+    return result;
 }
 
 }

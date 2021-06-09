@@ -6,11 +6,12 @@ namespace occ::solvent::surface
 
 struct Surface
 {
-    occ::Mat3N vertices;
-    occ::Vec areas;
-    occ::IVec atom_index;
+    Mat3N vertices;
+    Vec areas;
+    IVec atom_index;
 };
 
-Surface solvent_surface(const occ::Vec &radii, const occ::IVec &atomic_numbers, const occ::Mat3N &positions);
+Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3N &positions);
 
+IVec nearest_atom_index(const Mat3N &atom_positions, const Mat3N &element_centers);
 }
