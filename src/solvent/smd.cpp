@@ -409,6 +409,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
 
 double molecular_surface_tension(const SMDSolventParameters &params)
 {
+    if(params.is_water) return 0.0;
     return detail::smd_sigma_gamma * params.gamma +
         detail::smd_sigma_phi2 * params.aromaticity * params.aromaticity +
         detail::smd_sigma_psi2 * params.electronegative_halogenicity * params.electronegative_halogenicity + 

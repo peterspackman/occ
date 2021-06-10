@@ -1,8 +1,11 @@
 #include <occ/solvent/solvation_correction.h>
-#include <fmt/core.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/surface.h>
 #include <occ/core/logger.h>
+#include <occ/solvent/smd.h>
+#include <occ/core/units.h>
+#include <fmt/core.h>
+#include <fmt/ostream.h>
 
 namespace occ::solvent {
 
@@ -93,7 +96,6 @@ void ContinuumSolvationModel::set_surface_potential(const Vec &potential)
 void ContinuumSolvationModel::set_solvent(const std::string &solvent)
 {
     m_solvent_name = solvent;
-    fmt::print("Setting solvent: {}\n", solvent);
 #if USING_PCMSolver
     pcmsolver_set_string_option(m_pcm_context, "solvent", solvent.c_str());
     pcmsolver_refresh(m_pcm_context);
@@ -146,4 +148,23 @@ ContinuumSolvationModel::~ContinuumSolvationModel()
     pcmsolver_delete(m_pcm_context);
 #endif 
 }
+
+double ContinuumSolvationModel::smd_cds_energy() const
+{
+    Mat3N pos_angs = m_nuclear_positions * 0.52917749;
+    IVec nums = m_nuclear_charges.cast<int>();
+    auto params = occ::solvent::smd_solvent_parameters["water"];
+    Vec at = occ::solvent::smd::atomic_surface_tension(params, nums, pos_angs);
+    Vec surface_areas_per_atom_angs = Vec::Zero(nums.rows());
+    const double conversion_factor = occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
+    for(int i = 0; i < m_surface_areas.rows(); i++)
+    {
+        surface_areas_per_atom_angs(m_surface_atoms(i)) += conversion_factor * m_surface_areas(i);
+    }
+    double total_area = surface_areas_per_atom_angs.array().sum();
+    double atomic_term = surface_areas_per_atom_angs.dot(at) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
+    double molecular_term = total_area * occ::solvent::smd::molecular_surface_tension(params) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
+    return molecular_term + atomic_term;
+}
+
 }

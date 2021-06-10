@@ -3,6 +3,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/units.h>
+#include <occ/core/element.h>
 
 namespace occ::solvent {
 
@@ -23,7 +24,8 @@ Vec solvation_radii(const IVec &nums)
         int n = nums(i);
         double r = 2.223;
         if(n <= 17 && n > 0) r = radii[n - 1];
-        result(i) = r;
+        if(n == 1) result(i) = 1.4;
+        else result(i) = occ::chem::Element(n).vdwRadius();
     }
     return result * occ::units::ANGSTROM_TO_BOHR;
 }

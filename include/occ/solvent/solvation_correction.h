@@ -34,6 +34,7 @@ public:
     const Vec& apparent_surface_charge();
 
     double surface_polarization_energy();
+    double smd_cds_energy() const;
 
 private:
     std::string m_solvent_name{"water"};
@@ -122,8 +123,9 @@ public:
             m_point_charges[i].first = asc(i);
         }
         double surface_energy = m_solvation_model.surface_polarization_energy();
+        double cds_energy = m_solvation_model.smd_cds_energy();
         m_nuclear_solvation_energy = m_qn.dot(asc);
-        m_solvation_energy = m_nuclear_solvation_energy - surface_energy;
+        m_solvation_energy = m_nuclear_solvation_energy - surface_energy + cds_energy;
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
         double e_X = 0.0;
 
