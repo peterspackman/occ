@@ -3,6 +3,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 project(occ LANGUAGES CXX)
 
+option(BUILD_FPIC "Build with position independent code" OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
     option(WITH_BENCHMARKS "Enable benchmarking tests" OFF)
@@ -27,9 +30,6 @@ endif()
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/fmt" EXCLUDE_FROM_ALL)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/scnlib" EXCLUDE_FROM_ALL)
-
-set(BUILD_FPIC OFF)
-set(BUILD_SHARED_LIBS OFF)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gau2grid" EXCLUDE_FROM_ALL)
 
 set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "Use fmt from 3rdparty directory" FORCE)
