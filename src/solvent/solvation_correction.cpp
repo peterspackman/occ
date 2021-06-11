@@ -74,21 +74,21 @@ ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom
     set_solvent(m_solvent_name);
     Vec coulomb_radii = occ::solvent::smd::intrinsic_coulomb_radii(nums, m_params);
     pcmsolver_print(m_pcm_context);
+    m_surface_atoms_coulomb = occ::solvent::surface::nearest_atom_index(m_nuclear_positions, m_surface_positions_coulomb);
 #else
     set_solvent(m_solvent_name);
     IVec nums = m_nuclear_charges.cast<int>();
     Vec coulomb_radii = occ::solvent::smd::intrinsic_coulomb_radii(nums, m_params);
-    auto s = occ::solvent::surface::solvent_surface(coulomb_radii, nums, m_nuclear_positions);
+    auto s = occ::solvent::surface::solvent_surface(coulomb_radii, nums, m_nuclear_positions, 0.0);
     m_surface_positions_coulomb = s.vertices;
     m_surface_areas_coulomb = s.areas;
+    m_surface_atoms_coulomb = s.atom_index;
 #endif
     Vec cds_radii = occ::solvent::smd::cds_radii(nums, m_params);
-    auto s_cds = occ::solvent::surface::solvent_surface(cds_radii, nums, m_nuclear_positions);
+    auto s_cds = occ::solvent::surface::solvent_surface(cds_radii, nums, m_nuclear_positions, 0.0);
     m_surface_positions_cds = s_cds.vertices;
     m_surface_areas_cds = s_cds.areas;
-
-    m_surface_atoms_coulomb = occ::solvent::surface::nearest_atom_index(m_nuclear_positions, m_surface_positions_coulomb);
-    m_surface_atoms_cds = occ::solvent::surface::nearest_atom_index(m_nuclear_positions, m_surface_positions_cds);
+    m_surface_atoms_cds = s_cds.atom_index;
     m_surface_potential = Vec::Zero(m_surface_areas_coulomb.rows());
     m_asc = Vec::Zero(m_surface_areas_coulomb.rows());
 
@@ -170,7 +170,7 @@ ContinuumSolvationModel::~ContinuumSolvationModel()
 
 double ContinuumSolvationModel::smd_cds_energy() const
 {
-    Mat3N pos_angs = m_nuclear_positions * 0.52917749;
+    Mat3N pos_angs = m_nuclear_positions * occ::units::BOHR_TO_ANGSTROM;
     IVec nums = m_nuclear_charges.cast<int>();
     auto params = occ::solvent::smd_solvent_parameters["water"];
     Vec at = occ::solvent::smd::atomic_surface_tension(params, nums, pos_angs);
@@ -180,11 +180,13 @@ double ContinuumSolvationModel::smd_cds_energy() const
     {
         surface_areas_per_atom_angs(m_surface_atoms_cds(i)) += conversion_factor * m_surface_areas_cds(i);
     }
+    fmt::print("Surface area per atom:\n{}\n", surface_areas_per_atom_angs);
     double total_area = surface_areas_per_atom_angs.array().sum();
     double atomic_term = surface_areas_per_atom_angs.dot(at) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
     double molecular_term = total_area * occ::solvent::smd::molecular_surface_tension(params) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
     fmt::print("Coulomb cavity surface area: {:.3f} Ang**2\n", m_surface_areas_coulomb.array().sum() * conversion_factor);
-    fmt::print("CDS cavity surface area: {:.3f} Ang**2\n", total_area);
+    fmt::print("CDS cavity surface area: {:.3f} Ang**2 ({:.3f})\n", total_area, m_surface_areas_cds.array().sum() * conversion_factor);
+    fmt::print("CDS energy: {:.2f}\n", (molecular_term + atomic_term) * occ::units::AU_TO_KCAL_PER_MOL);
     return molecular_term + atomic_term;
 }
 

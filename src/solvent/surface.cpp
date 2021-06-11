@@ -21,62 +21,46 @@ Mat3 principal_axes(const Mat3N &positions)
     return result;
 }
 
-Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3N &positions)
+Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3N &positions, double solvent_radius_angs)
 {
     const size_t N = atomic_numbers.rows();
-    const size_t npts = 170;
-    const size_t npts_H = 110;
-    const double solvent_radius = 0.5 * occ::units::ANGSTROM_TO_BOHR;
-    const double delta = 0.1 + solvent_radius;
+    const double solvent_radius = solvent_radius_angs * occ::units::ANGSTROM_TO_BOHR;
     Surface surface;
-    size_t num_h{0}, num_other{0};
-    for(size_t i = 0; i < N; i++)
-    {
-        if (atomic_numbers(i) == 1) num_h++;
-        else num_other++;
-    }
-    size_t pt_count{npts * num_other + num_h * npts_H};
-    auto tmp_vertices = Mat3N(3, pt_count);
-    auto tmp_areas = Vec(pt_count);
-    auto tmp_atom_index = IVec(pt_count);
-    auto grid = occ::grid::lebedev(npts);
-    auto hgrid = occ::grid::lebedev(npts_H);
-    Mat3N lebedev_points = grid.leftCols(3).transpose();
-    Mat3N h_lebedev_points = hgrid.leftCols(3).transpose();
-    Vec lebedev_weights = grid.col(3);
-    Vec h_lebedev_weights = hgrid.col(3);
+    Mat tmp_vertices;
+    Vec tmp_areas;
+    IVec tmp_atom_index;
     Vec3 centroid = positions.rowwise().mean();
     Mat3N centered = positions.colwise() - centroid;
     auto axes = principal_axes(centered);
     centered = axes.transpose() * centered;
 
+    const double points_per_bohr2{1.5};
     Vec ri = radii.array();
+    const std::array<int, 6> point_levels{302, 350, 434, 590, 770, 974};
 
     size_t num_valid_points{0};
     for(size_t i = 0; i < N; i++)
     {
         double rs = ri(i);
-        double r = rs + delta; 
-        if (atomic_numbers(i) == 1)
+        double r = rs + solvent_radius; 
+        double surface_area = 4 * M_PI * rs * rs;
+        double grid_size_d = surface_area * points_per_bohr2;
+        int npts = point_levels[point_levels.size() - 1];
+        for(int j = point_levels.size() - 1; j >= 0; j--)
         {
-            tmp_areas.segment(num_valid_points, npts_H) = 
-                h_lebedev_weights * 4 * M_PI * rs * rs;
-            auto vblock = tmp_vertices.block(0, num_valid_points, 3, npts_H);
-            vblock = h_lebedev_points * r;
-            vblock.colwise() += centered.col(i);
-            tmp_atom_index.segment(num_valid_points, npts_H).array() = i;
-            num_valid_points += npts_H;
+            if(grid_size_d > point_levels[j]) break;
+            npts = point_levels[j];
         }
-        else
-        {
-            tmp_areas.segment(num_valid_points, npts) = 
-                lebedev_weights * 4 * M_PI * rs * rs;
-            auto vblock = tmp_vertices.block(0, num_valid_points, 3, npts);
-            vblock = lebedev_points * r;
-            vblock.colwise() += centered.col(i);
-            tmp_atom_index.segment(num_valid_points, npts).array() = i;
-            num_valid_points += npts;
-        }
+        tmp_vertices.conservativeResize(3, num_valid_points + npts);
+        tmp_areas.conservativeResize(num_valid_points + npts);
+        tmp_atom_index.conservativeResize(num_valid_points + npts);
+        auto grid = occ::grid::lebedev(npts);
+        tmp_areas.segment(num_valid_points, npts) = grid.col(3) * surface_area;
+        auto vblock = tmp_vertices.block(0, num_valid_points, 3, npts);
+        vblock = grid.block(0, 0, npts, 3).transpose() * r;
+        vblock.colwise() += centered.col(i);
+        tmp_atom_index.segment(num_valid_points, npts).array() = i;
+        num_valid_points += npts;
     }
 
     Eigen::Matrix<bool, Eigen::Dynamic, 1> mask(num_valid_points);
@@ -90,7 +74,7 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3
         {
             if(!mask(j) || tmp_atom_index(j) == i) continue;
             double r = (q - tmp_vertices.col(j)).norm();
-            if(r < (ri(i) + delta)) {
+            if(r < (ri(i) + solvent_radius)) {
                 num_valid_points--;
                 mask(j) = false;
             }
@@ -108,8 +92,8 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3
             Vec3 v = tmp_vertices.col(i);
             Vec3 shift = (v - centered.col(atom_idx));
             shift.normalize();
-            shift.array() *= delta;
-            // shift the position back by delta
+            shift.array() *= solvent_radius;
+            // shift the position back by solvent radius
             v -= shift;
             remaining_points.col(j) = v;
             remaining_weights(j) = tmp_areas(i);

@@ -1,6 +1,7 @@
 #include <occ/solvent/smd.h>
 #include <occ/core/element.h>
 #include <occ/core/units.h>
+#include <fmt/ostream.h>
 
 namespace occ::solvent::smd{
 
@@ -211,12 +212,36 @@ constexpr double delta_rzz(ElementPair p)
     }
 }
 
-constexpr double T_switching_function(ElementPair p, double r)
+void print_pair(ElementPair p)
 {
-    double rz = rzz(p);
-    double delta_rz = delta_rzz(p);
-    if(r < (rz + delta_rz)) return std::exp(delta_rz / (r - delta_rz - rz));
-    return 0.0;
+    switch(p)
+    {
+        case H_C: fmt::print("H_C\n");
+                  break;
+        case H_O: fmt::print("H_C\n");
+                  break;
+        case O_C: fmt::print("O_C\n");
+                  break;
+        case O_O: fmt::print("O_O\n");
+                  break;
+        case O_N: fmt::print("O_N\n");
+                  break;
+        case O_P: fmt::print("O_P\n");
+                  break;
+        default: fmt::print("Other\n");
+                 break;
+    }
+}
+
+double T_switching_function(ElementPair p, double r)
+{
+    const double rz = rzz(p);
+    const double delta_rz = delta_rzz(p);
+    const double cutoff = rz + delta_rz;
+    print_pair(p);
+    fmt::print("rzz: {}, delta_rzz: {}\n", rz, delta_rz);
+    if(r < cutoff) return std::exp(delta_rz / (r - cutoff));
+    else return 0.0;
 }
 
 double element_sigma(const SMDSolventParameters &params, int z)
@@ -276,13 +301,26 @@ double element_pair_sum(const SMDSolventParameters &params, int index, ElementPa
     double result{0.0};
     int z2 = get_second_element(p);
     double prefactor = element_pair_prefactor(params, p);
-    if(prefactor == 0.0) return prefactor;
+    print_pair(p);
+    fmt::print("Prefactor: {}\n", prefactor);
+    if(prefactor == 0.0) return 0.0;
+    bool found_element{false};
     for(int i = 0; i < nums.rows(); i++)
     {
         if(i == index) continue;
         if(nums(i) != z2) continue;
+        found_element = true;
         double r = (positions.col(index) - positions.col(i)).norm();
         result += T_switching_function(p, r);
+    }
+    if(!found_element)
+    {
+        fmt::print("No terms\n");
+        return 0.0;
+    }
+    else
+    {
+        fmt::print("Found terms\n");
     }
     return std::pow(result, power) * prefactor;
 }
@@ -375,6 +413,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
     {
         int n = nums(i);
         result(i) = detail::element_sigma(params, n);
+        fmt::print("Element {}: sigma: {}\n", n, result(i));
         switch(n)
         {
             case 1:
@@ -401,6 +440,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
                 result(i) += detail::element_pair_sum(params, i, detail::ElementPair::O_N, nums, positions, 1);
                 result(i) += detail::element_pair_sum(params, i, detail::ElementPair::O_O, nums, positions, 1);
                 result(i) += detail::element_pair_sum(params, i, detail::ElementPair::O_P, nums, positions, 1);
+                break;
             }
             default:
                 continue;

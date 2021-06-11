@@ -53,6 +53,7 @@ private:
     const char * m_surface_potential_label = "OCC_TOTAL_MEP";
     const char * m_asc_label = "OCC_TOTAL_ASC";
     pcmsolver_context_t *m_pcm_context;
+    pcmsolver_context_t *m_pcm_context_cds;
 #else
     COSMO m_cosmo;
 #endif
