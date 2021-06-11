@@ -3,6 +3,7 @@
 #include <occ/qm/energy_components.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
+#include <occ/solvent/parameters.h>
 #include <libint2/atom.h>
 
 #ifdef USING_PCMSolver
@@ -26,10 +27,10 @@ public:
     const std::string& solvent() const { return m_solvent_name; }
 
     const Mat3N &nuclear_positions() const { return m_nuclear_positions; } 
-    const Mat3N &surface_positions() const { return m_surface_positions; } 
-    const Vec &surface_areas() const { return m_surface_areas; } 
+    const Mat3N &surface_positions() const { return m_surface_positions_coulomb; } 
+    const Vec &surface_areas() const { return m_surface_areas_coulomb; } 
     const Vec &nuclear_charges() const { return m_nuclear_charges; } 
-    size_t num_surface_points() const { return m_surface_areas.rows(); }
+    size_t num_surface_points() const { return m_surface_areas_coulomb.rows(); }
     void set_surface_potential(const Vec&);
     const Vec& apparent_surface_charge();
 
@@ -37,15 +38,17 @@ public:
     double smd_cds_energy() const;
 
 private:
-    std::string m_solvent_name{"water"};
+    std::string m_solvent_name;
     Mat3N m_nuclear_positions;
     Vec m_nuclear_charges;
-    Mat3N m_surface_positions;
-    Vec m_surface_areas;
+    Mat3N m_surface_positions_coulomb, m_surface_positions_cds;
+    Vec m_surface_areas_coulomb, m_surface_areas_cds;
     Vec m_surface_potential;
     Vec m_asc;
-    IVec m_surface_atoms;
+    IVec m_surface_atoms_coulomb, m_surface_atoms_cds;
     bool m_asc_needs_update{true};
+    SMDSolventParameters m_params;
+
 #ifdef USING_PCMSolver
     const char * m_surface_potential_label = "OCC_TOTAL_MEP";
     const char * m_asc_label = "OCC_TOTAL_ASC";
@@ -60,8 +63,8 @@ template<typename Proc>
 class SolvationCorrectedProcedure
 {
 public:
-    SolvationCorrectedProcedure(Proc &proc) : m_atoms(proc.atoms()), m_proc(proc),
-        m_solvation_model(proc.atoms())
+    SolvationCorrectedProcedure(Proc &proc, const std::string &solvent = "water") : m_atoms(proc.atoms()), m_proc(proc),
+        m_solvation_model(proc.atoms(), solvent)
     {
         occ::Mat3N pos(3, m_atoms.size());
         occ::IVec nums(m_atoms.size());
@@ -124,6 +127,7 @@ public:
         }
         double surface_energy = m_solvation_model.surface_polarization_energy();
         double cds_energy = m_solvation_model.smd_cds_energy();
+        fmt::print("PCM non-electrostatic energy: {:.12f}\n", cds_energy);
         m_nuclear_solvation_energy = m_qn.dot(asc);
         m_solvation_energy = m_nuclear_solvation_energy - surface_energy + cds_energy;
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);

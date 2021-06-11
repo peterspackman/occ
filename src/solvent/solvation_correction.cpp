@@ -45,7 +45,7 @@ void host_writer(const char * message) { occ::log::debug("PCMSolver\n\n{}\n\n", 
 }
 
 ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom> &atoms, const std::string &solvent) :
-    m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()), m_solvent_name("water")
+    m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()), m_solvent_name(solvent)
 #ifndef USING_PCMSolver
     , m_cosmo(78.39)
 #endif
@@ -72,18 +72,25 @@ ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom
         impl::host_writer
     );
     set_solvent(m_solvent_name);
+    Vec coulomb_radii = occ::solvent::smd::intrinsic_coulomb_radii(nums, m_params);
     pcmsolver_print(m_pcm_context);
 #else
-    IVec nums = m_nuclear_charges.cast<int>();
-    Vec radii = occ::solvent::cosmo::solvation_radii(nums);
     set_solvent(m_solvent_name);
-    auto s = occ::solvent::surface::solvent_surface(radii, nums, m_nuclear_positions);
-    m_surface_positions = s.vertices;
-    m_surface_areas = s.areas;
+    IVec nums = m_nuclear_charges.cast<int>();
+    Vec coulomb_radii = occ::solvent::smd::intrinsic_coulomb_radii(nums, m_params);
+    auto s = occ::solvent::surface::solvent_surface(coulomb_radii, nums, m_nuclear_positions);
+    m_surface_positions_coulomb = s.vertices;
+    m_surface_areas_coulomb = s.areas;
 #endif
-    m_surface_atoms = occ::solvent::surface::nearest_atom_index(m_nuclear_positions, m_surface_positions);
-    m_surface_potential = Vec::Zero(m_surface_areas.rows());
-    m_asc = Vec::Zero(m_surface_areas.rows());
+    Vec cds_radii = occ::solvent::smd::cds_radii(nums, m_params);
+    auto s_cds = occ::solvent::surface::solvent_surface(cds_radii, nums, m_nuclear_positions);
+    m_surface_positions_cds = s_cds.vertices;
+    m_surface_areas_cds = s_cds.areas;
+
+    m_surface_atoms_coulomb = occ::solvent::surface::nearest_atom_index(m_nuclear_positions, m_surface_positions_coulomb);
+    m_surface_atoms_cds = occ::solvent::surface::nearest_atom_index(m_nuclear_positions, m_surface_positions_cds);
+    m_surface_potential = Vec::Zero(m_surface_areas_coulomb.rows());
+    m_asc = Vec::Zero(m_surface_areas_coulomb.rows());
 
 }
 
@@ -96,19 +103,31 @@ void ContinuumSolvationModel::set_surface_potential(const Vec &potential)
 void ContinuumSolvationModel::set_solvent(const std::string &solvent)
 {
     m_solvent_name = solvent;
+    if(!occ::solvent::smd_solvent_parameters.contains(m_solvent_name)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", m_solvent_name));
+    m_params = occ::solvent::smd_solvent_parameters[m_solvent_name];
+    fmt::print("Using SMD solvent '{}'\n", m_solvent_name);
+    fmt::print("Parameters:\n");
+    fmt::print("Dielectric                    {: 9.4f}\n", m_params.dielectric);
+    if(!m_params.is_water)
+    {
+        fmt::print("Surface Tension               {: 9.4f}\n", m_params.gamma);
+        fmt::print("Acidity                       {: 9.4f}\n", m_params.acidity);
+        fmt::print("Basicity                      {: 9.4f}\n", m_params.basicity);
+        fmt::print("Aromaticity                   {: 9.4f}\n", m_params.aromaticity);
+        fmt::print("Electronegative Halogenicity  {: 9.4f}\n", m_params.electronegative_halogenicity);
+    }
 #if USING_PCMSolver
     pcmsolver_set_string_option(m_pcm_context, "solvent", solvent.c_str());
     pcmsolver_refresh(m_pcm_context);
     int grid_size = pcmsolver_get_cavity_size(m_pcm_context);
     int irr_grid_size = pcmsolver_get_irreducible_cavity_size(m_pcm_context);
-    m_surface_areas = Vec(grid_size);
-    m_surface_positions = Mat3N(3, grid_size);
-    pcmsolver_get_centers(m_pcm_context, m_surface_positions.data());
-    pcmsolver_get_areas(m_pcm_context, m_surface_areas.data());
+    m_surface_areas_coulomb = Vec(grid_size);
+    m_surface_positions_coulomb = Mat3N(3, grid_size);
+    pcmsolver_get_centers(m_pcm_context, m_surface_positions_coulomb.data());
+    pcmsolver_get_areas(m_pcm_context, m_surface_areas_coulomb.data());
     m_asc_needs_update = true;
 #else
-    if(!occ::solvent::dielectric_constant.contains(m_solvent_name)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", m_solvent_name));
-    m_cosmo = COSMO(occ::solvent::dielectric_constant[m_solvent_name]);
+    m_cosmo = COSMO(m_params.dielectric);
 #endif 
 }
 
@@ -124,7 +143,7 @@ const Vec& ContinuumSolvationModel::apparent_surface_charge()
       pcmsolver_compute_asc(m_pcm_context, m_surface_potential_label, m_asc_label, irrep);
       pcmsolver_get_surface_function(m_pcm_context, grid_size, m_asc.data(), m_asc_label);
 #else
-      auto result = m_cosmo(m_surface_positions, m_surface_areas, m_surface_potential);
+      auto result = m_cosmo(m_surface_positions_coulomb, m_surface_areas_coulomb, m_surface_potential);
       m_asc = result.converged;
 #endif
       m_asc_needs_update = false;
@@ -157,13 +176,15 @@ double ContinuumSolvationModel::smd_cds_energy() const
     Vec at = occ::solvent::smd::atomic_surface_tension(params, nums, pos_angs);
     Vec surface_areas_per_atom_angs = Vec::Zero(nums.rows());
     const double conversion_factor = occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
-    for(int i = 0; i < m_surface_areas.rows(); i++)
+    for(int i = 0; i < m_surface_areas_cds.rows(); i++)
     {
-        surface_areas_per_atom_angs(m_surface_atoms(i)) += conversion_factor * m_surface_areas(i);
+        surface_areas_per_atom_angs(m_surface_atoms_cds(i)) += conversion_factor * m_surface_areas_cds(i);
     }
     double total_area = surface_areas_per_atom_angs.array().sum();
     double atomic_term = surface_areas_per_atom_angs.dot(at) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
     double molecular_term = total_area * occ::solvent::smd::molecular_surface_tension(params) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
+    fmt::print("Coulomb cavity surface area: {:.3f} Ang**2\n", m_surface_areas_coulomb.array().sum() * conversion_factor);
+    fmt::print("CDS cavity surface area: {:.3f} Ang**2\n", total_area);
     return molecular_term + atomic_term;
 }
 

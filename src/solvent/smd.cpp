@@ -1,4 +1,6 @@
 #include <occ/solvent/smd.h>
+#include <occ/core/element.h>
+#include <occ/core/units.h>
 
 namespace occ::solvent::smd{
 
@@ -414,6 +416,68 @@ double molecular_surface_tension(const SMDSolventParameters &params)
         detail::smd_sigma_phi2 * params.aromaticity * params.aromaticity +
         detail::smd_sigma_psi2 * params.electronegative_halogenicity * params.electronegative_halogenicity + 
         detail::smd_sigma_beta2 * params.basicity * params.basicity;
+}
+
+
+Vec intrinsic_coulomb_radii(const IVec &nums, const SMDSolventParameters &params)
+{
+
+    // see Table 3 of https://pubs.acs.org/doi/10.1021/jp810292n
+    occ::Vec result(nums.rows());
+    for(int i = 0; i < nums.rows(); i++)
+    {
+        int n = nums(i);
+        double r = 1.2;
+        switch(n)
+        {
+            case 1:
+                r = 1.2;
+                break;
+            case 6:
+                r = 1.85;
+                break;
+            case 7:
+                r = 1.89;
+                break;
+            case 8:
+                r = (params.acidity >= 0.43 || params.is_water) ? 1.52 : 1.52 + 1.8 * (0.43 - params.acidity);
+                break;
+            case 9:
+                r = 1.73;
+                break;
+            case 14:
+                r = 2.47;
+                break;
+            case 15:
+                r = 2.12;
+                break;
+            case 16:
+                r = 2.49;
+                break;
+            case 17:
+                r = 2.38;
+                break;
+            case 35:
+                r = 3.06;
+                break;
+            default:
+                r = occ::chem::Element(n).vdwRadius();
+                break;
+        }
+        result(i) = r;
+    }
+    return result * occ::units::ANGSTROM_TO_BOHR;
+}
+
+Vec cds_radii(const IVec &nums, const SMDSolventParameters &params)
+{
+    occ::Vec result(nums.rows());
+    for(int i = 0; i < nums.rows(); i++)
+    {
+        int n = nums(i);
+        result(i) = occ::chem::Element(n).vdwRadius() + 0.4;
+    }
+    return result * occ::units::ANGSTROM_TO_BOHR;
 }
 
 }
