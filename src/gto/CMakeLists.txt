@@ -8,6 +8,7 @@ target_link_libraries(occ_gto
     PUBLIC 
     occ_core
     occ_qm
+    gau2grid::gg
 )
 target_include_directories(occ_gto PUBLIC 
     ${OCC_INCLUDE_DIR} 

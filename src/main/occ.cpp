@@ -57,7 +57,7 @@ Open Computational Chemistry (OCC)
 Copyright (C) 2020-2021
 Peter Spackman - Primary Developer
 
-This version of occ makse use of the following third party libraries:
+This version of occ makes use of the following third party libraries:
 
 eigen3       - Linear Algebra (v {})
 libint2      - Electron integrals using GTOs (v {})

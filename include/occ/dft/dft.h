@@ -42,7 +42,7 @@ std::pair<occ::Mat, occ::gto::GTOValues<derivative_order>> evaluate_density_and_
     const Eigen::Ref<const occ::MatRM>& D,
     const Eigen::Ref<const occ::Mat> &grid_pts)
 {
-    auto gto_values = occ::gto::evaluate_basis_on_grid<derivative_order>(basis, atoms, grid_pts);
+    auto gto_values = occ::gto::evaluate_basis_gau2grid<derivative_order>(basis, atoms, grid_pts);
     auto rho = occ::density::evaluate_density<derivative_order, spinorbital_kind>(D, gto_values);
     return {rho, gto_values};
 }
@@ -142,7 +142,7 @@ public:
         K = occ::MatRM::Zero(F.rows(), F.cols());
         const auto& basis = m_hf.basis();
         const auto& atoms = m_hf.atoms();
-        constexpr size_t BLOCKSIZE = 128;
+        constexpr size_t BLOCKSIZE = 256;
         double total_density_a{0.0}, total_density_b{0.0};
         const auto& D2 = 2 * D;
         DensityFunctional::Family family{DensityFunctional::Family::LDA};

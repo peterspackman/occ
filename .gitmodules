@@ -16,3 +16,6 @@
 [submodule "3rdparty/toml11"]
 	path = 3rdparty/toml11
 	url = https://github.com/ToruNiina/toml11
+[submodule "3rdparty/gau2grid"]
+	path = 3rdparty/gau2grid
+	url = https://github.com/dgasmith/gau2grid
