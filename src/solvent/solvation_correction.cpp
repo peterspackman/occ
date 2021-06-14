@@ -91,6 +91,14 @@ ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom
     m_surface_atoms_cds = s_cds.atom_index;
     m_surface_potential = Vec::Zero(m_surface_areas_coulomb.rows());
     m_asc = Vec::Zero(m_surface_areas_coulomb.rows());
+    double area_coulomb = m_surface_areas_coulomb.sum();
+    double area_cds = m_surface_areas_cds.sum();
+    double au2_to_ang2 = occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
+    fmt::print("\nsolvent surface\n");
+    fmt::print("total surface area (coulomb) = {:10.3f} Angstroms^2\n",
+                area_coulomb * au2_to_ang2);
+    fmt::print("total surface area (cds)     = {:10.3f} Angstroms^2\n\n",
+                area_cds * au2_to_ang2);
 
 }
 
@@ -180,18 +188,22 @@ double ContinuumSolvationModel::smd_cds_energy() const
         surface_areas_per_atom_angs(m_surface_atoms_cds(i)) += conversion_factor * m_surface_areas_cds(i);
     }
 
+    /*
     fmt::print("Surface area per atom:\n");
     for(int i = 0; i < surface_areas_per_atom_angs.rows(); i++)
     {
         fmt::print("{:<7d} {:10.3f}\n", static_cast<int>(m_nuclear_charges(i)), surface_areas_per_atom_angs(i));
     }
+    */
     double total_area = surface_areas_per_atom_angs.array().sum();
     double atomic_term = surface_areas_per_atom_angs.dot(at) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
     double molecular_term = total_area * occ::solvent::smd::molecular_surface_tension(m_params) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
+    /*
     fmt::print("Coulomb cavity surface area: {:.3f} Ang**2\n", m_surface_areas_coulomb.array().sum() * conversion_factor);
     fmt::print("CDS cavity surface area: {:.3f} Ang**2 ({:.3f})\n", total_area, m_surface_areas_cds.array().sum() * conversion_factor);
     fmt::print("CDS energy: {:.4f}\n", (molecular_term + atomic_term) * occ::units::AU_TO_KCAL_PER_MOL);
     fmt::print("CDS energy (molecular): {:.4f}\n", molecular_term * occ::units::AU_TO_KCAL_PER_MOL);
+    */
     return molecular_term + atomic_term;
 }
 

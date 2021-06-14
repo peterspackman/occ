@@ -9,7 +9,7 @@
 namespace occ::solvent::surface
 {
 
-#include "points_314.cpp"
+#include "points_278.cpp"
 
 Mat3 principal_axes(const Mat3N &positions)
 {
@@ -28,16 +28,16 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3
     const size_t N = atomic_numbers.rows();
     const double solvent_radius = solvent_radius_angs * occ::units::ANGSTROM_TO_BOHR;
     Surface surface;
-    Mat tmp_vertices(3, 314 * N);
-    Vec tmp_areas(314 * N);
-    IVec tmp_atom_index(314 * N);
+    Mat tmp_vertices(3, 278 * N);
+    Vec tmp_areas(278 * N);
+    IVec tmp_atom_index(278 * N);
     Vec3 centroid = positions.rowwise().mean();
     Mat3N centered = positions.colwise() - centroid;
     auto axes = principal_axes(centered);
     centered = axes.transpose() * centered;
 
-    auto grid = Eigen::Map<const Eigen::Matrix<double, 3, 314>>(surface_points);
-    constexpr int npts = 314;
+    auto grid = Eigen::Map<const Eigen::Matrix<double, 3, 278>>(surface_points);
+    constexpr int npts = 278;
 
     const double points_per_bohr2{1.5};
     Vec ri = radii.array();

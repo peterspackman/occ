@@ -238,8 +238,10 @@ double T_switching_function(ElementPair p, double r)
     const double rz = rzz(p);
     const double delta_rz = delta_rzz(p);
     const double cutoff = rz + delta_rz;
+    /*
     print_pair(p);
     fmt::print("rzz: {}, delta_rzz: {}\n", rz, delta_rz);
+    */
     if(r < cutoff) return std::exp(delta_rz / (r - cutoff));
     else return 0.0;
 }
@@ -301,8 +303,10 @@ double element_pair_sum(const SMDSolventParameters &params, int index, ElementPa
     double result{0.0};
     int z2 = get_second_element(p);
     double prefactor = element_pair_prefactor(params, p);
+    /*
     print_pair(p);
     fmt::print("Prefactor: {}\n", prefactor);
+    */
     if(prefactor == 0.0) return 0.0;
     bool found_element{false};
     for(int i = 0; i < nums.rows(); i++)
@@ -315,12 +319,12 @@ double element_pair_sum(const SMDSolventParameters &params, int index, ElementPa
     }
     if(!found_element)
     {
-        fmt::print("No terms\n");
+     //   fmt::print("No terms\n");
         return 0.0;
     }
     else
     {
-        fmt::print("Found terms\n");
+      //  fmt::print("Found terms\n");
     }
     return std::pow(result, power) * prefactor;
 }
@@ -413,7 +417,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
     {
         int n = nums(i);
         result(i) = detail::element_sigma(params, n);
-        fmt::print("Element {}: sigma: {}\n", n, result(i));
+        // fmt::print("Element {}: sigma: {}\n", n, result(i));
         switch(n)
         {
             case 1:

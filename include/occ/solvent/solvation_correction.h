@@ -128,10 +128,10 @@ public:
         }
         double surface_energy = m_solvation_model.surface_polarization_energy();
         double cds_energy = m_solvation_model.smd_cds_energy();
-        fmt::print("PCM non-electrostatic energy: {:.12f}\n", cds_energy);
+        // fmt::print("PCM non-electrostatic energy: {:.12f}\n", cds_energy);
         m_nuclear_solvation_energy = m_qn.dot(asc);
         m_solvation_energy = m_nuclear_solvation_energy - surface_energy + cds_energy;
-        fmt::print("Surface electrostatic energy: {:.12f}\n", surface_energy);
+        // fmt::print("Surface electrostatic energy: {:.12f}\n", surface_energy);
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
         double e_X = 0.0;
 
@@ -161,7 +161,7 @@ public:
                 break;
             }
         }
-        fmt::print("e_X: {:.12f}\n", e_X);
+        // fmt::print("e_X: {:.12f}\n", e_X);
         occ::timing::stop(occ::timing::category::solvent);
     }
 
