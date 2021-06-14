@@ -18,6 +18,7 @@ find_package(Boost CONFIG COMPONENTS graph)
 find_package(Libint2 CONFIG REQUIRED)
 find_package(Libxc CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
+message(STATUS "PCMSolver_DIR = ${PCMSolver_DIR}")
 find_package(PCMSolver CONFIG COMPONENTS static)
 
 set(OCC_DEFINITIONS "")

@@ -9,6 +9,8 @@
 namespace occ::solvent::surface
 {
 
+#include "points_314.cpp"
+
 Mat3 principal_axes(const Mat3N &positions)
 {
     if(positions.cols() == 1) return Mat3::Identity();
@@ -26,17 +28,19 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3
     const size_t N = atomic_numbers.rows();
     const double solvent_radius = solvent_radius_angs * occ::units::ANGSTROM_TO_BOHR;
     Surface surface;
-    Mat tmp_vertices;
-    Vec tmp_areas;
-    IVec tmp_atom_index;
+    Mat tmp_vertices(3, 314 * N);
+    Vec tmp_areas(314 * N);
+    IVec tmp_atom_index(314 * N);
     Vec3 centroid = positions.rowwise().mean();
     Mat3N centered = positions.colwise() - centroid;
     auto axes = principal_axes(centered);
     centered = axes.transpose() * centered;
 
+    auto grid = Eigen::Map<const Eigen::Matrix<double, 3, 314>>(surface_points);
+    constexpr int npts = 314;
+
     const double points_per_bohr2{1.5};
     Vec ri = radii.array();
-    const std::array<int, 6> point_levels{302, 350, 434, 590, 770, 974};
 
     size_t num_valid_points{0};
     for(size_t i = 0; i < N; i++)
@@ -44,20 +48,9 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3
         double rs = ri(i);
         double r = rs + solvent_radius; 
         double surface_area = 4 * M_PI * rs * rs;
-        double grid_size_d = surface_area * points_per_bohr2;
-        int npts = point_levels[point_levels.size() - 1];
-        for(int j = point_levels.size() - 1; j >= 0; j--)
-        {
-            if(grid_size_d > point_levels[j]) break;
-            npts = point_levels[j];
-        }
-        tmp_vertices.conservativeResize(3, num_valid_points + npts);
-        tmp_areas.conservativeResize(num_valid_points + npts);
-        tmp_atom_index.conservativeResize(num_valid_points + npts);
-        auto grid = occ::grid::lebedev(npts);
-        tmp_areas.segment(num_valid_points, npts) = grid.col(3) * surface_area;
+        tmp_areas.segment(num_valid_points, npts).array() = surface_area / npts;
         auto vblock = tmp_vertices.block(0, num_valid_points, 3, npts);
-        vblock = grid.block(0, 0, npts, 3).transpose() * r;
+        vblock = grid.array() * r;
         vblock.colwise() += centered.col(i);
         tmp_atom_index.segment(num_valid_points, npts).array() = i;
         num_valid_points += npts;

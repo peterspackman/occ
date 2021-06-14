@@ -293,7 +293,6 @@ std::vector<double> compute_solvation_energy_breakdown(
     if(!occ::solvent::dielectric_constant.contains(solvent)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", solvent));
     dielectric = occ::solvent::dielectric_constant[solvent];
     COSMO cosmo(dielectric);
-    cosmo.set_max_iterations(100);
     auto result = cosmo(points, areas, charges);
     //fmt::print("Surface area: {} angstrom**2\n", areas.sum() * 0.52917749 * 0.52917749);
     //fmt::print("Total energy: {} kJ/mol\n", AU_TO_KJ_PER_MOL * result.energy);

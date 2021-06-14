@@ -46,7 +46,8 @@ COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const 
         }
     }
 
-    A.diagonal().array() = 3.8 / areas.array().sqrt();
+    // 1.07 * \sqrt(4 * \pi / S_i)
+    A.diagonal().array() = 3.793051240937804 / areas.array().sqrt();
     res.initial = -surface_charge(charges);
     res.converged = Vec(res.initial.rows());
 
