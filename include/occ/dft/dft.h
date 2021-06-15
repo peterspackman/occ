@@ -62,9 +62,9 @@ public:
     int system_charge() const { return m_hf.system_charge(); }
     int num_e() const { return m_hf.num_e(); }
 
-    double two_electron_energy() const { return m_e_alpha + m_e_beta; }
-    double two_electron_energy_alpha() const { return m_e_alpha; }
-    double two_electron_energy_beta() const { return m_e_beta; }
+    double two_electron_energy() const { return m_two_electron_energy; }
+    double exchange_correlation_energy() const { return m_exc_dft; }
+
     bool usual_scf_energy() const { return false; }
     void update_scf_energy(occ::core::EnergyComponents &energy, bool incremental) const
     { 
@@ -72,12 +72,14 @@ public:
         {
             energy["electronic.2e"] += two_electron_energy();
             energy["electronic"]  += two_electron_energy();
+            energy["electronic.dft_xc"] += exchange_correlation_energy();
         }
         else
         {
             energy["electronic"] = energy["electronic.1e"];
             energy["electronic.2e"] = two_electron_energy();
             energy["electronic"]  += two_electron_energy();
+            energy["electronic.dft_xc"] = exchange_correlation_energy();
         }
     }
     bool supports_incremental_fock_build() const { return false; }
@@ -138,8 +140,8 @@ public:
         size_t nbf = occ::qm::nbf(basis);
         std::tie(F_rows, F_cols) = occ::qm::matrix_dimensions<spinorbital_kind>(nbf);
         MatRM F = MatRM::Zero(F_rows, F_cols);
-        m_e_alpha = 0.0;
-        m_e_beta = 0.0;
+        m_two_electron_energy = 0.0;
+        m_exc_dft = 0.0;
         double ecoul, exc;
         double exchange_factor = exact_exchange_factor();
 
@@ -176,11 +178,10 @@ public:
                     DensityFunctional::Params params(npt, family, spinorbital_kind);
                     const auto [rho, gto_vals] = evaluate_density_and_gtos<derivative_order, spinorbital_kind>(basis, atoms, D2, pts_block);
 
-                    double tot_density_block{0.0};
+                    double max_density_block = rho.col(0).maxCoeff();
                     if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
                         params.rho.col(0) = rho.col(0);
-                        tot_density_block = rho.col(0).dot(weights_block);
-                        alpha_densities[thread_id] += tot_density_block;
+                        alpha_densities[thread_id] += rho.col(0).dot(weights_block);
                     }
                     else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
                         // correct assignment
@@ -190,9 +191,8 @@ public:
                         double tot_density_b = rho.beta().col(0).dot(weights_block);
                         alpha_densities[thread_id] += tot_density_a;
                         beta_densities[thread_id] += tot_density_b;
-                        tot_density_block = tot_density_a + tot_density_b;
                     }
-                    if(tot_density_block < m_density_threshold) continue;
+                    if(max_density_block < m_density_threshold) continue;
 
                     if constexpr(derivative_order > 0) {
                         if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
@@ -277,9 +277,7 @@ public:
             total_density_b += beta_densities[i];
         }
         occ::log::debug("Total density: alpha = {} beta = {}", total_density_a, total_density_b);
-        //occ::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_e_alpha, m_e_alpha + exc);
-
-        if((total_density_a + total_density_b) < m_density_threshold) return MatRM::Zero(F_rows, F_cols);
+        //occ::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_two_electron_energy, m_two_electron_energy + exc);
 
         if(exchange_factor != 0.0) {
             MatRM J, K;
@@ -293,7 +291,8 @@ public:
             F += m_hf.compute_J(spinorbital_kind, D, precision, Schwarz);
             ecoul = expectation<spinorbital_kind>(D, F);
         }
-        m_e_alpha += exc_dft + exc + ecoul;
+        m_two_electron_energy += exc_dft + exc + ecoul;
+        m_exc_dft += exc_dft;
         return F;
     }
 
@@ -340,8 +339,8 @@ private:
     MolecularGrid m_grid;
     std::vector<DensityFunctional> m_funcs;
     std::vector<AtomGrid> m_atom_grids;
-    mutable double m_e_alpha{0.0};
-    mutable double m_e_beta{0.0};
-    double m_density_threshold{1e-8};
+    mutable double m_two_electron_energy{0.0};
+    mutable double m_exc_dft{0.0};
+    double m_density_threshold{1e-10};
 };
 }

@@ -26,6 +26,16 @@ using occ::util::is_odd;
 using occ::qm::BasisSet;
 using occ::qm::Wavefunction;
 
+inline double rms_error_diis(const MatRM &commutator)
+{
+    return commutator.norm() / commutator.size();
+}
+
+inline double maximum_error_diis(const MatRM &commutator)
+{
+    return commutator.maxCoeff();
+}
+
 template <typename Procedure, SpinorbitalKind spinorbital_kind>
 struct SCF {
 
@@ -302,13 +312,13 @@ struct SCF {
             if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                 F += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
-                    density_convergence_threshold
+                    commutator_convergence_threshold 
                 );
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
                 F.alpha() += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
-                    density_convergence_threshold
+                    commutator_convergence_threshold
                 );
 
                 F.beta() = F.alpha();
@@ -316,7 +326,7 @@ struct SCF {
             else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
                 F.alpha_alpha() += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
-                    density_convergence_threshold
+                    commutator_convergence_threshold
                 );
                 F.beta_alpha() = F.alpha_alpha();
                 F.alpha_beta() = F.alpha_alpha();
@@ -425,12 +435,12 @@ struct SCF {
             incremental = true;
 
             if (not incremental_Fbuild_started &&
-                    rms_error < start_incremental_F_threshold) {
+                    diis_error < start_incremental_F_threshold) {
                 incremental_Fbuild_started = true;
                 reset_incremental_fock_formation = false;
                 last_reset_iteration = iter - 1;
-                next_reset_threshold = rms_error / 1e1;
-                occ::log::debug("Starting incremental fock build");
+                next_reset_threshold = diis_error / 10;
+                fmt::print("         ** start incremental fock build **\n");
             }
             if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
                 F = H;
@@ -440,15 +450,15 @@ struct SCF {
             if (reset_incremental_fock_formation && incremental_Fbuild_started) {
                 reset_incremental_fock_formation = false;
                 last_reset_iteration = iter;
-                next_reset_threshold = rms_error / 1e1;
-                occ::log::debug("Resetting incremental fock build");
+                next_reset_threshold = diis_error / 10;
+                fmt::print("         ** reset incremental fock build **\n");
             }
 
             // build a new Fock matrix
             // totally empirical precision variation, involves the condition number
             const auto precision_F = std::min(
                         std::min(1e-3 / XtX_condition_number, 1e-7),
-                        std::max(rms_error / 1e4, std::numeric_limits<double>::epsilon()));
+                        std::max(diis_error / 1e4, std::numeric_limits<double>::epsilon()));
             if(df_engine == std::nullopt) {
                 F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
             }
@@ -475,8 +485,9 @@ struct SCF {
             else {
                 FD_comm = F * D * S - S * D * F;
             }
-            rms_error = FD_comm.norm() / FD_comm.size();
-            if (rms_error < next_reset_threshold || iter - last_reset_iteration >= 8)
+            diis_error = maximum_error_diis(FD_comm);
+
+            if (diis_error < next_reset_threshold || iter - last_reset_iteration >= 8)
                 reset_incremental_fock_formation = true;
 
             // DIIS extrapolate F
@@ -495,14 +506,14 @@ struct SCF {
 
             if (iter == 1) {
                 fmt::print("{:>6s} {: >20s} {: >20s} {: >20s} {: >10s}\n", "cycle",
-                           "energy", "D(E)/E", "rms([F,D])/nn", "time");
+                           "energy", "energy change", "err commutator", "time");
             }
             fmt::print("{:>6d} {:>20.12f} {:>20.12e} {:>20.12e} {:>10.5f}\n", iter,
-                       energy["total"], ediff_rel, rms_error, time_elapsed.count());
+                       energy["total"], ediff_rel, diis_error, time_elapsed.count());
             total_time += time_elapsed.count();
 
-        }   while (((ediff_rel > energy_convergence_threshold) || (rms_error > density_convergence_threshold)) && (iter < maxiter));
-        fmt::print("\n{} SCF energy_converged after {} seconds\n\n", scf_kind(), total_time);
+        }   while (((ediff_rel > energy_convergence_threshold) || (diis_error > commutator_convergence_threshold)) && (iter < maxiter));
+        fmt::print("\n{} spinorbital SCF energy converged after {:.5f} seconds\n\n", scf_kind(), total_time);
         fmt::print("{}\n", energy);
         return energy["total"];
     }
@@ -545,15 +556,15 @@ struct SCF {
     int maxiter{100};
     size_t nbf{0};
     double energy_convergence_threshold = 1e-8;
-    double density_convergence_threshold = 1e-5;
+    double commutator_convergence_threshold = 1e-6;
     int iter = 0;
-    double rms_error = 1.0;
+    double diis_error{1.0};
     double ediff_rel = 0.0;
     double total_time{0.0};
     occ::diis::DIIS<MatRM> diis; // start DIIS on second iteration
     bool reset_incremental_fock_formation = false;
     bool incremental_Fbuild_started = false;
-    double start_incremental_F_threshold = 1e-5;
+    double start_incremental_F_threshold = 1e-4;
     double next_reset_threshold = 0.0;
     size_t last_reset_iteration = 0;
     MatRM D, S, T, V, H, K, X, Xinv, C, C_occ, F;

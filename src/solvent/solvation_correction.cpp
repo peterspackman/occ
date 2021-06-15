@@ -95,10 +95,10 @@ ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom
     double area_cds = m_surface_areas_cds.sum();
     double au2_to_ang2 = occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
     fmt::print("\nsolvent surface\n");
-    fmt::print("total surface area (coulomb) = {:10.3f} Angstroms^2\n",
-                area_coulomb * au2_to_ang2);
-    fmt::print("total surface area (cds)     = {:10.3f} Angstroms^2\n\n",
-                area_cds * au2_to_ang2);
+    fmt::print("total surface area (coulomb) = {:10.3f} Angstroms^2, {} finite elements\n",
+                area_coulomb * au2_to_ang2, m_surface_areas_coulomb.rows());
+    fmt::print("total surface area (cds)     = {:10.3f} Angstroms^2, {} finite elements\n\n",
+                area_cds * au2_to_ang2, m_surface_areas_cds.rows());
 
 }
 
