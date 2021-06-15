@@ -7,7 +7,7 @@
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/density_fitting.h>
 #include <occ/qm/wavefunction.h>
-#include <occ/qm/energy_components.h>
+#include <occ/core/energy_components.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -541,7 +541,7 @@ struct SCF {
     int n_electrons{0};
     int n_occ{0};
     int n_unpaired_electrons{0};
-    occ::qm::EnergyComponents energy;
+    occ::core::EnergyComponents energy;
     int maxiter{100};
     size_t nbf{0};
     double energy_convergence_threshold = 1e-8;

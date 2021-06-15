@@ -12,7 +12,7 @@
 #include <occ/gto/gto.h>
 #include <occ/gto/density.h>
 #include <occ/qm/basisset.h>
-#include <occ/qm/energy_components.h>
+#include <occ/core/energy_components.h>
 
 namespace occ::dft {
 using occ::qm::SpinorbitalKind;
@@ -66,7 +66,7 @@ public:
     double two_electron_energy_alpha() const { return m_e_alpha; }
     double two_electron_energy_beta() const { return m_e_beta; }
     bool usual_scf_energy() const { return false; }
-    void update_scf_energy(occ::qm::EnergyComponents &energy, bool incremental) const
+    void update_scf_energy(occ::core::EnergyComponents &energy, bool incremental) const
     { 
         if(incremental)
         {

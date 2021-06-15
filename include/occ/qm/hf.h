@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/qm/fock.h>
 #include <occ/qm/spinorbital.h>
-#include <occ/qm/energy_components.h>
+#include <occ/core/energy_components.h>
 
 namespace occ::hf {
 
@@ -37,7 +37,7 @@ public:
   double two_electron_energy_beta() const { return m_e_beta; }
   double two_electron_energy() const { return m_e_alpha + m_e_beta; }
   bool usual_scf_energy() const { return true; }
-  void update_scf_energy(occ::qm::EnergyComponents &energy, bool incremental) const { return; }
+  void update_scf_energy(occ::core::EnergyComponents &energy, bool incremental) const { return; }
   bool supports_incremental_fock_build() const { return true; }
 
   double nuclear_repulsion_energy() const;

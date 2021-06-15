@@ -1,6 +1,6 @@
 #pragma once
 #include <occ/qm/spinorbital.h>
-#include <occ/qm/energy_components.h>
+#include <occ/core/energy_components.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/solvent/parameters.h>
@@ -102,7 +102,7 @@ public:
 
     double nuclear_repulsion_energy() const { return m_proc.nuclear_repulsion_energy(); }
 
-    void update_scf_energy(occ::qm::EnergyComponents &energy, bool incremental) const
+    void update_scf_energy(occ::core::EnergyComponents &energy, bool incremental) const
     { 
 
         m_proc.update_scf_energy(energy, incremental);
