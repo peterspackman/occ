@@ -91,13 +91,13 @@ struct SCF {
         wfn.num_alpha = n_alpha();
         wfn.num_beta = n_beta();
         wfn.num_electrons = n_electrons;
-        wfn.energy.core = energy.one_electron;
-        wfn.energy.kinetic = energy.kinetic;
-        wfn.energy.nuclear_attraction = energy.nuclear_attraction;
-        wfn.energy.nuclear_repulsion = energy.nuclear_repulsion;
-        wfn.energy.coulomb = energy.coulomb;
-        wfn.energy.exchange = energy.exchange;
-        wfn.energy.total = energy.total;
+        wfn.energy.core = energy.at("electronic.1e");
+        wfn.energy.kinetic = energy.at("electronic.kinetic");
+        wfn.energy.nuclear_attraction = energy.at("nuclear.attraction");
+        wfn.energy.nuclear_repulsion = energy.at("nuclear.repulsion");
+        if(energy.contains("electronic.coulomb")) wfn.energy.coulomb = energy.at("electronic.coulomb");
+        if(energy.contains("electronic.exchange")) wfn.energy.exchange = energy.at("electronic.exchange");
+        wfn.energy.total = energy.at("total");
         wfn.spinorbital_kind = spinorbital_kind;
         wfn.T = T;
         wfn.V = V;
@@ -372,19 +372,25 @@ struct SCF {
         }
     }
 
-    void update_scf_energy() {
+    void update_scf_energy(bool incremental) {
 
-        energy.kinetic = 2 * expectation<spinorbital_kind>(D, T);
-        energy.nuclear_attraction = 2 * expectation<spinorbital_kind>(D, V);
-        energy.one_electron = 2 * expectation<spinorbital_kind>(D, H);
-        energy.electronic = 0.5 * energy.one_electron;
-        if(m_procedure.usual_scf_energy()) {
-            energy.electronic += expectation<spinorbital_kind>(D, F);
+        if(!incremental)
+        {
+            energy["electronic.kinetic"] = 2 * expectation<spinorbital_kind>(D, T);
+            energy["nuclear.attraction"] = 2 * expectation<spinorbital_kind>(D, V);
+            energy["electronic.1e"] = 2 * expectation<spinorbital_kind>(D, H);
+            energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
         }
-        m_procedure.update_scf_energy(energy);
-        energy.nuclear_repulsion = m_procedure.nuclear_repulsion_energy();
-        energy.two_electron = energy.electronic - energy.one_electron;
-        energy.total = energy.electronic + energy.nuclear_repulsion + energy.solvation;
+        if(m_procedure.usual_scf_energy()) {
+            energy["electronic"] = 0.5 * energy["electronic.1e"];
+            energy["electronic"] += expectation<spinorbital_kind>(D, F);
+        }
+        m_procedure.update_scf_energy(energy, incremental);
+        energy["electronic.2e"] = energy["electronic"] - energy["electronic.1e"];
+        energy["total"] = energy["electronic"] + energy["nuclear.repulsion"]
+            + energy["solvation.nuclear"] + energy["solvation.surface"]
+            + energy["solvation.CDS"];
+
     }
 
     std::string scf_kind() const {
@@ -398,14 +404,15 @@ struct SCF {
     double compute_scf_energy() {
         // compute one-body integrals
         // count the number of electrons
+        bool incremental{false};
         update_occupied_orbital_count();
         compute_initial_guess();
         K = m_procedure.compute_schwarz_ints();
         MatRM D_diff = D;
         MatRM D_last;
         MatRM FD_comm = MatRM::Zero(F.rows(), F.cols());
-        update_scf_energy();
-        fmt::print("Starting {} SCF iterations (Eguess = {:.12f})\n\n", scf_kind(), energy.total);
+        update_scf_energy(incremental);
+        fmt::print("Starting {} SCF iterations (Eguess = {:.12f})\n\n", scf_kind(), energy["total"]);
         if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
             fmt::print("n_electrons: {}\nn_alpha: {}\nn_beta: {}\n", n_electrons, n_alpha(), n_beta());
         }
@@ -414,10 +421,11 @@ struct SCF {
             const auto tstart = std::chrono::high_resolution_clock::now();
             ++iter;
             // Last iteration's energy and density
-            auto ehf_last = energy.electronic;
+            auto ehf_last = energy["electronic"];
             D_last = D;
             H = T + V;
             m_procedure.update_core_hamiltonian(spinorbital_kind, D, H);
+            incremental = true;
 
             if (not incremental_Fbuild_started &&
                     rms_error < start_incremental_F_threshold) {
@@ -430,6 +438,7 @@ struct SCF {
             if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
                 F = H;
                 D_diff = D;
+                incremental = false;
             }
             if (reset_incremental_fock_formation && incremental_Fbuild_started) {
                 reset_incremental_fock_formation = false;
@@ -458,8 +467,8 @@ struct SCF {
                 fmt::print("Fock\n:{}\n\n\nFockDF\n{}\n", F, fock_df);
             }*/
             // compute HF energy with the non-extrapolated Fock matrix
-            update_scf_energy();
-            ediff_rel = std::abs((energy.electronic - ehf_last) / energy.electronic);
+            update_scf_energy(incremental);
+            ediff_rel = std::abs((energy["electronic"] - ehf_last) / energy["electronic"]);
 
             // compute SCF error
             if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
@@ -492,13 +501,13 @@ struct SCF {
                            "energy", "D(E)/E", "rms([F,D])/nn", "time");
             }
             fmt::print("{:>6d} {:>20.12f} {:>20.12e} {:>20.12e} {:>10.5f}\n", iter,
-                       energy.total, ediff_rel, rms_error, time_elapsed.count());
+                       energy["total"], ediff_rel, rms_error, time_elapsed.count());
             total_time += time_elapsed.count();
 
         }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
         fmt::print("\n{} SCF converged after {} seconds\n\n", scf_kind(), total_time);
-        fmt::print(energy.energy_table_string());
-        return energy.total;
+        fmt::print("{}\n", energy);
+        return energy["total"];
     }
 
     void print_orbital_energies() {

@@ -80,7 +80,6 @@ Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis, const Input
         DFT rks(config.method, basis, m.atoms(), SK);
         SCF<DFT, SK> scf(rks);
         scf.set_charge_multiplicity(config.charge, config.multiplicity);
-        scf.start_incremental_F_threshold = 0.0;
         double e = scf.compute_scf_energy();
         return scf.wavefunction();
     }

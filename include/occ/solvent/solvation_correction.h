@@ -102,10 +102,23 @@ public:
 
     double nuclear_repulsion_energy() const { return m_proc.nuclear_repulsion_energy(); }
 
-    void update_scf_energy(occ::qm::EnergyComponents &energy) const
+    void update_scf_energy(occ::qm::EnergyComponents &energy, bool incremental) const
     { 
-        m_proc.update_scf_energy(energy);
-        energy.solvation = m_solvation_energy;
+
+        m_proc.update_scf_energy(energy, incremental);
+        if(incremental)
+        {
+            energy["solvation.electronic"] += m_electronic_solvation_energy;
+            energy["solvation.surface"] += m_surface_solvation_energy;
+            energy["solvation.nuclear"] += m_nuclear_solvation_energy;
+        }
+        else
+        {
+            energy["solvation.electronic"] = m_electronic_solvation_energy;
+            energy["solvation.nuclear"] = m_nuclear_solvation_energy;
+            energy["solvation.surface"] = m_surface_solvation_energy;
+            energy["solvation.CDS"] = m_cds_solvation_energy;
+        }
     }
 
     auto compute_kinetic_matrix() { return m_proc.compute_kinetic_matrix(); }
@@ -130,38 +143,38 @@ public:
         double cds_energy = m_solvation_model.smd_cds_energy();
         // fmt::print("PCM non-electrostatic energy: {:.12f}\n", cds_energy);
         m_nuclear_solvation_energy = m_qn.dot(asc);
-        m_solvation_energy = m_nuclear_solvation_energy - surface_energy + cds_energy;
+        m_surface_solvation_energy = - surface_energy;
+        m_cds_solvation_energy = cds_energy;
+        m_electronic_solvation_energy = 0.0;
         // fmt::print("Surface electrostatic energy: {:.12f}\n", surface_energy);
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
-        double e_X = 0.0;
 
         switch(kind)
         {
             case SpinorbitalKind::Restricted:
             {
-                e_X = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, H);
+                m_electronic_solvation_energy = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, H);
                 H += m_X;
-                e_X = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, H) - e_X;
+                m_electronic_solvation_energy = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, H) - m_electronic_solvation_energy;
                 break;
             }
             case SpinorbitalKind::Unrestricted:
             {
-                e_X = 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H);
+                m_electronic_solvation_energy = 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H);
                 H.alpha() += m_X;
                 H.beta() += m_X;
-                e_X = 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H) - e_X;
+                m_electronic_solvation_energy = 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H) - m_electronic_solvation_energy;
                 break;
             }
             case SpinorbitalKind::General:
             {
-                e_X = 2 * occ::qm::expectation<SpinorbitalKind::General>(D, H);
+                m_electronic_solvation_energy = 2 * occ::qm::expectation<SpinorbitalKind::General>(D, H);
                 H.alpha_alpha() += m_X;
                 H.beta_beta() += m_X;
-                e_X = 2 * occ::qm::expectation<SpinorbitalKind::General>(D, H) - e_X;
+                m_electronic_solvation_energy = 2 * occ::qm::expectation<SpinorbitalKind::General>(D, H) - m_electronic_solvation_energy;
                 break;
             }
         }
-        // fmt::print("e_X: {:.12f}\n", e_X);
         occ::timing::stop(occ::timing::category::solvent);
     }
 
@@ -184,7 +197,8 @@ private:
     Proc &m_proc;
     ContinuumSolvationModel m_solvation_model;
     std::vector<std::pair<double, std::array<double, 3>>> m_point_charges;
-    double m_solvation_energy{0.0}, m_nuclear_solvation_energy{0.0};
+    double m_electronic_solvation_energy{0.0}, m_nuclear_solvation_energy{0.0},
+           m_surface_solvation_energy, m_cds_solvation_energy;
     occ::MatRM m_X;
     occ::Vec m_qn;
 };
