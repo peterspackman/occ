@@ -31,6 +31,7 @@ const robin_hood::unordered_map<std::string, std::vector<FuncComponent>> builtin
     {"svwn", {{dfid::lda_x}, {dfid::lda_c_vwn_3}}},
     {"svwn5", {{dfid::lda_x}, {dfid::lda_c_vwn}}},
     {"blyp", {{dfid::gga_x_b88}, {dfid::gga_c_lyp}}},
+    {"bpbe", {{dfid::gga_x_b88}, {dfid::gga_c_pbe}}},
 });
 
 

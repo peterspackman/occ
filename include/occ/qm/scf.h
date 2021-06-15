@@ -290,8 +290,8 @@ struct SCF {
                 D.beta() = D_minbs * (static_cast<double>(n_beta()) / n_electrons);
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
-                D.alpha_alpha() = D_minbs * 0.5;
-                D.beta_beta() = D_minbs * 0.5;
+                D.alpha_alpha() = D_minbs * (static_cast<double>(n_alpha())/ n_electrons); ;
+                D.beta_beta() = D_minbs * (static_cast<double>(n_beta())/ n_electrons);;
             }
         } else {
             // if basis != minimal basis, map non-representable SOAD guess
@@ -301,29 +301,26 @@ struct SCF {
 
             if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                 F += occ::ints::compute_2body_fock_mixed_basis(
-                            m_procedure.basis(), D_minbs, minbs, true,
-                            std::numeric_limits<double>::epsilon()
-                            );
+                    m_procedure.basis(), D_minbs, minbs, true,
+                    density_convergence_threshold
+                );
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
                 F.alpha() += occ::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs * (static_cast<double>(n_alpha())/ n_electrons), minbs, true,
-                    std::numeric_limits<double>::epsilon()
+                    m_procedure.basis(), D_minbs, minbs, true,
+                    density_convergence_threshold
                 );
-                F.beta() += occ::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs * (static_cast<double>(n_beta()) / n_electrons), minbs, true,
-                    std::numeric_limits<double>::epsilon()
-                );
+
+                F.beta() = F.alpha();
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
                 F.alpha_alpha() += occ::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs * (static_cast<double>(n_alpha())/ n_electrons), minbs, true,
-                    std::numeric_limits<double>::epsilon()
+                    m_procedure.basis(), D_minbs, minbs, true,
+                    density_convergence_threshold
                 );
-                F.beta_beta() += occ::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs * (static_cast<double>(n_beta()) / n_electrons), minbs, true,
-                    std::numeric_limits<double>::epsilon()
-                );
+                F.beta_alpha() = F.alpha_alpha();
+                F.alpha_beta() = F.alpha_alpha();
+                F.beta_beta() = F.alpha_alpha();
             }
 
             update_molecular_orbitals(F);
@@ -504,8 +501,8 @@ struct SCF {
                        energy["total"], ediff_rel, rms_error, time_elapsed.count());
             total_time += time_elapsed.count();
 
-        }   while (((ediff_rel > conv) || (rms_error > conv)) && (iter < maxiter));
-        fmt::print("\n{} SCF converged after {} seconds\n\n", scf_kind(), total_time);
+        }   while (((ediff_rel > energy_convergence_threshold) || (rms_error > density_convergence_threshold)) && (iter < maxiter));
+        fmt::print("\n{} SCF energy_converged after {} seconds\n\n", scf_kind(), total_time);
         fmt::print("{}\n", energy);
         return energy["total"];
     }
@@ -547,7 +544,8 @@ struct SCF {
     occ::qm::EnergyComponents energy;
     int maxiter{100};
     size_t nbf{0};
-    double conv = 1e-8;
+    double energy_convergence_threshold = 1e-8;
+    double density_convergence_threshold = 1e-5;
     int iter = 0;
     double rms_error = 1.0;
     double ediff_rel = 0.0;

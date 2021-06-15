@@ -181,6 +181,7 @@ Wavefunction run_from_gaussian_input_file(InputConfiguration &config)
     config.method = com.method;
     config.charge = com.charge;
     config.multiplicity = com.multiplicity;
+    config.basis_name = com.basis_name;
 
     print_configuration(m, config);
     auto basis = load_basis_set(m, com.basis_name);

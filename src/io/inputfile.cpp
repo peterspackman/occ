@@ -78,7 +78,7 @@ void GaussianInputFile::parse_route_line(const std::string &line)
         occ::log::error("Did not find method/basis in route line in gaussian input!");
     }
     occ::log::debug("Found route command: method = {} basis = {}", method, basis_name);
-    if(method == "hf" || method == "uhf") method_type = MethodType::HF;
+    if(method == "hf" || method == "uhf" || method == "ghf") method_type = MethodType::HF;
     else method_type = MethodType::DFT;
 }
 
@@ -89,11 +89,10 @@ void GaussianInputFile::parse_charge_multiplicity_line(const std::string &line)
 
 void GaussianInputFile::parse_atom_line(const std::string &line)
 {
-    constexpr double bohr = 1.889725989;
     double x, y, z;
     std::string symbol;
     scn::scan(line, "{} {} {} {}", symbol, x, y, z);
-    atomic_positions.push_back({x * bohr, y * bohr, z * bohr});
+    atomic_positions.push_back({x, y, z});
     occ::chem::Element elem(symbol);
     atomic_numbers.push_back(elem.atomic_number());
 }
@@ -101,6 +100,7 @@ void GaussianInputFile::parse_atom_line(const std::string &line)
 
 SpinorbitalKind GaussianInputFile::spinorbital_kind() const
 {
+    if(method == "ghf") return SpinorbitalKind::General;
     if(multiplicity != 1) return SpinorbitalKind::Unrestricted;
     if(method[0] == 'u') return SpinorbitalKind::Unrestricted;
     return SpinorbitalKind::Restricted;
