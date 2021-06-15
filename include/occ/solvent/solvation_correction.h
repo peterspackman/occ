@@ -6,11 +6,7 @@
 #include <occ/solvent/parameters.h>
 #include <libint2/atom.h>
 
-#ifdef USING_PCMSolver
-#include "PCMSolver/pcmsolver.h"
-#else
 #include <occ/solvent/cosmo.h>
-#endif
 
 
 namespace occ::solvent {
@@ -21,7 +17,6 @@ class ContinuumSolvationModel
 {
 public:
     ContinuumSolvationModel(const std::vector<libint2::Atom>&, const std::string& solvent = "water");
-    ~ContinuumSolvationModel();
 
     void set_solvent(const std::string&);
     const std::string& solvent() const { return m_solvent_name; }
@@ -49,14 +44,7 @@ private:
     bool m_asc_needs_update{true};
     SMDSolventParameters m_params;
 
-#ifdef USING_PCMSolver
-    const char * m_surface_potential_label = "OCC_TOTAL_MEP";
-    const char * m_asc_label = "OCC_TOTAL_ASC";
-    pcmsolver_context_t *m_pcm_context;
-    pcmsolver_context_t *m_pcm_context_cds;
-#else
     COSMO m_cosmo;
-#endif
 };
 
 
