@@ -20,11 +20,9 @@ using occ::qm::expectation;
 using occ::qm::BasisSet;
 
 using occ::Mat3N;
-using occ::MatRM;
 using occ::MatN4;
 using occ::Vec;
 using occ::IVec;
-using occ::MatRM;
 using occ::ints::BasisSet;
 using occ::ints::compute_1body_ints;
 using occ::ints::compute_1body_ints_deriv;
@@ -39,7 +37,7 @@ template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKin
 std::pair<Mat, occ::gto::GTOValues<derivative_order>> evaluate_density_and_gtos(
     const BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
-    const Eigen::Ref<const MatRM>& D,
+    const Eigen::Ref<const Mat>& D,
     const Eigen::Ref<const Mat> &grid_pts)
 {
     auto gto_values = occ::gto::evaluate_basis_gau2grid<derivative_order>(basis, atoms, grid_pts);
@@ -122,7 +120,7 @@ public:
       return m_hf.compute_overlap_derivatives(derivative);
     }
 
-    MatRM compute_shellblock_norm(const MatRM &A) const {
+    auto compute_shellblock_norm(const Mat &A) const {
         return m_hf.compute_shellblock_norm(A);
     }
 
@@ -131,7 +129,7 @@ public:
     }
 
     template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-    MatRM compute_fock_dft(const MatRM &D, double precision, const MatRM& Schwarz)
+    Mat compute_fock_dft(const Mat &D, double precision, const Mat& Schwarz)
     {
         using occ::parallel::nthreads;
         const auto& basis = m_hf.basis();
@@ -139,7 +137,7 @@ public:
         size_t F_rows, F_cols;
         size_t nbf = occ::qm::nbf(basis);
         std::tie(F_rows, F_cols) = occ::qm::matrix_dimensions<spinorbital_kind>(nbf);
-        MatRM F = MatRM::Zero(F_rows, F_cols);
+        Mat F = Mat::Zero(F_rows, F_cols);
         m_two_electron_energy = 0.0;
         m_exc_dft = 0.0;
         double ecoul, exc;
@@ -153,7 +151,7 @@ public:
             family = DensityFunctional::Family::GGA;
         }
 
-        std::vector<MatRM> Kt(occ::parallel::nthreads, MatRM::Zero(D.rows(), D.cols()));
+        std::vector<Mat> Kt(occ::parallel::nthreads, Mat::Zero(D.rows(), D.cols()));
         std::vector<double> energies(occ::parallel::nthreads, 0.0);
         std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
         std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
@@ -220,7 +218,7 @@ public:
                         res += func.evaluate(params);
                     }
 
-                    MatRM KK = MatRM::Zero(k.rows(), k.cols());
+                    Mat KK = Mat::Zero(k.rows(), k.cols());
 
                     // Weight the arrays by the grid weights
                     res.weight_by(weights_block);
@@ -280,7 +278,7 @@ public:
         //occ::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_two_electron_energy, m_two_electron_energy + exc);
 
         if(exchange_factor != 0.0) {
-            MatRM J, K;
+            Mat J, K;
             std::tie(J, K) = m_hf.compute_JK(spinorbital_kind, D, precision, Schwarz);
             ecoul = expectation<spinorbital_kind>(D, J);
             exc = - expectation<spinorbital_kind>(D, K) * exchange_factor;
@@ -297,7 +295,7 @@ public:
     }
 
 
-    MatRM compute_fock(SpinorbitalKind kind, const MatRM& D, double precision, const MatRM& Schwarz)
+    Mat compute_fock(SpinorbitalKind kind, const Mat& D, double precision, const Mat& Schwarz)
     {
         int deriv = density_derivative();
         switch (kind) {
@@ -320,7 +318,7 @@ public:
     }
     const auto& hf() const { return m_hf; }
 
-    Vec electronic_electric_potential_contribution(occ::qm::SpinorbitalKind kind, const MatRM &D, const Mat3N &pts) const
+    Vec electronic_electric_potential_contribution(occ::qm::SpinorbitalKind kind, const Mat &D, const Mat3N &pts) const
     {
         return m_hf.electronic_electric_potential_contribution(kind, D, pts);
     }
@@ -330,7 +328,7 @@ public:
         return m_hf.nuclear_electric_potential_contribution(pts);
     }
 
-    void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const MatRM &D, MatRM &H) { return; }
+    void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const Mat &D, Mat &H) { return; }
     
 private:
 

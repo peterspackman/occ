@@ -14,7 +14,6 @@ namespace occ::dft {
 using occ::qm::SpinorbitalKind;
 using occ::Vec;
 using occ::IVec;
-using occ::MatRM;
 using occ::Array;
 
 class DensityFunctional {
@@ -405,9 +404,9 @@ public:
             }
             else {
                 exc = Vec::Zero(npt);
-                vrho = MatRM::Zero(npt, 2);
+                vrho = Mat::Zero(npt, 2);
                 if(family == GGA || family == HGGA) {
-                    vsigma = MatRM::Zero(npt, 3);
+                    vsigma = Mat::Zero(npt, 3);
                     have_vsigma = true;
                 }
             }
@@ -415,8 +414,8 @@ public:
         size_t npts{0};
         bool have_vsigma{false};
         Vec exc;
-        MatRM vrho;
-        MatRM vsigma;
+        Mat vrho;
+        Mat vsigma;
         Result& operator +=(const Result& right) {
             exc.array() += right.exc.array();
             vrho.array() += right.vrho.array();
@@ -451,8 +450,8 @@ public:
             }
         }
         size_t npts{0};
-        MatRM rho;
-        MatRM sigma;
+        Mat rho;
+        Mat sigma;
     };
 
     DensityFunctional(const std::string&, bool polarized = false);

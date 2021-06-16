@@ -8,6 +8,7 @@
 using occ::qm::BasisSet;
 using occ::hf::HartreeFock;
 using occ::util::all_close;
+using occ::Mat;
 
 TEST_CASE("H2/STO-3G") {
     libint2::initialize();
@@ -17,7 +18,7 @@ TEST_CASE("H2/STO-3G") {
         {1, 0.0, 0.0, 1.398397}
     };
     BasisSet basis("sto-3g", atoms);
-    occ::MatRM D(2, 2);
+    Mat D(2, 2);
     D.setConstant(0.301228);
     auto grid_pts = occ::Mat3N(3, 4);
     grid_pts << 1.0, 0.0, 0.0, 0.0,

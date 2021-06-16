@@ -4,7 +4,7 @@
 
 namespace occ::df {
 
-occ::MatRM DFFockEngine::compute_2body_fock_dfC(const occ::MatRM& Cocc) {
+Mat DFFockEngine::compute_2body_fock_dfC(const Mat& Cocc) {
 
   using occ::parallel::nthreads;
 
@@ -82,12 +82,12 @@ occ::MatRM DFFockEngine::compute_2body_fock_dfC(const occ::MatRM& Cocc) {
 
     occ::parallel::parallel_do(lambda);
 
-    occ::MatRM V = occ::ints::compute_2body_2index_ints(dfbs);
-    Eigen::LLT<occ::MatRM> V_LLt(V);
-    occ::MatRM I = occ::MatRM::Identity(ndf, ndf);
+    Mat V = occ::ints::compute_2body_2index_ints(dfbs);
+    Eigen::LLT<Mat> V_LLt(V);
+    Mat I = Mat::Identity(ndf, ndf);
     auto L = V_LLt.matrixL();
-    occ::MatRM V_L = L;
-    occ::MatRM Linv_t = L.solve(I).transpose();
+    Mat V_L = L;
+    Mat Linv_t = L.solve(I).transpose();
     // check
     //  std::cout << "||V - L L^t|| = " << (V - V_L * V_L.transpose()).norm() <<
     //  std::endl;
@@ -194,8 +194,7 @@ occ::MatRM DFFockEngine::compute_2body_fock_dfC(const occ::MatRM& Cocc) {
       }
   }
   // copy result to an Eigen::Matrix
-  occ::MatRM result(n, n);
-  std::copy(G.data(), G.data() + G.size(), result.data());
+  Mat result = Eigen::Map<const MatRM>(G.data(), n, n);;
   return result;
 }
 

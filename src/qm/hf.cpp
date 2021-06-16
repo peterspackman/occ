@@ -29,7 +29,7 @@ double HartreeFock::nuclear_repulsion_energy() const {
   return enuc;
 }
 
-MatRM HartreeFock::compute_shellblock_norm(const MatRM &A) const {
+Mat HartreeFock::compute_shellblock_norm(const Mat &A) const {
   return occ::ints::compute_shellblock_norm(m_basis, A);
 }
 
@@ -48,7 +48,7 @@ Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions) c
     return result;
 }
 
-Mat3N HartreeFock::electronic_electric_field_contribution(SpinorbitalKind kind, const MatRM& D, const Mat3N &positions) const
+Mat3N HartreeFock::electronic_electric_field_contribution(SpinorbitalKind kind, const Mat& D, const Mat3N &positions) const
 {
     constexpr bool use_finite_differences = true;
     if constexpr(use_finite_differences) {
@@ -77,7 +77,7 @@ Mat3N HartreeFock::electronic_electric_field_contribution(SpinorbitalKind kind, 
     }
 }
 
-Vec HartreeFock::electronic_electric_potential_contribution(SpinorbitalKind kind, const MatRM &D, const Mat3N &positions) const
+Vec HartreeFock::electronic_electric_potential_contribution(SpinorbitalKind kind, const Mat &D, const Mat3N &positions) const
 {
     switch(kind)
     {

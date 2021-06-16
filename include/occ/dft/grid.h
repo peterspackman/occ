@@ -5,12 +5,6 @@
 
 namespace occ::dft {
 
-using occ::Mat3N;
-using occ::MatRM;
-using occ::MatN4;
-using occ::Vec;
-using occ::IVec;
-using occ::MatRM;
 using occ::qm::BasisSet;
 
 struct AtomGrid
@@ -127,6 +121,6 @@ private:
     Vec m_weights;
     IVec m_l_max;
     Vec m_alpha_max;
-    MatRM m_alpha_min;
+    Mat m_alpha_min;
 };
 }

@@ -6,8 +6,8 @@ namespace occ::io::conversion {
 
 namespace orb {
 
-occ::MatRM from_gaussian(const occ::qm::BasisSet&, const occ::MatRM&);
-occ::MatRM to_gaussian(const occ::qm::BasisSet&, const occ::MatRM&);
+Mat from_gaussian(const occ::qm::BasisSet&, const Mat&);
+Mat to_gaussian(const occ::qm::BasisSet&, const Mat&);
 
 }
 

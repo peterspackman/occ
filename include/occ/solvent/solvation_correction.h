@@ -117,7 +117,7 @@ public:
     
     auto compute_schwarz_ints() { return m_proc.compute_schwarz_ints(); }
 
-    void update_core_hamiltonian(SpinorbitalKind kind, const occ::MatRM &D, occ::MatRM &H)
+    void update_core_hamiltonian(SpinorbitalKind kind, const occ::Mat &D, occ::Mat &H)
     {
         occ::timing::start(occ::timing::category::solvent);
         occ::Vec v = (m_qn + m_proc.electronic_electric_potential_contribution(kind, D, m_solvation_model.surface_positions()));
@@ -167,9 +167,9 @@ public:
     }
 
 
-    MatRM compute_fock(SpinorbitalKind kind, const MatRM &D,
+    Mat compute_fock(SpinorbitalKind kind, const Mat &D,
                     double precision = std::numeric_limits<double>::epsilon(),
-                    const MatRM &Schwarz = MatRM()) const
+                    const Mat &Schwarz = Mat()) const
     {
         return m_proc.compute_fock(kind, D, precision, Schwarz);
     }
@@ -187,8 +187,8 @@ private:
     std::vector<std::pair<double, std::array<double, 3>>> m_point_charges;
     double m_electronic_solvation_energy{0.0}, m_nuclear_solvation_energy{0.0},
            m_surface_solvation_energy, m_cds_solvation_energy;
-    occ::MatRM m_X;
-    occ::Vec m_qn;
+    Mat m_X;
+    Vec m_qn;
 };
 
 }

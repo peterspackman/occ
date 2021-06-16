@@ -60,7 +60,7 @@ Wavefunction::Wavefunction(const MoldenReader& molden) :
     }
     else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
         std::tie(rows, cols) = occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
-        C = MatRM(rows, cols);
+        C = Mat(rows, cols);
         mo_energies = Vec(rows);
         C.alpha() = molden.alpha_mo_coefficients();
         C.beta() = molden.beta_mo_coefficients();
@@ -90,10 +90,10 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     size_t rows, cols;
     if(is_restricted()) std::tie(rows, cols) = matrix_dimensions<SpinorbitalKind::Restricted>(nbf);
     else std::tie(rows, cols) = matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
-    C = MatRM(rows, cols);
+    C = Mat(rows, cols);
     mo_energies = occ::Vec(rows);
     // temporaries for merging orbitals
-    MatRM C_merged;
+    Mat C_merged;
     occ::Vec energies_merged;
     occ::log::debug("Merging occupied orbitals, sorted by energy");
     if(wfn_a.is_restricted() && wfn_b.is_restricted())
@@ -267,7 +267,7 @@ void Wavefunction::set_molecular_orbitals(const FchkReader& fchk)
     }
     else if(spinorbital_kind == SpinorbitalKind::Unrestricted) {
         std::tie(rows, cols) = occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
-        C = MatRM(rows, cols);
+        C = Mat(rows, cols);
         mo_energies = Vec(rows);
         C.alpha() = fchk.alpha_mo_coefficients();
         C.beta() = fchk.beta_mo_coefficients();
@@ -296,7 +296,7 @@ void Wavefunction::compute_density_matrix() {
     }
 }
 
-void Wavefunction::symmetric_orthonormalize_molecular_orbitals(const MatRM& overlap)
+void Wavefunction::symmetric_orthonormalize_molecular_orbitals(const Mat& overlap)
 {
     if(spinorbital_kind == SpinorbitalKind::Restricted)
     {
@@ -310,23 +310,23 @@ void Wavefunction::symmetric_orthonormalize_molecular_orbitals(const MatRM& over
 }
 
 
-MatRM symmetrically_orthonormalize(const MatRM& mat, const MatRM& metric)
+Mat symmetrically_orthonormalize(const Mat& mat, const Mat& metric)
 {
-    MatRM X, X_invT;
+    Mat X, X_invT;
     size_t n_cond;
     double x_condition_number, condition_number;
     double threshold = 1.0 / std::numeric_limits<double>::epsilon();
-    MatRM SS = mat.transpose() * metric * mat;
+    Mat SS = mat.transpose() * metric * mat;
     std::tie(X, X_invT, n_cond, x_condition_number, condition_number) = occ::gensqrtinv(SS, true, threshold);
     return mat * X;
 }
 
-MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overlap, size_t n_occ)
+Mat symmorthonormalize_molecular_orbitals(const Mat& mos, const Mat& overlap, size_t n_occ)
 {
-    MatRM result(mos.rows(), mos.cols());
+    Mat result(mos.rows(), mos.cols());
     size_t n_virt = mos.cols() - n_occ;
-    MatRM C_occ = mos.leftCols(n_occ);
-    MatRM C_virt = mos.rightCols(n_virt);
+    Mat C_occ = mos.leftCols(n_occ);
+    Mat C_virt = mos.rightCols(n_virt);
     result.leftCols(n_occ) = symmetrically_orthonormalize(C_occ, overlap);
     result.rightCols(n_virt) = symmetrically_orthonormalize(C_virt, overlap);
     return result;
@@ -348,11 +348,11 @@ void Wavefunction::apply_rotation(const occ::Mat3& rot)
 {
     if(spinorbital_kind == SpinorbitalKind::Restricted)
     {
-        MatRM rotated = rotate_molecular_orbitals(basis, rot, C);
+        Mat rotated = rotate_molecular_orbitals(basis, rot, C);
         C.noalias() = rotated;
     }
     else {
-        MatRM rotated = rotate_molecular_orbitals(basis, rot, C.alpha());
+        Mat rotated = rotate_molecular_orbitals(basis, rot, C.alpha());
         C.alpha().noalias() = rotated;
         rotated = rotate_molecular_orbitals(basis, rot, C.beta());
         C.beta().noalias() = rotated;
@@ -405,7 +405,7 @@ void Wavefunction::save(FchkWriter &fchk)
     fchk.set_vector("Real atomic weights", atomic_prop);
 
     auto Cfchk = occ::io::conversion::orb::to_gaussian(basis, C);
-    occ::MatRM Dfchk;
+    Mat Dfchk;
 
     std::vector<double> density_lower_triangle, spin_density_lower_triangle;
 
@@ -414,7 +414,7 @@ void Wavefunction::save(FchkWriter &fchk)
         fchk.set_vector("Alpha MO coefficients", Cfchk.alpha());
         fchk.set_vector("Beta Orbital Energies", mo_energies.beta());
         fchk.set_vector("Beta MO coefficients", Cfchk.beta());
-        occ::MatRM occ_fchk = occ::qm::orb::occupied_unrestricted(Cfchk, num_alpha, num_beta);
+        Mat occ_fchk = occ::qm::orb::occupied_unrestricted(Cfchk, num_alpha, num_beta);
         Dfchk = occ::qm::orb::density_matrix_unrestricted(occ_fchk, num_alpha, num_beta);
 
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
@@ -432,7 +432,7 @@ void Wavefunction::save(FchkWriter &fchk)
     else {
         fchk.set_vector("Alpha Orbital Energies", mo_energies);
         fchk.set_vector("Alpha MO coefficients", Cfchk);
-        occ::MatRM occ_fchk = occ::qm::orb::occupied_restricted(Cfchk, num_alpha);
+        Mat occ_fchk = occ::qm::orb::occupied_restricted(Cfchk, num_alpha);
         Dfchk = occ::qm::orb::density_matrix_restricted(occ_fchk);
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
         for(Eigen::Index row = 0; row < nbf; row++) {

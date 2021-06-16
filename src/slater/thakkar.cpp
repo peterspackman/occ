@@ -1,7 +1,6 @@
 #include <occ/slater/thakkar.h>
 
 namespace occ::thakkar {
-using occ::MatRM;
 using occ::IVec;
 using occ::Vec;
 using occ::slater::Basis;

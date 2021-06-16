@@ -402,17 +402,17 @@ void BasisSet::update()
 }
 
 
-occ::MatRM rotate_molecular_orbitals(const BasisSet& basis, const occ::Mat3& rotation, const occ::MatRM& C)
+Mat rotate_molecular_orbitals(const BasisSet& basis, const occ::Mat3& rotation, const Mat& C)
 {
     assert(!basis.is_pure());
     const auto shell2bf = basis.shell2bf();
-    occ::MatRM result(C.rows(), C.cols());
+    Mat result(C.rows(), C.cols());
     for(size_t s = 0; s < basis.size(); s++) {
         const auto& shell = basis[s];
         size_t bf_first = shell2bf[s];
         size_t shell_size = shell.size();
         int l = shell.contr[0].l;
-        occ::MatRM rot;
+        Mat rot;
         switch(l) {
         case 0:
             result.block(bf_first, 0, shell_size, C.cols()).noalias() = C.block(bf_first, 0, shell_size, C.cols());

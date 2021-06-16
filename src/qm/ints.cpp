@@ -4,7 +4,7 @@
 
 namespace occ::ints {
 
-MatRM compute_2body_2index_ints(const BasisSet &bs) {
+Mat compute_2body_2index_ints(const BasisSet &bs) {
     occ::timing::start(occ::timing::category::ints2e);
   using occ::parallel::nthreads;
   using libint2::BraKet;
@@ -13,7 +13,7 @@ MatRM compute_2body_2index_ints(const BasisSet &bs) {
 
   const auto n = bs.nbf();
   const auto nshells = bs.size();
-  MatRM result = MatRM::Zero(n, n);
+  Mat result = Mat::Zero(n, n);
 
   // build engines for each thread
 
@@ -177,9 +177,9 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
   return std::make_tuple(splist, spdata);
 }
 
-MatRM compute_shellblock_norm(const BasisSet &obs, const MatRM &A) {
+Mat compute_shellblock_norm(const BasisSet &obs, const Mat &A) {
   const auto nsh = obs.size();
-  MatRM Ash(nsh, nsh);
+  Mat Ash(nsh, nsh);
 
   auto shell2bf = obs.shell2bf();
   for (size_t s1 = 0; s1 != nsh; ++s1) {
@@ -197,7 +197,7 @@ MatRM compute_shellblock_norm(const BasisSet &obs, const MatRM &A) {
   return Ash;
 }
 
-MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
+Mat compute_2body_fock_mixed_basis(const BasisSet &obs, const Mat &D,
                                  const BasisSet &D_bs, bool D_is_shelldiagonal,
                                  double precision) {
     occ::timing::start(occ::timing::category::ints2e);
@@ -208,7 +208,7 @@ MatRM compute_2body_fock_mixed_basis(const BasisSet &obs, const MatRM &D,
   assert(D.cols() == D.rows() && D.cols() == n_D);
 
   using occ::parallel::nthreads;
-  std::vector<MatRM> G(nthreads, MatRM::Zero(n, n));
+  std::vector<Mat> G(nthreads, Mat::Zero(n, n));
 
   // construct the 2-electron repulsion integrals engine
   using libint2::Engine;

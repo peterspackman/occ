@@ -8,7 +8,6 @@
 
 namespace occ::qm {
 
-using occ::MatRM;
 using occ::Vec;
 using occ::io::FchkReader;
 using occ::io::FchkWriter;
@@ -45,7 +44,7 @@ struct Wavefunction {
     void update_occupied_orbitals();
     void set_molecular_orbitals(const FchkReader& fchk);
     void compute_density_matrix();
-    void symmetric_orthonormalize_molecular_orbitals(const MatRM& overlap);
+    void symmetric_orthonormalize_molecular_orbitals(const Mat& overlap);
     void apply_transformation(const occ::Mat3&, const occ::Vec3&);
     void apply_rotation(const occ::Mat3&);
     void apply_translation(const occ::Vec3&);
@@ -62,7 +61,7 @@ struct Wavefunction {
     BasisSet basis;
     size_t nbf{0};
     std::vector<libint2::Atom> atoms;
-    MatRM C, C_occ, D, T, V, H, J, K;
+    Mat C, C_occ, D, T, V, H, J, K;
     Vec mo_energies;
     Energy energy;
     bool have_energies{false};
@@ -70,5 +69,5 @@ struct Wavefunction {
 
 };
 
-MatRM symmorthonormalize_molecular_orbitals(const MatRM& mos, const MatRM& overlap, size_t n_occ);
+Mat symmorthonormalize_molecular_orbitals(const Mat& mos, const Mat& overlap, size_t n_occ);
 }

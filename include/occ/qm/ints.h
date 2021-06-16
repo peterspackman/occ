@@ -9,7 +9,6 @@
 #include <vector>
 
 namespace occ::ints {
-using occ::MatRM;
 using occ::qm::BasisSet;
 using libint2::BraKet;
 using libint2::Operator;
@@ -27,19 +26,19 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2 = BasisSet(),
 template <Operator obtype,
           typename OperatorParams =
               typename libint2::operator_traits<obtype>::oper_params_type>
-std::array<MatRM, libint2::operator_traits<obtype>::nopers>
+std::array<Mat, libint2::operator_traits<obtype>::nopers>
 compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list,
                    OperatorParams oparams = OperatorParams()) {
   occ::timing::start(occ::timing::category::ints1e);
   const auto n = obs.nbf();
   const auto nshells = obs.size();
   using occ::parallel::nthreads;
-  typedef std::array<MatRM, libint2::operator_traits<obtype>::nopers>
+  typedef std::array<Mat, libint2::operator_traits<obtype>::nopers>
       result_type;
   const unsigned int nopers = libint2::operator_traits<obtype>::nopers;
   result_type result;
   for (auto &r : result)
-    r = MatRM::Zero(n, n);
+    r = Mat::Zero(n, n);
 
   // construct the 1-body integrals engine
   std::vector<libint2::Engine> engines(nthreads);
@@ -97,7 +96,7 @@ compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list,
 }
 
 template <Operator obtype>
-std::vector<MatRM>
+std::vector<Mat>
 compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
                          const shellpair_list_t &shellpair_list,
                          const std::vector<libint2::Atom> &atoms) {
@@ -108,10 +107,10 @@ compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
   constexpr auto nopers = libint2::operator_traits<obtype>::nopers;
   const auto nresults =
       nopers * libint2::num_geometrical_derivatives(atoms.size(), deriv_order);
-  typedef std::vector<MatRM> result_type;
+  typedef std::vector<Mat> result_type;
   result_type result(nresults);
   for (auto &r : result)
-    r = MatRM::Zero(n, n);
+    r = Mat::Zero(n, n);
 
   // construct the 1-body integrals engine
   std::vector<libint2::Engine> engines(nthreads);
@@ -308,7 +307,7 @@ compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
 }
 
 template <libint2::Operator Kernel = libint2::Operator::coulomb>
-MatRM compute_schwarz_ints(
+Mat compute_schwarz_ints(
     const BasisSet &bs1, const BasisSet &_bs2 = BasisSet(),
     bool use_2norm = false, // use infty norm by default
     typename libint2::operator_traits<Kernel>::oper_params_type params =
@@ -322,7 +321,7 @@ MatRM compute_schwarz_ints(
   const auto nsh2 = bs2.size();
   const auto bs1_equiv_bs2 = (&bs1 == &bs2);
 
-  MatRM K = MatRM::Zero(nsh1, nsh2);
+  Mat K = Mat::Zero(nsh1, nsh2);
 
   // construct the 2-electron repulsion integrals engine
   using occ::parallel::nthreads;
@@ -378,20 +377,20 @@ MatRM compute_schwarz_ints(
   return K;
 }
 
-MatRM compute_shellblock_norm(const BasisSet &obs, const MatRM &A);
-MatRM compute_2body_2index_ints(const BasisSet &);
+Mat compute_shellblock_norm(const BasisSet &obs, const Mat &A);
+Mat compute_2body_2index_ints(const BasisSet &);
 
-MatRM compute_2body_fock_mixed_basis(
-    const BasisSet &obs, const MatRM &D, const BasisSet &D_bs,
+Mat compute_2body_fock_mixed_basis(
+    const BasisSet &obs, const Mat &D, const BasisSet &D_bs,
     bool D_is_shelldiagonal,
     double precision = std::numeric_limits<double>::epsilon());
 
 template <unsigned deriv_order>
-std::vector<MatRM> compute_2body_fock_deriv(
+std::vector<Mat> compute_2body_fock_deriv(
     const BasisSet &obs, const shellpair_list_t &shellpair_list,
     const shellpair_data_t &shellpair_data,
-    const std::vector<libint2::Atom> &atoms, const MatRM &D, double precision,
-    const MatRM &Schwarz) {
+    const std::vector<libint2::Atom> &atoms, const Mat &D, double precision,
+    const Mat &Schwarz) {
     occ::timing::start(occ::timing::category::ints2e);
 
   const auto n = obs.nbf();
@@ -402,10 +401,10 @@ std::vector<MatRM> compute_2body_fock_deriv(
       atoms.size(), deriv_order); // total # of derivs
   const auto ncoords_times_two = (atoms.size() * 3) * 2;
   using occ::parallel::nthreads;
-  std::vector<MatRM> G(nthreads * nderiv, MatRM::Zero(n, n));
+  std::vector<Mat> G(nthreads * nderiv, Mat::Zero(n, n));
 
   const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
-  MatRM D_shblk_norm =
+  Mat D_shblk_norm =
       compute_shellblock_norm(obs, D); // matrix of infty-norms of shell blocks
 
   auto fock_precision = precision;
@@ -642,7 +641,7 @@ std::vector<MatRM> compute_2body_fock_deriv(
     engines[t].print_timers();
 #endif
 
-  std::vector<MatRM> GG(nderiv);
+  std::vector<Mat> GG(nderiv);
   for (auto d = 0; d != nderiv; ++d) {
     GG[d] = 0.5 * (G[d] + G[d].transpose());
   }

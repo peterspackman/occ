@@ -229,10 +229,10 @@ class BasisSet : public std::vector<libint2::Shell> {
 
 }; // BasisSet
 
-occ::MatRM rotate_molecular_orbitals(const BasisSet&, const occ::Mat3&, const occ::MatRM&);
+Mat rotate_molecular_orbitals(const BasisSet&, const Mat3&, const Mat&);
 
-void rotate_atoms(std::vector<libint2::Atom>& atoms, const occ::Mat3& rotation);
-void translate_atoms(std::vector<libint2::Atom>& atoms, const occ::Vec3& translation);
+void rotate_atoms(std::vector<libint2::Atom>& atoms, const Mat3& rotation);
+void translate_atoms(std::vector<libint2::Atom>& atoms, const Vec3& translation);
 
 
 inline std::vector<libint2::Atom> rotated_atoms(const std::vector<libint2::Atom>& atoms, const occ::Mat3& rotation)

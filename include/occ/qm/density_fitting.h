@@ -16,7 +16,7 @@ struct DFFockEngine {
   std::vector<double> xyK;
 
   // a DF-based builder, using coefficients of occupied MOs
-  occ::MatRM compute_2body_fock_dfC(const occ::MatRM& Cocc);
+  Mat compute_2body_fock_dfC(const Mat& Cocc);
 };
 
 }

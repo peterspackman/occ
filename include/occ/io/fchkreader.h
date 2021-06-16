@@ -91,8 +91,8 @@ public:
         return Eigen::Map<const occ::Vec, 0>(m_beta_mo_energies.data(), m_beta_mo_energies.size());
     }
 
-    occ::MatRM scf_density_matrix() const;
-    occ::MatRM mp2_density_matrix() const;
+    Mat scf_density_matrix() const;
+    Mat mp2_density_matrix() const;
 
     std::vector<libint2::Atom> atoms() const;
 

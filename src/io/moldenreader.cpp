@@ -280,8 +280,8 @@ void MoldenReader::parse_mo_section(const std::optional<std::string> &args, std:
     std::string line;
     m_energies_alpha = occ::Vec(nbf());
     m_energies_beta = occ::Vec(nbf());
-    m_molecular_orbitals_alpha = occ::MatRM(nbf(), nbf());
-    m_molecular_orbitals_beta = occ::MatRM(nbf(), nbf());
+    m_molecular_orbitals_alpha = Mat(nbf(), nbf());
+    m_molecular_orbitals_beta = Mat(nbf(), nbf());
     size_t num_alpha = 0, num_beta = 0;
     while(std::getline(stream, line))
     {
@@ -295,7 +295,7 @@ void MoldenReader::parse_mo_section(const std::optional<std::string> &args, std:
 }
 
 
-occ::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const occ::qm::BasisSet& basis, const occ::MatRM& mo) const
+Mat MoldenReader::convert_mo_coefficients_from_molden_convention(const occ::qm::BasisSet& basis, const Mat& mo) const
 {
     using occ::util::index_of;
     // no reordering should occur unless there are d, f, g, h etc. functions
@@ -309,7 +309,7 @@ occ::MatRM MoldenReader::convert_mo_coefficients_from_molden_convention(const oc
 
     occ::log::debug("Reordering MO coefficients from Molden ordering to internal convention");
     auto shell2bf = basis.shell2bf();
-    occ::MatRM result(mo.rows(), mo.cols());
+    Mat result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     for(size_t i = 0; i < basis.size(); i++)
     {

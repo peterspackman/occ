@@ -248,10 +248,10 @@ std::vector<std::array<int, angular_momentum>> cartesian_gaussian_power_index_ar
  * giving results P' = R P
  */
 template<int l>
-occ::MatRM cartesian_gaussian_rotation_matrix(const occ::Mat3 rotation)
+Mat cartesian_gaussian_rotation_matrix(const occ::Mat3 rotation)
 {
     constexpr int num_moments = (l + 1) * (l + 2) / 2;
-    occ::MatRM result = occ::MatRM::Zero(num_moments, num_moments);
+    Mat result = Mat::Zero(num_moments, num_moments);
     auto cg_powers = cartesian_gaussian_power_index_arrays<l>();
     for(int i = 0; i < num_moments; i++)
     {

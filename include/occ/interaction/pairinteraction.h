@@ -10,8 +10,6 @@
 
 namespace occ::hf { class HartreeFock; }
 namespace occ::interaction {
-using occ::MatRM;
-using occ::Vec;
 using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;

@@ -44,12 +44,12 @@ public:
         return static_cast<size_t>(m_total_beta_occupation);
     }
 
-    const occ::MatRM& alpha_mo_coefficients() const
+    const Mat& alpha_mo_coefficients() const
     {
         return m_molecular_orbitals_alpha;
     }
 
-    const occ::MatRM& beta_mo_coefficients() const
+    const Mat& beta_mo_coefficients() const
     {
         return m_molecular_orbitals_beta;
     }
@@ -66,7 +66,7 @@ public:
 
 
 
-    occ::MatRM convert_mo_coefficients_from_molden_convention(const occ::qm::BasisSet&, const occ::MatRM&) const;
+    Mat convert_mo_coefficients_from_molden_convention(const occ::qm::BasisSet&, const Mat&) const;
 
 private:
     void parse(std::istream&);
@@ -79,8 +79,8 @@ private:
     std::vector<libint2::Atom> m_atoms;
     occ::qm::BasisSet m_basis;
     std::string m_filename;
-    occ::MatRM m_molecular_orbitals_alpha;
-    occ::MatRM m_molecular_orbitals_beta;
+    Mat m_molecular_orbitals_alpha;
+    Mat m_molecular_orbitals_beta;
     occ::Vec m_energies_alpha;
     occ::Vec m_energies_beta;
     double m_total_alpha_occupation{0};

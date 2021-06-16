@@ -4,23 +4,22 @@
 #include <occ/qm/spinorbital.h>
 
 namespace occ::ints {
-using occ::MatRM;
 using occ::qm::SpinorbitalKind;
 
 template<SpinorbitalKind kind>
-MatRM compute_fock(
+Mat compute_fock(
     const BasisSet &obs, const shellpair_list_t &shellpair_list,
-    const shellpair_data_t &shellpair_data, const MatRM &D,
+    const shellpair_data_t &shellpair_data, const Mat &D,
     double precision = std::numeric_limits<double>::epsilon(),
-    const MatRM &Schwarz = MatRM())
+    const Mat &Schwarz = Mat())
 {
     occ::timing::start(occ::timing::category::ints2e);
     occ::timing::start(occ::timing::category::fock);
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     using occ::parallel::nthreads;
-    std::vector<MatRM> G(nthreads, MatRM::Zero(D.rows(), D.cols()));
-    MatRM D_shblk_norm;
+    std::vector<Mat> G(nthreads, Mat::Zero(D.rows(), D.cols()));
+    Mat D_shblk_norm;
 
     if constexpr(kind == SpinorbitalKind::Restricted) {
         D_shblk_norm = compute_shellblock_norm(obs, D);
@@ -237,7 +236,7 @@ MatRM compute_fock(
         G[0] += G[i];
     }
     // symmetrize the result and return
-    MatRM GG(G[0].rows(), G[0].cols());
+    Mat GG(G[0].rows(), G[0].cols());
     if constexpr(kind == SpinorbitalKind::Restricted || kind == SpinorbitalKind::General)
         GG = 0.5 * (G[0] + G[0].transpose());
     else if constexpr(kind == SpinorbitalKind::Unrestricted) {
@@ -251,19 +250,19 @@ MatRM compute_fock(
 
 
 template<SpinorbitalKind kind>
-std::pair<MatRM, MatRM> compute_JK(
+std::pair<Mat, Mat> compute_JK(
     const BasisSet &obs, const shellpair_list_t &shellpair_list,
-    const shellpair_data_t &shellpair_data, const MatRM &D,
+    const shellpair_data_t &shellpair_data, const Mat &D,
     double precision = std::numeric_limits<double>::epsilon(),
-    const MatRM &Schwarz = MatRM())
+    const Mat &Schwarz = Mat())
 {
     occ::timing::start(occ::timing::category::ints2e);
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     using occ::parallel::nthreads;
-    std::vector<MatRM> J(nthreads, MatRM::Zero(D.rows(), D.cols()));
-    std::vector<MatRM> K(nthreads, MatRM::Zero(D.rows(), D.cols()));
-    MatRM D_shblk_norm = compute_shellblock_norm(obs, D.block(0, 0, n, n));
+    std::vector<Mat> J(nthreads, Mat::Zero(D.rows(), D.cols()));
+    std::vector<Mat> K(nthreads, Mat::Zero(D.rows(), D.cols()));
+    Mat D_shblk_norm = compute_shellblock_norm(obs, D.block(0, 0, n, n));
 
     if constexpr(kind == SpinorbitalKind::Unrestricted) {
         assert((D.rows() == 2 * n) && (D.cols() ==n) && "Unrestricted density matrix must be 2 nbf x nbf");
@@ -480,7 +479,7 @@ std::pair<MatRM, MatRM> compute_JK(
         K[0] += K[i];
     }
     // symmetrize the result and return
-    MatRM JJ(J[0].rows(), J[0].cols()), KK(K[0].rows(), K[0].cols());
+    Mat JJ(J[0].rows(), J[0].cols()), KK(K[0].rows(), K[0].cols());
     if constexpr(kind == SpinorbitalKind::Restricted || kind == SpinorbitalKind::General) {
         JJ = 0.5 * (J[0] + J[0].transpose());
         KK = 0.5 * (K[0] + K[0].transpose());
@@ -496,18 +495,18 @@ std::pair<MatRM, MatRM> compute_JK(
 }
 
 template<SpinorbitalKind kind>
-MatRM compute_J(
+Mat compute_J(
     const BasisSet &obs, const shellpair_list_t &shellpair_list,
-    const shellpair_data_t &shellpair_data, const MatRM &D,
+    const shellpair_data_t &shellpair_data, const Mat &D,
     double precision = std::numeric_limits<double>::epsilon(),
-    const MatRM &Schwarz = MatRM())
+    const Mat &Schwarz = Mat())
 {
     occ::timing::start(occ::timing::category::ints2e);
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     using occ::parallel::nthreads;
-    std::vector<MatRM> J(nthreads, MatRM::Zero(D.rows(), D.cols()));
-    MatRM D_shblk_norm = compute_shellblock_norm(obs, D.block(0, 0, n, n));
+    std::vector<Mat> J(nthreads, Mat::Zero(D.rows(), D.cols()));
+    Mat D_shblk_norm = compute_shellblock_norm(obs, D.block(0, 0, n, n));
 
     if constexpr(kind == SpinorbitalKind::Unrestricted) {
         assert((D.rows() == 2 * n) && (D.cols() ==n) && "Unrestricted density matrix must be 2 nbf x nbf");
@@ -678,7 +677,7 @@ MatRM compute_J(
         J[0] += J[i];
     }
     // symmetrize the result and return
-    MatRM JJ(J[0].rows(), J[0].cols());
+    Mat JJ(J[0].rows(), J[0].cols());
     if constexpr(kind == SpinorbitalKind::Restricted || kind == SpinorbitalKind::General) {
         JJ = 0.5 * (J[0] + J[0].transpose());
     }

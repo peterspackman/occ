@@ -6,7 +6,6 @@
 namespace occ::hf {
 
 using occ::qm::SpinorbitalKind;
-using occ::MatRM;
 using occ::ints::BasisSet;
 using occ::ints::compute_1body_ints;
 using occ::ints::compute_1body_ints_deriv;
@@ -42,27 +41,27 @@ public:
 
   double nuclear_repulsion_energy() const;
 
-  MatRM compute_fock(SpinorbitalKind kind, const MatRM &D,
+  Mat compute_fock(SpinorbitalKind kind, const Mat &D,
                     double precision = std::numeric_limits<double>::epsilon(),
-                    const MatRM &Schwarz = MatRM()) const
+                    const Mat &Schwarz = Mat()) const
   {
       if(kind == SpinorbitalKind::General) return occ::ints::compute_fock<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       if(kind == SpinorbitalKind::Unrestricted) return occ::ints::compute_fock<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       return occ::ints::compute_fock<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
   }
 
-  std::pair<MatRM, MatRM> compute_JK(SpinorbitalKind kind, const MatRM &D,
+  std::pair<Mat, Mat> compute_JK(SpinorbitalKind kind, const Mat &D,
                     double precision = std::numeric_limits<double>::epsilon(),
-                    const MatRM &Schwarz = MatRM()) const
+                    const Mat &Schwarz = Mat()) const
   {
       if(kind == SpinorbitalKind::General) return occ::ints::compute_JK<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       if(kind == SpinorbitalKind::Unrestricted) return occ::ints::compute_JK<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       return occ::ints::compute_JK<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
   }
 
-  MatRM compute_J(SpinorbitalKind kind, const MatRM &D,
+  Mat compute_J(SpinorbitalKind kind, const Mat &D,
                   double precision = std::numeric_limits<double>::epsilon(),
-                  const MatRM &Schwarz = MatRM()) const
+                  const Mat &Schwarz = Mat()) const
   {
       if(kind == SpinorbitalKind::General) return occ::ints::compute_J<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
       if(kind == SpinorbitalKind::Unrestricted) return occ::ints::compute_J<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
@@ -101,17 +100,17 @@ public:
   }
 
   Mat3N nuclear_electric_field_contribution(const Mat3N&) const;
-  Mat3N electronic_electric_field_contribution(SpinorbitalKind kind, const MatRM&, const Mat3N&) const;
-  Vec electronic_electric_potential_contribution(SpinorbitalKind kind, const MatRM&, const Mat3N&) const;
+  Mat3N electronic_electric_field_contribution(SpinorbitalKind kind, const Mat&, const Mat3N&) const;
+  Vec electronic_electric_potential_contribution(SpinorbitalKind kind, const Mat&, const Mat3N&) const;
   Vec nuclear_electric_potential_contribution(const Mat3N&) const;
 
-  MatRM compute_shellblock_norm(const MatRM &A) const;
+  Mat compute_shellblock_norm(const Mat &A) const;
 
   auto compute_schwarz_ints() {
     return occ::ints::compute_schwarz_ints<>(m_basis);
   }
 
-  void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const MatRM &D, MatRM &H) { return; }
+  void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const Mat &D, Mat &H) { return; }
 
 private:
   int m_charge{0};

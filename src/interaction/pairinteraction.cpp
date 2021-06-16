@@ -34,8 +34,8 @@ void compute_ce_model_energies(Wavefunction& wfn, occ::hf::HartreeFock& hf)
     else {
         size_t rows, cols;
         std::tie(rows, cols) = matrix_dimensions<SpinorbitalKind::Unrestricted>(wfn.nbf);
-        wfn.T = MatRM(rows, cols);
-        wfn.V = MatRM(rows, cols);
+        wfn.T = Mat(rows, cols);
+        wfn.V = Mat(rows, cols);
         wfn.T.alpha() = hf.compute_kinetic_matrix();
         wfn.T.beta() = wfn.T.alpha();
         wfn.V.alpha() = hf.compute_nuclear_attraction_matrix();
@@ -77,7 +77,7 @@ CEModelInteraction::EnergyComponents CEModelInteraction::operator()(Wavefunction
     auto hf_AB = HartreeFock(ABn.atoms, ABn.basis);
 
     Wavefunction ABo = ABn;
-    MatRM S_AB = hf_AB.compute_overlap_matrix();
+    Mat S_AB = hf_AB.compute_overlap_matrix();
     ABo.symmetric_orthonormalize_molecular_orbitals(S_AB);
 
     ABn.compute_density_matrix();

@@ -21,17 +21,17 @@ using occ::util::human_readable_size;
 using occ::conditioning_orthogonalizer;
 using occ::qm::SpinorbitalKind;
 using occ::qm::expectation;
-using occ::MatRM;
+using occ::Mat;
 using occ::util::is_odd;
 using occ::qm::BasisSet;
 using occ::qm::Wavefunction;
 
-inline double rms_error_diis(const MatRM &commutator)
+inline double rms_error_diis(const Mat &commutator)
 {
     return commutator.norm() / commutator.size();
 }
 
-inline double maximum_error_diis(const MatRM &commutator)
+inline double maximum_error_diis(const Mat &commutator)
 {
     return commutator.maxCoeff();
 }
@@ -45,13 +45,13 @@ struct SCF {
         nbf = m_procedure.basis().nbf();
         size_t rows, cols;
         std::tie(rows, cols) = occ::qm::matrix_dimensions<spinorbital_kind>(nbf);
-        S = MatRM::Zero(rows, cols);
-        T = MatRM::Zero(rows, cols);
-        V = MatRM::Zero(rows, cols);
-        H = MatRM::Zero(rows, cols);
-        F = MatRM::Zero(rows, cols);
-        D = MatRM::Zero(rows, cols);
-        C = MatRM::Zero(rows, cols);
+        S = Mat::Zero(rows, cols);
+        T = Mat::Zero(rows, cols);
+        V = Mat::Zero(rows, cols);
+        H = Mat::Zero(rows, cols);
+        F = Mat::Zero(rows, cols);
+        D = Mat::Zero(rows, cols);
+        C = Mat::Zero(rows, cols);
         orbital_energies = Vec::Zero(rows);
     }
 
@@ -163,7 +163,7 @@ struct SCF {
 
     const auto &atoms() const { return m_procedure.atoms(); }
 
-    MatRM compute_soad() const {
+    Mat compute_soad() const {
         // computes Superposition-Of-Atomic-Densities guess for the molecular
         // density matrix in minimal basis; occupies subshells by smearing electrons
         // evenly over the orbitals compute number of atomic orbitals
@@ -174,7 +174,7 @@ struct SCF {
         }
 
         // compute the minimal basis density
-        MatRM D_minbs = MatRM::Zero(nao, nao);
+        Mat D_minbs = Mat::Zero(nao, nao);
         size_t ao_offset = 0; // first AO of this atom
         for (const auto &atom : atoms()) {
             const auto Z = atom.atomic_number;
@@ -356,23 +356,23 @@ struct SCF {
         }
     }
 
-    void update_molecular_orbitals(const MatRM& fock) {
+    void update_molecular_orbitals(const Mat& fock) {
         // solve F C = e S C by (conditioned) transformation to F' C' = e C',
         // where
         // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
         if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-            Eigen::SelfAdjointEigenSolver<MatRM> alpha_eig_solver(X.transpose() * fock.alpha() * X);
-            Eigen::SelfAdjointEigenSolver<MatRM> beta_eig_solver(X.transpose() * fock.beta() * X);
+            Eigen::SelfAdjointEigenSolver<Mat> alpha_eig_solver(X.transpose() * fock.alpha() * X);
+            Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(X.transpose() * fock.beta() * X);
             C.alpha() = X * alpha_eig_solver.eigenvectors();
             C.beta() = X * beta_eig_solver.eigenvectors();
             orbital_energies.block(0, 0, nbf, 1) = alpha_eig_solver.eigenvalues();
             orbital_energies.block(nbf, 0, nbf, 1) = beta_eig_solver.eigenvalues();
-            C_occ = MatRM::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
+            C_occ = Mat::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
             C_occ.block(0, 0, nbf, n_alpha()) = C.alpha().leftCols(n_alpha());
             C_occ.block(nbf, 0, nbf, n_beta()) = C.beta().leftCols(n_beta());
         }
         else {
-            Eigen::SelfAdjointEigenSolver<MatRM> eig_solver(X.transpose() * fock * X);
+            Eigen::SelfAdjointEigenSolver<Mat> eig_solver(X.transpose() * fock * X);
             C = X * eig_solver.eigenvectors();
             orbital_energies = eig_solver.eigenvalues();
             C_occ = C.leftCols(n_occ);
@@ -415,9 +415,9 @@ struct SCF {
         update_occupied_orbital_count();
         compute_initial_guess();
         K = m_procedure.compute_schwarz_ints();
-        MatRM D_diff = D;
-        MatRM D_last;
-        MatRM FD_comm = MatRM::Zero(F.rows(), F.cols());
+        Mat D_diff = D;
+        Mat D_last;
+        Mat FD_comm = Mat::Zero(F.rows(), F.cols());
         update_scf_energy(incremental);
         fmt::print("Starting {} SCF iterations (Eguess = {:.12f})\n\n", scf_kind(), energy["total"]);
         if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
@@ -470,7 +470,7 @@ struct SCF {
             {
                 BasisSet dfbs("def2-svp-jk", m_procedure.atoms());
                 occ::df::DFFockEngine dfe(m_procedure.basis(), dfbs);
-                occ::MatRM fock_df = dfe.compute_2body_fock_dfC(C_occ);
+                occ::Mat fock_df = dfe.compute_2body_fock_dfC(C_occ);
                 fmt::print("Fock\n:{}\n\n\nFockDF\n{}\n", F, fock_df);
             }*/
             // compute HF energy with the non-extrapolated Fock matrix
@@ -491,7 +491,7 @@ struct SCF {
                 reset_incremental_fock_formation = true;
 
             // DIIS extrapolate F
-            MatRM F_diis(F.rows(), F.cols()); // extrapolated F cannot be used in incremental Fock
+            Mat F_diis(F.rows(), F.cols()); // extrapolated F cannot be used in incremental Fock
             F_diis = F;
             // build; only used to produce the density
             // make a copy of the unextrapolated matrix
@@ -561,13 +561,13 @@ struct SCF {
     double diis_error{1.0};
     double ediff_rel = 0.0;
     double total_time{0.0};
-    occ::diis::DIIS<MatRM> diis; // start DIIS on second iteration
+    occ::diis::DIIS<Mat> diis; // start DIIS on second iteration
     bool reset_incremental_fock_formation = false;
     bool incremental_Fbuild_started = false;
     double start_incremental_F_threshold = 1e-4;
     double next_reset_threshold = 0.0;
     size_t last_reset_iteration = 0;
-    MatRM D, S, T, V, H, K, X, Xinv, C, C_occ, F;
+    Mat D, S, T, V, H, K, X, Xinv, C, C_occ, F;
     Vec orbital_energies;
     double XtX_condition_number;
     std::optional<occ::df::DFFockEngine> df_engine;

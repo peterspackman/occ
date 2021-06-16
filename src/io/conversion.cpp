@@ -6,7 +6,7 @@
 namespace occ::io::conversion {
 
 namespace orb {
-occ::MatRM from_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM& mo)
+Mat from_gaussian(const occ::qm::BasisSet &basis, const Mat& mo)
 {
     // no reordering should occur unless there are d, f, g, h etc. functions
     using occ::util::index_of;
@@ -20,7 +20,7 @@ occ::MatRM from_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM& mo)
 
     occ::log::debug("Reordering MO coefficients from Gaussian ordering to internal convention");
     auto shell2bf = basis.shell2bf();
-    occ::MatRM result(mo.rows(), mo.cols());
+    Mat result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     for(size_t i = 0; i < basis.size(); i++)
     {
@@ -73,7 +73,7 @@ occ::MatRM from_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM& mo)
 }
 
 
-occ::MatRM to_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM &mo)
+Mat to_gaussian(const occ::qm::BasisSet &basis, const Mat &mo)
 {
     // no reordering should occur unless there are d, f, g, h etc. functions
     using occ::util::index_of;
@@ -87,7 +87,7 @@ occ::MatRM to_gaussian(const occ::qm::BasisSet &basis, const occ::MatRM &mo)
 
     occ::log::debug("Reordering MO coefficients from Gaussian ordering to internal convention");
     auto shell2bf = basis.shell2bf();
-    occ::MatRM result(mo.rows(), mo.cols());
+    Mat result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     for(size_t i = 0; i < basis.size(); i++)
     {

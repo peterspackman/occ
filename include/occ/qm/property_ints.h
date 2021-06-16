@@ -9,7 +9,6 @@
 
 namespace occ::ints {
 
-using occ::MatRM;
 using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 using libint2::BraKet;
@@ -20,7 +19,7 @@ using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
 using shellpair_data_t = std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>; // in same order as shellpair_list_t
 
 template<SpinorbitalKind kind>
-occ::Vec compute_electric_potential(const occ::MatRM& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
+occ::Vec compute_electric_potential(const Mat& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
                                       const occ::Mat3N& positions)
 {
     occ::timing::start(occ::timing::category::ints1e);
@@ -29,7 +28,7 @@ occ::Vec compute_electric_potential(const occ::MatRM& D, const BasisSet &obs, co
     const auto n = obs.nbf();
     const auto nshells = obs.size();
     using occ::parallel::nthreads;
-    typedef std::array<MatRM, libint2::operator_traits<Operator::nuclear>::nopers>
+    typedef std::array<Mat, libint2::operator_traits<Operator::nuclear>::nopers>
             result_type;
     const unsigned int nopers = libint2::operator_traits<Operator::nuclear>::nopers;
 
@@ -39,7 +38,7 @@ occ::Vec compute_electric_potential(const occ::MatRM& D, const BasisSet &obs, co
     for (size_t i = 1; i != nthreads; ++i) {
         engines[i] = engines[0];
     }
-    std::vector<MatRM> opmats(nthreads, MatRM::Zero(n, n));
+    std::vector<Mat> opmats(nthreads, Mat::Zero(n, n));
     auto shell2bf = obs.shell2bf();
 
     auto compute = [&](int thread_id) {
@@ -86,8 +85,8 @@ occ::Vec compute_electric_potential(const occ::MatRM& D, const BasisSet &obs, co
 
 
 template<SpinorbitalKind kind>
-occ::Mat3N compute_electric_field(const occ::MatRM& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
-                                    const occ::Mat3N& positions)
+occ::Mat3N compute_electric_field(const Mat& D, const BasisSet &obs, const shellpair_list_t &shellpair_list,
+                                    const Mat3N& positions)
 {
     occ::timing::start(occ::timing::category::ints1e);
     using occ::parallel::nthreads;
@@ -99,9 +98,9 @@ occ::Mat3N compute_electric_field(const occ::MatRM& D, const BasisSet &obs, cons
     const auto nresults = libint2::num_geometrical_derivatives(1, 1);
     occ::Mat3N result(3, positions.cols());
 
-    std::vector<MatRM> xmats(nthreads, MatRM::Zero(n, n));
-    std::vector<MatRM> ymats(nthreads, MatRM::Zero(n, n));
-    std::vector<MatRM> zmats(nthreads, MatRM::Zero(n, n));
+    std::vector<Mat> xmats(nthreads, Mat::Zero(n, n));
+    std::vector<Mat> ymats(nthreads, Mat::Zero(n, n));
+    std::vector<Mat> zmats(nthreads, Mat::Zero(n, n));
 
     // construct the 1-body integrals engine
     std::vector<libint2::Engine> engines(nthreads);

@@ -276,19 +276,19 @@ void FchkReader::FchkBasis::print() const
     }
 }
 
-occ::MatRM FchkReader::scf_density_matrix() const
+Mat FchkReader::scf_density_matrix() const
 {
 
-    occ::MatRM C_occ = alpha_mo_coefficients().leftCols(m_num_alpha);
+    Mat C_occ = alpha_mo_coefficients().leftCols(m_num_alpha);
     return C_occ * C_occ.transpose();
 }
 
-occ::MatRM FchkReader::mp2_density_matrix() const
+Mat FchkReader::mp2_density_matrix() const
 {
 
     size_t nbf{num_basis_functions()};
     assert(nbf * (nbf - 1) == m_mp2_density.size());
-    occ::MatRM dm(nbf, nbf);
+    Mat dm(nbf, nbf);
     size_t idx = 0;
     for(size_t i = 0; i < nbf; i++) {
         for(size_t j = i; j < nbf; j++) {
