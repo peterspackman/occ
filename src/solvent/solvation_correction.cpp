@@ -6,6 +6,7 @@
 #include <occ/core/units.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+#include <fmt/os.h>
 
 namespace occ::solvent {
 
@@ -43,6 +44,26 @@ ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom
                 area_coulomb * au2_to_ang2, m_surface_areas_coulomb.rows());
     fmt::print("total surface area (cds)     = {:10.3f} Angstroms^2, {} finite elements\n\n",
                 area_cds * au2_to_ang2, m_surface_areas_cds.rows());
+
+
+}
+
+void ContinuumSolvationModel::write_surface_file(const std::string &filename)
+{
+    auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
+    output.print("{}\natom_idx x y z area q asc\n", m_surface_areas_coulomb.rows());
+    for(int i = 0; i < m_surface_areas_coulomb.rows(); i++)
+    {
+        output.print("{:4d} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.8f} {:12.8f}\n",
+                m_surface_atoms_coulomb(i),
+                m_surface_positions_coulomb(0, i),
+                m_surface_positions_coulomb(1, i),
+                m_surface_positions_coulomb(2, i),
+                m_surface_areas_coulomb(i),
+                m_surface_potential(i),
+                m_asc(i)
+        );
+    }
 
 }
 

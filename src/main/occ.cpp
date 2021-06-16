@@ -35,6 +35,7 @@ struct InputConfiguration {
     size_t multiplicity;
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
     int charge;
+    std::optional<std::string> solvent_surface_filename{std::nullopt};
 };
 
 void print_header()
@@ -108,6 +109,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn, const InputConfigurati
         scf.start_incremental_F_threshold = 0.0;
         scf.set_initial_guess_from_wfn(wfn);
         double e = scf.compute_scf_energy();
+        if(config.solvent_surface_filename) proc_solv.write_surface_file(*config.solvent_surface_filename);
         return scf.wavefunction();
     }
     else
@@ -119,6 +121,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn, const InputConfigurati
         scf.set_initial_guess_from_wfn(wfn);
         scf.start_incremental_F_threshold = 0.0;
         double e = scf.compute_scf_energy();
+        if(config.solvent_surface_filename) proc_solv.write_surface_file(*config.solvent_surface_filename);
         return scf.wavefunction();
 
     }
@@ -233,6 +236,9 @@ int main(int argc, const char **argv) {
     parser.add_argument("--solvent")
         .help("Solvent name");
 
+    parser.add_argument("--solvent-file")
+        .help("Solvent surface filename");
+
     occ::timing::start(occ::timing::category::global);
     occ::log::set_level(occ::log::level::warn);
     try {
@@ -289,6 +295,7 @@ int main(int argc, const char **argv) {
         {
             double esolv{0.0};
             config.solvent = *solvent;
+            config.solvent_surface_filename = parser.present("--solvent-file");
             Wavefunction wfn2;
             if(config.method == "ghf")
             {

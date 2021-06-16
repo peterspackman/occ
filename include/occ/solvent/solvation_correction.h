@@ -31,8 +31,10 @@ public:
 
     double surface_polarization_energy();
     double smd_cds_energy() const;
+    void write_surface_file(const std::string& filename);
 
 private:
+    std::string m_filename{"solvent.xyz"};
     std::string m_solvent_name;
     Mat3N m_nuclear_positions;
     Vec m_nuclear_charges;
@@ -179,6 +181,10 @@ public:
         m_solvation_model.set_solvent(solvent);
     }
 
+    void write_surface_file(const std::string &filename)
+    {
+        m_solvation_model.write_surface_file(filename);
+    }
 
 private:
     const std::vector<libint2::Atom> &m_atoms;

@@ -26,7 +26,7 @@ Mat3 principal_axes(const Mat3N &positions)
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3N &positions, double solvent_radius_angs)
 {
     const size_t N = atomic_numbers.rows();
-    const double solvent_radius = solvent_radius_angs * occ::units::ANGSTROM_TO_BOHR;
+    const double solvent_radius = std::min(solvent_radius_angs, 0.05) * occ::units::ANGSTROM_TO_BOHR;
     Surface surface;
     Mat tmp_vertices(3, 278 * N);
     Vec tmp_areas(278 * N);
