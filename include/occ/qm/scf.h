@@ -53,6 +53,7 @@ struct SCF {
         D = Mat::Zero(rows, cols);
         C = Mat::Zero(rows, cols);
         orbital_energies = Vec::Zero(rows);
+        energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
     }
 
     inline int n_alpha() const { return n_occ; }
@@ -300,8 +301,8 @@ struct SCF {
                 D.beta() = D_minbs * (static_cast<double>(n_beta()) / n_electrons);
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
-                D.alpha_alpha() = D_minbs * (static_cast<double>(n_alpha())/ n_electrons); ;
-                D.beta_beta() = D_minbs * (static_cast<double>(n_beta())/ n_electrons);;
+                D.alpha_alpha() = D_minbs * 0.5;
+                D.beta_beta() = D_minbs * 0.5;
             }
         } else {
             // if basis != minimal basis, map non-representable SOAD guess
@@ -324,12 +325,10 @@ struct SCF {
                 F.beta() = F.alpha();
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
-                F.alpha_alpha() += occ::ints::compute_2body_fock_mixed_basis(
+                F.alpha_alpha() += 2 * occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
                     commutator_convergence_threshold
                 );
-                F.beta_alpha() = F.alpha_alpha();
-                F.alpha_beta() = F.alpha_alpha();
                 F.beta_beta() = F.alpha_alpha();
             }
 
@@ -386,7 +385,6 @@ struct SCF {
             energy["electronic.kinetic"] = 2 * expectation<spinorbital_kind>(D, T);
             energy["electronic.nuclear"] = 2 * expectation<spinorbital_kind>(D, V);
             energy["electronic.1e"] = 2 * expectation<spinorbital_kind>(D, H);
-            energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
         }
         if(m_procedure.usual_scf_energy()) {
             energy["electronic"] = 0.5 * energy["electronic.1e"];
@@ -416,7 +414,7 @@ struct SCF {
         Mat D_last;
         Mat FD_comm = Mat::Zero(F.rows(), F.cols());
         update_scf_energy(incremental);
-        fmt::print("starting {} scf iterations (Eguess = {:.12f})\n\n", scf_kind(), energy["total"]);
+        fmt::print("starting {} scf iterations \n", scf_kind());
         occ::log::info("{} electrons total", n_electrons);
         occ::log::info("{} alpha electrons", n_alpha());
         occ::log::info("{} beta electrons", n_beta());
@@ -553,7 +551,7 @@ struct SCF {
     occ::core::EnergyComponents energy;
     int maxiter{100};
     size_t nbf{0};
-    double energy_convergence_threshold = 1e-8;
+    double energy_convergence_threshold = 1e-6;
     double commutator_convergence_threshold = 1e-6;
     int iter = 0;
     double diis_error{1.0};
