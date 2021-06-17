@@ -11,13 +11,9 @@
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/disp.h>
 #include <occ/interaction/polarization.h>
-#include <occ/core/kabsch.h>
-#include <occ/solvent/cosmo.h>
-#include <occ/solvent/surface.h>
-#include <occ/solvent/parameters.h>
+#include <occ/solvent/solvation_correction.h>
 #include <filesystem>
 #include <occ/core/units.h>
-#include <occ/qm/property_ints.h>
 #include <fmt/os.h>
 
 namespace fs = std::filesystem;
@@ -38,22 +34,13 @@ using occ::util::all_close;
 using occ::hf::HartreeFock;
 using occ::solvent::COSMO;
 
-
-occ::Vec compute_esp(const Wavefunction &wfn, const occ::Mat3N &points)
+struct SolvatedSurfaceProperties
 {
-    occ::ints::shellpair_list_t shellpair_list;
-    occ::ints::shellpair_data_t shellpair_data;
-    std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(wfn.basis);
-    switch(wfn.spinorbital_kind)
-    {
-        case SpinorbitalKind::General:
-            return occ::ints::compute_electric_potential<SpinorbitalKind::General>(wfn.D, wfn.basis, shellpair_list, points);
-        case SpinorbitalKind::Unrestricted:
-            return occ::ints::compute_electric_potential<SpinorbitalKind::Unrestricted>(wfn.D, wfn.basis, shellpair_list, points);
-        default:
-            return occ::ints::compute_electric_potential<SpinorbitalKind::Restricted>(wfn.D, wfn.basis, shellpair_list, points);
-    }
-}
+    occ::Mat3N coulomb_pos;
+    occ::Mat3N cds_pos;
+    occ::Vec e_coulomb;
+    occ::Vec e_cds;
+};
 
 std::string dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)
 {
@@ -132,27 +119,53 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
 
 }
 
-auto compute_solvent_surface(const Wavefunction &wfn)
+std::vector<SolvatedSurfaceProperties> calculate_solvated_surfaces(
+        const std::string &basename, const std::vector<Wavefunction> &wfns,
+        const std::string& solvent_name)
 {
-    occ::Mat3N pos = wfn.positions();
-    occ::IVec nums = wfn.atomic_numbers();
-    occ::Vec radii = occ::solvent::cosmo::solvation_radii(nums);
-    radii.array() /= BOHR_TO_ANGSTROM;
-
-    auto surface = occ::solvent::surface::solvent_surface(radii, nums, pos);
-    //fmt::print("Surface ({} atoms, {} points) calculated in {}\n", radii.rows(), surface.areas.rows(), sw.read(0));
-    return surface;
-}
-
-std::vector<occ::solvent::surface::Surface> compute_solvent_surfaces(const std::vector<Wavefunction> &wfns)
-{
-    std::vector<occ::solvent::surface::Surface> surfs;
+    std::vector<SolvatedSurfaceProperties> result;
+    using occ::solvent::SolvationCorrectedProcedure;
+    using occ::dft::DFT;
+    const std::string method = "b3lyp";
+    const std::string basis_name = "6-31G**";
+    std::vector<Wavefunction> solvated_wfns;
+    size_t index = 0;
     for(const auto& wfn: wfns)
     {
-        surfs.push_back(compute_solvent_surface(wfn));
+        SolvatedSurfaceProperties props;
+        BasisSet basis(basis_name, wfn.atoms);
+        basis.set_pure(false);
+        fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
+        occ::dft::DFT ks(method, basis, wfn.atoms, SpinorbitalKind::Restricted);
+        SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
+        SCF<SolvationCorrectedProcedure<DFT>, SpinorbitalKind::Restricted> scf(proc_solv);
+        scf.start_incremental_F_threshold = 0.0;
+        scf.set_charge_multiplicity(0, 1);
+        double e = scf.compute_scf_energy();
+        props.coulomb_pos = proc_solv.surface_positions_coulomb();
+        props.cds_pos = proc_solv.surface_positions_cds();
+        props.e_cds = proc_solv.surface_cds_energy_elements();
+        auto nuc = proc_solv.surface_nuclear_energy_elements();
+        auto elec = proc_solv.surface_electronic_energy_elements(SpinorbitalKind::Restricted, scf.D);
+        auto pol = proc_solv.surface_polarization_energy_elements();
+        props.e_coulomb = nuc + elec + pol;
+        fmt::print("e_nuc {:12.6f}\n", nuc.array().sum());
+        fmt::print("e_ele {:12.6f}\n", elec.array().sum());
+        fmt::print("e_pol {:12.6f}\n", pol.array().sum());
+        fmt::print("e_cds {:12.6f}\n", props.e_cds.array().sum());
+        double esolv = nuc.array().sum() + 
+                elec.array().sum() + 
+                pol.array().sum() + 
+                props.e_cds.array().sum();
+
+        fmt::print("Solvation energy = {:12.6f} ({:.3f} kJ/mol)\n", esolv, esolv * occ::units::AU_TO_KJ_PER_MOL);
+        result.push_back(props);
     }
-    return surfs;
+
+    return result;
+
 }
+
 
 void compute_monomer_energies(std::vector<Wavefunction> &wfns)
 {
@@ -246,75 +259,40 @@ std::pair<occ::IVec, occ::Mat3N> environment(const std::vector<Dimer> &neighbors
     return {mol_idx, positions};
 }
 
-void write_solvation_visualization(const std::string &filename,
-        const occ::solvent::surface::Surface &surface, 
-        const occ::Vec &charges,
-        const occ::IVec &neighbor_idx)
+
+std::vector<std::pair<double, double>> compute_solvation_energy_breakdown(
+        const SolvatedSurfaceProperties &surface,
+        const std::vector<Dimer> &neighbors,
+        const std::string& solvent)
 {
-    std::ofstream f(filename);
-    fmt::print(f, "{}\n", surface.areas.rows());
-    fmt::print(f, "x y z area charge neigh\n");
-    for (size_t i = 0; i < charges.rows(); i++)
-    {
-        fmt::print(f, "{:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12d}\n",
-            surface.vertices(0, i),
-            surface.vertices(1, i),
-            surface.vertices(2, i),
-            surface.areas(i),
-            charges(i),
-            neighbor_idx(i)
-        );
-    }
+    std::vector<std::pair<double, double>> energy_contribution(neighbors.size());
 
-
-}
-
-std::vector<double> compute_solvation_energy_breakdown(
-        const occ::solvent::surface::Surface& surface, const Wavefunction &wfn,
-        const std::vector<Dimer> &neighbors, const std::string& solvent, const std::optional<std::string> &output_file)
-{
-    occ::Vec areas = surface.areas;
-    occ::Mat3N points = surface.vertices;
-    occ::Mat3N pos = wfn.positions();
-    occ::IVec nums = wfn.atomic_numbers();
-    occ::Vec radii = occ::solvent::cosmo::solvation_radii(nums);
-    occ::Vec charges = compute_esp(wfn, points);
-    for(size_t i = 0; i < nums.rows(); i++)
-    {
-        auto p1 = pos.col(i);
-        double q = nums(i);
-        auto r = (points.colwise() - p1).colwise().norm();
-        charges.array() += q / r.array();
-    }
-    //fmt::print("ESP (range = {}, {}) calculated in {}\n", charges.minCoeff(), charges.maxCoeff(), sw.read(0)); 
-
-
-    double dielectric = 78.40;
-    if(!occ::solvent::dielectric_constant.contains(solvent)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", solvent));
-    dielectric = occ::solvent::dielectric_constant[solvent];
-    COSMO cosmo(dielectric);
-    auto result = cosmo(points, areas, charges);
-    //fmt::print("Surface area: {} angstrom**2\n", areas.sum() * 0.52917749 * 0.52917749);
-    //fmt::print("Total energy: {} kJ/mol\n", AU_TO_KJ_PER_MOL * result.energy);
-
-    std::vector<double> energy_contribution(neighbors.size());
+    for(int i = 0; i < neighbors.size(); i++) energy_contribution[i] = {0.0, 0.0};
 
     occ::Mat3N neigh_pos;
     occ::IVec mol_idx;
-    occ::IVec neighbor_idx(areas.rows());
+    occ::IVec neighbor_idx_coul(surface.coulomb_pos.cols());
+    occ::IVec neighbor_idx_cds(surface.cds_pos.cols());
     std::tie(mol_idx, neigh_pos) = environment(neighbors);
     
-    for(size_t i = 0; i < neighbor_idx.rows(); i++)
+    // coulomb breakdown
+    for(size_t i = 0; i < neighbor_idx_coul.rows(); i++)
     {
-        occ::Vec3 x = points.col(i) * BOHR_TO_ANGSTROM;
+        occ::Vec3 x = surface.coulomb_pos.col(i);
         Eigen::Index idx = 0;
         double r = (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
-        energy_contribution[mol_idx(idx)] += 0.5 * result.converged(i) * result.initial(i);
-        neighbor_idx(i) = mol_idx(idx);
+        energy_contribution[mol_idx(idx)].first += surface.e_coulomb(i);
+        neighbor_idx_coul(i) = mol_idx(idx);
     }
-    if(output_file)
+
+    // cds breakdown
+    for(size_t i = 0; i < neighbor_idx_cds.rows(); i++)
     {
-        write_solvation_visualization(*output_file, surface, charges, neighbor_idx);
+        occ::Vec3 x = surface.cds_pos.col(i);
+        Eigen::Index idx = 0;
+        double r = (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
+        energy_contribution[mol_idx(idx)].second += surface.e_cds(i);
+        neighbor_idx_cds(i) = mol_idx(idx);
     }
     return energy_contribution;
 }
@@ -374,7 +352,7 @@ int main(int argc, const char **argv) {
         auto molecules = c.symmetry_unique_molecules();
         fmt::print("Symmetry unique molecules in {}: {}\n", filename, molecules.size());
         auto wfns = calculate_wavefunctions(basename, molecules);
-        auto surfaces = compute_solvent_surfaces(wfns);
+        auto surfaces = calculate_solvated_surfaces(basename, wfns, solvent);
         compute_monomer_energies(wfns);
         auto crystal_dimers = c.symmetry_unique_dimers(radius);
         const auto &dimers = crystal_dimers.unique_dimers;
@@ -385,7 +363,7 @@ int main(int argc, const char **argv) {
             exit(0);
         }
 
-        const std::string row_fmt_string = "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
+        const std::string row_fmt_string = "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
 
         std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
 
@@ -413,12 +391,12 @@ int main(int argc, const char **argv) {
             {
                 solv_filename = fmt::format("{}_{}_solvation_vis.xyz", basename, i);
             }
-            auto solv = compute_solvation_energy_breakdown(surfaces[i], wfns[i], n, solvent, solv_filename);
+            auto solv = compute_solvation_energy_breakdown(surfaces[i], n, solvent);
 
             fmt::print("Neighbors for molecule {}\n", i);
 
-            fmt::print("{:>7s} {:>7s} {:>20s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
-                       "Rn", "Rc", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot", "E_solv", "E_int");
+            fmt::print("{:>7s} {:>7s} {:>20s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
+                       "Rn", "Rc", "Symop", "E_coul", "E_rep", "E_pol", "E_disp", "E_tot", "E_scoul", "E_scds", "E_int");
             fmt::print("============================================================================================\n");
 
             size_t j = 0;
@@ -440,8 +418,8 @@ int main(int argc, const char **argv) {
                 total.dispersion += edisp;
                 total.total += etot;
 
-                fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, erep, epol, edisp, etot, solv[j] * AU_TO_KJ_PER_MOL,
-                           etot + solv[j] * AU_TO_KJ_PER_MOL);
+                fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, erep, epol, edisp, etot, solv[j].first * AU_TO_KJ_PER_MOL,
+                           solv[j].second * AU_TO_KJ_PER_MOL, etot - (solv[j].first + solv[j].second) * AU_TO_KJ_PER_MOL);
                 j++;
             }
             fmt::print("Total: {:.3f} kJ/mol\n", total.total);

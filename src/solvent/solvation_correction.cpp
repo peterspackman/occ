@@ -137,7 +137,7 @@ double ContinuumSolvationModel::smd_cds_energy() const
     return molecular_term + atomic_term;
 }
 
-Vec ContinuumSolvationModel::smd_cds_energy_elements() const
+Vec ContinuumSolvationModel::surface_cds_energy_elements() const
 {
     Vec result(m_surface_areas_cds.rows());
     Mat3N pos_angs = m_nuclear_positions * occ::units::BOHR_TO_ANGSTROM;

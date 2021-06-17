@@ -80,7 +80,7 @@ public:
         m_basis, m_shellpair_list, libint2::make_point_charges(m_atoms))[0];
   }
 
-  auto compute_point_charge_interaction_matrix(const std::vector<std::pair<double, std::array<double, 3>>> &point_charges) {
+  auto compute_point_charge_interaction_matrix(const std::vector<std::pair<double, std::array<double, 3>>> &point_charges) const {
     return compute_1body_ints<Operator::nuclear>(m_basis, m_shellpair_list, point_charges)[0];
   }
 

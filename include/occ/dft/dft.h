@@ -103,7 +103,7 @@ public:
       return m_hf.compute_nuclear_attraction_matrix();
     }
     
-    auto compute_point_charge_interaction_matrix(const std::vector<std::pair<double, std::array<double, 3>>> &point_charges)
+    auto compute_point_charge_interaction_matrix(const std::vector<std::pair<double, std::array<double, 3>>> &point_charges) const
     {
         return m_hf.compute_point_charge_interaction_matrix(point_charges);
     }

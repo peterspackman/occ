@@ -22,8 +22,10 @@ public:
     const std::string& solvent() const { return m_solvent_name; }
 
     const Mat3N &nuclear_positions() const { return m_nuclear_positions; } 
-    const Mat3N &surface_positions() const { return m_surface_positions_coulomb; } 
-    const Vec &surface_areas() const { return m_surface_areas_coulomb; } 
+    const Mat3N &surface_positions_coulomb() const { return m_surface_positions_coulomb; } 
+    const Mat3N &surface_positions_cds() const { return m_surface_positions_cds; } 
+    const Vec &surface_areas_coulomb() const { return m_surface_areas_coulomb; } 
+    const Vec &surface_areas_cds() const { return m_surface_areas_cds; } 
     const Vec &nuclear_charges() const { return m_nuclear_charges; } 
     size_t num_surface_points() const { return m_surface_areas_coulomb.rows(); }
     void set_surface_potential(const Vec&);
@@ -32,7 +34,7 @@ public:
     double surface_polarization_energy();
     double smd_cds_energy() const;
 
-    Vec smd_cds_energy_elements() const;
+    Vec surface_cds_energy_elements() const;
     Vec surface_polarization_energy_elements() const;
 
     template<typename Proc>
@@ -116,12 +118,12 @@ public:
             pos(2, i) = m_atoms[i].z;
             nums(i) = m_atoms[i].atomic_number;
         }
-        m_qn = m_proc.nuclear_electric_potential_contribution(m_solvation_model.surface_positions());
+        m_qn = m_proc.nuclear_electric_potential_contribution(m_solvation_model.surface_positions_coulomb());
         m_point_charges.reserve(m_qn.rows());
 
         for(int i = 0; i < m_solvation_model.num_surface_points(); i++)
         {
-            const auto& pt = m_solvation_model.surface_positions().col(i);
+            const auto& pt = m_solvation_model.surface_positions_coulomb().col(i);
             m_point_charges.push_back({0.0, {pt(0), pt(1), pt(2)}});
         }
 
@@ -177,7 +179,7 @@ public:
     void update_core_hamiltonian(SpinorbitalKind kind, const occ::Mat &D, occ::Mat &H)
     {
         occ::timing::start(occ::timing::category::solvent);
-        occ::Vec v = (m_qn + m_proc.electronic_electric_potential_contribution(kind, D, m_solvation_model.surface_positions()));
+        occ::Vec v = (m_qn + m_proc.electronic_electric_potential_contribution(kind, D, m_solvation_model.surface_positions_coulomb()));
         m_solvation_model.set_surface_potential(v);
         auto asc = m_solvation_model.apparent_surface_charge();
         for(int i = 0; i < m_point_charges.size(); i++)
@@ -185,11 +187,11 @@ public:
             m_point_charges[i].first = asc(i);
         }
         double surface_energy = m_solvation_model.surface_polarization_energy();
-        m_nuclear_solvation_energy = m_qn.dot(asc);
+        m_nuclear_solvation_energy = 0.5 * m_qn.dot(asc);
         m_surface_solvation_energy = surface_energy;
         m_electronic_solvation_energy = 0.0;
         occ::log::debug("PCM surface polarization energy: {:.12f}", surface_energy);
-        m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
+        m_X = 0.5 * m_proc.compute_point_charge_interaction_matrix(m_point_charges);
 
         switch(kind)
         {
@@ -237,6 +239,21 @@ public:
     {
         m_solvation_model.write_surface_file(filename);
     }
+
+    auto surface_positions_coulomb() const { return m_solvation_model.surface_positions_coulomb(); }
+    auto surface_positions_cds() const { return m_solvation_model.surface_positions_cds(); }
+    auto surface_areas_coulomb() const { return m_solvation_model.surface_areas_coulomb(); }
+    auto surface_areas_cds() const { return m_solvation_model.surface_areas_cds(); }
+
+    auto surface_cds_energy_elements() const { return m_solvation_model.surface_cds_energy_elements(); }
+    auto surface_polarization_energy_elements() const { return m_solvation_model.surface_polarization_energy_elements(); }
+
+    auto surface_nuclear_energy_elements() const { return m_solvation_model.surface_nuclear_energy_elements(m_proc); }
+    auto surface_electronic_energy_elements(const SpinorbitalKind kind, const Mat& D) const
+    {
+        return m_solvation_model.surface_electronic_energy_elements(kind, D, m_proc);
+    }
+
 
 private:
     const std::vector<libint2::Atom> &m_atoms;
