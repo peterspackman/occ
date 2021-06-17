@@ -13,5 +13,6 @@ namespace occ::log {
         using spdlog::level::debug;
         using spdlog::level::info;
         using spdlog::level::warn;
+        using spdlog::level::err;
     }
 }

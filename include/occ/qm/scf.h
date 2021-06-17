@@ -103,7 +103,7 @@ struct SCF {
         wfn.num_electrons = n_electrons;
         wfn.energy.core = energy.at("electronic.1e");
         wfn.energy.kinetic = energy.at("electronic.kinetic");
-        wfn.energy.nuclear_attraction = energy.at("nuclear.attraction");
+        wfn.energy.nuclear_attraction = energy.at("electronic.nuclear");
         wfn.energy.nuclear_repulsion = energy.at("nuclear.repulsion");
         if(energy.contains("electronic.coulomb")) wfn.energy.coulomb = energy.at("electronic.coulomb");
         if(energy.contains("electronic.exchange")) wfn.energy.exchange = energy.at("electronic.exchange");
@@ -384,20 +384,21 @@ struct SCF {
         if(!incremental)
         {
             energy["electronic.kinetic"] = 2 * expectation<spinorbital_kind>(D, T);
-            energy["nuclear.attraction"] = 2 * expectation<spinorbital_kind>(D, V);
+            energy["electronic.nuclear"] = 2 * expectation<spinorbital_kind>(D, V);
             energy["electronic.1e"] = 2 * expectation<spinorbital_kind>(D, H);
             energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
         }
         if(m_procedure.usual_scf_energy()) {
             energy["electronic"] = 0.5 * energy["electronic.1e"];
             energy["electronic"] += expectation<spinorbital_kind>(D, F);
+            energy["electronic.2e"] = energy["electronic"] - energy["electronic.1e"];
+            energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
         }
-        m_procedure.update_scf_energy(energy, incremental);
-        energy["electronic.2e"] = energy["electronic"] - energy["electronic.1e"];
-        energy["total"] = energy["electronic"] + energy["nuclear.repulsion"]
-            + energy["solvation.nuclear"] + energy["solvation.surface"]
-            + energy["solvation.CDS"];
-
+        else
+        {
+            m_procedure.update_scf_energy(energy, incremental);
+        }
+        
     }
 
     std::string scf_kind() const {

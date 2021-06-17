@@ -79,6 +79,7 @@ public:
             energy["electronic"]  += two_electron_energy();
             energy["electronic.dft_xc"] = exchange_correlation_energy();
         }
+        energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
     }
     bool supports_incremental_fock_build() const { return false; }
 

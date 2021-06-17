@@ -233,6 +233,9 @@ int main(int argc, const char **argv) {
             .default_value(false)
             .implicit_value(true);
 
+    parser.add_argument("--log-level")
+        .help("Control logging verbosity (one of ERROR, WARN, INFO, DEBUG)");
+
     parser.add_argument("--solvent")
         .help("Solvent name");
 
@@ -240,7 +243,6 @@ int main(int argc, const char **argv) {
         .help("Solvent surface filename");
 
     occ::timing::start(occ::timing::category::global);
-    occ::log::set_level(occ::log::level::warn);
     try {
         parser.parse_args(argc, argv);
     }
@@ -249,8 +251,16 @@ int main(int argc, const char **argv) {
         fmt::print("{}", parser);
         exit(1);
     }
-    spdlog::set_level(spdlog::level::warn);
-
+    auto level = occ::log::level::warn;
+    if(auto log_level = parser.present("--log-level"))
+    {
+        std::string level_lower = occ::util::to_lower_copy(*log_level);
+        if(level_lower == "debug") level = occ::log::level::debug;
+        else if(level_lower == "info") level = occ::log::level::info;
+        else if(level_lower == "error") level = occ::log::level::err;
+    }
+    occ::log::set_level(level);
+    spdlog::set_level(level);
     print_header();
 
 

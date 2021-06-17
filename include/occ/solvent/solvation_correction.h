@@ -77,6 +77,8 @@ public:
             const auto& pt = m_solvation_model.surface_positions().col(i);
             m_point_charges.push_back({0.0, {pt(0), pt(1), pt(2)}});
         }
+
+        m_cds_solvation_energy = m_solvation_model.smd_cds_energy();
     }
 
     const auto &shellpair_list() const { return m_proc.shellpair_list(); }
@@ -112,6 +114,9 @@ public:
             energy["solvation.surface"] = m_surface_solvation_energy;
             energy["solvation.CDS"] = m_cds_solvation_energy;
         }
+        energy["total"] = energy["electronic"] + energy["nuclear.repulsion"]
+            + energy["solvation.nuclear"] + energy["solvation.surface"]
+            + energy["solvation.CDS"];
     }
 
     auto compute_kinetic_matrix() { return m_proc.compute_kinetic_matrix(); }
@@ -133,11 +138,9 @@ public:
             m_point_charges[i].first = asc(i);
         }
         double surface_energy = m_solvation_model.surface_polarization_energy();
-        double cds_energy = m_solvation_model.smd_cds_energy();
         // fmt::print("PCM non-electrostatic energy: {:.12f}\n", cds_energy);
         m_nuclear_solvation_energy = m_qn.dot(asc);
         m_surface_solvation_energy = - surface_energy;
-        m_cds_solvation_energy = cds_energy;
         m_electronic_solvation_energy = 0.0;
         // fmt::print("Surface electrostatic energy: {:.12f}\n", surface_energy);
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);

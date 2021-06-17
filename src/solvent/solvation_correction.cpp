@@ -39,10 +39,10 @@ ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom
     double area_coulomb = m_surface_areas_coulomb.sum();
     double area_cds = m_surface_areas_cds.sum();
     double au2_to_ang2 = occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
-    fmt::print("\nsolvent surface\n");
-    fmt::print("total surface area (coulomb) = {:10.3f} Angstroms^2, {} finite elements\n",
+    occ::log::info("solvent surface:");
+    occ::log::info("total surface area (coulomb) = {:10.3f} Angstroms^2, {} finite elements",
                 area_coulomb * au2_to_ang2, m_surface_areas_coulomb.rows());
-    fmt::print("total surface area (cds)     = {:10.3f} Angstroms^2, {} finite elements\n\n",
+    occ::log::info("total surface area (cds)     = {:10.3f} Angstroms^2, {} finite elements",
                 area_cds * au2_to_ang2, m_surface_areas_cds.rows());
 
 
@@ -78,16 +78,16 @@ void ContinuumSolvationModel::set_solvent(const std::string &solvent)
     m_solvent_name = solvent;
     if(!occ::solvent::smd_solvent_parameters.contains(m_solvent_name)) throw std::runtime_error(fmt::format("Unknown solvent '{}'", m_solvent_name));
     m_params = occ::solvent::smd_solvent_parameters[m_solvent_name];
-    fmt::print("Using SMD solvent '{}'\n", m_solvent_name);
-    fmt::print("Parameters:\n");
-    fmt::print("Dielectric                    {: 9.4f}\n", m_params.dielectric);
+    occ::log::info("Using SMD solvent '{}'", m_solvent_name);
+    occ::log::info("Parameters:");
+    occ::log::info("Dielectric                    {: 9.4f}\n", m_params.dielectric);
     if(!m_params.is_water)
     {
-        fmt::print("Surface Tension               {: 9.4f}\n", m_params.gamma);
-        fmt::print("Acidity                       {: 9.4f}\n", m_params.acidity);
-        fmt::print("Basicity                      {: 9.4f}\n", m_params.basicity);
-        fmt::print("Aromaticity                   {: 9.4f}\n", m_params.aromaticity);
-        fmt::print("Electronegative Halogenicity  {: 9.4f}\n", m_params.electronegative_halogenicity);
+        occ::log::info("Surface Tension               {: 9.4f}\n", m_params.gamma);
+        occ::log::info("Acidity                       {: 9.4f}\n", m_params.acidity);
+        occ::log::info("Basicity                      {: 9.4f}\n", m_params.basicity);
+        occ::log::info("Aromaticity                   {: 9.4f}\n", m_params.aromaticity);
+        occ::log::info("Electronegative Halogenicity  {: 9.4f}\n", m_params.electronegative_halogenicity);
     }
     m_cosmo = COSMO(m_params.dielectric);
 }
@@ -123,22 +123,17 @@ double ContinuumSolvationModel::smd_cds_energy() const
         surface_areas_per_atom_angs(m_surface_atoms_cds(i)) += conversion_factor * m_surface_areas_cds(i);
     }
 
-    /*
-    fmt::print("Surface area per atom:\n");
+    occ::log::debug("Surface area per atom:");
     for(int i = 0; i < surface_areas_per_atom_angs.rows(); i++)
     {
-        fmt::print("{:<7d} {:10.3f}\n", static_cast<int>(m_nuclear_charges(i)), surface_areas_per_atom_angs(i));
+        occ::log::debug("{:<7d} {:10.3f}", static_cast<int>(m_nuclear_charges(i)), surface_areas_per_atom_angs(i));
     }
-    */
     double total_area = surface_areas_per_atom_angs.array().sum();
     double atomic_term = surface_areas_per_atom_angs.dot(at) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
     double molecular_term = total_area * occ::solvent::smd::molecular_surface_tension(m_params) / 1000 / occ::units::AU_TO_KCAL_PER_MOL;
-    /*
-    fmt::print("Coulomb cavity surface area: {:.3f} Ang**2\n", m_surface_areas_coulomb.array().sum() * conversion_factor);
-    fmt::print("CDS cavity surface area: {:.3f} Ang**2 ({:.3f})\n", total_area, m_surface_areas_cds.array().sum() * conversion_factor);
-    fmt::print("CDS energy: {:.4f}\n", (molecular_term + atomic_term) * occ::units::AU_TO_KCAL_PER_MOL);
-    fmt::print("CDS energy (molecular): {:.4f}\n", molecular_term * occ::units::AU_TO_KCAL_PER_MOL);
-    */
+
+    occ::log::info("CDS energy: {:.4f}", (molecular_term + atomic_term) * occ::units::AU_TO_KCAL_PER_MOL);
+    occ::log::info("CDS energy (molecular): {:.4f}", molecular_term * occ::units::AU_TO_KCAL_PER_MOL);
     return molecular_term + atomic_term;
 }
 
