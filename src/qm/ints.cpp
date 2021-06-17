@@ -69,11 +69,18 @@ Mat compute_2body_2index_ints(const BasisSet &bs) {
 }
 
 std::tuple<shellpair_list_t, shellpair_data_t>
-compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
+compute_shellpairs(const BasisSet &bs, const double threshold)
+{
+    return compute_shellpairs(bs, bs, threshold);
+}
+
+std::tuple<shellpair_list_t, shellpair_data_t>
+compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
                    const double threshold) {
-    occ::timing::start(occ::timing::category::ints1e);
+  occ::log::debug("Start computing non-negligible shell-pair list");
+
+  occ::timing::start(occ::timing::category::ints1e);
   using libint2::Operator;
-  const BasisSet &bs2 = (_bs2.empty() ? bs1 : _bs2);
   const auto nsh1 = bs1.size();
   const auto nsh2 = bs2.size();
   const auto bs1_equiv_bs2 = (&bs1 == &bs2);
@@ -91,7 +98,6 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
     engines.push_back(engines[0]);
   }
 
-  occ::log::debug("start computing non-negligible shell-pair list");
 
   libint2::Timers<1> timer;
   timer.set_now_overhead(25);
@@ -104,6 +110,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
   auto compute = [&](int thread_id) {
     auto &engine = engines[thread_id];
     const auto &buf = engine.results();
+    if(buf[0] == nullptr)
 
     // loop over permutationally-unique set of shells
     for (size_t s1 = 0, s12 = 0; s1 != nsh1; ++s1) {
@@ -121,7 +128,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
 
         auto on_same_center = (bs1[s1].O == bs2[s2].O);
         bool significant = on_same_center;
-        if (not on_same_center) {
+        if (!on_same_center) {
           auto n2 = bs2[s2].size();
           engines[thread_id].compute(bs1[s1], bs2[s2]);
           Eigen::Map<const MatRM> buf_mat(buf[0], n1, n2);
@@ -137,7 +144,6 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
       }
     }
   }; // end of compute
-
   occ::parallel::parallel_do(compute);
 
   // resort shell list in increasing order, i.e. splist[s][s1] < splist[s][s2]
@@ -171,8 +177,8 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &_bs2,
   occ::parallel::parallel_do(make_spdata);
 
   timer.stop(0);
-  occ::log::debug("computed non-negligible shell-pair list in {:.6f} s", timer.read(0));
   occ::timing::stop(occ::timing::category::ints1e);
+  occ::log::debug("Finish computing non-negligible shell-pair list in {:.6f} s", timer.read(0));
 
   return std::make_tuple(splist, spdata);
 }

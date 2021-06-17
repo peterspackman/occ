@@ -31,7 +31,10 @@ public:
 
     double surface_polarization_energy();
     double smd_cds_energy() const;
+    Vec smd_cds_energy_elements() const;
+    Vec surface_polarization_energy_elements() const;
     void write_surface_file(const std::string& filename);
+
 
 private:
     std::string m_filename{"solvent.xyz"};

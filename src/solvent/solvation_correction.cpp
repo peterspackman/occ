@@ -142,4 +142,29 @@ double ContinuumSolvationModel::smd_cds_energy() const
     return molecular_term + atomic_term;
 }
 
+Vec ContinuumSolvationModel::smd_cds_energy_elements() const
+{
+    Vec result(m_surface_areas_cds.rows());
+    Mat3N pos_angs = m_nuclear_positions * occ::units::BOHR_TO_ANGSTROM;
+    IVec nums = m_nuclear_charges.cast<int>();
+    Vec at = occ::solvent::smd::atomic_surface_tension(m_params, nums, pos_angs);
+    Vec surface_areas_per_atom_angs = Vec::Zero(nums.rows());
+
+    const double conversion_factor = occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
+    const double molecular_term = occ::solvent::smd::molecular_surface_tension(m_params);
+
+    for(int i = 0; i < m_surface_areas_cds.rows(); i++)
+    {
+        result(i) = at(m_surface_atoms_cds(i)) * conversion_factor * m_surface_areas_cds(i);
+        result(i) += molecular_term * m_surface_areas_cds(i);
+    }
+    result /= (1000 * occ::units::AU_TO_KCAL_PER_MOL);
+    return result;
+}
+
+Vec ContinuumSolvationModel::surface_polarization_energy_elements() const
+{
+    return 0.5 * m_asc.array() * m_surface_potential.array();
+}
+
 }

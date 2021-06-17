@@ -5,6 +5,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/basisset.h>
 #include <occ/qm/spinorbital.h>
+#include <optional>
 
 namespace occ::io {
 

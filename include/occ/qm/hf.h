@@ -117,8 +117,8 @@ private:
   int m_num_e{0};
   std::vector<libint2::Atom> m_atoms;
   BasisSet m_basis;
-  shellpair_list_t m_shellpair_list; // shellpair list for OBS
-  shellpair_data_t m_shellpair_data; // shellpair data for OBS
+  shellpair_list_t m_shellpair_list{}; // shellpair list for OBS
+  shellpair_data_t m_shellpair_data{}; // shellpair data for OBS
   mutable double m_e_alpha{0};
   mutable double m_e_beta{0};
 };

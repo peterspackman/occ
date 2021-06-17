@@ -20,8 +20,10 @@ using shellpair_data_t = std::vector<std::vector<
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 
 std::tuple<shellpair_list_t, shellpair_data_t>
-compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2 = BasisSet(),
-                   double threshold = 1e-12);
+compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2, double threshold = 1e-12);
+
+std::tuple<shellpair_list_t, shellpair_data_t>
+compute_shellpairs(const BasisSet &bs1, double threshold = 1e-12);
 
 template <Operator obtype,
           typename OperatorParams =
