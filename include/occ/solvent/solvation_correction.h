@@ -5,7 +5,7 @@
 #include <occ/core/units.h>
 #include <occ/solvent/parameters.h>
 #include <libint2/atom.h>
-
+#include <occ/core/logger.h>
 #include <occ/solvent/cosmo.h>
 
 
@@ -31,8 +31,55 @@ public:
 
     double surface_polarization_energy();
     double smd_cds_energy() const;
+
     Vec smd_cds_energy_elements() const;
     Vec surface_polarization_energy_elements() const;
+
+    template<typename Proc>
+    Vec surface_nuclear_energy_elements(const Proc& proc) const
+    {
+        Vec qn = proc.nuclear_electric_potential_contribution(m_surface_positions_coulomb);
+        qn.array() *= m_asc.array();
+        return qn;
+    }
+
+    template <typename Proc>
+    Vec surface_electronic_energy_elements(const SpinorbitalKind kind, const Mat& D, const Proc& p) const
+    {
+        Vec result(m_surface_areas_coulomb.rows());
+        Mat X;
+        std::vector<std::pair<double, std::array<double, 3>>> point_charges;
+        point_charges.emplace_back(0, std::array<double, 3>{0.0, 0.0, 0.0});
+        for(int i = 0; i < m_surface_areas_coulomb.rows(); i++)
+        {
+            point_charges[0].first = m_asc(i);
+            point_charges[0].second[0] = m_surface_positions_coulomb(0, i);
+            point_charges[0].second[1] = m_surface_positions_coulomb(1, i);
+            point_charges[0].second[2] = m_surface_positions_coulomb(2, i);
+            X = p.compute_point_charge_interaction_matrix(point_charges);
+            switch(kind)
+            {
+                case SpinorbitalKind::Restricted:
+                {
+                    result(i) = 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, X);
+                    break;
+                }
+                case SpinorbitalKind::Unrestricted:
+                {
+                    result(i) = 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, X);
+                    break;
+                }
+                case SpinorbitalKind::General:
+                {
+                    result(i) = 2 * occ::qm::expectation<SpinorbitalKind::General>(D, X);
+                    break;
+                }
+            }
+
+        }
+        return result;
+    }
+
     void write_surface_file(const std::string& filename);
 
 
@@ -138,11 +185,10 @@ public:
             m_point_charges[i].first = asc(i);
         }
         double surface_energy = m_solvation_model.surface_polarization_energy();
-        // fmt::print("PCM non-electrostatic energy: {:.12f}\n", cds_energy);
         m_nuclear_solvation_energy = m_qn.dot(asc);
-        m_surface_solvation_energy = - surface_energy;
+        m_surface_solvation_energy = surface_energy;
         m_electronic_solvation_energy = 0.0;
-        // fmt::print("Surface electrostatic energy: {:.12f}\n", surface_energy);
+        occ::log::debug("PCM surface polarization energy: {:.12f}", surface_energy);
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
 
         switch(kind)

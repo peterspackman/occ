@@ -118,7 +118,7 @@ struct SCF {
     {
         int current_charge = charge();
         bool state_changed = false;
-        fmt::print("Charge = {}\nMultiplicity = {}\n", chg, mult);
+        occ::log::debug("Setting charge = {}, multiplicity = {} in scf", chg, mult);
         if(chg != current_charge) {
             n_electrons -= chg - current_charge;
             state_changed = true;
@@ -394,11 +394,7 @@ struct SCF {
             energy["electronic.2e"] = energy["electronic"] - energy["electronic.1e"];
             energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
         }
-        else
-        {
-            m_procedure.update_scf_energy(energy, incremental);
-        }
-        
+        m_procedure.update_scf_energy(energy, incremental);
     }
 
     std::string scf_kind() const {
@@ -420,11 +416,12 @@ struct SCF {
         Mat D_last;
         Mat FD_comm = Mat::Zero(F.rows(), F.cols());
         update_scf_energy(incremental);
-        fmt::print("Starting {} SCF iterations (Eguess = {:.12f})\n\n", scf_kind(), energy["total"]);
-        if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-            fmt::print("n_electrons: {}\nn_alpha: {}\nn_beta: {}\n", n_electrons, n_alpha(), n_beta());
-        }
+        fmt::print("starting {} scf iterations (Eguess = {:.12f})\n\n", scf_kind(), energy["total"]);
+        occ::log::info("{} electrons total", n_electrons);
+        occ::log::info("{} alpha electrons", n_alpha());
+        occ::log::info("{} beta electrons", n_beta());
         total_time = 0.0;
+
         do {
             const auto tstart = std::chrono::high_resolution_clock::now();
             ++iter;
@@ -441,7 +438,7 @@ struct SCF {
                 reset_incremental_fock_formation = false;
                 last_reset_iteration = iter - 1;
                 next_reset_threshold = diis_error / 10;
-                fmt::print("         ** start incremental fock build **\n");
+                occ::log::info("starting incremental fock build");
             }
             if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
                 F = H;
@@ -452,7 +449,7 @@ struct SCF {
                 reset_incremental_fock_formation = false;
                 last_reset_iteration = iter;
                 next_reset_threshold = diis_error / 10;
-                fmt::print("         ** reset incremental fock build **\n");
+                occ::log::info("resetting incremental fock build");
             }
 
             // build a new Fock matrix

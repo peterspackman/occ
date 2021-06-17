@@ -80,14 +80,14 @@ void ContinuumSolvationModel::set_solvent(const std::string &solvent)
     m_params = occ::solvent::smd_solvent_parameters[m_solvent_name];
     occ::log::info("Using SMD solvent '{}'", m_solvent_name);
     occ::log::info("Parameters:");
-    occ::log::info("Dielectric                    {: 9.4f}\n", m_params.dielectric);
+    occ::log::info("Dielectric                    {: 9.4f}", m_params.dielectric);
     if(!m_params.is_water)
     {
-        occ::log::info("Surface Tension               {: 9.4f}\n", m_params.gamma);
-        occ::log::info("Acidity                       {: 9.4f}\n", m_params.acidity);
-        occ::log::info("Basicity                      {: 9.4f}\n", m_params.basicity);
-        occ::log::info("Aromaticity                   {: 9.4f}\n", m_params.aromaticity);
-        occ::log::info("Electronegative Halogenicity  {: 9.4f}\n", m_params.electronegative_halogenicity);
+        occ::log::info("Surface Tension               {: 9.4f}", m_params.gamma);
+        occ::log::info("Acidity                       {: 9.4f}", m_params.acidity);
+        occ::log::info("Basicity                      {: 9.4f}", m_params.basicity);
+        occ::log::info("Aromaticity                   {: 9.4f}", m_params.aromaticity);
+        occ::log::info("Electronegative Halogenicity  {: 9.4f}", m_params.electronegative_halogenicity);
     }
     m_cosmo = COSMO(m_params.dielectric);
 }
@@ -107,7 +107,7 @@ const Vec& ContinuumSolvationModel::apparent_surface_charge()
 
 double ContinuumSolvationModel::surface_polarization_energy()
 {
-    return 0.5 * m_surface_potential.dot(m_asc);
+    return - 0.5 * m_surface_potential.dot(m_asc);
 }
 
 
@@ -159,7 +159,7 @@ Vec ContinuumSolvationModel::smd_cds_energy_elements() const
 
 Vec ContinuumSolvationModel::surface_polarization_energy_elements() const
 {
-    return 0.5 * m_asc.array() * m_surface_potential.array();
+    return - 0.5 * m_asc.array() * m_surface_potential.array();
 }
 
 }

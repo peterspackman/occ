@@ -110,7 +110,6 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
   auto compute = [&](int thread_id) {
     auto &engine = engines[thread_id];
     const auto &buf = engine.results();
-    if(buf[0] == nullptr)
 
     // loop over permutationally-unique set of shells
     for (size_t s1 = 0, s12 = 0; s1 != nsh1; ++s1) {
