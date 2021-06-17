@@ -76,14 +76,10 @@ spdlog       - Logging (v {})
 template<typename T, SpinorbitalKind SK>
 Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis, const InputConfiguration &config)
 {
-    fmt::print("In run_method\n");
     if constexpr(std::is_same<T, DFT>::value)
     {
-        fmt::print("Creating DFT\n");
         DFT ks(config.method, basis, m.atoms(), SK);
-        fmt::print("Created DFT\n");
         SCF<DFT, SK> scf(ks);
-        fmt::print("Created SCF\n");
         scf.set_charge_multiplicity(config.charge, config.multiplicity);
         scf.start_incremental_F_threshold = 0.0;
         double e = scf.compute_scf_energy();
@@ -91,11 +87,8 @@ Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis, const Input
     }
     else
     {
-        fmt::print("Creating T\n");
         T proc(m.atoms(), basis);
-        fmt::print("Created T\n");
         SCF<T, SK> scf(proc);
-        fmt::print("Created SCF\n");
         scf.set_charge_multiplicity(config.charge, config.multiplicity);
         double e = scf.compute_scf_energy();
         return scf.wavefunction();

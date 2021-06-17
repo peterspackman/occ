@@ -8,9 +8,7 @@ namespace occ::hf {
 HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms,
                          const BasisSet &basis)
     : m_atoms(atoms), m_basis(basis) {
-  fmt::print("Computing shellpairs\n");
   std::tie(m_shellpair_list, m_shellpair_data) = occ::ints::compute_shellpairs(m_basis);
-  fmt::print("shellpairs computed\n");
   for (const auto &a : m_atoms) {
     m_num_e += a.atomic_number;
   }
