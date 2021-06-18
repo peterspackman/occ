@@ -9,8 +9,6 @@
 namespace occ::solvent::surface
 {
 
-#include "points_278.cpp"
-
 Mat3 principal_axes(const Mat3N &positions)
 {
     if(positions.cols() == 1) return Mat3::Identity();
@@ -26,20 +24,19 @@ Mat3 principal_axes(const Mat3N &positions)
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3N &positions, double solvent_radius_angs)
 {
     const size_t N = atomic_numbers.rows();
-    const double solvent_radius = std::min(solvent_radius_angs, 0.05) * occ::units::ANGSTROM_TO_BOHR;
+    const double solvent_radius = std::min(solvent_radius_angs, 0.001) * occ::units::ANGSTROM_TO_BOHR;
     Surface surface;
-    Mat tmp_vertices(3, 278 * N);
-    Vec tmp_areas(278 * N);
-    IVec tmp_atom_index(278 * N);
+    auto grid = occ::grid::lebedev(146);
+    const int npts = grid.rows();
+    Mat tmp_vertices(3, npts * N);
+    Vec tmp_areas(npts * N);
+    IVec tmp_atom_index(npts * N);
     Vec3 centroid = positions.rowwise().mean();
     Mat3N centered = positions.colwise() - centroid;
     auto axes = principal_axes(centered);
     centered = axes.transpose() * centered;
 
-    auto grid = Eigen::Map<const Eigen::Matrix<double, 3, 278>>(surface_points);
-    constexpr int npts = 278;
 
-    const double points_per_bohr2{1.5};
     Vec ri = radii.array();
 
     size_t num_valid_points{0};
@@ -48,9 +45,9 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers, const Mat3
         double rs = ri(i);
         double r = rs + solvent_radius; 
         double surface_area = 4 * M_PI * rs * rs;
-        tmp_areas.segment(num_valid_points, npts).array() = surface_area / npts;
+        tmp_areas.segment(num_valid_points, npts).array() = grid.col(3).array() * surface_area;
         auto vblock = tmp_vertices.block(0, num_valid_points, 3, npts);
-        vblock = grid.array() * r;
+        vblock.array() = grid.block(0, 0, npts, 3).transpose() * r;
         vblock.colwise() += centered.col(i);
         tmp_atom_index.segment(num_valid_points, npts).array() = i;
         num_valid_points += npts;
