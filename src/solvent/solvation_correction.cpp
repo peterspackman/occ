@@ -2,6 +2,7 @@
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/surface.h>
 #include <occ/core/logger.h>
+#include <occ/core/element.h>
 #include <occ/solvent/smd.h>
 #include <occ/core/units.h>
 #include <fmt/core.h>
@@ -13,6 +14,7 @@ namespace occ::solvent {
 ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom> &atoms, const std::string &solvent) :
     m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()), m_solvent_name(solvent), m_cosmo(78.39)
 {
+    robin_hood::unordered_map<int, double> element_radii;
     for(size_t i = 0; i < atoms.size(); i++)
     {
         m_nuclear_positions(0, i) = atoms[i].x;
@@ -24,12 +26,38 @@ ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom
 
     set_solvent(m_solvent_name);
     Vec coulomb_radii = occ::solvent::smd::intrinsic_coulomb_radii(nums, m_params);
+    for(int i = 0; i < nums.rows(); i++)
+    {
+        int nuc = m_nuclear_charges(i);
+        if(!element_radii.contains(nuc)) element_radii[nuc] = coulomb_radii[i];
+    }
+
+    occ::log::info("Intrinsic coulomb radii");
+    for(const auto& x: element_radii)
+    {
+        auto el = occ::chem::Element(x.first);
+        occ::log::info("{:<7s} {: 12.6f}", el.symbol(), x.second);
+    }
     auto s = occ::solvent::surface::solvent_surface(coulomb_radii, nums, m_nuclear_positions, 0.0);
     m_surface_positions_coulomb = s.vertices;
     m_surface_areas_coulomb = s.areas;
     m_surface_atoms_coulomb = s.atom_index;
 
     Vec cds_radii = occ::solvent::smd::cds_radii(nums, m_params);
+    element_radii.clear();
+    for(int i = 0; i < nums.rows(); i++)
+    {
+        int nuc = m_nuclear_charges(i);
+        if(!element_radii.contains(nuc)) element_radii[nuc] = cds_radii[i];
+    }
+
+    occ::log::info("CDS radii");
+    for(const auto& x: element_radii)
+    {
+        auto el = occ::chem::Element(x.first);
+        occ::log::info("{:<7s} {: 12.6f}", el.symbol(), x.second);
+    }
+
     auto s_cds = occ::solvent::surface::solvent_surface(cds_radii, nums, m_nuclear_positions, 0.0);
     m_surface_positions_cds = s_cds.vertices;
     m_surface_areas_cds = s_cds.areas;

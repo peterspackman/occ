@@ -32,6 +32,7 @@ public:
     const Vec& apparent_surface_charge();
 
     double surface_polarization_energy();
+    double surface_charge() const { return m_asc.array().sum(); }
     double smd_cds_energy() const;
 
     Vec surface_cds_energy_elements() const;
@@ -187,11 +188,12 @@ public:
             m_point_charges[i].first = asc(i);
         }
         double surface_energy = m_solvation_model.surface_polarization_energy();
-        m_nuclear_solvation_energy = 0.5 * m_qn.dot(asc);
+        m_nuclear_solvation_energy = m_qn.dot(asc);
         m_surface_solvation_energy = surface_energy;
         m_electronic_solvation_energy = 0.0;
         occ::log::debug("PCM surface polarization energy: {:.12f}", surface_energy);
-        m_X = 0.5 * m_proc.compute_point_charge_interaction_matrix(m_point_charges);
+        occ::log::debug("PCM surface charge: {:.12f}", m_solvation_model.surface_charge());
+        m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
 
         switch(kind)
         {

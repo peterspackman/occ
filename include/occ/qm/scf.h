@@ -8,6 +8,7 @@
 #include <occ/qm/density_fitting.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/core/energy_components.h>
+#include <occ/core/point_charge.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -52,6 +53,7 @@ struct SCF {
         F = Mat::Zero(rows, cols);
         D = Mat::Zero(rows, cols);
         C = Mat::Zero(rows, cols);
+        Vpc = Mat::Zero(rows, cols);
         orbital_energies = Vec::Zero(rows);
         energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
     }
@@ -88,6 +90,13 @@ struct SCF {
 
     void set_multiplicity(int m) {
         set_charge_multiplicity(charge(), m);
+    }
+
+    void set_point_charges(const std::vector<occ::core::PointCharge>& charges)
+    {
+        point_charges = charges;
+        energy["nuclear.point_charge"] = 0.0;
+        energy["electronic.point_charge"] = 0.0;
     }
 
     Wavefunction wavefunction() const {
@@ -563,11 +572,12 @@ struct SCF {
     double start_incremental_F_threshold = 1e-4;
     double next_reset_threshold = 0.0;
     size_t last_reset_iteration = 0;
-    Mat D, S, T, V, H, K, X, Xinv, C, C_occ, F;
+    Mat D, S, T, V, H, K, X, Xinv, C, C_occ, F, Vpc;
     Vec orbital_energies;
     double XtX_condition_number;
     std::optional<occ::df::DFFockEngine> df_engine;
     bool m_have_initial_guess{false};
+    std::vector<occ::core::PointCharge> point_charges;
 };
 
 } // namespace occ::scf

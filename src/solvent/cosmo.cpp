@@ -45,13 +45,15 @@ COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas, const 
 
         }
     }
+    bool make_hermitian{true};
+    if(make_hermitian) A = 0.5 * (A + A.adjoint().eval());
 
     // 1.07 * \sqrt(4 * \pi / S_i)
     A.diagonal().array() = 3.793051240937804 / areas.array().sqrt();
     res.initial = -surface_charge(charges);
     res.converged = Vec(res.initial.rows());
 
-    res.converged = A.llt().solve(res.initial);
+    res.converged = A.lu().solve(res.initial);
     res.energy = - 0.5 * res.initial.dot(res.converged);
     return res;
 }
