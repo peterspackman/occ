@@ -27,6 +27,8 @@ enum category {
     gto_p,
     gto_gen,
     solvent,
+    lambda,
+    engine_construct,
     _group_count
 };
 

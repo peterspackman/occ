@@ -46,6 +46,8 @@ std::string category_name(category cat)
     case df: return "Density fitting";
     case solvent: return "Solvation";
     case global: return "Global (total time)";
+    case lambda: return "Lambda construction";
+    case engine_construct: return "Engine construction";
     default: return "other";
     }
 }
@@ -70,7 +72,9 @@ void print_timings()
         fock,
         df,
         solvent,
-        global
+        global,
+        lambda,
+        engine_construct,
     };
     fmt::print("Wall clock time by category (s)\n");
     for(const auto& cat : categories)
