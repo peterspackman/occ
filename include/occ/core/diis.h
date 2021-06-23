@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <occ/core/timings.h>
 #include <deque>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -61,6 +62,7 @@ public:
 
   void extrapolate(T& x, T& error, bool extrapolate_error = false)
   {
+      occ::timing::start(occ::timing::category::diis);
     const value_t zero_determinant = std::numeric_limits<value_t>::epsilon();
     const value_t zero_norm = 1.0e-10;
     m_iter++;
@@ -157,6 +159,7 @@ public:
 
     // only need to keep extrapolated x if doing mixing
     if (do_mixing) m_extrapolated.push_back(x);
+    occ::timing::stop(occ::timing::category::diis);
   }
 
 

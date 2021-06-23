@@ -13,13 +13,16 @@ enum category {
     ints2e,
     io,
     la,
+    diis,
     grid_init,
     grid_points,
     dft,
     gto,
     fock,
+    engine_construct,
+    jkmat,
+    jmat,
     df,
-    global,
     gto_dist,
     gto_mask,
     gto_shell,
@@ -27,8 +30,7 @@ enum category {
     gto_p,
     gto_gen,
     solvent,
-    lambda,
-    engine_construct,
+    global,
     _group_count
 };
 

@@ -315,7 +315,7 @@ static inline robin_hood::unordered_map<std::string, SMDSolventParameters> smd_s
     {"dimethyldisulfide", {1.5289, 1.522, 0.00,0.28, 48.06, 9.6, 0.0, 0.0}},
     {"N,N-dimethylacetamide", {1.4380, 1.4358, 0.00, 0.78, 47.62, 37.781, 0.0, 0.0}},
     {"N,N-dimethylformamide", {1.4305, 1.4280, 0.00, 0.74, 49.56, 37.219, 0.0, 0.0}},
-    {"dimethylsulfoxide(DMSO)", {1.4783, 1.4783, 0.00,0.88, 61.78, 46.826, 0.0, 0.0}},
+    {"dimethylsulfoxide", {1.4783, 1.4783, 0.00,0.88, 61.78, 46.826, 0.0, 0.0}},
     {"diphenylether", {1.5787, -1, 0.00, 0.20, 38.5, 3.73, 0.923, 0.0}},
     {"dipropylamine", {1.4050, 1.4018, 0.08, 0.69, 32.11, 2.9112, 0.0, 0.0}},
     {"n-dodecane", {1.4216, 1.4151, 0.00, 0.00, 35.85, 2.0060, 0.0, 0.0}},

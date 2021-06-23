@@ -54,18 +54,18 @@ public:
                     double precision = std::numeric_limits<double>::epsilon(),
                     const Mat &Schwarz = Mat()) const
   {
-      if(kind == SpinorbitalKind::General) return occ::ints::compute_JK<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      if(kind == SpinorbitalKind::Unrestricted) return occ::ints::compute_JK<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      return occ::ints::compute_JK<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      if(kind == SpinorbitalKind::General) return m_fockbuilder.compute_JK<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      if(kind == SpinorbitalKind::Unrestricted) return m_fockbuilder.compute_JK<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      return m_fockbuilder.compute_JK<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
   }
 
   Mat compute_J(SpinorbitalKind kind, const Mat &D,
                   double precision = std::numeric_limits<double>::epsilon(),
                   const Mat &Schwarz = Mat()) const
   {
-      if(kind == SpinorbitalKind::General) return occ::ints::compute_J<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      if(kind == SpinorbitalKind::Unrestricted) return occ::ints::compute_J<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      return occ::ints::compute_J<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      if(kind == SpinorbitalKind::General) return m_fockbuilder.compute_J<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      if(kind == SpinorbitalKind::Unrestricted) return m_fockbuilder.compute_J<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+      return m_fockbuilder.compute_J<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
   }
 
 

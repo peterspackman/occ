@@ -32,6 +32,7 @@ std::string category_name(category cat)
     case ints2e: return "integrals (two-electron)";
     case io: return "file input/output";
     case la: return "linear algebra";
+    case diis: return "DIIS extrapolation";
     case grid_init: return "DFT grid init";
     case grid_points: return "DFT grid points";
     case dft: return "DFT functional evaluation";
@@ -46,8 +47,9 @@ std::string category_name(category cat)
     case df: return "Density fitting";
     case solvent: return "Solvation";
     case global: return "Global (total time)";
-    case lambda: return "Lambda construction";
-    case engine_construct: return "Engine construction";
+    case jkmat: return "J+K matrix";
+    case jmat: return "J matrix";
+    case engine_construct: return "libint2 eng.";
     default: return "other";
     }
 }
@@ -59,6 +61,7 @@ void print_timings()
         ints2e,
         io,
         la,
+        diis,
         grid_init,
         grid_points,
         dft,
@@ -69,12 +72,13 @@ void print_timings()
         gto_s,
         gto_p,
         gto_gen,
+        engine_construct,
+        jmat,
+        jkmat,
         fock,
         df,
         solvent,
         global,
-        lambda,
-        engine_construct,
     };
     fmt::print("Wall clock time by category (s)\n");
     for(const auto& cat : categories)
