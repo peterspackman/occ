@@ -13,6 +13,8 @@ enum category {
     ints2e,
     io,
     la,
+    guess,
+    mo,
     diis,
     grid_init,
     grid_points,

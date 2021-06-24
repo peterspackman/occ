@@ -207,6 +207,8 @@ Wavefunction run_from_gaussian_input_file(InputConfiguration &config)
 
 
 int main(int argc, const char **argv) {
+    occ::timing::start(occ::timing::category::global);
+    occ::timing::start(occ::timing::category::io);
     argparse::ArgumentParser parser("occ");
     parser.add_argument("input").help("Input file geometry");
     parser.add_argument("-b", "--basis").help("Basis set name")
@@ -242,7 +244,6 @@ int main(int argc, const char **argv) {
     parser.add_argument("--solvent-file")
         .help("Solvent surface filename");
 
-    occ::timing::start(occ::timing::category::global);
     try {
         parser.parse_args(argc, argv);
     }
@@ -262,12 +263,14 @@ int main(int argc, const char **argv) {
     occ::log::set_level(level);
     spdlog::set_level(level);
     print_header();
+    occ::timing::stop(occ::timing::category::io);
 
 
     const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
     try {
         libint2::Shell::do_enforce_unit_normalization(false);
         libint2::initialize();
+        occ::timing::start(occ::timing::category::io);
         InputConfiguration config;
         config.input_file = parser.get<std::string>("input");
         config.basis_name = parser.get<std::string>("--basis");
@@ -285,6 +288,7 @@ int main(int argc, const char **argv) {
         fmt::print("\nParallelization: {} threads, {} Eigen threads\n", nthreads, Eigen::nbThreads());
 
         std::string ext = config.input_file.extension();
+        occ::timing::stop(occ::timing::category::io);
         Wavefunction wfn;
         if ( ext == ".gjf" || ext == ".com") {
             wfn = run_from_gaussian_input_file(config);

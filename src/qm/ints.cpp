@@ -183,6 +183,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
 }
 
 Mat compute_shellblock_norm(const BasisSet &obs, const Mat &A) {
+  occ::timing::start(occ::timing::category::ints1e);
   const auto nsh = obs.size();
   Mat Ash(nsh, nsh);
 
@@ -199,6 +200,7 @@ Mat compute_shellblock_norm(const BasisSet &obs, const Mat &A) {
     }
   }
 
+  occ::timing::stop(occ::timing::category::ints1e);
   return Ash;
 }
 

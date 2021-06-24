@@ -291,6 +291,7 @@ struct SCF {
         // 1/eps
         // this is probably too optimistic, but in well-behaved cases even 10^11 is
         // OK
+        occ::timing::start(occ::timing::category::la);
         double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
         if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
             std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S.alpha(), S_condition_number_threshold);
@@ -298,7 +299,9 @@ struct SCF {
         else {
             std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S, S_condition_number_threshold);
         }
+        occ::timing::stop(occ::timing::category::la);
 
+        occ::timing::start(occ::timing::category::guess);
         auto D_minbs = compute_soad(); // compute guess in minimal basis
         BasisSet minbs("STO-3G", atoms());
         if (minbs == m_procedure.basis()) {
@@ -348,9 +351,11 @@ struct SCF {
             const std::chrono::duration<double> time_elapsed = tstop - tstart;
             occ::log::debug("SOAD projection into AO basis took {:.5f} s", time_elapsed.count());
         }
+        occ::timing::stop(occ::timing::category::guess);
     }
 
     void update_density_matrix() {
+        occ::timing::start(occ::timing::category::la);
         if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
             D = C_occ * C_occ.transpose();
         }
@@ -362,12 +367,14 @@ struct SCF {
         else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
             D = (C_occ * C_occ.transpose()) * 0.5;
         }
+        occ::timing::stop(occ::timing::category::la);
     }
 
     void update_molecular_orbitals(const Mat& fock) {
         // solve F C = e S C by (conditioned) transformation to F' C' = e C',
         // where
         // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
+        occ::timing::start(occ::timing::category::mo);
         if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
             Eigen::SelfAdjointEigenSolver<Mat> alpha_eig_solver(X.transpose() * fock.alpha() * X);
             Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(X.transpose() * fock.beta() * X);
@@ -385,21 +392,26 @@ struct SCF {
             orbital_energies = eig_solver.eigenvalues();
             C_occ = C.leftCols(n_occ);
         }
+        occ::timing::stop(occ::timing::category::mo);
     }
 
     void update_scf_energy(bool incremental) {
 
         if(!incremental)
         {
+            occ::timing::start(occ::timing::category::la);
             energy["electronic.kinetic"] = 2 * expectation<spinorbital_kind>(D, T);
             energy["electronic.nuclear"] = 2 * expectation<spinorbital_kind>(D, V);
             energy["electronic.1e"] = 2 * expectation<spinorbital_kind>(D, H);
+            occ::timing::stop(occ::timing::category::la);
         }
         if(m_procedure.usual_scf_energy()) {
+            occ::timing::start(occ::timing::category::la);
             energy["electronic"] = 0.5 * energy["electronic.1e"];
             energy["electronic"] += expectation<spinorbital_kind>(D, F);
             energy["electronic.2e"] = energy["electronic"] - energy["electronic.1e"];
             energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
+            occ::timing::stop(occ::timing::category::la);
         }
         m_procedure.update_scf_energy(energy, incremental);
     }

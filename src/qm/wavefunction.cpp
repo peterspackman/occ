@@ -1,4 +1,5 @@
 #include <occ/core/logger.h>
+#include <occ/core/timings.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/io/conversion.h>
@@ -385,6 +386,7 @@ occ::IVec Wavefunction::atomic_numbers() const
 
 void Wavefunction::save(FchkWriter &fchk)
 {
+    occ::timing::start(occ::timing::category::io);
     fchk.set_scalar("Number of atoms", atoms.size());
     fchk.set_scalar("Charge", charge());
     fchk.set_scalar("Multiplicity", multiplicity());
@@ -453,6 +455,7 @@ void Wavefunction::save(FchkWriter &fchk)
         shell2atom.push_back(x + 1);
     }
     fchk.set_vector("Shell to atom map", shell2atom);
+    occ::timing::stop(occ::timing::category::io);
 }
 
 }

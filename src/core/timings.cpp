@@ -32,6 +32,8 @@ std::string category_name(category cat)
     case ints2e: return "integrals (two-electron)";
     case io: return "file input/output";
     case la: return "linear algebra";
+    case guess: return "Initial guess";
+    case mo: return "MO update";
     case diis: return "DIIS extrapolation";
     case grid_init: return "DFT grid init";
     case grid_points: return "DFT grid points";
@@ -61,6 +63,8 @@ void print_timings()
         ints2e,
         io,
         la,
+        guess,
+        mo,
         diis,
         grid_init,
         grid_points,

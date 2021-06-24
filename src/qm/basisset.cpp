@@ -1,5 +1,6 @@
 #include <occ/core/util.h>
 #include <occ/core/logger.h>
+#include <occ/core/timings.h>
 #include <occ/qm/basisset.h>
 #include <occ/gto/gto.h>
 #include <cerrno>
@@ -250,6 +251,7 @@ std::vector<std::vector<libint2::Shell>> BasisSet::read_g94_basis_library(
         bool throw_if_missing,
         std::string locale_name)
 {
+  occ::timing::start(occ::timing::category::io);
   std::locale locale(locale_name.c_str());  // TODO omit c_str() with up-to-date stdlib
   std::vector<std::vector<libint2::Shell>> ref_shells(118); // 118 = number of chemical elements
   std::ifstream is(file_dot_g94);
@@ -377,6 +379,7 @@ std::vector<std::vector<libint2::Shell>> BasisSet::read_g94_basis_library(
     }
   }
 
+  occ::timing::stop(occ::timing::category::io);
   return ref_shells;
 }
 
