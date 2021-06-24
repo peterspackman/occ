@@ -70,6 +70,7 @@ TEST_CASE("Marching cubes", "[geometry]")
     fmt::print("{} function calls\n", s.num_calls);
 }
 
+/*
 TEST_CASE("Linear hashed marching cubes", "[geometry]")
 {
     LinearHashedMarchingCubes m(7);
@@ -93,3 +94,4 @@ TEST_CASE("Linear hashed marching cubes", "[geometry]")
     }
     fmt::print("{} function calls\n", s.num_calls);
 }
+*/

@@ -22,6 +22,7 @@ TEST_CASE("Water SCF", "[scf]")
         BasisSet obs("STO-3G", atoms);
         HartreeFock hf(atoms, obs);
         occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
+        scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Approx(-74.963706080054).epsilon(1e-8));
     }
@@ -30,6 +31,7 @@ TEST_CASE("Water SCF", "[scf]")
         BasisSet obs("3-21G", atoms);
         HartreeFock hf(atoms, obs);
         occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
+        scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Approx(-75.585325673488).epsilon(1e-8));
     }
