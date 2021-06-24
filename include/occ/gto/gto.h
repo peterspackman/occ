@@ -39,16 +39,18 @@ inline std::vector<std::string> shell_component_labels(int l)
 
 template<size_t max_derivative>
 struct GTOValues {
+    GTOValues() {}
     GTOValues(size_t nbf, size_t npts) : phi(npts, nbf) {}
     inline void set_zero() {
         phi.setZero();
     }
-    occ::Mat phi;
+    Mat phi;
 };
 
 template<>
 struct GTOValues<1>
 {
+    GTOValues() {}
     GTOValues(size_t nbf, size_t npts) : phi(npts, nbf), phi_x(npts, nbf), phi_y(npts, nbf), phi_z(npts, nbf) {}
     inline void set_zero() {
         phi.setZero();
@@ -56,10 +58,10 @@ struct GTOValues<1>
         phi_y.setZero();
         phi_z.setZero();
     }
-    occ::Mat phi;
-    occ::Mat phi_x;
-    occ::Mat phi_y;
-    occ::Mat phi_z;
+    Mat phi;
+    Mat phi_x;
+    Mat phi_y;
+    Mat phi_z;
 };
 
 inline double cartesian_normalization_factor(int l, int m, int n)
@@ -161,17 +163,16 @@ GTOValues<max_derivative> evaluate_basis_on_grid(const BasisSet &basis,
     return gto_values;
 }
 
-
 template<size_t max_derivative>
-GTOValues<max_derivative> evaluate_basis_gau2grid(const BasisSet &basis,
-                                         const std::vector<libint2::Atom> &atoms,
-                                         const occ::Mat &grid_pts)
+void evaluate_basis_gau2grid(const BasisSet &basis,
+                             const std::vector<libint2::Atom> &atoms,
+                             const occ::Mat &grid_pts,
+                             GTOValues<max_derivative> &gto_values)
 {
     occ::timing::start(occ::timing::category::gto);
     size_t nbf = basis.nbf();
     size_t npts = grid_pts.cols();
     size_t natoms = atoms.size();
-    GTOValues<max_derivative> gto_values(nbf, npts);
     gto_values.set_zero();
     auto shell2bf = basis.shell2bf();
     auto atom2shell = basis.atom2shell(atoms);
@@ -210,9 +211,17 @@ GTOValues<max_derivative> evaluate_basis_gau2grid(const BasisSet &basis,
         }
     }
     occ::timing::stop(occ::timing::category::gto);
+}
 
+
+template<size_t max_derivative>
+GTOValues<max_derivative> evaluate_basis_gau2grid(const BasisSet &basis,
+                                         const std::vector<libint2::Atom> &atoms,
+                                         const occ::Mat &grid_pts)
+{
+    GTOValues<max_derivative> gto_values(basis.nbf(), grid_pts.cols());
+    evaluate_basis_gau2grid(basis, atoms, grid_pts, gto_values);
     return gto_values;
-
 }
 
 

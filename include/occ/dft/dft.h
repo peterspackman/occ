@@ -34,15 +34,16 @@ using occ::ints::shellpair_list_t;
 std::vector<DensityFunctional> parse_method(const std::string& method_string, bool polarized = false);
 
 template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-std::pair<Mat, occ::gto::GTOValues<derivative_order>> evaluate_density_and_gtos(
+void evaluate_density_and_gtos(
     const BasisSet &basis,
     const std::vector<libint2::Atom> &atoms,
     const Eigen::Ref<const Mat>& D,
-    const Eigen::Ref<const Mat> &grid_pts)
+    const Eigen::Ref<const Mat> &grid_pts,
+    Mat &rho,
+    occ::gto::GTOValues<derivative_order> &gto_values)
 {
-    auto gto_values = occ::gto::evaluate_basis_gau2grid<derivative_order>(basis, atoms, grid_pts);
-    auto rho = occ::density::evaluate_density<derivative_order, spinorbital_kind>(D, gto_values);
-    return {rho, gto_values};
+    occ::gto::evaluate_basis_gau2grid<derivative_order>(basis, atoms, grid_pts, gto_values);
+    occ::density::evaluate_density<derivative_order, spinorbital_kind>(D, gto_values, rho);
 }
 
 class DFT {
@@ -156,6 +157,12 @@ public:
         std::vector<double> energies(occ::parallel::nthreads, 0.0);
         std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
         std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
+        std::vector<Mat> rho_vec(occ::parallel::nthreads);
+        std::vector<occ::gto::GTOValues<derivative_order>> gto_values_vec(occ::parallel::nthreads);
+        for(size_t i = 0; i < occ::parallel::nthreads; i++)
+        {
+            gto_values_vec[i] = occ::gto::GTOValues<derivative_order>(basis.nbf(), BLOCKSIZE);
+        }
         const auto& funcs = m_funcs;
         for(const auto& atom_grid : m_atom_grids) {
             const auto& atom_pts = atom_grid.points;
@@ -165,6 +172,8 @@ public:
 
             auto lambda = [&](int thread_id)
             {
+                auto &rho = rho_vec[thread_id];
+                auto &gto_vals = gto_values_vec[thread_id];
                 for(size_t block = 0; block < num_blocks; block++) {
                     if(block % nthreads != thread_id) continue;
                     Eigen::Index l = block * BLOCKSIZE;
@@ -175,7 +184,7 @@ public:
                     const auto& pts_block = atom_pts.middleCols(l, npt);
                     const auto& weights_block = atom_weights.segment(l, npt);
                     DensityFunctional::Params params(npt, family, spinorbital_kind);
-                    const auto [rho, gto_vals] = evaluate_density_and_gtos<derivative_order, spinorbital_kind>(basis, atoms, D2, pts_block);
+                    evaluate_density_and_gtos<derivative_order, spinorbital_kind>(basis, atoms, D2, pts_block, rho, gto_vals);
 
                     double max_density_block = rho.col(0).maxCoeff();
                     if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {

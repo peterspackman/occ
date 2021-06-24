@@ -16,13 +16,14 @@ namespace occ::density {
         return 1;
     }
 
+
     template<size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-    occ::Mat evaluate_density(const Mat &D, const occ::gto::GTOValues<max_derivative>& gto_values)
+    void evaluate_density(const Mat &D, const occ::gto::GTOValues<max_derivative>& gto_values, Mat &rho)
     {
         if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
             // alpha part first
-            occ::Mat Dphi = gto_values.phi * D.alpha();
-            occ::Mat rho(Dphi.rows() * 2, num_components(max_derivative));
+            Mat Dphi = gto_values.phi * D.alpha();
+            if(rho.rows() != gto_values.phi.rows() * 2) rho.resize(gto_values.phi.rows() * 2, num_components(max_derivative));
             rho.block(0, 0, Dphi.rows(), 1).array() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
             /*
              * If we wish to get the values interleaved for say libxc, use an Eigen::Map as follows:
@@ -35,25 +36,32 @@ namespace occ::density {
             }
             // beta part
             Dphi = gto_values.phi * D.beta();
-            rho.block(Dphi.rows(), 0, Dphi.rows(), 1).array() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
+            rho.block(gto_values.phi.rows(), 0, gto_values.phi.rows(), 1).array() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
             if constexpr(max_derivative > 0) {
                 rho.block(Dphi.rows(), 1, Dphi.rows(), 1).array() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
                 rho.block(Dphi.rows(), 2, Dphi.rows(), 1).array() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
                 rho.block(Dphi.rows(), 3, Dphi.rows(), 1).array() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
             }
-            return rho;
         }
         else {
-            occ::Mat Dphi = gto_values.phi * D;
-            occ::Mat rho(Dphi.rows(), num_components(max_derivative));
+            Mat Dphi = gto_values.phi * D;
+            if (rho.rows() != gto_values.phi.rows()) rho.resize(gto_values.phi.rows(), num_components(max_derivative));
             rho.col(0).array() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
             if constexpr(max_derivative > 0) {
                 rho.col(1).array() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
                 rho.col(2).array() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
                 rho.col(3).array() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
             }
-            return rho;
         }
+
+    }
+
+    template<size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
+    Mat evaluate_density(const Mat &D, const occ::gto::GTOValues<max_derivative>& gto_values)
+    {
+        occ::Mat rho;
+        evaluate_density<max_derivative, spinorbital_kind>(D, gto_values, rho);
+        return rho;
     }
 
     template<size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
