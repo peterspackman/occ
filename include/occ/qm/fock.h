@@ -22,8 +22,9 @@ public:
         occ::timing::stop(occ::timing::category::engine_construct);
     }
 
-    template<SpinorbitalKind kind>
-    Mat compute_fock(
+
+    template<SpinorbitalKind kind, typename Func>
+    void two_electron_integral_helper(Func& func,
         const BasisSet &obs, const shellpair_list_t &shellpair_list,
         const shellpair_data_t &shellpair_data, const Mat &D,
         double precision = std::numeric_limits<double>::epsilon(),
@@ -33,7 +34,6 @@ public:
         const auto n = obs.nbf();
         const auto nshells = obs.size();
         using occ::parallel::nthreads;
-        std::vector<Mat> G(nthreads, Mat::Zero(D.rows(), D.cols()));
         Mat D_shblk_norm;
 
         if constexpr(kind == SpinorbitalKind::Restricted) {
@@ -80,7 +80,6 @@ public:
 
         auto lambda = [&](int thread_id) {
             auto &engine = engines[thread_id];
-            auto &g = G[thread_id];
             const auto &buf = engine.results();
             // loop over permutationally-unique set of shells
             for (size_t s1 = 0, s1234 = 0; s1 != nshells; ++s1) {
@@ -150,93 +149,13 @@ public:
 
                             engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
                                         shell1, shell2, shell3, shell4, sp12, sp34);
-                            const auto *buf_1234 = buf[0];
+                            const double *buf_1234 = buf[0];
 
                             if (buf_1234 == nullptr) continue; // if all integrals screened out, skip to next quartet
 
-                            for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1) {
-                                const auto bf1 = f1 + bf1_first;
-                                for (auto f2 = 0; f2 != n2; ++f2) {
-                                    const auto bf2 = f2 + bf2_first;
-                                    for (auto f3 = 0; f3 != n3; ++f3) {
-                                        const auto bf3 = f3 + bf3_first;
-                                        for (auto f4 = 0; f4 != n4; ++f4, ++f1234) {
-                                            const auto bf4 = f4 + bf4_first;
-
-                                            const auto value = buf_1234[f1234];
-
-                                            const auto value_scal_by_deg = value * s1234_deg;
-                                            if constexpr(kind == SpinorbitalKind::Restricted) {
-                                                g(bf1, bf2) += D(bf3, bf4) * value_scal_by_deg;
-                                                g(bf3, bf4) += D(bf1, bf2) * value_scal_by_deg;
-                                                g(bf1, bf3) -= 0.25 * D(bf2, bf4) * value_scal_by_deg;
-                                                g(bf2, bf4) -= 0.25 * D(bf1, bf3) * value_scal_by_deg;
-                                                g(bf1, bf4) -= 0.25 * D(bf2, bf3) * value_scal_by_deg;
-                                                g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value_scal_by_deg;
-                                            }
-                                            else if constexpr(kind == SpinorbitalKind::Unrestricted) {
-                                                auto ga = g.alpha();
-                                                auto gb = g.beta();
-                                                const auto Da = D.alpha();
-                                                const auto Db = D.beta();
-                                                ga(bf1, bf2) +=
-                                                    (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
-                                                ga(bf3, bf4) +=
-                                                    (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
-
-                                                gb(bf1, bf2) +=
-                                                    (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
-                                                gb(bf3, bf4) +=
-                                                    (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
-
-                                                ga(bf1, bf3) -= 0.5 * Da(bf2, bf4) * value_scal_by_deg;
-                                                ga(bf2, bf4) -= 0.5 * Da(bf1, bf3) * value_scal_by_deg;
-                                                ga(bf1, bf4) -= 0.5 * Da(bf2, bf3) * value_scal_by_deg;
-                                                ga(bf2, bf3) -= 0.5 * Da(bf1, bf4) * value_scal_by_deg;
-
-                                                gb(bf1, bf3) -= 0.5 * Db(bf2, bf4) * value_scal_by_deg;
-                                                gb(bf2, bf4) -= 0.5 * Db(bf1, bf3) * value_scal_by_deg;
-                                                gb(bf1, bf4) -= 0.5 * Db(bf2, bf3) * value_scal_by_deg;
-                                                gb(bf2, bf3) -= 0.5 * Db(bf1, bf4) * value_scal_by_deg;
-                                            }
-                                            else if constexpr(kind == SpinorbitalKind::General) {
-                                                g(bf1, bf2) += 2 * D(bf3, bf4) * value_scal_by_deg;
-                                                g(bf3, bf4) += 2 * D(bf1, bf2) * value_scal_by_deg;
-                                                g(n + bf1, n + bf2) += 2 * D(n + bf3, n + bf4) * value_scal_by_deg;
-                                                g(n + bf3, n + bf4) += 2 * D(n + bf1, n + bf2) * value_scal_by_deg;
-
-                                                g(bf1, bf3) -= 0.5 * D(bf2, bf4) * value_scal_by_deg;
-                                                g(bf2, bf4) -= 0.5 * D(bf1, bf3) * value_scal_by_deg;
-                                                g(bf1, bf4) -= 0.5 * D(bf2, bf3) * value_scal_by_deg;
-                                                g(bf2, bf3) -= 0.5 * D(bf1, bf4) * value_scal_by_deg;
-
-                                                g(n + bf1, n + bf3) -= 0.5 * D(n + bf2, n + bf4) * value_scal_by_deg;
-                                                g(n + bf2, n + bf4) -= 0.5 * D(n + bf1, n + bf3) * value_scal_by_deg;
-                                                g(n + bf1, n + bf4) -= 0.5 * D(n + bf2, n + bf3) * value_scal_by_deg;
-                                                g(n + bf2, n + bf3) -= 0.5 * D(n + bf1, n + bf4) * value_scal_by_deg;
-
-                                                g(n + bf1, bf3) -= 0.5 * D(n + bf2, bf4) * value_scal_by_deg;
-                                                g(n + bf2, bf4) -= 0.5 * D(n + bf1, bf3) * value_scal_by_deg;
-                                                g(n + bf1, bf4) -= 0.5 * D(n + bf2, bf3) * value_scal_by_deg;
-                                                g(n + bf2, bf3) -= 0.5 * D(n + bf1, bf4) * value_scal_by_deg;
-                                                g(bf1, n + bf3) -= 0.5 * D(n + bf2, bf4) * value_scal_by_deg;
-                                                g(bf2, n + bf4) -= 0.5 * D(n + bf1, bf3) * value_scal_by_deg;
-                                                g(bf1, n + bf4) -= 0.5 * D(n + bf2, bf3) * value_scal_by_deg;
-                                                g(bf2, n + bf3) -= 0.5 * D(n + bf1, bf4) * value_scal_by_deg;
-
-                                                g(n + bf1, bf3) -= 0.5 * D(bf2, n + bf4) * value_scal_by_deg;
-                                                g(n + bf2, bf4) -= 0.5 * D(bf1, n + bf3) * value_scal_by_deg;
-                                                g(n + bf1, bf4) -= 0.5 * D(bf2, n + bf3) * value_scal_by_deg;
-                                                g(n + bf2, bf3) -= 0.5 * D(bf1, n + bf4) * value_scal_by_deg;
-                                                g(bf1, n + bf3) -= 0.5 * D(bf2, n + bf4) * value_scal_by_deg;
-                                                g(bf2, n + bf4) -= 0.5 * D(bf1, n + bf3) * value_scal_by_deg;
-                                                g(bf1, n + bf4) -= 0.5 * D(bf2, n + bf3) * value_scal_by_deg;
-                                                g(bf2, n + bf3) -= 0.5 * D(bf1, n + bf4) * value_scal_by_deg;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            func(thread_id, bf1_first, n1, bf2_first, n2,
+                                            bf3_first, n3, bf4_first, n4,
+                                            buf_1234, s1234_deg);
                         }
                     }
                 }
@@ -246,6 +165,114 @@ public:
         occ::timing::start(occ::timing::category::ints2e);
         occ::parallel::parallel_do(lambda);
         occ::timing::stop(occ::timing::category::ints2e);
+    }
+
+
+    template<SpinorbitalKind kind>
+    Mat compute_fock(
+        const BasisSet &obs, const shellpair_list_t &shellpair_list,
+        const shellpair_data_t &shellpair_data, const Mat &D,
+        double precision = std::numeric_limits<double>::epsilon(),
+        const Mat &Schwarz = Mat()) const
+    {
+        occ::timing::start(occ::timing::category::fock);
+        using occ::parallel::nthreads;
+        const auto n = obs.nbf();
+        std::vector<Mat> G(nthreads, Mat::Zero(D.rows(), D.cols()));
+
+        auto lambda = [&](int thread_id,
+                int bf1_first, int n1, 
+                int bf2_first, int n2,
+                int bf3_first, int n3,
+                int bf4_first, int n4,
+                const double * buffer, double scale)
+        {
+            auto &g = G[thread_id];
+            for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1)
+            {
+                const auto bf1 = f1 + bf1_first;
+                for (auto f2 = 0; f2 != n2; ++f2)
+                {
+                    const auto bf2 = f2 + bf2_first;
+                    for (auto f3 = 0; f3 != n3; ++f3)
+                    {
+                        const auto bf3 = f3 + bf3_first;
+                        for (auto f4 = 0; f4 != n4; ++f4, ++f1234)
+                        {
+                            const auto bf4 = f4 + bf4_first;
+                            const auto value = buffer[f1234] * scale;
+                            if constexpr(kind == SpinorbitalKind::Restricted) {
+                                g(bf1, bf2) += D(bf3, bf4) * value;
+                                g(bf3, bf4) += D(bf1, bf2) * value;
+                                g(bf1, bf3) -= 0.25 * D(bf2, bf4) * value;
+                                g(bf2, bf4) -= 0.25 * D(bf1, bf3) * value;
+                                g(bf1, bf4) -= 0.25 * D(bf2, bf3) * value;
+                                g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value;
+                            }
+                            else if constexpr(kind == SpinorbitalKind::Unrestricted)
+                            {
+                                auto ga = g.alpha();
+                                auto gb = g.beta();
+                                const auto Da = D.alpha();
+                                const auto Db = D.beta();
+                                ga(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value;
+                                ga(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value;
+                                gb(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value;
+                                gb(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value;
+
+                                ga(bf1, bf3) -= 0.5 * Da(bf2, bf4) * value;
+                                ga(bf2, bf4) -= 0.5 * Da(bf1, bf3) * value;
+                                ga(bf1, bf4) -= 0.5 * Da(bf2, bf3) * value;
+                                ga(bf2, bf3) -= 0.5 * Da(bf1, bf4) * value;
+
+                                gb(bf1, bf3) -= 0.5 * Db(bf2, bf4) * value;
+                                gb(bf2, bf4) -= 0.5 * Db(bf1, bf3) * value;
+                                gb(bf1, bf4) -= 0.5 * Db(bf2, bf3) * value;
+                                gb(bf2, bf3) -= 0.5 * Db(bf1, bf4) * value;
+                            }
+                            else if constexpr(kind == SpinorbitalKind::General)
+                            {
+                                g(bf1, bf2) += 2 * D(bf3, bf4) * value;
+                                g(bf3, bf4) += 2 * D(bf1, bf2) * value;
+                                g(n + bf1, n + bf2) += 2 * D(n + bf3, n + bf4) * value;
+                                g(n + bf3, n + bf4) += 2 * D(n + bf1, n + bf2) * value;
+
+                                g(bf1, bf3) -= 0.5 * D(bf2, bf4) * value;
+                                g(bf2, bf4) -= 0.5 * D(bf1, bf3) * value;
+                                g(bf1, bf4) -= 0.5 * D(bf2, bf3) * value;
+                                g(bf2, bf3) -= 0.5 * D(bf1, bf4) * value;
+
+                                g(n + bf1, n + bf3) -= 0.5 * D(n + bf2, n + bf4) * value;
+                                g(n + bf2, n + bf4) -= 0.5 * D(n + bf1, n + bf3) * value;
+                                g(n + bf1, n + bf4) -= 0.5 * D(n + bf2, n + bf3) * value;
+                                g(n + bf2, n + bf3) -= 0.5 * D(n + bf1, n + bf4) * value;
+
+                                g(n + bf1, bf3) -= 0.5 * D(n + bf2, bf4) * value;
+                                g(n + bf2, bf4) -= 0.5 * D(n + bf1, bf3) * value;
+                                g(n + bf1, bf4) -= 0.5 * D(n + bf2, bf3) * value;
+                                g(n + bf2, bf3) -= 0.5 * D(n + bf1, bf4) * value;
+                                g(bf1, n + bf3) -= 0.5 * D(n + bf2, bf4) * value;
+                                g(bf2, n + bf4) -= 0.5 * D(n + bf1, bf3) * value;
+                                g(bf1, n + bf4) -= 0.5 * D(n + bf2, bf3) * value;
+                                g(bf2, n + bf3) -= 0.5 * D(n + bf1, bf4) * value;
+
+                                g(n + bf1, bf3) -= 0.5 * D(bf2, n + bf4) * value;
+                                g(n + bf2, bf4) -= 0.5 * D(bf1, n + bf3) * value;
+                                g(n + bf1, bf4) -= 0.5 * D(bf2, n + bf3) * value;
+                                g(n + bf2, bf3) -= 0.5 * D(bf1, n + bf4) * value;
+                                g(bf1, n + bf3) -= 0.5 * D(bf2, n + bf4) * value;
+                                g(bf2, n + bf4) -= 0.5 * D(bf1, n + bf3) * value;
+                                g(bf1, n + bf4) -= 0.5 * D(bf2, n + bf3) * value;
+                                g(bf2, n + bf3) -= 0.5 * D(bf1, n + bf4) * value;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }; // end of lambda
+
+        two_electron_integral_helper<kind>(lambda, obs, shellpair_list, shellpair_data, D, precision, Schwarz);
 
         // accumulate contributions from all threads
         for (auto i = 1; i < nthreads; ++i) {
@@ -276,44 +303,14 @@ public:
         using occ::parallel::nthreads;
         std::vector<Mat> J(nthreads, Mat::Zero(D.rows(), D.cols()));
         std::vector<Mat> K(nthreads, Mat::Zero(D.rows(), D.cols()));
-        Mat D_shblk_norm = compute_shellblock_norm(obs, D.block(0, 0, n, n));
 
-        if constexpr(kind == SpinorbitalKind::Unrestricted) {
-            assert((D.rows() == 2 * n) && (D.cols() ==n) && "Unrestricted density matrix must be 2 nbf x nbf");
-            size_t beta_rows = D.beta().rows();
-            size_t beta_cols = D.beta().cols();
-            D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta()));
-        }
-        else if constexpr(kind == SpinorbitalKind::General) {
-            assert((D.rows() == 2 * n) && (D.cols() ==n) && "General density matrix must be 2 nbf x 2 nbf");
-            D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.alpha_beta()));
-            D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta_alpha()));
-            D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta_beta()));
-        }
-        const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
-        double max_coeff = D_shblk_norm.maxCoeff();
-
-        auto fock_precision = precision;
-        // engine precision controls primitive truncation, assume worst-case scenario
-        // (all primitive combinations add up constructively)
-        auto max_nprim = obs.max_nprim();
-        auto max_nprim4 = max_nprim * max_nprim * max_nprim * max_nprim;
-        auto engine_precision = std::min(
-            fock_precision / max_coeff,
-            std::numeric_limits<double>::epsilon()) / max_nprim4;
-        assert(engine_precision > max_engine_precision &&
-               "using precomputed shell pair data limits the max engine precision"
-               " ... make max_engine_precision smaller and recompile");
-
-
-        auto& engines = m_coulomb_engines;
-        for(int i = 0; i < nthreads; ++i) engines[i].set_precision(engine_precision); // shellset-dependent precision
-        std::atomic<size_t> num_ints_computed{0};
-
-        auto shell2bf = obs.shell2bf();
-
-        auto lambda = [&](int thread_id) {
-            auto &engine = engines[thread_id];
+        auto lambda = [&](int thread_id,
+                int bf1_first, int n1, 
+                int bf2_first, int n2,
+                int bf3_first, int n3,
+                int bf4_first, int n4,
+                const double * buffer, double scale)
+        {
             auto &j = J[thread_id];
             auto &k = K[thread_id];
             auto ja = j.alpha();
@@ -322,164 +319,87 @@ public:
             auto kb = k.beta();
             const auto Da = D.alpha();
             const auto Db = D.beta();
-            const auto &buf = engine.results();
-            // loop over permutationally-unique set of shells
-            for (size_t s1 = 0, s1234 = 0; s1 != nshells; ++s1) {
-                auto bf1_first = shell2bf[s1]; // first basis function in this shell
-                auto n1 = obs[s1].size();      // number of basis functions in this shell
+            for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1)
+            {
+                const auto bf1 = f1 + bf1_first;
+                for (auto f2 = 0; f2 != n2; ++f2)
+                {
+                    const auto bf2 = f2 + bf2_first;
+                    for (auto f3 = 0; f3 != n3; ++f3)
+                    {
+                        const auto bf3 = f3 + bf3_first;
+                        for (auto f4 = 0; f4 != n4; ++f4, ++f1234)
+                        {
+                            const auto bf4 = f4 + bf4_first;
+                            const auto value = buffer[f1234] * scale;
 
-                auto sp12_iter = shellpair_data.at(s1).begin();
+                            if constexpr(kind == SpinorbitalKind::Restricted) {
+                                j(bf1, bf2) += D(bf3, bf4) * value;
+                                j(bf3, bf4) += D(bf1, bf2) * value;
+                                k(bf1, bf3) += 0.25 * D(bf2, bf4) * value;
+                                k(bf2, bf4) += 0.25 * D(bf1, bf3) * value;
+                                k(bf1, bf4) += 0.25 * D(bf2, bf3) * value;
+                                k(bf2, bf3) += 0.25 * D(bf1, bf4) * value;
+                            }
+                            else if constexpr(kind == SpinorbitalKind::Unrestricted) {
 
-                for (const auto &s2 : shellpair_list.at(s1)) {
-                    auto bf2_first = shell2bf[s2];
-                    auto n2 = obs[s2].size();
+                                ja(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value;
+                                ja(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value;
 
-                    const auto *sp12 = sp12_iter->get();
-                    ++sp12_iter;
+                                jb(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value;
+                                jb(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value;
 
-                    const auto Dnorm12 = do_schwarz_screen ? D_shblk_norm(s1, s2) : 0.;
+                                ka(bf1, bf3) += 0.5 * Da(bf2, bf4) * value;
+                                ka(bf2, bf4) += 0.5 * Da(bf1, bf3) * value;
+                                ka(bf1, bf4) += 0.5 * Da(bf2, bf3) * value;
+                                ka(bf2, bf3) += 0.5 * Da(bf1, bf4) * value;
 
-                    for (auto s3 = 0; s3 <= s1; ++s3) {
-                        auto bf3_first = shell2bf[s3];
-                        auto n3 = obs[s3].size();
+                                kb(bf1, bf3) += 0.5 * Db(bf2, bf4) * value;
+                                kb(bf2, bf4) += 0.5 * Db(bf1, bf3) * value;
+                                kb(bf1, bf4) += 0.5 * Db(bf2, bf3) * value;
+                                kb(bf2, bf3) += 0.5 * Db(bf1, bf4) * value;
+                            }
+                            else if constexpr(kind == SpinorbitalKind::General) {
+                                j(bf1, bf2) += 2 * D(bf3, bf4) * value;
+                                j(bf3, bf4) += 2 * D(bf1, bf2) * value;
+                                j(n + bf1, n + bf2) += 2 * D(n + bf3, n + bf4) * value;
+                                j(n + bf3, n + bf4) += 2 * D(n + bf1, n + bf2) * value;
 
-                        const auto Dnorm123 =
-                                do_schwarz_screen
-                                ? std::max(D_shblk_norm(s1, s3),
-                                           std::max(D_shblk_norm(s2, s3), Dnorm12))
-                                : 0.;
+                                k(bf1, bf3) += 0.5 * D(bf2, bf4) * value;
+                                k(bf2, bf4) += 0.5 * D(bf1, bf3) * value;
+                                k(bf1, bf4) += 0.5 * D(bf2, bf3) * value;
+                                k(bf2, bf3) += 0.5 * D(bf1, bf4) * value;
 
-                        auto sp34_iter = shellpair_data.at(s3).begin();
+                                k(n + bf1, n + bf3) += 0.5 * D(n + bf2, n + bf4) * value;
+                                k(n + bf2, n + bf4) += 0.5 * D(n + bf1, n + bf3) * value;
+                                k(n + bf1, n + bf4) += 0.5 * D(n + bf2, n + bf3) * value;
+                                k(n + bf2, n + bf3) += 0.5 * D(n + bf1, n + bf4) * value;
 
-                        const auto s4_max = (s1 == s3) ? s2 : s3;
-                        for (const auto &s4 : shellpair_list.at(s3)) {
-                            if (s4 > s4_max)
-                                break; // for each s3, s4 are stored in monotonically increasing order
+                                k(n + bf1, bf3) += 0.5 * D(n + bf2, bf4) * value;
+                                k(n + bf2, bf4) += 0.5 * D(n + bf1, bf3) * value;
+                                k(n + bf1, bf4) += 0.5 * D(n + bf2, bf3) * value;
+                                k(n + bf2, bf3) += 0.5 * D(n + bf1, bf4) * value;
+                                k(bf1, n + bf3) += 0.5 * D(n + bf2, bf4) * value;
+                                k(bf2, n + bf4) += 0.5 * D(n + bf1, bf3) * value;
+                                k(bf1, n + bf4) += 0.5 * D(n + bf2, bf3) * value;
+                                k(bf2, n + bf3) += 0.5 * D(n + bf1, bf4) * value;
 
-                            // must update the iter even if going to skip s4
-                            const auto *sp34 = sp34_iter->get();
-                            ++sp34_iter;
-
-                            if ((s1234++) % nthreads != thread_id)
-                                continue;
-
-                            const auto Dnorm1234 =
-                                    do_schwarz_screen
-                                    ? std::max(D_shblk_norm(s1, s4),
-                                        std::max(D_shblk_norm(s2, s4),
-                                          std::max(D_shblk_norm(s3, s4), Dnorm123)))
-                                    : 0.0;
-
-                            if (do_schwarz_screen && Dnorm1234 * Schwarz(s1, s2) * Schwarz(s3, s4) < fock_precision)
-                                continue;
-
-                            auto bf4_first = shell2bf[s4];
-                            auto n4 = obs[s4].size();
-
-                            num_ints_computed += n1 * n2 * n3 * n4;
-
-                            // compute the permutational degeneracy (i.e. # of equivalents) of
-                            // the given shell set
-                            auto s12_deg = (s1 == s2) ? 1 : 2;
-                            auto s34_deg = (s3 == s4) ? 1 : 2;
-                            auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
-                            auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
-
-                            engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
-                                        obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
-                            const auto *buf_1234 = buf[0];
-
-                            if (buf_1234 == nullptr) continue; // if all integrals screened out, skip to next quartet
-
-                            for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1) {
-                                const auto bf1 = f1 + bf1_first;
-                                for (auto f2 = 0; f2 != n2; ++f2) {
-                                    const auto bf2 = f2 + bf2_first;
-                                    for (auto f3 = 0; f3 != n3; ++f3) {
-                                        const auto bf3 = f3 + bf3_first;
-                                        for (auto f4 = 0; f4 != n4; ++f4, ++f1234) {
-                                            const auto bf4 = f4 + bf4_first;
-
-                                            const auto value = buf_1234[f1234];
-
-                                            const auto value_scal_by_deg = value * s1234_deg;
-                                            if constexpr(kind == SpinorbitalKind::Restricted) {
-                                                j(bf1, bf2) += D(bf3, bf4) * value_scal_by_deg;
-                                                j(bf3, bf4) += D(bf1, bf2) * value_scal_by_deg;
-                                                k(bf1, bf3) += 0.25 * D(bf2, bf4) * value_scal_by_deg;
-                                                k(bf2, bf4) += 0.25 * D(bf1, bf3) * value_scal_by_deg;
-                                                k(bf1, bf4) += 0.25 * D(bf2, bf3) * value_scal_by_deg;
-                                                k(bf2, bf3) += 0.25 * D(bf1, bf4) * value_scal_by_deg;
-                                            }
-                                            else if constexpr(kind == SpinorbitalKind::Unrestricted) {
-
-                                                ja(bf1, bf2) +=
-                                                    (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
-                                                ja(bf3, bf4) +=
-                                                    (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
-
-                                                jb(bf1, bf2) +=
-                                                    (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
-                                                jb(bf3, bf4) +=
-                                                    (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
-
-                                                ka(bf1, bf3) += 0.5 * Da(bf2, bf4) * value_scal_by_deg;
-                                                ka(bf2, bf4) += 0.5 * Da(bf1, bf3) * value_scal_by_deg;
-                                                ka(bf1, bf4) += 0.5 * Da(bf2, bf3) * value_scal_by_deg;
-                                                ka(bf2, bf3) += 0.5 * Da(bf1, bf4) * value_scal_by_deg;
-
-                                                kb(bf1, bf3) += 0.5 * Db(bf2, bf4) * value_scal_by_deg;
-                                                kb(bf2, bf4) += 0.5 * Db(bf1, bf3) * value_scal_by_deg;
-                                                kb(bf1, bf4) += 0.5 * Db(bf2, bf3) * value_scal_by_deg;
-                                                kb(bf2, bf3) += 0.5 * Db(bf1, bf4) * value_scal_by_deg;
-                                            }
-                                            else if constexpr(kind == SpinorbitalKind::General) {
-                                                j(bf1, bf2) += 2 * D(bf3, bf4) * value_scal_by_deg;
-                                                j(bf3, bf4) += 2 * D(bf1, bf2) * value_scal_by_deg;
-                                                j(n + bf1, n + bf2) += 2 * D(n + bf3, n + bf4) * value_scal_by_deg;
-                                                j(n + bf3, n + bf4) += 2 * D(n + bf1, n + bf2) * value_scal_by_deg;
-
-                                                k(bf1, bf3) += 0.5 * D(bf2, bf4) * value_scal_by_deg;
-                                                k(bf2, bf4) += 0.5 * D(bf1, bf3) * value_scal_by_deg;
-                                                k(bf1, bf4) += 0.5 * D(bf2, bf3) * value_scal_by_deg;
-                                                k(bf2, bf3) += 0.5 * D(bf1, bf4) * value_scal_by_deg;
-
-                                                k(n + bf1, n + bf3) += 0.5 * D(n + bf2, n + bf4) * value_scal_by_deg;
-                                                k(n + bf2, n + bf4) += 0.5 * D(n + bf1, n + bf3) * value_scal_by_deg;
-                                                k(n + bf1, n + bf4) += 0.5 * D(n + bf2, n + bf3) * value_scal_by_deg;
-                                                k(n + bf2, n + bf3) += 0.5 * D(n + bf1, n + bf4) * value_scal_by_deg;
-
-                                                k(n + bf1, bf3) += 0.5 * D(n + bf2, bf4) * value_scal_by_deg;
-                                                k(n + bf2, bf4) += 0.5 * D(n + bf1, bf3) * value_scal_by_deg;
-                                                k(n + bf1, bf4) += 0.5 * D(n + bf2, bf3) * value_scal_by_deg;
-                                                k(n + bf2, bf3) += 0.5 * D(n + bf1, bf4) * value_scal_by_deg;
-                                                k(bf1, n + bf3) += 0.5 * D(n + bf2, bf4) * value_scal_by_deg;
-                                                k(bf2, n + bf4) += 0.5 * D(n + bf1, bf3) * value_scal_by_deg;
-                                                k(bf1, n + bf4) += 0.5 * D(n + bf2, bf3) * value_scal_by_deg;
-                                                k(bf2, n + bf3) += 0.5 * D(n + bf1, bf4) * value_scal_by_deg;
-
-                                                k(n + bf1, bf3) += 0.5 * D(bf2, n + bf4) * value_scal_by_deg;
-                                                k(n + bf2, bf4) += 0.5 * D(bf1, n + bf3) * value_scal_by_deg;
-                                                k(n + bf1, bf4) += 0.5 * D(bf2, n + bf3) * value_scal_by_deg;
-                                                k(n + bf2, bf3) += 0.5 * D(bf1, n + bf4) * value_scal_by_deg;
-                                                k(bf1, n + bf3) += 0.5 * D(bf2, n + bf4) * value_scal_by_deg;
-                                                k(bf2, n + bf4) += 0.5 * D(bf1, n + bf3) * value_scal_by_deg;
-                                                k(bf1, n + bf4) += 0.5 * D(bf2, n + bf3) * value_scal_by_deg;
-                                                k(bf2, n + bf3) += 0.5 * D(bf1, n + bf4) * value_scal_by_deg;
-                                            }
-                                        }
-                                    }
-                                }
+                                k(n + bf1, bf3) += 0.5 * D(bf2, n + bf4) * value;
+                                k(n + bf2, bf4) += 0.5 * D(bf1, n + bf3) * value;
+                                k(n + bf1, bf4) += 0.5 * D(bf2, n + bf3) * value;
+                                k(n + bf2, bf3) += 0.5 * D(bf1, n + bf4) * value;
+                                k(bf1, n + bf3) += 0.5 * D(bf2, n + bf4) * value;
+                                k(bf2, n + bf4) += 0.5 * D(bf1, n + bf3) * value;
+                                k(bf1, n + bf4) += 0.5 * D(bf2, n + bf3) * value;
+                                k(bf2, n + bf3) += 0.5 * D(bf1, n + bf4) * value;
                             }
                         }
                     }
                 }
             }
         }; // end of lambda
+        two_electron_integral_helper<kind>(lambda, obs, shellpair_list, shellpair_data, D, precision, Schwarz);
 
-        occ::timing::start(occ::timing::category::ints2e);
-        occ::parallel::parallel_do(lambda);
-        occ::timing::stop(occ::timing::category::ints2e);
 
         // accumulate contributions from all threads
         for (auto i = 1; i < nthreads; ++i) {
@@ -511,168 +431,63 @@ public:
     {
         occ::timing::start(occ::timing::category::jmat);
         const auto n = obs.nbf();
-        const auto nshells = obs.size();
         using occ::parallel::nthreads;
         std::vector<Mat> J(nthreads, Mat::Zero(D.rows(), D.cols()));
-        Mat D_shblk_norm = compute_shellblock_norm(obs, D.block(0, 0, n, n));
-
-        if constexpr(kind == SpinorbitalKind::Unrestricted) {
-            assert((D.rows() == 2 * n) && (D.cols() ==n) && "Unrestricted density matrix must be 2 nbf x nbf");
-            size_t beta_rows = D.beta().rows();
-            size_t beta_cols = D.beta().cols();
-            D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta()));
-        }
-        else if constexpr(kind == SpinorbitalKind::General) {
-            assert((D.rows() == 2 * n) && (D.cols() ==n) && "General density matrix must be 2 nbf x 2 nbf");
-            D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.alpha_beta()));
-            D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta_alpha()));
-            D_shblk_norm = D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta_beta()));
-        }
-        const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
-        double max_coeff = D_shblk_norm.maxCoeff();
-
-        auto fock_precision = precision;
-        // engine precision controls primitive truncation, assume worst-case scenario
-        // (all primitive combinations add up constructively)
-        auto max_nprim = obs.max_nprim();
-        auto max_nprim4 = max_nprim * max_nprim * max_nprim * max_nprim;
-        auto engine_precision = std::min(
-            fock_precision / max_coeff,
-            std::numeric_limits<double>::epsilon()) / max_nprim4;
-        assert(engine_precision > max_engine_precision &&
-               "using precomputed shell pair data limits the max engine precision"
-               " ... make max_engine_precision smaller and recompile");
-
-
-        auto& engines = m_coulomb_engines;
-        for(int i = 0; i < nthreads; ++i) engines[i].set_precision(engine_precision); // shellset-dependent precision
-        std::atomic<size_t> num_ints_computed{0};
 
         auto shell2bf = obs.shell2bf();
 
-        auto lambda = [&](int thread_id) {
-            auto &engine = engines[thread_id];
+        auto lambda = [&](int thread_id,
+                int bf1_first, int n1, 
+                int bf2_first, int n2,
+                int bf3_first, int n3,
+                int bf4_first, int n4,
+                const double * buffer, double scale)
+        {
             auto &j = J[thread_id];
             auto ja = j.alpha();
             auto jb = j.beta();
             const auto Da = D.alpha();
             const auto Db = D.beta();
-            const auto &buf = engine.results();
-            // loop over permutationally-unique set of shells
-            for (size_t s1 = 0, s1234 = 0; s1 != nshells; ++s1) {
-                auto bf1_first = shell2bf[s1]; // first basis function in this shell
-                auto n1 = obs[s1].size();      // number of basis functions in this shell
+            for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1)
+            {
+                const auto bf1 = f1 + bf1_first;
+                for (auto f2 = 0; f2 != n2; ++f2)
+                {
+                    const auto bf2 = f2 + bf2_first;
+                    for (auto f3 = 0; f3 != n3; ++f3)
+                    {
+                        const auto bf3 = f3 + bf3_first;
+                        for (auto f4 = 0; f4 != n4; ++f4, ++f1234)
+                        {
+                            const auto bf4 = f4 + bf4_first;
+                            const auto value = buffer[f1234] * scale;
 
-                auto sp12_iter = shellpair_data.at(s1).begin();
+                            if constexpr(kind == SpinorbitalKind::Restricted) {
+                                j(bf1, bf2) += D(bf3, bf4) * value;
+                                j(bf3, bf4) += D(bf1, bf2) * value;
+                            }
+                            else if constexpr(kind == SpinorbitalKind::Unrestricted) {
 
-                for (const auto &s2 : shellpair_list.at(s1)) {
-                    auto bf2_first = shell2bf[s2];
-                    auto n2 = obs[s2].size();
+                                ja(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value;
+                                ja(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value;
 
-                    const auto *sp12 = sp12_iter->get();
-                    ++sp12_iter;
+                                jb(bf1, bf2) += (Da(bf3, bf4) + Db(bf3, bf4)) * value;
+                                jb(bf3, bf4) += (Da(bf1, bf2) + Db(bf1, bf2)) * value;
+                            }
+                            else if constexpr(kind == SpinorbitalKind::General) {
+                                j(bf1, bf2) += 2 * D(bf3, bf4) * value;
+                                j(bf3, bf4) += 2 * D(bf1, bf2) * value;
 
-                    const auto Dnorm12 = do_schwarz_screen ? D_shblk_norm(s1, s2) : 0.;
-
-                    for (auto s3 = 0; s3 <= s1; ++s3) {
-                        auto bf3_first = shell2bf[s3];
-                        auto n3 = obs[s3].size();
-
-                        const auto Dnorm123 =
-                                do_schwarz_screen
-                                ? std::max(D_shblk_norm(s1, s3),
-                                           std::max(D_shblk_norm(s2, s3), Dnorm12))
-                                : 0.;
-
-                        auto sp34_iter = shellpair_data.at(s3).begin();
-
-                        const auto s4_max = (s1 == s3) ? s2 : s3;
-                        for (const auto &s4 : shellpair_list.at(s3)) {
-                            if (s4 > s4_max)
-                                break; // for each s3, s4 are stored in monotonically increasing order
-
-                            // must update the iter even if going to skip s4
-                            const auto *sp34 = sp34_iter->get();
-                            ++sp34_iter;
-
-                            if ((s1234++) % nthreads != thread_id)
-                                continue;
-
-                            const auto Dnorm1234 =
-                                    do_schwarz_screen
-                                    ? std::max(D_shblk_norm(s1, s4),
-                                        std::max(D_shblk_norm(s2, s4),
-                                          std::max(D_shblk_norm(s3, s4), Dnorm123)))
-                                    : 0.0;
-
-                            if (do_schwarz_screen && Dnorm1234 * Schwarz(s1, s2) * Schwarz(s3, s4) < fock_precision)
-                                continue;
-
-                            auto bf4_first = shell2bf[s4];
-                            auto n4 = obs[s4].size();
-
-                            num_ints_computed += n1 * n2 * n3 * n4;
-
-                            // compute the permutational degeneracy (i.e. # of equivalents) of
-                            // the given shell set
-                            auto s12_deg = (s1 == s2) ? 1 : 2;
-                            auto s34_deg = (s3 == s4) ? 1 : 2;
-                            auto s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1 : 2) : 2;
-                            auto s1234_deg = s12_deg * s34_deg * s12_34_deg;
-
-                            engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
-                                        obs[s1], obs[s2], obs[s3], obs[s4], sp12, sp34);
-                            const auto *buf_1234 = buf[0];
-
-                            if (buf_1234 == nullptr) continue; // if all integrals screened out, skip to next quartet
-
-                            for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1) {
-                                const auto bf1 = f1 + bf1_first;
-                                for (auto f2 = 0; f2 != n2; ++f2) {
-                                    const auto bf2 = f2 + bf2_first;
-                                    for (auto f3 = 0; f3 != n3; ++f3) {
-                                        const auto bf3 = f3 + bf3_first;
-                                        for (auto f4 = 0; f4 != n4; ++f4, ++f1234) {
-                                            const auto bf4 = f4 + bf4_first;
-
-                                            const auto value = buf_1234[f1234];
-
-                                            const auto value_scal_by_deg = value * s1234_deg;
-                                            if constexpr(kind == SpinorbitalKind::Restricted) {
-                                                j(bf1, bf2) += D(bf3, bf4) * value_scal_by_deg;
-                                                j(bf3, bf4) += D(bf1, bf2) * value_scal_by_deg;
-                                            }
-                                            else if constexpr(kind == SpinorbitalKind::Unrestricted) {
-
-                                                ja(bf1, bf2) +=
-                                                    (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
-                                                ja(bf3, bf4) +=
-                                                    (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
-
-                                                jb(bf1, bf2) +=
-                                                    (Da(bf3, bf4) + Db(bf3, bf4)) * value_scal_by_deg;
-                                                jb(bf3, bf4) +=
-                                                    (Da(bf1, bf2) + Db(bf1, bf2)) * value_scal_by_deg;
-                                            }
-                                            else if constexpr(kind == SpinorbitalKind::General) {
-                                                j(bf1, bf2) += 2 * D(bf3, bf4) * value_scal_by_deg;
-                                                j(bf3, bf4) += 2 * D(bf1, bf2) * value_scal_by_deg;
-                                                j(n + bf1, n + bf2) += 2 * D(n + bf3, n + bf4) * value_scal_by_deg;
-                                                j(n + bf3, n + bf4) += 2 * D(n + bf1, n + bf2) * value_scal_by_deg;
-                                            }
-                                        }
-                                    }
-                                }
+                                j(n + bf1, n + bf2) += 2 * D(n + bf3, n + bf4) * value;
+                                j(n + bf3, n + bf4) += 2 * D(n + bf1, n + bf2) * value;
                             }
                         }
                     }
                 }
             }
-        }; // end of lambda
+        };
 
-        occ::timing::start(occ::timing::category::ints2e);
-        occ::parallel::parallel_do(lambda);
-        occ::timing::stop(occ::timing::category::ints2e);
+        two_electron_integral_helper<kind>(lambda, obs, shellpair_list, shellpair_data, D, precision, Schwarz);
 
         // accumulate contributions from all threads
         for (auto i = 1; i < nthreads; ++i) {

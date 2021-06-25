@@ -220,7 +220,7 @@ GTOValues<max_derivative> evaluate_basis_gau2grid(const BasisSet &basis,
                                          const occ::Mat &grid_pts)
 {
     GTOValues<max_derivative> gto_values(basis.nbf(), grid_pts.cols());
-    evaluate_basis_gau2grid(basis, atoms, grid_pts, gto_values);
+    evaluate_basis_gau2grid<max_derivative>(basis, atoms, grid_pts, gto_values);
     return gto_values;
 }
 
