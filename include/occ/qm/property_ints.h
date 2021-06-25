@@ -3,8 +3,7 @@
 #include <occ/core/parallel.h>
 #include <occ/qm/basisset.h>
 #include <libint2/engine.h>
-#include <occ/qm/spinorbital.h>
-#include <unordered_map>
+#include <occ/3rdparty/robin_hood.h>
 #include <vector>
 
 namespace occ::ints {
@@ -15,7 +14,7 @@ using libint2::BraKet;
 using libint2::Operator;
 using libint2::Shell;
 
-using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
+using shellpair_list_t = robin_hood::unordered_map<size_t, std::vector<size_t>>;
 using shellpair_data_t = std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>; // in same order as shellpair_list_t
 
 template<SpinorbitalKind kind>

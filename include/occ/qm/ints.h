@@ -3,9 +3,9 @@
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/basisset.h>
+#include <occ/3rdparty/robin_hood.h>
 #include <array>
 #include <libint2/engine.h>
-#include <unordered_map>
 #include <vector>
 
 namespace occ::ints {
@@ -14,7 +14,7 @@ using libint2::BraKet;
 using libint2::Operator;
 using libint2::Shell;
 
-using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
+using shellpair_list_t = robin_hood::unordered_map<size_t, std::vector<size_t>>;
 using shellpair_data_t = std::vector<std::vector<
     std::shared_ptr<libint2::ShellPair>>>; // in same order as shellpair_list_t
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;

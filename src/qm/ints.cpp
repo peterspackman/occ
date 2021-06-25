@@ -115,7 +115,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
     for (size_t s1 = 0, s12 = 0; s1 != nsh1; ++s1) {
       mx.lock();
       if (splist.find(s1) == splist.end())
-        splist.insert(std::make_pair(s1, std::vector<size_t>()));
+        splist[s1] = {};
       mx.unlock();
 
       auto n1 = bs1[s1].size(); // number of basis functions in this shell
