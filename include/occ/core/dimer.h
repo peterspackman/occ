@@ -21,6 +21,7 @@ public:
   double center_of_mass_distance() const;
   double nearest_distance() const;
   std::optional<occ::Mat4> symmetry_relation() const;
+  Vec3 v_ab() const;
 
   const Vec vdw_radii() const;
   IVec atomic_numbers() const;

@@ -1,5 +1,5 @@
-#include <occ/core/timings.h>
 #include <fmt/core.h>
+#include <occ/core/timings.h>
 
 namespace occ::timing {
 

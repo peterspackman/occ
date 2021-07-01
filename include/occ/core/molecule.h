@@ -41,6 +41,7 @@ public:
   const std::string &name() const { return m_name; }
 
   Vec interatomic_distances() const;
+  const auto& elements() const { return m_elements; }
   const Mat3N &positions() const { return m_positions; }
   const IVec &atomic_numbers() const { return m_atomicNumbers; }
   const Vec vdw_radii() const;

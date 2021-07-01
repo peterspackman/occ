@@ -71,7 +71,7 @@ public:
     }
 
     void clear_all() {
-        for(auto t=0; t != ntimers; ++t) {
+        for(auto t = 0; t != ntimers; ++t) {
             m_timers[t] = duration_t::zero();
             m_tstart[t] = time_point_t();
         }

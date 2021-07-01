@@ -24,6 +24,13 @@ double Dimer::nearest_distance() const
     return std::get<2>(m_a.nearest_atom(m_b));
 }
 
+Vec3 Dimer::v_ab() const
+{
+    Vec3 o_a = m_a.centroid();
+    Vec3 o_b = m_b.centroid();
+    return o_b - o_a;
+}
+
 std::optional<occ::Mat4> Dimer::symmetry_relation() const
 {
     if(!m_a.comparable_to(m_b)) return std::nullopt;

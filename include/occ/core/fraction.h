@@ -27,10 +27,10 @@ public:
   const Fraction operator-(const Fraction &) const;
   const Fraction operator*(const Fraction &)const;
   const Fraction operator/(const Fraction &) const;
-  bool operator==(const Fraction &) const;
-  bool operator==(int64_t) const;
-  bool operator<(const Fraction &) const;
-  bool operator<=(const Fraction &) const;
+  auto operator==(const Fraction &) const -> bool;
+  auto operator==(int64_t) const -> bool;
+  auto operator<(const Fraction &) const -> bool;
+  auto operator<=(const Fraction &) const -> bool;
 
 private:
   int64_t m_numerator{0};
