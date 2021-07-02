@@ -8,6 +8,7 @@
 #include <occ/qm/scf.h>
 #include <occ/solvent/solvation_correction.h>
 #include <occ/core/units.h>
+#include <occ/core/constants.h>
 #include <occ/3rdparty/argparse.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -142,6 +143,17 @@ void print_configuration(const Molecule &m, const InputConfiguration &config)
     fmt::print("Input basis name: '{}'\n", config.basis_name);
     fmt::print("Total charge: {}\n", config.charge);
     fmt::print("System multiplicity: {}\n", config.multiplicity);
+    occ::Mat3 iner = occ::inertia_tensor(m.atomic_masses(), m.positions());
+    fmt::print("\nInertia Tensor (amu angstrom^2)\n{}\n", iner);
+    Eigen::SelfAdjointEigenSolver<occ::Mat3> solver(iner);
+    occ::Vec3 moments = solver.eigenvalues();
+    fmt::print("\nPrincipal moments of inertia\n{}\n", moments);
+    occ::Vec3 moments_gcm = 1e-16 * moments.array() / occ::constants::avogadro<double>;
+    occ::Vec3 rotational_constants = 1e5 * occ::constants::planck<double> / (
+        8 * occ::constants::pi<double> * occ::constants::pi<double> *
+        occ::constants::speed_of_light<double> * moments_gcm.array()
+            );
+    fmt::print("\nRotational constants (cm^-1)\n{}\n\n", rotational_constants);
 }
 
 occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name)

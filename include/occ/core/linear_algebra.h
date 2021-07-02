@@ -69,4 +69,7 @@ std::tuple<Mat, Mat, double> conditioning_orthogonalizer(const Mat&, double);
 std::tuple<Mat, Mat, size_t, double, double>
 gensqrtinv(const Mat&, bool symmetric = false, double max_condition_number = 1e8);
 
+
+Mat3 inertia_tensor(Eigen::Ref<const Vec> masses, Eigen::Ref<const Mat3N> positions);
+
 }; // namespace occ
