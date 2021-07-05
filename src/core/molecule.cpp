@@ -4,6 +4,8 @@
 #include <fmt/core.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
+#include <occ/core/constants.h>
+#include <occ/core/logger.h>
 
 namespace occ::chem {
 
@@ -88,16 +90,82 @@ const Vec Molecule::atomic_masses() const
     return masses;
 }
 
-const occ::Vec3 Molecule::centroid() const
+Vec3 Molecule::centroid() const
 {
     return m_positions.rowwise().mean();
 }
 
-const occ::Vec3 Molecule::center_of_mass() const
+Vec3 Molecule::center_of_mass() const
 {
     occ::RowVec masses = atomic_masses();
     masses.array() /= masses.sum();
     return (m_positions.array().rowwise() * masses.array()).rowwise().sum();
+}
+
+
+Mat3 Molecule::inertia_tensor() const
+{
+    //amu angstrom^2
+    // 10^-46 kgm^2
+    // amu angstrom^2 to 10^-46 kgm^2
+    constexpr double kgm2_fac = 1e23 / occ::constants::avogadro<double>;
+    // unit is 10^-46 kg m^2
+    return occ::inertia_tensor(atomic_masses(), m_positions) * kgm2_fac;
+}
+
+
+Vec3 Molecule::principal_moments_of_inertia() const
+{
+    // unit is 10^-46 kg m^2
+    Mat3 T = inertia_tensor();
+    Eigen::SelfAdjointEigenSolver<occ::Mat3> solver(T);
+    return solver.eigenvalues();
+}
+
+
+Vec3 Molecule::rotational_constants() const
+{
+    // conversion factor from 10^-46 kgm^2 to amu angstrom^2 to GHz or cm^-1
+    constexpr double GHz_factor{505.379045961437 * 1e23 / occ::constants::avogadro<double>};
+    constexpr double per_cm_factor{16.8576304198232 * 1e23 / occ::constants::avogadro<double>};
+
+    return (GHz_factor / principal_moments_of_inertia().array()).unaryExpr(
+        [](double x) { return std::isfinite(x) ? x : 0.0; }
+    );
+}
+
+
+double Molecule::rotational_free_energy(double temperature) const
+{
+    // unit is 10^-46 kg m^2
+    Vec3 r = principal_moments_of_inertia();
+    // linear
+    double lnZr;
+    if(r(0) < 1e-12)
+    {
+        double inertia_product = r(2) / 16.60538921;
+        lnZr = std::log(inertia_product) * std::log(temperature) + 1.418;
+    }
+    else
+    {
+        double inertia_product = r(0) * r(1) * r(2) / std::pow(16.60538921, 3);
+        lnZr = 0.5 * std::log(inertia_product)  + 1.5 * std::log(temperature) + 1.5 * 1.418;
+    }
+    occ::log::debug("Rotational partition function: {: 12.6f}\n", lnZr);
+    return - occ::constants::boltzmann<double> * temperature * lnZr * occ::constants::avogadro<double> / 1000;
+}
+
+double Molecule::translational_free_energy(double temperature) const
+{
+    // unit is 10^-46 kg m^2
+    constexpr double pressure{1.0};
+    // will need update for CODATA 2018, due to change from amu to g
+    double total_mass = atomic_masses().array().sum();
+    double lnZt = 1.5 * std::log(total_mass) + 2.5 * std::log(temperature) - std::log(pressure) + 51.104;
+    occ::log::debug("Translational partition function: {: 12.6f}\n", lnZt);
+    double Gt = - occ::constants::boltzmann<double> * temperature * lnZt;
+    double Gn = occ::constants::boltzmann<double>  * temperature * std::log(occ::constants::avogadro<double>);
+    return (Gt + Gn) * occ::constants::avogadro<double> / 1000;
 }
 
 

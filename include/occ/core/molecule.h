@@ -48,8 +48,14 @@ public:
   const Vec atomic_masses() const;
   std::vector<libint2::Atom> atoms() const;
 
-  const occ::Vec3 centroid() const;
-  const occ::Vec3 center_of_mass() const;
+  Vec3 centroid() const;
+  Vec3 center_of_mass() const;
+  Mat3 inertia_tensor() const;
+  Vec3 principal_moments_of_inertia() const;
+  Vec3 rotational_constants() const;
+  double rotational_free_energy(double) const;
+  double translational_free_energy(double) const;
+
 
   std::tuple<size_t, size_t, double> nearest_atom(const Molecule&) const;
 
