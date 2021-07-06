@@ -9,10 +9,10 @@
 #include <occ/qm/wavefunction.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/point_charge.h>
+#include <occ/qm/guess_density.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <libint2/chemistry/sto3g_atomic_density.h>
 #include <tuple>
 #include <optional>
 
@@ -180,7 +180,7 @@ struct SCF {
         size_t nao = 0;
         for (const auto &atom : atoms()) {
             const auto Z = atom.atomic_number;
-            nao += libint2::sto3g_num_ao(Z);
+            nao += occ::qm::guess::minimal_basis_nao(Z);
         }
 
         // compute the minimal basis density
@@ -188,7 +188,7 @@ struct SCF {
         size_t ao_offset = 0; // first AO of this atom
         for (const auto &atom : atoms()) {
             const auto Z = atom.atomic_number;
-            const auto &occvec = libint2::sto3g_ao_occupation_vector(Z);
+            const auto occvec = occ::qm::guess::minimal_basis_occupation_vector(Z);
             for (const auto &occ : occvec) {
                 D_minbs(ao_offset, ao_offset) = occ;
                 ++ao_offset;
