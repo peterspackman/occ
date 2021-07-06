@@ -36,7 +36,7 @@ enum category {
     _group_count
 };
 
-template <size_t count>
+template <size_t count = 1>
 class StopWatch {
 public:
 
@@ -54,19 +54,19 @@ public:
         m_overhead = std::chrono::nanoseconds(ns);
     }
 
-    time_point_t start(size_t t) {
+    time_point_t start(size_t t = 0) {
         m_tstart[t] = now();
         return m_tstart[t];
     }
 
-    duration_t stop(size_t t) {
+    duration_t stop(size_t t = 0) {
         const auto tstop = now();
         const duration_t result = (tstop - m_tstart[t]) - m_overhead;
         m_timers[t] += result;
         return result;
     }
 
-    double read(size_t t) const {
+    double read(size_t t = 0) const {
         return m_timers[t].count();
     }
 

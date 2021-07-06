@@ -14,6 +14,7 @@
 #include <occ/solvent/solvation_correction.h>
 #include <filesystem>
 #include <occ/core/units.h>
+#include <occ/core/timings.h>
 #include <fmt/os.h>
 
 namespace fs = std::filesystem;
@@ -147,17 +148,17 @@ std::vector<SolvatedSurfaceProperties> calculate_solvated_surfaces(
         auto elec = proc_solv.surface_electronic_energy_elements(SpinorbitalKind::Restricted, scf.D);
         auto pol = proc_solv.surface_polarization_energy_elements();
         props.e_coulomb = nuc + elec + pol;
-        fmt::print("e_nuc {:12.6f}\n", nuc.array().sum());
-        fmt::print("e_ele {:12.6f}\n", elec.array().sum());
-        fmt::print("e_pol {:12.6f}\n", pol.array().sum());
-        fmt::print("e_cds {:12.6f}\n", props.e_cds.array().sum());
+        occ::log::debug("sum e_nuc {:12.6f}\n", nuc.array().sum());
+        occ::log::debug("sum e_ele {:12.6f}\n", elec.array().sum());
+        occ::log::debug("sum e_pol {:12.6f}\n", pol.array().sum());
+        occ::log::debug("sum e_cds {:12.6f}\n", props.e_cds.array().sum());
         double esolv = nuc.array().sum() + 
                 elec.array().sum() + 
                 pol.array().sum() + 
                 props.e_cds.array().sum();
 
         props.esolv = esolv;
-        fmt::print("Solvation energy = {:12.6f} ({:.3f} kJ/mol)\n", esolv, esolv * occ::units::AU_TO_KJ_PER_MOL);
+        occ::log::debug("total e_solv {:12.6f} ({:.3f} kJ/mol)\n", esolv, esolv * occ::units::AU_TO_KJ_PER_MOL);
         result.push_back(props);
     }
 
@@ -171,7 +172,7 @@ void compute_monomer_energies(std::vector<Wavefunction> &wfns)
     size_t complete = 0;
     for(auto& wfn : wfns)
     {
-        fmt::print("Calculating monomer energies {}/{}\n", complete, wfns.size());
+        fmt::print("Calculating unique monomer energies for molecule {}\n", complete, wfns.size());
         std::cout << std::flush;
         HartreeFock hf(wfn.atoms, wfn.basis);
         occ::interaction::compute_ce_model_energies(wfn, hf);
@@ -379,6 +380,8 @@ int main(int argc, const char **argv) {
     double radius = 0.0;
     bool dump_visualization_files = false;
     std::string solvent{"water"};
+    occ::timing::StopWatch global_timer;
+    global_timer.start();
 
     try {
         parser.parse_args(argc, argv);
@@ -400,17 +403,48 @@ int main(int argc, const char **argv) {
 
     const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
     try {
+        occ::timing::StopWatch sw;
+
+        sw.start();
         std::string filename = parser.get<std::string>("input");
         std::string basename = fs::path(filename).stem();
         Crystal c = read_crystal(filename);
-        fmt::print("Loaded crystal from {}\n", filename);
+        sw.stop();
+        double tprev = sw.read();
+        fmt::print("Loaded crystal from {} in {:.6f} seconds\n", filename, tprev);
+
+        sw.start();
         auto molecules = c.symmetry_unique_molecules();
-        fmt::print("Symmetry unique molecules in {}: {}\n", filename, molecules.size());
+        sw.stop();
+
+        fmt::print("Found {} symmetry unique molecules in {} in {:.6f} seconds\n", molecules.size(), filename, sw.read() - tprev);
+
+        tprev = sw.read();
+        sw.start();
         auto wfns = calculate_wavefunctions(basename, molecules);
+        sw.stop();
+
+        fmt::print("Gas phase wavefunctions took {:.6f} seconds\n", sw.read() - tprev);
+
+        tprev = sw.read();
+        sw.start();
         auto surfaces = calculate_solvated_surfaces(basename, wfns, solvent);
+        sw.stop();
+        fmt::print("Solution phase wavefunctions took {:.6f} seconds\n", sw.read() - tprev);
+
+        tprev = sw.read();
+        sw.start();
         compute_monomer_energies(wfns);
+        sw.stop();
+        fmt::print("Computing monomer energies took {:.6f} seconds\n", sw.read() - tprev);
+
+        tprev = sw.read();
+        sw.start();
         auto crystal_dimers = c.symmetry_unique_dimers(radius);
+        sw.stop();
+
         const auto &dimers = crystal_dimers.unique_dimers;
+        fmt::print("Found {} symmetry unique dimers in {:.6f} seconds\n", dimers.size(), sw.read() - tprev);
 
         if(dimers.size() < 1)
         {
@@ -423,17 +457,24 @@ int main(int argc, const char **argv) {
         std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
 
         fmt::print("Calculating unique pair interactions\n");
+        size_t current_dimer = 0;
         for(const auto& dimer: dimers)
         {
             auto s_ab = dimer_symop(dimer, c);
             write_xyz_dimer(fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()), dimer);
-            fmt::print("Rn: {: 7.3f} Rc: {: 7.3f} symop: {}\n", 
+            tprev = sw.read();
+            sw.start();
+            fmt::print("{}. Rn: {: 7.3f} Rc: {: 7.3f} symop: {}", 
+                       current_dimer++,
                        dimer.nearest_distance(),
                        dimer.center_of_mass_distance(),
                        s_ab); 
 
             std::cout << std::flush;
             dimer_energies.push_back(calculate_interaction_energy(dimer, wfns, c));
+            sw.stop();
+            fmt::print("  took {:.6f} seconds\n", sw.read() - tprev);
+            std::cout << std::flush;
         }
         fmt::print("Finished calculating {} unique dimer interaction energies\n", dimer_energies.size());
 
@@ -448,6 +489,8 @@ int main(int argc, const char **argv) {
             }
             auto solv = compute_solvation_energy_breakdown(surfaces[i], n, solvent);
             auto crystal_contributions = assign_interaction_terms_to_nearest_neighbours(i, solv, crystal_dimers, dimer_energies);
+            double Gr = molecules[i].rotational_free_energy(298.15);
+            double Gt = molecules[i].translational_free_energy(298.15);
 
             fmt::print("Neighbors for molecule {}\n", i);
 
@@ -493,10 +536,14 @@ int main(int argc, const char **argv) {
                            etot + crystal_contributions[j] - (solv[j].first + solv[j].second) * AU_TO_KJ_PER_MOL);
                 j++;
             }
-            fmt::print("Total: {:.3f} kJ/mol\n", total.total);
-            fmt::print("Lattice energy estimate: {:.3f} kJ/mol\n", 0.5 * total.total);
-            fmt::print("Solvation free energy estimate: {:.3f} kJ/mol\n", surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL);
-            fmt::print("E_solv - E_lat: {:.3f} kJ/mol\n", surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL - 0.5 * total.total);
+            fmt::print("\nFree energy estimates at T = 298.15 K, P = 1 atm., units: kJ/mol\n");
+            fmt::print("-------------------------------------------------------\n");
+            fmt::print("lattice energy (crystal)             {: 9.3f}  (E_lat)\n", 0.5 * total.total);
+            fmt::print("rotational free energy (molecule)    {: 9.3f}  (E_rot)\n", Gr);
+            fmt::print("translational free energy (molecule) {: 9.3f}  (E_trans)\n", Gt);
+            fmt::print("solvation free energy (molecule)     {: 9.3f}  (E_solv)\n", surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL);
+            fmt::print("E_solv - E_lat:                      {: 9.3f}\n", surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL - 0.5 * total.total);
+            fmt::print("solubility                           {: 9.3f}\n", surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL - 0.5 * total.total + Gr + Gt);
         }
 
      } catch (const char *ex) {
@@ -512,6 +559,9 @@ int main(int argc, const char **argv) {
         fmt::print("Exception:\n- Unknown...\n");
         return 1;
     }
+
+    global_timer.stop();
+    fmt::print("Program exiting successfully after {:.6f} seconds\n", global_timer.read());
    
     return 0;
 }

@@ -143,7 +143,7 @@ void print_configuration(const Molecule &m, const InputConfiguration &config)
     fmt::print("Input basis name: '{}'\n", config.basis_name);
     fmt::print("Total charge: {}\n", config.charge);
     fmt::print("System multiplicity: {}\n", config.multiplicity);
-    fmt::print("Inertia Tensor (amu angstrom^2)\n{}\n\n", m.inertia_tensor());
+    fmt::print("Inertia Tensor (x 10^-46 kg m^2)\n{}\n\n", m.inertia_tensor());
     fmt::print("Principal moments of inertia\n{}\n\n", m.principal_moments_of_inertia());
     fmt::print("Rotational constants (GHz)\n{}\n\n", m.rotational_constants());
     fmt::print("Rotational free energy      {: 12.6f} kJ/mol\n", m.rotational_free_energy(occ::constants::celsius<double> + 25));

@@ -144,7 +144,7 @@ public:
         double ecoul, exc;
         double exchange_factor = exact_exchange_factor();
 
-        constexpr size_t BLOCKSIZE = 128;
+        constexpr size_t BLOCKSIZE = 64;
         double total_density_a{0.0}, total_density_b{0.0};
         const auto& D2 = 2 * D;
         DensityFunctional::Family family{DensityFunctional::Family::LDA};
