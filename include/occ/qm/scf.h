@@ -337,7 +337,8 @@ struct SCF {
                 F.beta() = F.alpha();
             }
             else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
-                F.alpha_alpha() += 2 * occ::ints::compute_2body_fock_mixed_basis(
+                // TODO fix multiplicity != 1
+                F.alpha_alpha() += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
                     commutator_convergence_threshold
                 );
