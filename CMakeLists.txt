@@ -18,6 +18,7 @@ find_package(Boost CONFIG COMPONENTS graph)
 find_package(Libint2 CONFIG REQUIRED)
 find_package(Libxc CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
+find_package(Threads REQUIRED)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/fmt" EXCLUDE_FROM_ALL)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/scnlib" EXCLUDE_FROM_ALL)
