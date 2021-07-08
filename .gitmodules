@@ -1,12 +1,6 @@
 [submodule "3rdparty/gemmi"]
 	path = 3rdparty/gemmi
 	url = https://github.com/project-gemmi/gemmi.git
-[submodule "3rdparty/fmt"]
-	path = 3rdparty/fmt
-	url = https://github.com/fmtlib/fmt
-[submodule "3rdparty/spdlog"]
-	path = 3rdparty/spdlog
-	url = https://github.com/gabime/spdlog
 [submodule "3rdparty/scnlib"]
 	path = 3rdparty/scnlib
 	url = https://github.com/eliaskosunen/scnlib
