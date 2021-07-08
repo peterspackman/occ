@@ -25,8 +25,6 @@ FetchContent_Declare(Libint2
 )
 FetchContent_MakeAvailable(Libint2)
 add_library(Libint2::cxx ALIAS libint2_cxx)
-else()
-find_package(Libint2 CONFIG REQUIRED)
 endif()
 
 if(NOT "${USE_SYSTEM_LIBXC}")
@@ -40,6 +38,4 @@ FetchContent_Declare(Libxc
 FetchContent_MakeAvailable(Libxc)
 add_library(Libxc::xc ALIAS xc)
 unset(BUILD_TESTING)
-else()
-find_package(Libxc CONFIG REQUIRED)
 endif()

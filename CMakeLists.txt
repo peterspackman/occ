@@ -10,7 +10,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(WITH_BENCHMARKS "Enable benchmarking tests" OFF)
     option(WITH_CLANG_TIDY "Enable clang tidy" OFF)
     option(USE_SYSTEM_LIBINT2 "Use Libint2 installed on system" ON)
-    option(USE_SYSTEM_LIBXC "Use LibXC installed on system" OFF)
+    option(USE_SYSTEM_LIBXC "Use LibXC installed on system" ON)
 endif()
 
 find_package(LAPACK REQUIRED)
@@ -19,6 +19,16 @@ find_package(Eigen3 CONFIG REQUIRED)
 find_package(Boost CONFIG COMPONENTS graph)
 find_package(ZLIB REQUIRED)
 find_package(Threads REQUIRED)
+
+if("${USE_SYSTEM_LIBINT2}")
+    find_package(Libint2 CONFIG REQUIRED)
+endif()
+
+if("${USE_SYSTEM_LIBXC}")
+    find_package(Libxc CONFIG REQUIRED)
+endif()
+
+
 
 set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "Use fmt from 3rdparty directory" FORCE)
 add_subdirectory(3rdparty)
