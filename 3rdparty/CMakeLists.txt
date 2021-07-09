@@ -17,6 +17,30 @@ FetchContent_Declare(spdlog
 )
 FetchContent_MakeAvailable(spdlog)
 
+FetchContent_Declare(scnlib
+    GIT_REPOSITORY https://github.com/eliaskosunen/scnlib.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(scnlib)
+
+FetchContent_Declare(gau2grid
+    GIT_REPOSITORY https://github.com/dgasmith/gau2grid.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(gau2grid)
+
+FetchContent_Declare(toml11
+    GIT_REPOSITORY https://github.com/ToruNiina/toml11.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(toml11)
+
 
 if(NOT "${USE_SYSTEM_LIBINT2}")
 set(LIBINT2_URL "https://github.com/evaleev/libint/releases/download/v2.7.0-beta.6/libint-2.7.0-beta.6.tgz")
@@ -39,3 +63,5 @@ FetchContent_MakeAvailable(Libxc)
 add_library(Libxc::xc ALIAS xc)
 unset(BUILD_TESTING)
 endif()
+
+

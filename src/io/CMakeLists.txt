@@ -12,11 +12,11 @@ target_link_libraries(occ_io
     PUBLIC 
     occ_core
     occ_qm
+    toml11::toml11
 )
 target_include_directories(occ_io PUBLIC 
     ${OCC_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
-    ${TOML_INCLUDE_DIR}
 )
 
 target_compile_features(occ_io PUBLIC cxx_std_17)
