@@ -1,7 +1,6 @@
 #include <occ/core/eigenp.h>
 #include <occ/core/logger.h>
 #include <filesystem>
-#include <occ/3rdparty/argparse.hpp>
 #include <occ/slater/thakkar.h>
 #include <fmt/ostream.h>
 #include <occ/core/molecule.h>
@@ -10,6 +9,7 @@
 #include <occ/core/interpolator.h>
 #include <occ/core/units.h>
 #include <occ/3rdparty/robin_hood.h>
+#include <cxxopts.hpp>
 
 namespace fs = std::filesystem;
 using occ::chem::Molecule;
@@ -194,42 +194,35 @@ std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi> as_matrices(const HirshfeldBasis& 
 
 int main(int argc, char *argv[])
 {
-    argparse::ArgumentParser parser("occ");
-    parser.add_argument("input").help("Input file geometry");
-    parser.add_argument("--minimum-separation", "-s")
-            .help("Minimum separation")
-            .default_value(0.005)
-            .action([](const std::string& value) { return std::stod(value); });
-    parser.add_argument("--maximum-separation", "-S")
-            .help("Maximum separation")
-            .default_value(0.1)
-            .action([](const std::string& value) { return std::stod(value); });
-    parser.add_argument("--environment").help("environment geometry");
-    parser.add_argument("-j", "--threads")
-            .help("Number of threads")
-            .default_value(2)
-            .action([](const std::string& value) { return std::stoi(value); });
-    occ::log::set_level(occ::log::level::debug);
-    spdlog::set_level(spdlog::level::debug);
-    fs::path geometry_filename, environment_filename;
+    cxxopts::Options options("occ-hs", "Surface generation program");
     double minimum_separation = 0.05;
     double maximum_separation = 0.5;
 
+    fs::path geometry_filename, environment_filename;
+    options
+        .add_options()
+        ("i,input", "Input file geometry", cxxopts::value<fs::path>(geometry_filename))
+        ("s,minimum-separation", "Minimum separation", cxxopts::value<double>(minimum_separation))
+        ("S,maximum-separation", "Maximum separation", cxxopts::value<double>(maximum_separation))
+        ("e,environment", "Environment geometry for HS", cxxopts::value<fs::path>(environment_filename))
+        ("t,threads", "Number of threads", cxxopts::value<int>()->default_value("1"));
+
+    options.parse_positional({"input", "environment"});
+    occ::log::set_level(occ::log::level::debug);
+    spdlog::set_level(spdlog::level::debug);
+
     try {
-        parser.parse_args(argc, argv);
-        geometry_filename = parser.get<std::string>("input");
-        minimum_separation = parser.get<double>("--minimum-separation");
-        maximum_separation = parser.get<double>("--maximum-separation");
+        auto result = options.parse(argc, argv);
     }
     catch (const std::runtime_error& err) {
         occ::log::error("error when parsing command line arguments: {}", err.what());
-        fmt::print("{}", parser);
+        fmt::print("{}\n", options.help());
         exit(1);
     }
 
 
-    if(auto environment_geometry = parser.present("--environment")) {
-        environment_filename = *environment_geometry;
+    if(!environment_filename.empty())
+    {
         Molecule m1 = occ::chem::read_xyz_file(geometry_filename);
         Molecule m2 = occ::chem::read_xyz_file(environment_filename);
 

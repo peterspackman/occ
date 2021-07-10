@@ -2,7 +2,6 @@
 #include <occ/core/logger.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
-#include <occ/3rdparty/argparse.hpp>
 #include <occ/io/fchkreader.h>
 #include <occ/io/moldenreader.h>
 #include <fmt/ostream.h>
@@ -13,6 +12,7 @@
 #include <occ/interaction/polarization.h>
 #include <toml.hpp>
 #include <filesystem>
+#include <cxxopts.hpp>
 
 using occ::qm::Wavefunction;
 using occ::interaction::CEModelInteraction;

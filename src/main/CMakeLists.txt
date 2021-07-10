@@ -4,6 +4,7 @@ target_link_libraries(occ
     occ_qm
     occ_dft
     occ_solvent
+    cxxopts
 )
 set_target_properties(occ
     PROPERTIES
@@ -11,7 +12,7 @@ set_target_properties(occ
 )
 
 add_executable(occ-pair "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp")
-target_link_libraries(occ-pair PUBLIC occ_interaction)
+target_link_libraries(occ-pair PUBLIC occ_interaction cxxopts)
 set_target_properties(occ-pair
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
@@ -33,6 +34,7 @@ target_link_libraries(crystal_interactions
     occ_io
     occ_crystal
     occ_interaction
+    cxxopts
 )
 
 set_target_properties(crystal_interactions
@@ -46,6 +48,7 @@ target_link_libraries(hs
     occ_geometry
     occ_slater
     occ_solvent
+    cxxopts
 )
 set_target_properties(hs
     PROPERTIES
@@ -60,6 +63,7 @@ target_link_libraries(occ-elat
     occ_io
     occ_crystal
     occ_interaction
+    cxxopts
 )
 
 set_target_properties(occ-elat

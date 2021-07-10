@@ -9,7 +9,6 @@
 #include <occ/solvent/solvation_correction.h>
 #include <occ/core/units.h>
 #include <occ/core/constants.h>
-#include <occ/3rdparty/argparse.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <iostream>
@@ -18,6 +17,7 @@
 #include "boost/version.hpp"
 #include <spdlog/cfg/env.h>
 #include <filesystem>
+#include <cxxopts.hpp>
 
 namespace fs = std::filesystem;
 using occ::chem::Molecule;
@@ -212,56 +212,40 @@ Wavefunction run_from_gaussian_input_file(InputConfiguration &config)
 }
 
 
-int main(int argc, const char **argv) {
+int main(int argc, char *argv[]) {
     occ::timing::start(occ::timing::category::global);
     occ::timing::start(occ::timing::category::io);
-    argparse::ArgumentParser parser("occ");
-    parser.add_argument("input").help("Input file geometry");
-    parser.add_argument("-b", "--basis").help("Basis set name")
-            .default_value(std::string("3-21G"));
-    parser.add_argument("-j", "--threads")
-            .help("Number of threads")
-            .default_value(1)
-            .action([](const std::string& value) { return std::stoi(value); });
-    parser.add_argument("--method")
-            .default_value(std::string("rhf"));
+    cxxopts::Options options("occ", "A program for quantum chemistry");
+    options.positional_help("[input_file] [method] [basis]").show_positional_help();
+    
+    options
+        .add_options()
+        ("h,help", "Print help")
+        ("i,input", "Input file", cxxopts::value<std::string>())
+        ("b,basis", "Basis set name", cxxopts::value<std::string>()->default_value("3-21G"))
+        ("t,threads", "Number of threads", cxxopts::value<int>()->default_value("1"))
+        ("m,method", "QM method", cxxopts::value<std::string>()->default_value("rhf"))
+        ("c,charge", "System net charge", cxxopts::value<int>()->default_value("0"))
+        ("n,multiplicity", "System multiplicity", cxxopts::value<int>()->default_value("1"))
+        ("u,unrestricted", "Use unrestricted DFT", cxxopts::value<bool>()->default_value("false"))
+        ("v,verbosity", "Logging verbosity", cxxopts::value<std::string>()->default_value("WARN"))
+        ("s,solvent", "Use SMD solvation model with solvent", cxxopts::value<std::string>())
+        ("f,solvent-file", "Write solvation surface to file", cxxopts::value<std::string>());
 
-    parser.add_argument("-c", "--charge")
-            .help("System charge")
-            .default_value(0)
-            .action([](const std::string& value) { return std::stoi(value); });
+    options.parse_positional({"input", "method", "basis"});
 
-    parser.add_argument("-m", "--multiplicity")
-            .help("System multiplicity")
-            .default_value(1)
-            .action([](const std::string& value) { return std::stoi(value); });
+    auto result = options.parse(argc, argv);
 
-    parser.add_argument("--uks")
-            .help("Use unrestricted dft")
-            .default_value(false)
-            .implicit_value(true);
-
-    parser.add_argument("--log-level")
-        .help("Control logging verbosity (one of ERROR, WARN, INFO, DEBUG)");
-
-    parser.add_argument("--solvent")
-        .help("Solvent name");
-
-    parser.add_argument("--solvent-file")
-        .help("Solvent surface filename");
-
-    try {
-        parser.parse_args(argc, argv);
-    }
-    catch (const std::runtime_error& err) {
-        occ::log::error("error when parsing command line arguments: {}", err.what());
-        fmt::print("{}", parser);
-        exit(1);
-    }
-    auto level = occ::log::level::warn;
-    if(auto log_level = parser.present("--log-level"))
+    if (result.count("help"))
     {
-        std::string level_lower = occ::util::to_lower_copy(*log_level);
+      fmt::print("{}\n", options.help());
+      exit(0);
+    }
+
+    auto level = occ::log::level::warn;
+    if(result.count("verbosity"))
+    {
+        std::string level_lower = occ::util::to_lower_copy(result["verbosity"].as<std::string>());
         if(level_lower == "debug") level = occ::log::level::debug;
         else if(level_lower == "info") level = occ::log::level::info;
         else if(level_lower == "error") level = occ::log::level::err;
@@ -278,19 +262,19 @@ int main(int argc, const char **argv) {
         libint2::initialize();
         occ::timing::start(occ::timing::category::io);
         InputConfiguration config;
-        config.input_file = parser.get<std::string>("input");
-        config.basis_name = parser.get<std::string>("--basis");
-        config.multiplicity = parser.get<int>("--multiplicity");
-        config.method = parser.get<std::string>("--method");
-        config.charge = parser.get<int>("--charge");
-        if (parser.get<bool>("--uks") || config.method == "uhf") {
+        config.input_file = result["input"].as<std::string>();
+        config.basis_name = result["basis"].as<std::string>();
+        config.multiplicity = result["multiplicity"].as<int>();
+        config.method = result["method"].as<std::string>();
+        config.charge = result["charge"].as<int>();
+        if (result.count("unrestricted") || config.method == "uhf") {
             config.spinorbital_kind == SpinorbitalKind::Unrestricted;
         }
         else if(config.method == "ghf") config.spinorbital_kind == SpinorbitalKind::General;
 
 
         using occ::parallel::nthreads;
-        nthreads = parser.get<int>("--threads");
+        nthreads = result["threads"].as<int>();
         fmt::print("\nParallelization: {} threads, {} Eigen threads\n", nthreads, Eigen::nbThreads());
 
         std::string ext = config.input_file.extension();
@@ -311,11 +295,12 @@ int main(int argc, const char **argv) {
         wfn.save(fchk);
         fchk.write();
 
-        if(auto solvent = parser.present("--solvent"))
+        if(result.count("solvent"))
         {
             double esolv{0.0};
-            config.solvent = *solvent;
-            config.solvent_surface_filename = parser.present("--solvent-file");
+            config.solvent = result["solvent"].as<std::string>();
+            if(result.count("solvent-file"))
+                config.solvent_surface_filename = result["solvent-file"].as<std::string>();
             Wavefunction wfn2;
             if(config.method == "ghf")
             {

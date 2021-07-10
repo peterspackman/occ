@@ -1,6 +1,5 @@
 #include <occ/crystal/crystal.h>
 #include <occ/io/cifparser.h>
-#include <occ/3rdparty/argparse.hpp>
 #include <occ/qm/wavefunction.h>
 #include <occ/core/logger.h>
 #include <occ/qm/hf.h>
@@ -16,6 +15,7 @@
 #include <occ/core/units.h>
 #include <occ/core/timings.h>
 #include <fmt/os.h>
+#include <cxxopts.hpp>
 
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;
@@ -355,69 +355,58 @@ std::vector<double> assign_interaction_terms_to_nearest_neighbours(
 }
 
 
-int main(int argc, const char **argv) {
-    argparse::ArgumentParser parser("interactions");
-    parser.add_argument("input").help("Input CIF");
-    parser.add_argument("-j", "--threads")
-            .help("Number of threads")
-            .default_value(2)
-            .action([](const std::string& value) { return std::stoi(value); });
-    parser.add_argument("--vis")
-        .default_value(false)
-        .implicit_value(true);
-    parser.add_argument("--solvent")
-        .help("Solvent name")
-        .default_value(std::string("water"))
-        .action([](const std::string& value) { return value; });
-    parser.add_argument("--radius")
-        .help("Radius (angstroms) for neighbours")
-        .default_value(3.8)
-        .action([](const std::string& value) { return std::stod(value); });
+int main(int argc, char **argv) {
+    cxxopts::Options options("occ-interactions", "Interactions of molecules with neighbours in a crystal");
+    double radius = 0.0;
+    bool dump_visualization_files = false;
+    using occ::parallel::nthreads;
+    std::string cif_filename{""};
+    std::string solvent{"water"};
+    options
+        .add_options()
+        ("i,input", "Input CIF", cxxopts::value<std::string>(cif_filename))
+        ("t,threads", "Number of threads", cxxopts::value<int>(nthreads)->default_value("1"))
+        ("dump-solvent-file", "Write out solvent file", cxxopts::value<bool>(dump_visualization_files))
+        ("r,radius", "maximum radius (angstroms) for neighbours", cxxopts::value<double>(radius)->default_value("3.8"))
+        ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent));
+
+    options.parse_positional({"input"});
+
     occ::log::set_level(occ::log::level::info);
     spdlog::set_level(spdlog::level::info);
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
-    double radius = 0.0;
-    bool dump_visualization_files = false;
-    std::string solvent{"water"};
+
     occ::timing::StopWatch global_timer;
     global_timer.start();
 
     try {
-        parser.parse_args(argc, argv);
-        radius = parser.get<double>("--radius");
-        dump_visualization_files = parser.get<bool>("--vis");
-        solvent = parser.get("--solvent");
+        options.parse(argc, argv);
     }
     catch (const std::runtime_error& err) {
         occ::log::error("error when parsing command line arguments: {}", err.what());
-        fmt::print("{}", parser);
+        fmt::print("{}", options.help());
         exit(1);
     }
 
-
-    using occ::parallel::nthreads;
-    nthreads = parser.get<int>("--threads");
     fmt::print("Parallelized over {} threads & {} Eigen threads\n", nthreads, Eigen::nbThreads());
 
 
     const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
     try {
         occ::timing::StopWatch sw;
-
         sw.start();
-        std::string filename = parser.get<std::string>("input");
-        std::string basename = fs::path(filename).stem();
-        Crystal c = read_crystal(filename);
+        std::string basename = fs::path(cif_filename).stem();
+        Crystal c = read_crystal(cif_filename);
         sw.stop();
         double tprev = sw.read();
-        fmt::print("Loaded crystal from {} in {:.6f} seconds\n", filename, tprev);
+        fmt::print("Loaded crystal from {} in {:.6f} seconds\n", cif_filename, tprev);
 
         sw.start();
         auto molecules = c.symmetry_unique_molecules();
         sw.stop();
 
-        fmt::print("Found {} symmetry unique molecules in {} in {:.6f} seconds\n", molecules.size(), filename, sw.read() - tprev);
+        fmt::print("Found {} symmetry unique molecules in {} in {:.6f} seconds\n", molecules.size(), cif_filename, sw.read() - tprev);
 
         tprev = sw.read();
         sw.start();

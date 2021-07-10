@@ -1,6 +1,5 @@
 #include <occ/crystal/crystal.h>
 #include <occ/io/cifparser.h>
-#include <occ/3rdparty/argparse.hpp>
 #include <occ/qm/wavefunction.h>
 #include <occ/core/logger.h>
 #include <occ/qm/hf.h>
@@ -15,6 +14,7 @@
 #include <filesystem>
 #include <occ/core/units.h>
 #include <fmt/os.h>
+#include <cxxopts.hpp>
 
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;
@@ -199,54 +199,43 @@ auto calculate_interaction_energy(const Dimer &dimer, const std::vector<Wavefunc
     return interaction_energy;
 }
 
-int main(int argc, const char **argv) {
-    argparse::ArgumentParser parser("interactions");
-    parser.add_argument("input").help("Input CIF");
-    parser.add_argument("-j", "--threads")
-            .help("Number of threads")
-            .default_value(2)
-            .action([](const std::string& value) { return std::stoi(value); });
-    parser.add_argument("--ce-hf")
-        .default_value(false)
-        .implicit_value(true);
-    parser.add_argument("--radius")
-        .help("maximum radius (angstroms) for neighbours")
-        .default_value(30.0)
-        .action([](const std::string& value) { return std::stod(value); });
-    parser.add_argument("--radius-increment")
-        .help("Step size for direct space summation")
-        .default_value(3.8)
-        .action([](const std::string& value) { return std::stod(value); });
+int main(int argc, char *argv[]) {
+    cxxopts::Options options("occ-elat", "Crystal lattice energy");
+
+    double radius = 3.8;
+    double increment = 3.8;
+    using occ::parallel::nthreads;
+    std::string cif_name;
+    options
+        .add_options()
+        ("i,input", "Input CIF", cxxopts::value<std::string>(cif_name))
+        ("t,threads", "Number of threads", cxxopts::value<int>(nthreads)->default_value("1"))
+        ("ce-hf", "Use CE-HF model", cxxopts::value<bool>()->default_value("false"))
+        ("r,radius", "maximum radius (angstroms) for neighbours", cxxopts::value<double>(radius)->default_value("30.0"))
+        ("radius-increment", "step size (angstroms) for direct space summation", cxxopts::value<double>(increment)->default_value("3.8"));
+
     occ::log::set_level(occ::log::level::info);
     spdlog::set_level(spdlog::level::info);
     libint2::Shell::do_enforce_unit_normalization(false);
     libint2::initialize();
-    double radius = 3.8;
-    double increment = 3.8;
     std::string model_name = "ce-b3lyp";
 
     try {
-        parser.parse_args(argc, argv);
-        radius = parser.get<double>("--radius");
-        increment = parser.get<double>("--radius-increment");
-        if (parser.get<bool>("--ce-hf")) model_name = "ce-hf";
+        auto result = options.parse(argc, argv);
+        if(result.count("ce-hf")) model_name = "ce-hf";
     }
     catch (const std::runtime_error& err) {
         occ::log::error("error when parsing command line arguments: {}", err.what());
-        fmt::print("{}", parser);
+        fmt::print("{}\n", options.help());
         exit(1);
     }
 
-
-
-    using occ::parallel::nthreads;
-    nthreads = parser.get<int>("--threads");
     fmt::print("Parallelized over {} threads & {} Eigen threads\n", nthreads, Eigen::nbThreads());
 
 
     const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
     try {
-        std::string filename = parser.get<std::string>("input");
+        std::string filename = cif_name;
         std::string basename = fs::path(filename).stem();
         Crystal c = read_crystal(filename);
         fmt::print("Energy model: {}\n", model_name);
