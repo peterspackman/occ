@@ -255,8 +255,14 @@ int main(int argc, char *argv[]) {
     print_header();
     occ::timing::stop(occ::timing::category::io);
 
-
     const std::string error_format = "Exception:\n    {}\nTerminating program.\n";
+
+    if(result.count("input") == 0)
+    {
+        occ::log::error("must provide an input file!");
+        exit(1);
+    }
+
     try {
         libint2::Shell::do_enforce_unit_normalization(false);
         libint2::initialize();
