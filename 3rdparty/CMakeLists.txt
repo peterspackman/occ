@@ -37,6 +37,19 @@ CPMAddPackage(
     OPTIONS "CXXOPTS_BUILD_EXAMPLES NO" "CXXOPTS_BUILD_TESTS NO" "CXXOPTS_ENABLE_INSTALL YES"
 )
 
+CPMAddPackage(
+    NAME eigen3
+    URL "https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.zip"
+    DOWNLOAD_ONLY YES  # Eigen CMakelists.txt not intended for library use
+)
+
+# Add the Eigen library target to link against
+if("${eigen3_ADDED}")
+    add_library(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
+    target_include_directories(Eigen3::Eigen INTERFACE ${eigen3_SOURCE_DIR})
+endif()
+
+
 if(NOT "${USE_SYSTEM_LIBINT2}")
 set(LIBINT2_URL "https://github.com/evaleev/libint/releases/download/v2.7.0-beta.6/libint-2.7.0-beta.6.tgz")
 CPMAddPackage(

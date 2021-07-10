@@ -15,7 +15,6 @@ endif()
 
 find_package(LAPACK REQUIRED)
 find_package(BLAS REQUIRED)
-find_package(Eigen3 CONFIG REQUIRED)
 find_package(Boost CONFIG COMPONENTS graph)
 find_package(ZLIB REQUIRED)
 find_package(Threads REQUIRED)
@@ -27,7 +26,6 @@ endif()
 if("${USE_SYSTEM_LIBXC}")
     find_package(Libxc CONFIG REQUIRED)
 endif()
-
 
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")
