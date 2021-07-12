@@ -62,20 +62,19 @@ if("${gemmi_ADDED}")
     target_include_directories(gemmi::gemmi INTERFACE "${gemmi_SOURCE_DIR}/include")
 endif()
 
-CPMAddPackage(
-    NAME Fastor
-    GITHUB_REPOSITORY romeric/Fastor
-    GIT_TAG master
-    DOWNLOAD_ONLY YES
-)
+# Fastor currently unused
+#CPMAddPackage(
+#    NAME Fastor
+#    GITHUB_REPOSITORY romeric/Fastor
+#    GIT_TAG master
+#    DOWNLOAD_ONLY YES
+#)
 
-# Add Fastor as a header only library for linking
-if("${Fastor_ADDED}")
-    add_library(Fastor::Fastor INTERFACE IMPORTED GLOBAL)
-    target_include_directories(Fastor::Fastor INTERFACE "${Fastor_SOURCE_DIR}")
-endif()
-
-
+## Add Fastor as a header only library for linking
+#if("${Fastor_ADDED}")
+#    add_library(Fastor::Fastor INTERFACE IMPORTED GLOBAL)
+#    target_include_directories(Fastor::Fastor INTERFACE "${Fastor_SOURCE_DIR}")
+#endif()
 
 
 if(NOT "${USE_SYSTEM_LIBINT2}")
