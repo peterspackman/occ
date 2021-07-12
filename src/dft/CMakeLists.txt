@@ -10,6 +10,7 @@ target_link_libraries(occ_dft
     PUBLIC 
     occ_core
     occ_qm
+    occ_io
     Libxc::xc
 )
 target_include_directories(occ_dft PUBLIC 

@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <occ/io/basis_g94.h>
 
 namespace occ::qm {
 
@@ -29,43 +30,32 @@ struct canonicalizer {
     }
 };
 
-BasisSet::BasisSet(std::string name,
-                   const std::vector<Atom>& atoms,
-                   const bool throw_if_no_match) : m_name(std::move(name))
+BasisSet::BasisSet(std::string name, const std::vector<Atom>& atoms) : m_name(std::move(name))
 {
 
-    // read in the library file contents
     std::string basis_lib_path = data_path();
     auto canonical_name = canonicalize_name(m_name);
-    // some basis sets use cartesian d shells by convention, the convention is taken from Gaussian09
     auto force_cartesian_d = gaussian_cartesian_d_convention(canonical_name);
 
-    // parse the name into components
     std::vector<std::string> basis_component_names = decompose_name_into_components(canonical_name);
 
-    // ref_shells[component_idx][Z] => vector of Shells
     std::vector<std::vector<std::vector<libint2::Shell>>> component_basis_sets;
     component_basis_sets.reserve(basis_component_names.size());
 
-    // read in ALL basis set components
     for(const auto& basis_component_name: basis_component_names) {
         std::string g94_filepath = basis_component_name + ".g94";
         if(!fs::exists(basis_component_name + ".g94"))
         {
             g94_filepath = basis_lib_path + "/" + g94_filepath;
         }
-        component_basis_sets.emplace_back(read_g94_basis_library(g94_filepath, force_cartesian_d, throw_if_no_match));
+        component_basis_sets.emplace_back(occ::io::basis::g94::read(g94_filepath, force_cartesian_d));
 
-        // use same cartesian_d convention for all components!
     }
 
-    // for each atom find the corresponding basis components
     for(auto a=0ul; a<atoms.size(); ++a)
     {
-
         const std::size_t Z = atoms[a].atomic_number;
 
-        // add each component in order
         for(auto comp_idx=0ul; comp_idx!=component_basis_sets.size(); ++comp_idx)
         {
             const auto& component_basis_set = component_basis_sets[comp_idx];
@@ -77,7 +67,7 @@ BasisSet::BasisSet(std::string name,
                     this->back().move({{atoms[a].x, atoms[a].y, atoms[a].z}});
                 }
             }
-            else if (throw_if_no_match)
+            else
             {
                 std::string basis_filename =  basis_lib_path + "/" + basis_component_names[comp_idx] + ".g94";
                 std::string errmsg = fmt::format(
@@ -95,37 +85,44 @@ BasisSet::BasisSet(std::string name,
 
 BasisSet::BasisSet(const std::vector<Atom>& atoms,
                    const std::vector<std::vector<Shell>>& element_bases,
-                   std::string name,
-                   const bool throw_if_no_match) : m_name(std::move(name))
+                   std::string name) : m_name(std::move(name))
 {
-    // for each atom find the corresponding basis components
-    for(auto a=0ul; a<atoms.size(); ++a) {
-
+    for(auto a=0ul; a<atoms.size(); ++a)
+    {
         auto Z = atoms[a].atomic_number;
-
-        if (decltype(Z)(element_bases.size()) > Z && !element_bases.at(Z).empty()) {  // found? add shells in order
-            for(auto s: element_bases.at(Z)) {
+        if (decltype(Z)(element_bases.size()) > Z && !element_bases.at(Z).empty())
+        {
+            for(auto s: element_bases.at(Z))
+            {
                 this->push_back(std::move(s));
                 this->back().move({{atoms[a].x, atoms[a].y, atoms[a].z}});
-            } // shell loop
+            }
         }
-        else if (throw_if_no_match) {  // not found? throw, if needed
-            throw std::logic_error(std::string("did not find the basis for Z=") + std::to_string(Z) + " in the element_bases");
+        else
+        {
+            std::string errmsg = fmt::format(
+                "No matching basis for element (z={}) in provided element basis", Z
+            );
+
+            throw std::logic_error(errmsg);
         }
-    } // atom loop
+    }
 }
 
 
-std::vector<long> BasisSet::shell2atom(const std::vector<Shell>& shells, const std::vector<Atom>& atoms, bool throw_if_no_match)
+std::vector<long> BasisSet::shell2atom(const std::vector<Shell>& shells, const std::vector<Atom>& atoms)
 {
   std::vector<long> result;
   result.reserve(shells.size());
-  for(const auto& s: shells) {
+  size_t shell_idx = 0;
+  for(const auto& s: shells)
+  {
     auto a = std::find_if(atoms.begin(), atoms.end(), [&s](const Atom& a){ return s.O[0] == a.x && s.O[1] == a.y && s.O[2] == a.z; } );
     const auto found_match = (a != atoms.end());
-    if (throw_if_no_match && !found_match)
-      throw std::logic_error("shell2atom: no matching atom found");
-    result.push_back( found_match ? a - atoms.begin() : -1);
+    if(!found_match)
+      throw std::logic_error(fmt::format("no matching atom found for shell {}", shell_idx));
+    result.push_back(a - atoms.begin());
+    shell_idx++;
   }
   return result;
 }
@@ -236,152 +233,6 @@ std::string BasisSet::data_path()
   return basis_path;
 }
 
-void BasisSet::fortran_dfloats_to_efloats(std::string& str)
-{
-  for(auto& ch: str) {
-    if (ch == 'd') ch = 'e';
-    if (ch == 'D') ch = 'E';
-  }
-}
-
-
-std::vector<std::vector<libint2::Shell>> BasisSet::read_g94_basis_library(
-        std::string file_dot_g94,
-        bool force_cartesian_d,
-        bool throw_if_missing,
-        std::string locale_name)
-{
-  occ::timing::start(occ::timing::category::io);
-  std::locale locale(locale_name.c_str());  // TODO omit c_str() with up-to-date stdlib
-  std::vector<std::vector<libint2::Shell>> ref_shells(118); // 118 = number of chemical elements
-  std::ifstream is(file_dot_g94);
-  is.imbue(locale);
-
-  if (is.good()) {
-    if (libint2::verbose())
-      libint2::verbose_stream() << "Will read basis set from " << file_dot_g94 << std::endl;
-
-    std::string line, rest;
-
-    // skip till first basis
-    while (std::getline(is, line) && line != "****") {
-    }
-
-#define LIBINT2_LINE_TO_STRINGSTREAM(line) \
-  std::istringstream iss(line); \
-  iss.imbue(locale);
-
-    size_t Z;
-    auto nextbasis = true, nextshell = false;
-    // read lines till end
-    while (std::getline(is, line)) {
-      // skipping empties and starting with '!' (the comment delimiter)
-      if (line.empty() || line[0] == '!') continue;
-      if (line == "****") {
-        nextbasis = true;
-        nextshell = false;
-        continue;
-      }
-      if (nextbasis) {
-        nextbasis = false;
-        LIBINT2_LINE_TO_STRINGSTREAM(line);
-        std::string elemsymbol;
-        iss >> elemsymbol >> rest;
-
-        bool found = false;
-        for (const auto &e: libint2::chemistry::get_element_info()) {
-          if (strcaseequal(e.symbol, elemsymbol)) {
-            Z = e.Z;
-            found = true;
-            break;
-          }
-        }
-        if (not found) {
-          std::ostringstream oss;
-          oss << "in file " << file_dot_g94
-              << " found G94 basis set for element symbol \""
-              << elemsymbol << "\", not found in Periodic Table.";
-          throw std::logic_error(oss.str());
-        }
-
-        nextshell = true;
-        continue;
-      }
-      if (nextshell) {
-        LIBINT2_LINE_TO_STRINGSTREAM(line);
-        std::string amlabel;
-        std::size_t nprim;
-        iss >> amlabel >> nprim >> rest;
-        if (amlabel != "SP" && amlabel != "sp") {
-          assert(amlabel.size() == 1);
-          auto l = Shell::am_symbol_to_l(amlabel[0]);
-          svector<double> exps;
-          svector<double> coeffs;
-          for (decltype(nprim) p = 0; p != nprim; ++p) {
-            while (std::getline(is, line) && (line.empty() || line[0] == '!')) {}
-            fortran_dfloats_to_efloats(line);
-            LIBINT2_LINE_TO_STRINGSTREAM(line);
-            double e, c;
-            iss >> e >> c;
-            exps.emplace_back(e);
-            coeffs.emplace_back(c);
-          }
-          auto pure = force_cartesian_d ? (l > 2) : (l > 1);
-          ref_shells.at(Z).push_back(
-              libint2::Shell{
-                  std::move(exps),
-                  {
-                      {l, pure, std::move(coeffs)}
-                  },
-                  {{0, 0, 0}}
-              }
-          );
-        } else { // split the SP shells
-          svector<double> exps;
-          svector<double> coeffs_s, coeffs_p;
-          for (decltype(nprim) p = 0; p != nprim; ++p) {
-            while (std::getline(is, line) && (line.empty() || line[0] == '!')) {}
-            fortran_dfloats_to_efloats(line);
-            LIBINT2_LINE_TO_STRINGSTREAM(line);
-            double e, c1, c2;
-            iss >> e >> c1 >> c2;
-            exps.emplace_back(e);
-            coeffs_s.emplace_back(c1);
-            coeffs_p.emplace_back(c2);
-          }
-          ref_shells.at(Z).push_back(
-              libint2::Shell{exps,
-                             {
-                                 {0, false, coeffs_s}
-                             },
-                             {{0, 0, 0}}
-              }
-          );
-          ref_shells.at(Z).push_back(
-              libint2::Shell{std::move(exps),
-                             {
-                                 {1, false, std::move(coeffs_p)}
-                             },
-                             {{0, 0, 0}}
-              }
-          );
-        }
-      }
-    }
-
-#undef LIBINT2_LINE_TO_STRINGSTREAM
-  }
-  else {  // !is.good()
-    if (throw_if_missing) {
-      std::ostringstream oss;
-      oss << "BasisSet::read_g94_basis_library(): could not open \"" << file_dot_g94 << "\"" << std::endl;
-      throw std::ios_base::failure(oss.str());
-    }
-  }
-
-  occ::timing::stop(occ::timing::category::io);
-  return ref_shells;
-}
 
 std::vector<size_t> compute_shell2bf(const std::vector<libint2::Shell>& shells) {
   std::vector<size_t> result;

@@ -1,4 +1,5 @@
 add_library(occ_io
+    "${CMAKE_CURRENT_SOURCE_DIR}/basis_g94.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/conversion.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.cpp"

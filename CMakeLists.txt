@@ -1,7 +1,18 @@
-cmake_minimum_required(VERSION 3.16.0)
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
-project(occ LANGUAGES CXX)
+project(occ
+    VERSION 0.1
+    LANGUAGES CXX
+)
+
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+    message(
+        FATAL_ERROR
+        "In-source builds are not supported. Please make a new directory (i.e. build directory) and run cmake from there."
+    )
+endif()
+
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)

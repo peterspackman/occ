@@ -7,7 +7,7 @@ namespace occ::chem {
 
 Element::Element(int atomicNumber) : m_data(ELEMENTDATA_TABLE[atomicNumber]) {}
 
-Element::Element(const std::string &s) : m_data(ELEMENTDATA_TABLE[0]) {
+Element::Element(const std::string &s, bool exact_match) : m_data(ELEMENTDATA_TABLE[0]) {
   // capitalize the symbol first
   auto symbol = occ::util::trim_copy(s);
   auto capitalized = occ::util::capitalize_copy(s);
@@ -15,8 +15,9 @@ Element::Element(const std::string &s) : m_data(ELEMENTDATA_TABLE[0]) {
     const auto dat = ELEMENTDATA_TABLE[i];
     const size_t N = dat.symbol.size();
     if (dat.symbol.compare(0, N, symbol, 0, N) == 0) {
-      m_data = dat;
-      return;
+        if(exact_match && dat.symbol != symbol) continue;
+        m_data = dat;
+        return;
     }
   }
 }
