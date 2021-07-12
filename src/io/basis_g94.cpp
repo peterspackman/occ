@@ -58,7 +58,7 @@ std::vector<std::vector<Shell>> read(const std::string &file_dot_g94, bool force
 
         Element e(elemsymbol, true);
         found = e.atomic_number() > 0;
-        occ::log::debug("Element: {}", e.symbol());
+        occ::log::debug("Found basis for symbol {} (match={})", elemsymbol, e.symbol());
         Z = e.atomic_number();
         if (!found) {
             std::string errstr = fmt::format("Unknown element symbol {} found in {}", elemsymbol, file_dot_g94);
