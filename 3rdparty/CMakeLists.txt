@@ -1,3 +1,4 @@
+
 CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"
@@ -74,6 +75,24 @@ endif()
 #if("${Fastor_ADDED}")
 #    add_library(Fastor::Fastor INTERFACE IMPORTED GLOBAL)
 #    target_include_directories(Fastor::Fastor INTERFACE "${Fastor_SOURCE_DIR}")
+#endif()
+
+if(NOT "${USE_SYSTEM_ZLIB}")
+CPMAddPackage(
+    NAME zlib
+    URL "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.5.zip"
+    OPTIONS "ZLIB_COMPAT YES ZLIB_ENABLE_TESTS NO"
+)
+add_library(ZLIB::ZLIB ALIAS zlib)
+endif()
+
+# Need to get OpenBLAS working
+#if(NOT "${USE_SYSTEM_BLAS}")
+#CPMAddPackage(
+#    NAME OpenBLAS
+#    GITHUB_REPOSITORY xianyi/OpenBLAS
+#    VERSION 0.3.16
+#)
 #endif()
 
 
