@@ -1,15 +1,3 @@
-[submodule "3rdparty/gemmi"]
-	path = 3rdparty/gemmi
-	url = https://github.com/project-gemmi/gemmi.git
-[submodule "3rdparty/scnlib"]
-	path = 3rdparty/scnlib
-	url = https://github.com/eliaskosunen/scnlib
 [submodule "3rdparty/Fastor"]
 	path = 3rdparty/Fastor
 	url = https://github.com/romeric/Fastor
-[submodule "3rdparty/toml11"]
-	path = 3rdparty/toml11
-	url = https://github.com/ToruNiina/toml11
-[submodule "3rdparty/gau2grid"]
-	path = 3rdparty/gau2grid
-	url = https://github.com/dgasmith/gau2grid

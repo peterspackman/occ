@@ -14,6 +14,7 @@ target_link_libraries(occ_io
     occ_core
     occ_qm
     toml11::toml11
+    gemmi::gemmi
 )
 target_include_directories(occ_io PUBLIC 
     ${OCC_INCLUDE_DIR} 

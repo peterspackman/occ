@@ -137,6 +137,7 @@ Vec3 Molecule::rotational_constants() const
 
 double Molecule::rotational_free_energy(double temperature) const
 {
+    if(size() == 1) return 0.0;
     // unit is 10^-46 kg m^2
     Vec3 r = principal_moments_of_inertia();
     // linear

@@ -41,10 +41,6 @@ endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")
 add_subdirectory(3rdparty)
-
-set(GEMMI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gemmi/include")
-set(FASTOR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/Fastor/")
-
 add_subdirectory(include)
 add_subdirectory(src)
 
