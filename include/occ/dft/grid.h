@@ -18,7 +18,7 @@ struct AtomGrid
     std::vector<occ::Mat4N> atom_distances;
     occ::MaskMat shell_mask;
 
-    void compute_distances(const std::vector<libint2::Atom> &atoms)
+    void compute_distances(const std::vector<occ::core::Atom> &atoms)
     {
         atom_distances.clear();
         const size_t natoms = atoms.size();
@@ -36,7 +36,7 @@ struct AtomGrid
     }
 
     template<size_t block_size=128>
-    void compute_basis_screen(const BasisSet &basis, const std::vector<libint2::Atom> &atoms)
+    void compute_basis_screen(const BasisSet &basis, const std::vector<occ::core::Atom> &atoms)
     {
         if(atom_distances.size() < 1) return;
 
@@ -98,7 +98,7 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points = 59
 class MolecularGrid
 {
 public:
-    MolecularGrid(const BasisSet&, const std::vector<libint2::Atom>&);
+    MolecularGrid(const BasisSet&, const std::vector<occ::core::Atom>&);
     void set_angular_points(size_t n);
     void set_radial_points(size_t n);
     void set_max_angular_points(size_t n) {m_max_angular = n; }

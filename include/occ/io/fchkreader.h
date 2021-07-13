@@ -94,7 +94,7 @@ public:
     Mat scf_density_matrix() const;
     Mat mp2_density_matrix() const;
 
-    std::vector<libint2::Atom> atoms() const;
+    std::vector<occ::core::Atom> atoms() const;
 
     occ::qm::BasisSet basis_set() const;
 private:

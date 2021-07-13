@@ -100,7 +100,7 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args, s
         pos = stream.tellg();
         std::string symbol;
         int idx;
-        libint2::Atom atom;
+        occ::core::Atom atom;
         scn::scan_default(line, symbol, idx, atom.atomic_number, atom.x, atom.y, atom.z);
         if(factor != 1.0)
         {

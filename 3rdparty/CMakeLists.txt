@@ -38,6 +38,7 @@ CPMAddPackage(
     OPTIONS "CXXOPTS_BUILD_EXAMPLES NO" "CXXOPTS_BUILD_TESTS NO" "CXXOPTS_ENABLE_INSTALL YES"
 )
 
+if(NOT "${USE_SYSTEM_EIGEN}")
 CPMAddPackage(
     NAME eigen3
     URL "https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.zip"
@@ -48,6 +49,8 @@ CPMAddPackage(
 if("${eigen3_ADDED}")
     add_library(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
     target_include_directories(Eigen3::Eigen INTERFACE ${eigen3_SOURCE_DIR})
+endif()
+
 endif()
 
 CPMAddPackage(
@@ -81,7 +84,7 @@ if(NOT "${USE_SYSTEM_ZLIB}")
 CPMAddPackage(
     NAME zlib
     URL "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.5.zip"
-    OPTIONS "ZLIB_COMPAT YES ZLIB_ENABLE_TESTS NO"
+    OPTIONS "ZLIB_COMPAT ON" "ZLIB_ENABLE_TESTS OFF"
 )
 add_library(ZLIB::ZLIB ALIAS zlib)
 endif()
@@ -112,7 +115,15 @@ CPMAddPackage(
     GIT_TAG 5.0.0
     OPTIONS "BUILD_TESTING OFF"
 )
-add_library(Libxc::xc ALIAS xc)
+add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 
+target_link_libraries(Libxc::xc INTERFACE xc)
+target_include_directories(
+    Libxc::xc INTERFACE
+    "${Libxc_BINARY_DIR}/gen_funcidx"
+    "${Libxc_SOURCE_DIR}/src"
+    "${Libxc_BINARY_DIR}/src"
+    "${Libxc_BINARY_DIR}"
+)
 endif()
 
 

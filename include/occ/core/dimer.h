@@ -11,8 +11,8 @@ using occ::chem::Molecule;
 class Dimer{
 public:
   Dimer(const Molecule&, const Molecule&);
-  Dimer(const std::vector<libint2::Atom>,
-        const std::vector<libint2::Atom>);
+  Dimer(const std::vector<occ::core::Atom>,
+        const std::vector<occ::core::Atom>);
 
   const Molecule& a() const { return m_a; }
   const Molecule& b() const { return m_b; }

@@ -5,6 +5,7 @@
 #include <fmt/ostream.h>
 #include <occ/qm/basisset.h>
 #include <occ/core/util.h>
+#include <occ/core/atom.h>
 
 using occ::util::all_close;
 
@@ -131,7 +132,7 @@ TEST_CASE("atom grid", "[grid]")
         return occ::dft::generate_atom_grid(6, 590);
     };
 */
-    std::vector<libint2::Atom> atoms {
+    std::vector<occ::core::Atom> atoms {
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.39839733}
     };

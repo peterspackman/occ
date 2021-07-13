@@ -1,7 +1,6 @@
 #include <occ/dft/grid.h>
-#include <libint2/basis.h>
-#include <libint2/atom.h>
 #include <occ/core/logger.h>
+#include <occ/core/atom.h>
 #include <occ/core/timings.h>
 #include <occ/dft/lebedev.h>
 
@@ -81,7 +80,7 @@ occ::Vec stratmann_scuseria_partition(const occ::Vec &w)
     return result;
 }
 
-occ::Mat interatomic_distances(const std::vector<libint2::Atom> & atoms)
+occ::Mat interatomic_distances(const std::vector<occ::core::Atom> & atoms)
 {
     size_t natoms = atoms.size();
     occ::Mat dists(natoms, natoms);
@@ -388,7 +387,7 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points, siz
     return result;
 }
 
-MolecularGrid::MolecularGrid(const BasisSet &basis, const std::vector<libint2::Atom> &atoms) :
+MolecularGrid::MolecularGrid(const BasisSet &basis, const std::vector<occ::core::Atom> &atoms) :
     m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()), m_alpha_max(atoms.size()), m_l_max(atoms.size()),
     m_alpha_min(basis.max_l() + 1, atoms.size())
 {

@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include <occ/core/linear_algebra.h>
+#include <occ/core/atom.h>
 #include <occ/qm/basisset.h>
 #include <vector>
 #include <fmt/core.h>
@@ -11,7 +12,7 @@ using occ::qm::BasisSet;
 using occ::Mat;
 
 TEST_CASE("GTO vals H2/STO-3G") {
-    std::vector<libint2::Atom> atoms {
+    std::vector<occ::core::Atom> atoms {
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.398397}
     };
@@ -30,7 +31,7 @@ TEST_CASE("GTO vals H2/STO-3G") {
 }
 
 TEST_CASE("GTO vals H2/3-21G") {
-    std::vector<libint2::Atom> atoms {
+    std::vector<occ::core::Atom> atoms {
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.398397}
     };
@@ -53,7 +54,7 @@ TEST_CASE("GTO vals H2/3-21G") {
 }
 
 TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
-    std::vector<libint2::Atom> atoms {
+    std::vector<occ::core::Atom> atoms {
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.398397}
     };

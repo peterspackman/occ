@@ -5,7 +5,7 @@
 
 namespace occ::hf {
 
-HartreeFock::HartreeFock(const std::vector<libint2::Atom> &atoms,
+HartreeFock::HartreeFock(const std::vector<occ::core::Atom> &atoms,
                          const BasisSet &basis)
     : m_atoms(atoms), m_basis(basis), m_fockbuilder(basis.max_nprim(), basis.max_l()) {
   std::tie(m_shellpair_list, m_shellpair_data) = occ::ints::compute_shellpairs(m_basis);

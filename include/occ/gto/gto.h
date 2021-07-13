@@ -116,7 +116,7 @@ void add_shell_contribution(
 
 template<size_t max_derivative>
 GTOValues<max_derivative> evaluate_basis_on_grid(const BasisSet &basis,
-                                         const std::vector<libint2::Atom> &atoms,
+                                         const std::vector<occ::core::Atom> &atoms,
                                          const occ::Mat &grid_pts)
 {
     occ::timing::start(occ::timing::category::gto);
@@ -165,7 +165,7 @@ GTOValues<max_derivative> evaluate_basis_on_grid(const BasisSet &basis,
 
 template<size_t max_derivative>
 void evaluate_basis_gau2grid(const BasisSet &basis,
-                             const std::vector<libint2::Atom> &atoms,
+                             const std::vector<occ::core::Atom> &atoms,
                              const occ::Mat &grid_pts,
                              GTOValues<max_derivative> &gto_values)
 {
@@ -216,7 +216,7 @@ void evaluate_basis_gau2grid(const BasisSet &basis,
 
 template<size_t max_derivative>
 GTOValues<max_derivative> evaluate_basis_gau2grid(const BasisSet &basis,
-                                         const std::vector<libint2::Atom> &atoms,
+                                         const std::vector<occ::core::Atom> &atoms,
                                          const occ::Mat &grid_pts)
 {
     GTOValues<max_derivative> gto_values(basis.nbf(), grid_pts.cols());

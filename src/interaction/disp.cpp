@@ -3,7 +3,7 @@
 #include <cmath>
 
 namespace occ::disp {
-using libint2::Atom;
+using occ::core::Atom;
 
 std::array<double, 110> Grimme06_a_6_disp_coeff{
    1.56,  1.18,  5.28,  5.28,  7.37,  5.51,  4.62,  3.48,  3.61,  3.31,

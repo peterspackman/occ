@@ -7,7 +7,7 @@ namespace occ::chem {
 
 Dimer::Dimer(const Molecule &a, const Molecule &b) : m_a(a), m_b(b) {}
 
-Dimer::Dimer(const std::vector<libint2::Atom> a, const std::vector<libint2::Atom> b) : m_a(a), m_b(b) {}
+Dimer::Dimer(const std::vector<occ::core::Atom> a, const std::vector<occ::core::Atom> b) : m_a(a), m_b(b) {}
 
 double Dimer::centroid_distance() const
 {

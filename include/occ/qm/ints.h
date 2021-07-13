@@ -101,7 +101,7 @@ template <Operator obtype>
 std::vector<Mat>
 compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
                          const shellpair_list_t &shellpair_list,
-                         const std::vector<libint2::Atom> &atoms) {
+                         const std::vector<occ::core::Atom> &atoms) {
     occ::timing::start(occ::timing::category::ints1e);
   using occ::parallel::nthreads;
   const auto n = obs.nbf();
@@ -391,7 +391,7 @@ template <unsigned deriv_order>
 std::vector<Mat> compute_2body_fock_deriv(
     const BasisSet &obs, const shellpair_list_t &shellpair_list,
     const shellpair_data_t &shellpair_data,
-    const std::vector<libint2::Atom> &atoms, const Mat &D, double precision,
+    const std::vector<occ::core::Atom> &atoms, const Mat &D, double precision,
     const Mat &Schwarz) {
     occ::timing::start(occ::timing::category::ints2e);
 

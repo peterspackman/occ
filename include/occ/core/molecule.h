@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/core/element.h>
 #include <occ/core/linear_algebra.h>
-#include <libint2/atom.h>
+#include <occ/core/atom.h>
 #include <Eigen/Geometry>
 #include <array>
 #include <tuple>
@@ -15,7 +15,7 @@ class Molecule {
 public:
   enum Origin { Cartesian, Centroid, CenterOfMass };
   Molecule(const IVec &, const Mat3N &);
-  Molecule(const std::vector<libint2::Atom> &atoms);
+  Molecule(const std::vector<occ::core::Atom> &atoms);
 
   template<typename N, typename D>
   Molecule(const std::vector<N> &nums, const std::vector<std::array<D, 3>> &pos)
@@ -46,7 +46,7 @@ public:
   const IVec &atomic_numbers() const { return m_atomicNumbers; }
   const Vec vdw_radii() const;
   const Vec atomic_masses() const;
-  std::vector<libint2::Atom> atoms() const;
+  std::vector<occ::core::Atom> atoms() const;
 
   Vec3 centroid() const;
   Vec3 center_of_mass() const;
@@ -109,7 +109,7 @@ private:
   int m_multiplicity{1};
   int m_asym_mol_idx{-1};
   std::string m_name{""};
-  std::vector<libint2::Atom> m_atoms;
+  std::vector<occ::core::Atom> m_atoms;
   IVec m_atomicNumbers;
   Mat3N m_positions;
   IVec m_uc_idx;

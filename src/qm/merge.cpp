@@ -37,9 +37,9 @@ BasisSet merge_basis_sets(const BasisSet& basis_a, const BasisSet& basis_b)
     return merged;
 }
 
-std::vector<libint2::Atom> merge_atoms(const std::vector<libint2::Atom>& atoms_a, const std::vector<libint2::Atom>& atoms_b)
+std::vector<occ::core::Atom> merge_atoms(const std::vector<occ::core::Atom>& atoms_a, const std::vector<occ::core::Atom>& atoms_b)
 {
-    std::vector<libint2::Atom> merged = atoms_a;
+    std::vector<occ::core::Atom> merged = atoms_a;
     merged.reserve(atoms_a.size() + atoms_b.size());
     merged.insert(merged.end(), atoms_b.begin(), atoms_b.end());
     return merged;

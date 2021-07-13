@@ -3,6 +3,7 @@
 #include <occ/solvent/surface.h>
 #include <occ/core/logger.h>
 #include <occ/core/element.h>
+#include <occ/core/atom.h>
 #include <occ/solvent/smd.h>
 #include <occ/core/units.h>
 #include <fmt/core.h>
@@ -11,7 +12,7 @@
 
 namespace occ::solvent {
 
-ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<libint2::Atom> &atoms, const std::string &solvent) :
+ContinuumSolvationModel::ContinuumSolvationModel(const std::vector<occ::core::Atom> &atoms, const std::string &solvent) :
     m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()), m_solvent_name(solvent), m_cosmo(78.39)
 {
     robin_hood::unordered_map<int, double> element_radii;

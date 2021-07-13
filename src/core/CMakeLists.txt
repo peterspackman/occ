@@ -25,6 +25,7 @@ target_link_libraries(occ_core
     spdlog::spdlog
     ZLIB::ZLIB
     Threads::Threads
+    Libint2::cxx
 )
 target_include_directories(occ_core PUBLIC 
     ${OCC_INCLUDE_DIR} 

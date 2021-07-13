@@ -2,7 +2,7 @@
 #include "catch.hpp"
 #include <occ/dft/dft.h>
 #include <libint2/basis.h>
-#include <libint2/atom.h>
+#include <occ/core/atom.h>
 #include <libint2.hpp>
 #include <vector>
 #include <iostream>

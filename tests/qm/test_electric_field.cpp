@@ -13,7 +13,7 @@ using occ::Mat;
 TEST_CASE("H2/STO-3G") {
     libint2::initialize();
     libint2::Shell::do_enforce_unit_normalization(false);
-    std::vector<libint2::Atom> atoms {
+    std::vector<occ::core::Atom> atoms {
         {1, 0.0, 0.0, 0.0},
         {1, 0.0, 0.0, 1.398397}
     };

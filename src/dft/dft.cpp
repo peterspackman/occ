@@ -4,8 +4,7 @@
 #include <occ/dft/dft.h>
 #include <occ/gto/gto.h>
 #include <occ/gto/density.h>
-#include <libint2/basis.h>
-#include <libint2/atom.h>
+#include <occ/core/atom.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/3rdparty/robin_hood.h>
@@ -43,7 +42,7 @@ int DFT::density_derivative() const {
     return deriv;
 }
 
-DFT::DFT(const std::string& method, const BasisSet& basis, const std::vector<libint2::Atom>& atoms, SpinorbitalKind kind) :
+DFT::DFT(const std::string& method, const BasisSet& basis, const std::vector<occ::core::Atom>& atoms, SpinorbitalKind kind) :
    m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(basis, atoms)
 {
     occ::log::debug("start calculating atom grids... ");

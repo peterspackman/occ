@@ -20,7 +20,7 @@ public:
         return occ::qm::SpinorbitalKind::Restricted;
     }
     const occ::qm::BasisSet& basis_set() const { return m_basis; }
-    const std::vector<libint2::Atom>& atoms() const { return m_atoms; }
+    const std::vector<occ::core::Atom>& atoms() const { return m_atoms; }
     size_t nbf() const { return m_basis.nbf(); }
     size_t num_electrons() const { return static_cast<size_t>(m_num_electrons); }
 
@@ -77,7 +77,7 @@ private:
     void parse_mo_section(const std::optional<std::string>&, std::istream&);
     void parse_mo(size_t&, size_t&, std::istream&);
 
-    std::vector<libint2::Atom> m_atoms;
+    std::vector<occ::core::Atom> m_atoms;
     occ::qm::BasisSet m_basis;
     std::string m_filename;
     Mat m_molecular_orbitals_alpha;

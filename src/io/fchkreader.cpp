@@ -175,12 +175,12 @@ void FchkReader::parse(std::istream& stream)
     }
 }
 
-std::vector<libint2::Atom> FchkReader::atoms() const {
-    std::vector<libint2::Atom> atoms;
+std::vector<occ::core::Atom> FchkReader::atoms() const {
+    std::vector<occ::core::Atom> atoms;
     atoms.reserve(m_atomic_numbers.size());
     for(size_t i = 0; i < m_atomic_numbers.size(); i++)
     {
-        atoms.emplace_back(libint2::Atom{m_atomic_numbers[i], m_atomic_positions[3*i], m_atomic_positions[3*i + 1], m_atomic_positions[3*i + 2]});
+        atoms.emplace_back(occ::core::Atom{m_atomic_numbers[i], m_atomic_positions[3*i], m_atomic_positions[3*i + 1], m_atomic_positions[3*i + 2]});
     }
     return atoms;
 }

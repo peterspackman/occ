@@ -323,7 +323,7 @@ void BasisSet::translate(const occ::Vec3& translation) {
 }
 
 
-void rotate_atoms(std::vector<libint2::Atom>& atoms, const occ::Mat3& rotation)
+void rotate_atoms(std::vector<occ::core::Atom>& atoms, const occ::Mat3& rotation)
 {
     for(auto& atom: atoms) {
         occ::Vec3 pos{atom.x, atom.y, atom.z};
@@ -334,7 +334,7 @@ void rotate_atoms(std::vector<libint2::Atom>& atoms, const occ::Mat3& rotation)
     }
 }
 
-void translate_atoms(std::vector<libint2::Atom>& atoms, const occ::Vec3& translation)
+void translate_atoms(std::vector<occ::core::Atom>& atoms, const occ::Vec3& translation)
 {
     for(auto& atom: atoms) {
         atom.x += translation(0);

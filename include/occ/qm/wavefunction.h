@@ -60,7 +60,7 @@ struct Wavefunction {
     int num_electrons;
     BasisSet basis;
     size_t nbf{0};
-    std::vector<libint2::Atom> atoms;
+    std::vector<occ::core::Atom> atoms;
     Mat C, C_occ, D, T, V, H, J, K;
     Vec mo_energies;
     Energy energy;

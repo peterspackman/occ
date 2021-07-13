@@ -2,6 +2,7 @@
 #include <occ/qm/fock.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/core/energy_components.h>
+#include <occ/core/point_charge.h>
 
 namespace occ::hf {
 
@@ -18,7 +19,7 @@ const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 
 class HartreeFock {
 public:
-  HartreeFock(const std::vector<libint2::Atom> &atoms, const BasisSet &basis);
+  HartreeFock(const std::vector<occ::core::Atom> &atoms, const BasisSet &basis);
   const auto &shellpair_list() const { return m_shellpair_list; }
   const auto &shellpair_data() const { return m_shellpair_data; }
   const auto &atoms() const { return m_atoms; }
@@ -77,7 +78,7 @@ public:
   }
   auto compute_nuclear_attraction_matrix() {
     return compute_1body_ints<Operator::nuclear>(
-        m_basis, m_shellpair_list, libint2::make_point_charges(m_atoms))[0];
+        m_basis, m_shellpair_list, occ::core::make_point_charges(m_atoms))[0];
   }
 
   auto compute_point_charge_interaction_matrix(const std::vector<std::pair<double, std::array<double, 3>>> &point_charges) const {
@@ -115,7 +116,7 @@ public:
 private:
   int m_charge{0};
   int m_num_e{0};
-  std::vector<libint2::Atom> m_atoms;
+  std::vector<occ::core::Atom> m_atoms;
   BasisSet m_basis;
   shellpair_list_t m_shellpair_list{}; // shellpair list for OBS
   shellpair_data_t m_shellpair_data{}; // shellpair data for OBS

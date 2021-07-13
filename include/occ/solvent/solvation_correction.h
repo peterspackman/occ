@@ -4,7 +4,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/solvent/parameters.h>
-#include <libint2/atom.h>
+#include <occ/core/atom.h>
 #include <occ/core/logger.h>
 #include <occ/solvent/cosmo.h>
 
@@ -16,7 +16,7 @@ using occ::qm::SpinorbitalKind;
 class ContinuumSolvationModel
 {
 public:
-    ContinuumSolvationModel(const std::vector<libint2::Atom>&, const std::string& solvent = "water");
+    ContinuumSolvationModel(const std::vector<occ::core::Atom>&, const std::string& solvent = "water");
 
     void set_solvent(const std::string&);
     const std::string& solvent() const { return m_solvent_name; }
@@ -258,7 +258,7 @@ public:
 
 
 private:
-    const std::vector<libint2::Atom> &m_atoms;
+    const std::vector<occ::core::Atom> &m_atoms;
     Proc &m_proc;
     ContinuumSolvationModel m_solvation_model;
     std::vector<std::pair<double, std::array<double, 3>>> m_point_charges;

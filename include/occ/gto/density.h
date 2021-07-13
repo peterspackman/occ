@@ -66,7 +66,7 @@ namespace occ::density {
 
     template<size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
     Mat evaluate_density_on_grid(
-        const BasisSet &basis, const std::vector<libint2::Atom> &atoms,
+        const BasisSet &basis, const std::vector<occ::core::Atom> &atoms,
         const Mat& D, const occ::Mat &grid_pts)
     {
         auto gto_values = occ::gto::evaluate_basis_on_grid<max_derivative>(basis, atoms, grid_pts);

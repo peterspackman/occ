@@ -6,6 +6,7 @@
 #include <occ/core/util.h>
 #include <occ/core/constants.h>
 #include <occ/core/logger.h>
+#include <scn/scn.h>
 
 namespace occ::chem {
 
@@ -17,7 +18,7 @@ Molecule::Molecule(const IVec &nums, const Mat3N &pos)
   m_name = chemical_formula(m_elements);
 }
 
-Molecule::Molecule(const std::vector<libint2::Atom> &atoms)
+Molecule::Molecule(const std::vector<occ::core::Atom> &atoms)
     : m_positions(3, atoms.size()),
       m_atomicNumbers(atoms.size()) {
   m_elements.reserve(atoms.size());
@@ -39,28 +40,34 @@ Molecule read_xyz_file(const std::string &filename) {
     throw std::runtime_error(fmt::format("Could not open file: '{}'", filename));
   }
 
-  // to prepare for MPI parallelization, we will read the entire file into a
-  // string that can be
-  // broadcast to everyone, then converted to an std::istringstream object that
-  // can be used just like std::ifstream
-  std::ostringstream oss;
-  oss << is.rdbuf();
-  // use ss.str() to get the entire contents of the file as an std::string
-  // broadcast
-  // then make an std::istringstream in each process
-  std::istringstream iss(oss.str());
-
-  // check the extension: if .xyz, assume the standard XYZ format, otherwise
-  // throw an exception
-  if (filename.rfind(".xyz") != std::string::npos)
-    return Molecule(libint2::read_dotxyz(iss));
-  else
-    throw "only .xyz files are accepted";
+  std::string line;
+  std::getline(is, line);
+  int num_atoms;
+  scn::scan(line, "{}", num_atoms);
+  std::vector<occ::core::Atom> atoms;
+  atoms.reserve(num_atoms);
+  std::getline(is, line);
+  double x, y, z;
+  std::string el;
+  while(std::getline(is, line) && num_atoms > 0)
+  {
+      auto result = scn::scan(line, "{} {} {} {}", el, x, y, z);
+      if(!result) 
+      {
+          occ::log::error("failed reading {}", result.error().msg());
+          continue;
+      }
+      occ::log::debug("Found atom line: {} {} {} {}\n", el, x, y , z);
+      int n = occ::chem::Element(el).atomic_number();
+      atoms.emplace_back(occ::core::Atom{n, x * occ::units::ANGSTROM_TO_BOHR, y * occ::units::ANGSTROM_TO_BOHR, z * occ::units::ANGSTROM_TO_BOHR});
+      num_atoms--;
+  }
+  return Molecule(atoms);
 }
 
-std::vector<libint2::Atom> Molecule::atoms() const
+std::vector<occ::core::Atom> Molecule::atoms() const
 {
-    std::vector<libint2::Atom> result(size());
+    std::vector<occ::core::Atom> result(size());
     using occ::units::ANGSTROM_TO_BOHR;
     for (size_t i = 0; i < size(); i++) {
         result[i] = {m_atomicNumbers(i), m_positions(0, i) * ANGSTROM_TO_BOHR,
