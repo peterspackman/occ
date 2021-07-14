@@ -18,7 +18,7 @@ TEST_CASE("GTO vals H2/STO-3G") {
     };
     BasisSet basis("sto-3g", atoms);
     auto grid_pts = Mat::Identity(3, 4);
-    auto gto_values = occ::gto::evaluate_basis_on_grid<1>(basis, atoms, grid_pts);
+    auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts ,1);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
     fmt::print("phi_y\n{}\n", gto_values.phi_y);
@@ -37,7 +37,7 @@ TEST_CASE("GTO vals H2/3-21G") {
     };
     BasisSet basis("3-21G", atoms);
     auto grid_pts = Mat::Identity(3, 4);
-    auto gto_values = occ::gto::evaluate_basis_on_grid<1>(basis, atoms, grid_pts);
+    auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts, 1);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
     fmt::print("phi_y\n{}\n", gto_values.phi_y);
@@ -60,7 +60,7 @@ TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
     };
     BasisSet basis("sto-3g", atoms);
     auto grid_pts = Mat::Identity(3, 4);
-    auto gto_values = occ::gto::evaluate_basis_on_grid<1>(basis, atoms, grid_pts);
+    auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts, 1);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
     fmt::print("phi_y\n{}\n", gto_values.phi_y);
