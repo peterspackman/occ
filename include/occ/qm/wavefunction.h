@@ -53,6 +53,7 @@ struct Wavefunction {
     occ::IVec atomic_numbers() const;
 
     void save(FchkWriter&);
+    void save_npz(const std::string&);
 
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
     int num_alpha;

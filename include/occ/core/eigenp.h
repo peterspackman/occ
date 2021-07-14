@@ -8,6 +8,7 @@
 #include <regex>
 #include <assert.h>
 #include <occ/3rdparty/robin_hood.h>
+#include <fmt/core.h>
 #include <fstream>
 #include <zlib.h>
 #include <Eigen/Dense>
@@ -451,7 +452,7 @@ void save_npz(const std::string &zipname, const std::string &filename, const Sca
         //then read and store the global header.
         //below, we will write the the new data at the start of the global header then append the global header and footer below it
         size_t global_header_size;
-        parse_zip_footer(file, nrecs,global_header_size,global_header_offset);
+        parse_zip_footer(file, nrecs, global_header_size, global_header_offset);
         file.seekg(global_header_offset, std::ios_base::beg);
         global_header.resize(global_header_size);
         file.read(&global_header[0], global_header_size);
@@ -469,57 +470,62 @@ void save_npz(const std::string &zipname, const std::string &filename, const Sca
 
     size_t nels = std::accumulate(shape.begin(),shape.end(), 1, std::multiplies<size_t>());
     size_t nbytes = nels*sizeof(ScalarType) + npy_header.size();
+    fmt::print("{} elements, {} bytes, {} recs\n", nels, nbytes, nrecs);
 
     //get the CRC of the data to be added
-    uint32_t crc = crc32(0L,(uint8_t*)&npy_header[0],npy_header.size());
-    crc = crc32(crc,(uint8_t*)data,nels*sizeof(ScalarType));
+    uint32_t crc = crc32(0L, reinterpret_cast<const uint8_t*>(npy_header.data()), npy_header.size());
+    crc = crc32(crc, reinterpret_cast<const uint8_t*>(data), nels*sizeof(ScalarType));
 
     //build the local header
     std::vector<char> local_header;
     local_header += "PK"; //first part of sig
-    local_header += (uint16_t) 0x0403; //second part of sig
-    local_header += (uint16_t) 20; //min version to extract
-    local_header += (uint16_t) 0; //general purpose bit flag
-    local_header += (uint16_t) 0; //compression method
-    local_header += (uint16_t) 0; //file last mod time
-    local_header += (uint16_t) 0;     //file last mod date
-    local_header += (uint32_t) crc; //crc
-    local_header += (uint32_t) nbytes; //compressed size
-    local_header += (uint32_t) nbytes; //uncompressed size
-    local_header += (uint16_t) zfname.size(); //fname length
-    local_header += (uint16_t) 0; //extra field length
+    local_header += uint16_t{0x0403}; //second part of sig
+    local_header += uint16_t{20}; //min version to extract
+    local_header += uint16_t{0}; //general purpose bit flag
+    local_header += uint16_t{0}; //compression method
+    local_header += uint16_t{0}; //file last mod time
+    local_header += uint16_t{0}; //file last mod date
+    local_header += crc; //crc
+    local_header += static_cast<uint32_t>(nbytes); //compressed size
+    local_header += static_cast<uint32_t>(nbytes); //uncompressed size
+    local_header += static_cast<uint16_t>(zfname.size()); //fname length
+    local_header += uint16_t{0}; //extra field length
     local_header += zfname;
 
     //build global header
     global_header += "PK"; //first part of sig
-    global_header += (uint16_t) 0x0201; //second part of sig
-    global_header += (uint16_t) 20; //version made by
+    global_header += uint16_t{0x0201}; //second part of sig
+    global_header += uint16_t{20}; //version made by
     global_header.insert(global_header.end(),local_header.begin()+4,local_header.begin()+30);
-    global_header += (uint16_t) 0; //file comment length
-    global_header += (uint16_t) 0; //disk number where file starts
-    global_header += (uint16_t) 0; //internal file attributes
-    global_header += (uint32_t) 0; //external file attributes
-    global_header += (uint32_t) global_header_offset; //relative offset of local file header, since it begins where the global header used to begin
+    global_header += uint16_t{0}; //file comment length
+    global_header += uint16_t{0}; //disk number where file starts
+    global_header += uint16_t{0}; //internal file attributes
+    global_header += uint32_t{0}; //external file attributes
+    //relative offset of local file header, since it begins where the global header used to begin
+    global_header += static_cast<uint32_t>(global_header_offset);
     global_header += zfname;
 
     //build footer
     std::vector<char> footer;
     footer += "PK"; //first part of sig
-    footer += (uint16_t) 0x0605; //second part of sig
-    footer += (uint16_t) 0; //number of this disk
-    footer += (uint16_t) 0; //disk where footer starts
-    footer += (uint16_t) (nrecs+1); //number of records on this disk
-    footer += (uint16_t) (nrecs+1); //total number of records
-    footer += (uint32_t) global_header.size(); //nbytes of global headers
-    footer += (uint32_t) (global_header_offset + nbytes + local_header.size()); //offset of start of global headers, since global header now starts after newly written array
-    footer += (uint16_t) 0; //zip file comment length
+    footer += uint16_t{0x0605}; //second part of sig
+    footer += uint16_t{0}; //number of this disk
+    footer += uint16_t{0}; //disk where footer starts
+    footer += static_cast<uint16_t>(nrecs + 1); //number of records on this disk
+    footer += static_cast<uint16_t>(nrecs + 1); //total number of records
+    footer += static_cast<uint32_t>(global_header.size()); //nbytes of global headers
+    //offset of start of global headers, since global header now starts after newly written array
+    footer += static_cast<uint32_t>(global_header_offset + nbytes + local_header.size());
+    footer += uint16_t{0}; //zip file comment length
 
     //write everything
-    file.write(&local_header[0], local_header.size());
-    file.write(&npy_header[0], npy_header.size());
+    file.write(local_header.data(), local_header.size());
+    file.write(npy_header.data(), npy_header.size());
     file.write(reinterpret_cast<const char*>(data), sizeof(ScalarType) * nels);
-    file.write(&global_header[0], global_header.size());
-    file.write(&footer[0], footer.size());
+    file.write(global_header.data(), global_header.size());
+    file.write(footer.data(), footer.size());
+    file.flush();
+    file.close();
 }
 
 

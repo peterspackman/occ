@@ -18,7 +18,7 @@ namespace occ::density {
 
 
     template<size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-    void evaluate_density(const Mat &D, const occ::gto::GTOValues<max_derivative>& gto_values, Mat &rho)
+    void evaluate_density(const Mat &D, const occ::gto::GTOValues& gto_values, Mat &rho)
     {
         if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
             // alpha part first
@@ -57,7 +57,7 @@ namespace occ::density {
     }
 
     template<size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-    Mat evaluate_density(const Mat &D, const occ::gto::GTOValues<max_derivative>& gto_values)
+    Mat evaluate_density(const Mat &D, const occ::gto::GTOValues& gto_values)
     {
         occ::Mat rho;
         evaluate_density<max_derivative, spinorbital_kind>(D, gto_values, rho);
@@ -69,7 +69,7 @@ namespace occ::density {
         const BasisSet &basis, const std::vector<occ::core::Atom> &atoms,
         const Mat& D, const occ::Mat &grid_pts)
     {
-        auto gto_values = occ::gto::evaluate_basis_on_grid<max_derivative>(basis, atoms, grid_pts);
+        auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts, max_derivative);
         return evaluate_density<max_derivative, spinorbital_kind>(D, gto_values);
     }
 
