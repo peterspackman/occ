@@ -273,10 +273,19 @@ int main(int argc, char *argv[]) {
         config.multiplicity = result["multiplicity"].as<int>();
         config.method = result["method"].as<std::string>();
         config.charge = result["charge"].as<int>();
-        if (result.count("unrestricted") || config.method == "uhf") {
-            config.spinorbital_kind == SpinorbitalKind::Unrestricted;
+        if (config.multiplicity != 1 || result.count("unrestricted") || config.method == "uhf") {
+            config.spinorbital_kind = SpinorbitalKind::Unrestricted;
+            fmt::print("unrestricted spinorbital kind\n");
         }
-        else if(config.method == "ghf") config.spinorbital_kind == SpinorbitalKind::General;
+        else if(config.method == "ghf")
+        {
+            config.spinorbital_kind = SpinorbitalKind::General;
+            fmt::print("general spinorbital kind\n");
+        }
+        else
+        {
+            fmt::print("restricted spinorbital kind\n");
+        }
 
 
         using occ::parallel::nthreads;
