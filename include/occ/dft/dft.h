@@ -33,12 +33,6 @@ using occ::ints::shellpair_list_t;
 
 std::vector<DensityFunctional> parse_method(const std::string& method_string, bool polarized = false);
 
-template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-Mat evaluate_density(Eigen::Ref<const Mat> D, const occ::gto::GTOValues& gto_values)
-{
-    return occ::density::evaluate_density<derivative_order, spinorbital_kind>(D, gto_values);
-}
-
 class DFT {
 
 public:
@@ -169,6 +163,7 @@ public:
             }
             auto lambda = [&](int thread_id)
             {
+                Mat rho(BLOCKSIZE, occ::density::num_components(derivative_order));
                 for(size_t block = 0; block < num_blocks; block++) {
                     if(block % nthreads != thread_id) continue;
                     Eigen::Index l = block * BLOCKSIZE;
@@ -184,7 +179,7 @@ public:
                         occ::gto::evaluate_basis(basis, atoms, pts_block, cache[block], derivative_order);
                     }
                     const auto &gto_vals = cache[block];
-                    const auto rho = evaluate_density<derivative_order, spinorbital_kind>(D2, gto_vals);
+                    occ::density::evaluate_density<derivative_order, spinorbital_kind>(D2, gto_vals, rho);
 
                     double max_density_block = rho.col(0).maxCoeff();
                     if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
@@ -275,7 +270,9 @@ public:
                     k.noalias() += KK;
                 }
             };
+            occ::timing::start(occ::timing::category::dft_xc);
             occ::parallel::parallel_do(lambda);
+            occ::timing::stop(occ::timing::category::dft_xc);
             atom_grid_idx++;
         }
         double exc_dft{0.0};

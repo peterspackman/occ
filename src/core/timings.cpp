@@ -38,6 +38,8 @@ std::string category_name(category cat)
     case grid_init: return "DFT grid init";
     case grid_points: return "DFT grid points";
     case dft: return "DFT functional evaluation";
+    case rho: return "density evaluation";
+    case dft_xc: return "DFT XC total";
     case gto: return "GTO evaluation (overall)";
     case gto_dist: return "GTO dist evaluation";
     case gto_mask: return "GTO mask evaluation";
@@ -69,6 +71,8 @@ void print_timings()
         grid_init,
         grid_points,
         dft,
+        rho,
+        dft_xc,
         gto,
         gto_dist,
         gto_mask,
