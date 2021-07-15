@@ -88,7 +88,11 @@ std::vector<DensityFunctional> parse_method(const std::string& method_string, bo
                 funcs.emplace_back(f);
             }
         }
-        else funcs.push_back(DensityFunctional(token, polarized));
+        else 
+        {
+            fmt::print("    {}\n", token);
+            funcs.push_back(DensityFunctional(token, polarized));
+        }
     }
     return funcs;
 }

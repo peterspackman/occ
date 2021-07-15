@@ -18,6 +18,7 @@
 
 namespace occ::scf {
 
+constexpr auto OCC_MINIMAL_BASIS = "mini";
 using occ::util::human_readable_size;
 using occ::conditioning_orthogonalizer;
 using occ::qm::SpinorbitalKind;
@@ -212,6 +213,7 @@ struct SCF {
         C = wfn.C;
         C_occ = wfn.C_occ;
         orbital_energies = wfn.mo_energies;
+        update_occupied_orbital_count();
         if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
         {
             S = m_procedure.compute_overlap_matrix();
@@ -303,7 +305,7 @@ struct SCF {
 
         occ::timing::start(occ::timing::category::guess);
         auto D_minbs = compute_soad(); // compute guess in minimal basis
-        BasisSet minbs("mini", atoms());
+        BasisSet minbs(OCC_MINIMAL_BASIS, atoms());
         if (minbs == m_procedure.basis()) {
             if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                 D = D_minbs;
