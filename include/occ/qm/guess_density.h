@@ -101,7 +101,7 @@ std::vector<double> minimal_basis_occupation_vector(size_t Z) {
     update_occupation_subshell(iter, 5, num_of_electrons);          // 3d
     update_occupation_subshell(iter, 5, num_of_electrons);          // 4d
   }
-  if(53 < Z <= 86)
+  if(53 < Z && Z <= 86)
   {
     update_occupation_subshell(iter, 1, num_of_electrons);          // 4s
     update_occupation_subshell(iter, 3, num_of_electrons);          // 4p
