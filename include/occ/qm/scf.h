@@ -303,7 +303,7 @@ struct SCF {
 
         occ::timing::start(occ::timing::category::guess);
         auto D_minbs = compute_soad(); // compute guess in minimal basis
-        BasisSet minbs("STO-3G", atoms());
+        BasisSet minbs("mini", atoms());
         if (minbs == m_procedure.basis()) {
             if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                 D = D_minbs;

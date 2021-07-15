@@ -40,10 +40,12 @@ inline size_t minimal_basis_nao(size_t Z) {
     nao = 18;
   else if (Z <= 38)  // Rb, Sr
     nao = 22;        // 5p is included
-  else if (Z <= 53)  // Y - I
+  else if (Z <= 54)  // Y - I
     nao = 27;
+  else if (Z <= 86)
+    nao = 49;
   else
-    throw std::runtime_error("STO-3G basis not defined for elements Z > 53");
+    throw std::runtime_error("minimal basis not defined for elements Z > 86");
   return nao;
 }
 
@@ -98,6 +100,19 @@ std::vector<double> minimal_basis_occupation_vector(size_t Z) {
 
     update_occupation_subshell(iter, 5, num_of_electrons);          // 3d
     update_occupation_subshell(iter, 5, num_of_electrons);          // 4d
+  }
+  if(53 < Z <= 86)
+  {
+    update_occupation_subshell(iter, 1, num_of_electrons);          // 4s
+    update_occupation_subshell(iter, 3, num_of_electrons);          // 4p
+    update_occupation_subshell(iter, 1, num_of_electrons);          // 5s
+    update_occupation_subshell(iter, 3, num_of_electrons);          // 5p
+    update_occupation_subshell(iter, 3, num_of_electrons);          // 6p
+    update_occupation_subshell(iter, 3, num_of_electrons);          // 6p
+    update_occupation_subshell(iter, 5, num_of_electrons);          // 3d
+    update_occupation_subshell(iter, 5, num_of_electrons);          // 4d
+    update_occupation_subshell(iter, 5, num_of_electrons);          // 5d
+    update_occupation_subshell(iter, 9, num_of_electrons);          // 4f
   }
 
   return occvec;
