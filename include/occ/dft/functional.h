@@ -414,8 +414,9 @@ public:
         size_t npts{0};
         bool have_vsigma{false};
         Vec exc;
-        Mat vrho;
-        Mat vsigma;
+        // must be row major for libXC interface
+        MatRM vrho;
+        MatRM vsigma;
         Result& operator +=(const Result& right) {
             exc.array() += right.exc.array();
             vrho.array() += right.vrho.array();
@@ -450,8 +451,9 @@ public:
             }
         }
         size_t npts{0};
-        Mat rho;
-        Mat sigma;
+        // must be row major for libXC interface
+        MatRM rho;
+        MatRM sigma;
     };
 
     DensityFunctional(const std::string&, bool polarized = false);

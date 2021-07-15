@@ -188,10 +188,10 @@ public:
                     }
                     else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
                         // correct assignment
-                        params.rho.col(0) = rho.alpha().col(0);
-                        params.rho.col(1) = rho.beta().col(0);
-                        double tot_density_a = rho.alpha().col(0).dot(weights_block);
-                        double tot_density_b = rho.beta().col(0).dot(weights_block);
+                        params.rho.col(0) = rho.col(0).alpha();
+                        params.rho.col(1) = rho.col(0).beta();
+                        double tot_density_a = rho.col(0).alpha().dot(weights_block);
+                        double tot_density_b = rho.col(0).beta().dot(weights_block);
                         alpha_densities[thread_id] += tot_density_a;
                         beta_densities[thread_id] += tot_density_b;
                     }
@@ -232,7 +232,9 @@ public:
                         Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
                         KK = gto_vals.phi.transpose() * phi_vrho;
                     } else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                        energies[thread_id] += res.exc.dot(rho.alpha().col(0)) + res.exc.dot(rho.beta().col(0));
+                        double e_alpha = res.exc.dot(rho.alpha().col(0));
+                        double e_beta = res.exc.dot(rho.beta().col(0));
+                        energies[thread_id] +=  e_alpha + e_beta;
                         Mat phi_vrho_a = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
                         Mat phi_vrho_b = gto_vals.phi.array().colwise() * res.vrho.col(1).array();
 

@@ -18,7 +18,7 @@ namespace occ::density {
 
 
     template<size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-    void evaluate_density(const Mat &D, const occ::gto::GTOValues& gto_values, Mat &rho)
+    void evaluate_density(Eigen::Ref<const Mat> D, const occ::gto::GTOValues& gto_values, Mat &rho)
     {
         //use a MatRM as a row major temporary, selfadjointView also speeds things up a little.
         auto npt = gto_values.phi.rows();
@@ -27,33 +27,33 @@ namespace occ::density {
             // alpha part first
             MatRM Dphi = gto_values.phi * D.alpha();
             if(rho.rows() != npt * 2) rho.resize(npt * 2, num_components(max_derivative));
-            rho.block(0, 0, npt, 1).array() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
+            rho.col(0).alpha() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
             /*
              * If we wish to get the values interleaved for say libxc, use an Eigen::Map as follows:
              *  Map<occ::Mat, 0, Stride<Dynamic, 2>>(rho.col(1).data(), Dphi.rows(), Dphi.cols(), Stride<Dynamic, 2>(2*Dphi.rows(), 2)) = RHS
              */
             if constexpr(max_derivative > 0) {
-                rho.block(0, 1, npt, 1).array() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-                rho.block(0, 2, npt, 1).array() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-                rho.block(0, 3, npt, 1).array() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+                rho.col(1).alpha() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
+                rho.col(2).alpha() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
+                rho.col(3).alpha() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
             }
             // beta part
             Dphi = gto_values.phi * D.beta();
-            rho.block(npt, 0, npt, 1).array() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
+            rho.col(0).beta() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
             if constexpr(max_derivative > 0) {
-                rho.block(npt, 1, npt, 1).array() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-                rho.block(npt, 2, npt, 1).array() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-                rho.block(npt, 3, npt, 1).array() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+                rho.col(1).beta() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
+                rho.col(2).beta() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
+                rho.col(3).beta() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
             }
         }
         else {
             MatRM Dphi = gto_values.phi * D.selfadjointView<Eigen::Upper>();
             if (rho.rows() != npt) rho.resize(npt, num_components(max_derivative));
-            rho.col(0).array() = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
+            rho.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
             if constexpr(max_derivative > 0) {
-                rho.col(1).array() = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-                rho.col(2).array() = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-                rho.col(3).array() = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+                rho.col(1) = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
+                rho.col(2) = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
+                rho.col(3) = 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
             }
         }
 
