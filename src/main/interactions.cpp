@@ -118,7 +118,7 @@ std::vector<Wavefunction> calculate_wavefunctions(const std::string &basename, c
 
 }
 
-std::vector<SolvatedSurfaceProperties> calculate_solvated_surfaces(
+std::pair<std::vector<SolvatedSurfaceProperties>, std::vector<Wavefunction>> calculate_solvated_surfaces(
         const std::string &basename, const std::vector<Wavefunction> &wfns,
         const std::string& solvent_name)
 {
@@ -141,6 +141,7 @@ std::vector<SolvatedSurfaceProperties> calculate_solvated_surfaces(
         scf.start_incremental_F_threshold = 0.0;
         scf.set_charge_multiplicity(0, 1);
         double e = scf.compute_scf_energy();
+        solvated_wfns.push_back(scf.wavefunction());
         props.coulomb_pos = proc_solv.surface_positions_coulomb();
         props.cds_pos = proc_solv.surface_positions_cds();
         props.e_cds = proc_solv.surface_cds_energy_elements();
@@ -162,8 +163,7 @@ std::vector<SolvatedSurfaceProperties> calculate_solvated_surfaces(
         result.push_back(props);
     }
 
-    return result;
-
+    return {result, solvated_wfns};
 }
 
 
@@ -204,15 +204,16 @@ void write_xyz_dimer(const std::string &filename, const Dimer &dimer)
     }
 }
 
-auto calculate_interaction_energy(const Dimer &dimer, const std::vector<Wavefunction> &wfns, const Crystal &crystal)
+auto calculate_interaction_energy(const Dimer &dimer, const std::vector<Wavefunction> &wfns_a,
+                                  const std::vector<Wavefunction> &wfns_b, const Crystal &crystal)
 {
     const std::string model_name = "ce-b3lyp";
     Molecule mol_A = dimer.a();
     Molecule mol_B = dimer.b();
-    const auto& wfna = wfns[mol_A.asymmetric_molecule_idx()];
-    const auto& wfnb = wfns[mol_B.asymmetric_molecule_idx()];
-    Wavefunction A = wfns[mol_A.asymmetric_molecule_idx()];
-    Wavefunction B = wfns[mol_B.asymmetric_molecule_idx()];
+    const auto& wfna = wfns_a[mol_A.asymmetric_molecule_idx()];
+    const auto& wfnb = wfns_b[mol_B.asymmetric_molecule_idx()];
+    Wavefunction A = wfns_a[mol_A.asymmetric_molecule_idx()];
+    Wavefunction B = wfns_b[mol_B.asymmetric_molecule_idx()];
     auto transform_a = calculate_transform(wfna, mol_A, crystal);
     A.apply_transformation(transform_a.first, transform_a.second);
 
@@ -362,13 +363,15 @@ int main(int argc, char **argv) {
     using occ::parallel::nthreads;
     std::string cif_filename{""};
     std::string solvent{"water"};
+    std::string wfn_choice{"gas"};
     options
         .add_options()
         ("i,input", "Input CIF", cxxopts::value<std::string>(cif_filename))
         ("t,threads", "Number of threads", cxxopts::value<int>(nthreads)->default_value("1"))
         ("dump-solvent-file", "Write out solvent file", cxxopts::value<bool>(dump_visualization_files))
         ("r,radius", "maximum radius (angstroms) for neighbours", cxxopts::value<double>(radius)->default_value("3.8"))
-        ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent));
+        ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent))
+        ("w,wavefunction-choice", "Choice of wavefunctions", cxxopts::value<std::string>(wfn_choice));
 
     options.parse_positional({"input"});
 
@@ -417,13 +420,16 @@ int main(int argc, char **argv) {
 
         tprev = sw.read();
         sw.start();
-        auto surfaces = calculate_solvated_surfaces(basename, wfns, solvent);
+        std::vector<Wavefunction> solvated_wavefunctions;
+        std::vector<SolvatedSurfaceProperties> surfaces;
+        std::tie(surfaces, solvated_wavefunctions) = calculate_solvated_surfaces(basename, wfns, solvent);
         sw.stop();
         fmt::print("Solution phase wavefunctions took {:.6f} seconds\n", sw.read() - tprev);
 
         tprev = sw.read();
         sw.start();
         compute_monomer_energies(wfns);
+        compute_monomer_energies(solvated_wavefunctions);
         sw.stop();
         fmt::print("Computing monomer energies took {:.6f} seconds\n", sw.read() - tprev);
 
@@ -445,7 +451,16 @@ int main(int argc, char **argv) {
 
         std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
 
-        fmt::print("Calculating unique pair interactions\n");
+        fmt::print("Calculating unique pair interactions using {} wavefunctions\n", wfn_choice);
+        const auto& wfns_a = [&]() {
+            if(wfn_choice == "gas") return wfns;
+            else return solvated_wavefunctions;
+        }();
+        const auto& wfns_b = [&]() {
+            if(wfn_choice == "solvent") return solvated_wavefunctions;
+            else return wfns;
+        }();
+
         size_t current_dimer = 0;
         for(const auto& dimer: dimers)
         {
@@ -460,7 +475,7 @@ int main(int argc, char **argv) {
                        s_ab); 
 
             std::cout << std::flush;
-            dimer_energies.push_back(calculate_interaction_energy(dimer, wfns, c));
+            dimer_energies.push_back(calculate_interaction_energy(dimer, wfns_a, wfns_b, c));
             sw.stop();
             fmt::print("  took {:.6f} seconds\n", sw.read() - tprev);
             std::cout << std::flush;
