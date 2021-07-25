@@ -322,7 +322,7 @@ struct SCF {
             // if basis != minimal basis, map non-representable SOAD guess
             // into the AO basis
             // by diagonalizing a Fock matrix
-            occ::log::debug("Projecting SOAD into atomic orbital basis...");
+            occ::log::debug("Projecting minimal basis guess into atomic orbital basis...");
 
             if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
                 F += occ::ints::compute_2body_fock_mixed_basis(

@@ -2,7 +2,6 @@
 #include <occ/core/logger.h>
 #include <occ/qm/ints.h>
 #include <occ/qm/spinorbital.h>
-#include <mutex>
 
 namespace occ::ints {
 using occ::qm::SpinorbitalKind;
