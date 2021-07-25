@@ -294,13 +294,15 @@ int main(int argc, char *argv[]) {
 
         std::string ext = config.input_file.extension();
         occ::timing::stop(occ::timing::category::io);
-        Wavefunction wfn;
-        if ( ext == ".gjf" || ext == ".com") {
-            wfn = run_from_gaussian_input_file(config);
-        }
-        else {
-            wfn = run_from_xyz_file(config);
-        }
+        Wavefunction wfn = [&ext, &config]() {
+            if ( ext == ".gjf" || ext == ".com") {
+                return run_from_gaussian_input_file(config);
+            }
+            else {
+                return run_from_xyz_file(config);
+            }
+        }();
+
         fs::path fchk_path = config.input_file;
         fchk_path.replace_extension(".fchk");
         fs::path npz_path = config.input_file;
@@ -319,40 +321,37 @@ int main(int argc, char *argv[]) {
             config.solvent = result["solvent"].as<std::string>();
             if(result.count("solvent-file"))
                 config.solvent_surface_filename = result["solvent-file"].as<std::string>();
-            Wavefunction wfn2;
-            if(config.method == "ghf")
-            {
-                fmt::print("Hartree-Fock + SMD with general spinorbitals\n");
-                wfn2 = run_solvated_method<HartreeFock, SpinorbitalKind::General>(wfn, config);
-                esolv = wfn2.energy.total - wfn.energy.total;
-            }
-            else if(config.method == "rhf")
-            {
-                fmt::print("Hartree-Fock + SMD with restricted spinorbitals\n");
-                wfn2 = run_solvated_method<HartreeFock, SpinorbitalKind::Restricted>(wfn, config);
-                esolv = wfn2.energy.total - wfn.energy.total;
-            }
-            else if(config.method == "uhf")
-            {
-                fmt::print("Hartree-Fock + SMD with unrestricted spinorbitals\n");
-                wfn2 = run_solvated_method<HartreeFock, SpinorbitalKind::Unrestricted>(wfn, config);
-                esolv = wfn2.energy.total - wfn.energy.total;
-            }
-            else
-            {
-                if(config.spinorbital_kind == SpinorbitalKind::Restricted)
+            Wavefunction wfn2 = [&config, &wfn]() {
+                if(config.method == "ghf")
                 {
-                    fmt::print("Kohn-Sham DFT + SMD with restricted spinorbitals\n");
-                    wfn2 = run_solvated_method<DFT, SpinorbitalKind::Restricted>(wfn, config);
-                    esolv = wfn2.energy.total - wfn.energy.total;
+                    fmt::print("Hartree-Fock + SMD with general spinorbitals\n");
+                    return run_solvated_method<HartreeFock, SpinorbitalKind::General>(wfn, config);
+                }
+                else if(config.method == "rhf")
+                {
+                    fmt::print("Hartree-Fock + SMD with restricted spinorbitals\n");
+                    return run_solvated_method<HartreeFock, SpinorbitalKind::Restricted>(wfn, config);
+                }
+                else if(config.method == "uhf")
+                {
+                    fmt::print("Hartree-Fock + SMD with unrestricted spinorbitals\n");
+                    return run_solvated_method<HartreeFock, SpinorbitalKind::Unrestricted>(wfn, config);
                 }
                 else
                 {
-                    fmt::print("Kohn-Sham DFT + SMD with unrestricted spinorbitals\n");
-                    wfn2 = run_solvated_method<DFT, SpinorbitalKind::Unrestricted>(wfn, config);
-                    esolv = wfn2.energy.total - wfn.energy.total;
+                    if(config.spinorbital_kind == SpinorbitalKind::Restricted)
+                    {
+                        fmt::print("Kohn-Sham DFT + SMD with restricted spinorbitals\n");
+                        return run_solvated_method<DFT, SpinorbitalKind::Restricted>(wfn, config);
+                    }
+                    else
+                    {
+                        fmt::print("Kohn-Sham DFT + SMD with unrestricted spinorbitals\n");
+                        return run_solvated_method<DFT, SpinorbitalKind::Unrestricted>(wfn, config);
+                    }
                 }
-            }
+            }();
+            esolv = wfn2.energy.total - wfn.energy.total;
 
             fmt::print("Estimated delta G(solv) {:20.12f} ({:.3f} kJ/mol, {:.3f} kcal/mol)\n", 
                         esolv, esolv * occ::units::AU_TO_KJ_PER_MOL, esolv * occ::units::AU_TO_KCAL_PER_MOL);

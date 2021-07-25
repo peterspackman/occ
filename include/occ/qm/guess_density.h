@@ -103,6 +103,7 @@ std::vector<double> minimal_basis_occupation_vector(size_t Z) {
   }
   if(53 < Z && Z <= 86)
   {
+    // TODO proper setup for heavy elements!
     update_occupation_subshell(iter, 1, num_of_electrons);          // 4s
     update_occupation_subshell(iter, 3, num_of_electrons);          // 4p
     update_occupation_subshell(iter, 1, num_of_electrons);          // 5s
