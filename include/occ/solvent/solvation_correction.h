@@ -256,6 +256,16 @@ public:
         return m_solvation_model.surface_electronic_energy_elements(kind, D, m_proc);
     }
 
+    auto compute_electronic_multipole_matrices(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    {
+        return m_proc.compute_electronic_multipole_matrices(order, o);
+    }
+
+    auto compute_nuclear_multipoles(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    {
+        return m_proc.compute_nuclear_multipoles(order, o);
+    }
+
 
 private:
     const std::vector<occ::core::Atom> &m_atoms;

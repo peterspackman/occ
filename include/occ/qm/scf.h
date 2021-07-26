@@ -9,6 +9,8 @@
 #include <occ/qm/wavefunction.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/point_charge.h>
+#include <occ/core/units.h>
+#include <occ/core/molecule.h>
 #include <occ/qm/guess_density.h>
 
 #include <fmt/core.h>
@@ -122,6 +124,17 @@ struct SCF {
         wfn.spinorbital_kind = spinorbital_kind;
         wfn.T = T;
         wfn.V = V;
+        Vec3 origin = occ::chem::Molecule(m_procedure.atoms()).center_of_mass() * occ::units::ANGSTROM_TO_BOHR;
+        auto ed = m_procedure.compute_electronic_multipole_matrices(1, origin);
+        auto nd = m_procedure.compute_nuclear_multipoles(1, origin);
+        Vec3 dipole;
+        dipole(0) = -2 * expectation<spinorbital_kind>(D, ed[1]);
+        dipole(1) = -2 * expectation<spinorbital_kind>(D, ed[2]);
+        dipole(2) = -2 * expectation<spinorbital_kind>(D, ed[3]);
+        fmt::print("Electronic dipole:\n{}\n", dipole);
+        fmt::print("Nuclear dipole:\n{}\n", nd[1]);
+        fmt::print("Total dipole moment:\n{}\n", dipole + nd[1]);
+        fmt::print("Magnitude: {:.3f}\n", (dipole + nd[1]).norm());
         return wfn;
     }
 

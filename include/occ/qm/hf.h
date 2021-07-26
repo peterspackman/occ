@@ -25,11 +25,6 @@ public:
   const auto &atoms() const { return m_atoms; }
   const auto &basis() const { return m_basis; }
 
-  void set_system_charge(int charge) {
-    m_num_e += m_charge;
-    m_charge = charge;
-    m_num_e -= m_charge;
-  }
   int system_charge() const { return m_charge; }
   int num_e() const { return m_num_e; }
 
@@ -40,65 +35,27 @@ public:
   void update_scf_energy(occ::core::EnergyComponents &energy, bool incremental) const { return; }
   bool supports_incremental_fock_build() const { return true; }
 
+  void set_system_charge(int charge);
   double nuclear_repulsion_energy() const;
 
   Mat compute_fock(SpinorbitalKind kind, const Mat &D,
                     double precision = std::numeric_limits<double>::epsilon(),
-                    const Mat &Schwarz = Mat()) const
-  {
-      if(kind == SpinorbitalKind::General) return m_fockbuilder.compute_fock<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      if(kind == SpinorbitalKind::Unrestricted) return m_fockbuilder.compute_fock<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      return m_fockbuilder.compute_fock<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-  }
-
+                    const Mat &Schwarz = Mat()) const;
   std::pair<Mat, Mat> compute_JK(SpinorbitalKind kind, const Mat &D,
                     double precision = std::numeric_limits<double>::epsilon(),
-                    const Mat &Schwarz = Mat()) const
-  {
-      if(kind == SpinorbitalKind::General) return m_fockbuilder.compute_JK<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      if(kind == SpinorbitalKind::Unrestricted) return m_fockbuilder.compute_JK<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      return m_fockbuilder.compute_JK<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-  }
-
+                    const Mat &Schwarz = Mat()) const;
   Mat compute_J(SpinorbitalKind kind, const Mat &D,
                   double precision = std::numeric_limits<double>::epsilon(),
-                  const Mat &Schwarz = Mat()) const
-  {
-      if(kind == SpinorbitalKind::General) return m_fockbuilder.compute_J<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      if(kind == SpinorbitalKind::Unrestricted) return m_fockbuilder.compute_J<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-      return m_fockbuilder.compute_J<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-  }
+                  const Mat &Schwarz = Mat()) const;
 
+  Mat compute_kinetic_matrix() const;
+  Mat compute_overlap_matrix() const;
+  Mat compute_nuclear_attraction_matrix() const; 
+  Mat compute_point_charge_interaction_matrix(const std::vector<occ::core::PointCharge> &point_charges) const;
 
-  auto compute_kinetic_matrix() {
-    return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0];
-  }
-  auto compute_overlap_matrix() {
-    return compute_1body_ints<Operator::overlap>(m_basis, m_shellpair_list)[0];
-  }
-  auto compute_nuclear_attraction_matrix() {
-    return compute_1body_ints<Operator::nuclear>(
-        m_basis, m_shellpair_list, occ::core::make_point_charges(m_atoms))[0];
-  }
-
-  auto compute_point_charge_interaction_matrix(const std::vector<std::pair<double, std::array<double, 3>>> &point_charges) const {
-    return compute_1body_ints<Operator::nuclear>(m_basis, m_shellpair_list, point_charges)[0];
-  }
-
-  auto compute_kinetic_energy_derivatives(unsigned derivative) {
-    return compute_1body_ints_deriv<Operator::kinetic>(
-        derivative, m_basis, m_shellpair_list, m_atoms);
-  }
-
-  auto compute_nuclear_attraction_derivatives(unsigned derivative) {
-    return compute_1body_ints_deriv<Operator::nuclear>(
-        derivative, m_basis, m_shellpair_list, m_atoms);
-  }
-
-  auto compute_overlap_derivatives(unsigned derivative) {
-    return compute_1body_ints_deriv<Operator::overlap>(
-        derivative, m_basis, m_shellpair_list, m_atoms);
-  }
+  std::vector<Mat> compute_kinetic_energy_derivatives(unsigned derivative) const;
+  std::vector<Mat> compute_nuclear_attraction_derivatives(unsigned derivative) const;
+  std::vector<Mat> compute_overlap_derivatives(unsigned derivative) const;
 
   Mat3N nuclear_electric_field_contribution(const Mat3N&) const;
   Mat3N electronic_electric_field_contribution(SpinorbitalKind kind, const Mat&, const Mat3N&) const;
@@ -107,11 +64,14 @@ public:
 
   Mat compute_shellblock_norm(const Mat &A) const;
 
-  auto compute_schwarz_ints() {
+  auto compute_schwarz_ints() const {
     return occ::ints::compute_schwarz_ints<>(m_basis);
   }
 
   void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const Mat &D, Mat &H) { return; }
+
+  std::vector<Mat> compute_electronic_multipole_matrices(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const;
+  std::vector<Vec> compute_nuclear_multipoles(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const;
 
 private:
   int m_charge{0};

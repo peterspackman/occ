@@ -1,6 +1,7 @@
 #pragma once
 #define EIGEN_MATRIXBASE_PLUGIN <occ/core/opmatrix.h>
 #include <Eigen/Dense>
+#include <Eigen/StdVector>
 
 namespace occ {
 using DMatRM =

@@ -79,15 +79,15 @@ public:
 
     double nuclear_repulsion_energy() const { return m_hf.nuclear_repulsion_energy(); }
 
-    auto compute_kinetic_matrix() {
+    auto compute_kinetic_matrix() const {
       return m_hf.compute_kinetic_matrix();
     }
 
-    auto compute_overlap_matrix() {
+    auto compute_overlap_matrix() const {
       return m_hf.compute_overlap_matrix();
     }
 
-    auto compute_nuclear_attraction_matrix() {
+    auto compute_nuclear_attraction_matrix() const {
       return m_hf.compute_nuclear_attraction_matrix();
     }
     
@@ -97,15 +97,15 @@ public:
     }
 
 
-    auto compute_kinetic_energy_derivatives(unsigned derivative) {
+    auto compute_kinetic_energy_derivatives(unsigned derivative) const {
       return m_hf.compute_kinetic_energy_derivatives(derivative);
     }
 
-    auto compute_nuclear_attraction_derivatives(unsigned derivative) {
+    auto compute_nuclear_attraction_derivatives(unsigned derivative) const {
       return m_hf.compute_nuclear_attraction_derivatives(derivative);
     }
 
-    auto compute_overlap_derivatives(unsigned derivative) {
+    auto compute_overlap_derivatives(unsigned derivative) const {
       return m_hf.compute_overlap_derivatives(derivative);
     }
 
@@ -113,8 +113,18 @@ public:
         return m_hf.compute_shellblock_norm(A);
     }
 
-    auto compute_schwarz_ints() {
+    auto compute_schwarz_ints() const {
       return m_hf.compute_schwarz_ints();
+    }
+
+    auto compute_electronic_multipole_matrices(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    {
+        return m_hf.compute_electronic_multipole_matrices(order, o);
+    }
+
+    auto compute_nuclear_multipoles(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    {
+        return m_hf.compute_nuclear_multipoles(order, o);
     }
 
     template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
