@@ -122,9 +122,10 @@ public:
         return m_hf.compute_electronic_multipole_matrices(order, o);
     }
 
-    auto compute_nuclear_multipoles(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    template<unsigned int order = 1>
+    inline auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0, 0.0}) const
     {
-        return m_hf.compute_nuclear_multipoles(order, o);
+        return m_hf.template compute_nuclear_multipoles<order>(o);
     }
 
     template<int derivative_order, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>

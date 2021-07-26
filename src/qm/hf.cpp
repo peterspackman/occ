@@ -135,12 +135,6 @@ std::vector<Mat> HartreeFock::compute_electronic_multipole_matrices(int order, c
     return {};
 }
 
-std::vector<Vec> HartreeFock::compute_nuclear_multipoles(int order, const Vec3 &center_of_mass) const
-{
-    std::array<double, 3> c{center_of_mass(0), center_of_mass(1), center_of_mass(2)};
-    auto charges = occ::core::make_point_charges(m_atoms);
-    return occ::core::compute_multipoles(order, charges, c);
-}
 
 Mat3N HartreeFock::electronic_electric_field_contribution(SpinorbitalKind kind, const Mat& D, const Mat3N &positions) const
 {

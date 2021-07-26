@@ -261,9 +261,10 @@ public:
         return m_proc.compute_electronic_multipole_matrices(order, o);
     }
 
-    auto compute_nuclear_multipoles(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    template<unsigned int order = 1>
+    inline auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0, 0.0}) const
     {
-        return m_proc.compute_nuclear_multipoles(order, o);
+        return m_proc.template compute_nuclear_multipoles<order>(o);
     }
 
 

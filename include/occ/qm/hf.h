@@ -71,7 +71,14 @@ public:
   void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const Mat &D, Mat &H) { return; }
 
   std::vector<Mat> compute_electronic_multipole_matrices(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const;
-  std::vector<Vec> compute_nuclear_multipoles(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const;
+
+  template<unsigned int order = 1>
+  inline auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0, 0.0}) const
+  {
+    std::array<double, 3> c{o(0), o(1), o(2)};
+    auto charges = occ::core::make_point_charges(m_atoms);
+    return occ::core::compute_multipoles<order>(charges, c);
+  }
 
 private:
   int m_charge{0};

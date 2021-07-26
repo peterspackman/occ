@@ -124,17 +124,22 @@ struct SCF {
         wfn.spinorbital_kind = spinorbital_kind;
         wfn.T = T;
         wfn.V = V;
+        fmt::print("\nproperties\n----------\n");
         Vec3 origin = occ::chem::Molecule(m_procedure.atoms()).center_of_mass() * occ::units::ANGSTROM_TO_BOHR;
+        fmt::print("center of mass (bohr)        {:12.6f} {:12.6f} {:12.6f}\n", origin(0), origin(1), origin(2));
         auto ed = m_procedure.compute_electronic_multipole_matrices(1, origin);
-        auto nd = m_procedure.compute_nuclear_multipoles(1, origin);
+        std::array<double, 4> nd = m_procedure.template compute_nuclear_multipoles<1>(origin);
         Vec3 dipole;
         dipole(0) = -2 * expectation<spinorbital_kind>(D, ed[1]);
         dipole(1) = -2 * expectation<spinorbital_kind>(D, ed[2]);
         dipole(2) = -2 * expectation<spinorbital_kind>(D, ed[3]);
-        fmt::print("Electronic dipole:\n{}\n", dipole);
-        fmt::print("Nuclear dipole:\n{}\n", nd[1]);
-        fmt::print("Total dipole moment:\n{}\n", dipole + nd[1]);
-        fmt::print("Magnitude: {:.3f}\n", (dipole + nd[1]).norm());
+        fmt::print("electronic dipole (au)       {:12.6f} {:12.6f} {:12.6f}\n", dipole(0), dipole(1), dipole(2));
+        fmt::print("nuclear dipole (au)          {:12.6f} {:12.6f} {:12.6f}\n", nd[1], nd[2], nd[3]);
+        dipole(0) += nd[1];
+        dipole(1) += nd[2];
+        dipole(2) += nd[3];
+        fmt::print("total dipole (au)            {:12.6f} {:12.6f} {:12.6f}\n",  dipole(0), dipole(1), dipole(2));
+        fmt::print("dipole magnitude             {:12.6f} au\n\n", (dipole).norm());
         return wfn;
     }
 
