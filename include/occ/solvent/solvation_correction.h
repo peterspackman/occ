@@ -256,9 +256,10 @@ public:
         return m_solvation_model.surface_electronic_energy_elements(kind, D, m_proc);
     }
 
-    auto compute_electronic_multipole_matrices(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    template<unsigned int order = 1>
+    inline auto compute_electronic_multipole_matrices(const Vec3 &o = {0.0, 0.0, 0.0}) const
     {
-        return m_proc.compute_electronic_multipole_matrices(order, o);
+        return m_proc.template compute_electronic_multipole_matrices<order>(o);
     }
 
     template<unsigned int order = 1>

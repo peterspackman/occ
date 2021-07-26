@@ -127,7 +127,7 @@ struct SCF {
         fmt::print("\nproperties\n----------\n");
         Vec3 origin = occ::chem::Molecule(m_procedure.atoms()).center_of_mass() * occ::units::ANGSTROM_TO_BOHR;
         fmt::print("center of mass (bohr)        {:12.6f} {:12.6f} {:12.6f}\n", origin(0), origin(1), origin(2));
-        auto ed = m_procedure.compute_electronic_multipole_matrices(1, origin);
+        std::array<Mat, 4> ed = m_procedure.template compute_electronic_multipole_matrices<1>(origin);
         std::array<double, 4> nd = m_procedure.template compute_nuclear_multipoles<1>(origin);
         Vec3 dipole;
         dipole(0) = -2 * expectation<spinorbital_kind>(D, ed[1]);

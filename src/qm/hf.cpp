@@ -123,19 +123,6 @@ Mat3N HartreeFock::nuclear_electric_field_contribution(const Mat3N &positions) c
 }
 
 
-
-std::vector<Mat> HartreeFock::compute_electronic_multipole_matrices(int order, const Vec3 &center_of_mass) const
-{
-    std::array<double, 3> c{center_of_mass(0), center_of_mass(1), center_of_mass(2)};
-    if(order == 1)
-    {
-        auto mats = compute_1body_ints<Operator::emultipole1>(m_basis, m_shellpair_list, c);
-        return {mats[0], mats[1], mats[2], mats[3]};
-    }
-    return {};
-}
-
-
 Mat3N HartreeFock::electronic_electric_field_contribution(SpinorbitalKind kind, const Mat& D, const Mat3N &positions) const
 {
     constexpr bool use_finite_differences = true;

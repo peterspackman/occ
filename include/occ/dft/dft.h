@@ -117,9 +117,10 @@ public:
       return m_hf.compute_schwarz_ints();
     }
 
-    auto compute_electronic_multipole_matrices(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    template<unsigned int order = 1>
+    inline auto compute_electronic_multipole_matrices(const Vec3 &o = {0.0, 0.0, 0.0}) const
     {
-        return m_hf.compute_electronic_multipole_matrices(order, o);
+        return m_hf.template compute_electronic_multipole_matrices<order>(o);
     }
 
     template<unsigned int order = 1>

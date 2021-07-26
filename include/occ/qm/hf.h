@@ -70,7 +70,22 @@ public:
 
   void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const Mat &D, Mat &H) { return; }
 
-  std::vector<Mat> compute_electronic_multipole_matrices(int order, const Vec3 &o = {0.0, 0.0, 0.0}) const;
+
+  template<unsigned int order = 1>
+  auto compute_electronic_multipole_matrices(const Vec3 &o = {0.0, 0.0, 0.0}) const
+  {
+    std::array<double, 3> c{o(0), o(1), o(2)};
+    static_assert(order < 4, "Multipole integrals with order > 3 are not supported yet");
+    constexpr std::array<libint2::Operator, 4> ops{
+        Operator::overlap,
+        Operator::emultipole1,
+        Operator::emultipole2,
+        Operator::emultipole3
+    };
+
+    constexpr libint2::Operator op = ops[order];
+    return compute_1body_ints<op>(m_basis, m_shellpair_list, c);
+  }
 
   template<unsigned int order = 1>
   inline auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0, 0.0}) const
