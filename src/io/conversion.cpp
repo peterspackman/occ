@@ -50,6 +50,20 @@ Mat from_gaussian(const occ::qm::BasisSet &basis, const Mat& mo)
                 {1, 1, 1}
             };
             break;
+        case 4:
+            gaussian_order = {
+                // xxxx, yyyy, zzzz,
+                // xxxy, xxxz, xyyy,
+                // yyyz, xzzz, yzzz,
+                // xxyy, xxzz, yyzz,
+                // xxyz, xyyz, xyzz
+                {4, 0, 0}, {0, 4, 0}, {0, 0, 4},
+                {3, 1, 0}, {3, 0, 1}, {1, 3, 0},
+                {0, 3, 1}, {1, 0, 3}, {0, 1, 3},
+                {2, 2, 0}, {2, 0, 2}, {0, 2, 2},
+                {2, 1, 1}, {1, 2, 1}, {1, 1, 2}
+            };
+            break;
         }
         if (gaussian_order.size() == 0) {
             occ::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
@@ -117,6 +131,21 @@ Mat to_gaussian(const occ::qm::BasisSet &basis, const Mat &mo)
                 {1, 1, 1}
             };
             break;
+        case 4:
+            gaussian_order = {
+                // xxxx, yyyy, zzzz,
+                // xxxy, xxxz, xyyy,
+                // yyyz, xzzz, yzzz,
+                // xxyy, xxzz, yyzz,
+                // xxyz, xyyz, xyzz
+                {4, 0, 0}, {0, 4, 0}, {0, 0, 4},
+                {3, 1, 0}, {3, 0, 1}, {1, 3, 0},
+                {0, 3, 1}, {1, 0, 3}, {0, 1, 3},
+                {2, 2, 0}, {2, 0, 2}, {0, 2, 2},
+                {2, 1, 1}, {1, 2, 1}, {1, 1, 2}
+            };
+            break;
+
         }
         if (gaussian_order.size() == 0) {
             occ::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
