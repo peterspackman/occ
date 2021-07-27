@@ -50,6 +50,7 @@ Mat from_gaussian(const occ::qm::BasisSet &basis, const Mat& mo)
                 {1, 1, 1}
             };
             break;
+        /* Apparently GDMA expects this order
         case 4:
             gaussian_order = {
                 // xxxx, yyyy, zzzz,
@@ -63,6 +64,21 @@ Mat from_gaussian(const occ::qm::BasisSet &basis, const Mat& mo)
                 {2, 2, 0}, {2, 0, 2}, {0, 2, 2},
                 {2, 1, 1}, {1, 2, 1}, {1, 1, 2}
             };
+            break;
+        */
+        // But this is the actual order G09 puts out...
+        default:
+            auto cc_order = occ::gto::cartesian_ordering(l);
+            gaussian_order.reserve(cc_order.size());
+            for(auto it = cc_order.rbegin(); it != cc_order.rend(); it++)
+            {
+                const auto& x = *it;
+                gaussian_order.emplace_back(xyz{
+                    static_cast<uint_fast8_t>(x.l),
+                    static_cast<uint_fast8_t>(x.m),
+                    static_cast<uint_fast8_t>(x.n)
+                });
+            }
             break;
         }
         if (gaussian_order.size() == 0) {
@@ -131,6 +147,7 @@ Mat to_gaussian(const occ::qm::BasisSet &basis, const Mat &mo)
                 {1, 1, 1}
             };
             break;
+        /* Apparently GDMA expects this order
         case 4:
             gaussian_order = {
                 // xxxx, yyyy, zzzz,
@@ -145,7 +162,21 @@ Mat to_gaussian(const occ::qm::BasisSet &basis, const Mat &mo)
                 {2, 1, 1}, {1, 2, 1}, {1, 1, 2}
             };
             break;
-
+        */
+        // But this is the actual order G09 puts out...
+        default:
+            auto cc_order = occ::gto::cartesian_ordering(l);
+            gaussian_order.reserve(cc_order.size());
+            for(auto it = cc_order.rbegin(); it != cc_order.rend(); it++)
+            {
+                const auto& x = *it;
+                gaussian_order.emplace_back(xyz{
+                    static_cast<uint_fast8_t>(x.l),
+                    static_cast<uint_fast8_t>(x.m),
+                    static_cast<uint_fast8_t>(x.n)
+                });
+            }
+            break;
         }
         if (gaussian_order.size() == 0) {
             occ::log::warn("Unknown Gaussian ordering for shell with angular momentum {}, not reordering", l);
