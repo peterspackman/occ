@@ -14,6 +14,7 @@ set(OCC_CORE_INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/marchingcubes.h
     ${CMAKE_CURRENT_SOURCE_DIR}/marchingcubestables.h
     ${CMAKE_CURRENT_SOURCE_DIR}/molecule.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/multipole.h
     ${CMAKE_CURRENT_SOURCE_DIR}/opmatrix.h
     ${CMAKE_CURRENT_SOURCE_DIR}/optimize.h
     ${CMAKE_CURRENT_SOURCE_DIR}/parallel.h

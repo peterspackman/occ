@@ -46,6 +46,8 @@ using RowVec3 = Eigen::RowVector3d;
 using Vec3 = Eigen::Vector3d;
 using RowVec4 = Eigen::RowVector4d;
 using Vec4 = Eigen::Vector4d;
+using Vec6 = Eigen::Matrix<double, 6, 1>;
+using Vec10 = Eigen::Matrix<double, 10, 1>;
 
 using DVec = Eigen::VectorXd;
 using DVec3 = Eigen::Vector3d;
