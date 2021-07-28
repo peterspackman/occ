@@ -127,6 +127,23 @@ std::vector<long> BasisSet::shell2atom(const std::vector<Shell>& shells, const s
   return result;
 }
 
+std::vector<long> BasisSet::bf2atom(const std::vector<Atom> &atoms) const
+{
+    auto shell_map = atom2shell(atoms);
+    auto bf_map = shell2bf();
+    std::vector<long> result(nbf());
+    for(size_t a = 0; a < atoms.size(); a++)
+    {
+        for(const auto& sh: shell_map[a])
+        {
+            for(size_t bf = bf_map[sh]; bf < bf_map[sh] + (at(sh)).size(); bf++)
+                result[bf] = a;
+        }
+    }
+    return result;
+}
+
+
 std::vector<std::vector<long>> BasisSet::atom2shell(const std::vector<Atom>& atoms, const std::vector<Shell>& shells)
 {
   std::vector<std::vector<long>> result;

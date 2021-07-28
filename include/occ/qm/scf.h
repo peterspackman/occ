@@ -12,6 +12,7 @@
 #include <occ/core/units.h>
 #include <occ/core/molecule.h>
 #include <occ/qm/guess_density.h>
+#include <occ/qm/partitioning.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -133,6 +134,18 @@ struct SCF {
         fmt::print("electronic multipole\n{}\n", e_mult);
         fmt::print("nuclear multipole\n{}\n", nuc_mult);
         fmt::print("total multipole\n{}\n", tot_mult);
+        Vec mulliken_charges = -2 * occ::qm::mulliken_partition<spinorbital_kind>(
+            m_procedure.basis(),
+            m_procedure.atoms(),
+            D,
+            S
+        );
+        fmt::print("Mulliken charges\n");
+        for(size_t i = 0; i < wfn.atoms.size(); i++)
+        {
+            mulliken_charges(i) += wfn.atoms[i].atomic_number;
+            fmt::print("Atom {}: {:12.6f}\n", i, mulliken_charges(i));
+        }
         return wfn;
     }
 

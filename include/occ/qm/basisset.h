@@ -101,6 +101,8 @@ class BasisSet : public std::vector<libint2::Shell> {
       return atom2shell(atoms, *this);
     }
 
+    std::vector<long> bf2atom(const std::vector<Atom>& atoms) const;
+
     static std::vector<long> shell2atom(const std::vector<Shell>& shells,
                                         const std::vector<Atom>& atoms);
 
