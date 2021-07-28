@@ -127,40 +127,12 @@ struct SCF {
         fmt::print("\nproperties\n----------\n");
         Vec3 origin = occ::chem::Molecule(m_procedure.atoms()).center_of_mass() * occ::units::ANGSTROM_TO_BOHR;
         fmt::print("center of mass (bohr)        {:12.6f} {:12.6f} {:12.6f}\n\n", origin(0), origin(1), origin(2));
-        std::array<Mat, 10> ed = m_procedure.template compute_electronic_multipole_matrices<2>(origin);
-        std::array<double, 10> nd = m_procedure.template compute_nuclear_multipoles<2>(origin);
-        std::array<double, 3> e_dipole, nuc_dipole, net_dipole;
-        std::array<double, 6> e_quadrupole, nuc_quadrupole, net_quadrupole;
-        double mag_dipole{0.0}, mag_quadrupole{0.0};
-        for(int i = 0; i < 3; i++)
-        {
-            e_dipole[i] = -2 * expectation<spinorbital_kind>(D, ed[1 + i]);
-            nuc_dipole[i] = nd[1 + i];
-            net_dipole[i] = e_dipole[i] + nuc_dipole[i];
-            mag_dipole += net_dipole[i] * net_dipole[i];
-        }
-        mag_dipole = std::sqrt(mag_dipole);
-        for(int i = 0; i < 6; i++)
-        {
-            e_quadrupole[i] = -2 * expectation<spinorbital_kind>(D, ed[4 + i]);
-            nuc_quadrupole[i] = nd[4 + i];
-            net_quadrupole[i] = e_quadrupole[i] + nuc_quadrupole[i];
-            mag_quadrupole+= net_quadrupole[i] * net_quadrupole[i];
-        }
-        mag_quadrupole = std::sqrt(mag_quadrupole);
-        fmt::print("dipole (au)\n----------\n");
-        fmt::print("electronic\n  x = {:12.6f} y = {:12.6f} z = {:12.6f}\n", e_dipole[0], e_dipole[1], e_dipole[2]);
-        fmt::print("nuclear\n  x = {:12.6f} y = {:12.6f} z = {:12.6f}\n", nuc_dipole[0], nuc_dipole[1], nuc_dipole[2]);
-        fmt::print("total\n  x = {:12.6f} y = {:12.6f} z = {:12.6f}\n\n", net_dipole[0], net_dipole[1], net_dipole[2]);
-        fmt::print("|D| {:12.6f}\n\n", mag_dipole);
-        fmt::print("quadrupole (au)\n----------\n");
-        fmt::print("electronic\n  xx = {:12.6f} xy = {:12.6f} xz = {:12.6f}\n", e_quadrupole[0], e_quadrupole[1], e_quadrupole[2]); 
-        fmt::print("  yy = {:12.6f} yz = {:12.6f} zz = {:12.6f}\n\n", e_quadrupole[3], e_quadrupole[4], e_quadrupole[5]); 
-        fmt::print("nuclear\n  xx = {:12.6f} xy = {:12.6f} xz = {:12.6f}\n", nuc_quadrupole[0], nuc_quadrupole[1], nuc_quadrupole[2]); 
-        fmt::print("  yy = {:12.6f} yz = {:12.6f} zz = {:12.6f}\n\n", nuc_quadrupole[3], nuc_quadrupole[4], nuc_quadrupole[5]); 
-        fmt::print("total\n  xx = {:12.6f} xy = {:12.6f} xz = {:12.6f}\n", net_quadrupole[0], net_quadrupole[1], net_quadrupole[2]); 
-        fmt::print("  yy = {:12.6f} yz = {:12.6f} zz = {:12.6f}\n\n", net_quadrupole[3], net_quadrupole[4], net_quadrupole[5]); 
-        fmt::print("|Q| {:12.6f}\n\n", mag_quadrupole);
+        auto e_mult = m_procedure.template compute_electronic_multipoles<3>(spinorbital_kind, D, origin);
+        auto nuc_mult = m_procedure.template compute_nuclear_multipoles<3>(origin);
+        auto tot_mult = e_mult + nuc_mult;
+        fmt::print("electronic multipole\n{}\n", e_mult);
+        fmt::print("nuclear multipole\n{}\n", nuc_mult);
+        fmt::print("total multipole\n{}\n", tot_mult);
         return wfn;
     }
 

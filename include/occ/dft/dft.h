@@ -124,6 +124,12 @@ public:
     }
 
     template<unsigned int order = 1>
+    inline auto compute_electronic_multipoles(SpinorbitalKind k, const Mat& D, const Vec3 &o = {0.0, 0.0, 0.0}) const
+    {
+        return m_hf.template compute_electronic_multipoles<order>(k, D, o);
+    }
+
+    template<unsigned int order = 1>
     inline auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0, 0.0}) const
     {
         return m_hf.template compute_nuclear_multipoles<order>(o);

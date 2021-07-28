@@ -23,11 +23,14 @@ inline constexpr std::array<const char *, 20> multipole_component_names{
 template <unsigned int L>
 struct Multipole
 {
+    using Dipole = std::array<double, 3>;
+    using Quadrupole = std::array<double, 6>;
+    using Octupole = std::array<double, 6>;
     static constexpr unsigned int num_components{num_multipole_components(L)};
     std::array<double, num_components> components;
     double charge() const { return components[0]; }
 
-    std::array<double, 3> dipole() const
+    Dipole dipole() const
     {
         static_assert(L > 0, "No dipole for a multipole with angular momentum < 1");
         return {
@@ -37,7 +40,7 @@ struct Multipole
         };
     }
 
-    std::array<double, 6> quadrupole() const
+    Quadrupole quadrupole() const
     {
         static_assert(L > 1, "No quadrupole for a multipole with angular momentum < 2");
         return {
@@ -50,7 +53,7 @@ struct Multipole
         };
     }
 
-    std::array<double, 10> octupole() const
+    Octupole octupole() const
     {
         static_assert(L > 2, "No octupole for a multipole with angular momentum < 3");
         return {
@@ -111,8 +114,8 @@ struct fmt::formatter<occ::core::Multipole<L>>
             return format_to(
                 ctx.out(),
                 presentation == 'f' ? 
-                    "{:5s} = {:12.6f}\n" :
-                    "{:5s} = {:12.6e}\n",
+                    "{:5s} {:12.6f}\n" :
+                    "{:5s} {:12.6e}\n",
                 names[0],
                 m.components[0]
             );
@@ -122,10 +125,10 @@ struct fmt::formatter<occ::core::Multipole<L>>
             return format_to(
                 ctx.out(),
                 presentation == 'f' ? 
-                    "{:5s} = {:12.6f}\n"
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n" :
-                    "{:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n",
+                    "{:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n" :
+                    "{:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n",
                 names[0], m.components[0],
                 names[1], m.components[1],
                 names[2], m.components[2],
@@ -137,14 +140,14 @@ struct fmt::formatter<occ::core::Multipole<L>>
             return format_to(
                 ctx.out(),
                 presentation == 'f' ? 
-                    "{:5s} = {:12.6f}\n"
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n"
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n"
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n" : 
-                    "{:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n",
+                    "{:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n" : 
+                    "{:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n",
                 names[0], m.components[0],
                 names[1], m.components[1],
                 names[2], m.components[2],
@@ -162,22 +165,22 @@ struct fmt::formatter<occ::core::Multipole<L>>
             return format_to(
                 ctx.out(),
                 presentation == 'f' ? 
-                    "{:5s} = {:12.6f}\n"
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n"
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n"
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n" 
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n" 
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n" 
-                    "{:5s} = {:12.6f} {:5s} = {:12.6f} {:5s} = {:12.6f}\n" 
-                    "{:5s} = {:12.6f}\n" :
-                    "{:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e} {:5s} = {:12.6e} {:5s} = {:12.6e}\n"
-                    "{:5s} = {:12.6e}\n",
+                    "{:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    "{:5s} {:12.6f}\n" :
+                    "{:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                    "{:5s} {:12.6e}\n",
                 names[0], m.components[0],
                 names[1], m.components[1],
                 names[2], m.components[2],

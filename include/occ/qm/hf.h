@@ -3,6 +3,7 @@
 #include <occ/qm/spinorbital.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/point_charge.h>
+#include <occ/core/multipole.h>
 
 namespace occ::hf {
 
@@ -72,7 +73,7 @@ public:
 
 
   template<unsigned int order = 1>
-  auto compute_electronic_multipole_matrices(const Vec3 &o = {0.0, 0.0, 0.0}) const
+  inline auto compute_electronic_multipole_matrices(const Vec3 &o = {0.0, 0.0, 0.0}) const
   {
     std::array<double, 3> c{o(0), o(1), o(2)};
     static_assert(order < 4, "Multipole integrals with order > 3 are not supported yet");
@@ -88,11 +89,32 @@ public:
   }
 
   template<unsigned int order = 1>
+  inline auto compute_electronic_multipoles(occ::qm::SpinorbitalKind k, const Mat &D, const Vec3 &o = {0.0, 0.0, 0.0}) const
+  {
+      occ::core::Multipole<order> result;
+      auto mats = compute_electronic_multipole_matrices<order>(o);
+      auto ex = [&](const Mat &op) {
+        switch(k)
+        {
+            case SpinorbitalKind::Unrestricted: return occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, op);
+            case SpinorbitalKind::General: return occ::qm::expectation<SpinorbitalKind::General>(D, op);
+            default: return occ::qm::expectation<SpinorbitalKind::Restricted>(D, op);
+        }
+      };
+
+      for(size_t i = 0; i < mats.size(); i++)
+      {
+          result.components[i] = -2 * ex(mats[i]);
+      }
+      return result;
+  }
+
+  template<unsigned int order = 1>
   inline auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0, 0.0}) const
   {
     std::array<double, 3> c{o(0), o(1), o(2)};
     auto charges = occ::core::make_point_charges(m_atoms);
-    return occ::core::compute_multipoles<order>(charges, c);
+    return occ::core::Multipole<order>{occ::core::compute_multipoles<order>(charges, c)};
   }
 
 private:

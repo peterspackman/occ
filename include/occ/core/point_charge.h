@@ -31,27 +31,41 @@ inline auto compute_multipoles(const std::vector<PointCharge> &charges,
     constexpr unsigned int ncomp = num_multipole_components(order);
 
     std::array<double, ncomp> result{0.0};
-    std::array<double, 3> d;
     for(int i = 0; i < charges.size(); i++)
     {
         const auto &charge = charges[i].first;
         const auto &pos = charges[i].second;
         result[0] += charge;
-        d = {pos[0] - origin[0], pos[1] - origin[1], pos[2] - origin[2]};
+        const double x = pos[0] - origin[0];
+        const double y = pos[1] - origin[1];
+        const double z = pos[2] - origin[2];
         if constexpr(order > 0)
         {
-            result[1] += charge * d[0];
-            result[2] += charge * d[1];
-            result[3] += charge * d[2];
+            result[1] += charge * x;
+            result[2] += charge * y;
+            result[3] += charge * z;
         }
         if constexpr(order > 1)
         {
-            result[4] += charge * d[0] * d[0]; // xx
-            result[5] += charge * d[0] * d[1]; // xy
-            result[6] += charge * d[0] * d[2]; // xz
-            result[7] += charge * d[1] * d[1]; // yy
-            result[8] += charge * d[1] * d[2]; // yz
-            result[9] += charge * d[2] * d[2]; // zz
+            result[4] += charge * x * x; // xx
+            result[5] += charge * x * y; // xy
+            result[6] += charge * x * z; // xz
+            result[7] += charge * y * y; // yy
+            result[8] += charge * y * z; // yz
+            result[9] += charge * z * z; // zz
+        }
+        if constexpr(order > 2)
+        {
+            result[10] += charge * x * x * x; // xxx
+            result[11] += charge * x * x * y; // xxy
+            result[12] += charge * x * x * z; // xxz
+            result[13] += charge * x * y * y; // xyy
+            result[14] += charge * x * y * z; // xyz
+            result[15] += charge * x * z * z; // xzz
+            result[16] += charge * y * y * y; // yyy
+            result[17] += charge * y * y * z; // yyz
+            result[18] += charge * y * z * z; // yzz
+            result[19] += charge * z * z * z; // zzz
         }
     }
     return result;
