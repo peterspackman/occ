@@ -121,6 +121,16 @@ std::string UnitCell::cell_type() const {
   return "triclinic";
 }
 
+
+MillerIndex UnitCell::hkl_limits(double d_min) const
+{
+    return {
+        static_cast<int>(m_lengths[0] / d_min),
+        static_cast<int>(m_lengths[1] / d_min),
+        static_cast<int>(m_lengths[2] / d_min)
+    };
+}
+
 /*
  * UnitCell builders
  */

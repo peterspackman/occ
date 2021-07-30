@@ -8,4 +8,5 @@ endfunction()
 
 create_crystal_test(test_crystal.cpp)
 create_crystal_test(test_space_group.cpp)
+create_crystal_test(test_surface.cpp)
 create_crystal_test(test_symmetry_operation.cpp)

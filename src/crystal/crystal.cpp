@@ -11,16 +11,20 @@ using occ::graph::BondGraph;
 
 //Asymmetric unit
 AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums) :
-    positions(frac_pos), atomic_numbers(nums), occupations(nums.rows())
+    positions(frac_pos), atomic_numbers(nums), occupations(nums.rows()),
+    charges(nums.rows())
 {
     occupations.setConstant(1.0);
+    charges = atomic_numbers.cast<double>();
     generate_default_labels();
 }
 
 AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums,
                                const std::vector<std::string> &site_labels) :
-    positions(frac_pos), atomic_numbers(nums), labels(site_labels), occupations(nums.rows())
+    positions(frac_pos), atomic_numbers(nums), labels(site_labels), occupations(nums.rows()),
+    charges(nums.rows())
 {
+    charges = atomic_numbers.cast<double>();
     occupations.setConstant(1.0);
 }
 

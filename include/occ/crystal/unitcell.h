@@ -1,7 +1,7 @@
 #pragma once
-
 #include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
+#include <occ/crystal/miller.h>
 #include <string>
 
 namespace occ::crystal {
@@ -52,6 +52,8 @@ public:
   auto b_star_vector() const { return m_reciprocal.col(1); }
   auto c_star_vector() const { return m_reciprocal.col(2); }
   const auto& lengths() const { return m_lengths; }
+
+  MillerIndex hkl_limits(double d_min) const;
 
 private:
   void update_cell_matrices();

@@ -41,6 +41,7 @@ struct AsymmetricUnit {
   Mat3N positions;
   IVec atomic_numbers;
   Vec occupations;
+  Vec charges;
   std::vector<std::string> labels;
   std::string chemical_formula() const;
   Vec covalent_radii() const;
@@ -75,6 +76,7 @@ public:
   }
   const SpaceGroup &space_group() const { return m_space_group; }
   const AsymmetricUnit &asymmetric_unit() const { return m_asymmetric_unit; }
+  AsymmetricUnit &asymmetric_unit() { return m_asymmetric_unit; }
   const UnitCell &unit_cell() const { return m_unit_cell; }
   AtomSlab slab(const HKL &, const HKL &) const;
   const AtomSlab &unit_cell_atoms() const;
