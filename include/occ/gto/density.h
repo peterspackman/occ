@@ -74,10 +74,20 @@ namespace occ::density {
             }
             if constexpr(max_derivative > 1) 
             {
-                rho.col(4).setZero();
+                rho.col(4) = 2 * ((
+                    gto_values.phi_xx.array() +
+                    gto_values.phi_yy.array() +
+                    gto_values.phi_zz.array()
+                    ) * Dphi.array()).rowwise().sum();
+                //tau
+                Dphi = gto_values.phi_x * D;
                 rho.col(5) = (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
+                Dphi = gto_values.phi_y * D;
                 rho.col(5).array() += (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
+                Dphi = gto_values.phi_z * D;
                 rho.col(5).array() += (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+                rho.col(4).array() += 2 * rho.col(5).array();
+                rho.col(5).array() *= 0.5;
             }
         }
 
