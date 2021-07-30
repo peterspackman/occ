@@ -8,7 +8,7 @@ namespace occ::crystal {
 using occ::Mat3;
 using occ::Mat3N;
 using occ::Vec3;
-using occ::util::isclose;
+using occ::util::is_close;
 
 class UnitCell {
 public:
@@ -57,27 +57,27 @@ public:
 
 private:
   void update_cell_matrices();
-  inline bool _ab_close() const { return isclose(m_lengths(0), m_lengths(1)); }
-  inline bool _ac_close() const { return isclose(m_lengths(0), m_lengths(2)); }
-  inline bool _bc_close() const { return isclose(m_lengths(1), m_lengths(2)); }
+  inline bool _ab_close() const { return is_close(m_lengths(0), m_lengths(1)); }
+  inline bool _ac_close() const { return is_close(m_lengths(0), m_lengths(2)); }
+  inline bool _bc_close() const { return is_close(m_lengths(1), m_lengths(2)); }
   inline bool _abc_close() const {
     return _ab_close() && _ac_close() && _bc_close();
   }
   inline bool _abc_different() const {
     return !_ab_close() && !_ac_close() && !_bc_close();
   }
-  inline bool _a_ab_close() const { return isclose(m_angles(0), m_angles(1)); }
-  inline bool _a_ac_close() const { return isclose(m_angles(0), m_angles(2)); }
-  inline bool _a_bc_close() const { return isclose(m_angles(1), m_angles(2)); }
+  inline bool _a_ab_close() const { return is_close(m_angles(0), m_angles(1)); }
+  inline bool _a_ac_close() const { return is_close(m_angles(0), m_angles(2)); }
+  inline bool _a_bc_close() const { return is_close(m_angles(1), m_angles(2)); }
   inline bool _a_abc_close() const {
     return _a_ab_close() && _a_ac_close() && _a_bc_close();
   }
   inline bool _a_abc_different() const {
     return !_a_ab_close() && !_a_ac_close() && !_a_bc_close();
   }
-  inline bool _a_90() const { return isclose(m_angles(0), M_PI / 2); }
-  inline bool _b_90() const { return isclose(m_angles(1), M_PI / 2); }
-  inline bool _c_90() const { return isclose(m_angles(2), M_PI / 2); }
+  inline bool _a_90() const { return is_close(m_angles(0), M_PI / 2); }
+  inline bool _b_90() const { return is_close(m_angles(1), M_PI / 2); }
+  inline bool _c_90() const { return is_close(m_angles(2), M_PI / 2); }
 
   Vec3 m_lengths;
   Vec3 m_angles;

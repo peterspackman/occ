@@ -102,7 +102,7 @@ bool UnitCell::is_rhombohedral() const {
 
 bool UnitCell::is_hexagonal() const {
   return _ab_close() && !_ac_close() && _a_90() &&
-         isclose(m_angles[2], 2 * M_PI / 3);
+         is_close(m_angles[2], 2 * M_PI / 3);
 }
 
 std::string UnitCell::cell_type() const {

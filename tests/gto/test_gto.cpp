@@ -18,15 +18,21 @@ TEST_CASE("GTO vals H2/STO-3G") {
     };
     BasisSet basis("sto-3g", atoms);
     auto grid_pts = Mat::Identity(3, 4);
-    auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts ,1);
+    auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts ,2);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
     fmt::print("phi_y\n{}\n", gto_values.phi_y);
     fmt::print("phi_z\n{}\n", gto_values.phi_z);
+    fmt::print("phi_xx\n{}\n", gto_values.phi_xx);
+    fmt::print("phi_xy\n{}\n", gto_values.phi_xy);
+    fmt::print("phi_xz\n{}\n", gto_values.phi_xz);
+    fmt::print("phi_yy\n{}\n", gto_values.phi_yy);
+    fmt::print("phi_yz\n{}\n", gto_values.phi_yz);
+    fmt::print("phi_zz\n{}\n", gto_values.phi_zz);
 
     Mat D(2, 2);
     D.setConstant(0.60245569);
-    auto rho = occ::density::evaluate_density_on_grid<1>(basis, atoms, D, grid_pts);
+    auto rho = occ::density::evaluate_density_on_grid<2>(basis, atoms, D, grid_pts);
     fmt::print("Rho\n{}\n", rho);
 }
 

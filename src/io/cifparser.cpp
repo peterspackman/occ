@@ -1,5 +1,5 @@
 ﻿#include <occ/core/element.h>
-#include <occ/core/util.h>
+#include <occ/core/units.h>
 #include <occ/core/logger.h>
 #include <occ/io/cifparser.h>
 #include <gemmi/numb.hpp>
@@ -51,11 +51,11 @@ void CifParser::extract_cell_parameter(const gemmi::cif::Pair &pair) {
   else if (tag == "_cell_length_c")
     m_cell.c = gemmi::cif::as_number(pair.back());
   else if (tag == "_cell_angle_alpha")
-    m_cell.alpha = occ::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.alpha = occ::units::radians(gemmi::cif::as_number(pair.back()));
   else if (tag == "_cell_angle_beta")
-    m_cell.beta = occ::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.beta = occ::units::radians(gemmi::cif::as_number(pair.back()));
   else if (tag == "_cell_angle_gamma")
-    m_cell.gamma = occ::util::deg2rad(gemmi::cif::as_number(pair.back()));
+    m_cell.gamma = occ::units::radians(gemmi::cif::as_number(pair.back()));
 }
 
 void remove_quotes(std::string &s)

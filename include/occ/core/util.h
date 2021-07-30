@@ -2,7 +2,6 @@
 #include <occ/core/linear_algebra.h>
 #include <algorithm>
 #include <cctype>
-#include <cmath>
 #include <locale>
 #include <string>
 #include <vector>
@@ -24,7 +23,8 @@ bool all_close(const Eigen::DenseBase<TA> &a, const Eigen::DenseBase<TB> &b,
 }
 
 template <typename T>
-constexpr bool isclose(T a, T b, T rtol = 1e-5, T atol = 1e-8) {
+constexpr bool is_close(T a, T b, const T rtol = Eigen::NumTraits<T>::dummy_precision(),
+                       const T atol = Eigen::NumTraits<T>::epsilon()) {
   return abs(a - b) <= (atol + rtol * abs(b));
 }
 
@@ -36,14 +36,6 @@ constexpr bool is_even(T a) {
 template <typename T>
 constexpr bool is_odd(T a) {
     return !is_even(a);
-}
-
-template <typename T> inline auto deg2rad(T x) {
-  return static_cast<T>(x * M_PI / 180.0);
-}
-
-template <typename T> inline auto rad2deg(T x) {
-  return static_cast<T>(x * 180.0 / M_PI);
 }
 
 static inline std::vector<std::string> tokenize(const std::string &str,
@@ -158,6 +150,13 @@ std::string human_readable_size(T number, const std::string& suffix)
     return fmt::format("{:.1f}{}{}", num, "Yi", suffix);
 }
 
+
+template<class M, class N>
+constexpr std::common_type_t<M, N> smallest_common_factor(M m, N n)
+{
+    if(n == 0) return std::abs(m);
+    return smallest_common_factor(n, m % n);
+}
 
 static inline double double_factorial(int l)
 {

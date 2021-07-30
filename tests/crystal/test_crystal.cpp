@@ -1,5 +1,6 @@
 #include <occ/crystal/crystal.h>
 #include <occ/core/util.h>
+#include <occ/core/units.h>
 #include <fmt/ostream.h>
 #include "catch.hpp"
 
@@ -9,7 +10,7 @@ using occ::crystal::UnitCell;
 using occ::crystal::SpaceGroup;
 using occ::crystal::SymmetryOperation;
 using occ::util::all_close;
-using occ::util::deg2rad;
+using occ::units::radians;
 
 
 auto ice_ii_asym()
@@ -105,14 +106,14 @@ TEST_CASE("AsymmetricUnit constructor", "[crystal]")
 
 TEST_CASE("UnitCell constructor", "[crystal]")
 {
-    UnitCell ice = occ::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
+    UnitCell ice = occ::crystal::rhombohedral_cell(7.78, radians(113.1));
 }
 
 TEST_CASE("ice_ii molecules", "[crystal]")
 {
     AsymmetricUnit asym = ice_ii_asym();
     SpaceGroup sg(1);
-    UnitCell cell = occ::crystal::rhombohedral_cell(7.78, deg2rad(113.1));
+    UnitCell cell = occ::crystal::rhombohedral_cell(7.78, radians(113.1));
     Crystal ice_ii(asym, sg, cell);
     REQUIRE(ice_ii.symmetry_operations().size() == 1);
     fmt::print("Unit cell molecules:\n");

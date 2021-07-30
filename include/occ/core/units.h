@@ -1,4 +1,6 @@
 #pragma once
+#include <cmath>
+
 namespace occ::units
 {
 constexpr double BOHR_TO_ANGSTROM = 0.52917749;
@@ -9,4 +11,22 @@ constexpr double AU_TO_KCAL_PER_MOL = 627.5096080305927;
 constexpr double EV_TO_KJ_PER_MOL = 96.48530749925973;
 constexpr double AU_TO_EV = 27.211399;
 constexpr double AU_TO_KELVIN = 315777.09;
+
+template <typename T>
+constexpr auto radians(T x) {
+  return x * M_PI / 180;
+}
+
+template <typename T>
+constexpr auto degrees(T x) {
+  return x * 180 / M_PI;
+}
+
+template<typename T>
+constexpr auto angstroms(T x)
+{
+    return BOHR_TO_ANGSTROM * x;
+}
+
+
 }

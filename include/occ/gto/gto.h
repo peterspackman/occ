@@ -48,6 +48,15 @@ struct GTOValues {
             phi_y = Mat(npts, nbf);
             phi_z = Mat(npts, nbf);
         }
+        if(derivative_order > 1)
+        {
+            phi_xx = Mat(npts, nbf);
+            phi_xy = Mat(npts, nbf);
+            phi_xz = Mat(npts, nbf);
+            phi_yy = Mat(npts, nbf);
+            phi_yz = Mat(npts, nbf);
+            phi_zz = Mat(npts, nbf);
+        }
     }
 
     inline void set_zero() {
@@ -55,11 +64,23 @@ struct GTOValues {
         phi_x.setZero();
         phi_y.setZero();
         phi_z.setZero();
+        phi_xx.setZero();
+        phi_xy.setZero();
+        phi_xz.setZero();
+        phi_yy.setZero();
+        phi_yz.setZero();
+        phi_zz.setZero();
     }
     Mat phi;
     Mat phi_x;
     Mat phi_y;
     Mat phi_z;
+    Mat phi_xx;
+    Mat phi_xy;
+    Mat phi_xz;
+    Mat phi_yy;
+    Mat phi_yz;
+    Mat phi_zz;
 };
 
 inline double cartesian_normalization_factor(int l, int m, int n)
