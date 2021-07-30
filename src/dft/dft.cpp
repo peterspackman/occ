@@ -31,6 +31,7 @@ const robin_hood::unordered_map<std::string, std::vector<FuncComponent>> builtin
     {"svwn5", {{dfid::lda_x}, {dfid::lda_c_vwn}}},
     {"blyp", {{dfid::gga_x_b88}, {dfid::gga_c_lyp}}},
     {"bpbe", {{dfid::gga_x_b88}, {dfid::gga_c_pbe}}},
+    {"m062x", {{dfid::hyb_mgga_x_m06_2x}, {dfid::mgga_c_m06_2x}}},
 });
 
 
@@ -75,17 +76,21 @@ std::vector<DensityFunctional> parse_method(const std::string& method_string, bo
     fmt::print("Functionals:\n");
     for(const auto& token: tokens) {
         std::string m = token;
+        occ::log::debug("Token: {}", m);
         if(m[0] == 'u') m = m.substr(1);
         if(builtin_functionals.contains(m)) {
             auto combo = builtin_functionals.at(m);
+            occ::log::debug("Found builtin functional combination for {}", m);
             for(const auto& func: combo) {
+                occ::log::debug("id: {}", func.id);
                 auto f = DensityFunctional(func.id, polarized);
+                occ::log::debug("scale factor: {}", func.factor);
                 f.set_scale_factor(func.factor);
                 fmt::print("    ");
                 if(func.factor != 1.0) fmt::print("{} x ", func.factor);
                 fmt::print("{}\n", f.name());
                 if(func.hfx > 0.0) f.set_exchange_factor(func.hfx);
-                funcs.emplace_back(f);
+                funcs.push_back(f);
             }
         }
         else 

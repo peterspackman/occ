@@ -19,6 +19,7 @@ using occ::Array;
 class DensityFunctional {
 public:
     enum Identifier {
+        // TODO go through and remove the deprecated functionals!
         lda_x = XC_LDA_X,
         lda_c_wigner = XC_LDA_C_WIGNER,
         lda_c_rpa = XC_LDA_C_RPA,
@@ -318,7 +319,7 @@ public:
         mgga_x_m05_2x = XC_MGGA_X_M05_2X,
         mgga_x_m06_hf = XC_MGGA_X_M06_HF,
         mgga_x_m06 = XC_MGGA_X_M06,
-        mgga_x_m06_2x = XC_MGGA_X_M06_2X,
+        hyb_mgga_x_m06_2x = XC_HYB_MGGA_X_M06_2X,
         mgga_x_m08_hx = XC_MGGA_X_M08_HX,
         mgga_x_m08_so = XC_MGGA_X_M08_SO,
         mgga_x_ms0 = XC_MGGA_X_MS0,
@@ -392,61 +393,127 @@ public:
         Kinetic = XC_KINETIC
     };
 
-    struct Result {
-        Result(size_t npt, Family family, SpinorbitalKind kind) : npts{npt} {
-            if(kind == SpinorbitalKind::Restricted) {
+    struct Result
+    {
+        Result(size_t npt, Family family, SpinorbitalKind kind) : npts{npt}
+        {
+            if(kind == SpinorbitalKind::Restricted) 
+            {
                 exc = Vec::Zero(npt);
-                vrho = Vec::Zero(npt);
-                if(family == GGA || family == HGGA) {
-                    vsigma = Vec::Zero(npt);
+                vrho = MatRM::Zero(npt, 1);
+                if(family == GGA || family == HGGA) 
+                {
+                    vsigma = MatRM::Zero(npt, 1);
                     have_vsigma = true;
                 }
-            }
-            else {
-                exc = Vec::Zero(npt);
-                vrho = Mat::Zero(npt, 2);
-                if(family == GGA || family == HGGA) {
-                    vsigma = Mat::Zero(npt, 3);
+                else if(family == MGGA || family == HMGGA)
+                {
+                    vsigma = MatRM::Zero(npt, 1);
                     have_vsigma = true;
+                    vlaplacian = MatRM::Zero(npt, 1);
+                    vtau = MatRM::Zero(npt, 1);
+                    have_vtau = true;
+                }
+            }
+            else
+            {
+                exc = Vec::Zero(npt);
+                vrho = MatRM::Zero(npt, 2);
+                if(family == GGA || family == HGGA)
+                {
+                    vsigma = MatRM::Zero(npt, 3);
+                    have_vsigma = true;
+                }
+                else if (family == MGGA || family == HMGGA)
+                {
+                    vsigma = MatRM::Zero(npt, 3);
+                    have_vsigma = true;
+                    vlaplacian = MatRM::Zero(npt, 2);
+                    vtau = MatRM::Zero(npt, 2);
+                    have_vtau = true;
                 }
             }
         }
         size_t npts{0};
         bool have_vsigma{false};
+        bool have_vtau{false};
         Vec exc;
         // must be row major for libXC interface
         MatRM vrho;
         MatRM vsigma;
-        Result& operator +=(const Result& right) {
+        MatRM vlaplacian;
+        MatRM vtau;
+        Result& operator +=(const Result& right)
+        {
             exc.array() += right.exc.array();
             vrho.array() += right.vrho.array();
-            if(right.have_vsigma) {
+            if(right.have_vsigma)
+            {
                 if(!have_vsigma) vsigma = right.vsigma;
                 else vsigma.array() += right.vsigma.array();
+                have_vsigma = true;
+            }
+            if(right.have_vtau)
+            {
+                if(!have_vtau)
+                {
+                    vlaplacian = right.vlaplacian;
+                    vtau = right.vtau;
+                }
+                else
+                {
+                    vlaplacian.array() += right.vlaplacian.array();
+                    vtau.array() += right.vtau.array();
+                }
+                have_vtau = true;
             }
             return *this;
         }
-        void weight_by(const Vec& weights) {
+        void weight_by(const Vec& weights)
+        {
             exc.array() *= weights.array();
             vrho.array().colwise() *= weights.array();
-            if(vsigma.size() > 0) {
+            if(vsigma.size() > 0)
+            {
                 vsigma.array().colwise() *= weights.array();
+            }
+            if(vlaplacian.size() > 0)
+            {
+                vlaplacian.array().colwise() *= weights.array();
+                vtau.array().colwise() *= weights.array();
             }
         }
     };
 
     struct Params {
-        Params(size_t npt, Family family, SpinorbitalKind kind) : npts(npt) {
-            if(kind == SpinorbitalKind::Restricted) {
+        Params(size_t npt, Family family, SpinorbitalKind kind) : npts(npt)
+        {
+            if(kind == SpinorbitalKind::Restricted)
+            {
                 rho.resize(npt, 1);
-                if(family == GGA || family == HGGA) {
+                if(family == GGA || family == HGGA)
+                {
                     sigma.resize(npt, 1);
                 }
+                else if(family == MGGA || family == HMGGA)
+                {
+                    sigma.resize(npt, 1);
+                    laplacian.resize(npt, 1);
+                    tau.resize(npt, 1);
+                }
             }
-            else {
+            else 
+            {
                 rho.resize(npt, 2);
-                if(family == GGA || family == HGGA) {
+                if(family == GGA || family == HGGA)
+                {
                     sigma.resize(npt, 3);
+                }
+                else if(family == MGGA || family == HMGGA)
+                {
+                    sigma.resize(npt, 3);
+                    laplacian.resize(npt, 2);
+                    tau.resize(npt, 3);
                 }
             }
         }
@@ -454,6 +521,8 @@ public:
         // must be row major for libXC interface
         MatRM rho;
         MatRM sigma;
+        MatRM laplacian;
+        MatRM tau;
     };
 
     DensityFunctional(const std::string&, bool polarized = false);
@@ -535,7 +604,7 @@ private:
     double m_factor{1.0};
     Identifier m_func_id;
     bool m_polarized{false};
-    std::string m_func_name;
+    std::string m_func_name{"unknown"};
 };
 
 }

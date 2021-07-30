@@ -33,6 +33,117 @@ using occ::ints::shellpair_list_t;
 
 std::vector<DensityFunctional> parse_method(const std::string& method_string, bool polarized = false);
 
+namespace impl {
+
+template <SpinorbitalKind spinorbital_kind, int derivative_order>
+void set_params(DensityFunctional::Params& params, const Mat& rho)
+{
+    if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
+        params.rho.col(0) = rho.col(0);
+    }
+    else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        // correct assignment
+        params.rho.col(0) = rho.col(0).alpha();
+        params.rho.col(1) = rho.col(0).beta();
+    }
+
+    if constexpr(derivative_order > 0) {
+        if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
+        {
+            const auto& dx_rho = rho.col(1).array(), dy_rho = rho.col(2).array(), dz_rho = rho.col(3).array();
+            params.sigma.col(0) = dx_rho * dx_rho + dy_rho * dy_rho + dz_rho * dz_rho;
+        }
+        else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted)
+        {
+            const auto& rho_alpha = rho.alpha();
+            const auto& rho_beta = rho.beta();
+            const auto& dx_rho_a = rho_alpha.col(1).array();
+            const auto& dy_rho_a = rho_alpha.col(2).array();
+            const auto& dz_rho_a = rho_alpha.col(3).array();
+            const auto& dx_rho_b = rho_beta.col(1).array();
+            const auto& dy_rho_b = rho_beta.col(2).array();
+            const auto& dz_rho_b = rho_beta.col(3).array();
+            params.sigma.col(0) = dx_rho_a * dx_rho_a + dy_rho_a * dy_rho_a + dz_rho_a * dz_rho_a;
+            params.sigma.col(1) = dx_rho_a * dx_rho_b + dy_rho_a * dy_rho_b + dz_rho_a * dz_rho_b;
+            params.sigma.col(2) = dx_rho_b * dx_rho_b + dy_rho_b * dy_rho_b + dz_rho_b * dz_rho_b;
+        }
+    }
+    if constexpr(derivative_order > 1)
+    {
+        if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
+        {
+            params.laplacian.col(0) = rho.col(4);
+            params.tau.col(0) = rho.col(5);
+        }
+        else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted)
+        {
+            params.laplacian.col(0) = rho.col(4).alpha();
+            params.laplacian.col(1) = rho.col(4).beta();
+            params.tau.col(0) = rho.col(5).alpha();
+            params.tau.col(1) = rho.col(5).beta();
+        }
+    }
+
+}
+
+
+template<SpinorbitalKind spinorbital_kind, int derivative_order>
+void update_exchange_matrix(const DensityFunctional::Result &res,
+                            Mat& KK, const Mat &rho, double &energy, const occ::gto::GTOValues &gto_vals)
+{
+    if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
+    {
+        energy += rho.col(0).dot(res.exc);
+        Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
+        KK = gto_vals.phi.transpose() * phi_vrho;
+    }
+    else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted)
+    {
+        double e_alpha = res.exc.dot(rho.alpha().col(0));
+        double e_beta = res.exc.dot(rho.beta().col(0));
+        energy +=  e_alpha + e_beta;
+        Mat phi_vrho_a = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
+        Mat phi_vrho_b = gto_vals.phi.array().colwise() * res.vrho.col(1).array();
+        KK.alpha().noalias() = gto_vals.phi.transpose() * phi_vrho_a;
+        KK.beta().noalias() = gto_vals.phi.transpose() * phi_vrho_b;
+    }
+
+    if constexpr(derivative_order > 0)
+    {
+        Eigen::Index npt = res.npts;
+        if constexpr (spinorbital_kind == SpinorbitalKind::Restricted)
+        {
+            auto g = rho.block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array());
+            Mat gamma = gto_vals.phi_x.array().colwise() * g.col(0).array()
+                             + gto_vals.phi_y.array().colwise() * g.col(1).array()
+                             + gto_vals.phi_z.array().colwise() * g.col(2).array();
+            Mat ktmp = gto_vals.phi.transpose() * gamma;
+            KK.noalias() += ktmp + ktmp.transpose();
+
+        }
+        else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted)
+        {
+            auto ga = rho.alpha().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array()) +
+                            rho.beta().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
+            auto gb = rho.beta().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(2).array()) +
+                            rho.alpha().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
+
+            Mat gamma_a = gto_vals.phi_x.array().colwise() * ga.col(0).array()
+                               + gto_vals.phi_y.array().colwise() * ga.col(1).array()
+                               + gto_vals.phi_z.array().colwise() * ga.col(2).array();
+            Mat gamma_b = gto_vals.phi_x.array().colwise() * gb.col(0).array()
+                               + gto_vals.phi_y.array().colwise() * gb.col(1).array()
+                               + gto_vals.phi_z.array().colwise() * gb.col(2).array();
+            Mat ktmp_a = (gto_vals.phi.transpose() * gamma_a);
+            Mat ktmp_b = (gto_vals.phi.transpose() * gamma_b);
+            KK.alpha().noalias() += ktmp_a + ktmp_a.transpose();
+            KK.beta().noalias() += ktmp_b + ktmp_b.transpose();
+        }
+    }
+}
+
+}
+
 class DFT {
 
 public:
@@ -157,6 +268,10 @@ public:
         if constexpr (derivative_order == 1) {
             family = DensityFunctional::Family::GGA;
         }
+        if constexpr (derivative_order == 2)
+        {
+            family = DensityFunctional::Family::MGGA;
+        }
 
         std::vector<Mat> Kt(occ::parallel::nthreads, Mat::Zero(D.rows(), D.cols()));
         std::vector<double> energies(occ::parallel::nthreads, 0.0);
@@ -191,7 +306,6 @@ public:
                     auto& k = Kt[thread_id];
                     const auto& pts_block = atom_pts.middleCols(l, npt);
                     const auto& weights_block = atom_weights.segment(l, npt);
-                    DensityFunctional::Params params(npt, family, spinorbital_kind);
                     if(cache[block].phi.rows() == 0)
                     {
                         occ::gto::evaluate_basis(basis, atoms, pts_block, cache[block], derivative_order);
@@ -200,14 +314,12 @@ public:
                     occ::density::evaluate_density<derivative_order, spinorbital_kind>(D2, gto_vals, rho);
 
                     double max_density_block = rho.col(0).maxCoeff();
-                    if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
-                        params.rho.col(0) = rho.col(0);
+                    if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
+                    {
                         alpha_densities[thread_id] += rho.col(0).dot(weights_block);
                     }
-                    else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                        // correct assignment
-                        params.rho.col(0) = rho.col(0).alpha();
-                        params.rho.col(1) = rho.col(0).beta();
+                    else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted)
+                    {
                         double tot_density_a = rho.col(0).alpha().dot(weights_block);
                         double tot_density_b = rho.col(0).beta().dot(weights_block);
                         alpha_densities[thread_id] += tot_density_a;
@@ -215,29 +327,12 @@ public:
                     }
                     if(max_density_block < m_density_threshold) continue;
 
-                    if constexpr(derivative_order > 0) {
-                        if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
-                            const auto& dx_rho = rho.col(1).array(), dy_rho = rho.col(2).array(), dz_rho = rho.col(3).array();
-                            params.sigma.col(0) = dx_rho * dx_rho + dy_rho * dy_rho + dz_rho * dz_rho;
-                        }
-                        else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-
-                            const auto& rho_alpha = rho.alpha();
-                            const auto& rho_beta = rho.beta();
-                            const auto& dx_rho_a = rho_alpha.col(1).array();
-                            const auto& dy_rho_a = rho_alpha.col(2).array();
-                            const auto& dz_rho_a = rho_alpha.col(3).array();
-                            const auto& dx_rho_b = rho_beta.col(1).array();
-                            const auto& dy_rho_b = rho_beta.col(2).array();
-                            const auto& dz_rho_b = rho_beta.col(3).array();
-                            params.sigma.col(0) = dx_rho_a * dx_rho_a + dy_rho_a * dy_rho_a + dz_rho_a * dz_rho_a;
-                            params.sigma.col(1) = dx_rho_a * dx_rho_b + dy_rho_a * dy_rho_b + dz_rho_a * dz_rho_b;
-                            params.sigma.col(2) = dx_rho_b * dx_rho_b + dy_rho_b * dy_rho_b + dz_rho_b * dz_rho_b;
-                        }
-                    }
+                    DensityFunctional::Params params(npt, family, spinorbital_kind);
+                    impl::set_params<spinorbital_kind, derivative_order>(params, rho);
 
                     DensityFunctional::Result res(npt, family, spinorbital_kind);
-                    for(const auto& func: funcs) {
+                    for(const auto& func: funcs)
+                    {
                         res += func.evaluate(params);
                     }
 
@@ -245,48 +340,7 @@ public:
 
                     // Weight the arrays by the grid weights
                     res.weight_by(weights_block);
-                    if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
-                        energies[thread_id] += rho.col(0).dot(res.exc);
-                        Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
-                        KK = gto_vals.phi.transpose() * phi_vrho;
-                    } else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                        double e_alpha = res.exc.dot(rho.alpha().col(0));
-                        double e_beta = res.exc.dot(rho.beta().col(0));
-                        energies[thread_id] +=  e_alpha + e_beta;
-                        Mat phi_vrho_a = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
-                        Mat phi_vrho_b = gto_vals.phi.array().colwise() * res.vrho.col(1).array();
-
-                        KK.alpha().noalias() = gto_vals.phi.transpose() * phi_vrho_a;
-                        KK.beta().noalias() = gto_vals.phi.transpose() * phi_vrho_b;
-                    }
-
-                    if constexpr(derivative_order > 0) {
-                        if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
-                            auto g = rho.block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array());
-                            Mat gamma = gto_vals.phi_x.array().colwise() * g.col(0).array()
-                                             + gto_vals.phi_y.array().colwise() * g.col(1).array()
-                                             + gto_vals.phi_z.array().colwise() * g.col(2).array();
-                            Mat ktmp = gto_vals.phi.transpose() * gamma;
-                            KK.noalias() += ktmp + ktmp.transpose();
-
-                        } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-                            auto ga = rho.alpha().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array()) +
-                                            rho.beta().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
-                            auto gb = rho.beta().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(2).array()) +
-                                            rho.alpha().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
-
-                            Mat gamma_a = gto_vals.phi_x.array().colwise() * ga.col(0).array()
-                                               + gto_vals.phi_y.array().colwise() * ga.col(1).array()
-                                               + gto_vals.phi_z.array().colwise() * ga.col(2).array();
-                            Mat gamma_b = gto_vals.phi_x.array().colwise() * gb.col(0).array()
-                                               + gto_vals.phi_y.array().colwise() * gb.col(1).array()
-                                               + gto_vals.phi_z.array().colwise() * gb.col(2).array();
-                            Mat ktmp_a = (gto_vals.phi.transpose() * gamma_a);
-                            Mat ktmp_b = (gto_vals.phi.transpose() * gamma_b);
-                            KK.alpha().noalias() += ktmp_a + ktmp_a.transpose();
-                            KK.beta().noalias() += ktmp_b + ktmp_b.transpose();
-                        }
-                    }
+                    impl::update_exchange_matrix<spinorbital_kind, derivative_order>(res, KK, rho, energies[thread_id], gto_vals);
                     k.noalias() += KK;
                 }
             };
@@ -331,14 +385,16 @@ public:
             switch (deriv) {
                 case 0: return compute_fock_dft<0, SpinorbitalKind::Unrestricted>(D, precision, Schwarz);
                 case 1: return compute_fock_dft<1, SpinorbitalKind::Unrestricted>(D, precision, Schwarz);
-                default: throw std::runtime_error("Not implemented: DFT for derivative order > 1");
+                case 2: return compute_fock_dft<2, SpinorbitalKind::Unrestricted>(D, precision, Schwarz);
+                default: throw std::runtime_error("Not implemented: DFT for derivative order > 2");
             }
         }
         case SpinorbitalKind::Restricted: {
             switch (deriv) {
                 case 0: return compute_fock_dft<0, SpinorbitalKind::Restricted>(D, precision, Schwarz);
                 case 1: return compute_fock_dft<1, SpinorbitalKind::Restricted>(D, precision, Schwarz);
-                default: throw std::runtime_error("Not implemented: DFT for derivative order > 1");
+                case 2: return compute_fock_dft<2, SpinorbitalKind::Restricted>(D, precision, Schwarz);
+                default: throw std::runtime_error("Not implemented: DFT for derivative order > 2");
             }
         }
         default: throw std::runtime_error("Not implemented: DFT for General spinorbitals");
