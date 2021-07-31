@@ -40,10 +40,21 @@ namespace occ::density {
             }
             if constexpr(max_derivative > 1) 
             {
-                rho.col(4).alpha().setZero();
+                rho.col(4).alpha() = 2 * ((
+                    gto_values.phi_xx.array() +
+                    gto_values.phi_yy.array() +
+                    gto_values.phi_zz.array()
+                    ) * Dphi.array()).rowwise().sum();
+                //tau
+                Dphi = gto_values.phi_x * D.alpha();
                 rho.col(5).alpha() = (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
+                Dphi = gto_values.phi_y * D.alpha();
                 rho.col(5).alpha().array() += (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
+                Dphi = gto_values.phi_z * D.alpha();
                 rho.col(5).alpha().array() += (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+                rho.col(4).alpha().array() += 2 * rho.col(5).array();
+                rho.col(5).alpha().array() *= 0.5;
+
             }
             // beta part
             Dphi = gto_values.phi * D.beta();
@@ -56,10 +67,20 @@ namespace occ::density {
             }
             if constexpr(max_derivative > 1) 
             {
-                rho.col(4).beta().setZero();
+                rho.col(4).beta() = 2 * ((
+                    gto_values.phi_xx.array() +
+                    gto_values.phi_yy.array() +
+                    gto_values.phi_zz.array()
+                    ) * Dphi.array()).rowwise().sum();
+                //tau
+                Dphi = gto_values.phi_x * D.beta();
                 rho.col(5).beta() = (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
+                Dphi = gto_values.phi_y * D.beta();
                 rho.col(5).beta().array() += (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
+                Dphi = gto_values.phi_z * D.beta();
                 rho.col(5).beta().array() += (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+                rho.col(4).beta().array() += 2 * rho.col(5).array();
+                rho.col(5).beta().array() *= 0.5;
             }
         }
         else {

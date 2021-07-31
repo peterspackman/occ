@@ -513,7 +513,7 @@ public:
                 {
                     sigma.resize(npt, 3);
                     laplacian.resize(npt, 2);
-                    tau.resize(npt, 3);
+                    tau.resize(npt, 2);
                 }
             }
         }

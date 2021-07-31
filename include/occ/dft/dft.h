@@ -140,6 +140,40 @@ void update_exchange_matrix(const DensityFunctional::Result &res,
             KK.beta().noalias() += ktmp_b + ktmp_b.transpose();
         }
     }
+    if constexpr (derivative_order > 1)
+    {
+        if constexpr (spinorbital_kind == SpinorbitalKind::Restricted)
+        {
+            // unsure about factors for vtau, vlaplacian
+            // xx + yy + zz = rho(4) 
+            auto t = gto_vals.phi_xx + gto_vals.phi_yy + gto_vals.phi_zz;
+            Mat tmp = gto_vals.phi.transpose() * (t.array().colwise() * res.vlaplacian.col(0).array()).matrix();
+            KK.noalias() += tmp;
+            auto t2 = 0.5 * res.vtau.col(0) + 2 * res.vlaplacian.col(0);
+            KK.noalias() += gto_vals.phi_x.transpose() * (gto_vals.phi_x.array().colwise() * t2.array()).matrix();
+            KK.noalias() += gto_vals.phi_y.transpose() * (gto_vals.phi_y.array().colwise() * t2.array()).matrix();
+            KK.noalias() += gto_vals.phi_z.transpose() * (gto_vals.phi_z.array().colwise() * t2.array()).matrix();
+        }
+        else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted)
+        {
+            // xx + yy + zz = rho(4) 
+            auto t = gto_vals.phi_xx + gto_vals.phi_yy + gto_vals.phi_zz;
+            Mat tmp = gto_vals.phi.transpose() * (t.array().colwise() * res.vlaplacian.col(0).array()).matrix();
+            KK.alpha().noalias() += tmp;
+            tmp = gto_vals.phi.transpose() * (t.array().colwise() * res.vlaplacian.col(1).array()).matrix();
+            KK.beta().noalias() += tmp;
+
+            auto t2a = 0.5 * res.vtau.col(0) + 2 * res.vlaplacian.col(0);
+            KK.alpha().noalias() += gto_vals.phi_x.transpose() * (gto_vals.phi_x.array().colwise() * t2a.array()).matrix();
+            KK.alpha().noalias() += gto_vals.phi_y.transpose() * (gto_vals.phi_y.array().colwise() * t2a.array()).matrix();
+            KK.alpha().noalias() += gto_vals.phi_z.transpose() * (gto_vals.phi_z.array().colwise() * t2a.array()).matrix();
+
+            auto t2b = 0.5 * res.vtau.col(1) + 2 * res.vlaplacian.col(1);
+            KK.beta().noalias() += gto_vals.phi_x.transpose() * (gto_vals.phi_x.array().colwise() * t2b.array()).matrix();
+            KK.beta().noalias() += gto_vals.phi_y.transpose() * (gto_vals.phi_y.array().colwise() * t2b.array()).matrix();
+            KK.beta().noalias() += gto_vals.phi_z.transpose() * (gto_vals.phi_z.array().colwise() * t2b.array()).matrix();
+        }
+    }
 }
 
 }
@@ -357,7 +391,6 @@ public:
             total_density_b += beta_densities[i];
         }
         occ::log::debug("Total density: alpha = {} beta = {}", total_density_a, total_density_b);
-        //occ::log::debug("E_coul: {}, E_x: {}, E_xc = {}, E_XC = {}", ecoul, exc, m_two_electron_energy, m_two_electron_energy + exc);
 
         if(exchange_factor != 0.0) {
             Mat J, K;
@@ -371,6 +404,7 @@ public:
             F += m_hf.compute_J(spinorbital_kind, D, precision, Schwarz);
             ecoul = expectation<spinorbital_kind>(D, F);
         }
+        occ::log::debug("EXC_dft = {}, EXC = {}, E_coul = {}\n", exc_dft, exc, ecoul);
         m_two_electron_energy += exc_dft + exc + ecoul;
         m_exc_dft += exc_dft;
         return F;
