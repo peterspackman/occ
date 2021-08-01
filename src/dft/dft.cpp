@@ -23,6 +23,21 @@ struct FuncComponent {
 
 const robin_hood::unordered_map<std::string, std::vector<FuncComponent>> builtin_functionals({
     {"b3lyp", {{dfid::hyb_gga_xc_b3lyp, 1.0}}},
+    {"b3pw91", {{dfid::hyb_gga_xc_b3pw91 , 1.0}}},
+    {"b3p86", {{dfid::hyb_gga_xc_b3p86 , 1.0}}},
+    {"o3lyp", {{dfid::hyb_gga_xc_o3lyp, 1.0}}},
+    {"pbeh", {{dfid::hyb_gga_xc_pbeh}}},
+    {"b97", {{dfid::hyb_gga_xc_b97}}},
+    {"b971", {{dfid::hyb_gga_xc_b97_1}}},
+    {"b972", {{dfid::hyb_gga_xc_b97_2}}},
+    {"x3lyp", {{dfid::hyb_gga_xc_x3lyp}}},
+    {"b97k", {{dfid::hyb_gga_xc_b97_k }}},
+    {"b973", {{dfid::hyb_gga_xc_b97_3}}},
+    {"mpw3pw", {{dfid::hyb_gga_xc_mpw3pw}}},
+    {"mpw3lyp", {{dfid::hyb_gga_xc_mpw3lyp}}},
+    {"bhandh", {{dfid::hyb_gga_xc_bhandh}}},
+    {"bhandhlyp", {{dfid::hyb_gga_xc_bhandhlyp}}},
+    {"b3lyp5", {{dfid::hyb_gga_xc_b3lyp5}}},
     {"pbe1pbe", {{dfid::gga_x_pbe, 0.75, 0.25}, {dfid::gga_c_pbe}}},
     {"pbe", {{dfid::gga_x_pbe, 1.0}, {dfid::gga_c_pbe, 1.0}}},
     {"pbepbe", {{dfid::gga_x_pbe, 1.0}, {dfid::gga_c_pbe, 1.0}}},
@@ -31,6 +46,7 @@ const robin_hood::unordered_map<std::string, std::vector<FuncComponent>> builtin
     {"svwn5", {{dfid::lda_x}, {dfid::lda_c_vwn}}},
     {"blyp", {{dfid::gga_x_b88}, {dfid::gga_c_lyp}}},
     {"bpbe", {{dfid::gga_x_b88}, {dfid::gga_c_pbe}}},
+    {"bp86", {{dfid::gga_x_b88}, {dfid::gga_c_p86}}},
     {"m062x", {{dfid::hyb_mgga_x_m06_2x}, {dfid::mgga_c_m06_2x}}},
 });
 
