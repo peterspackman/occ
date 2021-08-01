@@ -292,7 +292,7 @@ public:
         Mat F = Mat::Zero(F_rows, F_cols);
         m_two_electron_energy = 0.0;
         m_exc_dft = 0.0;
-        double ecoul, exc;
+        double ecoul{0.0}, exc{0.0};
         double exchange_factor = exact_exchange_factor();
 
         constexpr size_t BLOCKSIZE = 128;
@@ -401,8 +401,9 @@ public:
             F.noalias() -= K * exchange_factor;
         }
         else {
-            F += m_hf.compute_J(spinorbital_kind, D, precision, Schwarz);
-            ecoul = expectation<spinorbital_kind>(D, F);
+            Mat J = m_hf.compute_J(spinorbital_kind, D, precision, Schwarz);
+            ecoul = expectation<spinorbital_kind>(D, J);
+            F.noalias() += J;
         }
         occ::log::debug("EXC_dft = {}, EXC = {}, E_coul = {}\n", exc_dft, exc, ecoul);
         m_two_electron_energy += exc_dft + exc + ecoul;
