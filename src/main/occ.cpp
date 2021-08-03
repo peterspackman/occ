@@ -33,6 +33,7 @@ struct InputConfiguration {
     fs::path input_file;
     std::string method;
     std::string basis_name;
+    bool spherical{false};
     std::optional<std::string> solvent{std::nullopt};
     size_t multiplicity;
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
@@ -164,11 +165,14 @@ void print_configuration(const Molecule &m, const InputConfiguration &config)
     fmt::print("Translational free energy   {: 12.6f} kJ/mol\n", m.translational_free_energy(occ::constants::celsius<double> + 25));
 }
 
-occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name)
+occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name, bool spherical)
 {
     occ::qm::BasisSet basis(name, m.atoms());
-    basis.set_pure(false);
-    fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
+    basis.set_pure(spherical);
+    fmt::print("Loaded basis set: {}\n", spherical ? "spherical" : "cartesian");
+    fmt::print("number of shells:            {}\n", basis.size());
+    fmt::print("number of  basis functions:  {}\n", basis.nbf());
+    fmt::print("max angular momentum:        {}\n", basis.max_l());
     return basis;
 }
 
@@ -177,7 +181,7 @@ Wavefunction run_from_xyz_file(const InputConfiguration &config)
     Molecule m = occ::chem::read_xyz_file(config.input_file.string());
     print_configuration(m, config);
 
-    auto basis = load_basis_set(m, config.basis_name);
+    auto basis = load_basis_set(m, config.basis_name, config.spherical);
 
     if (config.method == "rhf")
         return run_method<HartreeFock, SpinorbitalKind::Restricted>(m, basis, config);
@@ -208,7 +212,7 @@ Wavefunction run_from_gaussian_input_file(InputConfiguration &config)
     config.basis_name = com.basis_name;
 
     print_configuration(m, config);
-    auto basis = load_basis_set(m, com.basis_name);
+    auto basis = load_basis_set(m, com.basis_name, false);
 
     if(com.method_type == occ::io::GaussianInputFile::MethodType::HF)
     {
@@ -243,6 +247,7 @@ int main(int argc, char *argv[]) {
         ("n,multiplicity", "System multiplicity", cxxopts::value<int>()->default_value("1"))
         ("u,unrestricted", "Use unrestricted DFT", cxxopts::value<bool>()->default_value("false"))
         ("v,verbosity", "Logging verbosity", cxxopts::value<std::string>()->default_value("WARN"))
+        ("spherical", "Use spherical basis functions", cxxopts::value<bool>()->default_value("false"))
         ("s,solvent", "Use SMD solvation model with solvent", cxxopts::value<std::string>())
         ("f,solvent-file", "Write solvation surface to file", cxxopts::value<std::string>());
 
@@ -287,6 +292,7 @@ int main(int argc, char *argv[]) {
         config.multiplicity = result["multiplicity"].as<int>();
         config.method = result["method"].as<std::string>();
         config.charge = result["charge"].as<int>();
+        config.spherical = result["spherical"].as<bool>();
         if (config.multiplicity != 1 || result.count("unrestricted") || config.method == "uhf") {
             config.spinorbital_kind = SpinorbitalKind::Unrestricted;
             fmt::print("unrestricted spinorbital kind\n");

@@ -199,7 +199,7 @@ public:
         const auto& basis = m_hf.basis();
         const auto& atoms = m_hf.atoms();
         size_t F_rows, F_cols;
-        size_t nbf = occ::qm::nbf(basis);
+        size_t nbf = basis.nbf();
         std::tie(F_rows, F_cols) = occ::qm::matrix_dimensions<spinorbital_kind>(nbf);
         Mat F = Mat::Zero(F_rows, F_cols);
         m_two_electron_energy = 0.0;

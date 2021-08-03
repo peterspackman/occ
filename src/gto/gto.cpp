@@ -44,7 +44,7 @@ void evaluate_basis(const BasisSet &basis,
                 double * z_out = gto_values.phi_z.col(bf).data();
                 gg_collocation_deriv1(L,
                         npts, xyz, xyz_stride,
-                                      sh.nprim(), coeffs, alpha, center, GG_CARTESIAN_CCA,
+                                      sh.nprim(), coeffs, alpha, center, order,
                                       output, x_out, y_out, z_out);   
             }
             else if (max_derivative == 2)
@@ -60,7 +60,7 @@ void evaluate_basis(const BasisSet &basis,
                 double *zz_out = gto_values.phi_zz.col(bf).data();
                 gg_collocation_deriv2(L,
                         npts, xyz, xyz_stride,
-                        sh.nprim(), coeffs, alpha, center, GG_CARTESIAN_CCA,
+                        sh.nprim(), coeffs, alpha, center, order,
                         output, x_out, y_out, z_out,
                         xx_out, xy_out, xz_out, yy_out, yz_out, zz_out);
             }
