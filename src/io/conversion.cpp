@@ -68,7 +68,7 @@ Mat from_gaussian(const occ::qm::BasisSet &basis, const Mat& mo)
         */
         // But this is the actual order G09 puts out...
         default:
-            auto cc_order = occ::gto::cartesian_ordering(l);
+            auto cc_order = occ::gto::subshell_ordering(l);
             gaussian_order.reserve(cc_order.size());
             for(auto it = cc_order.rbegin(); it != cc_order.rend(); it++)
             {
@@ -165,7 +165,7 @@ Mat to_gaussian(const occ::qm::BasisSet &basis, const Mat &mo)
         */
         // But this is the actual order G09 puts out...
         default:
-            auto cc_order = occ::gto::cartesian_ordering(l);
+            auto cc_order = occ::gto::subshell_ordering(l);
             gaussian_order.reserve(cc_order.size());
             for(auto it = cc_order.rbegin(); it != cc_order.rend(); it++)
             {

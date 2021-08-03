@@ -24,6 +24,7 @@ inline std::string component_label(int i, int j, int k, int l) {
     return label;
 }
 
+template<bool Cartesian = true>
 inline std::vector<std::string> shell_component_labels(int l)
 {
     if(l == 0) return {std::string{shell_labels[0]}};
@@ -33,7 +34,7 @@ inline std::vector<std::string> shell_component_labels(int l)
     auto f = [&labels](int i, int j, int k, int l) {
         labels.push_back(component_label(i, j, k, l));
     };
-    occ::gto::iterate_over_shell<true>(f, l);
+    occ::gto::iterate_over_shell<Cartesian>(f, l);
     return labels;
 }
 
@@ -83,6 +84,14 @@ struct GTOValues {
     Mat phi_zz;
 };
 
+constexpr unsigned int num_subshells(bool cartesian, unsigned int l)
+{
+    if (l == 0) return 1;
+    if (l == 1) return 3;
+    if (cartesian) return (l + 2) * (l + 1) / 2;
+    return 2 * l + 1;
+}
+
 inline double cartesian_normalization_factor(int l, int m, int n)
 {
     int angular_momenta = l + m + n;
@@ -108,14 +117,15 @@ struct Momenta {
     }
 };
 
-inline std::vector<Momenta> cartesian_ordering(int l) {
+template<bool Cartesian = true>
+std::vector<Momenta> subshell_ordering(int l) {
     if(l == 0) return {{0, 0, 0}};
     int i = 0, j = 0, k = 0;
     std::vector<Momenta> powers;
     auto f = [&powers](int i, int j, int k, int l) {
         powers.push_back({i, j, k});
     };
-    occ::gto::iterate_over_shell<true>(f, l);
+    occ::gto::iterate_over_shell<Cartesian>(f, l);
     return powers;
 }
 

@@ -11,8 +11,7 @@ void xc_potential_matrix<Restricted, 0>(const DensityFunctional::Result &res, co
         double &energy)
 {
     energy += rho.col(0).dot(res.exc);
-    Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
-    Vxc = gto_vals.phi.transpose() * phi_vrho;
+    Vxc = gto_vals.phi.transpose() * (gto_vals.phi.array().colwise() * res.vrho.col(0).array()).matrix();
 }
 
 
@@ -23,21 +22,20 @@ void xc_potential_matrix<Restricted, 1>(const DensityFunctional::Result &res, co
         double &energy)
 {
     Eigen::Index npt = res.npts;
-    // LDA into K0
-    xc_potential_matrix<Restricted, 0>(res, rho, gto_vals, Vxc, energy);
 
     const auto& phi = gto_vals.phi;
     const auto& phi_x = gto_vals.phi_x;
     const auto& phi_y = gto_vals.phi_y;
     const auto& phi_z = gto_vals.phi_z;
 
+    energy += rho.col(0).dot(res.exc);
     const auto& vsigma = res.vsigma.col(0);
-    auto g = rho.block(0, 1, npt, 3).array().colwise() * (2 * vsigma.array());
-    Mat gamma = 
-        phi_x.array().colwise() * g.col(0).array() +
-        phi_y.array().colwise() * g.col(1).array() +
-        phi_z.array().colwise() * g.col(2).array();
-    Mat ktmp = phi.transpose() * gamma;
+    Mat ktmp = phi.transpose() * (
+        0.5 * (phi.array().colwise() * res.vrho.col(0).array()) + 
+        2 * (phi_x.array().colwise() * (rho.col(1).array() * vsigma.array())) +
+        2 * (phi_y.array().colwise() * (rho.col(2).array() * vsigma.array())) +
+        2 * (phi_z.array().colwise() * (rho.col(3).array() * vsigma.array()))
+    ).matrix();
     Vxc.noalias() += ktmp + ktmp.transpose();
 }
 
