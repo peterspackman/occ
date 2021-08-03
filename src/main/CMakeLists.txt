@@ -11,6 +11,9 @@ set_target_properties(occ
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+# Use for GCC time report when compiling occ
+# target_compile_options(occ PRIVATE "-ftime-report")
+
 add_executable(occ-pair "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp")
 target_link_libraries(occ-pair PUBLIC occ_interaction cxxopts)
 set_target_properties(occ-pair

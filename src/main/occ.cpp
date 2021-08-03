@@ -6,6 +6,7 @@
 #include <occ/dft/dft.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
+#include <occ/qm/partitioning.h>
 #include <occ/solvent/solvation_correction.h>
 #include <occ/core/units.h>
 #include <occ/core/constants.h>
@@ -77,24 +78,37 @@ spdlog       - Logging (v {})
 template<typename T, SpinorbitalKind SK>
 Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis, const InputConfiguration &config)
 {
-    if constexpr(std::is_same<T, DFT>::value)
-    {
-        DFT ks(config.method, basis, m.atoms(), SK);
-        SCF<DFT, SK> scf(ks);
-        scf.set_charge_multiplicity(config.charge, config.multiplicity);
-        scf.start_incremental_F_threshold = 0.0;
-        double e = scf.compute_scf_energy();
-        return scf.wavefunction();
-    }
-    else
-    {
-        T proc(m.atoms(), basis);
-        SCF<T, SK> scf(proc);
-        scf.set_charge_multiplicity(config.charge, config.multiplicity);
-        double e = scf.compute_scf_energy();
-        return scf.wavefunction();
 
+    T proc = [&]() {
+        if constexpr(std::is_same<T, DFT>::value)
+            return T(config.method, basis, m.atoms(), SK);
+        else return T(m.atoms(), basis);
+    }();
+
+    SCF<T, SK> scf(proc);
+    scf.set_charge_multiplicity(config.charge, config.multiplicity);
+
+    double e = scf.compute_scf_energy();
+    Wavefunction wfn = scf.wavefunction();
+    fmt::print("\nproperties\n----------\n");
+    occ::Vec3 origin = m.center_of_mass() * occ::units::ANGSTROM_TO_BOHR;
+    fmt::print("center of mass (bohr)        {:12.6f} {:12.6f} {:12.6f}\n\n", origin(0), origin(1), origin(2));
+    auto e_mult = proc.template compute_electronic_multipoles<3>(SK, wfn.D, origin);
+    auto nuc_mult = proc.template compute_nuclear_multipoles<3>(origin);
+    auto tot_mult = e_mult + nuc_mult;
+    fmt::print("electronic multipole\n{}\n", e_mult);
+    fmt::print("nuclear multipole\n{}\n", nuc_mult);
+    fmt::print("total multipole\n{}\n", tot_mult);
+    occ::Vec mulliken_charges = -2 * occ::qm::mulliken_partition<SK>(
+        proc.basis(), proc.atoms(), wfn.D, proc.compute_overlap_matrix()
+    );
+    fmt::print("Mulliken charges\n");
+    for(size_t i = 0; i < wfn.atoms.size(); i++)
+    {
+        mulliken_charges(i) += wfn.atoms[i].atomic_number;
+        fmt::print("Atom {}: {:12.6f}\n", i, mulliken_charges(i));
     }
+    return wfn;
 }
 
 template<typename T, SpinorbitalKind SK>

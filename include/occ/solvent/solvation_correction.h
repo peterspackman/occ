@@ -131,6 +131,7 @@ public:
         m_cds_solvation_energy = m_solvation_model.smd_cds_energy();
     }
 
+    bool supports_incremental_fock_build() const { return m_proc.supports_incremental_fock_build(); }
     const auto &shellpair_list() const { return m_proc.shellpair_list(); }
     const auto &shellpair_data() const { return m_proc.shellpair_data(); }
     const auto &atoms() const { return m_proc.atoms(); }

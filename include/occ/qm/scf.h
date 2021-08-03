@@ -5,19 +5,13 @@
 #include <occ/core/diis.h>
 #include <occ/qm/ints.h>
 #include <occ/qm/spinorbital.h>
-#include <occ/qm/density_fitting.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/core/energy_components.h>
-#include <occ/core/point_charge.h>
 #include <occ/core/units.h>
-#include <occ/core/molecule.h>
 #include <occ/qm/guess_density.h>
-#include <occ/qm/partitioning.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <tuple>
-#include <optional>
 
 namespace occ::scf {
 
@@ -25,6 +19,9 @@ constexpr auto OCC_MINIMAL_BASIS = "mini";
 using occ::util::human_readable_size;
 using occ::conditioning_orthogonalizer;
 using occ::qm::SpinorbitalKind;
+using occ::qm::SpinorbitalKind::Restricted;
+using occ::qm::SpinorbitalKind::Unrestricted;
+using occ::qm::SpinorbitalKind::General;
 using occ::qm::expectation;
 using occ::Mat;
 using occ::util::is_odd;
@@ -60,6 +57,7 @@ struct SCF {
         Vpc = Mat::Zero(rows, cols);
         orbital_energies = Vec::Zero(rows);
         energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
+        if(!m_procedure.supports_incremental_fock_build()) start_incremental_F_threshold = 0.0;
     }
 
     inline int n_alpha() const { return n_occ; }
@@ -77,30 +75,12 @@ struct SCF {
         return n_unpaired_electrons + 1;
     }
 
-    void set_density_fitting_basis(const std::string& name)
-    {
-        if(spinorbital_kind != SpinorbitalKind::Restricted) throw std::runtime_error("Density fitting only implemented for RHF");
-        BasisSet df_basis(name, m_procedure.atoms());
-        BasisSet basis = m_procedure.basis();
-        fmt::print("Loaded density-fitting basis-set ({}), {} shells, {} basis functions\n", name, df_basis.size(), occ::qm::nbf(df_basis));
-        fmt::print("Storing DF overlap integrals requires {}\n",
-                   human_readable_size(occ::qm::nbf(basis) * occ::qm::nbf(df_basis) * occ::qm::nbf(df_basis) * sizeof(double), "B"));
-        df_engine.emplace(basis, df_basis);
-    }
-
     void set_charge(int c) {
         set_charge_multiplicity(c, multiplicity());
     }
 
     void set_multiplicity(int m) {
         set_charge_multiplicity(charge(), m);
-    }
-
-    void set_point_charges(const std::vector<occ::core::PointCharge>& charges)
-    {
-        point_charges = charges;
-        energy["nuclear.point_charge"] = 0.0;
-        energy["electronic.point_charge"] = 0.0;
     }
 
     Wavefunction wavefunction() const {
@@ -125,27 +105,6 @@ struct SCF {
         wfn.spinorbital_kind = spinorbital_kind;
         wfn.T = T;
         wfn.V = V;
-        fmt::print("\nproperties\n----------\n");
-        Vec3 origin = occ::chem::Molecule(m_procedure.atoms()).center_of_mass() * occ::units::ANGSTROM_TO_BOHR;
-        fmt::print("center of mass (bohr)        {:12.6f} {:12.6f} {:12.6f}\n\n", origin(0), origin(1), origin(2));
-        auto e_mult = m_procedure.template compute_electronic_multipoles<3>(spinorbital_kind, D, origin);
-        auto nuc_mult = m_procedure.template compute_nuclear_multipoles<3>(origin);
-        auto tot_mult = e_mult + nuc_mult;
-        fmt::print("electronic multipole\n{}\n", e_mult);
-        fmt::print("nuclear multipole\n{}\n", nuc_mult);
-        fmt::print("total multipole\n{}\n", tot_mult);
-        Vec mulliken_charges = -2 * occ::qm::mulliken_partition<spinorbital_kind>(
-            m_procedure.basis(),
-            m_procedure.atoms(),
-            D,
-            S
-        );
-        fmt::print("Mulliken charges\n");
-        for(size_t i = 0; i < wfn.atoms.size(); i++)
-        {
-            mulliken_charges(i) += wfn.atoms[i].atomic_number;
-            fmt::print("Atom {}: {:12.6f}\n", i, mulliken_charges(i));
-        }
         return wfn;
     }
 
@@ -177,7 +136,7 @@ struct SCF {
 
 
     void update_occupied_orbital_count() {
-        if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
+        if constexpr (spinorbital_kind == Restricted) {
             n_occ = n_electrons / 2;
             if(is_odd(n_electrons)) {
                 throw std::runtime_error(
@@ -187,11 +146,11 @@ struct SCF {
                             );
             }
         }
-        else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        else if constexpr (spinorbital_kind == Unrestricted) {
             n_occ = (n_electrons - n_unpaired_electrons) / 2;
             n_unpaired_electrons = n_beta() - n_alpha();
         }
-        else if constexpr (spinorbital_kind == SpinorbitalKind::General) {
+        else if constexpr (spinorbital_kind == General) {
             n_occ = n_electrons;
         }
     }
@@ -238,13 +197,13 @@ struct SCF {
         C_occ = wfn.C_occ;
         orbital_energies = wfn.mo_energies;
         update_occupied_orbital_count();
-        if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
+        if constexpr(spinorbital_kind == Restricted)
         {
             S = m_procedure.compute_overlap_matrix();
             T = m_procedure.compute_kinetic_matrix();
             V = m_procedure.compute_nuclear_attraction_matrix();
         }
-        else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted)
+        else if constexpr(spinorbital_kind == Unrestricted)
         {
             S.alpha() = m_procedure.compute_overlap_matrix();
             S.beta() = S.alpha();
@@ -253,7 +212,7 @@ struct SCF {
             V.alpha() = m_procedure.compute_nuclear_attraction_matrix();
             V.beta() = V.alpha();
         }
-        else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+        else if constexpr(spinorbital_kind == General) {
             S.alpha_alpha() = m_procedure.compute_overlap_matrix();
             T.alpha_alpha() = m_procedure.compute_kinetic_matrix();
             V.alpha_alpha() = m_procedure.compute_nuclear_attraction_matrix();
@@ -272,7 +231,7 @@ struct SCF {
         // this is probably too optimistic, but in well-behaved cases even 10^11 is
         // OK
         double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
-        if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        if constexpr(spinorbital_kind == Unrestricted) {
             std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S.alpha(), S_condition_number_threshold);
         }
         else {
@@ -284,13 +243,13 @@ struct SCF {
     void compute_initial_guess() {
         if(m_have_initial_guess) return;
         const auto tstart = std::chrono::high_resolution_clock::now();
-        if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
+        if constexpr(spinorbital_kind == Restricted)
         {
             S = m_procedure.compute_overlap_matrix();
             T = m_procedure.compute_kinetic_matrix();
             V = m_procedure.compute_nuclear_attraction_matrix();
         }
-        else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted)
+        else if constexpr(spinorbital_kind == Unrestricted)
         {
             S.alpha() = m_procedure.compute_overlap_matrix();
             S.beta() = S.alpha();
@@ -299,7 +258,7 @@ struct SCF {
             V.alpha() = m_procedure.compute_nuclear_attraction_matrix();
             V.beta() = V.alpha();
         }
-        else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+        else if constexpr(spinorbital_kind == General) {
             S.alpha_alpha() = m_procedure.compute_overlap_matrix();
             T.alpha_alpha() = m_procedure.compute_kinetic_matrix();
             V.alpha_alpha() = m_procedure.compute_nuclear_attraction_matrix();
@@ -319,7 +278,7 @@ struct SCF {
         // OK
         occ::timing::start(occ::timing::category::la);
         double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
-        if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        if constexpr(spinorbital_kind == Unrestricted) {
             std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(S.alpha(), S_condition_number_threshold);
         }
         else {
@@ -331,14 +290,14 @@ struct SCF {
         auto D_minbs = compute_soad(); // compute guess in minimal basis
         BasisSet minbs(OCC_MINIMAL_BASIS, atoms());
         if (minbs == m_procedure.basis()) {
-            if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
+            if constexpr(spinorbital_kind == Restricted) {
                 D = D_minbs;
             }
-            else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            else if constexpr(spinorbital_kind == Unrestricted) {
                 D.alpha() = D_minbs * (static_cast<double>(n_alpha())/ n_electrons);
                 D.beta() = D_minbs * (static_cast<double>(n_beta()) / n_electrons);
             }
-            else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+            else if constexpr(spinorbital_kind == General) {
                 D.alpha_alpha() = D_minbs * 0.5;
                 D.beta_beta() = D_minbs * 0.5;
             }
@@ -348,13 +307,13 @@ struct SCF {
             // by diagonalizing a Fock matrix
             occ::log::debug("Projecting minimal basis guess into atomic orbital basis...");
 
-            if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
+            if constexpr(spinorbital_kind == Restricted) {
                 F += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
                     commutator_convergence_threshold 
                 );
             }
-            else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            else if constexpr(spinorbital_kind == Unrestricted) {
                 F.alpha() += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
                     commutator_convergence_threshold
@@ -362,7 +321,7 @@ struct SCF {
 
                 F.beta() = F.alpha();
             }
-            else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+            else if constexpr(spinorbital_kind == General) {
                 // TODO fix multiplicity != 1
                 F.alpha_alpha() += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
@@ -383,15 +342,15 @@ struct SCF {
 
     void update_density_matrix() {
         occ::timing::start(occ::timing::category::la);
-        if constexpr(spinorbital_kind == SpinorbitalKind::Restricted) {
+        if constexpr(spinorbital_kind == Restricted) {
             D = C_occ * C_occ.transpose();
         }
-        else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        else if constexpr(spinorbital_kind == Unrestricted) {
             D.alpha() = C_occ.block(0, 0, nbf, n_alpha()) * C_occ.block(0, 0, nbf, n_alpha()).transpose();
             D.beta() = C_occ.block(nbf, 0, nbf, n_beta()) * C_occ.block(nbf, 0, nbf, n_beta()).transpose();
             D *= 0.5;
         }
-        else if constexpr(spinorbital_kind == SpinorbitalKind::General) {
+        else if constexpr(spinorbital_kind == General) {
             D = (C_occ * C_occ.transpose()) * 0.5;
         }
         occ::timing::stop(occ::timing::category::la);
@@ -402,7 +361,7 @@ struct SCF {
         // where
         // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
         occ::timing::start(occ::timing::category::mo);
-        if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        if constexpr(spinorbital_kind == Unrestricted) {
             Eigen::SelfAdjointEigenSolver<Mat> alpha_eig_solver(X.transpose() * fock.alpha() * X);
             Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(X.transpose() * fock.beta() * X);
             C.alpha() = X * alpha_eig_solver.eigenvectors();
@@ -445,8 +404,8 @@ struct SCF {
 
     std::string scf_kind() const {
         switch(spinorbital_kind) {
-        case SpinorbitalKind::Unrestricted: return "unrestricted";
-        case SpinorbitalKind::General: return "general";
+        case Unrestricted: return "unrestricted";
+        case General: return "general";
         default: return "restricted";
         }
     }
@@ -503,26 +462,15 @@ struct SCF {
             const auto precision_F = std::min(
                         std::min(1e-3 / XtX_condition_number, 1e-7),
                         std::max(diis_error / 1e4, std::numeric_limits<double>::epsilon()));
-            if(df_engine == std::nullopt) {
-                F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
-            }
-            else {
-                F = H + (*df_engine).compute_2body_fock_dfC(C_occ);
-            }
-            /*
-            // code for testing DF implementation is working
-            {
-                BasisSet dfbs("def2-svp-jk", m_procedure.atoms());
-                occ::df::DFFockEngine dfe(m_procedure.basis(), dfbs);
-                occ::Mat fock_df = dfe.compute_2body_fock_dfC(C_occ);
-                fmt::print("Fock\n:{}\n\n\nFockDF\n{}\n", F, fock_df);
-            }*/
+
+            F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
+
             // compute HF energy with the non-extrapolated Fock matrix
             update_scf_energy(incremental);
             ediff_rel = std::abs((energy["electronic"] - ehf_last) / energy["electronic"]);
 
             // compute SCF error
-            if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            if constexpr(spinorbital_kind == Unrestricted) {
                 FD_comm.alpha() = F.alpha() * D.alpha() * S.alpha() - S.alpha() * D.alpha() * F.alpha();
                 FD_comm.beta() = F.beta() * D.beta() * S.beta() - S.beta() * D.beta() * F.beta();
             }
@@ -563,7 +511,7 @@ struct SCF {
     }
 
     void print_orbital_energies() {
-        if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        if constexpr (spinorbital_kind == Unrestricted) {
             int n_a = n_alpha(), n_b = n_beta();
             int n_mo = orbital_energies.size() / 2;
             fmt::print("\nMolecular orbital energies\n");
@@ -614,9 +562,7 @@ struct SCF {
     Mat D, S, T, V, H, K, X, Xinv, C, C_occ, F, Vpc;
     Vec orbital_energies;
     double XtX_condition_number;
-    std::optional<occ::df::DFFockEngine> df_engine;
     bool m_have_initial_guess{false};
-    std::vector<occ::core::PointCharge> point_charges;
 };
 
 } // namespace occ::scf
