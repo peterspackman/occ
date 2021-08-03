@@ -13,6 +13,7 @@
 #include <occ/gto/density.h>
 #include <occ/qm/basisset.h>
 #include <occ/core/energy_components.h>
+#include <occ/dft/xc_potential_matrix.h>
 
 namespace occ::dft {
 using occ::qm::SpinorbitalKind;
@@ -50,8 +51,9 @@ void set_params(DensityFunctional::Params& params, const Mat& rho)
     if constexpr(derivative_order > 0) {
         if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
         {
-            const auto& dx_rho = rho.col(1).array(), dy_rho = rho.col(2).array(), dz_rho = rho.col(3).array();
-            params.sigma.col(0) = dx_rho * dx_rho + dy_rho * dy_rho + dz_rho * dz_rho;
+            params.sigma.col(0) = (
+                rho.block(0, 1, rho.rows(), 3).array() * rho.block(0, 1, rho.rows(), 3).array() 
+            ).rowwise().sum();
         }
         else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted)
         {
@@ -84,96 +86,6 @@ void set_params(DensityFunctional::Params& params, const Mat& rho)
         }
     }
 
-}
-
-
-template<SpinorbitalKind spinorbital_kind, int derivative_order>
-void update_exchange_matrix(const DensityFunctional::Result &res,
-                            Mat& KK, const Mat &rho, double &energy, const occ::gto::GTOValues &gto_vals)
-{
-    if constexpr(spinorbital_kind == SpinorbitalKind::Restricted)
-    {
-        energy += rho.col(0).dot(res.exc);
-        Mat phi_vrho = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
-        KK = gto_vals.phi.transpose() * phi_vrho;
-    }
-    else if constexpr(spinorbital_kind == SpinorbitalKind::Unrestricted)
-    {
-        double e_alpha = res.exc.dot(rho.alpha().col(0));
-        double e_beta = res.exc.dot(rho.beta().col(0));
-        energy +=  e_alpha + e_beta;
-        Mat phi_vrho_a = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
-        Mat phi_vrho_b = gto_vals.phi.array().colwise() * res.vrho.col(1).array();
-        KK.alpha().noalias() = gto_vals.phi.transpose() * phi_vrho_a;
-        KK.beta().noalias() = gto_vals.phi.transpose() * phi_vrho_b;
-    }
-
-    if constexpr(derivative_order > 0)
-    {
-        Eigen::Index npt = res.npts;
-        if constexpr (spinorbital_kind == SpinorbitalKind::Restricted)
-        {
-            auto g = rho.block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array());
-            Mat gamma = gto_vals.phi_x.array().colwise() * g.col(0).array()
-                             + gto_vals.phi_y.array().colwise() * g.col(1).array()
-                             + gto_vals.phi_z.array().colwise() * g.col(2).array();
-            Mat ktmp = gto_vals.phi.transpose() * gamma;
-            KK.noalias() += ktmp + ktmp.transpose();
-
-        }
-        else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted)
-        {
-            auto ga = rho.alpha().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(0).array()) +
-                            rho.beta().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
-            auto gb = rho.beta().block(0, 1, npt, 3).array().colwise() * (2 * res.vsigma.col(2).array()) +
-                            rho.alpha().block(0, 1, npt, 3).array().colwise() * res.vsigma.col(1).array();
-
-            Mat gamma_a = gto_vals.phi_x.array().colwise() * ga.col(0).array()
-                               + gto_vals.phi_y.array().colwise() * ga.col(1).array()
-                               + gto_vals.phi_z.array().colwise() * ga.col(2).array();
-            Mat gamma_b = gto_vals.phi_x.array().colwise() * gb.col(0).array()
-                               + gto_vals.phi_y.array().colwise() * gb.col(1).array()
-                               + gto_vals.phi_z.array().colwise() * gb.col(2).array();
-            Mat ktmp_a = (gto_vals.phi.transpose() * gamma_a);
-            Mat ktmp_b = (gto_vals.phi.transpose() * gamma_b);
-            KK.alpha().noalias() += ktmp_a + ktmp_a.transpose();
-            KK.beta().noalias() += ktmp_b + ktmp_b.transpose();
-        }
-    }
-    if constexpr (derivative_order > 1)
-    {
-        if constexpr (spinorbital_kind == SpinorbitalKind::Restricted)
-        {
-            // unsure about factors for vtau, vlaplacian
-            // xx + yy + zz = rho(4) 
-            auto t = gto_vals.phi_xx + gto_vals.phi_yy + gto_vals.phi_zz;
-            Mat tmp = gto_vals.phi.transpose() * (t.array().colwise() * res.vlaplacian.col(0).array()).matrix();
-            KK.noalias() += tmp;
-            auto t2 = 0.5 * res.vtau.col(0) + 2 * res.vlaplacian.col(0);
-            KK.noalias() += gto_vals.phi_x.transpose() * (gto_vals.phi_x.array().colwise() * t2.array()).matrix();
-            KK.noalias() += gto_vals.phi_y.transpose() * (gto_vals.phi_y.array().colwise() * t2.array()).matrix();
-            KK.noalias() += gto_vals.phi_z.transpose() * (gto_vals.phi_z.array().colwise() * t2.array()).matrix();
-        }
-        else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted)
-        {
-            // xx + yy + zz = rho(4) 
-            auto t = gto_vals.phi_xx + gto_vals.phi_yy + gto_vals.phi_zz;
-            Mat tmp = gto_vals.phi.transpose() * (t.array().colwise() * res.vlaplacian.col(0).array()).matrix();
-            KK.alpha().noalias() += tmp;
-            tmp = gto_vals.phi.transpose() * (t.array().colwise() * res.vlaplacian.col(1).array()).matrix();
-            KK.beta().noalias() += tmp;
-
-            auto t2a = 0.5 * res.vtau.col(0) + 2 * res.vlaplacian.col(0);
-            KK.alpha().noalias() += gto_vals.phi_x.transpose() * (gto_vals.phi_x.array().colwise() * t2a.array()).matrix();
-            KK.alpha().noalias() += gto_vals.phi_y.transpose() * (gto_vals.phi_y.array().colwise() * t2a.array()).matrix();
-            KK.alpha().noalias() += gto_vals.phi_z.transpose() * (gto_vals.phi_z.array().colwise() * t2a.array()).matrix();
-
-            auto t2b = 0.5 * res.vtau.col(1) + 2 * res.vlaplacian.col(1);
-            KK.beta().noalias() += gto_vals.phi_x.transpose() * (gto_vals.phi_x.array().colwise() * t2b.array()).matrix();
-            KK.beta().noalias() += gto_vals.phi_y.transpose() * (gto_vals.phi_y.array().colwise() * t2b.array()).matrix();
-            KK.beta().noalias() += gto_vals.phi_z.transpose() * (gto_vals.phi_z.array().colwise() * t2b.array()).matrix();
-        }
-    }
 }
 
 }
@@ -359,7 +271,7 @@ public:
                         alpha_densities[thread_id] += tot_density_a;
                         beta_densities[thread_id] += tot_density_b;
                     }
-                    if(max_density_block < m_density_threshold) continue;
+                    //if(max_density_block < m_density_threshold) continue;
 
                     DensityFunctional::Params params(npt, family, spinorbital_kind);
                     impl::set_params<spinorbital_kind, derivative_order>(params, rho);
@@ -374,7 +286,7 @@ public:
 
                     // Weight the arrays by the grid weights
                     res.weight_by(weights_block);
-                    impl::update_exchange_matrix<spinorbital_kind, derivative_order>(res, KK, rho, energies[thread_id], gto_vals);
+                    xc_potential_matrix<spinorbital_kind, derivative_order>(res, rho, gto_vals, KK, energies[thread_id]);
                     k.noalias() += KK;
                 }
             };

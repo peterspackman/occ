@@ -48,6 +48,7 @@ const robin_hood::unordered_map<std::string, std::vector<FuncComponent>> builtin
     {"bpbe", {{dfid::gga_x_b88}, {dfid::gga_c_pbe}}},
     {"bp86", {{dfid::gga_x_b88}, {dfid::gga_c_p86}}},
     {"m062x", {{dfid::hyb_mgga_x_m06_2x}, {dfid::mgga_c_m06_2x}}},
+    {"tpss", {{dfid::mgga_x_tpss}, {dfid::mgga_c_tpss}}},
 });
 
 

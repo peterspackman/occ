@@ -262,6 +262,7 @@ std::pair<occ::IVec, occ::Mat3N> environment(const std::vector<Dimer> &neighbors
 
 
 std::vector<std::pair<double, double>> compute_solvation_energy_breakdown(
+        const std::string &mol_name,
         const SolvatedSurfaceProperties &surface,
         const std::vector<Dimer> &neighbors,
         const std::string& solvent)
@@ -276,7 +277,7 @@ std::vector<std::pair<double, double>> compute_solvation_energy_breakdown(
     occ::IVec neighbor_idx_cds(surface.cds_pos.cols());
     std::tie(mol_idx, neigh_pos) = environment(neighbors);
     
-    auto cfile = fmt::output_file("solvent_surface_coulomb.txt", fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
+    auto cfile = fmt::output_file(fmt::format("{}_coulomb.txt", mol_name), fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
     cfile.print("{}\nx y z e neighbor\n", neighbor_idx_coul.rows());
     // coulomb breakdown
     for(size_t i = 0; i < neighbor_idx_coul.rows(); i++)
@@ -289,7 +290,7 @@ std::vector<std::pair<double, double>> compute_solvation_energy_breakdown(
         cfile.print("{:12.5f} {:12.5f} {:12.5f} {:12.5f} {:5d}\n", x(0), x(1), x(2), surface.e_coulomb(i), mol_idx(idx));
     }
 
-    auto cdsfile = fmt::output_file("solvent_surface_cds.txt", fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
+    auto cdsfile = fmt::output_file(fmt::format("{}_cds.txt", mol_name), fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
     cdsfile.print("{}\nx y z e neighbor\n", neighbor_idx_cds.rows());
     // cds breakdown
     for(size_t i = 0; i < neighbor_idx_cds.rows(); i++)
@@ -487,11 +488,12 @@ int main(int argc, char **argv) {
         {
             const auto& n = mol_neighbors[i];
             std::optional<std::string> solv_filename{};
+            std::string molname = fmt::format("{}_{}_{}", basename, i, solvent);
             if(dump_visualization_files)
             {
                 solv_filename = fmt::format("{}_{}_solvation_vis.xyz", basename, i);
             }
-            auto solv = compute_solvation_energy_breakdown(surfaces[i], n, solvent);
+            auto solv = compute_solvation_energy_breakdown(molname, surfaces[i], n, solvent);
             auto crystal_contributions = assign_interaction_terms_to_nearest_neighbours(i, solv, crystal_dimers, dimer_energies);
             double Gr = molecules[i].rotational_free_energy(298.15);
             double Gt = molecules[i].translational_free_energy(298.15);

@@ -40,12 +40,13 @@ namespace occ::density {
             }
             if constexpr(max_derivative > 1) 
             {
+                // laplacian
                 rho.col(4).alpha() = 2 * ((
                     gto_values.phi_xx.array() +
                     gto_values.phi_yy.array() +
                     gto_values.phi_zz.array()
                     ) * Dphi.array()).rowwise().sum();
-                //tau
+                // tau
                 Dphi = gto_values.phi_x * D.alpha();
                 rho.col(5).alpha() = (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
                 Dphi = gto_values.phi_y * D.alpha();
@@ -67,12 +68,13 @@ namespace occ::density {
             }
             if constexpr(max_derivative > 1) 
             {
+                // laplacian
                 rho.col(4).beta() = 2 * ((
                     gto_values.phi_xx.array() +
                     gto_values.phi_yy.array() +
                     gto_values.phi_zz.array()
                     ) * Dphi.array()).rowwise().sum();
-                //tau
+                // tau
                 Dphi = gto_values.phi_x * D.beta();
                 rho.col(5).beta() = (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
                 Dphi = gto_values.phi_y * D.beta();
@@ -95,18 +97,20 @@ namespace occ::density {
             }
             if constexpr(max_derivative > 1) 
             {
+                // laplacian
                 rho.col(4) = 2 * ((
                     gto_values.phi_xx.array() +
                     gto_values.phi_yy.array() +
                     gto_values.phi_zz.array()
                     ) * Dphi.array()).rowwise().sum();
-                //tau
+                // tau
                 Dphi = gto_values.phi_x * D;
                 rho.col(5) = (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
                 Dphi = gto_values.phi_y * D;
                 rho.col(5).array() += (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
                 Dphi = gto_values.phi_z * D;
                 rho.col(5).array() += (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
+
                 rho.col(4).array() += 2 * rho.col(5).array();
                 rho.col(5).array() *= 0.5;
             }

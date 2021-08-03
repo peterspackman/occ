@@ -503,9 +503,9 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number)
 {
     size_t num_points = 0;
     size_t atom_idx;
-    m_max_angular = 590;
-    m_min_angular = 99;
-    m_radial_precision = 1e-12;
+    m_max_angular = 302;
+    m_min_angular = 50;
+    m_radial_precision = 1e-11;
     for(atom_idx = 0; atom_idx < n_atoms(); ++atom_idx)
     {
         if(m_atomic_numbers(atom_idx) == atomic_number) break;
