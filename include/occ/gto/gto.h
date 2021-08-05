@@ -117,15 +117,14 @@ struct Momenta {
     }
 };
 
-template<bool Cartesian = true>
-std::vector<Momenta> subshell_ordering(int l) {
+inline std::vector<Momenta> cartesian_subshell_ordering(int l) {
     if(l == 0) return {{0, 0, 0}};
     int i = 0, j = 0, k = 0;
     std::vector<Momenta> powers;
     auto f = [&powers](int i, int j, int k, int l) {
         powers.push_back({i, j, k});
     };
-    occ::gto::iterate_over_shell<Cartesian>(f, l);
+    occ::gto::iterate_over_shell<true>(f, l);
     return powers;
 }
 

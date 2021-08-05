@@ -275,13 +275,13 @@ void Wavefunction::set_molecular_orbitals(const FchkReader& fchk)
         C.beta() = fchk.beta_mo_coefficients();
         mo_energies.alpha() = fchk.alpha_mo_energies();
         mo_energies.beta() = fchk.beta_mo_energies();
-        C.alpha() = occ::io::conversion::orb::from_gaussian(basis, C.alpha());
-        C.beta() = occ::io::conversion::orb::from_gaussian(basis, C.beta());
+        C.alpha() = occ::io::conversion::orb::from_gaussian_order_cartesian(basis, C.alpha());
+        C.beta() = occ::io::conversion::orb::from_gaussian_order_cartesian(basis, C.beta());
     }
     else {
         C = fchk.alpha_mo_coefficients();
         mo_energies = fchk.alpha_mo_energies();
-        C = occ::io::conversion::orb::from_gaussian(basis, C);
+        C = occ::io::conversion::orb::from_gaussian_order_cartesian(basis, C);
     }
     update_occupied_orbitals();
 }
@@ -407,7 +407,10 @@ void Wavefunction::save(FchkWriter &fchk)
     fchk.set_vector("Integer atomic weights", atomic_prop.array().round().cast<int>());
     fchk.set_vector("Real atomic weights", atomic_prop);
 
-    auto Cfchk = occ::io::conversion::orb::to_gaussian(basis, C);
+    auto Cfchk = [&](){
+        if(basis.is_pure()) return C;
+        return occ::io::conversion::orb::to_gaussian_order_cartesian(basis, C);
+    }();
     Mat Dfchk;
 
     std::vector<double> density_lower_triangle, spin_density_lower_triangle;

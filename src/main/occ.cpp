@@ -334,6 +334,7 @@ int main(int argc, char *argv[]) {
         wfn.save(fchk);
         fchk.write();
         fmt::print("wavefunction stored in {}\n", fchk_path);
+        if(config.spherical) occ::log::warn("Spherical basis coefficients and ordering are not yet implemented for Fchk files");
 
         if(result.count("solvent"))
         {
@@ -385,6 +386,7 @@ int main(int argc, char *argv[]) {
             wfn2.save(fchk_solv);
             fchk_solv.write();
             fmt::print("solvated wavefunction stored in {}\n", fchk_path);
+            if(config.spherical) occ::log::warn("Spherical basis coefficients and ordering are not yet implemented for Fchk files");
         }
 
 

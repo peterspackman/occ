@@ -1,5 +1,6 @@
 #include <occ/io/fchkwriter.h>
 #include <fmt/ostream.h>
+#include <occ/core/util.h>
 
 namespace occ::io {
 
@@ -191,6 +192,7 @@ void FchkWriter::set_basis(const occ::qm::BasisSet &basis)
         const auto& sh = basis[i];
         const auto& contraction = sh.contr[0];
         int l = contraction.l;
+        if(l > 1 && contraction.pure) l = -l;
         l_max = std::max(l, l_max);
         int nprim = sh.alpha.size();
         number_primitive_shells += nprim;
@@ -204,7 +206,11 @@ void FchkWriter::set_basis(const occ::qm::BasisSet &basis)
             primitive_exponents.push_back(sh.alpha[p]);
         }
         for(size_t p = 0; p < contraction.coeff.size(); p++) {
-            contraction_coefficients.push_back(sh.coeff_normalized(0, p));
+            if(contraction.pure) 
+            {
+                contraction_coefficients.push_back(sh.coeff_normalized(0, p));
+            }
+            else contraction_coefficients.push_back(sh.coeff_normalized(0, p));
         }
 
     }
