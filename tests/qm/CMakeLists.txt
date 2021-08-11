@@ -7,6 +7,7 @@ add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
 create_qm_test(test_basis.cpp)
+create_qm_test(test_density_fitting.cpp)
 create_qm_test(test_electric_field.cpp)
 create_qm_test(test_mo_rotation.cpp)
 create_qm_test(test_scf.cpp)
