@@ -14,7 +14,6 @@ DFFockEngine::DFFockEngine(const BasisSet& _obs, const BasisSet& _dfbs)
                 std::max(obs.max_nprim(), dfbs.max_nprim()),
                 std::max(obs.max_l(), dfbs.max_l()), 0);
     m_engines[0].set(libint2::BraKet::xs_xx);
-    m_engines[0].set_precision(1e-8);
     for (size_t i = 1; i < occ::parallel::nthreads; ++i)
     {
         m_engines.push_back(m_engines[0]);
@@ -143,6 +142,7 @@ Mat DFFockEngine::compute_J(const Mat &D)
         const auto &tr = ints[r];
         g(r) = (D.array() * tr.array()).sum();
     }
+    fmt::print("g\n{}\n", g);
     Vec d = V_LLt.solve(g);
     for(int r = 0; r < ndf; r++)
     {
@@ -155,38 +155,36 @@ Mat DFFockEngine::compute_J(const Mat &D)
 Mat DFFockEngine::compute_J_direct(const Mat &D) const
 {
 
-    // using first time? compute 3-center ints and transform to inv sqrt
-    // representation
-    Vec g(ndf);
+    using occ::parallel::nthreads;
+    std::vector<Vec> gg(nthreads);
+    std::vector<Mat> JJ(nthreads);
+    for(int i = 0; i < nthreads; i++)
+    {
+        gg[i] = Vec::Zero(ndf);
+        JJ[i] = Mat::Zero(nbf, nbf);
+    }
+
     auto glambda = [&](int thread_id, size_t bf1, size_t n1,
             size_t bf2, size_t n2,
             size_t bf3, size_t n3,
             const double * buf)
     {
+        auto& g = gg[thread_id];
         size_t offset = 0;
         for(size_t i = bf1; i < bf1 + n1; i++)
         {
-            g(i) = 0.0;
-            for(size_t j = bf2; j < bf2 + n2; j++)
-            {
-                for(size_t k = bf3; k < bf3 + n3; k++)
-                {
-                    g(i) += D(j, k) * buf[offset];
-                    offset++;
-                }
-            }
+            g(i) += (D.block(bf2, bf3, n2, n3).array() *
+                Eigen::Map<const MatRM>(&buf[offset], n2, n3).array()).sum();
+            offset += n2 * n3;
         }
     };
 
+
     three_center_integral_helper(glambda);
 
-    using occ::parallel::nthreads;
-    std::vector<Mat> JJ(nthreads);
-    for(int i = 0; i < nthreads; i++)
-    {
-        JJ[i] = Mat::Zero(nbf, nbf);
-    }
-    Vec d = V_LLt.solve(g);
+    for(int i = 1; i < nthreads; i++) gg[0] += gg[i];
+
+    Vec d = V_LLt.solve(gg[0]);
 
     auto Jlambda = [&](int thread_id, size_t bf1, size_t n1,
             size_t bf2, size_t n2,
@@ -197,14 +195,8 @@ Mat DFFockEngine::compute_J_direct(const Mat &D) const
         size_t offset = 0;
         for(size_t i = bf1; i < bf1 + n1; i++)
         {
-            for(size_t j = bf2; j < bf2 + n2; j++)
-            {
-                for(size_t k = bf3; k < bf3 + n3; k++)
-                {
-                    J(j, k) += D(j, k) * buf[offset];
-                    offset++;
-                }
-            }
+            J.block(bf2, bf3, n2, n3) += d(i) * Eigen::Map<const MatRM>(&buf[offset], n2, n3);
+            offset += n2 * n3;
         }
     };
 

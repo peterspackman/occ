@@ -41,9 +41,11 @@ TEST_CASE("H2O/6-31G") {
 
     occ::Mat F = df.compute_2body_fock_dfC(C.leftCols(1));
     occ::Mat Japprox = df.compute_J(D);
+    occ::Mat Japprox2 = df.compute_J_direct(D);
     fmt::print("F\n{}\nE = {}\n", F, occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(D, Jexact));
     fmt::print("Jexact\n{}\n", Jexact);
     fmt::print("Japprox\n{}\n", Japprox);
+    fmt::print("Japprox2\n{}\n", Japprox2);
     fmt::print("Kexact\n{}\n", Kexact);
     fmt::print("Fexact\n{}\n", Fexact);
 }
