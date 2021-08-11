@@ -226,19 +226,19 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream)
     std::string line;
     while(std::getline(stream, line))
     {
-        if(startswith(line, "Sym", false)) {
+        if(startswith(line, "Sym", true)) {
 
         }
-        else if(startswith(line, "Ene", false)) {
+        else if(startswith(line, "Ene", true)) {
             scn::scan(line, "Ene= {}", energy);
         }
-        else if(startswith(line, "Spin", false)) {
+        else if(startswith(line, "Spin", true)) {
             std::string spin;
             scn::scan(line, "Spin= {}", spin);
             to_lower(spin);
             alpha = (spin == "alpha");
         }
-        else if(startswith(line, "Occup", false))
+        else if(startswith(line, "Occup", true))
         {
             scn::scan(line, "Occup= {}", occupation);
             m_num_electrons += occupation;

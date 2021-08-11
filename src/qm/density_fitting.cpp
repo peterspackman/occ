@@ -1,134 +1,217 @@
 #include <occ/qm/density_fitting.h>
 #include <occ/core/parallel.h>
+#include <fmt/ostream.h>
 
 namespace occ::df {
 
 DFFockEngine::DFFockEngine(const BasisSet& _obs, const BasisSet& _dfbs)
-    : obs(_obs), dfbs(_dfbs), nbf(_obs.nbf()), ndf(_dfbs.nbf())
+    : obs(_obs), dfbs(_dfbs), nbf(_obs.nbf()), ndf(_dfbs.nbf()), ints(_dfbs.nbf())
 {
     Mat V = occ::ints::compute_2body_2index_ints(dfbs);
-    Eigen::LLT<Mat> V_LLt(V);
+    Vinv = V.inverse();
+    m_engines.reserve(occ::parallel::nthreads);
+    m_engines.emplace_back(libint2::Operator::coulomb,
+                std::max(obs.max_nprim(), dfbs.max_nprim()),
+                std::max(obs.max_l(), dfbs.max_l()), 0);
+    m_engines[0].set(libint2::BraKet::xs_xx);
+    m_engines[0].set_precision(1e-8);
+    for (size_t i = 1; i < occ::parallel::nthreads; ++i)
+    {
+        m_engines.push_back(m_engines[0]);
+    }
+
+    V_LLt = Eigen::LLT<Mat>(V);
     Mat I = Mat::Identity(ndf, ndf);
     auto L = V_LLt.matrixL();
     Linv_t = L.solve(I).transpose();
 }
 
-Mat DFFockEngine::compute_2body_fock_dfC(const Mat& Cocc)
+Mat DFFockEngine::compute_2body_fock_dfC(const Mat& C_occ)
 {
 
-  // using first time? compute 3-center ints and transform to inv sqrt
-  // representation
-  if (xyK.size() == 0) {
+    // using first time? compute 3-center ints and transform to inv sqrt
+    // representation
+    if (!ints_populated)
+    {
+        auto lambda = [&](int thread_id, size_t bf1, size_t n1,
+                size_t bf2, size_t n2,
+                size_t bf3, size_t n3,
+                const double * buf)
+        {
+            size_t offset = 0;
+            for(size_t i = bf1; i < bf1 + n1; i++)
+            {
+                auto &x = ints[i];
+                x.resize(nbf, nbf);
+                for(size_t j = bf2; j < bf2 + n2; j++)
+                {
+                    for(size_t k = bf3; k < bf3 + n3; k++)
+                    {
+                        x(j, k) = buf[offset];
+                        offset++;
+                    }
+                }
+            }
+        };
 
-    xyK_dims = {nbf, nbf, ndf};
-    xyK.resize(nbf * nbf * ndf);
-    std::fill(xyK.begin(), xyK.end(), 0.0);
+        three_center_integral_helper(lambda);
+        ints_populated = true;
+    }
 
-    auto lambda = [&](int thread_id, size_t bf1, size_t n1,
-                      size_t bf2, size_t n2,
-                      size_t bf3, size_t n3,
-                      const double * buf)
+    // compute exchange
+    /*
+       for(size_t i = 0; i < ints.size(); i++)
+       {
+       fmt::print("{}\n{}\n", i, ints[i]);
+       }
+       */
+
+    Mat J = Mat::Zero(nbf, nbf);
+    Mat D = C_occ * C_occ.transpose();
+
+    for(int r = 0; r < ndf; r++)
+    {
+        const auto &tr = ints[r];
+        for(int s = 0; s < ndf; s++)
+        {
+            const auto& ts = ints[s];
+            double Vrs = Vinv(r, s);
+            if(abs(Vrs) < 1e-12) continue;
+            for(int i = 0; i < nbf; i++)
+                for(int j = 0; j < nbf; j++)
+                    for(int k = 0; k < nbf; k++)
+                        for(int l = 0; l < nbf; l++)
+                        {
+                            double v = Vrs * tr(i, j) * ts(k, l);
+                            J(i, j) += D(k, l) * v;
+                            J(k, l) += D(i, j) * v;
+                            J(i, k) -= 0.25 * D(j, l) * v;
+                            J(j, l) -= 0.25 * D(i, k) * v;
+                            J(i, l) -= 0.25 * D(j, k) * v;
+                            J(j, k) -= 0.25 * D(i, l) * v;
+                        }
+        }
+    }
+    return J;
+}
+
+Mat DFFockEngine::compute_J(const Mat &D)
+{
+
+    // using first time? compute 3-center ints and transform to inv sqrt
+    // representation
+    if (!ints_populated)
+    {
+        auto lambda = [&](int thread_id, size_t bf1, size_t n1,
+                size_t bf2, size_t n2,
+                size_t bf3, size_t n3,
+                const double * buf)
+        {
+            size_t offset = 0;
+            for(size_t i = bf1; i < bf1 + n1; i++)
+            {
+                auto &x = ints[i];
+                x.resize(nbf, nbf);
+                for(size_t j = bf2; j < bf2 + n2; j++)
+                {
+                    for(size_t k = bf3; k < bf3 + n3; k++)
+                    {
+                        x(j, k) = buf[offset];
+                        offset++;
+                    }
+                }
+            }
+        };
+
+        three_center_integral_helper(lambda);
+        ints_populated = true;
+    }
+
+    // compute exchange
+    /*
+       for(size_t i = 0; i < ints.size(); i++)
+       {
+       fmt::print("{}\n{}\n", i, ints[i]);
+       }
+       */
+
+    Mat J = Mat::Zero(nbf, nbf);
+
+    Vec g(ndf);
+    for(int r = 0; r < ndf; r++)
+    {
+        const auto &tr = ints[r];
+        g(r) = (D.array() * tr.array()).sum();
+    }
+    Vec d = V_LLt.solve(g);
+    for(int r = 0; r < ndf; r++)
+    {
+        const auto &tr = ints[r];
+        J += d(r) * tr;
+    }
+    return 2 * J;
+}
+
+Mat DFFockEngine::compute_J_direct(const Mat &D) const
+{
+
+    // using first time? compute 3-center ints and transform to inv sqrt
+    // representation
+    Vec g(ndf);
+    auto glambda = [&](int thread_id, size_t bf1, size_t n1,
+            size_t bf2, size_t n2,
+            size_t bf3, size_t n3,
+            const double * buf)
     {
         size_t offset = 0;
         for(size_t i = bf1; i < bf1 + n1; i++)
         {
-            for(size_t j = bf2; j < bf2+ n2; j++)
+            g(i) = 0.0;
+            for(size_t j = bf2; j < bf2 + n2; j++)
             {
                 for(size_t k = bf3; k < bf3 + n3; k++)
                 {
-                    for(size_t l = 0; l < ndf; l++)
-                    {
-                        xyK[j * (nbf * ndf) + k * ndf + l] += buf[offset] * Linv_t(i, l);
-                    }
+                    g(i) += D(j, k) * buf[offset];
                     offset++;
                 }
             }
         }
     };
 
-    three_center_integral_helper(lambda);
+    three_center_integral_helper(glambda);
 
-  }  // if (xyK.size() == 0)
+    using occ::parallel::nthreads;
+    std::vector<Mat> JJ(nthreads);
+    for(int i = 0; i < nthreads; i++)
+    {
+        JJ[i] = Mat::Zero(nbf, nbf);
+    }
+    Vec d = V_LLt.solve(g);
 
-  // compute exchange
-  const size_t nocc = Cocc.cols();
-  MatRM cr = Cocc;
-  const double * Co = cr.data();
-  std::array<size_t, 2> Co_dims{nbf, nocc};
-  std::array<size_t, 3> xiK_dims{xyK_dims[0], Co_dims[1], xyK_dims[2]};
-  std::vector<double> xiK(xiK_dims[0] * xiK_dims[1] * xiK_dims[2], 0.0);
+    auto Jlambda = [&](int thread_id, size_t bf1, size_t n1,
+            size_t bf2, size_t n2,
+            size_t bf3, size_t n3,
+            const double * buf)
+    {
+        auto& J = JJ[thread_id];
+        size_t offset = 0;
+        for(size_t i = bf1; i < bf1 + n1; i++)
+        {
+            for(size_t j = bf2; j < bf2 + n2; j++)
+            {
+                for(size_t k = bf3; k < bf3 + n3; k++)
+                {
+                    J(j, k) += D(j, k) * buf[offset];
+                    offset++;
+                }
+            }
+        }
+    };
 
-  // xiK(i,l,k) = xyK(i,j,k) * Co(j,l)
-  for(size_t i = 0; i < xyK_dims[0]; i++) {
-      for(size_t j = 0; j < Co_dims[0]; j++) {
-          size_t jxyK = i * xyK_dims[1] + j;
-          for(size_t l = 0; l < Co_dims[1]; l++) {
-              size_t lxiK = i * xiK_dims[1] + l;
-              size_t lCo = j * Co_dims[1] + l;
-              for(size_t k = 0; k < xyK_dims[2]; k++) {
-                  size_t kxiK = lxiK * xiK_dims[2] + k;
-                  size_t kxyK = jxyK * xyK_dims[2] + k;
-                  xiK[kxiK] = xiK[kxiK] + xyK[kxyK] * Co[lCo];
-              }
-          }
-      }
-  }
+    three_center_integral_helper(Jlambda);
 
-  std::array<size_t, 2> G_dims{xiK_dims[0], xiK_dims[0]};
-  std::vector<double> KK(G_dims[0] * G_dims[1]);
-  //exchange
-  // G(i,l) = xiK(i,j,k) * xiK(l,j,k)
-  for(size_t i = 0; i < xiK_dims[0]; i++) {
-      for(size_t l = 0; l < xiK_dims[0]; l++) {
-          size_t lG = i * G_dims[1] + l;
-          double tjG_val = 0.0;
-          for(size_t j = 0; j < xiK_dims[1]; j++) {
-              size_t jxiK = i * xiK_dims[1] + j;
-              size_t jxiK0 = l * xiK_dims[1] + j;
-              for(size_t k = 0; k < xiK_dims[2]; k++) {
-                  size_t kxiK = jxiK * xiK_dims[2] + k;
-                  size_t kxiK0 = jxiK0 * xiK_dims[2] + k;
-                  tjG_val += xiK[kxiK] * xiK[kxiK0];
-              }
-          }
-          KK[lG] = tjG_val;
-      }
-  }
-
-  //coulomb
-  //J(k) = xiK(i,j,k) * Co(i,j)
-  size_t J_dim = xiK_dims[2];
-  std::vector<double> J(J_dim, 0);
-  for(size_t i = 0; i < Co_dims[0]; i++) {
-      for(size_t j = 0; j < Co_dims[1]; j++) {
-          size_t jxiK = i * xiK_dims[1] + j;
-          size_t jCo = i * Co_dims[1] + j;
-          for(size_t k = 0; k < xiK_dims[2]; k++) {
-              size_t kxiK = jxiK * xiK_dims[2] + k;
-              J[k] = J[k] + xiK[kxiK] * Co[jCo];
-          }
-      }
-  }
-  std::vector<double> JJ(KK.size());
-  // G(i,j) = 2 * xyK(i,j,k) * J(k) - G(i,j)
-  for(size_t i = 0; i < G_dims[0]; i++) {
-      for(size_t j = 0; j < G_dims[1]; j++) {
-          size_t jG = i * G_dims[1] + j;
-          size_t jxyK = i * xyK_dims[1] + j;
-          size_t jG0 = i * G_dims[1] + j;
-          double tk_val = 0.0;
-          for(size_t k = 0; k < J_dim; k++) {
-              size_t kxyK = jxyK * xyK_dims[2] + k;
-              tk_val += (2 * xyK[kxyK] * J[k]);
-          }
-          JJ[jG] = tk_val;
-      }
-  }
-  // copy result to an Eigen::Matrix
-  Mat Jm = Eigen::Map<const MatRM>(JJ.data(), nbf, nbf);
-  Mat Km = Eigen::Map<const MatRM>(KK.data(), nbf, nbf);
-  Mat result = (Jm - Km);
-  return result;
+    for(int i = 1; i < nthreads; i++) JJ[0] += JJ[i];
+    return 2 * JJ[0];
 }
 
 inline int upper_triangle_index(const int N, const int i, const int j)

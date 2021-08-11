@@ -11,20 +11,25 @@ struct DFFockEngine
 
     BasisSet obs;
     BasisSet dfbs;
+    Mat Vinv;
     Mat Linv_t;
+    Eigen::LLT<Mat> V_LLt;
     const size_t nbf{0}, ndf{0};
 
     DFFockEngine(const BasisSet& _obs, const BasisSet& _dfbs);
 
-    std::array<size_t, 3> xyK_dims;
-    std::vector<double> xyK;
+    std::vector<Mat> ints;
+    bool ints_populated{false};
 
     // a DF-based builder, using coefficients of occupied MOs
     Mat compute_2body_fock_dfC(const Mat& Cocc);
+    Mat compute_J(const Mat &D);
+    Mat compute_J_direct(const Mat &D) const;
 
 private:
+    mutable std::vector<libint2::Engine> m_engines;
     template <typename T>
-    void three_center_integral_helper(T& func)
+    void three_center_integral_helper(T& func) const
     {
         using occ::parallel::nthreads;
 
@@ -35,22 +40,13 @@ private:
         // construct the 2-electron 3-center repulsion integrals engine
         // since the code assumes (xx|xs) braket, and Engine/libint only produces
         // (xs|xx), use 4-center engine
-        std::vector<libint2::Engine> engines(nthreads);
-        engines[0] = libint2::Engine(libint2::Operator::coulomb,
-                std::max(obs.max_nprim(), dfbs.max_nprim()),
-                std::max(obs.max_l(), dfbs.max_l()), 0);
-        engines[0].set(libint2::BraKet::xs_xx);
-        for (size_t i = 1; i != nthreads; ++i)
-        {
-            engines[i] = engines[0];
-        }
-
+        
         auto shell2bf = obs.shell2bf();
         auto shell2bf_df = dfbs.shell2bf();
 
         auto lambda = [&](int thread_id)
         {
-            auto& engine = engines[thread_id];
+            auto& engine = m_engines[thread_id];
             const auto& results = engine.results();
 
             for (auto s1 = 0l, s123 = 0l; s1 != nshells_df; ++s1)

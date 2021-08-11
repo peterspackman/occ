@@ -88,6 +88,7 @@ Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis, const Input
 
     SCF<T, SK> scf(proc);
     scf.set_charge_multiplicity(config.charge, config.multiplicity);
+    scf.set_density_fitting_basis("def2-svp-jk");
 
     double e = scf.compute_scf_energy();
     Wavefunction wfn = scf.wavefunction();
