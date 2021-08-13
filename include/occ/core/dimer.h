@@ -33,9 +33,11 @@ public:
 
   bool same_asymmetric_molecule_idxs(const Dimer&) const;
   bool operator ==(const Dimer&) const;
+  inline bool operator !=(const Dimer &b) const { return !(*this == b); }
 
 private:
   Molecule m_a, m_b;
+  size_t m_uc_idx_a{0}, m_uc_idx_b{0};
 };
 
 } 

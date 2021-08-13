@@ -210,13 +210,25 @@ void Molecule::rotate(const occ::Mat3 &rotation, Origin origin)
         }
         default: break;
     }
-    translate(-O);
+    rotate(rotation, O);
+}
+
+void Molecule::rotate(const occ::Mat3 &rotation, const Vec3 &origin)
+{
+    translate(-origin);
     m_positions = rotation * m_positions;
-    translate(O);
+    translate(origin);
     m_asymmetric_unit_rotation = rotation * m_asymmetric_unit_rotation;
 }
 
 Molecule Molecule::rotated(const occ::Mat3 &rotation, Origin origin) const
+{
+    Molecule result = *this;
+    result.rotate(rotation, origin);
+    return result;
+}
+
+Molecule Molecule::rotated(const occ::Mat3 &rotation, const Vec3 &origin) const
 {
     Molecule result = *this;
     result.rotate(rotation, origin);
@@ -242,7 +254,20 @@ void Molecule::transform(const Mat4 &transform, Origin origin)
     translate(transform.block<3, 1>(0, 3));
 }
 
+void Molecule::transform(const Mat4 &transform, const Vec3 &origin)
+{
+    rotate(transform.block<3, 3>(0, 0), origin);
+    translate(transform.block<3, 1>(0, 3));
+}
+
 Molecule Molecule::transformed(const Mat4 &transform, Origin origin) const
+{
+    Molecule result = *this;
+    result.transform(transform, origin);
+    return result;
+}
+
+Molecule Molecule::transformed(const Mat4 &transform, const Vec3 &origin) const
 {
     Molecule result = *this;
     result.transform(transform, origin);
@@ -288,6 +313,12 @@ bool Molecule::equivalent_to(const Molecule &rhs) const
     auto dists_a = interatomic_distances();
     auto dists_b = rhs.interatomic_distances();
     return occ::util::all_close(dists_a, dists_b, 1e-8, 1e-8);
+}
+
+
+void Molecule::set_asymmetric_unit_symop(const IVec &symop)
+{
+    m_asym_symop = symop;
 }
 
 } // namespace occ::chem
