@@ -9,7 +9,6 @@
 #include <occ/core/energy_components.h>
 #include <occ/core/units.h>
 #include <occ/qm/guess_density.h>
-#include <occ/qm/density_fitting.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -107,18 +106,6 @@ struct SCF {
         wfn.T = T;
         wfn.V = V;
         return wfn;
-    }
-
-    void set_density_fitting_basis(const std::string& name)
-    {
-        if(spinorbital_kind != SpinorbitalKind::Restricted) throw std::runtime_error("Density fitting only implemented for RHF");
-        BasisSet df_basis(name, m_procedure.atoms());
-        BasisSet basis = m_procedure.basis();
-        fmt::print("Loaded density-fitting basis-set ({}), {} shells, {} basis functions\n", name, df_basis.size(), occ::qm::nbf(df_basis));
-        fmt::print("Storing DF overlap integrals requires {}\n",
-                human_readable_size(basis.nbf() * basis.nbf() * df_basis.nbf() * sizeof(double), "B"));
-        df_engine.emplace(basis, df_basis);
-        start_incremental_F_threshold = 0.0;
     }
 
     void set_charge_multiplicity(int chg, unsigned int mult)
@@ -477,14 +464,7 @@ struct SCF {
                         std::max(diis_error / 1e4, std::numeric_limits<double>::epsilon()));
 
 
-            if(df_engine)
-            {
-                F = H + (*df_engine).compute_2body_fock_dfC(C_occ);
-            }
-            else
-            {
-                F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
-            }
+            F += m_procedure.compute_fock(spinorbital_kind, D_diff, precision_F, K);
 
             // compute HF energy with the non-extrapolated Fock matrix
             update_scf_energy(incremental);
@@ -584,7 +564,6 @@ struct SCF {
     Vec orbital_energies;
     double XtX_condition_number;
     bool m_have_initial_guess{false};
-    std::optional<occ::df::DFFockEngine> df_engine;
 };
 
 } // namespace occ::scf

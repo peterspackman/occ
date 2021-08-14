@@ -51,6 +51,7 @@ private:
 
             for (auto s1 = 0l, s123 = 0l; s1 != nshells_df; ++s1)
             {
+                if (s1 % nthreads != thread_id) continue;
                 auto bf1_first = shell2bf_df[s1];
                 auto n1 = dfbs[s1].size();
 
@@ -62,7 +63,6 @@ private:
 
                     for (auto s3 = 0; s3 < nshells; ++s3, ++s123)
                     {
-                        if (s123 % nthreads != thread_id) continue;
 
                         auto bf3_first = shell2bf[s3];
                         auto n3 = obs[s3].size();

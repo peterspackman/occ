@@ -111,19 +111,17 @@ Mat DFFockEngine::compute_J(const Mat &D)
             {
                 auto &x = ints[i];
                 x.resize(nbf, nbf);
-                for(size_t j = bf2; j < bf2 + n2; j++)
-                {
-                    for(size_t k = bf3; k < bf3 + n3; k++)
-                    {
-                        x(j, k) = buf[offset];
-                        offset++;
-                    }
-                }
+                x.block(bf2, bf3, n2, n3) = Eigen::Map<const MatRM>(&buf[offset], n2, n3);
+                offset += n2 * n3;
             }
         };
 
         three_center_integral_helper(lambda);
         ints_populated = true;
+        for(auto& x: ints)
+        {
+            if(x.isZero()) x.resize(0, 0);
+        }
     }
 
     // compute exchange
@@ -134,19 +132,21 @@ Mat DFFockEngine::compute_J(const Mat &D)
        }
        */
 
-    Mat J = Mat::Zero(nbf, nbf);
 
     Vec g(ndf);
     for(int r = 0; r < ndf; r++)
     {
         const auto &tr = ints[r];
+        if(tr.rows() == 0) continue;
         g(r) = (D.array() * tr.array()).sum();
     }
-    fmt::print("g\n{}\n", g);
+    //fmt::print("g\n{}\n", g);
     Vec d = V_LLt.solve(g);
+    Mat J = Mat::Zero(nbf, nbf);
     for(int r = 0; r < ndf; r++)
     {
         const auto &tr = ints[r];
+        if(tr.rows() == 0) continue;
         J += d(r) * tr;
     }
     return 2 * J;

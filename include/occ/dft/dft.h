@@ -105,6 +105,11 @@ public:
     int system_charge() const { return m_hf.system_charge(); }
     int num_e() const { return m_hf.num_e(); }
 
+    void set_density_fitting_basis(const std::string &density_fitting_basis)
+    {
+        m_hf.set_density_fitting_basis(density_fitting_basis);
+    }
+
     double two_electron_energy() const { return m_two_electron_energy; }
     double exchange_correlation_energy() const { return m_exc_dft; }
 
@@ -248,7 +253,7 @@ public:
                     Eigen::Index l = block * BLOCKSIZE;
                     Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
                     Eigen::Index npt = u - l;
-                    if(npt == 0) continue;
+                    if(npt <= 0) continue;
                     auto& k = Kt[thread_id];
                     const auto& pts_block = atom_pts.middleCols(l, npt);
                     const auto& weights_block = atom_weights.segment(l, npt);

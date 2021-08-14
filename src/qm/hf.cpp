@@ -12,6 +12,12 @@ void HartreeFock::set_system_charge(int charge)
     m_num_e -= m_charge;
 }
 
+void HartreeFock::set_density_fitting_basis(const std::string &density_fitting_basis)
+{
+    m_density_fitting_basis = occ::qm::BasisSet(density_fitting_basis, m_atoms);
+    m_df_fock_engine.emplace(m_basis, m_density_fitting_basis);
+}
+
 
 HartreeFock::HartreeFock(const std::vector<occ::core::Atom> &atoms, const BasisSet &basis)
     : m_atoms(atoms), m_basis(basis), m_fockbuilder(basis.max_nprim(), basis.max_l()) 
@@ -62,7 +68,15 @@ Mat HartreeFock::compute_J(SpinorbitalKind kind, const Mat &D,
 {
   if(kind == SpinorbitalKind::General) return m_fockbuilder.compute_J<SpinorbitalKind::General>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
   if(kind == SpinorbitalKind::Unrestricted) return m_fockbuilder.compute_J<SpinorbitalKind::Unrestricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
-  return m_fockbuilder.compute_J<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+  if(m_df_fock_engine)
+  {
+      //return (*m_df_fock_engine).compute_J(D);
+      return (*m_df_fock_engine).compute_J_direct(D);
+  }
+  else
+  {
+    return m_fockbuilder.compute_J<SpinorbitalKind::Restricted>(m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+  }
 }
 
 

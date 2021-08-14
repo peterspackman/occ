@@ -35,6 +35,7 @@ struct InputConfiguration {
     std::string basis_name;
     bool spherical{false};
     std::optional<std::string> solvent{std::nullopt};
+    std::optional<std::string> density_fitting_basis_name{std::nullopt};
     size_t multiplicity;
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
     int charge;
@@ -86,9 +87,9 @@ Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis, const Input
         else return T(m.atoms(), basis);
     }();
 
+    if(config.density_fitting_basis_name) proc.set_density_fitting_basis(*config.density_fitting_basis_name);
     SCF<T, SK> scf(proc);
     scf.set_charge_multiplicity(config.charge, config.multiplicity);
-    scf.set_density_fitting_basis("def2-svp-jk");
 
     double e = scf.compute_scf_energy();
     Wavefunction wfn = scf.wavefunction();
@@ -242,6 +243,7 @@ int main(int argc, char *argv[]) {
         ("h,help", "Print help")
         ("i,input", "Input file", cxxopts::value<std::string>())
         ("b,basis", "Basis set name", cxxopts::value<std::string>()->default_value("3-21G"))
+        ("d,df-basis", "Basis set name", cxxopts::value<std::string>())
         ("t,threads", "Number of threads", cxxopts::value<int>()->default_value("1"))
         ("m,method", "QM method", cxxopts::value<std::string>()->default_value("rhf"))
         ("c,charge", "System net charge", cxxopts::value<int>()->default_value("0"))
@@ -294,6 +296,8 @@ int main(int argc, char *argv[]) {
         config.method = result["method"].as<std::string>();
         config.charge = result["charge"].as<int>();
         config.spherical = result["spherical"].as<bool>();
+        if(result.count("df-basis"))
+            config.density_fitting_basis_name = result["df-basis"].as<std::string>();
         if (config.multiplicity != 1 || result.count("unrestricted") || config.method == "uhf") {
             config.spinorbital_kind = SpinorbitalKind::Unrestricted;
             fmt::print("unrestricted spinorbital kind\n");

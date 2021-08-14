@@ -4,6 +4,7 @@
 #include <occ/core/energy_components.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/multipole.h>
+#include <occ/qm/density_fitting.h>
 
 namespace occ::hf {
 
@@ -37,6 +38,7 @@ public:
   bool supports_incremental_fock_build() const { return true; }
 
   void set_system_charge(int charge);
+  void set_density_fitting_basis(const std::string&);
   double nuclear_repulsion_energy() const;
 
   Mat compute_fock(SpinorbitalKind kind, const Mat &D,
@@ -122,11 +124,13 @@ private:
   int m_num_e{0};
   std::vector<occ::core::Atom> m_atoms;
   BasisSet m_basis;
+  BasisSet m_density_fitting_basis;
   shellpair_list_t m_shellpair_list{}; // shellpair list for OBS
   shellpair_data_t m_shellpair_data{}; // shellpair data for OBS
   occ::ints::FockBuilder m_fockbuilder;
   mutable double m_e_alpha{0};
   mutable double m_e_beta{0};
+  mutable std::optional<occ::df::DFFockEngine> m_df_fock_engine;
 };
 
 } // namespace occ::hf
