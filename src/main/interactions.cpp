@@ -165,6 +165,8 @@ std::pair<std::vector<SolvatedSurfaceProperties>, std::vector<Wavefunction>> cal
     {
         SolvatedSurfaceProperties props;
         BasisSet basis(basis_name, wfn.atoms);
+        double original_energy = wfn.energy.total;
+        fmt::print("Total energy (gas) {:.3f}\n", original_energy);
         basis.set_pure(false);
         fmt::print("Loaded basis set, {} shells, {} basis functions\n", basis.size(), libint2::nbf(basis));
         occ::dft::DFT ks(method, basis, wfn.atoms, SpinorbitalKind::Restricted);
@@ -190,10 +192,11 @@ std::pair<std::vector<SolvatedSurfaceProperties>, std::vector<Wavefunction>> cal
                 pol.array().sum() + 
                 props.e_cds.array().sum();
 
-        double dG_conc = 1.89 * occ::units::KJ_TO_KCAL;
+        double dG_conc = 1.89 / occ::units::KJ_TO_KCAL;
         fmt::print("delta G concentration for standard state of 1atm = {:.3f} kJ/mol\n", dG_conc);
-        props.esolv = esolv + dG_conc;
+        props.esolv = esolv + 1.89 / occ::units::AU_TO_KCAL_PER_MOL;
         occ::log::debug("total e_solv {:12.6f} ({:.3f} kJ/mol)\n", esolv, esolv * occ::units::AU_TO_KJ_PER_MOL);
+        props.esolv = e - original_energy + 1.89 / occ::units::AU_TO_KCAL_PER_MOL;;
         result.push_back(props);
     }
 
