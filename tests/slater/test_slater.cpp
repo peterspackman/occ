@@ -4,6 +4,7 @@
 #include <occ/core/timings.h>
 #include <occ/slater/thakkar.h>
 #include <occ/core/util.h>
+#include <array>
 
 using occ::util::all_close;
 

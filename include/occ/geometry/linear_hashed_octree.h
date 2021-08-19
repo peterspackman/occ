@@ -3,6 +3,7 @@
 #include <deque>
 #include <occ/geometry/morton.h>
 #include <occ/3rdparty/robin_hood.h>
+#include <optional>
 
 namespace occ::geometry
 {
