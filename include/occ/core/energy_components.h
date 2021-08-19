@@ -1,6 +1,7 @@
 #pragma once
 #include <fmt/format.h>
 #include <occ/3rdparty/robin_hood.h>
+#include <vector>
 
 namespace occ::core
 {

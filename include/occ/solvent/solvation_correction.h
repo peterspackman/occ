@@ -7,6 +7,7 @@
 #include <occ/core/atom.h>
 #include <occ/core/logger.h>
 #include <occ/solvent/cosmo.h>
+#include <array>
 
 
 namespace occ::solvent {
