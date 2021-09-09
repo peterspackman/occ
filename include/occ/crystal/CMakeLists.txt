@@ -1,9 +1,6 @@
-set(OCC_CRYSTAL_INCLUDE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/crystal.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/miller.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/surface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/unitcell.h
-    PARENT_SCOPE
-)
+set(OCC_CRYSTAL_INCLUDE_FILES ${CMAKE_CURRENT_SOURCE_DIR} /
+    crystal.h ${CMAKE_CURRENT_SOURCE_DIR} /
+    miller.h ${CMAKE_CURRENT_SOURCE_DIR} /
+    spacegroup.h ${CMAKE_CURRENT_SOURCE_DIR} /
+    surface.h ${CMAKE_CURRENT_SOURCE_DIR} /
+    symmetryoperation.h ${CMAKE_CURRENT_SOURCE_DIR} / unitcell.h PARENT_SCOPE)

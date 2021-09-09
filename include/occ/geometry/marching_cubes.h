@@ -1,40 +1,25 @@
 #pragma once
-#include <vector>
 #include <array>
-#include <occ/geometry/index_cache.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/geometry/index_cache.h>
+#include <vector>
 
 namespace occ::geometry::mc {
 
 namespace tables {
 static const uint8_t CORNERS[8][3] = {
-    {0, 0, 0},
-    {1, 0, 0},
-    {1, 1, 0},
-    {0, 1, 0},
-    {0, 0, 1},
-    {1, 0, 1},
-    {1, 1, 1},
-    {0, 1, 1},
+    {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0},
+    {0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1},
 };
 
 /// The corners used by each edge in a call
 static const uint8_t EDGE_CONNECTION[12][2] = {
-    {0, 1},
-    {1, 2},
-    {2, 3},
-    {3, 0},
-    {4, 5},
-    {5, 6},
-    {6, 7},
-    {7, 4},
-    {0, 4},
-    {1, 5},
-    {2, 6},
-    {3, 7},
+    {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6},
+    {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
 };
 
-/// Maps the signs of each corner in a cell to the set of triangles spanning the active edges
+/// Maps the signs of each corner in a cell to the set of triangles spanning the
+/// active edges
 static const int8_t TRIANGLE_CONNECTION[256][16] = {
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -294,57 +279,52 @@ static const int8_t TRIANGLE_CONNECTION[256][16] = {
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 };
 
-}
+} // namespace tables
 
 namespace impl {
-template<typename E>
-void march_cube(const std::array<float, 8> &values, E &edge_func)
-{
+template <typename E>
+void march_cube(const std::array<float, 8> &values, E &edge_func) {
     using namespace tables;
     uint32_t cube_index = 0;
-    for(size_t i = 0; i < 8; i++)
-    {
+    for (size_t i = 0; i < 8; i++) {
         if (values[i] <= 0.0) {
             cube_index |= (1 << i);
         }
     }
     const auto triangles = TRIANGLE_CONNECTION[cube_index];
 
-    for(size_t i = 0; i < 5; i++)
-    {
-        if(triangles[3 * i] < 0) break;
-        for(size_t j = 0; j < 3; j++)
-        {
+    for (size_t i = 0; i < 5; i++) {
+        if (triangles[3 * i] < 0)
+            break;
+        for (size_t j = 0; j < 3; j++) {
             size_t edge = triangles[3 * i + j];
             edge_func(edge);
         }
     }
 }
 
-float get_offset(float a, float b)
-{
+float get_offset(float a, float b) {
     float delta = b - a;
-    if (delta == 0.0) return 0.5;
+    if (delta == 0.0)
+        return 0.5;
     return -a / delta;
 }
 
-template<typename T>
-T interpolate(T a, T b, float t)
-{
+template <typename T> T interpolate(T a, T b, float t) {
     return a * (1.0 - t) + b * t;
 }
 
-}
+} // namespace impl
 
 struct MarchingCubes {
     size_t size;
     std::vector<float> layer0, layer1;
     MarchingCubes(size_t s) : size(s), layer0(s * s), layer1(s * s) {}
 
-    template<typename S>
-    void extract(const S &source, std::vector<float> &vertices, std::vector<uint32_t> &indices)
-    {
-        auto fn = [&vertices](const Eigen::Vector3f& vertex) {
+    template <typename S>
+    void extract(const S &source, std::vector<float> &vertices,
+                 std::vector<uint32_t> &indices) {
+        auto fn = [&vertices](const Eigen::Vector3f &vertex) {
             vertices.push_back(vertex(0));
             vertices.push_back(vertex(1));
             vertices.push_back(vertex(2));
@@ -353,36 +333,33 @@ struct MarchingCubes {
         extract_impl(source, fn, indices);
     }
 
-    template<typename S>
-    void extract_normal(const S &source, std::vector<float> &vertices, std::vector<uint32_t> &indices)
-    {
+    template <typename S>
+    void extract_normal(const S &source, std::vector<float> &vertices,
+                        std::vector<uint32_t> &indices) {
         auto fn = [&vertices, &source](const Eigen::Vector3f &vertex) {
-                auto normal = source.normal(vertex(0), vertex(1), vertex(2));
-                vertices.push_back(vertex[0]);
-                vertices.push_back(vertex[1]);
-                vertices.push_back(vertex[2]);
-                vertices.push_back(normal[0]);
-                vertices.push_back(normal[1]);
-                vertices.push_back(normal[2]);
+            auto normal = source.normal(vertex(0), vertex(1), vertex(2));
+            vertices.push_back(vertex[0]);
+            vertices.push_back(vertex[1]);
+            vertices.push_back(vertex[2]);
+            vertices.push_back(normal[0]);
+            vertices.push_back(normal[1]);
+            vertices.push_back(normal[2]);
         };
 
         extract_impl(source, fn, indices);
     }
 
-
-private:
-    template<typename S, typename E>
-    void extract_impl(const S &source, E &extract_fn, std::vector<uint32_t> &indices)
-    {
+  private:
+    template <typename S, typename E>
+    void extract_impl(const S &source, E &extract_fn,
+                      std::vector<uint32_t> &indices) {
         using namespace tables;
         using namespace impl;
         const size_t size_less_one = size - 1;
         const float size_inv = 1.0 / size_less_one;
 
-        for(size_t y = 0; y < size; y++)
-        {
-            for(size_t x = 0; x < size; x++)
-            {
+        for (size_t y = 0; y < size; y++) {
+            for (size_t x = 0; x < size; x++) {
                 layer0[y * size + x] = source(x * size_inv, y * size_inv, 0.0);
             }
         }
@@ -393,58 +370,47 @@ private:
         IndexCache index_cache(size);
         uint32_t index = 0;
 
-        for(size_t z = 0; z < size; z++)
-        {
-            for(size_t y = 0; y < size; y++)
-            {
-                for(size_t x = 0; x < size; x++)
-                {
-                    layer1[y * size + x] = source(x * size_inv, y * size_inv, (z + 1) * size_inv);
+        for (size_t z = 0; z < size; z++) {
+            for (size_t y = 0; y < size; y++) {
+                for (size_t x = 0; x < size; x++) {
+                    layer1[y * size + x] =
+                        source(x * size_inv, y * size_inv, (z + 1) * size_inv);
                 }
             }
 
-            for(size_t y = 0; y < size_less_one; y++)
-            {
-                for(size_t x = 0; x < size_less_one; x++)
-                {
-                    for(size_t i = 0; i < 8; i++)
-                    {
+            for (size_t y = 0; y < size_less_one; y++) {
+                for (size_t x = 0; x < size_less_one; x++) {
+                    for (size_t i = 0; i < 8; i++) {
                         const auto corner = CORNERS[i];
-                        const auto cx = corner[0], cy = corner[1], cz  = corner[2];
-                        corners[i] = {
-                            (x + cx) * size_inv,
-                            (y + cy) * size_inv,
-                            (z + cz) * size_inv
-                        };
+                        const auto cx = corner[0], cy = corner[1],
+                                   cz = corner[2];
+                        corners[i] = {(x + cx) * size_inv, (y + cy) * size_inv,
+                                      (z + cz) * size_inv};
 
-                        if(cz == 0)
-                        {
+                        if (cz == 0) {
                             values[i] = layer0[(y + cy) * size + x + cx];
-                        }
-                        else
-                        {
+                        } else {
                             values[i] = layer1[(y + cy) * size + x + cx];
                         }
                     }
 
-                    auto fn = [&extract_fn, &index_cache, &indices, &index, &corners, &values, &x, &y](size_t edge)
-                    {
-                        const uint32_t cached_index = index_cache.get(x, y, edge);
-                        if(cached_index > 0)
-                        {
+                    auto fn = [&extract_fn, &index_cache, &indices, &index,
+                               &corners, &values, &x, &y](size_t edge) {
+                        const uint32_t cached_index =
+                            index_cache.get(x, y, edge);
+                        if (cached_index > 0) {
                             indices.push_back(cached_index);
-                        }
-                        else
-                        {
+                        } else {
                             size_t u = EDGE_CONNECTION[edge][0];
                             size_t v = EDGE_CONNECTION[edge][1];
 
                             index_cache.put(x, y, edge, index);
                             indices.push_back(index);
                             index += 1;
-                            
+
                             float offset = get_offset(values[u], values[v]);
-                            Eigen::Vector3f vertex = interpolate(corners[u], corners[v], offset);
+                            Eigen::Vector3f vertex =
+                                interpolate(corners[u], corners[v], offset);
                             extract_fn(vertex);
                         }
                     };
@@ -458,9 +424,7 @@ private:
 
             std::swap(layer0, layer1);
         }
-
     }
-
 };
 
-}
+} // namespace occ::geometry::mc

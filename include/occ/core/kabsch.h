@@ -3,6 +3,6 @@
 
 namespace occ::linalg {
 
-occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N&, const occ::Mat3N&);
+occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &, const occ::Mat3N &);
 
 }

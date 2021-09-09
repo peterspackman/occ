@@ -1,10 +1,9 @@
-#include <occ/core/kabsch.h>
 #include <Eigen/SVD>
+#include <occ/core/kabsch.h>
 
 namespace occ::linalg {
 
-occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b)
-{
+occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b) {
     /*
     Calculate the optimal rotation matrix `R` to rotate
     `A` onto `B`, minimising root-mean-square deviation so that
@@ -31,7 +30,8 @@ occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b)
 
     // Use singular value decomposition to calculate
     // the optimal rotation matrix
-    Eigen::JacobiSVD<occ::Mat> svd(cov, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    Eigen::JacobiSVD<occ::Mat> svd(cov,
+                                   Eigen::ComputeThinU | Eigen::ComputeThinV);
     // auto v, s, w = np.linalg.svd(cov)
     occ::Mat3N u = svd.matrixU();
     occ::MatN3 v = svd.matrixV();
@@ -43,4 +43,4 @@ occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b)
     return v * d * u.transpose();
 }
 
-}
+} // namespace occ::linalg

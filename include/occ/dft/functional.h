@@ -1,9 +1,9 @@
 #pragma once
-#include <string>
+#include <fmt/core.h>
 #include <memory>
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/spinorbital.h>
-#include <fmt/core.h>
+#include <string>
 
 extern "C" {
 #include <xc.h>
@@ -11,13 +11,13 @@ extern "C" {
 
 namespace occ::dft {
 
-using occ::qm::SpinorbitalKind;
-using occ::Vec;
-using occ::IVec;
 using occ::Array;
+using occ::IVec;
+using occ::Vec;
+using occ::qm::SpinorbitalKind;
 
 class DensityFunctional {
-public:
+  public:
     enum Identifier {
         // TODO go through and remove the deprecated functionals!
         lda_x = XC_LDA_X,
@@ -393,39 +393,28 @@ public:
         Kinetic = XC_KINETIC
     };
 
-    struct Result
-    {
-        Result(size_t npt, Family family, SpinorbitalKind kind) : npts{npt}
-        {
-            if(kind == SpinorbitalKind::Restricted) 
-            {
+    struct Result {
+        Result(size_t npt, Family family, SpinorbitalKind kind) : npts{npt} {
+            if (kind == SpinorbitalKind::Restricted) {
                 exc = Vec::Zero(npt);
                 vrho = MatRM::Zero(npt, 1);
-                if(family == GGA || family == HGGA) 
-                {
+                if (family == GGA || family == HGGA) {
                     vsigma = MatRM::Zero(npt, 1);
                     have_vsigma = true;
-                }
-                else if(family == MGGA || family == HMGGA)
-                {
+                } else if (family == MGGA || family == HMGGA) {
                     vsigma = MatRM::Zero(npt, 1);
                     have_vsigma = true;
                     vlaplacian = MatRM::Zero(npt, 1);
                     vtau = MatRM::Zero(npt, 1);
                     have_vtau = true;
                 }
-            }
-            else
-            {
+            } else {
                 exc = Vec::Zero(npt);
                 vrho = MatRM::Zero(npt, 2);
-                if(family == GGA || family == HGGA)
-                {
+                if (family == GGA || family == HGGA) {
                     vsigma = MatRM::Zero(npt, 3);
                     have_vsigma = true;
-                }
-                else if (family == MGGA || family == HMGGA)
-                {
+                } else if (family == MGGA || family == HMGGA) {
                     vsigma = MatRM::Zero(npt, 3);
                     have_vsigma = true;
                     vlaplacian = MatRM::Zero(npt, 2);
@@ -443,25 +432,21 @@ public:
         MatRM vsigma;
         MatRM vlaplacian;
         MatRM vtau;
-        Result& operator +=(const Result& right)
-        {
+        Result &operator+=(const Result &right) {
             exc.array() += right.exc.array();
             vrho.array() += right.vrho.array();
-            if(right.have_vsigma)
-            {
-                if(!have_vsigma) vsigma = right.vsigma;
-                else vsigma.array() += right.vsigma.array();
+            if (right.have_vsigma) {
+                if (!have_vsigma)
+                    vsigma = right.vsigma;
+                else
+                    vsigma.array() += right.vsigma.array();
                 have_vsigma = true;
             }
-            if(right.have_vtau)
-            {
-                if(!have_vtau)
-                {
+            if (right.have_vtau) {
+                if (!have_vtau) {
                     vlaplacian = right.vlaplacian;
                     vtau = right.vtau;
-                }
-                else
-                {
+                } else {
                     vlaplacian.array() += right.vlaplacian.array();
                     vtau.array() += right.vtau.array();
                 }
@@ -469,16 +454,13 @@ public:
             }
             return *this;
         }
-        void weight_by(const Vec& weights)
-        {
+        void weight_by(const Vec &weights) {
             exc.array() *= weights.array();
             vrho.array().colwise() *= weights.array();
-            if(vsigma.size() > 0)
-            {
+            if (vsigma.size() > 0) {
                 vsigma.array().colwise() *= weights.array();
             }
-            if(vlaplacian.size() > 0)
-            {
+            if (vlaplacian.size() > 0) {
                 vlaplacian.array().colwise() *= weights.array();
                 vtau.array().colwise() *= weights.array();
             }
@@ -486,31 +468,21 @@ public:
     };
 
     struct Params {
-        Params(size_t npt, Family family, SpinorbitalKind kind) : npts(npt)
-        {
-            if(kind == SpinorbitalKind::Restricted)
-            {
+        Params(size_t npt, Family family, SpinorbitalKind kind) : npts(npt) {
+            if (kind == SpinorbitalKind::Restricted) {
                 rho.resize(npt, 1);
-                if(family == GGA || family == HGGA)
-                {
+                if (family == GGA || family == HGGA) {
                     sigma.resize(npt, 1);
-                }
-                else if(family == MGGA || family == HMGGA)
-                {
+                } else if (family == MGGA || family == HMGGA) {
                     sigma.resize(npt, 1);
                     laplacian.resize(npt, 1);
                     tau.resize(npt, 1);
                 }
-            }
-            else 
-            {
+            } else {
                 rho.resize(npt, 2);
-                if(family == GGA || family == HGGA)
-                {
+                if (family == GGA || family == HGGA) {
                     sigma.resize(npt, 3);
-                }
-                else if(family == MGGA || family == HMGGA)
-                {
+                } else if (family == MGGA || family == HMGGA) {
                     sigma.resize(npt, 3);
                     laplacian.resize(npt, 2);
                     tau.resize(npt, 2);
@@ -525,7 +497,7 @@ public:
         MatRM tau;
     };
 
-    DensityFunctional(const std::string&, bool polarized = false);
+    DensityFunctional(const std::string &, bool polarized = false);
     DensityFunctional(Identifier, bool polarized = false);
 
     void set_name(const std::string &name) { m_func_name = name; }
@@ -536,70 +508,91 @@ public:
     bool polarized() const { return m_polarized; }
     Family family() const {
         xc_func_type func;
-        int err = xc_func_init(&func, static_cast<int>(m_func_id), m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+        int err = xc_func_init(&func, static_cast<int>(m_func_id),
+                               m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
         Family f = static_cast<Family>(func.info->family);
         xc_func_end(&func);
         return f;
     }
     Kind kind() const {
         xc_func_type func;
-        int err = xc_func_init(&func, static_cast<int>(m_func_id), m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+        int err = xc_func_init(&func, static_cast<int>(m_func_id),
+                               m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
         Kind k = static_cast<Kind>(func.info->kind);
         xc_func_end(&func);
         return k;
     }
     Identifier id() const { return static_cast<Identifier>(m_func_id); }
-    const std::string& name() const { return m_func_name; }    
+    const std::string &name() const { return m_func_name; }
     std::string kind_string() const {
-        switch(kind()) {
-        case Exchange: return "exchange";
-        case Correlation: return "correlation";
-        case ExchangeCorrelation: return "exchange-correlation";
-        case Kinetic: return "kinetic";
-        default: return "unknown kind";
+        switch (kind()) {
+        case Exchange:
+            return "exchange";
+        case Correlation:
+            return "correlation";
+        case ExchangeCorrelation:
+            return "exchange-correlation";
+        case Kinetic:
+            return "kinetic";
+        default:
+            return "unknown kind";
         }
     }
 
     double exact_exchange_factor() const {
-        if(m_exchange_factor_override != 0.0) return m_exchange_factor_override;
+        if (m_exchange_factor_override != 0.0)
+            return m_exchange_factor_override;
         switch (family()) {
         case HGGA:
         case HMGGA: {
             xc_func_type func;
-            int err = xc_func_init(&func, static_cast<int>(m_func_id), m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+            int err = xc_func_init(&func, static_cast<int>(m_func_id),
+                                   m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
             double fac = xc_hyb_exx_coef(&func);
             xc_func_end(&func);
             return fac;
         }
-        default: return 0;
+        default:
+            return 0;
         }
     }
 
     int derivative_order() const {
-        switch(family()) {
-        case LDA: return 0;
+        switch (family()) {
+        case LDA:
+            return 0;
         case GGA:
-        case HGGA: return 1;
+        case HGGA:
+            return 1;
         case MGGA:
-        case HMGGA: return 2;
-        default: return 0;
+        case HMGGA:
+            return 2;
+        default:
+            return 0;
         }
     }
 
-    Result evaluate(const Params& params) const;
+    Result evaluate(const Params &params) const;
 
     std::string family_string() const {
-        switch(family()) {
-        case LDA: return "LDA";
-        case GGA: return "GGA";
-        case HGGA: return "hybrid GGA";
-        case MGGA: return "meta-GGA";
-        case HMGGA: return "hybrid meta-GGA";
-        default: return "unknown family";
+        switch (family()) {
+        case LDA:
+            return "LDA";
+        case GGA:
+            return "GGA";
+        case HGGA:
+            return "hybrid GGA";
+        case MGGA:
+            return "meta-GGA";
+        case HMGGA:
+            return "hybrid meta-GGA";
+        default:
+            return "unknown family";
         }
     }
-    static int functional_id(const std::string&);
-private:
+    static int functional_id(const std::string &);
+
+  private:
     double m_exchange_factor_override{0.0};
     double m_factor{1.0};
     Identifier m_func_id;
@@ -607,4 +600,4 @@ private:
     std::string m_func_name{"unknown"};
 };
 
-}
+} // namespace occ::dft

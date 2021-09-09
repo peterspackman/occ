@@ -10,7 +10,7 @@ using occ::Mat4;
 using occ::Vec3;
 
 class SymmetryOperation {
-public:
+  public:
     SymmetryOperation(const occ::Mat4 &);
     SymmetryOperation(const std::string &);
     SymmetryOperation(int);
@@ -46,12 +46,11 @@ public:
         return to_int() >= other.to_int();
     }
 
-    const SymmetryOperation operator*(const SymmetryOperation &other) const
-    {
+    const SymmetryOperation operator*(const SymmetryOperation &other) const {
         return SymmetryOperation(seitz() * other.seitz());
     }
 
-private:
+  private:
     Mat4 m_seitz;
 };
 

@@ -4,14 +4,13 @@
 
 namespace occ::crystal {
 
-struct MillerIndex
-{
+struct MillerIndex {
     int h, k, l;
-    inline double d(const Mat3 &lattice) const
-    {
-        Vec3 result = h * lattice.col(0) + k * lattice.col(1) + l * lattice.col(2);
+    inline double d(const Mat3 &lattice) const {
+        Vec3 result =
+            h * lattice.col(0) + k * lattice.col(1) + l * lattice.col(2);
         return result.norm();
     }
 };
 
-}
+} // namespace occ::crystal

@@ -1,33 +1,30 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 
-namespace occ::solvent
-{
-using occ::Vec;
-using occ::Mat3N;
+namespace occ::solvent {
 using occ::Mat;
+using occ::Mat3N;
+using occ::Vec;
 
 namespace cosmo {
-occ::Vec solvation_radii(const occ::IVec&);
+occ::Vec solvation_radii(const occ::IVec &);
 }
 
-class COSMO
-{
+class COSMO {
 
-public:
-    struct Result
-    {
+  public:
+    struct Result {
         occ::Vec initial;
         occ::Vec converged;
         double energy;
     };
 
-    COSMO(double dielectric, double x = 0.0) : m_x(x), m_dielectric(dielectric) {}
+    COSMO(double dielectric, double x = 0.0)
+        : m_x(x), m_dielectric(dielectric) {}
 
-    Result operator()(const Mat3N&, const Vec&, const Vec&) const;
+    Result operator()(const Mat3N &, const Vec &, const Vec &) const;
 
-    auto surface_charge(const Vec& charges) const
-    {
+    auto surface_charge(const Vec &charges) const {
         return charges.array() * (m_dielectric - 1) / (m_dielectric + m_x);
     }
 
@@ -35,8 +32,8 @@ public:
 
     double dielectric() const { return m_dielectric; }
 
-private:
+  private:
     double m_x{0.0};
     double m_dielectric;
 };
-}
+} // namespace occ::solvent

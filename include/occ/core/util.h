@@ -1,13 +1,13 @@
 #pragma once
-#include <occ/core/linear_algebra.h>
 #include <algorithm>
 #include <cctype>
-#include <locale>
-#include <string>
-#include <vector>
-#include <numeric>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+#include <locale>
+#include <numeric>
+#include <occ/core/linear_algebra.h>
+#include <string>
+#include <vector>
 
 namespace occ::util {
 
@@ -17,131 +17,126 @@ bool all_close(const Eigen::DenseBase<TA> &a, const Eigen::DenseBase<TB> &b,
                    Eigen::NumTraits<typename TA::RealScalar>::dummy_precision(),
                const typename TA::RealScalar &atol =
                    Eigen::NumTraits<typename TA::RealScalar>::epsilon()) {
-  return ((a.derived() - b.derived()).array().abs() <=
-          (atol + rtol * b.derived().array().abs()))
-      .all();
+    return ((a.derived() - b.derived()).array().abs() <=
+            (atol + rtol * b.derived().array().abs()))
+        .all();
 }
 
 template <typename T>
-constexpr bool is_close(T a, T b, const T rtol = Eigen::NumTraits<T>::dummy_precision(),
-                       const T atol = Eigen::NumTraits<T>::epsilon()) {
-  return abs(a - b) <= (atol + rtol * abs(b));
+constexpr bool is_close(T a, T b,
+                        const T rtol = Eigen::NumTraits<T>::dummy_precision(),
+                        const T atol = Eigen::NumTraits<T>::epsilon()) {
+    return abs(a - b) <= (atol + rtol * abs(b));
 }
 
-template <typename T>
-constexpr bool is_even(T a) {
-    return a % 2 == 0;
-}
+template <typename T> constexpr bool is_even(T a) { return a % 2 == 0; }
 
-template <typename T>
-constexpr bool is_odd(T a) {
-    return !is_even(a);
-}
+template <typename T> constexpr bool is_odd(T a) { return !is_even(a); }
 
 static inline std::vector<std::string> tokenize(const std::string &str,
                                                 const std::string &delimiters) {
-  std::vector<std::string> tokens;
-  auto last_position = str.find_first_not_of(delimiters, 0);
-  auto position = str.find_first_of(delimiters, last_position);
-  while (std::string::npos != position || std::string::npos != last_position) {
-    tokens.push_back(str.substr(last_position, position - last_position));
-    last_position = str.find_first_not_of(delimiters, position);
-    position = str.find_first_of(delimiters, last_position);
-  }
-  return tokens;
+    std::vector<std::string> tokens;
+    auto last_position = str.find_first_not_of(delimiters, 0);
+    auto position = str.find_first_of(delimiters, last_position);
+    while (std::string::npos != position ||
+           std::string::npos != last_position) {
+        tokens.push_back(str.substr(last_position, position - last_position));
+        last_position = str.find_first_not_of(delimiters, position);
+        position = str.find_first_of(delimiters, last_position);
+    }
+    return tokens;
 }
 
 static inline std::string join(const std::vector<std::string> &seq,
                                const std::string &sep) {
-  std::string res;
-  for (size_t i = 0; i < seq.size(); ++i)
-    res += seq[i] + ((i != seq.size() - 1) ? sep : "");
-  return res;
+    std::string res;
+    for (size_t i = 0; i < seq.size(); ++i)
+        res += seq[i] + ((i != seq.size() - 1) ? sep : "");
+    return res;
 }
 
 // trim from start (in place)
 static inline void ltrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-                                  [](int ch) { return !std::isspace(ch); }));
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                    [](int ch) { return !std::isspace(ch); }));
 }
 
 // trim from end (in place)
 static inline void rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(),
-                       [](int ch) { return !std::isspace(ch); })
-              .base(),
-          s.end());
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+                         [](int ch) { return !std::isspace(ch); })
+                .base(),
+            s.end());
 }
 
 // trim from both ends (in place)
 static inline void trim(std::string &s) {
-  ltrim(s);
-  rtrim(s);
+    ltrim(s);
+    rtrim(s);
 }
 
 // trim from start (copying)
 static inline std::string ltrim_copy(std::string s) {
-  ltrim(s);
-  return s;
+    ltrim(s);
+    return s;
 }
 
 // trim from end (copying)
 static inline std::string rtrim_copy(std::string s) {
-  rtrim(s);
-  return s;
+    rtrim(s);
+    return s;
 }
 
 // trim from both ends (copying)
 static inline std::string trim_copy(std::string s) {
-  trim(s);
-  return s;
+    trim(s);
+    return s;
 }
 
 static inline void capitalize(std::string &s) {
-  s[0] = std::toupper(s[0]);
-  std::transform(s.begin() + 1, s.end(), s.begin() + 1,
-                 [](unsigned char c) { return std::tolower(c); });
+    s[0] = std::toupper(s[0]);
+    std::transform(s.begin() + 1, s.end(), s.begin() + 1,
+                   [](unsigned char c) { return std::tolower(c); });
 }
 
 static inline std::string capitalize_copy(std::string s) {
-  capitalize(s);
-  return s;
+    capitalize(s);
+    return s;
 }
 
 static inline void to_lower(std::string &s) {
-  std::transform(s.begin(), s.end(), s.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
 }
 
 static inline void to_upper(std::string &s) {
-  std::transform(s.begin(), s.end(), s.begin(),
-                 [](unsigned char c) { return std::toupper(c); });
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
 }
 
 static inline std::string to_lower_copy(std::string s) {
-  to_lower(s);
-  return s;
+    to_lower(s);
+    return s;
 }
 static inline std::string to_upper_copy(std::string s) {
-  to_upper(s);
-  return s;
+    to_upper(s);
+    return s;
 }
 
-inline bool startswith(const std::string& h, const std::string& prefix, bool trimmed = true)
-{
-    if(trimmed) {
+inline bool startswith(const std::string &h, const std::string &prefix,
+                       bool trimmed = true) {
+    if (trimmed) {
         auto trimmed_str = trim_copy(h);
         return trimmed_str.rfind(prefix, 0) == 0;
     }
     return h.rfind(prefix, 0) == 0;
 }
 
-template<typename T>
-std::string human_readable_size(T number, const std::string& suffix)
-{
+template <typename T>
+std::string human_readable_size(T number, const std::string &suffix) {
     double num = static_cast<double>(number);
     const auto units = {"", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"};
-    for(const auto& unit: units) {
+    for (const auto &unit : units) {
         if (abs(num) < 1024.0) {
             return fmt::format("{:3.2f}{}{}", num, unit, suffix);
         }
@@ -150,17 +145,15 @@ std::string human_readable_size(T number, const std::string& suffix)
     return fmt::format("{:.1f}{}{}", num, "Yi", suffix);
 }
 
-
-template<class M, class N>
-constexpr std::common_type_t<M, N> smallest_common_factor(M m, N n)
-{
-    if(n == 0) return std::abs(m);
+template <class M, class N>
+constexpr std::common_type_t<M, N> smallest_common_factor(M m, N n) {
+    if (n == 0)
+        return std::abs(m);
     return smallest_common_factor(n, m % n);
 }
 
-static inline double double_factorial(int l)
-{
-    switch(l) {
+static inline double double_factorial(int l) {
+    switch (l) {
     case 0:
         return 1.0;
     case 1:
@@ -175,16 +168,15 @@ static inline double double_factorial(int l)
         return 945.0;
     default:
         double result = 10395.0;
-        for(int i = 7; i <= l; i++) {
+        for (int i = 7; i <= l; i++) {
             result *= (2 * i - 1);
         }
         return result;
     }
 }
 
-static inline double factorial(int l)
-{
-    switch(l) {
+static inline double factorial(int l) {
+    switch (l) {
     case 0:
         return 1.0;
     case 1:
@@ -199,20 +191,19 @@ static inline double factorial(int l)
         return 120.0;
     default:
         double result = 720.0;
-        for(int i = 7; i <= l; i++) {
+        for (int i = 7; i <= l; i++) {
             result *= i;
         }
         return result;
     }
 }
 
-static inline int multinomial_coefficient(std::initializer_list<int> args)
-{
+static inline int multinomial_coefficient(std::initializer_list<int> args) {
     int result = 1;
     int numerator = std::accumulate(args.begin(), args.end(), 0);
 
-    for (const auto& k : args) {
-        for(int i = 0; i < k; i++) {
+    for (const auto &k : args) {
+        for (int i = 0; i < k; i++) {
             result *= numerator;
             result /= 1 + i;
             numerator--;
@@ -221,12 +212,8 @@ static inline int multinomial_coefficient(std::initializer_list<int> args)
     return result;
 }
 
-template<typename T>
-size_t index_of(T x, const std::vector<T>& vec)
-{
-    return std::distance(vec.begin(),
-        std::find(vec.begin(), vec.end(), x)
-    );
+template <typename T> size_t index_of(T x, const std::vector<T> &vec) {
+    return std::distance(vec.begin(), std::find(vec.begin(), vec.end(), x));
 }
 
 } // namespace occ::util

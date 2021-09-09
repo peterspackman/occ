@@ -1,17 +1,28 @@
-#include <occ/io/fchkwriter.h>
 #include <fmt/ostream.h>
 #include <occ/core/util.h>
+#include <occ/io/fchkwriter.h>
 
 namespace occ::io {
 
 namespace impl {
 
-static const std::array<const char *, 15> fchk_type_strings {
-    "SP", "FOPT", "POPT", "FTS", "FSADDLE", "PSADDLE", "FORCE",
-    "FREQ", "SCAN", "GUESS=ONLY", "LST", "STABILITY", "REARCHIVE/MS-RESTART", "MIXED"
-};
+static const std::array<const char *, 15> fchk_type_strings{
+    "SP",
+    "FOPT",
+    "POPT",
+    "FTS",
+    "FSADDLE",
+    "PSADDLE",
+    "FORCE",
+    "FREQ",
+    "SCAN",
+    "GUESS=ONLY",
+    "LST",
+    "STABILITY",
+    "REARCHIVE/MS-RESTART",
+    "MIXED"};
 
-static const std::vector<std::string> fchk_key_order {
+static const std::vector<std::string> fchk_key_order{
     "Number of atoms",
     "Info1-9",
     "Full Title",
@@ -95,90 +106,86 @@ static const std::vector<std::string> fchk_key_order {
     "Cartesian Gradient",
     "Dipole Moment",
     "Quadrupole Moment",
-    "QEq coupling tensors"
-};
+    "QEq coupling tensors"};
 
-void FchkScalarWriter::operator()(int value)
-{
+void FchkScalarWriter::operator()(int value) {
     fmt::print(destination, "{:40s}   I     {:12d}\n", key, value);
 }
 
-void FchkScalarWriter::operator()(double value)
-{
+void FchkScalarWriter::operator()(double value) {
     fmt::print(destination, "{:40s}   R     {:22.15E}\n", key, value);
 }
 
-void FchkScalarWriter::operator()(const std::string &value)
-{
+void FchkScalarWriter::operator()(const std::string &value) {
     fmt::print(destination, "{:40s}   C     {:12s}\n", key, value);
 }
 
-void FchkScalarWriter::operator()(bool value)
-{
+void FchkScalarWriter::operator()(bool value) {
     fmt::print(destination, "{:40s}   L     {:1d}\n", key, value);
 }
 
-
-void FchkVectorWriter::operator()(const std::vector<int> &values)
-{
+void FchkVectorWriter::operator()(const std::vector<int> &values) {
     constexpr int num_per_line{6};
     const std::string value_format{"{:12d}"};
     fmt::print(destination, "{:40s}   I   N={:12d}\n", key, values.size());
     int count = 0;
-    for(const auto& value: values) {
+    for (const auto &value : values) {
         fmt::print(destination, value_format, value);
         count++;
-        if(count % num_per_line == 0) fmt::print(destination, "\n");
+        if (count % num_per_line == 0)
+            fmt::print(destination, "\n");
     }
-    if(count % num_per_line != 0) fmt::print(destination, "\n");
+    if (count % num_per_line != 0)
+        fmt::print(destination, "\n");
 }
 
-void FchkVectorWriter::operator()(const std::vector<double> &values)
-{
+void FchkVectorWriter::operator()(const std::vector<double> &values) {
     constexpr int num_per_line{5};
     const std::string value_format{"{:16.8e}"};
     fmt::print(destination, "{:40s}   R   N={:12d}\n", key, values.size());
     int count = 0;
-    for(const auto& value: values) {
+    for (const auto &value : values) {
         fmt::print(destination, value_format, value);
         count++;
-        if(count % num_per_line == 0) fmt::print(destination, "\n");
+        if (count % num_per_line == 0)
+            fmt::print(destination, "\n");
     }
-    if(count % num_per_line != 0) fmt::print(destination, "\n");
+    if (count % num_per_line != 0)
+        fmt::print(destination, "\n");
 }
 
-void FchkVectorWriter::operator()(const std::vector<std::string> &values)
-{
+void FchkVectorWriter::operator()(const std::vector<std::string> &values) {
     constexpr int num_per_line{5};
     const std::string value_format{"{:12s}"};
     fmt::print(destination, "{:40s}   C   N={:12d}\n", key, values.size());
     int count = 0;
-    for(const auto& value: values) {
+    for (const auto &value : values) {
         fmt::print(destination, value_format, value);
         count++;
-        if(count % num_per_line == 0) fmt::print(destination, "\n");
+        if (count % num_per_line == 0)
+            fmt::print(destination, "\n");
     }
-    if(count % num_per_line != 0) fmt::print(destination, "\n");
+    if (count % num_per_line != 0)
+        fmt::print(destination, "\n");
 }
 
-void FchkVectorWriter::operator()(const std::vector<bool> &values)
-{
+void FchkVectorWriter::operator()(const std::vector<bool> &values) {
     constexpr int num_per_line{72};
     const std::string value_format{"{:1d}"};
     fmt::print(destination, "{:40s}   L   N={:12d}\n", key, values.size());
     int count = 0;
-    for(const auto& value: values) {
+    for (const auto &value : values) {
         fmt::print(destination, value_format, value);
         count++;
-        if(count % num_per_line == 0) fmt::print(destination, "\n");
+        if (count % num_per_line == 0)
+            fmt::print(destination, "\n");
     }
-    if(count % num_per_line != 0) fmt::print(destination, "\n");
+    if (count % num_per_line != 0)
+        fmt::print(destination, "\n");
 }
-}
+} // namespace impl
 
-
-void FchkWriter::set_basis(const occ::qm::BasisSet &basis)
-{
+void FchkWriter::set_basis(const occ::qm::BasisSet &basis) {
     int largest_contraction{0};
     int l_max = 0;
     std::vector<int> shell_types, nprim_per_shell;
@@ -187,12 +194,12 @@ void FchkWriter::set_basis(const occ::qm::BasisSet &basis)
     shell_coords.reserve(3 * basis.size());
     std::vector<double> primitive_exponents, contraction_coefficients;
     int number_primitive_shells{0};
-    for(size_t i = 0; i < basis.size(); i++)
-    {
-        const auto& sh = basis[i];
-        const auto& contraction = sh.contr[0];
+    for (size_t i = 0; i < basis.size(); i++) {
+        const auto &sh = basis[i];
+        const auto &contraction = sh.contr[0];
         int l = contraction.l;
-        if(l > 1 && contraction.pure) l = -l;
+        if (l > 1 && contraction.pure)
+            l = -l;
         l_max = std::max(l, l_max);
         int nprim = sh.alpha.size();
         number_primitive_shells += nprim;
@@ -202,17 +209,15 @@ void FchkWriter::set_basis(const occ::qm::BasisSet &basis)
         shell_coords.push_back(sh.O[0]);
         shell_coords.push_back(sh.O[1]);
         shell_coords.push_back(sh.O[2]);
-        for(size_t p = 0; p < sh.alpha.size(); p++) {
+        for (size_t p = 0; p < sh.alpha.size(); p++) {
             primitive_exponents.push_back(sh.alpha[p]);
         }
-        for(size_t p = 0; p < contraction.coeff.size(); p++) {
-            if(contraction.pure) 
-            {
+        for (size_t p = 0; p < contraction.coeff.size(); p++) {
+            if (contraction.pure) {
                 contraction_coefficients.push_back(sh.coeff_normalized(0, p));
-            }
-            else contraction_coefficients.push_back(sh.coeff_normalized(0, p));
+            } else
+                contraction_coefficients.push_back(sh.coeff_normalized(0, p));
         }
-
     }
     set_scalar("Number of contracted shells", basis.size());
     bool spherical = basis.is_pure();
@@ -225,36 +230,33 @@ void FchkWriter::set_basis(const occ::qm::BasisSet &basis)
     set_scalar("Number of primitive shells", number_primitive_shells);
     set_vector("Primitive exponents", primitive_exponents);
     set_vector("Contraction coefficients", contraction_coefficients);
-    set_vector("P(S=P) Contraction coefficients", occ::Vec::Zero(contraction_coefficients.size()));
+    set_vector("P(S=P) Contraction coefficients",
+               occ::Vec::Zero(contraction_coefficients.size()));
     set_vector("Coordinates of each shell", shell_coords);
 }
 
-FchkWriter::FchkWriter(const std::string &filename) : m_owned_destination(filename), m_dest(m_owned_destination)
-{
+FchkWriter::FchkWriter(const std::string &filename)
+    : m_owned_destination(filename), m_dest(m_owned_destination) {}
 
-}
+FchkWriter::FchkWriter(std::ostream &stream) : m_dest(stream) {}
 
-FchkWriter::FchkWriter(std::ostream &stream) : m_dest(stream)
-{}
-
-
-void FchkWriter::write()
-{
+void FchkWriter::write() {
     fmt::print(m_dest, "{:<72s}\n", m_title);
-    fmt::print(m_dest, "{:10s} {:<30s} {:>30s}\n", impl::fchk_type_strings[m_type], m_method, m_basis_name);
+    fmt::print(m_dest, "{:10s} {:<30s} {:>30s}\n",
+               impl::fchk_type_strings[m_type], m_method, m_basis_name);
     impl::FchkScalarWriter scalar_writer{m_dest, ""};
     impl::FchkVectorWriter vector_writer{m_dest, ""};
 
-    for(const auto& key: impl::fchk_key_order) {
-        if(m_scalars.contains(key)) {
+    for (const auto &key : impl::fchk_key_order) {
+        if (m_scalars.contains(key)) {
             scalar_writer.key = key;
             std::visit(scalar_writer, m_scalars[key]);
         }
-        if(m_vectors.contains(key)) {
+        if (m_vectors.contains(key)) {
             vector_writer.key = key;
             std::visit(vector_writer, m_vectors[key]);
         }
     }
 }
 
-}
+} // namespace occ::io

@@ -1,5 +1,3 @@
 #include <occ/gto/density.h>
 
-namespace occ::density {
-
-}
+namespace occ::density {}

@@ -56,7 +56,7 @@ using DVec3 = Eigen::Vector3d;
 using IVec = Eigen::VectorXi;
 using IVec3 = Eigen::Vector3i;
 
-std::tuple<Mat, Mat, double> conditioning_orthogonalizer(const Mat&, double);
+std::tuple<Mat, Mat, double> conditioning_orthogonalizer(const Mat &, double);
 
 // returns {X,X^{-1},rank,A_condition_number,result_A_condition_number}, where
 // X is the generalized square-root-inverse such that X.transpose() * A * X = I
@@ -71,9 +71,10 @@ std::tuple<Mat, Mat, double> conditioning_orthogonalizer(const Mat&, double);
 //
 // A is conditioned to max_condition_number
 std::tuple<Mat, Mat, size_t, double, double>
-gensqrtinv(const Mat&, bool symmetric = false, double max_condition_number = 1e8);
+gensqrtinv(const Mat &, bool symmetric = false,
+           double max_condition_number = 1e8);
 
-
-Mat3 inertia_tensor(Eigen::Ref<const Vec> masses, Eigen::Ref<const Mat3N> positions);
+Mat3 inertia_tensor(Eigen::Ref<const Vec> masses,
+                    Eigen::Ref<const Mat3N> positions);
 
 }; // namespace occ

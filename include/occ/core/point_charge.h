@@ -6,47 +6,42 @@
 namespace occ::core {
 using PointCharge = std::pair<double, std::array<double, 3>>;
 
-std::vector<PointCharge> inline make_point_charges(const std::vector<Atom> &atoms)
-{
-  std::vector<PointCharge> q(atoms.size());
-  for (const auto &atom : atoms) {
-    q.emplace_back(static_cast<double>(atom.atomic_number),
-                   std::array<double, 3>{{atom.x, atom.y, atom.z}});
-  }
-  return q;
+std::vector<PointCharge> inline make_point_charges(
+    const std::vector<Atom> &atoms) {
+    std::vector<PointCharge> q(atoms.size());
+    for (const auto &atom : atoms) {
+        q.emplace_back(static_cast<double>(atom.atomic_number),
+                       std::array<double, 3>{{atom.x, atom.y, atom.z}});
+    }
+    return q;
 }
 
-constexpr unsigned int num_multipole_components(unsigned int order)
-{
+constexpr unsigned int num_multipole_components(unsigned int order) {
     unsigned int n{0};
-    for(unsigned int i = 0; i <= order; i++)
+    for (unsigned int i = 0; i <= order; i++)
         n += (i + 1) * (i + 2) / 2;
     return n;
 }
 
-template<unsigned int order = 0>
+template <unsigned int order = 0>
 inline auto compute_multipoles(const std::vector<PointCharge> &charges,
-                               std::array<double, 3> origin = {0.0, 0.0, 0.0})
-{
+                               std::array<double, 3> origin = {0.0, 0.0, 0.0}) {
     constexpr unsigned int ncomp = num_multipole_components(order);
 
     std::array<double, ncomp> result{0.0};
-    for(int i = 0; i < charges.size(); i++)
-    {
+    for (int i = 0; i < charges.size(); i++) {
         const auto &charge = charges[i].first;
         const auto &pos = charges[i].second;
         result[0] += charge;
         const double x = pos[0] - origin[0];
         const double y = pos[1] - origin[1];
         const double z = pos[2] - origin[2];
-        if constexpr(order > 0)
-        {
+        if constexpr (order > 0) {
             result[1] += charge * x;
             result[2] += charge * y;
             result[3] += charge * z;
         }
-        if constexpr(order > 1)
-        {
+        if constexpr (order > 1) {
             result[4] += charge * x * x; // xx
             result[5] += charge * x * y; // xy
             result[6] += charge * x * z; // xz
@@ -54,8 +49,7 @@ inline auto compute_multipoles(const std::vector<PointCharge> &charges,
             result[8] += charge * y * z; // yz
             result[9] += charge * z * z; // zz
         }
-        if constexpr(order > 2)
-        {
+        if constexpr (order > 2) {
             result[10] += charge * x * x * x; // xxx
             result[11] += charge * x * x * y; // xxy
             result[12] += charge * x * x * z; // xxz
@@ -71,4 +65,4 @@ inline auto compute_multipoles(const std::vector<PointCharge> &charges,
     return result;
 }
 
-}
+} // namespace occ::core

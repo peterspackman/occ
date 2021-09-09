@@ -38,19 +38,14 @@ enum category {
     _group_count
 };
 
-template <size_t count = 1>
-class StopWatch {
-public:
-
-
+template <size_t count = 1> class StopWatch {
+  public:
     StopWatch() {
         clear_all();
         set_now_overhead(0);
     }
 
-    static time_point_t now() {
-        return clock_t::now();
-    }
+    static time_point_t now() { return clock_t::now(); }
 
     void set_now_overhead(size_t ns) {
         m_overhead = std::chrono::nanoseconds(ns);
@@ -68,18 +63,16 @@ public:
         return result;
     }
 
-    double read(size_t t = 0) const {
-        return m_timers[t].count();
-    }
+    double read(size_t t = 0) const { return m_timers[t].count(); }
 
     void clear_all() {
-        for(auto t = 0; t != ntimers; ++t) {
+        for (auto t = 0; t != ntimers; ++t) {
             m_timers[t] = duration_t::zero();
             m_tstart[t] = time_point_t();
         }
     }
 
-private:
+  private:
     constexpr static auto ntimers = count;
     duration_t m_timers[ntimers];
     time_point_t m_tstart[ntimers];
@@ -94,4 +87,4 @@ void clear_all();
 std::string category_name(category);
 void print_timings();
 
-}
+} // namespace occ::timing

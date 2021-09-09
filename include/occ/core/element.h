@@ -6,19 +6,19 @@
 namespace occ::chem {
 
 struct ElementData {
-  ElementData(int n, const std::string &nm, const std::string &sym, float cov,
-              float vdw, float m)
-      : atomic_number(n), name(nm), symbol(sym), cov_radius(cov),
-        vdw_radius(vdw), mass(m) {}
-  ElementData(const ElementData &o)
-      : atomic_number(o.atomic_number), name(o.name), symbol(o.symbol),
-        cov_radius(o.cov_radius), vdw_radius(o.vdw_radius), mass(o.mass) {}
-  int atomic_number;
-  std::string name;
-  std::string symbol;
-  float cov_radius;
-  float vdw_radius;
-  float mass;
+    ElementData(int n, const std::string &nm, const std::string &sym, float cov,
+                float vdw, float m)
+        : atomic_number(n), name(nm), symbol(sym), cov_radius(cov),
+          vdw_radius(vdw), mass(m) {}
+    ElementData(const ElementData &o)
+        : atomic_number(o.atomic_number), name(o.name), symbol(o.symbol),
+          cov_radius(o.cov_radius), vdw_radius(o.vdw_radius), mass(o.mass) {}
+    int atomic_number;
+    std::string name;
+    std::string symbol;
+    float cov_radius;
+    float vdw_radius;
+    float mass;
 };
 
 static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] = {
@@ -128,34 +128,34 @@ static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] = {
     {103, "lawrencium", "Lr", 1.50f, 2.00f, 262.0f}};
 
 class Element {
-public:
-  Element() = delete;
-  Element(const std::string &, bool exact_match = false);
-  Element(int);
-  inline const std::string &symbol() const { return m_data.symbol; }
-  inline const std::string &name() const { return m_data.name; }
-  inline float mass() const { return m_data.mass; }
-  inline float cov() const { return m_data.cov_radius; }
-  inline float covalentRadius() const { return m_data.cov_radius; }
-  inline float vdw() const { return m_data.vdw_radius; }
-  inline float vdwRadius() const { return m_data.vdw_radius; }
-  inline int atomic_number() const { return m_data.atomic_number; }
-  inline int n() const { return m_data.atomic_number; }
-  bool operator<(const Element &rhs) const {
-    return m_data.atomic_number < rhs.m_data.atomic_number;
-  }
-  bool operator>(const Element &rhs) const {
-    return m_data.atomic_number > rhs.m_data.atomic_number;
-  }
-  bool operator==(const Element &rhs) const {
-    return m_data.atomic_number == rhs.m_data.atomic_number;
-  }
-  bool operator!=(const Element &rhs) const {
-    return m_data.atomic_number != rhs.m_data.atomic_number;
-  }
+  public:
+    Element() = delete;
+    Element(const std::string &, bool exact_match = false);
+    Element(int);
+    inline const std::string &symbol() const { return m_data.symbol; }
+    inline const std::string &name() const { return m_data.name; }
+    inline float mass() const { return m_data.mass; }
+    inline float cov() const { return m_data.cov_radius; }
+    inline float covalentRadius() const { return m_data.cov_radius; }
+    inline float vdw() const { return m_data.vdw_radius; }
+    inline float vdwRadius() const { return m_data.vdw_radius; }
+    inline int atomic_number() const { return m_data.atomic_number; }
+    inline int n() const { return m_data.atomic_number; }
+    bool operator<(const Element &rhs) const {
+        return m_data.atomic_number < rhs.m_data.atomic_number;
+    }
+    bool operator>(const Element &rhs) const {
+        return m_data.atomic_number > rhs.m_data.atomic_number;
+    }
+    bool operator==(const Element &rhs) const {
+        return m_data.atomic_number == rhs.m_data.atomic_number;
+    }
+    bool operator!=(const Element &rhs) const {
+        return m_data.atomic_number != rhs.m_data.atomic_number;
+    }
 
-private:
-  ElementData m_data;
+  private:
+    ElementData m_data;
 };
 
 std::string chemical_formula(const std::vector<Element> &);
