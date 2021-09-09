@@ -28,6 +28,7 @@ public:
     enum LineLabel {
         Unknown,
         NumElectrons,
+        SCFEnergy,
         AtomicNumbers,
         AtomicPositions,
         NumBasisFunctions,
@@ -56,6 +57,7 @@ public:
     inline auto num_basis_functions() const { return m_num_basis_functions; }
     inline auto num_orbitals() const { return m_num_basis_functions; }
     inline auto num_electrons() const { return m_num_electrons; }
+    inline auto scf_energy() const { return m_scf_energy; }
     inline auto num_alpha() const { return m_num_alpha; }
     inline auto num_beta() const { return m_num_beta; }
 
@@ -109,6 +111,7 @@ private:
     size_t m_num_basis_functions{0};
     size_t m_num_alpha{0};
     size_t m_num_beta{0};
+    double m_scf_energy{0.0};
 
     std::vector<int> m_atomic_numbers;
     std::vector<double> m_atomic_positions;

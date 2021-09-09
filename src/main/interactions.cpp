@@ -39,10 +39,14 @@ using occ::solvent::COSMO;
 struct SolvatedSurfaceProperties
 {
     double esolv{0.0};
+    double dg_ele{0.0};
+    double dg_conc{0.0};
     occ::Mat3N coulomb_pos;
     occ::Mat3N cds_pos;
     occ::Vec e_coulomb;
     occ::Vec e_cds;
+    occ::Vec e_ele;
+    occ::Vec e_conc;
 };
 
 
@@ -178,6 +182,8 @@ std::pair<std::vector<SolvatedSurfaceProperties>, std::vector<Wavefunction>> cal
         solvated_wfns.push_back(scf.wavefunction());
         props.coulomb_pos = proc_solv.surface_positions_coulomb();
         props.cds_pos = proc_solv.surface_positions_cds();
+        auto coul_areas = proc_solv.surface_areas_coulomb();
+        auto cds_areas = proc_solv.surface_areas_cds();
         props.e_cds = proc_solv.surface_cds_energy_elements();
         auto nuc = proc_solv.surface_nuclear_energy_elements();
         auto elec = proc_solv.surface_electronic_energy_elements(SpinorbitalKind::Restricted, scf.D);
@@ -193,10 +199,13 @@ std::pair<std::vector<SolvatedSurfaceProperties>, std::vector<Wavefunction>> cal
                 props.e_cds.array().sum();
 
         double dG_conc = 1.89 / occ::units::KJ_TO_KCAL;
-        fmt::print("delta G concentration for standard state of 1atm = {:.3f} kJ/mol\n", dG_conc);
+        props.dg_conc = dG_conc / occ::units::AU_TO_KJ_PER_MOL;
+        props.dg_ele = e - original_energy - esolv;
         props.esolv = esolv + 1.89 / occ::units::AU_TO_KCAL_PER_MOL;
         occ::log::debug("total e_solv {:12.6f} ({:.3f} kJ/mol)\n", esolv, esolv * occ::units::AU_TO_KJ_PER_MOL);
         props.esolv = e - original_energy + 1.89 / occ::units::AU_TO_KCAL_PER_MOL;;
+        props.e_ele = (props.dg_ele / coul_areas.array().sum()) * coul_areas.array();
+        props.e_conc = (props.dg_conc / cds_areas.array().sum()) * cds_areas.array();
         result.push_back(props);
     }
 
@@ -300,7 +309,7 @@ std::pair<occ::IVec, occ::Mat3N> environment(const std::vector<Dimer> &neighbors
 struct SolventNeighborContribution {
     double coul_ab{0.0}, cds_ab{0.0}, coul_ba{0.0}, cds_ba{0.0};
     double total_coul() const { return coul_ab + coul_ba; }
-    double total_cds() const { return coul_ab + coul_ba; }
+    double total_cds() const { return cds_ab + cds_ba; }
     double total() const { return coul_ab + coul_ba + cds_ab + cds_ba; }
 };
 
@@ -319,7 +328,7 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
     occ::IVec neighbor_idx_coul(surface.coulomb_pos.cols());
     occ::IVec neighbor_idx_cds(surface.cds_pos.cols());
     std::tie(mol_idx, neigh_pos) = environment(neighbors);
-    
+
     auto cfile = fmt::output_file(fmt::format("{}_coulomb.txt", mol_name), fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
     cfile.print("{}\nx y z e neighbor\n", neighbor_idx_coul.rows());
     // coulomb breakdown
@@ -328,7 +337,7 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
         occ::Vec3 x = surface.coulomb_pos.col(i);
         Eigen::Index idx = 0;
         double r = (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
-        energy_contribution[mol_idx(idx)].coul_ab += surface.e_coulomb(i);
+        energy_contribution[mol_idx(idx)].coul_ab += surface.e_coulomb(i) + surface.e_ele(i);
         neighbor_idx_coul(i) = mol_idx(idx);
         cfile.print("{:12.5f} {:12.5f} {:12.5f} {:12.5f} {:5d}\n", angstroms(x(0)), angstroms(x(1)), angstroms(x(2)), surface.e_coulomb(i), mol_idx(idx));
     }
@@ -341,7 +350,7 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
         occ::Vec3 x = surface.cds_pos.col(i);
         Eigen::Index idx = 0;
         double r = (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
-        energy_contribution[mol_idx(idx)].cds_ab += surface.e_cds(i);
+        energy_contribution[mol_idx(idx)].cds_ab += surface.e_cds(i) + surface.e_conc(i);
         neighbor_idx_cds(i) = mol_idx(idx);
         cdsfile.print("{:12.5f} {:12.5f} {:12.5f} {:12.5f} {:5d}\n", angstroms(x(0)), angstroms(x(1)), angstroms(x(2)), surface.e_cds(i), mol_idx(idx));
     }
@@ -528,8 +537,10 @@ int main(int argc, char **argv) {
             write_xyz_dimer(fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()), dimer);
             tprev = sw.read();
             sw.start();
-            fmt::print("{}. Rn: {: 7.3f} Rc: {: 7.3f} symop: {}", 
+            fmt::print("{}. ({}<->{}) r = {: 7.3f} symop: {}", 
                        current_dimer++,
+                       dimer.a().unit_cell_molecule_idx(),
+                       dimer.b().unit_cell_molecule_idx(),
                        dimer.nearest_distance(),
                        dimer.center_of_mass_distance(),
                        s_ab); 
@@ -537,7 +548,7 @@ int main(int argc, char **argv) {
             std::cout << std::flush;
             dimer_energies.push_back(calculate_interaction_energy(dimer, wfns_a, wfns_b, c));
             sw.stop();
-            fmt::print("  took {:.6f} seconds\n", sw.read() - tprev);
+            fmt::print("  took {:.3f} seconds\n", sw.read() - tprev);
             std::cout << std::flush;
         }
         fmt::print("Finished calculating {} unique dimer interaction energies\n", dimer_energies.size());
@@ -582,6 +593,14 @@ int main(int argc, char **argv) {
                     neigh.print("{:.3s} {:12.5f} {:12.5f} {:12.5f} {:5d}\n", els[a].symbol(), pos(0, a), pos(1, a), pos(2, a), j);
                 }
 
+                auto shift_a = dimer.a().cell_shift();
+                auto idx_a = dimer.a().unit_cell_molecule_idx();
+                auto shift_b = dimer.b().cell_shift();
+                auto idx_b = dimer.b().unit_cell_molecule_idx();
+                fmt::print("{}: ({} {} {}) {}: ({} {} {})\n",
+                           idx_a, shift_a[0], shift_a[1], shift_a[2], 
+                           idx_b, shift_b[0], shift_b[1], shift_b[2]); 
+
                 auto s_ab = dimer_symop(dimer, c);
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j]; 
                 double rn = dimer.nearest_distance();
@@ -596,9 +615,11 @@ int main(int argc, char **argv) {
                 total.dispersion += edisp;
                 total.total += etot;
 
+                double e_int = 
+                           etot + crystal_contributions[j] - (solv[j].total()) * AU_TO_KJ_PER_MOL;
                 fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, erep, epol, edisp, etot, (solv[j].total_coul()) * AU_TO_KJ_PER_MOL,
                            (solv[j].total_cds()) * AU_TO_KJ_PER_MOL, crystal_contributions[j],
-                           etot + crystal_contributions[j] - (solv[j].total()) * AU_TO_KJ_PER_MOL);
+                           e_int * occ::units::KJ_TO_KCAL);
                 j++;
             }
             fmt::print("\nFree energy estimates at T = 298 K, P = 1 atm., units: kJ/mol\n");
@@ -608,7 +629,12 @@ int main(int argc, char **argv) {
             fmt::print("translational free energy (molecule) {: 9.3f}  (E_trans)\n", Gt);
             fmt::print("solvation free energy (molecule)     {: 9.3f}  (E_solv)\n", surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL);
             fmt::print("E_solv - E_lat:                      {: 9.3f}\n", surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL - 0.5 * total.total);
-            fmt::print("solubility                           {: 9.3f}\n", surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL - 0.5 * total.total + Gr + Gt);
+            double dG_solubility = surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL - 0.5 * total.total + Gr + Gt;
+            fmt::print("solubility                           {: 9.3f}\n", dG_solubility);
+            constexpr double R = 8.31446261815324;
+            constexpr double RT = 298 * R / 1000;
+            double equilibrium_constant = std::exp(-dG_solubility/RT);
+            fmt::print("equilibrium_constant                 {: 9.2e}\n", equilibrium_constant);
         }
 
      } catch (const char *ex) {

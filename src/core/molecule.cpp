@@ -321,4 +321,14 @@ void Molecule::set_asymmetric_unit_symop(const IVec &symop)
     m_asym_symop = symop;
 }
 
+void Molecule::set_cell_shift(const Molecule::CellShift& shift)
+{
+    m_cell_shift = shift;
+}
+
+const Molecule::CellShift& Molecule::cell_shift() const
+{
+    return m_cell_shift;
+}
+
 } // namespace occ::chem

@@ -6,6 +6,7 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
+create_io_test(test_crystalgrower.cpp)
 create_io_test(test_fchk.cpp)
 create_io_test(test_gaussian_input.cpp)
 create_io_test(test_molden.cpp)

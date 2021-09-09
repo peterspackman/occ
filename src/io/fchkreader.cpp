@@ -65,6 +65,7 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string& line) const
     if(startswith(lt, "Number of electrons", false)) return NumElectrons;
     if(startswith(lt, "Number of alpha electrons", false)) return NumAlpha;
     if(startswith(lt, "Number of beta electrons", false)) return NumBeta;
+    if(startswith(lt, "SCF Energy", false)) return SCFEnergy;
     if(startswith(lt, "Alpha MO coefficients", false)) return AlphaMO;
     if(startswith(lt, "Beta MO coefficients", false)) return BetaMO;
     if(startswith(lt, "Alpha Orbital Energies", false)) return AlphaMOEnergies;
@@ -94,6 +95,9 @@ void FchkReader::parse(std::istream& stream)
         {
         case NumElectrons:
             scn::scan(line, "Number of electrons I {}", m_num_electrons);
+            break;
+        case SCFEnergy:
+            scn::scan(line, "SCF Energy R {}", m_scf_energy);
             break;
         case NumBasisFunctions:
             scn::scan(line, "Number of basis functions I {}", m_num_basis_functions);

@@ -40,6 +40,7 @@ Wavefunction::Wavefunction(const FchkReader& fchk) :
     nbf(occ::qm::nbf(basis)),
     atoms(fchk.atoms())
 {
+    energy.total = fchk.scf_energy();
     set_molecular_orbitals(fchk);
     compute_density_matrix();
 }

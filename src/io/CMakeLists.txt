@@ -2,6 +2,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/basis_g94.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/conversion.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/crystalgrower.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/inputfile.cpp"
@@ -12,6 +13,7 @@ add_library(occ_io
 target_link_libraries(occ_io
     PUBLIC 
     occ_core
+    occ_crystal
     occ_qm
     toml11::toml11
     gemmi::gemmi

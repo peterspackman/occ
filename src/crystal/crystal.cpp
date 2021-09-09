@@ -279,6 +279,7 @@ void Crystal::update_unit_cell_molecules() const
     std::vector<int> &m_p;
   };
 
+  size_t uc_mol_idx = 0;
   for (const auto &group : groups) {
     auto root = group[0];
     Eigen::VectorXi atomic_numbers(group.size());
@@ -311,7 +312,9 @@ void Crystal::update_unit_cell_molecules() const
     m.set_unit_cell_idx(uc_idxs);
     m.set_asymmetric_unit_idx(asym_idxs);
     m.set_asymmetric_unit_symop(symops);
+    m.set_unit_cell_molecule_idx(uc_mol_idx);
     m_unit_cell_molecules.push_back(m);
+    uc_mol_idx++;
   }
   m_unit_cell_molecules_needs_update = false;
 }
@@ -440,6 +443,7 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const
                     {
                         int asym_idx_b = uc_mol.asymmetric_molecule_idx();
                         auto mol_translated = uc_mol.translated(cart_shift);
+                        mol_translated.set_cell_shift({h, k, l});
                         double distance = std::get<2>(asym_mol.nearest_atom(mol_translated));
                         if ((distance < radius) && (distance > 1e-1))
                         {

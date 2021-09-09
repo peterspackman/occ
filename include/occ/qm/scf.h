@@ -9,6 +9,7 @@
 #include <occ/core/energy_components.h>
 #include <occ/core/units.h>
 #include <occ/qm/guess_density.h>
+#include <occ/qm/opmatrix.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -42,7 +43,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind>
 struct SCF {
 
     SCF(Procedure &procedure, int diis_start = 2)
-        : m_procedure(procedure), diis(diis_start) {
+        : m_procedure(procedure), diis(diis_start)
+    {
         n_electrons = m_procedure.num_e();
         nbf = m_procedure.basis().nbf();
         size_t rows, cols;
