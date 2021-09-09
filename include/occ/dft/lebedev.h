@@ -1,5 +1,5 @@
 #pragma once
-#include <Eigen/Dense>
+#include <occ/core/linear_algebra.h>
 // Generate Lebedev grids for sphere integral
 // Input parameter:
 //   nPoints : Number pf Lebedev grid points

@@ -1,8 +1,8 @@
 #pragma once
 #include <array>
+#include <occ/core/linear_algebra.h>
 #include <libint2/engine.h>
 #include <occ/3rdparty/robin_hood.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/basisset.h>

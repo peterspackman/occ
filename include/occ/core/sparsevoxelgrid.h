@@ -1,7 +1,7 @@
 #pragma once
-#include <Eigen/Core>
 #include <array>
 #include <occ/3rdparty/robin_hood.h>
+#include <occ/core/linear_algebra.h>
 #include <vector>
 
 namespace occ::grid::sparse {

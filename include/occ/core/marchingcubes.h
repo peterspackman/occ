@@ -24,8 +24,8 @@
  *                                                                           *
  \*===========================================================================*/
 
-#include <Eigen/Dense>
 #include <occ/3rdparty/robin_hood.h>
+#include <occ/core/linear_algebra.h>
 #include <occ/core/marchingcubestables.h>
 
 extern const int edgeTable[256];

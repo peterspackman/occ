@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Eigen/Dense>
 #include <array>
 #include <assert.h>
 #include <complex>
@@ -9,6 +8,7 @@
 #include <memory>
 #include <numeric>
 #include <occ/3rdparty/robin_hood.h>
+#include <occ/core/linear_algebra.h>
 #include <regex>
 #include <string>
 #include <type_traits>

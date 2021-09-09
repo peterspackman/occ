@@ -1,8 +1,8 @@
 #pragma once
-#include <Eigen/Core>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/3rdparty/robin_hood.h>
+#include <occ/core/linear_algebra.h>
 #include <optional>
 #include <string>
 #include <vector>

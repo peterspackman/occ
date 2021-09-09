@@ -1,4 +1,4 @@
-#include <Eigen/Dense>
+#include <occ/core/linear_algebra.h>
 #include <fmt/core.h>
 #include <iostream>
 #include <occ/core/element.h>

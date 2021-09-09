@@ -1,5 +1,4 @@
 #pragma once
-#include <Eigen/Geometry>
 #include <array>
 #include <occ/core/atom.h>
 #include <occ/core/element.h>

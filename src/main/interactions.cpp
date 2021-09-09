@@ -209,7 +209,6 @@ calculate_solvated_surfaces(const std::string &basename,
                         esolv * occ::units::AU_TO_KJ_PER_MOL);
         props.esolv =
             e - original_energy + 1.89 / occ::units::AU_TO_KCAL_PER_MOL;
-        ;
         props.e_ele =
             (props.dg_ele / coul_areas.array().sum()) * coul_areas.array();
         props.e_conc =
@@ -451,18 +450,20 @@ int main(int argc, char **argv) {
     std::string cif_filename{""};
     std::string solvent{"water"};
     std::string wfn_choice{"gas"};
-    options.add_options()("h,help", "Print help")(
-        "i,input", "Input CIF", cxxopts::value<std::string>(cif_filename))(
-        "t,threads", "Number of threads",
-        cxxopts::value<int>(nthreads)->default_value("1"))(
-        "dump-solvent-file", "Write out solvent file",
-        cxxopts::value<bool>(dump_visualization_files))(
-        "r,radius", "maximum radius (angstroms) for neighbours",
-        cxxopts::value<double>(radius)->default_value("3.8"))(
-        "s,solvent", "Solvent name", cxxopts::value<std::string>(solvent))(
-        "w,wavefunction-choice", "Choice of wavefunctions",
-        cxxopts::value<std::string>(wfn_choice));
-
+    // clang-format off
+    options.add_options()
+        ("h,help", "Print help")
+        ("i,input", "Input CIF", cxxopts::value<std::string>(cif_filename))
+        ("t,threads", "Number of threads", 
+         cxxopts::value<int>(nthreads)->default_value("1"))
+        ("dump-solvent-file", "Write out solvent file",
+         cxxopts::value<bool>(dump_visualization_files))
+        ("r,radius", "maximum radius (angstroms) for neighbours",
+         cxxopts::value<double>(radius)->default_value("3.8"))
+        ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent))
+        ("w,wavefunction-choice", "Choice of wavefunctions",
+         cxxopts::value<std::string>(wfn_choice));
+    // clang-format on
     options.parse_positional({"input"});
 
     occ::log::set_level(occ::log::level::info);
@@ -616,9 +617,10 @@ int main(int argc, char **argv) {
                        "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
                        "Rn", "Rc", "Symop", "E_coul", "E_rep", "E_pol",
                        "E_disp", "E_tot", "E_scoul", "E_scds", "E_nn", "E_int");
-            fmt::print("======================================================="
-                       "========="
-                       "============================================\n");
+            fmt::print("============================="
+                       "============================="
+                       "============================="
+                       "=====================\n");
 
             size_t j = 0;
             CEModelInteraction::EnergyComponents total;

@@ -1,4 +1,3 @@
-#include <Eigen/SVD>
 #include <occ/core/kabsch.h>
 
 namespace occ::linalg {

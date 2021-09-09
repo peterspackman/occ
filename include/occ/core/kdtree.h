@@ -1,7 +1,6 @@
 #pragma once
-
-#include <Eigen/Dense>
 #include <occ/3rdparty/nanoflann.hpp>
+#include <occ/core/linear_algebra.h>
 
 namespace cx {
 

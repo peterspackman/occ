@@ -1,8 +1,8 @@
 #pragma once
+#include <occ/core/linear_algebra.h>
 #include <libint2/cxxapi.h>
 #include <libint2/shell.h>
 #include <occ/core/atom.h>
-#include <occ/core/linear_algebra.h>
 
 /* this has been modified from libint2::BasisSet
  * due to requirements in construction etc that were not possible
