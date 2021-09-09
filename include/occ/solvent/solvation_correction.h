@@ -174,15 +174,15 @@ template <typename Proc> class SolvationCorrectedProcedure {
                           energy["solvation.surface"] + energy["solvation.CDS"];
     }
 
-    auto compute_kinetic_matrix() { return m_proc.compute_kinetic_matrix(); }
+    auto compute_kinetic_matrix() const { return m_proc.compute_kinetic_matrix(); }
 
-    auto compute_overlap_matrix() { return m_proc.compute_overlap_matrix(); }
+    auto compute_overlap_matrix() const { return m_proc.compute_overlap_matrix(); }
 
-    auto compute_nuclear_attraction_matrix() {
+    auto compute_nuclear_attraction_matrix() const {
         return m_proc.compute_nuclear_attraction_matrix();
     }
 
-    auto compute_schwarz_ints() { return m_proc.compute_schwarz_ints(); }
+    auto compute_schwarz_ints() const { return m_proc.compute_schwarz_ints(); }
 
     void update_core_hamiltonian(SpinorbitalKind kind, const occ::Mat &D,
                                  occ::Mat &H) {
@@ -219,8 +219,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
         case SpinorbitalKind::Unrestricted: {
             m_electronic_solvation_energy =
                 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H);
-            H.alpha() += m_X;
-            H.beta() += m_X;
+            occ::qm::block::a(H) += m_X;
+            occ::qm::block::b(H) += m_X;
             m_electronic_solvation_energy =
                 2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H) -
                 m_electronic_solvation_energy;
@@ -229,8 +229,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
         case SpinorbitalKind::General: {
             m_electronic_solvation_energy =
                 2 * occ::qm::expectation<SpinorbitalKind::General>(D, H);
-            H.alpha_alpha() += m_X;
-            H.beta_beta() += m_X;
+            occ::qm::block::aa(H) += m_X;
+            occ::qm::block::bb(H) += m_X;
             m_electronic_solvation_energy =
                 2 * occ::qm::expectation<SpinorbitalKind::General>(D, H) -
                 m_electronic_solvation_energy;

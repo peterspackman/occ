@@ -29,10 +29,12 @@ void evaluate_density(Eigen::Ref<const Mat> D,
     auto nbf = gto_values.phi.cols();
     if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
         // alpha part first
-        MatRM Dphi = gto_values.phi * D.alpha();
+        auto Da = occ::qm::block::a(D);
+        MatRM Dphi = gto_values.phi * Da;
         if (rho.rows() != npt * 2)
             rho.resize(npt * 2, num_components(max_derivative));
-        rho.col(0).alpha() =
+        auto rho_a = occ::qm::block::a(rho);
+        rho_a.col(0) =
             (gto_values.phi.array() * Dphi.array()).rowwise().sum();
         /*
          * If we wish to get the values interleaved for say libxc, use an
@@ -41,66 +43,68 @@ void evaluate_density(Eigen::Ref<const Mat> D,
          * 2>(2*Dphi.rows(), 2)) = RHS
          */
         if constexpr (max_derivative > 0) {
-            rho.col(1).alpha() =
+            rho_a.col(1) =
                 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-            rho.col(2).alpha() =
+            rho_a.col(2) =
                 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-            rho.col(3).alpha() =
+            rho_a.col(3) =
                 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
         }
         if constexpr (max_derivative > 1) {
             // laplacian
-            rho.col(4).alpha() =
+            rho_a.col(4) =
                 2 * ((gto_values.phi_xx.array() + gto_values.phi_yy.array() +
                       gto_values.phi_zz.array()) *
                      Dphi.array())
                         .rowwise()
                         .sum();
             // tau
-            Dphi = gto_values.phi_x * D.alpha();
-            rho.col(5).alpha() =
+            Dphi = gto_values.phi_x * Da;
+            rho_a.col(5) =
                 (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-            Dphi = gto_values.phi_y * D.alpha();
-            rho.col(5).alpha().array() +=
+            Dphi = gto_values.phi_y * Da;
+            rho_a.col(5).array() +=
                 (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-            Dphi = gto_values.phi_z * D.alpha();
-            rho.col(5).alpha().array() +=
+            Dphi = gto_values.phi_z * Da;
+            rho_a.col(5).array() +=
                 (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
-            rho.col(4).alpha().array() += 2 * rho.col(5).array();
-            rho.col(5).alpha().array() *= 0.5;
+            rho_a.col(4).array() += 2 * rho.col(5).array();
+            rho_a.col(5).array() *= 0.5;
         }
         // beta part
-        Dphi = gto_values.phi * D.beta();
-        rho.col(0).beta() =
+        auto Db = occ::qm::block::b(D);
+        Dphi = gto_values.phi * Db;
+        auto rho_b = occ::qm::block::b(rho);
+        rho_b.col(0) =
             (gto_values.phi.array() * Dphi.array()).rowwise().sum();
         if constexpr (max_derivative > 0) {
-            rho.col(1).beta() =
+            rho_b.col(1) =
                 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-            rho.col(2).beta() =
+            rho_b.col(2) =
                 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-            rho.col(3).beta() =
+            rho_b.col(3) =
                 2 * (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
         }
         if constexpr (max_derivative > 1) {
             // laplacian
-            rho.col(4).beta() =
+            rho_b.col(4) =
                 2 * ((gto_values.phi_xx.array() + gto_values.phi_yy.array() +
                       gto_values.phi_zz.array()) *
                      Dphi.array())
                         .rowwise()
                         .sum();
             // tau
-            Dphi = gto_values.phi_x * D.beta();
-            rho.col(5).beta() =
+            Dphi = gto_values.phi_x * Db;
+            rho_b.col(5) =
                 (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
-            Dphi = gto_values.phi_y * D.beta();
-            rho.col(5).beta().array() +=
+            Dphi = gto_values.phi_y * Db;
+            rho_b.col(5).array() +=
                 (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
-            Dphi = gto_values.phi_z * D.beta();
-            rho.col(5).beta().array() +=
+            Dphi = gto_values.phi_z * Db;
+            rho_b.col(5).array() +=
                 (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
-            rho.col(4).beta().array() += 2 * rho.col(5).array();
-            rho.col(5).beta().array() *= 0.5;
+            rho_b.col(4).array() += 2 * rho.col(5).array();
+            rho_b.col(5).array() *= 0.5;
         }
     } else {
         MatRM Dphi = gto_values.phi * D.selfadjointView<Eigen::Upper>();

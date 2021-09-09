@@ -42,6 +42,7 @@ TEST_CASE("Density Functional", "[lda]") {
 
 TEST_CASE("gga", "[gga]") {
     using occ::util::all_close;
+    namespace block = occ::qm::block;
     occ::dft::DensityFunctional gga("xc_gga_x_pbe");
     occ::dft::DensityFunctional gga_u("xc_gga_x_pbe", true);
     occ::Mat rho(8, 4);
@@ -55,8 +56,8 @@ TEST_CASE("gga", "[gga]") {
            1.775122853194434636e-01, -0.000000000000000000e+00, -0.000000000000000000e+00, 7.842601108050306635e-02;
     occ::dft::DensityFunctional::Params params(4, occ::dft::DensityFunctional::Family::GGA, occ::qm::SpinorbitalKind::Restricted);
     REQUIRE(params.rho.size() == 4);
-    params.rho.col(0) = rho.alpha().col(0);
-    auto rho_a = rho.alpha(), rho_b = rho.beta();
+    params.rho.col(0) = block::a(rho).col(0);
+    auto rho_a = block::a(rho), rho_b = block::b(rho);
     fmt::print("Rho_a:\n{}\n", rho_a);
     params.sigma.col(0) = rho_a.col(1).array() * rho_a.col(1).array() + rho_a.col(2).array() * rho_a.col(2).array() + rho_a.col(3).array() * rho_a.col(3).array();
     fmt::print("GGA-----\nRho:\n{}\n\nsigma\n{}\n", params.rho, params.sigma);

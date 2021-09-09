@@ -7,9 +7,9 @@
 #include <occ/core/util.h>
 #include <occ/qm/guess_density.h>
 #include <occ/qm/ints.h>
-#include <occ/qm/opmatrix.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
+#include <occ/qm/opmatrix.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -28,6 +28,7 @@ using occ::qm::SpinorbitalKind::Restricted;
 using occ::qm::SpinorbitalKind::Unrestricted;
 using occ::util::human_readable_size;
 using occ::util::is_odd;
+namespace block = occ::qm::block;
 
 inline double rms_error_diis(const Mat &commutator) {
     return commutator.norm() / commutator.size();
@@ -35,6 +36,54 @@ inline double rms_error_diis(const Mat &commutator) {
 
 inline double maximum_error_diis(const Mat &commutator) {
     return commutator.maxCoeff();
+}
+
+namespace impl {
+
+template<typename Procedure, SpinorbitalKind sk>
+void set_core_matrices(const Procedure& proc, Mat& S, Mat& T, Mat& V, Mat &H) {
+    if constexpr (sk == Restricted) {
+        S = proc.compute_overlap_matrix();
+        T = proc.compute_kinetic_matrix();
+        V = proc.compute_nuclear_attraction_matrix();
+    } else if constexpr (sk == Unrestricted) {
+        block::a(S) = proc.compute_overlap_matrix();
+        block::b(S) = block::a(S);
+        block::a(T) = proc.compute_kinetic_matrix();
+        block::b(T) = block::a(T);
+        block::a(V) = proc.compute_nuclear_attraction_matrix();
+        block::b(V) = block::a(V);
+    } else if constexpr (sk == General) {
+        block::aa(S) = proc.compute_overlap_matrix();
+        block::aa(T) = proc.compute_kinetic_matrix();
+        block::aa(V) = proc.compute_nuclear_attraction_matrix();
+        block::bb(S) = block::aa(S);
+        block::bb(T) = block::aa(T);
+        block::bb(V) = block::aa(V);
+    }
+    H = T + V;
+}
+
+template<SpinorbitalKind sk>
+void set_conditioning_orthogonalizer(const Mat& S, Mat& X, Mat& Xinv, double& XtX_condition_number)
+{
+    // compute orthogonalizer X such that X.transpose() . S . X = I
+    // one should think of columns of Xinv as the conditioned basis
+    // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose()
+    // . X) by default assume can manage to compute with condition number of
+    // S <= 1/eps this is probably too optimistic, but in well-behaved cases
+    // even 10^11 is OK
+    double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
+    if constexpr (sk == Unrestricted) {
+        std::tie(X, Xinv, XtX_condition_number) =
+            conditioning_orthogonalizer(block::a(S),
+                                        S_condition_number_threshold);
+    } else {
+        std::tie(X, Xinv, XtX_condition_number) =
+            conditioning_orthogonalizer(S, S_condition_number_threshold);
+    }
+}
+
 }
 
 template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
@@ -189,43 +238,9 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         C_occ = wfn.C_occ;
         orbital_energies = wfn.mo_energies;
         update_occupied_orbital_count();
-        if constexpr (spinorbital_kind == Restricted) {
-            S = m_procedure.compute_overlap_matrix();
-            T = m_procedure.compute_kinetic_matrix();
-            V = m_procedure.compute_nuclear_attraction_matrix();
-        } else if constexpr (spinorbital_kind == Unrestricted) {
-            S.alpha() = m_procedure.compute_overlap_matrix();
-            S.beta() = S.alpha();
-            T.alpha() = m_procedure.compute_kinetic_matrix();
-            T.beta() = T.alpha();
-            V.alpha() = m_procedure.compute_nuclear_attraction_matrix();
-            V.beta() = V.alpha();
-        } else if constexpr (spinorbital_kind == General) {
-            S.alpha_alpha() = m_procedure.compute_overlap_matrix();
-            T.alpha_alpha() = m_procedure.compute_kinetic_matrix();
-            V.alpha_alpha() = m_procedure.compute_nuclear_attraction_matrix();
-            S.beta_beta() = S.alpha_alpha();
-            T.beta_beta() = T.alpha_alpha();
-            V.beta_beta() = V.alpha_alpha();
-        }
-        H = T + V;
+        impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T, V, H);
         F = H;
-        // compute orthogonalizer X such that X.transpose() . S . X = I
-        // one should think of columns of Xinv as the conditioned basis
-        // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose()
-        // . X) by default assume can manage to compute with condition number of
-        // S <= 1/eps this is probably too optimistic, but in well-behaved cases
-        // even 10^11 is OK
-        double S_condition_number_threshold =
-            1.0 / std::numeric_limits<double>::epsilon();
-        if constexpr (spinorbital_kind == Unrestricted) {
-            std::tie(X, Xinv, XtX_condition_number) =
-                conditioning_orthogonalizer(S.alpha(),
-                                            S_condition_number_threshold);
-        } else {
-            std::tie(X, Xinv, XtX_condition_number) =
-                conditioning_orthogonalizer(S, S_condition_number_threshold);
-        }
+        impl::set_conditioning_orthogonalizer<spinorbital_kind>(S, X, Xinv, XtX_condition_number);
         update_density_matrix();
     }
 
@@ -233,44 +248,10 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         if (m_have_initial_guess)
             return;
         const auto tstart = std::chrono::high_resolution_clock::now();
-        if constexpr (spinorbital_kind == Restricted) {
-            S = m_procedure.compute_overlap_matrix();
-            T = m_procedure.compute_kinetic_matrix();
-            V = m_procedure.compute_nuclear_attraction_matrix();
-        } else if constexpr (spinorbital_kind == Unrestricted) {
-            S.alpha() = m_procedure.compute_overlap_matrix();
-            S.beta() = S.alpha();
-            T.alpha() = m_procedure.compute_kinetic_matrix();
-            T.beta() = T.alpha();
-            V.alpha() = m_procedure.compute_nuclear_attraction_matrix();
-            V.beta() = V.alpha();
-        } else if constexpr (spinorbital_kind == General) {
-            S.alpha_alpha() = m_procedure.compute_overlap_matrix();
-            T.alpha_alpha() = m_procedure.compute_kinetic_matrix();
-            V.alpha_alpha() = m_procedure.compute_nuclear_attraction_matrix();
-            S.beta_beta() = S.alpha_alpha();
-            T.beta_beta() = T.alpha_alpha();
-            V.beta_beta() = V.alpha_alpha();
-        }
-        H = T + V;
+        impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T, V, H);
         F = H;
-        // compute orthogonalizer X such that X.transpose() . S . X = I
-        // one should think of columns of Xinv as the conditioned basis
-        // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose()
-        // . X) by default assume can manage to compute with condition number of
-        // S <= 1/eps this is probably too optimistic, but in well-behaved cases
-        // even 10^11 is OK
         occ::timing::start(occ::timing::category::la);
-        double S_condition_number_threshold =
-            1.0 / std::numeric_limits<double>::epsilon();
-        if constexpr (spinorbital_kind == Unrestricted) {
-            std::tie(X, Xinv, XtX_condition_number) =
-                conditioning_orthogonalizer(S.alpha(),
-                                            S_condition_number_threshold);
-        } else {
-            std::tie(X, Xinv, XtX_condition_number) =
-                conditioning_orthogonalizer(S, S_condition_number_threshold);
-        }
+        impl::set_conditioning_orthogonalizer<spinorbital_kind>(S, X, Xinv, XtX_condition_number);
         occ::timing::stop(occ::timing::category::la);
 
         occ::timing::start(occ::timing::category::guess);
@@ -280,13 +261,11 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             if constexpr (spinorbital_kind == Restricted) {
                 D = D_minbs;
             } else if constexpr (spinorbital_kind == Unrestricted) {
-                D.alpha() =
-                    D_minbs * (static_cast<double>(n_alpha()) / n_electrons);
-                D.beta() =
-                    D_minbs * (static_cast<double>(n_beta()) / n_electrons);
+                block::a(D) = D_minbs * (static_cast<double>(n_alpha()) / n_electrons);
+                block::b(D) = D_minbs * (static_cast<double>(n_beta()) / n_electrons);
             } else if constexpr (spinorbital_kind == General) {
-                D.alpha_alpha() = D_minbs * 0.5;
-                D.beta_beta() = D_minbs * 0.5;
+                block::aa(D) = D_minbs * 0.5;
+                block::bb(D) = D_minbs * 0.5;
             }
         } else {
             // if basis != minimal basis, map non-representable SOAD guess
@@ -300,17 +279,17 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                     m_procedure.basis(), D_minbs, minbs, true,
                     commutator_convergence_threshold);
             } else if constexpr (spinorbital_kind == Unrestricted) {
-                F.alpha() += occ::ints::compute_2body_fock_mixed_basis(
+                block::a(F) += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
                     commutator_convergence_threshold);
 
-                F.beta() = F.alpha();
+                block::b(F) = block::a(F);
             } else if constexpr (spinorbital_kind == General) {
                 // TODO fix multiplicity != 1
-                F.alpha_alpha() += occ::ints::compute_2body_fock_mixed_basis(
+                block::aa(F) += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
                     commutator_convergence_threshold);
-                F.beta_beta() = F.alpha_alpha();
+                block::bb(F) = block::aa(F);
             }
 
             update_molecular_orbitals(F);
@@ -329,10 +308,10 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         if constexpr (spinorbital_kind == Restricted) {
             D = C_occ * C_occ.transpose();
         } else if constexpr (spinorbital_kind == Unrestricted) {
-            D.alpha() = C_occ.block(0, 0, nbf, n_alpha()) *
-                        C_occ.block(0, 0, nbf, n_alpha()).transpose();
-            D.beta() = C_occ.block(nbf, 0, nbf, n_beta()) *
-                       C_occ.block(nbf, 0, nbf, n_beta()).transpose();
+            block::a(D) = C_occ.block(0, 0, nbf, n_alpha()) *
+                          C_occ.block(0, 0, nbf, n_alpha()).transpose();
+            block::b(D) = C_occ.block(nbf, 0, nbf, n_beta()) *
+                          C_occ.block(nbf, 0, nbf, n_beta()).transpose();
             D *= 0.5;
         } else if constexpr (spinorbital_kind == General) {
             D = (C_occ * C_occ.transpose()) * 0.5;
@@ -347,18 +326,16 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         occ::timing::start(occ::timing::category::mo);
         if constexpr (spinorbital_kind == Unrestricted) {
             Eigen::SelfAdjointEigenSolver<Mat> alpha_eig_solver(
-                X.transpose() * fock.alpha() * X);
+                X.transpose() * block::a(fock) * X);
             Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(X.transpose() *
-                                                               fock.beta() * X);
-            C.alpha() = X * alpha_eig_solver.eigenvectors();
-            C.beta() = X * beta_eig_solver.eigenvectors();
-            orbital_energies.block(0, 0, nbf, 1) =
-                alpha_eig_solver.eigenvalues();
-            orbital_energies.block(nbf, 0, nbf, 1) =
-                beta_eig_solver.eigenvalues();
+                                                               block::b(fock) * X);
+            block::a(C) = X * alpha_eig_solver.eigenvectors();
+            block::b(C) = X * beta_eig_solver.eigenvectors();
+            block::a(orbital_energies) = alpha_eig_solver.eigenvalues();
+            block::b(orbital_energies) = beta_eig_solver.eigenvalues();
             C_occ = Mat::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
-            C_occ.block(0, 0, nbf, n_alpha()) = C.alpha().leftCols(n_alpha());
-            C_occ.block(nbf, 0, nbf, n_beta()) = C.beta().leftCols(n_beta());
+            C_occ.block(0, 0, nbf, n_alpha()) = block::a(C).leftCols(n_alpha());
+            C_occ.block(nbf, 0, nbf, n_beta()) = block::b(C).leftCols(n_beta());
         } else {
             Eigen::SelfAdjointEigenSolver<Mat> eig_solver(X.transpose() * fock *
                                                           X);
@@ -471,10 +448,14 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
             // compute SCF error
             if constexpr (spinorbital_kind == Unrestricted) {
-                FD_comm.alpha() = F.alpha() * D.alpha() * S.alpha() -
-                                  S.alpha() * D.alpha() * F.alpha();
-                FD_comm.beta() = F.beta() * D.beta() * S.beta() -
-                                 S.beta() * D.beta() * F.beta();
+                const auto& Fa = block::a(F);
+                const auto& Fb = block::a(F);
+                const auto& Da = block::a(D);
+                const auto& Db = block::a(D);
+                const auto& Sa = block::a(S);
+                const auto& Sb = block::a(S);
+                block::a(FD_comm) = Fa * Da * Sa - Fa * Da * Sa;
+                block::b(FD_comm) = Fb * Db * Sb - Sb * Db * Fb;
             } else {
                 FD_comm = F * D * S - S * D * F;
             }

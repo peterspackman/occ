@@ -41,21 +41,19 @@ class FockBuilder {
         if constexpr (kind == SpinorbitalKind::Unrestricted) {
             assert((D.rows() == 2 * n) && (D.cols() == n) &&
                    "Unrestricted density matrix must be 2 nbf x nbf");
-            D_shblk_norm = compute_shellblock_norm(obs, D.alpha());
-            size_t beta_rows = D.beta().rows();
-            size_t beta_cols = D.beta().cols();
+            D_shblk_norm = compute_shellblock_norm(obs, occ::qm::block::a(D));
             D_shblk_norm =
-                D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, D.beta()));
+                D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, occ::qm::block::b(D)));
         } else if constexpr (kind == SpinorbitalKind::General) {
             assert((D.rows() == 2 * n) && (D.cols() == n) &&
                    "General density matrix must be 2 nbf x 2 nbf");
-            D_shblk_norm = compute_shellblock_norm(obs, D.alpha_alpha());
+            D_shblk_norm = compute_shellblock_norm(obs, occ::qm::block::aa(D));
             D_shblk_norm = D_shblk_norm.cwiseMax(
-                compute_shellblock_norm(obs, D.alpha_beta()));
+                compute_shellblock_norm(obs, occ::qm::block::ab(D)));
             D_shblk_norm = D_shblk_norm.cwiseMax(
-                compute_shellblock_norm(obs, D.beta_alpha()));
+                compute_shellblock_norm(obs, occ::qm::block::ba(D)));
             D_shblk_norm = D_shblk_norm.cwiseMax(
-                compute_shellblock_norm(obs, D.beta_beta()));
+                compute_shellblock_norm(obs, occ::qm::block::bb(D)));
         }
         const auto do_schwarz_screen =
             Schwarz.cols() != 0 && Schwarz.rows() != 0;
@@ -222,10 +220,10 @@ class FockBuilder {
                                 g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value;
                             } else if constexpr (kind == SpinorbitalKind::
                                                              Unrestricted) {
-                                auto ga = g.alpha();
-                                auto gb = g.beta();
-                                const auto Da = D.alpha();
-                                const auto Db = D.beta();
+                                auto ga = occ::qm::block::a(g);
+                                auto gb = occ::qm::block::b(g);
+                                const auto Da = occ::qm::block::a(D);
+                                const auto Db = occ::qm::block::b(D);
                                 ga(bf1, bf2) +=
                                     (Da(bf3, bf4) + Db(bf3, bf4)) * value;
                                 ga(bf3, bf4) +=
@@ -320,8 +318,8 @@ class FockBuilder {
                       kind == SpinorbitalKind::General)
             GG = 0.5 * (G[0] + G[0].transpose());
         else if constexpr (kind == SpinorbitalKind::Unrestricted) {
-            GG.alpha() = 0.5 * (G[0].alpha() + G[0].alpha().transpose());
-            GG.beta() = 0.5 * (G[0].beta() + G[0].beta().transpose());
+            occ::qm::block::a(GG) = 0.5 * (occ::qm::block::a(G[0]) + occ::qm::block::a(G[0]).transpose());
+            occ::qm::block::b(GG) = 0.5 * (occ::qm::block::b(G[0]) + occ::qm::block::b(G[0]).transpose());
         }
         occ::timing::stop(occ::timing::category::fock);
         return GG;
@@ -345,12 +343,12 @@ class FockBuilder {
                           const double *buffer, double scale) {
             auto &j = J[thread_id];
             auto &k = K[thread_id];
-            auto ja = j.alpha();
-            auto jb = j.beta();
-            auto ka = k.alpha();
-            auto kb = k.beta();
-            const auto Da = D.alpha();
-            const auto Db = D.beta();
+            auto ja = occ::qm::block::a(j);
+            auto jb = occ::qm::block::b(j);
+            auto ka = occ::qm::block::a(k);
+            auto kb = occ::qm::block::b(k);
+            const auto Da = occ::qm::block::a(D);
+            const auto Db = occ::qm::block::b(D);
             for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1) {
                 const auto bf1 = f1 + bf1_first;
                 for (auto f2 = 0; f2 != n2; ++f2) {
@@ -467,10 +465,10 @@ class FockBuilder {
             JJ = 0.5 * (J[0] + J[0].transpose());
             KK = 0.5 * (K[0] + K[0].transpose());
         } else if constexpr (kind == SpinorbitalKind::Unrestricted) {
-            JJ.alpha() = 0.5 * (J[0].alpha() + J[0].alpha().transpose());
-            JJ.beta() = 0.5 * (J[0].beta() + J[0].beta().transpose());
-            KK.alpha() = 0.5 * (K[0].alpha() + K[0].alpha().transpose());
-            KK.beta() = 0.5 * (K[0].beta() + K[0].beta().transpose());
+            occ::qm::block::a(JJ) = 0.5 * (occ::qm::block::a(J[0]) + occ::qm::block::a(J[0]).transpose());
+            occ::qm::block::b(JJ) = 0.5 * (occ::qm::block::b(J[0]) + occ::qm::block::b(J[0]).transpose());
+            occ::qm::block::a(KK) = 0.5 * (occ::qm::block::a(K[0]) + occ::qm::block::a(K[0]).transpose());
+            occ::qm::block::b(KK) = 0.5 * (occ::qm::block::b(K[0]) + occ::qm::block::b(K[0]).transpose());
         }
         occ::timing::stop(occ::timing::category::jkmat);
         return {JJ, KK};
@@ -492,10 +490,10 @@ class FockBuilder {
                           int n2, int bf3_first, int n3, int bf4_first, int n4,
                           const double *buffer, double scale) {
             auto &j = J[thread_id];
-            auto ja = j.alpha();
-            auto jb = j.beta();
-            const auto Da = D.alpha();
-            const auto Db = D.beta();
+            auto ja = occ::qm::block::a(j);
+            auto jb = occ::qm::block::b(j);
+            const auto Da = occ::qm::block::a(D);
+            const auto Db = occ::qm::block::b(D);
             for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1) {
                 const auto bf1 = f1 + bf1_first;
                 for (auto f2 = 0; f2 != n2; ++f2) {
@@ -550,8 +548,8 @@ class FockBuilder {
                       kind == SpinorbitalKind::General) {
             JJ = 0.5 * (J[0] + J[0].transpose());
         } else if constexpr (kind == SpinorbitalKind::Unrestricted) {
-            JJ.alpha() = 0.5 * (J[0].alpha() + J[0].alpha().transpose());
-            JJ.beta() = 0.5 * (J[0].beta() + J[0].beta().transpose());
+            occ::qm::block::a(JJ) = 0.5 * (occ::qm::block::a(J[0]) + occ::qm::block::a(J[0]).transpose());
+            occ::qm::block::b(JJ) = 0.5 * (occ::qm::block::b(J[0]) + occ::qm::block::b(J[0]).transpose());
         }
         occ::timing::stop(occ::timing::category::jmat);
         return JJ;

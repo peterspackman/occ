@@ -30,6 +30,7 @@ using occ::ints::compute_1body_ints_deriv;
 using occ::ints::Operator;
 using occ::ints::shellpair_data_t;
 using occ::ints::shellpair_list_t;
+namespace block = occ::qm::block;
 
 std::vector<DensityFunctional> parse_method(const std::string &method_string,
                                             bool polarized = false);
@@ -42,8 +43,8 @@ void set_params(DensityFunctional::Params &params, const Mat &rho) {
         params.rho.col(0) = rho.col(0);
     } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
         // correct assignment
-        params.rho.col(0) = rho.col(0).alpha();
-        params.rho.col(1) = rho.col(0).beta();
+        params.rho.col(0) = block::a(rho.col(0));
+        params.rho.col(1) = block::b(rho.col(0));
     }
 
     if constexpr (derivative_order > 0) {
@@ -54,14 +55,14 @@ void set_params(DensityFunctional::Params &params, const Mat &rho) {
                                       .sum();
         } else if constexpr (spinorbital_kind ==
                              SpinorbitalKind::Unrestricted) {
-            const auto &rho_alpha = rho.alpha();
-            const auto &rho_beta = rho.beta();
-            const auto &dx_rho_a = rho_alpha.col(1).array();
-            const auto &dy_rho_a = rho_alpha.col(2).array();
-            const auto &dz_rho_a = rho_alpha.col(3).array();
-            const auto &dx_rho_b = rho_beta.col(1).array();
-            const auto &dy_rho_b = rho_beta.col(2).array();
-            const auto &dz_rho_b = rho_beta.col(3).array();
+            const auto rho_a = block::a(rho.array());
+            const auto rho_b = block::b(rho.array());
+            const auto &dx_rho_a = rho_a.col(1);
+            const auto &dy_rho_a = rho_a.col(2);
+            const auto &dz_rho_a = rho_a.col(3);
+            const auto &dx_rho_b = rho_b.col(1);
+            const auto &dy_rho_b = rho_b.col(2);
+            const auto &dz_rho_b = rho_b.col(3);
             params.sigma.col(0) =
                 dx_rho_a * dx_rho_a + dy_rho_a * dy_rho_a + dz_rho_a * dz_rho_a;
             params.sigma.col(1) =
@@ -76,10 +77,10 @@ void set_params(DensityFunctional::Params &params, const Mat &rho) {
             params.tau.col(0) = rho.col(5);
         } else if constexpr (spinorbital_kind ==
                              SpinorbitalKind::Unrestricted) {
-            params.laplacian.col(0) = rho.col(4).alpha();
-            params.laplacian.col(1) = rho.col(4).beta();
-            params.tau.col(0) = rho.col(5).alpha();
-            params.tau.col(1) = rho.col(5).beta();
+            params.laplacian.col(0) = block::a(rho.col(4));
+            params.laplacian.col(1) = block::b(rho.col(4));
+            params.tau.col(0) = block::a(rho.col(5));
+            params.tau.col(1) = block::b(rho.col(5));
         }
     }
 }
@@ -272,9 +273,9 @@ class DFT {
                     } else if constexpr (spinorbital_kind ==
                                          SpinorbitalKind::Unrestricted) {
                         double tot_density_a =
-                            rho.col(0).alpha().dot(weights_block);
+                            block::a(rho.col(0)).dot(weights_block);
                         double tot_density_b =
-                            rho.col(0).beta().dot(weights_block);
+                            block::b(rho.col(0)).dot(weights_block);
                         alpha_densities[thread_id] += tot_density_a;
                         beta_densities[thread_id] += tot_density_b;
                     }

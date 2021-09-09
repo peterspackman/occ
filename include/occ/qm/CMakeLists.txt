@@ -6,6 +6,7 @@ set(OCC_QM_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/opmatrix.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/orb.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/partitioning.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.h"
