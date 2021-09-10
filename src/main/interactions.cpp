@@ -80,6 +80,37 @@ bool dimers_equivalent_in_opposite_frame(const occ::chem::Dimer &d1,
     return all_close(rot * posd1, posd2, 1e-5, 1e-5);
 }
 
+bool dimers_equivalent(const occ::chem::Dimer &d1, const occ::chem::Dimer &d2) {
+    using occ::Mat3N;
+    using occ::Vec3;
+    using occ::linalg::kabsch_rotation_matrix;
+    size_t d1_na = d1.a().size();
+    size_t d2_na = d2.a().size();
+    size_t d1_nb = d1.b().size();
+    size_t d2_nb = d2.b().size();
+    if ((d1_na != d2_na) || (d1_nb != d2_nb))
+        return false;
+    if (d1 != d2)
+        return false;
+
+    size_t N = d1_na + d2_na;
+    Vec3 Od1 = d1.a().centroid();
+    Vec3 Od2 = d2.a().centroid();
+    Mat3N posd1(3, N), posd2(3, N);
+    // positions d1
+    posd1.block(0, 0, 3, d1_na) = d1.a().positions();
+    posd1.block(0, d1_na, 3, d1_nb) = d1.b().positions();
+    posd1.colwise() -= Od1;
+    // positions d2
+    posd2.block(0, 0, 3, d2_na) = d2.a().positions();
+    posd2.block(0, d2_na, 3, d1_nb) = d2.b().positions();
+    posd2.colwise() -= Od2;
+
+    occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
+    Mat3N posd1_rot = rot * posd1;
+    return all_close(rot * posd1, posd2, 1e-5, 1e-5);
+}
+
 std::string dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal) {
     const auto &a = dimer.a();
     const auto &b = dimer.b();
@@ -492,14 +523,15 @@ int main(int argc, char **argv) {
         occ::timing::StopWatch sw;
         sw.start();
         std::string basename = fs::path(cif_filename).stem();
-        Crystal c = read_crystal(cif_filename);
+        Crystal c_symm = read_crystal(cif_filename);
+        Crystal c_prim = Crystal::create_primitive_supercell(c_symm, {1, 1, 1});
         sw.stop();
         double tprev = sw.read();
         fmt::print("Loaded crystal from {} in {:.6f} seconds\n", cif_filename,
                    tprev);
 
         sw.start();
-        auto molecules = c.symmetry_unique_molecules();
+        auto molecules = c_symm.symmetry_unique_molecules();
         sw.stop();
 
         fmt::print(
@@ -534,7 +566,7 @@ int main(int argc, char **argv) {
 
         tprev = sw.read();
         sw.start();
-        auto crystal_dimers = c.symmetry_unique_dimers(radius);
+        auto crystal_dimers = c_symm.symmetry_unique_dimers(radius);
         sw.stop();
 
         const auto &dimers = crystal_dimers.unique_dimers;
@@ -571,21 +603,20 @@ int main(int argc, char **argv) {
 
         size_t current_dimer = 0;
         for (const auto &dimer : dimers) {
-            auto s_ab = dimer_symop(dimer, c);
+            auto s_ab = dimer_symop(dimer, c_symm);
             write_xyz_dimer(
                 fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()),
                 dimer);
             tprev = sw.read();
             sw.start();
-            fmt::print("{}. ({}<->{}) r = {: 7.3f} symop: {}", current_dimer++,
+            fmt::print("*{}* ({},{}) r = {: 5.2f}", current_dimer++,
                        dimer.a().unit_cell_molecule_idx(),
                        dimer.b().unit_cell_molecule_idx(),
-                       dimer.nearest_distance(),
-                       dimer.center_of_mass_distance(), s_ab);
+                       dimer.center_of_mass_distance());
 
             std::cout << std::flush;
             dimer_energies.push_back(
-                calculate_interaction_energy(dimer, wfns_a, wfns_b, c));
+                calculate_interaction_energy(dimer, wfns_a, wfns_b, c_symm));
             sw.stop();
             fmt::print("  took {:.3f} seconds\n", sw.read() - tprev);
             std::cout << std::flush;
@@ -595,6 +626,8 @@ int main(int argc, char **argv) {
             dimer_energies.size());
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
+        std::vector<std::vector<SolventNeighborContribution>> solvation_breakdowns;
+        std::vector<std::vector<double>> crystal_contributions_vec;
         for (size_t i = 0; i < mol_neighbors.size(); i++) {
             const auto &n = mol_neighbors[i];
             std::optional<std::string> solv_filename{};
@@ -604,14 +637,16 @@ int main(int argc, char **argv) {
                     fmt::format("{}_{}_solvation_vis.xyz", basename, i);
             }
             auto solv = compute_solvation_energy_breakdown(
-                c, molname, surfaces[i], n, solvent);
+                c_symm, molname, surfaces[i], n, solvent);
+            solvation_breakdowns.push_back(solv);
             auto crystal_contributions =
                 assign_interaction_terms_to_nearest_neighbours(
                     i, solv, crystal_dimers, dimer_energies);
+            crystal_contributions_vec.push_back(crystal_contributions);
             double Gr = molecules[i].rotational_free_energy(298);
             double Gt = molecules[i].translational_free_energy(298);
 
-            fmt::print("Neighbors for molecule {}\n", i);
+            fmt::print("Neighbors for asymmetric molecule {}\n", i);
 
             fmt::print("{:>7s} {:>7s} {:>20s} {:>7s} {:>7s} {:>7s} {:>7s} "
                        "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
@@ -649,11 +684,13 @@ int main(int argc, char **argv) {
                 auto idx_a = dimer.a().unit_cell_molecule_idx();
                 auto shift_b = dimer.b().cell_shift();
                 auto idx_b = dimer.b().unit_cell_molecule_idx();
+                /*
                 fmt::print("{}: ({} {} {}) {}: ({} {} {})\n", idx_a, shift_a[0],
                            shift_a[1], shift_a[2], idx_b, shift_b[0],
                            shift_b[1], shift_b[2]);
+                */
 
-                auto s_ab = dimer_symop(dimer, c);
+                auto s_ab = dimer_symop(dimer, c_symm);
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j];
                 double rn = dimer.nearest_distance();
                 double rc = dimer.center_of_mass_distance();
@@ -705,6 +742,55 @@ int main(int argc, char **argv) {
             double equilibrium_constant = std::exp(-dG_solubility / RT);
             fmt::print("equilibrium_constant                 {: 9.2e}\n",
                        equilibrium_constant);
+        }
+
+        auto uc_dimers = c_symm.unit_cell_dimers(radius);
+        const auto &uc_neighbors = uc_dimers.molecule_neighbors;
+        for(size_t i = 0; i < uc_neighbors.size(); i++)
+        {
+            const auto &m = c_symm.unit_cell_molecules()[i];
+            size_t asym_idx = m.asymmetric_molecule_idx();
+            const auto &m_asym = c_symm.symmetry_unique_molecules()[asym_idx];
+            const auto &n = uc_neighbors[i];
+            fmt::print("uc = {} asym = {}\n", i, asym_idx);
+
+            fmt::print("Neighbors for unit cell molecule {} ({})\n", i, n.size());
+
+            fmt::print("{:<7s} {:>7s} {:>10s} {:>7s} {:>7s}\n",
+                       "N", "b", "Tb", "E_int", "R");
+
+            size_t j = 0;
+            const auto &n_asym = mol_neighbors[asym_idx];
+            const auto& solv = solvation_breakdowns[asym_idx];
+            const auto& crystal_contributions = crystal_contributions_vec[asym_idx];
+
+            for (const auto &dimer : n) {
+
+                auto shift_b = dimer.b().cell_shift();
+                auto idx_b = dimer.b().unit_cell_molecule_idx();
+
+                size_t idx{0};
+                for(idx = 0; idx < n_asym.size(); idx++)
+                {
+                    if(dimers_equivalent(dimer, n_asym[idx])) break;
+                }
+                if(idx >= n_asym.size()) {
+                    throw std::runtime_error(
+                        fmt::format("No matching interaction found for uc_mol = {}, dimer = {}\n", i, j)
+                    );
+                }
+            
+                double rn = dimer.nearest_distance();
+                double rc = dimer.center_of_mass_distance();
+
+                const auto &e = dimer_energies[crystal_dimers.unique_dimer_idx[asym_idx][idx]];
+                double e_int = e.total_kjmol() + crystal_contributions[idx] - solv[idx].total() * AU_TO_KJ_PER_MOL;
+
+                fmt::print("{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f}\n", j, idx_b,
+                           fmt::format("{},{},{}", shift_b[0], shift_b[1], shift_b[2]), e_int * occ::units::KJ_TO_KCAL, rc);
+                j++;
+            }
+
         }
 
     } catch (const char *ex) {

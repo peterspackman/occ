@@ -196,3 +196,26 @@ TEST_CASE("acetic molecules", "[crystal]")
     }
 
 }
+
+TEST_CASE("acetic supercell", "[crystal]")
+{
+    AsymmetricUnit asym = acetic_asym();
+    SpaceGroup sg(33);
+    UnitCell cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
+
+    Crystal acetic(asym, sg, cell);
+    REQUIRE(acetic.unit_cell_molecules().size() == 4);
+    fmt::print("Unit cell molecules:\n");
+    for(const auto& mol: acetic.unit_cell_molecules())
+    {
+        fmt::print("{}\n", mol.name());
+    }
+    Crystal acetic_p1 = Crystal::create_primitive_supercell(acetic, {1, 1, 1});
+    REQUIRE(acetic.unit_cell_molecules().size() == acetic_p1.symmetry_unique_molecules().size());
+    fmt::print("Unique P1 molecules:\n");
+    for(const auto& mol: acetic_p1.symmetry_unique_molecules())
+    {
+        fmt::print("{}\n", mol.name());
+    }
+}
+

@@ -86,6 +86,8 @@ class Crystal {
     const std::vector<Molecule> &symmetry_unique_molecules() const;
 
     CrystalDimers symmetry_unique_dimers(double) const;
+    CrystalDimers unit_cell_dimers(double) const;
+    static Crystal create_primitive_supercell(const Crystal& c, HKL);
 
   private:
     AsymmetricUnit m_asymmetric_unit;

@@ -427,7 +427,6 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
                 for (const auto &asym_mol : asym_mols) {
                     int asym_idx_a = asym_mol.asymmetric_molecule_idx();
                     for (const auto &uc_mol : uc_mols) {
-                        int asym_idx_b = uc_mol.asymmetric_molecule_idx();
                         auto mol_translated = uc_mol.translated(cart_shift);
                         mol_translated.set_cell_shift({h, k, l});
                         double distance =
@@ -463,6 +462,100 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
         nb_idx++;
     }
     return result;
+}
+
+CrystalDimers Crystal::unit_cell_dimers(double radius) const {
+    using occ::chem::Dimer;
+    CrystalDimers result;
+    auto &dimers = result.unique_dimers;
+    auto &mol_nbs = result.molecule_neighbors;
+
+    occ::Vec3 frac_radius = radius * 2 / m_unit_cell.lengths().array();
+    auto hklmax = frac_radius.array().ceil().cast<int>();
+    HKL upper{hklmax(0), hklmax(1), hklmax(2)};
+    HKL lower{-hklmax(0), -hklmax(1), -hklmax(2)};
+
+    const auto &uc_mols = unit_cell_molecules();
+    mol_nbs.resize(uc_mols.size());
+    result.unique_dimer_idx.resize(uc_mols.size());
+
+    for (int h = lower.h; h <= upper.h; h++) {
+        for (int k = lower.k; k <= upper.k; k++) {
+            for (int l = lower.l; l <= upper.l; l++) {
+                occ::Vec3 cart_shift = to_cartesian(
+                    occ::Vec3{static_cast<double>(h), static_cast<double>(k),
+                              static_cast<double>(l)});
+                int uc_idx_a = 0;
+                for (const auto &uc_mol1 : uc_mols) {
+                    for (const auto &uc_mol2 : uc_mols) {
+                        auto mol_translated = uc_mol2.translated(cart_shift);
+                        mol_translated.set_cell_shift({h, k, l});
+                        double distance =
+                            std::get<2>(uc_mol1.nearest_atom(mol_translated));
+                        if ((distance < radius) && (distance > 1e-1)) {
+                            Dimer d(uc_mol1, mol_translated);
+                            mol_nbs[uc_idx_a].push_back(d);
+                            if (std::any_of(
+                                    dimers.begin(), dimers.end(),
+                                    [&d](const Dimer &d2) { return d == d2; }))
+                                continue;
+                            dimers.push_back(d);
+                        }
+                    }
+                    uc_idx_a++;
+                }
+            }
+        }
+    }
+
+    auto sort_func = [](const Dimer &a, const Dimer &b) {
+        return a.nearest_distance() < b.nearest_distance();
+    };
+
+    std::sort(dimers.begin(), dimers.end(), sort_func);
+    size_t nb_idx = 0;
+    for (auto &vec : mol_nbs) {
+        std::sort(vec.begin(), vec.end(), sort_func);
+        for (const auto &d : vec) {
+            size_t idx = std::distance(
+                dimers.begin(), std::find(dimers.begin(), dimers.end(), d));
+            result.unique_dimer_idx[nb_idx].push_back(idx);
+        }
+        nb_idx++;
+    }
+    return result;
+}
+
+Crystal Crystal::create_primitive_supercell(const Crystal& c, HKL hkl) {
+    const auto& uc = c.unit_cell();
+    auto supercell = UnitCell(
+        uc.a() * hkl.h, uc.b() * hkl.k, uc.c() * hkl.l,
+        uc.alpha(), uc.beta(), uc.gamma()
+    );
+    const auto& uc_mols = c.unit_cell_molecules();
+    size_t natoms = std::accumulate(uc_mols.begin(), uc_mols.end(), 0, 
+            [](size_t a, const auto& mol) {
+                return a + mol.size();
+            }) * hkl.h * hkl.k * hkl.l;
+    Mat3N positions(3, natoms);
+    IVec numbers(natoms);
+    Vec3 t;
+    size_t offset{0};
+    for (int h = 0; h < hkl.h; h++) {
+        for (int k = 0; k < hkl.k; k++) {
+            for (int l = 0; l < hkl.l; l++) {
+                for(const auto& uc_mol: uc_mols) {
+                    t = Vec3(h, k, l);
+                    size_t n = uc_mol.size();
+                    positions.block(0, offset, 3, n) = c.to_fractional(uc_mol.positions());
+                    positions.block(0, offset, 3, n).colwise() += t;
+                    numbers.block(offset, 0, n, 1) = uc_mol.atomic_numbers();
+                    offset += n;
+                }
+            }
+        }
+    }
+    return Crystal(AsymmetricUnit(positions, numbers), SpaceGroup(1), supercell);
 }
 
 } // namespace occ::crystal
