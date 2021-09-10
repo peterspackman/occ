@@ -55,14 +55,14 @@ Wavefunction::Wavefunction(const MoldenReader &molden)
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
         C = Mat(rows, cols);
         mo_energies = Vec(rows);
-        C.alpha() = molden.alpha_mo_coefficients();
-        C.beta() = molden.beta_mo_coefficients();
-        mo_energies.alpha() = molden.alpha_mo_energies();
-        mo_energies.beta() = molden.beta_mo_energies();
-        C.alpha() = molden.convert_mo_coefficients_from_molden_convention(
-            basis, C.alpha());
-        C.beta() = molden.convert_mo_coefficients_from_molden_convention(
-            basis, C.beta());
+        block::a(C) = molden.alpha_mo_coefficients();
+        block::b(C) = molden.beta_mo_coefficients();
+        block::a(mo_energies) = molden.alpha_mo_energies();
+        block::b(mo_energies) = molden.beta_mo_energies();
+        block::a(C) = molden.convert_mo_coefficients_from_molden_convention(
+            basis, block::a(C));
+        block::b(C) = molden.convert_mo_coefficients_from_molden_convention(
+            basis, block::b(C));
     } else {
         C = molden.alpha_mo_coefficients();
         C = molden.convert_mo_coefficients_from_molden_convention(basis, C);
@@ -121,138 +121,138 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
             { // alpha
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.leftCols(wfn_a.num_alpha),
-                    wfn_b.C.alpha().leftCols(wfn_b.num_alpha),
+                    block::a(wfn_b.C).leftCols(wfn_b.num_alpha),
                     wfn_a.mo_energies.topRows(wfn_a.num_alpha),
-                    wfn_b.mo_energies.alpha().topRows(wfn_b.num_alpha));
-                C.alpha().leftCols(num_alpha) = C_merged;
-                mo_energies.alpha().topRows(num_alpha) = energies_merged;
+                    block::a(wfn_b.mo_energies).topRows(wfn_b.num_alpha));
+                block::a(C).leftCols(num_alpha) = C_merged;
+                block::a(mo_energies).topRows(num_alpha) = energies_merged;
 
                 // merge virtual orbitals
                 size_t nv_a = wfn_a.C.rows() - wfn_a.num_alpha,
-                       nv_b = wfn_b.C.alpha().rows() - wfn_b.num_alpha;
+                       nv_b = block::a(wfn_b.C).rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.rightCols(nv_a), wfn_b.C.alpha().rightCols(nv_b),
+                    wfn_a.C.rightCols(nv_a), block::a(wfn_b.C).rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a),
-                    wfn_b.mo_energies.alpha().bottomRows(nv_b));
-                C.alpha().rightCols(nv_ab) = C_merged;
-                mo_energies.alpha().bottomRows(nv_ab) = energies_merged;
+                    block::a(wfn_b.mo_energies).bottomRows(nv_b));
+                block::a(C).rightCols(nv_ab) = C_merged;
+                block::a(mo_energies).bottomRows(nv_ab) = energies_merged;
             }
             { // beta
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
                     wfn_a.C.leftCols(wfn_a.num_beta),
-                    wfn_b.C.beta().leftCols(wfn_b.num_beta),
+                    block::b(wfn_b.C).leftCols(wfn_b.num_beta),
                     wfn_a.mo_energies.topRows(wfn_a.num_beta),
-                    wfn_b.mo_energies.beta().topRows(wfn_b.num_beta));
-                C.beta().leftCols(num_beta) = C_merged;
-                mo_energies.beta().topRows(num_beta) = energies_merged;
+                    block::b(wfn_b.mo_energies).topRows(wfn_b.num_beta));
+                block::b(C).leftCols(num_beta) = C_merged;
+                block::b(mo_energies).topRows(num_beta) = energies_merged;
 
                 // merge virtual orbitals
                 size_t nv_a = wfn_a.C.rows() - wfn_a.num_beta,
-                       nv_b = wfn_b.C.beta().rows() - wfn_b.num_beta;
+                       nv_b = block::b(wfn_b.C).rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.rightCols(nv_a), wfn_b.C.beta().rightCols(nv_b),
+                    wfn_a.C.rightCols(nv_a), block::b(wfn_b.C).rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a),
-                    wfn_b.mo_energies.beta().bottomRows(nv_b));
-                C.beta().rightCols(nv_ab) = C_merged;
-                mo_energies.beta().bottomRows(nv_ab) = energies_merged;
+                    block::b(wfn_b.mo_energies).bottomRows(nv_b));
+                block::b(C).rightCols(nv_ab) = C_merged;
+                block::b(mo_energies).bottomRows(nv_ab) = energies_merged;
             }
         } else if (wfn_b.is_restricted()) {
             { // alpha
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.alpha().leftCols(wfn_a.num_alpha),
+                    block::a(wfn_a.C).leftCols(wfn_a.num_alpha),
                     wfn_b.C.leftCols(wfn_b.num_alpha),
-                    wfn_a.mo_energies.alpha().topRows(wfn_a.num_alpha),
+                    block::a(wfn_a.mo_energies).topRows(wfn_a.num_alpha),
                     wfn_b.mo_energies.topRows(wfn_b.num_alpha));
-                C.alpha().leftCols(num_alpha) = C_merged;
-                mo_energies.alpha().topRows(num_alpha) = energies_merged;
+                block::a(C).leftCols(num_alpha) = C_merged;
+                block::a(mo_energies).topRows(num_alpha) = energies_merged;
 
                 // merge virtual orbitals
-                size_t nv_a = wfn_a.C.alpha().rows() - wfn_a.num_alpha,
+                size_t nv_a = block::a(wfn_a.C).rows() - wfn_a.num_alpha,
                        nv_b = wfn_b.C.rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.alpha().rightCols(nv_a), wfn_b.C.rightCols(nv_b),
+                    block::a(wfn_a.C).rightCols(nv_a), wfn_b.C.rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a),
                     wfn_b.mo_energies.bottomRows(nv_b));
-                C.alpha().rightCols(nv_ab) = C_merged;
-                mo_energies.alpha().bottomRows(nv_ab) = energies_merged;
+                block::a(C).rightCols(nv_ab) = C_merged;
+                block::a(mo_energies).bottomRows(nv_ab) = energies_merged;
             }
             { // beta
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.beta().leftCols(wfn_a.num_beta),
+                    block::b(wfn_a.C).leftCols(wfn_a.num_beta),
                     wfn_b.C.leftCols(wfn_b.num_beta),
-                    wfn_a.mo_energies.beta().topRows(wfn_a.num_beta),
+                    block::b(wfn_a.mo_energies).topRows(wfn_a.num_beta),
                     wfn_b.mo_energies.topRows(wfn_b.num_beta));
-                C.beta().leftCols(num_beta) = C_merged;
-                mo_energies.beta().topRows(num_beta) = energies_merged;
+                block::b(C).leftCols(num_beta) = C_merged;
+                block::b(mo_energies).topRows(num_beta) = energies_merged;
 
                 // merge virtual orbitals
-                size_t nv_a = wfn_a.C.beta().rows() - wfn_a.num_beta,
+                size_t nv_a = block::b(wfn_a.C).rows() - wfn_a.num_beta,
                        nv_b = wfn_b.C.rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.beta().rightCols(nv_a), wfn_b.C.rightCols(nv_b),
-                    wfn_a.mo_energies.beta().bottomRows(nv_a),
+                    block::b(wfn_a.C).rightCols(nv_a), wfn_b.C.rightCols(nv_b),
+                    block::b(wfn_a.mo_energies).bottomRows(nv_a),
                     wfn_b.mo_energies.bottomRows(nv_b));
-                C.beta().rightCols(nv_ab) = C_merged;
-                mo_energies.beta().bottomRows(nv_ab) = energies_merged;
+                block::b(C).rightCols(nv_ab) = C_merged;
+                block::b(mo_energies).bottomRows(nv_ab) = energies_merged;
             }
         } else {
             { // alpha
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.alpha().leftCols(wfn_a.num_alpha),
-                    wfn_b.C.alpha().leftCols(wfn_b.num_alpha),
-                    wfn_a.mo_energies.alpha().topRows(wfn_a.num_alpha),
-                    wfn_b.mo_energies.alpha().topRows(wfn_b.num_alpha));
-                C.alpha().leftCols(num_alpha) = C_merged;
-                mo_energies.alpha().topRows(num_alpha) = energies_merged;
+                    block::a(wfn_a.C).leftCols(wfn_a.num_alpha),
+                    block::a(wfn_b.C).leftCols(wfn_b.num_alpha),
+                    block::a(wfn_a.mo_energies).topRows(wfn_a.num_alpha),
+                    block::a(wfn_b.mo_energies).topRows(wfn_b.num_alpha));
+                block::a(C).leftCols(num_alpha) = C_merged;
+                block::a(mo_energies).topRows(num_alpha) = energies_merged;
 
                 // merge virtual orbitals
-                size_t nv_a = wfn_a.C.alpha().rows() - wfn_a.num_alpha,
-                       nv_b = wfn_b.C.alpha().rows() - wfn_b.num_alpha;
+                size_t nv_a = block::a(wfn_a.C).rows() - wfn_a.num_alpha,
+                       nv_b = block::a(wfn_b.C).rows() - wfn_b.num_alpha;
                 size_t nv_ab = nv_a + nv_b;
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.alpha().rightCols(nv_a),
-                    wfn_b.C.alpha().rightCols(nv_b),
+                    block::a(wfn_a.C).rightCols(nv_a),
+                    block::a(wfn_b.C).rightCols(nv_b),
                     wfn_a.mo_energies.bottomRows(nv_a),
-                    wfn_b.mo_energies.alpha().bottomRows(nv_b));
-                C.alpha().rightCols(nv_ab) = C_merged;
-                mo_energies.alpha().bottomRows(nv_ab) = energies_merged;
+                    block::a(wfn_b.mo_energies).bottomRows(nv_b));
+                block::a(C).rightCols(nv_ab) = C_merged;
+                block::a(mo_energies).bottomRows(nv_ab) = energies_merged;
             }
             { // beta
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.beta().leftCols(wfn_a.num_beta),
-                    wfn_b.C.beta().leftCols(wfn_b.num_beta),
-                    wfn_a.mo_energies.beta().topRows(wfn_a.num_beta),
-                    wfn_b.mo_energies.beta().topRows(wfn_b.num_beta));
-                C.beta().leftCols(num_beta) = C_merged;
-                mo_energies.beta().topRows(num_beta) = energies_merged;
+                    block::b(wfn_a.C).leftCols(wfn_a.num_beta),
+                    block::b(wfn_b.C).leftCols(wfn_b.num_beta),
+                    block::b(wfn_a.mo_energies).topRows(wfn_a.num_beta),
+                    block::b(wfn_b.mo_energies).topRows(wfn_b.num_beta));
+                block::b(C).leftCols(num_beta) = C_merged;
+                block::b(mo_energies).topRows(num_beta) = energies_merged;
 
                 // merge virtual orbitals
-                size_t nv_a = wfn_a.C.beta().rows() - wfn_a.num_beta,
-                       nv_b = wfn_b.C.beta().rows() - wfn_b.num_beta;
+                size_t nv_a = block::b(wfn_a.C).rows() - wfn_a.num_beta,
+                       nv_b = block::b(wfn_b.C).rows() - wfn_b.num_beta;
                 size_t nv_ab = nv_a + nv_b;
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.C.beta().rightCols(nv_a),
-                    wfn_b.C.beta().rightCols(nv_b),
-                    wfn_a.mo_energies.beta().bottomRows(nv_a),
-                    wfn_b.mo_energies.beta().bottomRows(nv_b));
-                C.beta().rightCols(nv_ab) = C_merged;
-                mo_energies.beta().bottomRows(nv_ab) = energies_merged;
+                    block::b(wfn_a.C).rightCols(nv_a),
+                    block::b(wfn_b.C).rightCols(nv_b),
+                    block::b(wfn_a.mo_energies).bottomRows(nv_a),
+                    block::b(wfn_b.mo_energies).bottomRows(nv_b));
+               block::b(C).rightCols(nv_ab) = C_merged;
+               block::b(mo_energies).bottomRows(nv_ab) = energies_merged;
             }
         }
     }
@@ -285,14 +285,14 @@ void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
         C = Mat(rows, cols);
         mo_energies = Vec(rows);
-        C.alpha() = fchk.alpha_mo_coefficients();
-        C.beta() = fchk.beta_mo_coefficients();
-        mo_energies.alpha() = fchk.alpha_mo_energies();
-        mo_energies.beta() = fchk.beta_mo_energies();
-        C.alpha() = occ::io::conversion::orb::from_gaussian_order_cartesian(
-            basis, C.alpha());
-        C.beta() = occ::io::conversion::orb::from_gaussian_order_cartesian(
-            basis, C.beta());
+        block::a(C) = fchk.alpha_mo_coefficients();
+        block::b(C) = fchk.beta_mo_coefficients();
+        block::a(mo_energies) = fchk.alpha_mo_energies();
+        block::b(mo_energies) = fchk.beta_mo_energies();
+        block::a(C) = occ::io::conversion::orb::from_gaussian_order_cartesian(
+            basis, block::a(C));
+        block::b(C) = occ::io::conversion::orb::from_gaussian_order_cartesian(
+            basis, block::b(C));
     } else {
         C = fchk.alpha_mo_coefficients();
         mo_energies = fchk.alpha_mo_energies();
@@ -318,10 +318,10 @@ void Wavefunction::symmetric_orthonormalize_molecular_orbitals(
     if (spinorbital_kind == SpinorbitalKind::Restricted) {
         C = symmorthonormalize_molecular_orbitals(C, overlap, num_alpha);
     } else {
-        C.alpha() = symmorthonormalize_molecular_orbitals(C.alpha(), overlap,
+        block::a(C) = symmorthonormalize_molecular_orbitals(block::a(C), overlap,
                                                           num_alpha);
-        C.beta() =
-            symmorthonormalize_molecular_orbitals(C.beta(), overlap, num_beta);
+        block::b(C) =
+            symmorthonormalize_molecular_orbitals(block::b(C), overlap, num_beta);
     }
     update_occupied_orbitals();
 }
@@ -363,10 +363,10 @@ void Wavefunction::apply_rotation(const occ::Mat3 &rot) {
         Mat rotated = rotate_molecular_orbitals(basis, rot, C);
         C.noalias() = rotated;
     } else {
-        Mat rotated = rotate_molecular_orbitals(basis, rot, C.alpha());
-        C.alpha().noalias() = rotated;
-        rotated = rotate_molecular_orbitals(basis, rot, C.beta());
-        C.beta().noalias() = rotated;
+        Mat rotated = rotate_molecular_orbitals(basis, rot, block::a(C));
+        block::a(C).noalias() = rotated;
+        rotated = rotate_molecular_orbitals(basis, rot, block::b(C));
+        block::b(C).noalias() = rotated;
     }
     basis.rotate(rot);
     rotate_atoms(atoms, rot);
@@ -426,10 +426,10 @@ void Wavefunction::save(FchkWriter &fchk) {
     std::vector<double> density_lower_triangle, spin_density_lower_triangle;
 
     if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        fchk.set_vector("Alpha Orbital Energies", mo_energies.alpha());
-        fchk.set_vector("Alpha MO coefficients", Cfchk.alpha());
-        fchk.set_vector("Beta Orbital Energies", mo_energies.beta());
-        fchk.set_vector("Beta MO coefficients", Cfchk.beta());
+        fchk.set_vector("Alpha Orbital Energies", block::a(mo_energies));
+        fchk.set_vector("Alpha MO coefficients", block::a(Cfchk));
+        fchk.set_vector("Beta Orbital Energies", block::b(mo_energies));
+        fchk.set_vector("Beta MO coefficients", block::b(Cfchk));
         Mat occ_fchk =
             occ::qm::orb::occupied_unrestricted(Cfchk, num_alpha, num_beta);
         Dfchk = occ::qm::orb::density_matrix_unrestricted(occ_fchk, num_alpha,
@@ -437,8 +437,8 @@ void Wavefunction::save(FchkWriter &fchk) {
 
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
         spin_density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
-        auto da = Dfchk.alpha();
-        auto db = Dfchk.beta();
+        auto da = block::a(Dfchk);
+        auto db = block::b(Dfchk);
         for (Eigen::Index row = 0; row < nbf; row++) {
             for (Eigen::Index col = 0; col <= row; col++) {
                 double va = da(row, col) * 2, vb = db(row, col) * 2;

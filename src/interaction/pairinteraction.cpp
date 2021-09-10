@@ -15,6 +15,7 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf) {
         return;
     using occ::qm::expectation;
     using occ::qm::matrix_dimensions;
+    namespace block = occ::qm::block;
     if constexpr (kind == SpinorbitalKind::Restricted) {
         wfn.V = hf.compute_nuclear_attraction_matrix();
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
@@ -32,10 +33,10 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf) {
             matrix_dimensions<SpinorbitalKind::Unrestricted>(wfn.nbf);
         wfn.T = Mat(rows, cols);
         wfn.V = Mat(rows, cols);
-        wfn.T.alpha() = hf.compute_kinetic_matrix();
-        wfn.T.beta() = wfn.T.alpha();
-        wfn.V.alpha() = hf.compute_nuclear_attraction_matrix();
-        wfn.V.beta() = wfn.V.alpha();
+        block::a(wfn.T) = hf.compute_kinetic_matrix();
+        block::b(wfn.T) = block::a(wfn.T);
+        block::a(wfn.V) = hf.compute_nuclear_attraction_matrix();
+        block::b(wfn.V) = block::a(wfn.V);
         wfn.H = wfn.V + wfn.T;
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.D, wfn.T);

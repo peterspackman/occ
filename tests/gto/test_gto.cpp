@@ -76,6 +76,6 @@ TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
     D.block(0, 0, 2, 2).setConstant(0.30122784);
     D.block(2, 0, 2, 2).setConstant(0.30122784);
     auto rho = occ::density::evaluate_density_on_grid<1, occ::qm::SpinorbitalKind::Unrestricted>(basis, atoms, D, grid_pts);
-    fmt::print("Rho alpha\n{}\n", rho.alpha());
-    fmt::print("Rho beta\n{}\n", rho.beta());
+    fmt::print("Rho alpha\n{}\n", occ::qm::block::a(rho));
+    fmt::print("Rho beta\n{}\n", occ::qm::block::b(rho));
 }
