@@ -11,6 +11,7 @@
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
 #include <occ/io/cifparser.h>
+#include <occ/io/crystalgrower.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/qm/hf.h>
@@ -524,7 +525,6 @@ int main(int argc, char **argv) {
         sw.start();
         std::string basename = fs::path(cif_filename).stem();
         Crystal c_symm = read_crystal(cif_filename);
-        Crystal c_prim = Crystal::create_primitive_supercell(c_symm, {1, 1, 1});
         sw.stop();
         double tprev = sw.read();
         fmt::print("Loaded crystal from {} in {:.6f} seconds\n", cif_filename,
@@ -626,7 +626,8 @@ int main(int argc, char **argv) {
             dimer_energies.size());
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
-        std::vector<std::vector<SolventNeighborContribution>> solvation_breakdowns;
+        std::vector<std::vector<SolventNeighborContribution>>
+            solvation_breakdowns;
         std::vector<std::vector<double>> crystal_contributions_vec;
         for (size_t i = 0; i < mol_neighbors.size(); i++) {
             const auto &n = mol_neighbors[i];
@@ -745,52 +746,70 @@ int main(int argc, char **argv) {
         }
 
         auto uc_dimers = c_symm.unit_cell_dimers(radius);
-        const auto &uc_neighbors = uc_dimers.molecule_neighbors;
-        for(size_t i = 0; i < uc_neighbors.size(); i++)
+        auto &uc_neighbors = uc_dimers.molecule_neighbors;
+
         {
+            occ::io::crystalgrower::StructureWriter cg_structure_writer(
+                fmt::format("{}_cg.txt", basename));
+            cg_structure_writer.write(c_symm, uc_dimers);
+        }
+
+        for (size_t i = 0; i < uc_neighbors.size(); i++) {
             const auto &m = c_symm.unit_cell_molecules()[i];
             size_t asym_idx = m.asymmetric_molecule_idx();
             const auto &m_asym = c_symm.symmetry_unique_molecules()[asym_idx];
-            const auto &n = uc_neighbors[i];
+            auto &n = uc_neighbors[i];
             fmt::print("uc = {} asym = {}\n", i, asym_idx);
 
-            fmt::print("Neighbors for unit cell molecule {} ({})\n", i, n.size());
+            fmt::print("Neighbors for unit cell molecule {} ({})\n", i,
+                       n.size());
 
-            fmt::print("{:<7s} {:>7s} {:>10s} {:>7s} {:>7s}\n",
-                       "N", "b", "Tb", "E_int", "R");
+            fmt::print("{:<7s} {:>7s} {:>10s} {:>7s} {:>7s}\n", "N", "b", "Tb",
+                       "E_int", "R");
 
             size_t j = 0;
             const auto &n_asym = mol_neighbors[asym_idx];
-            const auto& solv = solvation_breakdowns[asym_idx];
-            const auto& crystal_contributions = crystal_contributions_vec[asym_idx];
+            const auto &solv = solvation_breakdowns[asym_idx];
+            const auto &crystal_contributions =
+                crystal_contributions_vec[asym_idx];
 
-            for (const auto &dimer : n) {
+            for (auto &dimer : n) {
 
                 auto shift_b = dimer.b().cell_shift();
                 auto idx_b = dimer.b().unit_cell_molecule_idx();
 
                 size_t idx{0};
-                for(idx = 0; idx < n_asym.size(); idx++)
-                {
-                    if(dimers_equivalent(dimer, n_asym[idx])) break;
+                for (idx = 0; idx < n_asym.size(); idx++) {
+                    if (dimers_equivalent(dimer, n_asym[idx]))
+                        break;
                 }
-                if(idx >= n_asym.size()) {
+                if (idx >= n_asym.size()) {
                     throw std::runtime_error(
-                        fmt::format("No matching interaction found for uc_mol = {}, dimer = {}\n", i, j)
-                    );
+                        fmt::format("No matching interaction found for uc_mol "
+                                    "= {}, dimer = {}\n",
+                                    i, j));
                 }
-            
                 double rn = dimer.nearest_distance();
                 double rc = dimer.center_of_mass_distance();
 
-                const auto &e = dimer_energies[crystal_dimers.unique_dimer_idx[asym_idx][idx]];
-                double e_int = e.total_kjmol() + crystal_contributions[idx] - solv[idx].total() * AU_TO_KJ_PER_MOL;
-
-                fmt::print("{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f}\n", j, idx_b,
-                           fmt::format("{},{},{}", shift_b[0], shift_b[1], shift_b[2]), e_int * occ::units::KJ_TO_KCAL, rc);
+                const auto &e =
+                    dimer_energies[crystal_dimers
+                                       .unique_dimer_idx[asym_idx][idx]];
+                double e_int = (e.total_kjmol() + crystal_contributions[idx] -
+                               solv[idx].total() * AU_TO_KJ_PER_MOL) * occ::units::KJ_TO_KCAL;
+                dimer.set_interaction_energy(e_int);
+                fmt::print(
+                    "{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f}\n", j, idx_b,
+                    fmt::format("{},{},{}", shift_b[0], shift_b[1], shift_b[2]),
+                    e_int, rc);
                 j++;
             }
+        }
 
+        {
+            occ::io::crystalgrower::NetWriter cg_net_writer(
+                fmt::format("{}_net.txt", basename));
+            cg_net_writer.write(c_symm, uc_dimers);
         }
 
     } catch (const char *ex) {

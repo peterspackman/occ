@@ -10,15 +10,27 @@ StructureWriter::StructureWriter(const std::string &filename)
 
 StructureWriter::StructureWriter(std::ostream &stream) : m_dest(stream) {}
 
-void StructureWriter::write(const occ::crystal::Crystal &crystal) {
+void StructureWriter::write(const occ::crystal::Crystal &crystal,
+                            const occ::crystal::CrystalDimers &uc_dimers) {
     using occ::units::degrees;
     fmt::print(m_dest, "{}\n\n", "title");
     const auto &uc_molecules = crystal.unit_cell_molecules();
     fmt::print(m_dest, "{}\n\n", uc_molecules.size());
+    const auto &neighbors = uc_dimers.molecule_neighbors;
+    size_t uc_idx = 0;
     for (const auto &mol : uc_molecules) {
-        size_t num_neighbors = 0;
-        fmt::print(m_dest, "{} {} {}\n\n", mol.unit_cell_molecule_idx() + 1,
-                   mol.name(), num_neighbors);
+        size_t num_neighbors = neighbors[uc_idx].size();
+        fmt::print(m_dest, "{} {} (1,0) {}\n\n", mol.name(),
+                   mol.unit_cell_molecule_idx() + 1, num_neighbors);
+        for (const auto &n : neighbors[uc_idx]) {
+            const auto uc_shift = n.b().cell_shift();
+            const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
+            fmt::print(m_dest, "{}({},{},{}) ", uc_idx, uc_shift[0], uc_shift[1],
+                       uc_shift[2]);
+        }
+        fmt::print(m_dest, "\n\nX 0[0]\n\n");
+
+        uc_idx++;
     }
 
     const auto &uc = crystal.unit_cell();
@@ -50,6 +62,36 @@ void StructureWriter::write(const occ::crystal::Crystal &crystal) {
                 fmt::print(m_dest, " {} {}\n", b.first + 1, b.second + 1);
         }
         fmt::print(m_dest, "\n");
+    }
+}
+
+NetWriter::NetWriter(const std::string &filename)
+    : m_owned_destination(filename), m_dest(m_owned_destination) {}
+
+NetWriter::NetWriter(std::ostream &stream) : m_dest(stream) {}
+
+void NetWriter::write(const occ::crystal::Crystal &crystal,
+                      const occ::crystal::CrystalDimers &uc_dimers) {
+    const auto &uc_molecules = crystal.unit_cell_molecules();
+    const auto &neighbors = uc_dimers.molecule_neighbors;
+    size_t uc_idx = 0;
+    for (const auto &mol : uc_molecules) {
+        size_t interaction_idx = 1;
+        for (const auto &n : neighbors[uc_idx]) {
+            const auto uc_shift = n.b().cell_shift();
+            const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
+            fmt::print(m_dest, "{}:[1A][{}-{}]({},{},{}) R={:.3f}\n",
+                       interaction_idx,
+                       n.a().name(), n.b().name(),
+                       uc_shift[0], uc_shift[1], uc_shift[2],
+                       n.centroid_distance()
+            );
+            interaction_idx++;
+        }
+        for(const auto &n: neighbors[uc_idx]) {
+            fmt::print(m_dest, "{:.3f}\n", -n.interaction_energy());
+        }
+        uc_idx++;
     }
 }
 
