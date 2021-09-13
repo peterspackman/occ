@@ -44,6 +44,9 @@ class Dimer {
     bool operator==(const Dimer &) const;
     inline bool operator!=(const Dimer &b) const { return !(*this == b); }
 
+    bool equivalent_in_opposite_frame(const Dimer &b) const;
+    bool equivalent(const Dimer &b) const;
+
   private:
     Molecule m_a, m_b;
     size_t m_uc_idx_a{0}, m_uc_idx_b{0};

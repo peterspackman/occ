@@ -558,4 +558,24 @@ Crystal Crystal::create_primitive_supercell(const Crystal& c, HKL hkl) {
     return Crystal(AsymmetricUnit(positions, numbers), SpaceGroup(1), supercell);
 }
 
+std::string Crystal::dimer_symmetry_string(const occ::chem::Dimer &dimer) const {
+    const auto &a = dimer.a();
+    const auto &b = dimer.b();
+    if (a.asymmetric_molecule_idx() != b.asymmetric_molecule_idx())
+        return "-";
+
+    int sa_int = a.asymmetric_unit_symop()(0);
+    int sb_int = b.asymmetric_unit_symop()(0);
+
+    SymmetryOperation symop_a(sa_int);
+    SymmetryOperation symop_b(sb_int);
+
+    auto symop_ab = symop_b * symop_a.inverted();
+    occ::Vec3 c_a = symop_ab(to_fractional(a.positions())).rowwise().mean();
+    occ::Vec3 v_ab = to_fractional(b.centroid()) - c_a;
+
+    symop_ab = symop_ab.translated(v_ab);
+    return symop_ab.to_string();
+}
+
 } // namespace occ::crystal

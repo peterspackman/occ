@@ -87,6 +87,7 @@ class Crystal {
 
     CrystalDimers symmetry_unique_dimers(double) const;
     CrystalDimers unit_cell_dimers(double) const;
+    std::string dimer_symmetry_string(const occ::chem::Dimer &) const;
     static Crystal create_primitive_supercell(const Crystal& c, HKL);
 
   private:

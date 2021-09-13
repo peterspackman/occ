@@ -49,89 +49,7 @@ struct SolvatedSurfaceProperties {
     occ::Vec e_conc;
 };
 
-bool dimers_equivalent_in_opposite_frame(const occ::chem::Dimer &d1,
-                                         const occ::chem::Dimer &d2) {
-    using occ::Mat3N;
-    using occ::Vec3;
-    using occ::linalg::kabsch_rotation_matrix;
-    size_t d1_na = d1.a().size();
-    size_t d2_na = d2.a().size();
-    size_t d1_nb = d1.b().size();
-    size_t d2_nb = d2.b().size();
-    if ((d1_na != d2_nb) || (d1_nb != d2_na))
-        return false;
-    if (d1 != d2)
-        return false;
 
-    size_t N = d1_na + d2_na;
-    Vec3 Od1 = d1.b().centroid();
-    Vec3 Od2 = d2.a().centroid();
-    Mat3N posd1(3, N), posd2(3, N);
-    // positions d1 (with A <-> B swapped)
-    posd1.block(0, 0, 3, d1_nb) = d1.b().positions();
-    posd1.block(0, d1_nb, 3, d1_na) = d1.a().positions();
-    posd1.colwise() -= Od1;
-    // positions d2
-    posd2.block(0, 0, 3, d2_na) = d2.a().positions();
-    posd2.block(0, d2_na, 3, d1_nb) = d2.b().positions();
-    posd2.colwise() -= Od2;
-
-    occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
-    Mat3N posd1_rot = rot * posd1;
-    return all_close(rot * posd1, posd2, 1e-5, 1e-5);
-}
-
-bool dimers_equivalent(const occ::chem::Dimer &d1, const occ::chem::Dimer &d2) {
-    using occ::Mat3N;
-    using occ::Vec3;
-    using occ::linalg::kabsch_rotation_matrix;
-    size_t d1_na = d1.a().size();
-    size_t d2_na = d2.a().size();
-    size_t d1_nb = d1.b().size();
-    size_t d2_nb = d2.b().size();
-    if ((d1_na != d2_na) || (d1_nb != d2_nb))
-        return false;
-    if (d1 != d2)
-        return false;
-
-    size_t N = d1_na + d2_na;
-    Vec3 Od1 = d1.a().centroid();
-    Vec3 Od2 = d2.a().centroid();
-    Mat3N posd1(3, N), posd2(3, N);
-    // positions d1
-    posd1.block(0, 0, 3, d1_na) = d1.a().positions();
-    posd1.block(0, d1_na, 3, d1_nb) = d1.b().positions();
-    posd1.colwise() -= Od1;
-    // positions d2
-    posd2.block(0, 0, 3, d2_na) = d2.a().positions();
-    posd2.block(0, d2_na, 3, d1_nb) = d2.b().positions();
-    posd2.colwise() -= Od2;
-
-    occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
-    Mat3N posd1_rot = rot * posd1;
-    return all_close(rot * posd1, posd2, 1e-5, 1e-5);
-}
-
-std::string dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal) {
-    const auto &a = dimer.a();
-    const auto &b = dimer.b();
-    if (a.asymmetric_molecule_idx() != b.asymmetric_molecule_idx())
-        return "-";
-
-    int sa_int = a.asymmetric_unit_symop()(0);
-    int sb_int = b.asymmetric_unit_symop()(0);
-
-    SymmetryOperation symop_a(sa_int);
-    SymmetryOperation symop_b(sb_int);
-
-    auto symop_ab = symop_b * symop_a.inverted();
-    occ::Vec3 c_a =
-        symop_ab(crystal.to_fractional(a.positions())).rowwise().mean();
-    occ::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
-
-    symop_ab = symop_ab.translated(v_ab);
-    return symop_ab.to_string();
-}
 
 Crystal read_crystal(const std::string &filename) {
     occ::io::CifParser parser;
@@ -408,7 +326,7 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
         const auto &d1 = neighbors[i];
         for (int j = i + 1; j < neighbors.size(); j++) {
             const auto &d2 = neighbors[j];
-            if (dimers_equivalent_in_opposite_frame(d1, d2)) {
+            if (d1.equivalent_in_opposite_frame(d2)) {
                 energy_contribution[i].coul_ba = energy_contribution[j].coul_ab;
                 energy_contribution[i].cds_ba = energy_contribution[j].cds_ab;
                 energy_contribution[j].coul_ba = energy_contribution[i].coul_ab;
@@ -603,7 +521,7 @@ int main(int argc, char **argv) {
 
         size_t current_dimer = 0;
         for (const auto &dimer : dimers) {
-            auto s_ab = dimer_symop(dimer, c_symm);
+            auto s_ab = c_symm.dimer_symmetry_string(dimer);
             write_xyz_dimer(
                 fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()),
                 dimer);
@@ -691,7 +609,7 @@ int main(int argc, char **argv) {
                            shift_b[1], shift_b[2]);
                 */
 
-                auto s_ab = dimer_symop(dimer, c_symm);
+                auto s_ab = c_symm.dimer_symmetry_string(dimer);
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j];
                 double rn = dimer.nearest_distance();
                 double rc = dimer.center_of_mass_distance();
@@ -780,7 +698,7 @@ int main(int argc, char **argv) {
 
                 size_t idx{0};
                 for (idx = 0; idx < n_asym.size(); idx++) {
-                    if (dimers_equivalent(dimer, n_asym[idx]))
+                    if (dimer.equivalent(n_asym[idx]))
                         break;
                 }
                 if (idx >= n_asym.size()) {

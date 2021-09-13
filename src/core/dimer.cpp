@@ -1,5 +1,6 @@
 #include <occ/core/dimer.h>
 #include <occ/core/kabsch.h>
+#include <occ/core/util.h>
 
 #include <fmt/ostream.h>
 
@@ -105,6 +106,70 @@ bool Dimer::operator==(const Dimer &rhs) const {
     bool ba_eq = m_b.equivalent_to(rhs.m_a);
     bool ab_eq = m_a.equivalent_to(rhs.m_b);
     return ab_eq && ba_eq;
+}
+
+
+
+bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
+    using occ::Mat3N;
+    using occ::Vec3;
+    using occ::linalg::kabsch_rotation_matrix;
+    size_t d1_na = m_a.size();
+    size_t d2_na = rhs.m_a.size();
+    size_t d1_nb = m_b.size();
+    size_t d2_nb = rhs.m_b.size();
+    if ((d1_na != d2_nb) || (d1_nb != d2_na))
+        return false;
+    if (*this != rhs)
+        return false;
+
+    size_t N = d1_na + d2_na;
+    Vec3 Od1 = m_b.centroid();
+    Vec3 Od2 = rhs.m_a.centroid();
+    Mat3N posd1(3, N), posd2(3, N);
+    // positions d1 (with A <-> B swapped)
+    posd1.block(0, 0, 3, d1_nb) = m_b.positions();
+    posd1.block(0, d1_nb, 3, d1_na) = m_a.positions();
+    posd1.colwise() -= Od1;
+    // positions d2
+    posd2.block(0, 0, 3, d2_na) = rhs.m_a.positions();
+    posd2.block(0, d2_na, 3, d1_nb) = rhs.m_b.positions();
+    posd2.colwise() -= Od2;
+
+    occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
+    Mat3N posd1_rot = rot * posd1;
+    return occ::util::all_close(rot * posd1, posd2, 1e-5, 1e-5);
+}
+
+bool Dimer::equivalent(const occ::chem::Dimer &rhs) const {
+    using occ::Mat3N;
+    using occ::Vec3;
+    using occ::linalg::kabsch_rotation_matrix;
+    size_t d1_na = m_a.size();
+    size_t d2_na = rhs.m_a.size();
+    size_t d1_nb = m_b.size();
+    size_t d2_nb = rhs.m_b.size();
+    if ((d1_na != d2_na) || (d1_nb != d2_nb))
+        return false;
+    if (*this != rhs)
+        return false;
+
+    size_t N = d1_na + d2_na;
+    Vec3 Od1 = m_a.centroid();
+    Vec3 Od2 = rhs.m_a.centroid();
+    Mat3N posd1(3, N), posd2(3, N);
+    // positions d1
+    posd1.block(0, 0, 3, d1_na) = m_a.positions();
+    posd1.block(0, d1_na, 3, d1_nb) = m_b.positions();
+    posd1.colwise() -= Od1;
+    // positions d2
+    posd2.block(0, 0, 3, d2_na) = rhs.m_a.positions();
+    posd2.block(0, d2_na, 3, d1_nb) = rhs.m_b.positions();
+    posd2.colwise() -= Od2;
+
+    occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
+    Mat3N posd1_rot = rot * posd1;
+    return occ::util::all_close(rot * posd1, posd2, 1e-5, 1e-5);
 }
 
 } // namespace occ::chem
