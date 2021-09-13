@@ -243,6 +243,37 @@ auto calculate_interaction_energy(const Dimer &dimer,
     return interaction_energy;
 }
 
+
+auto calculate_dimer_energies(const Crystal &crystal, 
+                              const std::vector<Dimer> &dimers,
+                              const std::vector<Wavefunction> &wfns_a,
+                              const std::vector<Wavefunction> &wfns_b) {
+    occ::timing::StopWatch sw;
+    std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
+    dimer_energies.reserve(dimers.size());
+    size_t current_dimer{0};
+    for (const auto &dimer : dimers) {
+        auto tprev = sw.read();
+        sw.start();
+        fmt::print("*{}* ({},{}) r = {: 5.2f}", current_dimer++,
+                   dimer.a().unit_cell_molecule_idx(),
+                   dimer.b().unit_cell_molecule_idx(),
+                   dimer.center_of_mass_distance());
+
+        std::cout << std::flush;
+        dimer_energies.push_back(
+            calculate_interaction_energy(dimer, wfns_a, wfns_b, crystal));
+        sw.stop();
+        fmt::print("  took {:.3f} seconds\n", sw.read() - tprev);
+        std::cout << std::flush;
+    }
+    fmt::print(
+        "Finished calculating {} unique dimer interaction energies\n",
+        dimer_energies.size());
+    return dimer_energies;
+}
+
+
 std::pair<occ::IVec, occ::Mat3N>
 environment(const std::vector<Dimer> &neighbors) {
     size_t num_atoms = 0;
@@ -501,7 +532,6 @@ int main(int argc, char **argv) {
             "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: "
             "7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
 
-        std::vector<CEModelInteraction::EnergyComponents> dimer_energies;
 
         fmt::print(
             "Calculating unique pair interactions using {} wavefunctions\n",
@@ -519,29 +549,8 @@ int main(int argc, char **argv) {
                 return wfns;
         }();
 
-        size_t current_dimer = 0;
-        for (const auto &dimer : dimers) {
-            auto s_ab = c_symm.dimer_symmetry_string(dimer);
-            write_xyz_dimer(
-                fmt::format("{}_dimer_{}.xyz", basename, dimer_energies.size()),
-                dimer);
-            tprev = sw.read();
-            sw.start();
-            fmt::print("*{}* ({},{}) r = {: 5.2f}", current_dimer++,
-                       dimer.a().unit_cell_molecule_idx(),
-                       dimer.b().unit_cell_molecule_idx(),
-                       dimer.center_of_mass_distance());
 
-            std::cout << std::flush;
-            dimer_energies.push_back(
-                calculate_interaction_energy(dimer, wfns_a, wfns_b, c_symm));
-            sw.stop();
-            fmt::print("  took {:.3f} seconds\n", sw.read() - tprev);
-            std::cout << std::flush;
-        }
-        fmt::print(
-            "Finished calculating {} unique dimer interaction energies\n",
-            dimer_energies.size());
+        auto dimer_energies = calculate_dimer_energies(c_symm, dimers, wfns_a, wfns_b);
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         std::vector<std::vector<SolventNeighborContribution>>
@@ -678,6 +687,12 @@ int main(int argc, char **argv) {
             const auto &m_asym = c_symm.symmetry_unique_molecules()[asym_idx];
             auto &n = uc_neighbors[i];
             fmt::print("uc = {} asym = {}\n", i, asym_idx);
+            int s_int = m.asymmetric_unit_symop()(0);
+
+            SymmetryOperation symop(s_int);
+
+            const auto &rotation = symop.rotation();
+            fmt::print("Asymmetric unit symop: {}\n", symop.to_string());
 
             fmt::print("Neighbors for unit cell molecule {} ({})\n", i,
                        n.size());
@@ -698,10 +713,13 @@ int main(int argc, char **argv) {
 
                 size_t idx{0};
                 for (idx = 0; idx < n_asym.size(); idx++) {
-                    if (dimer.equivalent(n_asym[idx]))
+                    if (dimer.equivalent_under_rotation(n_asym[idx], rotation))
                         break;
                 }
                 if (idx >= n_asym.size()) {
+                    fmt::print("shift_b = {} {} {}, idx_b = {}\n", shift_b[0], shift_b[1], shift_b[2], idx_b);
+                    fmt::print("Rn = {:.3f} Rc = {:.3f}\n", dimer.nearest_distance(), dimer.center_of_mass_distance());
+                    write_xyz_dimer("invalid_dimer.xyz", dimer);
                     throw std::runtime_error(
                         fmt::format("No matching interaction found for uc_mol "
                                     "= {}, dimer = {}\n",

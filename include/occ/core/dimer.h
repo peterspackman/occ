@@ -10,6 +10,7 @@ using occ::chem::Molecule;
 
 class Dimer {
   public:
+    enum class MoleculeOrder : bool { AB = true, BA = false };
     Dimer(const Molecule &, const Molecule &);
     Dimer(const std::vector<occ::core::Atom>,
           const std::vector<occ::core::Atom>);
@@ -23,9 +24,9 @@ class Dimer {
     std::optional<occ::Mat4> symmetry_relation() const;
     Vec3 v_ab() const;
 
-    const Vec vdw_radii() const;
-    IVec atomic_numbers() const;
-    Mat3N positions() const;
+    const Vec vdw_radii(MoleculeOrder = MoleculeOrder::AB) const;
+    IVec atomic_numbers(MoleculeOrder = MoleculeOrder::AB) const;
+    Mat3N positions(MoleculeOrder = MoleculeOrder::AB) const;
 
     int num_electrons() const {
         return m_a.num_electrons() + m_b.num_electrons();
@@ -46,6 +47,7 @@ class Dimer {
 
     bool equivalent_in_opposite_frame(const Dimer &b) const;
     bool equivalent(const Dimer &b) const;
+    bool equivalent_under_rotation(const Dimer &b, const occ::Mat3&) const;
 
   private:
     Molecule m_a, m_b;

@@ -50,21 +50,42 @@ std::optional<occ::Mat4> Dimer::symmetry_relation() const {
     return result;
 }
 
-const Vec Dimer::vdw_radii() const {
+const Vec Dimer::vdw_radii(MoleculeOrder order) const {
     Vec result(m_a.size() + m_b.size());
-    result << m_a.vdw_radii(), m_b.vdw_radii();
+    switch(order) {
+        case MoleculeOrder::AB:
+            result << m_a.vdw_radii(), m_b.vdw_radii();
+            break;
+        case MoleculeOrder::BA:
+            result << m_b.vdw_radii(), m_a.vdw_radii();
+            break;
+    }
     return result;
 }
 
-IVec Dimer::atomic_numbers() const {
+IVec Dimer::atomic_numbers(MoleculeOrder order) const {
     IVec result(m_a.size() + m_b.size());
-    result << m_a.atomic_numbers(), m_b.atomic_numbers();
+    switch(order) {
+        case MoleculeOrder::AB:
+            result << m_a.atomic_numbers(), m_b.atomic_numbers();
+            break;
+        case MoleculeOrder::BA:
+            result << m_b.atomic_numbers(), m_a.atomic_numbers();
+            break;
+    }
     return result;
 }
 
-Mat3N Dimer::positions() const {
+Mat3N Dimer::positions(MoleculeOrder order) const {
     Mat3N result(3, m_a.size() + m_b.size());
-    result << m_a.positions(), m_b.positions();
+    switch(order) {
+        case MoleculeOrder::AB:
+            result << m_a.positions(), m_b.positions();
+            break;
+        case MoleculeOrder::BA:
+            result << m_b.positions(), m_a.positions();
+            break;
+    }
     return result;
 }
 
@@ -123,22 +144,18 @@ bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
     if (*this != rhs)
         return false;
 
-    size_t N = d1_na + d2_na;
     Vec3 Od1 = m_b.centroid();
     Vec3 Od2 = rhs.m_a.centroid();
-    Mat3N posd1(3, N), posd2(3, N);
     // positions d1 (with A <-> B swapped)
-    posd1.block(0, 0, 3, d1_nb) = m_b.positions();
-    posd1.block(0, d1_nb, 3, d1_na) = m_a.positions();
+    Mat3N posd1 = positions(MoleculeOrder::BA);
     posd1.colwise() -= Od1;
     // positions d2
-    posd2.block(0, 0, 3, d2_na) = rhs.m_a.positions();
-    posd2.block(0, d2_na, 3, d1_nb) = rhs.m_b.positions();
+    Mat3N posd2 = rhs.positions(MoleculeOrder::AB);
     posd2.colwise() -= Od2;
 
     occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
     Mat3N posd1_rot = rot * posd1;
-    return occ::util::all_close(rot * posd1, posd2, 1e-5, 1e-5);
+    return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
 }
 
 bool Dimer::equivalent(const occ::chem::Dimer &rhs) const {
@@ -154,22 +171,45 @@ bool Dimer::equivalent(const occ::chem::Dimer &rhs) const {
     if (*this != rhs)
         return false;
 
-    size_t N = d1_na + d2_na;
     Vec3 Od1 = m_a.centroid();
     Vec3 Od2 = rhs.m_a.centroid();
-    Mat3N posd1(3, N), posd2(3, N);
     // positions d1
-    posd1.block(0, 0, 3, d1_na) = m_a.positions();
-    posd1.block(0, d1_na, 3, d1_nb) = m_b.positions();
+    Mat3N posd1 = positions(MoleculeOrder::AB);
     posd1.colwise() -= Od1;
     // positions d2
-    posd2.block(0, 0, 3, d2_na) = rhs.m_a.positions();
-    posd2.block(0, d2_na, 3, d1_nb) = rhs.m_b.positions();
+    Mat3N posd2 = rhs.positions(MoleculeOrder::AB);
     posd2.colwise() -= Od2;
 
     occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
     Mat3N posd1_rot = rot * posd1;
-    return occ::util::all_close(rot * posd1, posd2, 1e-5, 1e-5);
+    return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
+}
+
+bool Dimer::equivalent_under_rotation(const occ::chem::Dimer &rhs, const occ::Mat3 &rotation) const {
+    using occ::Mat3N;
+    using occ::Vec3;
+    using occ::linalg::kabsch_rotation_matrix;
+    size_t d1_na = m_a.size();
+    size_t d2_na = rhs.m_a.size();
+    size_t d1_nb = m_b.size();
+    size_t d2_nb = rhs.m_b.size();
+    if ((d1_na != d2_na) || (d1_nb != d2_nb))
+        return false;
+    if (*this != rhs)
+        return false;
+
+    Vec3 Od1 = rotation * m_a.centroid();
+    Vec3 Od2 = rhs.m_a.centroid();
+    // positions d1
+    Mat3N posd1 = rotation * positions(MoleculeOrder::AB);
+    posd1.colwise() -= Od1;
+    // positions d2
+    Mat3N posd2 = rhs.positions(MoleculeOrder::AB);
+    posd2.colwise() -= Od2;
+
+    occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
+    Mat3N posd1_rot = rot * posd1;
+    return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
 }
 
 } // namespace occ::chem
