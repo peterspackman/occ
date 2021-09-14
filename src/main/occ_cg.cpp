@@ -87,7 +87,7 @@ struct SolvatedSurfaceProperties {
         std::getline(file, line);
         scn::scan_default(line, N);
         std::getline(file, line);
-        scn::scan(line, "esolv = {} dg_ele = {} dg_conc = {}", props.esolv, props.dg_ele, props.dg_conc);
+        scn::scan(line, "coulomb esolv = {} dg_ele = {} dg_conc = {}", props.esolv, props.dg_ele, props.dg_conc);
         props.coulomb_pos = occ::Mat3N(3, N);
         props.e_coulomb = occ::Vec(N);
         props.e_ele = occ::Vec(N);
@@ -122,6 +122,14 @@ struct SolvatedSurfaceProperties {
 Crystal read_crystal(const std::string &filename) {
     occ::io::CifParser parser;
     return parser.parse_crystal(filename).value();
+}
+
+CEModelInteraction::EnergyComponents read_energy_components(const std::string &line) {
+    CEModelInteraction::EnergyComponents components;
+    scn::scan(line, "{{ e_coul: {}, e_rep: {}, e_pol: {}, e_disp: {}, e_tot: {} }}",
+              components.coulomb, components.exchange_repulsion,
+              components.polarization, components.dispersion, components.total);
+    return components;
 }
 
 Wavefunction calculate_wavefunction(const Molecule &mol,
@@ -314,12 +322,19 @@ auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
     return std::make_pair(rotation, translation);
 }
 
-void write_xyz_dimer(const std::string &filename, const Dimer &dimer) {
+void write_xyz_dimer(const std::string &filename, const Dimer &dimer,
+                     std::optional<CEModelInteraction::EnergyComponents> energies = {}) {
     auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
                                                  fmt::file::CREATE);
     const auto &pos = dimer.positions();
     const auto &nums = dimer.atomic_numbers();
-    output.print("{}\n\n", nums.rows());
+    output.print("{}\n", nums.rows());
+    if(energies) {
+        auto e = *energies;
+        output.print("{{ e_coul: {}, e_rep: {}, e_pol: {}, e_disp: {}, e_tot: {} }}",
+                     e.coulomb, e.exchange_repulsion, e.polarization, e.dispersion, e.total);
+    }
+    output.print("\n");
     for (size_t i = 0; i < nums.rows(); i++) {
         output.print("{:5s} {:12.5f} {:12.5f} {:12.5f}\n",
                      Element(nums(i)).symbol(), pos(0, i), pos(1, i),
@@ -387,7 +402,8 @@ auto calculate_interaction_energy(const Dimer &dimer,
 }
 
 
-auto calculate_dimer_energies(const Crystal &crystal, 
+auto calculate_dimer_energies(const std::string &basename,
+                              const Crystal &crystal, 
                               const std::vector<Dimer> &dimers,
                               const std::vector<Wavefunction> &wfns_a,
                               const std::vector<Wavefunction> &wfns_b) {
@@ -398,16 +414,29 @@ auto calculate_dimer_energies(const Crystal &crystal,
     for (const auto &dimer : dimers) {
         auto tprev = sw.read();
         sw.start();
+        fs::path dimer_energy_file(fmt::format("{}_dimer_{}_energies.xyz", basename, current_dimer));
+        if(fs::exists(dimer_energy_file)) {
+            fmt::print("{} load from {}\n", current_dimer, dimer_energy_file);
+            std::ifstream file(dimer_energy_file.string());
+            std::string line;
+            std::getline(file, line);
+            std::getline(file, line);
+            dimer_energies.push_back(read_energy_components(line));
+            current_dimer++;
+            continue;
+        }
         const auto& a = dimer.a();
         const auto& b = dimer.b();
         const auto asym_idx_a = a.asymmetric_molecule_idx();
         const auto asym_idx_b = b.asymmetric_molecule_idx();
-        fmt::print("unique interaction {} ({}[{}] - {}[{}]), Rc = {: 5.2f}",
+        const auto shift_b = dimer.b().cell_shift();
+        fmt::print("{} ({}[{}] - {}[{} + ({},{},{})]), Rc = {: 5.2f}",
                    current_dimer++,
                    asym_idx_a,
                    SymmetryOperation(a.asymmetric_unit_symop()(0)).to_string(),
                    asym_idx_b,
                    SymmetryOperation(b.asymmetric_unit_symop()(0)).to_string(),
+                   shift_b[0], shift_b[1], shift_b[2],
                    dimer.center_of_mass_distance());
 
         std::cout << std::flush;
@@ -415,6 +444,7 @@ auto calculate_dimer_energies(const Crystal &crystal,
             calculate_interaction_energy(dimer, wfns_a, wfns_b, crystal));
         sw.stop();
         fmt::print("  took {:.3f} seconds\n", sw.read() - tprev);
+        write_xyz_dimer(dimer_energy_file.string(), dimer, dimer_energies[current_dimer - 1]);
         std::cout << std::flush;
     }
     fmt::print(
@@ -697,7 +727,7 @@ int main(int argc, char **argv) {
         }();
 
 
-        auto dimer_energies = calculate_dimer_energies(c_symm, dimers, wfns_a, wfns_b);
+        auto dimer_energies = calculate_dimer_energies(basename, c_symm, dimers, wfns_a, wfns_b);
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         std::vector<std::vector<SolventNeighborContribution>>

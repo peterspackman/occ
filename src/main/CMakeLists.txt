@@ -28,8 +28,8 @@ set_target_properties(make_radial_interpolators
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_executable(crystal_interactions "${CMAKE_CURRENT_SOURCE_DIR}/interactions.cpp")
-target_link_libraries(crystal_interactions
+add_executable(occ-cg "${CMAKE_CURRENT_SOURCE_DIR}/occ_cg.cpp")
+target_link_libraries(occ-cg
     PUBLIC
     occ_qm
     occ_dft
@@ -40,7 +40,7 @@ target_link_libraries(crystal_interactions
     cxxopts
 )
 
-set_target_properties(crystal_interactions
+set_target_properties(occ-cg
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
