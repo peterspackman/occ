@@ -282,6 +282,17 @@ calculate_solvated_surfaces(const std::string &basename,
             props.esolv = esolv + 1.89 / occ::units::AU_TO_KCAL_PER_MOL;
             occ::log::debug("total e_solv {:12.6f} ({:.3f} kJ/mol)\n", esolv,
                             esolv * occ::units::AU_TO_KJ_PER_MOL);
+
+            fmt::print("SCF difference         (au)       {: 9.3f}\n", e - original_energy);
+            fmt::print("SCF difference         (kJ/mol)   {: 9.3f}\n", occ::units::AU_TO_KJ_PER_MOL * (e - original_energy));
+            fmt::print("delta G concentratcion (kJ/mol)   {: 9.3f}\n", props.dg_conc);
+            fmt::print("total E solv (surface) (kj/mol)   {: 9.3f}\n", esolv * occ::units::AU_TO_KJ_PER_MOL);
+            fmt::print("orbitals E_solv        (kj/mol)   {: 9.3f}\n", props.dg_ele * occ::units::AU_TO_KJ_PER_MOL);
+            fmt::print("CDS E_solv   (surface) (kj/mol)   {: 9.3f}\n", props.e_cds.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
+            fmt::print("nuc E_solv   (surface) (kj/mol)   {: 9.3f}\n", nuc.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
+            fmt::print("pol E_solv   (surface) (kj/mol)   {: 9.3f}\n", pol.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
+            fmt::print("ele E_solv   (surface) (kj/mol)   {: 9.3f}\n", elec.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
+
             props.esolv =
                 e - original_energy + 1.89 / occ::units::AU_TO_KCAL_PER_MOL;
             props.e_ele =
@@ -745,6 +756,7 @@ int main(int argc, char **argv) {
             crystal_contributions_vec.push_back(crystal_contributions);
             double Gr = molecules[i].rotational_free_energy(298);
             double Gt = molecules[i].translational_free_energy(298);
+            double molar_mass = molecules[i].molar_mass();
 
             fmt::print("Neighbors for asymmetric molecule {}\n", i);
 
@@ -791,6 +803,8 @@ int main(int argc, char **argv) {
                     crystal_contributions[j], e_int * occ::units::KJ_TO_KCAL);
                 j++;
             }
+            constexpr double R = 8.31446261815324;
+            constexpr double RT = 298 * R / 1000;
             fmt::print("\nFree energy estimates at T = 298 K, P = 1 atm., "
                        "units: kJ/mol\n");
             fmt::print(
@@ -803,22 +817,31 @@ int main(int argc, char **argv) {
             fmt::print(
                 "translational free energy (molecule) {: 9.3f}  (E_trans)\n",
                 Gt);
+            double dG_solv = 
+                surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL;
             fmt::print(
                 "solvation free energy (molecule)     {: 9.3f}  (E_solv)\n",
-                surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL);
+                dG_solv);
             fmt::print("E_solv - E_lat:                      {: 9.3f}\n",
                        surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL -
                            0.5 * total.total);
-            double dG_solubility =
-                surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL -
-                0.5 * total.total + Gr + Gt;
-            fmt::print("solubility                           {: 9.3f}\n",
+            double dH_sub = -0.5 * total.total - 2 * RT;
+            fmt::print("dH sublimation                       {: 9.3f}\n",
+                       dH_sub); 
+            double dS_sub = Gr + Gt;
+            fmt::print("dS sublimation                       {: 9.3f}\n",
+                       dS_sub);
+            double dG_sub = dH_sub + dS_sub;
+            fmt::print("dG sublimation                       {: 9.3f}\n",
+                       dG_sub);
+            double dG_solubility = dG_solv + dG_sub;
+            fmt::print("dG solution                          {: 9.3f}\n",
                        dG_solubility);
-            constexpr double R = 8.31446261815324;
-            constexpr double RT = 298 * R / 1000;
             double equilibrium_constant = std::exp(-dG_solubility / RT);
             fmt::print("equilibrium_constant                 {: 9.2e}\n",
                        equilibrium_constant);
+            fmt::print("solubility (g/L)                     {: 9.3f}\n",
+                       equilibrium_constant * molar_mass * 1000);
         }
 
         auto uc_dimers = c_symm.unit_cell_dimers(radius);

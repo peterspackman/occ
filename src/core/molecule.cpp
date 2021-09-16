@@ -295,4 +295,8 @@ void Molecule::set_cell_shift(const Molecule::CellShift &shift) {
 
 const Molecule::CellShift &Molecule::cell_shift() const { return m_cell_shift; }
 
+double Molecule::molar_mass() const {
+    return occ::constants::molar_mass_constant<double> * atomic_masses().array().sum();
+}
+
 } // namespace occ::chem

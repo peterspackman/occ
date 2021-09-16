@@ -43,6 +43,7 @@ class Molecule {
     const IVec &atomic_numbers() const { return m_atomicNumbers; }
     const Vec vdw_radii() const;
     const Vec atomic_masses() const;
+    double molar_mass() const;
     std::vector<core::Atom> atoms() const;
     void set_cell_shift(const CellShift &);
     const CellShift &cell_shift() const;
