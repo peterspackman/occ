@@ -22,6 +22,7 @@ class UnitCell {
     double alpha() const { return m_angles[0]; }
     double beta() const { return m_angles[1]; }
     double gamma() const { return m_angles[2]; }
+    double volume() const { return m_volume; }
     void set_a(double);
     void set_b(double);
     void set_c(double);

@@ -84,6 +84,7 @@ class Crystal {
     const PeriodicBondGraph &unit_cell_connectivity() const;
     const std::vector<Molecule> &unit_cell_molecules() const;
     const std::vector<Molecule> &symmetry_unique_molecules() const;
+    double volume() const;
 
     CrystalDimers symmetry_unique_dimers(double) const;
     CrystalDimers unit_cell_dimers(double) const;

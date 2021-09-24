@@ -578,4 +578,8 @@ std::string Crystal::dimer_symmetry_string(const occ::chem::Dimer &dimer) const 
     return symop_ab.to_string();
 }
 
+double Crystal::volume() const {
+    return m_unit_cell.volume();
+}
+
 } // namespace occ::crystal
