@@ -87,13 +87,6 @@ bool is_valid_symop(const SymOp& op, Eigen::Ref<const Mat3N> positions) {
 }
 
 IVec smallest_off_axis_group(const occ::chem::Molecule& mol, const Vec3& axis) {
-    /*
-        Returns the smallest list of atoms with the same species and
-        distance from origin AND does not lie on the specified axis.  This
-        maximal set limits the possible rotational symmetry operations,
-        since atoms lying on a test axis is irrelevant in testing rotational
-        symmetryOperations.
-    */
     double tol = 0.1;
     const auto& pos = mol.positions();
     const auto els = mol.atomic_numbers();
@@ -180,12 +173,6 @@ void MolecularPointGroup::init_linear() {
 }
 
 void MolecularPointGroup::find_spherical_axes() {
-    /* 
-    Looks for R5, R4, R3 and R2 axes in spherical top molecules.  Point
-    group T molecules have only one unique 3-fold and one unique 2-fold
-    axis. O molecules have one unique 4, 3 and 2-fold axes. I molecules
-    have a unique 5-fold axis.
-    */
     robin_hood::unordered_map<int, int> count;
     std::array<bool, 6> rot_found{false, false, false, false, false, false};
 
@@ -393,10 +380,6 @@ PointGroup cyclic_group(int r, MirrorType m) {
 }
 
 bool MolecularPointGroup::check_perpendicular_r2_axis(const Vec3& axis) {
-    /*
-    Checks for R2 axes perpendicular to unique axis.  For handling
-    symmetric top molecules.
-    */
     IVec min_set = smallest_off_axis_group(centered_molecule, axis);
     size_t N = centered_molecule.size();
     const auto& positions = centered_molecule.positions();

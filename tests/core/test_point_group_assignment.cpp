@@ -138,5 +138,4 @@ TEST_CASE("CHFBrCl: C1", "[point_group]")
     MolecularPointGroup pg(m);
     fmt::print("CHFBrCl group: {}\n", pg.point_group_string());
     REQUIRE(pg.point_group() == occ::core::PointGroup::C1);
-
 }
