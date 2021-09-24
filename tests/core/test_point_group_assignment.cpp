@@ -18,7 +18,7 @@ TEST_CASE("Symop constructors", "[point_group]") {
     fmt::print("Transformation:\n{}\n", s.transformation);
 }
 
-TEST_CASE("Water is C2v", "[point_group]")
+TEST_CASE("Water: C2v", "[point_group]")
 {
     occ::Mat3N pos(3, 3);
     occ::IVec nums(3);
@@ -35,7 +35,7 @@ TEST_CASE("Water is C2v", "[point_group]")
     REQUIRE(pg.point_group() == occ::core::PointGroup::C2v);
 }
 
-TEST_CASE("Oxygen is Dooh", "[point_group]")
+TEST_CASE("Oxygen: Dooh", "[point_group]")
 {
     occ::Mat3N pos(3, 2);
     occ::IVec nums(2);
@@ -52,7 +52,7 @@ TEST_CASE("Oxygen is Dooh", "[point_group]")
     REQUIRE(pg.point_group() == occ::core::PointGroup::Dooh);
 }
 
-TEST_CASE("BF3 is D3h", "[point_group]")
+TEST_CASE("BF3: D3h", "[point_group]")
 {
     occ::Mat3N pos(3, 4);
     occ::IVec nums(4);
@@ -71,7 +71,7 @@ TEST_CASE("BF3 is D3h", "[point_group]")
 
 }
 
-TEST_CASE("Benzene is D6h", "[point_group]")
+TEST_CASE("Benzene: D6h", "[point_group]")
 {
     occ::Mat3N pos(3, 12);
     occ::IVec nums(12);
@@ -88,7 +88,7 @@ TEST_CASE("Benzene is D6h", "[point_group]")
     REQUIRE(pg.point_group() == occ::core::PointGroup::D6h);
 }
 
-TEST_CASE("CH4 is Td", "[point_group]")
+TEST_CASE("CH4: Td", "[point_group]")
 {
     occ::Mat3N pos(3, 5);
     occ::IVec nums(5);
@@ -106,7 +106,7 @@ TEST_CASE("CH4 is Td", "[point_group]")
 
 }
 
-TEST_CASE("Cube", "[point_group]")
+TEST_CASE("Cube: Oh", "[point_group]")
 {
     occ::Mat3N pos(3, 8);
     occ::IVec nums(8);
@@ -121,4 +121,22 @@ TEST_CASE("Cube", "[point_group]")
     MolecularPointGroup pg(m);
     fmt::print("Cube group: {}\n", pg.point_group_string());
     REQUIRE(pg.point_group() == occ::core::PointGroup::Oh);
+}
+
+TEST_CASE("CHFBrCl: C1", "[point_group]")
+{
+    occ::Mat3N pos(3, 5);
+    occ::IVec nums(5);
+
+    nums << 6, 1, 9, 35, 17;
+    pos <<  0.000000, 0.000000,  1.026719, -0.513360, -0.513360,
+            0.000000, 0.000000,  0.000000, -0.889165,  0.889165,
+            0.000000, 1.080000, -0.363000, -0.363000, -0.363000;
+
+    Molecule m(nums, pos);
+
+    MolecularPointGroup pg(m);
+    fmt::print("CHFBrCl group: {}\n", pg.point_group_string());
+    REQUIRE(pg.point_group() == occ::core::PointGroup::C1);
+
 }
