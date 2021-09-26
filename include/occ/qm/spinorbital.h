@@ -18,27 +18,4 @@ constexpr std::pair<size_t, size_t> matrix_dimensions(size_t nbf) {
     }
 }
 
-template <SpinorbitalKind kind, typename TA>
-typename TA::Scalar expectation(const TA &left, const TA &right) {
-    namespace block = occ::qm::block;
-    if constexpr (kind == Unrestricted) {
-        if (right.rows() < left.rows()) {
-            return block::a(left).cwiseProduct(right).sum() +
-                   block::b(left).cwiseProduct(right).sum();
-        } else {
-            return block::a(left).cwiseProduct(block::a(right)).sum() +
-                   block::b(left).cwiseProduct(block::b(right)).sum();
-        }
-    } else if constexpr (kind == General) {
-        if (right.rows() < left.rows()) {
-            return block::aa(left).cwiseProduct(right).sum() +
-                   block::bb(left).cwiseProduct(right).sum();
-        } else {
-            return left.cwiseProduct(right).sum();
-        }
-    } else {
-        return left.cwiseProduct(right).sum();
-    }
-}
-
 } // namespace occ::qm

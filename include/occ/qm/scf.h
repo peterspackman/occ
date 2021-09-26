@@ -7,9 +7,9 @@
 #include <occ/core/util.h>
 #include <occ/qm/guess_density.h>
 #include <occ/qm/ints.h>
+#include <occ/qm/opmatrix.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
-#include <occ/qm/opmatrix.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -40,8 +40,8 @@ inline double maximum_error_diis(const Mat &commutator) {
 
 namespace impl {
 
-template<typename Procedure, SpinorbitalKind sk>
-void set_core_matrices(const Procedure& proc, Mat& S, Mat& T, Mat& V, Mat &H) {
+template <typename Procedure, SpinorbitalKind sk>
+void set_core_matrices(const Procedure &proc, Mat &S, Mat &T, Mat &V, Mat &H) {
     if constexpr (sk == Restricted) {
         S = proc.compute_overlap_matrix();
         T = proc.compute_kinetic_matrix();
@@ -64,27 +64,27 @@ void set_core_matrices(const Procedure& proc, Mat& S, Mat& T, Mat& V, Mat &H) {
     H = T + V;
 }
 
-template<SpinorbitalKind sk>
-void set_conditioning_orthogonalizer(const Mat& S, Mat& X, Mat& Xinv, double& XtX_condition_number)
-{
+template <SpinorbitalKind sk>
+void set_conditioning_orthogonalizer(const Mat &S, Mat &X, Mat &Xinv,
+                                     double &XtX_condition_number) {
     // compute orthogonalizer X such that X.transpose() . S . X = I
     // one should think of columns of Xinv as the conditioned basis
     // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose()
     // . X) by default assume can manage to compute with condition number of
     // S <= 1/eps this is probably too optimistic, but in well-behaved cases
     // even 10^11 is OK
-    double S_condition_number_threshold = 1.0 / std::numeric_limits<double>::epsilon();
+    double S_condition_number_threshold =
+        1.0 / std::numeric_limits<double>::epsilon();
     if constexpr (sk == Unrestricted) {
-        std::tie(X, Xinv, XtX_condition_number) =
-            conditioning_orthogonalizer(block::a(S),
-                                        S_condition_number_threshold);
+        std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(
+            block::a(S), S_condition_number_threshold);
     } else {
         std::tie(X, Xinv, XtX_condition_number) =
             conditioning_orthogonalizer(S, S_condition_number_threshold);
     }
 }
 
-}
+} // namespace impl
 
 template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
@@ -238,9 +238,11 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         C_occ = wfn.C_occ;
         orbital_energies = wfn.mo_energies;
         update_occupied_orbital_count();
-        impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T, V, H);
+        impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T,
+                                                             V, H);
         F = H;
-        impl::set_conditioning_orthogonalizer<spinorbital_kind>(S, X, Xinv, XtX_condition_number);
+        impl::set_conditioning_orthogonalizer<spinorbital_kind>(
+            S, X, Xinv, XtX_condition_number);
         update_density_matrix();
     }
 
@@ -248,10 +250,12 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         if (m_have_initial_guess)
             return;
         const auto tstart = std::chrono::high_resolution_clock::now();
-        impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T, V, H);
+        impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T,
+                                                             V, H);
         F = H;
         occ::timing::start(occ::timing::category::la);
-        impl::set_conditioning_orthogonalizer<spinorbital_kind>(S, X, Xinv, XtX_condition_number);
+        impl::set_conditioning_orthogonalizer<spinorbital_kind>(
+            S, X, Xinv, XtX_condition_number);
         occ::timing::stop(occ::timing::category::la);
 
         occ::timing::start(occ::timing::category::guess);
@@ -261,8 +265,10 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             if constexpr (spinorbital_kind == Restricted) {
                 D = D_minbs;
             } else if constexpr (spinorbital_kind == Unrestricted) {
-                block::a(D) = D_minbs * (static_cast<double>(n_alpha()) / n_electrons);
-                block::b(D) = D_minbs * (static_cast<double>(n_beta()) / n_electrons);
+                block::a(D) =
+                    D_minbs * (static_cast<double>(n_alpha()) / n_electrons);
+                block::b(D) =
+                    D_minbs * (static_cast<double>(n_beta()) / n_electrons);
             } else if constexpr (spinorbital_kind == General) {
                 block::aa(D) = D_minbs * 0.5;
                 block::bb(D) = D_minbs * 0.5;
@@ -327,8 +333,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         if constexpr (spinorbital_kind == Unrestricted) {
             Eigen::SelfAdjointEigenSolver<Mat> alpha_eig_solver(
                 X.transpose() * block::a(fock) * X);
-            Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(X.transpose() *
-                                                               block::b(fock) * X);
+            Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(
+                X.transpose() * block::b(fock) * X);
             block::a(C) = X * alpha_eig_solver.eigenvectors();
             block::b(C) = X * beta_eig_solver.eigenvectors();
             block::a(orbital_energies) = alpha_eig_solver.eigenvalues();
@@ -448,12 +454,12 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
             // compute SCF error
             if constexpr (spinorbital_kind == Unrestricted) {
-                const auto& Fa = block::a(F);
-                const auto& Fb = block::a(F);
-                const auto& Da = block::a(D);
-                const auto& Db = block::a(D);
-                const auto& Sa = block::a(S);
-                const auto& Sb = block::a(S);
+                const auto &Fa = block::a(F);
+                const auto &Fb = block::a(F);
+                const auto &Da = block::a(D);
+                const auto &Db = block::a(D);
+                const auto &Sa = block::a(S);
+                const auto &Sb = block::a(S);
                 block::a(FD_comm) = Fa * Da * Sa - Fa * Da * Sa;
                 block::b(FD_comm) = Fb * Db * Sb - Sb * Db * Fb;
             } else {
@@ -482,11 +488,11 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             const std::chrono::duration<double> time_elapsed = tstop - tstart;
 
             if (iter == 1) {
-                fmt::print("{:>6s} {: >20s} {: >20s} {: >20s} {: >10s}\n",
-                           "cycle", "energy", "energy change", "err commutator",
-                           "time");
+                fmt::print("{:>4s} {: >20s} {: >12s} {: >12s}  {: >8s}\n", "#",
+                           "E (Hartrees)", "|\u0394E|/E", "max|FDS-SDF|",
+                           "T (s)");
             }
-            fmt::print("{:>6d} {:>20.12f} {:>20.12e} {:>20.12e} {:>10.5f}\n",
+            fmt::print("{:>4d} {:>20.12f} {:>12.5e} {:>12.5e}  {:>8.2e}\n",
                        iter, energy["total"], ediff_rel, diis_error,
                        time_elapsed.count());
             total_time += time_elapsed.count();

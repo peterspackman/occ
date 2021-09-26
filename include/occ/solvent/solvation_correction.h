@@ -5,7 +5,7 @@
 #include <occ/core/logger.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
-#include <occ/qm/spinorbital.h>
+#include <occ/qm/expectation.h>
 #include <occ/solvent/cosmo.h>
 #include <occ/solvent/parameters.h>
 
@@ -174,9 +174,13 @@ template <typename Proc> class SolvationCorrectedProcedure {
                           energy["solvation.surface"] + energy["solvation.CDS"];
     }
 
-    auto compute_kinetic_matrix() const { return m_proc.compute_kinetic_matrix(); }
+    auto compute_kinetic_matrix() const {
+        return m_proc.compute_kinetic_matrix();
+    }
 
-    auto compute_overlap_matrix() const { return m_proc.compute_overlap_matrix(); }
+    auto compute_overlap_matrix() const {
+        return m_proc.compute_overlap_matrix();
+    }
 
     auto compute_nuclear_attraction_matrix() const {
         return m_proc.compute_nuclear_attraction_matrix();
