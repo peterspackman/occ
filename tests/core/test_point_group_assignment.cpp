@@ -33,6 +33,7 @@ TEST_CASE("Water: C2v", "[point_group]")
 
     fmt::print("Water group: {}\n", pg.point_group_string());
     REQUIRE(pg.point_group() == occ::core::PointGroup::C2v);
+    REQUIRE(pg.symmetry_number() == 2);
 }
 
 TEST_CASE("Oxygen: Dooh", "[point_group]")
@@ -49,7 +50,15 @@ TEST_CASE("Oxygen: Dooh", "[point_group]")
     MolecularPointGroup pg(m);
 
     fmt::print("Oxygen group: {}\n", pg.point_group_string());
+    for(const auto& sym: pg.symops()) {
+        fmt::print("symop:\n{}\n", sym.transformation);
+    }
+    for(const auto& sym: pg.rotational_symmetries()) {
+        fmt::print("rotational symmetry: {}\n", sym.second);
+    }
+
     REQUIRE(pg.point_group() == occ::core::PointGroup::Dooh);
+    REQUIRE(pg.symmetry_number() == 2);
 }
 
 TEST_CASE("BF3: D3h", "[point_group]")
@@ -66,9 +75,14 @@ TEST_CASE("BF3: D3h", "[point_group]")
     MolecularPointGroup pg(m);
 
     fmt::print("BF3 group: {}\n", pg.point_group_string());
+    for(const auto& sym: pg.symops()) {
+        fmt::print("symop:\n{}\n", sym.transformation);
+    }
+    for(const auto& sym: pg.rotational_symmetries()) {
+        fmt::print("rotational symmetry: {}\n", sym.second);
+    }
     REQUIRE(pg.point_group() == occ::core::PointGroup::D3h);
-
-
+    REQUIRE(pg.symmetry_number() == 6);
 }
 
 TEST_CASE("Benzene: D6h", "[point_group]")
@@ -120,6 +134,13 @@ TEST_CASE("Cube: Oh", "[point_group]")
 
     MolecularPointGroup pg(m);
     fmt::print("Cube group: {}\n", pg.point_group_string());
+    for(const auto& sym: pg.symops()) {
+        fmt::print("symop:\n{}\n", sym.transformation);
+    }
+    for(const auto& sym: pg.rotational_symmetries()) {
+        fmt::print("rotational symmetry: {}\n", sym.second);
+    }
+
     REQUIRE(pg.point_group() == occ::core::PointGroup::Oh);
 }
 

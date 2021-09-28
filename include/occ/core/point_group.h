@@ -55,6 +55,7 @@ public:
     const PointGroup point_group() const { return group; }
     const auto& symops() const { return symmetry_operations; }
     const auto& rotational_symmetries() const { return rotational_symmetry; }
+    int symmetry_number() const;
 
 private:
     void init();

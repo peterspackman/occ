@@ -3,6 +3,7 @@
 #include <fmt/os.h>
 #include <occ/core/kabsch.h>
 #include <occ/core/logger.h>
+#include <occ/core/point_group.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
@@ -755,6 +756,9 @@ int main(int argc, char **argv) {
                     i, solv, crystal_dimers, dimer_energies);
             crystal_contributions_vec.push_back(crystal_contributions);
             double Gr = molecules[i].rotational_free_energy(298);
+            occ::core::MolecularPointGroup pg(molecules[i]);
+            fmt::print("Molecule {} point group = {}, symmetry number = {}\n",
+                       i, pg.point_group_string(), pg.symmetry_number());
             double Gt = molecules[i].translational_free_energy(298);
             double molar_mass = molecules[i].molar_mass();
 
@@ -812,6 +816,7 @@ int main(int argc, char **argv) {
             fmt::print(
                 "lattice energy (crystal)             {: 9.3f}  (E_lat)\n",
                 0.5 * total.total);
+            Gr += RT * std::log(pg.symmetry_number());
             fmt::print(
                 "rotational free energy (molecule)    {: 9.3f}  (E_rot)\n", Gr);
             fmt::print(
