@@ -75,11 +75,31 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
     const auto &uc_molecules = crystal.unit_cell_molecules();
     const auto &neighbors = uc_dimers.molecule_neighbors;
     size_t uc_idx = 0;
+    constexpr double max_de = 1e-4;
+
     for (const auto &mol : uc_molecules) {
-        size_t interaction_idx = 1;
+        std::vector<double> unique_interaction_energies;
+
         for (const auto &n : neighbors[uc_idx]) {
             const auto uc_shift = n.b().cell_shift();
             const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
+            const double e_int = n.interaction_energy();
+
+            auto match = std::find_if(
+                unique_interaction_energies.begin(),
+                unique_interaction_energies.end(),
+                [&e_int, &max_de](double x){ return std::abs(x - e_int) < max_de; }
+            );
+            size_t interaction_idx = 1;
+
+            if(match == std::end(unique_interaction_energies)) {
+                unique_interaction_energies.push_back(e_int);
+                interaction_idx = unique_interaction_energies.size();
+            }
+            else {
+                interaction_idx = 1 + std::distance(unique_interaction_energies.begin(), match);
+            }
+
             fmt::print(m_dest, "{}:[1A][{}-{}]({},{},{}) R={:.3f}\n",
                        interaction_idx,
                        n.a().name(), n.b().name(),
@@ -88,8 +108,8 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
             );
             interaction_idx++;
         }
-        for(const auto &n: neighbors[uc_idx]) {
-            fmt::print(m_dest, "{:.3f}\n", -n.interaction_energy());
+        for(double e: unique_interaction_energies) {
+            fmt::print(m_dest, "{:.4f}\n", -e);
         }
         uc_idx++;
     }

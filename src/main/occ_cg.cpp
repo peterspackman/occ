@@ -617,7 +617,7 @@ int main(int argc, char **argv) {
     cxxopts::Options options(
         "occ-interactions",
         "Interactions of molecules with neighbours in a crystal");
-    double radius = 0.0;
+    double radius = 0.0, cg_radius = 0.0;
     using occ::parallel::nthreads;
     std::string cif_filename{""};
     std::string solvent{"water"};
@@ -630,6 +630,8 @@ int main(int argc, char **argv) {
          cxxopts::value<int>(nthreads)->default_value("1"))
         ("r,radius", "maximum radius (angstroms) for neighbours",
          cxxopts::value<double>(radius)->default_value("3.8"))
+        ("c,cg-radius", "maximum radius (angstroms) for nearest neighbours in cg file (must be <= radius)",
+         cxxopts::value<double>(cg_radius)->default_value("3.8"))
         ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent))
         ("w,wavefunction-choice", "Choice of wavefunctions",
          cxxopts::value<std::string>(wfn_choice));
@@ -782,6 +784,7 @@ int main(int argc, char **argv) {
                 write_xyz_neighbors(neighbors_filename, n);
             }
 
+
             for (const auto &dimer : n) {
                 auto s_ab = c_symm.dimer_symmetry_string(dimer);
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j];
@@ -845,11 +848,13 @@ int main(int argc, char **argv) {
             double equilibrium_constant = std::exp(-dG_solubility / RT);
             fmt::print("equilibrium_constant                 {: 9.2e}\n",
                        equilibrium_constant);
+            fmt::print("log S                                {: 9.3f}\n",
+                    std::log10(equilibrium_constant));
             fmt::print("solubility (g/L)                     {: 9.3f}\n",
                        equilibrium_constant * molar_mass * 1000);
         }
 
-        auto uc_dimers = c_symm.unit_cell_dimers(radius);
+        auto uc_dimers = c_symm.unit_cell_dimers(cg_radius);
         auto &uc_neighbors = uc_dimers.molecule_neighbors;
 
         // write CG structure file
