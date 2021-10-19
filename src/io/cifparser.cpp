@@ -82,13 +82,13 @@ void CifParser::extract_symmetry_operations(const gemmi::cif::Loop &loop) {
 }
 
 void CifParser::extract_symmetry_data(const gemmi::cif::Pair &pair) {
-    const auto &tag = pair.front();
-    if (tag == "_symmetry_space_group_name_Hall")
+    const auto &tag = occ::util::to_lower_copy(pair.front());
+    if (tag == "_symmetry_space_group_name_hall")
         m_sym.nameHall = gemmi::cif::as_string(pair.back());
-    else if (tag == "_symmetry_space_group_name_H-M")
+    else if (tag == "_symmetry_space_group_name_h-m")
         m_sym.nameHM = gemmi::cif::as_string(pair.back());
-    else if (tag == "_space_group_IT_number" ||
-             tag == "_symmetry_Int_Tables_number")
+    else if (tag == "_space_group_it_number" ||
+             tag == "_symmetry_int_tables_number")
         m_sym.number = gemmi::cif::as_number(pair.back());
 }
 

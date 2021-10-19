@@ -286,7 +286,7 @@ calculate_solvated_surfaces(const std::string &basename,
 
             fmt::print("SCF difference         (au)       {: 9.3f}\n", e - original_energy);
             fmt::print("SCF difference         (kJ/mol)   {: 9.3f}\n", occ::units::AU_TO_KJ_PER_MOL * (e - original_energy));
-            fmt::print("delta G concentratcion (kJ/mol)   {: 9.3f}\n", props.dg_conc);
+            fmt::print("delta G concentration  (kJ/mol)   {: 9.3f}\n", dG_conc);
             fmt::print("total E solv (surface) (kj/mol)   {: 9.3f}\n", esolv * occ::units::AU_TO_KJ_PER_MOL);
             fmt::print("orbitals E_solv        (kj/mol)   {: 9.3f}\n", props.dg_ele * occ::units::AU_TO_KJ_PER_MOL);
             fmt::print("CDS E_solv   (surface) (kj/mol)   {: 9.3f}\n", props.e_cds.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
@@ -825,6 +825,7 @@ int main(int argc, char **argv) {
             fmt::print(
                 "translational free energy (molecule) {: 9.3f}  (E_trans)\n",
                 Gt);
+            // includes concentration shift
             double dG_solv = 
                 surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL;
             fmt::print(
@@ -850,7 +851,7 @@ int main(int argc, char **argv) {
                        equilibrium_constant);
             fmt::print("log S                                {: 9.3f}\n",
                     std::log10(equilibrium_constant));
-            fmt::print("solubility (g/L)                     {: 9.3f}\n",
+            fmt::print("solubility (g/L)                     {: 9.2e}\n",
                        equilibrium_constant * molar_mass * 1000);
         }
 
