@@ -1,4 +1,3 @@
-#include <fmt/ostream.h>
 #include <occ/core/element.h>
 #include <occ/core/units.h>
 #include <occ/solvent/smd.h>
@@ -226,42 +225,27 @@ constexpr double delta_rzz(ElementPair p) {
     }
 }
 
-void print_pair(ElementPair p) {
+constexpr const char * pair_string(ElementPair p) {
     switch (p) {
-    case H_C:
-        fmt::print("H_C\n");
-        break;
-    case H_O:
-        fmt::print("H_C\n");
-        break;
-    case O_C:
-        fmt::print("O_C\n");
-        break;
-    case O_O:
-        fmt::print("O_O\n");
-        break;
-    case O_N:
-        fmt::print("O_N\n");
-        break;
-    case O_P:
-        fmt::print("O_P\n");
-        break;
-    default:
-        fmt::print("Other\n");
-        break;
+    case H_C: return "H,C";
+    case H_O: return "H,O";
+    case O_C: return "O,C";
+    case O_O: return "O,O";
+    case O_N: return "O,N";
+    case O_P: return "O,P";
+    case C_C: return "C,C";
+    case C_N: return "C,N";
+    case N_C3: return "N,C(3)";
+    case N_C: return "N,C";
+    default: return "X,X";
     }
 }
 
 double T_switching_function(ElementPair p, double r) {
     const double rz = rzz(p);
     const double delta_rz = delta_rzz(p);
-    const double cutoff = rz + delta_rz;
-    /*
-    print_pair(p);
-    fmt::print("rzz: {}, delta_rzz: {}\n", rz, delta_rz);
-    */
-    if (r < cutoff)
-        return std::exp(delta_rz / (r - cutoff));
+    if (r < (rz + delta_rz))
+        return std::exp(delta_rz / (r - rz - delta_rz));
     else
         return 0.0;
 }
@@ -329,37 +313,6 @@ int get_second_element(ElementPair p) {
     return -1;
 }
 
-double element_pair_sum(const SMDSolventParameters &params, int index,
-                        ElementPair p, const IVec &nums, const Mat3N &positions,
-                        double power) {
-    double result{0.0};
-    int z2 = get_second_element(p);
-    double prefactor = element_pair_prefactor(params, p);
-    /*
-    print_pair(p);
-    fmt::print("Prefactor: {}\n", prefactor);
-    */
-    if (prefactor == 0.0)
-        return 0.0;
-    bool found_element{false};
-    for (int i = 0; i < nums.rows(); i++) {
-        if (i == index)
-            continue;
-        if (nums(i) != z2)
-            continue;
-        found_element = true;
-        double r = (positions.col(index) - positions.col(i)).norm();
-        result += T_switching_function(p, r);
-    }
-    if (!found_element) {
-        //   fmt::print("No terms\n");
-        return 0.0;
-    } else {
-        //  fmt::print("Found terms\n");
-    }
-    return std::pow(result, power) * prefactor;
-}
-
 ElementPair get_element_pair(int z1, int z2) {
     if (z1 == H) {
         switch (z2) {
@@ -372,6 +325,8 @@ ElementPair get_element_pair(int z1, int z2) {
         }
     } else if (z1 == C) {
         switch (z2) {
+        case H:
+            return C_H;
         case C:
             return C_C;
         case N:
@@ -417,79 +372,234 @@ ElementPair get_element_pair(int z1, int z2) {
     return Other;
 }
 
-double nitrogen_N_C_term(const SMDSolventParameters &params, int index,
-                         const IVec &nums, const Mat3N &positions) {
-    double result{0.0};
-    ElementPair p = N_C;
-    int z2 = get_second_element(p);
-    double nc_prefactor = element_pair_prefactor(params, p);
-    if (nc_prefactor == 0.0)
-        return nc_prefactor;
-    for (int i = 0; i < nums.rows(); i++) {
-        if (i == index)
-            continue;
-        if (nums(i) != z2)
-            continue;
-        double r = (positions.col(index) - positions.col(i)).norm();
-        double tmp = T_switching_function(p, r);
-        double csum{0.0};
-        for (int j = 0; j < nums.rows(); j++) {
-            if (j == index || j == i)
-                continue;
-            double r = (positions.col(j) - positions.col(i)).norm();
-            ElementPair p2 = get_element_pair(nums(i), nums(j));
-            csum += T_switching_function(p2, r);
+
+Mat cot_matrix(const SMDSolventParameters &params, const IVec &nums, const Mat3N &positions) {
+    Mat result = Mat::Zero(nums.rows(), nums.rows());
+    size_t N = nums.rows();
+    for(int i = 0; i < N; i++) {
+        for(int j = i + 1; j < N; j++) {
+            double r = (positions.col(i) - positions.col(j)).norm();
+            ElementPair p1 = get_element_pair(nums(i), nums(j));
+            ElementPair p2 = get_element_pair(nums(j), nums(i));
+            result(i, j) = T_switching_function(p1, r);
+            result(j, i) = T_switching_function(p2, r);
         }
-        result += csum * csum * tmp;
     }
-    return std::pow(result, 1.3) * nc_prefactor;
+    return result;
+}
+
+Mat sigma_matrix(const SMDSolventParameters &params, const IVec &nums) {
+    int max_el = nums.maxCoeff() + 1;
+    Mat result = Mat::Zero(max_el, max_el);
+    for(int i = 1; i < max_el; i++) {
+        for(int j = 1; j < max_el; j++) {
+            ElementPair p = get_element_pair(i, j);
+            result(i, j) = element_pair_prefactor(params, p);
+        }
+    }
+    return result;
+}
+
+Vec sigma_vector(const SMDSolventParameters &params, const IVec &nums) {
+    Vec result = Vec::Zero(nums.rows());
+    for(int i = 0; i < nums.rows(); i++) {
+        result(i) = element_sigma(params, nums(i));
+    }
+    return result;
+}
+
+double pair_term(int index, int n, const IVec &nums, const Mat &cot, int power = 1) {
+    double result = 0.0;
+    for(int j = 0; j < nums.rows(); j++) {
+        if(j == index) continue;
+        if(nums(j) != n) continue;
+        result += cot(index, j);
+    }
+    return std::pow(result, power);
+}
+
+double nc_term(int k, const IVec &nums, const Mat &cot) {
+    double result{0.0};
+    size_t N = nums.rows();
+    for (int kp = 0; kp < N; kp++) {
+        if(nums(kp) != 6) continue;
+
+        double csum{0.0};
+        for (int kpp = 0; kpp < N; kpp++) {
+            if((kpp == k) || (kpp == kp)) continue;
+            csum += cot(kp, kpp);
+        }
+        result += csum * csum * cot(k, kp);
+    }
+    return std::pow(result, 1.3);
+}
+
+double nc3_term(const SMDSolventParameters &params, int index, const IVec &nums, const Mat3N &positions) {
+    size_t N = nums.rows();
+    double result = 0.0;
+    const ElementPair p = ElementPair::N_C3;
+    for(int j = 0; j < N; j++) {
+        if(j == index) continue;
+        if(nums(j) != 6) continue;
+        double r = (positions.col(j) - positions.col(index)).norm();
+        result += T_switching_function(p, r);
+    }
+    return result;
 }
 
 } // namespace detail
 
 Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
-                           const Mat3N &positions) {
+                           const Mat3N &positions, const Vec &areas) {
+    int N = nums.rows();
     Vec result = Vec::Zero(nums.rows());
-    for (int i = 0; i < nums.rows(); i++) {
-        int n = nums(i);
-        result(i) = detail::element_sigma(params, n);
-        // fmt::print("Element {}: sigma: {}\n", n, result(i));
-        switch (n) {
+    Vec per_element_sigma = Vec::Zero(static_cast<size_t>(detail::ElementPair::Other));
+    Vec per_element_pair = Vec::Zero(nums.maxCoeff() + 1);
+    Vec per_element_pair2 = Vec::Zero(nums.maxCoeff() + 1);
+    Mat cot = detail::cot_matrix(params, nums, positions);
+    Mat sigma_mat = detail::sigma_matrix(params, nums);
+    Vec sigma_vec = detail::sigma_vector(params, nums);
+
+    for (int i = 0; i < N; i++) {
+        int ni = nums(i);
+        result(i) += sigma_vec(i);
+        switch(ni) {
         case 1: {
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::H_C, nums, positions, 1);
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::H_O, nums, positions, 1);
+            double hc_sigma = sigma_mat(1, 6);
+            if(hc_sigma != 0.0) {
+                double hc = detail::pair_term(i, 6, nums, cot, 1);
+                result(i) += hc * hc_sigma;
+            }
+            double ho_sigma = sigma_mat(1, 8);
+            if(ho_sigma != 0.0) {
+                double ho = detail::pair_term(i, 8, nums, cot, 1);
+                result(i) += ho * ho_sigma;
+            }
             break;
         }
         case 6: {
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::C_C, nums, positions, 1);
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::C_N, nums, positions, 2);
+            double cc_sigma = sigma_mat(6, 6);
+            if(cc_sigma != 0.0) {
+                double cc = detail::pair_term(i, 6, nums, cot, 1);
+                result(i) += cc * cc_sigma;
+            }
+            double cn_sigma = sigma_mat(6, 7);
+            if(cn_sigma != 0.0) {
+                double cn = detail::pair_term(i, 7, nums, cot, 2);
+                result(i) += cn * cn_sigma;
+            }
             break;
         }
         case 7: {
-            result(i) += detail::nitrogen_N_C_term(params, i, nums, positions);
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::N_C3, nums, positions, 1);
+            // definitely the problem
+            double nc_sigma = sigma_mat(7, 6);
+            if(nc_sigma != 0.0) {
+                double nc = detail::nc_term(i, nums, cot);
+                result(i) += nc * nc_sigma;
+            }
+            double nc3_sigma = detail::element_pair_prefactor(params, detail::ElementPair::N_C3);
+            if(nc3_sigma != 0.0) {
+                double nc3 = detail::nc3_term(params, i, nums, positions); 
+                result(i) += nc3 * nc3_sigma;
+            }
             break;
         }
         case 8: {
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::O_C, nums, positions, 1);
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::O_N, nums, positions, 1);
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::O_O, nums, positions, 1);
-            result(i) += detail::element_pair_sum(
-                params, i, detail::ElementPair::O_P, nums, positions, 1);
+            // O,C; O,N; O,O
+            for(int j = 6; j < 9; j++) {
+                double ox_sigma = sigma_mat(8, j);
+                if(ox_sigma != 0.0) {
+                    double ox = detail::pair_term(i, j, nums, cot, 1);
+                    result(i) += ox * ox_sigma;
+                }
+            }
+
+            double op_sigma = sigma_mat(8, 15);
+            if(op_sigma != 0.0) {
+                double op = detail::pair_term(i, 15, nums, cot, 1);
+                result(i) += op * op_sigma;
+            }
             break;
         }
-        default:
-            continue;
+        default: break;
         }
     }
+
+    return result;
+}
+
+Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
+                           const Mat3N &positions) {
+    int N = nums.rows();
+    Vec result = Vec::Zero(nums.rows());
+    Mat cot = detail::cot_matrix(params, nums, positions);
+    Mat sigma_mat = detail::sigma_matrix(params, nums);
+    Vec sigma_vec = detail::sigma_vector(params, nums);
+
+    for (int i = 0; i < N; i++) {
+        int ni = nums(i);
+        result(i) += sigma_vec(i);
+        switch(ni) {
+        case 1: {
+            double hc_sigma = sigma_mat(1, 6);
+            if(hc_sigma != 0.0) {
+                double hc = detail::pair_term(i, 6, nums, cot, 1);
+                result(i) += hc * hc_sigma;
+            }
+            double ho_sigma = sigma_mat(1, 8);
+            if(ho_sigma != 0.0) {
+                double ho = detail::pair_term(i, 8, nums, cot, 1);
+                result(i) += ho * ho_sigma;
+            }
+            break;
+        }
+        case 6: {
+            double cc_sigma = sigma_mat(6, 6);
+            if(cc_sigma != 0.0) {
+                double cc = detail::pair_term(i, 6, nums, cot, 1);
+                result(i) += cc * cc_sigma;
+            }
+            double cn_sigma = sigma_mat(6, 7);
+            if(cn_sigma != 0.0) {
+                double cn = detail::pair_term(i, 7, nums, cot, 2);
+                result(i) += cn * cn_sigma;
+            }
+            break;
+        }
+        case 7: {
+            double nc_sigma = sigma_mat(7, 6);
+            if(nc_sigma != 0.0) {
+                double nc = detail::nc_term(i, nums, cot);
+                result(i) += nc * nc_sigma;
+            }
+            double nc3_sigma = detail::element_pair_prefactor(params, detail::ElementPair::N_C3);
+            if(nc3_sigma != 0.0) {
+                double nc3 = detail::nc3_term(params, i, nums, positions); 
+                result(i) += nc3 * nc3_sigma;
+            }
+            break;
+        }
+        case 8: {
+            // O,C; O,N; O,O
+            for(int j = 6; j < 9; j++) {
+                double ox_sigma = sigma_mat(8, j);
+                if(ox_sigma != 0.0) {
+                    double ox = detail::pair_term(i, j, nums, cot, 1);
+                    result(i) += ox * ox_sigma;
+                }
+            }
+
+            double op_sigma = sigma_mat(8, 15);
+            if(op_sigma != 0.0) {
+                double op = detail::pair_term(i, 15, nums, cot, 1);
+                result(i) += op * op_sigma;
+            }
+            break;
+        }
+        default: break;
+        }
+    }
+
     return result;
 }
 

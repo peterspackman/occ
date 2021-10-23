@@ -128,5 +128,6 @@ class Molecule {
 };
 
 Molecule read_xyz_file(const std::string &);
+Molecule read_xyz_string(const std::string &);
 
 } // namespace occ::chem

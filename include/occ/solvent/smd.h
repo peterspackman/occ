@@ -6,6 +6,9 @@ namespace occ::solvent::smd {
 
 Vec atomic_surface_tension(const SMDSolventParameters &, const IVec &,
                            const Mat3N &);
+
+Vec atomic_surface_tension(const SMDSolventParameters &, const IVec &,
+                           const Mat3N &, const Vec &);
 Vec intrinsic_coulomb_radii(const IVec &nums, const SMDSolventParameters &);
 Vec cds_radii(const IVec &nums, const SMDSolventParameters &);
 double molecular_surface_tension(const SMDSolventParameters &);

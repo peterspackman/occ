@@ -1,5 +1,4 @@
 #include <fmt/core.h>
-#include <fstream>
 #include <occ/core/constants.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/logger.h>
@@ -7,6 +6,8 @@
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <scn/scn.h>
+#include <fstream>
+#include <sstream>
 
 namespace occ::chem {
 
@@ -33,13 +34,7 @@ Molecule::Molecule(const std::vector<occ::core::Atom> &atoms)
     m_name = chemical_formula(m_elements);
 }
 
-Molecule read_xyz_file(const std::string &filename) {
-    std::ifstream is(filename);
-    if (not is.good()) {
-        throw std::runtime_error(
-            fmt::format("Could not open file: '{}'", filename));
-    }
-
+Molecule read_xyz_istream(std::istream &is) {
     std::string line;
     std::getline(is, line);
     int num_atoms;
@@ -63,6 +58,24 @@ Molecule read_xyz_file(const std::string &filename) {
         num_atoms--;
     }
     return Molecule(atoms);
+}
+
+Molecule read_xyz_file(const std::string &filename) {
+    std::ifstream is(filename);
+    if (not is.good()) {
+        throw std::runtime_error(
+            fmt::format("Could not open file: '{}'", filename));
+    }
+    return read_xyz_istream(is);
+}
+
+Molecule read_xyz_string(const std::string &contents) {
+    std::istringstream is(contents);
+    if (not is.good()) {
+        throw std::runtime_error(
+            fmt::format("Could read xyz from string: '{}'", contents));
+    }
+    return read_xyz_istream(is);
 }
 
 std::vector<occ::core::Atom> Molecule::atoms() const {
