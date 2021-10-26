@@ -1,5 +1,5 @@
-#include "boost/version.hpp"
-#include "gemmi/version.hpp"
+#include <boost/version.hpp>
+#include <gemmi/version.hpp>
 #include <cxxopts.hpp>
 #include <filesystem>
 #include <fmt/core.h>
