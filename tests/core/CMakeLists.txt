@@ -9,7 +9,6 @@ endfunction()
 
 create_core_test(test_dimer.cpp)
 create_core_test(test_element.cpp)
-create_core_test(test_marching_cubes.cpp)
 create_core_test(test_molecule.cpp)
 create_core_test(test_multipole.cpp)
 create_core_test(test_numpy_io.cpp)

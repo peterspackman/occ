@@ -16,7 +16,7 @@ double ax(double x)
 
 
 TEST_CASE("Brent") {
-    std::function<double(double)> x2 = [](double x) { return (x - 0.5) * (x - 0.5); };
+    auto x2 = [](double x) { return (x - 0.5) * (x - 0.5); };
     occ::opt::Brent brent(x2);
     double xmin = brent.xmin();
     fmt::print("Found minimum of (x - 0.5)^2 in {} evaluations: ({}, {})\n", brent.num_calls(), xmin, brent.f_xmin());
