@@ -2,7 +2,7 @@
 #include <occ/core/element.h>
 #include <occ/core/logger.h>
 #include <occ/core/util.h>
-#include <occ/io/inputfile.h>
+#include <occ/io/gaussian_input_file.h>
 #include <regex>
 #include <scn/scn.h>
 

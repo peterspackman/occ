@@ -30,6 +30,12 @@ CPMAddPackage(
     GIT_TAG master
 )
 
+CPMAddPackage(
+    NAME nlohmann_json
+    GITHUB_REPOSITORY nlohmann/json
+    VERSION 3.10.4
+)
+
 # the install option has to be explicitly set to allow installation
 CPMAddPackage(
     NAME cxxopts

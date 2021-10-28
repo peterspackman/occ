@@ -5,8 +5,9 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/crystalgrower.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/inputfile.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gaussian_input_file.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/moldenreader.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/qcschema.cpp"
     ${OCC_INCLUDE_FILES}
 )
 
@@ -17,6 +18,7 @@ target_link_libraries(occ_io
     occ_qm
     toml11::toml11
     gemmi::gemmi
+    nlohmann_json::nlohmann_json
 )
 target_include_directories(occ_io PUBLIC 
     ${OCC_INCLUDE_DIR} 

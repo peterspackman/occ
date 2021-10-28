@@ -12,7 +12,7 @@
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
 #include <occ/io/fchkwriter.h>
-#include <occ/io/inputfile.h>
+#include <occ/io/gaussian_input_file.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/partitioning.h>
 #include <occ/qm/scf.h>

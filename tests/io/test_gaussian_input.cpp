@@ -1,6 +1,6 @@
 #include "catch.hpp"
 #include <fmt/ostream.h>
-#include <occ/io/inputfile.h>
+#include <occ/io/gaussian_input_file.h>
 #include <sstream>
 
 const char *contents = R""""(%chk=h2o
