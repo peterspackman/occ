@@ -14,6 +14,7 @@
 #include <occ/io/fchkwriter.h>
 #include <occ/io/xyz.h>
 #include <occ/io/gaussian_input_file.h>
+#include <occ/io/qcschema.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/partitioning.h>
@@ -168,6 +169,23 @@ void print_configuration(const Molecule &m, const OccInput &config) {
         m.translational_free_energy(occ::constants::celsius<double> + 25));
 }
 
+void read_input_file(OccInput &config) {
+    occ::timing::stop(occ::timing::category::io);
+    std::string ext = fs::path(config.filename).extension();
+    if (ext == ".gjf" || ext == ".com") {
+        occ::io::GaussianInputFile g(config.filename);
+        g.update_occ_input(config);
+    }
+    else if (ext == ".json") {
+        occ::io::QCSchemaReader qcs(config.filename);
+        qcs.update_occ_input(config);
+    }
+    else if (ext == ".xyz") {
+        occ::io::XyzFileReader xyz(config.filename);
+        xyz.update_occ_input(config);
+    }
+}
+
 occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name,
                                  bool spherical) {
     occ::qm::BasisSet basis(name, m.atoms());
@@ -179,30 +197,90 @@ occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name,
     return basis;
 }
 
-Wavefunction run_from_configuration(const OccInput &config) {
+Wavefunction single_point_calculation(const OccInput &config, const std::optional<Wavefunction>& guess = {}) {
     Molecule m = config.geometry.molecule();
     print_configuration(m, config);
 
     auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
 
-    if (config.method.name == "rhf")
-        return run_method<HartreeFock, SpinorbitalKind::Restricted>(m, basis,
-                                                                    config);
-    else if (config.method.name == "ghf")
-        return run_method<HartreeFock, SpinorbitalKind::General>(m, basis,
-                                                                 config);
-    else if (config.method.name == "uhf")
-        return run_method<HartreeFock, SpinorbitalKind::Unrestricted>(m, basis,
+    if(config.solvent.solvent_name.empty()) {
+        if (config.method.name == "rhf")
+            return run_method<HartreeFock, SpinorbitalKind::Restricted>(m, basis,
+                                                                        config);
+        else if (config.method.name == "ghf")
+            return run_method<HartreeFock, SpinorbitalKind::General>(m, basis,
+                                                                     config);
+        else if (config.method.name == "uhf")
+            return run_method<HartreeFock, SpinorbitalKind::Unrestricted>(m, basis,
+                                                                          config);
+        else {
+            if (config.electronic.spinorbital_kind == SpinorbitalKind::Unrestricted) {
+                return run_method<DFT, SpinorbitalKind::Unrestricted>(m, basis,
                                                                       config);
-    else {
-        if (config.electronic.spinorbital_kind == SpinorbitalKind::Unrestricted) {
-            return run_method<DFT, SpinorbitalKind::Unrestricted>(m, basis,
-                                                                  config);
-        } else {
-            return run_method<DFT, SpinorbitalKind::Restricted>(m, basis,
-                                                                config);
+            } else {
+                return run_method<DFT, SpinorbitalKind::Restricted>(m, basis,
+                                                                    config);
+            }
         }
     }
+    else {
+        if (config.method.name == "ghf") {
+            fmt::print(
+                "Hartree-Fock + SMD with general spinorbitals\n");
+            return run_solvated_method<HartreeFock,
+                                       SpinorbitalKind::General>(
+                *guess, config);
+        } else if (config.method.name == "rhf") {
+            fmt::print(
+                "Hartree-Fock + SMD with restricted spinorbitals\n");
+            return run_solvated_method<HartreeFock,
+                                       SpinorbitalKind::Restricted>(
+                *guess, config);
+        } else if (config.method.name == "uhf") {
+            fmt::print(
+                "Hartree-Fock + SMD with unrestricted spinorbitals\n");
+            return run_solvated_method<HartreeFock,
+                                       SpinorbitalKind::Unrestricted>(
+                *guess, config);
+        } else {
+            if (config.electronic.spinorbital_kind ==
+                SpinorbitalKind::Restricted) {
+                fmt::print("Kohn-Sham DFT + SMD with restricted "
+                           "spinorbitals\n");
+                return run_solvated_method<DFT,
+                                           SpinorbitalKind::Restricted>(
+                    *guess, config);
+            } else {
+                fmt::print("Kohn-Sham DFT + SMD with unrestricted "
+                           "spinorbitals\n");
+                return run_solvated_method<
+                    DFT, SpinorbitalKind::Unrestricted>(*guess, config);
+            }
+        }
+    }
+}
+
+
+void write_output_files(const OccInput &config, Wavefunction &wfn) {
+    fs::path fchk_path = config.filename;
+    if(!config.solvent.solvent_name.empty()) {
+        fchk_path.replace_extension(".solvated.fchk");
+    }
+    else {
+        fchk_path.replace_extension(".fchk");
+    }
+    occ::io::FchkWriter fchk(fchk_path.string());
+    fchk.set_title(fmt::format("{} {}/{} generated by occ",
+                               fchk_path.stem(), config.method.name,
+                               config.basis.name));
+    fchk.set_method(config.method.name);
+    fchk.set_basis_name(config.basis.name);
+    wfn.save(fchk);
+    fchk.write();
+    fmt::print("wavefunction stored in {}\n", fchk_path);
+    if (config.basis.spherical)
+        occ::log::warn("Spherical basis coefficients and ordering are not "
+                       "yet implemented for Fchk files");
 }
 
 int main(int argc, char *argv[]) {
@@ -273,13 +351,23 @@ int main(int argc, char *argv[]) {
         libint2::Shell::do_enforce_unit_normalization(false);
         libint2::initialize();
         occ::timing::start(occ::timing::category::io);
+
         OccInput config;
         config.filename = result["input"].as<std::string>();
-        config.basis.name = result["basis"].as<std::string>();
-        config.electronic.multiplicity = result["multiplicity"].as<int>();
-        config.method.name = result["method"].as<std::string>();
-        config.electronic.charge = result["charge"].as<int>();
-        config.basis.spherical = result["spherical"].as<bool>();
+        // read input file first so we can override with command line settings
+        read_input_file(config);
+
+        if(result.count("basis"))
+            config.basis.name = result["basis"].as<std::string>();
+        if(result.count("multiplicity"))
+            config.electronic.multiplicity = result["multiplicity"].as<int>();
+        if(result.count("method"))
+            config.method.name = result["method"].as<std::string>();
+        if(result.count("charge"))
+            config.electronic.charge = result["charge"].as<int>();
+        if(result.count("spherical"))
+            config.basis.spherical = result["spherical"].as<bool>();
+
         if (result.count("df-basis"))
             config.basis.df_name =
                 result["df-basis"].as<std::string>();
@@ -296,100 +384,28 @@ int main(int argc, char *argv[]) {
 
         using occ::parallel::nthreads;
         nthreads = result["threads"].as<int>();
+
         fmt::print("\nParallelization: {} threads, {} Eigen threads\n",
                    nthreads, Eigen::nbThreads());
 
-        std::string ext = fs::path(config.filename).extension();
         occ::timing::stop(occ::timing::category::io);
-        Wavefunction wfn = [&ext, &config]() {
-            if (ext == ".gjf" || ext == ".com") {
-                occ::io::GaussianInputFile g(config.filename);
-                g.update_occ_input(config);
-            } else {
-                occ::io::XyzFileReader xyz(config.filename);
-                xyz.update_occ_input(config);
-            }
-            return run_from_configuration(config);
-        }();
+        Wavefunction wfn = single_point_calculation(config);
+        write_output_files(config, wfn);
 
-        fs::path fchk_path = config.filename;
-        fchk_path.replace_extension(".fchk");
-        fs::path npz_path = config.filename;
-        npz_path.replace_extension(".npz");
-        occ::io::FchkWriter fchk(fchk_path.string());
-        fchk.set_title(fmt::format("{} {}/{} generated by occ",
-                                   fchk_path.stem(), config.method.name,
-                                   config.basis.name));
-        fchk.set_method(config.method.name);
-        fchk.set_basis_name(config.basis.name);
-        wfn.save(fchk);
-        fchk.write();
-        fmt::print("wavefunction stored in {}\n", fchk_path);
-        if (config.basis.spherical)
-            occ::log::warn("Spherical basis coefficients and ordering are not "
-                           "yet implemented for Fchk files");
 
         if (result.count("solvent")) {
-            double esolv{0.0};
             config.solvent.solvent_name = result["solvent"].as<std::string>();
             if (result.count("solvent-file"))
                 config.solvent.output_surface_filename =
                     result["solvent-file"].as<std::string>();
-            Wavefunction wfn2 = [&config, &wfn]() {
-                if (config.method.name == "ghf") {
-                    fmt::print(
-                        "Hartree-Fock + SMD with general spinorbitals\n");
-                    return run_solvated_method<HartreeFock,
-                                               SpinorbitalKind::General>(
-                        wfn, config);
-                } else if (config.method.name == "rhf") {
-                    fmt::print(
-                        "Hartree-Fock + SMD with restricted spinorbitals\n");
-                    return run_solvated_method<HartreeFock,
-                                               SpinorbitalKind::Restricted>(
-                        wfn, config);
-                } else if (config.method.name == "uhf") {
-                    fmt::print(
-                        "Hartree-Fock + SMD with unrestricted spinorbitals\n");
-                    return run_solvated_method<HartreeFock,
-                                               SpinorbitalKind::Unrestricted>(
-                        wfn, config);
-                } else {
-                    if (config.electronic.spinorbital_kind ==
-                        SpinorbitalKind::Restricted) {
-                        fmt::print("Kohn-Sham DFT + SMD with restricted "
-                                   "spinorbitals\n");
-                        return run_solvated_method<DFT,
-                                                   SpinorbitalKind::Restricted>(
-                            wfn, config);
-                    } else {
-                        fmt::print("Kohn-Sham DFT + SMD with unrestricted "
-                                   "spinorbitals\n");
-                        return run_solvated_method<
-                            DFT, SpinorbitalKind::Unrestricted>(wfn, config);
-                    }
-                }
-            }();
-            esolv = wfn2.energy.total - wfn.energy.total;
+            Wavefunction wfn2 = single_point_calculation(config, wfn);
+            double esolv = wfn2.energy.total - wfn.energy.total;
 
             fmt::print("Estimated delta G(solv) {:20.12f} ({:.3f} kJ/mol, "
                        "{:.3f} kcal/mol)\n",
                        esolv, esolv * occ::units::AU_TO_KJ_PER_MOL,
                        esolv * occ::units::AU_TO_KCAL_PER_MOL);
-
-            fchk_path.replace_extension(".solvated.fchk");
-            occ::io::FchkWriter fchk_solv(fchk_path.string());
-            fchk_solv.set_title(fmt::format(
-                "{} {}/{} generated by occ, SMD solvent = {}", fchk_path.stem(),
-                config.method.name, config.basis.name, config.solvent.solvent_name));
-            fchk_solv.set_method(config.method.name);
-            fchk_solv.set_basis_name(config.basis.name);
-            wfn2.save(fchk_solv);
-            fchk_solv.write();
-            fmt::print("solvated wavefunction stored in {}\n", fchk_path);
-            if (config.basis.spherical)
-                occ::log::warn("Spherical basis coefficients and ordering are "
-                               "not yet implemented for Fchk files");
+            write_output_files(config, wfn2);
         }
 
     } catch (const char *ex) {

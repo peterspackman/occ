@@ -3,31 +3,10 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <vector>
-#include <fmt/core.h>
+#include <occ/io/occ_input.h>
 
 namespace occ::io {
 
-struct QCSchemaBond {
-    int idx_a{-1};
-    int idx_b{-1};
-    double bond_length{0.0};
-};
-
-struct QCSchemaMolecule {
-    std::vector<double> positions;
-    std::vector<std::string> symbols;
-};
-
-struct QCSchemaModel {
-    std::string method;
-    std::string basis;
-};
-
-struct QCSchemaInput {
-    QCSchemaMolecule molecule;
-    QCSchemaModel model;
-    std::string driver;
-};
 
 void from_json(const nlohmann::json &J, QCSchemaModel &model) {
     J.at("method").get_to(model.method);
@@ -35,8 +14,19 @@ void from_json(const nlohmann::json &J, QCSchemaModel &model) {
 }
 
 void from_json(const nlohmann::json &J, QCSchemaMolecule &mol) {
-    J.at("geometry").get_to(mol.positions);
-    J.at("symbols").get_to(mol.symbols);
+    std::vector<double> positions;
+    J.at("geometry").get_to(positions);
+    for(size_t i = 0; i < positions.size(); i += 3) {
+        mol.positions.emplace_back(std::array<double, 3>{
+                positions[i],
+                positions[i + 1],
+                positions[i + 2]});
+    }
+    std::vector<std::string> symbols;
+    J.at("symbols").get_to(symbols);
+    for(const auto& sym: symbols) {
+        mol.elements.emplace_back(occ::chem::Element(sym));
+    }
 }
 
 void from_json(const nlohmann::json &J, QCSchemaInput &qc) {
@@ -61,8 +51,20 @@ QCSchemaReader::QCSchemaReader(std::istream &file) : m_filename("_istream_") {
 void QCSchemaReader::parse(std::istream &is) {
     nlohmann::json j;
     is >> j;
-    auto inp = j.get<QCSchemaInput>();
-    fmt::print("Molecule size: {}\n",  inp.molecule.positions.size());
+    input = j.get<QCSchemaInput>();
+}
+
+void QCSchemaReader::update_occ_input(OccInput &result) const {
+    result.geometry.elements = input.molecule.elements;
+    result.geometry.positions = input.molecule.positions;
+    result.method.name = input.model.method;
+    result.basis.name = input.model.basis;
+}
+
+OccInput QCSchemaReader::as_occ_input() const {
+    OccInput result;
+    update_occ_input(result);
+    return result;
 }
 
 
