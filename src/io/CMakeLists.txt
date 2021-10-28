@@ -7,6 +7,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gaussian_input_file.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/moldenreader.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_input.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/qcschema.cpp"
     ${OCC_INCLUDE_FILES}
 )

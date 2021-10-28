@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <istream>
+#include <occ/io/occ_input.h>
 #include <occ/qm/spinorbital.h>
 #include <string>
 #include <vector>
@@ -9,7 +10,6 @@ namespace occ::io {
 
 struct GaussianInputFile {
     enum MethodType { HF, DFT, Other };
-    using position = std::array<double, 3>;
     GaussianInputFile(const std::string &);
     GaussianInputFile(std::istream &);
 
@@ -17,12 +17,14 @@ struct GaussianInputFile {
     std::string method, basis_name;
     std::vector<std::string> keywords;
     std::vector<uint_fast8_t> atomic_numbers;
-    std::vector<position> atomic_positions;
+    std::vector<occ::io::Position> atomic_positions;
     std::string route_tag{"#"};
     std::string comment;
     MethodType method_type{Other};
     unsigned int charge{0}, multiplicity{1};
     occ::qm::SpinorbitalKind spinorbital_kind() const;
+
+
 
   private:
     void parse(std::istream &);
