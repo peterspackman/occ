@@ -12,7 +12,9 @@
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
 #include <occ/io/fchkwriter.h>
+#include <occ/io/xyz.h>
 #include <occ/io/gaussian_input_file.h>
+#include <occ/io/occ_input.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/partitioning.h>
 #include <occ/qm/scf.h>
@@ -177,8 +179,8 @@ occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name,
     return basis;
 }
 
-Wavefunction run_from_xyz_file(const OccInput &config) {
-    Molecule m = occ::chem::read_xyz_file(config.filename);
+Wavefunction run_from_configuration(const OccInput &config) {
+    Molecule m = config.geometry.molecule();
     print_configuration(m, config);
 
     auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
@@ -200,35 +202,6 @@ Wavefunction run_from_xyz_file(const OccInput &config) {
             return run_method<DFT, SpinorbitalKind::Restricted>(m, basis,
                                                                 config);
         }
-    }
-}
-
-Wavefunction run_from_gaussian_input_file(OccInput &config) {
-    occ::io::GaussianInputFile com(config.filename);
-    Molecule m(com.atomic_numbers, com.atomic_positions);
-
-    config.method.name = com.method;
-    config.electronic.charge = com.charge;
-    config.electronic.multiplicity = com.multiplicity;
-    config.basis.name = com.basis_name;
-
-    print_configuration(m, config);
-    auto basis = load_basis_set(m, com.basis_name, false);
-
-    if (com.method_type == occ::io::GaussianInputFile::MethodType::HF) {
-        if (com.spinorbital_kind() == SpinorbitalKind::Unrestricted)
-            return run_method<HartreeFock, SpinorbitalKind::Unrestricted>(
-                m, basis, config);
-        else
-            return run_method<HartreeFock, SpinorbitalKind::Restricted>(
-                m, basis, config);
-    } else {
-        if (com.spinorbital_kind() == SpinorbitalKind::Unrestricted)
-            return run_method<DFT, SpinorbitalKind::Unrestricted>(m, basis,
-                                                                  config);
-        else
-            return run_method<DFT, SpinorbitalKind::Restricted>(m, basis,
-                                                                config);
     }
 }
 
@@ -330,10 +303,13 @@ int main(int argc, char *argv[]) {
         occ::timing::stop(occ::timing::category::io);
         Wavefunction wfn = [&ext, &config]() {
             if (ext == ".gjf" || ext == ".com") {
-                return run_from_gaussian_input_file(config);
+                occ::io::GaussianInputFile g(config.filename);
+                g.update_occ_input(config);
             } else {
-                return run_from_xyz_file(config);
+                occ::io::XyzFileReader xyz(config.filename);
+                xyz.update_occ_input(config);
             }
+            return run_from_configuration(config);
         }();
 
         fs::path fchk_path = config.filename;

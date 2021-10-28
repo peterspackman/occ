@@ -3,6 +3,7 @@
 #include <occ/core/logger.h>
 #include <occ/core/util.h>
 #include <occ/io/gaussian_input_file.h>
+#include <occ/io/occ_input.h>
 #include <regex>
 #include <scn/scn.h>
 
@@ -90,8 +91,7 @@ void GaussianInputFile::parse_atom_line(const std::string &line) {
     std::string symbol;
     scn::scan(line, "{} {} {} {}", symbol, x, y, z);
     atomic_positions.push_back({x, y, z});
-    occ::chem::Element elem(symbol);
-    atomic_numbers.push_back(elem.atomic_number());
+    elements.emplace_back(occ::chem::Element(symbol));
 }
 
 SpinorbitalKind GaussianInputFile::spinorbital_kind() const {
@@ -102,6 +102,21 @@ SpinorbitalKind GaussianInputFile::spinorbital_kind() const {
     if (method[0] == 'u')
         return SpinorbitalKind::Unrestricted;
     return SpinorbitalKind::Restricted;
+}
+
+void GaussianInputFile::update_occ_input(OccInput &result) const {
+    result.geometry.positions = atomic_positions;
+    result.geometry.elements = elements;
+    result.method.name = method;
+    result.electronic.charge = charge;
+    result.electronic.multiplicity = multiplicity;
+    result.basis.name = basis_name;
+}
+
+OccInput GaussianInputFile::as_occ_input() const {
+    OccInput result;
+    update_occ_input(result);
+    return result;
 }
 
 } // namespace occ::io

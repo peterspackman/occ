@@ -5,7 +5,6 @@
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
-#include <scn/scn.h>
 #include <fstream>
 #include <sstream>
 
@@ -15,6 +14,17 @@ Molecule::Molecule(const IVec &nums, const Mat3N &pos)
     : m_atomicNumbers(nums), m_positions(pos) {
     for (size_t i = 0; i < size(); i++) {
         m_elements.push_back(Element(m_atomicNumbers(i)));
+    }
+    m_name = chemical_formula(m_elements);
+}
+
+Molecule::Molecule(const std::vector<Element> &elements, const std::vector<std::array<double, 3>> &positions)
+    : m_elements(elements), m_atomicNumbers(elements.size()), m_positions(3, positions.size()) {
+    for (size_t i = 0; i < size(); i++) {
+        m_atomicNumbers(i) = m_elements[i].atomic_number();
+        m_positions(0, i) = positions[i][0];
+        m_positions(1, i) = positions[i][1];
+        m_positions(2, i) = positions[i][2];
     }
     m_name = chemical_formula(m_elements);
 }
@@ -34,49 +44,6 @@ Molecule::Molecule(const std::vector<occ::core::Atom> &atoms)
     m_name = chemical_formula(m_elements);
 }
 
-Molecule read_xyz_istream(std::istream &is) {
-    std::string line;
-    std::getline(is, line);
-    int num_atoms;
-    scn::scan(line, "{}", num_atoms);
-    std::vector<occ::core::Atom> atoms;
-    atoms.reserve(num_atoms);
-    std::getline(is, line);
-    double x, y, z;
-    std::string el;
-    while (std::getline(is, line) && num_atoms > 0) {
-        auto result = scn::scan(line, "{} {} {} {}", el, x, y, z);
-        if (!result) {
-            occ::log::error("failed reading {}", result.error().msg());
-            continue;
-        }
-        occ::log::debug("Found atom line: {} {} {} {}\n", el, x, y, z);
-        int n = occ::chem::Element(el).atomic_number();
-        atoms.emplace_back(occ::core::Atom{n, x * occ::units::ANGSTROM_TO_BOHR,
-                                           y * occ::units::ANGSTROM_TO_BOHR,
-                                           z * occ::units::ANGSTROM_TO_BOHR});
-        num_atoms--;
-    }
-    return Molecule(atoms);
-}
-
-Molecule read_xyz_file(const std::string &filename) {
-    std::ifstream is(filename);
-    if (not is.good()) {
-        throw std::runtime_error(
-            fmt::format("Could not open file: '{}'", filename));
-    }
-    return read_xyz_istream(is);
-}
-
-Molecule read_xyz_string(const std::string &contents) {
-    std::istringstream is(contents);
-    if (not is.good()) {
-        throw std::runtime_error(
-            fmt::format("Could read xyz from string: '{}'", contents));
-    }
-    return read_xyz_istream(is);
-}
 
 std::vector<occ::core::Atom> Molecule::atoms() const {
     std::vector<occ::core::Atom> result(size());

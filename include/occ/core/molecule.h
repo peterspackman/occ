@@ -13,6 +13,7 @@ class Molecule {
     using CellShift = std::array<int, 3>;
     Molecule(const IVec &, const Mat3N &);
     Molecule(const std::vector<core::Atom> &atoms);
+    Molecule(const std::vector<Element>&, const std::vector<std::array<double, 3>>&);
 
     template <typename N, typename D>
     Molecule(const std::vector<N> &nums,
@@ -127,7 +128,5 @@ class Molecule {
     CellShift m_cell_shift{0, 0, 0};
 };
 
-Molecule read_xyz_file(const std::string &);
-Molecule read_xyz_string(const std::string &);
 
 } // namespace occ::chem

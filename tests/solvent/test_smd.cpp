@@ -1,4 +1,4 @@
-#include <occ/core/molecule.h>
+#include <occ/io/xyz.h>
 #include <occ/solvent/smd.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/surface.h>
@@ -94,7 +94,7 @@ H   2.612031   3.407432   2.520566
 
 
 TEST_CASE("CDS", "[solvent]") {
-    auto mol = occ::chem::read_xyz_string(NAPHTHOL);
+    auto mol = occ::io::molecule_from_xyz_string(NAPHTHOL);
     auto nums = mol.atomic_numbers();
     auto pos = mol.positions();
     Mat3N pos_bohr = pos * occ::units::ANGSTROM_TO_BOHR;

@@ -1,6 +1,7 @@
 #include <cxxopts.hpp>
 #include <filesystem>
 #include <fmt/ostream.h>
+#include <occ/io/xyz.h>
 #include <occ/3rdparty/robin_hood.h>
 #include <occ/core/eigenp.h>
 #include <occ/core/interpolator.h>
@@ -211,8 +212,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (!environment_filename.empty()) {
-        Molecule m1 = occ::chem::read_xyz_file(geometry_filename);
-        Molecule m2 = occ::chem::read_xyz_file(environment_filename);
+        Molecule m1 = occ::io::molecule_from_xyz_file(geometry_filename);
+        Molecule m2 = occ::io::molecule_from_xyz_file(environment_filename);
 
         fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
                    geometry_filename, "sym", "x", "y", "z");
@@ -249,7 +250,7 @@ int main(int argc, char *argv[]) {
         enpy::save_npy("faces.npy", f);
 
     } else {
-        Molecule m = occ::chem::read_xyz_file(geometry_filename);
+        Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
 
         fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
                    geometry_filename, "sym", "x", "y", "z");

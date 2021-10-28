@@ -23,7 +23,7 @@ TEST_CASE("h2o gaussian input", "[read]") {
     REQUIRE(reader.basis_name == "3-21g");
 
     REQUIRE(reader.atomic_positions.size() == 3);
-    REQUIRE(reader.atomic_numbers.size() == 3);
-    REQUIRE(reader.atomic_numbers[2] == 1);
+    REQUIRE(reader.elements.size() == 3);
+    REQUIRE(reader.elements[2].atomic_number() == 1);
     REQUIRE(reader.spinorbital_kind() == occ::qm::SpinorbitalKind::Restricted);
 }

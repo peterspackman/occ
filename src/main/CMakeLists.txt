@@ -51,6 +51,7 @@ target_link_libraries(hs
     occ_geometry
     occ_slater
     occ_solvent
+    occ_io
     cxxopts
 )
 set_target_properties(hs
