@@ -15,9 +15,13 @@ struct QCSchemaBond {
     double bond_length{0.0};
 };
 
-struct QCSchemaMolecule {
+struct QCSchemaTopology {
     std::vector<std::array<double, 3>> positions;
     std::vector<Element> elements;
+    std::vector<std::vector<int>> fragments;
+    std::vector<int> fragment_multiplicities;
+    int charge{0};
+    int multiplicity{1};
 };
 
 struct QCSchemaModel {
@@ -26,7 +30,7 @@ struct QCSchemaModel {
 };
 
 struct QCSchemaInput {
-    QCSchemaMolecule molecule;
+    QCSchemaTopology topology;
     QCSchemaModel model;
     std::string driver;
 };

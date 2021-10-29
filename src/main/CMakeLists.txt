@@ -1,9 +1,29 @@
-add_executable(occ "${CMAKE_CURRENT_SOURCE_DIR}/occ.cpp")
-target_link_libraries(occ
-    PUBLIC
+add_library(occ_main
+    "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
+    ${OCC_INCLUDE_FILES}
+)
+
+target_link_libraries(occ_main
+    PUBLIC 
+    occ_core
     occ_qm
     occ_dft
     occ_solvent
+)
+target_include_directories(occ_main PUBLIC 
+    ${OCC_INCLUDE_DIR} 
+    ${GEMMI_INCLUDE_DIR}
+)
+
+target_compile_features(occ_main PUBLIC cxx_std_17)
+
+
+add_executable(occ "${CMAKE_CURRENT_SOURCE_DIR}/occ.cpp")
+target_link_libraries(occ
+    PUBLIC
+    occ_main
     cxxopts
 )
 set_target_properties(occ

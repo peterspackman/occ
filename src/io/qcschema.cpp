@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <occ/io/occ_input.h>
+#include <fmt/core.h>
 
 namespace occ::io {
 
@@ -13,7 +14,7 @@ void from_json(const nlohmann::json &J, QCSchemaModel &model) {
     J.at("basis").get_to(model.basis);
 }
 
-void from_json(const nlohmann::json &J, QCSchemaMolecule &mol) {
+void from_json(const nlohmann::json &J, QCSchemaTopology &mol) {
     std::vector<double> positions;
     J.at("geometry").get_to(positions);
     for(size_t i = 0; i < positions.size(); i += 3) {
@@ -27,10 +28,26 @@ void from_json(const nlohmann::json &J, QCSchemaMolecule &mol) {
     for(const auto& sym: symbols) {
         mol.elements.emplace_back(occ::chem::Element(sym));
     }
+
+    if(J.contains("fragments")) {
+        J.at("fragments").get_to(mol.fragments);
+    }
+
+    if(J.contains("fragment_multiplicities")) {
+        J.at("fragment_multiplicities").get_to(mol.fragment_multiplicities);
+    }
+
+    if(J.contains("molecular_charge")) {
+        J.at("molecular_charge").get_to(mol.charge);
+    }
+
+    if(J.contains("molecular_multiplicity")) {
+        J.at("molecular_multiplicity").get_to(mol.multiplicity);
+    }
 }
 
 void from_json(const nlohmann::json &J, QCSchemaInput &qc) {
-    J.at("molecule").get_to(qc.molecule);
+    J.at("molecule").get_to(qc.topology);
     J.at("model").get_to(qc.model);
     J.at("driver").get_to(qc.driver);
 }
@@ -55,8 +72,10 @@ void QCSchemaReader::parse(std::istream &is) {
 }
 
 void QCSchemaReader::update_occ_input(OccInput &result) const {
-    result.geometry.elements = input.molecule.elements;
-    result.geometry.positions = input.molecule.positions;
+    result.geometry.elements = input.topology.elements;
+    result.geometry.positions = input.topology.positions;
+    result.electronic.multiplicity = input.topology.multiplicity;
+    result.electronic.charge = input.topology.charge;
     result.method.name = input.model.method;
     result.basis.name = input.model.basis;
 }

@@ -24,8 +24,12 @@ struct GeometryInput {
     occ::chem::Molecule molecule() const;
 };
 
+struct DriverInput {
+    std::string driver{"energy"};
+};
+
 struct MethodInput {
-    std::string name{"hf"};
+    std::string name{"rhf"};
 };
 
 struct BasisSetInput {
@@ -45,6 +49,7 @@ struct RuntimeInput {
 };
 
 struct OccInput {
+    DriverInput driver;
     RuntimeInput runtime;
     ElectronInput electronic;
     GeometryInput geometry;
