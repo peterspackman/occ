@@ -153,7 +153,7 @@ bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
     Mat3N posd2 = rhs.positions(MoleculeOrder::AB);
     posd2.colwise() -= Od2;
 
-    occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
+    occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2, false);
     Mat3N posd1_rot = rot * posd1;
     return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
 }

@@ -22,6 +22,7 @@ struct GeometryInput {
     std::vector<Position> positions;
     std::vector<Element> elements;
     occ::chem::Molecule molecule() const;
+    void set_molecule(const occ::chem::Molecule&);
 };
 
 struct DriverInput {

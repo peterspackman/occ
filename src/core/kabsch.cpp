@@ -2,7 +2,7 @@
 
 namespace occ::linalg {
 
-occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b) {
+occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b, bool ensure_proper_rotation) {
     /*
     Calculate the optimal rotation matrix `R` to rotate
     `A` onto `B`, minimising root-mean-square deviation so that
@@ -38,7 +38,8 @@ occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b) {
     // check the determinant to ensure a right-handed
     // coordinate system
     occ::Mat d = occ::Mat::Identity(3, 3);
-    d(2, 2) = (u.determinant() * v.determinant() < 0.0) ? -1 : 1;
+    if(ensure_proper_rotation)
+        d(2, 2) = (u.determinant() * v.determinant() < 0.0) ? -1 : 1;
     return v * d * u.transpose();
 }
 

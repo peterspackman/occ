@@ -57,6 +57,7 @@ target_link_libraries(occ-cg
     occ_io
     occ_crystal
     occ_interaction
+    occ_main
     cxxopts
 )
 

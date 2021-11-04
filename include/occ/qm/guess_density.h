@@ -53,7 +53,7 @@ inline size_t minimal_basis_nao(size_t Z) {
     return nao;
 }
 
-std::vector<double> minimal_basis_occupation_vector(size_t Z) {
+inline std::vector<double> minimal_basis_occupation_vector(size_t Z) {
 
     using impl::update_occupation_subshell;
     std::vector<double> occvec(minimal_basis_nao(Z));
