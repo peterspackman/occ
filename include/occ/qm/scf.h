@@ -495,6 +495,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             fmt::print("{:>4d} {:>20.12f} {:>12.5e} {:>12.5e}  {:>8.2e}\n",
                        iter, energy["total"], ediff_rel, diis_error,
                        time_elapsed.count());
+            std::cout << std::flush;
             total_time += time_elapsed.count();
 
         } while (((ediff_rel > energy_convergence_threshold) ||
@@ -540,8 +541,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     occ::core::EnergyComponents energy;
     int maxiter{100};
     size_t nbf{0};
-    double energy_convergence_threshold = 1e-8;
-    double commutator_convergence_threshold = 1e-8;
+    double energy_convergence_threshold = 5e-8;
+    double commutator_convergence_threshold = 5e-8;
     int iter = 0;
     double diis_error{1.0};
     double ediff_rel = 0.0;

@@ -109,7 +109,7 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
             interaction_idx++;
         }
         for(double e: unique_interaction_energies) {
-            fmt::print(m_dest, "{:.4f}\n", -e);
+            fmt::print(m_dest, "{:.4f}\n", e);
         }
         uc_idx++;
     }
