@@ -488,18 +488,23 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
     }
     return energy_contribution;
 }
+struct AssignedEnergy {
+    bool is_nn{true};
+    double energy{0.0};
+};
 
-std::vector<double> assign_interaction_terms_to_nearest_neighbours(
+std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
     int i, const std::vector<SolventNeighborContribution> &solv,
     const occ::crystal::CrystalDimers &crystal_dimers,
     const std::vector<CEModelInteraction::EnergyComponents> dimer_energies) {
-    std::vector<double> crystal_contributions(solv.size(), 0.0);
+    std::vector<AssignedEnergy> crystal_contributions(solv.size());
     double total_taken{0.0};
     const auto &n = crystal_dimers.molecule_neighbors[i];
     for (size_t k1 = 0; k1 < solv.size(); k1++) {
         const auto& s1 = solv[k1];
         if ((abs(s1.coulomb.total()) != 0.0 || abs(s1.cds.total()) != 0.0))
             continue;
+        crystal_contributions[k1].is_nn = false;
         auto v = n[k1].v_ab().normalized();
         auto unique_dimer_idx = crystal_dimers.unique_dimer_idx[i][k1];
         total_taken += dimer_energies[unique_dimer_idx].total_kjmol();
@@ -526,17 +531,18 @@ std::vector<double> assign_interaction_terms_to_nearest_neighbours(
             double dp = v.dot(v2);
             if (dp <= 0.0)
                 continue;
-            crystal_contributions[k2] +=
+            crystal_contributions[k2].is_nn = true;
+            crystal_contributions[k2].energy +=
                 (dp / total_dp) *
                 dimer_energies[unique_dimer_idx].total_kjmol();
         }
     }
     double total_reassigned{0.0};
     for (size_t k1 = 0; k1 < solv.size(); k1++) {
-        if (crystal_contributions[k1] == 0.0)
+        if (!crystal_contributions[k1].is_nn)
             continue;
-        fmt::print("{}: {:.3f}\n", k1, crystal_contributions[k1]);
-        total_reassigned += crystal_contributions[k1];
+        fmt::print("{}: {:.3f}\n", k1, crystal_contributions[k1].energy);
+        total_reassigned += crystal_contributions[k1].energy;
     }
     occ::log::debug("Total taken from non-nearest neighbors: {:.3f} kJ/mol\n",
                total_taken);
@@ -681,7 +687,6 @@ int main(int argc, char **argv) {
             solvation_breakdowns;
         std::vector<std::vector<double>> interaction_energies_vec(mol_neighbors.size());
         for (size_t i = 0; i < mol_neighbors.size(); i++) {
-            double total_interaction_energy{0.0};
             const auto &n = mol_neighbors[i];
             std::string molname = fmt::format("{}_{}_{}", basename, i, solvent);
             auto solv = compute_solvation_energy_breakdown(
@@ -717,8 +722,13 @@ int main(int argc, char **argv) {
                 write_xyz_neighbors(neighbors_filename, n);
             }
 
+            size_t num_neighbors = std::accumulate(crystal_contributions.begin(), crystal_contributions.end(), 0,
+                    [](size_t a, const AssignedEnergy &x) { return x.is_nn ? a + 1 : a; });
+
             // TODO adjust for co-crystals!
-            double gas_term_per_interaction = 2 * surfaces[i].dg_gas / n.size();
+            double gas_term_per_interaction = 2 * surfaces[i].dg_gas / num_neighbors;
+
+            double total_interaction_energy{0.0};
 
             for (const auto &dimer : n) {
                 auto s_ab = c_symm.dimer_symmetry_string(dimer);
@@ -736,9 +746,11 @@ int main(int argc, char **argv) {
                 total.dispersion += edisp;
                 total.total += etot;
 
-                double e_int = etot + crystal_contributions[j];
+                double e_int = etot;
                 double solv_cont = solv[j].total() * AU_TO_KJ_PER_MOL;
-                e_int -= solv_cont + gas_term_per_interaction * AU_TO_KJ_PER_MOL;
+                double gas_term = crystal_contributions[j].is_nn ? gas_term_per_interaction * AU_TO_KJ_PER_MOL : 0.0;
+
+                e_int = gas_term + solv_cont - etot - crystal_contributions[j].energy;
                 interactions.push_back(e_int);
                 auto &sj = solv[j];
 
@@ -749,10 +761,10 @@ int main(int argc, char **argv) {
                     sj.coulomb.total() * AU_TO_KJ_PER_MOL,
                     sj.cds_area.total(),
                     sj.cds.total() * AU_TO_KJ_PER_MOL,
-                    gas_term_per_interaction * AU_TO_KJ_PER_MOL,
-                    crystal_contributions[j],
+                    gas_term,
+                    crystal_contributions[j].energy,
                     e_int);
-                total_interaction_energy += e_int;
+                if(crystal_contributions[j].is_nn) total_interaction_energy += e_int;
                 j++;
             }
             constexpr double R = 8.31446261815324;

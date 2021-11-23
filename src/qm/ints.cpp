@@ -190,6 +190,7 @@ Mat compute_shellblock_norm(const BasisSet &obs, const Mat &A) {
     Mat Ash(nsh, nsh);
 
     auto shell2bf = obs.shell2bf();
+
     for (size_t s1 = 0; s1 != nsh; ++s1) {
         const auto &s1_first = shell2bf[s1];
         const auto &s1_size = obs[s1].size();
@@ -201,7 +202,6 @@ Mat compute_shellblock_norm(const BasisSet &obs, const Mat &A) {
                               .lpNorm<Eigen::Infinity>();
         }
     }
-
     occ::timing::stop(occ::timing::category::ints1e);
     return Ash;
 }
