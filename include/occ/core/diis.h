@@ -5,7 +5,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/timings.h>
 
-namespace occ::diis {
+namespace occ::core::diis {
 
 template <typename T> struct diis_traits;
 
@@ -182,4 +182,18 @@ template <typename T> class DIIS {
         m_extrapolated.clear();
     }
 };
+
+
+class DIIS2 {
+public:
+    enum Mode {
+        Restart,
+        AdaptiveDepth,
+        FixedDepth
+    };
+    static Mat commutator(const Mat &A, const Mat &B, const Mat &overlap);
+private:
+    Mode m_mode;
+};
+
 } // namespace occ::diis

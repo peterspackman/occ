@@ -547,7 +547,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     double diis_error{1.0};
     double ediff_rel = 0.0;
     double total_time{0.0};
-    occ::diis::DIIS<Mat> diis; // start DIIS on second iteration
+    occ::core::diis::DIIS<Mat> diis; // start DIIS on second iteration
     bool reset_incremental_fock_formation = false;
     bool incremental_Fbuild_started = false;
     double start_incremental_F_threshold = 1e-4;

@@ -45,25 +45,27 @@ using occ::util::all_close;
 struct SolvatedSurfaceProperties {
     double esolv{0.0};
     double dg_ele{0.0};
-    double dg_offset{0.0};
+    double dg_gas{0.0};
     occ::Mat3N coulomb_pos;
     occ::Mat3N cds_pos;
     occ::Vec e_coulomb;
     occ::Vec e_cds;
     occ::Vec e_ele;
-    occ::Vec e_gas;
+    occ::Vec a_coulomb;
+    occ::Vec a_cds;
 
     void save(const std::string &filename) {
         auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
         size_t N = coulomb_pos.cols();
-        output.print("{}\ncoulomb esolv = {} dg_ele = {} dg_offset = {}\n", N, esolv, dg_ele, dg_offset);
+        output.print("{}\ncoulomb esolv = {} dg_ele = {} dg_gas = {}\n", N, esolv, dg_ele, dg_gas);
         for(size_t i = 0; i < N; i++)
         {
             output.print("{: 12.6f} {: 12.6f} {: 12.6f} "
-                         "{: 20.12f} {: 20.12f}\n",
+                         "{: 20.12f} {: 20.12f} {: 20.12f}\n",
                          coulomb_pos(0, i), 
                          coulomb_pos(1, i), 
                          coulomb_pos(2, i), 
+                         a_coulomb(i),
                          e_coulomb(i),
                          e_ele(i));
         }
@@ -76,8 +78,8 @@ struct SolvatedSurfaceProperties {
                          cds_pos(0, i), 
                          cds_pos(1, i), 
                          cds_pos(2, i), 
-                         e_cds(i),
-                         e_gas(i));
+                         a_cds(i),
+                         e_cds(i));
         }
     }
 
@@ -87,20 +89,23 @@ struct SolvatedSurfaceProperties {
         size_t N;
         SolvatedSurfaceProperties props;
         double coul_x, coul_y, coul_z, cds_x, cds_y, cds_z;
-        double e_coul, e_cds, e_ele, e_gas;
+        double e_coul, e_cds, e_ele;
+        double area;
         std::getline(file, line);
         scn::scan_default(line, N);
         std::getline(file, line);
-        scn::scan(line, "coulomb esolv = {} dg_ele = {} dg_offset = {}", props.esolv, props.dg_ele, props.dg_offset);
+        scn::scan(line, "coulomb esolv = {} dg_ele = {} dg_gas = {}", props.esolv, props.dg_ele, props.dg_gas);
         props.coulomb_pos = occ::Mat3N::Zero(3, N);
         props.e_coulomb = occ::Vec::Zero(N);
         props.e_ele = occ::Vec::Zero(N);
+        props.a_coulomb = occ::Vec::Zero(N);
         for(size_t i = 0; i < N; i++) {
             std::getline(file, line);
-            scn::scan_default(line, coul_x, coul_y, coul_z, e_coul, e_ele);
+            scn::scan_default(line, coul_x, coul_y, coul_z, area, e_coul, e_ele);
             props.coulomb_pos(0, i) = coul_x;
             props.coulomb_pos(1, i) = coul_y;
             props.coulomb_pos(2, i) = coul_z;
+            props.a_coulomb(i) = area;
             props.e_coulomb(i) = e_coul;
             props.e_ele(i) = e_ele;
         }
@@ -108,16 +113,16 @@ struct SolvatedSurfaceProperties {
         scn::scan_default(line, N);
         props.cds_pos = occ::Mat3N::Zero(3, N);
         props.e_cds = occ::Vec::Zero(N);
-        props.e_gas = occ::Vec::Zero(N);
+        props.a_cds = occ::Vec::Zero(N);
         std::getline(file, line);
         for(size_t i = 0; i < N; i++) {
             std::getline(file, line);
-            scn::scan_default(line, cds_x, cds_y, cds_z, e_cds, e_gas);
+            scn::scan_default(line, cds_x, cds_y, cds_z, area, e_cds);
             props.cds_pos(0, i) = cds_x;
             props.cds_pos(1, i) = cds_y;
             props.cds_pos(2, i) = cds_z;
+            props.a_cds(i) = area;
             props.e_cds(i) = e_cds;
-            props.e_gas(i) = e_gas;
         }
         return props;
     }
@@ -262,6 +267,8 @@ calculate_solvated_surfaces(const std::string &basename,
             auto coul_areas = proc_solv.surface_areas_coulomb();
             auto cds_areas = proc_solv.surface_areas_cds();
             props.e_cds = proc_solv.surface_cds_energy_elements();
+            props.a_coulomb = coul_areas;
+            props.a_cds = cds_areas;
             auto nuc = proc_solv.surface_nuclear_energy_elements();
             auto elec = proc_solv.surface_electronic_energy_elements(
                 SpinorbitalKind::Restricted, scf.D);
@@ -274,7 +281,7 @@ calculate_solvated_surfaces(const std::string &basename,
             double esolv = nuc.array().sum() + elec.array().sum() +
                            pol.array().sum() + props.e_cds.array().sum();
 
-            // dG_offset
+            // dG_gas
             const auto& mol = mols[index];
             double Gr = mol.rotational_free_energy(298);
             occ::core::MolecularPointGroup pg(mol);
@@ -283,7 +290,7 @@ calculate_solvated_surfaces(const std::string &basename,
             constexpr double R = 8.31446261815324;
             constexpr double RT = 298 * R / 1000;
             Gr += RT * std::log(pg.symmetry_number());
-            double dG_offset = 
+            double dG_gas = 
                 // dG concentration in kJ/mol
                 1.89 / occ::units::KJ_TO_KCAL
                 // 2 RT contribution from enthalpy
@@ -291,14 +298,14 @@ calculate_solvated_surfaces(const std::string &basename,
                 // Gr + Gt contribution from gas
                 + Gt + Gr;
 
-            props.dg_offset = dG_offset / occ::units::AU_TO_KJ_PER_MOL;
+            props.dg_gas = dG_gas / occ::units::AU_TO_KJ_PER_MOL;
             props.dg_ele = e - original_energy - esolv;
             occ::log::debug("total e_solv {:12.6f} ({:.3f} kJ/mol)\n", esolv,
                             esolv * occ::units::AU_TO_KJ_PER_MOL);
 
             fmt::print("SCF difference         (au)       {: 9.3f}\n", e - original_energy);
             fmt::print("SCF difference         (kJ/mol)   {: 9.3f}\n", occ::units::AU_TO_KJ_PER_MOL * (e - original_energy));
-            fmt::print("delta G concentration  (kJ/mol)   {: 9.3f}\n", dG_offset);
+            fmt::print("delta G gas            (kJ/mol)   {: 9.3f}\n", dG_gas);
             fmt::print("total E solv (surface) (kj/mol)   {: 9.3f}\n", esolv * occ::units::AU_TO_KJ_PER_MOL);
             fmt::print("orbitals E_solv        (kj/mol)   {: 9.3f}\n", props.dg_ele * occ::units::AU_TO_KJ_PER_MOL);
             fmt::print("CDS E_solv   (surface) (kj/mol)   {: 9.3f}\n", props.e_cds.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
@@ -309,7 +316,6 @@ calculate_solvated_surfaces(const std::string &basename,
             props.esolv = e - original_energy;
             props.e_ele =
                 (props.dg_ele / coul_areas.array().sum()) * coul_areas.array();
-            props.e_gas = (props.dg_offset / cds_areas.array().sum()) * cds_areas.array();
             props.save(props_path.string());
             result.push_back(props);
         }
@@ -389,19 +395,20 @@ struct SolventNeighborContribution {
 
     inline double total() const { 
         return coulomb.total()
-             + cds.total()
-             + gas.total();
+             + cds.total();
     }
 
     AsymPair coulomb;
     AsymPair cds;
-    AsymPair gas;
+    AsymPair cds_area;
+    AsymPair coulomb_area;
     bool neighbor_set{false};
 
     void assign(SolventNeighborContribution &other) {
         coulomb.assign(other.coulomb);
         cds.assign(other.cds);
-        gas.assign(other.gas);
+        coulomb_area.assign(other.coulomb_area);
+        cds_area.assign(other.cds_area);
     }
 };
 
@@ -429,9 +436,12 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
         Eigen::Index idx = 0;
         double r =
             (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
-        energy_contribution[mol_idx(idx)].coulomb.ab +=
+        auto m_idx = mol_idx(idx);
+        auto &contrib = energy_contribution[m_idx];
+        contrib.coulomb.ab +=
             surface.e_coulomb(i) + surface.e_ele(i);
-        neighbor_idx_coul(i) = mol_idx(idx);
+        neighbor_idx_coul(i) = m_idx;
+        contrib.coulomb_area.ab += surface.a_coulomb(i);
         cfile.print("{:12.5f} {:12.5f} {:12.5f} {:12.5f} {:5d}\n",
                     angstroms(x(0)), angstroms(x(1)), angstroms(x(2)),
                     surface.e_coulomb(i), mol_idx(idx));
@@ -447,9 +457,11 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
         Eigen::Index idx = 0;
         double r =
             (neigh_pos.colwise() - x).colwise().squaredNorm().minCoeff(&idx);
-        energy_contribution[mol_idx(idx)].cds.ab += surface.e_cds(i);
-        energy_contribution[mol_idx(idx)].gas.ab += surface.e_gas(i);
-        neighbor_idx_cds(i) = mol_idx(idx);
+        auto m_idx = mol_idx(idx);
+        auto &contrib = energy_contribution[m_idx];
+        contrib.cds.ab += surface.e_cds(i);
+        contrib.cds_area.ab += surface.a_cds(i);
+        neighbor_idx_cds(i) = m_idx;
         cdsfile.print("{:12.5f} {:12.5f} {:12.5f} {:12.5f} {:5d}\n",
                       angstroms(x(0)), angstroms(x(1)), angstroms(x(2)),
                       surface.e_cds(i), mol_idx(idx));
@@ -468,7 +480,7 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
             if (d1.equivalent_in_opposite_frame(d2)) {
                 ci.neighbor_set = true;
                 cj.neighbor_set = true;
-                fmt::print("Match: {} {}\n", i, j);
+                fmt::print("Interaction paired {}<->{}\n", i, j);
                 ci.assign(cj);
                 continue;
             }
@@ -641,7 +653,7 @@ int main(int argc, char **argv) {
 
         const std::string row_fmt_string =
             "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
-            "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
+            "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
 
 
         fmt::print(
@@ -690,8 +702,8 @@ int main(int argc, char **argv) {
             fmt::print("Neighbors for asymmetric molecule {}\n", i);
 
             fmt::print("{:>7s} {:>7s} {:>20s} "
-                       "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
-                       "Rn", "Rc", "Symop", "E_crys", "E_scoul", "E_scds", "E_gas", "E_nn", "E_int");
+                       "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
+                       "Rn", "Rc", "Symop", "E_crys", "A_coul", "E_scoul", "A_cds", "E_scds", "E_gas", "E_nn", "E_int");
             fmt::print("============================="
                        "============================="
                        "=============================\n");
@@ -704,6 +716,9 @@ int main(int argc, char **argv) {
                 std::string neighbors_filename = fmt::format("{}_{}_neighbors.xyz", basename, i);
                 write_xyz_neighbors(neighbors_filename, n);
             }
+
+            // TODO adjust for co-crystals!
+            double gas_term_per_interaction = 2 * surfaces[i].dg_gas / n.size();
 
             for (const auto &dimer : n) {
                 auto s_ab = c_symm.dimer_symmetry_string(dimer);
@@ -723,15 +738,18 @@ int main(int argc, char **argv) {
 
                 double e_int = etot + crystal_contributions[j];
                 double solv_cont = solv[j].total() * AU_TO_KJ_PER_MOL;
-                e_int -= solv_cont;
+                e_int -= solv_cont + gas_term_per_interaction * AU_TO_KJ_PER_MOL;
                 interactions.push_back(e_int);
+                auto &sj = solv[j];
 
                 fmt::print(
                     row_fmt_string, rn, rc, s_ab,
                     etot,
-                    solv[j].coulomb.total() * AU_TO_KJ_PER_MOL,
-                    solv[j].cds.total() * AU_TO_KJ_PER_MOL,
-                    solv[j].gas.total() * AU_TO_KJ_PER_MOL,
+                    sj.coulomb_area.total(),
+                    sj.coulomb.total() * AU_TO_KJ_PER_MOL,
+                    sj.cds_area.total(),
+                    sj.cds.total() * AU_TO_KJ_PER_MOL,
+                    gas_term_per_interaction * AU_TO_KJ_PER_MOL,
                     crystal_contributions[j],
                     e_int);
                 total_interaction_energy += e_int;
