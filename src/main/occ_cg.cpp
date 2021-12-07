@@ -686,6 +686,7 @@ int main(int argc, char **argv) {
         std::vector<std::vector<SolventNeighborContribution>>
             solvation_breakdowns;
         std::vector<std::vector<double>> interaction_energies_vec(mol_neighbors.size());
+        double dG_solubility{0.0};
         for (size_t i = 0; i < mol_neighbors.size(); i++) {
             const auto &n = mol_neighbors[i];
             std::string molname = fmt::format("{}_{}_{}", basename, i, solvent);
@@ -798,7 +799,7 @@ int main(int argc, char **argv) {
             double dG_sub = dH_sub + dS_sub;
             fmt::print("\u0394G sublimation                       {: 9.3f}\n",
                        dG_sub);
-            double dG_solubility = dG_solv + dG_sub;
+            dG_solubility = dG_solv + dG_sub;
             fmt::print("\u0394G solution                          {: 9.3f}\n",
                        dG_solubility);
             double equilibrium_constant = std::exp(-dG_solubility / RT);
@@ -873,7 +874,7 @@ int main(int argc, char **argv) {
                 double rn = dimer.nearest_distance();
                 double rc = dimer.center_of_mass_distance();
 
-                double e_int = interaction_energies[idx] * occ::units::KJ_TO_KCAL;
+                double e_int = - interaction_energies[idx] * occ::units::KJ_TO_KCAL;
 
                 dimer.set_interaction_energy(e_int);
                 occ::log::debug(

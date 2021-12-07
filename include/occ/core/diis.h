@@ -21,7 +21,7 @@ struct diis_traits<
 template <typename T> class DIIS {
   public:
     typedef typename diis_traits<T>::element_type value_t;
-    DIIS(size_t start = 1, size_t diis_subspace = 6, value_t damping_factor = 0,
+    DIIS(size_t start = 4, size_t diis_subspace = 6, value_t damping_factor = 0,
          size_t ngroup = 1, size_t ngroup_diis = 1, value_t mixing_fraction = 0)
         : m_error{0}, m_error_is_set{false}, m_start{start},
           m_diis_subspace_size{diis_subspace}, m_num_group{ngroup},
@@ -191,6 +191,8 @@ public:
         AdaptiveDepth,
         FixedDepth
     };
+    void set_mode(Mode m);
+    void set_tolerance(double);
     static Mat commutator(const Mat &A, const Mat &B, const Mat &overlap);
 private:
     Mode m_mode;
