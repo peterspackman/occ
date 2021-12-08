@@ -453,25 +453,19 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                                  energy["electronic"]);
 
             // compute SCF error
-            if(diis_error < 0.1) {
-                if constexpr (spinorbital_kind == Unrestricted) {
-                    const auto &Fa = block::a(F);
-                    const auto &Fb = block::a(F);
-                    const auto &Da = block::a(D);
-                    const auto &Db = block::a(D);
-                    const auto &Sa = block::a(S);
-                    const auto &Sb = block::a(S);
-                    block::a(FD_comm) = Fa * Da * Sa - Fa * Da * Sa;
-                    block::b(FD_comm) = Fb * Db * Sb - Sb * Db * Fb;
-                } else {
-                    FD_comm = F * D * S - S * D * F;
-                }
-                diis_error = maximum_error_diis(FD_comm);
+            if constexpr (spinorbital_kind == Unrestricted) {
+                const auto &Fa = block::a(F);
+                const auto &Fb = block::a(F);
+                const auto &Da = block::a(D);
+                const auto &Db = block::a(D);
+                const auto &Sa = block::a(S);
+                const auto &Sb = block::a(S);
+                block::a(FD_comm) = Fa * Da * Sa - Fa * Da * Sa;
+                block::b(FD_comm) = Fb * Db * Sb - Sb * Db * Fb;
+            } else {
+                FD_comm = F * D * S - S * D * F;
             }
-            else {
-                FD_comm = D_diff;
-                diis_error = std::abs(energy["electronic"] - ehf_last);
-            }
+            diis_error = maximum_error_diis(FD_comm);
 
             if (diis_error < next_reset_threshold ||
                 iter - last_reset_iteration >= 8)
@@ -553,7 +547,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     double diis_error{1.0};
     double ediff_rel = 0.0;
     double total_time{0.0};
-    occ::core::diis::DIIS<Mat> diis; // start DIIS on second iteration
+    occ::core::diis::DIIS diis; // start DIIS on second iteration
     bool reset_incremental_fock_formation = false;
     bool incremental_Fbuild_started = false;
     double start_incremental_F_threshold = 1e-4;

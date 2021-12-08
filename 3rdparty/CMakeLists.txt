@@ -72,6 +72,20 @@ if("${gemmi_ADDED}")
     target_include_directories(gemmi::gemmi INTERFACE "${gemmi_SOURCE_DIR}/include")
 endif()
 
+
+CPMAddPackage(
+    NAME LBFGSpp
+    GITHUB_REPOSITORY yixuan/LBFGSpp
+    GIT_TAG master
+    DOWNLOAD_ONLY YES
+)
+
+# Add LBFGSpp as a header only library for linking
+if("${LBFGSpp_ADDED}")
+    add_library(LBFGSpp::LBFGSpp INTERFACE IMPORTED GLOBAL)
+    target_include_directories(LBFGSpp::LBFGSpp INTERFACE "${LBFGSpp_SOURCE_DIR}/include")
+endif()
+
 # Fastor currently unused
 #CPMAddPackage(
 #    NAME Fastor

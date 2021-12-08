@@ -24,6 +24,7 @@ target_link_libraries(occ_core
     fmt::fmt
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}
+    LBFGSpp::LBFGSpp
     scn::scn
     spdlog::spdlog
     ZLIB::ZLIB
