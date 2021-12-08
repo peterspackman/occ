@@ -12,14 +12,20 @@ Element::Element(const std::string &s, bool exact_match)
     // capitalize the symbol first
     auto symbol = occ::util::trim_copy(s);
     auto capitalized = occ::util::capitalize_copy(s);
+    size_t match_length = 0;
     for (size_t i = ELEMENT_MAX - 1; i > 0; i--) {
         const auto dat = ELEMENTDATA_TABLE[i];
         const size_t N = dat.symbol.size();
         if (dat.symbol.compare(0, N, symbol, 0, N) == 0) {
             if (exact_match && dat.symbol != symbol)
                 continue;
-            m_data = dat;
-            return;
+            if(dat.symbol.size() > match_length) {
+                m_data = dat;
+                match_length = dat.symbol.size();
+            }
+            if(symbol.size() == dat.symbol.size())
+                return;
+            fmt::print("match length {}\n", match_length);
         }
     }
 }

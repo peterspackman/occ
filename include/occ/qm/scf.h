@@ -453,19 +453,25 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                                  energy["electronic"]);
 
             // compute SCF error
-            if constexpr (spinorbital_kind == Unrestricted) {
-                const auto &Fa = block::a(F);
-                const auto &Fb = block::a(F);
-                const auto &Da = block::a(D);
-                const auto &Db = block::a(D);
-                const auto &Sa = block::a(S);
-                const auto &Sb = block::a(S);
-                block::a(FD_comm) = Fa * Da * Sa - Fa * Da * Sa;
-                block::b(FD_comm) = Fb * Db * Sb - Sb * Db * Fb;
-            } else {
-                FD_comm = F * D * S - S * D * F;
+            if(diis_error < 0.1) {
+                if constexpr (spinorbital_kind == Unrestricted) {
+                    const auto &Fa = block::a(F);
+                    const auto &Fb = block::a(F);
+                    const auto &Da = block::a(D);
+                    const auto &Db = block::a(D);
+                    const auto &Sa = block::a(S);
+                    const auto &Sb = block::a(S);
+                    block::a(FD_comm) = Fa * Da * Sa - Fa * Da * Sa;
+                    block::b(FD_comm) = Fb * Db * Sb - Sb * Db * Fb;
+                } else {
+                    FD_comm = F * D * S - S * D * F;
+                }
+                diis_error = maximum_error_diis(FD_comm);
             }
-            diis_error = maximum_error_diis(FD_comm);
+            else {
+                FD_comm = D_diff;
+                diis_error = std::abs(energy["electronic"] - ehf_last);
+            }
 
             if (diis_error < next_reset_threshold ||
                 iter - last_reset_iteration >= 8)
