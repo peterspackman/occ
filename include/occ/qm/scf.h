@@ -1,5 +1,6 @@
 #pragma once
-#include <occ/core/diis.h>
+#include <occ/qm/cdiis.h>
+#include <occ/qm/ediis.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/logger.h>
@@ -30,13 +31,6 @@ using occ::util::human_readable_size;
 using occ::util::is_odd;
 namespace block = occ::qm::block;
 
-inline double rms_error_diis(const Mat &commutator) {
-    return commutator.norm() / commutator.size();
-}
-
-inline double maximum_error_diis(const Mat &commutator) {
-    return commutator.maxCoeff();
-}
 
 namespace impl {
 
@@ -88,8 +82,8 @@ void set_conditioning_orthogonalizer(const Mat &S, Mat &X, Mat &Xinv,
 
 template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
-    SCF(Procedure &procedure, int diis_start = 2)
-        : m_procedure(procedure), diis(diis_start) {
+    SCF(Procedure &procedure)
+        : m_procedure(procedure) {
         n_electrons = m_procedure.num_e();
         nbf = m_procedure.basis().nbf();
         size_t rows, cols;
@@ -452,33 +446,18 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             ediff_rel = std::abs((energy["electronic"] - ehf_last) /
                                  energy["electronic"]);
 
-            // compute SCF error
-            if constexpr (spinorbital_kind == Unrestricted) {
-                const auto &Fa = block::a(F);
-                const auto &Fb = block::a(F);
-                const auto &Da = block::a(D);
-                const auto &Db = block::a(D);
-                const auto &Sa = block::a(S);
-                const auto &Sb = block::a(S);
-                block::a(FD_comm) = Fa * Da * Sa - Fa * Da * Sa;
-                block::b(FD_comm) = Fb * Db * Sb - Sb * Db * Fb;
-            } else {
-                FD_comm = F * D * S - S * D * F;
+            Mat F_diis = diis.update(S, D, F);
+            double prev_error = diis_error;
+            diis_error = diis.error();
+            bool use_ediis = false; //diis_error > 1e-1;
+
+            if(use_ediis) {
+                F_diis = ediis.update(D, F, energy["electronic"]);
             }
-            diis_error = maximum_error_diis(FD_comm);
 
             if (diis_error < next_reset_threshold ||
                 iter - last_reset_iteration >= 8)
                 reset_incremental_fock_formation = true;
-
-            // DIIS extrapolate F
-            Mat F_diis(
-                F.rows(),
-                F.cols()); // extrapolated F cannot be used in incremental Fock
-            F_diis = F;
-            // build; only used to produce the density
-            // make a copy of the unextrapolated matrix
-            diis.extrapolate(F_diis, FD_comm);
 
             update_molecular_orbitals(F_diis);
             update_density_matrix();
@@ -547,7 +526,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     double diis_error{1.0};
     double ediff_rel = 0.0;
     double total_time{0.0};
-    occ::core::diis::DIIS diis; // start DIIS on second iteration
+    occ::qm::CDIIS diis; // start DIIS on second iteration
+    occ::qm::EDIIS ediis;
     bool reset_incremental_fock_formation = false;
     bool incremental_Fbuild_started = false;
     double start_incremental_F_threshold = 1e-4;

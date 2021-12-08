@@ -3,14 +3,14 @@
 #include <occ/core/linear_algebra.h>
 namespace occ::core::diis {
 
-Mat diis_commutator(const Mat &A, const Mat &B, const Mat &overlap);
-
 class DIIS {
 public:
-    DIIS(size_t start = 4, size_t diis_subspace = 6, double damping_factor = 0,
+    DIIS(size_t start = 2, size_t diis_subspace = 6, double damping_factor = 0,
          size_t ngroup = 1, size_t ngroup_diis = 1, double mixing_fraction = 0);
 
     void extrapolate(Mat &x, Mat &error, bool extrapolate_error = false);
+    void set_error(double e);
+    double error() const;
 
 private:
     double m_error;
@@ -29,15 +29,10 @@ private:
     std::deque<Mat> m_errors;       //!< set of most recent errors
     std::deque<Mat> m_extrapolated; //!< set of most recent extrapolated x
 
-    void set_error(double e);
-    double error() const;
 
     void init();
 };
 
 
-class EDIIS : public DIIS {
-    
-};
 
 } // namespace occ::diis
