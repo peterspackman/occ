@@ -5,10 +5,6 @@
 
 namespace occ::core::diis {
 
-Mat diis_commutator(const Mat &A, const Mat &B, const Mat &overlap) {
-    return  A * B * overlap - overlap * B * A;
-}
-
 
 DIIS::DIIS(size_t start, size_t diis_subspace, double damping_factor,
            size_t ngroup, size_t ngroup_diis, double mixing_fraction)
@@ -150,5 +146,6 @@ void DIIS::extrapolate(Mat &x, Mat &error, bool extrapolate_error) {
         m_extrapolated.push_back(x);
     occ::timing::stop(occ::timing::category::diis);
 }
+
 
 }
