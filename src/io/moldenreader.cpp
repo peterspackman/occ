@@ -56,7 +56,10 @@ void MoldenReader::parse(std::istream &stream) {
 void MoldenReader::parse_section(const std::string &section_name,
                                  const std::optional<std::string> &args,
                                  std::istream &stream) {
-    if (section_name == "Atoms") {
+    if (section_name == "Title") {
+        parse_title_section(args, stream);
+    }
+    else if (section_name == "Atoms") {
         parse_atoms_section(args, stream);
     } else if (section_name == "GTO") {
         parse_gto_section(args, stream);
@@ -97,6 +100,23 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args,
             atom.z *= factor;
         }
         m_atoms.push_back(atom);
+    }
+}
+
+void MoldenReader::parse_title_section(const std::optional<std::string> &args,
+                                       std::istream &stream) {
+    occ::log::debug("Parsing Title section");
+    auto pos = stream.tellg();
+    std::string line;
+    while (std::getline(stream, line)) {
+        if (is_section_line(line)) {
+            stream.seekg(pos, std::ios_base::beg);
+            break;
+        }
+        pos = stream.tellg();
+        if(line.find("orca_2mkl") != std::string::npos) {
+            source = Source::Orca;
+        }
     }
 }
 

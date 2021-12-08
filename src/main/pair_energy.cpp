@@ -6,6 +6,7 @@
 #include <fmt/ostream.h>
 #include <filesystem>
 #include <scn/scn.h>
+#include <occ/core/util.h>
 
 namespace fs = std::filesystem;
 
@@ -19,6 +20,7 @@ using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::chem::Molecule;
 using occ::crystal::Crystal;
+using occ::util::all_close;
 
 EnergyComponentsCE read_energy_components(const std::string &line) {
     CEModelInteraction::EnergyComponents components;

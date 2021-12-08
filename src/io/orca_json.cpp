@@ -7,6 +7,30 @@
 
 namespace occ::io {
 
+
+/*
+  Scaling factors for Orca
+
+         class                           factor
+    1    s                             * 1.0
+         p
+         d
+         f(0,+1,-1,+2,-2)
+         g(0,+1,-1,+2,-2)
+         h(0,+1,-1,+2,-2,+5,-5)
+    2    f(+3,-3)                      *-1.0
+         g(+3,-3,+4,-4)
+*/
+
+
+double normalization_factor(double alpha, int l, int m, int n) {
+    using occ::util::double_factorial;
+    return std::sqrt(std::pow(4 * alpha, l + m + n) * std::pow(2 * alpha / M_PI, 1.5) /
+                     (double_factorial(2 * l - 1) * 
+                      double_factorial(2 * m - 1) * 
+                      double_factorial(2 * n - 1)));
+}
+
 OrcaJSONReader::OrcaJSONReader(const std::string &filename) {
     occ::timing::start(occ::timing::category::io);
     open(filename);
@@ -98,6 +122,7 @@ void OrcaJSONReader::parse(std::istream &stream) {
         }
     }
     m_basis.update();
+    m_basis.set_pure(true);
     size_t nbf = m_basis.nbf();
     occ::log::debug("num atoms {}", num_atoms);
 
@@ -144,6 +169,31 @@ void OrcaJSONReader::parse(std::istream &stream) {
     occ::log::debug("Num electrons: {}", m_num_electrons);
     occ::log::debug("Num alpha electrons {}", m_num_alpha);
     occ::log::debug("Num beta electrons {}", m_num_beta);
+
+    const auto &S = mol["S-Matrix"];
+    size_t bf1 = 0;
+    m_overlap = Mat(nbf, nbf);
+    for(const auto &row: S) {
+        size_t bf2 = 0;
+        for(const auto &x: row) {
+            m_overlap(bf1, bf2) = x;
+            bf2++;
+        }
+        bf1++;
+    }
 }
+
+std::vector<occ::core::Atom> OrcaJSONReader::atoms() const {
+    std::vector<occ::core::Atom> atoms;
+    atoms.reserve(m_atomic_numbers.size());
+    for (size_t i = 0; i < m_atomic_numbers.size(); i++) {
+        atoms.emplace_back(occ::core::Atom{
+            m_atomic_numbers(i), m_atom_positions(0, i),
+            m_atom_positions(1, i), m_atom_positions(2, i)});
+    }
+    return atoms;
+}
+
+
 
 }

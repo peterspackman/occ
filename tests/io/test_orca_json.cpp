@@ -2,6 +2,8 @@
 #include <occ/io/orca_json.h>
 #include <sstream>
 #include <fmt/ostream.h>
+#include <occ/qm/hf.h>
+#include <occ/core/util.h>
 
 using occ::Mat;
 
@@ -132,8 +134,22 @@ const char* json_contents = R"(
 
 TEST_CASE("H2 orca json", "[read]")
 {
+
+    libint2::Shell::do_enforce_unit_normalization(false);
+    if (!libint2::initialized()) libint2::initialize();
+
     std::istringstream json_istream(json_contents);
     occ::io::OrcaJSONReader reader(json_istream);
     fmt::print("Atomic numbers:\n{}\n", reader.atomic_numbers());
     fmt::print("Atomic positions:\n{}\n", reader.atom_positions());
+    std::vector<occ::core::Atom> atoms = reader.atoms();
+    Mat S1 = reader.overlap_matrix();
+    fmt::print("ORCA Overlap matrix:\n{}\n", S1);
+
+
+    occ::hf::HartreeFock hf(atoms, reader.basis_set());
+    Mat S2 = hf.compute_overlap_matrix();
+    fmt::print("OUR Overlap matrix:\n{}\n", S2);
+    fmt::print("Difference\n{}\n", S2 - S1);
+    REQUIRE(occ::util::all_close(S1, S2));
 }

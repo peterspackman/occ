@@ -33,6 +33,8 @@ public:
 
     Mat scf_density_matrix() const;
 
+    const Mat& overlap_matrix() const { return m_overlap; };
+
     std::vector<Atom> atoms() const;
 
 private:
@@ -53,6 +55,7 @@ private:
     Mat m_alpha_coeffs, m_beta_coeffs;
     Vec m_alpha_energies, m_beta_energies;
     std::vector<std::string> m_alpha_labels, m_beta_labels;
+    Mat m_overlap;
 };
 
 }

@@ -11,6 +11,12 @@ namespace occ::io {
 
 class MoldenReader {
   public:
+    enum class Source {
+        Unknown,
+        Orca,
+        NWChem,
+    };
+
     MoldenReader(const std::string &);
     MoldenReader(std::istream &);
 
@@ -74,6 +80,7 @@ class MoldenReader {
                              std::istream &);
     void parse_gto_section(const std::optional<std::string> &, std::istream &);
     void parse_mo_section(const std::optional<std::string> &, std::istream &);
+    void parse_title_section(const std::optional<std::string> &, std::istream &);
     void parse_mo(size_t &, size_t &, std::istream &);
 
     std::vector<occ::core::Atom> m_atoms;
@@ -87,6 +94,7 @@ class MoldenReader {
     double m_total_beta_occupation{0};
     double m_num_electrons{0};
     bool m_pure{false};
+    Source source{Source::Unknown};
 };
 
 } // namespace occ::io
