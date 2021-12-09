@@ -93,6 +93,39 @@ Pair parse_input_file(const std::string &filename) {
     return p;
 }
 
+
+/*
+ *  Example input:
+ *  {
+ *      "name": "formamide",
+ *      "monomers": [
+ *          {
+ *              "source": "formamide.fchk",
+ *              "rotation": [
+ *                  [1.0, 0.0, 0.0],
+ *                  [0.0, 1.0, 0.0],
+ *                  [0.0, 0.0, 1.0]
+ *              ],
+ *              "translation": [
+ *                  0.0, 0.0, 0.0
+ *              ]
+ *          },
+ *          {
+ *              "source": "formamide.fchk",
+ *              "rotation": [
+ *                  [-1.0,  0.0,  0.0],
+ *                  [ 0.0, -1.0,  0.0],
+ *                  [ 0.0,  0.0, -1.0]
+ *              ],
+ *              "translation": [
+ *                  3.604, 0.0, 0.0
+ *              ]
+ *          }
+ *      ]
+ *  }
+ *
+ */
+
 int main(int argc, char *argv[]) {
     cxxopts::Options options("occ", "A program for quantum chemistry");
     options.positional_help("[input_file]")

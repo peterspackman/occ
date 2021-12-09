@@ -44,6 +44,8 @@ const robin_hood::unordered_map<std::string, std::vector<FuncComponent>>
         {"pbepbe", {{dfid::gga_x_pbe, 1.0}, {dfid::gga_c_pbe, 1.0}}},
         {"pbe0", {{dfid::gga_x_pbe, 0.75, 0.25}, {dfid::gga_c_pbe}}},
         {"svwn", {{dfid::lda_x}, {dfid::lda_c_vwn_3}}},
+        {"lda", {{dfid::lda_x}, {dfid::lda_c_vwn_3}}},
+        {"lsda", {{dfid::lda_x}, {dfid::lda_c_vwn_3}}},
         {"svwn5", {{dfid::lda_x}, {dfid::lda_c_vwn}}},
         {"blyp", {{dfid::gga_x_b88}, {dfid::gga_c_lyp}}},
         {"bpbe", {{dfid::gga_x_b88}, {dfid::gga_c_pbe}}},
