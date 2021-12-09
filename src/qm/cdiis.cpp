@@ -8,7 +8,11 @@ double rms_error_diis(const Mat &commutator) {
 }
 
 double maximum_error_diis(const Mat &commutator) {
-    return commutator.maxCoeff();
+    return commutator.array().abs().maxCoeff();
+}
+
+double minimum_error_diis(const Mat &commutator) {
+    return commutator.array().abs().maxCoeff();
 }
 
 
@@ -27,7 +31,8 @@ Mat CDIIS::update(const Mat &overlap, const Mat &D, const Mat &F) {
     else {
         comm = commutator(overlap, D, F);
     }
-    m_error = maximum_error_diis(comm);
+    m_max_error = maximum_error_diis(comm);
+    m_min_error = minimum_error_diis(comm);
     Mat result = F;
     occ::core::diis::DIIS::extrapolate(result, comm);
     return result;

@@ -447,13 +447,17 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                                  energy["electronic"]);
 
             Mat F_diis = diis.update(S, D, F);
-            double prev_error = diis_error;
-            diis_error = diis.error();
-            bool use_ediis = false; //diis_error > 1e-1;
+            // double prev_error = diis_error;
+            diis_error = diis.max_error();
+            /*
+            bool use_ediis = (diis_error > 1e-1) || (prev_error / diis.min_error() > 1.1);
 
-            if(use_ediis) {
-                F_diis = ediis.update(D, F, energy["electronic"]);
+            Mat F_ediis = ediis.update(D, F, energy["electronic"]);
+            if(use_ediis) F_diis = F_ediis;
+            else if(diis_error > 1e-4) {
+                F_diis = (10 * diis_error) * F_ediis + (1 - 10 * diis_error) * F_diis;
             }
+            */
 
             if (diis_error < next_reset_threshold ||
                 iter - last_reset_iteration >= 8)
@@ -520,8 +524,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     occ::core::EnergyComponents energy;
     int maxiter{100};
     size_t nbf{0};
-    double energy_convergence_threshold = 5e-8;
-    double commutator_convergence_threshold = 5e-8;
+    double energy_convergence_threshold = 1e-6;
+    double commutator_convergence_threshold = 1e-8;
     int iter = 0;
     double diis_error{1.0};
     double ediff_rel = 0.0;

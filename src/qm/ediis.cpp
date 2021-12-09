@@ -12,19 +12,9 @@ EDIIS::EDIIS(size_t start, size_t diis_subspace) : m_error{0}, m_start{start},
 }
 
 
-Mat EDIIS::update(const Mat &D, const Mat &F, double e) {
+void EDIIS::minimize_coefficients() {
     using LBFGSpp::LBFGSBParam;
     using LBFGSpp::LBFGSBSolver;
-    if (m_energies.size() == m_diis_subspace_size) {
-        m_density_matrices.pop_front();
-        m_fock_matrices.pop_front();
-        m_energies.pop_front();
-    }
-    m_density_matrices.push_back(D);
-    m_fock_matrices.push_back(F);
-    m_energies.push_back(e);
-
-    size_t N = m_energies.size();
 
     LBFGSBParam<double> param;  // New parameter class
     param.epsilon = 1e-9;
@@ -37,8 +27,8 @@ Mat EDIIS::update(const Mat &D, const Mat &F, double e) {
     Vec ub = Vec::Constant(m_diis_subspace_size, 5.0);
 
     Mat df = Mat::Zero(m_diis_subspace_size, m_diis_subspace_size);
-    for(size_t i = 0; i < N; i++) {
-        for(size_t j = 0; j < N; j++) {
+    for(size_t i = m_nskip; i < m_energies.size(); i++) {
+        for(size_t j = m_nskip; j < m_energies.size(); j++) {
             df(i, j) = 2 * expectation<SpinorbitalKind::Restricted>(m_density_matrices[i], m_fock_matrices[j]);
         }
     }
@@ -56,7 +46,7 @@ Mat EDIIS::update(const Mat &D, const Mat &F, double e) {
 
         // grad
         Vec fc = Vec::Zero(m_diis_subspace_size);
-        for(size_t i = 0; i < N; i++) {
+        for(size_t i = m_nskip; i < m_energies.size(); i++) {
             fc(i) = m_energies[i];
         }
         fc -= 2 * c.transpose() * df2;
@@ -77,10 +67,42 @@ Mat EDIIS::update(const Mat &D, const Mat &F, double e) {
     solver.minimize(func, x, fx, lb, ub);
     Vec coeffs = x.array() * x.array();
     coeffs /= coeffs.sum();
+    m_previous_coeffs = coeffs;
 
-    Mat result = coeffs(0) * m_fock_matrices[0];
-    for(size_t i = 1; i < N; i++) {
-        result += coeffs(i) * m_fock_matrices[i];
+}
+
+Mat EDIIS::update(const Mat &D, const Mat &F, double e) {
+    if (m_energies.size() == m_diis_subspace_size) {
+        m_density_matrices.pop_front();
+        m_fock_matrices.pop_front();
+        m_energies.pop_front();
+    }
+    m_density_matrices.push_back(D);
+    m_fock_matrices.push_back(F);
+    m_energies.push_back(e);
+
+    bool valid_direction = false;
+    m_nskip = 0;
+    do {
+        try {
+            minimize_coefficients();
+            valid_direction = true;
+        }
+        catch (std::logic_error& e) {
+            m_nskip++;
+        }
+        catch (std::runtime_error& e) {
+            m_nskip++;
+        }
+        if(m_nskip >= m_energies.size()) {
+            throw std::domain_error(
+                        "EDIIS::update: poorly-conditioned system");
+        }
+    } while(!valid_direction);
+
+    Mat result = m_previous_coeffs(0) * m_fock_matrices[0];
+    for(size_t i = 1; i < m_fock_matrices.size(); i++) {
+        result += m_previous_coeffs(i) * m_fock_matrices[i];
     }
     return result;
 }

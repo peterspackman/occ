@@ -5,7 +5,7 @@ namespace occ::core::diis {
 
 class DIIS {
 public:
-    DIIS(size_t start = 2, size_t diis_subspace = 6, double damping_factor = 0,
+    DIIS(size_t start = 2, size_t diis_subspace = 20, double damping_factor = 0,
          size_t ngroup = 1, size_t ngroup_diis = 1, double mixing_fraction = 0);
 
     void extrapolate(Mat &x, Mat &error, bool extrapolate_error = false);
