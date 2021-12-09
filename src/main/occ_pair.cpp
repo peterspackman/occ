@@ -19,8 +19,6 @@ using occ::qm::Wavefunction;
 using occ::Mat3;
 using occ::Vec3;
 
-constexpr double kjmol_per_hartree{2625.46};
-
 struct Pair {
     struct Monomer {
         Wavefunction wfn;
@@ -79,10 +77,16 @@ Pair parse_input_file(const std::string &filename) {
     p.a.wfn = load_wavefunction(source_a);
     load_matrix(monomers[0]["rotation"], p.a.rotation);
     load_vector(monomers[0]["translation"], p.a.translation);
+    p.a.translation *= occ::units::ANGSTROM_TO_BOHR;
+    fmt::print("Rotation A:\n{}\n", p.a.rotation);
+    fmt::print("Translation A:\n{}\n", p.a.translation);
 
     p.b.wfn = load_wavefunction(source_b);
     load_matrix(monomers[1]["rotation"], p.b.rotation);
     load_vector(monomers[1]["translation"], p.b.translation);
+    p.b.translation *= occ::units::ANGSTROM_TO_BOHR;
+    fmt::print("Rotation B:\n{}\n", p.b.rotation);
+    fmt::print("Translation B:\n{}\n", p.b.translation);
 
     p.a.wfn.apply_transformation(p.a.rotation, p.a.translation);
     p.b.wfn.apply_transformation(p.b.rotation, p.b.translation);
@@ -125,16 +129,16 @@ int main(int argc, char *argv[]) {
 
     fmt::print("Component              Energy (kJ/mol)\n\n");
     fmt::print("Coulomb               {: 12.6f}\n",
-               interaction_energy.coulomb * kjmol_per_hartree);
+               interaction_energy.coulomb_kjmol());
     fmt::print("Exchange-repulsion    {: 12.6f}\n",
-               interaction_energy.exchange_repulsion * kjmol_per_hartree);
+               interaction_energy.exchange_kjmol());
     fmt::print("Polarization          {: 12.6f}\n",
-               interaction_energy.polarization * kjmol_per_hartree);
+               interaction_energy.polarization_kjmol());
     fmt::print("Dispersion            {: 12.6f}\n",
-               interaction_energy.dispersion * kjmol_per_hartree);
+               interaction_energy.dispersion_kjmol());
     fmt::print("__________________________________\n");
     fmt::print("Total {:^8s}        {: 12.6f}\n", model_name,
-               interaction_energy.total * kjmol_per_hartree);
+               interaction_energy.total_kjmol());
 
     fmt::print("\n");
     occ::timing::print_timings();
