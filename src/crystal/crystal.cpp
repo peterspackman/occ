@@ -470,12 +470,37 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
     auto &dimers = result.unique_dimers;
     auto &mol_nbs = result.molecule_neighbors;
 
+    HKL upper{std::numeric_limits<int>::min(), std::numeric_limits<int>::min(),
+              std::numeric_limits<int>::min()};
+    HKL lower{std::numeric_limits<int>::max(), std::numeric_limits<int>::max(),
+              std::numeric_limits<int>::max()};
     occ::Vec3 frac_radius = radius * 2 / m_unit_cell.lengths().array();
-    auto hklmax = frac_radius.array().ceil().cast<int>();
-    HKL upper{hklmax(0), hklmax(1), hklmax(2)};
-    HKL lower{-hklmax(0), -hklmax(1), -hklmax(2)};
 
     const auto &uc_mols = unit_cell_molecules();
+
+    size_t mol_idx = 0;
+    for (const auto& mol : uc_mols) {
+        Mat3N pos_frac = to_fractional(mol.positions());
+        fmt::print("Molecule {} fractional center = ({})\n", mol_idx++, pos_frac.rowwise().mean().transpose()); 
+        for(size_t i = 0; i < pos_frac.cols(); i++) {
+            const auto& pos = pos_frac.col(i);
+            upper.h =
+                std::max(upper.h, static_cast<int>(ceil(pos(0) + frac_radius(0))));
+            upper.k =
+                std::max(upper.k, static_cast<int>(ceil(pos(1) + frac_radius(1))));
+            upper.l =
+                std::max(upper.l, static_cast<int>(ceil(pos(2) + frac_radius(2))));
+
+            lower.h =
+                std::min(lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
+            lower.k =
+                std::min(lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
+            lower.l =
+                std::min(lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
+        }
+    }
+
+
     mol_nbs.resize(uc_mols.size());
     result.unique_dimer_idx.resize(uc_mols.size());
 

@@ -42,10 +42,16 @@ using occ::units::AU_TO_KJ_PER_MOL;
 using occ::units::BOHR_TO_ANGSTROM;
 using occ::util::all_close;
 
+struct InteractionE {
+    double actual{0.0};
+    double fictitious{0.0};
+};
+
 struct SolvatedSurfaceProperties {
     double esolv{0.0};
     double dg_ele{0.0};
     double dg_gas{0.0};
+    double dg_correction{0.0};
     occ::Mat3N coulomb_pos;
     occ::Mat3N cds_pos;
     occ::Vec e_coulomb;
@@ -290,22 +296,21 @@ calculate_solvated_surfaces(const std::string &basename,
             constexpr double R = 8.31446261815324;
             constexpr double RT = 298 * R / 1000;
             Gr += RT * std::log(pg.symmetry_number());
-            double dG_gas = 
+            props.dg_correction = (
                 // dG concentration in kJ/mol
                 1.89 / occ::units::KJ_TO_KCAL
                 // 2 RT contribution from enthalpy
-                - 2 * RT 
+                - 2 * RT ) / occ::units::AU_TO_KJ_PER_MOL;
+            props.dg_gas = 
                 // Gr + Gt contribution from gas
-                + Gt + Gr;
+                (Gt + Gr) / occ::units::AU_TO_KJ_PER_MOL;
 
-            props.dg_gas = dG_gas / occ::units::AU_TO_KJ_PER_MOL;
             props.dg_ele = e - original_energy - esolv;
             occ::log::debug("total e_solv {:12.6f} ({:.3f} kJ/mol)\n", esolv,
                             esolv * occ::units::AU_TO_KJ_PER_MOL);
 
             fmt::print("SCF difference         (au)       {: 9.3f}\n", e - original_energy);
             fmt::print("SCF difference         (kJ/mol)   {: 9.3f}\n", occ::units::AU_TO_KJ_PER_MOL * (e - original_energy));
-            fmt::print("delta G gas            (kJ/mol)   {: 9.3f}\n", dG_gas);
             fmt::print("total E solv (surface) (kj/mol)   {: 9.3f}\n", esolv * occ::units::AU_TO_KJ_PER_MOL);
             fmt::print("orbitals E_solv        (kj/mol)   {: 9.3f}\n", props.dg_ele * occ::units::AU_TO_KJ_PER_MOL);
             fmt::print("CDS E_solv   (surface) (kj/mol)   {: 9.3f}\n", props.e_cds.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
@@ -685,7 +690,7 @@ int main(int argc, char **argv) {
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         std::vector<std::vector<SolventNeighborContribution>>
             solvation_breakdowns;
-        std::vector<std::vector<double>> interaction_energies_vec(mol_neighbors.size());
+        std::vector<std::vector<InteractionE>> interaction_energies_vec(mol_neighbors.size());
         double dG_solubility{0.0};
         for (size_t i = 0; i < mol_neighbors.size(); i++) {
             const auto &n = mol_neighbors[i];
@@ -728,6 +733,7 @@ int main(int argc, char **argv) {
 
             // TODO adjust for co-crystals!
             double gas_term_per_interaction = 2 * surfaces[i].dg_gas / num_neighbors;
+            double correction_term_per_interaction = 2 * surfaces[i].dg_correction / num_neighbors;
 
             double total_interaction_energy{0.0};
 
@@ -750,9 +756,10 @@ int main(int argc, char **argv) {
                 double e_int = etot;
                 double solv_cont = solv[j].total() * AU_TO_KJ_PER_MOL;
                 double gas_term = crystal_contributions[j].is_nn ? gas_term_per_interaction * AU_TO_KJ_PER_MOL : 0.0;
+                double correction_term = crystal_contributions[j].is_nn ? correction_term_per_interaction * AU_TO_KJ_PER_MOL : 0.0;
 
-                e_int = gas_term + solv_cont - etot - crystal_contributions[j].energy;
-                interactions.push_back(e_int);
+                e_int = correction_term + gas_term + solv_cont - etot - crystal_contributions[j].energy;
+                interactions.push_back({e_int, e_int - gas_term});
                 auto &sj = solv[j];
 
                 fmt::print(
@@ -829,6 +836,7 @@ int main(int argc, char **argv) {
             size_t asym_idx = m.asymmetric_molecule_idx();
             const auto &m_asym = c_symm.symmetry_unique_molecules()[asym_idx];
             auto &n = uc_neighbors[i];
+            fmt::print("Molecule {} has {} neighbours within {:.3f}\n", i, n.size(), cg_radius);
             occ::log::debug("uc = {} asym = {}\n", i, asym_idx);
             int s_int = m.asymmetric_unit_symop()(0);
 
@@ -874,7 +882,7 @@ int main(int argc, char **argv) {
                 double rn = dimer.nearest_distance();
                 double rc = dimer.center_of_mass_distance();
 
-                double e_int = - interaction_energies[idx] * occ::units::KJ_TO_KCAL;
+                double e_int = interaction_energies[idx].fictitious * occ::units::KJ_TO_KCAL;
 
                 dimer.set_interaction_energy(e_int);
                 occ::log::debug(
