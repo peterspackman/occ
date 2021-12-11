@@ -23,6 +23,7 @@ struct DFFockEngine {
     Mat compute_2body_fock_dfC(const Mat &Cocc);
     Mat compute_J(const Mat &D);
     Mat compute_J_direct(const Mat &D) const;
+    std::pair<Mat, Mat> compute_JK_direct(const Mat &Cocc);
 
   private:
     mutable std::vector<libint2::Engine> m_engines;

@@ -11,8 +11,8 @@ namespace occ::io {
 
 struct ColumnConfiguration {
     struct Border {
-        std::optional<std::string> left;
-        std::optional<std::string> right;
+        std::string left{""};
+        std::string right{" "};
     };
     enum class Alignment : char {
         left = '<',
@@ -23,22 +23,17 @@ struct ColumnConfiguration {
     uint_fast8_t width{12};
     Alignment alignment{Alignment::left};
     Border border;
-    std::optional<std::string> pad;
+    std::string pad{""};
     std::string fill_value{""};
 
     std::string format_string() const {
         std::string result = fmt::format(
-            "{0}{{:{1}{2}{3}s}}{4}", border.left.value_or(""), pad.value_or(""),
-            alignment, static_cast<int>(width), border.right.value_or(" "));
+            "{0}{{:{1}{2}{3}s}}{4}", border.left, pad,
+            static_cast<char>(alignment), static_cast<int>(width), border.right);
         return result;
     }
     uint_fast8_t column_width() const {
-        uint_fast8_t w = 0;
-        if (border.left)
-            w++;
-        if (border.right)
-            w++;
-        return width + w;
+        return width + border.left.size() + border.right.size();
     }
 };
 

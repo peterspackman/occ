@@ -182,6 +182,66 @@ Mat DFFockEngine::compute_J_direct(const Mat &D) const {
     return 2 * JJ[0];
 }
 
+std::pair<Mat, Mat> DFFockEngine::compute_JK_direct(const Mat &C_occ) {
+
+    // using first time? compute 3-center ints and transform to inv sqrt
+    // representation
+    if (!ints_populated) {
+        auto lambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
+                          size_t n2, size_t bf3, size_t n3, const double *buf) {
+            size_t offset = 0;
+            for (size_t i = bf1; i < bf1 + n1; i++) {
+                auto &x = ints[i];
+                x.resize(nbf, nbf);
+                for (size_t j = bf2; j < bf2 + n2; j++) {
+                    for (size_t k = bf3; k < bf3 + n3; k++) {
+                        x(j, k) = buf[offset];
+                        offset++;
+                    }
+                }
+            }
+        };
+
+        three_center_integral_helper(lambda);
+        ints_populated = true;
+    }
+
+    // compute exchange
+    /*
+       for(size_t i = 0; i < ints.size(); i++)
+       {
+       fmt::print("{}\n{}\n", i, ints[i]);
+       }
+       */
+
+    Mat J = Mat::Zero(nbf, nbf);
+    Mat K = Mat::Zero(nbf, nbf);
+    Mat D = C_occ * C_occ.transpose();
+
+    for (int r = 0; r < ndf; r++) {
+        const auto &tr = ints[r];
+        for (int s = 0; s < ndf; s++) {
+            const auto &ts = ints[s];
+            double Vrs = Vinv(r, s);
+            if (abs(Vrs) < 1e-12)
+                continue;
+            for (int i = 0; i < nbf; i++)
+                for (int j = 0; j < nbf; j++)
+                    for (int k = 0; k < nbf; k++)
+                        for (int l = 0; l < nbf; l++) {
+                            double v = Vrs * tr(i, j) * ts(k, l);
+                            J(i, j) += D(k, l) * v;
+                            J(k, l) += D(i, j) * v;
+                            K(i, k) += 0.5 * D(j, l) * v;
+                            K(j, l) += 0.5 * D(i, k) * v;
+                            K(i, l) += 0.5 * D(j, k) * v;
+                            K(j, k) += 0.5 * D(i, l) * v;
+                        }
+        }
+    }
+    return {J, K};
+}
+
 inline int upper_triangle_index(const int N, const int i, const int j) {
     return (2 * N * i - i * i - i + 2 * j) / 2;
 }
