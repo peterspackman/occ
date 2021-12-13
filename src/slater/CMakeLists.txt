@@ -1,6 +1,5 @@
 add_library(occ_slater
     "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/thakkar.cpp"
     ${OCC_INCLUDE_FILES}
 )
 

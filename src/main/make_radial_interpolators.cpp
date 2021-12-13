@@ -2,10 +2,8 @@
 #include <occ/core/eigenp.h>
 #include <occ/slater/slaterbasis.h>
 #include <occ/core/element.h>
-#include <occ/slater/thakkar.h>
 
 int main(int argc, char *argv[]) {
-    occ::thakkar::write_json_file();
     constexpr int num_points = 4096;
     auto basis = occ::slater::load_slaterbasis("thakkar");
     occ::Vec domain = occ::Vec::LinSpaced(num_points, -4, 3);
