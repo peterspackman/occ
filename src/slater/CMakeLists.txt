@@ -7,6 +7,7 @@ add_library(occ_slater
 target_link_libraries(occ_slater
     PUBLIC 
     occ_core
+    nlohmann_json::nlohmann_json
 )
 
 target_include_directories(occ_slater PUBLIC 

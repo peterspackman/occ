@@ -26,7 +26,7 @@ void from_json(const nlohmann::json &J, QCSchemaTopology &mol) {
     std::vector<std::string> symbols;
     J.at("symbols").get_to(symbols);
     for(const auto& sym: symbols) {
-        mol.elements.emplace_back(occ::chem::Element(sym));
+        mol.elements.emplace_back(occ::core::Element(sym));
     }
 
     if(J.contains("fragments")) {

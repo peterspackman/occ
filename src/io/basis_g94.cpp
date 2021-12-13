@@ -6,7 +6,7 @@
 
 namespace occ::io::basis::g94 {
 
-using occ::chem::Element;
+using occ::core::Element;
 
 void fortran_dfloats_to_efloats(std::string &str) {
     for (auto &ch : str) {

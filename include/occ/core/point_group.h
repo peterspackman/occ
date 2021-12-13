@@ -49,7 +49,7 @@ PointGroup cyclic_group(int, MirrorType);
 
 class MolecularPointGroup {
 public:
-    MolecularPointGroup(const occ::chem::Molecule&);
+    MolecularPointGroup(const occ::core::Molecule&);
     const char * description() const;
     const char * point_group_string() const;
     const PointGroup point_group() const { return group; }
@@ -74,7 +74,7 @@ private:
 
     Rotor rotor_type{Rotor::Asymmetric};
     PointGroup group{PointGroup::C1}; 
-    occ::chem::Molecule centered_molecule;
+    occ::core::Molecule centered_molecule;
     std::vector<SymOp> symmetry_operations;
     std::vector<std::pair<Vec3, int>> rotational_symmetry;
     Mat3 inertia_tensor;

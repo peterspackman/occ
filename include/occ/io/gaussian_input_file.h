@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace occ::io {
-using occ::chem::Element;
+using occ::core::Element;
 using Position = std::array<double, 3>;
 
 struct OccInput;

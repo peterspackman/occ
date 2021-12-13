@@ -131,7 +131,7 @@ CifParser::parse_crystal(const std::string &filename) {
                 asym.positions(0, i) = atom.position[0];
                 asym.positions(1, i) = atom.position[1];
                 asym.positions(2, i) = atom.position[2];
-                asym.atomic_numbers(i) = occ::chem::Element(atom.element).n();
+                asym.atomic_numbers(i) = occ::core::Element(atom.element).n();
                 asym.labels.push_back(atom.site_label);
                 i++;
             }

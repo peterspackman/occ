@@ -3,7 +3,7 @@
 #include <occ/core/util.h>
 #include <sstream>
 
-namespace occ::chem {
+namespace occ::core {
 
 Element::Element(int atomicNumber) : m_data(ELEMENTDATA_TABLE[atomicNumber]) {}
 
@@ -56,4 +56,4 @@ std::string chemical_formula(const std::vector<Element> &els) {
     return result;
 }
 
-} // namespace occ::chem
+} // namespace occ::core

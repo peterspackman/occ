@@ -26,7 +26,7 @@ auto ice_ii_asym()
     occ::Mat positions(labels.size(), 3);
     for(size_t i = 0; i < labels.size(); i++)
     {
-        nums(i) = occ::chem::Element(labels[i]).atomic_number();
+        nums(i) = occ::core::Element(labels[i]).atomic_number();
     }
 
     positions << 
@@ -69,7 +69,7 @@ auto acetic_asym()
     occ::Mat positions(labels.size(), 3);
     for(size_t i = 0; i < labels.size(); i++)
     {
-        nums(i) = occ::chem::Element(labels[i]).atomic_number();
+        nums(i) = occ::core::Element(labels[i]).atomic_number();
     }
     positions << 
         0.16510, 0.28580,  0.17090,
@@ -130,7 +130,7 @@ TEST_CASE("ice_ii molecules", "[crystal]")
 }
 
 
-SymmetryOperation dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal)
+SymmetryOperation dimer_symop(const occ::core::Dimer &dimer, const Crystal &crystal)
 {
     const auto& a = dimer.a();
     const auto& b = dimer.b();

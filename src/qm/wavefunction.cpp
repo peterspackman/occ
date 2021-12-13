@@ -411,7 +411,7 @@ void Wavefunction::save(FchkWriter &fchk) {
     // atomic weights
     for (Eigen::Index i = 0; i < atomic_prop.rows(); i++)
         atomic_prop(i) =
-            static_cast<double>(occ::chem::Element(nums(i)).mass());
+            static_cast<double>(occ::core::Element(nums(i)).mass());
     fchk.set_vector("Integer atomic weights",
                     atomic_prop.array().round().cast<int>());
     fchk.set_vector("Real atomic weights", atomic_prop);

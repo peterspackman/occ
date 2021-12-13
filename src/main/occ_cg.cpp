@@ -25,9 +25,9 @@
 #include <scn/scn.h>
 
 namespace fs = std::filesystem;
-using occ::chem::Dimer;
-using occ::chem::Element;
-using occ::chem::Molecule;
+using occ::core::Dimer;
+using occ::core::Element;
+using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::SymmetryOperation;
 using occ::hf::HartreeFock;

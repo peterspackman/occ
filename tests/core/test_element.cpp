@@ -3,7 +3,7 @@
 
 TEST_CASE("Element constructor", "[element]")
 {
-    using occ::chem::Element;
+    using occ::core::Element;
     REQUIRE(Element("H").symbol() == "H");
     REQUIRE(Element("He").symbol() == "He");
     REQUIRE(Element("He1").symbol() == "He");

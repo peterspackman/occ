@@ -3,7 +3,7 @@
 #include <fmt/ostream.h>
 #include "catch.hpp"
 
-using occ::chem::Molecule;
+using occ::core::Molecule;
 using occ::core::MolecularPointGroup;
 using occ::core::SymOp;
 using occ::util::all_close;

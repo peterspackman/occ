@@ -33,7 +33,7 @@ void AsymmetricUnit::generate_default_labels() {
     labels.reserve(size());
     for (size_t i = 0; i < size(); i++) {
         auto num = atomic_numbers(i);
-        auto symbol = occ::chem::Element(num).symbol();
+        auto symbol = occ::core::Element(num).symbol();
         labels.push_back(fmt::format("{}{}", symbol, counts(num)++));
     }
 }
@@ -41,17 +41,17 @@ void AsymmetricUnit::generate_default_labels() {
 Eigen::VectorXd AsymmetricUnit::covalent_radii() const {
     Eigen::VectorXd result(atomic_numbers.size());
     for (int i = 0; i < atomic_numbers.size(); i++) {
-        result(i) = occ::chem::Element(atomic_numbers(i)).covalentRadius();
+        result(i) = occ::core::Element(atomic_numbers(i)).covalentRadius();
     }
     return result;
 }
 
 std::string AsymmetricUnit::chemical_formula() const {
-    std::vector<occ::chem::Element> els;
+    std::vector<occ::core::Element> els;
     for (int i = 0; i < atomic_numbers.size(); i++) {
-        els.push_back(occ::chem::Element(atomic_numbers[i]));
+        els.push_back(occ::core::Element(atomic_numbers[i]));
     }
-    return occ::chem::chemical_formula(els);
+    return occ::core::chemical_formula(els);
 }
 
 // Atom Slab
@@ -227,7 +227,7 @@ void Crystal::update_unit_cell_connectivity() const {
     m_unit_cell_connectivity_needs_update = false;
 }
 
-const std::vector<occ::chem::Molecule> &Crystal::unit_cell_molecules() const {
+const std::vector<occ::core::Molecule> &Crystal::unit_cell_molecules() const {
     if (m_unit_cell_molecules_needs_update)
         update_unit_cell_molecules();
     return m_unit_cell_molecules;
@@ -294,7 +294,7 @@ void Crystal::update_unit_cell_molecules() const {
             }
         }
         positions += shifts;
-        occ::chem::Molecule m(atomic_numbers, to_cartesian(positions));
+        occ::core::Molecule m(atomic_numbers, to_cartesian(positions));
         m.set_bonds(bonds);
         m.set_unit_cell_idx(uc_idxs);
         m.set_asymmetric_unit_idx(asym_idxs);
@@ -306,7 +306,7 @@ void Crystal::update_unit_cell_molecules() const {
     m_unit_cell_molecules_needs_update = false;
 }
 
-const std::vector<occ::chem::Molecule> &
+const std::vector<occ::core::Molecule> &
 Crystal::symmetry_unique_molecules() const {
     if (m_symmetry_unique_molecules_needs_update)
         update_symmetry_unique_molecules();
@@ -385,7 +385,7 @@ void Crystal::update_symmetry_unique_molecules() const {
 }
 
 CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
-    using occ::chem::Dimer;
+    using occ::core::Dimer;
     CrystalDimers result;
     auto &dimers = result.unique_dimers;
     auto &mol_nbs = result.molecule_neighbors;
@@ -465,7 +465,7 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
 }
 
 CrystalDimers Crystal::unit_cell_dimers(double radius) const {
-    using occ::chem::Dimer;
+    using occ::core::Dimer;
     CrystalDimers result;
     auto &dimers = result.unique_dimers;
     auto &mol_nbs = result.molecule_neighbors;
@@ -583,7 +583,7 @@ Crystal Crystal::create_primitive_supercell(const Crystal& c, HKL hkl) {
     return Crystal(AsymmetricUnit(positions, numbers), SpaceGroup(1), supercell);
 }
 
-std::string Crystal::dimer_symmetry_string(const occ::chem::Dimer &dimer) const {
+std::string Crystal::dimer_symmetry_string(const occ::core::Dimer &dimer) const {
     const auto &a = dimer.a();
     const auto &b = dimer.b();
     if (a.asymmetric_molecule_idx() != b.asymmetric_molecule_idx())

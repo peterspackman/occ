@@ -10,11 +10,11 @@
 #include <occ/core/units.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>
 #include <occ/geometry/marching_cubes.h>
-#include <occ/slater/thakkar.h>
+#include <occ/slater/slaterbasis.h>
 
 namespace fs = std::filesystem;
-using occ::chem::Element;
-using occ::chem::Molecule;
+using occ::core::Element;
+using occ::core::Molecule;
 using occ::core::Interpolator1D;
 
 struct HirshfeldBasis {
@@ -46,13 +46,14 @@ struct HirshfeldBasis {
         Eigen::Vector3d maxp_ext = pos_ext.rowwise().maxCoeff();
 
         num_interior = in.size();
+        auto basis = occ::slater::load_slaterbasis("thakkar");
         for (size_t i = 0; i < in.size(); i++) {
             int el = nums_in[i];
             coordinates.push_back(pos_in.col(i));
             elements.push_back(el);
             auto search = interpolators.find(el);
             if (search == interpolators.end()) {
-                auto b = occ::thakkar::basis_for_element(el);
+                auto b = basis[Element(el).symbol()];
                 auto func = [&b](double x) { return b.rho(x); };
                 interpolators[el] =
                     Interpolator1D<double, occ::core::DomainMapping::Log>(
@@ -66,7 +67,7 @@ struct HirshfeldBasis {
             coordinates.push_back(pos_ext.col(i));
             auto search = interpolators.find(el);
             if (search == interpolators.end()) {
-                auto b = occ::thakkar::basis_for_element(el);
+                auto b = basis[Element(el).symbol()];
                 auto func = [&b](double x) { return b.rho(x); };
                 interpolators[el] =
                     Interpolator1D<double, occ::core::DomainMapping::Log>(
@@ -120,10 +121,11 @@ struct SlaterBasis {
         Eigen::Vector3d maxp = pos.rowwise().maxCoeff();
         minp.array() -= buffer;
         maxp.array() += buffer;
+        auto basis_set = occ::slater::load_slaterbasis("thakkar");
         for (size_t i = 0; i < molecule.size(); i++) {
             int el = nums[i];
             coordinates.push_back(pos.col(i));
-            basis.emplace_back(occ::thakkar::basis_for_element(el));
+            basis.emplace_back(basis_set[Element(el).symbol()]);
         }
         origin = minp;
         length = (maxp - minp).maxCoeff();
@@ -259,12 +261,6 @@ int main(int argc, char *argv[]) {
                        Element(atom.atomic_number).symbol(), atom.x, atom.y,
                        atom.z);
         }
-
-        auto b = occ::thakkar::basis_for_element(6);
-        auto func = [&b](double x) { return b.rho(x); };
-        Interpolator1D<double, occ::core::DomainMapping::Log> interp(
-            func, 0.1, 20.0, 1024);
-        fmt::print("v({}) = ({}, {})", 0.4, func(0.4), interp(0.4));
 
         auto basis = SlaterBasis(m);
         size_t max_depth = 7;

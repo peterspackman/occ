@@ -2,11 +2,11 @@
 #include <occ/core/molecule.h>
 #include <optional>
 
-namespace occ::chem {
+namespace occ::core {
 using occ::IVec;
 using occ::Mat3N;
 using occ::Vec;
-using occ::chem::Molecule;
+using occ::core::Molecule;
 
 class Dimer {
   public:
@@ -56,4 +56,4 @@ class Dimer {
     double m_interaction_energy{0};
 };
 
-} // namespace occ::chem
+} // namespace occ::core

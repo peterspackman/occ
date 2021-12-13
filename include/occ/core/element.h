@@ -3,7 +3,7 @@
 #include <vector>
 #define ELEMENT_MAX 103
 
-namespace occ::chem {
+namespace occ::core {
 
 struct ElementData {
     ElementData(int n, const std::string &nm, const std::string &sym, float cov,
@@ -160,4 +160,4 @@ class Element {
 
 std::string chemical_formula(const std::vector<Element> &);
 
-} // namespace occ::chem
+} // namespace occ::core

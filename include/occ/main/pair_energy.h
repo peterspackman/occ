@@ -8,7 +8,7 @@
 namespace occ::main {
 
 using EnergyComponentsCE = occ::interaction::CEModelInteraction::EnergyComponents;
-using occ::chem::Dimer;
+using occ::core::Dimer;
 using occ::qm::Wavefunction;
 using occ::crystal::Crystal;
 

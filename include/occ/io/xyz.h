@@ -14,7 +14,7 @@ struct XyzFileReader {
     XyzFileReader(std::istream &);
     XyzFileReader(const std::string &);
 
-    std::vector<occ::chem::Element> elements;
+    std::vector<occ::core::Element> elements;
     std::vector<Position> positions;
     std::string comment;
 
@@ -25,8 +25,8 @@ private:
 };
 
 
-occ::chem::Molecule molecule_from_xyz_file(const std::string &);
-occ::chem::Molecule molecule_from_xyz_string(const std::string &);
+occ::core::Molecule molecule_from_xyz_file(const std::string &);
+occ::core::Molecule molecule_from_xyz_string(const std::string &);
 
 
 } // namespace occ::io

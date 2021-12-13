@@ -8,8 +8,8 @@
 
 namespace occ::main {
 
-using occ::chem::Element;
-using occ::chem::Molecule;
+using occ::core::Element;
+using occ::core::Molecule;
 using occ::dft::DFT;
 using occ::hf::HartreeFock;
 using occ::qm::SpinorbitalKind;

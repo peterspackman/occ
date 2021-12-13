@@ -9,7 +9,7 @@ auto acetic_crystal() {
     occ::IVec nums(labels.size());
     occ::Mat positions(labels.size(), 3);
     for (size_t i = 0; i < labels.size(); i++) {
-        nums(i) = occ::chem::Element(labels[i]).atomic_number();
+        nums(i) = occ::core::Element(labels[i]).atomic_number();
     }
     positions << 0.16510, 0.28580, 0.17090, 0.08940, 0.37620, 0.34810, 0.18200,
         0.05100, -0.11600, 0.12800, 0.51000, 0.49100, 0.03300, 0.54000, 0.27900,

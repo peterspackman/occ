@@ -2,6 +2,7 @@
 #include <occ/core/linear_algebra.h>
 #include <string>
 #include <vector>
+#include <occ/3rdparty/robin_hood.h>
 
 namespace occ::slater {
 
@@ -50,9 +51,9 @@ class Basis {
     void renormalize();
     void unnormalize();
     const auto &shells() const { return m_shells; }
-
   private:
     std::vector<Shell> m_shells;
 };
 
+robin_hood::unordered_map<std::string, Basis> load_slaterbasis(const std::string&);
 } // namespace occ::slater

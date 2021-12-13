@@ -17,9 +17,9 @@
 #include <occ/qm/wavefunction.h>
 
 namespace fs = std::filesystem;
-using occ::chem::Dimer;
-using occ::chem::Element;
-using occ::chem::Molecule;
+using occ::core::Dimer;
+using occ::core::Element;
+using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::SymmetryOperation;
 using occ::hf::HartreeFock;
@@ -33,7 +33,7 @@ using occ::units::AU_TO_KJ_PER_MOL;
 using occ::units::BOHR_TO_ANGSTROM;
 using occ::util::all_close;
 
-std::string dimer_symop(const occ::chem::Dimer &dimer, const Crystal &crystal) {
+std::string dimer_symop(const occ::core::Dimer &dimer, const Crystal &crystal) {
     const auto &a = dimer.a();
     const auto &b = dimer.b();
     if (a.asymmetric_molecule_idx() != b.asymmetric_molecule_idx())

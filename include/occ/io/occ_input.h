@@ -8,7 +8,7 @@
 
 namespace occ::io {
 using occ::qm::SpinorbitalKind;
-using occ::chem::Element;
+using occ::core::Element;
 
 using Position = std::array<double, 3>;
 
@@ -21,8 +21,8 @@ struct ElectronInput {
 struct GeometryInput {
     std::vector<Position> positions;
     std::vector<Element> elements;
-    occ::chem::Molecule molecule() const;
-    void set_molecule(const occ::chem::Molecule&);
+    occ::core::Molecule molecule() const;
+    void set_molecule(const occ::core::Molecule&);
 };
 
 struct DriverInput {

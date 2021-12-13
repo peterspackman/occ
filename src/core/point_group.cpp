@@ -90,7 +90,7 @@ bool is_valid_symop(const SymOp &op, Eigen::Ref<const Mat3N> positions) {
     return true;
 }
 
-IVec smallest_off_axis_group(const occ::chem::Molecule &mol, const Vec3 &axis) {
+IVec smallest_off_axis_group(const occ::core::Molecule &mol, const Vec3 &axis) {
     double tol = 0.1;
     const auto &pos = mol.positions();
     const auto els = mol.atomic_numbers();
@@ -130,7 +130,7 @@ IVec smallest_off_axis_group(const occ::chem::Molecule &mol, const Vec3 &axis) {
     return mask;
 }
 
-MolecularPointGroup::MolecularPointGroup(const occ::chem::Molecule &mol)
+MolecularPointGroup::MolecularPointGroup(const occ::core::Molecule &mol)
     : centered_molecule(mol.translated(-mol.center_of_mass())) {
     init();
 }

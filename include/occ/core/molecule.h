@@ -5,7 +5,7 @@
 #include <occ/core/linear_algebra.h>
 #include <tuple>
 
-namespace occ::chem {
+namespace occ::core {
 
 class Molecule {
   public:
@@ -129,4 +129,4 @@ class Molecule {
 };
 
 
-} // namespace occ::chem
+} // namespace occ::core

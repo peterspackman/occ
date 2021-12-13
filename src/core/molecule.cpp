@@ -8,7 +8,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace occ::chem {
+namespace occ::core {
 
 Molecule::Molecule(const IVec &nums, const Mat3N &pos)
     : m_atomicNumbers(nums), m_positions(pos) {
@@ -279,4 +279,4 @@ double Molecule::molar_mass() const {
     return occ::constants::molar_mass_constant<double> * atomic_masses().array().sum();
 }
 
-} // namespace occ::chem
+} // namespace occ::core

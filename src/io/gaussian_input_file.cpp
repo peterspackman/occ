@@ -91,7 +91,7 @@ void GaussianInputFile::parse_atom_line(const std::string &line) {
     std::string symbol;
     scn::scan(line, "{} {} {} {}", symbol, x, y, z);
     atomic_positions.push_back({x, y, z});
-    elements.emplace_back(occ::chem::Element(symbol));
+    elements.emplace_back(occ::core::Element(symbol));
 }
 
 SpinorbitalKind GaussianInputFile::spinorbital_kind() const {

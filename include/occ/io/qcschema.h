@@ -5,7 +5,7 @@
 
 namespace occ::io {
 
-using occ::chem::Element;
+using occ::core::Element;
 
 struct OccInput;
 

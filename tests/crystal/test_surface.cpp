@@ -19,7 +19,7 @@ auto acetic_acid_crystal()
     occ::Mat positions(labels.size(), 3);
     for(size_t i = 0; i < labels.size(); i++)
     {
-        nums(i) = occ::chem::Element(labels[i]).atomic_number();
+        nums(i) = occ::core::Element(labels[i]).atomic_number();
     }
     positions << 
         0.16510, 0.28580,  0.17090,

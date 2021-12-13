@@ -14,11 +14,11 @@ namespace occ::main {
 
 using occ::interaction::CEModelInteraction;
 using EnergyComponentsCE = CEModelInteraction::EnergyComponents;
-using occ::chem::Dimer;
+using occ::core::Dimer;
 using occ::units::BOHR_TO_ANGSTROM;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
-using occ::chem::Molecule;
+using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::util::all_close;
 
@@ -49,7 +49,7 @@ auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
 bool write_xyz_dimer(const std::string &filename, const Dimer &dimer,
                      std::optional<EnergyComponentsCE> energies) {
 
-    using occ::chem::Element;
+    using occ::core::Element;
     auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
                                                  fmt::file::CREATE);
     const auto &pos = dimer.positions();

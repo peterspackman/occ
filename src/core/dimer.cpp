@@ -4,7 +4,7 @@
 
 #include <fmt/ostream.h>
 
-namespace occ::chem {
+namespace occ::core {
 
 Dimer::Dimer(const Molecule &a, const Molecule &b) : m_a(a), m_b(b) {}
 
@@ -158,7 +158,7 @@ bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
     return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
 }
 
-bool Dimer::equivalent(const occ::chem::Dimer &rhs) const {
+bool Dimer::equivalent(const occ::core::Dimer &rhs) const {
     using occ::Mat3N;
     using occ::Vec3;
     using occ::linalg::kabsch_rotation_matrix;
@@ -185,7 +185,7 @@ bool Dimer::equivalent(const occ::chem::Dimer &rhs) const {
     return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
 }
 
-bool Dimer::equivalent_under_rotation(const occ::chem::Dimer &rhs, const occ::Mat3 &rotation) const {
+bool Dimer::equivalent_under_rotation(const occ::core::Dimer &rhs, const occ::Mat3 &rotation) const {
     using occ::Mat3N;
     using occ::Vec3;
     using occ::linalg::kabsch_rotation_matrix;
@@ -212,4 +212,4 @@ bool Dimer::equivalent_under_rotation(const occ::chem::Dimer &rhs, const occ::Ma
     return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
 }
 
-} // namespace occ::chem
+} // namespace occ::core

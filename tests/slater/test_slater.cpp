@@ -2,7 +2,7 @@
 #include "catch.hpp"
 #include <fmt/ostream.h>
 #include <occ/core/timings.h>
-#include <occ/slater/thakkar.h>
+#include <occ/slater/slaterbasis.h>
 #include <occ/core/util.h>
 #include <array>
 
@@ -18,8 +18,9 @@ std::array<double, 38> domain_data{
 
 TEST_CASE("Grad and rho consistency") {
     using occ::Vec;
-    auto H = occ::thakkar::basis_for_element(1);
-    auto C = occ::thakkar::basis_for_element(6);
+    auto basis = occ::slater::load_slaterbasis("thakkar");
+    auto H = basis["H"];
+    auto C = basis["C"];
 
     Vec r0(1);
     r0(0) = 0.0;
@@ -43,7 +44,8 @@ TEST_CASE("Grad and rho consistency") {
 
 TEST_CASE("Vector vs. repeated function call")
 {
-    auto Ag = occ::thakkar::basis_for_element(47);
+    auto basis = occ::slater::load_slaterbasis("thakkar");
+    auto Ag = basis["Ag"];
     using occ::Vec;
 
     occ::timing::StopWatch<1> sw;
@@ -66,7 +68,8 @@ TEST_CASE("Vector vs. repeated function call")
 
 TEST_CASE("H") {
     using occ::Vec;
-    auto H = occ::thakkar::basis_for_element(1);
+    auto basis = occ::slater::load_slaterbasis("thakkar");
+    auto H = basis["H"];
     Vec expected(38);
     Eigen::Map<Vec, 0> domain(domain_data.data(), 38);
     expected <<
@@ -78,13 +81,15 @@ TEST_CASE("H") {
         0.106950, 0.101774, 0.096850;
 
     auto rho = H.rho(domain);
+    fmt::print("Diff:\n{}\n", rho - expected);
 
     REQUIRE(all_close(rho, expected, 1e-5, 1e-5));
 }
 
 TEST_CASE("Ag") {
     using occ::Vec;
-    auto Ag = occ::thakkar::basis_for_element(47);
+    auto basis = occ::slater::load_slaterbasis("thakkar");
+    auto Ag = basis["Ag"];
     Vec expected(38);
     Eigen::Map<Vec, 0> domain(domain_data.data(), 38);
 

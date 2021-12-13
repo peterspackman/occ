@@ -7,7 +7,7 @@
 #include <fstream>
 
 namespace occ::io {
-using occ::chem::Element;
+using occ::core::Element;
 using Position = std::array<double, 3>;
 
 XyzFileReader::XyzFileReader(const std::string &filename) {
@@ -41,7 +41,7 @@ void XyzFileReader::parse(std::istream &is) {
             continue;
         }
         occ::log::debug("Found atom line: {} {} {} {}\n", el, x, y, z);
-        elements.emplace_back(occ::chem::Element(el));
+        elements.emplace_back(occ::core::Element(el));
         positions.emplace_back(std::array<double, 3>{x, y, z});
         num_atoms--;
     }
@@ -59,19 +59,19 @@ OccInput XyzFileReader::as_occ_input() const {
     return result;
 }
 
-occ::chem::Molecule molecule_from_xyz_file(const std::string &filename) {
+occ::core::Molecule molecule_from_xyz_file(const std::string &filename) {
     XyzFileReader xyz(filename);
-    return occ::chem::Molecule(xyz.elements, xyz.positions);
+    return occ::core::Molecule(xyz.elements, xyz.positions);
 }
 
-occ::chem::Molecule molecule_from_xyz_string(const std::string &contents) {
+occ::core::Molecule molecule_from_xyz_string(const std::string &contents) {
     std::istringstream is(contents);
     if (not is.good()) {
         throw std::runtime_error(
             fmt::format("Could read xyz from string: '{}'", contents));
     }
     XyzFileReader xyz(is);
-    return occ::chem::Molecule(xyz.elements, xyz.positions);
+    return occ::core::Molecule(xyz.elements, xyz.positions);
 }
 
 

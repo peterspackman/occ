@@ -36,7 +36,7 @@ ContinuumSolvationModel::ContinuumSolvationModel(
 
     occ::log::info("Intrinsic coulomb radii");
     for (const auto &x : element_radii) {
-        auto el = occ::chem::Element(x.first);
+        auto el = occ::core::Element(x.first);
         occ::log::info("{:<7s} {: 12.6f}", el.symbol(), x.second);
     }
     auto s = occ::solvent::surface::solvent_surface(coulomb_radii, nums,
@@ -55,7 +55,7 @@ ContinuumSolvationModel::ContinuumSolvationModel(
 
     occ::log::info("CDS radii");
     for (const auto &x : element_radii) {
-        auto el = occ::chem::Element(x.first);
+        auto el = occ::core::Element(x.first);
         occ::log::info("{:<7s} {: 12.6f}", el.symbol(), x.second);
     }
 

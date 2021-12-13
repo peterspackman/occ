@@ -11,7 +11,7 @@ namespace occ::crystal {
 
 using occ::IVec;
 using occ::Mat3N;
-using occ::chem::Molecule;
+using occ::core::Molecule;
 using occ::graph::PeriodicBondGraph;
 
 struct HKL {
@@ -51,8 +51,8 @@ struct AsymmetricUnit {
 };
 
 struct CrystalDimers {
-    std::vector<occ::chem::Dimer> unique_dimers;
-    std::vector<std::vector<occ::chem::Dimer>> molecule_neighbors;
+    std::vector<occ::core::Dimer> unique_dimers;
+    std::vector<std::vector<occ::core::Dimer>> molecule_neighbors;
     std::vector<std::vector<size_t>> unique_dimer_idx;
 };
 
@@ -88,7 +88,7 @@ class Crystal {
 
     CrystalDimers symmetry_unique_dimers(double) const;
     CrystalDimers unit_cell_dimers(double) const;
-    std::string dimer_symmetry_string(const occ::chem::Dimer &) const;
+    std::string dimer_symmetry_string(const occ::core::Dimer &) const;
     static Crystal create_primitive_supercell(const Crystal& c, HKL);
 
   private:

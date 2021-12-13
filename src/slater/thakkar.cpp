@@ -1,4 +1,7 @@
 #include <occ/slater/thakkar.h>
+#include <fstream>
+#include <string>
+#include <nlohmann/json.hpp>
 
 namespace occ::thakkar {
 using occ::IVec;
@@ -8112,6 +8115,97 @@ std::vector<Basis> basis = {
 
 Basis basis_for_element(size_t atomic_number) {
     return basis.at(atomic_number - 1);
+}
+
+void write_json_file() {
+    std::vector<Basis> to_write = {
+         H, H_normal, H_contracted, He, Li, Be, B, C, N, O, F, Ne, Na, Mg, Al, Si, P, S, Cl, Ar, K, Ca, Sc, Ti,
+         V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr, Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd,
+         In, Sn, Sb, Te, I, Xe, Li_plus, Be_plus, B_plus, C_plus, N_plus, O_plus, F_plus, Ne_plus,
+         Na_plus, Mg_plus, Al_plus, Si_plus, P_plus, S_plus, Cl_plus, Ar_plus, K_plus,
+         Ca_plus, Sc_plus, Ti_plus, V_plus, Cr_plus, Mn_plus, Fe_plus, Co_plus, Ni_plus,
+         Cu_plus, Zn_plus, Ga_plus, Ge_plus, As_plus, Se_plus, Br_plus, Kr_plus, Rb_plus,
+         Sr_plus, Y_plus, Zr_plus, Nb_plus, Mo_plus, Tc_plus, Ru_plus, Rh_plus, Pd_plus,
+         Ag_plus, Cd_plus, In_plus, Sn_plus, Sb_plus, Te_plus, I_plus, Xe_plus, Cs_plus,
+         H_minus, Li_minus, B_minus, C_minus, N_minus, O_minus, F_minus, Na_minus, Al_minus,
+         Si_minus, P_minus, S_minus, Cl_minus, K_minus, Sc_minus, Ti_minus, V_minus,
+         Cr_minus, Mn_minus, Fe_minus, Co_minus, Ni_minus, Cu_minus, Ga_minus, Ge_minus,
+         As_minus, Se_minus, Br_minus, Rb_minus, Y_minus, Zr_minus, Nb_minus, Mo_minus,
+         Tc_minus, Ru_minus, Rh_minus, Pd_minus, Ag_minus, In_minus, Sn_minus, Sb_minus,
+         Te_minus, I_minus, Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W,
+         Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn, Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf,
+         Es, Fm, Md, No, Lr
+    };
+    std::vector<std::string> names{
+        "H", "H_normal", "H_contracted", "He", "Li", "Be", "B", "C", "N", "O",
+        "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca",
+        "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga",
+        "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo",
+        "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I",
+        "Xe", "Li+", "Be+", "B+", "C+", "N+", "O+", "F+", "Ne+", "Na+",
+        "Mg+", "Al+", "Si+", "P+", "S+", "Cl+", "Ar+", "K+", "Ca+", "Sc+",
+        "Ti+", "V+", "Cr+", "Mn+", "Fe+", "Co+", "Ni+", "Cu+", "Zn+",
+        "Ga+", "Ge+", "As+", "Se+", "Br+", "Kr+", "Rb+", "Sr+", "Y+",
+        "Zr+", "Nb+", "Mo+", "Tc+", "Ru+", "Rh+", "Pd+", "Ag+", "Cd+",
+        "In+", "Sn+", "Sb+", "Te+", "I+", "Xe+", "Cs+", "H-", "Li-",
+        "B-", "C-", "N-", "O-", "F-", "Na-", "Al-", "Si-", "P-", "S-",
+        "Cl-", "K-", "Sc-", "Ti-", "V-", "Cr-", "Mn-", "Fe-", "Co-", "Ni-",
+        "Cu-", "Ga-", "Ge-", "As-", "Se-", "Br-", "Rb-", "Y-", "Zr-",
+        "Nb-", "Mo-", "Tc-", "Ru-", "Rh-", "Pd-", "Ag-", "In-", "Sn-",
+        "Sb-", "Te-", "I-", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm",
+        "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta",
+        "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po",
+        "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu",
+        "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr"
+    };
+    using nlohmann::json;
+
+    json els;
+    for(size_t i = 0; i < to_write.size(); ++i) {
+        const auto& b = to_write[i];
+        const auto &name = names[i];
+
+        json shells = json::array();
+        for(auto shell: b.shells()) {
+            shell.renormalize();
+            const auto& occupation_ref = shell.occupation();
+            const auto& n_ref = shell.n();
+            const auto& z_ref = shell.z();
+            const auto& c_ref = shell.c();
+            size_t nocc = occupation_ref.rows();
+            auto occ = json::array();
+            auto n = json::array();
+            auto z = json::array();
+            auto c = json::array();
+
+            for(size_t idx = 0; idx < occupation_ref.rows(); idx++) {
+                occ.push_back(occupation_ref(idx));
+            }
+
+            for(size_t idx = 0; idx < n_ref.rows(); idx++) {
+                n.push_back(n_ref(idx));
+                z.push_back(z_ref(idx));
+            }
+
+            for(size_t idx = 0; idx < c_ref.cols(); idx++) {
+                auto ccol = json::array();
+                for(size_t jdx = 0; jdx < c_ref.rows(); jdx++) {
+                    ccol.push_back(c_ref(jdx, idx));
+                }
+                c.push_back(ccol);
+            }
+
+            auto shell_obj = json::object();
+            shell_obj["occ"] = occ;
+            shell_obj["n"] = n;
+            shell_obj["z"] = z;
+            shell_obj["c"] = c;
+            shells.push_back(shell_obj);
+        }
+        els[name] = shells;
+    }
+    std::ofstream o("thakkar_pretty.json");
+    o << std::setw(2) << els << std::endl;
 }
 
 } // namespace occ::thakkar

@@ -4,12 +4,12 @@
 
 namespace occ::io {
 
-occ::chem::Molecule GeometryInput::molecule() const {
-    return occ::chem::Molecule(elements, positions);
+occ::core::Molecule GeometryInput::molecule() const {
+    return occ::core::Molecule(elements, positions);
 }
 
 
-void GeometryInput::set_molecule(const occ::chem::Molecule &mol) {
+void GeometryInput::set_molecule(const occ::core::Molecule &mol) {
     elements = mol.elements();
     positions.clear();
     const auto& pos = mol.positions();

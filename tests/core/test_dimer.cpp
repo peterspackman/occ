@@ -3,8 +3,8 @@
 #include <fmt/ostream.h>
 #include "catch.hpp"
 
-using occ::chem::Dimer;
-using occ::chem::Molecule;
+using occ::core::Dimer;
+using occ::core::Molecule;
 using occ::util::all_close;
 
 TEST_CASE("Dimer constructor", "[dimer]")

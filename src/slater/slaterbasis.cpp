@@ -1,6 +1,10 @@
 #include <fmt/core.h>
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>
+#include <filesystem>
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <fmt/ostream.h>
 
 namespace occ::slater {
 
@@ -190,6 +194,65 @@ void Basis::unnormalize() {
     for (auto &sh : m_shells) {
         sh.unnormalize();
     }
+}
+
+robin_hood::unordered_map<std::string, Basis> load_slaterbasis(const std::string &name) {
+    namespace fs = std::filesystem;
+    fs::path path;
+    const char *basis_path_env = getenv("OCC_BASIS_PATH");
+    if (basis_path_env) {
+        path = basis_path_env;
+    } else {
+        path = "."; 
+    }
+    path /= name;
+    path.replace_extension("json");
+    robin_hood::unordered_map<std::string, Basis> basis_set;
+
+    if(!fs::exists(path)) {
+        throw std::runtime_error("Could not locate slater basis file " + path.string());
+    }
+    std::ifstream in(path.c_str());
+
+    if(!in.good()) {
+        throw std::runtime_error("Could not read slater basis file " + path.string());
+    }
+
+    auto basis_json = nlohmann::json::parse(in);
+    for(const auto &basis: basis_json.items()) {
+        std::string k = basis.key();
+        std::vector<Shell> shells;
+        const auto &j = basis.value();
+        for(const auto &shell: j) {
+            const auto &occ_ref = shell["occ"];
+            const auto &n_ref = shell["n"];
+            const auto &z_ref = shell["z"];
+            const auto &c_ref = shell["c"];
+            size_t nocc = occ_ref.size();
+            size_t nz = n_ref.size();
+            IVec occupation(nocc);
+            IVec n(nz);
+            Vec z(z_ref.size());
+            Mat c = Mat::Zero(nz, nocc);
+            for(size_t row = 0; row < nocc; row++) {
+                occupation(row) = occ_ref[row];
+            }
+
+            for(size_t row = 0; row < nz; row++) {
+                n(row) = n_ref[row];
+                z(row) = z_ref[row];
+            }
+
+            for(size_t oi = 0; oi < nocc; oi++) {
+                for(size_t zi = 0; zi < nz; zi++) {
+                    c(zi, oi) = c_ref[oi][zi];
+                }
+            }
+            shells.push_back(Shell(occupation, n, z, c));
+        }
+        basis_set[k] = Basis(shells);
+    }
+    return basis_set;
 }
 
 } // namespace occ::slater
