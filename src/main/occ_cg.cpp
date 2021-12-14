@@ -741,7 +741,7 @@ int main(int argc, char **argv) {
                 auto s_ab = c_symm.dimer_symmetry_string(dimer);
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j];
                 double rn = dimer.nearest_distance();
-                double rc = dimer.center_of_mass_distance();
+                double rc = dimer.centroid_distance();
                 const auto &e =
                     dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];
                 double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
@@ -880,7 +880,7 @@ int main(int argc, char **argv) {
                                     i, j));
                 }
                 double rn = dimer.nearest_distance();
-                double rc = dimer.center_of_mass_distance();
+                double rc = dimer.centroid_distance();
 
                 double e_int = interaction_energies[idx].fictitious * occ::units::KJ_TO_KCAL;
 

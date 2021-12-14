@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
 project(occ
-    VERSION 0.1
+    VERSION 0.2
     LANGUAGES CXX
 )
 
@@ -20,6 +20,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
     option(WITH_BENCHMARKS "Enable benchmarking tests" OFF)
     option(WITH_CLANG_TIDY "Enable clang tidy" OFF)
+    option(USE_SYSTEM_BOOST "Use Boost installed on system" ON)
     option(USE_SYSTEM_LIBINT2 "Use Libint2 installed on system" ON)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" ON)
 #    option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" ON)
@@ -27,11 +28,14 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" ON)
 endif()
 
-find_package(Boost CONFIG COMPONENTS graph)
 find_package(Threads REQUIRED)
 
+if("${USE_SYSTEM_BOOST}")
+    find_package(Boost CONFIG COMPONENTS graph)
+endif()
+
 if("${USE_SYSTEM_EIGEN}")
-find_package(Eigen3 CONFIG REQUIRED)
+    find_package(Eigen3 CONFIG REQUIRED)
 endif()
 
 if("${USE_SYSTEM_ZLIB}")
@@ -61,6 +65,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
 if("${WITH_CLANG_TIDY}")
     set(CMAKE_CXX_CLANG_TIDY "clang-tidy;clang-diagnostic-*,clang-analyzer-*,-*,bugprone*,modernize*,performance*,-modernize-pass-by-value,-modernize-use-auto,-modernize-use-using")
 endif()

@@ -1,3 +1,11 @@
+if(NOT "${USE_SYSTEM_BOOST}")
+CPMAddPackage(
+    NAME Boost
+    VERSION 1.77.0
+    GITHUB_REPOSITORY "boostorg/boost"
+    GIT_TAG "boost-1.77.0"
+)
+endif()
 
 CPMAddPackage(
     NAME fmt
@@ -47,7 +55,7 @@ CPMAddPackage(
 if(NOT "${USE_SYSTEM_EIGEN}")
 CPMAddPackage(
     NAME eigen3
-    URL "https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.zip"
+    URL "https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip"
     DOWNLOAD_ONLY YES  # Eigen CMakelists.txt not intended for library use
 )
 
@@ -120,7 +128,7 @@ endif()
 
 
 if(NOT "${USE_SYSTEM_LIBINT2}")
-set(LIBINT2_URL "https://github.com/evaleev/libint/releases/download/v2.7.0-beta.6/libint-2.7.0-beta.6.tgz")
+set(LIBINT2_URL "https://github.com/evaleev/libint/releases/download/v2.7.1/libint-2.7.1.tgz")
 CPMAddPackage(
     NAME Libint2
     URL "${LIBINT2_URL}"
@@ -132,7 +140,7 @@ if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc
     GIT_REPOSITORY "https://gitlab.com/libxc/libxc.git"
-    GIT_TAG 5.0.0
+    GIT_TAG 5.1.7
     OPTIONS "BUILD_TESTING OFF"
 )
 add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 

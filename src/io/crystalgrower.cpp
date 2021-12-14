@@ -53,7 +53,7 @@ void StructureWriter::write(const occ::crystal::Crystal &crystal,
                    mol.unit_cell_molecule_idx() + 1, mol.size(),
                    bonds.size() / 2);
         for (size_t i = 0; i < mol.size(); i++) {
-            fmt::print(m_dest, "{} {:<2s} {: 8.5f} {: 8.5f} {: 8.5f}\n", i + 1,
+            fmt::print(m_dest, "{} {:s} {: 8.5f} {: 8.5f} {: 8.5f}\n", i + 1,
                        elements[i].symbol(), pos(0, i), pos(1, i), pos(2, i));
         }
         fmt::print(m_dest, "\n");
