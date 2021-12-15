@@ -17,11 +17,24 @@ using occ::qm::Wavefunction;
 using occ::scf::SCF;
 using occ::io::OccInput;
 
+void print_matrix_xyz(const Mat& m) {
+    static const char dims[] = {'x', 'y', 'z'};
+    fmt::print("\n    {:^12c} {:^12c} {:^12c}\n", dims[0], dims[1], dims[2]);
+    for(size_t i = 0; i < 3; i++) {
+        fmt::print("{:<3c} {: 12.7f} {: 12.7f} {: 12.7f}\n", dims[i], m(i, 0), m(i, 1), m(i, 2));
+    }
+    fmt::print("\n");
+}
+
+void print_vector(const Vec3& m) {
+    fmt::print("{: 12.7f} {: 12.7f} {: 12.7f}\n\n", m(0), m(1), m(2));
+}
+
 occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name,
                                  bool spherical) {
     occ::qm::BasisSet basis(name, m.atoms());
     basis.set_pure(spherical);
-    fmt::print("Loaded basis set: {}\n", spherical ? "spherical" : "cartesian");
+    fmt::print("loaded basis set: {}\n", spherical ? "spherical" : "cartesian");
     fmt::print("number of shells:            {}\n", basis.size());
     fmt::print("number of  basis functions:  {}\n", basis.nbf());
     fmt::print("max angular momentum:        {}\n", basis.max_l());
@@ -29,7 +42,7 @@ occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name,
 }
 
 void print_configuration(const Molecule &m, const OccInput &config) {
-    fmt::print("Input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n",
+    fmt::print("input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n",
                config.filename, "sym", "x", "y", "z");
     for (const auto &atom : m.atoms()) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
@@ -38,19 +51,22 @@ void print_configuration(const Molecule &m, const OccInput &config) {
     }
     fmt::print("\n");
 
-    fmt::print("Input method string: '{}'\n", config.method.name);
-    fmt::print("Input basis name: '{}'\n", config.basis.name);
-    fmt::print("Total charge: {}\n", config.electronic.charge);
-    fmt::print("System multiplicity: {}\n", config.electronic.multiplicity);
-    fmt::print("Inertia Tensor (x 10^-46 kg m^2)\n{}\n\n", m.inertia_tensor());
-    fmt::print("Principal moments of inertia\n{}\n\n",
-               m.principal_moments_of_inertia());
-    fmt::print("Rotational constants (GHz)\n{}\n\n", m.rotational_constants());
-    fmt::print("Rotational free energy      {: 12.6f} kJ/mol\n",
+    fmt::print("input method string: '{}'\n", config.method.name);
+    fmt::print("input basis name: '{}'\n", config.basis.name);
+    fmt::print("total charge: {}\n", config.electronic.charge);
+    fmt::print("system multiplicity: {}\n", config.electronic.multiplicity);
+    fmt::print("\ninertia tensor (x 10e-46 kg m^2)\n");
+    print_matrix_xyz(m.inertia_tensor());
+    fmt::print("principal moments of inertia\n\n");
+    print_vector(m.principal_moments_of_inertia());
+    fmt::print("rotational constants (GHz)\n\n");
+    print_vector(m.rotational_constants());
+    fmt::print("rotational free energy      {: 12.6f} kJ/mol\n",
                m.rotational_free_energy(occ::constants::celsius<double> + 25));
     fmt::print(
-        "Translational free energy   {: 12.6f} kJ/mol\n",
+        "translational free energy   {: 12.6f} kJ/mol\n",
         m.translational_free_energy(occ::constants::celsius<double> + 25));
+    fmt::print("\n");
 }
 
 

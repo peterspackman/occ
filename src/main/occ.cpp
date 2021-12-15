@@ -59,8 +59,8 @@ void write_output_files(const OccInput &config, Wavefunction &wfn) {
     fchk.write();
     fmt::print("wavefunction stored in {}\n", fchk_path);
     if (config.basis.spherical)
-        occ::log::warn("Spherical basis coefficients and ordering are not "
-                       "yet implemented for Fchk files");
+        occ::log::warn("spherical basis coefficients and ordering are not "
+                       "yet implemented for fchk files");
 }
 
 int main(int argc, char *argv[]) {
@@ -70,28 +70,28 @@ int main(int argc, char *argv[]) {
     options.positional_help("[input_file] [method] [basis]")
         .show_positional_help();
 
-    options.add_options()("h,help", "Print help")(
-        "i,input", "Input file", cxxopts::value<std::string>())(
-        "b,basis", "Basis set name",
+    options.add_options()("h,help", "print help")(
+        "i,input", "input file", cxxopts::value<std::string>())(
+        "b,basis", "basis set name",
         cxxopts::value<std::string>()->default_value("3-21G"))(
-        "d,df-basis", "Basis set name", cxxopts::value<std::string>())(
-        "t,threads", "Number of threads",
+        "d,df-basis", "basis set name", cxxopts::value<std::string>())(
+        "t,threads", "number of threads",
         cxxopts::value<int>()->default_value("1"))(
         "m,method", "QM method",
         cxxopts::value<std::string>()->default_value("rhf"))(
-        "c,charge", "System net charge",
+        "c,charge", "system net charge",
         cxxopts::value<int>()->default_value("0"))(
-        "n,multiplicity", "System multiplicity",
+        "n,multiplicity", "system multiplicity",
         cxxopts::value<int>()->default_value("1"))(
-        "u,unrestricted", "Use unrestricted DFT",
+        "u,unrestricted", "use unrestricted DFT",
         cxxopts::value<bool>()->default_value("false"))(
-        "v,verbosity", "Logging verbosity",
+        "v,verbosity", "logging verbosity",
         cxxopts::value<std::string>()->default_value("WARN"))(
-        "spherical", "Use spherical basis functions",
+        "spherical", "use spherical basis functions",
         cxxopts::value<bool>()->default_value("false"))(
-        "s,solvent", "Use SMD solvation model with solvent",
+        "s,solvent", "use SMD solvation model with solvent",
         cxxopts::value<std::string>())("f,solvent-file",
-                                       "Write solvation surface to file",
+                                       "write solvation surface to file",
                                        cxxopts::value<std::string>());
 
     options.parse_positional({"input", "method", "basis"});
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
     occ::timing::stop(occ::timing::category::io);
 
     const std::string error_format =
-        "Exception:\n    {}\nTerminating program.\n";
+        "exception:\n    {}\nterminating program.\n";
 
     if (result.count("input") == 0) {
         occ::log::error("must provide an input file!");
@@ -136,6 +136,12 @@ int main(int argc, char *argv[]) {
         config.filename = result["input"].as<std::string>();
         // read input file first so we can override with command line settings
         read_input_file(config);
+
+        using occ::parallel::nthreads;
+        nthreads = result["threads"].as<int>();
+
+        fmt::print("\nparallelization: {} threads, {} eigen threads\n",
+                   nthreads, Eigen::nbThreads());
 
         if(result.count("basis"))
             config.basis.name = result["basis"].as<std::string>();
@@ -154,19 +160,14 @@ int main(int argc, char *argv[]) {
         if (config.electronic.multiplicity != 1 || result.count("unrestricted") ||
             config.method.name == "uhf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
-            fmt::print("unrestricted spinorbital kind\n");
+            fmt::print("spinorbital kind: unrestricted");
         } else if (config.method.name == "ghf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::General;
-            fmt::print("general spinorbital kind\n");
+            fmt::print("spinorbital kind: general\n");
         } else {
-            fmt::print("restricted spinorbital kind\n");
+            fmt::print("spinorbital kind: restricted\n");
         }
 
-        using occ::parallel::nthreads;
-        nthreads = result["threads"].as<int>();
-
-        fmt::print("\nParallelization: {} threads, {} Eigen threads\n",
-                   nthreads, Eigen::nbThreads());
 
         occ::timing::stop(occ::timing::category::io);
         Wavefunction wfn = occ::main::single_point_calculation(config);
@@ -181,7 +182,7 @@ int main(int argc, char *argv[]) {
             Wavefunction wfn2 = occ::main::single_point_calculation(config, wfn);
             double esolv = wfn2.energy.total - wfn.energy.total;
 
-            fmt::print("Estimated delta G(solv) {:20.12f} ({:.3f} kJ/mol, "
+            fmt::print("estimated \u0394G(solv) {:20.12f} ({:.3f} kJ/mol, "
                        "{:.3f} kcal/mol)\n",
                        esolv, esolv * occ::units::AU_TO_KJ_PER_MOL,
                        esolv * occ::units::AU_TO_KCAL_PER_MOL);

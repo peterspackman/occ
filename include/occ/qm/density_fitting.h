@@ -4,6 +4,8 @@
 
 namespace occ::df {
 using occ::qm::BasisSet;
+using occ::ints::shellpair_data_t;
+using occ::ints::shellpair_list_t;
 
 struct DFFockEngine {
 
@@ -25,7 +27,18 @@ struct DFFockEngine {
     Mat compute_J_direct(const Mat &D) const;
     std::pair<Mat, Mat> compute_JK_direct(const Mat &Cocc);
 
+    size_t integral_storage_max_size() const {
+        return nbf * nbf * ndf;
+    }
+
+    const auto &shellpair_list() const { return m_shellpair_list; }
+    const auto &shellpair_data() const { return m_shellpair_data; }
+
+
   private:
+    shellpair_list_t m_shellpair_list{}; // shellpair list for OBS
+    shellpair_data_t m_shellpair_data{}; // shellpair data for OBS
+
     mutable std::vector<libint2::Engine> m_engines;
     template <typename T> void three_center_integral_helper(T &func) const {
         using occ::parallel::nthreads;
@@ -51,16 +64,16 @@ struct DFFockEngine {
                 auto bf1_first = shell2bf_df[s1];
                 auto n1 = dfbs[s1].size();
 
-                for (auto s2 = 0; s2 < nshells; ++s2) {
-                    auto bf2_first = shell2bf[s2];
+                for (auto s2 = 0l; s2 != nshells; s2++) {
+                    auto bf2 = shell2bf[s2]; // first basis function in this shell
                     auto n2 = obs[s2].size();
-                    const auto n12 = n1 * n2;
+                    auto bf2_first = shell2bf[s2];
 
-                    for (auto s3 = 0; s3 < nshells; ++s3, ++s123) {
-
-                        auto bf3_first = shell2bf[s3];
+                    auto s2_offset = s2 * (s2 + 1) / 2;
+                    for (auto s3 : m_shellpair_list.at(s2)) {
+                        auto bf2 = shell2bf[s3];
                         auto n3 = obs[s3].size();
-                        const auto n123 = n12 * n3;
+                        auto bf3_first = shell2bf[s3];
 
                         engine.compute2<libint2::Operator::coulomb,
                                         libint2::BraKet::xs_xx, 0>(

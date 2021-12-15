@@ -7,6 +7,8 @@ namespace occ::df {
 DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
     : obs(_obs), dfbs(_dfbs), nbf(_obs.nbf()), ndf(_dfbs.nbf()),
       ints(_dfbs.nbf()) {
+    std::tie(m_shellpair_list, m_shellpair_data) =
+        occ::ints::compute_shellpairs(obs);
     Mat V = occ::ints::compute_2body_2index_ints(dfbs);
     Vinv = V.inverse();
     m_engines.reserve(occ::parallel::nthreads);
@@ -29,12 +31,14 @@ Mat DFFockEngine::compute_2body_fock_dfC(const Mat &C_occ) {
     // using first time? compute 3-center ints and transform to inv sqrt
     // representation
     if (!ints_populated) {
+        for(auto& x : ints) {
+            x = Mat::Zero(nbf, nbf);
+        }
         auto lambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
                           size_t n2, size_t bf3, size_t n3, const double *buf) {
             size_t offset = 0;
             for (size_t i = bf1; i < bf1 + n1; i++) {
                 auto &x = ints[i];
-                x.resize(nbf, nbf);
                 for (size_t j = bf2; j < bf2 + n2; j++) {
                     for (size_t k = bf3; k < bf3 + n3; k++) {
                         x(j, k) = buf[offset];
@@ -88,14 +92,18 @@ Mat DFFockEngine::compute_J(const Mat &D) {
     // using first time? compute 3-center ints and transform to inv sqrt
     // representation
     if (!ints_populated) {
+        for(auto& x : ints) {
+            x = Mat::Zero(nbf, nbf);
+        }
         auto lambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
                           size_t n2, size_t bf3, size_t n3, const double *buf) {
             size_t offset = 0;
             for (size_t i = bf1; i < bf1 + n1; i++) {
                 auto &x = ints[i];
-                x.resize(nbf, nbf);
-                x.block(bf2, bf3, n2, n3) =
-                    Eigen::Map<const MatRM>(&buf[offset], n2, n3);
+                Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+                x.block(bf2, bf3, n2, n3) = buf_mat;
+                if (bf2 != bf3)
+                    x.block(bf3, bf2, n3, n2) = buf_mat.transpose();
                 offset += n2 * n3;
             }
         };

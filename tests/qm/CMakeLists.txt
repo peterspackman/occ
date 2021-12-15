@@ -11,3 +11,7 @@ create_qm_test(test_density_fitting.cpp)
 create_qm_test(test_electric_field.cpp)
 create_qm_test(test_mo_rotation.cpp)
 create_qm_test(test_scf.cpp)
+
+if("${WITH_BENCHMARKS}")
+create_qm_test(benchmark_density_fitting.cpp)
+endif()

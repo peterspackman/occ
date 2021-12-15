@@ -9,6 +9,3 @@ endfunction()
 
 create_gto_test(test_gto.cpp)
 create_gto_test(test_gto_transformation.cpp)
-if(WITH_BENCHMARKS)
-    create_gto_test(test_gto_mask.cpp)
-endif()

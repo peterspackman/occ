@@ -495,7 +495,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         if constexpr (spinorbital_kind == Unrestricted) {
             int n_a = n_alpha(), n_b = n_beta();
             int n_mo = orbital_energies.size() / 2;
-            fmt::print("\nMolecular orbital energies\n");
+            fmt::print("\nmolecular orbital energies\n");
             fmt::print("{0:3s}   {1:3s} {2:>16s}  {1:3s} {2:>16s}\n", "idx",
                        "occ", "energy");
             for (int i = 0; i < n_mo; i++) {
@@ -507,7 +507,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             }
         } else {
             int n_mo = orbital_energies.size();
-            fmt::print("\nMolecular orbital energies\n");
+            fmt::print("\nmolecular orbital energies\n");
             fmt::print("{0:3s}   {1:3s} {2:>16s}\n", "idx", "occ", "energy");
             for (int i = 0; i < n_mo; i++) {
                 auto s = i < n_occ ? "ab" : " ";

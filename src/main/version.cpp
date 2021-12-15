@@ -28,20 +28,27 @@ void print_header() {
 
     fmt::print(R"(
 
-Open Computational Chemistry (OCC)
+open computational chemistry (occ)
 
-Copyright (C) 2020-2021
-Peter Spackman - Primary Developer
+a library and program for quantum chemistry
 
-This version of occ makes use of the following third party libraries:
+copyright (C) 2020-2022 Peter Spackman 
 
-eigen3       - Linear Algebra (v {})
-libint2      - Electron integrals using GTOs (v {})
-libxc        - Density functional implementations (v {})
-gemmi        - CIF parsing & structure refinement (v {})
-boost::graph - Graph implementation (v {})
-fmt          - String formatting (v {})
-spdlog       - Logging (v {})
+this version of occ makes use of the following third party libraries:
+
+eigen3               Linear Algebra (v {})
+libint2              Electron integrals using GTOs (v {})
+libxc                Density functional implementations (v {})
+gau2grid             Gaussian basis function evaluation (v 2.0.7)
+gemmi                CIF parsing & structure refinement (v {})
+boost::graph         Graph implementation (v {})
+fmt                  String formatting (v {})
+spdlog               Logging (v {})
+scnlib               String parsing
+nlohmann::json       JSON parser
+cxxopts              command line argument parser
+LBFGS++              L-BFGS implementation
+zlib                 zip library
 
 )",
                eigen_version_string, libint_version_string, xc_version_string,
