@@ -47,7 +47,7 @@ TEST_CASE("H2O/6-31G") {
     fmt::print("Japprox\n{}\n", Japprox);
     fmt::print("Japprox2\n{}\n", Japprox2);
     occ::Mat Kapprox;
-    std::tie(Japprox, Kapprox) = df.compute_JK_direct(C.leftCols(1));
+    std::tie(Japprox, Kapprox) = df.compute_JK(D);
     fmt::print("Kapprox\n{}\n", Kapprox);
     fmt::print("Kexact\n{}\n", Kexact);
     fmt::print("Fexact\n{}\n", Fexact);

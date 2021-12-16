@@ -1,6 +1,7 @@
 #include <fmt/ostream.h>
 #include <occ/core/parallel.h>
 #include <occ/qm/density_fitting.h>
+#include <unsupported/Eigen/MatrixFunctions>
 
 namespace occ::df {
 
@@ -9,8 +10,8 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
       ints(_dfbs.nbf()) {
     std::tie(m_shellpair_list, m_shellpair_data) =
         occ::ints::compute_shellpairs(obs);
-    Mat V = occ::ints::compute_2body_2index_ints(dfbs);
-    Vinv = V.inverse();
+    Mat V = occ::ints::compute_2body_2index_ints(dfbs); // V = (P|Q) in df basis
+    Vinv = V.inverse(); // V^-1
     m_engines.reserve(occ::parallel::nthreads);
     m_engines.emplace_back(libint2::Operator::coulomb,
                            std::max(obs.max_nprim(), dfbs.max_nprim()),
@@ -22,44 +23,13 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
 
     V_LLt = Eigen::LLT<Mat>(V);
     Mat I = Mat::Identity(ndf, ndf);
-    auto L = V_LLt.matrixL();
-    Linv_t = L.solve(I).transpose();
+    L = Eigen::LLT<Mat>(Vinv).matrixL(); // (P|Q)^-1/2 
+    Linv_t = V_LLt.matrixL().solve(I).transpose();
 }
 
 Mat DFFockEngine::compute_2body_fock_dfC(const Mat &C_occ) {
 
-    // using first time? compute 3-center ints and transform to inv sqrt
-    // representation
-    if (!ints_populated) {
-        for(auto& x : ints) {
-            x = Mat::Zero(nbf, nbf);
-        }
-        auto lambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
-                          size_t n2, size_t bf3, size_t n3, const double *buf) {
-            size_t offset = 0;
-            for (size_t i = bf1; i < bf1 + n1; i++) {
-                auto &x = ints[i];
-                for (size_t j = bf2; j < bf2 + n2; j++) {
-                    for (size_t k = bf3; k < bf3 + n3; k++) {
-                        x(j, k) = buf[offset];
-                        offset++;
-                    }
-                }
-            }
-        };
-
-        three_center_integral_helper(lambda);
-        ints_populated = true;
-    }
-
-    // compute exchange
-    /*
-       for(size_t i = 0; i < ints.size(); i++)
-       {
-       fmt::print("{}\n{}\n", i, ints[i]);
-       }
-       */
-
+    populate_integrals();
     Mat J = Mat::Zero(nbf, nbf);
     Mat D = C_occ * C_occ.transpose();
 
@@ -87,57 +57,42 @@ Mat DFFockEngine::compute_2body_fock_dfC(const Mat &C_occ) {
     return J;
 }
 
+
+void DFFockEngine::populate_integrals() {
+  if (!m_have_integrals) {
+    m_ints = Mat::Zero(nbf * nbf, ndf);
+    auto lambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
+            size_t n2, size_t bf3, size_t n3, const double *buf) {
+        size_t offset = 0;
+        for (size_t i = bf1; i < bf1 + n1; i++) {
+            auto x = Eigen::Map<Mat>(m_ints.col(i).data(), nbf, nbf);
+            Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+            x.block(bf2, bf3, n2, n3) = buf_mat;
+            if (bf2 != bf3)
+                x.block(bf3, bf2, n3, n2) = buf_mat.transpose();
+            offset += n2 * n3;
+        }
+    };
+
+    three_center_integral_helper(lambda);
+    m_have_integrals = true;
+  }
+}
+
 Mat DFFockEngine::compute_J(const Mat &D) {
 
-    // using first time? compute 3-center ints and transform to inv sqrt
-    // representation
-    if (!ints_populated) {
-        for(auto& x : ints) {
-            x = Mat::Zero(nbf, nbf);
-        }
-        auto lambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
-                          size_t n2, size_t bf3, size_t n3, const double *buf) {
-            size_t offset = 0;
-            for (size_t i = bf1; i < bf1 + n1; i++) {
-                auto &x = ints[i];
-                Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
-                x.block(bf2, bf3, n2, n3) = buf_mat;
-                if (bf2 != bf3)
-                    x.block(bf3, bf2, n3, n2) = buf_mat.transpose();
-                offset += n2 * n3;
-            }
-        };
-
-        three_center_integral_helper(lambda);
-        ints_populated = true;
-        for (auto &x : ints) {
-            if (x.isZero())
-                x.resize(0, 0);
-        }
-    }
-
-    // compute exchange
-    /*
-       for(size_t i = 0; i < ints.size(); i++)
-       {
-       fmt::print("{}\n{}\n", i, ints[i]);
-       }
-       */
+    populate_integrals();
 
     Vec g(ndf);
     for (int r = 0; r < ndf; r++) {
-        const auto &tr = ints[r];
-        if (tr.rows() == 0)
-            continue;
+        const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
         g(r) = (D.array() * tr.array()).sum();
     }
     // fmt::print("g\n{}\n", g);
     Vec d = V_LLt.solve(g);
     Mat J = Mat::Zero(nbf, nbf);
     for (int r = 0; r < ndf; r++) {
-        const auto &tr = ints[r];
-        if (tr.rows() == 0)
-            continue;
+        const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
         J += d(r) * tr;
     }
     return 2 * J;
@@ -190,46 +145,35 @@ Mat DFFockEngine::compute_J_direct(const Mat &D) const {
     return 2 * JJ[0];
 }
 
-std::pair<Mat, Mat> DFFockEngine::compute_JK_direct(const Mat &C_occ) {
+Mat DFFockEngine::compute_K(const Mat& C_occ) {
+    Mat K = Mat::Zero(nbf, nbf);
+    Mat iuP = Mat::Zero(ndf, nbf);
+    Mat tmp = Vinv.sqrt();
+    for(size_t i = 0; i < C_occ.cols(); i++) {
+        auto c = C_occ.col(i);
+        for(size_t r = 0; r < ndf; r++) {
+            const auto vu = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
+            iuP.row(r) = (vu * c).transpose();
+        }
+        Mat B = tmp * iuP;
+        K.noalias() += B.transpose() * B;
+    }
+    return K;
+}
+
+std::pair<Mat, Mat> DFFockEngine::compute_JK(const Mat &D) {
 
     // using first time? compute 3-center ints and transform to inv sqrt
     // representation
-    if (!ints_populated) {
-        auto lambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
-                          size_t n2, size_t bf3, size_t n3, const double *buf) {
-            size_t offset = 0;
-            for (size_t i = bf1; i < bf1 + n1; i++) {
-                auto &x = ints[i];
-                x.resize(nbf, nbf);
-                for (size_t j = bf2; j < bf2 + n2; j++) {
-                    for (size_t k = bf3; k < bf3 + n3; k++) {
-                        x(j, k) = buf[offset];
-                        offset++;
-                    }
-                }
-            }
-        };
-
-        three_center_integral_helper(lambda);
-        ints_populated = true;
-    }
-
-    // compute exchange
-    /*
-       for(size_t i = 0; i < ints.size(); i++)
-       {
-       fmt::print("{}\n{}\n", i, ints[i]);
-       }
-       */
+    populate_integrals();
 
     Mat J = Mat::Zero(nbf, nbf);
     Mat K = Mat::Zero(nbf, nbf);
-    Mat D = C_occ * C_occ.transpose();
 
     for (int r = 0; r < ndf; r++) {
-        const auto &tr = ints[r];
+        const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
         for (int s = 0; s < ndf; s++) {
-            const auto &ts = ints[s];
+            const auto ts = Eigen::Map<const Mat>(m_ints.col(s).data(), nbf, nbf);
             double Vrs = Vinv(r, s);
             if (abs(Vrs) < 1e-12)
                 continue;

@@ -12,6 +12,7 @@ struct DFFockEngine {
     BasisSet obs;
     BasisSet dfbs;
     Mat Vinv;
+    Mat L;
     Mat Linv_t;
     Eigen::LLT<Mat> V_LLt;
     const size_t nbf{0}, ndf{0};
@@ -19,16 +20,29 @@ struct DFFockEngine {
     DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs);
 
     std::vector<Mat> ints;
-    bool ints_populated{false};
 
     // a DF-based builder, using coefficients of occupied MOs
     Mat compute_2body_fock_dfC(const Mat &Cocc);
     Mat compute_J(const Mat &D);
+    Mat compute_K(const Mat &C_occ);
     Mat compute_J_direct(const Mat &D) const;
-    std::pair<Mat, Mat> compute_JK_direct(const Mat &Cocc);
+    std::pair<Mat, Mat> compute_JK(const Mat &D);
+
+    size_t num_rows() const {
+        size_t n = 0;
+        for(size_t s1 = 0; s1 < obs.size(); s1++) {
+            size_t s1_size = obs[s1].size();
+            size_t pairs_size = 0;
+            for(const auto& s2 : m_shellpair_list.at(s1)) {
+                pairs_size += obs[s2].size();
+            }
+            n += s1 * pairs_size;
+        }
+        return n;
+    }
 
     size_t integral_storage_max_size() const {
-        return nbf * nbf * ndf;
+        return ndf * num_rows();
     }
 
     const auto &shellpair_list() const { return m_shellpair_list; }
@@ -36,6 +50,10 @@ struct DFFockEngine {
 
 
   private:
+
+    void populate_integrals();
+    Mat m_ints;
+    bool m_have_integrals{false};
     shellpair_list_t m_shellpair_list{}; // shellpair list for OBS
     shellpair_data_t m_shellpair_data{}; // shellpair data for OBS
 
@@ -58,20 +76,17 @@ struct DFFockEngine {
             auto &engine = m_engines[thread_id];
             const auto &results = engine.results();
 
-            for (auto s1 = 0l, s123 = 0l; s1 != nshells_df; ++s1) {
+            for (auto s1 = 0l; s1 != nshells_df; ++s1) {
                 if (s1 % nthreads != thread_id)
                     continue;
                 auto bf1_first = shell2bf_df[s1];
                 auto n1 = dfbs[s1].size();
 
                 for (auto s2 = 0l; s2 != nshells; s2++) {
-                    auto bf2 = shell2bf[s2]; // first basis function in this shell
                     auto n2 = obs[s2].size();
                     auto bf2_first = shell2bf[s2];
 
-                    auto s2_offset = s2 * (s2 + 1) / 2;
                     for (auto s3 : m_shellpair_list.at(s2)) {
-                        auto bf2 = shell2bf[s3];
                         auto n3 = obs[s3].size();
                         auto bf3_first = shell2bf[s3];
 
