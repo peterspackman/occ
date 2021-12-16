@@ -11,7 +11,7 @@ struct DFFockEngine {
 
     BasisSet obs;
     BasisSet dfbs;
-    Mat Vinv;
+    Mat Vinv, Vinv_sqrt;
     Mat L;
     Mat Linv_t;
     Eigen::LLT<Mat> V_LLt;

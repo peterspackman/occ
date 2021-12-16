@@ -12,6 +12,7 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
         occ::ints::compute_shellpairs(obs);
     Mat V = occ::ints::compute_2body_2index_ints(dfbs); // V = (P|Q) in df basis
     Vinv = V.inverse(); // V^-1
+    Vinv_sqrt = Vinv.sqrt();
     m_engines.reserve(occ::parallel::nthreads);
     m_engines.emplace_back(libint2::Operator::coulomb,
                            std::max(obs.max_nprim(), dfbs.max_nprim()),
@@ -147,16 +148,16 @@ Mat DFFockEngine::compute_J_direct(const Mat &D) const {
 
 Mat DFFockEngine::compute_K(const Mat& C_occ) {
     Mat K = Mat::Zero(nbf, nbf);
-    Mat iuP = Mat::Zero(ndf, nbf);
-    Mat tmp = Vinv.sqrt();
+    Mat iuP = Mat::Zero(nbf, ndf);
+    Mat B(nbf, ndf);
     for(size_t i = 0; i < C_occ.cols(); i++) {
         auto c = C_occ.col(i);
         for(size_t r = 0; r < ndf; r++) {
             const auto vu = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
-            iuP.row(r) = (vu * c).transpose();
+            iuP.col(r) = (vu * c);
         }
-        Mat B = tmp * iuP;
-        K.noalias() += B.transpose() * B;
+        B = iuP * Vinv_sqrt;
+        K.noalias() += B * B.transpose();
     }
     return K;
 }

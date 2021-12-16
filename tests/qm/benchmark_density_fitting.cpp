@@ -35,10 +35,10 @@ TEST_CASE("H2O/def2-svp") {
 
     Molecule m = water();
 
-    occ::qm::BasisSet basis("sto-3g", m.atoms());
+    occ::qm::BasisSet basis("def2-tzvpp", m.atoms());
     basis.set_pure(false);
     // density fitting basis must be pure!
-    occ::qm::BasisSet dfbasis("def2-svp-jk", m.atoms());
+    occ::qm::BasisSet dfbasis("def2-tzvpp-jk", m.atoms());
     dfbasis.set_pure(true);
 
     HartreeFock hf = HartreeFock(m.atoms(), basis);
@@ -64,9 +64,6 @@ TEST_CASE("H2O/def2-svp") {
     fmt::print("Max error J({},{}) = {}\n", i, j, max_err);
     double max_err_k = (K_approx - K_exact).array().abs().maxCoeff(&i, &j); 
     fmt::print("Max error K({},{}) = {}\n", i, j, max_err_k);
-    fmt::print("K_exact:\n{}\n", K_exact);
-    fmt::print("K_approx:\n{}\n", K_approx);
-    fmt::print("Ratio:\n{}\n", K_approx.array() / K_exact.array());
 
 
     BENCHMARK("J exact") {
