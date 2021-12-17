@@ -89,6 +89,13 @@ std::pair<Mat, Mat> DFFockEngine::compute_JK(const MolecularOrbitals &mo) {
     return {compute_J(mo), compute_K(mo)};
 }
 
+Mat DFFockEngine::compute_fock(const MolecularOrbitals &mo) {
+    Mat J, K;
+    std::tie(J, K) = compute_JK(mo);
+    J.noalias() -= K;
+    return J;
+}
+
 inline int upper_triangle_index(const int N, const int i, const int j) {
     return (2 * N * i - i * i - i + 2 * j) / 2;
 }

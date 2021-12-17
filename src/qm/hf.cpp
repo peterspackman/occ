@@ -51,7 +51,10 @@ Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
     if (kind == SpinorbitalKind::Unrestricted)
         return m_fockbuilder.compute_fock<SpinorbitalKind::Unrestricted>(
             m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
-    return m_fockbuilder.compute_fock<SpinorbitalKind::Restricted>(
+    if (m_df_fock_engine) {
+        return (*m_df_fock_engine).compute_fock(mo);
+    }
+    else return m_fockbuilder.compute_fock<SpinorbitalKind::Restricted>(
         m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
 }
 
@@ -64,7 +67,10 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind, const Molecula
     if (kind == SpinorbitalKind::Unrestricted)
         return m_fockbuilder.compute_JK<SpinorbitalKind::Unrestricted>(
             m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
-    return m_fockbuilder.compute_JK<SpinorbitalKind::Restricted>(
+    if (m_df_fock_engine) {
+        return (*m_df_fock_engine).compute_JK(mo);
+    }
+    else return m_fockbuilder.compute_JK<SpinorbitalKind::Restricted>(
         m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
 }
 
