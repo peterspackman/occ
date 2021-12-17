@@ -1,11 +1,13 @@
 #pragma once
 #include <libint2.hpp>
 #include <occ/qm/ints.h>
+#include <occ/qm/mo.h>
 
 namespace occ::df {
 using occ::qm::BasisSet;
 using occ::ints::shellpair_data_t;
 using occ::ints::shellpair_list_t;
+using occ::qm::MolecularOrbitals;
 
 struct DFFockEngine {
 
@@ -22,11 +24,9 @@ struct DFFockEngine {
     std::vector<Mat> ints;
 
     // a DF-based builder, using coefficients of occupied MOs
-    Mat compute_2body_fock_dfC(const Mat &Cocc);
-    Mat compute_J(const Mat &D);
-    Mat compute_K(const Mat &C_occ);
-    Mat compute_J_direct(const Mat &D) const;
-    std::pair<Mat, Mat> compute_JK(const Mat &D);
+    Mat compute_J(const MolecularOrbitals&);
+    Mat compute_K(const MolecularOrbitals&);
+    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals&);
 
     size_t num_rows() const {
         size_t n = 0;

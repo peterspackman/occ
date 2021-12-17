@@ -28,37 +28,6 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
     Linv_t = V_LLt.matrixL().solve(I).transpose();
 }
 
-Mat DFFockEngine::compute_2body_fock_dfC(const Mat &C_occ) {
-
-    populate_integrals();
-    Mat J = Mat::Zero(nbf, nbf);
-    Mat D = C_occ * C_occ.transpose();
-
-    for (int r = 0; r < ndf; r++) {
-        const auto &tr = ints[r];
-        for (int s = 0; s < ndf; s++) {
-            const auto &ts = ints[s];
-            double Vrs = Vinv(r, s);
-            if (abs(Vrs) < 1e-12)
-                continue;
-            for (int i = 0; i < nbf; i++)
-                for (int j = 0; j < nbf; j++)
-                    for (int k = 0; k < nbf; k++)
-                        for (int l = 0; l < nbf; l++) {
-                            double v = Vrs * tr(i, j) * ts(k, l);
-                            J(i, j) += D(k, l) * v;
-                            J(k, l) += D(i, j) * v;
-                            J(i, k) -= 0.25 * D(j, l) * v;
-                            J(j, l) -= 0.25 * D(i, k) * v;
-                            J(i, l) -= 0.25 * D(j, k) * v;
-                            J(j, k) -= 0.25 * D(i, l) * v;
-                        }
-        }
-    }
-    return J;
-}
-
-
 void DFFockEngine::populate_integrals() {
   if (!m_have_integrals) {
     m_ints = Mat::Zero(nbf * nbf, ndf);
@@ -80,14 +49,14 @@ void DFFockEngine::populate_integrals() {
   }
 }
 
-Mat DFFockEngine::compute_J(const Mat &D) {
+Mat DFFockEngine::compute_J(const MolecularOrbitals &mo) {
 
     populate_integrals();
 
     Vec g(ndf);
     for (int r = 0; r < ndf; r++) {
         const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
-        g(r) = (D.array() * tr.array()).sum();
+        g(r) = (mo.D.array() * tr.array()).sum();
     }
     // fmt::print("g\n{}\n", g);
     Vec d = V_LLt.solve(g);
@@ -99,59 +68,13 @@ Mat DFFockEngine::compute_J(const Mat &D) {
     return 2 * J;
 }
 
-Mat DFFockEngine::compute_J_direct(const Mat &D) const {
-
-    using occ::parallel::nthreads;
-    std::vector<Vec> gg(nthreads);
-    std::vector<Mat> JJ(nthreads);
-    for (int i = 0; i < nthreads; i++) {
-        gg[i] = Vec::Zero(ndf);
-        JJ[i] = Mat::Zero(nbf, nbf);
-    }
-
-    auto glambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
-                       size_t n2, size_t bf3, size_t n3, const double *buf) {
-        auto &g = gg[thread_id];
-        size_t offset = 0;
-        for (size_t i = bf1; i < bf1 + n1; i++) {
-            g(i) += (D.block(bf2, bf3, n2, n3).array() *
-                     Eigen::Map<const MatRM>(&buf[offset], n2, n3).array())
-                        .sum();
-            offset += n2 * n3;
-        }
-    };
-
-    three_center_integral_helper(glambda);
-
-    for (int i = 1; i < nthreads; i++)
-        gg[0] += gg[i];
-
-    Vec d = V_LLt.solve(gg[0]);
-
-    auto Jlambda = [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
-                       size_t n2, size_t bf3, size_t n3, const double *buf) {
-        auto &J = JJ[thread_id];
-        size_t offset = 0;
-        for (size_t i = bf1; i < bf1 + n1; i++) {
-            J.block(bf2, bf3, n2, n3) +=
-                d(i) * Eigen::Map<const MatRM>(&buf[offset], n2, n3);
-            offset += n2 * n3;
-        }
-    };
-
-    three_center_integral_helper(Jlambda);
-
-    for (int i = 1; i < nthreads; i++)
-        JJ[0] += JJ[i];
-    return 2 * JJ[0];
-}
-
-Mat DFFockEngine::compute_K(const Mat& C_occ) {
+Mat DFFockEngine::compute_K(const MolecularOrbitals &mo) {
     Mat K = Mat::Zero(nbf, nbf);
+    // temporaries
     Mat iuP = Mat::Zero(nbf, ndf);
     Mat B(nbf, ndf);
-    for(size_t i = 0; i < C_occ.cols(); i++) {
-        auto c = C_occ.col(i);
+    for(size_t i = 0; i < mo.Cocc.cols(); i++) {
+        auto c = mo.Cocc.col(i);
         for(size_t r = 0; r < ndf; r++) {
             const auto vu = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
             iuP.col(r) = (vu * c);
@@ -162,37 +85,8 @@ Mat DFFockEngine::compute_K(const Mat& C_occ) {
     return K;
 }
 
-std::pair<Mat, Mat> DFFockEngine::compute_JK(const Mat &D) {
-
-    // using first time? compute 3-center ints and transform to inv sqrt
-    // representation
-    populate_integrals();
-
-    Mat J = Mat::Zero(nbf, nbf);
-    Mat K = Mat::Zero(nbf, nbf);
-
-    for (int r = 0; r < ndf; r++) {
-        const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
-        for (int s = 0; s < ndf; s++) {
-            const auto ts = Eigen::Map<const Mat>(m_ints.col(s).data(), nbf, nbf);
-            double Vrs = Vinv(r, s);
-            if (abs(Vrs) < 1e-12)
-                continue;
-            for (int i = 0; i < nbf; i++)
-                for (int j = 0; j < nbf; j++)
-                    for (int k = 0; k < nbf; k++)
-                        for (int l = 0; l < nbf; l++) {
-                            double v = Vrs * tr(i, j) * ts(k, l);
-                            J(i, j) += D(k, l) * v;
-                            J(k, l) += D(i, j) * v;
-                            K(i, k) += 0.5 * D(j, l) * v;
-                            K(j, l) += 0.5 * D(i, k) * v;
-                            K(i, l) += 0.5 * D(j, k) * v;
-                            K(j, k) += 0.5 * D(i, l) * v;
-                        }
-        }
-    }
-    return {J, K};
+std::pair<Mat, Mat> DFFockEngine::compute_JK(const MolecularOrbitals &mo) {
+    return {compute_J(mo), compute_K(mo)};
 }
 
 inline int upper_triangle_index(const int N, const int i, const int j) {

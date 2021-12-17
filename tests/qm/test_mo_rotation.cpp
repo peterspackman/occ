@@ -94,7 +94,7 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]")
     REQUIRE(hf.nuclear_repulsion_energy() == Approx(hf_rot.nuclear_repulsion_energy()));
     occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
     double e = scf.compute_scf_energy();
-    Mat mos = scf.C;
+    Mat mos = scf.mo.C;
     Mat C_occ = mos.leftCols(scf.n_occ);
     Mat D = C_occ * C_occ.transpose();
     Mat rot_mos = occ::qm::rotate_molecular_orbitals(rot_basis, rotation, mos);

@@ -5,6 +5,7 @@
 #include <occ/io/moldenreader.h>
 #include <occ/qm/basisset.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/mo.h>
 
 namespace occ::qm {
 
@@ -65,8 +66,8 @@ struct Wavefunction {
     BasisSet basis;
     size_t nbf{0};
     std::vector<occ::core::Atom> atoms;
-    Mat C, C_occ, D, T, V, H, J, K;
-    Vec mo_energies;
+    MolecularOrbitals mo;
+    Mat T, V, H, J, K;
     Energy energy;
     bool have_energies{false};
 };

@@ -18,14 +18,14 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf) {
     namespace block = occ::qm::block;
     if constexpr (kind == SpinorbitalKind::Restricted) {
         wfn.V = hf.compute_nuclear_attraction_matrix();
-        wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
+        wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
         wfn.T = hf.compute_kinetic_matrix();
-        wfn.energy.kinetic = 2 * expectation<kind>(wfn.D, wfn.T);
+        wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.H = wfn.V + wfn.T;
-        wfn.energy.core = 2 * expectation<kind>(wfn.D, wfn.H);
-        std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.D);
-        wfn.energy.coulomb = expectation<kind>(wfn.D, wfn.J);
-        wfn.energy.exchange = -expectation<kind>(wfn.D, wfn.K);
+        wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
+        std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.mo);
+        wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
+        wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
     } else {
         size_t rows, cols;
@@ -38,12 +38,12 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf) {
         block::a(wfn.V) = hf.compute_nuclear_attraction_matrix();
         block::b(wfn.V) = block::a(wfn.V);
         wfn.H = wfn.V + wfn.T;
-        wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.D, wfn.V);
-        wfn.energy.kinetic = 2 * expectation<kind>(wfn.D, wfn.T);
-        wfn.energy.core = 2 * expectation<kind>(wfn.D, wfn.H);
-        std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.D);
-        wfn.energy.coulomb = expectation<kind>(wfn.D, wfn.J);
-        wfn.energy.exchange = -expectation<kind>(wfn.D, wfn.K);
+        wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
+        wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
+        wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
+        std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.mo);
+        wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
+        wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
     }
     wfn.have_energies = true;

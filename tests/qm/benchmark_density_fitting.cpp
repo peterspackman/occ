@@ -35,10 +35,10 @@ TEST_CASE("H2O/def2-svp") {
 
     Molecule m = water();
 
-    occ::qm::BasisSet basis("def2-tzvpp", m.atoms());
+    occ::qm::BasisSet basis("def2-svp", m.atoms());
     basis.set_pure(false);
     // density fitting basis must be pure!
-    occ::qm::BasisSet dfbasis("def2-tzvpp-jk", m.atoms());
+    occ::qm::BasisSet dfbasis("def2-svp-jk", m.atoms());
     dfbasis.set_pure(true);
 
     HartreeFock hf = HartreeFock(m.atoms(), basis);
@@ -48,13 +48,13 @@ TEST_CASE("H2O/def2-svp") {
 
 
     Mat J_exact, K_exact;
-    std::tie(J_exact, K_exact) = scf.m_procedure.compute_JK(Restricted, scf.D);
+    std::tie(J_exact, K_exact) = scf.m_procedure.compute_JK(Restricted, scf.mo);
 
     Mat J_approx, K_approx;
     auto tprev = sw.read();
     sw.start();
-    J_approx = df.compute_J(scf.D);
-    K_approx = df.compute_K(scf.C_occ);
+    J_approx = df.compute_J(scf.mo);
+    K_approx = df.compute_K(scf.mo);
     sw.stop();
     fmt::print("nbf * nbf: {}, num_rows: {}\n", df.nbf * df.nbf, df.num_rows());
     fmt::print("Integral storage size: {:.3f} MiB\n", df.integral_storage_max_size() * sizeof(double) * 1.0 / (1024 * 1024));
@@ -64,32 +64,34 @@ TEST_CASE("H2O/def2-svp") {
     fmt::print("Max error J({},{}) = {}\n", i, j, max_err);
     double max_err_k = (K_approx - K_exact).array().abs().maxCoeff(&i, &j); 
     fmt::print("Max error K({},{}) = {}\n", i, j, max_err_k);
+    fmt::print("Ratio:\n{}\n", K_approx.array() / K_exact.array());
 
 
     BENCHMARK("J exact") {
-        J_exact = scf.m_procedure.compute_J(Restricted, scf.D);
+        J_exact = scf.m_procedure.compute_J(Restricted, scf.mo);
         return 0;
     };
 
 
     BENCHMARK("J density fitting") {
-        J_approx = df.compute_J(scf.D);
-        return 0;
-    };
-
-    BENCHMARK("J density fitting direct") {
-        J_approx = df.compute_J_direct(scf.D);
+        J_approx = df.compute_J(scf.mo);
         return 0;
     };
 
     BENCHMARK("JK exact") {
-        std::tie(J_exact, K_exact) = scf.m_procedure.compute_JK(Restricted, scf.D);
+        std::tie(J_exact, K_exact) = scf.m_procedure.compute_JK(Restricted, scf.mo);
         return 0;
     };
 
     BENCHMARK("K density fitting") {
-        K_approx = df.compute_K(scf.C_occ);
+        K_approx = df.compute_K(scf.mo);
         return 0;
     };
+    
+    BENCHMARK("JK density fitting") {
+        std::tie(J_approx, K_approx) = df.compute_JK(scf.mo);
+        return 0;
+    };
+
 
 }

@@ -3,6 +3,7 @@
 #include <fmt/ostream.h>
 #include <occ/core/util.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/mo.h>
 
 using occ::df::DFFockEngine;
 
@@ -17,13 +18,17 @@ TEST_CASE("H2O/6-31G") {
     occ::qm::BasisSet basis("sto-3g", atoms);
     basis.set_pure(false);
     occ::qm::BasisSet dfbasis("def2-svp-jk", atoms);
+    dfbasis.set_pure(true);
 
-    occ::Mat C(2, 2);
-    C << 0.54884228,  1.21245192,
-         0.54884228, -1.21245192;
+    occ::qm::MolecularOrbitals mo;
 
-    occ::Mat D = C.leftCols(1) * C.leftCols(1).transpose();
-    fmt::print("D:\n{}\n", D);
+    mo.C = occ::Mat(2, 2);
+    mo.C << 0.54884228,  1.21245192,
+            0.54884228, -1.21245192;
+
+    mo.Cocc = mo.C.leftCols(1);
+    mo.D = mo.Cocc * mo.Cocc.transpose();
+    fmt::print("D:\n{}\n", mo.D);
 
     occ::Mat Fexact(2, 2);
     Fexact << 1.50976125, 0.7301775,
@@ -39,16 +44,16 @@ TEST_CASE("H2O/6-31G") {
 
     DFFockEngine df(basis, dfbasis);
 
-    occ::Mat F = df.compute_2body_fock_dfC(C.leftCols(1));
-    occ::Mat Japprox = df.compute_J(D);
-    occ::Mat Japprox2 = df.compute_J_direct(D);
-    fmt::print("F\n{}\nE = {}\n", F, occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(D, Jexact));
+    occ::Mat Japprox = df.compute_J(mo);
+    occ::Mat Kapprox = df.compute_K(mo);
+    occ::Mat F = 2 * (Japprox - Kapprox);
+    fmt::print("Fexact\n{}\n", Fexact);
+    fmt::print("Fapprox\n{}\n", F);
+
     fmt::print("Jexact\n{}\n", Jexact);
     fmt::print("Japprox\n{}\n", Japprox);
-    fmt::print("Japprox2\n{}\n", Japprox2);
-    occ::Mat Kapprox;
-    std::tie(Japprox, Kapprox) = df.compute_JK(D);
-    fmt::print("Kapprox\n{}\n", Kapprox);
+
+    std::tie(Japprox, Kapprox) = df.compute_JK(mo);
     fmt::print("Kexact\n{}\n", Kexact);
-    fmt::print("Fexact\n{}\n", Fexact);
+    fmt::print("Kapprox\n{}\n", 2 * Kapprox);
 }

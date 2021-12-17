@@ -2,9 +2,11 @@
 #include <occ/core/logger.h>
 #include <occ/qm/ints.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/mo.h>
 
 namespace occ::ints {
 using occ::qm::SpinorbitalKind;
+using occ::qm::MolecularOrbitals;
 
 class FockBuilder {
   public:
@@ -190,12 +192,13 @@ class FockBuilder {
     template <SpinorbitalKind kind>
     Mat compute_fock(const BasisSet &obs,
                      const shellpair_list_t &shellpair_list,
-                     const shellpair_data_t &shellpair_data, const Mat &D,
+                     const shellpair_data_t &shellpair_data, const occ::qm::MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const {
         occ::timing::start(occ::timing::category::fock);
         using occ::parallel::nthreads;
         const auto n = obs.nbf();
+        const auto &D = mo.D;
         std::vector<Mat> G(nthreads, Mat::Zero(D.rows(), D.cols()));
 
         auto lambda = [&](int thread_id, int bf1_first, int n1, int bf2_first,
@@ -328,13 +331,14 @@ class FockBuilder {
     template <SpinorbitalKind kind>
     std::pair<Mat, Mat>
     compute_JK(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-               const shellpair_data_t &shellpair_data, const Mat &D,
+               const shellpair_data_t &shellpair_data, const occ::qm::MolecularOrbitals &mo,
                double precision = std::numeric_limits<double>::epsilon(),
                const Mat &Schwarz = Mat()) const {
         occ::timing::start(occ::timing::category::jkmat);
         const auto n = obs.nbf();
         const auto nshells = obs.size();
         using occ::parallel::nthreads;
+        const auto &D = mo.D;
         std::vector<Mat> J(nthreads, Mat::Zero(D.rows(), D.cols()));
         std::vector<Mat> K(nthreads, Mat::Zero(D.rows(), D.cols()));
 
@@ -476,12 +480,13 @@ class FockBuilder {
 
     template <SpinorbitalKind kind>
     Mat compute_J(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-                  const shellpair_data_t &shellpair_data, const Mat &D,
+                  const shellpair_data_t &shellpair_data, const MolecularOrbitals &mo,
                   double precision = std::numeric_limits<double>::epsilon(),
                   const Mat &Schwarz = Mat()) const {
         occ::timing::start(occ::timing::category::jmat);
         const auto n = obs.nbf();
         using occ::parallel::nthreads;
+        const auto &D = mo.D;
         std::vector<Mat> J(nthreads, Mat::Zero(D.rows(), D.cols()));
 
         auto shell2bf = obs.shell2bf();

@@ -8,10 +8,12 @@
 #include <occ/qm/expectation.h>
 #include <occ/solvent/cosmo.h>
 #include <occ/solvent/parameters.h>
+#include <occ/qm/mo.h>
 
 namespace occ::solvent {
 
 using occ::qm::SpinorbitalKind;
+using occ::qm::MolecularOrbitals;
 
 class ContinuumSolvationModel {
   public:
@@ -52,7 +54,7 @@ class ContinuumSolvationModel {
 
     template <typename Proc>
     Vec surface_electronic_energy_elements(const SpinorbitalKind kind,
-                                           const Mat &D, const Proc &p) const {
+                                           const MolecularOrbitals &mo, const Proc &p) const {
         Vec result(m_surface_areas_coulomb.rows());
         Mat X;
         std::vector<std::pair<double, std::array<double, 3>>> point_charges;
@@ -66,18 +68,18 @@ class ContinuumSolvationModel {
             switch (kind) {
             case SpinorbitalKind::Restricted: {
                 result(i) =
-                    2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, X);
+                    2 * occ::qm::expectation<SpinorbitalKind::Restricted>(mo.D, X);
                 break;
             }
             case SpinorbitalKind::Unrestricted: {
                 result(i) =
                     2 *
-                    occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, X);
+                    occ::qm::expectation<SpinorbitalKind::Unrestricted>(mo.D, X);
                 break;
             }
             case SpinorbitalKind::General: {
                 result(i) =
-                    2 * occ::qm::expectation<SpinorbitalKind::General>(D, X);
+                    2 * occ::qm::expectation<SpinorbitalKind::General>(mo.D, X);
                 break;
             }
             }
@@ -188,13 +190,13 @@ template <typename Proc> class SolvationCorrectedProcedure {
 
     auto compute_schwarz_ints() const { return m_proc.compute_schwarz_ints(); }
 
-    void update_core_hamiltonian(SpinorbitalKind kind, const occ::Mat &D,
+    void update_core_hamiltonian(SpinorbitalKind kind, const MolecularOrbitals &mo,
                                  occ::Mat &H) {
         occ::timing::start(occ::timing::category::solvent);
         occ::Vec v =
             (m_qn +
              m_proc.electronic_electric_potential_contribution(
-                 kind, D, m_solvation_model.surface_positions_coulomb()));
+                 kind, mo, m_solvation_model.surface_positions_coulomb()));
         m_solvation_model.set_surface_potential(v);
         auto asc = m_solvation_model.apparent_surface_charge();
         for (int i = 0; i < m_point_charges.size(); i++) {
@@ -213,30 +215,30 @@ template <typename Proc> class SolvationCorrectedProcedure {
         switch (kind) {
         case SpinorbitalKind::Restricted: {
             m_electronic_solvation_energy =
-                2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, H);
+                2 * occ::qm::expectation<SpinorbitalKind::Restricted>(mo.D, H);
             H += m_X;
             m_electronic_solvation_energy =
-                2 * occ::qm::expectation<SpinorbitalKind::Restricted>(D, H) -
+                2 * occ::qm::expectation<SpinorbitalKind::Restricted>(mo.D, H) -
                 m_electronic_solvation_energy;
             break;
         }
         case SpinorbitalKind::Unrestricted: {
             m_electronic_solvation_energy =
-                2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H);
+                2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(mo.D, H);
             occ::qm::block::a(H) += m_X;
             occ::qm::block::b(H) += m_X;
             m_electronic_solvation_energy =
-                2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(D, H) -
+                2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(mo.D, H) -
                 m_electronic_solvation_energy;
             break;
         }
         case SpinorbitalKind::General: {
             m_electronic_solvation_energy =
-                2 * occ::qm::expectation<SpinorbitalKind::General>(D, H);
+                2 * occ::qm::expectation<SpinorbitalKind::General>(mo.D, H);
             occ::qm::block::aa(H) += m_X;
             occ::qm::block::bb(H) += m_X;
             m_electronic_solvation_energy =
-                2 * occ::qm::expectation<SpinorbitalKind::General>(D, H) -
+                2 * occ::qm::expectation<SpinorbitalKind::General>(mo.D, H) -
                 m_electronic_solvation_energy;
             break;
         }
@@ -244,10 +246,10 @@ template <typename Proc> class SolvationCorrectedProcedure {
         occ::timing::stop(occ::timing::category::solvent);
     }
 
-    Mat compute_fock(SpinorbitalKind kind, const Mat &D,
+    Mat compute_fock(SpinorbitalKind kind, const MolecularOrbitals  &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const {
-        return m_proc.compute_fock(kind, D, precision, Schwarz);
+        return m_proc.compute_fock(kind, mo, precision, Schwarz);
     }
 
     void set_solvent(const std::string &solvent) {
@@ -282,8 +284,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
         return m_solvation_model.surface_nuclear_energy_elements(m_proc);
     }
     auto surface_electronic_energy_elements(const SpinorbitalKind kind,
-                                            const Mat &D) const {
-        return m_solvation_model.surface_electronic_energy_elements(kind, D,
+                                            const MolecularOrbitals &mo) const {
+        return m_solvation_model.surface_electronic_energy_elements(kind, mo,
                                                                     m_proc);
     }
 
@@ -294,10 +296,10 @@ template <typename Proc> class SolvationCorrectedProcedure {
     }
 
     template <unsigned int order = 1>
-    inline auto compute_electronic_multipoles(SpinorbitalKind k, const Mat &D,
+    inline auto compute_electronic_multipoles(SpinorbitalKind k, const MolecularOrbitals &mo,
                                               const Vec3 &o = {0.0, 0.0,
                                                                0.0}) const {
-        return m_proc.template compute_electronic_multipoles<order>(k, D, o);
+        return m_proc.template compute_electronic_multipoles<order>(k, mo, o);
     }
 
     template <unsigned int order = 1>

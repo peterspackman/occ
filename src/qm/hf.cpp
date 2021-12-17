@@ -43,45 +43,44 @@ double HartreeFock::nuclear_repulsion_energy() const {
     return enuc;
 }
 
-Mat HartreeFock::compute_fock(SpinorbitalKind kind, const Mat &D,
+Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
                               double precision, const Mat &Schwarz) const {
     if (kind == SpinorbitalKind::General)
         return m_fockbuilder.compute_fock<SpinorbitalKind::General>(
-            m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+            m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
     if (kind == SpinorbitalKind::Unrestricted)
         return m_fockbuilder.compute_fock<SpinorbitalKind::Unrestricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+            m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
     return m_fockbuilder.compute_fock<SpinorbitalKind::Restricted>(
-        m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+        m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
 }
 
-std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind, const Mat &D,
+std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind, const MolecularOrbitals &mo,
                                             double precision,
                                             const Mat &Schwarz) const {
     if (kind == SpinorbitalKind::General)
         return m_fockbuilder.compute_JK<SpinorbitalKind::General>(
-            m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+            m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
     if (kind == SpinorbitalKind::Unrestricted)
         return m_fockbuilder.compute_JK<SpinorbitalKind::Unrestricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+            m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
     return m_fockbuilder.compute_JK<SpinorbitalKind::Restricted>(
-        m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+        m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
 }
 
-Mat HartreeFock::compute_J(SpinorbitalKind kind, const Mat &D, double precision,
+Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo, double precision,
                            const Mat &Schwarz) const {
     if (kind == SpinorbitalKind::General)
         return m_fockbuilder.compute_J<SpinorbitalKind::General>(
-            m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+            m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
     if (kind == SpinorbitalKind::Unrestricted)
         return m_fockbuilder.compute_J<SpinorbitalKind::Unrestricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+            m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
     if (m_df_fock_engine) {
-        // return (*m_df_fock_engine).compute_J(D);
-        return (*m_df_fock_engine).compute_J_direct(D);
+        return (*m_df_fock_engine).compute_J(mo);
     } else {
         return m_fockbuilder.compute_J<SpinorbitalKind::Restricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, D, precision, Schwarz);
+            m_basis, m_shellpair_list, m_shellpair_data, mo, precision, Schwarz);
     }
 }
 
@@ -141,7 +140,8 @@ Mat3N HartreeFock::nuclear_electric_field_contribution(
 }
 
 Mat3N HartreeFock::electronic_electric_field_contribution(
-    SpinorbitalKind kind, const Mat &D, const Mat3N &positions) const {
+    SpinorbitalKind kind, const MolecularOrbitals &mo, const Mat3N &positions) const {
+    const auto& D = mo.D;
     constexpr bool use_finite_differences = true;
     if constexpr (use_finite_differences) {
         double delta = 1e-8;
@@ -150,10 +150,10 @@ Mat3N HartreeFock::electronic_electric_field_contribution(
             auto pts_delta = positions;
             pts_delta.row(i).array() += delta;
             auto esp_f =
-                electronic_electric_potential_contribution(kind, D, pts_delta);
+                electronic_electric_potential_contribution(kind, mo, pts_delta);
             pts_delta.row(i).array() -= 2 * delta;
             auto esp_b =
-                electronic_electric_potential_contribution(kind, D, pts_delta);
+                electronic_electric_potential_contribution(kind, mo, pts_delta);
             efield_fd.row(i) = -(esp_f - esp_b) / (2 * delta);
         }
         return efield_fd;
@@ -175,7 +175,8 @@ Mat3N HartreeFock::electronic_electric_field_contribution(
 }
 
 Vec HartreeFock::electronic_electric_potential_contribution(
-    SpinorbitalKind kind, const Mat &D, const Mat3N &positions) const {
+    SpinorbitalKind kind, const MolecularOrbitals &mo, const Mat3N &positions) const {
+    const auto &D = mo.D;
     switch (kind) {
     case SpinorbitalKind::Unrestricted:
         return occ::ints::compute_electric_potential<
