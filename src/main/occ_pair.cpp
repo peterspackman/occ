@@ -21,9 +21,9 @@ using occ::Vec3;
 
 struct Pair {
     struct Monomer {
-        Wavefunction wfn;
-        occ::Mat3 rotation{occ::Mat3::Identity()};
-        occ::Vec3 translation{occ::Vec3::Zero()};
+	Wavefunction wfn;
+	occ::Mat3 rotation{occ::Mat3::Identity()};
+	occ::Vec3 translation{occ::Vec3::Zero()};
     };
     Monomer a;
     Monomer b;
@@ -35,31 +35,31 @@ Wavefunction load_wavefunction(const std::string &filename) {
     std::string ext = fs::path(filename).extension();
     to_lower(ext);
     if (ext == ".fchk") {
-        using occ::io::FchkReader;
-        FchkReader fchk(filename);
-        return Wavefunction(fchk);
+	using occ::io::FchkReader;
+	FchkReader fchk(filename);
+	return Wavefunction(fchk);
     }
     if (ext == ".molden") {
-        using occ::io::MoldenReader;
-        MoldenReader molden(filename);
-        return Wavefunction(molden);
+	using occ::io::MoldenReader;
+	MoldenReader molden(filename);
+	return Wavefunction(molden);
     }
     throw std::runtime_error(
-        "Unknown file extension when reading wavefunction: " + ext);
+	    "Unknown file extension when reading wavefunction: " + ext);
 }
 
 void load_matrix(const nlohmann::json &json, Mat3 &mat) {
     for(size_t i = 0; i < json.size(); i++) {
-        const auto& row = json.at(i);
-        for (size_t j = 0; j < row.size(); j++) {
-            mat(i, j) = row.at(j).get<double>();
-        }
+	const auto& row = json.at(i);
+	for (size_t j = 0; j < row.size(); j++) {
+	    mat(i, j) = row.at(j).get<double>();
+	}
     }
 }
 
 void load_vector(const nlohmann::json &json, Vec3 &vec) {
     for(size_t i = 0; i < json.size(); i++) {
-        vec(i) = json.at(i).get<double>();
+	vec(i) = json.at(i).get<double>();
     }
 }
 
@@ -129,16 +129,16 @@ Pair parse_input_file(const std::string &filename) {
 int main(int argc, char *argv[]) {
     cxxopts::Options options("occ", "A program for quantum chemistry");
     options.positional_help("[input_file]")
-        .show_positional_help();
+	.show_positional_help();
 
     options.add_options()("h,help", "Print help")(
-        "i,input", "Input file", cxxopts::value<std::string>())(
-        "t,threads", "Number of threads",
-        cxxopts::value<int>()->default_value("1"))(
-        "m,model", "CE model",
-        cxxopts::value<std::string>()->default_value("ce-b3lyp"))(
-        "v,verbosity", "Logging verbosity",
-        cxxopts::value<std::string>()->default_value("WARN"));
+	    "i,input", "Input file", cxxopts::value<std::string>())(
+	    "t,threads", "Number of threads",
+	    cxxopts::value<int>()->default_value("1"))(
+	    "m,model", "CE model",
+	    cxxopts::value<std::string>()->default_value("ce-b3lyp"))(
+	    "v,verbosity", "Logging verbosity",
+	    cxxopts::value<std::string>()->default_value("WARN"));
 
     options.parse_positional({"input"});
     auto args = options.parse(argc, argv);
@@ -162,16 +162,16 @@ int main(int argc, char *argv[]) {
 
     fmt::print("Component              Energy (kJ/mol)\n\n");
     fmt::print("Coulomb               {: 12.6f}\n",
-               interaction_energy.coulomb_kjmol());
+	    interaction_energy.coulomb_kjmol());
     fmt::print("Exchange-repulsion    {: 12.6f}\n",
-               interaction_energy.exchange_kjmol());
+	    interaction_energy.exchange_kjmol());
     fmt::print("Polarization          {: 12.6f}\n",
-               interaction_energy.polarization_kjmol());
+	    interaction_energy.polarization_kjmol());
     fmt::print("Dispersion            {: 12.6f}\n",
-               interaction_energy.dispersion_kjmol());
+	    interaction_energy.dispersion_kjmol());
     fmt::print("__________________________________\n");
     fmt::print("Total {:^8s}        {: 12.6f}\n", model_name,
-               interaction_energy.total_kjmol());
+	    interaction_energy.total_kjmol());
 
     fmt::print("\n");
     occ::timing::print_timings();

@@ -14,7 +14,7 @@
 namespace occ::gto {
 
 using occ::qm::BasisSet;
-const inline char shell_labels[] = "SPDFGHIKMNOQRTUVWXYZ";
+constexpr inline char shell_labels[] = "SPDFGHIKMNOQRTUVWXYZ";
 
 inline std::string component_label(int i, int j, int k, int l) {
     std::string label{shell_labels[l]};

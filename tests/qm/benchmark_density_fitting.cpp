@@ -35,7 +35,7 @@ TEST_CASE("H2O/def2-svp") {
 
     Molecule m = water();
 
-    occ::qm::BasisSet basis("def2-svp", m.atoms());
+    occ::qm::BasisSet basis("def2-qzvpp", m.atoms());
     basis.set_pure(false);
     // density fitting basis must be pure!
     occ::qm::BasisSet dfbasis("def2-svp-jk", m.atoms());
@@ -55,6 +55,8 @@ TEST_CASE("H2O/def2-svp") {
     sw.start();
     J_approx = df.compute_J(scf.mo);
     K_approx = df.compute_K(scf.mo);
+    Mat J_approx_direct = df.compute_J_direct(scf.mo);
+    Mat K_approx_direct = df.compute_K_direct(scf.mo);
     sw.stop();
     fmt::print("nbf * nbf: {}, num_rows: {}\n", df.nbf * df.nbf, df.num_rows());
     fmt::print("Integral storage size: {:.3f} MiB\n", df.integral_storage_max_size() * sizeof(double) * 1.0 / (1024 * 1024));
@@ -64,7 +66,7 @@ TEST_CASE("H2O/def2-svp") {
     fmt::print("Max error J({},{}) = {}\n", i, j, max_err);
     double max_err_k = (K_approx - K_exact).array().abs().maxCoeff(&i, &j); 
     fmt::print("Max error K({},{}) = {}\n", i, j, max_err_k);
-    fmt::print("Ratio:\n{}\n", K_approx.array() / K_exact.array());
+    fmt::print("Ratio:\n{}\n", K_approx_direct.array() / K_approx.array());
 
 
     BENCHMARK("J exact") {
@@ -78,6 +80,11 @@ TEST_CASE("H2O/def2-svp") {
         return 0;
     };
 
+    BENCHMARK("J density fitting direct") {
+        J_approx = df.compute_J_direct(scf.mo);
+        return 0;
+    };
+
     BENCHMARK("JK exact") {
         std::tie(J_exact, K_exact) = scf.m_procedure.compute_JK(Restricted, scf.mo);
         return 0;
@@ -85,6 +92,11 @@ TEST_CASE("H2O/def2-svp") {
 
     BENCHMARK("K density fitting") {
         K_approx = df.compute_K(scf.mo);
+        return 0;
+    };
+
+    BENCHMARK("K density fitting direct") {
+        K_approx = df.compute_K_direct(scf.mo);
         return 0;
     };
     
