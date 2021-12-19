@@ -86,6 +86,7 @@ TEST_CASE("H2O/def2-svp") {
         return 0;
     };
 
+
     BENCHMARK("J density fitting direct") {
         J_approx = df.compute_J_direct(scf.mo);
         return 0;
