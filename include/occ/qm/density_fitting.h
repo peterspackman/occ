@@ -26,10 +26,10 @@ struct DFFockEngine {
     // a DF-based builder, using coefficients of occupied MOs
     Mat compute_J(const MolecularOrbitals&);
     Mat compute_J_direct(const MolecularOrbitals&) const;
-    Mat compute_JK_direct(const MolecularOrbitals&) const;
     Mat compute_K(const MolecularOrbitals&);
     Mat compute_K_direct(const MolecularOrbitals&) const;
     std::pair<Mat, Mat> compute_JK(const MolecularOrbitals&);
+    std::pair<Mat, Mat> compute_JK_direct(const MolecularOrbitals&) const;
     Mat compute_fock(const MolecularOrbitals&);
 
     size_t num_rows() const {

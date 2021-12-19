@@ -85,10 +85,6 @@ TEST_CASE("H2O/def2-svp") {
         return 0;
     };
 
-    BENCHMARK("JK exact") {
-        std::tie(J_exact, K_exact) = scf.m_procedure.compute_JK(Restricted, scf.mo);
-        return 0;
-    };
 
     BENCHMARK("K density fitting") {
         K_approx = df.compute_K(scf.mo);
@@ -99,9 +95,20 @@ TEST_CASE("H2O/def2-svp") {
         K_approx = df.compute_K_direct(scf.mo);
         return 0;
     };
+
+    BENCHMARK("JK exact") {
+        std::tie(J_exact, K_exact) = scf.m_procedure.compute_JK(Restricted, scf.mo);
+        return 0;
+    };
+
     
     BENCHMARK("JK density fitting") {
         std::tie(J_approx, K_approx) = df.compute_JK(scf.mo);
+        return 0;
+    };
+
+    BENCHMARK("JK density fitting direct") {
+        std::tie(J_approx, K_approx) = df.compute_JK_direct(scf.mo);
         return 0;
     };
 
