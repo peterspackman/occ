@@ -162,6 +162,7 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
     size_t nmo = mo.Cocc.cols();
     std::vector<Vec> gg(nthreads);
     std::vector<Mat> JJ(nthreads);
+
     Mat K = Mat::Zero(nbf, nbf);
     std::vector<Mat> iuP(nmo * nthreads);
     Mat B(nbf, ndf);
@@ -177,13 +178,13 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
         auto &g = gg[thread_id];
         size_t offset = 0;
 
-        for (size_t i = bf1; i < bf1 + n1; i++) {
+        for (size_t r = bf1; r < bf1 + n1; r++) {
             Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
-            g(i) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+            g(r) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
 	        if(bf2 != bf3) {
-                g(i) += (mo.D.block(bf3, bf2, n3, n2).array() * buf_mat.transpose().array()).sum();
-                    offset += n2 * n3;
+                g(r) += (mo.D.block(bf3, bf2, n3, n2).array() * buf_mat.transpose().array()).sum();
             }
+            offset += n2 * n3;
         }
 
         for(size_t i = 0; i < mo.Cocc.cols(); i++) {
@@ -213,7 +214,7 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
     }
 
     for(size_t i = 0; i < nmo; i++) {
-	B = iuP[i] * Vinv_sqrt;
+	    B = iuP[i] * Vinv_sqrt;
     	K.noalias() += B * B.transpose();
     }
     iuP.clear();
@@ -265,6 +266,13 @@ std::pair<Mat, Mat> DFFockEngine::compute_JK(const MolecularOrbitals &mo) {
 Mat DFFockEngine::compute_fock(const MolecularOrbitals &mo) {
     Mat J, K;
     std::tie(J, K) = compute_JK(mo);
+    J.noalias() -= K;
+    return J;
+}
+
+Mat DFFockEngine::compute_fock_direct(const MolecularOrbitals &mo) const {
+    Mat J, K;
+    std::tie(J, K) = compute_JK_direct(mo);
     J.noalias() -= K;
     return J;
 }

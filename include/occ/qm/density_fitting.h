@@ -31,6 +31,7 @@ struct DFFockEngine {
     std::pair<Mat, Mat> compute_JK(const MolecularOrbitals&);
     std::pair<Mat, Mat> compute_JK_direct(const MolecularOrbitals&) const;
     Mat compute_fock(const MolecularOrbitals&);
+    Mat compute_fock_direct(const MolecularOrbitals&) const;
 
     size_t num_rows() const {
         size_t n = 0;

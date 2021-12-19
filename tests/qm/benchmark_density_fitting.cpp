@@ -62,11 +62,17 @@ TEST_CASE("H2O/def2-svp") {
     fmt::print("Integral storage size: {:.3f} MiB\n", df.integral_storage_max_size() * sizeof(double) * 1.0 / (1024 * 1024));
     fmt::print("initial J matrix build took: {:.3f} ms\n", 1000 * (sw.read() - tprev));
     Eigen::Index i, j;
-    double max_err = (J_approx - J_exact).array().abs().maxCoeff(&i, &j);
+    double max_err = (J_approx_direct - J_exact).array().abs().maxCoeff(&i, &j);
     fmt::print("Max error J({},{}) = {}\n", i, j, max_err);
-    double max_err_k = (K_approx - K_exact).array().abs().maxCoeff(&i, &j); 
+    double max_err_k = (K_approx_direct - K_exact).array().abs().maxCoeff(&i, &j); 
     fmt::print("Max error K({},{}) = {}\n", i, j, max_err_k);
-    fmt::print("Ratio:\n{}\n", K_approx_direct.array() / K_approx.array());
+
+    std::tie(J_approx_direct, K_approx_direct) = df.compute_JK_direct(scf.mo);
+
+    max_err = (J_approx_direct - J_exact).array().abs().maxCoeff(&i, &j);
+    fmt::print("Max error J({},{}) = {}\n", i, j, max_err);
+    max_err_k = (K_approx_direct - K_exact).array().abs().maxCoeff(&i, &j); 
+    fmt::print("Max error K({},{}) = {}\n", i, j, max_err_k);
 
 
     BENCHMARK("J exact") {
