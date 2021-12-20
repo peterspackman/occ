@@ -1,7 +1,6 @@
 #include <fmt/ostream.h>
 #include <occ/core/parallel.h>
 #include <occ/qm/density_fitting.h>
-#include <unsupported/Eigen/MatrixFunctions>
 
 namespace occ::df {
 
@@ -11,8 +10,6 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
     std::tie(m_shellpair_list, m_shellpair_data) =
         occ::ints::compute_shellpairs(obs);
     Mat V = occ::ints::compute_2body_2index_ints(dfbs); // V = (P|Q) in df basis
-    Vinv = V.inverse(); // V^-1
-    Vinv_sqrt = Vinv.sqrt();
     m_engines.reserve(occ::parallel::nthreads);
     m_engines.emplace_back(libint2::Operator::coulomb,
                            std::max(obs.max_nprim(), dfbs.max_nprim()),
@@ -22,10 +19,11 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
         m_engines.push_back(m_engines[0]);
     }
 
+    occ::timing::start(occ::timing::category::la);
     V_LLt = Eigen::LLT<Mat>(V);
-    Mat I = Mat::Identity(ndf, ndf);
-    L = Eigen::LLT<Mat>(Vinv).matrixL(); // (P|Q)^-1/2 
-    Linv_t = V_LLt.matrixL().solve(I).transpose();
+    Mat Vsqrt = Eigen::SelfAdjointEigenSolver<Mat>(V).operatorSqrt();
+    Vsqrt_LLt = Eigen::LLT<Mat>(Vsqrt);
+    occ::timing::stop(occ::timing::category::la);
 }
 
 void DFFockEngine::populate_integrals() {
@@ -149,8 +147,8 @@ Mat DFFockEngine::compute_K_direct(const MolecularOrbitals &mo) const {
     }
 
     for(size_t i = 0; i < nmo; i++) {
-	B = iuP[i] * Vinv_sqrt;
-	K.noalias() += B * B.transpose();
+	B = Vsqrt_LLt.solve(iuP[i].transpose());
+	K.noalias() += B.transpose() * B;
     }
 
     return K;
@@ -218,8 +216,8 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
 	Mat B(nbf, ndf);
 	for(size_t i = 0; i < nmo; i++) {
 	    if(i % nthreads != thread_id) continue;
-	    B = iuP[i] * Vinv_sqrt;
-	    KK[thread_id].noalias() += B * B.transpose();
+	    B = Vsqrt_LLt.solve(iuP[i].transpose());
+	    KK[thread_id].noalias() += B.transpose() * B;
 	}
     };
 
@@ -264,8 +262,8 @@ Mat DFFockEngine::compute_K(const MolecularOrbitals &mo) {
             const auto vu = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
             iuP.col(r) = (vu * c);
         }
-        B = iuP * Vinv_sqrt;
-        K.noalias() += B * B.transpose();
+	B = Vsqrt_LLt.solve(iuP.transpose());
+        K.noalias() += B.transpose() * B;
     }
     return K;
 }

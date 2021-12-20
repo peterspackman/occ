@@ -13,10 +13,7 @@ struct DFFockEngine {
 
     BasisSet obs;
     BasisSet dfbs;
-    Mat Vinv, Vinv_sqrt;
-    Mat L;
-    Mat Linv_t;
-    Eigen::LLT<Mat> V_LLt;
+    Eigen::LLT<Mat> V_LLt, Vsqrt_LLt;
     const size_t nbf{0}, ndf{0};
 
     DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs);
