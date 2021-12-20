@@ -19,11 +19,23 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
         m_engines.push_back(m_engines[0]);
     }
 
+<<<<<<< HEAD
     occ::timing::start(occ::timing::category::la);
     V_LLt = Eigen::LLT<Mat>(V);
     Mat Vsqrt = Eigen::SelfAdjointEigenSolver<Mat>(V).operatorSqrt();
     Vsqrt_LLt = Eigen::LLT<Mat>(Vsqrt);
     occ::timing::stop(occ::timing::category::la);
+=======
+    fmt::print("Cholesky decomposition\n");
+    occ::timing::start(occ::timing::category::la);
+    V_LLt = Eigen::LDLT<Mat>(V);
+    fmt::print("V done\n");
+    Mat Vsqrt = Eigen::SelfAdjointEigenSolver<Mat>(V).operatorSqrt();
+    fmt::print("Eigensolver done\n");
+    Vsqrt_LLt = Eigen::LDLT<Mat>(Vsqrt);
+    occ::timing::stop(occ::timing::category::la);
+    fmt::print("Finished decomposition\n");
+>>>>>>> c84ebb7437d82825e1a462094e2e155c1cad9ae5
 }
 
 void DFFockEngine::populate_integrals() {
