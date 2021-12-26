@@ -28,6 +28,58 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
     Linv_t = V_LLt.matrixL().solve(I).transpose();
 }
 
+
+DFFockEngine::Policy policy_choice(const DFFockEngine &df) {
+    if(df.memory_limit >= df.integral_storage_max_size()) {
+        return DFFockEngine::Policy::Stored;
+    }
+    return DFFockEngine::Policy::Direct;
+}
+
+Mat DFFockEngine::compute_J(const MolecularOrbitals &mo, Policy policy) {
+    policy = (policy == Policy::Choose) ? policy_choice(*this) : policy;
+    if(policy == Policy::Direct) {
+        return compute_J_direct(mo);
+    }
+    else {
+        return compute_J_stored(mo);
+    }
+}
+
+Mat DFFockEngine::compute_K(const MolecularOrbitals &mo, Policy policy) {
+    policy = (policy == Policy::Choose) ? policy_choice(*this) : policy;
+    if(policy == Policy::Direct) {
+        return compute_K_direct(mo);
+    }
+    else {
+        return compute_K_stored(mo);
+    }
+}
+
+Mat DFFockEngine::compute_fock(const MolecularOrbitals &mo, Policy policy) {
+    policy = (policy == Policy::Choose) ? policy_choice(*this) : policy;
+    if(policy == Policy::Direct) {
+        return compute_fock_direct(mo);
+    }
+    else {
+        return compute_fock_stored(mo);
+    }
+}
+
+std::pair<Mat, Mat> DFFockEngine::compute_JK(const MolecularOrbitals &mo, Policy policy) {
+    policy = (policy == Policy::Choose) ? policy_choice(*this) : policy;
+    if(policy == Policy::Direct) {
+        return compute_JK_direct(mo);
+    }
+    else {
+        return compute_JK_stored(mo);
+    }
+}
+
+
+
+
+
 void DFFockEngine::populate_integrals() {
   if (!m_have_integrals) {
     m_ints = Mat::Zero(nbf * nbf, ndf);
@@ -49,25 +101,9 @@ void DFFockEngine::populate_integrals() {
   }
 }
 
-Mat DFFockEngine::compute_J(const MolecularOrbitals &mo) {
 
-    populate_integrals();
 
-    Vec g(ndf);
-    for (int r = 0; r < ndf; r++) {
-        const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
-        g(r) = (mo.D.array() * tr.array()).sum();
-    }
-    Vec d = V_LLt.solve(g);
-    Mat J = Mat::Zero(nbf, nbf);
-    for (int r = 0; r < ndf; r++) {
-        const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
-        J += d(r) * tr;
-    }
-    return 2 * J;
-}
-
-Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo) const {
+Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo) {
 
     using occ::parallel::nthreads;
     std::vector<Vec> gg(nthreads);
@@ -116,7 +152,7 @@ Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo) const {
     return (JJ[0] + JJ[0].transpose());
 }
 
-Mat DFFockEngine::compute_K_direct(const MolecularOrbitals &mo) const {
+Mat DFFockEngine::compute_K_direct(const MolecularOrbitals &mo) {
     using occ::parallel::nthreads;
     size_t nmo = mo.Cocc.cols();
     Mat K = Mat::Zero(nbf, nbf);
@@ -156,7 +192,7 @@ Mat DFFockEngine::compute_K_direct(const MolecularOrbitals &mo) const {
     return K;
 }
 
-std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) const {
+std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) {
 
     using occ::parallel::nthreads;
     size_t nmo = mo.Cocc.cols();
@@ -252,8 +288,33 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
     return {JJ[0] + JJ[0].transpose(), KK[0]};
 }
 
+Mat DFFockEngine::compute_fock_direct(const MolecularOrbitals &mo) {
+    Mat J, K;
+    std::tie(J, K) = compute_JK_direct(mo);
+    J.noalias() -= K;
+    return J;
+}
 
-Mat DFFockEngine::compute_K(const MolecularOrbitals &mo) {
+
+Mat DFFockEngine::compute_J_stored(const MolecularOrbitals &mo) {
+
+    populate_integrals();
+
+    Vec g(ndf);
+    for (int r = 0; r < ndf; r++) {
+        const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
+        g(r) = (mo.D.array() * tr.array()).sum();
+    }
+    Vec d = V_LLt.solve(g);
+    Mat J = Mat::Zero(nbf, nbf);
+    for (int r = 0; r < ndf; r++) {
+        const auto tr = Eigen::Map<const Mat>(m_ints.col(r).data(), nbf, nbf);
+        J += d(r) * tr;
+    }
+    return 2 * J;
+}
+
+Mat DFFockEngine::compute_K_stored(const MolecularOrbitals &mo) {
     Mat K = Mat::Zero(nbf, nbf);
     // temporaries
     Mat iuP = Mat::Zero(nbf, ndf);
@@ -270,23 +331,17 @@ Mat DFFockEngine::compute_K(const MolecularOrbitals &mo) {
     return K;
 }
 
-std::pair<Mat, Mat> DFFockEngine::compute_JK(const MolecularOrbitals &mo) {
-    return {compute_J(mo), compute_K(mo)};
+std::pair<Mat, Mat> DFFockEngine::compute_JK_stored(const MolecularOrbitals &mo) {
+    return {compute_J_stored(mo), compute_K_stored(mo)};
 }
 
-Mat DFFockEngine::compute_fock(const MolecularOrbitals &mo) {
+Mat DFFockEngine::compute_fock_stored(const MolecularOrbitals &mo) {
     Mat J, K;
     std::tie(J, K) = compute_JK(mo);
     J.noalias() -= K;
     return J;
 }
 
-Mat DFFockEngine::compute_fock_direct(const MolecularOrbitals &mo) const {
-    Mat J, K;
-    std::tie(J, K) = compute_JK_direct(mo);
-    J.noalias() -= K;
-    return J;
-}
 
 inline int upper_triangle_index(const int N, const int i, const int j) {
     return (2 * N * i - i * i - i + 2 * j) / 2;

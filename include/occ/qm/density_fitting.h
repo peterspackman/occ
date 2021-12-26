@@ -11,6 +11,13 @@ using occ::qm::MolecularOrbitals;
 
 struct DFFockEngine {
 
+    enum Policy {
+        Choose,
+        Direct,
+        Stored
+    };
+
+    size_t memory_limit{200 * 1024 * 1024}; // 200 MiB
     BasisSet obs;
     BasisSet dfbs;
     Mat Vinv, Vinv_sqrt;
@@ -24,14 +31,10 @@ struct DFFockEngine {
     std::vector<Mat> ints;
 
     // a DF-based builder, using coefficients of occupied MOs
-    Mat compute_J(const MolecularOrbitals&);
-    Mat compute_J_direct(const MolecularOrbitals&) const;
-    Mat compute_K(const MolecularOrbitals&);
-    Mat compute_K_direct(const MolecularOrbitals&) const;
-    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals&);
-    std::pair<Mat, Mat> compute_JK_direct(const MolecularOrbitals&) const;
-    Mat compute_fock(const MolecularOrbitals&);
-    Mat compute_fock_direct(const MolecularOrbitals&) const;
+    Mat compute_J(const MolecularOrbitals&, Policy policy = Policy::Choose);
+    Mat compute_K(const MolecularOrbitals&, Policy policy = Policy::Choose);
+    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals&, Policy policy = Policy::Choose);
+    Mat compute_fock(const MolecularOrbitals&, Policy policy = Policy::Choose);
 
     size_t num_rows() const {
         size_t n = 0;
@@ -55,6 +58,15 @@ struct DFFockEngine {
 
 
   private:
+    Mat compute_J_stored(const MolecularOrbitals&);
+    Mat compute_K_stored(const MolecularOrbitals&);
+    std::pair<Mat, Mat> compute_JK_stored(const MolecularOrbitals&);
+    Mat compute_fock_stored(const MolecularOrbitals&);
+    Mat compute_J_direct(const MolecularOrbitals&);
+    Mat compute_K_direct(const MolecularOrbitals&);
+    std::pair<Mat, Mat> compute_JK_direct(const MolecularOrbitals&);
+    Mat compute_fock_direct(const MolecularOrbitals&);
+
 
     void populate_integrals();
     Mat m_ints;

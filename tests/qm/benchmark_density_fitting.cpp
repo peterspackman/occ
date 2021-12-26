@@ -55,8 +55,8 @@ TEST_CASE("H2O/def2-svp") {
     sw.start();
     J_approx = df.compute_J(scf.mo);
     K_approx = df.compute_K(scf.mo);
-    Mat J_approx_direct = df.compute_J_direct(scf.mo);
-    Mat K_approx_direct = df.compute_K_direct(scf.mo);
+    Mat J_approx_direct = df.compute_J(scf.mo, DFFockEngine::Policy::Direct);
+    Mat K_approx_direct = df.compute_K(scf.mo, DFFockEngine::Policy::Direct);
     sw.stop();
     fmt::print("nbf * nbf: {}, num_rows: {}\n", df.nbf * df.nbf, df.num_rows());
     fmt::print("Integral storage size: {:.3f} MiB\n", df.integral_storage_max_size() * sizeof(double) * 1.0 / (1024 * 1024));
@@ -67,7 +67,7 @@ TEST_CASE("H2O/def2-svp") {
     double max_err_k = (K_approx_direct - K_exact).array().abs().maxCoeff(&i, &j); 
     fmt::print("Max error K({},{}) = {}\n", i, j, max_err_k);
 
-    std::tie(J_approx_direct, K_approx_direct) = df.compute_JK_direct(scf.mo);
+    std::tie(J_approx_direct, K_approx_direct) = df.compute_JK(scf.mo, DFFockEngine::Policy::Direct);
 
     max_err = (J_approx_direct - J_exact).array().abs().maxCoeff(&i, &j);
     fmt::print("Max error J({},{}) = {}\n", i, j, max_err);
@@ -82,24 +82,24 @@ TEST_CASE("H2O/def2-svp") {
 
 
     BENCHMARK("J density fitting") {
-        J_approx = df.compute_J(scf.mo);
+        J_approx = df.compute_J(scf.mo, DFFockEngine::Policy::Stored);
         return 0;
     };
 
 
     BENCHMARK("J density fitting direct") {
-        J_approx = df.compute_J_direct(scf.mo);
+        J_approx = df.compute_J(scf.mo, DFFockEngine::Policy::Direct);
         return 0;
     };
 
 
     BENCHMARK("K density fitting") {
-        K_approx = df.compute_K(scf.mo);
+        K_approx = df.compute_K(scf.mo, DFFockEngine::Policy::Stored);
         return 0;
     };
 
     BENCHMARK("K density fitting direct") {
-        K_approx = df.compute_K_direct(scf.mo);
+        K_approx = df.compute_K(scf.mo, DFFockEngine::Policy::Direct);
         return 0;
     };
 
@@ -110,12 +110,12 @@ TEST_CASE("H2O/def2-svp") {
 
     
     BENCHMARK("JK density fitting") {
-        std::tie(J_approx, K_approx) = df.compute_JK(scf.mo);
+        std::tie(J_approx, K_approx) = df.compute_JK(scf.mo, DFFockEngine::Policy::Stored);
         return 0;
     };
 
     BENCHMARK("JK density fitting direct") {
-        std::tie(J_approx, K_approx) = df.compute_JK_direct(scf.mo);
+        std::tie(J_approx, K_approx) = df.compute_JK(scf.mo, DFFockEngine::Policy::Direct);
         return 0;
     };
 
