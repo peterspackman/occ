@@ -20,10 +20,11 @@ struct DFFockEngine {
     size_t memory_limit{200 * 1024 * 1024}; // 200 MiB
     BasisSet obs;
     BasisSet dfbs;
-    Mat Vinv, Vinv_sqrt;
-    Mat L;
-    Mat Linv_t;
-    Eigen::LLT<Mat> V_LLt;
+<<<<<<< HEAD
+    Eigen::LLT<Mat> V_LLt, Vsqrt_LLt;
+=======
+    Eigen::LDLT<Mat> V_LLt, Vsqrt_LLt;
+>>>>>>> c84ebb7437d82825e1a462094e2e155c1cad9ae5
     const size_t nbf{0}, ndf{0};
 
     DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs);
