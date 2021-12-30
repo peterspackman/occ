@@ -9,8 +9,13 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
       ints(_dfbs.nbf()) {
     std::tie(m_shellpair_list, m_shellpair_data) =
         occ::ints::compute_shellpairs(obs);
+
+    occ::timing::start(occ::timing::category::df);
     Mat V = occ::ints::compute_2body_2index_ints(dfbs); // V = (P|Q) in df basis
+    occ::timing::stop(occ::timing::category::df);
     m_engines.reserve(occ::parallel::nthreads);
+
+    occ::timing::start(occ::timing::category::engine_construct);
     m_engines.emplace_back(libint2::Operator::coulomb,
                            std::max(obs.max_nprim(), dfbs.max_nprim()),
                            std::max(obs.max_l(), dfbs.max_l()), 0);
@@ -18,6 +23,7 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
     for (size_t i = 1; i < occ::parallel::nthreads; ++i) {
         m_engines.push_back(m_engines[0]);
     }
+    occ::timing::stop(occ::timing::category::engine_construct);
 
     occ::timing::start(occ::timing::category::la);
     V_LLt = Eigen::LLT<Mat>(V);
@@ -213,34 +219,41 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
                        size_t n2, size_t bf3, size_t n3, const double *buf) {
         auto &g = gg[thread_id];
         size_t offset = 0;
+	size_t nocc = mo.Cocc.cols();
+	auto c3 = mo.Cocc.block(bf3, 0, n3, nocc);
+	Mat c2_term(n2, nocc);
 
-        for (size_t r = bf1; r < bf1 + n1; r++) {
-            Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
-            g(r) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
-	    if(bf2 != bf3) {
-                g(r) += (mo.D.block(bf3, bf2, n3, n2).array() * buf_mat.transpose().array()).sum();
-            }
-            offset += n2 * n3;
-        }
+	if(bf2 != bf3) {
+	    auto c2 = mo.Cocc.block(bf2, 0, n2, nocc);
+	    Mat c3_term(n3, nocc);
+	    for (size_t r = bf1; r < bf1 + n1; r++) {
+		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+		g(r) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+		c2_term = buf_mat * c3;
+		g(r) += (mo.D.block(bf3, bf2, n3, n2).array() * buf_mat.transpose().array()).sum();
+		c3_term = buf_mat.transpose() * c2;
 
-        for(size_t i = 0; i < mo.Cocc.cols(); i++) {
-            auto &iuPx = iuP[i];
-            auto c2 = mo.Cocc.block(bf2, i, n2, 1);
-            auto c3 = mo.Cocc.block(bf3, i, n3, 1);
-
-            size_t offset = 0;
-	    Mat tmp1, tmp2;
-	    // because we parallelize over bf1 i.e. r,
-	    // there's no need for a mutex as only one thread writes each column
-            for(size_t r = bf1; r < bf1 + n1; r++) {
-                Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
-                iuPx.block(bf2, r, n2, 1) += buf_mat * c3;
-                if(bf2 != bf3) {
-		    iuPx.block(bf3, r, n3, 1) += (buf_mat.transpose() * c2);
+		for(int i = 0; i < mo.Cocc.cols(); i++) {
+		    auto &iuPx = iuP[i];
+		    iuPx.block(bf2, r, n2, 1) += c2_term.block(0, i, n2, 1);
+		    iuPx.block(bf3, r, n3, 1) += c3_term.block(0, i, n3, 1);
 		}
-                offset += n2 * n3;
-            }
-        }
+		offset += n2 * n3;
+	    }
+	}
+	else {
+	    for (size_t r = bf1; r < bf1 + n1; r++) {
+		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+		g(r) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+		c2_term = buf_mat * c3;
+
+		for(int i = 0; i < mo.Cocc.cols(); i++) {
+		    auto &iuPx = iuP[i];
+		    iuPx.block(bf2, r, n2, 1) += c2_term.block(0, i, n2, 1);
+		}
+		offset += n2 * n3;
+	    }
+	}
     };
 
     three_center_integral_helper(lambda1);
@@ -257,6 +270,7 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
 	}
     };
 
+
     occ::parallel::parallel_do(klambda);
 
 
@@ -268,12 +282,21 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
                        size_t n2, size_t bf3, size_t n3, const double *buf) {
         auto &J = JJ[thread_id];
         size_t offset = 0;
-        for (size_t i = bf1; i < bf1 + n1; i++) {
-            Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
-            J.block(bf2, bf3, n2, n3) += d(i) * buf_mat;
-	    if(bf2 != bf3) J.block(bf3, bf2, n3, n2) += d(i) * buf_mat.transpose();
-            offset += n2 * n3;
-        }
+	if(bf2 != bf3) {
+	    for (size_t i = bf1; i < bf1 + n1; i++) {
+		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+		J.block(bf2, bf3, n2, n3) += d(i) * buf_mat;
+		J.block(bf3, bf2, n3, n2) += d(i) * buf_mat.transpose();
+		offset += n2 * n3;
+	    }
+	}
+	else {
+	    for (size_t i = bf1; i < bf1 + n1; i++) {
+		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+		J.block(bf2, bf3, n2, n3) += d(i) * buf_mat;
+		offset += n2 * n3;
+	    }
+	}
     };
 
     three_center_integral_helper(Jlambda);

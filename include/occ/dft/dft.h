@@ -214,7 +214,7 @@ class DFT {
 
         constexpr size_t BLOCKSIZE = 64;
         double total_density_a{0.0}, total_density_b{0.0};
-        const auto &D2 = 2 * D;
+        const Mat D2 = 2 * D;
         DensityFunctional::Family family{DensityFunctional::Family::LDA};
         if constexpr (derivative_order == 1) {
             family = DensityFunctional::Family::GGA;

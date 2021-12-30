@@ -8,6 +8,8 @@ namespace orb {
 
 Mat from_gaussian_order_cartesian(const occ::qm::BasisSet &, const Mat &);
 Mat to_gaussian_order_cartesian(const occ::qm::BasisSet &, const Mat &);
+Mat from_gaussian_order_spherical(const occ::qm::BasisSet &, const Mat &);
+Mat to_gaussian_order_spherical(const occ::qm::BasisSet &, const Mat &);
 
 } // namespace orb
 

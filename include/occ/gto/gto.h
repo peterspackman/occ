@@ -124,6 +124,11 @@ struct Momenta {
     }
 };
 
+struct MomentaSpherical {
+    int l{0};
+    int m{0};
+};
+
 inline std::vector<Momenta> cartesian_subshell_ordering(int l) {
     if (l == 0)
         return {{0, 0, 0}};
@@ -134,6 +139,17 @@ inline std::vector<Momenta> cartesian_subshell_ordering(int l) {
     };
     occ::gto::iterate_over_shell<true>(f, l);
     return powers;
+}
+
+inline std::vector<MomentaSpherical> spherical_subshell_ordering(int l) {
+    if(l == 0) return {MomentaSpherical{}};
+    int m = 0;
+    std::vector<MomentaSpherical> moments;
+    auto f = [&moments](int l, int m) {
+	moments.push_back({l, m});
+    };
+    occ::gto::iterate_over_shell<false>(f, l);
+    return moments;
 }
 
 void evaluate_basis(const BasisSet &basis,

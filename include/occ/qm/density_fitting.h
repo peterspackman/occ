@@ -2,6 +2,7 @@
 #include <libint2.hpp>
 #include <occ/qm/ints.h>
 #include <occ/qm/mo.h>
+#include <occ/core/timings.h>
 
 namespace occ::df {
 using occ::qm::BasisSet;
@@ -118,7 +119,9 @@ struct DFFockEngine {
             }
         }; // lambda
 
+	occ::timing::start(occ::timing::category::df);
         occ::parallel::parallel_do(lambda);
+	occ::timing::stop(occ::timing::category::df);
     }
 };
 

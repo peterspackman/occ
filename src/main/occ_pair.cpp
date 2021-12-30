@@ -174,5 +174,7 @@ int main(int argc, char *argv[]) {
 	    interaction_energy.total_kjmol());
 
     fmt::print("\n");
+    fmt::print("C\n{}\n", pair.a.wfn.mo.C);
+    fmt::print("D\n{}\n", pair.a.wfn.mo.D);
     occ::timing::print_timings();
 }

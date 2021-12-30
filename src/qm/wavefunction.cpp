@@ -289,14 +289,27 @@ void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
         block::b(mo.C) = fchk.beta_mo_coefficients();
         block::a(mo.energies) = fchk.alpha_mo_energies();
         block::b(mo.energies) = fchk.beta_mo_energies();
-        block::a(mo.C) = occ::io::conversion::orb::from_gaussian_order_cartesian(
-            basis, block::a(mo.C));
-        block::b(mo.C) = occ::io::conversion::orb::from_gaussian_order_cartesian(
-            basis, block::b(mo.C));
+	if(!basis.is_pure()) {
+	    block::a(mo.C) = occ::io::conversion::orb::from_gaussian_order_cartesian(
+		basis, block::a(mo.C));
+	    block::b(mo.C) = occ::io::conversion::orb::from_gaussian_order_cartesian(
+		basis, block::b(mo.C));
+	}
+	else {
+	    block::a(mo.C) = occ::io::conversion::orb::from_gaussian_order_spherical(
+		basis, block::a(mo.C));
+	    block::b(mo.C) = occ::io::conversion::orb::from_gaussian_order_spherical(
+		basis, block::b(mo.C));
+	}
     } else {
         mo.C = fchk.alpha_mo_coefficients();
         mo.energies = fchk.alpha_mo_energies();
-        mo.C = occ::io::conversion::orb::from_gaussian_order_cartesian(basis, mo.C);
+	if(!basis.is_pure()) {
+	    mo.C = occ::io::conversion::orb::from_gaussian_order_cartesian(basis, mo.C);
+	}
+	else {
+	    mo.C = occ::io::conversion::orb::from_gaussian_order_spherical(basis, mo.C);
+	}
     }
     update_occupied_orbitals();
 }
@@ -418,7 +431,7 @@ void Wavefunction::save(FchkWriter &fchk) {
 
     auto Cfchk = [&]() {
         if (basis.is_pure())
-            return mo.C;
+            return occ::io::conversion::orb::to_gaussian_order_spherical(basis, mo.C);
         return occ::io::conversion::orb::to_gaussian_order_cartesian(basis, mo.C);
     }();
     Mat Dfchk;

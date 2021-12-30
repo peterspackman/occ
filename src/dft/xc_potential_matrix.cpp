@@ -1,4 +1,5 @@
 #include <occ/dft/xc_potential_matrix.h>
+#include <occ/core/timings.h>
 
 namespace occ::dft {
 using occ::qm::SpinorbitalKind::Restricted;
