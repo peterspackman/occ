@@ -40,40 +40,40 @@ DFFockEngine::Policy policy_choice(const DFFockEngine &df) {
     return DFFockEngine::Policy::Direct;
 }
 
-Mat DFFockEngine::compute_J(const MolecularOrbitals &mo, Policy policy) {
+Mat DFFockEngine::compute_J(const MolecularOrbitals &mo, const Mat &Schwarz, Policy policy) {
     policy = (policy == Policy::Choose) ? policy_choice(*this) : policy;
     if(policy == Policy::Direct) {
-        return compute_J_direct(mo);
+        return compute_J_direct(mo, Schwarz);
     }
     else {
         return compute_J_stored(mo);
     }
 }
 
-Mat DFFockEngine::compute_K(const MolecularOrbitals &mo, Policy policy) {
+Mat DFFockEngine::compute_K(const MolecularOrbitals &mo, const Mat &Schwarz, Policy policy) {
     policy = (policy == Policy::Choose) ? policy_choice(*this) : policy;
     if(policy == Policy::Direct) {
-        return compute_K_direct(mo);
+        return compute_K_direct(mo, Schwarz);
     }
     else {
         return compute_K_stored(mo);
     }
 }
 
-Mat DFFockEngine::compute_fock(const MolecularOrbitals &mo, Policy policy) {
+Mat DFFockEngine::compute_fock(const MolecularOrbitals &mo, const Mat &Schwarz, Policy policy) {
     policy = (policy == Policy::Choose) ? policy_choice(*this) : policy;
     if(policy == Policy::Direct) {
-        return compute_fock_direct(mo);
+        return compute_fock_direct(mo, Schwarz);
     }
     else {
         return compute_fock_stored(mo);
     }
 }
 
-std::pair<Mat, Mat> DFFockEngine::compute_JK(const MolecularOrbitals &mo, Policy policy) {
+std::pair<Mat, Mat> DFFockEngine::compute_JK(const MolecularOrbitals &mo, const Mat &Schwarz, Policy policy) {
     policy = (policy == Policy::Choose) ? policy_choice(*this) : policy;
     if(policy == Policy::Direct) {
-        return compute_JK_direct(mo);
+        return compute_JK_direct(mo, Schwarz);
     }
     else {
         return compute_JK_stored(mo);
@@ -100,14 +100,16 @@ void DFFockEngine::populate_integrals() {
         }
     };
 
-    three_center_integral_helper(lambda);
+    Mat D(nbf, nbf);
+    D.setConstant(1.0);
+    three_center_integral_helper(lambda, D);
     m_have_integrals = true;
   }
 }
 
 
 
-Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo) {
+Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo, const Mat &Schwarz) {
 
     using occ::parallel::nthreads;
     std::vector<Vec> gg(nthreads);
@@ -130,7 +132,7 @@ Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo) {
         }
     };
 
-    three_center_integral_helper(glambda);
+    three_center_integral_helper(glambda, mo.D, Schwarz);
 
     for (int i = 1; i < nthreads; i++)
         gg[0] += gg[i];
@@ -149,14 +151,14 @@ Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo) {
         }
     };
 
-    three_center_integral_helper(Jlambda);
+    three_center_integral_helper(Jlambda, mo.D, Schwarz);
 
     for (int i = 1; i < nthreads; i++)
         JJ[0] += JJ[i];
     return (JJ[0] + JJ[0].transpose());
 }
 
-Mat DFFockEngine::compute_K_direct(const MolecularOrbitals &mo) {
+Mat DFFockEngine::compute_K_direct(const MolecularOrbitals &mo, const Mat &Schwarz) {
     using occ::parallel::nthreads;
     size_t nmo = mo.Cocc.cols();
     Mat K = Mat::Zero(nbf, nbf);
@@ -182,7 +184,7 @@ Mat DFFockEngine::compute_K_direct(const MolecularOrbitals &mo) {
 	}
     };
 
-    three_center_integral_helper(lambda);
+    three_center_integral_helper(lambda, mo.D, Schwarz);
 
     for(size_t i = nmo; i < nmo * nthreads; i++) {
 	iuP[i % nmo] += iuP[i];
@@ -196,7 +198,7 @@ Mat DFFockEngine::compute_K_direct(const MolecularOrbitals &mo) {
     return K;
 }
 
-std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) {
+std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo, const Mat &Schwarz) {
 
     using occ::parallel::nthreads;
     size_t nmo = mo.Cocc.cols();
@@ -256,7 +258,7 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
 	}
     };
 
-    three_center_integral_helper(lambda1);
+    three_center_integral_helper(lambda1, mo.D, Schwarz);
 
     for (int i = 1; i < nthreads; i++)
         gg[0] += gg[i];
@@ -299,7 +301,7 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
 	}
     };
 
-    three_center_integral_helper(Jlambda);
+    three_center_integral_helper(Jlambda, mo.D, Schwarz);
 
     for (int i = 1; i < nthreads; i++) {
         JJ[0] += JJ[i];
@@ -309,9 +311,9 @@ std::pair<Mat,Mat> DFFockEngine::compute_JK_direct(const MolecularOrbitals &mo) 
     return {JJ[0] + JJ[0].transpose(), KK[0]};
 }
 
-Mat DFFockEngine::compute_fock_direct(const MolecularOrbitals &mo) {
+Mat DFFockEngine::compute_fock_direct(const MolecularOrbitals &mo, const Mat &Schwarz) {
     Mat J, K;
-    std::tie(J, K) = compute_JK_direct(mo);
+    std::tie(J, K) = compute_JK_direct(mo, Schwarz);
     J.noalias() -= K;
     return J;
 }

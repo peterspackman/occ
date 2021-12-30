@@ -29,10 +29,10 @@ struct DFFockEngine {
     std::vector<Mat> ints;
 
     // a DF-based builder, using coefficients of occupied MOs
-    Mat compute_J(const MolecularOrbitals&, Policy policy = Policy::Choose);
-    Mat compute_K(const MolecularOrbitals&, Policy policy = Policy::Choose);
-    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals&, Policy policy = Policy::Choose);
-    Mat compute_fock(const MolecularOrbitals&, Policy policy = Policy::Choose);
+    Mat compute_J(const MolecularOrbitals&, const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
+    Mat compute_K(const MolecularOrbitals&, const Mat &Schwarz = Mat(),Policy policy = Policy::Choose);
+    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals&,const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
+    Mat compute_fock(const MolecularOrbitals&, const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
 
     size_t num_rows() const {
         size_t n = 0;
@@ -54,16 +54,15 @@ struct DFFockEngine {
     const auto &shellpair_list() const { return m_shellpair_list; }
     const auto &shellpair_data() const { return m_shellpair_data; }
 
-
   private:
     Mat compute_J_stored(const MolecularOrbitals&);
     Mat compute_K_stored(const MolecularOrbitals&);
     std::pair<Mat, Mat> compute_JK_stored(const MolecularOrbitals&);
     Mat compute_fock_stored(const MolecularOrbitals&);
-    Mat compute_J_direct(const MolecularOrbitals&);
-    Mat compute_K_direct(const MolecularOrbitals&);
-    std::pair<Mat, Mat> compute_JK_direct(const MolecularOrbitals&);
-    Mat compute_fock_direct(const MolecularOrbitals&);
+    Mat compute_J_direct(const MolecularOrbitals&, const Mat &Schwarz = Mat());
+    Mat compute_K_direct(const MolecularOrbitals&, const Mat &Schwarz = Mat());
+    std::pair<Mat, Mat> compute_JK_direct(const MolecularOrbitals&, const Mat &Schwarz = Mat());
+    Mat compute_fock_direct(const MolecularOrbitals&, const Mat &Schwarz = Mat());
 
 
     void populate_integrals();
@@ -73,12 +72,17 @@ struct DFFockEngine {
     shellpair_data_t m_shellpair_data{}; // shellpair data for OBS
 
     mutable std::vector<libint2::Engine> m_engines;
-    template <typename T> void three_center_integral_helper(T &func) const {
+    template <typename T> void three_center_integral_helper(T &func, const Mat &D, const Mat &Schwarz = Mat()) const {
         using occ::parallel::nthreads;
 
         const auto nshells = obs.size();
         const auto nshells_df = dfbs.size();
         const auto &unitshell = libint2::Shell::unit();
+        Mat D_shblk_norm = occ::ints::compute_shellblock_norm(obs, D);
+        const bool do_schwarz_screen =
+            Schwarz.cols() != 0 && Schwarz.rows() != 0;
+
+
 
         // construct the 2-electron 3-center repulsion integrals engine
         // since the code assumes (xx|xs) braket, and Engine/libint only
@@ -86,6 +90,7 @@ struct DFFockEngine {
 
         auto shell2bf = obs.shell2bf();
         auto shell2bf_df = dfbs.shell2bf();
+        size_t num_skipped = 0;
 
         auto lambda = [&](int thread_id) {
             auto &engine = m_engines[thread_id];
@@ -101,7 +106,15 @@ struct DFFockEngine {
                     auto n2 = obs[s2].size();
                     auto bf2_first = shell2bf[s2];
 
+
                     for (auto s3 : m_shellpair_list.at(s2)) {
+                        const auto Dnorm23 =
+                            do_schwarz_screen ? D_shblk_norm(s2, s3) : 0.;
+                        if(do_schwarz_screen && (Dnorm23 * Schwarz(s2, s3) < 1e-10)) {
+                            num_skipped++;
+                            continue;
+                        }
+
                         auto n3 = obs[s3].size();
                         auto bf3_first = shell2bf[s3];
 
