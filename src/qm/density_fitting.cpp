@@ -108,35 +108,35 @@ void DFFockEngine::populate_integrals() {
 
 inline auto g_lambda_direct_r(std::vector<Vec> &gg, const MolecularOrbitals &mo) {
     return [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
-                       size_t n2, size_t bf3, size_t n3, const double *buf) {
-        auto &g = gg[thread_id];
-        size_t offset = 0;
-	if(bf2 != bf3) {
-	    for (size_t i = bf1; i < bf1 + n1; i++) {
-		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
-		g(i) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
-		g(i) += (mo.D.block(bf3, bf2, n3, n2).array() * buf_mat.transpose().array()).sum();
-		offset += n2 * n3;
-	    }
-	}
-	else {
-	    for (size_t i = bf1; i < bf1 + n1; i++) {
-		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
-		g(i) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
-		offset += n2 * n3;
-	    }
-	}
+	       size_t n2, size_t bf3, size_t n3, const double *buf) {
+		auto &g = gg[thread_id];
+		size_t offset = 0;
+		if(bf2 != bf3) {
+		    for (size_t i = bf1; i < bf1 + n1; i++) {
+			Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+			g(i) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+			g(i) += (mo.D.block(bf3, bf2, n3, n2).array() * buf_mat.transpose().array()).sum();
+			offset += n2 * n3;
+		    }
+		}
+		else {
+		    for (size_t i = bf1; i < bf1 + n1; i++) {
+			Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+			g(i) += (mo.D.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+			offset += n2 * n3;
+		    }
+		}
     };
 }
 
 inline auto g_lambda_direct_u(std::vector<Vec> &gg_alpha, std::vector<Vec> &gg_beta, const MolecularOrbitals &mo) {
     return [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
-                       size_t n2, size_t bf3, size_t n3, const double *buf) {
-        auto &ga = gg_alpha[thread_id];
-        auto &gb = gg_beta[thread_id];
+	       size_t n2, size_t bf3, size_t n3, const double *buf) {
+	auto &ga = gg_alpha[thread_id];
+	auto &gb = gg_beta[thread_id];
 	const auto Da = qm::block::a(mo.D);
 	const auto Db = qm::block::b(mo.D);
-        size_t offset = 0;
+	size_t offset = 0;
 	if(bf2 != bf3) {
 	    for (size_t i = bf1; i < bf1 + n1; i++) {
 		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
@@ -237,6 +237,42 @@ inline auto k_lambda_direct_r(std::vector<Mat>& iuP, const MolecularOrbitals &mo
     };
 }
 
+inline auto k_lambda_direct_u(std::vector<Mat>& iuPa, std::vector<Mat> &iuPb, const MolecularOrbitals &mo) {
+    size_t nmo = mo.Cocc.cols();
+    return [&, nmo](int thread_id, size_t bf1, size_t n1, size_t bf2,
+                       size_t n2, size_t bf3, size_t n3, const double *buf) {
+	for(size_t i = 0; i < mo.Cocc.cols(); i++) {
+	    auto &iuPxa = iuPa[nmo * thread_id + i];
+	    auto &iuPxb = iuPb[nmo * thread_id + i];
+	    auto c2a = qm::block::a(mo.Cocc).block(bf2, i, n2, 1);
+	    auto c3a = qm::block::a(mo.Cocc).block(bf3, i, n3, 1);
+	    auto c2b = qm::block::b(mo.Cocc).block(bf2, i, n2, 1);
+	    auto c3b = qm::block::b(mo.Cocc).block(bf3, i, n3, 1);
+
+	    size_t offset = 0;
+	    if(bf2 != bf3) {
+		for(size_t r = bf1; r < bf1 + n1; r++) {
+		    Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+		    iuPxa.block(bf2, r, n2, 1) += buf_mat * c3a;
+		    iuPxa.block(bf3, r, n3, 1) += (buf_mat.transpose() * c2a);
+
+		    iuPxb.block(bf2, r, n2, 1) += buf_mat * c3b;
+		    iuPxb.block(bf3, r, n3, 1) += (buf_mat.transpose() * c2b);
+		    offset += n2 * n3;
+		}
+	    }
+	    else {
+		for(size_t r = bf1; r < bf1 + n1; r++) {
+		    Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+		    iuPxa.block(bf2, r, n2, 1) += buf_mat * c3a;
+		    iuPxb.block(bf2, r, n2, 1) += buf_mat * c3b;
+		    offset += n2 * n3;
+		}
+	    }
+	}
+    };
+}
+
 inline auto jk_lambda_direct_r(std::vector<Vec> &gg, std::vector<Mat> &iuP, const MolecularOrbitals &mo) {
     return [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
                        size_t n2, size_t bf3, size_t n3, const double *buf) {
@@ -280,9 +316,79 @@ inline auto jk_lambda_direct_r(std::vector<Vec> &gg, std::vector<Mat> &iuP, cons
     };
 }
 
+inline auto jk_lambda_direct_u(std::vector<Vec> &gg_alpha,
+	std::vector<Vec> &gg_beta,
+	std::vector<Mat> &iuPa,
+	std::vector<Mat> &iuPb,
+	const MolecularOrbitals &mo) {
+    return [&](int thread_id, size_t bf1, size_t n1, size_t bf2,
+                       size_t n2, size_t bf3, size_t n3, const double *buf) {
+        auto &ga = gg_alpha[thread_id];
+        auto &gb = gg_beta[thread_id];
+        size_t offset = 0;
+	size_t nocc = mo.Cocc.cols();
+	auto c3a = qm::block::a(mo.Cocc).block(bf3, 0, n3, nocc);
+	auto c3b = qm::block::b(mo.Cocc).block(bf3, 0, n3, nocc);
+	auto Da = qm::block::a(mo.D);
+	auto Db = qm::block::b(mo.D);
+	Mat c2_term_a(n2, nocc);
+	Mat c2_term_b(n2, nocc);
+
+	if(bf2 != bf3) {
+	    auto c2a = qm::block::a(mo.Cocc).block(bf2, 0, n2, nocc);
+	    auto c2b = qm::block::b(mo.Cocc).block(bf2, 0, n2, nocc);
+	    Mat c3_term_a(n3, nocc);
+	    Mat c3_term_b(n3, nocc);
+	    for (size_t r = bf1; r < bf1 + n1; r++) {
+		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+
+		ga(r) += (Da.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+		c2_term_a = buf_mat * c3a;
+
+		gb(r) += (Db.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+		c2_term_b = buf_mat * c3b;
+
+		ga(r) += (Da.block(bf3, bf2, n3, n2).array() * buf_mat.transpose().array()).sum();
+		c3_term_a = buf_mat.transpose() * c2a;
+
+		gb(r) += (Db.block(bf3, bf2, n3, n2).array() * buf_mat.transpose().array()).sum();
+		c3_term_b = buf_mat.transpose() * c2b;
+
+		for(int i = 0; i < mo.Cocc.cols(); i++) {
+		    auto &iuPxa = iuPa[i];
+		    iuPxa.block(bf2, r, n2, 1) += c2_term_a.block(0, i, n2, 1);
+		    iuPxa.block(bf3, r, n3, 1) += c3_term_a.block(0, i, n3, 1);
+		    auto &iuPxb = iuPb[i];
+		    iuPxb.block(bf2, r, n2, 1) += c2_term_b.block(0, i, n2, 1);
+		    iuPxb.block(bf3, r, n3, 1) += c3_term_b.block(0, i, n3, 1);
+		}
+		offset += n2 * n3;
+	    }
+	}
+	else {
+	    for (size_t r = bf1; r < bf1 + n1; r++) {
+		Eigen::Map<const MatRM> buf_mat(&buf[offset], n2, n3);
+		ga(r) += (Da.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+		c2_term_a = buf_mat * c3a;
+		gb(r) += (Db.block(bf2, bf3, n2, n3).array() * buf_mat.array()).sum();
+		c2_term_b = buf_mat * c3b;
+		for(int i = 0; i < mo.Cocc.cols(); i++) {
+		    auto &iuPxa = iuPa[i];
+		    iuPxa.block(bf2, r, n2, 1) += c2_term_a.block(0, i, n2, 1);
+		    auto &iuPxb = iuPb[i];
+		    iuPxb.block(bf2, r, n2, 1) += c2_term_b.block(0, i, n2, 1);
+
+		}
+		offset += n2 * n3;
+	    }
+	}
+    };
+}
+
 Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo, double precision, const Mat &Schwarz) {
 
     using occ::parallel::nthreads;
+    bool unrestricted = (mo.kind == qm::SpinorbitalKind::Unrestricted);
     std::vector<Vec> gg(nthreads);
     std::vector<Mat> JJ(nthreads);
     for (int i = 0; i < nthreads; i++) {
@@ -293,16 +399,18 @@ Mat DFFockEngine::compute_J_direct(const MolecularOrbitals &mo, double precision
     auto glambda = g_lambda_direct_r(gg, mo);
     three_center_integral_helper(glambda, mo.D, precision, Schwarz);
 
-    for (int i = 1; i < nthreads; i++)
+    for (int i = 1; i < nthreads; i++) {
         gg[0] += gg[i];
+    }
 
     Vec d = V_LLt.solve(gg[0]);
 
     auto jlambda = j_lambda_direct_r(JJ, d);
     three_center_integral_helper(jlambda, mo.D, precision, Schwarz);
 
-    for (int i = 1; i < nthreads; i++)
+    for (int i = 1; i < nthreads; i++) {
         JJ[0] += JJ[i];
+    }
     return (JJ[0] + JJ[0].transpose());
 }
 
