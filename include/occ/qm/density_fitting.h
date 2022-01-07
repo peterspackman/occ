@@ -107,11 +107,14 @@ struct DFFockEngine {
                 auto n1 = dfbs[s1].size();
 
                 for (auto s2 = 0l; s2 != nshells; s2++) {
+		    auto sp23_iter = m_shellpair_data.at(s2).begin();
                     auto n2 = obs[s2].size();
                     auto bf2_first = shell2bf[s2];
 
 
                     for (auto s3 : m_shellpair_list.at(s2)) {
+			const auto* sp23 = sp23_iter->get();
+			++sp23_iter;
                         const auto Dnorm23 =
                             do_schwarz_screen ? D_shblk_norm(s2, s3) : 0.;
                         if(do_schwarz_screen && (Dnorm23 * Schwarz(s2, s3) < precision)) {
@@ -124,7 +127,7 @@ struct DFFockEngine {
 
                         engine.compute2<libint2::Operator::coulomb,
                                         libint2::BraKet::xs_xx, 0>(
-                            dfbs[s1], unitshell, obs[s2], obs[s3]);
+                            dfbs[s1], unitshell, obs[s2], obs[s3], nullptr, sp23);
                         const auto *buf = results[0];
                         if (buf == nullptr)
                             continue;

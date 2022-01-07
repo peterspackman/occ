@@ -260,9 +260,8 @@ void BasisSet::update() {
     m_shell2bf = compute_shell2bf(*this);
 }
 
-Mat rotate_molecular_orbitals(const BasisSet &basis, const occ::Mat3 &rotation,
+Mat rotate_molecular_orbitals_cart(const BasisSet &basis, const occ::Mat3 &rotation,
                               const Mat &C) {
-    assert(!basis.is_pure());
     const auto shell2bf = basis.shell2bf();
     Mat result(C.rows(), C.cols());
     for (size_t s = 0; s < basis.size(); s++) {
@@ -304,6 +303,59 @@ Mat rotate_molecular_orbitals(const BasisSet &basis, const occ::Mat3 &rotation,
             rot * C.block(bf_first, 0, shell_size, C.cols());
     }
     return result;
+}
+
+Mat rotate_molecular_orbitals_pure(const BasisSet &basis, const occ::Mat3 &rotation,
+                              const Mat &C) {
+    const auto shell2bf = basis.shell2bf();
+    occ::log::debug("Rotating MO coefficients via transform to cartesian then back");
+    Mat result(C.rows(), C.cols());
+    for (size_t s = 0; s < basis.size(); s++) {
+        const auto &shell = basis[s];
+        size_t bf_first = shell2bf[s];
+        size_t shell_size = shell.size();
+        int l = shell.contr[0].l;
+        Mat rot, transform;
+        switch (l) {
+        case 0:
+            result.block(bf_first, 0, shell_size, C.cols()).noalias() =
+                C.block(bf_first, 0, shell_size, C.cols());
+            continue;
+        case 1:
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<1>(rotation);
+            transform = occ::gto::cartesian_to_spherical_transformation_matrix(1);
+            break;
+        case 2:
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<2>(rotation);
+            transform = occ::gto::cartesian_to_spherical_transformation_matrix(2);
+            break;
+        case 3:
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<3>(rotation);
+            transform = occ::gto::cartesian_to_spherical_transformation_matrix(3);
+            break;
+        case 4:
+            rot = occ::gto::cartesian_gaussian_rotation_matrix<4>(rotation);
+            transform = occ::gto::cartesian_to_spherical_transformation_matrix(4);
+            break;
+        default:
+            throw std::runtime_error(
+                "pure MO rotation not implemented for angular momentum > 4");
+        }
+	Mat cart = transform * C.block(bf_first, 0, shell_size, C.cols()); 
+	fmt::print("C block shape: {} {}\n", shell_size, C.cols());
+	fmt::print("transform.shape: {} {}\n", transform.rows(), transform.cols());
+	fmt::print("cart.shape: {} {}\n", cart.rows(), cart.cols());
+	Mat cart_rotated = rot * cart;
+        result.block(bf_first, 0, shell_size, C.cols()).noalias() = transform.transpose() * cart_rotated;
+    }
+    return result;
+}
+
+Mat rotate_molecular_orbitals(const BasisSet &basis, const occ::Mat3 &rotation,
+                              const Mat &C) {
+    if(basis.is_pure()) return rotate_molecular_orbitals_pure(basis, rotation, C);
+    return rotate_molecular_orbitals_cart(basis, rotation, C);
+
 }
 
 void BasisSet::rotate(const occ::Mat3 &rotation) {

@@ -525,7 +525,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     int maxiter{100};
     size_t nbf{0};
     double energy_convergence_threshold = 1e-6;
-    double commutator_convergence_threshold = 1e-8;
+    double commutator_convergence_threshold = 1e-5;
     int iter = 0;
     double diis_error{1.0};
     double ediff_rel = 0.0;

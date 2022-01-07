@@ -388,7 +388,6 @@ Mat from_gaussian_order_spherical(const occ::qm::BasisSet &basis,
     return result;
 }
 
-
 } // namespace orb
 
 } // namespace occ::io::conversion

@@ -68,6 +68,7 @@ void MoldenReader::parse_section(const std::string &section_name,
     } else if (section_name == "5D") {
         m_basis.set_pure(true);
         m_pure = true;
+	occ::log::debug("Basis uses pure spherical harmonics");
     }
 }
 
@@ -115,6 +116,7 @@ void MoldenReader::parse_title_section(const std::optional<std::string> &args,
         }
         pos = stream.tellg();
         if(line.find("orca_2mkl") != std::string::npos) {
+	    occ::log::debug("Detected ORCA molden file");
             source = Source::Orca;
         }
     }
@@ -189,9 +191,8 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3> &position,
         }
         norm = sqrt(norm) * pi2_34;
         if (std::abs(pi2_34 - norm) > 1e-4) {
+	    occ::log::debug("Renormalizing coefficients, shell norm: {:6.3f}", norm);
             for (size_t i = 0; i < coeffs.size(); i++) {
-                occ::log::debug(
-                    "Renormalizing coefficients: {} != (2*pi)^(3/4)\n", norm);
                 coeffs[i] /= pow(4 * alpha[i], 0.5 * l + 0.75);
                 coeffs[i] = coeffs[i] * pi2_34 / norm;
             }
@@ -302,69 +303,82 @@ void MoldenReader::parse_mo_section(const std::optional<std::string> &args,
 
 Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
     const occ::qm::BasisSet &basis, const Mat &mo) const {
-    using occ::util::index_of;
-    // no reordering should occur unless there are d, f, g, h etc. functions
-    if (occ::qm::max_l(basis) < 2)
+
+    if (occ::qm::max_l(basis) < 1)
         return mo;
-    struct xyz {
-        uint_fast8_t x{0};
-        uint_fast8_t y{0};
-        uint_fast8_t z{0};
-        bool operator==(const xyz &rhs) const {
-            return x == rhs.x && y == rhs.y && z == rhs.z;
-        }
-    };
 
     occ::log::debug("Reordering MO coefficients from Molden ordering to "
                     "internal convention");
     auto shell2bf = basis.shell2bf();
     Mat result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
+    bool orca = source == Source::Orca;
+    if(orca) occ::log::debug("ORCA phase convention...");
     for (size_t i = 0; i < basis.size(); i++) {
         const auto &shell = basis[i];
         size_t bf_first = shell2bf[i];
         size_t shell_size = shell.size();
         int l = shell.contr[0].l;
-        if (l < 2) {
+        if (l < 1) {
             result.block(bf_first, 0, shell_size, ncols) =
                 mo.block(bf_first, 0, shell_size, ncols);
             continue;
         }
-        std::vector<xyz> molden_order;
+        std::vector<double> phase;
         switch (l) {
+	case 1:
+	    // x y z i.e. cartesian p functions...
+            result.row(bf_first + 2) = mo.row(bf_first); // x
+            result.row(bf_first) = mo.row(bf_first + 1); // y
+            result.row(bf_first + 1) = mo.row(bf_first + 2); // z
+	    continue;
         case 2:
-            molden_order = {// xx, yy, zz, xy, xz, yz
-                            {2, 0, 0}, {0, 2, 0}, {0, 0, 2},
-                            {1, 1, 0}, {1, 0, 1}, {0, 1, 1}};
+	    // c0 c1 s1 c2 s2
+	    // orca phase is fine here
+	    for(size_t i = 0; i < shell_size; i++) {
+		phase.emplace_back(1.0);
+	    }
             break;
         case 3:
-            molden_order = {// xxx, yyy, zzz, xyy, xxy, xxz, xzz, yzz, yyz, xyz
-                            {3, 0, 0}, {0, 3, 0}, {0, 0, 3}, {1, 2, 0},
-                            {2, 1, 0}, {2, 0, 1}, {1, 0, 2}, {0, 1, 2},
-                            {0, 2, 1}, {1, 1, 1}};
+	    // c0 c1 s1 c2 s2 c3 s3
+	    // +  +  +  +  +  -  -
+	    // orca has modified phase
+	    for(size_t i = 0; i < shell_size; i++) {
+		if(orca && (i > 4)) phase.emplace_back(-1.0);
+		else phase.emplace_back(1.0);
+	    }
+	    break;
+	case 4:
+	    // c0 c1 s1 c2 s2 c3 s3 c4 s4
+	    // +  +  +  +  +  -  -  -  -
+	    // orca has modified phase
+	    for(size_t i = 0; i < shell_size; i++) {
+		if(orca && (i > 4)) phase.emplace_back(-1.0);
+		else phase.emplace_back(1.0);
+	    }
+	    break;
+	case 5:
+	    // But this is the actual order G09 puts out...
+	    // c0 c1 s1 c2 s2 c3 s3 c4 s4 c5 s5
+	    // +  +  +  +  +  -  -  -  -  +  + 
+	    // orca has modified phase (weird)
+	    for(size_t i = 0; i < shell_size; i++) {
+		if(orca && ((i > 4) && (i < 9))) phase.emplace_back(-1.0);
+		else phase.emplace_back(1.0);
+	    }
+	    break;
+        default:
+	    // not sure how to deal with AM = 6...
+	    for(size_t i = 0; i < shell_size; i++) {
+		phase.emplace_back(1.0);
+	    }
             break;
         }
-        if (molden_order.size() == 0) {
-            occ::log::warn("Unknown Molden ordering for shell with angular "
-                           "momentum {}, not reordering",
-                           l);
-            continue;
-        }
 
-        int xp, yp, zp;
-        size_t our_idx{0};
-        auto func = [&](int xp, int yp, int zp, int l) {
-            xyz v{static_cast<uint_fast8_t>(xp), static_cast<uint_fast8_t>(yp),
-                  static_cast<uint_fast8_t>(zp)};
-            size_t gaussian_idx = index_of(v, molden_order);
-            occ::log::debug("Setting row {} <- row {}", our_idx, gaussian_idx);
-            result.row(bf_first + our_idx) = mo.row(bf_first + gaussian_idx);
-            double normalization_factor =
-                occ::gto::cartesian_normalization_factor(xp, yp, zp);
-            result.row(bf_first + our_idx) *= normalization_factor;
-            our_idx++;
-        };
-        occ::gto::iterate_over_shell<true>(func, l);
+	for(size_t i = bf_first; i< shell_size; i++) {
+	    size_t idx = bf_first + i;
+	    result.row(idx) = mo.row(idx) * phase[i];
+	}
     }
     return result;
 }

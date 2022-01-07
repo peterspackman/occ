@@ -37,7 +37,6 @@ DFFockEngine::Policy policy_choice(const DFFockEngine &df) {
     if(df.memory_limit >= df.integral_storage_max_size()) {
         return DFFockEngine::Policy::Stored;
     }
-    fmt::print("direct\n");
     return DFFockEngine::Policy::Direct;
 }
 

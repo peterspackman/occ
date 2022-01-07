@@ -63,6 +63,17 @@ void load_vector(const nlohmann::json &json, Vec3 &vec) {
     }
 }
 
+void print_mo_norms(const Wavefunction &wfn) {
+    auto [shellpair_list, shellpair_data] = occ::ints::compute_shellpairs(wfn.basis);
+
+    occ::Mat overlap = occ::ints::compute_1body_ints<occ::ints::Operator::overlap>(wfn.basis, shellpair_list)[0];
+    for(size_t i = 0; i < wfn.mo.Cocc.cols(); i++) {
+	auto v = wfn.mo.Cocc.col(i);
+	double norm = v.transpose().dot(overlap * v);
+	fmt::print("norm {} = {}\n", i, norm);
+    }
+}
+
 Pair parse_input_file(const std::string &filename) {
     std::ifstream i(filename);
     nlohmann::json j;
@@ -75,6 +86,7 @@ Pair parse_input_file(const std::string &filename) {
     std::string source_a = monomers[0]["source"];
     std::string source_b = monomers[1]["source"];
     p.a.wfn = load_wavefunction(source_a);
+    print_mo_norms(p.a.wfn);
     load_matrix(monomers[0]["rotation"], p.a.rotation);
     load_vector(monomers[0]["translation"], p.a.translation);
     p.a.translation *= occ::units::ANGSTROM_TO_BOHR;
@@ -82,6 +94,7 @@ Pair parse_input_file(const std::string &filename) {
     fmt::print("Translation A:\n{}\n", p.a.translation);
 
     p.b.wfn = load_wavefunction(source_b);
+    print_mo_norms(p.b.wfn);
     load_matrix(monomers[1]["rotation"], p.b.rotation);
     load_vector(monomers[1]["translation"], p.b.translation);
     p.b.translation *= occ::units::ANGSTROM_TO_BOHR;
@@ -143,6 +156,20 @@ int main(int argc, char *argv[]) {
     options.parse_positional({"input"});
     auto args = options.parse(argc, argv);
 
+    auto level = occ::log::level::warn;
+    if (args.count("verbosity")) {
+        std::string level_lower =
+            occ::util::to_lower_copy(args["verbosity"].as<std::string>());
+        if (level_lower == "debug")
+            level = occ::log::level::debug;
+        else if (level_lower == "info")
+            level = occ::log::level::info;
+        else if (level_lower == "error")
+            level = occ::log::level::err;
+    }
+    occ::log::set_level(level);
+    spdlog::set_level(level);
+
     occ::timing::start(occ::timing::category::global);
     libint2::Shell::do_enforce_unit_normalization(true);
     libint2::initialize();
@@ -173,8 +200,7 @@ int main(int argc, char *argv[]) {
     fmt::print("Total {:^8s}        {: 12.6f}\n", model_name,
 	    interaction_energy.total_kjmol());
 
-    fmt::print("\n");
-    fmt::print("C\n{}\n", pair.a.wfn.mo.C);
-    fmt::print("D\n{}\n", pair.a.wfn.mo.D);
+    //fmt::print("\n");
+    fmt::print("D norm\n{}\n", pair.a.wfn.mo.D.norm());
     occ::timing::print_timings();
 }
