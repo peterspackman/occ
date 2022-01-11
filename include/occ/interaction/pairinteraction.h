@@ -90,9 +90,11 @@ struct CEModelInteraction {
     };
     CEModelInteraction(const CEParameterizedModel &);
     EnergyComponents operator()(Wavefunction &, Wavefunction &) const;
+    void use_density_fitting();
 
   private:
     CEParameterizedModel scale_factors;
+    bool m_use_density_fitting{false};
 };
 
 } // namespace occ::interaction

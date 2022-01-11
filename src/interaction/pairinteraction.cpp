@@ -57,6 +57,10 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf) {
                                                                         hf);
 }
 
+void CEModelInteraction::use_density_fitting() {
+    m_use_density_fitting = true;
+}
+
 CEModelInteraction::EnergyComponents
 CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
     using occ::disp::ce_model_dispersion_energy;
@@ -65,6 +69,10 @@ CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
 
     HartreeFock hf_a(A.atoms, A.basis);
     HartreeFock hf_b(B.atoms, B.basis);
+    if(m_use_density_fitting) {
+	hf_a.set_density_fitting_basis("def2-svp-jk");
+	hf_b.set_density_fitting_basis("def2-svp-jk");
+    }
 
     compute_ce_model_energies(A, hf_a);
     compute_ce_model_energies(B, hf_b);
@@ -74,6 +82,9 @@ CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
     // Can reuse the same HartreeFock object for both merged wfns: same basis
     // and atoms
     auto hf_AB = HartreeFock(ABn.atoms, ABn.basis);
+    if(m_use_density_fitting) {
+	hf_AB.set_density_fitting_basis("def2-svp-jk");
+    }
 
     Wavefunction ABo = ABn;
     Mat S_AB = hf_AB.compute_overlap_matrix();

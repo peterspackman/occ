@@ -150,6 +150,8 @@ int main(int argc, char *argv[]) {
 	    cxxopts::value<int>()->default_value("1"))(
 	    "m,model", "CE model",
 	    cxxopts::value<std::string>()->default_value("ce-b3lyp"))(
+	    "d,with-density-fitting", "Use density fitting (RI-JK)",
+	    cxxopts::value<bool>()->default_value("false"))(
 	    "v,verbosity", "Logging verbosity",
 	    cxxopts::value<std::string>()->default_value("WARN"));
 
@@ -184,6 +186,9 @@ int main(int argc, char *argv[]) {
     auto model = occ::interaction::ce_model_from_string(model_name);
 
     CEModelInteraction interaction(model);
+    if(args.count("with-density-fitting")) {
+	interaction.use_density_fitting();
+    }
     auto interaction_energy = interaction(pair.a.wfn, pair.b.wfn);
     occ::timing::stop(occ::timing::category::global);
 
