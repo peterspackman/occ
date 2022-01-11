@@ -336,7 +336,8 @@ void compute_monomer_energies(std::vector<Wavefunction> &wfns) {
                    complete, wfns.size());
         std::cout << std::flush;
         HartreeFock hf(wfn.atoms, wfn.basis);
-        occ::interaction::compute_ce_model_energies(wfn, hf);
+	occ::Mat schwarz = hf.compute_schwarz_ints();
+        occ::interaction::compute_ce_model_energies(wfn, hf, 1e-8, schwarz);
         complete++;
     }
     fmt::print("Finished calculating {} unique monomer energies\n", complete);

@@ -11,8 +11,6 @@ namespace occ::hf {
 class HartreeFock;
 }
 namespace occ::interaction {
-using occ::qm::BasisSet;
-using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 
 struct CEParameterizedModel {
@@ -31,7 +29,7 @@ inline CEParameterizedModel CE_HF_321G{1.019, 0.811, 0.651, 0.901, "CE-HF"};
 inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177, 0.7399, 0.8708,
                                             "CE-B3LYP"};
 
-void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf);
+void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf, double precision, const Mat &Schwarz);
 
 template <typename Procedure>
 double compute_polarization_energy(const Wavefunction &wfn_a,
