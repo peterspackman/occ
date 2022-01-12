@@ -20,7 +20,6 @@ DFFockEngine::DFFockEngine(const BasisSet &_obs, const BasisSet &_dfbs)
                            std::max(obs.max_nprim(), dfbs.max_nprim()),
                            std::max(obs.max_l(), dfbs.max_l()), 0);
     m_engines[0].set(libint2::BraKet::xs_xx);
-    m_engines[0].set_precision(1e-12);
     for (size_t i = 1; i < occ::parallel::nthreads; ++i) {
         m_engines.push_back(m_engines[0]);
     }

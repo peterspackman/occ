@@ -5,7 +5,7 @@ namespace occ::core::diis {
 
 class DIIS {
 public:
-    DIIS(size_t start = 2, size_t diis_subspace = 20, double damping_factor = 0,
+    DIIS(size_t start = 2, size_t diis_subspace = 20, double damping_factor = 0.0,
          size_t ngroup = 1, size_t ngroup_diis = 1, double mixing_fraction = 0);
 
     void extrapolate(Mat &x, Mat &error, bool extrapolate_error = false);
@@ -20,8 +20,8 @@ private:
     size_t m_iter{0};
     size_t m_num_group{1};
     size_t m_num_group_diis{1};
-    double m_damping_factor;
-    double m_mixing_fraction;
+    double m_damping_factor{0.0};
+    double m_mixing_fraction{0.0};
 
     Mat m_B; //!< B(i,j) = <ei|ej>
 

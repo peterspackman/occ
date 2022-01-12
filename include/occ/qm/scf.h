@@ -275,18 +275,18 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             if constexpr (spinorbital_kind == Restricted) {
                 F += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
-                    commutator_convergence_threshold);
+                    std::numeric_limits<double>::epsilon());
             } else if constexpr (spinorbital_kind == Unrestricted) {
                 block::a(F) += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
-                    commutator_convergence_threshold);
+                    std::numeric_limits<double>::epsilon());
 
                 block::b(F) = block::a(F);
             } else if constexpr (spinorbital_kind == General) {
                 // TODO fix multiplicity != 1
                 block::aa(F) += occ::ints::compute_2body_fock_mixed_basis(
                     m_procedure.basis(), D_minbs, minbs, true,
-                    commutator_convergence_threshold);
+                    std::numeric_limits<double>::epsilon());
                 block::bb(F) = block::aa(F);
             }
 

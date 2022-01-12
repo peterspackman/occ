@@ -43,13 +43,12 @@ inline size_t minimal_basis_nao(size_t Z) {
         nao = 18;
     else if (Z <= 38) // Rb, Sr
         nao = 22;     // 5p is included
-    else if (Z <= 54) // Y - I
+    else if (Z <= 53) // Y - I
         nao = 27;
     else if (Z <= 86)
         nao = 49;
     else
-        throw std::runtime_error(
-            "minimal basis not defined for elements Z > 86");
+        throw "minimal basis not defined for elements Z > 86";
     return nao;
 }
 
