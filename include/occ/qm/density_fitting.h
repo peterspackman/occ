@@ -117,7 +117,7 @@ struct DFFockEngine {
 			++sp23_iter;
                         const auto Dnorm23 =
                             do_schwarz_screen ? D_shblk_norm(s2, s3) : 0.;
-                        if(do_schwarz_screen && (Dnorm23 * Schwarz(s2, s3) < precision)) {
+                        if(do_schwarz_screen && (Schwarz(s2, s3) < precision)) {
                             num_skipped++;
                             continue;
                         }
