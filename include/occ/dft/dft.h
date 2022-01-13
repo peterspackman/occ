@@ -275,10 +275,12 @@ class DFT {
                             rho.col(0).dot(weights_block);
                     } else if constexpr (spinorbital_kind ==
                                          SpinorbitalKind::Unrestricted) {
+                        Vec rho_a_tmp = block::a(rho.col(0));
+                        Vec rho_b_tmp = block::b(rho.col(0));
                         double tot_density_a =
-                            block::a(rho.col(0)).dot(weights_block);
+                            rho_a_tmp.dot(weights_block);
                         double tot_density_b =
-                            block::b(rho.col(0)).dot(weights_block);
+                            rho_b_tmp.dot(weights_block);
                         alpha_densities[thread_id] += tot_density_a;
                         beta_densities[thread_id] += tot_density_b;
                     }
