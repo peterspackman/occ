@@ -111,6 +111,9 @@ class DFT {
     double two_electron_energy() const { return m_two_electron_energy; }
     double exchange_correlation_energy() const { return m_exc_dft; }
 
+    Mat compute_sgx_jk(SpinorbitalKind kind, const MolecularOrbitals &mo, double precision,
+                     const Mat &Schwarz) const;
+
     bool usual_scf_energy() const { return false; }
     void update_scf_energy(occ::core::EnergyComponents &energy,
                            bool incremental) const {
