@@ -1,8 +1,9 @@
 # Open Computational Chemistry (OCC)
+<img src="https://github.com/peterspackman/occ/raw/main/docs/static/occ.png" width=640/>
 
 A next generation quantum chemistry and crystallography program and library.
 
-*Note* occ is in early development, and is undergoing substantial changes regularly -
+**Note**: occ is in early development, and is undergoing substantial changes regularly -
 it is not stable.
 
 ## Compilation
@@ -69,7 +70,10 @@ cmake .. -GNinja
 **OR**, if you'd rather download all dependencies you could call cmake with:
 
 ```
-cmake .. -GNinja -DUSE_SYSTEM_LIBINT2=OFF -DUSE_SYSTEM_LIBXC=OFF -DUSE_SYSTEM_BOOST=OFF -DUSE_SYSTEM_ZLIB=OFF -DUSE_SYSTEM_EIGEN=OFF
+cmake .. -GNinja \
+    -DUSE_SYSTEM_LIBINT2=OFF -DUSE_SYSTEM_LIBXC=OFF \
+    -DUSE_SYSTEM_BOOST=OFF -DUSE_SYSTEM_ZLIB=OFF \
+    -DUSE_SYSTEM_EIGEN=OFF
 ```
 
 Likewise, you can pick and choose which dependencies to download. Note that if you're compiling libint2, it might take a while...
