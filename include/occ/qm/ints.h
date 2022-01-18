@@ -1,37 +1,35 @@
 #pragma once
 #include <array>
 #include <libint2/engine.h>
-#include <occ/3rdparty/robin_hood.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/basisset.h>
 #include <occ/qm/expectation.h>
+#include <occ/qm/shellpair.h>
 #include <vector>
 
 namespace occ::ints {
 using libint2::BraKet;
 using libint2::Operator;
-using libint2::Shell;
 using occ::qm::BasisSet;
+using occ::qm::ShellPairList;
+using occ::qm::ShellPairData;
 
-using shellpair_list_t = robin_hood::unordered_map<size_t, std::vector<size_t>>;
-using shellpair_data_t = std::vector<std::vector<
-    std::shared_ptr<libint2::ShellPair>>>; // in same order as shellpair_list_t
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 
-std::tuple<shellpair_list_t, shellpair_data_t>
+std::tuple<ShellPairList, ShellPairData>
 compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
                    double threshold = 1e-12);
 
-std::tuple<shellpair_list_t, shellpair_data_t>
+std::tuple<ShellPairList, ShellPairData>
 compute_shellpairs(const BasisSet &bs1, double threshold = 1e-12);
 
 template <Operator obtype,
           typename OperatorParams =
               typename libint2::operator_traits<obtype>::oper_params_type>
 std::array<Mat, libint2::operator_traits<obtype>::nopers>
-compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list,
+compute_1body_ints(const BasisSet &obs, const ShellPairList &shellpair_list,
                    OperatorParams oparams = OperatorParams()) {
     occ::timing::start(occ::timing::category::ints1e);
     const auto n = obs.nbf();
@@ -104,7 +102,7 @@ compute_1body_ints(const BasisSet &obs, const shellpair_list_t &shellpair_list,
 template <Operator obtype>
 std::vector<Mat>
 compute_1body_ints_deriv(unsigned deriv_order, const BasisSet &obs,
-                         const shellpair_list_t &shellpair_list,
+                         const ShellPairList &shellpair_list,
                          const std::vector<occ::core::Atom> &atoms) {
     occ::timing::start(occ::timing::category::ints1e);
     using occ::parallel::nthreads;
@@ -408,8 +406,8 @@ Mat compute_2body_fock_mixed_basis(
 template <unsigned deriv_order>
 std::vector<Mat>
 compute_2body_fock_deriv(const BasisSet &obs,
-                         const shellpair_list_t &shellpair_list,
-                         const shellpair_data_t &shellpair_data,
+                         const ShellPairList &shellpair_list,
+                         const ShellPairData &shellpair_data,
                          const std::vector<occ::core::Atom> &atoms,
                          const Mat &D, double precision, const Mat &Schwarz) {
     occ::timing::start(occ::timing::category::ints2e);

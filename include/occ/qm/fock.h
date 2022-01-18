@@ -7,6 +7,8 @@
 namespace occ::ints {
 using occ::qm::SpinorbitalKind;
 using occ::qm::MolecularOrbitals;
+using occ::qm::ShellPairList;
+using occ::qm::ShellPairData;
 
 class FockBuilder {
   public:
@@ -27,8 +29,8 @@ class FockBuilder {
 
     template <SpinorbitalKind kind, typename Func>
     void two_electron_integral_helper(
-        Func &func, const BasisSet &obs, const shellpair_list_t &shellpair_list,
-        const shellpair_data_t &shellpair_data, const Mat &D,
+        Func &func, const BasisSet &obs, const ShellPairList &shellpair_list,
+        const ShellPairData &shellpair_data, const Mat &D,
         double precision = std::numeric_limits<double>::epsilon(),
         const Mat &Schwarz = Mat()) const {
         occ::timing::start(occ::timing::category::fock);
@@ -191,8 +193,8 @@ class FockBuilder {
 
     template <SpinorbitalKind kind>
     Mat compute_fock(const BasisSet &obs,
-                     const shellpair_list_t &shellpair_list,
-                     const shellpair_data_t &shellpair_data, const occ::qm::MolecularOrbitals &mo,
+                     const ShellPairList &shellpair_list,
+                     const ShellPairData &shellpair_data, const occ::qm::MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const {
         occ::timing::start(occ::timing::category::fock);
@@ -330,8 +332,8 @@ class FockBuilder {
 
     template <SpinorbitalKind kind>
     std::pair<Mat, Mat>
-    compute_JK(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-               const shellpair_data_t &shellpair_data, const occ::qm::MolecularOrbitals &mo,
+    compute_JK(const BasisSet &obs, const ShellPairList &shellpair_list,
+               const ShellPairData &shellpair_data, const occ::qm::MolecularOrbitals &mo,
                double precision = std::numeric_limits<double>::epsilon(),
                const Mat &Schwarz = Mat()) const {
         occ::timing::start(occ::timing::category::jkmat);
@@ -479,8 +481,8 @@ class FockBuilder {
     }
 
     template <SpinorbitalKind kind>
-    Mat compute_J(const BasisSet &obs, const shellpair_list_t &shellpair_list,
-                  const shellpair_data_t &shellpair_data, const MolecularOrbitals &mo,
+    Mat compute_J(const BasisSet &obs, const ShellPairList &shellpair_list,
+                  const ShellPairData &shellpair_data, const MolecularOrbitals &mo,
                   double precision = std::numeric_limits<double>::epsilon(),
                   const Mat &Schwarz = Mat()) const {
         occ::timing::start(occ::timing::category::jmat);

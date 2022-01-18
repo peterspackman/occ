@@ -8,3 +8,4 @@ endfunction()
 
 create_dft_test(test_dft.cpp)
 create_dft_test(test_grid.cpp)
+create_dft_test(test_seminumerical_exchange.cpp)

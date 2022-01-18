@@ -33,8 +33,8 @@ TEST_CASE("H2/STO-3G") {
     fmt::print("Grid points\n{}\n", grid_pts);
     fmt::print("Nuclear E field values:\n{}\n", field_values);
 
-    occ::ints::shellpair_list_t shellpair_list;
-    occ::ints::shellpair_data_t shellpair_data;
+    occ::qm::ShellPairList shellpair_list;
+    occ::qm::ShellPairData shellpair_data;
     std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(basis);
 
     auto esp = occ::ints::compute_electric_potential<occ::qm::SpinorbitalKind::Restricted>(D, basis, shellpair_list, grid_pts);

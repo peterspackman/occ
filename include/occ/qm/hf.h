@@ -13,8 +13,8 @@ using occ::ints::BasisSet;
 using occ::ints::compute_1body_ints;
 using occ::ints::compute_1body_ints_deriv;
 using occ::ints::Operator;
-using occ::ints::shellpair_data_t;
-using occ::ints::shellpair_list_t;
+using occ::ints::ShellPairData;
+using occ::ints::ShellPairList;
 using occ::qm::SpinorbitalKind;
 using occ::qm::MolecularOrbitals;
 
@@ -145,8 +145,8 @@ class HartreeFock {
     std::vector<occ::core::Atom> m_atoms;
     BasisSet m_basis;
     BasisSet m_density_fitting_basis;
-    shellpair_list_t m_shellpair_list{}; // shellpair list for OBS
-    shellpair_data_t m_shellpair_data{}; // shellpair data for OBS
+    ShellPairList m_shellpair_list{}; // shellpair list for OBS
+    ShellPairData m_shellpair_data{}; // shellpair data for OBS
     occ::ints::FockBuilder m_fockbuilder;
     mutable double m_e_alpha{0};
     mutable double m_e_beta{0};

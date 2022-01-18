@@ -6,8 +6,8 @@
 
 namespace occ::df {
 using occ::qm::BasisSet;
-using occ::ints::shellpair_data_t;
-using occ::ints::shellpair_list_t;
+using occ::qm::ShellPairData;
+using occ::qm::ShellPairList;
 using occ::qm::MolecularOrbitals;
 
 struct DFFockEngine {
@@ -72,8 +72,8 @@ struct DFFockEngine {
     void populate_integrals();
     Mat m_ints;
     bool m_have_integrals{false};
-    shellpair_list_t m_shellpair_list{}; // shellpair list for OBS
-    shellpair_data_t m_shellpair_data{}; // shellpair data for OBS
+    ShellPairList m_shellpair_list{}; // shellpair list for OBS
+    ShellPairData m_shellpair_data{}; // shellpair data for OBS
 
     mutable std::vector<libint2::Engine> m_engines;
     template <typename T> void three_center_integral_helper(T &func, const Mat &D, double precision = default_prec, const Mat &Schwarz = Mat()) const {

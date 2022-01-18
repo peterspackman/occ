@@ -13,14 +13,12 @@ using libint2::Operator;
 using libint2::Shell;
 using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
-
-using shellpair_list_t = robin_hood::unordered_map<size_t, std::vector<size_t>>;
-using shellpair_data_t = std::vector<std::vector<
-    std::shared_ptr<libint2::ShellPair>>>; // in same order as shellpair_list_t
+using occ::qm::ShellPairList;
+using occ::qm::ShellPairData;
 
 template <SpinorbitalKind kind>
 occ::Vec compute_electric_potential(const Mat &D, const BasisSet &obs,
-                                    const shellpair_list_t &shellpair_list,
+                                    const ShellPairList &shellpair_list,
                                     const occ::Mat3N &positions) {
     occ::timing::start(occ::timing::category::ints1e);
 
@@ -89,7 +87,7 @@ occ::Vec compute_electric_potential(const Mat &D, const BasisSet &obs,
 
 template <SpinorbitalKind kind>
 occ::Mat3N compute_electric_field(const Mat &D, const BasisSet &obs,
-                                  const shellpair_list_t &shellpair_list,
+                                  const ShellPairList &shellpair_list,
                                   const Mat3N &positions) {
     occ::timing::start(occ::timing::category::ints1e);
     using occ::parallel::nthreads;

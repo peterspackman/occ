@@ -69,12 +69,12 @@ Mat compute_2body_2index_ints(const BasisSet &bs) {
     return result;
 }
 
-std::tuple<shellpair_list_t, shellpair_data_t>
+std::tuple<ShellPairList, ShellPairData>
 compute_shellpairs(const BasisSet &bs, const double threshold) {
     return compute_shellpairs(bs, bs, threshold);
 }
 
-std::tuple<shellpair_list_t, shellpair_data_t>
+std::tuple<ShellPairList, ShellPairData>
 compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
                    const double threshold) {
     occ::log::debug("Start computing non-negligible shell-pair list");
@@ -102,7 +102,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
     timer.set_now_overhead(25);
     timer.start(0);
 
-    shellpair_list_t splist;
+    ShellPairList splist;
 
     std::mutex mx;
 
@@ -160,7 +160,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
     // compute shellpair data assuming that we are computing to default_epsilon
     // N.B. only parallelized over 1 shell index
     const auto ln_max_engine_precision = std::log(max_engine_precision);
-    shellpair_data_t spdata(splist.size());
+    ShellPairData spdata(splist.size());
     auto make_spdata = [&](int thread_id) {
         for (auto s1 = 0l; s1 != nsh1; ++s1) {
             if (s1 % nthreads == thread_id) {

@@ -30,8 +30,7 @@ using occ::ints::BasisSet;
 using occ::ints::compute_1body_ints;
 using occ::ints::compute_1body_ints_deriv;
 using occ::ints::Operator;
-using occ::ints::shellpair_data_t;
-using occ::ints::shellpair_list_t;
+
 namespace block = occ::qm::block;
 
 std::vector<DensityFunctional> parse_method(const std::string &method_string,
@@ -110,9 +109,6 @@ class DFT {
 
     double two_electron_energy() const { return m_two_electron_energy; }
     double exchange_correlation_energy() const { return m_exc_dft; }
-
-    Mat compute_sgx_jk(SpinorbitalKind kind, const MolecularOrbitals &mo, double precision,
-                     const Mat &Schwarz) const;
 
     bool usual_scf_energy() const { return false; }
     void update_scf_energy(occ::core::EnergyComponents &energy,
@@ -262,9 +258,8 @@ class DFT {
                     const auto &pts_block = atom_pts.middleCols(l, npt);
                     const auto &weights_block = atom_weights.segment(l, npt);
                     if (cache[block].phi.rows() == 0) {
-                        occ::gto::evaluate_basis(basis, atoms, pts_block,
-                                                 cache[block],
-                                                 derivative_order);
+                        occ::gto::evaluate_basis<derivative_order>(basis, atoms, pts_block,
+                                                 cache[block]);
                     }
                     const auto &gto_vals = cache[block];
                     occ::density::evaluate_density<derivative_order,
