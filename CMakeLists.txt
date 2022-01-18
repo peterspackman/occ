@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
 project(occ
-    VERSION 0.2
+    VERSION 0.3
     LANGUAGES CXX
 )
 

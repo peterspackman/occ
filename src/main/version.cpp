@@ -27,8 +27,12 @@ void print_header() {
         "{}.{}.{}", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 
     fmt::print(R"(
-
-open computational chemistry (occ)
+   
+	 Open
+	  \
+	   Comp
+	    \
+	     Chem
 
 a library and program for quantum chemistry
 
