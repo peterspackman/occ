@@ -10,7 +10,7 @@ using occ::qm::BasisSet;
 
 TEST_CASE("Water SCF", "[scf]")
 {
-    libint2::Shell::do_enforce_unit_normalization(false);
+    libint2::Shell::do_enforce_unit_normalization(true);
     if (!libint2::initialized()) libint2::initialize();
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},

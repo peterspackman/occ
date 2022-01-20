@@ -58,9 +58,6 @@ void write_output_files(const OccInput &config, Wavefunction &wfn) {
     wfn.save(fchk);
     fchk.write();
     fmt::print("wavefunction stored in {}\n", fchk_path);
-    if (config.basis.spherical)
-        occ::log::warn("spherical basis coefficients and ordering are not "
-                       "yet implemented for fchk files");
 }
 
 int main(int argc, char *argv[]) {
@@ -128,7 +125,7 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        libint2::Shell::do_enforce_unit_normalization(false);
+        libint2::Shell::do_enforce_unit_normalization(true);
         libint2::initialize();
         occ::timing::start(occ::timing::category::io);
 

@@ -8,7 +8,7 @@
 using occ::df::DFFockEngine;
 
 TEST_CASE("H2O/6-31G") {
-    libint2::Shell::do_enforce_unit_normalization(false);
+    libint2::Shell::do_enforce_unit_normalization(true);
     if (!libint2::initialized()) libint2::initialize();
 
     std::vector<occ::core::Atom> atoms{

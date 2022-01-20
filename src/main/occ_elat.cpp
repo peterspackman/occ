@@ -224,7 +224,7 @@ int main(int argc, char *argv[]) {
 
     occ::log::set_level(occ::log::level::info);
     spdlog::set_level(spdlog::level::info);
-    libint2::Shell::do_enforce_unit_normalization(false);
+    libint2::Shell::do_enforce_unit_normalization(true);
     libint2::initialize();
     std::string model_name = "ce-b3lyp";
 

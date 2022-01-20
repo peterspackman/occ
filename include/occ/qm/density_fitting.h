@@ -83,6 +83,7 @@ struct DFFockEngine {
         const auto nshells_df = dfbs.size();
         const auto &unitshell = libint2::Shell::unit();
         Mat D_shblk_norm = occ::ints::compute_shellblock_norm(obs, D);
+	const auto ln_precision = std::log(precision);
         const bool do_schwarz_screen =
             Schwarz.cols() != 0 && Schwarz.rows() != 0;
 
@@ -105,6 +106,7 @@ struct DFFockEngine {
                     continue;
                 auto bf1_first = shell2bf_df[s1];
                 auto n1 = dfbs[s1].size();
+		auto sp1u = libint2::ShellPair(dfbs[s1], unitshell, ln_precision);
 
                 for (auto s2 = 0l; s2 != nshells; s2++) {
 		    auto sp23_iter = m_shellpair_data.at(s2).begin();
@@ -127,7 +129,7 @@ struct DFFockEngine {
 
                         engine.compute2<libint2::Operator::coulomb,
                                         libint2::BraKet::xs_xx, 0>(
-                            dfbs[s1], unitshell, obs[s2], obs[s3], nullptr, sp23);
+                            dfbs[s1], unitshell, obs[s2], obs[s3], &sp1u, sp23);
                         const auto *buf = results[0];
                         if (buf == nullptr)
                             continue;

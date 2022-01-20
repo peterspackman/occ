@@ -135,7 +135,7 @@ const char* json_contents = R"(
 TEST_CASE("H2 orca json", "[read]")
 {
 
-    libint2::Shell::do_enforce_unit_normalization(false);
+    libint2::Shell::do_enforce_unit_normalization(true);
     if (!libint2::initialized()) libint2::initialize();
 
     std::istringstream json_istream(json_contents);

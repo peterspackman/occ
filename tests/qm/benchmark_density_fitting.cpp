@@ -27,7 +27,7 @@ Molecule water() {
 }
 
 TEST_CASE("H2O/def2-svp") {
-    libint2::Shell::do_enforce_unit_normalization(false);
+    libint2::Shell::do_enforce_unit_normalization(true);
     if (!libint2::initialized()) libint2::initialize();
 
 
