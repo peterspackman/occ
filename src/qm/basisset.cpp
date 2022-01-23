@@ -310,7 +310,6 @@ Mat rotate_molecular_orbitals_pure(const BasisSet &basis, const occ::Mat3 &rotat
     const auto shell2bf = basis.shell2bf();
     occ::log::debug("Rotating MO coefficients via transform to cartesian then back");
     Mat result(C.rows(), C.cols());
-    fmt::print("result.shape {} {}\n", C.rows(), C.cols());
     for (size_t s = 0; s < basis.size(); s++) {
         const auto &shell = basis[s];
         size_t bf_first = shell2bf[s];
