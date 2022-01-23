@@ -192,6 +192,12 @@ int main(int argc, char *argv[]) {
     auto interaction_energy = interaction(pair.a.wfn, pair.b.wfn);
     occ::timing::stop(occ::timing::category::global);
 
+    fmt::print("A\n");
+    pair.a.wfn.energy.print();
+
+    fmt::print("B\n");
+    pair.b.wfn.energy.print();
+
     fmt::print("Component              Energy (kJ/mol)\n\n");
     fmt::print("Coulomb               {: 12.6f}\n",
 	    interaction_energy.coulomb_kjmol());

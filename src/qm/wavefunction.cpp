@@ -12,6 +12,7 @@
 #include <occ/qm/orb.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
+#include <occ/qm/ints.h>
 
 namespace occ::qm {
 
@@ -76,7 +77,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     : num_alpha(wfn_a.num_alpha + wfn_b.num_alpha),
       num_beta(wfn_a.num_beta + wfn_b.num_beta),
       basis(merge_basis_sets(wfn_a.basis, wfn_b.basis)),
-      nbf(wfn_a.nbf + wfn_b.nbf), atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms)) {
+      nbf(basis.nbf()), atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms)) {
     spinorbital_kind = (wfn_a.is_restricted() && wfn_b.is_restricted())
                            ? SpinorbitalKind::Restricted
                            : SpinorbitalKind::Unrestricted;

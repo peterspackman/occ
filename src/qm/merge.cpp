@@ -32,10 +32,11 @@ std::pair<Mat, Vec> merge_molecular_orbitals(const Mat &mo_a, const Mat &mo_b,
 
 BasisSet merge_basis_sets(const BasisSet &basis_a, const BasisSet &basis_b) {
     occ::qm::BasisSet merged = basis_a;
+    if(basis_a.is_pure() != basis_b.is_pure()) throw "Mix of pure and cartesian basis sets not supported";
     merged.reserve(basis_a.size() + basis_b.size());
     merged.insert(merged.end(), basis_b.begin(), basis_b.end());
     merged.update();
-    merged.set_pure(false);
+    merged.set_pure(basis_a.is_pure());
     return merged;
 }
 

@@ -8,6 +8,7 @@ endfunction()
 
 create_io_test(test_crystalgrower.cpp)
 create_io_test(test_fchk.cpp)
+create_io_test(test_fchk_pure.cpp)
 create_io_test(test_gaussian_input.cpp)
 create_io_test(test_molden.cpp)
 create_io_test(test_orca_json.cpp)

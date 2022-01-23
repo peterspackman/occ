@@ -276,7 +276,7 @@ Mat cartesian_gaussian_rotation_matrix(const occ::Mat3 rotation) {
     return result;
 }
 
-Mat spherical_to_cartesian_transformation_matrix(int l);
 Mat cartesian_to_spherical_transformation_matrix(int l);
+Mat spherical_to_cartesian_transformation_matrix(int l);
 
 } // namespace occ::gto

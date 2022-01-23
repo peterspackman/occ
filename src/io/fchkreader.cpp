@@ -211,12 +211,14 @@ BasisSet FchkReader::basis_set() const {
     BasisSet bs;
     size_t primitive_offset{0};
     constexpr int SP_SHELL{-1};
+    bool any_pure = false;
     for (size_t i = 0; i < num_shells; i++) {
         // shell types: 0=s, 1=p, -1=sp, 2=6d, -2=5d, 3=10f, -3=7f
         int shell_type = m_basis.shell_types[i];
         int l = std::abs(shell_type);
         // normally shell type < -1 will be pure
-        auto pure = false;
+        auto pure = shell_type < -1;
+	if(pure) any_pure = true;
 
         size_t nprim = m_basis.primitives_per_shell[i];
         std::array<double, 3> position{
@@ -265,7 +267,7 @@ BasisSet FchkReader::basis_set() const {
         primitive_offset += nprim;
     }
     bs.update();
-    bs.set_pure(false);
+    bs.set_pure(any_pure);
     return bs;
 }
 

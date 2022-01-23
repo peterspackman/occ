@@ -67,7 +67,7 @@ CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
     using occ::disp::ce_model_dispersion_energy;
     using occ::hf::HartreeFock;
     using occ::qm::Energy;
-    constexpr double precision = 1e-8;
+    constexpr double precision = std::numeric_limits<double>::epsilon();
 
     HartreeFock hf_a(A.atoms, A.basis);
     HartreeFock hf_b(B.atoms, B.basis);
