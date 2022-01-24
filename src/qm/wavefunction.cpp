@@ -96,6 +96,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     Mat C_merged;
     occ::Vec energies_merged;
     occ::log::debug("Merging occupied orbitals, sorted by energy");
+    // TODO refactor
     if (wfn_a.is_restricted() && wfn_b.is_restricted()) {
         // merge occupied orbitals
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(

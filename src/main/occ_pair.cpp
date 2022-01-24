@@ -39,7 +39,7 @@ Wavefunction load_wavefunction(const std::string &filename) {
 	FchkReader fchk(filename);
 	return Wavefunction(fchk);
     }
-    if (ext == ".molden") {
+    if (ext == ".molden" || ext == ".input") {
 	using occ::io::MoldenReader;
 	MoldenReader molden(filename);
 	return Wavefunction(molden);
@@ -63,17 +63,6 @@ void load_vector(const nlohmann::json &json, Vec3 &vec) {
     }
 }
 
-void print_mo_norms(const Wavefunction &wfn) {
-    auto [shellpair_list, shellpair_data] = occ::ints::compute_shellpairs(wfn.basis);
-
-    occ::Mat overlap = occ::ints::compute_1body_ints<occ::ints::Operator::overlap>(wfn.basis, shellpair_list)[0];
-    for(size_t i = 0; i < wfn.mo.Cocc.cols(); i++) {
-	auto v = wfn.mo.Cocc.col(i);
-	double norm = v.transpose().dot(overlap * v);
-	fmt::print("norm {} = {}\n", i, norm);
-    }
-}
-
 Pair parse_input_file(const std::string &filename) {
     std::ifstream i(filename);
     nlohmann::json j;
@@ -86,20 +75,18 @@ Pair parse_input_file(const std::string &filename) {
     std::string source_a = monomers[0]["source"];
     std::string source_b = monomers[1]["source"];
     p.a.wfn = load_wavefunction(source_a);
-    print_mo_norms(p.a.wfn);
     load_matrix(monomers[0]["rotation"], p.a.rotation);
     load_vector(monomers[0]["translation"], p.a.translation);
     p.a.translation *= occ::units::ANGSTROM_TO_BOHR;
-    fmt::print("Rotation A:\n{}\n", p.a.rotation);
-    fmt::print("Translation A:\n{}\n", p.a.translation);
+    occ::log::debug("Rotation A:\n{}", p.a.rotation);
+    occ::log::debug("Translation A: {}", p.a.translation.transpose());
 
     p.b.wfn = load_wavefunction(source_b);
-    print_mo_norms(p.b.wfn);
     load_matrix(monomers[1]["rotation"], p.b.rotation);
     load_vector(monomers[1]["translation"], p.b.translation);
     p.b.translation *= occ::units::ANGSTROM_TO_BOHR;
-    fmt::print("Rotation B:\n{}\n", p.b.rotation);
-    fmt::print("Translation B:\n{}\n", p.b.translation);
+    occ::log::debug("Rotation A:\n{}", p.b.rotation);
+    occ::log::debug("Translation A: {}", p.b.translation.transpose());
 
     p.a.wfn.apply_transformation(p.a.rotation, p.a.translation);
     p.b.wfn.apply_transformation(p.b.rotation, p.b.translation);
@@ -146,6 +133,7 @@ int main(int argc, char *argv[]) {
 
     options.add_options()("h,help", "Print help")(
 	    "i,input", "Input file", cxxopts::value<std::string>())(
+	    "o,output", "Output file", cxxopts::value<std::string>())(
 	    "t,threads", "Number of threads",
 	    cxxopts::value<int>()->default_value("1"))(
 	    "m,model", "CE model",
@@ -192,11 +180,13 @@ int main(int argc, char *argv[]) {
     auto interaction_energy = interaction(pair.a.wfn, pair.b.wfn);
     occ::timing::stop(occ::timing::category::global);
 
-    fmt::print("A\n");
+    fmt::print("Monomer A energies\n");
     pair.a.wfn.energy.print();
 
-    fmt::print("B\n");
+    fmt::print("Monomer B energies\n");
     pair.b.wfn.energy.print();
+
+    fmt::print("\nDimer\n");
 
     fmt::print("Component              Energy (kJ/mol)\n\n");
     fmt::print("Coulomb               {: 12.6f}\n",
@@ -211,7 +201,48 @@ int main(int argc, char *argv[]) {
     fmt::print("Total {:^8s}        {: 12.6f}\n", model_name,
 	    interaction_energy.total_kjmol());
 
-    //fmt::print("\n");
-    fmt::print("D norm\n{}\n", pair.a.wfn.mo.D.norm());
+    fmt::print("\nTimings\n");
     occ::timing::print_timings();
+    if(args.count("output")) {
+	nlohmann::json j = {
+	    {"energies", {
+		{"units", "kj/mol"},
+		{"pair", 
+		    {
+			{"coulomb", interaction_energy.coulomb_kjmol()},
+			{"exchange_repulsion", interaction_energy.exchange_kjmol()},
+			{"polarization", interaction_energy.polarization_kjmol()},
+			{"dispersion", interaction_energy.dispersion_kjmol()},
+			{"scaled_total", interaction_energy.total_kjmol()},
+			{"model", model_name}
+		    }
+		},
+		{"monomer_a",
+		    {
+			{"coulomb", pair.a.wfn.energy.coulomb},
+			{"exchange", pair.a.wfn.energy.exchange},
+			{"nuclear_repulsion", pair.a.wfn.energy.nuclear_repulsion},
+			{"nuclear_attraction", pair.a.wfn.energy.nuclear_repulsion},
+			{"kinetic", pair.a.wfn.energy.kinetic},
+			{"core", pair.a.wfn.energy.core},
+			{"total", pair.a.wfn.energy.total}
+		    }
+		},
+		{"monomer_b",
+		    {
+			{"coulomb", pair.b.wfn.energy.coulomb},
+			{"exchange", pair.b.wfn.energy.exchange},
+			{"nuclear_repulsion", pair.b.wfn.energy.nuclear_repulsion},
+			{"nuclear_attraction", pair.b.wfn.energy.nuclear_repulsion},
+			{"kinetic", pair.b.wfn.energy.kinetic},
+			{"core", pair.b.wfn.energy.core},
+			{"total", pair.b.wfn.energy.total}
+		    }
+		}
+	     }
+	    }
+	};
+	std::ofstream output(args["output"].as<std::string>());
+	output << std::setw(2) << j;
+    }
 }
