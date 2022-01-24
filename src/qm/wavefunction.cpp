@@ -369,7 +369,7 @@ void Wavefunction::apply_transformation(const occ::Mat3 &rot,
 }
 void Wavefunction::apply_translation(const occ::Vec3 &trans) {
     basis.translate(trans);
-    translate_atoms(atoms, trans);
+    occ::core::translate_atoms(atoms, trans);
 }
 
 void Wavefunction::apply_rotation(const occ::Mat3 &rot) {
@@ -383,7 +383,7 @@ void Wavefunction::apply_rotation(const occ::Mat3 &rot) {
         block::b(mo.C).noalias() = rotated;
     }
     basis.rotate(rot);
-    rotate_atoms(atoms, rot);
+    occ::core::rotate_atoms(atoms, rot);
     update_occupied_orbitals();
     compute_density_matrix();
 }

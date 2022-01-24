@@ -379,26 +379,6 @@ void BasisSet::translate(const occ::Vec3 &translation) {
     update();
 }
 
-void rotate_atoms(std::vector<occ::core::Atom> &atoms,
-                  const occ::Mat3 &rotation) {
-    for (auto &atom : atoms) {
-        occ::Vec3 pos{atom.x, atom.y, atom.z};
-        auto pos_rot = rotation * pos;
-        atom.x = pos_rot(0);
-        atom.y = pos_rot(1);
-        atom.z = pos_rot(2);
-    }
-}
-
-void translate_atoms(std::vector<occ::core::Atom> &atoms,
-                     const occ::Vec3 &translation) {
-    for (auto &atom : atoms) {
-        atom.x += translation(0);
-        atom.y += translation(1);
-        atom.z += translation(2);
-    }
-}
-
 std::vector<size_t> pople_sp_shells(const BasisSet &basis) {
     std::vector<bool> visited(basis.size(), false);
     std::vector<size_t> shells(basis.size());
