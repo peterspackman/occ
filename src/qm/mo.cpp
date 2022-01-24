@@ -9,7 +9,6 @@ void MolecularOrbitals::rotate(const BasisSet &basis, const Mat3 &rotation) {
 
     const auto shell2bf = basis.shell2bf();
     occ::log::debug("Rotating MO coefficients");
-    fmt::print("before\n{} {}\n", C.rows(), C.cols());
     for (size_t s = 0; s < basis.size(); s++) {
         const auto &shell = basis[s];
         size_t bf_first = shell2bf[s];
@@ -57,7 +56,6 @@ void MolecularOrbitals::rotate(const BasisSet &basis, const Mat3 &rotation) {
 		    rot * cb.block(bf_first, 0, shell_size, cb.cols());
 	}
     }
-    fmt::print("after\n{} {}\n", C.rows(), C.cols());
 }
 
 }

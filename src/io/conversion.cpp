@@ -5,6 +5,13 @@
 
 namespace occ::io::conversion::orb {
 
+/* TODO
+ *
+ * Refactor into one method, generic across orders/normalization schemes
+ *
+ * Shouldn't be too hard, but should also write tests to ensure correctness
+ *
+ */
 Mat from_gaussian_order_cartesian(const occ::qm::BasisSet &basis,
                                   const Mat &mo) {
     // no reordering should occur unless there are d, f, g, h etc. functions

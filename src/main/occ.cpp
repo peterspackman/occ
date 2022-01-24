@@ -58,9 +58,6 @@ void write_output_files(const OccInput &config, Wavefunction &wfn) {
     wfn.save(fchk);
     fchk.write();
     fmt::print("wavefunction stored in {}\n", fchk_path);
-    for(const auto &sh: wfn.basis) {
-	fmt::print("{}\n", sh);
-    }
 }
 
 int main(int argc, char *argv[]) {

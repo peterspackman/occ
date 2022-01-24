@@ -314,31 +314,34 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
     size_t ncols = mo.cols();
     bool orca = source == Source::Orca;
     if(orca) occ::log::debug("ORCA phase convention...");
+    if (occ::qm::max_l(basis) < 1)
+        return mo;
+    constexpr auto order = occ::gto::ShellOrder::Molden;
+
     for (size_t i = 0; i < basis.size(); i++) {
         const auto &shell = basis[i];
         size_t bf_first = shell2bf[i];
-        size_t shell_size = shell.size();
         int l = shell.contr[0].l;
-        if (l < 1) {
-            result.block(bf_first, 0, shell_size, ncols) =
-                mo.block(bf_first, 0, shell_size, ncols);
-            continue;
-        }
-        std::vector<double> phase;
-        switch (l) {
-	case 1:
-	    // x y z i.e. cartesian p functions...
-            result.row(bf_first + 2) = mo.row(bf_first); // x
-            result.row(bf_first) = mo.row(bf_first + 1); // y
-            result.row(bf_first + 1) = mo.row(bf_first + 2); // z
-	    continue;
-        case 2:
-	    // c0 c1 s1 c2 s2
-	    // orca phase is fine here
-	    for(size_t i = 0; i < shell_size; i++) {
-		phase.emplace_back(1.0);
-	    }
-            break;
+	if(l == 1) {
+	    // xyz -> yzx
+	    occ::log::debug("Swapping (l={}): (2, 0, 1) <-> (0, 1, 2)", l); 
+	    result.block(bf_first, 0, 1, ncols) = mo.block(bf_first + 1, 0, 1, ncols);
+	    result.block(bf_first + 1, 0, 1, ncols) = mo.block(bf_first + 2, 0, 1, ncols);
+	    result.block(bf_first + 2, 0, 1, ncols) = mo.block(bf_first, 0, 1, ncols);
+	}
+	else {
+	    size_t idx = 0;
+	    auto func = [&](int am, int m) {
+		int their_idx = occ::gto::shell_index_spherical<order>(am, m);
+		result.row(bf_first + idx)= mo.row(bf_first + their_idx);
+		occ::log::debug("Swapping (l={}): {} <-> {}", l, idx, their_idx);
+		idx++;
+	    };
+	    occ::gto::iterate_over_shell<false, occ::gto::ShellOrder::Default>(func, l);
+	}
+    }
+
+    /*
         case 3:
 	    // c0 c1 s1 c2 s2 c3 s3
 	    // +  +  +  +  +  -  -
@@ -358,7 +361,6 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
 	    }
 	    break;
 	case 5:
-	    // But this is the actual order G09 puts out...
 	    // c0 c1 s1 c2 s2 c3 s3 c4 s4 c5 s5
 	    // +  +  +  +  +  -  -  -  -  +  + 
 	    // orca has modified phase (weird)
@@ -367,19 +369,7 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
 		else phase.emplace_back(1.0);
 	    }
 	    break;
-        default:
-	    // not sure how to deal with AM = 6...
-	    for(size_t i = 0; i < shell_size; i++) {
-		phase.emplace_back(1.0);
-	    }
-            break;
-        }
-
-	for(size_t i = bf_first; i< shell_size; i++) {
-	    size_t idx = bf_first + i;
-	    result.row(idx) = mo.row(idx) * phase[i];
-	}
-    }
+	    */
     return result;
 }
 } // namespace occ::io

@@ -47,6 +47,7 @@ Wavefunction::Wavefunction(const MoldenReader &molden)
       nbf(molden.nbf()), atoms(molden.atoms()) {
     size_t rows, cols;
     nbf = occ::qm::nbf(basis);
+    mo.kind = spinorbital_kind;
 
     if (spinorbital_kind == SpinorbitalKind::General) {
         throw std::runtime_error(
