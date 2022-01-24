@@ -277,7 +277,7 @@ void Wavefunction::update_occupied_orbitals() {
 void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
     size_t rows, cols;
     nbf = occ::qm::nbf(basis);
-
+    mo.kind = fchk.spinorbital_kind();
     if (spinorbital_kind == SpinorbitalKind::General) {
         throw std::runtime_error(
             "Reading MOs from g09 unsupported for General spinorbitals");
@@ -373,15 +373,7 @@ void Wavefunction::apply_translation(const occ::Vec3 &trans) {
 }
 
 void Wavefunction::apply_rotation(const occ::Mat3 &rot) {
-    if (spinorbital_kind == SpinorbitalKind::Restricted) {
-        Mat rotated = rotate_molecular_orbitals(basis, rot, mo.C);
-        mo.C.noalias() = rotated;
-    } else {
-        Mat rotated = rotate_molecular_orbitals(basis, rot, block::a(mo.C));
-        block::a(mo.C).noalias() = rotated;
-        rotated = rotate_molecular_orbitals(basis, rot, block::b(mo.C));
-        block::b(mo.C).noalias() = rotated;
-    }
+    mo.rotate(basis, rot);
     basis.rotate(rot);
     occ::core::rotate_atoms(atoms, rot);
     update_occupied_orbitals();

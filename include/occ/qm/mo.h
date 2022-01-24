@@ -3,6 +3,8 @@
 
 namespace occ::qm {
 
+class BasisSet;
+
 struct MolecularOrbitals {
     SpinorbitalKind kind{SpinorbitalKind::Restricted};
     size_t n_occ;
@@ -10,6 +12,8 @@ struct MolecularOrbitals {
     Mat Cocc;
     Mat D;
     Vec energies;
+    void rotate(const BasisSet &basis, const occ::Mat3 &rotation);
 };
+
 
 } // namespace occ::qm

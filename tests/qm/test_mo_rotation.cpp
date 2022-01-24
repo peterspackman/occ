@@ -6,6 +6,7 @@
 #include <fmt/ostream.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/hf.h>
+#include <occ/qm/mo.h>
 
 using occ::util::all_close;
 using occ::Mat;
@@ -94,12 +95,14 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]")
     REQUIRE(hf.nuclear_repulsion_energy() == Approx(hf_rot.nuclear_repulsion_energy()));
     occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
     double e = scf.compute_scf_energy();
-    Mat mos = scf.mo.C;
-    Mat C_occ = mos.leftCols(scf.n_occ);
+    occ::qm::MolecularOrbitals mos = scf.mo;
+    Mat C_occ = mos.C.leftCols(scf.n_occ);
     Mat D = C_occ * C_occ.transpose();
-    Mat rot_mos = occ::qm::rotate_molecular_orbitals(rot_basis, rotation, mos);
-    Mat rot_C_occ = rot_mos.leftCols(scf.n_occ);
+
+    mos.rotate(rot_basis, rotation);
+    Mat rot_C_occ = mos.C.leftCols(scf.n_occ);
     Mat rot_D = rot_C_occ * rot_C_occ.transpose();
+
     double e_en = occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(D, hf.compute_nuclear_attraction_matrix());
     double e_en_rot = occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(rot_D, hf_rot.compute_nuclear_attraction_matrix());
     fmt::print("E_en      {}\n", e_en);

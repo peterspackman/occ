@@ -13,7 +13,7 @@ Mat from_gaussian_order_cartesian(const occ::qm::BasisSet &basis,
     if (occ::qm::max_l(basis) < 2)
         return mo;
 
-    occ::log::debug("Reordering MO coefficients from Gaussian ordering to "
+    occ::log::debug("Reordering cartesian MO coefficients from Gaussian ordering to "
                     "internal convention");
     auto shell2bf = basis.shell2bf();
     Mat result(mo.rows(), mo.cols());
@@ -33,7 +33,7 @@ Mat from_gaussian_order_cartesian(const occ::qm::BasisSet &basis,
 		    occ::gto::component_label(pi, pj, pk, l), idx, their_idx);
 	    idx++;
 	};
-	occ::gto::iterate_over_shell<true>(func, l);
+	occ::gto::iterate_over_shell<true, occ::gto::ShellOrder::Default>(func, l);
     }
     return result;
 }
@@ -65,7 +65,7 @@ Mat to_gaussian_order_cartesian(const occ::qm::BasisSet &basis, const Mat &mo) {
 		    occ::gto::component_label(pi, pj, pk, l), idx, their_idx);
 	    idx++;
 	};
-	occ::gto::iterate_over_shell<true>(func, l);
+	occ::gto::iterate_over_shell<true, occ::gto::ShellOrder::Default>(func, l);
     }
     return result;
 }
