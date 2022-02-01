@@ -486,7 +486,7 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
             if (d1.equivalent_in_opposite_frame(d2)) {
                 ci.neighbor_set = true;
                 cj.neighbor_set = true;
-                fmt::print("Interaction paired {}<->{}\n", i, j);
+		occ::log::debug("Interaction paired {}<->{}\n", i, j);
                 ci.assign(cj);
                 continue;
             }
@@ -494,6 +494,7 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
     }
     return energy_contribution;
 }
+
 struct AssignedEnergy {
     bool is_nn{true};
     double energy{0.0};
@@ -513,6 +514,10 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
         crystal_contributions[k1].is_nn = false;
         auto v = n[k1].v_ab().normalized();
         auto unique_dimer_idx = crystal_dimers.unique_dimer_idx[i][k1];
+
+	// skip if not contributing
+	if(!dimer_energies[unique_dimer_idx].is_computed) continue;
+
         total_taken += dimer_energies[unique_dimer_idx].total_kjmol();
         double total_dp = 0.0;
         for (size_t k2 = 0; k2 < solv.size(); k2++) {
@@ -566,6 +571,7 @@ int main(int argc, char **argv) {
     std::string cif_filename{""};
     std::string solvent{"water"};
     std::string wfn_choice{"gas"};
+    bool write_dump_files{false};
     // clang-format off
     options.add_options()
         ("h,help", "Print help")
@@ -577,6 +583,7 @@ int main(int argc, char **argv) {
         ("c,cg-radius", "maximum radius (angstroms) for nearest neighbours in cg file (must be <= radius)",
          cxxopts::value<double>(cg_radius)->default_value("3.8"))
         ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent))
+        ("d,dump", "Write dump files", cxxopts::value<bool>(write_dump_files))
         ("w,wavefunction-choice", "Choice of wavefunctions",
          cxxopts::value<std::string>(wfn_choice));
     // clang-format on
@@ -648,29 +655,13 @@ int main(int argc, char **argv) {
         fmt::print("Computing monomer energies took {:.6f} seconds\n",
                    sw.read() - tprev);
 
-        tprev = sw.read();
-        sw.start();
-        auto crystal_dimers = c_symm.symmetry_unique_dimers(radius);
-        sw.stop();
 
-        const auto &dimers = crystal_dimers.unique_dimers;
-        fmt::print("Found {} symmetry unique dimers in {:.6f} seconds\n",
-                   dimers.size(), sw.read() - tprev);
-
-        if (dimers.size() < 1) {
-            fmt::print("No dimers found using neighbour radius {:.3f}\n",
-                       radius);
-            exit(0);
-        }
 
         const std::string row_fmt_string =
             "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
             "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
 
 
-        fmt::print(
-            "Calculating unique pair interactions using {} wavefunctions\n",
-            wfn_choice);
         const auto &wfns_a = [&]() {
             if (wfn_choice == "gas")
                 return wfns;
@@ -684,9 +675,19 @@ int main(int argc, char **argv) {
                 return wfns;
         }();
 
+	occ::crystal::CrystalDimers crystal_dimers;
+	std::vector<occ::main::EnergyComponentsCE> dimer_energies;
 
-        using occ::main::ce_model_energies;
-        auto dimer_energies = ce_model_energies(c_symm, dimers, wfns_a, wfns_b, basename);
+
+	occ::main::LatticeConvergenceSettings convergence_settings;
+	convergence_settings.max_radius = radius;
+	std::tie(crystal_dimers, dimer_energies) = occ::main::converged_lattice_energies(c_symm, wfns_a, wfns_b, basename);
+
+        if (crystal_dimers.unique_dimers.size() < 1) {
+            fmt::print("No dimers found using neighbour radius {:.3f}\n",
+                       radius);
+            exit(0);
+        }
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         std::vector<std::vector<SolventNeighborContribution>>
@@ -723,8 +724,8 @@ int main(int argc, char **argv) {
             size_t j = 0;
             CEModelInteraction::EnergyComponents total;
 
-            // write neighbors file for molecule i
-            {
+            if(write_dump_files) {
+		// write neighbors file for molecule i
                 std::string neighbors_filename = fmt::format("{}_{}_neighbors.xyz", basename, i);
                 write_xyz_neighbors(neighbors_filename, n);
             }
@@ -745,6 +746,10 @@ int main(int argc, char **argv) {
                 double rc = dimer.centroid_distance();
                 const auto &e =
                     dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];
+		if(!e.is_computed) {
+		    j++;
+		    continue;
+		}
                 double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
                        epol = e.polarization_kjmol(),
                        edisp = e.dispersion_kjmol(), etot = e.total_kjmol();

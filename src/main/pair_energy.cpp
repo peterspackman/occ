@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <scn/scn.h>
 #include <occ/core/util.h>
+#include <occ/core/logger.h>
 
 namespace fs = std::filesystem;
 
@@ -16,17 +17,16 @@ using occ::interaction::CEModelInteraction;
 using EnergyComponentsCE = CEModelInteraction::EnergyComponents;
 using occ::core::Dimer;
 using occ::units::BOHR_TO_ANGSTROM;
-using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
-using occ::util::all_close;
 
 EnergyComponentsCE read_energy_components(const std::string &line) {
     CEModelInteraction::EnergyComponents components;
     scn::scan(line, "{{ e_coul: {}, e_rep: {}, e_pol: {}, e_disp: {}, e_tot: {} }}",
               components.coulomb, components.exchange_repulsion,
               components.polarization, components.dispersion, components.total);
+    components.is_computed = true;
     return components;
 }
 
@@ -100,39 +100,46 @@ EnergyComponentsCE ce_model_energy(const Dimer &dimer,
     CEModelInteraction interaction(model);
 
     auto interaction_energy = interaction(A, B);
+    interaction_energy.is_computed = true;
     return interaction_energy;
 }
 
 
-std::vector<EnergyComponentsCE> ce_model_energies(
+int compute_ce_model_energies_radius(
                               const Crystal &crystal, 
                               const std::vector<Dimer> &dimers,
                               const std::vector<Wavefunction> &wfns_a,
                               const std::vector<Wavefunction> &wfns_b,
-                              const std::string &basename) {
+                              const std::string &basename, double radius, 
+			      std::vector<EnergyComponentsCE> &dimer_energies) {
     using occ::crystal::SymmetryOperation;
     occ::timing::StopWatch sw;
-    std::vector<EnergyComponentsCE> dimer_energies;
-    dimer_energies.reserve(dimers.size());
+    if(dimer_energies.size() < dimers.size()) {
+	dimer_energies.resize(dimers.size());
+    }
     size_t current_dimer{0};
+    size_t computed_dimers{0};
     for (const auto &dimer : dimers) {
         auto tprev = sw.read();
         sw.start();
-        EnergyComponentsCE dimer_energy;
+
+        EnergyComponentsCE &dimer_energy = dimer_energies[current_dimer];
         std::string dimer_energy_file(fmt::format("{}_dimer_{}_energies.xyz", basename, current_dimer));
 
-        if(load_dimer_energy(dimer_energy_file, dimer_energy)) {
-            dimer_energies.push_back(dimer_energy);
+        if(dimer.nearest_distance() > radius ||
+	   dimer_energy.is_computed ||
+	   load_dimer_energy(dimer_energy_file, dimer_energy)) {
             current_dimer++;
             continue;
         }
+	computed_dimers++;
 
         const auto& a = dimer.a();
         const auto& b = dimer.b();
         const auto asym_idx_a = a.asymmetric_molecule_idx();
         const auto asym_idx_b = b.asymmetric_molecule_idx();
         const auto shift_b = dimer.b().cell_shift();
-        fmt::print("{} ({}[{}] - {}[{} + ({},{},{})]), Rc = {: 5.2f}",
+	occ::log::info("{} ({}[{}] - {}[{} + ({},{},{})]), Rc = {: 5.2f}",
                    current_dimer++,
                    asym_idx_a,
                    SymmetryOperation(a.asymmetric_unit_symop()(0)).to_string(),
@@ -143,23 +150,34 @@ std::vector<EnergyComponentsCE> ce_model_energies(
 
         std::cout << std::flush;
         dimer_energy = ce_model_energy(dimer, wfns_a, wfns_b, crystal);
-        dimer_energies.push_back(dimer_energy);
         sw.stop();
-        fmt::print("  took {:.3f} seconds\n", sw.read() - tprev);
-        write_xyz_dimer(dimer_energy_file, dimer, dimer_energies[current_dimer - 1]);
+	occ::log::info("Took {:.3f} seconds", sw.read() - tprev);
+        write_xyz_dimer(dimer_energy_file, dimer, dimer_energy);
         std::cout << std::flush;
     }
-    fmt::print(
-        "Finished calculating {} unique dimer interaction energies\n",
-        dimer_energies.size());
-    return dimer_energies;
+    occ::log::info(
+        "Finished calculating {} unique dimer interaction energies",
+        computed_dimers);
+    return computed_dimers;
 }
+
+std::vector<EnergyComponentsCE> ce_model_energies(
+                              const Crystal &crystal, 
+                              const std::vector<Dimer> &dimers,
+                              const std::vector<Wavefunction> &wfns_a,
+                              const std::vector<Wavefunction> &wfns_b,
+                              const std::string &basename) {
+    std::vector<EnergyComponentsCE> result;
+    compute_ce_model_energies_radius(crystal, dimers, wfns_a, wfns_b, basename, std::numeric_limits<double>::max(), result);
+    return result;
+}
+
 
 
 bool load_dimer_energy(const std::string &filename, EnergyComponentsCE &energies) {
     if(!fs::exists(filename))
         return false;
-    fmt::print("Load dimer energies from {}\n", filename);
+    occ::log::info("Load dimer energies from {}", filename);
     std::ifstream file(filename);
     std::string line;
     std::getline(file, line);
@@ -169,5 +187,56 @@ bool load_dimer_energy(const std::string &filename, EnergyComponentsCE &energies
 }
 
 
+std::pair<occ::crystal::CrystalDimers, std::vector<EnergyComponentsCE>>
+converged_lattice_energies(const Crystal &crystal,
+	    const std::vector<Wavefunction> &wfns_a,
+	    const std::vector<Wavefunction> &wfns_b,
+	    const std::string &basename,
+	    const LatticeConvergenceSettings conv) {
+
+    crystal::CrystalDimers converged_dimers;
+    std::vector<EnergyComponentsCE> converged_energies;
+    double lattice_energy{0.0}, previous_lattice_energy{0.0};
+    double current_radius = std::max(conv.radius_increment, conv.min_radius);
+    size_t cycle{1};
+    auto all_dimers = crystal.symmetry_unique_dimers(conv.max_radius);
+    fmt::print("Found {} symmetry unique dimers within max radius {:.3f}\n",
+	       all_dimers.unique_dimers.size(), conv.max_radius);
+    fmt::print("Lattice convergence settings:\n");
+    fmt::print("Start radius       {: 8.4f} \u212b\n", conv.min_radius);
+    fmt::print("Max radius         {: 8.4f} \u212b\n", conv.max_radius);
+    fmt::print("Radius increment   {: 8.4f} \u212b\n", conv.radius_increment);
+    fmt::print("Energy tolerance   {: 8.4f} kJ/mol\n", conv.energy_tolerance);
+    do {
+	previous_lattice_energy = lattice_energy;
+	const auto &dimers = all_dimers.unique_dimers;
+	compute_ce_model_energies_radius(crystal, dimers, wfns_a, wfns_b, basename, current_radius, converged_energies);
+        const auto &mol_neighbors = all_dimers.molecule_neighbors;
+	double etot{0.0};
+	size_t mol_idx{0};
+	for(const auto &n : mol_neighbors) {
+	    double molecule_total{0.0};
+	    size_t dimer_idx{0};
+	    for (const auto &dimer : n) {
+                const auto &e =
+		    converged_energies[all_dimers.unique_dimer_idx[mol_idx][dimer_idx]];
+
+		if(e.is_computed) {
+                    molecule_total += e.total_kjmol();
+		}
+		dimer_idx++;
+	    }
+	    etot += molecule_total;
+	    mol_idx++;
+	}
+	lattice_energy = 0.5 * etot;
+	fmt::print("Cycle {} lattice energy: {}\n", cycle, lattice_energy);
+        cycle++;
+        current_radius += conv.radius_increment;
+    } while(std::abs(lattice_energy - previous_lattice_energy) > conv.energy_tolerance);
+    converged_dimers = all_dimers;
+    return std::make_pair(converged_dimers, converged_energies);
+}
 
 }
+

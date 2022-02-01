@@ -89,6 +89,7 @@ target_link_libraries(occ-elat
     occ_io
     occ_crystal
     occ_interaction
+    occ_main
     cxxopts
 )
 

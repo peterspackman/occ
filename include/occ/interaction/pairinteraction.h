@@ -70,6 +70,7 @@ struct CEModelInteraction {
         double polarization{0.0};
         double dispersion{0.0};
         double total{0.0};
+	bool is_computed{false};
         double coulomb_kjmol() const {
             return occ::units::AU_TO_KJ_PER_MOL * coulomb;
         }

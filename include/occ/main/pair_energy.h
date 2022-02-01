@@ -29,5 +29,17 @@ std::vector<EnergyComponentsCE> ce_model_energies(
                               const std::string &basename = "dimer");
 
 
+struct LatticeConvergenceSettings {
+    double min_radius{3.8}; // angstroms
+    double max_radius{30.0}; // angstroms
+    double radius_increment{3.8}; // angstroms
+    double energy_tolerance{1.0}; // kj/mol
+};
 
+std::pair<occ::crystal::CrystalDimers, std::vector<EnergyComponentsCE>>
+converged_lattice_energies(const Crystal &crystal,
+    const std::vector<Wavefunction> &wfns_a,
+    const std::vector<Wavefunction> &wfns_b,
+    const std::string &basename = "crystal_dimer",
+    const LatticeConvergenceSettings conv = {});
 }
