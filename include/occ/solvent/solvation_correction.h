@@ -90,7 +90,6 @@ class ContinuumSolvationModel {
     void write_surface_file(const std::string &filename);
 
   private:
-    std::string m_filename{"solvent.xyz"};
     std::string m_solvent_name;
     Mat3N m_nuclear_positions;
     Vec m_nuclear_charges;

@@ -195,6 +195,33 @@ calculate_wavefunctions(const std::string &basename,
     return wfns;
 }
 
+
+std::vector<occ::Vec3> calculate_net_dipole(const std::vector<Wavefunction> &wfns,
+					   const occ::crystal::CrystalDimers &crystal_dimers) {
+    std::vector<occ::Vec3> dipoles;
+    std::vector<occ::Vec> partial_charges;
+    for(const auto & wfn: wfns) {
+	partial_charges.push_back(wfn.mulliken_charges());
+    }
+    for(size_t idx = 0; idx < crystal_dimers.molecule_neighbors.size(); idx++) {
+	occ::Vec3 dipole = occ::Vec3::Zero(3);
+	size_t j = 0;
+	for(const auto &dimer: crystal_dimers.molecule_neighbors[idx]) {
+	    occ::Vec3 center_a = dimer.a().center_of_mass();
+	    if(j == 0) {
+		const auto& charges = partial_charges[dimer.a().asymmetric_molecule_idx()];
+		dipole.array() += ((dimer.a().positions().colwise() - center_a).array() * charges.array()).rowwise().sum();
+	    }
+	    const auto& charges = partial_charges[dimer.b().asymmetric_molecule_idx()];
+	    const auto& pos_b = dimer.b().positions();
+	    dipole.array() += ((pos_b.colwise() - center_a).array() * charges.array()).rowwise().sum();
+	    j++;
+	}
+	dipoles.push_back(dipole);
+    }
+    return dipoles;
+}
+
 std::pair<std::vector<SolvatedSurfaceProperties>, std::vector<Wavefunction>>
 calculate_solvated_surfaces(const std::string &basename,
                             const std::vector<Molecule> &mols,
@@ -552,7 +579,7 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
     for (size_t k1 = 0; k1 < solv.size(); k1++) {
         if (!crystal_contributions[k1].is_nn)
             continue;
-        fmt::print("{}: {:.3f}\n", k1, crystal_contributions[k1].energy);
+	occ::log::debug("{}: {:.3f}", k1, crystal_contributions[k1].energy);
         total_reassigned += crystal_contributions[k1].energy;
     }
     occ::log::debug("Total taken from non-nearest neighbors: {:.3f} kJ/mol\n",
@@ -561,6 +588,7 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
                total_reassigned);
     return crystal_contributions;
 }
+
 
 int main(int argc, char **argv) {
     cxxopts::Options options(
@@ -681,13 +709,18 @@ int main(int argc, char **argv) {
 
 	occ::main::LatticeConvergenceSettings convergence_settings;
 	convergence_settings.max_radius = radius;
-	std::tie(crystal_dimers, dimer_energies) = occ::main::converged_lattice_energies(c_symm, wfns_a, wfns_b, basename);
+	std::tie(crystal_dimers, dimer_energies) = occ::main::converged_lattice_energies(c_symm, wfns_a, wfns_b, basename, convergence_settings);
 
         if (crystal_dimers.unique_dimers.size() < 1) {
             fmt::print("No dimers found using neighbour radius {:.3f}\n",
                        radius);
             exit(0);
         }
+
+	auto dipoles = calculate_net_dipole(wfns_b, crystal_dimers);
+	for(const auto &x: dipoles) {
+	    fmt::print("Net dipole {}\n", x.transpose());
+	}
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         std::vector<std::vector<SolventNeighborContribution>>

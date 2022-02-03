@@ -90,32 +90,31 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
     // construct the 2-electron repulsion integrals engine
     using libint2::Engine;
     std::vector<Engine> engines;
+    std::vector<MaskMat> masks;
     engines.reserve(nthreads);
     engines.emplace_back(Operator::overlap,
                          std::max(bs1.max_nprim(), bs2.max_nprim()),
                          std::max(bs1.max_l(), bs2.max_l()), 0);
+    masks.emplace_back(MaskMat::Zero(nsh1, nsh2));
     for (size_t i = 1; i != nthreads; ++i) {
         engines.push_back(engines[0]);
+	masks.push_back(masks[0]);
     }
+    size_t num_engines = engines.size();
 
     libint2::Timers<1> timer;
     timer.set_now_overhead(25);
     timer.start(0);
 
-    ShellPairList splist;
 
-    std::mutex mx;
 
     auto compute = [&](int thread_id) {
         auto &engine = engines[thread_id];
+	auto &mask = masks[thread_id];
         const auto &buf = engine.results();
 
         // loop over permutationally-unique set of shells
         for (size_t s1 = 0, s12 = 0; s1 != nsh1; ++s1) {
-            mx.lock();
-            if (splist.find(s1) == splist.end())
-                splist[s1] = {};
-            mx.unlock();
 
             auto n1 = bs1[s1].size(); // number of basis functions in this shell
 
@@ -128,34 +127,29 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
                 bool significant = on_same_center;
                 if (!on_same_center) {
                     auto n2 = bs2[s2].size();
-                    engines[thread_id].compute(bs1[s1], bs2[s2]);
+                    engine.compute(bs1[s1], bs2[s2]);
                     Eigen::Map<const MatRM> buf_mat(buf[0], n1, n2);
                     auto norm = buf_mat.norm();
                     significant = (norm >= threshold);
                 }
 
-                if (significant) {
-                    mx.lock();
-                    splist[s1].emplace_back(s2);
-                    mx.unlock();
-                }
+                if (significant) { mask(s1, s2) = true; }
             }
         }
     }; // end of compute
     occ::parallel::parallel_do(compute);
 
-    // resort shell list in increasing order, i.e. splist[s][s1] < splist[s][s2]
-    // if s1 < s2 N.B. only parallelized over 1 shell index
-    auto sort = [&](int thread_id) {
-        for (auto s1 = 0l; s1 != nsh1; ++s1) {
-            if (s1 % nthreads == thread_id) {
-                auto &list = splist[s1];
-                std::sort(list.begin(), list.end());
-            }
-        }
-    }; // end of sort
+    for(size_t n = 1; n < nthreads; n++) {
+	masks[0] = masks[0].cwiseMax(masks[n]);
+    }
 
-    occ::parallel::parallel_do(sort);
+    ShellPairList splist;
+    for(size_t s1 = 0; s1 < nsh1; s1++) {
+        splist[s1] = {};
+	for(size_t s2 = 0; s2 < nsh2; s2++) {
+	    if(masks[0](s1, s2)) splist[s1].push_back(s2);
+	}
+    }
 
     // compute shellpair data assuming that we are computing to default_epsilon
     // N.B. only parallelized over 1 shell index

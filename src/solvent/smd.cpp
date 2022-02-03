@@ -459,17 +459,20 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
     Mat cot = detail::cot_matrix(params, nums, positions);
     Mat sigma_mat = detail::sigma_matrix(params, nums);
     Vec sigma_vec = detail::sigma_vector(params, nums);
+    int max_number = nums.maxCoeff();
 
     for (int i = 0; i < N; i++) {
         int ni = nums(i);
         result(i) += sigma_vec(i);
         switch(ni) {
         case 1: {
+	    if(6 > max_number) continue;
             double hc_sigma = sigma_mat(1, 6);
             if(hc_sigma != 0.0) {
                 double hc = detail::pair_term(i, 6, nums, cot, 1);
                 result(i) += hc * hc_sigma;
             }
+	    if(8 > max_number) continue;
             double ho_sigma = sigma_mat(1, 8);
             if(ho_sigma != 0.0) {
                 double ho = detail::pair_term(i, 8, nums, cot, 1);
@@ -483,6 +486,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
                 double cc = detail::pair_term(i, 6, nums, cot, 1);
                 result(i) += cc * cc_sigma;
             }
+	    if(7 > max_number) continue;
             double cn_sigma = sigma_mat(6, 7);
             if(cn_sigma != 0.0) {
                 double cn = detail::pair_term(i, 7, nums, cot, 2);
@@ -507,6 +511,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
         case 8: {
             // O,C; O,N; O,O
             for(int j = 6; j < 9; j++) {
+		if(j > max_number) continue;
                 double ox_sigma = sigma_mat(8, j);
                 if(ox_sigma != 0.0) {
                     double ox = detail::pair_term(i, j, nums, cot, 1);
@@ -514,6 +519,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
                 }
             }
 
+	    if(15 > max_number) continue;
             double op_sigma = sigma_mat(8, 15);
             if(op_sigma != 0.0) {
                 double op = detail::pair_term(i, 15, nums, cot, 1);
@@ -535,17 +541,20 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
     Mat cot = detail::cot_matrix(params, nums, positions);
     Mat sigma_mat = detail::sigma_matrix(params, nums);
     Vec sigma_vec = detail::sigma_vector(params, nums);
+    int max_number = nums.maxCoeff();
 
     for (int i = 0; i < N; i++) {
         int ni = nums(i);
         result(i) += sigma_vec(i);
         switch(ni) {
         case 1: {
+	    if(6 > max_number) continue;
             double hc_sigma = sigma_mat(1, 6);
             if(hc_sigma != 0.0) {
                 double hc = detail::pair_term(i, 6, nums, cot, 1);
                 result(i) += hc * hc_sigma;
             }
+	    if(8 > max_number) continue;
             double ho_sigma = sigma_mat(1, 8);
             if(ho_sigma != 0.0) {
                 double ho = detail::pair_term(i, 8, nums, cot, 1);
@@ -559,6 +568,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
                 double cc = detail::pair_term(i, 6, nums, cot, 1);
                 result(i) += cc * cc_sigma;
             }
+	    if(7 > max_number) continue;
             double cn_sigma = sigma_mat(6, 7);
             if(cn_sigma != 0.0) {
                 double cn = detail::pair_term(i, 7, nums, cot, 2);
@@ -582,6 +592,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
         case 8: {
             // O,C; O,N; O,O
             for(int j = 6; j < 9; j++) {
+		if(j > max_number) continue;
                 double ox_sigma = sigma_mat(8, j);
                 if(ox_sigma != 0.0) {
                     double ox = detail::pair_term(i, j, nums, cot, 1);
@@ -589,6 +600,7 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
                 }
             }
 
+	    if(15 > max_number) continue;
             double op_sigma = sigma_mat(8, 15);
             if(op_sigma != 0.0) {
                 double op = detail::pair_term(i, 15, nums, cot, 1);

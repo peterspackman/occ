@@ -86,14 +86,14 @@ EnergyComponentsCE ce_model_energy(const Dimer &dimer,
     occ::Mat3N pos_A = mol_A.positions();
     occ::Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
 
-    assert(all_close(pos_A, pos_A_t, 1e-5, 1e-5));
+    assert(occ::util::all_close(pos_A, pos_A_t, 1e-5, 1e-5));
 
     auto transform_b = calculate_transform(wfnb, mol_B, crystal);
     B.apply_transformation(transform_b.first, transform_b.second);
 
     const auto &pos_B = mol_B.positions();
     const auto pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
-    assert(all_close(pos_A, pos_A_t, 1e-5, 1e-5));
+    assert(occ::util::all_close(pos_A, pos_A_t, 1e-5, 1e-5));
 
     auto model = occ::interaction::ce_model_from_string(model_name);
 

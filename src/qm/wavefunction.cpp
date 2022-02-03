@@ -13,6 +13,7 @@
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/qm/ints.h>
+#include <occ/qm/partitioning.h>
 
 namespace occ::qm {
 
@@ -525,6 +526,29 @@ void Wavefunction::save_npz(const std::string &filename) {
         set_matrix("exchange_matrix", K);
 
     occ::timing::stop(occ::timing::category::io);
+}
+
+Vec Wavefunction::mulliken_charges() const {
+
+    ShellPairList shellpair_list;
+    ShellPairData shellpair_data;
+    std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(basis);
+    Mat overlap = occ::ints::compute_1body_ints<libint2::Operator::overlap>(basis, shellpair_list)[0];
+
+    Vec charges = Vec::Zero(atoms.size());;
+
+    switch(spinorbital_kind) {
+	case SpinorbitalKind::Unrestricted:
+	    charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::Unrestricted>(basis, atoms, mo.D, overlap);
+	case SpinorbitalKind::General:
+	    charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::General>(basis, atoms, mo.D, overlap);
+	default:
+	    charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::Restricted>(basis, atoms, mo.D, overlap);
+    }
+    for(size_t i = 0; i < atoms.size(); i++) {
+	charges(i) += atoms[i].atomic_number;
+    }
+    return charges;
 }
 
 } // namespace occ::qm

@@ -56,6 +56,8 @@ struct Wavefunction {
     occ::Mat3N positions() const;
     occ::IVec atomic_numbers() const;
 
+    Vec mulliken_charges() const;
+
     void save(FchkWriter &);
     void save_npz(const std::string &);
 
