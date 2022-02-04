@@ -7,6 +7,7 @@ add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
 create_io_test(test_crystalgrower.cpp)
+create_io_test(test_eigen_json.cpp)
 create_io_test(test_fchk.cpp)
 create_io_test(test_fchk_pure.cpp)
 create_io_test(test_gaussian_input.cpp)

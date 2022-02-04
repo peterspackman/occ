@@ -63,32 +63,33 @@ inline CEParameterizedModel ce_model_from_string(const std::string &s) {
     return CEParameterizedModel{};
 }
 
+struct CEEnergyComponents {
+    double coulomb{0.0};
+    double exchange_repulsion{0.0};
+    double polarization{0.0};
+    double dispersion{0.0};
+    double total{0.0};
+    bool is_computed{false};
+    double coulomb_kjmol() const {
+	return occ::units::AU_TO_KJ_PER_MOL * coulomb;
+    }
+    double exchange_kjmol() const {
+	return occ::units::AU_TO_KJ_PER_MOL * exchange_repulsion;
+    }
+    double polarization_kjmol() const {
+	return occ::units::AU_TO_KJ_PER_MOL * polarization;
+    }
+    double dispersion_kjmol() const {
+	return occ::units::AU_TO_KJ_PER_MOL * dispersion;
+    }
+    double total_kjmol() const {
+	return occ::units::AU_TO_KJ_PER_MOL * total;
+    }
+};
+
 struct CEModelInteraction {
-    struct EnergyComponents {
-        double coulomb{0.0};
-        double exchange_repulsion{0.0};
-        double polarization{0.0};
-        double dispersion{0.0};
-        double total{0.0};
-	bool is_computed{false};
-        double coulomb_kjmol() const {
-            return occ::units::AU_TO_KJ_PER_MOL * coulomb;
-        }
-        double exchange_kjmol() const {
-            return occ::units::AU_TO_KJ_PER_MOL * exchange_repulsion;
-        }
-        double polarization_kjmol() const {
-            return occ::units::AU_TO_KJ_PER_MOL * polarization;
-        }
-        double dispersion_kjmol() const {
-            return occ::units::AU_TO_KJ_PER_MOL * dispersion;
-        }
-        double total_kjmol() const {
-            return occ::units::AU_TO_KJ_PER_MOL * total;
-        }
-    };
     CEModelInteraction(const CEParameterizedModel &);
-    EnergyComponents operator()(Wavefunction &, Wavefunction &) const;
+    CEEnergyComponents operator()(Wavefunction &, Wavefunction &) const;
     void use_density_fitting();
 
   private:

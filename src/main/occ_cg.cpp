@@ -23,6 +23,8 @@
 #include <occ/solvent/solvation_correction.h>
 #include <occ/main/single_point.h>
 #include <scn/scn.h>
+#include <fstream>
+#include <occ/io/eigen_json.h>
 
 namespace fs = std::filesystem;
 using occ::core::Dimer;
@@ -31,21 +33,19 @@ using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::SymmetryOperation;
 using occ::hf::HartreeFock;
-using occ::interaction::CEModelInteraction;
 using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;
-using occ::solvent::COSMO;
-using occ::units::AU_TO_KCAL_PER_MOL;
 using occ::units::AU_TO_KJ_PER_MOL;
 using occ::units::BOHR_TO_ANGSTROM;
-using occ::util::all_close;
 
 struct InteractionE {
     double actual{0.0};
     double fictitious{0.0};
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InteractionE, actual, fictitious)
 
 struct SolvatedSurfaceProperties {
     double esolv{0.0};
@@ -59,93 +59,39 @@ struct SolvatedSurfaceProperties {
     occ::Vec e_ele;
     occ::Vec a_coulomb;
     occ::Vec a_cds;
-
-    void save(const std::string &filename) {
-        auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
-        size_t N = coulomb_pos.cols();
-        output.print("{}\ncoulomb esolv = {} dg_ele = {} dg_gas = {}\n", N, esolv, dg_ele, dg_gas);
-        for(size_t i = 0; i < N; i++)
-        {
-            output.print("{: 12.6f} {: 12.6f} {: 12.6f} "
-                         "{: 20.12f} {: 20.12f} {: 20.12f}\n",
-                         coulomb_pos(0, i), 
-                         coulomb_pos(1, i), 
-                         coulomb_pos(2, i), 
-                         a_coulomb(i),
-                         e_coulomb(i),
-                         e_ele(i));
-        }
-        N = cds_pos.cols();
-        output.print("{}\ncds\n", N);
-        for(size_t i = 0; i < N; i++)
-        {
-            output.print("{: 12.6f} {: 12.6f} {: 12.6f} "
-                         "{: 20.12f} {: 20.12f}\n",
-                         cds_pos(0, i), 
-                         cds_pos(1, i), 
-                         cds_pos(2, i), 
-                         a_cds(i),
-                         e_cds(i));
-        }
-    }
-
-    static SolvatedSurfaceProperties load(const std::string &filename) {
-        std::ifstream file(filename);
-        std::string line;
-        size_t N;
-        SolvatedSurfaceProperties props;
-        double coul_x, coul_y, coul_z, cds_x, cds_y, cds_z;
-        double e_coul, e_cds, e_ele;
-        double area;
-        std::getline(file, line);
-        scn::scan_default(line, N);
-        std::getline(file, line);
-        scn::scan(line, "coulomb esolv = {} dg_ele = {} dg_gas = {}", props.esolv, props.dg_ele, props.dg_gas);
-        props.coulomb_pos = occ::Mat3N::Zero(3, N);
-        props.e_coulomb = occ::Vec::Zero(N);
-        props.e_ele = occ::Vec::Zero(N);
-        props.a_coulomb = occ::Vec::Zero(N);
-        for(size_t i = 0; i < N; i++) {
-            std::getline(file, line);
-            scn::scan_default(line, coul_x, coul_y, coul_z, area, e_coul, e_ele);
-            props.coulomb_pos(0, i) = coul_x;
-            props.coulomb_pos(1, i) = coul_y;
-            props.coulomb_pos(2, i) = coul_z;
-            props.a_coulomb(i) = area;
-            props.e_coulomb(i) = e_coul;
-            props.e_ele(i) = e_ele;
-        }
-        std::getline(file, line);
-        scn::scan_default(line, N);
-        props.cds_pos = occ::Mat3N::Zero(3, N);
-        props.e_cds = occ::Vec::Zero(N);
-        props.a_cds = occ::Vec::Zero(N);
-        std::getline(file, line);
-        for(size_t i = 0; i < N; i++) {
-            std::getline(file, line);
-            scn::scan_default(line, cds_x, cds_y, cds_z, area, e_cds);
-            props.cds_pos(0, i) = cds_x;
-            props.cds_pos(1, i) = cds_y;
-            props.cds_pos(2, i) = cds_z;
-            props.a_cds(i) = area;
-            props.e_cds(i) = e_cds;
-        }
-        return props;
-    }
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SolvatedSurfaceProperties,
+    esolv,
+    dg_ele,
+    dg_gas,
+    dg_correction,
+    coulomb_pos,
+    cds_pos,
+    e_coulomb,
+    e_cds,
+    e_ele,
+    a_coulomb,
+    a_cds)
+
+
+namespace occ::qm {
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Energy,
+    coulomb,
+    exchange,
+    nuclear_repulsion,
+    nuclear_attraction,
+    kinetic,
+    core,
+    total
+)
+}
 
 Crystal read_crystal(const std::string &filename) {
     occ::io::CifParser parser;
     return parser.parse_crystal(filename).value();
 }
 
-CEModelInteraction::EnergyComponents read_energy_components(const std::string &line) {
-    CEModelInteraction::EnergyComponents components;
-    scn::scan(line, "{{ e_coul: {}, e_rep: {}, e_pol: {}, e_disp: {}, e_tot: {} }}",
-              components.coulomb, components.exchange_repulsion,
-              components.polarization, components.dispersion, components.total);
-    return components;
-}
 
 Wavefunction calculate_wavefunction(const Molecule &mol,
                                     const std::string &name) {
@@ -217,7 +163,7 @@ std::vector<occ::Vec3> calculate_net_dipole(const std::vector<Wavefunction> &wfn
 	    dipole.array() += ((pos_b.colwise() - center_a).array() * charges.array()).rowwise().sum();
 	    j++;
 	}
-	dipoles.push_back(dipole);
+	dipoles.push_back(dipole / BOHR_TO_ANGSTROM);
     }
     return dipoles;
 }
@@ -235,11 +181,15 @@ calculate_solvated_surfaces(const std::string &basename,
     std::vector<Wavefunction> solvated_wfns;
     size_t index = 0;
     for (const auto &wfn : wfns) {
-        fs::path props_path(fmt::format("{}_{}_{}_surface.txt", basename, index, solvent_name));
+        fs::path props_path(fmt::format("{}_{}_{}_surface.json", basename, index, solvent_name));
         fs::path fchk_path(fmt::format("{}_{}_{}.fchk", basename, index, solvent_name));
         if (fs::exists(props_path)) {
             fmt::print("Loading surface properties from {}\n", props_path);
-            result.emplace_back(SolvatedSurfaceProperties::load(props_path.string()));
+	    {
+		std::ifstream ifs(props_path.string());
+		auto jf = nlohmann::json::parse(ifs);
+		result.emplace_back(jf.get<SolvatedSurfaceProperties>());
+	    }
 
             if(fs::exists(fchk_path)) {
                 fmt::print("Loading solvated wavefunction from {}\n", fchk_path);
@@ -348,7 +298,12 @@ calculate_solvated_surfaces(const std::string &basename,
             props.esolv = e - original_energy;
             props.e_ele =
                 (props.dg_ele / coul_areas.array().sum()) * coul_areas.array();
-            props.save(props_path.string());
+
+	    {
+		std::ofstream ofs(props_path.string());
+		nlohmann::json j = props;
+		ofs << j;
+	    }
             result.push_back(props);
         }
         index++;
@@ -356,18 +311,27 @@ calculate_solvated_surfaces(const std::string &basename,
     return {result, solvated_wfns};
 }
 
-void compute_monomer_energies(std::vector<Wavefunction> &wfns) {
-    size_t complete = 0;
+void compute_monomer_energies(const std::string &basename, std::vector<Wavefunction> &wfns) {
+    size_t idx = 0;
     for (auto &wfn : wfns) {
-        fmt::print("Calculating unique monomer energies for molecule {}\n",
-                   complete, wfns.size());
-        std::cout << std::flush;
-        HartreeFock hf(wfn.atoms, wfn.basis);
-	occ::Mat schwarz = hf.compute_schwarz_ints();
-        occ::interaction::compute_ce_model_energies(wfn, hf, 1e-8, schwarz);
-        complete++;
+	fs::path monomer_energies_path(fmt::format("{}_{}_monomer_energies.json", basename, idx));
+	if (fs::exists(monomer_energies_path)) {
+	    occ::log::debug("Loading monomer energies from {}", monomer_energies_path);
+	    std::ifstream ifs(monomer_energies_path.string());
+	    wfn.energy = nlohmann::json::parse(ifs).get<occ::qm::Energy>();
+	}
+	else {
+	    std::cout << std::flush;
+	    HartreeFock hf(wfn.atoms, wfn.basis);
+	    occ::Mat schwarz = hf.compute_schwarz_ints();
+	    occ::interaction::compute_ce_model_energies(wfn, hf, 1e-8, schwarz);
+	    occ::log::debug("Writing monomer energies to {}", monomer_energies_path);
+	    std::ofstream ofs(monomer_energies_path.string());
+	    nlohmann::json j = wfn.energy;
+	    ofs << j;
+	}
+	idx++;
     }
-    fmt::print("Finished calculating {} unique monomer energies\n", complete);
 }
 
 void write_xyz_neighbors(const std::string &filename, const std::vector<Dimer> &neighbors) {
@@ -530,7 +494,7 @@ struct AssignedEnergy {
 std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
     int i, const std::vector<SolventNeighborContribution> &solv,
     const occ::crystal::CrystalDimers &crystal_dimers,
-    const std::vector<CEModelInteraction::EnergyComponents> dimer_energies) {
+    const std::vector<occ::interaction::CEEnergyComponents> dimer_energies) {
     std::vector<AssignedEnergy> crystal_contributions(solv.size());
     double total_taken{0.0};
     const auto &n = crystal_dimers.molecule_neighbors[i];
@@ -677,13 +641,13 @@ int main(int argc, char **argv) {
 
         tprev = sw.read();
         sw.start();
-        compute_monomer_energies(wfns);
-        compute_monomer_energies(solvated_wavefunctions);
+	fmt::print("Computing monomer energies for gas phase\n");
+        compute_monomer_energies(basename, wfns);
+	fmt::print("Computing monomer energies for solution phase\n");
+        compute_monomer_energies(fmt::format("{}_{}", basename, solvent), solvated_wavefunctions);
         sw.stop();
         fmt::print("Computing monomer energies took {:.6f} seconds\n",
                    sw.read() - tprev);
-
-
 
         const std::string row_fmt_string =
             "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
@@ -704,7 +668,7 @@ int main(int argc, char **argv) {
         }();
 
 	occ::crystal::CrystalDimers crystal_dimers;
-	std::vector<occ::main::EnergyComponentsCE> dimer_energies;
+	std::vector<occ::interaction::CEEnergyComponents> dimer_energies;
 
 
 	occ::main::LatticeConvergenceSettings convergence_settings;
@@ -719,7 +683,8 @@ int main(int argc, char **argv) {
 
 	auto dipoles = calculate_net_dipole(wfns_b, crystal_dimers);
 	for(const auto &x: dipoles) {
-	    fmt::print("Net dipole {}\n", x.transpose());
+	    fmt::print("Net dipole for cluster\n  x = {:12.5f}  y = {:12.5f}  z = {:12.5f}\n", 
+		    x(0), x(1), x(2));
 	}
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
@@ -755,7 +720,7 @@ int main(int argc, char **argv) {
                        "=============================\n");
 
             size_t j = 0;
-            CEModelInteraction::EnergyComponents total;
+	    occ::interaction::CEEnergyComponents total;
 
             if(write_dump_files) {
 		// write neighbors file for molecule i

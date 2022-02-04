@@ -62,7 +62,7 @@ void CEModelInteraction::use_density_fitting() {
     m_use_density_fitting = true;
 }
 
-CEModelInteraction::EnergyComponents
+CEEnergyComponents
 CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
     using occ::disp::ce_model_dispersion_energy;
     using occ::hf::HartreeFock;
@@ -115,7 +115,7 @@ CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
         ABn.energy.nuclear_repulsion -
         (A.energy.nuclear_repulsion + B.energy.nuclear_repulsion);
 
-    EnergyComponents energy;
+    CEEnergyComponents energy;
     energy.coulomb =
         E_ABn.coulomb + E_ABn.nuclear_attraction + E_ABn.nuclear_repulsion;
     double eABn = ABn.energy.core + ABn.energy.exchange + ABn.energy.coulomb;

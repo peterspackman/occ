@@ -8,27 +8,32 @@
 #include <scn/scn.h>
 #include <occ/core/util.h>
 #include <occ/core/logger.h>
+#include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
+
+namespace occ::interaction {
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CEEnergyComponents,
+        coulomb,
+        exchange_repulsion,
+        polarization,
+        dispersion,
+        total)
+}
 
 namespace occ::main {
 
 using occ::interaction::CEModelInteraction;
-using EnergyComponentsCE = CEModelInteraction::EnergyComponents;
+using occ::interaction::CEEnergyComponents;
 using occ::core::Dimer;
 using occ::units::BOHR_TO_ANGSTROM;
 using occ::qm::Wavefunction;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
 
-EnergyComponentsCE read_energy_components(const std::string &line) {
-    CEModelInteraction::EnergyComponents components;
-    scn::scan(line, "{{ e_coul: {}, e_rep: {}, e_pol: {}, e_disp: {}, e_tot: {} }}",
-              components.coulomb, components.exchange_repulsion,
-              components.polarization, components.dispersion, components.total);
-    components.is_computed = true;
-    return components;
-}
+
+
 
 auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
                          const Crystal &c) {
@@ -47,7 +52,7 @@ auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
 
 
 bool write_xyz_dimer(const std::string &filename, const Dimer &dimer,
-                     std::optional<EnergyComponentsCE> energies) {
+                     std::optional<CEEnergyComponents> energies) {
 
     using occ::core::Element;
     auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
@@ -56,9 +61,8 @@ bool write_xyz_dimer(const std::string &filename, const Dimer &dimer,
     const auto &nums = dimer.atomic_numbers();
     output.print("{}\n", nums.rows());
     if(energies) {
-        auto e = *energies;
-        output.print("{{ e_coul: {}, e_rep: {}, e_pol: {}, e_disp: {}, e_tot: {} }}",
-                     e.coulomb, e.exchange_repulsion, e.polarization, e.dispersion, e.total);
+	nlohmann::json j = *energies;
+        output.print("{}", j.dump());
     }
     output.print("\n");
     for (size_t i = 0; i < nums.rows(); i++) {
@@ -69,7 +73,7 @@ bool write_xyz_dimer(const std::string &filename, const Dimer &dimer,
     return true;
 }
 
-EnergyComponentsCE ce_model_energy(const Dimer &dimer,
+CEEnergyComponents ce_model_energy(const Dimer &dimer,
                                    const std::vector<Wavefunction> &wfns_a,
                                    const std::vector<Wavefunction> &wfns_b,
                                    const Crystal &crystal) {
@@ -111,7 +115,7 @@ int compute_ce_model_energies_radius(
                               const std::vector<Wavefunction> &wfns_a,
                               const std::vector<Wavefunction> &wfns_b,
                               const std::string &basename, double radius, 
-			      std::vector<EnergyComponentsCE> &dimer_energies) {
+			      std::vector<CEEnergyComponents> &dimer_energies) {
     using occ::crystal::SymmetryOperation;
     occ::timing::StopWatch sw;
     if(dimer_energies.size() < dimers.size()) {
@@ -123,7 +127,7 @@ int compute_ce_model_energies_radius(
         auto tprev = sw.read();
         sw.start();
 
-        EnergyComponentsCE &dimer_energy = dimer_energies[current_dimer];
+        CEEnergyComponents &dimer_energy = dimer_energies[current_dimer];
         std::string dimer_energy_file(fmt::format("{}_dimer_{}_energies.xyz", basename, current_dimer));
 
         if(dimer.nearest_distance() > radius ||
@@ -161,20 +165,20 @@ int compute_ce_model_energies_radius(
     return computed_dimers;
 }
 
-std::vector<EnergyComponentsCE> ce_model_energies(
+std::vector<CEEnergyComponents> ce_model_energies(
                               const Crystal &crystal, 
                               const std::vector<Dimer> &dimers,
                               const std::vector<Wavefunction> &wfns_a,
                               const std::vector<Wavefunction> &wfns_b,
                               const std::string &basename) {
-    std::vector<EnergyComponentsCE> result;
+    std::vector<CEEnergyComponents> result;
     compute_ce_model_energies_radius(crystal, dimers, wfns_a, wfns_b, basename, std::numeric_limits<double>::max(), result);
     return result;
 }
 
 
 
-bool load_dimer_energy(const std::string &filename, EnergyComponentsCE &energies) {
+bool load_dimer_energy(const std::string &filename, CEEnergyComponents &energies) {
     if(!fs::exists(filename))
         return false;
     occ::log::info("Load dimer energies from {}", filename);
@@ -182,12 +186,13 @@ bool load_dimer_energy(const std::string &filename, EnergyComponentsCE &energies
     std::string line;
     std::getline(file, line);
     std::getline(file, line);
-    energies = read_energy_components(line);
+    energies = nlohmann::json::parse(line).get<CEEnergyComponents>();
+    energies.is_computed = true;
     return true;
 }
 
 
-std::pair<occ::crystal::CrystalDimers, std::vector<EnergyComponentsCE>>
+std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
 converged_lattice_energies(const Crystal &crystal,
 	    const std::vector<Wavefunction> &wfns_a,
 	    const std::vector<Wavefunction> &wfns_b,
@@ -195,7 +200,7 @@ converged_lattice_energies(const Crystal &crystal,
 	    const LatticeConvergenceSettings conv) {
 
     crystal::CrystalDimers converged_dimers;
-    std::vector<EnergyComponentsCE> converged_energies;
+    std::vector<CEEnergyComponents> converged_energies;
     double lattice_energy{0.0}, previous_lattice_energy{0.0};
     double current_radius = std::max(conv.radius_increment, conv.min_radius);
     size_t cycle{1};
