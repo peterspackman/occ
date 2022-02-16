@@ -19,7 +19,7 @@ void read_matrix_block(std::istream &stream, std::vector<T> &destination,
     std::string line;
     while (destination.size() < count) {
         std::getline(stream, line);
-        scn::scan_list(line, destination);
+        auto result = scn::scan_list(line, destination);
     }
 }
 
@@ -102,93 +102,115 @@ void FchkReader::parse(std::istream &stream) {
     size_t count;
     while (std::getline(stream, line)) {
         switch (resolve_line(line)) {
-        case NumElectrons:
-            scn::scan(line, "Number of electrons I {}", m_num_electrons);
+        case NumElectrons: {
+            auto result = scn::scan(line, "Number of electrons I {}", m_num_electrons);
             break;
-        case SCFEnergy:
-            scn::scan(line, "SCF Energy R {}", m_scf_energy);
+        }
+        case SCFEnergy: {
+            auto result = scn::scan(line, "SCF Energy R {}", m_scf_energy);
             break;
-        case NumBasisFunctions:
-            scn::scan(line, "Number of basis functions I {}",
+	}
+        case NumBasisFunctions: {
+            auto result = scn::scan(line, "Number of basis functions I {}",
                       m_num_basis_functions);
             break;
-        case NumAlpha:
-            scn::scan(line, "Number of alpha electrons I {}", m_num_alpha);
+	}
+        case NumAlpha: {
+            auto result = scn::scan(line, "Number of alpha electrons I {}", m_num_alpha);
             break;
-        case NumBeta:
-            scn::scan(line, "Number of beta electrons I {}", m_num_beta);
+	}
+        case NumBeta: {
+            auto result = scn::scan(line, "Number of beta electrons I {}", m_num_beta);
             break;
-        case AtomicNumbers:
-            scn::scan(line, "Atomic numbers I N= {}", count);
+	}
+        case AtomicNumbers: {
+            auto result = scn::scan(line, "Atomic numbers I N= {}", count);
             read_matrix_block<int>(stream, m_atomic_numbers, count);
             break;
-        case AtomicPositions:
-            scn::scan(line, "Current cartesian coordinates R N= {}", count);
+	}
+        case AtomicPositions: {
+            auto result = scn::scan(line, "Current cartesian coordinates R N= {}", count);
             read_matrix_block<double>(stream, m_atomic_positions, count);
             break;
-        case AlphaMO:
-            scn::scan(line, "Alpha MO coefficients R N= {}", count);
+	}
+        case AlphaMO: {
+            auto result = scn::scan(line, "Alpha MO coefficients R N= {}", count);
             read_matrix_block<double>(stream, m_alpha_mos, count);
             break;
-        case BetaMO:
-            scn::scan(line, "Beta MO coefficients R N= {}", count);
+	}
+        case BetaMO: {
+            auto result = scn::scan(line, "Beta MO coefficients R N= {}", count);
             read_matrix_block<double>(stream, m_beta_mos, count);
             break;
-        case AlphaMOEnergies:
-            scn::scan(line, "Alpha Orbital Energies R N= {}", count);
+	}
+        case AlphaMOEnergies: {
+            auto result = scn::scan(line, "Alpha Orbital Energies R N= {}", count);
             read_matrix_block<double>(stream, m_alpha_mo_energies, count);
             break;
-        case BetaMOEnergies:
-            scn::scan(line, "Beta Orbital Energies R N= {}", count);
+	}
+        case BetaMOEnergies: {
+            auto result = scn::scan(line, "Beta Orbital Energies R N= {}", count);
             read_matrix_block<double>(stream, m_beta_mo_energies, count);
             break;
-        case NumShells:
-            scn::scan(line, "Number of contracted shells I {}",
+	}
+        case NumShells: {
+            auto result = scn::scan(line, "Number of contracted shells I {}",
                       m_basis.num_shells);
             break;
-        case NumPrimitiveShells:
-            scn::scan(line, "Number of primitive shells I {}",
+	}
+        case NumPrimitiveShells: {
+            auto result = scn::scan(line, "Number of primitive shells I {}",
                       m_basis.num_primitives);
             break;
-        case ShellTypes:
-            scn::scan(line, "Shell types I N= {}", count);
+	}
+        case ShellTypes: {
+            auto result = scn::scan(line, "Shell types I N= {}", count);
             read_matrix_block<int>(stream, m_basis.shell_types, count);
             break;
-        case PrimitivesPerShell:
-            scn::scan(line, "Number of primitives per shell I N= {}", count);
+	}
+        case PrimitivesPerShell: {
+            auto result = scn::scan(line, "Number of primitives per shell I N= {}", count);
             read_matrix_block<int>(stream, m_basis.primitives_per_shell, count);
             break;
-        case ShellToAtomMap:
-            scn::scan(line, "Shell to atom map I N= {}", count);
+	}
+        case ShellToAtomMap: {
+            auto result = scn::scan(line, "Shell to atom map I N= {}", count);
             read_matrix_block<int>(stream, m_basis.shell2atom, count);
             break;
-        case PrimitiveExponents:
-            scn::scan(line, "Primitive exponents R N= {}", count);
+	}
+        case PrimitiveExponents: {
+            auto result = scn::scan(line, "Primitive exponents R N= {}", count);
             read_matrix_block<double>(stream, m_basis.primitive_exponents,
                                       count);
             break;
-        case ContractionCoefficients:
-            scn::scan(line, "Contraction coefficients R N= {}", count);
+	}
+        case ContractionCoefficients: {
+            auto result = scn::scan(line, "Contraction coefficients R N= {}", count);
             read_matrix_block<double>(stream, m_basis.contraction_coefficients,
                                       count);
             break;
-        case SPContractionCoefficients:
-            scn::scan(line, "P(S=P) Contraction coefficients R N= {}", count);
+	}
+        case SPContractionCoefficients: {
+            auto result = scn::scan(line, "P(S=P) Contraction coefficients R N= {}", count);
             read_matrix_block<double>(
                 stream, m_basis.sp_contraction_coefficients, count);
             break;
-        case ShellCoordinates:
-            scn::scan(line, "Coordinates of each shell R N= {}", count);
+	}
+        case ShellCoordinates: {
+            auto result = scn::scan(line, "Coordinates of each shell R N= {}", count);
             read_matrix_block<double>(stream, m_basis.shell_coordinates, count);
             break;
-        case SCFDensity:
-            scn::scan(line, "Total SCF Density R N= {}", count);
+	}
+        case SCFDensity: {
+            auto result = scn::scan(line, "Total SCF Density R N= {}", count);
             read_matrix_block<double>(stream, m_scf_density, count);
             break;
-        case MP2Density:
-            scn::scan(line, "Total MP2 Density R N= {}", count);
+	}
+        case MP2Density: {
+            auto result = scn::scan(line, "Total MP2 Density R N= {}", count);
             read_matrix_block<double>(stream, m_mp2_density, count);
             break;
+	}
         default:
             continue;
         }

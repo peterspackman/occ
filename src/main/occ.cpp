@@ -13,6 +13,7 @@
 #include <occ/qm/partitioning.h>
 #include <spdlog/cfg/env.h>
 #include <occ/main/single_point.h>
+#include <occ/main/pair_energy.h>
 #include <occ/main/version.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
@@ -191,6 +192,8 @@ int main(int argc, char *argv[]) {
 	}
 	else if(config.driver.driver == "pair_energy") {
 	    fmt::print("Pair energy\n");
+	    occ::main::PairEnergy pair_energy(config);
+	    pair_energy.compute();
 	}
 	else {
 	    fmt::print("Unknown driver: {}\n", config.driver.driver);

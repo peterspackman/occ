@@ -4,13 +4,34 @@
 #include <occ/core/dimer.h>
 #include <occ/crystal/crystal.h>
 #include <optional>
+#include <occ/qm/wavefunction.h>
+#include <occ/io/occ_input.h>
 
 namespace occ::main {
 
 using occ::interaction::CEEnergyComponents;
+using occ::interaction::CEParameterizedModel;
 using occ::core::Dimer;
 using occ::qm::Wavefunction;
 using occ::crystal::Crystal;
+
+
+struct PairEnergy {
+    struct Monomer {
+	occ::qm::Wavefunction wfn;
+	occ::Mat3 rotation{occ::Mat3::Identity()};
+	occ::Vec3 translation{occ::Vec3::Zero()};
+    };
+
+    PairEnergy(const occ::io::OccInput &input);
+
+    void compute();
+    Monomer a;
+    Monomer b;
+    CEParameterizedModel model{occ::interaction::CE_B3LYP_631Gdp};
+    CEEnergyComponents energy;
+};
+
 
 bool load_dimer_energy(const std::string &, CEEnergyComponents&);
 bool write_xyz_dimer(const std::string&, const Dimer &,

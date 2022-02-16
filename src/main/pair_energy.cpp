@@ -25,6 +25,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CEEnergyComponents,
 namespace occ::main {
 
 using occ::interaction::CEModelInteraction;
+using occ::interaction::CEParameterizedModel;
 using occ::interaction::CEEnergyComponents;
 using occ::core::Dimer;
 using occ::units::BOHR_TO_ANGSTROM;
@@ -33,6 +34,68 @@ using occ::core::Molecule;
 using occ::crystal::Crystal;
 
 
+Wavefunction load_wavefunction(const std::string &filename) {
+    namespace fs = std::filesystem;
+    using occ::util::to_lower;
+    std::string ext = fs::path(filename).extension();
+    to_lower(ext);
+    if (ext == ".fchk") {
+	using occ::io::FchkReader;
+	FchkReader fchk(filename);
+	return Wavefunction(fchk);
+    }
+    if (ext == ".molden" || ext == ".input") {
+	using occ::io::MoldenReader;
+	MoldenReader molden(filename);
+	return Wavefunction(molden);
+    }
+    throw std::runtime_error(
+	    "Unknown file extension when reading wavefunction: " + ext);
+}
+
+PairEnergy::PairEnergy(const occ::io::OccInput &input) {
+    if(input.pair.source_a == "none" || input.pair.source_b == "none") {
+	throw "Both monomers in a pair energy need a wavefunction set";
+    }
+
+    a.wfn = load_wavefunction(input.pair.source_a);
+    b.wfn = load_wavefunction(input.pair.source_b);
+    a.rotation = input.pair.rotation_a;
+    b.rotation = input.pair.rotation_b;
+    a.translation =  input.pair.translation_a * occ::units::ANGSTROM_TO_BOHR;
+    b.translation =  input.pair.translation_b * occ::units::ANGSTROM_TO_BOHR;
+
+    a.wfn.apply_transformation(a.rotation, a.translation);
+    b.wfn.apply_transformation(b.rotation, b.translation);
+}
+
+void PairEnergy::compute() {
+
+    CEModelInteraction interaction(model);
+    auto interaction_energy = interaction(a.wfn, b.wfn);
+    occ::timing::stop(occ::timing::category::global);
+
+    fmt::print("Monomer A energies\n");
+    a.wfn.energy.print();
+
+    fmt::print("Monomer B energies\n");
+    b.wfn.energy.print();
+
+    fmt::print("\nDimer\n");
+
+    fmt::print("Component              Energy (kJ/mol)\n\n");
+    fmt::print("Coulomb               {: 12.6f}\n",
+	    interaction_energy.coulomb_kjmol());
+    fmt::print("Exchange-repulsion    {: 12.6f}\n",
+	    interaction_energy.exchange_kjmol());
+    fmt::print("Polarization          {: 12.6f}\n",
+	    interaction_energy.polarization_kjmol());
+    fmt::print("Dispersion            {: 12.6f}\n",
+	    interaction_energy.dispersion_kjmol());
+    fmt::print("__________________________________\n");
+    fmt::print("Total 		      {: 12.6f}\n",
+	    interaction_energy.total_kjmol());
+}
 
 
 auto calculate_transform(const Wavefunction &wfn, const Molecule &m,

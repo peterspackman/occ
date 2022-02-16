@@ -46,13 +46,6 @@ void from_json(const nlohmann::json &J, QCSchemaTopology &mol) {
     }
 }
 
-void from_json(const nlohmann::json &J, QCSchemaInput &qc) {
-    if(J.contains("name")) { J.at("name").get_to(qc.name); }
-    J.at("molecule").get_to(qc.topology);
-    J.at("model").get_to(qc.model);
-    J.at("driver").get_to(qc.driver);
-}
-
 void load_matrix(const nlohmann::json &json, Mat3 &mat) {
     for(size_t i = 0; i < json.size(); i++) {
 	const auto& row = json.at(i);
@@ -68,18 +61,27 @@ void load_vector(const nlohmann::json &json, Vec3 &vec) {
     }
 }
 
-
 void from_json(const nlohmann::json &J, PairInput &p) {
-    if(!J.contains("monomers")) return;
-    const auto& monomers = J["monomers"];
-    p.source_a = monomers[0]["source"];
-    p.source_b = monomers[1]["source"];
+    p.source_a = J[0]["source"];
+    p.source_b = J[1]["source"];
 
-    load_matrix(monomers[0]["rotation"], p.rotation_a);
-    load_matrix(monomers[1]["rotation"], p.rotation_b);
+    load_matrix(J[0]["rotation"], p.rotation_a);
+    load_matrix(J[1]["rotation"], p.rotation_b);
 
-    load_vector(monomers[0]["translation"], p.translation_a);
-    load_vector(monomers[1]["translation"], p.translation_b);
+    load_vector(J[0]["translation"], p.translation_a);
+    load_vector(J[1]["translation"], p.translation_b);
+}
+
+void from_json(const nlohmann::json &J, QCSchemaInput &qc) {
+    if(J.contains("name")) { J.at("name").get_to(qc.name); }
+    J.at("driver").get_to(qc.driver);
+    if(qc.driver == "energy") {
+	J.at("molecule").get_to(qc.topology);
+	J.at("model").get_to(qc.model);
+    }
+    else if (qc.driver == "pair_energy") {
+	J.at("monomers").get_to(qc.pair_input);
+    }
 }
 
 QCSchemaReader::QCSchemaReader(const std::string &filename) : m_filename(filename) {
@@ -104,13 +106,13 @@ void QCSchemaReader::parse(std::istream &is) {
 void QCSchemaReader::update_occ_input(OccInput &result) const {
     result.name = input.name;
     result.driver.driver = input.driver;
+    result.pair = input.pair_input;
     result.geometry.elements = input.topology.elements;
     result.geometry.positions = input.topology.positions;
     result.electronic.multiplicity = input.topology.multiplicity;
     result.electronic.charge = input.topology.charge;
     result.method.name = input.model.method;
     result.basis.name = input.model.basis;
-    result.pair = input.pair_input;
 }
 
 OccInput QCSchemaReader::as_occ_input() const {
