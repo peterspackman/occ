@@ -53,6 +53,35 @@ void from_json(const nlohmann::json &J, QCSchemaInput &qc) {
     J.at("driver").get_to(qc.driver);
 }
 
+void load_matrix(const nlohmann::json &json, Mat3 &mat) {
+    for(size_t i = 0; i < json.size(); i++) {
+	const auto& row = json.at(i);
+	for (size_t j = 0; j < row.size(); j++) {
+	    mat(i, j) = row.at(j).get<double>();
+	}
+    }
+}
+
+void load_vector(const nlohmann::json &json, Vec3 &vec) {
+    for(size_t i = 0; i < json.size(); i++) {
+	vec(i) = json.at(i).get<double>();
+    }
+}
+
+
+void from_json(const nlohmann::json &J, PairInput &p) {
+    if(!J.contains("monomers")) return;
+    const auto& monomers = J["monomers"];
+    p.source_a = monomers[0]["source"];
+    p.source_b = monomers[1]["source"];
+
+    load_matrix(monomers[0]["rotation"], p.rotation_a);
+    load_matrix(monomers[1]["rotation"], p.rotation_b);
+
+    load_vector(monomers[0]["translation"], p.translation_a);
+    load_vector(monomers[1]["translation"], p.translation_b);
+}
+
 QCSchemaReader::QCSchemaReader(const std::string &filename) : m_filename(filename) {
     occ::timing::start(occ::timing::category::io);
     std::ifstream file(filename);
@@ -74,12 +103,14 @@ void QCSchemaReader::parse(std::istream &is) {
 
 void QCSchemaReader::update_occ_input(OccInput &result) const {
     result.name = input.name;
+    result.driver.driver = input.driver;
     result.geometry.elements = input.topology.elements;
     result.geometry.positions = input.topology.positions;
     result.electronic.multiplicity = input.topology.multiplicity;
     result.electronic.charge = input.topology.charge;
     result.method.name = input.model.method;
     result.basis.name = input.model.basis;
+    result.pair = input.pair_input;
 }
 
 OccInput QCSchemaReader::as_occ_input() const {

@@ -411,12 +411,21 @@ void Wavefunction::save(FchkWriter &fchk) {
     fchk.set_scalar("Number of alpha electrons", num_alpha);
     fchk.set_scalar("Number of beta electrons", num_beta);
     fchk.set_scalar("Number of basis functions", nbf);
+    fchk.set_scalar("Number of independent functions", nbf);
+    fchk.set_scalar("Number of point charges in /Mol/", 0);
+    fchk.set_scalar("Number of translation vectors", 0);
+    fchk.set_scalar("Force Field", 0);
+
     // nuclear charges
     occ::IVec nums = atomic_numbers();
     occ::Vec atomic_prop = nums.cast<double>();
     fchk.set_vector("Atomic numbers", nums);
     fchk.set_vector("Nuclear charges", atomic_prop);
     fchk.set_vector("Current cartesian coordinates", positions());
+    fchk.set_vector("Int Atom Types", occ::IVec::Zero(nums.rows()));
+    fchk.set_vector("MM Charges", occ::Vec::Zero(nums.rows()));
+    fchk.set_vector("Atom residue num", occ::IVec::Zero(nums.rows()));
+
     // atomic weights
     for (Eigen::Index i = 0; i < atomic_prop.rows(); i++)
         atomic_prop(i) =
@@ -478,6 +487,13 @@ void Wavefunction::save(FchkWriter &fchk) {
         shell2atom.push_back(x + 1);
     }
     fchk.set_vector("Shell to atom map", shell2atom);
+
+    // TODO fix this is wrong
+    fchk.set_scalar("Virial ratio",
+	-(energy.nuclear_repulsion + energy.nuclear_attraction + energy.coulomb + energy.exchange) / energy.kinetic);
+    fchk.set_scalar("SCF ratio", energy.total);
+    fchk.set_scalar("Total ratio", energy.total);
+
     occ::timing::stop(occ::timing::category::io);
 }
 

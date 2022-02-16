@@ -49,11 +49,22 @@ struct RuntimeInput {
     std::string output_filename{""};
 };
 
+struct PairInput {
+    std::string source_a{"none"};
+    Mat3 rotation_a{Mat3::Identity()};
+    Vec3 translation_a{Vec3::Zero()};
+
+    std::string source_b{"none"};
+    Mat3 rotation_b{Mat3::Identity()};
+    Vec3 translation_b{Vec3::Zero()};
+};
+
 struct OccInput {
     DriverInput driver;
     RuntimeInput runtime;
     ElectronInput electronic;
     GeometryInput geometry;
+    PairInput pair;
     MethodInput method;
     BasisSetInput basis;
     SolventInput solvent;

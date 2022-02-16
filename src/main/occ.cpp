@@ -167,27 +167,35 @@ int main(int argc, char *argv[]) {
         } else {
             fmt::print("spinorbital kind: restricted\n");
         }
-
-
         occ::timing::stop(occ::timing::category::io);
-        Wavefunction wfn = occ::main::single_point_calculation(config);
-        write_output_files(config, wfn);
+
+	if(config.driver.driver == "energy") {
+	    Wavefunction wfn = occ::main::single_point_calculation(config);
+	    write_output_files(config, wfn);
 
 
-        if (result.count("solvent")) {
-            config.solvent.solvent_name = result["solvent"].as<std::string>();
-            if (result.count("solvent-file"))
-                config.solvent.output_surface_filename =
-                    result["solvent-file"].as<std::string>();
-            Wavefunction wfn2 = occ::main::single_point_calculation(config, wfn);
-            double esolv = wfn2.energy.total - wfn.energy.total;
+	    if (result.count("solvent")) {
+		config.solvent.solvent_name = result["solvent"].as<std::string>();
+		if (result.count("solvent-file"))
+		    config.solvent.output_surface_filename =
+			result["solvent-file"].as<std::string>();
+		Wavefunction wfn2 = occ::main::single_point_calculation(config, wfn);
+		double esolv = wfn2.energy.total - wfn.energy.total;
 
-            fmt::print("estimated \u0394G(solv) {:20.12f} ({:.3f} kJ/mol, "
-                       "{:.3f} kcal/mol)\n",
-                       esolv, esolv * occ::units::AU_TO_KJ_PER_MOL,
-                       esolv * occ::units::AU_TO_KCAL_PER_MOL);
-            write_output_files(config, wfn2);
-        }
+		fmt::print("estimated \u0394G(solv) {:20.12f} ({:.3f} kJ/mol, "
+			   "{:.3f} kcal/mol)\n",
+			   esolv, esolv * occ::units::AU_TO_KJ_PER_MOL,
+			   esolv * occ::units::AU_TO_KCAL_PER_MOL);
+		write_output_files(config, wfn2);
+	    }
+	}
+	else if(config.driver.driver == "pair_energy") {
+	    fmt::print("Pair energy\n");
+	}
+	else {
+	    fmt::print("Unknown driver: {}\n", config.driver.driver);
+	    return 1;
+	}
 
     } catch (const char *ex) {
         fmt::print(error_format, ex);

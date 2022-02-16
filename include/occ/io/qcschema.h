@@ -1,6 +1,7 @@
 #pragma once
 #include <istream>
 #include <occ/core/element.h>
+#include <occ/io/occ_input.h>
 #include <array>
 
 namespace occ::io {
@@ -33,6 +34,7 @@ struct QCSchemaInput {
     std::string name{"input"};
     QCSchemaTopology topology;
     QCSchemaModel model;
+    PairInput pair_input;
     std::string driver;
 };
 
