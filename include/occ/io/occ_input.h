@@ -57,6 +57,7 @@ struct OccInput {
     MethodInput method;
     BasisSetInput basis;
     SolventInput solvent;
+    std::string name{""};
     std::string filename{""};
 };
 

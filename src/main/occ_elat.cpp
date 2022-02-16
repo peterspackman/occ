@@ -24,6 +24,7 @@ using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::SymmetryOperation;
 using occ::hf::HartreeFock;
+using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEModelInteraction;
 using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
@@ -258,7 +259,7 @@ int main(int argc, char *argv[]) {
         compute_monomer_energies(wfns);
         fmt::print("Calculating symmetry unique dimers\n");
 	occ::crystal::CrystalDimers crystal_dimers;
-	std::vector<CEModelInteraction::EnergyComponents> energies;
+	std::vector<CEEnergyComponents> energies;
 	occ::main::LatticeConvergenceSettings settings;
 	settings.max_radius = radius;
 	std::tie(crystal_dimers, energies) = occ::main::converged_lattice_energies(c, wfns, wfns, basename, settings);
@@ -285,7 +286,7 @@ int main(int argc, char *argv[]) {
 		       "E_disp", "E_tot");
 	    fmt::print("==================================================="
 		       "================================\n");
-	    CEModelInteraction::EnergyComponents molecule_total;
+	    CEEnergyComponents molecule_total;
 
 	    size_t j = 0;
 	    for (const auto &dimer : n) {

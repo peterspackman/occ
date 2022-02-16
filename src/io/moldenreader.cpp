@@ -93,7 +93,7 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args,
         std::string symbol;
         int idx;
         occ::core::Atom atom;
-        scn::scan_default(line, symbol, idx, atom.atomic_number, atom.x, atom.y,
+        auto scan_result = scn::scan_default(line, symbol, idx, atom.atomic_number, atom.x, atom.y,
                           atom.z);
         if (factor != 1.0) {
             atom.x *= factor;
@@ -164,14 +164,14 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3> &position,
     using occ::util::double_factorial;
     char shell_type;
     int num_primitives, second;
-    scn::scan_default(line, shell_type, num_primitives, second);
+    auto scan_result = scn::scan_default(line, shell_type, num_primitives, second);
     libint2::svector<double> alpha, coeffs;
     alpha.reserve(num_primitives), coeffs.reserve(num_primitives);
     int l = l_from_char(shell_type);
     for (int i = 0; i < num_primitives; i++) {
         std::getline(stream, line);
         double e, c;
-        scn::scan_default(line, e, c);
+        auto scan_result = scn::scan_default(line, e, c);
         alpha.push_back(e);
         coeffs.push_back(c);
     }
@@ -218,7 +218,7 @@ void MoldenReader::parse_gto_section(const std::optional<std::string> &args,
         }
         pos = stream.tellg();
         int atom_idx, second;
-        scn::scan_default(line, atom_idx, second);
+        auto scan_result = scn::scan_default(line, atom_idx, second);
         assert(atom_idx <= m_atoms.size());
         std::array<double, 3> position{m_atoms[atom_idx - 1].x,
                                        m_atoms[atom_idx - 1].y,
@@ -245,14 +245,14 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream) {
         if (startswith(line, "Sym", true)) {
 
         } else if (startswith(line, "Ene", true)) {
-            scn::scan(line, "Ene= {}", energy);
+            auto scan_result = scn::scan(line, "Ene= {}", energy);
         } else if (startswith(line, "Spin", true)) {
             std::string spin;
-            scn::scan(line, "Spin= {}", spin);
+            auto scan_result = scn::scan(line, "Spin= {}", spin);
             to_lower(spin);
             alpha = (spin == "alpha");
         } else if (startswith(line, "Occup", true)) {
-            scn::scan(line, "Occup= {}", occupation);
+            auto scan_result = scn::scan(line, "Occup= {}", occupation);
             m_num_electrons += occupation;
         } else {
             for (size_t i = 0; i < nbf(); i++) {
@@ -260,7 +260,7 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream) {
                     std::getline(stream, line);
                 int idx;
                 double coeff;
-                scn::scan_default(line, idx, coeff);
+                auto scan_result = scn::scan_default(line, idx, coeff);
                 if (alpha) {
                     m_molecular_orbitals_alpha(idx - 1, mo_a) = coeff;
                     m_energies_alpha(mo_a) = energy;

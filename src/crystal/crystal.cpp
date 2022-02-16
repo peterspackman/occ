@@ -481,7 +481,6 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
     size_t mol_idx = 0;
     for (const auto& mol : uc_mols) {
         Mat3N pos_frac = to_fractional(mol.positions());
-        fmt::print("Molecule {} fractional center = ({})\n", mol_idx++, pos_frac.rowwise().mean().transpose()); 
         for(size_t i = 0; i < pos_frac.cols(); i++) {
             const auto& pos = pos_frac.col(i);
             upper.h =

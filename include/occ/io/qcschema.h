@@ -30,6 +30,7 @@ struct QCSchemaModel {
 };
 
 struct QCSchemaInput {
+    std::string name{"input"};
     QCSchemaTopology topology;
     QCSchemaModel model;
     std::string driver;

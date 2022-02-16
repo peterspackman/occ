@@ -47,6 +47,7 @@ void from_json(const nlohmann::json &J, QCSchemaTopology &mol) {
 }
 
 void from_json(const nlohmann::json &J, QCSchemaInput &qc) {
+    if(J.contains("name")) { J.at("name").get_to(qc.name); }
     J.at("molecule").get_to(qc.topology);
     J.at("model").get_to(qc.model);
     J.at("driver").get_to(qc.driver);
@@ -72,6 +73,7 @@ void QCSchemaReader::parse(std::istream &is) {
 }
 
 void QCSchemaReader::update_occ_input(OccInput &result) const {
+    result.name = input.name;
     result.geometry.elements = input.topology.elements;
     result.geometry.positions = input.topology.positions;
     result.electronic.multiplicity = input.topology.multiplicity;

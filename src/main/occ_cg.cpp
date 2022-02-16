@@ -412,7 +412,9 @@ struct SolventNeighborContribution {
 std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
     const Crystal &crystal, const std::string &mol_name,
     const SolvatedSurfaceProperties &surface,
-    const std::vector<Dimer> &neighbors, const std::string &solvent) {
+    const std::vector<Dimer> &neighbors, 
+    const std::vector<Dimer> &nearest_neighbors, 
+    const std::string &solvent) {
     using occ::units::angstroms;
     std::vector<SolventNeighborContribution> energy_contribution(
         neighbors.size());
@@ -421,7 +423,7 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
     occ::IVec mol_idx;
     occ::IVec neighbor_idx_coul(surface.coulomb_pos.cols());
     occ::IVec neighbor_idx_cds(surface.cds_pos.cols());
-    std::tie(mol_idx, neigh_pos) = environment(neighbors);
+    std::tie(mol_idx, neigh_pos) = environment(nearest_neighbors);
 
     auto cfile =
         fmt::output_file(fmt::format("{}_coulomb.txt", mol_name),
@@ -590,7 +592,11 @@ int main(int argc, char **argv) {
     global_timer.start();
 
     try {
-        options.parse(argc, argv);
+        auto result = options.parse(argc, argv);
+	if(result.count("help")) {
+	    fmt::print("{}", options.help());
+	    exit(1);
+	}
     } catch (const std::runtime_error &err) {
         occ::log::error("error when parsing command line arguments: {}",
                         err.what());
@@ -673,7 +679,10 @@ int main(int argc, char **argv) {
 
 	occ::main::LatticeConvergenceSettings convergence_settings;
 	convergence_settings.max_radius = radius;
+	fmt::print("Computing crystal interactions using {} wavefunctions\n", wfn_choice);
 	std::tie(crystal_dimers, dimer_energies) = occ::main::converged_lattice_energies(c_symm, wfns_a, wfns_b, basename, convergence_settings);
+
+        auto cg_symm_dimers = c_symm.symmetry_unique_dimers(cg_radius);
 
         if (crystal_dimers.unique_dimers.size() < 1) {
             fmt::print("No dimers found using neighbour radius {:.3f}\n",
@@ -696,7 +705,7 @@ int main(int argc, char **argv) {
             const auto &n = mol_neighbors[i];
             std::string molname = fmt::format("{}_{}_{}", basename, i, solvent);
             auto solv = compute_solvation_energy_breakdown(
-                c_symm, molname, surfaces[i], n, solvent);
+                c_symm, molname, surfaces[i], n, cg_symm_dimers.molecule_neighbors[i], solvent);
             solvation_breakdowns.push_back(solv);
             auto crystal_contributions =
                 assign_interaction_terms_to_nearest_neighbours(

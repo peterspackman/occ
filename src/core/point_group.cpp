@@ -142,7 +142,6 @@ void MolecularPointGroup::init() {
     Eigen::SelfAdjointEigenSolver<Mat3> solver(inertia_tensor);
     eigenvalues = solver.eigenvalues();
     eigenvectors = solver.eigenvectors();
-    occ::log::debug("eigenvalues: {}", eigenvalues.transpose());
     rotor_type = occ::core::rotor::classify(eigenvalues(0), eigenvalues(1),
                                             eigenvalues(2), etol);
     symmetry_operations.push_back(SymOp());

@@ -26,7 +26,7 @@ void XyzFileReader::parse(std::istream &is) {
     std::string line;
     std::getline(is, line);
     int num_atoms;
-    scn::scan(line, "{}", num_atoms);
+    auto scan_result = scn::scan(line, "{}", num_atoms);
     std::vector<occ::core::Atom> atoms;
     positions.reserve(num_atoms);
     elements.reserve(num_atoms);
