@@ -32,7 +32,7 @@ class FockBuilder {
         Func &func, const BasisSet &obs, const ShellPairList &shellpair_list,
         const ShellPairData &shellpair_data, const Mat &D,
         double precision = std::numeric_limits<double>::epsilon(),
-        const Mat &Schwarz = Mat()) const {
+        const Mat &Schwarz = Mat()) const noexcept {
         occ::timing::start(occ::timing::category::fock);
         const auto n = obs.nbf();
         const auto nshells = obs.size();
@@ -196,7 +196,7 @@ class FockBuilder {
                      const ShellPairList &shellpair_list,
                      const ShellPairData &shellpair_data, const occ::qm::MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
-                     const Mat &Schwarz = Mat()) const {
+                     const Mat &Schwarz = Mat()) const noexcept {
         occ::timing::start(occ::timing::category::fock);
         using occ::parallel::nthreads;
         const auto n = obs.nbf();
@@ -205,7 +205,7 @@ class FockBuilder {
 
         auto lambda = [&](int thread_id, int bf1_first, int n1, int bf2_first,
                           int n2, int bf3_first, int n3, int bf4_first, int n4,
-                          const double *buffer, double scale) {
+                          const double *buffer, double scale) noexcept {
             auto &g = G[thread_id];
             for (auto f1 = 0, f1234 = 0; f1 != n1; ++f1) {
                 const auto bf1 = f1 + bf1_first;
@@ -335,7 +335,7 @@ class FockBuilder {
     compute_JK(const BasisSet &obs, const ShellPairList &shellpair_list,
                const ShellPairData &shellpair_data, const occ::qm::MolecularOrbitals &mo,
                double precision = std::numeric_limits<double>::epsilon(),
-               const Mat &Schwarz = Mat()) const {
+               const Mat &Schwarz = Mat()) const noexcept {
         occ::timing::start(occ::timing::category::jkmat);
         const auto n = obs.nbf();
         const auto nshells = obs.size();
@@ -346,7 +346,7 @@ class FockBuilder {
 
         auto lambda = [&](int thread_id, int bf1_first, int n1, int bf2_first,
                           int n2, int bf3_first, int n3, int bf4_first, int n4,
-                          const double *buffer, double scale) {
+                          const double *buffer, double scale) noexcept {
             auto &j = J[thread_id];
             auto &k = K[thread_id];
             auto ja = occ::qm::block::a(j);
@@ -484,7 +484,7 @@ class FockBuilder {
     Mat compute_J(const BasisSet &obs, const ShellPairList &shellpair_list,
                   const ShellPairData &shellpair_data, const MolecularOrbitals &mo,
                   double precision = std::numeric_limits<double>::epsilon(),
-                  const Mat &Schwarz = Mat()) const {
+                  const Mat &Schwarz = Mat()) const noexcept {
         occ::timing::start(occ::timing::category::jmat);
         const auto n = obs.nbf();
         using occ::parallel::nthreads;
@@ -495,7 +495,7 @@ class FockBuilder {
 
         auto lambda = [&](int thread_id, int bf1_first, int n1, int bf2_first,
                           int n2, int bf3_first, int n3, int bf4_first, int n4,
-                          const double *buffer, double scale) {
+                          const double *buffer, double scale) noexcept {
             auto &j = J[thread_id];
             auto ja = occ::qm::block::a(j);
             auto jb = occ::qm::block::b(j);

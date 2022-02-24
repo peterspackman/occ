@@ -22,6 +22,30 @@ struct Energy {
     double kinetic{0};
     double core{0};
     double total{0};
+
+    inline auto operator-(const Energy &rhs) {
+	return Energy{
+	    coulomb - rhs.coulomb,
+	    exchange - rhs.exchange,
+	    nuclear_repulsion - rhs.nuclear_repulsion,
+	    nuclear_attraction - rhs.nuclear_attraction,
+	    kinetic - rhs.kinetic,
+	    core - rhs.core,
+	    total - rhs.total,
+	};
+    }
+
+    inline auto operator+(const Energy &rhs) {
+	return Energy{
+	    coulomb + rhs.coulomb,
+	    exchange + rhs.exchange,
+	    nuclear_repulsion + rhs.nuclear_repulsion,
+	    nuclear_attraction + rhs.nuclear_attraction,
+	    kinetic + rhs.kinetic,
+	    core + rhs.core,
+	    total + rhs.total,
+	};
+    }
     void print() const;
 };
 

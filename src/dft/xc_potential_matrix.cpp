@@ -21,8 +21,6 @@ void xc_potential_matrix<Restricted, 1>(const DensityFunctional::Result &res,
                                         const Mat &rho,
                                         const occ::gto::GTOValues &gto_vals,
                                         Mat &Vxc, double &energy) {
-    Eigen::Index npt = res.npts;
-
     const auto &phi = gto_vals.phi;
     const auto &phi_x = gto_vals.phi_x;
     const auto &phi_y = gto_vals.phi_y;
@@ -45,13 +43,7 @@ void xc_potential_matrix<Restricted, 2>(const DensityFunctional::Result &res,
                                         const Mat &rho,
                                         const occ::gto::GTOValues &gto_vals,
                                         Mat &Vxc, double &energy) {
-    Eigen::Index npt = res.npts;
     xc_potential_matrix<Restricted, 1>(res, rho, gto_vals, Vxc, energy);
-
-    const auto &phi = gto_vals.phi;
-    const auto &phi_x = gto_vals.phi_x;
-    const auto &phi_y = gto_vals.phi_y;
-    const auto &phi_z = gto_vals.phi_z;
 
     // unsure about factors for vtau, vlaplacian
     // xx + yy + zz = rho(4)
