@@ -27,6 +27,7 @@ struct GeometryInput {
 
 struct DriverInput {
     std::string driver{"energy"};
+    int threads{1};
 };
 
 struct MethodInput {

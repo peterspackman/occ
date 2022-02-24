@@ -75,6 +75,7 @@ void from_json(const nlohmann::json &J, PairInput &p) {
 void from_json(const nlohmann::json &J, QCSchemaInput &qc) {
     if(J.contains("name")) { J.at("name").get_to(qc.name); }
     J.at("driver").get_to(qc.driver);
+    if(J.contains("threads")) { J.at("threads").get_to(qc.threads); }
     if(qc.driver == "energy") {
 	J.at("molecule").get_to(qc.topology);
 	J.at("model").get_to(qc.model);
@@ -106,6 +107,7 @@ void QCSchemaReader::parse(std::istream &is) {
 void QCSchemaReader::update_occ_input(OccInput &result) const {
     result.name = input.name;
     result.driver.driver = input.driver;
+    result.driver.threads = input.threads;
     result.pair = input.pair_input;
     result.geometry.elements = input.topology.elements;
     result.geometry.positions = input.topology.positions;

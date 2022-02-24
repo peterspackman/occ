@@ -3,7 +3,7 @@
 namespace occ::qm {
 
 std::pair<Mat, Vec> merge_molecular_orbitals(const Mat &mo_a, const Mat &mo_b,
-                                             const Vec &e_a, const Vec &e_b) {
+                                             const Vec &e_a, const Vec &e_b, bool sort_by_energy) {
     Mat merged =
         Mat::Zero(mo_a.rows() + mo_b.rows(), mo_a.cols() + mo_b.cols());
     Vec merged_energies(e_a.rows() + e_b.rows());
@@ -13,6 +13,12 @@ std::pair<Mat, Vec> merge_molecular_orbitals(const Mat &mo_a, const Mat &mo_b,
     idxs.reserve(merged_energies.rows());
     for (Eigen::Index i = 0; i < merged_energies.rows(); i++)
         idxs.push_back(i);
+    if(sort_by_energy) {
+	std::sort(idxs.begin(), idxs.end(),
+		  [&merged_energies](Eigen::Index a, Eigen::Index b) {
+		      return merged_energies(a) < merged_energies(b);
+		  });
+    }
     Vec sorted_energies(merged_energies.rows());
     for (Eigen::Index i = 0; i < merged_energies.rows(); i++) {
         Eigen::Index c = idxs[i];

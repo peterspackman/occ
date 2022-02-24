@@ -139,7 +139,9 @@ int main(int argc, char *argv[]) {
 	}
 
         using occ::parallel::nthreads;
-        nthreads = result["threads"].as<int>();
+	nthreads = std::max(1, config.driver.threads);
+        if(result.count("threads"))
+	    nthreads = result["threads"].as<int>();
 
         fmt::print("\nparallelization: {} threads, {} eigen threads\n",
                    nthreads, Eigen::nbThreads());

@@ -36,6 +36,7 @@ struct QCSchemaInput {
     QCSchemaModel model;
     PairInput pair_input;
     std::string driver;
+    int threads{1};
 };
 
 class QCSchemaReader {
