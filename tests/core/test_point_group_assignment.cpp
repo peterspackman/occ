@@ -1,6 +1,5 @@
 #include <occ/core/point_group.h>
 #include <occ/core/util.h>
-#include <fmt/ostream.h>
 #include "catch.hpp"
 
 using occ::core::Molecule;

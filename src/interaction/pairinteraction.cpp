@@ -62,6 +62,30 @@ void CEModelInteraction::use_density_fitting() {
     m_use_density_fitting = true;
 }
 
+void dump_matrix(const Mat& matrix) {
+    size_t maxdim = std::max(matrix.rows(), matrix.cols());
+    Eigen::Index fields = 5;
+
+    if (fields==0) fields = matrix.rows();
+    size_t n_block = static_cast<size_t>((matrix.cols() - 0.1)/fields) + 1;
+    for(size_t block = 0; block < n_block; block++) {
+	Eigen::Index f = fields * block;
+	Eigen::Index l = std::min(f + fields, matrix.cols());
+	fmt::print("{:8s}", " ");
+	for(size_t j = f; j < l; j++) {
+	    fmt::print(" {:8d}", j);
+	}
+	fmt::print("\n");
+	for(size_t i = 0; i < matrix.rows(); i++) {
+	    fmt::print("{:8d}", i);
+	    for(size_t j = f; j < l; j++) {
+		fmt::print(" {:8.5f}", matrix(i, j));
+	    }
+	    fmt::print("\n");
+	}
+    }
+}
+
 CEEnergyComponents
 CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
     using occ::disp::ce_model_dispersion_energy;
@@ -77,10 +101,10 @@ CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
     }
 
     Mat schwarz_a = hf_a.compute_schwarz_ints();
-    Mat schwarz_b = hf_a.compute_schwarz_ints();
+    Mat schwarz_b = hf_b.compute_schwarz_ints();
 
     compute_ce_model_energies(A, hf_a, precision, schwarz_a);
-    compute_ce_model_energies(B, hf_b, precision, schwarz_a);
+    compute_ce_model_energies(B, hf_b, precision, schwarz_b);
 
     Wavefunction ABn(A, B);
 
@@ -102,18 +126,7 @@ CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
     compute_ce_model_energies(ABn, hf_AB, precision, schwarz_ab);
     compute_ce_model_energies(ABo, hf_AB, precision, schwarz_ab);
 
-    Energy E_ABn;
-    E_ABn.kinetic = ABn.energy.kinetic - (A.energy.kinetic + B.energy.kinetic);
-    E_ABn.coulomb = ABn.energy.coulomb - (A.energy.coulomb + B.energy.coulomb);
-    E_ABn.exchange =
-        ABn.energy.exchange - (A.energy.exchange + B.energy.exchange);
-    E_ABn.core = ABn.energy.core - (A.energy.core + B.energy.core);
-    E_ABn.nuclear_attraction =
-        ABn.energy.nuclear_attraction -
-        (A.energy.nuclear_attraction + B.energy.nuclear_attraction);
-    E_ABn.nuclear_repulsion =
-        ABn.energy.nuclear_repulsion -
-        (A.energy.nuclear_repulsion + B.energy.nuclear_repulsion);
+    Energy E_ABn = ABn.energy - (A.energy + B.energy);
 
     CEEnergyComponents energy;
     energy.coulomb =

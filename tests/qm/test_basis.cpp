@@ -11,9 +11,9 @@ TEST_CASE("H2O/6-31G") {
     };
     occ::qm::BasisSet basis("6-31G", atoms);
     auto sp_shells = occ::qm::pople_sp_shells(basis);
-    for(const auto& x: sp_shells) {
-        fmt::print("{}\n", x);
-    }
+//    for(const auto& x: sp_shells) {
+//        fmt::print("{}\n", x);
+//    }
 }
 
 TEST_CASE("spherical_to_cartesian")
@@ -25,7 +25,7 @@ TEST_CASE("spherical_to_cartesian")
     };
     occ::qm::BasisSet basis("6-31G", atoms);
     basis.set_pure(true);
-    for(const auto& x: basis) {
-        fmt::print("{}\n", x);
-    }
+//    for(const auto& x: basis) {
+//        fmt::print("{}\n", x);
+//    }
 }

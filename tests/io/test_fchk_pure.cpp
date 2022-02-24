@@ -377,7 +377,7 @@ QEq coupling tensors                       R   N=          18
 )";
 
 void print_shell(const libint2::Shell &shell) {
-    fmt::print("{}\n", shell);
+//    fmt::print("{}\n", shell);
 }
 
 void print_basis(const occ::qm::BasisSet &basis) {

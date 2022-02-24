@@ -215,5 +215,6 @@ int main(int argc, char *argv[]) {
     }
     occ::timing::stop(occ::timing::global);
     occ::timing::print_timings();
+    fmt::print("A job well done\n");
     return 0;
 }

@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
         Molecule m2 = occ::io::molecule_from_xyz_file(environment_filename);
 
         fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename, "sym", "x", "y", "z");
+                   geometry_filename.string(), "sym", "x", "y", "z");
         for (const auto &atom : m1.atoms()) {
             fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
                        Element(atom.atomic_number).symbol(), atom.x, atom.y,
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
         }
 
         fmt::print("Environment geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename, "sym", "x", "y", "z");
+                   geometry_filename.string(), "sym", "x", "y", "z");
         for (const auto &atom : m2.atoms()) {
             fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
                        Element(atom.atomic_number).symbol(), atom.x, atom.y,
@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
         Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
 
         fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename, "sym", "x", "y", "z");
+                   geometry_filename.string(), "sym", "x", "y", "z");
         for (const auto &atom : m.atoms()) {
             fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
                        Element(atom.atomic_number).symbol(), atom.x, atom.y,

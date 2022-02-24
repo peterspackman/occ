@@ -486,11 +486,11 @@ TEST_CASE("H2 fchk", "[read]")
 
     occ::io::FchkReader::FchkBasis basis = reader.basis();
     basis.print();
-    fmt::print("Libint2 basis:\n");
-    for(const auto& shell: reader.basis_set())
-    {
-        fmt::print("\n{}\n", shell);
-    }
+//    fmt::print("Libint2 basis:\n");
+//    for(const auto& shell: reader.basis_set())
+//    {
+//        fmt::print("\n{}\n", shell);
+//    }
     auto density = reader.scf_density_matrix();
     fmt::print("Density matrix\n{}\n", density);
 
@@ -528,11 +528,11 @@ TEST_CASE("water uhf fchk", "[read]")
 
     occ::io::FchkReader::FchkBasis basis = reader.basis();
     basis.print();
-    fmt::print("Libint2 basis:\n");
-    for(const auto& shell: reader.basis_set())
-    {
-        fmt::print("\n{}\n", shell);
-    }
+//    fmt::print("Libint2 basis:\n");
+//    for(const auto& shell: reader.basis_set())
+//    {
+//        fmt::print("\n{}\n", shell);
+//    }
     auto density = reader.scf_density_matrix();
     fmt::print("Density matrix\n{}\n", density);
 

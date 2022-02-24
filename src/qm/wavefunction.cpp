@@ -100,6 +100,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     // TODO refactor
     if (wfn_a.is_restricted() && wfn_b.is_restricted()) {
         // merge occupied orbitals
+	Vec occ_energies_merged;
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
             wfn_a.mo.C.leftCols(wfn_a.num_alpha),
             wfn_b.mo.C.leftCols(wfn_b.num_alpha),
@@ -120,7 +121,8 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
             wfn_b.mo.energies.bottomRows(nv_b));
         mo.C.rightCols(nv_ab) = C_merged;
         mo.energies.bottomRows(nv_ab) = energies_merged;
-    } else {
+    } 
+    else {
         if (wfn_a.is_restricted()) {
             { // alpha
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(

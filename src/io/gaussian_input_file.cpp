@@ -83,13 +83,13 @@ void GaussianInputFile::parse_route_line(const std::string &line) {
 
 void GaussianInputFile::parse_charge_multiplicity_line(
     const std::string &line) {
-    scn::scan(line, "{} {}", charge, multiplicity);
+    auto result = scn::scan(line, "{} {}", charge, multiplicity);
 }
 
 void GaussianInputFile::parse_atom_line(const std::string &line) {
     double x, y, z;
     std::string symbol;
-    scn::scan(line, "{} {} {} {}", symbol, x, y, z);
+    auto result = scn::scan(line, "{} {} {} {}", symbol, x, y, z);
     atomic_positions.push_back({x, y, z});
     elements.emplace_back(occ::core::Element(symbol));
 }

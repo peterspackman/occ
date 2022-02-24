@@ -13,6 +13,7 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
 #include <nlohmann/json.hpp>
+#include <fmt/ostream.h>
 
 using occ::interaction::CEModelInteraction;
 using occ::qm::Wavefunction;

@@ -85,6 +85,28 @@ struct CEEnergyComponents {
     double total_kjmol() const {
 	return occ::units::AU_TO_KJ_PER_MOL * total;
     }
+
+    inline auto operator-(const CEEnergyComponents &rhs) {
+	return CEEnergyComponents{
+	    coulomb - rhs.coulomb,
+	    exchange_repulsion - rhs.exchange_repulsion,
+	    polarization - rhs.polarization,
+	    dispersion - rhs.dispersion,
+	    total - rhs.total,
+	    true
+	};
+    }
+
+    inline auto operator+(const CEEnergyComponents &rhs) {
+	return CEEnergyComponents{
+	    coulomb + rhs.coulomb,
+	    exchange_repulsion + rhs.exchange_repulsion,
+	    polarization + rhs.polarization,
+	    dispersion + rhs.dispersion,
+	    total + rhs.total,
+	    true
+	};
+    }
 };
 
 struct CEModelInteraction {
