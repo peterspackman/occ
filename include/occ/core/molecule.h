@@ -68,7 +68,9 @@ class Molecule {
         return m_bonds;
     }
     int charge() const { return m_charge; }
+    void set_charge(int c) { m_charge = c; }
     int multiplicity() const { return m_multiplicity; }
+    void set_multiplicity(int m) { m_multiplicity = m; }
     int num_electrons() const { return m_atomicNumbers.sum() - m_charge; }
 
     bool comparable_to(const Molecule &) const;

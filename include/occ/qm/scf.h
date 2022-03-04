@@ -394,6 +394,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         occ::log::info("{} electrons total", n_electrons);
         occ::log::info("{} alpha electrons", n_alpha());
         occ::log::info("{} beta electrons", n_beta());
+        occ::log::info("net charge {}", charge());
         total_time = 0.0;
 
         do {

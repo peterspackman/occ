@@ -109,6 +109,8 @@ Wavefunction calculate_wavefunction(const Molecule &mol,
     input.method.name = method;
     input.basis.name = basis_name;
     input.geometry.set_molecule(mol);
+    input.electronic.charge = mol.charge();
+    input.electronic.multiplicity = mol.multiplicity();
     auto wfn = occ::main::single_point_calculation(input);
 
     occ::io::FchkWriter fchk(fchk_path.string());
@@ -209,7 +211,7 @@ calculate_solvated_surfaces(const std::string &basename,
                 SCF<SolvationCorrectedProcedure<DFT>, SpinorbitalKind::Restricted> scf(
                     proc_solv);
                 scf.start_incremental_F_threshold = 0.0;
-                scf.set_charge_multiplicity(0, 1);
+                scf.set_charge_multiplicity(wfn.charge(), wfn.multiplicity());
                 double e = scf.compute_scf_energy();
                 Wavefunction wfn = scf.wavefunction();
                 occ::io::FchkWriter fchk(fchk_path.string());
@@ -233,7 +235,7 @@ calculate_solvated_surfaces(const std::string &basename,
             SCF<SolvationCorrectedProcedure<DFT>, SpinorbitalKind::Restricted> scf(
                 proc_solv);
             scf.start_incremental_F_threshold = 0.0;
-            scf.set_charge_multiplicity(0, 1);
+            scf.set_charge_multiplicity(wfn.charge(), wfn.multiplicity());
             double e = scf.compute_scf_energy();
             Wavefunction wfn = scf.wavefunction();
             occ::io::FchkWriter fchk(fchk_path.string());
@@ -473,13 +475,14 @@ std::vector<SolventNeighborContribution> compute_solvation_energy_breakdown(
         const auto &d1 = neighbors[i];
 
         for (int j = i; j < neighbors.size(); j++) {
+	    if(ci.neighbor_set) break;
             auto& cj = energy_contribution[j];
             if(cj.neighbor_set) continue;
             const auto &d2 = neighbors[j];
             if (d1.equivalent_in_opposite_frame(d2)) {
                 ci.neighbor_set = true;
                 cj.neighbor_set = true;
-		occ::log::debug("Interaction paired {}<->{}\n", i, j);
+		occ::log::debug("Interaction paired {}<->{}", i, j);
                 ci.assign(cj);
                 continue;
             }
@@ -565,6 +568,7 @@ int main(int argc, char **argv) {
     std::string cif_filename{""};
     std::string solvent{"water"};
     std::string wfn_choice{"gas"};
+    std::string charge_string{""};
     bool write_dump_files{false};
     // clang-format off
     options.add_options()
@@ -578,6 +582,7 @@ int main(int argc, char **argv) {
          cxxopts::value<double>(cg_radius)->default_value("3.8"))
         ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent))
         ("d,dump", "Write dump files", cxxopts::value<bool>(write_dump_files))
+	("charges", "Fragment chargs", cxxopts::value<std::string>(charge_string))
         ("w,wavefunction-choice", "Choice of wavefunctions",
          cxxopts::value<std::string>(wfn_choice));
     // clang-format on
@@ -626,6 +631,18 @@ int main(int argc, char **argv) {
         fmt::print(
             "Found {} symmetry unique molecules in {} in {:.6f} seconds\n",
             molecules.size(), cif_filename, sw.read() - tprev);
+
+	if(!charge_string.empty()) {
+	    auto tokens = occ::util::tokenize(charge_string, ",");
+	    if(tokens.size() != molecules.size()) {
+		throw fmt::format("Require {} charges to be specified, found {}", molecules.size(), tokens.size());
+	    }
+	    size_t i = 0;
+	    for(const auto& token : tokens) {
+		molecules[i].set_charge(std::stoi(token));
+		i++;
+	    }
+	}
 
         tprev = sw.read();
         sw.start();
