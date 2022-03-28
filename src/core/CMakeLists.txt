@@ -28,7 +28,7 @@ target_link_libraries(occ_core
     scn::scn
     spdlog::spdlog
     ZLIB::ZLIB
-    Threads::Threads
+    OpenMP::OpenMP_CXX
     Libint2::cxx
 )
 target_include_directories(occ_core PUBLIC 

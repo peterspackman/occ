@@ -138,13 +138,19 @@ int main(int argc, char *argv[]) {
 	    config.filename = config.name;
 	}
 
-        using occ::parallel::nthreads;
-	nthreads = std::max(1, config.driver.threads);
+	occ::parallel::set_num_threads(std::max(1, config.driver.threads));
         if(result.count("threads"))
-	    nthreads = result["threads"].as<int>();
+	    occ::parallel::set_num_threads(result["threads"].as<int>());
 
-        fmt::print("\nparallelization: {} threads, {} eigen threads\n",
-                   nthreads, Eigen::nbThreads());
+#ifdef _OPENMP
+	std::string thread_type = "OpenMP";
+#else
+	std::string thread_type = "std";
+#endif
+        fmt::print("\nparallelization: {} {} threads, {} eigen threads\n",
+                   occ::parallel::get_num_threads(),
+		   thread_type,
+		   Eigen::nbThreads());
 
         if(result.count("basis"))
             config.basis.name = result["basis"].as<std::string>();

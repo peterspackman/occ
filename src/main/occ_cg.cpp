@@ -385,10 +385,12 @@ environment(const std::vector<Dimer> &neighbors) {
 struct SolventNeighborContribution {
     struct AsymPair {
         double ab{0.0}, ba{0.0};
-        inline double total() const { return ab + ba; }
+	double difference{0.0};
+        inline double total() const { return ab + ba + 0.5 * difference; }
         void assign(AsymPair &other) {
             other.ba = ab;
             ba = other.ab;
+	    difference = ab - ba;
         }
     };
 
@@ -564,7 +566,7 @@ int main(int argc, char **argv) {
         "occ-interactions",
         "Interactions of molecules with neighbours in a crystal");
     double radius = 0.0, cg_radius = 0.0;
-    using occ::parallel::nthreads;
+    int threads = 1;
     std::string cif_filename{""};
     std::string solvent{"water"};
     std::string wfn_choice{"gas"};
@@ -575,7 +577,7 @@ int main(int argc, char **argv) {
         ("h,help", "Print help")
         ("i,input", "Input CIF", cxxopts::value<std::string>(cif_filename))
         ("t,threads", "Number of threads", 
-         cxxopts::value<int>(nthreads)->default_value("1"))
+         cxxopts::value<int>(threads)->default_value("1"))
         ("r,radius", "maximum radius (angstroms) for neighbours",
          cxxopts::value<double>(radius)->default_value("3.8"))
         ("c,cg-radius", "maximum radius (angstroms) for nearest neighbours in cg file (must be <= radius)",
@@ -602,15 +604,23 @@ int main(int argc, char **argv) {
 	    fmt::print("{}", options.help());
 	    exit(1);
 	}
+	occ::parallel::set_num_threads(std::max(1, threads));
+#ifdef _OPENMP
+	std::string thread_type = "OpenMP";
+#else
+	std::string thread_type = "std";
+#endif
+        fmt::print("\nparallelization: {} {} threads, {} eigen threads\n",
+                   occ::parallel::get_num_threads(),
+		   thread_type,
+		   Eigen::nbThreads());
+
     } catch (const std::runtime_error &err) {
         occ::log::error("error when parsing command line arguments: {}",
                         err.what());
         fmt::print("{}", options.help());
         exit(1);
     }
-
-    fmt::print("Parallelized over {} threads & {} Eigen threads\n", nthreads,
-               Eigen::nbThreads());
 
     const std::string error_format =
         "Exception:\n    {}\nTerminating program.\n";

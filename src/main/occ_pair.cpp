@@ -128,6 +128,7 @@ Pair parse_input_file(const std::string &filename) {
  */
 
 int main(int argc, char *argv[]) {
+    int threads = 1;
     cxxopts::Options options("occ", "A program for quantum chemistry");
     options.positional_help("[input_file]")
 	.show_positional_help();
@@ -136,7 +137,7 @@ int main(int argc, char *argv[]) {
 	    "i,input", "Input file", cxxopts::value<std::string>())(
 	    "o,output", "Output file", cxxopts::value<std::string>())(
 	    "t,threads", "Number of threads",
-	    cxxopts::value<int>()->default_value("1"))(
+	    cxxopts::value<int>(threads)->default_value("1"))(
 	    "m,model", "CE model",
 	    cxxopts::value<std::string>()->default_value("ce-b3lyp"))(
 	    "d,with-density-fitting", "Use density fitting (RI-JK)",
@@ -167,8 +168,7 @@ int main(int argc, char *argv[]) {
 
     auto pair = parse_input_file(args["input"].as<std::string>());
 
-    using occ::parallel::nthreads;
-    nthreads = args["threads"].as<int>();
+    occ::parallel::set_num_threads(threads);
 
     const std::string model_name = args["model"].as<std::string>();
 

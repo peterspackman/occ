@@ -29,6 +29,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 find_package(Threads REQUIRED)
+find_package(OpenMP REQUIRED)
 
 if("${USE_SYSTEM_BOOST}")
     find_package(Boost CONFIG COMPONENTS graph)
