@@ -138,7 +138,12 @@ double Molecule::translational_free_energy(double temperature) const {
     double Gt = -occ::constants::boltzmann<double> * temperature * lnZt;
     double Gn = occ::constants::boltzmann<double> * temperature *
                 std::log(occ::constants::avogadro<double>);
-    return (Gt + Gn) * occ::constants::avogadro<double> / 1000;
+
+    // missing RT factor
+    constexpr double R = 8.31446261815324;
+    double RT = temperature * R / 1000;
+
+    return (Gt + Gn) * occ::constants::avogadro<double> / 1000 + RT;
 }
 
 bool Molecule::comparable_to(const Molecule &other) const {

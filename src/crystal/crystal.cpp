@@ -334,7 +334,7 @@ void Crystal::update_symmetry_unique_molecules() const {
             n_b;
         return pct_a > pct_b;
     };
-    std::sort(indexes.begin(), indexes.end(), sort_func);
+    std::stable_sort(indexes.begin(), indexes.end(), sort_func);
 
     int num_found = 0;
 
@@ -450,10 +450,10 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
         return a.nearest_distance() < b.nearest_distance();
     };
 
-    std::sort(dimers.begin(), dimers.end(), sort_func);
+    std::stable_sort(dimers.begin(), dimers.end(), sort_func);
     size_t nb_idx = 0;
     for (auto &vec : mol_nbs) {
-        std::sort(vec.begin(), vec.end(), sort_func);
+        std::stable_sort(vec.begin(), vec.end(), sort_func);
         for (const auto &d : vec) {
             size_t idx = std::distance(
                 dimers.begin(), std::find(dimers.begin(), dimers.end(), d));
@@ -536,10 +536,10 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
         return a.nearest_distance() < b.nearest_distance();
     };
 
-    std::sort(dimers.begin(), dimers.end(), sort_func);
+    std::stable_sort(dimers.begin(), dimers.end(), sort_func);
     size_t nb_idx = 0;
     for (auto &vec : mol_nbs) {
-        std::sort(vec.begin(), vec.end(), sort_func);
+        std::stable_sort(vec.begin(), vec.end(), sort_func);
         for (const auto &d : vec) {
             size_t idx = std::distance(
                 dimers.begin(), std::find(dimers.begin(), dimers.end(), d));

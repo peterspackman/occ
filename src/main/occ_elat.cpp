@@ -26,6 +26,7 @@ using occ::crystal::SymmetryOperation;
 using occ::hf::HartreeFock;
 using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEModelInteraction;
+using occ::interaction::CEEnergyComponents;
 using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;

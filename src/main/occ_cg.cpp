@@ -385,18 +385,17 @@ environment(const std::vector<Dimer> &neighbors) {
 struct SolventNeighborContribution {
     struct AsymPair {
         double ab{0.0}, ba{0.0};
-	double difference{0.0};
-        inline double total() const { return ab + ba + 0.5 * difference; }
+        inline double total() const { return ab + ba; }
         void assign(AsymPair &other) {
             other.ba = ab;
             ba = other.ab;
-	    difference = ab - ba;
         }
     };
 
     inline double total() const { 
-        return coulomb.total()
-             + cds.total();
+        double t = coulomb.total() + cds.total();
+        double difference = coulomb.ab + cds.ab - coulomb.ba - cds.ba;
+        return t + 0.5 * difference;
     }
 
     AsymPair coulomb;
@@ -513,11 +512,12 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
         auto v = n[k1].v_ab().normalized();
         auto unique_dimer_idx = crystal_dimers.unique_dimer_idx[i][k1];
 
-	// skip if not contributing
-	if(!dimer_energies[unique_dimer_idx].is_computed) continue;
+        // skip if not contributing
+        if(!dimer_energies[unique_dimer_idx].is_computed) continue;
 
         total_taken += dimer_energies[unique_dimer_idx].total_kjmol();
         double total_dp = 0.0;
+        size_t number_interactions = 0;
         for (size_t k2 = 0; k2 < solv.size(); k2++) {
             const auto& s2 = solv[k2];
             if (abs(s2.coulomb.total()) == 0.0 || abs(s2.cds.total()) == 0.0)
@@ -529,6 +529,7 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
             if (dp <= 0.0)
                 continue;
             total_dp += dp;
+            number_interactions++;
         }
         for (size_t k2 = 0; k2 < solv.size(); k2++) {
             const auto& s2 = solv[k2];
@@ -674,9 +675,9 @@ int main(int argc, char **argv) {
 
         tprev = sw.read();
         sw.start();
-	fmt::print("Computing monomer energies for gas phase\n");
+        fmt::print("Computing monomer energies for gas phase\n");
         compute_monomer_energies(basename, wfns);
-	fmt::print("Computing monomer energies for solution phase\n");
+        fmt::print("Computing monomer energies for solution phase\n");
         compute_monomer_energies(fmt::format("{}_{}", basename, solvent), solvated_wavefunctions);
         sw.stop();
         fmt::print("Computing monomer energies took {:.6f} seconds\n",
@@ -685,7 +686,6 @@ int main(int argc, char **argv) {
         const std::string row_fmt_string =
             "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
             "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
-
 
         const auto &wfns_a = [&]() {
             if (wfn_choice == "gas")
@@ -731,6 +731,8 @@ int main(int argc, char **argv) {
         for (size_t i = 0; i < mol_neighbors.size(); i++) {
             const auto &n = mol_neighbors[i];
             std::string molname = fmt::format("{}_{}_{}", basename, i, solvent);
+            std::ofstream gulp_file(fmt::format("{}_{}_gulp.txt", basename, i));
+            fmt::print(gulp_file, "{:3s} {:12s} {:12s} {:12s} {:12s} {:12s}\n", "N", "x", "y", "z", "r", "energy");
             auto solv = compute_solvation_energy_breakdown(
                 c_symm, molname, surfaces[i], n, cg_symm_dimers.molecule_neighbors[i], solvent);
             solvation_breakdowns.push_back(solv);
@@ -749,17 +751,17 @@ int main(int argc, char **argv) {
             fmt::print("Neighbors for asymmetric molecule {}\n", i);
 
             fmt::print("{:>7s} {:>7s} {:>20s} "
-                       "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
-                       "Rn", "Rc", "Symop", "E_crys", "A_coul", "E_scoul", "A_cds", "E_scds", "E_gas", "E_nn", "E_int");
+                       "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
+                       "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA", "E_S", "E_gas", "E_nn", "E_cg", "E_int");
             fmt::print("============================="
                        "============================="
                        "=============================\n");
 
             size_t j = 0;
-	    occ::interaction::CEEnergyComponents total;
+            occ::interaction::CEEnergyComponents total;
 
             if(write_dump_files) {
-		// write neighbors file for molecule i
+                // write neighbors file for molecule i
                 std::string neighbors_filename = fmt::format("{}_{}_neighbors.xyz", basename, i);
                 write_xyz_neighbors(neighbors_filename, n);
             }
@@ -778,12 +780,13 @@ int main(int argc, char **argv) {
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j];
                 double rn = dimer.nearest_distance();
                 double rc = dimer.centroid_distance();
+                occ::Vec3 v_ab = dimer.v_ab();
                 const auto &e =
                     dimer_energies[crystal_dimers.unique_dimer_idx[i][j]];
-		if(!e.is_computed) {
-		    j++;
-		    continue;
-		}
+                if(!e.is_computed) {
+                    j++;
+                    continue;
+                }
                 double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
                        epol = e.polarization_kjmol(),
                        edisp = e.dispersion_kjmol(), etot = e.total_kjmol();
@@ -792,6 +795,8 @@ int main(int argc, char **argv) {
                 total.polarization += epol;
                 total.dispersion += edisp;
                 total.total += etot;
+
+                fmt::print(gulp_file, "{:3d} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f}\n", j, v_ab(0), v_ab(1), v_ab(2), v_ab.norm(), etot);
 
                 double e_int = etot;
                 double solv_cont = solv[j].total() * AU_TO_KJ_PER_MOL;
@@ -805,12 +810,12 @@ int main(int argc, char **argv) {
                 fmt::print(
                     row_fmt_string, rn, rc, s_ab,
                     etot,
-                    sj.coulomb_area.total(),
-                    sj.coulomb.total() * AU_TO_KJ_PER_MOL,
-                    sj.cds_area.total(),
-                    sj.cds.total() * AU_TO_KJ_PER_MOL,
+                    (sj.coulomb.ab + sj.cds.ab) * AU_TO_KJ_PER_MOL,
+                    (sj.coulomb.ba + sj.cds.ba) * AU_TO_KJ_PER_MOL,
+                    sj.total() * AU_TO_KJ_PER_MOL,
                     gas_term,
                     crystal_contributions[j].energy,
+                    e_int - gas_term,
                     e_int);
                 if(crystal_contributions[j].is_nn) total_interaction_energy += e_int;
                 j++;
