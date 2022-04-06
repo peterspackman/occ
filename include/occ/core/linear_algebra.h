@@ -43,6 +43,7 @@ using DMat4 = Eigen::Matrix4d;
 
 using RowVec = Eigen::RowVectorXd;
 using Vec = Eigen::VectorXd;
+using CVec = Eigen::VectorXcd;
 using RowVec3 = Eigen::RowVector3d;
 using Vec3 = Eigen::Vector3d;
 using RowVec4 = Eigen::RowVector4d;

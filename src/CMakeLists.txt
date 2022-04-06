@@ -6,6 +6,7 @@ add_subdirectory(gto)
 add_subdirectory(io)
 add_subdirectory(qm)
 add_subdirectory(dft)
+add_subdirectory(sht)
 add_subdirectory(slater)
 add_subdirectory(solvent)
 
