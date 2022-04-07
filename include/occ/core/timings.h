@@ -33,6 +33,8 @@ enum category {
     gto_s,
     gto_p,
     gto_gen,
+    assoc_legendre,
+    fft,
     solvent,
     global,
     _group_count

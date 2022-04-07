@@ -68,11 +68,17 @@ TEST_CASE("Analysis complex", "[sht]") {
 }
 
 TEST_CASE("Analysis real", "[sht]") {
-    size_t l_max = 4;
+    size_t l_max = 25;
     using occ::sht::SHT;
     occ::sht::SHT sht(l_max);
     occ::sht::AssocLegendreP Plm(l_max);
+    auto t0 = std::chrono::high_resolution_clock::now();
     auto coeffs = sht.analysis_real(func);
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    fmt::print("Analysis took {} s\n",std::chrono::duration<double>(t1 - t0).count());
+    occ::timing::print_timings();
+
     int i = 0;
     for(int m = 0; m <= l_max; m++) {
 	for(int l = m; l <= l_max; l++) {
