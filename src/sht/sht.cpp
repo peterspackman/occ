@@ -4,6 +4,7 @@
 #include <iostream>
 #include <occ/3rdparty/pocketfft.h>
 #include <occ/sht/sht.h>
+#include <occ/core/logger.h>
 
 namespace occ::sht {
 
@@ -43,7 +44,7 @@ void gauss_legendre_quadrature(Vec &roots, Vec &weights, int N) {
 		  (z1 + z) * 0.5 * eps)
 		&& (--iteration_count > 0));
 
-	if(iteration_count == 0) std::cerr << "Iterations exceeded when finding Gauss-Legendre roots\n";
+	if(iteration_count == 0) occ::log::warn("Iterations exceeded when finding Gauss-Legendre roots");
 
 	double s2 = 1.0 - z * z;
 	// Build up the abscissas.
@@ -69,7 +70,7 @@ void gauss_legendre_quadrature(Vec &roots, Vec &weights, int N) {
     }
     // as we started with initial guesses, we should check if the gauss points are actually unique and ordered.
     for (long i = m - 1; i > 0; i--) {
-	if (roots(i) >= roots(i - 1)) std::cerr << "Invalid Gauss-Legendre points\n";
+	if (roots(i) >= roots(i - 1)) occ::log::error("Invalid Gauss-Legendre points");
     }
 }
 
