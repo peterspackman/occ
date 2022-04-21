@@ -46,8 +46,12 @@ void AssocLegendreP::evaluate_batch(double x, Vec &result) const {
     }
 }
 
+Vec AssocLegendreP::work_array() const {
+    return Vec((l_max + 1) * (l_max + 2) / 2);
+}
+
 Vec AssocLegendreP::evaluate_batch(double x) const {
-    Vec result((l_max + 1) * (l_max + 2) / 2);
+    Vec result = work_array();
     evaluate_batch(x, result);
     return result;
 }

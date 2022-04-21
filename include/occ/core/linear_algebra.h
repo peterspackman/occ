@@ -78,4 +78,7 @@ gensqrtinv(const Mat &, bool symmetric = false,
 Mat3 inertia_tensor(Eigen::Ref<const Vec> masses,
                     Eigen::Ref<const Mat3N> positions);
 
+// same as indexing='ij' order in numpy, could easily generalize this
+std::pair<Mat, Mat> meshgrid(const Vec &, const Vec &);
+
 }; // namespace occ

@@ -6,4 +6,5 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
+create_sht_test(test_legendre.cpp)
 create_sht_test(test_sht.cpp)

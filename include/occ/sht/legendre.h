@@ -15,6 +15,8 @@ class AssocLegendreP {
     static double alm(size_t l, size_t m);
     static double blm(size_t l, size_t m);
 
+    Vec work_array() const;
+
   private:
     size_t l_max{0};
     Mat m_a;
