@@ -27,9 +27,9 @@ struct ColumnConfiguration {
     std::string fill_value{""};
 
     std::string format_string() const {
-        std::string result = fmt::format(
-            "{0}{{:{1}{2}{3}s}}{4}", border.left, pad,
-            static_cast<char>(alignment), static_cast<int>(width), border.right);
+        std::string result = fmt::format("{0}{{:{1}{2}{3}s}}{4}", border.left,
+                                         pad, static_cast<char>(alignment),
+                                         static_cast<int>(width), border.right);
         return result;
     }
     uint_fast8_t column_width() const {

@@ -12,10 +12,10 @@
 #include <occ/io/cifparser.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
+#include <occ/main/pair_energy.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
-#include <occ/main/pair_energy.h>
 
 namespace fs = std::filesystem;
 using occ::core::Dimer;
@@ -26,7 +26,6 @@ using occ::crystal::SymmetryOperation;
 using occ::hf::HartreeFock;
 using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEModelInteraction;
-using occ::interaction::CEEnergyComponents;
 using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
@@ -142,7 +141,7 @@ void compute_monomer_energies(std::vector<Wavefunction> &wfns) {
                    wfns.size());
         std::cout << std::flush;
         HartreeFock hf(wfn.atoms, wfn.basis);
-	occ::Mat schwarz = hf.compute_schwarz_ints();
+        occ::Mat schwarz = hf.compute_schwarz_ints();
         occ::interaction::compute_ce_model_energies(wfn, hf, 1e-8, schwarz);
         complete++;
     }
@@ -259,11 +258,13 @@ int main(int argc, char *argv[]) {
         auto wfns = calculate_wavefunctions(basename, molecules, model_name);
         compute_monomer_energies(wfns);
         fmt::print("Calculating symmetry unique dimers\n");
-	occ::crystal::CrystalDimers crystal_dimers;
-	std::vector<CEEnergyComponents> energies;
-	occ::main::LatticeConvergenceSettings settings;
-	settings.max_radius = radius;
-	std::tie(crystal_dimers, energies) = occ::main::converged_lattice_energies(c, wfns, wfns, basename, settings);
+        occ::crystal::CrystalDimers crystal_dimers;
+        std::vector<CEEnergyComponents> energies;
+        occ::main::LatticeConvergenceSettings settings;
+        settings.max_radius = radius;
+        std::tie(crystal_dimers, energies) =
+            occ::main::converged_lattice_energies(c, wfns, wfns, basename,
+                                                  settings);
 
         const auto &dimers = crystal_dimers.unique_dimers;
         if (dimers.size() < 1) {
@@ -275,46 +276,46 @@ int main(int argc, char *argv[]) {
         const std::string row_fmt_string =
             "{:>7.3f} {:>7.3f} {:>20s} {: 8.3f} {: 8.3f} {: 8.3f} {: 8.3f} {: "
             "8.3f}\n";
-	size_t mol_idx{0};
-	double etot{0.0}, elat{0.0};
-	for (const auto &n: crystal_dimers.molecule_neighbors) {
+        size_t mol_idx{0};
+        double etot{0.0}, elat{0.0};
+        for (const auto &n : crystal_dimers.molecule_neighbors) {
 
-	    fmt::print("Neighbors for molecule {}\n", mol_idx);
+            fmt::print("Neighbors for molecule {}\n", mol_idx);
 
-	    fmt::print("{:>7s} {:>7s} {:>20s} {:>8s} {:>8s} {:>8s} {:>8s} "
-		       "{:>8s}\n",
-		       "Rn", "Rc", "Symop", "E_coul", "E_rep", "E_pol",
-		       "E_disp", "E_tot");
-	    fmt::print("==================================================="
-		       "================================\n");
-	    CEEnergyComponents molecule_total;
+            fmt::print("{:>7s} {:>7s} {:>20s} {:>8s} {:>8s} {:>8s} {:>8s} "
+                       "{:>8s}\n",
+                       "Rn", "Rc", "Symop", "E_coul", "E_rep", "E_pol",
+                       "E_disp", "E_tot");
+            fmt::print("==================================================="
+                       "================================\n");
+            CEEnergyComponents molecule_total;
 
-	    size_t j = 0;
-	    for (const auto &dimer : n) {
-		auto s_ab = dimer_symop(dimer, c);
-		size_t idx = crystal_dimers.unique_dimer_idx[mol_idx][j];
-		double rn = dimer.nearest_distance();
-		double rc = dimer.center_of_mass_distance();
-		const auto &e = energies[idx];
-		if(!e.is_computed) {
-		    j++;
-		    continue;
-		}
-		double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
-		       epol = e.polarization_kjmol(),
-		       edisp = e.dispersion_kjmol(), etot = e.total_kjmol();
-		molecule_total.coulomb += ecoul;
-		molecule_total.exchange_repulsion += erep;
-		molecule_total.polarization += epol;
-		molecule_total.dispersion += edisp;
-		molecule_total.total += etot;
-		fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, erep, epol,
-			   edisp, etot);
-		j++;
-	    }
-	    fmt::print("Molecule {} total: {:.3f} kJ/mol ({} pairs)\n", mol_idx,
-		       molecule_total.total, j);
-	    etot += molecule_total.total;
+            size_t j = 0;
+            for (const auto &dimer : n) {
+                auto s_ab = dimer_symop(dimer, c);
+                size_t idx = crystal_dimers.unique_dimer_idx[mol_idx][j];
+                double rn = dimer.nearest_distance();
+                double rc = dimer.center_of_mass_distance();
+                const auto &e = energies[idx];
+                if (!e.is_computed) {
+                    j++;
+                    continue;
+                }
+                double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
+                       epol = e.polarization_kjmol(),
+                       edisp = e.dispersion_kjmol(), etot = e.total_kjmol();
+                molecule_total.coulomb += ecoul;
+                molecule_total.exchange_repulsion += erep;
+                molecule_total.polarization += epol;
+                molecule_total.dispersion += edisp;
+                molecule_total.total += etot;
+                fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, erep, epol,
+                           edisp, etot);
+                j++;
+            }
+            fmt::print("Molecule {} total: {:.3f} kJ/mol ({} pairs)\n", mol_idx,
+                       molecule_total.total, j);
+            etot += molecule_total.total;
         }
         fmt::print("Final energy: {:.3f} kJ/mol\n", etot * 0.5);
 

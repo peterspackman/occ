@@ -1,14 +1,14 @@
 #pragma once
 #include <occ/core/logger.h>
 #include <occ/qm/ints.h>
-#include <occ/qm/spinorbital.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/spinorbital.h>
 
 namespace occ::ints {
-using occ::qm::SpinorbitalKind;
 using occ::qm::MolecularOrbitals;
-using occ::qm::ShellPairList;
 using occ::qm::ShellPairData;
+using occ::qm::ShellPairList;
+using occ::qm::SpinorbitalKind;
 
 class FockBuilder {
   public:
@@ -46,8 +46,8 @@ class FockBuilder {
             assert((D.rows() == 2 * n) && (D.cols() == n) &&
                    "Unrestricted density matrix must be 2 nbf x nbf");
             D_shblk_norm = compute_shellblock_norm(obs, occ::qm::block::a(D));
-            D_shblk_norm =
-                D_shblk_norm.cwiseMax(compute_shellblock_norm(obs, occ::qm::block::b(D)));
+            D_shblk_norm = D_shblk_norm.cwiseMax(
+                compute_shellblock_norm(obs, occ::qm::block::b(D)));
         } else if constexpr (kind == SpinorbitalKind::General) {
             assert((D.rows() == 2 * n) && (D.cols() == n) &&
                    "General density matrix must be 2 nbf x 2 nbf");
@@ -192,9 +192,9 @@ class FockBuilder {
     }
 
     template <SpinorbitalKind kind>
-    Mat compute_fock(const BasisSet &obs,
-                     const ShellPairList &shellpair_list,
-                     const ShellPairData &shellpair_data, const occ::qm::MolecularOrbitals &mo,
+    Mat compute_fock(const BasisSet &obs, const ShellPairList &shellpair_list,
+                     const ShellPairData &shellpair_data,
+                     const occ::qm::MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const noexcept {
         occ::timing::start(occ::timing::category::fock);
@@ -323,8 +323,10 @@ class FockBuilder {
                       kind == SpinorbitalKind::General)
             GG = 0.5 * (G[0] + G[0].transpose());
         else if constexpr (kind == SpinorbitalKind::Unrestricted) {
-            occ::qm::block::a(GG) = 0.5 * (occ::qm::block::a(G[0]) + occ::qm::block::a(G[0]).transpose());
-            occ::qm::block::b(GG) = 0.5 * (occ::qm::block::b(G[0]) + occ::qm::block::b(G[0]).transpose());
+            occ::qm::block::a(GG) = 0.5 * (occ::qm::block::a(G[0]) +
+                                           occ::qm::block::a(G[0]).transpose());
+            occ::qm::block::b(GG) = 0.5 * (occ::qm::block::b(G[0]) +
+                                           occ::qm::block::b(G[0]).transpose());
         }
         occ::timing::stop(occ::timing::category::fock);
         return GG;
@@ -333,7 +335,8 @@ class FockBuilder {
     template <SpinorbitalKind kind>
     std::pair<Mat, Mat>
     compute_JK(const BasisSet &obs, const ShellPairList &shellpair_list,
-               const ShellPairData &shellpair_data, const occ::qm::MolecularOrbitals &mo,
+               const ShellPairData &shellpair_data,
+               const occ::qm::MolecularOrbitals &mo,
                double precision = std::numeric_limits<double>::epsilon(),
                const Mat &Schwarz = Mat()) const noexcept {
         occ::timing::start(occ::timing::category::jkmat);
@@ -471,10 +474,14 @@ class FockBuilder {
             JJ = 0.5 * (J[0] + J[0].transpose());
             KK = 0.5 * (K[0] + K[0].transpose());
         } else if constexpr (kind == SpinorbitalKind::Unrestricted) {
-            occ::qm::block::a(JJ) = 0.5 * (occ::qm::block::a(J[0]) + occ::qm::block::a(J[0]).transpose());
-            occ::qm::block::b(JJ) = 0.5 * (occ::qm::block::b(J[0]) + occ::qm::block::b(J[0]).transpose());
-            occ::qm::block::a(KK) = 0.5 * (occ::qm::block::a(K[0]) + occ::qm::block::a(K[0]).transpose());
-            occ::qm::block::b(KK) = 0.5 * (occ::qm::block::b(K[0]) + occ::qm::block::b(K[0]).transpose());
+            occ::qm::block::a(JJ) = 0.5 * (occ::qm::block::a(J[0]) +
+                                           occ::qm::block::a(J[0]).transpose());
+            occ::qm::block::b(JJ) = 0.5 * (occ::qm::block::b(J[0]) +
+                                           occ::qm::block::b(J[0]).transpose());
+            occ::qm::block::a(KK) = 0.5 * (occ::qm::block::a(K[0]) +
+                                           occ::qm::block::a(K[0]).transpose());
+            occ::qm::block::b(KK) = 0.5 * (occ::qm::block::b(K[0]) +
+                                           occ::qm::block::b(K[0]).transpose());
         }
         occ::timing::stop(occ::timing::category::jkmat);
         return {JJ, KK};
@@ -482,7 +489,8 @@ class FockBuilder {
 
     template <SpinorbitalKind kind>
     Mat compute_J(const BasisSet &obs, const ShellPairList &shellpair_list,
-                  const ShellPairData &shellpair_data, const MolecularOrbitals &mo,
+                  const ShellPairData &shellpair_data,
+                  const MolecularOrbitals &mo,
                   double precision = std::numeric_limits<double>::epsilon(),
                   const Mat &Schwarz = Mat()) const noexcept {
         occ::timing::start(occ::timing::category::jmat);
@@ -555,8 +563,10 @@ class FockBuilder {
                       kind == SpinorbitalKind::General) {
             JJ = 0.5 * (J[0] + J[0].transpose());
         } else if constexpr (kind == SpinorbitalKind::Unrestricted) {
-            occ::qm::block::a(JJ) = 0.5 * (occ::qm::block::a(J[0]) + occ::qm::block::a(J[0]).transpose());
-            occ::qm::block::b(JJ) = 0.5 * (occ::qm::block::b(J[0]) + occ::qm::block::b(J[0]).transpose());
+            occ::qm::block::a(JJ) = 0.5 * (occ::qm::block::a(J[0]) +
+                                           occ::qm::block::a(J[0]).transpose());
+            occ::qm::block::b(JJ) = 0.5 * (occ::qm::block::b(J[0]) +
+                                           occ::qm::block::b(J[0]).transpose());
         }
         occ::timing::stop(occ::timing::category::jmat);
         return JJ;

@@ -1,10 +1,10 @@
+#include <filesystem>
 #include <fmt/core.h>
+#include <fmt/ostream.h>
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>
-#include <filesystem>
-#include <nlohmann/json.hpp>
-#include <fstream>
-#include <fmt/ostream.h>
 
 namespace occ::slater {
 
@@ -196,34 +196,37 @@ void Basis::unnormalize() {
     }
 }
 
-robin_hood::unordered_map<std::string, Basis> load_slaterbasis(const std::string &name) {
+robin_hood::unordered_map<std::string, Basis>
+load_slaterbasis(const std::string &name) {
     namespace fs = std::filesystem;
     fs::path path;
     const char *basis_path_env = getenv("OCC_BASIS_PATH");
     if (basis_path_env) {
         path = basis_path_env;
     } else {
-        path = "."; 
+        path = ".";
     }
     path /= name;
     path.replace_extension("json");
     robin_hood::unordered_map<std::string, Basis> basis_set;
 
-    if(!fs::exists(path)) {
-        throw std::runtime_error("Could not locate slater basis file " + path.string());
+    if (!fs::exists(path)) {
+        throw std::runtime_error("Could not locate slater basis file " +
+                                 path.string());
     }
     std::ifstream in(path.c_str());
 
-    if(!in.good()) {
-        throw std::runtime_error("Could not read slater basis file " + path.string());
+    if (!in.good()) {
+        throw std::runtime_error("Could not read slater basis file " +
+                                 path.string());
     }
 
     auto basis_json = nlohmann::json::parse(in);
-    for(const auto &basis: basis_json.items()) {
+    for (const auto &basis : basis_json.items()) {
         std::string k = basis.key();
         std::vector<Shell> shells;
         const auto &j = basis.value();
-        for(const auto &shell: j) {
+        for (const auto &shell : j) {
             const auto &occ_ref = shell["occ"];
             const auto &n_ref = shell["n"];
             const auto &z_ref = shell["z"];
@@ -234,17 +237,17 @@ robin_hood::unordered_map<std::string, Basis> load_slaterbasis(const std::string
             IVec n(nz);
             Vec z(z_ref.size());
             Mat c = Mat::Zero(nz, nocc);
-            for(size_t row = 0; row < nocc; row++) {
+            for (size_t row = 0; row < nocc; row++) {
                 occupation(row) = occ_ref[row];
             }
 
-            for(size_t row = 0; row < nz; row++) {
+            for (size_t row = 0; row < nz; row++) {
                 n(row) = n_ref[row];
                 z(row) = z_ref[row];
             }
 
-            for(size_t oi = 0; oi < nocc; oi++) {
-                for(size_t zi = 0; zi < nz; zi++) {
+            for (size_t oi = 0; oi < nocc; oi++) {
+                for (size_t zi = 0; zi < nz; zi++) {
                     c(zi, oi) = c_ref[oi][zi];
                 }
             }

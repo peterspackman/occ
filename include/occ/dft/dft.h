@@ -11,16 +11,16 @@
 #include <occ/qm/basisset.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/ints.h>
-#include <occ/qm/spinorbital.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/spinorbital.h>
 #include <string>
 #include <vector>
 
 namespace occ::dft {
 using occ::qm::BasisSet;
 using occ::qm::expectation;
-using occ::qm::SpinorbitalKind;
 using occ::qm::MolecularOrbitals;
+using occ::qm::SpinorbitalKind;
 
 using occ::IVec;
 using occ::Mat3N;
@@ -182,7 +182,8 @@ class DFT {
     }
 
     template <unsigned int order = 1>
-    inline auto compute_electronic_multipoles(SpinorbitalKind k, const MolecularOrbitals &mo,
+    inline auto compute_electronic_multipoles(SpinorbitalKind k,
+                                              const MolecularOrbitals &mo,
                                               const Vec3 &o = {0.0, 0.0,
                                                                0.0}) const {
         return m_hf.template compute_electronic_multipoles<order>(k, mo, o);
@@ -196,13 +197,14 @@ class DFT {
 
     template <int derivative_order,
               SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-    Mat compute_fock_dft(const MolecularOrbitals &mo, double precision, const Mat &Schwarz) {
+    Mat compute_fock_dft(const MolecularOrbitals &mo, double precision,
+                         const Mat &Schwarz) {
         using occ::parallel::nthreads;
         const auto &basis = m_hf.basis();
         const auto &atoms = m_hf.atoms();
         size_t F_rows, F_cols;
         size_t nbf = basis.nbf();
-        const auto& D = mo.D;
+        const auto &D = mo.D;
         std::tie(F_rows, F_cols) =
             occ::qm::matrix_dimensions<spinorbital_kind>(nbf);
         Mat F = Mat::Zero(F_rows, F_cols);
@@ -258,8 +260,8 @@ class DFT {
                     const auto &pts_block = atom_pts.middleCols(l, npt);
                     const auto &weights_block = atom_weights.segment(l, npt);
                     if (cache[block].phi.rows() == 0) {
-                        occ::gto::evaluate_basis<derivative_order>(basis, atoms, pts_block,
-                                                 cache[block]);
+                        occ::gto::evaluate_basis<derivative_order>(
+                            basis, atoms, pts_block, cache[block]);
                     }
                     const auto &gto_vals = cache[block];
                     occ::density::evaluate_density<derivative_order,
@@ -275,10 +277,8 @@ class DFT {
                                          SpinorbitalKind::Unrestricted) {
                         Vec rho_a_tmp = block::a(rho.col(0));
                         Vec rho_b_tmp = block::b(rho.col(0));
-                        double tot_density_a =
-                            rho_a_tmp.dot(weights_block);
-                        double tot_density_b =
-                            rho_b_tmp.dot(weights_block);
+                        double tot_density_a = rho_a_tmp.dot(weights_block);
+                        double tot_density_b = rho_b_tmp.dot(weights_block);
                         alpha_densities[thread_id] += tot_density_a;
                         beta_densities[thread_id] += tot_density_b;
                     }
@@ -339,8 +339,8 @@ class DFT {
         return F;
     }
 
-    Mat compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo, double precision,
-                     const Mat &Schwarz) {
+    Mat compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
+                     double precision, const Mat &Schwarz) {
         int deriv = density_derivative();
         switch (kind) {
         case SpinorbitalKind::Unrestricted: {
@@ -382,8 +382,10 @@ class DFT {
     }
     const auto &hf() const { return m_hf; }
 
-    Vec electronic_electric_potential_contribution(
-        occ::qm::SpinorbitalKind kind, const MolecularOrbitals &mo, const Mat3N &pts) const {
+    Vec
+    electronic_electric_potential_contribution(occ::qm::SpinorbitalKind kind,
+                                               const MolecularOrbitals &mo,
+                                               const Mat3N &pts) const {
         return m_hf.electronic_electric_potential_contribution(kind, mo, pts);
     }
 
@@ -391,8 +393,8 @@ class DFT {
         return m_hf.nuclear_electric_potential_contribution(pts);
     }
 
-    void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const MolecularOrbitals &mo,
-                                 Mat &H) {
+    void update_core_hamiltonian(occ::qm::SpinorbitalKind k,
+                                 const MolecularOrbitals &mo, Mat &H) {
         return;
     }
 

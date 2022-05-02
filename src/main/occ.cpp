@@ -4,26 +4,26 @@
 #include <fmt/ostream.h>
 #include <iostream>
 #include <occ/core/logger.h>
+#include <occ/core/parallel.h>
 #include <occ/core/timings.h>
-#include <occ/io/fchkwriter.h>
-#include <occ/io/xyz.h>
-#include <occ/io/gaussian_input_file.h>
-#include <occ/io/qcschema.h>
-#include <occ/io/occ_input.h>
-#include <occ/qm/partitioning.h>
-#include <spdlog/cfg/env.h>
-#include <occ/main/single_point.h>
-#include <occ/main/pair_energy.h>
-#include <occ/main/version.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
-#include <occ/core/parallel.h>
+#include <occ/io/fchkwriter.h>
+#include <occ/io/gaussian_input_file.h>
+#include <occ/io/occ_input.h>
+#include <occ/io/qcschema.h>
+#include <occ/io/xyz.h>
+#include <occ/main/pair_energy.h>
+#include <occ/main/single_point.h>
+#include <occ/main/version.h>
+#include <occ/qm/partitioning.h>
+#include <spdlog/cfg/env.h>
 #include <xc.h>
 
 namespace fs = std::filesystem;
 using occ::io::OccInput;
-using occ::qm::Wavefunction;
 using occ::qm::SpinorbitalKind;
+using occ::qm::Wavefunction;
 
 void read_input_file(const std::string &filename, OccInput &config) {
     occ::timing::stop(occ::timing::category::io);
@@ -31,12 +31,10 @@ void read_input_file(const std::string &filename, OccInput &config) {
     if (ext == ".gjf" || ext == ".com") {
         occ::io::GaussianInputFile g(filename);
         g.update_occ_input(config);
-    }
-    else if (ext == ".json") {
+    } else if (ext == ".json") {
         occ::io::QCSchemaReader qcs(filename);
         qcs.update_occ_input(config);
-    }
-    else if (ext == ".xyz") {
+    } else if (ext == ".xyz") {
         occ::io::XyzFileReader xyz(filename);
         xyz.update_occ_input(config);
     }
@@ -44,10 +42,9 @@ void read_input_file(const std::string &filename, OccInput &config) {
 
 void write_output_files(const OccInput &config, Wavefunction &wfn) {
     fs::path fchk_path = config.filename;
-    if(!config.solvent.solvent_name.empty()) {
+    if (!config.solvent.solvent_name.empty()) {
         fchk_path.replace_extension(".solvated.fchk");
-    }
-    else {
+    } else {
         fchk_path.replace_extension(".fchk");
     }
     occ::io::FchkWriter fchk(fchk_path.string());
@@ -131,43 +128,41 @@ int main(int argc, char *argv[]) {
         occ::timing::start(occ::timing::category::io);
 
         OccInput config;
-	config.name = result["input"].as<std::string>();
+        config.name = result["input"].as<std::string>();
         // read input file first so we can override with command line settings
         read_input_file(result["input"].as<std::string>(), config);
-	if(config.filename.empty()) {
-	    config.filename = config.name;
-	}
+        if (config.filename.empty()) {
+            config.filename = config.name;
+        }
 
-	occ::parallel::set_num_threads(std::max(1, config.driver.threads));
-        if(result.count("threads"))
-	    occ::parallel::set_num_threads(result["threads"].as<int>());
+        occ::parallel::set_num_threads(std::max(1, config.driver.threads));
+        if (result.count("threads"))
+            occ::parallel::set_num_threads(result["threads"].as<int>());
 
 #ifdef _OPENMP
-	std::string thread_type = "OpenMP";
+        std::string thread_type = "OpenMP";
 #else
-	std::string thread_type = "std";
+        std::string thread_type = "std";
 #endif
         fmt::print("\nparallelization: {} {} threads, {} eigen threads\n",
-                   occ::parallel::get_num_threads(),
-		   thread_type,
-		   Eigen::nbThreads());
+                   occ::parallel::get_num_threads(), thread_type,
+                   Eigen::nbThreads());
 
-        if(result.count("basis"))
+        if (result.count("basis"))
             config.basis.name = result["basis"].as<std::string>();
-        if(result.count("multiplicity"))
+        if (result.count("multiplicity"))
             config.electronic.multiplicity = result["multiplicity"].as<int>();
-        if(result.count("method"))
+        if (result.count("method"))
             config.method.name = result["method"].as<std::string>();
-        if(result.count("charge"))
+        if (result.count("charge"))
             config.electronic.charge = result["charge"].as<int>();
-        if(result.count("spherical"))
+        if (result.count("spherical"))
             config.basis.spherical = result["spherical"].as<bool>();
 
         if (result.count("df-basis"))
-            config.basis.df_name =
-                result["df-basis"].as<std::string>();
-        if (config.electronic.multiplicity != 1 || result.count("unrestricted") ||
-            config.method.name == "uhf") {
+            config.basis.df_name = result["df-basis"].as<std::string>();
+        if (config.electronic.multiplicity != 1 ||
+            result.count("unrestricted") || config.method.name == "uhf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
             fmt::print("spinorbital kind: unrestricted");
         } else if (config.method.name == "ghf") {
@@ -178,35 +173,34 @@ int main(int argc, char *argv[]) {
         }
         occ::timing::stop(occ::timing::category::io);
 
-	if(config.driver.driver == "energy") {
-	    Wavefunction wfn = occ::main::single_point_calculation(config);
-	    write_output_files(config, wfn);
+        if (config.driver.driver == "energy") {
+            Wavefunction wfn = occ::main::single_point_calculation(config);
+            write_output_files(config, wfn);
 
+            if (result.count("solvent")) {
+                config.solvent.solvent_name =
+                    result["solvent"].as<std::string>();
+                if (result.count("solvent-file"))
+                    config.solvent.output_surface_filename =
+                        result["solvent-file"].as<std::string>();
+                Wavefunction wfn2 =
+                    occ::main::single_point_calculation(config, wfn);
+                double esolv = wfn2.energy.total - wfn.energy.total;
 
-	    if (result.count("solvent")) {
-		config.solvent.solvent_name = result["solvent"].as<std::string>();
-		if (result.count("solvent-file"))
-		    config.solvent.output_surface_filename =
-			result["solvent-file"].as<std::string>();
-		Wavefunction wfn2 = occ::main::single_point_calculation(config, wfn);
-		double esolv = wfn2.energy.total - wfn.energy.total;
-
-		fmt::print("estimated \u0394G(solv) {:20.12f} ({:.3f} kJ/mol, "
-			   "{:.3f} kcal/mol)\n",
-			   esolv, esolv * occ::units::AU_TO_KJ_PER_MOL,
-			   esolv * occ::units::AU_TO_KCAL_PER_MOL);
-		write_output_files(config, wfn2);
-	    }
-	}
-	else if(config.driver.driver == "pair_energy") {
-	    fmt::print("Pair energy\n");
-	    occ::main::PairEnergy pair_energy(config);
-	    pair_energy.compute();
-	}
-	else {
-	    fmt::print("Unknown driver: {}\n", config.driver.driver);
-	    return 1;
-	}
+                fmt::print("estimated \u0394G(solv) {:20.12f} ({:.3f} kJ/mol, "
+                           "{:.3f} kcal/mol)\n",
+                           esolv, esolv * occ::units::AU_TO_KJ_PER_MOL,
+                           esolv * occ::units::AU_TO_KCAL_PER_MOL);
+                write_output_files(config, wfn2);
+            }
+        } else if (config.driver.driver == "pair_energy") {
+            fmt::print("Pair energy\n");
+            occ::main::PairEnergy pair_energy(config);
+            pair_energy.compute();
+        } else {
+            fmt::print("Unknown driver: {}\n", config.driver.driver);
+            return 1;
+        }
 
     } catch (const char *ex) {
         fmt::print(error_format, ex);

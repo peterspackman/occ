@@ -8,12 +8,12 @@
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
+#include <occ/qm/ints.h>
 #include <occ/qm/merge.h>
 #include <occ/qm/orb.h>
+#include <occ/qm/partitioning.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
-#include <occ/qm/ints.h>
-#include <occ/qm/partitioning.h>
 
 namespace occ::qm {
 
@@ -68,7 +68,8 @@ Wavefunction::Wavefunction(const MoldenReader &molden)
             basis, block::b(mo.C));
     } else {
         mo.C = molden.alpha_mo_coefficients();
-        mo.C = molden.convert_mo_coefficients_from_molden_convention(basis, mo.C);
+        mo.C =
+            molden.convert_mo_coefficients_from_molden_convention(basis, mo.C);
         mo.energies = molden.alpha_mo_energies();
     }
     update_occupied_orbitals();
@@ -78,8 +79,8 @@ Wavefunction::Wavefunction(const MoldenReader &molden)
 Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     : num_alpha(wfn_a.num_alpha + wfn_b.num_alpha),
       num_beta(wfn_a.num_beta + wfn_b.num_beta),
-      basis(merge_basis_sets(wfn_a.basis, wfn_b.basis)),
-      nbf(basis.nbf()), atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms)) {
+      basis(merge_basis_sets(wfn_a.basis, wfn_b.basis)), nbf(basis.nbf()),
+      atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms)) {
     spinorbital_kind = (wfn_a.is_restricted() && wfn_b.is_restricted())
                            ? SpinorbitalKind::Restricted
                            : SpinorbitalKind::Unrestricted;
@@ -100,7 +101,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     // TODO refactor
     if (wfn_a.is_restricted() && wfn_b.is_restricted()) {
         // merge occupied orbitals
-	Vec occ_energies_merged;
+        Vec occ_energies_merged;
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
             wfn_a.mo.C.leftCols(wfn_a.num_alpha),
             wfn_b.mo.C.leftCols(wfn_b.num_alpha),
@@ -121,8 +122,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
             wfn_b.mo.energies.bottomRows(nv_b));
         mo.C.rightCols(nv_ab) = C_merged;
         mo.energies.bottomRows(nv_ab) = energies_merged;
-    } 
-    else {
+    } else {
         if (wfn_a.is_restricted()) {
             { // alpha
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
@@ -140,7 +140,8 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.mo.C.rightCols(nv_a), block::a(wfn_b.mo.C).rightCols(nv_b),
+                    wfn_a.mo.C.rightCols(nv_a),
+                    block::a(wfn_b.mo.C).rightCols(nv_b),
                     wfn_a.mo.energies.bottomRows(nv_a),
                     block::a(wfn_b.mo.energies).bottomRows(nv_b));
                 block::a(mo.C).rightCols(nv_ab) = C_merged;
@@ -162,7 +163,8 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.mo.C.rightCols(nv_a), block::b(wfn_b.mo.C).rightCols(nv_b),
+                    wfn_a.mo.C.rightCols(nv_a),
+                    block::b(wfn_b.mo.C).rightCols(nv_b),
                     wfn_a.mo.energies.bottomRows(nv_a),
                     block::b(wfn_b.mo.energies).bottomRows(nv_b));
                 block::b(mo.C).rightCols(nv_ab) = C_merged;
@@ -185,7 +187,8 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::a(wfn_a.mo.C).rightCols(nv_a), wfn_b.mo.C.rightCols(nv_b),
+                    block::a(wfn_a.mo.C).rightCols(nv_a),
+                    wfn_b.mo.C.rightCols(nv_b),
                     wfn_a.mo.energies.bottomRows(nv_a),
                     wfn_b.mo.energies.bottomRows(nv_b));
                 block::a(mo.C).rightCols(nv_ab) = C_merged;
@@ -207,7 +210,8 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
 
                 occ::log::debug("Merging virtual orbitals, sorted by energy");
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::b(wfn_a.mo.C).rightCols(nv_a), wfn_b.mo.C.rightCols(nv_b),
+                    block::b(wfn_a.mo.C).rightCols(nv_a),
+                    wfn_b.mo.C.rightCols(nv_b),
                     block::b(wfn_a.mo.energies).bottomRows(nv_a),
                     wfn_b.mo.energies.bottomRows(nv_b));
                 block::b(mo.C).rightCols(nv_ab) = C_merged;
@@ -257,8 +261,8 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
                     block::b(wfn_b.mo.C).rightCols(nv_b),
                     block::b(wfn_a.mo.energies).bottomRows(nv_a),
                     block::b(wfn_b.mo.energies).bottomRows(nv_b));
-               block::b(mo.C).rightCols(nv_ab) = C_merged;
-               block::b(mo.energies).bottomRows(nv_ab) = energies_merged;
+                block::b(mo.C).rightCols(nv_ab) = C_merged;
+                block::b(mo.energies).bottomRows(nv_ab) = energies_merged;
             }
         }
     }
@@ -273,7 +277,8 @@ void Wavefunction::update_occupied_orbitals() {
         throw std::runtime_error(
             "Reading MOs from g09 unsupported for General spinorbitals");
     } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        mo.Cocc = occ::qm::orb::occupied_unrestricted(mo.C, num_alpha, num_beta);
+        mo.Cocc =
+            occ::qm::orb::occupied_unrestricted(mo.C, num_alpha, num_beta);
     } else {
         mo.Cocc = occ::qm::orb::occupied_restricted(mo.C, num_alpha);
     }
@@ -295,27 +300,31 @@ void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
         block::b(mo.C) = fchk.beta_mo_coefficients();
         block::a(mo.energies) = fchk.alpha_mo_energies();
         block::b(mo.energies) = fchk.beta_mo_energies();
-	if(!basis.is_pure()) {
-	    block::a(mo.C) = occ::io::conversion::orb::from_gaussian_order_cartesian(
-		basis, block::a(mo.C));
-	    block::b(mo.C) = occ::io::conversion::orb::from_gaussian_order_cartesian(
-		basis, block::b(mo.C));
-	}
-	else {
-	    block::a(mo.C) = occ::io::conversion::orb::from_gaussian_order_spherical(
-		basis, block::a(mo.C));
-	    block::b(mo.C) = occ::io::conversion::orb::from_gaussian_order_spherical(
-		basis, block::b(mo.C));
-	}
+        if (!basis.is_pure()) {
+            block::a(mo.C) =
+                occ::io::conversion::orb::from_gaussian_order_cartesian(
+                    basis, block::a(mo.C));
+            block::b(mo.C) =
+                occ::io::conversion::orb::from_gaussian_order_cartesian(
+                    basis, block::b(mo.C));
+        } else {
+            block::a(mo.C) =
+                occ::io::conversion::orb::from_gaussian_order_spherical(
+                    basis, block::a(mo.C));
+            block::b(mo.C) =
+                occ::io::conversion::orb::from_gaussian_order_spherical(
+                    basis, block::b(mo.C));
+        }
     } else {
         mo.C = fchk.alpha_mo_coefficients();
         mo.energies = fchk.alpha_mo_energies();
-	if(!basis.is_pure()) {
-	    mo.C = occ::io::conversion::orb::from_gaussian_order_cartesian(basis, mo.C);
-	}
-	else {
-	    mo.C = occ::io::conversion::orb::from_gaussian_order_spherical(basis, mo.C);
-	}
+        if (!basis.is_pure()) {
+            mo.C = occ::io::conversion::orb::from_gaussian_order_cartesian(
+                basis, mo.C);
+        } else {
+            mo.C = occ::io::conversion::orb::from_gaussian_order_spherical(
+                basis, mo.C);
+        }
     }
     update_occupied_orbitals();
 }
@@ -326,7 +335,7 @@ void Wavefunction::compute_density_matrix() {
             "Reading MOs from g09 unsupported for General spinorbitals");
     } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
         mo.D = occ::qm::orb::density_matrix_unrestricted(mo.Cocc, num_alpha,
-                                                      num_beta);
+                                                         num_beta);
     } else {
         mo.D = occ::qm::orb::density_matrix_restricted(mo.Cocc);
     }
@@ -337,10 +346,10 @@ void Wavefunction::symmetric_orthonormalize_molecular_orbitals(
     if (spinorbital_kind == SpinorbitalKind::Restricted) {
         mo.C = symmorthonormalize_molecular_orbitals(mo.C, overlap, num_alpha);
     } else {
-        block::a(mo.C) = symmorthonormalize_molecular_orbitals(block::a(mo.C), overlap,
-                                                          num_alpha);
-        block::b(mo.C) =
-            symmorthonormalize_molecular_orbitals(block::b(mo.C), overlap, num_beta);
+        block::a(mo.C) = symmorthonormalize_molecular_orbitals(
+            block::a(mo.C), overlap, num_alpha);
+        block::b(mo.C) = symmorthonormalize_molecular_orbitals(
+            block::b(mo.C), overlap, num_beta);
     }
     update_occupied_orbitals();
 }
@@ -438,8 +447,10 @@ void Wavefunction::save(FchkWriter &fchk) {
 
     auto Cfchk = [&]() {
         if (basis.is_pure())
-            return occ::io::conversion::orb::to_gaussian_order_spherical(basis, mo.C);
-        return occ::io::conversion::orb::to_gaussian_order_cartesian(basis, mo.C);
+            return occ::io::conversion::orb::to_gaussian_order_spherical(basis,
+                                                                         mo.C);
+        return occ::io::conversion::orb::to_gaussian_order_cartesian(basis,
+                                                                     mo.C);
     }();
     Mat Dfchk;
 
@@ -492,7 +503,9 @@ void Wavefunction::save(FchkWriter &fchk) {
 
     // TODO fix this is wrong
     fchk.set_scalar("Virial ratio",
-	-(energy.nuclear_repulsion + energy.nuclear_attraction + energy.coulomb + energy.exchange) / energy.kinetic);
+                    -(energy.nuclear_repulsion + energy.nuclear_attraction +
+                      energy.coulomb + energy.exchange) /
+                        energy.kinetic);
     fchk.set_scalar("SCF ratio", energy.total);
     fchk.set_scalar("Total ratio", energy.total);
 
@@ -550,21 +563,28 @@ Vec Wavefunction::mulliken_charges() const {
 
     ShellPairList shellpair_list;
     ShellPairData shellpair_data;
-    std::tie(shellpair_list, shellpair_data) = occ::ints::compute_shellpairs(basis);
-    Mat overlap = occ::ints::compute_1body_ints<libint2::Operator::overlap>(basis, shellpair_list)[0];
+    std::tie(shellpair_list, shellpair_data) =
+        occ::ints::compute_shellpairs(basis);
+    Mat overlap = occ::ints::compute_1body_ints<libint2::Operator::overlap>(
+        basis, shellpair_list)[0];
 
-    Vec charges = Vec::Zero(atoms.size());;
+    Vec charges = Vec::Zero(atoms.size());
+    ;
 
-    switch(spinorbital_kind) {
-	case SpinorbitalKind::Unrestricted:
-	    charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::Unrestricted>(basis, atoms, mo.D, overlap);
-	case SpinorbitalKind::General:
-	    charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::General>(basis, atoms, mo.D, overlap);
-	default:
-	    charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::Restricted>(basis, atoms, mo.D, overlap);
+    switch (spinorbital_kind) {
+    case SpinorbitalKind::Unrestricted:
+        charges =
+            -2 * occ::qm::mulliken_partition<SpinorbitalKind::Unrestricted>(
+                     basis, atoms, mo.D, overlap);
+    case SpinorbitalKind::General:
+        charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::General>(
+                           basis, atoms, mo.D, overlap);
+    default:
+        charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::Restricted>(
+                           basis, atoms, mo.D, overlap);
     }
-    for(size_t i = 0; i < atoms.size(); i++) {
-	charges(i) += atoms[i].atomic_number;
+    for (size_t i = 0; i < atoms.size(); i++) {
+        charges(i) += atoms[i].atomic_number;
     }
     return charges;
 }

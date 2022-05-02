@@ -1,8 +1,8 @@
-#include <occ/core/linear_algebra.h>
 #include <fmt/core.h>
 #include <iostream>
 #include <occ/core/element.h>
 #include <occ/core/kdtree.h>
+#include <occ/core/linear_algebra.h>
 #include <occ/crystal/crystal.h>
 
 namespace occ::crystal {
@@ -479,26 +479,25 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
     const auto &uc_mols = unit_cell_molecules();
 
     size_t mol_idx = 0;
-    for (const auto& mol : uc_mols) {
+    for (const auto &mol : uc_mols) {
         Mat3N pos_frac = to_fractional(mol.positions());
-        for(size_t i = 0; i < pos_frac.cols(); i++) {
-            const auto& pos = pos_frac.col(i);
-            upper.h =
-                std::max(upper.h, static_cast<int>(ceil(pos(0) + frac_radius(0))));
-            upper.k =
-                std::max(upper.k, static_cast<int>(ceil(pos(1) + frac_radius(1))));
-            upper.l =
-                std::max(upper.l, static_cast<int>(ceil(pos(2) + frac_radius(2))));
+        for (size_t i = 0; i < pos_frac.cols(); i++) {
+            const auto &pos = pos_frac.col(i);
+            upper.h = std::max(upper.h,
+                               static_cast<int>(ceil(pos(0) + frac_radius(0))));
+            upper.k = std::max(upper.k,
+                               static_cast<int>(ceil(pos(1) + frac_radius(1))));
+            upper.l = std::max(upper.l,
+                               static_cast<int>(ceil(pos(2) + frac_radius(2))));
 
-            lower.h =
-                std::min(lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
-            lower.k =
-                std::min(lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
-            lower.l =
-                std::min(lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
+            lower.h = std::min(
+                lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
+            lower.k = std::min(
+                lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
+            lower.l = std::min(
+                lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
         }
     }
-
 
     mol_nbs.resize(uc_mols.size());
     result.unique_dimer_idx.resize(uc_mols.size());
@@ -550,17 +549,16 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
     return result;
 }
 
-Crystal Crystal::create_primitive_supercell(const Crystal& c, HKL hkl) {
-    const auto& uc = c.unit_cell();
-    auto supercell = UnitCell(
-        uc.a() * hkl.h, uc.b() * hkl.k, uc.c() * hkl.l,
-        uc.alpha(), uc.beta(), uc.gamma()
-    );
-    const auto& uc_mols = c.unit_cell_molecules();
-    size_t natoms = std::accumulate(uc_mols.begin(), uc_mols.end(), 0, 
-            [](size_t a, const auto& mol) {
-                return a + mol.size();
-            }) * hkl.h * hkl.k * hkl.l;
+Crystal Crystal::create_primitive_supercell(const Crystal &c, HKL hkl) {
+    const auto &uc = c.unit_cell();
+    auto supercell = UnitCell(uc.a() * hkl.h, uc.b() * hkl.k, uc.c() * hkl.l,
+                              uc.alpha(), uc.beta(), uc.gamma());
+    const auto &uc_mols = c.unit_cell_molecules();
+    size_t natoms = std::accumulate(uc_mols.begin(), uc_mols.end(), 0,
+                                    [](size_t a, const auto &mol) {
+                                        return a + mol.size();
+                                    }) *
+                    hkl.h * hkl.k * hkl.l;
     Mat3N positions(3, natoms);
     IVec numbers(natoms);
     Vec3 t;
@@ -568,10 +566,11 @@ Crystal Crystal::create_primitive_supercell(const Crystal& c, HKL hkl) {
     for (int h = 0; h < hkl.h; h++) {
         for (int k = 0; k < hkl.k; k++) {
             for (int l = 0; l < hkl.l; l++) {
-                for(const auto& uc_mol: uc_mols) {
+                for (const auto &uc_mol : uc_mols) {
                     t = Vec3(h, k, l);
                     size_t n = uc_mol.size();
-                    positions.block(0, offset, 3, n) = c.to_fractional(uc_mol.positions());
+                    positions.block(0, offset, 3, n) =
+                        c.to_fractional(uc_mol.positions());
                     positions.block(0, offset, 3, n).colwise() += t;
                     numbers.block(offset, 0, n, 1) = uc_mol.atomic_numbers();
                     offset += n;
@@ -579,10 +578,12 @@ Crystal Crystal::create_primitive_supercell(const Crystal& c, HKL hkl) {
             }
         }
     }
-    return Crystal(AsymmetricUnit(positions, numbers), SpaceGroup(1), supercell);
+    return Crystal(AsymmetricUnit(positions, numbers), SpaceGroup(1),
+                   supercell);
 }
 
-std::string Crystal::dimer_symmetry_string(const occ::core::Dimer &dimer) const {
+std::string
+Crystal::dimer_symmetry_string(const occ::core::Dimer &dimer) const {
     const auto &a = dimer.a();
     const auto &b = dimer.b();
     if (a.asymmetric_molecule_idx() != b.asymmetric_molecule_idx())
@@ -602,8 +603,6 @@ std::string Crystal::dimer_symmetry_string(const occ::core::Dimer &dimer) const 
     return symop_ab.to_string();
 }
 
-double Crystal::volume() const {
-    return m_unit_cell.volume();
-}
+double Crystal::volume() const { return m_unit_cell.volume(); }
 
 } // namespace occ::crystal

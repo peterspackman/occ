@@ -1,7 +1,6 @@
 #include <cxxopts.hpp>
 #include <filesystem>
 #include <fmt/ostream.h>
-#include <occ/io/xyz.h>
 #include <occ/3rdparty/robin_hood.h>
 #include <occ/core/eigenp.h>
 #include <occ/core/interpolator.h>
@@ -10,12 +9,13 @@
 #include <occ/core/units.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>
 #include <occ/geometry/marching_cubes.h>
+#include <occ/io/xyz.h>
 #include <occ/slater/slaterbasis.h>
 
 namespace fs = std::filesystem;
 using occ::core::Element;
-using occ::core::Molecule;
 using occ::core::Interpolator1D;
+using occ::core::Molecule;
 
 struct HirshfeldBasis {
     std::vector<Eigen::Vector3d> coordinates;

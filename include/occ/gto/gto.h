@@ -142,17 +142,16 @@ inline std::vector<Momenta> cartesian_subshell_ordering(int l) {
 }
 
 inline std::vector<MomentaSpherical> spherical_subshell_ordering(int l) {
-    if(l == 0) return {MomentaSpherical{}};
+    if (l == 0)
+        return {MomentaSpherical{}};
     int m = 0;
     std::vector<MomentaSpherical> moments;
-    auto f = [&moments](int l, int m) {
-	moments.push_back({l, m});
-    };
+    auto f = [&moments](int l, int m) { moments.push_back({l, m}); };
     occ::gto::iterate_over_shell<false>(f, l);
     return moments;
 }
 
-template<int max_derivative = 0>
+template <int max_derivative = 0>
 void evaluate_basis(const BasisSet &basis,
                     const std::vector<occ::core::Atom> &atoms,
                     const occ::Mat &grid_pts, GTOValues &gto_values) {
@@ -209,8 +208,6 @@ void evaluate_basis(const BasisSet &basis,
     occ::timing::stop(occ::timing::category::gto);
 }
 
-
-
 void evaluate_basis(const BasisSet &basis,
                     const std::vector<occ::core::Atom> &atoms,
                     const occ::Mat &grid_pts, GTOValues &gto_values,
@@ -259,10 +256,10 @@ Mat cartesian_gaussian_rotation_matrix(const occ::Mat3 rotation) {
     Mat result = Mat::Zero(num_moments, num_moments);
     auto cg_powers = cartesian_gaussian_power_index_arrays<l>();
     int p1_idx = 0;
-    for (const auto &p1: cg_powers) {
-	int p2_idx = 0;
-	// copy as we're permuting p2
-        for (auto p2: cg_powers) {
+    for (const auto &p1 : cg_powers) {
+        int p2_idx = 0;
+        // copy as we're permuting p2
+        for (auto p2 : cg_powers) {
             do {
                 double tmp{1.0};
                 for (int k = 0; k < l; k++) {
@@ -270,9 +267,9 @@ Mat cartesian_gaussian_rotation_matrix(const occ::Mat3 rotation) {
                 }
                 result(p2_idx, p1_idx) += tmp;
             } while (std::next_permutation(p2.begin(), p2.end()));
-	    p2_idx++;
+            p2_idx++;
         }
-	p1_idx++;
+        p1_idx++;
     }
     return result;
 }

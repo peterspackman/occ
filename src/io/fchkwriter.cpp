@@ -213,7 +213,7 @@ void FchkWriter::set_basis(const occ::qm::BasisSet &basis) {
             primitive_exponents.push_back(sh.alpha[p]);
         }
         for (size_t p = 0; p < contraction.coeff.size(); p++) {
-	    contraction_coefficients.push_back(sh.coeff_normalized(0, p));
+            contraction_coefficients.push_back(sh.coeff_normalized(0, p));
         }
     }
     set_scalar("Number of contracted shells", basis.size());

@@ -98,7 +98,7 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
     masks.emplace_back(MaskMat::Zero(nsh1, nsh2));
     for (size_t i = 1; i != nthreads; ++i) {
         engines.push_back(engines[0]);
-	masks.push_back(masks[0]);
+        masks.push_back(masks[0]);
     }
     size_t num_engines = engines.size();
 
@@ -106,11 +106,9 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
     timer.set_now_overhead(25);
     timer.start(0);
 
-
-
     auto compute = [&](int thread_id) {
         auto &engine = engines[thread_id];
-	auto &mask = masks[thread_id];
+        auto &mask = masks[thread_id];
         const auto &buf = engine.results();
 
         // loop over permutationally-unique set of shells
@@ -133,22 +131,25 @@ compute_shellpairs(const BasisSet &bs1, const BasisSet &bs2,
                     significant = (norm >= threshold);
                 }
 
-                if (significant) { mask(s1, s2) = true; }
+                if (significant) {
+                    mask(s1, s2) = true;
+                }
             }
         }
     }; // end of compute
     occ::parallel::parallel_do(compute);
 
-    for(size_t n = 1; n < nthreads; n++) {
-	masks[0] = masks[0].cwiseMax(masks[n]);
+    for (size_t n = 1; n < nthreads; n++) {
+        masks[0] = masks[0].cwiseMax(masks[n]);
     }
 
     ShellPairList splist;
-    for(size_t s1 = 0; s1 < nsh1; s1++) {
+    for (size_t s1 = 0; s1 < nsh1; s1++) {
         splist[s1] = {};
-	for(size_t s2 = 0; s2 < nsh2; s2++) {
-	    if(masks[0](s1, s2)) splist[s1].push_back(s2);
-	}
+        for (size_t s2 = 0; s2 < nsh2; s2++) {
+            if (masks[0](s1, s2))
+                splist[s1].push_back(s2);
+        }
     }
 
     // compute shellpair data assuming that we are computing to default_epsilon

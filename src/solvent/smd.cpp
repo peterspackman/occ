@@ -225,19 +225,30 @@ constexpr double delta_rzz(ElementPair p) {
     }
 }
 
-constexpr const char * pair_string(ElementPair p) {
+constexpr const char *pair_string(ElementPair p) {
     switch (p) {
-    case H_C: return "H,C";
-    case H_O: return "H,O";
-    case O_C: return "O,C";
-    case O_O: return "O,O";
-    case O_N: return "O,N";
-    case O_P: return "O,P";
-    case C_C: return "C,C";
-    case C_N: return "C,N";
-    case N_C3: return "N,C(3)";
-    case N_C: return "N,C";
-    default: return "X,X";
+    case H_C:
+        return "H,C";
+    case H_O:
+        return "H,O";
+    case O_C:
+        return "O,C";
+    case O_O:
+        return "O,O";
+    case O_N:
+        return "O,N";
+    case O_P:
+        return "O,P";
+    case C_C:
+        return "C,C";
+    case C_N:
+        return "C,N";
+    case N_C3:
+        return "N,C(3)";
+    case N_C:
+        return "N,C";
+    default:
+        return "X,X";
     }
 }
 
@@ -372,12 +383,12 @@ ElementPair get_element_pair(int z1, int z2) {
     return Other;
 }
 
-
-Mat cot_matrix(const SMDSolventParameters &params, const IVec &nums, const Mat3N &positions) {
+Mat cot_matrix(const SMDSolventParameters &params, const IVec &nums,
+               const Mat3N &positions) {
     Mat result = Mat::Zero(nums.rows(), nums.rows());
     size_t N = nums.rows();
-    for(int i = 0; i < N; i++) {
-        for(int j = i + 1; j < N; j++) {
+    for (int i = 0; i < N; i++) {
+        for (int j = i + 1; j < N; j++) {
             double r = (positions.col(i) - positions.col(j)).norm();
             ElementPair p1 = get_element_pair(nums(i), nums(j));
             ElementPair p2 = get_element_pair(nums(j), nums(i));
@@ -391,8 +402,8 @@ Mat cot_matrix(const SMDSolventParameters &params, const IVec &nums, const Mat3N
 Mat sigma_matrix(const SMDSolventParameters &params, const IVec &nums) {
     int max_el = nums.maxCoeff() + 1;
     Mat result = Mat::Zero(max_el, max_el);
-    for(int i = 1; i < max_el; i++) {
-        for(int j = 1; j < max_el; j++) {
+    for (int i = 1; i < max_el; i++) {
+        for (int j = 1; j < max_el; j++) {
             ElementPair p = get_element_pair(i, j);
             result(i, j) = element_pair_prefactor(params, p);
         }
@@ -402,17 +413,20 @@ Mat sigma_matrix(const SMDSolventParameters &params, const IVec &nums) {
 
 Vec sigma_vector(const SMDSolventParameters &params, const IVec &nums) {
     Vec result = Vec::Zero(nums.rows());
-    for(int i = 0; i < nums.rows(); i++) {
+    for (int i = 0; i < nums.rows(); i++) {
         result(i) = element_sigma(params, nums(i));
     }
     return result;
 }
 
-double pair_term(int index, int n, const IVec &nums, const Mat &cot, int power = 1) {
+double pair_term(int index, int n, const IVec &nums, const Mat &cot,
+                 int power = 1) {
     double result = 0.0;
-    for(int j = 0; j < nums.rows(); j++) {
-        if(j == index) continue;
-        if(nums(j) != n) continue;
+    for (int j = 0; j < nums.rows(); j++) {
+        if (j == index)
+            continue;
+        if (nums(j) != n)
+            continue;
         result += cot(index, j);
     }
     return std::pow(result, power);
@@ -422,11 +436,13 @@ double nc_term(int k, const IVec &nums, const Mat &cot) {
     double result{0.0};
     size_t N = nums.rows();
     for (int kp = 0; kp < N; kp++) {
-        if(nums(kp) != 6) continue;
+        if (nums(kp) != 6)
+            continue;
 
         double csum{0.0};
         for (int kpp = 0; kpp < N; kpp++) {
-            if((kpp == k) || (kpp == kp)) continue;
+            if ((kpp == k) || (kpp == kp))
+                continue;
             csum += cot(kp, kpp);
         }
         result += csum * csum * cot(k, kp);
@@ -434,13 +450,16 @@ double nc_term(int k, const IVec &nums, const Mat &cot) {
     return std::pow(result, 1.3);
 }
 
-double nc3_term(const SMDSolventParameters &params, int index, const IVec &nums, const Mat3N &positions) {
+double nc3_term(const SMDSolventParameters &params, int index, const IVec &nums,
+                const Mat3N &positions) {
     size_t N = nums.rows();
     double result = 0.0;
     const ElementPair p = ElementPair::N_C3;
-    for(int j = 0; j < N; j++) {
-        if(j == index) continue;
-        if(nums(j) != 6) continue;
+    for (int j = 0; j < N; j++) {
+        if (j == index)
+            continue;
+        if (nums(j) != 6)
+            continue;
         double r = (positions.col(j) - positions.col(index)).norm();
         result += T_switching_function(p, r);
     }
@@ -453,7 +472,8 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
                            const Mat3N &positions, const Vec &areas) {
     int N = nums.rows();
     Vec result = Vec::Zero(nums.rows());
-    Vec per_element_sigma = Vec::Zero(static_cast<size_t>(detail::ElementPair::Other));
+    Vec per_element_sigma =
+        Vec::Zero(static_cast<size_t>(detail::ElementPair::Other));
     Vec per_element_pair = Vec::Zero(nums.maxCoeff() + 1);
     Vec per_element_pair2 = Vec::Zero(nums.maxCoeff() + 1);
     Mat cot = detail::cot_matrix(params, nums, positions);
@@ -464,17 +484,19 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
     for (int i = 0; i < N; i++) {
         int ni = nums(i);
         result(i) += sigma_vec(i);
-        switch(ni) {
+        switch (ni) {
         case 1: {
-	    if(6 > max_number) continue;
+            if (6 > max_number)
+                continue;
             double hc_sigma = sigma_mat(1, 6);
-            if(hc_sigma != 0.0) {
+            if (hc_sigma != 0.0) {
                 double hc = detail::pair_term(i, 6, nums, cot, 1);
                 result(i) += hc * hc_sigma;
             }
-	    if(8 > max_number) continue;
+            if (8 > max_number)
+                continue;
             double ho_sigma = sigma_mat(1, 8);
-            if(ho_sigma != 0.0) {
+            if (ho_sigma != 0.0) {
                 double ho = detail::pair_term(i, 8, nums, cot, 1);
                 result(i) += ho * ho_sigma;
             }
@@ -482,13 +504,14 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
         }
         case 6: {
             double cc_sigma = sigma_mat(6, 6);
-            if(cc_sigma != 0.0) {
+            if (cc_sigma != 0.0) {
                 double cc = detail::pair_term(i, 6, nums, cot, 1);
                 result(i) += cc * cc_sigma;
             }
-	    if(7 > max_number) continue;
+            if (7 > max_number)
+                continue;
             double cn_sigma = sigma_mat(6, 7);
-            if(cn_sigma != 0.0) {
+            if (cn_sigma != 0.0) {
                 double cn = detail::pair_term(i, 7, nums, cot, 2);
                 result(i) += cn * cn_sigma;
             }
@@ -497,37 +520,41 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
         case 7: {
             // definitely the problem
             double nc_sigma = sigma_mat(7, 6);
-            if(nc_sigma != 0.0) {
+            if (nc_sigma != 0.0) {
                 double nc = detail::nc_term(i, nums, cot);
                 result(i) += nc * nc_sigma;
             }
-            double nc3_sigma = detail::element_pair_prefactor(params, detail::ElementPair::N_C3);
-            if(nc3_sigma != 0.0) {
-                double nc3 = detail::nc3_term(params, i, nums, positions); 
+            double nc3_sigma = detail::element_pair_prefactor(
+                params, detail::ElementPair::N_C3);
+            if (nc3_sigma != 0.0) {
+                double nc3 = detail::nc3_term(params, i, nums, positions);
                 result(i) += nc3 * nc3_sigma;
             }
             break;
         }
         case 8: {
             // O,C; O,N; O,O
-            for(int j = 6; j < 9; j++) {
-		if(j > max_number) continue;
+            for (int j = 6; j < 9; j++) {
+                if (j > max_number)
+                    continue;
                 double ox_sigma = sigma_mat(8, j);
-                if(ox_sigma != 0.0) {
+                if (ox_sigma != 0.0) {
                     double ox = detail::pair_term(i, j, nums, cot, 1);
                     result(i) += ox * ox_sigma;
                 }
             }
 
-	    if(15 > max_number) continue;
+            if (15 > max_number)
+                continue;
             double op_sigma = sigma_mat(8, 15);
-            if(op_sigma != 0.0) {
+            if (op_sigma != 0.0) {
                 double op = detail::pair_term(i, 15, nums, cot, 1);
                 result(i) += op * op_sigma;
             }
             break;
         }
-        default: break;
+        default:
+            break;
         }
     }
 
@@ -546,17 +573,19 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
     for (int i = 0; i < N; i++) {
         int ni = nums(i);
         result(i) += sigma_vec(i);
-        switch(ni) {
+        switch (ni) {
         case 1: {
-	    if(6 > max_number) continue;
+            if (6 > max_number)
+                continue;
             double hc_sigma = sigma_mat(1, 6);
-            if(hc_sigma != 0.0) {
+            if (hc_sigma != 0.0) {
                 double hc = detail::pair_term(i, 6, nums, cot, 1);
                 result(i) += hc * hc_sigma;
             }
-	    if(8 > max_number) continue;
+            if (8 > max_number)
+                continue;
             double ho_sigma = sigma_mat(1, 8);
-            if(ho_sigma != 0.0) {
+            if (ho_sigma != 0.0) {
                 double ho = detail::pair_term(i, 8, nums, cot, 1);
                 result(i) += ho * ho_sigma;
             }
@@ -564,13 +593,14 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
         }
         case 6: {
             double cc_sigma = sigma_mat(6, 6);
-            if(cc_sigma != 0.0) {
+            if (cc_sigma != 0.0) {
                 double cc = detail::pair_term(i, 6, nums, cot, 1);
                 result(i) += cc * cc_sigma;
             }
-	    if(7 > max_number) continue;
+            if (7 > max_number)
+                continue;
             double cn_sigma = sigma_mat(6, 7);
-            if(cn_sigma != 0.0) {
+            if (cn_sigma != 0.0) {
                 double cn = detail::pair_term(i, 7, nums, cot, 2);
                 result(i) += cn * cn_sigma;
             }
@@ -578,37 +608,41 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
         }
         case 7: {
             double nc_sigma = sigma_mat(7, 6);
-            if(nc_sigma != 0.0) {
+            if (nc_sigma != 0.0) {
                 double nc = detail::nc_term(i, nums, cot);
                 result(i) += nc * nc_sigma;
             }
-            double nc3_sigma = detail::element_pair_prefactor(params, detail::ElementPair::N_C3);
-            if(nc3_sigma != 0.0) {
-                double nc3 = detail::nc3_term(params, i, nums, positions); 
+            double nc3_sigma = detail::element_pair_prefactor(
+                params, detail::ElementPair::N_C3);
+            if (nc3_sigma != 0.0) {
+                double nc3 = detail::nc3_term(params, i, nums, positions);
                 result(i) += nc3 * nc3_sigma;
             }
             break;
         }
         case 8: {
             // O,C; O,N; O,O
-            for(int j = 6; j < 9; j++) {
-		if(j > max_number) continue;
+            for (int j = 6; j < 9; j++) {
+                if (j > max_number)
+                    continue;
                 double ox_sigma = sigma_mat(8, j);
-                if(ox_sigma != 0.0) {
+                if (ox_sigma != 0.0) {
                     double ox = detail::pair_term(i, j, nums, cot, 1);
                     result(i) += ox * ox_sigma;
                 }
             }
 
-	    if(15 > max_number) continue;
+            if (15 > max_number)
+                continue;
             double op_sigma = sigma_mat(8, 15);
-            if(op_sigma != 0.0) {
+            if (op_sigma != 0.0) {
                 double op = detail::pair_term(i, 15, nums, cot, 1);
                 result(i) += op * op_sigma;
             }
             break;
         }
-        default: break;
+        default:
+            break;
         }
     }
 

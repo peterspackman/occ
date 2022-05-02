@@ -1,10 +1,10 @@
-#include <occ/main/single_point.h>
-#include <occ/qm/wavefunction.h>
-#include <occ/io/occ_input.h>
-#include <occ/solvent/solvation_correction.h>
-#include <occ/dft/dft.h>
-#include <occ/qm/scf.h>
 #include <occ/core/constants.h>
+#include <occ/dft/dft.h>
+#include <occ/io/occ_input.h>
+#include <occ/main/single_point.h>
+#include <occ/qm/scf.h>
+#include <occ/qm/wavefunction.h>
+#include <occ/solvent/solvation_correction.h>
 
 namespace occ::main {
 
@@ -12,21 +12,22 @@ using occ::core::Element;
 using occ::core::Molecule;
 using occ::dft::DFT;
 using occ::hf::HartreeFock;
+using occ::io::OccInput;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;
-using occ::io::OccInput;
 
-void print_matrix_xyz(const Mat& m) {
+void print_matrix_xyz(const Mat &m) {
     static const char dims[] = {'x', 'y', 'z'};
     fmt::print("\n    {:^12c} {:^12c} {:^12c}\n", dims[0], dims[1], dims[2]);
-    for(size_t i = 0; i < 3; i++) {
-        fmt::print("{:<3c} {: 12.7f} {: 12.7f} {: 12.7f}\n", dims[i], m(i, 0), m(i, 1), m(i, 2));
+    for (size_t i = 0; i < 3; i++) {
+        fmt::print("{:<3c} {: 12.7f} {: 12.7f} {: 12.7f}\n", dims[i], m(i, 0),
+                   m(i, 1), m(i, 2));
     }
     fmt::print("\n");
 }
 
-void print_vector(const Vec3& m) {
+void print_vector(const Vec3 &m) {
     fmt::print("{: 12.7f} {: 12.7f} {: 12.7f}\n\n", m(0), m(1), m(2));
 }
 
@@ -69,7 +70,6 @@ void print_configuration(const Molecule &m, const OccInput &config) {
     fmt::print("\n");
 }
 
-
 template <typename T, SpinorbitalKind SK>
 Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis,
                         const OccInput &config) {
@@ -84,7 +84,8 @@ Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis,
     if (!config.basis.df_name.empty())
         proc.set_density_fitting_basis(config.basis.df_name);
     SCF<T, SK> scf(proc);
-    scf.set_charge_multiplicity(config.electronic.charge, config.electronic.multiplicity);
+    scf.set_charge_multiplicity(config.electronic.charge,
+                                config.electronic.multiplicity);
     if (!config.basis.df_name.empty())
         scf.start_incremental_F_threshold = 0.0;
 
@@ -98,48 +99,56 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
     using occ::solvent::SolvationCorrectedProcedure;
     if constexpr (std::is_same<T, DFT>::value) {
         DFT ks(config.method.name, wfn.basis, wfn.atoms, SK);
-        SolvationCorrectedProcedure<DFT> proc_solv(ks, config.solvent.solvent_name);
+        SolvationCorrectedProcedure<DFT> proc_solv(ks,
+                                                   config.solvent.solvent_name);
         SCF<SolvationCorrectedProcedure<DFT>, SK> scf(proc_solv);
-        scf.set_charge_multiplicity(config.electronic.charge, config.electronic.multiplicity);
+        scf.set_charge_multiplicity(config.electronic.charge,
+                                    config.electronic.multiplicity);
         scf.start_incremental_F_threshold = 0.0;
         scf.set_initial_guess_from_wfn(wfn);
         double e = scf.compute_scf_energy();
         if (!config.solvent.output_surface_filename.empty())
-            proc_solv.write_surface_file(config.solvent.output_surface_filename);
+            proc_solv.write_surface_file(
+                config.solvent.output_surface_filename);
         return scf.wavefunction();
     } else {
         T proc(wfn.atoms, wfn.basis);
-        SolvationCorrectedProcedure<T> proc_solv(proc, config.solvent.solvent_name);
+        SolvationCorrectedProcedure<T> proc_solv(proc,
+                                                 config.solvent.solvent_name);
         SCF<SolvationCorrectedProcedure<T>, SK> scf(proc_solv);
-        scf.set_charge_multiplicity(config.electronic.charge, config.electronic.multiplicity);
+        scf.set_charge_multiplicity(config.electronic.charge,
+                                    config.electronic.multiplicity);
         scf.set_initial_guess_from_wfn(wfn);
         scf.start_incremental_F_threshold = 0.0;
         double e = scf.compute_scf_energy();
         if (!config.solvent.output_surface_filename.empty())
-            proc_solv.write_surface_file(config.solvent.output_surface_filename);
+            proc_solv.write_surface_file(
+                config.solvent.output_surface_filename);
         return scf.wavefunction();
     }
 }
 
-
-Wavefunction single_point_driver(const OccInput &config, const std::optional<Wavefunction>& guess = {}) {
+Wavefunction
+single_point_driver(const OccInput &config,
+                    const std::optional<Wavefunction> &guess = {}) {
     Molecule m = config.geometry.molecule();
     print_configuration(m, config);
 
     auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
 
-    if(config.solvent.solvent_name.empty()) {
+    if (config.solvent.solvent_name.empty()) {
         if (config.method.name == "rhf")
-            return run_method<HartreeFock, SpinorbitalKind::Restricted>(m, basis,
-                                                                        config);
+            return run_method<HartreeFock, SpinorbitalKind::Restricted>(
+                m, basis, config);
         else if (config.method.name == "ghf")
             return run_method<HartreeFock, SpinorbitalKind::General>(m, basis,
                                                                      config);
         else if (config.method.name == "uhf")
-            return run_method<HartreeFock, SpinorbitalKind::Unrestricted>(m, basis,
-                                                                          config);
+            return run_method<HartreeFock, SpinorbitalKind::Unrestricted>(
+                m, basis, config);
         else {
-            if (config.electronic.spinorbital_kind == SpinorbitalKind::Unrestricted) {
+            if (config.electronic.spinorbital_kind ==
+                SpinorbitalKind::Unrestricted) {
                 return run_method<DFT, SpinorbitalKind::Unrestricted>(m, basis,
                                                                       config);
             } else {
@@ -147,39 +156,33 @@ Wavefunction single_point_driver(const OccInput &config, const std::optional<Wav
                                                                     config);
             }
         }
-    }
-    else {
+    } else {
         if (config.method.name == "ghf") {
-            fmt::print(
-                "Hartree-Fock + SMD with general spinorbitals\n");
-            return run_solvated_method<HartreeFock,
-                                       SpinorbitalKind::General>(
+            fmt::print("Hartree-Fock + SMD with general spinorbitals\n");
+            return run_solvated_method<HartreeFock, SpinorbitalKind::General>(
                 *guess, config);
         } else if (config.method.name == "rhf") {
-            fmt::print(
-                "Hartree-Fock + SMD with restricted spinorbitals\n");
+            fmt::print("Hartree-Fock + SMD with restricted spinorbitals\n");
             return run_solvated_method<HartreeFock,
-                                       SpinorbitalKind::Restricted>(
-                *guess, config);
+                                       SpinorbitalKind::Restricted>(*guess,
+                                                                    config);
         } else if (config.method.name == "uhf") {
-            fmt::print(
-                "Hartree-Fock + SMD with unrestricted spinorbitals\n");
+            fmt::print("Hartree-Fock + SMD with unrestricted spinorbitals\n");
             return run_solvated_method<HartreeFock,
-                                       SpinorbitalKind::Unrestricted>(
-                *guess, config);
+                                       SpinorbitalKind::Unrestricted>(*guess,
+                                                                      config);
         } else {
             if (config.electronic.spinorbital_kind ==
                 SpinorbitalKind::Restricted) {
                 fmt::print("Kohn-Sham DFT + SMD with restricted "
                            "spinorbitals\n");
-                return run_solvated_method<DFT,
-                                           SpinorbitalKind::Restricted>(
+                return run_solvated_method<DFT, SpinorbitalKind::Restricted>(
                     *guess, config);
             } else {
                 fmt::print("Kohn-Sham DFT + SMD with unrestricted "
                            "spinorbitals\n");
-                return run_solvated_method<
-                    DFT, SpinorbitalKind::Unrestricted>(*guess, config);
+                return run_solvated_method<DFT, SpinorbitalKind::Unrestricted>(
+                    *guess, config);
             }
         }
     }
@@ -189,8 +192,9 @@ Wavefunction single_point_calculation(const OccInput &config) {
     return single_point_driver(config);
 }
 
-Wavefunction single_point_calculation(const OccInput &config, const Wavefunction &wfn) {
+Wavefunction single_point_calculation(const OccInput &config,
+                                      const Wavefunction &wfn) {
     return single_point_driver(config, wfn);
 }
 
-}
+} // namespace occ::main

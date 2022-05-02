@@ -260,8 +260,8 @@ void BasisSet::update() {
     m_shell2bf = compute_shell2bf(*this);
 }
 
-Mat rotate_molecular_orbitals_cart(const BasisSet &basis, const occ::Mat3 &rotation,
-                              const Mat &C) {
+Mat rotate_molecular_orbitals_cart(const BasisSet &basis,
+                                   const occ::Mat3 &rotation, const Mat &C) {
     const auto shell2bf = basis.shell2bf();
     Mat result(C.rows(), C.cols());
     for (size_t s = 0; s < basis.size(); s++) {
@@ -304,7 +304,6 @@ Mat rotate_molecular_orbitals_cart(const BasisSet &basis, const occ::Mat3 &rotat
     }
     return result;
 }
-
 
 void BasisSet::rotate(const occ::Mat3 &rotation) {
     for (auto &shell : *this) {

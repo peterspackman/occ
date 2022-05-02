@@ -52,39 +52,39 @@ std::optional<occ::Mat4> Dimer::symmetry_relation() const {
 
 const Vec Dimer::vdw_radii(MoleculeOrder order) const {
     Vec result(m_a.size() + m_b.size());
-    switch(order) {
-        case MoleculeOrder::AB:
-            result << m_a.vdw_radii(), m_b.vdw_radii();
-            break;
-        case MoleculeOrder::BA:
-            result << m_b.vdw_radii(), m_a.vdw_radii();
-            break;
+    switch (order) {
+    case MoleculeOrder::AB:
+        result << m_a.vdw_radii(), m_b.vdw_radii();
+        break;
+    case MoleculeOrder::BA:
+        result << m_b.vdw_radii(), m_a.vdw_radii();
+        break;
     }
     return result;
 }
 
 IVec Dimer::atomic_numbers(MoleculeOrder order) const {
     IVec result(m_a.size() + m_b.size());
-    switch(order) {
-        case MoleculeOrder::AB:
-            result << m_a.atomic_numbers(), m_b.atomic_numbers();
-            break;
-        case MoleculeOrder::BA:
-            result << m_b.atomic_numbers(), m_a.atomic_numbers();
-            break;
+    switch (order) {
+    case MoleculeOrder::AB:
+        result << m_a.atomic_numbers(), m_b.atomic_numbers();
+        break;
+    case MoleculeOrder::BA:
+        result << m_b.atomic_numbers(), m_a.atomic_numbers();
+        break;
     }
     return result;
 }
 
 Mat3N Dimer::positions(MoleculeOrder order) const {
     Mat3N result(3, m_a.size() + m_b.size());
-    switch(order) {
-        case MoleculeOrder::AB:
-            result << m_a.positions(), m_b.positions();
-            break;
-        case MoleculeOrder::BA:
-            result << m_b.positions(), m_a.positions();
-            break;
+    switch (order) {
+    case MoleculeOrder::AB:
+        result << m_a.positions(), m_b.positions();
+        break;
+    case MoleculeOrder::BA:
+        result << m_b.positions(), m_a.positions();
+        break;
     }
     return result;
 }
@@ -128,8 +128,6 @@ bool Dimer::operator==(const Dimer &rhs) const {
     bool ab_eq = m_a.equivalent_to(rhs.m_b);
     return ab_eq && ba_eq;
 }
-
-
 
 bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
     using occ::Mat3N;
@@ -185,7 +183,8 @@ bool Dimer::equivalent(const occ::core::Dimer &rhs) const {
     return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
 }
 
-bool Dimer::equivalent_under_rotation(const occ::core::Dimer &rhs, const occ::Mat3 &rotation) const {
+bool Dimer::equivalent_under_rotation(const occ::core::Dimer &rhs,
+                                      const occ::Mat3 &rotation) const {
     using occ::Mat3N;
     using occ::Vec3;
     using occ::linalg::kabsch_rotation_matrix;

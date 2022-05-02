@@ -54,9 +54,9 @@ std::string category_name(category cat) {
     case gto_gen:
         return "GTO higher order eval";
     case assoc_legendre:
-	return "Assoc. Legendre Poly";
+        return "Assoc. Legendre Poly";
     case fft:
-	return "FFT";
+        return "FFT";
     case fock:
         return "Fock build";
     case df:
@@ -78,11 +78,20 @@ std::string category_name(category cat) {
 
 void print_timings() {
     const auto categories = {
-        ints1e,  ints2e,           io,          la,        guess, mo,
-        diis,    grid_init,        grid_points, dft,       rho,   dft_xc,
-        gto,     gto_dist,         gto_mask,    gto_shell, gto_s, gto_p,
-        gto_gen, assoc_legendre,   fft,         engine_construct, jmat,
-	jkmat,   fock,  	   df,          solvent,   global,
+        ints1e,      ints2e,
+        io,          la,
+        guess,       mo,
+        diis,        grid_init,
+        grid_points, dft,
+        rho,         dft_xc,
+        gto,         gto_dist,
+        gto_mask,    gto_shell,
+        gto_s,       gto_p,
+        gto_gen,     assoc_legendre,
+        fft,         engine_construct,
+        jmat,        jkmat,
+        fock,        df,
+        solvent,     global,
     };
     fmt::print("Wall clock time by category (s)\n");
     for (const auto &cat : categories) {

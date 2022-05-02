@@ -4,8 +4,8 @@
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
 #include <occ/qm/basisset.h>
-#include <occ/qm/spinorbital.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/spinorbital.h>
 
 namespace occ::qm {
 
@@ -24,27 +24,27 @@ struct Energy {
     double total{0};
 
     inline auto operator-(const Energy &rhs) {
-	return Energy{
-	    coulomb - rhs.coulomb,
-	    exchange - rhs.exchange,
-	    nuclear_repulsion - rhs.nuclear_repulsion,
-	    nuclear_attraction - rhs.nuclear_attraction,
-	    kinetic - rhs.kinetic,
-	    core - rhs.core,
-	    total - rhs.total,
-	};
+        return Energy{
+            coulomb - rhs.coulomb,
+            exchange - rhs.exchange,
+            nuclear_repulsion - rhs.nuclear_repulsion,
+            nuclear_attraction - rhs.nuclear_attraction,
+            kinetic - rhs.kinetic,
+            core - rhs.core,
+            total - rhs.total,
+        };
     }
 
     inline auto operator+(const Energy &rhs) {
-	return Energy{
-	    coulomb + rhs.coulomb,
-	    exchange + rhs.exchange,
-	    nuclear_repulsion + rhs.nuclear_repulsion,
-	    nuclear_attraction + rhs.nuclear_attraction,
-	    kinetic + rhs.kinetic,
-	    core + rhs.core,
-	    total + rhs.total,
-	};
+        return Energy{
+            coulomb + rhs.coulomb,
+            exchange + rhs.exchange,
+            nuclear_repulsion + rhs.nuclear_repulsion,
+            nuclear_attraction + rhs.nuclear_attraction,
+            kinetic + rhs.kinetic,
+            core + rhs.core,
+            total + rhs.total,
+        };
     }
     void print() const;
 };

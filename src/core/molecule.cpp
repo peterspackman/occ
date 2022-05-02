@@ -1,11 +1,11 @@
 #include <fmt/core.h>
+#include <fstream>
 #include <occ/core/constants.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/logger.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
-#include <fstream>
 #include <sstream>
 
 namespace occ::core {
@@ -18,8 +18,10 @@ Molecule::Molecule(const IVec &nums, const Mat3N &pos)
     m_name = chemical_formula(m_elements);
 }
 
-Molecule::Molecule(const std::vector<Element> &elements, const std::vector<std::array<double, 3>> &positions)
-    : m_elements(elements), m_atomicNumbers(elements.size()), m_positions(3, positions.size()) {
+Molecule::Molecule(const std::vector<Element> &elements,
+                   const std::vector<std::array<double, 3>> &positions)
+    : m_elements(elements), m_atomicNumbers(elements.size()),
+      m_positions(3, positions.size()) {
     for (size_t i = 0; i < size(); i++) {
         m_atomicNumbers(i) = m_elements[i].atomic_number();
         m_positions(0, i) = positions[i][0];
@@ -43,7 +45,6 @@ Molecule::Molecule(const std::vector<occ::core::Atom> &atoms)
     }
     m_name = chemical_formula(m_elements);
 }
-
 
 std::vector<occ::core::Atom> Molecule::atoms() const {
     std::vector<occ::core::Atom> result(size());
@@ -281,7 +282,8 @@ void Molecule::set_cell_shift(const Molecule::CellShift &shift) {
 const Molecule::CellShift &Molecule::cell_shift() const { return m_cell_shift; }
 
 double Molecule::molar_mass() const {
-    return occ::constants::molar_mass_constant<double> * atomic_masses().array().sum();
+    return occ::constants::molar_mass_constant<double> *
+           atomic_masses().array().sum();
 }
 
 } // namespace occ::core

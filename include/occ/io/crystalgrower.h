@@ -1,7 +1,7 @@
 #pragma once
 #include <fstream>
-#include <vector>
 #include <occ/crystal/crystal.h>
+#include <vector>
 
 namespace occ::crystal {
 class Crystal;

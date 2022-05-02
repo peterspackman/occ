@@ -34,8 +34,7 @@ void evaluate_density(Eigen::Ref<const Mat> D,
         if (rho.rows() != npt * 2)
             rho.resize(npt * 2, num_components(max_derivative));
         auto rho_a = occ::qm::block::a(rho);
-        rho_a.col(0) =
-            (gto_values.phi.array() * Dphi.array()).rowwise().sum();
+        rho_a.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
         /*
          * If we wish to get the values interleaved for say libxc, use an
          * Eigen::Map as follows: Map<occ::Mat, 0, Stride<Dynamic,
@@ -75,8 +74,7 @@ void evaluate_density(Eigen::Ref<const Mat> D,
         auto Db = occ::qm::block::b(D);
         Dphi = gto_values.phi * Db;
         auto rho_b = occ::qm::block::b(rho);
-        rho_b.col(0) =
-            (gto_values.phi.array() * Dphi.array()).rowwise().sum();
+        rho_b.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
         if constexpr (max_derivative > 0) {
             rho_b.col(1) =
                 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();

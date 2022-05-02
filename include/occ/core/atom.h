@@ -27,17 +27,17 @@ inline bool operator==(const Atom &atom1, const Atom &atom2) {
            atom1.y == atom2.y && atom1.z == atom2.z;
 }
 
-template<typename AtomIterator>
+template <typename AtomIterator>
 inline void rotate_atoms(AtomIterator &atoms, const Mat3 &rotation) {
-    for(auto & atom: atoms) {
-	atom.rotate(rotation);
+    for (auto &atom : atoms) {
+        atom.rotate(rotation);
     }
 }
 
-template<typename AtomIterator>
+template <typename AtomIterator>
 inline void translate_atoms(AtomIterator &atoms, const Vec3 &translation) {
-    for(auto & atom: atoms) {
-	atom.translate(translation);
+    for (auto &atom : atoms) {
+        atom.translate(translation);
     }
 }
 

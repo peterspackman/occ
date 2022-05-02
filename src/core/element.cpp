@@ -19,11 +19,11 @@ Element::Element(const std::string &s, bool exact_match)
         if (dat.symbol.compare(0, N, symbol, 0, N) == 0) {
             if (exact_match && dat.symbol != symbol)
                 continue;
-            if(dat.symbol.size() > match_length) {
+            if (dat.symbol.size() > match_length) {
                 m_data = dat;
                 match_length = dat.symbol.size();
             }
-            if(symbol.size() == dat.symbol.size())
+            if (symbol.size() == dat.symbol.size())
                 return;
             fmt::print("match length {}\n", match_length);
         }

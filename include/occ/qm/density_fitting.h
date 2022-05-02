@@ -1,24 +1,21 @@
 #pragma once
 #include <libint2.hpp>
+#include <occ/core/timings.h>
 #include <occ/qm/ints.h>
 #include <occ/qm/mo.h>
-#include <occ/core/timings.h>
 
 namespace occ::df {
 using occ::qm::BasisSet;
+using occ::qm::MolecularOrbitals;
 using occ::qm::ShellPairData;
 using occ::qm::ShellPairList;
-using occ::qm::MolecularOrbitals;
 
 struct DFFockEngine {
 
-    enum Policy {
-        Choose,
-        Direct,
-        Stored
-    };
+    enum Policy { Choose, Direct, Stored };
 
-    constexpr static double default_prec = std::numeric_limits<double>::epsilon();
+    constexpr static double default_prec =
+        std::numeric_limits<double>::epsilon();
 
     size_t memory_limit{200 * 1024 * 1024}; // 200 MiB
     BasisSet obs;
@@ -32,18 +29,25 @@ struct DFFockEngine {
 
     // a DF-based builder, using coefficients of occupied MOs
     //
-        
-    Mat compute_J(const MolecularOrbitals&, double precision = default_prec, const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
-    Mat compute_K(const MolecularOrbitals&, double precision = default_prec, const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
-    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals&, double precision = default_prec, const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
-    Mat compute_fock(const MolecularOrbitals&, double precision = default_prec, const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
+
+    Mat compute_J(const MolecularOrbitals &, double precision = default_prec,
+                  const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
+    Mat compute_K(const MolecularOrbitals &, double precision = default_prec,
+                  const Mat &Schwarz = Mat(), Policy policy = Policy::Choose);
+    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals &,
+                                   double precision = default_prec,
+                                   const Mat &Schwarz = Mat(),
+                                   Policy policy = Policy::Choose);
+    Mat compute_fock(const MolecularOrbitals &, double precision = default_prec,
+                     const Mat &Schwarz = Mat(),
+                     Policy policy = Policy::Choose);
 
     size_t num_rows() const {
         size_t n = 0;
-        for(size_t s1 = 0; s1 < obs.size(); s1++) {
+        for (size_t s1 = 0; s1 < obs.size(); s1++) {
             size_t s1_size = obs[s1].size();
             size_t pairs_size = 0;
-            for(const auto& s2 : m_shellpair_list.at(s1)) {
+            for (const auto &s2 : m_shellpair_list.at(s1)) {
                 pairs_size += obs[s2].size();
             }
             n += s1 * pairs_size;
@@ -51,23 +55,21 @@ struct DFFockEngine {
         return n;
     }
 
-    size_t integral_storage_max_size() const {
-        return ndf * num_rows();
-    }
+    size_t integral_storage_max_size() const { return ndf * num_rows(); }
 
     const auto &shellpair_list() const { return m_shellpair_list; }
     const auto &shellpair_data() const { return m_shellpair_data; }
 
   private:
-    Mat compute_J_stored(const MolecularOrbitals&);
-    Mat compute_K_stored(const MolecularOrbitals&);
-    std::pair<Mat, Mat> compute_JK_stored(const MolecularOrbitals&);
-    Mat compute_fock_stored(const MolecularOrbitals&);
-    Mat compute_J_direct(const MolecularOrbitals&, double, const Mat&);
-    Mat compute_K_direct(const MolecularOrbitals&, double, const Mat&);
-    std::pair<Mat, Mat> compute_JK_direct(const MolecularOrbitals&, double, const Mat&);
-    Mat compute_fock_direct(const MolecularOrbitals&, double, const Mat&);
-
+    Mat compute_J_stored(const MolecularOrbitals &);
+    Mat compute_K_stored(const MolecularOrbitals &);
+    std::pair<Mat, Mat> compute_JK_stored(const MolecularOrbitals &);
+    Mat compute_fock_stored(const MolecularOrbitals &);
+    Mat compute_J_direct(const MolecularOrbitals &, double, const Mat &);
+    Mat compute_K_direct(const MolecularOrbitals &, double, const Mat &);
+    std::pair<Mat, Mat> compute_JK_direct(const MolecularOrbitals &, double,
+                                          const Mat &);
+    Mat compute_fock_direct(const MolecularOrbitals &, double, const Mat &);
 
     void populate_integrals();
     Mat m_ints;
@@ -76,18 +78,19 @@ struct DFFockEngine {
     ShellPairData m_shellpair_data{}; // shellpair data for OBS
 
     mutable std::vector<libint2::Engine> m_engines;
-    template <typename T> void three_center_integral_helper(T &func, const Mat &D, double precision = default_prec, const Mat &Schwarz = Mat()) const {
+    template <typename T>
+    void three_center_integral_helper(T &func, const Mat &D,
+                                      double precision = default_prec,
+                                      const Mat &Schwarz = Mat()) const {
         using occ::parallel::nthreads;
 
         const auto nshells = obs.size();
         const auto nshells_df = dfbs.size();
         const auto &unitshell = libint2::Shell::unit();
         Mat D_shblk_norm = occ::ints::compute_shellblock_norm(obs, D);
-	const auto ln_precision = std::log(precision);
+        const auto ln_precision = std::log(precision);
         const bool do_schwarz_screen =
             Schwarz.cols() != 0 && Schwarz.rows() != 0;
-
-
 
         // construct the 2-electron 3-center repulsion integrals engine
         // since the code assumes (xx|xs) braket, and Engine/libint only
@@ -106,20 +109,21 @@ struct DFFockEngine {
                     continue;
                 auto bf1_first = shell2bf_df[s1];
                 auto n1 = dfbs[s1].size();
-		auto sp1u = libint2::ShellPair(dfbs[s1], unitshell, ln_precision);
+                auto sp1u =
+                    libint2::ShellPair(dfbs[s1], unitshell, ln_precision);
 
                 for (auto s2 = 0l; s2 != nshells; s2++) {
-		    auto sp23_iter = m_shellpair_data.at(s2).begin();
+                    auto sp23_iter = m_shellpair_data.at(s2).begin();
                     auto n2 = obs[s2].size();
                     auto bf2_first = shell2bf[s2];
 
-
                     for (auto s3 : m_shellpair_list.at(s2)) {
-			const auto* sp23 = sp23_iter->get();
-			++sp23_iter;
+                        const auto *sp23 = sp23_iter->get();
+                        ++sp23_iter;
                         const auto Dnorm23 =
                             do_schwarz_screen ? D_shblk_norm(s2, s3) : 0.;
-                        if(do_schwarz_screen && (Schwarz(s2, s3) < precision)) {
+                        if (do_schwarz_screen &&
+                            (Schwarz(s2, s3) < precision)) {
                             num_skipped++;
                             continue;
                         }
@@ -141,9 +145,9 @@ struct DFFockEngine {
             }
         }; // lambda
 
-	occ::timing::start(occ::timing::category::df);
+        occ::timing::start(occ::timing::category::df);
         occ::parallel::parallel_do(lambda);
-	occ::timing::stop(occ::timing::category::df);
+        occ::timing::stop(occ::timing::category::df);
     }
 };
 

@@ -1,5 +1,5 @@
-#include <occ/main/properties.h>
 #include <fmt/core.h>
+#include <occ/main/properties.h>
 
 namespace occ::main {
 
@@ -28,4 +28,4 @@ void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
     */
 }
 
-}
+} // namespace occ::main

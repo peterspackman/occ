@@ -1,7 +1,7 @@
 #include <fmt/core.h>
 #include <occ/core/eigenp.h>
-#include <occ/slater/slaterbasis.h>
 #include <occ/core/element.h>
+#include <occ/slater/slaterbasis.h>
 
 int main(int argc, char *argv[]) {
     constexpr int num_points = 4096;

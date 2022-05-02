@@ -4,8 +4,8 @@
 #include <occ/core/point_charge.h>
 #include <occ/qm/density_fitting.h>
 #include <occ/qm/fock.h>
-#include <occ/qm/spinorbital.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/spinorbital.h>
 
 namespace occ::hf {
 
@@ -15,8 +15,8 @@ using occ::ints::compute_1body_ints_deriv;
 using occ::ints::Operator;
 using occ::ints::ShellPairData;
 using occ::ints::ShellPairList;
-using occ::qm::SpinorbitalKind;
 using occ::qm::MolecularOrbitals;
+using occ::qm::SpinorbitalKind;
 
 /// to use precomputed shell pair data must decide on max precision a priori
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
@@ -85,8 +85,8 @@ class HartreeFock {
         return occ::ints::compute_schwarz_ints<>(m_basis);
     }
 
-    void update_core_hamiltonian(occ::qm::SpinorbitalKind k, const MolecularOrbitals &mo,
-                                 Mat &H) {
+    void update_core_hamiltonian(occ::qm::SpinorbitalKind k,
+                                 const MolecularOrbitals &mo, Mat &H) {
         return;
     }
 
@@ -106,9 +106,10 @@ class HartreeFock {
     }
 
     template <unsigned int order = 1>
-    inline auto
-    compute_electronic_multipoles(occ::qm::SpinorbitalKind k, const MolecularOrbitals &mo,
-                                  const Vec3 &o = {0.0, 0.0, 0.0}) const {
+    inline auto compute_electronic_multipoles(occ::qm::SpinorbitalKind k,
+                                              const MolecularOrbitals &mo,
+                                              const Vec3 &o = {0.0, 0.0,
+                                                               0.0}) const {
         occ::core::Multipole<order> result;
         const auto &D = mo.D;
         auto mats = compute_electronic_multipole_matrices<order>(o);

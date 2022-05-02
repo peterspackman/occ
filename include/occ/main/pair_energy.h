@@ -1,26 +1,25 @@
 #pragma once
-#include <occ/main/pair_energy.h>
-#include <occ/interaction/pairinteraction.h>
 #include <occ/core/dimer.h>
 #include <occ/crystal/crystal.h>
-#include <optional>
-#include <occ/qm/wavefunction.h>
+#include <occ/interaction/pairinteraction.h>
 #include <occ/io/occ_input.h>
+#include <occ/main/pair_energy.h>
+#include <occ/qm/wavefunction.h>
+#include <optional>
 
 namespace occ::main {
 
+using occ::core::Dimer;
+using occ::crystal::Crystal;
 using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEParameterizedModel;
-using occ::core::Dimer;
 using occ::qm::Wavefunction;
-using occ::crystal::Crystal;
-
 
 struct PairEnergy {
     struct Monomer {
-	occ::qm::Wavefunction wfn;
-	occ::Mat3 rotation{occ::Mat3::Identity()};
-	occ::Vec3 translation{occ::Vec3::Zero()};
+        occ::qm::Wavefunction wfn;
+        occ::Mat3 rotation{occ::Mat3::Identity()};
+        occ::Vec3 translation{occ::Vec3::Zero()};
     };
 
     PairEnergy(const occ::io::OccInput &input);
@@ -32,9 +31,8 @@ struct PairEnergy {
     CEEnergyComponents energy;
 };
 
-
-bool load_dimer_energy(const std::string &, CEEnergyComponents&);
-bool write_xyz_dimer(const std::string&, const Dimer &,
+bool load_dimer_energy(const std::string &, CEEnergyComponents &);
+bool write_xyz_dimer(const std::string &, const Dimer &,
                      std::optional<CEEnergyComponents> energies = {});
 
 CEEnergyComponents ce_model_energy(const Dimer &dimer,
@@ -42,25 +40,23 @@ CEEnergyComponents ce_model_energy(const Dimer &dimer,
                                    const std::vector<Wavefunction> &wfns_b,
                                    const Crystal &crystal);
 
-std::vector<CEEnergyComponents> ce_model_energies(
-                              const Crystal &crystal, 
-                              const std::vector<Dimer> &dimers,
-                              const std::vector<Wavefunction> &wfns_a,
-                              const std::vector<Wavefunction> &wfns_b,
-                              const std::string &basename = "dimer");
-
+std::vector<CEEnergyComponents>
+ce_model_energies(const Crystal &crystal, const std::vector<Dimer> &dimers,
+                  const std::vector<Wavefunction> &wfns_a,
+                  const std::vector<Wavefunction> &wfns_b,
+                  const std::string &basename = "dimer");
 
 struct LatticeConvergenceSettings {
-    double min_radius{3.8}; // angstroms
-    double max_radius{30.0}; // angstroms
+    double min_radius{3.8};       // angstroms
+    double max_radius{30.0};      // angstroms
     double radius_increment{3.8}; // angstroms
     double energy_tolerance{1.0}; // kj/mol
 };
 
 std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
 converged_lattice_energies(const Crystal &crystal,
-    const std::vector<Wavefunction> &wfns_a,
-    const std::vector<Wavefunction> &wfns_b,
-    const std::string &basename = "crystal_dimer",
-    const LatticeConvergenceSettings conv = {});
-}
+                           const std::vector<Wavefunction> &wfns_a,
+                           const std::vector<Wavefunction> &wfns_b,
+                           const std::string &basename = "crystal_dimer",
+                           const LatticeConvergenceSettings conv = {});
+} // namespace occ::main

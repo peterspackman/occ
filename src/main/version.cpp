@@ -1,12 +1,11 @@
-#include <occ/main/version.h>
-#include <boost/version.hpp>
-#include <gemmi/version.hpp>
-#include <fmt/core.h>
 #include <Eigen/Core>
+#include <boost/version.hpp>
+#include <fmt/core.h>
+#include <gemmi/version.hpp>
 #include <libint2.hpp>
-#include <xc.h>
+#include <occ/main/version.h>
 #include <spdlog/spdlog.h>
-
+#include <xc.h>
 
 namespace occ::main {
 
@@ -59,4 +58,4 @@ zlib                 zip library
                gemmi_version_string, boost_version_string, fmt_version_string,
                spdlog_version_string);
 }
-}
+} // namespace occ::main

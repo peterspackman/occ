@@ -80,7 +80,8 @@ class MoldenReader {
                              std::istream &);
     void parse_gto_section(const std::optional<std::string> &, std::istream &);
     void parse_mo_section(const std::optional<std::string> &, std::istream &);
-    void parse_title_section(const std::optional<std::string> &, std::istream &);
+    void parse_title_section(const std::optional<std::string> &,
+                             std::istream &);
     void parse_mo(size_t &, size_t &, std::istream &);
 
     std::vector<occ::core::Atom> m_atoms;

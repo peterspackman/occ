@@ -13,7 +13,8 @@ class Molecule {
     using CellShift = std::array<int, 3>;
     Molecule(const IVec &, const Mat3N &);
     Molecule(const std::vector<core::Atom> &atoms);
-    Molecule(const std::vector<Element>&, const std::vector<std::array<double, 3>>&);
+    Molecule(const std::vector<Element> &,
+             const std::vector<std::array<double, 3>> &);
 
     template <typename N, typename D>
     Molecule(const std::vector<N> &nums,
@@ -129,6 +130,5 @@ class Molecule {
     Vec3 m_asymmetric_unit_translation = Vec3::Zero(3);
     CellShift m_cell_shift{0, 0, 0};
 };
-
 
 } // namespace occ::core

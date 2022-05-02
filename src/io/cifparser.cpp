@@ -1,6 +1,6 @@
-﻿#include <occ/core/element.h>
-#include <gemmi/numb.hpp>
+﻿#include <gemmi/numb.hpp>
 #include <iostream>
+#include <occ/core/element.h>
 #include <occ/core/logger.h>
 #include <occ/core/units.h>
 #include <occ/io/cifparser.h>

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <gemmi/symmetry.hpp>
 #include <map>
 #include <occ/crystal/miller.h>

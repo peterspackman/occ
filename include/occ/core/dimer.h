@@ -47,7 +47,7 @@ class Dimer {
 
     bool equivalent_in_opposite_frame(const Dimer &b) const;
     bool equivalent(const Dimer &b) const;
-    bool equivalent_under_rotation(const Dimer &b, const occ::Mat3&) const;
+    bool equivalent_under_rotation(const Dimer &b, const occ::Mat3 &) const;
 
   private:
     Molecule m_a, m_b;

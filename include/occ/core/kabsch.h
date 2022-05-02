@@ -3,6 +3,7 @@
 
 namespace occ::linalg {
 
-occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &, const occ::Mat3N &, bool ensure_proper_rotation = true);
+occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &, const occ::Mat3N &,
+                                 bool ensure_proper_rotation = true);
 
 }

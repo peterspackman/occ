@@ -1,20 +1,18 @@
-#include <occ/core/diis.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+#include <occ/core/diis.h>
 #include <occ/core/timings.h>
 
 namespace occ::core::diis {
 
-
 DIIS::DIIS(size_t start, size_t diis_subspace, double damping_factor,
            size_t ngroup, size_t ngroup_diis, double mixing_fraction)
-        : m_error{0}, m_error_is_set{false}, m_start{start},
-          m_diis_subspace_size{diis_subspace}, m_num_group{ngroup},
-          m_num_group_diis{ngroup}, m_damping_factor{damping_factor},
-          m_mixing_fraction{mixing_fraction} {
+    : m_error{0}, m_error_is_set{false}, m_start{start},
+      m_diis_subspace_size{diis_subspace}, m_num_group{ngroup},
+      m_num_group_diis{ngroup}, m_damping_factor{damping_factor},
+      m_mixing_fraction{mixing_fraction} {
     init();
 }
-
 
 void DIIS::set_error(double e) {
     m_error = e;
@@ -31,11 +29,9 @@ void DIIS::init() {
     m_extrapolated.clear();
 }
 
-
 void DIIS::extrapolate(Mat &x, Mat &error, bool extrapolate_error) {
     occ::timing::start(occ::timing::category::diis);
-    const double zero_determinant =
-        std::numeric_limits<double>::epsilon();
+    const double zero_determinant = std::numeric_limits<double>::epsilon();
     const double zero_norm = 1.0e-10;
     m_iter++;
     const bool do_mixing = (m_mixing_fraction != 0.0);
@@ -50,9 +46,8 @@ void DIIS::extrapolate(Mat &x, Mat &error, bool extrapolate_error) {
         if (!m_extrapolated.empty())
             m_extrapolated.pop_front();
         Mat Bcrop = m_B.bottomRightCorner(m_diis_subspace_size - 1,
-                m_diis_subspace_size - 1);
-        Bcrop.conservativeResize(m_diis_subspace_size,
-                m_diis_subspace_size);
+                                          m_diis_subspace_size - 1);
+        Bcrop.conservativeResize(m_diis_subspace_size, m_diis_subspace_size);
         m_B = Bcrop;
     }
 
@@ -77,8 +72,8 @@ void DIIS::extrapolate(Mat &x, Mat &error, bool extrapolate_error) {
             x.noalias() += m_mixing_fraction * m_extrapolated[0];
         }
     } else if (m_iter > m_start &&
-            (((m_iter - m_start) % m_num_group) <
-             m_num_group_diis)) { // not the first iteration and need to
+               (((m_iter - m_start) % m_num_group) <
+                m_num_group_diis)) { // not the first iteration and need to
         // extrapolate?
 
         Vec c;
@@ -114,13 +109,13 @@ void DIIS::extrapolate(Mat &x, Mat &error, bool extrapolate_error) {
 
             ++nskip;
         } while (absdetA < zero_determinant &&
-                nskip < nvec); // while (system is poorly conditioned)
+                 nskip < nvec); // while (system is poorly conditioned)
 
         // failed?
         if (absdetA < zero_determinant) {
             throw std::domain_error(fmt::format(
-                        "DIIS::extrapolate: poorly-conditioned system, |A| = {}",
-                        absdetA));
+                "DIIS::extrapolate: poorly-conditioned system, |A| = {}",
+                absdetA));
         }
         --nskip; // undo the last ++ :-(
         {
@@ -147,5 +142,4 @@ void DIIS::extrapolate(Mat &x, Mat &error, bool extrapolate_error) {
     occ::timing::stop(occ::timing::category::diis);
 }
 
-
-}
+} // namespace occ::core::diis

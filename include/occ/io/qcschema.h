@@ -1,8 +1,8 @@
 #pragma once
+#include <array>
 #include <istream>
 #include <occ/core/element.h>
 #include <occ/io/occ_input.h>
-#include <array>
 
 namespace occ::io {
 
@@ -40,13 +40,14 @@ struct QCSchemaInput {
 };
 
 class QCSchemaReader {
-public:
+  public:
     QCSchemaReader(const std::string &);
     QCSchemaReader(std::istream &);
     OccInput as_occ_input() const;
     void update_occ_input(OccInput &) const;
     QCSchemaInput input;
-private:
+
+  private:
     void parse(std::istream &);
     std::string m_filename;
 };

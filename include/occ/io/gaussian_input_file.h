@@ -1,8 +1,8 @@
 #pragma once
 #include <array>
 #include <istream>
-#include <occ/qm/spinorbital.h>
 #include <occ/core/element.h>
+#include <occ/qm/spinorbital.h>
 #include <string>
 #include <vector>
 

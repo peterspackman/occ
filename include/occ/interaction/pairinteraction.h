@@ -29,7 +29,8 @@ inline CEParameterizedModel CE_HF_321G{1.019, 0.811, 0.651, 0.901, "CE-HF"};
 inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177, 0.7399, 0.8708,
                                             "CE-B3LYP"};
 
-void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf, double precision, const Mat &Schwarz);
+void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
+                               double precision, const Mat &Schwarz);
 
 template <typename Procedure>
 double compute_polarization_energy(const Wavefunction &wfn_a,
@@ -71,41 +72,35 @@ struct CEEnergyComponents {
     double total{0.0};
     bool is_computed{false};
     double coulomb_kjmol() const {
-	return occ::units::AU_TO_KJ_PER_MOL * coulomb;
+        return occ::units::AU_TO_KJ_PER_MOL * coulomb;
     }
     double exchange_kjmol() const {
-	return occ::units::AU_TO_KJ_PER_MOL * exchange_repulsion;
+        return occ::units::AU_TO_KJ_PER_MOL * exchange_repulsion;
     }
     double polarization_kjmol() const {
-	return occ::units::AU_TO_KJ_PER_MOL * polarization;
+        return occ::units::AU_TO_KJ_PER_MOL * polarization;
     }
     double dispersion_kjmol() const {
-	return occ::units::AU_TO_KJ_PER_MOL * dispersion;
+        return occ::units::AU_TO_KJ_PER_MOL * dispersion;
     }
-    double total_kjmol() const {
-	return occ::units::AU_TO_KJ_PER_MOL * total;
-    }
+    double total_kjmol() const { return occ::units::AU_TO_KJ_PER_MOL * total; }
 
     inline auto operator-(const CEEnergyComponents &rhs) {
-	return CEEnergyComponents{
-	    coulomb - rhs.coulomb,
-	    exchange_repulsion - rhs.exchange_repulsion,
-	    polarization - rhs.polarization,
-	    dispersion - rhs.dispersion,
-	    total - rhs.total,
-	    true
-	};
+        return CEEnergyComponents{coulomb - rhs.coulomb,
+                                  exchange_repulsion - rhs.exchange_repulsion,
+                                  polarization - rhs.polarization,
+                                  dispersion - rhs.dispersion,
+                                  total - rhs.total,
+                                  true};
     }
 
     inline auto operator+(const CEEnergyComponents &rhs) {
-	return CEEnergyComponents{
-	    coulomb + rhs.coulomb,
-	    exchange_repulsion + rhs.exchange_repulsion,
-	    polarization + rhs.polarization,
-	    dispersion + rhs.dispersion,
-	    total + rhs.total,
-	    true
-	};
+        return CEEnergyComponents{coulomb + rhs.coulomb,
+                                  exchange_repulsion + rhs.exchange_repulsion,
+                                  polarization + rhs.polarization,
+                                  dispersion + rhs.dispersion,
+                                  total + rhs.total,
+                                  true};
     }
 };
 

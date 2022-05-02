@@ -63,7 +63,8 @@ void GaussianInputFile::parse_route_line(const std::string &line) {
     if (ltrim.size() == 0)
         return;
 
-    const std::regex method_regex(R"(([\w\-\+\*\(\)]+)\s*\/\s*([\w\-\+\*\(\)]+))",
+    const std::regex method_regex(
+        R"(([\w\-\+\*\(\)]+)\s*\/\s*([\w\-\+\*\(\)]+))",
         std::regex_constants::ECMAScript);
     std::smatch sm;
     if (std::regex_search(ltrim, sm, method_regex)) {

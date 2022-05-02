@@ -58,8 +58,7 @@ void MoldenReader::parse_section(const std::string &section_name,
                                  std::istream &stream) {
     if (section_name == "Title") {
         parse_title_section(args, stream);
-    }
-    else if (section_name == "Atoms") {
+    } else if (section_name == "Atoms") {
         parse_atoms_section(args, stream);
     } else if (section_name == "GTO") {
         parse_gto_section(args, stream);
@@ -68,7 +67,7 @@ void MoldenReader::parse_section(const std::string &section_name,
     } else if (section_name == "5D") {
         m_basis.set_pure(true);
         m_pure = true;
-	occ::log::debug("Basis uses pure spherical harmonics");
+        occ::log::debug("Basis uses pure spherical harmonics");
     }
 }
 
@@ -93,8 +92,8 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args,
         std::string symbol;
         int idx;
         occ::core::Atom atom;
-        auto scan_result = scn::scan_default(line, symbol, idx, atom.atomic_number, atom.x, atom.y,
-                          atom.z);
+        auto scan_result = scn::scan_default(
+            line, symbol, idx, atom.atomic_number, atom.x, atom.y, atom.z);
         if (factor != 1.0) {
             atom.x *= factor;
             atom.y *= factor;
@@ -115,8 +114,8 @@ void MoldenReader::parse_title_section(const std::optional<std::string> &args,
             break;
         }
         pos = stream.tellg();
-        if(line.find("orca_2mkl") != std::string::npos) {
-	    occ::log::debug("Detected ORCA molden file");
+        if (line.find("orca_2mkl") != std::string::npos) {
+            occ::log::debug("Detected ORCA molden file");
             source = Source::Orca;
         }
     }
@@ -164,7 +163,8 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3> &position,
     using occ::util::double_factorial;
     char shell_type;
     int num_primitives, second;
-    auto scan_result = scn::scan_default(line, shell_type, num_primitives, second);
+    auto scan_result =
+        scn::scan_default(line, shell_type, num_primitives, second);
     libint2::svector<double> alpha, coeffs;
     alpha.reserve(num_primitives), coeffs.reserve(num_primitives);
     int l = l_from_char(shell_type);
@@ -191,7 +191,8 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3> &position,
         }
         norm = sqrt(norm) * pi2_34;
         if (std::abs(pi2_34 - norm) > 1e-4) {
-	    occ::log::debug("Renormalizing coefficients, shell norm: {:6.3f}", norm);
+            occ::log::debug("Renormalizing coefficients, shell norm: {:6.3f}",
+                            norm);
             for (size_t i = 0; i < coeffs.size(); i++) {
                 coeffs[i] /= pow(4 * alpha[i], 0.5 * l + 0.75);
                 coeffs[i] = coeffs[i] * pi2_34 / norm;
@@ -313,7 +314,8 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
     Mat result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     bool orca = source == Source::Orca;
-    if(orca) occ::log::debug("ORCA phase convention...");
+    if (orca)
+        occ::log::debug("ORCA phase convention...");
     if (occ::qm::max_l(basis) < 1)
         return mo;
     constexpr auto order = occ::gto::ShellOrder::Molden;
@@ -322,54 +324,58 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
         const auto &shell = basis[i];
         size_t bf_first = shell2bf[i];
         int l = shell.contr[0].l;
-	if(l == 1) {
-	    // xyz -> yzx
-	    occ::log::debug("Swapping (l={}): (2, 0, 1) <-> (0, 1, 2)", l); 
-	    result.block(bf_first, 0, 1, ncols) = mo.block(bf_first + 1, 0, 1, ncols);
-	    result.block(bf_first + 1, 0, 1, ncols) = mo.block(bf_first + 2, 0, 1, ncols);
-	    result.block(bf_first + 2, 0, 1, ncols) = mo.block(bf_first, 0, 1, ncols);
-	}
-	else {
-	    size_t idx = 0;
-	    auto func = [&](int am, int m) {
-		int their_idx = occ::gto::shell_index_spherical<order>(am, m);
-		result.row(bf_first + idx)= mo.row(bf_first + their_idx);
-		occ::log::debug("Swapping (l={}): {} <-> {}", l, idx, their_idx);
-		idx++;
-	    };
-	    occ::gto::iterate_over_shell<false, occ::gto::ShellOrder::Default>(func, l);
-	}
+        if (l == 1) {
+            // xyz -> yzx
+            occ::log::debug("Swapping (l={}): (2, 0, 1) <-> (0, 1, 2)", l);
+            result.block(bf_first, 0, 1, ncols) =
+                mo.block(bf_first + 1, 0, 1, ncols);
+            result.block(bf_first + 1, 0, 1, ncols) =
+                mo.block(bf_first + 2, 0, 1, ncols);
+            result.block(bf_first + 2, 0, 1, ncols) =
+                mo.block(bf_first, 0, 1, ncols);
+        } else {
+            size_t idx = 0;
+            auto func = [&](int am, int m) {
+                int their_idx = occ::gto::shell_index_spherical<order>(am, m);
+                result.row(bf_first + idx) = mo.row(bf_first + their_idx);
+                occ::log::debug("Swapping (l={}): {} <-> {}", l, idx,
+                                their_idx);
+                idx++;
+            };
+            occ::gto::iterate_over_shell<false, occ::gto::ShellOrder::Default>(
+                func, l);
+        }
     }
 
     /*
         case 3:
-	    // c0 c1 s1 c2 s2 c3 s3
-	    // +  +  +  +  +  -  -
-	    // orca has modified phase
-	    for(size_t i = 0; i < shell_size; i++) {
-		if(orca && (i > 4)) phase.emplace_back(-1.0);
-		else phase.emplace_back(1.0);
-	    }
-	    break;
-	case 4:
-	    // c0 c1 s1 c2 s2 c3 s3 c4 s4
-	    // +  +  +  +  +  -  -  -  -
-	    // orca has modified phase
-	    for(size_t i = 0; i < shell_size; i++) {
-		if(orca && (i > 4)) phase.emplace_back(-1.0);
-		else phase.emplace_back(1.0);
-	    }
-	    break;
-	case 5:
-	    // c0 c1 s1 c2 s2 c3 s3 c4 s4 c5 s5
-	    // +  +  +  +  +  -  -  -  -  +  + 
-	    // orca has modified phase (weird)
-	    for(size_t i = 0; i < shell_size; i++) {
-		if(orca && ((i > 4) && (i < 9))) phase.emplace_back(-1.0);
-		else phase.emplace_back(1.0);
-	    }
-	    break;
-	    */
+            // c0 c1 s1 c2 s2 c3 s3
+            // +  +  +  +  +  -  -
+            // orca has modified phase
+            for(size_t i = 0; i < shell_size; i++) {
+                if(orca && (i > 4)) phase.emplace_back(-1.0);
+                else phase.emplace_back(1.0);
+            }
+            break;
+        case 4:
+            // c0 c1 s1 c2 s2 c3 s3 c4 s4
+            // +  +  +  +  +  -  -  -  -
+            // orca has modified phase
+            for(size_t i = 0; i < shell_size; i++) {
+                if(orca && (i > 4)) phase.emplace_back(-1.0);
+                else phase.emplace_back(1.0);
+            }
+            break;
+        case 5:
+            // c0 c1 s1 c2 s2 c3 s3 c4 s4 c5 s5
+            // +  +  +  +  +  -  -  -  -  +  +
+            // orca has modified phase (weird)
+            for(size_t i = 0; i < shell_size; i++) {
+                if(orca && ((i > 4) && (i < 9))) phase.emplace_back(-1.0);
+                else phase.emplace_back(1.0);
+            }
+            break;
+            */
     return result;
 }
 } // namespace occ::io

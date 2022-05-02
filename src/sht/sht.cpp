@@ -1,7 +1,6 @@
 #include <cmath>
 #include <complex>
-#include <fmt/ostream.h>
-#include <occ/core/logger.h>
+
 #include <occ/sht/quadrature.h>
 #include <occ/sht/sht.h>
 #include <vector>

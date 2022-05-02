@@ -11,7 +11,8 @@ CEModelInteraction::CEModelInteraction(const CEParameterizedModel &facs)
     : scale_factors(facs) {}
 
 template <SpinorbitalKind kind>
-void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf, double precision, const Mat &Schwarz) {
+void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
+                               double precision, const Mat &Schwarz) {
     if (wfn.have_energies)
         return;
     using occ::qm::expectation;
@@ -23,12 +24,13 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf, doub
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.H = wfn.V + wfn.T;
         wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
-        std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.mo, precision, Schwarz);
+        std::tie(wfn.J, wfn.K) =
+            hf.compute_JK(kind, wfn.mo, precision, Schwarz);
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
     } else {
-	namespace block = occ::qm::block;
+        namespace block = occ::qm::block;
         size_t rows, cols;
         std::tie(rows, cols) =
             matrix_dimensions<SpinorbitalKind::Unrestricted>(wfn.nbf);
@@ -42,7 +44,8 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf, doub
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
-        std::tie(wfn.J, wfn.K) = hf.compute_JK(kind, wfn.mo, precision, Schwarz);
+        std::tie(wfn.J, wfn.K) =
+            hf.compute_JK(kind, wfn.mo, precision, Schwarz);
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
@@ -50,44 +53,45 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf, doub
     wfn.have_energies = true;
 }
 
-void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf, double precision, const Mat &Schwarz) {
+void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
+                               double precision, const Mat &Schwarz) {
     if (wfn.is_restricted())
-        return compute_ce_model_energies<SpinorbitalKind::Restricted>(wfn, hf, precision, Schwarz);
+        return compute_ce_model_energies<SpinorbitalKind::Restricted>(
+            wfn, hf, precision, Schwarz);
     else
-        return compute_ce_model_energies<SpinorbitalKind::Unrestricted>(wfn,
-                                                                        hf, precision, Schwarz);
+        return compute_ce_model_energies<SpinorbitalKind::Unrestricted>(
+            wfn, hf, precision, Schwarz);
 }
 
-void CEModelInteraction::use_density_fitting() {
-    m_use_density_fitting = true;
-}
+void CEModelInteraction::use_density_fitting() { m_use_density_fitting = true; }
 
-void dump_matrix(const Mat& matrix) {
+void dump_matrix(const Mat &matrix) {
     size_t maxdim = std::max(matrix.rows(), matrix.cols());
     Eigen::Index fields = 5;
 
-    if (fields==0) fields = matrix.rows();
-    size_t n_block = static_cast<size_t>((matrix.cols() - 0.1)/fields) + 1;
-    for(size_t block = 0; block < n_block; block++) {
-	Eigen::Index f = fields * block;
-	Eigen::Index l = std::min(f + fields, matrix.cols());
-	fmt::print("{:8s}", " ");
-	for(size_t j = f; j < l; j++) {
-	    fmt::print(" {:8d}", j);
-	}
-	fmt::print("\n");
-	for(size_t i = 0; i < matrix.rows(); i++) {
-	    fmt::print("{:8d}", i);
-	    for(size_t j = f; j < l; j++) {
-		fmt::print(" {:8.5f}", matrix(i, j));
-	    }
-	    fmt::print("\n");
-	}
+    if (fields == 0)
+        fields = matrix.rows();
+    size_t n_block = static_cast<size_t>((matrix.cols() - 0.1) / fields) + 1;
+    for (size_t block = 0; block < n_block; block++) {
+        Eigen::Index f = fields * block;
+        Eigen::Index l = std::min(f + fields, matrix.cols());
+        fmt::print("{:8s}", " ");
+        for (size_t j = f; j < l; j++) {
+            fmt::print(" {:8d}", j);
+        }
+        fmt::print("\n");
+        for (size_t i = 0; i < matrix.rows(); i++) {
+            fmt::print("{:8d}", i);
+            for (size_t j = f; j < l; j++) {
+                fmt::print(" {:8.5f}", matrix(i, j));
+            }
+            fmt::print("\n");
+        }
     }
 }
 
-CEEnergyComponents
-CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
+CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
+                                                  Wavefunction &B) const {
     using occ::disp::ce_model_dispersion_energy;
     using occ::hf::HartreeFock;
     using occ::qm::Energy;
@@ -95,9 +99,9 @@ CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
 
     HartreeFock hf_a(A.atoms, A.basis);
     HartreeFock hf_b(B.atoms, B.basis);
-    if(m_use_density_fitting) {
-	hf_a.set_density_fitting_basis("cc-pvdz-jkfit");
-	hf_b.set_density_fitting_basis("cc-pvdz-jkfit");
+    if (m_use_density_fitting) {
+        hf_a.set_density_fitting_basis("cc-pvdz-jkfit");
+        hf_b.set_density_fitting_basis("cc-pvdz-jkfit");
     }
 
     Mat schwarz_a = hf_a.compute_schwarz_ints();
@@ -112,8 +116,8 @@ CEModelInteraction::operator()(Wavefunction &A, Wavefunction &B) const {
     // and atoms
     auto hf_AB = HartreeFock(ABn.atoms, ABn.basis);
     Mat schwarz_ab = hf_AB.compute_schwarz_ints();
-    if(m_use_density_fitting) {
-	hf_AB.set_density_fitting_basis("cc-pvdz-jkfit");
+    if (m_use_density_fitting) {
+        hf_AB.set_density_fitting_basis("cc-pvdz-jkfit");
     }
 
     Wavefunction ABo = ABn;

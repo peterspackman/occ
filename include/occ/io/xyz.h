@@ -1,8 +1,8 @@
 #pragma once
 #include <array>
 #include <istream>
-#include <occ/core/molecule.h>
 #include <occ/core/element.h>
+#include <occ/core/molecule.h>
 
 namespace occ::io {
 
@@ -20,13 +20,12 @@ struct XyzFileReader {
 
     OccInput as_occ_input() const;
     void update_occ_input(OccInput &) const;
-private:
+
+  private:
     void parse(std::istream &);
 };
 
-
 occ::core::Molecule molecule_from_xyz_file(const std::string &);
 occ::core::Molecule molecule_from_xyz_string(const std::string &);
-
 
 } // namespace occ::io

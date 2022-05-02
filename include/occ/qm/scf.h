@@ -1,16 +1,16 @@
 #pragma once
-#include <occ/qm/cdiis.h>
-#include <occ/qm/ediis.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/logger.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
+#include <occ/qm/cdiis.h>
+#include <occ/qm/ediis.h>
 #include <occ/qm/guess_density.h>
 #include <occ/qm/ints.h>
+#include <occ/qm/mo.h>
 #include <occ/qm/opmatrix.h>
 #include <occ/qm/spinorbital.h>
-#include <occ/qm/mo.h>
 #include <occ/qm/wavefunction.h>
 
 #include <fmt/core.h>
@@ -31,7 +31,6 @@ using occ::qm::SpinorbitalKind::Unrestricted;
 using occ::util::human_readable_size;
 using occ::util::is_odd;
 namespace block = occ::qm::block;
-
 
 namespace impl {
 
@@ -83,8 +82,7 @@ void set_conditioning_orthogonalizer(const Mat &S, Mat &X, Mat &Xinv,
 
 template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
-    SCF(Procedure &procedure)
-        : m_procedure(procedure) {
+    SCF(Procedure &procedure) : m_procedure(procedure) {
         n_electrons = m_procedure.num_e();
         nbf = m_procedure.basis().nbf();
         size_t rows, cols;
@@ -307,9 +305,9 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             mo.D = mo.Cocc * mo.Cocc.transpose();
         } else if constexpr (spinorbital_kind == Unrestricted) {
             block::a(mo.D) = mo.Cocc.block(0, 0, nbf, n_alpha()) *
-                          mo.Cocc.block(0, 0, nbf, n_alpha()).transpose();
+                             mo.Cocc.block(0, 0, nbf, n_alpha()).transpose();
             block::b(mo.D) = mo.Cocc.block(nbf, 0, nbf, n_beta()) *
-                          mo.Cocc.block(nbf, 0, nbf, n_beta()).transpose();
+                             mo.Cocc.block(nbf, 0, nbf, n_beta()).transpose();
             mo.D *= 0.5;
         } else if constexpr (spinorbital_kind == General) {
             mo.D = (mo.Cocc * mo.Cocc.transpose()) * 0.5;
@@ -332,8 +330,10 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             block::a(mo.energies) = alpha_eig_solver.eigenvalues();
             block::b(mo.energies) = beta_eig_solver.eigenvalues();
             mo.Cocc = Mat::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
-            mo.Cocc.block(0, 0, nbf, n_alpha()) = block::a(mo.C).leftCols(n_alpha());
-            mo.Cocc.block(nbf, 0, nbf, n_beta()) = block::b(mo.C).leftCols(n_beta());
+            mo.Cocc.block(0, 0, nbf, n_alpha()) =
+                block::a(mo.C).leftCols(n_alpha());
+            mo.Cocc.block(nbf, 0, nbf, n_beta()) =
+                block::b(mo.C).leftCols(n_beta());
         } else {
             Eigen::SelfAdjointEigenSolver<Mat> eig_solver(X.transpose() * fock *
                                                           X);
@@ -352,7 +352,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                 2 * expectation<spinorbital_kind>(mo.D, T);
             energy["electronic.nuclear"] =
                 2 * expectation<spinorbital_kind>(mo.D, V);
-            energy["electronic.1e"] = 2 * expectation<spinorbital_kind>(mo.D, H);
+            energy["electronic.1e"] =
+                2 * expectation<spinorbital_kind>(mo.D, H);
             occ::timing::stop(occ::timing::category::la);
         }
         if (m_procedure.usual_scf_energy()) {
@@ -438,8 +439,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                                   std::numeric_limits<double>::epsilon()));
 
             std::swap(mo.D, D_diff);
-            F += m_procedure.compute_fock(spinorbital_kind, mo, precision_F,
-                                          K);
+            F += m_procedure.compute_fock(spinorbital_kind, mo, precision_F, K);
             std::swap(mo.D, D_diff);
 
             // compute HF energy with the non-extrapolated Fock matrix
@@ -451,12 +451,14 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             // double prev_error = diis_error;
             diis_error = diis.max_error();
             /*
-            bool use_ediis = (diis_error > 1e-1) || (prev_error / diis.min_error() > 1.1);
+            bool use_ediis = (diis_error > 1e-1) || (prev_error /
+            diis.min_error() > 1.1);
 
             Mat F_ediis = ediis.update(D, F, energy["electronic"]);
             if(use_ediis) F_diis = F_ediis;
             else if(diis_error > 1e-4) {
-                F_diis = (10 * diis_error) * F_ediis + (1 - 10 * diis_error) * F_diis;
+                F_diis = (10 * diis_error) * F_ediis + (1 - 10 * diis_error) *
+            F_diis;
             }
             */
 
@@ -503,8 +505,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                 auto s_a = i < n_a ? "a" : " ";
                 auto s_b = i < n_b ? "b" : " ";
                 fmt::print("{:3d}   {:^3s} {:16.12f}  {:^3s} {:16.12f}\n", i,
-                           s_a, mo.energies(i), s_b,
-                           mo.energies(nbf + i));
+                           s_a, mo.energies(i), s_b, mo.energies(nbf + i));
             }
         } else {
             int n_mo = mo.energies.size();
@@ -512,8 +513,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             fmt::print("{0:3s}   {1:3s} {2:>16s}\n", "idx", "occ", "energy");
             for (int i = 0; i < n_mo; i++) {
                 auto s = i < n_occ ? "ab" : " ";
-                fmt::print("{:3d}   {:^3s} {:16.12f}\n", i, s,
-                           mo.energies(i));
+                fmt::print("{:3d}   {:^3s} {:16.12f}\n", i, s, mo.energies(i));
             }
         }
     }

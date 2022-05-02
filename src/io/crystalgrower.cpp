@@ -25,8 +25,8 @@ void StructureWriter::write(const occ::crystal::Crystal &crystal,
         for (const auto &n : neighbors[uc_idx]) {
             const auto uc_shift = n.b().cell_shift();
             const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
-            fmt::print(m_dest, "{}({},{},{}) ", uc_idx, uc_shift[0], uc_shift[1],
-                       uc_shift[2]);
+            fmt::print(m_dest, "{}({},{},{}) ", uc_idx, uc_shift[0],
+                       uc_shift[1], uc_shift[2]);
         }
         fmt::print(m_dest, "\n\nX 0[0]\n\n");
 
@@ -85,30 +85,28 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
             const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
             const double e_int = n.interaction_energy();
 
-            auto match = std::find_if(
-                unique_interaction_energies.begin(),
-                unique_interaction_energies.end(),
-                [&e_int, &max_de](double x){ return std::abs(x - e_int) < max_de; }
-            );
+            auto match = std::find_if(unique_interaction_energies.begin(),
+                                      unique_interaction_energies.end(),
+                                      [&e_int, &max_de](double x) {
+                                          return std::abs(x - e_int) < max_de;
+                                      });
             size_t interaction_idx = 1;
 
-            if(match == std::end(unique_interaction_energies)) {
+            if (match == std::end(unique_interaction_energies)) {
                 unique_interaction_energies.push_back(e_int);
                 interaction_idx = unique_interaction_energies.size();
-            }
-            else {
-                interaction_idx = 1 + std::distance(unique_interaction_energies.begin(), match);
+            } else {
+                interaction_idx =
+                    1 +
+                    std::distance(unique_interaction_energies.begin(), match);
             }
 
             fmt::print(m_dest, "{}:[1A][{}-{}]({},{},{}) R={:.3f}\n",
-                       interaction_idx,
-                       n.a().name(), n.b().name(),
-                       uc_shift[0], uc_shift[1], uc_shift[2],
-                       n.centroid_distance()
-            );
+                       interaction_idx, n.a().name(), n.b().name(), uc_shift[0],
+                       uc_shift[1], uc_shift[2], n.centroid_distance());
             interaction_idx++;
         }
-        for(double e: unique_interaction_energies) {
+        for (double e : unique_interaction_energies) {
             fmt::print(m_dest, "{:.4f}\n", e);
         }
         uc_idx++;

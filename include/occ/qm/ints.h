@@ -13,8 +13,8 @@ namespace occ::ints {
 using libint2::BraKet;
 using libint2::Operator;
 using occ::qm::BasisSet;
-using occ::qm::ShellPairList;
 using occ::qm::ShellPairData;
+using occ::qm::ShellPairList;
 
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 

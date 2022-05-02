@@ -74,7 +74,7 @@ DFT::DFT(const std::string &method, const BasisSet &basis,
         m_atom_grids.begin(), m_atom_grids.end(), 0.0,
         [&](double tot, const auto &grid) { return tot + grid.points.cols(); });
     occ::log::info("finished calculating atom grids ({} points)",
-                    num_grid_points);
+                   num_grid_points);
     occ::log::debug("Grid initialization took {} seconds",
                     occ::timing::total(occ::timing::grid_init));
     occ::log::debug("Grid point creation took {} seconds",
@@ -128,7 +128,5 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
     }
     return funcs;
 }
-
-
 
 } // namespace occ::dft

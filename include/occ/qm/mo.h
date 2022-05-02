@@ -15,5 +15,4 @@ struct MolecularOrbitals {
     void rotate(const BasisSet &basis, const occ::Mat3 &rotation);
 };
 
-
 } // namespace occ::qm

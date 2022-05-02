@@ -744,59 +744,112 @@ const char *MolecularPointGroup::description() const {
 
 int pg_symmetry_number(PointGroup group) {
     switch (group) {
-    case PointGroup::C1: return 1;
-    case PointGroup::Cs: return 1;
-    case PointGroup::Ci: return 1;
-    case PointGroup::Coov: return 1;
-    case PointGroup::Dooh: return 2;
-    case PointGroup::C2: return 2;
-    case PointGroup::C3: return 3;
-    case PointGroup::C4: return 4;
-    case PointGroup::C5: return 5;
-    case PointGroup::C6: return 6;
-    case PointGroup::C8: return 8;
-    case PointGroup::C2v: return 2;
-    case PointGroup::C3v: return 3;
-    case PointGroup::C4v: return 4;
-    case PointGroup::C5v: return 5;
-    case PointGroup::C6v: return 6;
-    case PointGroup::C2h: return 2;
-    case PointGroup::C3h: return 3;
-    case PointGroup::C4h: return 4;
-    case PointGroup::C5h: return 5;
-    case PointGroup::C6h: return 6;
-    case PointGroup::D2: return 4;
-    case PointGroup::D3: return 6;
-    case PointGroup::D4: return 8;
-    case PointGroup::D5: return 10;
-    case PointGroup::D6: return 12;
-    case PointGroup::D7: return 14;
-    case PointGroup::D8: return 16;
-    case PointGroup::D2h: return 4;
-    case PointGroup::D3h: return 6;
-    case PointGroup::D4h: return 8;
-    case PointGroup::D5h: return 10;
-    case PointGroup::D6h: return 12;
-    case PointGroup::D7h: return 14;
-    case PointGroup::D8h: return 16;
-    case PointGroup::D2d: return 4;
-    case PointGroup::D3d: return 6;
-    case PointGroup::D4d: return 8;
-    case PointGroup::D5d: return 10;
-    case PointGroup::D6d: return 12;
-    case PointGroup::D7d: return 14;
-    case PointGroup::D8d: return 16;
-    case PointGroup::S4: return 4;
-    case PointGroup::S6: return 6;
-    case PointGroup::S8: return 8;
-    case PointGroup::T: return 12;
-    case PointGroup::Td: return 12;
-    case PointGroup::Th: return 12;
-    case PointGroup::O: return 24;
-    case PointGroup::Oh: return 24;
-    case PointGroup::I: return 60;
-    case PointGroup::Ih: return 60;
-    default: throw std::runtime_error("Unknown point group");
+    case PointGroup::C1:
+        return 1;
+    case PointGroup::Cs:
+        return 1;
+    case PointGroup::Ci:
+        return 1;
+    case PointGroup::Coov:
+        return 1;
+    case PointGroup::Dooh:
+        return 2;
+    case PointGroup::C2:
+        return 2;
+    case PointGroup::C3:
+        return 3;
+    case PointGroup::C4:
+        return 4;
+    case PointGroup::C5:
+        return 5;
+    case PointGroup::C6:
+        return 6;
+    case PointGroup::C8:
+        return 8;
+    case PointGroup::C2v:
+        return 2;
+    case PointGroup::C3v:
+        return 3;
+    case PointGroup::C4v:
+        return 4;
+    case PointGroup::C5v:
+        return 5;
+    case PointGroup::C6v:
+        return 6;
+    case PointGroup::C2h:
+        return 2;
+    case PointGroup::C3h:
+        return 3;
+    case PointGroup::C4h:
+        return 4;
+    case PointGroup::C5h:
+        return 5;
+    case PointGroup::C6h:
+        return 6;
+    case PointGroup::D2:
+        return 4;
+    case PointGroup::D3:
+        return 6;
+    case PointGroup::D4:
+        return 8;
+    case PointGroup::D5:
+        return 10;
+    case PointGroup::D6:
+        return 12;
+    case PointGroup::D7:
+        return 14;
+    case PointGroup::D8:
+        return 16;
+    case PointGroup::D2h:
+        return 4;
+    case PointGroup::D3h:
+        return 6;
+    case PointGroup::D4h:
+        return 8;
+    case PointGroup::D5h:
+        return 10;
+    case PointGroup::D6h:
+        return 12;
+    case PointGroup::D7h:
+        return 14;
+    case PointGroup::D8h:
+        return 16;
+    case PointGroup::D2d:
+        return 4;
+    case PointGroup::D3d:
+        return 6;
+    case PointGroup::D4d:
+        return 8;
+    case PointGroup::D5d:
+        return 10;
+    case PointGroup::D6d:
+        return 12;
+    case PointGroup::D7d:
+        return 14;
+    case PointGroup::D8d:
+        return 16;
+    case PointGroup::S4:
+        return 4;
+    case PointGroup::S6:
+        return 6;
+    case PointGroup::S8:
+        return 8;
+    case PointGroup::T:
+        return 12;
+    case PointGroup::Td:
+        return 12;
+    case PointGroup::Th:
+        return 12;
+    case PointGroup::O:
+        return 24;
+    case PointGroup::Oh:
+        return 24;
+    case PointGroup::I:
+        return 60;
+    case PointGroup::Ih:
+        return 60;
+    default:
+        throw std::runtime_error("Unknown point group");
     }
 }
 

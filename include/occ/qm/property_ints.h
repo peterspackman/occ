@@ -12,9 +12,9 @@ using libint2::BraKet;
 using libint2::Operator;
 using libint2::Shell;
 using occ::qm::BasisSet;
-using occ::qm::SpinorbitalKind;
-using occ::qm::ShellPairList;
 using occ::qm::ShellPairData;
+using occ::qm::ShellPairList;
+using occ::qm::SpinorbitalKind;
 
 template <SpinorbitalKind kind>
 occ::Vec compute_electric_potential(const Mat &D, const BasisSet &obs,

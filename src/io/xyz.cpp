@@ -1,10 +1,10 @@
-#include <occ/io/xyz.h>
-#include <occ/io/occ_input.h>
+#include <fstream>
+#include <occ/core/logger.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
+#include <occ/io/occ_input.h>
+#include <occ/io/xyz.h>
 #include <scn/scn.h>
-#include <occ/core/logger.h>
-#include <fstream>
 
 namespace occ::io {
 using occ::core::Element;
@@ -20,7 +20,6 @@ XyzFileReader::XyzFileReader(const std::string &filename) {
 }
 
 XyzFileReader::XyzFileReader(std::istream &stream) { parse(stream); }
-
 
 void XyzFileReader::parse(std::istream &is) {
     std::string line;
@@ -52,7 +51,6 @@ void XyzFileReader::update_occ_input(OccInput &result) const {
     result.geometry.elements = elements;
 }
 
-
 OccInput XyzFileReader::as_occ_input() const {
     OccInput result;
     update_occ_input(result);
@@ -73,8 +71,5 @@ occ::core::Molecule molecule_from_xyz_string(const std::string &contents) {
     XyzFileReader xyz(is);
     return occ::core::Molecule(xyz.elements, xyz.positions);
 }
-
-
-
 
 } // namespace occ::io

@@ -1,16 +1,16 @@
 #pragma once
+#include <fstream>
+#include <istream>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/basisset.h>
-#include <fstream>
-#include <istream>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace occ::io {
 
 class OrcaJSONReader {
-public:
+  public:
     using Atom = occ::core::Atom;
     OrcaJSONReader(const std::string &filename);
     OrcaJSONReader(std::istream &);
@@ -22,22 +22,22 @@ public:
     inline auto num_alpha() const { return m_num_alpha; }
     inline auto num_beta() const { return m_num_beta; }
 
-    inline const auto& atomic_numbers() const { return m_atomic_numbers; }
-    inline const auto& atom_labels () const { return m_atom_labels; }
-    inline const auto& atom_positions() const { return m_atom_positions; }
-    inline const auto& basis_set() const { return m_basis; }
-    inline const auto& alpha_mo_energies() const { return m_alpha_energies; }
-    inline const auto& alpha_mo_coefficients() const { return m_alpha_coeffs; }
-    inline const auto& beta_mo_energies() const { return m_beta_energies; }
-    inline const auto& beta_mo_coefficients() const { return m_beta_coeffs; }
+    inline const auto &atomic_numbers() const { return m_atomic_numbers; }
+    inline const auto &atom_labels() const { return m_atom_labels; }
+    inline const auto &atom_positions() const { return m_atom_positions; }
+    inline const auto &basis_set() const { return m_basis; }
+    inline const auto &alpha_mo_energies() const { return m_alpha_energies; }
+    inline const auto &alpha_mo_coefficients() const { return m_alpha_coeffs; }
+    inline const auto &beta_mo_energies() const { return m_beta_energies; }
+    inline const auto &beta_mo_coefficients() const { return m_beta_coeffs; }
 
     Mat scf_density_matrix() const;
 
-    const Mat& overlap_matrix() const { return m_overlap; };
+    const Mat &overlap_matrix() const { return m_overlap; };
 
     std::vector<Atom> atoms() const;
 
-private:
+  private:
     void parse(std::istream &);
     void open(const std::string &filename);
     void close();
@@ -58,4 +58,4 @@ private:
     Mat m_overlap;
 };
 
-}
+} // namespace occ::io
