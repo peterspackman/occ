@@ -8,17 +8,60 @@
 
 namespace occ::sht {
 
+int next_power_of_2(int n) {
+    int i = 1;
+    while (i < n)
+        i *= 2;
+    return i;
+}
+
+int closest_int_with_only_prime_factors_up_to_fmax(int n, int fmax = 7) {
+    if (n <= fmax) {
+        return n;
+    }
+    if (fmax < 2) {
+        return 0;
+    }
+    if (fmax == 2) {
+        return next_power_of_2(n);
+    }
+
+    n -= 2 - (n & 1);
+    int f = 2;
+    do {
+        n += 2;
+        f = 2;
+        while ((2 * f <= n) && ((n & f) == 0))
+            f *= 2; // no divisions for factor 2.
+        int k = 3;
+        while ((k <= fmax) && (k * f <= n)) {
+            while ((k * f <= n) && (n % (k * f) == 0))
+                f *= k;
+            k += 2;
+        }
+    } while (f != n);
+
+    int k = next_power_of_2(n); // what is the closest power of 2 ?
+
+    if ((k - n) * 33 < n) {
+        return k; // rather choose power of 2 if not too far(3 %)
+    }
+    return n;
+}
+
 SHT::SHT(size_t lm)
-    : m_lmax(lm), m_plm(lm), m_nphi(2 * lm + 1), m_fft_shape({m_nphi}) {
+    : m_lmax(lm), m_plm(lm),
+      m_nphi(closest_int_with_only_prime_factors_up_to_fmax(2 * lm + 1)),
+      m_fft_shape({m_nphi}) {
     m_phi = Vec(m_nphi);
     for (size_t i = 0; i < m_nphi; i++) {
         m_phi(i) = (2 * M_PI * i) / m_nphi;
     }
 
-    m_ntheta = 1;
-    while (m_ntheta < m_nphi) {
-        m_ntheta *= 2;
-    }
+    m_ntheta = m_lmax + 1;
+    m_ntheta += (m_ntheta & 1);
+    m_ntheta = ((m_ntheta + 7) / 8) * 8;
+
     std::tie(m_cos_theta, m_weights) = gauss_legendre_quadrature(m_ntheta);
     m_weights.array() /= 2.0;
     m_theta = m_cos_theta.array().acos();
@@ -57,15 +100,13 @@ CVec SHT::analysis_real(const Mat &values) {
             Associated Legendre Polynomials, we need a factor here.
             which alternates with m and l
         */
-        int sign = -1;
         for (int m = 1; m <= m_lmax; m++) {
+            int sign = (m & 1) ? -1 : 1;
             for (int l = m; l <= m_lmax; l++) {
                 auto pw = sign * m_plm_work_array(plm_idx) * w;
                 coeffs(plm_idx) += m_fft_work_array(m) * pw;
                 plm_idx++;
-                sign *= -1;
             }
-            sign *= -1;
         }
     }
     return coeffs;
@@ -87,14 +128,13 @@ Mat SHT::synthesis_real(const CVec &coeffs) {
             plm_idx++;
         }
 
-        int sign = -1;
         for (int m = 1; m <= m_lmax; m++) {
+            int sign = (m & 1) ? -1 : 1;
             for (int l = m; l <= m_lmax; l++) {
                 auto p = 2 * sign * m_plm_work_array(plm_idx);
                 m_fft_work_array(m) += coeffs(plm_idx) * p;
                 plm_idx++;
             }
-            sign *= -1;
         }
 
         // should be able to use a c2r here instead
@@ -136,8 +176,8 @@ CVec SHT::analysis_cplx(const CMat &values) {
             Associated Legendre Polynomials, we need a factor here.
             which alternates with m and l
         */
-        int sign = -1;
         for (int m = 1; m <= m_lmax; m++) {
+            int sign = (m & 1) ? -1 : 1;
             for (int l = m; l <= m_lmax; l++) {
                 int l_offset = l * (l + 1);
                 int m_idx_neg = m_nphi - m;
@@ -153,7 +193,6 @@ CVec SHT::analysis_cplx(const CMat &values) {
                 coeffs(l_offset + m) += rr;
                 plm_idx++;
             }
-            sign *= -1;
         }
     }
     return coeffs;
@@ -176,8 +215,8 @@ CMat SHT::synthesis_cplx(const CVec &coeffs) {
             plm_idx++;
         }
 
-        int sign = -1;
         for (int m = 1; m <= m_lmax; m++) {
+            int sign = (m & 1) ? -1 : 1;
             for (int l = m; l <= m_lmax; l++) {
                 int l_offset = l * (l + 1);
                 int m_idx_neg = m_nphi - m;
@@ -192,7 +231,6 @@ CMat SHT::synthesis_cplx(const CVec &coeffs) {
                 m_fft_work_array(m_idx_pos) += rr;
                 plm_idx++;
             }
-            sign *= -1;
         }
 
         // should be able to use a c2r here instead
