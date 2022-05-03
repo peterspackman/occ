@@ -1,5 +1,7 @@
+#include <chrono>
 #include <cxxopts.hpp>
 #include <filesystem>
+#include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <occ/3rdparty/robin_hood.h>
 #include <occ/core/eigenp.h>
@@ -16,6 +18,29 @@ namespace fs = std::filesystem;
 using occ::core::Element;
 using occ::core::Interpolator1D;
 using occ::core::Molecule;
+
+void write_ply_file(const std::string &filename,
+                    const std::vector<float> &vertices,
+                    const std::vector<uint32_t> &faces) {
+    auto file = fmt::output_file(filename);
+    file.print("ply\n");
+    file.print("format ascii 1.0\n");
+    file.print("comment exported from CrystalExplorer\n");
+    file.print("element vertex {}\n", vertices.size() / 3);
+    file.print("property float x\n");
+    file.print("property float y\n");
+    file.print("property float z\n");
+    file.print("element face {}\n", faces.size() / 3);
+    file.print("property list uchar int vertex_index\n");
+    file.print("end_header\n");
+    for (size_t idx = 0; idx < vertices.size(); idx += 3) {
+        file.print("{} {} {}\n", vertices[idx], vertices[idx + 1],
+                   vertices[idx + 2]);
+    }
+    for (size_t idx = 0; idx < faces.size(); idx += 3) {
+        file.print("3 {} {} {}\n", faces[idx], faces[idx + 1], faces[idx + 2]);
+    }
+}
 
 struct HirshfeldBasis {
     std::vector<Eigen::Vector3d> coordinates;
@@ -111,6 +136,7 @@ struct SlaterBasis {
     double length{0.0};
     float iso = 0.02;
     float fac = 0.5;
+    mutable std::chrono::duration<double> time{0};
     mutable int num_calls{0};
 
     SlaterBasis(const Molecule &mol) : molecule(mol) {
@@ -135,6 +161,7 @@ struct SlaterBasis {
 
     float operator()(float x, float y, float z) const {
         num_calls++;
+        auto t1 = std::chrono::high_resolution_clock::now();
         float result = 0.0;
         Eigen::Vector3d pos{static_cast<double>(x * length + origin(0)),
                             static_cast<double>(y * length + origin(1)),
@@ -143,6 +170,8 @@ struct SlaterBasis {
             double r = (pos - coordinates[i]).norm();
             result += static_cast<float>(basis[i].rho(r));
         }
+        auto t2 = std::chrono::high_resolution_clock::now();
+        time += t2 - t1;
         return fac * (iso - result);
     }
 };
@@ -192,13 +221,20 @@ int main(int argc, char *argv[]) {
     options.add_options()("i,input", "Input file geometry",
                           cxxopts::value<fs::path>(geometry_filename))(
         "s,minimum-separation", "Minimum separation",
-        cxxopts::value<double>(minimum_separation))(
-        "S,maximum-separation", "Maximum separation",
-        cxxopts::value<double>(maximum_separation))(
-        "e,environment", "Environment geometry for HS",
-        cxxopts::value<fs::path>(environment_filename))(
-        "t,threads", "Number of threads",
-        cxxopts::value<int>()->default_value("1"));
+        cxxopts::value<double>(
+            minimum_separation))("S,maximum-separation", "Maximum separation",
+                                 cxxopts::value<double>(
+                                     maximum_separation))("e,environment",
+                                                          "Environment "
+                                                          "geometry for HS",
+                                                          cxxopts::value<
+                                                              fs::path>(
+                                                              environment_filename))("t,threads",
+                                                                                     "Number of threads",
+                                                                                     cxxopts::value<
+                                                                                         int>()
+                                                                                         ->default_value(
+                                                                                             "1"));
 
     options.parse_positional({"input", "environment"});
     occ::log::set_level(occ::log::level::debug);
@@ -250,7 +286,7 @@ int main(int argc, char *argv[]) {
 
         enpy::save_npy("verts.npy", v);
         enpy::save_npy("faces.npy", f);
-
+        write_ply_file("surface.ply", vertices, faces);
     } else {
         Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
 
@@ -263,22 +299,24 @@ int main(int argc, char *argv[]) {
         }
 
         auto basis = SlaterBasis(m);
-        size_t max_depth = 7;
+        size_t max_depth = 6;
         size_t min_depth = 1;
         fmt::print("Min depth = {}, max depth = {}\n", min_depth, max_depth);
         auto mc = occ::geometry::mc::LinearHashedMarchingCubes(max_depth);
+        auto mc_conventional =
+            occ::geometry::mc::MarchingCubes(std::pow(2, max_depth));
         mc.min_depth = min_depth;
         std::vector<float> vertices;
         std::vector<uint32_t> faces;
+        fmt::print("Linear hashed\n");
+        auto t1 = std::chrono::high_resolution_clock::now();
         mc.extract(basis, vertices, faces);
-        double max_calls = std::pow(2, 3 * max_depth);
-        fmt::print("{} calls ({} % of conventional)\n", basis.num_calls,
-                   (basis.num_calls / max_calls) * 100);
-
-        auto [v, f] = as_matrices(basis, vertices, faces);
-
-        enpy::save_npy("verts.npy", v);
-        enpy::save_npy("faces.npy", f);
+        size_t num_calls_hashed = basis.num_calls;
+        auto t2 = std::chrono::high_resolution_clock::now();
+        fmt::print("{} calls hashed, {} total, {} calls\n", num_calls_hashed,
+                   std::chrono::duration<double>(t2 - t1).count(),
+                   basis.time.count());
+        write_ply_file("surface_hashed.ply", vertices, faces);
     }
     return 0;
 }

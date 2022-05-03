@@ -303,7 +303,7 @@ void march_cube(const std::array<float, 8> &values, E &edge_func) {
     }
 }
 
-float get_offset(float a, float b) {
+inline constexpr float get_offset(float a, float b) {
     float delta = b - a;
     if (delta == 0.0)
         return 0.5;

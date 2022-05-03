@@ -4,6 +4,10 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/parallel.h>
 #include <occ/qm/basisset.h>
+#include <occ/qm/spinorbital.h>
+#include <occ/qm/expectation.h>
+#include <occ/qm/shellpair.h>
+#include <occ/core/timings.h>
 #include <vector>
 
 namespace occ::ints {

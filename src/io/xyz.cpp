@@ -39,7 +39,7 @@ void XyzFileReader::parse(std::istream &is) {
             occ::log::error("failed reading {}", result.error().msg());
             continue;
         }
-        occ::log::debug("Found atom line: {} {} {} {}\n", el, x, y, z);
+        occ::log::debug("Found atom line: {} {} {} {}", el, x, y, z);
         elements.emplace_back(occ::core::Element(el));
         positions.emplace_back(std::array<double, 3>{x, y, z});
         num_atoms--;
