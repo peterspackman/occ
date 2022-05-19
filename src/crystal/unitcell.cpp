@@ -102,7 +102,7 @@ bool UnitCell::is_rhombohedral() const {
 
 bool UnitCell::is_hexagonal() const {
     return _ab_close() && !_ac_close() && _a_90() &&
-           is_close(m_angles[2], 2 * M_PI / 3);
+           is_close(m_angles[2], 2 * occ::units::PI / 3);
 }
 
 std::string UnitCell::cell_type() const {
@@ -132,7 +132,8 @@ MillerIndex UnitCell::hkl_limits(double d_min) const {
  */
 
 UnitCell cubic_cell(double length) {
-    return UnitCell(length, length, length, M_PI / 2, M_PI / 2, M_PI / 2);
+    return UnitCell(length, length, length, occ::units::PI / 2,
+                    occ::units::PI / 2, occ::units::PI / 2);
 }
 
 UnitCell rhombohedral_cell(double length, double angle) {
@@ -140,20 +141,23 @@ UnitCell rhombohedral_cell(double length, double angle) {
 }
 
 UnitCell tetragonal_cell(double a, double c) {
-    return UnitCell(a, a, c, M_PI / 2, M_PI / 2, M_PI / 2);
+    return UnitCell(a, a, c, occ::units::PI / 2, occ::units::PI / 2,
+                    occ::units::PI / 2);
 }
 
 UnitCell hexagonal_cell(double a, double c) {
-    return UnitCell(a, a, c, M_PI / 2, M_PI / 2, 2 * M_PI / 3);
+    return UnitCell(a, a, c, occ::units::PI / 2, occ::units::PI / 2,
+                    2 * occ::units::PI / 3);
 }
 
 UnitCell orthorhombic_cell(double a, double b, double c) {
-    return UnitCell(a, b, c, M_PI / 2, M_PI / 2, M_PI / 2);
+    return UnitCell(a, b, c, occ::units::PI / 2, occ::units::PI / 2,
+                    occ::units::PI / 2);
 }
 
 UnitCell monoclinic_cell(double a, double b, double c, double angle) {
 
-    return UnitCell(a, b, c, M_PI / 2, angle, M_PI / 2);
+    return UnitCell(a, b, c, occ::units::PI / 2, angle, occ::units::PI / 2);
 }
 
 UnitCell triclinic_cell(double a, double b, double c, double alpha, double beta,

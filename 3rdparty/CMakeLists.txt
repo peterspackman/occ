@@ -1,10 +1,18 @@
 if(NOT "${USE_SYSTEM_BOOST}")
 CPMAddPackage(
-    NAME Boost
-    VERSION 1.77.0
-    GITHUB_REPOSITORY "boostorg/boost"
-    GIT_TAG "boost-1.77.0"
+  NAME Boost
+  VERSION 1.76.0
+  URL https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz
+  DOWNLOAD_ONLY True 
 )
+if(Boost_ADDED)
+  # Define the header-only Boost target
+  add_library(Boost::boost INTERFACE IMPORTED GLOBAL)
+  target_include_directories(Boost::boost SYSTEM INTERFACE ${Boost_SOURCE_DIR})
+
+  # Disable autolink
+  target_compile_definitions(Boost::boost INTERFACE BOOST_ALL_NO_LIB=1)
+endif()
 endif()
 
 CPMAddPackage(
@@ -17,7 +25,7 @@ CPMAddPackage(
     NAME spdlog
     GITHUB_REPOSITORY "gabime/spdlog"
     OPTIONS "SPDLOG_FMT_EXTERNAL ON"
-    VERSION "1.x"
+    VERSION "1.10.0"
 )
 
 CPMAddPackage(
@@ -29,12 +37,6 @@ CPMAddPackage(
 CPMAddPackage(
     NAME gau2grid
     GITHUB_REPOSITORY "dgasmith/gau2grid"
-    GIT_TAG master
-)
-
-CPMAddPackage(
-    NAME toml11
-    GITHUB_REPOSITORY "ToruNiina/toml11"
     GIT_TAG master
 )
 
@@ -132,6 +134,7 @@ set(LIBINT2_URL "https://github.com/evaleev/libint/releases/download/v2.7.1/libi
 CPMAddPackage(
     NAME Libint2
     URL "${LIBINT2_URL}"
+    OPTIONS "LIBINT_HAS_SYSTEM_BOOST_PREPROCESSOR_VARIADICS ON"
 )
 add_library(Libint2::cxx ALIAS libint2_cxx)
 endif()
@@ -140,14 +143,13 @@ if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc
     GIT_REPOSITORY "https://gitlab.com/libxc/libxc.git"
-    GIT_TAG 5.1.7
+    GIT_TAG 5.2.3
     OPTIONS "BUILD_TESTING OFF"
 )
 add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(Libxc::xc INTERFACE xc)
 target_include_directories(
     Libxc::xc INTERFACE
-    "${Libxc_BINARY_DIR}/gen_funcidx"
     "${Libxc_SOURCE_DIR}/src"
     "${Libxc_BINARY_DIR}/src"
     "${Libxc_BINARY_DIR}"

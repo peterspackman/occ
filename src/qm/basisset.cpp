@@ -234,7 +234,7 @@ std::string BasisSet::data_path() {
         occ::log::warn("There is a problem with BasisSet::data_path(), the "
                        "path '{}' is not valid ({})",
                        basis_path, ec.message());
-        basis_path = fs::current_path();
+        basis_path = fs::current_path().string();
     }
     return basis_path;
 }
