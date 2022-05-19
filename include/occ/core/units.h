@@ -11,10 +11,11 @@ constexpr double EV_TO_KJ_PER_MOL = 96.48530749925973;
 constexpr double AU_TO_EV = 27.211399;
 constexpr double AU_TO_KELVIN = 315777.09;
 constexpr double KJ_TO_KCAL = AU_TO_KCAL_PER_MOL / AU_TO_KJ_PER_MOL;
+constexpr double PI = 3.14159265358979323846;
 
-template <typename T> constexpr auto radians(T x) { return x * M_PI / 180; }
+template <typename T> constexpr auto radians(T x) { return x * PI / 180; }
 
-template <typename T> constexpr auto degrees(T x) { return x * 180 / M_PI; }
+template <typename T> constexpr auto degrees(T x) { return x * 180 / PI; }
 
 template <typename T> constexpr auto angstroms(T x) {
     return BOHR_TO_ANGSTROM * x;

@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/crystal/miller.h>
 #include <string>
@@ -88,9 +89,15 @@ class UnitCell {
     inline bool _a_abc_different() const {
         return !_a_ab_close() && !_a_ac_close() && !_a_bc_close();
     }
-    inline bool _a_90() const { return is_close(m_angles(0), M_PI / 2); }
-    inline bool _b_90() const { return is_close(m_angles(1), M_PI / 2); }
-    inline bool _c_90() const { return is_close(m_angles(2), M_PI / 2); }
+    inline bool _a_90() const {
+        return is_close(m_angles(0), occ::units::PI / 2);
+    }
+    inline bool _b_90() const {
+        return is_close(m_angles(1), occ::units::PI / 2);
+    }
+    inline bool _c_90() const {
+        return is_close(m_angles(2), occ::units::PI / 2);
+    }
 
     Vec3 m_lengths;
     Vec3 m_angles;

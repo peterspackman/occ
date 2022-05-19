@@ -27,7 +27,7 @@ using occ::qm::Wavefunction;
 
 void read_input_file(const std::string &filename, OccInput &config) {
     occ::timing::stop(occ::timing::category::io);
-    std::string ext = fs::path(filename).extension();
+    std::string ext = fs::path(filename).extension().string();
     if (ext == ".gjf" || ext == ".com") {
         occ::io::GaussianInputFile g(filename);
         g.update_occ_input(config);

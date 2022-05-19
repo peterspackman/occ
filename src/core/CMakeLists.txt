@@ -30,10 +30,10 @@ target_link_libraries(occ_core
     ZLIB::ZLIB
     OpenMP::OpenMP_CXX
     Libint2::cxx
+    Boost::boost
 )
 target_include_directories(occ_core PUBLIC 
     ${OCC_INCLUDE_DIR} 
-    ${Boost_INCLUDE_DIRS}
 )
 
 target_compile_features(occ_core PUBLIC cxx_std_17)
