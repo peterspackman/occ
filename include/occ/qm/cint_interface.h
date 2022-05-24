@@ -1,18 +1,13 @@
 #pragma once
-#include <occ/qm/operator.h>
-
-namespace cint {
-extern "C" {
-#include "cint.h"
-#include "cint_funcs.h"
-}
-} // namespace cint
+#include <occ/3rdparty/cint_wrapper.h>
+#include <occ/qm/occshell.h>
 
 namespace occ::qm::cint {
 
 using occ::core::Atom;
-using occ::qm::Operator;
-using occ::qm::Shell;
+using Shell = occ::qm::OccShell;
+
+enum class Operator { overlap, nuclear, kinetic, coulomb };
 
 namespace impl {
 struct AtomInfo {
@@ -135,6 +130,10 @@ class IntegralEnvironment {
         }
     }
 
+    //    size_t add_auxiliary_basis(const std::vector<Shell> &basis) {
+    //        return m_auxiliary_offset;
+    //    }
+
     size_t atom_info_size_bytes() const {
         return m_atom_info.size() * sizeof(impl::AtomInfo);
     }
@@ -163,63 +162,104 @@ class IntegralEnvironment {
 
     template <Shell::Kind ST> inline int total_cgto() const {
         if constexpr (ST == Shell::Kind::Spherical)
-            return cint::CINTtot_cgto_spheric(basis_data_ptr(), num_basis());
+            return libcint::CINTtot_cgto_spheric(basis_data_ptr(), num_basis());
         else
-            return cint::CINTtot_cgto_cart(basis_data_ptr(), num_basis());
+            return libcint::CINTtot_cgto_cart(basis_data_ptr(), num_basis());
     }
 
     template <Shell::Kind ST> inline int cgto(int shell_idx) const {
         if constexpr (ST == Shell::Kind::Spherical)
-            return cint::CINTcgto_spheric(shell_idx, basis_data_ptr());
+            return libcint::CINTcgto_spheric(shell_idx, basis_data_ptr());
         else
-            return cint::CINTcgto_cart(shell_idx, basis_data_ptr());
+            return libcint::CINTcgto_cart(shell_idx, basis_data_ptr());
+    }
+
+    template <Operator OP, Shell::Kind ST>
+    inline int one_electron_cache_size(std::array<int, 2> shells) {
+        static_assert(OP != Operator::coulomb, "not a one-electron operator");
+        std::array<int, 2> dims{cgto<ST>(shells[0]), cgto<ST>(shells[1])};
+        if constexpr (ST == Shell::Kind::Spherical) {
+            if constexpr (OP == Operator::overlap) {
+                return libcint::int1e_ovlp_sph(
+                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
+                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
+                    nullptr, nullptr);
+            } else if constexpr (OP == Operator::nuclear) {
+                return libcint::int1e_nuc_sph(
+                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
+                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
+                    nullptr, nullptr);
+            } else if constexpr (OP == Operator::kinetic) {
+                return libcint::int1e_kin_sph(
+                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
+                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
+                    nullptr, nullptr);
+            }
+        } else {
+            if constexpr (OP == Operator::overlap) {
+                return libcint::int1e_ovlp_cart(
+                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
+                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
+                    nullptr, nullptr);
+            } else if constexpr (OP == Operator::nuclear) {
+                return libcint::int1e_nuc_cart(
+                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
+                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
+                    nullptr, nullptr);
+            } else if constexpr (OP == Operator::kinetic) {
+                return libcint::int1e_kin_cart(
+                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
+                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
+                    nullptr, nullptr);
+            }
+        }
     }
 
     template <Operator OP, Shell::Kind ST>
     inline std::array<int, 2>
-    one_electron_helper(std::array<int, 2> shells, cint::CINTOpt *opt,
+    one_electron_helper(std::array<int, 2> shells, libcint::CINTOpt *opt,
                         double *buffer, double *cache) {
         static_assert(OP != Operator::coulomb, "not a one-electron operator");
         std::array<int, 2> dims{cgto<ST>(shells[0]), cgto<ST>(shells[1])};
         if constexpr (ST == Shell::Kind::Spherical) {
             if constexpr (OP == Operator::overlap)
-                cint::int1e_ovlp_sph(buffer, dims.data(), shells.data(),
-                                     atom_data_ptr(), num_atoms(),
-                                     basis_data_ptr(), num_basis(),
-                                     env_data_ptr(), opt, cache);
+                libcint::int1e_ovlp_sph(buffer, dims.data(), shells.data(),
+                                        atom_data_ptr(), num_atoms(),
+                                        basis_data_ptr(), num_basis(),
+                                        env_data_ptr(), opt, cache);
             else if constexpr (OP == Operator::nuclear)
-                cint::int1e_nuc_sph(buffer, dims.data(), shells.data(),
-                                    atom_data_ptr(), num_atoms(),
-                                    basis_data_ptr(), num_basis(),
-                                    env_data_ptr(), opt, cache);
+                libcint::int1e_nuc_sph(buffer, dims.data(), shells.data(),
+                                       atom_data_ptr(), num_atoms(),
+                                       basis_data_ptr(), num_basis(),
+                                       env_data_ptr(), opt, cache);
             else if constexpr (OP == Operator::kinetic)
-                cint::int1e_kin_sph(buffer, dims.data(), shells.data(),
-                                    atom_data_ptr(), num_atoms(),
-                                    basis_data_ptr(), num_basis(),
-                                    env_data_ptr(), opt, cache);
+                libcint::int1e_kin_sph(buffer, dims.data(), shells.data(),
+                                       atom_data_ptr(), num_atoms(),
+                                       basis_data_ptr(), num_basis(),
+                                       env_data_ptr(), opt, cache);
         } else {
             if constexpr (OP == Operator::overlap)
-                cint::int1e_ovlp_cart(buffer, dims.data(), shells.data(),
-                                      atom_data_ptr(), num_atoms(),
-                                      basis_data_ptr(), num_basis(),
-                                      env_data_ptr(), opt, cache);
+                libcint::int1e_ovlp_cart(buffer, dims.data(), shells.data(),
+                                         atom_data_ptr(), num_atoms(),
+                                         basis_data_ptr(), num_basis(),
+                                         env_data_ptr(), opt, cache);
             else if constexpr (OP == Operator::nuclear)
-                cint::int1e_nuc_cart(buffer, dims.data(), shells.data(),
-                                     atom_data_ptr(), num_atoms(),
-                                     basis_data_ptr(), num_basis(),
-                                     env_data_ptr(), opt, cache);
+                libcint::int1e_nuc_cart(buffer, dims.data(), shells.data(),
+                                        atom_data_ptr(), num_atoms(),
+                                        basis_data_ptr(), num_basis(),
+                                        env_data_ptr(), opt, cache);
             else if constexpr (OP == Operator::kinetic)
-                cint::int1e_kin_cart(buffer, dims.data(), shells.data(),
-                                     atom_data_ptr(), num_atoms(),
-                                     basis_data_ptr(), num_basis(),
-                                     env_data_ptr(), opt, cache);
+                libcint::int1e_kin_cart(buffer, dims.data(), shells.data(),
+                                        atom_data_ptr(), num_atoms(),
+                                        basis_data_ptr(), num_basis(),
+                                        env_data_ptr(), opt, cache);
         }
         return dims;
     }
 
     template <Operator OP, Shell::Kind ST>
     inline std::array<int, 4>
-    two_electron_helper(std::array<int, 4> shells, cint::CINTOpt *opt,
+    two_electron_helper(std::array<int, 4> shells, libcint::CINTOpt *opt,
                         double *buffer, double *cache) {
         static_assert(OP == Operator::coulomb, "not a two-electron operator");
         std::array<int, 4> dims{
@@ -228,19 +268,57 @@ class IntegralEnvironment {
             cgto<ST>(shells[2]),
             cgto<ST>(shells[3]),
         };
+        int nonzero = 0;
 
-        if constexpr (ST == Shell::Kind::Spherical)
-            cint::int2e_sph(buffer, dims.data(), shells.data(), atom_data_ptr(),
-                            num_atoms(), basis_data_ptr(), num_basis(),
-                            env_data_ptr(), opt, cache);
-        else
-            cint::int2e_cart(buffer, dims.data(), shells.data(),
-                             atom_data_ptr(), num_atoms(), basis_data_ptr(),
-                             num_basis(), env_data_ptr(), opt, cache);
+        if constexpr (ST == Shell::Kind::Spherical) {
+            nonzero = libcint::int2e_sph(buffer, dims.data(), shells.data(),
+                                         atom_data_ptr(), num_atoms(),
+                                         basis_data_ptr(), num_basis(),
+                                         env_data_ptr(), opt, cache);
+        } else {
+            nonzero = libcint::int2e_cart(buffer, dims.data(), shells.data(),
+                                          atom_data_ptr(), num_atoms(),
+                                          basis_data_ptr(), num_basis(),
+                                          env_data_ptr(), opt, cache);
+        }
+        if (nonzero == 0) {
+            fmt::print("Zero\n");
+        }
+        return dims;
+    }
+
+    template <Operator OP, Shell::Kind ST>
+    inline std::array<int, 3>
+    three_center_two_electron_helper(std::array<int, 3> shells,
+                                     libcint::CINTOpt *opt, double *buffer,
+                                     double *cache) {
+        static_assert(OP == Operator::coulomb, "not a two-electron operator");
+        std::array<int, 3> dims{
+            cgto<ST>(shells[0]),
+            cgto<ST>(shells[1]),
+            cgto<ST>(shells[2]),
+        };
+        int nonzero = 0;
+
+        if constexpr (ST == Shell::Kind::Spherical) {
+            nonzero = libcint::int3c2e_sph(buffer, dims.data(), shells.data(),
+                                           atom_data_ptr(), num_atoms(),
+                                           basis_data_ptr(), num_basis(),
+                                           env_data_ptr(), opt, cache);
+        } else {
+            nonzero = libcint::int3c2e_cart(buffer, dims.data(), shells.data(),
+                                            atom_data_ptr(), num_atoms(),
+                                            basis_data_ptr(), num_basis(),
+                                            env_data_ptr(), opt, cache);
+        }
+        if (nonzero == 0) {
+            fmt::print("Zero\n");
+        }
         return dims;
     }
 
   private:
+    size_t m_auxiliary_offset{0};
     std::vector<impl::AtomInfo> m_atom_info;
     std::vector<impl::BasisInfo> m_basis_info;
     std::vector<double> m_env_data;
@@ -250,20 +328,20 @@ template <Operator OP> class Optimizer {
   public:
     Optimizer(IntegralEnvironment env) {
         if constexpr (OP == Operator::coulomb)
-            cint::int2e_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                  env.num_atoms(), env.basis_data_ptr(),
-                                  env.num_basis(), env.env_data_ptr());
+            libcint::int2e_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                     env.num_atoms(), env.basis_data_ptr(),
+                                     env.num_basis(), env.env_data_ptr());
         else if constexpr (OP == Operator::nuclear)
-            cint::int1e_nuc_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                      env.num_atoms(), env.basis_data_ptr(),
-                                      env.num_basis(), env.env_data_ptr());
+            libcint::int1e_nuc_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                         env.num_atoms(), env.basis_data_ptr(),
+                                         env.num_basis(), env.env_data_ptr());
     }
 
-    ~Optimizer() { cint::CINTdel_optimizer(&m_optimizer); }
+    ~Optimizer() { libcint::CINTdel_optimizer(&m_optimizer); }
     inline auto optimizer_ptr() { return m_optimizer; }
 
   private:
-    cint::CINTOpt *m_optimizer{nullptr};
+    libcint::CINTOpt *m_optimizer{nullptr};
 };
 
 } // namespace occ::qm::cint

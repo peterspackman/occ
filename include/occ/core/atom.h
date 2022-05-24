@@ -20,6 +20,11 @@ struct Atom {
         y += translation(1);
         z += translation(2);
     }
+
+    inline double square_distance(double xx, double yy, double zz) const {
+        double dx = xx - x, dy = yy - y, dz = zz - z;
+        return dx * dx + dy * dy + dz * dz;
+    }
 };
 
 inline bool operator==(const Atom &atom1, const Atom &atom2) {

@@ -28,8 +28,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" ON)
 endif()
 
-find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
+find_package(Threads REQUIRED)
 
 if("${USE_SYSTEM_BOOST}")
     find_package(Boost CONFIG COMPONENTS graph)

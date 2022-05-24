@@ -128,6 +128,21 @@ endif()
 #)
 #endif()
 
+CPMAddPackage(
+    NAME libcint
+    GITHUB_REPOSITORY "sunqm/libcint"
+    GIT_TAG master
+    OPTIONS "WITH_FORTRAN OFF" "WITH_CINT2_INTERFACE OFF" "ENABLE_STATIC ON" "BUILD_SHARED_LIBS OFF"
+    VERSION "5.1.2"
+)
+add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
+target_link_libraries(libcint::libcint INTERFACE cint)
+target_include_directories(
+    libcint::libcint INTERFACE
+    "${libcint_SOURCE_DIR}/include"
+    "${libcint_SOURCE_DIR}/src"
+    "${libcint_BINARY_DIR}/include"
+)
 
 if(NOT "${USE_SYSTEM_LIBINT2}")
 set(LIBINT2_URL "https://github.com/evaleev/libint/releases/download/v2.7.1/libint-2.7.1.tgz")
@@ -135,6 +150,7 @@ CPMAddPackage(
     NAME Libint2
     URL "${LIBINT2_URL}"
     OPTIONS "LIBINT_HAS_SYSTEM_BOOST_PREPROCESSOR_VARIADICS ON"
+    VERSION "2.7.1"
 )
 add_library(Libint2::cxx ALIAS libint2_cxx)
 endif()
