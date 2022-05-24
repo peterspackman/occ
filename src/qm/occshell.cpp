@@ -4,6 +4,63 @@
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/occshell.h>
 
+namespace detail {
+/// fac[k] = k!
+static constexpr std::array<int64_t, 21> fac = {{1LL,
+                                                 1LL,
+                                                 2LL,
+                                                 6LL,
+                                                 24LL,
+                                                 120LL,
+                                                 720LL,
+                                                 5040LL,
+                                                 40320LL,
+                                                 362880LL,
+                                                 3628800LL,
+                                                 39916800LL,
+                                                 479001600LL,
+                                                 6227020800LL,
+                                                 87178291200LL,
+                                                 1307674368000LL,
+                                                 20922789888000LL,
+                                                 355687428096000LL,
+                                                 6402373705728000LL,
+                                                 121645100408832000LL,
+                                                 2432902008176640000LL}};
+/// df_Kminus1[k] = (k-1)!!
+static constexpr std::array<int64_t, 31> df_Kminus1 = {{1LL,
+                                                        1LL,
+                                                        1LL,
+                                                        2LL,
+                                                        3LL,
+                                                        8LL,
+                                                        15LL,
+                                                        48LL,
+                                                        105LL,
+                                                        384LL,
+                                                        945LL,
+                                                        3840LL,
+                                                        10395LL,
+                                                        46080LL,
+                                                        135135LL,
+                                                        645120LL,
+                                                        2027025LL,
+                                                        10321920LL,
+                                                        34459425LL,
+                                                        185794560LL,
+                                                        654729075LL,
+                                                        3715891200LL,
+                                                        13749310575LL,
+                                                        81749606400LL,
+                                                        316234143225LL,
+                                                        1961990553600LL,
+                                                        7905853580625LL,
+                                                        51011754393600LL,
+                                                        213458046676875LL,
+                                                        1428329123020800LL,
+                                                        6190283353629375LL}};
+} // namespace detail
+
 namespace occ::qm {
 
 double gint(int n, double alpha) {
@@ -103,11 +160,60 @@ double OccShell::max_exponent() const { return exponents.maxCoeff(); }
 double OccShell::min_exponent() const { return exponents.minCoeff(); }
 
 void OccShell::incorporate_shell_norm() {
-    for (size_t i = 0; i < num_primitives(); i++) {
-        double n = gto_norm(static_cast<int>(l), exponents(i));
-        contraction_coefficients.row(i).array() *= n;
+    if (l < 2) {
+
+        for (size_t i = 0; i < num_primitives(); i++) {
+            double n = gto_norm(static_cast<int>(l), exponents(i));
+            contraction_coefficients.row(i).array() *= n;
+        }
+        normalize_contracted_gto(l, exponents, contraction_coefficients);
     }
-    normalize_contracted_gto(l, exponents, contraction_coefficients);
+
+    // NOTE: this is taken from libint2, and is here for compatibility
+    // and consistency as the library was initially written with libint2
+    // as the integral backend.
+    // It's strange to treat s & p functions differently, but this yields
+    // consistent results with libint2 and libint2::Shell
+    else {
+        using detail::df_Kminus1;
+        using std::pow;
+        const auto sqrt_Pi_cubed = double{5.56832799683170784528481798212};
+        const auto np = num_primitives();
+        for (size_t i = 0; i < num_contractions(); i++) {
+            auto coeff = contraction_coefficients.col(i);
+            for (auto p = 0ul; p != np; ++p) {
+                if (exponents(p) != 0) {
+                    const auto two_alpha = 2 * exponents(p);
+                    const auto two_alpha_to_am32 =
+                        pow(two_alpha, l + 1) * sqrt(two_alpha);
+                    const auto normalization_factor =
+                        sqrt(pow(2, l) * two_alpha_to_am32 /
+                             (sqrt_Pi_cubed * df_Kminus1[2 * l]));
+
+                    coeff(p) *= normalization_factor;
+                }
+            }
+
+            // need to force normalization to unity?
+            if (true) {
+                // compute the self-overlap of the , scale coefficients by its
+                // inverse square root
+                double norm{0};
+                for (auto p = 0ul; p != np; ++p) {
+                    for (decltype(p) q = 0ul; q <= p; ++q) {
+                        auto gamma = exponents(p) + exponents(q);
+                        norm += (p == q ? 1 : 2) * df_Kminus1[2 * l] *
+                                sqrt_Pi_cubed * coeff(p) * coeff(q) /
+                                (pow(2, l) * pow(gamma, l + 1) * sqrt(gamma));
+                    }
+                }
+                auto normalization_factor = 1 / sqrt(norm);
+                for (auto p = 0ul; p != np; ++p) {
+                    coeff(p) *= normalization_factor;
+                }
+            }
+        }
+    }
 }
 
 double OccShell::coeff_normalized(Eigen::Index contr_idx,

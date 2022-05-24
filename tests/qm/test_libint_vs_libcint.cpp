@@ -243,6 +243,7 @@ TEST_CASE("Water nuclear attraction", "[cint]") {
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
     occ::qm::BasisSet basis("def2-tzvp", atoms);
+
     constexpr Kind kind = Kind::Cartesian;
     basis.set_pure(kind == Kind::Spherical);
 
@@ -251,13 +252,11 @@ TEST_CASE("Water nuclear attraction", "[cint]") {
 
     AOBasis basis2 = read_atomic_orbital_basis(atoms, "def2-tzvp.json",
                                                kind == Kind::Cartesian);
+
     auto o1 = hf.compute_overlap_matrix();
     auto o2 = compute_one_electron<Operator::overlap, kind>(basis2);
     Eigen::Index i, j;
     fmt::print("Overlap max err: {}\n", (o2 - o1).cwiseAbs().maxCoeff(&i, &j));
-    fmt::print("@ ({} {})\n", i, j);
-    std::cout << "libint\n" << o1.block(20, 20, 5, 5) << '\n';
-    std::cout << "cint\n" << o2.block(20, 20, 5, 5) << '\n';
 
     auto n1 = hf.compute_nuclear_attraction_matrix();
     auto n2 = compute_one_electron<Operator::nuclear, kind>(basis2);
@@ -272,9 +271,7 @@ TEST_CASE("Water nuclear attraction", "[cint]") {
     mo.D = D;
     occ::Mat f1 = fock.compute_fock<occ::qm::SpinorbitalKind::Restricted>(
         basis, hf.shellpair_list(), hf.shellpair_data(), mo);
-    fmt::print("Computed fock libint\n");
     ShellPairList splist = compute_shellpairs<kind>(basis2);
-    fmt::print("Computed shellpairs cint\n");
     occ::Mat f2 = compute_fock<kind>(D, basis2, splist);
     fmt::print("Fock max err: {}\n", (f2 - f1).cwiseAbs().maxCoeff());
 }
