@@ -175,51 +175,9 @@ class IntegralEnvironment {
     }
 
     template <Operator OP, Shell::Kind ST>
-    inline int one_electron_cache_size(std::array<int, 2> shells) {
-        static_assert(OP != Operator::coulomb, "not a one-electron operator");
-        std::array<int, 2> dims{cgto<ST>(shells[0]), cgto<ST>(shells[1])};
-        if constexpr (ST == Shell::Kind::Spherical) {
-            if constexpr (OP == Operator::overlap) {
-                return libcint::int1e_ovlp_sph(
-                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
-                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
-                    nullptr, nullptr);
-            } else if constexpr (OP == Operator::nuclear) {
-                return libcint::int1e_nuc_sph(
-                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
-                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
-                    nullptr, nullptr);
-            } else if constexpr (OP == Operator::kinetic) {
-                return libcint::int1e_kin_sph(
-                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
-                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
-                    nullptr, nullptr);
-            }
-        } else {
-            if constexpr (OP == Operator::overlap) {
-                return libcint::int1e_ovlp_cart(
-                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
-                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
-                    nullptr, nullptr);
-            } else if constexpr (OP == Operator::nuclear) {
-                return libcint::int1e_nuc_cart(
-                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
-                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
-                    nullptr, nullptr);
-            } else if constexpr (OP == Operator::kinetic) {
-                return libcint::int1e_kin_cart(
-                    nullptr, dims.data(), shells.data(), atom_data_ptr(),
-                    num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(),
-                    nullptr, nullptr);
-            }
-        }
-    }
-
-    template <Operator OP, Shell::Kind ST>
-    inline std::array<int, 2>
-    one_electron_helper(std::array<int, 2> shells, libcint::CINTOpt *opt,
-                        double *buffer, double *cache) {
-        static_assert(OP != Operator::coulomb, "not a one-electron operator");
+    inline std::array<int, 2> two_center_helper(std::array<int, 2> shells,
+                                                libcint::CINTOpt *opt,
+                                                double *buffer, double *cache) {
         std::array<int, 2> dims{cgto<ST>(shells[0]), cgto<ST>(shells[1])};
         if constexpr (ST == Shell::Kind::Spherical) {
             if constexpr (OP == Operator::overlap)
@@ -237,6 +195,12 @@ class IntegralEnvironment {
                                        atom_data_ptr(), num_atoms(),
                                        basis_data_ptr(), num_basis(),
                                        env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::coulomb)
+                libcint::int2c2e_sph(buffer, dims.data(), shells.data(),
+                                     atom_data_ptr(), num_atoms(),
+                                     basis_data_ptr(), num_basis(),
+                                     env_data_ptr(), opt, cache);
+
         } else {
             if constexpr (OP == Operator::overlap)
                 libcint::int1e_ovlp_cart(buffer, dims.data(), shells.data(),
@@ -253,14 +217,19 @@ class IntegralEnvironment {
                                         atom_data_ptr(), num_atoms(),
                                         basis_data_ptr(), num_basis(),
                                         env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::coulomb)
+                libcint::int2c2e_cart(buffer, dims.data(), shells.data(),
+                                      atom_data_ptr(), num_atoms(),
+                                      basis_data_ptr(), num_basis(),
+                                      env_data_ptr(), opt, cache);
         }
         return dims;
     }
 
     template <Operator OP, Shell::Kind ST>
     inline std::array<int, 4>
-    two_electron_helper(std::array<int, 4> shells, libcint::CINTOpt *opt,
-                        double *buffer, double *cache) {
+    four_center_helper(std::array<int, 4> shells, libcint::CINTOpt *opt,
+                       double *buffer, double *cache) {
         static_assert(OP == Operator::coulomb, "not a two-electron operator");
         std::array<int, 4> dims{
             cgto<ST>(shells[0]),
@@ -289,9 +258,8 @@ class IntegralEnvironment {
 
     template <Operator OP, Shell::Kind ST>
     inline std::array<int, 3>
-    three_center_two_electron_helper(std::array<int, 3> shells,
-                                     libcint::CINTOpt *opt, double *buffer,
-                                     double *cache) {
+    three_center_helper(std::array<int, 3> shells, libcint::CINTOpt *opt,
+                        double *buffer, double *cache) {
         static_assert(OP == Operator::coulomb, "not a two-electron operator");
         std::array<int, 3> dims{
             cgto<ST>(shells[0]),

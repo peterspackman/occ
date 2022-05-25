@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <iostream>
+#include <libint2/shell.h>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
@@ -25,6 +26,7 @@ struct OccShell {
     OccShell(int, const std::vector<double> &expo,
              const std::vector<std::vector<double>> &contr,
              const std::array<double, 3> &pos);
+    OccShell(const libint2::Shell &);
 
     bool operator==(const OccShell &other) const;
     bool operator!=(const OccShell &other) const;

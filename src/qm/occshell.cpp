@@ -122,6 +122,19 @@ OccShell::OccShell(const int ang, const std::vector<double> &expo,
     origin = {pos[0], pos[1], pos[2]};
 }
 
+// TODO remove once libint2 has been purged...
+OccShell::OccShell(const libint2::Shell &sh) : l(sh.contr[0].l), origin() {
+    size_t nprim = sh.nprim();
+    size_t ncont = 1;
+    exponents = Eigen::VectorXd(nprim);
+    contraction_coefficients = Eigen::MatrixXd(nprim, 1);
+    for (size_t i = 0; i < nprim; i++) {
+        exponents(i) = sh.alpha[i];
+        contraction_coefficients(i, 0) = sh.coeff_normalized(0, i);
+    }
+    origin = {sh.O[0], sh.O[1], sh.O[2]};
+}
+
 bool OccShell::operator==(const OccShell &other) const {
     return &other == this ||
            (origin == other.origin && exponents == other.exponents &&
@@ -218,8 +231,20 @@ void OccShell::incorporate_shell_norm() {
 
 double OccShell::coeff_normalized(Eigen::Index contr_idx,
                                   Eigen::Index coeff_idx) const {
-    return contraction_coefficients(coeff_idx, contr_idx) /
-           gto_norm(static_cast<int>(l), exponents(coeff_idx));
+    // see NOTE in incorporate_shell_norm
+    if (l < 2) {
+        return contraction_coefficients(coeff_idx, contr_idx) /
+               gto_norm(static_cast<int>(l), exponents(coeff_idx));
+    } else {
+        using detail::df_Kminus1;
+        constexpr double sqrt_Pi_cubed{5.56832799683170784528481798212};
+        const double two_alpha = 2 * exponents(coeff_idx);
+        const double two_alpha_to_am32 =
+            pow(two_alpha, l + 1) * sqrt(two_alpha);
+        const double one_over_N = sqrt((sqrt_Pi_cubed * df_Kminus1[2 * l]) /
+                                       (pow(2, l) * two_alpha_to_am32));
+        return contraction_coefficients(contr_idx, coeff_idx) * one_over_N;
+    }
 }
 
 size_t OccShell::size() const {
