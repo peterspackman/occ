@@ -88,6 +88,7 @@ class IntegralEnvironment {
         for (const auto &atom : atoms) {
             auto &atom_info = m_atom_info[atom_idx];
             atom_info.set_charge(atom.atomic_number);
+            atom_info.set_nuclear_model((atom.atomic_number == 0) ? 0 : 1);
             atom_info.set_env_coord_offset(env_data_size);
             atom_info.set_env_nuclear_charge_dist_offset(env_data_size + 3);
             env_data_size += 4;
@@ -251,7 +252,7 @@ class IntegralEnvironment {
                                           env_data_ptr(), opt, cache);
         }
         if (nonzero == 0) {
-            fmt::print("Zero\n");
+            dims[0] = -1;
         }
         return dims;
     }
@@ -280,7 +281,7 @@ class IntegralEnvironment {
                                             env_data_ptr(), opt, cache);
         }
         if (nonzero == 0) {
-            fmt::print("Zero\n");
+            dims[0] = -1;
         }
         return dims;
     }

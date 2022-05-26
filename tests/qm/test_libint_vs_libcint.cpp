@@ -64,20 +64,7 @@ TEST_CASE("Water nuclear attraction", "[cint]") {
 
     IntegralEngine basis2(atoms, occ::qm::from_libint2_basis(basis));
 
-    auto o1 = hf.compute_overlap_matrix();
-    auto o2 = basis2.one_electron_operator<Operator::overlap, kind>();
-    Eigen::Index i, j;
-    fmt::print("Overlap max err: {}\n", (o2 - o1).cwiseAbs().maxCoeff(&i, &j));
-
-    auto n1 = hf.compute_nuclear_attraction_matrix();
-    auto n2 = basis2.one_electron_operator<Operator::nuclear, kind>();
-    fmt::print("Nuclear max err: {}\n", (n2 - n1).cwiseAbs().maxCoeff());
-
-    auto k1 = hf.compute_kinetic_matrix();
-    auto k2 = basis2.one_electron_operator<Operator::kinetic, kind>();
-    fmt::print("Kinetic max err: {}\n", (k2 - k1).cwiseAbs().maxCoeff());
-
-    occ::Mat D = occ::Mat::Random(basis2.nbf(), basis2.nbf());
+    occ::Mat D = occ::Mat::Identity(basis2.nbf(), basis2.nbf());
     occ::qm::MolecularOrbitals mo;
     mo.D = D;
     occ::Mat f1 = fock.compute_fock<occ::qm::SpinorbitalKind::Restricted>(
@@ -87,6 +74,18 @@ TEST_CASE("Water nuclear attraction", "[cint]") {
 
     Mat schw1 = hf.compute_schwarz_ints();
     Mat schw2 = basis2.schwarz<kind>();
-    fmt::print("Schwarz max err: {}\n",
-               (schw2 - schw1).cwiseAbs().maxCoeff(&i, &j));
+    fmt::print("Schwarz max err: {}\n", (schw2 - schw1).cwiseAbs().maxCoeff());
+
+    occ::Mat3N pos(3, 6);
+    pos << -4, -4, -4, 4, 4, 4, -4, -4, 4, 4, -4, -4, -4, 4, -4, 4, -4, 4;
+
+    auto e1 = hf.electronic_electric_potential_contribution(
+        occ::qm::SpinorbitalKind::Restricted, mo, pos);
+
+    fmt::print("ESP:\n");
+    std::cout << e1 << '\n';
+    auto e2 = basis2.electric_potential<kind>(D, pos);
+    fmt::print("ESP new:\n");
+    std::cout << e2 << '\n';
+    std::cout << e2.array() / e1.array() << '\n';
 }

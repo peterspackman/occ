@@ -3,6 +3,7 @@
 #include <iostream>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/point_charge.h>
 #include <occ/core/util.h>
 #include <occ/qm/basisset.h>
 #include <vector>
@@ -26,6 +27,7 @@ struct OccShell {
     OccShell(int, const std::vector<double> &expo,
              const std::vector<std::vector<double>> &contr,
              const std::array<double, 3> &pos);
+    OccShell(const occ::core::PointCharge &);
     OccShell(const libint2::Shell &);
 
     bool operator==(const OccShell &other) const;

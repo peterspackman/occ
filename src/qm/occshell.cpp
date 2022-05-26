@@ -136,6 +136,16 @@ OccShell::OccShell(const libint2::Shell &sh) : l(sh.contr[0].l), origin() {
     origin = {sh.O[0], sh.O[1], sh.O[2]};
 }
 
+OccShell::OccShell(const occ::core::PointCharge &point_charge)
+    : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
+    constexpr double alpha = 1e16;
+    exponents(0) = alpha;
+    contraction_coefficients(0, 0) =
+        1.0 / (2 * constants::sqrt_pi<double> * gint(2, alpha));
+    origin = {point_charge.second[0], point_charge.second[1],
+              point_charge.second[2]};
+}
+
 bool OccShell::operator==(const OccShell &other) const {
     return &other == this ||
            (origin == other.origin && exponents == other.exponents &&
