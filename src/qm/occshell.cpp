@@ -1,6 +1,7 @@
 #include <cmath>
 #include <occ/core/constants.h>
 #include <occ/core/util.h>
+#include <occ/qm/basisset.h>
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/occshell.h>
 
@@ -334,6 +335,16 @@ int OccShell::find_atom_index(const std::vector<Atom> &atoms) const {
 }
 
 bool OccShell::is_pure() const { return kind == Spherical; }
+
+std::vector<OccShell> from_libint2_basis(const occ::qm::BasisSet &basis) {
+    std::vector<OccShell> result;
+    result.reserve(basis.size());
+    for (const auto &sh : basis) {
+        result.emplace_back(occ::qm::OccShell(sh));
+        result.back().incorporate_shell_norm();
+    }
+    return result;
+}
 
 std::ostream &operator<<(std::ostream &stream, const OccShell &shell) {
     stream << shell.symbol() << " (" << shell.origin(0) << ","

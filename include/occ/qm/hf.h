@@ -4,6 +4,7 @@
 #include <occ/core/point_charge.h>
 #include <occ/qm/density_fitting.h>
 #include <occ/qm/fock.h>
+#include <occ/qm/integral_engine.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/spinorbital.h>
 
@@ -152,6 +153,7 @@ class HartreeFock {
     mutable double m_e_alpha{0};
     mutable double m_e_beta{0};
     mutable std::optional<occ::df::DFFockEngine> m_df_fock_engine;
+    occ::qm::IntegralEngine m_engine;
 };
 
 } // namespace occ::hf

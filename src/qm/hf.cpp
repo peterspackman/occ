@@ -20,7 +20,8 @@ void HartreeFock::set_density_fitting_basis(
 HartreeFock::HartreeFock(const std::vector<occ::core::Atom> &atoms,
                          const BasisSet &basis)
     : m_atoms(atoms), m_basis(basis),
-      m_fockbuilder(basis.max_nprim(), basis.max_l()) {
+      m_fockbuilder(basis.max_nprim(), basis.max_l()),
+      m_engine(atoms, occ::qm::from_libint2_basis(basis)) {
     std::tie(m_shellpair_list, m_shellpair_data) =
         occ::ints::compute_shellpairs(m_basis);
     for (const auto &a : m_atoms) {
@@ -101,16 +102,15 @@ Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
 }
 
 Mat HartreeFock::compute_kinetic_matrix() const {
-    return compute_1body_ints<Operator::kinetic>(m_basis, m_shellpair_list)[0];
+    return m_engine.one_electron_operator<qm::IntegralEngine::Op::kinetic>();
 }
 
 Mat HartreeFock::compute_overlap_matrix() const {
-    return compute_1body_ints<Operator::overlap>(m_basis, m_shellpair_list)[0];
+    return m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap>();
 }
 
 Mat HartreeFock::compute_nuclear_attraction_matrix() const {
-    return compute_1body_ints<Operator::nuclear>(
-        m_basis, m_shellpair_list, occ::core::make_point_charges(m_atoms))[0];
+    return m_engine.one_electron_operator<qm::IntegralEngine::Op::nuclear>();
 }
 
 Mat HartreeFock::compute_point_charge_interaction_matrix(

@@ -1,10 +1,10 @@
 #pragma once
 #include <array>
 #include <iostream>
-#include <libint2/shell.h>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
+#include <occ/qm/basisset.h>
 #include <vector>
 
 namespace occ::qm {
@@ -64,6 +64,7 @@ struct OccShell {
     Vec max_ln_coefficient;
 };
 
+std::vector<OccShell> from_libint2_basis(const BasisSet &basis);
 std::ostream &operator<<(std::ostream &stream, const OccShell &shell);
 
 } // namespace occ::qm
