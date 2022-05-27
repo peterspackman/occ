@@ -6,6 +6,7 @@ add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/density_fitting.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ints.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/mo.cpp"

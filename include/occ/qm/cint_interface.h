@@ -280,6 +280,7 @@ class IntegralEnvironment {
                                             basis_data_ptr(), num_basis(),
                                             env_data_ptr(), opt, cache);
         }
+
         if (nonzero == 0) {
             dims[0] = -1;
         }

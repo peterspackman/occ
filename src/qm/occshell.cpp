@@ -133,6 +133,7 @@ OccShell::OccShell(const libint2::Shell &sh) : l(sh.contr[0].l), origin() {
         exponents(i) = sh.alpha[i];
         contraction_coefficients(i, 0) = sh.coeff_normalized(0, i);
     }
+    kind = sh.contr[0].pure ? Kind::Spherical : Kind::Cartesian;
     origin = {sh.O[0], sh.O[1], sh.O[2]};
 }
 
@@ -141,7 +142,7 @@ OccShell::OccShell(const occ::core::PointCharge &point_charge)
     constexpr double alpha = 1e16;
     exponents(0) = alpha;
     contraction_coefficients(0, 0) =
-        1.0 / (2 * constants::sqrt_pi<double> * gint(2, alpha));
+        -point_charge.first / (2 * constants::sqrt_pi<double> * gint(2, alpha));
     origin = {point_charge.second[0], point_charge.second[1],
               point_charge.second[2]};
 }
@@ -184,7 +185,7 @@ double OccShell::max_exponent() const { return exponents.maxCoeff(); }
 double OccShell::min_exponent() const { return exponents.minCoeff(); }
 
 void OccShell::incorporate_shell_norm() {
-    if (l < 2) {
+    if (kind == Kind::Spherical || l < 2) {
 
         for (size_t i = 0; i < num_primitives(); i++) {
             double n = gto_norm(static_cast<int>(l), exponents(i));
@@ -243,7 +244,7 @@ void OccShell::incorporate_shell_norm() {
 double OccShell::coeff_normalized(Eigen::Index contr_idx,
                                   Eigen::Index coeff_idx) const {
     // see NOTE in incorporate_shell_norm
-    if (l < 2) {
+    if (kind == Kind::Spherical || l < 2) {
         return contraction_coefficients(coeff_idx, contr_idx) /
                gto_norm(static_cast<int>(l), exponents(coeff_idx));
     } else {
