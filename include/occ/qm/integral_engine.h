@@ -3,10 +3,45 @@
 #include <occ/core/atom.h>
 #include <occ/core/parallel.h>
 #include <occ/qm/cint_interface.h>
+#include <occ/qm/mo.h>
 #include <occ/qm/occshell.h>
 #include <vector>
 
 namespace occ::qm {
+
+namespace impl {
+void fock_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
+                  int bf2, int bf3, double value);
+void j_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
+               int bf2, int bf3, double value);
+void jk_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
+                int bf0, int bf1, int bf2, int bf3, double value);
+void fock_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
+                  int bf2, int bf3, double value);
+void j_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
+               int bf2, int bf3, double value);
+void jk_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
+                int bf0, int bf1, int bf2, int bf3, double value);
+void fock_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
+                  int bf2, int bf3, double value);
+void j_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
+               int bf2, int bf3, double value);
+void jk_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
+                int bf0, int bf1, int bf2, int bf3, double value);
+
+template <occ::qm::SpinorbitalKind sk>
+void delegate_fock(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
+                   int bf2, int bf3, double value) {
+    if constexpr (sk == SpinorbitalKind::Restricted) {
+        impl::fock_inner_r(D, F, bf0, bf1, bf2, bf3, value);
+    } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
+        impl::fock_inner_u(D, F, bf0, bf1, bf2, bf3, value);
+    } else if constexpr (sk == SpinorbitalKind::General) {
+        impl::fock_inner_g(D, F, bf0, bf1, bf2, bf3, value);
+    }
+}
+
+} // namespace impl
 
 class IntegralEngine {
   public:
@@ -211,8 +246,8 @@ class IntegralEngine {
         return results[0];
     }
 
-    template <ShellKind kind = ShellKind::Cartesian>
-    Mat fock_operator(const Mat &D) const {
+    template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
+    Mat fock_operator(const MolecularOrbitals &mo) const {
         auto nthreads = occ::parallel::get_num_threads();
         constexpr Op op = Op::coulomb;
         std::vector<Mat> results;
@@ -220,6 +255,7 @@ class IntegralEngine {
         for (size_t i = 1; i < nthreads; i++) {
             results.push_back(results[0]);
         }
+        const auto &D = mo.D;
         auto f = [&D, &results](const IntegralResult<4> &args) {
             auto &g = results[args.thread];
             auto pq_degree = (args.shell[0] == args.shell[1]) ? 1 : 2;
@@ -238,14 +274,8 @@ class IntegralEngine {
                         for (auto f0 = 0; f0 != args.dims[0]; ++f0, ++f0123) {
                             const auto bf0 = f0 + args.bf[0];
                             const auto value = args.buffer[f0123] * scale;
-                            // J
-                            g(bf0, bf1) += D(bf2, bf3) * value;
-                            g(bf2, bf3) += D(bf0, bf1) * value;
-                            // K
-                            g(bf0, bf2) -= 0.25 * D(bf1, bf3) * value;
-                            g(bf1, bf3) -= 0.25 * D(bf0, bf2) * value;
-                            g(bf0, bf3) -= 0.25 * D(bf1, bf2) * value;
-                            g(bf1, bf2) -= 0.25 * D(bf0, bf3) * value;
+                            impl::delegate_fock<sk>(D, g, bf0, bf1, bf2, bf3,
+                                                    value);
                         }
                     }
                 }
@@ -303,7 +333,7 @@ class IntegralEngine {
     }
 
     template <ShellKind kind = ShellKind::Cartesian>
-    Vec electric_potential(const Mat &D, const Mat3N &points) {
+    Vec electric_potential(const MolecularOrbitals &mo, const Mat3N &points) {
         ShellList dummy_shells;
         dummy_shells.reserve(points.cols());
         for (size_t i = 0; i < points.cols(); i++) {
@@ -317,7 +347,7 @@ class IntegralEngine {
         for (size_t i = 1; i < nthreads; i++) {
             results.push_back(results[0]);
         }
-
+        const auto &D = mo.D;
         auto f = [&D, &results](const IntegralResult<3> &args) {
             auto &v = results[args.thread];
             auto scale = (args.shell[0] == args.shell[1]) ? 1 : 2;
@@ -417,6 +447,10 @@ class IntegralEngine {
         }
 
         return results[0];
+    }
+
+    inline bool is_spherical() const {
+        return m_shells[0].kind == ShellKind::Spherical;
     }
 
   private:

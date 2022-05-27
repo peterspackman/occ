@@ -16,7 +16,57 @@ class IntegralEngineDF {
                      const ShellList &df);
 
     template <ShellKind kind = ShellKind::Cartesian>
-    Mat compute_coulomb_operator(const Mat &D) const {
+    Mat exchange_operator(const MolecularOrbitals &mo) const {
+        const auto nthreads = occ::parallel::get_num_threads();
+        size_t nmo = mo.Cocc.cols();
+        const auto nbf = m_ao_env.nbf();
+        const auto ndf = m_aux_env.nbf();
+        Mat K = Mat::Zero(nbf, nbf);
+        std::vector<Mat> iuP(nmo * nthreads);
+        Mat B(nbf, ndf);
+        for (auto &x : iuP) {
+            x = Mat::Zero(nbf, ndf);
+        }
+
+        auto klambda = [&](const IntegralResult &args) {
+            size_t offset = nmo * args.thread;
+            auto f = [&offset, &nmo, &mo, &iuP](int bf_aux, int bf1, int bf2,
+                                                const auto &buf_mat) {
+                const auto n1 = buf_mat.rows();
+                const auto n2 = buf_mat.cols();
+                bool same_shell = bf1 == bf2;
+                for (size_t i = 0; i < nmo; i++) {
+                    auto &iuPx = iuP[offset + i];
+                    auto c2 = mo.Cocc.block(bf1, i, n1, 1);
+                    auto c3 = mo.Cocc.block(bf2, i, n2, 1);
+                    iuPx.block(bf1, bf_aux, n1, 1) += buf_mat * c3;
+                    if (!same_shell)
+                        iuPx.block(bf2, bf_aux, n2, 1) +=
+                            (buf_mat.transpose() * c2);
+                }
+            };
+            inner_loop(f, args);
+        };
+
+        auto lambda = [&](int thread_id) {
+            m_ao_env.evaluate_three_center_aux<kind>(klambda, thread_id);
+        };
+        occ::parallel::parallel_do(lambda);
+
+        for (size_t i = nmo; i < nmo * nthreads; i++) {
+            iuP[i % nmo] += iuP[i];
+        }
+
+        for (size_t i = 0; i < nmo; i++) {
+            B = Vsqrt_LLt.solve(iuP[i].transpose());
+            K.noalias() += B.transpose() * B;
+        }
+
+        return 0.5 * (K + K.transpose());
+    }
+
+    template <ShellKind kind = ShellKind::Cartesian>
+    Mat coulomb_operator(const MolecularOrbitals &mo) const {
         const auto nthreads = occ::parallel::get_num_threads();
         std::vector<Vec> gg(nthreads);
         std::vector<Mat> JJ(nthreads);
@@ -25,6 +75,7 @@ class IntegralEngineDF {
             JJ[i] = Mat::Zero(m_ao_env.nbf(), m_ao_env.nbf());
         }
 
+        const auto &D = mo.D;
         auto glambda = [&](const IntegralResult &args) {
             auto &g = gg[args.thread];
             auto f = [&g, &D](int bf_aux, int bf1, int bf2,
@@ -51,7 +102,6 @@ class IntegralEngineDF {
         for (int i = 1; i < nthreads; i++) {
             gg[0] += gg[i];
         }
-
         Vec d = V_LLt.solve(gg[0]);
 
         auto jlambda = [&](const IntegralResult &args) {
@@ -92,7 +142,7 @@ class IntegralEngineDF {
 
         for (size_t p = 0, offset = 0; p < args.dims[2]; p++, offset += incr) {
             const auto bf_aux = first_bf_aux + p;
-            Eigen::Map<const Mat> buf_mat(args.buffer, args.dims[0],
+            Eigen::Map<const Mat> buf_mat(args.buffer + offset, args.dims[0],
                                           args.dims[1]);
             f(bf_aux, bf1, bf2, buf_mat);
         }

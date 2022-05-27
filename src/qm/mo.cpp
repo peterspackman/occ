@@ -1,9 +1,74 @@
 #include <occ/core/logger.h>
+#include <occ/core/timings.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/basisset.h>
 #include <occ/qm/mo.h>
 
 namespace occ::qm {
+
+void MolecularOrbitals::update(const Mat &ortho, const Mat &potential) {
+    // solve F C = e S C by (conditioned) transformation to F' C' = e C',
+    // where
+    // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
+    occ::timing::start(occ::timing::category::mo);
+    switch (kind) {
+    case SpinorbitalKind::Unrestricted: {
+        Eigen::SelfAdjointEigenSolver<Mat> alpha_eig_solver(
+            ortho.transpose() * block::a(potential) * ortho);
+        Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(
+            ortho.transpose() * block::b(potential) * ortho);
+
+        block::a(C) = ortho * alpha_eig_solver.eigenvectors();
+        block::b(C) = ortho * beta_eig_solver.eigenvectors();
+
+        block::a(energies) = alpha_eig_solver.eigenvalues();
+        block::b(energies) = beta_eig_solver.eigenvalues();
+
+        Cocc = Mat::Zero(2 * n_ao, std::max(n_alpha, n_beta));
+        Cocc.block(0, 0, n_ao, n_alpha) = block::a(C).leftCols(n_alpha);
+        Cocc.block(n_ao, 0, n_ao, n_beta) = block::b(C).leftCols(n_beta);
+        break;
+    }
+    case SpinorbitalKind::Restricted: {
+        Eigen::SelfAdjointEigenSolver<Mat> eig_solver(ortho.transpose() *
+                                                      potential * ortho);
+        C = ortho * eig_solver.eigenvectors();
+        energies = eig_solver.eigenvalues();
+        Cocc = C.leftCols(n_alpha);
+        break;
+    }
+    case SpinorbitalKind::General: {
+        // same as restricted
+        Eigen::SelfAdjointEigenSolver<Mat> eig_solver(ortho.transpose() *
+                                                      potential * ortho);
+        C = ortho * eig_solver.eigenvectors();
+        energies = eig_solver.eigenvalues();
+        Cocc = C.leftCols(n_alpha);
+        break;
+    }
+    }
+    occ::timing::stop(occ::timing::category::mo);
+}
+
+void MolecularOrbitals::update_density_matrix() {
+    occ::timing::start(occ::timing::category::la);
+    switch (kind) {
+    case SpinorbitalKind::Restricted:
+        D = Cocc * Cocc.transpose();
+        break;
+    case SpinorbitalKind::Unrestricted:
+        block::a(D) = Cocc.block(0, 0, n_ao, n_alpha) *
+                      Cocc.block(0, 0, n_ao, n_alpha).transpose();
+        block::b(D) = Cocc.block(n_ao, 0, n_ao, n_beta) *
+                      Cocc.block(n_ao, 0, n_ao, n_beta).transpose();
+        D *= 0.5;
+        break;
+    case SpinorbitalKind::General:
+        D = (Cocc * Cocc.transpose()) * 0.5;
+        break;
+    }
+    occ::timing::stop(occ::timing::category::la);
+}
 
 void MolecularOrbitals::rotate(const BasisSet &basis, const Mat3 &rotation) {
 

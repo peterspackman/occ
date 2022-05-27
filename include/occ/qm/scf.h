@@ -94,9 +94,11 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         H = Mat::Zero(rows, cols);
         F = Mat::Zero(rows, cols);
 
+        mo.kind = spinorbital_kind;
         mo.D = Mat::Zero(rows, cols);
         mo.C = Mat::Zero(rows, cols);
         mo.energies = Vec::Zero(rows);
+        mo.n_ao = nbf;
 
         Vpc = Mat::Zero(rows, cols);
         energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
@@ -186,6 +188,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         } else if constexpr (spinorbital_kind == General) {
             n_occ = n_electrons;
         }
+        mo.n_alpha = n_alpha();
+        mo.n_beta = n_beta();
     }
 
     const auto &atoms() const { return m_procedure.atoms(); }
@@ -233,7 +237,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         F = H;
         impl::set_conditioning_orthogonalizer<spinorbital_kind>(
             S, X, Xinv, XtX_condition_number);
-        update_density_matrix();
+        mo.update_density_matrix();
     }
 
     void compute_initial_guess() {
@@ -288,8 +292,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                 block::bb(F) = block::aa(F);
             }
 
-            update_molecular_orbitals(F);
-            update_density_matrix();
+            mo.update(X, F);
+            mo.update_density_matrix();
 
             const auto tstop = std::chrono::high_resolution_clock::now();
             const std::chrono::duration<double> time_elapsed = tstop - tstart;
@@ -297,51 +301,6 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                             time_elapsed.count());
         }
         occ::timing::stop(occ::timing::category::guess);
-    }
-
-    void update_density_matrix() {
-        occ::timing::start(occ::timing::category::la);
-        if constexpr (spinorbital_kind == Restricted) {
-            mo.D = mo.Cocc * mo.Cocc.transpose();
-        } else if constexpr (spinorbital_kind == Unrestricted) {
-            block::a(mo.D) = mo.Cocc.block(0, 0, nbf, n_alpha()) *
-                             mo.Cocc.block(0, 0, nbf, n_alpha()).transpose();
-            block::b(mo.D) = mo.Cocc.block(nbf, 0, nbf, n_beta()) *
-                             mo.Cocc.block(nbf, 0, nbf, n_beta()).transpose();
-            mo.D *= 0.5;
-        } else if constexpr (spinorbital_kind == General) {
-            mo.D = (mo.Cocc * mo.Cocc.transpose()) * 0.5;
-        }
-        occ::timing::stop(occ::timing::category::la);
-    }
-
-    void update_molecular_orbitals(const Mat &fock) {
-        // solve F C = e S C by (conditioned) transformation to F' C' = e C',
-        // where
-        // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
-        occ::timing::start(occ::timing::category::mo);
-        if constexpr (spinorbital_kind == Unrestricted) {
-            Eigen::SelfAdjointEigenSolver<Mat> alpha_eig_solver(
-                X.transpose() * block::a(fock) * X);
-            Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(
-                X.transpose() * block::b(fock) * X);
-            block::a(mo.C) = X * alpha_eig_solver.eigenvectors();
-            block::b(mo.C) = X * beta_eig_solver.eigenvectors();
-            block::a(mo.energies) = alpha_eig_solver.eigenvalues();
-            block::b(mo.energies) = beta_eig_solver.eigenvalues();
-            mo.Cocc = Mat::Zero(2 * nbf, std::max(n_alpha(), n_beta()));
-            mo.Cocc.block(0, 0, nbf, n_alpha()) =
-                block::a(mo.C).leftCols(n_alpha());
-            mo.Cocc.block(nbf, 0, nbf, n_beta()) =
-                block::b(mo.C).leftCols(n_beta());
-        } else {
-            Eigen::SelfAdjointEigenSolver<Mat> eig_solver(X.transpose() * fock *
-                                                          X);
-            mo.C = X * eig_solver.eigenvectors();
-            mo.energies = eig_solver.eigenvalues();
-            mo.Cocc = mo.C.leftCols(n_occ);
-        }
-        occ::timing::stop(occ::timing::category::mo);
     }
 
     void update_scf_energy(bool incremental) {
@@ -466,8 +425,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                 iter - last_reset_iteration >= 8)
                 reset_incremental_fock_formation = true;
 
-            update_molecular_orbitals(F_diis);
-            update_density_matrix();
+            mo.update(X, F_diis);
+            mo.update_density_matrix();
             D_diff = mo.D - D_last;
 
             const auto tstop = std::chrono::high_resolution_clock::now();

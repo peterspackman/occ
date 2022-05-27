@@ -15,6 +15,7 @@ using Kind = occ::qm::OccShell::Kind;
 using occ::Mat;
 using occ::qm::IntegralEngine;
 using occ::qm::IntegralEngineDF;
+using occ::qm::SpinorbitalKind;
 
 IntegralEngine
 read_atomic_orbital_basis(const std::vector<occ::core::Atom> &atoms,
@@ -45,7 +46,7 @@ read_atomic_orbital_basis(const std::vector<occ::core::Atom> &atoms,
     return IntegralEngine(atoms, shells);
 }
 
-TEST_CASE("Water nuclear attraction", "[cint]") {
+TEST_CASE("Water def2-tzvp", "[cint]") {
     using occ::qm::OccShell;
     libint2::Shell::do_enforce_unit_normalization(true);
     if (!libint2::initialized())
@@ -69,12 +70,12 @@ TEST_CASE("Water nuclear attraction", "[cint]") {
 
     IntegralEngine engine(atoms, basis2);
 
-    occ::Mat D = occ::Mat::Identity(engine.nbf(), engine.nbf());
     occ::qm::MolecularOrbitals mo;
-    mo.D = D;
-    occ::Mat f1 = fock.compute_fock<occ::qm::SpinorbitalKind::Restricted>(
+    mo.Cocc = Mat::Random(engine.nbf(), 4);
+    mo.D = mo.Cocc * mo.Cocc.transpose();
+    occ::Mat f1 = fock.compute_fock<SpinorbitalKind::Restricted>(
         basis, hf.shellpair_list(), hf.shellpair_data(), mo);
-    occ::Mat f2 = engine.fock_operator<kind>(D);
+    occ::Mat f2 = engine.fock_operator<SpinorbitalKind::Restricted, kind>(mo);
     fmt::print("Fock max err: {}\n", (f2 - f1).cwiseAbs().maxCoeff());
 
     Mat schw1 = hf.compute_schwarz_ints();
@@ -91,15 +92,12 @@ TEST_CASE("Water nuclear attraction", "[cint]") {
     auto pc1 = hf.compute_point_charge_interaction_matrix(chgs);
     auto pc2 = engine.point_charge_potential<kind>(chgs);
     fmt::print("Point charge max err: {}\n", (pc2 - pc1).cwiseAbs().maxCoeff());
-    std::cout << pc1.block(0, 0, 5, 5) << '\n' << pc2.block(0, 0, 5, 5) << '\n';
 
     auto e1 = hf.electronic_electric_potential_contribution(
-        occ::qm::SpinorbitalKind::Restricted, mo, pos);
-    auto e2 = engine.electric_potential<kind>(D, pos);
+        SpinorbitalKind::Restricted, mo, pos);
+    auto e2 = engine.electric_potential<kind>(mo, pos);
     fmt::print("ESP max err: {}\n", (e2 - e1).cwiseAbs().maxCoeff());
 
-    hf.set_density_fitting_basis("def2-svp-jk");
-    auto j1 = hf.compute_J(occ::qm::SpinorbitalKind::Restricted, mo);
     engine.set_auxiliary_basis(dfbasis2);
     // auto j2 = engine.coulomb_operator_df<kind>(D);
     auto V1 = occ::ints::compute_2body_2index_ints(dfbasis);
@@ -109,8 +107,13 @@ TEST_CASE("Water nuclear attraction", "[cint]") {
             .one_electron_operator<occ::qm::cint::Operator::coulomb, kind>();
     fmt::print("2c2e max err: {}\n", (V2 - V1).cwiseAbs().maxCoeff());
 
+    hf.set_density_fitting_basis("def2-svp-jk");
+    auto J1 = hf.compute_J(occ::qm::SpinorbitalKind::Restricted, mo);
     IntegralEngineDF engine_df(atoms, basis2, dfbasis2);
-    auto J2 = engine_df.compute_coulomb_operator<kind>(D);
-    fmt::print("J\n");
-    std::cout << J2.block(0, 0, 10, 10) << '\n';
+    auto J2 = engine_df.coulomb_operator<kind>(mo);
+    fmt::print("DF J direct max err: {}\n", (J2 - J1).cwiseAbs().maxCoeff());
+
+    auto K1 = hf.compute_JK(occ::qm::SpinorbitalKind::Restricted, mo).second;
+    auto K2 = engine_df.exchange_operator<kind>(mo);
+    fmt::print("DF K direct max err: {}\n", (K2 - K1).cwiseAbs().maxCoeff());
 }

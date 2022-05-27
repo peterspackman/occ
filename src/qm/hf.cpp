@@ -56,10 +56,18 @@ Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
             Schwarz);
     if (m_df_fock_engine) {
         return (*m_df_fock_engine).compute_fock(mo, precision, Schwarz);
-    } else
-        return m_fockbuilder.compute_fock<SpinorbitalKind::Restricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
+    } else {
+        using Kind = occ::qm::OccShell::Kind;
+        if (m_engine.is_spherical()) {
+            return m_engine
+                .fock_operator<SpinorbitalKind::Restricted, Kind::Spherical>(
+                    mo);
+        } else {
+            return m_engine
+                .fock_operator<SpinorbitalKind::Restricted, Kind::Cartesian>(
+                    mo);
+        }
+    }
 }
 
 std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind,
@@ -102,15 +110,36 @@ Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
 }
 
 Mat HartreeFock::compute_kinetic_matrix() const {
-    return m_engine.one_electron_operator<qm::IntegralEngine::Op::kinetic>();
+    using Kind = occ::qm::OccShell::Kind;
+    if (m_engine.is_spherical()) {
+        return m_engine.one_electron_operator<qm::IntegralEngine::Op::kinetic,
+                                              Kind::Spherical>();
+    } else {
+        return m_engine.one_electron_operator<qm::IntegralEngine::Op::kinetic,
+                                              Kind::Cartesian>();
+    }
 }
 
 Mat HartreeFock::compute_overlap_matrix() const {
-    return m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap>();
+    using Kind = occ::qm::OccShell::Kind;
+    if (m_engine.is_spherical()) {
+        return m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap,
+                                              Kind::Spherical>();
+    } else {
+        return m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap,
+                                              Kind::Cartesian>();
+    }
 }
 
 Mat HartreeFock::compute_nuclear_attraction_matrix() const {
-    return m_engine.one_electron_operator<qm::IntegralEngine::Op::nuclear>();
+    using Kind = occ::qm::OccShell::Kind;
+    if (m_engine.is_spherical()) {
+        return m_engine.one_electron_operator<qm::IntegralEngine::Op::nuclear,
+                                              Kind::Spherical>();
+    } else {
+        return m_engine.one_electron_operator<qm::IntegralEngine::Op::nuclear,
+                                              Kind::Cartesian>();
+    }
 }
 
 Mat HartreeFock::compute_point_charge_interaction_matrix(
