@@ -25,10 +25,10 @@ void jk_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
     J(bf0, bf1) += D(bf2, bf3) * value;
     J(bf2, bf3) += D(bf0, bf1) * value;
     // K
-    K(bf0, bf2) -= 0.25 * D(bf1, bf3) * value;
-    K(bf1, bf3) -= 0.25 * D(bf0, bf2) * value;
-    K(bf0, bf3) -= 0.25 * D(bf1, bf2) * value;
-    K(bf1, bf2) -= 0.25 * D(bf0, bf3) * value;
+    K(bf0, bf2) += 0.25 * D(bf1, bf3) * value;
+    K(bf1, bf3) += 0.25 * D(bf0, bf2) * value;
+    K(bf0, bf3) += 0.25 * D(bf1, bf2) * value;
+    K(bf1, bf2) += 0.25 * D(bf0, bf3) * value;
 }
 
 void fock_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
@@ -78,15 +78,15 @@ void jk_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
     Jb(bf0, bf1) += (Da(bf2, bf3) + Db(bf2, bf3)) * value;
     Jb(bf2, bf3) += (Da(bf0, bf1) + Db(bf0, bf1)) * value;
 
-    Ka(bf0, bf2) -= 0.5 * Da(bf1, bf3) * value;
-    Ka(bf1, bf3) -= 0.5 * Da(bf0, bf2) * value;
-    Ka(bf0, bf3) -= 0.5 * Da(bf1, bf2) * value;
-    Ka(bf1, bf2) -= 0.5 * Da(bf0, bf3) * value;
+    Ka(bf0, bf2) += 0.5 * Da(bf1, bf3) * value;
+    Ka(bf1, bf3) += 0.5 * Da(bf0, bf2) * value;
+    Ka(bf0, bf3) += 0.5 * Da(bf1, bf2) * value;
+    Ka(bf1, bf2) += 0.5 * Da(bf0, bf3) * value;
 
-    Kb(bf0, bf2) -= 0.5 * Db(bf1, bf3) * value;
-    Kb(bf1, bf3) -= 0.5 * Db(bf0, bf2) * value;
-    Kb(bf0, bf3) -= 0.5 * Db(bf1, bf2) * value;
-    Kb(bf1, bf2) -= 0.5 * Db(bf0, bf3) * value;
+    Kb(bf0, bf2) += 0.5 * Db(bf1, bf3) * value;
+    Kb(bf1, bf3) += 0.5 * Db(bf0, bf2) * value;
+    Kb(bf0, bf3) += 0.5 * Db(bf1, bf2) * value;
+    Kb(bf1, bf2) += 0.5 * Db(bf0, bf3) * value;
 }
 
 void fock_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
@@ -173,26 +173,26 @@ void jk_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
     Jbb(bf2, bf3) += 2 * Dbb(bf0, bf1) * value;
 
     // K aa
-    Kaa(bf0, bf2) -= 0.5 * Daa(bf1, bf3) * value;
-    Kaa(bf1, bf3) -= 0.5 * Daa(bf0, bf2) * value;
-    Kaa(bf0, bf3) -= 0.5 * Daa(bf1, bf2) * value;
-    Kaa(bf1, bf2) -= 0.5 * Daa(bf0, bf3) * value;
+    Kaa(bf0, bf2) += 0.5 * Daa(bf1, bf3) * value;
+    Kaa(bf1, bf3) += 0.5 * Daa(bf0, bf2) * value;
+    Kaa(bf0, bf3) += 0.5 * Daa(bf1, bf2) * value;
+    Kaa(bf1, bf2) += 0.5 * Daa(bf0, bf3) * value;
 
     // K bb
-    Kbb(bf0, bf2) -= 0.5 * D(bf1, bf3) * value;
-    Kbb(bf1, bf3) -= 0.5 * D(bf0, bf2) * value;
-    Kbb(bf0, bf3) -= 0.5 * D(bf1, bf2) * value;
-    Kbb(bf1, bf2) -= 0.5 * D(bf0, bf3) * value;
+    Kbb(bf0, bf2) += 0.5 * D(bf1, bf3) * value;
+    Kbb(bf1, bf3) += 0.5 * D(bf0, bf2) * value;
+    Kbb(bf0, bf3) += 0.5 * D(bf1, bf2) * value;
+    Kbb(bf1, bf2) += 0.5 * D(bf0, bf3) * value;
 
     // Kab, Kba
-    Kab(bf0, bf2) -= 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-    Kab(bf1, bf3) -= 0.5 * (Dab(bf0, bf2) + Dba(bf0, bf2)) * value;
-    Kab(bf0, bf3) -= 0.5 * (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
-    Kab(bf1, bf2) -= 0.5 * (Dab(bf0, bf3) + Dba(bf0, bf3)) * value;
-    Kba(bf0, bf2) -= 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-    Kba(bf1, bf3) -= 0.5 * (Dab(bf0, bf2) + Dba(bf0, bf2)) * value;
-    Kba(bf0, bf3) -= 0.5 * (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
-    Kba(bf1, bf2) -= 0.5 * (Dab(bf0, bf3) + Dba(bf0, bf3)) * value;
+    Kab(bf0, bf2) += 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
+    Kab(bf1, bf3) += 0.5 * (Dab(bf0, bf2) + Dba(bf0, bf2)) * value;
+    Kab(bf0, bf3) += 0.5 * (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
+    Kab(bf1, bf2) += 0.5 * (Dab(bf0, bf3) + Dba(bf0, bf3)) * value;
+    Kba(bf0, bf2) += 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
+    Kba(bf1, bf3) += 0.5 * (Dab(bf0, bf2) + Dba(bf0, bf2)) * value;
+    Kba(bf0, bf3) += 0.5 * (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
+    Kba(bf1, bf2) += 0.5 * (Dab(bf0, bf3) + Dba(bf0, bf3)) * value;
 }
 
 } // namespace impl

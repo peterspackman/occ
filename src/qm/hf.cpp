@@ -88,20 +88,36 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind,
                                             const MolecularOrbitals &mo,
                                             double precision,
                                             const Mat &Schwarz) const {
-    if (kind == SpinorbitalKind::General)
-        return m_fockbuilder.compute_JK<SpinorbitalKind::General>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
-    if (kind == SpinorbitalKind::Unrestricted)
-        return m_fockbuilder.compute_JK<SpinorbitalKind::Unrestricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
+    using Kind = occ::qm::OccShell::Kind;
+    if (kind == SpinorbitalKind::General) {
+        if (m_engine.is_spherical()) {
+            return m_engine.coulomb_and_exchange<SpinorbitalKind::General,
+                                                 Kind::Spherical>(mo, Schwarz);
+        } else {
+            return m_engine.coulomb_and_exchange<SpinorbitalKind::General,
+                                                 Kind::Cartesian>(mo, Schwarz);
+        }
+    }
+    if (kind == SpinorbitalKind::Unrestricted) {
+        if (m_engine.is_spherical()) {
+            return m_engine.coulomb_and_exchange<SpinorbitalKind::Unrestricted,
+                                                 Kind::Spherical>(mo, Schwarz);
+        } else {
+            return m_engine.coulomb_and_exchange<SpinorbitalKind::Unrestricted,
+                                                 Kind::Cartesian>(mo, Schwarz);
+        }
+    }
     if (m_df_fock_engine) {
         return (*m_df_fock_engine).compute_JK(mo, precision, Schwarz);
-    } else
-        return m_fockbuilder.compute_JK<SpinorbitalKind::Restricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
+    } else {
+        if (m_engine.is_spherical()) {
+            return m_engine.coulomb_and_exchange<SpinorbitalKind::Restricted,
+                                                 Kind::Spherical>(mo, Schwarz);
+        } else {
+            return m_engine.coulomb_and_exchange<SpinorbitalKind::Restricted,
+                                                 Kind::Cartesian>(mo, Schwarz);
+        }
+    }
 }
 
 Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
