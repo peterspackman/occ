@@ -294,23 +294,19 @@ class IntegralEnvironment {
     std::vector<double> m_env_data;
 };
 
-template <Operator OP> class Optimizer {
+class Optimizer {
   public:
-    Optimizer(IntegralEnvironment env) {
-        if constexpr (OP == Operator::coulomb)
-            libcint::int2e_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                     env.num_atoms(), env.basis_data_ptr(),
-                                     env.num_basis(), env.env_data_ptr());
-        else if constexpr (OP == Operator::nuclear)
-            libcint::int1e_nuc_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                         env.num_atoms(), env.basis_data_ptr(),
-                                         env.num_basis(), env.env_data_ptr());
-    }
-
-    ~Optimizer() { libcint::CINTdel_optimizer(&m_optimizer); }
+    Optimizer(IntegralEnvironment &env, Operator op, int num_center);
+    ~Optimizer();
     inline auto optimizer_ptr() { return m_optimizer; }
 
   private:
+    void create1or2c(IntegralEnvironment &);
+    void create3c(IntegralEnvironment &);
+    void create4c(IntegralEnvironment &);
+
+    Operator m_op{Operator::coulomb};
+    int m_num_center{1};
     libcint::CINTOpt *m_optimizer{nullptr};
 };
 

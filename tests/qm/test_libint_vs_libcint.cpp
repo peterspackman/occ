@@ -1,4 +1,5 @@
 #include "catch.hpp"
+#include <chrono>
 #include <fmt/ostream.h>
 #include <iostream>
 #include <occ/core/parallel.h>
@@ -82,29 +83,44 @@ TEST_CASE("Water def2-tzvp", "[cint]") {
     Mat schw2 = engine.schwarz<kind>();
     fmt::print("Schwarz max err: {}\n", (schw2 - schw1).cwiseAbs().maxCoeff());
 
-    occ::Mat3N pos(3, 6);
-    pos << -4, -4, -4, 4, 4, 4, -4, -4, 4, 4, -4, -4, -4, 4, -4, 4, -4, 4;
+    occ::Mat3N pos = (occ::Mat3N::Random(3, 128).array() - 0.5) * 10;
     std::vector<occ::core::PointCharge> chgs;
-    for (size_t i = 0; i < 6; i++) {
+    for (size_t i = 0; i < pos.cols(); i++) {
         chgs.push_back({i, {pos(0, i), pos(1, i), pos(2, i)}});
     }
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto e1 = hf.electronic_electric_potential_contribution(
+        SpinorbitalKind::Restricted, mo, pos);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    fmt::print("Libint2: {:.6f} s\n",
+               std::chrono::duration<double>(t2 - t1).count());
+    t1 = std::chrono::high_resolution_clock::now();
+    auto e2 =
+        engine.electric_potential<SpinorbitalKind::Restricted, kind>(mo, pos);
+    t2 = std::chrono::high_resolution_clock::now();
+    fmt::print("libcint: {:.6f} s\n",
+               std::chrono::duration<double>(t2 - t1).count());
+    fmt::print("ESP max err: {}\n", (e2 - e1).cwiseAbs().maxCoeff());
 
     auto pc1 = hf.compute_point_charge_interaction_matrix(chgs);
     auto pc2 = engine.point_charge_potential<kind>(chgs);
     fmt::print("Point charge max err: {}\n", (pc2 - pc1).cwiseAbs().maxCoeff());
 
-    auto e1 = hf.electronic_electric_potential_contribution(
-        SpinorbitalKind::Restricted, mo, pos);
-    auto e2 = engine.electric_potential<kind>(mo, pos);
-    fmt::print("ESP max err: {}\n", (e2 - e1).cwiseAbs().maxCoeff());
-
     engine.set_auxiliary_basis(dfbasis2);
     // auto j2 = engine.coulomb_operator_df<kind>(D);
+    t1 = std::chrono::high_resolution_clock::now();
     auto V1 = occ::ints::compute_2body_2index_ints(dfbasis);
+    t2 = std::chrono::high_resolution_clock::now();
+    fmt::print("Libint2: {:.6f} s\n",
+               std::chrono::duration<double>(t2 - t1).count());
     IntegralEngine engine_aux(atoms, dfbasis2);
+    t1 = std::chrono::high_resolution_clock::now();
     auto V2 =
         engine_aux
             .one_electron_operator<occ::qm::cint::Operator::coulomb, kind>();
+    t2 = std::chrono::high_resolution_clock::now();
+    fmt::print("libcint: {:.6f} s\n",
+               std::chrono::duration<double>(t2 - t1).count());
     fmt::print("2c2e max err: {}\n", (V2 - V1).cwiseAbs().maxCoeff());
 
     hf.set_density_fitting_basis("def2-svp-jk");

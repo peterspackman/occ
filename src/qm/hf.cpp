@@ -46,26 +46,40 @@ double HartreeFock::nuclear_repulsion_energy() const {
 
 Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
                               double precision, const Mat &Schwarz) const {
-    if (kind == SpinorbitalKind::General)
-        return m_fockbuilder.compute_fock<SpinorbitalKind::General>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
-    if (kind == SpinorbitalKind::Unrestricted)
-        return m_fockbuilder.compute_fock<SpinorbitalKind::Unrestricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
+    using Kind = occ::qm::OccShell::Kind;
+    if (kind == SpinorbitalKind::General) {
+        if (m_engine.is_spherical()) {
+            return m_engine
+                .fock_operator<SpinorbitalKind::General, Kind::Spherical>(
+                    mo, Schwarz);
+        } else {
+            return m_engine
+                .fock_operator<SpinorbitalKind::General, Kind::Cartesian>(
+                    mo, Schwarz);
+        }
+    }
+    if (kind == SpinorbitalKind::Unrestricted) {
+        if (m_engine.is_spherical()) {
+            return m_engine
+                .fock_operator<SpinorbitalKind::Unrestricted, Kind::Spherical>(
+                    mo, Schwarz);
+        } else {
+            return m_engine
+                .fock_operator<SpinorbitalKind::Unrestricted, Kind::Cartesian>(
+                    mo, Schwarz);
+        }
+    }
     if (m_df_fock_engine) {
         return (*m_df_fock_engine).compute_fock(mo, precision, Schwarz);
     } else {
-        using Kind = occ::qm::OccShell::Kind;
         if (m_engine.is_spherical()) {
             return m_engine
                 .fock_operator<SpinorbitalKind::Restricted, Kind::Spherical>(
-                    mo);
+                    mo, Schwarz);
         } else {
             return m_engine
                 .fock_operator<SpinorbitalKind::Restricted, Kind::Cartesian>(
-                    mo);
+                    mo, Schwarz);
         }
     }
 }

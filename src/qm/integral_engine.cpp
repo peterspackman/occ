@@ -4,7 +4,7 @@ namespace occ::qm {
 
 namespace impl {
 void fock_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
-                  int bf2, int bf3, double value) {
+                  int bf2, int bf3, double value) noexcept {
     F(bf0, bf1) += D(bf2, bf3) * value;
     F(bf2, bf3) += D(bf0, bf1) * value;
     // K
@@ -15,13 +15,13 @@ void fock_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
 }
 
 void j_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
-               int bf2, int bf3, double value) {
+               int bf2, int bf3, double value) noexcept {
     J(bf0, bf1) += D(bf2, bf3) * value;
     J(bf2, bf3) += D(bf0, bf1) * value;
 }
 
 void jk_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
-                int bf0, int bf1, int bf2, int bf3, double value) {
+                int bf0, int bf1, int bf2, int bf3, double value) noexcept {
     J(bf0, bf1) += D(bf2, bf3) * value;
     J(bf2, bf3) += D(bf0, bf1) * value;
     // K
@@ -32,7 +32,7 @@ void jk_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
 }
 
 void fock_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
-                  int bf2, int bf3, double value) {
+                  int bf2, int bf3, double value) noexcept {
     auto Fa = occ::qm::block::a(F);
     auto Fb = occ::qm::block::b(F);
     const auto Da = occ::qm::block::a(D);
@@ -54,7 +54,7 @@ void fock_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
 }
 
 void j_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
-               int bf2, int bf3, double value) {
+               int bf2, int bf3, double value) noexcept {
     auto Ja = occ::qm::block::a(J);
     auto Jb = occ::qm::block::b(J);
     const auto Da = occ::qm::block::a(D);
@@ -66,7 +66,7 @@ void j_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
 }
 
 void jk_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
-                int bf0, int bf1, int bf2, int bf3, double value) {
+                int bf0, int bf1, int bf2, int bf3, double value) noexcept {
     auto Ja = occ::qm::block::a(J);
     auto Jb = occ::qm::block::b(J);
     auto Ka = occ::qm::block::a(K);
@@ -90,7 +90,7 @@ void jk_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
 }
 
 void fock_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
-                  int bf2, int bf3, double value) {
+                  int bf2, int bf3, double value) noexcept {
     auto Faa = occ::qm::block::aa(F);
     auto Fab = occ::qm::block::ab(F);
     auto Fba = occ::qm::block::ba(F);
@@ -131,7 +131,7 @@ void fock_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
 }
 
 void j_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
-               int bf2, int bf3, double value) {
+               int bf2, int bf3, double value) noexcept {
     auto Jaa = occ::qm::block::aa(J);
     auto Jab = occ::qm::block::ab(J);
     auto Jba = occ::qm::block::ba(J);
@@ -150,7 +150,7 @@ void j_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
 }
 
 void jk_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
-                int bf0, int bf1, int bf2, int bf3, double value) {
+                int bf0, int bf1, int bf2, int bf3, double value) noexcept {
     auto Jaa = occ::qm::block::aa(J);
     auto Jab = occ::qm::block::ab(J);
     auto Jba = occ::qm::block::ba(J);
@@ -196,5 +196,77 @@ void jk_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
 }
 
 } // namespace impl
+
+namespace cint {
+
+Optimizer::Optimizer(IntegralEnvironment &env, Operator op, int num_center)
+    : m_op(op), m_num_center(num_center) {
+    switch (m_num_center) {
+    case 1:
+    case 2:
+        create1or2c(env);
+        break;
+    case 3:
+        create3c(env);
+        break;
+    case 4:
+        create4c(env);
+        break;
+    default:
+        throw std::runtime_error("Invalid num centers for cint::Optimizer");
+    }
+}
+
+Optimizer::~Optimizer() { libcint::CINTdel_optimizer(&m_optimizer); }
+
+void Optimizer::create1or2c(IntegralEnvironment &env) {
+    switch (m_op) {
+    case Operator::coulomb:
+        libcint::int2c2e_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                   env.num_atoms(), env.basis_data_ptr(),
+                                   env.num_basis(), env.env_data_ptr());
+        break;
+    case Operator::nuclear:
+        libcint::int1e_nuc_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                     env.num_atoms(), env.basis_data_ptr(),
+                                     env.num_basis(), env.env_data_ptr());
+        break;
+    case Operator::kinetic:
+        libcint::int1e_kin_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                     env.num_atoms(), env.basis_data_ptr(),
+                                     env.num_basis(), env.env_data_ptr());
+        break;
+    case Operator::overlap:
+        libcint::int1e_ovlp_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                      env.num_atoms(), env.basis_data_ptr(),
+                                      env.num_basis(), env.env_data_ptr());
+        break;
+    }
+}
+void Optimizer::create3c(IntegralEnvironment &env) {
+    switch (m_op) {
+    case Operator::coulomb:
+        libcint::int3c2e_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                   env.num_atoms(), env.basis_data_ptr(),
+                                   env.num_basis(), env.env_data_ptr());
+        break;
+    default:
+        throw std::runtime_error(
+            "Invalid operator for 3-center integral optimizer");
+    }
+}
+void Optimizer::create4c(IntegralEnvironment &env) {
+    switch (m_op) {
+    case Operator::coulomb:
+        libcint::int2e_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                 env.num_atoms(), env.basis_data_ptr(),
+                                 env.num_basis(), env.env_data_ptr());
+        break;
+    default:
+        throw std::runtime_error(
+            "Invalid operator for 4-center integral optimizer");
+    }
+}
+} // namespace cint
 
 } // namespace occ::qm
