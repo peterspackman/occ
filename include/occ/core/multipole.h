@@ -5,10 +5,14 @@
 
 namespace occ::core {
 
-inline constexpr unsigned int num_multipole_components(int L) {
+inline constexpr unsigned int num_unique_multipole_components(int L) {
+    return (L + 1) * (L + 2) / 2;
+}
+
+inline constexpr unsigned int total_num_multipole_components(int L) {
     unsigned int n{0};
     for (unsigned int i = 0; i <= L; i++) {
-        n += (i + 1) * (i + 2) / 2;
+        n += num_unique_multipole_components(i);
     }
     return n;
 }
@@ -21,8 +25,9 @@ inline constexpr std::array<const char *, 20> multipole_component_names{
 template <unsigned int L> struct Multipole {
     using Dipole = std::array<double, 3>;
     using Quadrupole = std::array<double, 6>;
-    using Octupole = std::array<double, 6>;
-    static constexpr unsigned int num_components{num_multipole_components(L)};
+    using Octupole = std::array<double, 10>;
+    static constexpr unsigned int num_components{
+        total_num_multipole_components(L)};
     std::array<double, num_components> components;
     double charge() const { return components[0]; }
 

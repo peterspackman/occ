@@ -7,7 +7,16 @@ namespace occ::qm::cint {
 using occ::core::Atom;
 using Shell = occ::qm::OccShell;
 
-enum class Operator { overlap, nuclear, kinetic, coulomb };
+enum class Operator {
+    overlap,
+    nuclear,
+    kinetic,
+    coulomb,
+    dipole,
+    quadrupole,
+    octapole,
+    hexadecapole
+};
 
 namespace impl {
 struct AtomInfo {
@@ -77,13 +86,11 @@ struct BasisInfo {
 
 class IntegralEnvironment {
   public:
-    static constexpr int environment_pointer_start_offset = PTR_ENV_START;
-
     IntegralEnvironment(const std::vector<Atom> &atoms,
                         const std::vector<Shell> &basis)
         : m_atom_info(atoms.size()), m_basis_info(basis.size()) {
         int atom_idx = 0;
-        int env_data_size{environment_pointer_start_offset};
+        int env_data_size{libcint::environment_start_offset};
 
         for (const auto &atom : atoms) {
             auto &atom_info = m_atom_info[atom_idx];
@@ -113,7 +120,7 @@ class IntegralEnvironment {
             bas_idx++;
         }
         m_env_data.reserve(env_data_size);
-        for (size_t i = 0; i < environment_pointer_start_offset; i++)
+        for (size_t i = 0; i < libcint::environment_start_offset; i++)
             m_env_data.push_back(0.0);
         for (const auto &atom : atoms) {
             m_env_data.push_back(atom.x);
@@ -131,9 +138,11 @@ class IntegralEnvironment {
         }
     }
 
-    //    size_t add_auxiliary_basis(const std::vector<Shell> &basis) {
-    //        return m_auxiliary_offset;
-    //    }
+    void set_common_origin(const std::array<double, 3> &origin) {
+        m_env_data[libcint::common_origin_offset] = origin[0];
+        m_env_data[libcint::common_origin_offset + 1] = origin[1];
+        m_env_data[libcint::common_origin_offset + 2] = origin[2];
+    }
 
     size_t atom_info_size_bytes() const {
         return m_atom_info.size() * sizeof(impl::AtomInfo);
@@ -201,6 +210,26 @@ class IntegralEnvironment {
                                      atom_data_ptr(), num_atoms(),
                                      basis_data_ptr(), num_basis(),
                                      env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::dipole)
+                libcint::int1e_r_sph(buffer, dims.data(), shells.data(),
+                                     atom_data_ptr(), num_atoms(),
+                                     basis_data_ptr(), num_basis(),
+                                     env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::quadrupole)
+                libcint::int1e_rr_sph(buffer, dims.data(), shells.data(),
+                                      atom_data_ptr(), num_atoms(),
+                                      basis_data_ptr(), num_basis(),
+                                      env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::octapole)
+                libcint::int1e_rrr_sph(buffer, dims.data(), shells.data(),
+                                       atom_data_ptr(), num_atoms(),
+                                       basis_data_ptr(), num_basis(),
+                                       env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::hexadecapole)
+                libcint::int1e_rrrr_sph(buffer, dims.data(), shells.data(),
+                                        atom_data_ptr(), num_atoms(),
+                                        basis_data_ptr(), num_basis(),
+                                        env_data_ptr(), opt, cache);
 
         } else {
             if constexpr (OP == Operator::overlap)
@@ -223,6 +252,26 @@ class IntegralEnvironment {
                                       atom_data_ptr(), num_atoms(),
                                       basis_data_ptr(), num_basis(),
                                       env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::dipole)
+                libcint::int1e_r_cart(buffer, dims.data(), shells.data(),
+                                      atom_data_ptr(), num_atoms(),
+                                      basis_data_ptr(), num_basis(),
+                                      env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::quadrupole)
+                libcint::int1e_rr_cart(buffer, dims.data(), shells.data(),
+                                       atom_data_ptr(), num_atoms(),
+                                       basis_data_ptr(), num_basis(),
+                                       env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::octapole)
+                libcint::int1e_rrr_cart(buffer, dims.data(), shells.data(),
+                                        atom_data_ptr(), num_atoms(),
+                                        basis_data_ptr(), num_basis(),
+                                        env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::hexadecapole)
+                libcint::int1e_rrrr_cart(buffer, dims.data(), shells.data(),
+                                         atom_data_ptr(), num_atoms(),
+                                         basis_data_ptr(), num_basis(),
+                                         env_data_ptr(), opt, cache);
         }
         return dims;
     }

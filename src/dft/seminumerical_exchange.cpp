@@ -9,7 +9,7 @@ using libint2::Operator;
 
 SemiNumericalExchange::SemiNumericalExchange(
     const std::vector<occ::core::Atom> &atoms, const qm::BasisSet &basis)
-    : m_atoms(atoms), m_basis(basis), m_grid(m_basis, m_atoms) {
+    : m_atoms(atoms), m_basis(basis), m_grid(m_basis, m_atoms, 110, 1e-3) {
 
     for (size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));

@@ -122,20 +122,39 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind,
 
 Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
                            double precision, const Mat &Schwarz) const {
-    if (kind == SpinorbitalKind::General)
-        return m_fockbuilder.compute_J<SpinorbitalKind::General>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
-    if (kind == SpinorbitalKind::Unrestricted)
-        return m_fockbuilder.compute_J<SpinorbitalKind::Unrestricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
+    using Kind = occ::qm::OccShell::Kind;
+    if (kind == SpinorbitalKind::General) {
+        if (m_engine.is_spherical()) {
+            return m_engine.coulomb<SpinorbitalKind::General, Kind::Spherical>(
+                mo, Schwarz);
+        } else {
+            return m_engine.coulomb<SpinorbitalKind::General, Kind::Cartesian>(
+                mo, Schwarz);
+        }
+    }
+    if (kind == SpinorbitalKind::Unrestricted) {
+        if (m_engine.is_spherical()) {
+            return m_engine
+                .coulomb<SpinorbitalKind::Unrestricted, Kind::Spherical>(
+                    mo, Schwarz);
+        } else {
+            return m_engine
+                .coulomb<SpinorbitalKind::Unrestricted, Kind::Cartesian>(
+                    mo, Schwarz);
+        }
+    }
     if (m_df_fock_engine) {
         return (*m_df_fock_engine).compute_J(mo, precision, Schwarz);
     } else {
-        return m_fockbuilder.compute_J<SpinorbitalKind::Restricted>(
-            m_basis, m_shellpair_list, m_shellpair_data, mo, precision,
-            Schwarz);
+        if (m_engine.is_spherical()) {
+            return m_engine
+                .coulomb<SpinorbitalKind::Restricted, Kind::Spherical>(mo,
+                                                                       Schwarz);
+        } else {
+            return m_engine
+                .coulomb<SpinorbitalKind::Restricted, Kind::Cartesian>(mo,
+                                                                       Schwarz);
+        }
     }
 }
 
@@ -174,8 +193,12 @@ Mat HartreeFock::compute_nuclear_attraction_matrix() const {
 
 Mat HartreeFock::compute_point_charge_interaction_matrix(
     const std::vector<occ::core::PointCharge> &point_charges) const {
-    return compute_1body_ints<Operator::nuclear>(m_basis, m_shellpair_list,
-                                                 point_charges)[0];
+    using Kind = occ::qm::OccShell::Kind;
+    if (m_engine.is_spherical()) {
+        return m_engine.point_charge_potential<Kind::Spherical>(point_charges);
+    } else {
+        return m_engine.point_charge_potential<Kind::Cartesian>(point_charges);
+    }
 }
 
 std::vector<Mat>

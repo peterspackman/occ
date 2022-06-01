@@ -153,7 +153,7 @@ class HartreeFock {
     mutable double m_e_alpha{0};
     mutable double m_e_beta{0};
     mutable std::optional<occ::df::DFFockEngine> m_df_fock_engine;
-    occ::qm::IntegralEngine m_engine;
+    mutable occ::qm::IntegralEngine m_engine;
 };
 
 } // namespace occ::hf

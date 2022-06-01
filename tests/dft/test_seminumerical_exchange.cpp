@@ -13,7 +13,8 @@ TEST_CASE("Water DFT", "[scf]") {
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
 
-    occ::qm::BasisSet obs("def2-svp", atoms);
+    occ::qm::BasisSet obs("def2-qzvpp", atoms);
+    obs.set_pure(false);
     auto dft =
         occ::dft::DFT("lda", obs, atoms, occ::qm::SpinorbitalKind::Restricted);
     occ::scf::SCF<occ::dft::DFT, occ::qm::SpinorbitalKind::Restricted> scf(dft);

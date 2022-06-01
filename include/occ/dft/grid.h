@@ -95,12 +95,13 @@ RadialGrid generate_gauss_chebyshev_radial_grid(size_t num_points);
 RadialGrid generate_lmg_radial_grid(double radial_precision, double alpha_max,
                                     const occ::Vec &alpha_min);
 AtomGrid generate_atom_grid(size_t atomic_number,
-                            size_t max_angular_points = 590,
-                            size_t radial_points = 82);
+                            size_t max_angular_points = 302,
+                            size_t radial_points = 50);
 
 class MolecularGrid {
   public:
-    MolecularGrid(const BasisSet &, const std::vector<occ::core::Atom> &);
+    MolecularGrid(const BasisSet &, const std::vector<occ::core::Atom> &,
+                  size_t max_angular = 302, double radial_precision = 1e-8);
     void set_angular_points(size_t n);
     void set_radial_points(size_t n);
     void set_max_angular_points(size_t n) { m_max_angular = n; }

@@ -345,8 +345,10 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points,
 }
 
 MolecularGrid::MolecularGrid(const BasisSet &basis,
-                             const std::vector<occ::core::Atom> &atoms)
-    : m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()),
+                             const std::vector<occ::core::Atom> &atoms,
+                             size_t max_angular, double radial_precision)
+    : m_max_angular(max_angular), m_radial_precision(radial_precision),
+      m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()),
       m_alpha_max(atoms.size()), m_l_max(atoms.size()),
       m_alpha_min(basis.max_l() + 1, atoms.size()) {
     occ::timing::start(occ::timing::category::grid_init);
@@ -459,9 +461,6 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const {
 AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number) {
     size_t num_points = 0;
     size_t atom_idx;
-    m_max_angular = 302;
-    m_min_angular = 50;
-    m_radial_precision = 1e-11;
     for (atom_idx = 0; atom_idx < n_atoms(); ++atom_idx) {
         if (m_atomic_numbers(atom_idx) == atomic_number)
             break;

@@ -54,6 +54,8 @@ void print_configuration(const Molecule &m, const OccInput &config) {
 
     fmt::print("input method string: '{}'\n", config.method.name);
     fmt::print("input basis name: '{}'\n", config.basis.name);
+    fmt::print("input shell kind: '{}'\n",
+               config.basis.spherical ? "spherical" : "Cartesian");
     fmt::print("total charge: {}\n", config.electronic.charge);
     fmt::print("system multiplicity: {}\n", config.electronic.multiplicity);
     fmt::print("\ninertia tensor (x 10e-46 kg m^2)\n");

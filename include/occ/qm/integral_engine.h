@@ -1,9 +1,11 @@
 #pragma once
 #include <array>
 #include <occ/core/atom.h>
+#include <occ/core/multipole.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/cint_interface.h>
+#include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/occshell.h>
 #include <vector>
@@ -41,6 +43,7 @@ void delegate_fock(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0, int bf1,
         impl::fock_inner_g(D, F, bf0, bf1, bf2, bf3, value);
     }
 }
+
 template <occ::qm::SpinorbitalKind sk>
 void delegate_jk(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
                  int bf0, int bf1, int bf2, int bf3, double value) {
@@ -50,6 +53,18 @@ void delegate_jk(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, Eigen::Ref<Mat> K,
         impl::jk_inner_u(D, J, K, bf0, bf1, bf2, bf3, value);
     } else if constexpr (sk == SpinorbitalKind::General) {
         impl::jk_inner_g(D, J, K, bf0, bf1, bf2, bf3, value);
+    }
+}
+
+template <occ::qm::SpinorbitalKind sk>
+void delegate_j(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
+                int bf2, int bf3, double value) {
+    if constexpr (sk == SpinorbitalKind::Restricted) {
+        impl::j_inner_r(D, J, bf0, bf1, bf2, bf3, value);
+    } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
+        impl::j_inner_u(D, J, bf0, bf1, bf2, bf3, value);
+    } else if constexpr (sk == SpinorbitalKind::General) {
+        impl::j_inner_g(D, J, bf0, bf1, bf2, bf3, value);
     }
 }
 
@@ -135,7 +150,9 @@ class IntegralEngine {
     void evaluate_two_center(Lambda &f, int thread_id = 0) const noexcept {
         occ::qm::cint::Optimizer opt(m_env, op, 2);
         auto nthreads = occ::parallel::get_num_threads();
-        auto buffer = std::make_unique<double[]>(buffer_size_1e());
+        auto bufsize = buffer_size_1e(op);
+
+        auto buffer = std::make_unique<double[]>(bufsize);
         for (int p = 0, pq = 0; p < m_nsh; p++) {
             int bf1 = m_first_bf[p];
             const auto &sh1 = m_shells[p];
@@ -414,6 +431,81 @@ class IntegralEngine {
     }
 
     template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
+    Mat coulomb(const MolecularOrbitals &mo,
+                const Mat &Schwarz = Mat()) const noexcept {
+        auto nthreads = occ::parallel::get_num_threads();
+        constexpr Op op = Op::coulomb;
+        std::vector<Mat> Jmats;
+        Jmats.emplace_back(Mat::Zero(mo.D.rows(), mo.D.cols()));
+        for (size_t i = 1; i < nthreads; i++) {
+            Jmats.push_back(Jmats[0]);
+        }
+
+        Mat Dnorm = compute_shellblock_norm<sk, kind>(mo.D);
+
+        const auto &D = mo.D;
+        auto f = [&D, &Jmats](const IntegralResult<4> &args) {
+            auto &J = Jmats[args.thread];
+            auto pq_degree = (args.shell[0] == args.shell[1]) ? 1 : 2;
+            auto pr_qs_degree = (args.shell[0] == args.shell[2])
+                                    ? (args.shell[1] == args.shell[3] ? 1 : 2)
+                                    : 2;
+            auto rs_degree = (args.shell[2] == args.shell[3]) ? 1 : 2;
+            auto scale = pq_degree * rs_degree * pr_qs_degree;
+
+            for (auto f3 = 0, f0123 = 0; f3 != args.dims[3]; ++f3) {
+                const auto bf3 = f3 + args.bf[3];
+                for (auto f2 = 0; f2 != args.dims[2]; ++f2) {
+                    const auto bf2 = f2 + args.bf[2];
+                    for (auto f1 = 0; f1 != args.dims[1]; ++f1) {
+                        const auto bf1 = f1 + args.bf[1];
+                        for (auto f0 = 0; f0 != args.dims[0]; ++f0, ++f0123) {
+                            const auto bf0 = f0 + args.bf[0];
+                            const auto value = args.buffer[f0123] * scale;
+                            impl::delegate_j<sk>(D, J, bf0, bf1, bf2, bf3,
+                                                 value);
+                        }
+                    }
+                }
+            }
+        };
+        auto lambda = [&](int thread_id) {
+            evaluate_four_center<op, kind>(f, Dnorm, Schwarz, thread_id);
+        };
+        occ::timing::start(occ::timing::category::fock);
+        occ::parallel::parallel_do(lambda);
+        occ::timing::stop(occ::timing::category::fock);
+
+        Mat J = Mat::Zero(Jmats[0].rows(), Jmats[0].cols());
+
+        for (size_t i = 0; i < nthreads; i++) {
+            if constexpr (sk == SpinorbitalKind::Restricted) {
+                J.noalias() += (Jmats[i] + Jmats[i].transpose());
+            } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
+                {
+                    auto Ja = occ::qm::block::a(Jmats[i]);
+                    auto Jb = occ::qm::block::b(Jmats[i]);
+                    occ::qm::block::a(J).noalias() += (Ja + Ja.transpose());
+                    occ::qm::block::b(J).noalias() += (Jb + Jb.transpose());
+                }
+            } else if constexpr (sk == SpinorbitalKind::General) {
+                {
+                    auto Jaa = occ::qm::block::aa(Jmats[i]);
+                    auto Jab = occ::qm::block::ab(Jmats[i]);
+                    auto Jba = occ::qm::block::ba(Jmats[i]);
+                    auto Jbb = occ::qm::block::bb(Jmats[i]);
+                    occ::qm::block::aa(J).noalias() += (Jaa + Jaa.transpose());
+                    occ::qm::block::ab(J).noalias() += (Jab + Jab.transpose());
+                    occ::qm::block::ba(J).noalias() += (Jba + Jba.transpose());
+                    occ::qm::block::bb(J).noalias() += (Jbb + Jbb.transpose());
+                }
+            }
+        }
+        J *= 0.5;
+        return J;
+    }
+
+    template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
     std::pair<Mat, Mat>
     coulomb_and_exchange(const MolecularOrbitals &mo,
                          const Mat &Schwarz = Mat()) const noexcept {
@@ -642,6 +734,69 @@ class IntegralEngine {
         }
     }
 
+    template <int order, SpinorbitalKind sk,
+              ShellKind kind = ShellKind::Cartesian>
+    auto multipole(const MolecularOrbitals &mo,
+                   const Vec3 &origin = {0, 0, 0}) const {
+
+        static_assert(sk == SpinorbitalKind::Restricted,
+                      "Unrestricted and General cases not implemented for "
+                      "multipoles yet");
+        static_assert(kind == ShellKind::Spherical,
+                      "Normalization inconsitent when using Cartesian basis "
+                      "sets for multipoles");
+        constexpr std::array<Op, 4> ops{Op::overlap, Op::dipole, Op::quadrupole,
+                                        Op::hexadecapole};
+        constexpr Op op = ops[order];
+
+        auto nthreads = occ::parallel::get_num_threads();
+        size_t num_components =
+            occ::core::num_unique_multipole_components(order);
+        m_env.set_common_origin({origin.x(), origin.y(), origin.z()});
+        std::vector<Vec> results;
+        results.push_back(Vec::Zero(num_components));
+        for (size_t i = 1; i < num_components; i++) {
+            results.push_back(results[0]);
+        }
+        const auto &D = mo.D;
+        /*
+         * For symmetric matrices
+         * the of a matrix product tr(D @ O) is equal to
+         * the sum of the elementwise product with the transpose:
+         * tr(D @ O) == sum(D * O^T)
+         * since expectation is -2 tr(D @ O) we factor that into the
+         * inner loop
+         */
+        auto f = [&D, &results,
+                  &num_components](const IntegralResult<2> &args) {
+            auto &result = results[args.thread];
+            size_t offset = 0;
+            double scale = (args.shell[0] != args.shell[1]) ? 2.0 : 1.0;
+            for (size_t n = 0; n < num_components; n++) {
+                Eigen::Map<const occ::Mat> tmp(args.buffer + offset,
+                                               args.dims[0], args.dims[1]);
+                result(n) += scale * (D.block(args.bf[0], args.bf[1],
+                                              args.dims[0], args.dims[1])
+                                          .array() *
+                                      tmp.array())
+                                         .sum();
+                offset += tmp.size();
+            }
+        };
+
+        auto lambda = [&](int thread_id) {
+            evaluate_two_center<op, kind>(f, thread_id);
+        };
+        occ::parallel::parallel_do(lambda);
+
+        for (auto i = 1; i < nthreads; ++i) {
+            results[0].noalias() += results[i];
+        }
+
+        results[0] *= -2;
+        return results[0];
+    }
+
     template <ShellKind kind = ShellKind::Cartesian>
     Mat schwarz() const noexcept {
         auto nthreads = occ::parallel::get_num_threads();
@@ -714,8 +869,25 @@ class IntegralEngine {
     // TODO remove mutable
     mutable IntEnv m_env;
 
-    inline size_t buffer_size_1e() const {
-        return m_max_shell_size * m_max_shell_size;
+    inline size_t buffer_size_1e(const Op op = Op::overlap) const {
+        auto bufsize = m_max_shell_size * m_max_shell_size;
+        switch (op) {
+        case Op::dipole:
+            bufsize *= occ::core::num_unique_multipole_components(1);
+            break;
+        case Op::quadrupole:
+            bufsize *= occ::core::num_unique_multipole_components(2);
+            break;
+        case Op::octapole:
+            bufsize *= occ::core::num_unique_multipole_components(3);
+            break;
+        case Op::hexadecapole:
+            bufsize *= occ::core::num_unique_multipole_components(4);
+            break;
+        default:
+            break;
+        }
+        return bufsize;
     }
 
     inline size_t buffer_size_3e() const {
