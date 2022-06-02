@@ -5,6 +5,13 @@
 
 namespace occ::dft {
 
+struct AtomGridSettings {
+    size_t max_angular_points{302};
+    size_t min_angular_points{50};
+    size_t radial_points{65};
+    double radial_precision{1e-12};
+};
+
 using occ::qm::BasisSet;
 
 struct AtomGrid {
@@ -101,12 +108,7 @@ AtomGrid generate_atom_grid(size_t atomic_number,
 class MolecularGrid {
   public:
     MolecularGrid(const BasisSet &, const std::vector<occ::core::Atom> &,
-                  size_t max_angular = 302, double radial_precision = 1e-8);
-    void set_angular_points(size_t n);
-    void set_radial_points(size_t n);
-    void set_max_angular_points(size_t n) { m_max_angular = n; }
-    void set_min_angular_points(size_t n) { m_min_angular = n; }
-    void set_radial_precision(double p) { m_radial_precision = p; }
+                  const AtomGridSettings &settings = {});
     const auto n_atoms() const { return m_atomic_numbers.size(); }
     AtomGrid generate_partitioned_atom_grid(size_t atom_idx) const;
     AtomGrid generate_lmg_atom_grid(size_t atomic_number);
@@ -116,10 +118,7 @@ class MolecularGrid {
     Mat3N m_positions;
     Mat m_dists;
     std::vector<AtomGrid> m_unique_atom_grids;
-    size_t m_max_angular{302};
-    size_t m_min_angular{50};
-    size_t m_radial_points{65};
-    double m_radial_precision{1e-12};
+    AtomGridSettings m_settings;
     std::vector<std::pair<size_t, size_t>> m_grid_atom_blocks;
     Mat3N m_points;
     Vec m_weights;

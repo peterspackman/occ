@@ -88,13 +88,8 @@ class IntegralEngine {
     using Op = cint::Operator;
 
     IntegralEngine(const AtomList &at, const ShellList &sh)
-        : m_atoms(at), m_shells(sh), m_env(at, sh) {
-        for (const auto &shell : m_shells) {
-            m_first_bf.push_back(m_nbf);
-            m_nbf += shell.size();
-            m_nsh += 1;
-            m_max_shell_size = std::max(m_max_shell_size, shell.size());
-        }
+        : m_aobasis(at, sh), m_env(at, sh) {
+
         if (is_spherical()) {
             compute_shellpairs<ShellKind::Spherical>();
         } else {
@@ -102,49 +97,55 @@ class IntegralEngine {
         }
     }
 
-    inline auto nbf() const noexcept { return m_nbf; }
-    inline auto nbf_aux() const noexcept { return m_nbf_aux; }
-    inline auto nsh() const noexcept { return m_nsh; }
-    inline auto nsh_aux() const noexcept { return m_nsh_aux; }
-    inline const auto &first_bf() const noexcept { return m_first_bf; }
-    inline const auto &first_bf_aux() const noexcept { return m_first_bf_aux; }
+    inline auto nbf() const noexcept { return m_aobasis.nbf(); }
+    inline auto nbf_aux() const noexcept { return m_auxbasis.nbf(); }
+    inline auto nsh() const noexcept { return m_aobasis.nsh(); }
+    inline auto nsh_aux() const noexcept { return m_auxbasis.nsh(); }
+
+    inline const auto &first_bf() const noexcept {
+        return m_aobasis.first_bf();
+    }
+    inline const auto &first_bf_aux() const noexcept {
+        return m_auxbasis.first_bf();
+    }
+    inline const auto &shellpairs() const noexcept { return m_shellpairs; }
+    inline const auto &shells() const noexcept { return m_aobasis.shells(); }
 
     inline void set_auxiliary_basis(const ShellList &bs, bool dummy = false) {
         clear_auxiliary_basis();
-        m_shells_aux.reserve(bs.size());
-        if (dummy)
-            m_sites_aux.reserve(bs.size());
-        for (const auto &shell : bs) {
-            m_shells_aux.push_back(shell);
-            m_first_bf_aux.push_back(m_nbf);
-            m_nbf_aux += shell.size();
-            m_nsh_aux += 1;
-            m_max_shell_size_aux = std::max(m_max_shell_size_aux, shell.size());
-            if (dummy)
-                m_sites_aux.push_back(
+        if (!dummy) {
+            m_auxbasis = AOBasis(m_aobasis.atoms(), bs);
+            ShellList combined = m_aobasis.shells();
+            combined.insert(combined.end(), m_auxbasis.shells().begin(),
+                            m_auxbasis.shells().end());
+            m_env = IntEnv(m_aobasis.atoms(), combined);
+        } else {
+            AtomList dummy_atoms;
+            dummy_atoms.reserve(bs.size());
+            for (const auto &shell : bs) {
+                dummy_atoms.push_back(
                     {0, shell.origin(0), shell.origin(1), shell.origin(2)});
+            }
+            m_auxbasis = AOBasis(dummy_atoms, bs);
+            AtomList combined_sites = m_aobasis.atoms();
+            combined_sites.insert(combined_sites.end(), dummy_atoms.begin(),
+                                  dummy_atoms.end());
+            ShellList combined = m_aobasis.shells();
+            combined.insert(combined.end(), m_auxbasis.shells().begin(),
+                            m_auxbasis.shells().end());
+            m_env = IntEnv(combined_sites, combined);
         }
-        AtomList combined_sites = m_atoms;
-        if (dummy)
-            combined_sites.insert(combined_sites.end(), m_sites_aux.begin(),
-                                  m_sites_aux.end());
-        ShellList combined = m_shells;
-        combined.insert(combined.end(), m_shells_aux.begin(),
-                        m_shells_aux.end());
-        m_env = IntEnv(combined_sites, combined);
     }
 
     inline void clear_auxiliary_basis() {
         if (!have_auxiliary_basis())
             return;
-        m_shells_aux.clear();
-        m_sites_aux.clear();
-        m_nbf_aux = 0;
-        m_nsh_aux = 0;
-        m_max_shell_size_aux = 0;
+        m_auxbasis = AOBasis();
     }
 
-    inline bool have_auxiliary_basis() const noexcept { return m_nsh_aux > 0; }
+    inline bool have_auxiliary_basis() const noexcept {
+        return m_auxbasis.nsh() > 0;
+    }
 
     template <Op op, ShellKind kind, typename Lambda>
     void evaluate_two_center(Lambda &f, int thread_id = 0) const noexcept {
@@ -153,14 +154,15 @@ class IntegralEngine {
         auto bufsize = buffer_size_1e(op);
 
         auto buffer = std::make_unique<double[]>(bufsize);
-        for (int p = 0, pq = 0; p < m_nsh; p++) {
-            int bf1 = m_first_bf[p];
-            const auto &sh1 = m_shells[p];
+        const auto &first_bf = m_aobasis.first_bf();
+        for (int p = 0, pq = 0; p < m_aobasis.size(); p++) {
+            int bf1 = first_bf[p];
+            const auto &sh1 = m_aobasis[p];
             for (const int &q : m_shellpairs.at(p)) {
                 if (pq++ % nthreads != thread_id)
                     continue;
-                int bf2 = m_first_bf[q];
-                const auto &sh2 = m_shells[q];
+                int bf2 = first_bf[q];
+                const auto &sh2 = m_aobasis[q];
                 std::array<int, 2> idxs{p, q};
                 IntegralResult<2> args{
                     thread_id,
@@ -185,19 +187,20 @@ class IntegralEngine {
         std::array<int, 4> shell_idx;
         std::array<int, 4> bf;
 
+        const auto &first_bf = m_aobasis.first_bf();
         const auto do_schwarz_screen =
             Schwarz.cols() != 0 && Schwarz.rows() != 0;
-        for (int p = 0, pqrs = 0; p < m_nsh; p++) {
-            const auto &sh1 = m_shells[p];
-            bf[0] = m_first_bf[p];
+        for (int p = 0, pqrs = 0; p < m_aobasis.size(); p++) {
+            const auto &sh1 = m_aobasis[p];
+            bf[0] = first_bf[p];
             const auto &plist = m_shellpairs.at(p);
             for (const int &q : plist) {
-                bf[1] = m_first_bf[q];
-                const auto &sh2 = m_shells[q];
+                bf[1] = first_bf[q];
+                const auto &sh2 = m_aobasis[q];
                 const auto DnormPQ = do_schwarz_screen ? Dnorm(p, q) : 0.;
                 for (int r = 0; r <= p; r++) {
-                    const auto &sh3 = m_shells[r];
-                    bf[2] = m_first_bf[r];
+                    const auto &sh3 = m_aobasis[r];
+                    bf[2] = first_bf[r];
                     const auto s_max = (p == r) ? q : r;
                     const auto DnormPQR =
                         do_schwarz_screen
@@ -222,8 +225,8 @@ class IntegralEngine {
                                 m_precision)
                             continue;
 
-                        bf[3] = m_first_bf[s];
-                        const auto &sh4 = m_shells[s];
+                        bf[3] = first_bf[s];
+                        const auto &sh4 = m_aobasis[s];
                         shell_idx = {p, q, r, s};
 
                         IntegralResult<4> args{
@@ -250,21 +253,24 @@ class IntegralEngine {
         args.thread = thread_id;
         args.buffer = buffer.get();
         std::array<int, 3> shell_idx;
-        for (int auxP = 0; auxP < m_nsh_aux; auxP++) {
+        const auto &first_bf_ao = m_aobasis.first_bf();
+        const auto &first_bf_aux = m_auxbasis.first_bf();
+        for (int auxP = 0; auxP < m_auxbasis.size(); auxP++) {
             if (auxP % nthreads != thread_id)
                 continue;
-            const auto &shauxP = m_shells_aux[auxP];
-            args.bf[2] = m_first_bf_aux[auxP];
+            const auto &shauxP = m_auxbasis[auxP];
+            args.bf[2] = first_bf_aux[auxP];
             args.shell[2] = auxP;
-            for (int p = 0; p < m_nsh; p++) {
-                args.bf[0] = m_first_bf[p];
+            for (int p = 0; p < m_aobasis.size(); p++) {
+                args.bf[0] = first_bf_ao[p];
                 args.shell[0] = p;
-                const auto &shp = m_shells[p];
+                const auto &shp = m_aobasis[p];
                 const auto &plist = m_shellpairs.at(p);
                 for (const int &q : plist) {
-                    args.bf[1] = m_first_bf[q];
+                    args.bf[1] = first_bf_ao[q];
                     args.shell[1] = q;
-                    shell_idx = {p, q, auxP + static_cast<int>(m_nsh)};
+                    shell_idx = {p, q,
+                                 auxP + static_cast<int>(m_aobasis.size())};
                     args.dims = m_env.three_center_helper<Op::coulomb, kind>(
                         shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
                     if (args.dims[0] > -1) {
@@ -278,9 +284,10 @@ class IntegralEngine {
     template <Op op, ShellKind kind = ShellKind::Cartesian>
     Mat one_electron_operator() const noexcept {
         auto nthreads = occ::parallel::get_num_threads();
-        Mat result = Mat::Zero(m_nbf, m_nbf);
+        const auto nbf = m_aobasis.nbf();
+        Mat result = Mat::Zero(nbf, nbf);
         std::vector<Mat> results;
-        results.emplace_back(Mat::Zero(m_nbf, m_nbf));
+        results.emplace_back(Mat::Zero(nbf, nbf));
         for (size_t i = 1; i < nthreads; i++) {
             results.push_back(results[0]);
         }
@@ -310,14 +317,16 @@ class IntegralEngine {
     template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
     Mat compute_shellblock_norm(const Mat &matrix) const noexcept {
         occ::timing::start(occ::timing::category::ints1e);
-        Mat result(m_nsh, m_nsh);
+        const auto nsh = m_aobasis.size();
+        const auto &first_bf = m_aobasis.first_bf();
+        Mat result(nsh, nsh);
 
-        for (size_t s1 = 0; s1 < m_nsh; ++s1) {
-            const auto &s1_first = m_first_bf[s1];
-            const auto &s1_size = m_shells[s1].size();
-            for (size_t s2 = 0; s2 < m_nsh; ++s2) {
-                const auto &s2_first = m_first_bf[s2];
-                const auto &s2_size = m_shells[s2].size();
+        for (size_t s1 = 0; s1 < nsh; ++s1) {
+            const auto &s1_first = first_bf[s1];
+            const auto &s1_size = m_aobasis[s1].size();
+            for (size_t s2 = 0; s2 < nsh; ++s2) {
+                const auto &s2_first = first_bf[s2];
+                const auto &s2_size = m_aobasis[s2].size();
 
                 if constexpr (sk == SpinorbitalKind::Restricted) {
                     result(s1, s2) =
@@ -610,6 +619,7 @@ class IntegralEngine {
     template <ShellKind kind = ShellKind::Cartesian>
     Mat
     point_charge_potential(const std::vector<occ::core::PointCharge> &charges) {
+        const auto nbf = m_aobasis.nbf();
         ShellList dummy_shells;
         dummy_shells.reserve(charges.size());
         for (size_t i = 0; i < charges.size(); i++) {
@@ -618,12 +628,12 @@ class IntegralEngine {
         set_auxiliary_basis(dummy_shells, true);
         auto nthreads = occ::parallel::get_num_threads();
         std::vector<Mat> results;
-        results.emplace_back(Mat::Zero(m_nbf, m_nbf));
+        results.emplace_back(Mat::Zero(nbf, nbf));
         for (size_t i = 1; i < nthreads; i++) {
             results.push_back(results[0]);
         }
 
-        size_t nsh = m_nsh;
+        size_t nsh = m_aobasis.size();
         auto f = [nsh, &results](const IntegralResult<3> &args) {
             auto &result = results[args.thread];
             Eigen::Map<const Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
@@ -712,17 +722,18 @@ class IntegralEngine {
     template <ShellKind kind>
     inline void compute_shellpairs(double threshold = 1e-12) {
         constexpr auto op = Op::overlap;
-        m_shellpairs.resize(m_nsh);
+        const auto nsh = m_aobasis.size();
+        m_shellpairs.resize(nsh);
         auto buffer = std::make_unique<double[]>(buffer_size_1e());
-        for (int p = 0; p < m_nsh; p++) {
+        for (int p = 0; p < nsh; p++) {
             auto &plist = m_shellpairs[p];
-            const auto &sh1 = m_shells[p];
+            const auto &sh1 = m_aobasis[p];
             for (int q = 0; q <= p; q++) {
-                if (m_shells[p].origin == m_shells[q].origin) {
+                if (m_aobasis.shells_share_origin(p, q)) {
                     plist.push_back(q);
                     continue;
                 }
-                const auto &sh2 = m_shells[q];
+                const auto &sh2 = m_aobasis[q];
                 std::array<int, 2> idxs{p, q};
                 std::array<int, 2> dims = m_env.two_center_helper<op, kind>(
                     idxs, nullptr, buffer.get(), nullptr);
@@ -802,8 +813,10 @@ class IntegralEngine {
         auto nthreads = occ::parallel::get_num_threads();
         constexpr Op op = Op::coulomb;
         constexpr bool use_euclidean_norm{false};
+        const auto nsh = m_aobasis.size();
+        const auto &first_bf = m_aobasis.first_bf();
         std::vector<Mat> results;
-        results.emplace_back(Mat::Zero(m_nsh, m_nsh));
+        results.emplace_back(Mat::Zero(nsh, nsh));
         for (size_t i = 1; i < nthreads; i++) {
             results.push_back(results[0]);
         }
@@ -821,14 +834,14 @@ class IntegralEngine {
 
         auto lambda = [&](int thread_id) {
             auto buffer = std::make_unique<double[]>(buffer_size_2e());
-            for (int p = 0, pq = 0; p < m_nsh; p++) {
-                int bf1 = m_first_bf[p];
-                const auto &sh1 = m_shells[p];
+            for (int p = 0, pq = 0; p < nsh; p++) {
+                int bf1 = first_bf[p];
+                const auto &sh1 = m_aobasis[p];
                 for (const int &q : m_shellpairs.at(p)) {
                     if (pq++ % nthreads != thread_id)
                         continue;
-                    int bf2 = m_first_bf[q];
-                    const auto &sh2 = m_shells[q];
+                    int bf2 = first_bf[q];
+                    const auto &sh2 = m_aobasis[q];
                     std::array<int, 4> idxs{p, q, p, q};
                     IntegralResult<4> args{
                         thread_id,
@@ -852,25 +865,18 @@ class IntegralEngine {
     }
 
     inline bool is_spherical() const noexcept {
-        return m_shells[0].kind == ShellKind::Spherical;
+        return m_aobasis.kind() == OccShell::Kind::Spherical;
     }
 
   private:
     double m_precision{1e-12};
-    size_t m_nbf{0}, m_nbf_aux{0};
-    size_t m_nsh{0}, m_nsh_aux{0};
-    size_t m_max_shell_size{0}, m_max_shell_size_aux{0};
-    AtomList m_atoms, m_sites_aux;
-    ShellList m_shells;
-    ShellList m_shells_aux;
-    std::vector<size_t> m_first_bf;
-    std::vector<size_t> m_first_bf_aux;
+    AOBasis m_aobasis, m_auxbasis;
     ShellPairList m_shellpairs;
     // TODO remove mutable
     mutable IntEnv m_env;
 
     inline size_t buffer_size_1e(const Op op = Op::overlap) const {
-        auto bufsize = m_max_shell_size * m_max_shell_size;
+        auto bufsize = m_aobasis.max_shell_size() * m_aobasis.max_shell_size();
         switch (op) {
         case Op::dipole:
             bufsize *= occ::core::num_unique_multipole_components(1);
@@ -891,7 +897,7 @@ class IntegralEngine {
     }
 
     inline size_t buffer_size_3e() const {
-        return m_max_shell_size_aux * buffer_size_1e();
+        return m_auxbasis.max_shell_size() * buffer_size_1e();
     }
 
     inline size_t buffer_size_2e() const {

@@ -66,6 +66,50 @@ struct OccShell {
     Vec max_ln_coefficient;
 };
 
+class AOBasis {
+  public:
+    using AtomList = std::vector<Atom>;
+
+    using ShellList = std::vector<OccShell>;
+    AOBasis(const AtomList &, const ShellList &);
+    AOBasis() {}
+
+    inline size_t nbf() const { return m_nbf; }
+    inline size_t first_bf(size_t shell_index) const {
+        return m_first_bf[shell_index];
+    }
+
+    void add_shell(const OccShell &);
+
+    inline bool shells_share_origin(size_t p, size_t q) const {
+        return m_shell_to_atom_idx[p] == m_shell_to_atom_idx[q];
+    }
+
+    inline auto size() const { return m_shells.size(); }
+    inline auto nsh() const { return size(); }
+    inline auto kind() const { return m_kind; }
+    inline const OccShell &operator[](size_t n) const { return m_shells[n]; }
+    inline const OccShell &at(size_t n) const { return m_shells.at(n); }
+
+    inline const auto &shells() const { return m_shells; }
+    inline const auto &atoms() const { return m_atoms; }
+    inline const auto &first_bf() const { return m_first_bf; }
+    inline const auto &shell_to_atom() const { return m_shell_to_atom_idx; }
+    inline const auto &atom_to_shell() const { return m_atom_to_shell_idxs; }
+
+    inline auto max_shell_size() const { return m_max_shell_size; }
+
+  private:
+    AtomList m_atoms;
+    ShellList m_shells;
+    std::vector<int> m_first_bf;
+    std::vector<int> m_shell_to_atom_idx;
+    std::vector<std::vector<int>> m_atom_to_shell_idxs;
+    size_t m_nbf{0};
+    size_t m_max_shell_size{0};
+    OccShell::Kind m_kind{OccShell::Kind::Cartesian};
+};
+
 std::vector<OccShell> from_libint2_basis(const BasisSet &basis);
 std::ostream &operator<<(std::ostream &stream, const OccShell &shell);
 

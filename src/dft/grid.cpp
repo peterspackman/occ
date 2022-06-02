@@ -346,11 +346,10 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points,
 
 MolecularGrid::MolecularGrid(const BasisSet &basis,
                              const std::vector<occ::core::Atom> &atoms,
-                             size_t max_angular, double radial_precision)
-    : m_max_angular(max_angular), m_radial_precision(radial_precision),
-      m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()),
-      m_alpha_max(atoms.size()), m_l_max(atoms.size()),
-      m_alpha_min(basis.max_l() + 1, atoms.size()) {
+                             const AtomGridSettings &settings)
+    : m_settings(settings), m_atomic_numbers(atoms.size()),
+      m_positions(3, atoms.size()), m_alpha_max(atoms.size()),
+      m_l_max(atoms.size()), m_alpha_min(basis.max_l() + 1, atoms.size()) {
     occ::timing::start(occ::timing::category::grid_init);
     size_t natom = atoms.size();
     std::vector<int> unique_atoms;
@@ -469,13 +468,15 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number) {
     double alpha_max = m_alpha_max(atom_idx);
     size_t l_max = m_l_max(atom_idx);
     const occ::Vec &alpha_min = m_alpha_min.col(atom_idx);
-    RadialGrid radial = generate_lmg_radial_grid(
-        atomic_number, m_radial_precision, alpha_max, l_max, alpha_min);
+    RadialGrid radial =
+        generate_lmg_radial_grid(atomic_number, m_settings.radial_precision,
+                                 alpha_max, l_max, alpha_min);
     size_t n_radial = radial.points.rows();
-    AtomGrid result(n_radial * m_max_angular);
+    AtomGrid result(n_radial * m_settings.max_angular_points);
     radial.weights.array() *= 4 * M_PI;
-    occ::IVec n_angular = prune_nwchem_scheme(
-        atomic_number, m_max_angular, radial.num_points(), radial.points);
+    occ::IVec n_angular =
+        prune_nwchem_scheme(atomic_number, m_settings.max_angular_points,
+                            radial.num_points(), radial.points);
     for (size_t i = 0; i < n_radial; i++) {
         auto lebedev = occ::grid::lebedev(n_angular(i));
         double r = radial.points(i);

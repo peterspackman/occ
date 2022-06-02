@@ -13,14 +13,18 @@ TEST_CASE("Water DFT", "[scf]") {
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
 
-    occ::qm::BasisSet obs("def2-qzvpp", atoms);
+    occ::qm::BasisSet obs("def2-tzvp", atoms);
     obs.set_pure(false);
     auto dft =
         occ::dft::DFT("lda", obs, atoms, occ::qm::SpinorbitalKind::Restricted);
     occ::scf::SCF<occ::dft::DFT, occ::qm::SpinorbitalKind::Restricted> scf(dft);
     double e = scf.compute_scf_energy();
 
-    occ::dft::cosx::SemiNumericalExchange sgx(atoms, obs);
+    occ::dft::AtomGridSettings settings;
+    settings.max_angular_points = 86;
+    settings.radial_precision = 1e-3;
+    auto occbs = occ::qm::from_libint2_basis(obs);
+    occ::dft::cosx::SemiNumericalExchange sgx(atoms, occbs, settings);
 
     occ::timing::StopWatch<2> sw;
     sw.start(0);

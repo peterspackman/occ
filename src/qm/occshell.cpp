@@ -347,6 +347,24 @@ int OccShell::find_atom_index(const std::vector<Atom> &atoms) const {
 
 bool OccShell::is_pure() const { return kind == Spherical; }
 
+AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
+                 const std::vector<OccShell> &shells)
+    : m_atoms(atoms), m_shells(shells), m_shell_to_atom_idx(shells.size()),
+      m_atom_to_shell_idxs(atoms.size()) {
+    size_t shell_idx = 0;
+    for (const auto &shell : m_shells) {
+        m_kind = shell.kind;
+        m_first_bf.push_back(m_nbf);
+        m_nbf += shell.size();
+        m_max_shell_size = std::max(m_max_shell_size, shell.size());
+        int atom_idx = shell.find_atom_index(m_atoms);
+        // TODO check for error
+        m_shell_to_atom_idx[shell_idx] = atom_idx;
+        m_atom_to_shell_idxs[atom_idx].push_back(shell_idx);
+        ++shell_idx;
+    }
+}
+
 std::vector<OccShell> from_libint2_basis(const occ::qm::BasisSet &basis) {
     std::vector<OccShell> result;
     result.reserve(basis.size());
