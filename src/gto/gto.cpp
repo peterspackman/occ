@@ -3,6 +3,17 @@
 
 namespace occ::gto {
 
+double common_fac(int l) {
+    switch (l) {
+    case 0:
+        return 0.282094791773878143;
+    case 1:
+        return 0.488602511902919921;
+    default:
+        return 1;
+    }
+}
+
 void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
                     GTOValues &gto_values, int max_derivative) {
     occ::timing::start(occ::timing::category::gto);
@@ -25,12 +36,14 @@ void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
             const double *alpha = sh.exponents.data();
             const double *center = sh.origin.data();
             int L = sh.l;
+            double fac = common_fac(L);
             int order = (sh.kind == qm::OccShell::Kind::Spherical)
                             ? GG_SPHERICAL_CCA
                             : GG_CARTESIAN_CCA;
             if (max_derivative == 0) {
                 gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(),
                                coeffs, alpha, center, order, output);
+                gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
             } else if (max_derivative == 1) {
                 double *x_out = gto_values.phi_x.col(bf).data();
                 double *y_out = gto_values.phi_y.col(bf).data();
@@ -38,6 +51,10 @@ void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
                 gg_collocation_deriv1(
                     L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs,
                     alpha, center, order, output, x_out, y_out, z_out);
+                gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_x.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_y.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_z.block(0, bf, npts, sh.size()) *= fac;
             } else if (max_derivative == 2) {
                 double *x_out = gto_values.phi_x.col(bf).data();
                 double *y_out = gto_values.phi_y.col(bf).data();
@@ -52,6 +69,16 @@ void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
                     L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs,
                     alpha, center, order, output, x_out, y_out, z_out, xx_out,
                     xy_out, xz_out, yy_out, yz_out, zz_out);
+                gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_x.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_y.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_z.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_xx.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_xy.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_xz.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_yy.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_yz.block(0, bf, npts, sh.size()) *= fac;
+                gto_values.phi_zz.block(0, bf, npts, sh.size()) *= fac;
             }
             occ::timing::stop(occ::timing::category::gto_shell);
         }

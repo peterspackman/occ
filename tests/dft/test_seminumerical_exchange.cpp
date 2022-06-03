@@ -15,7 +15,7 @@ TEST_CASE("Water DFT", "[scf]") {
         {1, 0.48664409, 0.07959806, 0.00986248}};
 
     occ::qm::BasisSet obs("def2-svp", atoms);
-    obs.set_pure(true);
+    obs.set_pure(false);
     auto hf = occ::hf::HartreeFock(atoms, obs);
     occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
         scf(hf);
@@ -23,7 +23,7 @@ TEST_CASE("Water DFT", "[scf]") {
 
     occ::dft::AtomGridSettings settings;
     settings.max_angular_points = 110;
-    settings.radial_precision = 1e-6;
+    settings.radial_precision = 1e-3;
     fmt::print("Construct\n");
     occ::dft::cosx::SemiNumericalExchange sgx(atoms, obs);
     fmt::print("Construct done\n");

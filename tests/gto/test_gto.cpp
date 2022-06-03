@@ -16,11 +16,10 @@ TEST_CASE("GTO vals H2/STO-3G") {
                                        {1, 0.0, 0.0, 1.398397}};
     BasisSet basis("sto-3g", atoms);
     occ::qm::AOBasis aobasis(atoms, occ::qm::from_libint2_basis(basis));
-    auto grid_pts = Mat::Identity(3, 4);
+    auto grid_pts = Mat::Zero(3, 4);
     auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts, 2);
     auto gto_values_new = occ::gto::evaluate_basis(aobasis, grid_pts, 2);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
-    fmt::print("Gto values new\nphi:\n{}\n", gto_values_new.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
     fmt::print("phi_y\n{}\n", gto_values.phi_y);
     fmt::print("phi_z\n{}\n", gto_values.phi_z);

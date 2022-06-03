@@ -20,10 +20,9 @@ SemiNumericalExchange::SemiNumericalExchange(
             m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap,
                                            qm::OccShell::Kind::Spherical>();
     } else {
-
         m_overlap =
             m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap,
-                                           qm::OccShell::Kind::Spherical>();
+                                           qm::OccShell::Kind::Cartesian>();
     }
     m_numerical_overlap = compute_overlap_matrix();
     fmt::print("Max error |Sn - S|: {:12.8f}\n",
@@ -135,7 +134,7 @@ Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
 
             const auto &pts_block = atom_pts.middleCols(l, npt);
             const auto &weights_block = atom_weights.segment(l, npt);
-            occ::gto::evaluate_basis<0>(basis, pts_block, ao);
+            occ::gto::evaluate_basis(basis, pts_block, ao, 0);
             if (ao.phi.maxCoeff() < precision)
                 continue;
 
@@ -158,10 +157,11 @@ Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
                                           args.dims[1]);
                 Gg.block(n, args.bf[1], 1, args.dims[1]) +=
                     Fg.block(n, args.bf[0], 1, args.dims[0]) * tmp;
-                if (args.shell[0] != args.shell[1])
+                if (args.shell[0] != args.shell[1]) {
                     Gg.block(n, args.bf[0], 1, args.dims[0]) +=
                         Fg.block(n, args.bf[1], 1, args.dims[1]) *
                         tmp.transpose();
+                }
             };
             auto lambda = [&](int thread_id) {
                 if (m_engine.is_spherical()) {
