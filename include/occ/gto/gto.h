@@ -8,6 +8,7 @@
 #include <occ/core/util.h>
 #include <occ/gto/shell_order.h>
 #include <occ/qm/basisset.h>
+#include <occ/qm/occshell.h>
 #include <string>
 #include <vector>
 
@@ -149,6 +150,73 @@ inline std::vector<MomentaSpherical> spherical_subshell_ordering(int l) {
     auto f = [&moments](int l, int m) { moments.push_back({l, m}); };
     occ::gto::iterate_over_shell<false>(f, l);
     return moments;
+}
+
+template <int max_derivative = 0>
+void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
+                    GTOValues &gto_values) {
+    occ::timing::start(occ::timing::category::gto);
+    size_t nbf = basis.nbf();
+    size_t npts = grid_pts.cols();
+    size_t natoms = basis.atoms().size();
+    gto_values.reserve(nbf, npts, max_derivative);
+    gto_values.set_zero();
+    auto shell2bf = basis.first_bf();
+    auto atom2shell = basis.atom_to_shell();
+    for (size_t i = 0; i < natoms; i++) {
+        for (const auto &shell_idx : atom2shell[i]) {
+            occ::timing::start(occ::timing::category::gto_shell);
+            size_t bf = shell2bf[shell_idx];
+            double *output = gto_values.phi.col(bf).data();
+            const double *xyz = grid_pts.data();
+            long int xyz_stride = 3;
+            const auto &sh = basis[shell_idx];
+            const double *coeffs = sh.contraction_coefficients.data();
+            const double *alpha = sh.exponents.data();
+            const double *center = sh.origin.data();
+            int L = sh.l;
+            int order = (sh.kind == qm::OccShell::Kind::Spherical)
+                            ? GG_SPHERICAL_CCA
+                            : GG_CARTESIAN_CCA;
+            if constexpr (max_derivative == 0) {
+                gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(),
+                               coeffs, alpha, center, order, output);
+            } else if constexpr (max_derivative == 1) {
+                double *x_out = gto_values.phi_x.col(bf).data();
+                double *y_out = gto_values.phi_y.col(bf).data();
+                double *z_out = gto_values.phi_z.col(bf).data();
+                gg_collocation_deriv1(
+                    L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs,
+                    alpha, center, order, output, x_out, y_out, z_out);
+            } else if constexpr (max_derivative == 2) {
+                double *x_out = gto_values.phi_x.col(bf).data();
+                double *y_out = gto_values.phi_y.col(bf).data();
+                double *z_out = gto_values.phi_z.col(bf).data();
+                double *xx_out = gto_values.phi_xx.col(bf).data();
+                double *xy_out = gto_values.phi_xy.col(bf).data();
+                double *xz_out = gto_values.phi_xz.col(bf).data();
+                double *yy_out = gto_values.phi_yy.col(bf).data();
+                double *yz_out = gto_values.phi_yz.col(bf).data();
+                double *zz_out = gto_values.phi_zz.col(bf).data();
+                gg_collocation_deriv2(
+                    L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs,
+                    alpha, center, order, output, x_out, y_out, z_out, xx_out,
+                    xy_out, xz_out, yy_out, yz_out, zz_out);
+            }
+            occ::timing::stop(occ::timing::category::gto_shell);
+        }
+    }
+    occ::timing::stop(occ::timing::category::gto);
+}
+
+void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
+                    GTOValues &gto_values, int max_derivative);
+
+inline GTOValues evaluate_basis(const qm::AOBasis &basis,
+                                const occ::Mat &grid_pts, int max_derivative) {
+    GTOValues gto_values;
+    evaluate_basis(basis, grid_pts, gto_values, max_derivative);
+    return gto_values;
 }
 
 template <int max_derivative = 0>

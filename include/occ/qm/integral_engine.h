@@ -101,6 +101,8 @@ class IntegralEngine {
     inline auto nbf_aux() const noexcept { return m_auxbasis.nbf(); }
     inline auto nsh() const noexcept { return m_aobasis.nsh(); }
     inline auto nsh_aux() const noexcept { return m_auxbasis.nsh(); }
+    inline const AOBasis &aobasis() const { return m_aobasis; }
+    inline const AOBasis &auxbasis() const { return m_auxbasis; }
 
     inline const auto &first_bf() const noexcept {
         return m_aobasis.first_bf();
@@ -112,8 +114,8 @@ class IntegralEngine {
     inline const auto &shells() const noexcept { return m_aobasis.shells(); }
 
     inline void set_auxiliary_basis(const ShellList &bs, bool dummy = false) {
-        clear_auxiliary_basis();
         if (!dummy) {
+            clear_auxiliary_basis();
             m_auxbasis = AOBasis(m_aobasis.atoms(), bs);
             ShellList combined = m_aobasis.shells();
             combined.insert(combined.end(), m_auxbasis.shells().begin(),
@@ -126,21 +128,26 @@ class IntegralEngine {
                 dummy_atoms.push_back(
                     {0, shell.origin(0), shell.origin(1), shell.origin(2)});
             }
-            m_auxbasis = AOBasis(dummy_atoms, bs);
-            AtomList combined_sites = m_aobasis.atoms();
-            combined_sites.insert(combined_sites.end(), dummy_atoms.begin(),
-                                  dummy_atoms.end());
-            ShellList combined = m_aobasis.shells();
-            combined.insert(combined.end(), m_auxbasis.shells().begin(),
-                            m_auxbasis.shells().end());
-            m_env = IntEnv(combined_sites, combined);
+            set_dummy_basis(dummy_atoms, bs);
         }
     }
 
+    inline void set_dummy_basis(const AtomList &dummy_atoms,
+                                const ShellList &bs) {
+        clear_auxiliary_basis();
+        m_auxbasis = AOBasis(dummy_atoms, bs);
+        AtomList combined_sites = m_aobasis.atoms();
+        combined_sites.insert(combined_sites.end(), dummy_atoms.begin(),
+                              dummy_atoms.end());
+        ShellList combined = m_aobasis.shells();
+        combined.insert(combined.end(), m_auxbasis.shells().begin(),
+                        m_auxbasis.shells().end());
+        m_env = IntEnv(combined_sites, combined);
+    }
+
     inline void clear_auxiliary_basis() {
-        if (!have_auxiliary_basis())
-            return;
         m_auxbasis = AOBasis();
+        m_env = IntEnv(m_aobasis.atoms(), m_aobasis.shells());
     }
 
     inline bool have_auxiliary_basis() const noexcept {
@@ -753,9 +760,6 @@ class IntegralEngine {
         static_assert(sk == SpinorbitalKind::Restricted,
                       "Unrestricted and General cases not implemented for "
                       "multipoles yet");
-        static_assert(kind == ShellKind::Spherical,
-                      "Normalization inconsitent when using Cartesian basis "
-                      "sets for multipoles");
         constexpr std::array<Op, 4> ops{Op::overlap, Op::dipole, Op::quadrupole,
                                         Op::hexadecapole};
         constexpr Op op = ops[order];
@@ -766,7 +770,7 @@ class IntegralEngine {
         m_env.set_common_origin({origin.x(), origin.y(), origin.z()});
         std::vector<Vec> results;
         results.push_back(Vec::Zero(num_components));
-        for (size_t i = 1; i < num_components; i++) {
+        for (size_t i = 1; i < nthreads; i++) {
             results.push_back(results[0]);
         }
         const auto &D = mo.D;

@@ -3,6 +3,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/dft/grid.h>
 #include <occ/qm/basisset.h>
+#include <occ/qm/integral_engine.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/shellpair.h>
 #include <vector>
@@ -24,6 +25,7 @@ class SemiNumericalExchange {
     std::vector<occ::core::Atom> m_atoms;
     qm::BasisSet m_basis;
     MolecularGrid m_grid;
+    mutable occ::qm::IntegralEngine m_engine;
 
     std::vector<AtomGrid> m_atom_grids;
     Mat m_overlap;

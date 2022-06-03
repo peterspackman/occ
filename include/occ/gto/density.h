@@ -160,4 +160,12 @@ Mat evaluate_density_on_grid(const BasisSet &basis,
     return evaluate_density<max_derivative, spinorbital_kind>(D, gto_values);
 }
 
+template <size_t max_derivative,
+          SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
+Mat evaluate_density_on_grid(const qm::AOBasis &basis, const Mat &D,
+                             const occ::Mat &grid_pts) {
+    auto gto_values = occ::gto::evaluate_basis(basis, grid_pts, max_derivative);
+    return evaluate_density<max_derivative, spinorbital_kind>(D, gto_values);
+}
+
 } // namespace occ::density

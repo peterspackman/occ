@@ -28,6 +28,7 @@ struct OccShell {
              const std::vector<std::vector<double>> &contr,
              const std::array<double, 3> &pos);
     OccShell(const occ::core::PointCharge &);
+    OccShell();
     OccShell(const libint2::Shell &);
 
     bool operator==(const OccShell &other) const;
@@ -80,6 +81,7 @@ class AOBasis {
     }
 
     void add_shell(const OccShell &);
+    void merge(const AOBasis &);
 
     inline bool shells_share_origin(size_t p, size_t q) const {
         return m_shell_to_atom_idx[p] == m_shell_to_atom_idx[q];

@@ -147,6 +147,15 @@ OccShell::OccShell(const occ::core::PointCharge &point_charge)
               point_charge.second[2]};
 }
 
+OccShell::OccShell()
+    : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
+    constexpr double alpha = 1e16;
+    exponents(0) = alpha;
+    contraction_coefficients(0, 0) =
+        -1 / (2 * constants::sqrt_pi<double> * gint(2, alpha));
+    origin = {0, 0, 0};
+}
+
 bool OccShell::operator==(const OccShell &other) const {
     return &other == this ||
            (origin == other.origin && exponents == other.exponents &&
@@ -185,21 +194,19 @@ double OccShell::max_exponent() const { return exponents.maxCoeff(); }
 double OccShell::min_exponent() const { return exponents.minCoeff(); }
 
 void OccShell::incorporate_shell_norm() {
-    if (kind == Kind::Spherical || l < 2) {
-
-        for (size_t i = 0; i < num_primitives(); i++) {
-            double n = gto_norm(static_cast<int>(l), exponents(i));
-            contraction_coefficients.row(i).array() *= n;
-        }
-        normalize_contracted_gto(l, exponents, contraction_coefficients);
+    for (size_t i = 0; i < num_primitives(); i++) {
+        double n = gto_norm(static_cast<int>(l), exponents(i));
+        contraction_coefficients.row(i).array() *= n;
     }
+    normalize_contracted_gto(l, exponents, contraction_coefficients);
 
     // NOTE: this is taken from libint2, and is here for compatibility
     // and consistency as the library was initially written with libint2
     // as the integral backend.
     // It's strange to treat s & p functions differently, but this yields
     // consistent results with libint2 and libint2::Shell
-    else {
+    /*
+    {
         using detail::df_Kminus1;
         using std::pow;
         const auto sqrt_Pi_cubed = double{5.56832799683170784528481798212};
@@ -239,15 +246,17 @@ void OccShell::incorporate_shell_norm() {
             }
         }
     }
+    */
 }
 
 double OccShell::coeff_normalized(Eigen::Index contr_idx,
                                   Eigen::Index coeff_idx) const {
     // see NOTE in incorporate_shell_norm
-    if (kind == Kind::Spherical || l < 2) {
-        return contraction_coefficients(coeff_idx, contr_idx) /
-               gto_norm(static_cast<int>(l), exponents(coeff_idx));
-    } else {
+    return contraction_coefficients(coeff_idx, contr_idx) /
+           gto_norm(static_cast<int>(l), exponents(coeff_idx));
+
+    /*
+    {
         using detail::df_Kminus1;
         constexpr double sqrt_Pi_cubed{5.56832799683170784528481798212};
         const double two_alpha = 2 * exponents(coeff_idx);
@@ -257,6 +266,7 @@ double OccShell::coeff_normalized(Eigen::Index contr_idx,
                                        (pow(2, l) * two_alpha_to_am32));
         return contraction_coefficients(contr_idx, coeff_idx) * one_over_N;
     }
+    */
 }
 
 size_t OccShell::size() const {
@@ -363,6 +373,39 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
         m_atom_to_shell_idxs[atom_idx].push_back(shell_idx);
         ++shell_idx;
     }
+}
+
+void AOBasis::merge(const AOBasis &rhs) {
+    // TODO handle case where atoms are common
+    // TODO handle case where basis sets aren't both cartesian/spherical
+    size_t bf_offset = m_nbf;
+    size_t shell_offset = m_shells.size();
+    size_t atom_offset = m_atoms.size();
+
+    m_nbf += rhs.m_nbf;
+    m_shells.insert(m_shells.begin(), rhs.m_shells.begin(), rhs.m_shells.end());
+    m_first_bf.insert(m_first_bf.begin(), rhs.m_first_bf.begin(),
+                      rhs.m_first_bf.end());
+    m_atom_to_shell_idxs.insert(m_atom_to_shell_idxs.begin(),
+                                rhs.m_atom_to_shell_idxs.begin(),
+                                rhs.m_atom_to_shell_idxs.end());
+    m_shell_to_atom_idx.insert(m_shell_to_atom_idx.begin(),
+                               rhs.m_shell_to_atom_idx.begin(),
+                               rhs.m_shell_to_atom_idx.end());
+
+    // apply offsets
+    for (size_t i = shell_offset; i < m_shell_to_atom_idx.size(); i++) {
+        m_shell_to_atom_idx[i] += atom_offset;
+        m_first_bf[i] += bf_offset;
+    }
+
+    for (auto &atom_shells : m_atom_to_shell_idxs) {
+        for (auto &x : atom_shells) {
+            x += shell_offset;
+        }
+    }
+
+    m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);
 }
 
 std::vector<OccShell> from_libint2_basis(const occ::qm::BasisSet &basis) {
