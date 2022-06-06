@@ -14,12 +14,14 @@ class SemiNumericalExchange {
 
   public:
     SemiNumericalExchange(const std::vector<occ::core::Atom> &,
-                          const qm::BasisSet &);
+                          const qm::BasisSet &, const AtomGridSettings & = {});
     Mat compute_K(qm::SpinorbitalKind kind, const qm::MolecularOrbitals &mo,
                   double precision = std::numeric_limits<double>::epsilon(),
                   const occ::Mat &Schwarz = occ::Mat()) const;
 
     Mat compute_overlap_matrix() const;
+
+    const auto &engine() const { return m_engine; }
 
   private:
     std::vector<occ::core::Atom> m_atoms;
@@ -30,7 +32,5 @@ class SemiNumericalExchange {
     std::vector<AtomGrid> m_atom_grids;
     Mat m_overlap;
     Mat m_numerical_overlap, m_overlap_projector;
-    qm::ShellPairList m_shellpair_list;
-    qm::ShellPairData m_shellpair_data;
 };
 } // namespace occ::dft::cosx

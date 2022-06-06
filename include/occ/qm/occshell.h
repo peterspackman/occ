@@ -96,6 +96,7 @@ class AOBasis {
     inline const auto &shells() const { return m_shells; }
     inline const auto &atoms() const { return m_atoms; }
     inline const auto &first_bf() const { return m_first_bf; }
+    inline const auto &bf_to_shell() const { return m_bf_to_shell; }
     inline const auto &shell_to_atom() const { return m_shell_to_atom_idx; }
     inline const auto &atom_to_shell() const { return m_atom_to_shell_idxs; }
 
@@ -106,6 +107,7 @@ class AOBasis {
     ShellList m_shells;
     std::vector<int> m_first_bf;
     std::vector<int> m_shell_to_atom_idx;
+    std::vector<int> m_bf_to_shell;
     std::vector<std::vector<int>> m_atom_to_shell_idxs;
     size_t m_nbf{0};
     size_t m_max_shell_size{0};

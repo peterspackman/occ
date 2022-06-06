@@ -8,10 +8,11 @@ namespace occ::dft::cosx {
 using libint2::Operator;
 
 SemiNumericalExchange::SemiNumericalExchange(
-    const std::vector<occ::core::Atom> &atoms, const qm::BasisSet &basis)
+    const std::vector<occ::core::Atom> &atoms, const qm::BasisSet &basis,
+    const AtomGridSettings &settings)
     : m_atoms(atoms), m_basis(basis),
       m_engine(atoms, occ::qm::from_libint2_basis(basis)),
-      m_grid(m_basis, m_atoms) {
+      m_grid(m_basis, m_atoms, settings) {
     for (size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
@@ -27,8 +28,6 @@ SemiNumericalExchange::SemiNumericalExchange(
     m_numerical_overlap = compute_overlap_matrix();
     fmt::print("Max error |Sn - S|: {:12.8f}\n",
                (m_numerical_overlap - m_overlap).array().cwiseAbs().maxCoeff());
-    std::cout << "S\n" << m_overlap.block(0, 0, 5, 5) << '\n';
-    std::cout << "S\n" << m_numerical_overlap.block(0, 0, 5, 5) << '\n';
     m_overlap_projector = m_numerical_overlap.ldlt().solve(m_overlap);
 }
 
@@ -100,17 +99,6 @@ Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
     const auto nshells = basis.nsh();
     const auto shell2bf = basis.first_bf();
 
-    std::vector<qm::Atom> dummy_atoms;
-    dummy_atoms.reserve(BLOCKSIZE);
-    dummy_atoms.push_back({0, 0.0, 0.0, 0.0});
-    std::vector<qm::OccShell> aux_shells;
-    aux_shells.reserve(BLOCKSIZE);
-    aux_shells.emplace_back(occ::core::PointCharge{1.0, {0, 0, 0}});
-    for (size_t i = 1; i < BLOCKSIZE; i++) {
-        aux_shells.push_back(aux_shells[0]);
-        dummy_atoms.push_back(dummy_atoms[0]);
-    }
-
     // compute J, K
     for (const auto &atom_grid : m_atom_grids) {
         const auto &atom_pts = atom_grid.points;
@@ -127,10 +115,8 @@ Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
             if (npt <= 0)
                 continue;
 
-            if (npt < BLOCKSIZE) {
-                aux_shells.resize(npt);
-                dummy_atoms.resize(npt);
-            }
+            std::vector<qm::Atom> dummy_atoms(npt);
+            std::vector<qm::OccShell> aux_shells(npt);
 
             const auto &pts_block = atom_pts.middleCols(l, npt);
             const auto &weights_block = atom_weights.segment(l, npt);

@@ -14,7 +14,7 @@ TEST_CASE("Water DFT", "[scf]") {
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
 
-    occ::qm::BasisSet obs("def2-svp", atoms);
+    occ::qm::BasisSet obs("def2-tzvp", atoms);
     obs.set_pure(false);
     auto hf = occ::hf::HartreeFock(atoms, obs);
     occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
@@ -23,9 +23,9 @@ TEST_CASE("Water DFT", "[scf]") {
 
     occ::dft::AtomGridSettings settings;
     settings.max_angular_points = 110;
-    settings.radial_precision = 1e-3;
+    settings.radial_precision = 1e-4;
     fmt::print("Construct\n");
-    occ::dft::cosx::SemiNumericalExchange sgx(atoms, obs);
+    occ::dft::cosx::SemiNumericalExchange sgx(atoms, obs, settings);
     fmt::print("Construct done\n");
 
     occ::timing::StopWatch<2> sw;
@@ -41,9 +41,23 @@ TEST_CASE("Water DFT", "[scf]") {
     std::tie(Jexact, Kexact) = hf.compute_JK(
         occ::qm::SpinorbitalKind::Restricted, scf.mo, 1e-12, occ::Mat());
     sw.stop(1);
+    int i, j;
     fmt::print("K exact\n{}\n", Kexact.block(0, 0, 5, 5));
     fmt::print("K - Kexact: {:12.8f}\n",
-               (result - Kexact).array().cwiseAbs().maxCoeff());
+               (result - Kexact).array().cwiseAbs().maxCoeff(&i, &j));
+    const auto &bf2shell = sgx.engine().aobasis().bf_to_shell();
+    int s1 = bf2shell[i];
+    const auto &sh1 = sgx.engine().aobasis()[s1];
+    int s2 = bf2shell[i];
+    const auto &sh2 = sgx.engine().aobasis()[s2];
+
+    fmt::print("Shells:\n");
+    std::cout << s1 << sh1 << '\n' << s2 << sh2 << '\n';
+    int bf1 = sgx.engine().aobasis().first_bf()[s1];
+    int bf2 = sgx.engine().aobasis().first_bf()[s2];
+
+    fmt::print("K SGX\n{}\n", result.block(bf1, bf2, sh1.size(), sh2.size()));
+    fmt::print("K exact\n{}\n", Kexact.block(bf1, bf2, sh1.size(), sh2.size()));
     fmt::print("Speedup = ({} vs. {}) {:.3f} times\n", sw.read(0), sw.read(1),
                sw.read(1) / sw.read(0));
 

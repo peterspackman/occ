@@ -22,8 +22,6 @@ HartreeFock::HartreeFock(const std::vector<occ::core::Atom> &atoms,
     : m_atoms(atoms), m_basis(basis),
       m_fockbuilder(basis.max_nprim(), basis.max_l()),
       m_engine(atoms, occ::qm::from_libint2_basis(basis)) {
-    std::tie(m_shellpair_list, m_shellpair_data) =
-        occ::ints::compute_shellpairs(m_basis);
     for (const auto &a : m_atoms) {
         m_num_e += a.atomic_number;
     }

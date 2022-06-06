@@ -360,7 +360,7 @@ bool OccShell::is_pure() const { return kind == Spherical; }
 AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
                  const std::vector<OccShell> &shells)
     : m_atoms(atoms), m_shells(shells), m_shell_to_atom_idx(shells.size()),
-      m_atom_to_shell_idxs(atoms.size()) {
+      m_atom_to_shell_idxs(atoms.size()), m_bf_to_shell() {
     size_t shell_idx = 0;
     for (const auto &shell : m_shells) {
         m_kind = shell.kind;
@@ -371,6 +371,9 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
         // TODO check for error
         m_shell_to_atom_idx[shell_idx] = atom_idx;
         m_atom_to_shell_idxs[atom_idx].push_back(shell_idx);
+        for (int i = 0; i < shell.size(); i++) {
+            m_bf_to_shell.push_back(shell_idx);
+        }
         ++shell_idx;
     }
 }
@@ -383,15 +386,18 @@ void AOBasis::merge(const AOBasis &rhs) {
     size_t atom_offset = m_atoms.size();
 
     m_nbf += rhs.m_nbf;
-    m_shells.insert(m_shells.begin(), rhs.m_shells.begin(), rhs.m_shells.end());
-    m_first_bf.insert(m_first_bf.begin(), rhs.m_first_bf.begin(),
+    m_shells.insert(m_shells.end(), rhs.m_shells.begin(), rhs.m_shells.end());
+    m_first_bf.insert(m_first_bf.end(), rhs.m_first_bf.begin(),
                       rhs.m_first_bf.end());
-    m_atom_to_shell_idxs.insert(m_atom_to_shell_idxs.begin(),
+    m_atom_to_shell_idxs.insert(m_atom_to_shell_idxs.end(),
                                 rhs.m_atom_to_shell_idxs.begin(),
                                 rhs.m_atom_to_shell_idxs.end());
-    m_shell_to_atom_idx.insert(m_shell_to_atom_idx.begin(),
+    m_shell_to_atom_idx.insert(m_shell_to_atom_idx.end(),
                                rhs.m_shell_to_atom_idx.begin(),
                                rhs.m_shell_to_atom_idx.end());
+
+    m_bf_to_shell.insert(m_bf_to_shell.end(), rhs.m_bf_to_shell.begin(),
+                         rhs.m_bf_to_shell.end());
 
     // apply offsets
     for (size_t i = shell_offset; i < m_shell_to_atom_idx.size(); i++) {
@@ -403,6 +409,9 @@ void AOBasis::merge(const AOBasis &rhs) {
         for (auto &x : atom_shells) {
             x += shell_offset;
         }
+    }
+    for (size_t i = bf_offset; i < m_nbf; i++) {
+        m_bf_to_shell[i] += shell_offset;
     }
 
     m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);

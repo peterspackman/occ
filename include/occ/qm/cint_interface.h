@@ -336,8 +336,28 @@ class IntegralEnvironment {
         return dims;
     }
 
+    inline void print() const {
+        fmt::print("Atom Info {}\n", m_atom_info.size());
+        for (const auto &atom : m_atom_info) {
+            fmt::print("{} {} {} {} {} {}\n", atom.data[0], atom.data[1],
+                       atom.data[2], atom.data[3], atom.data[4], atom.data[5]);
+        }
+        fmt::print("Basis Info {}\n", m_basis_info.size());
+        for (const auto &sh : m_basis_info) {
+            fmt::print("{} {} {} {} {} {}\n", sh.data[0], sh.data[1],
+                       sh.data[2], sh.data[3], sh.data[4], sh.data[5],
+                       sh.data[6], sh.data[7]);
+        }
+        fmt::print("Env Data {}\n", m_env_data.size());
+        for (size_t i = 0; i < m_env_data.size(); i++) {
+            fmt::print("{:12.6f} ", m_env_data[i]);
+            if (i > 0 && (i % 6 == 0))
+                fmt::print("\n");
+        }
+        fmt::print("\n");
+    }
+
   private:
-    size_t m_auxiliary_offset{0};
     std::vector<impl::AtomInfo> m_atom_info;
     std::vector<impl::BasisInfo> m_basis_info;
     std::vector<double> m_env_data;
