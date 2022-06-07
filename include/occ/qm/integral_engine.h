@@ -155,36 +155,6 @@ class IntegralEngine {
     }
 
     template <Op op, ShellKind kind, typename Lambda>
-    void evaluate_two_center(Lambda &f, int thread_id = 0) const noexcept {
-        occ::qm::cint::Optimizer opt(m_env, op, 2);
-        auto nthreads = occ::parallel::get_num_threads();
-        auto bufsize = buffer_size_1e(op);
-
-        auto buffer = std::make_unique<double[]>(bufsize);
-        const auto &first_bf = m_aobasis.first_bf();
-        for (int p = 0, pq = 0; p < m_aobasis.size(); p++) {
-            int bf1 = first_bf[p];
-            const auto &sh1 = m_aobasis[p];
-            for (const int &q : m_shellpairs.at(p)) {
-                if (pq++ % nthreads != thread_id)
-                    continue;
-                int bf2 = first_bf[q];
-                const auto &sh2 = m_aobasis[q];
-                std::array<int, 2> idxs{p, q};
-                IntegralResult<2> args{
-                    thread_id,
-                    idxs,
-                    {bf1, bf2},
-                    m_env.two_center_helper<op, kind>(idxs, opt.optimizer_ptr(),
-                                                      buffer.get(), nullptr),
-                    buffer.get()};
-                if (args.dims[0] > -1)
-                    f(args);
-            }
-        }
-    }
-
-    template <Op op, ShellKind kind, typename Lambda>
     void evaluate_four_center(Lambda &f, const Mat &Dnorm = Mat(),
                               const Mat &Schwarz = Mat(),
                               int thread_id = 0) const noexcept {
@@ -297,38 +267,7 @@ class IntegralEngine {
         }
     }
 
-    template <Op op, ShellKind kind = ShellKind::Cartesian>
-    Mat one_electron_operator() const noexcept {
-        auto nthreads = occ::parallel::get_num_threads();
-        const auto nbf = m_aobasis.nbf();
-        Mat result = Mat::Zero(nbf, nbf);
-        std::vector<Mat> results;
-        results.emplace_back(Mat::Zero(nbf, nbf));
-        for (size_t i = 1; i < nthreads; i++) {
-            results.push_back(results[0]);
-        }
-        auto f = [&results](const IntegralResult<2> &args) {
-            auto &result = results[args.thread];
-            Eigen::Map<const occ::Mat> tmp(args.buffer, args.dims[0],
-                                           args.dims[1]);
-            result.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) =
-                tmp;
-            if (args.shell[0] != args.shell[1]) {
-                result.block(args.bf[1], args.bf[0], args.dims[1],
-                             args.dims[0]) = tmp.transpose();
-            }
-        };
-
-        auto lambda = [&](int thread_id) {
-            evaluate_two_center<op, kind>(f, thread_id);
-        };
-        occ::parallel::parallel_do(lambda);
-
-        for (auto i = 1; i < nthreads; ++i) {
-            results[0].noalias() += results[i];
-        }
-        return results[0];
-    }
+    Mat one_electron_operator(Op op) const noexcept;
 
     template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
     Mat compute_shellblock_norm(const Mat &matrix) const noexcept {
@@ -467,7 +406,7 @@ class IntegralEngine {
         const int nsh = m_aobasis.size();
         const int nbf_aux = m_auxbasis.nbf();
         const int nsh_aux = m_auxbasis.size();
-        assert(D.cols() == D.rows() && D.cols() == n_D);
+        assert(D.cols() == D.rows() && D.cols() == nbf_aux);
 
         std::vector<Mat> G(nthreads, Mat::Zero(nbf, nbf));
 
@@ -903,65 +842,8 @@ class IntegralEngine {
         }
     }
 
-    template <int order, SpinorbitalKind sk,
-              ShellKind kind = ShellKind::Cartesian>
-    auto multipole(const MolecularOrbitals &mo,
-                   const Vec3 &origin = {0, 0, 0}) const {
-
-        static_assert(sk == SpinorbitalKind::Restricted,
-                      "Unrestricted and General cases not implemented for "
-                      "multipoles yet");
-        constexpr std::array<Op, 4> ops{Op::overlap, Op::dipole, Op::quadrupole,
-                                        Op::hexadecapole};
-        constexpr Op op = ops[order];
-
-        auto nthreads = occ::parallel::get_num_threads();
-        size_t num_components =
-            occ::core::num_unique_multipole_components(order);
-        m_env.set_common_origin({origin.x(), origin.y(), origin.z()});
-        std::vector<Vec> results;
-        results.push_back(Vec::Zero(num_components));
-        for (size_t i = 1; i < nthreads; i++) {
-            results.push_back(results[0]);
-        }
-        const auto &D = mo.D;
-        /*
-         * For symmetric matrices
-         * the of a matrix product tr(D @ O) is equal to
-         * the sum of the elementwise product with the transpose:
-         * tr(D @ O) == sum(D * O^T)
-         * since expectation is -2 tr(D @ O) we factor that into the
-         * inner loop
-         */
-        auto f = [&D, &results,
-                  &num_components](const IntegralResult<2> &args) {
-            auto &result = results[args.thread];
-            size_t offset = 0;
-            double scale = (args.shell[0] != args.shell[1]) ? 2.0 : 1.0;
-            for (size_t n = 0; n < num_components; n++) {
-                Eigen::Map<const occ::Mat> tmp(args.buffer + offset,
-                                               args.dims[0], args.dims[1]);
-                result(n) += scale * (D.block(args.bf[0], args.bf[1],
-                                              args.dims[0], args.dims[1])
-                                          .array() *
-                                      tmp.array())
-                                         .sum();
-                offset += tmp.size();
-            }
-        };
-
-        auto lambda = [&](int thread_id) {
-            evaluate_two_center<op, kind>(f, thread_id);
-        };
-        occ::parallel::parallel_do(lambda);
-
-        for (auto i = 1; i < nthreads; ++i) {
-            results[0].noalias() += results[i];
-        }
-
-        results[0] *= -2;
-        return results[0];
-    }
+    Vec multipole(SpinorbitalKind, int order, const MolecularOrbitals &mo,
+                  const Vec3 &origin = {0, 0, 0}) const;
 
     template <ShellKind kind = ShellKind::Cartesian>
     Mat schwarz() const noexcept {

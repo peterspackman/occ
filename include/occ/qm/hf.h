@@ -116,14 +116,7 @@ class HartreeFock {
                                                                0.0}) const {
         occ::core::Multipole<order> result;
         const auto &D = mo.D;
-        Vec c;
-        if (m_engine.is_spherical()) {
-            c = m_engine.multipole<order, SpinorbitalKind::Restricted,
-                                   occ::qm::OccShell::Kind::Spherical>(mo, o);
-        } else {
-            c = m_engine.multipole<order, SpinorbitalKind::Restricted,
-                                   occ::qm::OccShell::Kind::Cartesian>(mo, o);
-        }
+        Vec c = m_engine.multipole(k, order, mo, o);
         fmt::print("libcint result:\n{}\n", c);
         auto mats = compute_electronic_multipole_matrices<order>(o);
         auto ex = [&](const Mat &op) {

@@ -205,35 +205,20 @@ Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
 
 Mat HartreeFock::compute_kinetic_matrix() const {
     using Kind = occ::qm::OccShell::Kind;
-    if (m_engine.is_spherical()) {
-        return m_engine.one_electron_operator<qm::IntegralEngine::Op::kinetic,
-                                              Kind::Spherical>();
-    } else {
-        return m_engine.one_electron_operator<qm::IntegralEngine::Op::kinetic,
-                                              Kind::Cartesian>();
-    }
+    using Op = occ::qm::cint::Operator;
+    return m_engine.one_electron_operator(Op::kinetic);
 }
 
 Mat HartreeFock::compute_overlap_matrix() const {
     using Kind = occ::qm::OccShell::Kind;
-    if (m_engine.is_spherical()) {
-        return m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap,
-                                              Kind::Spherical>();
-    } else {
-        return m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap,
-                                              Kind::Cartesian>();
-    }
+    using Op = occ::qm::cint::Operator;
+    return m_engine.one_electron_operator(Op::overlap);
 }
 
 Mat HartreeFock::compute_nuclear_attraction_matrix() const {
     using Kind = occ::qm::OccShell::Kind;
-    if (m_engine.is_spherical()) {
-        return m_engine.one_electron_operator<qm::IntegralEngine::Op::nuclear,
-                                              Kind::Spherical>();
-    } else {
-        return m_engine.one_electron_operator<qm::IntegralEngine::Op::nuclear,
-                                              Kind::Cartesian>();
-    }
+    using Op = occ::qm::cint::Operator;
+    return m_engine.one_electron_operator(Op::nuclear);
 }
 
 Mat HartreeFock::compute_point_charge_interaction_matrix(

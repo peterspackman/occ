@@ -8,8 +8,8 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
     : m_ao_env(atoms, ao), m_aux_env(atoms, df) {
     m_ao_env.set_auxiliary_basis(df, false);
     occ::timing::start(occ::timing::category::df);
-    Mat V = m_aux_env.one_electron_operator<
-        Op::coulomb, ShellKind::Spherical>(); // V = (P|Q) in df basis
+    Mat V =
+        m_aux_env.one_electron_operator(Op::coulomb); // V = (P|Q) in df basis
     occ::timing::stop(occ::timing::category::df);
 
     occ::timing::start(occ::timing::category::la);

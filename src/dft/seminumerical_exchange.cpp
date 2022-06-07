@@ -16,15 +16,7 @@ SemiNumericalExchange::SemiNumericalExchange(
     for (size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
-    if (m_engine.is_spherical()) {
-        m_overlap =
-            m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap,
-                                           qm::OccShell::Kind::Spherical>();
-    } else {
-        m_overlap =
-            m_engine.one_electron_operator<qm::IntegralEngine::Op::overlap,
-                                           qm::OccShell::Kind::Cartesian>();
-    }
+    m_overlap = m_engine.one_electron_operator(qm::IntegralEngine::Op::overlap);
     m_numerical_overlap = compute_overlap_matrix();
     fmt::print("Max error |Sn - S|: {:12.8f}\n",
                (m_numerical_overlap - m_overlap).array().cwiseAbs().maxCoeff());

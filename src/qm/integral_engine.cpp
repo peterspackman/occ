@@ -269,4 +269,272 @@ void Optimizer::create4c(IntegralEnvironment &env) {
 }
 } // namespace cint
 
+using ShellList = std::vector<OccShell>;
+using AtomList = std::vector<occ::core::Atom>;
+using ShellPairList = std::vector<std::vector<size_t>>;
+using IntEnv = cint::IntegralEnvironment;
+using ShellKind = OccShell::Kind;
+using Op = cint::Operator;
+
+inline size_t buffer_size_1e(const AOBasis &basis, Op op = Op::overlap) {
+    auto bufsize = basis.max_shell_size() * basis.max_shell_size();
+    switch (op) {
+    case Op::dipole:
+        bufsize *= occ::core::num_unique_multipole_components(1);
+        break;
+    case Op::quadrupole:
+        bufsize *= occ::core::num_unique_multipole_components(2);
+        break;
+    case Op::octapole:
+        bufsize *= occ::core::num_unique_multipole_components(3);
+        break;
+    case Op::hexadecapole:
+        bufsize *= occ::core::num_unique_multipole_components(4);
+        break;
+    default:
+        break;
+    }
+    return bufsize;
+}
+
+template <Op op, ShellKind kind, typename Lambda>
+void evaluate_two_center(Lambda &f, cint::IntegralEnvironment &env,
+                         const AOBasis &basis, const ShellPairList &shellpairs,
+                         int thread_id = 0) noexcept {
+    using Result = IntegralEngine::IntegralResult<2>;
+    occ::qm::cint::Optimizer opt(env, op, 2);
+    auto nthreads = occ::parallel::get_num_threads();
+    auto bufsize = buffer_size_1e(basis, op);
+
+    auto buffer = std::make_unique<double[]>(bufsize);
+    const auto &first_bf = basis.first_bf();
+    for (int p = 0, pq = 0; p < basis.size(); p++) {
+        int bf1 = first_bf[p];
+        const auto &sh1 = basis[p];
+        for (const int &q : shellpairs.at(p)) {
+            if (pq++ % nthreads != thread_id)
+                continue;
+            int bf2 = first_bf[q];
+            const auto &sh2 = basis[q];
+            std::array<int, 2> idxs{p, q};
+            Result args{thread_id,
+                        idxs,
+                        {bf1, bf2},
+                        env.two_center_helper<op, kind>(
+                            idxs, opt.optimizer_ptr(), buffer.get(), nullptr),
+                        buffer.get()};
+            if (args.dims[0] > -1)
+                f(args);
+        }
+    }
+}
+
+template <Op op, ShellKind kind = ShellKind::Cartesian>
+Mat one_electron_operator_kernel(const AOBasis &basis,
+                                 cint::IntegralEnvironment &env,
+                                 const ShellPairList &shellpairs) noexcept {
+    using Result = IntegralEngine::IntegralResult<2>;
+    auto nthreads = occ::parallel::get_num_threads();
+    const auto nbf = basis.nbf();
+    Mat result = Mat::Zero(nbf, nbf);
+    std::vector<Mat> results;
+    results.emplace_back(Mat::Zero(nbf, nbf));
+    for (size_t i = 1; i < nthreads; i++) {
+        results.push_back(results[0]);
+    }
+    auto f = [&results](const Result &args) {
+        auto &result = results[args.thread];
+        Eigen::Map<const occ::Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
+        result.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmp;
+        if (args.shell[0] != args.shell[1]) {
+            result.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]) =
+                tmp.transpose();
+        }
+    };
+
+    auto lambda = [&](int thread_id) {
+        evaluate_two_center<op, kind>(f, env, basis, shellpairs, thread_id);
+    };
+    occ::parallel::parallel_do(lambda);
+
+    for (auto i = 1; i < nthreads; ++i) {
+        results[0].noalias() += results[i];
+    }
+    return results[0];
+}
+
+Mat IntegralEngine::one_electron_operator(Op op) const noexcept {
+    bool spherical = is_spherical();
+    constexpr auto Cart = ShellKind::Cartesian;
+    constexpr auto Sph = ShellKind::Spherical;
+    switch (op) {
+    case Op::overlap: {
+        if (spherical) {
+            return one_electron_operator_kernel<Op::overlap, Sph>(
+                m_aobasis, m_env, m_shellpairs);
+        } else {
+            return one_electron_operator_kernel<Op::overlap, Cart>(
+                m_aobasis, m_env, m_shellpairs);
+        }
+        break;
+    }
+    case Op::nuclear: {
+        if (spherical) {
+            return one_electron_operator_kernel<Op::nuclear, Sph>(
+                m_aobasis, m_env, m_shellpairs);
+        } else {
+            return one_electron_operator_kernel<Op::nuclear, Cart>(
+                m_aobasis, m_env, m_shellpairs);
+        }
+        break;
+    }
+    case Op::kinetic: {
+        if (spherical) {
+            return one_electron_operator_kernel<Op::kinetic, Sph>(
+                m_aobasis, m_env, m_shellpairs);
+        } else {
+            return one_electron_operator_kernel<Op::kinetic, Cart>(
+                m_aobasis, m_env, m_shellpairs);
+        }
+        break;
+    }
+    case Op::coulomb: {
+        if (spherical) {
+            return one_electron_operator_kernel<Op::coulomb, Sph>(
+                m_aobasis, m_env, m_shellpairs);
+        } else {
+            return one_electron_operator_kernel<Op::coulomb, Cart>(
+                m_aobasis, m_env, m_shellpairs);
+        }
+        break;
+    }
+    default:
+        throw std::runtime_error("Invalid operator for two-center integral");
+        break;
+    }
+}
+
+template <int order, SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
+Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
+                     const ShellPairList &shellpairs,
+                     const MolecularOrbitals &mo, const Vec3 &origin) {
+
+    using Result = IntegralEngine::IntegralResult<2>;
+    static_assert(sk == SpinorbitalKind::Restricted,
+                  "Unrestricted and General cases not implemented for "
+                  "multipoles yet");
+    constexpr std::array<Op, 5> ops{Op::overlap, Op::dipole, Op::quadrupole,
+                                    Op::octapole, Op::hexadecapole};
+    constexpr Op op = ops[order];
+
+    auto nthreads = occ::parallel::get_num_threads();
+    size_t num_components = occ::core::num_unique_multipole_components(order);
+    env.set_common_origin({origin.x(), origin.y(), origin.z()});
+    std::vector<Vec> results;
+    results.push_back(Vec::Zero(num_components));
+    for (size_t i = 1; i < nthreads; i++) {
+        results.push_back(results[0]);
+    }
+    const auto &D = mo.D;
+    /*
+     * For symmetric matrices
+     * the of a matrix product tr(D @ O) is equal to
+     * the sum of the elementwise product with the transpose:
+     * tr(D @ O) == sum(D * O^T)
+     * since expectation is -2 tr(D @ O) we factor that into the
+     * inner loop
+     */
+    auto f = [&D, &results, &num_components](const Result &args) {
+        auto &result = results[args.thread];
+        size_t offset = 0;
+        double scale = (args.shell[0] != args.shell[1]) ? 2.0 : 1.0;
+        for (size_t n = 0; n < num_components; n++) {
+            Eigen::Map<const occ::Mat> tmp(args.buffer + offset, args.dims[0],
+                                           args.dims[1]);
+            result(n) += scale * (D.block(args.bf[0], args.bf[1], args.dims[0],
+                                          args.dims[1])
+                                      .array() *
+                                  tmp.array())
+                                     .sum();
+            offset += tmp.size();
+        }
+    };
+
+    auto lambda = [&](int thread_id) {
+        evaluate_two_center<op, kind>(f, env, basis, shellpairs, thread_id);
+    };
+    occ::parallel::parallel_do(lambda);
+
+    for (auto i = 1; i < nthreads; ++i) {
+        results[0].noalias() += results[i];
+    }
+
+    results[0] *= -2;
+    return results[0];
+}
+
+Vec IntegralEngine::multipole(SpinorbitalKind sk, int order,
+                              const MolecularOrbitals &mo,
+                              const Vec3 &origin) const {
+
+    bool spherical = is_spherical();
+    if (sk != SpinorbitalKind::Restricted) {
+        throw std::runtime_error(
+            "Multipole integrals only implemented for restricted case");
+    }
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto Cart = ShellKind::Cartesian;
+    constexpr auto Sph = ShellKind::Spherical;
+    switch (order) {
+    case 0:
+        if (spherical) {
+            return multipole_kernel<0, R, Sph>(m_aobasis, m_env, m_shellpairs,
+                                               mo, origin);
+        } else {
+            return multipole_kernel<0, R, Cart>(m_aobasis, m_env, m_shellpairs,
+                                                mo, origin);
+        }
+        break;
+    case 1:
+        if (spherical) {
+            return multipole_kernel<1, R, Sph>(m_aobasis, m_env, m_shellpairs,
+                                               mo, origin);
+        } else {
+            return multipole_kernel<1, R, Cart>(m_aobasis, m_env, m_shellpairs,
+                                                mo, origin);
+        }
+        break;
+    case 2:
+        if (spherical) {
+            return multipole_kernel<2, R, Sph>(m_aobasis, m_env, m_shellpairs,
+                                               mo, origin);
+        } else {
+            return multipole_kernel<2, R, Cart>(m_aobasis, m_env, m_shellpairs,
+                                                mo, origin);
+        }
+        break;
+    case 3:
+        if (spherical) {
+            return multipole_kernel<3, R, Sph>(m_aobasis, m_env, m_shellpairs,
+                                               mo, origin);
+        } else {
+            return multipole_kernel<3, R, Cart>(m_aobasis, m_env, m_shellpairs,
+                                                mo, origin);
+        }
+        break;
+    case 4:
+        if (spherical) {
+            return multipole_kernel<4, R, Sph>(m_aobasis, m_env, m_shellpairs,
+                                               mo, origin);
+        } else {
+            return multipole_kernel<4, R, Cart>(m_aobasis, m_env, m_shellpairs,
+                                                mo, origin);
+        }
+        break;
+    default:
+        throw std::runtime_error("Invalid multipole order");
+        break;
+    }
+}
+
 } // namespace occ::qm
