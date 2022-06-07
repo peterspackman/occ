@@ -382,6 +382,12 @@ class DFT {
     }
     const auto &hf() const { return m_hf; }
 
+    inline Mat compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
+                                        const qm::AOBasis &bs,
+                                        bool is_shell_diagonal) {
+        return m_hf.compute_fock_mixed_basis(kind, D_bs, bs, is_shell_diagonal);
+    }
+
     Vec
     electronic_electric_potential_contribution(occ::qm::SpinorbitalKind kind,
                                                const MolecularOrbitals &mo,

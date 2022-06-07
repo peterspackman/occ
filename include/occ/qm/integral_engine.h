@@ -455,6 +455,148 @@ class IntegralEngine {
         return F;
     }
 
+    template <ShellKind sk = ShellKind::Cartesian>
+    Mat fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
+                                  bool is_shell_diagonal) {
+        set_auxiliary_basis(D_bs.shells(), false);
+        constexpr Op op = Op::coulomb;
+        occ::timing::start(occ::timing::category::ints2e);
+        auto nthreads = occ::parallel::get_num_threads();
+
+        const int nbf = m_aobasis.nbf();
+        const int nsh = m_aobasis.size();
+        const int nbf_aux = m_auxbasis.nbf();
+        const int nsh_aux = m_auxbasis.size();
+        assert(D.cols() == D.rows() && D.cols() == n_D);
+
+        std::vector<Mat> G(nthreads, Mat::Zero(nbf, nbf));
+
+        // construct the 2-electron repulsion integrals engine
+        auto shell2bf = m_aobasis.first_bf();
+        auto shell2bf_D = m_auxbasis.first_bf();
+
+        auto lambda = [&](int thread_id) {
+            auto &g = G[thread_id];
+            occ::qm::cint::Optimizer opt(m_env, Op::coulomb, 4);
+            auto buffer = std::make_unique<double[]>(buffer_size_2e());
+
+            std::array<int, 4> idxs;
+            // loop over permutationally-unique set of shells
+            for (int s1 = 0, s1234 = 0; s1 != nsh; ++s1) {
+                int bf1_first =
+                    shell2bf[s1]; // first basis function in this shell
+                int n1 = m_aobasis[s1]
+                             .size(); // number of basis functions in this shell
+
+                for (int s2 = 0; s2 <= s1; ++s2) {
+                    int bf2_first = shell2bf[s2];
+                    int n2 = m_aobasis[s2].size();
+
+                    for (int s3 = 0; s3 < nsh_aux; ++s3) {
+                        int bf3_first = shell2bf_D[s3];
+                        int n3 = D_bs[s3].size();
+
+                        int s4_begin = is_shell_diagonal ? s3 : 0;
+                        int s4_fence = is_shell_diagonal ? s3 + 1 : nsh_aux;
+
+                        for (int s4 = s4_begin; s4 != s4_fence; ++s4, ++s1234) {
+                            if (s1234 % nthreads != thread_id)
+                                continue;
+
+                            int bf4_first = shell2bf_D[s4];
+                            int n4 = D_bs[s4].size();
+
+                            // compute the permutational degeneracy (i.e. # of
+                            // equivalents) of the given shell set
+                            double s12_deg = (s1 == s2) ? 1.0 : 2.0;
+
+                            std::array<int, 4> dims;
+                            if (s3 >= s4) {
+                                double s34_deg = (s3 == s4) ? 1.0 : 2.0;
+                                double s1234_deg = s12_deg * s34_deg;
+                                // auto s1234_deg = s12_deg;
+                                std::array<int, 4> idxs{s1, s2, s3 + nsh,
+                                                        s4 + nsh};
+                                dims = m_env.four_center_helper<op, sk>(
+                                    idxs, opt.optimizer_ptr(), buffer.get(),
+                                    nullptr);
+
+                                if (dims[0] >= 0) {
+                                    const auto *buf_1234 = buffer.get();
+                                    for (auto f4 = 0, f1234 = 0; f4 != n4;
+                                         ++f4) {
+                                        const auto bf4 = f4 + bf4_first;
+                                        for (auto f3 = 0; f3 != n3; ++f3) {
+                                            const auto bf3 = f3 + bf3_first;
+                                            for (auto f2 = 0; f2 != n2; ++f2) {
+                                                const auto bf2 = f2 + bf2_first;
+                                                for (auto f1 = 0; f1 != n1;
+                                                     ++f1, ++f1234) {
+                                                    const auto bf1 =
+                                                        f1 + bf1_first;
+
+                                                    const auto value =
+                                                        buf_1234[f1234];
+                                                    const auto
+                                                        value_scal_by_deg =
+                                                            value * s1234_deg;
+                                                    g(bf1, bf2) +=
+                                                        2.0 * D(bf3, bf4) *
+                                                        value_scal_by_deg;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            std::array<int, 4> idxs{s1, s3 + nsh, s2, s4 + nsh};
+                            dims = m_env.four_center_helper<op, sk>(
+                                idxs, opt.optimizer_ptr(), buffer.get(),
+                                nullptr);
+                            if (dims[0] < 0)
+                                continue;
+
+                            const auto *buf_1324 = buffer.get();
+
+                            for (auto f4 = 0, f1324 = 0; f4 != n4; ++f4) {
+                                const auto bf4 = f4 + bf4_first;
+                                for (auto f2 = 0; f2 != n2; ++f2) {
+                                    const auto bf2 = f2 + bf2_first;
+                                    for (auto f3 = 0; f3 != n3; ++f3) {
+                                        const auto bf3 = f3 + bf3_first;
+                                        for (auto f1 = 0; f1 != n1;
+                                             ++f1, ++f1324) {
+                                            const auto bf1 = f1 + bf1_first;
+
+                                            const auto value = buf_1324[f1324];
+                                            const auto value_scal_by_deg =
+                                                value * s12_deg;
+                                            g(bf1, bf2) -=
+                                                D(bf3, bf4) * value_scal_by_deg;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }; // thread lambda
+
+        occ::parallel::parallel_do(lambda);
+
+        // accumulate contributions from all threads
+        for (size_t i = 1; i != nthreads; ++i) {
+            G[0] += G[i];
+        }
+        occ::timing::stop(occ::timing::category::ints2e);
+
+        clear_auxiliary_basis();
+        // symmetrize the result and return
+        return 0.5 * (G[0] + G[0].transpose());
+    }
+
     template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
     Mat coulomb(const MolecularOrbitals &mo,
                 const Mat &Schwarz = Mat()) const noexcept {

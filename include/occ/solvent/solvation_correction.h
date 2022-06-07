@@ -7,6 +7,7 @@
 #include <occ/core/units.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/occshell.h>
 #include <occ/solvent/cosmo.h>
 #include <occ/solvent/parameters.h>
 
@@ -253,6 +254,13 @@ template <typename Proc> class SolvationCorrectedProcedure {
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const {
         return m_proc.compute_fock(kind, mo, precision, Schwarz);
+    }
+
+    Mat compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
+                                 const qm::AOBasis &bs,
+                                 bool is_shell_diagonal) {
+        return m_proc.compute_fock_mixed_basis(kind, D_bs, bs,
+                                               is_shell_diagonal);
     }
 
     void set_solvent(const std::string &solvent) {

@@ -9,6 +9,7 @@
 #include <occ/qm/guess_density.h>
 #include <occ/qm/ints.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/occshell.h>
 #include <occ/qm/opmatrix.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
@@ -273,25 +274,11 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             // by diagonalizing a Fock matrix
             occ::log::debug(
                 "Projecting minimal basis guess into atomic orbital basis...");
+            auto minbs2 = occ::qm::AOBasis(m_procedure.atoms(),
+                                           occ::qm::from_libint2_basis(minbs));
 
-            if constexpr (spinorbital_kind == Restricted) {
-                F += occ::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs, minbs, true,
-                    std::numeric_limits<double>::epsilon());
-            } else if constexpr (spinorbital_kind == Unrestricted) {
-                block::a(F) += occ::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs, minbs, true,
-                    std::numeric_limits<double>::epsilon());
-
-                block::b(F) = block::a(F);
-            } else if constexpr (spinorbital_kind == General) {
-                // TODO fix multiplicity != 1
-                block::aa(F) += occ::ints::compute_2body_fock_mixed_basis(
-                    m_procedure.basis(), D_minbs, minbs, true,
-                    std::numeric_limits<double>::epsilon());
-                block::bb(F) = block::aa(F);
-            }
-
+            F += m_procedure.compute_fock_mixed_basis(spinorbital_kind, D_minbs,
+                                                      minbs2, true);
             mo.update(X, F);
             mo.update_density_matrix();
 

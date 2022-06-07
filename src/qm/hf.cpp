@@ -82,6 +82,53 @@ Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
     }
 }
 
+Mat HartreeFock::compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
+                                          const qm::AOBasis &bs,
+                                          bool is_shell_diagonal) {
+    using Kind = occ::qm::OccShell::Kind;
+    if (kind == SpinorbitalKind::Restricted) {
+        if (m_engine.is_spherical()) {
+            return m_engine.fock_operator_mixed_basis<Kind::Spherical>(
+                D_bs, bs, is_shell_diagonal);
+        } else {
+            return m_engine.fock_operator_mixed_basis<Kind::Cartesian>(
+                D_bs, bs, is_shell_diagonal);
+        }
+    } else if (kind == SpinorbitalKind::Unrestricted) {
+        const auto [rows, cols] =
+            occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(
+                m_engine.aobasis().nbf());
+        Mat F = Mat::Zero(rows, cols);
+        if (m_engine.is_spherical()) {
+            qm::block::a(F) =
+                m_engine.fock_operator_mixed_basis<Kind::Spherical>(
+                    D_bs, bs, is_shell_diagonal);
+        } else {
+            qm::block::a(F) =
+                m_engine.fock_operator_mixed_basis<Kind::Cartesian>(
+                    D_bs, bs, is_shell_diagonal);
+        }
+        qm::block::b(F) = qm::block::a(F);
+        return F;
+    } else if (kind == SpinorbitalKind::General) {
+        const auto [rows, cols] =
+            occ::qm::matrix_dimensions<SpinorbitalKind::General>(
+                m_engine.aobasis().nbf());
+        Mat F = Mat::Zero(rows, cols);
+        if (m_engine.is_spherical()) {
+            qm::block::aa(F) =
+                m_engine.fock_operator_mixed_basis<Kind::Spherical>(
+                    D_bs, bs, is_shell_diagonal);
+        } else {
+            qm::block::aa(F) =
+                m_engine.fock_operator_mixed_basis<Kind::Cartesian>(
+                    D_bs, bs, is_shell_diagonal);
+        }
+        qm::block::bb(F) = qm::block::aa(F);
+        return F;
+    }
+}
+
 std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind,
                                             const MolecularOrbitals &mo,
                                             double precision,

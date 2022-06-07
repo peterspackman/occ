@@ -51,6 +51,9 @@ class HartreeFock {
     Mat compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const;
+
+    Mat compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
+                                 const qm::AOBasis &bs, bool is_shell_diagonal);
     std::pair<Mat, Mat>
     compute_JK(SpinorbitalKind kind, const MolecularOrbitals &mo,
                double precision = std::numeric_limits<double>::epsilon(),
