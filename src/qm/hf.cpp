@@ -22,6 +22,10 @@ HartreeFock::HartreeFock(const std::vector<occ::core::Atom> &atoms,
     : m_atoms(atoms), m_basis(basis),
       m_fockbuilder(basis.max_nprim(), basis.max_l()),
       m_engine(atoms, occ::qm::from_libint2_basis(basis)) {
+
+    std::tie(m_shellpair_list, m_shellpair_data) =
+        occ::ints::compute_shellpairs(m_basis);
+
     for (const auto &a : m_atoms) {
         m_num_e += a.atomic_number;
     }
@@ -44,41 +48,10 @@ double HartreeFock::nuclear_repulsion_energy() const {
 
 Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
                               double precision, const Mat &Schwarz) const {
-    using Kind = occ::qm::OccShell::Kind;
-    if (kind == SpinorbitalKind::General) {
-        if (m_engine.is_spherical()) {
-            return m_engine
-                .fock_operator<SpinorbitalKind::General, Kind::Spherical>(
-                    mo, Schwarz);
-        } else {
-            return m_engine
-                .fock_operator<SpinorbitalKind::General, Kind::Cartesian>(
-                    mo, Schwarz);
-        }
-    }
-    if (kind == SpinorbitalKind::Unrestricted) {
-        if (m_engine.is_spherical()) {
-            return m_engine
-                .fock_operator<SpinorbitalKind::Unrestricted, Kind::Spherical>(
-                    mo, Schwarz);
-        } else {
-            return m_engine
-                .fock_operator<SpinorbitalKind::Unrestricted, Kind::Cartesian>(
-                    mo, Schwarz);
-        }
-    }
     if (m_df_fock_engine) {
         return (*m_df_fock_engine).compute_fock(mo, precision, Schwarz);
     } else {
-        if (m_engine.is_spherical()) {
-            return m_engine
-                .fock_operator<SpinorbitalKind::Restricted, Kind::Spherical>(
-                    mo, Schwarz);
-        } else {
-            return m_engine
-                .fock_operator<SpinorbitalKind::Restricted, Kind::Cartesian>(
-                    mo, Schwarz);
-        }
+        return m_engine.fock_operator(kind, mo, Schwarz);
     }
 }
 
@@ -87,43 +60,23 @@ Mat HartreeFock::compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
                                           bool is_shell_diagonal) {
     using Kind = occ::qm::OccShell::Kind;
     if (kind == SpinorbitalKind::Restricted) {
-        if (m_engine.is_spherical()) {
-            return m_engine.fock_operator_mixed_basis<Kind::Spherical>(
-                D_bs, bs, is_shell_diagonal);
-        } else {
-            return m_engine.fock_operator_mixed_basis<Kind::Cartesian>(
-                D_bs, bs, is_shell_diagonal);
-        }
+        return m_engine.fock_operator_mixed_basis(D_bs, bs, is_shell_diagonal);
     } else if (kind == SpinorbitalKind::Unrestricted) {
         const auto [rows, cols] =
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(
                 m_engine.aobasis().nbf());
         Mat F = Mat::Zero(rows, cols);
-        if (m_engine.is_spherical()) {
-            qm::block::a(F) =
-                m_engine.fock_operator_mixed_basis<Kind::Spherical>(
-                    D_bs, bs, is_shell_diagonal);
-        } else {
-            qm::block::a(F) =
-                m_engine.fock_operator_mixed_basis<Kind::Cartesian>(
-                    D_bs, bs, is_shell_diagonal);
-        }
+        qm::block::a(F) =
+            m_engine.fock_operator_mixed_basis(D_bs, bs, is_shell_diagonal);
         qm::block::b(F) = qm::block::a(F);
         return F;
-    } else if (kind == SpinorbitalKind::General) {
+    } else { // kind == SpinorbitalKind::General
         const auto [rows, cols] =
             occ::qm::matrix_dimensions<SpinorbitalKind::General>(
                 m_engine.aobasis().nbf());
         Mat F = Mat::Zero(rows, cols);
-        if (m_engine.is_spherical()) {
-            qm::block::aa(F) =
-                m_engine.fock_operator_mixed_basis<Kind::Spherical>(
-                    D_bs, bs, is_shell_diagonal);
-        } else {
-            qm::block::aa(F) =
-                m_engine.fock_operator_mixed_basis<Kind::Cartesian>(
-                    D_bs, bs, is_shell_diagonal);
-        }
+        qm::block::aa(F) =
+            m_engine.fock_operator_mixed_basis(D_bs, bs, is_shell_diagonal);
         qm::block::bb(F) = qm::block::aa(F);
         return F;
     }
@@ -133,73 +86,19 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind,
                                             const MolecularOrbitals &mo,
                                             double precision,
                                             const Mat &Schwarz) const {
-    using Kind = occ::qm::OccShell::Kind;
-    if (kind == SpinorbitalKind::General) {
-        if (m_engine.is_spherical()) {
-            return m_engine.coulomb_and_exchange<SpinorbitalKind::General,
-                                                 Kind::Spherical>(mo, Schwarz);
-        } else {
-            return m_engine.coulomb_and_exchange<SpinorbitalKind::General,
-                                                 Kind::Cartesian>(mo, Schwarz);
-        }
-    }
-    if (kind == SpinorbitalKind::Unrestricted) {
-        if (m_engine.is_spherical()) {
-            return m_engine.coulomb_and_exchange<SpinorbitalKind::Unrestricted,
-                                                 Kind::Spherical>(mo, Schwarz);
-        } else {
-            return m_engine.coulomb_and_exchange<SpinorbitalKind::Unrestricted,
-                                                 Kind::Cartesian>(mo, Schwarz);
-        }
-    }
     if (m_df_fock_engine) {
         return (*m_df_fock_engine).compute_JK(mo, precision, Schwarz);
     } else {
-        if (m_engine.is_spherical()) {
-            return m_engine.coulomb_and_exchange<SpinorbitalKind::Restricted,
-                                                 Kind::Spherical>(mo, Schwarz);
-        } else {
-            return m_engine.coulomb_and_exchange<SpinorbitalKind::Restricted,
-                                                 Kind::Cartesian>(mo, Schwarz);
-        }
+        return m_engine.coulomb_and_exchange(kind, mo, Schwarz);
     }
 }
 
 Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
                            double precision, const Mat &Schwarz) const {
-    using Kind = occ::qm::OccShell::Kind;
-    if (kind == SpinorbitalKind::General) {
-        if (m_engine.is_spherical()) {
-            return m_engine.coulomb<SpinorbitalKind::General, Kind::Spherical>(
-                mo, Schwarz);
-        } else {
-            return m_engine.coulomb<SpinorbitalKind::General, Kind::Cartesian>(
-                mo, Schwarz);
-        }
-    }
-    if (kind == SpinorbitalKind::Unrestricted) {
-        if (m_engine.is_spherical()) {
-            return m_engine
-                .coulomb<SpinorbitalKind::Unrestricted, Kind::Spherical>(
-                    mo, Schwarz);
-        } else {
-            return m_engine
-                .coulomb<SpinorbitalKind::Unrestricted, Kind::Cartesian>(
-                    mo, Schwarz);
-        }
-    }
     if (m_df_fock_engine) {
         return (*m_df_fock_engine).compute_J(mo, precision, Schwarz);
     } else {
-        if (m_engine.is_spherical()) {
-            return m_engine
-                .coulomb<SpinorbitalKind::Restricted, Kind::Spherical>(mo,
-                                                                       Schwarz);
-        } else {
-            return m_engine
-                .coulomb<SpinorbitalKind::Restricted, Kind::Cartesian>(mo,
-                                                                       Schwarz);
-        }
+        return m_engine.coulomb(kind, mo, Schwarz);
     }
 }
 

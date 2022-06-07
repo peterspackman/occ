@@ -74,14 +74,33 @@ TEST_CASE("Water def2-tzvp", "[cint]") {
     occ::qm::MolecularOrbitals mo;
     mo.Cocc = Mat::Random(engine.nbf(), 4);
     mo.D = mo.Cocc * mo.Cocc.transpose();
+
+    Mat coulomb2c = engine.one_electron_operator(IntegralEngine::Op::coulomb);
+    const auto &b = engine.aobasis();
+    Mat schw3 = Mat::Zero(b.size(), b.size());
+
+    for (size_t i = 0; i < b.size(); i++) {
+        int bf1 = b.first_bf()[i];
+        const auto &sh1 = b[i];
+        for (size_t j = 0; j <= i; j++) {
+            int bf2 = b.first_bf()[j];
+            const auto &sh2 = b[j];
+            schw3(i, j) = coulomb2c.block(bf1, bf2, sh1.size(), sh2.size())
+                              .lpNorm<Eigen::Infinity>();
+            schw3(j, i) = schw3(i, j);
+        }
+    }
+
     occ::Mat f1 = fock.compute_fock<SpinorbitalKind::Restricted>(
         basis, hf.shellpair_list(), hf.shellpair_data(), mo);
-    occ::Mat f2 = engine.fock_operator<SpinorbitalKind::Restricted, kind>(mo);
+    occ::Mat f2 = engine.fock_operator(SpinorbitalKind::Restricted, mo);
     fmt::print("Fock max err: {}\n", (f2 - f1).cwiseAbs().maxCoeff());
 
     Mat schw1 = hf.compute_schwarz_ints();
     Mat schw2 = engine.schwarz<kind>();
     fmt::print("Schwarz max err: {}\n", (schw2 - schw1).cwiseAbs().maxCoeff());
+    fmt::print("Schwarz max err (new): {}\n",
+               (schw3 - schw1).cwiseAbs().maxCoeff());
 
     occ::Mat3N pos = (occ::Mat3N::Random(3, 128).array() - 0.5) * 10;
     std::vector<occ::core::PointCharge> chgs;
@@ -115,9 +134,7 @@ TEST_CASE("Water def2-tzvp", "[cint]") {
                std::chrono::duration<double>(t2 - t1).count());
     IntegralEngine engine_aux(atoms, dfbasis2);
     t1 = std::chrono::high_resolution_clock::now();
-    auto V2 =
-        engine_aux
-            .one_electron_operator<occ::qm::cint::Operator::coulomb, kind>();
+    auto V2 = engine_aux.one_electron_operator(Operator::coulomb);
     t2 = std::chrono::high_resolution_clock::now();
     fmt::print("libcint: {:.6f} s\n",
                std::chrono::duration<double>(t2 - t1).count());
