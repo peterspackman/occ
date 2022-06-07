@@ -14,6 +14,60 @@ double common_fac(int l) {
     }
 }
 
+Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
+    occ::timing::start(occ::timing::category::gto);
+    size_t nbf = basis.nbf();
+    size_t natoms = basis.atoms().size();
+    auto shell2bf = basis.first_bf();
+    auto atom2shell = basis.atom_to_shell();
+    size_t max_shell_size = basis.max_shell_size();
+    const double max_radius = 30.0;
+    const double threshold = 1e-12;
+    const double increment = 0.1;
+    const double min_radius = 5.0;
+    const int npts =
+        static_cast<int>((max_radius - min_radius) / increment) + 1;
+    Mat3N pts = Mat3N::Zero(3, npts);
+    pts.row(0).array() = 1.0;
+    pts.row(0).array() *= Vec::LinSpaced(npts, min_radius, max_radius).array();
+    Mat values(npts, max_shell_size);
+    Vec result(basis.size());
+    for (size_t i = 0; i < natoms; i++) {
+        for (const auto &shell_idx : atom2shell[i]) {
+            const auto &sh = basis[shell_idx];
+            pts.colwise() += sh.origin;
+            occ::timing::start(occ::timing::category::gto_shell);
+            size_t bf = shell2bf[shell_idx];
+            double *output = values.data();
+            const double *xyz = pts.data();
+            long int xyz_stride = 3;
+            const double *coeffs = sh.contraction_coefficients.data();
+            const double *alpha = sh.exponents.data();
+            const double *center = sh.origin.data();
+            int L = sh.l;
+            double fac = common_fac(L);
+            int order = (sh.kind == qm::OccShell::Kind::Spherical)
+                            ? GG_SPHERICAL_CCA
+                            : GG_CARTESIAN_CCA;
+            gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(),
+                           coeffs, alpha, center, order, output);
+            values.array() *= fac;
+            for (int i = 0; i < values.rows(); i++) {
+                result(shell_idx) = i * increment + min_radius;
+                double v = values.block(i, 0, 1, sh.size())
+                               .cwiseAbs()
+                               .lpNorm<Eigen::Infinity>();
+                if (v < threshold)
+                    break;
+            }
+            occ::timing::stop(occ::timing::category::gto_shell);
+            pts.colwise() -= sh.origin;
+        }
+    }
+    occ::timing::stop(occ::timing::category::gto);
+    return result;
+}
+
 void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
                     GTOValues &gto_values, int max_derivative) {
     occ::timing::start(occ::timing::category::gto);

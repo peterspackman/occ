@@ -65,6 +65,7 @@ struct OccShell {
     Vec exponents;
     Mat contraction_coefficients;
     Vec max_ln_coefficient;
+    double extent{0.0};
 };
 
 class AOBasis {

@@ -1,6 +1,7 @@
 #include <cmath>
 #include <occ/core/constants.h>
 #include <occ/core/util.h>
+#include <occ/gto/gto.h>
 #include <occ/qm/basisset.h>
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/occshell.h>
@@ -375,6 +376,10 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
             m_bf_to_shell.push_back(shell_idx);
         }
         ++shell_idx;
+    }
+    Vec extents = occ::gto::evaluate_decay_cutoff(*this);
+    for (size_t i = 0; i < m_shells.size(); i++) {
+        m_shells[i].extent = extents(i);
     }
 }
 

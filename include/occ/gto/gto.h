@@ -219,6 +219,8 @@ inline GTOValues evaluate_basis(const qm::AOBasis &basis,
     return gto_values;
 }
 
+Vec evaluate_decay_cutoff(const qm::AOBasis &basis);
+
 template <int max_derivative = 0>
 void evaluate_basis(const BasisSet &basis,
                     const std::vector<occ::core::Atom> &atoms,

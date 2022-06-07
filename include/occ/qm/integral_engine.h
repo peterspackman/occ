@@ -273,11 +273,20 @@ class IntegralEngine {
                 args.shell[0] = p;
                 const auto &shp = m_aobasis[p];
                 const auto &plist = m_shellpairs.at(p);
+                if ((shp.extent > 0.0) &&
+                    (shp.origin - shauxP.origin).norm() > shp.extent) {
+                    continue;
+                }
                 for (const int &q : plist) {
                     args.bf[1] = first_bf_ao[q];
                     args.shell[1] = q;
+                    const auto &shq = m_aobasis[q];
                     shell_idx = {p, q,
                                  auxP + static_cast<int>(m_aobasis.size())};
+                    if ((shq.extent > 0.0) &&
+                        (shq.origin - shauxP.origin).norm() > shq.extent) {
+                        continue;
+                    }
                     args.dims = m_env.three_center_helper<Op::coulomb, kind>(
                         shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
                     if (args.dims[0] > -1) {

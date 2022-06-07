@@ -90,9 +90,6 @@ Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
 
     Mat Sn = Mat::Zero(nbf, nbf);
 
-    libint2::Engine engine = libint2::Engine(
-        Operator::nuclear, m_basis.max_nprim(), m_basis.max_l(), 0);
-
     Mat D2q = m_overlap_projector * D2;
     Mat K = Mat::Zero(nbf, nbf);
     const auto &basis = m_engine.aobasis();
