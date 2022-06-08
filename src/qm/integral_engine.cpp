@@ -391,9 +391,6 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
                      const MolecularOrbitals &mo, const Vec3 &origin) {
 
     using Result = IntegralEngine::IntegralResult<2>;
-    static_assert(sk == SpinorbitalKind::Restricted,
-                  "Unrestricted and General cases not implemented for "
-                  "multipoles yet");
     constexpr std::array<Op, 5> ops{Op::overlap, Op::dipole, Op::quadrupole,
                                     Op::octapole, Op::hexadecapole};
     constexpr Op op = ops[order];
@@ -422,11 +419,51 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
         for (size_t n = 0; n < num_components; n++) {
             Eigen::Map<const occ::Mat> tmp(args.buffer + offset, args.dims[0],
                                            args.dims[1]);
-            result(n) += scale * (D.block(args.bf[0], args.bf[1], args.dims[0],
-                                          args.dims[1])
-                                      .array() *
-                                  tmp.array())
-                                     .sum();
+            if constexpr (sk == SpinorbitalKind::Restricted) {
+                result(n) += scale * (D.block(args.bf[0], args.bf[1],
+                                              args.dims[0], args.dims[1])
+                                          .array() *
+                                      tmp.array())
+                                         .sum();
+            } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
+                const auto Da = qm::block::a(D);
+                const auto Db = qm::block::b(D);
+                result(n) += scale * (Da.block(args.bf[0], args.bf[1],
+                                               args.dims[0], args.dims[1])
+                                          .array() *
+                                      tmp.array())
+                                         .sum();
+                result(n) += scale * (Db.block(args.bf[0], args.bf[1],
+                                               args.dims[0], args.dims[1])
+                                          .array() *
+                                      tmp.array())
+                                         .sum();
+            } else if constexpr (sk == SpinorbitalKind::General) {
+                const auto Daa = qm::block::aa(D);
+                const auto Dab = qm::block::ab(D);
+                const auto Dba = qm::block::ba(D);
+                const auto Dbb = qm::block::bb(D);
+                result(n) += scale * (Daa.block(args.bf[0], args.bf[1],
+                                                args.dims[0], args.dims[1])
+                                          .array() *
+                                      tmp.array())
+                                         .sum();
+                result(n) += scale * (Dab.block(args.bf[0], args.bf[1],
+                                                args.dims[0], args.dims[1])
+                                          .array() *
+                                      tmp.array())
+                                         .sum();
+                result(n) += scale * (Dba.block(args.bf[0], args.bf[1],
+                                                args.dims[0], args.dims[1])
+                                          .array() *
+                                      tmp.array())
+                                         .sum();
+                result(n) += scale * (Dbb.block(args.bf[0], args.bf[1],
+                                                args.dims[0], args.dims[1])
+                                          .array() *
+                                      tmp.array())
+                                         .sum();
+            }
             offset += tmp.size();
         }
     };
@@ -449,62 +486,164 @@ Vec IntegralEngine::multipole(SpinorbitalKind sk, int order,
                               const Vec3 &origin) const {
 
     bool spherical = is_spherical();
-    if (sk != SpinorbitalKind::Restricted) {
-        throw std::runtime_error(
-            "Multipole integrals only implemented for restricted case");
-    }
     constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
     constexpr auto Cart = ShellKind::Cartesian;
     constexpr auto Sph = ShellKind::Spherical;
-    switch (order) {
-    case 0:
-        if (spherical) {
-            return multipole_kernel<0, R, Sph>(m_aobasis, m_env, m_shellpairs,
-                                               mo, origin);
-        } else {
-            return multipole_kernel<0, R, Cart>(m_aobasis, m_env, m_shellpairs,
-                                                mo, origin);
+    if (sk == R) {
+        switch (order) {
+        case 0:
+            if (spherical) {
+                return multipole_kernel<0, R, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<0, R, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 1:
+            if (spherical) {
+                return multipole_kernel<1, R, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<1, R, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 2:
+            if (spherical) {
+                return multipole_kernel<2, R, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<2, R, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 3:
+            if (spherical) {
+                return multipole_kernel<3, R, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<3, R, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 4:
+            if (spherical) {
+                return multipole_kernel<4, R, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<4, R, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        default:
+            throw std::runtime_error("Invalid multipole order");
+            break;
         }
-        break;
-    case 1:
-        if (spherical) {
-            return multipole_kernel<1, R, Sph>(m_aobasis, m_env, m_shellpairs,
-                                               mo, origin);
-        } else {
-            return multipole_kernel<1, R, Cart>(m_aobasis, m_env, m_shellpairs,
-                                                mo, origin);
+    } else if (sk == U) {
+        switch (order) {
+        case 0:
+            if (spherical) {
+                return multipole_kernel<0, U, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<0, U, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 1:
+            if (spherical) {
+                return multipole_kernel<1, U, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<1, U, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 2:
+            if (spherical) {
+                return multipole_kernel<2, U, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<2, U, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 3:
+            if (spherical) {
+                return multipole_kernel<3, U, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<3, U, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 4:
+            if (spherical) {
+                return multipole_kernel<4, U, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<4, U, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        default:
+            throw std::runtime_error("Invalid multipole order");
+            break;
         }
-        break;
-    case 2:
-        if (spherical) {
-            return multipole_kernel<2, R, Sph>(m_aobasis, m_env, m_shellpairs,
-                                               mo, origin);
-        } else {
-            return multipole_kernel<2, R, Cart>(m_aobasis, m_env, m_shellpairs,
-                                                mo, origin);
+    } else { // if (sk == G)
+        switch (order) {
+        case 0:
+            if (spherical) {
+                return multipole_kernel<0, G, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<0, G, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 1:
+            if (spherical) {
+                return multipole_kernel<1, G, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<1, G, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 2:
+            if (spherical) {
+                return multipole_kernel<2, G, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<2, G, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 3:
+            if (spherical) {
+                return multipole_kernel<3, G, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<3, G, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        case 4:
+            if (spherical) {
+                return multipole_kernel<4, G, Sph>(m_aobasis, m_env,
+                                                   m_shellpairs, mo, origin);
+            } else {
+                return multipole_kernel<4, G, Cart>(m_aobasis, m_env,
+                                                    m_shellpairs, mo, origin);
+            }
+            break;
+        default:
+            throw std::runtime_error("Invalid multipole order");
+            break;
         }
-        break;
-    case 3:
-        if (spherical) {
-            return multipole_kernel<3, R, Sph>(m_aobasis, m_env, m_shellpairs,
-                                               mo, origin);
-        } else {
-            return multipole_kernel<3, R, Cart>(m_aobasis, m_env, m_shellpairs,
-                                                mo, origin);
-        }
-        break;
-    case 4:
-        if (spherical) {
-            return multipole_kernel<4, R, Sph>(m_aobasis, m_env, m_shellpairs,
-                                               mo, origin);
-        } else {
-            return multipole_kernel<4, R, Cart>(m_aobasis, m_env, m_shellpairs,
-                                                mo, origin);
-        }
-        break;
-    default:
-        throw std::runtime_error("Invalid multipole order");
-        break;
     }
 }
 
