@@ -30,6 +30,7 @@ class HartreeFock {
     const auto &shellpair_data() const { return m_shellpair_data; }
     const auto &atoms() const { return m_atoms; }
     const auto &basis() const { return m_basis; }
+    const auto &aobasis() const { return m_engine.aobasis(); }
 
     int system_charge() const { return m_charge; }
     int num_e() const { return m_num_e; }

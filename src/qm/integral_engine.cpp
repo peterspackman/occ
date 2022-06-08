@@ -236,78 +236,6 @@ void delegate_j(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
 
 } // namespace impl
 
-namespace cint {
-
-Optimizer::Optimizer(IntegralEnvironment &env, Operator op, int num_center)
-    : m_op(op), m_num_center(num_center) {
-    switch (m_num_center) {
-    case 1:
-    case 2:
-        create1or2c(env);
-        break;
-    case 3:
-        create3c(env);
-        break;
-    case 4:
-        create4c(env);
-        break;
-    default:
-        throw std::runtime_error("Invalid num centers for cint::Optimizer");
-    }
-}
-
-Optimizer::~Optimizer() { libcint::CINTdel_optimizer(&m_optimizer); }
-
-void Optimizer::create1or2c(IntegralEnvironment &env) {
-    switch (m_op) {
-    case Operator::coulomb:
-        libcint::int2c2e_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                   env.num_atoms(), env.basis_data_ptr(),
-                                   env.num_basis(), env.env_data_ptr());
-        break;
-    case Operator::nuclear:
-        libcint::int1e_nuc_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                     env.num_atoms(), env.basis_data_ptr(),
-                                     env.num_basis(), env.env_data_ptr());
-        break;
-    case Operator::kinetic:
-        libcint::int1e_kin_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                     env.num_atoms(), env.basis_data_ptr(),
-                                     env.num_basis(), env.env_data_ptr());
-        break;
-    case Operator::overlap:
-        libcint::int1e_ovlp_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                      env.num_atoms(), env.basis_data_ptr(),
-                                      env.num_basis(), env.env_data_ptr());
-        break;
-    }
-}
-void Optimizer::create3c(IntegralEnvironment &env) {
-    switch (m_op) {
-    case Operator::coulomb:
-        libcint::int3c2e_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                   env.num_atoms(), env.basis_data_ptr(),
-                                   env.num_basis(), env.env_data_ptr());
-        break;
-    default:
-        throw std::runtime_error(
-            "Invalid operator for 3-center integral optimizer");
-    }
-}
-void Optimizer::create4c(IntegralEnvironment &env) {
-    switch (m_op) {
-    case Operator::coulomb:
-        libcint::int2e_optimizer(&m_optimizer, env.atom_data_ptr(),
-                                 env.num_atoms(), env.basis_data_ptr(),
-                                 env.num_basis(), env.env_data_ptr());
-        break;
-    default:
-        throw std::runtime_error(
-            "Invalid operator for 4-center integral optimizer");
-    }
-}
-} // namespace cint
-
 using ShellList = std::vector<OccShell>;
 using AtomList = std::vector<occ::core::Atom>;
 using ShellPairList = std::vector<std::vector<size_t>>;
@@ -652,11 +580,7 @@ Mat fock_operator_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     using Result = IntegralEngine::IntegralResult<4>;
     auto nthreads = occ::parallel::get_num_threads();
     constexpr Op op = Op::coulomb;
-    std::vector<Mat> Fmats;
-    Fmats.emplace_back(Mat::Zero(mo.D.rows(), mo.D.cols()));
-    for (size_t i = 1; i < nthreads; i++) {
-        Fmats.push_back(Fmats[0]);
-    }
+    std::vector<Mat> Fmats(nthreads, Mat::Zero(mo.D.rows(), mo.D.cols()));
     Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
 
     const auto &D = mo.D;
@@ -726,12 +650,7 @@ Mat coulomb_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     using Result = IntegralEngine::IntegralResult<4>;
     auto nthreads = occ::parallel::get_num_threads();
     constexpr Op op = Op::coulomb;
-    std::vector<Mat> Jmats;
-    Jmats.emplace_back(Mat::Zero(mo.D.rows(), mo.D.cols()));
-    for (size_t i = 1; i < nthreads; i++) {
-        Jmats.push_back(Jmats[0]);
-    }
-
+    std::vector<Mat> Jmats(nthreads, Mat::Zero(mo.D.rows(), mo.D.cols()));
     Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
 
     const auto &D = mo.D;
@@ -805,15 +724,8 @@ std::pair<Mat, Mat> coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
     using Result = IntegralEngine::IntegralResult<4>;
     auto nthreads = occ::parallel::get_num_threads();
     constexpr Op op = Op::coulomb;
-    std::vector<Mat> Jmats;
-    std::vector<Mat> Kmats;
-    Jmats.emplace_back(Mat::Zero(mo.D.rows(), mo.D.cols()));
-    Kmats.emplace_back(Mat::Zero(mo.D.rows(), mo.D.cols()));
-    for (size_t i = 1; i < nthreads; i++) {
-        Jmats.push_back(Jmats[0]);
-        Kmats.push_back(Kmats[0]);
-    }
-
+    std::vector<Mat> Jmats(nthreads, Mat::Zero(mo.D.rows(), mo.D.cols()));
+    std::vector<Mat> Kmats(nthreads, Mat::Zero(mo.D.rows(), mo.D.cols()));
     Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
 
     const auto &D = mo.D;
@@ -871,8 +783,8 @@ std::pair<Mat, Mat> coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
             {
                 auto Ka = occ::qm::block::a(Kmats[i]);
                 auto Kb = occ::qm::block::b(Kmats[i]);
-                occ::qm::block::a(J).noalias() += (Ka + Ka.transpose());
-                occ::qm::block::b(J).noalias() += (Kb + Kb.transpose());
+                occ::qm::block::a(K).noalias() += (Ka + Ka.transpose());
+                occ::qm::block::b(K).noalias() += (Kb + Kb.transpose());
             }
         } else if constexpr (sk == SpinorbitalKind::General) {
             {
@@ -890,10 +802,10 @@ std::pair<Mat, Mat> coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
                 auto Kab = occ::qm::block::ab(Kmats[i]);
                 auto Kba = occ::qm::block::ba(Kmats[i]);
                 auto Kbb = occ::qm::block::bb(Kmats[i]);
-                occ::qm::block::aa(J).noalias() += (Kaa + Kaa.transpose());
-                occ::qm::block::ab(J).noalias() += (Kab + Kab.transpose());
-                occ::qm::block::ba(J).noalias() += (Kba + Kba.transpose());
-                occ::qm::block::bb(J).noalias() += (Kbb + Kbb.transpose());
+                occ::qm::block::aa(K).noalias() += (Kaa + Kaa.transpose());
+                occ::qm::block::ab(K).noalias() += (Kab + Kab.transpose());
+                occ::qm::block::ba(K).noalias() += (Kba + Kba.transpose());
+                occ::qm::block::bb(K).noalias() += (Kbb + Kbb.transpose());
             }
         }
     }
@@ -1036,14 +948,14 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
     const int nsh_aux = m_auxbasis.size();
     assert(D.cols() == D.rows() && D.cols() == nbf_aux);
 
-    std::vector<Mat> G(nthreads, Mat::Zero(nbf, nbf));
+    std::vector<Mat> Fmats(nthreads, Mat::Zero(nbf, nbf));
 
     // construct the 2-electron repulsion integrals engine
     auto shell2bf = m_aobasis.first_bf();
     auto shell2bf_D = m_auxbasis.first_bf();
 
     auto lambda = [&](int thread_id) {
-        auto &g = G[thread_id];
+        auto &F = Fmats[thread_id];
         occ::qm::cint::Optimizer opt(m_env, Op::coulomb, 4);
         auto buffer = std::make_unique<double[]>(buffer_size_2e());
 
@@ -1108,7 +1020,7 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
                                                     buf_1234[f1234];
                                                 const auto value_scal_by_deg =
                                                     value * s1234_deg;
-                                                g(bf1, bf2) +=
+                                                F(bf1, bf2) +=
                                                     2.0 * D(bf3, bf4) *
                                                     value_scal_by_deg;
                                             }
@@ -1145,7 +1057,7 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
                                         const auto value = buf_1324[f1324];
                                         const auto value_scal_by_deg =
                                             value * s12_deg;
-                                        g(bf1, bf2) -=
+                                        F(bf1, bf2) -=
                                             D(bf3, bf4) * value_scal_by_deg;
                                     }
                                 }
@@ -1161,13 +1073,13 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
 
     // accumulate contributions from all threads
     for (size_t i = 1; i != nthreads; ++i) {
-        G[0] += G[i];
+        Fmats[0] += Fmats[i];
     }
     occ::timing::stop(occ::timing::category::ints2e);
 
     clear_auxiliary_basis();
     // symmetrize the result and return
-    return 0.5 * (G[0] + G[0].transpose());
+    return 0.5 * (Fmats[0] + Fmats[0].transpose());
 }
 
 } // namespace occ::qm

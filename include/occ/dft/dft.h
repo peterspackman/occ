@@ -200,7 +200,7 @@ class DFT {
     Mat compute_fock_dft(const MolecularOrbitals &mo, double precision,
                          const Mat &Schwarz) {
         using occ::parallel::nthreads;
-        const auto &basis = m_hf.basis();
+        const auto &basis = m_hf.aobasis();
         const auto &atoms = m_hf.atoms();
         size_t F_rows, F_cols;
         size_t nbf = basis.nbf();
@@ -260,8 +260,8 @@ class DFT {
                     const auto &pts_block = atom_pts.middleCols(l, npt);
                     const auto &weights_block = atom_weights.segment(l, npt);
                     if (cache[block].phi.rows() == 0) {
-                        occ::gto::evaluate_basis<derivative_order>(
-                            basis, atoms, pts_block, cache[block]);
+                        occ::gto::evaluate_basis(basis, pts_block, cache[block],
+                                                 derivative_order);
                     }
                     const auto &gto_vals = cache[block];
                     occ::density::evaluate_density<derivative_order,
