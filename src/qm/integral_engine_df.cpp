@@ -15,8 +15,10 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
     : m_ao_engine(atoms, ao), m_aux_engine(atoms, df), m_integral_store(0, 0) {
     m_ao_engine.set_auxiliary_basis(df, false);
     occ::timing::start(occ::timing::category::df);
-    Mat V = m_aux_engine.one_electron_operator(
-        Op::coulomb); // V = (P|Q) in df basis
+    // don't use the shellpair list for this, results in
+    // messes with positive-definiteness
+    Mat V = m_aux_engine.one_electron_operator(Op::coulomb,
+                                               false); // V = (P|Q) in df basis
     occ::timing::stop(occ::timing::category::df);
 
     occ::timing::start(occ::timing::category::la);

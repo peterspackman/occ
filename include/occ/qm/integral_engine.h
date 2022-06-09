@@ -99,7 +99,7 @@ class IntegralEngine {
         return m_auxbasis.nsh() > 0;
     }
 
-    Mat one_electron_operator(Op op) const;
+    Mat one_electron_operator(Op op, bool use_shellpair_list = true) const;
     Mat fock_operator(SpinorbitalKind, const MolecularOrbitals &mo,
                       const Mat &Schwarz = Mat()) const;
     Mat fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
