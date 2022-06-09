@@ -97,7 +97,7 @@ TEST_CASE("Water def2-tzvp", "[cint]") {
     fmt::print("Fock max err: {}\n", (f2 - f1).cwiseAbs().maxCoeff());
 
     Mat schw1 = hf.compute_schwarz_ints();
-    Mat schw2 = engine.schwarz<kind>();
+    Mat schw2 = engine.schwarz();
     fmt::print("Schwarz max err: {}\n", (schw2 - schw1).cwiseAbs().maxCoeff());
     fmt::print("Schwarz max err (new): {}\n",
                (schw3 - schw1).cwiseAbs().maxCoeff());
@@ -114,15 +114,14 @@ TEST_CASE("Water def2-tzvp", "[cint]") {
     fmt::print("Libint2: {:.6f} s\n",
                std::chrono::duration<double>(t2 - t1).count());
     t1 = std::chrono::high_resolution_clock::now();
-    auto e2 =
-        engine.electric_potential<SpinorbitalKind::Restricted, kind>(mo, pos);
+    auto e2 = engine.electric_potential(mo, pos);
     t2 = std::chrono::high_resolution_clock::now();
     fmt::print("libcint: {:.6f} s\n",
                std::chrono::duration<double>(t2 - t1).count());
     fmt::print("ESP max err: {}\n", (e2 - e1).cwiseAbs().maxCoeff());
 
     auto pc1 = hf.compute_point_charge_interaction_matrix(chgs);
-    auto pc2 = engine.point_charge_potential<kind>(chgs);
+    auto pc2 = engine.point_charge_potential(chgs);
     fmt::print("Point charge max err: {}\n", (pc2 - pc1).cwiseAbs().maxCoeff());
 
     engine.set_auxiliary_basis(dfbasis2);
@@ -143,10 +142,15 @@ TEST_CASE("Water def2-tzvp", "[cint]") {
     hf.set_density_fitting_basis("def2-svp-jk");
     auto J1 = hf.compute_J(occ::qm::SpinorbitalKind::Restricted, mo);
     IntegralEngineDF engine_df(atoms, basis2, dfbasis2);
-    auto J2 = engine_df.coulomb_operator<kind>(mo);
+    auto J2 = engine_df.coulomb(mo);
     fmt::print("DF J direct max err: {}\n", (J2 - J1).cwiseAbs().maxCoeff());
 
     auto K1 = hf.compute_JK(occ::qm::SpinorbitalKind::Restricted, mo).second;
-    auto K2 = engine_df.exchange_operator<kind>(mo);
+    auto K2 = engine_df.exchange(mo);
     fmt::print("DF K direct max err: {}\n", (K2 - K1).cwiseAbs().maxCoeff());
+    auto [J3, K3] = engine_df.coulomb_and_exchange(mo);
+    fmt::print("DF J (JK) direct max err: {}\n",
+               (J3 - J1).cwiseAbs().maxCoeff());
+    fmt::print("DF K (JK)direct max err: {}\n",
+               (K3 - K1).cwiseAbs().maxCoeff());
 }

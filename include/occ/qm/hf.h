@@ -3,8 +3,8 @@
 #include <occ/core/multipole.h>
 #include <occ/core/point_charge.h>
 #include <occ/qm/density_fitting.h>
-#include <occ/qm/fock.h>
 #include <occ/qm/integral_engine.h>
+#include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/spinorbital.h>
 
@@ -86,10 +86,7 @@ class HartreeFock {
 
     Mat compute_shellblock_norm(const Mat &A) const;
 
-    auto compute_schwarz_ints() const {
-        return occ::ints::compute_schwarz_ints<>(m_basis);
-    }
-
+    Mat compute_schwarz_ints() const;
     void update_core_hamiltonian(occ::qm::SpinorbitalKind k,
                                  const MolecularOrbitals &mo, Mat &H) {
         return;
@@ -155,10 +152,9 @@ class HartreeFock {
     BasisSet m_density_fitting_basis;
     ShellPairList m_shellpair_list{}; // shellpair list for OBS
     ShellPairData m_shellpair_data{}; // shellpair data for OBS
-    occ::ints::FockBuilder m_fockbuilder;
     mutable double m_e_alpha{0};
     mutable double m_e_beta{0};
-    mutable std::optional<occ::df::DFFockEngine> m_df_fock_engine;
+    mutable std::optional<occ::qm::IntegralEngineDF> m_df_engine;
     mutable occ::qm::IntegralEngine m_engine;
 };
 

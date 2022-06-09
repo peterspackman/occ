@@ -5,7 +5,13 @@
 
 namespace occ::dft::cosx {
 
-using libint2::Operator;
+using ShellPairList = std::vector<std::vector<size_t>>;
+using ShellList = std::vector<qm::OccShell>;
+using AtomList = std::vector<occ::core::Atom>;
+using ShellKind = qm::OccShell::Kind;
+using Op = qm::cint::Operator;
+using Buffer = std::vector<double>;
+using IntegralResult = qm::IntegralEngine::IntegralResult<3>;
 
 SemiNumericalExchange::SemiNumericalExchange(
     const std::vector<occ::core::Atom> &atoms, const qm::BasisSet &basis,
@@ -68,6 +74,58 @@ Mat SemiNumericalExchange::compute_overlap_matrix() const {
         SS[0].noalias() += SS[i];
     }
     return SS[0];
+}
+
+template <ShellKind kind, typename Lambda>
+void three_center_screened_aux_kernel(Lambda &f,
+                                      qm::cint::IntegralEnvironment &env,
+                                      const qm::AOBasis &aobasis,
+                                      const qm::AOBasis &auxbasis,
+                                      const ShellPairList &shellpairs,
+                                      int thread_id = 0) noexcept {
+    auto nthreads = occ::parallel::get_num_threads();
+    occ::qm::cint::Optimizer opt(env, Op::coulomb, 3);
+    size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
+                     auxbasis.max_shell_size();
+    auto buffer = std::make_unique<double[]>(bufsize);
+    IntegralResult args;
+    args.thread = thread_id;
+    args.buffer = buffer.get();
+    std::array<int, 3> shell_idx;
+    const auto &first_bf_ao = aobasis.first_bf();
+    const auto &first_bf_aux = auxbasis.first_bf();
+    for (int auxP = 0; auxP < auxbasis.size(); auxP++) {
+        if (auxP % nthreads != thread_id)
+            continue;
+        const auto &shauxP = auxbasis[auxP];
+        args.bf[2] = first_bf_aux[auxP];
+        args.shell[2] = auxP;
+        for (int p = 0; p < aobasis.size(); p++) {
+            args.bf[0] = first_bf_ao[p];
+            args.shell[0] = p;
+            const auto &shp = aobasis[p];
+            const auto &plist = shellpairs.at(p);
+            if ((shp.extent > 0.0) &&
+                (shp.origin - shauxP.origin).norm() > shp.extent) {
+                continue;
+            }
+            for (const int &q : plist) {
+                args.bf[1] = first_bf_ao[q];
+                args.shell[1] = q;
+                const auto &shq = aobasis[q];
+                shell_idx = {p, q, auxP + static_cast<int>(aobasis.size())};
+                if ((shq.extent > 0.0) &&
+                    (shq.origin - shauxP.origin).norm() > shq.extent) {
+                    continue;
+                }
+                args.dims = env.three_center_helper<Op::coulomb, kind>(
+                    shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
+                if (args.dims[0] > -1) {
+                    f(args);
+                }
+            }
+        }
+    }
 }
 
 Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
@@ -140,11 +198,15 @@ Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
             };
             auto lambda = [&](int thread_id) {
                 if (m_engine.is_spherical()) {
-                    m_engine.template evaluate_three_center_aux<
-                        qm::OccShell::Kind::Spherical>(f, thread_id);
+                    three_center_screened_aux_kernel<
+                        qm::OccShell::Kind::Spherical>(
+                        f, m_engine.env(), m_engine.aobasis(),
+                        m_engine.auxbasis(), m_engine.shellpairs(), thread_id);
                 } else {
-                    m_engine.template evaluate_three_center_aux<
-                        qm::OccShell::Kind::Cartesian>(f, thread_id);
+                    three_center_screened_aux_kernel<
+                        qm::OccShell::Kind::Cartesian>(
+                        f, m_engine.env(), m_engine.aobasis(),
+                        m_engine.auxbasis(), m_engine.shellpairs(), thread_id);
                 }
             };
             occ::parallel::parallel_do(lambda);

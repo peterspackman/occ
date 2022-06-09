@@ -1221,4 +1221,272 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
     return 0.5 * (Fmats[0] + Fmats[0].transpose());
 }
 
+template <ShellKind kind = ShellKind::Cartesian>
+Mat schwarz_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
+                   const ShellPairList &shellpairs) {
+    constexpr auto op = Op::coulomb;
+    using Result = IntegralEngine::IntegralResult<4>;
+    auto nthreads = occ::parallel::get_num_threads();
+    constexpr bool use_euclidean_norm{false};
+    const auto nsh = basis.size();
+    const auto &first_bf = basis.first_bf();
+    std::vector<Mat> results;
+    results.emplace_back(Mat::Zero(nsh, nsh));
+    for (size_t i = 1; i < nthreads; i++) {
+        results.push_back(results[0]);
+    }
+
+    auto f = [&results](const Result &args) {
+        auto &result = results[args.thread];
+        auto N = args.dims[0] * args.dims[1];
+        Eigen::Map<const occ::Mat> tmp(args.buffer, N, N);
+        double sq_norm =
+            use_euclidean_norm ? tmp.norm() : tmp.lpNorm<Eigen::Infinity>();
+        double norm = std::sqrt(sq_norm);
+        result(args.shell[0], args.shell[1]) = norm;
+        result(args.shell[1], args.shell[0]) = norm;
+    };
+
+    auto lambda = [&](int thread_id) {
+        auto buffer = std::make_unique<double[]>(buffer_size_2e(basis));
+        for (int p = 0, pq = 0; p < nsh; p++) {
+            int bf1 = first_bf[p];
+            const auto &sh1 = basis[p];
+            for (const int &q : shellpairs.at(p)) {
+                if (pq++ % nthreads != thread_id)
+                    continue;
+                int bf2 = first_bf[q];
+                const auto &sh2 = basis[q];
+                std::array<int, 4> idxs{p, q, p, q};
+                Result args{thread_id,
+                            idxs,
+                            {bf1, bf2, bf1, bf2},
+                            env.four_center_helper<op, kind>(
+                                idxs, nullptr, buffer.get(), nullptr),
+                            buffer.get()};
+                if (args.dims[0] > -1)
+                    f(args);
+            }
+        }
+    };
+    occ::parallel::parallel_do(lambda);
+
+    for (auto i = 1; i < nthreads; ++i) {
+        results[0].noalias() += results[i];
+    }
+
+    return results[0];
+}
+
+Mat IntegralEngine::schwarz() const {
+    if (is_spherical()) {
+        return schwarz_kernel<ShellKind::Spherical>(m_env, m_aobasis,
+                                                    m_shellpairs);
+    } else {
+        return schwarz_kernel<ShellKind::Cartesian>(m_env, m_aobasis,
+                                                    m_shellpairs);
+    }
+}
+
+/*
+ * Three-center integrals
+ */
+template <ShellKind kind, typename Lambda>
+void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
+                             const qm::AOBasis &aobasis,
+                             const qm::AOBasis &auxbasis,
+                             const ShellPairList &shellpairs,
+                             int thread_id = 0) noexcept {
+    using Result = IntegralEngine::IntegralResult<3>;
+    auto nthreads = occ::parallel::get_num_threads();
+    occ::qm::cint::Optimizer opt(env, Op::coulomb, 3);
+    size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
+                     auxbasis.max_shell_size();
+    auto buffer = std::make_unique<double[]>(bufsize);
+    Result args;
+    args.thread = thread_id;
+    args.buffer = buffer.get();
+    std::array<int, 3> shell_idx;
+    const auto &first_bf_ao = aobasis.first_bf();
+    const auto &first_bf_aux = auxbasis.first_bf();
+    for (int auxP = 0; auxP < auxbasis.size(); auxP++) {
+        if (auxP % nthreads != thread_id)
+            continue;
+        const auto &shauxP = auxbasis[auxP];
+        args.bf[2] = first_bf_aux[auxP];
+        args.shell[2] = auxP;
+        for (int p = 0; p < aobasis.size(); p++) {
+            args.bf[0] = first_bf_ao[p];
+            args.shell[0] = p;
+            const auto &shp = aobasis[p];
+            const auto &plist = shellpairs.at(p);
+            for (const int &q : plist) {
+                args.bf[1] = first_bf_ao[q];
+                args.shell[1] = q;
+                const auto &shq = aobasis[q];
+                shell_idx = {p, q, auxP + static_cast<int>(aobasis.size())};
+                args.dims = env.three_center_helper<Op::coulomb, kind>(
+                    shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
+                if (args.dims[0] > -1) {
+                    f(args);
+                }
+            }
+        }
+    }
+}
+
+template <ShellKind kind = ShellKind::Cartesian>
+Mat point_charge_potential_kernel(cint::IntegralEnvironment &env,
+                                  const AOBasis &aobasis,
+                                  const AOBasis &auxbasis,
+                                  const ShellPairList &shellpairs) {
+    using Result = IntegralEngine::IntegralResult<3>;
+    auto nthreads = occ::parallel::get_num_threads();
+    size_t nsh = aobasis.size();
+    const auto nbf = aobasis.nbf();
+    std::vector<Mat> results(nthreads, Mat::Zero(nbf, nbf));
+    auto f = [nsh, &results](const Result &args) {
+        auto &result = results[args.thread];
+        Eigen::Map<const Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
+        result.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) += tmp;
+        if (args.shell[0] != args.shell[1]) {
+            result.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]) +=
+                tmp.transpose();
+        }
+    };
+
+    auto lambda = [&](int thread_id) {
+        three_center_aux_kernel<kind>(f, env, aobasis, auxbasis, shellpairs,
+                                      thread_id);
+    };
+    occ::parallel::parallel_do(lambda);
+
+    for (auto i = 1; i < nthreads; i++) {
+        results[0] += results[i];
+    }
+    return results[0];
+}
+
+Mat IntegralEngine::point_charge_potential(
+    const std::vector<occ::core::PointCharge> &charges) {
+    ShellList dummy_shells;
+    dummy_shells.reserve(charges.size());
+    for (size_t i = 0; i < charges.size(); i++) {
+        dummy_shells.push_back(OccShell(charges[i]));
+    }
+    set_auxiliary_basis(dummy_shells, true);
+    if (is_spherical()) {
+        return point_charge_potential_kernel<ShellKind::Spherical>(
+            m_env, m_aobasis, m_auxbasis, m_shellpairs);
+    } else {
+        return point_charge_potential_kernel<ShellKind::Cartesian>(
+            m_env, m_aobasis, m_auxbasis, m_shellpairs);
+    }
+}
+
+template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
+Vec electric_potential_kernel(cint::IntegralEnvironment &env,
+                              const AOBasis &aobasis, const AOBasis &auxbasis,
+                              const ShellPairList &shellpairs,
+                              const MolecularOrbitals &mo) {
+    using Result = IntegralEngine::IntegralResult<3>;
+    auto nthreads = occ::parallel::get_num_threads();
+    size_t npts = auxbasis.size();
+    std::vector<Vec> results(nthreads, Vec::Zero(npts));
+
+    const auto &D = mo.D;
+    auto f = [&D, &results](const Result &args) {
+        auto &v = results[args.thread];
+        auto scale = (args.shell[0] == args.shell[1]) ? 1 : 2;
+        Eigen::Map<const Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
+        if constexpr (sk == SpinorbitalKind::Restricted) {
+            v(args.shell[2]) +=
+                (D.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
+                     .array() *
+                 tmp.array())
+                    .sum() *
+                scale;
+        } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
+            const auto alpha = occ::qm::block::a(D).block(
+                args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
+            const auto beta = occ::qm::block::a(D).block(
+                args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
+            v(args.shell[2]) +=
+                ((alpha.array() + beta.array()) * tmp.array()).sum() * scale;
+        } else if constexpr (sk == SpinorbitalKind::General) {
+            const auto aa = occ::qm::block::aa(D).block(
+                args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
+            const auto ab = occ::qm::block::ab(D).block(
+                args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
+            const auto ba = occ::qm::block::ba(D).block(
+                args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
+            const auto bb = occ::qm::block::bb(D).block(
+                args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
+            v(args.shell[2]) +=
+                ((aa.array() + ab.array() + ba.array() + bb.array()) *
+                 tmp.array())
+                    .sum() *
+                scale;
+        }
+    };
+
+    auto lambda = [&](int thread_id) {
+        three_center_aux_kernel<kind>(f, env, aobasis, auxbasis, shellpairs,
+                                      thread_id);
+    };
+    occ::parallel::parallel_do(lambda);
+
+    for (auto i = 1; i < nthreads; i++) {
+        results[0] += results[i];
+    }
+    return 2 * results[0];
+}
+
+Vec IntegralEngine::electric_potential(const MolecularOrbitals &mo,
+                                       const Mat3N &points) {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+    constexpr auto Sph = ShellKind::Spherical;
+    constexpr auto Cart = ShellKind::Cartesian;
+    ShellList dummy_shells;
+    dummy_shells.reserve(points.cols());
+    for (size_t i = 0; i < points.cols(); i++) {
+        dummy_shells.push_back(
+            OccShell({1.0, {points(0, i), points(1, i), points(2, i)}}));
+    }
+    set_auxiliary_basis(dummy_shells, true);
+    if (is_spherical()) {
+        switch (mo.kind) {
+        default: // Restricted
+            return electric_potential_kernel<R, Sph>(
+                m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
+            break;
+        case U:
+            return electric_potential_kernel<U, Sph>(
+                m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
+            break;
+        case G:
+            return electric_potential_kernel<G, Sph>(
+                m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
+            break;
+        }
+    } else {
+        switch (mo.kind) {
+        default: // Restricted
+            return electric_potential_kernel<R, Cart>(
+                m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
+            break;
+        case U:
+            return electric_potential_kernel<U, Cart>(
+                m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
+            break;
+        case G:
+            return electric_potential_kernel<G, Cart>(
+                m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
+            break;
+        }
+    }
+}
+
 } // namespace occ::qm

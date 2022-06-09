@@ -1,5 +1,4 @@
 #include <occ/core/parallel.h>
-#include <occ/qm/fock.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/property_ints.h>
 
@@ -14,13 +13,15 @@ void HartreeFock::set_system_charge(int charge) {
 void HartreeFock::set_density_fitting_basis(
     const std::string &density_fitting_basis) {
     m_density_fitting_basis = occ::qm::BasisSet(density_fitting_basis, m_atoms);
-    m_df_fock_engine.emplace(m_basis, m_density_fitting_basis);
+    m_density_fitting_basis.set_pure(m_basis.is_pure());
+    auto ao = qm::from_libint2_basis(m_basis);
+    auto aux = qm::from_libint2_basis(m_density_fitting_basis);
+    m_df_engine.emplace(m_atoms, ao, aux);
 }
 
 HartreeFock::HartreeFock(const std::vector<occ::core::Atom> &atoms,
                          const BasisSet &basis)
     : m_atoms(atoms), m_basis(basis),
-      m_fockbuilder(basis.max_nprim(), basis.max_l()),
       m_engine(atoms, occ::qm::from_libint2_basis(basis)) {
 
     std::tie(m_shellpair_list, m_shellpair_data) =
@@ -48,8 +49,8 @@ double HartreeFock::nuclear_repulsion_energy() const {
 
 Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
                               double precision, const Mat &Schwarz) const {
-    if (m_df_fock_engine) {
-        return (*m_df_fock_engine).compute_fock(mo, precision, Schwarz);
+    if (m_df_engine && kind == SpinorbitalKind::Restricted) {
+        return (*m_df_engine).fock_operator(mo);
     } else {
         return m_engine.fock_operator(kind, mo, Schwarz);
     }
@@ -86,8 +87,8 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind,
                                             const MolecularOrbitals &mo,
                                             double precision,
                                             const Mat &Schwarz) const {
-    if (m_df_fock_engine) {
-        return (*m_df_fock_engine).compute_JK(mo, precision, Schwarz);
+    if (m_df_engine && kind == SpinorbitalKind::Restricted) {
+        return (*m_df_engine).coulomb_and_exchange(mo);
     } else {
         return m_engine.coulomb_and_exchange(kind, mo, Schwarz);
     }
@@ -95,8 +96,8 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind,
 
 Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
                            double precision, const Mat &Schwarz) const {
-    if (m_df_fock_engine) {
-        return (*m_df_fock_engine).compute_J(mo, precision, Schwarz);
+    if (m_df_engine && kind == SpinorbitalKind::Restricted) {
+        return (*m_df_engine).coulomb(mo);
     } else {
         return m_engine.coulomb(kind, mo, Schwarz);
     }
@@ -122,12 +123,7 @@ Mat HartreeFock::compute_nuclear_attraction_matrix() const {
 
 Mat HartreeFock::compute_point_charge_interaction_matrix(
     const std::vector<occ::core::PointCharge> &point_charges) const {
-    using Kind = occ::qm::OccShell::Kind;
-    if (m_engine.is_spherical()) {
-        return m_engine.point_charge_potential<Kind::Spherical>(point_charges);
-    } else {
-        return m_engine.point_charge_potential<Kind::Cartesian>(point_charges);
-    }
+    return m_engine.point_charge_potential(point_charges);
 }
 
 std::vector<Mat>
@@ -233,5 +229,7 @@ Vec HartreeFock::nuclear_electric_potential_contribution(
     }
     return result;
 }
+
+Mat HartreeFock::compute_schwarz_ints() const { return m_engine.schwarz(); }
 
 } // namespace occ::hf
