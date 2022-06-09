@@ -247,16 +247,16 @@ size_t buffer_size_1e(const AOBasis &basis, Op op = Op::overlap) {
     auto bufsize = basis.max_shell_size() * basis.max_shell_size();
     switch (op) {
     case Op::dipole:
-        bufsize *= occ::core::num_unique_multipole_components(1);
+        bufsize *= 3;
         break;
     case Op::quadrupole:
-        bufsize *= occ::core::num_unique_multipole_components(2);
+        bufsize *= 3 * 3;
         break;
     case Op::octapole:
-        bufsize *= occ::core::num_unique_multipole_components(3);
+        bufsize *= 3 * 3 * 3;
         break;
     case Op::hexadecapole:
-        bufsize *= occ::core::num_unique_multipole_components(4);
+        bufsize *= 3 * 3 * 3 * 3;
         break;
     default:
         break;
@@ -438,7 +438,7 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
     constexpr Op op = ops[order];
 
     auto nthreads = occ::parallel::get_num_threads();
-    size_t num_components = occ::core::num_unique_multipole_components(order);
+    size_t num_components = occ::core::num_multipole_components_tensor(order);
     env.set_common_origin({origin.x(), origin.y(), origin.z()});
     std::vector<Vec> results;
     results.push_back(Vec::Zero(num_components));
@@ -521,6 +521,49 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
     }
 
     results[0] *= -2;
+    Vec unique(occ::core::num_unique_multipole_components(order));
+    int offset = 0;
+    if constexpr (order <= 1) {
+        return results[0];
+    } else if constexpr (order == 2) {
+        const auto &Q = results[0];
+        unique(0) = Q(0); // xx
+        unique(1) = Q(1); // xy
+        unique(2) = Q(2); // xz
+        unique(3) = Q(4); // yy
+        unique(4) = Q(5); // yz
+        unique(5) = Q(8); // zz
+    } else if constexpr (order == 3) {
+        const auto &O = results[0];
+        unique(0) = O(0);  // xxx
+        unique(1) = O(1);  // xxy
+        unique(2) = O(2);  // xxz
+        unique(3) = O(4);  // xyy
+        unique(4) = O(5);  // xyz
+        unique(5) = O(8);  // xzz
+        unique(6) = O(13); // yyy
+        unique(7) = O(14); // yyz
+        unique(8) = O(17); // yzz
+        unique(9) = O(26); // zzz
+    } else if constexpr (order == 4) {
+        const auto &H = results[0];
+        unique(0) = H(0);   // xxxx
+        unique(1) = H(1);   // xxxy
+        unique(2) = H(2);   // xxxz
+        unique(3) = H(4);   // xxyy
+        unique(4) = H(5);   // xxxz
+        unique(5) = H(8);   // xxzz
+        unique(6) = H(13);  // xyyy
+        unique(7) = H(14);  // xyyz
+        unique(8) = H(17);  // xyzz
+        unique(9) = H(26);  // xzzz
+        unique(10) = H(40); // yyyy
+        unique(11) = H(41); // yyyz
+        unique(12) = H(44); // yyzz
+        unique(13) = H(53); // yzzz
+        unique(14) = H(80); // zzzz
+    }
+
     return results[0];
 }
 

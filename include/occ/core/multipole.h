@@ -9,6 +9,14 @@ inline constexpr unsigned int num_unique_multipole_components(int L) {
     return (L + 1) * (L + 2) / 2;
 }
 
+inline constexpr unsigned int num_multipole_components_tensor(int L) {
+    unsigned int result = 1;
+    for (int i = 1; i <= L; i++) {
+        result *= 3;
+    }
+    return result;
+}
+
 inline constexpr unsigned int total_num_multipole_components(int L) {
     unsigned int n{0};
     for (unsigned int i = 0; i <= L; i++) {
@@ -17,15 +25,20 @@ inline constexpr unsigned int total_num_multipole_components(int L) {
     return n;
 }
 
-inline constexpr std::array<const char *, 20> multipole_component_names{
-    "chg",  "Dx",   "Dy",   "Dz",   "Qxx",  "Qxy",  "Qxz",
-    "Qyy",  "Qyz",  "Qzz",  "Oxxx", "Oxxy", "Oxxz", "Oxyy",
-    "Oxyz", "Oxzz", "Oyyy", "Oyyz", "Oyzz", "Ozzz"};
+inline constexpr std::array<const char *, 35> multipole_component_names{
+    "chg",   "Dx",    "Dy",    "Dz",    "Qxx",   "Qxy",   "Qxz",
+    "Qyy",   "Qyz",   "Qzz",   "Oxxx",  "Oxxy",  "Oxxz",  "Oxyy",
+    "Oxyz",  "Oxzz",  "Oyyy",  "Oyyz",  "Oyzz",  "Ozzz",  "Hyyzz",
+    "Hzzzz", "Hxxyz", "Hxxxy", "Hxyyz", "Hxxxz", "Hxxzz", "Hyyyy",
+    "Hyyyz", "Hyzzz", "Hxxxx", "Hxyyy", "Hxyzz", "Hxxyy", "Hxzzz",
+
+};
 
 template <unsigned int L> struct Multipole {
     using Dipole = std::array<double, 3>;
     using Quadrupole = std::array<double, 6>;
     using Octupole = std::array<double, 10>;
+    using Hexadecapole = std::array<double, 15>;
     static constexpr unsigned int num_components{
         total_num_multipole_components(L)};
     std::array<double, num_components> components;
@@ -50,6 +63,15 @@ template <unsigned int L> struct Multipole {
         return {components[10], components[11], components[12], components[13],
                 components[14], components[15], components[16], components[17],
                 components[18], components[19]};
+    }
+
+    Hexadecapole hexadecapole() const {
+        static_assert(
+            L > 3, "No hexadecapole for a multipole with angular momentum < 4");
+        return {components[20], components[21], components[22], components[23],
+                components[24], components[25], components[26], components[27],
+                components[28], components[29], components[30], components[31],
+                components[32], components[33], components[34]};
     }
 
     template <unsigned int L2>

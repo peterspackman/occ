@@ -91,46 +91,19 @@ class HartreeFock {
                                  const MolecularOrbitals &mo, Mat &H) {
         return;
     }
-
-    template <unsigned int order = 1>
-    inline auto compute_electronic_multipole_matrices(
-        const Vec3 &o = {0.0, 0.0, 0.0}) const {
-        std::array<double, 3> c{o(0), o(1), o(2)};
-        static_assert(
-            order < 4,
-            "Multipole integrals with order > 3 are not supported yet");
-        constexpr std::array<libint2::Operator, 4> ops{
-            Operator::overlap, Operator::emultipole1, Operator::emultipole2,
-            Operator::emultipole3};
-
-        constexpr libint2::Operator op = ops[order];
-        return compute_1body_ints<op>(m_basis, m_shellpair_list, c);
-    }
-
-    template <unsigned int order = 1>
-    inline auto compute_electronic_multipoles(occ::qm::SpinorbitalKind k,
-                                              const MolecularOrbitals &mo,
-                                              const Vec3 &o = {0.0, 0.0,
-                                                               0.0}) const {
+    template <int order>
+    occ::core::Multipole<order>
+    compute_electronic_multipoles(occ::qm::SpinorbitalKind k,
+                                  const MolecularOrbitals &mo,
+                                  const Vec3 &o = {0.0, 0.0, 0.0}) const {
         occ::core::Multipole<order> result;
         const auto &D = mo.D;
-        Vec c = m_engine.multipole(k, order, mo, o);
-        fmt::print("libcint result:\n{}\n", c);
-        auto mats = compute_electronic_multipole_matrices<order>(o);
-        auto ex = [&](const Mat &op) {
-            switch (k) {
-            case SpinorbitalKind::Unrestricted:
-                return occ::qm::expectation<SpinorbitalKind::Unrestricted>(D,
-                                                                           op);
-            case SpinorbitalKind::General:
-                return occ::qm::expectation<SpinorbitalKind::General>(D, op);
-            default:
-                return occ::qm::expectation<SpinorbitalKind::Restricted>(D, op);
+        int offset = 0;
+        for (int i = 0; i <= order; i++) {
+            Vec c = m_engine.multipole(k, i, mo, o);
+            for (int j = 0; j < c.rows(); j++) {
+                result.components[offset++] = c(j);
             }
-        };
-
-        for (size_t i = 0; i < mats.size(); i++) {
-            result.components[i] = -2 * ex(mats[i]);
         }
         return result;
     }

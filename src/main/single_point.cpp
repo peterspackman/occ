@@ -93,7 +93,7 @@ Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis,
 
     double e = scf.compute_scf_energy();
     auto mult =
-        scf.m_procedure.template compute_electronic_multipoles<1>(SK, scf.mo);
+        scf.m_procedure.template compute_electronic_multipoles<3>(SK, scf.mo);
     fmt::print("Result:\n{}\n", mult);
     return scf.wavefunction();
 }
