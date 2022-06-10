@@ -440,11 +440,7 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
     auto nthreads = occ::parallel::get_num_threads();
     size_t num_components = occ::core::num_multipole_components_tensor(order);
     env.set_common_origin({origin.x(), origin.y(), origin.z()});
-    std::vector<Vec> results;
-    results.push_back(Vec::Zero(num_components));
-    for (size_t i = 1; i < nthreads; i++) {
-        results.push_back(results[0]);
-    }
+    std::vector<Vec> results(nthreads, Vec::Zero(num_components));
     const auto &D = mo.D;
     /*
      * For symmetric matrices
@@ -458,6 +454,7 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
         auto &result = results[args.thread];
         size_t offset = 0;
         double scale = (args.shell[0] != args.shell[1]) ? 2.0 : 1.0;
+        // TODO avoid redundant tensor calcs
         for (size_t n = 0; n < num_components; n++) {
             Eigen::Map<const occ::Mat> tmp(args.buffer + offset, args.dims[0],
                                            args.dims[1]);
@@ -521,6 +518,7 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
     }
 
     results[0] *= -2;
+    // TODO refactor this
     Vec unique(occ::core::num_unique_multipole_components(order));
     int offset = 0;
     if constexpr (order <= 1) {
@@ -551,7 +549,7 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
         unique(1) = H(1);   // xxxy
         unique(2) = H(2);   // xxxz
         unique(3) = H(4);   // xxyy
-        unique(4) = H(5);   // xxxz
+        unique(4) = H(5);   // xxyz
         unique(5) = H(8);   // xxzz
         unique(6) = H(13);  // xyyy
         unique(7) = H(14);  // xyyz
@@ -563,8 +561,7 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
         unique(13) = H(53); // yzzz
         unique(14) = H(80); // zzzz
     }
-
-    return results[0];
+    return unique;
 }
 
 Vec IntegralEngine::multipole(SpinorbitalKind sk, int order,

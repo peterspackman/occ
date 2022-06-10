@@ -189,6 +189,12 @@ class DFT {
         return m_hf.template compute_nuclear_multipoles<order>(o);
     }
 
+    template <unsigned int order = 1>
+    inline auto compute_multipoles(const MolecularOrbitals &mo,
+                                   const Vec3 &o = {0.0, 0.0, 0.0}) const {
+        return m_hf.template compute_multipoles<order>(mo, o);
+    }
+
     template <int derivative_order,
               SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
     Mat compute_fock_dft(const MolecularOrbitals &mo, double precision,

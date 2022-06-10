@@ -43,6 +43,26 @@ void Optimizer::create1or2c(IntegralEnvironment &env) {
                                       env.num_atoms(), env.basis_data_ptr(),
                                       env.num_basis(), env.env_data_ptr());
         break;
+    case Operator::dipole:
+        libcint::int1e_r_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                   env.num_atoms(), env.basis_data_ptr(),
+                                   env.num_basis(), env.env_data_ptr());
+        break;
+    case Operator::quadrupole:
+        libcint::int1e_rr_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                    env.num_atoms(), env.basis_data_ptr(),
+                                    env.num_basis(), env.env_data_ptr());
+        break;
+    case Operator::octapole:
+        libcint::int1e_rrr_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                     env.num_atoms(), env.basis_data_ptr(),
+                                     env.num_basis(), env.env_data_ptr());
+        break;
+    case Operator::hexadecapole:
+        libcint::int1e_rrrr_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                      env.num_atoms(), env.basis_data_ptr(),
+                                      env.num_basis(), env.env_data_ptr());
+        break;
     }
 }
 void Optimizer::create3c(IntegralEnvironment &env) {

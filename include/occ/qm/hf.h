@@ -109,12 +109,19 @@ class HartreeFock {
     }
 
     template <unsigned int order = 1>
-    inline auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0,
-                                                            0.0}) const {
+    auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0, 0.0}) const {
         std::array<double, 3> c{o(0), o(1), o(2)};
         auto charges = occ::core::make_point_charges(m_atoms);
         return occ::core::Multipole<order>{
             occ::core::compute_multipoles<order>(charges, c)};
+    }
+
+    template <int order>
+    auto compute_multipoles(const MolecularOrbitals &mo,
+                            const Vec3 &o = {0.0, 0.0, 0.0}) const {
+        auto mults = compute_electronic_multipoles<order>(mo.kind, mo, o);
+        auto nuc_mults = compute_nuclear_multipoles<order>(o);
+        return mults + nuc_mults;
     }
 
   private:

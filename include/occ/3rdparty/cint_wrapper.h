@@ -5,27 +5,35 @@ extern "C" {
 #include "cint.h"
 #include "cint_funcs.h"
 
-CACHE_SIZE_T int3c2e_sph(double *out, int *dims, int *shls, int *atm, int natm,
-                         int *bas, int nbas, double *env, CINTOpt *opt,
-                         double *cache);
+extern CACHE_SIZE_T int3c2e_sph(double *out, int *dims, int *shls, int *atm,
+                                int natm, int *bas, int nbas, double *env,
+                                CINTOpt *opt, double *cache);
 
-CACHE_SIZE_T int3c2e_cart(double *out, int *dims, int *shls, int *atm, int natm,
-                          int *bas, int nbas, double *env, CINTOpt *opt,
-                          double *cache);
+extern CACHE_SIZE_T int3c2e_cart(double *out, int *dims, int *shls, int *atm,
+                                 int natm, int *bas, int nbas, double *env,
+                                 CINTOpt *opt, double *cache);
 
-CACHE_SIZE_T int2c2e_sph(double *out, int *dims, int *shls, int *atm, int natm,
-                         int *bas, int nbas, double *env, CINTOpt *opt,
-                         double *cache);
+extern CACHE_SIZE_T int2c2e_sph(double *out, int *dims, int *shls, int *atm,
+                                int natm, int *bas, int nbas, double *env,
+                                CINTOpt *opt, double *cache);
 
-CACHE_SIZE_T int2c2e_cart(double *out, int *dims, int *shls, int *atm, int natm,
-                          int *bas, int nbas, double *env, CINTOpt *opt,
-                          double *cache);
+extern CACHE_SIZE_T int2c2e_cart(double *out, int *dims, int *shls, int *atm,
+                                 int natm, int *bas, int nbas, double *env,
+                                 CINTOpt *opt, double *cache);
 
-void int2c2e_optimizer(CINTOpt **opt, int *atm, int natm, int *bas, int nbas,
-                       double *env);
+extern void int2c2e_optimizer(CINTOpt **opt, int *atm, int natm, int *bas,
+                              int nbas, double *env);
 
-void int3c2e_optimizer(CINTOpt **opt, int *atm, int natm, int *bas, int nbas,
-                       double *env);
+extern void int3c2e_optimizer(CINTOpt **opt, int *atm, int natm, int *bas,
+                              int nbas, double *env);
+extern void int1e_r_optimizer(CINTOpt **opt, int *atm, int natm, int *bas,
+                              int nbas, double *env);
+extern void int1e_rr_optimizer(CINTOpt **opt, int *atm, int natm, int *bas,
+                               int nbas, double *env);
+extern void int1e_rrr_optimizer(CINTOpt **opt, int *atm, int natm, int *bas,
+                                int nbas, double *env);
+extern void int1e_rrrr_optimizer(CINTOpt **opt, int *atm, int natm, int *bas,
+                                 int nbas, double *env);
 }
 
 static constexpr int environment_start_offset = PTR_ENV_START;

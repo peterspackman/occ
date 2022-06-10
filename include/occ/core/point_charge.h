@@ -61,6 +61,23 @@ inline auto compute_multipoles(const std::vector<PointCharge> &charges,
             result[18] += charge * y * z * z; // yzz
             result[19] += charge * z * z * z; // zzz
         }
+        if constexpr (order > 3) {
+            result[20] += charge * x * x * x * x; // xxxx
+            result[21] += charge * x * x * x * y; // xxxy
+            result[22] += charge * x * x * x * z; // xxxz
+            result[23] += charge * x * x * y * y; // xxyy
+            result[24] += charge * x * x * y * z; // xxyz
+            result[25] += charge * x * x * z * z; // xxzz
+            result[26] += charge * x * y * y * y; // xyyy
+            result[27] += charge * x * y * y * z; // xyyz
+            result[28] += charge * x * y * z * z; // xyzz
+            result[29] += charge * x * z * z * z; // xzzz
+            result[30] += charge * y * y * y * y; // yyyy
+            result[31] += charge * y * y * y * z; // yyyz
+            result[32] += charge * y * y * z * z; // yyzz
+            result[33] += charge * y * z * z * z; // yzzz
+            result[34] += charge * z * z * z * z; // zzzz
+        }
     }
     return result;
 }

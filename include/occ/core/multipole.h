@@ -26,13 +26,11 @@ inline constexpr unsigned int total_num_multipole_components(int L) {
 }
 
 inline constexpr std::array<const char *, 35> multipole_component_names{
-    "chg",   "Dx",    "Dy",    "Dz",    "Qxx",   "Qxy",   "Qxz",
+    "q",     "Dx",    "Dy",    "Dz",    "Qxx",   "Qxy",   "Qxz",
     "Qyy",   "Qyz",   "Qzz",   "Oxxx",  "Oxxy",  "Oxxz",  "Oxyy",
-    "Oxyz",  "Oxzz",  "Oyyy",  "Oyyz",  "Oyzz",  "Ozzz",  "Hyyzz",
-    "Hzzzz", "Hxxyz", "Hxxxy", "Hxyyz", "Hxxxz", "Hxxzz", "Hyyyy",
-    "Hyyyz", "Hyzzz", "Hxxxx", "Hxyyy", "Hxyzz", "Hxxyy", "Hxzzz",
-
-};
+    "Oxyz",  "Oxzz",  "Oyyy",  "Oyyz",  "Oyzz",  "Ozzz",  "Hxxxx",
+    "Hxxxy", "Hxxxz", "Hxxyy", "Hxxyz", "Hxxzz", "Hxyyy", "Hxyyz",
+    "Hxyzz", "Hxzzz", "Hyyyy", "Hyyyz", "Hyyzz", "Hyzzz", "Hzzzz"};
 
 template <unsigned int L> struct Multipole {
     using Dipole = std::array<double, 3>;
@@ -170,6 +168,54 @@ template <unsigned int L> struct fmt::formatter<occ::core::Multipole<L>> {
                 m.components[14], names[15], m.components[15], names[16],
                 m.components[16], names[17], m.components[17], names[18],
                 m.components[18], names[19], m.components[19]);
+        } else if constexpr (L == 4) {
+            return format_to(
+                ctx.out(),
+                presentation == 'f'
+                    ? "{:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                    : "{:5s} {:12.6e}\n"
+                      "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                      "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                      "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                      "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                      "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                      "{:5s} {:12.6e} {:5s} {:12.6e} {:5s} {:12.6e}\n"
+                      "{:5s} {:12.6e}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n"
+                      "{:5s} {:12.6f} {:5s} {:12.6f} {:5s} {:12.6f}\n",
+                names[0], m.components[0], names[1], m.components[1], names[2],
+                m.components[2], names[3], m.components[3], names[4],
+                m.components[4], names[5], m.components[5], names[6],
+                m.components[6], names[7], m.components[7], names[8],
+                m.components[8], names[9], m.components[9], names[10],
+                m.components[10], names[11], m.components[11], names[12],
+                m.components[12], names[13], m.components[13], names[14],
+                m.components[14], names[15], m.components[15], names[16],
+                m.components[16], names[17], m.components[17], names[18],
+                m.components[18], names[19], m.components[19], names[20],
+                m.components[20], names[21], m.components[21], names[22],
+                m.components[22], names[23], m.components[23], names[24],
+                m.components[24], names[25], m.components[25], names[26],
+                m.components[26], names[27], m.components[27], names[28],
+                m.components[28], names[29], m.components[29], names[30],
+                m.components[30], names[31], m.components[31], names[32],
+                m.components[32], names[33], m.components[33], names[34],
+                m.components[34]);
         }
     }
 };
