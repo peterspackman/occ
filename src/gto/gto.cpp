@@ -3,14 +3,14 @@
 
 namespace occ::gto {
 
-double common_fac(int l) {
+double common_fac(int l, bool spherical) {
     switch (l) {
     case 0:
         return 0.282094791773878143;
     case 1:
         return 0.488602511902919921;
     default:
-        return 1;
+        return spherical ? std::sqrt((2 * l + 1) / (4 * M_PI)) : 1.0;
     }
 }
 
@@ -45,10 +45,9 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
             const double *alpha = sh.exponents.data();
             const double *center = sh.origin.data();
             int L = sh.l;
-            double fac = common_fac(L);
-            int order = (sh.kind == qm::OccShell::Kind::Spherical)
-                            ? GG_SPHERICAL_CCA
-                            : GG_CARTESIAN_CCA;
+            bool spherical = (sh.kind == qm::OccShell::Kind::Spherical);
+            double fac = common_fac(L, spherical);
+            int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
             gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(),
                            coeffs, alpha, center, order, output);
             values.array() *= fac;
@@ -90,10 +89,10 @@ void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
             const double *alpha = sh.exponents.data();
             const double *center = sh.origin.data();
             int L = sh.l;
-            double fac = common_fac(L);
-            int order = (sh.kind == qm::OccShell::Kind::Spherical)
-                            ? GG_SPHERICAL_CCA
-                            : GG_CARTESIAN_CCA;
+            bool spherical = (sh.kind == qm::OccShell::Kind::Spherical);
+            double fac = common_fac(L, spherical);
+            int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
+
             if (max_derivative == 0) {
                 gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(),
                                coeffs, alpha, center, order, output);
