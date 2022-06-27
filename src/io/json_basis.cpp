@@ -93,7 +93,7 @@ void JsonBasisReader::parse(std::istream &is) {
     }
 }
 
-const JsonBasis::ElementMap &JsonBasisReader::element_map() const {
+const ElementMap &JsonBasisReader::element_map() const {
     return json_basis.elements;
 }
 

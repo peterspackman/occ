@@ -15,6 +15,8 @@ struct MolecularOrbitals {
     void update(const Mat &ortho, const Mat &potential);
     void update_density_matrix();
     void rotate(const BasisSet &basis, const occ::Mat3 &rotation);
+    void print() const;
+    void incorporate_norm(Eigen::Ref<const Vec> norms);
 };
 
 } // namespace occ::qm

@@ -21,10 +21,11 @@ constexpr int num_components(int deriv_order) {
 
 template <size_t max_derivative,
           SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-void evaluate_density(Eigen::Ref<const Mat> D,
-                      const occ::gto::GTOValues &gto_values, Mat &rho) {
+void evaluate_density(MatConstRef D, const occ::gto::GTOValues &gto_values,
+                      Mat &rho) {
     // use a MatRM as a row major temporary, selfadjointView also speeds things
     // up a little.
+    // Genuine bottleneck ~ 50% of the time for DFT XC is spent here for hybrids
     auto npt = gto_values.phi.rows();
     auto nbf = gto_values.phi.cols();
     if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {

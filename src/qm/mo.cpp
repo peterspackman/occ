@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/core/logger.h>
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
@@ -121,6 +122,42 @@ void MolecularOrbitals::rotate(const BasisSet &basis, const Mat3 &rotation) {
                 rot * cb.block(bf_first, 0, shell_size, cb.cols());
         }
     }
+}
+
+void MolecularOrbitals::print() const {
+    if (kind == SpinorbitalKind::Unrestricted) {
+        int n_mo = energies.size() / 2;
+        fmt::print("\nmolecular orbital energies\n");
+        fmt::print("{0:3s}   {1:3s} {2:>16s}  {1:3s} {2:>16s}\n", "idx", "occ",
+                   "energy");
+        for (int i = 0; i < n_mo; i++) {
+            auto s_a = i < n_alpha ? "a" : " ";
+            auto s_b = i < n_beta ? "b" : " ";
+            fmt::print("{:3d}   {:^3s} {:16.12f}  {:^3s} {:16.12f}\n", i, s_a,
+                       energies(i), s_b, energies(n_ao + i));
+        }
+    } else {
+        int n_mo = energies.size();
+        fmt::print("\nmolecular orbital energies\n");
+        fmt::print("{0:3s}   {1:3s} {2:>16s} {3:>16s}\n", "idx", "occ",
+                   "energy", "norm");
+        for (int i = 0; i < n_mo; i++) {
+            auto s = i < n_alpha ? "ab" : " ";
+            fmt::print("{:3d}   {:^3s} {:16.12f} {:16.12f}\n", i, s,
+                       energies(i), C.col(i).sum());
+        }
+    }
+}
+
+void MolecularOrbitals::incorporate_norm(Eigen::Ref<const Vec> norms) {
+    if (kind == SpinorbitalKind::Restricted) {
+        for (int ao = 0; ao < norms.rows(); ao++) {
+            fmt::print("Norm:{}\n", norms(ao));
+            C.row(ao).array() /= norms(ao);
+            Cocc.row(ao).array() /= norms(ao);
+        }
+    }
+    update_density_matrix();
 }
 
 } // namespace occ::qm

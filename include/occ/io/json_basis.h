@@ -24,8 +24,9 @@ struct ElementBasis {
     std::vector<ReferenceData> references;
 };
 
+using ElementMap = robin_hood::unordered_map<int, ElementBasis>;
+
 struct JsonBasis {
-    using ElementMap = robin_hood::unordered_map<int, ElementBasis>;
     std::string version;
     std::string name;
     std::string description;
@@ -36,7 +37,7 @@ struct JsonBasisReader {
   public:
     JsonBasisReader(const std::string &);
     JsonBasisReader(std::istream &);
-    const JsonBasis::ElementMap &element_map() const;
+    const ElementMap &element_map() const;
     const ElementBasis &element_basis(int number);
     const ElementBasis &element_basis(const Element &element);
     JsonBasis json_basis;

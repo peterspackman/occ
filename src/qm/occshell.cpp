@@ -1,10 +1,14 @@
 #include <cmath>
+#include <filesystem>
 #include <occ/core/constants.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
+#include <occ/io/basis_g94.h>
 #include <occ/qm/basisset.h>
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/occshell.h>
+
+namespace fs = std::filesystem;
 
 namespace detail {
 /// fac[k] = k!
@@ -444,6 +448,122 @@ std::ostream &operator<<(std::ostream &stream, const OccShell &shell) {
         stream << "\n";
     }
     return stream;
+}
+
+std::string canonicalize_name(const std::string &name) {
+    auto result = name;
+    std::transform(name.begin(), name.end(), result.begin(), [](auto &c) {
+        char cc = ::tolower(c);
+        switch (cc) {
+        case '/':
+            cc = 'I';
+            break;
+        }
+        return cc;
+    });
+    return result;
+}
+
+std::vector<std::string> decompose_name_into_components(std::string name) {
+    std::vector<std::string> component_names;
+    // aug-cc-pvxz* = cc-pvxz* + augmentation-... , except aug-cc-pvxz-cabs
+    if ((name.find("aug-cc-pv") == 0) &&
+        (name.find("cabs") == std::string::npos)) {
+        std::string base_name = name.substr(4);
+        component_names.push_back(base_name);
+        component_names.push_back(std::string("augmentation-") + base_name);
+    } else
+        component_names.push_back(name);
+
+    return component_names;
+}
+
+std::string data_path() {
+    std::string path;
+    const char *data_path_env = getenv("OCC_BASIS_PATH");
+    if (data_path_env) {
+        path = data_path_env;
+    } else {
+#if defined(DATADIR)
+        path = std::string{DATADIR};
+#elif defined(SRCDATADIR)
+        path = std::string{SRCDATADIR};
+#else
+        path = std::string("/usr/local/share/libint/2.7.0");
+#endif
+    }
+    // validate basis_path = path + "/basis"
+    std::string basis_path = path + std::string("/basis");
+    bool error = true;
+    std::error_code ec;
+    auto validate_basis_path = [&basis_path, &error, &ec]() -> void {
+        if (not basis_path.empty()) {
+            struct stat sb;
+            error = (::stat(basis_path.c_str(), &sb) == -1);
+            error = error || not S_ISDIR(sb.st_mode);
+            if (error)
+                ec = std::error_code(errno, std::generic_category());
+        }
+    };
+    validate_basis_path();
+    if (error) { // try without "/basis"
+        basis_path = path;
+        validate_basis_path();
+    }
+    if (error) {
+        occ::log::warn("There is a problem with BasisSet::data_path(), the "
+                       "path '{}' is not valid ({})",
+                       basis_path, ec.message());
+        basis_path = fs::current_path().string();
+    }
+    return basis_path;
+}
+
+AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
+    std::string basis_lib_path = data_path();
+
+    auto canonical_name = canonicalize_name(name);
+
+    std::vector<std::string> basis_component_names =
+        decompose_name_into_components(canonical_name);
+
+    std::vector<std::vector<std::vector<OccShell>>> component_basis_sets;
+    component_basis_sets.reserve(basis_component_names.size());
+
+    for (const auto &basis_component_name : basis_component_names) {
+        std::string g94_filepath = basis_component_name + ".g94";
+        if (!fs::exists(basis_component_name + ".g94")) {
+            g94_filepath = basis_lib_path + "/" + g94_filepath;
+        }
+        component_basis_sets.emplace_back(
+            occ::io::basis::g94::read_occshell(g94_filepath));
+    }
+
+    std::vector<OccShell> shells;
+
+    for (size_t a = 0; a < atoms.size(); ++a) {
+        const std::size_t Z = atoms[a].atomic_number;
+
+        for (auto comp_idx = 0ul; comp_idx != component_basis_sets.size();
+             ++comp_idx) {
+            const auto &component_basis_set = component_basis_sets[comp_idx];
+            if (!component_basis_set.at(Z).empty()) {
+                for (auto s : component_basis_set.at(Z)) {
+                    shells.push_back(std::move(s));
+                    shells.back().origin = {atoms[a].x, atoms[a].y, atoms[a].z};
+                }
+            } else {
+                std::string basis_filename = basis_lib_path + "/" +
+                                             basis_component_names[comp_idx] +
+                                             ".g94";
+                std::string errmsg =
+                    fmt::format("No matching basis for element (z={}) in {}", Z,
+                                basis_filename);
+                throw std::logic_error(errmsg);
+            }
+        }
+    }
+    return AOBasis(atoms, shells);
 }
 
 } // namespace occ::qm

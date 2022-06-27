@@ -440,30 +440,6 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         return energy["total"];
     }
 
-    void print_orbital_energies() {
-        if constexpr (spinorbital_kind == Unrestricted) {
-            int n_a = n_alpha(), n_b = n_beta();
-            int n_mo = mo.energies.size() / 2;
-            fmt::print("\nmolecular orbital energies\n");
-            fmt::print("{0:3s}   {1:3s} {2:>16s}  {1:3s} {2:>16s}\n", "idx",
-                       "occ", "energy");
-            for (int i = 0; i < n_mo; i++) {
-                auto s_a = i < n_a ? "a" : " ";
-                auto s_b = i < n_b ? "b" : " ";
-                fmt::print("{:3d}   {:^3s} {:16.12f}  {:^3s} {:16.12f}\n", i,
-                           s_a, mo.energies(i), s_b, mo.energies(nbf + i));
-            }
-        } else {
-            int n_mo = mo.energies.size();
-            fmt::print("\nmolecular orbital energies\n");
-            fmt::print("{0:3s}   {1:3s} {2:>16s}\n", "idx", "occ", "energy");
-            for (int i = 0; i < n_mo; i++) {
-                auto s = i < n_occ ? "ab" : " ";
-                fmt::print("{:3d}   {:^3s} {:16.12f}\n", i, s, mo.energies(i));
-            }
-        }
-    }
-
     Procedure &m_procedure;
     int n_electrons{0};
     int n_occ{0};

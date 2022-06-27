@@ -8,9 +8,9 @@ namespace block = occ::qm::block;
 
 template <>
 void xc_potential_matrix<Restricted, 0>(const DensityFunctional::Result &res,
-                                        const Mat &rho,
+                                        MatConstRef rho,
                                         const occ::gto::GTOValues &gto_vals,
-                                        Mat &Vxc, double &energy) {
+                                        MatRef Vxc, double &energy) {
     energy += rho.col(0).dot(res.exc);
     Vxc = gto_vals.phi.transpose() *
           (gto_vals.phi.array().colwise() * res.vrho.col(0).array()).matrix();
@@ -18,9 +18,9 @@ void xc_potential_matrix<Restricted, 0>(const DensityFunctional::Result &res,
 
 template <>
 void xc_potential_matrix<Restricted, 1>(const DensityFunctional::Result &res,
-                                        const Mat &rho,
+                                        MatConstRef rho,
                                         const occ::gto::GTOValues &gto_vals,
-                                        Mat &Vxc, double &energy) {
+                                        MatRef Vxc, double &energy) {
     const auto &phi = gto_vals.phi;
     const auto &phi_x = gto_vals.phi_x;
     const auto &phi_y = gto_vals.phi_y;
@@ -40,9 +40,9 @@ void xc_potential_matrix<Restricted, 1>(const DensityFunctional::Result &res,
 
 template <>
 void xc_potential_matrix<Restricted, 2>(const DensityFunctional::Result &res,
-                                        const Mat &rho,
+                                        MatConstRef rho,
                                         const occ::gto::GTOValues &gto_vals,
-                                        Mat &Vxc, double &energy) {
+                                        MatRef Vxc, double &energy) {
     xc_potential_matrix<Restricted, 1>(res, rho, gto_vals, Vxc, energy);
 
     // unsure about factors for vtau, vlaplacian
@@ -63,9 +63,9 @@ void xc_potential_matrix<Restricted, 2>(const DensityFunctional::Result &res,
 
 template <>
 void xc_potential_matrix<Unrestricted, 0>(const DensityFunctional::Result &res,
-                                          const Mat &rho,
+                                          MatConstRef rho,
                                           const occ::gto::GTOValues &gto_vals,
-                                          Mat &Vxc, double &energy) {
+                                          MatRef Vxc, double &energy) {
     double e_alpha = res.exc.dot(block::a(rho).col(0));
     double e_beta = res.exc.dot(block::b(rho).col(0));
     energy += e_alpha + e_beta;
@@ -77,9 +77,9 @@ void xc_potential_matrix<Unrestricted, 0>(const DensityFunctional::Result &res,
 
 template <>
 void xc_potential_matrix<Unrestricted, 1>(const DensityFunctional::Result &res,
-                                          const Mat &rho,
+                                          MatConstRef rho,
                                           const occ::gto::GTOValues &gto_vals,
-                                          Mat &Vxc, double &energy) {
+                                          MatRef Vxc, double &energy) {
     Eigen::Index npt = res.npts;
     // LDA into K0
     xc_potential_matrix<Unrestricted, 0>(res, rho, gto_vals, Vxc, energy);
@@ -113,9 +113,9 @@ void xc_potential_matrix<Unrestricted, 1>(const DensityFunctional::Result &res,
 
 template <>
 void xc_potential_matrix<Unrestricted, 2>(const DensityFunctional::Result &res,
-                                          const Mat &rho,
+                                          MatConstRef rho,
                                           const occ::gto::GTOValues &gto_vals,
-                                          Mat &Vxc, double &energy) {
+                                          MatRef Vxc, double &energy) {
     Eigen::Index npt = res.npts;
     xc_potential_matrix<Unrestricted, 1>(res, rho, gto_vals, Vxc, energy);
 

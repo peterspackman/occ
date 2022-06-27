@@ -91,6 +91,7 @@ class AOBasis {
     inline auto size() const { return m_shells.size(); }
     inline auto nsh() const { return size(); }
     inline auto kind() const { return m_kind; }
+    inline void set_kind(OccShell::Kind kind) { m_kind = kind; }
     inline const OccShell &operator[](size_t n) const { return m_shells[n]; }
     inline const OccShell &at(size_t n) const { return m_shells.at(n); }
 
@@ -102,6 +103,7 @@ class AOBasis {
     inline const auto &atom_to_shell() const { return m_atom_to_shell_idxs; }
 
     inline auto max_shell_size() const { return m_max_shell_size; }
+    static AOBasis load(const AtomList &atoms, const std::string &name);
 
   private:
     AtomList m_atoms;
