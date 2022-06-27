@@ -48,8 +48,6 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
             bool spherical = (sh.kind == qm::OccShell::Kind::Spherical);
             double fac = common_fac(L, spherical);
             int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
-            if (L < 2)
-                order = GG_CARTESIAN_CCA;
             gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(),
                            coeffs, alpha, center, order, output);
             values.array() *= fac;
@@ -94,8 +92,6 @@ void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
             const double *alpha = sh.exponents.data();
             const double *center = sh.origin.data();
             int L = sh.l;
-            if (L < 2)
-                order = GG_CARTESIAN_CCA;
             double fac = common_fac(L, spherical);
 
             if (max_derivative == 0) {
