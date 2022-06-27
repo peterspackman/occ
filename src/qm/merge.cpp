@@ -38,7 +38,7 @@ BasisSet merge_basis_sets(const BasisSet &basis_a, const BasisSet &basis_b) {
     merged.reserve(basis_a.size() + basis_b.size());
     merged.insert(merged.end(), basis_b.begin(), basis_b.end());
     merged.update();
-    merged.set_pure(false);
+    merged.set_pure(basis_a.is_pure());
     return merged;
 }
 
