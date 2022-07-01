@@ -49,10 +49,15 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
         wfn_a.spinorbital_kind, wfn_a.mo, pos_b);
     field_b += proc_a.nuclear_electric_field_contribution(pos_b);
 
+    // if charged atoms, use charged atomic polarizabilities
+    bool charged_a = (wfn_a.atoms.size() == 1) && (wfn_a.charge() != 0);
+    bool charged_b = (wfn_b.atoms.size() == 1) && (wfn_b.charge() != 0);
+
     using occ::pol::ce_model_polarization_energy;
-    double e_pol =
-        ce_model_polarization_energy(wfn_a.atomic_numbers(), field_a) +
-        ce_model_polarization_energy(wfn_b.atomic_numbers(), field_b);
+    double e_pol = ce_model_polarization_energy(wfn_a.atomic_numbers(), field_a,
+                                                charged_a) +
+                   ce_model_polarization_energy(wfn_b.atomic_numbers(), field_b,
+                                                charged_b);
     return e_pol;
 }
 

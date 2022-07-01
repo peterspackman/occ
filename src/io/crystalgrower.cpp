@@ -77,6 +77,9 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
     size_t uc_idx = 0;
     constexpr double max_de = 1e-4;
 
+    // TODO fix for multiple molecules in asymmetric unit
+    // 1A -> 1 is the conformer number, A is the compound i.e. chemical
+    // composition id
     std::vector<double> unique_interaction_energies;
     for (const auto &mol : uc_molecules) {
 

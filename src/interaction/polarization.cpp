@@ -40,12 +40,14 @@ static const std::array<double, 110> Charged_atomic_polarizibility{
     0.00,   0.00};
 
 double ce_model_polarization_energy(const occ::IVec &atomic_numbers,
-                                    const occ::Mat3N &field) {
+                                    const occ::Mat3N &field, bool charged) {
     auto fsq = field.colwise().squaredNorm();
+    const auto &polarizabilities =
+        charged ? Charged_atomic_polarizibility : Thakkar_atomic_polarizability;
     double epol = 0.0;
     for (auto i = 0; i < atomic_numbers.rows(); i++) {
         int n = atomic_numbers(i);
-        double pol_fac = Thakkar_atomic_polarizability[n - 1];
+        double pol_fac = polarizabilities[n - 1];
         epol += pol_fac * fsq(i);
     }
     return epol * -0.5;
