@@ -2,6 +2,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/solvation_partition.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
     ${OCC_INCLUDE_FILES}
 )

@@ -59,7 +59,8 @@ void evaluate_density(MatConstRef D, const occ::gto::GTOValues &gto_values,
                         .rowwise()
                         .sum();
             // tau
-            Dphi = gto_values.phi_x * Da;
+            Dphi =
+                (gto_values.phi_x + gto_values.phi_y + gto_values.phi_z) * Da;
             rho_a.col(5) =
                 (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
             Dphi = gto_values.phi_y * Da;

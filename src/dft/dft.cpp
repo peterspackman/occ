@@ -109,7 +109,7 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
             auto combo = builtin_functionals.at(m);
             occ::log::debug("Found builtin functional combination for {}", m);
             for (const auto &func : combo) {
-                occ::log::debug("id: {}", func.id);
+                occ::log::debug("id: {}", static_cast<int>(func.id));
                 auto f = DensityFunctional(func.id, polarized);
                 occ::log::debug("scale factor: {}", func.factor);
                 f.set_scale_factor(func.factor);
