@@ -40,7 +40,7 @@ jobs:
     - name: CPM Cache
       uses: actions/cache@v3.0.4
       with:
-        path: ${{env.CPM_SOURCE_CACHE}
+        path: ${{env.CPM_SOURCE_CACHE}}
         key: ${{ runner.os }}-build-cache
 
     - name: Test
