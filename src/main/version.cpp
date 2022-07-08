@@ -2,7 +2,7 @@
 #include <boost/version.hpp>
 #include <fmt/core.h>
 #include <gemmi/version.hpp>
-#include <libint2.hpp>
+#include <occ/3rdparty/cint_wrapper.h>
 #include <occ/main/version.h>
 #include <spdlog/spdlog.h>
 #include <xc.h>
@@ -14,7 +14,7 @@ void print_header() {
     const auto eigen_version_string =
         fmt::format("{}.{}.{}", EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION,
                     EIGEN_MINOR_VERSION);
-    const std::string libint_version_string{LIBINT_VERSION};
+    const std::string cint_version_string{libcint::cint_version_string};
     const std::string gemmi_version_string{GEMMI_VERSION};
     const std::string boost_version_string{BOOST_LIB_VERSION};
     const int fmt_major = FMT_VERSION / 10000;
@@ -40,7 +40,7 @@ copyright (C) 2020-2022 Peter Spackman
 this version of occ makes use of the following third party libraries:
 
 eigen3               Linear Algebra (v {})
-libint2              Electron integrals using GTOs (v {})
+libcint              Electron integrals using GTOs (v {})
 libxc                Density functional implementations (v {})
 gau2grid             Gaussian basis function evaluation (v 2.0.7)
 gemmi                CIF parsing & structure refinement (v {})
@@ -54,7 +54,7 @@ LBFGS++              L-BFGS implementation
 zlib                 zip library
 
 )",
-               eigen_version_string, libint_version_string, xc_version_string,
+               eigen_version_string, cint_version_string, xc_version_string,
                gemmi_version_string, boost_version_string, fmt_version_string,
                spdlog_version_string);
 }

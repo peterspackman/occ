@@ -6,9 +6,6 @@
 #include <occ/qm/scf.h>
 
 TEST_CASE("Water DFT", "[scf]") {
-    libint2::Shell::do_enforce_unit_normalization(true);
-    if (!libint2::initialized())
-        libint2::initialize();
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},

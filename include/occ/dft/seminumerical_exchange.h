@@ -2,10 +2,8 @@
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/dft/grid.h>
-#include <occ/qm/basisset.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shellpair.h>
 #include <vector>
 
 namespace occ::dft::cosx {

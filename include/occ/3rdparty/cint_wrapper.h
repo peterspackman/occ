@@ -43,5 +43,10 @@ static constexpr int rinv_origin_offset = PTR_RINV_ORIG;
 static constexpr int rinv_zeta_offset = PTR_RINV_ZETA;
 static constexpr int range_omega_offset = PTR_RANGE_OMEGA;
 static constexpr int f12_zeta_offset = PTR_F12_ZETA;
+#define XXSTRINGIFY(s) XSTRINGIFY(s)
+#define XSTRINGIFY(s) #s
+static constexpr const char *cint_version_string = XXSTRINGIFY(CINT_VERSION);
+#undef XSTRINGIFY
+#undef XXSTRINGIFY
 
 } // namespace libcint

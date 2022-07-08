@@ -23,7 +23,6 @@ enum category {
     rho,
     gto,
     fock,
-    engine_construct,
     jkmat,
     jmat,
     df,

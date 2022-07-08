@@ -5,20 +5,16 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
-#include <occ/qm/basisset.h>
 #include <vector>
 
 using occ::Mat;
-using occ::qm::BasisSet;
 
 TEST_CASE("GTO vals H2/STO-3G") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
-    BasisSet basis("sto-3g", atoms);
-    occ::qm::AOBasis aobasis(atoms, occ::qm::from_libint2_basis(basis));
+    occ::qm::AOBasis aobasis = occ::qm::AOBasis::load(atoms, "sto-3g");
     auto grid_pts = Mat::Zero(3, 4);
-    auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts, 2);
-    auto gto_values_new = occ::gto::evaluate_basis(aobasis, grid_pts, 2);
+    auto gto_values = occ::gto::evaluate_basis(aobasis, grid_pts, 2);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
     fmt::print("phi_y\n{}\n", gto_values.phi_y);
@@ -32,20 +28,16 @@ TEST_CASE("GTO vals H2/STO-3G") {
 
     Mat D(2, 2);
     D.setConstant(0.60245569);
-    auto rho =
-        occ::density::evaluate_density_on_grid<2>(basis, atoms, D, grid_pts);
-    auto rho_new =
-        occ::density::evaluate_density_on_grid<2>(aobasis, D, grid_pts);
+    auto rho = occ::density::evaluate_density_on_grid<2>(aobasis, D, grid_pts);
     fmt::print("Rho\n{}\n", rho);
-    fmt::print("Rho new\n{}\n", rho);
 }
 
 TEST_CASE("GTO vals H2/3-21G") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
-    BasisSet basis("3-21G", atoms);
+    occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "3-21G");
     auto grid_pts = Mat::Identity(3, 4);
-    auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts, 1);
+    auto gto_values = occ::gto::evaluate_basis(basis, grid_pts, 1);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
     fmt::print("phi_y\n{}\n", gto_values.phi_y);
@@ -57,17 +49,16 @@ TEST_CASE("GTO vals H2/3-21G") {
         0.175416203439, 0.181496024303, 0.175416203439, 0.181496024303,
         0.181496024303, 0.187786568128, 0.181496024303, 0.187786568128;
 
-    auto rho =
-        occ::density::evaluate_density_on_grid<1>(basis, atoms, D, grid_pts);
+    auto rho = occ::density::evaluate_density_on_grid<1>(basis, D, grid_pts);
     fmt::print("Rho\n{}\n", rho);
 }
 
 TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
-    BasisSet basis("sto-3g", atoms);
+    occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "sto-3g");
     auto grid_pts = Mat::Identity(3, 4);
-    auto gto_values = occ::gto::evaluate_basis(basis, atoms, grid_pts, 1);
+    auto gto_values = occ::gto::evaluate_basis(basis, grid_pts, 1);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
     fmt::print("phi_y\n{}\n", gto_values.phi_y);
@@ -77,7 +68,7 @@ TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
     D.block(0, 0, 2, 2).setConstant(0.30122784);
     D.block(2, 0, 2, 2).setConstant(0.30122784);
     auto rho = occ::density::evaluate_density_on_grid<
-        1, occ::qm::SpinorbitalKind::Unrestricted>(basis, atoms, D, grid_pts);
+        1, occ::qm::SpinorbitalKind::Unrestricted>(basis, D, grid_pts);
     fmt::print("Rho alpha\n{}\n", occ::qm::block::a(rho));
     fmt::print("Rho beta\n{}\n", occ::qm::block::b(rho));
 }

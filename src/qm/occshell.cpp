@@ -4,7 +4,6 @@
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/io/basis_g94.h>
-#include <occ/qm/basisset.h>
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/occshell.h>
 
@@ -126,20 +125,6 @@ OccShell::OccShell(const int ang, const std::vector<double> &expo,
         }
     }
     origin = {pos[0], pos[1], pos[2]};
-}
-
-// TODO remove once libint2 has been purged...
-OccShell::OccShell(const libint2::Shell &sh) : l(sh.contr[0].l), origin() {
-    size_t nprim = sh.nprim();
-    size_t ncont = 1;
-    exponents = Eigen::VectorXd(nprim);
-    contraction_coefficients = Eigen::MatrixXd(nprim, 1);
-    for (size_t i = 0; i < nprim; i++) {
-        exponents(i) = sh.alpha[i];
-        contraction_coefficients(i, 0) = sh.coeff_normalized(0, i);
-    }
-    kind = sh.contr[0].pure ? Kind::Spherical : Kind::Cartesian;
-    origin = {sh.O[0], sh.O[1], sh.O[2]};
 }
 
 OccShell::OccShell(const occ::core::PointCharge &point_charge)
@@ -434,19 +419,6 @@ void AOBasis::merge(const AOBasis &rhs) {
     m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);
 }
 
-std::vector<OccShell> from_libint2_basis(const occ::qm::BasisSet &basis) {
-    std::vector<OccShell> result;
-    result.reserve(basis.size());
-    for (const auto &sh : basis) {
-        result.emplace_back(occ::qm::OccShell(sh));
-        result.back().incorporate_shell_norm();
-    }
-    return result;
-}
-occ::qm::BasisSet to_libint2_basis(const AOBasis &basis) {
-    return occ::qm::BasisSet(basis.name(), basis.atoms());
-}
-
 std::ostream &operator<<(std::ostream &stream, const OccShell &shell) {
     stream << shell.symbol() << " (" << shell.origin(0) << ","
            << shell.origin(1) << ", " << shell.origin(2) << ")\n";
@@ -499,32 +471,22 @@ std::string data_path() {
         path = std::string{DATADIR};
 #elif defined(SRCDATADIR)
         path = std::string{SRCDATADIR};
-#else
-        path = std::string("/usr/local/share/libint/2.7.0");
 #endif
     }
     // validate basis_path = path + "/basis"
     std::string basis_path = path + std::string("/basis");
-    bool error = true;
-    std::error_code ec;
-    auto validate_basis_path = [&basis_path, &error, &ec]() -> void {
-        if (not basis_path.empty()) {
-            struct stat sb;
-            error = (::stat(basis_path.c_str(), &sb) == -1);
-            error = error || not S_ISDIR(sb.st_mode);
-            if (error)
-                ec = std::error_code(errno, std::generic_category());
-        }
-    };
-    validate_basis_path();
-    if (error) { // try without "/basis"
-        basis_path = path;
-        validate_basis_path();
-    }
-    if (error) {
-        occ::log::warn("There is a problem with BasisSet::data_path(), the "
-                       "path '{}' is not valid ({})",
-                       basis_path, ec.message());
+    bool path_exists = fs::exists(basis_path);
+    bool error = false;
+    std::string errmsg;
+    if (!path_exists) { // try without "/basis"
+        occ::log::warn("There is a problem with the basis set directory, the "
+                       "path '{}' is not valid (does not exist)",
+                       basis_path);
+        basis_path = fs::current_path().string();
+    } else if (!fs::is_directory(basis_path)) {
+        occ::log::warn("There is a problem with the basis set directory, the "
+                       "path '{}' is not valid (not a directory)",
+                       basis_path);
         basis_path = fs::current_path().string();
     }
     return basis_path;

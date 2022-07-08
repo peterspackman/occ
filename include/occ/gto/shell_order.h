@@ -1,6 +1,5 @@
 #pragma once
-#include <libint2/cgshell_ordering.h>
-#include <libint2/shgshell_ordering.h>
+#include <cmath>
 
 namespace occ::gto {
 

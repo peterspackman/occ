@@ -4,7 +4,6 @@
 #include <occ/qm/spinorbital.h>
 
 namespace occ::density {
-using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 
 constexpr int num_components(int deriv_order) {
@@ -150,16 +149,6 @@ Mat evaluate_density(const Mat &D, const occ::gto::GTOValues &gto_values) {
     occ::Mat rho;
     evaluate_density<max_derivative, spinorbital_kind>(D, gto_values, rho);
     return rho;
-}
-
-template <size_t max_derivative,
-          SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-Mat evaluate_density_on_grid(const BasisSet &basis,
-                             const std::vector<occ::core::Atom> &atoms,
-                             const Mat &D, const occ::Mat &grid_pts) {
-    auto gto_values =
-        occ::gto::evaluate_basis(basis, atoms, grid_pts, max_derivative);
-    return evaluate_density<max_derivative, spinorbital_kind>(D, gto_values);
 }
 
 template <size_t max_derivative,

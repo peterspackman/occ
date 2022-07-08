@@ -69,8 +69,6 @@ std::string category_name(category cat) {
         return "J+K matrix";
     case jmat:
         return "J matrix";
-    case engine_construct:
-        return "libint2 eng.";
     default:
         return "other";
     }
@@ -78,20 +76,11 @@ std::string category_name(category cat) {
 
 void print_timings() {
     const auto categories = {
-        ints1e,      ints2e,
-        io,          la,
-        guess,       mo,
-        diis,        grid_init,
-        grid_points, dft,
-        rho,         dft_xc,
-        gto,         gto_dist,
-        gto_mask,    gto_shell,
-        gto_s,       gto_p,
-        gto_gen,     assoc_legendre,
-        fft,         engine_construct,
-        jmat,        jkmat,
-        fock,        df,
-        solvent,     global,
+        ints1e,  ints2e,         io,          la,        guess, mo,
+        diis,    grid_init,      grid_points, dft,       rho,   dft_xc,
+        gto,     gto_dist,       gto_mask,    gto_shell, gto_s, gto_p,
+        gto_gen, assoc_legendre, fft,         jmat,      jkmat, fock,
+        df,      solvent,        global,
     };
     fmt::print("Wall clock time by category (s)\n");
     for (const auto &cat : categories) {

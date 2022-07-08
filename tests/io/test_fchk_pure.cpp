@@ -377,19 +377,6 @@ QEq coupling tensors                       R   N=          18
   3.27501915E-03  2.04394117E-03  2.72481891E-01
 )";
 
-void print_shell(const libint2::Shell &shell) {
-    //    fmt::print("{}\n", shell);
-}
-
-void print_basis(const occ::qm::BasisSet &basis) {
-    size_t idx = 0;
-    for (const auto &sh : basis) {
-        fmt::print("Shell {}\n", idx);
-        print_shell(sh);
-        idx++;
-    }
-}
-
 TEST_CASE("G09 water fchk", "[read]") {
     std::istringstream fchk(fchk_contents);
     occ::io::FchkReader reader(fchk);

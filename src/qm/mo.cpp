@@ -2,7 +2,6 @@
 #include <occ/core/logger.h>
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
-#include <occ/qm/basisset.h>
 #include <occ/qm/mo.h>
 
 namespace occ::qm {

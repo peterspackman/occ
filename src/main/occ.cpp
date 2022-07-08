@@ -151,8 +151,6 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        libint2::Shell::do_enforce_unit_normalization(true);
-        libint2::initialize();
         occ::timing::start(occ::timing::category::io);
 
         OccInput config;

@@ -15,7 +15,6 @@
 #include <vector>
 
 namespace occ::dft {
-using occ::qm::BasisSet;
 using occ::qm::expectation;
 using occ::qm::MolecularOrbitals;
 using occ::qm::SpinorbitalKind;

@@ -144,17 +144,6 @@ target_include_directories(
     "${libcint_BINARY_DIR}/include"
 )
 
-if(NOT "${USE_SYSTEM_LIBINT2}")
-set(LIBINT2_URL "https://github.com/evaleev/libint/releases/download/v2.7.1/libint-2.7.1.tgz")
-CPMAddPackage(
-    NAME Libint2
-    URL "${LIBINT2_URL}"
-    OPTIONS "LIBINT_HAS_SYSTEM_BOOST_PREPROCESSOR_VARIADICS ON"
-    VERSION "2.7.1"
-)
-add_library(Libint2::cxx ALIAS libint2_cxx)
-endif()
-
 if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc

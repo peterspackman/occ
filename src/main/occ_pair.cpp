@@ -132,14 +132,25 @@ int main(int argc, char *argv[]) {
     options.positional_help("[input_file]").show_positional_help();
 
     options.add_options()("h,help", "Print help")(
-        "i,input", "Input file", cxxopts::value<std::string>())(
-        "o,output", "Output file", cxxopts::value<std::string>())(
-        "t,threads", "Number of threads",
-        cxxopts::value<int>(threads)->default_value("1"))(
-        "m,model", "CE model",
-        cxxopts::value<std::string>()->default_value("ce-b3lyp"))(
-        "d,with-density-fitting", "Use density fitting (RI-JK)",
-        cxxopts::value<bool>()->default_value("false"))(
+        "i,input", "Input file",
+        cxxopts::value<
+            std::
+                string>())("o,output", "Output file",
+                           cxxopts::value<
+                               std::
+                                   string>())("t,threads", "Number of threads",
+                                              cxxopts::value<int>(threads)
+                                                  ->default_value(
+                                                      "1"))("m,model",
+                                                            "CE model",
+                                                            cxxopts::value<
+                                                                std::string>()
+                                                                ->default_value(
+                                                                    "ce-"
+                                                                    "b3lyp"));
+    options.add_options()("d,with-density-fitting",
+                          "Use density fitting (RI-JK)",
+                          cxxopts::value<bool>()->default_value("false"))(
         "v,verbosity", "Logging verbosity",
         cxxopts::value<std::string>()->default_value("WARN"));
 
@@ -161,8 +172,6 @@ int main(int argc, char *argv[]) {
     spdlog::set_level(level);
 
     occ::timing::start(occ::timing::category::global);
-    libint2::Shell::do_enforce_unit_normalization(true);
-    libint2::initialize();
 
     auto pair = parse_input_file(args["input"].as<std::string>());
 

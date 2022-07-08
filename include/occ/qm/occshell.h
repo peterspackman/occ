@@ -5,7 +5,6 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/util.h>
-#include <occ/qm/basisset.h>
 #include <vector>
 
 namespace occ::qm {
@@ -29,7 +28,6 @@ struct OccShell {
              const std::array<double, 3> &pos);
     OccShell(const occ::core::PointCharge &);
     OccShell();
-    OccShell(const libint2::Shell &);
 
     bool operator==(const OccShell &other) const;
     bool operator!=(const OccShell &other) const;
@@ -137,8 +135,6 @@ class AOBasis {
     OccShell::Kind m_kind{OccShell::Kind::Cartesian};
 };
 
-std::vector<OccShell> from_libint2_basis(const BasisSet &basis);
-BasisSet to_libint2_basis(const AOBasis &basis);
 std::ostream &operator<<(std::ostream &stream, const OccShell &shell);
 
 } // namespace occ::qm
