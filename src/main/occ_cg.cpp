@@ -430,7 +430,7 @@ int main(int argc, char **argv) {
         }
 
         occ::main::SolvationPartitionScheme partition_scheme =
-            occ::main::SolvationPartitionScheme::ElectronDensity;
+            occ::main::SolvationPartitionScheme::NearestAtom;
 
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         std::vector<std::vector<occ::main::SolventNeighborContribution>>

@@ -2,12 +2,13 @@
 #include <occ/core/energy_components.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/logger.h>
+#include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/qm/cdiis.h>
 #include <occ/qm/ediis.h>
+#include <occ/qm/expectation.h>
 #include <occ/qm/guess_density.h>
-#include <occ/qm/ints.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/occshell.h>
 #include <occ/qm/opmatrix.h>
@@ -255,8 +256,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
         occ::timing::start(occ::timing::category::guess);
         auto D_minbs = compute_soad(); // compute guess in minimal basis
-        BasisSet minbs(OCC_MINIMAL_BASIS, atoms());
-        if (minbs == m_procedure.basis()) {
+        if (m_procedure.aobasis().name() == OCC_MINIMAL_BASIS) {
             if constexpr (spinorbital_kind == Restricted) {
                 mo.D = D_minbs;
             } else if constexpr (spinorbital_kind == Unrestricted) {
@@ -274,11 +274,10 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             // by diagonalizing a Fock matrix
             occ::log::debug(
                 "Projecting minimal basis guess into atomic orbital basis...");
-            auto minbs2 = occ::qm::AOBasis(m_procedure.atoms(),
-                                           occ::qm::from_libint2_basis(minbs));
-
+            auto minbs =
+                occ::qm::AOBasis::load(m_procedure.atoms(), OCC_MINIMAL_BASIS);
             F += m_procedure.compute_fock_mixed_basis(spinorbital_kind, D_minbs,
-                                                      minbs2, true);
+                                                      minbs, true);
             mo.update(X, F);
             mo.update_density_matrix();
 

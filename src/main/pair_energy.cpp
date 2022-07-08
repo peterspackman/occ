@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <occ/core/logger.h>
 #include <occ/core/molecule.h>
+#include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/main/pair_energy.h>

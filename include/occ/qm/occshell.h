@@ -73,7 +73,7 @@ class AOBasis {
     using AtomList = std::vector<Atom>;
 
     using ShellList = std::vector<OccShell>;
-    AOBasis(const AtomList &, const ShellList &);
+    AOBasis(const AtomList &, const ShellList &, const std::string &name = "");
     AOBasis() {}
 
     inline size_t nbf() const { return m_nbf; }
@@ -87,7 +87,7 @@ class AOBasis {
     inline bool shells_share_origin(size_t p, size_t q) const {
         return m_shell_to_atom_idx[p] == m_shell_to_atom_idx[q];
     }
-
+    inline const auto &name() const { return m_basis_name; }
     inline auto size() const { return m_shells.size(); }
     inline auto nsh() const { return size(); }
     inline auto kind() const { return m_kind; }
@@ -105,7 +105,10 @@ class AOBasis {
     inline auto max_shell_size() const { return m_max_shell_size; }
     static AOBasis load(const AtomList &atoms, const std::string &name);
 
+    bool operator==(const AOBasis &rhs);
+
   private:
+    std::string m_basis_name;
     AtomList m_atoms;
     ShellList m_shells;
     std::vector<int> m_first_bf;
@@ -118,6 +121,7 @@ class AOBasis {
 };
 
 std::vector<OccShell> from_libint2_basis(const BasisSet &basis);
+BasisSet to_libint2_basis(const AOBasis &basis);
 std::ostream &operator<<(std::ostream &stream, const OccShell &shell);
 
 } // namespace occ::qm

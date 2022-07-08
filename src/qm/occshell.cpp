@@ -363,9 +363,10 @@ int OccShell::find_atom_index(const std::vector<Atom> &atoms) const {
 bool OccShell::is_pure() const { return kind == Spherical; }
 
 AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
-                 const std::vector<OccShell> &shells)
-    : m_atoms(atoms), m_shells(shells), m_shell_to_atom_idx(shells.size()),
-      m_atom_to_shell_idxs(atoms.size()), m_bf_to_shell() {
+                 const std::vector<OccShell> &shells, const std::string &name)
+    : m_basis_name(name), m_atoms(atoms), m_shells(shells),
+      m_shell_to_atom_idx(shells.size()), m_atom_to_shell_idxs(atoms.size()),
+      m_bf_to_shell() {
     size_t shell_idx = 0;
     for (const auto &shell : m_shells) {
         m_kind = shell.kind;
@@ -434,6 +435,9 @@ std::vector<OccShell> from_libint2_basis(const occ::qm::BasisSet &basis) {
         result.back().incorporate_shell_norm();
     }
     return result;
+}
+occ::qm::BasisSet to_libint2_basis(const AOBasis &basis) {
+    return occ::qm::BasisSet(basis.name(), basis.atoms());
 }
 
 std::ostream &operator<<(std::ostream &stream, const OccShell &shell) {
@@ -551,6 +555,7 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
                 for (auto s : component_basis_set.at(Z)) {
                     shells.push_back(std::move(s));
                     shells.back().origin = {atoms[a].x, atoms[a].y, atoms[a].z};
+                    shells.back().incorporate_shell_norm();
                 }
             } else {
                 std::string basis_filename = basis_lib_path + "/" +
@@ -563,7 +568,11 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
             }
         }
     }
-    return AOBasis(atoms, shells);
+    return AOBasis(atoms, shells, name);
+}
+
+bool AOBasis::operator==(const AOBasis &rhs) {
+    return m_shells == rhs.m_shells;
 }
 
 } // namespace occ::qm

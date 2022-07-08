@@ -8,7 +8,7 @@
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
-#include <occ/qm/ints.h>
+#include <occ/qm/hf.h>
 #include <occ/qm/merge.h>
 #include <occ/qm/orb.h>
 #include <occ/qm/partitioning.h>
@@ -561,15 +561,10 @@ void Wavefunction::save_npz(const std::string &filename) {
 
 Vec Wavefunction::mulliken_charges() const {
 
-    ShellPairList shellpair_list;
-    ShellPairData shellpair_data;
-    std::tie(shellpair_list, shellpair_data) =
-        occ::ints::compute_shellpairs(basis);
-    Mat overlap = occ::ints::compute_1body_ints<libint2::Operator::overlap>(
-        basis, shellpair_list)[0];
+    occ::hf::HartreeFock hf(atoms, basis);
+    Mat overlap = hf.compute_overlap_matrix();
 
     Vec charges = Vec::Zero(atoms.size());
-    ;
 
     switch (spinorbital_kind) {
     case SpinorbitalKind::Unrestricted:

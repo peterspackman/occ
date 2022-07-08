@@ -137,10 +137,9 @@ template <typename Proc> class SolvationCorrectedProcedure {
     bool supports_incremental_fock_build() const {
         return m_proc.supports_incremental_fock_build();
     }
-    const auto &shellpair_list() const { return m_proc.shellpair_list(); }
-    const auto &shellpair_data() const { return m_proc.shellpair_data(); }
     const auto &atoms() const { return m_proc.atoms(); }
     const auto &basis() const { return m_proc.basis(); }
+    const auto &aobasis() const { return m_proc.aobasis(); }
 
     void set_system_charge(int charge) { m_proc.set_system_charge(charge); }
     int system_charge() const { return m_proc.system_charge(); }

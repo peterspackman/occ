@@ -1,7 +1,6 @@
 #include <occ/core/parallel.h>
 #include <occ/dft/seminumerical_exchange.h>
 #include <occ/gto/gto.h>
-#include <occ/qm/ints.h>
 
 namespace occ::dft::cosx {
 

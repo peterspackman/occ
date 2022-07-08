@@ -2,7 +2,6 @@
 #include <occ/core/energy_components.h>
 #include <occ/core/multipole.h>
 #include <occ/core/point_charge.h>
-#include <occ/qm/density_fitting.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo.h>
@@ -10,14 +9,10 @@
 
 namespace occ::hf {
 
-using occ::ints::BasisSet;
-using occ::ints::compute_1body_ints;
-using occ::ints::compute_1body_ints_deriv;
-using occ::ints::Operator;
-using occ::ints::ShellPairData;
-using occ::ints::ShellPairList;
+using occ::qm::BasisSet;
 using occ::qm::MolecularOrbitals;
 using occ::qm::SpinorbitalKind;
+using PointChargeList = std::vector<occ::core::PointCharge>;
 
 /// to use precomputed shell pair data must decide on max precision a priori
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
@@ -26,8 +21,6 @@ class HartreeFock {
   public:
     HartreeFock(const std::vector<occ::core::Atom> &atoms,
                 const BasisSet &basis);
-    const auto &shellpair_list() const { return m_shellpair_list; }
-    const auto &shellpair_data() const { return m_shellpair_data; }
     const auto &atoms() const { return m_atoms; }
     const auto &basis() const { return m_basis; }
     const auto &aobasis() const { return m_engine.aobasis(); }
@@ -67,13 +60,7 @@ class HartreeFock {
     Mat compute_overlap_matrix() const;
     Mat compute_nuclear_attraction_matrix() const;
     Mat compute_point_charge_interaction_matrix(
-        const std::vector<occ::core::PointCharge> &point_charges) const;
-
-    std::vector<Mat>
-    compute_kinetic_energy_derivatives(unsigned derivative) const;
-    std::vector<Mat>
-    compute_nuclear_attraction_derivatives(unsigned derivative) const;
-    std::vector<Mat> compute_overlap_derivatives(unsigned derivative) const;
+        const PointChargeList &point_charges) const;
 
     Mat3N nuclear_electric_field_contribution(const Mat3N &) const;
     Mat3N electronic_electric_field_contribution(SpinorbitalKind kind,
@@ -83,8 +70,6 @@ class HartreeFock {
                                                    const MolecularOrbitals &mo,
                                                    const Mat3N &) const;
     Vec nuclear_electric_potential_contribution(const Mat3N &) const;
-
-    Mat compute_shellblock_norm(const Mat &A) const;
 
     Mat compute_schwarz_ints() const;
     void update_core_hamiltonian(occ::qm::SpinorbitalKind k,
@@ -130,8 +115,6 @@ class HartreeFock {
     std::vector<occ::core::Atom> m_atoms;
     BasisSet m_basis;
     BasisSet m_density_fitting_basis;
-    ShellPairList m_shellpair_list{}; // shellpair list for OBS
-    ShellPairData m_shellpair_data{}; // shellpair data for OBS
     mutable double m_e_alpha{0};
     mutable double m_e_beta{0};
     mutable std::optional<occ::qm::IntegralEngineDF> m_df_engine;

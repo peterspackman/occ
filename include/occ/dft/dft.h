@@ -10,7 +10,6 @@
 #include <occ/gto/gto.h>
 #include <occ/qm/basisset.h>
 #include <occ/qm/hf.h>
-#include <occ/qm/ints.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/spinorbital.h>
 #include <string>
@@ -26,10 +25,6 @@ using occ::IVec;
 using occ::Mat3N;
 using occ::MatN4;
 using occ::Vec;
-using occ::ints::BasisSet;
-using occ::ints::compute_1body_ints;
-using occ::ints::compute_1body_ints_deriv;
-using occ::ints::Operator;
 
 namespace block = occ::qm::block;
 
@@ -94,10 +89,9 @@ class DFT {
     DFT(const std::string &, const BasisSet &,
         const std::vector<occ::core::Atom> &,
         const SpinorbitalKind kind = SpinorbitalKind::Restricted);
-    const auto &shellpair_list() const { return m_hf.shellpair_list(); }
-    const auto &shellpair_data() const { return m_hf.shellpair_data(); }
     const auto &atoms() const { return m_hf.atoms(); }
     const auto &basis() const { return m_hf.basis(); }
+    const auto &aobasis() const { return m_hf.aobasis(); }
 
     void set_system_charge(int charge) { m_hf.set_system_charge(charge); }
     int system_charge() const { return m_hf.system_charge(); }
@@ -155,22 +149,6 @@ class DFT {
         const std::vector<std::pair<double, std::array<double, 3>>>
             &point_charges) const {
         return m_hf.compute_point_charge_interaction_matrix(point_charges);
-    }
-
-    auto compute_kinetic_energy_derivatives(unsigned derivative) const {
-        return m_hf.compute_kinetic_energy_derivatives(derivative);
-    }
-
-    auto compute_nuclear_attraction_derivatives(unsigned derivative) const {
-        return m_hf.compute_nuclear_attraction_derivatives(derivative);
-    }
-
-    auto compute_overlap_derivatives(unsigned derivative) const {
-        return m_hf.compute_overlap_derivatives(derivative);
-    }
-
-    auto compute_shellblock_norm(const Mat &A) const {
-        return m_hf.compute_shellblock_norm(A);
     }
 
     auto compute_schwarz_ints() const { return m_hf.compute_schwarz_ints(); }

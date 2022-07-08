@@ -26,6 +26,13 @@ void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
         fmt::print("Atom {}: {:12.6f}\n", i, mulliken_charges(i));
     }
     */
+    Vec charges = wfn.mulliken_charges();
+    fmt::print("Atomic charges:\n");
+    for (int i = 0; i < charges.rows(); i++) {
+        fmt::print("{:<6s} {: 9.6f}\n",
+                   core::Element(wfn.atoms[i].atomic_number).symbol(),
+                   charges(i));
+    }
 }
 
 } // namespace occ::main

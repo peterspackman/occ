@@ -1,6 +1,5 @@
 #include <occ/core/parallel.h>
 #include <occ/qm/hf.h>
-#include <occ/qm/property_ints.h>
 
 namespace occ::hf {
 
@@ -23,9 +22,6 @@ HartreeFock::HartreeFock(const std::vector<occ::core::Atom> &atoms,
                          const BasisSet &basis)
     : m_atoms(atoms), m_basis(basis),
       m_engine(atoms, occ::qm::from_libint2_basis(basis)) {
-
-    std::tie(m_shellpair_list, m_shellpair_data) =
-        occ::ints::compute_shellpairs(m_basis);
 
     for (const auto &a : m_atoms) {
         m_num_e += a.atomic_number;
@@ -122,30 +118,8 @@ Mat HartreeFock::compute_nuclear_attraction_matrix() const {
 }
 
 Mat HartreeFock::compute_point_charge_interaction_matrix(
-    const std::vector<occ::core::PointCharge> &point_charges) const {
+    const PointChargeList &point_charges) const {
     return m_engine.point_charge_potential(point_charges);
-}
-
-std::vector<Mat>
-HartreeFock::compute_kinetic_energy_derivatives(unsigned derivative) const {
-    return compute_1body_ints_deriv<Operator::kinetic>(
-        derivative, m_basis, m_shellpair_list, m_atoms);
-}
-
-std::vector<Mat>
-HartreeFock::compute_nuclear_attraction_derivatives(unsigned derivative) const {
-    return compute_1body_ints_deriv<Operator::nuclear>(
-        derivative, m_basis, m_shellpair_list, m_atoms);
-}
-
-std::vector<Mat>
-HartreeFock::compute_overlap_derivatives(unsigned derivative) const {
-    return compute_1body_ints_deriv<Operator::overlap>(
-        derivative, m_basis, m_shellpair_list, m_atoms);
-}
-
-Mat HartreeFock::compute_shellblock_norm(const Mat &A) const {
-    return occ::ints::compute_shellblock_norm(m_basis, A);
 }
 
 Mat3N HartreeFock::nuclear_electric_field_contribution(
@@ -166,55 +140,26 @@ Mat3N HartreeFock::electronic_electric_field_contribution(
     SpinorbitalKind kind, const MolecularOrbitals &mo,
     const Mat3N &positions) const {
     const auto &D = mo.D;
-    constexpr bool use_finite_differences = true;
-    if constexpr (use_finite_differences) {
-        double delta = 1e-8;
-        occ::Mat3N efield_fd(positions.rows(), positions.cols());
-        for (size_t i = 0; i < 3; i++) {
-            auto pts_delta = positions;
-            pts_delta.row(i).array() += delta;
-            auto esp_f =
-                electronic_electric_potential_contribution(kind, mo, pts_delta);
-            pts_delta.row(i).array() -= 2 * delta;
-            auto esp_b =
-                electronic_electric_potential_contribution(kind, mo, pts_delta);
-            efield_fd.row(i) = -(esp_f - esp_b) / (2 * delta);
-        }
-        return efield_fd;
-    } else {
-        switch (kind) {
-        case SpinorbitalKind::Restricted:
-            return occ::ints::compute_electric_field<
-                SpinorbitalKind::Restricted>(D, m_basis, m_shellpair_list,
-                                             positions);
-        case SpinorbitalKind::Unrestricted:
-            return occ::ints::compute_electric_field<
-                SpinorbitalKind::Unrestricted>(D, m_basis, m_shellpair_list,
-                                               positions);
-        case SpinorbitalKind::General:
-            return occ::ints::compute_electric_field<SpinorbitalKind::General>(
-                D, m_basis, m_shellpair_list, positions);
-        }
+    double delta = 1e-8;
+    occ::Mat3N efield_fd(positions.rows(), positions.cols());
+    for (size_t i = 0; i < 3; i++) {
+        auto pts_delta = positions;
+        pts_delta.row(i).array() += delta;
+        auto esp_f =
+            electronic_electric_potential_contribution(kind, mo, pts_delta);
+        pts_delta.row(i).array() -= 2 * delta;
+        auto esp_b =
+            electronic_electric_potential_contribution(kind, mo, pts_delta);
+        efield_fd.row(i) = -(esp_f - esp_b) / (2 * delta);
     }
+    return efield_fd;
 }
 
 Vec HartreeFock::electronic_electric_potential_contribution(
     SpinorbitalKind kind, const MolecularOrbitals &mo,
     const Mat3N &positions) const {
     const auto &D = mo.D;
-    switch (kind) {
-    case SpinorbitalKind::Unrestricted:
-        return occ::ints::compute_electric_potential<
-            SpinorbitalKind::Unrestricted>(D, m_basis, m_shellpair_list,
-                                           positions);
-    case SpinorbitalKind::General:
-        return occ::ints::compute_electric_potential<SpinorbitalKind::General>(
-            D, m_basis, m_shellpair_list, positions);
-    default:
-        return occ::ints::compute_electric_potential<
-            SpinorbitalKind::Restricted>(D, m_basis, m_shellpair_list,
-                                         positions);
-    }
+    return m_engine.electric_potential(mo, positions);
 }
 
 Vec HartreeFock::nuclear_electric_potential_contribution(
