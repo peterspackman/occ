@@ -9,7 +9,7 @@
 
 namespace occ::hf {
 
-using occ::qm::BasisSet;
+using occ::qm::AOBasis;
 using occ::qm::MolecularOrbitals;
 using occ::qm::SpinorbitalKind;
 using PointChargeList = std::vector<occ::core::PointCharge>;
@@ -19,11 +19,10 @@ const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 
 class HartreeFock {
   public:
-    HartreeFock(const std::vector<occ::core::Atom> &atoms,
-                const BasisSet &basis);
-    const auto &atoms() const { return m_atoms; }
-    const auto &basis() const { return m_basis; }
-    const auto &aobasis() const { return m_engine.aobasis(); }
+    HartreeFock(const AOBasis &basis);
+    inline const auto &atoms() const { return m_atoms; }
+    inline const auto &aobasis() const { return m_engine.aobasis(); }
+    inline auto nbf() const { return m_engine.nbf(); }
 
     int system_charge() const { return m_charge; }
     int num_e() const { return m_num_e; }
@@ -113,8 +112,6 @@ class HartreeFock {
     int m_charge{0};
     int m_num_e{0};
     std::vector<occ::core::Atom> m_atoms;
-    BasisSet m_basis;
-    BasisSet m_density_fitting_basis;
     mutable double m_e_alpha{0};
     mutable double m_e_beta{0};
     mutable std::optional<occ::qm::IntegralEngineDF> m_df_engine;

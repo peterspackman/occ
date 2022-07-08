@@ -2,7 +2,7 @@
 #include <fstream>
 #include <istream>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/basisset.h>
+#include <occ/qm/occshell.h>
 #include <occ/qm/spinorbital.h>
 #include <vector>
 
@@ -47,6 +47,8 @@ class FchkReader {
         ShellTypes,
         SCFDensity,
         MP2Density,
+        PureCartesianD,
+        PureCartesianF,
     };
 
     FchkReader(const std::string &filename);
@@ -102,7 +104,7 @@ class FchkReader {
 
     std::vector<occ::core::Atom> atoms() const;
 
-    occ::qm::BasisSet basis_set() const;
+    occ::qm::AOBasis basis_set() const;
 
   private:
     void parse(std::istream &);
@@ -116,6 +118,8 @@ class FchkReader {
     size_t m_num_alpha{0};
     size_t m_num_beta{0};
     double m_scf_energy{0.0};
+    bool m_cartesian_d{true};
+    bool m_cartesian_f{true};
 
     std::vector<int> m_atomic_numbers;
     std::vector<double> m_atomic_positions;

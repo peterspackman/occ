@@ -71,16 +71,16 @@ void MolecularOrbitals::update_density_matrix() {
     occ::timing::stop(occ::timing::category::la);
 }
 
-void MolecularOrbitals::rotate(const BasisSet &basis, const Mat3 &rotation) {
+void MolecularOrbitals::rotate(const AOBasis &basis, const Mat3 &rotation) {
 
-    const auto shell2bf = basis.shell2bf();
+    const auto shell2bf = basis.first_bf();
     occ::log::debug("Rotating MO coefficients");
     for (size_t s = 0; s < basis.size(); s++) {
         const auto &shell = basis[s];
         size_t bf_first = shell2bf[s];
         size_t shell_size = shell.size();
-        int l = shell.contr[0].l;
-        bool pure = shell.contr[0].pure;
+        int l = shell.l;
+        bool pure = shell.is_pure();
         Mat rot;
         switch (l) {
         case 0:

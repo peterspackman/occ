@@ -1,18 +1,16 @@
 #pragma once
 #include <fmt/ostream.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/basisset.h>
+#include <occ/qm/occshell.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {
 
 template <SpinorbitalKind kind>
-Vec mulliken_partition(const BasisSet &basis,
-                       const std::vector<occ::core::Atom> &atoms, const Mat &D,
-                       const Mat &op) {
+Vec mulliken_partition(const AOBasis &basis, const Mat &D, const Mat &op) {
     auto nbf = basis.nbf();
-    Vec N = Vec::Zero(atoms.size());
-    auto bf2atom = basis.bf2atom(atoms);
+    Vec N = Vec::Zero(basis.atoms().size());
+    auto bf2atom = basis.bf_to_atom();
     if constexpr (kind == SpinorbitalKind::Restricted) {
         Vec pop = (D * op).diagonal();
         for (int u = 0; u < nbf; u++) {

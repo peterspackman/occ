@@ -1,5 +1,4 @@
 #include <fmt/ostream.h>
-#include <libint2/cgshell_ordering.h>
 #include <occ/core/logger.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
@@ -8,7 +7,6 @@
 
 namespace occ::io {
 
-using occ::qm::BasisSet;
 using occ::util::startswith;
 using occ::util::trim_copy;
 
@@ -93,6 +91,10 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string &line) const {
         return SCFDensity;
     if (startswith(lt, "Total MP2 Density", false))
         return MP2Density;
+    if (startswith(lt, "Pure/Cartesian d shells", false))
+        return PureCartesianD;
+    if (startswith(lt, "Pure/Cartesian f shells", false))
+        return PureCartesianF;
 
     return Unknown;
 }
@@ -223,6 +225,20 @@ void FchkReader::parse(std::istream &stream) {
             read_matrix_block<double>(stream, m_mp2_density, count);
             break;
         }
+        case PureCartesianD: {
+            auto result =
+                scn::scan(line, "Pure/Cartesian d shells I {}", count);
+            fmt::print("READ {}\n", count);
+            m_cartesian_d = (count == 1);
+            break;
+        }
+        case PureCartesianF: {
+            auto result =
+                scn::scan(line, "Pure/Cartesian f shells I {}", count);
+            fmt::print("READ {}\n", count);
+            m_cartesian_f = (count == 1);
+            break;
+        }
         default:
             continue;
         }
@@ -240,20 +256,22 @@ std::vector<occ::core::Atom> FchkReader::atoms() const {
     return atoms;
 }
 
-BasisSet FchkReader::basis_set() const {
+occ::qm::AOBasis FchkReader::basis_set() const {
     size_t num_shells = m_basis.num_shells;
-    BasisSet bs;
+    std::vector<occ::qm::OccShell> bs;
     size_t primitive_offset{0};
     constexpr int SP_SHELL{-1};
-    bool any_pure = false;
+    bool any_pure = !(m_cartesian_d && m_cartesian_f);
+    fmt::print("CART D: {}\n", m_cartesian_d);
+    fmt::print("CART F: {}\n", m_cartesian_f);
     for (size_t i = 0; i < num_shells; i++) {
         // shell types: 0=s, 1=p, -1=sp, 2=6d, -2=5d, 3=10f, -3=7f
         int shell_type = m_basis.shell_types[i];
         int l = std::abs(shell_type);
         // normally shell type < -1 will be pure
-        auto pure = shell_type < -1;
-        if (pure)
-            any_pure = true;
+        occ::qm::OccShell::Kind shell_kind =
+            any_pure ? occ::qm::OccShell::Kind::Spherical
+                     : occ::qm::OccShell::Kind::Cartesian;
 
         size_t nprim = m_basis.primitives_per_shell[i];
         std::array<double, 3> position{
@@ -263,9 +281,9 @@ BasisSet FchkReader::basis_set() const {
         };
 
         if (shell_type == SP_SHELL) {
-            libint2::svector<double> alpha;
-            libint2::svector<double> coeffs;
-            libint2::svector<double> pcoeffs;
+            std::vector<double> alpha;
+            std::vector<double> coeffs;
+            std::vector<double> pcoeffs;
             for (size_t prim = 0; prim < nprim; prim++) {
                 alpha.emplace_back(
                     m_basis.primitive_exponents[primitive_offset + prim]);
@@ -276,34 +294,31 @@ BasisSet FchkReader::basis_set() const {
                         .sp_contraction_coefficients[primitive_offset + prim]);
             }
             // sp shell
-            bs.emplace_back(libint2::Shell{alpha,
-                                           {
-                                               {0, pure, std::move(coeffs)},
-                                           },
-                                           {position}});
-            bs.emplace_back(libint2::Shell{std::move(alpha),
-                                           {
-                                               {1, pure, std::move(pcoeffs)},
-                                           },
-                                           {std::move(position)}});
+            bs.emplace_back(occ::qm::OccShell(0, alpha, {coeffs}, position));
+            bs.back().kind = shell_kind;
+            bs.back().incorporate_shell_norm();
+            bs.emplace_back(
+                occ::qm::OccShell(1, std::move(alpha), {pcoeffs}, position));
+            bs.back().kind = shell_kind;
+            bs.back().incorporate_shell_norm();
         } else {
-            libint2::svector<double> alpha;
-            libint2::svector<double> coeffs;
+            std::vector<double> alpha;
+            std::vector<double> coeffs;
             for (size_t prim = 0; prim < nprim; prim++) {
                 alpha.emplace_back(
                     m_basis.primitive_exponents[primitive_offset + prim]);
                 coeffs.emplace_back(
                     m_basis.contraction_coefficients[primitive_offset + prim]);
             }
-            bs.emplace_back(libint2::Shell{std::move(alpha),
-                                           {{l, pure, std::move(coeffs)}},
-                                           {std::move(position)}});
+            bs.emplace_back(occ::qm::OccShell(l, alpha, {coeffs}, position));
+            bs.back().kind = shell_kind;
+            bs.back().incorporate_shell_norm();
         }
         primitive_offset += nprim;
     }
-    bs.update();
-    bs.set_pure(any_pure);
-    return bs;
+    auto result = occ::qm::AOBasis(atoms(), bs);
+    result.set_pure(any_pure);
+    return result;
 }
 
 void FchkReader::FchkBasis::print() const {

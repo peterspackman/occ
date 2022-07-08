@@ -3,8 +3,8 @@
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
-#include <occ/qm/basisset.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/occshell.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {
@@ -89,7 +89,7 @@ struct Wavefunction {
     int num_alpha;
     int num_beta;
     int num_electrons;
-    BasisSet basis;
+    AOBasis basis;
     size_t nbf{0};
     std::vector<occ::core::Atom> atoms;
     MolecularOrbitals mo;

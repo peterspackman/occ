@@ -26,7 +26,6 @@ using occ::crystal::SymmetryOperation;
 using occ::hf::HartreeFock;
 using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEModelInteraction;
-using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;
@@ -89,12 +88,12 @@ calculate_wavefunctions(const std::string &basename,
             auto wfn = Wavefunction(fchk);
             wfns.push_back(wfn);
         } else {
-            BasisSet basis(basis_name, m.atoms());
+            auto basis = occ::qm::AOBasis::load(m.atoms(), basis_name);
             basis.set_pure(false);
             fmt::print("Loaded basis set, {} shells, {} basis functions\n",
-                       basis.size(), libint2::nbf(basis));
+                       basis.size(), basis.nbf());
             if (model == "ce-hf") {
-                HartreeFock hf(m.atoms(), basis);
+                HartreeFock hf(basis);
                 SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
                 scf.set_charge_multiplicity(0, 1);
                 double e = scf.compute_scf_energy();
@@ -109,8 +108,7 @@ calculate_wavefunctions(const std::string &basename,
                 fchk.write();
                 wfns.push_back(wfn);
             } else {
-                occ::dft::DFT rks(method, basis, m.atoms(),
-                                  SpinorbitalKind::Restricted);
+                occ::dft::DFT rks(method, basis, SpinorbitalKind::Restricted);
                 SCF<occ::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
 
                 scf.set_charge_multiplicity(0, 1);
@@ -140,7 +138,7 @@ void compute_monomer_energies(std::vector<Wavefunction> &wfns) {
         fmt::print("Calculating monomer energies {}/{}\n", complete,
                    wfns.size());
         std::cout << std::flush;
-        HartreeFock hf(wfn.atoms, wfn.basis);
+        HartreeFock hf(wfn.basis);
         occ::Mat schwarz = hf.compute_schwarz_ints();
         occ::interaction::compute_ce_model_energies(wfn, hf, 1e-8, schwarz);
         complete++;
@@ -216,13 +214,17 @@ int main(int argc, char *argv[]) {
     options.add_options()("i,input", "Input CIF",
                           cxxopts::value<std::string>(cif_name))(
         "t,threads", "Number of threads",
-        cxxopts::value<int>(nthreads)->default_value("1"))(
-        "ce-hf", "Use CE-HF model",
-        cxxopts::value<bool>()->default_value("false"))(
-        "r,radius", "maximum radius (angstroms) for neighbours",
-        cxxopts::value<double>(radius)->default_value("30.0"))(
-        "radius-increment", "step size (angstroms) for direct space summation",
-        cxxopts::value<double>(increment)->default_value("3.8"));
+        cxxopts::value<int>(nthreads)->default_value(
+            "1"))("ce-hf", "Use CE-HF model",
+                  cxxopts::value<bool>()->default_value(
+                      "false"))("r,radius",
+                                "maximum radius (angstroms) for neighbours",
+                                cxxopts::value<double>(radius)->default_value(
+                                    "30.0"))("radius-increment",
+                                             "step size (angstroms) for direct "
+                                             "space summation",
+                                             cxxopts::value<double>(increment)
+                                                 ->default_value("3.8"));
 
     occ::log::set_level(occ::log::level::info);
     spdlog::set_level(spdlog::level::info);

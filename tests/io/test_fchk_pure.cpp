@@ -1,16 +1,17 @@
 #include "catch.hpp"
+#include <fmt/ostream.h>
+#include <occ/core/util.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
-#include <sstream>
-#include <fmt/ostream.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
-#include <occ/core/util.h>
+#include <sstream>
 
 using occ::Mat;
 using occ::util::all_close;
 
-const char* fchk_contents = R"(water                                                                   
+const char *fchk_contents =
+    R"(water                                                                   
 SP        RHF                                                         6-31G(d,p)          
 Number of atoms                            I                3
 Info1-9                                    I   N=           9
@@ -377,20 +378,19 @@ QEq coupling tensors                       R   N=          18
 )";
 
 void print_shell(const libint2::Shell &shell) {
-//    fmt::print("{}\n", shell);
+    //    fmt::print("{}\n", shell);
 }
 
 void print_basis(const occ::qm::BasisSet &basis) {
     size_t idx = 0;
-    for(const auto& sh: basis) {
-	fmt::print("Shell {}\n", idx);
-	print_shell(sh);
-	idx++;
+    for (const auto &sh : basis) {
+        fmt::print("Shell {}\n", idx);
+        print_shell(sh);
+        idx++;
     }
 }
 
-TEST_CASE("G09 water fchk", "[read]")
-{
+TEST_CASE("G09 water fchk", "[read]") {
     std::istringstream fchk(fchk_contents);
     occ::io::FchkReader reader(fchk);
     REQUIRE(reader.num_alpha() == 5);
@@ -402,7 +402,8 @@ TEST_CASE("G09 water fchk", "[read]")
     auto obs = reader.basis_set();
 }
 
-void check_wavefunctions(const occ::qm::Wavefunction &wfn, const occ::qm::Wavefunction &wfn2) {
+void check_wavefunctions(const occ::qm::Wavefunction &wfn,
+                         const occ::qm::Wavefunction &wfn2) {
     // fmt::print("Original D\n{}\n", wfn.mo.D);
     // fmt::print("After reading D\n{}\n", wfn2.mo.D);
     CHECK(wfn2.mo.D.rows() == wfn.mo.D.rows());
@@ -415,44 +416,44 @@ void check_wavefunctions(const occ::qm::Wavefunction &wfn, const occ::qm::Wavefu
     CHECK(wfn2.mo.C.cols() == wfn.mo.C.cols());
     CHECK(all_close(wfn2.mo.C, wfn.mo.C, 1e-6, 1e-6));
 
-    auto check_same_position = [](const std::array<double, 3> &x1, const std::array<double, 3> &x2) {
-	for(size_t i = 0; i < 3; i++) {
-	    CHECK(x1[i] == Approx(x2[i]));
-	}
+    auto check_same_position = [](const occ::Vec3 &x1, const occ::Vec3 &x2) {
+        for (size_t i = 0; i < 3; i++) {
+            CHECK(x1(i) == Approx(x2(i)));
+        }
     };
 
-    auto check_same_coeffs = [](const auto &c1, const auto& c2) {
-	for(size_t i = 0; i < c1.size(); i++) {
-	    CHECK(c1[i] == Approx(c2[i]));
-	}
+    auto check_same_coeffs = [](const auto &c1, const auto &c2) {
+        for (size_t i = 0; i < c1.rows(); i++) {
+            for (size_t j = 0; j < c1.cols(); j++) {
+                CHECK(c1(i, j) == Approx(c2(i, j)));
+            }
+        }
     };
 
-    for(size_t i = 0; i < wfn.basis.size(); i++) {
-	const auto &sh1 = wfn.basis[i];
-	const auto &sh2 = wfn2.basis[i];
-	check_same_position(sh1.O, sh2.O);
-	check_same_coeffs(sh1.alpha, sh2.alpha);
-	check_same_coeffs(sh1.contr[0].coeff, sh2.contr[0].coeff);
-	CHECK(sh1.contr[0].l == sh2.contr[0].l);
-	CHECK(sh1.contr[0].pure == sh2.contr[0].pure);
-	CHECK(sh2.contr[0].pure == true);
+    for (size_t i = 0; i < wfn.basis.size(); i++) {
+        const auto &sh1 = wfn.basis[i];
+        const auto &sh2 = wfn2.basis[i];
+        check_same_position(sh1.origin, sh2.origin);
+        check_same_coeffs(sh1.exponents, sh2.exponents);
+        check_same_coeffs(sh1.contraction_coefficients,
+                          sh2.contraction_coefficients);
+        CHECK(sh1.l == sh2.l);
+        CHECK(sh1.kind == sh2.kind);
+        CHECK(sh2.is_pure());
     }
-
 }
 
 TEST_CASE("our water fchk read write", "[read,write]") {
-    libint2::Shell::do_enforce_unit_normalization(true);
-    if (!libint2::initialized()) libint2::initialize();
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
-        {1, 0.48664409, 0.07959806, 0.00986248}
-    };
+        {1, 0.48664409, 0.07959806, 0.00986248}};
 
-    occ::qm::BasisSet obs("6-31G**", atoms);
+    auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
     obs.set_pure(true);
-    occ::hf::HartreeFock hf(atoms, obs);
-    occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
+    occ::hf::HartreeFock hf(obs);
+    occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
+        scf(hf);
     scf.energy_convergence_threshold = 1e-8;
     double e = scf.compute_scf_energy();
 
@@ -460,32 +461,29 @@ TEST_CASE("our water fchk read write", "[read,write]") {
 
     std::string water_fchk_contents;
     {
-	std::ostringstream fchk_os;
-	occ::io::FchkWriter fchk_writer(fchk_os);
-	fchk_writer.set_title("test water fchk");
-	fchk_writer.set_method("hf");
-	fchk_writer.set_basis_name("6-31G**");
-	wfn.save(fchk_writer);
-	fchk_writer.write();
-	water_fchk_contents = fchk_os.str();
+        std::ostringstream fchk_os;
+        occ::io::FchkWriter fchk_writer(fchk_os);
+        fchk_writer.set_title("test water fchk");
+        fchk_writer.set_method("hf");
+        fchk_writer.set_basis_name("6-31G**");
+        wfn.save(fchk_writer);
+        fchk_writer.write();
+        water_fchk_contents = fchk_os.str();
     }
 
     occ::qm::Wavefunction wfn2 = [&]() {
-	std::istringstream fchk_is(water_fchk_contents);
-	occ::io::FchkReader reader(fchk_is);
-	return occ::qm::Wavefunction(reader);
+        std::istringstream fchk_is(water_fchk_contents);
+        occ::io::FchkReader reader(fchk_is);
+        return occ::qm::Wavefunction(reader);
     }();
 
     check_wavefunctions(wfn, wfn2);
 
     SECTION("Rotate by I") {
-	occ::Mat rot = occ::Mat::Identity(3, 3);
-	wfn2.apply_rotation(rot);
-	check_wavefunctions(wfn, wfn2);
-	fmt::print("orig MOs\n{}\n", wfn.mo.C);
-	fmt::print("rot  MOs\n{}\n", wfn2.mo.C);
+        occ::Mat rot = occ::Mat::Identity(3, 3);
+        wfn2.apply_rotation(rot);
+        check_wavefunctions(wfn, wfn2);
+        fmt::print("orig MOs\n{}\n", wfn.mo.C);
+        fmt::print("rot  MOs\n{}\n", wfn2.mo.C);
     }
-
 }
-
-

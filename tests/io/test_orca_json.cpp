@@ -1,13 +1,13 @@
 #include "catch.hpp"
-#include <occ/io/orca_json.h>
-#include <sstream>
 #include <fmt/ostream.h>
-#include <occ/qm/hf.h>
 #include <occ/core/util.h>
+#include <occ/io/orca_json.h>
+#include <occ/qm/hf.h>
+#include <sstream>
 
 using occ::Mat;
 
-const char* json_contents = R"(
+const char *json_contents = R"(
 {
     "Molecule": {
         "Atoms": [
@@ -131,12 +131,7 @@ const char* json_contents = R"(
 }
 )";
 
-
-TEST_CASE("H2 orca json", "[read]")
-{
-
-    libint2::Shell::do_enforce_unit_normalization(true);
-    if (!libint2::initialized()) libint2::initialize();
+TEST_CASE("H2 orca json", "[read]") {
 
     std::istringstream json_istream(json_contents);
     occ::io::OrcaJSONReader reader(json_istream);
@@ -146,8 +141,7 @@ TEST_CASE("H2 orca json", "[read]")
     Mat S1 = reader.overlap_matrix();
     fmt::print("ORCA Overlap matrix:\n{}\n", S1);
 
-
-    occ::hf::HartreeFock hf(atoms, reader.basis_set());
+    occ::hf::HartreeFock hf(reader.basis_set());
     Mat S2 = hf.compute_overlap_matrix();
     fmt::print("OUR Overlap matrix:\n{}\n", S2);
     fmt::print("Difference\n{}\n", S2 - S1);

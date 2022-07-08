@@ -18,7 +18,6 @@ namespace occ::main {
 using occ::core::Dimer;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
-using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;
@@ -125,9 +124,9 @@ std::vector<SolventNeighborContribution> partition_by_electron_density(
         const auto pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
         assert(occ::util::all_close(pos_B, pos_B_t, 1e-5, 1e-5));
         density_coulomb.col(i) = occ::density::evaluate_density_on_grid<0>(
-            B.basis, B.atoms, B.mo.D, surface.coulomb_pos);
+            B.basis, B.mo.D, surface.coulomb_pos);
         density_cds.col(i) = occ::density::evaluate_density_on_grid<0>(
-            B.basis, B.atoms, B.mo.D, surface.cds_pos);
+            B.basis, B.mo.D, surface.cds_pos);
     }
 
     for (int i = 0; i < surface.coulomb_pos.cols(); i++) {
@@ -280,14 +279,14 @@ calculate_solvated_surfaces(const std::string &basename,
                 FchkReader fchk(fchk_path.string());
                 solvated_wfns.emplace_back(Wavefunction(fchk));
             } else {
-                BasisSet basis(basis_name, wfn.atoms);
+                occ::qm::AOBasis basis =
+                    occ::qm::AOBasis::load(wfn.atoms, basis_name);
                 double original_energy = wfn.energy.total;
                 fmt::print("Total energy (gas) {:.3f}\n", original_energy);
                 basis.set_pure(false);
                 fmt::print("Loaded basis set, {} shells, {} basis functions\n",
-                           basis.size(), libint2::nbf(basis));
-                occ::dft::DFT ks(method, basis, wfn.atoms,
-                                 SpinorbitalKind::Restricted);
+                           basis.size(), basis.nbf());
+                occ::dft::DFT ks(method, basis, SpinorbitalKind::Restricted);
                 SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
                 SCF<SolvationCorrectedProcedure<DFT>,
                     SpinorbitalKind::Restricted>
@@ -308,14 +307,14 @@ calculate_solvated_surfaces(const std::string &basename,
                 solvated_wfns.push_back(wfn);
             }
         } else {
-            BasisSet basis(basis_name, wfn.atoms);
+            occ::qm::AOBasis basis =
+                occ::qm::AOBasis::load(wfn.atoms, basis_name);
             double original_energy = wfn.energy.total;
             fmt::print("Total energy (gas) {:.3f}\n", original_energy);
             basis.set_pure(false);
             fmt::print("Loaded basis set, {} shells, {} basis functions\n",
-                       basis.size(), libint2::nbf(basis));
-            occ::dft::DFT ks(method, basis, wfn.atoms,
-                             SpinorbitalKind::Restricted);
+                       basis.size(), basis.nbf());
+            occ::dft::DFT ks(method, basis, SpinorbitalKind::Restricted);
             SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
             SCF<SolvationCorrectedProcedure<DFT>, SpinorbitalKind::Restricted>
                 scf(proc_solv);

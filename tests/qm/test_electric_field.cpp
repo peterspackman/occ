@@ -1,26 +1,22 @@
 #include "catch.hpp"
 #include <fmt/ostream.h>
 #include <occ/core/util.h>
-#include <occ/qm/basisset.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
 
 using occ::Mat;
 using occ::hf::HartreeFock;
-using occ::qm::BasisSet;
 using occ::util::all_close;
 
 TEST_CASE("H2/STO-3G") {
-    libint2::initialize();
-    libint2::Shell::do_enforce_unit_normalization(true);
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
-    BasisSet basis("sto-3g", atoms);
+    auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
     Mat D(2, 2);
     D.setConstant(0.301228);
     auto grid_pts = occ::Mat3N(3, 4);
     grid_pts << 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0;
-    HartreeFock hf(atoms, basis);
+    HartreeFock hf(basis);
 
     occ::qm::MolecularOrbitals mo;
     mo.D = D;

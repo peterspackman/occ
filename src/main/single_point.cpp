@@ -31,14 +31,14 @@ void print_vector(const Vec3 &m) {
     fmt::print("{: 12.7f} {: 12.7f} {: 12.7f}\n\n", m(0), m(1), m(2));
 }
 
-occ::qm::BasisSet load_basis_set(const Molecule &m, const std::string &name,
-                                 bool spherical) {
-    occ::qm::BasisSet basis(name, m.atoms());
+occ::qm::AOBasis load_basis_set(const Molecule &m, const std::string &name,
+                                bool spherical) {
+    auto basis = occ::qm::AOBasis::load(m.atoms(), name);
     basis.set_pure(spherical);
     fmt::print("loaded basis set: {}\n", spherical ? "spherical" : "cartesian");
     fmt::print("number of shells:            {}\n", basis.size());
     fmt::print("number of  basis functions:  {}\n", basis.nbf());
-    fmt::print("max angular momentum:        {}\n", basis.max_l());
+    fmt::print("max angular momentum:        {}\n", basis.l_max());
     return basis;
 }
 
@@ -73,14 +73,14 @@ void print_configuration(const Molecule &m, const OccInput &config) {
 }
 
 template <typename T, SpinorbitalKind SK>
-Wavefunction run_method(Molecule &m, const occ::qm::BasisSet &basis,
+Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
                         const OccInput &config) {
 
     T proc = [&]() {
         if constexpr (std::is_same<T, DFT>::value)
-            return T(config.method.name, basis, m.atoms(), SK);
+            return T(config.method.name, basis, SK);
         else
-            return T(m.atoms(), basis);
+            return T(basis);
     }();
 
     if (!config.basis.df_name.empty())
@@ -105,7 +105,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
                                  const OccInput &config) {
     using occ::solvent::SolvationCorrectedProcedure;
     if constexpr (std::is_same<T, DFT>::value) {
-        DFT ks(config.method.name, wfn.basis, wfn.atoms, SK);
+        DFT ks(config.method.name, wfn.basis, SK);
         SolvationCorrectedProcedure<DFT> proc_solv(ks,
                                                    config.solvent.solvent_name);
         SCF<SolvationCorrectedProcedure<DFT>, SK> scf(proc_solv);
@@ -119,7 +119,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
                 config.solvent.output_surface_filename);
         return scf.wavefunction();
     } else {
-        T proc(wfn.atoms, wfn.basis);
+        T proc(wfn.basis);
         SolvationCorrectedProcedure<T> proc_solv(proc,
                                                  config.solvent.solvent_name);
         SCF<SolvationCorrectedProcedure<T>, SK> scf(proc_solv);

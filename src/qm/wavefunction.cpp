@@ -35,7 +35,7 @@ void Energy::print() const {
 Wavefunction::Wavefunction(const FchkReader &fchk)
     : spinorbital_kind(fchk.spinorbital_kind()), num_alpha(fchk.num_alpha()),
       num_beta(fchk.num_beta()), num_electrons(fchk.num_electrons()),
-      basis(fchk.basis_set()), nbf(occ::qm::nbf(basis)), atoms(fchk.atoms()) {
+      basis(fchk.basis_set()), nbf(basis.nbf()), atoms(fchk.atoms()) {
     energy.total = fchk.scf_energy();
     set_molecular_orbitals(fchk);
     compute_density_matrix();
@@ -47,7 +47,7 @@ Wavefunction::Wavefunction(const MoldenReader &molden)
       num_electrons(molden.num_electrons()), basis(molden.basis_set()),
       nbf(molden.nbf()), atoms(molden.atoms()) {
     size_t rows, cols;
-    nbf = occ::qm::nbf(basis);
+    nbf = basis.nbf();
     mo.kind = spinorbital_kind;
 
     if (spinorbital_kind == SpinorbitalKind::General) {
@@ -286,7 +286,7 @@ void Wavefunction::update_occupied_orbitals() {
 
 void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
     size_t rows, cols;
-    nbf = occ::qm::nbf(basis);
+    nbf = basis.nbf();
     mo.kind = fchk.spinorbital_kind();
     if (spinorbital_kind == SpinorbitalKind::General) {
         throw std::runtime_error(
@@ -496,7 +496,7 @@ void Wavefunction::save(FchkWriter &fchk) {
 
     std::vector<int> shell2atom;
     shell2atom.reserve(basis.size());
-    for (const auto &x : basis.shell2atom(atoms)) {
+    for (const auto &x : basis.shell_to_atom()) {
         shell2atom.push_back(x + 1);
     }
     fchk.set_vector("Shell to atom map", shell2atom);
@@ -561,7 +561,7 @@ void Wavefunction::save_npz(const std::string &filename) {
 
 Vec Wavefunction::mulliken_charges() const {
 
-    occ::hf::HartreeFock hf(atoms, basis);
+    occ::hf::HartreeFock hf(basis);
     Mat overlap = hf.compute_overlap_matrix();
 
     Vec charges = Vec::Zero(atoms.size());
@@ -570,13 +570,13 @@ Vec Wavefunction::mulliken_charges() const {
     case SpinorbitalKind::Unrestricted:
         charges =
             -2 * occ::qm::mulliken_partition<SpinorbitalKind::Unrestricted>(
-                     basis, atoms, mo.D, overlap);
+                     basis, mo.D, overlap);
     case SpinorbitalKind::General:
         charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::General>(
-                           basis, atoms, mo.D, overlap);
+                           basis, mo.D, overlap);
     default:
         charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::Restricted>(
-                           basis, atoms, mo.D, overlap);
+                           basis, mo.D, overlap);
     }
     for (size_t i = 0; i < atoms.size(); i++) {
         charges(i) += atoms[i].atomic_number;

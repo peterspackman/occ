@@ -97,8 +97,8 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     using occ::qm::Energy;
     constexpr double precision = std::numeric_limits<double>::epsilon();
 
-    HartreeFock hf_a(A.atoms, A.basis);
-    HartreeFock hf_b(B.atoms, B.basis);
+    HartreeFock hf_a(A.basis);
+    HartreeFock hf_b(B.basis);
     if (m_use_density_fitting) {
         hf_a.set_density_fitting_basis("cc-pvdz-jkfit");
         hf_b.set_density_fitting_basis("cc-pvdz-jkfit");
@@ -114,7 +114,7 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
 
     // Can reuse the same HartreeFock object for both merged wfns: same basis
     // and atoms
-    auto hf_AB = HartreeFock(ABn.atoms, ABn.basis);
+    auto hf_AB = HartreeFock(ABn.basis);
     Mat schwarz_ab = hf_AB.compute_schwarz_ints();
     if (m_use_density_fitting) {
         hf_AB.set_density_fitting_basis("cc-pvdz-jkfit");

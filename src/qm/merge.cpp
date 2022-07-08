@@ -33,12 +33,9 @@ std::pair<Mat, Vec> merge_molecular_orbitals(const Mat &mo_a, const Mat &mo_b,
     return {merged, sorted_energies};
 }
 
-BasisSet merge_basis_sets(const BasisSet &basis_a, const BasisSet &basis_b) {
-    occ::qm::BasisSet merged = basis_a;
-    merged.reserve(basis_a.size() + basis_b.size());
-    merged.insert(merged.end(), basis_b.begin(), basis_b.end());
-    merged.update();
-    merged.set_pure(basis_a.is_pure());
+AOBasis merge_basis_sets(const AOBasis &basis_a, const AOBasis &basis_b) {
+    AOBasis merged = basis_a;
+    merged.merge(basis_b);
     return merged;
 }
 

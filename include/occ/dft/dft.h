@@ -8,7 +8,6 @@
 #include <occ/dft/xc_potential_matrix.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
-#include <occ/qm/basisset.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/spinorbital.h>
@@ -86,12 +85,11 @@ void set_params(DensityFunctional::Params &params, const Mat &rho) {
 class DFT {
 
   public:
-    DFT(const std::string &, const BasisSet &,
-        const std::vector<occ::core::Atom> &,
+    DFT(const std::string &, const AOBasis &,
         const SpinorbitalKind kind = SpinorbitalKind::Restricted);
-    const auto &atoms() const { return m_hf.atoms(); }
-    const auto &basis() const { return m_hf.basis(); }
-    const auto &aobasis() const { return m_hf.aobasis(); }
+    inline const auto &atoms() const { return m_hf.atoms(); }
+    inline const auto &aobasis() const { return m_hf.aobasis(); }
+    inline auto nbf() const { return m_hf.nbf(); }
 
     void set_system_charge(int charge) { m_hf.set_system_charge(charge); }
     int system_charge() const { return m_hf.system_charge(); }

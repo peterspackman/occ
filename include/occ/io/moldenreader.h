@@ -1,7 +1,7 @@
 #pragma once
 #include <istream>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/basisset.h>
+#include <occ/qm/occshell.h>
 #include <occ/qm/spinorbital.h>
 #include <optional>
 #include <string>
@@ -25,9 +25,11 @@ class MoldenReader {
             return occ::qm::SpinorbitalKind::Unrestricted;
         return occ::qm::SpinorbitalKind::Restricted;
     }
-    const occ::qm::BasisSet &basis_set() const { return m_basis; }
     const std::vector<occ::core::Atom> &atoms() const { return m_atoms; }
-    size_t nbf() const { return m_basis.nbf(); }
+    occ::qm::AOBasis basis_set() const {
+        return occ::qm::AOBasis(atoms(), m_shells);
+    }
+    size_t nbf() const { return basis_set().nbf(); }
     size_t num_electrons() const {
         return static_cast<size_t>(m_num_electrons);
     }
@@ -68,9 +70,8 @@ class MoldenReader {
 
     const occ::Vec &beta_mo_energies() const { return m_energies_beta; }
 
-    Mat
-    convert_mo_coefficients_from_molden_convention(const occ::qm::BasisSet &,
-                                                   const Mat &) const;
+    Mat convert_mo_coefficients_from_molden_convention(const occ::qm::AOBasis &,
+                                                       const Mat &) const;
 
   private:
     void parse(std::istream &);
@@ -85,7 +86,7 @@ class MoldenReader {
     void parse_mo(size_t &, size_t &, std::istream &);
 
     std::vector<occ::core::Atom> m_atoms;
-    occ::qm::BasisSet m_basis;
+    std::vector<occ::qm::OccShell> m_shells;
     std::string m_filename;
     Mat m_molecular_orbitals_alpha;
     Mat m_molecular_orbitals_beta;

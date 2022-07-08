@@ -2,7 +2,6 @@
 #include <memory>
 #include <occ/core/units.h>
 #include <occ/interaction/polarization.h>
-#include <occ/qm/basisset.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
 

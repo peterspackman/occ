@@ -65,7 +65,6 @@ void MoldenReader::parse_section(const std::string &section_name,
     } else if (section_name == "MO") {
         parse_mo_section(args, stream);
     } else if (section_name == "5D") {
-        m_basis.set_pure(true);
         m_pure = true;
         occ::log::debug("Basis uses pure spherical harmonics");
     }
@@ -156,18 +155,28 @@ inline int l_from_char(const char c) {
     }
 }
 
-inline libint2::Shell parse_molden_shell(const std::array<double, 3> &position,
-                                         bool pure, std::istream &stream) {
+inline occ::qm::OccShell
+parse_molden_shell(const std::array<double, 3> &position, bool pure,
+                   std::istream &stream) {
     std::string line;
     std::getline(stream, line);
     using occ::util::double_factorial;
-    char shell_type;
+    occ::qm::OccShell::Kind shell_kind =
+        pure ? occ::qm::OccShell::Kind::Spherical
+             : occ::qm::OccShell::Kind::Cartesian;
+
+    std::string shell_type;
     int num_primitives, second;
-    auto scan_result =
-        scn::scan_default(line, shell_type, num_primitives, second);
-    libint2::svector<double> alpha, coeffs;
+    auto result = scn::make_result(line);
+    if (!(result = scn::scan_default(result.range(), shell_type, num_primitives,
+                                     second))) {
+        fmt::print("Error: {}\n", result.error().msg());
+        throw std::runtime_error(fmt::format(
+            "Unable to parse molden file, error: {}", result.error().msg()));
+    }
+    std::vector<double> alpha, coeffs;
     alpha.reserve(num_primitives), coeffs.reserve(num_primitives);
-    int l = l_from_char(shell_type);
+    int l = l_from_char(shell_type[0]);
     for (int i = 0; i < num_primitives; i++) {
         std::getline(stream, line);
         double e, c;
@@ -199,11 +208,9 @@ inline libint2::Shell parse_molden_shell(const std::array<double, 3> &position,
             }
         }
     }
-    auto shell = libint2::Shell{std::move(alpha),
-                                {
-                                    {l, pure, std::move(coeffs)},
-                                },
-                                position};
+    auto shell = occ::qm::OccShell(l, alpha, {coeffs}, position);
+    shell.kind = shell_kind;
+    shell.incorporate_shell_norm();
     return shell;
 }
 
@@ -230,11 +237,11 @@ void MoldenReader::parse_gto_section(const std::optional<std::string> &args,
                 break;
             }
             stream.seekg(pos, std::ios_base::beg);
-            m_basis.push_back(parse_molden_shell(position, m_pure, stream));
+            m_shells.push_back(parse_molden_shell(position, m_pure, stream));
+            fmt::print("shells: {}\n", m_shells.size());
             pos = stream.tellg();
         }
     }
-    m_basis.update();
 }
 
 void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream) {
@@ -303,27 +310,27 @@ void MoldenReader::parse_mo_section(const std::optional<std::string> &args,
 }
 
 Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
-    const occ::qm::BasisSet &basis, const Mat &mo) const {
+    const occ::qm::AOBasis &basis, const Mat &mo) const {
 
-    if (occ::qm::max_l(basis) < 1)
+    if (basis.l_max() < 1)
         return mo;
 
     occ::log::debug("Reordering MO coefficients from Molden ordering to "
                     "internal convention");
-    auto shell2bf = basis.shell2bf();
+    auto shell2bf = basis.first_bf();
     Mat result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     bool orca = source == Source::Orca;
     if (orca)
         occ::log::debug("ORCA phase convention...");
-    if (occ::qm::max_l(basis) < 1)
+    if (basis.l_max() < 1)
         return mo;
     constexpr auto order = occ::gto::ShellOrder::Molden;
 
     for (size_t i = 0; i < basis.size(); i++) {
-        const auto &shell = basis[i];
+        const auto &shell = basis.shells()[i];
         size_t bf_first = shell2bf[i];
-        int l = shell.contr[0].l;
+        int l = shell.l;
         if (l == 1) {
             // xyz -> yzx
             occ::log::debug("Swapping (l={}): (2, 0, 1) <-> (0, 1, 2)", l);

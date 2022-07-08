@@ -366,7 +366,7 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
                  const std::vector<OccShell> &shells, const std::string &name)
     : m_basis_name(name), m_atoms(atoms), m_shells(shells),
       m_shell_to_atom_idx(shells.size()), m_atom_to_shell_idxs(atoms.size()),
-      m_bf_to_shell() {
+      m_bf_to_shell(), m_bf_to_atom() {
     size_t shell_idx = 0;
     for (const auto &shell : m_shells) {
         m_kind = shell.kind;
@@ -375,10 +375,14 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
         m_max_shell_size = std::max(m_max_shell_size, shell.size());
         int atom_idx = shell.find_atom_index(m_atoms);
         // TODO check for error
+        if (atom_idx >= m_atom_to_shell_idxs.size() || atom_idx < 0) {
+            throw std::runtime_error("Unable to map shell to atoms in AOBasis");
+        }
         m_shell_to_atom_idx[shell_idx] = atom_idx;
         m_atom_to_shell_idxs[atom_idx].push_back(shell_idx);
         for (int i = 0; i < shell.size(); i++) {
             m_bf_to_shell.push_back(shell_idx);
+            m_bf_to_atom.push_back(atom_idx);
         }
         ++shell_idx;
     }
@@ -408,6 +412,8 @@ void AOBasis::merge(const AOBasis &rhs) {
 
     m_bf_to_shell.insert(m_bf_to_shell.end(), rhs.m_bf_to_shell.begin(),
                          rhs.m_bf_to_shell.end());
+    m_bf_to_atom.insert(m_bf_to_atom.end(), rhs.m_bf_to_atom.begin(),
+                        rhs.m_bf_to_atom.end());
 
     // apply offsets
     for (size_t i = shell_offset; i < m_shell_to_atom_idx.size(); i++) {
@@ -422,6 +428,7 @@ void AOBasis::merge(const AOBasis &rhs) {
     }
     for (size_t i = bf_offset; i < m_nbf; i++) {
         m_bf_to_shell[i] += shell_offset;
+        m_bf_to_atom[i] += atom_offset;
     }
 
     m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);
@@ -573,6 +580,41 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
 
 bool AOBasis::operator==(const AOBasis &rhs) {
     return m_shells == rhs.m_shells;
+}
+
+void AOBasis::rotate(const occ::Mat3 &rotation) {
+    int shell_idx = 0;
+    for (auto &shell : m_shells) {
+        auto rot_pos = rotation * shell.origin;
+        shell.origin = rot_pos;
+        int atom_idx = m_shell_to_atom_idx[shell_idx];
+        auto &atom = m_atoms[atom_idx];
+        atom.x = shell.origin(0);
+        atom.y = shell.origin(1);
+        atom.z = shell.origin(2);
+        shell_idx++;
+    }
+}
+
+void AOBasis::translate(const occ::Vec3 &translation) {
+    int shell_idx = 0;
+    for (auto &shell : m_shells) {
+        auto t_pos = translation + shell.origin;
+        shell.origin = t_pos;
+        auto &atom = m_atoms[m_shell_to_atom_idx[shell_idx]];
+        atom.x = shell.origin(0);
+        atom.y = shell.origin(1);
+        atom.z = shell.origin(2);
+        shell_idx++;
+    }
+}
+
+uint_fast8_t AOBasis::l_max() const {
+    uint_fast8_t l_max = 0;
+    for (const auto &sh : m_shells) {
+        l_max = std::max(l_max, sh.l);
+    }
+    return l_max;
 }
 
 } // namespace occ::qm

@@ -13,9 +13,9 @@ TEST_CASE("Water DFT", "[scf]") {
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
-    occ::qm::BasisSet obs("def2-tzvp", atoms);
-    obs.set_pure(false);
-    auto hf = occ::hf::HartreeFock(atoms, obs);
+    auto basis = occ::qm::AOBasis::load(atoms, "def2-tzvp");
+    basis.set_pure(false);
+    auto hf = occ::hf::HartreeFock(basis);
     occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
         scf(hf);
     double e = scf.compute_scf_energy();
@@ -24,7 +24,7 @@ TEST_CASE("Water DFT", "[scf]") {
     settings.max_angular_points = 302;
     settings.radial_precision = 1e-12;
     fmt::print("Construct\n");
-    occ::dft::cosx::SemiNumericalExchange sgx(atoms, obs, settings);
+    occ::dft::cosx::SemiNumericalExchange sgx(basis, settings);
     fmt::print("Construct done\n");
 
     occ::timing::StopWatch<2> sw;

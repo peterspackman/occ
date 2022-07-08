@@ -23,14 +23,12 @@ namespace occ::scf {
 constexpr auto OCC_MINIMAL_BASIS = "mini";
 using occ::conditioning_orthogonalizer;
 using occ::Mat;
-using occ::qm::BasisSet;
 using occ::qm::expectation;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::qm::SpinorbitalKind::General;
 using occ::qm::SpinorbitalKind::Restricted;
 using occ::qm::SpinorbitalKind::Unrestricted;
-using occ::util::human_readable_size;
 using occ::util::is_odd;
 namespace block = occ::qm::block;
 
@@ -86,7 +84,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
     SCF(Procedure &procedure) : m_procedure(procedure) {
         n_electrons = m_procedure.num_e();
-        nbf = m_procedure.basis().nbf();
+        nbf = m_procedure.nbf();
         size_t rows, cols;
         std::tie(rows, cols) =
             occ::qm::matrix_dimensions<spinorbital_kind>(nbf);
@@ -128,7 +126,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     Wavefunction wavefunction() const {
         Wavefunction wfn;
         wfn.atoms = m_procedure.atoms();
-        wfn.basis = m_procedure.basis();
+        wfn.basis = m_procedure.aobasis();
         wfn.nbf = wfn.basis.nbf();
         wfn.mo = mo;
         wfn.num_alpha = n_alpha();

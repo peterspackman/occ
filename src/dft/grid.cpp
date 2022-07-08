@@ -5,7 +5,7 @@
 #include <occ/dft/lebedev.h>
 
 namespace occ::dft {
-using occ::qm::BasisSet;
+using occ::qm::AOBasis;
 
 const std::array<uint_fast16_t, 33> lebedev_grid_levels{
     1,    6,    14,   26,   38,   50,   74,   86,   110,  146,  170,
@@ -344,47 +344,35 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points,
     return result;
 }
 
-MolecularGrid::MolecularGrid(const BasisSet &basis,
-                             const std::vector<occ::core::Atom> &atoms,
+MolecularGrid::MolecularGrid(const AOBasis &basis,
                              const AtomGridSettings &settings)
-    : m_settings(settings), m_atomic_numbers(atoms.size()),
-      m_positions(3, atoms.size()), m_alpha_max(atoms.size()),
-      m_l_max(atoms.size()), m_alpha_min(basis.max_l() + 1, atoms.size()) {
+    : m_settings(settings), m_atomic_numbers(basis.atoms().size()),
+      m_positions(3, basis.atoms().size()), m_alpha_max(basis.atoms().size()),
+      m_l_max(basis.atoms().size()),
+      m_alpha_min(basis.l_max() + 1, basis.atoms().size()) {
     occ::timing::start(occ::timing::category::grid_init);
-    size_t natom = atoms.size();
+    size_t natom = basis.atoms().size();
     std::vector<int> unique_atoms;
-    const auto atom_map = basis.atom2shell(atoms);
+    const auto atom_map = basis.atom_to_shell();
     for (size_t i = 0; i < natom; i++) {
-        m_atomic_numbers(i) = atoms[i].atomic_number;
-        unique_atoms.push_back(atoms[i].atomic_number);
-        m_positions(0, i) = atoms[i].x;
-        m_positions(1, i) = atoms[i].y;
-        m_positions(2, i) = atoms[i].z;
+        m_atomic_numbers(i) = basis.atoms()[i].atomic_number;
+        unique_atoms.push_back(basis.atoms()[i].atomic_number);
+        m_positions(0, i) = basis.atoms()[i].x;
+        m_positions(1, i) = basis.atoms()[i].y;
+        m_positions(2, i) = basis.atoms()[i].z;
         std::vector<double> atom_min_alpha;
         double max_alpha = 0.0;
-        int max_l = 0;
+        int max_l = basis.l_max();
         for (const auto &shell_idx : atom_map[i]) {
             const auto &shell = basis[shell_idx];
             int j = 0;
-            for (const auto &contraction : shell.contr) {
-                int l = contraction.l;
-                max_l = std::max(max_l, l);
-                j++;
-            }
-
             for (int i = atom_min_alpha.size(); i < max_l + 1; i++) {
                 atom_min_alpha.push_back(std::numeric_limits<double>::max());
             }
-            j = 0;
-            for (const auto &contraction : shell.contr) {
-                int l = contraction.l;
-                atom_min_alpha[l] = std::min(shell.alpha[j], atom_min_alpha[l]);
-                j++;
-            }
 
-            for (const double alpha : shell.alpha) {
-                max_alpha = std::max(alpha, max_alpha);
-            }
+            atom_min_alpha[shell.l] =
+                std::min(shell.exponents.minCoeff(), atom_min_alpha[shell.l]);
+            max_alpha = std::max(max_alpha, shell.exponents.maxCoeff());
         }
         for (int l = 0; l <= max_l; l++)
             m_alpha_min(l, i) = atom_min_alpha[l];
@@ -397,7 +385,7 @@ MolecularGrid::MolecularGrid(const BasisSet &basis,
     for (const auto &atom : unique_atoms) {
         m_unique_atom_grids.emplace_back(generate_lmg_atom_grid(atom));
     }
-    m_dists = interatomic_distances(atoms);
+    m_dists = interatomic_distances(basis.atoms());
     occ::timing::stop(occ::timing::category::grid_init);
 }
 

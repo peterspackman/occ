@@ -92,19 +92,19 @@ int string_to_l(const std::string &shell_label) {
 }
 
 void OrcaJSONReader::parse(std::istream &stream) {
-    using libint2::svector;
-    using occ::qm::Shell;
+    using occ::qm::OccShell;
 
     auto j = nlohmann::json::parse(stream);
     const auto &mol = j["Molecule"];
-    const auto &atoms = mol["Atoms"];
+    const auto &atoms_json = mol["Atoms"];
 
-    size_t num_atoms = atoms.size();
+    size_t num_atoms = atoms_json.size();
     m_atomic_numbers = IVec(num_atoms);
     m_atom_labels.resize(num_atoms);
     m_atom_positions = Mat3N(3, num_atoms);
+    std::vector<occ::qm::OccShell> shells;
 
-    for (const auto &atom : atoms) {
+    for (const auto &atom : atoms_json) {
         size_t idx = atom["Idx"];
         m_atomic_numbers(idx) = atom["ElementNumber"];
         m_atom_labels[idx] = atom["ElementLabel"];
@@ -116,8 +116,8 @@ void OrcaJSONReader::parse(std::istream &stream) {
         std::array<double, 3> pos_array = {pos[0], pos[1], pos[2]};
 
         for (const auto &bf : atom["BasisFunctions"]) {
-            svector<double> alpha;
-            svector<double> coeffs;
+            std::vector<double> alpha;
+            std::vector<double> coeffs;
             const auto &coeff = bf["Coefficients"];
             const auto &exp = bf["Exponents"];
             const auto &shell_kind = bf["Shell"];
@@ -129,13 +129,11 @@ void OrcaJSONReader::parse(std::istream &stream) {
             }
 
             int l = string_to_l(shell_kind);
-            m_basis.emplace_back(Shell{std::move(alpha),
-                                       {{l, true, std::move(coeffs)}},
-                                       {std::move(pos_array)}});
+            shells.emplace_back(OccShell(l, alpha, {coeffs}, pos_array));
+            shells.back().incorporate_shell_norm();
         }
     }
-    m_basis.update();
-    m_basis.set_pure(true);
+    m_basis = occ::qm::AOBasis(atoms(), shells);
     size_t nbf = m_basis.nbf();
     occ::log::debug("num atoms {}", num_atoms);
 

@@ -11,7 +11,7 @@
 
 namespace occ::dft {
 
-using occ::qm::BasisSet;
+using occ::qm::AOBasis;
 using occ::qm::SpinorbitalKind;
 
 using dfid = DensityFunctional::Identifier;
@@ -63,11 +63,10 @@ int DFT::density_derivative() const {
     return deriv;
 }
 
-DFT::DFT(const std::string &method, const BasisSet &basis,
-         const std::vector<occ::core::Atom> &atoms, SpinorbitalKind kind)
-    : m_spinorbital_kind(kind), m_hf(atoms, basis), m_grid(basis, atoms) {
+DFT::DFT(const std::string &method, const AOBasis &basis, SpinorbitalKind kind)
+    : m_spinorbital_kind(kind), m_hf(basis), m_grid(basis) {
     occ::log::debug("start calculating atom grids... ");
-    for (size_t i = 0; i < atoms.size(); i++) {
+    for (size_t i = 0; i < basis.atoms().size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
     size_t num_grid_points = std::accumulate(

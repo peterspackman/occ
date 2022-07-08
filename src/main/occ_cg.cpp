@@ -34,7 +34,6 @@ using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::SymmetryOperation;
 using occ::hf::HartreeFock;
-using occ::qm::BasisSet;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;
@@ -159,7 +158,7 @@ void compute_monomer_energies(const std::string &basename,
             wfn.energy = nlohmann::json::parse(ifs).get<occ::qm::Energy>();
         } else {
             std::cout << std::flush;
-            HartreeFock hf(wfn.atoms, wfn.basis);
+            HartreeFock hf(wfn.basis);
             occ::Mat schwarz = hf.compute_schwarz_ints();
             occ::interaction::compute_ce_model_energies(wfn, hf, 1e-8, schwarz);
             occ::log::debug("Writing monomer energies to {}",

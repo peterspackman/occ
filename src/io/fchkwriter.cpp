@@ -185,7 +185,7 @@ void FchkVectorWriter::operator()(const std::vector<bool> &values) {
 }
 } // namespace impl
 
-void FchkWriter::set_basis(const occ::qm::BasisSet &basis) {
+void FchkWriter::set_basis(const occ::qm::AOBasis &basis) {
     int largest_contraction{0};
     int l_max = 0;
     std::vector<int> shell_types, nprim_per_shell;
@@ -195,24 +195,21 @@ void FchkWriter::set_basis(const occ::qm::BasisSet &basis) {
     std::vector<double> primitive_exponents, contraction_coefficients;
     int number_primitive_shells{0};
     for (size_t i = 0; i < basis.size(); i++) {
-        const auto &sh = basis[i];
-        const auto &contraction = sh.contr[0];
-        int l = contraction.l;
-        if (l > 1 && contraction.pure)
+        const auto &sh = basis.shells()[i];
+        int l = sh.l;
+        if (l > 1 && sh.is_pure())
             l = -l;
         l_max = std::max(l, l_max);
-        int nprim = sh.alpha.size();
+        int nprim = sh.num_primitives();
         number_primitive_shells += nprim;
         largest_contraction = std::max(nprim, largest_contraction);
         shell_types.push_back(l);
         nprim_per_shell.push_back(nprim);
-        shell_coords.push_back(sh.O[0]);
-        shell_coords.push_back(sh.O[1]);
-        shell_coords.push_back(sh.O[2]);
-        for (size_t p = 0; p < sh.alpha.size(); p++) {
-            primitive_exponents.push_back(sh.alpha[p]);
-        }
-        for (size_t p = 0; p < contraction.coeff.size(); p++) {
+        shell_coords.push_back(sh.origin(0));
+        shell_coords.push_back(sh.origin(1));
+        shell_coords.push_back(sh.origin(2));
+        for (size_t p = 0; p < nprim; p++) {
+            primitive_exponents.push_back(sh.exponents(p));
             contraction_coefficients.push_back(sh.coeff_normalized(0, p));
         }
     }

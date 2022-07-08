@@ -4,7 +4,7 @@
 #include <istream>
 #include <occ/3rdparty/robin_hood.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/basisset.h>
+#include <occ/qm/occshell.h>
 #include <occ/qm/spinorbital.h>
 #include <variant>
 #include <vector>
@@ -65,7 +65,7 @@ class FchkWriter {
     void set_method(const std::string &method) { m_method = method; }
     void set_basis_name(const std::string &basis) { m_basis_name = basis; }
 
-    void set_basis(const occ::qm::BasisSet &);
+    void set_basis(const occ::qm::AOBasis &);
 
     template <typename T>
     void set_scalar(const std::string &key, const T &value) {

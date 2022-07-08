@@ -3,7 +3,7 @@
 
 namespace occ::qm {
 
-class BasisSet;
+class AOBasis;
 
 struct MolecularOrbitals {
     SpinorbitalKind kind{SpinorbitalKind::Restricted};
@@ -14,7 +14,7 @@ struct MolecularOrbitals {
     Vec energies;
     void update(const Mat &ortho, const Mat &potential);
     void update_density_matrix();
-    void rotate(const BasisSet &basis, const occ::Mat3 &rotation);
+    void rotate(const AOBasis &basis, const occ::Mat3 &rotation);
     void print() const;
     void incorporate_norm(Eigen::Ref<const Vec> norms);
 };

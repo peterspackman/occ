@@ -3,7 +3,7 @@
 #include <istream>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/basisset.h>
+#include <occ/qm/occshell.h>
 #include <string>
 #include <vector>
 
@@ -51,7 +51,7 @@ class OrcaJSONReader {
     std::vector<std::string> m_atom_labels;
     IVec m_atomic_numbers;
     Mat3N m_atom_positions;
-    occ::qm::BasisSet m_basis;
+    occ::qm::AOBasis m_basis;
     Mat m_alpha_coeffs, m_beta_coeffs;
     Vec m_alpha_energies, m_beta_energies;
     std::vector<std::string> m_alpha_labels, m_beta_labels;

@@ -91,7 +91,18 @@ class AOBasis {
     inline auto size() const { return m_shells.size(); }
     inline auto nsh() const { return size(); }
     inline auto kind() const { return m_kind; }
-    inline void set_kind(OccShell::Kind kind) { m_kind = kind; }
+    inline bool is_pure() const { return m_kind == OccShell::Kind::Spherical; }
+    inline bool is_cartesian() const {
+        return m_kind == OccShell::Kind::Cartesian;
+    }
+    inline void set_kind(OccShell::Kind kind) {
+        m_kind = kind;
+        for (auto &sh : m_shells)
+            sh.kind = kind;
+    }
+    inline void set_pure(bool pure) {
+        set_kind(pure ? OccShell::Kind::Spherical : OccShell::Kind::Cartesian);
+    }
     inline const OccShell &operator[](size_t n) const { return m_shells[n]; }
     inline const OccShell &at(size_t n) const { return m_shells.at(n); }
 
@@ -99,8 +110,13 @@ class AOBasis {
     inline const auto &atoms() const { return m_atoms; }
     inline const auto &first_bf() const { return m_first_bf; }
     inline const auto &bf_to_shell() const { return m_bf_to_shell; }
+    inline const auto &bf_to_atom() const { return m_bf_to_atom; }
     inline const auto &shell_to_atom() const { return m_shell_to_atom_idx; }
     inline const auto &atom_to_shell() const { return m_atom_to_shell_idxs; }
+    uint_fast8_t l_max() const;
+
+    void rotate(const Mat3 &rotation);
+    void translate(const Vec3 &rotation);
 
     inline auto max_shell_size() const { return m_max_shell_size; }
     static AOBasis load(const AtomList &atoms, const std::string &name);
@@ -114,6 +130,7 @@ class AOBasis {
     std::vector<int> m_first_bf;
     std::vector<int> m_shell_to_atom_idx;
     std::vector<int> m_bf_to_shell;
+    std::vector<int> m_bf_to_atom;
     std::vector<std::vector<int>> m_atom_to_shell_idxs;
     size_t m_nbf{0};
     size_t m_max_shell_size{0};

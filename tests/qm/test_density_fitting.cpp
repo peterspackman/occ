@@ -8,9 +8,9 @@
 TEST_CASE("H2O/6-31G") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.39839733}};
-    occ::qm::BasisSet basis("sto-3g", atoms);
+    auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
     basis.set_pure(false);
-    auto hf = occ::hf::HartreeFock(atoms, basis);
+    auto hf = occ::hf::HartreeFock(basis);
     hf.set_density_fitting_basis("def2-svp-jk");
 
     occ::qm::MolecularOrbitals mo;

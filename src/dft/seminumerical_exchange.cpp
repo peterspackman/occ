@@ -12,13 +12,11 @@ using Op = qm::cint::Operator;
 using Buffer = std::vector<double>;
 using IntegralResult = qm::IntegralEngine::IntegralResult<3>;
 
-SemiNumericalExchange::SemiNumericalExchange(
-    const std::vector<occ::core::Atom> &atoms, const qm::BasisSet &basis,
-    const AtomGridSettings &settings)
-    : m_atoms(atoms), m_basis(basis),
-      m_engine(atoms, occ::qm::from_libint2_basis(basis)),
-      m_grid(m_basis, m_atoms, settings) {
-    for (size_t i = 0; i < atoms.size(); i++) {
+SemiNumericalExchange::SemiNumericalExchange(const qm::AOBasis &basis,
+                                             const AtomGridSettings &settings)
+    : m_atoms(basis.atoms()), m_basis(basis),
+      m_engine(basis.atoms(), basis.shells()), m_grid(m_basis, settings) {
+    for (size_t i = 0; i < m_atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
     m_overlap = m_engine.one_electron_operator(qm::IntegralEngine::Op::overlap);

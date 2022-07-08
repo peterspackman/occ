@@ -13,8 +13,7 @@ namespace occ::dft::cosx {
 class SemiNumericalExchange {
 
   public:
-    SemiNumericalExchange(const std::vector<occ::core::Atom> &,
-                          const qm::BasisSet &, const AtomGridSettings & = {});
+    SemiNumericalExchange(const qm::AOBasis &, const AtomGridSettings & = {});
     Mat compute_K(qm::SpinorbitalKind kind, const qm::MolecularOrbitals &mo,
                   double precision = std::numeric_limits<double>::epsilon(),
                   const occ::Mat &Schwarz = occ::Mat()) const;
@@ -25,7 +24,7 @@ class SemiNumericalExchange {
 
   private:
     std::vector<occ::core::Atom> m_atoms;
-    qm::BasisSet m_basis;
+    qm::AOBasis m_basis;
     MolecularGrid m_grid;
     mutable occ::qm::IntegralEngine m_engine;
 

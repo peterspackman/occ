@@ -11,17 +11,14 @@ void HartreeFock::set_system_charge(int charge) {
 
 void HartreeFock::set_density_fitting_basis(
     const std::string &density_fitting_basis) {
-    m_density_fitting_basis = occ::qm::BasisSet(density_fitting_basis, m_atoms);
-    m_density_fitting_basis.set_pure(m_basis.is_pure());
-    auto ao = qm::from_libint2_basis(m_basis);
-    auto aux = qm::from_libint2_basis(m_density_fitting_basis);
-    m_df_engine.emplace(m_atoms, ao, aux);
+    occ::qm::AOBasis dfbasis =
+        occ::qm::AOBasis::load(m_atoms, density_fitting_basis);
+    dfbasis.set_kind(m_engine.aobasis().kind());
+    m_df_engine.emplace(m_atoms, m_engine.aobasis().shells(), dfbasis.shells());
 }
 
-HartreeFock::HartreeFock(const std::vector<occ::core::Atom> &atoms,
-                         const BasisSet &basis)
-    : m_atoms(atoms), m_basis(basis),
-      m_engine(atoms, occ::qm::from_libint2_basis(basis)) {
+HartreeFock::HartreeFock(const AOBasis &basis)
+    : m_atoms(basis.atoms()), m_engine(basis.atoms(), basis.shells()) {
 
     for (const auto &a : m_atoms) {
         m_num_e += a.atomic_number;
