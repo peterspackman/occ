@@ -18,7 +18,6 @@ target_link_libraries(occ_qm
     occ_core
     occ_io
     occ_gto
-    Libint2::cxx
     libcint::libcint
 )
 target_include_directories(occ_qm PUBLIC 

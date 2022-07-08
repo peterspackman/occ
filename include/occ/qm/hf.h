@@ -6,6 +6,7 @@
 #include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/spinorbital.h>
+#include <optional>
 
 namespace occ::hf {
 

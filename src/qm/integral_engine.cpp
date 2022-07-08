@@ -1324,7 +1324,7 @@ Mat schwarz_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
         auto N = args.dims[0] * args.dims[1];
         Eigen::Map<const occ::Mat> tmp(args.buffer, N, N);
         double sq_norm =
-            use_euclidean_norm ? tmp.norm() : tmp.lpNorm<Eigen::Infinity>();
+            use_euclidean_norm ? tmp.norm() : tmp.array().abs().maxCoeff();
         double norm = std::sqrt(sq_norm);
         result(args.shell[0], args.shell[1]) = norm;
         result(args.shell[1], args.shell[0]) = norm;

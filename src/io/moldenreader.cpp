@@ -5,6 +5,7 @@
 #include <occ/gto/gto.h>
 #include <occ/io/moldenreader.h>
 #include <scn/scn.h>
+#include <fstream>
 
 namespace occ::io {
 using occ::util::startswith;

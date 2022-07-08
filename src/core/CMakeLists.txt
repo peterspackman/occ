@@ -29,7 +29,6 @@ target_link_libraries(occ_core
     spdlog::spdlog
     ZLIB::ZLIB
     OpenMP::OpenMP_CXX
-    Libint2::cxx
     Boost::boost
 )
 target_include_directories(occ_core PUBLIC 
