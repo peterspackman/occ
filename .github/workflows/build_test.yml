@@ -29,16 +29,18 @@ jobs:
         sudo apt update
         sudo apt install -y libboost-graph-dev python3-numpy
 
+    - name: Cache CPM Dependencies
+      uses: actions/cache@v3.0.4
+      with:
+        path: |
+          ${{env.CPM_SOURCE_CACHE}}
+          ${{github.workspace}}/build
+        key: ${{ runner.os }}-build-cache
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCPM_SOURCE_CACHE=${{env.CPM_SOURCE_CACHE}} -DUSE_SYSTEM_LIBXC=OFF -DUSE_SYSTEM_EIGEN=OFF -DUSE_SYSTEM_ZLIB=OFF
-
-    - name: Cache CPM Dependencies
-      uses: actions/cache@v3.0.4
-      with:
-        path: ${{env.CPM_SOURCE_CACHE}}
-        key: ${{ runner.os }}-build-cache
  
     - name: Build
       # Build your program with the given configuration
