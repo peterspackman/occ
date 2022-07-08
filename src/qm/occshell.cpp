@@ -444,6 +444,15 @@ std::string canonicalize_name(const std::string &name) {
         }
         return cc;
     });
+
+    if (result == "6-311g**") {
+        result = "6-311g(d,p)";
+    } else if (result == "6-31g**") {
+        result = "6-31g(d,p)";
+    } else if (result == "6-31g*") {
+        result = "6-31g(d)";
+    }
+
     return result;
 }
 

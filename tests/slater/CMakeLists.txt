@@ -6,4 +6,4 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
-create_slater_test(test_slater.cpp)
+create_slater_test(slater_tests.cpp)

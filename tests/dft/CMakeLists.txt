@@ -6,6 +6,4 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
-create_dft_test(test_dft.cpp)
-create_dft_test(test_grid.cpp)
-create_dft_test(test_seminumerical_exchange.cpp)
+create_dft_test(dft_tests.cpp)

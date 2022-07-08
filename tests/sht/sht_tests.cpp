@@ -1,6 +1,7 @@
 #include "catch.hpp"
 #include <occ/3rdparty/eigen-fmt/fmt.h>
 #include <occ/core/util.h>
+#include <occ/sht/legendre.h>
 #include <occ/sht/sht.h>
 
 double func(double theta, double phi) {
@@ -83,4 +84,21 @@ TEST_CASE("Analysis real", "[sht]") {
 
     occ::Mat values_synth = sht.synthesis_real(coeffs);
     REQUIRE(occ::util::all_close(values, values_synth, 1e-7, 1e-12));
+}
+
+TEST_CASE("Legendre Evaluate batch", "[sht]") {
+
+    occ::sht::AssocLegendreP plm(4);
+    occ::Vec expected((4 + 1) * (4 + 2) / 2);
+    occ::Vec result((4 + 1) * (4 + 2) / 2);
+
+    expected << 0.28209479177387814, 0.24430125595145993, -0.07884789131313,
+        -0.326529291016351, -0.24462907724141, 0.2992067103010745,
+        0.33452327177864455, 0.06997056236064664, -0.25606603842001846,
+        0.2897056515173922, 0.3832445536624809, 0.18816934037548755,
+        0.27099482274755193, 0.4064922341213279, 0.24892463950030275;
+
+    plm.evaluate_batch(0.5, result);
+
+    REQUIRE(occ::util::all_close(expected, result));
 }

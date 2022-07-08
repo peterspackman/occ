@@ -7,5 +7,4 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
-create_solvent_test(test_cosmo.cpp)
-create_solvent_test(test_smd.cpp)
+create_solvent_test(solvent_tests.cpp)

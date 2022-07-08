@@ -1,17 +1,48 @@
-#include <occ/io/xyz.h>
-#include <occ/solvent/smd.h>
-#include <occ/solvent/parameters.h>
-#include <occ/solvent/surface.h>
-#include <occ/core/units.h>
-#include <fmt/ostream.h>
-#include <fmt/os.h>
-#include <occ/core/timings.h>
 #include "catch.hpp"
+#include <fmt/os.h>
+#include <fmt/ostream.h>
+#include <occ/core/timings.h>
+#include <occ/core/units.h>
+#include <occ/io/xyz.h>
+#include <occ/solvent/cosmo.h>
+#include <occ/solvent/parameters.h>
+#include <occ/solvent/smd.h>
+#include <occ/solvent/surface.h>
 
-using occ::Vec;
+using occ::Mat;
 using occ::Mat3N;
+using occ::Vec;
+using occ::solvent::COSMO;
 
-const char * NAPHTHOL = R""""(19
+// COSMO
+
+TEST_CASE("COSMO", "[solvent]") {
+
+    auto pts = Mat3N(3, 12);
+    pts << -0.525731, 0.525731, -0.525731, 0.525731, 0.0, 0.0, 0.0, 0.0,
+        0.850651, 0.850651, -0.850651, -0.850651, 0.850651, 0.850651, -0.850651,
+        -0.850651, -0.525731, 0.525731, -0.525731, 0.525731, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.850651, 0.850651, -0.850651, -0.850651, -0.525731,
+        0.525731, -0.525731, 0.527531;
+
+    auto areas = Vec(12);
+    areas.setConstant(0.79787845);
+
+    auto charges = Vec(12);
+    charges.topRows(6).setConstant(-0.05);
+    charges.bottomRows(6).setConstant(0.05);
+    const COSMO c(78.4);
+    COSMO::Result result = c(pts, areas, charges);
+    fmt::print("Final energy: {}\n", result.energy);
+    fmt::print("InitialFinal charges:\n{}\n", result.initial);
+    fmt::print("Converged charges:\n{}\n", result.converged);
+
+    REQUIRE(result.energy == Approx(-0.0042715403));
+}
+
+// SMD tests
+
+const char *NAPHTHOL = R""""(19
 
 C          2.27713      0.06621      3.27549
 O          4.40801      1.08291      3.23213
@@ -34,7 +65,7 @@ C          0.09875     -0.98551      3.34060
 H         -0.75476     -1.09298      2.98836
 )"""";
 
-const char * UREA = R""""(8
+const char *UREA = R""""(8
 
 C          0.00000      2.83100      1.55628
 H          1.37587      4.20687      1.32520
@@ -46,7 +77,7 @@ H         -0.80400      2.02700      0.13205
 N         -0.81136      2.01964      0.87105
 )"""";
 
-const char * DESLORATADINE = R""""(43
+const char *DESLORATADINE = R""""(43
 
 Cl  8.365742  -3.156674   2.279987
 N   6.535935   4.241773   2.118667
@@ -91,8 +122,6 @@ H   3.958665   4.201700   2.165391
 H   2.612031   3.407432   2.520566
 )"""";
 
-
-
 TEST_CASE("CDS", "[solvent]") {
     auto mol = occ::io::molecule_from_xyz_string(NAPHTHOL);
     auto nums = mol.atomic_numbers();
@@ -101,46 +130,47 @@ TEST_CASE("CDS", "[solvent]") {
     auto params = occ::solvent::smd_solvent_parameters["water"];
 
     Vec cds_radii = occ::solvent::smd::cds_radii(nums, params);
-    auto surface = occ::solvent::surface::solvent_surface(cds_radii, nums, pos_bohr, 0.0);
-    const auto& surface_positions = surface.vertices;
-    const auto& surface_areas = surface.areas;
-    const auto& surface_atoms = surface.atom_index;
+    auto surface =
+        occ::solvent::surface::solvent_surface(cds_radii, nums, pos_bohr, 0.0);
+    const auto &surface_positions = surface.vertices;
+    const auto &surface_areas = surface.areas;
+    const auto &surface_atoms = surface.atom_index;
 
-    auto output = fmt::output_file("desloratadine.cpcm", fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
-    output.print("{}\nelement, x, y, z, atom_idx, area\n", surface_areas.rows());
-    for(size_t i = 0; i < surface_areas.rows(); i++)
-    {
+    auto output = fmt::output_file(
+        "desloratadine.cpcm", fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
+    output.print("{}\nelement, x, y, z, atom_idx, area\n",
+                 surface_areas.rows());
+    for (size_t i = 0; i < surface_areas.rows(); i++) {
         output.print("{:4d} {: 12.6f} {: 12.6f} {: 12.6f} {:4d} {: 12.6f}\n",
-                     nums(surface_atoms(i)),
-                     surface_positions(0, i), 
-                     surface_positions(1, i), 
-                     surface_positions(2, i), 
-                     surface_atoms(i),
-                     surface_areas(i));
+                     nums(surface_atoms(i)), surface_positions(0, i),
+                     surface_positions(1, i), surface_positions(2, i),
+                     surface_atoms(i), surface_areas(i));
     }
-
 
     Vec surface_areas_per_atom_angs = Vec::Zero(nums.rows());
     const double conversion_factor =
         occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
     for (int i = 0; i < surface_areas.rows(); i++) {
-        surface_areas_per_atom_angs(surface_atoms(i)) += conversion_factor * surface_areas(i);
+        surface_areas_per_atom_angs(surface_atoms(i)) +=
+            conversion_factor * surface_areas(i);
     }
 
-    auto surface_tension = occ::solvent::smd::atomic_surface_tension(params, nums, pos);
+    auto surface_tension =
+        occ::solvent::smd::atomic_surface_tension(params, nums, pos);
 
     double H{0.0}, C{0.0}, N{0.0}, Cl{0.0};
     for (int i = 0; i < surface_areas_per_atom_angs.rows(); i++) {
-        if(nums(i) == 1) H += surface_areas_per_atom_angs(i);
-        else if(nums(i) == 6) C += surface_areas_per_atom_angs(i);
-        else if(nums(i) == 7) N += surface_areas_per_atom_angs(i);
-        else if(nums(i) == 17) Cl += surface_areas_per_atom_angs(i);
-        fmt::print("{:<7d} {:10.3f} {:10.3f} {:10.3f}\n",
-                   nums(i),
-                   surface_areas_per_atom_angs(i),
-                   surface_tension(i),
-                   surface_areas_per_atom_angs(i) * surface_tension(i)
-                   );
+        if (nums(i) == 1)
+            H += surface_areas_per_atom_angs(i);
+        else if (nums(i) == 6)
+            C += surface_areas_per_atom_angs(i);
+        else if (nums(i) == 7)
+            N += surface_areas_per_atom_angs(i);
+        else if (nums(i) == 17)
+            Cl += surface_areas_per_atom_angs(i);
+        fmt::print("{:<7d} {:10.3f} {:10.3f} {:10.3f}\n", nums(i),
+                   surface_areas_per_atom_angs(i), surface_tension(i),
+                   surface_areas_per_atom_angs(i) * surface_tension(i));
     }
     double total_area = surface_areas_per_atom_angs.array().sum();
     fmt::print("Total area = {:.4f}\n", total_area);

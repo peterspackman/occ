@@ -6,5 +6,4 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
-create_geometry_test(test_morton.cpp)
-create_geometry_test(test_mc.cpp)
+create_geometry_test(geometry_tests.cpp)

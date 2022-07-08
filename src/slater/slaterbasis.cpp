@@ -202,7 +202,9 @@ load_slaterbasis(const std::string &name) {
     fs::path path;
     const char *basis_path_env = getenv("OCC_BASIS_PATH");
     if (basis_path_env) {
+        // TODO check
         path = basis_path_env;
+        path /= "basis";
     } else {
         path = ".";
     }

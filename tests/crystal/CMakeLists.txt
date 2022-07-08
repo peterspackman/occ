@@ -6,7 +6,4 @@ target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
-create_crystal_test(test_crystal.cpp)
-create_crystal_test(test_space_group.cpp)
-create_crystal_test(test_surface.cpp)
-create_crystal_test(test_symmetry_operation.cpp)
+create_crystal_test(crystal_tests.cpp)
