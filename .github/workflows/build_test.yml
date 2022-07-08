@@ -33,17 +33,17 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCPM_SOURCE_CACHE=${{env.CPM_SOURCE_CACHE}} -DUSE_SYSTEM_LIBXC=OFF -DUSE_SYSTEM_EIGEN=OFF -DUSE_SYSTEM_ZLIB=OFF
 
-    - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-   
-    - name: CPM Cache
+    - name: Cache CPM Dependencies
       uses: actions/cache@v3.0.4
       with:
         path: ${{env.CPM_SOURCE_CACHE}}
         key: ${{ runner.os }}-build-cache
-
-    - name: Test
+ 
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+   
+   - name: Test
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
