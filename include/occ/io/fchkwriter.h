@@ -4,7 +4,7 @@
 #include <istream>
 #include <occ/3rdparty/robin_hood.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <variant>
 #include <vector>

@@ -7,7 +7,7 @@
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/shellblock_norm.h>
 #include <vector>
 
@@ -23,11 +23,11 @@ class IntegralEngine {
         const double *buffer{nullptr};
     };
 
-    using ShellList = std::vector<OccShell>;
+    using ShellList = std::vector<Shell>;
     using AtomList = std::vector<occ::core::Atom>;
     using ShellPairList = std::vector<std::vector<size_t>>;
     using IntEnv = cint::IntegralEnvironment;
-    using ShellKind = OccShell::Kind;
+    using ShellKind = Shell::Kind;
     using Op = cint::Operator;
 
     IntegralEngine(const AtomList &at, const ShellList &sh)
@@ -146,7 +146,7 @@ class IntegralEngine {
     Mat schwarz() const;
 
     inline bool is_spherical() const {
-        return m_aobasis.kind() == OccShell::Kind::Spherical;
+        return m_aobasis.kind() == Shell::Kind::Spherical;
     }
 
   private:

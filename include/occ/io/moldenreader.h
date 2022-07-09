@@ -1,7 +1,7 @@
 #pragma once
 #include <istream>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <optional>
 #include <string>
@@ -86,7 +86,7 @@ class MoldenReader {
     void parse_mo(size_t &, size_t &, std::istream &);
 
     std::vector<occ::core::Atom> m_atoms;
-    std::vector<occ::qm::OccShell> m_shells;
+    std::vector<occ::qm::Shell> m_shells;
     std::string m_filename;
     Mat m_molecular_orbitals_alpha;
     Mat m_molecular_orbitals_beta;

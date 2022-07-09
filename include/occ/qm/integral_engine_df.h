@@ -7,9 +7,9 @@ class IntegralEngineDF {
   public:
     enum Policy { Choose, Direct, Stored };
     using ShellPairList = std::vector<std::vector<size_t>>;
-    using ShellList = std::vector<OccShell>;
+    using ShellList = std::vector<Shell>;
     using AtomList = std::vector<occ::core::Atom>;
-    using ShellKind = OccShell::Kind;
+    using ShellKind = Shell::Kind;
     using Op = cint::Operator;
     using Buffer = std::vector<double>;
     using IntegralResult = IntegralEngine::IntegralResult<3>;

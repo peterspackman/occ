@@ -7,7 +7,7 @@ add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/mo.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/occshell.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shell.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
     ${OCC_INCLUDE_FILES}

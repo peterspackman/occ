@@ -17,13 +17,13 @@ void fortran_dfloats_to_efloats(std::string &str) {
     }
 }
 
-std::vector<std::vector<occ::qm::OccShell>>
-read_occshell(const std::string &file_dot_g94, bool force_cartesian_d,
+std::vector<std::vector<occ::qm::Shell>>
+read_shell(const std::string &file_dot_g94, bool force_cartesian_d,
               std::string locale_name) {
     occ::timing::start(occ::timing::category::io);
     std::locale locale(
         locale_name.c_str()); // TODO omit c_str() with up-to-date stdlib
-    std::vector<std::vector<occ::qm::OccShell>> ref_shells(
+    std::vector<std::vector<occ::qm::Shell>> ref_shells(
         118); // 118 = number of chemical elements
     std::ifstream is(file_dot_g94);
     is.imbue(locale);
@@ -82,7 +82,7 @@ read_occshell(const std::string &file_dot_g94, bool force_cartesian_d,
                 iss >> amlabel >> nprim >> rest;
                 if (amlabel != "SP" && amlabel != "sp") {
                     assert(amlabel.size() == 1);
-                    auto l = occ::qm::OccShell::symbol_to_l(amlabel[0]);
+                    auto l = occ::qm::Shell::symbol_to_l(amlabel[0]);
                     std::vector<double> exps;
                     std::vector<double> coeffs;
                     for (decltype(nprim) p = 0; p != nprim; ++p) {
@@ -98,7 +98,7 @@ read_occshell(const std::string &file_dot_g94, bool force_cartesian_d,
                     }
                     auto pure = force_cartesian_d ? (l > 2) : (l > 1);
                     ref_shells.at(Z).push_back(
-                        occ::qm::OccShell(l, exps, {coeffs}, {0, 0, 0}));
+                        occ::qm::Shell(l, exps, {coeffs}, {0, 0, 0}));
                 } else { // split the SP shells
                     std::vector<double> exps;
                     std::vector<double> coeffs_s, coeffs_p;
@@ -115,9 +115,9 @@ read_occshell(const std::string &file_dot_g94, bool force_cartesian_d,
                         coeffs_p.emplace_back(c2);
                     }
                     ref_shells.at(Z).push_back(
-                        occ::qm::OccShell(0, exps, {coeffs_s}, {0, 0, 0}));
+                        occ::qm::Shell(0, exps, {coeffs_s}, {0, 0, 0}));
                     ref_shells.at(Z).push_back(
-                        occ::qm::OccShell(1, exps, {coeffs_p}, {0, 0, 0}));
+                        occ::qm::Shell(1, exps, {coeffs_p}, {0, 0, 0}));
                 }
             }
         }

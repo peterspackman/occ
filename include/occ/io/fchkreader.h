@@ -2,7 +2,7 @@
 #include <fstream>
 #include <istream>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <vector>
 

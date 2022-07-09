@@ -1,6 +1,6 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 
 namespace occ::io::conversion {
 

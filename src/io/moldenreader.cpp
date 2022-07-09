@@ -156,15 +156,15 @@ inline int l_from_char(const char c) {
     }
 }
 
-inline occ::qm::OccShell
+inline occ::qm::Shell
 parse_molden_shell(const std::array<double, 3> &position, bool pure,
                    std::istream &stream) {
     std::string line;
     std::getline(stream, line);
     using occ::util::double_factorial;
-    occ::qm::OccShell::Kind shell_kind =
-        pure ? occ::qm::OccShell::Kind::Spherical
-             : occ::qm::OccShell::Kind::Cartesian;
+    occ::qm::Shell::Kind shell_kind =
+        pure ? occ::qm::Shell::Kind::Spherical
+             : occ::qm::Shell::Kind::Cartesian;
 
     std::string shell_type;
     int num_primitives, second;
@@ -209,7 +209,7 @@ parse_molden_shell(const std::array<double, 3> &position, bool pure,
             }
         }
     }
-    auto shell = occ::qm::OccShell(l, alpha, {coeffs}, position);
+    auto shell = occ::qm::Shell(l, alpha, {coeffs}, position);
     shell.kind = shell_kind;
     shell.incorporate_shell_norm();
     return shell;

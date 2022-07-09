@@ -7,7 +7,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/gto/shell_order.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <string>
 #include <vector>
 

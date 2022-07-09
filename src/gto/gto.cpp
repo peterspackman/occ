@@ -45,7 +45,7 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
             const double *alpha = sh.exponents.data();
             const double *center = sh.origin.data();
             int L = sh.l;
-            bool spherical = (sh.kind == qm::OccShell::Kind::Spherical);
+            bool spherical = (sh.kind == qm::Shell::Kind::Spherical);
             double fac = common_fac(L, spherical);
             int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
             gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(),
@@ -78,7 +78,7 @@ void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
     auto shell2bf = basis.first_bf();
     auto atom2shell = basis.atom_to_shell();
     // change this if we allow mixed integral kinds
-    bool spherical = (basis.kind() == qm::OccShell::Kind::Spherical);
+    bool spherical = (basis.kind() == qm::Shell::Kind::Spherical);
     int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
     for (size_t i = 0; i < natoms; i++) {
         for (const auto &shell_idx : atom2shell[i]) {

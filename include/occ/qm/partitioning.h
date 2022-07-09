@@ -1,7 +1,7 @@
 #pragma once
 #include <fmt/ostream.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {

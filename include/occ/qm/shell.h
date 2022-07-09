@@ -13,7 +13,7 @@ using occ::core::Atom;
 
 double gto_norm(int l, double alpha);
 
-struct OccShell {
+struct Shell {
 
     enum Kind {
         Cartesian,
@@ -23,14 +23,14 @@ struct OccShell {
     constexpr static double pi2_34 =
         3.9685778240728024992720094621189610321284055835201069917099724937;
 
-    OccShell(int, const std::vector<double> &expo,
+    Shell(int, const std::vector<double> &expo,
              const std::vector<std::vector<double>> &contr,
              const std::array<double, 3> &pos);
-    OccShell(const occ::core::PointCharge &);
-    OccShell();
+    Shell(const occ::core::PointCharge &);
+    Shell();
 
-    bool operator==(const OccShell &other) const;
-    bool operator!=(const OccShell &other) const;
+    bool operator==(const Shell &other) const;
+    bool operator!=(const Shell &other) const;
 
     size_t num_primitives() const;
     size_t num_contractions() const;
@@ -49,14 +49,14 @@ struct OccShell {
     static uint_fast8_t symbol_to_l(char symbol);
     char symbol() const;
 
-    OccShell translated_copy(const Eigen::Vector3d &origin) const;
+    Shell translated_copy(const Eigen::Vector3d &origin) const;
     size_t libcint_environment_size() const;
 
     int find_atom_index(const std::vector<Atom> &atoms) const;
 
     bool is_pure() const;
 
-    bool operator<(const OccShell &other) const;
+    bool operator<(const Shell &other) const;
     Kind kind{Cartesian};
     uint_fast8_t l;
     Vec3 origin;
@@ -70,7 +70,7 @@ class AOBasis {
   public:
     using AtomList = std::vector<Atom>;
 
-    using ShellList = std::vector<OccShell>;
+    using ShellList = std::vector<Shell>;
     AOBasis(const AtomList &, const ShellList &, const std::string &name = "");
     AOBasis() {}
 
@@ -79,7 +79,7 @@ class AOBasis {
         return m_first_bf[shell_index];
     }
 
-    void add_shell(const OccShell &);
+    void add_shell(const Shell &);
     void merge(const AOBasis &);
 
     inline bool shells_share_origin(size_t p, size_t q) const {
@@ -89,20 +89,20 @@ class AOBasis {
     inline auto size() const { return m_shells.size(); }
     inline auto nsh() const { return size(); }
     inline auto kind() const { return m_kind; }
-    inline bool is_pure() const { return m_kind == OccShell::Kind::Spherical; }
+    inline bool is_pure() const { return m_kind == Shell::Kind::Spherical; }
     inline bool is_cartesian() const {
-        return m_kind == OccShell::Kind::Cartesian;
+        return m_kind == Shell::Kind::Cartesian;
     }
-    inline void set_kind(OccShell::Kind kind) {
+    inline void set_kind(Shell::Kind kind) {
         m_kind = kind;
         for (auto &sh : m_shells)
             sh.kind = kind;
     }
     inline void set_pure(bool pure) {
-        set_kind(pure ? OccShell::Kind::Spherical : OccShell::Kind::Cartesian);
+        set_kind(pure ? Shell::Kind::Spherical : Shell::Kind::Cartesian);
     }
-    inline const OccShell &operator[](size_t n) const { return m_shells[n]; }
-    inline const OccShell &at(size_t n) const { return m_shells.at(n); }
+    inline const Shell &operator[](size_t n) const { return m_shells[n]; }
+    inline const Shell &at(size_t n) const { return m_shells.at(n); }
 
     inline const auto &shells() const { return m_shells; }
     inline const auto &atoms() const { return m_atoms; }
@@ -132,9 +132,9 @@ class AOBasis {
     std::vector<std::vector<int>> m_atom_to_shell_idxs;
     size_t m_nbf{0};
     size_t m_max_shell_size{0};
-    OccShell::Kind m_kind{OccShell::Kind::Cartesian};
+    Shell::Kind m_kind{Shell::Kind::Cartesian};
 };
 
-std::ostream &operator<<(std::ostream &stream, const OccShell &shell);
+std::ostream &operator<<(std::ostream &stream, const Shell &shell);
 
 } // namespace occ::qm

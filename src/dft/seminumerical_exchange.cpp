@@ -5,9 +5,9 @@
 namespace occ::dft::cosx {
 
 using ShellPairList = std::vector<std::vector<size_t>>;
-using ShellList = std::vector<qm::OccShell>;
+using ShellList = std::vector<qm::Shell>;
 using AtomList = std::vector<occ::core::Atom>;
-using ShellKind = qm::OccShell::Kind;
+using ShellKind = qm::Shell::Kind;
 using Op = qm::cint::Operator;
 using Buffer = std::vector<double>;
 using IntegralResult = qm::IntegralEngine::IntegralResult<3>;
@@ -160,7 +160,7 @@ Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
                 continue;
 
             std::vector<qm::Atom> dummy_atoms(npt);
-            std::vector<qm::OccShell> aux_shells(npt);
+            std::vector<qm::Shell> aux_shells(npt);
 
             const auto &pts_block = atom_pts.middleCols(l, npt);
             const auto &weights_block = atom_weights.segment(l, npt);
@@ -196,12 +196,12 @@ Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
             auto lambda = [&](int thread_id) {
                 if (m_engine.is_spherical()) {
                     three_center_screened_aux_kernel<
-                        qm::OccShell::Kind::Spherical>(
+                        qm::Shell::Kind::Spherical>(
                         f, m_engine.env(), m_engine.aobasis(),
                         m_engine.auxbasis(), m_engine.shellpairs(), thread_id);
                 } else {
                     three_center_screened_aux_kernel<
-                        qm::OccShell::Kind::Cartesian>(
+                        qm::Shell::Kind::Cartesian>(
                         f, m_engine.env(), m_engine.aobasis(),
                         m_engine.auxbasis(), m_engine.shellpairs(), thread_id);
                 }

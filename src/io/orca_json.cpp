@@ -92,7 +92,7 @@ int string_to_l(const std::string &shell_label) {
 }
 
 void OrcaJSONReader::parse(std::istream &stream) {
-    using occ::qm::OccShell;
+    using occ::qm::Shell;
 
     auto j = nlohmann::json::parse(stream);
     const auto &mol = j["Molecule"];
@@ -102,7 +102,7 @@ void OrcaJSONReader::parse(std::istream &stream) {
     m_atomic_numbers = IVec(num_atoms);
     m_atom_labels.resize(num_atoms);
     m_atom_positions = Mat3N(3, num_atoms);
-    std::vector<occ::qm::OccShell> shells;
+    std::vector<occ::qm::Shell> shells;
 
     for (const auto &atom : atoms_json) {
         size_t idx = atom["Idx"];
@@ -129,7 +129,7 @@ void OrcaJSONReader::parse(std::istream &stream) {
             }
 
             int l = string_to_l(shell_kind);
-            shells.emplace_back(OccShell(l, alpha, {coeffs}, pos_array));
+            shells.emplace_back(Shell(l, alpha, {coeffs}, pos_array));
             shells.back().incorporate_shell_norm();
         }
     }

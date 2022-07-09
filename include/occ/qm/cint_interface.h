@@ -1,11 +1,10 @@
 #pragma once
 #include <occ/3rdparty/cint_wrapper.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 
 namespace occ::qm::cint {
 
 using occ::core::Atom;
-using Shell = occ::qm::OccShell;
 
 enum class Operator {
     overlap,

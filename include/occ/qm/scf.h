@@ -10,7 +10,7 @@
 #include <occ/qm/expectation.h>
 #include <occ/qm/guess_density.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/opmatrix.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>

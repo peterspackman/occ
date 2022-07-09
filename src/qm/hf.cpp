@@ -52,7 +52,7 @@ Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
 Mat HartreeFock::compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
                                           const qm::AOBasis &bs,
                                           bool is_shell_diagonal) {
-    using Kind = occ::qm::OccShell::Kind;
+    using Kind = occ::qm::Shell::Kind;
     if (kind == SpinorbitalKind::Restricted) {
         return m_engine.fock_operator_mixed_basis(D_bs, bs, is_shell_diagonal);
     } else if (kind == SpinorbitalKind::Unrestricted) {
@@ -97,19 +97,19 @@ Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
 }
 
 Mat HartreeFock::compute_kinetic_matrix() const {
-    using Kind = occ::qm::OccShell::Kind;
+    using Kind = occ::qm::Shell::Kind;
     using Op = occ::qm::cint::Operator;
     return m_engine.one_electron_operator(Op::kinetic);
 }
 
 Mat HartreeFock::compute_overlap_matrix() const {
-    using Kind = occ::qm::OccShell::Kind;
+    using Kind = occ::qm::Shell::Kind;
     using Op = occ::qm::cint::Operator;
     return m_engine.one_electron_operator(Op::overlap);
 }
 
 Mat HartreeFock::compute_nuclear_attraction_matrix() const {
-    using Kind = occ::qm::OccShell::Kind;
+    using Kind = occ::qm::Shell::Kind;
     using Op = occ::qm::cint::Operator;
     return m_engine.one_electron_operator(Op::nuclear);
 }

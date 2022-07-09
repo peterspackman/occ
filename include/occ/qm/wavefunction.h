@@ -4,7 +4,7 @@
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {

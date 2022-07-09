@@ -6,7 +6,7 @@
 #include <occ/gto/gto.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/spinorbital.h>
 #include <vector>

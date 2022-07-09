@@ -5,7 +5,7 @@
 #include <occ/gto/gto.h>
 #include <occ/io/basis_g94.h>
 #include <occ/qm/cint_interface.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 
 namespace fs = std::filesystem;
 
@@ -104,7 +104,7 @@ void normalize_contracted_gto(int l, const Vec &alpha, Mat &coeffs) {
     coeffs = coeffs * s1.matrix();
 }
 
-OccShell::OccShell(const int ang, const std::vector<double> &expo,
+Shell::Shell(const int ang, const std::vector<double> &expo,
                    const std::vector<std::vector<double>> &contr,
                    const std::array<double, 3> &pos)
     : l(ang), origin() {
@@ -127,7 +127,7 @@ OccShell::OccShell(const int ang, const std::vector<double> &expo,
     origin = {pos[0], pos[1], pos[2]};
 }
 
-OccShell::OccShell(const occ::core::PointCharge &point_charge)
+Shell::Shell(const occ::core::PointCharge &point_charge)
     : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
     constexpr double alpha = 1e16;
     exponents(0) = alpha;
@@ -137,7 +137,7 @@ OccShell::OccShell(const occ::core::PointCharge &point_charge)
               point_charge.second[2]};
 }
 
-OccShell::OccShell()
+Shell::Shell()
     : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
     constexpr double alpha = 1e16;
     exponents(0) = alpha;
@@ -146,24 +146,24 @@ OccShell::OccShell()
     origin = {0, 0, 0};
 }
 
-bool OccShell::operator==(const OccShell &other) const {
+bool Shell::operator==(const Shell &other) const {
     return &other == this ||
            (origin == other.origin && exponents == other.exponents &&
             contraction_coefficients == other.contraction_coefficients);
 }
 
-bool OccShell::operator!=(const OccShell &other) const {
+bool Shell::operator!=(const Shell &other) const {
     return !this->operator==(other);
 }
 
-bool OccShell::operator<(const OccShell &other) const { return l < other.l; }
+bool Shell::operator<(const Shell &other) const { return l < other.l; }
 
-size_t OccShell::num_primitives() const { return exponents.rows(); }
-size_t OccShell::num_contractions() const {
+size_t Shell::num_primitives() const { return exponents.rows(); }
+size_t Shell::num_contractions() const {
     return contraction_coefficients.cols();
 }
 
-double OccShell::norm() const {
+double Shell::norm() const {
     double result = 0.0;
     for (Eigen::Index i = 0; i < contraction_coefficients.rows(); i++) {
         Eigen::Index j;
@@ -180,10 +180,10 @@ double OccShell::norm() const {
     return sqrt(result) * pi2_34;
 }
 
-double OccShell::max_exponent() const { return exponents.maxCoeff(); }
-double OccShell::min_exponent() const { return exponents.minCoeff(); }
+double Shell::max_exponent() const { return exponents.maxCoeff(); }
+double Shell::min_exponent() const { return exponents.minCoeff(); }
 
-void OccShell::incorporate_shell_norm() {
+void Shell::incorporate_shell_norm() {
     for (size_t i = 0; i < num_primitives(); i++) {
         double n = gto_norm(static_cast<int>(l), exponents(i));
         contraction_coefficients.row(i).array() *= n;
@@ -239,7 +239,7 @@ void OccShell::incorporate_shell_norm() {
     */
 }
 
-double OccShell::coeff_normalized(Eigen::Index contr_idx,
+double Shell::coeff_normalized(Eigen::Index contr_idx,
                                   Eigen::Index coeff_idx) const {
     // see NOTE in incorporate_shell_norm
     return contraction_coefficients(coeff_idx, contr_idx) /
@@ -259,7 +259,7 @@ double OccShell::coeff_normalized(Eigen::Index contr_idx,
     */
 }
 
-size_t OccShell::size() const {
+size_t Shell::size() const {
     switch (kind) {
     case Spherical:
         return 2 * l + 1;
@@ -268,7 +268,7 @@ size_t OccShell::size() const {
     }
 }
 
-char OccShell::l_to_symbol(uint_fast8_t l) {
+char Shell::l_to_symbol(uint_fast8_t l) {
     assert(l <= 19);
     static std::array<char, 20> l_symbols = {'s', 'p', 'd', 'f', 'g', 'h', 'i',
                                              'k', 'm', 'n', 'o', 'q', 'r', 't',
@@ -276,7 +276,7 @@ char OccShell::l_to_symbol(uint_fast8_t l) {
     return l_symbols[l];
 }
 
-uint_fast8_t OccShell::symbol_to_l(char symbol) {
+uint_fast8_t Shell::symbol_to_l(char symbol) {
     const char usym = ::toupper(symbol);
     switch (usym) {
     case 'S':
@@ -324,19 +324,19 @@ uint_fast8_t OccShell::symbol_to_l(char symbol) {
     }
 }
 
-char OccShell::symbol() const { return l_to_symbol(l); }
+char Shell::symbol() const { return l_to_symbol(l); }
 
-OccShell OccShell::translated_copy(const Eigen::Vector3d &origin) const {
-    OccShell other = *this;
+Shell Shell::translated_copy(const Eigen::Vector3d &origin) const {
+    Shell other = *this;
     other.origin = origin;
     return other;
 }
 
-size_t OccShell::libcint_environment_size() const {
+size_t Shell::libcint_environment_size() const {
     return exponents.size() + contraction_coefficients.size();
 }
 
-int OccShell::find_atom_index(const std::vector<Atom> &atoms) const {
+int Shell::find_atom_index(const std::vector<Atom> &atoms) const {
     double x = origin(0), y = origin(1), z = origin(2);
     auto same_site = [&x, &y, &z](const Atom &atom) {
         return atom.square_distance(x, y, z) < 1e-6;
@@ -345,10 +345,10 @@ int OccShell::find_atom_index(const std::vector<Atom> &atoms) const {
                          std::find_if(begin(atoms), end(atoms), same_site));
 }
 
-bool OccShell::is_pure() const { return kind == Spherical; }
+bool Shell::is_pure() const { return kind == Spherical; }
 
 AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
-                 const std::vector<OccShell> &shells, const std::string &name)
+                 const std::vector<Shell> &shells, const std::string &name)
     : m_basis_name(name), m_atoms(atoms), m_shells(shells),
       m_shell_to_atom_idx(shells.size()), m_atom_to_shell_idxs(atoms.size()),
       m_bf_to_shell(), m_bf_to_atom() {
@@ -419,7 +419,7 @@ void AOBasis::merge(const AOBasis &rhs) {
     m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);
 }
 
-std::ostream &operator<<(std::ostream &stream, const OccShell &shell) {
+std::ostream &operator<<(std::ostream &stream, const Shell &shell) {
     stream << shell.symbol() << " (" << shell.origin(0) << ","
            << shell.origin(1) << ", " << shell.origin(2) << ")\n";
     stream << "exp   contr\n";
@@ -509,7 +509,7 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
     std::vector<std::string> basis_component_names =
         decompose_name_into_components(canonical_name);
 
-    std::vector<std::vector<std::vector<OccShell>>> component_basis_sets;
+    std::vector<std::vector<std::vector<Shell>>> component_basis_sets;
     component_basis_sets.reserve(basis_component_names.size());
 
     for (const auto &basis_component_name : basis_component_names) {
@@ -518,10 +518,10 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
             g94_filepath = basis_lib_path + "/" + g94_filepath;
         }
         component_basis_sets.emplace_back(
-            occ::io::basis::g94::read_occshell(g94_filepath));
+            occ::io::basis::g94::read_shell(g94_filepath));
     }
 
-    std::vector<OccShell> shells;
+    std::vector<Shell> shells;
 
     for (size_t a = 0; a < atoms.size(); ++a) {
         const std::size_t Z = atoms[a].atomic_number;

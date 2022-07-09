@@ -258,7 +258,7 @@ std::vector<occ::core::Atom> FchkReader::atoms() const {
 
 occ::qm::AOBasis FchkReader::basis_set() const {
     size_t num_shells = m_basis.num_shells;
-    std::vector<occ::qm::OccShell> bs;
+    std::vector<occ::qm::Shell> bs;
     size_t primitive_offset{0};
     constexpr int SP_SHELL{-1};
     bool any_pure = !(m_cartesian_d && m_cartesian_f);
@@ -269,9 +269,9 @@ occ::qm::AOBasis FchkReader::basis_set() const {
         int shell_type = m_basis.shell_types[i];
         int l = std::abs(shell_type);
         // normally shell type < -1 will be pure
-        occ::qm::OccShell::Kind shell_kind =
-            any_pure ? occ::qm::OccShell::Kind::Spherical
-                     : occ::qm::OccShell::Kind::Cartesian;
+        occ::qm::Shell::Kind shell_kind =
+            any_pure ? occ::qm::Shell::Kind::Spherical
+                     : occ::qm::Shell::Kind::Cartesian;
 
         size_t nprim = m_basis.primitives_per_shell[i];
         std::array<double, 3> position{
@@ -294,11 +294,11 @@ occ::qm::AOBasis FchkReader::basis_set() const {
                         .sp_contraction_coefficients[primitive_offset + prim]);
             }
             // sp shell
-            bs.emplace_back(occ::qm::OccShell(0, alpha, {coeffs}, position));
+            bs.emplace_back(occ::qm::Shell(0, alpha, {coeffs}, position));
             bs.back().kind = shell_kind;
             bs.back().incorporate_shell_norm();
             bs.emplace_back(
-                occ::qm::OccShell(1, std::move(alpha), {pcoeffs}, position));
+                occ::qm::Shell(1, std::move(alpha), {pcoeffs}, position));
             bs.back().kind = shell_kind;
             bs.back().incorporate_shell_norm();
         } else {
@@ -310,7 +310,7 @@ occ::qm::AOBasis FchkReader::basis_set() const {
                 coeffs.emplace_back(
                     m_basis.contraction_coefficients[primitive_offset + prim]);
             }
-            bs.emplace_back(occ::qm::OccShell(l, alpha, {coeffs}, position));
+            bs.emplace_back(occ::qm::Shell(l, alpha, {coeffs}, position));
             bs.back().kind = shell_kind;
             bs.back().incorporate_shell_norm();
         }

@@ -1,11 +1,11 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/timings.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {
 
-template <SpinorbitalKind sk, OccShell::Kind kind>
+template <SpinorbitalKind sk, Shell::Kind kind>
 inline Mat shellblock_norm(const AOBasis &basis, const Mat &matrix) noexcept {
     occ::timing::start(occ::timing::category::la);
     const auto nsh = basis.size();

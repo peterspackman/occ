@@ -7,7 +7,7 @@
 #include <occ/core/units.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/solvent/cosmo.h>
 #include <occ/solvent/parameters.h>
 

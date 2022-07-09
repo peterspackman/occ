@@ -11,7 +11,7 @@
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/hf.h>
-#include <occ/qm/occshell.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/scf.h>
 #include <vector>
 

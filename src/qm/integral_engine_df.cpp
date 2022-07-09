@@ -4,9 +4,9 @@
 namespace occ::qm {
 
 using ShellPairList = std::vector<std::vector<size_t>>;
-using ShellList = std::vector<OccShell>;
+using ShellList = std::vector<Shell>;
 using AtomList = std::vector<occ::core::Atom>;
-using ShellKind = OccShell::Kind;
+using ShellKind = Shell::Kind;
 using Op = cint::Operator;
 using IntegralResult = IntegralEngine::IntegralResult<3>;
 

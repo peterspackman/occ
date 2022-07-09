@@ -236,11 +236,11 @@ void delegate_j(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
 
 } // namespace impl
 
-using ShellList = std::vector<OccShell>;
+using ShellList = std::vector<Shell>;
 using AtomList = std::vector<occ::core::Atom>;
 using ShellPairList = std::vector<std::vector<size_t>>;
 using IntEnv = cint::IntegralEnvironment;
-using ShellKind = OccShell::Kind;
+using ShellKind = Shell::Kind;
 using Op = cint::Operator;
 
 size_t buffer_size_1e(const AOBasis &basis, Op op = Op::overlap) {
@@ -1455,7 +1455,7 @@ Mat IntegralEngine::point_charge_potential(
     ShellList dummy_shells;
     dummy_shells.reserve(charges.size());
     for (size_t i = 0; i < charges.size(); i++) {
-        dummy_shells.push_back(OccShell(charges[i]));
+        dummy_shells.push_back(Shell(charges[i]));
     }
     set_auxiliary_basis(dummy_shells, true);
     if (is_spherical()) {
@@ -1536,7 +1536,7 @@ Vec IntegralEngine::electric_potential(const MolecularOrbitals &mo,
     dummy_shells.reserve(points.cols());
     for (size_t i = 0; i < points.cols(); i++) {
         dummy_shells.push_back(
-            OccShell({1.0, {points(0, i), points(1, i), points(2, i)}}));
+            Shell({1.0, {points(0, i), points(1, i), points(2, i)}}));
     }
     set_auxiliary_basis(dummy_shells, true);
     if (is_spherical()) {
