@@ -2,7 +2,7 @@
 #include <occ/3rdparty/nanoflann.hpp>
 #include <occ/core/linear_algebra.h>
 
-namespace cx {
+namespace occ::core {
 
 template <typename NumericType>
 using KDTree = nanoflann::KDTreeEigenMatrixAdaptor<
@@ -11,4 +11,4 @@ using KDTree = nanoflann::KDTreeEigenMatrixAdaptor<
 
 constexpr size_t max_leaf = 10;
 
-} // namespace cx
+} // namespace occ::core

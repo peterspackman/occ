@@ -6,7 +6,9 @@
 #include <occ/core/molecule.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
+#include <occ/interaction/coulomb.h>
 #include <occ/interaction/pairinteraction.h>
+#include <occ/interaction/wolf.h>
 #include <occ/main/pair_energy.h>
 #include <optional>
 #include <scn/scn.h>
@@ -148,14 +150,11 @@ CEEnergyComponents ce_model_energy(const Dimer &dimer,
     occ::Mat3N pos_A = mol_A.positions();
     occ::Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
 
-    assert(occ::util::all_close(pos_A, pos_A_t, 1e-5, 1e-5));
-
     auto transform_b = calculate_transform(wfnb, mol_B, crystal);
     B.apply_transformation(transform_b.first, transform_b.second);
 
-    const auto &pos_B = mol_B.positions();
-    const auto pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
-    assert(occ::util::all_close(pos_A, pos_A_t, 1e-5, 1e-5));
+    Mat3N pos_B = mol_B.positions();
+    Mat3N pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
 
     auto model = occ::interaction::ce_model_from_string(model_name);
 
@@ -163,7 +162,37 @@ CEEnergyComponents ce_model_energy(const Dimer &dimer,
 
     auto interaction_energy = interaction(A, B);
     interaction_energy.is_computed = true;
+    fmt::print("Finished model energy\n");
     return interaction_energy;
+}
+
+int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
+                                    const Vec &asym_charges, double radius,
+                                    std::vector<double> &charge_energies) {
+    occ::timing::StopWatch sw;
+    if (charge_energies.size() < dimers.size()) {
+        charge_energies.resize(dimers.size());
+    }
+
+    size_t current_dimer{0};
+    size_t computed_dimers{0};
+    for (const auto &dimer : dimers) {
+        if (dimer.nearest_distance() > radius) {
+            current_dimer++;
+            continue;
+        }
+        auto tprev = sw.read();
+        sw.start();
+        const auto asym_idx_a = dimer.a().asymmetric_molecule_idx();
+        const auto asym_idx_b = dimer.b().asymmetric_molecule_idx();
+
+        charge_energies[current_dimer] =
+            occ::interaction::coulomb_interaction_energy_asym_charges(
+                dimer, asym_charges);
+    }
+    occ::log::info("Finished calculating {} unique dimer coulomb energies",
+                   computed_dimers);
+    return computed_dimers;
 }
 
 int compute_ce_model_energies_radius(
@@ -176,6 +205,7 @@ int compute_ce_model_energies_radius(
     if (dimer_energies.size() < dimers.size()) {
         dimer_energies.resize(dimers.size());
     }
+
     size_t current_dimer{0};
     size_t computed_dimers{0};
     for (const auto &dimer : dimers) {
@@ -254,10 +284,25 @@ converged_lattice_energies(const Crystal &crystal,
 
     crystal::CrystalDimers converged_dimers;
     std::vector<CEEnergyComponents> converged_energies;
+    std::vector<double> charge_energies;
     double lattice_energy{0.0}, previous_lattice_energy{0.0};
     double current_radius = std::max(conv.radius_increment, conv.min_radius);
     size_t cycle{1};
+
     auto all_dimers = crystal.symmetry_unique_dimers(conv.max_radius);
+    auto asym_mols = crystal.symmetry_unique_molecules();
+
+    Vec asym_charges(crystal.asymmetric_unit().size());
+    std::vector<Vec> charges(wfns_a.size());
+    std::vector<double> charge_self_energies(wfns_a.size());
+    for (int i = 0; i < wfns_a.size(); i++) {
+        charges[i] = wfns_a[i].mulliken_charges();
+        fmt::print("Charges {}\n{}\nSelf energy {}\n", i, charges[i],
+                   charge_self_energies[i] * units::AU_TO_KJ_PER_MOL);
+        for (int j = 0; j < charges[i].rows(); j++) {
+            asym_charges(asym_mols[i].asymmetric_unit_idx()(j)) = charges[i](j);
+        }
+    }
     fmt::print("Found {} symmetry unique dimers within max radius {:.3f}\n",
                all_dimers.unique_dimers.size(), conv.max_radius);
     fmt::print("Lattice convergence settings:\n");
@@ -265,33 +310,84 @@ converged_lattice_energies(const Crystal &crystal,
     fmt::print("Max radius         {: 8.4f} \u212b\n", conv.max_radius);
     fmt::print("Radius increment   {: 8.4f} \u212b\n", conv.radius_increment);
     fmt::print("Energy tolerance   {: 8.4f} kJ/mol\n", conv.energy_tolerance);
+
+    double wolf_energy = 0.0;
+    int asym_idx = 0;
+    auto surrounds = crystal.asymmetric_unit_atom_surroundings(conv.max_radius);
+    auto wolf_params =
+        occ::interaction::WolfParams{std::max(conv.max_radius, 16.0), 0.2};
+    Mat3N asym_cart = crystal.to_cartesian(crystal.asymmetric_unit().positions);
+    for (const auto &s : surrounds) {
+        double qi = asym_charges(asym_idx);
+        Vec3 pi = asym_cart.col(asym_idx);
+        Vec qj(s.size());
+        for (int j = 0; j < qj.rows(); j++) {
+            qj(j) = asym_charges(s.asym_idx(j));
+        }
+        wolf_energy += occ::interaction::wolf_coulomb_energy(
+                           qi, pi, qj, s.cart_pos, wolf_params) *
+                       units::AU_TO_KJ_PER_MOL;
+        asym_idx++;
+    }
+    for (int i = 0; i < asym_mols.size(); i++) {
+        charge_self_energies[i] =
+            occ::interaction::coulomb_self_energy_asym_charges(asym_mols[i],
+                                                               asym_charges);
+    }
+
+    fmt::print("Wolf energy ({} asymmetric atoms): {}\n", asym_idx,
+               wolf_energy);
+
+    size_t natoms_in_mols = std::accumulate(
+        wfns_a.begin(), wfns_a.end(), 0,
+        [](size_t a, const auto &wfn) { return a + wfn.atoms.size(); });
+
+    wolf_energy *= (1.0 * natoms_in_mols) / asym_idx;
+    fmt::print("Wolf energy ({} atoms in unique mols): {}\n", natoms_in_mols,
+               wolf_energy);
     do {
         previous_lattice_energy = lattice_energy;
         const auto &dimers = all_dimers.unique_dimers;
         compute_ce_model_energies_radius(crystal, dimers, wfns_a, wfns_b,
                                          basename, current_radius,
                                          converged_energies);
+        compute_coulomb_energies_radius(dimers, asym_charges, current_radius,
+                                        charge_energies);
+
         const auto &mol_neighbors = all_dimers.molecule_neighbors;
         double etot{0.0};
         size_t mol_idx{0};
+        double ecoul_real{0};
+        double ecoul_exact_real{0};
+        double ecoul_self{0};
         for (const auto &n : mol_neighbors) {
             double molecule_total{0.0};
             size_t dimer_idx{0};
             for (const auto &dimer : n) {
-                const auto &e =
-                    converged_energies[all_dimers.unique_dimer_idx[mol_idx]
-                                                                  [dimer_idx]];
+                int unique_idx =
+                    all_dimers.unique_dimer_idx[mol_idx][dimer_idx];
+                const auto &e = converged_energies[unique_idx];
+                double e_charge = charge_energies[unique_idx];
 
                 if (e.is_computed) {
                     molecule_total += e.total_kjmol();
+                    ecoul_exact_real += 0.5 * e.coulomb_kjmol();
+                    ecoul_real += 0.5 * e_charge * occ::units::AU_TO_KJ_PER_MOL;
                 }
                 dimer_idx++;
             }
             etot += molecule_total;
+            ecoul_self +=
+                charge_self_energies[mol_idx] * units::AU_TO_KJ_PER_MOL;
             mol_idx++;
         }
         lattice_energy = 0.5 * etot;
         fmt::print("Cycle {} lattice energy: {}\n", cycle, lattice_energy);
+        fmt::print("Coulomb self: {}\n", ecoul_self);
+        fmt::print("Coul real: {}\n", ecoul_real);
+        fmt::print("Wolf: {}\n", wolf_energy);
+        fmt::print("Coulomb (exact) real: {}\n", ecoul_exact_real);
+        fmt::print("Wolf - self: {}\n", wolf_energy - ecoul_self);
         cycle++;
         current_radius += conv.radius_increment;
     } while (std::abs(lattice_energy - previous_lattice_energy) >

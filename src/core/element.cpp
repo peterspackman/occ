@@ -25,7 +25,6 @@ Element::Element(const std::string &s, bool exact_match)
             }
             if (symbol.size() == dat.symbol.size())
                 return;
-            fmt::print("match length {}\n", match_length);
         }
     }
 }

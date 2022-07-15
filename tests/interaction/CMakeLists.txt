@@ -5,3 +5,5 @@ target_link_libraries(${test_name} occ_interaction)
 target_include_directories(${test_name} PRIVATE ${TEST_INCLUDE_DIR})
 add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
+
+create_interaction_test(interaction_tests.cpp)

@@ -55,7 +55,7 @@ std::string AsymmetricUnit::chemical_formula() const {
 }
 
 // Atom Slab
-const AtomSlab &Crystal::unit_cell_atoms() const {
+const CrystalAtomRegion &Crystal::unit_cell_atoms() const {
     if (m_unit_cell_atoms_needs_update)
         update_unit_cell_atoms();
     return m_unit_cell_atoms;
@@ -72,7 +72,7 @@ void Crystal::update_unit_cell_atoms() const {
         m_asymmetric_unit.occupations.replicate(nsymops, 1);
     Eigen::VectorXi uc_nums = atoms.replicate(nsymops, 1);
     Eigen::VectorXi asym_idx =
-        Eigen::VectorXi::LinSpaced(natom, 0, natom).replicate(nsymops, 1);
+        Eigen::VectorXi::LinSpaced(natom, 0, natom - 1).replicate(nsymops, 1);
     Eigen::VectorXi sym;
     Eigen::Matrix3Xd uc_pos;
     std::tie(sym, uc_pos) = m_space_group.apply_all_symmetry_operations(pos);
@@ -104,18 +104,18 @@ void Crystal::update_unit_cell_atoms() const {
             n++;
         }
     }
-    m_unit_cell_atoms = AtomSlab{
+    m_unit_cell_atoms = CrystalAtomRegion{
         uc_pos_masked, m_unit_cell.to_cartesian(uc_pos_masked),
         idxs.unaryExpr(asym_idx), idxs.unaryExpr(uc_nums), idxs.unaryExpr(sym)};
     m_unit_cell_atoms_needs_update = false;
 }
 
-AtomSlab Crystal::slab(const HKL &lower, const HKL &upper) const {
+CrystalAtomRegion Crystal::slab(const HKL &lower, const HKL &upper) const {
     int ncells = (upper.h - lower.h + 1) * (upper.k - lower.k + 1) *
                  (upper.l - lower.l + 1);
-    const AtomSlab &uc_atoms = unit_cell_atoms();
+    const CrystalAtomRegion &uc_atoms = unit_cell_atoms();
     const size_t n_uc = uc_atoms.size();
-    AtomSlab result;
+    CrystalAtomRegion result;
     const int rows = uc_atoms.frac_pos.rows();
     const int cols = uc_atoms.frac_pos.cols();
     result.frac_pos.resize(3, ncells * n_uc);
@@ -142,6 +142,130 @@ AtomSlab Crystal::slab(const HKL &lower, const HKL &upper) const {
     return result;
 }
 
+CrystalAtomRegion Crystal::atom_surroundings(int asym_idx,
+                                             double radius) const {
+    // TODO streamline this code with the full asymmetric unit equivalent
+    HKL upper = HKL::minimum();
+    HKL lower = HKL::maximum();
+    occ::Vec3 frac_radius = (radius + 1.0) / m_unit_cell.lengths().array();
+
+    for (size_t i = 0; i < m_asymmetric_unit.positions.cols(); i++) {
+        const auto &pos = m_asymmetric_unit.positions.col(i);
+        upper.h =
+            std::max(upper.h, static_cast<int>(ceil(pos(0) + frac_radius(0))));
+        upper.k =
+            std::max(upper.k, static_cast<int>(ceil(pos(1) + frac_radius(1))));
+        upper.l =
+            std::max(upper.l, static_cast<int>(ceil(pos(2) + frac_radius(2))));
+
+        lower.h =
+            std::min(lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
+        lower.k =
+            std::min(lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
+        lower.l =
+            std::min(lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
+    }
+
+    fmt::print("Slab size: ({} {} {}), ({} {} {})\n", lower.h, lower.k, lower.l,
+               upper.h, upper.k, upper.l);
+    auto atom_slab = slab(lower, upper);
+    occ::core::KDTree<double> tree(atom_slab.cart_pos.rows(),
+                                   atom_slab.cart_pos, occ::core::max_leaf);
+    tree.index->buildIndex();
+    fmt::print("Index built\n");
+
+    std::vector<std::pair<Eigen::Index, double>> idxs_dists;
+    nanoflann::RadiusResultSet results(radius * radius, idxs_dists);
+
+    Mat3N asym_cart_pos = to_cartesian(m_asymmetric_unit.positions);
+
+    double *q = asym_cart_pos.col(asym_idx).data();
+    tree.index->findNeighbors(results, q, nanoflann::SearchParams());
+
+    CrystalAtomRegion result;
+    if (idxs_dists.size() < 1)
+        return result;
+    result.resize(idxs_dists.size()); // -1 for the self
+    fmt::print("Found {} neighbours out of {}\n", idxs_dists.size(),
+               atom_slab.cart_pos.cols());
+
+    int result_idx = 0;
+    for (const auto &[idx, d] : idxs_dists) {
+        if (d < 1e-3) {
+            fmt::print("Skipping self\n");
+            continue;
+        }
+        result.frac_pos.col(result_idx) = atom_slab.frac_pos.col(idx);
+        result.atomic_numbers(result_idx) = atom_slab.atomic_numbers(idx);
+        result.asym_idx(result_idx) = atom_slab.asym_idx(idx);
+        result.cart_pos.col(result_idx) = atom_slab.cart_pos.col(idx);
+        result.symop(result_idx) = atom_slab.symop(idx);
+        result_idx++;
+    }
+    fmt::print("Stored {} neighbours\n", result_idx);
+    result.resize(result_idx);
+    return result;
+}
+
+std::vector<CrystalAtomRegion>
+Crystal::asymmetric_unit_atom_surroundings(double radius) const {
+
+    HKL upper = HKL::minimum();
+    HKL lower = HKL::maximum();
+    occ::Vec3 frac_radius = radius * 2 / m_unit_cell.lengths().array();
+
+    for (size_t i = 0; i < m_asymmetric_unit.positions.cols(); i++) {
+        const auto &pos = m_asymmetric_unit.positions.col(i);
+        upper.h =
+            std::max(upper.h, static_cast<int>(ceil(pos(0) + frac_radius(0))));
+        upper.k =
+            std::max(upper.k, static_cast<int>(ceil(pos(1) + frac_radius(1))));
+        upper.l =
+            std::max(upper.l, static_cast<int>(ceil(pos(2) + frac_radius(2))));
+
+        lower.h =
+            std::min(lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
+        lower.k =
+            std::min(lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
+        lower.l =
+            std::min(lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
+    }
+    auto atom_slab = slab(lower, upper);
+    occ::core::KDTree<double> tree(atom_slab.cart_pos.rows(),
+                                   atom_slab.cart_pos, occ::core::max_leaf);
+    tree.index->buildIndex();
+
+    std::vector<std::pair<Eigen::Index, double>> idxs_dists;
+    nanoflann::RadiusResultSet results(radius * radius, idxs_dists);
+
+    Mat3N asym_cart_pos = to_cartesian(m_asymmetric_unit.positions);
+
+    std::vector<CrystalAtomRegion> regions;
+    for (int asym_idx = 0; asym_idx < num_sites(); asym_idx++) {
+
+        double *q = asym_cart_pos.col(asym_idx).data();
+        tree.index->findNeighbors(results, q, nanoflann::SearchParams());
+        regions.push_back(CrystalAtomRegion{});
+        auto &reg = regions.back();
+        reg.resize(idxs_dists.size() - 1); // -1 for the self
+
+        int result_idx = 0;
+        for (const auto &[idx, d] : idxs_dists) {
+            if (d < 1e-3)
+                continue;
+            reg.frac_pos.col(result_idx) = atom_slab.frac_pos.col(idx);
+            reg.atomic_numbers(result_idx) = atom_slab.atomic_numbers(idx);
+            reg.asym_idx(result_idx) = atom_slab.asym_idx(idx);
+            reg.cart_pos.col(result_idx) = atom_slab.cart_pos.col(idx);
+            reg.symop(result_idx) = atom_slab.symop(idx);
+            result_idx++;
+        }
+        reg.resize(result_idx);
+        results.clear();
+    }
+    return regions;
+}
+
 Crystal::Crystal(const AsymmetricUnit &asym, const SpaceGroup &sg,
                  const UnitCell &uc)
     : m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc) {}
@@ -159,8 +283,8 @@ void Crystal::update_unit_cell_connectivity() const {
     occ::Mat3N cart_uc_pos = s.cart_pos.block(0, 0, 3, n_uc);
     occ::Mat3N cart_neighbor_pos =
         s.cart_pos.block(0, n_uc, 3, s.cart_pos.cols() - n_uc);
-    cx::KDTree<double> tree(cart_neighbor_pos.rows(), cart_neighbor_pos,
-                            cx::max_leaf);
+    occ::core::KDTree<double> tree(cart_neighbor_pos.rows(), cart_neighbor_pos,
+                                   occ::core::max_leaf);
     tree.index->buildIndex();
     auto covalent_radii = m_asymmetric_unit.covalent_radii();
     double max_cov = covalent_radii.maxCoeff();
@@ -390,10 +514,8 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
     auto &dimers = result.unique_dimers;
     auto &mol_nbs = result.molecule_neighbors;
 
-    HKL upper{std::numeric_limits<int>::min(), std::numeric_limits<int>::min(),
-              std::numeric_limits<int>::min()};
-    HKL lower{std::numeric_limits<int>::max(), std::numeric_limits<int>::max(),
-              std::numeric_limits<int>::max()};
+    HKL upper = HKL::minimum();
+    HKL lower = HKL::maximum();
     occ::Vec3 frac_radius = radius * 2 / m_unit_cell.lengths().array();
 
     for (size_t i = 0; i < m_asymmetric_unit.size(); i++) {
@@ -470,10 +592,8 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
     auto &dimers = result.unique_dimers;
     auto &mol_nbs = result.molecule_neighbors;
 
-    HKL upper{std::numeric_limits<int>::min(), std::numeric_limits<int>::min(),
-              std::numeric_limits<int>::min()};
-    HKL lower{std::numeric_limits<int>::max(), std::numeric_limits<int>::max(),
-              std::numeric_limits<int>::max()};
+    HKL upper = HKL::minimum();
+    HKL lower = HKL::maximum();
     occ::Vec3 frac_radius = radius * 2 / m_unit_cell.lengths().array();
 
     const auto &uc_mols = unit_cell_molecules();

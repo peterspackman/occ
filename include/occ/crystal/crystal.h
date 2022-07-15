@@ -16,9 +16,19 @@ using occ::graph::PeriodicBondGraph;
 
 struct HKL {
     int h{0}, k{0}, l{0};
+    static HKL maximum() {
+        return {std::numeric_limits<int>::max(),
+                std::numeric_limits<int>::max(),
+                std::numeric_limits<int>::max()};
+    }
+    static HKL minimum() {
+        return {std::numeric_limits<int>::min(),
+                std::numeric_limits<int>::min(),
+                std::numeric_limits<int>::min()};
+    }
 };
 
-struct AtomSlab {
+struct CrystalAtomRegion {
     Mat3N frac_pos;
     Mat3N cart_pos;
     IVec asym_idx;
@@ -79,8 +89,12 @@ class Crystal {
     const AsymmetricUnit &asymmetric_unit() const { return m_asymmetric_unit; }
     AsymmetricUnit &asymmetric_unit() { return m_asymmetric_unit; }
     const UnitCell &unit_cell() const { return m_unit_cell; }
-    AtomSlab slab(const HKL &, const HKL &) const;
-    const AtomSlab &unit_cell_atoms() const;
+    CrystalAtomRegion slab(const HKL &, const HKL &) const;
+    const CrystalAtomRegion &unit_cell_atoms() const;
+    CrystalAtomRegion atom_surroundings(int asym_idx = 0,
+                                        double radius = 6.0) const;
+    std::vector<CrystalAtomRegion>
+    asymmetric_unit_atom_surroundings(double radius) const;
     const PeriodicBondGraph &unit_cell_connectivity() const;
     const std::vector<Molecule> &unit_cell_molecules() const;
     const std::vector<Molecule> &symmetry_unique_molecules() const;
@@ -102,7 +116,7 @@ class Crystal {
 
     mutable std::vector<PeriodicBondGraph::vertex_t> m_bond_graph_vertices;
     mutable PeriodicBondGraph m_bond_graph;
-    mutable AtomSlab m_unit_cell_atoms;
+    mutable CrystalAtomRegion m_unit_cell_atoms;
     mutable bool m_symmetry_unique_molecules_needs_update{true};
     mutable bool m_unit_cell_atoms_needs_update{true};
     mutable bool m_unit_cell_molecules_needs_update{true};

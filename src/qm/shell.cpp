@@ -105,8 +105,8 @@ void normalize_contracted_gto(int l, const Vec &alpha, Mat &coeffs) {
 }
 
 Shell::Shell(const int ang, const std::vector<double> &expo,
-                   const std::vector<std::vector<double>> &contr,
-                   const std::array<double, 3> &pos)
+             const std::vector<std::vector<double>> &contr,
+             const std::array<double, 3> &pos)
     : l(ang), origin() {
     size_t nprim = expo.size();
     size_t ncont = contr.size();
@@ -137,8 +137,7 @@ Shell::Shell(const occ::core::PointCharge &point_charge)
               point_charge.second[2]};
 }
 
-Shell::Shell()
-    : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
+Shell::Shell() : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
     constexpr double alpha = 1e16;
     exponents(0) = alpha;
     contraction_coefficients(0, 0) =
@@ -240,7 +239,7 @@ void Shell::incorporate_shell_norm() {
 }
 
 double Shell::coeff_normalized(Eigen::Index contr_idx,
-                                  Eigen::Index coeff_idx) const {
+                               Eigen::Index coeff_idx) const {
     // see NOTE in incorporate_shell_norm
     return contraction_coefficients(coeff_idx, contr_idx) /
            gto_norm(static_cast<int>(l), exponents(coeff_idx));
@@ -399,6 +398,7 @@ void AOBasis::merge(const AOBasis &rhs) {
                          rhs.m_bf_to_shell.end());
     m_bf_to_atom.insert(m_bf_to_atom.end(), rhs.m_bf_to_atom.begin(),
                         rhs.m_bf_to_atom.end());
+    m_atoms.insert(m_atoms.begin(), rhs.m_atoms.begin(), rhs.m_atoms.end());
 
     // apply offsets
     for (size_t i = shell_offset; i < m_shell_to_atom_idx.size(); i++) {

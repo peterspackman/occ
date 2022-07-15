@@ -228,14 +228,12 @@ void FchkReader::parse(std::istream &stream) {
         case PureCartesianD: {
             auto result =
                 scn::scan(line, "Pure/Cartesian d shells I {}", count);
-            fmt::print("READ {}\n", count);
             m_cartesian_d = (count == 1);
             break;
         }
         case PureCartesianF: {
             auto result =
                 scn::scan(line, "Pure/Cartesian f shells I {}", count);
-            fmt::print("READ {}\n", count);
             m_cartesian_f = (count == 1);
             break;
         }
@@ -269,9 +267,9 @@ occ::qm::AOBasis FchkReader::basis_set() const {
         int shell_type = m_basis.shell_types[i];
         int l = std::abs(shell_type);
         // normally shell type < -1 will be pure
-        occ::qm::Shell::Kind shell_kind =
-            any_pure ? occ::qm::Shell::Kind::Spherical
-                     : occ::qm::Shell::Kind::Cartesian;
+        occ::qm::Shell::Kind shell_kind = any_pure
+                                              ? occ::qm::Shell::Kind::Spherical
+                                              : occ::qm::Shell::Kind::Cartesian;
 
         size_t nprim = m_basis.primitives_per_shell[i];
         std::array<double, 3> position{
