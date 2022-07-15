@@ -141,6 +141,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
     inline const auto &aobasis() const { return m_proc.aobasis(); }
     inline auto nbf() const { return m_proc.nbf(); }
 
+    inline Vec3 center_of_mass() const { return m_proc.center_of_mass(); }
+
     void set_system_charge(int charge) { m_proc.set_system_charge(charge); }
     int system_charge() const { return m_proc.system_charge(); }
     int num_e() const { return m_proc.num_e(); }

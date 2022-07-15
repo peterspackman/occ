@@ -92,11 +92,6 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
         scf.start_incremental_F_threshold = 0.0;
 
     double e = scf.compute_scf_energy();
-    auto mult = scf.m_procedure.template compute_multipoles<4>(scf.mo);
-
-    fmt::print(
-        "\nmultipole moments (origin [0, 0, 0])\n-------------------\n{}\n",
-        mult);
     return scf.wavefunction();
 }
 

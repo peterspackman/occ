@@ -1,7 +1,14 @@
+#include <occ/core/molecule.h>
 #include <occ/core/parallel.h>
+#include <occ/core/units.h>
 #include <occ/qm/hf.h>
 
 namespace occ::hf {
+
+Vec3 HartreeFock::center_of_mass() const {
+    auto mol = occ::core::Molecule(m_atoms);
+    return mol.center_of_mass() * occ::units::ANGSTROM_TO_BOHR;
+}
 
 void HartreeFock::set_system_charge(int charge) {
     m_num_e += m_charge;

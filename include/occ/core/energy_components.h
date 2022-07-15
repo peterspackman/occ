@@ -29,14 +29,14 @@ template <> struct fmt::formatter<occ::core::EnergyComponents> {
     template <typename FormatContext>
     auto format(const occ::core::EnergyComponents &e, FormatContext &ctx) {
         auto fmt_string = fmt::format("{{:32s}} {{:20.12{}}}\n", presentation);
-        std::string result =
-            fmt::format("{:32s} {:>20s}\n\n", "Component", "Energy (Hartree)");
+        std::string result = fmt::format("\n{:32s} {:>20s}\n\n", "Component",
+                                         "Energy (Hartree)");
 
         robin_hood::unordered_map<std::string, bool> printed;
 
         auto cats = e.categories();
         for (const auto &c : cats) {
-            result += fmt::format("{}\n-------------------\n", c);
+            result += fmt::format("{:—<72s}\n", c + "  ");
             for (const auto &component : e) {
                 if (printed[component.first])
                     continue;
@@ -47,9 +47,9 @@ template <> struct fmt::formatter<occ::core::EnergyComponents> {
                     printed[component.first] = true;
                 }
             }
-            result += '\n';
         }
 
+        result += fmt::format("\n\n");
         for (const auto &component : e) {
             if (!printed[component.first])
                 result +=

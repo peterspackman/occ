@@ -7,10 +7,10 @@ namespace occ::interaction {
 double coulomb_energy(Eigen::Ref<const Vec> charges,
                       Eigen::Ref<const Mat3N> positions);
 
-double coulomb_pair_energy(Eigen::Ref<const Vec> charges_a,
-                           Eigen::Ref<const Mat3N> positions_a,
-                           Eigen::Ref<const Vec> charges_b,
-                           Eigen::Ref<const Mat3N> positions_b);
+double coulomb_pair_(Eigen::Ref<const Vec> charges_a,
+                     Eigen::Ref<const Mat3N> positions_a,
+                     Eigen::Ref<const Vec> charges_b,
+                     Eigen::Ref<const Mat3N> positions_b);
 
 double
 coulomb_interaction_energy_asym_charges(const occ::core::Dimer &,

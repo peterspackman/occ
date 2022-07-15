@@ -28,6 +28,8 @@ class HartreeFock {
     int system_charge() const { return m_charge; }
     int num_e() const { return m_num_e; }
 
+    Vec3 center_of_mass() const;
+
     double two_electron_energy_alpha() const { return m_e_alpha; }
     double two_electron_energy_beta() const { return m_e_beta; }
     double two_electron_energy() const { return m_e_alpha + m_e_beta; }

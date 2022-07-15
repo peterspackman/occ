@@ -1,5 +1,6 @@
 add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/cdiis.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/chelpg.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cint_interface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ediis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"

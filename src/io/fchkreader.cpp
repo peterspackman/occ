@@ -260,8 +260,6 @@ occ::qm::AOBasis FchkReader::basis_set() const {
     size_t primitive_offset{0};
     constexpr int SP_SHELL{-1};
     bool any_pure = !(m_cartesian_d && m_cartesian_f);
-    fmt::print("CART D: {}\n", m_cartesian_d);
-    fmt::print("CART F: {}\n", m_cartesian_f);
     for (size_t i = 0; i < num_shells; i++) {
         // shell types: 0=s, 1=p, -1=sp, 2=6d, -2=5d, 3=10f, -3=7f
         int shell_type = m_basis.shell_types[i];
