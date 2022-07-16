@@ -18,17 +18,15 @@ using occ::qm::Wavefunction;
 using occ::scf::SCF;
 
 void print_matrix_xyz(const Mat &m) {
-    static const char dims[] = {'x', 'y', 'z'};
-    fmt::print("\n    {:^12c} {:^12c} {:^12c}\n", dims[0], dims[1], dims[2]);
     for (size_t i = 0; i < 3; i++) {
-        fmt::print("{:<3c} {: 12.7f} {: 12.7f} {: 12.7f}\n", dims[i], m(i, 0),
+        fmt::print("{: 12.6f} {: 12.6f} {: 12.6f}\n", m(i, 0),
                    m(i, 1), m(i, 2));
     }
     fmt::print("\n");
 }
 
 void print_vector(const Vec3 &m) {
-    fmt::print("{: 12.7f} {: 12.7f} {: 12.7f}\n\n", m(0), m(1), m(2));
+    fmt::print("{: 12.6f} {: 12.6f} {: 12.6f}\n", m(0), m(1), m(2));
 }
 
 occ::qm::AOBasis load_basis_set(const Molecule &m, const std::string &name,
@@ -43,32 +41,40 @@ occ::qm::AOBasis load_basis_set(const Molecule &m, const std::string &name,
 }
 
 void print_configuration(const Molecule &m, const OccInput &config) {
-    fmt::print("input geometry ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-               config.filename, "sym", "x", "y", "z");
+    fmt::print("\n{:=^72s}\n\n", "  Input  ");
+
+    fmt::print("{: <20s} {: >20s}\n", "Method string", config.method.name);
+    fmt::print("{: <20s} {: >20s}\n", "Basis name", config.basis.name);
+    fmt::print("{: <20s} {: >20s}\n", "Shell kind",
+               config.basis.spherical ? "spherical" : "Cartesian");
+    fmt::print("{: <20s} {: >20d}\n", "Net charge", static_cast<int>(config.electronic.charge));
+    fmt::print("{: <20s} {: >20d}\n", "Multiplicity", config.electronic.multiplicity);
+
+    fmt::print("\n{:—<72s}\n\n", fmt::format("Geometry '{}' (au)  ", config.filename));
     for (const auto &atom : m.atoms()) {
-        fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
+        fmt::print("{:^3s} {:12.6f} {:12.6f} {:12.6f}\n",
                    Element(atom.atomic_number).symbol(), atom.x, atom.y,
                    atom.z);
     }
     fmt::print("\n");
 
-    fmt::print("input method string: '{}'\n", config.method.name);
-    fmt::print("input basis name: '{}'\n", config.basis.name);
-    fmt::print("input shell kind: '{}'\n",
-               config.basis.spherical ? "spherical" : "Cartesian");
-    fmt::print("total charge: {}\n", config.electronic.charge);
-    fmt::print("system multiplicity: {}\n", config.electronic.multiplicity);
-    fmt::print("\ninertia tensor (x 10e-46 kg m^2)\n");
+    double temperature = occ::constants::celsius<double> + 25;
+
+    fmt::print("\n{:—<72s}\n\n", "Inertia tensor (x 10e-46 kg m^2)  ");
     print_matrix_xyz(m.inertia_tensor());
-    fmt::print("principal moments of inertia\n\n");
+    fmt::print("\n{:—<72s}\n\n", "Principal moments of inertia  ");
     print_vector(m.principal_moments_of_inertia());
-    fmt::print("rotational constants (GHz)\n\n");
+    fmt::print("\n{:—<72s}\n\n", "Rotational constants (GHz)  ");
     print_vector(m.rotational_constants());
-    fmt::print("rotational free energy      {: 12.6f} kJ/mol\n",
-               m.rotational_free_energy(occ::constants::celsius<double> + 25));
+    fmt::print("\n");
+    
+    fmt::print("\n{:—<72s}\n\n", 
+            fmt::format("Gas-phase properties (at {} K)  ", temperature));
+    fmt::print("Rotational free energy      {: 12.6f} kJ/mol\n",
+               m.rotational_free_energy(temperature));
     fmt::print(
-        "translational free energy   {: 12.6f} kJ/mol\n",
-        m.translational_free_energy(occ::constants::celsius<double> + 25));
+        "Translational free energy   {: 12.6f} kJ/mol\n",
+        m.translational_free_energy(temperature));
     fmt::print("\n");
 }
 
