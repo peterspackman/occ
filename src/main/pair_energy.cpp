@@ -10,6 +10,7 @@
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/wolf.h>
 #include <occ/main/pair_energy.h>
+#include <occ/qm/chelpg.h>
 #include <optional>
 #include <scn/scn.h>
 
@@ -189,6 +190,7 @@ int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
         charge_energies[current_dimer] =
             occ::interaction::coulomb_interaction_energy_asym_charges(
                 dimer, asym_charges);
+        current_dimer++;
     }
     occ::log::info("Finished calculating {} unique dimer coulomb energies",
                    computed_dimers);
@@ -296,9 +298,9 @@ converged_lattice_energies(const Crystal &crystal,
     std::vector<Vec> charges(wfns_a.size());
     std::vector<double> charge_self_energies(wfns_a.size());
     for (int i = 0; i < wfns_a.size(); i++) {
-        charges[i] = wfns_a[i].mulliken_charges();
-        fmt::print("Charges {}\n{}\nSelf energy {}\n", i, charges[i],
-                   charge_self_energies[i] * units::AU_TO_KJ_PER_MOL);
+        charges[i] = occ::qm::chelpg_charges(wfns_a[i]);
+        // charges[i] = wfns_a[i].mulliken_charges();
+        fmt::print("Charges {}\n{}\n", i, charges[i]);
         for (int j = 0; j < charges[i].rows(); j++) {
             asym_charges(asym_mols[i].asymmetric_unit_idx()(j)) = charges[i](j);
         }
@@ -317,6 +319,7 @@ converged_lattice_energies(const Crystal &crystal,
     auto wolf_params =
         occ::interaction::WolfParams{std::max(conv.max_radius, 16.0), 0.2};
     Mat3N asym_cart = crystal.to_cartesian(crystal.asymmetric_unit().positions);
+    Vec asym_wolf(surrounds.size());
     for (const auto &s : surrounds) {
         double qi = asym_charges(asym_idx);
         Vec3 pi = asym_cart.col(asym_idx);
@@ -324,27 +327,27 @@ converged_lattice_energies(const Crystal &crystal,
         for (int j = 0; j < qj.rows(); j++) {
             qj(j) = asym_charges(s.asym_idx(j));
         }
-        wolf_energy += occ::interaction::wolf_coulomb_energy(
-                           qi, pi, qj, s.cart_pos, wolf_params) *
-                       units::AU_TO_KJ_PER_MOL;
+        asym_wolf(asym_idx) = occ::interaction::wolf_coulomb_energy(
+                                  qi, pi, qj, s.cart_pos, wolf_params) *
+                              units::AU_TO_KJ_PER_MOL;
         asym_idx++;
     }
     for (int i = 0; i < asym_mols.size(); i++) {
+        const auto &mol = asym_mols[i];
         charge_self_energies[i] =
-            occ::interaction::coulomb_self_energy_asym_charges(asym_mols[i],
+            occ::interaction::coulomb_self_energy_asym_charges(mol,
                                                                asym_charges);
+        for (int j = 0; j < mol.size(); j++) {
+            wolf_energy += asym_wolf(mol.asymmetric_unit_idx()(j));
+        }
     }
 
     fmt::print("Wolf energy ({} asymmetric atoms): {}\n", asym_idx,
+               asym_wolf.sum());
+
+    fmt::print("Wolf energy ({} asymmetric molecules): {}\n", asym_mols.size(),
                wolf_energy);
 
-    size_t natoms_in_mols = std::accumulate(
-        wfns_a.begin(), wfns_a.end(), 0,
-        [](size_t a, const auto &wfn) { return a + wfn.atoms.size(); });
-
-    wolf_energy *= (1.0 * natoms_in_mols) / asym_idx;
-    fmt::print("Wolf energy ({} atoms in unique mols): {}\n", natoms_in_mols,
-               wolf_energy);
     do {
         previous_lattice_energy = lattice_energy;
         const auto &dimers = all_dimers.unique_dimers;
@@ -360,6 +363,7 @@ converged_lattice_energies(const Crystal &crystal,
         double ecoul_real{0};
         double ecoul_exact_real{0};
         double ecoul_self{0};
+        double coulomb_scale_factor = occ::interaction::CE_B3LYP_631Gdp.coulomb;
         for (const auto &n : mol_neighbors) {
             double molecule_total{0.0};
             size_t dimer_idx{0};
@@ -383,11 +387,17 @@ converged_lattice_energies(const Crystal &crystal,
         }
         lattice_energy = 0.5 * etot;
         fmt::print("Cycle {} lattice energy: {}\n", cycle, lattice_energy);
-        fmt::print("Coulomb self: {}\n", ecoul_self);
-        fmt::print("Coul real: {}\n", ecoul_real);
-        fmt::print("Wolf: {}\n", wolf_energy);
+        fmt::print("Charge-charge intramolecular: {}\n", ecoul_self);
+        fmt::print("Charge-charge real space: {}\n", ecoul_real);
+        fmt::print("Wolf energy: {}\n", wolf_energy);
         fmt::print("Coulomb (exact) real: {}\n", ecoul_exact_real);
-        fmt::print("Wolf - self: {}\n", wolf_energy - ecoul_self);
+        fmt::print("Wolf - intra: {}\n", wolf_energy - ecoul_self);
+        fmt::print("Wolf corrected Coulomb total: {}\n",
+                   wolf_energy - ecoul_self - ecoul_real + ecoul_exact_real);
+        fmt::print("Wolf corrected lattice energy: {}\n",
+                   coulomb_scale_factor *
+                           (wolf_energy - ecoul_self - ecoul_real) +
+                       0.5 * etot);
         cycle++;
         current_radius += conv.radius_increment;
     } while (std::abs(lattice_energy - previous_lattice_energy) >

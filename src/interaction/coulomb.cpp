@@ -29,7 +29,7 @@ double coulomb_pair_energy(Eigen::Ref<const Vec> charges_a,
     const int Nb = charges_b.rows();
     for (int i = 0; i < Na; i++) {
         const double qi = charges_a(i);
-        for (int j = 0; j < i; j++) {
+        for (int j = 0; j < Nb; j++) {
             const double qj = charges_b(j);
             double r = (positions_b.col(j) - positions_a.col(i)).norm() *
                        occ::units::ANGSTROM_TO_BOHR;
