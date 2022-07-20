@@ -2713,10 +2713,11 @@ TEST_CASE("core_json", "[json,write]") {
     auto acetic = acetic_crystal();
     auto dimers = acetic.unit_cell_dimers(3.8);
     const auto &mols = acetic.symmetry_unique_molecules();
-    nlohmann::json j = mols[0];
-    fmt::print("{}\n", j);
+    nlohmann::json j;
+    j["symmetry_unique_molecules"] = mols;
+    fmt::print("{}\n", j.dump());
     fmt::print("Dimer to JSON\n");
     nlohmann::json jd;
-    jd["unique_dimers"] = dimers.unique_dimers;
-    fmt::print("{}\n", jd);
+    jd["symmetry_unique_dimers"] = dimers.unique_dimers;
+    fmt::print("{}\n", jd.dump());
 }

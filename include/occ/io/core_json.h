@@ -1,11 +1,10 @@
 #pragma once
 #include <nlohmann/json.hpp>
+#include <occ/core/dimer.h>
 
 namespace occ::core {
 
-class Dimer;
-class Molecule;
 void to_json(nlohmann::json &j, const Dimer &);
-void to_json(nlohmann::json &j, const Molecule &l);
+void to_json(nlohmann::json &j, const Molecule &);
 
 } // namespace occ::core
