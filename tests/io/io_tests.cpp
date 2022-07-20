@@ -4,6 +4,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
 #include <occ/crystal/crystal.h>
+#include <occ/io/core_json.h>
 #include <occ/io/crystalgrower.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/fchkreader.h>
@@ -2705,4 +2706,17 @@ const char *json_input_contents = R""""({
 TEST_CASE("water qcschema", "[read]") {
     std::istringstream json(json_input_contents);
     occ::io::QCSchemaReader reader(json);
+}
+
+TEST_CASE("core_json", "[json,write]") {
+    fmt::print("Molecule to JSON\n");
+    auto acetic = acetic_crystal();
+    auto dimers = acetic.unit_cell_dimers(3.8);
+    const auto &mols = acetic.symmetry_unique_molecules();
+    nlohmann::json j = mols[0];
+    fmt::print("{}\n", j);
+    fmt::print("Dimer to JSON\n");
+    nlohmann::json jd;
+    jd["unique_dimers"] = dimers.unique_dimers;
+    fmt::print("{}\n", jd);
 }
