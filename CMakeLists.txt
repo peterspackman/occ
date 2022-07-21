@@ -14,18 +14,34 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+if(SKBUILD)
+  # Scikit-Build does not add your site-packages to the search path
+  # automatically, so we need to add it _or_ the pybind11 specific directory
+  # here.
+  execute_process(
+    COMMAND "${PYTHON_EXECUTABLE}" -c
+            "import pybind11; print(pybind11.get_cmake_dir())"
+    OUTPUT_VARIABLE _tmp_dir
+    OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ECHO STDOUT)
+  list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
+  set(WITH_PYTHON_BINDINGS ON)
+endif()
+
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
     option(BUILD_FPIC "Build with position independent code" OFF)
     option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
     option(WITH_BENCHMARKS "Enable benchmarking tests" OFF)
     option(WITH_CLANG_TIDY "Enable clang tidy" OFF)
+    option(WITH_PYTHON_BINDINGS "Build python bindings" OFF)
     option(USE_SYSTEM_BOOST "Use Boost installed on system" ON)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" ON)
 #    option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" ON)
     option(USE_SYSTEM_ZLIB "Use ZLIB installed on system" ON)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" ON)
 endif()
+
 
 find_package(OpenMP REQUIRED)
 find_package(Threads REQUIRED)

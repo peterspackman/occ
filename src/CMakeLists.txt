@@ -10,4 +10,8 @@ add_subdirectory(sht)
 add_subdirectory(slater)
 add_subdirectory(solvent)
 
+if("${WITH_PYTHON_BINDINGS}")
+add_subdirectory(python)
+endif()
+
 add_subdirectory(main)
