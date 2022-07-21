@@ -36,13 +36,13 @@ class Molecule {
 
     size_t size() const { return m_atomicNumbers.size(); }
 
-    void set_name(const std::string &);
-    const std::string &name() const { return m_name; }
+    inline void set_name(const std::string &name) { m_name = name; }
+    inline const std::string &name() const { return m_name; }
 
     Vec interatomic_distances() const;
-    const auto &elements() const { return m_elements; }
-    const Mat3N &positions() const { return m_positions; }
-    const IVec &atomic_numbers() const { return m_atomicNumbers; }
+    inline const auto &elements() const { return m_elements; }
+    inline const Mat3N &positions() const { return m_positions; }
+    inline const IVec &atomic_numbers() const { return m_atomicNumbers; }
     const Vec vdw_radii() const;
     const Vec atomic_masses() const;
     double molar_mass() const;
