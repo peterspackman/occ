@@ -22,7 +22,9 @@ using occ::core::Element;
 using occ::core::Molecule;
 using occ::hf::HartreeFock;
 using occ::qm::AOBasis;
+using occ::qm::MolecularOrbitals;
 using occ::qm::Shell;
+using occ::qm::Wavefunction;
 using occ::scf::SCF;
 
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
@@ -56,20 +58,36 @@ PYBIND11_MODULE(_occpy, m) {
         .def_static("load", &AOBasis::load)
         .def("set_pure", &AOBasis::set_pure);
 
+    py::class_<MolecularOrbitals>(m, "MolecularOrbitals")
+        .def_readwrite("num_alpha", &MolecularOrbitals::n_alpha)
+        .def_readwrite("num_beta", &MolecularOrbitals::n_beta)
+        .def_readwrite("num_ao", &MolecularOrbitals::n_ao)
+        .def_readwrite("orbital_coeffs", &MolecularOrbitals::C)
+        .def_readwrite("occupied_orbital_coeffs", &MolecularOrbitals::Cocc)
+        .def_readwrite("density_matrix", &MolecularOrbitals::D)
+        .def_readwrite("orbital_energies", &MolecularOrbitals::energies);
+
+    py::class_<Wavefunction>(m, "Wavefunction")
+        .def_readwrite("molecular_orbitals", &Wavefunction::mo)
+        .def_readonly("atoms", &Wavefunction::atoms);
+
     using RHF = SCF<HartreeFock, R>;
     py::class_<RHF>(m, "RHF")
         .def("set_charge_multiplicity", &RHF::set_charge_multiplicity)
-        .def("run", &RHF::compute_scf_energy);
+        .def("run", &RHF::compute_scf_energy)
+        .def("wavefunction", &RHF::wavefunction);
 
     using UHF = SCF<HartreeFock, U>;
     py::class_<UHF>(m, "UHF")
         .def("set_charge_multiplicity", &UHF::set_charge_multiplicity)
-        .def("run", &UHF::compute_scf_energy);
+        .def("run", &UHF::compute_scf_energy)
+        .def("wavefunction", &UHF::wavefunction);
 
     using GHF = SCF<HartreeFock, G>;
     py::class_<GHF>(m, "GHF")
         .def("set_charge_multiplicity", &GHF::set_charge_multiplicity)
-        .def("run", &GHF::compute_scf_energy);
+        .def("run", &GHF::compute_scf_energy)
+        .def("wavefunction", &GHF::wavefunction);
 
     py::class_<HartreeFock>(m, "HartreeFock")
         .def(py::init<const AOBasis &>())
