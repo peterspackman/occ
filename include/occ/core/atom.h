@@ -21,6 +21,14 @@ struct Atom {
         z += translation(2);
     }
 
+    inline Vec3 position() const { return {x, y, z}; }
+
+    inline void set_position(const Vec3 &v) {
+        x = v.x();
+        y = v.y();
+        z = v.z();
+    }
+
     inline double square_distance(double xx, double yy, double zz) const {
         double dx = xx - x, dy = yy - y, dz = zz - z;
         return dx * dx + dy * dy + dz * dz;
