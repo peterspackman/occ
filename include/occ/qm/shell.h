@@ -24,8 +24,8 @@ struct Shell {
         3.9685778240728024992720094621189610321284055835201069917099724937;
 
     Shell(int, const std::vector<double> &expo,
-             const std::vector<std::vector<double>> &contr,
-             const std::array<double, 3> &pos);
+          const std::vector<std::vector<double>> &contr,
+          const std::array<double, 3> &pos);
     Shell(const occ::core::PointCharge &);
     Shell();
 
@@ -75,9 +75,6 @@ class AOBasis {
     AOBasis() {}
 
     inline size_t nbf() const { return m_nbf; }
-    inline size_t first_bf(size_t shell_index) const {
-        return m_first_bf[shell_index];
-    }
 
     void add_shell(const Shell &);
     void merge(const AOBasis &);
