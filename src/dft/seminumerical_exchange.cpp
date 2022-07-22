@@ -125,8 +125,7 @@ void three_center_screened_aux_kernel(Lambda &f,
     }
 }
 
-Mat SemiNumericalExchange::compute_K(qm::SpinorbitalKind kind,
-                                     const qm::MolecularOrbitals &mo,
+Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
                                      double precision,
                                      const Mat &Schwarz) const {
     size_t nbf = m_basis.nbf();

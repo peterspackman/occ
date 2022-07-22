@@ -54,8 +54,7 @@ class ContinuumSolvationModel {
     }
 
     template <typename Proc>
-    Vec surface_electronic_energy_elements(const SpinorbitalKind kind,
-                                           const MolecularOrbitals &mo,
+    Vec surface_electronic_energy_elements(const MolecularOrbitals &mo,
                                            const Proc &p) const {
         Vec result(m_surface_areas_coulomb.rows());
         Mat X;
@@ -67,7 +66,7 @@ class ContinuumSolvationModel {
             point_charges[0].second[1] = m_surface_positions_coulomb(1, i);
             point_charges[0].second[2] = m_surface_positions_coulomb(2, i);
             X = p.compute_point_charge_interaction_matrix(point_charges);
-            switch (kind) {
+            switch (mo.kind) {
             case SpinorbitalKind::Restricted: {
                 result(i) =
                     2 *
@@ -193,13 +192,11 @@ template <typename Proc> class SolvationCorrectedProcedure {
 
     auto compute_schwarz_ints() const { return m_proc.compute_schwarz_ints(); }
 
-    void update_core_hamiltonian(SpinorbitalKind kind,
-                                 const MolecularOrbitals &mo, occ::Mat &H) {
+    void update_core_hamiltonian(const MolecularOrbitals &mo, occ::Mat &H) {
         occ::timing::start(occ::timing::category::solvent);
         occ::Vec v =
-            (m_qn +
-             m_proc.electronic_electric_potential_contribution(
-                 kind, mo, m_solvation_model.surface_positions_coulomb()));
+            (m_qn + m_proc.electronic_electric_potential_contribution(
+                        mo, m_solvation_model.surface_positions_coulomb()));
         m_solvation_model.set_surface_potential(v);
         auto asc = m_solvation_model.apparent_surface_charge();
         for (int i = 0; i < m_point_charges.size(); i++) {
@@ -215,7 +212,7 @@ template <typename Proc> class SolvationCorrectedProcedure {
                         m_solvation_model.surface_charge());
         m_X = m_proc.compute_point_charge_interaction_matrix(m_point_charges);
 
-        switch (kind) {
+        switch (mo.kind) {
         case SpinorbitalKind::Restricted: {
             m_electronic_solvation_energy =
                 2 * occ::qm::expectation<SpinorbitalKind::Restricted>(mo.D, H);
@@ -251,17 +248,16 @@ template <typename Proc> class SolvationCorrectedProcedure {
         occ::timing::stop(occ::timing::category::solvent);
     }
 
-    Mat compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
+    Mat compute_fock(const MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const {
-        return m_proc.compute_fock(kind, mo, precision, Schwarz);
+        return m_proc.compute_fock(mo, precision, Schwarz);
     }
 
-    Mat compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
+    Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
                                  const qm::AOBasis &bs,
                                  bool is_shell_diagonal) {
-        return m_proc.compute_fock_mixed_basis(kind, D_bs, bs,
-                                               is_shell_diagonal);
+        return m_proc.compute_fock_mixed_basis(mo_bs, bs, is_shell_diagonal);
     }
 
     void set_solvent(const std::string &solvent) {
@@ -295,10 +291,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
     auto surface_nuclear_energy_elements() const {
         return m_solvation_model.surface_nuclear_energy_elements(m_proc);
     }
-    auto surface_electronic_energy_elements(const SpinorbitalKind kind,
-                                            const MolecularOrbitals &mo) const {
-        return m_solvation_model.surface_electronic_energy_elements(kind, mo,
-                                                                    m_proc);
+    auto surface_electronic_energy_elements(const MolecularOrbitals &mo) const {
+        return m_solvation_model.surface_electronic_energy_elements(mo, m_proc);
     }
 
     template <unsigned int order = 1>
@@ -308,11 +302,10 @@ template <typename Proc> class SolvationCorrectedProcedure {
     }
 
     template <unsigned int order = 1>
-    inline auto compute_electronic_multipoles(SpinorbitalKind k,
-                                              const MolecularOrbitals &mo,
+    inline auto compute_electronic_multipoles(const MolecularOrbitals &mo,
                                               const Vec3 &o = {0.0, 0.0,
                                                                0.0}) const {
-        return m_proc.template compute_electronic_multipoles<order>(k, mo, o);
+        return m_proc.template compute_electronic_multipoles<order>(mo, o);
     }
 
     template <unsigned int order = 1>

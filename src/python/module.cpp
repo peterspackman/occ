@@ -2,7 +2,10 @@
 #include <occ/core/element.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
+#include <occ/core/parallel.h>
+#include <occ/crystal/crystal.h>
 #include <occ/dft/dft.h>
+#include <occ/io/cifparser.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/xyz.h>
@@ -24,6 +27,11 @@ using occ::Vec3;
 using occ::core::Atom;
 using occ::core::Element;
 using occ::core::Molecule;
+using occ::crystal::AsymmetricUnit;
+using occ::crystal::Crystal;
+using occ::crystal::SpaceGroup;
+using occ::crystal::SymmetryOperation;
+using occ::crystal::UnitCell;
 using occ::dft::DFT;
 using occ::hf::HartreeFock;
 using occ::qm::AOBasis;
@@ -36,7 +44,7 @@ constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
 constexpr auto G = occ::qm::SpinorbitalKind::General;
 
-PYBIND11_MODULE(_occpy, m) {
+PYBIND11_MODULE(_occ, m) {
     py::class_<Element>(m, "Element")
         .def(py::init<const std::string &>())
         .def("symbol", &Element::symbol)
@@ -216,6 +224,48 @@ PYBIND11_MODULE(_occpy, m) {
                 mol.name(), com.x(), com.y(), com.z());
         });
 
+    // occ::crystal
+
+    py::class_<Crystal>(m, "Crystal")
+        .def("symmetry_unique_molecules", &Crystal::symmetry_unique_molecules)
+        .def("symmetry_unique_dimers", &Crystal::symmetry_unique_dimers)
+        .def("unit_cell", &Crystal::unit_cell)
+        .def("asymmetric_unit",
+             py::overload_cast<>(&Crystal::asymmetric_unit, py::const_))
+        .def_static("from_cif_file", [](const std::string &filename) {
+            occ::io::CifParser parser;
+            return parser.parse_crystal(filename).value();
+        });
+
+    py::class_<AsymmetricUnit>(m, "AsymmetricUnit")
+        .def_readwrite("positions", &AsymmetricUnit::positions)
+        .def_readwrite("atomic_numbers", &AsymmetricUnit::atomic_numbers)
+        .def_readwrite("occupations", &AsymmetricUnit::occupations)
+        .def_readwrite("charges", &AsymmetricUnit::charges)
+        .def_readwrite("labels", &AsymmetricUnit::labels)
+        .def("__len__", &AsymmetricUnit::size)
+        .def("__repr__", [](const AsymmetricUnit &asym) {
+            return fmt::format("<occ.AsymmetricUnit {}>",
+                               asym.chemical_formula());
+        });
+
+    py::class_<UnitCell>(m, "UnitCell")
+        .def_property("a", &UnitCell::a, &UnitCell::set_a)
+        .def_property("b", &UnitCell::b, &UnitCell::set_b)
+        .def_property("c", &UnitCell::c, &UnitCell::set_c)
+        .def_property("alpha", &UnitCell::alpha, &UnitCell::set_alpha)
+        .def_property("beta", &UnitCell::beta, &UnitCell::set_beta)
+        .def_property("gamma", &UnitCell::gamma, &UnitCell::set_gamma)
+        .def("lengths", &UnitCell::lengths)
+        .def("to_fractional", &UnitCell::to_fractional)
+        .def("to_cartesian", &UnitCell::to_cartesian)
+        .def("cell_type", &UnitCell::cell_type)
+        .def("__repr__", [](const UnitCell &uc) {
+            return fmt::format("<occ.UnitCell {} ({:.5f}, {:.5f}, {:.5f})>",
+                               uc.cell_type(), uc.a(), uc.b(), uc.c());
+        });
+
+    m.def("set_num_threads", [](int n) { occ::parallel::set_num_threads(n); });
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else

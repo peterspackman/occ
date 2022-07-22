@@ -5,6 +5,8 @@
 
 namespace occ::hf {
 
+using occ::qm::SpinorbitalKind;
+
 Vec3 HartreeFock::center_of_mass() const {
     auto mol = occ::core::Molecule(m_atoms);
     return mol.center_of_mass() * occ::units::ANGSTROM_TO_BOHR;
@@ -47,28 +49,29 @@ double HartreeFock::nuclear_repulsion_energy() const {
     return enuc;
 }
 
-Mat HartreeFock::compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
-                              double precision, const Mat &Schwarz) const {
-    if (m_df_engine && kind == SpinorbitalKind::Restricted) {
+Mat HartreeFock::compute_fock(const MolecularOrbitals &mo, double precision,
+                              const Mat &Schwarz) const {
+    if (m_df_engine && mo.kind == SpinorbitalKind::Restricted) {
         return (*m_df_engine).fock_operator(mo);
     } else {
-        return m_engine.fock_operator(kind, mo, Schwarz);
+        return m_engine.fock_operator(mo.kind, mo, Schwarz);
     }
 }
 
-Mat HartreeFock::compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
+Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
                                           const qm::AOBasis &bs,
                                           bool is_shell_diagonal) {
     using Kind = occ::qm::Shell::Kind;
-    if (kind == SpinorbitalKind::Restricted) {
-        return m_engine.fock_operator_mixed_basis(D_bs, bs, is_shell_diagonal);
-    } else if (kind == SpinorbitalKind::Unrestricted) {
+    if (mo_bs.kind == SpinorbitalKind::Restricted) {
+        return m_engine.fock_operator_mixed_basis(mo_bs.D, bs,
+                                                  is_shell_diagonal);
+    } else if (mo_bs.kind == SpinorbitalKind::Unrestricted) {
         const auto [rows, cols] =
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(
                 m_engine.aobasis().nbf());
         Mat F = Mat::Zero(rows, cols);
         qm::block::a(F) =
-            m_engine.fock_operator_mixed_basis(D_bs, bs, is_shell_diagonal);
+            m_engine.fock_operator_mixed_basis(mo_bs.D, bs, is_shell_diagonal);
         qm::block::b(F) = qm::block::a(F);
         return F;
     } else { // kind == SpinorbitalKind::General
@@ -77,29 +80,28 @@ Mat HartreeFock::compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
                 m_engine.aobasis().nbf());
         Mat F = Mat::Zero(rows, cols);
         qm::block::aa(F) =
-            m_engine.fock_operator_mixed_basis(D_bs, bs, is_shell_diagonal);
+            m_engine.fock_operator_mixed_basis(mo_bs.D, bs, is_shell_diagonal);
         qm::block::bb(F) = qm::block::aa(F);
         return F;
     }
 }
 
-std::pair<Mat, Mat> HartreeFock::compute_JK(SpinorbitalKind kind,
-                                            const MolecularOrbitals &mo,
+std::pair<Mat, Mat> HartreeFock::compute_JK(const MolecularOrbitals &mo,
                                             double precision,
                                             const Mat &Schwarz) const {
-    if (m_df_engine && kind == SpinorbitalKind::Restricted) {
+    if (m_df_engine && mo.kind == SpinorbitalKind::Restricted) {
         return (*m_df_engine).coulomb_and_exchange(mo);
     } else {
-        return m_engine.coulomb_and_exchange(kind, mo, Schwarz);
+        return m_engine.coulomb_and_exchange(mo.kind, mo, Schwarz);
     }
 }
 
-Mat HartreeFock::compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
-                           double precision, const Mat &Schwarz) const {
-    if (m_df_engine && kind == SpinorbitalKind::Restricted) {
+Mat HartreeFock::compute_J(const MolecularOrbitals &mo, double precision,
+                           const Mat &Schwarz) const {
+    if (m_df_engine && mo.kind == SpinorbitalKind::Restricted) {
         return (*m_df_engine).coulomb(mo);
     } else {
-        return m_engine.coulomb(kind, mo, Schwarz);
+        return m_engine.coulomb(mo.kind, mo, Schwarz);
     }
 }
 
@@ -141,27 +143,23 @@ Mat3N HartreeFock::nuclear_electric_field_contribution(
 }
 
 Mat3N HartreeFock::electronic_electric_field_contribution(
-    SpinorbitalKind kind, const MolecularOrbitals &mo,
-    const Mat3N &positions) const {
+    const MolecularOrbitals &mo, const Mat3N &positions) const {
     const auto &D = mo.D;
     double delta = 1e-8;
     occ::Mat3N efield_fd(positions.rows(), positions.cols());
     for (size_t i = 0; i < 3; i++) {
         auto pts_delta = positions;
         pts_delta.row(i).array() += delta;
-        auto esp_f =
-            electronic_electric_potential_contribution(kind, mo, pts_delta);
+        auto esp_f = electronic_electric_potential_contribution(mo, pts_delta);
         pts_delta.row(i).array() -= 2 * delta;
-        auto esp_b =
-            electronic_electric_potential_contribution(kind, mo, pts_delta);
+        auto esp_b = electronic_electric_potential_contribution(mo, pts_delta);
         efield_fd.row(i) = -(esp_f - esp_b) / (2 * delta);
     }
     return efield_fd;
 }
 
 Vec HartreeFock::electronic_electric_potential_contribution(
-    SpinorbitalKind kind, const MolecularOrbitals &mo,
-    const Mat3N &positions) const {
+    const MolecularOrbitals &mo, const Mat3N &positions) const {
     const auto &D = mo.D;
     return m_engine.electric_potential(mo, positions);
 }

@@ -70,9 +70,9 @@ Vec chelpg_charges(const Wavefunction &wfn) {
     distances.conservativeResize(current, num_atoms);
 
     hf::HartreeFock hf(wfn.basis);
-    Vec esp = hf.electronic_electric_potential_contribution(wfn.mo.kind, wfn.mo,
-                                                            grid_points) +
-              hf.nuclear_electric_potential_contribution(grid_points);
+    Vec esp =
+        hf.electronic_electric_potential_contribution(wfn.mo, grid_points) +
+        hf.nuclear_electric_potential_contribution(grid_points);
 
     double net_charge = hf.system_charge();
     Mat inverse_distances = 1.0 / distances.array();

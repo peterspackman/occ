@@ -152,11 +152,10 @@ class DFT {
     auto compute_schwarz_ints() const { return m_hf.compute_schwarz_ints(); }
 
     template <unsigned int order = 1>
-    inline auto compute_electronic_multipoles(SpinorbitalKind k,
-                                              const MolecularOrbitals &mo,
+    inline auto compute_electronic_multipoles(const MolecularOrbitals &mo,
                                               const Vec3 &o = {0.0, 0.0,
                                                                0.0}) const {
-        return m_hf.template compute_electronic_multipoles<order>(k, mo, o);
+        return m_hf.template compute_electronic_multipoles<order>(mo, o);
     }
 
     template <unsigned int order = 1>
@@ -297,14 +296,13 @@ class DFT {
 
         if (exchange_factor != 0.0) {
             Mat J, K;
-            std::tie(J, K) =
-                m_hf.compute_JK(spinorbital_kind, mo, precision, Schwarz);
+            std::tie(J, K) = m_hf.compute_JK(mo, precision, Schwarz);
             ecoul = expectation<spinorbital_kind>(D, J);
             exc = -expectation<spinorbital_kind>(D, K) * exchange_factor;
             F.noalias() += J;
             F.noalias() -= K * exchange_factor;
         } else {
-            Mat J = m_hf.compute_J(spinorbital_kind, mo, precision, Schwarz);
+            Mat J = m_hf.compute_J(mo, precision, Schwarz);
             ecoul = expectation<spinorbital_kind>(D, J);
             F.noalias() += J;
         }
@@ -315,10 +313,10 @@ class DFT {
         return F;
     }
 
-    Mat compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
-                     double precision, const Mat &Schwarz) {
+    Mat compute_fock(const MolecularOrbitals &mo, double precision,
+                     const Mat &Schwarz) {
         int deriv = density_derivative();
-        switch (kind) {
+        switch (mo.kind) {
         case SpinorbitalKind::Unrestricted: {
             switch (deriv) {
             case 0:
@@ -358,25 +356,22 @@ class DFT {
     }
     const auto &hf() const { return m_hf; }
 
-    inline Mat compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
+    inline Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
                                         const qm::AOBasis &bs,
                                         bool is_shell_diagonal) {
-        return m_hf.compute_fock_mixed_basis(kind, D_bs, bs, is_shell_diagonal);
+        return m_hf.compute_fock_mixed_basis(mo_bs, bs, is_shell_diagonal);
     }
 
-    Vec
-    electronic_electric_potential_contribution(occ::qm::SpinorbitalKind kind,
-                                               const MolecularOrbitals &mo,
-                                               const Mat3N &pts) const {
-        return m_hf.electronic_electric_potential_contribution(kind, mo, pts);
+    Vec electronic_electric_potential_contribution(const MolecularOrbitals &mo,
+                                                   const Mat3N &pts) const {
+        return m_hf.electronic_electric_potential_contribution(mo, pts);
     }
 
     Vec nuclear_electric_potential_contribution(const Mat3N &pts) const {
         return m_hf.nuclear_electric_potential_contribution(pts);
     }
 
-    void update_core_hamiltonian(occ::qm::SpinorbitalKind k,
-                                 const MolecularOrbitals &mo, Mat &H) {
+    void update_core_hamiltonian(const MolecularOrbitals &mo, Mat &H) {
         return;
     }
 

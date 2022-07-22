@@ -10,8 +10,8 @@
 #include <occ/qm/expectation.h>
 #include <occ/qm/guess_density.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
 #include <occ/qm/opmatrix.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
 
@@ -274,8 +274,10 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                 "Projecting minimal basis guess into atomic orbital basis...");
             auto minbs =
                 occ::qm::AOBasis::load(m_procedure.atoms(), OCC_MINIMAL_BASIS);
-            F += m_procedure.compute_fock_mixed_basis(spinorbital_kind, D_minbs,
-                                                      minbs, true);
+            occ::qm::MolecularOrbitals mo_bs;
+            mo_bs.kind = spinorbital_kind;
+            mo_bs.D = D_minbs;
+            F += m_procedure.compute_fock_mixed_basis(mo_bs, minbs, true);
             mo.update(X, F);
             mo.update_density_matrix();
 
@@ -324,6 +326,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     }
 
     double compute_scf_energy() {
+        if (converged)
+            return energy["total"];
         // compute one-body integrals
         // count the number of electrons
         bool incremental{false};
@@ -348,7 +352,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             auto ehf_last = energy["electronic"];
             D_last = mo.D;
             H = T + V;
-            m_procedure.update_core_hamiltonian(spinorbital_kind, mo, H);
+            m_procedure.update_core_hamiltonian(mo, H);
             incremental = true;
 
             if (not incremental_Fbuild_started &&
@@ -382,7 +386,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                                   std::numeric_limits<double>::epsilon()));
 
             std::swap(mo.D, D_diff);
-            F += m_procedure.compute_fock(spinorbital_kind, mo, precision_F, K);
+            F += m_procedure.compute_fock(mo, precision_F, K);
             std::swap(mo.D, D_diff);
 
             // compute HF energy with the non-extrapolated Fock matrix
@@ -434,6 +438,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             "\n{} spinorbital SCF energy converged after {:.5f} seconds\n\n",
             scf_kind(), total_time);
         fmt::print("{}\n", energy);
+        converged = true;
         return energy["total"];
     }
 
@@ -454,6 +459,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     occ::qm::EDIIS ediis;
     bool reset_incremental_fock_formation = false;
     bool incremental_Fbuild_started = false;
+    bool converged{false};
     double start_incremental_F_threshold = 1e-4;
     double next_reset_threshold = 0.0;
     size_t last_reset_iteration = 0;

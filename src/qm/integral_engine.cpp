@@ -564,8 +564,7 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
     return unique;
 }
 
-Vec IntegralEngine::multipole(SpinorbitalKind sk, int order,
-                              const MolecularOrbitals &mo,
+Vec IntegralEngine::multipole(int order, const MolecularOrbitals &mo,
                               const Vec3 &origin) const {
 
     bool spherical = is_spherical();
@@ -574,7 +573,7 @@ Vec IntegralEngine::multipole(SpinorbitalKind sk, int order,
     constexpr auto G = SpinorbitalKind::General;
     constexpr auto Cart = ShellKind::Cartesian;
     constexpr auto Sph = ShellKind::Spherical;
-    if (sk == R) {
+    if (mo.kind == R) {
         switch (order) {
         case 0:
             if (spherical) {
@@ -625,7 +624,7 @@ Vec IntegralEngine::multipole(SpinorbitalKind sk, int order,
             throw std::runtime_error("Invalid multipole order");
             break;
         }
-    } else if (sk == U) {
+    } else if (mo.kind == U) {
         switch (order) {
         case 0:
             if (spherical) {

@@ -12,7 +12,6 @@ namespace occ::hf {
 
 using occ::qm::AOBasis;
 using occ::qm::MolecularOrbitals;
-using occ::qm::SpinorbitalKind;
 using PointChargeList = std::vector<occ::core::PointCharge>;
 
 /// to use precomputed shell pair data must decide on max precision a priori
@@ -44,17 +43,17 @@ class HartreeFock {
     void set_density_fitting_basis(const std::string &);
     double nuclear_repulsion_energy() const;
 
-    Mat compute_fock(SpinorbitalKind kind, const MolecularOrbitals &mo,
+    Mat compute_fock(const MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const;
 
-    Mat compute_fock_mixed_basis(SpinorbitalKind kind, const Mat &D_bs,
+    Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
                                  const qm::AOBasis &bs, bool is_shell_diagonal);
     std::pair<Mat, Mat>
-    compute_JK(SpinorbitalKind kind, const MolecularOrbitals &mo,
+    compute_JK(const MolecularOrbitals &mo,
                double precision = std::numeric_limits<double>::epsilon(),
                const Mat &Schwarz = Mat()) const;
-    Mat compute_J(SpinorbitalKind kind, const MolecularOrbitals &mo,
+    Mat compute_J(const MolecularOrbitals &mo,
                   double precision = std::numeric_limits<double>::epsilon(),
                   const Mat &Schwarz = Mat()) const;
 
@@ -65,29 +64,25 @@ class HartreeFock {
         const PointChargeList &point_charges) const;
 
     Mat3N nuclear_electric_field_contribution(const Mat3N &) const;
-    Mat3N electronic_electric_field_contribution(SpinorbitalKind kind,
-                                                 const MolecularOrbitals &mo,
+    Mat3N electronic_electric_field_contribution(const MolecularOrbitals &mo,
                                                  const Mat3N &) const;
-    Vec electronic_electric_potential_contribution(SpinorbitalKind kind,
-                                                   const MolecularOrbitals &mo,
+    Vec electronic_electric_potential_contribution(const MolecularOrbitals &mo,
                                                    const Mat3N &) const;
     Vec nuclear_electric_potential_contribution(const Mat3N &) const;
 
     Mat compute_schwarz_ints() const;
-    void update_core_hamiltonian(occ::qm::SpinorbitalKind k,
-                                 const MolecularOrbitals &mo, Mat &H) {
+    void update_core_hamiltonian(const MolecularOrbitals &mo, Mat &H) {
         return;
     }
     template <int order>
     occ::core::Multipole<order>
-    compute_electronic_multipoles(occ::qm::SpinorbitalKind k,
-                                  const MolecularOrbitals &mo,
+    compute_electronic_multipoles(const MolecularOrbitals &mo,
                                   const Vec3 &o = {0.0, 0.0, 0.0}) const {
         occ::core::Multipole<order> result;
         const auto &D = mo.D;
         int offset = 0;
         for (int i = 0; i <= order; i++) {
-            Vec c = m_engine.multipole(k, i, mo, o);
+            Vec c = m_engine.multipole(i, mo, o);
             for (int j = 0; j < c.rows(); j++) {
                 result.components[offset++] = c(j);
             }
@@ -106,7 +101,7 @@ class HartreeFock {
     template <int order>
     auto compute_multipoles(const MolecularOrbitals &mo,
                             const Vec3 &o = {0.0, 0.0, 0.0}) const {
-        auto mults = compute_electronic_multipoles<order>(mo.kind, mo, o);
+        auto mults = compute_electronic_multipoles<order>(mo, o);
         auto nuc_mults = compute_nuclear_multipoles<order>(o);
         return mults + nuc_mults;
     }

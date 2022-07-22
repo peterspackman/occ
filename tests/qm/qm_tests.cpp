@@ -6,8 +6,8 @@
 #include <occ/gto/gto.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
 #include <occ/qm/scf.h>
+#include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <vector>
 
@@ -53,7 +53,7 @@ TEST_CASE("Density Fitting H2O/6-31G") {
     hf.set_density_fitting_basis("def2-svp-jk");
 
     occ::qm::MolecularOrbitals mo;
-    auto sk = occ::qm::SpinorbitalKind::Restricted;
+    mo.kind = occ::qm::SpinorbitalKind::Restricted;
 
     mo.C = occ::Mat(2, 2);
     mo.C << 0.54884228, 1.21245192, 0.54884228, -1.21245192;
@@ -72,7 +72,7 @@ TEST_CASE("Density Fitting H2O/6-31G") {
     Kexact << 1.18164378, 1.05837468, 1.05837468, 1.18164378;
 
     occ::Mat Japprox, Kapprox;
-    std::tie(Japprox, Kapprox) = hf.compute_JK(sk, mo);
+    std::tie(Japprox, Kapprox) = hf.compute_JK(mo);
     occ::Mat F = 2 * (Japprox - Kapprox);
     fmt::print("Fexact\n{}\n", Fexact);
     fmt::print("Fapprox\n{}\n", F);
@@ -80,7 +80,7 @@ TEST_CASE("Density Fitting H2O/6-31G") {
     fmt::print("Jexact\n{}\n", Jexact);
     fmt::print("Japprox\n{}\n", Japprox);
 
-    std::tie(Japprox, Kapprox) = hf.compute_JK(sk, mo);
+    std::tie(Japprox, Kapprox) = hf.compute_JK(mo);
     fmt::print("Kexact\n{}\n", Kexact);
     fmt::print("Kapprox\n{}\n", 2 * Kapprox);
 }
@@ -105,8 +105,7 @@ TEST_CASE("Electric Field H2/STO-3G") {
     fmt::print("Grid points\n{}\n", grid_pts);
     fmt::print("Nuclear E field values:\n{}\n", field_values);
 
-    auto esp = hf.electronic_electric_potential_contribution(
-        occ::qm::SpinorbitalKind::Restricted, mo, grid_pts);
+    auto esp = hf.electronic_electric_potential_contribution(mo, grid_pts);
     fmt::print("ESP:\n{}\n", esp);
     REQUIRE(all_close(esp, expected_esp, 1e-5, 1e-5));
     occ::Mat expected_efield(field_values.rows(), field_values.cols());
@@ -120,8 +119,8 @@ TEST_CASE("Electric Field H2/STO-3G") {
     for (size_t i = 0; i < 3; i++) {
         auto grid_pts_d = grid_pts;
         grid_pts_d.row(i).array() += delta;
-        auto esp_d = hf.electronic_electric_potential_contribution(
-            occ::qm::SpinorbitalKind::Restricted, mo, grid_pts_d);
+        auto esp_d =
+            hf.electronic_electric_potential_contribution(mo, grid_pts_d);
         efield_fd.row(i) = -(esp_d - esp) / delta;
     }
     REQUIRE(all_close(efield_fd, expected_efield, 1e-5, 1e-5));

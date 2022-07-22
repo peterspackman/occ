@@ -140,7 +140,7 @@ class IntegralEngine {
         }
     }
 
-    Vec multipole(SpinorbitalKind, int order, const MolecularOrbitals &mo,
+    Vec multipole(int order, const MolecularOrbitals &mo,
                   const Vec3 &origin = {0, 0, 0}) const;
 
     Mat schwarz() const;

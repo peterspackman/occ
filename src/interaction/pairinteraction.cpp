@@ -24,8 +24,7 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.H = wfn.V + wfn.T;
         wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
-        std::tie(wfn.J, wfn.K) =
-            hf.compute_JK(kind, wfn.mo, precision, Schwarz);
+        std::tie(wfn.J, wfn.K) = hf.compute_JK(wfn.mo, precision, Schwarz);
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
@@ -44,8 +43,7 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
-        std::tie(wfn.J, wfn.K) =
-            hf.compute_JK(kind, wfn.mo, precision, Schwarz);
+        std::tie(wfn.J, wfn.K) = hf.compute_JK(wfn.mo, precision, Schwarz);
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
