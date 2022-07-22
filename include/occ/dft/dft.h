@@ -91,6 +91,8 @@ class DFT {
     inline auto nbf() const { return m_hf.nbf(); }
     inline Vec3 center_of_mass() const { return m_hf.center_of_mass(); }
 
+    void set_integration_grid(const AtomGridSettings & = {});
+
     void set_system_charge(int charge) { m_hf.set_system_charge(charge); }
     int system_charge() const { return m_hf.system_charge(); }
     int num_e() const { return m_hf.num_e(); }
@@ -313,8 +315,15 @@ class DFT {
         return F;
     }
 
-    Mat compute_fock(const MolecularOrbitals &mo, double precision,
-                     const Mat &Schwarz) {
+    Mat compute_J(const MolecularOrbitals &mo,
+                  double precision = std::numeric_limits<double>::epsilon(),
+                  const Mat &Schwarz = Mat()) const {
+        return m_hf.compute_J(mo, precision, Schwarz);
+    }
+
+    Mat compute_fock(const MolecularOrbitals &mo,
+                     double precision = std::numeric_limits<double>::epsilon(),
+                     const Mat &Schwarz = Mat()) {
         int deriv = density_derivative();
         switch (mo.kind) {
         case SpinorbitalKind::Unrestricted: {
@@ -375,7 +384,13 @@ class DFT {
         return;
     }
 
+    void set_method(const std::string &method_string,
+                    bool unrestricted = false);
+
+    void set_unrestricted(bool unrestricted);
+
   private:
+    std::string m_method_string{"svwn5"};
     SpinorbitalKind m_spinorbital_kind;
     occ::hf::HartreeFock m_hf;
     MolecularGrid m_grid;

@@ -10,6 +10,17 @@ struct AtomGridSettings {
     size_t min_angular_points{50};
     size_t radial_points{65};
     double radial_precision{1e-12};
+
+    inline bool operator==(const AtomGridSettings &rhs) const {
+        return (max_angular_points == rhs.max_angular_points) &&
+               (min_angular_points == rhs.min_angular_points) &&
+               (radial_points == rhs.radial_points) &&
+               (radial_precision == rhs.radial_precision);
+    }
+
+    inline bool operator!=(const AtomGridSettings &rhs) const {
+        return !(*this == rhs);
+    }
 };
 
 using occ::qm::AOBasis;
@@ -111,6 +122,8 @@ class MolecularGrid {
     const auto n_atoms() const { return m_atomic_numbers.size(); }
     AtomGrid generate_partitioned_atom_grid(size_t atom_idx) const;
     AtomGrid generate_lmg_atom_grid(size_t atomic_number);
+
+    inline const auto &settings() const { return m_settings; }
 
   private:
     occ::IVec m_atomic_numbers;

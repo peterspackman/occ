@@ -181,12 +181,24 @@ PYBIND11_MODULE(_occ, m) {
         .def(py::init<const AOBasis &>())
         .def("nuclear_attraction_matrix",
              &HartreeFock::compute_nuclear_attraction_matrix)
+        .def("set_density_fitting_basis",
+             &HartreeFock::set_density_fitting_basis)
         .def("kinetic_matrix", &HartreeFock::compute_kinetic_matrix)
         .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
         .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
         .def("rhf", [](HartreeFock &hf) { return RHF(hf); })
         .def("uhf", [](HartreeFock &hf) { return UHF(hf); })
-        .def("ghf", [](HartreeFock &hf) { return GHF(hf); });
+        .def("ghf", [](HartreeFock &hf) { return GHF(hf); })
+        .def("coulomb_matrix", &HartreeFock::compute_J, py::arg("mo"),
+             py::arg("precision") = std::numeric_limits<double>::epsilon(),
+             py::arg("Schwarz") = occ::Mat())
+        .def("coulomb_and_exchange_matrices", &HartreeFock::compute_JK,
+             py::arg("mo"),
+             py::arg("precision") = std::numeric_limits<double>::epsilon(),
+             py::arg("Schwarz") = occ::Mat())
+        .def("fock_matrix", &HartreeFock::compute_fock, py::arg("mo"),
+             py::arg("precision") = std::numeric_limits<double>::epsilon(),
+             py::arg("Schwarz") = occ::Mat());
 
     py::class_<DFT>(m, "DFT")
         .def(py::init<const std::string &, const AOBasis &>())
@@ -195,6 +207,12 @@ PYBIND11_MODULE(_occ, m) {
         .def("kinetic_matrix", &DFT::compute_kinetic_matrix)
         .def("overlap_matrix", &DFT::compute_overlap_matrix)
         .def("nuclear_repulsion", &DFT::nuclear_repulsion_energy)
+        .def("set_method", &DFT::set_method, py::arg("method_string"),
+             py::arg("unrestricted") = false)
+        .def("set_unrestricted", &DFT::set_unrestricted)
+        .def("fock_matrix", &DFT::compute_fock, py::arg("mo"),
+             py::arg("precision") = std::numeric_limits<double>::epsilon(),
+             py::arg("Schwarz") = occ::Mat())
         .def("rks", [](DFT &dft) { return RKS(dft); })
         .def("uks", [](DFT &dft) { return UKS(dft); });
 

@@ -37,7 +37,7 @@ class HartreeFock {
                            bool incremental) const {
         return;
     }
-    bool supports_incremental_fock_build() const { return true; }
+    bool supports_incremental_fock_build() const { return !m_df_engine; }
 
     void set_system_charge(int charge);
     void set_density_fitting_basis(const std::string &);
