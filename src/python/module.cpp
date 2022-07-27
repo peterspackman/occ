@@ -8,6 +8,7 @@
 #include <occ/io/cifparser.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
+#include <occ/io/moldenreader.h>
 #include <occ/io/xyz.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -124,8 +125,14 @@ PYBIND11_MODULE(_occ, m) {
                  wfn.save(writer);
                  writer.write();
              })
-        .def_static("from_fchk", [](const std::string &filename) {
-            auto reader = occ::io::FchkReader(filename);
+        .def_static("from_fchk",
+                    [](const std::string &filename) {
+                        auto reader = occ::io::FchkReader(filename);
+                        Wavefunction wfn(reader);
+                        return wfn;
+                    })
+        .def_static("from_molden", [](const std::string &filename) {
+            auto reader = occ::io::MoldenReader(filename);
             Wavefunction wfn(reader);
             return wfn;
         });

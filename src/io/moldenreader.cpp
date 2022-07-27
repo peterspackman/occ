@@ -1,11 +1,11 @@
 #include <fmt/ostream.h>
+#include <fstream>
 #include <occ/core/logger.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/io/moldenreader.h>
 #include <scn/scn.h>
-#include <fstream>
 
 namespace occ::io {
 using occ::util::startswith;
@@ -67,6 +67,9 @@ void MoldenReader::parse_section(const std::string &section_name,
         parse_mo_section(args, stream);
     } else if (section_name == "5D") {
         m_pure = true;
+        for (auto &shell : m_shells) {
+            shell.kind = qm::Shell::Kind::Spherical;
+        }
         occ::log::debug("Basis uses pure spherical harmonics");
     }
 }
@@ -156,15 +159,13 @@ inline int l_from_char(const char c) {
     }
 }
 
-inline occ::qm::Shell
-parse_molden_shell(const std::array<double, 3> &position, bool pure,
-                   std::istream &stream) {
+inline occ::qm::Shell parse_molden_shell(const std::array<double, 3> &position,
+                                         bool pure, std::istream &stream) {
     std::string line;
     std::getline(stream, line);
     using occ::util::double_factorial;
-    occ::qm::Shell::Kind shell_kind =
-        pure ? occ::qm::Shell::Kind::Spherical
-             : occ::qm::Shell::Kind::Cartesian;
+    occ::qm::Shell::Kind shell_kind = pure ? occ::qm::Shell::Kind::Spherical
+                                           : occ::qm::Shell::Kind::Cartesian;
 
     std::string shell_type;
     int num_primitives, second;
@@ -239,10 +240,14 @@ void MoldenReader::parse_gto_section(const std::optional<std::string> &args,
             }
             stream.seekg(pos, std::ios_base::beg);
             m_shells.push_back(parse_molden_shell(position, m_pure, stream));
-            fmt::print("shells: {}\n", m_shells.size());
             pos = stream.tellg();
         }
     }
+}
+
+inline void fail_with_error(const std::string &msg, const std::string &line) {
+    throw std::runtime_error(fmt::format(
+        "Unable to parse molden file, error: {}, line = '{}'", msg, line));
 }
 
 void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream) {
@@ -251,17 +256,26 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream) {
     double occupation{0.0};
     std::string line;
     while (std::getline(stream, line)) {
+        trim(line);
+        auto result = scn::make_result(line);
         if (startswith(line, "Sym", true)) {
 
         } else if (startswith(line, "Ene", true)) {
-            auto scan_result = scn::scan(line, "Ene= {}", energy);
+            if (!(result = scn::scan(result.range(), "Ene= {}", energy))) {
+                fail_with_error(result.error().msg(), line);
+            }
         } else if (startswith(line, "Spin", true)) {
             std::string spin;
-            auto scan_result = scn::scan(line, "Spin= {}", spin);
+            if (!(result = scn::scan(result.range(), "Spin= {}", spin))) {
+                fail_with_error(result.error().msg(), line);
+            }
             to_lower(spin);
             alpha = (spin == "alpha");
         } else if (startswith(line, "Occup", true)) {
-            auto scan_result = scn::scan(line, "Occup= {}", occupation);
+            if (!(result =
+                      scn::scan(result.range(), "Occup= {}", occupation))) {
+                fail_with_error(result.error().msg(), line);
+            }
             m_num_electrons += occupation;
         } else {
             for (size_t i = 0; i < nbf(); i++) {
@@ -269,7 +283,11 @@ void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream) {
                     std::getline(stream, line);
                 int idx;
                 double coeff;
-                auto scan_result = scn::scan_default(line, idx, coeff);
+                auto scan_result = scn::make_result(line);
+                if (!(scan_result =
+                          scn::scan_default(scan_result.range(), idx, coeff))) {
+                    fail_with_error(scan_result.error().msg(), line);
+                }
                 if (alpha) {
                     m_molecular_orbitals_alpha(idx - 1, mo_a) = coeff;
                     m_energies_alpha(mo_a) = energy;
