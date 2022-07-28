@@ -4,6 +4,8 @@
 
 namespace occ::geometry {
 
+using std::size_t;
+
 struct IndexCache {
     struct Layer {
         std::array<uint32_t, 4> element{0};
