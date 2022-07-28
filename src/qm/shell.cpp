@@ -376,6 +376,26 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
     }
 }
 
+void AOBasis::update_bf_maps() {
+    m_first_bf.clear();
+    m_nbf = 0;
+    m_max_shell_size = 0;
+    m_bf_to_shell.clear();
+    m_bf_to_atom.clear();
+    size_t shell_idx = 0;
+    for (const auto &shell : m_shells) {
+        m_first_bf.push_back(m_nbf);
+        m_nbf += shell.size();
+        m_max_shell_size = std::max(m_max_shell_size, shell.size());
+        int atom_idx = m_shell_to_atom_idx[shell_idx];
+        for (int i = 0; i < shell.size(); i++) {
+            m_bf_to_shell.push_back(shell_idx);
+            m_bf_to_atom.push_back(atom_idx);
+        }
+        ++shell_idx;
+    }
+}
+
 void AOBasis::merge(const AOBasis &rhs) {
     // TODO handle case where atoms are common
     // TODO handle case where basis sets aren't both cartesian/spherical

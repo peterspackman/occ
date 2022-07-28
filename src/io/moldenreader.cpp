@@ -7,6 +7,8 @@
 #include <occ/io/moldenreader.h>
 #include <scn/scn.h>
 
+constexpr size_t expected_max_line_length{1024};
+
 namespace occ::io {
 using occ::util::startswith;
 using occ::util::to_lower;
@@ -30,6 +32,7 @@ std::optional<std::string> extract_section_args(const std::string &line) {
 }
 
 MoldenReader::MoldenReader(const std::string &filename) : m_filename(filename) {
+    m_current_line.reserve(expected_max_line_length);
     occ::timing::start(occ::timing::category::io);
     std::ifstream file(filename);
     parse(file);
@@ -37,17 +40,17 @@ MoldenReader::MoldenReader(const std::string &filename) : m_filename(filename) {
 }
 
 MoldenReader::MoldenReader(std::istream &file) {
+    m_current_line.reserve(expected_max_line_length);
     occ::timing::start(occ::timing::category::io);
     parse(file);
     occ::timing::stop(occ::timing::category::io);
 }
 
 void MoldenReader::parse(std::istream &stream) {
-    std::string line;
-    while (std::getline(stream, line)) {
-        if (is_section_line(line)) {
-            auto section_name = parse_section_name(line);
-            auto section_args = extract_section_args(line);
+    while (std::getline(stream, m_current_line)) {
+        if (is_section_line(m_current_line)) {
+            auto section_name = parse_section_name(m_current_line);
+            auto section_args = extract_section_args(m_current_line);
             occ::log::debug("Found section: {}", section_name);
             parse_section(section_name, section_args, stream);
         }
@@ -78,7 +81,6 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args,
                                        std::istream &stream) {
     occ::log::debug("Parsing Atoms section");
     auto pos = stream.tellg();
-    std::string line;
     std::vector<int> idx;
     std::string unit = args.value_or("bohr");
     trim(unit);
@@ -86,8 +88,8 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args,
     double factor = 1.0;
     if (startswith(unit, "angs", false))
         factor = 0.5291772108;
-    while (std::getline(stream, line)) {
-        if (is_section_line(line)) {
+    while (std::getline(stream, m_current_line)) {
+        if (is_section_line(m_current_line)) {
             stream.seekg(pos, std::ios_base::beg);
             break;
         }
@@ -95,8 +97,9 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args,
         std::string symbol;
         int idx;
         occ::core::Atom atom;
-        auto scan_result = scn::scan_default(
-            line, symbol, idx, atom.atomic_number, atom.x, atom.y, atom.z);
+        auto scan_result =
+            scn::scan_default(m_current_line, symbol, idx, atom.atomic_number,
+                              atom.x, atom.y, atom.z);
         if (factor != 1.0) {
             atom.x *= factor;
             atom.y *= factor;
@@ -110,14 +113,13 @@ void MoldenReader::parse_title_section(const std::optional<std::string> &args,
                                        std::istream &stream) {
     occ::log::debug("Parsing Title section");
     auto pos = stream.tellg();
-    std::string line;
-    while (std::getline(stream, line)) {
-        if (is_section_line(line)) {
+    while (std::getline(stream, m_current_line)) {
+        if (is_section_line(m_current_line)) {
             stream.seekg(pos, std::ios_base::beg);
             break;
         }
         pos = stream.tellg();
-        if (line.find("orca_2mkl") != std::string::npos) {
+        if (m_current_line.find("orca_2mkl") != std::string::npos) {
             occ::log::debug("Detected ORCA molden file");
             source = Source::Orca;
         }
@@ -160,16 +162,16 @@ inline int l_from_char(const char c) {
 }
 
 inline occ::qm::Shell parse_molden_shell(const std::array<double, 3> &position,
-                                         bool pure, std::istream &stream) {
-    std::string line;
-    std::getline(stream, line);
+                                         bool pure, std::istream &stream,
+                                         std::string &line_buffer) {
+    std::getline(stream, line_buffer);
     using occ::util::double_factorial;
     occ::qm::Shell::Kind shell_kind = pure ? occ::qm::Shell::Kind::Spherical
                                            : occ::qm::Shell::Kind::Cartesian;
 
     std::string shell_type;
     int num_primitives, second;
-    auto result = scn::make_result(line);
+    auto result = scn::make_result(line_buffer);
     if (!(result = scn::scan_default(result.range(), shell_type, num_primitives,
                                      second))) {
         fmt::print("Error: {}\n", result.error().msg());
@@ -180,9 +182,9 @@ inline occ::qm::Shell parse_molden_shell(const std::array<double, 3> &position,
     alpha.reserve(num_primitives), coeffs.reserve(num_primitives);
     int l = l_from_char(shell_type[0]);
     for (int i = 0; i < num_primitives; i++) {
-        std::getline(stream, line);
+        std::getline(stream, line_buffer);
         double e, c;
-        auto scan_result = scn::scan_default(line, e, c);
+        auto scan_result = scn::scan_default(line_buffer, e, c);
         alpha.push_back(e);
         coeffs.push_back(c);
     }
@@ -220,26 +222,26 @@ void MoldenReader::parse_gto_section(const std::optional<std::string> &args,
                                      std::istream &stream) {
     occ::log::debug("Parsing GTO section");
     auto pos = stream.tellg();
-    std::string line;
-    while (std::getline(stream, line)) {
-        if (is_section_line(line)) {
+    while (std::getline(stream, m_current_line)) {
+        if (is_section_line(m_current_line)) {
             stream.seekg(pos, std::ios_base::beg);
             break;
         }
         pos = stream.tellg();
         int atom_idx, second;
-        auto scan_result = scn::scan_default(line, atom_idx, second);
+        auto scan_result = scn::scan_default(m_current_line, atom_idx, second);
         assert(atom_idx <= m_atoms.size());
         std::array<double, 3> position{m_atoms[atom_idx - 1].x,
                                        m_atoms[atom_idx - 1].y,
                                        m_atoms[atom_idx - 1].z};
-        while (std::getline(stream, line)) {
-            trim(line);
-            if (line.empty()) {
+        while (std::getline(stream, m_current_line)) {
+            trim(m_current_line);
+            if (m_current_line.empty()) {
                 break;
             }
             stream.seekg(pos, std::ios_base::beg);
-            m_shells.push_back(parse_molden_shell(position, m_pure, stream));
+            m_shells.push_back(
+                parse_molden_shell(position, m_pure, stream, m_current_line));
             pos = stream.tellg();
         }
     }
@@ -251,42 +253,41 @@ inline void fail_with_error(const std::string &msg, const std::string &line) {
 }
 
 void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream) {
-    double energy;
-    bool alpha;
+    double energy{0.0};
+    bool alpha{false};
     double occupation{0.0};
-    std::string line;
-    while (std::getline(stream, line)) {
-        trim(line);
-        auto result = scn::make_result(line);
-        if (startswith(line, "Sym", true)) {
+    while (std::getline(stream, m_current_line)) {
+        trim(m_current_line);
+        auto result = scn::make_result(m_current_line);
+        if (startswith(m_current_line, "Sym", true)) {
 
-        } else if (startswith(line, "Ene", true)) {
+        } else if (startswith(m_current_line, "Ene", true)) {
             if (!(result = scn::scan(result.range(), "Ene= {}", energy))) {
-                fail_with_error(result.error().msg(), line);
+                fail_with_error(result.error().msg(), m_current_line);
             }
-        } else if (startswith(line, "Spin", true)) {
+        } else if (startswith(m_current_line, "Spin", true)) {
             std::string spin;
             if (!(result = scn::scan(result.range(), "Spin= {}", spin))) {
-                fail_with_error(result.error().msg(), line);
+                fail_with_error(result.error().msg(), m_current_line);
             }
             to_lower(spin);
             alpha = (spin == "alpha");
-        } else if (startswith(line, "Occup", true)) {
+        } else if (startswith(m_current_line, "Occup", true)) {
             if (!(result =
                       scn::scan(result.range(), "Occup= {}", occupation))) {
-                fail_with_error(result.error().msg(), line);
+                fail_with_error(result.error().msg(), m_current_line);
             }
             m_num_electrons += occupation;
         } else {
             for (size_t i = 0; i < nbf(); i++) {
                 if (i > 0)
-                    std::getline(stream, line);
+                    std::getline(stream, m_current_line);
                 int idx;
                 double coeff;
-                auto scan_result = scn::make_result(line);
+                auto scan_result = scn::make_result(m_current_line);
                 if (!(scan_result =
                           scn::scan_default(scan_result.range(), idx, coeff))) {
-                    fail_with_error(scan_result.error().msg(), line);
+                    fail_with_error(scan_result.error().msg(), m_current_line);
                 }
                 if (alpha) {
                     m_molecular_orbitals_alpha(idx - 1, mo_a) = coeff;
@@ -312,14 +313,13 @@ void MoldenReader::parse_mo_section(const std::optional<std::string> &args,
                                     std::istream &stream) {
     occ::log::debug("Parsing MO section");
     auto pos = stream.tellg();
-    std::string line;
     m_energies_alpha = occ::Vec(nbf());
     m_energies_beta = occ::Vec(nbf());
     m_molecular_orbitals_alpha = Mat(nbf(), nbf());
     m_molecular_orbitals_beta = Mat(nbf(), nbf());
     size_t num_alpha = 0, num_beta = 0;
-    while (std::getline(stream, line)) {
-        if (is_section_line(line)) {
+    while (std::getline(stream, m_current_line)) {
+        if (is_section_line(m_current_line)) {
             stream.seekg(pos, std::ios_base::beg);
             break;
         }

@@ -95,6 +95,7 @@ class MoldenReader {
     double m_total_alpha_occupation{0};
     double m_total_beta_occupation{0};
     double m_num_electrons{0};
+    std::string m_current_line;
     bool m_pure{false};
     Source source{Source::Unknown};
 };

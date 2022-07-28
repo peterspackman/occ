@@ -159,4 +159,140 @@ void MolecularOrbitals::incorporate_norm(Eigen::Ref<const Vec> norms) {
     update_density_matrix();
 }
 
+void MolecularOrbitals::to_cartesian(const AOBasis &bspure,
+                                     const AOBasis &bscart) {
+    const auto shell2bf_pure = bspure.first_bf();
+    const auto shell2bf_cart = bscart.first_bf();
+    occ::log::debug("Converting MO from spherical to Cartesian");
+    const auto &shells_pure = bspure.shells();
+    const auto &shells_cart = bscart.shells();
+
+    // fail early if we already have the right number of AOs
+    if (bspure.nbf() == bscart.nbf())
+        return;
+
+    Mat Cnew;
+    if (kind == SpinorbitalKind::Restricted) {
+        Cnew = Mat::Zero(bscart.nbf(), bscart.nbf());
+    } else {
+        auto [nrows, ncols] =
+            occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(
+                bscart.nbf());
+        Cnew = Mat::Zero(nrows, ncols);
+    }
+
+    for (size_t s = 0; s < bspure.size(); s++) {
+        const auto &shell_pure = bspure[s];
+        const auto &shell_cart = bscart[s];
+        size_t bf_first_pure = shell2bf_pure[s];
+        size_t bf_first_cart = shell2bf_cart[s];
+        size_t shell_size_pure = shell_pure.size();
+        size_t shell_size_cart = shell_cart.size();
+        int l = shell_pure.l;
+        Mat T = occ::gto::spherical_to_cartesian_transformation_matrix(l);
+
+        if (kind == SpinorbitalKind::Restricted) {
+            occ::log::debug("Restricted MO transform spherical->Cartesian");
+            Cnew.block(bf_first_cart, 0, shell_size_cart, Cnew.cols()) =
+                T * C.block(bf_first_pure, 0, shell_size_pure, C.cols());
+        } else {
+            occ::log::debug("Unrestricted MO transform spherical->Cartesian");
+            auto ca = block::a(C);
+            auto cb = block::b(C);
+            auto ca_new = block::a(Cnew);
+            auto cb_new = block::b(Cnew);
+            ca_new.block(bf_first_cart, 0, shell_size_cart, ca_new.cols()) =
+                T * ca.block(bf_first_pure, 0, shell_size_pure, ca.cols());
+            cb_new.block(bf_first_cart, 0, shell_size_cart, cb.cols()) =
+                T * cb.block(bf_first_pure, 0, shell_size_pure, cb.cols());
+        }
+    }
+    n_ao = bscart.nbf();
+    C = Cnew;
+    switch (kind) {
+    case SpinorbitalKind::Restricted: {
+        Cocc = C.leftCols(n_alpha);
+        break;
+    }
+    case SpinorbitalKind::Unrestricted: {
+        Cocc = Mat::Zero(2 * n_ao, std::max(n_alpha, n_beta));
+        Cocc.block(0, 0, n_ao, n_alpha) = block::a(C).leftCols(n_alpha);
+        Cocc.block(n_ao, 0, n_ao, n_beta) = block::b(C).leftCols(n_beta);
+        break;
+    }
+    case SpinorbitalKind::General: {
+        Cocc = C.leftCols(n_alpha);
+        break;
+    }
+    }
+    update_density_matrix();
+}
+
+void MolecularOrbitals::to_spherical(const AOBasis &bscart,
+                                     const AOBasis &bspure) {
+    const auto shell2bf_pure = bspure.first_bf();
+    const auto shell2bf_cart = bscart.first_bf();
+    occ::log::debug("Converting MO from Cartesian to spherical (lossy)");
+    const auto &shells_pure = bspure.shells();
+    const auto &shells_cart = bscart.shells();
+
+    // fail early if we already have the right number of AOs
+    if (bspure.nbf() == bscart.nbf())
+        return;
+
+    Mat Cnew;
+    if (kind == SpinorbitalKind::Restricted) {
+        Cnew = Mat::Zero(bspure.nbf(), bspure.nbf());
+    } else {
+        auto [nrows, ncols] =
+            occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(
+                bspure.nbf());
+        Cnew = Mat::Zero(nrows, ncols);
+    }
+
+    for (size_t s = 0; s < bspure.size(); s++) {
+        const auto &shell_pure = bspure[s];
+        const auto &shell_cart = bscart[s];
+        size_t bf_first_pure = shell2bf_pure[s];
+        size_t bf_first_cart = shell2bf_cart[s];
+        size_t shell_size_pure = shell_pure.size();
+        size_t shell_size_cart = shell_cart.size();
+        int l = shell_pure.l;
+        Mat T = occ::gto::cartesian_to_spherical_transformation_matrix(l);
+
+        if (kind == SpinorbitalKind::Restricted) {
+            occ::log::debug("Restricted MO transform Cartesian->spherical");
+            Cnew.block(bf_first_pure, 0, shell_size_pure, Cnew.cols()) =
+                T * C.block(bf_first_cart, 0, shell_size_cart, C.cols());
+        } else {
+            occ::log::debug("Unrestricted MO transform Cartesian->spherical");
+            auto ca = block::a(C);
+            auto cb = block::b(C);
+            auto ca_new = block::a(Cnew);
+            auto cb_new = block::b(Cnew);
+            ca_new.block(bf_first_pure, 0, shell_size_pure, ca_new.cols()) =
+                T * ca.block(bf_first_cart, 0, shell_size_cart, ca.cols());
+            cb_new.block(bf_first_pure, 0, shell_size_pure, cb.cols()) =
+                T * cb.block(bf_first_cart, 0, shell_size_cart, cb.cols());
+        }
+    }
+    switch (kind) {
+    case SpinorbitalKind::Restricted: {
+        Cocc = C.leftCols(n_alpha);
+        break;
+    }
+    case SpinorbitalKind::Unrestricted: {
+        Cocc = Mat::Zero(2 * n_ao, std::max(n_alpha, n_beta));
+        Cocc.block(0, 0, n_ao, n_alpha) = block::a(C).leftCols(n_alpha);
+        Cocc.block(n_ao, 0, n_ao, n_beta) = block::b(C).leftCols(n_beta);
+        break;
+    }
+    case SpinorbitalKind::General: {
+        Cocc = C.leftCols(n_alpha);
+        break;
+    }
+    }
+    update_density_matrix();
+}
+
 } // namespace occ::qm

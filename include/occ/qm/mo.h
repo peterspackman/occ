@@ -15,6 +15,8 @@ struct MolecularOrbitals {
     void update(const Mat &ortho, const Mat &potential);
     void update_density_matrix();
     void rotate(const AOBasis &basis, const occ::Mat3 &rotation);
+    void to_cartesian(const AOBasis &bspure, const AOBasis &bscart);
+    void to_spherical(const AOBasis &bscart, const AOBasis &bspure);
     void print() const;
     void incorporate_norm(Eigen::Ref<const Vec> norms);
 };

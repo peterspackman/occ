@@ -91,9 +91,12 @@ class AOBasis {
         return m_kind == Shell::Kind::Cartesian;
     }
     inline void set_kind(Shell::Kind kind) {
+        if (kind == m_kind)
+            return;
         m_kind = kind;
         for (auto &sh : m_shells)
             sh.kind = kind;
+        update_bf_maps();
     }
     inline void set_pure(bool pure) {
         set_kind(pure ? Shell::Kind::Spherical : Shell::Kind::Cartesian);
@@ -119,6 +122,7 @@ class AOBasis {
     bool operator==(const AOBasis &rhs);
 
   private:
+    void update_bf_maps();
     std::string m_basis_name;
     AtomList m_atoms;
     ShellList m_shells;
