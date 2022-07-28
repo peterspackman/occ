@@ -19,8 +19,8 @@ using occ::scf::SCF;
 
 void print_matrix_xyz(const Mat &m) {
     for (size_t i = 0; i < 3; i++) {
-        fmt::print("{: 12.6f} {: 12.6f} {: 12.6f}\n", m(i, 0),
-                   m(i, 1), m(i, 2));
+        fmt::print("{: 12.6f} {: 12.6f} {: 12.6f}\n", m(i, 0), m(i, 1),
+                   m(i, 2));
     }
     fmt::print("\n");
 }
@@ -47,10 +47,13 @@ void print_configuration(const Molecule &m, const OccInput &config) {
     fmt::print("{: <20s} {: >20s}\n", "Basis name", config.basis.name);
     fmt::print("{: <20s} {: >20s}\n", "Shell kind",
                config.basis.spherical ? "spherical" : "Cartesian");
-    fmt::print("{: <20s} {: >20d}\n", "Net charge", static_cast<int>(config.electronic.charge));
-    fmt::print("{: <20s} {: >20d}\n", "Multiplicity", config.electronic.multiplicity);
+    fmt::print("{: <20s} {: >20d}\n", "Net charge",
+               static_cast<int>(config.electronic.charge));
+    fmt::print("{: <20s} {: >20d}\n", "Multiplicity",
+               config.electronic.multiplicity);
 
-    fmt::print("\n{:—<72s}\n\n", fmt::format("Geometry '{}' (au)  ", config.filename));
+    fmt::print("\n{:—<72s}\n\n",
+               fmt::format("Geometry '{}' (au)  ", config.filename));
     for (const auto &atom : m.atoms()) {
         fmt::print("{:^3s} {:12.6f} {:12.6f} {:12.6f}\n",
                    Element(atom.atomic_number).symbol(), atom.x, atom.y,
@@ -67,14 +70,13 @@ void print_configuration(const Molecule &m, const OccInput &config) {
     fmt::print("\n{:—<72s}\n\n", "Rotational constants (GHz)  ");
     print_vector(m.rotational_constants());
     fmt::print("\n");
-    
-    fmt::print("\n{:—<72s}\n\n", 
-            fmt::format("Gas-phase properties (at {} K)  ", temperature));
+
+    fmt::print("\n{:—<72s}\n\n",
+               fmt::format("Gas-phase properties (at {} K)  ", temperature));
     fmt::print("Rotational free energy      {: 12.6f} kJ/mol\n",
                m.rotational_free_energy(temperature));
-    fmt::print(
-        "Translational free energy   {: 12.6f} kJ/mol\n",
-        m.translational_free_energy(temperature));
+    fmt::print("Translational free energy   {: 12.6f} kJ/mol\n",
+               m.translational_free_energy(temperature));
     fmt::print("\n");
 }
 
@@ -107,6 +109,8 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
     using occ::solvent::SolvationCorrectedProcedure;
     if constexpr (std::is_same<T, DFT>::value) {
         DFT ks(config.method.name, wfn.basis, SK);
+        if (!config.basis.df_name.empty())
+            ks.set_density_fitting_basis(config.basis.df_name);
         SolvationCorrectedProcedure<DFT> proc_solv(ks,
                                                    config.solvent.solvent_name);
         SCF<SolvationCorrectedProcedure<DFT>, SK> scf(proc_solv);
@@ -121,6 +125,8 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
         return scf.wavefunction();
     } else {
         T proc(wfn.basis);
+        if (!config.basis.df_name.empty())
+            proc.set_density_fitting_basis(config.basis.df_name);
         SolvationCorrectedProcedure<T> proc_solv(proc,
                                                  config.solvent.solvent_name);
         SCF<SolvationCorrectedProcedure<T>, SK> scf(proc_solv);
