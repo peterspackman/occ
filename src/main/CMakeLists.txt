@@ -22,6 +22,18 @@ target_include_directories(occ_main PUBLIC
 
 target_compile_features(occ_main PUBLIC cxx_std_17)
 
+add_executable(occ_xdm "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")
+target_link_libraries(occ_xdm
+    PUBLIC
+    occ_main
+    occ_slater
+    cxxopts
+)
+
+set_target_properties(occ_xdm
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 add_executable(occ "${CMAKE_CURRENT_SOURCE_DIR}/occ.cpp")
 target_link_libraries(occ
