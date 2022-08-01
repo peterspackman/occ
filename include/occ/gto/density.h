@@ -59,7 +59,7 @@ void evaluate_density(MatConstRef D, const occ::gto::GTOValues &gto_values,
                         .sum();
             // tau
             Dphi =
-                (gto_values.phi_x + gto_values.phi_y + gto_values.phi_z) * Da;
+                gto_values.phi_x * Da;
             rho_a.col(5) =
                 (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
             Dphi = gto_values.phi_y * Da;
@@ -68,7 +68,7 @@ void evaluate_density(MatConstRef D, const occ::gto::GTOValues &gto_values,
             Dphi = gto_values.phi_z * Da;
             rho_a.col(5).array() +=
                 (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
-            rho_a.col(4).array() += 2 * rho.col(5).array();
+            rho_a.col(4).array() += 2 * rho_a.col(5).array();
             rho_a.col(5).array() *= 0.5;
         }
         // beta part
@@ -102,7 +102,7 @@ void evaluate_density(MatConstRef D, const occ::gto::GTOValues &gto_values,
             Dphi = gto_values.phi_z * Db;
             rho_b.col(5).array() +=
                 (gto_values.phi_z.array() * Dphi.array()).rowwise().sum();
-            rho_b.col(4).array() += 2 * rho.col(5).array();
+            rho_b.col(4).array() += 2 * rho_b.col(5).array();
             rho_b.col(5).array() *= 0.5;
         }
     } else {

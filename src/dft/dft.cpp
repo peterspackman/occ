@@ -67,11 +67,12 @@ DFT::DFT(const std::string &method, const AOBasis &basis, SpinorbitalKind kind)
     : m_spinorbital_kind(kind), m_hf(basis), m_grid(basis) {
 
     set_integration_grid();
-    set_method(method);
+    set_method(method, m_spinorbital_kind == SpinorbitalKind::Unrestricted);
 }
 
 void DFT::set_unrestricted(bool unrestricted) {
-    set_method(m_method_string, unrestricted);
+    m_spinorbital_kind = unrestricted ? SpinorbitalKind::Unrestricted : SpinorbitalKind::Restricted;
+    set_method(m_method_string, m_spinorbital_kind == SpinorbitalKind::Unrestricted);
 }
 
 void DFT::set_method(const std::string &method_string, bool unrestricted) {
@@ -119,8 +120,10 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
     for (const auto &token : tokens) {
         std::string m = token;
         occ::log::debug("Token: {}", m);
-        if (m[0] == 'u')
+        if (m[0] == 'u') {
+	    // TODO handle unrestricted convenience case
             m = m.substr(1);
+	}
         if (builtin_functionals.contains(m)) {
             auto combo = builtin_functionals.at(m);
             occ::log::debug("Found builtin functional combination for {}", m);

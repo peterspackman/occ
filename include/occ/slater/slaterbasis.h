@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/3rdparty/robin_hood.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/atom.h>
 #include <string>
 #include <vector>
 
@@ -58,4 +59,6 @@ class Basis {
 
 robin_hood::unordered_map<std::string, Basis>
 load_slaterbasis(const std::string &);
+
+std::vector<Basis> slaterbasis_for_atoms(const std::vector<occ::core::Atom> &, const std::string &basis_name = "thakkar");
 } // namespace occ::slater

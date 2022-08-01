@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>
+#include <occ/core/element.h>
 
 namespace occ::slater {
 
@@ -258,6 +259,19 @@ load_slaterbasis(const std::string &name) {
         basis_set[k] = Basis(shells);
     }
     return basis_set;
+}
+
+
+std::vector<Basis> slaterbasis_for_atoms(const std::vector<occ::core::Atom> &atoms, const std::string &basis_name) {
+    auto slaterbasis_data = occ::slater::load_slaterbasis(basis_name);
+    std::vector<Basis> result;
+    for (const auto &atom: atoms) {
+	auto el = occ::core::Element(atom.atomic_number);
+	std::string sym = el.symbol();
+	if(sym == "H") sym = "H_normal";
+	result.push_back(slaterbasis_data[sym]);
+    }
+    return result;
 }
 
 } // namespace occ::slater
