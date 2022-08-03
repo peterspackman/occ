@@ -1,0 +1,4 @@
+set(OCC_XDM_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/becke_hole.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/xdm.h"
+    PARENT_SCOPE)

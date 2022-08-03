@@ -154,6 +154,8 @@ class Element {
         return m_data.atomic_number != rhs.m_data.atomic_number;
     }
 
+    double polarizability() const;
+
   private:
     ElementData m_data;
 };

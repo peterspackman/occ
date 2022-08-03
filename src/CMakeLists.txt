@@ -9,6 +9,7 @@ add_subdirectory(dft)
 add_subdirectory(sht)
 add_subdirectory(slater)
 add_subdirectory(solvent)
+add_subdirectory(xdm)
 
 add_subdirectory(main)
 
