@@ -1,11 +1,12 @@
 #include <cmath>
-#include <iostream>
-#include <occ/qm/wavefunction.h>
-#include <occ/io/fchkreader.h>
-#include <occ/core/linear_algebra.h>
-#include <occ/io/moldenreader.h>
 #include <filesystem>
 #include <fmt/core.h>
+#include <iostream>
+#include <occ/core/linear_algebra.h>
+#include <occ/core/logger.h>
+#include <occ/io/fchkreader.h>
+#include <occ/io/moldenreader.h>
+#include <occ/qm/wavefunction.h>
 #include <occ/xdm/xdm.h>
 #include <vector>
 
@@ -30,8 +31,9 @@ Wavefunction load_wavefunction(const std::string &filename) {
         "Unknown file extension when reading wavefunction: " + ext);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+
+    occ::log::set_level(occ::log::level::debug);
     auto wfn = load_wavefunction(argv[1]);
     fmt::print("wfn loaded: {}\n", argv[1]);
 
@@ -40,4 +42,3 @@ int main(int argc, char *argv[])
     fmt::print("XDM energy = {:20.16f} Hartree\n", e);
     return 0;
 }
-

@@ -26,6 +26,8 @@ struct CEParameterizedModel {
 inline CEParameterizedModel CE_HF_321G{1.019, 0.811, 0.651, 0.901, "CE-HF"};
 inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177, 0.7399, 0.8708,
                                             "CE-B3LYP"};
+inline CEParameterizedModel CE_B3LYP_SVP_XDM{1.0, 1.0, 1.0, 1.0,
+                                             "CE-B3LYP-XDM"};
 
 void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
                                double precision, const Mat &Schwarz);

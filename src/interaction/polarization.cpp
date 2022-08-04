@@ -53,4 +53,14 @@ double ce_model_polarization_energy(const occ::IVec &atomic_numbers,
     return epol * -0.5;
 }
 
+double polarization_energy(const occ::Vec &polarizabilities,
+                           const occ::Mat3N &field) {
+    auto fsq = field.colwise().squaredNorm();
+    double epol = 0.0;
+    for (auto i = 0; i < polarizabilities.rows(); i++) {
+        epol += polarizabilities(i) * fsq(i);
+    }
+    return epol * -0.5;
+}
+
 } // namespace occ::pol

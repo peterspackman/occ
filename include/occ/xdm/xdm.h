@@ -1,16 +1,16 @@
 #pragma once
-#include <occ/qm/shell.h>
 #include <occ/dft/grid.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/shell.h>
 #include <occ/slater/slaterbasis.h>
 
 namespace occ::xdm {
 
 class XDM {
-public:
+  public:
     struct Parameters {
-	double a1{1.0};
-	double a2{1.0}; // angstroms
+        double a1{1.0};
+        double a2{1.0}; // angstroms
     };
 
     XDM(const occ::qm::AOBasis &basis);
@@ -24,7 +24,7 @@ public:
     inline const auto &atom_volume() const { return m_volume; }
     inline const auto &free_atom_volume() const { return m_volume_free; }
 
-private:
+  private:
     void populate_moments(const occ::qm::MolecularOrbitals &mo);
 
     occ::qm::AOBasis m_basis;
@@ -40,5 +40,4 @@ private:
     Mat3N m_forces;
 };
 
-}
-
+} // namespace occ::xdm
