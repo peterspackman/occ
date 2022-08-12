@@ -1,6 +1,7 @@
 set(OCC_CORE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/atom.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/bondgraph.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/combinations.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/diis.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/eem.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/eigenp.h"

@@ -17,6 +17,7 @@
 #include <occ/io/eigen_json.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
+#include <occ/io/kmcpp.h>
 #include <occ/io/occ_input.h>
 #include <occ/main/pair_energy.h>
 #include <occ/main/single_point.h>
@@ -593,6 +594,16 @@ int main(int argc, char **argv) {
         auto uc_dimers = c_symm.unit_cell_dimers(cg_radius);
         auto &uc_neighbors = uc_dimers.molecule_neighbors;
 
+        {
+            std::string kmcpp_structure_filename =
+                fmt::format("{}_kmcpp.json", basename);
+            fmt::print("Writing kmcpp structure file to '{}'\n",
+                       kmcpp_structure_filename);
+            occ::io::kmcpp::InputWriter kmcpp_structure_writer(
+                kmcpp_structure_filename);
+            kmcpp_structure_writer.write(c_symm, uc_dimers);
+        }
+
         // write CG structure file
         {
             std::string cg_structure_filename =
@@ -670,6 +681,16 @@ int main(int argc, char **argv) {
                     e_int, rc, match_type);
                 j++;
             }
+        }
+
+        {
+            std::string kmcpp_structure_filename =
+                fmt::format("{}_kmcpp.json", basename);
+            fmt::print("Writing kmcpp structure file to '{}'\n",
+                       kmcpp_structure_filename);
+            occ::io::kmcpp::InputWriter kmcpp_structure_writer(
+                kmcpp_structure_filename);
+            kmcpp_structure_writer.write(c_symm, uc_dimers);
         }
 
         // write CG net file

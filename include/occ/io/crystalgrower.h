@@ -3,12 +3,8 @@
 #include <occ/crystal/crystal.h>
 #include <vector>
 
-namespace occ::crystal {
-class Crystal;
-class CrystalDimers;
-} // namespace occ::crystal
-
 namespace occ::io::crystalgrower {
+
 class StructureWriter {
   public:
     StructureWriter(const std::string &filename);
