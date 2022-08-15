@@ -19,6 +19,7 @@
 #include <occ/io/fchkwriter.h>
 #include <occ/io/kmcpp.h>
 #include <occ/io/occ_input.h>
+#include <occ/io/xyz.h>
 #include <occ/main/pair_energy.h>
 #include <occ/main/single_point.h>
 #include <occ/main/solvation_partition.h>
@@ -272,6 +273,7 @@ int main(int argc, char **argv) {
     std::string solvent{"water"};
     std::string wfn_choice{"gas"};
     std::string charge_string{""};
+    std::string region_string{""};
     bool write_dump_files{false};
     // clang-format off
     options.add_options()
@@ -285,7 +287,8 @@ int main(int argc, char **argv) {
          cxxopts::value<double>(cg_radius)->default_value("3.8"))
         ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent))
         ("d,dump", "Write dump files", cxxopts::value<bool>(write_dump_files))
-	("charges", "Fragment chargs", cxxopts::value<std::string>(charge_string))
+	("charges", "Fragment charges", cxxopts::value<std::string>(charge_string))
+	("g,region", "Restric to this region (xyz file)", cxxopts::value<std::string>(region_string))
         ("w,wavefunction-choice", "Choice of wavefunctions",
          cxxopts::value<std::string>(wfn_choice));
     // clang-format on
@@ -296,12 +299,17 @@ int main(int argc, char **argv) {
 
     occ::timing::StopWatch global_timer;
     global_timer.start();
+    std::optional<Molecule> region;
 
     try {
         auto result = options.parse(argc, argv);
         if (result.count("help")) {
             fmt::print("{}", options.help());
             exit(1);
+        }
+
+        if (result.count("region")) {
+            region = occ::io::molecule_from_xyz_file(region_string);
         }
         occ::parallel::set_num_threads(std::max(1, threads));
 #ifdef _OPENMP
@@ -494,6 +502,16 @@ int main(int argc, char **argv) {
             double total_interaction_energy{0.0};
 
             for (const auto &dimer : n) {
+                if (region) {
+                    const auto &b = dimer.b();
+                    auto [idx_region_b, idx_mol_b, distance_rb] =
+                        region.value().nearest_atom(b);
+                    if (distance_rb > 1e-3) {
+                        fmt::print("Excluding {}\n", distance_rb);
+                        j++;
+                        continue;
+                    }
+                }
                 auto s_ab = c_symm.dimer_symmetry_string(dimer);
                 size_t idx = crystal_dimers.unique_dimer_idx[i][j];
                 double rn = dimer.nearest_distance();

@@ -24,7 +24,7 @@ void InputWriter::write(const occ::crystal::Crystal &crystal,
     const auto &neighbors = uc_dimers.molecule_neighbors;
     nlohmann::json repr;
     repr["kind"] = "atoms";
-    repr["lattice_vectors"] = crystal.unit_cell().direct();
+    j["lattice_vectors"] = crystal.unit_cell().direct();
     repr["elements"] = {};
     repr["positions"] = {};
     j["neighbor_offsets"] = {};

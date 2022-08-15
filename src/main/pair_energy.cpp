@@ -316,8 +316,7 @@ converged_lattice_energies(const Crystal &crystal,
     double wolf_energy = 0.0;
     int asym_idx = 0;
     auto surrounds = crystal.asymmetric_unit_atom_surroundings(conv.max_radius);
-    auto wolf_params =
-        occ::interaction::WolfParams{std::max(conv.max_radius, 16.0), 0.2};
+    auto wolf_params = occ::interaction::WolfParams{16.0, 0.2};
     Mat3N asym_cart = crystal.to_cartesian(crystal.asymmetric_unit().positions);
     Vec asym_wolf(surrounds.size());
     for (const auto &s : surrounds) {
