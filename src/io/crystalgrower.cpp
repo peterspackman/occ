@@ -83,6 +83,7 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
     std::vector<double> unique_interaction_energies;
     for (const auto &mol : uc_molecules) {
 
+        std::vector<double> energies_to_print;
         for (const auto &n : neighbors[uc_idx]) {
             const auto uc_shift = n.b().cell_shift();
             const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
@@ -107,9 +108,10 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
             fmt::print(m_dest, "{}:[1A][{}-{}]({},{},{}) R={:.3f}\n",
                        interaction_idx, n.a().name(), n.b().name(), uc_shift[0],
                        uc_shift[1], uc_shift[2], n.centroid_distance());
-            interaction_idx++;
+            energies_to_print.push_back(
+                unique_interaction_energies[interaction_idx - 1]);
         }
-        for (double e : unique_interaction_energies) {
+        for (double e : energies_to_print) {
             fmt::print(m_dest, "{:.4f}\n", e);
         }
         uc_idx++;

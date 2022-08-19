@@ -15,7 +15,8 @@ InputWriter::InputWriter(const std::string &filename)
 InputWriter::InputWriter(std::ostream &stream) : m_dest(stream) {}
 
 void InputWriter::write(const occ::crystal::Crystal &crystal,
-                        const occ::crystal::CrystalDimers &uc_dimers) {
+                        const occ::crystal::CrystalDimers &uc_dimers,
+                        const std::vector<double> &solution_term) {
 
     nlohmann::json j;
     j["title"] = "title";
@@ -27,6 +28,7 @@ void InputWriter::write(const occ::crystal::Crystal &crystal,
     j["lattice_vectors"] = crystal.unit_cell().direct();
     repr["elements"] = {};
     repr["positions"] = {};
+    j["solution term"] = solution_term;
     j["neighbor_offsets"] = {};
     size_t uc_idx_a = 0;
     j["neighbor_energies"] = {};

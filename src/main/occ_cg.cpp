@@ -42,13 +42,6 @@ using occ::scf::SCF;
 using occ::units::AU_TO_KJ_PER_MOL;
 using occ::units::BOHR_TO_ANGSTROM;
 
-struct InteractionE {
-    double actual{0.0};
-    double fictitious{0.0};
-};
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InteractionE, actual, fictitious)
-
 namespace occ::qm {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Energy, coulomb, exchange, nuclear_repulsion,
                                    nuclear_attraction, kinetic, core, total)
@@ -394,7 +387,7 @@ int main(int argc, char **argv) {
 
         const std::string row_fmt_string =
             "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
-            "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
+            "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
 
         const auto &wfns_a = [&]() {
             if (wfn_choice == "gas")
@@ -441,8 +434,9 @@ int main(int argc, char **argv) {
         const auto &mol_neighbors = crystal_dimers.molecule_neighbors;
         std::vector<std::vector<occ::main::SolventNeighborContribution>>
             solvation_breakdowns;
-        std::vector<std::vector<InteractionE>> interaction_energies_vec(
+        std::vector<std::vector<double>> interaction_energies_vec(
             mol_neighbors.size());
+        std::vector<double> solution_terms(mol_neighbors.size(), 0.0);
         double dG_solubility{0.0};
         for (size_t i = 0; i < mol_neighbors.size(); i++) {
             const auto &n = mol_neighbors[i];
@@ -468,11 +462,10 @@ int main(int argc, char **argv) {
 
             fmt::print("Neighbors for asymmetric molecule {}\n", i);
 
-            fmt::print(
-                "{:>7s} {:>7s} {:>20s} "
-                "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
-                "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA", "E_S", "E_gas",
-                "E_nn", "E_cg", "E_int");
+            fmt::print("{:>7s} {:>7s} {:>20s} "
+                       "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
+                       "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA", "E_S",
+                       "E_nn", "E_int");
             fmt::print("============================="
                        "============================="
                        "=============================\n");
@@ -493,11 +486,9 @@ int main(int argc, char **argv) {
                     return x.is_nn ? a + 1 : a;
                 });
 
-            // TODO adjust for co-crystals!
-            double gas_term_per_interaction =
-                2 * surfaces[i].dg_gas / num_neighbors;
-            double correction_term_per_interaction =
-                2 * surfaces[i].dg_correction / num_neighbors;
+            solution_terms[i] =
+                (surfaces[i].dg_gas + surfaces[i].dg_correction) *
+                AU_TO_KJ_PER_MOL;
 
             double total_interaction_energy{0.0};
 
@@ -538,31 +529,22 @@ int main(int argc, char **argv) {
                     v_ab(0), v_ab(1), v_ab(2), v_ab.norm(), etot);
 
                 double solv_cont = solv[j].total() * AU_TO_KJ_PER_MOL;
-                double gas_term =
-                    crystal_contributions[j].is_nn
-                        ? gas_term_per_interaction * AU_TO_KJ_PER_MOL
-                        : 0.0;
-                double correction_term =
-                    crystal_contributions[j].is_nn
-                        ? correction_term_per_interaction * AU_TO_KJ_PER_MOL
-                        : 0.0;
 
-                double e_int = correction_term + gas_term + solv_cont - etot -
-                               crystal_contributions[j].energy;
+                double e_int =
+                    solv_cont - etot - crystal_contributions[j].energy;
                 if (!crystal_contributions[j].is_nn) {
                     e_int = 0;
                 } else {
                     total_interaction_energy += e_int;
                 }
-                interactions.push_back({e_int, e_int - gas_term});
+                interactions.push_back(e_int);
                 auto &sj = solv[j];
 
                 fmt::print(row_fmt_string, rn, rc, s_ab, etot,
                            (sj.coulomb.ab + sj.cds.ab) * AU_TO_KJ_PER_MOL,
                            (sj.coulomb.ba + sj.cds.ba) * AU_TO_KJ_PER_MOL,
-                           sj.total() * AU_TO_KJ_PER_MOL, gas_term,
-                           crystal_contributions[j].energy, e_int - gas_term,
-                           e_int);
+                           sj.total() * AU_TO_KJ_PER_MOL,
+                           crystal_contributions[j].energy, e_int);
                 j++;
             }
             constexpr double R = 8.31446261815324;
@@ -605,22 +587,12 @@ int main(int argc, char **argv) {
                        std::log10(equilibrium_constant));
             fmt::print("solubility (g/L)                     {: 9.2e}\n",
                        equilibrium_constant * molar_mass * 1000);
-            fmt::print("Total E_int (~ 2 x \u0394G solution)      {: 9.3f}\n",
+            fmt::print("Total E_int                          {: 9.3f}\n",
                        total_interaction_energy);
         }
 
         auto uc_dimers = c_symm.unit_cell_dimers(cg_radius);
         auto &uc_neighbors = uc_dimers.molecule_neighbors;
-
-        {
-            std::string kmcpp_structure_filename =
-                fmt::format("{}_kmcpp.json", basename);
-            fmt::print("Writing kmcpp structure file to '{}'\n",
-                       kmcpp_structure_filename);
-            occ::io::kmcpp::InputWriter kmcpp_structure_writer(
-                kmcpp_structure_filename);
-            kmcpp_structure_writer.write(c_symm, uc_dimers);
-        }
 
         // write CG structure file
         {
@@ -633,11 +605,13 @@ int main(int argc, char **argv) {
             cg_structure_writer.write(c_symm, uc_dimers);
         }
 
+        std::vector<double> solution_terms_uc(uc_neighbors.size());
         // map interactions surrounding UC molecules to symmetry unique
         // interactions
         for (size_t i = 0; i < uc_neighbors.size(); i++) {
             const auto &m = c_symm.unit_cell_molecules()[i];
             size_t asym_idx = m.asymmetric_molecule_idx();
+            solution_terms_uc[i] = solution_terms[asym_idx];
             const auto &m_asym = c_symm.symmetry_unique_molecules()[asym_idx];
             auto &n = uc_neighbors[i];
             fmt::print("Molecule {} has {} neighbours within {:.3f}\n", i,
@@ -689,8 +663,8 @@ int main(int argc, char **argv) {
                 double rn = dimer.nearest_distance();
                 double rc = dimer.centroid_distance();
 
-                double e_int = interaction_energies[idx].fictitious *
-                               occ::units::KJ_TO_KCAL;
+                double e_int =
+                    interaction_energies[idx] * occ::units::KJ_TO_KCAL;
 
                 dimer.set_interaction_energy(e_int);
                 occ::log::debug(
@@ -708,7 +682,7 @@ int main(int argc, char **argv) {
                        kmcpp_structure_filename);
             occ::io::kmcpp::InputWriter kmcpp_structure_writer(
                 kmcpp_structure_filename);
-            kmcpp_structure_writer.write(c_symm, uc_dimers);
+            kmcpp_structure_writer.write(c_symm, uc_dimers, solution_terms_uc);
         }
 
         // write CG net file

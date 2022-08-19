@@ -10,9 +10,8 @@ class InputWriter {
     InputWriter(std::ostream &);
 
     void write(const occ::crystal::Crystal &,
-               const occ::crystal::CrystalDimers &);
-    void write_net(const occ::crystal::Crystal &,
-                   const occ::crystal::CrystalDimers &);
+               const occ::crystal::CrystalDimers &,
+               const std::vector<double> &);
 
   private:
     std::ofstream m_owned_destination;
