@@ -1,6 +1,6 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <occ/3rdparty/robin_hood.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/atom.h>
 #include <occ/core/logger.h>
 #include <occ/core/timings.h>
@@ -22,7 +22,7 @@ struct FuncComponent {
     double hfx{0.0};
 };
 
-const robin_hood::unordered_map<std::string, std::vector<FuncComponent>>
+const phmap::flat_hash_map<std::string, std::vector<FuncComponent>>
     builtin_functionals({
         {"b3lyp", {{dfid::hyb_gga_xc_b3lyp, 1.0}}},
         {"b3pw91", {{dfid::hyb_gga_xc_b3pw91, 1.0}}},
@@ -71,8 +71,10 @@ DFT::DFT(const std::string &method, const AOBasis &basis, SpinorbitalKind kind)
 }
 
 void DFT::set_unrestricted(bool unrestricted) {
-    m_spinorbital_kind = unrestricted ? SpinorbitalKind::Unrestricted : SpinorbitalKind::Restricted;
-    set_method(m_method_string, m_spinorbital_kind == SpinorbitalKind::Unrestricted);
+    m_spinorbital_kind = unrestricted ? SpinorbitalKind::Unrestricted
+                                      : SpinorbitalKind::Restricted;
+    set_method(m_method_string,
+               m_spinorbital_kind == SpinorbitalKind::Unrestricted);
 }
 
 void DFT::set_method(const std::string &method_string, bool unrestricted) {
@@ -121,9 +123,9 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
         std::string m = token;
         occ::log::debug("Token: {}", m);
         if (m[0] == 'u') {
-	    // TODO handle unrestricted convenience case
+            // TODO handle unrestricted convenience case
             m = m.substr(1);
-	}
+        }
         if (builtin_functionals.contains(m)) {
             auto combo = builtin_functionals.at(m);
             occ::log::debug("Found builtin functional combination for {}", m);

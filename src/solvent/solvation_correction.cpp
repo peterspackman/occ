@@ -16,7 +16,7 @@ ContinuumSolvationModel::ContinuumSolvationModel(
     const std::vector<occ::core::Atom> &atoms, const std::string &solvent)
     : m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()),
       m_solvent_name(solvent), m_cosmo(78.39) {
-    robin_hood::unordered_map<int, double> element_radii;
+    phmap::flat_hash_map<int, double> element_radii;
     for (size_t i = 0; i < atoms.size(); i++) {
         m_nuclear_positions(0, i) = atoms[i].x;
         m_nuclear_positions(1, i) = atoms[i].y;

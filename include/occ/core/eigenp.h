@@ -7,7 +7,7 @@
 #include <fstream>
 #include <memory>
 #include <numeric>
-#include <occ/3rdparty/robin_hood.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/linear_algebra.h>
 #include <regex>
 #include <string>
@@ -80,7 +80,7 @@ struct NumpyArray {
     size_t size;
 };
 
-using npz_type = robin_hood::unordered_map<std::string, NumpyArray>;
+using npz_type = phmap::flat_hash_map<std::string, NumpyArray>;
 
 inline void parse_numpy_header(const std::string header, size_t &word_size,
                                std::vector<size_t> &shape,

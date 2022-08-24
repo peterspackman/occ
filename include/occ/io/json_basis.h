@@ -1,5 +1,5 @@
 #include <istream>
-#include <occ/3rdparty/robin_hood.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/element.h>
 #include <vector>
 
@@ -24,7 +24,7 @@ struct ElementBasis {
     std::vector<ReferenceData> references;
 };
 
-using ElementMap = robin_hood::unordered_map<int, ElementBasis>;
+using ElementMap = phmap::flat_hash_map<int, ElementBasis>;
 
 struct JsonBasis {
     std::string version;

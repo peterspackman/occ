@@ -19,12 +19,17 @@ add_library(occ_core
     ${OCC_CORE_INCLUDE_FILES}
 )
 
+if("${USE_SYSTEM_BLAS}")
+    target_link_libraries(occ_core
+	PUBLIC
+	${BLAS_LIBRARIES})
+    target_compile_definitions(occ_core PUBLIC EIGEN_USE_BLAS)
+endif()
+
 target_link_libraries(occ_core
     PUBLIC 
     Eigen3::Eigen 
     fmt::fmt
-    ${BLAS_LIBRARIES}
-    ${LAPACK_LIBRARIES}
     LBFGSpp::LBFGSpp
     scn::scn
     spdlog::spdlog

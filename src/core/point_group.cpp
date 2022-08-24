@@ -1,6 +1,6 @@
 #include <Eigen/Geometry>
 #include <fmt/ostream.h>
-#include <occ/3rdparty/robin_hood.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/logger.h>
 #include <occ/core/point_group.h>
 #include <occ/core/units.h>
@@ -101,7 +101,7 @@ IVec smallest_off_axis_group(const occ::core::Molecule &mol, const Vec3 &axis) {
     };
 
     IVec mask(N);
-    robin_hood::unordered_map<int, int> group_size;
+    phmap::flat_hash_map<int, int> group_size;
     for (int i = 0; i < N; i++) {
         int el = els(i);
         if (off_axis(pos.col(i))) {
@@ -176,7 +176,7 @@ void MolecularPointGroup::init_linear() {
 }
 
 void MolecularPointGroup::find_spherical_axes() {
-    robin_hood::unordered_map<int, int> count;
+    phmap::flat_hash_map<int, int> count;
     std::array<bool, 6> rot_found{false, false, false, false, false, false};
 
     const auto &pos = centered_molecule.positions();
@@ -188,7 +188,7 @@ void MolecularPointGroup::find_spherical_axes() {
         else
             count[el]++;
     }
-    const robin_hood::pair<int, int> &min_el = *std::min_element(
+    const auto &min_el = *std::min_element(
         count.begin(), count.end(),
         [](const auto &l, const auto &r) { return l.second < r.second; });
 

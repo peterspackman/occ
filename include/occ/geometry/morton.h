@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <occ/3rdparty/parallel_hashmap/phmap_utils.h>
 
 namespace occ::geometry {
 
@@ -50,11 +51,8 @@ struct MIndex {
     bool operator!=(const MIndex &other) const { return code != other.code; }
     bool operator==(const MIndex &other) const { return code == other.code; }
     bool operator>(const MIndex &other) const { return code > other.code; }
-};
-
-struct MIndexHash {
-    std::size_t operator()(const occ::geometry::MIndex &k) const {
-        return static_cast<size_t>(k.code);
+    friend size_t hash_value(const MIndex &m) {
+        return phmap::HashState().combine(0, m.code);
     }
 };
 

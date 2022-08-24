@@ -14,21 +14,16 @@ struct Edge {
     bool operator==(const Edge &other) const {
         return (from == other.from) && (to == other.to);
     }
-};
-
-struct EdgeHash {
-    size_t operator()(const Edge &x) const {
-        return robin_hood::hash_bytes(&x, sizeof(Edge));
+    friend size_t hash_value(const Edge &e) {
+        return phmap::HashState().combine(0, e.from, e.to);
     }
 };
 
 } // namespace impl
 
 struct LinearHashedMarchingCubes {
-    using VertexMap =
-        robin_hood::unordered_flat_map<MIndex, size_t, MIndexHash>;
-    using EdgeMap =
-        robin_hood::unordered_flat_map<impl::Edge, size_t, impl::EdgeHash>;
+    using VertexMap = phmap::flat_hash_map<MIndex, size_t>;
+    using EdgeMap = phmap::flat_hash_map<impl::Edge, size_t>;
     size_t max_depth{6};
     size_t min_depth{2};
     float tolerance{1e-6};

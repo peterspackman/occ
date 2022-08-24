@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
-#include <occ/3rdparty/robin_hood.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/eigenp.h>
 #include <occ/core/interpolator.h>
 #include <occ/core/logger.h>
@@ -53,8 +53,8 @@ struct HirshfeldBasis {
     float fac = 0.5;
     mutable int num_calls{0};
     std::vector<int> elements;
-    robin_hood::unordered_flat_map<
-        int, Interpolator1D<double, occ::core::DomainMapping::Log>>
+    phmap::flat_hash_map<int,
+                         Interpolator1D<double, occ::core::DomainMapping::Log>>
         interpolators;
 
     HirshfeldBasis(const Molecule &in, Molecule &ext)
@@ -221,20 +221,15 @@ int main(int argc, char *argv[]) {
     options.add_options()("i,input", "Input file geometry",
                           cxxopts::value<fs::path>(geometry_filename))(
         "s,minimum-separation", "Minimum separation",
-        cxxopts::value<double>(
-            minimum_separation))("S,maximum-separation", "Maximum separation",
-                                 cxxopts::value<double>(
-                                     maximum_separation))("e,environment",
-                                                          "Environment "
-                                                          "geometry for HS",
-                                                          cxxopts::value<
-                                                              fs::path>(
-                                                              environment_filename))("t,threads",
-                                                                                     "Number of threads",
-                                                                                     cxxopts::value<
-                                                                                         int>()
-                                                                                         ->default_value(
-                                                                                             "1"));
+        cxxopts::value<double>(minimum_separation))(
+        "S,maximum-separation", "Maximum separation",
+        cxxopts::value<double>(maximum_separation))(
+        "e,environment",
+        "Environment "
+        "geometry for HS",
+        cxxopts::value<fs::path>(environment_filename))(
+        "t,threads", "Number of threads",
+        cxxopts::value<int>()->default_value("1"));
 
     options.parse_positional({"input", "environment"});
     occ::log::set_level(occ::log::level::debug);

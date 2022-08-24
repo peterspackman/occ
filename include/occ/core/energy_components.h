@@ -1,11 +1,11 @@
 #pragma once
 #include <fmt/format.h>
-#include <occ/3rdparty/robin_hood.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <vector>
 
 namespace occ::core {
 
-class EnergyComponents : public robin_hood::unordered_map<std::string, double> {
+class EnergyComponents : public phmap::flat_hash_map<std::string, double> {
   public:
     std::vector<std::string> categories() const;
 };
@@ -32,7 +32,7 @@ template <> struct fmt::formatter<occ::core::EnergyComponents> {
         std::string result = fmt::format("\n{:32s} {:>20s}\n\n", "Component",
                                          "Energy (Hartree)");
 
-        robin_hood::unordered_map<std::string, bool> printed;
+        phmap::flat_hash_map<std::string, bool> printed;
 
         auto cats = e.categories();
         for (const auto &c : cats) {

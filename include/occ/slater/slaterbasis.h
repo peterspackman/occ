@@ -1,7 +1,7 @@
 #pragma once
-#include <occ/3rdparty/robin_hood.h>
-#include <occ/core/linear_algebra.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/atom.h>
+#include <occ/core/linear_algebra.h>
 #include <string>
 #include <vector>
 
@@ -57,8 +57,9 @@ class Basis {
     std::vector<Shell> m_shells;
 };
 
-robin_hood::unordered_map<std::string, Basis>
-load_slaterbasis(const std::string &);
+phmap::flat_hash_map<std::string, Basis> load_slaterbasis(const std::string &);
 
-std::vector<Basis> slaterbasis_for_atoms(const std::vector<occ::core::Atom> &, const std::string &basis_name = "thakkar");
+std::vector<Basis>
+slaterbasis_for_atoms(const std::vector<occ::core::Atom> &,
+                      const std::string &basis_name = "thakkar");
 } // namespace occ::slater

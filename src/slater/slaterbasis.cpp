@@ -3,9 +3,9 @@
 #include <fmt/ostream.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <occ/core/element.h>
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>
-#include <occ/core/element.h>
 
 namespace occ::slater {
 
@@ -197,7 +197,7 @@ void Basis::unnormalize() {
     }
 }
 
-robin_hood::unordered_map<std::string, Basis>
+phmap::flat_hash_map<std::string, Basis>
 load_slaterbasis(const std::string &name) {
     namespace fs = std::filesystem;
     fs::path path;
@@ -211,7 +211,7 @@ load_slaterbasis(const std::string &name) {
     }
     path /= name;
     path.replace_extension("json");
-    robin_hood::unordered_map<std::string, Basis> basis_set;
+    phmap::flat_hash_map<std::string, Basis> basis_set;
 
     if (!fs::exists(path)) {
         throw std::runtime_error("Could not locate slater basis file " +
@@ -261,15 +261,17 @@ load_slaterbasis(const std::string &name) {
     return basis_set;
 }
 
-
-std::vector<Basis> slaterbasis_for_atoms(const std::vector<occ::core::Atom> &atoms, const std::string &basis_name) {
+std::vector<Basis>
+slaterbasis_for_atoms(const std::vector<occ::core::Atom> &atoms,
+                      const std::string &basis_name) {
     auto slaterbasis_data = occ::slater::load_slaterbasis(basis_name);
     std::vector<Basis> result;
-    for (const auto &atom: atoms) {
-	auto el = occ::core::Element(atom.atomic_number);
-	std::string sym = el.symbol();
-	if(sym == "H") sym = "H_normal";
-	result.push_back(slaterbasis_data[sym]);
+    for (const auto &atom : atoms) {
+        auto el = occ::core::Element(atom.atomic_number);
+        std::string sym = el.symbol();
+        if (sym == "H")
+            sym = "H_normal";
+        result.push_back(slaterbasis_data[sym]);
     }
     return result;
 }

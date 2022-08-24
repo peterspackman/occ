@@ -1,6 +1,6 @@
 #pragma once
 #include <deque>
-#include <occ/3rdparty/robin_hood.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/geometry/morton.h>
 #include <optional>
 #include <vector>
@@ -8,7 +8,7 @@
 namespace occ::geometry {
 
 template <typename N> struct LinearHashedOctree {
-    using NodeMap = robin_hood::unordered_flat_map<MIndex, N, MIndexHash>;
+    using NodeMap = phmap::flat_hash_map<MIndex, N>;
     NodeMap nodes;
     std::vector<MIndex> leaves;
 
