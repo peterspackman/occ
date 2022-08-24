@@ -3,6 +3,7 @@
 #include <occ/core/dimer.h>
 #include <occ/core/eigenp.h>
 #include <occ/core/element.h>
+#include <occ/core/graph.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
 #include <occ/core/multipole.h>
@@ -453,4 +454,26 @@ TEST_CASE("human_readable_size", "[util]") {
     REQUIRE(human_readable_size(1024 * 1024, "B") == "1.00MiB");
     REQUIRE(human_readable_size(1024 * 1024 * 1024, "B") == "1.00GiB");
     REQUIRE(human_readable_size(0, "B") == "0.00B");
+}
+
+TEST_CASE("graph traversal", "[graph]") {
+    using Graph = occ::core::graph::Graph<std::string, std::string>;
+    using vertex_desc = Graph::VertexDescriptor;
+    Graph graph;
+
+    auto v1 = graph.add_vertex("A");
+    auto v2 = graph.add_vertex("B");
+    auto v3 = graph.add_vertex("C");
+    auto v4 = graph.add_vertex("D");
+
+    auto e1 = graph.add_edge(v1, v2, "---");
+    auto e2 = graph.add_edge(v1, v3, "--");
+    auto e3 = graph.add_edge(v3, v4, "---");
+
+    auto f = [](const vertex_desc &v) { fmt::print("vertex = {}\n", v); };
+
+    fmt::print("Depth first:\n");
+    graph.depth_first_traversal(v1, f);
+    fmt::print("Breadth first:\n");
+    graph.breadth_first_traversal(v1, f);
 }

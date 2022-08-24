@@ -8,6 +8,7 @@ set(OCC_CORE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/element.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/energy_components.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/graph.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/kabsch.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.h"
