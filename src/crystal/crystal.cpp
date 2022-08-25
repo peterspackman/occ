@@ -384,9 +384,7 @@ void Crystal::update_unit_cell_molecules() const {
             const auto &edge = edges.at(e);
             Vec3 uc_shift(edge.h, edge.k, edge.l);
             shifts.col(v) = shifts.col(prev) + uc_shift;
-            size_t prev_mol_idx = std::distance(
-                idxs.begin(), std::find(idxs.begin(), idxs.end(), prev));
-            mol_bonds[uc_mol_idx].push_back({prev_mol_idx, idxs.size() - 1});
+            mol_bonds[uc_mol_idx].push_back({prev, v});
         }
     };
 
@@ -400,7 +398,10 @@ void Crystal::update_unit_cell_molecules() const {
     }
     Mat3N cart_pos = to_cartesian(atoms.frac_pos + shifts);
     for (size_t i = 0; i < uc_mol_idx; i++) {
-        const auto idx = atom_indices[i];
+        auto idx = atom_indices[i];
+
+        // sort by asymmetric atom index
+        std::sort(idx.begin(), idx.end());
         occ::core::Molecule m(atoms.atomic_numbers(idx),
                               cart_pos({0, 1, 2}, idx));
         m.set_unit_cell_idx(Eigen::Map<const IVec>(idx.data(), idx.size()));
@@ -408,7 +409,7 @@ void Crystal::update_unit_cell_molecules() const {
         m.set_asymmetric_unit_symop(atoms.symop(idx));
         m.set_unit_cell_molecule_idx(i);
         m_unit_cell_molecules.push_back(m);
-        m.set_bonds(mol_bonds[i]);
+        // TODO set bonding information
     }
 
     m_unit_cell_molecules_needs_update = false;
