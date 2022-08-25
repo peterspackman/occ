@@ -12,7 +12,7 @@ namespace occ::crystal {
 using occ::IVec;
 using occ::Mat3N;
 using occ::core::Molecule;
-using occ::graph::PeriodicBondGraph;
+using occ::core::graph::PeriodicBondGraph;
 
 struct HKL {
     int h{0}, k{0}, l{0};
@@ -114,7 +114,8 @@ class Crystal {
     void update_unit_cell_connectivity() const;
     void update_unit_cell_atoms() const;
 
-    mutable std::vector<PeriodicBondGraph::vertex_t> m_bond_graph_vertices;
+    mutable std::vector<typename PeriodicBondGraph::VertexDescriptor>
+        m_bond_graph_vertices;
     mutable PeriodicBondGraph m_bond_graph;
     mutable CrystalAtomRegion m_unit_cell_atoms;
     mutable bool m_symmetry_unique_molecules_needs_update{true};

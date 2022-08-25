@@ -457,23 +457,32 @@ TEST_CASE("human_readable_size", "[util]") {
 }
 
 TEST_CASE("graph traversal", "[graph]") {
-    using Graph = occ::core::graph::Graph<std::string, std::string>;
+    using Graph = occ::core::graph::Graph<int, int>;
     using vertex_desc = Graph::VertexDescriptor;
     Graph graph;
 
-    auto v1 = graph.add_vertex("A");
-    auto v2 = graph.add_vertex("B");
-    auto v3 = graph.add_vertex("C");
-    auto v4 = graph.add_vertex("D");
+    std::vector<vertex_desc> descriptors;
 
-    auto e1 = graph.add_edge(v1, v2, "---");
-    auto e2 = graph.add_edge(v1, v3, "--");
-    auto e3 = graph.add_edge(v3, v4, "---");
+    for (int i = 0; i < 10; i++) {
+        descriptors.push_back(graph.add_vertex(i));
+    }
+
+    auto e1 = graph.add_edge(descriptors[0], descriptors[1], 1);
+    auto e2 = graph.add_edge(descriptors[1], descriptors[2], 1);
+    auto e3 = graph.add_edge(descriptors[2], descriptors[3], 1);
+    auto e4 = graph.add_edge(descriptors[4], descriptors[5], 1);
+    auto e5 = graph.add_edge(descriptors[4], descriptors[6], 1);
+    auto e6 = graph.add_edge(descriptors[4], descriptors[7], 1);
 
     auto f = [](const vertex_desc &v) { fmt::print("vertex = {}\n", v); };
 
     fmt::print("Depth first:\n");
-    graph.depth_first_traversal(v1, f);
+    graph.depth_first_traversal(descriptors[0], f);
     fmt::print("Breadth first:\n");
-    graph.breadth_first_traversal(v1, f);
+    graph.breadth_first_traversal(descriptors[0], f);
+    auto components = graph.connected_components();
+    REQUIRE(components[descriptors[0]] == components[descriptors[3]]);
+    REQUIRE(components[descriptors[0]] != components[descriptors[4]]);
+    REQUIRE(components[descriptors[4]] == components[descriptors[6]]);
+    REQUIRE(components[descriptors[4]] == components[descriptors[5]]);
 }

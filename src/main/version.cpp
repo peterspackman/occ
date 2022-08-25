@@ -1,5 +1,4 @@
 #include <Eigen/Core>
-#include <boost/version.hpp>
 #include <fmt/core.h>
 #include <gemmi/version.hpp>
 #include <occ/3rdparty/cint_wrapper.h>
@@ -16,7 +15,6 @@ void print_header() {
                     EIGEN_MINOR_VERSION);
     const std::string cint_version_string{libcint::cint_version_string};
     const std::string gemmi_version_string{GEMMI_VERSION};
-    const std::string boost_version_string{BOOST_LIB_VERSION};
     const int fmt_major = FMT_VERSION / 10000;
     const int fmt_minor = (FMT_VERSION % 10000) / 100;
     const int fmt_patch = (FMT_VERSION % 100);
@@ -44,7 +42,6 @@ libcint              Electron integrals using GTOs (v {})
 libxc                Density functional implementations (v {})
 gau2grid             Gaussian basis function evaluation (v 2.0.7)
 gemmi                CIF parsing & structure refinement (v {})
-boost::graph         Graph implementation (v {})
 fmt                  String formatting (v {})
 spdlog               Logging (v {})
 scnlib               String parsing
@@ -55,7 +52,6 @@ zlib                 zip library
 
 )",
                eigen_version_string, cint_version_string, xc_version_string,
-               gemmi_version_string, boost_version_string, fmt_version_string,
-               spdlog_version_string);
+               gemmi_version_string, fmt_version_string, spdlog_version_string);
 }
 } // namespace occ::main

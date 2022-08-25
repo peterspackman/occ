@@ -7,8 +7,6 @@
 
 namespace occ::crystal {
 
-using occ::graph::BondGraph;
-
 // Asymmetric unit
 AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums)
     : positions(frac_pos), atomic_numbers(nums), occupations(nums.rows()),
@@ -294,7 +292,7 @@ void Crystal::update_unit_cell_connectivity() const {
 
     for (size_t i = 0; i < n_uc; i++) {
         m_bond_graph_vertices.push_back(
-            m_bond_graph.add_vertex(occ::graph::PeriodicVertex{i}));
+            m_bond_graph.add_vertex(occ::core::graph::PeriodicVertex{i}));
     }
 
     size_t num_connections = 0;
@@ -303,12 +301,12 @@ void Crystal::update_unit_cell_connectivity() const {
         int h = static_cast<int>(floor(pos(0)));
         int k = static_cast<int>(floor(pos(1)));
         int l = static_cast<int>(floor(pos(2)));
-        occ::graph::PeriodicEdge left_right{sqrt(d), uc_l, uc_r, asym_l,
-                                            asym_r,  h,    k,    l};
+        occ::core::graph::PeriodicEdge left_right{sqrt(d), uc_l, uc_r, asym_l,
+                                                  asym_r,  h,    k,    l};
         m_bond_graph.add_edge(m_bond_graph_vertices[uc_l],
                               m_bond_graph_vertices[uc_r], left_right);
-        occ::graph::PeriodicEdge right_left{sqrt(d), uc_r, uc_l, asym_r,
-                                            asym_l,  -h,   -k,   -l};
+        occ::core::graph::PeriodicEdge right_left{sqrt(d), uc_r, uc_l, asym_r,
+                                                  asym_l,  -h,   -k,   -l};
         m_bond_graph.add_edge(m_bond_graph_vertices[uc_r],
                               m_bond_graph_vertices[uc_l], right_left);
         num_connections++;
@@ -358,75 +356,61 @@ const std::vector<occ::core::Molecule> &Crystal::unit_cell_molecules() const {
 }
 
 void Crystal::update_unit_cell_molecules() const {
+    using vertex_desc =
+        typename occ::core::graph::PeriodicBondGraph::VertexDescriptor;
+    using edge_desc =
+        typename occ::core::graph::PeriodicBondGraph::EdgeDescriptor;
     m_unit_cell_molecules.clear();
     auto g = unit_cell_connectivity();
+    const auto &edges = g.edges();
     auto atoms = unit_cell_atoms();
-    auto [n, components] = g.connected_components();
-    std::vector<HKL> shifts_vec(components.size());
-    std::vector<int> predecessors(components.size());
-    std::vector<std::vector<int>> groups(n);
-    for (size_t i = 0; i < components.size(); i++) {
-        predecessors[i] = -1;
-        groups[components[i]].push_back(i);
-    }
+    std::vector<HKL> shifts_vec(atoms.size());
+    std::vector<std::vector<int>> groups;
 
-    struct Vis : public boost::default_bfs_visitor {
-        Vis(std::vector<HKL> &hkl, std::vector<int> &pred)
-            : m_hkl(hkl), m_p(pred) {}
-        void tree_edge(PeriodicBondGraph::edge_t e,
-                       const PeriodicBondGraph::GraphContainer &g) {
-            m_p[e.m_target] = e.m_source;
-            auto prop = g[e];
-            auto hkls = m_hkl[e.m_source];
-            m_hkl[e.m_target].h = hkls.h + prop.h;
-            m_hkl[e.m_target].k = hkls.k + prop.k;
-            m_hkl[e.m_target].l = hkls.l + prop.l;
+    size_t uc_mol_idx{0};
+    // reuse these
+    IVec molecule_index(atoms.size());
+    std::vector<std::vector<int>> atom_indices;
+    std::vector<std::vector<std::pair<size_t, size_t>>> mol_bonds;
+    Mat3N shifts = Mat3N::Zero(3, atoms.size());
+    phmap::flat_hash_set<vertex_desc> visited;
+    auto visitor = [&](const vertex_desc &v, const vertex_desc &prev,
+                       const edge_desc &e) {
+        auto &idxs = atom_indices[uc_mol_idx];
+        visited.insert(v);
+        molecule_index(v) = uc_mol_idx;
+        idxs.push_back(v);
+        if (v != prev) {
+            const auto &edge = edges.at(e);
+            Vec3 uc_shift(edge.h, edge.k, edge.l);
+            shifts.col(v) = shifts.col(prev) + uc_shift;
+            size_t prev_mol_idx = std::distance(
+                idxs.begin(), std::find(idxs.begin(), idxs.end(), prev));
+            mol_bonds[uc_mol_idx].push_back({prev_mol_idx, idxs.size() - 1});
         }
-        std::vector<HKL> &m_hkl;
-        std::vector<int> &m_p;
     };
 
-    size_t uc_mol_idx = 0;
-    for (const auto &group : groups) {
-        auto root = group[0];
-        Eigen::VectorXi atomic_numbers(group.size());
-        occ::IVec uc_idxs(group.size()), asym_idxs(group.size()),
-            symops(group.size());
-        Eigen::Matrix3Xd positions(3, group.size());
-        Eigen::Matrix3Xd shifts(3, group.size());
-        shifts.setZero();
-        boost::breadth_first_search(
-            g.graph(), m_bond_graph_vertices[root],
-            boost::visitor(Vis(shifts_vec, predecessors)));
-        std::vector<std::pair<size_t, size_t>> bonds;
-        for (size_t i = 0; i < group.size(); i++) {
-            size_t uc_idx = group[i];
-            uc_idxs(i) = uc_idx;
-            asym_idxs(i) = atoms.asym_idx(uc_idx);
-            symops(i) = atoms.symop(uc_idx);
-            atomic_numbers(i) = atoms.atomic_numbers(uc_idx);
-            positions.col(i) = atoms.frac_pos.col(uc_idx);
-            shifts(0, i) = shifts_vec[uc_idx].h;
-            shifts(1, i) = shifts_vec[uc_idx].k;
-            shifts(2, i) = shifts_vec[uc_idx].l;
-            for (const auto &n :
-                 g.neighbor_list(m_bond_graph_vertices[uc_idx])) {
-                size_t group_idx = std::distance(
-                    group.begin(),
-                    std::find(group.begin(), group.end(), n.uc_idx));
-                bonds.push_back(std::pair(i, group_idx));
-            }
-        }
-        positions += shifts;
-        occ::core::Molecule m(atomic_numbers, to_cartesian(positions));
-        m.set_bonds(bonds);
-        m.set_unit_cell_idx(uc_idxs);
-        m.set_asymmetric_unit_idx(asym_idxs);
-        m.set_asymmetric_unit_symop(symops);
-        m.set_unit_cell_molecule_idx(uc_mol_idx);
-        m_unit_cell_molecules.push_back(m);
+    for (const auto &v : g.vertices()) {
+        atom_indices.push_back({});
+        mol_bonds.push_back({});
+        if (visited.contains(v.first))
+            continue;
+        g.breadth_first_traversal_with_edge(v.first, visitor);
         uc_mol_idx++;
     }
+    Mat3N cart_pos = to_cartesian(atoms.frac_pos + shifts);
+    for (size_t i = 0; i < uc_mol_idx; i++) {
+        const auto idx = atom_indices[i];
+        occ::core::Molecule m(atoms.atomic_numbers(idx),
+                              cart_pos({0, 1, 2}, idx));
+        m.set_unit_cell_idx(Eigen::Map<const IVec>(idx.data(), idx.size()));
+        m.set_asymmetric_unit_idx(atoms.asym_idx(idx));
+        m.set_asymmetric_unit_symop(atoms.symop(idx));
+        m.set_unit_cell_molecule_idx(i);
+        m_unit_cell_molecules.push_back(m);
+        m.set_bonds(mol_bonds[i]);
+    }
+
     m_unit_cell_molecules_needs_update = false;
 }
 

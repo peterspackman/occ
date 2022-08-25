@@ -36,7 +36,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(WITH_BENCHMARKS "Enable benchmarking tests" OFF)
     option(WITH_CLANG_TIDY "Enable clang tidy" OFF)
     option(WITH_PYTHON_BINDINGS "Build python bindings" OFF)
-    option(USE_SYSTEM_BOOST "Use Boost installed on system" ON)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" ON)
     option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
     option(USE_SYSTEM_ZLIB "Use ZLIB installed on system" ON)
@@ -46,10 +45,6 @@ endif()
 
 find_package(OpenMP REQUIRED)
 find_package(Threads REQUIRED)
-
-if("${USE_SYSTEM_BOOST}")
-    find_package(Boost CONFIG COMPONENTS graph)
-endif()
 
 if("${USE_SYSTEM_EIGEN}")
     find_package(Eigen3 CONFIG REQUIRED)

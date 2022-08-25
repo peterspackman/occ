@@ -34,36 +34,30 @@ template <typename VertexType, typename EdgeType> class Graph {
     }
 
     EdgeDescriptor add_edge(VertexDescriptor source, VertexDescriptor target,
-                            const EdgeType &edge) {
+                            const EdgeType &edge, bool bidirectional = false) {
         EdgeType e = edge;
-        return add_edge(source, target, std::move(e));
+        return add_edge(source, target, std::move(e), bidirectional);
     }
 
     EdgeDescriptor add_edge(VertexDescriptor source, VertexDescriptor target,
-                            EdgeType &&edge) {
-        auto s = m_adjacency_list.find(source);
-
-        if (s == m_adjacency_list.end()) {
-            throw std::runtime_error("No such source vertex");
+                            EdgeType &&edge, bool bidirectional = false) {
+        auto &s_neighbors = m_adjacency_list[source];
+        s_neighbors.insert({target, m_current_edge_descriptor});
+        if (bidirectional) {
+            auto &t_neighbors = m_adjacency_list[target];
+            t_neighbors.insert({source, m_current_edge_descriptor});
         }
-
-        auto t = m_adjacency_list.find(target);
-        if (t == m_adjacency_list.end()) {
-            throw std::runtime_error("No such target vertex");
-        }
-
-        s->second.insert({target, m_current_edge_descriptor});
-        t->second.insert({source, m_current_edge_descriptor});
         m_edges.insert({m_current_edge_descriptor, edge});
         return m_current_edge_descriptor++;
     }
+
+    const EdgeType &edge(EdgeDescriptor e) const { return m_edges[e]; }
+    const VertexType &vertex(VertexDescriptor v) const { return m_vertices[v]; }
 
     const auto &vertices() const { return m_vertices; }
     const auto &edges() const { return m_edges; }
     const auto &adjacency_list() const { return m_adjacency_list; }
 
-    const auto vertex(VertexDescriptor v) const { return m_vertices.find(v); }
-    const auto edge(EdgeDescriptor e) const { return m_edges.find(e); }
     const auto neighbors(VertexDescriptor v) const {
         return m_adjacency_list.find(v);
     }
@@ -71,43 +65,108 @@ template <typename VertexType, typename EdgeType> class Graph {
     auto edge(EdgeDescriptor e) { return m_edges.find(e); }
     auto neighbors(VertexDescriptor v) { return m_adjacency_list.find(v); }
 
+    bool is_connected(VertexDescriptor i, VertexDescriptor j) const {
+        if (m_adjacency_list.at(i).contains(j))
+            return true;
+        if (m_adjacency_list.at(j).contains(i))
+            return true;
+        return false;
+    }
+
     template <typename T>
-    void depth_first_traversal(VertexDescriptor source, T &func) {
+    void depth_first_traversal(VertexDescriptor source, T &func) const {
         phmap::flat_hash_set<VertexDescriptor> visited;
         std::stack<VertexDescriptor> store;
         store.push(source);
         while (!store.empty()) {
-            const auto s = store.top();
+            auto s = store.top();
             store.pop();
             if (visited.contains(s))
                 continue;
 
             visited.insert(s);
             func(s);
-            for (const auto &kv : m_adjacency_list[s]) {
+            for (const auto &kv : m_adjacency_list.at(s)) {
                 store.push(kv.first);
             }
         }
     }
 
     template <typename T>
-    void breadth_first_traversal(VertexDescriptor source, T &func) {
+    void breadth_first_traversal(VertexDescriptor source, T &func) const {
         phmap::flat_hash_set<VertexDescriptor> visited;
         std::queue<VertexDescriptor> store;
         store.push(source);
         while (!store.empty()) {
-            const auto s = store.front();
+            auto s = store.front();
             store.pop();
             if (visited.contains(s))
                 continue;
 
             visited.insert(s);
             func(s);
-            for (const auto &kv : m_adjacency_list[s]) {
+            for (const auto &kv : m_adjacency_list.at(s)) {
                 store.push(kv.first);
             }
         }
     }
+
+    template <typename T>
+    void breadth_first_traversal_with_edge(VertexDescriptor source,
+                                           T &func) const {
+        phmap::flat_hash_set<VertexDescriptor> visited;
+        std::queue<
+            std::tuple<VertexDescriptor, VertexDescriptor, EdgeDescriptor>>
+            store;
+        store.push({source, source, 0});
+        while (!store.empty()) {
+            auto [s, predecessor, edge] = store.front();
+            store.pop();
+            if (visited.contains(s))
+                continue;
+
+            visited.insert(s);
+            func(s, predecessor, edge);
+            for (const auto &kv : m_adjacency_list.at(s)) {
+                store.push({kv.first, s, kv.second});
+            }
+        }
+    }
+
+    template <typename T> void connected_component_traversal(T &func) {
+        phmap::flat_hash_set<VertexDescriptor> visited;
+        size_t current_component{0};
+        auto call_with_component = [&current_component,
+                                    &func](const VertexDescriptor &desc) {
+            func(desc, current_component);
+        };
+
+        for (const auto &v : m_vertices) {
+            if (visited.contains(v.first))
+                continue;
+            breadth_first_traversal(v.first, call_with_component);
+            current_component++;
+        }
+    }
+
+    auto connected_components() const {
+        phmap::flat_hash_map<VertexDescriptor, size_t> components;
+        size_t current_component{0};
+        auto set_component = [&current_component,
+                              &components](const VertexDescriptor &desc) {
+            components.insert({desc, current_component});
+        };
+        for (const auto &v : m_vertices) {
+            if (components.find(v.first) != components.end())
+                continue;
+            depth_first_traversal(v.first, set_component);
+            current_component++;
+        }
+        return components;
+    }
+
+    size_t num_edges() const { return m_edges.size(); }
+    size_t num_vertices() const { return m_vertices.size(); }
 
   private:
     VertexDescriptor m_current_vertex_descriptor{0};
