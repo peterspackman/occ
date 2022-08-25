@@ -571,12 +571,15 @@ Vec Wavefunction::mulliken_charges() const {
         charges =
             -2 * occ::qm::mulliken_partition<SpinorbitalKind::Unrestricted>(
                      basis, mo.D, overlap);
+        break;
     case SpinorbitalKind::General:
         charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::General>(
                            basis, mo.D, overlap);
+        break;
     default:
         charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::Restricted>(
                            basis, mo.D, overlap);
+        break;
     }
     for (size_t i = 0; i < atoms.size(); i++) {
         charges(i) += atoms[i].atomic_number;

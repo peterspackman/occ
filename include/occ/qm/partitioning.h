@@ -17,18 +17,16 @@ Vec mulliken_partition(const AOBasis &basis, const Mat &D, const Mat &op) {
             N(bf2atom[u]) += pop(u);
         }
     } else if constexpr (kind == SpinorbitalKind::Unrestricted) {
-        Vec pop_a = (block::a(D) * op).diagonal();
-        Vec pop_b = (block::b(D) * op).diagonal();
+        Vec pop = ((block::b(D) + block::a(D)) * op).diagonal();
         for (int u = 0; u < nbf; u++) {
-            N(bf2atom[u]) += (pop_a(u) + pop_b(u));
+            N(bf2atom[u]) += pop(u);
         }
     } else if constexpr (kind == SpinorbitalKind::General) {
-        Vec pop_aa = (block::aa(D) * op).diagonal();
-        Vec pop_ab = (block::ab(D) * op).diagonal();
-        Vec pop_ba = (block::ba(D) * op).diagonal();
-        Vec pop_bb = (block::bb(D) * op).diagonal();
+        Vec pop =
+            ((block::aa(D) + block::ab(D) + block::ba(D) + block::bb(D)) * op)
+                .diagonal();
         for (int u = 0; u < nbf; u++) {
-            N(bf2atom[u]) += pop_aa(u) + pop_ab(u) + pop_ba(u) + pop_bb(u);
+            N(bf2atom[u]) += pop(u);
         }
     }
     return N;
