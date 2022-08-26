@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/atom.h>

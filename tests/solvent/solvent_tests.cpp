@@ -1,4 +1,5 @@
-#include "catch.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <occ/core/timings.h>
@@ -37,7 +38,7 @@ TEST_CASE("COSMO", "[solvent]") {
     fmt::print("InitialFinal charges:\n{}\n", result.initial);
     fmt::print("Converged charges:\n{}\n", result.converged);
 
-    REQUIRE(result.energy == Approx(-0.0042715403));
+    REQUIRE(result.energy == Catch::Approx(-0.0042715403));
 }
 
 // SMD tests

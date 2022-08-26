@@ -1,4 +1,5 @@
-#include "catch.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fmt/ostream.h>
 #include <occ/crystal/crystal.h>
 #include <occ/interaction/wolf.h>
@@ -48,5 +49,5 @@ TEST_CASE("NaCl wolf sum", "[interaction,wolf]") {
         wolf_energy += wolf_coulomb_energy(qi, pi, qj, surrounds[i].cart_pos);
     }
     fmt::print("Wolf energy (NaCl): {}\n", wolf_energy);
-    REQUIRE(wolf_energy == Approx(-0.3302735899347252));
+    REQUIRE(wolf_energy == Catch::Approx(-0.3302735899347252));
 }

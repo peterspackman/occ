@@ -1,5 +1,10 @@
 set(TEST_MAIN ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cpp)
-set(TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+CPMAddPackage(
+    NAME catch
+    GITHUB_REPOSITORY "catchorg/Catch2"
+    GIT_TAG v3.1.0
+)
 
 enable_testing()
 add_subdirectory(core)

@@ -1,4 +1,5 @@
-#include "catch.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fmt/ostream.h>
 #include <occ/core/dimer.h>
 #include <occ/core/eigenp.h>
@@ -75,9 +76,9 @@ TEST_CASE("Dimer separations", "[dimer]") {
 
     Dimer dim(m, m2);
 
-    REQUIRE(dim.nearest_distance() == Approx(0.8605988136));
-    REQUIRE(dim.centroid_distance() == Approx(1.8479851333));
-    REQUIRE(dim.center_of_mass_distance() == Approx(2.5186418514));
+    REQUIRE(dim.nearest_distance() == Catch::Approx(0.8605988136));
+    REQUIRE(dim.centroid_distance() == Catch::Approx(1.8479851333));
+    REQUIRE(dim.center_of_mass_distance() == Catch::Approx(2.5186418514));
 }
 
 // Element tests
@@ -228,12 +229,12 @@ TEST_CASE("Brent") {
     double xmin = brent.xmin();
     fmt::print("Found minimum of (x - 0.5)^2 in {} evaluations: ({}, {})\n",
                brent.num_calls(), xmin, brent.f_xmin());
-    REQUIRE(xmin == Approx(0.5));
+    REQUIRE(xmin == Catch::Approx(0.5));
     occ::opt::Brent brentsin(sx);
     xmin = brentsin.xmin();
     fmt::print("Found a minimum of sin(x) in {} evaluations: ({}, {})\n",
                brentsin.num_calls(), xmin, brentsin.f_xmin());
-    REQUIRE(std::abs(xmin) == Approx(M_PI / 2));
+    REQUIRE(std::abs(xmin) == Catch::Approx(M_PI / 2));
 
     occ::opt::Brent ba(ax);
     xmin = ba.xmin();

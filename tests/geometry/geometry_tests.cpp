@@ -1,4 +1,5 @@
-#include "catch.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fmt/core.h>
 #include <fmt/os.h>
 #include <occ/core/timings.h>
@@ -107,12 +108,12 @@ TEST_CASE("Morton Index", "[geometry]") {
     MIndex c2 = c1.child(3);
 
     REQUIRE(m.level() == 0);
-    REQUIRE(c1.size() == Approx(0.25));
-    REQUIRE(c2.size() == Approx(0.125));
+    REQUIRE(c1.size() == Catch::Approx(0.25));
+    REQUIRE(c2.size() == Catch::Approx(0.125));
     auto center = c2.center();
-    REQUIRE(center.x == Approx(0.875));
-    REQUIRE(center.y == Approx(0.875));
-    REQUIRE(center.z == Approx(0.625));
+    REQUIRE(center.x == Catch::Approx(0.875));
+    REQUIRE(center.y == Catch::Approx(0.875));
+    REQUIRE(center.z == Catch::Approx(0.625));
 
     REQUIRE(c2.primal(1, 3).code == 0x0);
     REQUIRE(c2.dual(1, 3).code == 0xb6db6db6db6db6db);

@@ -1,4 +1,5 @@
-#include "catch.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fmt/ostream.h>
 #include <iostream>
 #include <occ/core/linear_algebra.h>
@@ -164,7 +165,7 @@ TEST_CASE("Water 3-21G basis set rotation", "[basis]") {
         scf_rot(hf_rot);
     double e_rot = scf_rot.compute_scf_energy();
 
-    REQUIRE(e == Approx(e_rot));
+    REQUIRE(e == Catch::Approx(e_rot));
 }
 
 occ::Mat interatomic_distances(const std::vector<occ::core::Atom> &atoms) {
@@ -205,7 +206,7 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]") {
                interatomic_distances(rot_atoms));
     auto hf_rot = occ::hf::HartreeFock(rot_basis);
     REQUIRE(hf.nuclear_repulsion_energy() ==
-            Approx(hf_rot.nuclear_repulsion_energy()));
+            Catch::Approx(hf_rot.nuclear_repulsion_energy()));
     occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
         scf(hf);
     double e = scf.compute_scf_energy();
@@ -224,7 +225,7 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]") {
             rot_D, hf_rot.compute_nuclear_attraction_matrix());
     fmt::print("E_en      {}\n", e_en);
     fmt::print("E_en'     {}\n", e_en_rot);
-    REQUIRE(e_en == Approx(e_en_rot));
+    REQUIRE(e_en == Catch::Approx(e_en_rot));
 }
 
 // SCF
@@ -241,7 +242,7 @@ TEST_CASE("Water SCF", "[scf]") {
         occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
-        REQUIRE(e == Approx(-74.963706080054).epsilon(1e-8));
+        REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
     }
 
     SECTION("3-21G") {
@@ -250,6 +251,6 @@ TEST_CASE("Water SCF", "[scf]") {
         occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
-        REQUIRE(e == Approx(-75.585325673488).epsilon(1e-8));
+        REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
     }
 }

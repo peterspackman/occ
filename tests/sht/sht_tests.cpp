@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 #include <occ/3rdparty/eigen-fmt/fmt.h>
 #include <occ/core/util.h>
 #include <occ/sht/legendre.h>

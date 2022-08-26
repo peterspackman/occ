@@ -1,4 +1,5 @@
-#include "catch.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fmt/ostream.h>
 #include <iostream>
 #include <occ/core/linear_algebra.h>
@@ -569,7 +570,7 @@ TEST_CASE("H2 fchk", "[read]") {
     fmt::print("Alpha MOs:\n{}\n", reader.alpha_mo_coefficients());
     fmt::print("Alpha MO energies:\n{}\n", reader.alpha_mo_energies());
     fmt::print("Positions:\n{}\n", reader.atomic_positions());
-    REQUIRE(reader.basis().primitive_exponents[0] == Approx(3.42525091));
+    REQUIRE(reader.basis().primitive_exponents[0] == Catch::Approx(3.42525091));
 
     occ::io::FchkReader::FchkBasis basis = reader.basis();
     basis.print();
@@ -581,7 +582,7 @@ TEST_CASE("H2 fchk", "[read]") {
     auto density = reader.scf_density_matrix();
     fmt::print("Density matrix\n{}\n", density);
 
-    REQUIRE(density(1, 0) == Approx(0.301228));
+    REQUIRE(density(1, 0) == Catch::Approx(0.301228));
 }
 
 TEST_CASE("Write H2 fchk", "[write]") {
@@ -608,7 +609,8 @@ TEST_CASE("water uhf fchk", "[read]") {
     fmt::print("Alpha MO energies:\n{}\n", reader.alpha_mo_energies());
     fmt::print("Beta MO energies:\n{}\n", reader.alpha_mo_energies());
     fmt::print("Positions:\n{}\n", reader.atomic_positions());
-    CHECK(reader.basis().primitive_exponents[0] == Approx(3.22037000e02));
+    CHECK(reader.basis().primitive_exponents[0] ==
+          Catch::Approx(3.22037000e02));
 
     occ::io::FchkReader::FchkBasis basis = reader.basis();
     basis.print();
@@ -709,7 +711,7 @@ TEST_CASE("water uhf fchk", "[read]") {
     for (int i = 0; i < nbf; i++) {
         for (int j = 0; j < nbf; j++) {
             INFO("DENSITY(" << i << ", " << j << ")");
-            CHECK(density(i, j) == Approx(density_expected(i, j)));
+            CHECK(density(i, j) == Catch::Approx(density_expected(i, j)));
         }
     }
 }
@@ -1088,10 +1090,11 @@ TEST_CASE("G09 water fchk", "[read]") {
     occ::io::FchkReader reader(fchk);
     REQUIRE(reader.num_alpha() == 5);
     REQUIRE(reader.num_basis_functions() == 24);
-    REQUIRE(reader.basis().primitive_exponents[0] == Approx(5.48467166e03));
+    REQUIRE(reader.basis().primitive_exponents[0] ==
+            Catch::Approx(5.48467166e03));
     occ::io::FchkReader::FchkBasis basis = reader.basis();
     auto density = reader.scf_density_matrix();
-    REQUIRE(density(0, 0) == Approx(2.08289728 * 0.5));
+    REQUIRE(density(0, 0) == Catch::Approx(2.08289728 * 0.5));
     auto obs = reader.basis_set();
 }
 
@@ -1111,14 +1114,14 @@ void check_wavefunctions(const occ::qm::Wavefunction &wfn,
 
     auto check_same_position = [](const occ::Vec3 &x1, const occ::Vec3 &x2) {
         for (size_t i = 0; i < 3; i++) {
-            CHECK(x1(i) == Approx(x2(i)));
+            CHECK(x1(i) == Catch::Approx(x2(i)));
         }
     };
 
     auto check_same_coeffs = [](const auto &c1, const auto &c2) {
         for (size_t i = 0; i < c1.rows(); i++) {
             for (size_t j = 0; j < c1.cols(); j++) {
-                CHECK(c1(i, j) == Approx(c2(i, j)));
+                CHECK(c1(i, j) == Catch::Approx(c2(i, j)));
             }
         }
     };
