@@ -1,20 +1,53 @@
-set(TEST_MAIN ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cpp)
-
 CPMAddPackage(
     NAME catch
     GITHUB_REPOSITORY "catchorg/Catch2"
     GIT_TAG v3.1.0
 )
 
-enable_testing()
-add_subdirectory(core)
-add_subdirectory(dft)
-add_subdirectory(crystal)
-add_subdirectory(geometry)
-add_subdirectory(gto)
-add_subdirectory(io)
-add_subdirectory(interaction)
-add_subdirectory(qm)
-add_subdirectory(sht)
-add_subdirectory(slater)
-add_subdirectory(solvent)
+list(APPEND CMAKE_MODULE_PATH "${catch_SOURCE_DIR}/extras")
+include(CTest)
+include(Catch)
+
+add_executable(core_tests "${CMAKE_CURRENT_SOURCE_DIR}/core_tests.cpp")
+target_link_libraries(core_tests PRIVATE occ_core Catch2::Catch2WithMain)
+catch_discover_tests(core_tests)
+
+add_executable(crystal_tests "${CMAKE_CURRENT_SOURCE_DIR}/crystal_tests.cpp")
+target_link_libraries(crystal_tests occ_crystal Catch2::Catch2WithMain)
+catch_discover_tests(crystal_tests)
+
+add_executable(dft_tests "${CMAKE_CURRENT_SOURCE_DIR}/dft_tests.cpp")
+target_link_libraries(dft_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain)
+catch_discover_tests(dft_tests)
+
+add_executable(geometry_tests "${CMAKE_CURRENT_SOURCE_DIR}/geometry_tests.cpp")
+target_link_libraries(geometry_tests PRIVATE occ_geometry Catch2::Catch2WithMain)
+catch_discover_tests(geometry_tests)
+
+add_executable(gto_tests "${CMAKE_CURRENT_SOURCE_DIR}/gto_tests.cpp")
+target_link_libraries(gto_tests PRIVATE occ_gto occ_dft Catch2::Catch2WithMain)
+catch_discover_tests(gto_tests)
+
+add_executable(io_tests "${CMAKE_CURRENT_SOURCE_DIR}/io_tests.cpp")
+target_link_libraries(io_tests PRIVATE occ_io Catch2::Catch2WithMain)
+catch_discover_tests(io_tests)
+
+add_executable(interaction_tests "${CMAKE_CURRENT_SOURCE_DIR}/interaction_tests.cpp")
+target_link_libraries(interaction_tests PRIVATE occ_interaction Catch2::Catch2WithMain)
+catch_discover_tests(interaction_tests)
+
+add_executable(qm_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp")
+target_link_libraries(qm_tests PRIVATE occ_qm Catch2::Catch2WithMain)
+catch_discover_tests(qm_tests)
+
+add_executable(sht_tests "${CMAKE_CURRENT_SOURCE_DIR}/sht_tests.cpp")
+target_link_libraries(sht_tests PRIVATE occ_sht Catch2::Catch2WithMain)
+catch_discover_tests(sht_tests)
+
+add_executable(slater_tests "${CMAKE_CURRENT_SOURCE_DIR}/slater_tests.cpp")
+target_link_libraries(slater_tests PRIVATE occ_slater Catch2::Catch2WithMain)
+catch_discover_tests(slater_tests)
+
+add_executable(solvent_tests "${CMAKE_CURRENT_SOURCE_DIR}/solvent_tests.cpp")
+target_link_libraries(solvent_tests PRIVATE occ_solvent occ_io Catch2::Catch2WithMain)
+catch_discover_tests(solvent_tests)
