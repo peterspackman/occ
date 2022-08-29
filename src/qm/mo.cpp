@@ -2,6 +2,7 @@
 #include <occ/core/logger.h>
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
+#include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
 
 namespace occ::qm {
@@ -293,6 +294,20 @@ void MolecularOrbitals::to_spherical(const AOBasis &bscart,
     }
     }
     update_density_matrix();
+}
+
+double MolecularOrbitals::expectation_value(const Mat &op) const {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+    switch (kind) {
+    default:
+        return occ::qm::expectation<R>(D, op);
+    case U:
+        return occ::qm::expectation<U>(D, op);
+    case G:
+        return occ::qm::expectation<G>(D, op);
+    }
 }
 
 } // namespace occ::qm

@@ -51,7 +51,7 @@ double HartreeFock::nuclear_repulsion_energy() const {
 
 Mat HartreeFock::compute_fock(const MolecularOrbitals &mo, double precision,
                               const Mat &Schwarz) const {
-    if (m_df_engine && mo.kind == SpinorbitalKind::Restricted) {
+    if (m_df_engine) {
         return (*m_df_engine).fock_operator(mo);
     } else {
         return m_engine.fock_operator(mo.kind, mo, Schwarz);
@@ -89,7 +89,7 @@ Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
 std::pair<Mat, Mat> HartreeFock::compute_JK(const MolecularOrbitals &mo,
                                             double precision,
                                             const Mat &Schwarz) const {
-    if (m_df_engine && mo.kind == SpinorbitalKind::Restricted) {
+    if (m_df_engine) {
         return (*m_df_engine).coulomb_and_exchange(mo);
     } else {
         return m_engine.coulomb_and_exchange(mo.kind, mo, Schwarz);
@@ -98,7 +98,7 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(const MolecularOrbitals &mo,
 
 Mat HartreeFock::compute_J(const MolecularOrbitals &mo, double precision,
                            const Mat &Schwarz) const {
-    if (m_df_engine && mo.kind == SpinorbitalKind::Restricted) {
+    if (m_df_engine) {
         return (*m_df_engine).coulomb(mo);
     } else {
         return m_engine.coulomb(mo.kind, mo, Schwarz);

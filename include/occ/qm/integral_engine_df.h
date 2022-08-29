@@ -58,7 +58,7 @@ class IntegralEngineDF {
     Eigen::LLT<Mat> V_LLt, Vsqrt_LLt;
     Mat m_integral_store;
     Policy m_policy{Policy::Choose};
-    size_t m_integral_store_memory_limit{256 * 1024 * 1024}; // 256 MiB
+    size_t m_integral_store_memory_limit{512 * 1024 * 1024}; // 512 MiB
 };
 
 } // namespace occ::qm

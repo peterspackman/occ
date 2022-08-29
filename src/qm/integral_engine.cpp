@@ -116,10 +116,10 @@ inline void fock_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0,
     Faa(bf1, bf2) -= 0.5 * Daa(bf0, bf3) * value;
 
     // K bb
-    Fbb(bf0, bf2) -= 0.5 * D(bf1, bf3) * value;
-    Fbb(bf1, bf3) -= 0.5 * D(bf0, bf2) * value;
-    Fbb(bf0, bf3) -= 0.5 * D(bf1, bf2) * value;
-    Fbb(bf1, bf2) -= 0.5 * D(bf0, bf3) * value;
+    Fbb(bf0, bf2) -= 0.5 * Dbb(bf1, bf3) * value;
+    Fbb(bf1, bf3) -= 0.5 * Dbb(bf0, bf2) * value;
+    Fbb(bf0, bf3) -= 0.5 * Dbb(bf1, bf2) * value;
+    Fbb(bf1, bf2) -= 0.5 * Dbb(bf0, bf3) * value;
 
     // Kab, Kba
     Fab(bf0, bf2) -= 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
@@ -182,10 +182,10 @@ inline void jk_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J,
     Kaa(bf1, bf2) += 0.5 * Daa(bf0, bf3) * value;
 
     // K bb
-    Kbb(bf0, bf2) += 0.5 * D(bf1, bf3) * value;
-    Kbb(bf1, bf3) += 0.5 * D(bf0, bf2) * value;
-    Kbb(bf0, bf3) += 0.5 * D(bf1, bf2) * value;
-    Kbb(bf1, bf2) += 0.5 * D(bf0, bf3) * value;
+    Kbb(bf0, bf2) += 0.5 * Dbb(bf1, bf3) * value;
+    Kbb(bf1, bf3) += 0.5 * Dbb(bf0, bf2) * value;
+    Kbb(bf0, bf3) += 0.5 * Dbb(bf1, bf2) * value;
+    Kbb(bf1, bf2) += 0.5 * Dbb(bf0, bf3) * value;
 
     // Kab, Kba
     Kab(bf0, bf2) += 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;

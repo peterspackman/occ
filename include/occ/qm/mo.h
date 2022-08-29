@@ -19,6 +19,7 @@ struct MolecularOrbitals {
     void to_spherical(const AOBasis &bscart, const AOBasis &bspure);
     void print() const;
     void incorporate_norm(Eigen::Ref<const Vec> norms);
+    double expectation_value(const Mat &op) const;
 };
 
 } // namespace occ::qm
