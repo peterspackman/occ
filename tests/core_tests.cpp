@@ -193,7 +193,7 @@ TEST_CASE("Multipole addition", "[multipole]") {
 
 // Numpy IO
 
-TEST_CASE("write eigen array", "[numpy]") {
+TEST_CASE("Write eigen array to numpy .npy file", "[numpy]") {
     Eigen::MatrixXd i = Eigen::MatrixXd::Identity(6, 6);
     i(0, 4) = 4;
     const std::string filename = "identity.npy";
@@ -205,7 +205,7 @@ TEST_CASE("write eigen array", "[numpy]") {
     std::remove(filename.c_str());
 }
 
-TEST_CASE("write eigen array compressed", "[numpy]") {
+TEST_CASE("Write eigen array to compressed numpy .npz file", "[numpy]") {
     Eigen::MatrixXd i = Eigen::MatrixXd::Identity(6, 6);
     i(0, 4) = 4;
     const std::string filename = "test.npz";
@@ -223,7 +223,7 @@ double sx(double x) { return std::sin(x); }
 
 double ax(double x) { return std::abs(x - 4); }
 
-TEST_CASE("Brent") {
+TEST_CASE("Brents method find minimum") {
     auto x2 = [](double x) { return (x - 0.5) * (x - 0.5); };
     occ::opt::Brent brent(x2);
     double xmin = brent.xmin();
@@ -244,7 +244,7 @@ TEST_CASE("Brent") {
 
 // Molecular Point Group
 
-TEST_CASE("Symop constructors", "[point_group]") {
+TEST_CASE("Point group Symop constructors", "[point_group]") {
     occ::Vec3 axis(0.0, 1.0, 0.0);
     double angle = 90.0;
     occ::Vec3 rotvec = angle * axis;
@@ -254,7 +254,7 @@ TEST_CASE("Symop constructors", "[point_group]") {
     fmt::print("Transformation:\n{}\n", s.transformation);
 }
 
-TEST_CASE("Water: C2v", "[point_group]") {
+TEST_CASE("PointGroup determination water = C2v", "[point_group]") {
     occ::Mat3N pos(3, 3);
     occ::IVec nums(3);
     nums << 8, 1, 1;
@@ -270,7 +270,7 @@ TEST_CASE("Water: C2v", "[point_group]") {
     REQUIRE(pg.symmetry_number() == 2);
 }
 
-TEST_CASE("Oxygen: Dooh", "[point_group]") {
+TEST_CASE("PointGroup determination O2 = Dooh", "[point_group]") {
     occ::Mat3N pos(3, 2);
     occ::IVec nums(2);
     nums << 8, 8;
@@ -292,7 +292,7 @@ TEST_CASE("Oxygen: Dooh", "[point_group]") {
     REQUIRE(pg.symmetry_number() == 2);
 }
 
-TEST_CASE("BF3: D3h", "[point_group]") {
+TEST_CASE("PointGroup determination BF3 = D3h", "[point_group]") {
     occ::Mat3N pos(3, 4);
     occ::IVec nums(4);
     nums << 5, 9, 9, 9;
@@ -314,7 +314,7 @@ TEST_CASE("BF3: D3h", "[point_group]") {
     REQUIRE(pg.symmetry_number() == 6);
 }
 
-TEST_CASE("Benzene: D6h", "[point_group]") {
+TEST_CASE("PointGroup determination benzene = D6h", "[point_group]") {
     occ::Mat3N pos(3, 12);
     occ::IVec nums(12);
     nums << 6, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1;
@@ -332,7 +332,7 @@ TEST_CASE("Benzene: D6h", "[point_group]") {
     REQUIRE(pg.point_group() == occ::core::PointGroup::D6h);
 }
 
-TEST_CASE("CH4: Td", "[point_group]") {
+TEST_CASE("PointGroup determination methane = Td", "[point_group]") {
     occ::Mat3N pos(3, 5);
     occ::IVec nums(5);
     nums << 6, 1, 1, 1, 1;
@@ -347,7 +347,7 @@ TEST_CASE("CH4: Td", "[point_group]") {
     REQUIRE(pg.point_group() == occ::core::PointGroup::Td);
 }
 
-TEST_CASE("Cube: Oh", "[point_group]") {
+TEST_CASE("PointGroup determination cube of atoms = Oh", "[point_group]") {
     occ::Mat3N pos(3, 8);
     occ::IVec nums(8);
 
@@ -369,7 +369,7 @@ TEST_CASE("Cube: Oh", "[point_group]") {
     REQUIRE(pg.point_group() == occ::core::PointGroup::Oh);
 }
 
-TEST_CASE("CHFBrCl: C1", "[point_group]") {
+TEST_CASE("PointGroup determination CHFBrCl = C1", "[point_group]") {
     occ::Mat3N pos(3, 5);
     occ::IVec nums(5);
 
@@ -398,7 +398,7 @@ TEST_CASE("Table constructor", "[table]") {
     t.print();
 }
 
-TEST_CASE("Table Eigen", "[table]") {
+TEST_CASE("Table Eigen matrix print", "[table]") {
     using occ::io::Table;
     Eigen::MatrixXd r = Eigen::MatrixXd::Random(4, 3);
     Table t;
@@ -409,7 +409,7 @@ TEST_CASE("Table Eigen", "[table]") {
 
 // Utils
 
-TEST_CASE("all_close", "[util]") {
+TEST_CASE("Basic usage of all_close helper", "[util]") {
     using occ::util::all_close;
 
     occ::Mat x = occ::Mat::Identity(3, 3);
@@ -419,7 +419,7 @@ TEST_CASE("all_close", "[util]") {
     REQUIRE(all_close(x, x2 * 0.5));
 }
 
-TEST_CASE("is_close", "[util]") {
+TEST_CASE("Basic usage of is_close helper", "[util]") {
     using occ::util::is_close;
     double x1 = 1e-6;
     double x2 = 2e-6;
@@ -428,7 +428,7 @@ TEST_CASE("is_close", "[util]") {
     REQUIRE(is_close(1e-17, 1e-18));
 }
 
-TEST_CASE("is_even, is_odd", "[util]") {
+TEST_CASE("Basic usage of is_even, is_odd helpers", "[util]") {
     using occ::util::is_even, occ::util::is_odd;
     REQUIRE(is_even(2));
     REQUIRE(is_odd(1));
@@ -438,7 +438,7 @@ TEST_CASE("is_even, is_odd", "[util]") {
     REQUIRE(!is_even(1312421411));
 }
 
-TEST_CASE("smallest_common_factor", "[util]") {
+TEST_CASE("Basic cases of smallest_common_factor", "[util]") {
     using occ::util::smallest_common_factor;
     REQUIRE(smallest_common_factor(1, 3) == 1);
     REQUIRE(smallest_common_factor(-1, 3) == 1);
@@ -448,7 +448,7 @@ TEST_CASE("smallest_common_factor", "[util]") {
     REQUIRE(smallest_common_factor(0, 12) == 12);
 }
 
-TEST_CASE("human_readable_size", "[util]") {
+TEST_CASE("Basic cases of human_readable_size", "[util]") {
     using occ::util::human_readable_size;
 
     REQUIRE(human_readable_size(1024, "B") == "1.00KiB");
@@ -457,7 +457,7 @@ TEST_CASE("human_readable_size", "[util]") {
     REQUIRE(human_readable_size(0, "B") == "0.00B");
 }
 
-TEST_CASE("graph traversal", "[graph]") {
+TEST_CASE("Depth first & Breadth first graph traversal", "[graph]") {
     using Graph = occ::core::graph::Graph<int, int>;
     using vertex_desc = Graph::VertexDescriptor;
     Graph graph;

@@ -17,7 +17,7 @@ using occ::solvent::COSMO;
 
 // COSMO
 
-TEST_CASE("COSMO", "[solvent]") {
+TEST_CASE("COSMO self energy", "[solvent]") {
 
     auto pts = Mat3N(3, 12);
     pts << -0.525731, 0.525731, -0.525731, 0.525731, 0.0, 0.0, 0.0, 0.0,
@@ -123,7 +123,7 @@ H   3.958665   4.201700   2.165391
 H   2.612031   3.407432   2.520566
 )"""";
 
-TEST_CASE("CDS", "[solvent]") {
+TEST_CASE("SMD CDS energy (naphthol)", "[solvent]") {
     auto mol = occ::io::molecule_from_xyz_string(NAPHTHOL);
     auto nums = mol.atomic_numbers();
     auto pos = mol.positions();

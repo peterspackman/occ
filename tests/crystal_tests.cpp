@@ -108,7 +108,8 @@ TEST_CASE("UnitCell constructor", "[crystal]") {
     UnitCell ice = occ::crystal::rhombohedral_cell(7.78, radians(113.1));
 }
 
-TEST_CASE("ice_ii molecules", "[crystal]") {
+TEST_CASE("Symmetry unique and unit cell molecules (ice-II crystal)",
+          "[crystal]") {
     AsymmetricUnit asym = ice_ii_asym();
     SpaceGroup sg(1);
     UnitCell cell = occ::crystal::rhombohedral_cell(7.78, radians(113.1));
@@ -145,7 +146,8 @@ SymmetryOperation dimer_symop(const occ::core::Dimer &dimer,
     return symop_ab;
 }
 
-TEST_CASE("acetic molecules", "[crystal]") {
+TEST_CASE("Symmetry unique and unit cell molecules (acetic acid crystal)",
+          "[crystal]") {
     AsymmetricUnit asym = acetic_asym();
     SpaceGroup sg(33);
     UnitCell cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
@@ -187,7 +189,7 @@ TEST_CASE("acetic molecules", "[crystal]") {
     }
 }
 
-TEST_CASE("acetic supercell", "[crystal]") {
+TEST_CASE("Supercell construction (acetic acid crystal)", "[crystal]") {
     AsymmetricUnit asym = acetic_asym();
     SpaceGroup sg(33);
     UnitCell cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
@@ -217,7 +219,8 @@ TEST_CASE("SpaceGroup constructor", "[space_group]") {
     REQUIRE(sg14a.symmetry_operations().size() == 4);
 }
 
-TEST_CASE("Spacegroup symops", "[space_group]") {
+TEST_CASE("Spacegroup symmetry operations are correct (P21/c)",
+          "[space_group]") {
     MatN3 coords(8, 3);
     coords << 1.650999999999999968e-01, 2.857999999999999985e-01,
         1.708999999999999964e-01, 8.939999999999999336e-02,
@@ -311,14 +314,15 @@ auto acetic_acid_crystal() {
     return Crystal(asym, sg, cell);
 }
 
-TEST_CASE("Surface constructor", "[crystal, surface]") {
+TEST_CASE("Crystal Surface construction", "[crystal, surface]") {
     Crystal a = acetic_acid_crystal();
     MillerIndex m{0, 1, 0};
     Surface surf(m, a);
     surf.print();
 }
 
-TEST_CASE("Surface generation", "[crystal, surface]") {
+TEST_CASE("Crystal surface generation (ordered by on Dhkl)",
+          "[crystal, surface]") {
     Crystal a = acetic_acid_crystal();
     occ::timing::StopWatch sw;
     sw.start();
@@ -342,7 +346,7 @@ TEST_CASE("SymmetryOperation constructor", "[symmetry_operation]") {
     REQUIRE(SymmetryOperation(16484).is_identity());
 }
 
-TEST_CASE("SymmetryOperation seitz", "[symmetry_operation]") {
+TEST_CASE("SymmetryOperation Seitz matrix", "[symmetry_operation]") {
     auto id = SymmetryOperation(16484);
     REQUIRE(all_close(id.seitz(), Eigen::Matrix4d::Identity()));
     REQUIRE(all_close(id.rotation(), id.inverted().rotation()));

@@ -12,7 +12,7 @@ using occ::Mat;
 
 // GTO
 
-TEST_CASE("GTO vals H2/STO-3G") {
+TEST_CASE("GTO values, derivatives & 2nd derivatives H2/STO-3G") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
     occ::qm::AOBasis aobasis = occ::qm::AOBasis::load(atoms, "sto-3g");
@@ -35,7 +35,7 @@ TEST_CASE("GTO vals H2/STO-3G") {
     fmt::print("Rho\n{}\n", rho);
 }
 
-TEST_CASE("GTO vals H2/3-21G") {
+TEST_CASE("GTO values, derivatives & density H2/3-21G") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
     occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "3-21G");
@@ -56,7 +56,7 @@ TEST_CASE("GTO vals H2/3-21G") {
     fmt::print("Rho\n{}\n", rho);
 }
 
-TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
+TEST_CASE("GTO values, derivatives & density H2/STO-3G Unrestricted") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
     occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "sto-3g");
@@ -76,7 +76,7 @@ TEST_CASE("GTO vals H2/STO-3G Unrestricted") {
     fmt::print("Rho beta\n{}\n", occ::qm::block::b(rho));
 }
 
-TEST_CASE("spherical <-> cartesian gaussian transforms") {
+TEST_CASE("Spherical Gaussian basis <-> Cartesian Gaussian basis transforms") {
     using occ::util::all_close;
     SECTION("c c^-1 = I") {
         for (int i = 0; i < 8; i++) {

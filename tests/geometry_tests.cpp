@@ -45,7 +45,7 @@ struct torus {
     }
 };
 
-TEST_CASE("Marching cubes", "[geometry]") {
+TEST_CASE("Marching cubes 128x128x128 on torus function", "[geometry]") {
     MarchingCubes m(128);
     torus s;
     occ::timing::StopWatch<1> sw;
@@ -102,7 +102,7 @@ indices[i + 1]);
 
 using occ::geometry::MIndex;
 
-TEST_CASE("Morton Index", "[geometry]") {
+TEST_CASE("Morton Index constructor & children", "[geometry]") {
     MIndex m{1};
     MIndex c1 = m.child(7);
     MIndex c2 = c1.child(3);

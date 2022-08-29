@@ -37,21 +37,21 @@ copyright (C) 2020-2022 Peter Spackman
 
 this version of occ makes use of the following third party libraries:
 
+cxxopts              command line argument parser
 eigen3               Linear Algebra (v {})
-libcint              Electron integrals using GTOs (v {})
-libxc                Density functional implementations (v {})
+fmt                  String formatting (v {})
 gau2grid             Gaussian basis function evaluation (v 2.0.7)
 gemmi                CIF parsing & structure refinement (v {})
-fmt                  String formatting (v {})
-spdlog               Logging (v {})
-scnlib               String parsing
-nlohmann::json       JSON parser
-cxxopts              command line argument parser
 LBFGS++              L-BFGS implementation
+libcint              Electron integrals using GTOs (v {})
+libxc                Density functional implementations (v {})
+nlohmann::json       JSON parser
+scnlib               String parsing
+spdlog               Logging (v {})
 zlib                 zip library
 
 )",
-               eigen_version_string, cint_version_string, xc_version_string,
-               gemmi_version_string, fmt_version_string, spdlog_version_string);
+               eigen_version_string, fmt_version_string, gemmi_version_string,
+               cint_version_string, xc_version_string, spdlog_version_string);
 }
 } // namespace occ::main

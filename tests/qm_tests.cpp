@@ -20,7 +20,7 @@ using occ::util::all_close;
 
 // Basis
 
-TEST_CASE("spherical_to_cartesian") {
+TEST_CASE("AOBasis set pure spherical") {
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
@@ -45,7 +45,7 @@ TEST_CASE("AOBasis load") {
 
 // Density Fitting
 
-TEST_CASE("Density Fitting H2O/6-31G") {
+TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.39839733}};
     auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
@@ -86,7 +86,7 @@ TEST_CASE("Density Fitting H2O/6-31G") {
     fmt::print("Kapprox\n{}\n", 2 * Kapprox);
 }
 
-TEST_CASE("Electric Field H2/STO-3G") {
+TEST_CASE("Electric Field evaluation H2/STO-3G") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
     auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
@@ -130,7 +130,7 @@ TEST_CASE("Electric Field H2/STO-3G") {
 
 // MO Rotation
 
-TEST_CASE("Basic rotations", "[mo_rotation]") {
+TEST_CASE("Cartesian gaussian basic rotation matrices", "[mo_rotation]") {
     Mat3 rot = Mat3::Identity(3, 3);
     auto drot = occ::gto::cartesian_gaussian_rotation_matrix<2>(rot);
     REQUIRE(all_close(drot, Mat::Identity(6, 6)));
@@ -139,7 +139,7 @@ TEST_CASE("Basic rotations", "[mo_rotation]") {
     REQUIRE(all_close(frot, Mat::Identity(10, 10)));
 }
 
-TEST_CASE("Water 3-21G basis set rotation", "[basis]") {
+TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
@@ -184,7 +184,7 @@ occ::Mat interatomic_distances(const std::vector<occ::core::Atom> &atoms) {
     return dists;
 }
 
-TEST_CASE("Water def2-tzvp MO rotation", "[basis]") {
+TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
@@ -230,7 +230,7 @@ TEST_CASE("Water def2-tzvp MO rotation", "[basis]") {
 
 // SCF
 
-TEST_CASE("Water SCF", "[scf]") {
+TEST_CASE("Water RHF SCF energy", "[scf]") {
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
@@ -249,6 +249,56 @@ TEST_CASE("Water SCF", "[scf]") {
         auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
         HartreeFock hf(obs);
         occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
+        scf.energy_convergence_threshold = 1e-8;
+        double e = scf.compute_scf_energy();
+        REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
+    }
+}
+
+TEST_CASE("Water UHF SCF energy", "[scf]") {
+    std::vector<occ::core::Atom> atoms{
+        {8, -1.32695761, -0.10593856, 0.01878821},
+        {1, -1.93166418, 1.60017351, -0.02171049},
+        {1, 0.48664409, 0.07959806, 0.00986248}};
+
+    SECTION("STO-3G") {
+        auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+        HartreeFock hf(obs);
+        occ::scf::SCF<HartreeFock, SpinorbitalKind::Unrestricted> scf(hf);
+        scf.energy_convergence_threshold = 1e-8;
+        double e = scf.compute_scf_energy();
+        REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
+    }
+
+    SECTION("3-21G") {
+        auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
+        HartreeFock hf(obs);
+        occ::scf::SCF<HartreeFock, SpinorbitalKind::Unrestricted> scf(hf);
+        scf.energy_convergence_threshold = 1e-8;
+        double e = scf.compute_scf_energy();
+        REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
+    }
+}
+
+TEST_CASE("Water GHF SCF energy", "[scf]") {
+    std::vector<occ::core::Atom> atoms{
+        {8, -1.32695761, -0.10593856, 0.01878821},
+        {1, -1.93166418, 1.60017351, -0.02171049},
+        {1, 0.48664409, 0.07959806, 0.00986248}};
+
+    SECTION("STO-3G") {
+        auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+        HartreeFock hf(obs);
+        occ::scf::SCF<HartreeFock, SpinorbitalKind::General> scf(hf);
+        scf.energy_convergence_threshold = 1e-8;
+        double e = scf.compute_scf_energy();
+        REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
+    }
+
+    SECTION("3-21G") {
+        auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
+        HartreeFock hf(obs);
+        occ::scf::SCF<HartreeFock, SpinorbitalKind::General> scf(hf);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));

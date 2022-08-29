@@ -18,7 +18,7 @@
 
 // DFT
 
-TEST_CASE("Density Functional", "[lda]") {
+TEST_CASE("LDA (Slater) exchange energy density", "[lda]") {
     occ::dft::DensityFunctional lda("xc_lda_x");
     occ::dft::DensityFunctional lda_u("xc_lda_x", true);
     occ::dft::DensityFunctional::Params params(
@@ -48,7 +48,7 @@ TEST_CASE("Density Functional", "[lda]") {
     fmt::print("exc:\n{}\nvrho\n{}\n", res2.exc, res2.vrho);
 }
 
-TEST_CASE("gga", "[gga]") {
+TEST_CASE("GGA (PBE) exchange energy density", "[gga]") {
     using occ::util::all_close;
     namespace block = occ::qm::block;
     occ::dft::DensityFunctional gga("xc_gga_x_pbe");
@@ -117,7 +117,7 @@ TEST_CASE("gga", "[gga]") {
 // Grid
 using occ::util::all_close;
 
-TEST_CASE("lebedev", "[grid]") {
+TEST_CASE("Lebedev grid construction", "[grid]") {
     auto grid = occ::grid::lebedev(110);
     fmt::print("grid:\n{}\n", grid);
     REQUIRE(grid.rows() == 110);
@@ -138,7 +138,7 @@ TEST_CASE("lebedev", "[grid]") {
     */
 }
 
-TEST_CASE("Becke radial grid", "[radial]") {
+TEST_CASE("Becke radial grid points", "[radial]") {
     auto radial = occ::dft::generate_becke_radial_grid(3, 0.6614041435977716);
     occ::Vec3 expected_pts{9.21217133, 0.66140414, 0.04748668};
     occ::Vec3 expected_weights{77.17570606, 1.3852416, 0.39782349};
@@ -163,7 +163,7 @@ TEST_CASE("Becke radial grid", "[radial]") {
     */
 }
 
-TEST_CASE("Gauss-Chebyshev radial grid", "[radial]") {
+TEST_CASE("Gauss-Chebyshev radial grid points", "[radial]") {
     auto radial = occ::dft::generate_gauss_chebyshev_radial_grid(3);
     occ::Vec3 expected_pts{8.66025404e-01, 6.123234e-17, -8.66025404e-01};
     occ::Vec3 expected_weights{1.04719755, 1.04719755, 1.04719755};
@@ -175,7 +175,7 @@ TEST_CASE("Gauss-Chebyshev radial grid", "[radial]") {
     REQUIRE(all_close(radial.weights, expected_weights, 1e-5));
 }
 
-TEST_CASE("Mura-Knowles radial grid", "[radial]") {
+TEST_CASE("Mura-Knowles radial grid points", "[radial]") {
     auto radial = occ::dft::generate_mura_knowles_radial_grid(3, 1);
     occ::Vec3 expected_pts{0.02412997, 0.69436324, 4.49497829};
     occ::Vec3 expected_weights{0.14511628, 1.48571429, 8.57142857};
@@ -200,7 +200,7 @@ TEST_CASE("Mura-Knowles radial grid", "[radial]") {
     */
 }
 
-TEST_CASE("Treutler-Alrichs radial grid", "[radial]") {
+TEST_CASE("Treutler-Alrichs radial grid points", "[radial]") {
     auto radial = occ::dft::generate_treutler_alrichs_radial_grid(3);
     occ::Vec3 expected_pts{0.10934791, 1, 3.82014324};
     occ::Vec3 expected_weights{0.34905607, 1.60432893, 4.51614622};
@@ -225,7 +225,7 @@ TEST_CASE("Treutler-Alrichs radial grid", "[radial]") {
     */
 }
 
-TEST_CASE("atom grid", "[grid]") {
+TEST_CASE("Becke partitioned atom grid H2", "[grid]") {
     auto atom = occ::dft::generate_atom_grid(1, 302, 50);
     // fmt::print("Atom grid:\n{}\n", atom.points.transpose());
     fmt::print("Sum weights\n{}\n", atom.weights.array().sum());
@@ -252,12 +252,12 @@ TEST_CASE("atom grid", "[grid]") {
 
 // Seminumerical Exchange
 
-TEST_CASE("Water DFT", "[scf]") {
+TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
-    auto basis = occ::qm::AOBasis::load(atoms, "def2-tzvp");
+    auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
     basis.set_pure(false);
     auto hf = occ::hf::HartreeFock(basis);
     occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
@@ -265,8 +265,8 @@ TEST_CASE("Water DFT", "[scf]") {
     double e = scf.compute_scf_energy();
 
     occ::dft::AtomGridSettings settings;
-    settings.max_angular_points = 302;
-    settings.radial_precision = 1e-12;
+    settings.max_angular_points = 194;
+    settings.radial_precision = 1e-5;
     fmt::print("Construct\n");
     occ::dft::cosx::SemiNumericalExchange sgx(basis, settings);
     fmt::print("Construct done\n");

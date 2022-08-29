@@ -33,7 +33,7 @@ jobs:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
           ${{github.workspace}}/build
-        key: ${{ runner.os }}-build-cache
+        key: ${{ runner.os }}-occ-build-cache
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

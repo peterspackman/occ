@@ -65,7 +65,7 @@ TEST_CASE("Vector vs. repeated function call") {
     REQUIRE(all_close(rho_func, rho_vec));
 }
 
-TEST_CASE("H") {
+TEST_CASE("H atom slater basis density") {
     using occ::Vec;
     auto basis = occ::slater::load_slaterbasis("thakkar");
     auto H = basis["H"];
@@ -84,7 +84,7 @@ TEST_CASE("H") {
     REQUIRE(all_close(rho, expected, 1e-5, 1e-5));
 }
 
-TEST_CASE("Ag") {
+TEST_CASE("Ag atom slater basis density") {
     using occ::Vec;
     auto basis = occ::slater::load_slaterbasis("thakkar");
     auto Ag = basis["Ag"];

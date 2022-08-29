@@ -42,7 +42,7 @@ auto acetic_crystal() {
     return occ::crystal::Crystal(asym, sg, cell);
 }
 
-TEST_CASE("Write acetic structure file", "[write]") {
+TEST_CASE("Write acetic CrystalGrower structure file", "[write]") {
     auto acetic = acetic_crystal();
     auto dimers = acetic.unit_cell_dimers(3.8);
     occ::io::crystalgrower::StructureWriter writer(std::cout);
@@ -562,7 +562,7 @@ QEq coupling tensors                       R   N=          18
   3.48239778E-03  1.86622939E-03  3.22514395E-01
 )";
 
-TEST_CASE("H2 fchk", "[read]") {
+TEST_CASE("Read H2 fchk contents", "[read]") {
     std::istringstream fchk(fchk_contents);
     occ::io::FchkReader reader(fchk);
     REQUIRE(reader.num_alpha() == 1);
@@ -585,7 +585,7 @@ TEST_CASE("H2 fchk", "[read]") {
     REQUIRE(density(1, 0) == Catch::Approx(0.301228));
 }
 
-TEST_CASE("Write H2 fchk", "[write]") {
+TEST_CASE("Write H2 fchk contents", "[write]") {
     occ::io::FchkWriter writer(std::cout);
     writer.set_scalar("Charge", 0);
     writer.set_scalar("Multiplicity", 1);
@@ -598,7 +598,7 @@ TEST_CASE("Write H2 fchk", "[write]") {
     REQUIRE(true);
 }
 
-TEST_CASE("water uhf fchk", "[read]") {
+TEST_CASE("Read water UHF fchk file", "[read]") {
     std::istringstream fchk(unrestricted_fchk_contents);
     occ::io::FchkReader reader(fchk);
     REQUIRE(reader.num_alpha() == 5);
@@ -1085,7 +1085,7 @@ QEq coupling tensors                       R   N=          18
   3.27501915E-03  2.04394117E-03  2.72481891E-01
 )";
 
-TEST_CASE("G09 water fchk", "[read]") {
+TEST_CASE("Read Gaussian09 water fchk spherical basis", "[read]") {
     std::istringstream fchk(pure_fchk_contents);
     occ::io::FchkReader reader(fchk);
     REQUIRE(reader.num_alpha() == 5);
@@ -1139,7 +1139,8 @@ void check_wavefunctions(const occ::qm::Wavefunction &wfn,
     }
 }
 
-TEST_CASE("our water fchk read write", "[read,write]") {
+TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
+          "[read,write]") {
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
@@ -1198,7 +1199,7 @@ H  0.2124040000  2.7681990000  0.7555250000
 
 )"""";
 
-TEST_CASE("h2o gaussian input", "[read]") {
+TEST_CASE("Read Gaussian input HF/3-21G water", "[read]") {
     std::istringstream inp(g09_input_contents);
     occ::io::GaussianInputFile reader(inp);
     REQUIRE(reader.charge == 0);
@@ -2515,7 +2516,7 @@ Occup=       0.0000000000
     33   -0.140885037876
 )";
 
-TEST_CASE("formamide molden", "[read]") {
+TEST_CASE("Read molden output formamide molecule", "[read]") {
     std::istringstream molden(molden_contents);
     occ::io::MoldenReader reader(molden);
     for (const auto &atom : reader.atoms()) {
@@ -2651,7 +2652,7 @@ const char *json_contents = R"(
 }
 )";
 
-TEST_CASE("H2 orca json", "[read]") {
+TEST_CASE("Read orca output JSON H2", "[read]") {
 
     std::istringstream json_istream(json_contents);
     occ::io::OrcaJSONReader reader(json_istream);
@@ -2706,12 +2707,12 @@ const char *json_input_contents = R""""({
 }
 )"""";
 
-TEST_CASE("water qcschema", "[read]") {
+TEST_CASE("Read QCSchema formatted input water b3lyp/6-31G", "[read]") {
     std::istringstream json(json_input_contents);
     occ::io::QCSchemaReader reader(json);
 }
 
-TEST_CASE("core_json", "[json,write]") {
+TEST_CASE("Serial Molecule & Dimer to JSON", "[json,write]") {
     fmt::print("Molecule to JSON\n");
     auto acetic = acetic_crystal();
     auto dimers = acetic.unit_cell_dimers(3.8);

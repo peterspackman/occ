@@ -13,7 +13,7 @@ double func(double theta, double phi) {
                 (7.0 * std::cos(theta) * std::cos(theta) - 1.0) * 3.0 / 8.0);
 }
 
-TEST_CASE("Analysis complex", "[sht]") {
+TEST_CASE("SHT Analysis complex function", "[sht]") {
 
     occ::sht::SHT sht(4);
     occ::CMat values = sht.values_on_grid_complex(func);
@@ -55,7 +55,7 @@ TEST_CASE("Analysis complex", "[sht]") {
     REQUIRE(occ::util::all_close(values, values_synth, 1e-7, 1e-12));
 }
 
-TEST_CASE("Analysis real", "[sht]") {
+TEST_CASE("SHT Analysis real function", "[sht]") {
 
     occ::sht::SHT sht(4);
     occ::Mat values = sht.values_on_grid_real(func);
@@ -86,7 +86,7 @@ TEST_CASE("Analysis real", "[sht]") {
     REQUIRE(occ::util::all_close(values, values_synth, 1e-7, 1e-12));
 }
 
-TEST_CASE("Legendre Evaluate batch", "[sht]") {
+TEST_CASE("SHT Associated Legendre polynomial evaluate in batch", "[sht]") {
 
     occ::sht::AssocLegendreP plm(4);
     occ::Vec expected((4 + 1) * (4 + 2) / 2);
