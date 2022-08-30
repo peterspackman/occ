@@ -253,7 +253,7 @@ inline auto j_lambda_direct_u(std::vector<Mat> &JJ, const Vec &da,
 
 inline auto j_lambda_direct_g(std::vector<Mat> &JJ, const Vec &da,
                               const Vec &db) {
-    return [&](const IntegralResult &args) {
+    return [&JJ, &da, &db](const IntegralResult &args) {
         auto Jaa = qm::block::aa(JJ[args.thread]);
         auto Jbb = qm::block::bb(JJ[args.thread]);
         size_t offset = 0;
@@ -367,18 +367,19 @@ inline auto k_lambda_direct_u(std::vector<Mat> &iuPa, std::vector<Mat> &iuPb,
     };
 }
 
-inline auto jk_lambda_direct_r(std::vector<Vec> &gg, std::vector<Mat> &iuP,
-                               const MolecularOrbitals &mo) {
+inline auto jk_lambda_direct_unpolarized(std::vector<Vec> &gg,
+                                         std::vector<Mat> &iuP,
+                                         const MolecularOrbitals &mo) {
     return [&](const IntegralResult &args) {
         auto &g = gg[args.thread];
         size_t offset = 0;
         size_t nocc = mo.Cocc.cols();
         auto c3 = mo.Cocc.block(args.bf[1], 0, args.dims[1], nocc);
-        Mat c2_term(args.dims[0], nocc);
+        Mat c3_term(args.dims[0], nocc);
 
         if (args.bf[0] != args.bf[1]) {
             auto c2 = mo.Cocc.block(args.bf[0], 0, args.dims[0], nocc);
-            Mat c3_term(args.dims[1], nocc);
+            Mat c2_term(args.dims[1], nocc);
             for (size_t r = args.bf[2]; r < args.bf[2] + args.dims[2]; r++) {
                 Eigen::Map<const Mat> buf_mat(args.buffer + offset,
                                               args.dims[0], args.dims[1]);
@@ -387,20 +388,20 @@ inline auto jk_lambda_direct_r(std::vector<Vec> &gg, std::vector<Mat> &iuP,
                              .array() *
                          buf_mat.array())
                             .sum();
-                c2_term = buf_mat * c3;
+                c3_term = buf_mat * c3;
                 g(r) += (mo.D.block(args.bf[1], args.bf[0], args.dims[1],
                                     args.dims[0])
                              .array() *
                          buf_mat.transpose().array())
                             .sum();
-                c3_term = buf_mat.transpose() * c2;
+                c2_term = buf_mat.transpose() * c2;
 
                 for (int i = 0; i < nocc; i++) {
                     auto &iuPx = iuP[i];
                     iuPx.block(args.bf[0], r, args.dims[0], 1) +=
-                        c2_term.block(0, i, args.dims[0], 1);
+                        c3_term.block(0, i, args.dims[0], 1);
                     iuPx.block(args.bf[1], r, args.dims[1], 1) +=
-                        c3_term.block(0, i, args.dims[1], 1);
+                        c2_term.block(0, i, args.dims[1], 1);
                 }
                 offset += args.dims[0] * args.dims[1];
             }
@@ -413,12 +414,12 @@ inline auto jk_lambda_direct_r(std::vector<Vec> &gg, std::vector<Mat> &iuP,
                              .array() *
                          buf_mat.array())
                             .sum();
-                c2_term = buf_mat * c3;
+                c3_term = buf_mat * c3;
 
                 for (int i = 0; i < nocc; i++) {
                     auto &iuPx = iuP[i];
                     iuPx.block(args.bf[0], r, args.dims[0], 1) +=
-                        c2_term.block(0, i, args.dims[0], 1);
+                        c3_term.block(0, i, args.dims[0], 1);
                 }
                 offset += args.dims[0] * args.dims[1];
             }
@@ -426,70 +427,70 @@ inline auto jk_lambda_direct_r(std::vector<Vec> &gg, std::vector<Mat> &iuP,
     };
 }
 
-inline auto jk_lambda_direct_u(std::vector<Vec> &gg_alpha,
-                               std::vector<Vec> &gg_beta,
-                               std::vector<Mat> &iuPa, std::vector<Mat> &iuPb,
-                               const MolecularOrbitals &mo) {
-    return [&](const IntegralResult &args) {
+inline auto jk_lambda_direct_polarized(
+    std::vector<Vec> &gg_alpha, std::vector<Vec> &gg_beta,
+    std::vector<Mat> &iuPa, std::vector<Mat> &iuPb, Eigen::Ref<const Mat> Da,
+    Eigen::Ref<const Mat> Db, Eigen::Ref<const Mat> Cocc_a,
+    Eigen::Ref<const Mat> Cocc_b) {
+    return [&gg_alpha, &gg_beta, &iuPa, &iuPb, Da, Db, Cocc_a,
+            Cocc_b](const IntegralResult &args) {
         auto &ga = gg_alpha[args.thread];
         auto &gb = gg_beta[args.thread];
         size_t offset = 0;
-        size_t nocc = mo.Cocc.cols();
-        auto c3a =
-            qm::block::a(mo.Cocc).block(args.bf[1], 0, args.dims[1], nocc);
-        auto c3b =
-            qm::block::b(mo.Cocc).block(args.bf[1], 0, args.dims[1], nocc);
-        auto Da = qm::block::a(mo.D);
-        auto Db = qm::block::b(mo.D);
-        Mat c3_term_a(args.dims[0], nocc);
-        Mat c3_term_b(args.dims[0], nocc);
+        // nbf x nocc
+        size_t n_alpha = Cocc_a.cols();
+        size_t n_beta = Cocc_a.cols();
+        auto c3a = Cocc_a.block(args.bf[1], 0, args.dims[1], n_alpha);
+        auto c3b = Cocc_b.block(args.bf[1], 0, args.dims[1], n_beta);
+        Mat c3_term_a(args.dims[0], n_alpha);
+        Mat c3_term_b(args.dims[0], n_beta);
 
         if (args.bf[0] != args.bf[1]) {
-            auto c2a =
-                qm::block::a(mo.Cocc).block(args.bf[0], 0, args.dims[0], nocc);
-            auto c2b =
-                qm::block::b(mo.Cocc).block(args.bf[0], 0, args.dims[0], nocc);
-            Mat c2_term_a(args.dims[1], nocc);
-            Mat c2_term_b(args.dims[1], nocc);
+            auto c2a = Cocc_a.block(args.bf[0], 0, args.dims[0], n_alpha);
+            auto c2b = Cocc_b.block(args.bf[0], 0, args.dims[0], n_beta);
+            Mat c2_term_a(args.dims[1], n_alpha);
+            Mat c2_term_b(args.dims[1], n_beta);
             for (size_t r = args.bf[2]; r < args.bf[2] + args.dims[2]; r++) {
                 Eigen::Map<const Mat> buf_mat(args.buffer + offset,
                                               args.dims[0], args.dims[1]);
 
-                ga(r) += (Da.block(args.bf[0], args.bf[1], args.dims[0],
-                                   args.dims[1])
-                              .array() *
-                          buf_mat.array())
-                             .sum();
-                gb(r) += (Db.block(args.bf[0], args.bf[1], args.dims[0],
-                                   args.dims[1])
-                              .array() *
-                          buf_mat.array())
-                             .sum();
+                ga(r) += 2 * (Da.block(args.bf[0], args.bf[1], args.dims[0],
+                                       args.dims[1])
+                                  .array() *
+                              buf_mat.array())
+                                 .sum();
+                gb(r) += 2 * (Db.block(args.bf[0], args.bf[1], args.dims[0],
+                                       args.dims[1])
+                                  .array() *
+                              buf_mat.array())
+                                 .sum();
 
                 c3_term_a = buf_mat * c3a;
                 c3_term_b = buf_mat * c3b;
 
-                ga(r) += (Da.block(args.bf[1], args.bf[0], args.dims[1],
-                                   args.dims[0])
-                              .array() *
-                          buf_mat.transpose().array())
-                             .sum();
-                gb(r) += (Db.block(args.bf[1], args.bf[0], args.dims[1],
-                                   args.dims[0])
-                              .array() *
-                          buf_mat.transpose().array())
-                             .sum();
+                ga(r) += 2 * (Da.block(args.bf[1], args.bf[0], args.dims[1],
+                                       args.dims[0])
+                                  .array() *
+                              buf_mat.transpose().array())
+                                 .sum();
+                gb(r) += 2 * (Db.block(args.bf[1], args.bf[0], args.dims[1],
+                                       args.dims[0])
+                                  .array() *
+                              buf_mat.transpose().array())
+                                 .sum();
 
                 c2_term_a = buf_mat.transpose() * c2a;
                 c2_term_b = buf_mat.transpose() * c2b;
 
-                for (int i = 0; i < nocc; i++) {
+                for (int i = 0; i < n_alpha; i++) {
                     auto &iuPxa = iuPa[i];
                     iuPxa.block(args.bf[0], r, args.dims[0], 1) +=
                         c3_term_a.block(0, i, args.dims[0], 1);
                     iuPxa.block(args.bf[1], r, args.dims[1], 1) +=
                         c2_term_a.block(0, i, args.dims[1], 1);
+                }
 
+                for (int i = 0; i < n_beta; i++) {
                     auto &iuPxb = iuPb[i];
                     iuPxb.block(args.bf[0], r, args.dims[0], 1) +=
                         c3_term_b.block(0, i, args.dims[0], 1);
@@ -502,128 +503,27 @@ inline auto jk_lambda_direct_u(std::vector<Vec> &gg_alpha,
             for (size_t r = args.bf[2]; r < args.bf[2] + args.dims[2]; r++) {
                 Eigen::Map<const Mat> buf_mat(args.buffer + offset,
                                               args.dims[0], args.dims[1]);
-                ga(r) += (Da.block(args.bf[0], args.bf[1], args.dims[0],
-                                   args.dims[1])
-                              .array() *
-                          buf_mat.array())
-                             .sum();
-                gb(r) += (Db.block(args.bf[0], args.bf[1], args.dims[0],
-                                   args.dims[1])
-                              .array() *
-                          buf_mat.array())
-                             .sum();
+                ga(r) += 2 * (Da.block(args.bf[0], args.bf[1], args.dims[0],
+                                       args.dims[1])
+                                  .array() *
+                              buf_mat.array())
+                                 .sum();
+                gb(r) += 2 * (Db.block(args.bf[0], args.bf[1], args.dims[0],
+                                       args.dims[1])
+                                  .array() *
+                              buf_mat.array())
+                                 .sum();
 
                 c3_term_a = buf_mat * c3a;
                 c3_term_b = buf_mat * c3b;
 
-                for (int i = 0; i < nocc; i++) {
+                for (int i = 0; i < n_alpha; i++) {
                     auto &iuPxa = iuPa[i];
                     iuPxa.block(args.bf[0], r, args.dims[0], 1) +=
                         c3_term_a.block(0, i, args.dims[0], 1);
-                    auto &iuPxb = iuPb[i];
-                    iuPxb.block(args.bf[0], r, args.dims[0], 1) +=
-                        c3_term_b.block(0, i, args.dims[0], 1);
                 }
-                offset += args.dims[0] * args.dims[1];
-            }
-        }
-    };
-}
 
-inline auto jk_lambda_direct_g(std::vector<Vec> &gg_alpha,
-                               std::vector<Vec> &gg_beta,
-                               std::vector<Mat> &iuPa, std::vector<Mat> &iuPb,
-                               const MolecularOrbitals &mo) {
-    return [&](const IntegralResult &args) {
-        auto &ga = gg_alpha[args.thread];
-        auto &gb = gg_beta[args.thread];
-        size_t offset = 0;
-        size_t nocc = mo.Cocc.cols();
-        auto c3a =
-            qm::block::a(mo.Cocc).block(args.bf[1], 0, args.dims[1], nocc);
-        auto c3b =
-            qm::block::b(mo.Cocc).block(args.bf[1], 0, args.dims[1], nocc);
-        auto Daa = qm::block::aa(mo.D);
-        auto Dbb = qm::block::bb(mo.D);
-        Mat c3_term_a(args.dims[0], nocc);
-        Mat c3_term_b(args.dims[0], nocc);
-
-        if (args.bf[0] != args.bf[1]) {
-            auto c2a =
-                qm::block::a(mo.Cocc).block(args.bf[0], 0, args.dims[0], nocc);
-            auto c2b =
-                qm::block::b(mo.Cocc).block(args.bf[0], 0, args.dims[0], nocc);
-            Mat c2_term_a(args.dims[1], nocc);
-            Mat c2_term_b(args.dims[1], nocc);
-            for (size_t r = args.bf[2]; r < args.bf[2] + args.dims[2]; r++) {
-                Eigen::Map<const Mat> buf_mat(args.buffer + offset,
-                                              args.dims[0], args.dims[1]);
-
-                ga(r) += (Daa.block(args.bf[0], args.bf[1], args.dims[0],
-                                    args.dims[1])
-                              .array() *
-                          buf_mat.array())
-                             .sum();
-                gb(r) += (Dbb.block(args.bf[0], args.bf[1], args.dims[0],
-                                    args.dims[1])
-                              .array() *
-                          buf_mat.array())
-                             .sum();
-
-                c3_term_a = buf_mat * c3a;
-                c3_term_b = buf_mat * c3b;
-
-                ga(r) += (Daa.block(args.bf[1], args.bf[0], args.dims[1],
-                                    args.dims[0])
-                              .array() *
-                          buf_mat.transpose().array())
-                             .sum();
-                gb(r) += (Dbb.block(args.bf[1], args.bf[0], args.dims[1],
-                                    args.dims[0])
-                              .array() *
-                          buf_mat.transpose().array())
-                             .sum();
-
-                c2_term_a = buf_mat.transpose() * c2a;
-                c2_term_b = buf_mat.transpose() * c2b;
-
-                for (int i = 0; i < nocc; i++) {
-                    auto &iuPxa = iuPa[i];
-                    iuPxa.block(args.bf[0], r, args.dims[0], 1) +=
-                        c3_term_a.block(0, i, args.dims[0], 1);
-                    iuPxa.block(args.bf[1], r, args.dims[1], 1) +=
-                        c2_term_a.block(0, i, args.dims[1], 1);
-
-                    auto &iuPxb = iuPb[i];
-                    iuPxb.block(args.bf[0], r, args.dims[0], 1) +=
-                        c3_term_b.block(0, i, args.dims[0], 1);
-                    iuPxb.block(args.bf[1], r, args.dims[1], 1) +=
-                        c2_term_b.block(0, i, args.dims[1], 1);
-                }
-                offset += args.dims[0] * args.dims[1];
-            }
-        } else {
-            for (size_t r = args.bf[2]; r < args.bf[2] + args.dims[2]; r++) {
-                Eigen::Map<const Mat> buf_mat(args.buffer + offset,
-                                              args.dims[0], args.dims[1]);
-                ga(r) += (Daa.block(args.bf[0], args.bf[1], args.dims[0],
-                                    args.dims[1])
-                              .array() *
-                          buf_mat.array())
-                             .sum();
-                gb(r) += (Dbb.block(args.bf[0], args.bf[1], args.dims[0],
-                                    args.dims[1])
-                              .array() *
-                          buf_mat.array())
-                             .sum();
-
-                c3_term_a = buf_mat * c3a;
-                c3_term_b = buf_mat * c3b;
-
-                for (int i = 0; i < nocc; i++) {
-                    auto &iuPxa = iuPa[i];
-                    iuPxa.block(args.bf[0], r, args.dims[0], 1) +=
-                        c3_term_a.block(0, i, args.dims[0], 1);
+                for (int i = 0; i < n_beta; i++) {
                     auto &iuPxb = iuPb[i];
                     iuPxb.block(args.bf[0], r, args.dims[0], 1) +=
                         c3_term_b.block(0, i, args.dims[0], 1);
@@ -1248,7 +1148,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_r(
 
     std::vector<Mat> iuP(nocc, Mat::Zero(nbf, ndf));
 
-    auto jk_lambda_1 = jk_lambda_direct_r(gg, iuP, mo);
+    auto jk_lambda_1 = jk_lambda_direct_unpolarized(gg, iuP, mo);
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(jk_lambda_1, engine.env(),
                                       engine.aobasis(), engine.auxbasis(),
@@ -1296,7 +1196,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
     const Eigen::LLT<Mat> &Vsqrt_LLt) {
-    size_t nocc = mo.Cocc.cols();
+    size_t nocc = mo.n_ao;
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
     const auto ndf = engine.auxbasis().nbf();
@@ -1313,8 +1213,9 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
     std::vector<Mat> iuP_alpha(nocc, Mat::Zero(nbf, ndf));
     std::vector<Mat> iuP_beta(nocc, Mat::Zero(nbf, ndf));
 
-    auto jk_lambda_1 =
-        jk_lambda_direct_u(gg_alpha, gg_beta, iuP_alpha, iuP_beta, mo);
+    auto jk_lambda_1 = jk_lambda_direct_polarized(
+        gg_alpha, gg_beta, iuP_alpha, iuP_beta, block::a(mo.D), block::b(mo.D),
+        mo.occ_alpha(), mo.occ_beta());
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(jk_lambda_1, engine.env(),
                                       engine.aobasis(), engine.auxbasis(),
@@ -1357,8 +1258,8 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
 
     auto Ja = block::a(J);
     auto Jb = block::b(J);
-    auto Ka = block::a(J);
-    auto Kb = block::b(J);
+    auto Ka = block::a(K);
+    auto Kb = block::b(K);
     for (int i = 0; i < nthreads; i++) {
         auto JJa = block::a(JJ[i]);
         auto JJb = block::b(JJ[i]);
@@ -1370,8 +1271,8 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
         Kb.noalias() += KKb + KKb.transpose();
     }
 
-    JJ[0] *= 4.0;
-    return {JJ[0], KK[0]};
+    K *= 0.5;
+    return {J, K};
 }
 
 template <ShellKind kind = ShellKind::Cartesian>
@@ -1379,7 +1280,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
     const Eigen::LLT<Mat> &Vsqrt_LLt) {
-    size_t nocc = mo.Cocc.cols();
+    size_t nocc = mo.n_alpha; // number of electrons == n_alpha for general
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
     const auto ndf = engine.auxbasis().nbf();
@@ -1396,8 +1297,9 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
     std::vector<Mat> iuP_alpha(nocc, Mat::Zero(nbf, ndf));
     std::vector<Mat> iuP_beta(nocc, Mat::Zero(nbf, ndf));
 
-    auto jk_lambda_1 =
-        jk_lambda_direct_g(gg_alpha, gg_beta, iuP_alpha, iuP_beta, mo);
+    auto jk_lambda_1 = jk_lambda_direct_polarized(
+        gg_alpha, gg_beta, iuP_alpha, iuP_beta, block::aa(mo.D),
+        block::bb(mo.D), mo.occ_alpha(), mo.occ_beta());
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(jk_lambda_1, engine.env(),
                                       engine.aobasis(), engine.auxbasis(),
@@ -1410,20 +1312,24 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
         gg_beta[0] += gg_beta[i];
     }
 
-    auto klambda = [&](int thread_id) {
+    auto klambda = [&iuP_alpha, &iuP_beta, &KK, Vsqrt_LLt, nthreads, nocc, nbf,
+                    ndf](int thread_id) {
+        auto &Kpart = KK[thread_id];
+        auto aa_part = block::aa(Kpart);
+        auto ab_part = block::ab(Kpart);
+        auto ba_part = block::ba(Kpart);
+        auto bb_part = block::bb(Kpart);
         Mat Ba = Mat::Zero(nbf, ndf);
-        Mat Bb = Mat::Zero(nbf, ndf);
+        Mat Bb = Ba;
         for (size_t i = 0; i < nocc; i++) {
             if (i % nthreads != thread_id)
                 continue;
             Ba = Vsqrt_LLt.solve(iuP_alpha[i].transpose());
             Bb = Vsqrt_LLt.solve(iuP_beta[i].transpose());
-            block::aa(KK[thread_id]).noalias() += Ba.transpose() * Ba;
-            block::bb(KK[thread_id]).noalias() += Bb.transpose() * Bb;
-            block::ab(KK[thread_id]).noalias() +=
-                Ba.transpose() * Bb + Bb.transpose() * Ba;
-            block::ba(KK[thread_id]).noalias() +=
-                Ba.transpose() * Bb + Bb.transpose() * Ba;
+            aa_part.noalias() += Ba.transpose() * Ba;
+            bb_part.noalias() += Bb.transpose() * Bb;
+            ab_part.noalias() += Ba.transpose() * Bb + Bb.transpose() * Ba;
+            ba_part.noalias() += Ba.transpose() * Bb + Bb.transpose() * Ba;
         }
     };
 
@@ -1444,19 +1350,21 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
 
     auto Jaa = block::aa(J);
     auto Jbb = block::bb(J);
-    auto Kaa = block::aa(J);
-    auto Kab = block::ab(J);
-    auto Kba = block::ba(J);
-    auto Kbb = block::bb(J);
+    auto Kaa = block::aa(K);
+    auto Kab = block::ab(K);
+    auto Kba = block::ba(K);
+    auto Kbb = block::bb(K);
     for (int i = 0; i < nthreads; i++) {
         auto JJaa = block::aa(JJ[i]);
         auto JJbb = block::bb(JJ[i]);
+
         auto KKaa = block::aa(KK[i]);
         auto KKab = block::ab(KK[i]);
         auto KKba = block::ba(KK[i]);
         auto KKbb = block::bb(KK[i]);
         Jaa.noalias() += JJaa + JJaa.transpose();
         Jbb.noalias() += JJbb + JJbb.transpose();
+
         Kaa.noalias() += KKaa + KKaa.transpose();
         Kab.noalias() += KKab + KKab.transpose();
         Kba.noalias() += KKba + KKba.transpose();
@@ -1465,8 +1373,8 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
 
     // can move a factor of 2 in the jk_lambda_g or in g_alpha/beta but this
     // saves flops (tiny)
-    JJ[0] *= 4.0;
-    return {JJ[0], KK[0]};
+    K *= 0.5;
+    return {J, K};
 }
 
 std::pair<Mat, Mat>

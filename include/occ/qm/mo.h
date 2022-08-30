@@ -20,6 +20,25 @@ struct MolecularOrbitals {
     void print() const;
     void incorporate_norm(Eigen::Ref<const Vec> norms);
     double expectation_value(const Mat &op) const;
+
+    inline const auto occ_alpha() const {
+        return Cocc.block(0, 0, n_ao,
+                          n_alpha); // block for consistent return type
+    }
+
+    inline const auto occ_beta() const {
+        switch (kind) {
+        default:
+            // restricted
+            return Cocc.block(0, 0, n_ao,
+                              n_alpha); // block for consistent return type
+        case SpinorbitalKind::Unrestricted:
+            return Cocc.block(n_ao, 0, n_ao, n_beta);
+        case SpinorbitalKind::General: // due to peculiarities of n_alpha/n_beta
+                                       // in general case
+            return Cocc.block(n_ao, 0, n_ao, n_alpha);
+        }
+    }
 };
 
 } // namespace occ::qm
