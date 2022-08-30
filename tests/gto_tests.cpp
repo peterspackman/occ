@@ -84,8 +84,13 @@ TEST_CASE("Spherical Gaussian basis <-> Cartesian Gaussian basis transforms") {
             Mat c = occ::gto::cartesian_to_spherical_transformation_matrix(i);
             Mat cinv =
                 occ::gto::spherical_to_cartesian_transformation_matrix(i);
-            REQUIRE(all_close(x, c * cinv, 1e-14, 1e-14));
-            fmt::print("c c^-1 (l = {})\n{}\n", i, c * cinv);
+            fmt::print("c {} {}, cinv {} {}\n", c.rows(), c.cols(), cinv.rows(),
+                       cinv.cols());
+            REQUIRE(c.rows() == x.rows());
+            REQUIRE(cinv.cols() == x.cols());
+            Mat prod = c * cinv;
+            REQUIRE(all_close(x, prod, 1e-14, 1e-14));
+            fmt::print("c c^-1 (l = {})\n{}\n", i, prod);
         }
     }
 
@@ -128,21 +133,27 @@ TEST_CASE("Spherical Gaussian basis <-> Cartesian Gaussian basis transforms") {
         x(4, 2) = 2;
         Mat c = occ::gto::cartesian_to_spherical_transformation_matrix(l);
         Mat cinv = occ::gto::spherical_to_cartesian_transformation_matrix(l);
-        Mat srot = c * grot * cinv;
+        Mat srot = c * (grot * cinv).eval();
 
         fmt::print("c {} {}\n{}\n", c.rows(), c.cols(), c);
         fmt::print("c^-1 {} {}\n{}\n", cinv.rows(), cinv.cols(), cinv);
         fmt::print("coeffs sph ({} {})\n{}\n", x.rows(), x.cols(), x);
         fmt::print("srot ({} {})\n{}\n", srot.rows(), srot.cols(), srot);
+        REQUIRE(srot.cols() == x.rows());
+        REQUIRE(cinv.cols() == x.rows());
 
         Mat xcart = cinv * x;
         Mat xcart_rot = grot * xcart;
+
+        REQUIRE(c.cols() == xcart_rot.rows());
         Mat xsph_rot = c * xcart_rot;
+
         fmt::print("cartesian ({} {})\n{}\n", xcart.rows(), xcart.cols(),
                    xcart);
         fmt::print("cartesian rotated\n{}\n", xcart_rot);
         fmt::print("spherical rotated\n{}\n", xsph_rot);
-        fmt::print("spherical rotated2\n{}\n", srot * x);
+        Mat srot_x = srot * x;
+        fmt::print("spherical rotated2\n{}\n", srot_x);
 
         Mat xcart2 = cinv * xsph_rot;
         Mat xcart_rot2 = grot2 * xcart2;
