@@ -114,6 +114,61 @@ TEST_CASE("GGA (PBE) exchange energy density", "[gga]") {
     // assert(all_close(expected_exc, res1.exc, 1e-6));
 }
 
+TEST_CASE("MGGA") {
+    occ::dft::DensityFunctional mgga("xc_mgga_x_tpss");
+    occ::dft::DensityFunctional mgga_c("xc_mgga_c_tpss");
+    occ::Mat rho(4, 6);
+    rho << 0.06019401627252133, -0.12747174847145987, -0, 0.03731311973522952,
+        0.09472176570942804, 0.036634279981580156, 0.06019401627252133, -0,
+        -0.12747174847145987, 0.03731311973522952, 0.09472176570942804,
+        0.036634279981580156, 0.30171849914696935, -0, -0, 0.26070301592021455,
+        -2.594981941107205, 0.02815789498408782, 0.3550246251878335, -0, -0,
+        0.15685208520532756, -6.307746108179051, 0.008662278222335566;
+    fmt::print("rho =\n{}\n", rho);
+
+    occ::dft::DensityFunctional::Params params(
+        4, occ::dft::DensityFunctional::Family::MGGA,
+        occ::qm::SpinorbitalKind::Restricted);
+    params.rho.col(0) = rho.col(0);
+    params.sigma.col(0) = rho.col(1).array() * rho.col(1).array() +
+                          rho.col(2).array() * rho.col(2).array() +
+                          rho.col(3).array() * rho.col(3).array();
+    params.laplacian.col(0) = rho.col(4);
+    params.tau.col(0) = rho.col(5);
+    occ::Vec expected_exc(4);
+    expected_exc << -0.33175882, -0.33175882, -0.56154382, -0.59257418;
+    auto res = mgga.evaluate(params);
+    fmt::print("Expected exc TPSSx\n{}\n", expected_exc);
+    fmt::print("MGGA exc TPSSx\n{}\n", res.exc);
+    fmt::print("Difference\n{}\n", res.exc - expected_exc);
+    REQUIRE(occ::util::all_close(expected_exc, res.exc, 1e-6));
+    occ::Vec expected_exc_c(4);
+    expected_exc_c << -0.02276044, -0.02276044, -0.04168478, -0.04268936;
+    auto res_c = mgga_c.evaluate(params);
+    fmt::print("Expected exc TPSSc\n{}\n", expected_exc_c);
+    fmt::print("MGGA exc TPSSc\n{}\n", res_c.exc);
+    fmt::print("Difference\n{}\n", res_c.exc - expected_exc_c);
+    REQUIRE(occ::util::all_close(expected_exc_c, res_c.exc, 1e-6));
+    fmt::print("MGGA vrho TPSSc\n{}\n", res_c.vrho);
+    fmt::print("MGGA vsigma TPSSc\n{}\n", res_c.vsigma);
+    fmt::print("MGGA vlaplacian TPSSc\n{}\n", res_c.vlaplacian);
+    fmt::print("MGGA vtau TPSSc\n{}\n", res_c.vtau);
+    occ::Vec expected_vrho_c(4), expected_vsigma_c(4), expected_vtau_c(4),
+        expected_vlapl_c(4);
+    expected_vrho_c << -5.57565777e-02, -5.57565777e-02, -8.00593613e-02,
+        -8.53775165e-02;
+    expected_vsigma_c << 3.91761083e-02, 3.91761083e-02, 1.47458233e-01,
+        5.51608074e-01;
+    expected_vlapl_c << 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+        0.00000000e+00;
+    expected_vtau_c << 1.10283011e-03, 1.10283011e-03, -3.50002323e-01,
+        -1.56487879e+00;
+    REQUIRE(occ::util::all_close(expected_vrho_c, res_c.vrho, 1e-6));
+    REQUIRE(occ::util::all_close(expected_vsigma_c, res_c.vsigma, 1e-6));
+    REQUIRE(occ::util::all_close(expected_vtau_c, res_c.vtau, 1e-6));
+    REQUIRE(occ::util::all_close(expected_vlapl_c, res_c.vlaplacian, 1e-6));
+}
+
 // Grid
 using occ::util::all_close;
 

@@ -12,11 +12,11 @@ using occ::Mat;
 
 // GTO
 
-TEST_CASE("GTO values, derivatives & 2nd derivatives H2/STO-3G") {
+TEST_CASE("GTO values derivatives & 2nd derivatives H2/STO-3G") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
     occ::qm::AOBasis aobasis = occ::qm::AOBasis::load(atoms, "sto-3g");
-    auto grid_pts = Mat::Zero(3, 4);
+    Mat grid_pts = Mat::Identity(3, 4);
     auto gto_values = occ::gto::evaluate_basis(aobasis, grid_pts, 2);
     fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
     fmt::print("phi_x\n{}\n", gto_values.phi_x);
@@ -35,7 +35,7 @@ TEST_CASE("GTO values, derivatives & 2nd derivatives H2/STO-3G") {
     fmt::print("Rho\n{}\n", rho);
 }
 
-TEST_CASE("GTO values, derivatives & density H2/3-21G") {
+TEST_CASE("GTO values derivatives & density H2/3-21G") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
     occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "3-21G");
@@ -56,7 +56,7 @@ TEST_CASE("GTO values, derivatives & density H2/3-21G") {
     fmt::print("Rho\n{}\n", rho);
 }
 
-TEST_CASE("GTO values, derivatives & density H2/STO-3G Unrestricted") {
+TEST_CASE("GTO values derivatives & density H2/STO-3G Unrestricted") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, 0.0, 0.0, 1.398397}};
     occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "sto-3g");

@@ -45,15 +45,13 @@ void xc_potential_matrix<Restricted, 2>(const DensityFunctional::Result &res,
     xc_potential_matrix<Restricted, 1>(res, rho, gto_vals, Vxc, energy);
     // unsure about factors for vtau, vlaplacian
     // xx + yy + zz = rho(4)
-    auto t = gto_vals.phi_xx + gto_vals.phi_yy + gto_vals.phi_zz;
-    Mat tmp = gto_vals.phi.transpose() *
-              (t.array().colwise() * res.vlaplacian.col(0).array()).matrix();
-    Vxc.noalias() += 0.5 * (tmp + tmp.transpose());
-    Eigen::ArrayXd t2 = 0.25 * res.vtau.col(0) + res.vlaplacian.col(0);
-    tmp = (gto_vals.phi_x.transpose() + gto_vals.phi_y.transpose() +
-           gto_vals.phi_z.transpose()) *
-          (gto_vals.phi_x.array().colwise() * t2.array()).matrix();
-    Vxc.noalias() += (tmp + tmp.transpose());
+    Array t2 = 0.5 * res.vtau.col(0);
+    Vxc.noalias() += gto_vals.phi_x.transpose() *
+                     (gto_vals.phi_x.array().colwise() * t2).matrix();
+    Vxc.noalias() += gto_vals.phi_y.transpose() *
+                     (gto_vals.phi_y.array().colwise() * t2).matrix();
+    Vxc.noalias() += gto_vals.phi_z.transpose() *
+                     (gto_vals.phi_z.array().colwise() * t2).matrix();
 }
 
 template <>
@@ -119,32 +117,21 @@ void xc_potential_matrix<Unrestricted, 2>(const DensityFunctional::Result &res,
     const auto &phi_y = gto_vals.phi_y;
     const auto &phi_z = gto_vals.phi_z;
 
-    // xx + yy + zz = rho(4)
-    auto t = gto_vals.phi_xx + gto_vals.phi_yy + gto_vals.phi_zz;
-    Mat tmp = gto_vals.phi.transpose() *
-              (t.array().colwise() * res.vlaplacian.col(0).array()).matrix();
-    block::a(Vxc).noalias() += 0.5 * (tmp + tmp.transpose());
-    tmp = gto_vals.phi.transpose() *
-          (t.array().colwise() * res.vlaplacian.col(1).array()).matrix();
-    block::b(Vxc).noalias() += 0.5 * (tmp + tmp.transpose());
+    Array t2 = 0.5 * res.vtau.col(0); // alpha
+    block::a(Vxc).noalias() += gto_vals.phi_x.transpose() *
+                               (gto_vals.phi_x.array().colwise() * t2).matrix();
+    block::a(Vxc).noalias() += gto_vals.phi_y.transpose() *
+                               (gto_vals.phi_y.array().colwise() * t2).matrix();
+    block::a(Vxc).noalias() += gto_vals.phi_z.transpose() *
+                               (gto_vals.phi_z.array().colwise() * t2).matrix();
 
-    auto t2a = 0.25 * res.vtau.col(0) + res.vlaplacian.col(0);
-    tmp = gto_vals.phi_x.transpose() *
-          (gto_vals.phi_x.array().colwise() * t2a.array()).matrix();
-    tmp.noalias() += gto_vals.phi_y.transpose() *
-                     (gto_vals.phi_y.array().colwise() * t2a.array()).matrix();
-    tmp.noalias() += gto_vals.phi_z.transpose() *
-                     (gto_vals.phi_z.array().colwise() * t2a.array()).matrix();
-    block::a(Vxc).noalias() += (tmp + tmp.transpose());
-
-    auto t2b = 0.25 * res.vtau.col(1) + res.vlaplacian.col(1);
-    tmp = gto_vals.phi_x.transpose() *
-          (gto_vals.phi_x.array().colwise() * t2b.array()).matrix();
-    tmp.noalias() += gto_vals.phi_y.transpose() *
-                     (gto_vals.phi_y.array().colwise() * t2b.array()).matrix();
-    tmp.noalias() += gto_vals.phi_z.transpose() *
-                     (gto_vals.phi_z.array().colwise() * t2b.array()).matrix();
-    block::b(Vxc).noalias() += (tmp + tmp.transpose());
+    t2 = 0.5 * res.vtau.col(1); // beta
+    block::b(Vxc).noalias() += gto_vals.phi_x.transpose() *
+                               (gto_vals.phi_x.array().colwise() * t2).matrix();
+    block::b(Vxc).noalias() += gto_vals.phi_y.transpose() *
+                               (gto_vals.phi_y.array().colwise() * t2).matrix();
+    block::b(Vxc).noalias() += gto_vals.phi_z.transpose() *
+                               (gto_vals.phi_z.array().colwise() * t2).matrix();
 }
 
 } // namespace occ::dft
