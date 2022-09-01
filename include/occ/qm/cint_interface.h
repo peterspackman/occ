@@ -1,7 +1,7 @@
 #pragma once
-#include <occ/3rdparty/cint_wrapper.h>
 #include <occ/qm/shell.h>
 
+#include <occ/3rdparty/cint_wrapper.h>
 namespace occ::qm::cint {
 
 using occ::core::Atom;

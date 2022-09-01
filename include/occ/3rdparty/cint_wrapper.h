@@ -1,3 +1,6 @@
+#pragma once
+#include <cstdlib>
+
 namespace libcint {
 
 extern "C" {

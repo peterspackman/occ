@@ -79,20 +79,6 @@ if("${LBFGSpp_ADDED}")
     target_include_directories(LBFGSpp::LBFGSpp INTERFACE "${LBFGSpp_SOURCE_DIR}/include")
 endif()
 
-# Fastor currently unused
-#CPMAddPackage(
-#    NAME Fastor
-#    GITHUB_REPOSITORY romeric/Fastor
-#    GIT_TAG master
-#    DOWNLOAD_ONLY YES
-#)
-
-## Add Fastor as a header only library for linking
-#if("${Fastor_ADDED}")
-#    add_library(Fastor::Fastor INTERFACE IMPORTED GLOBAL)
-#    target_include_directories(Fastor::Fastor INTERFACE "${Fastor_SOURCE_DIR}")
-#endif()
-
 if(NOT "${USE_SYSTEM_ZLIB}")
 CPMAddPackage(
     NAME zlib
@@ -102,21 +88,12 @@ CPMAddPackage(
 add_library(ZLIB::ZLIB ALIAS zlib)
 endif()
 
-# Need to get OpenBLAS working
-#if(NOT "${USE_SYSTEM_BLAS}")
-#CPMAddPackage(
-#    NAME OpenBLAS
-#    GITHUB_REPOSITORY xianyi/OpenBLAS
-#    VERSION 0.3.16
-#)
-#endif()
-
 CPMAddPackage(
     NAME libcint
     GITHUB_REPOSITORY "sunqm/libcint"
     GIT_TAG master
     OPTIONS "WITH_FORTRAN OFF" "WITH_CINT2_INTERFACE OFF" "ENABLE_STATIC ON" "BUILD_SHARED_LIBS OFF" "PYPZPX ON" "BUILD_MARCH_NATIVE ON"
-    VERSION "5.1.2"
+    VERSION "5.1.5"
 )
 add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(libcint::libcint INTERFACE cint)
