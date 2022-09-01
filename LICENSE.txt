@@ -1,4 +1,4 @@
-tonto-ng, a program for quantum chemistry & crystallography
+occ, a program for quantum chemistry & crystallography
 Copyright (C) 2020 Peter Spackman
 
 This program is free software: you can redistribute it and/or modify
