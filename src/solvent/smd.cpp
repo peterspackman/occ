@@ -701,7 +701,7 @@ Vec intrinsic_coulomb_radii(const IVec &nums,
             r = 3.06;
             break;
         default:
-            r = occ::core::Element(n).vdwRadius();
+            r = occ::core::Element(n).van_der_waals_radius();
             break;
         }
         result(i) = r;
@@ -713,7 +713,7 @@ Vec cds_radii(const IVec &nums, const SMDSolventParameters &params) {
     occ::Vec result(nums.rows());
     for (int i = 0; i < nums.rows(); i++) {
         int n = nums(i);
-        result(i) = occ::core::Element(n).vdwRadius() + 0.4;
+        result(i) = occ::core::Element(n).van_der_waals_radius() + 0.4;
     }
     return result * occ::units::ANGSTROM_TO_BOHR;
 }

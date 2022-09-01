@@ -36,6 +36,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(WITH_BENCHMARKS "Enable benchmarking tests" OFF)
     option(WITH_CLANG_TIDY "Enable clang tidy" OFF)
     option(WITH_PYTHON_BINDINGS "Build python bindings" OFF)
+    option(BUILD_DOCS "Build documentation using Doxygen" OFF)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" ON)
     option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
     option(USE_SYSTEM_ZLIB "Use ZLIB installed on system" ON)
@@ -75,4 +76,21 @@ endif()
 
 if("${WITH_CLANG_TIDY}")
     set(CMAKE_CXX_CLANG_TIDY "clang-tidy;clang-diagnostic-*,clang-analyzer-*,-*,bugprone*,modernize*,performance*,-modernize-pass-by-value,-modernize-use-auto,-modernize-use-using")
+endif()
+
+if(${BUILD_DOCS})
+    find_package(Doxygen)
+    if(DOXYGEN_FOUND)
+	set(DOXYGEN_IN "${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in")
+	set(DOXYGEN_OUT "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile.out")
+	configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+	message(STATUS "Start building documentation with Doxygen")
+	add_custom_target(docs
+	    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+	    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	    COMMENT "Generating documentation with Doxygen"
+	    VERBATIM)
+    else(DOXYGEN_FOUND)
+	message(STATUS "Doxygen must be installed to generate documentation")
+    endif(DOXYGEN_FOUND)
 endif()

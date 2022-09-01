@@ -39,7 +39,7 @@ void AsymmetricUnit::generate_default_labels() {
 Eigen::VectorXd AsymmetricUnit::covalent_radii() const {
     Eigen::VectorXd result(atomic_numbers.size());
     for (int i = 0; i < atomic_numbers.size(); i++) {
-        result(i) = occ::core::Element(atomic_numbers(i)).covalentRadius();
+        result(i) = occ::core::Element(atomic_numbers(i)).covalent_radius();
     }
     return result;
 }

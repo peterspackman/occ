@@ -42,7 +42,7 @@ Vec chelpg_charges(const Wavefunction &wfn) {
     Mat distances(nx * ny * nz, num_atoms);
     Eigen::Index current{0};
     Vec radii = wfn.atomic_numbers().unaryExpr([](int n) {
-        return static_cast<double>(core::Element(n).vdw()) *
+        return static_cast<double>(core::Element(n).van_der_waals_radius()) *
                occ::units::ANGSTROM_TO_BOHR;
     });
     Vec3 pt;

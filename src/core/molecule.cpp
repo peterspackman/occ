@@ -60,7 +60,7 @@ std::vector<occ::core::Atom> Molecule::atoms() const {
 const Vec Molecule::vdw_radii() const {
     Vec radii(size());
     for (size_t i = 0; i < radii.size(); i++) {
-        radii(i) = static_cast<double>(m_elements[i].vdw());
+        radii(i) = static_cast<double>(m_elements[i].van_der_waals_radius());
     }
     return radii;
 }
