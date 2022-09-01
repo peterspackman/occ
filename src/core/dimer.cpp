@@ -8,8 +8,8 @@ namespace occ::core {
 
 Dimer::Dimer(const Molecule &a, const Molecule &b) : m_a(a), m_b(b) {}
 
-Dimer::Dimer(const std::vector<occ::core::Atom> a,
-             const std::vector<occ::core::Atom> b)
+Dimer::Dimer(const std::vector<occ::core::Atom> &a,
+             const std::vector<occ::core::Atom> &b)
     : m_a(a), m_b(b) {}
 
 double Dimer::centroid_distance() const {
@@ -50,7 +50,7 @@ std::optional<occ::Mat4> Dimer::symmetry_relation() const {
     return result;
 }
 
-const Vec Dimer::vdw_radii(MoleculeOrder order) const {
+Vec Dimer::vdw_radii(MoleculeOrder order) const {
     Vec result(m_a.size() + m_b.size());
     switch (order) {
     case MoleculeOrder::AB:
