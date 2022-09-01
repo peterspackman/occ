@@ -18,6 +18,7 @@
 #include <occ/qm/scf.h>
 #include <sstream>
 
+using occ::qm::HartreeFock;
 using occ::util::all_close;
 // CrystalGrower
 
@@ -1148,9 +1149,8 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
 
     auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
     obs.set_pure(true);
-    occ::hf::HartreeFock hf(obs);
-    occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
-        scf(hf);
+    HartreeFock hf(obs);
+    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
     scf.energy_convergence_threshold = 1e-8;
     double e = scf.compute_scf_energy();
 
@@ -2662,7 +2662,7 @@ TEST_CASE("Read orca output JSON H2", "[read]") {
     Mat S1 = reader.overlap_matrix();
     fmt::print("ORCA Overlap matrix:\n{}\n", S1);
 
-    occ::hf::HartreeFock hf(reader.basis_set());
+    HartreeFock hf(reader.basis_set());
     Mat S2 = hf.compute_overlap_matrix();
     fmt::print("OUR Overlap matrix:\n{}\n", S2);
     fmt::print("Difference\n{}\n", S2 - S1);

@@ -3,6 +3,7 @@ set(OCC_QM_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/expectation.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/guess_density.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/hf_fwd.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.h"

@@ -45,7 +45,10 @@ gemmi                CIF parsing & structure refinement (v {})
 LBFGS++              L-BFGS implementation
 libcint              Electron integrals using GTOs (v {})
 libxc                Density functional implementations (v {})
+nanoflann	     KDtree implementation
 nlohmann::json       JSON parser
+phmap                Fast hashmap implementation
+pocketFFT 	     Standalone implementation of fast Fourier transform
 scnlib               String parsing
 spdlog               Logging (v {})
 zlib                 zip library

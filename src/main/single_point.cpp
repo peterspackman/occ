@@ -11,8 +11,8 @@ namespace occ::main {
 using occ::core::Element;
 using occ::core::Molecule;
 using occ::dft::DFT;
-using occ::hf::HartreeFock;
 using occ::io::OccInput;
+using occ::qm::HartreeFock;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;

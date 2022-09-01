@@ -2,13 +2,13 @@
 #include <memory>
 #include <occ/core/units.h>
 #include <occ/interaction/polarization.h>
+#include <occ/qm/hf_fwd.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
 
-namespace occ::hf {
-class HartreeFock;
-}
 namespace occ::interaction {
+
+using occ::qm::HartreeFock;
 using occ::qm::Wavefunction;
 
 struct CEParameterizedModel {
@@ -29,7 +29,7 @@ inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177, 0.7399, 0.8708,
 inline CEParameterizedModel CE_B3LYP_SVP_XDM{1.0, 1.0, 1.0, 1.0,
                                              "CE-B3LYP-XDM"};
 
-void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
+void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
                                double precision, const Mat &Schwarz);
 
 template <typename Procedure>

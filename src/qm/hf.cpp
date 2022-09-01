@@ -3,9 +3,7 @@
 #include <occ/core/units.h>
 #include <occ/qm/hf.h>
 
-namespace occ::hf {
-
-using occ::qm::SpinorbitalKind;
+namespace occ::qm {
 
 Vec3 HartreeFock::center_of_mass() const {
     auto mol = occ::core::Molecule(m_atoms);
@@ -23,7 +21,8 @@ void HartreeFock::set_density_fitting_basis(
     occ::qm::AOBasis dfbasis =
         occ::qm::AOBasis::load(m_atoms, density_fitting_basis);
     dfbasis.set_kind(m_engine.aobasis().kind());
-    m_df_engine.emplace(m_atoms, m_engine.aobasis().shells(), dfbasis.shells());
+    m_df_engine = std::make_unique<IntegralEngineDF>(
+        m_atoms, m_engine.aobasis().shells(), dfbasis.shells());
 }
 
 HartreeFock::HartreeFock(const AOBasis &basis)
@@ -52,7 +51,7 @@ double HartreeFock::nuclear_repulsion_energy() const {
 Mat HartreeFock::compute_fock(const MolecularOrbitals &mo, double precision,
                               const Mat &Schwarz) const {
     if (m_df_engine) {
-        return (*m_df_engine).fock_operator(mo);
+        return m_df_engine->fock_operator(mo);
     } else {
         return m_engine.fock_operator(mo.kind, mo, Schwarz);
     }
@@ -90,7 +89,7 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(const MolecularOrbitals &mo,
                                             double precision,
                                             const Mat &Schwarz) const {
     if (m_df_engine) {
-        return (*m_df_engine).coulomb_and_exchange(mo);
+        return m_df_engine->coulomb_and_exchange(mo);
     } else {
         return m_engine.coulomb_and_exchange(mo.kind, mo, Schwarz);
     }
@@ -99,7 +98,7 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(const MolecularOrbitals &mo,
 Mat HartreeFock::compute_J(const MolecularOrbitals &mo, double precision,
                            const Mat &Schwarz) const {
     if (m_df_engine) {
-        return (*m_df_engine).coulomb(mo);
+        return m_df_engine->coulomb(mo);
     } else {
         return m_engine.coulomb(mo.kind, mo, Schwarz);
     }
@@ -179,4 +178,4 @@ Vec HartreeFock::nuclear_electric_potential_contribution(
 
 Mat HartreeFock::compute_schwarz_ints() const { return m_engine.schwarz(); }
 
-} // namespace occ::hf
+} // namespace occ::qm

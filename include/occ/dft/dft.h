@@ -101,20 +101,19 @@ class DFT {
         m_hf.set_density_fitting_basis(density_fitting_basis);
     }
 
-    double two_electron_energy() const { return m_two_electron_energy; }
     double exchange_correlation_energy() const { return m_exc_dft; }
 
     bool usual_scf_energy() const { return false; }
     void update_scf_energy(occ::core::EnergyComponents &energy,
                            bool incremental) const {
         if (incremental) {
-            energy["electronic.2e"] += two_electron_energy();
-            energy["electronic"] += two_electron_energy();
+            energy["electronic.2e"] += m_two_electron_energy;
+            energy["electronic"] += m_two_electron_energy;
             energy["electronic.dft_xc"] += exchange_correlation_energy();
         } else {
             energy["electronic"] = energy["electronic.1e"];
-            energy["electronic.2e"] = two_electron_energy();
-            energy["electronic"] += two_electron_energy();
+            energy["electronic.2e"] = m_two_electron_energy;
+            energy["electronic"] += m_two_electron_energy;
             energy["electronic.dft_xc"] = exchange_correlation_energy();
         }
         energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
@@ -392,7 +391,7 @@ class DFT {
   private:
     std::string m_method_string{"svwn5"};
     SpinorbitalKind m_spinorbital_kind;
-    occ::hf::HartreeFock m_hf;
+    occ::qm::HartreeFock m_hf;
     MolecularGrid m_grid;
     std::vector<DensityFunctional> m_funcs;
     std::vector<AtomGrid> m_atom_grids;

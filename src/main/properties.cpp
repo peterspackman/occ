@@ -11,7 +11,7 @@ namespace occ::main {
 void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
     fmt::print("\n{:=^72s}\n\n", "  Converged Properties  ");
 
-    occ::hf::HartreeFock hf(wfn.basis);
+    occ::qm::HartreeFock hf(wfn.basis);
 
     Vec3 com = hf.center_of_mass();
 

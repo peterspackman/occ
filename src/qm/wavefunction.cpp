@@ -561,7 +561,7 @@ void Wavefunction::save_npz(const std::string &filename) {
 
 Vec Wavefunction::mulliken_charges() const {
 
-    occ::hf::HartreeFock hf(basis);
+    HartreeFock hf(basis);
     Mat overlap = hf.compute_overlap_matrix();
 
     Vec charges = Vec::Zero(atoms.size());

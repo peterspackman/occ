@@ -6,9 +6,8 @@
 #include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/spinorbital.h>
-#include <optional>
 
-namespace occ::hf {
+namespace occ::qm {
 
 using occ::qm::AOBasis;
 using occ::qm::MolecularOrbitals;
@@ -29,9 +28,6 @@ class HartreeFock {
 
     Vec3 center_of_mass() const;
 
-    double two_electron_energy_alpha() const { return m_e_alpha; }
-    double two_electron_energy_beta() const { return m_e_beta; }
-    double two_electron_energy() const { return m_e_alpha + m_e_beta; }
     bool usual_scf_energy() const { return true; }
     void update_scf_energy(occ::core::EnergyComponents &energy,
                            bool incremental) const {
@@ -110,10 +106,8 @@ class HartreeFock {
     int m_charge{0};
     int m_num_e{0};
     std::vector<occ::core::Atom> m_atoms;
-    mutable double m_e_alpha{0};
-    mutable double m_e_beta{0};
-    mutable std::optional<occ::qm::IntegralEngineDF> m_df_engine;
+    mutable std::unique_ptr<IntegralEngineDF> m_df_engine{nullptr};
     mutable occ::qm::IntegralEngine m_engine;
 };
 
-} // namespace occ::hf
+} // namespace occ::qm

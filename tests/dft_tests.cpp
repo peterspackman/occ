@@ -314,8 +314,8 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
         {1, 0.48664409, 0.07959806, 0.00986248}};
     auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
     basis.set_pure(false);
-    auto hf = occ::hf::HartreeFock(basis);
-    occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
+    auto hf = occ::qm::HartreeFock(basis);
+    occ::scf::SCF<occ::qm::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
         scf(hf);
     double e = scf.compute_scf_energy();
 

@@ -146,13 +146,6 @@ template <typename Proc> class SolvationCorrectedProcedure {
     int system_charge() const { return m_proc.system_charge(); }
     int num_e() const { return m_proc.num_e(); }
 
-    double two_electron_energy() const { return m_proc.two_electron_energy(); }
-    double two_electron_energy_alpha() const {
-        return m_proc.two_electron_energy_alpha();
-    }
-    double two_electron_energy_beta() const {
-        return m_proc.two_electron_energy_beta();
-    }
     bool usual_scf_energy() const { return m_proc.usual_scf_energy(); }
 
     double nuclear_repulsion_energy() const {

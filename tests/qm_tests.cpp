@@ -14,7 +14,7 @@
 
 using occ::Mat;
 using occ::Mat3;
-using occ::hf::HartreeFock;
+using occ::qm::HartreeFock;
 using occ::qm::SpinorbitalKind;
 using occ::util::all_close;
 
@@ -50,7 +50,7 @@ TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
                                        {1, 0.0, 0.0, 1.39839733}};
     auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
     basis.set_pure(false);
-    auto hf = occ::hf::HartreeFock(basis);
+    auto hf = HartreeFock(basis);
     hf.set_density_fitting_basis("def2-svp-jk");
 
     occ::qm::MolecularOrbitals mo;
@@ -151,18 +151,17 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
         Eigen::AngleAxisd(M_PI / 2, occ::Vec3{0, 1, 0}).toRotationMatrix();
     fmt::print("Rotation by:\n{}\n", rotation);
 
-    auto hf = occ::hf::HartreeFock(basis);
-    occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
-        scf(hf);
+    auto hf = HartreeFock(basis);
+    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
     double e = scf.compute_scf_energy();
 
     occ::qm::AOBasis rot_basis = basis;
     rot_basis.rotate(rotation);
     auto rot_atoms = rot_basis.atoms();
     fmt::print("rot_basis.size() {}\n", rot_basis.size());
-    auto hf_rot = occ::hf::HartreeFock(rot_basis);
-    occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
-        scf_rot(hf_rot);
+    auto hf_rot = HartreeFock(rot_basis);
+    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf_rot(
+        hf_rot);
     double e_rot = scf_rot.compute_scf_energy();
 
     REQUIRE(e == Catch::Approx(e_rot));
@@ -195,7 +194,7 @@ TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
     fmt::print("Rotation by:\n{}\n", rotation);
     fmt::print("Distances before rotation:\n{}\n",
                interatomic_distances(atoms));
-    auto hf = occ::hf::HartreeFock(basis);
+    auto hf = HartreeFock(basis);
 
     auto rot_basis = basis;
     rot_basis.rotate(rotation);
@@ -204,11 +203,10 @@ TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
 
     fmt::print("Distances after rotation:\n{}\n",
                interatomic_distances(rot_atoms));
-    auto hf_rot = occ::hf::HartreeFock(rot_basis);
+    auto hf_rot = HartreeFock(rot_basis);
     REQUIRE(hf.nuclear_repulsion_energy() ==
             Catch::Approx(hf_rot.nuclear_repulsion_energy()));
-    occ::scf::SCF<occ::hf::HartreeFock, occ::qm::SpinorbitalKind::Restricted>
-        scf(hf);
+    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
     double e = scf.compute_scf_energy();
     occ::qm::MolecularOrbitals mos = scf.mo;
     Mat C_occ = mos.C.leftCols(scf.n_occ);

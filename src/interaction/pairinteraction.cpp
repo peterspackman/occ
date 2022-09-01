@@ -5,13 +5,14 @@
 #include <occ/qm/merge.h>
 
 namespace occ::interaction {
+using qm::HartreeFock;
 using qm::SpinorbitalKind;
 
 CEModelInteraction::CEModelInteraction(const CEParameterizedModel &facs)
     : scale_factors(facs) {}
 
 template <SpinorbitalKind kind>
-void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
+void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
                                double precision, const Mat &Schwarz) {
     if (wfn.have_energies)
         return;
@@ -51,7 +52,7 @@ void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
     wfn.have_energies = true;
 }
 
-void compute_ce_model_energies(Wavefunction &wfn, occ::hf::HartreeFock &hf,
+void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
                                double precision, const Mat &Schwarz) {
     if (wfn.is_restricted())
         return compute_ce_model_energies<SpinorbitalKind::Restricted>(
@@ -91,7 +92,6 @@ void dump_matrix(const Mat &matrix) {
 CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
                                                   Wavefunction &B) const {
     using occ::disp::ce_model_dispersion_energy;
-    using occ::hf::HartreeFock;
     using occ::qm::Energy;
     constexpr double precision = std::numeric_limits<double>::epsilon();
 

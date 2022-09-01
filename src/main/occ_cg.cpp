@@ -35,7 +35,7 @@ using occ::core::Element;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::SymmetryOperation;
-using occ::hf::HartreeFock;
+using occ::qm::HartreeFock;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;

@@ -23,9 +23,9 @@ using occ::core::Element;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::SymmetryOperation;
-using occ::hf::HartreeFock;
 using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEModelInteraction;
+using occ::qm::HartreeFock;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;
@@ -214,17 +214,15 @@ int main(int argc, char *argv[]) {
     options.add_options()("i,input", "Input CIF",
                           cxxopts::value<std::string>(cif_name))(
         "t,threads", "Number of threads",
-        cxxopts::value<int>(nthreads)->default_value(
-            "1"))("ce-hf", "Use CE-HF model",
-                  cxxopts::value<bool>()->default_value(
-                      "false"))("r,radius",
-                                "maximum radius (angstroms) for neighbours",
-                                cxxopts::value<double>(radius)->default_value(
-                                    "30.0"))("radius-increment",
-                                             "step size (angstroms) for direct "
-                                             "space summation",
-                                             cxxopts::value<double>(increment)
-                                                 ->default_value("3.8"));
+        cxxopts::value<int>(nthreads)->default_value("1"))(
+        "ce-hf", "Use CE-HF model",
+        cxxopts::value<bool>()->default_value("false"))(
+        "r,radius", "maximum radius (angstroms) for neighbours",
+        cxxopts::value<double>(radius)->default_value("30.0"))(
+        "radius-increment",
+        "step size (angstroms) for direct "
+        "space summation",
+        cxxopts::value<double>(increment)->default_value("3.8"));
 
     occ::log::set_level(occ::log::level::info);
     spdlog::set_level(spdlog::level::info);
