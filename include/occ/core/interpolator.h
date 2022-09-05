@@ -3,16 +3,43 @@
 
 namespace occ::core {
 
+/**
+ * An enum to specify the mapping of the domain of inputs for interpolation.
+ *
+ * Can help improve precision of linear interpolation while minimizing
+ * number of points.
+ */
 enum DomainMapping {
-    Linear,
-    SquareRoot,
-    Log,
+    Linear,     /**< The typical f(x) mapping */
+    SquareRoot, /**< Make f a function of x^2 -> f(x*x) mapping */
+    Log,        /**< Make f a function of e^x -> f(e^x) mapping */
 };
 
+/**
+ * Class for interpolating one-dimensional functions.
+ *
+ * Templated by the type of data to be interpolated, and the DomainMapping
+ * (default = Linear)
+ */
 template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
   public:
+    /**
+     * Default constructor
+     */
     Interpolator1D() {}
 
+    /**
+     * Construct an Interpolator1D from a given function.
+     *
+     * \param f the function to interpolate
+     * \param left the lowest (left most) value in the domain
+     * \param right the highest (right most) value in the domain
+     * \param N the number of points to sample in the domain [left, right]
+     *
+     * Will evaluate the function f N times, and map the domain values
+     * internally based on the specified DomainMapping....
+     *
+     */
     template <typename F>
     Interpolator1D(const F &f, T left, T right, size_t N) {
         m_domain.reserve(N);
@@ -59,6 +86,16 @@ template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
         u_fill = m_range[m_range.size() - 1];
     }
 
+    /**
+     * Evaluate the interpolated function at the value provided.
+     *
+     * \param x the value where the interpolated function should be evaluated.
+     *
+     * The provided value will be mapped based on DomainMapping.
+     * If the provided value falls outside the domain, it will be
+     * yield the f(left) and f(right) values from the original
+     * construction of the Interpolator1D.
+     */
     T operator()(T x) const {
         size_t N = m_domain.size();
         T domain_distance = u_domain - l_domain;

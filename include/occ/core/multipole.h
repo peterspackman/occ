@@ -5,10 +5,24 @@
 
 namespace occ::core {
 
+/**
+ * The number of unique multipole components for a given angular momentum.
+ *
+ * \param L the angular momentum.
+ *
+ * \returns an unsigned int with the count of the number of components.
+ */
 inline constexpr unsigned int num_unique_multipole_components(int L) {
     return (L + 1) * (L + 2) / 2;
 }
 
+/**
+ * The number of tensor multipole components for a given angular momentum.
+ *
+ * \param L the angular momentum.
+ *
+ * \returns an unsigned int with the count of the number of components.
+ */
 inline constexpr unsigned int num_multipole_components_tensor(int L) {
     unsigned int result = 1;
     for (int i = 1; i <= L; i++) {
@@ -17,6 +31,14 @@ inline constexpr unsigned int num_multipole_components_tensor(int L) {
     return result;
 }
 
+/**
+ * The total number of unique multipole components up to and including a given
+ * angular momentum.
+ *
+ * \param L the angular momentum.
+ *
+ * \returns an unsigned int with the count of the number of components.
+ */
 inline constexpr unsigned int total_num_multipole_components(int L) {
     unsigned int n{0};
     for (unsigned int i = 0; i <= L; i++) {
@@ -25,6 +47,9 @@ inline constexpr unsigned int total_num_multipole_components(int L) {
     return n;
 }
 
+/**
+ * The names of multipole components in order
+ */
 inline constexpr std::array<const char *, 35> multipole_component_names{
     "q",     "Dx",    "Dy",    "Dz",    "Qxx",   "Qxy",   "Qxz",
     "Qyy",   "Qyz",   "Qzz",   "Oxxx",  "Oxxy",  "Oxxz",  "Oxyy",
@@ -32,22 +57,47 @@ inline constexpr std::array<const char *, 35> multipole_component_names{
     "Hxxxy", "Hxxxz", "Hxxyy", "Hxxyz", "Hxxzz", "Hxyyy", "Hxyyz",
     "Hxyzz", "Hxzzz", "Hyyyy", "Hyyyz", "Hyyzz", "Hyzzz", "Hzzzz"};
 
+/**
+ * Templated storage class for Multipole expansions
+ */
 template <unsigned int L> struct Multipole {
+    /// storage alias for 3 components of a dipole
     using Dipole = std::array<double, 3>;
+    /// storage alias for the 6 components of a quadrupole
     using Quadrupole = std::array<double, 6>;
+    /// storage alias for the 10 components of an octupole
     using Octupole = std::array<double, 10>;
+    /// storage alias for the 15 components of a hexadecapole
     using Hexadecapole = std::array<double, 15>;
+
     static constexpr unsigned int num_components{
         total_num_multipole_components(L)};
     std::array<double, num_components> components;
+
+    /**
+     * The monopole (charge) part of this multipole expansion `q`
+     *
+     * \returns monopole.
+     */
     double charge() const { return components[0]; }
 
+    /**
+     * The dipole part of this multipole expansion (`x y z`).
+     *
+     * \returns the (3 unique) components of the dipole
+     */
     Dipole dipole() const {
         static_assert(L > 0,
                       "No dipole for a multipole with angular momentum < 1");
         return {components[1], components[2], components[3]};
     }
 
+    /**
+     * The quadrupole part of this multipole expansion (`xx xy xz yy yz
+     * zz`).
+     *
+     * \returns the (6 unique) components of the quadrupole
+     */
     Quadrupole quadrupole() const {
         static_assert(
             L > 1, "No quadrupole for a multipole with angular momentum < 2");
@@ -55,6 +105,12 @@ template <unsigned int L> struct Multipole {
                 components[7], components[8], components[9]};
     }
 
+    /**
+     * The octupole part of this multipole expansion (`xxx xxy xxz xyy xyz
+     * xzz yyy yyz yzz zzz`).
+     *
+     * \returns the (10 unique) components of the octupole
+     */
     Octupole octupole() const {
         static_assert(L > 2,
                       "No octupole for a multipole with angular momentum < 3");
@@ -62,7 +118,12 @@ template <unsigned int L> struct Multipole {
                 components[14], components[15], components[16], components[17],
                 components[18], components[19]};
     }
-
+    /**
+     * The hexadecapole part of this multipole expansion (`xxxx xxxz xxyy xxyz
+     * xxzz xyyy xyyz xyzz xzzz yyyy yyyz yyzz yzzz zzzz`).
+     *
+     * \returns the (15 unique) components of the hexadecapole
+     */
     Hexadecapole hexadecapole() const {
         static_assert(
             L > 3, "No hexadecapole for a multipole with angular momentum < 4");
@@ -72,6 +133,10 @@ template <unsigned int L> struct Multipole {
                 components[32], components[33], components[34]};
     }
 
+    /**
+     * Operator overload to add two multipoles together.
+     * \returns a Multipole of order max(L1, L2).
+     */
     template <unsigned int L2>
     Multipole<std::max(L, L2)> operator+(const Multipole<L2> &rhs) const {
         constexpr unsigned int LM = std::max(L, L2);

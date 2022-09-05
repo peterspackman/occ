@@ -14,6 +14,7 @@ add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/optimize.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/point_group.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/quasirandom.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.cpp"
     ${OCC_CORE_INCLUDE_FILES}

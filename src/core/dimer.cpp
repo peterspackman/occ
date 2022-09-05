@@ -31,7 +31,7 @@ Vec3 Dimer::v_ab() const {
 }
 
 std::optional<occ::Mat4> Dimer::symmetry_relation() const {
-    if (!m_a.comparable_to(m_b))
+    if (!m_a.is_comparable_to(m_b))
         return std::nullopt;
     using occ::Vec3;
     using occ::linalg::kabsch_rotation_matrix;
@@ -120,12 +120,12 @@ bool Dimer::operator==(const Dimer &rhs) const {
     double nearest_diff = abs(nearest_distance() - rhs.nearest_distance());
     if (nearest_diff > eps)
         return false;
-    bool aa_eq = m_a.equivalent_to(rhs.m_a);
-    bool bb_eq = m_b.equivalent_to(rhs.m_b);
+    bool aa_eq = m_a.is_equivalent_to(rhs.m_a);
+    bool bb_eq = m_b.is_equivalent_to(rhs.m_b);
     if (aa_eq && bb_eq)
         return true;
-    bool ba_eq = m_b.equivalent_to(rhs.m_a);
-    bool ab_eq = m_a.equivalent_to(rhs.m_b);
+    bool ba_eq = m_b.is_equivalent_to(rhs.m_a);
+    bool ab_eq = m_a.is_equivalent_to(rhs.m_b);
     return ab_eq && ba_eq;
 }
 

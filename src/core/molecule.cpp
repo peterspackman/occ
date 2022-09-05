@@ -57,7 +57,7 @@ std::vector<occ::core::Atom> Molecule::atoms() const {
     return result;
 }
 
-const Vec Molecule::vdw_radii() const {
+Vec Molecule::vdw_radii() const {
     Vec radii(size());
     for (size_t i = 0; i < radii.size(); i++) {
         radii(i) = static_cast<double>(m_elements[i].van_der_waals_radius());
@@ -65,7 +65,7 @@ const Vec Molecule::vdw_radii() const {
     return radii;
 }
 
-const Vec Molecule::atomic_masses() const {
+Vec Molecule::atomic_masses() const {
     Vec masses(size());
     for (size_t i = 0; i < masses.size(); i++) {
         masses(i) = static_cast<double>(m_elements[i].mass());
@@ -147,7 +147,7 @@ double Molecule::translational_free_energy(double temperature) const {
     return (Gt + Gn) * occ::constants::avogadro<double> / 1000 + RT;
 }
 
-bool Molecule::comparable_to(const Molecule &other) const {
+bool Molecule::is_comparable_to(const Molecule &other) const {
     if (size() != other.size())
         return false;
     return (m_atomicNumbers.array() == other.m_atomicNumbers.array()).all();
@@ -263,8 +263,8 @@ Vec Molecule::interatomic_distances() const {
     return result;
 }
 
-bool Molecule::equivalent_to(const Molecule &rhs) const {
-    if (!comparable_to(rhs))
+bool Molecule::is_equivalent_to(const Molecule &rhs) const {
+    if (!is_comparable_to(rhs))
         return false;
     auto dists_a = interatomic_distances();
     auto dists_b = rhs.interatomic_distances();

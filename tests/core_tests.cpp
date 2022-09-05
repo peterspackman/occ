@@ -10,6 +10,7 @@
 #include <occ/core/multipole.h>
 #include <occ/core/optimize.h>
 #include <occ/core/point_group.h>
+#include <occ/core/quasirandom.h>
 #include <occ/core/table.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
@@ -486,4 +487,17 @@ TEST_CASE("Depth first & Breadth first graph traversal", "[graph]") {
     REQUIRE(components[descriptors[0]] != components[descriptors[4]]);
     REQUIRE(components[descriptors[4]] == components[descriptors[6]]);
     REQUIRE(components[descriptors[4]] == components[descriptors[5]]);
+}
+
+TEST_CASE("Quasirandom KGF", "[quasirandom]") {
+
+    occ::Mat pts = occ::core::quasirandom_kgf(3, 5, 10);
+    occ::Mat expected(3, 5);
+    expected << 0.5108976473578082, 0.3300701607539729, 0.1492426741501376,
+        0.9684151875463005, 0.7875877009424652, 0.8814796737416799,
+        0.5525232804454685, 0.2235668871492571, 0.8946104938530475,
+        0.5656541005568361, 0.5467052569216708, 0.0964057348236409,
+        0.646106212725611, 0.19580669062758105, 0.7455071685295511;
+
+    REQUIRE(occ::util::all_close(pts, expected));
 }
