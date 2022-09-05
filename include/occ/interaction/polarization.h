@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 
-namespace occ::pol {
+namespace occ::interaction {
 
 double ce_model_polarization_energy(const occ::IVec &atomic_numbers,
                                     const occ::Mat3N &efield,
@@ -10,4 +10,4 @@ double ce_model_polarization_energy(const occ::IVec &atomic_numbers,
 double polarization_energy(const occ::IVec &polarizabilities,
                            const occ::Mat3N &efield);
 
-} // namespace occ::pol
+} // namespace occ::interaction

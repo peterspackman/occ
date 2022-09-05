@@ -26,7 +26,7 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
     const double solvent_radius =
         std::min(solvent_radius_angs, 0.001) * occ::units::ANGSTROM_TO_BOHR;
     Surface surface;
-    auto grid = occ::grid::lebedev(146);
+    auto grid = occ::dft::grid::lebedev(146);
     const int npts = grid.rows();
     Mat tmp_vertices(3, npts * N);
     Vec tmp_areas(npts * N);

@@ -4,7 +4,7 @@
 #include <occ/core/util.h>
 #include <vector>
 
-namespace occ::numeric {
+namespace occ::core {
 
 using occ::util::tokenize;
 
@@ -271,4 +271,4 @@ bool Fraction::operator<(const Fraction &other) const {
 bool Fraction::operator<=(const Fraction &other) const {
     return cast<double>() <= other.cast<double>();
 }
-} // namespace occ::numeric
+} // namespace occ::core

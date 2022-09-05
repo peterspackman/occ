@@ -2,7 +2,7 @@
 #include <numeric>
 #include <string>
 
-namespace occ::numeric {
+namespace occ::core {
 
 class Fraction {
 
@@ -37,4 +37,4 @@ class Fraction {
     int64_t m_denominator{1};
 };
 
-} // namespace occ::numeric
+} // namespace occ::core

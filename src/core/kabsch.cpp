@@ -1,6 +1,6 @@
 #include <occ/core/kabsch.h>
 
-namespace occ::linalg {
+namespace occ::core::linalg {
 
 occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b,
                                  bool ensure_proper_rotation) {
@@ -44,4 +44,4 @@ occ::Mat3 kabsch_rotation_matrix(const occ::Mat3N &a, const occ::Mat3N &b,
     return v * d * u.transpose();
 }
 
-} // namespace occ::linalg
+} // namespace occ::core::linalg

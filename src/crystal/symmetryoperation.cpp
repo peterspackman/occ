@@ -5,7 +5,7 @@
 
 namespace occ::crystal {
 
-using occ::numeric::Fraction;
+using occ::core::Fraction;
 using occ::util::tokenize;
 
 void decode_int(int code, Mat4 &seitz) {

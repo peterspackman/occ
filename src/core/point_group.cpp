@@ -16,7 +16,7 @@ SymOp::SymOp(const Mat3 &rotation, const Vec3 &translation)
     transformation(3, 3) = 1;
 }
 
-Mat3N SymOp::apply(const Mat3N &coordinates) const {
+Mat3N SymOp::apply(Mat3NConstRef coordinates) const {
     Mat3N result = rotation() * coordinates;
     result.colwise() += translation();
     return result;

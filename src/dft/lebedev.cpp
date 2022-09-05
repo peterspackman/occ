@@ -5384,7 +5384,7 @@ int make_angular_grid_5810(
     return N;
 }
 
-namespace occ::grid {
+namespace occ::dft::grid {
 
 Eigen::Matrix<double, Eigen::Dynamic, 4, Eigen::RowMajor>
 lebedev(int num_points) {
@@ -5501,4 +5501,4 @@ lebedev(int num_points) {
     assert(N == num_points);
     return result;
 }
-} // namespace occ::grid
+} // namespace occ::dft::grid

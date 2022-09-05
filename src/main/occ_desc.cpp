@@ -53,7 +53,7 @@ struct SlaterBasis {
             return (*this)(x * r, y * r, z * r);
         };
         std::function<double(double)> func(lambda);
-        occ::opt::Brent brent(func);
+        occ::core::opt::Brent brent(func);
         brent.set_left(5.0);
         brent.set_right(20.0);
         double xx = brent.xmin();

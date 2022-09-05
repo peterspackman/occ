@@ -1,7 +1,7 @@
 #include <functional>
 #include <occ/core/optimize.h>
 
-namespace occ::opt {
+namespace occ::core::opt {
 
 Brent::Brent(Brent::func_type func, double tolerance, size_t max_iter)
     : m_func(func), m_tolerance(tolerance), m_max_iter(max_iter) {}
@@ -121,4 +121,4 @@ void Brent::optimize() {
     m_num_calls = num_calls;
 }
 
-} // namespace occ::opt
+} // namespace occ::core::opt

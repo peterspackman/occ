@@ -53,7 +53,7 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
     bool charged_a = (wfn_a.atoms.size() == 1) && (wfn_a.charge() != 0);
     bool charged_b = (wfn_b.atoms.size() == 1) && (wfn_b.charge() != 0);
 
-    using occ::pol::ce_model_polarization_energy;
+    using occ::interaction::ce_model_polarization_energy;
     double e_pol = ce_model_polarization_energy(wfn_a.atomic_numbers(), field_a,
                                                 charged_a) +
                    ce_model_polarization_energy(wfn_b.atomic_numbers(), field_b,

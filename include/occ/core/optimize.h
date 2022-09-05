@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 
-namespace occ::opt {
+namespace occ::core::opt {
 
 struct bracket1d {
     typedef const std::function<double(double)> &func_type;
@@ -120,4 +120,4 @@ class Brent {
     size_t m_num_calls{0};
 };
 
-} // namespace occ::opt
+} // namespace occ::core::opt

@@ -1,7 +1,7 @@
 #include <array>
 #include <occ/interaction/polarization.h>
 
-namespace occ::pol {
+namespace occ::interaction {
 
 static const std::array<double, 110> Thakkar_atomic_polarizability{
     4.50,   1.38,   164.04, 37.74,  20.43,  11.67,  7.26,   5.24,   3.70,
@@ -63,4 +63,4 @@ double polarization_energy(const occ::Vec &polarizabilities,
     return epol * -0.5;
 }
 
-} // namespace occ::pol
+} // namespace occ::interaction

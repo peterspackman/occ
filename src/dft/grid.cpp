@@ -329,7 +329,7 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points,
     occ::IVec n_angular = prune_nwchem_scheme(atomic_number, max_angular_points,
                                               n_radial, radial.points);
     for (size_t i = 0; i < n_radial; i++) {
-        auto lebedev = occ::grid::lebedev(n_angular(i));
+        auto lebedev = grid::lebedev(n_angular(i));
         double r = radial.points(i);
         double w = radial.weights(i);
         result.points.block(0, num_points, 3, lebedev.rows()) =
@@ -466,7 +466,7 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number) {
         prune_nwchem_scheme(atomic_number, m_settings.max_angular_points,
                             radial.num_points(), radial.points);
     for (size_t i = 0; i < n_radial; i++) {
-        auto lebedev = occ::grid::lebedev(n_angular(i));
+        auto lebedev = grid::lebedev(n_angular(i));
         double r = radial.points(i);
         double w = radial.weights(i);
         result.points.block(0, num_points, 3, lebedev.rows()) =

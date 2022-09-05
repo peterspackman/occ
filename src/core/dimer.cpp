@@ -5,6 +5,7 @@
 #include <fmt/ostream.h>
 
 namespace occ::core {
+using occ::core::linalg::kabsch_rotation_matrix;
 
 Dimer::Dimer(const Molecule &a, const Molecule &b) : m_a(a), m_b(b) {}
 
@@ -34,7 +35,6 @@ std::optional<occ::Mat4> Dimer::symmetry_relation() const {
     if (!m_a.is_comparable_to(m_b))
         return std::nullopt;
     using occ::Vec3;
-    using occ::linalg::kabsch_rotation_matrix;
 
     Vec3 o_a = m_a.centroid();
     Vec3 o_b = m_b.centroid();
@@ -130,9 +130,6 @@ bool Dimer::operator==(const Dimer &rhs) const {
 }
 
 bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
-    using occ::Mat3N;
-    using occ::Vec3;
-    using occ::linalg::kabsch_rotation_matrix;
     size_t d1_na = m_a.size();
     size_t d2_na = rhs.m_a.size();
     size_t d1_nb = m_b.size();
@@ -157,9 +154,6 @@ bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
 }
 
 bool Dimer::equivalent(const occ::core::Dimer &rhs) const {
-    using occ::Mat3N;
-    using occ::Vec3;
-    using occ::linalg::kabsch_rotation_matrix;
     size_t d1_na = m_a.size();
     size_t d2_na = rhs.m_a.size();
     size_t d1_nb = m_b.size();
@@ -185,9 +179,6 @@ bool Dimer::equivalent(const occ::core::Dimer &rhs) const {
 
 bool Dimer::equivalent_under_rotation(const occ::core::Dimer &rhs,
                                       const occ::Mat3 &rotation) const {
-    using occ::Mat3N;
-    using occ::Vec3;
-    using occ::linalg::kabsch_rotation_matrix;
     size_t d1_na = m_a.size();
     size_t d2_na = rhs.m_a.size();
     size_t d1_nb = m_b.size();

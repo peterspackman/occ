@@ -173,22 +173,22 @@ TEST_CASE("MGGA") {
 using occ::util::all_close;
 
 TEST_CASE("Lebedev grid construction", "[grid]") {
-    auto grid = occ::grid::lebedev(110);
+    auto grid = occ::dft::grid::lebedev(110);
     fmt::print("grid:\n{}\n", grid);
     REQUIRE(grid.rows() == 110);
     REQUIRE(grid.cols() == 4);
 
     /*
     BENCHMARK("Lebedev 86") {
-        return occ::grid::lebedev(86);
+        return occ::dft::grid::lebedev(86);
     };0
 
     BENCHMARK("Lebedev 590") {
-        return occ::grid::lebedev(590);
+        return occ::dft::grid::lebedev(590);
     };
 
     BENCHMARK("Lebedev 5810") {
-        return occ::grid::lebedev(5810);
+        return occ::dft::grid::lebedev(5810);
     };
     */
 }
