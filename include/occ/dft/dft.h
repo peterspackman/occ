@@ -190,6 +190,10 @@ class DFT {
         double exchange_factor = exact_exchange_factor();
 
         constexpr size_t BLOCKSIZE = 64;
+        size_t num_rows_factor = 1;
+        if (spinorbital_kind == SpinorbitalKind::Unrestricted)
+            num_rows_factor = 2;
+
         double total_density_a{0.0}, total_density_b{0.0};
         const Mat D2 = 2 * D;
         DensityFunctional::Family family{DensityFunctional::Family::LDA};
@@ -221,8 +225,8 @@ class DFT {
                 cache.resize(num_blocks);
             }
             auto lambda = [&](int thread_id) {
-                Mat rho(BLOCKSIZE,
-                        occ::density::num_components(derivative_order));
+                Mat rho_storage(num_rows_factor * BLOCKSIZE,
+                                occ::density::num_components(derivative_order));
                 for (size_t block = 0; block < num_blocks; block++) {
                     if (block % nthreads != thread_id)
                         continue;
@@ -232,6 +236,9 @@ class DFT {
                     Eigen::Index npt = u - l;
                     if (npt <= 0)
                         continue;
+                    Eigen::Ref<Mat> rho = rho_storage.block(
+                        0, 0, num_rows_factor * npt, rho_storage.cols());
+
                     auto &k = Kt[thread_id];
                     const auto &pts_block = atom_pts.middleCols(l, npt);
                     const auto &weights_block = atom_weights.segment(l, npt);
