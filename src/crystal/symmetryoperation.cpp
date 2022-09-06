@@ -154,6 +154,8 @@ SymmetryOperation SymmetryOperation::translated(const Vec3 &t) const {
 }
 
 SymmetryOperation SymmetryOperation::inverted() const {
+    if (is_identity())
+        return *this;
     return SymmetryOperation(m_seitz.inverse());
 }
 

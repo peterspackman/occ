@@ -82,6 +82,8 @@ Vec3 Molecule::center_of_mass() const {
 }
 
 Mat3 Molecule::inertia_tensor() const {
+    if (size() == 1)
+        return Mat3::Zero();
     // amu angstrom^2
     // 10^-46 kgm^2
     // amu angstrom^2 to 10^-46 kgm^2
@@ -92,6 +94,8 @@ Mat3 Molecule::inertia_tensor() const {
 
 Vec3 Molecule::principal_moments_of_inertia() const {
     // unit is 10^-46 kg m^2
+    if (size() == 1)
+        return Vec3::Zero();
     Mat3 T = inertia_tensor();
     Eigen::SelfAdjointEigenSolver<occ::Mat3> solver(T);
     return solver.eigenvalues();
@@ -99,6 +103,8 @@ Vec3 Molecule::principal_moments_of_inertia() const {
 
 Vec3 Molecule::rotational_constants() const {
     // conversion factor from 10^-46 kgm^2 to amu angstrom^2 to GHz or cm^-1
+    if (size() == 1)
+        return Vec3::Zero();
     constexpr double GHz_factor{505.379045961437 * 1e23 /
                                 occ::constants::avogadro<double>};
     constexpr double per_cm_factor{16.8576304198232 * 1e23 /
