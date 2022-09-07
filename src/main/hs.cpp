@@ -1,5 +1,7 @@
+#include <CLI/App.hpp>
+#include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
 #include <chrono>
-#include <cxxopts.hpp>
 #include <filesystem>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
@@ -213,43 +215,37 @@ as_matrices(const HirshfeldBasis &b, const std::vector<float> &vertices,
 }
 
 int main(int argc, char *argv[]) {
-    cxxopts::Options options("occ-hs", "Surface generation program");
     double minimum_separation = 0.05;
     double maximum_separation = 0.5;
 
-    fs::path geometry_filename, environment_filename;
-    options.add_options()("i,input", "Input file geometry",
-                          cxxopts::value<fs::path>(geometry_filename))(
-        "s,minimum-separation", "Minimum separation",
-        cxxopts::value<double>(minimum_separation))(
-        "S,maximum-separation", "Maximum separation",
-        cxxopts::value<double>(maximum_separation))(
-        "e,environment",
-        "Environment "
-        "geometry for HS",
-        cxxopts::value<fs::path>(environment_filename))(
-        "t,threads", "Number of threads",
-        cxxopts::value<int>()->default_value("1"));
+    CLI::App app(
+        "occ-hs - A program for Hirshfeld and promolecule surface generation");
+    std::string geometry_filename{""};
+    std::optional<std::string> environment_filename{};
+    int threads{1};
 
-    options.parse_positional({"input", "environment"});
+    CLI::Option *input_option = app.add_option(
+        "geometry_file", geometry_filename, "xyz file of geometry");
+    input_option->required();
+    app.add_option("environment_file", environment_filename,
+                   "xyz file of surroundings for Hirshfeld surface");
+    app.add_option("-s,--minimum-separation", minimum_separation,
+                   "Minimum separation for surface construction");
+    app.add_option("-S,--maximum-separation", maximum_separation,
+                   "Maximum separation for surface construction");
+    app.add_flag("-t,--threads", threads, "Number of threads");
+
+    CLI11_PARSE(app, argc, argv);
+
     occ::log::set_level(occ::log::level::debug);
     spdlog::set_level(spdlog::level::debug);
 
-    try {
-        auto result = options.parse(argc, argv);
-    } catch (const std::runtime_error &err) {
-        occ::log::error("error when parsing command line arguments: {}",
-                        err.what());
-        fmt::print("{}\n", options.help());
-        exit(1);
-    }
-
-    if (!environment_filename.empty()) {
+    if (environment_filename) {
         Molecule m1 = occ::io::molecule_from_xyz_file(geometry_filename);
-        Molecule m2 = occ::io::molecule_from_xyz_file(environment_filename);
+        Molecule m2 = occ::io::molecule_from_xyz_file(*environment_filename);
 
         fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename.string(), "sym", "x", "y", "z");
+                   geometry_filename, "sym", "x", "y", "z");
         for (const auto &atom : m1.atoms()) {
             fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
                        Element(atom.atomic_number).symbol(), atom.x, atom.y,
@@ -257,7 +253,7 @@ int main(int argc, char *argv[]) {
         }
 
         fmt::print("Environment geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename.string(), "sym", "x", "y", "z");
+                   geometry_filename, "sym", "x", "y", "z");
         for (const auto &atom : m2.atoms()) {
             fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
                        Element(atom.atomic_number).symbol(), atom.x, atom.y,
@@ -286,7 +282,7 @@ int main(int argc, char *argv[]) {
         Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
 
         fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename.string(), "sym", "x", "y", "z");
+                   geometry_filename, "sym", "x", "y", "z");
         for (const auto &atom : m.atoms()) {
             fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
                        Element(atom.atomic_number).symbol(), atom.x, atom.y,

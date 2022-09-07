@@ -37,7 +37,7 @@ copyright (C) 2020-2022 Peter Spackman
 
 this version of occ makes use of the following third party libraries:
 
-cxxopts              command line argument parser
+CLI11                command line argument parser
 eigen3               Linear Algebra (v {})
 fmt                  String formatting (v {})
 gau2grid             Gaussian basis function evaluation (v 2.0.7)

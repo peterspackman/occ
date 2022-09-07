@@ -1,5 +1,7 @@
+#include <CLI/App.hpp>
+#include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
 #include <chrono>
-#include <cxxopts.hpp>
 #include <filesystem>
 #include <occ/core/logger.h>
 #include <occ/core/optimize.h>
@@ -64,32 +66,27 @@ struct SlaterBasis {
 };
 
 int main(int argc, char *argv[]) {
-    cxxopts::Options options("occ-desc", "Molecular shape descriptors");
+    CLI::App app("occ-desc - A program for molecular shape descriptors");
+    std::string geometry_filename{""};
+    std::optional<std::string> environment_filename{};
+    int threads{1};
 
-    fs::path geometry_filename, environment_filename;
-    options.add_options()("i,input", "Input file geometry",
-                          cxxopts::value<fs::path>(geometry_filename))(
-        "t,threads", "Number of threads",
-        cxxopts::value<int>()->default_value("1"));
+    CLI::Option *input_option = app.add_option(
+        "geometry_file", geometry_filename, "xyz file of geometry");
+    input_option->required();
+    app.add_option("environment_file", environment_filename,
+                   "xyz file of surroundings for of molecule");
 
-    options.parse_positional({"input", "environment"});
+    CLI11_PARSE(app, argc, argv);
+
     occ::log::set_level(occ::log::level::debug);
     spdlog::set_level(spdlog::level::debug);
-
-    try {
-        auto result = options.parse(argc, argv);
-    } catch (const std::runtime_error &err) {
-        occ::log::error("error when parsing command line arguments: {}",
-                        err.what());
-        fmt::print("{}\n", options.help());
-        exit(1);
-    }
 
     Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
     m.translate(-m.center_of_mass());
 
     fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-               geometry_filename.string(), "sym", "x", "y", "z");
+               geometry_filename, "sym", "x", "y", "z");
     for (const auto &atom : m.atoms()) {
         fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
                    Element(atom.atomic_number).symbol(), atom.x, atom.y,

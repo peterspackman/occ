@@ -1,4 +1,6 @@
-#include <cxxopts.hpp>
+#include <CLI/App.hpp>
+#include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
 #include <filesystem>
 #include <fmt/os.h>
 #include <occ/core/kabsch.h>
@@ -205,47 +207,39 @@ auto calculate_interaction_energy(const Dimer &dimer,
 }
 
 int main(int argc, char *argv[]) {
-    cxxopts::Options options("occ-elat", "Crystal lattice energy");
+    CLI::App app("occ-elat - Crystal lattice energy");
+    std::string cif_filename{""}, verbosity{"warn"}, model_name{"ce-b3lyp"};
+    int threads{1};
+    double radius{30.0}, radius_increment{3.8};
 
-    double radius = 3.8;
-    double increment = 3.8;
-    using occ::parallel::nthreads;
-    std::string cif_name;
-    options.add_options()("i,input", "Input CIF",
-                          cxxopts::value<std::string>(cif_name))(
-        "t,threads", "Number of threads",
-        cxxopts::value<int>(nthreads)->default_value("1"))(
-        "ce-hf", "Use CE-HF model",
-        cxxopts::value<bool>()->default_value("false"))(
-        "r,radius", "maximum radius (angstroms) for neighbours",
-        cxxopts::value<double>(radius)->default_value("30.0"))(
-        "radius-increment",
-        "step size (angstroms) for direct "
-        "space summation",
-        cxxopts::value<double>(increment)->default_value("3.8"));
+    CLI::Option *input_option =
+        app.add_option("input", cif_filename, "input CIF");
+    input_option->required();
+    app.add_option("-t,--threads", threads, "number of threads");
+    app.add_option("-r,--radius", radius,
+                   "maximum radius (Angstroms) for neighbours");
+    app.add_option("--radius-increment", radius_increment,
+                   "step size (Angstroms) direct space summation");
+    app.add_option("-m,--model", model_name, "CE model");
+    app.add_option("-v,--verbosity", verbosity, "logging verbosity");
 
     occ::log::set_level(occ::log::level::info);
     spdlog::set_level(spdlog::level::info);
-    std::string model_name = "ce-b3lyp";
 
-    try {
-        auto result = options.parse(argc, argv);
-        if (result.count("ce-hf"))
-            model_name = "ce-hf";
-    } catch (const std::runtime_error &err) {
-        occ::log::error("error when parsing command line arguments: {}",
-                        err.what());
-        fmt::print("{}\n", options.help());
-        exit(1);
-    }
+    CLI11_PARSE(app, argc, argv);
 
-    fmt::print("Parallelized over {} threads & {} Eigen threads\n", nthreads,
-               Eigen::nbThreads());
+    occ::parallel::set_num_threads(std::max(1, threads));
+
+    occ::log::set_level(occ::log::level::info);
+    spdlog::set_level(spdlog::level::info);
+
+    fmt::print("Parallelized over {} threads & {} Eigen threads\n",
+               occ::parallel::get_num_threads(), Eigen::nbThreads());
 
     const std::string error_format =
         "Exception:\n    {}\nTerminating program.\n";
     try {
-        std::string filename = cif_name;
+        std::string filename = cif_filename;
         std::string basename = fs::path(filename).stem();
         Crystal c = read_crystal(filename);
         fmt::print("Energy model: {}\n", model_name);

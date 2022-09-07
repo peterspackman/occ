@@ -27,7 +27,7 @@ target_link_libraries(xdm
     PUBLIC
     occ_main
     occ_xdm
-    cxxopts
+    CLI11::CLI11
 )
 
 set_target_properties(xdm
@@ -39,7 +39,7 @@ add_executable(occ "${CMAKE_CURRENT_SOURCE_DIR}/occ.cpp")
 target_link_libraries(occ
     PUBLIC
     occ_main
-    cxxopts
+    CLI11::CLI11
 )
 set_target_properties(occ
     PROPERTIES
@@ -50,7 +50,7 @@ set_target_properties(occ
 # target_compile_options(occ PRIVATE "-ftime-report")
 
 add_executable(occ-pair "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp")
-target_link_libraries(occ-pair PUBLIC occ_interaction cxxopts)
+target_link_libraries(occ-pair PUBLIC occ_interaction CLI11::CLI11)
 set_target_properties(occ-pair
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
@@ -73,7 +73,7 @@ target_link_libraries(occ-cg
     occ_crystal
     occ_interaction
     occ_main
-    cxxopts
+    CLI11::CLI11
 )
 
 set_target_properties(occ-cg
@@ -88,7 +88,7 @@ target_link_libraries(hs
     occ_slater
     occ_solvent
     occ_io
-    cxxopts
+    CLI11::CLI11
 )
 set_target_properties(hs
     PROPERTIES
@@ -101,7 +101,7 @@ target_link_libraries(occ-desc
     occ_slater
     occ_sht
     occ_io
-    cxxopts
+    CLI11::CLI11
 )
 set_target_properties(occ-desc
     PROPERTIES
@@ -118,7 +118,7 @@ target_link_libraries(occ-elat
     occ_crystal
     occ_interaction
     occ_main
-    cxxopts
+    CLI11::CLI11
 )
 
 set_target_properties(occ-elat

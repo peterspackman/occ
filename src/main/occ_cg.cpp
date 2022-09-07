@@ -1,4 +1,6 @@
-#include <cxxopts.hpp>
+#include <CLI/App.hpp>
+#include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
 #include <filesystem>
 #include <fmt/os.h>
 #include <fstream>
@@ -257,70 +259,54 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
 }
 
 int main(int argc, char **argv) {
-    cxxopts::Options options(
-        "occ-interactions",
-        "Interactions of molecules with neighbours in a crystal");
-    double radius = 0.0, cg_radius = 0.0;
-    int threads = 1;
-    std::string cif_filename{""};
-    std::string solvent{"water"};
-    std::string wfn_choice{"gas"};
-    std::string charge_string{""};
-    std::string region_string{""};
-    bool write_dump_files{false};
-    // clang-format off
-    options.add_options()
-        ("h,help", "Print help")
-        ("i,input", "Input CIF", cxxopts::value<std::string>(cif_filename))
-        ("t,threads", "Number of threads", 
-         cxxopts::value<int>(threads)->default_value("1"))
-        ("r,radius", "maximum radius (angstroms) for neighbours",
-         cxxopts::value<double>(radius)->default_value("3.8"))
-        ("c,cg-radius", "maximum radius (angstroms) for nearest neighbours in cg file (must be <= radius)",
-         cxxopts::value<double>(cg_radius)->default_value("3.8"))
-        ("s,solvent", "Solvent name", cxxopts::value<std::string>(solvent))
-        ("d,dump", "Write dump files", cxxopts::value<bool>(write_dump_files))
-	("charges", "Fragment charges", cxxopts::value<std::string>(charge_string))
-	("g,region", "Restric to this region (xyz file)", cxxopts::value<std::string>(region_string))
-        ("w,wavefunction-choice", "Choice of wavefunctions",
-         cxxopts::value<std::string>(wfn_choice));
-    // clang-format on
-    options.parse_positional({"input"});
+    CLI::App app(
+        "occ-cg - Interactions of molecules with neighbours in a crystal");
+    std::string cif_filename{""}, charge_string{""}, region_string{""},
+        verbosity{"warn"}, solvent{"water"}, wfn_choice{"gas"};
+
+    int threads{1};
+    double radius{3.8}, cg_radius{3.8};
+    bool write_dump_files{false}, spherical{false};
+
+    CLI::Option *input_option =
+        app.add_option("input", cif_filename, "input CIF");
+    input_option->required();
+    app.add_option("-t,--threads", threads, "number of threads");
+    app.add_option("-r,--radius", radius,
+                   "maximum radius (Angstroms) for neighbours");
+    app.add_option("-c,--cg-radius", cg_radius,
+                   "maximum radius (Angstroms) for nearest neighbours in CG "
+                   "file (must be <= radius)");
+    app.add_option("-s,--solvent", solvent, "solvent name");
+    app.add_option("--charges", charge_string, "system net charge");
+    app.add_option("-g,--region", region_string,
+                   "Restrict to this region (xyz file)");
+    app.add_option("-v,--verbosity", verbosity, "logging verbosity");
+    app.add_option("-w,--wavefunction-choice", wfn_choice,
+                   "Choice of wavefunctions");
+    app.add_flag("-d,--dump", write_dump_files, "Write dump files");
 
     occ::log::set_level(occ::log::level::info);
     spdlog::set_level(spdlog::level::info);
+
+    CLI11_PARSE(app, argc, argv);
 
     occ::timing::StopWatch global_timer;
     global_timer.start();
     std::optional<Molecule> region;
 
-    try {
-        auto result = options.parse(argc, argv);
-        if (result.count("help")) {
-            fmt::print("{}", options.help());
-            exit(1);
-        }
-
-        if (result.count("region")) {
-            region = occ::io::molecule_from_xyz_file(region_string);
-        }
-        occ::parallel::set_num_threads(std::max(1, threads));
-#ifdef _OPENMP
-        std::string thread_type = "OpenMP";
-#else
-        std::string thread_type = "std";
-#endif
-        fmt::print("\nparallelization: {} {} threads, {} eigen threads\n",
-                   occ::parallel::get_num_threads(), thread_type,
-                   Eigen::nbThreads());
-
-    } catch (const std::runtime_error &err) {
-        occ::log::error("error when parsing command line arguments: {}",
-                        err.what());
-        fmt::print("{}", options.help());
-        exit(1);
+    if (!region_string.empty()) {
+        region = occ::io::molecule_from_xyz_file(region_string);
     }
-
+    occ::parallel::set_num_threads(std::max(1, threads));
+#ifdef _OPENMP
+    std::string thread_type = "OpenMP";
+#else
+    std::string thread_type = "std";
+#endif
+    fmt::print("\nparallelization: {} {} threads, {} eigen threads\n",
+               occ::parallel::get_num_threads(), thread_type,
+               Eigen::nbThreads());
     const std::string error_format =
         "Exception:\n    {}\nTerminating program.\n";
     try {

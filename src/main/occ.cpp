@@ -1,4 +1,6 @@
-#include <cxxopts.hpp>
+#include <CLI/App.hpp>
+#include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
 #include <filesystem>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -61,82 +63,40 @@ void write_output_files(const OccInput &config, Wavefunction &wfn) {
 int main(int argc, char *argv[]) {
     occ::timing::start(occ::timing::category::global);
     occ::timing::start(occ::timing::category::io);
-    cxxopts::Options options("occ", "A program for quantum chemistry");
-    options.positional_help("[input_file] [method] [basis]")
-        .show_positional_help();
+    CLI::App app("occ - A program for quantum chemistry");
+    std::string input_file{""}, method{"rhf"}, basis_set{"3-21G"},
+        verbosity{"warn"};
+    std::optional<std::string> df_basis{}, solvent{},
+        solvent_surface_filename{};
+    int threads{1}, charge{0}, multiplicity{1};
+    bool unrestricted{false}, spherical{false};
 
-    options.add_options()("h,help",
-                          "print help")("i,input", "input file", cxxopts::value<std::string>())("b,basis",
-                                                                                                "basis set name",
-                                                                                                cxxopts::
-                                                                                                    value<
-                                                                                                        std::
-                                                                                                            string>()
-                                                                                                        ->default_value("3-21G"))("d,df-basis", "basis set name", cxxopts::value<std::string>())("t,threads",
-                                                                                                                                                                                                 "number of "
-                                                                                                                                                                                                 "threads",
-                                                                                                                                                                                                 cxxopts::value<
-                                                                                                                                                                                                     int>()
-                                                                                                                                                                                                     ->default_value("1"))("m,"
-                                                                                                                                                                                                                           "met"
-                                                                                                                                                                                                                           "ho"
-                                                                                                                                                                                                                           "d",
-                                                                                                                                                                                                                           "QM "
-                                                                                                                                                                                                                           "met"
-                                                                                                                                                                                                                           "ho"
-                                                                                                                                                                                                                           "d",
-                                                                                                                                                                                                                           cxxopts::value<
-                                                                                                                                                                                                                               std::
-                                                                                                                                                                                                                                   string>()
-                                                                                                                                                                                                                               ->default_value("rhf"))("c,charge",
-                                                                                                                                                                                                                                                       "system net charge",
-                                                                                                                                                                                                                                                       cxxopts::value<
-                                                                                                                                                                                                                                                           int>()
-                                                                                                                                                                                                                                                           ->default_value(
-                                                                                                                                                                                                                                                               "0"))("n,multiplicity",
-                                                                                                                                                                                                                                                                     "system multiplicity",
-                                                                                                                                                                                                                                                                     cxxopts::value<
-                                                                                                                                                                                                                                                                         int>()
-                                                                                                                                                                                                                                                                         ->default_value("1"))("u,unrestricted",
-                                                                                                                                                                                                                                                                                               "use unrestricted DFT",
-                                                                                                                                                                                                                                                                                               cxxopts::value<
-                                                                                                                                                                                                                                                                                                   bool>()
-                                                                                                                                                                                                                                                                                                   ->default_value(
-                                                                                                                                                                                                                                                                                                       "false"))("v,verbosity",
-                                                                                                                                                                                                                                                                                                                 "logging verbosity",
-                                                                                                                                                                                                                                                                                                                 cxxopts::
-                                                                                                                                                                                                                                                                                                                     value<
-                                                                                                                                                                                                                                                                                                                         std::
-                                                                                                                                                                                                                                                                                                                             string>()
-                                                                                                                                                                                                                                                                                                                         ->default_value(
-                                                                                                                                                                                                                                                                                                                             "WARN"))("spherical",
-                                                                                                                                                                                                                                                                                                                                      "use spherical basis functions",
-                                                                                                                                                                                                                                                                                                                                      cxxopts::
-                                                                                                                                                                                                                                                                                                                                          value<
-                                                                                                                                                                                                                                                                                                                                              bool>()
-                                                                                                                                                                                                                                                                                                                                              ->default_value("false"))("s,solvent", "use SMD solvation model with solvent", cxxopts::value<std::string>())("f,solvent-file",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            "write solvation surface to file", cxxopts::value<std::string>());
+    CLI::Option *input_option =
+        app.add_option("input", input_file, "input file");
+    input_option->required();
+    app.add_option("method", method, "method");
+    app.add_option("basis", basis_set, "basis set");
+    app.add_option("-d,--df-basis", df_basis, "basis set");
+    app.add_option("-t,--threads", threads, "number of threads");
+    app.add_option("-c,--charge", charge, "system net charge");
+    app.add_option("--multiplicity", charge, "system multiplicity");
+    app.add_flag("-u,--unrestricted", unrestricted, "use unrestricted SCF");
+    app.add_option("-v,--verbosity", verbosity, "logging verbosity");
+    app.add_flag("--spherical", spherical, "use spherical basis sets");
+    app.add_flag("-s,--solvent", solvent, "use spherical basis sets");
+    app.add_flag("-f,--solvent-file", solvent_surface_filename,
+                 "file to write solvent surface");
 
-    options.parse_positional({"input", "method", "basis"});
-
-    auto result = options.parse(argc, argv);
-
-    if (result.count("help")) {
-        fmt::print("{}\n", options.help());
-        exit(0);
-    }
+    CLI11_PARSE(app, argc, argv);
 
     auto level = occ::log::level::warn;
-    if (result.count("verbosity")) {
-        std::string level_lower =
-            occ::util::to_lower_copy(result["verbosity"].as<std::string>());
-        if (level_lower == "debug")
-            level = occ::log::level::debug;
-        else if (level_lower == "info")
-            level = occ::log::level::info;
-        else if (level_lower == "error")
-            level = occ::log::level::err;
-    }
+    std::string level_lower = occ::util::to_lower_copy(verbosity);
+    if (level_lower == "debug")
+        level = occ::log::level::debug;
+    else if (level_lower == "info")
+        level = occ::log::level::info;
+    else if (level_lower == "error")
+        level = occ::log::level::err;
     occ::log::set_level(level);
     spdlog::set_level(level);
     occ::main::print_header();
@@ -145,25 +105,19 @@ int main(int argc, char *argv[]) {
     const std::string error_format =
         "exception:\n    {}\nterminating program.\n";
 
-    if (result.count("input") == 0) {
-        occ::log::error("must provide an input file!");
-        exit(1);
-    }
-
     try {
         occ::timing::start(occ::timing::category::io);
 
         OccInput config;
-        config.name = result["input"].as<std::string>();
+        config.name = input_file;
         // read input file first so we can override with command line settings
-        read_input_file(result["input"].as<std::string>(), config);
+        read_input_file(input_file, config);
         if (config.filename.empty()) {
             config.filename = config.name;
         }
 
         occ::parallel::set_num_threads(std::max(1, config.driver.threads));
-        if (result.count("threads"))
-            occ::parallel::set_num_threads(result["threads"].as<int>());
+        occ::parallel::set_num_threads(threads);
 
 #ifdef _OPENMP
         std::string thread_type = "OpenMP";
@@ -174,21 +128,15 @@ int main(int argc, char *argv[]) {
                    occ::parallel::get_num_threads(), thread_type,
                    Eigen::nbThreads());
 
-        if (result.count("basis"))
-            config.basis.name = result["basis"].as<std::string>();
-        if (result.count("multiplicity"))
-            config.electronic.multiplicity = result["multiplicity"].as<int>();
-        if (result.count("method"))
-            config.method.name = result["method"].as<std::string>();
-        if (result.count("charge"))
-            config.electronic.charge = result["charge"].as<int>();
-        if (result.count("spherical"))
-            config.basis.spherical = result["spherical"].as<bool>();
-
-        if (result.count("df-basis"))
-            config.basis.df_name = result["df-basis"].as<std::string>();
-        if (config.electronic.multiplicity != 1 ||
-            result.count("unrestricted") || config.method.name == "uhf") {
+        config.basis.name = basis_set;
+        config.electronic.multiplicity = multiplicity;
+        config.method.name = method;
+        config.electronic.charge = charge;
+        config.basis.spherical = spherical;
+        if (df_basis)
+            config.basis.df_name = *df_basis;
+        if (config.electronic.multiplicity != 1 || unrestricted ||
+            config.method.name == "uhf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
             fmt::print("spinorbital kind: unrestricted");
         } else if (config.method.name == "ghf") {
@@ -204,12 +152,12 @@ int main(int argc, char *argv[]) {
             write_output_files(config, wfn);
             occ::main::calculate_properties(config, wfn);
 
-            if (result.count("solvent")) {
-                config.solvent.solvent_name =
-                    result["solvent"].as<std::string>();
-                if (result.count("solvent-file"))
+            if (solvent) {
+                config.solvent.solvent_name = *solvent;
+
+                if (solvent_surface_filename)
                     config.solvent.output_surface_filename =
-                        result["solvent-file"].as<std::string>();
+                        *solvent_surface_filename;
                 Wavefunction wfn2 =
                     occ::main::single_point_calculation(config, wfn);
                 double esolv = wfn2.energy.total - wfn.energy.total;

@@ -29,12 +29,10 @@ CPMAddPackage(
     VERSION 3.10.4
 )
 
-# the install option has to be explicitly set to allow installation
 CPMAddPackage(
-    NAME cxxopts
-    GITHUB_REPOSITORY jarro2783/cxxopts
-    VERSION 2.2.1
-    OPTIONS "CXXOPTS_BUILD_EXAMPLES NO" "CXXOPTS_BUILD_TESTS NO" "CXXOPTS_ENABLE_INSTALL YES"
+    NAME CLI11
+    GITHUB_REPOSITORY CLIUtils/CLI11
+    GIT_TAG 1a26afab049bb75c0523a754d62b961439248d44
 )
 
 if(NOT "${USE_SYSTEM_EIGEN}")

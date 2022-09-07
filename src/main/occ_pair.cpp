@@ -1,4 +1,6 @@
-#include <cxxopts.hpp>
+#include <CLI/App.hpp>
+#include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
 #include <filesystem>
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
@@ -127,62 +129,46 @@ Pair parse_input_file(const std::string &filename) {
  */
 
 int main(int argc, char *argv[]) {
-    int threads = 1;
-    cxxopts::Options options("occ", "A program for quantum chemistry");
-    options.positional_help("[input_file]").show_positional_help();
+    CLI::App app("occ - A program for quantum chemistry");
+    std::string input_file{""}, model_name{"ce-b3lyp"}, output_file{""},
+        verbosity{"warn"};
+    int threads{1};
+    bool use_df{false};
 
-    options.add_options()("h,help", "Print help")(
-        "i,input", "Input file",
-        cxxopts::value<
-            std::
-                string>())("o,output", "Output file",
-                           cxxopts::value<
-                               std::
-                                   string>())("t,threads", "Number of threads",
-                                              cxxopts::value<int>(threads)
-                                                  ->default_value(
-                                                      "1"))("m,model",
-                                                            "CE model",
-                                                            cxxopts::value<
-                                                                std::string>()
-                                                                ->default_value(
-                                                                    "ce-"
-                                                                    "b3lyp"));
-    options.add_options()("d,with-density-fitting",
-                          "Use density fitting (RI-JK)",
-                          cxxopts::value<bool>()->default_value("false"))(
-        "v,verbosity", "Logging verbosity",
-        cxxopts::value<std::string>()->default_value("WARN"));
+    CLI::Option *input_option =
+        app.add_option("input", input_file, "input file");
+    input_option->required();
+    app.add_option("output", output_file, "output file");
+    app.add_option("-t,--threads", threads, "number of threads");
+    app.add_option("-m,--model", model_name, "CE energy model");
+    app.add_flag("-d,--with-density-fitting", use_df,
+                 "Use density fitting (RI-JK)");
+    app.add_option("-v,--verbosity", verbosity, "logging verbosity");
 
-    options.parse_positional({"input"});
-    auto args = options.parse(argc, argv);
+    CLI11_PARSE(app, argc, argv);
 
     auto level = occ::log::level::warn;
-    if (args.count("verbosity")) {
-        std::string level_lower =
-            occ::util::to_lower_copy(args["verbosity"].as<std::string>());
-        if (level_lower == "debug")
-            level = occ::log::level::debug;
-        else if (level_lower == "info")
-            level = occ::log::level::info;
-        else if (level_lower == "error")
-            level = occ::log::level::err;
-    }
+    std::string level_lower = occ::util::to_lower_copy(verbosity);
+
+    if (level_lower == "debug")
+        level = occ::log::level::debug;
+    else if (level_lower == "info")
+        level = occ::log::level::info;
+    else if (level_lower == "error")
+        level = occ::log::level::err;
     occ::log::set_level(level);
     spdlog::set_level(level);
 
     occ::timing::start(occ::timing::category::global);
 
-    auto pair = parse_input_file(args["input"].as<std::string>());
+    auto pair = parse_input_file(input_file);
 
     occ::parallel::set_num_threads(threads);
-
-    const std::string model_name = args["model"].as<std::string>();
 
     auto model = occ::interaction::ce_model_from_string(model_name);
 
     CEModelInteraction interaction(model);
-    if (args.count("with-density-fitting")) {
+    if (use_df) {
         interaction.use_density_fitting();
     }
     auto interaction_energy = interaction(pair.a.wfn, pair.b.wfn);
@@ -211,7 +197,7 @@ int main(int argc, char *argv[]) {
 
     fmt::print("\nTimings\n");
     occ::timing::print_timings();
-    if (args.count("output")) {
+    if (!output_file.empty()) {
         nlohmann::json j = {
             {"energies",
              {{"units", "kj/mol"},
@@ -238,7 +224,7 @@ int main(int argc, char *argv[]) {
                 {"kinetic", pair.b.wfn.energy.kinetic},
                 {"core", pair.b.wfn.energy.core},
                 {"total", pair.b.wfn.energy.total}}}}}};
-        std::ofstream output(args["output"].as<std::string>());
+        std::ofstream output(output_file);
         output << std::setw(2) << j;
     }
 }
