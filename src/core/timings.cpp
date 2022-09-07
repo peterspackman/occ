@@ -13,12 +13,14 @@ double total(category cat) { return sw.read(static_cast<size_t>(cat)); }
 
 void clear_all() { sw.clear_all(); }
 
-std::string category_name(category cat) {
+const char *category_name(category cat) {
     switch (cat) {
     case ints1e:
         return "integrals (one-electron)";
-    case ints2e:
-        return "integrals (two-electron)";
+    case ints4c2e:
+        return "4-centre 2-electron integrals";
+    case ints3c2e:
+        return "3-centre 2-electron integrals";
     case io:
         return "file input/output";
     case la:
@@ -39,14 +41,18 @@ std::string category_name(category cat) {
         return "density evaluation";
     case dft_xc:
         return "DFT XC total";
+    case xc_func_init:
+        return "DFT XC func init";
+    case xc_func_end:
+        return "DFT XC func close";
     case gto:
-        return "GTO evaluation (overall)";
+        return "GTO evaluation total";
     case gto_dist:
         return "GTO dist evaluation";
     case gto_mask:
         return "GTO mask evaluation";
     case gto_shell:
-        return "GTO evaluation";
+        return "GTO shell evaluation";
     case gto_s:
         return "GTO S-function eval";
     case gto_p:
@@ -76,11 +82,9 @@ std::string category_name(category cat) {
 
 void print_timings() {
     const auto categories = {
-        ints1e,  ints2e,         io,          la,        guess, mo,
-        diis,    grid_init,      grid_points, dft,       rho,   dft_xc,
-        gto,     gto_dist,       gto_mask,    gto_shell, gto_s, gto_p,
-        gto_gen, assoc_legendre, fft,         jmat,      jkmat, fock,
-        df,      solvent,        global,
+        ints1e, ints4c2e, ints3c2e, io,      guess,          mo,  diis,
+        dft,    rho,      dft_xc,   gto,     assoc_legendre, fft, jmat,
+        jkmat,  fock,     df,       solvent, global,
     };
     fmt::print("Wall clock time by category (s)\n");
     for (const auto &cat : categories) {

@@ -229,6 +229,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     }
 
     void set_initial_guess_from_wfn(const Wavefunction &wfn) {
+        fmt::print("Setting initial guess from existing wavefunction\n");
         m_have_initial_guess = true;
         mo = wfn.mo;
         update_occupied_orbital_count();
@@ -243,6 +244,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     void compute_initial_guess() {
         if (m_have_initial_guess)
             return;
+        fmt::print("Computing initial guess using SOAD in minimal basis\n");
         const auto tstart = std::chrono::high_resolution_clock::now();
         impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T,
                                                              V, H);

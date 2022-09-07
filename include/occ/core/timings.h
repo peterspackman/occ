@@ -10,7 +10,8 @@ using time_point_t = std::chrono::time_point<clock_t>;
 
 enum category {
     ints1e,
-    ints2e,
+    ints4c2e,
+    ints3c2e,
     io,
     la,
     guess,
@@ -20,6 +21,8 @@ enum category {
     grid_points,
     dft_xc,
     dft,
+    xc_func_init,
+    xc_func_end,
     rho,
     gto,
     fock,
@@ -85,7 +88,7 @@ duration_t stop(category cat);
 double total(category cat);
 void clear_all();
 
-std::string category_name(category);
+const char *category_name(category);
 void print_timings();
 
 } // namespace occ::timing

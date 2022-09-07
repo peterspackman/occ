@@ -1,3 +1,4 @@
+#include <occ/core/timings.h>
 #include <occ/qm/integral_engine.h>
 
 namespace occ::qm {
@@ -735,6 +736,7 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
                           const Mat &Dnorm = Mat(), const Mat &Schwarz = Mat(),
                           double precision = 1e-12, int thread_id = 0) {
     using Result = IntegralEngine::IntegralResult<4>;
+    occ::timing::start(occ::timing::category::ints4c2e);
     auto nthreads = occ::parallel::get_num_threads();
     occ::qm::cint::Optimizer opt(env, Op::coulomb, 4);
     auto buffer = std::make_unique<double[]>(buffer_size_2e(basis));
@@ -791,6 +793,7 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
             }
         }
     }
+    occ::timing::stop(occ::timing::category::ints4c2e);
 }
 
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
@@ -1157,7 +1160,6 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
                                               bool is_shell_diagonal) {
     set_auxiliary_basis(D_bs.shells(), false);
     constexpr Op op = Op::coulomb;
-    occ::timing::start(occ::timing::category::ints2e);
     auto nthreads = occ::parallel::get_num_threads();
 
     constexpr auto Sph = ShellKind::Spherical;
@@ -1296,7 +1298,6 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
     for (size_t i = 1; i != nthreads; ++i) {
         Fmats[0] += Fmats[i];
     }
-    occ::timing::stop(occ::timing::category::ints2e);
 
     clear_auxiliary_basis();
     // symmetrize the result and return
@@ -1380,6 +1381,7 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
                              const ShellPairList &shellpairs,
                              int thread_id = 0) noexcept {
     using Result = IntegralEngine::IntegralResult<3>;
+    occ::timing::start(occ::timing::category::ints3c2e);
     auto nthreads = occ::parallel::get_num_threads();
     occ::qm::cint::Optimizer opt(env, Op::coulomb, 3);
     size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
@@ -1415,6 +1417,7 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
             }
         }
     }
+    occ::timing::stop(occ::timing::category::ints3c2e);
 }
 
 template <ShellKind kind = ShellKind::Cartesian>

@@ -1,4 +1,5 @@
 #include <occ/core/logger.h>
+#include <occ/core/timings.h>
 #include <occ/dft/functional.h>
 
 namespace occ::dft {
@@ -24,6 +25,8 @@ DensityFunctional::evaluate(const Params &params) const {
                               : SpinorbitalKind::Restricted);
     xc_func_type func;
 
+    // this takes quite a while (can be 1-5% of total DFT XC evaluation time),
+    // should probably cache this
     int err = xc_func_init(&func, static_cast<int>(m_func_id),
                            m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
     switch (fam) {

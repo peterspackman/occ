@@ -689,6 +689,7 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
                              const qm::AOBasis &auxbasis,
                              const ShellPairList &shellpairs,
                              int thread_id = 0) noexcept {
+    occ::timing::start(occ::timing::category::ints3c2e);
     auto nthreads = occ::parallel::get_num_threads();
     occ::qm::cint::Optimizer opt(env, Op::coulomb, 3);
     size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
@@ -725,9 +726,11 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
             }
         }
     }
+    occ::timing::stop(occ::timing::category::ints3c2e);
 }
 
 void IntegralEngineDF::compute_stored_integrals() {
+    occ::timing::start(occ::timing::category::df);
     if (m_integral_store.rows() == 0) {
         size_t nbf = m_ao_engine.nbf();
         size_t ndf = m_aux_engine.nbf();
@@ -763,6 +766,7 @@ void IntegralEngineDF::compute_stored_integrals() {
         };
         occ::parallel::parallel_do(lambda2);
     }
+    occ::timing::stop(occ::timing::category::df);
 }
 
 template <ShellKind kind = ShellKind::Cartesian>
@@ -770,6 +774,7 @@ Mat direct_exchange_operator_kernel_r(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
                                       const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     size_t nocc = mo.Cocc.cols();
     const auto nbf = engine.aobasis().nbf();
@@ -796,6 +801,7 @@ Mat direct_exchange_operator_kernel_r(IntegralEngine &engine,
         K.noalias() += B.transpose() * B;
     }
 
+    occ::timing::stop(occ::timing::category::df);
     return 0.5 * (K + K.transpose());
 }
 
@@ -804,6 +810,7 @@ Mat direct_exchange_operator_kernel_u(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
                                       const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     size_t nocc = mo.Cocc.cols();
     const auto nbf = engine.aobasis().nbf();
@@ -840,6 +847,7 @@ Mat direct_exchange_operator_kernel_u(IntegralEngine &engine,
     block::b(K) += block::b(K).transpose().eval();
     K *= 0.5;
 
+    occ::timing::stop(occ::timing::category::df);
     return K;
 }
 
@@ -848,6 +856,7 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
                                       const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     size_t nocc = mo.Cocc.cols();
     const auto nbf = engine.aobasis().nbf();
@@ -887,6 +896,7 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
     block::ba(K) += block::ba(K).transpose().eval();
     block::bb(K) += block::bb(K).transpose().eval();
     K *= 0.5;
+    occ::timing::stop(occ::timing::category::df);
 
     return K;
 }
@@ -944,6 +954,7 @@ Mat direct_coulomb_operator_kernel_r(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
                                      const Eigen::LLT<Mat> &V_LLt) {
+    occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
     const auto ndf = engine.auxbasis().nbf();
@@ -975,6 +986,7 @@ Mat direct_coulomb_operator_kernel_r(IntegralEngine &engine,
     for (int i = 1; i < nthreads; i++) {
         JJ[0] += JJ[i];
     }
+    occ::timing::stop(occ::timing::category::df);
     return (JJ[0] + JJ[0].transpose());
 }
 
@@ -983,6 +995,7 @@ Mat direct_coulomb_operator_kernel_u(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
                                      const Eigen::LLT<Mat> &V_LLt) {
+    occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
     const auto ndf = engine.auxbasis().nbf();
@@ -1028,6 +1041,7 @@ Mat direct_coulomb_operator_kernel_u(IntegralEngine &engine,
 
     J *= 2;
 
+    occ::timing::stop(occ::timing::category::df);
     return J;
 }
 
@@ -1036,6 +1050,7 @@ Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
                                      const Eigen::LLT<Mat> &V_LLt) {
+    occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
     const auto ndf = engine.auxbasis().nbf();
@@ -1081,6 +1096,7 @@ Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
 
     J *= 2;
 
+    occ::timing::stop(occ::timing::category::df);
     return J;
 }
 
@@ -1137,6 +1153,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_r(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
     const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::timing::start(occ::timing::category::df);
     size_t nocc = mo.Cocc.cols();
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
@@ -1188,6 +1205,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_r(
         KK[0] += KK[i];
     }
 
+    occ::timing::stop(occ::timing::category::df);
     return {JJ[0] + JJ[0].transpose(), 0.5 * (KK[0] + KK[0].transpose())};
 }
 
@@ -1196,6 +1214,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
     const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::timing::start(occ::timing::category::df);
     size_t nocc = mo.n_ao;
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
@@ -1272,6 +1291,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
     }
 
     K *= 0.5;
+    occ::timing::stop(occ::timing::category::df);
     return {J, K};
 }
 
@@ -1280,6 +1300,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
     const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::timing::start(occ::timing::category::df);
     size_t nocc = mo.n_alpha; // number of electrons == n_alpha for general
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
@@ -1374,6 +1395,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
     // can move a factor of 2 in the jk_lambda_g or in g_alpha/beta but this
     // saves flops (tiny)
     K *= 0.5;
+    occ::timing::stop(occ::timing::category::df);
     return {J, K};
 }
 

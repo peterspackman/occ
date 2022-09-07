@@ -33,10 +33,10 @@ occ::qm::AOBasis load_basis_set(const Molecule &m, const std::string &name,
                                 bool spherical) {
     auto basis = occ::qm::AOBasis::load(m.atoms(), name);
     basis.set_pure(spherical);
-    fmt::print("loaded basis set: {}\n", spherical ? "spherical" : "cartesian");
-    fmt::print("number of shells:            {}\n", basis.size());
-    fmt::print("number of  basis functions:  {}\n", basis.nbf());
-    fmt::print("max angular momentum:        {}\n", basis.l_max());
+    fmt::print("Loaded basis set: {}\n", spherical ? "spherical" : "cartesian");
+    fmt::print("Number of shells:            {}\n", basis.size());
+    fmt::print("Number of  basis functions:  {}\n", basis.nbf());
+    fmt::print("Maximum angular momentum:    {}\n", basis.l_max());
     return basis;
 }
 

@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
 #else
         std::string thread_type = "std";
 #endif
-        fmt::print("\nparallelization: {} {} threads, {} eigen threads\n",
+        fmt::print("\nParallelization: {} {} threads, {} eigen threads\n",
                    occ::parallel::get_num_threads(), thread_type,
                    Eigen::nbThreads());
 
@@ -138,12 +138,12 @@ int main(int argc, char *argv[]) {
         if (config.electronic.multiplicity != 1 || unrestricted ||
             config.method.name == "uhf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
-            fmt::print("spinorbital kind: unrestricted");
+            fmt::print("Spinorbital kind: Unrestricted");
         } else if (config.method.name == "ghf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::General;
-            fmt::print("spinorbital kind: general\n");
+            fmt::print("Spinorbital kind: General\n");
         } else {
-            fmt::print("spinorbital kind: restricted\n");
+            fmt::print("Spinorbital kind: Restricted\n");
         }
         occ::timing::stop(occ::timing::category::io);
 
@@ -162,9 +162,11 @@ int main(int argc, char *argv[]) {
                     occ::main::single_point_calculation(config, wfn);
                 double esolv = wfn2.energy.total - wfn.energy.total;
 
-                fmt::print("estimated \u0394G(solv) {:20.12f} ({:.3f} kJ/mol, "
-                           "{:.3f} kcal/mol)\n",
-                           esolv, esolv * occ::units::AU_TO_KJ_PER_MOL,
+                fmt::print("\n{:—<72s}\n\n", "Solvation free energy (SMD)  ");
+                fmt::print("\u0394G(solv)    = {:20.12f} Hartree\n", esolv);
+                fmt::print("            = {:20.12f} kJ/mol\n",
+                           esolv * occ::units::AU_TO_KJ_PER_MOL);
+                fmt::print("            = {:20.12f} kcal/mol\n\n",
                            esolv * occ::units::AU_TO_KCAL_PER_MOL);
                 write_output_files(config, wfn2);
             }
