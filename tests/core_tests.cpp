@@ -469,12 +469,12 @@ TEST_CASE("Depth first & Breadth first graph traversal", "[graph]") {
         descriptors.push_back(graph.add_vertex(i));
     }
 
-    auto e1 = graph.add_edge(descriptors[0], descriptors[1], 1);
-    auto e2 = graph.add_edge(descriptors[1], descriptors[2], 1);
-    auto e3 = graph.add_edge(descriptors[2], descriptors[3], 1);
-    auto e4 = graph.add_edge(descriptors[4], descriptors[5], 1);
-    auto e5 = graph.add_edge(descriptors[4], descriptors[6], 1);
-    auto e6 = graph.add_edge(descriptors[4], descriptors[7], 1);
+    auto e1 = graph.add_edge(descriptors[0], descriptors[1], 1, true);
+    auto e2 = graph.add_edge(descriptors[1], descriptors[2], 1, true);
+    auto e3 = graph.add_edge(descriptors[2], descriptors[3], 1, true);
+    auto e4 = graph.add_edge(descriptors[4], descriptors[5], 1, true);
+    auto e5 = graph.add_edge(descriptors[4], descriptors[6], 1, true);
+    auto e6 = graph.add_edge(descriptors[4], descriptors[7], 1, true);
 
     auto f = [](const vertex_desc &v) { fmt::print("vertex = {}\n", v); };
 
