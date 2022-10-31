@@ -5,7 +5,7 @@
 #include <fmt/os.h>
 #include <fstream>
 #include <occ/core/kabsch.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/point_group.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
@@ -58,8 +58,8 @@ Wavefunction calculate_wavefunction(const Molecule &mol,
                                     const std::string &name) {
     fs::path fchk_path(fmt::format("{}.fchk", name));
     if (fs::exists(fchk_path)) {
-        fmt::print("Loading gas phase wavefunction from {}\n",
-                   fchk_path.string());
+        occ::log::info("Loading gas phase wavefunction from {}",
+                       fchk_path.string());
         using occ::io::FchkReader;
         FchkReader fchk(fchk_path.string());
         return Wavefunction(fchk);

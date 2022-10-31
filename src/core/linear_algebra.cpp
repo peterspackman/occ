@@ -1,5 +1,5 @@
 #include <occ/core/linear_algebra.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 
 namespace occ {
 

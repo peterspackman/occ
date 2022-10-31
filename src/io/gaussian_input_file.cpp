@@ -1,6 +1,6 @@
 #include <fstream>
 #include <occ/core/element.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/util.h>
 #include <occ/io/gaussian_input_file.h>
 #include <occ/io/occ_input.h>

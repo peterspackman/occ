@@ -62,7 +62,9 @@ void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
             wfn, hf, precision, Schwarz);
 }
 
-void CEModelInteraction::use_density_fitting() { m_use_density_fitting = true; }
+void CEModelInteraction::set_use_density_fitting(bool value) {
+    m_use_density_fitting = value;
+}
 
 void dump_matrix(const Mat &matrix) {
     size_t maxdim = std::max(matrix.rows(), matrix.cols());

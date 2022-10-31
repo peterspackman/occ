@@ -1,4 +1,4 @@
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/crystal/spacegroup.h>
 
 namespace occ::crystal {

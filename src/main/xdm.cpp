@@ -3,7 +3,7 @@
 #include <fmt/core.h>
 #include <iostream>
 #include <occ/core/linear_algebra.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/moldenreader.h>
 #include <occ/qm/wavefunction.h>

@@ -1,3 +1,3 @@
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 
 namespace occ::log {}

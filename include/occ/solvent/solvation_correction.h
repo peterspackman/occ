@@ -2,7 +2,7 @@
 #include <array>
 #include <occ/core/atom.h>
 #include <occ/core/energy_components.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/qm/expectation.h>

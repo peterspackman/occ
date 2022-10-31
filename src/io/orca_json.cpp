@@ -1,6 +1,6 @@
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/io/orca_json.h>

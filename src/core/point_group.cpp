@@ -1,7 +1,7 @@
 #include <Eigen/Geometry>
 #include <fmt/ostream.h>
 #include <occ/3rdparty/parallel_hashmap/phmap.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/point_group.h>
 #include <occ/core/units.h>
 

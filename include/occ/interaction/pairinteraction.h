@@ -112,7 +112,7 @@ struct CEEnergyComponents {
 struct CEModelInteraction {
     CEModelInteraction(const CEParameterizedModel &);
     CEEnergyComponents operator()(Wavefunction &, Wavefunction &) const;
-    void use_density_fitting();
+    void set_use_density_fitting(bool value = true);
 
   private:
     CEParameterizedModel scale_factors;

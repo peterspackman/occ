@@ -1,5 +1,5 @@
 #include <occ/core/constants.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/gto/gto.h>
 
 namespace occ::gto {

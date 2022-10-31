@@ -19,65 +19,59 @@ using occ::scf::SCF;
 
 void print_matrix_xyz(const Mat &m) {
     for (size_t i = 0; i < 3; i++) {
-        fmt::print("{: 12.6f} {: 12.6f} {: 12.6f}\n", m(i, 0), m(i, 1),
-                   m(i, 2));
+        log::info("{: 12.6f} {: 12.6f} {: 12.6f}", m(i, 0), m(i, 1), m(i, 2));
     }
-    fmt::print("\n");
 }
 
 void print_vector(const Vec3 &m) {
-    fmt::print("{: 12.6f} {: 12.6f} {: 12.6f}\n", m(0), m(1), m(2));
+    log::info("{: 12.6f} {: 12.6f} {: 12.6f}", m(0), m(1), m(2));
 }
 
 occ::qm::AOBasis load_basis_set(const Molecule &m, const std::string &name,
                                 bool spherical) {
     auto basis = occ::qm::AOBasis::load(m.atoms(), name);
     basis.set_pure(spherical);
-    fmt::print("Loaded basis set: {}\n", spherical ? "spherical" : "cartesian");
-    fmt::print("Number of shells:            {}\n", basis.size());
-    fmt::print("Number of  basis functions:  {}\n", basis.nbf());
-    fmt::print("Maximum angular momentum:    {}\n", basis.l_max());
+    log::info("Loaded basis set: {}", spherical ? "spherical" : "cartesian");
+    log::info("Number of shells:            {}", basis.size());
+    log::info("Number of  basis functions:  {}", basis.nbf());
+    log::info("Maximum angular momentum:    {}", basis.l_max());
     return basis;
 }
 
 void print_configuration(const Molecule &m, const OccInput &config) {
-    fmt::print("\n{:=^72s}\n\n", "  Input  ");
+    log::info("{:=^72s}", "  Input  ");
 
-    fmt::print("{: <20s} {: >20s}\n", "Method string", config.method.name);
-    fmt::print("{: <20s} {: >20s}\n", "Basis name", config.basis.name);
-    fmt::print("{: <20s} {: >20s}\n", "Shell kind",
-               config.basis.spherical ? "spherical" : "Cartesian");
-    fmt::print("{: <20s} {: >20d}\n", "Net charge",
-               static_cast<int>(config.electronic.charge));
-    fmt::print("{: <20s} {: >20d}\n", "Multiplicity",
-               config.electronic.multiplicity);
+    log::info("{: <20s} {: >20s}", "Method string", config.method.name);
+    log::info("{: <20s} {: >20s}", "Basis name", config.basis.name);
+    log::info("{: <20s} {: >20s}", "Shell kind",
+              config.basis.spherical ? "spherical" : "Cartesian");
+    log::info("{: <20s} {: >20d}", "Net charge",
+              static_cast<int>(config.electronic.charge));
+    log::info("{: <20s} {: >20d}", "Multiplicity",
+              config.electronic.multiplicity);
 
-    fmt::print("\n{:—<72s}\n\n",
-               fmt::format("Geometry '{}' (au)  ", config.filename));
+    log::info("{:—<72s}", fmt::format("Geometry '{}' (au)  ", config.filename));
     for (const auto &atom : m.atoms()) {
-        fmt::print("{:^3s} {:12.6f} {:12.6f} {:12.6f}\n",
-                   Element(atom.atomic_number).symbol(), atom.x, atom.y,
-                   atom.z);
+        log::info("{:^3s} {:12.6f} {:12.6f} {:12.6f}",
+                  Element(atom.atomic_number).symbol(), atom.x, atom.y, atom.z);
     }
-    fmt::print("\n");
 
     double temperature = occ::constants::celsius<double> + 25;
 
-    fmt::print("\n{:—<72s}\n\n", "Inertia tensor (x 10e-46 kg m^2)  ");
+    log::info("{:—<72s}", "Inertia tensor (x 10e-46 kg m^2)  ");
     print_matrix_xyz(m.inertia_tensor());
-    fmt::print("\n{:—<72s}\n\n", "Principal moments of inertia  ");
+    log::info("{:—<72s}", "Principal moments of inertia  ");
     print_vector(m.principal_moments_of_inertia());
-    fmt::print("\n{:—<72s}\n\n", "Rotational constants (GHz)  ");
+    log::info("{:—<72s}", "Rotational constants (GHz)  ");
     print_vector(m.rotational_constants());
-    fmt::print("\n");
+    log::info("\n");
 
-    fmt::print("\n{:—<72s}\n\n",
-               fmt::format("Gas-phase properties (at {} K)  ", temperature));
-    fmt::print("Rotational free energy      {: 12.6f} kJ/mol\n",
-               m.rotational_free_energy(temperature));
-    fmt::print("Translational free energy   {: 12.6f} kJ/mol\n",
-               m.translational_free_energy(temperature));
-    fmt::print("\n");
+    log::info("{:—<72s}",
+              fmt::format("Gas-phase properties (at {} K)  ", temperature));
+    log::info("Rotational free energy      {: 12.6f} kJ/mol",
+              m.rotational_free_energy(temperature));
+    log::info("Translational free energy   {: 12.6f} kJ/mol",
+              m.translational_free_energy(temperature));
 }
 
 template <typename T, SpinorbitalKind SK>
@@ -172,29 +166,29 @@ single_point_driver(const OccInput &config,
         }
     } else {
         if (config.method.name == "ghf") {
-            fmt::print("Hartree-Fock + SMD with general spinorbitals\n");
+            log::info("Hartree-Fock + SMD with general spinorbitals");
             return run_solvated_method<HartreeFock, SpinorbitalKind::General>(
                 *guess, config);
         } else if (config.method.name == "rhf") {
-            fmt::print("Hartree-Fock + SMD with restricted spinorbitals\n");
+            log::info("Hartree-Fock + SMD with restricted spinorbitals");
             return run_solvated_method<HartreeFock,
                                        SpinorbitalKind::Restricted>(*guess,
                                                                     config);
         } else if (config.method.name == "uhf") {
-            fmt::print("Hartree-Fock + SMD with unrestricted spinorbitals\n");
+            log::info("Hartree-Fock + SMD with unrestricted spinorbitals");
             return run_solvated_method<HartreeFock,
                                        SpinorbitalKind::Unrestricted>(*guess,
                                                                       config);
         } else {
             if (config.electronic.spinorbital_kind ==
                 SpinorbitalKind::Restricted) {
-                fmt::print("Kohn-Sham DFT + SMD with restricted "
-                           "spinorbitals\n");
+                log::info("Kohn-Sham DFT + SMD with restricted "
+                          "spinorbitals");
                 return run_solvated_method<DFT, SpinorbitalKind::Restricted>(
                     *guess, config);
             } else {
-                fmt::print("Kohn-Sham DFT + SMD with unrestricted "
-                           "spinorbitals\n");
+                log::info("Kohn-Sham DFT + SMD with unrestricted "
+                          "spinorbitals");
                 return run_solvated_method<DFT, SpinorbitalKind::Unrestricted>(
                     *guess, config);
             }

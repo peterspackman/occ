@@ -5,7 +5,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <iostream>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
@@ -29,16 +29,26 @@ using occ::qm::Wavefunction;
 
 void read_input_file(const std::string &filename, OccInput &config) {
     occ::timing::stop(occ::timing::category::io);
-    std::string ext = fs::path(filename).extension().string();
+    auto path = fs::path(filename);
+    std::string ext = path.extension().string();
+    occ::log::debug("Attempting to read input from {}, file extension = {}",
+                    filename, ext);
+    if (!fs::exists(path))
+        throw std::runtime_error("Input file does not exist.");
     if (ext == ".gjf" || ext == ".com") {
+        occ::log::debug("Detected Gaussian input file");
         occ::io::GaussianInputFile g(filename);
         g.update_occ_input(config);
     } else if (ext == ".json") {
+        occ::log::debug("Detected JSON input");
         occ::io::QCSchemaReader qcs(filename);
         qcs.update_occ_input(config);
     } else if (ext == ".xyz") {
+        occ::log::debug("Detected xyz input");
         occ::io::XyzFileReader xyz(filename);
         xyz.update_occ_input(config);
+    } else {
+        throw std::runtime_error("unknown file type");
     }
 }
 
@@ -57,7 +67,27 @@ void write_output_files(const OccInput &config, Wavefunction &wfn) {
     fchk.set_basis_name(config.basis.name);
     wfn.save(fchk);
     fchk.write();
-    fmt::print("wavefunction stored in {}\n", fchk_path.string());
+    occ::log::info("wavefunction stored in {}", fchk_path.string());
+}
+
+void setup_logging(const std::string &verbosity) {
+    auto level = occ::log::level::info;
+    std::string level_lower = occ::util::to_lower_copy(verbosity);
+    if (level_lower == "debug")
+        level = occ::log::level::trace;
+    else if (level_lower == "normal")
+        level = occ::log::level::info;
+    else if (level_lower == "verbose")
+        level = occ::log::level::debug;
+    else if (level_lower == "minimal")
+        level = occ::log::level::warn;
+    else if (level_lower == "silent")
+        level = occ::log::level::critical;
+    occ::log::set_level(level);
+    spdlog::set_level(level);
+    // store the last 32 debug messages in a buffer
+    spdlog::enable_backtrace(32);
+    spdlog::set_pattern("%v");
 }
 
 int main(int argc, char *argv[]) {
@@ -88,17 +118,8 @@ int main(int argc, char *argv[]) {
                  "file to write solvent surface");
 
     CLI11_PARSE(app, argc, argv);
+    setup_logging(verbosity);
 
-    auto level = occ::log::level::warn;
-    std::string level_lower = occ::util::to_lower_copy(verbosity);
-    if (level_lower == "debug")
-        level = occ::log::level::debug;
-    else if (level_lower == "info")
-        level = occ::log::level::info;
-    else if (level_lower == "error")
-        level = occ::log::level::err;
-    occ::log::set_level(level);
-    spdlog::set_level(level);
     occ::main::print_header();
     occ::timing::stop(occ::timing::category::io);
 
@@ -124,9 +145,9 @@ int main(int argc, char *argv[]) {
 #else
         std::string thread_type = "std";
 #endif
-        fmt::print("\nParallelization: {} {} threads, {} eigen threads\n",
-                   occ::parallel::get_num_threads(), thread_type,
-                   Eigen::nbThreads());
+        occ::log::info("\nParallelization: {} {} threads, {} eigen threads",
+                       occ::parallel::get_num_threads(), thread_type,
+                       Eigen::nbThreads());
 
         config.basis.name = basis_set;
         config.electronic.multiplicity = multiplicity;
@@ -138,16 +159,17 @@ int main(int argc, char *argv[]) {
         if (config.electronic.multiplicity != 1 || unrestricted ||
             config.method.name == "uhf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
-            fmt::print("Spinorbital kind: Unrestricted");
+            occ::log::info("Spinorbital kind: Unrestricted");
         } else if (config.method.name == "ghf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::General;
-            fmt::print("Spinorbital kind: General\n");
+            occ::log::info("Spinorbital kind: General");
         } else {
-            fmt::print("Spinorbital kind: Restricted\n");
+            occ::log::info("Spinorbital kind: Restricted");
         }
         occ::timing::stop(occ::timing::category::io);
 
         if (config.driver.driver == "energy") {
+            occ::log::debug("Using energy driver");
             Wavefunction wfn = occ::main::single_point_calculation(config);
             write_output_files(config, wfn);
             occ::main::calculate_properties(config, wfn);
@@ -162,38 +184,43 @@ int main(int argc, char *argv[]) {
                     occ::main::single_point_calculation(config, wfn);
                 double esolv = wfn2.energy.total - wfn.energy.total;
 
-                fmt::print("\n{:—<72s}\n\n", "Solvation free energy (SMD)  ");
-                fmt::print("\u0394G(solv)    = {:20.12f} Hartree\n", esolv);
-                fmt::print("            = {:20.12f} kJ/mol\n",
-                           esolv * occ::units::AU_TO_KJ_PER_MOL);
-                fmt::print("            = {:20.12f} kcal/mol\n\n",
-                           esolv * occ::units::AU_TO_KCAL_PER_MOL);
+                occ::log::info("{:—<72s}", "Solvation free energy (SMD)  ");
+                occ::log::info("\u0394G(solv)    = {:20.12f} Hartree", esolv);
+                occ::log::info("            = {:20.12f} kJ/mol",
+                               esolv * occ::units::AU_TO_KJ_PER_MOL);
+                occ::log::info("            = {:20.12f} kcal/mol",
+                               esolv * occ::units::AU_TO_KCAL_PER_MOL);
                 write_output_files(config, wfn2);
             }
         } else if (config.driver.driver == "pair_energy") {
-            fmt::print("Pair energy\n");
+            occ::log::info("Using pair energy driver\n");
             occ::main::PairEnergy pair_energy(config);
             pair_energy.compute();
         } else {
-            fmt::print("Unknown driver: {}\n", config.driver.driver);
+            throw std::runtime_error(
+                fmt::format("Unknown driver: {}", config.driver.driver));
             return 1;
         }
 
     } catch (const char *ex) {
-        fmt::print(error_format, ex);
+        occ::log::error(error_format, ex);
+        spdlog::dump_backtrace();
         return 1;
     } catch (std::string &ex) {
-        fmt::print(error_format, ex);
+        occ::log::error(error_format, ex);
+        spdlog::dump_backtrace();
         return 1;
     } catch (std::exception &ex) {
-        fmt::print(error_format, ex.what());
+        occ::log::error(error_format, ex.what());
+        spdlog::dump_backtrace();
         return 1;
     } catch (...) {
-        fmt::print("Exception:\n- Unknown...\n");
+        occ::log::error("Exception:\n- Unknown...\n");
+        spdlog::dump_backtrace();
         return 1;
     }
     occ::timing::stop(occ::timing::global);
     occ::timing::print_timings();
-    fmt::print("A job well done\n");
+    occ::log::info("A job well done\n");
     return 0;
 }

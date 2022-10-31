@@ -1,6 +1,6 @@
 #include <fstream>
 #include <occ/core/element.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/basis_g94.h>
 

@@ -1,5 +1,5 @@
 #include <fstream>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/io/occ_input.h>
@@ -12,7 +12,7 @@ using Position = std::array<double, 3>;
 
 XyzFileReader::XyzFileReader(const std::string &filename) {
     std::ifstream file(filename);
-    if (not file.good()) {
+    if (!file.good()) {
         throw std::runtime_error(
             fmt::format("Could not open file: '{}'", filename));
     }

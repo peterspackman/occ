@@ -2,7 +2,7 @@
 #include <fmt/ostream.h>
 #include <occ/core/eigenp.h>
 #include <occ/core/element.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/conversion.h>
 #include <occ/io/fchkreader.h>

@@ -8,7 +8,7 @@
 #include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/eigenp.h>
 #include <occ/core/interpolator.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>

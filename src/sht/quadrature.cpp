@@ -1,5 +1,5 @@
 #include <cmath>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/sht/quadrature.h>
 
 namespace occ::sht {

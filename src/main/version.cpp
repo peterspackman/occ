@@ -2,8 +2,8 @@
 #include <fmt/core.h>
 #include <gemmi/version.hpp>
 #include <occ/3rdparty/cint_wrapper.h>
+#include <occ/core/log.h>
 #include <occ/main/version.h>
-#include <spdlog/spdlog.h>
 #include <xc.h>
 
 namespace occ::main {
@@ -23,7 +23,7 @@ void print_header() {
     const std::string spdlog_version_string = fmt::format(
         "{}.{}.{}", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 
-    fmt::print(R"(
+    log::info(R"(
    
 	 Open
 	  \
@@ -54,7 +54,7 @@ spdlog               Logging (v {})
 zlib                 zip library
 
 )",
-               eigen_version_string, fmt_version_string, gemmi_version_string,
-               cint_version_string, xc_version_string, spdlog_version_string);
+              eigen_version_string, fmt_version_string, gemmi_version_string,
+              cint_version_string, xc_version_string, spdlog_version_string);
 }
 } // namespace occ::main

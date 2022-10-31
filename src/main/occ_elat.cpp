@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <fmt/os.h>
 #include <occ/core/kabsch.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/dft/dft.h>

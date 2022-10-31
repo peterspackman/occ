@@ -1,5 +1,5 @@
 #include <occ/core/atom.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/dft/grid.h>
 #include <occ/dft/lebedev.h>

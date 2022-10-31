@@ -94,8 +94,10 @@ class AOBasis {
         if (kind == m_kind)
             return;
         m_kind = kind;
-        for (auto &sh : m_shells)
+        for (auto &sh : m_shells) {
             sh.kind = kind;
+            m_max_shell_size = std::max(m_max_shell_size, sh.size());
+        }
         update_bf_maps();
     }
     inline void set_pure(bool pure) {

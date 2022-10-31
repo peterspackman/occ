@@ -5,7 +5,7 @@
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/element.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/interaction/disp.h>
@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
 
     CEModelInteraction interaction(model);
     if (use_df) {
-        interaction.use_density_fitting();
+        interaction.set_use_density_fitting(true);
     }
     auto interaction_energy = interaction(pair.a.wfn, pair.b.wfn);
     occ::timing::stop(occ::timing::category::global);

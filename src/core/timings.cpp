@@ -1,4 +1,4 @@
-#include <fmt/core.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 
 namespace occ::timing {
@@ -86,11 +86,11 @@ void print_timings() {
         dft,    rho,      dft_xc,   gto,     assoc_legendre, fft, jmat,
         jkmat,  fock,     df,       solvent, global,
     };
-    fmt::print("Wall clock time by category (s)\n");
+    log::debug("Wall clock time by category (s)");
     for (const auto &cat : categories) {
         auto t = total(cat);
         if (t > 0) {
-            fmt::print("{:<30s} {:12.6f}\n", category_name(cat), t);
+            log::debug("{:<30s} {:12.6f}", category_name(cat), t);
         }
     }
 }

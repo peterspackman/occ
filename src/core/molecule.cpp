@@ -2,7 +2,7 @@
 #include <fstream>
 #include <occ/core/constants.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>

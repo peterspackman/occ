@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/core/energy_components.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
@@ -150,8 +150,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     void set_charge_multiplicity(int chg, unsigned int mult) {
         int current_charge = charge();
         bool state_changed = false;
-        occ::log::debug("Setting charge = {}, multiplicity = {} in scf", chg,
-                        mult);
+        log::debug("Setting charge = {}, multiplicity = {} in scf", chg, mult);
         if (chg != current_charge) {
             n_electrons -= chg - current_charge;
             state_changed = true;
@@ -229,7 +228,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     }
 
     void set_initial_guess_from_wfn(const Wavefunction &wfn) {
-        fmt::print("Setting initial guess from existing wavefunction\n");
+        log::info("Setting initial guess from existing wavefunction");
         m_have_initial_guess = true;
         mo = wfn.mo;
         update_occupied_orbital_count();
@@ -244,7 +243,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     void compute_initial_guess() {
         if (m_have_initial_guess)
             return;
-        fmt::print("Computing initial guess using SOAD in minimal basis\n");
+        log::info("Computing initial guess using SOAD in minimal basis");
         const auto tstart = std::chrono::high_resolution_clock::now();
         impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T,
                                                              V, H);
@@ -272,7 +271,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             // if basis != minimal basis, map non-representable SOAD guess
             // into the AO basis
             // by diagonalizing a Fock matrix
-            occ::log::debug(
+            log::debug(
                 "Projecting minimal basis guess into atomic orbital basis...");
             auto minbs =
                 occ::qm::AOBasis::load(m_procedure.atoms(), OCC_MINIMAL_BASIS);
@@ -285,8 +284,8 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
             const auto tstop = std::chrono::high_resolution_clock::now();
             const std::chrono::duration<double> time_elapsed = tstop - tstart;
-            occ::log::debug("SOAD projection into AO basis took {:.5f} s",
-                            time_elapsed.count());
+            log::debug("SOAD projection into AO basis took {:.5f} s",
+                       time_elapsed.count());
         }
         occ::timing::stop(occ::timing::category::guess);
     }
@@ -340,11 +339,11 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         Mat D_last;
         Mat FD_comm = Mat::Zero(F.rows(), F.cols());
         update_scf_energy(incremental);
-        fmt::print("starting {} scf iterations \n", scf_kind());
-        occ::log::info("{} electrons total", n_electrons);
-        occ::log::info("{} alpha electrons", n_alpha());
-        occ::log::info("{} beta electrons", n_beta());
-        occ::log::info("net charge {}", charge());
+        log::info("starting {} scf iterations", scf_kind());
+        log::debug("{} electrons total", n_electrons);
+        log::debug("{} alpha electrons", n_alpha());
+        log::debug("{} beta electrons", n_beta());
+        log::debug("net charge {}", charge());
         total_time = 0.0;
 
         do {
@@ -363,7 +362,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                 reset_incremental_fock_formation = false;
                 last_reset_iteration = iter - 1;
                 next_reset_threshold = diis_error / 10;
-                occ::log::info("starting incremental fock build");
+                log::debug("starting incremental fock build");
             }
             if (reset_incremental_fock_formation ||
                 not incremental_Fbuild_started) {
@@ -376,7 +375,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
                 reset_incremental_fock_formation = false;
                 last_reset_iteration = iter;
                 next_reset_threshold = diis_error / 10;
-                occ::log::info("resetting incremental fock build");
+                log::debug("resetting incremental fock build");
             }
 
             // build a new Fock matrix
@@ -423,23 +422,22 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             const std::chrono::duration<double> time_elapsed = tstop - tstart;
 
             if (iter == 1) {
-                fmt::print("{:>4s} {: >20s} {: >12s} {: >12s}  {: >8s}\n", "#",
-                           "E (Hartrees)", "|\u0394E|/E", "max|FDS-SDF|",
-                           "T (s)");
+                log::info("{:>4s} {: >20s} {: >12s} {: >12s}  {: >8s}", "#",
+                          "E (Hartrees)", "|\u0394E|/E", "max|FDS-SDF|",
+                          "T (s)");
             }
-            fmt::print("{:>4d} {:>20.12f} {:>12.5e} {:>12.5e}  {:>8.2e}\n",
-                       iter, energy["total"], ediff_rel, diis_error,
-                       time_elapsed.count());
+            log::info("{:>4d} {:>20.12f} {:>12.5e} {:>12.5e}  {:>8.2e}", iter,
+                      energy["total"], ediff_rel, diis_error,
+                      time_elapsed.count());
             std::cout << std::flush;
             total_time += time_elapsed.count();
 
         } while (((ediff_rel > energy_convergence_threshold) ||
                   (diis_error > commutator_convergence_threshold)) &&
                  (iter < maxiter));
-        fmt::print(
-            "\n{} spinorbital SCF energy converged after {:.5f} seconds\n\n",
-            scf_kind(), total_time);
-        fmt::print("{}\n", energy);
+        log::info("{} spinorbital SCF energy converged after {:.5f} seconds",
+                  scf_kind(), total_time);
+        log::info("{}", energy);
         converged = true;
         return energy["total"];
     }

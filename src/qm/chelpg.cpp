@@ -1,7 +1,7 @@
 #include <LBFGS.h>
 #include <fmt/os.h>
 #include <occ/core/element.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/hf.h>

@@ -3,7 +3,7 @@
 #include <fmt/ostream.h>
 #include <occ/core/atom.h>
 #include <occ/core/element.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>

@@ -14,6 +14,7 @@ target_link_libraries(occ_interaction
     occ_crystal
     occ_qm
     occ_io
+    occ_xdm
 )
 target_include_directories(occ_interaction PUBLIC 
     ${OCC_INCLUDE_DIR} 

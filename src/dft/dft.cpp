@@ -2,7 +2,7 @@
 #include <fmt/ostream.h>
 #include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/atom.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/dft/dft.h>

@@ -3,7 +3,7 @@
 #include <CLI/Formatter.hpp>
 #include <chrono>
 #include <filesystem>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/optimize.h>
 #include <occ/core/units.h>
 #include <occ/io/xyz.h>

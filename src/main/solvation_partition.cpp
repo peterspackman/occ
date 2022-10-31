@@ -1,6 +1,6 @@
 #include <filesystem>
 #include <fmt/os.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/point_group.h>
 #include <occ/core/units.h>

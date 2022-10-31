@@ -3,7 +3,7 @@
 #include <fmt/core.h>
 #include <gau2grid/gau2grid.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/core/logger.h>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/gto/shell_order.h>

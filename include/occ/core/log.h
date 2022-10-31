@@ -10,9 +10,11 @@ using spdlog::set_level;
 using spdlog::warn;
 
 namespace level {
+using spdlog::level::critical;
 using spdlog::level::debug;
 using spdlog::level::err;
 using spdlog::level::info;
+using spdlog::level::trace;
 using spdlog::level::warn;
 } // namespace level
 } // namespace occ::log
