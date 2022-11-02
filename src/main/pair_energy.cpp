@@ -300,18 +300,18 @@ converged_lattice_energies(const Crystal &crystal,
     for (int i = 0; i < wfns_a.size(); i++) {
         charges[i] = occ::qm::chelpg_charges(wfns_a[i]);
         // charges[i] = wfns_a[i].mulliken_charges();
-        fmt::print("Charges {}\n{}\n", i, charges[i]);
+        occ::log::info("Charges {}\n{}", i, charges[i]);
         for (int j = 0; j < charges[i].rows(); j++) {
             asym_charges(asym_mols[i].asymmetric_unit_idx()(j)) = charges[i](j);
         }
     }
-    fmt::print("Found {} symmetry unique dimers within max radius {:.3f}\n",
-               all_dimers.unique_dimers.size(), conv.max_radius);
-    fmt::print("Lattice convergence settings:\n");
-    fmt::print("Start radius       {: 8.4f} \u212b\n", conv.min_radius);
-    fmt::print("Max radius         {: 8.4f} \u212b\n", conv.max_radius);
-    fmt::print("Radius increment   {: 8.4f} \u212b\n", conv.radius_increment);
-    fmt::print("Energy tolerance   {: 8.4f} kJ/mol\n", conv.energy_tolerance);
+    occ::log::info("Found {} symmetry unique dimers within max radius {:.3f}\n",
+                   all_dimers.unique_dimers.size(), conv.max_radius);
+    occ::log::info("Lattice convergence settings:");
+    occ::log::info("Start radius       {: 8.4f} \u212b", conv.min_radius);
+    occ::log::info("Max radius         {: 8.4f} \u212b", conv.max_radius);
+    occ::log::info("Radius increment   {: 8.4f} \u212b", conv.radius_increment);
+    occ::log::info("Energy tolerance   {: 8.4f} kJ/mol", conv.energy_tolerance);
 
     double wolf_energy = 0.0;
     int asym_idx = 0;
@@ -341,11 +341,11 @@ converged_lattice_energies(const Crystal &crystal,
         }
     }
 
-    fmt::print("Wolf energy ({} asymmetric atoms): {}\n", asym_idx,
-               asym_wolf.sum());
+    occ::log::debug("Wolf energy ({} asymmetric atoms): {}\n", asym_idx,
+                    asym_wolf.sum());
 
-    fmt::print("Wolf energy ({} asymmetric molecules): {}\n", asym_mols.size(),
-               wolf_energy);
+    occ::log::debug("Wolf energy ({} asymmetric molecules): {}\n",
+                    asym_mols.size(), wolf_energy);
 
     do {
         previous_lattice_energy = lattice_energy;
@@ -385,18 +385,19 @@ converged_lattice_energies(const Crystal &crystal,
             mol_idx++;
         }
         lattice_energy = 0.5 * etot;
-        fmt::print("Cycle {} lattice energy: {}\n", cycle, lattice_energy);
-        fmt::print("Charge-charge intramolecular: {}\n", ecoul_self);
-        fmt::print("Charge-charge real space: {}\n", ecoul_real);
-        fmt::print("Wolf energy: {}\n", wolf_energy);
-        fmt::print("Coulomb (exact) real: {}\n", ecoul_exact_real);
-        fmt::print("Wolf - intra: {}\n", wolf_energy - ecoul_self);
-        fmt::print("Wolf corrected Coulomb total: {}\n",
-                   wolf_energy - ecoul_self - ecoul_real + ecoul_exact_real);
-        fmt::print("Wolf corrected lattice energy: {}\n",
-                   coulomb_scale_factor *
-                           (wolf_energy - ecoul_self - ecoul_real) +
-                       0.5 * etot);
+        occ::log::info("Cycle {} lattice energy: {}", cycle, lattice_energy);
+        occ::log::debug("Charge-charge intramolecular: {}", ecoul_self);
+        occ::log::debug("Charge-charge real space: {}", ecoul_real);
+        occ::log::debug("Wolf energy: {}", wolf_energy);
+        occ::log::debug("Coulomb (exact) real: {}", ecoul_exact_real);
+        occ::log::debug("Wolf - intra: {}", wolf_energy - ecoul_self);
+        occ::log::debug("Wolf corrected Coulomb total: {}",
+                        wolf_energy - ecoul_self - ecoul_real +
+                            ecoul_exact_real);
+        occ::log::debug("Wolf corrected lattice energy: {}",
+                        coulomb_scale_factor *
+                                (wolf_energy - ecoul_self - ecoul_real) +
+                            0.5 * etot);
         cycle++;
         current_radius += conv.radius_increment;
     } while (std::abs(lattice_energy - previous_lattice_energy) >

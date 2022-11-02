@@ -17,4 +17,7 @@ using spdlog::level::info;
 using spdlog::level::trace;
 using spdlog::level::warn;
 } // namespace level
+
+void setup_logging(const std::string &verbosity);
+
 } // namespace occ::log

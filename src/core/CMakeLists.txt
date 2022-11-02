@@ -8,7 +8,7 @@ add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/kabsch.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/log.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/optimize.cpp"

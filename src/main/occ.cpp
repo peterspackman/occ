@@ -70,26 +70,6 @@ void write_output_files(const OccInput &config, Wavefunction &wfn) {
     occ::log::info("wavefunction stored in {}", fchk_path.string());
 }
 
-void setup_logging(const std::string &verbosity) {
-    auto level = occ::log::level::info;
-    std::string level_lower = occ::util::to_lower_copy(verbosity);
-    if (level_lower == "debug")
-        level = occ::log::level::trace;
-    else if (level_lower == "normal")
-        level = occ::log::level::info;
-    else if (level_lower == "verbose")
-        level = occ::log::level::debug;
-    else if (level_lower == "minimal")
-        level = occ::log::level::warn;
-    else if (level_lower == "silent")
-        level = occ::log::level::critical;
-    occ::log::set_level(level);
-    spdlog::set_level(level);
-    // store the last 32 debug messages in a buffer
-    spdlog::enable_backtrace(32);
-    spdlog::set_pattern("%v");
-}
-
 int main(int argc, char *argv[]) {
     occ::timing::start(occ::timing::category::global);
     occ::timing::start(occ::timing::category::io);
@@ -118,7 +98,7 @@ int main(int argc, char *argv[]) {
                  "file to write solvent surface");
 
     CLI11_PARSE(app, argc, argv);
-    setup_logging(verbosity);
+    occ::log::setup_logging(verbosity);
 
     occ::main::print_header();
     occ::timing::stop(occ::timing::category::io);

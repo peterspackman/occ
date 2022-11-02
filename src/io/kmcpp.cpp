@@ -1,6 +1,6 @@
-#include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/combinations.h>
+#include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/core_json.h>
@@ -45,8 +45,8 @@ void InputWriter::write(const occ::crystal::Crystal &crystal,
         }
         j["neighbor_offsets"][uc_idx_a] = shifts;
         const auto &neighbors_a = neighbors[uc_idx_a];
-        fmt::print("Generating all combinations for {} neighbors\n",
-                   neighbors_a.size());
+        occ::log::debug("Generating all combinations for {} neighbors",
+                        neighbors_a.size());
         for (const auto &n : neighbors_a) {
             j["neighbor_energies"][uc_idx_a].push_back(n.interaction_energy() /
                                                        occ::units::KJ_TO_KCAL);

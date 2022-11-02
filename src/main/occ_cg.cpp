@@ -91,12 +91,12 @@ calculate_wavefunctions(const std::string &basename,
     std::vector<Wavefunction> wfns;
     size_t index = 0;
     for (const auto &m : molecules) {
-        fmt::print("Molecule ({})\n{:3s} {:^10s} {:^10s} {:^10s}\n", index,
-                   "sym", "x", "y", "z");
+        occ::log::info("Molecule ({})\n{:3s} {:^10s} {:^10s} {:^10s}", index,
+                       "sym", "x", "y", "z");
         for (const auto &atom : m.atoms()) {
-            fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
-                       Element(atom.atomic_number).symbol(), atom.x, atom.y,
-                       atom.z);
+            occ::log::info("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
+                           Element(atom.atomic_number).symbol(), atom.x, atom.y,
+                           atom.z);
         }
         std::string name = fmt::format("{}_{}", basename, index);
         wfns.emplace_back(calculate_wavefunction(m, name));
@@ -251,9 +251,9 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
         occ::log::debug("{}: {:.3f}", k1, crystal_contributions[k1].energy);
         total_reassigned += crystal_contributions[k1].energy;
     }
-    occ::log::debug("Total taken from non-nearest neighbors: {:.3f} kJ/mol\n",
+    occ::log::debug("Total taken from non-nearest neighbors: {:.3f} kJ/mol",
                     total_taken);
-    occ::log::debug("Total assigned to nearest neighbors: {:.3f} kJ/mol\n",
+    occ::log::debug("Total assigned to nearest neighbors: {:.3f} kJ/mol",
                     total_reassigned);
     return crystal_contributions;
 }
@@ -286,11 +286,9 @@ int main(int argc, char **argv) {
                    "Choice of wavefunctions");
     app.add_flag("-d,--dump", write_dump_files, "Write dump files");
 
-    occ::log::set_level(occ::log::level::info);
-    spdlog::set_level(spdlog::level::info);
-
     CLI11_PARSE(app, argc, argv);
 
+    occ::log::setup_logging(verbosity);
     occ::timing::StopWatch global_timer;
     global_timer.start();
     std::optional<Molecule> region;
@@ -304,9 +302,9 @@ int main(int argc, char **argv) {
 #else
     std::string thread_type = "std";
 #endif
-    fmt::print("\nparallelization: {} {} threads, {} eigen threads\n",
-               occ::parallel::get_num_threads(), thread_type,
-               Eigen::nbThreads());
+    occ::log::info("parallelization: {} {} threads, {} eigen threads",
+                   occ::parallel::get_num_threads(), thread_type,
+                   Eigen::nbThreads());
     const std::string error_format =
         "Exception:\n    {}\nTerminating program.\n";
     try {
@@ -316,15 +314,15 @@ int main(int argc, char **argv) {
         Crystal c_symm = read_crystal(cif_filename);
         sw.stop();
         double tprev = sw.read();
-        fmt::print("Loaded crystal from {} in {:.6f} seconds\n", cif_filename,
-                   tprev);
+        occ::log::debug("Loaded crystal from {} in {:.6f} seconds",
+                        cif_filename, tprev);
 
         sw.start();
         auto molecules = c_symm.symmetry_unique_molecules();
         sw.stop();
 
-        fmt::print(
-            "Found {} symmetry unique molecules in {} in {:.6f} seconds\n",
+        occ::log::debug(
+            "Found {} symmetry unique molecules in {} in {:.6f} seconds",
             molecules.size(), cif_filename, sw.read() - tprev);
 
         if (!charge_string.empty()) {
@@ -346,8 +344,8 @@ int main(int argc, char **argv) {
         auto wfns = calculate_wavefunctions(basename, molecules);
         sw.stop();
 
-        fmt::print("Gas phase wavefunctions took {:.6f} seconds\n",
-                   sw.read() - tprev);
+        occ::log::info("Gas phase wavefunctions took {:.6f} seconds",
+                       sw.read() - tprev);
 
         tprev = sw.read();
         sw.start();
@@ -357,23 +355,23 @@ int main(int argc, char **argv) {
             occ::main::calculate_solvated_surfaces(basename, molecules, wfns,
                                                    solvent);
         sw.stop();
-        fmt::print("Solution phase wavefunctions took {:.6f} seconds\n",
-                   sw.read() - tprev);
+        occ::log::info("Solution phase wavefunctions took {:.6f} seconds",
+                       sw.read() - tprev);
 
         tprev = sw.read();
         sw.start();
-        fmt::print("Computing monomer energies for gas phase\n");
+        occ::log::info("Computing monomer energies for gas phase");
         compute_monomer_energies(basename, wfns);
-        fmt::print("Computing monomer energies for solution phase\n");
+        occ::log::info("Computing monomer energies for solution phase");
         compute_monomer_energies(fmt::format("{}_{}", basename, solvent),
                                  solvated_wavefunctions);
         sw.stop();
-        fmt::print("Computing monomer energies took {:.6f} seconds\n",
-                   sw.read() - tprev);
+        occ::log::info("Computing monomer energies took {:.6f} seconds",
+                       sw.read() - tprev);
 
         const std::string row_fmt_string =
             "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
-            "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}\n";
+            "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}";
 
         const auto &wfns_a = [&]() {
             if (wfn_choice == "gas")
@@ -393,8 +391,8 @@ int main(int argc, char **argv) {
 
         occ::main::LatticeConvergenceSettings convergence_settings;
         convergence_settings.max_radius = radius;
-        fmt::print("Computing crystal interactions using {} wavefunctions\n",
-                   wfn_choice);
+        occ::log::info("Computing crystal interactions using {} wavefunctions",
+                       wfn_choice);
         std::tie(crystal_dimers, dimer_energies) =
             occ::main::converged_lattice_energies(
                 c_symm, wfns_a, wfns_b, basename, convergence_settings);
@@ -402,16 +400,20 @@ int main(int argc, char **argv) {
         auto cg_symm_dimers = c_symm.symmetry_unique_dimers(cg_radius);
 
         if (crystal_dimers.unique_dimers.size() < 1) {
-            fmt::print("No dimers found using neighbour radius {:.3f}\n",
-                       radius);
+            occ::log::error("No dimers found using neighbour radius {:.3f}",
+                            radius);
             exit(0);
         }
 
         auto dipoles = calculate_net_dipole(wfns_b, crystal_dimers);
-        for (const auto &x : dipoles) {
-            fmt::print("Net dipole for cluster\n  x = {:12.5f}  y = {:12.5f}  "
-                       "z = {:12.5f}\n",
-                       x(0), x(1), x(2));
+        {
+            size_t i = 0;
+            for (const auto &x : dipoles) {
+                occ::log::debug("Net dipole for cluster {}: ({:12.5f}, "
+                                "{:12.5f} {:12.5f})",
+                                i, x(0), x(1), x(2));
+                i++;
+            }
         }
 
         occ::main::SolvationPartitionScheme partition_scheme =
@@ -441,20 +443,21 @@ int main(int argc, char **argv) {
             interactions.reserve(n.size());
             double Gr = molecules[i].rotational_free_energy(298);
             occ::core::MolecularPointGroup pg(molecules[i]);
-            fmt::print("Molecule {} point group = {}, symmetry number = {}\n",
-                       i, pg.point_group_string(), pg.symmetry_number());
+            occ::log::debug(
+                "Molecule {} point group = {}, symmetry number = {}", i,
+                pg.point_group_string(), pg.symmetry_number());
             double Gt = molecules[i].translational_free_energy(298);
             double molar_mass = molecules[i].molar_mass();
 
-            fmt::print("Neighbors for asymmetric molecule {}\n", i);
+            occ::log::warn("Neighbors for asymmetric molecule {}", i);
 
-            fmt::print("{:>7s} {:>7s} {:>20s} "
-                       "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}\n",
-                       "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA", "E_S",
-                       "E_nn", "E_int");
-            fmt::print("============================="
-                       "============================="
-                       "=============================\n");
+            occ::log::warn("{:>7s} {:>7s} {:>20s} "
+                           "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}",
+                           "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA",
+                           "E_S", "E_nn", "E_int");
+            occ::log::warn("============================="
+                           "============================="
+                           "=============================");
 
             size_t j = 0;
             occ::interaction::CEEnergyComponents total;
@@ -484,7 +487,7 @@ int main(int argc, char **argv) {
                     auto [idx_region_b, idx_mol_b, distance_rb] =
                         region.value().nearest_atom(b);
                     if (distance_rb > 1e-3) {
-                        fmt::print("Excluding {}\n", distance_rb);
+                        occ::log::debug("Excluding {}", distance_rb);
                         j++;
                         continue;
                     }
@@ -526,55 +529,54 @@ int main(int argc, char **argv) {
                 interactions.push_back(e_int);
                 auto &sj = solv[j];
 
-                fmt::print(row_fmt_string, rn, rc, s_ab, etot,
-                           (sj.coulomb.ab + sj.cds.ab) * AU_TO_KJ_PER_MOL,
-                           (sj.coulomb.ba + sj.cds.ba) * AU_TO_KJ_PER_MOL,
-                           sj.total() * AU_TO_KJ_PER_MOL,
-                           crystal_contributions[j].energy, e_int);
+                occ::log::warn(row_fmt_string, rn, rc, s_ab, etot,
+                               (sj.coulomb.ab + sj.cds.ab) * AU_TO_KJ_PER_MOL,
+                               (sj.coulomb.ba + sj.cds.ba) * AU_TO_KJ_PER_MOL,
+                               sj.total() * AU_TO_KJ_PER_MOL,
+                               crystal_contributions[j].energy, e_int);
                 j++;
             }
             constexpr double R = 8.31446261815324;
             constexpr double RT = 298 * R / 1000;
-            fmt::print("\nFree energy estimates at T = 298 K, P = 1 atm., "
-                       "units: kJ/mol\n");
-            fmt::print(
-                "-------------------------------------------------------\n");
-            fmt::print(
-                "lattice energy (crystal)             {: 9.3f}  (E_lat)\n",
+            occ::log::warn("Free energy estimates at T = 298 K, P = 1 atm., "
+                           "units: kJ/mol");
+            occ::log::warn(
+                "-------------------------------------------------------");
+            occ::log::warn(
+                "lattice energy (crystal)             {: 9.3f}  (E_lat)",
                 0.5 * total.total);
             Gr += RT * std::log(pg.symmetry_number());
-            fmt::print(
-                "rotational free energy (molecule)    {: 9.3f}  (E_rot)\n", Gr);
-            fmt::print(
-                "translational free energy (molecule) {: 9.3f}  (E_trans)\n",
-                Gt);
+            occ::log::warn(
+                "rotational free energy (molecule)    {: 9.3f}  (E_rot)", Gr);
+            occ::log::warn(
+                "translational free energy (molecule) {: 9.3f}  (E_trans)", Gt);
             // includes concentration shift
             double dG_solv = surfaces[i].esolv * occ::units::AU_TO_KJ_PER_MOL +
                              1.89 / occ::units::KJ_TO_KCAL;
-            fmt::print(
-                "solvation free energy (molecule)     {: 9.3f}  (E_solv)\n",
+            occ::log::warn(
+                "solvation free energy (molecule)     {: 9.3f}  (E_solv)",
                 dG_solv);
             double dH_sub = -0.5 * total.total - 2 * RT;
-            fmt::print("\u0394H sublimation                       {: 9.3f}\n",
-                       dH_sub);
+            occ::log::warn("\u0394H sublimation                       {: 9.3f}",
+                           dH_sub);
             double dS_sub = Gr + Gt;
-            fmt::print("\u0394S sublimation                       {: 9.3f}\n",
-                       dS_sub);
+            occ::log::warn("\u0394S sublimation                       {: 9.3f}",
+                           dS_sub);
             double dG_sub = dH_sub + dS_sub;
-            fmt::print("\u0394G sublimation                       {: 9.3f}\n",
-                       dG_sub);
+            occ::log::warn("\u0394G sublimation                       {: 9.3f}",
+                           dG_sub);
             dG_solubility = dG_solv + dG_sub;
-            fmt::print("\u0394G solution                          {: 9.3f}\n",
-                       dG_solubility);
+            occ::log::warn("\u0394G solution                          {: 9.3f}",
+                           dG_solubility);
             double equilibrium_constant = std::exp(-dG_solubility / RT);
-            fmt::print("equilibrium_constant                 {: 9.2e}\n",
-                       equilibrium_constant);
-            fmt::print("log S                                {: 9.3f}\n",
-                       std::log10(equilibrium_constant));
-            fmt::print("solubility (g/L)                     {: 9.2e}\n",
-                       equilibrium_constant * molar_mass * 1000);
-            fmt::print("Total E_int                          {: 9.3f}\n",
-                       total_interaction_energy);
+            occ::log::warn("equilibrium_constant                 {: 9.2e}",
+                           equilibrium_constant);
+            occ::log::warn("log S                                {: 9.3f}",
+                           std::log10(equilibrium_constant));
+            occ::log::warn("solubility (g/L)                     {: 9.2e}",
+                           equilibrium_constant * molar_mass * 1000);
+            occ::log::warn("Total E_int                          {: 9.3f}",
+                           total_interaction_energy);
         }
 
         auto uc_dimers = c_symm.unit_cell_dimers(cg_radius);
@@ -584,8 +586,8 @@ int main(int argc, char **argv) {
         {
             std::string cg_structure_filename =
                 fmt::format("{}_cg.txt", basename);
-            fmt::print("Writing crystalgrower structure file to '{}'\n",
-                       cg_structure_filename);
+            occ::log::info("Writing crystalgrower structure file to '{}'",
+                           cg_structure_filename);
             occ::io::crystalgrower::StructureWriter cg_structure_writer(
                 cg_structure_filename);
             cg_structure_writer.write(c_symm, uc_dimers);
@@ -600,22 +602,23 @@ int main(int argc, char **argv) {
             solution_terms_uc[i] = solution_terms[asym_idx];
             const auto &m_asym = c_symm.symmetry_unique_molecules()[asym_idx];
             auto &n = uc_neighbors[i];
-            fmt::print("Molecule {} has {} neighbours within {:.3f}\n", i,
-                       n.size(), cg_radius);
-            occ::log::debug("uc = {} asym = {}\n", i, asym_idx);
+            occ::log::debug("Molecule {} has {} neighbours within {:.3f}", i,
+                            n.size(), cg_radius);
+            occ::log::debug("Unit cell index = {}, asymmetric index = {}", i,
+                            asym_idx);
             int s_int = m.asymmetric_unit_symop()(0);
 
             SymmetryOperation symop(s_int);
 
             const auto &rotation = symop.rotation();
             occ::log::debug(
-                "Asymmetric unit symop: {} (has handedness change: {})\n",
+                "Asymmetric unit symop: {} (has handedness change: {})",
                 symop.to_string(), rotation.determinant() < 0);
 
-            occ::log::debug("Neighbors for unit cell molecule {} ({})\n", i,
+            occ::log::debug("Neighbors for unit cell molecule {} ({})", i,
                             n.size());
 
-            occ::log::debug("{:<7s} {:>7s} {:>10s} {:>7s} {:>7s}\n", "N", "b",
+            occ::log::debug("{:<7s} {:>7s} {:>10s} {:>7s} {:>7s}", "N", "b",
                             "Tb", "E_int", "R");
 
             size_t j = 0;
@@ -654,7 +657,7 @@ int main(int argc, char **argv) {
 
                 dimer.set_interaction_energy(e_int);
                 occ::log::debug(
-                    "{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f} {}\n", j, idx_b,
+                    "{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f} {}", j, idx_b,
                     fmt::format("{},{},{}", shift_b[0], shift_b[1], shift_b[2]),
                     e_int, rc, match_type);
                 j++;
@@ -664,8 +667,8 @@ int main(int argc, char **argv) {
         {
             std::string kmcpp_structure_filename =
                 fmt::format("{}_kmcpp.json", basename);
-            fmt::print("Writing kmcpp structure file to '{}'\n",
-                       kmcpp_structure_filename);
+            occ::log::info("Writing kmcpp structure file to '{}'",
+                           kmcpp_structure_filename);
             occ::io::kmcpp::InputWriter kmcpp_structure_writer(
                 kmcpp_structure_filename);
             kmcpp_structure_writer.write(c_symm, uc_dimers, solution_terms_uc);
@@ -674,8 +677,8 @@ int main(int argc, char **argv) {
         // write CG net file
         {
             std::string cg_net_filename = fmt::format("{}_net.txt", basename);
-            fmt::print("Writing crystalgrower net file to '{}'\n",
-                       cg_net_filename);
+            occ::log::info("Writing crystalgrower net file to '{}'",
+                           cg_net_filename);
             occ::io::crystalgrower::NetWriter cg_net_writer(cg_net_filename);
             cg_net_writer.write(c_symm, uc_dimers);
         }
@@ -690,13 +693,13 @@ int main(int argc, char **argv) {
         fmt::print(error_format, ex.what());
         return 1;
     } catch (...) {
-        fmt::print("Exception:\n- Unknown...\n");
+        occ::log::critical("Exception:\n- Unknown...\n");
         return 1;
     }
 
     global_timer.stop();
-    fmt::print("Program exiting successfully after {:.6f} seconds\n",
-               global_timer.read());
+    occ::log::info("Program exiting successfully after {:.6f} seconds",
+                   global_timer.read());
 
     return 0;
 }

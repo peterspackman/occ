@@ -264,8 +264,8 @@ calculate_solvated_surfaces(const std::string &basename,
         fs::path fchk_path(
             fmt::format("{}_{}_{}.fchk", basename, index, solvent_name));
         if (fs::exists(props_path)) {
-            fmt::print("Loading surface properties from {}\n",
-                       props_path.string());
+            occ::log::info("Loading surface properties from {}",
+                           props_path.string());
             {
                 std::ifstream ifs(props_path.string());
                 auto jf = nlohmann::json::parse(ifs);
@@ -273,8 +273,8 @@ calculate_solvated_surfaces(const std::string &basename,
             }
 
             if (fs::exists(fchk_path)) {
-                fmt::print("Loading solvated wavefunction from {}\n",
-                           fchk_path.string());
+                occ::log::info("Loading solvated wavefunction from {}",
+                               fchk_path.string());
                 using occ::io::FchkReader;
                 FchkReader fchk(fchk_path.string());
                 solvated_wfns.emplace_back(Wavefunction(fchk));
@@ -282,10 +282,11 @@ calculate_solvated_surfaces(const std::string &basename,
                 occ::qm::AOBasis basis =
                     occ::qm::AOBasis::load(wfn.atoms, basis_name);
                 double original_energy = wfn.energy.total;
-                fmt::print("Total energy (gas) {:.3f}\n", original_energy);
+                occ::log::debug("Total energy (gas) {:.3f}", original_energy);
                 basis.set_pure(false);
-                fmt::print("Loaded basis set, {} shells, {} basis functions\n",
-                           basis.size(), basis.nbf());
+                occ::log::debug(
+                    "Loaded basis set, {} shells, {} basis functions",
+                    basis.size(), basis.nbf());
                 occ::dft::DFT ks(method, basis, SpinorbitalKind::Restricted);
                 SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
                 SCF<SolvationCorrectedProcedure<DFT>,
@@ -310,10 +311,10 @@ calculate_solvated_surfaces(const std::string &basename,
             occ::qm::AOBasis basis =
                 occ::qm::AOBasis::load(wfn.atoms, basis_name);
             double original_energy = wfn.energy.total;
-            fmt::print("Total energy (gas) {:.3f}\n", original_energy);
+            occ::log::debug("Total energy (gas) {:.3f}", original_energy);
             basis.set_pure(false);
-            fmt::print("Loaded basis set, {} shells, {} basis functions\n",
-                       basis.size(), basis.nbf());
+            occ::log::debug("Loaded basis set, {} shells, {} basis functions",
+                            basis.size(), basis.nbf());
             occ::dft::DFT ks(method, basis, SpinorbitalKind::Restricted);
             SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
             SCF<SolvationCorrectedProcedure<DFT>, SpinorbitalKind::Restricted>
@@ -370,26 +371,27 @@ calculate_solvated_surfaces(const std::string &basename,
                 (Gt + Gr) / occ::units::AU_TO_KJ_PER_MOL;
 
             props.dg_ele = e - original_energy - esolv;
-            occ::log::debug("total e_solv {:12.6f} ({:.3f} kJ/mol)\n", esolv,
+            occ::log::debug("total e_solv {:12.6f} ({:.3f} kJ/mol)", esolv,
                             esolv * occ::units::AU_TO_KJ_PER_MOL);
 
-            fmt::print("SCF difference         (au)       {: 9.3f}\n",
-                       e - original_energy);
-            fmt::print("SCF difference         (kJ/mol)   {: 9.3f}\n",
-                       occ::units::AU_TO_KJ_PER_MOL * (e - original_energy));
-            fmt::print("total E solv (surface) (kj/mol)   {: 9.3f}\n",
-                       esolv * occ::units::AU_TO_KJ_PER_MOL);
-            fmt::print("orbitals E_solv        (kj/mol)   {: 9.3f}\n",
-                       props.dg_ele * occ::units::AU_TO_KJ_PER_MOL);
-            fmt::print("CDS E_solv   (surface) (kj/mol)   {: 9.3f}\n",
-                       props.e_cds.array().sum() *
-                           occ::units::AU_TO_KJ_PER_MOL);
-            fmt::print("nuc E_solv   (surface) (kj/mol)   {: 9.3f}\n",
-                       nuc.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
-            fmt::print("pol E_solv   (surface) (kj/mol)   {: 9.3f}\n",
-                       pol.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
-            fmt::print("ele E_solv   (surface) (kj/mol)   {: 9.3f}\n",
-                       elec.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
+            occ::log::info("SCF difference         (au)       {: 9.3f}",
+                           e - original_energy);
+            occ::log::debug("SCF difference         (kJ/mol)   {: 9.3f}",
+                            occ::units::AU_TO_KJ_PER_MOL *
+                                (e - original_energy));
+            occ::log::debug("total E solv (surface) (kj/mol)   {: 9.3f}",
+                            esolv * occ::units::AU_TO_KJ_PER_MOL);
+            occ::log::debug("orbitals E_solv        (kj/mol)   {: 9.3f}",
+                            props.dg_ele * occ::units::AU_TO_KJ_PER_MOL);
+            occ::log::debug("CDS E_solv   (surface) (kj/mol)   {: 9.3f}",
+                            props.e_cds.array().sum() *
+                                occ::units::AU_TO_KJ_PER_MOL);
+            occ::log::debug("nuc E_solv   (surface) (kj/mol)   {: 9.3f}",
+                            nuc.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
+            occ::log::debug("pol E_solv   (surface) (kj/mol)   {: 9.3f}",
+                            pol.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
+            occ::log::debug("ele E_solv   (surface) (kj/mol)   {: 9.3f}",
+                            elec.array().sum() * occ::units::AU_TO_KJ_PER_MOL);
 
             props.esolv = e - original_energy;
             props.e_ele =
