@@ -1,7 +1,8 @@
 CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"
-    GIT_TAG master
+    VERSION "9.1.0"
+    GIT_TAG "9.1.0"
 )
 
 CPMAddPackage(
@@ -14,25 +15,25 @@ CPMAddPackage(
 CPMAddPackage(
     NAME scnlib
     GITHUB_REPOSITORY "eliaskosunen/scnlib"
-    GIT_TAG master
+    GIT_TAG "master"
 )
 
 CPMAddPackage(
     NAME gau2grid
     GITHUB_REPOSITORY "dgasmith/gau2grid"
-    GIT_TAG master
+    GIT_TAG "master"
 )
 
 CPMAddPackage(
-    NAME nlohmann_json
-    GITHUB_REPOSITORY nlohmann/json
-    VERSION 3.10.4
+    NAME "nlohmann_json"
+    GITHUB_REPOSITORY "nlohmann/json"
+    VERSION "3.10.4"
 )
 
 CPMAddPackage(
     NAME CLI11
-    GITHUB_REPOSITORY CLIUtils/CLI11
-    GIT_TAG 1a26afab049bb75c0523a754d62b961439248d44
+    GITHUB_REPOSITORY "CLIUtils/CLI11"
+    GIT_TAG "1a26afab049bb75c0523a754d62b961439248d44"
 )
 
 if(NOT "${USE_SYSTEM_EIGEN}")
@@ -45,7 +46,7 @@ CPMAddPackage(
 # Add the Eigen library target to link against
 if("${eigen3_ADDED}")
     add_library(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
-    target_include_directories(Eigen3::Eigen INTERFACE ${eigen3_SOURCE_DIR})
+    target_include_directories(Eigen3::Eigen INTERFACE "${eigen3_SOURCE_DIR}")
 endif()
 
 endif()
