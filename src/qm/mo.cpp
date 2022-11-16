@@ -109,11 +109,11 @@ void MolecularOrbitals::rotate(const AOBasis &basis, const Mat3 &rotation) {
             rot = c * rot * cinv;
         }
         if (kind == SpinorbitalKind::Restricted) {
-            occ::log::debug("Restricted MO rotation");
+            occ::log::trace("Restricted MO rotation");
             C.block(bf_first, 0, shell_size, C.cols()) =
                 rot * C.block(bf_first, 0, shell_size, C.cols());
         } else {
-            occ::log::debug("Unrestricted MO rotation");
+            occ::log::trace("Unrestricted MO rotation");
             auto ca = block::a(C);
             auto cb = block::b(C);
             ca.block(bf_first, 0, shell_size, ca.cols()) =
@@ -193,11 +193,11 @@ void MolecularOrbitals::to_cartesian(const AOBasis &bspure,
         Mat T = occ::gto::spherical_to_cartesian_transformation_matrix(l);
 
         if (kind == SpinorbitalKind::Restricted) {
-            occ::log::debug("Restricted MO transform spherical->Cartesian");
+            occ::log::trace("Restricted MO transform spherical->Cartesian");
             Cnew.block(bf_first_cart, 0, shell_size_cart, Cnew.cols()) =
                 T * C.block(bf_first_pure, 0, shell_size_pure, C.cols());
         } else {
-            occ::log::debug("Unrestricted MO transform spherical->Cartesian");
+            occ::log::trace("Unrestricted MO transform spherical->Cartesian");
             auto ca = block::a(C);
             auto cb = block::b(C);
             auto ca_new = block::a(Cnew);
@@ -262,11 +262,11 @@ void MolecularOrbitals::to_spherical(const AOBasis &bscart,
         Mat T = occ::gto::cartesian_to_spherical_transformation_matrix(l);
 
         if (kind == SpinorbitalKind::Restricted) {
-            occ::log::debug("Restricted MO transform Cartesian->spherical");
+            occ::log::trace("Restricted MO transform Cartesian->spherical");
             Cnew.block(bf_first_pure, 0, shell_size_pure, Cnew.cols()) =
                 T * C.block(bf_first_cart, 0, shell_size_cart, C.cols());
         } else {
-            occ::log::debug("Unrestricted MO transform Cartesian->spherical");
+            occ::log::trace("Unrestricted MO transform Cartesian->spherical");
             auto ca = block::a(C);
             auto cb = block::b(C);
             auto ca_new = block::a(Cnew);

@@ -16,7 +16,7 @@ double common_fac(int l, bool spherical) {
 }
 
 Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
-    occ::log::debug("Evaluating decay cutoff (threshold = 1e-12) for AOBasis");
+    occ::log::trace("Evaluating decay cutoff (threshold = 1e-12) for AOBasis");
     occ::timing::start(occ::timing::category::gto);
     size_t nbf = basis.nbf();
     size_t natoms = basis.atoms().size();

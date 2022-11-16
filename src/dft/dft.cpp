@@ -88,7 +88,7 @@ void DFT::set_method(const std::string &method_string, bool unrestricted) {
     }
     double hfx = exact_exchange_factor();
     if (hfx > 0.0)
-        fmt::print("    {} x HF exchange\n", hfx);
+        occ::log::info("    {} x HF exchange", hfx);
 }
 
 void DFT::set_integration_grid(const AtomGridSettings &settings) {
@@ -118,7 +118,7 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
     occ::util::to_lower(method);
 
     auto tokens = occ::util::tokenize(method_string, " ");
-    fmt::print("Functionals:\n");
+    occ::log::info("Functionals:");
     for (const auto &token : tokens) {
         std::string m = token;
         occ::log::debug("Token: {}", m);
@@ -134,16 +134,17 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
                 auto f = DensityFunctional(func.id, polarized);
                 occ::log::debug("scale factor: {}", func.factor);
                 f.set_scale_factor(func.factor);
-                fmt::print("    ");
-                if (func.factor != 1.0)
-                    fmt::print("{} x ", func.factor);
-                fmt::print("{}\n", f.name());
+                if (func.factor != 1.0) {
+                    occ::log::info("    {} x {}", func.factor, f.name());
+                } else {
+                    occ::log::info("    {}\n", f.name());
+                }
                 if (func.hfx > 0.0)
                     f.set_exchange_factor(func.hfx);
                 funcs.push_back(f);
             }
         } else {
-            fmt::print("    {}\n", token);
+            occ::log::info("    {}", token);
             funcs.push_back(DensityFunctional(token, polarized));
         }
     }

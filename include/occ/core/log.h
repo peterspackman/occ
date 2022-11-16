@@ -7,6 +7,7 @@ using spdlog::debug;
 using spdlog::error;
 using spdlog::info;
 using spdlog::set_level;
+using spdlog::trace;
 using spdlog::warn;
 
 namespace level {
