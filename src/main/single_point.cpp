@@ -88,6 +88,9 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
     if (!config.basis.df_name.empty())
         proc.set_density_fitting_basis(config.basis.df_name);
     SCF<T, SK> scf(proc);
+    occ::log::trace("Setting system charge: {}", config.electronic.charge);
+    occ::log::trace("Setting system multiplicity: {}",
+                    config.electronic.multiplicity);
     scf.set_charge_multiplicity(config.electronic.charge,
                                 config.electronic.multiplicity);
     if (!config.basis.df_name.empty())
