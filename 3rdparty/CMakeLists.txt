@@ -78,15 +78,6 @@ if("${LBFGSpp_ADDED}")
     target_include_directories(LBFGSpp::LBFGSpp INTERFACE "${LBFGSpp_SOURCE_DIR}/include")
 endif()
 
-if(NOT "${USE_SYSTEM_ZLIB}")
-CPMAddPackage(
-    NAME zlib
-    URL "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.5.zip"
-    OPTIONS "ZLIB_COMPAT ON" "ZLIB_ENABLE_TESTS OFF"
-)
-add_library(ZLIB::ZLIB ALIAS zlib)
-endif()
-
 CPMAddPackage(
     NAME libcint
     GITHUB_REPOSITORY "sunqm/libcint"

@@ -6,10 +6,10 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <occ/3rdparty/parallel_hashmap/phmap.h>
-#include <occ/core/eigenp.h>
 #include <occ/core/interpolator.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
+#include <occ/core/numpy.h>
 #include <occ/core/units.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>
 #include <occ/geometry/marching_cubes.h>
@@ -275,8 +275,8 @@ int main(int argc, char *argv[]) {
 
         auto [v, f] = as_matrices(basis, vertices, faces);
 
-        enpy::save_npy("verts.npy", v);
-        enpy::save_npy("faces.npy", f);
+        occ::core::numpy::save_npy("verts.npy", v);
+        occ::core::numpy::save_npy("faces.npy", f);
         write_ply_file("surface.ply", vertices, faces);
     } else {
         Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);

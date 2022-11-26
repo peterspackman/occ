@@ -1,6 +1,6 @@
 #include <fmt/core.h>
-#include <occ/core/eigenp.h>
 #include <occ/core/element.h>
+#include <occ/core/numpy.h>
 #include <occ/slater/slaterbasis.h>
 
 int main(int argc, char *argv[]) {
@@ -17,9 +17,9 @@ int main(int argc, char *argv[]) {
         grad_rho.row(i - 1) = b.grad_rho(domain);
         fmt::print("Atomic number {}\n", i);
     }
-    enpy::save_npy("domain.npy", domain);
-    enpy::save_npy("rho.npy", rho);
-    enpy::save_npy("grad_rho.npy", grad_rho);
+    occ::core::numpy::save_npy("domain.npy", domain);
+    occ::core::numpy::save_npy("rho.npy", rho);
+    occ::core::numpy::save_npy("grad_rho.npy", grad_rho);
 
     return 0;
 }

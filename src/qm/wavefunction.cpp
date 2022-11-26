@@ -1,6 +1,5 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <occ/core/eigenp.h>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -508,53 +507,6 @@ void Wavefunction::save(FchkWriter &fchk) {
                         energy.kinetic);
     fchk.set_scalar("SCF ratio", energy.total);
     fchk.set_scalar("Total ratio", energy.total);
-
-    occ::timing::stop(occ::timing::category::io);
-}
-
-void Wavefunction::save_npz(const std::string &filename) {
-    occ::timing::start(occ::timing::category::io);
-
-    int scalar_i;
-    double scalar_d;
-    std::vector<size_t> scalar_shape{1}, vector_shape{2};
-
-    auto set_scalar = [&](auto name, auto val, const std::string mode = "a") {
-        enpy::save_npz(filename, name, &val, scalar_shape, mode);
-    };
-    set_scalar("n_atom", atoms.size(), "w");
-    set_scalar("charge", charge());
-    set_scalar("multiplicity", multiplicity());
-    set_scalar("e_scf", energy.total);
-    set_scalar("n_electron", num_electrons);
-    set_scalar("n_alpha", num_alpha);
-    set_scalar("n_beta", num_beta);
-    set_scalar("n_bf", nbf);
-
-    auto set_matrix = [&](auto name, auto val) {
-        enpy::save_npz(filename, name, val, "a");
-    };
-
-    set_matrix("atomic_numbers", atomic_numbers());
-    set_matrix("positions", positions());
-    if (mo.D.rows())
-        set_matrix("density_matrix", mo.D);
-    if (mo.C.rows())
-        set_matrix("mos", mo.C);
-    if (mo.Cocc.rows())
-        set_matrix("occupied_mos", mo.Cocc);
-    if (mo.energies.rows())
-        set_matrix("mo_energies", mo.energies);
-    if (T.rows())
-        set_matrix("kinetic_matrix", T);
-    if (V.rows())
-        set_matrix("nuclear_attraction_matrix", V);
-    if (H.rows())
-        set_matrix("core_hamiltonian", H);
-    if (J.rows())
-        set_matrix("coulomb_matrix", J);
-    if (K.rows())
-        set_matrix("exchange_matrix", K);
 
     occ::timing::stop(occ::timing::category::io);
 }

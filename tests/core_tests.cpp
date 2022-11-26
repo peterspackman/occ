@@ -2,12 +2,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include <fmt/ostream.h>
 #include <occ/core/dimer.h>
-#include <occ/core/eigenp.h>
 #include <occ/core/element.h>
 #include <occ/core/graph.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
 #include <occ/core/multipole.h>
+#include <occ/core/numpy.h>
 #include <occ/core/optimize.h>
 #include <occ/core/point_group.h>
 #include <occ/core/quasirandom.h>
@@ -198,20 +198,8 @@ TEST_CASE("Write eigen array to numpy .npy file", "[numpy]") {
     Eigen::MatrixXd i = Eigen::MatrixXd::Identity(6, 6);
     i(0, 4) = 4;
     const std::string filename = "identity.npy";
-    enpy::save_npy(filename, i);
-    enpy::NumpyArray arr = enpy::load_npy(filename);
-    Eigen::Map<Eigen::MatrixXd, 0> m(arr.data<double>(), arr.shape[0],
-                                     arr.shape[1]);
-    REQUIRE(all_close(i, m));
-    std::remove(filename.c_str());
-}
-
-TEST_CASE("Write eigen array to compressed numpy .npz file", "[numpy]") {
-    Eigen::MatrixXd i = Eigen::MatrixXd::Identity(6, 6);
-    i(0, 4) = 4;
-    const std::string filename = "test.npz";
-    enpy::save_npz(filename, "identity", i);
-    enpy::NumpyArray arr = enpy::load_npz(filename, "identity");
+    occ::core::numpy::save_npy(filename, i);
+    auto arr = occ::core::numpy::load_npy(filename);
     Eigen::Map<Eigen::MatrixXd, 0> m(arr.data<double>(), arr.shape[0],
                                      arr.shape[1]);
     REQUIRE(all_close(i, m));
