@@ -25,7 +25,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install -y python3-numpy
+        sudo apt install -y python3-numpy libpthread-stubs0-dev
 
     - name: Cache CPM Dependencies
       uses: actions/cache@v3
