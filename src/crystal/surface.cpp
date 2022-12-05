@@ -8,10 +8,10 @@ template <typename T>
 void loop_over_miller_indices(T &func, const Crystal &c, double dmin,
                               double dmax = 1.0, bool unique = true) {
     const auto &uc = c.unit_cell();
-    MillerIndex limits = uc.hkl_limits(dmin);
+    HKL limits = uc.hkl_limits(dmin);
     const auto rasu = c.space_group().reciprocal_asu();
     const Mat3 &lattice = uc.reciprocal();
-    MillerIndex m;
+    HKL m;
     for (m.h = -limits.h; m.h <= limits.h; m.h++)
         for (m.k = -limits.k; m.k <= limits.k; m.k++)
             for (m.l = -limits.l; m.l <= limits.l; m.l++) {
@@ -23,7 +23,7 @@ void loop_over_miller_indices(T &func, const Crystal &c, double dmin,
             }
 }
 
-Surface::Surface(const MillerIndex &miller, const Crystal &crystal)
+Surface::Surface(const HKL &miller, const Crystal &crystal)
     : m_hkl{miller}, m_lattice(crystal.unit_cell().direct()),
       m_reciprocal_lattice(crystal.unit_cell().reciprocal()) {
     m_depth = 1.0 / d();
@@ -42,7 +42,7 @@ void Surface::print() const {
 
 std::vector<Surface> generate_surfaces(const Crystal &c, double d_max) {
     std::vector<Surface> result;
-    auto f = [&](const MillerIndex &m) { result.emplace_back(Surface(m, c)); };
+    auto f = [&](const HKL &m) { result.emplace_back(Surface(m, c)); };
     loop_over_miller_indices(f, c, 0.05, 0.5);
     std::sort(result.begin(), result.end(),
               [](const Surface &a, const Surface &b) {

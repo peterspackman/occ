@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
 #include <occ/core/linear_algebra.h>
-#include <occ/crystal/miller.h>
+#include <occ/crystal/hkl.h>
 
 namespace occ::crystal {
 
@@ -9,7 +9,7 @@ class Crystal;
 
 class Surface {
   public:
-    Surface(const MillerIndex &, const Crystal &);
+    Surface(const HKL &, const Crystal &);
 
     double depth() const;
     double d() const;
@@ -17,7 +17,7 @@ class Surface {
     std::array<double, 3> dipole() const;
 
   private:
-    MillerIndex m_hkl;
+    HKL m_hkl;
     double m_depth{0.0};
     Mat3 m_lattice;
     Mat3 m_reciprocal_lattice;

@@ -4,6 +4,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
 #include <occ/crystal/asymmetric_unit.h>
+#include <occ/crystal/hkl.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/unitcell.h>
 #include <vector>
@@ -14,20 +15,6 @@ using occ::IVec;
 using occ::Mat3N;
 using occ::core::Molecule;
 using occ::core::graph::PeriodicBondGraph;
-
-struct HKL {
-    int h{0}, k{0}, l{0};
-    static HKL maximum() {
-        return {std::numeric_limits<int>::max(),
-                std::numeric_limits<int>::max(),
-                std::numeric_limits<int>::max()};
-    }
-    static HKL minimum() {
-        return {std::numeric_limits<int>::min(),
-                std::numeric_limits<int>::min(),
-                std::numeric_limits<int>::min()};
-    }
-};
 
 /**
  * \brief A class representing a region of atoms in a crystal lattice.

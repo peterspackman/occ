@@ -8,6 +8,7 @@ SpaceGroup::SpaceGroup(int number) {
     for (const auto &op : m_sgdata->operations()) {
         m_symops.push_back(SymmetryOperation(op.triplet()));
     }
+    update_from_sgdata();
 }
 
 SpaceGroup::SpaceGroup(const std::string &symbol) {
@@ -22,6 +23,7 @@ SpaceGroup::SpaceGroup(const std::string &symbol) {
         occ::log::error(
             "Could not find matching space group: some data will be missing");
     }
+    update_from_sgdata();
 }
 
 SpaceGroup::SpaceGroup(const std::vector<std::string> &symops) {
@@ -44,6 +46,7 @@ SpaceGroup::SpaceGroup(const std::vector<std::string> &symops) {
             m_symops.push_back(SymmetryOperation(op));
         }
     }
+    update_from_sgdata();
 }
 
 SpaceGroup::SpaceGroup(const std::vector<SymmetryOperation> &symops)
@@ -64,6 +67,25 @@ SpaceGroup::SpaceGroup(const std::vector<SymmetryOperation> &symops)
         occ::log::error(
             "Could not find matching space group: some data will be missing");
     }
+    update_from_sgdata();
+}
+
+void SpaceGroup::update_from_sgdata() {
+    if (m_sgdata != nullptr) {
+        m_symbol = m_sgdata->hm;
+        m_short_name = m_sgdata->short_name();
+        m_number = m_sgdata->number;
+    }
+}
+
+int SpaceGroup::number() const { return m_number; }
+
+const std::string &SpaceGroup::symbol() const { return m_symbol; }
+
+const std::string &SpaceGroup::short_name() const { return m_short_name; }
+
+const std::vector<SymmetryOperation> &SpaceGroup::symmetry_operations() const {
+    return m_symops;
 }
 
 bool SpaceGroup::has_H_R_choice() const {

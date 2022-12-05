@@ -14,7 +14,7 @@ using occ::Mat3N;
 using occ::MatN3;
 using occ::crystal::AsymmetricUnit;
 using occ::crystal::Crystal;
-using occ::crystal::MillerIndex;
+using occ::crystal::HKL;
 using occ::crystal::SpaceGroup;
 using occ::crystal::Surface;
 using occ::crystal::SymmetryOperation;
@@ -316,7 +316,7 @@ auto acetic_acid_crystal() {
 
 TEST_CASE("Crystal Surface construction", "[crystal, surface]") {
     Crystal a = acetic_acid_crystal();
-    MillerIndex m{0, 1, 0};
+    HKL m{0, 1, 0};
     Surface surf(m, a);
     surf.print();
 }

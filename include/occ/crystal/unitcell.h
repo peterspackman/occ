@@ -2,7 +2,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
-#include <occ/crystal/miller.h>
+#include <occ/crystal/hkl.h>
 #include <string>
 
 namespace occ::crystal {
@@ -55,7 +55,7 @@ class UnitCell {
     auto c_star_vector() const { return m_reciprocal.col(2); }
     const auto &lengths() const { return m_lengths; }
 
-    MillerIndex hkl_limits(double d_min) const;
+    HKL hkl_limits(double d_min) const;
 
   private:
     void update_cell_matrices();
