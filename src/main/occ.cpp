@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     app.add_option("-d,--df-basis", df_basis, "basis set");
     app.add_option("-t,--threads", threads, "number of threads");
     app.add_option("-c,--charge", charge, "system net charge");
-    app.add_option("--multiplicity", charge, "system multiplicity");
+    app.add_option("--multiplicity", multiplicity, "system multiplicity");
     app.add_flag("-u,--unrestricted", unrestricted, "use unrestricted SCF");
     app.add_option("-v,--verbosity", verbosity, "logging verbosity");
     app.add_flag("--spherical", spherical, "use spherical basis sets");
@@ -134,11 +134,16 @@ int main(int argc, char *argv[]) {
         config.method.name = method;
         config.electronic.charge = charge;
         config.basis.spherical = spherical;
-        if (df_basis)
+
+        if (df_basis) {
             config.basis.df_name = *df_basis;
-        if (config.electronic.multiplicity != 1 || unrestricted ||
+        }
+
+        if ((config.electronic.multiplicity != 1) || unrestricted ||
             config.method.name == "uhf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
+            if (config.method.name == "rhf")
+                config.method.name = "uhf";
             occ::log::info("Spinorbital kind: Unrestricted");
         } else if (config.method.name == "ghf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::General;

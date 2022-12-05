@@ -34,7 +34,6 @@ target_link_libraries(occ_core
     LBFGSpp::LBFGSpp
     scn::scn
     spdlog::spdlog
-    ZLIB::ZLIB
     OpenMP::OpenMP_CXX
 )
 target_include_directories(occ_core PUBLIC 
