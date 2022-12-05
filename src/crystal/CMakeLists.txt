@@ -1,4 +1,5 @@
 add_library(occ_crystal
+    "${CMAKE_CURRENT_SOURCE_DIR}/asymmetric_unit.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp"
