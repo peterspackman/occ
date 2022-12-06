@@ -65,7 +65,7 @@ class Molecule {
      * Construct a Molecule from a vector of atomic numbers a vector
      * arrays of positions
      *
-     * \param els std::vector<N> of atomic numbers, convertible to int
+     * \param nums std::vector<N> of atomic numbers, convertible to int
      * \param pos std::vector<std::array<D, 3> > of atomic
      * positions, convertible to double.
      *
@@ -194,11 +194,11 @@ class Molecule {
     /**
      * Set the unit cell offset for this Molecule (default 000)
      *
-     * \params a the desired CellShift
+     * \param shift the desired CellShift
      *
      * See Molecule::cell_shift
      */
-    void set_cell_shift(const CellShift &);
+    void set_cell_shift(const CellShift &shift);
 
     /**
      * Get the unit cell offset for this Molecule (default 000)
@@ -332,7 +332,7 @@ class Molecule {
     /**
      * Set the net charge of this Molecule.
      *
-     * \params c an integer representing the net charge.
+     * \param c an integer representing the net charge.
      *
      * No checks are performed to ensure this charge is sensible.
      */
@@ -380,7 +380,7 @@ class Molecule {
      * Set the index into Crystal::symmetry_unique_molecules for this
      * Molecule.
      *
-     * \params idx an integer representing the index.
+     * \param idx an integer representing the index.
      *
      * \warning No check is performed to ensure this is a sensible value.
      */
@@ -401,7 +401,7 @@ class Molecule {
      * Set the index into Crystal::unit_cell_molecules for this
      * Molecule.
      *
-     * \params idx an integer representing the index.
+     * \param idx an integer representing the index.
      *
      * \warning No check is performed to ensure this is a sensible value.
      */
@@ -411,8 +411,8 @@ class Molecule {
      * Set the transformation from the corresponding molecule in the
      * asymmetric unit of a Crystal to this geometry.
      *
-     * \params rot A Mat3 representing the rotation part of the transform.
-     * \params trans A Vec3 representing the translation part of the transform.
+     * \param rot A Mat3 representing the rotation part of the transform.
+     * \param trans A Vec3 representing the translation part of the transform.
      *
      * By default the rotation is the identity matrix, and the translation is
      * the zero vector. Molecule::set_asymmetric_molecule_index should also
@@ -564,7 +564,7 @@ class Molecule {
      * Transform this Molecule by the given homogeneous transformation matrix,
      * with rotation performed about the specified origin.
      *
-     * \param r The homogeneous transformation matrix.
+     * \param t The homogeneous transformation matrix.
      * \param o The desired Origin about which to rotate.
      *
      * All rotations will be in the Cartesian axis frame (though not necessarily
@@ -578,7 +578,7 @@ class Molecule {
      * Transform this Molecule by the given homogeneous transformation matrix,
      * with rotation performed about the specified origin.
      *
-     * \param r The homogeneous transformation matrix.
+     * \param t The homogeneous transformation matrix.
      * \param o The desired position about which to rotate (Angstroms).
      *
      * All rotations will be in the Cartesian axis frame (though not necessarily
@@ -644,14 +644,14 @@ class Molecule {
      *
      * See Molecule::rotate if you wish to modify this Molecule.
      */
-    Molecule rotated(const Mat3 &r, const Vec3 &) const;
+    Molecule rotated(const Mat3 &r, const Vec3 &o) const;
 
     /**
      * A copy of this Molecule transformed by the given homogeneous
      * transformation matrix, with rotation performed about the specified
      * origin.
      *
-     * \param r The homogeneous transformation matrix.
+     * \param t The homogeneous transformation matrix.
      * \param o The desired origin about which to rotate.
      *
      * \returns transformed copy of this Molecule.
@@ -668,7 +668,7 @@ class Molecule {
      * transformation matrix, with rotation performed about the specified
      * origin.
      *
-     * \param r The homogeneous transformation matrix.
+     * \param t The homogeneous transformation matrix.
      * \param o The desired position about which to rotate (Angstroms).
      *
      * \returns transformed copy of this Molecule.
@@ -678,7 +678,7 @@ class Molecule {
      *
      * See Molecule::transforme if you wish to modify this Molecule.
      */
-    Molecule transformed(const Mat4 &t, const Vec3 &) const;
+    Molecule transformed(const Mat4 &t, const Vec3 &o) const;
 
     /**
      * A copy of this Molecule translated by the given vector.
@@ -688,7 +688,7 @@ class Molecule {
      *
      * See Molecule::translate if you wish to modify this Molecule.
      */
-    Molecule translated(const Vec3 &) const;
+    Molecule translated(const Vec3 &t) const;
 
     /**
      * Determine whether this Molecule and another can be sensibly compared.
@@ -701,10 +701,12 @@ class Molecule {
      * order (i.e. the same chemical composition, and the order of atoms is not
      * permuted.
      */
-    bool is_comparable_to(const Molecule &) const;
+    bool is_comparable_to(const Molecule &rhs) const;
 
     /**
      * Determine whether this Molecule and another are equivalent.
+     *
+     * \param rhs The other Molecule object to check equivalence
      *
      * \returns true if they are comparable Molecules per the definition, false
      * otherwise.
@@ -713,7 +715,7 @@ class Molecule {
      * a) they are comparable (i.e. all atomic numbers are the same) and b)
      * all interatomic distances are the same.
      */
-    bool is_equivalent_to(const Molecule &) const;
+    bool is_equivalent_to(const Molecule &rhs) const;
 
   private:
     int m_charge{0};

@@ -4,6 +4,9 @@
 namespace occ::crystal {
 
 SpaceGroup::SpaceGroup(int number) {
+    if (number > 230)
+        throw std::invalid_argument(
+            "Space group number must be in range [1, 230]");
     m_sgdata = gemmi::find_spacegroup_by_number(number);
     for (const auto &op : m_sgdata->operations()) {
         m_symops.push_back(SymmetryOperation(op.triplet()));
@@ -20,8 +23,9 @@ SpaceGroup::SpaceGroup(const std::string &symbol) {
             m_symops.push_back(SymmetryOperation(op.triplet()));
         }
     } else {
-        occ::log::error(
+        occ::log::critical(
             "Could not find matching space group: some data will be missing");
+        throw std::invalid_argument("Could not find matching space group");
     }
     update_from_sgdata();
 }

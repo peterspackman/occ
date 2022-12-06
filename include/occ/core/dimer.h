@@ -125,7 +125,7 @@ class Dimer {
      * \returns a Vec object representing the van der Waals radii of
      * atoms in the Dimer in the specified (AB or BA) order, in Angstroms.
      */
-    Vec vdw_radii(MoleculeOrder = MoleculeOrder::AB) const;
+    Vec vdw_radii(MoleculeOrder order = MoleculeOrder::AB) const;
 
     /**
      * Vector of atomic numbers for the atoms in this Dimer.
@@ -136,7 +136,7 @@ class Dimer {
      * \returns an IVec object representing the atomic numbers of
      * atoms in the Dimer in the specified (AB or BA) order.
      */
-    IVec atomic_numbers(MoleculeOrder = MoleculeOrder::AB) const;
+    IVec atomic_numbers(MoleculeOrder order = MoleculeOrder::AB) const;
 
     /**
      * The positions of all atoms in this Dimer.
@@ -147,7 +147,7 @@ class Dimer {
      * \returns A `(3, N)` matrix of atomic positions for the atoms in this
      * dimer, in Angstroms
      */
-    Mat3N positions(MoleculeOrder = MoleculeOrder::AB) const;
+    Mat3N positions(MoleculeOrder order = MoleculeOrder::AB) const;
 
     /**
      * The total number of electrons in this Dimer
@@ -165,7 +165,7 @@ class Dimer {
      * \returns an integer with value equal to the sum of the net charge of
      * Molecule A and the net charge of Molecule B.
      */
-    inline int charge(int) const { return m_a.charge() + m_b.charge(); };
+    inline int charge() const { return m_a.charge() + m_b.charge(); };
 
     /**
      * The net spin multiplicity of this Dimer
@@ -173,7 +173,7 @@ class Dimer {
      * \returns an integer with value equal to net spin multiplicity when
      * combining Molecule A and Molecule B.
      */
-    inline int multiplicity(int) const {
+    inline int multiplicity() const {
         return m_a.multiplicity() + m_b.multiplicity() - 1;
     };
 
@@ -244,7 +244,7 @@ class Dimer {
      * Uses Dimer::operator== to find the result.
      *
      */
-    inline bool operator!=(const Dimer &b) const { return !(*this == b); }
+    inline bool operator!=(const Dimer &rhs) const { return !(*this == rhs); }
 
     /**
      * Check if two dimers are identical in the opposite reference frame

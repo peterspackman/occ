@@ -119,9 +119,9 @@ struct CrystalDimers {
 };
 
 /**
- * \brief A class representing a crystal lattice.
+ * \brief A class representing a crystal structure.
  *
- * A crystal lattice is a periodic arrangement of atoms in 3D space,
+ * A crystal is a periodic arrangement of atoms in 3D space,
  * characterized by its unit cell, space group, and the atoms in its
  * asymmetric unit. This class provides methods to access and manipulate
  * the properties of the crystal lattice, such as its atoms, bonds,
@@ -293,15 +293,15 @@ class Crystal {
      * inside the range of these corners, generated from the unit cell atoms,
      * translated to all possible unit cells.
      *
-     * \param hkl1 The Miller indices (hkl) of the first plane defining
+     * \param lower The Miller indices (hkl) of the
      * first corner of the slab.
-     * \param hkl2 The Miller indices (hkl) of the
+     * \param upper The Miller indices (hkl) of the
      * second corner of the slab.
      *
      * \return A `CrystalAtomRegion` object containing the atoms in the
      * specified slab of the lattice.
      */
-    CrystalAtomRegion slab(const HKL &, const HKL &) const;
+    CrystalAtomRegion slab(const HKL &lower, const HKL &upper) const;
 
     /**
      * \brief Returns the atoms in the unit cell of the crystal lattice.
@@ -423,12 +423,12 @@ class Crystal {
      * A dimer is a pair of molecules in the crystal.
      *
      * \param distance_tolerance The maximum distance between two atoms in order
-     * for them to be considered.      *
+     * for them to be considered.
      *
      * \return A `CrystalDimers` object containing the symmetry-unique dimers in
      * the crystal.
      */
-    CrystalDimers symmetry_unique_dimers(double) const;
+    CrystalDimers symmetry_unique_dimers(double distance_tolerance) const;
 
     /**
      * \brief Returns the neighbouring dimers for the unit cell molecules
@@ -437,12 +437,12 @@ class Crystal {
      * A dimer is a pair of molecules in the crystal.
      *
      * \param distance_tolerance The maximum distance between two atoms in order
-     * for them to be considered.      *
+     * for them to be considered.
      *
      * \return A `CrystalDimers` object containing the unit cell dimers in
      * the crystal.
      */
-    CrystalDimers unit_cell_dimers(double) const;
+    CrystalDimers unit_cell_dimers(double distance_tolerance) const;
     /**
      * \brief Returns a string representing the symmetry of a dimer in the
      * crystal lattice.
@@ -457,7 +457,7 @@ class Crystal {
      * \return A string representing the symmetry of the dimer, composed of
      * rotation and translation components
      */
-    std::string dimer_symmetry_string(const occ::core::Dimer &) const;
+    std::string dimer_symmetry_string(const occ::core::Dimer &dimer) const;
 
     /**
      * \brief Creates a primitive supercell from a crystal lattice.
@@ -476,7 +476,7 @@ class Crystal {
      * \return A new `Crystal` object representing the primitive supercell of
      * the original lattice.
      */
-    static Crystal create_primitive_supercell(const Crystal &c, HKL);
+    static Crystal create_primitive_supercell(const Crystal &c, HKL hkl);
 
   private:
     AsymmetricUnit m_asymmetric_unit;
