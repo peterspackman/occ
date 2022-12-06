@@ -77,9 +77,6 @@ class SpaceGroup {
     /**
      * \brief Returns the space group number of this space group.
      * \return The space group number.
-     * \example
-     * SpaceGroup sg(3);
-     * int num = sg.number(); // num == 3
      */
     int number() const;
 
@@ -87,9 +84,6 @@ class SpaceGroup {
      * \brief Returns the Hermann-Mauguin (international tables) symbol for this
      * object
      * \return The space group symbol.
-     * \example
-     * SpaceGroup sg(3);
-     * std::string symbol = sg.symbol(); // symbol == "P 1 2 1"
      */
     const std::string &symbol() const;
 
@@ -97,9 +91,6 @@ class SpaceGroup {
      * \brief Returns the Hermann-Mauguin (international tables) symbol for this
      * object, shortened e.g P 1 2 1 -> P2
      * \return The space group name.
-     * \example
-     * SpaceGroup sg(3);
-     * std::string name = sg.short_name(); // name == "P2"
      */
     const std::string &short_name() const;
 
@@ -107,13 +98,6 @@ class SpaceGroup {
      * \brief Returns the list of symmetry operations for this space group.
      *
      * \return The list of symmetry operations.
-     *
-     * \example
-     * SpaceGroup sg(3);
-     * std::vector<SymmetryOperation> ops = sg.symmetry_operations();
-     * for (const SymmetryOperation &op : ops) {
-     *   // do something with each symmetry operation
-     * }
      */
     const std::vector<SymmetryOperation> &symmetry_operations() const;
 
@@ -122,10 +106,6 @@ class SpaceGroup {
      * hexagonal (H) and rhombohedral (R) settings.
      *
      * \return true if there's a choice to be made, false otherwise
-     *
-     * \example
-     * bool x = SpaceGroup(3).has_H_R_choice(); // x == false
-     * bool y = SpaceGroup(169).has_H_R_choice(); // y == true
      */
     bool has_H_R_choice() const;
 
@@ -139,11 +119,6 @@ class SpaceGroup {
      * provided and this SpaceGroup has 8 symmetry operations, then the
      * resulting `IVec` will have dimension (N*8,) and the `Mat3N` of
      * coordinates will have dimension (3, N*8).
-     *
-     * \example
-     * Mat3N points(3, 100); // unit cell atomic positions  or similar
-     * auto [symop_id, transformed] =
-     * SpaceGroup(14).apply_all_symmetry_operations(points);
      */
     std::pair<IVec, Mat3N> apply_all_symmetry_operations(const Mat3N &) const;
 

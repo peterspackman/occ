@@ -2,6 +2,7 @@
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/crystalgrower.h>
+#include <string>
 
 namespace occ::io::crystalgrower {
 
@@ -70,6 +71,32 @@ NetWriter::NetWriter(const std::string &filename)
 
 NetWriter::NetWriter(std::ostream &stream) : m_dest(stream) {}
 
+struct FormulaIndex {
+    int count{1};
+    char letter{'A'};
+};
+
+std::vector<FormulaIndex> build_formula_indices_for_symmetry_unique_molecules(
+    const occ::crystal::Crystal &crystal) {
+    std::vector<FormulaIndex> result;
+    phmap::flat_hash_map<std::string, FormulaIndex> formula_count;
+    for (const auto &mol : crystal.symmetry_unique_molecules()) {
+        std::string formula = occ::core::chemical_formula(mol.elements());
+        auto it = formula_count.find(formula);
+        FormulaIndex formula_index;
+        if (it != formula_count.end()) {
+            it->second.count++;
+            formula_index = it->second;
+        } else {
+            fmt::print("not found\n");
+            formula_index.letter += static_cast<char>(formula_count.size());
+            formula_count.insert({formula, formula_index});
+        }
+        result.push_back(formula_index);
+    }
+    return result;
+}
+
 void NetWriter::write(const occ::crystal::Crystal &crystal,
                       const occ::crystal::CrystalDimers &uc_dimers) {
     const auto &uc_molecules = crystal.unit_cell_molecules();
@@ -77,13 +104,21 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
     size_t uc_idx = 0;
     constexpr double max_de = 1e-4;
 
+    std::vector<FormulaIndex> sym_formula_indices =
+        build_formula_indices_for_symmetry_unique_molecules(crystal);
+
     // TODO fix for multiple molecules in asymmetric unit
     // 1A -> 1 is the conformer number, A is the compound i.e. chemical
     // composition id
-    std::vector<double> unique_interaction_energies;
     for (const auto &mol : uc_molecules) {
+        std::vector<double> unique_interaction_energies;
 
         std::vector<double> energies_to_print;
+        FormulaIndex formula_index =
+            sym_formula_indices[mol.asymmetric_molecule_idx()];
+        fmt::print("uc mol {}, asym = {}, formula = {} {}\n", uc_idx,
+                   mol.asymmetric_molecule_idx(), formula_index.count,
+                   formula_index.letter);
         for (const auto &n : neighbors[uc_idx]) {
             const auto uc_shift = n.b().cell_shift();
             const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
@@ -105,9 +140,11 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
                     std::distance(unique_interaction_energies.begin(), match);
             }
 
-            fmt::print(m_dest, "{}:[1A][{}-{}]({},{},{}) R={:.3f}\n",
-                       interaction_idx, n.a().name(), n.b().name(), uc_shift[0],
-                       uc_shift[1], uc_shift[2], n.centroid_distance());
+            fmt::print(m_dest, "{}:[{}{}][{}-{}]({},{},{}) R={:.3f}\n",
+                       interaction_idx, formula_index.count,
+                       formula_index.letter, n.a().name(), n.b().name(),
+                       uc_shift[0], uc_shift[1], uc_shift[2],
+                       n.centroid_distance());
             energies_to_print.push_back(
                 unique_interaction_energies[interaction_idx - 1]);
         }

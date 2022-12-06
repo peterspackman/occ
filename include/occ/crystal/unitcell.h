@@ -11,50 +11,186 @@ using occ::Mat3N;
 using occ::Vec3;
 using occ::util::is_close;
 
+/**
+ * This class represents a unit cell of a crystal lattice.
+ *
+ * A UnitCell describes the lattice vectors of a 3D crystal
+ * structure, including the 6 (possibly unique) parameters
+ * lengths \f$(a,b,c)\f$ and angles \f$(\alpha, \beta, \gamma)\f$.
+ * It also serves as a utility class for coordinate transforms,
+ * and other conversions and checks.
+ */
+
 class UnitCell {
   public:
     UnitCell(double a, double b, double c, double alpha, double beta,
              double gamma);
     UnitCell(const Vec3 &lengths, const Vec3 &angles);
 
-    double a() const { return m_lengths[0]; }
-    double b() const { return m_lengths[1]; }
-    double c() const { return m_lengths[2]; }
-    double alpha() const { return m_angles[0]; }
-    double beta() const { return m_angles[1]; }
-    double gamma() const { return m_angles[2]; }
-    double volume() const { return m_volume; }
-    void set_a(double);
-    void set_b(double);
-    void set_c(double);
-    void set_alpha(double);
-    void set_beta(double);
-    void set_gamma(double);
+    /// the length of the a-axis in Angstroms
+    inline double a() const { return m_lengths(0); }
+    /// the length of the b-axis in Angstroms
+    inline double b() const { return m_lengths(1); }
+    /// the length of the c-axis in Angstroms
+    inline double c() const { return m_lengths(2); }
 
+    /// angle \f$\alpha\f$, i.e. the angle between the b- and c-axes in radians
+    inline double alpha() const { return m_angles(0); }
+    /// angle \f$\beta\f$, i.e. the angle between the a- and c-axes in radians
+    inline double beta() const { return m_angles(1); }
+    /// angle \f$\gamma\f$, i.e. the angle between the a- and b-axes in radians
+    inline double gamma() const { return m_angles(2); }
+
+    /// Volume of the unit cell in cubic Angstroms
+    inline double volume() const { return m_volume; }
+
+    /**
+     * Set the length of the a-axis.
+     *
+     * \param a new length of the a-axis in Angstroms
+     *
+     * \note Will update other dependent values e.g. volume etc.
+     * No checking is performed.
+     */
+    void set_a(double a);
+
+    /**
+     * Set the length of the b-axis.
+     *
+     * \param b new length of the b-axis in Angstroms
+     *
+     * \note Will update other dependent values e.g. volume etc.
+     * No checking is performed.
+     */
+    void set_b(double b);
+
+    /**
+     * Set the length of the c-axis.
+     *
+     * \param c new length of the c-axis in Angstroms
+     *
+     * \note Will update other dependent values e.g. volume etc.
+     * No checking is performed.
+     */
+    void set_c(double c);
+
+    /**
+     * Set the angle of between the b- and c-axes
+     *
+     * \param alpha new angle between the b- and c-axes in radians
+     *
+     * \note Will update other dependent values e.g. volume etc.
+     * No checking is performed.
+     */
+    void set_alpha(double alpha);
+
+    /**
+     * Set the angle of between the a- and c-axes
+     *
+     * \param beta new angle between the a- and c-axes in radians
+     *
+     * \note Will update other dependent values e.g. volume etc.
+     * No checking is performed.
+     */
+    void set_beta(double beta);
+
+    /**
+     * Set the angle of between the a- and b-axes
+     *
+     * \param gamma new angle between the a- and b-axes in radians
+     *
+     * \note Will update other dependent values e.g. volume etc.
+     * No checking is performed.
+     */
+    void set_gamma(double gamma);
+
+    /// Check if cubic i.e. \f$ a=b=c, \alpha=\beta=\gamma \f$
     bool is_cubic() const;
+
+    /// Check if triclinic i.e. \f$ a \ne b \ne c, \alpha \ne \beta \ne \gamma
+    /// \f$
     bool is_triclinic() const;
+
+    /// Check if monoclinic i.e. \f$ a \ne b \ne c, \alpha = \gamma = 90^\circ
+    /// \ne \beta \f$
     bool is_monoclinic() const;
+
+    /// Check if orthorhombic i.e. \f$ a \ne b \ne c, \alpha = \beta = \gamma =
+    /// 90^\circ \f$
     bool is_orthorhombic() const;
+
+    /// Check if tetragonal i.e. \f$ a = b, a \ne c, \alpha = \beta = \gamma =
+    /// 90^\circ \f$
     bool is_tetragonal() const;
+
+    /// Check if rhombohedral i.e. \f$ a = b = c, \alpha = \beta = \gamma \ne
+    /// 90^\circ \f$
     bool is_rhombohedral() const;
+
+    /// Check if hexagonal i.e. \f$ a = b, a \ne c, \alpha = 90^\circ , \gamma =
+    /// 120^\circ \f$
     bool is_hexagonal() const;
-    bool is_orthogonal() const { return _a_90() && _b_90() && _c_90(); }
+
+    /// Check if orthogonal i.e. \f$\alpha = \beta = \gamma = 90^\circ\f$
+    inline bool is_orthogonal() const { return _a_90() && _b_90() && _c_90(); }
+
+    /// String representing the type of cell e.g. "monoclinic"
     std::string cell_type() const;
 
-    auto to_cartesian(const Mat3N &coords) const { return m_direct * coords; }
-    auto to_fractional(const Mat3N &coords) const { return m_inverse * coords; }
+    /**
+     * Convert a given matrix of coordinates from fractional to Cartesian
+     *
+     * \param coords Mat3N of fractional coordinates
+     *
+     * \returns Mat3N of Cartesian coordinates
+     */
+    inline auto to_cartesian(const Mat3N &coords) const {
+        return m_direct * coords;
+    }
 
-    const auto &direct() const { return m_direct; }
-    const auto &reciprocal() const { return m_reciprocal; }
-    const auto &inverse() const { return m_inverse; }
-    auto a_vector() const { return m_direct.col(0); }
-    auto b_vector() const { return m_direct.col(1); }
-    auto c_vector() const { return m_direct.col(2); }
-    auto a_star_vector() const { return m_reciprocal.col(0); }
-    auto b_star_vector() const { return m_reciprocal.col(1); }
-    auto c_star_vector() const { return m_reciprocal.col(2); }
-    const auto &lengths() const { return m_lengths; }
+    /**
+     * Convert a given matrix of coordinates from Cartesian to fractional
+     *
+     * \param coords Mat3N of Cartesian coordinates
+     *
+     * \returns Mat3N of fractional coordinates
+     */
+    inline auto to_fractional(const Mat3N &coords) const {
+        return m_inverse * coords;
+    }
 
+    /// The direct matrix of this unit cell (columns are lattice vectors)
+    inline const auto &direct() const { return m_direct; }
+    /// The reciprocal matrix of this unit cell (columns are reciprocal lattice
+    /// vectors)
+    inline const auto &reciprocal() const { return m_reciprocal; }
+    /// The inverse matrix of this unit cell (rows are reciprocal lattice
+    /// vectors)
+    inline const auto &inverse() const { return m_inverse; }
+
+    /// the \f$\bf{a}\f$ lattice vector
+    inline auto a_vector() const { return m_direct.col(0); }
+    /// the \f$\bf{b}\f$ lattice vector
+    inline auto b_vector() const { return m_direct.col(1); }
+    /// the \f$\bf{c}\f$ lattice vector
+    inline auto c_vector() const { return m_direct.col(2); }
+
+    /// the \f$\bf{a^*}\f$ vector in reciprocal lattice
+    inline auto a_star_vector() const { return m_reciprocal.col(0); }
+    /// the \f$\bf{b^*}\f$ vector in reciprocal lattice
+    inline auto b_star_vector() const { return m_reciprocal.col(1); }
+    /// the \f$\bf{c^*}\f$ vector in reciprocal lattice
+    inline auto c_star_vector() const { return m_reciprocal.col(2); }
+
+    /// Vector of lengths \f$(a, b, c)\f$
+    inline const auto &lengths() const { return m_lengths; }
+
+    /**
+     * Return the maximum fractional coordinates \f$(h,k,l)\f$ needed
+     * to enclose a sphere of size d_min
+     *
+     * \return HKL of the limits bounding a given sphere
+     */
     HKL hkl_limits(double d_min) const;
 
   private:
@@ -110,12 +246,20 @@ class UnitCell {
     Mat3 m_reciprocal;
 };
 
+/// Construct a cubic unit cell from a given length
 UnitCell cubic_cell(double length);
+/// Construct a rhombohedral unit cell from a given length and angle
 UnitCell rhombohedral_cell(double length, double angle);
+/// Construct a tetragonal unit cell from two given lengths
 UnitCell tetragonal_cell(double a, double c);
+/// Construct a hexagonal unit cell from two given lengths
 UnitCell hexagonal_cell(double a, double c);
+/// Construct an orthorhombic unit cell from three given lengths
 UnitCell orthorhombic_cell(double a, double b, double c);
+/// Construct an orthorhombic unit cell from three given lengths and one angle
 UnitCell monoclinic_cell(double a, double b, double c, double angle);
+/// Construct an orthorhombic unit cell from three given lengths and three
+/// angles
 UnitCell triclinic_cell(double a, double b, double c, double alpha, double beta,
                         double gamma);
 
