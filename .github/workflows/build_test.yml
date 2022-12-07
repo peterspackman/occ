@@ -25,7 +25,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install -y python3-numpy libpthread-stubs0-dev
+        sudo apt install -y python3-numpy libpthread-stubs0-dev doxygen
 
     - name: Cache CPM Dependencies
       uses: actions/cache@v3
@@ -38,7 +38,7 @@ jobs:
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCPM_SOURCE_CACHE=${{env.CPM_SOURCE_CACHE}} -DUSE_SYSTEM_LIBXC=OFF -DUSE_SYSTEM_EIGEN=OFF -DUSE_SYSTEM_ZLIB=OFF
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCPM_SOURCE_CACHE=${{env.CPM_SOURCE_CACHE}} -DUSE_SYSTEM_LIBXC=OFF -DUSE_SYSTEM_EIGEN=OFF -DUSE_SYSTEM_ZLIB=OFF -DBUILD_DOCS=ON
  
     - name: Build
       # Build your program with the given configuration
@@ -50,3 +50,12 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
       
+    - name: Build Documentation
+      run: cmake --build ${{github.workspace}}/build --target docs
+
+    - name: Deploy Documentation
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ${{github.workspace}}/build/docs/html
+

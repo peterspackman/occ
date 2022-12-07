@@ -91,7 +91,8 @@ int main(int argc, char *argv[]) {
     app.add_option("-c,--charge", charge, "system net charge");
     app.add_option("--multiplicity", multiplicity, "system multiplicity");
     app.add_flag("-u,--unrestricted", unrestricted, "use unrestricted SCF");
-    app.add_option("-v,--verbosity", verbosity, "logging verbosity");
+    app.add_option("-v,--verbosity", verbosity,
+                   "logging verbosity {silent,minimal,normal,verbose,debug}");
     app.add_flag("--spherical", spherical, "use spherical basis sets");
     app.add_flag("-s,--solvent", solvent, "use spherical basis sets");
     app.add_flag("-f,--solvent-file", solvent_surface_filename,
