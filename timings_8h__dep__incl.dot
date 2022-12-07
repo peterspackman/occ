@@ -1,0 +1,38 @@
+digraph "/home/runner/work/occ/occ/include/occ/core/timings.h"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="/home/runner/work/occ\l/occ/include/occ/core\l/timings.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="/home/runner/work/occ\l/occ/include/occ/dft/dft.h",height=0.2,width=0.4,color="black",URL="$dft_8h.html",tooltip=" "];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="/home/runner/work/occ\l/occ/include/occ/gto/gto.h",height=0.2,width=0.4,color="black",URL="$gto_8h.html",tooltip=" "];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="/home/runner/work/occ\l/occ/include/occ/dft\l/xc_potential_matrix.h",height=0.2,width=0.4,color="black",URL="$xc__potential__matrix_8h.html",tooltip=" "];
+  Node4 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="/home/runner/work/occ\l/occ/include/occ/gto\l/density.h",height=0.2,width=0.4,color="black",URL="$density_8h.html",tooltip=" "];
+  Node5 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="/home/runner/work/occ\l/occ/include/occ/qm/integral\l_engine.h",height=0.2,width=0.4,color="black",URL="$integral__engine_8h.html",tooltip=" "];
+  Node6 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="/home/runner/work/occ\l/occ/include/occ/dft\l/seminumerical_exchange.h",height=0.2,width=0.4,color="black",URL="$seminumerical__exchange_8h.html",tooltip=" "];
+  Node6 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="/home/runner/work/occ\l/occ/include/occ/qm/hf.h",height=0.2,width=0.4,color="black",URL="$hf_8h.html",tooltip=" "];
+  Node8 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="/home/runner/work/occ\l/occ/include/occ/qm/integral\l_engine_df.h",height=0.2,width=0.4,color="black",URL="$integral__engine__df_8h.html",tooltip=" "];
+  Node9 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="/home/runner/work/occ\l/occ/include/occ/qm/scf.h",height=0.2,width=0.4,color="black",URL="$scf_8h.html",tooltip=" "];
+  Node1 -> Node11 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node11 [label="/home/runner/work/occ\l/occ/include/occ/qm/shellblock\l_norm.h",height=0.2,width=0.4,color="black",URL="$shellblock__norm_8h.html",tooltip=" "];
+  Node11 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node12 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 [label="/home/runner/work/occ\l/occ/include/occ/sht/sht.h",height=0.2,width=0.4,color="black",URL="$sht_8h.html",tooltip=" "];
+  Node1 -> Node13 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node13 [label="/home/runner/work/occ\l/occ/include/occ/solvent\l/solvation_correction.h",height=0.2,width=0.4,color="black",URL="$solvation__correction_8h.html",tooltip=" "];
+}

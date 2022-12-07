@@ -1,0 +1,25 @@
+var classocc_1_1crystal_1_1Crystal =
+[
+    [ "Crystal", "classocc_1_1crystal_1_1Crystal.html#a05ba2aa184d1d4fc05a18c339c766c90", null ],
+    [ "asymmetric_unit", "classocc_1_1crystal_1_1Crystal.html#a754afc33acff3b61f2fc8e3738ffb688", null ],
+    [ "asymmetric_unit", "classocc_1_1crystal_1_1Crystal.html#ade1987a84960462dafac4eba6f365da0", null ],
+    [ "asymmetric_unit_atom_surroundings", "classocc_1_1crystal_1_1Crystal.html#a116f176e72cb178db6087915ac493ad0", null ],
+    [ "atom_surroundings", "classocc_1_1crystal_1_1Crystal.html#af61a6255cfcd1d9a8f062c0c065a54b8", null ],
+    [ "dimer_symmetry_string", "classocc_1_1crystal_1_1Crystal.html#a7d88c14753f98a230d5580f5ec0fc80d", null ],
+    [ "frac", "classocc_1_1crystal_1_1Crystal.html#a070f081cf143d7547bdbcdeeab683f84", null ],
+    [ "labels", "classocc_1_1crystal_1_1Crystal.html#af5e5d70c0465f72860ee5b3e68923e41", null ],
+    [ "num_sites", "classocc_1_1crystal_1_1Crystal.html#a0e4f57e59b377f98ed9529aa94c7a25e", null ],
+    [ "slab", "classocc_1_1crystal_1_1Crystal.html#abd2bf4be03979f62a1b4a7c892c10e8b", null ],
+    [ "space_group", "classocc_1_1crystal_1_1Crystal.html#a6d031f75ebb73e0817350becc56f2309", null ],
+    [ "symmetry_operations", "classocc_1_1crystal_1_1Crystal.html#ac87d6bd7d94dc9fb0c3923e5ab355f40", null ],
+    [ "symmetry_unique_dimers", "classocc_1_1crystal_1_1Crystal.html#ae99864bf434db546e3cb9d4dae31df4c", null ],
+    [ "symmetry_unique_molecules", "classocc_1_1crystal_1_1Crystal.html#ae6844966f92d3fc01a7a481fc5f101d3", null ],
+    [ "to_cartesian", "classocc_1_1crystal_1_1Crystal.html#a914cba935dc2140d034ca173d6e01043", null ],
+    [ "to_fractional", "classocc_1_1crystal_1_1Crystal.html#a5ef5f5c6ae413169e2fb77305f98af9a", null ],
+    [ "unit_cell", "classocc_1_1crystal_1_1Crystal.html#a3a16c39c8623f66d907980b8b8231484", null ],
+    [ "unit_cell_atoms", "classocc_1_1crystal_1_1Crystal.html#a898abef35af88fd667638b377f0175ed", null ],
+    [ "unit_cell_connectivity", "classocc_1_1crystal_1_1Crystal.html#a2777bc54a23a6aee6ecd35805ab1d5e3", null ],
+    [ "unit_cell_dimers", "classocc_1_1crystal_1_1Crystal.html#a9c1359c007205afad1527ef524621ba4", null ],
+    [ "unit_cell_molecules", "classocc_1_1crystal_1_1Crystal.html#aa55777860fc503e6c43a3d0ba82dca50", null ],
+    [ "volume", "classocc_1_1crystal_1_1Crystal.html#abc9f15fb4cbb88676d9156ad1f8ef04c", null ]
+];
