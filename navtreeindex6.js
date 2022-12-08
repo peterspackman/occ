@@ -1,6 +1,5 @@
 var NAVTREEINDEX6 =
 {
-"linear__algebra_8h.html#ae6658a71f1ab626bb34cd517eebdfff2":[3,0,1,0,0,14,27],
 "linear__algebra_8h.html#ae89d745b26c15115153317e5d90b6e93":[3,0,1,0,0,14,45],
 "linear__algebra_8h.html#af51d15e9008089919e6a8c5a09724f7f":[3,0,1,0,0,14,42],
 "linear__algebra_8h.html#af52f8e368b5574abdfd32e8c343039bc":[3,0,1,0,0,14,3],
@@ -249,5 +248,6 @@ var NAVTREEINDEX6 =
 "namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6":[1,0,2,1,21],
 "namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6a5206560a306a2e085a437fd258eb57ce":[1,0,2,1,21,3],
 "namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6a6adf97f83acf6453d4a6a4b1070f3754":[1,0,2,1,21,0],
-"namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6ac1d9f50f86825a1a2302ec2449c17196":[1,0,2,1,21,1]
+"namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6ac1d9f50f86825a1a2302ec2449c17196":[1,0,2,1,21,1],
+"namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6af623e75af30e62bbd73d6df5b50bb7b5":[1,0,2,1,21,2]
 };

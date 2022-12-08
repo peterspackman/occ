@@ -1,6 +1,5 @@
 var NAVTREEINDEX11 =
 {
-"structocc_1_1io_1_1impl_1_1FchkScalarWriter.html":[2,0,1,6,1,0],
 "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html#a19ad1c5a7ffbed1e2870789c5a9258c5":[2,0,1,6,1,0,4],
 "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html#a34906b7933336dddf89a7cba6331aa46":[2,0,1,6,1,0,5],
 "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html#a53d9635fb2c7fcfd12deda8eaa936b9f":[2,0,1,6,1,0,0],
@@ -249,5 +248,6 @@ var NAVTREEINDEX11 =
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a986045b51eaa207a46cc54c7f67e323a":[2,0,1,12,2,0],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#aa962c330a93a114152421bce0ad62132":[2,0,1,12,2,7],
 "structocc_1_1solvent_1_1surface_1_1Surface.html":[2,0,1,12,0,0],
-"structocc_1_1solvent_1_1surface_1_1Surface.html#a1a6b590b4949a6aa3582054eb1170a68":[2,0,1,12,0,0,0]
+"structocc_1_1solvent_1_1surface_1_1Surface.html#a1a6b590b4949a6aa3582054eb1170a68":[2,0,1,12,0,0,0],
+"structocc_1_1solvent_1_1surface_1_1Surface.html#a769c5d142fa957e869e642db833d77dd":[2,0,1,12,0,0,1]
 };
