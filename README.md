@@ -78,7 +78,6 @@ occ makes use of the the following open source libraries:
 - [pocketFFT](https://github.com/hayguen/pocketfft)
 - [scnlib](https://github.com/eliaskosunen/scnlib)
 - [spdlog](https://github.com/gabime/spdlog)
-- [zlib](https://zlib.net/) (`zlibc`)
 
 And for the library tests/benchmarks:
 
@@ -95,7 +94,7 @@ git clone https://github.com/peterspackman/occ.git
 ### Getting dependencies
 
 Most of the dependencies can be downloaded and compiled via [CPM](https://github.com/cpm-cmake/CPM.cmake),
-but you may wish to use system installed dependencies for `libxc`, `zlibc` and `eigen3` which will be searched for by default.
+but you may wish to use system installed dependencies for `libxc` and `eigen3` which will be searched for by default.
 Note `occ` requires eigen version 3.4 or newer, which most operating systems do not package by default.
 
 ### Caching dependency downloads
@@ -124,7 +123,6 @@ cmake .. -GNinja
 ```
 cmake .. -GNinja \
     -DUSE_SYSTEM_LIBXC=OFF \
-    -DUSE_SYSTEM_ZLIB=OFF \
     -DUSE_SYSTEM_EIGEN=OFF
 ```
 

@@ -39,7 +39,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(BUILD_DOCS "Build documentation using Doxygen" OFF)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" ON)
     option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
-    option(USE_SYSTEM_ZLIB "Use ZLIB installed on system" ON)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" ON)
 endif()
 
@@ -49,10 +48,6 @@ find_package(Threads REQUIRED)
 
 if("${USE_SYSTEM_EIGEN}")
     find_package(Eigen3 CONFIG REQUIRED)
-endif()
-
-if("${USE_SYSTEM_ZLIB}")
-    find_package(ZLIB REQUIRED)
 endif()
 
 if("${USE_SYSTEM_BLAS}")
