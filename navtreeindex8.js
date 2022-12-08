@@ -1,5 +1,6 @@
 var NAVTREEINDEX8 =
 {
+"namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfab3e74e3ddf2a48dead0bc9d1eb83050f":[1,0,2,13,1,3,4],
 "namespaceocc_1_1qm_1_1cint_1_1impl.html":[1,0,2,13,1,0],
 "namespaceocc_1_1qm_1_1guess.html":[1,0,2,13,2],
 "namespaceocc_1_1qm_1_1guess.html#a1f66c3d5a941d4737dc51f8d1c32bdac":[1,0,2,13,2,2],
@@ -248,6 +249,5 @@ var NAVTREEINDEX8 =
 "quadrature_8h.html#ac947b8b44ffb01ab845ad31172ef09b2":[3,0,1,0,9,1,1],
 "quasirandom_8h.html":[3,0,1,0,0,24],
 "quasirandom_8h.html#abeb0483db6e31121318847e734ed6cf5":[3,0,1,0,0,24,0],
-"rotor_8h.html":[3,0,1,0,0,25],
-"rotor_8h.html#a6afb43a55d3c5722239c777d40bc4e43":[3,0,1,0,0,25,1]
+"rotor_8h.html":[3,0,1,0,0,25]
 };

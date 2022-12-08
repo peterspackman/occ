@@ -1,5 +1,6 @@
 var NAVTREEINDEX12 =
 {
+"structocc_1_1solvent_1_1surface_1_1Surface.html#a769c5d142fa957e869e642db833d77dd":[2,0,1,12,0,0,1],
 "structocc_1_1solvent_1_1surface_1_1Surface.html#ac6e8d5b47c8086a330927a8ead975a14":[2,0,1,12,0,0,2],
 "structocc_1_1xdm_1_1XDM_1_1Parameters.html":[2,0,1,14,0,0],
 "structocc_1_1xdm_1_1XDM_1_1Parameters.html#ad8105cd00918a9cdb07c6ad1189f63b5":[2,0,1,14,0,0,1],
@@ -96,6 +97,5 @@ var NAVTREEINDEX12 =
 "xdm_8h.html":[3,0,1,0,12,1],
 "xyz_8h.html":[3,0,1,0,6,15],
 "xyz_8h.html#a9e545a9864ef7cba94ea648e321f9899":[3,0,1,0,6,15,2],
-"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,6,15,1],
-"":[1,0,1]
+"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,6,15,1]
 };

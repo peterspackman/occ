@@ -1,5 +1,6 @@
 var NAVTREEINDEX2 =
 {
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba59b031d7f33073bb39ca0e6a66dfca8c":[2,0,1,2,2,3,22],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba5acddbeb40327b1f5a2c992f95e4cdc1":[2,0,1,2,2,3,6],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba5b2a67dda0dc4cfa0c1255af5684c638":[2,0,1,2,2,3,158],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba5b423057ead2b2a67a88b73a43df736d":[2,0,1,2,2,3,132],
@@ -248,6 +249,5 @@ var NAVTREEINDEX2 =
 "classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6ad70335725b5322e861182cbce89d3196":[2,0,1,2,2,4,2],
 "classocc_1_1dft_1_1DensityFunctional.html#ae2a70f3e803201853c99c4790f5fc48e":[2,0,1,2,2,6],
 "classocc_1_1dft_1_1DensityFunctional.html#afcc6c15ae8cf9fe39f18f9e495e823b1":[2,0,1,2,2,7],
-"classocc_1_1dft_1_1MolecularGrid.html":[2,0,1,2,6],
-"classocc_1_1dft_1_1MolecularGrid.html#a08f37ee7480c0fdaff8223102bc44409":[2,0,1,2,6,3]
+"classocc_1_1dft_1_1MolecularGrid.html":[2,0,1,2,6]
 };
