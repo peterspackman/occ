@@ -125,3 +125,19 @@ set_target_properties(occ-elat
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+if("${WITH_XTB}") 
+
+add_executable(occ-xtb "${CMAKE_CURRENT_SOURCE_DIR}/xtb.cpp")
+target_link_libraries(occ-xtb
+    PUBLIC
+    occ_main
+    occ_xtb
+    CLI11::CLI11
+)
+
+set_target_properties(occ-xtb
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+endif()
