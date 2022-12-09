@@ -58,6 +58,7 @@ struct PairInput {
     std::string source_b{"none"};
     Mat3 rotation_b{Mat3::Identity()};
     Vec3 translation_b{Vec3::Zero()};
+    std::string model_name{"ce-b3lyp"};
 };
 
 struct OccInput {
