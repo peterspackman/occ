@@ -6,6 +6,7 @@ add_library(occ_xtb
 
 target_link_libraries(occ_xtb
     PUBLIC 
+    occ_core
     occ_qm
     occ_dft
     ${tblite_STATIC_LIBRARIES}
