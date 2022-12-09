@@ -1,6 +1,7 @@
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
+#include <LBFGS.h>
 #include <iostream>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
@@ -8,6 +9,9 @@
 #include <occ/core/timings.h>
 #include <occ/io/xyz.h>
 #include <occ/xtb/xtb_wrapper.h>
+
+using LBFGSpp::LBFGSParam;
+using LBFGSpp::LBFGSSolver;
 
 int main(int argc, char *argv[]) {
 
@@ -35,8 +39,33 @@ int main(int argc, char *argv[]) {
     fmt::print("TBLITE VERSION: {}\n", occ::xtb::tblite_version());
     occ::core::Molecule mol = occ::io::molecule_from_xyz_file(input_file);
     occ::xtb::XTBCalculator calc(mol);
-    fmt::print("Energy: {}\n", calc.single_point_energy());
-    fmt::print("Gradients:\n");
+    int natom = mol.size();
+
+    auto func = [&](const occ::Vec &posvec, occ::Vec &gradvec) {
+        calc.update_structure(posvec.reshaped(3, natom));
+        double e = calc.single_point_energy();
+        gradvec = calc.gradients().reshaped();
+        return e;
+    };
+
+    LBFGSParam<double> param;
+    param.epsilon = 1e-6;
+    param.max_iterations = 100;
+    LBFGSSolver<double> solver(param);
+
+    occ::Vec initial = calc.positions().reshaped();
+
+    double fx;
+    int niter = solver.minimize(func, initial, fx);
+
+    fmt::print("Final energy after {} iterations: {}\n", niter,
+               calc.single_point_energy());
+    fmt::print("Final Gradients:\n");
     std::cout << calc.gradients() << '\n';
+    occ::Vec charges = calc.charges();
+    fmt::print("Charges:\n{}\n", charges);
+
+    auto bo = calc.bond_orders();
+    fmt::print("Bond orders:\n{}\n", bo);
     return 0;
 }

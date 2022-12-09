@@ -133,6 +133,7 @@ target_link_libraries(occ-xtb
     PUBLIC
     occ_main
     occ_xtb
+    LBFGSpp::LBFGSpp
     CLI11::CLI11
 )
 
