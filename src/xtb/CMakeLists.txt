@@ -1,3 +1,17 @@
+# need this to get the fortran libraries populated
+
+enable_language(Fortran)
+CPMAddPackage(
+    NAME TBLite 
+    GITHUB_REPOSITORY "tblite/tblite"
+    OPTIONS "WITH_TESTS OFF"
+    GIT_TAG "main"
+)
+add_library(TBLite::TBLite INTERFACE IMPORTED GLOBAL) 
+# bit of a hack but the best I could do for linking gfortran etc. in a cross platform way
+target_link_libraries(TBLite::TBLite INTERFACE tblite-lib tblite "${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
+
+
 add_library(occ_xtb
     STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/xtb_wrapper.cpp"
@@ -9,17 +23,15 @@ target_link_libraries(occ_xtb
     occ_core
     occ_qm
     occ_dft
-    ${tblite_STATIC_LIBRARIES}
-    gomp
+    TBLite::TBLite
 )
+message(STATUS "TBLite found: ${TBLITE_FOUND}")
+message(STATUS "TBLite paths: ${TBLITE_LIBRARY}")
 
 target_include_directories(occ_xtb PUBLIC 
     ${OCC_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
-    ${tblite_STATIC_INCLUDE_DIRS}
+    ${TBLITE_INCLUDE_DIR}
 )
-message(STATUS "TBLITE include: ${tblite_STATIC_INCLUDE_DIRS}")
-message(STATUS "TBLITE libs: ${tblite_STATIC_LIBRARIES}")
 
 target_compile_features(occ_xtb PUBLIC cxx_std_17)
-

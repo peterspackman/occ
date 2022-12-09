@@ -110,9 +110,3 @@ target_include_directories(
     "${Libxc_BINARY_DIR}"
 )
 endif()
-
-if("${WITH_XTB}") 
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(tblite REQUIRED IMPORTED_TARGET tblite)
-endif()
-
