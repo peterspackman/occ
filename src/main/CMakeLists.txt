@@ -20,6 +20,11 @@ target_include_directories(occ_main PUBLIC
     ${GEMMI_INCLUDE_DIR}
 )
 
+if("${WITH_XTB}") 
+    target_link_libraries(occ_main PUBLIC occ_xtb)
+    target_compile_definitions(occ_main PUBLIC "HAVE_OCC_XTB_INTERFACE")
+endif()
+
 target_compile_features(occ_main PUBLIC cxx_std_17)
 
 add_executable(xdm "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")

@@ -5,6 +5,7 @@
 #include <occ/core/units.h>
 #include <occ/xtb/xtb_wrapper.h>
 
+using occ::core::Dimer;
 using occ::core::Molecule;
 
 namespace occ::xtb {
@@ -33,6 +34,24 @@ XTBCalculator::XTBCalculator(const Molecule &mol)
 }
 
 XTBCalculator::XTBCalculator(const Molecule &mol, Method method)
+    : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
+      m_atomic_numbers(mol.atomic_numbers()), m_method(method),
+      m_charge(mol.charge()), m_num_unpaired_electrons(mol.multiplicity() - 1) {
+    initialize_context();
+    initialize_structure();
+    initialize_method();
+}
+
+XTBCalculator::XTBCalculator(const Dimer &mol)
+    : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
+      m_atomic_numbers(mol.atomic_numbers()), m_charge(mol.charge()),
+      m_num_unpaired_electrons(mol.multiplicity() - 1) {
+    initialize_context();
+    initialize_structure();
+    initialize_method();
+}
+
+XTBCalculator::XTBCalculator(const Dimer &mol, Method method)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_method(method),
       m_charge(mol.charge()), m_num_unpaired_electrons(mol.multiplicity() - 1) {

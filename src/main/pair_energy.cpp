@@ -13,6 +13,9 @@
 #include <occ/qm/chelpg.h>
 #include <optional>
 #include <scn/scn.h>
+#ifdef HAVE_OCC_XTB_INTERFACE
+#include <occ/xtb/xtb_wrapper.h>
+#endif
 
 namespace fs = std::filesystem;
 
@@ -166,6 +169,21 @@ CEEnergyComponents ce_model_energy(const Dimer &dimer,
     fmt::print("Finished model energy\n");
     return interaction_energy;
 }
+
+#ifdef HAVE_OCC_XTB_INTERFACE
+double xtb_pair_energy(const Dimer &dimer) {
+    Molecule mol_A = dimer.a();
+    Molecule mol_B = dimer.a();
+
+    occ::xtb::XTBCalculator calc_A(mol_A);
+    double e_a = calc_A.single_point_energy();
+    occ::xtb::XTBCalculator calc_B(mol_B);
+    double e_b = calc_B.single_point_energy();
+    occ::xtb::XTBCalculator calc_AB(dimer);
+    double e_ab = calc_AB.single_point_energy();
+    return e_ab - e_a - e_b;
+}
+#endif
 
 int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
                                     const Vec &asym_charges, double radius,

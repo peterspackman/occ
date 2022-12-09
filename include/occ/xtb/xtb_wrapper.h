@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <occ/core/dimer.h>
 #include <occ/core/molecule.h>
 
 extern "C" {
@@ -15,7 +16,9 @@ class XTBCalculator {
   public:
     enum class Method { GFN1, GFN2 };
     XTBCalculator(const occ::core::Molecule &mol);
+    XTBCalculator(const occ::core::Dimer &dimer);
     XTBCalculator(const occ::core::Molecule &mol, Method method);
+    XTBCalculator(const occ::core::Dimer &dimer, Method method);
     double single_point_energy();
     inline const auto &positions() const { return m_positions_bohr; }
     inline const auto &gradients() const { return m_gradients; }
