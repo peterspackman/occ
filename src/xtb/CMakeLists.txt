@@ -1,5 +1,4 @@
 # need this to get the fortran libraries populated
-
 enable_language(Fortran)
 CPMAddPackage(
     NAME TBLite 
@@ -21,6 +20,7 @@ add_library(occ_xtb
 target_link_libraries(occ_xtb
     PUBLIC 
     occ_core
+    occ_crystal
     occ_qm
     occ_dft
     TBLite::TBLite

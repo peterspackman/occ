@@ -7,6 +7,7 @@
 
 using occ::core::Dimer;
 using occ::core::Molecule;
+using occ::crystal::Crystal;
 
 namespace occ::xtb {
 
@@ -60,6 +61,31 @@ XTBCalculator::XTBCalculator(const Dimer &mol, Method method)
     initialize_method();
 }
 
+XTBCalculator::XTBCalculator(const Crystal &crystal)
+    : m_positions_bohr(crystal.unit_cell_atoms().cart_pos *
+                       occ::units::ANGSTROM_TO_BOHR),
+      m_atomic_numbers(crystal.unit_cell_atoms().atomic_numbers), m_charge(0),
+      m_num_unpaired_electrons(0), m_periodic{true, true, true},
+      m_lattice_vectors(crystal.unit_cell().direct() *
+                        occ::units::ANGSTROM_TO_BOHR) {
+    initialize_context();
+    initialize_structure();
+    initialize_method();
+}
+
+XTBCalculator::XTBCalculator(const Crystal &crystal, Method method)
+    : m_positions_bohr(crystal.unit_cell_atoms().cart_pos *
+                       occ::units::ANGSTROM_TO_BOHR),
+      m_atomic_numbers(crystal.unit_cell_atoms().atomic_numbers),
+      m_method(method), m_charge(0),
+      m_num_unpaired_electrons(0), m_periodic{true, true, true},
+      m_lattice_vectors(crystal.unit_cell().direct() *
+                        occ::units::ANGSTROM_TO_BOHR) {
+    initialize_context();
+    initialize_structure();
+    initialize_method();
+}
+
 void XTBCalculator::initialize_context() {
     m_tb_error = tblite_new_error();
     m_tb_ctx = tblite_new_context();
@@ -72,6 +98,7 @@ void XTBCalculator::initialize_structure() {
     }
     int natoms = m_atomic_numbers.rows();
     m_gradients = Mat3N::Zero(3, natoms);
+    m_virial = Mat3::Zero();
     m_tb_structure = tblite_new_structure(
         m_tb_error, natoms, m_atomic_numbers.data(), m_positions_bohr.data(),
         &m_charge, &m_num_unpaired_electrons, m_lattice_vectors.data(),
@@ -155,6 +182,11 @@ double XTBCalculator::single_point_energy() {
     check_error(m_tb_error);
     tblite_get_result_gradient(m_tb_error, m_tb_result, m_gradients.data());
     check_error(m_tb_error);
+
+    if (m_periodic[0]) {
+        tblite_get_result_virial(m_tb_error, m_tb_result, m_virial.data());
+    }
+    check_error(m_tb_error);
     return energy;
 }
 
@@ -191,6 +223,20 @@ XTBCalculator::~XTBCalculator() {
     if (m_tb_structure) {
         tblite_delete_structure(&m_tb_structure);
     }
+}
+
+Crystal XTBCalculator::to_crystal() const {
+    occ::crystal::UnitCell uc(m_lattice_vectors * occ::units::BOHR_TO_ANGSTROM);
+    occ::crystal::SpaceGroup sg(1);
+    occ::crystal::AsymmetricUnit asym(
+        uc.to_fractional(m_positions_bohr * occ::units::BOHR_TO_ANGSTROM),
+        m_atomic_numbers);
+    return Crystal(asym, sg, uc);
+}
+
+Molecule XTBCalculator::to_molecule() const {
+    return Molecule(m_atomic_numbers,
+                    m_positions_bohr / occ::units::BOHR_TO_ANGSTROM);
 }
 
 } // namespace occ::xtb
