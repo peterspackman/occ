@@ -3,8 +3,16 @@
 #include <occ/qm/mo.h>
 #include <occ/qm/shell.h>
 #include <occ/slater/slaterbasis.h>
+#include <vector>
 
 namespace occ::xdm {
+
+struct XDMAtomList {
+    const std::vector<occ::core::Atom> &atoms;
+    const Mat &moments;
+    const Vec &volume;
+    const Vec &volume_free;
+};
 
 class XDM {
   public:
@@ -39,5 +47,14 @@ class XDM {
     double m_energy{0.0};
     Mat3N m_forces;
 };
+
+std::pair<double, Mat3N>
+xdm_dispersion_energy(const XDMAtomList &atom_info,
+                      const XDM::Parameters &params = {});
+
+std::tuple<double, Mat3N, Mat3N>
+xdm_dispersion_interaction_energy(const XDMAtomList &atom_info_a,
+                                  const XDMAtomList &atom_info_b,
+                                  const XDM::Parameters &params = {});
 
 } // namespace occ::xdm

@@ -53,6 +53,8 @@ const phmap::flat_hash_map<std::string, std::vector<FuncComponent>>
         {"bp86", {{dfid::gga_x_b88}, {dfid::gga_c_p86}}},
         {"m062x", {{dfid::hyb_mgga_x_m06_2x}, {dfid::mgga_c_m06_2x}}},
         {"tpss", {{dfid::mgga_x_tpss}, {dfid::mgga_c_tpss}}},
+        {"b86bpbe", {{dfid::gga_x_b86_mgc}, {dfid::gga_c_pbe}}},
+        {"b86bpbeh", {{dfid::gga_x_b86_mgc, 0.75, 0.25}, {dfid::gga_c_pbe}}},
     });
 
 int DFT::density_derivative() const {

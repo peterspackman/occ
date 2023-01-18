@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
         }
     }();
 
+    calc.set_accuracy(0.01);
     int natom = calc.num_atoms();
 
     auto func = [&](const occ::Vec &posvec, occ::Vec &gradvec) {
@@ -127,9 +128,11 @@ int main(int argc, char *argv[]) {
     fmt::print("beta: {}\n", occ::units::degrees(result.unit_cell().beta()));
     fmt::print("gamma: {}\n", occ::units::degrees(result.unit_cell().gamma()));
 
-    fmt::print("Numbers\n{}\n", result.asymmetric_unit().atomic_numbers);
-    fmt::print("Positions\n{}\n",
-               result.asymmetric_unit().positions.transpose());
-
+    const auto &labels = result.asymmetric_unit().labels;
+    const auto &pos = result.asymmetric_unit().positions;
+    for (int i = 0; i < natom; i++) {
+        fmt::print("{} {:12.6f} {:12.6f} {:12.6f}\n", labels[i], pos(0, i),
+                   pos(1, i), pos(2, i));
+    }
     return 0;
 }

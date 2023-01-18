@@ -18,11 +18,98 @@ double xdm_polarizability(int n, double v, double vfree) {
     return v * Element(n).polarizability() / vfree;
 }
 
-std::pair<double, Mat3N>
-xdm_dispersion_energy(const std::vector<occ::core::Atom> &atoms,
-                      const Mat &moments, const Vec &volume,
-                      const Vec &volume_free, double alpha1 = 1.0,
-                      double alpha2 = 1.0) {
+std::tuple<double, Mat3N, Mat3N>
+xdm_dispersion_interaction_energy(const XDMAtomList &atom_info_a,
+                                  const XDMAtomList &atom_info_b,
+                                  const XDM::Parameters &params) {
+    const auto &atoms_a = atom_info_a.atoms;
+    const auto &volume_a = atom_info_a.volume;
+    const auto &moments_a = atom_info_a.moments;
+    const auto &volume_free_a = atom_info_a.volume_free;
+
+    const auto &atoms_b = atom_info_b.atoms;
+    const auto &volume_b = atom_info_b.volume;
+    const auto &moments_b = atom_info_b.moments;
+    const auto &volume_free_b = atom_info_b.volume_free;
+
+    const size_t num_atoms_a = atoms_a.size();
+    const size_t num_atoms_b = atoms_a.size();
+
+    using occ::Vec3;
+    Vec polarizabilities_a(num_atoms_a);
+    Vec polarizabilities_b(num_atoms_b);
+    for (int i = 0; i < num_atoms_a; i++) {
+        polarizabilities_a(i) = xdm_polarizability(
+            atoms_a[i].atomic_number, volume_a(i), volume_free_a(i));
+    }
+    for (int i = 0; i < num_atoms_b; i++) {
+        polarizabilities_b(i) = xdm_polarizability(
+            atoms_b[i].atomic_number, volume_b(i), volume_free_b(i));
+    }
+    Mat3N forces_a = Mat3N::Zero(3, num_atoms_a);
+    Mat3N forces_b = Mat3N::Zero(3, num_atoms_b);
+    double edisp = 0.0;
+    for (int i = 0; i < num_atoms_a; i++) {
+        Vec3 pi = {atoms_a[i].x, atoms_a[i].y, atoms_a[i].z};
+        double pol_i = polarizabilities_a(i);
+        for (int j = 0; j < num_atoms_b; j++) {
+            Vec3 pj = {atoms_b[j].x, atoms_b[j].y, atoms_b[j].z};
+            Vec3 v_ij = pj - pi;
+            double pol_j = polarizabilities_b(j);
+            double factor = pol_i * pol_j /
+                            (moments_a(0, i) * pol_j + moments_b(0, j) * pol_i);
+            double rij = v_ij.norm();
+
+            double rij2 = rij * rij;
+            double rij4 = rij2 * rij2;
+            double rij6 = rij4 * rij2;
+            double rij8 = rij4 * rij4;
+            double rij10 = rij4 * rij6;
+
+            double c6 = factor * moments_a(0, i) * moments_b(0, j);
+            double c8 = 1.5 * factor *
+                        (moments_a(0, i) * moments_b(1, j) +
+                         moments_a(1, i) * moments_b(0, j));
+            double c10 = 2.0 * factor *
+                             (moments_a(0, i) * moments_b(2, j) +
+                              moments_a(2, i) * moments_b(0, j)) +
+                         4.2 * factor * moments_a(1, i) * moments_b(1, j);
+            double rc = (std::sqrt(c8 / c6) + std::sqrt(std::sqrt(c10 / c6)) +
+                         std::sqrt(c10 / c8)) /
+                        3;
+            double rvdw =
+                params.a1 * rc + params.a2 * occ::units::ANGSTROM_TO_BOHR;
+            double rvdw2 = rvdw * rvdw;
+            double rvdw4 = rvdw2 * rvdw2;
+            double rvdw6 = rvdw4 * rvdw2;
+            double rvdw8 = rvdw4 * rvdw4;
+            double rvdw10 = rvdw4 * rvdw6;
+
+            occ::log::debug("{:>3d} {:>3d} {:12.6f} {:12.6f} {:12.6f} {:12.6f} "
+                            "{:12.6f} {:12.6f}",
+                            i, j, rij, c6, c8, c10, rc, rvdw);
+            if (rij < 1e-15)
+                continue;
+            edisp -= c6 / (rvdw6 + rij6) + c8 / (rvdw8 + rij8) +
+                     c10 / (rvdw10 + rij10);
+
+            double c6_com = 6.0 * c6 * rij4 / ((rvdw6 + rij6) * (rvdw6 + rij6));
+            double c8_com = 8.0 * c8 * rij6 / ((rvdw8 + rij8) * (rvdw8 + rij8));
+            double c10_com =
+                10.0 * c10 * rij8 / ((rvdw10 + rij10) * (rvdw10 + rij10));
+            forces_a.col(i) += (c6_com + c8_com + c10_com) * v_ij;
+            forces_b.col(j) -= (c6_com + c8_com + c10_com) * v_ij;
+        }
+    }
+    return {edisp, forces_a, forces_b};
+}
+
+std::pair<double, Mat3N> xdm_dispersion_energy(const XDMAtomList &atom_info,
+                                               const XDM::Parameters &params) {
+    const auto &atoms = atom_info.atoms;
+    const auto &volume = atom_info.volume;
+    const auto &moments = atom_info.moments;
+    const auto &volume_free = atom_info.volume_free;
     const size_t num_atoms = atoms.size();
     using occ::Vec3;
     Vec polarizabilities(num_atoms);
@@ -30,9 +117,9 @@ xdm_dispersion_energy(const std::vector<occ::core::Atom> &atoms,
         polarizabilities(i) = xdm_polarizability(atoms[i].atomic_number,
                                                  volume(i), volume_free(i));
     }
-    occ::log::debug("Volume\n{}\n", volume);
-    occ::log::debug("Volume Free\n{}\n", volume_free);
-    occ::log::debug("Polarizibility: \n{}\n", polarizabilities);
+    occ::log::debug("Volumes\n{}\n", volume);
+    occ::log::debug("Volumes free\n{}\n", volume_free);
+    occ::log::debug("Polarizibilities: \n{}\n", polarizabilities);
     Mat3N forces = Mat3N::Zero(3, num_atoms);
     double edisp = 0.0;
     for (int i = 0; i < num_atoms; i++) {
@@ -63,7 +150,8 @@ xdm_dispersion_energy(const std::vector<occ::core::Atom> &atoms,
             double rc = (std::sqrt(c8 / c6) + std::sqrt(std::sqrt(c10 / c6)) +
                          std::sqrt(c10 / c8)) /
                         3;
-            double rvdw = alpha1 * rc + alpha2 * occ::units::ANGSTROM_TO_BOHR;
+            double rvdw =
+                params.a1 * rc + params.a2 * occ::units::ANGSTROM_TO_BOHR;
             double rvdw2 = rvdw * rvdw;
             double rvdw4 = rvdw2 * rvdw2;
             double rvdw6 = rvdw4 * rvdw2;
@@ -71,7 +159,7 @@ xdm_dispersion_energy(const std::vector<occ::core::Atom> &atoms,
             double rvdw10 = rvdw4 * rvdw6;
 
             occ::log::debug("{:>3d} {:>3d} {:12.6f} {:12.6f} {:12.6f} {:12.6f} "
-                            "{:12.6f} {:12.6f}\n",
+                            "{:12.6f} {:12.6f}",
                             i, j, rij, c6, c8, c10, rc, rvdw);
             if (rij < 1e-15)
                 continue;
@@ -236,7 +324,7 @@ double XDM::energy(const occ::qm::MolecularOrbitals &mo) {
     occ::log::debug("moments\n{}\n", m_moments);
 
     std::tie(m_energy, m_forces) = xdm_dispersion_energy(
-        m_basis.atoms(), m_moments, m_volume, m_volume_free);
+        {m_basis.atoms(), m_moments, m_volume, m_volume_free});
     return m_energy;
 }
 
@@ -244,7 +332,7 @@ const Mat3N &XDM::forces(const occ::qm::MolecularOrbitals &mo) {
     populate_moments(mo);
 
     std::tie(m_energy, m_forces) = xdm_dispersion_energy(
-        m_basis.atoms(), m_moments, m_volume, m_volume_free);
+        {m_basis.atoms(), m_moments, m_volume, m_volume_free});
     return m_forces;
 }
 
