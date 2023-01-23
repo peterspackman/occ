@@ -15,6 +15,9 @@ using occ::core::Element;
 namespace occ::xdm {
 
 double xdm_polarizability(int n, double v, double vfree) {
+    // TODO handle charged atoms!
+    // Thakkar polarizabilities for default oxidation states
+    // are in occ::interaction but is this enough?
     return v * Element(n).polarizability() / vfree;
 }
 
@@ -26,32 +29,26 @@ xdm_dispersion_interaction_energy(const XDMAtomList &atom_info_a,
     const auto &volume_a = atom_info_a.volume;
     const auto &moments_a = atom_info_a.moments;
     const auto &volume_free_a = atom_info_a.volume_free;
+    const auto &polarizabilities_a = atom_info_a.polarizabilities;
 
     const auto &atoms_b = atom_info_b.atoms;
     const auto &volume_b = atom_info_b.volume;
     const auto &moments_b = atom_info_b.moments;
     const auto &volume_free_b = atom_info_b.volume_free;
+    const auto &polarizabilities_b = atom_info_b.polarizabilities;
 
     const size_t num_atoms_a = atoms_a.size();
-    const size_t num_atoms_b = atoms_a.size();
+    const size_t num_atoms_b = atoms_b.size();
 
     using occ::Vec3;
-    Vec polarizabilities_a(num_atoms_a);
-    Vec polarizabilities_b(num_atoms_b);
-    for (int i = 0; i < num_atoms_a; i++) {
-        polarizabilities_a(i) = xdm_polarizability(
-            atoms_a[i].atomic_number, volume_a(i), volume_free_a(i));
-    }
-    for (int i = 0; i < num_atoms_b; i++) {
-        polarizabilities_b(i) = xdm_polarizability(
-            atoms_b[i].atomic_number, volume_b(i), volume_free_b(i));
-    }
+
     Mat3N forces_a = Mat3N::Zero(3, num_atoms_a);
     Mat3N forces_b = Mat3N::Zero(3, num_atoms_b);
     double edisp = 0.0;
     for (int i = 0; i < num_atoms_a; i++) {
         Vec3 pi = {atoms_a[i].x, atoms_a[i].y, atoms_a[i].z};
         double pol_i = polarizabilities_a(i);
+
         for (int j = 0; j < num_atoms_b; j++) {
             Vec3 pj = {atoms_b[j].x, atoms_b[j].y, atoms_b[j].z};
             Vec3 v_ij = pj - pi;
@@ -110,16 +107,13 @@ std::pair<double, Mat3N> xdm_dispersion_energy(const XDMAtomList &atom_info,
     const auto &volume = atom_info.volume;
     const auto &moments = atom_info.moments;
     const auto &volume_free = atom_info.volume_free;
+    const auto &polarizabilities = atom_info.polarizabilities;
     const size_t num_atoms = atoms.size();
     using occ::Vec3;
-    Vec polarizabilities(num_atoms);
-    for (int i = 0; i < num_atoms; i++) {
-        polarizabilities(i) = xdm_polarizability(atoms[i].atomic_number,
-                                                 volume(i), volume_free(i));
-    }
+
     occ::log::debug("Volumes\n{}\n", volume);
     occ::log::debug("Volumes free\n{}\n", volume_free);
-    occ::log::debug("Polarizibilities: \n{}\n", polarizabilities);
+    occ::log::debug("Polarizabilities: \n{}\n", polarizabilities);
     Mat3N forces = Mat3N::Zero(3, num_atoms);
     double edisp = 0.0;
     for (int i = 0; i < num_atoms; i++) {
@@ -321,18 +315,22 @@ XDM::XDM(const occ::qm::AOBasis &basis) : m_basis(basis), m_grid(basis) {
 
 double XDM::energy(const occ::qm::MolecularOrbitals &mo) {
     populate_moments(mo);
+    populate_polarizabilities();
     occ::log::debug("moments\n{}\n", m_moments);
 
-    std::tie(m_energy, m_forces) = xdm_dispersion_energy(
-        {m_basis.atoms(), m_moments, m_volume, m_volume_free});
+    std::tie(m_energy, m_forces) =
+        xdm_dispersion_energy({m_basis.atoms(), m_polarizabilities, m_moments,
+                               m_volume, m_volume_free});
     return m_energy;
 }
 
 const Mat3N &XDM::forces(const occ::qm::MolecularOrbitals &mo) {
     populate_moments(mo);
+    populate_polarizabilities();
 
-    std::tie(m_energy, m_forces) = xdm_dispersion_energy(
-        {m_basis.atoms(), m_moments, m_volume, m_volume_free});
+    std::tie(m_energy, m_forces) =
+        xdm_dispersion_energy({m_basis.atoms(), m_polarizabilities, m_moments,
+                               m_volume, m_volume_free});
     return m_forces;
 }
 
@@ -416,6 +414,15 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
                     num_electrons_promol);
             }
         }
+    }
+}
+
+void XDM::populate_polarizabilities() {
+    m_polarizabilities = Vec(m_volume.rows());
+    const auto &atoms = m_basis.atoms();
+    for (int i = 0; i < m_polarizabilities.rows(); i++) {
+        m_polarizabilities(i) = xdm_polarizability(
+            atoms[i].atomic_number, m_volume(i), m_volume_free(i));
     }
 }
 

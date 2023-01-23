@@ -1,8 +1,10 @@
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/interaction/disp.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/merge.h>
+#include <occ/xdm/xdm.h>
 
 namespace occ::interaction {
 using qm::HartreeFock;
@@ -14,8 +16,10 @@ CEModelInteraction::CEModelInteraction(const CEParameterizedModel &facs)
 template <SpinorbitalKind kind>
 void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
                                double precision, const Mat &Schwarz) {
-    if (wfn.have_energies)
+    if (wfn.have_energies) {
+        occ::log::debug("Already have monomer energies, skipping");
         return;
+    }
     using occ::qm::expectation;
     using occ::qm::matrix_dimensions;
     if constexpr (kind == SpinorbitalKind::Restricted) {
@@ -52,14 +56,37 @@ void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
     wfn.have_energies = true;
 }
 
+void compute_xdm_parameters(Wavefunction &wfn) {
+    if (wfn.have_xdm_parameters) {
+        occ::log::debug("Skipping computation of parameters");
+        return;
+    }
+    occ::log::debug("Computing xdm_parameters");
+    occ::xdm::XDM xdm_calc(wfn.basis);
+    auto energy = xdm_calc.energy(wfn.mo);
+    wfn.xdm_polarizabilities = xdm_calc.polarizabilities();
+    wfn.xdm_moments = xdm_calc.moments();
+    wfn.xdm_volumes = xdm_calc.atom_volume();
+    wfn.xdm_free_volumes = xdm_calc.free_atom_volume();
+    wfn.have_xdm_parameters = true;
+    occ::log::debug("Computed xdm_parameters");
+}
+
 void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
-                               double precision, const Mat &Schwarz) {
-    if (wfn.is_restricted())
-        return compute_ce_model_energies<SpinorbitalKind::Restricted>(
+                               double precision, const Mat &Schwarz, bool xdm) {
+    if (wfn.is_restricted()) {
+        occ::log::info("Restricted wavefunction");
+        compute_ce_model_energies<SpinorbitalKind::Restricted>(
             wfn, hf, precision, Schwarz);
-    else
-        return compute_ce_model_energies<SpinorbitalKind::Unrestricted>(
+    } else {
+        occ::log::info("Unrestricted wavefunction");
+        compute_ce_model_energies<SpinorbitalKind::Unrestricted>(
             wfn, hf, precision, Schwarz);
+    }
+
+    if (xdm) {
+        compute_xdm_parameters(wfn);
+    }
 }
 
 void CEModelInteraction::set_use_density_fitting(bool value) {
@@ -107,8 +134,8 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     Mat schwarz_a = hf_a.compute_schwarz_ints();
     Mat schwarz_b = hf_b.compute_schwarz_ints();
 
-    compute_ce_model_energies(A, hf_a, precision, schwarz_a);
-    compute_ce_model_energies(B, hf_b, precision, schwarz_b);
+    compute_ce_model_energies(A, hf_a, precision, schwarz_a, scale_factors.xdm);
+    compute_ce_model_energies(B, hf_b, precision, schwarz_b, scale_factors.xdm);
 
     Wavefunction ABn(A, B);
 
@@ -127,8 +154,14 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     ABn.compute_density_matrix();
     ABo.compute_density_matrix();
 
-    compute_ce_model_energies(ABn, hf_AB, precision, schwarz_ab);
-    compute_ce_model_energies(ABo, hf_AB, precision, schwarz_ab);
+    // no need to XDM for the combined wavefunctions
+    compute_ce_model_energies(ABn, hf_AB, precision, schwarz_ab, false);
+    compute_ce_model_energies(ABo, hf_AB, precision, schwarz_ab, false);
+
+    fmt::print("ABn\n");
+    ABn.energy.print();
+    fmt::print("ABo\n");
+    ABo.energy.print();
 
     Energy E_ABn = ABn.energy - (A.energy + B.energy);
 
@@ -139,7 +172,18 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     double eABo = ABo.energy.core + ABo.energy.exchange + ABo.energy.coulomb;
     double E_rep = eABo - eABn;
     energy.exchange_repulsion = E_ABn.exchange + E_rep;
-    energy.dispersion = ce_model_dispersion_energy(A.atoms, B.atoms);
+
+    if (scale_factors.xdm) {
+        auto xdm_result = xdm::xdm_dispersion_interaction_energy(
+            {A.atoms, A.xdm_polarizabilities, A.xdm_moments, A.xdm_volumes,
+             A.xdm_free_volumes},
+            {B.atoms, B.xdm_polarizabilities, B.xdm_moments, B.xdm_volumes,
+             B.xdm_free_volumes},
+            {});
+        energy.dispersion = std::get<0>(xdm_result);
+    } else {
+        energy.dispersion = ce_model_dispersion_energy(A.atoms, B.atoms);
+    }
     energy.polarization = compute_polarization_energy(A, hf_a, B, hf_b);
 
     energy.total =

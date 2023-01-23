@@ -55,7 +55,7 @@ set_target_properties(occ
 # target_compile_options(occ PRIVATE "-ftime-report")
 
 add_executable(occ-pair "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp")
-target_link_libraries(occ-pair PUBLIC occ_interaction CLI11::CLI11)
+target_link_libraries(occ-pair PUBLIC occ_interaction occ_xdm CLI11::CLI11)
 set_target_properties(occ-pair
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"

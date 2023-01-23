@@ -9,6 +9,7 @@ namespace occ::xdm {
 
 struct XDMAtomList {
     const std::vector<occ::core::Atom> &atoms;
+    const Vec &polarizabilities;
     const Mat &moments;
     const Vec &volume;
     const Vec &volume_free;
@@ -32,8 +33,11 @@ class XDM {
     inline const auto &atom_volume() const { return m_volume; }
     inline const auto &free_atom_volume() const { return m_volume_free; }
 
+    inline const auto &polarizabilities() const { return m_polarizabilities; }
+
   private:
     void populate_moments(const occ::qm::MolecularOrbitals &mo);
+    void populate_polarizabilities();
 
     occ::qm::AOBasis m_basis;
     occ::dft::MolecularGrid m_grid;
@@ -42,6 +46,7 @@ class XDM {
     Mat m_density_matrix;
     Mat m_moments;
     Vec m_volume;
+    Vec m_polarizabilities;
     Vec m_volume_free;
     Vec m_hirshfeld_charges;
     double m_energy{0.0};

@@ -95,6 +95,11 @@ struct Wavefunction {
     Mat T, V, H, J, K;
     Energy energy;
     bool have_energies{false};
+    bool have_xdm_parameters{false};
+    Vec xdm_polarizabilities;
+    Mat xdm_moments;
+    Vec xdm_volumes;
+    Vec xdm_free_volumes;
 };
 
 Mat symmorthonormalize_molecular_orbitals(const Mat &mos, const Mat &overlap,

@@ -99,6 +99,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     occ::log::debug("Merging occupied orbitals, sorted by energy");
     // TODO refactor
     if (wfn_a.is_restricted() && wfn_b.is_restricted()) {
+        mo.kind = SpinorbitalKind::Restricted;
         // merge occupied orbitals
         Vec occ_energies_merged;
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
@@ -122,6 +123,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
         mo.C.rightCols(nv_ab) = C_merged;
         mo.energies.bottomRows(nv_ab) = energies_merged;
     } else {
+        mo.kind = SpinorbitalKind::Unrestricted;
         if (wfn_a.is_restricted()) {
             { // alpha
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
@@ -265,7 +267,33 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
             }
         }
     }
+
     update_occupied_orbitals();
+
+    if (wfn_a.have_xdm_parameters && wfn_b.have_xdm_parameters) {
+        occ::log::debug("Merging XDM parameters");
+        have_xdm_parameters = true;
+        occ::log::debug("Merging XDM polarizabilities");
+        xdm_polarizabilities = Vec(wfn_a.xdm_polarizabilities.rows() +
+                                   wfn_b.xdm_polarizabilities.rows());
+        xdm_polarizabilities << wfn_a.xdm_polarizabilities,
+            wfn_b.xdm_polarizabilities;
+
+        occ::log::debug("Merging XDM moments");
+        xdm_moments = Mat(wfn_a.xdm_moments.rows(),
+                          wfn_a.xdm_moments.cols() + wfn_b.xdm_moments.cols());
+        xdm_moments.leftCols(wfn_a.xdm_moments.cols()) = wfn_a.xdm_moments;
+        xdm_moments.rightCols(wfn_b.xdm_moments.cols()) = wfn_b.xdm_moments;
+
+        occ::log::debug("Merging XDM volumes");
+        xdm_volumes = Vec(wfn_a.xdm_volumes.rows() + wfn_b.xdm_volumes.rows());
+        xdm_volumes << wfn_a.xdm_volumes, wfn_b.xdm_volumes;
+        occ::log::debug("Merging XDM free volumes");
+        xdm_free_volumes =
+            Vec(wfn_a.xdm_free_volumes.rows() + wfn_b.xdm_free_volumes.rows());
+        xdm_free_volumes << wfn_a.xdm_free_volumes, wfn_b.xdm_free_volumes;
+        occ::log::debug("Finished merging");
+    }
 }
 
 void Wavefunction::update_occupied_orbitals() {
@@ -276,9 +304,13 @@ void Wavefunction::update_occupied_orbitals() {
         throw std::runtime_error(
             "Reading MOs from g09 unsupported for General spinorbitals");
     } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        occ::log::info("num alpha electrons = {}", num_alpha);
+        occ::log::info("num beta electrons = {}", num_beta);
         mo.Cocc =
             occ::qm::orb::occupied_unrestricted(mo.C, num_alpha, num_beta);
     } else {
+        occ::log::info("num alpha electrons = {}", num_alpha);
+        occ::log::info("num beta electrons = {}", num_alpha);
         mo.Cocc = occ::qm::orb::occupied_restricted(mo.C, num_alpha);
     }
 }

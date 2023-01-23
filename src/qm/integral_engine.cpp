@@ -1494,7 +1494,7 @@ Vec electric_potential_kernel(cint::IntegralEnvironment &env,
         } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
             const auto alpha = occ::qm::block::a(D).block(
                 args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
-            const auto beta = occ::qm::block::a(D).block(
+            const auto beta = occ::qm::block::b(D).block(
                 args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
             v(args.shell[2]) +=
                 ((alpha.array() + beta.array()) * tmp.array()).sum() * scale;
