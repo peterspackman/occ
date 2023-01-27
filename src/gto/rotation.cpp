@@ -1,5 +1,6 @@
 #include <cmath>
 #include <fmt/core.h>
+#include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
 #include <occ/gto/shell_order.h>
 
@@ -131,15 +132,17 @@ std::vector<Mat> spherical_gaussian_rotation_matrices(int lmax,
 
     rotation_matrices[0].setConstant(1.0);
     // TODO ensure order is correct for l == 1
+    // Apparently no condon-shortley phase factor for
+    // the p functions... very consistent.
     Mat rot(3, 3);
     rot(0, 0) = rotation(1, 1);
-    rot(0, 1) = -rotation(1, 2);
+    rot(0, 1) = rotation(1, 2);
     rot(0, 2) = rotation(1, 0);
-    rot(1, 0) = -rotation(2, 1);
+    rot(1, 0) = rotation(2, 1);
     rot(1, 1) = rotation(2, 2);
-    rot(1, 2) = -rotation(2, 0);
+    rot(1, 2) = rotation(2, 0);
     rot(2, 0) = rotation(0, 1);
-    rot(2, 1) = -rotation(0, 2);
+    rot(2, 1) = rotation(0, 2);
     rot(2, 2) = rotation(0, 0);
     rotation_matrices.push_back(rot);
 
@@ -150,4 +153,70 @@ std::vector<Mat> spherical_gaussian_rotation_matrices(int lmax,
     return rotation_matrices;
 }
 
+/*
+ * Result should be R: an MxM rotation matrix for P: a MxN set of coordinates
+ * giving results P' = R P
+ */
+template <int l> Mat cartesian_gaussian_rotation_matrix(const Mat3 &rotation) {
+    constexpr int num_moments = (l + 1) * (l + 2) / 2;
+    Mat result = Mat::Zero(num_moments, num_moments);
+    auto cg_powers = cartesian_gaussian_power_index_arrays<l>();
+    int p1_idx = 0;
+    for (const auto &p1 : cg_powers) {
+        int p2_idx = 0;
+        // copy as we're permuting p2
+        for (auto p2 : cg_powers) {
+            do {
+                double tmp{1.0};
+                for (int k = 0; k < l; k++) {
+                    tmp *= rotation(p2[k], p1[k]);
+                }
+                result(p2_idx, p1_idx) += tmp;
+            } while (std::next_permutation(p2.begin(), p2.end()));
+            p2_idx++;
+        }
+        p1_idx++;
+    }
+    return result;
+}
+
+Mat cartesian_gaussian_rotation_matrix(int l, const Mat3 &rotation) {
+    Mat rot;
+    switch (l) {
+    case 0:
+        rot = occ::gto::cartesian_gaussian_rotation_matrix<0>(rotation);
+        break;
+    case 1:
+        rot = occ::gto::cartesian_gaussian_rotation_matrix<1>(rotation);
+        break;
+    case 2:
+        rot = occ::gto::cartesian_gaussian_rotation_matrix<2>(rotation);
+        break;
+    case 3:
+        rot = occ::gto::cartesian_gaussian_rotation_matrix<3>(rotation);
+        break;
+    case 4:
+        rot = occ::gto::cartesian_gaussian_rotation_matrix<4>(rotation);
+    default:
+        throw std::runtime_error(
+            "MO rotation not implemented for angular momentum > 4");
+    }
+
+    return rot;
+}
+
+std::vector<Mat> cartesian_gaussian_rotation_matrices(int lmax,
+                                                      const Mat3 &rotation) {
+
+    std::vector<Mat> rotation_matrices{Mat(1, 1)};
+
+    rotation_matrices[0].setConstant(1.0);
+
+    for (int l = 1; l <= lmax; l++) {
+        rotation_matrices.push_back(
+            cartesian_gaussian_rotation_matrix(l, rotation));
+    }
+
+    return rotation_matrices;
+}
 } // namespace occ::gto

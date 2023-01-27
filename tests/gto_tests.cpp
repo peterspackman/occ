@@ -113,9 +113,10 @@ TEST_CASE("Spherical Gaussian basis <-> Cartesian Gaussian basis transforms") {
         // yy
         // yz
         // zz
-        Mat grot = occ::gto::cartesian_gaussian_rotation_matrix<l>(rotation);
-        Mat grot2 =
-            occ::gto::cartesian_gaussian_rotation_matrix<l>(rotation_reverse);
+        Mat grot =
+            occ::gto::cartesian_gaussian_rotation_matrices(l, rotation)[l];
+        Mat grot2 = occ::gto::cartesian_gaussian_rotation_matrices(
+            l, rotation_reverse)[l];
 
         // sqrt(3)*x*y -> -sqrt(3) xz idx = 0
         // sqrt(3)*y*z -> -sqrt(3) yz idx = 1

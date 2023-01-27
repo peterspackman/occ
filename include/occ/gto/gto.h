@@ -191,34 +191,6 @@ cartesian_gaussian_power_index_arrays() {
     return result;
 }
 
-/*
- * Result should be R: an MxM rotation matrix for P: a MxN set of coordinates
- * giving results P' = R P
- */
-template <int l>
-Mat cartesian_gaussian_rotation_matrix(const occ::Mat3 rotation) {
-    constexpr int num_moments = (l + 1) * (l + 2) / 2;
-    Mat result = Mat::Zero(num_moments, num_moments);
-    auto cg_powers = cartesian_gaussian_power_index_arrays<l>();
-    int p1_idx = 0;
-    for (const auto &p1 : cg_powers) {
-        int p2_idx = 0;
-        // copy as we're permuting p2
-        for (auto p2 : cg_powers) {
-            do {
-                double tmp{1.0};
-                for (int k = 0; k < l; k++) {
-                    tmp *= rotation(p2[k], p1[k]);
-                }
-                result(p2_idx, p1_idx) += tmp;
-            } while (std::next_permutation(p2.begin(), p2.end()));
-            p2_idx++;
-        }
-        p1_idx++;
-    }
-    return result;
-}
-
 Mat cartesian_to_spherical_transformation_matrix(int l);
 Mat spherical_to_cartesian_transformation_matrix(int l);
 

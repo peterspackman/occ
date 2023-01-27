@@ -5,6 +5,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
+#include <occ/gto/rotation.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/scf.h>
@@ -132,10 +133,10 @@ TEST_CASE("Electric Field evaluation H2/STO-3G") {
 
 TEST_CASE("Cartesian gaussian basic rotation matrices", "[mo_rotation]") {
     Mat3 rot = Mat3::Identity(3, 3);
-    auto drot = occ::gto::cartesian_gaussian_rotation_matrix<2>(rot);
+    auto drot = occ::gto::cartesian_gaussian_rotation_matrices(2, rot)[2];
     REQUIRE(all_close(drot, Mat::Identity(6, 6)));
 
-    auto frot = occ::gto::cartesian_gaussian_rotation_matrix<3>(rot);
+    auto frot = occ::gto::cartesian_gaussian_rotation_matrices(3, rot)[3];
     REQUIRE(all_close(frot, Mat::Identity(10, 10)));
 }
 
@@ -189,8 +190,11 @@ TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
     auto basis = occ::qm::AOBasis::load(atoms, "def2-tzvp");
-    basis.set_pure(false);
-    Mat3 rotation = -Mat3::Identity();
+    basis.set_pure(true);
+    Eigen::Quaterniond r(Eigen::AngleAxisd(
+        0.423, Eigen::Vector3d(0.234, -0.642, 0.829).normalized()));
+    Mat3 rotation = r.toRotationMatrix();
+
     fmt::print("Rotation by:\n{}\n", rotation);
     fmt::print("Distances before rotation:\n{}\n",
                interatomic_distances(atoms));
