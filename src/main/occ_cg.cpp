@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
     try {
         occ::timing::StopWatch sw;
         sw.start();
-        std::string basename = fs::path(cif_filename).stem();
+        std::string basename = fs::path(cif_filename).stem().string();
         Crystal c_symm = read_crystal(cif_filename);
         sw.stop();
         double tprev = sw.read();

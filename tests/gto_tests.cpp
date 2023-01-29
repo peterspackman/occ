@@ -204,6 +204,8 @@ TEST_CASE("Spherical GTO rotations") {
         Mat r1(3, 3);
         r1 << std::cos(alpha), 0, std::sin(alpha), 0, 1, 0, -std::sin(alpha), 0,
             std::cos(alpha);
+        fmt::print("Found  (l == 1)\n{}\n", rotations[1]);
+        fmt::print("Expect (l == 1)\n{}\n", r1);
         REQUIRE(all_close(r1, rotations[1], 1e-10, 1e-10));
 
         // order 2
@@ -255,13 +257,13 @@ TEST_CASE("Spherical GTO rotations") {
         Eigen::Matrix3d band_1 = rotations[1];
 
         REQUIRE(rot(1, 1) == band_1(0, 0));
-        REQUIRE(-rot(1, 2) == band_1(0, 1));
+        REQUIRE(rot(1, 2) == band_1(0, 1));
         REQUIRE(rot(1, 0) == band_1(0, 2));
-        REQUIRE(-rot(2, 1) == band_1(1, 0));
+        REQUIRE(rot(2, 1) == band_1(1, 0));
         REQUIRE(rot(2, 2) == band_1(1, 1));
-        REQUIRE(-rot(2, 0) == band_1(1, 2));
+        REQUIRE(rot(2, 0) == band_1(1, 2));
         REQUIRE(rot(0, 1) == band_1(2, 0));
-        REQUIRE(-rot(0, 2) == band_1(2, 1));
+        REQUIRE(rot(0, 2) == band_1(2, 1));
         REQUIRE(rot(0, 0) == band_1(2, 2));
 
         // The l = 2 band transformation is significantly more complex in terms
@@ -270,41 +272,41 @@ TEST_CASE("Spherical GTO rotations") {
         Mat band_2 = rotations[2];
         REQUIRE(rot(0, 0) * rot(1, 1) + rot(0, 1) * rot(1, 0) ==
                 Approx(band_2(0, 0)).epsilon(1e-10));
-        REQUIRE(-rot(0, 1) * rot(1, 2) - rot(0, 2) * rot(1, 1) ==
+        REQUIRE(rot(0, 1) * rot(1, 2) + rot(0, 2) * rot(1, 1) ==
                 Approx(band_2(0, 1)).epsilon(1e-10));
         REQUIRE(-std::sqrt(3) / 3 *
                     (rot(0, 0) * rot(1, 0) + rot(0, 1) * rot(1, 1) -
                      2 * rot(0, 2) * rot(1, 2)) ==
                 Approx(band_2(0, 2)).epsilon(1e-10));
-        REQUIRE(-rot(0, 0) * rot(1, 2) - rot(0, 2) * rot(1, 0) ==
+        REQUIRE(rot(0, 0) * rot(1, 2) + rot(0, 2) * rot(1, 0) ==
                 Approx(band_2(0, 3)).epsilon(1e-10));
         REQUIRE(rot(0, 0) * rot(1, 0) - rot(0, 1) * rot(1, 1) ==
                 Approx(band_2(0, 4)).epsilon(1e-10));
 
-        REQUIRE(-rot(1, 0) * rot(2, 1) - rot(1, 1) * rot(2, 0) ==
+        REQUIRE(rot(1, 0) * rot(2, 1) + rot(1, 1) * rot(2, 0) ==
                 Approx(band_2(1, 0)).epsilon(1e-10));
         REQUIRE(rot(1, 1) * rot(2, 2) + rot(1, 2) * rot(2, 1) ==
                 Approx(band_2(1, 1)).epsilon(1e-10));
-        REQUIRE(std::sqrt(3) / 3 *
+        REQUIRE(-std::sqrt(3) / 3 *
                     (rot(1, 0) * rot(2, 0) + rot(1, 1) * rot(2, 1) -
                      2 * rot(1, 2) * rot(2, 2)) ==
                 Approx(band_2(1, 2)).epsilon(1e-10));
         REQUIRE(rot(1, 0) * rot(2, 2) + rot(1, 2) * rot(2, 0) ==
                 Approx(band_2(1, 3)).epsilon(1e-10));
-        REQUIRE(-rot(1, 0) * rot(2, 0) + rot(1, 1) * rot(2, 1) ==
+        REQUIRE(rot(1, 0) * rot(2, 0) - rot(1, 1) * rot(2, 1) ==
                 Approx(band_2(1, 4)).epsilon(1e-10));
 
         REQUIRE(-std::sqrt(3) / 3 *
                     (rot(0, 0) * rot(0, 1) + rot(1, 0) * rot(1, 1) -
                      2 * rot(2, 0) * rot(2, 1)) ==
                 Approx(band_2(2, 0)).epsilon(1e-10));
-        REQUIRE(std::sqrt(3) / 3 *
+        REQUIRE(-std::sqrt(3) / 3 *
                     (rot(0, 1) * rot(0, 2) + rot(1, 1) * rot(1, 2) -
                      2 * rot(2, 1) * rot(2, 2)) ==
                 Approx(band_2(2, 1)).epsilon(1e-10));
         REQUIRE(-0.5 * (1 - 3 * rot(2, 2) * rot(2, 2)) ==
                 Approx(band_2(2, 2)).epsilon(1e-10));
-        REQUIRE(std::sqrt(3) / 3 *
+        REQUIRE(-std::sqrt(3) / 3 *
                     (rot(0, 0) * rot(0, 2) + rot(1, 0) * rot(1, 2) -
                      2 * rot(2, 0) * rot(2, 2)) ==
                 Approx(band_2(2, 3)).epsilon(1e-10));
@@ -314,29 +316,29 @@ TEST_CASE("Spherical GTO rotations") {
                      2 * rot(2, 0) * rot(2, 0) - 2 * rot(2, 1) * rot(2, 1)) ==
                 Approx(band_2(2, 4)).epsilon(1e-10));
 
-        REQUIRE(-rot(0, 0) * rot(2, 1) - rot(0, 1) * rot(2, 0) ==
+        REQUIRE(rot(0, 0) * rot(2, 1) + rot(0, 1) * rot(2, 0) ==
                 Approx(band_2(3, 0)).epsilon(1e-10));
         REQUIRE(rot(0, 1) * rot(2, 2) + rot(0, 2) * rot(2, 1) ==
                 Approx(band_2(3, 1)).epsilon(1e-10));
-        REQUIRE(std::sqrt(3) / 3 *
+        REQUIRE(-std::sqrt(3) / 3 *
                     (rot(0, 0) * rot(2, 0) + rot(0, 1) * rot(2, 1) -
                      2 * rot(0, 2) * rot(2, 2)) ==
                 Approx(band_2(3, 2)).epsilon(1e-10));
         REQUIRE(rot(0, 0) * rot(2, 2) + rot(0, 2) * rot(2, 0) ==
                 Approx(band_2(3, 3)).epsilon(1e-10));
-        REQUIRE(-rot(0, 0) * rot(2, 0) + rot(0, 1) * rot(2, 1) ==
+        REQUIRE(rot(0, 0) * rot(2, 0) - rot(0, 1) * rot(2, 1) ==
                 Approx(band_2(3, 4)).epsilon(1e-10));
 
         REQUIRE(rot(0, 0) * rot(0, 1) - rot(1, 0) * rot(1, 1) ==
                 Approx(band_2(4, 0)).epsilon(1e-10));
-        REQUIRE(-rot(0, 1) * rot(0, 2) + rot(1, 1) * rot(1, 2) ==
+        REQUIRE(rot(0, 1) * rot(0, 2) - rot(1, 1) * rot(1, 2) ==
                 Approx(band_2(4, 1)).epsilon(1e-10));
         REQUIRE(std::sqrt(3) / 6 *
                     (-rot(0, 0) * rot(0, 0) - rot(0, 1) * rot(0, 1) +
                      rot(1, 0) * rot(1, 0) + rot(1, 1) * rot(1, 1) +
                      2 * rot(0, 2) * rot(0, 2) - 2 * rot(1, 2) * rot(1, 2)) ==
                 Approx(band_2(4, 2)).epsilon(1e-10));
-        REQUIRE(-rot(0, 0) * rot(0, 2) + rot(1, 0) * rot(1, 2) ==
+        REQUIRE(rot(0, 0) * rot(0, 2) - rot(1, 0) * rot(1, 2) ==
                 Approx(band_2(4, 3)).epsilon(1e-10));
         REQUIRE(0.5 * (rot(0, 0) * rot(0, 0) - rot(0, 1) * rot(0, 1) -
                        rot(1, 0) * rot(1, 0) + rot(1, 1) * rot(1, 1)) ==
