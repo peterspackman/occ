@@ -136,6 +136,9 @@ template <typename Proc> class SolvationCorrectedProcedure {
     bool supports_incremental_fock_build() const {
         return m_proc.supports_incremental_fock_build();
     }
+    inline bool have_effective_core_potentials() const {
+        return m_proc.have_effective_core_potentials();
+    }
     inline const auto &atoms() const { return m_proc.atoms(); }
     inline const auto &aobasis() const { return m_proc.aobasis(); }
     inline auto nbf() const { return m_proc.nbf(); }
@@ -144,7 +147,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
 
     void set_system_charge(int charge) { m_proc.set_system_charge(charge); }
     int system_charge() const { return m_proc.system_charge(); }
-    int num_e() const { return m_proc.num_e(); }
+    int total_electrons() const { return m_proc.total_electrons(); }
+    int active_electrons() const { return m_proc.active_electrons(); }
 
     bool usual_scf_energy() const { return m_proc.usual_scf_energy(); }
 
@@ -181,6 +185,10 @@ template <typename Proc> class SolvationCorrectedProcedure {
 
     auto compute_nuclear_attraction_matrix() const {
         return m_proc.compute_nuclear_attraction_matrix();
+    }
+
+    auto compute_effective_core_potential_matrix() const {
+        return m_proc.compute_effective_core_potential_matrix();
     }
 
     auto compute_schwarz_ints() const { return m_proc.compute_schwarz_ints(); }

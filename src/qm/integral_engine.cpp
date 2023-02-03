@@ -428,11 +428,100 @@ Mat IntegralEngine::one_electron_operator(Op op,
     }
 }
 
+template <ShellKind kind = ShellKind::Cartesian>
+Mat ecp_operator_kernel(libecpint::ECPIntegrator &integral_factory,
+                        const ShellPairList &shellpairs) {
+    using Result = IntegralEngine::IntegralResult<2>;
+    auto nthreads = occ::parallel::get_num_threads();
+    const int nbf = integral_factory.ncart;
+    Mat result = Mat::Zero(nbf, nbf);
+    integral_factory.compute_integrals();
+    fmt::print("Integrals have shape {} {}\n", nbf, nbf);
+    result = Eigen::Map<const occ::Mat>(integral_factory.integrals.data.data(),
+                                        nbf, nbf);
+    return result;
+}
+
+Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
+    if (!have_effective_core_potentials())
+        throw std::runtime_error(
+            "Called effective_core_potential without any ECPs");
+
+    bool spherical = is_spherical();
+    constexpr auto Cart = ShellKind::Cartesian;
+    constexpr auto Sph = ShellKind::Spherical;
+    ShellPairList empty_shellpairs = {};
+    const auto &shellpairs =
+        use_shellpair_list ? m_shellpairs : empty_shellpairs;
+    if (spherical) {
+        return ecp_operator_kernel<Sph>(m_ecp_integral_factory, shellpairs);
+    } else {
+        return ecp_operator_kernel<Cart>(m_ecp_integral_factory, shellpairs);
+    }
+}
+
+void IntegralEngine::set_effective_core_potentials(
+    const ShellList &ecp_shells, const std::vector<int> &ecp_electrons) {
+    int num_shells = m_aobasis.size();
+    const auto &atoms = m_aobasis.atoms();
+    std::vector<double> coords;
+    std::vector<double> exps;
+    std::vector<double> coeffs;
+    std::vector<int> ams;
+    std::vector<int> lengths;
+    for (const auto &sh : m_aobasis.shells()) {
+        for (int i = 0; i < 3; i++) {
+            coords.push_back(sh.origin(i));
+        }
+        int length = sh.num_primitives();
+        lengths.push_back(length);
+        ams.push_back(sh.l);
+        for (int i = 0; i < length; i++) {
+            exps.push_back(sh.exponents(i));
+            coeffs.push_back(sh.contraction_coefficients(i, 0));
+        }
+    }
+    for (int i = 0; i < ecp_electrons.size(); i++) {
+        m_env.set_atom_charge(i, atoms[i].atomic_number - ecp_electrons[i]);
+    }
+    fmt::print("Setting gaussian basis for ECP integrals\n");
+    m_ecp_integral_factory.set_gaussian_basis(num_shells, coords.data(),
+                                              exps.data(), coeffs.data(),
+                                              ams.data(), lengths.data());
+
+    coords.clear();
+    ams.clear();
+    lengths.clear();
+    exps.clear();
+    coeffs.clear();
+    std::vector<int> r_exponents;
+
+    for (const auto &sh : ecp_shells) {
+        for (int i = 0; i < 3; i++) {
+            coords.push_back(sh.origin(i));
+        }
+        int length = sh.num_primitives();
+        lengths.push_back(length);
+        for (int i = 0; i < length; i++) {
+            ams.push_back(sh.l);
+            exps.push_back(sh.exponents(i));
+            coeffs.push_back(sh.contraction_coefficients(i, 0));
+            r_exponents.push_back(sh.ecp_r_exponents(i));
+        }
+    }
+
+    int num_ecps = lengths.size();
+    m_ecp_integral_factory.set_ecp_basis(num_ecps, coords.data(), exps.data(),
+                                         coeffs.data(), ams.data(),
+                                         r_exponents.data(), lengths.data());
+    m_ecp_integral_factory.init(0);
+    m_have_ecp = true;
+}
+
 template <int order, SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
                      const ShellPairList &shellpairs,
                      const MolecularOrbitals &mo, const Vec3 &origin) {
-
     using Result = IntegralEngine::IntegralResult<2>;
     constexpr std::array<Op, 5> ops{Op::overlap, Op::dipole, Op::quadrupole,
                                     Op::octapole, Op::hexadecapole};
@@ -567,7 +656,6 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
 
 Vec IntegralEngine::multipole(int order, const MolecularOrbitals &mo,
                               const Vec3 &origin) const {
-
     bool spherical = is_spherical();
     constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
@@ -1207,8 +1295,8 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
                         int bf4_first = shell2bf_D[s4];
                         int n4 = D_bs[s4].size();
 
-                        // compute the permutational degeneracy (i.e. # of
-                        // equivalents) of the given shell set
+                        // compute the permutational degeneracy (i.e. #
+                        // of equivalents) of the given shell set
                         double s12_deg = (s1 == s2) ? 1.0 : 2.0;
 
                         std::array<int, 4> dims;

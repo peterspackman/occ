@@ -35,7 +35,8 @@ namespace block = occ::qm::block;
 namespace impl {
 
 template <typename Procedure, SpinorbitalKind sk>
-void set_core_matrices(const Procedure &proc, Mat &S, Mat &T, Mat &V, Mat &H) {
+void set_core_matrices(const Procedure &proc, Mat &S, Mat &T, Mat &V, Mat &H,
+                       Mat &Vecp) {
     if constexpr (sk == Restricted) {
         S = proc.compute_overlap_matrix();
         T = proc.compute_kinetic_matrix();
@@ -56,6 +57,12 @@ void set_core_matrices(const Procedure &proc, Mat &S, Mat &T, Mat &V, Mat &H) {
         block::bb(V) = block::aa(V);
     }
     H = T + V;
+    if (proc.have_effective_core_potentials()) {
+        fmt::print("Computing effective core potential matrix\n");
+        Vecp = proc.compute_effective_core_potential_matrix();
+        H = H + Vecp;
+        fmt::print("Vecp\n{}\n", Vecp);
+    }
 }
 
 template <SpinorbitalKind sk>
@@ -83,7 +90,10 @@ void set_conditioning_orthogonalizer(const Mat &S, Mat &X, Mat &Xinv,
 template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
 
     SCF(Procedure &procedure) : m_procedure(procedure) {
-        n_electrons = m_procedure.num_e();
+        n_electrons = m_procedure.active_electrons();
+        fmt::print("{} active electrons\n", n_electrons);
+        fmt::print("{} frozen electrons\n", m_procedure.total_electrons() -
+                                                m_procedure.active_electrons());
         nbf = m_procedure.nbf();
         size_t rows, cols;
         std::tie(rows, cols) =
@@ -233,7 +243,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         mo = wfn.mo;
         update_occupied_orbital_count();
         impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T,
-                                                             V, H);
+                                                             V, H, Vecp);
         F = H;
         impl::set_conditioning_orthogonalizer<spinorbital_kind>(
             S, X, Xinv, XtX_condition_number);
@@ -246,7 +256,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         log::info("Computing initial guess using SOAD in minimal basis");
         const auto tstart = std::chrono::high_resolution_clock::now();
         impl::set_core_matrices<Procedure, spinorbital_kind>(m_procedure, S, T,
-                                                             V, H);
+                                                             V, H, Vecp);
         F = H;
         occ::timing::start(occ::timing::category::la);
         impl::set_conditioning_orthogonalizer<spinorbital_kind>(
@@ -311,6 +321,10 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
             energy["total"] =
                 energy["electronic"] + energy["nuclear.repulsion"];
             occ::timing::stop(occ::timing::category::la);
+        }
+        if (m_procedure.have_effective_core_potentials()) {
+            energy["electronic.ecp"] =
+                expectation<spinorbital_kind>(mo.D, Vecp);
         }
         m_procedure.update_scf_energy(energy, incremental);
     }
@@ -464,7 +478,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
     double next_reset_threshold = 0.0;
     size_t last_reset_iteration = 0;
     occ::qm::MolecularOrbitals mo;
-    Mat S, T, V, H, K, X, Xinv, F, Vpc;
+    Mat S, T, V, H, K, X, Xinv, F, Vpc, Vecp;
     double XtX_condition_number;
     bool m_have_initial_guess{false};
 };

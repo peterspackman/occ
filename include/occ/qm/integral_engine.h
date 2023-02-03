@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <libecpint.hpp>
 #include <occ/core/atom.h>
 #include <occ/core/multipole.h>
 #include <occ/core/parallel.h>
@@ -9,12 +10,18 @@
 #include <occ/qm/mo.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/shellblock_norm.h>
+#include <optional>
 #include <vector>
 
 namespace occ::qm {
 
 class IntegralEngine {
   public:
+    struct ECPCenter {
+        int index{0};
+        libecpint::ECP ecp;
+    };
+
     template <size_t num_centers> struct IntegralResult {
         int thread{0};
         std::array<int, num_centers> shell{0};
@@ -99,7 +106,12 @@ class IntegralEngine {
         return m_auxbasis.nsh() > 0;
     }
 
+    inline bool have_effective_core_potentials() const noexcept {
+        return m_have_ecp;
+    }
+
     Mat one_electron_operator(Op op, bool use_shellpair_list = true) const;
+    Mat effective_core_potential(bool use_shellpair_list = true) const;
     Mat fock_operator(SpinorbitalKind, const MolecularOrbitals &mo,
                       const Mat &Schwarz = Mat()) const;
     Mat fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
@@ -149,12 +161,18 @@ class IntegralEngine {
         return m_aobasis.kind() == Shell::Kind::Spherical;
     }
 
+    void set_effective_core_potentials(const ShellList &ecp_shells,
+                                       const std::vector<int> &ecp_electrons);
+
   private:
     double m_precision{1e-12};
     AOBasis m_aobasis, m_auxbasis;
     ShellPairList m_shellpairs;
     // TODO remove mutable
     mutable IntEnv m_env;
+
+    bool m_have_ecp{false};
+    mutable libecpint::ECPIntegrator m_ecp_integral_factory;
 
     inline size_t buffer_size_1e(const Op op = Op::overlap) const {
         auto bufsize = m_aobasis.max_shell_size() * m_aobasis.max_shell_size();

@@ -20,6 +20,7 @@ target_link_libraries(occ_qm
     occ_io
     occ_gto
     libcint::libcint
+    ECPINT::ecpint
 )
 target_include_directories(occ_qm PUBLIC 
     ${OCC_INCLUDE_DIR} 

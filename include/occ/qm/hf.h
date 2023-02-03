@@ -24,7 +24,8 @@ class HartreeFock {
     inline auto nbf() const { return m_engine.nbf(); }
 
     int system_charge() const { return m_charge; }
-    int num_e() const { return m_num_e; }
+    int total_electrons() const { return m_num_e; }
+    int active_electrons() const { return m_num_e - m_num_frozen; }
 
     Vec3 center_of_mass() const;
 
@@ -35,6 +36,9 @@ class HartreeFock {
     }
     bool supports_incremental_fock_build() const { return !m_df_engine; }
 
+    inline bool have_effective_core_potentials() const {
+        return m_engine.have_effective_core_potentials();
+    }
     void set_system_charge(int charge);
     void set_density_fitting_basis(const std::string &);
     double nuclear_repulsion_energy() const;
@@ -56,6 +60,7 @@ class HartreeFock {
     Mat compute_kinetic_matrix() const;
     Mat compute_overlap_matrix() const;
     Mat compute_nuclear_attraction_matrix() const;
+    Mat compute_effective_core_potential_matrix() const;
     Mat compute_point_charge_interaction_matrix(
         const PointChargeList &point_charges) const;
 
@@ -105,7 +110,9 @@ class HartreeFock {
   private:
     int m_charge{0};
     int m_num_e{0};
+    int m_num_frozen{0};
     std::vector<occ::core::Atom> m_atoms;
+    std::vector<int> m_frozen_electrons;
     mutable std::unique_ptr<IntegralEngineDF> m_df_engine{nullptr};
     mutable occ::qm::IntegralEngine m_engine;
 };

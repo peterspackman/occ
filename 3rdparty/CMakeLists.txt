@@ -94,6 +94,13 @@ target_include_directories(
     "${libcint_BINARY_DIR}/include"
 )
 
+CPMAddPackage(
+    NAME libecpint
+    GITHUB_REPOSITORY "robashaw/libecpint"
+    GIT_TAG "v1.0.7"
+    OPTIONS "LIBECPINT_BUILD_TESTS OFF" "LIBECPINT_BUILD_DOCS OFF"
+)
+
 if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc
