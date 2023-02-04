@@ -42,6 +42,7 @@ struct Shell {
     void incorporate_shell_norm();
     double coeff_normalized(Eigen::Index contr_idx,
                             Eigen::Index coeff_idx) const;
+    Mat coeffs_normalized_for_libecpint() const;
     size_t size() const;
 
     static char l_to_symbol(uint_fast8_t l);
@@ -62,6 +63,7 @@ struct Shell {
     Vec3 origin;
     Vec exponents;
     Mat contraction_coefficients;
+    Mat u_coefficients; // unnormalized coefficients
     Vec max_ln_coefficient;
     IVec ecp_r_exponents;
     double extent{0.0};

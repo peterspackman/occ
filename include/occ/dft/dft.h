@@ -97,6 +97,9 @@ class DFT {
     int system_charge() const { return m_hf.system_charge(); }
     int total_electrons() const { return m_hf.total_electrons(); }
     int active_electrons() const { return m_hf.active_electrons(); }
+    inline const auto &frozen_electrons() const {
+        return m_hf.frozen_electrons();
+    }
 
     void set_density_fitting_basis(const std::string &density_fitting_basis) {
         m_hf.set_density_fitting_basis(density_fitting_basis);

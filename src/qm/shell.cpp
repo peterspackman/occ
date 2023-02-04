@@ -73,6 +73,16 @@ double gint(int n, double alpha) {
     return std::tgamma(n1_2) / (2 * std::pow(alpha, n1_2));
 }
 
+double psi4_primitive_normalization(int n, double alpha) {
+    double tmp1 = n + 1.5;
+    double g = 2.0 * alpha;
+    double z = std::pow(g, tmp1);
+    double normg =
+        std::sqrt((pow(2.0, n) * z) / (M_PI * std::sqrt(M_PI) *
+                                       occ::util::double_factorial(2 * n)));
+    return normg;
+}
+
 double gto_norm(int l, double alpha) {
     // to evaluate without the gamma function:
     // sqrt of the following:
@@ -124,6 +134,7 @@ Shell::Shell(const int ang, const std::vector<double> &expo,
             contraction_coefficients(i, j) = contr[j][i];
         }
     }
+    u_coefficients = contraction_coefficients;
     origin = {pos[0], pos[1], pos[2]};
 }
 
@@ -133,6 +144,7 @@ Shell::Shell(const occ::core::PointCharge &point_charge)
     exponents(0) = alpha;
     contraction_coefficients(0, 0) =
         -point_charge.first / (2 * constants::sqrt_pi<double> * gint(2, alpha));
+    u_coefficients = contraction_coefficients;
     origin = {point_charge.second[0], point_charge.second[1],
               point_charge.second[2]};
 }
@@ -142,6 +154,7 @@ Shell::Shell() : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
     exponents(0) = alpha;
     contraction_coefficients(0, 0) =
         -1 / (2 * constants::sqrt_pi<double> * gint(2, alpha));
+    u_coefficients = contraction_coefficients;
     origin = {0, 0, 0};
 }
 
@@ -181,6 +194,39 @@ double Shell::norm() const {
 
 double Shell::max_exponent() const { return exponents.maxCoeff(); }
 double Shell::min_exponent() const { return exponents.minCoeff(); }
+
+Mat Shell::coeffs_normalized_for_libecpint() const {
+    Mat result = contraction_coefficients;
+    for (int i = 0; i < num_primitives(); ++i) {
+        double normalization = psi4_primitive_normalization(l, exponents(i));
+        result(i, 0) *= normalization;
+    }
+    double e_sum = 0.0, g, z;
+
+    for (int i = 0; i < num_primitives(); ++i) {
+        for (int j = 0; j < num_primitives(); ++j) {
+            g = exponents(i) + exponents(j);
+            z = std::pow(g, l + 1.5);
+            e_sum += result(i, 0) * result(j, 0) / z;
+        }
+    }
+
+    double tmp =
+        ((2.0 * M_PI / M_2_SQRTPI) * occ::util::double_factorial(2 * l)) /
+        std::pow(2.0, l);
+    double norm = std::sqrt(1.0 / (tmp * e_sum));
+
+    // Set the normalization
+    for (int i = 0; i < num_primitives(); ++i) {
+        result(i, 0) *= norm;
+    }
+
+    if (norm != norm) {
+        for (int i = 0; i < num_primitives(); ++i)
+            result(i, 0) = 1.0;
+    }
+    return result;
+}
 
 void Shell::incorporate_shell_norm() {
     for (size_t i = 0; i < num_primitives(); i++) {

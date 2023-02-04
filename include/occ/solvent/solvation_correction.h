@@ -149,6 +149,9 @@ template <typename Proc> class SolvationCorrectedProcedure {
     int system_charge() const { return m_proc.system_charge(); }
     int total_electrons() const { return m_proc.total_electrons(); }
     int active_electrons() const { return m_proc.active_electrons(); }
+    inline const auto &frozen_electrons() const {
+        return m_proc.frozen_electrons();
+    }
 
     bool usual_scf_energy() const { return m_proc.usual_scf_energy(); }
 

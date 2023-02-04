@@ -71,20 +71,20 @@ Mat HartreeFock::compute_effective_core_potential_matrix() const {
     return m_engine.effective_core_potential();
 }
 
-Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
+Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                           const qm::AOBasis &bs,
                                           bool is_shell_diagonal) {
     using Kind = occ::qm::Shell::Kind;
-    if (mo_bs.kind == SpinorbitalKind::Restricted) {
-        return m_engine.fock_operator_mixed_basis(mo_bs.D, bs,
+    if (mo_minbs.kind == SpinorbitalKind::Restricted) {
+        return m_engine.fock_operator_mixed_basis(mo_minbs.D, bs,
                                                   is_shell_diagonal);
-    } else if (mo_bs.kind == SpinorbitalKind::Unrestricted) {
+    } else if (mo_minbs.kind == SpinorbitalKind::Unrestricted) {
         const auto [rows, cols] =
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(
                 m_engine.aobasis().nbf());
         Mat F = Mat::Zero(rows, cols);
-        qm::block::a(F) =
-            m_engine.fock_operator_mixed_basis(mo_bs.D, bs, is_shell_diagonal);
+        qm::block::a(F) = m_engine.fock_operator_mixed_basis(mo_minbs.D, bs,
+                                                             is_shell_diagonal);
         qm::block::b(F) = qm::block::a(F);
         return F;
     } else { // kind == SpinorbitalKind::General
@@ -92,8 +92,8 @@ Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
             occ::qm::matrix_dimensions<SpinorbitalKind::General>(
                 m_engine.aobasis().nbf());
         Mat F = Mat::Zero(rows, cols);
-        qm::block::aa(F) =
-            m_engine.fock_operator_mixed_basis(mo_bs.D, bs, is_shell_diagonal);
+        qm::block::aa(F) = m_engine.fock_operator_mixed_basis(
+            mo_minbs.D, bs, is_shell_diagonal);
         qm::block::bb(F) = qm::block::aa(F);
         return F;
     }

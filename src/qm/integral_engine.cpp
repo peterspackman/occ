@@ -476,9 +476,17 @@ void IntegralEngine::set_effective_core_potentials(
         int length = sh.num_primitives();
         lengths.push_back(length);
         ams.push_back(sh.l);
+        Mat coeffs_norm = sh.contraction_coefficients;
         for (int i = 0; i < length; i++) {
+            double c = coeffs_norm(i, 0);
+            if (sh.l == 0) {
+                c *= 0.28209479177387814; // 1 / (2 * sqrt(pi))
+            }
+            if (sh.l == 1) {
+                c *= 0.4886025119029199; // sqrt(3) / (2 * sqrt(pi))
+            }
             exps.push_back(sh.exponents(i));
-            coeffs.push_back(sh.contraction_coefficients(i, 0));
+            coeffs.push_back(c);
         }
     }
     for (int i = 0; i < ecp_electrons.size(); i++) {
@@ -496,19 +504,39 @@ void IntegralEngine::set_effective_core_potentials(
     coeffs.clear();
     std::vector<int> r_exponents;
 
+    Vec3 pt = ecp_shells[0].origin;
+    int length = 0;
     for (const auto &sh : ecp_shells) {
-        for (int i = 0; i < 3; i++) {
-            coords.push_back(sh.origin(i));
+        if ((pt - sh.origin).norm() > 1e-3) {
+            for (int i = 0; i < 3; i++) {
+                coords.push_back(pt(i));
+            }
+            lengths.push_back(length);
+            length = 0;
+            pt = sh.origin;
         }
-        int length = sh.num_primitives();
-        lengths.push_back(length);
-        for (int i = 0; i < length; i++) {
+        length += sh.num_primitives();
+        for (int i = 0; i < sh.num_primitives(); i++) {
             ams.push_back(sh.l);
             exps.push_back(sh.exponents(i));
             coeffs.push_back(sh.contraction_coefficients(i, 0));
             r_exponents.push_back(sh.ecp_r_exponents(i));
         }
     }
+    lengths.push_back(length);
+    for (int i = 0; i < 3; i++) {
+        coords.push_back(pt(i));
+    }
+    fmt::print("Setting ECP basis\n");
+    fmt::print("ns.size = {}\n", r_exponents.size());
+    fmt::print("coords.size = {}\n", coords.size());
+    fmt::print("coeffs.size = {}\n", coeffs.size());
+    fmt::print("exps.size = {}\n", exps.size());
+    fmt::print("lengths.size = {}\n", lengths.size());
+    for (const auto &length : lengths) {
+        fmt::print("{}\n", length);
+    }
+    fmt::print("ams.size = {}\n", ams.size());
 
     int num_ecps = lengths.size();
     m_ecp_integral_factory.set_ecp_basis(num_ecps, coords.data(), exps.data(),

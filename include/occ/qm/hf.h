@@ -23,9 +23,10 @@ class HartreeFock {
     inline const auto &aobasis() const { return m_engine.aobasis(); }
     inline auto nbf() const { return m_engine.nbf(); }
 
-    int system_charge() const { return m_charge; }
-    int total_electrons() const { return m_num_e; }
-    int active_electrons() const { return m_num_e - m_num_frozen; }
+    inline int system_charge() const { return m_charge; }
+    inline int total_electrons() const { return m_num_e; }
+    inline int active_electrons() const { return m_num_e - m_num_frozen; }
+    inline const auto &frozen_electrons() const { return m_frozen_electrons; }
 
     Vec3 center_of_mass() const;
 
@@ -47,7 +48,7 @@ class HartreeFock {
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const;
 
-    Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
+    Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                  const qm::AOBasis &bs, bool is_shell_diagonal);
     std::pair<Mat, Mat>
     compute_JK(const MolecularOrbitals &mo,
@@ -88,6 +89,7 @@ class HartreeFock {
                 result.components[offset++] = c(j);
             }
         }
+        result.components[0] -= m_num_frozen;
         return result;
     }
 
