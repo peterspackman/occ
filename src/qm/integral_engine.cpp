@@ -1,3 +1,4 @@
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/qm/integral_engine.h>
 
@@ -436,7 +437,6 @@ Mat ecp_operator_kernel(libecpint::ECPIntegrator &integral_factory,
     const int nbf = integral_factory.ncart;
     Mat result = Mat::Zero(nbf, nbf);
     integral_factory.compute_integrals();
-    fmt::print("Integrals have shape {} {}\n", nbf, nbf);
     result = Eigen::Map<const occ::Mat>(integral_factory.integrals.data.data(),
                                         nbf, nbf);
     return result;
@@ -492,7 +492,7 @@ void IntegralEngine::set_effective_core_potentials(
     for (int i = 0; i < ecp_electrons.size(); i++) {
         m_env.set_atom_charge(i, atoms[i].atomic_number - ecp_electrons[i]);
     }
-    fmt::print("Setting gaussian basis for ECP integrals\n");
+    occ::log::debug("Setting gaussian basis for ECP integrals");
     m_ecp_integral_factory.set_gaussian_basis(num_shells, coords.data(),
                                               exps.data(), coeffs.data(),
                                               ams.data(), lengths.data());
@@ -527,17 +527,6 @@ void IntegralEngine::set_effective_core_potentials(
     for (int i = 0; i < 3; i++) {
         coords.push_back(pt(i));
     }
-    fmt::print("Setting ECP basis\n");
-    fmt::print("ns.size = {}\n", r_exponents.size());
-    fmt::print("coords.size = {}\n", coords.size());
-    fmt::print("coeffs.size = {}\n", coeffs.size());
-    fmt::print("exps.size = {}\n", exps.size());
-    fmt::print("lengths.size = {}\n", lengths.size());
-    for (const auto &length : lengths) {
-        fmt::print("{}\n", length);
-    }
-    fmt::print("ams.size = {}\n", ams.size());
-
     int num_ecps = lengths.size();
     m_ecp_integral_factory.set_ecp_basis(num_ecps, coords.data(), exps.data(),
                                          coeffs.data(), ams.data(),
