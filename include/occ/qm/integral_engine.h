@@ -172,7 +172,12 @@ class IntegralEngine {
     mutable IntEnv m_env;
 
     bool m_have_ecp{false};
-    mutable libecpint::ECPIntegrator m_ecp_integral_factory;
+    std::vector<libecpint::GaussianShell> m_ecp_gaussian_shells;
+    std::vector<libecpint::GaussianShell> m_ecp_aux_gaussian_shells;
+    std::vector<libecpint::ECP>
+        m_ecp; // might need to track center info for derivatives
+    int m_ecp_ao_max_l{0};
+    int m_ecp_max_l{0};
 
     inline size_t buffer_size_1e(const Op op = Op::overlap) const {
         auto bufsize = m_aobasis.max_shell_size() * m_aobasis.max_shell_size();

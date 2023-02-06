@@ -429,17 +429,81 @@ Mat IntegralEngine::one_electron_operator(Op op,
     }
 }
 
-template <ShellKind kind = ShellKind::Cartesian>
-Mat ecp_operator_kernel(libecpint::ECPIntegrator &integral_factory,
-                        const ShellPairList &shellpairs) {
+template <typename Lambda>
+void evaluate_two_center_ecp_with_shellpairs(
+    Lambda &f, const std::vector<libecpint::GaussianShell> &shells,
+    const std::vector<libecpint::ECP> &ecps, int lmax1, int lmax2,
+    const ShellPairList &shellpairs, int thread_id = 0) {
+    libecpint::ECPIntegral ecp_integral(lmax1, lmax2, 0);
     using Result = IntegralEngine::IntegralResult<2>;
     auto nthreads = occ::parallel::get_num_threads();
-    const int nbf = integral_factory.ncart;
-    Mat result = Mat::Zero(nbf, nbf);
-    integral_factory.compute_integrals();
-    result = Eigen::Map<const occ::Mat>(integral_factory.integrals.data.data(),
-                                        nbf, nbf);
-    return result;
+
+    std::array<int, 2> dims;
+    std::array<int, 2> bfs{-1, -1}; // ignore this
+
+    libecpint::TwoIndex<double> tmp;
+    for (int p = 0, pq = 0; p < shells.size(); p++) {
+        const auto &sh1 = shells[p];
+
+        dims[0] = sh1.ncartesian();
+
+        for (const int &q : shellpairs.at(p)) {
+            if (pq++ % nthreads != thread_id)
+                continue;
+            const auto &sh2 = shells[q];
+            dims[1] = sh2.ncartesian();
+            libecpint::TwoIndex<double> buffer(dims[0], dims[1], 0.0);
+
+            std::array<int, 2> idxs{p, q};
+            for (const auto &U : ecps) {
+                ecp_integral.compute_shell_pair(U, sh1, sh2, tmp);
+                buffer.add(tmp);
+            }
+            Result args{thread_id, idxs, bfs, dims, buffer.data.data()};
+            f(args);
+        }
+    }
+}
+
+template <ShellKind kind = ShellKind::Cartesian>
+Mat ecp_operator_kernel(const std::vector<int> &first_bf,
+                        const std::vector<libecpint::GaussianShell> &aoshells,
+                        const std::vector<libecpint::ECP> &ecps, int ao_max_l,
+                        int ecp_max_l, const ShellPairList &shellpairs) {
+    using Result = IntegralEngine::IntegralResult<2>;
+    auto nthreads = occ::parallel::get_num_threads();
+    const int nbf = std::accumulate(
+        aoshells.begin(), aoshells.end(), 0,
+        [](int a, const auto &x) { return a + x.ncartesian(); });
+
+    std::vector<Mat> results;
+    results.emplace_back(Mat::Zero(nbf, nbf));
+    for (size_t i = 1; i < nthreads; i++) {
+        results.push_back(results[0]);
+    }
+    auto f = [&results, &first_bf](const Result &args) {
+        auto &result = results[args.thread];
+        Eigen::Map<const occ::MatRM> tmp(args.buffer, args.dims[0],
+                                         args.dims[1]);
+        const int bf0 = first_bf[args.shell[0]];
+        const int bf1 = first_bf[args.shell[1]];
+        result.block(bf0, bf1, args.dims[0], args.dims[1]) = tmp;
+        if (args.shell[0] != args.shell[1]) {
+            result.block(bf1, bf0, args.dims[1], args.dims[0]) =
+                tmp.transpose();
+        }
+    };
+
+    auto lambda = [&](int thread_id) {
+        evaluate_two_center_ecp_with_shellpairs(
+            f, aoshells, ecps, ao_max_l, ecp_max_l, shellpairs, thread_id);
+    };
+    occ::parallel::parallel_do(lambda);
+
+    for (auto i = 1; i < nthreads; ++i) {
+        results[0].noalias() += results[i];
+    }
+    return results[0];
 }
 
 Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
@@ -447,37 +511,37 @@ Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
         throw std::runtime_error(
             "Called effective_core_potential without any ECPs");
 
+    occ::timing::start(occ::timing::category::ecp);
     bool spherical = is_spherical();
     constexpr auto Cart = ShellKind::Cartesian;
     constexpr auto Sph = ShellKind::Spherical;
     ShellPairList empty_shellpairs = {};
     const auto &shellpairs =
         use_shellpair_list ? m_shellpairs : empty_shellpairs;
+    Mat result;
     if (spherical) {
-        return ecp_operator_kernel<Sph>(m_ecp_integral_factory, shellpairs);
+        result = ecp_operator_kernel<Sph>(
+            m_aobasis.first_bf(), m_ecp_gaussian_shells, m_ecp, m_ecp_ao_max_l,
+            m_ecp_max_l, shellpairs);
     } else {
-        return ecp_operator_kernel<Cart>(m_ecp_integral_factory, shellpairs);
+        result = ecp_operator_kernel<Cart>(
+            m_aobasis.first_bf(), m_ecp_gaussian_shells, m_ecp, m_ecp_ao_max_l,
+            m_ecp_max_l, shellpairs);
     }
+    occ::timing::stop(occ::timing::category::ecp);
+    return result;
 }
 
 void IntegralEngine::set_effective_core_potentials(
     const ShellList &ecp_shells, const std::vector<int> &ecp_electrons) {
     int num_shells = m_aobasis.size();
     const auto &atoms = m_aobasis.atoms();
-    std::vector<double> coords;
-    std::vector<double> exps;
-    std::vector<double> coeffs;
-    std::vector<int> ams;
-    std::vector<int> lengths;
     for (const auto &sh : m_aobasis.shells()) {
-        for (int i = 0; i < 3; i++) {
-            coords.push_back(sh.origin(i));
-        }
-        int length = sh.num_primitives();
-        lengths.push_back(length);
-        ams.push_back(sh.l);
-        Mat coeffs_norm = sh.contraction_coefficients;
-        for (int i = 0; i < length; i++) {
+        libecpint::GaussianShell ecpint_shell(
+            {sh.origin(0), sh.origin(1), sh.origin(2)}, sh.l);
+        const Mat &coeffs_norm = sh.contraction_coefficients;
+        m_ecp_ao_max_l = std::max(static_cast<int>(sh.l), m_ecp_ao_max_l);
+        for (int i = 0; i < sh.num_primitives(); i++) {
             double c = coeffs_norm(i, 0);
             if (sh.l == 0) {
                 c *= 0.28209479177387814; // 1 / (2 * sqrt(pi))
@@ -485,53 +549,39 @@ void IntegralEngine::set_effective_core_potentials(
             if (sh.l == 1) {
                 c *= 0.4886025119029199; // sqrt(3) / (2 * sqrt(pi))
             }
-            exps.push_back(sh.exponents(i));
-            coeffs.push_back(c);
+            ecpint_shell.addPrim(sh.exponents(i), c);
         }
+        m_ecp_gaussian_shells.push_back(ecpint_shell);
     }
     for (int i = 0; i < ecp_electrons.size(); i++) {
         m_env.set_atom_charge(i, atoms[i].atomic_number - ecp_electrons[i]);
     }
-    occ::log::debug("Setting gaussian basis for ECP integrals");
-    m_ecp_integral_factory.set_gaussian_basis(num_shells, coords.data(),
-                                              exps.data(), coeffs.data(),
-                                              ams.data(), lengths.data());
-
-    coords.clear();
-    ams.clear();
-    lengths.clear();
-    exps.clear();
-    coeffs.clear();
-    std::vector<int> r_exponents;
 
     Vec3 pt = ecp_shells[0].origin;
-    int length = 0;
+    // For some reason need to merge all shells that share a center.
+    // This code relies on shells with the same center being grouped.
+    //
+    libecpint::ECP ecp(pt.data());
     for (const auto &sh : ecp_shells) {
         if ((pt - sh.origin).norm() > 1e-3) {
-            for (int i = 0; i < 3; i++) {
-                coords.push_back(pt(i));
-            }
-            lengths.push_back(length);
-            length = 0;
+            ecp.sort();
+            ecp.atom_id = m_ecp.size();
+            m_ecp.push_back(ecp);
             pt = sh.origin;
+            ecp = libecpint::ECP(pt.data());
         }
-        length += sh.num_primitives();
         for (int i = 0; i < sh.num_primitives(); i++) {
-            ams.push_back(sh.l);
-            exps.push_back(sh.exponents(i));
-            coeffs.push_back(sh.contraction_coefficients(i, 0));
-            r_exponents.push_back(sh.ecp_r_exponents(i));
+            m_ecp_max_l = std::max(static_cast<int>(sh.l), m_ecp_max_l);
+            ecp.addPrimitive(sh.ecp_r_exponents(i), sh.l, sh.exponents(i),
+                             sh.contraction_coefficients(i, 0), false);
         }
     }
-    lengths.push_back(length);
-    for (int i = 0; i < 3; i++) {
-        coords.push_back(pt(i));
-    }
-    int num_ecps = lengths.size();
-    m_ecp_integral_factory.set_ecp_basis(num_ecps, coords.data(), exps.data(),
-                                         coeffs.data(), ams.data(),
-                                         r_exponents.data(), lengths.data());
-    m_ecp_integral_factory.init(0);
+
+    // add the last ECP to the end
+    ecp.sort();
+    ecp.atom_id = m_ecp.size();
+    m_ecp.push_back(ecp);
+
     m_have_ecp = true;
 }
 

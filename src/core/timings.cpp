@@ -59,6 +59,8 @@ const char *category_name(category cat) {
         return "GTO P-function eval";
     case gto_gen:
         return "GTO higher order eval";
+    case ecp:
+        return "ECP integrals";
     case assoc_legendre:
         return "Assoc. Legendre Poly";
     case fft:
@@ -82,9 +84,9 @@ const char *category_name(category cat) {
 
 void print_timings() {
     const auto categories = {
-        ints1e, ints4c2e, ints3c2e, io,      guess,          mo,  diis,
-        dft,    rho,      dft_xc,   gto,     assoc_legendre, fft, jmat,
-        jkmat,  fock,     df,       solvent, global,
+        ints1e, ints4c2e, ints3c2e, io,     guess,          mo,  diis, dft,
+        rho,    dft_xc,   gto,      ecp,    assoc_legendre, fft, jmat, jkmat,
+        fock,   df,       solvent,  global,
     };
     log::debug("Wall clock time by category (s)");
     for (const auto &cat : categories) {
