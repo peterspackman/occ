@@ -101,14 +101,14 @@ void from_json(const nlohmann::json &J, ElementBasis &basis) {
         basis.electron_shells.push_back(x);
     }
     if (J.contains("ecp_potentials")) {
-        occ::log::debug("Reading ECP potentials");
+        occ::log::trace("Reading ECP potentials");
         for (const auto &x : J.at("ecp_potentials")) {
             basis.ecp_shells.push_back(x);
         }
     }
     if (J.contains("ecp_electrons")) {
         basis.ecp_electrons = J.at("ecp_electrons");
-        occ::log::debug("ECP contains {} electrons", basis.ecp_electrons);
+        occ::log::trace("ECP contains {} electrons", basis.ecp_electrons);
     }
 }
 
@@ -133,7 +133,7 @@ void JsonBasisReader::parse(std::istream &is) {
         int atomic_number = 1;
         if (std::isdigit(it.key()[0])) {
             atomic_number = std::stoi(it.key());
-            occ::log::debug("Reading JSON basis Z = {}", atomic_number);
+            occ::log::trace("Reading JSON basis Z = {}", atomic_number);
         } else {
             Element el(it.key());
             atomic_number = el.atomic_number();

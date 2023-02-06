@@ -1,5 +1,6 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
+#include <occ/gto/gto.h>
 #include <occ/qm/integral_engine.h>
 
 namespace occ::qm {
@@ -434,6 +435,7 @@ void evaluate_two_center_ecp_with_shellpairs(
     Lambda &f, const std::vector<libecpint::GaussianShell> &shells,
     const std::vector<libecpint::ECP> &ecps, int lmax1, int lmax2,
     const ShellPairList &shellpairs, int thread_id = 0) {
+    // TODO maybe share this? not sure if it's thread safe.
     libecpint::ECPIntegral ecp_integral(lmax1, lmax2, 0);
     using Result = IntegralEngine::IntegralResult<2>;
     auto nthreads = occ::parallel::get_num_threads();
@@ -466,7 +468,7 @@ void evaluate_two_center_ecp_with_shellpairs(
 }
 
 template <ShellKind kind = ShellKind::Cartesian>
-Mat ecp_operator_kernel(const std::vector<int> &first_bf,
+Mat ecp_operator_kernel(const AOBasis &aobasis,
                         const std::vector<libecpint::GaussianShell> &aoshells,
                         const std::vector<libecpint::ECP> &ecps, int ao_max_l,
                         int ecp_max_l, const ShellPairList &shellpairs) {
@@ -477,20 +479,44 @@ Mat ecp_operator_kernel(const std::vector<int> &first_bf,
         [](int a, const auto &x) { return a + x.ncartesian(); });
 
     std::vector<Mat> results;
-    results.emplace_back(Mat::Zero(nbf, nbf));
+    results.emplace_back(Mat::Zero(aobasis.nbf(), aobasis.nbf()));
     for (size_t i = 1; i < nthreads; i++) {
         results.push_back(results[0]);
     }
-    auto f = [&results, &first_bf](const Result &args) {
+
+    std::vector<Mat> cart2sph;
+    if constexpr (kind == ShellKind::Spherical) {
+        for (int i = 0; i <= ao_max_l; i++) {
+            cart2sph.push_back(
+                occ::gto::cartesian_to_spherical_transformation_matrix(i));
+        }
+    }
+
+    auto f = [&results, &aobasis, &cart2sph](const Result &args) {
         auto &result = results[args.thread];
         Eigen::Map<const occ::MatRM> tmp(args.buffer, args.dims[0],
                                          args.dims[1]);
-        const int bf0 = first_bf[args.shell[0]];
-        const int bf1 = first_bf[args.shell[1]];
-        result.block(bf0, bf1, args.dims[0], args.dims[1]) = tmp;
-        if (args.shell[0] != args.shell[1]) {
-            result.block(bf1, bf0, args.dims[1], args.dims[0]) =
-                tmp.transpose();
+        const int bf0 = aobasis.first_bf()[args.shell[0]];
+        const int bf1 = aobasis.first_bf()[args.shell[1]];
+        if constexpr (kind == ShellKind::Spherical) {
+            const int dim0 = aobasis[args.shell[0]].size();
+            const int dim1 = aobasis[args.shell[1]].size();
+            const int l0 = aobasis[args.shell[0]].l;
+            const int l1 = aobasis[args.shell[1]].l;
+            fmt::print("Block ({}:{}, {}:{}) norm = {:10.6f}\n", bf0,
+                       bf0 + dim0, bf1, bf1 + dim1, tmp.norm());
+            result.block(bf0, bf1, dim0, dim1) =
+                cart2sph[l0] * tmp * cart2sph[l1].transpose();
+            if (args.shell[0] != args.shell[1]) {
+                result.block(bf1, bf0, dim1, dim0) =
+                    result.block(bf0, bf1, dim0, dim1).transpose();
+            }
+        } else {
+            result.block(bf0, bf1, args.dims[0], args.dims[1]) = tmp;
+            if (args.shell[0] != args.shell[1]) {
+                result.block(bf1, bf0, args.dims[1], args.dims[0]) =
+                    tmp.transpose();
+            }
         }
     };
 
@@ -502,6 +528,10 @@ Mat ecp_operator_kernel(const std::vector<int> &first_bf,
 
     for (auto i = 1; i < nthreads; ++i) {
         results[0].noalias() += results[i];
+    }
+    {
+        std::ofstream file("sph.txt");
+        file << results[0];
     }
     return results[0];
 }
@@ -520,13 +550,13 @@ Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
         use_shellpair_list ? m_shellpairs : empty_shellpairs;
     Mat result;
     if (spherical) {
-        result = ecp_operator_kernel<Sph>(
-            m_aobasis.first_bf(), m_ecp_gaussian_shells, m_ecp, m_ecp_ao_max_l,
-            m_ecp_max_l, shellpairs);
+        result =
+            ecp_operator_kernel<Sph>(m_aobasis, m_ecp_gaussian_shells, m_ecp,
+                                     m_ecp_ao_max_l, m_ecp_max_l, shellpairs);
     } else {
-        result = ecp_operator_kernel<Cart>(
-            m_aobasis.first_bf(), m_ecp_gaussian_shells, m_ecp, m_ecp_ao_max_l,
-            m_ecp_max_l, shellpairs);
+        result =
+            ecp_operator_kernel<Cart>(m_aobasis, m_ecp_gaussian_shells, m_ecp,
+                                      m_ecp_ao_max_l, m_ecp_max_l, shellpairs);
     }
     occ::timing::stop(occ::timing::category::ecp);
     return result;

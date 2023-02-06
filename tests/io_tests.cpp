@@ -1179,9 +1179,9 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
     SECTION("Rotate by I") {
         occ::Mat rot = occ::Mat::Identity(3, 3);
         wfn2.apply_rotation(rot);
-        check_wavefunctions(wfn, wfn2);
         fmt::print("orig MOs\n{}\n", wfn.mo.C);
         fmt::print("rot  MOs\n{}\n", wfn2.mo.C);
+        check_wavefunctions(wfn, wfn2);
     }
 }
 
