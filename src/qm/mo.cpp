@@ -75,7 +75,8 @@ void MolecularOrbitals::update_density_matrix() {
 void MolecularOrbitals::rotate(const AOBasis &basis, const Mat3 &rotation) {
 
     const auto shell2bf = basis.first_bf();
-    occ::log::debug("Rotating MO coefficients");
+    occ::log::debug("Rotating {} MO coefficients, l max = {}",
+                    basis.is_pure() ? "Spherical" : "Cartesian", basis.l_max());
     std::vector<Mat> rotation_matrices;
     if (basis.is_pure()) {
         rotation_matrices = occ::gto::spherical_gaussian_rotation_matrices(

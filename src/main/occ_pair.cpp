@@ -16,6 +16,8 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
 
+namespace fs = std::filesystem;
+
 using occ::Mat3;
 using occ::Vec3;
 using occ::interaction::CEModelInteraction;
@@ -37,13 +39,16 @@ Wavefunction load_wavefunction(const std::string &filename) {
     std::string ext = fs::path(filename).extension();
     to_lower(ext);
     if (ext == ".fchk") {
+        occ::log::debug("Loading Gaussian fchk file from {}\n", filename);
         using occ::io::FchkReader;
         FchkReader fchk(filename);
         return Wavefunction(fchk);
     }
     if (ext == ".molden" || ext == ".input") {
+        occ::log::debug("Loading molden file from {}\n", filename);
         using occ::io::MoldenReader;
         MoldenReader molden(filename);
+        occ::log::debug("Wavefunction has {} atoms", molden.atoms().size());
         return Wavefunction(molden);
     }
     throw std::runtime_error(
@@ -65,7 +70,8 @@ void load_vector(const nlohmann::json &json, Vec3 &vec) {
     }
 }
 
-Pair parse_input_file(const std::string &filename) {
+Pair parse_input_file(const std::string &filename,
+                      const std::string &monomer_directory) {
     std::ifstream i(filename);
     nlohmann::json j;
     i >> j;
@@ -75,24 +81,43 @@ Pair parse_input_file(const std::string &filename) {
         throw std::runtime_error("Require two monomers in input file");
 
     Pair p;
-    std::string source_a = monomers[0]["source"];
-    std::string source_b = monomers[1]["source"];
+    std::string source_a =
+        (fs::path(monomer_directory) / fs::path(monomers[0]["source"]))
+            .string();
+    std::string source_b =
+        (fs::path(monomer_directory) / fs::path(monomers[1]["source"]))
+            .string();
     p.a.wfn = load_wavefunction(source_a);
     load_matrix(monomers[0]["rotation"], p.a.rotation);
     load_vector(monomers[0]["translation"], p.a.translation);
     p.a.translation *= occ::units::ANGSTROM_TO_BOHR;
-    occ::log::debug("Rotation A:\n{}", p.a.rotation);
+    occ::log::debug("Rotation A (det = {}):\n{}", p.a.rotation.determinant(),
+                    p.a.rotation);
     occ::log::debug("Translation A: {}", p.a.translation.transpose());
 
     p.b.wfn = load_wavefunction(source_b);
     load_matrix(monomers[1]["rotation"], p.b.rotation);
     load_vector(monomers[1]["translation"], p.b.translation);
     p.b.translation *= occ::units::ANGSTROM_TO_BOHR;
-    occ::log::debug("Rotation A:\n{}", p.b.rotation);
+    occ::log::debug("Rotation B (det = {}):\n{}", p.b.rotation.determinant(),
+                    p.b.rotation);
     occ::log::debug("Translation A: {}", p.b.translation.transpose());
 
     p.a.wfn.apply_transformation(p.a.rotation, p.a.translation);
     p.b.wfn.apply_transformation(p.b.rotation, p.b.translation);
+    for (const auto &a : p.a.wfn.atoms) {
+        fmt::print("{} {:20.12f} {:20.12f} {:20.12f}\n", a.atomic_number,
+                   a.x / occ::units::ANGSTROM_TO_BOHR,
+                   a.y / occ::units::ANGSTROM_TO_BOHR,
+                   a.z / occ::units::ANGSTROM_TO_BOHR);
+    }
+    for (const auto &a : p.b.wfn.atoms) {
+        fmt::print("{} {:20.12f} {:20.12f} {:20.12f}\n", a.atomic_number,
+                   a.x / occ::units::ANGSTROM_TO_BOHR,
+                   a.y / occ::units::ANGSTROM_TO_BOHR,
+                   a.z / occ::units::ANGSTROM_TO_BOHR);
+    }
+
     return p;
 }
 
@@ -132,6 +157,8 @@ int main(int argc, char *argv[]) {
     CLI::App app("occ - A program for quantum chemistry");
     std::string input_file{""}, model_name{"ce-b3lyp"}, output_file{""},
         verbosity{"warn"};
+    std::string monomer_directory(".");
+
     int threads{1};
     bool use_df{false};
 
@@ -144,6 +171,8 @@ int main(int argc, char *argv[]) {
     app.add_flag("-d,--with-density-fitting", use_df,
                  "Use density fitting (RI-JK)");
     app.add_option("-v,--verbosity", verbosity, "logging verbosity");
+    app.add_option("--monomer-directory", monomer_directory,
+                   "directory to find monomer wavefunctions");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -161,7 +190,7 @@ int main(int argc, char *argv[]) {
 
     occ::timing::start(occ::timing::category::global);
 
-    auto pair = parse_input_file(input_file);
+    auto pair = parse_input_file(input_file, monomer_directory);
 
     occ::parallel::set_num_threads(threads);
 
