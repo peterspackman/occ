@@ -152,6 +152,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         wfn.num_alpha = n_alpha();
         wfn.num_beta = n_beta();
         wfn.num_electrons = n_electrons;
+        wfn.num_frozen_electrons = n_frozen_electrons;
         wfn.energy.core = energy.at("electronic.1e");
         wfn.energy.kinetic = energy.at("electronic.kinetic");
         wfn.energy.nuclear_attraction = energy.at("electronic.nuclear");

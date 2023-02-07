@@ -27,18 +27,15 @@ void HartreeFock::set_density_fitting_basis(
 }
 
 HartreeFock::HartreeFock(const AOBasis &basis)
-    : m_atoms(basis.atoms()), m_engine(basis.atoms(), basis.shells()),
+    : m_atoms(basis.atoms()), m_engine(basis),
       m_frozen_electrons(basis.atoms().size(), 0) {
 
     for (const auto &a : m_atoms) {
         m_num_e += a.atomic_number;
     }
     m_num_e -= m_charge;
-    if (basis.ecp_nsh() > 0) {
-        occ::log::debug("Setting ECPs\n");
-        m_engine.set_effective_core_potentials(basis.ecp_shells(),
-                                               basis.ecp_electrons());
-        m_num_frozen = basis.total_ecp_electrons();
+    m_num_frozen = basis.total_ecp_electrons();
+    if (m_num_frozen > 0) {
         m_frozen_electrons = basis.ecp_electrons();
     }
 }
@@ -144,13 +141,15 @@ Mat HartreeFock::compute_point_charge_interaction_matrix(
 Mat3N HartreeFock::nuclear_electric_field_contribution(
     const Mat3N &positions) const {
     Mat3N result = Mat3N::Zero(3, positions.cols());
+    int atom_index = 0;
     for (const auto &atom : m_atoms) {
-        double Z = atom.atomic_number;
+        double Z = atom.atomic_number - m_frozen_electrons[atom_index];
         Vec3 atom_pos{atom.x, atom.y, atom.z};
         auto ab = positions.colwise() - atom_pos;
         auto r = ab.colwise().norm();
         auto r3 = r.array() * r.array() * r.array();
         result.array() += (Z * (ab.array().rowwise() / r3));
+        atom_index++;
     }
     return result;
 }

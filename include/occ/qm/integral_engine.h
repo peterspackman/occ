@@ -47,6 +47,21 @@ class IntegralEngine {
         }
     }
 
+    IntegralEngine(const AOBasis &basis)
+        : m_aobasis(basis), m_env(basis.atoms(), basis.shells()) {
+
+        if (is_spherical()) {
+            compute_shellpairs<ShellKind::Spherical>();
+        } else {
+            compute_shellpairs<ShellKind::Cartesian>();
+        }
+
+        if (m_aobasis.have_ecps()) {
+            set_effective_core_potentials(m_aobasis.ecp_shells(),
+                                          m_aobasis.ecp_electrons());
+        }
+    }
+
     inline auto nbf() const noexcept { return m_aobasis.nbf(); }
     inline auto nbf_aux() const noexcept { return m_auxbasis.nbf(); }
     inline auto nsh() const noexcept { return m_aobasis.nsh(); }

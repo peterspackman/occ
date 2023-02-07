@@ -95,6 +95,7 @@ class AOBasis {
     inline bool is_cartesian() const {
         return m_kind == Shell::Kind::Cartesian;
     }
+    inline bool have_ecps() const { return m_ecp_shells.size() > 0; }
     inline void set_kind(Shell::Kind kind) {
         if (kind == m_kind)
             return;

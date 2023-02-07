@@ -412,6 +412,7 @@ occ::IVec Wavefunction::atomic_numbers() const {
 }
 
 void Wavefunction::save(FchkWriter &fchk) {
+    bool have_ecps = basis.have_ecps();
     occ::timing::start(occ::timing::category::io);
     fchk.set_scalar("Number of atoms", atoms.size());
     fchk.set_scalar("Charge", charge());
@@ -429,6 +430,13 @@ void Wavefunction::save(FchkWriter &fchk) {
     // nuclear charges
     occ::IVec nums = atomic_numbers();
     occ::Vec atomic_prop = nums.cast<double>();
+    if (have_ecps) {
+        // set nuclear charges to include ecp
+        const auto &ecp_electrons = basis.ecp_electrons();
+        for (int i = 0; i < atoms.size(); i++) {
+            atomic_prop(i) -= ecp_electrons[i];
+        }
+    }
     fchk.set_vector("Atomic numbers", nums);
     fchk.set_vector("Nuclear charges", atomic_prop);
     fchk.set_vector("Current cartesian coordinates", positions());
@@ -500,6 +508,40 @@ void Wavefunction::save(FchkWriter &fchk) {
     }
     fchk.set_vector("Shell to atom map", shell2atom);
 
+    if (have_ecps) {
+        // TODO finish ECP writing routines
+        occ::log::debug("Writing ECP information to fchk\n");
+        fchk.set_vector<int, double>("ECP-RNFroz", basis.ecp_electrons());
+        std::vector<double> ecp_clp1;
+        std::vector<double> ecp_clp2;
+        std::vector<int> ecp_nlp;
+        std::vector<double> ecp_zlp;
+        std::vector<int> ecp_lmax(atoms.size(), 0);
+        int ecp_max_length = 0;
+        const auto &ecp_shell2atom = basis.ecp_shell_to_atom();
+        int shell_index = 0;
+        for (const auto &sh : basis.ecp_shells()) {
+            int atom_idx = ecp_shell2atom[shell_index];
+            ecp_max_length =
+                std::max(static_cast<int>(sh.num_primitives()), ecp_max_length);
+            ecp_lmax[atom_idx] =
+                std::max(static_cast<int>(sh.l), ecp_lmax[atom_idx]);
+            for (int i = 0; i < sh.num_primitives(); i++) {
+                ecp_clp1.push_back(sh.contraction_coefficients(i, 0));
+                ecp_zlp.push_back(sh.exponents(i));
+                ecp_nlp.push_back(sh.ecp_r_exponents(i));
+                ecp_clp2.push_back(0.0);
+            }
+            shell_index++;
+        }
+        fchk.set_scalar("ECP-MaxLECP", ecp_max_length);
+        fchk.set_vector("ECP-LMax", ecp_lmax);
+        fchk.set_vector("ECP-NLP", ecp_nlp);
+        fchk.set_vector("ECP-CLP1", ecp_clp1);
+        fchk.set_vector("ECP-CLP2", ecp_clp2);
+        fchk.set_vector("ECP-ZLP", ecp_zlp);
+    }
+
     // TODO fix this is wrong
     fchk.set_scalar("Virial ratio",
                     -(energy.nuclear_repulsion + energy.nuclear_attraction +
@@ -533,8 +575,9 @@ Vec Wavefunction::mulliken_charges() const {
                            basis, mo.D, overlap);
         break;
     }
+    const auto &ecp_electrons = basis.ecp_electrons();
     for (size_t i = 0; i < atoms.size(); i++) {
-        charges(i) += atoms[i].atomic_number;
+        charges(i) += atoms[i].atomic_number - ecp_electrons[i];
     }
     return charges;
 }

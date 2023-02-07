@@ -85,9 +85,10 @@ struct Wavefunction {
     void save(FchkWriter &);
 
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
-    int num_alpha;
-    int num_beta;
-    int num_electrons;
+    int num_alpha{0};
+    int num_beta{0};
+    int num_electrons{0};
+    int num_frozen_electrons{0};
     AOBasis basis;
     size_t nbf{0};
     std::vector<occ::core::Atom> atoms;

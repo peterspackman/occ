@@ -503,8 +503,6 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
             const int dim1 = aobasis[args.shell[1]].size();
             const int l0 = aobasis[args.shell[0]].l;
             const int l1 = aobasis[args.shell[1]].l;
-            fmt::print("Block ({}:{}, {}:{}) norm = {:10.6f}\n", bf0,
-                       bf0 + dim0, bf1, bf1 + dim1, tmp.norm());
             result.block(bf0, bf1, dim0, dim1) =
                 cart2sph[l0] * tmp * cart2sph[l1].transpose();
             if (args.shell[0] != args.shell[1]) {
@@ -528,10 +526,6 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
 
     for (auto i = 1; i < nthreads; ++i) {
         results[0].noalias() += results[i];
-    }
-    {
-        std::ofstream file("sph.txt");
-        file << results[0];
     }
     return results[0];
 }
