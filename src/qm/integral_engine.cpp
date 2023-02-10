@@ -578,7 +578,9 @@ void IntegralEngine::set_effective_core_potentials(
         m_ecp_gaussian_shells.push_back(ecpint_shell);
     }
     for (int i = 0; i < ecp_electrons.size(); i++) {
-        m_env.set_atom_charge(i, atoms[i].atomic_number - ecp_electrons[i]);
+        int charge = atoms[i].atomic_number - ecp_electrons[i];
+        occ::log::debug("setting atom {} charge to {}", i, charge);
+        m_env.set_atom_charge(i, charge);
     }
 
     Vec3 pt = ecp_shells[0].origin;

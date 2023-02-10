@@ -468,26 +468,25 @@ void AOBasis::merge(const AOBasis &rhs) {
     size_t atom_offset = m_atoms.size();
 
     m_nbf += rhs.m_nbf;
-    m_shells.insert(m_shells.end(), rhs.m_shells.begin(), rhs.m_shells.end());
-    m_ecp_shells.insert(m_ecp_shells.end(), rhs.m_ecp_shells.begin(),
-                        rhs.m_ecp_shells.end());
-    m_first_bf.insert(m_first_bf.end(), rhs.m_first_bf.begin(),
-                      rhs.m_first_bf.end());
-    m_atom_to_shell_idxs.insert(m_atom_to_shell_idxs.end(),
-                                rhs.m_atom_to_shell_idxs.begin(),
-                                rhs.m_atom_to_shell_idxs.end());
-    m_atom_to_ecp_shell_idxs.insert(m_atom_to_ecp_shell_idxs.end(),
-                                    rhs.m_atom_to_ecp_shell_idxs.begin(),
-                                    rhs.m_atom_to_ecp_shell_idxs.end());
-    m_ecp_shell_to_atom_idx.insert(m_ecp_shell_to_atom_idx.end(),
-                                   rhs.m_ecp_shell_to_atom_idx.begin(),
-                                   rhs.m_ecp_shell_to_atom_idx.end());
+    auto append = [](auto &v1, auto &v2) {
+        v1.insert(v1.end(), v2.begin(), v2.end());
+    };
 
-    m_bf_to_shell.insert(m_bf_to_shell.end(), rhs.m_bf_to_shell.begin(),
-                         rhs.m_bf_to_shell.end());
-    m_bf_to_atom.insert(m_bf_to_atom.end(), rhs.m_bf_to_atom.begin(),
-                        rhs.m_bf_to_atom.end());
-    m_atoms.insert(m_atoms.begin(), rhs.m_atoms.begin(), rhs.m_atoms.end());
+    append(m_shells, rhs.m_shells);
+    append(m_ecp_shells, rhs.m_ecp_shells);
+
+    append(m_first_bf, rhs.m_first_bf);
+
+    append(m_atom_to_shell_idxs, rhs.m_atom_to_shell_idxs);
+    append(m_atom_to_ecp_shell_idxs, rhs.m_atom_to_ecp_shell_idxs);
+
+    append(m_shell_to_atom_idx, rhs.m_shell_to_atom_idx);
+    append(m_ecp_shell_to_atom_idx, rhs.m_ecp_shell_to_atom_idx);
+
+    append(m_bf_to_shell, rhs.m_bf_to_shell);
+    append(m_bf_to_atom, rhs.m_bf_to_atom);
+    append(m_atoms, rhs.m_atoms);
+    append(m_ecp_electrons, rhs.m_ecp_electrons);
 
     // apply offsets
     for (size_t i = shell_offset; i < m_shell_to_atom_idx.size(); i++) {
@@ -499,9 +498,8 @@ void AOBasis::merge(const AOBasis &rhs) {
         m_ecp_shell_to_atom_idx[i] += atom_offset;
     }
 
-    // TODO check merge this seems wrong?
-    for (auto &atom_shells : m_atom_to_shell_idxs) {
-        for (auto &x : atom_shells) {
+    for (size_t i = atom_offset; i < m_atom_to_shell_idxs.size(); i++) {
+        for (auto &x : m_atom_to_shell_idxs[i]) {
             x += shell_offset;
         }
     }

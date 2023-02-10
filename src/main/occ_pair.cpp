@@ -104,8 +104,10 @@ Pair parse_input_file(const std::string &filename,
     occ::log::debug("Rotation A (det = {}):\n{}", p.a.rotation.determinant(),
                     p.a.rotation);
     if (monomers[0].contains("ecp_electrons")) {
-        p.a.wfn.basis.set_ecp_electrons(
-            load_std_vector<int>(monomers[0]["ecp_electrons"]));
+        // TODO properly deal with loading the ECP basis
+        auto bs = occ::qm::AOBasis::load(p.a.wfn.atoms, "def2-svp");
+        bs.set_pure(p.a.wfn.basis.is_pure());
+        p.a.wfn.basis = bs;
     }
     occ::log::debug("Translation A: {}", p.a.translation.transpose());
 
@@ -116,24 +118,27 @@ Pair parse_input_file(const std::string &filename,
     occ::log::debug("Rotation B (det = {}):\n{}", p.b.rotation.determinant(),
                     p.b.rotation);
     if (monomers[1].contains("ecp_electrons")) {
-        p.b.wfn.basis.set_ecp_electrons(
-            load_std_vector<int>(monomers[1]["ecp_electrons"]));
+        auto bs = occ::qm::AOBasis::load(p.b.wfn.atoms, "def2-svp");
+        bs.set_pure(p.b.wfn.basis.is_pure());
+        p.b.wfn.basis = bs;
     }
     occ::log::debug("Translation A: {}", p.b.translation.transpose());
 
     p.a.wfn.apply_transformation(p.a.rotation, p.a.translation);
     p.b.wfn.apply_transformation(p.b.rotation, p.b.translation);
+    occ::log::debug("Monomer A positions after rotation + translation:");
     for (const auto &a : p.a.wfn.atoms) {
-        fmt::print("{} {:20.12f} {:20.12f} {:20.12f}\n", a.atomic_number,
-                   a.x / occ::units::ANGSTROM_TO_BOHR,
-                   a.y / occ::units::ANGSTROM_TO_BOHR,
-                   a.z / occ::units::ANGSTROM_TO_BOHR);
+        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}\n", a.atomic_number,
+                        a.x / occ::units::ANGSTROM_TO_BOHR,
+                        a.y / occ::units::ANGSTROM_TO_BOHR,
+                        a.z / occ::units::ANGSTROM_TO_BOHR);
     }
+    occ::log::debug("Monomer B positions after rotation + translation:");
     for (const auto &a : p.b.wfn.atoms) {
-        fmt::print("{} {:20.12f} {:20.12f} {:20.12f}\n", a.atomic_number,
-                   a.x / occ::units::ANGSTROM_TO_BOHR,
-                   a.y / occ::units::ANGSTROM_TO_BOHR,
-                   a.z / occ::units::ANGSTROM_TO_BOHR);
+        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}\n", a.atomic_number,
+                        a.x / occ::units::ANGSTROM_TO_BOHR,
+                        a.y / occ::units::ANGSTROM_TO_BOHR,
+                        a.z / occ::units::ANGSTROM_TO_BOHR);
     }
 
     return p;
@@ -197,14 +202,7 @@ int main(int argc, char *argv[]) {
     auto level = occ::log::level::warn;
     std::string level_lower = occ::util::to_lower_copy(verbosity);
 
-    if (level_lower == "debug")
-        level = occ::log::level::debug;
-    else if (level_lower == "info")
-        level = occ::log::level::info;
-    else if (level_lower == "error")
-        level = occ::log::level::err;
-    occ::log::set_level(level);
-    spdlog::set_level(level);
+    occ::log::setup_logging(level_lower);
 
     occ::timing::start(occ::timing::category::global);
 

@@ -297,6 +297,9 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
 }
 
 void Wavefunction::update_occupied_orbitals() {
+    mo.n_ao = nbf;
+    mo.n_alpha = num_alpha;
+    mo.n_beta = num_beta;
     if (mo.C.size() == 0) {
         return;
     }
@@ -304,13 +307,13 @@ void Wavefunction::update_occupied_orbitals() {
         throw std::runtime_error(
             "Reading MOs from g09 unsupported for General spinorbitals");
     } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        occ::log::info("num alpha electrons = {}", num_alpha);
-        occ::log::info("num beta electrons = {}", num_beta);
+        occ::log::debug("num alpha electrons = {}", num_alpha);
+        occ::log::debug("num beta electrons = {}", num_beta);
         mo.Cocc =
             occ::qm::orb::occupied_unrestricted(mo.C, num_alpha, num_beta);
     } else {
-        occ::log::info("num alpha electrons = {}", num_alpha);
-        occ::log::info("num beta electrons = {}", num_alpha);
+        occ::log::debug("num alpha electrons = {}", num_alpha);
+        occ::log::debug("num beta electrons = {}", num_alpha);
         mo.Cocc = occ::qm::orb::occupied_restricted(mo.C, num_alpha);
     }
 }

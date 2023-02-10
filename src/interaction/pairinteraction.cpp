@@ -75,11 +75,11 @@ void compute_xdm_parameters(Wavefunction &wfn) {
 void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
                                double precision, const Mat &Schwarz, bool xdm) {
     if (wfn.is_restricted()) {
-        occ::log::info("Restricted wavefunction");
+        occ::log::debug("Restricted wavefunction");
         compute_ce_model_energies<SpinorbitalKind::Restricted>(
             wfn, hf, precision, Schwarz);
     } else {
-        occ::log::info("Unrestricted wavefunction");
+        occ::log::debug("Unrestricted wavefunction");
         compute_ce_model_energies<SpinorbitalKind::Unrestricted>(
             wfn, hf, precision, Schwarz);
     }
@@ -138,6 +138,14 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     compute_ce_model_energies(B, hf_b, precision, schwarz_b, scale_factors.xdm);
 
     Wavefunction ABn(A, B);
+
+    occ::log::debug("Merged wavefunction atoms:");
+    for (const auto &a : ABn.atoms) {
+        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}", a.atomic_number,
+                        a.x / occ::units::ANGSTROM_TO_BOHR,
+                        a.y / occ::units::ANGSTROM_TO_BOHR,
+                        a.z / occ::units::ANGSTROM_TO_BOHR);
+    }
 
     // Can reuse the same HartreeFock object for both merged wfns: same basis
     // and atoms
