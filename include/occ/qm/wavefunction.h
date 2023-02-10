@@ -82,6 +82,8 @@ struct Wavefunction {
 
     Vec mulliken_charges() const;
 
+    Vec electric_potential(const Mat3N &points) const;
+
     void save(FchkWriter &);
 
     SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};

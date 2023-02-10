@@ -1648,6 +1648,26 @@ Mat IntegralEngine::point_charge_potential(
     }
 }
 
+Vec electric_potential_ecp_kernel(std::vector<libecpint::ECP> &ecps,
+                                  int ecp_lmax, const Mat3N &points) {
+    Vec result = Vec::Zero(points.cols());
+    for (int pt = 0; pt < points.cols(); pt++) {
+        for (const auto &U : ecps) {
+            double dx = points(0, pt) - U.center_[0];
+            double dy = points(1, pt) - U.center_[1];
+            double dz = points(2, pt) - U.center_[2];
+            double r = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+            double fac = 1.0;
+            for (int l = 0; l <= U.getL(); l++) {
+                result(pt) += fac * U.evaluate(r, l);
+                fac *= r;
+            }
+        }
+    }
+    return result;
+}
+
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 Vec electric_potential_kernel(cint::IntegralEnvironment &env,
                               const AOBasis &aobasis, const AOBasis &auxbasis,
@@ -1715,42 +1735,53 @@ Vec IntegralEngine::electric_potential(const MolecularOrbitals &mo,
     constexpr auto Cart = ShellKind::Cartesian;
     ShellList dummy_shells;
     dummy_shells.reserve(points.cols());
+    Vec result = Vec::Zero(points.cols());
     for (size_t i = 0; i < points.cols(); i++) {
         dummy_shells.push_back(
             Shell({1.0, {points(0, i), points(1, i), points(2, i)}}));
     }
     set_auxiliary_basis(dummy_shells, true);
+
+    // Below code could be used if ECPs are needed for electric potential,
+    // not sure if it's correct
+    /*
+    if (m_have_ecp) {
+        result += electric_potential_ecp_kernel(m_ecp, m_ecp_max_l, points);
+    }
+    */
+
     if (is_spherical()) {
         switch (mo.kind) {
         default: // Restricted
-            return electric_potential_kernel<R, Sph>(
+            result += electric_potential_kernel<R, Sph>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         case U:
-            return electric_potential_kernel<U, Sph>(
+            result += electric_potential_kernel<U, Sph>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         case G:
-            return electric_potential_kernel<G, Sph>(
+            result += electric_potential_kernel<G, Sph>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         }
     } else {
         switch (mo.kind) {
         default: // Restricted
-            return electric_potential_kernel<R, Cart>(
+            result += electric_potential_kernel<R, Cart>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         case U:
-            return electric_potential_kernel<U, Cart>(
+            result += electric_potential_kernel<U, Cart>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         case G:
-            return electric_potential_kernel<G, Cart>(
+            result += electric_potential_kernel<G, Cart>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         }
     }
+    return result;
 }
 
 } // namespace occ::qm

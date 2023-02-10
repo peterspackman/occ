@@ -612,9 +612,10 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
         if (!element_basis.electron_shells.empty()) {
             for (const auto &s : element_basis.electron_shells) {
                 // handle general contractions by splitting
-                for (int i = 0; i < s.angular_momentum.size(); i++) {
-                    shells.push_back(Shell(s.angular_momentum[i], s.exponents,
-                                           {s.coefficients[i]}, origin));
+                for (int i = 0; i < s.coefficients.size(); i++) {
+                    shells.push_back(
+                        Shell(s.angular_momentum[i % s.angular_momentum.size()],
+                              s.exponents, {s.coefficients[i]}, origin));
                     shells[nsh].incorporate_shell_norm();
                     nsh++;
                 }
@@ -650,7 +651,7 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
         }
     }
     AOBasis result(atoms, shells, name, ecp_shells);
-    result.ecp_electrons() = ecp_electrons;
+    result.set_ecp_electrons(ecp_electrons);
     return result;
 }
 

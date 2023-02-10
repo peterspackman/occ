@@ -553,6 +553,13 @@ void Wavefunction::save(FchkWriter &fchk) {
     occ::timing::stop(occ::timing::category::io);
 }
 
+Vec Wavefunction::electric_potential(const Mat3N &points) const {
+    HartreeFock hf(basis);
+    Vec esp_e = hf.electronic_electric_potential_contribution(mo, points);
+    Vec esp_n = hf.nuclear_electric_potential_contribution(points);
+    return esp_e + esp_n;
+}
+
 Vec Wavefunction::mulliken_charges() const {
 
     HartreeFock hf(basis);

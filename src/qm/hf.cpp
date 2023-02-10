@@ -179,12 +179,14 @@ Vec HartreeFock::electronic_electric_potential_contribution(
 Vec HartreeFock::nuclear_electric_potential_contribution(
     const Mat3N &positions) const {
     Vec result = Vec::Zero(positions.cols());
+    int atom_index = 0;
     for (const auto &atom : m_atoms) {
-        double Z = atom.atomic_number;
+        double Z = atom.atomic_number - m_frozen_electrons[atom_index];
         Vec3 atom_pos{atom.x, atom.y, atom.z};
         auto ab = positions.colwise() - atom_pos;
         auto r = ab.colwise().norm();
         result.array() += Z / r.array();
+        atom_index++;
     }
     return result;
 }

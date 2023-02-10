@@ -129,6 +129,9 @@ class AOBasis {
     }
     inline const auto &ecp_electrons() const { return m_ecp_electrons; }
     inline auto &ecp_electrons() { return m_ecp_electrons; }
+    inline void set_ecp_electrons(const std::vector<int> &e) {
+        m_ecp_electrons = e;
+    }
     inline auto total_ecp_electrons() const {
         return std::accumulate(m_ecp_electrons.begin(), m_ecp_electrons.end(),
                                0);
