@@ -70,6 +70,16 @@ void load_vector(const nlohmann::json &json, Vec3 &vec) {
     }
 }
 
+template <typename T>
+std::vector<T> load_std_vector(const nlohmann::json &json) {
+    std::vector<T> result;
+    result.reserve(json.size());
+    for (size_t i = 0; i < json.size(); i++) {
+        result.push_back(json.at(i).get<double>());
+    }
+    return result;
+}
+
 Pair parse_input_file(const std::string &filename,
                       const std::string &monomer_directory) {
     std::ifstream i(filename);
@@ -93,6 +103,10 @@ Pair parse_input_file(const std::string &filename,
     p.a.translation *= occ::units::ANGSTROM_TO_BOHR;
     occ::log::debug("Rotation A (det = {}):\n{}", p.a.rotation.determinant(),
                     p.a.rotation);
+    if (monomers[0].contains("ecp_electrons")) {
+        p.a.wfn.basis.set_ecp_electrons(
+            load_std_vector<int>(monomers[0]["ecp_electrons"]));
+    }
     occ::log::debug("Translation A: {}", p.a.translation.transpose());
 
     p.b.wfn = load_wavefunction(source_b);
@@ -101,6 +115,10 @@ Pair parse_input_file(const std::string &filename,
     p.b.translation *= occ::units::ANGSTROM_TO_BOHR;
     occ::log::debug("Rotation B (det = {}):\n{}", p.b.rotation.determinant(),
                     p.b.rotation);
+    if (monomers[1].contains("ecp_electrons")) {
+        p.b.wfn.basis.set_ecp_electrons(
+            load_std_vector<int>(monomers[1]["ecp_electrons"]));
+    }
     occ::log::debug("Translation A: {}", p.b.translation.transpose());
 
     p.a.wfn.apply_transformation(p.a.rotation, p.a.translation);

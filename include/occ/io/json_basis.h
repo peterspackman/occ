@@ -15,6 +15,14 @@ struct ElectronShell {
     std::vector<std::vector<double>> coefficients;
 };
 
+struct ECPShell {
+    std::string ecp_type;
+    std::vector<int> angular_momentum;
+    std::vector<double> exponents;
+    std::vector<int> r_exponents;
+    std::vector<std::vector<double>> coefficients;
+};
+
 struct ReferenceData {
     std::string description;
     std::vector<std::string> keys;
@@ -22,6 +30,8 @@ struct ReferenceData {
 struct ElementBasis {
     std::vector<ElectronShell> electron_shells;
     std::vector<ReferenceData> references;
+    std::vector<ECPShell> ecp_shells;
+    int ecp_electrons{0};
 };
 
 using ElementMap = phmap::flat_hash_map<int, ElementBasis>;

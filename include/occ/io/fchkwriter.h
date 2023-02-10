@@ -117,10 +117,10 @@ class FchkWriter {
         }
     }
 
-    template <typename T>
-    void set_vector(const std::string &key, const std::vector<T> &vec) {
-        if constexpr (std::is_integral<T>::value) {
-            if constexpr (std::is_same<T, bool>::value) {
+    template <typename InputType, typename CastType = InputType>
+    void set_vector(const std::string &key, const std::vector<InputType> &vec) {
+        if constexpr (std::is_integral<CastType>::value) {
+            if constexpr (std::is_same<CastType, bool>::value) {
                 std::vector<bool> vals;
                 vals.reserve(vec.size());
                 for (const auto &x : vec)
@@ -133,7 +133,7 @@ class FchkWriter {
                     vals.push_back(static_cast<int>(x));
                 m_vectors[key] = vals;
             }
-        } else if constexpr (std::is_floating_point<T>::value) {
+        } else if constexpr (std::is_floating_point<CastType>::value) {
             std::vector<double> vals;
             vals.reserve(vec.size());
             for (const auto &x : vec)

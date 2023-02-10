@@ -1,4 +1,6 @@
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
+#include <occ/gto/gto.h>
 #include <occ/qm/integral_engine.h>
 
 namespace occ::qm {
@@ -428,11 +430,189 @@ Mat IntegralEngine::one_electron_operator(Op op,
     }
 }
 
+template <typename Lambda>
+void evaluate_two_center_ecp_with_shellpairs(
+    Lambda &f, const std::vector<libecpint::GaussianShell> &shells,
+    const std::vector<libecpint::ECP> &ecps, int lmax1, int lmax2,
+    const ShellPairList &shellpairs, int thread_id = 0) {
+    // TODO maybe share this? not sure if it's thread safe.
+    libecpint::ECPIntegral ecp_integral(lmax1, lmax2, 0);
+    using Result = IntegralEngine::IntegralResult<2>;
+    auto nthreads = occ::parallel::get_num_threads();
+
+    std::array<int, 2> dims;
+    std::array<int, 2> bfs{-1, -1}; // ignore this
+
+    libecpint::TwoIndex<double> tmp;
+    for (int p = 0, pq = 0; p < shells.size(); p++) {
+        const auto &sh1 = shells[p];
+
+        dims[0] = sh1.ncartesian();
+
+        for (const int &q : shellpairs.at(p)) {
+            if (pq++ % nthreads != thread_id)
+                continue;
+            const auto &sh2 = shells[q];
+            dims[1] = sh2.ncartesian();
+            libecpint::TwoIndex<double> buffer(dims[0], dims[1], 0.0);
+
+            std::array<int, 2> idxs{p, q};
+            for (const auto &U : ecps) {
+                ecp_integral.compute_shell_pair(U, sh1, sh2, tmp);
+                buffer.add(tmp);
+            }
+            Result args{thread_id, idxs, bfs, dims, buffer.data.data()};
+            f(args);
+        }
+    }
+}
+
+template <ShellKind kind = ShellKind::Cartesian>
+Mat ecp_operator_kernel(const AOBasis &aobasis,
+                        const std::vector<libecpint::GaussianShell> &aoshells,
+                        const std::vector<libecpint::ECP> &ecps, int ao_max_l,
+                        int ecp_max_l, const ShellPairList &shellpairs) {
+    using Result = IntegralEngine::IntegralResult<2>;
+    auto nthreads = occ::parallel::get_num_threads();
+    const int nbf = std::accumulate(
+        aoshells.begin(), aoshells.end(), 0,
+        [](int a, const auto &x) { return a + x.ncartesian(); });
+
+    std::vector<Mat> results;
+    results.emplace_back(Mat::Zero(aobasis.nbf(), aobasis.nbf()));
+    for (size_t i = 1; i < nthreads; i++) {
+        results.push_back(results[0]);
+    }
+
+    std::vector<Mat> cart2sph;
+    if constexpr (kind == ShellKind::Spherical) {
+        for (int i = 0; i <= ao_max_l; i++) {
+            cart2sph.push_back(
+                occ::gto::cartesian_to_spherical_transformation_matrix(i));
+        }
+    }
+
+    auto f = [&results, &aobasis, &cart2sph](const Result &args) {
+        auto &result = results[args.thread];
+        Eigen::Map<const occ::MatRM> tmp(args.buffer, args.dims[0],
+                                         args.dims[1]);
+        const int bf0 = aobasis.first_bf()[args.shell[0]];
+        const int bf1 = aobasis.first_bf()[args.shell[1]];
+        if constexpr (kind == ShellKind::Spherical) {
+            const int dim0 = aobasis[args.shell[0]].size();
+            const int dim1 = aobasis[args.shell[1]].size();
+            const int l0 = aobasis[args.shell[0]].l;
+            const int l1 = aobasis[args.shell[1]].l;
+            result.block(bf0, bf1, dim0, dim1) =
+                cart2sph[l0] * tmp * cart2sph[l1].transpose();
+            if (args.shell[0] != args.shell[1]) {
+                result.block(bf1, bf0, dim1, dim0) =
+                    result.block(bf0, bf1, dim0, dim1).transpose();
+            }
+        } else {
+            result.block(bf0, bf1, args.dims[0], args.dims[1]) = tmp;
+            if (args.shell[0] != args.shell[1]) {
+                result.block(bf1, bf0, args.dims[1], args.dims[0]) =
+                    tmp.transpose();
+            }
+        }
+    };
+
+    auto lambda = [&](int thread_id) {
+        evaluate_two_center_ecp_with_shellpairs(
+            f, aoshells, ecps, ao_max_l, ecp_max_l, shellpairs, thread_id);
+    };
+    occ::parallel::parallel_do(lambda);
+
+    for (auto i = 1; i < nthreads; ++i) {
+        results[0].noalias() += results[i];
+    }
+    return results[0];
+}
+
+Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
+    if (!have_effective_core_potentials())
+        throw std::runtime_error(
+            "Called effective_core_potential without any ECPs");
+
+    occ::timing::start(occ::timing::category::ecp);
+    bool spherical = is_spherical();
+    constexpr auto Cart = ShellKind::Cartesian;
+    constexpr auto Sph = ShellKind::Spherical;
+    ShellPairList empty_shellpairs = {};
+    const auto &shellpairs =
+        use_shellpair_list ? m_shellpairs : empty_shellpairs;
+    Mat result;
+    if (spherical) {
+        result =
+            ecp_operator_kernel<Sph>(m_aobasis, m_ecp_gaussian_shells, m_ecp,
+                                     m_ecp_ao_max_l, m_ecp_max_l, shellpairs);
+    } else {
+        result =
+            ecp_operator_kernel<Cart>(m_aobasis, m_ecp_gaussian_shells, m_ecp,
+                                      m_ecp_ao_max_l, m_ecp_max_l, shellpairs);
+    }
+    occ::timing::stop(occ::timing::category::ecp);
+    return result;
+}
+
+void IntegralEngine::set_effective_core_potentials(
+    const ShellList &ecp_shells, const std::vector<int> &ecp_electrons) {
+    int num_shells = m_aobasis.size();
+    const auto &atoms = m_aobasis.atoms();
+    for (const auto &sh : m_aobasis.shells()) {
+        libecpint::GaussianShell ecpint_shell(
+            {sh.origin(0), sh.origin(1), sh.origin(2)}, sh.l);
+        const Mat &coeffs_norm = sh.contraction_coefficients;
+        m_ecp_ao_max_l = std::max(static_cast<int>(sh.l), m_ecp_ao_max_l);
+        for (int i = 0; i < sh.num_primitives(); i++) {
+            double c = coeffs_norm(i, 0);
+            if (sh.l == 0) {
+                c *= 0.28209479177387814; // 1 / (2 * sqrt(pi))
+            }
+            if (sh.l == 1) {
+                c *= 0.4886025119029199; // sqrt(3) / (2 * sqrt(pi))
+            }
+            ecpint_shell.addPrim(sh.exponents(i), c);
+        }
+        m_ecp_gaussian_shells.push_back(ecpint_shell);
+    }
+    for (int i = 0; i < ecp_electrons.size(); i++) {
+        m_env.set_atom_charge(i, atoms[i].atomic_number - ecp_electrons[i]);
+    }
+
+    Vec3 pt = ecp_shells[0].origin;
+    // For some reason need to merge all shells that share a center.
+    // This code relies on shells with the same center being grouped.
+    //
+    libecpint::ECP ecp(pt.data());
+    for (const auto &sh : ecp_shells) {
+        if ((pt - sh.origin).norm() > 1e-3) {
+            ecp.sort();
+            ecp.atom_id = m_ecp.size();
+            m_ecp.push_back(ecp);
+            pt = sh.origin;
+            ecp = libecpint::ECP(pt.data());
+        }
+        for (int i = 0; i < sh.num_primitives(); i++) {
+            m_ecp_max_l = std::max(static_cast<int>(sh.l), m_ecp_max_l);
+            ecp.addPrimitive(sh.ecp_r_exponents(i), sh.l, sh.exponents(i),
+                             sh.contraction_coefficients(i, 0), false);
+        }
+    }
+
+    // add the last ECP to the end
+    ecp.sort();
+    ecp.atom_id = m_ecp.size();
+    m_ecp.push_back(ecp);
+
+    m_have_ecp = true;
+}
+
 template <int order, SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
                      const ShellPairList &shellpairs,
                      const MolecularOrbitals &mo, const Vec3 &origin) {
-
     using Result = IntegralEngine::IntegralResult<2>;
     constexpr std::array<Op, 5> ops{Op::overlap, Op::dipole, Op::quadrupole,
                                     Op::octapole, Op::hexadecapole};
@@ -567,7 +747,6 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
 
 Vec IntegralEngine::multipole(int order, const MolecularOrbitals &mo,
                               const Vec3 &origin) const {
-
     bool spherical = is_spherical();
     constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
@@ -1207,8 +1386,8 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
                         int bf4_first = shell2bf_D[s4];
                         int n4 = D_bs[s4].size();
 
-                        // compute the permutational degeneracy (i.e. # of
-                        // equivalents) of the given shell set
+                        // compute the permutational degeneracy (i.e. #
+                        // of equivalents) of the given shell set
                         double s12_deg = (s1 == s2) ? 1.0 : 2.0;
 
                         std::array<int, 4> dims;
@@ -1469,6 +1648,26 @@ Mat IntegralEngine::point_charge_potential(
     }
 }
 
+Vec electric_potential_ecp_kernel(std::vector<libecpint::ECP> &ecps,
+                                  int ecp_lmax, const Mat3N &points) {
+    Vec result = Vec::Zero(points.cols());
+    for (int pt = 0; pt < points.cols(); pt++) {
+        for (const auto &U : ecps) {
+            double dx = points(0, pt) - U.center_[0];
+            double dy = points(1, pt) - U.center_[1];
+            double dz = points(2, pt) - U.center_[2];
+            double r = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+            double fac = 1.0;
+            for (int l = 0; l <= U.getL(); l++) {
+                result(pt) += fac * U.evaluate(r, l);
+                fac *= r;
+            }
+        }
+    }
+    return result;
+}
+
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 Vec electric_potential_kernel(cint::IntegralEnvironment &env,
                               const AOBasis &aobasis, const AOBasis &auxbasis,
@@ -1536,42 +1735,53 @@ Vec IntegralEngine::electric_potential(const MolecularOrbitals &mo,
     constexpr auto Cart = ShellKind::Cartesian;
     ShellList dummy_shells;
     dummy_shells.reserve(points.cols());
+    Vec result = Vec::Zero(points.cols());
     for (size_t i = 0; i < points.cols(); i++) {
         dummy_shells.push_back(
             Shell({1.0, {points(0, i), points(1, i), points(2, i)}}));
     }
     set_auxiliary_basis(dummy_shells, true);
+
+    // Below code could be used if ECPs are needed for electric potential,
+    // not sure if it's correct
+    /*
+    if (m_have_ecp) {
+        result += electric_potential_ecp_kernel(m_ecp, m_ecp_max_l, points);
+    }
+    */
+
     if (is_spherical()) {
         switch (mo.kind) {
         default: // Restricted
-            return electric_potential_kernel<R, Sph>(
+            result += electric_potential_kernel<R, Sph>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         case U:
-            return electric_potential_kernel<U, Sph>(
+            result += electric_potential_kernel<U, Sph>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         case G:
-            return electric_potential_kernel<G, Sph>(
+            result += electric_potential_kernel<G, Sph>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         }
     } else {
         switch (mo.kind) {
         default: // Restricted
-            return electric_potential_kernel<R, Cart>(
+            result += electric_potential_kernel<R, Cart>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         case U:
-            return electric_potential_kernel<U, Cart>(
+            result += electric_potential_kernel<U, Cart>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         case G:
-            return electric_potential_kernel<G, Cart>(
+            result += electric_potential_kernel<G, Cart>(
                 m_env, m_aobasis, m_auxbasis, m_shellpairs, mo);
             break;
         }
     }
+    return result;
 }
 
 } // namespace occ::qm

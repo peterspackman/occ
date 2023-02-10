@@ -52,7 +52,7 @@ TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
     auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
     basis.set_pure(false);
     auto hf = HartreeFock(basis);
-    hf.set_density_fitting_basis("def2-svp-jk");
+    hf.set_density_fitting_basis("def2-universal-jkfit");
 
     occ::qm::MolecularOrbitals mo;
     mo.kind = occ::qm::SpinorbitalKind::Restricted;

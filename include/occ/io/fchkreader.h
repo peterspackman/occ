@@ -23,11 +23,12 @@ class FchkReader {
         void print() const;
     };
 
-    enum LineLabel {
+    enum class LineLabel {
         Unknown,
         NumElectrons,
         SCFEnergy,
         AtomicNumbers,
+        NuclearCharges,
         AtomicPositions,
         NumBasisFunctions,
         NumAlpha,
@@ -49,6 +50,7 @@ class FchkReader {
         MP2Density,
         PureCartesianD,
         PureCartesianF,
+        ECP_RNFroz,
     };
 
     FchkReader(const std::string &filename);
@@ -72,6 +74,11 @@ class FchkReader {
     inline auto atomic_numbers() const {
         return Eigen::Map<const occ::IVec, 0>(m_atomic_numbers.data(),
                                               m_atomic_numbers.size());
+    }
+
+    inline auto nuclear_charges() const {
+        return Eigen::Map<const occ::Vec, 0>(m_nuclear_charges.data(),
+                                             m_nuclear_charges.size());
     }
 
     inline auto atomic_positions() const {
@@ -120,8 +127,10 @@ class FchkReader {
     double m_scf_energy{0.0};
     bool m_cartesian_d{true};
     bool m_cartesian_f{true};
+    bool m_have_ecps{false};
 
     std::vector<int> m_atomic_numbers;
+    std::vector<double> m_nuclear_charges;
     std::vector<double> m_atomic_positions;
     std::vector<double> m_alpha_mos;
     std::vector<double> m_alpha_mo_energies;
@@ -129,6 +138,7 @@ class FchkReader {
     std::vector<double> m_beta_mo_energies;
     std::vector<double> m_scf_density;
     std::vector<double> m_mp2_density;
+    std::vector<double> m_ecp_frozen;
     FchkBasis m_basis;
 };
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/core.h>
 #include <memory>
 #include <occ/core/units.h>
 #include <occ/interaction/polarization.h>

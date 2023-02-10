@@ -95,7 +95,11 @@ class DFT {
 
     void set_system_charge(int charge) { m_hf.set_system_charge(charge); }
     int system_charge() const { return m_hf.system_charge(); }
-    int num_e() const { return m_hf.num_e(); }
+    int total_electrons() const { return m_hf.total_electrons(); }
+    int active_electrons() const { return m_hf.active_electrons(); }
+    inline const auto &frozen_electrons() const {
+        return m_hf.frozen_electrons();
+    }
 
     void set_density_fitting_basis(const std::string &density_fitting_basis) {
         m_hf.set_density_fitting_basis(density_fitting_basis);
@@ -119,6 +123,9 @@ class DFT {
         energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
     }
     bool supports_incremental_fock_build() const { return false; }
+    inline bool have_effective_core_potentials() const {
+        return m_hf.have_effective_core_potentials();
+    }
 
     int density_derivative() const;
     double exact_exchange_factor() const {
@@ -142,6 +149,10 @@ class DFT {
 
     auto compute_nuclear_attraction_matrix() const {
         return m_hf.compute_nuclear_attraction_matrix();
+    }
+
+    auto compute_effective_core_potential_matrix() const {
+        return m_hf.compute_effective_core_potential_matrix();
     }
 
     auto compute_point_charge_interaction_matrix(

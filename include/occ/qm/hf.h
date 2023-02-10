@@ -23,8 +23,10 @@ class HartreeFock {
     inline const auto &aobasis() const { return m_engine.aobasis(); }
     inline auto nbf() const { return m_engine.nbf(); }
 
-    int system_charge() const { return m_charge; }
-    int num_e() const { return m_num_e; }
+    inline int system_charge() const { return m_charge; }
+    inline int total_electrons() const { return m_num_e; }
+    inline int active_electrons() const { return m_num_e - m_num_frozen; }
+    inline const auto &frozen_electrons() const { return m_frozen_electrons; }
 
     Vec3 center_of_mass() const;
 
@@ -35,6 +37,9 @@ class HartreeFock {
     }
     bool supports_incremental_fock_build() const { return !m_df_engine; }
 
+    inline bool have_effective_core_potentials() const {
+        return m_engine.have_effective_core_potentials();
+    }
     void set_system_charge(int charge);
     void set_density_fitting_basis(const std::string &);
     double nuclear_repulsion_energy() const;
@@ -43,7 +48,7 @@ class HartreeFock {
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const;
 
-    Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
+    Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                  const qm::AOBasis &bs, bool is_shell_diagonal);
     std::pair<Mat, Mat>
     compute_JK(const MolecularOrbitals &mo,
@@ -56,6 +61,7 @@ class HartreeFock {
     Mat compute_kinetic_matrix() const;
     Mat compute_overlap_matrix() const;
     Mat compute_nuclear_attraction_matrix() const;
+    Mat compute_effective_core_potential_matrix() const;
     Mat compute_point_charge_interaction_matrix(
         const PointChargeList &point_charges) const;
 
@@ -83,6 +89,7 @@ class HartreeFock {
                 result.components[offset++] = c(j);
             }
         }
+        result.components[0] -= m_num_frozen;
         return result;
     }
 
@@ -105,7 +112,9 @@ class HartreeFock {
   private:
     int m_charge{0};
     int m_num_e{0};
+    int m_num_frozen{0};
     std::vector<occ::core::Atom> m_atoms;
+    std::vector<int> m_frozen_electrons;
     mutable std::unique_ptr<IntegralEngineDF> m_df_engine{nullptr};
     mutable occ::qm::IntegralEngine m_engine;
 };
