@@ -465,6 +465,9 @@ Mat cartesian_to_spherical_transformation_matrix(int l) {
 }
 
 Mat spherical_to_cartesian_transformation_matrix(int l) {
+    throw std::runtime_error(
+        "Not implemented: spherical_to_cartesian_transformation matrix "
+        "normalisation is wrong");
     using occ::util::factorial;
     Mat c = cartesian_to_spherical_transformation_matrix(l);
     Mat S = Mat::Zero(num_subshells(true, l), num_subshells(true, l));
@@ -489,6 +492,12 @@ Mat spherical_to_cartesian_transformation_matrix(int l) {
                 factorial(lx2) / factorial(2 * lx2) * factorial(ly2) /
                 factorial(2 * ly2) * factorial(lz2) / factorial(2 * lz2));
             S(i, j) = lhs * rhs;
+            if (L1 > 1) {
+                S(i, j) /= common_fac(L1, true);
+            }
+            if (L2 > 1) {
+                S(i, j) /= common_fac(L2, true);
+            }
             j++;
         };
         iterate_over_shell<true>(lambda2, l);
