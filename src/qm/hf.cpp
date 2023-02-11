@@ -50,7 +50,7 @@ double HartreeFock::nuclear_repulsion_energy() const {
             auto r2 = xij * xij + yij * yij + zij * zij;
             auto r = sqrt(r2);
             enuc += (m_atoms[i].atomic_number - m_frozen_electrons[i]) *
-                    (m_atoms[j].atomic_number - m_frozen_electrons[i]) / r;
+                    (m_atoms[j].atomic_number - m_frozen_electrons[j]) / r;
         }
     return enuc;
 }

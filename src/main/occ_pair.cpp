@@ -128,14 +128,14 @@ Pair parse_input_file(const std::string &filename,
     p.b.wfn.apply_transformation(p.b.rotation, p.b.translation);
     occ::log::debug("Monomer A positions after rotation + translation:");
     for (const auto &a : p.a.wfn.atoms) {
-        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}\n", a.atomic_number,
+        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}", a.atomic_number,
                         a.x / occ::units::ANGSTROM_TO_BOHR,
                         a.y / occ::units::ANGSTROM_TO_BOHR,
                         a.z / occ::units::ANGSTROM_TO_BOHR);
     }
     occ::log::debug("Monomer B positions after rotation + translation:");
     for (const auto &a : p.b.wfn.atoms) {
-        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}\n", a.atomic_number,
+        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}", a.atomic_number,
                         a.x / occ::units::ANGSTROM_TO_BOHR,
                         a.y / occ::units::ANGSTROM_TO_BOHR,
                         a.z / occ::units::ANGSTROM_TO_BOHR);
@@ -184,6 +184,8 @@ int main(int argc, char *argv[]) {
 
     int threads{1};
     bool use_df{false};
+    double xdm_a1{1.0};
+    double xdm_a2{1.0};
 
     CLI::Option *input_option =
         app.add_option("input", input_file, "input file");
@@ -196,6 +198,8 @@ int main(int argc, char *argv[]) {
     app.add_option("-v,--verbosity", verbosity, "logging verbosity");
     app.add_option("--monomer-directory", monomer_directory,
                    "directory to find monomer wavefunctions");
+    app.add_option("--xdm-a1", xdm_a1, "a1 parameter for XDM");
+    app.add_option("--xdm-a2", xdm_a2, "a2 parameter for XDM");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -211,6 +215,8 @@ int main(int argc, char *argv[]) {
     occ::parallel::set_num_threads(threads);
 
     auto model = occ::interaction::ce_model_from_string(model_name);
+    model.xdm_a1 = xdm_a1;
+    model.xdm_a1 = xdm_a2;
 
     CEModelInteraction interaction(model);
     if (use_df) {

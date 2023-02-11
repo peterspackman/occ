@@ -176,18 +176,25 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     CEEnergyComponents energy;
     energy.coulomb =
         E_ABn.coulomb + E_ABn.nuclear_attraction + E_ABn.nuclear_repulsion;
+    occ::log::debug("Coulomb components:");
+    occ::log::debug("ABn coulomb term {:20.12f}", E_ABn.coulomb);
+    occ::log::debug("ABn en term      {:20.12f}", E_ABn.nuclear_attraction);
+    occ::log::debug("ABn nn term      {:20.12f}", E_ABn.nuclear_repulsion);
+    occ::log::debug("Total term       {:20.12f}", energy.coulomb);
     double eABn = ABn.energy.core + ABn.energy.exchange + ABn.energy.coulomb;
     double eABo = ABo.energy.core + ABo.energy.exchange + ABo.energy.coulomb;
     double E_rep = eABo - eABn;
     energy.exchange_repulsion = E_ABn.exchange + E_rep;
 
     if (scale_factors.xdm) {
+        fmt::print("XDM params: {} {}\n", scale_factors.xdm_a1,
+                   scale_factors.xdm_a2);
         auto xdm_result = xdm::xdm_dispersion_interaction_energy(
             {A.atoms, A.xdm_polarizabilities, A.xdm_moments, A.xdm_volumes,
              A.xdm_free_volumes},
             {B.atoms, B.xdm_polarizabilities, B.xdm_moments, B.xdm_volumes,
              B.xdm_free_volumes},
-            {});
+            {scale_factors.xdm_a1, scale_factors.xdm_a2});
         energy.dispersion = std::get<0>(xdm_result);
     } else {
         energy.dispersion = ce_model_dispersion_energy(A.atoms, B.atoms);

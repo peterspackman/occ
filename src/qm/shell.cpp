@@ -432,7 +432,9 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
         m_atom_to_ecp_shell_idxs[atom_idx].push_back(ecp_shell_idx);
         ++ecp_shell_idx;
     }
+}
 
+void AOBasis::calculate_shell_cutoffs() {
     Vec extents = occ::gto::evaluate_decay_cutoff(*this);
     for (size_t i = 0; i < m_shells.size(); i++) {
         m_shells[i].extent = extents(i);

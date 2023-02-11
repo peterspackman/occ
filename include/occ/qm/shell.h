@@ -148,6 +148,8 @@ class AOBasis {
 
     bool operator==(const AOBasis &rhs);
 
+    void calculate_shell_cutoffs();
+
   private:
     void update_bf_maps();
     std::string m_basis_name;
