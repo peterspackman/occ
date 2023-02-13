@@ -421,11 +421,17 @@ void Wavefunction::apply_translation(const occ::Vec3 &trans) {
 }
 
 void Wavefunction::apply_rotation(const occ::Mat3 &rot) {
-    mo.rotate(basis, rot);
-    basis.rotate(rot);
-    occ::core::rotate_atoms(atoms, rot);
-    update_occupied_orbitals();
-    compute_density_matrix();
+    // check if identity matrix, otherwise do the rotation and
+    // update the orbitals
+    if (!rot.isIdentity(1e-6)) {
+        mo.rotate(basis, rot);
+        basis.rotate(rot);
+        occ::core::rotate_atoms(atoms, rot);
+        update_occupied_orbitals();
+        compute_density_matrix();
+    } else {
+        occ::log::debug("Skipping rotation by identity matrix");
+    }
 }
 
 occ::Mat3N Wavefunction::positions() const {

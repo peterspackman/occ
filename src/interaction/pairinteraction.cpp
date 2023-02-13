@@ -185,6 +185,16 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     double eABo = ABo.energy.core + ABo.energy.exchange + ABo.energy.coulomb;
     double E_rep = eABo - eABn;
     energy.exchange_repulsion = E_ABn.exchange + E_rep;
+    occ::log::debug("Exchange repulsion components:");
+    occ::log::debug("ABn core term      {:20.12f}", ABn.energy.core);
+    occ::log::debug("ABn exchange term  {:20.12f}", ABn.energy.exchange);
+    occ::log::debug("ABn coulomb term   {:20.12f}", ABn.energy.coulomb);
+    occ::log::debug("ABo core term      {:20.12f}", ABo.energy.core);
+    occ::log::debug("ABo exchange term  {:20.12f}", ABo.energy.exchange);
+    occ::log::debug("ABo coulomb term   {:20.12f}", ABo.energy.coulomb);
+    occ::log::debug("E_rep term         {:20.12f}", E_rep);
+    occ::log::debug("Exchange term      {:20.12f}", E_ABn.exchange);
+    occ::log::debug("Total term         {:20.12f}", energy.exchange_repulsion);
 
     if (scale_factors.xdm) {
         fmt::print("XDM params: {} {}\n", scale_factors.xdm_a1,

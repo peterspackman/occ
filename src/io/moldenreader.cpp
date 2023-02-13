@@ -328,6 +328,23 @@ void MoldenReader::parse_mo_section(const std::optional<std::string> &args,
     }
 }
 
+int fix_orca_phase_convention(int l, int m) {
+    if (l == 3 && std::abs(m) == 3) {
+        // c0 c1 s1 c2 s2 c3 s3
+        // +  +  +  +  +  -  -
+        return -1;
+    } else if (l == 4 && std::abs(m) >= 3) {
+        // c0 c1 s1 c2 s2 c3 s3 c4 s4
+        // +  +  +  +  +  -  -  -  -
+        return -1;
+    } else if (l == 5 && std::abs(m) >= 3 && std::abs(m) < 5) {
+        // c0 c1 s1 c2 s2 c3 s3 c4 s4 c5 s5
+        // +  +  +  +  +  -  -  -  -  +  +
+        return -1;
+    }
+    return 1;
+}
+
 Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
     const occ::qm::AOBasis &basis, const Mat &mo) const {
 
@@ -340,8 +357,10 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
     Mat result(mo.rows(), mo.cols());
     size_t ncols = mo.cols();
     bool orca = source == Source::Orca;
-    if (orca)
-        occ::log::debug("ORCA phase convention...");
+    if (orca) {
+        occ::log::debug("Detected ORCA wavefunction source, will fix phase "
+                        "convention for l >= 3...");
+    }
     if (basis.l_max() < 1)
         return mo;
     constexpr auto order = occ::gto::ShellOrder::Molden;
@@ -363,7 +382,11 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
             size_t idx = 0;
             auto func = [&](int am, int m) {
                 int their_idx = occ::gto::shell_index_spherical<order>(am, m);
-                result.row(bf_first + idx) = mo.row(bf_first + their_idx);
+                int sign = 1;
+                if (orca)
+                    sign = fix_orca_phase_convention(am, m);
+                result.row(bf_first + idx) =
+                    sign * mo.row(bf_first + their_idx);
                 occ::log::debug("Swapping (l={}): {} <-> {}", l, idx,
                                 their_idx);
                 idx++;
@@ -372,36 +395,6 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
                 func, l);
         }
     }
-
-    /*
-        case 3:
-            // c0 c1 s1 c2 s2 c3 s3
-            // +  +  +  +  +  -  -
-            // orca has modified phase
-            for(size_t i = 0; i < shell_size; i++) {
-                if(orca && (i > 4)) phase.emplace_back(-1.0);
-                else phase.emplace_back(1.0);
-            }
-            break;
-        case 4:
-            // c0 c1 s1 c2 s2 c3 s3 c4 s4
-            // +  +  +  +  +  -  -  -  -
-            // orca has modified phase
-            for(size_t i = 0; i < shell_size; i++) {
-                if(orca && (i > 4)) phase.emplace_back(-1.0);
-                else phase.emplace_back(1.0);
-            }
-            break;
-        case 5:
-            // c0 c1 s1 c2 s2 c3 s3 c4 s4 c5 s5
-            // +  +  +  +  +  -  -  -  -  +  +
-            // orca has modified phase (weird)
-            for(size_t i = 0; i < shell_size; i++) {
-                if(orca && ((i > 4) && (i < 9))) phase.emplace_back(-1.0);
-                else phase.emplace_back(1.0);
-            }
-            break;
-            */
     return result;
 }
 } // namespace occ::io
