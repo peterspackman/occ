@@ -186,8 +186,8 @@ void xdm_moment_kernel_restricted(
             continue;
         // now it holds the weight function
         occ::RowVec hirshfeld_weights = rho_pro.row(j).array() / protot;
-        hirshfeld_charges -=
-            hirshfeld_weights.row(j).transpose() * 2 * rho(j, 0) * weights(j);
+        double fac = 2 * rho(j, 0) * weights(j);
+        hirshfeld_charges.array() -= hirshfeld_weights.array() * fac;
         num_electrons_promol += protot * weights(j);
         double lapl = rho(j, 4);
         double tau = 2 * rho(j, 5);
@@ -231,69 +231,90 @@ void xdm_moment_kernel_unrestricted(
     const auto &rho_b = occ::qm::block::b(rho);
 
     for (int j = 0; j < rho_pro.rows(); j++) {
+
         double protot = rho_pro.row(j).sum();
         if (protot < 1e-30)
             continue;
         // now it holds the weight function
         occ::RowVec hirshfeld_weights = rho_pro.row(j).array() / protot;
-        hirshfeld_charges -=
-            hirshfeld_weights.row(j).transpose() * 2 * rho(j, 0) * weights(j);
         num_electrons_promol += protot * weights(j);
-        double lapl_a = rho_a(j, 4);
-        double tau_a = 2 * rho_a(j, 5);
-        double sigma_a = rho_a(j, 1) * rho_a(j, 1) + rho_a(j, 2) * rho_a(j, 2) +
-                         rho_a(j, 3) * rho_a(j, 3);
-        double dsigs_a = tau_a - 0.25 * sigma_a / std::max(rho_a(j, 0), 1e-30);
-        double q_a = (lapl_a - 2 * dsigs_a) / 6.0;
-        double bhole_a = occ::xdm::becke_hole_br89(rho_a(j, 0), q_a, 1.0);
 
-        double lapl_b = rho_b(j, 4);
-        double tau_b = 2 * rho_b(j, 5);
-        double sigma_b = rho_b(j, 1) * rho_b(j, 1) + rho_b(j, 2) * rho_b(j, 2) +
-                         rho_b(j, 3) * rho_b(j, 3);
-        double dsigs_b = tau_b - 0.25 * sigma_b / std::max(rho_b(j, 0), 1e-30);
-        double q_b = (lapl_b - 2 * dsigs_b) / 6.0;
-        double bhole_b = occ::xdm::becke_hole_br89(rho_b(j, 0), q_b, 1.0);
+        double fac = 2.0 * (rho_a(j, 0) + rho_b(j, 0)) * weights(j);
+        hirshfeld_charges.array() -= hirshfeld_weights.array() * fac;
 
         const auto &rja = r.row(j).array();
-        occ::RowVec r_sub_ba =
-            (rja - bhole_a)
-                .unaryExpr([](double x) { return std::max(x, 0.0); })
-                .transpose();
-        occ::RowVec r_sub_bb =
-            (rja - bhole_b)
-                .unaryExpr([](double x) { return std::max(x, 0.0); })
-                .transpose();
 
-        moments.row(0).array() +=
-            hirshfeld_weights.array() * weights(j) *
-            ((rja - r_sub_ba.array()).pow(2) * rho_a(j, 0) +
-             (rja - r_sub_bb.array()).pow(2) * rho_b(j, 0));
+        {
+            double lapl_a = rho_a(j, 4);
+            double tau_a = 2 * rho_a(j, 5);
+            double sigma_a = rho_a(j, 1) * rho_a(j, 1) +
+                             rho_a(j, 2) * rho_a(j, 2) +
+                             rho_a(j, 3) * rho_a(j, 3);
+            double dsigs_a =
+                tau_a - 0.25 * sigma_a / std::max(rho_a(j, 0), 1e-30);
+            double q_a = (lapl_a - 2 * dsigs_a) / 6.0;
+            double bhole_a = occ::xdm::becke_hole_br89(rho_a(j, 0), q_a, 1.0);
 
-        moments.row(1).array() +=
-            hirshfeld_weights.array() *
-            (rja.pow(2) - r_sub_ba.array().pow(2)).pow(2) * rho_a(j, 0) *
-            weights(j);
-        moments.row(1).array() +=
-            hirshfeld_weights.array() *
-            (rja.pow(2) - r_sub_bb.array().pow(2)).pow(2) * rho_b(j, 0) *
-            weights(j);
+            occ::RowVec r_sub_ba =
+                (rja - bhole_a)
+                    .unaryExpr([](double x) { return std::max(x, 0.0); })
+                    .transpose();
 
-        moments.row(2).array() +=
-            hirshfeld_weights.array() *
-            (rja.pow(3) - r_sub_ba.array().pow(3)).pow(2) * rho_a(j, 0) *
-            weights(j);
-        moments.row(2).array() +=
-            hirshfeld_weights.array() *
-            (rja.pow(3) - r_sub_bb.array().pow(3)).pow(2) * rho_b(j, 0) *
-            weights(j);
+            moments.row(0).array() += 2 * hirshfeld_weights.array() *
+                                      (rja - r_sub_ba.array()).pow(2) *
+                                      rho_a(j, 0) * weights(j);
+            moments.row(1).array() +=
+                2 * hirshfeld_weights.array() *
+                (rja.pow(2) - r_sub_ba.array().pow(2)).pow(2) * rho_a(j, 0) *
+                weights(j);
+            moments.row(2).array() +=
+                2 * hirshfeld_weights.array() *
+                (rja.pow(3) - r_sub_ba.array().pow(3)).pow(2) * rho_a(j, 0) *
+                weights(j);
+            num_electrons += 2 * rho_a(j, 0) * weights(j);
+            volume.array() += (hirshfeld_weights.array() * r.row(j).array() *
+                               r.row(j).array() * r.row(j).array())
+                                  .transpose()
+                                  .array() *
+                              2 * rho_a(j, 0) * weights(j);
+        }
+        {
+            double lapl_b = rho_b(j, 4);
+            double tau_b = 2 * rho_b(j, 5);
+            double sigma_b = rho_b(j, 1) * rho_b(j, 1) +
+                             rho_b(j, 2) * rho_b(j, 2) +
+                             rho_b(j, 3) * rho_b(j, 3);
+            double dsigs_b =
+                tau_b - 0.25 * sigma_b / std::max(rho_b(j, 0), 1e-30);
+            double q_b = (lapl_b - 2 * dsigs_b) / 6.0;
+            double bhole_b = occ::xdm::becke_hole_br89(rho_b(j, 0), q_b, 1.0);
 
-        num_electrons += (rho_a(j, 0) + rho_b(j, 0)) * weights(j);
-        volume.array() += (hirshfeld_weights.array() * r.row(j).array() *
-                           r.row(j).array() * r.row(j).array())
-                              .transpose()
-                              .array() *
-                          (rho_a(j, 0) + rho_b(j, 0)) * weights(j);
+            const auto &rja = r.row(j).array();
+
+            occ::RowVec r_sub_bb =
+                (rja - bhole_b)
+                    .unaryExpr([](double x) { return std::max(x, 0.0); })
+                    .transpose();
+
+            moments.row(0).array() +=
+                2 * hirshfeld_weights.array() * weights(j) *
+                (rja - r_sub_bb.array()).pow(2) * rho_b(j, 0);
+            moments.row(1).array() +=
+                2 * hirshfeld_weights.array() *
+                (rja.pow(2) - r_sub_bb.array().pow(2)).pow(2) * rho_b(j, 0) *
+                weights(j);
+
+            moments.row(2).array() +=
+                2 * hirshfeld_weights.array() *
+                (rja.pow(3) - r_sub_bb.array().pow(3)).pow(2) * rho_b(j, 0) *
+                weights(j);
+
+            num_electrons += 2 * rho_b(j, 0) * weights(j);
+            volume.array() += (hirshfeld_weights.array() * rja * rja * rja)
+                                  .transpose()
+                                  .array() *
+                              2 * rho_b(j, 0) * weights(j);
+        }
     }
 }
 
@@ -310,10 +331,13 @@ XDM::XDM(const occ::qm::AOBasis &basis) : m_basis(basis), m_grid(basis) {
     size_t num_grid_points = std::accumulate(
         m_atom_grids.begin(), m_atom_grids.end(), 0.0,
         [&](double tot, const auto &grid) { return tot + grid.points.cols(); });
+    occ::log::debug("{} total grid points used for XDM", num_grid_points);
     m_slater_basis = occ::slater::slaterbasis_for_atoms(m_basis.atoms());
 }
 
 double XDM::energy(const occ::qm::MolecularOrbitals &mo) {
+    occ::log::debug("MO has {} alpha electrons {} beta electrons\n", mo.n_alpha,
+                    mo.n_beta);
     populate_moments(mo);
     populate_polarizabilities();
     occ::log::debug("moments\n{}\n", m_moments);
@@ -341,15 +365,24 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
     }
     m_density_matrix = mo.D;
 
+    {
+        std::ofstream d("density_xdm.txt");
+        d << mo.D;
+    }
+
     occ::gto::GTOValues gto_vals;
     const auto &atoms = m_basis.atoms();
     const size_t num_atoms = atoms.size();
 
     bool unrestricted = (mo.kind == occ::qm::SpinorbitalKind::Unrestricted);
+    occ::log::debug("XDM using {} wavefunction",
+                    unrestricted ? "unrestricted" : "restricted");
 
     constexpr size_t BLOCKSIZE = 64;
+    int num_rows_factor = 1;
+    if (unrestricted)
+        num_rows_factor = 2;
     gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, 2);
-    Mat rho = Mat::Zero(BLOCKSIZE, occ::density::num_components(2));
     m_hirshfeld_charges = Vec::Zero(num_atoms);
     for (int i = 0; i < num_atoms; i++) {
         m_hirshfeld_charges(i) = static_cast<double>(atoms[i].atomic_number);
@@ -376,13 +409,15 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
                 continue;
             Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
             Mat r = Mat::Zero(npt, num_atoms);
+            Mat rho = Mat::Zero(num_rows_factor * npt,
+                                occ::density::num_components(2));
             const auto &pts_block = atom_pts.middleCols(l, npt);
             const auto &weights_block = atom_weights.segment(l, npt);
             occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, 2);
             if (unrestricted) {
                 occ::density::evaluate_density<
-                    2, occ::qm::SpinorbitalKind::Unrestricted>(
-                    m_density_matrix * 2, gto_vals, rho);
+                    2, occ::qm::SpinorbitalKind::Unrestricted>(m_density_matrix,
+                                                               gto_vals, rho);
             } else {
                 occ::density::evaluate_density<
                     2, occ::qm::SpinorbitalKind::Restricted>(m_density_matrix,
@@ -415,6 +450,9 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
             }
         }
     }
+    occ::log::debug("Num electrons {:20.12f}, promolecule {:20.12f}\n",
+                    num_electrons, num_electrons_promol);
+    occ::log::debug("Hirshfeld charges:\n{}", m_hirshfeld_charges);
 }
 
 void XDM::populate_polarizabilities() {

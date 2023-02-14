@@ -5,6 +5,63 @@
 
 namespace occ::io::conversion::orb {
 
+template <typename Lambda>
+qm::MolecularOrbitals convert_order(const qm::AOBasis &basis,
+                                    const qm::MolecularOrbitals &mo,
+                                    Lambda conv_func) {
+
+    using SK = occ::qm::SpinorbitalKind;
+    namespace block = occ::qm::block;
+    qm::MolecularOrbitals result = mo;
+
+    switch (mo.kind) {
+    case SK::Restricted: {
+        result.C = conv_func(basis, mo.C);
+        break;
+    }
+    case SK::Unrestricted: {
+        block::a(result.C) = conv_func(basis, block::a(mo.C));
+        block::b(result.C) = conv_func(basis, block::b(mo.C));
+        break;
+    }
+    case SK::General: {
+        block::aa(result.C) = conv_func(basis, block::aa(mo.C));
+        block::ab(result.C) = conv_func(basis, block::ab(mo.C));
+        block::ba(result.C) = conv_func(basis, block::ba(mo.C));
+        block::bb(result.C) = conv_func(basis, block::bb(mo.C));
+        break;
+    }
+    }
+    return result;
+}
+
+qm::MolecularOrbitals to_gaussian_order(const qm::AOBasis &basis,
+                                        const qm::MolecularOrbitals &mo) {
+    if (basis.is_pure()) {
+        return convert_order(basis, mo, [](const qm::AOBasis &b, const Mat &m) {
+            return to_gaussian_order_spherical(b, m);
+        });
+    } else {
+        return convert_order(basis, mo, [](const qm::AOBasis &b, const Mat &m) {
+            return to_gaussian_order_cartesian(b, m);
+        });
+    }
+}
+
+qm::MolecularOrbitals from_gaussian_order(const qm::AOBasis &basis,
+                                          const qm::MolecularOrbitals &mo) {
+
+    if (basis.is_pure()) {
+        return convert_order(basis, mo, [](const qm::AOBasis &b, const Mat &m) {
+            return from_gaussian_order_spherical(b, m);
+        });
+    } else {
+        return convert_order(basis, mo, [](const qm::AOBasis &b, const Mat &m) {
+            return from_gaussian_order_cartesian(b, m);
+        });
+    }
+}
+
 /* TODO
  *
  * Refactor into one method, generic across orders/normalization schemes

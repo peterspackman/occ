@@ -334,32 +334,11 @@ void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
         block::b(mo.C) = fchk.beta_mo_coefficients();
         block::a(mo.energies) = fchk.alpha_mo_energies();
         block::b(mo.energies) = fchk.beta_mo_energies();
-        if (!basis.is_pure()) {
-            block::a(mo.C) =
-                occ::io::conversion::orb::from_gaussian_order_cartesian(
-                    basis, block::a(mo.C));
-            block::b(mo.C) =
-                occ::io::conversion::orb::from_gaussian_order_cartesian(
-                    basis, block::b(mo.C));
-        } else {
-            block::a(mo.C) =
-                occ::io::conversion::orb::from_gaussian_order_spherical(
-                    basis, block::a(mo.C));
-            block::b(mo.C) =
-                occ::io::conversion::orb::from_gaussian_order_spherical(
-                    basis, block::b(mo.C));
-        }
     } else {
         mo.C = fchk.alpha_mo_coefficients();
         mo.energies = fchk.alpha_mo_energies();
-        if (!basis.is_pure()) {
-            mo.C = occ::io::conversion::orb::from_gaussian_order_cartesian(
-                basis, mo.C);
-        } else {
-            mo.C = occ::io::conversion::orb::from_gaussian_order_spherical(
-                basis, mo.C);
-        }
     }
+    mo = occ::io::conversion::orb::from_gaussian_order(basis, mo);
     update_occupied_orbitals();
 }
 
@@ -493,24 +472,25 @@ void Wavefunction::save(FchkWriter &fchk) {
                     atomic_prop.array().round().cast<int>());
     fchk.set_vector("Real atomic weights", atomic_prop);
 
-    auto Cfchk = [&]() {
-        if (basis.is_pure())
-            return occ::io::conversion::orb::to_gaussian_order_spherical(basis,
-                                                                         mo.C);
-        return occ::io::conversion::orb::to_gaussian_order_cartesian(basis,
-                                                                     mo.C);
-    }();
+    bool spherical = basis.is_pure();
+
+    auto mo_fchk = occ::io::conversion::orb::to_gaussian_order(basis, mo);
     Mat Dfchk;
+
+    {
+        std::ofstream d("density_correct.txt");
+        d << mo.D;
+    }
 
     std::vector<double> density_lower_triangle, spin_density_lower_triangle;
 
     if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        fchk.set_vector("Alpha Orbital Energies", block::a(mo.energies));
-        fchk.set_vector("Alpha MO coefficients", block::a(Cfchk));
-        fchk.set_vector("Beta Orbital Energies", block::b(mo.energies));
-        fchk.set_vector("Beta MO coefficients", block::b(Cfchk));
+        fchk.set_vector("Alpha Orbital Energies", block::a(mo_fchk.energies));
+        fchk.set_vector("Alpha MO coefficients", block::a(mo_fchk.C));
+        fchk.set_vector("Beta Orbital Energies", block::b(mo_fchk.energies));
+        fchk.set_vector("Beta MO coefficients", block::b(mo_fchk.C));
         Mat occ_fchk =
-            occ::qm::orb::occupied_unrestricted(Cfchk, num_alpha, num_beta);
+            occ::qm::orb::occupied_unrestricted(mo_fchk.C, num_alpha, num_beta);
         Dfchk = occ::qm::orb::density_matrix_unrestricted(occ_fchk, num_alpha,
                                                           num_beta);
 
@@ -526,9 +506,9 @@ void Wavefunction::save(FchkWriter &fchk) {
             }
         }
     } else {
-        fchk.set_vector("Alpha Orbital Energies", mo.energies);
-        fchk.set_vector("Alpha MO coefficients", Cfchk);
-        Mat occ_fchk = occ::qm::orb::occupied_restricted(Cfchk, num_alpha);
+        fchk.set_vector("Alpha Orbital Energies", mo_fchk.energies);
+        fchk.set_vector("Alpha MO coefficients", mo_fchk.C);
+        Mat occ_fchk = occ::qm::orb::occupied_restricted(mo_fchk.C, num_alpha);
         Dfchk = occ::qm::orb::density_matrix_restricted(occ_fchk);
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
         for (Eigen::Index row = 0; row < nbf; row++) {
@@ -592,7 +572,7 @@ void Wavefunction::save(FchkWriter &fchk) {
     fchk.set_scalar("Total ratio", energy.total);
 
     occ::timing::stop(occ::timing::category::io);
-}
+} // namespace occ::qm
 
 Vec Wavefunction::electric_potential(const Mat3N &points) const {
     HartreeFock hf(basis);
