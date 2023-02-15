@@ -3,9 +3,68 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
+#include <occ/gto/gto.h>
 #include <occ/io/orca_json.h>
 
 namespace occ::io {
+
+inline int fix_orca_phase_convention(int l, int m) {
+    if (l == 3 && std::abs(m) == 3) {
+        // c0 c1 s1 c2 s2 c3 s3
+        // +  +  +  +  +  -  -
+        return -1;
+    } else if (l == 4 && std::abs(m) >= 3) {
+        // c0 c1 s1 c2 s2 c3 s3 c4 s4
+        // +  +  +  +  +  -  -  -  -
+        return -1;
+    } else if (l == 5 && std::abs(m) >= 3 && std::abs(m) < 5) {
+        // c0 c1 s1 c2 s2 c3 s3 c4 s4 c5 s5
+        // +  +  +  +  +  -  -  -  -  +  +
+        return -1;
+    }
+    return 1;
+}
+
+Mat convert_mo_coefficients_from_orca_convention(const occ::qm::AOBasis &basis,
+                                                 const Mat &mo) {
+    occ::log::debug("Reordering MO coefficients from Molden ordering to "
+                    "internal convention");
+    auto shell2bf = basis.first_bf();
+    Mat result(mo.rows(), mo.cols());
+    size_t ncols = mo.cols();
+    constexpr auto order = occ::gto::ShellOrder::Molden;
+
+    for (size_t i = 0; i < basis.size(); i++) {
+        const auto &shell = basis.shells()[i];
+        size_t bf_first = shell2bf[i];
+        int l = shell.l;
+        if (l == 1) {
+            // zxy -> yzx
+            occ::log::debug("Swapping (l={}): z,x,y to y,z,x");
+            result.block(bf_first + 0, 0, 1, ncols) =
+                mo.block(bf_first + 2, 0, 1, ncols);
+            result.block(bf_first + 1, 0, 1, ncols) =
+                mo.block(bf_first + 0, 0, 1, ncols);
+            result.block(bf_first + 2, 0, 1, ncols) =
+                mo.block(bf_first + 1, 0, 1, ncols);
+        } else {
+            size_t idx = 0;
+            auto func = [&](int am, int m) {
+                int their_idx = occ::gto::shell_index_spherical<order>(am, m);
+                int sign = 1;
+                sign = fix_orca_phase_convention(am, m);
+                result.row(bf_first + idx) =
+                    sign * mo.row(bf_first + their_idx);
+                occ::log::debug("Swapping (l={}): {} <-> {}", l, idx,
+                                their_idx);
+                idx++;
+            };
+            occ::gto::iterate_over_shell<false, occ::gto::ShellOrder::Default>(
+                func, l);
+        }
+    }
+    return result;
+}
 
 /*
   Scaling factors for Orca
@@ -134,11 +193,15 @@ void OrcaJSONReader::parse(std::istream &stream) {
         }
     }
     m_basis = occ::qm::AOBasis(atoms(), shells);
+    m_basis.set_pure(true); // orca only uses pure functions
     size_t nbf = m_basis.nbf();
     occ::log::debug("num atoms {}", num_atoms);
 
     bool unrestricted = mol["HFTyp"] == "UHF";
 
+    if (unrestricted) {
+        m_spinorbital_kind = qm::SpinorbitalKind::Unrestricted;
+    }
     occ::log::debug("unrestricted: {}", unrestricted);
     occ::log::debug("nbf: {}", nbf);
 
@@ -175,8 +238,16 @@ void OrcaJSONReader::parse(std::istream &stream) {
         mo_idx++;
     }
 
-    if (!unrestricted)
+    if (unrestricted) {
+        m_alpha_coeffs = convert_mo_coefficients_from_orca_convention(
+            m_basis, m_alpha_coeffs);
+        m_beta_coeffs = convert_mo_coefficients_from_orca_convention(
+            m_basis, m_beta_coeffs);
+    } else {
         m_num_beta = m_num_alpha;
+        m_alpha_coeffs = convert_mo_coefficients_from_orca_convention(
+            m_basis, m_alpha_coeffs);
+    }
 
     occ::log::debug("Num electrons: {}", m_num_electrons);
     occ::log::debug("Num alpha electrons {}", m_num_alpha);

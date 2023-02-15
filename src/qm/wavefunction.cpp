@@ -40,6 +40,34 @@ Wavefunction::Wavefunction(const FchkReader &fchk)
     compute_density_matrix();
 }
 
+Wavefunction::Wavefunction(const OrcaJSONReader &json)
+    : spinorbital_kind(json.spinorbital_kind()), num_alpha(json.num_alpha()),
+      num_beta(json.num_beta()), num_electrons(json.num_electrons()),
+      basis(json.basis_set()), nbf(basis.nbf()), atoms(json.atoms()) {
+    energy.total = json.scf_energy();
+    size_t rows, cols;
+
+    mo.kind = spinorbital_kind;
+    if (spinorbital_kind == SpinorbitalKind::General) {
+        throw std::runtime_error(
+            "Reading MOs from Orca json unsupported for General spinorbitals");
+    } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        std::tie(rows, cols) =
+            occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+        mo.C = Mat(rows, cols);
+        mo.energies = Vec(rows);
+        block::a(mo.C) = json.alpha_mo_coefficients();
+        block::b(mo.C) = json.beta_mo_coefficients();
+        block::a(mo.energies) = json.alpha_mo_energies();
+        block::b(mo.energies) = json.beta_mo_energies();
+    } else {
+        mo.C = json.alpha_mo_coefficients();
+        mo.energies = json.alpha_mo_energies();
+    }
+    update_occupied_orbitals();
+    compute_density_matrix();
+}
+
 Wavefunction::Wavefunction(const MoldenReader &molden)
     : spinorbital_kind(molden.spinorbital_kind()),
       num_alpha(molden.num_alpha()), num_beta(molden.num_beta()),

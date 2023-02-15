@@ -3,6 +3,7 @@
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
+#include <occ/io/orca_json.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
@@ -13,6 +14,7 @@ using occ::Vec;
 using occ::io::FchkReader;
 using occ::io::FchkWriter;
 using occ::io::MoldenReader;
+using occ::io::OrcaJSONReader;
 
 struct Energy {
     double coulomb{0};
@@ -52,8 +54,9 @@ struct Energy {
 struct Wavefunction {
     Wavefunction() {}
 
-    Wavefunction(const FchkReader &fchk);
-    Wavefunction(const MoldenReader &fchk);
+    Wavefunction(const FchkReader &);
+    Wavefunction(const MoldenReader &);
+    Wavefunction(const OrcaJSONReader &);
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
 
     size_t multiplicity() const { return abs(num_beta - num_alpha) + 1; }
