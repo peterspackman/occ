@@ -56,16 +56,16 @@ struct Wavefunction {
     Wavefunction(const MoldenReader &fchk);
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
 
-    size_t multiplicity() const { return abs(num_beta - num_alpha) + 1; }
-    size_t charge() const {
+    inline int multiplicity() const { return abs(num_beta - num_alpha) + 1; }
+    inline int charge() const {
         size_t c = 0;
         for (const auto &atom : atoms)
             c += atom.atomic_number;
         c -= num_electrons;
         return c;
     }
-    size_t n_alpha() const { return num_alpha; }
-    size_t n_beta() const { return num_beta; }
+    inline int n_alpha() const { return num_alpha; }
+    inline int n_beta() const { return num_beta; }
     bool is_restricted() const {
         return spinorbital_kind == SpinorbitalKind::Restricted;
     }

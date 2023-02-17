@@ -294,7 +294,7 @@ class Element {
      * atom of this element in its neutral (ground) state.
      *
      */
-    double polarizability() const;
+    double polarizability(bool charged = false) const;
 
   private:
     /// \internal

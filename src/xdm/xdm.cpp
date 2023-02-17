@@ -14,11 +14,11 @@ using occ::core::Element;
 
 namespace occ::xdm {
 
-double xdm_polarizability(int n, double v, double vfree) {
+double xdm_polarizability(int n, double v, double vfree, bool charged) {
     // TODO handle charged atoms!
     // Thakkar polarizabilities for default oxidation states
     // are in occ::interaction but is this enough?
-    return v * Element(n).polarizability() / vfree;
+    return v * Element(n).polarizability(charged) / vfree;
 }
 
 std::tuple<double, Mat3N, Mat3N>
@@ -324,7 +324,8 @@ struct XDMResult {
     double energy{0.0};
 };
 
-XDM::XDM(const occ::qm::AOBasis &basis) : m_basis(basis), m_grid(basis) {
+XDM::XDM(const occ::qm::AOBasis &basis, int charge)
+    : m_basis(basis), m_grid(basis), m_charge(charge) {
     for (int i = 0; i < basis.atoms().size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
@@ -332,7 +333,13 @@ XDM::XDM(const occ::qm::AOBasis &basis) : m_basis(basis), m_grid(basis) {
         m_atom_grids.begin(), m_atom_grids.end(), 0.0,
         [&](double tot, const auto &grid) { return tot + grid.points.cols(); });
     occ::log::debug("{} total grid points used for XDM", num_grid_points);
-    m_slater_basis = occ::slater::slaterbasis_for_atoms(m_basis.atoms());
+    m_atomic_ion = (m_atom_grids.size() == 1) && (m_charge != 0);
+    std::vector<int> ox = {};
+    if (m_atomic_ion) {
+        ox.push_back(m_charge);
+    }
+    m_slater_basis =
+        occ::slater::slaterbasis_for_atoms(m_basis.atoms(), "thakkar", ox);
 }
 
 double XDM::energy(const occ::qm::MolecularOrbitals &mo) {
@@ -459,8 +466,9 @@ void XDM::populate_polarizabilities() {
     m_polarizabilities = Vec(m_volume.rows());
     const auto &atoms = m_basis.atoms();
     for (int i = 0; i < m_polarizabilities.rows(); i++) {
-        m_polarizabilities(i) = xdm_polarizability(
-            atoms[i].atomic_number, m_volume(i), m_volume_free(i));
+        m_polarizabilities(i) =
+            xdm_polarizability(atoms[i].atomic_number, m_volume(i),
+                               m_volume_free(i), m_atomic_ion);
     }
 }
 

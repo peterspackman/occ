@@ -126,19 +126,21 @@ Pair parse_input_file(const std::string &filename,
 
     p.a.wfn.apply_transformation(p.a.rotation, p.a.translation);
     p.b.wfn.apply_transformation(p.b.rotation, p.b.translation);
-    occ::log::debug("Monomer A positions after rotation + translation:");
+    fmt::print("Monomer A positions after rotation + translation:\n");
     for (const auto &a : p.a.wfn.atoms) {
-        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}", a.atomic_number,
-                        a.x / occ::units::ANGSTROM_TO_BOHR,
-                        a.y / occ::units::ANGSTROM_TO_BOHR,
-                        a.z / occ::units::ANGSTROM_TO_BOHR);
+        fmt::print("{} {:20.12f} {:20.12f} {:20.12f}\n",
+                   occ::core::Element(a.atomic_number).symbol(),
+                   a.x / occ::units::ANGSTROM_TO_BOHR,
+                   a.y / occ::units::ANGSTROM_TO_BOHR,
+                   a.z / occ::units::ANGSTROM_TO_BOHR);
     }
-    occ::log::debug("Monomer B positions after rotation + translation:");
+    fmt::print("Monomer B positions after rotation + translation:\n");
     for (const auto &a : p.b.wfn.atoms) {
-        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}", a.atomic_number,
-                        a.x / occ::units::ANGSTROM_TO_BOHR,
-                        a.y / occ::units::ANGSTROM_TO_BOHR,
-                        a.z / occ::units::ANGSTROM_TO_BOHR);
+        fmt::print("{} {:20.12f} {:20.12f} {:20.12f}\n",
+                   occ::core::Element(a.atomic_number).symbol(),
+                   a.x / occ::units::ANGSTROM_TO_BOHR,
+                   a.y / occ::units::ANGSTROM_TO_BOHR,
+                   a.z / occ::units::ANGSTROM_TO_BOHR);
     }
 
     return p;
@@ -246,19 +248,18 @@ int main(int argc, char *argv[]) {
     fmt::print("Total {:^8s}        {: 12.6f}\n", model_name,
                interaction_energy.total_kjmol());
 
-    fmt::print("\nTimings\n");
     occ::timing::print_timings();
     if (!output_file.empty()) {
         nlohmann::json j = {
             {"energies",
-             {{"units", "kj/mol"},
-              {"pair",
+             {{"pair",
                {{"coulomb", interaction_energy.coulomb_kjmol()},
                 {"exchange_repulsion", interaction_energy.exchange_kjmol()},
                 {"polarization", interaction_energy.polarization_kjmol()},
                 {"dispersion", interaction_energy.dispersion_kjmol()},
                 {"scaled_total", interaction_energy.total_kjmol()},
-                {"model", model_name}}},
+                {"model", model_name},
+                {"units", "kj/mol"}}},
               {"monomer_a",
                {{"coulomb", pair.a.wfn.energy.coulomb},
                 {"exchange", pair.a.wfn.energy.exchange},

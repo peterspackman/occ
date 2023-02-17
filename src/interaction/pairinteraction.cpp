@@ -62,7 +62,7 @@ void compute_xdm_parameters(Wavefunction &wfn) {
         return;
     }
     occ::log::debug("Computing xdm_parameters");
-    occ::xdm::XDM xdm_calc(wfn.basis);
+    occ::xdm::XDM xdm_calc(wfn.basis, wfn.charge());
     auto energy = xdm_calc.energy(wfn.mo);
     wfn.xdm_polarizabilities = xdm_calc.polarizabilities();
     wfn.xdm_moments = xdm_calc.moments();

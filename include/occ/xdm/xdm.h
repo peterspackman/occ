@@ -22,7 +22,7 @@ class XDM {
         double a2{1.0}; // angstroms
     };
 
-    XDM(const occ::qm::AOBasis &basis);
+    XDM(const occ::qm::AOBasis &basis, int charge = 0);
 
     double energy(const occ::qm::MolecularOrbitals &mo);
 
@@ -51,6 +51,8 @@ class XDM {
     Vec m_hirshfeld_charges;
     double m_energy{0.0};
     Mat3N m_forces;
+    bool m_atomic_ion{false};
+    int m_charge{0};
 };
 
 std::pair<double, Mat3N>
