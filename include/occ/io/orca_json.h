@@ -4,6 +4,7 @@
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/shell.h>
+#include <occ/qm/spinorbital.h>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,7 @@ class OrcaJSONReader {
     inline const auto &alpha_mo_coefficients() const { return m_alpha_coeffs; }
     inline const auto &beta_mo_energies() const { return m_beta_energies; }
     inline const auto &beta_mo_coefficients() const { return m_beta_coeffs; }
+    inline const auto &spinorbital_kind() const { return m_spinorbital_kind; }
 
     Mat scf_density_matrix() const;
 
@@ -56,6 +58,7 @@ class OrcaJSONReader {
     Vec m_alpha_energies, m_beta_energies;
     std::vector<std::string> m_alpha_labels, m_beta_labels;
     Mat m_overlap;
+    qm::SpinorbitalKind m_spinorbital_kind{qm::SpinorbitalKind::Restricted};
 };
 
 } // namespace occ::io

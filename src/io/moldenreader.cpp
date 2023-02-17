@@ -328,7 +328,7 @@ void MoldenReader::parse_mo_section(const std::optional<std::string> &args,
     }
 }
 
-int fix_orca_phase_convention(int l, int m) {
+inline int fix_orca_phase_convention(int l, int m) {
     if (l == 3 && std::abs(m) == 3) {
         // c0 c1 s1 c2 s2 c3 s3
         // +  +  +  +  +  -  -
@@ -372,12 +372,12 @@ Mat MoldenReader::convert_mo_coefficients_from_molden_convention(
         if (l == 1) {
             // xyz -> yzx
             occ::log::debug("Swapping (l={}): (2, 0, 1) <-> (0, 1, 2)", l);
-            result.block(bf_first, 0, 1, ncols) =
+            result.block(bf_first + 0, 0, 1, ncols) =
                 mo.block(bf_first + 1, 0, 1, ncols);
             result.block(bf_first + 1, 0, 1, ncols) =
                 mo.block(bf_first + 2, 0, 1, ncols);
             result.block(bf_first + 2, 0, 1, ncols) =
-                mo.block(bf_first, 0, 1, ncols);
+                mo.block(bf_first + 0, 0, 1, ncols);
         } else {
             size_t idx = 0;
             auto func = [&](int am, int m) {

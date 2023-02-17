@@ -13,6 +13,7 @@
 #include <occ/interaction/polarization.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/moldenreader.h>
+#include <occ/io/orca_json.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
 
@@ -39,17 +40,20 @@ Wavefunction load_wavefunction(const std::string &filename) {
     std::string ext = fs::path(filename).extension();
     to_lower(ext);
     if (ext == ".fchk") {
-        occ::log::debug("Loading Gaussian fchk file from {}\n", filename);
+        occ::log::debug("Loading Gaussian fchk file from {}", filename);
         using occ::io::FchkReader;
         FchkReader fchk(filename);
         return Wavefunction(fchk);
-    }
-    if (ext == ".molden" || ext == ".input") {
-        occ::log::debug("Loading molden file from {}\n", filename);
+    } else if (ext == ".molden" || ext == ".input") {
+        occ::log::debug("Loading molden file from {}", filename);
         using occ::io::MoldenReader;
         MoldenReader molden(filename);
         occ::log::debug("Wavefunction has {} atoms", molden.atoms().size());
         return Wavefunction(molden);
+    } else if (ext == ".json") {
+        occ::log::debug("Loading Orca JSON file from {}", filename);
+        occ::io::OrcaJSONReader json(filename);
+        return Wavefunction(json);
     }
     throw std::runtime_error(
         "Unknown file extension when reading wavefunction: " + ext);
@@ -110,6 +114,14 @@ Pair parse_input_file(const std::string &filename,
         p.a.wfn.basis = bs;
     }
     occ::log::debug("Translation A: {}", p.a.translation.transpose());
+    {
+        std::ofstream out("a_mo.txt");
+        out << p.a.wfn.mo.C;
+    }
+    {
+        std::ofstream out("a_d.txt");
+        out << p.a.wfn.mo.D;
+    }
 
     p.b.wfn = load_wavefunction(source_b);
     load_matrix(monomers[1]["rotation"], p.b.rotation);
@@ -123,6 +135,14 @@ Pair parse_input_file(const std::string &filename,
         p.b.wfn.basis = bs;
     }
     occ::log::debug("Translation A: {}", p.b.translation.transpose());
+    {
+        std::ofstream out("b_mo.txt");
+        out << p.b.wfn.mo.C;
+    }
+    {
+        std::ofstream out("b_d.txt");
+        out << p.b.wfn.mo.D;
+    }
 
     p.a.wfn.apply_transformation(p.a.rotation, p.a.translation);
     p.b.wfn.apply_transformation(p.b.rotation, p.b.translation);
