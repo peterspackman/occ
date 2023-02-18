@@ -1,4 +1,5 @@
 #pragma once
+#include <occ/core/conditioning_orthogonalizer.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
@@ -21,8 +22,8 @@
 namespace occ::scf {
 
 constexpr auto OCC_MINIMAL_BASIS = "sto-3g";
-using occ::conditioning_orthogonalizer;
 using occ::Mat;
+using occ::core::conditioning_orthogonalizer;
 using occ::qm::expectation;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
@@ -76,21 +77,20 @@ void set_core_matrices(const Procedure &proc, Mat &S, Mat &T, Mat &V, Mat &H,
 template <SpinorbitalKind sk>
 void set_conditioning_orthogonalizer(const Mat &S, Mat &X, Mat &Xinv,
                                      double &XtX_condition_number) {
-    // compute orthogonalizer X such that X.transpose() . S . X = I
-    // one should think of columns of Xinv as the conditioned basis
-    // Re: name ... cond # (Xinv.transpose() . Xinv) = cond # (X.transpose()
-    // . X) by default assume can manage to compute with condition number of
-    // S <= 1/eps this is probably too optimistic, but in well-behaved cases
-    // even 10^11 is OK
     double S_condition_number_threshold =
         1.0 / std::numeric_limits<double>::epsilon();
+    occ::core::ConditioningOrthogonalizerResult g;
     if constexpr (sk == Unrestricted) {
-        std::tie(X, Xinv, XtX_condition_number) = conditioning_orthogonalizer(
-            block::a(S), S_condition_number_threshold);
+        g = conditioning_orthogonalizer(block::a(S),
+                                        S_condition_number_threshold);
     } else {
-        std::tie(X, Xinv, XtX_condition_number) =
-            conditioning_orthogonalizer(S, S_condition_number_threshold);
+        g = conditioning_orthogonalizer(S, S_condition_number_threshold);
     }
+
+    X = g.result;
+    Xinv = g.result_inverse;
+    XtX_condition_number = g.result_condition_number;
+    X = g.result;
 }
 
 } // namespace impl

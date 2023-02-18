@@ -1,6 +1,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/element.h>
+#include <occ/core/gensqrtinv.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/conversion.h>
@@ -396,14 +397,10 @@ void Wavefunction::symmetric_orthonormalize_molecular_orbitals(
 }
 
 Mat symmetrically_orthonormalize(const Mat &mat, const Mat &metric) {
-    Mat X, X_invT;
-    size_t n_cond;
-    double x_condition_number, condition_number;
     double threshold = 1.0 / std::numeric_limits<double>::epsilon();
     Mat SS = mat.transpose() * metric * mat;
-    std::tie(X, X_invT, n_cond, x_condition_number, condition_number) =
-        occ::gensqrtinv(SS, true, threshold);
-    return mat * X;
+    auto g = occ::core::gensqrtinv(SS, true, threshold);
+    return mat * g.result;
 }
 
 Mat symmorthonormalize_molecular_orbitals(const Mat &mos, const Mat &overlap,
