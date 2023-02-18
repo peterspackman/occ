@@ -1,7 +1,7 @@
-#include <occ/core/linear_algebra.h>
+#include <occ/core/inertia_tensor.h>
 #include <occ/core/log.h>
 
-namespace occ {
+namespace occ::core {
 
 Mat3 inertia_tensor(Eigen::Ref<const Vec> masses,
                     Eigen::Ref<const Mat3N> positions) {
@@ -30,10 +30,4 @@ Mat3 inertia_tensor(Eigen::Ref<const Vec> masses,
     return result;
 }
 
-std::pair<Mat, Mat> meshgrid(const Vec &x, const Vec &y) {
-    Mat g0 = x.replicate(1, y.rows()).transpose();
-    Mat g1 = y.replicate(1, x.rows());
-    return {g0, g1};
-}
-
-} // namespace occ
+} // namespace occ::core

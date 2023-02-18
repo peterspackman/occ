@@ -62,11 +62,4 @@ using DVec3 = Eigen::Vector3d;
 
 using IVec = Eigen::VectorXi;
 using IVec3 = Eigen::Vector3i;
-
-Mat3 inertia_tensor(Eigen::Ref<const Vec> masses,
-                    Eigen::Ref<const Mat3N> positions);
-
-// same as indexing='ij' order in numpy, could easily generalize this
-std::pair<Mat, Mat> meshgrid(const Vec &, const Vec &);
-
 }; // namespace occ

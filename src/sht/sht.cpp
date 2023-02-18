@@ -1,6 +1,7 @@
 #include <cmath>
 #include <complex>
 
+#include <occ/core/meshgrid.h>
 #include <occ/sht/quadrature.h>
 #include <occ/sht/sht.h>
 #include <vector>
@@ -64,7 +65,7 @@ SHT::SHT(size_t lm)
     std::tie(m_cos_theta, m_weights) = gauss_legendre_quadrature(m_ntheta);
     m_weights.array() /= 2.0;
     m_theta = m_cos_theta.array().acos();
-    std::tie(m_theta_grid, m_phi_grid) = occ::meshgrid(m_theta, m_phi);
+    std::tie(m_theta_grid, m_phi_grid) = occ::core::meshgrid(m_theta, m_phi);
     m_fft_work_array = CVec(m_nphi);
     m_plm_work_array = m_plm.work_array();
 }
