@@ -24,6 +24,7 @@ struct Energy {
     double kinetic{0};
     double core{0};
     double total{0};
+    double ecp{0};
 
     inline auto operator-(const Energy &rhs) {
         return Energy{
@@ -34,6 +35,7 @@ struct Energy {
             kinetic - rhs.kinetic,
             core - rhs.core,
             total - rhs.total,
+            ecp - rhs.ecp,
         };
     }
 
@@ -46,6 +48,7 @@ struct Energy {
             kinetic + rhs.kinetic,
             core + rhs.core,
             total + rhs.total,
+            ecp + rhs.ecp,
         };
     }
     void print() const;
@@ -98,7 +101,7 @@ struct Wavefunction {
     size_t nbf{0};
     std::vector<occ::core::Atom> atoms;
     MolecularOrbitals mo;
-    Mat T, V, H, J, K;
+    Mat T, V, H, J, K, Vecp;
     Energy energy;
     bool have_energies{false};
     bool have_xdm_parameters{false};

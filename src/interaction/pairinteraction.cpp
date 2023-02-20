@@ -28,11 +28,16 @@ void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
         wfn.T = hf.compute_kinetic_matrix();
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.H = wfn.V + wfn.T;
-        wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
         std::tie(wfn.J, wfn.K) = hf.compute_JK(wfn.mo, precision, Schwarz);
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
+        if (hf.have_effective_core_potentials()) {
+            wfn.Vecp = hf.compute_effective_core_potential_matrix();
+            wfn.H += wfn.Vecp;
+            wfn.energy.ecp = 2 * expectation<kind>(wfn.mo.D, wfn.Vecp);
+        }
+        wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
     } else {
         namespace block = occ::qm::block;
         size_t rows, cols;
@@ -47,11 +52,19 @@ void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
         wfn.H = wfn.V + wfn.T;
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
-        wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
         std::tie(wfn.J, wfn.K) = hf.compute_JK(wfn.mo, precision, Schwarz);
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
         wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
+
+        if (hf.have_effective_core_potentials()) {
+            wfn.Vecp = Mat(rows, cols);
+            block::a(wfn.Vecp) = hf.compute_effective_core_potential_matrix();
+            block::b(wfn.Vecp) = block::a(wfn.Vecp);
+            wfn.H += wfn.Vecp;
+            wfn.energy.ecp = 2 * expectation<kind>(wfn.mo.D, wfn.Vecp);
+        }
+        wfn.energy.core = 2 * expectation<kind>(wfn.mo.D, wfn.H);
     }
     wfn.have_energies = true;
 }
@@ -174,8 +187,8 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     Energy E_ABn = ABn.energy - (A.energy + B.energy);
 
     CEEnergyComponents energy;
-    energy.coulomb =
-        E_ABn.coulomb + E_ABn.nuclear_attraction + E_ABn.nuclear_repulsion;
+    energy.coulomb = E_ABn.coulomb + E_ABn.nuclear_attraction +
+                     E_ABn.nuclear_repulsion + E_ABn.ecp;
     occ::log::debug("Coulomb components:");
     occ::log::debug("ABn coulomb term {:20.12f}", E_ABn.coulomb);
     occ::log::debug("ABn en term      {:20.12f}", E_ABn.nuclear_attraction);

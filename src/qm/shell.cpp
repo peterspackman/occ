@@ -672,7 +672,13 @@ void AOBasis::rotate(const occ::Mat3 &rotation) {
         shell_idx++;
     }
 
-    // nothing needs to happen to ECPs
+    // nothing needs to happen to ECPs besides their
+    int ecp_shell_idx = 0;
+    for (auto &shell : m_ecp_shells) {
+        auto rot_pos = rotation * shell.origin;
+        shell.origin = rot_pos;
+        ecp_shell_idx++;
+    }
 }
 
 void AOBasis::translate(const occ::Vec3 &translation) {

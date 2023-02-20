@@ -30,6 +30,9 @@ void Energy::print() const {
     fmt::print(format_string, "E_en", nuclear_attraction);
     fmt::print(format_string, "E_kin", kinetic);
     fmt::print(format_string, "E_1e", core);
+    if (ecp != 0.0) {
+        fmt::print(format_string, "E_ecp", ecp);
+    }
 }
 
 Wavefunction::Wavefunction(const FchkReader &fchk)

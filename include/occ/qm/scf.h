@@ -386,7 +386,7 @@ template <typename Procedure, SpinorbitalKind spinorbital_kind> struct SCF {
         m_procedure.update_scf_energy(energy, incremental);
     }
 
-    std::string scf_kind() const {
+    inline const char *scf_kind() const {
         switch (spinorbital_kind) {
         case Unrestricted:
             return "unrestricted";
