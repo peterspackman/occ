@@ -16,90 +16,17 @@
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
 
-#include <fmt/core.h>
-#include <fmt/ostream.h>
-
 namespace occ::scf {
 
 constexpr auto OCC_MINIMAL_BASIS = "sto-3g";
-using occ::Mat;
-using occ::core::conditioning_orthogonalizer;
-using occ::qm::expectation;
-using occ::qm::SpinorbitalKind;
-using occ::qm::Wavefunction;
-using occ::qm::SpinorbitalKind::General;
-using occ::qm::SpinorbitalKind::Restricted;
-using occ::qm::SpinorbitalKind::Unrestricted;
-using occ::util::is_odd;
-namespace block = occ::qm::block;
-
-namespace impl {
-
-template <typename Procedure>
-void set_core_matrices(const Procedure &proc, Mat &S, Mat &T, Mat &V, Mat &H,
-                       Mat &Vecp, SpinorbitalKind sk) {
-
-    bool calc_ecp = proc.have_effective_core_potentials();
-    switch (sk) {
-    case SpinorbitalKind::Restricted: {
-        S = proc.compute_overlap_matrix();
-        T = proc.compute_kinetic_matrix();
-        V = proc.compute_nuclear_attraction_matrix();
-        if (calc_ecp) {
-            Vecp = proc.compute_effective_core_potential_matrix();
-        }
-        break;
-    }
-    case SpinorbitalKind::Unrestricted: {
-        block::a(S) = proc.compute_overlap_matrix();
-        block::b(S) = block::a(S);
-        block::a(T) = proc.compute_kinetic_matrix();
-        block::b(T) = block::a(T);
-        block::a(V) = proc.compute_nuclear_attraction_matrix();
-        block::b(V) = block::a(V);
-        if (calc_ecp) {
-            block::a(Vecp) = proc.compute_effective_core_potential_matrix();
-            block::b(Vecp) = block::a(Vecp);
-        }
-        break;
-    }
-    case SpinorbitalKind::General: {
-        block::aa(S) = proc.compute_overlap_matrix();
-        block::aa(T) = proc.compute_kinetic_matrix();
-        block::aa(V) = proc.compute_nuclear_attraction_matrix();
-        block::bb(S) = block::aa(S);
-        block::bb(T) = block::aa(T);
-        block::bb(V) = block::aa(V);
-        if (calc_ecp) {
-            block::aa(Vecp) = proc.compute_effective_core_potential_matrix();
-            block::bb(Vecp) = block::aa(Vecp);
-        }
-        break;
-    }
-    }
-    H = T + V + Vecp;
-}
-
-inline void set_conditioning_orthogonalizer(SpinorbitalKind sk, const Mat &S,
-                                            Mat &X, Mat &Xinv,
-                                            double &XtX_condition_number) {
-    double S_condition_number_threshold =
-        1.0 / std::numeric_limits<double>::epsilon();
-    occ::core::ConditioningOrthogonalizerResult g;
-    if (sk == Unrestricted) {
-        g = conditioning_orthogonalizer(block::a(S),
-                                        S_condition_number_threshold);
-    } else {
-        g = conditioning_orthogonalizer(S, S_condition_number_threshold);
-    }
-
-    X = g.result;
-    Xinv = g.result_inverse;
-    XtX_condition_number = g.result_condition_number;
-    X = g.result;
-}
-
-} // namespace impl
+using qm::expectation;
+using qm::SpinorbitalKind;
+using qm::Wavefunction;
+using qm::SpinorbitalKind::General;
+using qm::SpinorbitalKind::Restricted;
+using qm::SpinorbitalKind::Unrestricted;
+using util::is_odd;
+namespace block = qm::block;
 
 template <typename Procedure> struct SCF {
 
@@ -108,8 +35,8 @@ template <typename Procedure> struct SCF {
         n_electrons = m_procedure.active_electrons();
         n_frozen_electrons =
             m_procedure.total_electrons() - m_procedure.active_electrons();
-        fmt::print("{} active electrons\n", n_electrons);
-        fmt::print("{} frozen electrons\n", n_frozen_electrons);
+        occ::log::debug("{} active electrons", n_electrons);
+        occ::log::debug("{} frozen electrons", n_frozen_electrons);
         nbf = m_procedure.nbf();
         size_t rows, cols;
         std::tie(rows, cols) = occ::qm::matrix_dimensions(sk, nbf);
@@ -296,16 +223,77 @@ template <typename Procedure> struct SCF {
         return D_minbs * 0.5; // we use densities normalized to # of electrons/2
     }
 
+    void set_conditioning_orthogonalizer() {
+        double S_condition_number_threshold =
+            1.0 / std::numeric_limits<double>::epsilon();
+        occ::core::ConditioningOrthogonalizerResult g;
+        if (mo.kind == Unrestricted) {
+            g = core::conditioning_orthogonalizer(block::a(S),
+                                                  S_condition_number_threshold);
+        } else {
+            g = core::conditioning_orthogonalizer(S,
+                                                  S_condition_number_threshold);
+        }
+
+        X = g.result;
+        Xinv = g.result_inverse;
+        XtX_condition_number = g.result_condition_number;
+        X = g.result;
+    }
+
+    void set_core_matrices() {
+
+        bool calc_ecp = m_procedure.have_effective_core_potentials();
+        switch (mo.kind) {
+        case SpinorbitalKind::Restricted: {
+            S = m_procedure.compute_overlap_matrix();
+            T = m_procedure.compute_kinetic_matrix();
+            V = m_procedure.compute_nuclear_attraction_matrix();
+            if (calc_ecp) {
+                Vecp = m_procedure.compute_effective_core_potential_matrix();
+            }
+            break;
+        }
+        case SpinorbitalKind::Unrestricted: {
+            block::a(S) = m_procedure.compute_overlap_matrix();
+            block::b(S) = block::a(S);
+            block::a(T) = m_procedure.compute_kinetic_matrix();
+            block::b(T) = block::a(T);
+            block::a(V) = m_procedure.compute_nuclear_attraction_matrix();
+            block::b(V) = block::a(V);
+            if (calc_ecp) {
+                block::a(Vecp) =
+                    m_procedure.compute_effective_core_potential_matrix();
+                block::b(Vecp) = block::a(Vecp);
+            }
+            break;
+        }
+        case SpinorbitalKind::General: {
+            block::aa(S) = m_procedure.compute_overlap_matrix();
+            block::aa(T) = m_procedure.compute_kinetic_matrix();
+            block::aa(V) = m_procedure.compute_nuclear_attraction_matrix();
+            block::bb(S) = block::aa(S);
+            block::bb(T) = block::aa(T);
+            block::bb(V) = block::aa(V);
+            if (calc_ecp) {
+                block::aa(Vecp) =
+                    m_procedure.compute_effective_core_potential_matrix();
+                block::bb(Vecp) = block::aa(Vecp);
+            }
+            break;
+        }
+        }
+        H = T + V + Vecp;
+    }
+
     void set_initial_guess_from_wfn(const Wavefunction &wfn) {
         log::info("Setting initial guess from existing wavefunction");
         m_have_initial_guess = true;
         mo = wfn.mo;
         update_occupied_orbital_count();
-        impl::set_core_matrices<Procedure>(m_procedure, S, T, V, H, Vecp,
-                                           mo.kind);
+        set_core_matrices();
         F = H;
-        impl::set_conditioning_orthogonalizer(mo.kind, S, X, Xinv,
-                                              XtX_condition_number);
+        set_conditioning_orthogonalizer();
         mo.update_density_matrix();
     }
 
@@ -314,12 +302,10 @@ template <typename Procedure> struct SCF {
             return;
 
         log::info("Computing core hamiltonian");
-        impl::set_core_matrices<Procedure>(m_procedure, S, T, V, H, Vecp,
-                                           mo.kind);
+        set_core_matrices();
         F = H;
         occ::timing::start(occ::timing::category::la);
-        impl::set_conditioning_orthogonalizer(mo.kind, S, X, Xinv,
-                                              XtX_condition_number);
+        set_conditioning_orthogonalizer();
         occ::timing::stop(occ::timing::category::la);
 
         occ::timing::start(occ::timing::category::guess);
@@ -431,16 +417,6 @@ template <typename Procedure> struct SCF {
         log::debug("{} beta electrons", n_beta());
         log::debug("net charge {}", charge());
         total_time = 0.0;
-
-        auto write_mat = [](const std::string &filename, const Mat &mat) {
-            std::ofstream file(filename);
-            if (file.is_open()) {
-                file << mat << '\n';
-            }
-        };
-        write_mat("v.txt", V);
-        write_mat("t.txt", T);
-        write_mat("h.txt", H);
 
         do {
             const auto tstart = std::chrono::high_resolution_clock::now();
