@@ -4,17 +4,24 @@
 #include <occ/core/molecule.h>
 #include <occ/crystal/crystal.h>
 
+extern "C" {
+#include "tblite/calculator.h"
+#include "tblite/error.h"
+#include "tblite/structure.h"
+#include "tblite/version.h"
+}
+
 namespace occ::xtb {
 
-class XTBCalculator {
+class TbliteCalculator {
   public:
     enum class Method { GFN1, GFN2 };
-    XTBCalculator(const occ::core::Molecule &mol);
-    XTBCalculator(const occ::core::Dimer &dimer);
-    XTBCalculator(const occ::core::Molecule &mol, Method method);
-    XTBCalculator(const occ::core::Dimer &dimer, Method method);
-    XTBCalculator(const occ::crystal::Crystal &crystal);
-    XTBCalculator(const occ::crystal::Crystal &crystal, Method method);
+    TbliteCalculator(const occ::core::Molecule &mol);
+    TbliteCalculator(const occ::core::Dimer &dimer);
+    TbliteCalculator(const occ::core::Molecule &mol, Method method);
+    TbliteCalculator(const occ::core::Dimer &dimer, Method method);
+    TbliteCalculator(const occ::crystal::Crystal &crystal);
+    TbliteCalculator(const occ::crystal::Crystal &crystal, Method method);
 
     double single_point_energy();
     inline const auto &positions() const { return m_positions_bohr; }
@@ -36,17 +43,16 @@ class XTBCalculator {
 
     void update_structure(const Mat3N &positions);
     void update_structure(const Mat3N &positions, const Mat3 &lattice);
-    void set_solvent(const std::string &solvent_name);
 
     occ::crystal::Crystal to_crystal() const;
     occ::core::Molecule to_molecule() const;
 
+    ~TbliteCalculator();
+
   private:
+    void initialize_context();
+    void initialize_method();
     void initialize_structure();
-    void write_input_file(const std::string &);
-    void read_json_contents(const std::string &);
-    void read_engrad_contents(const std::string &);
-    int gfn_method() const;
 
     Mat3N m_positions_bohr;
     Mat3N m_gradients;
@@ -57,14 +63,13 @@ class XTBCalculator {
     Mat3 m_lattice_vectors;
     Mat3 m_virial;
     std::array<bool, 3> m_periodic{false, false, false};
-    std::string m_xtb_stdout;
-    std::string m_xtb_stderr;
-    double m_accuracy{0.01};
-    int m_max_iterations{100};
-    double m_temperature{0.0};
-    double m_damping_factor{1.0};
-    std::string m_solvent{""};
-    std::string m_xtb_executable_path{"xtb"};
+    tblite_error m_tb_error{nullptr};
+    tblite_context m_tb_ctx{nullptr};
+    tblite_result m_tb_result{nullptr};
+    tblite_structure m_tb_structure{nullptr};
+    tblite_calculator m_tb_calc{nullptr};
 };
+
+std::string tblite_version();
 
 } // namespace occ::xtb

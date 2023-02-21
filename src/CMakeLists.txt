@@ -1,3 +1,4 @@
+add_subdirectory(3rdparty)
 add_subdirectory(core)
 add_subdirectory(crystal)
 add_subdirectory(interaction)
@@ -10,6 +11,7 @@ add_subdirectory(sht)
 add_subdirectory(slater)
 add_subdirectory(solvent)
 add_subdirectory(xdm)
+add_subdirectory(xtb)
 
 add_subdirectory(main)
 
@@ -17,6 +19,3 @@ if("${WITH_PYTHON_BINDINGS}")
 add_subdirectory(python)
 endif()
 
-if("${WITH_XTB}")
-add_subdirectory(xtb)
-endif()

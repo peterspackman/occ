@@ -4,6 +4,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/conversion.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystalgrower.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/engrad.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/json_basis.cpp"

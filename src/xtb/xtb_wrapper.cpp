@@ -1,8 +1,12 @@
-#include <cstdint>
-#include <cstdlib>
 #include <fmt/core.h>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <occ/3rdparty/subprocess.hpp>
+#include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
+#include <occ/io/eigen_json.h>
+#include <occ/io/engrad.h>
 #include <occ/xtb/xtb_wrapper.h>
 
 using occ::core::Dimer;
@@ -11,54 +15,78 @@ using occ::crystal::Crystal;
 
 namespace occ::xtb {
 
-void check_error(tblite_error err) {
-    if (tblite_check_error(err)) {
-        char message[512];
-        tblite_get_error(err, message, nullptr);
-        occ::log::critical("Fatal error in tblite: {}", message);
-        throw std::runtime_error("Unrecoverable error using tblite");
-    }
-}
+struct XTBJsonOutput {
+    double energy{0.0};
+    double homo_lumo_gap{0.0};
+    double electronic_energy{0.0};
+    Vec3 dipole{0.0, 0.0, 0.0};
+    Vec partial_charges;
+    Mat atomic_dipoles;
+    Mat atomic_quadrupoles;
+    int num_molecular_orbitals{0};
+    int num_electrons{0};
+    int num_unpaired_electrons{0};
+    Vec orbital_energies;
+    Vec fractional_occupation;
+    std::string program_call;
+    std::string method;
+    std::string xtb_version;
+};
 
-std::string tblite_version() {
-    auto v = tblite_get_version();
-    return fmt::format("v{}", v);
+void from_json(const nlohmann::json &J, XTBJsonOutput &out) {
+    J.at("total energy").get_to(out.energy);
+    J.at("HOMO-LUMO gap/eV").get_to(out.homo_lumo_gap);
+    J.at("electronic energy").get_to(out.electronic_energy);
+    J.at("dipole").get_to(out.dipole);
+
+    auto maybe_get = [&](const char *name, auto &dest) {
+        if (J.contains(name)) {
+            J.at(name).get_to(dest);
+        }
+    };
+
+    maybe_get("partial charges", out.partial_charges);
+    maybe_get("atomic dipole moments", out.atomic_dipoles);
+    maybe_get("atomic quadrupole moments", out.atomic_quadrupoles);
+
+    maybe_get("number of molecular orbitals", out.num_molecular_orbitals);
+    maybe_get("number of electrons", out.num_electrons);
+    maybe_get("number of unpaired electrons", out.num_unpaired_electrons);
+
+    maybe_get("orbital energies/eV", out.orbital_energies);
+    maybe_get("fractional occupation", out.fractional_occupation);
+
+    maybe_get("program call", out.program_call);
+    maybe_get("method", out.method);
+    maybe_get("xtb version", out.xtb_version);
 }
 
 XTBCalculator::XTBCalculator(const Molecule &mol)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_charge(mol.charge()),
       m_num_unpaired_electrons(mol.multiplicity() - 1) {
-    initialize_context();
     initialize_structure();
-    initialize_method();
 }
 
 XTBCalculator::XTBCalculator(const Molecule &mol, Method method)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_method(method),
       m_charge(mol.charge()), m_num_unpaired_electrons(mol.multiplicity() - 1) {
-    initialize_context();
     initialize_structure();
-    initialize_method();
 }
 
 XTBCalculator::XTBCalculator(const Dimer &mol)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_charge(mol.charge()),
       m_num_unpaired_electrons(mol.multiplicity() - 1) {
-    initialize_context();
     initialize_structure();
-    initialize_method();
 }
 
 XTBCalculator::XTBCalculator(const Dimer &mol, Method method)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_method(method),
       m_charge(mol.charge()), m_num_unpaired_electrons(mol.multiplicity() - 1) {
-    initialize_context();
     initialize_structure();
-    initialize_method();
 }
 
 XTBCalculator::XTBCalculator(const Crystal &crystal)
@@ -68,9 +96,7 @@ XTBCalculator::XTBCalculator(const Crystal &crystal)
       m_num_unpaired_electrons(0), m_periodic{true, true, true},
       m_lattice_vectors(crystal.unit_cell().direct() *
                         occ::units::ANGSTROM_TO_BOHR) {
-    initialize_context();
     initialize_structure();
-    initialize_method();
 }
 
 XTBCalculator::XTBCalculator(const Crystal &crystal, Method method)
@@ -81,148 +107,92 @@ XTBCalculator::XTBCalculator(const Crystal &crystal, Method method)
       m_num_unpaired_electrons(0), m_periodic{true, true, true},
       m_lattice_vectors(crystal.unit_cell().direct() *
                         occ::units::ANGSTROM_TO_BOHR) {
-    initialize_context();
     initialize_structure();
-    initialize_method();
-}
-
-void XTBCalculator::initialize_context() {
-    m_tb_error = tblite_new_error();
-    m_tb_ctx = tblite_new_context();
-    m_tb_result = tblite_new_result();
 }
 
 void XTBCalculator::initialize_structure() {
-    if (m_tb_structure) {
-        tblite_delete_structure(&m_tb_structure);
-    }
     int natoms = m_atomic_numbers.rows();
     m_gradients = Mat3N::Zero(3, natoms);
     m_virial = Mat3::Zero();
-    m_tb_structure = tblite_new_structure(
-        m_tb_error, natoms, m_atomic_numbers.data(), m_positions_bohr.data(),
-        &m_charge, &m_num_unpaired_electrons, m_lattice_vectors.data(),
-        m_periodic.data());
-    check_error(m_tb_error);
-}
-
-void XTBCalculator::initialize_method() {
-    if (m_tb_calc) {
-        tblite_delete_calculator(&m_tb_calc);
-    }
-    switch (m_method) {
-    case Method::GFN2:
-        m_tb_calc = tblite_new_gfn2_calculator(m_tb_ctx, m_tb_structure);
-        break;
-    case Method::GFN1:
-        m_tb_calc = tblite_new_gfn1_calculator(m_tb_ctx, m_tb_structure);
-        break;
-    }
 }
 
 void XTBCalculator::update_structure(const Mat3N &new_positions) {
     m_positions_bohr = new_positions;
-    tblite_update_structure_geometry(m_tb_error, m_tb_structure,
-                                     m_positions_bohr.data(),
-                                     m_lattice_vectors.data());
-    check_error(m_tb_error);
 }
 
 void XTBCalculator::update_structure(const Mat3N &new_positions,
                                      const Mat3 &lattice) {
     m_positions_bohr = new_positions;
     m_lattice_vectors = lattice;
-    tblite_update_structure_geometry(m_tb_error, m_tb_structure,
-                                     m_positions_bohr.data(),
-                                     m_lattice_vectors.data());
-    check_error(m_tb_error);
 }
 
-void XTBCalculator::set_charge(double charge) {
-    m_charge = charge;
-    tblite_update_structure_charge(m_tb_error, m_tb_structure, &m_charge);
-    check_error(m_tb_error);
-}
+void XTBCalculator::set_charge(double charge) { m_charge = charge; }
 
 void XTBCalculator::set_num_unpaired_electrons(int n) {
     m_num_unpaired_electrons = n;
-    tblite_update_structure_uhf(m_tb_error, m_tb_structure,
-                                &m_num_unpaired_electrons);
-    check_error(m_tb_error);
 }
 
-void XTBCalculator::set_accuracy(double accuracy) {
-    if (!m_tb_calc || !m_tb_ctx)
-        return;
-    tblite_set_calculator_accuracy(m_tb_ctx, m_tb_calc, accuracy);
-}
+void XTBCalculator::set_accuracy(double accuracy) { m_accuracy = accuracy; }
 
 void XTBCalculator::set_max_iterations(int iterations) {
-    if (!m_tb_calc || !m_tb_ctx)
-        return;
-    tblite_set_calculator_max_iter(m_tb_ctx, m_tb_calc, iterations);
+    m_max_iterations = iterations;
 }
 
-void XTBCalculator::set_temperature(double temp) {
-    if (!m_tb_calc || !m_tb_ctx)
-        return;
-    tblite_set_calculator_temperature(m_tb_ctx, m_tb_calc, temp);
-}
+void XTBCalculator::set_temperature(double temp) { m_temperature = temp; }
 
 void XTBCalculator::set_mixer_damping(double damping_factor) {
-    if (!m_tb_calc || !m_tb_ctx)
-        return;
-    tblite_set_calculator_mixer_damping(m_tb_ctx, m_tb_calc, damping_factor);
+    m_damping_factor = damping_factor;
+}
+
+void XTBCalculator::set_solvent(const std::string &solvent) {
+    m_solvent = solvent;
 }
 
 double XTBCalculator::single_point_energy() {
-    double energy;
-    tblite_get_singlepoint(m_tb_ctx, m_tb_structure, m_tb_calc, m_tb_result);
-    tblite_get_result_energy(m_tb_error, m_tb_result, &energy);
-    check_error(m_tb_error);
-    tblite_get_result_gradient(m_tb_error, m_tb_result, m_gradients.data());
-    check_error(m_tb_error);
+    using subprocess::CompletedProcess;
+    using subprocess::PipeOption;
+    using subprocess::RunBuilder;
 
-    if (m_periodic[0]) {
-        tblite_get_result_virial(m_tb_error, m_tb_result, m_virial.data());
+    double energy{0.0};
+    const char *xtbinput_filename = "xtbinput.coord";
+    const char *xtbengrad_filename = "xtbinput.engrad";
+    write_input_file(xtbinput_filename);
+    std::string command_string = fmt::format(
+        "{} {} {}", m_xtb_executable_path, xtbinput_filename, "--json --grad");
+
+    std::vector<std::string> command_line{
+        m_xtb_executable_path, xtbinput_filename, "--json", "--grad"};
+    if (!m_solvent.empty()) {
+        command_line.push_back("--alpb");
+        command_line.push_back(m_solvent);
     }
-    check_error(m_tb_error);
+
+    auto process = subprocess::run(
+        command_line,
+        RunBuilder().cerr(PipeOption::pipe).cout(PipeOption::pipe).check(true));
+    {
+        std::ifstream json_output_file("xtbout.json");
+        XTBJsonOutput output =
+            nlohmann::json::parse(json_output_file).get<XTBJsonOutput>();
+        energy = output.energy;
+    }
+    {
+        io::EngradReader engrad(xtbengrad_filename);
+        m_gradients = engrad.gradient();
+        fmt::print("Gradients:\n{}\n", m_gradients);
+    }
     return energy;
 }
 
 Vec XTBCalculator::charges() const {
-    int natoms;
-    tblite_get_result_number_of_atoms(m_tb_error, m_tb_result, &natoms);
-    check_error(m_tb_error);
-    Vec chg(natoms);
-    tblite_get_result_charges(m_tb_error, m_tb_result, chg.data());
-    check_error(m_tb_error);
+    Vec chg(num_atoms());
     return chg;
 }
 
 Mat XTBCalculator::bond_orders() const {
-    int natoms;
-    tblite_get_result_number_of_atoms(m_tb_error, m_tb_result, &natoms);
-    check_error(m_tb_error);
+    int natoms = num_atoms();
     Mat bo(natoms, natoms);
-    tblite_get_result_bond_orders(m_tb_error, m_tb_result, bo.data());
-    check_error(m_tb_error);
     return bo;
-}
-
-XTBCalculator::~XTBCalculator() {
-    if (m_tb_error) {
-        tblite_delete_error(&m_tb_error);
-    }
-    if (m_tb_ctx) {
-        tblite_delete_context(&m_tb_ctx);
-    }
-    if (m_tb_result) {
-        tblite_delete_result(&m_tb_result);
-    }
-    if (m_tb_structure) {
-        tblite_delete_structure(&m_tb_structure);
-    }
 }
 
 Crystal XTBCalculator::to_crystal() const {
@@ -238,5 +208,31 @@ Molecule XTBCalculator::to_molecule() const {
     return Molecule(m_atomic_numbers,
                     m_positions_bohr / occ::units::BOHR_TO_ANGSTROM);
 }
+
+int XTBCalculator::gfn_method() const {
+    switch (m_method) {
+    case Method::GFN1:
+        return 1;
+    default:
+        return 2;
+    }
+}
+
+void XTBCalculator::write_input_file(const std::string &dest) {
+    std::ofstream of(dest);
+    fmt::print(of, "$chrg {}\n", m_charge);
+    fmt::print(of, "$spin {}\n", m_num_unpaired_electrons);
+    fmt::print(of, "$gfn\n  method={}\n", gfn_method());
+    fmt::print(of, "$coord\n");
+    for (int i = 0; i < num_atoms(); i++) {
+        fmt::print(of, "{:20.12f} {:20.12f} {:20.12f} {}\n",
+                   m_positions_bohr(0, i), m_positions_bohr(1, i),
+                   m_positions_bohr(2, i),
+                   core::Element(m_atomic_numbers(i)).symbol());
+    }
+    fmt::print(of, "$end");
+}
+
+void XTBCalculator::read_json_contents(const std::string &json_filename) {}
 
 } // namespace occ::xtb

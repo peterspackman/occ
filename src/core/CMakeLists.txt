@@ -39,6 +39,7 @@ target_link_libraries(occ_core
     spdlog::spdlog
     OpenMP::OpenMP_CXX
     Threads::Threads
+    _subprocess
 )
 target_include_directories(occ_core PUBLIC 
     ${OCC_INCLUDE_DIR} 

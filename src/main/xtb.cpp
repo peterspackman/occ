@@ -69,7 +69,6 @@ int main(int argc, char *argv[]) {
 
     occ::parallel::set_num_threads(std::max(1, threads));
 
-    fmt::print("TBLITE VERSION: {}\n", occ::xtb::tblite_version());
     occ::xtb::XTBCalculator calc = [&]() {
         auto path = fs::path(input_file);
         std::string ext = path.extension().string();
@@ -88,6 +87,13 @@ int main(int argc, char *argv[]) {
     calc.set_accuracy(0.01);
     int natom = calc.num_atoms();
 
+    double e = calc.single_point_energy();
+    fmt::print("Single point energy: {}\n", e);
+    calc.set_solvent("water");
+    e = calc.single_point_energy();
+    fmt::print("Solvated: {}\n", e);
+
+    /*
     auto func = [&](const occ::Vec &posvec, occ::Vec &gradvec) {
         occ::Mat3N new_positions = posvec.topRows(3 * natom).reshaped(3, natom);
         occ::Mat3 new_vectors = from_voigt(posvec.bottomRows(6));
@@ -134,5 +140,6 @@ int main(int argc, char *argv[]) {
         fmt::print("{} {:12.6f} {:12.6f} {:12.6f}\n", labels[i], pos(0, i),
                    pos(1, i), pos(2, i));
     }
+    */
     return 0;
 }
