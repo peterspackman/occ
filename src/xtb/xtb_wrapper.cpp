@@ -4,6 +4,7 @@
 #include <occ/3rdparty/subprocess.hpp>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
+#include <occ/core/parallel.h>
 #include <occ/core/units.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/engrad.h>
@@ -152,13 +153,11 @@ double XTBCalculator::single_point_energy() {
     using subprocess::CompletedProcess;
     using subprocess::PipeOption;
     using subprocess::RunBuilder;
+    subprocess::EnvGuard env_guard;
 
-    double energy{0.0};
     const char *xtbinput_filename = "xtbinput.coord";
     const char *xtbengrad_filename = "xtbinput.engrad";
     write_input_file(xtbinput_filename);
-    std::string command_string = fmt::format(
-        "{} {} {}", m_xtb_executable_path, xtbinput_filename, "--json --grad");
 
     std::vector<std::string> command_line{
         m_xtb_executable_path, xtbinput_filename, "--json", "--grad"};
@@ -167,21 +166,15 @@ double XTBCalculator::single_point_energy() {
         command_line.push_back(m_solvent);
     }
 
+    subprocess::cenv["OMP_NUM_THREADS"] =
+        fmt::format("{}", occ::parallel::get_num_threads());
     auto process = subprocess::run(
         command_line,
         RunBuilder().cerr(PipeOption::pipe).cout(PipeOption::pipe).check(true));
-    {
-        std::ifstream json_output_file("xtbout.json");
-        XTBJsonOutput output =
-            nlohmann::json::parse(json_output_file).get<XTBJsonOutput>();
-        energy = output.energy;
-    }
-    {
-        io::EngradReader engrad(xtbengrad_filename);
-        m_gradients = engrad.gradient();
-        fmt::print("Gradients:\n{}\n", m_gradients);
-    }
-    return energy;
+
+    read_json_contents("xtbout.json");
+    read_engrad_contents(xtbengrad_filename);
+    return m_energy;
 }
 
 Vec XTBCalculator::charges() const {
@@ -233,6 +226,17 @@ void XTBCalculator::write_input_file(const std::string &dest) {
     fmt::print(of, "$end");
 }
 
-void XTBCalculator::read_json_contents(const std::string &json_filename) {}
+void XTBCalculator::read_json_contents(const std::string &json_filename) {
+    std::ifstream json_output_file(json_filename);
+    XTBJsonOutput output =
+        nlohmann::json::parse(json_output_file).get<XTBJsonOutput>();
+    m_energy = output.energy;
+}
+
+void XTBCalculator::read_engrad_contents(const std::string &engrad_filename) {
+    io::EngradReader engrad(engrad_filename);
+    m_gradients = engrad.gradient();
+    m_positions_bohr = engrad.positions();
+}
 
 } // namespace occ::xtb

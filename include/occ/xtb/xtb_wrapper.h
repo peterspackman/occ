@@ -54,6 +54,7 @@ class XTBCalculator {
     Method m_method{Method::GFN2};
     double m_charge{0};
     int m_num_unpaired_electrons{0};
+    double m_energy{0.0};
     Mat3 m_lattice_vectors;
     Mat3 m_virial;
     std::array<bool, 3> m_periodic{false, false, false};
