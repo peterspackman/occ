@@ -289,9 +289,8 @@ calculate_solvated_surfaces(const std::string &basename,
                     basis.size(), basis.nbf());
                 occ::dft::DFT ks(method, basis, SpinorbitalKind::Restricted);
                 SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
-                SCF<SolvationCorrectedProcedure<DFT>,
-                    SpinorbitalKind::Restricted>
-                    scf(proc_solv);
+                SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv,
+                                                          wfn.mo.kind);
                 scf.start_incremental_F_threshold = 0.0;
                 scf.set_charge_multiplicity(wfn.charge(), wfn.multiplicity());
                 double e = scf.compute_scf_energy();
@@ -317,8 +316,7 @@ calculate_solvated_surfaces(const std::string &basename,
                             basis.size(), basis.nbf());
             occ::dft::DFT ks(method, basis, SpinorbitalKind::Restricted);
             SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
-            SCF<SolvationCorrectedProcedure<DFT>, SpinorbitalKind::Restricted>
-                scf(proc_solv);
+            SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv, wfn.mo.kind);
             scf.start_incremental_F_threshold = 0.0;
             scf.set_charge_multiplicity(wfn.charge(), wfn.multiplicity());
             double e = scf.compute_scf_energy();

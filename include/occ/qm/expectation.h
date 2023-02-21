@@ -23,4 +23,19 @@ typename TA::Scalar expectation(const TA &left, const TA &right) {
     }
 }
 
+template <typename TA>
+typename TA::Scalar expectation(SpinorbitalKind sk, const TA &left,
+                                const TA &right) {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+    switch (sk) {
+    case U:
+        return expectation<U>(left, right);
+    case G:
+        return expectation<G>(left, right);
+    default:
+        return expectation<R>(left, right);
+    }
+}
 } // namespace occ::qm

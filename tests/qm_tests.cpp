@@ -153,7 +153,7 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
     fmt::print("Rotation by:\n{}\n", rotation);
 
     auto hf = HartreeFock(basis);
-    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
+    occ::scf::SCF<HartreeFock> scf(hf);
     double e = scf.compute_scf_energy();
 
     occ::qm::AOBasis rot_basis = basis;
@@ -161,8 +161,7 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
     auto rot_atoms = rot_basis.atoms();
     fmt::print("rot_basis.size() {}\n", rot_basis.size());
     auto hf_rot = HartreeFock(rot_basis);
-    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf_rot(
-        hf_rot);
+    occ::scf::SCF<HartreeFock> scf_rot(hf_rot);
     double e_rot = scf_rot.compute_scf_energy();
 
     REQUIRE(e == Catch::Approx(e_rot));
@@ -210,7 +209,7 @@ TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
     auto hf_rot = HartreeFock(rot_basis);
     REQUIRE(hf.nuclear_repulsion_energy() ==
             Catch::Approx(hf_rot.nuclear_repulsion_energy()));
-    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
+    occ::scf::SCF<HartreeFock> scf(hf);
     double e = scf.compute_scf_energy();
     occ::qm::MolecularOrbitals mos = scf.mo;
     Mat C_occ = mos.C.leftCols(scf.n_occ);
@@ -241,7 +240,7 @@ TEST_CASE("Water RHF SCF energy", "[scf]") {
     SECTION("STO-3G") {
         auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
+        occ::scf::SCF<HartreeFock> scf(hf);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
@@ -250,7 +249,7 @@ TEST_CASE("Water RHF SCF energy", "[scf]") {
     SECTION("3-21G") {
         auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
+        occ::scf::SCF<HartreeFock> scf(hf);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
@@ -266,7 +265,7 @@ TEST_CASE("Water UHF SCF energy", "[scf]") {
     SECTION("STO-3G") {
         auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock, SpinorbitalKind::Unrestricted> scf(hf);
+        occ::scf::SCF<HartreeFock> scf(hf, SpinorbitalKind::Unrestricted);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
@@ -275,7 +274,7 @@ TEST_CASE("Water UHF SCF energy", "[scf]") {
     SECTION("3-21G") {
         auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock, SpinorbitalKind::Unrestricted> scf(hf);
+        occ::scf::SCF<HartreeFock> scf(hf, SpinorbitalKind::Unrestricted);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
@@ -291,7 +290,7 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
     SECTION("STO-3G") {
         auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock, SpinorbitalKind::General> scf(hf);
+        occ::scf::SCF<HartreeFock> scf(hf, SpinorbitalKind::General);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
@@ -300,7 +299,7 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
     SECTION("3-21G") {
         auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock, SpinorbitalKind::General> scf(hf);
+        occ::scf::SCF<HartreeFock> scf(hf, SpinorbitalKind::General);
         scf.energy_convergence_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));

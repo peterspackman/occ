@@ -18,4 +18,16 @@ constexpr std::pair<size_t, size_t> matrix_dimensions(size_t nbf) {
     }
 }
 
+inline constexpr std::pair<size_t, size_t>
+matrix_dimensions(SpinorbitalKind kind, size_t nbf) {
+    switch (kind) {
+    case Unrestricted:
+        return {2 * nbf, nbf};
+    case General:
+        return {2 * nbf, 2 * nbf};
+    default:
+        return {nbf, nbf};
+    }
+}
+
 } // namespace occ::qm

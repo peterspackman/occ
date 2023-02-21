@@ -96,7 +96,7 @@ calculate_wavefunctions(const std::string &basename,
                        basis.size(), basis.nbf());
             if (model == "ce-hf") {
                 HartreeFock hf(basis);
-                SCF<HartreeFock, SpinorbitalKind::Restricted> scf(hf);
+                SCF<HartreeFock> scf(hf, SpinorbitalKind::Restricted);
                 scf.set_charge_multiplicity(0, 1);
                 double e = scf.compute_scf_energy();
                 auto wfn = scf.wavefunction();
@@ -111,7 +111,7 @@ calculate_wavefunctions(const std::string &basename,
                 wfns.push_back(wfn);
             } else {
                 occ::dft::DFT rks(method, basis, SpinorbitalKind::Restricted);
-                SCF<occ::dft::DFT, SpinorbitalKind::Restricted> scf(rks);
+                SCF<occ::dft::DFT> scf(rks, SpinorbitalKind::Restricted);
 
                 scf.set_charge_multiplicity(0, 1);
                 scf.start_incremental_F_threshold = 0.0;

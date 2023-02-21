@@ -1150,7 +1150,7 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
     auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
     obs.set_pure(true);
     HartreeFock hf(obs);
-    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
+    occ::scf::SCF<HartreeFock> scf(hf);
     scf.energy_convergence_threshold = 1e-8;
     double e = scf.compute_scf_energy();
 
