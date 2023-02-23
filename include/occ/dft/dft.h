@@ -106,6 +106,7 @@ class DFT {
     }
 
     double exchange_correlation_energy() const { return m_exc_dft; }
+    double exchange_energy_total() const { return m_exchange_energy; }
 
     bool usual_scf_energy() const { return false; }
     void update_scf_energy(occ::core::EnergyComponents &energy,
@@ -385,7 +386,8 @@ class DFT {
         }
         occ::log::debug("EXC_dft = {}, EXC = {}, E_coul = {}\n", m_exc_dft, exc,
                         ecoul);
-        m_two_electron_energy += m_exc_dft + exc + ecoul;
+        m_exchange_energy = m_exc_dft + exc;
+        m_two_electron_energy += m_exchange_energy + ecoul;
         return {J, K};
     }
 
@@ -443,6 +445,7 @@ class DFT {
     mutable std::vector<std::vector<occ::gto::GTOValues>> m_gto_values_cache{};
     mutable double m_two_electron_energy{0.0};
     mutable double m_exc_dft{0.0};
+    mutable double m_exchange_energy{0.0};
     double m_density_threshold{1e-10};
 };
 } // namespace occ::dft

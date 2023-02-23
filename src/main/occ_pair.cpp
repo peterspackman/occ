@@ -231,6 +231,7 @@ int main(int argc, char *argv[]) {
     std::string input_file{""}, model_name{"ce-b3lyp"}, output_file{""},
         verbosity{"warn"};
     std::string monomer_directory(".");
+    std::string dft_functional("");
 
     int threads{1};
     bool use_df{false};
@@ -245,6 +246,8 @@ int main(int argc, char *argv[]) {
     app.add_option("-m,--model", model_name, "CE energy model");
     app.add_flag("-d,--with-density-fitting", use_df,
                  "Use density fitting (RI-JK)");
+    app.add_flag("--dft-functional", dft_functional,
+                 "Use density functional for exchange");
     app.add_option("-v,--verbosity", verbosity, "logging verbosity");
     app.add_option("--monomer-directory", monomer_directory,
                    "directory to find monomer wavefunctions");
@@ -272,7 +275,14 @@ int main(int argc, char *argv[]) {
     if (use_df) {
         interaction.set_use_density_fitting(true);
     }
-    auto interaction_energy = interaction(pair.a.wfn, pair.b.wfn);
+
+    occ::interaction::CEEnergyComponents interaction_energy;
+    if (dft_functional.empty()) {
+        interaction_energy = interaction(pair.a.wfn, pair.b.wfn);
+    } else {
+        interaction_energy =
+            interaction.dft_pair(dft_functional, pair.a.wfn, pair.b.wfn);
+    }
     occ::timing::stop(occ::timing::category::global);
 
     fmt::print("Monomer A energies\n");

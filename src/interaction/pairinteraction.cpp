@@ -16,7 +16,7 @@ CEModelInteraction::CEModelInteraction(const CEParameterizedModel &facs)
     : scale_factors(facs) {}
 
 template <SpinorbitalKind kind, typename Proc = qm::HartreeFock>
-void compute_ce_model_energies(Wavefunction &wfn, Proc &hf, double precision,
+void compute_ce_model_energies(Wavefunction &wfn, Proc &proc, double precision,
                                const Mat &Schwarz) {
     if (wfn.have_energies) {
         occ::log::debug("Already have monomer energies, skipping");
@@ -25,17 +25,23 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &hf, double precision,
     using occ::qm::expectation;
     using occ::qm::matrix_dimensions;
     if constexpr (kind == SpinorbitalKind::Restricted) {
-        wfn.V = hf.compute_nuclear_attraction_matrix();
+        wfn.V = proc.compute_nuclear_attraction_matrix();
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
-        wfn.T = hf.compute_kinetic_matrix();
+        wfn.T = proc.compute_kinetic_matrix();
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.H = wfn.V + wfn.T;
-        std::tie(wfn.J, wfn.K) = hf.compute_JK(wfn.mo, precision, Schwarz);
+        std::tie(wfn.J, wfn.K) = proc.compute_JK(wfn.mo, precision, Schwarz);
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
+        if constexpr (std::is_same<Proc, dft::DFT>::value) {
+            wfn.energy.exchange = proc.exchange_energy_total();
+        } else {
+            wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
+        }
+
         wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
-        wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
-        if (hf.have_effective_core_potentials()) {
-            wfn.Vecp = hf.compute_effective_core_potential_matrix();
+        wfn.energy.nuclear_repulsion = proc.nuclear_repulsion_energy();
+        if (proc.have_effective_core_potentials()) {
+            wfn.Vecp = proc.compute_effective_core_potential_matrix();
             wfn.H += wfn.Vecp;
             wfn.energy.ecp = 2 * expectation<kind>(wfn.mo.D, wfn.Vecp);
         }
@@ -47,21 +53,26 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &hf, double precision,
             matrix_dimensions<SpinorbitalKind::Unrestricted>(wfn.nbf);
         wfn.T = Mat(rows, cols);
         wfn.V = Mat(rows, cols);
-        block::a(wfn.T) = hf.compute_kinetic_matrix();
+        block::a(wfn.T) = proc.compute_kinetic_matrix();
         block::b(wfn.T) = block::a(wfn.T);
-        block::a(wfn.V) = hf.compute_nuclear_attraction_matrix();
+        block::a(wfn.V) = proc.compute_nuclear_attraction_matrix();
         block::b(wfn.V) = block::a(wfn.V);
         wfn.H = wfn.V + wfn.T;
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
-        std::tie(wfn.J, wfn.K) = hf.compute_JK(wfn.mo, precision, Schwarz);
+        std::tie(wfn.J, wfn.K) = proc.compute_JK(wfn.mo, precision, Schwarz);
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
-        wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
-        wfn.energy.nuclear_repulsion = hf.nuclear_repulsion_energy();
+        if constexpr (std::is_same<Proc, dft::DFT>::value) {
+            wfn.energy.exchange = proc.exchange_energy_total();
+        } else {
+            wfn.energy.exchange = -expectation<kind>(wfn.mo.D, wfn.K);
+        }
 
-        if (hf.have_effective_core_potentials()) {
+        wfn.energy.nuclear_repulsion = proc.nuclear_repulsion_energy();
+
+        if (proc.have_effective_core_potentials()) {
             wfn.Vecp = Mat(rows, cols);
-            block::a(wfn.Vecp) = hf.compute_effective_core_potential_matrix();
+            block::a(wfn.Vecp) = proc.compute_effective_core_potential_matrix();
             block::b(wfn.Vecp) = block::a(wfn.Vecp);
             wfn.H += wfn.Vecp;
             wfn.energy.ecp = 2 * expectation<kind>(wfn.mo.D, wfn.Vecp);
@@ -258,8 +269,12 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     using occ::qm::Energy;
     constexpr double precision = std::numeric_limits<double>::epsilon();
 
+    occ::dft::AtomGridSettings grid_settings{194, 50, 50, 1e-8};
+
     DFT dft_a(functional, A.basis);
+    dft_a.set_integration_grid(grid_settings);
     DFT dft_b(functional, B.basis);
+    dft_b.set_integration_grid(grid_settings);
     if (m_use_density_fitting) {
         dft_a.set_density_fitting_basis("def2-universal-jkfit");
         dft_b.set_density_fitting_basis("def2-universal-jkfit");
@@ -285,7 +300,8 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
 
     // Can reuse the same HartreeFock object for both merged wfns: same basis
     // and atoms
-    auto dft_AB = HartreeFock(ABn.basis);
+    auto dft_AB = DFT(functional, ABn.basis);
+    dft_AB.set_integration_grid(grid_settings);
     Mat schwarz_ab = dft_AB.compute_schwarz_ints();
     if (m_use_density_fitting) {
         dft_AB.set_density_fitting_basis("def2-universal-jkfit");
