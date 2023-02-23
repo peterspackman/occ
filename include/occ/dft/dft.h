@@ -184,21 +184,19 @@ class DFT {
 
     template <int derivative_order,
               SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-    Mat compute_fock_dft(const MolecularOrbitals &mo, double precision,
-                         const Mat &Schwarz) {
+    Mat compute_K_dft(const MolecularOrbitals &mo, double precision,
+                      const Mat &Schwarz) {
         using occ::parallel::nthreads;
         const auto &basis = m_hf.aobasis();
         const auto &atoms = m_hf.atoms();
-        size_t F_rows, F_cols;
+        size_t K_rows, K_cols;
         size_t nbf = basis.nbf();
         const auto &D = mo.D;
-        std::tie(F_rows, F_cols) =
+        std::tie(K_rows, K_cols) =
             occ::qm::matrix_dimensions<spinorbital_kind>(nbf);
-        Mat F = Mat::Zero(F_rows, F_cols);
+        Mat K = Mat::Zero(K_rows, K_cols);
         m_two_electron_energy = 0.0;
         m_exc_dft = 0.0;
-        double ecoul{0.0}, exc{0.0};
-        double exchange_factor = exact_exchange_factor();
 
         constexpr size_t BLOCKSIZE = 64;
         size_t num_rows_factor = 1;
@@ -303,56 +301,41 @@ class DFT {
             occ::timing::stop(occ::timing::category::dft_xc);
             atom_grid_idx++;
         }
-        double exc_dft{0.0};
         for (size_t i = 0; i < nthreads; i++) {
-            F += Kt[i];
-            exc_dft += energies[i];
+            K += Kt[i];
+            m_exc_dft += energies[i];
             total_density_a += alpha_densities[i];
             total_density_b += beta_densities[i];
         }
         occ::log::debug("Total density: alpha = {} beta = {}", total_density_a,
                         total_density_b);
 
-        if (exchange_factor != 0.0) {
-            Mat J, K;
-            std::tie(J, K) = m_hf.compute_JK(mo, precision, Schwarz);
-            ecoul = expectation<spinorbital_kind>(D, J);
-            exc = -expectation<spinorbital_kind>(D, K) * exchange_factor;
-            F.noalias() += J;
-            F.noalias() -= K * exchange_factor;
-        } else {
-            Mat J = m_hf.compute_J(mo, precision, Schwarz);
-            ecoul = expectation<spinorbital_kind>(D, J);
-            F.noalias() += J;
-        }
-        occ::log::debug("EXC_dft = {}, EXC = {}, E_coul = {}\n", exc_dft, exc,
-                        ecoul);
-        m_two_electron_energy += exc_dft + exc + ecoul;
-        m_exc_dft += exc_dft;
-        return F;
+        return K;
     }
 
-    Mat compute_J(const MolecularOrbitals &mo,
-                  double precision = std::numeric_limits<double>::epsilon(),
-                  const Mat &Schwarz = Mat()) const {
+    inline Mat
+    compute_J(const MolecularOrbitals &mo,
+              double precision = std::numeric_limits<double>::epsilon(),
+              const Mat &Schwarz = Mat()) const {
         return m_hf.compute_J(mo, precision, Schwarz);
     }
 
-    Mat compute_fock(const MolecularOrbitals &mo,
-                     double precision = std::numeric_limits<double>::epsilon(),
-                     const Mat &Schwarz = Mat()) {
+    inline Mat
+    compute_vxc(const MolecularOrbitals &mo,
+                double precision = std::numeric_limits<double>::epsilon(),
+                const Mat &Schwarz = Mat()) {
         int deriv = density_derivative();
         switch (mo.kind) {
         case SpinorbitalKind::Unrestricted: {
             switch (deriv) {
             case 0:
-                return compute_fock_dft<0, SpinorbitalKind::Unrestricted>(
+                return compute_K_dft<0, SpinorbitalKind::Unrestricted>(
                     mo, precision, Schwarz);
             case 1:
-                return compute_fock_dft<1, SpinorbitalKind::Unrestricted>(
+                return compute_K_dft<1, SpinorbitalKind::Unrestricted>(
                     mo, precision, Schwarz);
             case 2:
-                return compute_fock_dft<2, SpinorbitalKind::Unrestricted>(
+                return compute_K_dft<2, SpinorbitalKind::Unrestricted>(
                     mo, precision, Schwarz);
             default:
                 throw std::runtime_error(
@@ -362,13 +345,13 @@ class DFT {
         case SpinorbitalKind::Restricted: {
             switch (deriv) {
             case 0:
-                return compute_fock_dft<0, SpinorbitalKind::Restricted>(
+                return compute_K_dft<0, SpinorbitalKind::Restricted>(
                     mo, precision, Schwarz);
             case 1:
-                return compute_fock_dft<1, SpinorbitalKind::Restricted>(
+                return compute_K_dft<1, SpinorbitalKind::Restricted>(
                     mo, precision, Schwarz);
             case 2:
-                return compute_fock_dft<2, SpinorbitalKind::Restricted>(
+                return compute_K_dft<2, SpinorbitalKind::Restricted>(
                     mo, precision, Schwarz);
             default:
                 throw std::runtime_error(
@@ -380,6 +363,39 @@ class DFT {
                 "Not implemented: DFT for General spinorbitals");
         }
     }
+
+    inline std::pair<Mat, Mat>
+    compute_JK(const MolecularOrbitals &mo,
+               double precision = std::numeric_limits<double>::epsilon(),
+               const Mat &Schwarz = Mat()) {
+
+        Mat J;
+        Mat K = -compute_vxc(mo, precision, Schwarz);
+        double ecoul{0.0}, exc{0.0};
+        double exchange_factor = exact_exchange_factor();
+        if (exchange_factor != 0.0) {
+            Mat Khf;
+            std::tie(J, Khf) = m_hf.compute_JK(mo, precision, Schwarz);
+            ecoul = expectation(m_spinorbital_kind, mo.D, J);
+            exc = -expectation(m_spinorbital_kind, mo.D, Khf) * exchange_factor;
+            K.noalias() += Khf * exchange_factor;
+        } else {
+            J = m_hf.compute_J(mo, precision, Schwarz);
+            ecoul = expectation(m_spinorbital_kind, mo.D, J);
+        }
+        occ::log::debug("EXC_dft = {}, EXC = {}, E_coul = {}\n", m_exc_dft, exc,
+                        ecoul);
+        m_two_electron_energy += m_exc_dft + exc + ecoul;
+        return {J, K};
+    }
+
+    Mat compute_fock(const MolecularOrbitals &mo,
+                     double precision = std::numeric_limits<double>::epsilon(),
+                     const Mat &Schwarz = Mat()) {
+        auto [J, K] = compute_JK(mo, precision, Schwarz);
+        return J - K;
+    }
+
     const auto &hf() const { return m_hf; }
 
     inline Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
@@ -388,13 +404,24 @@ class DFT {
         return m_hf.compute_fock_mixed_basis(mo_bs, bs, is_shell_diagonal);
     }
 
-    Vec electronic_electric_potential_contribution(const MolecularOrbitals &mo,
-                                                   const Mat3N &pts) const {
+    inline Vec
+    electronic_electric_potential_contribution(const MolecularOrbitals &mo,
+                                               const Mat3N &pts) const {
         return m_hf.electronic_electric_potential_contribution(mo, pts);
     }
 
-    Vec nuclear_electric_potential_contribution(const Mat3N &pts) const {
+    inline Vec nuclear_electric_potential_contribution(const Mat3N &pts) const {
         return m_hf.nuclear_electric_potential_contribution(pts);
+    }
+
+    inline Mat3N nuclear_electric_field_contribution(const Mat3N &pts) const {
+        return m_hf.nuclear_electric_field_contribution(pts);
+    }
+
+    inline Mat3N
+    electronic_electric_field_contribution(const MolecularOrbitals &mo,
+                                           const Mat3N &pts) const {
+        return m_hf.electronic_electric_field_contribution(mo, pts);
     }
 
     void update_core_hamiltonian(const MolecularOrbitals &mo, Mat &H) {

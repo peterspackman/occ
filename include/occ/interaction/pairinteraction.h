@@ -128,6 +128,8 @@ struct CEEnergyComponents {
 struct CEModelInteraction {
     CEModelInteraction(const CEParameterizedModel &);
     CEEnergyComponents operator()(Wavefunction &, Wavefunction &) const;
+    CEEnergyComponents dft_pair(const std::string &, Wavefunction &,
+                                Wavefunction &) const;
     void set_use_density_fitting(bool value = true);
 
   private:

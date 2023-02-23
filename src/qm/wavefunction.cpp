@@ -600,7 +600,7 @@ void Wavefunction::save(FchkWriter &fchk) {
     fchk.set_scalar("Total ratio", energy.total);
 
     occ::timing::stop(occ::timing::category::io);
-} // namespace occ::qm
+}
 
 Vec Wavefunction::electric_potential(const Mat3N &points) const {
     HartreeFock hf(basis);

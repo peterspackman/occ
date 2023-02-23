@@ -11,6 +11,7 @@
 #include <occ/interaction/disp.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
+#include <occ/io/eigen_json.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/moldenreader.h>
 #include <occ/io/orca_json.h>
@@ -57,6 +58,22 @@ Wavefunction load_wavefunction(const std::string &filename) {
     }
     throw std::runtime_error(
         "Unknown file extension when reading wavefunction: " + ext);
+}
+
+void save_xdm_parameters(const Wavefunction &wfn, const std::string &filename) {
+    std::ofstream out(filename);
+    nlohmann::json j;
+    j["elements"] = {};
+    j["positions"] = {};
+    for (const auto &a : wfn.atoms) {
+        j["elements"].push_back(a.atomic_number);
+        j["positions"].push_back({a.x, a.y, a.z});
+    }
+    j["volume"] = wfn.xdm_volumes;
+    j["moments"] = wfn.xdm_moments;
+    j["volume_free"] = wfn.xdm_free_volumes;
+    j["polarizabilities"] = wfn.xdm_polarizabilities;
+    out << j;
 }
 
 void load_matrix(const nlohmann::json &json, Mat3 &mat) {
@@ -108,10 +125,15 @@ Pair parse_input_file(const std::string &filename,
     occ::log::debug("Rotation A (det = {}):\n{}", p.a.rotation.determinant(),
                     p.a.rotation);
     if (monomers[0].contains("ecp_electrons")) {
-        // TODO properly deal with loading the ECP basis
+        // TODO no more hard coded ecp basis
         auto bs = occ::qm::AOBasis::load(p.a.wfn.atoms, "def2-svp");
         bs.set_pure(p.a.wfn.basis.is_pure());
-        p.a.wfn.basis = bs;
+        const auto &atoms = p.a.wfn.atoms;
+        const auto &shells = p.a.wfn.basis.shells();
+        const auto &name = p.a.wfn.basis.name();
+        const auto &ecp_shells = bs.ecp_shells();
+        p.a.wfn.basis = occ::qm::AOBasis(atoms, shells, name, ecp_shells);
+        p.a.wfn.basis.set_ecp_electrons(bs.ecp_electrons());
     }
     occ::log::debug("Translation A: {}", p.a.translation.transpose());
     {
@@ -130,9 +152,15 @@ Pair parse_input_file(const std::string &filename,
     occ::log::debug("Rotation B (det = {}):\n{}", p.b.rotation.determinant(),
                     p.b.rotation);
     if (monomers[1].contains("ecp_electrons")) {
+        // hard coded ecp basis
         auto bs = occ::qm::AOBasis::load(p.b.wfn.atoms, "def2-svp");
         bs.set_pure(p.b.wfn.basis.is_pure());
-        p.b.wfn.basis = bs;
+        const auto &atoms = p.b.wfn.atoms;
+        const auto &shells = p.b.wfn.basis.shells();
+        const auto &name = p.b.wfn.basis.name();
+        const auto &ecp_shells = bs.ecp_shells();
+        p.b.wfn.basis = occ::qm::AOBasis(atoms, shells, name, ecp_shells);
+        p.b.wfn.basis.set_ecp_electrons(bs.ecp_electrons());
     }
     occ::log::debug("Translation A: {}", p.b.translation.transpose());
     {
@@ -249,9 +277,11 @@ int main(int argc, char *argv[]) {
 
     fmt::print("Monomer A energies\n");
     pair.a.wfn.energy.print();
+    save_xdm_parameters(pair.a.wfn, "a_xdm.json");
 
     fmt::print("Monomer B energies\n");
     pair.b.wfn.energy.print();
+    save_xdm_parameters(pair.b.wfn, "b_xdm.json");
 
     fmt::print("\nDimer\n");
 

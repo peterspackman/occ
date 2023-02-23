@@ -16,6 +16,8 @@ target_link_libraries(_subprocess
     Threads::Threads
 )
 
+target_compile_features(_subprocess PUBLIC cxx_std_17)
+
 set(OCC_3RDPARTY_SUBPROCESS_INCLUDE_DIR
     "${OCC_INCLUDE_DIR}/occ/3rdparty/subprocess/"
 )
