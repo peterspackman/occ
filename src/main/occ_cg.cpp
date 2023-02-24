@@ -417,105 +417,6 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
     return solution_terms_uc;
 }
 
-std::tuple<SolventNeighborContributionList, CEEnergyComponents, double, double>
-process_neighbors_for_symmetry_unique_molecule(
-    const Crystal &crystal, const std::string &molname,
-    const std::string &solvent, double cg_radius,
-    const SolvatedSurfaceProperties &surface,
-    const CrystalDimers::MoleculeNeighbors &nearest_neighbors,
-    const CrystalDimers::MoleculeNeighbors &full_neighbors,
-    const CrystalDimers::UniqueDimerIndices &unique_dimer_indices,
-    const DimerEnergies &dimer_energies, const WavefunctionList &wavefunctions,
-    std::vector<double> &interactions) {
-
-    const occ::main::SolvationPartitionScheme partition_scheme =
-        occ::main::SolvationPartitionScheme::NearestAtom;
-
-    auto solv = occ::main::partition_solvent_surface(
-        partition_scheme, crystal, molname, wavefunctions, surface,
-        full_neighbors, nearest_neighbors, solvent);
-
-    auto crystal_contributions = assign_interaction_terms_to_nearest_neighbours(
-        full_neighbors, unique_dimer_indices, dimer_energies, cg_radius);
-    interactions.reserve(full_neighbors.size());
-
-    occ::log::warn("Neighbors for asymmetric molecule {}", molname);
-
-    occ::log::warn("{:>7s} {:>7s} {:>20s} "
-                   "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}",
-                   "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA", "E_S",
-                   "E_nn", "E_int");
-    occ::log::warn("============================="
-                   "============================="
-                   "=============================");
-
-    size_t j = 0;
-    CEEnergyComponents total;
-
-    size_t num_neighbors = std::accumulate(
-        crystal_contributions.begin(), crystal_contributions.end(), 0,
-        [](size_t a, const AssignedEnergy &x) { return x.is_nn ? a + 1 : a; });
-
-    double solution_term =
-        (surface.dg_gas + surface.dg_correction) * AU_TO_KJ_PER_MOL;
-
-    double total_interaction_energy{0.0};
-    const std::string row_fmt_string =
-        "{:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
-        "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}";
-
-    for (const auto &dimer : full_neighbors) {
-        size_t unique_idx = unique_dimer_indices[j];
-        const auto &e = dimer_energies[unique_idx];
-        if (!e.is_computed) {
-            j++;
-            continue;
-        }
-        const auto &solvent_neighbor_contribution = solv[j];
-        auto symmetry_string = crystal.dimer_symmetry_string(dimer);
-        double rn = dimer.nearest_distance();
-        double rc = dimer.centroid_distance();
-        double crystal_contribution = crystal_contributions[j].energy;
-        bool is_nearest_neighbor = crystal_contributions[j].is_nn;
-
-        occ::Vec3 v_ab = dimer.v_ab();
-
-        total.coulomb += e.coulomb_kjmol();
-        total.exchange_repulsion += e.exchange_kjmol();
-        total.polarization += e.polarization_kjmol();
-        total.dispersion += e.dispersion_kjmol();
-        total.total += e.total_kjmol();
-
-        double interaction_energy =
-            solvent_neighbor_contribution.total_kjmol() - e.total_kjmol() -
-            crystal_contributions[j].energy;
-
-        if (is_nearest_neighbor) {
-            total_interaction_energy += interaction_energy;
-            interactions.push_back(interaction_energy);
-        } else {
-            interactions.push_back(0.0);
-            interaction_energy = 0;
-        }
-
-        double solvent_contribution_ab =
-            (solvent_neighbor_contribution.coulomb.ab +
-             solvent_neighbor_contribution.cds.ab) *
-            AU_TO_KJ_PER_MOL;
-        double solvent_contribution_ba =
-            (solvent_neighbor_contribution.coulomb.ba +
-             solvent_neighbor_contribution.cds.ba) *
-            AU_TO_KJ_PER_MOL;
-
-        occ::log::warn(row_fmt_string, rn, rc, symmetry_string, e.total_kjmol(),
-                       solvent_contribution_ab, solvent_contribution_ba,
-                       solvent_neighbor_contribution.total_kjmol(),
-                       crystal_contribution, interaction_energy);
-        j++;
-    }
-    return {solv, total, total_interaction_energy, solution_term};
-}
-
 class CEModelCrystalGrowthCalculator {
   public:
     enum class WavefunctionChoice { GasPhase, Solvated };
@@ -639,37 +540,136 @@ class CEModelCrystalGrowthCalculator {
         }
     }
 
+    std::tuple<CEEnergyComponents, double, double>
+    process_neighbors_for_symmetry_unique_molecule(int i,
+                                                   const std::string &molname) {
+
+        const auto &surface_properties = m_solvated_surface_properties[i];
+        const auto &full_neighbors = m_full_dimers.molecule_neighbors[i];
+        const auto &nearest_neighbors = m_nearest_dimers.molecule_neighbors[i];
+        const auto &unique_dimer_indices = m_full_dimers.unique_dimer_idx[i];
+        auto &interactions = m_interaction_energies[i];
+
+        const occ::main::SolvationPartitionScheme partition_scheme =
+            occ::main::SolvationPartitionScheme::NearestAtom;
+
+        auto solvation_breakdown = occ::main::partition_solvent_surface(
+            partition_scheme, m_crystal, molname, outer_wavefunctions(),
+            surface_properties, full_neighbors, nearest_neighbors, m_solvent);
+
+        auto crystal_contributions =
+            assign_interaction_terms_to_nearest_neighbours(
+                full_neighbors, unique_dimer_indices, m_dimer_energies,
+                m_inner_radius);
+        interactions.reserve(full_neighbors.size());
+
+        occ::log::warn("Neighbors for asymmetric molecule {}", molname);
+
+        occ::log::warn("nn {:>7s} {:>7s} {:>20s} "
+                       "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}",
+                       "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA", "E_S",
+                       "E_nn", "E_int");
+        occ::log::warn(std::string(88, '='));
+
+        size_t j = 0;
+        CEEnergyComponents total;
+
+        size_t num_neighbors = std::accumulate(
+            crystal_contributions.begin(), crystal_contributions.end(), 0,
+            [](size_t a, const AssignedEnergy &x) {
+                return x.is_nn ? a + 1 : a;
+            });
+
+        double solution_term =
+            (surface_properties.dg_gas + surface_properties.dg_correction) *
+            AU_TO_KJ_PER_MOL;
+
+        double total_interaction_energy{0.0};
+        const std::string row_fmt_string =
+            " {} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
+            "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}";
+
+        for (const auto &dimer : full_neighbors) {
+            size_t unique_idx = unique_dimer_indices[j];
+            const auto &e = m_dimer_energies[unique_idx];
+            if (!e.is_computed) {
+                j++;
+                continue;
+            }
+            const auto &solvent_neighbor_contribution = solvation_breakdown[j];
+            auto symmetry_string = m_crystal.dimer_symmetry_string(dimer);
+            double rn = dimer.nearest_distance();
+            double rc = dimer.centroid_distance();
+            double crystal_contribution = crystal_contributions[j].energy;
+            bool is_nearest_neighbor = crystal_contributions[j].is_nn;
+
+            occ::Vec3 v_ab = dimer.v_ab();
+
+            total.coulomb += e.coulomb_kjmol();
+            total.exchange_repulsion += e.exchange_kjmol();
+            total.polarization += e.polarization_kjmol();
+            total.dispersion += e.dispersion_kjmol();
+            total.total += e.total_kjmol();
+
+            double interaction_energy =
+                solvent_neighbor_contribution.total_kjmol() - e.total_kjmol() -
+                crystal_contributions[j].energy;
+
+            if (is_nearest_neighbor) {
+                total_interaction_energy += interaction_energy;
+                interactions.push_back(interaction_energy);
+            } else {
+                interactions.push_back(0.0);
+                interaction_energy = 0;
+            }
+
+            double solvent_contribution_ab =
+                (solvent_neighbor_contribution.coulomb.ab +
+                 solvent_neighbor_contribution.cds.ab) *
+                AU_TO_KJ_PER_MOL;
+            double solvent_contribution_ba =
+                (solvent_neighbor_contribution.coulomb.ba +
+                 solvent_neighbor_contribution.cds.ba) *
+                AU_TO_KJ_PER_MOL;
+
+            if (is_nearest_neighbor) {
+                occ::log::warn(row_fmt_string, "|", rn, rc, symmetry_string,
+                               e.total_kjmol(), solvent_contribution_ab,
+                               solvent_contribution_ba,
+                               solvent_neighbor_contribution.total_kjmol(),
+                               crystal_contribution, interaction_energy);
+            } else {
+                occ::log::debug(row_fmt_string, " ", rn, rc, symmetry_string,
+                                e.total_kjmol(), solvent_contribution_ab,
+                                solvent_contribution_ba,
+                                solvent_neighbor_contribution.total_kjmol(),
+                                crystal_contribution, interaction_energy);
+            }
+            j++;
+        }
+        m_solvation_breakdowns.push_back(solvation_breakdown);
+        return {total, total_interaction_energy, solution_term};
+    }
+
     void evaluate_molecular_surroundings() {
 
-        const auto &mol_neighbors = m_full_dimers.molecule_neighbors;
-        m_solution_terms = std::vector<double>(mol_neighbors.size(), 0.0);
-        for (size_t i = 0; i < mol_neighbors.size(); i++) {
-            const auto &full_neighbors = mol_neighbors[i];
-            const auto &nearest_neighbors =
-                m_nearest_dimers.molecule_neighbors[i];
-            const auto &surface_properties = m_solvated_surface_properties[i];
-
-            auto [solv, mol_total, mol_total_interaction_energy,
-                  solution_term] =
+        m_solution_terms = std::vector<double>(m_molecules.size(), 0.0);
+        for (size_t i = 0; i < m_molecules.size(); i++) {
+            auto [mol_total, mol_total_interaction_energy, solution_term] =
                 process_neighbors_for_symmetry_unique_molecule(
-                    m_crystal,
-                    fmt::format("{}_{}_{}", m_basename, i, m_solvent),
-                    m_solvent, m_inner_radius, surface_properties,
-                    nearest_neighbors, full_neighbors,
-                    m_full_dimers.unique_dimer_idx[i], m_dimer_energies,
-                    outer_wavefunctions(), m_interaction_energies[i]);
+                    i, fmt::format("{}_{}_{}", m_basename, i, m_solvent));
 
-            m_solvation_breakdowns.push_back(solv);
             m_solution_terms[i] = solution_term;
             write_energy_summary(mol_total, m_molecules[i],
-                                 surface_properties.esolv,
+                                 m_solvated_surface_properties[i].esolv,
                                  mol_total_interaction_energy);
 
             if (m_output) {
                 // write neighbors file for molecule i
                 std::string neighbors_filename =
                     fmt::format("{}_{}_neighbors.xyz", m_basename, i);
-                write_xyz_neighbors(neighbors_filename, full_neighbors);
+                write_xyz_neighbors(neighbors_filename,
+                                    m_full_dimers.molecule_neighbors[i]);
             }
         }
     }
