@@ -21,6 +21,7 @@ class XTBCalculator {
     inline const auto &lattice_vectors() const { return m_lattice_vectors; }
     inline const auto &virial() const { return m_virial; }
     inline const auto &gradients() const { return m_gradients; }
+    inline const auto &partial_charges() const { return m_partial_charges; }
 
     void set_charge(double c);
     void set_num_unpaired_electrons(int n);
@@ -57,6 +58,7 @@ class XTBCalculator {
     double m_energy{0.0};
     Mat3 m_lattice_vectors;
     Mat3 m_virial;
+    Vec m_partial_charges;
     std::array<bool, 3> m_periodic{false, false, false};
     std::string m_xtb_stdout;
     std::string m_xtb_stderr;

@@ -92,6 +92,15 @@ struct CrystalAtomRegion {
  * as the complete set of dimers that are equivalent to the unique dimers
  */
 struct CrystalDimers {
+    using MoleculeNeighbors = std::vector<occ::core::Dimer>;
+    using UniqueDimerIndices = std::vector<size_t>;
+    /**
+     * \brief The search radius used to create this set of dimers
+     *
+     * In angstroms
+     */
+    double radius{0.0};
+
     /**
      * \brief A vector containing the unique dimers in the lattice.
      *
@@ -106,7 +115,7 @@ struct CrystalDimers {
      * Each inner vector contains the complete set of dimers that are
      * surrounding a particular molecule
      */
-    std::vector<std::vector<occ::core::Dimer>> molecule_neighbors;
+    std::vector<MoleculeNeighbors> molecule_neighbors;
 
     /**
      * \brief A vector of vectors containing the indices of the unique dimers
@@ -115,7 +124,7 @@ struct CrystalDimers {
      * Each inner vector contains the indices of the unique dimers that
      * correspond to a particular dimer in the `molecule_neighbors` vector.
      */
-    std::vector<std::vector<size_t>> unique_dimer_idx;
+    std::vector<UniqueDimerIndices> unique_dimer_idx;
 };
 
 /**

@@ -231,6 +231,7 @@ void XTBCalculator::read_json_contents(const std::string &json_filename) {
     XTBJsonOutput output =
         nlohmann::json::parse(json_output_file).get<XTBJsonOutput>();
     m_energy = output.energy;
+    m_partial_charges = output.partial_charges;
 }
 
 void XTBCalculator::read_engrad_contents(const std::string &engrad_filename) {
