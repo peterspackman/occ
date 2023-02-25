@@ -722,28 +722,20 @@ class XTBCrystalGrowthCalculator {
     void converge_lattice_energy(double inner_radius, double outer_radius) {
         occ::log::info("Computing crystal interactions using xtb");
 
+        occ::main::LatticeConvergenceSettings convergence_settings;
         outer_radius = std::max(outer_radius, inner_radius);
         m_inner_radius = inner_radius;
         m_outer_radius = outer_radius;
+        convergence_settings.max_radius = outer_radius;
 
         m_full_dimers = m_crystal.symmetry_unique_dimers(outer_radius);
-        for (auto &dimer : m_full_dimers.unique_dimers) {
-            occ::xtb::XTBCalculator xtb(dimer);
-            int unique_a = dimer.a().asymmetric_molecule_idx();
-            int unique_b = dimer.b().asymmetric_molecule_idx();
-            double e = xtb.single_point_energy() -
-                       m_gas_phase_energies[unique_a] -
-                       m_gas_phase_energies[unique_b];
-            m_dimer_energies.push_back(e * AU_TO_KJ_PER_MOL);
-            if (dimer.nearest_distance() <= inner_radius) {
-                xtb.set_solvent(m_solvent);
-                e = (xtb.single_point_energy() - m_solvated_energies[unique_a] -
-                     m_solvated_energies[unique_b]) *
-                        AU_TO_KJ_PER_MOL -
-                    m_dimer_energies.back();
+        std::vector<CEEnergyComponents> energies;
+        std::tie(m_full_dimers, energies) =
+            occ::main::converged_xtb_lattice_energies(m_crystal, m_basename,
+                                                      convergence_settings);
 
-                m_solvated_dimer_energies.push_back(e);
-            }
+        for (const auto &e : energies) {
+            m_dimer_energies.push_back(e.total_kjmol());
         }
 
         m_nearest_dimers = m_crystal.symmetry_unique_dimers(inner_radius);
@@ -887,7 +879,7 @@ int main(int argc, char **argv) {
     double radius{3.8}, cg_radius{3.8};
     bool write_dump_files{false}, spherical{false};
     bool write_kmcpp_file{false};
-    bool use_xtb{true};
+    bool use_xtb{false};
 
     CLI::Option *input_option =
         app.add_option("input", cif_filename, "input CIF");
