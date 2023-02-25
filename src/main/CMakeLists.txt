@@ -78,6 +78,7 @@ target_link_libraries(occ-cg
     occ_crystal
     occ_interaction
     occ_main
+    occ_xtb
     CLI11::CLI11
 )
 
