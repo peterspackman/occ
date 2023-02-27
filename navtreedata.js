@@ -67,20 +67,20 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"",
-"classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html#a6c319aaeab76964254f139fe34964740",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba5054820ddc199990def7d287fe7ebf6b",
-"classocc_1_1dft_1_1DensityFunctional.html#abecc0a59a365ad908763722bcc5a9590",
-"classocc_1_1qm_1_1HartreeFock.html#a4685f93a622ab3459c7c40cf552c10be",
-"classocc_1_1xtb_1_1TbliteCalculator.html#ab282fd768c163ab0da5993d3e06c273f",
-"functions_~.html",
-"namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b",
-"namespaceocc_1_1gto.html#aa7372855434b49ec8477d66411fe35b9",
-"orb_8h.html#acc8e0b755126663a63eb71bb60f55939",
-"structocc_1_1core_1_1numpy_1_1NumpyArray.html#a5f31a33fae48e9ae541a4cfa327fa67b",
-"structocc_1_1io_1_1ColumnConfiguration_1_1Border.html#a0749faab2f125909f360f02051825f35",
-"structocc_1_1qm_1_1Shell.html#a350a1ac244ac98719a508fa11fc682fd",
-"util_8h.html"
+"annotated.html",
+"classocc_1_1crystal_1_1SpaceGroup.html",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba505af83666759e84ab158f62a6261702",
+"classocc_1_1dft_1_1DensityFunctional.html#ac3dc4dfba3f753903774490403e2aab4",
+"classocc_1_1qm_1_1HartreeFock.html#a484863783cad38de56e4ecc4ed439a0e",
+"classocc_1_1xtb_1_1TbliteCalculator.html#ab282fd768c163ab0da5993d3e06c273fa92af1fb7f30e3a7152b45751bd02aed6",
+"gaussian__input__file_8h.html",
+"namespaceocc.html#aa25e99581dd6d9cb6fdfc2e54124f91c",
+"namespaceocc_1_1gto.html#ab095e06b21b929c59b79d8dc12944570",
+"orb_8h.html#ad33fc26f33525ddebcd8886565af9d6e",
+"structocc_1_1core_1_1numpy_1_1NumpyArray.html#a7cb6a1bdd3ef592f49a3bcfd0b2cf350",
+"structocc_1_1io_1_1ColumnConfiguration_1_1Border.html#a1545e32b7add0bb5467ef696c2237186",
+"structocc_1_1qm_1_1Shell.html#a3c580cff455e85510a23401e374b79e3",
+"util_8h.html#a0f4b4a70d874306db9b67ccc69091f93"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

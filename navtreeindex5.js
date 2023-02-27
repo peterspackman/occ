@@ -1,6 +1,5 @@
 var NAVTREEINDEX5 =
 {
-"classocc_1_1xtb_1_1TbliteCalculator.html#ab282fd768c163ab0da5993d3e06c273f":[2,0,1,15,0,0],
 "classocc_1_1xtb_1_1TbliteCalculator.html#ab282fd768c163ab0da5993d3e06c273fa92af1fb7f30e3a7152b45751bd02aed6":[2,0,1,15,0,0,0],
 "classocc_1_1xtb_1_1TbliteCalculator.html#ab282fd768c163ab0da5993d3e06c273fac532b38d13102b9dcefa2e631fd44912":[2,0,1,15,0,0,1],
 "classocc_1_1xtb_1_1TbliteCalculator.html#ac63c5b58d8638a6f0a9970046b06245e":[2,0,1,15,0,11],
@@ -219,8 +218,8 @@ var NAVTREEINDEX5 =
 "functions_type.html":[2,3,3],
 "functions_u.html":[2,3,0,21],
 "functions_v.html":[2,3,0,22],
-"functions_vars.html":[2,3,2],
 "functions_vars.html":[2,3,2,0],
+"functions_vars.html":[2,3,2],
 "functions_vars_a.html":[2,3,2,1],
 "functions_vars_b.html":[2,3,2,2],
 "functions_vars_c.html":[2,3,2,3],
@@ -249,5 +248,6 @@ var NAVTREEINDEX5 =
 "functions_w.html":[2,3,0,23],
 "functions_x.html":[2,3,0,24],
 "functions_y.html":[2,3,0,25],
-"functions_z.html":[2,3,0,26]
+"functions_z.html":[2,3,0,26],
+"functions_~.html":[2,3,0,27]
 };

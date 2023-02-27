@@ -1,6 +1,5 @@
 var NAVTREEINDEX3 =
 {
-"classocc_1_1dft_1_1DensityFunctional.html#abecc0a59a365ad908763722bcc5a9590":[2,0,1,2,2,10],
 "classocc_1_1dft_1_1DensityFunctional.html#ac3dc4dfba3f753903774490403e2aab4":[2,0,1,2,2,14],
 "classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6":[2,0,1,2,2,4],
 "classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6a3287afc1cc6cb61e6100019d1af3ab29":[2,0,1,2,2,4,1],
@@ -249,5 +248,6 @@ var NAVTREEINDEX3 =
 "classocc_1_1qm_1_1HartreeFock.html#a26985e1a8a73553c86f411af703ef1e0":[2,0,1,8,3,33],
 "classocc_1_1qm_1_1HartreeFock.html#a33c1a92f68a2204a5fa99e84e591249d":[2,0,1,8,3,11],
 "classocc_1_1qm_1_1HartreeFock.html#a3bc5b25ed89b1bab05233c155ff7918f":[2,0,1,8,3,14],
-"classocc_1_1qm_1_1HartreeFock.html#a412bb5564965a89bcf44a6539eafb720":[2,0,1,8,3,17]
+"classocc_1_1qm_1_1HartreeFock.html#a412bb5564965a89bcf44a6539eafb720":[2,0,1,8,3,17],
+"classocc_1_1qm_1_1HartreeFock.html#a4685f93a622ab3459c7c40cf552c10be":[2,0,1,8,3,23]
 };

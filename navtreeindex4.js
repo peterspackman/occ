@@ -1,6 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"classocc_1_1qm_1_1HartreeFock.html#a4685f93a622ab3459c7c40cf552c10be":[2,0,1,8,3,23],
 "classocc_1_1qm_1_1HartreeFock.html#a484863783cad38de56e4ecc4ed439a0e":[2,0,1,8,3,9],
 "classocc_1_1qm_1_1HartreeFock.html#a626f4e045b22ec9fdd77167f6a6c73d1":[2,0,1,8,3,0],
 "classocc_1_1qm_1_1HartreeFock.html#a71462ff1772e705ed36cfc5d8e084142":[2,0,1,8,3,31],
@@ -249,5 +248,6 @@ var NAVTREEINDEX4 =
 "classocc_1_1xtb_1_1TbliteCalculator.html#a7aadef898ec8f2ea3348b999f20f2ca3":[2,0,1,15,0,19],
 "classocc_1_1xtb_1_1TbliteCalculator.html#a80788532d8740f658b0394adc6277d88":[2,0,1,15,0,16],
 "classocc_1_1xtb_1_1TbliteCalculator.html#a823a6d8811a19890467b77d6f683cdc6":[2,0,1,15,0,4],
-"classocc_1_1xtb_1_1TbliteCalculator.html#a92b445d6f8c74f3951a35ea00dc3053a":[2,0,1,15,0,8]
+"classocc_1_1xtb_1_1TbliteCalculator.html#a92b445d6f8c74f3951a35ea00dc3053a":[2,0,1,15,0,8],
+"classocc_1_1xtb_1_1TbliteCalculator.html#ab282fd768c163ab0da5993d3e06c273f":[2,0,1,15,0,0]
 };
