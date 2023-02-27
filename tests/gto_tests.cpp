@@ -1,3 +1,4 @@
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -6,8 +7,10 @@
 #include <occ/core/util.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
+#include <occ/gto/rotation.h>
 #include <vector>
 
+using Catch::Approx;
 using occ::Mat;
 
 // GTO
@@ -76,91 +79,179 @@ TEST_CASE("GTO values derivatives & density H2/STO-3G Unrestricted") {
     fmt::print("Rho beta\n{}\n", occ::qm::block::b(rho));
 }
 
-TEST_CASE("Spherical Gaussian basis <-> Cartesian Gaussian basis transforms") {
+TEST_CASE("Spherical GTO rotations") {
+    // These tests have been modified from
+    // https://github.com/google/spherical-harmonics
+    // which is licensed under the Apache-2.0 license
+    // (compatible with GPLv3)
+    //
+    // The band-level rotation matrices for a rotation about the z-axis are
+    // relatively simple so we can compute them closed form and make sure the
+    // recursive general approach works properly.
+    // This closed form comes from [1].
+    using occ::Mat;
+    using occ::Mat3;
     using occ::util::all_close;
-    SECTION("c c^-1 = I") {
-        for (int i = 0; i < 8; i++) {
-            Mat x = Mat::Identity(2 * i + 1, 2 * i + 1);
-            Mat c = occ::gto::cartesian_to_spherical_transformation_matrix(i);
-            Mat cinv =
-                occ::gto::spherical_to_cartesian_transformation_matrix(i);
-            fmt::print("c {} {}, cinv {} {}\n", c.rows(), c.cols(), cinv.rows(),
-                       cinv.cols());
-            REQUIRE(c.rows() == x.rows());
-            REQUIRE(cinv.cols() == x.cols());
-            Mat prod = c * cinv;
-            REQUIRE(all_close(x, prod, 1e-14, 1e-14));
-            fmt::print("c c^-1 (l = {})\n{}\n", i, prod);
-        }
+
+    SECTION("Closed form z-axis rotation") {
+        double alpha = M_PI / 4.0;
+        Eigen::Quaterniond rz(
+            Eigen::AngleAxisd(alpha, Eigen::Vector3d::UnitZ()));
+
+        Mat3 rotation_matrix = rz.normalized().toRotationMatrix();
+
+        auto rotations =
+            occ::gto::spherical_gaussian_rotation_matrices(3, rotation_matrix);
+
+        fmt::print("Rotation matrix\n{}\n", rotation_matrix);
+        // order 0
+        Mat r0(1, 1);
+        r0.setConstant(1.0);
+
+        REQUIRE(all_close(r0, rotations[0], 1e-10, 1e-10));
+
+        // order 1
+        Mat r1(3, 3);
+        r1 << std::cos(alpha), 0, std::sin(alpha), 0, 1, 0, -std::sin(alpha), 0,
+            std::cos(alpha);
+        fmt::print("Found  (l == 1)\n{}\n", rotations[1]);
+        fmt::print("Expect (l == 1)\n{}\n", r1);
+        REQUIRE(all_close(r1, rotations[1], 1e-10, 1e-10));
+
+        // order 2
+        Mat r2(5, 5);
+        r2 << cos(2 * alpha), 0, 0, 0, sin(2 * alpha), 0, cos(alpha), 0,
+            sin(alpha), 0, 0, 0, 1, 0, 0, 0, -sin(alpha), 0, cos(alpha), 0,
+            -sin(2 * alpha), 0, 0, 0, cos(2 * alpha);
+        fmt::print("Found  (l == 2)\n{}\n", rotations[2]);
+        fmt::print("Expect (l == 2)\n{}\n", r2);
+        REQUIRE(all_close(r2, rotations[2], 1e-10, 1e-10));
+
+        // order 3
+        Mat r3(7, 7);
+        r3 << cos(3 * alpha), 0, 0, 0, 0, 0, sin(3 * alpha), 0, cos(2 * alpha),
+            0, 0, 0, sin(2 * alpha), 0, 0, 0, cos(alpha), 0, sin(alpha), 0, 0,
+            0, 0, 0, 1, 0, 0, 0, 0, 0, -sin(alpha), 0, cos(alpha), 0, 0, 0,
+            -sin(2 * alpha), 0, 0, 0, cos(2 * alpha), 0, -sin(3 * alpha), 0, 0,
+            0, 0, 0, cos(3 * alpha);
+        fmt::print("Found  (l == 3)\n{}\n", rotations[3]);
+        fmt::print("Expect (l == 3)\n{}\n", r2);
+        REQUIRE(all_close(r3, rotations[3], 1e-10, 1e-10));
     }
 
-    SECTION("Transform with rotation") {
-        constexpr int l = 2;
-        Mat rotation = Mat::Zero(3, 3);
-        // i.e. rotation of 90 deg about x
-        rotation << 1, 0, 0, 0, 0, -1, 0, 1, 0;
-        Mat rotation_reverse = Mat::Zero(3, 3);
-        // i.e. rotation of - 90 deg about x
-        rotation_reverse << 1, 0, 0, 0, 0, 1, 0, -1, 0;
+    SECTION("Closed form bands") {
+        // Use an arbitrary rotation
+        Eigen::Quaterniond r(Eigen::AngleAxisd(
+            0.423, Eigen::Vector3d(0.234, -0.642, 0.829).normalized()));
+        Mat3 rot = r.toRotationMatrix();
 
-        // cartesians
-        // xx
-        // xy
-        // xz
-        // yy
-        // yz
-        // zz
-        Mat grot = occ::gto::cartesian_gaussian_rotation_matrix<l>(rotation);
-        Mat grot2 =
-            occ::gto::cartesian_gaussian_rotation_matrix<l>(rotation_reverse);
+        // Create rotation for band 1 and 2
+        auto rotations = occ::gto::spherical_gaussian_rotation_matrices(3, rot);
 
-        // sqrt(3)*x*y -> -sqrt(3) xz idx = 0
-        // sqrt(3)*y*z -> -sqrt(3) yz idx = 1
-        //
-        // -r**2/2 + 3*z**2/2 = z**2 - (x**2 + y**2)/2 -> y**2 - (x**2 + z**2)/2
-        // idx = 2 r ** 2 = x**2 + y**2 + z**2 -x**2 = -r**2 + y**2 + z**2 =
-        // (y**2 + y**2 - r**2  + y**2 + z**2 + z**2) / 2 = (3*y**2 + z**2 -
-        // r**2)/2
-        //
-        // sqrt(3)*x*z -> sqrt(3) xy idx = 3
-        // sqrt(3)*(x**2 - y**2)/2 -> sqrt(3) * (x**2 - z**2)/2 idx = 4
+        // For l = 1, the transformation matrix for the coefficients is
+        // relatively easy to derive. If R is the rotation matrix, the elements
+        // of the transform can be described as: Mij = integral_over_sphere Yi(R
+        // * s)Yj(s) ds. For l = 1, we have:
+        //   Y0(s) = -0.5sqrt(3/pi)s.y
+        //   Y1(s) = 0.5sqrt(3/pi)s.z
+        //   Y2(s) = -0.5sqrt(3/pi)s.x
+        // Note that these Yi include the Condon-Shortely phase. The expectent
+        // matrix M is equal to:
+        //   [ R11  -R12   R10
+        //    -R21   R22  -R20
+        //     R01  -R02   R00 ]
+        // In [1]'s Appendix summarizing [4], this is given without the negative
+        // signs and is a simple permutation, but that is because [4] does not
+        // include the Condon-Shortely phase in their definition of the SH basis
+        // functions.
+        Eigen::Matrix3d band_1 = rotations[1];
 
-        Mat x = Mat::Random(5, 13);
-        x(0, 0) = 2.5;
-        x(1, 1) = 0.5;
-        x(2, 1) = 0.67;
-        x(3, 2) = 1;
-        x(4, 2) = 2;
-        Mat c = occ::gto::cartesian_to_spherical_transformation_matrix(l);
-        Mat cinv = occ::gto::spherical_to_cartesian_transformation_matrix(l);
-        Mat srot = c * (grot * cinv).eval();
+        REQUIRE(rot(1, 1) == band_1(0, 0));
+        REQUIRE(rot(1, 2) == band_1(0, 1));
+        REQUIRE(rot(1, 0) == band_1(0, 2));
+        REQUIRE(rot(2, 1) == band_1(1, 0));
+        REQUIRE(rot(2, 2) == band_1(1, 1));
+        REQUIRE(rot(2, 0) == band_1(1, 2));
+        REQUIRE(rot(0, 1) == band_1(2, 0));
+        REQUIRE(rot(0, 2) == band_1(2, 1));
+        REQUIRE(rot(0, 0) == band_1(2, 2));
 
-        fmt::print("c {} {}\n{}\n", c.rows(), c.cols(), c);
-        fmt::print("c^-1 {} {}\n{}\n", cinv.rows(), cinv.cols(), cinv);
-        fmt::print("coeffs sph ({} {})\n{}\n", x.rows(), x.cols(), x);
-        fmt::print("srot ({} {})\n{}\n", srot.rows(), srot.cols(), srot);
-        REQUIRE(srot.cols() == x.rows());
-        REQUIRE(cinv.cols() == x.rows());
+        // The l = 2 band transformation is significantly more complex in terms
+        // of R, and a CAS program was used to arrive at these equations (plus a
+        // fair amount of simplification by hand afterwards).
+        Mat band_2 = rotations[2];
+        REQUIRE(rot(0, 0) * rot(1, 1) + rot(0, 1) * rot(1, 0) ==
+                Approx(band_2(0, 0)).epsilon(1e-10));
+        REQUIRE(rot(0, 1) * rot(1, 2) + rot(0, 2) * rot(1, 1) ==
+                Approx(band_2(0, 1)).epsilon(1e-10));
+        REQUIRE(-std::sqrt(3) / 3 *
+                    (rot(0, 0) * rot(1, 0) + rot(0, 1) * rot(1, 1) -
+                     2 * rot(0, 2) * rot(1, 2)) ==
+                Approx(band_2(0, 2)).epsilon(1e-10));
+        REQUIRE(rot(0, 0) * rot(1, 2) + rot(0, 2) * rot(1, 0) ==
+                Approx(band_2(0, 3)).epsilon(1e-10));
+        REQUIRE(rot(0, 0) * rot(1, 0) - rot(0, 1) * rot(1, 1) ==
+                Approx(band_2(0, 4)).epsilon(1e-10));
 
-        Mat xcart = cinv * x;
-        Mat xcart_rot = grot * xcart;
+        REQUIRE(rot(1, 0) * rot(2, 1) + rot(1, 1) * rot(2, 0) ==
+                Approx(band_2(1, 0)).epsilon(1e-10));
+        REQUIRE(rot(1, 1) * rot(2, 2) + rot(1, 2) * rot(2, 1) ==
+                Approx(band_2(1, 1)).epsilon(1e-10));
+        REQUIRE(-std::sqrt(3) / 3 *
+                    (rot(1, 0) * rot(2, 0) + rot(1, 1) * rot(2, 1) -
+                     2 * rot(1, 2) * rot(2, 2)) ==
+                Approx(band_2(1, 2)).epsilon(1e-10));
+        REQUIRE(rot(1, 0) * rot(2, 2) + rot(1, 2) * rot(2, 0) ==
+                Approx(band_2(1, 3)).epsilon(1e-10));
+        REQUIRE(rot(1, 0) * rot(2, 0) - rot(1, 1) * rot(2, 1) ==
+                Approx(band_2(1, 4)).epsilon(1e-10));
 
-        REQUIRE(c.cols() == xcart_rot.rows());
-        Mat xsph_rot = c * xcart_rot;
+        REQUIRE(-std::sqrt(3) / 3 *
+                    (rot(0, 0) * rot(0, 1) + rot(1, 0) * rot(1, 1) -
+                     2 * rot(2, 0) * rot(2, 1)) ==
+                Approx(band_2(2, 0)).epsilon(1e-10));
+        REQUIRE(-std::sqrt(3) / 3 *
+                    (rot(0, 1) * rot(0, 2) + rot(1, 1) * rot(1, 2) -
+                     2 * rot(2, 1) * rot(2, 2)) ==
+                Approx(band_2(2, 1)).epsilon(1e-10));
+        REQUIRE(-0.5 * (1 - 3 * rot(2, 2) * rot(2, 2)) ==
+                Approx(band_2(2, 2)).epsilon(1e-10));
+        REQUIRE(-std::sqrt(3) / 3 *
+                    (rot(0, 0) * rot(0, 2) + rot(1, 0) * rot(1, 2) -
+                     2 * rot(2, 0) * rot(2, 2)) ==
+                Approx(band_2(2, 3)).epsilon(1e-10));
+        REQUIRE(std::sqrt(3) / 6 *
+                    (-rot(0, 0) * rot(0, 0) + rot(0, 1) * rot(0, 1) -
+                     rot(1, 0) * rot(1, 0) + rot(1, 1) * rot(1, 1) +
+                     2 * rot(2, 0) * rot(2, 0) - 2 * rot(2, 1) * rot(2, 1)) ==
+                Approx(band_2(2, 4)).epsilon(1e-10));
 
-        fmt::print("cartesian ({} {})\n{}\n", xcart.rows(), xcart.cols(),
-                   xcart);
-        fmt::print("cartesian rotated\n{}\n", xcart_rot);
-        fmt::print("spherical rotated\n{}\n", xsph_rot);
-        Mat srot_x = srot * x;
-        fmt::print("spherical rotated2\n{}\n", srot_x);
+        REQUIRE(rot(0, 0) * rot(2, 1) + rot(0, 1) * rot(2, 0) ==
+                Approx(band_2(3, 0)).epsilon(1e-10));
+        REQUIRE(rot(0, 1) * rot(2, 2) + rot(0, 2) * rot(2, 1) ==
+                Approx(band_2(3, 1)).epsilon(1e-10));
+        REQUIRE(-std::sqrt(3) / 3 *
+                    (rot(0, 0) * rot(2, 0) + rot(0, 1) * rot(2, 1) -
+                     2 * rot(0, 2) * rot(2, 2)) ==
+                Approx(band_2(3, 2)).epsilon(1e-10));
+        REQUIRE(rot(0, 0) * rot(2, 2) + rot(0, 2) * rot(2, 0) ==
+                Approx(band_2(3, 3)).epsilon(1e-10));
+        REQUIRE(rot(0, 0) * rot(2, 0) - rot(0, 1) * rot(2, 1) ==
+                Approx(band_2(3, 4)).epsilon(1e-10));
 
-        Mat xcart2 = cinv * xsph_rot;
-        Mat xcart_rot2 = grot2 * xcart2;
-        Mat xsph_rot2 = c * xcart_rot2;
-        fmt::print("cartesian\n{}\n", xcart2);
-        fmt::print("cartesian rotated\n{}\n", xcart_rot2);
-        fmt::print("spherical rotated\n{}\n", xsph_rot2);
-        REQUIRE(all_close(x, xsph_rot2, 1e-12, 1e-12));
+        REQUIRE(rot(0, 0) * rot(0, 1) - rot(1, 0) * rot(1, 1) ==
+                Approx(band_2(4, 0)).epsilon(1e-10));
+        REQUIRE(rot(0, 1) * rot(0, 2) - rot(1, 1) * rot(1, 2) ==
+                Approx(band_2(4, 1)).epsilon(1e-10));
+        REQUIRE(std::sqrt(3) / 6 *
+                    (-rot(0, 0) * rot(0, 0) - rot(0, 1) * rot(0, 1) +
+                     rot(1, 0) * rot(1, 0) + rot(1, 1) * rot(1, 1) +
+                     2 * rot(0, 2) * rot(0, 2) - 2 * rot(1, 2) * rot(1, 2)) ==
+                Approx(band_2(4, 2)).epsilon(1e-10));
+        REQUIRE(rot(0, 0) * rot(0, 2) - rot(1, 0) * rot(1, 2) ==
+                Approx(band_2(4, 3)).epsilon(1e-10));
+        REQUIRE(0.5 * (rot(0, 0) * rot(0, 0) - rot(0, 1) * rot(0, 1) -
+                       rot(1, 0) * rot(1, 0) + rot(1, 1) * rot(1, 1)) ==
+                Approx(band_2(4, 4)).epsilon(1e-10));
     }
 }

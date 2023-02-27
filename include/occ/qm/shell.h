@@ -42,6 +42,7 @@ struct Shell {
     void incorporate_shell_norm();
     double coeff_normalized(Eigen::Index contr_idx,
                             Eigen::Index coeff_idx) const;
+    Mat coeffs_normalized_for_libecpint() const;
     size_t size() const;
 
     static char l_to_symbol(uint_fast8_t l);
@@ -62,7 +63,9 @@ struct Shell {
     Vec3 origin;
     Vec exponents;
     Mat contraction_coefficients;
+    Mat u_coefficients; // unnormalized coefficients
     Vec max_ln_coefficient;
+    IVec ecp_r_exponents;
     double extent{0.0};
 };
 
@@ -71,12 +74,12 @@ class AOBasis {
     using AtomList = std::vector<Atom>;
 
     using ShellList = std::vector<Shell>;
-    AOBasis(const AtomList &, const ShellList &, const std::string &name = "");
+    AOBasis(const AtomList &, const ShellList &, const std::string &name = "",
+            const ShellList &ecp = {});
     AOBasis() {}
 
     inline size_t nbf() const { return m_nbf; }
 
-    void add_shell(const Shell &);
     void merge(const AOBasis &);
 
     inline bool shells_share_origin(size_t p, size_t q) const {
@@ -84,12 +87,15 @@ class AOBasis {
     }
     inline const auto &name() const { return m_basis_name; }
     inline auto size() const { return m_shells.size(); }
+    inline auto ecp_size() const { return m_ecp_shells.size(); }
     inline auto nsh() const { return size(); }
+    inline auto ecp_nsh() const { return m_ecp_shells.size(); }
     inline auto kind() const { return m_kind; }
     inline bool is_pure() const { return m_kind == Shell::Kind::Spherical; }
     inline bool is_cartesian() const {
         return m_kind == Shell::Kind::Cartesian;
     }
+    inline bool have_ecps() const { return m_ecp_shells.size() > 0; }
     inline void set_kind(Shell::Kind kind) {
         if (kind == m_kind)
             return;
@@ -105,36 +111,59 @@ class AOBasis {
     }
     inline const Shell &operator[](size_t n) const { return m_shells[n]; }
     inline const Shell &at(size_t n) const { return m_shells.at(n); }
+    inline const Shell &ecp_at(size_t n) const { return m_ecp_shells.at(n); }
 
     inline const auto &shells() const { return m_shells; }
+    inline const auto &ecp_shells() const { return m_ecp_shells; }
     inline const auto &atoms() const { return m_atoms; }
     inline const auto &first_bf() const { return m_first_bf; }
     inline const auto &bf_to_shell() const { return m_bf_to_shell; }
     inline const auto &bf_to_atom() const { return m_bf_to_atom; }
     inline const auto &shell_to_atom() const { return m_shell_to_atom_idx; }
+    inline const auto &ecp_shell_to_atom() const {
+        return m_ecp_shell_to_atom_idx;
+    }
     inline const auto &atom_to_shell() const { return m_atom_to_shell_idxs; }
+    inline const auto &atom_to_ecp_shell() const {
+        return m_atom_to_ecp_shell_idxs;
+    }
+    inline const auto &ecp_electrons() const { return m_ecp_electrons; }
+    inline auto &ecp_electrons() { return m_ecp_electrons; }
+    inline void set_ecp_electrons(const std::vector<int> &e) {
+        m_ecp_electrons = e;
+    }
+    inline auto total_ecp_electrons() const {
+        return std::accumulate(m_ecp_electrons.begin(), m_ecp_electrons.end(),
+                               0);
+    }
     uint_fast8_t l_max() const;
+    uint_fast8_t ecp_l_max() const;
 
     void rotate(const Mat3 &rotation);
     void translate(const Vec3 &rotation);
 
     inline auto max_shell_size() const { return m_max_shell_size; }
+    inline auto max_ecp_shell_size() const { return m_max_ecp_shell_size; }
     static AOBasis load(const AtomList &atoms, const std::string &name);
 
     bool operator==(const AOBasis &rhs);
+
+    void calculate_shell_cutoffs();
 
   private:
     void update_bf_maps();
     std::string m_basis_name;
     AtomList m_atoms;
-    ShellList m_shells;
+    ShellList m_shells, m_ecp_shells;
     std::vector<int> m_first_bf;
-    std::vector<int> m_shell_to_atom_idx;
+    std::vector<int> m_shell_to_atom_idx, m_ecp_shell_to_atom_idx;
     std::vector<int> m_bf_to_shell;
     std::vector<int> m_bf_to_atom;
     std::vector<std::vector<int>> m_atom_to_shell_idxs;
+    std::vector<std::vector<int>> m_atom_to_ecp_shell_idxs;
+    std::vector<int> m_ecp_electrons;
     size_t m_nbf{0};
-    size_t m_max_shell_size{0};
+    size_t m_max_shell_size{0}, m_max_ecp_shell_size{0};
     Shell::Kind m_kind{Shell::Kind::Cartesian};
 };
 

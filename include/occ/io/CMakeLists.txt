@@ -5,6 +5,7 @@ set(OCC_IO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/core_json.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystalgrower.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/eigen_json.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/engrad.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/gaussian_input_file.h"

@@ -3,7 +3,7 @@
 #include <occ/core/constants.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
-#include <occ/io/basis_g94.h>
+#include <occ/io/json_basis.h>
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/shell.h>
 
@@ -73,6 +73,16 @@ double gint(int n, double alpha) {
     return std::tgamma(n1_2) / (2 * std::pow(alpha, n1_2));
 }
 
+double psi4_primitive_normalization(int n, double alpha) {
+    double tmp1 = n + 1.5;
+    double g = 2.0 * alpha;
+    double z = std::pow(g, tmp1);
+    double normg =
+        std::sqrt((pow(2.0, n) * z) / (M_PI * std::sqrt(M_PI) *
+                                       occ::util::double_factorial(2 * n)));
+    return normg;
+}
+
 double gto_norm(int l, double alpha) {
     // to evaluate without the gamma function:
     // sqrt of the following:
@@ -124,6 +134,7 @@ Shell::Shell(const int ang, const std::vector<double> &expo,
             contraction_coefficients(i, j) = contr[j][i];
         }
     }
+    u_coefficients = contraction_coefficients;
     origin = {pos[0], pos[1], pos[2]};
 }
 
@@ -133,6 +144,7 @@ Shell::Shell(const occ::core::PointCharge &point_charge)
     exponents(0) = alpha;
     contraction_coefficients(0, 0) =
         -point_charge.first / (2 * constants::sqrt_pi<double> * gint(2, alpha));
+    u_coefficients = contraction_coefficients;
     origin = {point_charge.second[0], point_charge.second[1],
               point_charge.second[2]};
 }
@@ -142,6 +154,7 @@ Shell::Shell() : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
     exponents(0) = alpha;
     contraction_coefficients(0, 0) =
         -1 / (2 * constants::sqrt_pi<double> * gint(2, alpha));
+    u_coefficients = contraction_coefficients;
     origin = {0, 0, 0};
 }
 
@@ -181,6 +194,39 @@ double Shell::norm() const {
 
 double Shell::max_exponent() const { return exponents.maxCoeff(); }
 double Shell::min_exponent() const { return exponents.minCoeff(); }
+
+Mat Shell::coeffs_normalized_for_libecpint() const {
+    Mat result = contraction_coefficients;
+    for (int i = 0; i < num_primitives(); ++i) {
+        double normalization = psi4_primitive_normalization(l, exponents(i));
+        result(i, 0) *= normalization;
+    }
+    double e_sum = 0.0, g, z;
+
+    for (int i = 0; i < num_primitives(); ++i) {
+        for (int j = 0; j < num_primitives(); ++j) {
+            g = exponents(i) + exponents(j);
+            z = std::pow(g, l + 1.5);
+            e_sum += result(i, 0) * result(j, 0) / z;
+        }
+    }
+
+    double tmp =
+        ((2.0 * M_PI / M_2_SQRTPI) * occ::util::double_factorial(2 * l)) /
+        std::pow(2.0, l);
+    double norm = std::sqrt(1.0 / (tmp * e_sum));
+
+    // Set the normalization
+    for (int i = 0; i < num_primitives(); ++i) {
+        result(i, 0) *= norm;
+    }
+
+    if (norm != norm) {
+        for (int i = 0; i < num_primitives(); ++i)
+            result(i, 0) = 1.0;
+    }
+    return result;
+}
 
 void Shell::incorporate_shell_norm() {
     for (size_t i = 0; i < num_primitives(); i++) {
@@ -347,10 +393,14 @@ int Shell::find_atom_index(const std::vector<Atom> &atoms) const {
 bool Shell::is_pure() const { return kind == Spherical; }
 
 AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
-                 const std::vector<Shell> &shells, const std::string &name)
+                 const std::vector<Shell> &shells, const std::string &name,
+                 const ShellList &ecp_shells)
     : m_basis_name(name), m_atoms(atoms), m_shells(shells),
       m_shell_to_atom_idx(shells.size()), m_atom_to_shell_idxs(atoms.size()),
-      m_bf_to_shell(), m_bf_to_atom() {
+      m_ecp_shell_to_atom_idx(ecp_shells.size()),
+      m_atom_to_ecp_shell_idxs(atoms.size()), m_ecp_shells(ecp_shells),
+      m_ecp_electrons(atoms.size(), 0), m_bf_to_shell(), m_bf_to_atom() {
+
     size_t shell_idx = 0;
     for (const auto &shell : m_shells) {
         m_kind = shell.kind;
@@ -370,6 +420,21 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
         }
         ++shell_idx;
     }
+    size_t ecp_shell_idx = 0;
+    for (const auto &shell : m_ecp_shells) {
+        m_max_ecp_shell_size = std::max(m_max_ecp_shell_size, shell.size());
+        int atom_idx = shell.find_atom_index(m_atoms);
+        if (atom_idx >= m_atom_to_shell_idxs.size() || atom_idx < 0) {
+            throw std::runtime_error(
+                "Unable to map ECP shell to atoms in AOBasis");
+        }
+        m_ecp_shell_to_atom_idx[ecp_shell_idx] = atom_idx;
+        m_atom_to_ecp_shell_idxs[atom_idx].push_back(ecp_shell_idx);
+        ++ecp_shell_idx;
+    }
+}
+
+void AOBasis::calculate_shell_cutoffs() {
     Vec extents = occ::gto::evaluate_decay_cutoff(*this);
     for (size_t i = 0; i < m_shells.size(); i++) {
         m_shells[i].extent = extents(i);
@@ -401,24 +466,29 @@ void AOBasis::merge(const AOBasis &rhs) {
     // TODO handle case where basis sets aren't both cartesian/spherical
     size_t bf_offset = m_nbf;
     size_t shell_offset = m_shells.size();
+    size_t ecp_shell_offset = m_shells.size();
     size_t atom_offset = m_atoms.size();
 
     m_nbf += rhs.m_nbf;
-    m_shells.insert(m_shells.end(), rhs.m_shells.begin(), rhs.m_shells.end());
-    m_first_bf.insert(m_first_bf.end(), rhs.m_first_bf.begin(),
-                      rhs.m_first_bf.end());
-    m_atom_to_shell_idxs.insert(m_atom_to_shell_idxs.end(),
-                                rhs.m_atom_to_shell_idxs.begin(),
-                                rhs.m_atom_to_shell_idxs.end());
-    m_shell_to_atom_idx.insert(m_shell_to_atom_idx.end(),
-                               rhs.m_shell_to_atom_idx.begin(),
-                               rhs.m_shell_to_atom_idx.end());
+    auto append = [](auto &v1, auto &v2) {
+        v1.insert(v1.end(), v2.begin(), v2.end());
+    };
 
-    m_bf_to_shell.insert(m_bf_to_shell.end(), rhs.m_bf_to_shell.begin(),
-                         rhs.m_bf_to_shell.end());
-    m_bf_to_atom.insert(m_bf_to_atom.end(), rhs.m_bf_to_atom.begin(),
-                        rhs.m_bf_to_atom.end());
-    m_atoms.insert(m_atoms.begin(), rhs.m_atoms.begin(), rhs.m_atoms.end());
+    append(m_shells, rhs.m_shells);
+    append(m_ecp_shells, rhs.m_ecp_shells);
+
+    append(m_first_bf, rhs.m_first_bf);
+
+    append(m_atom_to_shell_idxs, rhs.m_atom_to_shell_idxs);
+    append(m_atom_to_ecp_shell_idxs, rhs.m_atom_to_ecp_shell_idxs);
+
+    append(m_shell_to_atom_idx, rhs.m_shell_to_atom_idx);
+    append(m_ecp_shell_to_atom_idx, rhs.m_ecp_shell_to_atom_idx);
+
+    append(m_bf_to_shell, rhs.m_bf_to_shell);
+    append(m_bf_to_atom, rhs.m_bf_to_atom);
+    append(m_atoms, rhs.m_atoms);
+    append(m_ecp_electrons, rhs.m_ecp_electrons);
 
     // apply offsets
     for (size_t i = shell_offset; i < m_shell_to_atom_idx.size(); i++) {
@@ -426,11 +496,16 @@ void AOBasis::merge(const AOBasis &rhs) {
         m_first_bf[i] += bf_offset;
     }
 
-    for (auto &atom_shells : m_atom_to_shell_idxs) {
-        for (auto &x : atom_shells) {
+    for (size_t i = ecp_shell_offset; i < m_ecp_shell_to_atom_idx.size(); i++) {
+        m_ecp_shell_to_atom_idx[i] += atom_offset;
+    }
+
+    for (size_t i = atom_offset; i < m_atom_to_shell_idxs.size(); i++) {
+        for (auto &x : m_atom_to_shell_idxs[i]) {
             x += shell_offset;
         }
     }
+
     for (size_t i = bf_offset; i < m_nbf; i++) {
         m_bf_to_shell[i] += shell_offset;
         m_bf_to_atom[i] += atom_offset;
@@ -476,22 +551,8 @@ std::string canonicalize_name(const std::string &name) {
     return result;
 }
 
-std::vector<std::string> decompose_name_into_components(std::string name) {
-    std::vector<std::string> component_names;
-    // aug-cc-pvxz* = cc-pvxz* + augmentation-... , except aug-cc-pvxz-cabs
-    if ((name.find("aug-cc-pv") == 0) &&
-        (name.find("cabs") == std::string::npos)) {
-        std::string base_name = name.substr(4);
-        component_names.push_back(base_name);
-        component_names.push_back(std::string("augmentation-") + base_name);
-    } else
-        component_names.push_back(name);
-
-    return component_names;
-}
-
 std::string data_path() {
-    std::string path;
+    std::string path{"."};
     const char *data_path_env = getenv("OCC_BASIS_PATH");
     if (data_path_env) {
         path = data_path_env;
@@ -526,51 +587,76 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
 
     auto canonical_name = canonicalize_name(name);
 
-    std::vector<std::string> basis_component_names =
-        decompose_name_into_components(canonical_name);
-
-    std::vector<std::vector<std::vector<Shell>>> component_basis_sets;
-    component_basis_sets.reserve(basis_component_names.size());
-
-    for (const auto &basis_component_name : basis_component_names) {
-        std::string g94_filepath = basis_component_name + ".g94";
-        if (!fs::exists(basis_component_name + ".g94")) {
-            g94_filepath = basis_lib_path + "/" + g94_filepath;
-        }
-        component_basis_sets.emplace_back(
-            occ::io::basis::g94::read_shell(g94_filepath));
+    std::string json_filepath = canonical_name + ".json";
+    if (!fs::exists(canonical_name + ".json")) {
+        json_filepath = basis_lib_path + "/" + json_filepath;
     }
+    occ::io::JsonBasisReader parser(json_filepath);
+    auto element_map = parser.element_map();
 
     std::vector<Shell> shells;
+    std::vector<Shell> ecp_shells;
+
+    std::vector<int> ecp_electrons(atoms.size(), 0);
+    int nsh = 0;
+    int nsh_ecp = 0;
 
     for (size_t a = 0; a < atoms.size(); ++a) {
+        std::array<double, 3> origin = {atoms[a].x, atoms[a].y, atoms[a].z};
         const std::size_t Z = atoms[a].atomic_number;
-
-        for (auto comp_idx = 0ul; comp_idx != component_basis_sets.size();
-             ++comp_idx) {
-            const auto &component_basis_set = component_basis_sets[comp_idx];
-            if (!component_basis_set.at(Z).empty()) {
-                for (auto s : component_basis_set.at(Z)) {
-                    shells.push_back(std::move(s));
-                    shells.back().origin = {atoms[a].x, atoms[a].y, atoms[a].z};
-                    shells.back().incorporate_shell_norm();
+        if (!element_map.contains(Z)) {
+            throw std::runtime_error(
+                fmt::format("element {} not found in basis", Z));
+        }
+        const occ::io::ElementBasis element_basis = element_map.at(Z);
+        if (!element_basis.electron_shells.empty()) {
+            for (const auto &s : element_basis.electron_shells) {
+                // handle general contractions by splitting
+                for (int i = 0; i < s.coefficients.size(); i++) {
+                    shells.push_back(
+                        Shell(s.angular_momentum[i % s.angular_momentum.size()],
+                              s.exponents, {s.coefficients[i]}, origin));
+                    shells[nsh].incorporate_shell_norm();
+                    nsh++;
                 }
-            } else {
-                std::string basis_filename = basis_lib_path + "/" +
-                                             basis_component_names[comp_idx] +
-                                             ".g94";
-                std::string errmsg =
-                    fmt::format("No matching basis for element (z={}) in {}", Z,
-                                basis_filename);
-                throw std::logic_error(errmsg);
             }
+        } else {
+            std::string errmsg = fmt::format(
+                "No matching basis for element (z={}) in {}", Z, json_filepath);
+            throw std::logic_error(errmsg);
+        }
+        if (element_basis.ecp_electrons > 0) {
+            occ::log::debug("Setting ECPs on atom {}", a);
+            if (element_basis.ecp_shells.size() < 1) {
+                std::string errmsg = fmt::format(
+                    "Element (z={}) in basis '{}' has ECP electrons but "
+                    "no defined ECP shells",
+                    Z, json_filepath);
+                throw std::runtime_error(errmsg);
+            }
+            for (const auto &s : element_basis.ecp_shells) {
+                // handle general contractions by splitting
+                for (int i = 0; i < s.angular_momentum.size(); i++) {
+                    ecp_shells.push_back(Shell(s.angular_momentum[i],
+                                               s.exponents, {s.coefficients[i]},
+                                               origin));
+                    const auto &n = s.r_exponents;
+                    auto &shell = ecp_shells[nsh_ecp];
+                    shell.ecp_r_exponents =
+                        Eigen::Map<const IVec>(n.data(), n.size());
+                    nsh_ecp++;
+                }
+            }
+            ecp_electrons[a] = element_basis.ecp_electrons;
         }
     }
-    return AOBasis(atoms, shells, name);
+    AOBasis result(atoms, shells, name, ecp_shells);
+    result.set_ecp_electrons(ecp_electrons);
+    return result;
 }
 
 bool AOBasis::operator==(const AOBasis &rhs) {
-    return m_shells == rhs.m_shells;
+    return (m_shells == rhs.m_shells) && (m_ecp_shells == rhs.m_ecp_shells);
 }
 
 void AOBasis::rotate(const occ::Mat3 &rotation) {
@@ -585,6 +671,14 @@ void AOBasis::rotate(const occ::Mat3 &rotation) {
         atom.z = shell.origin(2);
         shell_idx++;
     }
+
+    // nothing needs to happen to ECPs besides their
+    int ecp_shell_idx = 0;
+    for (auto &shell : m_ecp_shells) {
+        auto rot_pos = rotation * shell.origin;
+        shell.origin = rot_pos;
+        ecp_shell_idx++;
+    }
 }
 
 void AOBasis::translate(const occ::Vec3 &translation) {
@@ -598,9 +692,24 @@ void AOBasis::translate(const occ::Vec3 &translation) {
         atom.z = shell.origin(2);
         shell_idx++;
     }
+
+    int ecp_shell_idx = 0;
+    for (auto &shell : m_ecp_shells) {
+        auto t_pos = translation + shell.origin;
+        shell.origin = t_pos;
+        ecp_shell_idx++;
+    }
 }
 
 uint_fast8_t AOBasis::l_max() const {
+    uint_fast8_t l_max = 0;
+    for (const auto &sh : m_shells) {
+        l_max = std::max(l_max, sh.l);
+    }
+    return l_max;
+}
+
+uint_fast8_t AOBasis::ecp_l_max() const {
     uint_fast8_t l_max = 0;
     for (const auto &sh : m_shells) {
         l_max = std::max(l_max, sh.l);

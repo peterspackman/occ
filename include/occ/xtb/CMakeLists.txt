@@ -1,0 +1,4 @@
+set(OCC_XTB_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/xtb_wrapper.h"
+    PARENT_SCOPE
+)

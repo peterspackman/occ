@@ -3,8 +3,17 @@
 #include <occ/qm/mo.h>
 #include <occ/qm/shell.h>
 #include <occ/slater/slaterbasis.h>
+#include <vector>
 
 namespace occ::xdm {
+
+struct XDMAtomList {
+    const std::vector<occ::core::Atom> &atoms;
+    const Vec &polarizabilities;
+    const Mat &moments;
+    const Vec &volume;
+    const Vec &volume_free;
+};
 
 class XDM {
   public:
@@ -13,7 +22,7 @@ class XDM {
         double a2{1.0}; // angstroms
     };
 
-    XDM(const occ::qm::AOBasis &basis);
+    XDM(const occ::qm::AOBasis &basis, int charge = 0);
 
     double energy(const occ::qm::MolecularOrbitals &mo);
 
@@ -24,8 +33,11 @@ class XDM {
     inline const auto &atom_volume() const { return m_volume; }
     inline const auto &free_atom_volume() const { return m_volume_free; }
 
+    inline const auto &polarizabilities() const { return m_polarizabilities; }
+
   private:
     void populate_moments(const occ::qm::MolecularOrbitals &mo);
+    void populate_polarizabilities();
 
     occ::qm::AOBasis m_basis;
     occ::dft::MolecularGrid m_grid;
@@ -34,10 +46,22 @@ class XDM {
     Mat m_density_matrix;
     Mat m_moments;
     Vec m_volume;
+    Vec m_polarizabilities;
     Vec m_volume_free;
     Vec m_hirshfeld_charges;
     double m_energy{0.0};
     Mat3N m_forces;
+    bool m_atomic_ion{false};
+    int m_charge{0};
 };
+
+std::pair<double, Mat3N>
+xdm_dispersion_energy(const XDMAtomList &atom_info,
+                      const XDM::Parameters &params = {});
+
+std::tuple<double, Mat3N, Mat3N>
+xdm_dispersion_interaction_energy(const XDMAtomList &atom_info_a,
+                                  const XDMAtomList &atom_info_b,
+                                  const XDM::Parameters &params = {});
 
 } // namespace occ::xdm

@@ -35,6 +35,7 @@ enum category {
     gto_s,
     gto_p,
     gto_gen,
+    ecp,
     assoc_legendre,
     fft,
     solvent,

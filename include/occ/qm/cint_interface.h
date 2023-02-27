@@ -168,6 +168,9 @@ class IntegralEnvironment {
 
     int num_atoms() const { return m_atom_info.size(); }
     int num_basis() const { return m_basis_info.size(); }
+    inline void set_atom_charge(int atom_index, int charge) {
+        m_atom_info[atom_index].set_charge(charge);
+    }
 
     template <Shell::Kind ST> inline int total_cgto() const {
         if constexpr (ST == Shell::Kind::Spherical)

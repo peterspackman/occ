@@ -59,4 +59,10 @@ converged_lattice_energies(const Crystal &crystal,
                            const std::vector<Wavefunction> &wfns_b,
                            const std::string &basename = "crystal_dimer",
                            const LatticeConvergenceSettings conv = {});
+
+std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
+converged_xtb_lattice_energies(const Crystal &crystal,
+                               const std::string &basename = "crystal_dimer",
+                               const LatticeConvergenceSettings conv = {});
+
 } // namespace occ::main

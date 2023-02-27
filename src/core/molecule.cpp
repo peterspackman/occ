@@ -1,6 +1,7 @@
 #include <fmt/core.h>
 #include <fstream>
 #include <occ/core/constants.h>
+#include <occ/core/inertia_tensor.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
@@ -89,7 +90,7 @@ Mat3 Molecule::inertia_tensor() const {
     // amu angstrom^2 to 10^-46 kgm^2
     constexpr double kgm2_fac = 1e23 / occ::constants::avogadro<double>;
     // unit is 10^-46 kg m^2
-    return occ::inertia_tensor(atomic_masses(), m_positions) * kgm2_fac;
+    return occ::core::inertia_tensor(atomic_masses(), m_positions) * kgm2_fac;
 }
 
 Vec3 Molecule::principal_moments_of_inertia() const {

@@ -1,6 +1,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/element.h>
+#include <occ/core/gensqrtinv.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/conversion.h>
@@ -29,6 +30,9 @@ void Energy::print() const {
     fmt::print(format_string, "E_en", nuclear_attraction);
     fmt::print(format_string, "E_kin", kinetic);
     fmt::print(format_string, "E_1e", core);
+    if (ecp != 0.0) {
+        fmt::print(format_string, "E_ecp", ecp);
+    }
 }
 
 Wavefunction::Wavefunction(const FchkReader &fchk)
@@ -37,6 +41,34 @@ Wavefunction::Wavefunction(const FchkReader &fchk)
       basis(fchk.basis_set()), nbf(basis.nbf()), atoms(fchk.atoms()) {
     energy.total = fchk.scf_energy();
     set_molecular_orbitals(fchk);
+    compute_density_matrix();
+}
+
+Wavefunction::Wavefunction(const OrcaJSONReader &json)
+    : spinorbital_kind(json.spinorbital_kind()), num_alpha(json.num_alpha()),
+      num_beta(json.num_beta()), num_electrons(json.num_electrons()),
+      basis(json.basis_set()), nbf(basis.nbf()), atoms(json.atoms()) {
+    energy.total = json.scf_energy();
+    size_t rows, cols;
+
+    mo.kind = spinorbital_kind;
+    if (spinorbital_kind == SpinorbitalKind::General) {
+        throw std::runtime_error(
+            "Reading MOs from Orca json unsupported for General spinorbitals");
+    } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        std::tie(rows, cols) =
+            occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+        mo.C = Mat(rows, cols);
+        mo.energies = Vec(rows);
+        block::a(mo.C) = json.alpha_mo_coefficients();
+        block::b(mo.C) = json.beta_mo_coefficients();
+        block::a(mo.energies) = json.alpha_mo_energies();
+        block::b(mo.energies) = json.beta_mo_energies();
+    } else {
+        mo.C = json.alpha_mo_coefficients();
+        mo.energies = json.alpha_mo_energies();
+    }
+    update_occupied_orbitals();
     compute_density_matrix();
 }
 
@@ -99,6 +131,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     occ::log::debug("Merging occupied orbitals, sorted by energy");
     // TODO refactor
     if (wfn_a.is_restricted() && wfn_b.is_restricted()) {
+        mo.kind = SpinorbitalKind::Restricted;
         // merge occupied orbitals
         Vec occ_energies_merged;
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
@@ -122,6 +155,7 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
         mo.C.rightCols(nv_ab) = C_merged;
         mo.energies.bottomRows(nv_ab) = energies_merged;
     } else {
+        mo.kind = SpinorbitalKind::Unrestricted;
         if (wfn_a.is_restricted()) {
             { // alpha
                 std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
@@ -265,10 +299,39 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
             }
         }
     }
+
     update_occupied_orbitals();
+
+    if (wfn_a.have_xdm_parameters && wfn_b.have_xdm_parameters) {
+        occ::log::debug("Merging XDM parameters");
+        have_xdm_parameters = true;
+        occ::log::debug("Merging XDM polarizabilities");
+        xdm_polarizabilities = Vec(wfn_a.xdm_polarizabilities.rows() +
+                                   wfn_b.xdm_polarizabilities.rows());
+        xdm_polarizabilities << wfn_a.xdm_polarizabilities,
+            wfn_b.xdm_polarizabilities;
+
+        occ::log::debug("Merging XDM moments");
+        xdm_moments = Mat(wfn_a.xdm_moments.rows(),
+                          wfn_a.xdm_moments.cols() + wfn_b.xdm_moments.cols());
+        xdm_moments.leftCols(wfn_a.xdm_moments.cols()) = wfn_a.xdm_moments;
+        xdm_moments.rightCols(wfn_b.xdm_moments.cols()) = wfn_b.xdm_moments;
+
+        occ::log::debug("Merging XDM volumes");
+        xdm_volumes = Vec(wfn_a.xdm_volumes.rows() + wfn_b.xdm_volumes.rows());
+        xdm_volumes << wfn_a.xdm_volumes, wfn_b.xdm_volumes;
+        occ::log::debug("Merging XDM free volumes");
+        xdm_free_volumes =
+            Vec(wfn_a.xdm_free_volumes.rows() + wfn_b.xdm_free_volumes.rows());
+        xdm_free_volumes << wfn_a.xdm_free_volumes, wfn_b.xdm_free_volumes;
+        occ::log::debug("Finished merging");
+    }
 }
 
 void Wavefunction::update_occupied_orbitals() {
+    mo.n_ao = nbf;
+    mo.n_alpha = num_alpha;
+    mo.n_beta = num_beta;
     if (mo.C.size() == 0) {
         return;
     }
@@ -276,9 +339,13 @@ void Wavefunction::update_occupied_orbitals() {
         throw std::runtime_error(
             "Reading MOs from g09 unsupported for General spinorbitals");
     } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+        occ::log::debug("num alpha electrons = {}", num_alpha);
+        occ::log::debug("num beta electrons = {}", num_beta);
         mo.Cocc =
             occ::qm::orb::occupied_unrestricted(mo.C, num_alpha, num_beta);
     } else {
+        occ::log::debug("num alpha electrons = {}", num_alpha);
+        occ::log::debug("num beta electrons = {}", num_alpha);
         mo.Cocc = occ::qm::orb::occupied_restricted(mo.C, num_alpha);
     }
 }
@@ -299,32 +366,11 @@ void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
         block::b(mo.C) = fchk.beta_mo_coefficients();
         block::a(mo.energies) = fchk.alpha_mo_energies();
         block::b(mo.energies) = fchk.beta_mo_energies();
-        if (!basis.is_pure()) {
-            block::a(mo.C) =
-                occ::io::conversion::orb::from_gaussian_order_cartesian(
-                    basis, block::a(mo.C));
-            block::b(mo.C) =
-                occ::io::conversion::orb::from_gaussian_order_cartesian(
-                    basis, block::b(mo.C));
-        } else {
-            block::a(mo.C) =
-                occ::io::conversion::orb::from_gaussian_order_spherical(
-                    basis, block::a(mo.C));
-            block::b(mo.C) =
-                occ::io::conversion::orb::from_gaussian_order_spherical(
-                    basis, block::b(mo.C));
-        }
     } else {
         mo.C = fchk.alpha_mo_coefficients();
         mo.energies = fchk.alpha_mo_energies();
-        if (!basis.is_pure()) {
-            mo.C = occ::io::conversion::orb::from_gaussian_order_cartesian(
-                basis, mo.C);
-        } else {
-            mo.C = occ::io::conversion::orb::from_gaussian_order_spherical(
-                basis, mo.C);
-        }
     }
+    mo = occ::io::conversion::orb::from_gaussian_order(basis, mo);
     update_occupied_orbitals();
 }
 
@@ -354,14 +400,10 @@ void Wavefunction::symmetric_orthonormalize_molecular_orbitals(
 }
 
 Mat symmetrically_orthonormalize(const Mat &mat, const Mat &metric) {
-    Mat X, X_invT;
-    size_t n_cond;
-    double x_condition_number, condition_number;
     double threshold = 1.0 / std::numeric_limits<double>::epsilon();
     Mat SS = mat.transpose() * metric * mat;
-    std::tie(X, X_invT, n_cond, x_condition_number, condition_number) =
-        occ::gensqrtinv(SS, true, threshold);
-    return mat * X;
+    auto g = occ::core::gensqrtinv(SS, true, threshold);
+    return mat * g.result;
 }
 
 Mat symmorthonormalize_molecular_orbitals(const Mat &mos, const Mat &overlap,
@@ -386,11 +428,17 @@ void Wavefunction::apply_translation(const occ::Vec3 &trans) {
 }
 
 void Wavefunction::apply_rotation(const occ::Mat3 &rot) {
-    mo.rotate(basis, rot);
-    basis.rotate(rot);
-    occ::core::rotate_atoms(atoms, rot);
-    update_occupied_orbitals();
-    compute_density_matrix();
+    // check if identity matrix, otherwise do the rotation and
+    // update the orbitals
+    if (!rot.isIdentity(1e-6)) {
+        mo.rotate(basis, rot);
+        basis.rotate(rot);
+        occ::core::rotate_atoms(atoms, rot);
+        update_occupied_orbitals();
+        compute_density_matrix();
+    } else {
+        occ::log::debug("Skipping rotation by identity matrix");
+    }
 }
 
 occ::Mat3N Wavefunction::positions() const {
@@ -412,6 +460,7 @@ occ::IVec Wavefunction::atomic_numbers() const {
 }
 
 void Wavefunction::save(FchkWriter &fchk) {
+    bool have_ecps = basis.have_ecps();
     occ::timing::start(occ::timing::category::io);
     fchk.set_scalar("Number of atoms", atoms.size());
     fchk.set_scalar("Charge", charge());
@@ -429,6 +478,13 @@ void Wavefunction::save(FchkWriter &fchk) {
     // nuclear charges
     occ::IVec nums = atomic_numbers();
     occ::Vec atomic_prop = nums.cast<double>();
+    if (have_ecps) {
+        // set nuclear charges to include ecp
+        const auto &ecp_electrons = basis.ecp_electrons();
+        for (int i = 0; i < atoms.size(); i++) {
+            atomic_prop(i) -= ecp_electrons[i];
+        }
+    }
     fchk.set_vector("Atomic numbers", nums);
     fchk.set_vector("Nuclear charges", atomic_prop);
     fchk.set_vector("Current cartesian coordinates", positions());
@@ -444,24 +500,25 @@ void Wavefunction::save(FchkWriter &fchk) {
                     atomic_prop.array().round().cast<int>());
     fchk.set_vector("Real atomic weights", atomic_prop);
 
-    auto Cfchk = [&]() {
-        if (basis.is_pure())
-            return occ::io::conversion::orb::to_gaussian_order_spherical(basis,
-                                                                         mo.C);
-        return occ::io::conversion::orb::to_gaussian_order_cartesian(basis,
-                                                                     mo.C);
-    }();
+    bool spherical = basis.is_pure();
+
+    auto mo_fchk = occ::io::conversion::orb::to_gaussian_order(basis, mo);
     Mat Dfchk;
+
+    {
+        std::ofstream d("density_correct.txt");
+        d << mo.D;
+    }
 
     std::vector<double> density_lower_triangle, spin_density_lower_triangle;
 
     if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        fchk.set_vector("Alpha Orbital Energies", block::a(mo.energies));
-        fchk.set_vector("Alpha MO coefficients", block::a(Cfchk));
-        fchk.set_vector("Beta Orbital Energies", block::b(mo.energies));
-        fchk.set_vector("Beta MO coefficients", block::b(Cfchk));
+        fchk.set_vector("Alpha Orbital Energies", block::a(mo_fchk.energies));
+        fchk.set_vector("Alpha MO coefficients", block::a(mo_fchk.C));
+        fchk.set_vector("Beta Orbital Energies", block::b(mo_fchk.energies));
+        fchk.set_vector("Beta MO coefficients", block::b(mo_fchk.C));
         Mat occ_fchk =
-            occ::qm::orb::occupied_unrestricted(Cfchk, num_alpha, num_beta);
+            occ::qm::orb::occupied_unrestricted(mo_fchk.C, num_alpha, num_beta);
         Dfchk = occ::qm::orb::density_matrix_unrestricted(occ_fchk, num_alpha,
                                                           num_beta);
 
@@ -477,9 +534,9 @@ void Wavefunction::save(FchkWriter &fchk) {
             }
         }
     } else {
-        fchk.set_vector("Alpha Orbital Energies", mo.energies);
-        fchk.set_vector("Alpha MO coefficients", Cfchk);
-        Mat occ_fchk = occ::qm::orb::occupied_restricted(Cfchk, num_alpha);
+        fchk.set_vector("Alpha Orbital Energies", mo_fchk.energies);
+        fchk.set_vector("Alpha MO coefficients", mo_fchk.C);
+        Mat occ_fchk = occ::qm::orb::occupied_restricted(mo_fchk.C, num_alpha);
         Dfchk = occ::qm::orb::density_matrix_restricted(occ_fchk);
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
         for (Eigen::Index row = 0; row < nbf; row++) {
@@ -500,6 +557,40 @@ void Wavefunction::save(FchkWriter &fchk) {
     }
     fchk.set_vector("Shell to atom map", shell2atom);
 
+    if (have_ecps) {
+        // TODO finish ECP writing routines
+        occ::log::debug("Writing ECP information to fchk\n");
+        fchk.set_vector<int, double>("ECP-RNFroz", basis.ecp_electrons());
+        std::vector<double> ecp_clp1;
+        std::vector<double> ecp_clp2;
+        std::vector<int> ecp_nlp;
+        std::vector<double> ecp_zlp;
+        std::vector<int> ecp_lmax(atoms.size(), 0);
+        int ecp_max_length = 0;
+        const auto &ecp_shell2atom = basis.ecp_shell_to_atom();
+        int shell_index = 0;
+        for (const auto &sh : basis.ecp_shells()) {
+            int atom_idx = ecp_shell2atom[shell_index];
+            ecp_max_length =
+                std::max(static_cast<int>(sh.num_primitives()), ecp_max_length);
+            ecp_lmax[atom_idx] =
+                std::max(static_cast<int>(sh.l), ecp_lmax[atom_idx]);
+            for (int i = 0; i < sh.num_primitives(); i++) {
+                ecp_clp1.push_back(sh.contraction_coefficients(i, 0));
+                ecp_zlp.push_back(sh.exponents(i));
+                ecp_nlp.push_back(sh.ecp_r_exponents(i));
+                ecp_clp2.push_back(0.0);
+            }
+            shell_index++;
+        }
+        fchk.set_scalar("ECP-MaxLECP", ecp_max_length);
+        fchk.set_vector("ECP-LMax", ecp_lmax);
+        fchk.set_vector("ECP-NLP", ecp_nlp);
+        fchk.set_vector("ECP-CLP1", ecp_clp1);
+        fchk.set_vector("ECP-CLP2", ecp_clp2);
+        fchk.set_vector("ECP-ZLP", ecp_zlp);
+    }
+
     // TODO fix this is wrong
     fchk.set_scalar("Virial ratio",
                     -(energy.nuclear_repulsion + energy.nuclear_attraction +
@@ -509,6 +600,13 @@ void Wavefunction::save(FchkWriter &fchk) {
     fchk.set_scalar("Total ratio", energy.total);
 
     occ::timing::stop(occ::timing::category::io);
+}
+
+Vec Wavefunction::electric_potential(const Mat3N &points) const {
+    HartreeFock hf(basis);
+    Vec esp_e = hf.electronic_electric_potential_contribution(mo, points);
+    Vec esp_n = hf.nuclear_electric_potential_contribution(points);
+    return esp_e + esp_n;
 }
 
 Vec Wavefunction::mulliken_charges() const {
@@ -533,8 +631,9 @@ Vec Wavefunction::mulliken_charges() const {
                            basis, mo.D, overlap);
         break;
     }
+    const auto &ecp_electrons = basis.ecp_electrons();
     for (size_t i = 0; i < atoms.size(); i++) {
-        charges(i) += atoms[i].atomic_number;
+        charges(i) += atoms[i].atomic_number - ecp_electrons[i];
     }
     return charges;
 }

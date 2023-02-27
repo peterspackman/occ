@@ -1150,7 +1150,7 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
     auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
     obs.set_pure(true);
     HartreeFock hf(obs);
-    occ::scf::SCF<HartreeFock, occ::qm::SpinorbitalKind::Restricted> scf(hf);
+    occ::scf::SCF<HartreeFock> scf(hf);
     scf.energy_convergence_threshold = 1e-8;
     double e = scf.compute_scf_energy();
 
@@ -1179,9 +1179,9 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
     SECTION("Rotate by I") {
         occ::Mat rot = occ::Mat::Identity(3, 3);
         wfn2.apply_rotation(rot);
-        check_wavefunctions(wfn, wfn2);
         fmt::print("orig MOs\n{}\n", wfn.mo.C);
         fmt::print("rot  MOs\n{}\n", wfn2.mo.C);
+        check_wavefunctions(wfn, wfn2);
     }
 }
 

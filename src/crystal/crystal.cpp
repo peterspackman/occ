@@ -451,6 +451,7 @@ void Crystal::update_symmetry_unique_molecules() const {
 CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
     using occ::core::Dimer;
     CrystalDimers result;
+    result.radius = radius;
     auto &dimers = result.unique_dimers;
     auto &mol_nbs = result.molecule_neighbors;
 
@@ -529,6 +530,7 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
 CrystalDimers Crystal::unit_cell_dimers(double radius) const {
     using occ::core::Dimer;
     CrystalDimers result;
+    result.radius = radius;
     auto &dimers = result.unique_dimers;
     auto &mol_nbs = result.molecule_neighbors;
 

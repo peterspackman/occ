@@ -263,15 +263,28 @@ load_slaterbasis(const std::string &name) {
 
 std::vector<Basis>
 slaterbasis_for_atoms(const std::vector<occ::core::Atom> &atoms,
-                      const std::string &basis_name) {
+                      const std::string &basis_name,
+                      const std::vector<int> &oxidation_states) {
     auto slaterbasis_data = occ::slater::load_slaterbasis(basis_name);
     std::vector<Basis> result;
+    size_t atom_idx = 0;
     for (const auto &atom : atoms) {
         auto el = occ::core::Element(atom.atomic_number);
         std::string sym = el.symbol();
-        if (sym == "H")
+
+        if (oxidation_states.size() > atom_idx) {
+            char state = oxidation_states[atom_idx] > 0 ? '+' : '-';
+            sym = fmt::format("{}{}", sym, state);
+        } else if (sym == "H") {
             sym = "H_normal";
+        }
+
+        if (!slaterbasis_data.contains(sym)) {
+            throw std::runtime_error(
+                fmt::format("no such slater basis for {} found", sym));
+        }
         result.push_back(slaterbasis_data[sym]);
+        atom_idx++;
     }
     return result;
 }

@@ -46,57 +46,60 @@ void FchkReader::close() { m_fchk_file.close(); }
 FchkReader::LineLabel FchkReader::resolve_line(const std::string &line) const {
     std::string lt = trim_copy(line);
     if (startswith(lt, "Number of electrons", false))
-        return NumElectrons;
+        return LineLabel::NumElectrons;
     if (startswith(lt, "Atomic numbers", false))
-        return AtomicNumbers;
+        return LineLabel::AtomicNumbers;
+    if (startswith(lt, "Nuclear charges", false))
+        return LineLabel::NuclearCharges;
     if (startswith(lt, "Current cartesian coordinates", false))
-        return AtomicPositions;
+        return LineLabel::AtomicPositions;
     if (startswith(lt, "Number of basis functions", false))
-        return NumBasisFunctions;
+        return LineLabel::NumBasisFunctions;
     if (startswith(lt, "Number of electrons", false))
-        return NumElectrons;
+        return LineLabel::NumElectrons;
     if (startswith(lt, "Number of alpha electrons", false))
-        return NumAlpha;
+        return LineLabel::NumAlpha;
     if (startswith(lt, "Number of beta electrons", false))
-        return NumBeta;
+        return LineLabel::NumBeta;
     if (startswith(lt, "SCF Energy", false))
-        return SCFEnergy;
+        return LineLabel::SCFEnergy;
     if (startswith(lt, "Alpha MO coefficients", false))
-        return AlphaMO;
+        return LineLabel::AlphaMO;
     if (startswith(lt, "Beta MO coefficients", false))
-        return BetaMO;
+        return LineLabel::BetaMO;
     if (startswith(lt, "Alpha Orbital Energies", false))
-        return AlphaMOEnergies;
+        return LineLabel::AlphaMOEnergies;
     if (startswith(lt, "Beta Orbital Energies", false))
-        return BetaMOEnergies;
+        return LineLabel::BetaMOEnergies;
     if (startswith(lt, "Number of contracted shells", false))
-        return NumShells;
+        return LineLabel::NumShells;
     if (startswith(lt, "Number of primitive shells", false))
-        return NumPrimitiveShells;
+        return LineLabel::NumPrimitiveShells;
     if (startswith(lt, "Shell types", false))
-        return ShellTypes;
+        return LineLabel::ShellTypes;
     if (startswith(lt, "Number of primitives per shell", false))
-        return PrimitivesPerShell;
+        return LineLabel::PrimitivesPerShell;
     if (startswith(lt, "Shell to atom map", false))
-        return ShellToAtomMap;
+        return LineLabel::ShellToAtomMap;
     if (startswith(lt, "Primitive exponents", false))
-        return PrimitiveExponents;
+        return LineLabel::PrimitiveExponents;
     if (startswith(lt, "Contraction coefficients", false))
-        return ContractionCoefficients;
+        return LineLabel::ContractionCoefficients;
     if (startswith(lt, "P(S=P) Contraction coefficients", false))
-        return SPContractionCoefficients;
+        return LineLabel::SPContractionCoefficients;
     if (startswith(lt, "Coordinates of each shell", false))
-        return ShellCoordinates;
+        return LineLabel::ShellCoordinates;
     if (startswith(lt, "Total SCF Density", false))
-        return SCFDensity;
+        return LineLabel::SCFDensity;
     if (startswith(lt, "Total MP2 Density", false))
-        return MP2Density;
+        return LineLabel::MP2Density;
     if (startswith(lt, "Pure/Cartesian d shells", false))
-        return PureCartesianD;
+        return LineLabel::PureCartesianD;
     if (startswith(lt, "Pure/Cartesian f shells", false))
-        return PureCartesianF;
-
-    return Unknown;
+        return LineLabel::PureCartesianF;
+    if (startswith(lt, "ECP-RNFroz", false))
+        return LineLabel::ECP_RNFroz;
+    return LineLabel::Unknown;
 }
 
 void FchkReader::parse(std::istream &stream) {
@@ -104,137 +107,147 @@ void FchkReader::parse(std::istream &stream) {
     size_t count;
     while (std::getline(stream, line)) {
         switch (resolve_line(line)) {
-        case NumElectrons: {
+        case LineLabel::NumElectrons: {
             auto result =
                 scn::scan(line, "Number of electrons I {}", m_num_electrons);
             break;
         }
-        case SCFEnergy: {
+        case LineLabel::SCFEnergy: {
             auto result = scn::scan(line, "SCF Energy R {}", m_scf_energy);
             break;
         }
-        case NumBasisFunctions: {
+        case LineLabel::NumBasisFunctions: {
             auto result = scn::scan(line, "Number of basis functions I {}",
                                     m_num_basis_functions);
             break;
         }
-        case NumAlpha: {
+        case LineLabel::NumAlpha: {
             auto result =
                 scn::scan(line, "Number of alpha electrons I {}", m_num_alpha);
             break;
         }
-        case NumBeta: {
+        case LineLabel::NumBeta: {
             auto result =
                 scn::scan(line, "Number of beta electrons I {}", m_num_beta);
             break;
         }
-        case AtomicNumbers: {
+        case LineLabel::AtomicNumbers: {
             auto result = scn::scan(line, "Atomic numbers I N= {}", count);
             read_matrix_block<int>(stream, m_atomic_numbers, count);
             break;
         }
-        case AtomicPositions: {
+        case LineLabel::NuclearCharges: {
+            auto result = scn::scan(line, "Nuclear charges R N= {}", count);
+            read_matrix_block<double>(stream, m_nuclear_charges, count);
+            break;
+        }
+        case LineLabel::AtomicPositions: {
             auto result =
                 scn::scan(line, "Current cartesian coordinates R N= {}", count);
             read_matrix_block<double>(stream, m_atomic_positions, count);
             break;
         }
-        case AlphaMO: {
+        case LineLabel::AlphaMO: {
             auto result =
                 scn::scan(line, "Alpha MO coefficients R N= {}", count);
             read_matrix_block<double>(stream, m_alpha_mos, count);
             break;
         }
-        case BetaMO: {
+        case LineLabel::BetaMO: {
             auto result =
                 scn::scan(line, "Beta MO coefficients R N= {}", count);
             read_matrix_block<double>(stream, m_beta_mos, count);
             break;
         }
-        case AlphaMOEnergies: {
+        case LineLabel::AlphaMOEnergies: {
             auto result =
                 scn::scan(line, "Alpha Orbital Energies R N= {}", count);
             read_matrix_block<double>(stream, m_alpha_mo_energies, count);
             break;
         }
-        case BetaMOEnergies: {
+        case LineLabel::BetaMOEnergies: {
             auto result =
                 scn::scan(line, "Beta Orbital Energies R N= {}", count);
             read_matrix_block<double>(stream, m_beta_mo_energies, count);
             break;
         }
-        case NumShells: {
+        case LineLabel::NumShells: {
             auto result = scn::scan(line, "Number of contracted shells I {}",
                                     m_basis.num_shells);
             break;
         }
-        case NumPrimitiveShells: {
+        case LineLabel::NumPrimitiveShells: {
             auto result = scn::scan(line, "Number of primitive shells I {}",
                                     m_basis.num_primitives);
             break;
         }
-        case ShellTypes: {
+        case LineLabel::ShellTypes: {
             auto result = scn::scan(line, "Shell types I N= {}", count);
             read_matrix_block<int>(stream, m_basis.shell_types, count);
             break;
         }
-        case PrimitivesPerShell: {
+        case LineLabel::PrimitivesPerShell: {
             auto result = scn::scan(
                 line, "Number of primitives per shell I N= {}", count);
             read_matrix_block<int>(stream, m_basis.primitives_per_shell, count);
             break;
         }
-        case ShellToAtomMap: {
+        case LineLabel::ShellToAtomMap: {
             auto result = scn::scan(line, "Shell to atom map I N= {}", count);
             read_matrix_block<int>(stream, m_basis.shell2atom, count);
             break;
         }
-        case PrimitiveExponents: {
+        case LineLabel::PrimitiveExponents: {
             auto result = scn::scan(line, "Primitive exponents R N= {}", count);
             read_matrix_block<double>(stream, m_basis.primitive_exponents,
                                       count);
             break;
         }
-        case ContractionCoefficients: {
+        case LineLabel::ContractionCoefficients: {
             auto result =
                 scn::scan(line, "Contraction coefficients R N= {}", count);
             read_matrix_block<double>(stream, m_basis.contraction_coefficients,
                                       count);
             break;
         }
-        case SPContractionCoefficients: {
+        case LineLabel::SPContractionCoefficients: {
             auto result = scn::scan(
                 line, "P(S=P) Contraction coefficients R N= {}", count);
             read_matrix_block<double>(
                 stream, m_basis.sp_contraction_coefficients, count);
             break;
         }
-        case ShellCoordinates: {
+        case LineLabel::ShellCoordinates: {
             auto result =
                 scn::scan(line, "Coordinates of each shell R N= {}", count);
             read_matrix_block<double>(stream, m_basis.shell_coordinates, count);
             break;
         }
-        case SCFDensity: {
+        case LineLabel::SCFDensity: {
             auto result = scn::scan(line, "Total SCF Density R N= {}", count);
             read_matrix_block<double>(stream, m_scf_density, count);
             break;
         }
-        case MP2Density: {
+        case LineLabel::MP2Density: {
             auto result = scn::scan(line, "Total MP2 Density R N= {}", count);
             read_matrix_block<double>(stream, m_mp2_density, count);
             break;
         }
-        case PureCartesianD: {
+        case LineLabel::PureCartesianD: {
             auto result =
                 scn::scan(line, "Pure/Cartesian d shells I {}", count);
             m_cartesian_d = (count == 1);
             break;
         }
-        case PureCartesianF: {
+        case LineLabel::PureCartesianF: {
             auto result =
                 scn::scan(line, "Pure/Cartesian f shells I {}", count);
             m_cartesian_f = (count == 1);
+            break;
+        }
+        case LineLabel::ECP_RNFroz: {
+            auto result = scn::scan(line, "ECP-RNFroz R N= {}", count);
+            read_matrix_block<double>(stream, m_ecp_frozen, count);
             break;
         }
         default:
@@ -313,6 +326,12 @@ occ::qm::AOBasis FchkReader::basis_set() const {
         primitive_offset += nprim;
     }
     auto result = occ::qm::AOBasis(atoms(), bs);
+    if (m_ecp_frozen.size() > 0) {
+        result.ecp_electrons().clear();
+        for (const auto &d : m_ecp_frozen) {
+            result.ecp_electrons().push_back(static_cast<int>(d));
+        }
+    }
     result.set_pure(any_pure);
     return result;
 }

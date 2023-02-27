@@ -1,5 +1,6 @@
 set(OCC_GTO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/density.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/gto.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/rotation.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/shell_order.h"
     PARENT_SCOPE)

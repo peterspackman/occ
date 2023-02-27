@@ -1,3 +1,4 @@
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/parallel.h>
 #include <occ/core/units.h>
@@ -26,12 +27,17 @@ void HartreeFock::set_density_fitting_basis(
 }
 
 HartreeFock::HartreeFock(const AOBasis &basis)
-    : m_atoms(basis.atoms()), m_engine(basis.atoms(), basis.shells()) {
+    : m_atoms(basis.atoms()), m_engine(basis),
+      m_frozen_electrons(basis.atoms().size(), 0) {
 
     for (const auto &a : m_atoms) {
         m_num_e += a.atomic_number;
     }
     m_num_e -= m_charge;
+    m_num_frozen = basis.total_ecp_electrons();
+    if (m_num_frozen > 0) {
+        m_frozen_electrons = basis.ecp_electrons();
+    }
 }
 
 double HartreeFock::nuclear_repulsion_energy() const {
@@ -43,7 +49,8 @@ double HartreeFock::nuclear_repulsion_energy() const {
             auto zij = m_atoms[i].z - m_atoms[j].z;
             auto r2 = xij * xij + yij * yij + zij * zij;
             auto r = sqrt(r2);
-            enuc += m_atoms[i].atomic_number * m_atoms[j].atomic_number / r;
+            enuc += (m_atoms[i].atomic_number - m_frozen_electrons[i]) *
+                    (m_atoms[j].atomic_number - m_frozen_electrons[j]) / r;
         }
     return enuc;
 }
@@ -57,20 +64,24 @@ Mat HartreeFock::compute_fock(const MolecularOrbitals &mo, double precision,
     }
 }
 
-Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
+Mat HartreeFock::compute_effective_core_potential_matrix() const {
+    return m_engine.effective_core_potential();
+}
+
+Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                           const qm::AOBasis &bs,
                                           bool is_shell_diagonal) {
     using Kind = occ::qm::Shell::Kind;
-    if (mo_bs.kind == SpinorbitalKind::Restricted) {
-        return m_engine.fock_operator_mixed_basis(mo_bs.D, bs,
+    if (mo_minbs.kind == SpinorbitalKind::Restricted) {
+        return m_engine.fock_operator_mixed_basis(mo_minbs.D, bs,
                                                   is_shell_diagonal);
-    } else if (mo_bs.kind == SpinorbitalKind::Unrestricted) {
+    } else if (mo_minbs.kind == SpinorbitalKind::Unrestricted) {
         const auto [rows, cols] =
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(
                 m_engine.aobasis().nbf());
         Mat F = Mat::Zero(rows, cols);
-        qm::block::a(F) =
-            m_engine.fock_operator_mixed_basis(mo_bs.D, bs, is_shell_diagonal);
+        qm::block::a(F) = m_engine.fock_operator_mixed_basis(mo_minbs.D, bs,
+                                                             is_shell_diagonal);
         qm::block::b(F) = qm::block::a(F);
         return F;
     } else { // kind == SpinorbitalKind::General
@@ -78,8 +89,8 @@ Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
             occ::qm::matrix_dimensions<SpinorbitalKind::General>(
                 m_engine.aobasis().nbf());
         Mat F = Mat::Zero(rows, cols);
-        qm::block::aa(F) =
-            m_engine.fock_operator_mixed_basis(mo_bs.D, bs, is_shell_diagonal);
+        qm::block::aa(F) = m_engine.fock_operator_mixed_basis(
+            mo_minbs.D, bs, is_shell_diagonal);
         qm::block::bb(F) = qm::block::aa(F);
         return F;
     }
@@ -130,13 +141,15 @@ Mat HartreeFock::compute_point_charge_interaction_matrix(
 Mat3N HartreeFock::nuclear_electric_field_contribution(
     const Mat3N &positions) const {
     Mat3N result = Mat3N::Zero(3, positions.cols());
+    int atom_index = 0;
     for (const auto &atom : m_atoms) {
-        double Z = atom.atomic_number;
+        double Z = atom.atomic_number - m_frozen_electrons[atom_index];
         Vec3 atom_pos{atom.x, atom.y, atom.z};
         auto ab = positions.colwise() - atom_pos;
         auto r = ab.colwise().norm();
         auto r3 = r.array() * r.array() * r.array();
         result.array() += (Z * (ab.array().rowwise() / r3));
+        atom_index++;
     }
     return result;
 }
@@ -166,12 +179,14 @@ Vec HartreeFock::electronic_electric_potential_contribution(
 Vec HartreeFock::nuclear_electric_potential_contribution(
     const Mat3N &positions) const {
     Vec result = Vec::Zero(positions.cols());
+    int atom_index = 0;
     for (const auto &atom : m_atoms) {
-        double Z = atom.atomic_number;
+        double Z = atom.atomic_number - m_frozen_electrons[atom_index];
         Vec3 atom_pos{atom.x, atom.y, atom.z};
         auto ab = positions.colwise() - atom_pos;
         auto r = ab.colwise().norm();
         result.array() += Z / r.array();
+        atom_index++;
     }
     return result;
 }

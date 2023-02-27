@@ -2,6 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
+#include <occ/gto/rotation.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
 
@@ -74,40 +75,24 @@ void MolecularOrbitals::update_density_matrix() {
 void MolecularOrbitals::rotate(const AOBasis &basis, const Mat3 &rotation) {
 
     const auto shell2bf = basis.first_bf();
-    occ::log::debug("Rotating MO coefficients");
+    occ::log::debug("Rotating {} MO coefficients, l max = {}",
+                    basis.is_pure() ? "Spherical" : "Cartesian", basis.l_max());
+    std::vector<Mat> rotation_matrices;
+    if (basis.is_pure()) {
+        rotation_matrices = occ::gto::spherical_gaussian_rotation_matrices(
+            basis.l_max(), rotation);
+    } else {
+        rotation_matrices = occ::gto::cartesian_gaussian_rotation_matrices(
+            basis.l_max(), rotation);
+    }
+
     for (size_t s = 0; s < basis.size(); s++) {
         const auto &shell = basis[s];
         size_t bf_first = shell2bf[s];
         size_t shell_size = shell.size();
         int l = shell.l;
         bool pure = shell.is_pure();
-        Mat rot;
-        switch (l) {
-        case 0:
-            rot = occ::gto::cartesian_gaussian_rotation_matrix<0>(rotation);
-            break;
-        case 1:
-            rot = occ::gto::cartesian_gaussian_rotation_matrix<1>(rotation);
-            break;
-        case 2:
-            rot = occ::gto::cartesian_gaussian_rotation_matrix<2>(rotation);
-            break;
-        case 3:
-            rot = occ::gto::cartesian_gaussian_rotation_matrix<3>(rotation);
-            break;
-        case 4:
-            rot = occ::gto::cartesian_gaussian_rotation_matrix<4>(rotation);
-            break;
-        default:
-            throw std::runtime_error(
-                "MO rotation not implemented for angular momentum > 4");
-        }
-        if (pure) {
-            Mat c = occ::gto::cartesian_to_spherical_transformation_matrix(l);
-            Mat cinv =
-                occ::gto::spherical_to_cartesian_transformation_matrix(l);
-            rot = c * rot * cinv;
-        }
+        Mat rot = rotation_matrices[l];
         if (kind == SpinorbitalKind::Restricted) {
             occ::log::trace("Restricted MO rotation");
             C.block(bf_first, 0, shell_size, C.cols()) =

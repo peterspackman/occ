@@ -2,6 +2,7 @@
 #include <occ/core/dimer.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
+#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/qm/wavefunction.h>
 #include <string>
@@ -54,6 +55,10 @@ struct SolventNeighborContribution {
         double t = coulomb.total() + cds.total();
         double difference = coulomb.ab + cds.ab - coulomb.ba - cds.ba;
         return t + 0.5 * difference;
+    }
+
+    inline double total_kjmol() const {
+        return occ::units::AU_TO_KJ_PER_MOL * total();
     }
 
     AsymPair coulomb;

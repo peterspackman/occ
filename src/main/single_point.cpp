@@ -87,7 +87,7 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
 
     if (!config.basis.df_name.empty())
         proc.set_density_fitting_basis(config.basis.df_name);
-    SCF<T, SK> scf(proc);
+    SCF<T> scf(proc, SK);
     occ::log::trace("Setting system charge: {}", config.electronic.charge);
     occ::log::trace("Setting system multiplicity: {}",
                     config.electronic.multiplicity);
@@ -110,7 +110,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
             ks.set_density_fitting_basis(config.basis.df_name);
         SolvationCorrectedProcedure<DFT> proc_solv(ks,
                                                    config.solvent.solvent_name);
-        SCF<SolvationCorrectedProcedure<DFT>, SK> scf(proc_solv);
+        SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv, SK);
         scf.set_charge_multiplicity(config.electronic.charge,
                                     config.electronic.multiplicity);
         scf.start_incremental_F_threshold = 0.0;
@@ -126,7 +126,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
             proc.set_density_fitting_basis(config.basis.df_name);
         SolvationCorrectedProcedure<T> proc_solv(proc,
                                                  config.solvent.solvent_name);
-        SCF<SolvationCorrectedProcedure<T>, SK> scf(proc_solv);
+        SCF<SolvationCorrectedProcedure<T>> scf(proc_solv, SK);
         scf.set_charge_multiplicity(config.electronic.charge,
                                     config.electronic.multiplicity);
         scf.set_initial_guess_from_wfn(wfn);

@@ -1,6 +1,7 @@
 #include <fmt/core.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/json_basis.h>
 #include <vector>
@@ -42,6 +43,44 @@ void from_json(const nlohmann::json &J, ElectronShell &shell) {
     }
 }
 
+void from_json(const nlohmann::json &J, ECPShell &shell) {
+    if (J.contains("ecp_type"))
+        J.at("ecp_type").get_to(shell.ecp_type);
+    if (J.contains("angular_momentum")) {
+        for (const auto &x : J.at("angular_momentum")) {
+            shell.angular_momentum.push_back(x);
+        }
+    }
+    if (J.contains("gaussian_exponents")) {
+        for (const auto &x : J.at("gaussian_exponents")) {
+            if (x.is_string()) {
+                std::string s = x;
+                shell.exponents.push_back(std::stod(s));
+            } else {
+                shell.exponents.push_back(x);
+            }
+        }
+    }
+    if (J.contains("coefficients")) {
+        for (const auto &x : J.at("coefficients")) {
+            shell.coefficients.push_back({});
+            for (const auto &c : x) {
+                if (c.is_string()) {
+                    std::string s = c;
+                    shell.coefficients.back().push_back(std::stod(s));
+                } else {
+                    shell.coefficients.back().push_back(c);
+                }
+            }
+        }
+    }
+    if (J.contains("r_exponents")) {
+        for (const auto &x : J.at("r_exponents")) {
+            shell.r_exponents.push_back(x);
+        }
+    }
+}
+
 void from_json(const nlohmann::json &J, ReferenceData &ref) {
     if (J.contains("reference_description"))
         J.at("reference_description").get_to(ref.description);
@@ -60,6 +99,16 @@ void from_json(const nlohmann::json &J, ElementBasis &basis) {
     }
     for (const auto &x : J.at("electron_shells")) {
         basis.electron_shells.push_back(x);
+    }
+    if (J.contains("ecp_potentials")) {
+        occ::log::trace("Reading ECP potentials");
+        for (const auto &x : J.at("ecp_potentials")) {
+            basis.ecp_shells.push_back(x);
+        }
+    }
+    if (J.contains("ecp_electrons")) {
+        basis.ecp_electrons = J.at("ecp_electrons");
+        occ::log::trace("ECP contains {} electrons", basis.ecp_electrons);
     }
 }
 
@@ -84,6 +133,7 @@ void JsonBasisReader::parse(std::istream &is) {
         int atomic_number = 1;
         if (std::isdigit(it.key()[0])) {
             atomic_number = std::stoi(it.key());
+            occ::log::trace("Reading JSON basis Z = {}", atomic_number);
         } else {
             Element el(it.key());
             atomic_number = el.atomic_number();

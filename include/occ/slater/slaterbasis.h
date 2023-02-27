@@ -61,5 +61,6 @@ phmap::flat_hash_map<std::string, Basis> load_slaterbasis(const std::string &);
 
 std::vector<Basis>
 slaterbasis_for_atoms(const std::vector<occ::core::Atom> &,
-                      const std::string &basis_name = "thakkar");
+                      const std::string &basis_name = "thakkar",
+                      const std::vector<int> &oxidation_states = {});
 } // namespace occ::slater

@@ -1,10 +1,14 @@
 #include <fmt/core.h>
+#include <fmt/os.h>
+#include <fmt/ostream.h>
+#include <fstream>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/dft/grid.h>
 #include <occ/main/properties.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/hf.h>
+#include <scn/scn.h>
 
 namespace occ::main {
 
@@ -39,6 +43,45 @@ void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
                       core::Element(wfn.atoms[i].atomic_number).symbol(),
                       charges_chelpg(i));
         }
+    }
+    bool do_esp = false;
+    // TODO make this flexible
+    if (do_esp) {
+        const std::string filename{"esp_points.txt"};
+        const std::string destination{"esp.txt"};
+        Mat3N points;
+        {
+            std::ifstream is(filename);
+            std::string line;
+            std::getline(is, line);
+            int num{0}, idx{0};
+            auto scan_result = scn::scan(line, "{}", num);
+            points = Mat3N(3, num);
+            // comment line
+            double x, y, z;
+            while (std::getline(is, line) && num > 0) {
+                auto result = scn::scan(line, "{} {} {}", x, y, z);
+                if (!result) {
+                    occ::log::error("failed reading {}", result.error().msg());
+                    continue;
+                }
+                points(0, idx) = x;
+                points(1, idx) = y;
+                points(2, idx) = z;
+                num--;
+                idx++;
+            }
+        }
+        log::info("Computing electric potential at points from '{}'", filename);
+        auto output = fmt::output_file(
+            destination, fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
+
+        Mat esp(points.cols(), 4);
+        esp.leftCols(3) = points.transpose();
+        esp.col(3) = wfn.electric_potential(points);
+        output.print("{}\n", esp.rows());
+        output.print("{}\n", esp);
+        log::info("Finishing computing ESP");
     }
 }
 

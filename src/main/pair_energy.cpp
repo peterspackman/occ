@@ -11,6 +11,7 @@
 #include <occ/interaction/wolf.h>
 #include <occ/main/pair_energy.h>
 #include <occ/qm/chelpg.h>
+#include <occ/xtb/xtb_wrapper.h>
 #include <optional>
 #include <scn/scn.h>
 
@@ -134,38 +135,100 @@ bool write_xyz_dimer(const std::string &filename, const Dimer &dimer,
     return true;
 }
 
-CEEnergyComponents ce_model_energy(const Dimer &dimer,
-                                   const std::vector<Wavefunction> &wfns_a,
-                                   const std::vector<Wavefunction> &wfns_b,
-                                   const Crystal &crystal) {
-    const std::string model_name = "ce-b3lyp";
-    Molecule mol_A = dimer.a();
-    Molecule mol_B = dimer.b();
-    const auto &wfna = wfns_a[mol_A.asymmetric_molecule_idx()];
-    const auto &wfnb = wfns_b[mol_B.asymmetric_molecule_idx()];
-    Wavefunction A = wfns_a[mol_A.asymmetric_molecule_idx()];
-    Wavefunction B = wfns_b[mol_B.asymmetric_molecule_idx()];
-    auto transform_a = calculate_transform(wfna, mol_A, crystal);
-    A.apply_transformation(transform_a.first, transform_a.second);
+using WavefunctionList = std::vector<Wavefunction>;
 
-    occ::Mat3N pos_A = mol_A.positions();
-    occ::Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
+class CEPairEnergyFunctor {
+  public:
+    CEPairEnergyFunctor(const Crystal &crystal,
+                        const WavefunctionList &wavefunctions_a,
+                        const WavefunctionList &wavefunctions_b = {})
+        : m_crystal(crystal), m_wavefunctions_a(wavefunctions_a),
+          m_wavefunctions_b(wavefunctions_b) {}
 
-    auto transform_b = calculate_transform(wfnb, mol_B, crystal);
-    B.apply_transformation(transform_b.first, transform_b.second);
+    CEEnergyComponents operator()(const Dimer &dimer) {
+        const std::string model_name = "ce-b3lyp";
+        Molecule mol_A = dimer.a();
+        Molecule mol_B = dimer.b();
+        Wavefunction A = m_wavefunctions_a[mol_A.asymmetric_molecule_idx()];
+        Wavefunction B =
+            (m_wavefunctions_b.size() > 0)
+                ? m_wavefunctions_a[mol_B.asymmetric_molecule_idx()]
+                : m_wavefunctions_b[mol_B.asymmetric_molecule_idx()];
 
-    Mat3N pos_B = mol_B.positions();
-    Mat3N pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
+        auto transform_a = calculate_transform(A, mol_A, m_crystal);
+        A.apply_transformation(transform_a.first, transform_a.second);
 
-    auto model = occ::interaction::ce_model_from_string(model_name);
+        occ::Mat3N pos_A = mol_A.positions();
+        occ::Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
 
-    CEModelInteraction interaction(model);
+        auto transform_b = calculate_transform(B, mol_B, m_crystal);
+        B.apply_transformation(transform_b.first, transform_b.second);
 
-    auto interaction_energy = interaction(A, B);
-    interaction_energy.is_computed = true;
-    fmt::print("Finished model energy\n");
-    return interaction_energy;
-}
+        Mat3N pos_B = mol_B.positions();
+        Mat3N pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
+
+        auto model = occ::interaction::ce_model_from_string(model_name);
+
+        CEModelInteraction interaction(model);
+
+        auto interaction_energy = interaction(A, B);
+        interaction_energy.is_computed = true;
+        fmt::print("Finished model energy\n");
+        return interaction_energy;
+    }
+
+    inline const auto &partial_charges() {
+        if (m_partial_charges.size() > 0)
+            return m_partial_charges;
+
+        m_partial_charges = std::vector<Vec>(m_wavefunctions_a.size());
+        for (int i = 0; i < m_wavefunctions_a.size(); i++) {
+            m_partial_charges[i] =
+                occ::qm::chelpg_charges(m_wavefunctions_a[i]);
+        }
+        return m_partial_charges;
+    }
+
+  private:
+    Crystal m_crystal;
+    std::vector<Wavefunction> m_wavefunctions_a;
+    std::vector<Wavefunction> m_wavefunctions_b;
+    std::vector<Vec> m_partial_charges;
+};
+
+class XTBPairEnergyFunctor {
+  public:
+    XTBPairEnergyFunctor(const Crystal &crystal) : m_crystal(crystal) {
+        for (const auto &mol : crystal.symmetry_unique_molecules()) {
+            occ::xtb::XTBCalculator calc(mol);
+            m_monomer_energies.push_back(calc.single_point_energy());
+
+            m_partial_charges.push_back(calc.partial_charges());
+        }
+    }
+
+    CEEnergyComponents operator()(const Dimer &dimer) {
+        Molecule mol_A = dimer.a();
+        Molecule mol_B = dimer.b();
+
+        occ::xtb::XTBCalculator calc_AB(dimer);
+        double e_a = m_monomer_energies[mol_A.asymmetric_molecule_idx()];
+        double e_b = m_monomer_energies[mol_B.asymmetric_molecule_idx()];
+        double e_ab = calc_AB.single_point_energy();
+        CEEnergyComponents result;
+        result.total = e_ab - e_a - e_b;
+        result.is_computed = true;
+        return result;
+    }
+
+    inline const auto &partial_charges() { return m_partial_charges; }
+    inline const auto &monomer_energies() { return m_monomer_energies; }
+
+  private:
+    Crystal m_crystal;
+    std::vector<double> m_monomer_energies;
+    std::vector<Vec> m_partial_charges;
+};
 
 int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
                                     const Vec &asym_charges, double radius,
@@ -197,11 +260,12 @@ int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
     return computed_dimers;
 }
 
-int compute_ce_model_energies_radius(
-    const Crystal &crystal, const std::vector<Dimer> &dimers,
-    const std::vector<Wavefunction> &wfns_a,
-    const std::vector<Wavefunction> &wfns_b, const std::string &basename,
+template <typename EnergyModel>
+int compute_dimer_energies_radius(
+    EnergyModel &energy_model, const Crystal &crystal,
+    const std::vector<Dimer> &dimers, const std::string &basename,
     double radius, std::vector<CEEnergyComponents> &dimer_energies) {
+
     using occ::crystal::SymmetryOperation;
     occ::timing::StopWatch sw;
     if (dimer_energies.size() < dimers.size()) {
@@ -240,7 +304,7 @@ int compute_ce_model_energies_radius(
             dimer.center_of_mass_distance());
 
         std::cout << std::flush;
-        dimer_energy = ce_model_energy(dimer, wfns_a, wfns_b, crystal);
+        dimer_energy = energy_model(dimer);
         sw.stop();
         occ::log::info("Took {:.3f} seconds", sw.read() - tprev);
         write_xyz_dimer(dimer_energy_file, dimer, dimer_energy);
@@ -257,9 +321,9 @@ ce_model_energies(const Crystal &crystal, const std::vector<Dimer> &dimers,
                   const std::vector<Wavefunction> &wfns_b,
                   const std::string &basename) {
     std::vector<CEEnergyComponents> result;
-    compute_ce_model_energies_radius(crystal, dimers, wfns_a, wfns_b, basename,
-                                     std::numeric_limits<double>::max(),
-                                     result);
+    CEPairEnergyFunctor f(crystal, wfns_a, wfns_b);
+    compute_dimer_energies_radius(f, crystal, dimers, basename,
+                                  std::numeric_limits<double>::max(), result);
     return result;
 }
 
@@ -277,10 +341,9 @@ bool load_dimer_energy(const std::string &filename,
     return true;
 }
 
+template <typename EnergyModel>
 std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
-converged_lattice_energies(const Crystal &crystal,
-                           const std::vector<Wavefunction> &wfns_a,
-                           const std::vector<Wavefunction> &wfns_b,
+converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                            const std::string &basename,
                            const LatticeConvergenceSettings conv) {
 
@@ -295,14 +358,17 @@ converged_lattice_energies(const Crystal &crystal,
     auto asym_mols = crystal.symmetry_unique_molecules();
 
     Vec asym_charges(crystal.asymmetric_unit().size());
-    std::vector<Vec> charges(wfns_a.size());
-    std::vector<double> charge_self_energies(wfns_a.size());
-    for (int i = 0; i < wfns_a.size(); i++) {
-        charges[i] = occ::qm::chelpg_charges(wfns_a[i]);
-        // charges[i] = wfns_a[i].mulliken_charges();
-        occ::log::info("Charges {}\n{}", i, charges[i]);
-        for (int j = 0; j < charges[i].rows(); j++) {
-            asym_charges(asym_mols[i].asymmetric_unit_idx()(j)) = charges[i](j);
+    std::vector<double> charge_self_energies(asym_mols.size());
+    // vector per unique molecule or wfn.
+
+    const auto &partial_charges = energy_model.partial_charges();
+    for (int i = 0; i < partial_charges.size(); i++) {
+        const auto &asymmetric_atom_indices =
+            asym_mols[i].asymmetric_unit_idx();
+        const auto &charge_vector = partial_charges[i];
+        occ::log::info("Charges {}\n{}", i, charge_vector);
+        for (int j = 0; j < charge_vector.rows(); j++) {
+            asym_charges(asymmetric_atom_indices(j)) = charge_vector(j);
         }
     }
     occ::log::info("Found {} symmetry unique dimers within max radius {:.3f}\n",
@@ -350,9 +416,8 @@ converged_lattice_energies(const Crystal &crystal,
     do {
         previous_lattice_energy = lattice_energy;
         const auto &dimers = all_dimers.unique_dimers;
-        compute_ce_model_energies_radius(crystal, dimers, wfns_a, wfns_b,
-                                         basename, current_radius,
-                                         converged_energies);
+        compute_dimer_energies_radius(energy_model, crystal, dimers, basename,
+                                      current_radius, converged_energies);
         compute_coulomb_energies_radius(dimers, asym_charges, current_radius,
                                         charge_energies);
 
@@ -404,6 +469,26 @@ converged_lattice_energies(const Crystal &crystal,
              conv.energy_tolerance);
     converged_dimers = all_dimers;
     return std::make_pair(converged_dimers, converged_energies);
+}
+
+std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
+converged_lattice_energies(const Crystal &crystal,
+                           const std::vector<Wavefunction> &wfns_a,
+                           const std::vector<Wavefunction> &wfns_b,
+                           const std::string &basename,
+                           const LatticeConvergenceSettings conv) {
+
+    CEPairEnergyFunctor energy_model(crystal, wfns_a, wfns_b);
+    return converged_lattice_energies(energy_model, crystal, basename, conv);
+}
+
+std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
+converged_xtb_lattice_energies(const Crystal &crystal,
+                               const std::string &basename,
+                               const LatticeConvergenceSettings conv) {
+
+    XTBPairEnergyFunctor energy_model(crystal);
+    return converged_lattice_energies(energy_model, crystal, basename, conv);
 }
 
 } // namespace occ::main

@@ -14,6 +14,16 @@ UnitCell::UnitCell(double a, double b, double c, double alpha, double beta,
     update_cell_matrices();
 }
 
+UnitCell::UnitCell(const Mat3 &vectors) : m_lengths(vectors.colwise().norm()) {
+    Vec3 u_a = vectors.col(0) / m_lengths(0);
+    Vec3 u_b = vectors.col(1) / m_lengths(1);
+    Vec3 u_c = vectors.col(2) / m_lengths(2);
+    m_angles(0) = std::acos(std::clamp(u_b.dot(u_c), -1.0, 1.0));
+    m_angles(1) = std::acos(std::clamp(u_c.dot(u_a), -1.0, 1.0));
+    m_angles(2) = std::acos(std::clamp(u_a.dot(u_b), -1.0, 1.0));
+    update_cell_matrices();
+}
+
 void UnitCell::set_a(double a) {
     if (a >= 0.0) {
         m_lengths(0) = a;

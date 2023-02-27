@@ -6,9 +6,6 @@
 #include <string>
 
 namespace occ::crystal {
-using occ::Mat3;
-using occ::Mat3N;
-using occ::Vec3;
 using occ::util::is_close;
 
 /**
@@ -26,6 +23,7 @@ class UnitCell {
     UnitCell(double a, double b, double c, double alpha, double beta,
              double gamma);
     UnitCell(const Vec3 &lengths, const Vec3 &angles);
+    UnitCell(const Mat3 &vectors);
 
     /// the length of the a-axis in Angstroms
     inline double a() const { return m_lengths(0); }
