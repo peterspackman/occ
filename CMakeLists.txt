@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.18.0 FATAL_ERROR)
 
+set(PROJECT_VERSION_MAJOR "0")
+set(PROJECT_VERSION_MINOR "3")
+set(PROJECT_VERSION_PATCH "2")
+
 project(occ
-    VERSION 0.3
+    VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
     LANGUAGES CXX
 )
 
@@ -56,7 +60,8 @@ if("${USE_SYSTEM_BLAS}")
 endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")
-add_subdirectory(3rdparty)
+# don't use install commands from third party
+add_subdirectory(3rdparty EXCLUDE_FROM_ALL)
 add_subdirectory(include)
 add_subdirectory(src)
 
@@ -85,3 +90,21 @@ if(${BUILD_DOCS})
 	message(STATUS "Doxygen must be installed to generate documentation")
     endif(DOXYGEN_FOUND)
 endif()
+
+include(GNUInstallDirs)
+include(InstallRequiredSystemLibraries)
+install(TARGETS occ occ-cg
+    EXPORT occ-targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(DIRECTORY basis DESTINATION "share/occ")
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FixBundle.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/FixBundle.cmake"
+    @ONLY
+)
+
+include(Packing)

@@ -23,7 +23,8 @@ target_include_directories(occ_main PUBLIC
 
 target_compile_features(occ_main PUBLIC cxx_std_17)
 
-add_executable(xdm "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")
+add_executable(xdm EXCLUDE_FROM_ALL 
+    "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")
 target_link_libraries(xdm
     PUBLIC
     occ_main
@@ -57,7 +58,8 @@ set_target_properties(occ-pair
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_executable(make_radial_interpolators "${CMAKE_CURRENT_SOURCE_DIR}/make_radial_interpolators.cpp")
+add_executable(make_radial_interpolators EXCLUDE_FROM_ALL
+    "${CMAKE_CURRENT_SOURCE_DIR}/make_radial_interpolators.cpp")
 target_link_libraries(make_radial_interpolators PUBLIC occ_slater)
 set_target_properties(make_radial_interpolators
     PROPERTIES
@@ -82,7 +84,8 @@ set_target_properties(occ-cg
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_executable(hs "${CMAKE_CURRENT_SOURCE_DIR}/hs.cpp")
+add_executable(hs EXCLUDE_FROM_ALL
+    "${CMAKE_CURRENT_SOURCE_DIR}/hs.cpp")
 target_link_libraries(hs
     PUBLIC
     occ_geometry
@@ -96,7 +99,8 @@ set_target_properties(hs
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_executable(occ-desc "${CMAKE_CURRENT_SOURCE_DIR}/occ_desc.cpp")
+add_executable(occ-desc EXCLUDE_FROM_ALL
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_desc.cpp")
 target_link_libraries(occ-desc
     PUBLIC
     occ_slater
@@ -110,7 +114,8 @@ set_target_properties(occ-desc
 )
 
 
-add_executable(occ-elat "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp")
+add_executable(occ-elat EXCLUDE_FROM_ALL
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp")
 target_link_libraries(occ-elat
     PUBLIC
     occ_qm
@@ -127,9 +132,8 @@ set_target_properties(occ-elat
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-if("${WITH_XTB}") 
-
-add_executable(occ-xtb "${CMAKE_CURRENT_SOURCE_DIR}/xtb.cpp")
+add_executable(occ-xtb EXCLUDE_FROM_ALL
+	"${CMAKE_CURRENT_SOURCE_DIR}/xtb.cpp")
 target_link_libraries(occ-xtb
     PUBLIC
     occ_main
@@ -142,4 +146,3 @@ set_target_properties(occ-xtb
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
-endif()
