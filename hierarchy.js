@@ -23,6 +23,7 @@ var hierarchy =
     [ "occ::io::CifParser", "classocc_1_1io_1_1CifParser.html", null ],
     [ "occ::io::ColumnConfiguration", "structocc_1_1io_1_1ColumnConfiguration.html", null ],
     [ "occ::core::Combinations", "classocc_1_1core_1_1Combinations.html", null ],
+    [ "occ::core::ConditioningOrthogonalizerResult", "structocc_1_1core_1_1ConditioningOrthogonalizerResult.html", null ],
     [ "occ::solvent::ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html", null ],
     [ "occ::solvent::COSMO", "classocc_1_1solvent_1_1COSMO.html", null ],
     [ "occ::crystal::Crystal", "classocc_1_1crystal_1_1Crystal.html", null ],
@@ -35,6 +36,8 @@ var hierarchy =
     ] ],
     [ "occ::core::Dimer", "classocc_1_1core_1_1Dimer.html", null ],
     [ "occ::io::DriverInput", "structocc_1_1io_1_1DriverInput.html", null ],
+    [ "occ::qm::IntegralEngine::ECPCenter", "structocc_1_1qm_1_1IntegralEngine_1_1ECPCenter.html", null ],
+    [ "occ::io::ECPShell", "structocc_1_1io_1_1ECPShell.html", null ],
     [ "occ::geometry::mc::impl::Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", null ],
     [ "occ::qm::EDIIS", "classocc_1_1qm_1_1EDIIS.html", null ],
     [ "occ::io::ElectronInput", "structocc_1_1io_1_1ElectronInput.html", null ],
@@ -42,6 +45,7 @@ var hierarchy =
     [ "occ::core::Element", "classocc_1_1core_1_1Element.html", null ],
     [ "occ::io::ElementBasis", "structocc_1_1io_1_1ElementBasis.html", null ],
     [ "occ::qm::Energy", "structocc_1_1qm_1_1Energy.html", null ],
+    [ "occ::io::EngradReader", "classocc_1_1io_1_1EngradReader.html", null ],
     [ "std::false_type", null, [
       [ "occ::core::numpy::impl::is_complex< T >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html", null ]
     ] ],
@@ -57,6 +61,7 @@ var hierarchy =
     [ "fmt::formatter< occ::core::Multipole< L > >", "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4.html", null ],
     [ "occ::core::Fraction", "classocc_1_1core_1_1Fraction.html", null ],
     [ "occ::io::GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", null ],
+    [ "occ::core::GenSqrtInvResult", "structocc_1_1core_1_1GenSqrtInvResult.html", null ],
     [ "occ::io::GeometryInput", "structocc_1_1io_1_1GeometryInput.html", null ],
     [ "occ::core::graph::Graph< VertexType, EdgeType >", "classocc_1_1core_1_1graph_1_1Graph.html", null ],
     [ "occ::gto::GTOValues", "structocc_1_1gto_1_1GTOValues.html", null ],
@@ -112,7 +117,7 @@ var hierarchy =
     [ "occ::geometry::IndexCache::Row", "structocc_1_1geometry_1_1IndexCache_1_1Row.html", null ],
     [ "occ::io::RowConfiguration", "structocc_1_1io_1_1RowConfiguration.html", null ],
     [ "occ::io::RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", null ],
-    [ "occ::scf::SCF< Procedure, spinorbital_kind >", "structocc_1_1scf_1_1SCF.html", null ],
+    [ "occ::scf::SCF< Procedure >", "structocc_1_1scf_1_1SCF.html", null ],
     [ "occ::dft::cosx::SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", null ],
     [ "occ::qm::Shell", "structocc_1_1qm_1_1Shell.html", null ],
     [ "occ::slater::Shell", "classocc_1_1slater_1_1Shell.html", null ],
@@ -131,6 +136,7 @@ var hierarchy =
     [ "occ::crystal::SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", null ],
     [ "occ::core::SymOp", "structocc_1_1core_1_1SymOp.html", null ],
     [ "occ::io::Table", "classocc_1_1io_1_1Table.html", null ],
+    [ "occ::xtb::TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", null ],
     [ "std::true_type", null, [
       [ "occ::core::numpy::impl::is_complex< std::complex< T > >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html", null ]
     ] ],
@@ -138,5 +144,7 @@ var hierarchy =
     [ "occ::qm::Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", null ],
     [ "occ::interaction::WolfParams", "structocc_1_1interaction_1_1WolfParams.html", null ],
     [ "occ::xdm::XDM", "classocc_1_1xdm_1_1XDM.html", null ],
+    [ "occ::xdm::XDMAtomList", "structocc_1_1xdm_1_1XDMAtomList.html", null ],
+    [ "occ::xtb::XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html", null ],
     [ "occ::io::XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", null ]
 ];

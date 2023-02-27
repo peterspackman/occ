@@ -105,7 +105,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 : <a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html#a48e0620f03878a94838a1c8f920d06e8">occ::interaction::CEParameterizedModel</a>
 </li>
 <li>SCF()
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#aee4acc4d45e3a2282c7a4812bae2c4a0">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#a54607f4a1d68cb1a8a720887b97a7f57">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>scf_density_matrix()
 : <a class="el" href="classocc_1_1io_1_1FchkReader.html#ac984418d842a64eaabc0c145b7abd38f">occ::io::FchkReader</a>
@@ -116,7 +116,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 , <a class="el" href="classocc_1_1io_1_1OrcaJSONReader.html#aac31480d7af4ae4d07ccc78a313878b2">occ::io::OrcaJSONReader</a>
 </li>
 <li>scf_kind()
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#a11a71a1437a23f751687893706d76b62">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#a53178532f3f5c5b446a4da84dbe0a90d">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>schwarz()
 : <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#ace1390f7f1a0cfe11a0020f4600f5467">occ::qm::IntegralEngine</a>
@@ -129,6 +129,10 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 </li>
 <li>set_a()
 : <a class="el" href="classocc_1_1crystal_1_1UnitCell.html#aa03c8bad5244c7bf0f630d10aaf20854">occ::crystal::UnitCell</a>
+</li>
+<li>set_accuracy()
+: <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#ae62810609134a18151e701d9730dc59b">occ::xtb::TbliteCalculator</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#a14740bc1fea74dc2c9b0b177fe7329cd">occ::xtb::XTBCalculator</a>
 </li>
 <li>set_alpha()
 : <a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a28e3b53df81837f008404bf6175b3a99">occ::crystal::UnitCell</a>
@@ -147,6 +151,9 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 </li>
 <li>set_asymmetric_unit_transformation()
 : <a class="el" href="classocc_1_1core_1_1Molecule.html#afeb07fa6ed184313cca484c07f1965cc">occ::core::Molecule</a>
+</li>
+<li>set_atom_charge()
+: <a class="el" href="classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a7611482ebe8b1ffa1833bec2ffd19f05">occ::qm::cint::IntegralEnvironment</a>
 </li>
 <li>set_auxiliary_basis()
 : <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#af906284349a10179aff5c6ff82de3276">occ::qm::IntegralEngine</a>
@@ -175,10 +182,12 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 <li>set_charge()
 : <a class="el" href="classocc_1_1core_1_1Molecule.html#a6db76f2ee69b21df4389dbf572e7ae64">occ::core::Molecule</a>
 , <a class="el" href="structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html#a1bffce90e864fe12c0202b7e85d08fbb">occ::qm::cint::impl::AtomInfo</a>
-, <a class="el" href="structocc_1_1scf_1_1SCF.html#abd266aa37ac4825bdb85551ba9a330b2">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+, <a class="el" href="structocc_1_1scf_1_1SCF.html#a4e2ac3ad45864c82f6d32c50f152fe84">occ::scf::SCF&lt; Procedure &gt;</a>
+, <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#ac7db71edda0f27e962024668a930e1a2">occ::xtb::TbliteCalculator</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#a7ddbdbbedaaf5c5c05e21c58e2ef78b0">occ::xtb::XTBCalculator</a>
 </li>
 <li>set_charge_multiplicity()
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#aa78105a1f4081f3bedb0ca5a6e60258b">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#a4480f43671158dee2af6f02dfb4f1af7">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>set_column()
 : <a class="el" href="classocc_1_1io_1_1Table.html#afc7ecb134f8dc561628a9af47f94dfe0">occ::io::Table</a>
@@ -186,12 +195,24 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 <li>set_common_origin()
 : <a class="el" href="classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#ade16168dbf4b0728492185b6494e0ddf">occ::qm::cint::IntegralEnvironment</a>
 </li>
+<li>set_conditioning_orthogonalizer()
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#a6d6b9e6a3ea8237be7ad258e40b37511">occ::scf::SCF&lt; Procedure &gt;</a>
+</li>
+<li>set_core_matrices()
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#ad42fd90a414bd50eb6ca3b2b630cc9ea">occ::scf::SCF&lt; Procedure &gt;</a>
+</li>
 <li>set_density_fitting_basis()
 : <a class="el" href="classocc_1_1dft_1_1DFT.html#ab2eeda64973fe7c0b9635d290b1b911f">occ::dft::DFT</a>
 , <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#af011e2eb93f9062fc349da2e43007230">occ::qm::HartreeFock</a>
 </li>
 <li>set_dummy_basis()
 : <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a9bd03d73ea11f267a941651de1be06ab">occ::qm::IntegralEngine</a>
+</li>
+<li>set_ecp_electrons()
+: <a class="el" href="classocc_1_1qm_1_1AOBasis.html#af5141c31b3ed7fdeaac2c42347920b2b">occ::qm::AOBasis</a>
+</li>
+<li>set_effective_core_potentials()
+: <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#aaba31c1545e2655a5e2df775f1168cea">occ::qm::IntegralEngine</a>
 </li>
 <li>set_env_atom_offset()
 : <a class="el" href="structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo.html#a7db462a93d04f00e38d9d3af918bf23c">occ::qm::cint::impl::BasisInfo</a>
@@ -203,7 +224,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 : <a class="el" href="structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html#a7f80fcbd7db3251ea44fd026bb9d2d38">occ::qm::cint::impl::AtomInfo</a>
 </li>
 <li>set_env_nuclear_charge_dist_offset()
-: <a class="el" href="structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html#a7e30a7a4ac8800fa3a6a08cae805196d">occ::qm::cint::impl::AtomInfo</a>
+: <a class="el" href="structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html#a7eaed74593b56046e63ba54eb24652df">occ::qm::cint::impl::AtomInfo</a>
 </li>
 <li>set_env_primitive_offset()
 : <a class="el" href="structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo.html#a8d17a1006e65fa0467e0e0b52edc3059">occ::qm::cint::impl::BasisInfo</a>
@@ -221,7 +242,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 : <a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a44606f8e40c9994fd37a9fb7f6a56267">occ::crystal::UnitCell</a>
 </li>
 <li>set_initial_guess_from_wfn()
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#ac0eb9963b03c51bdbea1a247f49bcfd0">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#a18d045a1dee5d0f5758f6839ba823a14">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>set_integral_policy()
 : <a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#aa20bdfe5ed36bf35cdf6bba53184f9de">occ::qm::IntegralEngineDF</a>
@@ -244,9 +265,17 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 <li>set_left()
 : <a class="el" href="classocc_1_1core_1_1opt_1_1Brent.html#a2c9adbbf2679bd49891b85ca7d5d1b3e">occ::core::opt::Brent</a>
 </li>
+<li>set_max_iterations()
+: <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a80788532d8740f658b0394adc6277d88">occ::xtb::TbliteCalculator</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#ab69b1877c79c496e812d7a29e028a590">occ::xtb::XTBCalculator</a>
+</li>
 <li>set_method()
 : <a class="el" href="classocc_1_1dft_1_1DFT.html#a7c1e5755c406ab949225af5e8ae78d1d">occ::dft::DFT</a>
 , <a class="el" href="classocc_1_1io_1_1FchkWriter.html#adecbc80b61600e3c08791f618dc6c66a">occ::io::FchkWriter</a>
+</li>
+<li>set_mixer_damping()
+: <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#ae23775b0bdecaf90a7ffe0936cf6d317">occ::xtb::TbliteCalculator</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#aed9d7d8e4725ffb5a1efe484fd878276">occ::xtb::XTBCalculator</a>
 </li>
 <li>set_molecular_orbitals()
 : <a class="el" href="structocc_1_1qm_1_1Wavefunction.html#accd795481115e410d038f02030905adf">occ::qm::Wavefunction</a>
@@ -256,7 +285,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 </li>
 <li>set_multiplicity()
 : <a class="el" href="classocc_1_1core_1_1Molecule.html#a20ccb2353b97c739c4099c11e0238a1b">occ::core::Molecule</a>
-, <a class="el" href="structocc_1_1scf_1_1SCF.html#a515f4bc46cafe82a3c23a7470a002df4">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+, <a class="el" href="structocc_1_1scf_1_1SCF.html#a7fc3189e2369210f590f620f0194e994">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>set_name()
 : <a class="el" href="classocc_1_1core_1_1Molecule.html#af30a3010257f85cb70a3858901ef155c">occ::core::Molecule</a>
@@ -273,6 +302,10 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 </li>
 <li>set_num_primitives()
 : <a class="el" href="structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo.html#a6829229990de8a4ad9a7396ca5fb526f">occ::qm::cint::impl::BasisInfo</a>
+</li>
+<li>set_num_unpaired_electrons()
+: <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a79f692e204cf635e570cb77f41b06cb4">occ::xtb::TbliteCalculator</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#abaae76f233e893c1043ce7d4e68f3c0e">occ::xtb::XTBCalculator</a>
 </li>
 <li>set_position()
 : <a class="el" href="structocc_1_1core_1_1Atom.html#a2ef625b671ce0c399f7cd94b57a3570b">occ::core::Atom</a>
@@ -292,6 +325,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 <li>set_solvent()
 : <a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#a76f305f5d7bd06dc692540c965a25dfc">occ::solvent::ContinuumSolvationModel</a>
 , <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a9d40cecadda55a6082b73f7079f2435f">occ::solvent::SolvationCorrectedProcedure&lt; Proc &gt;</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#a7316001e9116147494013a2ab299b5ec">occ::xtb::XTBCalculator</a>
 </li>
 <li>set_surface_potential()
 : <a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#aae81c7679910c83a0c435dba11d6607c">occ::solvent::ContinuumSolvationModel</a>
@@ -300,6 +334,10 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 : <a class="el" href="classocc_1_1dft_1_1DFT.html#ab768a8e86c0fb4a4c92545cdfbc3c7f4">occ::dft::DFT</a>
 , <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#aeac67c8dfd6d032eb90d8c8571121422">occ::qm::HartreeFock</a>
 , <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a0cc8ca2a5b0cc95ccbe1ab9622a69de3">occ::solvent::SolvationCorrectedProcedure&lt; Proc &gt;</a>
+</li>
+<li>set_temperature()
+: <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a7aadef898ec8f2ea3348b999f20f2ca3">occ::xtb::TbliteCalculator</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#aa42dda7f7de7cb7a0db84b15dcb871d5">occ::xtb::XTBCalculator</a>
 </li>
 <li>set_title()
 : <a class="el" href="classocc_1_1io_1_1FchkWriter.html#abca8bd39408b97d1320d3bcd79b5cf4d">occ::io::FchkWriter</a>
@@ -355,6 +393,10 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 <li>simplify()
 : <a class="el" href="classocc_1_1core_1_1Fraction.html#a8eb7f7f4d35bd2b2fc5f531651e715d6">occ::core::Fraction</a>
 </li>
+<li>single_point_energy()
+: <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#af77a804389306046a8c8897e78aec088">occ::xtb::TbliteCalculator</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#a550cee39c712e4b5d31748cae07d0b63">occ::xtb::XTBCalculator</a>
+</li>
 <li>size()
 : <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a86107314c9787a71ae11f08acabd9ad0">occ::core::graph::Graph&lt; VertexType, EdgeType &gt;</a>
 , <a class="el" href="classocc_1_1core_1_1Molecule.html#a866533eddaa2fef1a9ee8becca5ceb3d">occ::core::Molecule</a>
@@ -383,12 +425,13 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 : <a class="el" href="classocc_1_1crystal_1_1Crystal.html#a6d031f75ebb73e0817350becc56f2309">occ::crystal::Crystal</a>
 </li>
 <li>SpaceGroup()
-: <a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#a39f1f3abe5ae23a90b3068624be3d2cc">occ::crystal::SpaceGroup</a>
+: <a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#a9709356e7da371bfe9eada1a641b80f5">occ::crystal::SpaceGroup</a>
 </li>
 <li>spinorbital_kind()
 : <a class="el" href="classocc_1_1io_1_1FchkReader.html#ace56114d6cd2799b6d6b538ee051b069">occ::io::FchkReader</a>
 , <a class="el" href="structocc_1_1io_1_1GaussianInputFile.html#afeadf48bd71aff9093710907bf5fcbe1">occ::io::GaussianInputFile</a>
 , <a class="el" href="classocc_1_1io_1_1MoldenReader.html#a8e1b9425c4b3d3d28598113fefba1d87">occ::io::MoldenReader</a>
+, <a class="el" href="classocc_1_1io_1_1OrcaJSONReader.html#a72cb9b5bd509a9605a4f7ee43e4e1db7">occ::io::OrcaJSONReader</a>
 </li>
 <li>square_distance()
 : <a class="el" href="structocc_1_1core_1_1Atom.html#acef072f41555ce828f8377b3d9f5701e">occ::core::Atom</a>
@@ -403,7 +446,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 : <a class="el" href="classocc_1_1timing_1_1StopWatch.html#aa0ba49ed3e50f90963ec81dff14bdfe2">occ::timing::StopWatch&lt; count &gt;</a>
 </li>
 <li>StructureWriter()
-: <a class="el" href="classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html#a0e92b26abd55a657684d072957c57d2b">occ::io::crystalgrower::StructureWriter</a>
+: <a class="el" href="classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html#a247b4eeaa2cd06d1da8c994560c4cd75">occ::io::crystalgrower::StructureWriter</a>
 </li>
 <li>subtract()
 : <a class="el" href="classocc_1_1core_1_1Fraction.html#a2d6cd4c5bb7f5a294956491549024992">occ::core::Fraction</a>
@@ -489,7 +532,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html',''); initResiza
 : <a class="el" href="classocc_1_1io_1_1CifParser.html#a704d3611e27976891ccc503d4e08f57f">occ::io::CifParser</a>
 </li>
 <li>SymmetryOperation()
-: <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a5900cafd650ac8520c80a5042556d897">occ::crystal::SymmetryOperation</a>
+: <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a1449a0aa641a565c85bece3ecf2491fc">occ::crystal::SymmetryOperation</a>
 </li>
 <li>SymOp()
 : <a class="el" href="structocc_1_1core_1_1SymOp.html#ad00ef1a91ed99270a4d2e631fbddf9af">occ::core::SymOp</a>

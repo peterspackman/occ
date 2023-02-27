@@ -98,7 +98,8 @@ $(document).ready(function(){initNavTree('pairinteraction_8h.html',''); initResi
 <div class="title">pairinteraction.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;memory&gt;</code><br />
+<div class="textblock"><code>#include &lt;fmt/core.h&gt;</code><br />
+<code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;<a class="el" href="units_8h.html">occ/core/units.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="polarization_8h.html">occ/interaction/polarization.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="hf__fwd_8h.html">occ/qm/hf_fwd.h</a>&gt;</code><br />
@@ -107,7 +108,7 @@ $(document).ready(function(){initNavTree('pairinteraction_8h.html',''); initResi
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for pairinteraction.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="pairinteraction_8h__incl.svg" width="1948" height="619"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+<div class="center"><iframe scrolling="no" frameborder="0" src="pairinteraction_8h__incl.svg" width="2183" height="619"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
 </div>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -136,8 +137,8 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a8a76a0f4e9bd8401b4c64d07cabf0f5c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a8a76a0f4e9bd8401b4c64d07cabf0f5c">occ::interaction::compute_ce_model_energies</a> (Wavefunction &amp;wfn, HartreeFock &amp;hf, double precision, const Mat &amp;Schwarz)</td></tr>
-<tr class="separator:a8a76a0f4e9bd8401b4c64d07cabf0f5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e3f552ea3d00d1281a854d301425fd9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a8e3f552ea3d00d1281a854d301425fd9">occ::interaction::compute_ce_model_energies</a> (Wavefunction &amp;wfn, HartreeFock &amp;hf, double precision, const Mat &amp;Schwarz, bool xdm=false)</td></tr>
+<tr class="separator:a8e3f552ea3d00d1281a854d301425fd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a221c7ae9914bd537f97657355b28d2"><td class="memTemplParams" colspan="2">template&lt;typename Procedure &gt; </td></tr>
 <tr class="memitem:a1a221c7ae9914bd537f97657355b28d2"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a1a221c7ae9914bd537f97657355b28d2">occ::interaction::compute_polarization_energy</a> (const Wavefunction &amp;wfn_a, const Procedure &amp;proc_a, const Wavefunction &amp;wfn_b, const Procedure &amp;proc_b)</td></tr>
 <tr class="separator:a1a221c7ae9914bd537f97657355b28d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,12 +147,12 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a4d04ac6dd87227b7fcc8cb762265f883"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a4d04ac6dd87227b7fcc8cb762265f883">occ::interaction::CE_HF_321G</a> {1.019, 0.811, 0.651, 0.901, &quot;CE-HF&quot;}</td></tr>
+<tr class="memitem:a4d04ac6dd87227b7fcc8cb762265f883"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a4d04ac6dd87227b7fcc8cb762265f883">occ::interaction::CE_HF_321G</a></td></tr>
 <tr class="separator:a4d04ac6dd87227b7fcc8cb762265f883"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f908428d769bd05d401580c302528e8"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a4f908428d769bd05d401580c302528e8">occ::interaction::CE_B3LYP_631Gdp</a></td></tr>
 <tr class="separator:a4f908428d769bd05d401580c302528e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3bc976b1fe001efd67c8fdd62013c4b3"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a3bc976b1fe001efd67c8fdd62013c4b3">occ::interaction::CE_B3LYP_SVP_XDM</a></td></tr>
-<tr class="separator:a3bc976b1fe001efd67c8fdd62013c4b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b67be4e4d79a02d1787387f8d79b95d"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a2b67be4e4d79a02d1787387f8d79b95d">occ::interaction::CE_XDM_FIT</a> {1.0, 1.0, 1.0, 1.0, &quot;CE-XDM-FIT&quot;, true}</td></tr>
+<tr class="separator:a2b67be4e4d79a02d1787387f8d79b95d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

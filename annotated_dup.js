@@ -27,10 +27,12 @@ var annotated_dup =
         ] ],
         [ "Atom", "structocc_1_1core_1_1Atom.html", "structocc_1_1core_1_1Atom" ],
         [ "Combinations", "classocc_1_1core_1_1Combinations.html", "classocc_1_1core_1_1Combinations" ],
+        [ "ConditioningOrthogonalizerResult", "structocc_1_1core_1_1ConditioningOrthogonalizerResult.html", "structocc_1_1core_1_1ConditioningOrthogonalizerResult" ],
         [ "Dimer", "classocc_1_1core_1_1Dimer.html", "classocc_1_1core_1_1Dimer" ],
         [ "Element", "classocc_1_1core_1_1Element.html", "classocc_1_1core_1_1Element" ],
         [ "EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", "classocc_1_1core_1_1EnergyComponents" ],
         [ "Fraction", "classocc_1_1core_1_1Fraction.html", "classocc_1_1core_1_1Fraction" ],
+        [ "GenSqrtInvResult", "structocc_1_1core_1_1GenSqrtInvResult.html", "structocc_1_1core_1_1GenSqrtInvResult" ],
         [ "Interpolator1D", "classocc_1_1core_1_1Interpolator1D.html", "classocc_1_1core_1_1Interpolator1D" ],
         [ "Molecule", "classocc_1_1core_1_1Molecule.html", "classocc_1_1core_1_1Molecule" ],
         [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
@@ -102,10 +104,12 @@ var annotated_dup =
         [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
         [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
         [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
+        [ "EngradReader", "classocc_1_1io_1_1EngradReader.html", "classocc_1_1io_1_1EngradReader" ],
         [ "FchkReader", "classocc_1_1io_1_1FchkReader.html", "classocc_1_1io_1_1FchkReader" ],
         [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html", "classocc_1_1io_1_1FchkWriter" ],
         [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
         [ "ElectronShell", "structocc_1_1io_1_1ElectronShell.html", "structocc_1_1io_1_1ElectronShell" ],
+        [ "ECPShell", "structocc_1_1io_1_1ECPShell.html", "structocc_1_1io_1_1ECPShell" ],
         [ "ReferenceData", "structocc_1_1io_1_1ReferenceData.html", "structocc_1_1io_1_1ReferenceData" ],
         [ "ElementBasis", "structocc_1_1io_1_1ElementBasis.html", "structocc_1_1io_1_1ElementBasis" ],
         [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
@@ -178,7 +182,12 @@ var annotated_dup =
         [ "StopWatch", "classocc_1_1timing_1_1StopWatch.html", "classocc_1_1timing_1_1StopWatch" ]
       ] ],
       [ "xdm", "namespaceocc_1_1xdm.html", [
+        [ "XDMAtomList", "structocc_1_1xdm_1_1XDMAtomList.html", "structocc_1_1xdm_1_1XDMAtomList" ],
         [ "XDM", "classocc_1_1xdm_1_1XDM.html", "classocc_1_1xdm_1_1XDM" ]
+      ] ],
+      [ "xtb", "namespaceocc_1_1xtb.html", [
+        [ "TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", "classocc_1_1xtb_1_1TbliteCalculator" ],
+        [ "XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html", "classocc_1_1xtb_1_1XTBCalculator" ]
       ] ]
     ] ]
 ];

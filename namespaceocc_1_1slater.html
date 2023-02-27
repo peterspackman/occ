@@ -111,8 +111,8 @@ Classes</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:af4bbb4cf10de22eb518bb535f1d6deec"><td class="memItemLeft" align="right" valign="top">phmap::flat_hash_map&lt; std::string, <a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1slater.html#af4bbb4cf10de22eb518bb535f1d6deec">load_slaterbasis</a> (const std::string &amp;)</td></tr>
 <tr class="separator:af4bbb4cf10de22eb518bb535f1d6deec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02883c20d806f63ab7f187e77b821850"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1slater.html#a02883c20d806f63ab7f187e77b821850">slaterbasis_for_atoms</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;, const std::string &amp;basis_name=&quot;thakkar&quot;)</td></tr>
-<tr class="separator:a02883c20d806f63ab7f187e77b821850"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01a666fbffdfbdf2a710bec42b725612"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1slater.html#a01a666fbffdfbdf2a710bec42b725612">slaterbasis_for_atoms</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;, const std::string &amp;basis_name=&quot;thakkar&quot;, const std::vector&lt; int &gt; &amp;oxidation_states={})</td></tr>
+<tr class="separator:a01a666fbffdfbdf2a710bec42b725612"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>evaluation of Slater-type orbitals, their derivatives etc. </p>
@@ -135,8 +135,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a02883c20d806f63ab7f187e77b821850"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02883c20d806f63ab7f187e77b821850">&#9670;&nbsp;</a></span>slaterbasis_for_atoms()</h2>
+<a id="a01a666fbffdfbdf2a710bec42b725612"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01a666fbffdfbdf2a710bec42b725612">&#9670;&nbsp;</a></span>slaterbasis_for_atoms()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -151,7 +151,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>basis_name</em> = <code>&quot;thakkar&quot;</code>&#160;</td>
+          <td class="paramname"><em>basis_name</em> = <code>&quot;thakkar&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>oxidation_states</em> = <code>{}</code>&#160;</td>
         </tr>
         <tr>
           <td></td>

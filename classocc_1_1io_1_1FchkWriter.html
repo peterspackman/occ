@@ -147,9 +147,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4efbc3a7da04f9d9298cbf0033990477"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a4efbc3a7da04f9d9298cbf0033990477"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classocc_1_1io_1_1FchkWriter.html#a4efbc3a7da04f9d9298cbf0033990477">set_vector</a> (const std::string &amp;key, const Eigen::DenseBase&lt; T &gt; &amp;mat)</td></tr>
 <tr class="separator:a4efbc3a7da04f9d9298cbf0033990477"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a69e8812990dee2262175db5759176496"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a69e8812990dee2262175db5759176496"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classocc_1_1io_1_1FchkWriter.html#a69e8812990dee2262175db5759176496">set_vector</a> (const std::string &amp;key, const std::vector&lt; T &gt; &amp;vec)</td></tr>
-<tr class="separator:a69e8812990dee2262175db5759176496"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7710394a603179e722c4f9640565272f"><td class="memTemplParams" colspan="2">template&lt;typename InputType , typename CastType  = InputType&gt; </td></tr>
+<tr class="memitem:a7710394a603179e722c4f9640565272f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classocc_1_1io_1_1FchkWriter.html#a7710394a603179e722c4f9640565272f">set_vector</a> (const std::string &amp;key, const std::vector&lt; InputType &gt; &amp;vec)</td></tr>
+<tr class="separator:a7710394a603179e722c4f9640565272f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10c89d9d5ea936822e8bb4a3dff2bd0d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1io_1_1FchkWriter.html#a10c89d9d5ea936822e8bb4a3dff2bd0d">write</a> ()</td></tr>
 <tr class="separator:a10c89d9d5ea936822e8bb4a3dff2bd0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -421,13 +421,13 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a id="a69e8812990dee2262175db5759176496"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a69e8812990dee2262175db5759176496">&#9670;&nbsp;</a></span>set_vector() <span class="overload">[2/2]</span></h2>
+<a id="a7710394a603179e722c4f9640565272f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7710394a603179e722c4f9640565272f">&#9670;&nbsp;</a></span>set_vector() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T &gt; </div>
+template&lt;typename InputType , typename CastType  = InputType&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -441,7 +441,7 @@ template&lt;typename T &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; T &gt; &amp;&#160;</td>
+          <td class="paramtype">const std::vector&lt; InputType &gt; &amp;&#160;</td>
           <td class="paramname"><em>vec</em>&#160;</td>
         </tr>
         <tr>

@@ -12,5 +12,6 @@ var dir_8b7861ad11e4db9a5e6a6da237b17e56 =
     [ "sht", "dir_c8d8043c34a1a39f98e9e96df9482495.html", "dir_c8d8043c34a1a39f98e9e96df9482495" ],
     [ "slater", "dir_dbf935c1a7fa7d699aede3b7b6b7a8e8.html", "dir_dbf935c1a7fa7d699aede3b7b6b7a8e8" ],
     [ "solvent", "dir_967679e990cc17ac80a3b7cf46e2ab27.html", "dir_967679e990cc17ac80a3b7cf46e2ab27" ],
-    [ "xdm", "dir_6a6ad6048e01a5a4f46258b22cf2ad4a.html", "dir_6a6ad6048e01a5a4f46258b22cf2ad4a" ]
+    [ "xdm", "dir_6a6ad6048e01a5a4f46258b22cf2ad4a.html", "dir_6a6ad6048e01a5a4f46258b22cf2ad4a" ],
+    [ "xtb", "dir_6308bc39371c39a0e1fd8fd7d55ee928.html", "dir_6308bc39371c39a0e1fd8fd7d55ee928" ]
 ];

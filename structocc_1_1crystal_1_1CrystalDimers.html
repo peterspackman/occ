@@ -90,6 +90,7 @@ $(document).ready(function(){initNavTree('structocc_1_1crystal_1_1CrystalDimers.
 
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="structocc_1_1crystal_1_1CrystalDimers-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -102,30 +103,69 @@ $(document).ready(function(){initNavTree('structocc_1_1crystal_1_1CrystalDimers.
 
 <p><code>#include &lt;crystal.h&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:adf1077318990ba0c5603b5bb0ad43f0c"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#adf1077318990ba0c5603b5bb0ad43f0c">MoleculeNeighbors</a> = std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">occ::core::Dimer</a> &gt;</td></tr>
+<tr class="separator:adf1077318990ba0c5603b5bb0ad43f0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46046fc90c4a1411f9a5393e6bb40bb7"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a46046fc90c4a1411f9a5393e6bb40bb7">UniqueDimerIndices</a> = std::vector&lt; size_t &gt;</td></tr>
+<tr class="separator:a46046fc90c4a1411f9a5393e6bb40bb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
+<tr class="memitem:a66e07228b096508be0cd7479e553230e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a66e07228b096508be0cd7479e553230e">radius</a> {0.0}</td></tr>
+<tr class="memdesc:a66e07228b096508be0cd7479e553230e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The search radius used to create this set of dimers.  <a href="structocc_1_1crystal_1_1CrystalDimers.html#a66e07228b096508be0cd7479e553230e">More...</a><br /></td></tr>
+<tr class="separator:a66e07228b096508be0cd7479e553230e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31462415705ef86536f7d6d40488dc50"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">occ::core::Dimer</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a31462415705ef86536f7d6d40488dc50">unique_dimers</a></td></tr>
 <tr class="memdesc:a31462415705ef86536f7d6d40488dc50"><td class="mdescLeft">&#160;</td><td class="mdescRight">A vector containing the unique dimers in the lattice.  <a href="structocc_1_1crystal_1_1CrystalDimers.html#a31462415705ef86536f7d6d40488dc50">More...</a><br /></td></tr>
 <tr class="separator:a31462415705ef86536f7d6d40488dc50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa58fd88fa658ea487d67a49ad0351982"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">occ::core::Dimer</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#aa58fd88fa658ea487d67a49ad0351982">molecule_neighbors</a></td></tr>
-<tr class="memdesc:aa58fd88fa658ea487d67a49ad0351982"><td class="mdescLeft">&#160;</td><td class="mdescRight">A vector of vectors containing the dimers surrounding each symmetry unique molecule in the lattice.  <a href="structocc_1_1crystal_1_1CrystalDimers.html#aa58fd88fa658ea487d67a49ad0351982">More...</a><br /></td></tr>
-<tr class="separator:aa58fd88fa658ea487d67a49ad0351982"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09dd4234788572fdcfbc70cff26b391a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::vector&lt; size_t &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a09dd4234788572fdcfbc70cff26b391a">unique_dimer_idx</a></td></tr>
-<tr class="memdesc:a09dd4234788572fdcfbc70cff26b391a"><td class="mdescLeft">&#160;</td><td class="mdescRight">A vector of vectors containing the indices of the unique dimers surrounding each molecule in the lattice.  <a href="structocc_1_1crystal_1_1CrystalDimers.html#a09dd4234788572fdcfbc70cff26b391a">More...</a><br /></td></tr>
-<tr class="separator:a09dd4234788572fdcfbc70cff26b391a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a243d8fa85b9ab110971436ef19b2e281"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#adf1077318990ba0c5603b5bb0ad43f0c">MoleculeNeighbors</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a243d8fa85b9ab110971436ef19b2e281">molecule_neighbors</a></td></tr>
+<tr class="memdesc:a243d8fa85b9ab110971436ef19b2e281"><td class="mdescLeft">&#160;</td><td class="mdescRight">A vector of vectors containing the dimers surrounding each symmetry unique molecule in the lattice.  <a href="structocc_1_1crystal_1_1CrystalDimers.html#a243d8fa85b9ab110971436ef19b2e281">More...</a><br /></td></tr>
+<tr class="separator:a243d8fa85b9ab110971436ef19b2e281"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf716f4f12efd46d4e8f4aae964db6e6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a46046fc90c4a1411f9a5393e6bb40bb7">UniqueDimerIndices</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#aaf716f4f12efd46d4e8f4aae964db6e6">unique_dimer_idx</a></td></tr>
+<tr class="memdesc:aaf716f4f12efd46d4e8f4aae964db6e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">A vector of vectors containing the indices of the unique dimers surrounding each molecule in the lattice.  <a href="structocc_1_1crystal_1_1CrystalDimers.html#aaf716f4f12efd46d4e8f4aae964db6e6">More...</a><br /></td></tr>
+<tr class="separator:aaf716f4f12efd46d4e8f4aae964db6e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A class representing the molecular dimers in a crystal lattice. </p>
 <p>A dimer is a pair of molecules that may or may not be symmetry related. A crystal dimers object stores the unique dimers in the lattice, as well as the complete set of dimers that are equivalent to the unique dimers </p>
-</div><h2 class="groupheader">Member Data Documentation</h2>
-<a id="aa58fd88fa658ea487d67a49ad0351982"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa58fd88fa658ea487d67a49ad0351982">&#9670;&nbsp;</a></span>molecule_neighbors</h2>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
+<a id="adf1077318990ba0c5603b5bb0ad43f0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf1077318990ba0c5603b5bb0ad43f0c">&#9670;&nbsp;</a></span>MoleculeNeighbors</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;std::vector&lt;<a class="el" href="classocc_1_1core_1_1Dimer.html">occ::core::Dimer</a>&gt; &gt; occ::crystal::CrystalDimers::molecule_neighbors</td>
+          <td class="memname">using <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#adf1077318990ba0c5603b5bb0ad43f0c">occ::crystal::CrystalDimers::MoleculeNeighbors</a> =  std::vector&lt;<a class="el" href="classocc_1_1core_1_1Dimer.html">occ::core::Dimer</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a46046fc90c4a1411f9a5393e6bb40bb7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46046fc90c4a1411f9a5393e6bb40bb7">&#9670;&nbsp;</a></span>UniqueDimerIndices</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a46046fc90c4a1411f9a5393e6bb40bb7">occ::crystal::CrystalDimers::UniqueDimerIndices</a> =  std::vector&lt;size_t&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a243d8fa85b9ab110971436ef19b2e281"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a243d8fa85b9ab110971436ef19b2e281">&#9670;&nbsp;</a></span>molecule_neighbors</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#adf1077318990ba0c5603b5bb0ad43f0c">MoleculeNeighbors</a>&gt; occ::crystal::CrystalDimers::molecule_neighbors</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -135,14 +175,31 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a09dd4234788572fdcfbc70cff26b391a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09dd4234788572fdcfbc70cff26b391a">&#9670;&nbsp;</a></span>unique_dimer_idx</h2>
+<a id="a66e07228b096508be0cd7479e553230e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66e07228b096508be0cd7479e553230e">&#9670;&nbsp;</a></span>radius</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;std::vector&lt;size_t&gt; &gt; occ::crystal::CrystalDimers::unique_dimer_idx</td>
+          <td class="memname">double occ::crystal::CrystalDimers::radius {0.0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The search radius used to create this set of dimers. </p>
+<p>In angstroms </p>
+
+</div>
+</div>
+<a id="aaf716f4f12efd46d4e8f4aae964db6e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf716f4f12efd46d4e8f4aae964db6e6">&#9670;&nbsp;</a></span>unique_dimer_idx</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a46046fc90c4a1411f9a5393e6bb40bb7">UniqueDimerIndices</a>&gt; occ::crystal::CrystalDimers::unique_dimer_idx</td>
         </tr>
       </table>
 </div><div class="memdoc">

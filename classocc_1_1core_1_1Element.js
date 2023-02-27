@@ -11,7 +11,7 @@ var classocc_1_1core_1_1Element =
     [ "operator<", "classocc_1_1core_1_1Element.html#ad584ae862432f71105d72408f44b90ba", null ],
     [ "operator==", "classocc_1_1core_1_1Element.html#afe7d88d8d861c46ed5b0d2070331f92a", null ],
     [ "operator>", "classocc_1_1core_1_1Element.html#ad3d06f86afbcd5c9eadfcd163e99a285", null ],
-    [ "polarizability", "classocc_1_1core_1_1Element.html#a67f0a5f26c31ac2a78e89bdac05d8ab3", null ],
+    [ "polarizability", "classocc_1_1core_1_1Element.html#ad021d1309677820e5c6c08a8bdb0dfbe", null ],
     [ "symbol", "classocc_1_1core_1_1Element.html#a56294f33eccfed4013bfd2f4338c055a", null ],
     [ "van_der_waals_radius", "classocc_1_1core_1_1Element.html#aec1aad626c396e4ae3fc50c7f6e3877c", null ]
 ];

@@ -108,6 +108,9 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 <li>c_vector()
 : <a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a72ad8d54607b3d6bcc1c5c92a10173aa">occ::crystal::UnitCell</a>
 </li>
+<li>calculate_shell_cutoffs()
+: <a class="el" href="classocc_1_1qm_1_1AOBasis.html#a48d3c36d8178fa0baa90fffc3fc7cd14">occ::qm::AOBasis</a>
+</li>
 <li>cart_pos
 : <a class="el" href="structocc_1_1crystal_1_1CrystalAtomRegion.html#ae56d2583eccfadb7b98eaf30d3f5ea00">occ::crystal::CrystalAtomRegion</a>
 </li>
@@ -169,11 +172,11 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 <li>CenterOfMass
 : <a class="el" href="classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da69b3d7faa64d0e963797dc516a3d1a70">occ::core::Molecule</a>
 </li>
-<li>Centroid
-: <a class="el" href="classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da6c2d48822f51238ae93fa27d054764d4">occ::core::Molecule</a>
-</li>
 <li>centroid()
 : <a class="el" href="classocc_1_1core_1_1Molecule.html#a7d6a5437786d7d326dccaa895caa2b60">occ::core::Molecule</a>
+</li>
+<li>Centroid
+: <a class="el" href="classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da6c2d48822f51238ae93fa27d054764d4">occ::core::Molecule</a>
 </li>
 <li>centroid_distance()
 : <a class="el" href="classocc_1_1core_1_1Dimer.html#a8196feca9f584788ed72957cfc5baa04">occ::core::Dimer</a>
@@ -192,11 +195,13 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 , <a class="el" href="structocc_1_1io_1_1GaussianInputFile.html#ad204ebe90935561a19420424e61bde0a">occ::io::GaussianInputFile</a>
 , <a class="el" href="structocc_1_1io_1_1QCSchemaTopology.html#a3baaf78f4391bbd43284dc726a82874a">occ::io::QCSchemaTopology</a>
 , <a class="el" href="structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html#a3e7778324e2aca050845b858b57a858b">occ::qm::cint::impl::AtomInfo</a>
-, <a class="el" href="structocc_1_1qm_1_1Wavefunction.html#ad8b58dd352ca331ead158ec11fac09d5">occ::qm::Wavefunction</a>
-, <a class="el" href="structocc_1_1scf_1_1SCF.html#aff4a24713e5c7b3542f857d9d4d4e0d1">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+, <a class="el" href="structocc_1_1qm_1_1Wavefunction.html#a5e0c93831990ca1edb34ca6c52b2b6ec">occ::qm::Wavefunction</a>
+, <a class="el" href="structocc_1_1scf_1_1SCF.html#aa9a126213f525420d9c0988835a752e0">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>charges
 : <a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html#a3e8fd54ba5ce351c709629ce39fd5c45">occ::crystal::AsymmetricUnit</a>
+, <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a23ebcbaa095224d4bde72f3b35349ebf">occ::xtb::TbliteCalculator</a>
+, <a class="el" href="classocc_1_1xtb_1_1XTBCalculator.html#ab255d8b7a42424f478663a8424472f1c">occ::xtb::XTBCalculator</a>
 </li>
 <li>chemical_formula()
 : <a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html#a24b40c6a3db077652a2e26aed309a68f">occ::crystal::AsymmetricUnit</a>
@@ -226,7 +231,11 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 : <a class="el" href="structocc_1_1qm_1_1Shell.html#a166a72250ff08a60b938dd7fe01fa0b1">occ::qm::Shell</a>
 </li>
 <li>coefficients
-: <a class="el" href="structocc_1_1io_1_1ElectronShell.html#a6754384783492c58ca433365211cbf88">occ::io::ElectronShell</a>
+: <a class="el" href="structocc_1_1io_1_1ECPShell.html#a69933672b9cf93cbe29569080a2746d5">occ::io::ECPShell</a>
+, <a class="el" href="structocc_1_1io_1_1ElectronShell.html#a6754384783492c58ca433365211cbf88">occ::io::ElectronShell</a>
+</li>
+<li>coeffs_normalized_for_libecpint()
+: <a class="el" href="structocc_1_1qm_1_1Shell.html#a63bda0e76ffb995bc6e95fdba750391a">occ::qm::Shell</a>
 </li>
 <li>column_major
 : <a class="el" href="structocc_1_1core_1_1numpy_1_1NumpyArray.html#a8ada3d0a4cd8ceb072c077378eece8c9">occ::core::numpy::NumpyArray</a>
@@ -242,7 +251,7 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 , <a class="el" href="structocc_1_1io_1_1XyzFileReader.html#ae0633069f684508fc31ebf9c95b4944e">occ::io::XyzFileReader</a>
 </li>
 <li>commutator_convergence_threshold
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#aa02cdfd0c18b2fac43ee311794972c13">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#ac014b29f1b98b7e5df61e800b7cd8dfb">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>Complex
 : <a class="el" href="classocc_1_1sht_1_1SHT.html#acada23bcbd9d2c2bd357e1e920b36ecc">occ::sht::SHT</a>
@@ -262,6 +271,11 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 <li>compute_distances()
 : <a class="el" href="structocc_1_1dft_1_1AtomGrid.html#a1a889671a32fa53ac5b12f306647dc23">occ::dft::AtomGrid</a>
 </li>
+<li>compute_effective_core_potential_matrix()
+: <a class="el" href="classocc_1_1dft_1_1DFT.html#a772912fd4df034b5f315cdd3d347bb94">occ::dft::DFT</a>
+, <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#ab02eb658d51353f91ee1a62a8c003e51">occ::qm::HartreeFock</a>
+, <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a3dd011c41ab9daf957c5b56184565168">occ::solvent::SolvationCorrectedProcedure&lt; Proc &gt;</a>
+</li>
 <li>compute_electronic_multipole_matrices()
 : <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2a55a4f56f1f5ca0531ea2cdf78838b9">occ::solvent::SolvationCorrectedProcedure&lt; Proc &gt;</a>
 </li>
@@ -275,26 +289,27 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 , <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a76e5534da4aa5a0e34325211afa7085d">occ::qm::HartreeFock</a>
 , <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2e612b158511738fe88cefcfcb3788fe">occ::solvent::SolvationCorrectedProcedure&lt; Proc &gt;</a>
 </li>
-<li>compute_fock_dft()
-: <a class="el" href="classocc_1_1dft_1_1DFT.html#ab265c551107a3cc4298db51c29cd0973">occ::dft::DFT</a>
-</li>
 <li>compute_fock_mixed_basis()
 : <a class="el" href="classocc_1_1dft_1_1DFT.html#a066b34d55d0057156d162c0d8af3e3bc">occ::dft::DFT</a>
-, <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a8cb62e918f69e8b8438fbd1d4c62162c">occ::qm::HartreeFock</a>
+, <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a169485351a2361402075595aa665aab1">occ::qm::HartreeFock</a>
 , <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a91871373bc64208de0643420d61869df">occ::solvent::SolvationCorrectedProcedure&lt; Proc &gt;</a>
 </li>
 <li>compute_initial_guess()
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#a884f5b332fd14a460b4248c0161fe957">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#ab037d9ae8e80a64375206bdcb15fc2cc">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>compute_J()
 : <a class="el" href="classocc_1_1dft_1_1DFT.html#af9985dc46d9e27d9104da05d61976b8f">occ::dft::DFT</a>
 , <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a484863783cad38de56e4ecc4ed439a0e">occ::qm::HartreeFock</a>
 </li>
 <li>compute_JK()
-: <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#ac65a3570647afbe144f6f49495cde7c6">occ::qm::HartreeFock</a>
+: <a class="el" href="classocc_1_1dft_1_1DFT.html#ac72f4888c75005c4875a65675562b64b">occ::dft::DFT</a>
+, <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#ac65a3570647afbe144f6f49495cde7c6">occ::qm::HartreeFock</a>
 </li>
 <li>compute_K()
 : <a class="el" href="classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html#a19fe4e29bff380fa035e26299d8f622c">occ::dft::cosx::SemiNumericalExchange</a>
+</li>
+<li>compute_K_dft()
+: <a class="el" href="classocc_1_1dft_1_1DFT.html#a7ef8607e9501a6d0d5f8e39f555a94e1">occ::dft::DFT</a>
 </li>
 <li>compute_kinetic_matrix()
 : <a class="el" href="classocc_1_1dft_1_1DFT.html#af779fee96a421244967a75b1510ab0ce">occ::dft::DFT</a>
@@ -326,7 +341,7 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 , <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#afe3098988017e35b0299efdd1cb062ac">occ::qm::HartreeFock</a>
 </li>
 <li>compute_scf_energy()
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#aa97d0e71395a4577a75ec6e908dfac50">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#ab135fdcc7ba4327b330e20936c31e9ae">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>compute_schwarz_ints()
 : <a class="el" href="classocc_1_1dft_1_1DFT.html#a35a5f0b71f5bd8817ee37e1f1d452764">occ::dft::DFT</a>
@@ -337,7 +352,13 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 : <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#acd797ad0f1fed9730320c94cf4e77310">occ::qm::IntegralEngine</a>
 </li>
 <li>compute_soad()
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#a929f28ea0cf9b95de0b081db332eb4b4">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#a10f13e5147f312fa4eb18a4f27e5e0ff">occ::scf::SCF&lt; Procedure &gt;</a>
+</li>
+<li>compute_vxc()
+: <a class="el" href="classocc_1_1dft_1_1DFT.html#ae681871b5efccf93ebe187c131adaf62">occ::dft::DFT</a>
+</li>
+<li>condition_number
+: <a class="el" href="structocc_1_1core_1_1GenSqrtInvResult.html#abaf8723d380d711ed2808a4cd3c51b66">occ::core::GenSqrtInvResult</a>
 </li>
 <li>connected_component_traversal()
 : <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a5bd51b63f0adf0f0551c776ba8fddf70">occ::core::graph::Graph&lt; VertexType, EdgeType &gt;</a>
@@ -352,11 +373,8 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 : <a class="el" href="structocc_1_1io_1_1FchkReader_1_1FchkBasis.html#a960680352b473e79ed5afa78c37cfd5a">occ::io::FchkReader::FchkBasis</a>
 , <a class="el" href="structocc_1_1qm_1_1Shell.html#ae2123649d1aa42bc20e0356ce95a1dda">occ::qm::Shell</a>
 </li>
-<li>ContractionCoefficients
-: <a class="el" href="classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41acbf69f005f9c70abe00ed02d2fdf1954">occ::io::FchkReader</a>
-</li>
 <li>converged
-: <a class="el" href="structocc_1_1scf_1_1SCF.html#afc730dd95ee24b5eca8597f2774bcb5a">occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;</a>
+: <a class="el" href="structocc_1_1scf_1_1SCF.html#abf3b8fda7b4121002c741ac42e9c39e1">occ::scf::SCF&lt; Procedure &gt;</a>
 , <a class="el" href="structocc_1_1solvent_1_1COSMO_1_1Result.html#a0081ce2dc697ddd596bf150a4e72919d">occ::solvent::COSMO::Result</a>
 </li>
 <li>convert_mo_coefficients_from_molden_convention()

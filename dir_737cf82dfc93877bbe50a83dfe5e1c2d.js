@@ -14,6 +14,7 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "hf_fwd.h", "hf__fwd_8h.html", null ],
     [ "integral_engine.h", "integral__engine_8h.html", [
       [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
+      [ "ECPCenter", "structocc_1_1qm_1_1IntegralEngine_1_1ECPCenter.html", "structocc_1_1qm_1_1IntegralEngine_1_1ECPCenter" ],
       [ "IntegralResult", "structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html", "structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult" ]
     ] ],
     [ "integral_engine_df.h", "integral__engine__df_8h.html", [

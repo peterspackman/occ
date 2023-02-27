@@ -104,14 +104,14 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a944b70ad6bc1331f2cba635c2a1edfb2"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm_1_1guess.html#a944b70ad6bc1331f2cba635c2a1edfb2">minimal_basis_nao</a> (size_t Z)</td></tr>
-<tr class="separator:a944b70ad6bc1331f2cba635c2a1edfb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1f66c3d5a941d4737dc51f8d1c32bdac"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm_1_1guess.html#a1f66c3d5a941d4737dc51f8d1c32bdac">minimal_basis_occupation_vector</a> (size_t Z)</td></tr>
-<tr class="separator:a1f66c3d5a941d4737dc51f8d1c32bdac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb0a9b7918ce5f813b34eb9e6ac97ecb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm_1_1guess.html#acb0a9b7918ce5f813b34eb9e6ac97ecb">minimal_basis_nao</a> (int Z, bool spherical)</td></tr>
+<tr class="separator:acb0a9b7918ce5f813b34eb9e6ac97ecb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a933946b1be85bd3cb3ccc5922d0839ff"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm_1_1guess.html#a933946b1be85bd3cb3ccc5922d0839ff">minimal_basis_occupation_vector</a> (size_t Z, bool spherical)</td></tr>
+<tr class="separator:a933946b1be85bd3cb3ccc5922d0839ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a944b70ad6bc1331f2cba635c2a1edfb2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a944b70ad6bc1331f2cba635c2a1edfb2">&#9670;&nbsp;</a></span>minimal_basis_nao()</h2>
+<a id="acb0a9b7918ce5f813b34eb9e6ac97ecb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb0a9b7918ce5f813b34eb9e6ac97ecb">&#9670;&nbsp;</a></span>minimal_basis_nao()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -120,11 +120,21 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">size_t occ::qm::guess::minimal_basis_nao </td>
+          <td class="memname">int occ::qm::guess::minimal_basis_nao </td>
           <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>Z</em></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>Z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>spherical</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -136,8 +146,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a1f66c3d5a941d4737dc51f8d1c32bdac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1f66c3d5a941d4737dc51f8d1c32bdac">&#9670;&nbsp;</a></span>minimal_basis_occupation_vector()</h2>
+<a id="a933946b1be85bd3cb3ccc5922d0839ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a933946b1be85bd3cb3ccc5922d0839ff">&#9670;&nbsp;</a></span>minimal_basis_occupation_vector()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -149,8 +159,18 @@ Functions</h2></td></tr>
           <td class="memname">std::vector&lt;double&gt; occ::qm::guess::minimal_basis_occupation_vector </td>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>Z</em></td><td>)</td>
+          <td class="paramname"><em>Z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>spherical</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>

@@ -1,5 +1,5 @@
-<map id="occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;" name="occ::scf::SCF&lt; Procedure, spinorbital_kind &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="592,126,779,167"/>
+<map id="occ::scf::SCF&lt; Procedure &gt;" name="occ::scf::SCF&lt; Procedure &gt;">
+<area shape="rect" id="node1" title=" " alt="" coords="592,133,791,160"/>
 <area shape="rect" id="node2" href="$classocc_1_1qm_1_1CDIIS.html" title=" " alt="" coords="329,5,445,32"/>
 <area shape="rect" id="node3" href="$classocc_1_1core_1_1diis_1_1DIIS.html" title=" " alt="" coords="18,5,163,32"/>
 <area shape="rect" id="node4" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="289,133,485,160"/>

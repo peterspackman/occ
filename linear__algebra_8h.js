@@ -46,9 +46,5 @@ var linear__algebra_8h =
     [ "Vec10", "linear__algebra_8h.html#a5a1b1abdb6c6e01f434f30f4571d049e", null ],
     [ "Vec3", "linear__algebra_8h.html#ae42d4cdd65ae47e7067b39d66ce2e0e1", null ],
     [ "Vec4", "linear__algebra_8h.html#ae89d745b26c15115153317e5d90b6e93", null ],
-    [ "Vec6", "linear__algebra_8h.html#a8165087ef72495abb134eb0a03ea6ec2", null ],
-    [ "conditioning_orthogonalizer", "linear__algebra_8h.html#a3c51234887071f253cd55992d729a513", null ],
-    [ "gensqrtinv", "linear__algebra_8h.html#a90ec1649fe0a64dd94fc72c350639436", null ],
-    [ "inertia_tensor", "linear__algebra_8h.html#af68a35cdf2a8440885ef17c0b0ec752e", null ],
-    [ "meshgrid", "linear__algebra_8h.html#a6eec83100655a0b393b47fd54e75e7ed", null ]
+    [ "Vec6", "linear__algebra_8h.html#a8165087ef72495abb134eb0a03ea6ec2", null ]
 ];

@@ -4,7 +4,6 @@ var gto_8h =
     [ "Momenta", "structocc_1_1gto_1_1Momenta.html", "structocc_1_1gto_1_1Momenta" ],
     [ "MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", "structocc_1_1gto_1_1MomentaSpherical" ],
     [ "cartesian_gaussian_power_index_arrays", "gto_8h.html#a6f62717148deb4c5f8a5e8f06bf0bece", null ],
-    [ "cartesian_gaussian_rotation_matrix", "gto_8h.html#afd2ddbd5228ecc1411e6a442e2d4d669", null ],
     [ "cartesian_normalization_factor", "gto_8h.html#ad383ab3d0c5496cf78ccc90fe2d2a43d", null ],
     [ "cartesian_subshell_ordering", "gto_8h.html#a829c85e35199f086f7a4c26b667e0122", null ],
     [ "cartesian_to_spherical_transformation_matrix", "gto_8h.html#ab69d436a61ddde3e394ea649a2f18991", null ],

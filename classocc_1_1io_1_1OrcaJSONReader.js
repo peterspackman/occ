@@ -19,5 +19,6 @@ var classocc_1_1io_1_1OrcaJSONReader =
     [ "num_orbitals", "classocc_1_1io_1_1OrcaJSONReader.html#a887374ee9794549b6d32d0abf9232a5c", null ],
     [ "overlap_matrix", "classocc_1_1io_1_1OrcaJSONReader.html#af615d687aeb406a4b8a55f1dfe4478e6", null ],
     [ "scf_density_matrix", "classocc_1_1io_1_1OrcaJSONReader.html#ac9571a028b5924103bf5626ad0d815a2", null ],
-    [ "scf_energy", "classocc_1_1io_1_1OrcaJSONReader.html#aac31480d7af4ae4d07ccc78a313878b2", null ]
+    [ "scf_energy", "classocc_1_1io_1_1OrcaJSONReader.html#aac31480d7af4ae4d07ccc78a313878b2", null ],
+    [ "spinorbital_kind", "classocc_1_1io_1_1OrcaJSONReader.html#a72cb9b5bd509a9605a4f7ee43e4e1db7", null ]
 ];

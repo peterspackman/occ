@@ -8,6 +8,7 @@ var structocc_1_1qm_1_1Shell =
     [ "Shell", "structocc_1_1qm_1_1Shell.html#adabc3cffd5be16c4263bd89281636c26", null ],
     [ "Shell", "structocc_1_1qm_1_1Shell.html#ac6ebd60c7417364b314b758b7b6d381b", null ],
     [ "coeff_normalized", "structocc_1_1qm_1_1Shell.html#a166a72250ff08a60b938dd7fe01fa0b1", null ],
+    [ "coeffs_normalized_for_libecpint", "structocc_1_1qm_1_1Shell.html#a63bda0e76ffb995bc6e95fdba750391a", null ],
     [ "find_atom_index", "structocc_1_1qm_1_1Shell.html#af0911d009eec67ca20e6962f7ba71dbb", null ],
     [ "incorporate_shell_norm", "structocc_1_1qm_1_1Shell.html#a111f01ae54fc4c4f8a660fbd8837c0fe", null ],
     [ "is_pure", "structocc_1_1qm_1_1Shell.html#a6def5bab1aae14f806c2e50c2143346e", null ],
@@ -24,10 +25,12 @@ var structocc_1_1qm_1_1Shell =
     [ "symbol", "structocc_1_1qm_1_1Shell.html#a2ba2903825d6061da1eeb3a96b9922a9", null ],
     [ "translated_copy", "structocc_1_1qm_1_1Shell.html#ae746611cb31908ffeb780dee9a7dcdb2", null ],
     [ "contraction_coefficients", "structocc_1_1qm_1_1Shell.html#ae2123649d1aa42bc20e0356ce95a1dda", null ],
+    [ "ecp_r_exponents", "structocc_1_1qm_1_1Shell.html#af12945e041905f6f264dd5f83ced9594", null ],
     [ "exponents", "structocc_1_1qm_1_1Shell.html#a51303d896503f84ccbbb21e531de7d2f", null ],
     [ "extent", "structocc_1_1qm_1_1Shell.html#a7b458d7e03b10d714f9aa86b79288791", null ],
     [ "kind", "structocc_1_1qm_1_1Shell.html#af97a82b298d0476414e5af23360bf1c1", null ],
     [ "l", "structocc_1_1qm_1_1Shell.html#ab7240241c7c55b8878fe2e4ecf1f0abb", null ],
     [ "max_ln_coefficient", "structocc_1_1qm_1_1Shell.html#a9673bfd18411a7210d9240b396115dad", null ],
-    [ "origin", "structocc_1_1qm_1_1Shell.html#a4ca9272d5d211d20aafcedee53ead279", null ]
+    [ "origin", "structocc_1_1qm_1_1Shell.html#a4ca9272d5d211d20aafcedee53ead279", null ],
+    [ "u_coefficients", "structocc_1_1qm_1_1Shell.html#a69295fd6466b5100c7f9263a03df7e22", null ]
 ];

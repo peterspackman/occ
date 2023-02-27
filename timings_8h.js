@@ -31,6 +31,7 @@ var timings_8h =
       [ "gto_s", "timings_8h.html#a089c88a4231531abae301355d6ba8c16ac10ac8f16fa5c6c29cf7ddd41827051e", null ],
       [ "gto_p", "timings_8h.html#a089c88a4231531abae301355d6ba8c16ac905a56538e18501d02b70c13a76dc1a", null ],
       [ "gto_gen", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a7ff3c90b00b4b9847e438d7ef2b57075", null ],
+      [ "ecp", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a2fbeefb0b46bc0e0f0038e7e18b74067", null ],
       [ "assoc_legendre", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a9906171f1b5834b4d59a636036986915", null ],
       [ "fft", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a0a42fe5f2ac3f6c76f70f06a2def547d", null ],
       [ "solvent", "timings_8h.html#a089c88a4231531abae301355d6ba8c16abaf639845bdbe70396a9bd527534f821", null ],

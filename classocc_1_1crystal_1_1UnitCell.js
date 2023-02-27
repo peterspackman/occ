@@ -2,6 +2,7 @@ var classocc_1_1crystal_1_1UnitCell =
 [
     [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html#a93c4298eb75398eded8869bc9c7ea5c6", null ],
     [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html#a8fc3943c296df948c1b2cf9afb51ae1b", null ],
+    [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html#a26907895b2c56ac1db8cac5c4951d5b8", null ],
     [ "a", "classocc_1_1crystal_1_1UnitCell.html#a02bc62be5b7171cf0dd95d837bf7032d", null ],
     [ "a_star_vector", "classocc_1_1crystal_1_1UnitCell.html#ab317b8b1c46f7189c27f6bee1c47a32e", null ],
     [ "a_vector", "classocc_1_1crystal_1_1UnitCell.html#a0032187c788fe7811aedf06904c4a16f", null ],

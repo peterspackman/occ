@@ -108,6 +108,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a93c4298eb75398eded8869bc9c7ea5c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fc3943c296df948c1b2cf9afb51ae1b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a8fc3943c296df948c1b2cf9afb51ae1b">UnitCell</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;<a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a840f1c5791964b259bd06c865fea40f0">lengths</a>, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;angles)</td></tr>
 <tr class="separator:a8fc3943c296df948c1b2cf9afb51ae1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26907895b2c56ac1db8cac5c4951d5b8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a26907895b2c56ac1db8cac5c4951d5b8">UnitCell</a> (const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;vectors)</td></tr>
+<tr class="separator:a26907895b2c56ac1db8cac5c4951d5b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02bc62be5b7171cf0dd95d837bf7032d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a02bc62be5b7171cf0dd95d837bf7032d">a</a> () const</td></tr>
 <tr class="memdesc:a02bc62be5b7171cf0dd95d837bf7032d"><td class="mdescLeft">&#160;</td><td class="mdescRight">the length of the a-axis in Angstroms  <a href="classocc_1_1crystal_1_1UnitCell.html#a02bc62be5b7171cf0dd95d837bf7032d">More...</a><br /></td></tr>
 <tr class="separator:a02bc62be5b7171cf0dd95d837bf7032d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -219,7 +221,7 @@ Public Member Functions</h2></td></tr>
 <p>A <a class="el" href="classocc_1_1crystal_1_1UnitCell.html" title="This class represents a unit cell of a crystal lattice.">UnitCell</a> describes the lattice vectors of a 3D crystal structure, including the 6 (possibly unique) parameters lengths \((a,b,c)\) and angles \((\alpha, \beta, \gamma)\). It also serves as a utility class for coordinate transforms, and other conversions and checks. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a93c4298eb75398eded8869bc9c7ea5c6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93c4298eb75398eded8869bc9c7ea5c6">&#9670;&nbsp;</a></span>UnitCell() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a93c4298eb75398eded8869bc9c7ea5c6">&#9670;&nbsp;</a></span>UnitCell() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -271,7 +273,7 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a id="a8fc3943c296df948c1b2cf9afb51ae1b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8fc3943c296df948c1b2cf9afb51ae1b">&#9670;&nbsp;</a></span>UnitCell() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8fc3943c296df948c1b2cf9afb51ae1b">&#9670;&nbsp;</a></span>UnitCell() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -292,6 +294,24 @@ Public Member Functions</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a26907895b2c56ac1db8cac5c4951d5b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26907895b2c56ac1db8cac5c4951d5b8">&#9670;&nbsp;</a></span>UnitCell() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">occ::crystal::UnitCell::UnitCell </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;&#160;</td>
+          <td class="paramname"><em>vectors</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">

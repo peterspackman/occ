@@ -5,6 +5,7 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "combinations.h", "combinations_8h.html", [
       [ "Combinations", "classocc_1_1core_1_1Combinations.html", "classocc_1_1core_1_1Combinations" ]
     ] ],
+    [ "conditioning_orthogonalizer.h", "conditioning__orthogonalizer_8h.html", "conditioning__orthogonalizer_8h" ],
     [ "constants.h", "constants_8h.html", "constants_8h" ],
     [ "diis.h", "diis_8h.html", [
       [ "DIIS", "classocc_1_1core_1_1diis_1_1DIIS.html", "classocc_1_1core_1_1diis_1_1DIIS" ]
@@ -21,14 +22,17 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "fraction.h", "fraction_8h.html", [
       [ "Fraction", "classocc_1_1core_1_1Fraction.html", "classocc_1_1core_1_1Fraction" ]
     ] ],
+    [ "gensqrtinv.h", "gensqrtinv_8h.html", "gensqrtinv_8h" ],
     [ "graph.h", "graph_8h.html", [
       [ "Graph", "classocc_1_1core_1_1graph_1_1Graph.html", "classocc_1_1core_1_1graph_1_1Graph" ]
     ] ],
+    [ "inertia_tensor.h", "inertia__tensor_8h.html", "inertia__tensor_8h" ],
     [ "interpolator.h", "interpolator_8h.html", "interpolator_8h" ],
     [ "kabsch.h", "kabsch_8h.html", "kabsch_8h" ],
     [ "kdtree.h", "kdtree_8h.html", "kdtree_8h" ],
     [ "linear_algebra.h", "linear__algebra_8h.html", "linear__algebra_8h" ],
     [ "log.h", "log_8h.html", "log_8h" ],
+    [ "meshgrid.h", "meshgrid_8h.html", "meshgrid_8h" ],
     [ "molecule.h", "molecule_8h.html", [
       [ "Molecule", "classocc_1_1core_1_1Molecule.html", "classocc_1_1core_1_1Molecule" ]
     ] ],

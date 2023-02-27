@@ -107,8 +107,8 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:afbdc85685465fe70ac8cc2d2b74e4e9c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xdm_1_1XDM.html#afbdc85685465fe70ac8cc2d2b74e4e9c">XDM</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis)</td></tr>
-<tr class="separator:afbdc85685465fe70ac8cc2d2b74e4e9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74c9e8952728be28c9597bce6d24e122"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xdm_1_1XDM.html#a74c9e8952728be28c9597bce6d24e122">XDM</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, int charge=0)</td></tr>
+<tr class="separator:a74c9e8952728be28c9597bce6d24e122"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04c6a3810478b6e7a53fa09fb7f4fa91"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xdm_1_1XDM.html#a04c6a3810478b6e7a53fa09fb7f4fa91">energy</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo)</td></tr>
 <tr class="separator:a04c6a3810478b6e7a53fa09fb7f4fa91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a136fd6b157d62e03113a7682288a8e6a"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xdm_1_1XDM.html#a136fd6b157d62e03113a7682288a8e6a">forces</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo)</td></tr>
@@ -121,10 +121,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a93a8f953acad68c63355b85789ffaf56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1db22887668a7a8c1bb42296a43adb2b"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xdm_1_1XDM.html#a1db22887668a7a8c1bb42296a43adb2b">free_atom_volume</a> () const</td></tr>
 <tr class="separator:a1db22887668a7a8c1bb42296a43adb2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afcc6b9708c9cc4cc6f8b43db69ba8899"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xdm_1_1XDM.html#afcc6b9708c9cc4cc6f8b43db69ba8899">polarizabilities</a> () const</td></tr>
+<tr class="separator:afcc6b9708c9cc4cc6f8b43db69ba8899"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="afbdc85685465fe70ac8cc2d2b74e4e9c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afbdc85685465fe70ac8cc2d2b74e4e9c">&#9670;&nbsp;</a></span>XDM()</h2>
+<a id="a74c9e8952728be28c9597bce6d24e122"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74c9e8952728be28c9597bce6d24e122">&#9670;&nbsp;</a></span>XDM()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -133,8 +135,18 @@ Public Member Functions</h2></td></tr>
           <td class="memname">occ::xdm::XDM::XDM </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;&#160;</td>
-          <td class="paramname"><em>basis</em></td><td>)</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>charge</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -264,6 +276,31 @@ Public Member Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">const auto&amp; occ::xdm::XDM::moments </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afcc6b9708c9cc4cc6f8b43db69ba8899"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afcc6b9708c9cc4cc6f8b43db69ba8899">&#9670;&nbsp;</a></span>polarizabilities()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const auto&amp; occ::xdm::XDM::polarizabilities </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>

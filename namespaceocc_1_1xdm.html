@@ -99,6 +99,8 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1xdm.html',''); initRes
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xdm_1_1XDM.html">XDM</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -110,6 +112,10 @@ Functions</h2></td></tr>
 <tr class="separator:a70cd0761aeaa63039c9e5419a7b344e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc1b870f50b1fd8768323a3d27429b71"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#adc1b870f50b1fd8768323a3d27429b71">becke_hole_br89</a> (double rho, double Q, double norm, bool analytic=true)</td></tr>
 <tr class="separator:adc1b870f50b1fd8768323a3d27429b71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a789a5e40cc60a135d18a7184c41e6e11"><td class="memItemLeft" align="right" valign="top">std::pair&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#a789a5e40cc60a135d18a7184c41e6e11">xdm_dispersion_energy</a> (const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info, const <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &amp;params={})</td></tr>
+<tr class="separator:a789a5e40cc60a135d18a7184c41e6e11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adae97932df5d1a6d182e870c3895fdff"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#adae97932df5d1a6d182e870c3895fdff">xdm_dispersion_interaction_energy</a> (const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info_a, const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info_b, const <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &amp;params={})</td></tr>
+<tr class="separator:adae97932df5d1a6d182e870c3895fdff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="adc1b870f50b1fd8768323a3d27429b71"></a>
@@ -217,6 +223,68 @@ Functions</h2></td></tr>
           <td></td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>norm</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a789a5e40cc60a135d18a7184c41e6e11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a789a5e40cc60a135d18a7184c41e6e11">&#9670;&nbsp;</a></span>xdm_dispersion_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt;double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&gt; occ::xdm::xdm_dispersion_energy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;&#160;</td>
+          <td class="paramname"><em>atom_info</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &amp;&#160;</td>
+          <td class="paramname"><em>params</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="adae97932df5d1a6d182e870c3895fdff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adae97932df5d1a6d182e870c3895fdff">&#9670;&nbsp;</a></span>xdm_dispersion_interaction_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::tuple&lt;double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&gt; occ::xdm::xdm_dispersion_interaction_energy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;&#160;</td>
+          <td class="paramname"><em>atom_info_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;&#160;</td>
+          <td class="paramname"><em>atom_info_b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &amp;&#160;</td>
+          <td class="paramname"><em>params</em> = <code>{}</code>&#160;</td>
         </tr>
         <tr>
           <td></td>

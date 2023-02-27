@@ -83,6 +83,7 @@ var namespaceocc =
       [ "startswith", "namespaceocc_1_1util.html#a54b5af357018533b1f7f4c8156f35862", null ]
     ] ],
     [ "xdm", "namespaceocc_1_1xdm.html", "namespaceocc_1_1xdm" ],
+    [ "xtb", "namespaceocc_1_1xtb.html", "namespaceocc_1_1xtb" ],
     [ "Array", "namespaceocc.html#adcde17020b7a59d8967444a69ade46e7", null ],
     [ "CArray", "namespaceocc.html#a9612be8ac7539e3b45fc93514e4f7bd5", null ],
     [ "CMat", "namespaceocc.html#abcae3213d0f169e3e6fc03865b017066", null ],
@@ -129,9 +130,5 @@ var namespaceocc =
     [ "Vec10", "namespaceocc.html#a5a1b1abdb6c6e01f434f30f4571d049e", null ],
     [ "Vec3", "namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1", null ],
     [ "Vec4", "namespaceocc.html#ae89d745b26c15115153317e5d90b6e93", null ],
-    [ "Vec6", "namespaceocc.html#a8165087ef72495abb134eb0a03ea6ec2", null ],
-    [ "conditioning_orthogonalizer", "namespaceocc.html#a3c51234887071f253cd55992d729a513", null ],
-    [ "gensqrtinv", "namespaceocc.html#a90ec1649fe0a64dd94fc72c350639436", null ],
-    [ "inertia_tensor", "namespaceocc.html#af68a35cdf2a8440885ef17c0b0ec752e", null ],
-    [ "meshgrid", "namespaceocc.html#a6eec83100655a0b393b47fd54e75e7ed", null ]
+    [ "Vec6", "namespaceocc.html#a8165087ef72495abb134eb0a03ea6ec2", null ]
 ];
