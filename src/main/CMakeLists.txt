@@ -10,6 +10,7 @@ add_library(occ_main
 target_link_libraries(occ_main
     PUBLIC 
     occ_core
+    occ_xtb
     occ_qm
     occ_dft
     occ_solvent
@@ -19,11 +20,6 @@ target_include_directories(occ_main PUBLIC
     ${OCC_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
 )
-
-if("${WITH_XTB}") 
-    target_link_libraries(occ_main PUBLIC occ_xtb)
-    target_compile_definitions(occ_main PUBLIC "HAVE_OCC_XTB_INTERFACE")
-endif()
 
 target_compile_features(occ_main PUBLIC cxx_std_17)
 
@@ -78,7 +74,6 @@ target_link_libraries(occ-cg
     occ_crystal
     occ_interaction
     occ_main
-    occ_xtb
     CLI11::CLI11
 )
 
