@@ -288,7 +288,7 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
     return crystal_contributions;
 }
 
-void write_energy_summary(CEEnergyComponents total, const Molecule &molecule,
+void write_energy_summary(double total, const Molecule &molecule,
                           double solvation_free_energy,
                           double total_interaction_energy) {
     double Gr = molecule.rotational_free_energy(298);
@@ -304,7 +304,7 @@ void write_energy_summary(CEEnergyComponents total, const Molecule &molecule,
                    "units: kJ/mol");
     occ::log::warn("-------------------------------------------------------");
     occ::log::warn("lattice energy (crystal)             {: 9.3f}  (E_lat)",
-                   0.5 * total.total);
+                   0.5 * total);
     Gr += RT * std::log(pg.symmetry_number());
     occ::log::warn("rotational free energy (molecule)    {: 9.3f}  (E_rot)",
                    Gr);
@@ -315,7 +315,7 @@ void write_energy_summary(CEEnergyComponents total, const Molecule &molecule,
                      1.89 / occ::units::KJ_TO_KCAL;
     occ::log::warn("solvation free energy (molecule)     {: 9.3f}  (E_solv)",
                    dG_solv);
-    double dH_sub = -0.5 * total.total - 2 * RT;
+    double dH_sub = -0.5 * total - 2 * RT;
     occ::log::warn("\u0394H sublimation                       {: 9.3f}",
                    dH_sub);
     double dS_sub = Gr + Gt;
@@ -666,7 +666,7 @@ class CEModelCrystalGrowthCalculator {
                     i, fmt::format("{}_{}_{}", m_basename, i, m_solvent));
 
             m_solution_terms[i] = solution_term;
-            write_energy_summary(mol_total, m_molecules[i],
+            write_energy_summary(mol_total.total, m_molecules[i],
                                  m_solvated_surface_properties[i].esolv,
                                  mol_total_interaction_energy);
 
@@ -709,6 +709,18 @@ class XTBCrystalGrowthCalculator {
         init_monomer_energies();
     }
 
+    inline auto &crystal() { return m_crystal; }
+    inline const auto &name() { return m_basename; }
+    inline const auto &solvent() { return m_solvent; }
+    inline const auto &molecules() { return m_molecules; }
+
+    inline auto &nearest_dimers() { return m_nearest_dimers; }
+    inline auto &full_dimers() { return m_full_dimers; }
+    inline auto &dimer_energies() { return m_dimer_energies; }
+
+    inline auto &solution_terms() { return m_solution_terms; }
+    inline auto &interaction_energies() { return m_interaction_energies; }
+
     void set_basename(const std::string &basename) { m_basename = basename; }
 
     void set_molecule_charges(const std::vector<int> &charges) {
@@ -745,6 +757,26 @@ class XTBCrystalGrowthCalculator {
                             outer_radius);
             exit(0);
         }
+
+        // calculate solvated dimers contribution
+        size_t unique_idx = 0;
+        m_solvated_dimer_energies =
+            std::vector<double>(m_full_dimers.unique_dimers.size(), 0.0);
+        for (const auto &dimer : m_full_dimers.unique_dimers) {
+            m_solvated_dimer_energies[unique_idx] = 0.0;
+            if (dimer.nearest_distance() <= 3.8) {
+                occ::xtb::XTBCalculator xtb(dimer);
+                xtb.set_solvent(m_solvent);
+                int a_idx = dimer.a().asymmetric_molecule_idx();
+                int b_idx = dimer.a().asymmetric_molecule_idx();
+                m_solvated_dimer_energies[unique_idx] =
+                    xtb.single_point_energy() - m_solvated_energies[a_idx] -
+                    m_solvated_energies[b_idx];
+            }
+            occ::log::debug("Computed solvated dimer energy {} = {}",
+                            unique_idx, m_solvated_dimer_energies[unique_idx]);
+            unique_idx++;
+        }
     }
 
     void evaluate_molecular_surroundings() {
@@ -754,6 +786,10 @@ class XTBCrystalGrowthCalculator {
             auto [mol_total, mol_total_interaction_energy, solution_term] =
                 process_neighbors_for_symmetry_unique_molecule(
                     i, fmt::format("{}_{}_{}", m_basename, i, m_solvent));
+
+            m_solution_terms[i] = solution_term;
+            write_energy_summary(mol_total, m_molecules[i], m_solution_terms[i],
+                                 mol_total_interaction_energy);
         }
     }
 
@@ -773,16 +809,6 @@ class XTBCrystalGrowthCalculator {
                 m_inner_radius);
         interactions.reserve(full_neighbors.size());
 
-        occ::log::warn("Neighbors for asymmetric molecule {}", molname);
-
-        occ::log::warn("nn {:>7s} {:>7s} {:>20s} "
-                       "{:>7s} {:>7s} {:>7s}",
-                       "Rn", "Rc", "Symop", "E_crys", "E_nn", "E_int");
-        occ::log::warn(std::string(88, '='));
-
-        size_t j = 0;
-        double total = 0.0;
-
         size_t num_neighbors = std::accumulate(
             crystal_contributions.begin(), crystal_contributions.end(), 0,
             [](size_t a, const AssignedEnergy &x) {
@@ -790,14 +816,37 @@ class XTBCrystalGrowthCalculator {
             });
 
         double solution_term =
-            (m_solvated_energies[i] - m_gas_phase_energies[i]) *
-            AU_TO_KJ_PER_MOL;
+            (m_solvated_energies[i] - m_gas_phase_energies[i]);
 
         double total_interaction_energy{0.0};
         const std::string row_fmt_string =
             " {} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
-            "{: 7.2f} {: 7.2f}";
+            "{: 7.2f} {: 7.2f} {: 7.2f}";
 
+        double dimers_solv_total = 0.0;
+        {
+            size_t j = 0;
+            for (const auto &dimer : full_neighbors) {
+                size_t unique_idx = unique_dimer_indices[j];
+                dimers_solv_total += m_solvated_dimer_energies[unique_idx];
+                j++;
+            }
+        }
+        double dimers_solv_scale_factor = solution_term / dimers_solv_total;
+
+        occ::log::debug("Total dimers solvation: {} vs {}", dimers_solv_total,
+                        solution_term);
+
+        occ::log::warn("Neighbors for asymmetric molecule {}", molname);
+
+        occ::log::warn("nn {:>7s} {:>7s} {:>20s} "
+                       "{:>7s} {:>7s} {:>7s} {:>7s}",
+                       "Rn", "Rc", "Symop", "E_crys", "E_solv", "E_nn",
+                       "E_int");
+        occ::log::warn(std::string(88, '='));
+
+        size_t j = 0;
+        double total = 0.0;
         for (const auto &dimer : full_neighbors) {
             size_t unique_idx = unique_dimer_indices[j];
             double e = m_dimer_energies[unique_idx];
@@ -811,7 +860,11 @@ class XTBCrystalGrowthCalculator {
 
             total += e;
 
-            double interaction_energy = e - crystal_contributions[j].energy;
+            double solv_ab_ba = m_solvated_dimer_energies[unique_idx] *
+                                AU_TO_KJ_PER_MOL * dimers_solv_scale_factor;
+
+            double interaction_energy =
+                solv_ab_ba - e - -crystal_contributions[j].energy;
 
             if (is_nearest_neighbor) {
                 total_interaction_energy += interaction_energy;
@@ -823,10 +876,12 @@ class XTBCrystalGrowthCalculator {
 
             if (is_nearest_neighbor) {
                 occ::log::warn(row_fmt_string, "|", rn, rc, symmetry_string, e,
-                               crystal_contribution, interaction_energy);
+                               solv_ab_ba, crystal_contribution,
+                               interaction_energy);
             } else {
                 occ::log::debug(row_fmt_string, " ", rn, rc, symmetry_string, e,
-                                crystal_contribution, interaction_energy);
+                                solv_ab_ba, crystal_contribution,
+                                interaction_energy);
             }
             j++;
         }
@@ -935,6 +990,22 @@ int main(int argc, char **argv) {
             }
             calc.converge_lattice_energy(cg_radius, radius);
             calc.evaluate_molecular_surroundings();
+
+            auto uc_dimers = calc.crystal().unit_cell_dimers(cg_radius);
+            write_cg_structure_file(fmt::format("{}_cg.txt", basename),
+                                    calc.crystal(), uc_dimers);
+
+            auto solution_terms_uc = map_unique_interactions_to_uc_molecules(
+                calc.crystal(), calc.full_dimers(), uc_dimers,
+                calc.solution_terms(), calc.interaction_energies());
+
+            if (write_kmcpp_file) {
+                write_kmcpp_input_file(fmt::format("{}_kmcpp.json", basename),
+                                       calc.crystal(), uc_dimers,
+                                       solution_terms_uc);
+            }
+            write_cg_net_file(fmt::format("{}_net.txt", basename),
+                              calc.crystal(), uc_dimers);
 
         } else {
             auto calc = CEModelCrystalGrowthCalculator(c_symm, solvent);
