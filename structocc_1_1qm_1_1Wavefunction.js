@@ -40,6 +40,7 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "T", "structocc_1_1qm_1_1Wavefunction.html#a0f98a845412f4d1f588ec4fc27c002ee", null ],
     [ "V", "structocc_1_1qm_1_1Wavefunction.html#a97b5d5261d3b6147fc30b77e5e22eceb", null ],
     [ "Vecp", "structocc_1_1qm_1_1Wavefunction.html#a4d848ec48354a4905c7c80d491445f0b", null ],
+    [ "xdm_energy", "structocc_1_1qm_1_1Wavefunction.html#ac8c58f857497fa46557d6812aec31346", null ],
     [ "xdm_free_volumes", "structocc_1_1qm_1_1Wavefunction.html#a4bf4d041cd116f44076b95f63adfa1e0", null ],
     [ "xdm_moments", "structocc_1_1qm_1_1Wavefunction.html#a5df841fc2fffdab81434015d2be081b2", null ],
     [ "xdm_polarizabilities", "structocc_1_1qm_1_1Wavefunction.html#a5b3b64147fd6ae2fd88d8f0bab4493bf", null ],

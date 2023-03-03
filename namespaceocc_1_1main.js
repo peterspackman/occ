@@ -2,6 +2,7 @@ var namespaceocc_1_1main =
 [
     [ "PairEnergy", "structocc_1_1main_1_1PairEnergy.html", "structocc_1_1main_1_1PairEnergy" ],
     [ "LatticeConvergenceSettings", "structocc_1_1main_1_1LatticeConvergenceSettings.html", "structocc_1_1main_1_1LatticeConvergenceSettings" ],
+    [ "LatticeEnergyResult", "structocc_1_1main_1_1LatticeEnergyResult.html", "structocc_1_1main_1_1LatticeEnergyResult" ],
     [ "SolvatedSurfaceProperties", "structocc_1_1main_1_1SolvatedSurfaceProperties.html", "structocc_1_1main_1_1SolvatedSurfaceProperties" ],
     [ "SolventNeighborContribution", "structocc_1_1main_1_1SolventNeighborContribution.html", "structocc_1_1main_1_1SolventNeighborContribution" ],
     [ "SolvationPartitionScheme", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8d", [
@@ -12,8 +13,8 @@ var namespaceocc_1_1main =
     [ "calculate_properties", "namespaceocc_1_1main.html#a0b6643aee3051aa1eea447c1f1225282", null ],
     [ "ce_model_energies", "namespaceocc_1_1main.html#a901f19833cb03324705091b2ee8ee4a4", null ],
     [ "ce_model_energy", "namespaceocc_1_1main.html#a9bd75f1db2963d6b0c769e586b588658", null ],
-    [ "converged_lattice_energies", "namespaceocc_1_1main.html#a07e6d540403d3e1423075774e347280d", null ],
-    [ "converged_xtb_lattice_energies", "namespaceocc_1_1main.html#a7a73ee66741960cf2490377064082ccb", null ],
+    [ "converged_lattice_energies", "namespaceocc_1_1main.html#adc1ccaf1ba538fd1b0c72157e51bdffb", null ],
+    [ "converged_xtb_lattice_energies", "namespaceocc_1_1main.html#a636639b98d41eb62542faf3416d5e6b8", null ],
     [ "load_dimer_energy", "namespaceocc_1_1main.html#a4c99afd3455379c53135bd1896c75dad", null ],
     [ "partition_solvent_surface", "namespaceocc_1_1main.html#a667def99b34bedf8e2e3764cd84848f7", null ],
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],

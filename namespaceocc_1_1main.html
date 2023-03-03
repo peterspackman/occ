@@ -107,6 +107,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1LatticeEnergyResult.html">LatticeEnergyResult</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1SolvatedSurfaceProperties.html">SolvatedSurfaceProperties</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1SolventNeighborContribution.html">SolventNeighborContribution</a></td></tr>
@@ -130,10 +132,10 @@ Functions</h2></td></tr>
 <tr class="separator:a9bd75f1db2963d6b0c769e586b588658"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a901f19833cb03324705091b2ee8ee4a4"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a901f19833cb03324705091b2ee8ee4a4">ce_model_energies</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &gt; &amp;dimers, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_a, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_b, const std::string &amp;basename=&quot;dimer&quot;)</td></tr>
 <tr class="separator:a901f19833cb03324705091b2ee8ee4a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07e6d540403d3e1423075774e347280d"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a>, std::vector&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a07e6d540403d3e1423075774e347280d">converged_lattice_energies</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_a, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_b, const std::string &amp;basename=&quot;crystal_dimer&quot;, const <a class="el" href="structocc_1_1main_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a> conv={})</td></tr>
-<tr class="separator:a07e6d540403d3e1423075774e347280d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a73ee66741960cf2490377064082ccb"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a>, std::vector&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a7a73ee66741960cf2490377064082ccb">converged_xtb_lattice_energies</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const std::string &amp;basename=&quot;crystal_dimer&quot;, const <a class="el" href="structocc_1_1main_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a> conv={})</td></tr>
-<tr class="separator:a7a73ee66741960cf2490377064082ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc1ccaf1ba538fd1b0c72157e51bdffb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1main_1_1LatticeEnergyResult.html">LatticeEnergyResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#adc1ccaf1ba538fd1b0c72157e51bdffb">converged_lattice_energies</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_a, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_b, const std::string &amp;basename=&quot;crystal_dimer&quot;, const <a class="el" href="structocc_1_1main_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a> conv={})</td></tr>
+<tr class="separator:adc1ccaf1ba538fd1b0c72157e51bdffb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a636639b98d41eb62542faf3416d5e6b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1main_1_1LatticeEnergyResult.html">LatticeEnergyResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a636639b98d41eb62542faf3416d5e6b8">converged_xtb_lattice_energies</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const std::string &amp;basename=&quot;crystal_dimer&quot;, const <a class="el" href="structocc_1_1main_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a> conv={})</td></tr>
+<tr class="separator:a636639b98d41eb62542faf3416d5e6b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b6643aee3051aa1eea447c1f1225282"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a0b6643aee3051aa1eea447c1f1225282">calculate_properties</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">OccInput</a> &amp;, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;)</td></tr>
 <tr class="separator:a0b6643aee3051aa1eea447c1f1225282"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a17c5945b306895d7d49fb2e0b9d32e72"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a17c5945b306895d7d49fb2e0b9d32e72">single_point_calculation</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">OccInput</a> &amp;)</td></tr>
@@ -290,14 +292,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a07e6d540403d3e1423075774e347280d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a07e6d540403d3e1423075774e347280d">&#9670;&nbsp;</a></span>converged_lattice_energies()</h2>
+<a id="adc1ccaf1ba538fd1b0c72157e51bdffb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc1ccaf1ba538fd1b0c72157e51bdffb">&#9670;&nbsp;</a></span>converged_lattice_energies()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::pair&lt;<a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a>, std::vector&lt;<a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a>&gt; &gt; occ::main::converged_lattice_energies </td>
+          <td class="memname"><a class="el" href="structocc_1_1main_1_1LatticeEnergyResult.html">LatticeEnergyResult</a> occ::main::converged_lattice_energies </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
           <td class="paramname"><em>crystal</em>, </td>
@@ -336,14 +338,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7a73ee66741960cf2490377064082ccb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7a73ee66741960cf2490377064082ccb">&#9670;&nbsp;</a></span>converged_xtb_lattice_energies()</h2>
+<a id="a636639b98d41eb62542faf3416d5e6b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a636639b98d41eb62542faf3416d5e6b8">&#9670;&nbsp;</a></span>converged_xtb_lattice_energies()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::pair&lt;<a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a>, std::vector&lt;<a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a>&gt; &gt; occ::main::converged_xtb_lattice_energies </td>
+          <td class="memname"><a class="el" href="structocc_1_1main_1_1LatticeEnergyResult.html">LatticeEnergyResult</a> occ::main::converged_xtb_lattice_energies </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
           <td class="paramname"><em>crystal</em>, </td>

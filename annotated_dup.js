@@ -2,7 +2,8 @@ var annotated_dup =
 [
     [ "fmt", null, [
       [ "formatter< occ::core::EnergyComponents >", "structfmt_1_1formatter_3_01occ_1_1core_1_1EnergyComponents_01_4.html", "structfmt_1_1formatter_3_01occ_1_1core_1_1EnergyComponents_01_4" ],
-      [ "formatter< occ::core::Multipole< L > >", "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4.html", "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4" ]
+      [ "formatter< occ::core::Multipole< L > >", "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4.html", "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4" ],
+      [ "formatter< occ::qm::Energy >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4" ]
     ] ],
     [ "occ", "namespaceocc.html", [
       [ "core", "namespaceocc_1_1core.html", [
@@ -135,6 +136,7 @@ var annotated_dup =
       [ "main", "namespaceocc_1_1main.html", [
         [ "PairEnergy", "structocc_1_1main_1_1PairEnergy.html", "structocc_1_1main_1_1PairEnergy" ],
         [ "LatticeConvergenceSettings", "structocc_1_1main_1_1LatticeConvergenceSettings.html", "structocc_1_1main_1_1LatticeConvergenceSettings" ],
+        [ "LatticeEnergyResult", "structocc_1_1main_1_1LatticeEnergyResult.html", "structocc_1_1main_1_1LatticeEnergyResult" ],
         [ "SolvatedSurfaceProperties", "structocc_1_1main_1_1SolvatedSurfaceProperties.html", "structocc_1_1main_1_1SolvatedSurfaceProperties" ],
         [ "SolventNeighborContribution", "structocc_1_1main_1_1SolventNeighborContribution.html", "structocc_1_1main_1_1SolventNeighborContribution" ]
       ] ],
