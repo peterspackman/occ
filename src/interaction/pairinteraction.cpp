@@ -162,6 +162,17 @@ void dump_matrix(const Mat &matrix) {
     }
 }
 
+void CEModelInteraction::compute_monomer_energies(Wavefunction &wfn) const {
+    constexpr double precision = std::numeric_limits<double>::epsilon();
+    HartreeFock hf(wfn.basis);
+    if (m_use_density_fitting) {
+        hf.set_density_fitting_basis("def2-universal-jkfit");
+    }
+    Mat schwarz = hf.compute_schwarz_ints();
+    fmt::print("Calculating xdm parameters: {}\n", scale_factors.xdm);
+    compute_ce_model_energies(wfn, hf, precision, schwarz, scale_factors.xdm);
+}
+
 CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
                                                   Wavefunction &B) const {
     using occ::disp::ce_model_dispersion_energy;
@@ -210,10 +221,8 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     compute_ce_model_energies(ABn, hf_AB, precision, schwarz_ab, false);
     compute_ce_model_energies(ABo, hf_AB, precision, schwarz_ab, false);
 
-    fmt::print("ABn\n");
-    ABn.energy.print();
-    fmt::print("ABo\n");
-    ABo.energy.print();
+    occ::log::debug("ABn\n{}\n", ABn.energy);
+    occ::log::debug("ABo\n{}\n", ABo.energy);
 
     Energy E_ABn = ABn.energy - (A.energy + B.energy);
 
@@ -318,10 +327,8 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     compute_ce_model_energies(ABn, dft_AB, precision, schwarz_ab, false);
     compute_ce_model_energies(ABo, dft_AB, precision, schwarz_ab, false);
 
-    fmt::print("ABn\n");
-    ABn.energy.print();
-    fmt::print("ABo\n");
-    ABo.energy.print();
+    occ::log::debug("ABn\n{}\n", ABn.energy);
+    occ::log::debug("ABo\n{}\n", ABo.energy);
 
     Energy E_ABn = ABn.energy - (A.energy + B.energy);
 

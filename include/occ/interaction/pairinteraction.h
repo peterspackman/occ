@@ -19,7 +19,7 @@ struct CEParameterizedModel {
     const double dispersion{1.0};
     const std::string name{"Unscaled"};
     bool xdm{false};
-    double xdm_a1{1.0}, xdm_a2{1.0};
+    double xdm_a1{0.7}, xdm_a2{1.4};
     double scaled_total(double coul, double ex, double pol, double disp) const {
         return coulomb * coul + exchange_repulsion * ex + polarization * pol +
                dispersion * disp;
@@ -131,6 +131,7 @@ struct CEModelInteraction {
     CEEnergyComponents dft_pair(const std::string &, Wavefunction &,
                                 Wavefunction &) const;
     void set_use_density_fitting(bool value = true);
+    void compute_monomer_energies(Wavefunction &) const;
 
   private:
     CEParameterizedModel scale_factors;

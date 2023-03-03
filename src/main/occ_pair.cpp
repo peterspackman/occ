@@ -285,12 +285,10 @@ int main(int argc, char *argv[]) {
     }
     occ::timing::stop(occ::timing::category::global);
 
-    fmt::print("Monomer A energies\n");
-    pair.a.wfn.energy.print();
+    fmt::print("Monomer A energies\n{}\n", pair.a.wfn.energy);
     save_xdm_parameters(pair.a.wfn, "a_xdm.json");
 
-    fmt::print("Monomer B energies\n");
-    pair.b.wfn.energy.print();
+    fmt::print("Monomer B energies\n{}\n", pair.b.wfn.energy);
     save_xdm_parameters(pair.b.wfn, "b_xdm.json");
 
     fmt::print("\nDimer\n");

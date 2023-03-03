@@ -51,16 +51,24 @@ struct LatticeConvergenceSettings {
     double max_radius{30.0};      // angstroms
     double radius_increment{3.8}; // angstroms
     double energy_tolerance{1.0}; // kj/mol
+    bool wolf_sum{false};
+    std::string model_name{"ce-b3lyp"};
 };
 
-std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
+struct LatticeEnergyResult {
+    double lattice_energy{0.0};
+    occ::crystal::CrystalDimers dimers;
+    std::vector<CEEnergyComponents> energy_components;
+};
+
+LatticeEnergyResult
 converged_lattice_energies(const Crystal &crystal,
                            const std::vector<Wavefunction> &wfns_a,
                            const std::vector<Wavefunction> &wfns_b,
                            const std::string &basename = "crystal_dimer",
                            const LatticeConvergenceSettings conv = {});
 
-std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
+LatticeEnergyResult
 converged_xtb_lattice_energies(const Crystal &crystal,
                                const std::string &basename = "crystal_dimer",
                                const LatticeConvergenceSettings conv = {});

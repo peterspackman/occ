@@ -22,19 +22,6 @@ using occ::qm::merge_atoms;
 using occ::qm::merge_basis_sets;
 using occ::qm::merge_molecular_orbitals;
 
-void Energy::print() const {
-    constexpr auto format_string = "{:<10s} {:10.6f}\n";
-    fmt::print(format_string, "E_coul", coulomb);
-    fmt::print(format_string, "E_ex", exchange);
-    fmt::print(format_string, "E_nn", nuclear_repulsion);
-    fmt::print(format_string, "E_en", nuclear_attraction);
-    fmt::print(format_string, "E_kin", kinetic);
-    fmt::print(format_string, "E_1e", core);
-    if (ecp != 0.0) {
-        fmt::print(format_string, "E_ecp", ecp);
-    }
-}
-
 Wavefunction::Wavefunction(const FchkReader &fchk)
     : spinorbital_kind(fchk.spinorbital_kind()), num_alpha(fchk.num_alpha()),
       num_beta(fchk.num_beta()), num_electrons(fchk.num_electrons()),
@@ -504,11 +491,6 @@ void Wavefunction::save(FchkWriter &fchk) {
 
     auto mo_fchk = occ::io::conversion::orb::to_gaussian_order(basis, mo);
     Mat Dfchk;
-
-    {
-        std::ofstream d("density_correct.txt");
-        d << mo.D;
-    }
 
     std::vector<double> density_lower_triangle, spin_density_lower_triangle;
 

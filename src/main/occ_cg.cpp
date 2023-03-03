@@ -518,10 +518,11 @@ class CEModelCrystalGrowthCalculator {
         m_inner_radius = inner_radius;
         m_outer_radius = outer_radius;
 
-        std::tie(m_full_dimers, m_dimer_energies) =
-            occ::main::converged_lattice_energies(
-                m_crystal, inner_wavefunctions(), outer_wavefunctions(),
-                m_basename, convergence_settings);
+        auto result = occ::main::converged_lattice_energies(
+            m_crystal, inner_wavefunctions(), outer_wavefunctions(), m_basename,
+            convergence_settings);
+        m_full_dimers = result.dimers;
+        m_dimer_energies = result.energy_components;
 
         m_nearest_dimers = m_crystal.symmetry_unique_dimers(inner_radius);
 
@@ -742,11 +743,11 @@ class XTBCrystalGrowthCalculator {
 
         m_full_dimers = m_crystal.symmetry_unique_dimers(outer_radius);
         std::vector<CEEnergyComponents> energies;
-        std::tie(m_full_dimers, energies) =
-            occ::main::converged_xtb_lattice_energies(m_crystal, m_basename,
-                                                      convergence_settings);
+        auto result = occ::main::converged_xtb_lattice_energies(
+            m_crystal, m_basename, convergence_settings);
+        m_full_dimers = result.dimers;
 
-        for (const auto &e : energies) {
+        for (const auto &e : result.energy_components) {
             m_dimer_energies.push_back(e.total_kjmol());
         }
 

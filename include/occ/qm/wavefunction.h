@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/core.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
@@ -51,7 +52,6 @@ struct Energy {
             ecp + rhs.ecp,
         };
     }
-    void print() const;
 };
 
 struct Wavefunction {
@@ -109,8 +109,38 @@ struct Wavefunction {
     Mat xdm_moments;
     Vec xdm_volumes;
     Vec xdm_free_volumes;
+    double xdm_energy{0.0};
 };
 
 Mat symmorthonormalize_molecular_orbitals(const Mat &mos, const Mat &overlap,
                                           size_t n_occ);
 } // namespace occ::qm
+
+template <> struct fmt::formatter<occ::qm::Energy> {
+    char presentation{'f'};
+
+    constexpr auto parse(format_parse_context &ctx) {
+        auto it = ctx.begin(), end = ctx.end();
+        if (it != end && (*it == 'f' || *it == 'e'))
+            presentation = *it++;
+
+        if (it != end && *it != '}')
+            throw format_error("invalid format");
+
+        return it;
+    }
+
+    template <typename FormatContext>
+    auto format(const occ::qm::Energy &e, FormatContext &ctx) {
+        auto fmt_string = fmt::format("{{:32s}} {{:20.12{}}}\n", presentation);
+        auto result = format_to(ctx.out(), fmt_string, "E_coul", e.coulomb);
+        result = format_to(ctx.out(), fmt_string, "E_ex", e.exchange);
+        result = format_to(ctx.out(), fmt_string, "E_nn", e.nuclear_repulsion);
+        result = format_to(ctx.out(), fmt_string, "E_en", e.nuclear_attraction);
+        result = format_to(ctx.out(), fmt_string, "E_kin", e.kinetic);
+        result = format_to(ctx.out(), fmt_string, "E_1e", e.core);
+        if (e.ecp != 0.0)
+            result = format_to(ctx.out(), fmt_string, "E_ecp", e.ecp);
+        return result;
+    }
+};

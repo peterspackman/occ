@@ -372,11 +372,6 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
     }
     m_density_matrix = mo.D;
 
-    {
-        std::ofstream d("density_xdm.txt");
-        d << mo.D;
-    }
-
     occ::gto::GTOValues gto_vals;
     const auto &atoms = m_basis.atoms();
     const size_t num_atoms = atoms.size();

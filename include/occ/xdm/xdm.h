@@ -18,8 +18,8 @@ struct XDMAtomList {
 class XDM {
   public:
     struct Parameters {
-        double a1{1.0};
-        double a2{1.0}; // angstroms
+        double a1{0.7};
+        double a2{1.4}; // angstroms
     };
 
     XDM(const occ::qm::AOBasis &basis, int charge = 0);

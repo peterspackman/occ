@@ -76,11 +76,8 @@ void PairEnergy::compute() {
     auto interaction_energy = interaction(a.wfn, b.wfn);
     occ::timing::stop(occ::timing::category::global);
 
-    fmt::print("Monomer A energies\n");
-    a.wfn.energy.print();
-
-    fmt::print("Monomer B energies\n");
-    b.wfn.energy.print();
+    fmt::print("Monomer A energies\n{}\n", a.wfn.energy);
+    fmt::print("Monomer B energies\n{}\n", b.wfn.energy);
 
     fmt::print("\nDimer\n");
 
@@ -145,8 +142,11 @@ class CEPairEnergyFunctor {
         : m_crystal(crystal), m_wavefunctions_a(wavefunctions_a),
           m_wavefunctions_b(wavefunctions_b) {}
 
+    void set_model_name(const std::string &model_name) {
+        m_model_name = model_name;
+    }
+
     CEEnergyComponents operator()(const Dimer &dimer) {
-        const std::string model_name = "ce-b3lyp";
         Molecule mol_A = dimer.a();
         Molecule mol_B = dimer.b();
         Wavefunction A = m_wavefunctions_a[mol_A.asymmetric_molecule_idx()];
@@ -167,7 +167,7 @@ class CEPairEnergyFunctor {
         Mat3N pos_B = mol_B.positions();
         Mat3N pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
 
-        auto model = occ::interaction::ce_model_from_string(model_name);
+        auto model = occ::interaction::ce_model_from_string(m_model_name);
 
         CEModelInteraction interaction(model);
 
@@ -191,6 +191,7 @@ class CEPairEnergyFunctor {
 
   private:
     Crystal m_crystal;
+    std::string m_model_name{"ce-b3lyp"};
     std::vector<Wavefunction> m_wavefunctions_a;
     std::vector<Wavefunction> m_wavefunctions_b;
     std::vector<Vec> m_partial_charges;
@@ -341,8 +342,70 @@ bool load_dimer_energy(const std::string &filename,
     return true;
 }
 
+struct WolfSumAccelerator {
+    occ::interaction::WolfParams parameters{16.0, 0.2};
+    Vec asym_charges;
+    std::vector<double> charge_self_energies;
+    double energy{0.0};
+
+    template <typename EnergyModel>
+    void setup(const Crystal &crystal, EnergyModel &energy_model) {
+        auto asym_mols = crystal.symmetry_unique_molecules();
+        asym_charges = Vec(crystal.asymmetric_unit().size());
+        charge_self_energies = std::vector<double>(asym_mols.size());
+        // vector per unique molecule or wfn.
+
+        const auto &partial_charges = energy_model.partial_charges();
+        for (int i = 0; i < partial_charges.size(); i++) {
+            const auto &asymmetric_atom_indices =
+                asym_mols[i].asymmetric_unit_idx();
+            const auto &charge_vector = partial_charges[i];
+            occ::log::info("Charges {}\n{}", i, charge_vector);
+            for (int j = 0; j < charge_vector.rows(); j++) {
+                asym_charges(asymmetric_atom_indices(j)) = charge_vector(j);
+            }
+        }
+
+        int asym_idx = 0;
+        auto surrounds =
+            crystal.asymmetric_unit_atom_surroundings(parameters.cutoff);
+        Mat3N asym_cart =
+            crystal.to_cartesian(crystal.asymmetric_unit().positions);
+        Vec asym_wolf(surrounds.size());
+        for (const auto &s : surrounds) {
+            double qi = asym_charges(asym_idx);
+            Vec3 pi = asym_cart.col(asym_idx);
+            Vec qj(s.size());
+            for (int j = 0; j < qj.rows(); j++) {
+                qj(j) = asym_charges(s.asym_idx(j));
+            }
+            asym_wolf(asym_idx) = occ::interaction::wolf_coulomb_energy(
+                                      qi, pi, qj, s.cart_pos, parameters) *
+                                  units::AU_TO_KJ_PER_MOL;
+            asym_idx++;
+        }
+        for (int i = 0; i < asym_mols.size(); i++) {
+            const auto &mol = asym_mols[i];
+            charge_self_energies[i] =
+                occ::interaction::coulomb_self_energy_asym_charges(
+                    mol, asym_charges);
+            for (int j = 0; j < mol.size(); j++) {
+                energy += asym_wolf(mol.asymmetric_unit_idx()(j));
+            }
+        }
+
+        occ::log::debug("Wolf energy ({} asymmetric atoms): {}\n", asym_idx,
+                        asym_wolf.sum());
+
+        occ::log::debug("Wolf energy ({} asymmetric molecules): {}\n",
+                        asym_mols.size(), energy);
+    }
+
+    void initialize(const Crystal &crystal) {}
+};
+
 template <typename EnergyModel>
-std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
+LatticeEnergyResult
 converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                            const std::string &basename,
                            const LatticeConvergenceSettings conv) {
@@ -355,22 +418,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
     size_t cycle{1};
 
     auto all_dimers = crystal.symmetry_unique_dimers(conv.max_radius);
-    auto asym_mols = crystal.symmetry_unique_molecules();
 
-    Vec asym_charges(crystal.asymmetric_unit().size());
-    std::vector<double> charge_self_energies(asym_mols.size());
-    // vector per unique molecule or wfn.
-
-    const auto &partial_charges = energy_model.partial_charges();
-    for (int i = 0; i < partial_charges.size(); i++) {
-        const auto &asymmetric_atom_indices =
-            asym_mols[i].asymmetric_unit_idx();
-        const auto &charge_vector = partial_charges[i];
-        occ::log::info("Charges {}\n{}", i, charge_vector);
-        for (int j = 0; j < charge_vector.rows(); j++) {
-            asym_charges(asymmetric_atom_indices(j)) = charge_vector(j);
-        }
-    }
     occ::log::info("Found {} symmetry unique dimers within max radius {:.3f}\n",
                    all_dimers.unique_dimers.size(), conv.max_radius);
     occ::log::info("Lattice convergence settings:");
@@ -379,47 +427,21 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
     occ::log::info("Radius increment   {: 8.4f} \u212b", conv.radius_increment);
     occ::log::info("Energy tolerance   {: 8.4f} kJ/mol", conv.energy_tolerance);
 
-    double wolf_energy = 0.0;
-    int asym_idx = 0;
-    auto surrounds = crystal.asymmetric_unit_atom_surroundings(conv.max_radius);
-    auto wolf_params = occ::interaction::WolfParams{16.0, 0.2};
-    Mat3N asym_cart = crystal.to_cartesian(crystal.asymmetric_unit().positions);
-    Vec asym_wolf(surrounds.size());
-    for (const auto &s : surrounds) {
-        double qi = asym_charges(asym_idx);
-        Vec3 pi = asym_cart.col(asym_idx);
-        Vec qj(s.size());
-        for (int j = 0; j < qj.rows(); j++) {
-            qj(j) = asym_charges(s.asym_idx(j));
-        }
-        asym_wolf(asym_idx) = occ::interaction::wolf_coulomb_energy(
-                                  qi, pi, qj, s.cart_pos, wolf_params) *
-                              units::AU_TO_KJ_PER_MOL;
-        asym_idx++;
+    WolfSumAccelerator wolf;
+    if (conv.wolf_sum) {
+        wolf.parameters.cutoff = conv.max_radius;
+        wolf.setup(crystal, energy_model);
     }
-    for (int i = 0; i < asym_mols.size(); i++) {
-        const auto &mol = asym_mols[i];
-        charge_self_energies[i] =
-            occ::interaction::coulomb_self_energy_asym_charges(mol,
-                                                               asym_charges);
-        for (int j = 0; j < mol.size(); j++) {
-            wolf_energy += asym_wolf(mol.asymmetric_unit_idx()(j));
-        }
-    }
-
-    occ::log::debug("Wolf energy ({} asymmetric atoms): {}\n", asym_idx,
-                    asym_wolf.sum());
-
-    occ::log::debug("Wolf energy ({} asymmetric molecules): {}\n",
-                    asym_mols.size(), wolf_energy);
 
     do {
         previous_lattice_energy = lattice_energy;
         const auto &dimers = all_dimers.unique_dimers;
         compute_dimer_energies_radius(energy_model, crystal, dimers, basename,
                                       current_radius, converged_energies);
-        compute_coulomb_energies_radius(dimers, asym_charges, current_radius,
-                                        charge_energies);
+        if (conv.wolf_sum) {
+            compute_coulomb_energies_radius(dimers, wolf.asym_charges,
+                                            current_radius, charge_energies);
+        }
 
         const auto &mol_neighbors = all_dimers.molecule_neighbors;
         double etot{0.0};
@@ -439,50 +461,57 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
 
                 if (e.is_computed) {
                     molecule_total += e.total_kjmol();
-                    ecoul_exact_real += 0.5 * e.coulomb_kjmol();
-                    ecoul_real += 0.5 * e_charge * occ::units::AU_TO_KJ_PER_MOL;
+                    if (conv.wolf_sum) {
+                        ecoul_exact_real += 0.5 * e.coulomb_kjmol();
+                        ecoul_real +=
+                            0.5 * e_charge * occ::units::AU_TO_KJ_PER_MOL;
+                    }
                 }
                 dimer_idx++;
             }
             etot += molecule_total;
-            ecoul_self +=
-                charge_self_energies[mol_idx] * units::AU_TO_KJ_PER_MOL;
+            if (conv.wolf_sum) {
+                ecoul_self += wolf.charge_self_energies[mol_idx] *
+                              units::AU_TO_KJ_PER_MOL;
+            }
             mol_idx++;
         }
         lattice_energy = 0.5 * etot;
+        if (conv.wolf_sum) {
+            occ::log::debug("Charge-charge intramolecular: {}", ecoul_self);
+            occ::log::debug("Charge-charge real space: {}", ecoul_real);
+            occ::log::debug("Wolf energy: {}", wolf.energy);
+            occ::log::debug("Coulomb (exact) real: {}", ecoul_exact_real);
+            occ::log::debug("Wolf - intra: {}", wolf.energy - ecoul_self);
+            occ::log::debug("Wolf corrected Coulomb total: {}",
+                            wolf.energy - ecoul_self - ecoul_real +
+                                ecoul_exact_real);
+            lattice_energy =
+                coulomb_scale_factor * (wolf.energy - ecoul_self - ecoul_real) +
+                0.5 * etot;
+            occ::log::debug("Wolf corrected lattice energy: {}",
+                            lattice_energy);
+        }
         occ::log::info("Cycle {} lattice energy: {}", cycle, lattice_energy);
-        occ::log::debug("Charge-charge intramolecular: {}", ecoul_self);
-        occ::log::debug("Charge-charge real space: {}", ecoul_real);
-        occ::log::debug("Wolf energy: {}", wolf_energy);
-        occ::log::debug("Coulomb (exact) real: {}", ecoul_exact_real);
-        occ::log::debug("Wolf - intra: {}", wolf_energy - ecoul_self);
-        occ::log::debug("Wolf corrected Coulomb total: {}",
-                        wolf_energy - ecoul_self - ecoul_real +
-                            ecoul_exact_real);
-        occ::log::debug("Wolf corrected lattice energy: {}",
-                        coulomb_scale_factor *
-                                (wolf_energy - ecoul_self - ecoul_real) +
-                            0.5 * etot);
         cycle++;
         current_radius += conv.radius_increment;
     } while (std::abs(lattice_energy - previous_lattice_energy) >
              conv.energy_tolerance);
     converged_dimers = all_dimers;
-    return std::make_pair(converged_dimers, converged_energies);
+    return {lattice_energy, converged_dimers, converged_energies};
 }
 
-std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
-converged_lattice_energies(const Crystal &crystal,
-                           const std::vector<Wavefunction> &wfns_a,
-                           const std::vector<Wavefunction> &wfns_b,
-                           const std::string &basename,
-                           const LatticeConvergenceSettings conv) {
+LatticeEnergyResult converged_lattice_energies(
+    const Crystal &crystal, const std::vector<Wavefunction> &wfns_a,
+    const std::vector<Wavefunction> &wfns_b, const std::string &basename,
+    const LatticeConvergenceSettings conv) {
 
     CEPairEnergyFunctor energy_model(crystal, wfns_a, wfns_b);
+    energy_model.set_model_name(conv.model_name);
     return converged_lattice_energies(energy_model, crystal, basename, conv);
 }
 
-std::pair<occ::crystal::CrystalDimers, std::vector<CEEnergyComponents>>
+LatticeEnergyResult
 converged_xtb_lattice_energies(const Crystal &crystal,
                                const std::string &basename,
                                const LatticeConvergenceSettings conv) {
