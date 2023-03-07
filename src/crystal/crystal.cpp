@@ -356,7 +356,9 @@ void Crystal::update_unit_cell_molecules() const {
         auto idx = atom_indices[i];
 
         // sort by asymmetric atom index
-        std::sort(idx.begin(), idx.end());
+        std::sort(idx.begin(), idx.end(), [&atoms](int a, int b) {
+            return atoms.asym_idx(a) < atoms.asym_idx(b);
+        });
         occ::core::Molecule m(atoms.atomic_numbers(idx),
                               cart_pos({0, 1, 2}, idx));
         m.set_unit_cell_idx(Eigen::Map<const IVec>(idx.data(), idx.size()));

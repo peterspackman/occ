@@ -115,7 +115,7 @@ calculate_wavefunctions(const std::string &basename,
                 fchk.write();
                 wfns.push_back(wfn);
             } else {
-                occ::dft::DFT rks(method, basis, SpinorbitalKind::Restricted);
+                occ::dft::DFT rks(method, basis);
                 SCF<occ::dft::DFT> scf(rks, SpinorbitalKind::Restricted);
 
                 scf.set_charge_multiplicity(0, 1);

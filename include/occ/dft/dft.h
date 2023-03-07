@@ -84,8 +84,7 @@ void set_params(DensityFunctional::Params &params, const Mat &rho) {
 class DFT {
 
   public:
-    DFT(const std::string &, const AOBasis &,
-        const SpinorbitalKind kind = SpinorbitalKind::Restricted);
+    DFT(const std::string &, const AOBasis &, const AtomGridSettings & = {});
     inline const auto &atoms() const { return m_hf.atoms(); }
     inline const auto &aobasis() const { return m_hf.aobasis(); }
     inline auto nbf() const { return m_hf.nbf(); }
@@ -377,12 +376,12 @@ class DFT {
         if (exchange_factor != 0.0) {
             Mat Khf;
             std::tie(J, Khf) = m_hf.compute_JK(mo, precision, Schwarz);
-            ecoul = expectation(m_spinorbital_kind, mo.D, J);
-            exc = -expectation(m_spinorbital_kind, mo.D, Khf) * exchange_factor;
+            ecoul = expectation(mo.kind, mo.D, J);
+            exc = -expectation(mo.kind, mo.D, Khf) * exchange_factor;
             K.noalias() += Khf * exchange_factor;
         } else {
             J = m_hf.compute_J(mo, precision, Schwarz);
-            ecoul = expectation(m_spinorbital_kind, mo.D, J);
+            ecoul = expectation(mo.kind, mo.D, J);
         }
         occ::log::debug("EXC_dft = {}, EXC = {}, E_coul = {}\n", m_exc_dft, exc,
                         ecoul);
@@ -437,7 +436,6 @@ class DFT {
 
   private:
     std::string m_method_string{"svwn5"};
-    SpinorbitalKind m_spinorbital_kind;
     occ::qm::HartreeFock m_hf;
     MolecularGrid m_grid;
     std::vector<DensityFunctional> m_funcs;

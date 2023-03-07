@@ -80,7 +80,7 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
 
     T proc = [&]() {
         if constexpr (std::is_same<T, DFT>::value)
-            return T(config.method.name, basis, SK);
+            return T(config.method.name, basis);
         else
             return T(basis);
     }();
@@ -105,7 +105,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
                                  const OccInput &config) {
     using occ::solvent::SolvationCorrectedProcedure;
     if constexpr (std::is_same<T, DFT>::value) {
-        DFT ks(config.method.name, wfn.basis, SK);
+        DFT ks(config.method.name, wfn.basis);
         if (!config.basis.df_name.empty())
             ks.set_density_fitting_basis(config.basis.df_name);
         SolvationCorrectedProcedure<DFT> proc_solv(ks,

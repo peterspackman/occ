@@ -287,7 +287,7 @@ calculate_solvated_surfaces(const std::string &basename,
                 occ::log::debug(
                     "Loaded basis set, {} shells, {} basis functions",
                     basis.size(), basis.nbf());
-                occ::dft::DFT ks(method, basis, SpinorbitalKind::Restricted);
+                occ::dft::DFT ks(method, basis);
                 SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
                 SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv,
                                                           wfn.mo.kind);
@@ -314,7 +314,7 @@ calculate_solvated_surfaces(const std::string &basename,
             basis.set_pure(false);
             occ::log::debug("Loaded basis set, {} shells, {} basis functions",
                             basis.size(), basis.nbf());
-            occ::dft::DFT ks(method, basis, SpinorbitalKind::Restricted);
+            occ::dft::DFT ks(method, basis);
             SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
             SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv, wfn.mo.kind);
             scf.start_incremental_F_threshold = 0.0;

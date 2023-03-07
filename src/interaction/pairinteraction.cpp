@@ -278,15 +278,13 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     using occ::qm::Energy;
     constexpr double precision = std::numeric_limits<double>::epsilon();
 
-    occ::dft::AtomGridSettings grid_settings{194, 50, 50, 1e-8};
+    occ::dft::AtomGridSettings grid_settings{110, 30, 30, 1e-6};
 
-    DFT dft_a(functional, A.basis);
-    dft_a.set_integration_grid(grid_settings);
-    DFT dft_b(functional, B.basis);
-    dft_b.set_integration_grid(grid_settings);
+    DFT dft_a(functional, A.basis, grid_settings);
+    DFT dft_b(functional, B.basis, grid_settings);
     if (m_use_density_fitting) {
-        dft_a.set_density_fitting_basis("def2-universal-jkfit");
-        dft_b.set_density_fitting_basis("def2-universal-jkfit");
+        dft_a.set_density_fitting_basis("def2-universal-jfit");
+        dft_b.set_density_fitting_basis("def2-universal-jfit");
     }
 
     Mat schwarz_a = dft_a.compute_schwarz_ints();
@@ -309,11 +307,10 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
 
     // Can reuse the same HartreeFock object for both merged wfns: same basis
     // and atoms
-    auto dft_AB = DFT(functional, ABn.basis);
-    dft_AB.set_integration_grid(grid_settings);
+    auto dft_AB = DFT(functional, ABn.basis, grid_settings);
     Mat schwarz_ab = dft_AB.compute_schwarz_ints();
     if (m_use_density_fitting) {
-        dft_AB.set_density_fitting_basis("def2-universal-jkfit");
+        dft_AB.set_density_fitting_basis("def2-universal-jfit");
     }
 
     Wavefunction ABo = ABn;

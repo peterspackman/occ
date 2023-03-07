@@ -65,18 +65,16 @@ int DFT::density_derivative() const {
     return deriv;
 }
 
-DFT::DFT(const std::string &method, const AOBasis &basis, SpinorbitalKind kind)
-    : m_spinorbital_kind(kind), m_hf(basis), m_grid(basis) {
+DFT::DFT(const std::string &method, const AOBasis &basis,
+         const AtomGridSettings &grid_settings)
+    : m_hf(basis), m_grid(basis, grid_settings) {
 
-    set_integration_grid();
-    set_method(method, m_spinorbital_kind == SpinorbitalKind::Unrestricted);
+    set_integration_grid(grid_settings);
+    set_method(method, false);
 }
 
 void DFT::set_unrestricted(bool unrestricted) {
-    m_spinorbital_kind = unrestricted ? SpinorbitalKind::Unrestricted
-                                      : SpinorbitalKind::Restricted;
-    set_method(m_method_string,
-               m_spinorbital_kind == SpinorbitalKind::Unrestricted);
+    set_method(m_method_string, unrestricted);
 }
 
 void DFT::set_method(const std::string &method_string, bool unrestricted) {
@@ -139,7 +137,7 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
                 if (func.factor != 1.0) {
                     occ::log::info("    {} x {}", func.factor, f.name());
                 } else {
-                    occ::log::info("    {}\n", f.name());
+                    occ::log::info("    {}", f.name());
                 }
                 if (func.hfx > 0.0)
                     f.set_exchange_factor(func.hfx);
