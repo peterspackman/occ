@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['x_3537',['x',['../structocc_1_1core_1_1Atom.html#aa292688d9909d939aff54d40f3dd6ab8',1,'occ::core::Atom::x()'],['../structocc_1_1geometry_1_1MIndex_1_1Position.html#a044ef3191f2c9a6713fa7f8abbd205ed',1,'occ::geometry::MIndex::Position::x()']]],
-  ['x_3538',['X',['../structocc_1_1scf_1_1SCF.html#ab0d3d895f7b127606e4fe48509b7b63d',1,'occ::scf::SCF']]],
+  ['x_3537',['X',['../structocc_1_1scf_1_1SCF.html#ab0d3d895f7b127606e4fe48509b7b63d',1,'occ::scf::SCF']]],
+  ['x_3538',['x',['../structocc_1_1core_1_1Atom.html#aa292688d9909d939aff54d40f3dd6ab8',1,'occ::core::Atom::x()'],['../structocc_1_1geometry_1_1MIndex_1_1Position.html#a044ef3191f2c9a6713fa7f8abbd205ed',1,'occ::geometry::MIndex::Position::x()']]],
   ['xa_3539',['xa',['../structocc_1_1core_1_1opt_1_1bracket1d.html#a4b8fea97f0ac10cf941b79283cdc9be7',1,'occ::core::opt::bracket1d']]],
   ['xb_3540',['xb',['../structocc_1_1core_1_1opt_1_1bracket1d.html#a5a9bc8b76f23942b0123fc94672d2f41',1,'occ::core::opt::bracket1d']]],
   ['xc_3541',['xc',['../structocc_1_1core_1_1opt_1_1bracket1d.html#a3cf6fa32a8c77b166bdae573986d44aa',1,'occ::core::opt::bracket1d']]],
