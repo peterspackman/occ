@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/dft/functional.h>
@@ -7,7 +8,9 @@ namespace occ::dft {
 DensityFunctional::DensityFunctional(DensityFunctional::Identifier id,
                                      bool polarized)
     : m_polarized(polarized), m_func_id(id) {
-    m_func_name = std::string(xc_functional_get_name(id));
+    char *cstr = xc_functional_get_name(id);
+    m_func_name = std::string(cstr);
+    free(cstr);
 }
 
 DensityFunctional::DensityFunctional(const std::string &name, bool polarized)

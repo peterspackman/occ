@@ -279,21 +279,27 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     constexpr double precision = std::numeric_limits<double>::epsilon();
 
     occ::dft::AtomGridSettings grid_settings{110, 30, 30, 1e-6};
+    double polarization_energy{0.0};
 
-    DFT dft_a(functional, A.basis, grid_settings);
-    DFT dft_b(functional, B.basis, grid_settings);
-    if (m_use_density_fitting) {
-        dft_a.set_density_fitting_basis("def2-universal-jfit");
-        dft_b.set_density_fitting_basis("def2-universal-jfit");
+    {
+        DFT dft_a(functional, A.basis, grid_settings);
+        if (m_use_density_fitting) {
+            dft_a.set_density_fitting_basis("def2-universal-jfit");
+        }
+
+        Mat schwarz_a = dft_a.compute_schwarz_ints();
+        compute_ce_model_energies(A, dft_a, precision, schwarz_a,
+                                  scale_factors.xdm);
+
+        DFT dft_b(functional, B.basis, grid_settings);
+        if (m_use_density_fitting) {
+            dft_b.set_density_fitting_basis("def2-universal-jfit");
+        }
+        Mat schwarz_b = dft_b.compute_schwarz_ints();
+        compute_ce_model_energies(B, dft_b, precision, schwarz_b,
+                                  scale_factors.xdm);
+        polarization_energy = compute_polarization_energy(A, dft_a, B, dft_b);
     }
-
-    Mat schwarz_a = dft_a.compute_schwarz_ints();
-    Mat schwarz_b = dft_b.compute_schwarz_ints();
-
-    compute_ce_model_energies(A, dft_a, precision, schwarz_a,
-                              scale_factors.xdm);
-    compute_ce_model_energies(B, dft_b, precision, schwarz_b,
-                              scale_factors.xdm);
 
     Wavefunction ABn(A, B);
 
@@ -365,7 +371,7 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     } else {
         energy.dispersion = ce_model_dispersion_energy(A.atoms, B.atoms);
     }
-    energy.polarization = compute_polarization_energy(A, dft_a, B, dft_b);
+    energy.polarization = polarization_energy;
 
     energy.total =
         scale_factors.scaled_total(energy.coulomb, energy.exchange_repulsion,

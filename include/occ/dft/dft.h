@@ -219,9 +219,6 @@ class DFT {
         std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
         std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
         const auto &funcs = m_funcs;
-        if (m_gto_values_cache.size() < m_atom_grids.size()) {
-            m_gto_values_cache.resize(m_atom_grids.size());
-        }
         size_t atom_grid_idx{0};
         for (const auto &atom_grid : m_atom_grids) {
             const auto &atom_pts = atom_grid.points;
@@ -229,10 +226,6 @@ class DFT {
             const size_t npt_total = atom_pts.cols();
             const size_t num_blocks = npt_total / BLOCKSIZE + 1;
 
-            auto &cache = m_gto_values_cache[atom_grid_idx];
-            if (cache.size() != num_blocks) {
-                cache.resize(num_blocks);
-            }
             auto lambda = [&](int thread_id) {
                 Mat rho_storage(num_rows_factor * BLOCKSIZE,
                                 occ::density::num_components(derivative_order));
@@ -251,11 +244,8 @@ class DFT {
                     auto &k = Kt[thread_id];
                     const auto &pts_block = atom_pts.middleCols(l, npt);
                     const auto &weights_block = atom_weights.segment(l, npt);
-                    if (cache[block].phi.rows() == 0) {
-                        occ::gto::evaluate_basis(basis, pts_block, cache[block],
-                                                 derivative_order);
-                    }
-                    const auto &gto_vals = cache[block];
+                    auto gto_vals = occ::gto::evaluate_basis(basis, pts_block,
+                                                             derivative_order);
                     occ::density::evaluate_density<derivative_order,
                                                    spinorbital_kind>(
                         D2, gto_vals, rho);
@@ -440,7 +430,6 @@ class DFT {
     MolecularGrid m_grid;
     std::vector<DensityFunctional> m_funcs;
     std::vector<AtomGrid> m_atom_grids;
-    mutable std::vector<std::vector<occ::gto::GTOValues>> m_gto_values_cache{};
     mutable double m_two_electron_energy{0.0};
     mutable double m_exc_dft{0.0};
     mutable double m_exchange_energy{0.0};
