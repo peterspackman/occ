@@ -78,9 +78,9 @@ var NAVTREEINDEX =
 "namespaceocc_1_1gto.html#ab095e06b21b929c59b79d8dc12944570",
 "orb_8h.html#ad33fc26f33525ddebcd8886565af9d6e",
 "structocc_1_1core_1_1numpy_1_1NumpyArray.html#a1cd88e6acf4c520bcdc23205e4f9fb40",
-"structocc_1_1io_1_1ColumnConfiguration.html#adc415c69232a6e3b14a1b3c438eb154f",
-"structocc_1_1qm_1_1MolecularOrbitals.html#add93919459e859112a7ee63fbddb9269",
-"units_8h.html#a4cd54c073c4aca586807e033f16e37b7"
+"structocc_1_1io_1_1ColumnConfiguration_1_1Border.html#a0749faab2f125909f360f02051825f35",
+"structocc_1_1qm_1_1Shell.html",
+"units_8h.html#a82df95b564a97fefb8f9ee088b9b647b"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

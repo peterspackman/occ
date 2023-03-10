@@ -1,8 +1,7 @@
 var searchData=
 [
-  ['h_841',['H',['../namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6ac1d9f50f86825a1a2302ec2449c17196',1,'occ::core']]],
-  ['h_842',['h',['../structocc_1_1core_1_1graph_1_1PeriodicEdge.html#ae8e50ecfaf5af9aedfcd9fedd142bb81',1,'occ::core::graph::PeriodicEdge::h()'],['../structocc_1_1crystal_1_1HKL.html#a487b5f9ce144ae61d237107138dd5741',1,'occ::crystal::HKL::h()']]],
-  ['h_843',['H',['../structocc_1_1scf_1_1SCF.html#ab59059b3e1944c77230e48aa25245109',1,'occ::scf::SCF::H()'],['../structocc_1_1qm_1_1Wavefunction.html#ad0e4e1c4f93b97a3e479d3dbba47ef05',1,'occ::qm::Wavefunction::H()']]],
+  ['h_842',['H',['../namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6ac1d9f50f86825a1a2302ec2449c17196',1,'occ::core::H()'],['../structocc_1_1scf_1_1SCF.html#ab59059b3e1944c77230e48aa25245109',1,'occ::scf::SCF::H()'],['../structocc_1_1qm_1_1Wavefunction.html#ad0e4e1c4f93b97a3e479d3dbba47ef05',1,'occ::qm::Wavefunction::H()']]],
+  ['h_843',['h',['../structocc_1_1core_1_1graph_1_1PeriodicEdge.html#ae8e50ecfaf5af9aedfcd9fedd142bb81',1,'occ::core::graph::PeriodicEdge::h()'],['../structocc_1_1crystal_1_1HKL.html#a487b5f9ce144ae61d237107138dd5741',1,'occ::crystal::HKL::h()']]],
   ['hartreefock_844',['HartreeFock',['../classocc_1_1qm_1_1HartreeFock.html#a626f4e045b22ec9fdd77167f6a6c73d1',1,'occ::qm::HartreeFock::HartreeFock()'],['../classocc_1_1qm_1_1HartreeFock.html',1,'occ::qm::HartreeFock']]],
   ['has_5fh_5fr_5fchoice_845',['has_H_R_choice',['../classocc_1_1crystal_1_1SpaceGroup.html#a3216f2dfca408e7ce217319fddb33e73',1,'occ::crystal::SpaceGroup']]],
   ['hash_5fvalue_846',['hash_value',['../structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html#a88e4c3f1c4b329d47bc36a60295260f7',1,'occ::geometry::mc::impl::Edge::hash_value()'],['../structocc_1_1geometry_1_1MIndex.html#a446f917c5073e3b2b37fce919e9095a8',1,'occ::geometry::MIndex::hash_value()']]],
@@ -18,8 +17,8 @@ var searchData=
   ['hexadecapole_856',['Hexadecapole',['../structocc_1_1core_1_1Multipole.html#a6d4d4591048065b2f686976812fd51b1',1,'occ::core::Multipole']]],
   ['hexadecapole_857',['hexadecapole',['../structocc_1_1core_1_1Multipole.html#ab2a63bc0ab8b611bd8dc95651b2be3b1',1,'occ::core::Multipole']]],
   ['hexagonal_5fcell_858',['hexagonal_cell',['../namespaceocc_1_1crystal.html#a9e01d3b4dd9257ecd1fac2bfba8947c3',1,'occ::crystal']]],
-  ['hf_859',['HF',['../structocc_1_1io_1_1GaussianInputFile.html#a51627d96aba86721b7969ea8e4905d4daa99d9e28b07573e22760b572129ad438',1,'occ::io::GaussianInputFile']]],
-  ['hf_860',['hf',['../classocc_1_1dft_1_1DFT.html#a457021dad1846051129e7f7183797e77',1,'occ::dft::DFT']]],
+  ['hf_859',['hf',['../classocc_1_1dft_1_1DFT.html#a457021dad1846051129e7f7183797e77',1,'occ::dft::DFT']]],
+  ['hf_860',['HF',['../structocc_1_1io_1_1GaussianInputFile.html#a51627d96aba86721b7969ea8e4905d4daa99d9e28b07573e22760b572129ad438',1,'occ::io::GaussianInputFile']]],
   ['hf_2eh_861',['hf.h',['../hf_8h.html',1,'']]],
   ['hf_5ffwd_2eh_862',['hf_fwd.h',['../hf__fwd_8h.html',1,'']]],
   ['hgga_863',['HGGA',['../classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa5d26cc198842849ff3ac93657856947c',1,'occ::dft::DensityFunctional']]],
