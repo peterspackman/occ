@@ -33,6 +33,7 @@ var classocc_1_1dft_1_1DFT =
     [ "nuclear_electric_field_contribution", "classocc_1_1dft_1_1DFT.html#ab0c7249530720ef82643f5670620c900", null ],
     [ "nuclear_electric_potential_contribution", "classocc_1_1dft_1_1DFT.html#ada10192bafbd396909b855c72d8591bc", null ],
     [ "nuclear_repulsion_energy", "classocc_1_1dft_1_1DFT.html#a2ca57b2a5d2e483f9299485f11564779", null ],
+    [ "range_separated_parameters", "classocc_1_1dft_1_1DFT.html#a27c7379a38a9cf5228468482678178f9", null ],
     [ "set_density_fitting_basis", "classocc_1_1dft_1_1DFT.html#ab2eeda64973fe7c0b9635d290b1b911f", null ],
     [ "set_integration_grid", "classocc_1_1dft_1_1DFT.html#a30441d9955dee9679731e28a53e6ff79", null ],
     [ "set_method", "classocc_1_1dft_1_1DFT.html#a7c1e5755c406ab949225af5e8ae78d1d", null ],

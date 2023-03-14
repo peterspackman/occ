@@ -8,6 +8,12 @@ var dir_7ab1db0ec535273aaa16e13087447790 =
     ] ],
     [ "grid.h", "grid_8h.html", "grid_8h" ],
     [ "lebedev.h", "lebedev_8h.html", "lebedev_8h" ],
+    [ "nonlocal_correlation_parameters.h", "nonlocal__correlation__parameters_8h.html", [
+      [ "NonLocalCorrelationParameters", "structocc_1_1dft_1_1NonLocalCorrelationParameters.html", "structocc_1_1dft_1_1NonLocalCorrelationParameters" ]
+    ] ],
+    [ "range_separated_parameters.h", "range__separated__parameters_8h.html", [
+      [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ]
+    ] ],
     [ "seminumerical_exchange.h", "seminumerical__exchange_8h.html", [
       [ "SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange" ]
     ] ],

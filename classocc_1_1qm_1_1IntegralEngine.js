@@ -34,10 +34,12 @@ var classocc_1_1qm_1_1IntegralEngine =
     [ "nsh_aux", "classocc_1_1qm_1_1IntegralEngine.html#a4f074722645ce688bdca63281892fd25", null ],
     [ "one_electron_operator", "classocc_1_1qm_1_1IntegralEngine.html#ad28a329c0312445b36bdc5e5025701d9", null ],
     [ "point_charge_potential", "classocc_1_1qm_1_1IntegralEngine.html#afa05a49965de81c5999abc077906fb82", null ],
+    [ "range_separated_omega", "classocc_1_1qm_1_1IntegralEngine.html#ad209475e84d6b9169f7fc6ecea01b290", null ],
     [ "schwarz", "classocc_1_1qm_1_1IntegralEngine.html#ace1390f7f1a0cfe11a0020f4600f5467", null ],
     [ "set_auxiliary_basis", "classocc_1_1qm_1_1IntegralEngine.html#af906284349a10179aff5c6ff82de3276", null ],
     [ "set_dummy_basis", "classocc_1_1qm_1_1IntegralEngine.html#a9bd03d73ea11f267a941651de1be06ab", null ],
     [ "set_effective_core_potentials", "classocc_1_1qm_1_1IntegralEngine.html#aaba31c1545e2655a5e2df775f1168cea", null ],
+    [ "set_range_separated_omega", "classocc_1_1qm_1_1IntegralEngine.html#a8f424044bff44e7c8f13def91db00675", null ],
     [ "shellpairs", "classocc_1_1qm_1_1IntegralEngine.html#a63fb2ea8fcf65da603ed10aff1708966", null ],
     [ "shells", "classocc_1_1qm_1_1IntegralEngine.html#a468493006ab69a98051666edfb385744", null ]
 ];

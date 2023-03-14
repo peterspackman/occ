@@ -61,7 +61,9 @@ var annotated_dup =
         [ "AtomGridSettings", "structocc_1_1dft_1_1AtomGridSettings.html", "structocc_1_1dft_1_1AtomGridSettings" ],
         [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
         [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
-        [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ]
+        [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
+        [ "NonLocalCorrelationParameters", "structocc_1_1dft_1_1NonLocalCorrelationParameters.html", "structocc_1_1dft_1_1NonLocalCorrelationParameters" ],
+        [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ]
       ] ],
       [ "geometry", "namespaceocc_1_1geometry.html", [
         [ "mc", "namespaceocc_1_1geometry_1_1mc.html", [
