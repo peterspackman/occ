@@ -1,6 +1,8 @@
 #include <fmt/core.h>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
+#include <occ/core/parallel.h>
+#include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
@@ -229,93 +231,10 @@ void xdm_moment_kernel_unrestricted(
 
     const auto &rho_a = occ::qm::block::a(rho);
     const auto &rho_b = occ::qm::block::b(rho);
-
-    for (int j = 0; j < rho_pro.rows(); j++) {
-
-        double protot = rho_pro.row(j).sum();
-        if (protot < 1e-30)
-            continue;
-        // now it holds the weight function
-        occ::RowVec hirshfeld_weights = rho_pro.row(j).array() / protot;
-        num_electrons_promol += protot * weights(j);
-
-        double fac = 2.0 * (rho_a(j, 0) + rho_b(j, 0)) * weights(j);
-        hirshfeld_charges.array() -= hirshfeld_weights.array() * fac;
-
-        const auto &rja = r.row(j).array();
-
-        {
-            double lapl_a = rho_a(j, 4);
-            double tau_a = 2 * rho_a(j, 5);
-            double sigma_a = rho_a(j, 1) * rho_a(j, 1) +
-                             rho_a(j, 2) * rho_a(j, 2) +
-                             rho_a(j, 3) * rho_a(j, 3);
-            double dsigs_a =
-                tau_a - 0.25 * sigma_a / std::max(rho_a(j, 0), 1e-30);
-            double q_a = (lapl_a - 2 * dsigs_a) / 6.0;
-            double bhole_a = occ::xdm::becke_hole_br89(rho_a(j, 0), q_a, 1.0);
-
-            occ::RowVec r_sub_ba =
-                (rja - bhole_a)
-                    .unaryExpr([](double x) { return std::max(x, 0.0); })
-                    .transpose();
-
-            moments.row(0).array() += 2 * hirshfeld_weights.array() *
-                                      (rja - r_sub_ba.array()).pow(2) *
-                                      rho_a(j, 0) * weights(j);
-            moments.row(1).array() +=
-                2 * hirshfeld_weights.array() *
-                (rja.pow(2) - r_sub_ba.array().pow(2)).pow(2) * rho_a(j, 0) *
-                weights(j);
-            moments.row(2).array() +=
-                2 * hirshfeld_weights.array() *
-                (rja.pow(3) - r_sub_ba.array().pow(3)).pow(2) * rho_a(j, 0) *
-                weights(j);
-            num_electrons += 2 * rho_a(j, 0) * weights(j);
-            volume.array() += (hirshfeld_weights.array() * r.row(j).array() *
-                               r.row(j).array() * r.row(j).array())
-                                  .transpose()
-                                  .array() *
-                              2 * rho_a(j, 0) * weights(j);
-        }
-        {
-            double lapl_b = rho_b(j, 4);
-            double tau_b = 2 * rho_b(j, 5);
-            double sigma_b = rho_b(j, 1) * rho_b(j, 1) +
-                             rho_b(j, 2) * rho_b(j, 2) +
-                             rho_b(j, 3) * rho_b(j, 3);
-            double dsigs_b =
-                tau_b - 0.25 * sigma_b / std::max(rho_b(j, 0), 1e-30);
-            double q_b = (lapl_b - 2 * dsigs_b) / 6.0;
-            double bhole_b = occ::xdm::becke_hole_br89(rho_b(j, 0), q_b, 1.0);
-
-            const auto &rja = r.row(j).array();
-
-            occ::RowVec r_sub_bb =
-                (rja - bhole_b)
-                    .unaryExpr([](double x) { return std::max(x, 0.0); })
-                    .transpose();
-
-            moments.row(0).array() +=
-                2 * hirshfeld_weights.array() * weights(j) *
-                (rja - r_sub_bb.array()).pow(2) * rho_b(j, 0);
-            moments.row(1).array() +=
-                2 * hirshfeld_weights.array() *
-                (rja.pow(2) - r_sub_bb.array().pow(2)).pow(2) * rho_b(j, 0) *
-                weights(j);
-
-            moments.row(2).array() +=
-                2 * hirshfeld_weights.array() *
-                (rja.pow(3) - r_sub_bb.array().pow(3)).pow(2) * rho_b(j, 0) *
-                weights(j);
-
-            num_electrons += 2 * rho_b(j, 0) * weights(j);
-            volume.array() += (hirshfeld_weights.array() * rja * rja * rja)
-                                  .transpose()
-                                  .array() *
-                              2 * rho_b(j, 0) * weights(j);
-        }
-    }
+    Mat rho_tot = rho_a + rho_b;
+    xdm_moment_kernel_restricted(r, rho_tot, weights, rho_pro,
+                                 hirshfeld_charges, volume, moments,
+                                 num_electrons, num_electrons_promol);
 }
 
 } // namespace impl
@@ -345,6 +264,7 @@ XDM::XDM(const occ::qm::AOBasis &basis, int charge)
 double XDM::energy(const occ::qm::MolecularOrbitals &mo) {
     occ::log::debug("MO has {} alpha electrons {} beta electrons\n", mo.n_alpha,
                     mo.n_beta);
+    occ::timing::start(occ::timing::category::xdm);
     populate_moments(mo);
     populate_polarizabilities();
     occ::log::debug("moments\n{}\n", m_moments);
@@ -352,6 +272,7 @@ double XDM::energy(const occ::qm::MolecularOrbitals &mo) {
     std::tie(m_energy, m_forces) =
         xdm_dispersion_energy({m_basis.atoms(), m_polarizabilities, m_moments,
                                m_volume, m_volume_free});
+    occ::timing::stop(occ::timing::category::xdm);
     return m_energy;
 }
 
@@ -366,13 +287,13 @@ const Mat3N &XDM::forces(const occ::qm::MolecularOrbitals &mo) {
 }
 
 void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
+    int nthreads = occ::parallel::get_num_threads();
     if (m_density_matrix.size() != 0 &&
         occ::util::all_close(mo.D, m_density_matrix)) {
         return;
     }
     m_density_matrix = mo.D;
 
-    occ::gto::GTOValues gto_vals;
     const auto &atoms = m_basis.atoms();
     const size_t num_atoms = atoms.size();
 
@@ -384,7 +305,87 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
     int num_rows_factor = 1;
     if (unrestricted)
         num_rows_factor = 2;
-    gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, 2);
+
+    constexpr double density_tolerance = 1e-10;
+    constexpr int max_derivative{2};
+    std::vector<Vec> tl_hirshfeld_charges(nthreads, Vec::Zero(num_atoms));
+    std::vector<Vec> tl_volumes(nthreads, Vec::Zero(num_atoms));
+    std::vector<Vec> tl_free_volumes(nthreads, Vec::Zero(num_atoms));
+    std::vector<Mat> tl_moments(nthreads, Mat::Zero(3, num_atoms));
+    std::vector<double> tl_num_electrons(nthreads, 0.0);
+    std::vector<double> tl_num_electrons_promol(nthreads, 0.0);
+
+    for (const auto &atom_grid : m_atom_grids) {
+        const auto &atom_pts = atom_grid.points;
+        const auto &atom_weights = atom_grid.weights;
+        const size_t npt_total = atom_pts.cols();
+        const size_t num_blocks = npt_total / BLOCKSIZE + 1;
+
+        auto lambda = [&](int thread_id) {
+            occ::gto::GTOValues gto_vals;
+            gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, 2);
+            auto &hirshfeld_charges = tl_hirshfeld_charges[thread_id];
+            auto &volume = tl_volumes[thread_id];
+            auto &volume_free = tl_free_volumes[thread_id];
+            auto &moments = tl_moments[thread_id];
+            auto &num_e = tl_num_electrons[thread_id];
+            auto &num_e_promol = tl_num_electrons_promol[thread_id];
+            for (size_t block = 0; block < num_blocks; block++) {
+                if (block % nthreads != thread_id)
+                    continue;
+                Eigen::Index l = block * BLOCKSIZE;
+                Eigen::Index u =
+                    std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+                Eigen::Index npt = u - l;
+                if (npt <= 0)
+                    continue;
+                Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
+                Mat r = Mat::Zero(npt, num_atoms);
+                Mat rho =
+                    Mat::Zero(num_rows_factor * npt,
+                              occ::density::num_components(max_derivative));
+                const auto &pts_block = atom_pts.middleCols(l, npt);
+                const auto &weights_block = atom_weights.segment(l, npt);
+                occ::gto::evaluate_basis(m_basis, pts_block, gto_vals,
+                                         max_derivative);
+                if (unrestricted) {
+                    occ::density::evaluate_density<
+                        max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
+                        mo.D, gto_vals, rho);
+                } else {
+                    occ::density::evaluate_density<
+                        max_derivative, occ::qm::SpinorbitalKind::Restricted>(
+                        mo.D, gto_vals, rho);
+                }
+
+                for (int i = 0; i < num_atoms; i++) {
+                    const auto &sb = m_slater_basis[i];
+                    occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
+                    r.col(i) = (pts_block.colwise() - pos).colwise().norm();
+                    const auto &ria = r.col(i).array();
+                    // currently the hirsfheld weights array just holds the free
+                    // atom density
+                    hirshfeld_weights.col(i) = sb.rho(r.col(i));
+                    volume_free(i) += (hirshfeld_weights.col(i).array() *
+                                       weights_block.array() * ria * ria * ria)
+                                          .sum();
+                }
+                if (unrestricted) {
+                    impl::xdm_moment_kernel_unrestricted(
+                        r, rho, weights_block, hirshfeld_weights,
+                        hirshfeld_charges, volume, moments, num_e,
+                        num_e_promol);
+                } else {
+                    impl::xdm_moment_kernel_restricted(
+                        r, rho, weights_block, hirshfeld_weights,
+                        hirshfeld_charges, volume, moments, num_e,
+                        num_e_promol);
+                }
+            }
+        };
+        occ::parallel::parallel_do(lambda);
+    }
+
     m_hirshfeld_charges = Vec::Zero(num_atoms);
     for (int i = 0; i < num_atoms; i++) {
         m_hirshfeld_charges(i) = static_cast<double>(atoms[i].atomic_number);
@@ -395,63 +396,15 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
     m_volume = Vec::Zero(num_atoms);
     m_volume_free = Vec::Zero(num_atoms);
 
-    constexpr double density_tolerance = 1e-10;
-
-    for (const auto &atom_grid : m_atom_grids) {
-        const auto &atom_pts = atom_grid.points;
-        const auto &atom_weights = atom_grid.weights;
-        const size_t npt_total = atom_pts.cols();
-        const size_t num_blocks = npt_total / BLOCKSIZE + 1;
-
-        for (size_t block = 0; block < num_blocks; block++) {
-            Eigen::Index l = block * BLOCKSIZE;
-            Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
-            Eigen::Index npt = u - l;
-            if (npt <= 0)
-                continue;
-            Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
-            Mat r = Mat::Zero(npt, num_atoms);
-            Mat rho = Mat::Zero(num_rows_factor * npt,
-                                occ::density::num_components(2));
-            const auto &pts_block = atom_pts.middleCols(l, npt);
-            const auto &weights_block = atom_weights.segment(l, npt);
-            occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, 2);
-            if (unrestricted) {
-                occ::density::evaluate_density<
-                    2, occ::qm::SpinorbitalKind::Unrestricted>(m_density_matrix,
-                                                               gto_vals, rho);
-            } else {
-                occ::density::evaluate_density<
-                    2, occ::qm::SpinorbitalKind::Restricted>(m_density_matrix,
-                                                             gto_vals, rho);
-            }
-
-            for (int i = 0; i < num_atoms; i++) {
-                auto el = Element(i);
-                const auto &sb = m_slater_basis[i];
-                occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
-                r.col(i) = (pts_block.colwise() - pos).colwise().norm();
-                const auto &ria = r.col(i).array();
-                // currently the hirsfheld weights array just holds the free
-                // atom density
-                hirshfeld_weights.col(i) = sb.rho(r.col(i));
-                m_volume_free(i) += (hirshfeld_weights.col(i).array() *
-                                     weights_block.array() * ria * ria * ria)
-                                        .sum();
-            }
-            if (unrestricted) {
-                impl::xdm_moment_kernel_unrestricted(
-                    r, rho, weights_block, hirshfeld_weights,
-                    m_hirshfeld_charges, m_volume, m_moments, num_electrons,
-                    num_electrons_promol);
-            } else {
-                impl::xdm_moment_kernel_restricted(
-                    r, rho, weights_block, hirshfeld_weights,
-                    m_hirshfeld_charges, m_volume, m_moments, num_electrons,
-                    num_electrons_promol);
-            }
-        }
+    for (size_t i = 0; i < nthreads; i++) {
+        m_hirshfeld_charges += tl_hirshfeld_charges[i];
+        m_volume += tl_volumes[i];
+        m_volume_free += tl_free_volumes[i];
+        m_moments += tl_moments[i];
+        num_electrons += tl_num_electrons[i];
+        num_electrons_promol += tl_num_electrons_promol[i];
     }
+
     occ::log::debug("Num electrons {:20.12f}, promolecule {:20.12f}\n",
                     num_electrons, num_electrons_promol);
     occ::log::debug("Hirshfeld charges:\n{}", m_hirshfeld_charges);

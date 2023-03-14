@@ -50,6 +50,12 @@ struct RuntimeInput {
     std::string output_filename{""};
 };
 
+struct DispersionCorrectionInput {
+    bool evaluate_correction{false};
+    double xdm_a1{1.0};
+    double xdm_a2{1.0};
+};
+
 struct PairInput {
     std::string source_a{"none"};
     Mat3 rotation_a{Mat3::Identity()};
@@ -70,6 +76,7 @@ struct OccInput {
     MethodInput method;
     BasisSetInput basis;
     SolventInput solvent;
+    DispersionCorrectionInput dispersion;
     std::string name{""};
     std::string filename{""};
 };

@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
         solvent_surface_filename{};
     int threads{1}, charge{0}, multiplicity{1};
     bool unrestricted{false}, spherical{false};
+    bool xdm_dispersion{false};
 
     CLI::Option *input_option =
         app.add_option("input", input_file, "input file");
@@ -97,6 +98,7 @@ int main(int argc, char *argv[]) {
     app.add_flag("-s,--solvent", solvent, "use spherical basis sets");
     app.add_flag("-f,--solvent-file", solvent_surface_filename,
                  "file to write solvent surface");
+    app.add_flag("--xdm", xdm_dispersion, "use XDM dispersion correction");
 
     CLI11_PARSE(app, argc, argv);
     occ::log::setup_logging(verbosity);
@@ -117,6 +119,7 @@ int main(int argc, char *argv[]) {
         if (config.filename.empty()) {
             config.filename = config.name;
         }
+        config.dispersion.evaluate_correction = xdm_dispersion;
 
         occ::parallel::set_num_threads(std::max(1, config.driver.threads));
         occ::parallel::set_num_threads(threads);
@@ -135,6 +138,8 @@ int main(int argc, char *argv[]) {
         config.method.name = method;
         config.electronic.charge = charge;
         config.basis.spherical = spherical;
+        if (config.method.name[0] == 'u')
+            unrestricted = true;
 
         if (df_basis) {
             config.basis.df_name = *df_basis;
@@ -145,6 +150,11 @@ int main(int argc, char *argv[]) {
             config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
             if (config.method.name == "rhf")
                 config.method.name = "uhf";
+            else {
+                if (config.method.name[0] != 'u') {
+                    config.method.name = "u" + config.method.name;
+                }
+            }
             occ::log::info("Spinorbital kind: Unrestricted");
         } else if (config.method.name == "ghf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::General;
@@ -158,6 +168,7 @@ int main(int argc, char *argv[]) {
             occ::log::debug("Using energy driver");
             Wavefunction wfn = occ::main::single_point_calculation(config);
             write_output_files(config, wfn);
+            occ::main::calculate_dispersion(config, wfn);
             occ::main::calculate_properties(config, wfn);
 
             if (solvent) {

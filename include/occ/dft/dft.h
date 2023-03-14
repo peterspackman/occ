@@ -317,6 +317,7 @@ class DFT {
         int deriv = density_derivative();
         switch (mo.kind) {
         case SpinorbitalKind::Unrestricted: {
+            occ::log::debug("Unrestricted vxc evaluation");
             switch (deriv) {
             case 0:
                 return compute_K_dft<0, SpinorbitalKind::Unrestricted>(

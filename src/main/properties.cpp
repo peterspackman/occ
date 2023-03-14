@@ -8,9 +8,33 @@
 #include <occ/main/properties.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/hf.h>
+#include <occ/xdm/xdm.h>
 #include <scn/scn.h>
 
 namespace occ::main {
+
+void print_charges(const std::string &charge_type, const Vec &charges,
+                   const std::vector<occ::core::Atom> &atoms) {
+    log::info("{:—<72s}", fmt::format("{} charges (au)  ", charge_type));
+    for (int i = 0; i < charges.rows(); i++) {
+        log::info("{:<6s} {: 9.6f}",
+                  core::Element(atoms[i].atomic_number).symbol(), charges(i));
+    }
+}
+
+void calculate_dispersion(const OccInput &config, const Wavefunction &wfn) {
+    if (!config.dispersion.evaluate_correction)
+        return;
+    log::info("{:=^72s}", "  Dispersion Correction  ");
+    log::info("Method: {}", "XDM");
+    occ::xdm::XDM xdm_calc(wfn.basis, wfn.charge());
+    auto energy = xdm_calc.energy(wfn.mo);
+    log::info("Energy            	    {:>20.12f} (Hartree)", energy);
+    log::info("Corrected total energy      {:>20.12f} (Hartree)\n",
+              energy + wfn.energy.total);
+    Vec charges = xdm_calc.hirshfeld_charges();
+    print_charges("Hirshfeld", charges, wfn.atoms);
+}
 
 void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
     log::info("{:=^72s}", "  Converged Properties  ");
@@ -27,22 +51,12 @@ void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
     log::info("{}", mult);
 
     Vec charges = wfn.mulliken_charges();
-    log::info("{:—<72s}", "Mulliken Charges (au)  ");
-    for (int i = 0; i < charges.rows(); i++) {
-        log::info("{:<6s} {: 9.6f}",
-                  core::Element(wfn.atoms[i].atomic_number).symbol(),
-                  charges(i));
-    }
+    print_charges("Mulliken", charges, wfn.atoms);
 
     bool do_chelpg = false;
     if (do_chelpg) {
-        log::info("{:—<72s}", "CHELPG Charges (au)  ");
         Vec charges_chelpg = occ::qm::chelpg_charges(wfn);
-        for (int i = 0; i < charges_chelpg.rows(); i++) {
-            log::info("{:<6s} {: 9.6f}",
-                      core::Element(wfn.atoms[i].atomic_number).symbol(),
-                      charges_chelpg(i));
-        }
+        print_charges("CHELPG", charges_chelpg, wfn.atoms);
     }
     bool do_esp = false;
     // TODO make this flexible

@@ -70,7 +70,12 @@ DFT::DFT(const std::string &method, const AOBasis &basis,
     : m_hf(basis), m_grid(basis, grid_settings) {
 
     set_integration_grid(grid_settings);
-    set_method(method, false);
+    if (method[0] == 'u') {
+        set_method(method.substr(1), true);
+        fmt::print("Unrestricted\n");
+    } else {
+        set_method(method, false);
+    }
 }
 
 void DFT::set_unrestricted(bool unrestricted) {

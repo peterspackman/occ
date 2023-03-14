@@ -38,6 +38,7 @@ enum category {
     ecp,
     assoc_legendre,
     fft,
+    xdm,
     solvent,
     global,
     _group_count

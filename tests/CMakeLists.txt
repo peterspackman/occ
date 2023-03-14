@@ -51,3 +51,7 @@ catch_discover_tests(slater_tests)
 add_executable(solvent_tests "${CMAKE_CURRENT_SOURCE_DIR}/solvent_tests.cpp")
 target_link_libraries(solvent_tests PRIVATE occ_solvent occ_io Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(solvent_tests)
+
+add_executable(xdm_tests "${CMAKE_CURRENT_SOURCE_DIR}/xdm_tests.cpp")
+target_link_libraries(xdm_tests PRIVATE occ_xdm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(xdm_tests)
