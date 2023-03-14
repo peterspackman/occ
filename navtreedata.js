@@ -76,11 +76,11 @@ var NAVTREEINDEX =
 "gaussian__input__file_8h.html",
 "namespaceocc.html#aa25e99581dd6d9cb6fdfc2e54124f91c",
 "namespaceocc_1_1gto.html#ab095e06b21b929c59b79d8dc12944570",
-"orb_8h.html#ad33fc26f33525ddebcd8886565af9d6e",
-"structocc_1_1core_1_1numpy_1_1NumpyArray.html#a1cd88e6acf4c520bcdc23205e4f9fb40",
-"structocc_1_1io_1_1ColumnConfiguration_1_1Border.html#a0749faab2f125909f360f02051825f35",
-"structocc_1_1qm_1_1Shell.html",
-"units_8h.html#a82df95b564a97fefb8f9ee088b9b647b"
+"orb_8h.html#a6fe071de5cda3dacedfb8f5957a82619",
+"structocc_1_1core_1_1numpy_1_1NumpyArray.html",
+"structocc_1_1io_1_1ColumnConfiguration.html#af43f1425da1694c3fc4a1c088b15a64c",
+"structocc_1_1qm_1_1MolecularOrbitals.html#a986ba6612cfa074a623515775f37b84d",
+"unitcell_8h.html#a9e01d3b4dd9257ecd1fac2bfba8947c3"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

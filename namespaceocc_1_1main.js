@@ -10,6 +10,7 @@ var namespaceocc_1_1main =
       [ "NearestAtomDnorm", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8da904a394a586beaef3768b3b664aa966c", null ],
       [ "ElectronDensity", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8dad47101755289809d537b90d5f1737add", null ]
     ] ],
+    [ "calculate_dispersion", "namespaceocc_1_1main.html#a5bcdc235883e285c89c65c39072780f5", null ],
     [ "calculate_properties", "namespaceocc_1_1main.html#a0b6643aee3051aa1eea447c1f1225282", null ],
     [ "ce_model_energies", "namespaceocc_1_1main.html#a901f19833cb03324705091b2ee8ee4a4", null ],
     [ "ce_model_energy", "namespaceocc_1_1main.html#a9bd75f1db2963d6b0c769e586b588658", null ],

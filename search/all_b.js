@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['k_1032',['K',['../structocc_1_1scf_1_1SCF.html#a5e696c1e94d34bd6d02de8987de38f9f',1,'occ::scf::SCF::K()'],['../structocc_1_1qm_1_1Wavefunction.html#a3bf373b971cdcf5ca14c713095dfcd38',1,'occ::qm::Wavefunction::K()']]],
-  ['k_1033',['k',['../structocc_1_1core_1_1graph_1_1PeriodicEdge.html#ac9092ab57abeddb7b155ee4fa33ccfa5',1,'occ::core::graph::PeriodicEdge::k()'],['../structocc_1_1crystal_1_1HKL.html#a546fd3f0dcf38bc585620810b4beaa28',1,'occ::crystal::HKL::k()']]],
+  ['k_1032',['k',['../structocc_1_1core_1_1graph_1_1PeriodicEdge.html#ac9092ab57abeddb7b155ee4fa33ccfa5',1,'occ::core::graph::PeriodicEdge::k()'],['../structocc_1_1crystal_1_1HKL.html#a546fd3f0dcf38bc585620810b4beaa28',1,'occ::crystal::HKL::k()']]],
+  ['k_1033',['K',['../structocc_1_1scf_1_1SCF.html#a5e696c1e94d34bd6d02de8987de38f9f',1,'occ::scf::SCF::K()'],['../structocc_1_1qm_1_1Wavefunction.html#a3bf373b971cdcf5ca14c713095dfcd38',1,'occ::qm::Wavefunction::K()']]],
   ['kabsch_2eh_1034',['kabsch.h',['../kabsch_8h.html',1,'']]],
   ['kabsch_5frotation_5fmatrix_1035',['kabsch_rotation_matrix',['../namespaceocc_1_1core_1_1linalg.html#a9e103d9ebbd8d958bd03c6b3f33c9d0e',1,'occ::core::linalg']]],
   ['kappa_1036',['kappa',['../structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo.html#aab00453f8a14af424004dcd19251d25a',1,'occ::qm::cint::impl::BasisInfo']]],
@@ -11,9 +11,9 @@ var searchData=
   ['key_1040',['key',['../structocc_1_1io_1_1impl_1_1FchkScalarWriter.html#a34906b7933336dddf89a7cba6331aa46',1,'occ::io::impl::FchkScalarWriter::key()'],['../structocc_1_1io_1_1impl_1_1FchkVectorWriter.html#a537d726a36ff707ff9e1f1617577c262',1,'occ::io::impl::FchkVectorWriter::key()']]],
   ['keys_1041',['keys',['../structocc_1_1io_1_1ReferenceData.html#a3915ac96ee9d1268dc76b11f6dce0a35',1,'occ::io::ReferenceData']]],
   ['keywords_1042',['keywords',['../structocc_1_1io_1_1GaussianInputFile.html#acdd8cdc5cd156e9a93fc60641d2a06c1',1,'occ::io::GaussianInputFile']]],
-  ['kind_1043',['Kind',['../structocc_1_1qm_1_1Shell.html#a937504c99e9ce9492392d26dac2b699d',1,'occ::qm::Shell']]],
-  ['kind_1044',['kind',['../classocc_1_1qm_1_1AOBasis.html#a6fc408325d1e4a36662993b96a82ebe2',1,'occ::qm::AOBasis::kind()'],['../classocc_1_1dft_1_1DensityFunctional.html#a6e18aea8633c8be13c7ff7a062acfe39',1,'occ::dft::DensityFunctional::kind()'],['../structocc_1_1qm_1_1Shell.html#af97a82b298d0476414e5af23360bf1c1',1,'occ::qm::Shell::kind()'],['../structocc_1_1qm_1_1MolecularOrbitals.html#afa0c011f3ddd499a5a0b09597ebc62d9',1,'occ::qm::MolecularOrbitals::kind()']]],
-  ['kind_1045',['Kind',['../classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6',1,'occ::dft::DensityFunctional']]],
+  ['kind_1043',['kind',['../structocc_1_1qm_1_1Shell.html#af97a82b298d0476414e5af23360bf1c1',1,'occ::qm::Shell']]],
+  ['kind_1044',['Kind',['../structocc_1_1qm_1_1Shell.html#a937504c99e9ce9492392d26dac2b699d',1,'occ::qm::Shell::Kind()'],['../classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6',1,'occ::dft::DensityFunctional::Kind()']]],
+  ['kind_1045',['kind',['../classocc_1_1qm_1_1AOBasis.html#a6fc408325d1e4a36662993b96a82ebe2',1,'occ::qm::AOBasis::kind()'],['../classocc_1_1dft_1_1DensityFunctional.html#a6e18aea8633c8be13c7ff7a062acfe39',1,'occ::dft::DensityFunctional::kind()'],['../structocc_1_1qm_1_1MolecularOrbitals.html#afa0c011f3ddd499a5a0b09597ebc62d9',1,'occ::qm::MolecularOrbitals::kind()']]],
   ['kind_5fstring_1046',['kind_string',['../classocc_1_1dft_1_1DensityFunctional.html#ac3dc4dfba3f753903774490403e2aab4',1,'occ::dft::DensityFunctional']]],
   ['kinetic_1047',['kinetic',['../structocc_1_1qm_1_1Energy.html#ad9300be23b3273cef7ded0b9fc4a4847',1,'occ::qm::Energy']]],
   ['kinetic_1048',['Kinetic',['../classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6a646de935d1c13473e35b9a115f74eb6c',1,'occ::dft::DensityFunctional']]],

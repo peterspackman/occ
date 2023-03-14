@@ -123,6 +123,7 @@ var annotated_dup =
         [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
         [ "SolventInput", "structocc_1_1io_1_1SolventInput.html", "structocc_1_1io_1_1SolventInput" ],
         [ "RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", "structocc_1_1io_1_1RuntimeInput" ],
+        [ "DispersionCorrectionInput", "structocc_1_1io_1_1DispersionCorrectionInput.html", "structocc_1_1io_1_1DispersionCorrectionInput" ],
         [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
         [ "OccInput", "structocc_1_1io_1_1OccInput.html", "structocc_1_1io_1_1OccInput" ],
         [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],

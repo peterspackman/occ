@@ -35,6 +35,7 @@ var hierarchy =
       [ "occ::qm::CDIIS", "classocc_1_1qm_1_1CDIIS.html", null ]
     ] ],
     [ "occ::core::Dimer", "classocc_1_1core_1_1Dimer.html", null ],
+    [ "occ::io::DispersionCorrectionInput", "structocc_1_1io_1_1DispersionCorrectionInput.html", null ],
     [ "occ::io::DriverInput", "structocc_1_1io_1_1DriverInput.html", null ],
     [ "occ::qm::IntegralEngine::ECPCenter", "structocc_1_1qm_1_1IntegralEngine_1_1ECPCenter.html", null ],
     [ "occ::io::ECPShell", "structocc_1_1io_1_1ECPShell.html", null ],

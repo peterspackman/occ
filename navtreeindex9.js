@@ -1,5 +1,7 @@
 var NAVTREEINDEX9 =
 {
+"orb_8h.html#a6fe071de5cda3dacedfb8f5957a82619":[3,0,1,0,8,13,3],
+"orb_8h.html#acc8e0b755126663a63eb71bb60f55939":[3,0,1,0,8,13,1],
 "orb_8h.html#ad33fc26f33525ddebcd8886565af9d6e":[3,0,1,0,8,13,0],
 "orca__json_8h.html":[3,0,1,0,6,14],
 "pages.html":[],
@@ -99,7 +101,8 @@ var NAVTREEINDEX9 =
 "polarization_8h.html#a3f579e72d12f4f6e07a7aa8cae1217a7":[3,0,1,0,5,4,1],
 "polarization_8h.html#a5b13ad9a54dd22da274e948db722569b":[3,0,1,0,5,4,0],
 "properties_8h.html":[3,0,1,0,7,1],
-"properties_8h.html#a0b6643aee3051aa1eea447c1f1225282":[3,0,1,0,7,1,0],
+"properties_8h.html#a0b6643aee3051aa1eea447c1f1225282":[3,0,1,0,7,1,1],
+"properties_8h.html#a5bcdc235883e285c89c65c39072780f5":[3,0,1,0,7,1,0],
 "qcschema_8h.html":[3,0,1,0,6,15],
 "qm_2opmatrix_8h.html":[3,0,1,0,8,12],
 "qm_2opmatrix_8h.html#a0bc0a924c072a5951d3fab6ee085b317":[3,0,1,0,8,12,11],
@@ -246,8 +249,5 @@ var NAVTREEINDEX9 =
 "structocc_1_1core_1_1graph_1_1PeriodicEdge.html#ae8e50ecfaf5af9aedfcd9fedd142bb81":[2,0,1,0,1,0,1],
 "structocc_1_1core_1_1graph_1_1PeriodicEdge.html#af9587efa7a74482485c66301bddedf20":[2,0,1,0,1,0,4],
 "structocc_1_1core_1_1graph_1_1PeriodicVertex.html":[2,0,1,0,1,1],
-"structocc_1_1core_1_1graph_1_1PeriodicVertex.html#a391d8c9b64501e9d9856e826f7c2b4b6":[2,0,1,0,1,1,0],
-"structocc_1_1core_1_1numpy_1_1NumpyArray.html":[2,0,1,0,2,1],
-"structocc_1_1core_1_1numpy_1_1NumpyArray.html#a0507e25742bafacc97f04e8507514370":[2,0,1,0,2,1,0],
-"structocc_1_1core_1_1numpy_1_1NumpyArray.html#a08c65bb4ea3242cabd63598977d8b17b":[2,0,1,0,2,1,7]
+"structocc_1_1core_1_1graph_1_1PeriodicVertex.html#a391d8c9b64501e9d9856e826f7c2b4b6":[2,0,1,0,1,1,0]
 };

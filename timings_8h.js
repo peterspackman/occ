@@ -34,6 +34,7 @@ var timings_8h =
       [ "ecp", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a2fbeefb0b46bc0e0f0038e7e18b74067", null ],
       [ "assoc_legendre", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a9906171f1b5834b4d59a636036986915", null ],
       [ "fft", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a0a42fe5f2ac3f6c76f70f06a2def547d", null ],
+      [ "xdm", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a7c33115a77204969afbddfe52e260d16", null ],
       [ "solvent", "timings_8h.html#a089c88a4231531abae301355d6ba8c16abaf639845bdbe70396a9bd527534f821", null ],
       [ "global", "timings_8h.html#a089c88a4231531abae301355d6ba8c16aa593d8f8f4e0489f836e07e4f4220cbf", null ],
       [ "_group_count", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a6f051406d3501a7e49a73b8fa2aef406", null ]
