@@ -338,6 +338,14 @@ class IntegralEnvironment {
         return dims;
     }
 
+    inline double range_separated_omega() const {
+        return m_env_data[libcint::range_omega_offset];
+    }
+
+    inline void set_range_separated_omega(double omega) {
+        m_env_data[libcint::range_omega_offset] = omega;
+    }
+
     inline void print() const {
         fmt::print("Atom Info {}\n", m_atom_info.size());
         for (const auto &atom : m_atom_info) {

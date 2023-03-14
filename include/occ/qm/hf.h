@@ -109,6 +109,14 @@ class HartreeFock {
         return mults + nuc_mults;
     }
 
+    inline double range_separated_omega() const {
+        return m_engine.range_separated_omega();
+    }
+
+    inline void set_range_separated_omega(double omega) {
+        m_engine.set_range_separated_omega(omega);
+    }
+
   private:
     int m_charge{0};
     int m_num_e{0};

@@ -534,7 +534,7 @@ class CEModelCrystalGrowthCalculator {
     }
 
     void set_molecule_charges(const std::vector<int> &charges) {
-        if (!charges.size() == m_molecules.size()) {
+        if (charges.size() != m_molecules.size()) {
             throw std::runtime_error(
                 fmt::format("Require {} charges to be specified, found {}",
                             m_molecules.size(), charges.size()));
@@ -725,7 +725,7 @@ class XTBCrystalGrowthCalculator {
     void set_basename(const std::string &basename) { m_basename = basename; }
 
     void set_molecule_charges(const std::vector<int> &charges) {
-        if (!charges.size() == m_molecules.size()) {
+        if (charges.size() != m_molecules.size()) {
             throw std::runtime_error(
                 fmt::format("Require {} charges to be specified, found {}",
                             m_molecules.size(), charges.size()));

@@ -179,6 +179,14 @@ class IntegralEngine {
     void set_effective_core_potentials(const ShellList &ecp_shells,
                                        const std::vector<int> &ecp_electrons);
 
+    inline double range_separated_omega() const {
+        return m_env.range_separated_omega();
+    }
+
+    inline void set_range_separated_omega(double omega) {
+        m_env.set_range_separated_omega(omega);
+    }
+
   private:
     double m_precision{1e-12};
     AOBasis m_aobasis, m_auxbasis;

@@ -2,6 +2,7 @@
 #include <fmt/core.h>
 #include <memory>
 #include <occ/core/linear_algebra.h>
+#include <occ/dft/range_separated_parameters.h>
 #include <occ/qm/spinorbital.h>
 #include <string>
 
@@ -554,6 +555,23 @@ class DensityFunctional {
         }
         default:
             return 0;
+        }
+    }
+
+    inline auto range_separated_parameters() const {
+        RangeSeparatedParameters params;
+        switch (family()) {
+        case HGGA:
+        case HMGGA: {
+            xc_func_type func;
+            int err = xc_func_init(&func, static_cast<int>(m_func_id),
+                                   m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+            xc_hyb_cam_coef(&func, &params.omega, &params.alpha, &params.beta);
+            xc_func_end(&func);
+            return params;
+        }
+        default:
+            return params;
         }
     }
 

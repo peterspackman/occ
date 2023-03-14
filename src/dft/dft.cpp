@@ -55,6 +55,8 @@ const phmap::flat_hash_map<std::string, std::vector<FuncComponent>>
         {"tpss", {{dfid::mgga_x_tpss}, {dfid::mgga_c_tpss}}},
         {"b86bpbe", {{dfid::gga_x_b86_mgc}, {dfid::gga_c_pbe}}},
         {"b86bpbeh", {{dfid::gga_x_b86_mgc, 0.75, 0.25}, {dfid::gga_c_pbe}}},
+        {"wb97x", {{dfid::hyb_gga_xc_wb97x}}},
+        {"wb97m", {{dfid::hyb_mgga_xc_wb97m_v}}},
     });
 
 int DFT::density_derivative() const {
@@ -91,6 +93,20 @@ void DFT::set_method(const std::string &method_string, bool unrestricted) {
             func.name(), func.kind_string(), func.family_string(),
             func.exact_exchange_factor(), func.polarized());
     }
+
+    m_rs_params = {};
+    for (const auto &func : m_funcs) {
+        auto rs = func.range_separated_parameters();
+        if (rs.omega != 0.0) {
+            m_rs_params = rs;
+        }
+    }
+    if (m_rs_params.omega != 0.0) {
+        occ::log::info("    RS omega = {}", m_rs_params.omega);
+        occ::log::info("    RS alpha = {}", m_rs_params.alpha);
+        occ::log::info("    RS beta  = {}", m_rs_params.beta);
+    }
+
     double hfx = exact_exchange_factor();
     if (hfx > 0.0)
         occ::log::info("    {} x HF exchange", hfx);
@@ -154,6 +170,10 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
         }
     }
     return funcs;
+}
+
+RangeSeparatedParameters DFT::range_separated_parameters() const {
+    return m_rs_params;
 }
 
 } // namespace occ::dft

@@ -5,6 +5,7 @@
 #include <occ/core/timings.h>
 #include <occ/dft/functional.h>
 #include <occ/dft/grid.h>
+#include <occ/dft/range_separated_parameters.h>
 #include <occ/dft/xc_potential_matrix.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
@@ -128,12 +129,14 @@ class DFT {
     }
 
     int density_derivative() const;
-    double exact_exchange_factor() const {
+    inline double exact_exchange_factor() const {
         return std::accumulate(m_funcs.begin(), m_funcs.end(), 0.0,
                                [&](double a, const auto &v) {
                                    return a + v.exact_exchange_factor();
                                });
     }
+
+    RangeSeparatedParameters range_separated_parameters() const;
 
     double nuclear_repulsion_energy() const {
         return m_hf.nuclear_repulsion_energy();
@@ -364,7 +367,22 @@ class DFT {
         Mat K = -compute_vxc(mo, precision, Schwarz);
         double ecoul{0.0}, exc{0.0};
         double exchange_factor = exact_exchange_factor();
-        if (exchange_factor != 0.0) {
+        RangeSeparatedParameters rs = range_separated_parameters();
+        if (rs.omega != 0.0) {
+            // range separated hybrid
+            J = m_hf.compute_J(mo, precision, Schwarz);
+            Mat Ksr;
+            std::tie(J, Ksr) = m_hf.compute_JK(mo, precision, Schwarz);
+            m_hf.set_range_separated_omega(rs.omega);
+            Mat Jlr, Klr;
+            std::tie(Jlr, Klr) = m_hf.compute_JK(mo, precision, Schwarz);
+            Mat Khf = Ksr * (rs.alpha + rs.beta) + Klr * (-rs.beta);
+            ecoul = expectation(mo.kind, mo.D, J);
+            exc = -expectation(mo.kind, mo.D, Khf);
+            K.noalias() += Khf;
+            m_hf.set_range_separated_omega(0.0);
+        } else if (exchange_factor != 0.0) {
+            // global hybrid
             Mat Khf;
             std::tie(J, Khf) = m_hf.compute_JK(mo, precision, Schwarz);
             ecoul = expectation(mo.kind, mo.D, J);
@@ -435,5 +453,6 @@ class DFT {
     mutable double m_exc_dft{0.0};
     mutable double m_exchange_energy{0.0};
     double m_density_threshold{1e-10};
+    RangeSeparatedParameters m_rs_params;
 };
 } // namespace occ::dft
