@@ -67,20 +67,20 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"annotated.html",
-"classocc_1_1crystal_1_1SpaceGroup.html",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba5054820ddc199990def7d287fe7ebf6b",
-"classocc_1_1dft_1_1DensityFunctional.html#ab946ee80dc74f2fff8c8d6ef9046fae2",
-"classocc_1_1qm_1_1HartreeFock.html#a412bb5564965a89bcf44a6539eafb720",
-"classocc_1_1xtb_1_1TbliteCalculator.html#a57ecc34169d10d9c4f5d6fae1d8a725e",
-"functions_vars_x.html",
-"namespaceocc.html#a8a1b01836705169c4372c04b71bd6ec6",
-"namespaceocc_1_1gto.html#a7112dcd1500ad3712dff469e32c4a6ea",
-"numpy_8h.html#adc6403ac94eaf175a371507dca6f72b9",
-"structocc_1_1core_1_1graph_1_1PeriodicEdge.html#a134099597bf6d65bcd64a9ba233d73ac",
-"structocc_1_1io_1_1CellData.html#a1080d8e83af26ddf4c752af190b81f36",
-"structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html",
-"timings_8h.html#a089c88a4231531abae301355d6ba8c16af6400cca291c26dddf346d5c46a8c8c8"
+"",
+"classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html#a6c319aaeab76964254f139fe34964740",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba4ccb8fa5f8f5cdc3bd406e04a6d4ac22",
+"classocc_1_1dft_1_1DensityFunctional.html#aa28b9cc2263cb29b3b82b1f84e4bf4db",
+"classocc_1_1qm_1_1HartreeFock.html",
+"classocc_1_1xdm_1_1XDM.html#a93a8f953acad68c63355b85789ffaf56",
+"functions_vars_m.html",
+"namespaceocc.html#a437f3d1ad27db4224c05f4772b08269c",
+"namespaceocc_1_1geometry_1_1mc_1_1tables.html",
+"numpy_8h.html#a4c201dd32910b0f4d0c82c69756fe40f",
+"structocc_1_1core_1_1Multipole.html#afe5a62086b5c0e8cd547a4d71bc0c908",
+"structocc_1_1interaction_1_1WolfParams.html#a4dd8fae90b441ed10e1a84ff015e0de0",
+"structocc_1_1qm_1_1Energy.html",
+"timings_8h.html#a089c88a4231531abae301355d6ba8c16a9438912000d031c4e60ee6964858de7a"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

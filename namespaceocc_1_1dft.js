@@ -13,7 +13,7 @@ var namespaceocc_1_1dft =
     [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
     [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
     [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
-    [ "NonLocalCorrelationParameters", "structocc_1_1dft_1_1NonLocalCorrelationParameters.html", "structocc_1_1dft_1_1NonLocalCorrelationParameters" ],
+    [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
     [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ],
     [ "generate_atom_grid", "namespaceocc_1_1dft.html#aa3f2fabc212c1f463b003557e3c38482", null ],
     [ "generate_becke_radial_grid", "namespaceocc_1_1dft.html#a48abc2172605dbc65f9f0efb7d88b2c2", null ],

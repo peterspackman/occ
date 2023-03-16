@@ -1,6 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/dft/grid.h" name="/home/runner/work/occ/occ/include/occ/dft/grid.h">
-<area shape="rect" id="node1" title=" " alt="" coords="225,5,396,61"/>
-<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="5,117,184,158"/>
-<area shape="rect" id="node3" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="208,109,413,165"/>
-<area shape="rect" id="node4" href="$xdm_8h.html" title=" " alt="" coords="437,117,640,158"/>
+<area shape="rect" id="node1" title=" " alt="" coords="176,5,347,61"/>
+<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="5,213,184,255"/>
+<area shape="rect" id="node3" href="$nonlocal__correlation_8h.html" title=" " alt="" coords="71,109,241,165"/>
+<area shape="rect" id="node4" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="265,109,471,165"/>
+<area shape="rect" id="node5" href="$xdm_8h.html" title=" " alt="" coords="495,117,697,158"/>
 </map>

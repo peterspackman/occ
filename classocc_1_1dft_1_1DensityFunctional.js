@@ -385,6 +385,7 @@ var classocc_1_1dft_1_1DensityFunctional =
     [ "kind", "classocc_1_1dft_1_1DensityFunctional.html#a6e18aea8633c8be13c7ff7a062acfe39", null ],
     [ "kind_string", "classocc_1_1dft_1_1DensityFunctional.html#ac3dc4dfba3f753903774490403e2aab4", null ],
     [ "name", "classocc_1_1dft_1_1DensityFunctional.html#a55d0285c35ab287a1d64460045b06e47", null ],
+    [ "needs_nlc_correction", "classocc_1_1dft_1_1DensityFunctional.html#acd2ba08a314b100c1d67bd08a743500c", null ],
     [ "polarized", "classocc_1_1dft_1_1DensityFunctional.html#a4170e5c5289b80add943202b7563da2c", null ],
     [ "range_separated_parameters", "classocc_1_1dft_1_1DensityFunctional.html#a9804e4eb0e152498ecc9818eb3b1d969", null ],
     [ "scale_factor", "classocc_1_1dft_1_1DensityFunctional.html#a092e275240e2b7fead8b5fbbd0f7b4f1", null ],

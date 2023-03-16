@@ -1,8 +1,11 @@
 var NAVTREEINDEX3 =
 {
+"classocc_1_1dft_1_1DensityFunctional.html#aa28b9cc2263cb29b3b82b1f84e4bf4db":[2,0,1,2,2,12],
+"classocc_1_1dft_1_1DensityFunctional.html#aa8d08896470fd4643b2d10a957b73d14":[2,0,1,2,2,21],
 "classocc_1_1dft_1_1DensityFunctional.html#ab946ee80dc74f2fff8c8d6ef9046fae2":[2,0,1,2,2,11],
 "classocc_1_1dft_1_1DensityFunctional.html#abecc0a59a365ad908763722bcc5a9590":[2,0,1,2,2,10],
 "classocc_1_1dft_1_1DensityFunctional.html#ac3dc4dfba3f753903774490403e2aab4":[2,0,1,2,2,14],
+"classocc_1_1dft_1_1DensityFunctional.html#acd2ba08a314b100c1d67bd08a743500c":[2,0,1,2,2,16],
 "classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6":[2,0,1,2,2,4],
 "classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6a3287afc1cc6cb61e6100019d1af3ab29":[2,0,1,2,2,4,1],
 "classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6a646de935d1c13473e35b9a115f74eb6c":[2,0,1,2,2,4,3],
@@ -16,6 +19,13 @@ var NAVTREEINDEX3 =
 "classocc_1_1dft_1_1MolecularGrid.html#a9f967e92fe8bc2f8c592eb60f7330236":[2,0,1,2,6,1],
 "classocc_1_1dft_1_1MolecularGrid.html#aa674acaec44375a825dcdfb5411654f2":[2,0,1,2,6,0],
 "classocc_1_1dft_1_1MolecularGrid.html#adc7809b9b0a5fe532b81d78ba0328a6f":[2,0,1,2,6,4],
+"classocc_1_1dft_1_1NonLocalCorrelationFunctional.html":[2,0,1,2,7],
+"classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a0018cb3c2db427e4e302fd043aee7bde":[2,0,1,2,7,4],
+"classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a1345d1b6891df1d6b2cc434ca7a03136":[2,0,1,2,7,5],
+"classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a2cbd1531ed6f7d2838ff29b3f2339cf0":[2,0,1,2,7,3],
+"classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a7c406817ccdef28e55cf0e82f3d4e2b9":[2,0,1,2,7,6],
+"classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#ad6e5077d648574a4085675e346468882":[2,0,1,2,7,2],
+"classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#ad6e5077d648574a4085675e346468882a9c9dad2092baa26ddc51e438626eba23":[2,0,1,2,7,2,0],
 "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html":[2,0,1,2,0,0],
 "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html#a19fe4e29bff380fa035e26299d8f622c":[2,0,1,2,0,0,1],
 "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html#a79815abc06f18c73b5dd381f70d4826e":[2,0,1,2,0,0,0],
@@ -239,15 +249,5 @@ var NAVTREEINDEX3 =
 "classocc_1_1qm_1_1EDIIS.html":[2,0,1,8,2],
 "classocc_1_1qm_1_1EDIIS.html#a059f8802000544e74b032ed3a67b6335":[2,0,1,8,2,1],
 "classocc_1_1qm_1_1EDIIS.html#a160768b0f2865af3af6e187f4a0ceff7":[2,0,1,8,2,0],
-"classocc_1_1qm_1_1EDIIS.html#a5e3373100d15cb942079c0f1d6cdbb5f":[2,0,1,8,2,2],
-"classocc_1_1qm_1_1HartreeFock.html":[2,0,1,8,3],
-"classocc_1_1qm_1_1HartreeFock.html#a0be84be9b0e853a9f060cc479589e598":[2,0,1,8,3,25],
-"classocc_1_1qm_1_1HartreeFock.html#a1120f8702ccefe665d545469d651c2e8":[2,0,1,8,3,24],
-"classocc_1_1qm_1_1HartreeFock.html#a140544576cd45ae4b8c00d382ddf8bbe":[2,0,1,8,3,2],
-"classocc_1_1qm_1_1HartreeFock.html#a169485351a2361402075595aa665aab1":[2,0,1,8,3,8],
-"classocc_1_1qm_1_1HartreeFock.html#a18c0b2c73c1304c1bb7e9bbdceba5f65":[2,0,1,8,3,15],
-"classocc_1_1qm_1_1HartreeFock.html#a1d7f4bc70aa12e9643479e4be4ee3674":[2,0,1,8,3,19],
-"classocc_1_1qm_1_1HartreeFock.html#a26985e1a8a73553c86f411af703ef1e0":[2,0,1,8,3,35],
-"classocc_1_1qm_1_1HartreeFock.html#a33c1a92f68a2204a5fa99e84e591249d":[2,0,1,8,3,11],
-"classocc_1_1qm_1_1HartreeFock.html#a3bc5b25ed89b1bab05233c155ff7918f":[2,0,1,8,3,14]
+"classocc_1_1qm_1_1EDIIS.html#a5e3373100d15cb942079c0f1d6cdbb5f":[2,0,1,8,2,2]
 };
