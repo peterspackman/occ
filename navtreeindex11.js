@@ -1,5 +1,6 @@
 var NAVTREEINDEX11 =
 {
+"structocc_1_1interaction_1_1WolfParams.html":[2,0,1,5,3],
 "structocc_1_1interaction_1_1WolfParams.html#a4dd8fae90b441ed10e1a84ff015e0de0":[2,0,1,5,3,1],
 "structocc_1_1interaction_1_1WolfParams.html#aa8d82e72cd76a1800c7296b28ec7164e":[2,0,1,5,3,0],
 "structocc_1_1io_1_1AtomData.html":[2,0,1,6,6],
@@ -248,6 +249,5 @@ var NAVTREEINDEX11 =
 "structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html":[2,0,1,7,4,0],
 "structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a4ff20df115d72beaad252ac37a9833a0":[2,0,1,7,4,0,2],
 "structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a67b47d2e66ba94432792a3e37c4cdfa1":[2,0,1,7,4,0,1],
-"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#ab434becae61c3354617a836dfc070ac9":[2,0,1,7,4,0,3],
-"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#adcb102138f6caf8593aa6db558a94b97":[2,0,1,7,4,0,0]
+"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#ab434becae61c3354617a836dfc070ac9":[2,0,1,7,4,0,3]
 };
