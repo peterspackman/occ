@@ -97,6 +97,14 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
         scf.start_incremental_F_threshold = 0.0;
 
     double e = scf.compute_scf_energy();
+    if constexpr (std::is_same<T, DFT>::value) {
+        double enlc = proc.post_scf_nlc_correction(scf.mo);
+        if (enlc != 0.0) {
+            log::info("Post SCF NLC correction:         {: 20.12f}", enlc);
+            e += enlc;
+            log::info("Corrected total energy:          {: 20.12f}", e);
+        }
+    }
     return scf.wavefunction();
 }
 

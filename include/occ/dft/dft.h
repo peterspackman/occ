@@ -309,16 +309,6 @@ class DFT {
         occ::log::debug("Total density: alpha = {} beta = {}", total_density_a,
                         total_density_b);
 
-        if (have_nonlocal_correlation()) {
-            auto nlc_result = m_nlc(basis, mo);
-            occ::log::debug("NLC energy = {}", nlc_result.energy);
-            m_nlc_energy = nlc_result.energy;
-            m_exc_dft += nlc_result.energy;
-            occ::log::debug("NLC Vxc = {} {}", nlc_result.Vxc.rows(),
-                            nlc_result.Vxc.cols());
-            K.noalias() += nlc_result.Vxc;
-        }
-
         return K;
     }
 
@@ -421,7 +411,19 @@ class DFT {
                 return true;
             }
         }
+
         return false;
+    }
+
+    inline double post_scf_nlc_correction(const MolecularOrbitals &mo) {
+        if (have_nonlocal_correlation()) {
+            auto nlc_result = m_nlc(m_hf.aobasis(), mo);
+            occ::log::debug("NLC energy = {}", nlc_result.energy);
+            m_nlc_energy = nlc_result.energy;
+            occ::log::debug("NLC Vxc = {} {}", nlc_result.Vxc.rows(),
+                            nlc_result.Vxc.cols());
+        }
+        return m_nlc_energy;
     }
 
     Mat compute_fock(const MolecularOrbitals &mo,
