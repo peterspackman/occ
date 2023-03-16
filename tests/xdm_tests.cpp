@@ -1,3 +1,4 @@
+#include <array>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <occ/3rdparty/eigen-fmt/fmt.h>

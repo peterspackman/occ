@@ -90,6 +90,16 @@ void CifParser::extract_symmetry_data(const gemmi::cif::Pair &pair) {
     else if (tag == "_space_group_it_number" ||
              tag == "_symmetry_int_tables_number")
         m_sym.number = gemmi::cif::as_number(pair.back());
+
+    if (m_sym.nameHall.find('_') != std::string::npos) {
+        occ::log::debug("Removing '_' characters from name Hall");
+        occ::util::remove_character_occurences(m_sym.nameHall, '_');
+    }
+
+    if (m_sym.nameHM.find('_') != std::string::npos) {
+        occ::log::debug("Removing '_' characters from name HM");
+        occ::util::remove_character_occurences(m_sym.nameHM, '_');
+    }
 }
 
 std::optional<occ::crystal::Crystal>
@@ -142,16 +152,21 @@ CifParser::parse_crystal(const std::string &filename) {
 
         if (m_sym.valid()) {
             if (m_sym.nameHall != "Not set") {
+                occ::log::debug("Using SG name Hall {}", m_sym.nameHall);
                 auto sg = occ::crystal::SpaceGroup(m_sym.nameHall);
                 return occ::crystal::Crystal(asym, sg, uc);
             }
             if (m_sym.nameHM != "Not set") {
+                occ::log::debug("Using SG nameHM {}", m_sym.nameHM);
                 auto sg = occ::crystal::SpaceGroup(m_sym.nameHM);
                 return occ::crystal::Crystal(asym, sg, uc);
             } else if (m_sym.number > 0) {
+                occ::log::debug("Using SG number {}", m_sym.number);
                 auto sg = occ::crystal::SpaceGroup(m_sym.number);
                 return occ::crystal::Crystal(asym, sg, uc);
             } else if (m_sym.symops.size() > 0) {
+                occ::log::debug("Using SG symops (len = {})",
+                                m_sym.symops.size());
                 auto sg = occ::crystal::SpaceGroup(m_sym.symops);
                 return occ::crystal::Crystal(asym, sg, uc);
             }

@@ -57,6 +57,7 @@ const phmap::flat_hash_map<std::string, std::vector<FuncComponent>>
         {"b86bpbeh", {{dfid::gga_x_b86_mgc, 0.75, 0.25}, {dfid::gga_c_pbe}}},
         {"wb97x", {{dfid::hyb_gga_xc_wb97x}}},
         {"wb97m", {{dfid::hyb_mgga_xc_wb97m_v}}},
+        {"wb97m-v", {{dfid::hyb_mgga_xc_wb97m_v}}},
     });
 
 int DFT::density_derivative() const {
@@ -71,13 +72,13 @@ DFT::DFT(const std::string &method, const AOBasis &basis,
          const AtomGridSettings &grid_settings)
     : m_hf(basis), m_grid(basis, grid_settings) {
 
-    set_integration_grid(grid_settings);
     if (method[0] == 'u') {
         set_method(method.substr(1), true);
         fmt::print("Unrestricted\n");
     } else {
         set_method(method, false);
     }
+    set_integration_grid(grid_settings);
 }
 
 void DFT::set_unrestricted(bool unrestricted) {
@@ -113,12 +114,13 @@ void DFT::set_method(const std::string &method_string, bool unrestricted) {
 }
 
 void DFT::set_integration_grid(const AtomGridSettings &settings) {
+    const auto &atoms = m_hf.aobasis().atoms();
     if (settings != m_grid.settings()) {
         m_grid = MolecularGrid(m_hf.aobasis(), settings);
     }
     occ::log::debug("start calculating atom grids... ");
     m_atom_grids.clear();
-    for (size_t i = 0; i < m_hf.aobasis().atoms().size(); i++) {
+    for (size_t i = 0; i < atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
     size_t num_grid_points = std::accumulate(
@@ -130,6 +132,13 @@ void DFT::set_integration_grid(const AtomGridSettings &settings) {
                     occ::timing::total(occ::timing::grid_init));
     occ::log::debug("Grid point creation took {} seconds",
                     occ::timing::total(occ::timing::grid_points));
+
+    for (const auto &func : m_funcs) {
+        if (func.needs_nlc_correction()) {
+            m_nlc.set_integration_grid(m_hf.aobasis());
+            break;
+        }
+    }
 }
 
 std::vector<DensityFunctional> parse_method(const std::string &method_string,

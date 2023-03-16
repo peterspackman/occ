@@ -3,6 +3,7 @@ add_library(occ_dft
     "${CMAKE_CURRENT_SOURCE_DIR}/functional.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nonlocal_correlation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/seminumerical_exchange.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xc_potential_matrix.cpp"
     ${OCC_INCLUDE_FILES}

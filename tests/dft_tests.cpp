@@ -8,6 +8,7 @@
 #include <occ/dft/dft.h>
 #include <occ/dft/grid.h>
 #include <occ/dft/lebedev.h>
+#include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/seminumerical_exchange.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
@@ -357,4 +358,59 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
                sw.read(1) / sw.read(0));
 
     occ::timing::print_timings();
+}
+
+TEST_CASE("H2 VV10 from ORCA wavefunction") {
+
+    const char *h2_molden_content = R"(
+[Molden Format]
+[Title]
+ Molden file created by orca_2mkl for BaseName=h2
+
+[Atoms] AU
+H    1   1          0.0000000000         0.0000000000         0.0000000000 
+H    2   1          0.0000000000         0.0000000000         1.3983973391 
+[GTO]
+  1 0
+s   3 1.0 
+        3.4252509100         0.2769343610
+        0.6239137300         0.2678388518
+        0.1688554000         0.0834736696
+
+  2 0
+s   3 1.0 
+        3.4252509100         0.2769343610
+        0.6239137300         0.2678388518
+        0.1688554000         0.0834736696
+
+[5D]
+[7F]
+[9G]
+[MO]
+ Sym=     1a
+ Ene= -5.15449496312014E-01
+ Spin= Alpha
+ Occup= 2.000000
+  1      -0.548842275549
+  2      -0.548842275421
+ Sym=     1a
+ Ene= 5.11943815961741E-01
+ Spin= Alpha
+ Occup= 0.000000
+  1      -1.212451915878
+  2       1.212451915935
+)";
+
+    std::istringstream molden(h2_molden_content);
+    occ::io::MoldenReader reader(molden);
+    occ::qm::Wavefunction wfn(reader);
+    occ::dft::NonLocalCorrelationFunctional nlc;
+    nlc.set_integration_grid(wfn.basis);
+    nlc.set_parameters(
+        {occ::dft::NonLocalCorrelationFunctional::Kind::VV10, 6.0, 0.01});
+
+    auto result = nlc(wfn.basis, wfn.mo);
+    double expected = 0.0089406089;
+    fmt::print("NLC = {} vs {}\n", result.energy, expected);
+    REQUIRE(result.energy == Catch::Approx(expected));
 }

@@ -114,6 +114,10 @@ static inline void to_upper(std::string &s) {
                    [](unsigned char c) { return std::toupper(c); });
 }
 
+static inline void remove_character_occurences(std::string &s, char c) {
+    s.erase(std::remove(s.begin(), s.end(), c), s.end());
+}
+
 static inline std::string to_lower_copy(std::string s) {
     to_lower(s);
     return s;

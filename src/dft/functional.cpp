@@ -77,4 +77,13 @@ int DensityFunctional::functional_id(const std::string &name) {
     return func;
 }
 
+bool DensityFunctional::needs_nlc_correction() const {
+    switch (m_func_id) {
+    default:
+        return false;
+    case hyb_mgga_xc_wb97m_v:
+        return true;
+    }
+}
+
 } // namespace occ::dft

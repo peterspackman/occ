@@ -610,6 +610,8 @@ class DensityFunctional {
     }
     static int functional_id(const std::string &);
 
+    bool needs_nlc_correction() const;
+
   private:
     double m_exchange_factor_override{0.0};
     double m_factor{1.0};

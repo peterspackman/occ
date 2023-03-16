@@ -5,6 +5,7 @@
 #include <occ/core/timings.h>
 #include <occ/dft/functional.h>
 #include <occ/dft/grid.h>
+#include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/range_separated_parameters.h>
 #include <occ/dft/xc_potential_matrix.h>
 #include <occ/gto/density.h>
@@ -121,6 +122,11 @@ class DFT {
             energy["electronic"] += m_two_electron_energy;
             energy["electronic.dft_xc"] = exchange_correlation_energy();
         }
+
+        if (m_nlc_energy != 0.0) {
+            energy["electronic.nonlocal_correlation"] = m_nlc_energy;
+        }
+
         energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
     }
     bool supports_incremental_fock_build() const { return false; }
@@ -303,6 +309,16 @@ class DFT {
         occ::log::debug("Total density: alpha = {} beta = {}", total_density_a,
                         total_density_b);
 
+        if (have_nonlocal_correlation()) {
+            auto nlc_result = m_nlc(basis, mo);
+            occ::log::debug("NLC energy = {}", nlc_result.energy);
+            m_nlc_energy = nlc_result.energy;
+            m_exc_dft += nlc_result.energy;
+            occ::log::debug("NLC Vxc = {} {}", nlc_result.Vxc.rows(),
+                            nlc_result.Vxc.cols());
+            K.noalias() += nlc_result.Vxc;
+        }
+
         return K;
     }
 
@@ -399,6 +415,15 @@ class DFT {
         return {J, K};
     }
 
+    inline bool have_nonlocal_correlation() const {
+        for (const auto &func : m_funcs) {
+            if (func.needs_nlc_correction()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     Mat compute_fock(const MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) {
@@ -449,9 +474,11 @@ class DFT {
     MolecularGrid m_grid;
     std::vector<DensityFunctional> m_funcs;
     std::vector<AtomGrid> m_atom_grids;
+    NonLocalCorrelationFunctional m_nlc;
     mutable double m_two_electron_energy{0.0};
     mutable double m_exc_dft{0.0};
     mutable double m_exchange_energy{0.0};
+    mutable double m_nlc_energy{0.0};
     double m_density_threshold{1e-10};
     RangeSeparatedParameters m_rs_params;
 };

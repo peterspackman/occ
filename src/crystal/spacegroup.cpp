@@ -1,5 +1,6 @@
 #include <occ/core/log.h>
 #include <occ/crystal/spacegroup.h>
+#include <stdexcept>
 
 namespace occ::crystal {
 
