@@ -15,13 +15,14 @@ CPMAddPackage(
 CPMAddPackage(
     NAME scnlib
     GITHUB_REPOSITORY "eliaskosunen/scnlib"
-    GIT_TAG "master"
+    VERSION "1.1.2"
 )
 
 CPMAddPackage(
     NAME gau2grid
     GITHUB_REPOSITORY "dgasmith/gau2grid"
     GIT_TAG "master"
+    OPTIONS "DISABLE_PRAGMA ${GG_NO_PRAGMA}" "ENABLE_XHOST ${ENABLE_HOST_OPT}" "BUILD_FPIC OFF" "BUILD_SHARED_LIBS OFF"
 )
 
 CPMAddPackage(
@@ -106,7 +107,7 @@ CPMAddPackage(
     NAME Libxc
     GIT_REPOSITORY "https://gitlab.com/libxc/libxc.git"
     GIT_TAG 5.2.3
-    OPTIONS "BUILD_TESTING OFF"
+    OPTIONS "BUILD_TESTING OFF" "ENABLE_XHOST ${ENABLE_HOST_OPT}"
 )
 add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(Libxc::xc INTERFACE xc)

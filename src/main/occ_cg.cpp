@@ -925,6 +925,22 @@ class XTBCrystalGrowthCalculator {
     double m_inner_radius{0.0}, m_outer_radius{0.0};
 };
 
+void list_available_solvents() {
+    fmt::print("{: <32s} {:>10s} {:>10s} {:>10s} {:>10s} {:>10s} "
+               "{:>10s} {:>10s}\n",
+               "Solvent", "n (293K)", "acidity", "basicity", "gamma",
+               "dielectric", "aromatic", "%F,Cl,Br");
+    fmt::print("{:-<110s}\n", "");
+    for (const auto &solvent : occ::solvent::smd_solvent_parameters) {
+        const auto &param = solvent.second;
+        fmt::print("{:<32s} {:10.4f} {:10.4f} {:10.4f} {:10.4f} "
+                   "{:10.4f} {:10.4f} {:10.4f}\n",
+                   solvent.first, param.refractive_index_293K, param.acidity,
+                   param.basicity, param.gamma, param.dielectric,
+                   param.aromaticity, param.electronegative_halogenicity);
+    }
+}
+
 int main(int argc, char **argv) {
     CLI::App app(
         "occ-cg - Interactions of molecules with neighbours in a crystal");
@@ -936,6 +952,7 @@ int main(int argc, char **argv) {
     bool write_dump_files{false}, spherical{false};
     bool write_kmcpp_file{false};
     bool use_xtb{false};
+    bool list_solvents{false};
 
     CLI::Option *input_option =
         app.add_option("input", cif_filename, "input CIF");
@@ -955,10 +972,17 @@ int main(int argc, char **argv) {
                  "write out an input file for kmcpp program");
     app.add_flag("--xtb", use_xtb, "use xtb for interaction energies");
     app.add_flag("-d,--dump", write_dump_files, "Write dump files");
+    app.add_flag("--list-available-solvents", list_solvents,
+                 "List available solvents and exit");
 
     CLI11_PARSE(app, argc, argv);
 
     occ::log::setup_logging(verbosity);
+
+    if (list_solvents) {
+        list_available_solvents();
+        exit(0);
+    }
     occ::timing::StopWatch global_timer;
     global_timer.start();
 

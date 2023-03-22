@@ -45,6 +45,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" ON)
     option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" ON)
+    option(GG_NO_PRAGMA "Define the __GG_NO_PRAGMA macro" OFF)
+    option(ENABLE_HOST_OPT "Enable -march=native and similar flags" ON)
 endif()
 
 
