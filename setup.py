@@ -2,6 +2,7 @@ import sys
 
 try:
     from skbuild import setup
+    import nanobind
 except ImportError:
     print(
         "Please update pip, you need pip 10 or greater,\n"
@@ -15,7 +16,7 @@ from setuptools import find_packages
 setup(
     name="occ",
     version="0.0.1",
-    description="a minimal example package (with pybind11)",
+    description="a minimal example package (with nanobind)",
     author="Peter Spackman",
     license="GPLv3",
     packages=find_packages(where="src/python"),
@@ -23,5 +24,5 @@ setup(
     cmake_install_dir="src/python/occ",
     include_package_data=True,
     extras_require={"test": ["pytest"]},
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 )

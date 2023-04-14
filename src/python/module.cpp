@@ -1,4 +1,5 @@
 #include <fmt/core.h>
+#include <nanobind/nanobind.h>
 #include <occ/core/element.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
@@ -14,14 +15,13 @@
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
-#include <pybind11/eigen.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
-namespace py = pybind11;
+namespace nb = nanobind;
+using namespace nb::literals;
+
 using occ::IVec;
 using occ::Mat3N;
 using occ::Vec3;
@@ -45,34 +45,32 @@ constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
 constexpr auto G = occ::qm::SpinorbitalKind::General;
 
-PYBIND11_MODULE(_occ, m) {
-    py::class_<Element>(m, "Element")
-        .def(py::init<const std::string &>())
+NB_MODULE(_occ, m) {
+    nb::class_<Element>(m, "Element")
+        .def(nb::init<const std::string &>())
         .def("symbol", &Element::symbol)
         .def("mass", &Element::mass)
         .def("name", &Element::name)
-        .def("vdw", &Element::vdw)
-        .def("cov", &Element::cov)
-        .def("atomic_number", &Element::n)
+        .def("van_der_waals_radius", &Element::van_der_waals_radius)
+        .def("covalent_radius", &Element::covalent_radius)
+        .def("atomic_number", &Element::atomic_number)
         .def("__repr__", [](const Element &a) {
             return "<occ.Element '" + a.symbol() + "'>";
         });
 
-    py::class_<Atom>(m, "Atom")
-        .def_readwrite("atomic_number", &Atom::atomic_number)
-        .def_property("position", &Atom::position, &Atom::set_position)
+    nb::class_<Atom>(m, "Atom")
+        .def_rw("atomic_number", &Atom::atomic_number)
+        .def_prop_rw("position", &Atom::position, &Atom::set_position)
         .def("__repr__", [](const Atom &a) {
             return fmt::format("<occ.Atom {} [{:.5f}, {:.5f}, {:.5f}>",
                                a.atomic_number, a.x, a.y, a.z);
         });
 
-    py::class_<Shell>(m, "Shell")
-        .def_readonly("origin", &Shell::origin)
-        .def_readonly("exponents", &Shell::exponents)
-        .def_readonly("contraction_coefficients",
-                      &Shell::contraction_coefficients)
-        .def_readonly("contraction_coefficients",
-                      &Shell::contraction_coefficients)
+    nb::class_<Shell>(m, "Shell")
+        .def_ro("origin", &Shell::origin)
+        .def_ro("exponents", &Shell::exponents)
+        .def_ro("contraction_coefficients", &Shell::contraction_coefficients)
+        .def_ro("contraction_coefficients", &Shell::contraction_coefficients)
         .def("num_contractions", &Shell::num_contractions)
         .def("num_primitives", &Shell::num_primitives)
         .def("norm", &Shell::norm)
@@ -81,7 +79,7 @@ PYBIND11_MODULE(_occ, m) {
                                s.origin(0), s.origin(1), s.origin(2));
         });
 
-    py::class_<AOBasis>(m, "AOBasis")
+    nb::class_<AOBasis>(m, "AOBasis")
         .def_static("load", &AOBasis::load)
         .def("shells", &AOBasis::shells)
         .def("set_pure", &AOBasis::set_pure)
@@ -100,25 +98,25 @@ PYBIND11_MODULE(_occ, m) {
                                basis.nsh(), basis.nbf(), basis.atoms().size());
         });
 
-    py::class_<MolecularOrbitals>(m, "MolecularOrbitals")
-        .def_readwrite("num_alpha", &MolecularOrbitals::n_alpha)
-        .def_readwrite("num_beta", &MolecularOrbitals::n_beta)
-        .def_readwrite("num_ao", &MolecularOrbitals::n_ao)
-        .def_readwrite("orbital_coeffs", &MolecularOrbitals::C)
-        .def_readwrite("occupied_orbital_coeffs", &MolecularOrbitals::Cocc)
-        .def_readwrite("density_matrix", &MolecularOrbitals::D)
-        .def_readwrite("orbital_energies", &MolecularOrbitals::energies);
+    nb::class_<MolecularOrbitals>(m, "MolecularOrbitals")
+        .def_rw("num_alpha", &MolecularOrbitals::n_alpha)
+        .def_rw("num_beta", &MolecularOrbitals::n_beta)
+        .def_rw("num_ao", &MolecularOrbitals::n_ao)
+        .def_rw("orbital_coeffs", &MolecularOrbitals::C)
+        .def_rw("occupied_orbital_coeffs", &MolecularOrbitals::Cocc)
+        .def_rw("density_matrix", &MolecularOrbitals::D)
+        .def_rw("orbital_energies", &MolecularOrbitals::energies);
 
-    py::class_<Wavefunction>(m, "Wavefunction")
-        .def_readwrite("molecular_orbitals", &Wavefunction::mo)
-        .def_readonly("atoms", &Wavefunction::atoms)
+    nb::class_<Wavefunction>(m, "Wavefunction")
+        .def_rw("molecular_orbitals", &Wavefunction::mo)
+        .def_ro("atoms", &Wavefunction::atoms)
         .def("mulliken_charges", &Wavefunction::mulliken_charges)
         .def("multiplicity", &Wavefunction::multiplicity)
         .def("rotate", &Wavefunction::apply_rotation)
         .def("translate", &Wavefunction::apply_translation)
         .def("transform", &Wavefunction::apply_transformation)
         .def("charge", &Wavefunction::charge)
-        .def_readonly("basis", &Wavefunction::basis)
+        .def_ro("basis", &Wavefunction::basis)
         .def("to_fchk",
              [](Wavefunction &wfn, const std::string &filename) {
                  auto writer = occ::io::FchkWriter(filename);
@@ -137,55 +135,28 @@ PYBIND11_MODULE(_occ, m) {
             return wfn;
         });
 
-    using RHF = SCF<HartreeFock, R>;
-    using UHF = SCF<HartreeFock, U>;
-    using GHF = SCF<HartreeFock, G>;
+    using HF = SCF<HartreeFock>;
 
-    py::class_<RHF>(m, "RHF")
-        .def(py::init<HartreeFock &>())
-        .def("set_charge_multiplicity", &RHF::set_charge_multiplicity)
-        .def("set_initial_guess", &RHF::set_initial_guess_from_wfn)
-        .def("scf_kind", &RHF::scf_kind)
-        .def("run", &RHF::compute_scf_energy)
-        .def("wavefunction", &RHF::wavefunction);
+    nb::class_<HF>(m, "HF")
+        .def(nb::init<HartreeFock &>())
+        .def("set_charge_multiplicity", &HF::set_charge_multiplicity)
+        .def("set_initial_guess", &HF::set_initial_guess_from_wfn)
+        .def("scf_kind", &HF::scf_kind)
+        .def("run", &HF::compute_scf_energy)
+        .def("wavefunction", &HF::wavefunction);
 
-    py::class_<UHF>(m, "UHF")
-        .def(py::init<HartreeFock &>())
-        .def("set_charge_multiplicity", &UHF::set_charge_multiplicity)
-        .def("set_initial_guess", &UHF::set_initial_guess_from_wfn)
-        .def("scf_kind", &UHF::scf_kind)
-        .def("run", &UHF::compute_scf_energy)
-        .def("wavefunction", &UHF::wavefunction);
+    using KS = SCF<DFT>;
 
-    py::class_<GHF>(m, "GHF")
-        .def(py::init<HartreeFock &>())
-        .def("set_charge_multiplicity", &GHF::set_charge_multiplicity)
-        .def("set_initial_guess", &GHF::set_initial_guess_from_wfn)
-        .def("scf_kind", &GHF::scf_kind)
-        .def("run", &GHF::compute_scf_energy)
-        .def("wavefunction", &GHF::wavefunction);
+    nb::class_<KS>(m, "KS")
+        .def(nb::init<DFT &>())
+        .def("set_charge_multiplicity", &KS::set_charge_multiplicity)
+        .def("set_initial_guess", &KS::set_initial_guess_from_wfn)
+        .def("scf_kind", &KS::scf_kind)
+        .def("run", &KS::compute_scf_energy)
+        .def("wavefunction", &KS::wavefunction);
 
-    using RKS = SCF<DFT, R>;
-    using UKS = SCF<DFT, U>;
-
-    py::class_<RKS>(m, "RKS")
-        .def(py::init<DFT &>())
-        .def("set_charge_multiplicity", &RKS::set_charge_multiplicity)
-        .def("set_initial_guess", &RKS::set_initial_guess_from_wfn)
-        .def("scf_kind", &RKS::scf_kind)
-        .def("run", &RKS::compute_scf_energy)
-        .def("wavefunction", &RKS::wavefunction);
-
-    py::class_<UKS>(m, "UKS")
-        .def(py::init<DFT &>())
-        .def("set_charge_multiplicity", &UKS::set_charge_multiplicity)
-        .def("set_initial_guess", &UKS::set_initial_guess_from_wfn)
-        .def("scf_kind", &UKS::scf_kind)
-        .def("run", &UKS::compute_scf_energy)
-        .def("wavefunction", &UKS::wavefunction);
-
-    py::class_<HartreeFock>(m, "HartreeFock")
-        .def(py::init<const AOBasis &>())
+    nb::class_<HartreeFock>(m, "HartreeFock")
+        .def(nb::init<const AOBasis &>())
         .def("nuclear_attraction_matrix",
              &HartreeFock::compute_nuclear_attraction_matrix)
         .def("set_density_fitting_basis",
@@ -193,42 +164,39 @@ PYBIND11_MODULE(_occ, m) {
         .def("kinetic_matrix", &HartreeFock::compute_kinetic_matrix)
         .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
         .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
-        .def("rhf", [](HartreeFock &hf) { return RHF(hf); })
-        .def("uhf", [](HartreeFock &hf) { return UHF(hf); })
-        .def("ghf", [](HartreeFock &hf) { return GHF(hf); })
-        .def("coulomb_matrix", &HartreeFock::compute_J, py::arg("mo"),
-             py::arg("precision") = std::numeric_limits<double>::epsilon(),
-             py::arg("Schwarz") = occ::Mat())
+        .def("scf", [](HartreeFock &hf) { return HF(hf); })
+        .def("coulomb_matrix", &HartreeFock::compute_J, nb::arg("mo"),
+             nb::arg("precision") = std::numeric_limits<double>::epsilon(),
+             nb::arg("Schwarz") = occ::Mat())
         .def("coulomb_and_exchange_matrices", &HartreeFock::compute_JK,
-             py::arg("mo"),
-             py::arg("precision") = std::numeric_limits<double>::epsilon(),
-             py::arg("Schwarz") = occ::Mat())
-        .def("fock_matrix", &HartreeFock::compute_fock, py::arg("mo"),
-             py::arg("precision") = std::numeric_limits<double>::epsilon(),
-             py::arg("Schwarz") = occ::Mat());
+             nb::arg("mo"),
+             nb::arg("precision") = std::numeric_limits<double>::epsilon(),
+             nb::arg("Schwarz") = occ::Mat())
+        .def("fock_matrix", &HartreeFock::compute_fock, nb::arg("mo"),
+             nb::arg("precision") = std::numeric_limits<double>::epsilon(),
+             nb::arg("Schwarz") = occ::Mat());
 
-    py::class_<DFT>(m, "DFT")
-        .def(py::init<const std::string &, const AOBasis &>())
+    nb::class_<DFT>(m, "DFT")
+        .def(nb::init<const std::string &, const AOBasis &>())
         .def("nuclear_attraction_matrix",
              &DFT::compute_nuclear_attraction_matrix)
         .def("kinetic_matrix", &DFT::compute_kinetic_matrix)
         .def("overlap_matrix", &DFT::compute_overlap_matrix)
         .def("nuclear_repulsion", &DFT::nuclear_repulsion_energy)
-        .def("set_method", &DFT::set_method, py::arg("method_string"),
-             py::arg("unrestricted") = false)
+        .def("set_method", &DFT::set_method, nb::arg("method_string"),
+             nb::arg("unrestricted") = false)
         .def("set_unrestricted", &DFT::set_unrestricted)
-        .def("fock_matrix", &DFT::compute_fock, py::arg("mo"),
-             py::arg("precision") = std::numeric_limits<double>::epsilon(),
-             py::arg("Schwarz") = occ::Mat())
-        .def("rks", [](DFT &dft) { return RKS(dft); })
-        .def("uks", [](DFT &dft) { return UKS(dft); });
+        .def("fock_matrix", &DFT::compute_fock, nb::arg("mo"),
+             nb::arg("precision") = std::numeric_limits<double>::epsilon(),
+             nb::arg("Schwarz") = occ::Mat())
+        .def("scf", [](DFT &dft) { return KS(dft); });
 
-    py::class_<Molecule>(m, "Molecule")
-        .def(py::init<const IVec &, const Mat3N &>())
+    nb::class_<Molecule>(m, "Molecule")
+        .def(nb::init<const IVec &, const Mat3N &>())
         .def("__len__", &Molecule::size)
         .def("elements", &Molecule::elements)
         .def("positions", &Molecule::positions)
-        .def_property("name", &Molecule::name, &Molecule::set_name)
+        .def_prop_rw("name", &Molecule::name, &Molecule::set_name)
         .def("atomic_numbers", &Molecule::atomic_numbers)
         .def("vdw_radii", &Molecule::vdw_radii)
         .def("molar_mass", &Molecule::molar_mass)
@@ -251,36 +219,36 @@ PYBIND11_MODULE(_occ, m) {
 
     // occ::crystal
 
-    py::class_<Crystal>(m, "Crystal")
+    nb::class_<Crystal>(m, "Crystal")
         .def("symmetry_unique_molecules", &Crystal::symmetry_unique_molecules)
         .def("symmetry_unique_dimers", &Crystal::symmetry_unique_dimers)
         .def("unit_cell", &Crystal::unit_cell)
         .def("asymmetric_unit",
-             py::overload_cast<>(&Crystal::asymmetric_unit, py::const_))
+             nb::overload_cast<>(&Crystal::asymmetric_unit, nb::const_))
         .def_static("from_cif_file", [](const std::string &filename) {
             occ::io::CifParser parser;
             return parser.parse_crystal(filename).value();
         });
 
-    py::class_<AsymmetricUnit>(m, "AsymmetricUnit")
-        .def_readwrite("positions", &AsymmetricUnit::positions)
-        .def_readwrite("atomic_numbers", &AsymmetricUnit::atomic_numbers)
-        .def_readwrite("occupations", &AsymmetricUnit::occupations)
-        .def_readwrite("charges", &AsymmetricUnit::charges)
-        .def_readwrite("labels", &AsymmetricUnit::labels)
+    nb::class_<AsymmetricUnit>(m, "AsymmetricUnit")
+        .def_rw("positions", &AsymmetricUnit::positions)
+        .def_rw("atomic_numbers", &AsymmetricUnit::atomic_numbers)
+        .def_rw("occupations", &AsymmetricUnit::occupations)
+        .def_rw("charges", &AsymmetricUnit::charges)
+        .def_rw("labels", &AsymmetricUnit::labels)
         .def("__len__", &AsymmetricUnit::size)
         .def("__repr__", [](const AsymmetricUnit &asym) {
             return fmt::format("<occ.AsymmetricUnit {}>",
                                asym.chemical_formula());
         });
 
-    py::class_<UnitCell>(m, "UnitCell")
-        .def_property("a", &UnitCell::a, &UnitCell::set_a)
-        .def_property("b", &UnitCell::b, &UnitCell::set_b)
-        .def_property("c", &UnitCell::c, &UnitCell::set_c)
-        .def_property("alpha", &UnitCell::alpha, &UnitCell::set_alpha)
-        .def_property("beta", &UnitCell::beta, &UnitCell::set_beta)
-        .def_property("gamma", &UnitCell::gamma, &UnitCell::set_gamma)
+    nb::class_<UnitCell>(m, "UnitCell")
+        .def_prop_rw("a", &UnitCell::a, &UnitCell::set_a)
+        .def_prop_rw("b", &UnitCell::b, &UnitCell::set_b)
+        .def_prop_rw("c", &UnitCell::c, &UnitCell::set_c)
+        .def_prop_rw("alpha", &UnitCell::alpha, &UnitCell::set_alpha)
+        .def_prop_rw("beta", &UnitCell::beta, &UnitCell::set_beta)
+        .def_prop_rw("gamma", &UnitCell::gamma, &UnitCell::set_gamma)
         .def("lengths", &UnitCell::lengths)
         .def("to_fractional", &UnitCell::to_fractional)
         .def("to_cartesian", &UnitCell::to_cartesian)

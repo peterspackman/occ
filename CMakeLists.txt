@@ -19,16 +19,8 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(SKBUILD)
-  # Scikit-Build does not add your site-packages to the search path
-  # automatically, so we need to add it _or_ the pybind11 specific directory
-  # here.
-  execute_process(
-    COMMAND "${PYTHON_EXECUTABLE}" -c
-            "import pybind11; print(pybind11.get_cmake_dir())"
-    OUTPUT_VARIABLE _tmp_dir
-    OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ECHO STDOUT)
-  list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
   set(WITH_PYTHON_BINDINGS ON)
+  set(USE_SYSTEM_LIBXC OFF)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
@@ -47,6 +39,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" ON)
     option(GG_NO_PRAGMA "Define the __GG_NO_PRAGMA macro" OFF)
     option(ENABLE_HOST_OPT "Enable -march=native and similar flags" ON)
+    if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+      set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+      set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    endif()
 endif()
 
 
@@ -59,6 +55,13 @@ endif()
 
 if("${USE_SYSTEM_BLAS}")
     find_package(BLAS REQUIRED)
+endif()
+
+
+if("${WITH_PYTHON_BINDINGS}")
+    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+    message(STATUS "Enabled python bindings, setting CMAKE_POSITION_INDEPENDENT_CODE globally")
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")

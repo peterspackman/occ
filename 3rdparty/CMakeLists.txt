@@ -107,7 +107,7 @@ CPMAddPackage(
     NAME Libxc
     GIT_REPOSITORY "https://gitlab.com/libxc/libxc.git"
     GIT_TAG 5.2.3
-    OPTIONS "BUILD_TESTING OFF" "ENABLE_XHOST ${ENABLE_HOST_OPT}"
+    OPTIONS "BUILD_TESTING OFF" "ENABLE_XHOST ${ENABLE_HOST_OPT}" "BUILD_FPIC ${WITH_PYTHON_BINDINGS}"
 )
 add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(Libxc::xc INTERFACE xc)
@@ -116,5 +116,15 @@ target_include_directories(
     "${Libxc_SOURCE_DIR}/src"
     "${Libxc_BINARY_DIR}/src"
     "${Libxc_BINARY_DIR}"
+)
+
+endif()
+
+
+if("${WITH_PYTHON_BINDINGS}")
+CPMAddPackage(
+    NAME nanobind
+    GITHUB_REPOSITORY "wjakob/nanobind"
+    GIT_TAG "v1.1.1"
 )
 endif()
