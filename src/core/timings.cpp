@@ -41,6 +41,8 @@ const char *category_name(category cat) {
         return "density evaluation";
     case dft_xc:
         return "DFT XC total";
+    case dft_nlc:
+        return "DFT NLC";
     case xc_func_init:
         return "DFT XC func init";
     case xc_func_end:
@@ -86,9 +88,10 @@ const char *category_name(category cat) {
 
 void print_timings() {
     const auto categories = {
-        ints1e, ints4c2e, ints3c2e, io,      guess,          mo,  diis, dft,
-        rho,    dft_xc,   gto,      ecp,     assoc_legendre, fft, jmat, jkmat,
-        fock,   df,       xdm,      solvent, global,
+        ints1e, ints4c2e, ints3c2e, io,      guess, mo,  diis,
+        dft,    rho,      dft_xc,   dft_nlc, gto,   ecp, assoc_legendre,
+        fft,    jmat,     jkmat,    fock,    df,    xdm, solvent,
+        global,
     };
     log::debug("Wall clock time by category (s)");
     for (const auto &cat : categories) {

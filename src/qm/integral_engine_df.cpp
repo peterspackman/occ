@@ -1,3 +1,4 @@
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/integral_engine_df.h>
@@ -17,13 +18,17 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
     m_ao_engine.set_auxiliary_basis(df, false);
     occ::timing::start(occ::timing::category::df);
     // don't use the shellpair list for this, results in
-    // messes with positive-definiteness
+    // issues with positive-definiteness
     Mat V = m_aux_engine.one_electron_operator(Op::coulomb,
                                                false); // V = (P|Q) in df basis
     occ::timing::stop(occ::timing::category::df);
 
     occ::timing::start(occ::timing::category::la);
     V_LLt = Eigen::LLT<Mat>(V);
+    if (V_LLt.info() != Eigen::Success) {
+        occ::log::warn(
+            "LLT decomposition of Coulomb metric in DF was not successful!");
+    }
     Mat Vsqrt = Eigen::SelfAdjointEigenSolver<Mat>(V).operatorSqrt();
     Vsqrt_LLt = Eigen::LLT<Mat>(Vsqrt);
     occ::timing::stop(occ::timing::category::la);
@@ -1445,6 +1450,12 @@ Mat IntegralEngineDF::fock_operator(const MolecularOrbitals &mo) {
     auto [J, K] = coulomb_and_exchange(mo);
     J.noalias() -= K;
     return J;
+}
+
+void IntegralEngineDF::set_range_separated_omega(double omega) {
+    m_ao_engine.set_range_separated_omega(omega);
+    m_aux_engine.set_range_separated_omega(omega);
+    set_integral_policy(Policy::Direct);
 }
 
 } // namespace occ::qm

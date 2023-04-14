@@ -115,6 +115,9 @@ class HartreeFock {
 
     inline void set_range_separated_omega(double omega) {
         m_engine.set_range_separated_omega(omega);
+        if (m_df_engine) {
+            (*m_df_engine).set_range_separated_omega(omega);
+        }
     }
 
   private:

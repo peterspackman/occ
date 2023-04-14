@@ -376,7 +376,6 @@ class DFT {
         RangeSeparatedParameters rs = range_separated_parameters();
         if (rs.omega != 0.0) {
             // range separated hybrid
-            J = m_hf.compute_J(mo, precision, Schwarz);
             Mat Ksr;
             std::tie(J, Ksr) = m_hf.compute_JK(mo, precision, Schwarz);
             m_hf.set_range_separated_omega(rs.omega);

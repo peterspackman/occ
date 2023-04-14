@@ -24,6 +24,8 @@ class IntegralEngineDF {
 
     inline void set_integral_policy(Policy p) { m_policy = p; }
 
+    void set_range_separated_omega(double omega);
+
   private:
     inline size_t num_rows() const {
         const auto &aobasis = m_ao_engine.aobasis();

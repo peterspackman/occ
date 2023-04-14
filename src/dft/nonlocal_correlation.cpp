@@ -33,36 +33,6 @@ void NonLocalCorrelationFunctional::set_parameters(const Parameters &params) {
     m_params = params;
 }
 
-void vv10_vxc_kernel(ArrayRef F, ArrayRef U, ArrayRef W, PointsRef points,
-                     ArrayConstRef rho, ArrayConstRef omega0,
-                     ArrayConstRef kappa, ArrayConstRef rho_weighted) {
-
-    for (int i = 0; i < points.cols(); i++) {
-        double f = 0.0;
-        double u = 0.0;
-        double w = 0.0;
-        // TODO lift screening outside loops
-        if (rho(i) < 1e-8)
-            continue;
-        for (int j = 0; j <= i; j++) {
-            if (rho(j) < 1e-8)
-                continue;
-            double fac = (i == j) ? 1.0 : 2.0;
-            double r2 = (points.col(i) - points.col(j)).squaredNorm();
-            double gi = r2 * omega0(i) + kappa(i);
-            double gj = r2 * omega0(j) + kappa(j);
-            double t = fac * rho_weighted(j) / (gi * gj * (gi + gj));
-            f += t;
-            t *= 1.0 / gi + 1.0 / (gi + gj);
-            u += t;
-            w += t * r2;
-        }
-        F(i) = f * -1.5;
-        U(i) = u;
-        W(i) = w;
-    }
-}
-
 std::pair<Vec, Mat>
 vv10_kernel(ArrayConstRef rho, ArrayConstRef grad_rho, PointsRef points,
             ArrayConstRef weights,
@@ -92,7 +62,42 @@ vv10_kernel(ArrayConstRef rho, ArrayConstRef grad_rho, PointsRef points,
     Array U = Array::Zero(rho.rows());
     Array W = Array::Zero(rho.rows());
 
-    vv10_vxc_kernel(F, U, W, points, rho, omega0, kappa, rho_weighted);
+    occ::timing::start(occ::timing::category::dft_nlc);
+    int num_threads = occ::parallel::get_num_threads();
+
+    auto kernel = [&](int thread_id) {
+        for (int i = 0; i < points.cols(); i++) {
+            if ((i % num_threads) != thread_id)
+                continue;
+            // TODO lift screening outside loops
+            // Refactor F, U, W to copy to avoid false sharing?
+            if (rho(i) < 1e-8)
+                continue;
+
+            double k = kappa(i);
+            double f = rho_weighted(i) / (2 * k * k * k);
+            double u = f * (1.0 / k + 1.0 / (2 * k));
+            double w = 0.0;
+
+            for (int j = 0; j < i; j++) {
+                if (rho(j) < 1e-8)
+                    continue;
+                double r2 = (points.col(i) - points.col(j)).squaredNorm();
+                double gi = r2 * omega0(i) + kappa(i);
+                double gj = r2 * omega0(j) + kappa(j);
+                double t = 2 * rho_weighted(j) / (gi * gj * (gi + gj));
+                f += t;
+                t *= 1.0 / gi + 1.0 / (gi + gj);
+                u += t;
+                w += t * r2;
+            }
+            F(i) = f * -1.5;
+            U(i) = u;
+            W(i) = w;
+        }
+    };
+    occ::parallel::parallel_do(kernel);
+    occ::timing::stop(occ::timing::category::dft_nlc);
 
     Vec exc = (beta + 0.5 * F);
     exc.array() *= weights;

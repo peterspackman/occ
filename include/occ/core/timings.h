@@ -21,6 +21,7 @@ enum category {
     grid_points,
     dft_xc,
     dft,
+    dft_nlc,
     xc_func_init,
     xc_func_end,
     rho,
