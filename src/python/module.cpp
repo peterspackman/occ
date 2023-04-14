@@ -1,5 +1,8 @@
 #include <fmt/core.h>
+#include <nanobind/eigen/dense.h>
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
 #include <occ/core/element.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
@@ -176,8 +179,17 @@ NB_MODULE(_occ, m) {
              nb::arg("precision") = std::numeric_limits<double>::epsilon(),
              nb::arg("Schwarz") = occ::Mat());
 
+    using occ::dft::AtomGridSettings;
+    nb::class_<AtomGridSettings>(m, "AtomGridSettings")
+        .def(nb::init<>())
+        .def_rw("max_angular_points", &AtomGridSettings::max_angular_points)
+        .def_rw("min_angular_points", &AtomGridSettings::min_angular_points)
+        .def_rw("radial_points", &AtomGridSettings::radial_points)
+        .def_rw("radial_precision", &AtomGridSettings::radial_precision);
+
     nb::class_<DFT>(m, "DFT")
-        .def(nb::init<const std::string &, const AOBasis &>())
+        .def(nb::init<const std::string &, const AOBasis &,
+                      const AtomGridSettings &>())
         .def("nuclear_attraction_matrix",
              &DFT::compute_nuclear_attraction_matrix)
         .def("kinetic_matrix", &DFT::compute_kinetic_matrix)
