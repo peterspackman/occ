@@ -9,6 +9,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     ] ],
     [ "conversion.h", "conversion_8h.html", "conversion_8h" ],
     [ "core_json.h", "core__json_8h.html", "core__json_8h" ],
+    [ "crystal_json.h", "crystal__json_8h.html", "crystal__json_8h" ],
     [ "crystalgrower.h", "crystalgrower_8h.html", [
       [ "StructureWriter", "classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html", "classocc_1_1io_1_1crystalgrower_1_1StructureWriter" ],
       [ "NetWriter", "classocc_1_1io_1_1crystalgrower_1_1NetWriter.html", "classocc_1_1io_1_1crystalgrower_1_1NetWriter" ]

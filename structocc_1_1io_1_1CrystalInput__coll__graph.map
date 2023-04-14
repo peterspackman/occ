@@ -1,0 +1,6 @@
+<map id="occ::io::CrystalInput" name="occ::io::CrystalInput">
+<area shape="rect" id="node1" title=" " alt="" coords="243,95,393,121"/>
+<area shape="rect" id="node2" href="$classocc_1_1crystal_1_1SpaceGroup.html" title="This class represents a space group." alt="" coords="5,5,188,32"/>
+<area shape="rect" id="node3" href="$structocc_1_1crystal_1_1AsymmetricUnit.html" title="A class representing an asymmetric unit of a crystal structure." alt="" coords="213,5,423,32"/>
+<area shape="rect" id="node4" href="$classocc_1_1crystal_1_1UnitCell.html" title="This class represents a unit cell of a crystal lattice." alt="" coords="448,5,604,32"/>
+</map>

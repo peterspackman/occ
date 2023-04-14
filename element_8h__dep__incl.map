@@ -1,24 +1,25 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/element.h" name="/home/runner/work/occ/occ/include/occ/core/element.h">
-<area shape="rect" id="node1" title=" " alt="" coords="834,5,1005,61"/>
-<area shape="rect" id="node2" href="$molecule_8h.html" title=" " alt="" coords="834,109,1005,165"/>
-<area shape="rect" id="node15" href="$occ__input_8h.html" title=" " alt="" coords="465,213,635,269"/>
-<area shape="rect" id="node16" href="$qcschema_8h.html" title=" " alt="" coords="5,325,228,366"/>
-<area shape="rect" id="node19" href="$xyz_8h.html" title=" " alt="" coords="1664,221,1844,262"/>
-<area shape="rect" id="node20" href="$asymmetric__unit_8h.html" title=" " alt="" coords="587,109,761,165"/>
-<area shape="rect" id="node21" href="$gaussian__input__file_8h.html" title=" " alt="" coords="1079,109,1282,165"/>
-<area shape="rect" id="node22" href="$json__basis_8h.html" title=" " alt="" coords="1307,109,1479,165"/>
-<area shape="rect" id="node3" href="$dimer_8h.html" title=" " alt="" coords="1023,213,1194,269"/>
-<area shape="rect" id="node4" href="$crystal_8h.html" title=" " alt="" coords="743,317,917,373"/>
-<area shape="rect" id="node9" href="$solvation__partition_8h.html" title=" " alt="" coords="1439,421,1610,477"/>
-<area shape="rect" id="node10" href="$tblite__wrapper_8h.html" title=" " alt="" coords="1218,421,1389,477"/>
-<area shape="rect" id="node11" href="$xtb__wrapper_8h.html" title=" " alt="" coords="1023,421,1194,477"/>
-<area shape="rect" id="node14" href="$point__group_8h.html" title=" " alt="" coords="762,213,933,269"/>
-<area shape="rect" id="node8" href="$pair__energy_8h.html" title=" " alt="" coords="71,421,242,477"/>
-<area shape="rect" id="node12" href="$coulomb_8h.html" title=" " alt="" coords="1041,317,1240,373"/>
-<area shape="rect" id="node13" href="$core__json_8h.html" title=" " alt="" coords="1314,317,1487,373"/>
-<area shape="rect" id="node5" href="$cifparser_8h.html" title=" " alt="" coords="517,429,730,470"/>
-<area shape="rect" id="node6" href="$crystalgrower_8h.html" title=" " alt="" coords="754,429,999,470"/>
-<area shape="rect" id="node7" href="$kmcpp_8h.html" title=" " alt="" coords="291,429,492,470"/>
-<area shape="rect" id="node17" href="$properties_8h.html" title=" " alt="" coords="447,317,618,373"/>
-<area shape="rect" id="node18" href="$single__point_8h.html" title=" " alt="" coords="253,317,423,373"/>
+<area shape="rect" id="node1" title=" " alt="" coords="1451,5,1621,61"/>
+<area shape="rect" id="node2" href="$molecule_8h.html" title=" " alt="" coords="752,109,923,165"/>
+<area shape="rect" id="node9" href="$occ__input_8h.html" title=" " alt="" coords="1451,421,1621,477"/>
+<area shape="rect" id="node10" href="$qcschema_8h.html" title=" " alt="" coords="1646,533,1869,574"/>
+<area shape="rect" id="node20" href="$xyz_8h.html" title=" " alt="" coords="1106,221,1286,262"/>
+<area shape="rect" id="node21" href="$asymmetric__unit_8h.html" title=" " alt="" coords="1320,213,1493,269"/>
+<area shape="rect" id="node22" href="$gaussian__input__file_8h.html" title=" " alt="" coords="1696,109,1899,165"/>
+<area shape="rect" id="node23" href="$json__basis_8h.html" title=" " alt="" coords="1923,109,2095,165"/>
+<area shape="rect" id="node3" href="$dimer_8h.html" title=" " alt="" coords="541,213,712,269"/>
+<area shape="rect" id="node4" href="$crystal_8h.html" title=" " alt="" coords="751,317,924,373"/>
+<area shape="rect" id="node14" href="$solvation__partition_8h.html" title=" " alt="" coords="1256,421,1427,477"/>
+<area shape="rect" id="node15" href="$tblite__wrapper_8h.html" title=" " alt="" coords="5,421,176,477"/>
+<area shape="rect" id="node16" href="$xtb__wrapper_8h.html" title=" " alt="" coords="200,421,371,477"/>
+<area shape="rect" id="node19" href="$point__group_8h.html" title=" " alt="" coords="347,213,517,269"/>
+<area shape="rect" id="node11" href="$pair__energy_8h.html" title=" " alt="" coords="800,525,971,581"/>
+<area shape="rect" id="node17" href="$coulomb_8h.html" title=" " alt="" coords="527,317,726,373"/>
+<area shape="rect" id="node18" href="$core__json_8h.html" title=" " alt="" coords="229,317,403,373"/>
+<area shape="rect" id="node5" href="$cifparser_8h.html" title=" " alt="" coords="1019,533,1232,574"/>
+<area shape="rect" id="node6" href="$crystal__json_8h.html" title=" " alt="" coords="496,421,685,477"/>
+<area shape="rect" id="node7" href="$crystalgrower_8h.html" title=" " alt="" coords="709,429,955,470"/>
+<area shape="rect" id="node8" href="$kmcpp_8h.html" title=" " alt="" coords="979,429,1181,470"/>
+<area shape="rect" id="node12" href="$properties_8h.html" title=" " alt="" coords="1451,525,1621,581"/>
+<area shape="rect" id="node13" href="$single__point_8h.html" title=" " alt="" coords="1256,525,1427,581"/>
 </map>

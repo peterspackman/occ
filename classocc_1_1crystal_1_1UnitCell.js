@@ -1,5 +1,6 @@
 var classocc_1_1crystal_1_1UnitCell =
 [
+    [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html#a084d43ff6f5861ff864582404cd461cf", null ],
     [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html#a93c4298eb75398eded8869bc9c7ea5c6", null ],
     [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html#a8fc3943c296df948c1b2cf9afb51ae1b", null ],
     [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html#a26907895b2c56ac1db8cac5c4951d5b8", null ],
@@ -7,6 +8,7 @@ var classocc_1_1crystal_1_1UnitCell =
     [ "a_star_vector", "classocc_1_1crystal_1_1UnitCell.html#ab317b8b1c46f7189c27f6bee1c47a32e", null ],
     [ "a_vector", "classocc_1_1crystal_1_1UnitCell.html#a0032187c788fe7811aedf06904c4a16f", null ],
     [ "alpha", "classocc_1_1crystal_1_1UnitCell.html#a163b84fe62fc90967efb037de882a1c4", null ],
+    [ "angles", "classocc_1_1crystal_1_1UnitCell.html#a33c963c34d7bf5de09fb708bc18c01bc", null ],
     [ "b", "classocc_1_1crystal_1_1UnitCell.html#a02f3ca3750c633457f670818b737fe4f", null ],
     [ "b_star_vector", "classocc_1_1crystal_1_1UnitCell.html#acc04fbb8801ce45a83b23eb6dceefa74", null ],
     [ "b_vector", "classocc_1_1crystal_1_1UnitCell.html#a06b1fd1201903afb2d85538bda5fa148", null ],

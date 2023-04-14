@@ -1,5 +1,6 @@
 var classocc_1_1crystal_1_1SpaceGroup =
 [
+    [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a65f36e7a7cc09230599f4d1153b10739", null ],
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a39f1f3abe5ae23a90b3068624be3d2cc", null ],
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a9709356e7da371bfe9eada1a641b80f5", null ],
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a088a1aa6a1b7cc146e56b72b8a78fcff", null ],

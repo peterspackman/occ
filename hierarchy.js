@@ -29,6 +29,7 @@ var hierarchy =
     [ "occ::crystal::Crystal", "classocc_1_1crystal_1_1Crystal.html", null ],
     [ "occ::crystal::CrystalAtomRegion", "structocc_1_1crystal_1_1CrystalAtomRegion.html", null ],
     [ "occ::crystal::CrystalDimers", "structocc_1_1crystal_1_1CrystalDimers.html", null ],
+    [ "occ::io::CrystalInput", "structocc_1_1io_1_1CrystalInput.html", null ],
     [ "occ::dft::DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", null ],
     [ "occ::dft::DFT", "classocc_1_1dft_1_1DFT.html", null ],
     [ "occ::core::diis::DIIS", "classocc_1_1core_1_1diis_1_1DIIS.html", [
