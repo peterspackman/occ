@@ -17,6 +17,7 @@ var namespaceocc_1_1timing =
       [ "grid_points", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a9dbd51e088c536f9e19f8c2dedd5aadd", null ],
       [ "dft_xc", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a902c790981c3842ae62a5571dbebba01", null ],
       [ "dft", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aeed532ff5d7ed069627dfe50cb4b0db1", null ],
+      [ "dft_nlc", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a37ab8fac1f89bb21eea82de1ddd71bfa", null ],
       [ "xc_func_init", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a36c1be49b6a17ce680ce70e584b26f93", null ],
       [ "xc_func_end", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a1bd630e82b9166acb45ec0744ec9a53d", null ],
       [ "rho", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16ab0c3f39107e645d0f564c38de68f202a", null ],

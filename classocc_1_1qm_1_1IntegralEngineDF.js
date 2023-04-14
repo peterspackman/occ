@@ -17,5 +17,6 @@ var classocc_1_1qm_1_1IntegralEngineDF =
     [ "coulomb_and_exchange", "classocc_1_1qm_1_1IntegralEngineDF.html#a49f1d6d680e016382f2f6f5a096ab650", null ],
     [ "exchange", "classocc_1_1qm_1_1IntegralEngineDF.html#ac86973728ee6bcffe314deba2d018c72", null ],
     [ "fock_operator", "classocc_1_1qm_1_1IntegralEngineDF.html#ad5eb8518ac79c5b234b3a16c01ca25cd", null ],
-    [ "set_integral_policy", "classocc_1_1qm_1_1IntegralEngineDF.html#aa20bdfe5ed36bf35cdf6bba53184f9de", null ]
+    [ "set_integral_policy", "classocc_1_1qm_1_1IntegralEngineDF.html#aa20bdfe5ed36bf35cdf6bba53184f9de", null ],
+    [ "set_range_separated_omega", "classocc_1_1qm_1_1IntegralEngineDF.html#acb458be66991c29996933458eb9a9dea", null ]
 ];
