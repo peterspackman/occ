@@ -10,6 +10,8 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
+#include <occ/io/cifparser.h>
+#include <occ/io/crystal_json.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/gaussian_input_file.h>
 #include <occ/io/occ_input.h>
@@ -47,6 +49,17 @@ void read_input_file(const std::string &filename, OccInput &config) {
         occ::log::debug("Detected xyz input");
         occ::io::XyzFileReader xyz(filename);
         xyz.update_occ_input(config);
+    } else if (ext == ".cif") {
+        occ::log::debug("Detected CIF input");
+        occ::io::CifParser cif;
+        auto crystal = cif.parse_crystal(filename);
+        if (!crystal)
+            throw std::runtime_error(fmt::format("Could not parse crystal: {}",
+                                                 cif.failure_description()));
+        config.crystal.asymmetric_unit = (*crystal).asymmetric_unit();
+        config.crystal.unit_cell = (*crystal).unit_cell();
+        config.crystal.space_group = (*crystal).space_group();
+        config.driver.driver = "crystal";
     } else {
         throw std::runtime_error("unknown file type");
     }
@@ -193,6 +206,18 @@ int main(int argc, char *argv[]) {
             occ::log::info("Using pair energy driver\n");
             occ::main::PairEnergy pair_energy(config);
             pair_energy.compute();
+        } else if (config.driver.driver == "crystal") {
+            occ::log::info("Using crystal driver\n");
+            occ::crystal::Crystal crystal(config.crystal.asymmetric_unit,
+                                          config.crystal.space_group,
+                                          config.crystal.unit_cell);
+            nlohmann::json json_data = crystal;
+            auto path = fs::path(config.filename);
+            path.replace_extension(".cxc.json");
+            occ::log::info("Writing crystal data to {}\n", path.string());
+            std::ofstream of(path.string());
+            of << std::setw(2) << json_data << std::endl;
+
         } else {
             throw std::runtime_error(
                 fmt::format("Unknown driver: {}", config.driver.driver));

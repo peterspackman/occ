@@ -15,6 +15,7 @@ target_link_libraries(occ_main
     occ_dft
     occ_solvent
     occ_interaction
+    occ_crystal
 )
 target_include_directories(occ_main PUBLIC 
     ${OCC_INCLUDE_DIR} 

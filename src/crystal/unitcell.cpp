@@ -3,6 +3,10 @@
 
 namespace occ::crystal {
 
+UnitCell::UnitCell()
+    : m_lengths{1, 1, 1}, m_angles{occ::units::PI / 2, occ::units::PI / 2,
+                                   occ::units::PI / 2} {}
+
 UnitCell::UnitCell(const Vec3 &lengths, const Vec3 &angles)
     : m_lengths{lengths}, m_angles{angles} {
     update_cell_matrices();

@@ -4,6 +4,14 @@
 
 namespace occ::crystal {
 
+SpaceGroup::SpaceGroup() {
+    m_sgdata = gemmi::find_spacegroup_by_number(1);
+    for (const auto &op : m_sgdata->operations()) {
+        m_symops.push_back(SymmetryOperation(op.triplet()));
+    }
+    update_from_sgdata();
+}
+
 SpaceGroup::SpaceGroup(int number) {
     if (number > 230)
         throw std::invalid_argument(

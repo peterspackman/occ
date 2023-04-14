@@ -36,6 +36,11 @@ class ReciprocalAsymmetricUnit {
 class SpaceGroup {
   public:
     /**
+     * Constructs a space group with only translational symmetry.
+     */
+    SpaceGroup();
+
+    /**
      * Constructs a space group with the given space group number.
      *
      * \param num The space group number.

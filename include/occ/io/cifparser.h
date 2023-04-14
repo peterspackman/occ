@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include <occ/crystal/crystal.h>
+#include <occ/io/occ_input.h>
 #include <regex>
 #include <string>
 

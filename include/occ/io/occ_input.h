@@ -3,6 +3,7 @@
 #include <istream>
 #include <occ/core/element.h>
 #include <occ/core/molecule.h>
+#include <occ/crystal/crystal.h>
 #include <occ/qm/spinorbital.h>
 #include <vector>
 
@@ -56,6 +57,12 @@ struct DispersionCorrectionInput {
     double xdm_a2{1.0};
 };
 
+struct CrystalInput {
+    occ::crystal::AsymmetricUnit asymmetric_unit;
+    occ::crystal::SpaceGroup space_group;
+    occ::crystal::UnitCell unit_cell;
+};
+
 struct PairInput {
     std::string source_a{"none"};
     Mat3 rotation_a{Mat3::Identity()};
@@ -77,6 +84,7 @@ struct OccInput {
     BasisSetInput basis;
     SolventInput solvent;
     DispersionCorrectionInput dispersion;
+    CrystalInput crystal;
     std::string name{""};
     std::string filename{""};
 };

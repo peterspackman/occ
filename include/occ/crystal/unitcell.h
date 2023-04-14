@@ -20,6 +20,7 @@ using occ::util::is_close;
 
 class UnitCell {
   public:
+    UnitCell();
     UnitCell(double a, double b, double c, double alpha, double beta,
              double gamma);
     UnitCell(const Vec3 &lengths, const Vec3 &angles);
@@ -182,6 +183,9 @@ class UnitCell {
 
     /// Vector of lengths \f$(a, b, c)\f$
     inline const auto &lengths() const { return m_lengths; }
+
+    /// Vector of lengths \f$(a, b, c)\f$
+    inline const auto &angles() const { return m_angles; }
 
     /**
      * Return the maximum fractional coordinates \f$(h,k,l)\f$ needed
