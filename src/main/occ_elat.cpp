@@ -69,14 +69,20 @@ calculate_wavefunctions(const std::string &basename,
                         const std::string &model) {
     std::string method = "b3lyp";
     std::string basis_name = "6-31G**";
+    const std::string ce2{"ce2-xdm"};
     if (model == "ce-hf") {
         method = "hf";
         basis_name = "3-21G";
-    }
-    if (model == "ce-xdm-fit") {
+    } else if (model == "ce-xdm-fit") {
         method = "b3lyp";
         basis_name = "def2-svp";
+    } else if (model.compare(0, ce2.size(), ce2) == 0) {
+        method = model.substr(ce2.size() + 1);
+        if (method == "")
+            method = "wb97m-v";
+        basis_name = "def2-svp";
     }
+
     std::vector<Wavefunction> wfns;
     size_t index = 0;
     for (const auto &m : molecules) {

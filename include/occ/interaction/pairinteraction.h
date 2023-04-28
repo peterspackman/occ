@@ -19,7 +19,7 @@ struct CEParameterizedModel {
     const double dispersion{1.0};
     const std::string name{"Unscaled"};
     bool xdm{false};
-    double xdm_a1{0.7}, xdm_a2{1.4};
+    double xdm_a1{0.65}, xdm_a2{1.7};
     double scaled_total(double coul, double ex, double pol, double disp) const {
         return coulomb * coul + exchange_repulsion * ex + polarization * pol +
                dispersion * disp;
@@ -31,6 +31,7 @@ inline CEParameterizedModel CE_HF_321G{1.019, 0.811,   0.651,
 inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177,     0.7399,
                                             0.8708, "CE-B3LYP", false};
 inline CEParameterizedModel CE_XDM_FIT{1.0, 1.0, 1.0, 1.0, "CE-XDM-FIT", true};
+inline CEParameterizedModel CE2_XDM{1.0, 0.485, 0.803, 1.0, "CE2-XDM", true};
 
 void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
                                double precision, const Mat &Schwarz,
@@ -82,6 +83,9 @@ inline CEParameterizedModel ce_model_from_string(const std::string &s) {
         return CE_HF_321G;
     if (s == "ce-xdm-fit")
         return CE_XDM_FIT;
+    const std::string ce2{"ce2-xdm"};
+    if (s.compare(0, ce2.size(), ce2) == 0)
+        return CE2_XDM;
     return CEParameterizedModel{};
 }
 

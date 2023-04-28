@@ -591,6 +591,13 @@ Vec Wavefunction::electric_potential(const Mat3N &points) const {
     return esp_e + esp_n;
 }
 
+Mat3N Wavefunction::electric_field(const Mat3N &points) const {
+    HartreeFock hf(basis);
+    Mat3N efield_e = hf.electronic_electric_field_contribution(mo, points);
+    Mat3N efield_n = hf.nuclear_electric_field_contribution(points);
+    return efield_e + efield_n;
+}
+
 Vec Wavefunction::mulliken_charges() const {
 
     HartreeFock hf(basis);

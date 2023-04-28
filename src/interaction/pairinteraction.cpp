@@ -250,8 +250,8 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     occ::log::debug("Total term         {:20.12f}", energy.exchange_repulsion);
 
     if (scale_factors.xdm) {
-        fmt::print("XDM params: {} {}\n", scale_factors.xdm_a1,
-                   scale_factors.xdm_a2);
+        occ::log::debug("XDM params: {} {}", scale_factors.xdm_a1,
+                        scale_factors.xdm_a2);
         auto xdm_result = xdm::xdm_dispersion_interaction_energy(
             {A.atoms, A.xdm_polarizabilities, A.xdm_moments, A.xdm_volumes,
              A.xdm_free_volumes},
@@ -359,8 +359,8 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     occ::log::debug("Total term         {:20.12f}", energy.exchange_repulsion);
 
     if (scale_factors.xdm) {
-        fmt::print("XDM params: {} {}\n", scale_factors.xdm_a1,
-                   scale_factors.xdm_a2);
+        occ::log::debug("XDM params: {} {}", scale_factors.xdm_a1,
+                        scale_factors.xdm_a2);
         auto xdm_result = xdm::xdm_dispersion_interaction_energy(
             {A.atoms, A.xdm_polarizabilities, A.xdm_moments, A.xdm_volumes,
              A.xdm_free_volumes},

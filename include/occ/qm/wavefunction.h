@@ -89,6 +89,7 @@ struct Wavefunction {
     Vec mulliken_charges() const;
 
     Vec electric_potential(const Mat3N &points) const;
+    Mat3N electric_field(const Mat3N &points) const;
 
     void save(FchkWriter &);
 

@@ -98,15 +98,31 @@ void PairEnergy::compute() {
 auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
                          const Crystal &c) {
     using occ::crystal::SymmetryOperation;
-    int sint = m.asymmetric_unit_symop()(0);
-    SymmetryOperation symop(sint);
-    occ::Mat3N positions = wfn.positions() * BOHR_TO_ANGSTROM;
+    const auto &asym_symops = m.asymmetric_unit_symop();
+    Mat3N pos_m = m.positions();
+    Mat3 rotation;
+    Vec3 translation;
 
-    occ::Mat3 rotation =
-        c.unit_cell().direct() * symop.rotation() * c.unit_cell().inverse();
-    occ::Vec3 translation =
-        (m.centroid() - (rotation * positions).rowwise().mean()) /
-        BOHR_TO_ANGSTROM;
+    for (int i = 0; i < asym_symops.rows(); i++) {
+        int sint = asym_symops(i);
+        SymmetryOperation symop(sint);
+        occ::Mat3N positions = wfn.positions() * BOHR_TO_ANGSTROM;
+
+        rotation =
+            c.unit_cell().direct() * symop.rotation() * c.unit_cell().inverse();
+        translation = (m.centroid() - (rotation * positions).rowwise().mean()) /
+                      BOHR_TO_ANGSTROM;
+        Wavefunction tmp = wfn;
+        tmp.apply_transformation(rotation, translation);
+
+        occ::Mat3N tmp_t = tmp.positions() * BOHR_TO_ANGSTROM;
+        double rmsd = (tmp_t - pos_m).norm();
+        occ::log::debug("transform (symop={}) RMSD = {}\n", sint, rmsd);
+        if (rmsd < 1e-3)
+            return std::make_pair(rotation, translation);
+    }
+    throw std::runtime_error(
+        "Unable to determine symmetry operation to transform wavefunction");
     return std::make_pair(rotation, translation);
 }
 
@@ -173,9 +189,35 @@ class CEPairEnergyFunctor {
 
         auto interaction_energy = interaction(A, B);
         interaction_energy.is_computed = true;
-        fmt::print("Finished model energy\n");
+        occ::log::debug("Finished model energy");
         return interaction_energy;
     }
+
+    Mat3N electric_field(const Dimer &dimer) {
+        Molecule mol_A = dimer.a();
+        Molecule mol_B = dimer.b();
+        Wavefunction A = m_wavefunctions_a[mol_A.asymmetric_molecule_idx()];
+        Wavefunction B =
+            (m_wavefunctions_b.size() > 0)
+                ? m_wavefunctions_a[mol_B.asymmetric_molecule_idx()]
+                : m_wavefunctions_b[mol_B.asymmetric_molecule_idx()];
+
+        auto transform_b = calculate_transform(B, mol_B, m_crystal);
+        B.apply_transformation(transform_b.first, transform_b.second);
+
+        occ::Mat3N pos_A = mol_A.positions();
+        Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
+
+        occ::Mat3N pos_A_bohr =
+            mol_A.positions() * occ::units::ANGSTROM_TO_BOHR;
+
+        Mat3N pos_B = mol_B.positions();
+        Mat3N pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
+
+        return B.electric_field(pos_A_bohr);
+    }
+
+    inline const auto &wavefunctions() const { return m_wavefunctions_a; }
 
     inline const auto &partial_charges() {
         if (m_partial_charges.size() > 0)
@@ -259,6 +301,14 @@ int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
     occ::log::info("Finished calculating {} unique dimer coulomb energies",
                    computed_dimers);
     return computed_dimers;
+}
+
+Mat3N compute_point_charge_efield(const Dimer &dimer, const Vec &asym_charges) {
+    const auto asym_idx_a = dimer.a().asymmetric_molecule_idx();
+    const auto asym_idx_b = dimer.b().asymmetric_molecule_idx();
+
+    return occ::interaction::coulomb_efield_asym_charges(dimer, asym_charges)
+        .first;
 }
 
 template <typename EnergyModel>
@@ -346,6 +396,7 @@ struct WolfSumAccelerator {
     occ::interaction::WolfParams parameters{16.0, 0.2};
     Vec asym_charges;
     std::vector<double> charge_self_energies;
+    std::vector<Mat3N> electric_field_values;
     double energy{0.0};
 
     template <typename EnergyModel>
@@ -386,6 +437,7 @@ struct WolfSumAccelerator {
         }
         for (int i = 0; i < asym_mols.size(); i++) {
             const auto &mol = asym_mols[i];
+            electric_field_values.push_back(Mat3N::Zero(3, mol.size()));
             charge_self_energies[i] =
                 occ::interaction::coulomb_self_energy_asym_charges(
                     mol, asym_charges);
@@ -418,6 +470,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
     size_t cycle{1};
 
     auto all_dimers = crystal.symmetry_unique_dimers(conv.max_radius);
+    const auto &asym_mols = crystal.symmetry_unique_molecules();
 
     occ::log::info("Found {} symmetry unique dimers within max radius {:.3f}\n",
                    all_dimers.unique_dimers.size(), conv.max_radius);
@@ -453,18 +506,34 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
         for (const auto &n : mol_neighbors) {
             double molecule_total{0.0};
             size_t dimer_idx{0};
+
+            Mat3N efield = Mat3N::Zero(3, asym_mols[mol_idx].size());
+
+            if (conv.wolf_sum) {
+                wolf.electric_field_values[mol_idx].setZero();
+                fmt::print("Field total =\n{}\n",
+                           wolf.electric_field_values[mol_idx]);
+            }
+
             for (const auto &dimer : n) {
                 int unique_idx =
                     all_dimers.unique_dimer_idx[mol_idx][dimer_idx];
                 const auto &e = converged_energies[unique_idx];
-                double e_charge = charge_energies[unique_idx];
 
                 if (e.is_computed) {
                     molecule_total += e.total_kjmol();
                     if (conv.wolf_sum) {
+                        double e_charge = charge_energies[unique_idx];
                         ecoul_exact_real += 0.5 * e.coulomb_kjmol();
                         ecoul_real +=
                             0.5 * e_charge * occ::units::AU_TO_KJ_PER_MOL;
+                        wolf.electric_field_values[mol_idx] +=
+                            compute_point_charge_efield(dimer,
+                                                        wolf.asym_charges);
+                    }
+                    if constexpr (std::is_same<EnergyModel,
+                                               CEPairEnergyFunctor>::value) {
+                        efield += energy_model.electric_field(dimer);
                     }
                 }
                 dimer_idx++;
@@ -473,6 +542,26 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
             if (conv.wolf_sum) {
                 ecoul_self += wolf.charge_self_energies[mol_idx] *
                               units::AU_TO_KJ_PER_MOL;
+
+                auto &electric_field = wolf.electric_field_values[mol_idx];
+                fmt::print("Field total =\n{}\n", electric_field);
+                fmt::print("Field total =\n{}\n", efield);
+                if constexpr (std::is_same<EnergyModel,
+                                           CEPairEnergyFunctor>::value) {
+                    const auto &wfn_a = energy_model.wavefunctions()[mol_idx];
+                    double e_pol_chg = occ::interaction::polarization_energy(
+                        wfn_a.xdm_polarizabilities, electric_field);
+                    fmt::print("Crystal polarizability (chg): {}\n",
+                               e_pol_chg * occ::units::AU_TO_KJ_PER_MOL);
+                }
+            }
+            if constexpr (std::is_same<EnergyModel,
+                                       CEPairEnergyFunctor>::value) {
+                const auto &wfn_a = energy_model.wavefunctions()[mol_idx];
+                double e_pol_qm = occ::interaction::polarization_energy(
+                    wfn_a.xdm_polarizabilities, efield);
+                fmt::print("Crystal polarizability (qm): {}\n",
+                           e_pol_qm * occ::units::AU_TO_KJ_PER_MOL);
             }
             mol_idx++;
         }
