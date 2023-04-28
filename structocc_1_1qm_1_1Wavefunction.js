@@ -11,6 +11,7 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "atomic_numbers", "structocc_1_1qm_1_1Wavefunction.html#a0ee0da05d5c5ffa064c5ba9b8df31c2b", null ],
     [ "charge", "structocc_1_1qm_1_1Wavefunction.html#a5e0c93831990ca1edb34ca6c52b2b6ec", null ],
     [ "compute_density_matrix", "structocc_1_1qm_1_1Wavefunction.html#a3adceb03c27c7d8ef4538239b30e32f7", null ],
+    [ "electric_field", "structocc_1_1qm_1_1Wavefunction.html#a2b4175573369c8e98696a18796e214e3", null ],
     [ "electric_potential", "structocc_1_1qm_1_1Wavefunction.html#a010f948b01866ec5d3992b3e4c17cb5e", null ],
     [ "is_restricted", "structocc_1_1qm_1_1Wavefunction.html#a1db590c06712d9e41a17a70b126381d7", null ],
     [ "mulliken_charges", "structocc_1_1qm_1_1Wavefunction.html#ae35e51e1af138bb7ddcea5091abb6b50", null ],
