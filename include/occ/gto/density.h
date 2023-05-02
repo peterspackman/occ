@@ -51,7 +51,7 @@ template <size_t max_derivative,
           SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
 Mat evaluate_density(const Mat &D, const occ::gto::GTOValues &gto_values) {
     const auto npt = gto_values.phi.rows();
-    if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+    if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
         occ::Mat rho(npt, num_components(max_derivative));
         evaluate_density<max_derivative, spinorbital_kind>(D, gto_values, rho);
         return rho;

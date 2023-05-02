@@ -243,8 +243,9 @@ struct XDMResult {
     double energy{0.0};
 };
 
-XDM::XDM(const occ::qm::AOBasis &basis, int charge)
-    : m_basis(basis), m_grid(basis), m_charge(charge) {
+XDM::XDM(const occ::qm::AOBasis &basis, int charge,
+         const XDM::Parameters &params)
+    : m_basis(basis), m_grid(basis), m_charge(charge), m_params(params) {
     for (int i = 0; i < basis.atoms().size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
@@ -271,7 +272,8 @@ double XDM::energy(const occ::qm::MolecularOrbitals &mo) {
 
     std::tie(m_energy, m_forces) =
         xdm_dispersion_energy({m_basis.atoms(), m_polarizabilities, m_moments,
-                               m_volume, m_volume_free});
+                               m_volume, m_volume_free},
+                              m_params);
     occ::timing::stop(occ::timing::category::xdm);
     return m_energy;
 }
@@ -282,7 +284,8 @@ const Mat3N &XDM::forces(const occ::qm::MolecularOrbitals &mo) {
 
     std::tie(m_energy, m_forces) =
         xdm_dispersion_energy({m_basis.atoms(), m_polarizabilities, m_moments,
-                               m_volume, m_volume_free});
+                               m_volume, m_volume_free},
+                              m_params);
     return m_forces;
 }
 

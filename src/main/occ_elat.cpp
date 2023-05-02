@@ -74,13 +74,30 @@ calculate_wavefunctions(const std::string &basename,
         method = "hf";
         basis_name = "3-21G";
     } else if (model == "ce-xdm-fit") {
+        method = "wb97x";
+        basis_name = "def2-svp";
+    } else if (model == "ce-hf-svp") {
+        method = "hf";
+        basis_name = "def2-svp";
+    } else if (model == "ce-lda-svp") {
+        method = "svwn5";
+        basis_name = "def2-svp";
+    } else if (model == "ce-blyp-svp") {
+        method = "blyp";
+        basis_name = "def2-svp";
+    } else if (model == "ce-b3lyp-svp") {
         method = "b3lyp";
+        basis_name = "def2-svp";
+    } else if (model == "ce-wb97x-svp") {
+        method = "wb97x";
+        basis_name = "def2-svp";
+    } else if (model == "ce-wb97m-svp") {
+        method = "wb97m-v";
         basis_name = "def2-svp";
     } else if (model.compare(0, ce2.size(), ce2) == 0) {
         method = model.substr(ce2.size() + 1);
         if (method == "")
             method = "wb97m-v";
-        basis_name = "def2-svp";
     }
 
     std::vector<Wavefunction> wfns;
@@ -105,7 +122,7 @@ calculate_wavefunctions(const std::string &basename,
             basis.set_pure(false);
             fmt::print("Loaded basis set, {} shells, {} basis functions\n",
                        basis.size(), basis.nbf());
-            if (model == "ce-hf") {
+            if (method == "hf") {
                 HartreeFock hf(basis);
                 SCF<HartreeFock> scf(hf, SpinorbitalKind::Restricted);
                 scf.set_charge_multiplicity(0, 1);
@@ -298,6 +315,7 @@ void calculate_lattice_energy(const std::string &cif_filename,
         fmt::print("Molecule {} total: {:.3f} kJ/mol ({} pairs)\n", mol_idx,
                    molecule_total.total, j);
         etot += molecule_total.total;
+        mol_idx++;
     }
     fmt::print("Final energy: {:.3f} kJ/mol\n", etot * 0.5);
     fmt::print("Lattice energy: {:.3f} kJ/mol\n",
@@ -341,6 +359,8 @@ int main(int argc, char *argv[]) {
         settings.wolf_sum = use_wolf_sum;
 
         calculate_lattice_energy(cif_filename, model_name, settings);
+
+        occ::timing::print_timings();
 
     } catch (const char *ex) {
         fmt::print(error_format, ex);

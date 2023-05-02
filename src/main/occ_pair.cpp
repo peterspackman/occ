@@ -269,7 +269,7 @@ int main(int argc, char *argv[]) {
 
     auto model = occ::interaction::ce_model_from_string(model_name);
     model.xdm_a1 = xdm_a1;
-    model.xdm_a1 = xdm_a2;
+    model.xdm_a2 = xdm_a2;
 
     CEModelInteraction interaction(model);
     if (use_df) {

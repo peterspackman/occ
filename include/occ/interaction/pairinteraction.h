@@ -19,7 +19,7 @@ struct CEParameterizedModel {
     const double dispersion{1.0};
     const std::string name{"Unscaled"};
     bool xdm{false};
-    double xdm_a1{0.65}, xdm_a2{1.7};
+    double xdm_a1{0.65}, xdm_a2{1.70};
     double scaled_total(double coul, double ex, double pol, double disp) const {
         return coulomb * coul + exchange_repulsion * ex + polarization * pol +
                dispersion * disp;
@@ -32,6 +32,19 @@ inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177,     0.7399,
                                             0.8708, "CE-B3LYP", false};
 inline CEParameterizedModel CE_XDM_FIT{1.0, 1.0, 1.0, 1.0, "CE-XDM-FIT", true};
 inline CEParameterizedModel CE2_XDM{1.0, 0.485, 0.803, 1.0, "CE2-XDM", true};
+
+inline CEParameterizedModel CE_HF_SVP{1.0,         0.485, 0.803, 1.0,
+                                      "CE-HF-SVP", true,  0.65,  1.7};
+inline CEParameterizedModel CE_LDA_SVP{1.0,          0.485, 0.803, 1.0,
+                                       "CE-LDA-SVP", true,  0.65,  1.7};
+inline CEParameterizedModel CE_BLYP_SVP{1.0,           0.485, 0.803, 1.0,
+                                        "CE-BLYP-SVP", true,  0.65,  1.7};
+inline CEParameterizedModel CE_B3LYP_SVP{
+    1.0, 0.485, 0.803, 1.0, "CE-B3LYP-SVP", true, 0.65, 1.7};
+inline CEParameterizedModel CE_WB97M_SVP{
+    1.0, 0.485, 0.803, 1.0, "CE-WB97M-SVP", true, 0.65, 1.7};
+inline CEParameterizedModel CE_WB97X_SVP{
+    1.0, 0.485, 0.803, 1.0, "CE-WB97X-SVP", true, 0.65, 1.7};
 
 void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
                                double precision, const Mat &Schwarz,
@@ -61,6 +74,7 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
     using occ::interaction::ce_model_polarization_energy;
     double e_pol = 0.0;
     if (wfn_a.have_xdm_parameters && wfn_b.have_xdm_parameters) {
+        fmt::print("Using XDM polarizability\n");
         using occ::interaction::polarization_energy;
         e_pol = polarization_energy(wfn_a.xdm_polarizabilities, field_a) +
                 polarization_energy(wfn_b.xdm_polarizabilities, field_b);
@@ -86,6 +100,24 @@ inline CEParameterizedModel ce_model_from_string(const std::string &s) {
     const std::string ce2{"ce2-xdm"};
     if (s.compare(0, ce2.size(), ce2) == 0)
         return CE2_XDM;
+    if (s == "ce-b3lyp")
+        return CE_B3LYP_631Gdp;
+    if (s == "ce-hf")
+        return CE_HF_321G;
+    if (s == "ce-xdm-fit")
+        return CE_XDM_FIT;
+    if (s == "ce-hf-svp")
+        return CE_HF_SVP;
+    if (s == "ce-lda-svp")
+        return CE_LDA_SVP;
+    if (s == "ce-blyp-svp")
+        return CE_BLYP_SVP;
+    if (s == "ce-b3lyp-svp")
+        return CE_B3LYP_SVP;
+    if (s == "ce-wb97x-svp")
+        return CE_WB97X_SVP;
+    if (s == "ce-wb97m-svp")
+        return CE_WB97M_SVP;
     return CEParameterizedModel{};
 }
 

@@ -170,6 +170,10 @@ void CEModelInteraction::compute_monomer_energies(Wavefunction &wfn) const {
     }
     Mat schwarz = hf.compute_schwarz_ints();
     fmt::print("Calculating xdm parameters: {}\n", scale_factors.xdm);
+    if (scale_factors.xdm) {
+        fmt::print("XDM damping parameters: {} {}\n", scale_factors.xdm_a1,
+                   scale_factors.xdm_a2);
+    }
     compute_ce_model_energies(wfn, hf, precision, schwarz, scale_factors.xdm);
 }
 
@@ -248,6 +252,11 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     occ::log::debug("E_rep term         {:20.12f}", E_rep);
     occ::log::debug("Exchange term      {:20.12f}", E_ABn.exchange);
     occ::log::debug("Total term         {:20.12f}", energy.exchange_repulsion);
+    occ::log::debug("Test term          {:20.12f}",
+                    ABo.energy.exchange - A.energy.exchange -
+                        B.energy.exchange +
+                        (ABo.energy.core - ABn.energy.core) +
+                        (ABo.energy.coulomb - ABn.energy.coulomb));
 
     if (scale_factors.xdm) {
         occ::log::debug("XDM params: {} {}", scale_factors.xdm_a1,
@@ -258,7 +267,22 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
             {B.atoms, B.xdm_polarizabilities, B.xdm_moments, B.xdm_volumes,
              B.xdm_free_volumes},
             {scale_factors.xdm_a1, scale_factors.xdm_a2});
-        energy.dispersion = std::get<0>(xdm_result);
+        occ::xdm::XDM xdm_calc_a(A.basis, A.charge(),
+                                 {scale_factors.xdm_a1, scale_factors.xdm_a2});
+        auto energy_a = xdm_calc_a.energy(A.mo);
+        occ::xdm::XDM xdm_calc_b(B.basis, B.charge(),
+                                 {scale_factors.xdm_a1, scale_factors.xdm_a2});
+        auto energy_b = xdm_calc_b.energy(B.mo);
+        occ::xdm::XDM xdm_calc_ab(ABn.basis, ABn.charge(),
+                                  {scale_factors.xdm_a1, scale_factors.xdm_a2});
+        auto energy_ab = xdm_calc_ab.energy(ABn.mo);
+        energy.dispersion = energy_ab - energy_a - energy_b;
+        fmt::print("energy_ab = {} vs {}\n", energy_ab - energy_a - energy_b,
+                   std::get<0>(xdm_result));
+        A.xdm_polarizabilities = ABn.xdm_polarizabilities.block(
+            0, 0, A.xdm_polarizabilities.rows(), 1);
+        B.xdm_polarizabilities = ABn.xdm_polarizabilities.block(
+            A.xdm_polarizabilities.rows(), 0, B.xdm_polarizabilities.rows(), 1);
     } else {
         energy.dispersion = ce_model_dispersion_energy(A.atoms, B.atoms);
     }

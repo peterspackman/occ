@@ -51,6 +51,7 @@ phmap                Fast hashmap implementation
 pocketFFT 	     Standalone implementation of fast Fourier transform
 scnlib               String parsing
 spdlog               Logging (v {})
+subprocess           Calling external subprocesses
 
 )",
               eigen_version_string, fmt_version_string, gemmi_version_string,
