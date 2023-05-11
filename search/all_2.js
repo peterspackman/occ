@@ -48,7 +48,7 @@ var searchData=
   ['breadth_5ffirst_5ftraversal_159',['breadth_first_traversal',['../classocc_1_1core_1_1graph_1_1Graph.html#a2e409aca89fe77687101e611578e8d73',1,'occ::core::graph::Graph']]],
   ['breadth_5ffirst_5ftraversal_5fwith_5fedge_160',['breadth_first_traversal_with_edge',['../classocc_1_1core_1_1graph_1_1Graph.html#ac55621ad5dcb5382e6dbe9bce1a5b40c',1,'occ::core::graph::Graph']]],
   ['brent_161',['Brent',['../classocc_1_1core_1_1opt_1_1Brent.html#a133a018dc60d3b481148cfcaa01eba24',1,'occ::core::opt::Brent::Brent()'],['../classocc_1_1core_1_1opt_1_1Brent.html',1,'occ::core::opt::Brent']]],
-  ['buffer_162',['buffer',['../structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html#a50ba5e01d3e39a03d6a4ae8980a695d9',1,'occ::qm::IntegralEngine::IntegralResult']]],
-  ['buffer_163',['Buffer',['../classocc_1_1qm_1_1IntegralEngineDF.html#a62e3c821697ddb931d843d15c19f777f',1,'occ::qm::IntegralEngineDF']]],
+  ['buffer_162',['Buffer',['../classocc_1_1qm_1_1IntegralEngineDF.html#a62e3c821697ddb931d843d15c19f777f',1,'occ::qm::IntegralEngineDF']]],
+  ['buffer_163',['buffer',['../structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html#a50ba5e01d3e39a03d6a4ae8980a695d9',1,'occ::qm::IntegralEngine::IntegralResult']]],
   ['build_164',['build',['../structocc_1_1geometry_1_1LinearHashedOctree.html#aabdf4143867fc80fcf288cc01f305193',1,'occ::geometry::LinearHashedOctree::build()'],['../namespaceocc_1_1io.html#a0b4154c8ab12aa7b60925e2a2b6acbe2',1,'occ::io::build(const std::string &amp;filename)'],['../namespaceocc_1_1io.html#a0b19dda27e50ff77a11e8e61654b1569',1,'occ::io::build(std::istream &amp;file)']]]
 ];

@@ -67,17 +67,17 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"",
-"classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html#a6c319aaeab76964254f139fe34964740",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba48e95a11708098012382729c8b6e136d",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbafeea6d4d188821e731bf4f727a6b98ef",
-"classocc_1_1qm_1_1EDIIS.html",
-"classocc_1_1xdm_1_1XDM.html#a136fd6b157d62e03113a7682288a8e6a",
-"functions_v.html",
-"namespaceocc.html",
-"namespaceocc_1_1geometry_1_1constants.html#a592768353d7a42e030df52fbbd9ed021",
-"namespaceocc_1_1units.html#af2b5a09e976e46202d8f3be996332ee3",
-"structocc_1_1core_1_1Atom.html#aad9642b5517f01fadc4f001ee8d029e1",
+"annotated.html",
+"classocc_1_1crystal_1_1SpaceGroup.html",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba498c05355c1d8d33a9acc8c2a8f02133",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaff679db65a9ba54728f9ae69aa621983",
+"classocc_1_1qm_1_1EDIIS.html#a059f8802000544e74b032ed3a67b6335",
+"classocc_1_1xdm_1_1XDM.html#a1db22887668a7a8c1bb42296a43adb2b",
+"functions_vars.html",
+"namespaceocc.html#a031760bbc5e156e4424d656b148ad8be",
+"namespaceocc_1_1geometry_1_1constants.html#a750b8aa600fac0f4a6bc5ca13c66bcde",
+"namespaceocc_1_1units.html#af6152c17fa3c68fec7ea231f47889bf7",
+"structocc_1_1core_1_1Atom.html#abf19c98a7f74b0967631b64090394630",
 "structocc_1_1interaction_1_1CEEnergyComponents.html#a53972764db2abc187d98730d375f728f",
 "structocc_1_1main_1_1PairEnergy.html#a9b2e8bbad829e31aa2f71f3f495c0b69",
 "structocc_1_1xdm_1_1XDMAtomList.html"

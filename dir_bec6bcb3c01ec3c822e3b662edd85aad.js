@@ -6,6 +6,7 @@ var dir_bec6bcb3c01ec3c822e3b662edd85aad =
     [ "crystal.h", "crystal_8h.html", [
       [ "CrystalAtomRegion", "structocc_1_1crystal_1_1CrystalAtomRegion.html", "structocc_1_1crystal_1_1CrystalAtomRegion" ],
       [ "CrystalDimers", "structocc_1_1crystal_1_1CrystalDimers.html", "structocc_1_1crystal_1_1CrystalDimers" ],
+      [ "SymmetryRelatedDimer", "structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html", "structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer" ],
       [ "Crystal", "classocc_1_1crystal_1_1Crystal.html", "classocc_1_1crystal_1_1Crystal" ]
     ] ],
     [ "hkl.h", "hkl_8h.html", [

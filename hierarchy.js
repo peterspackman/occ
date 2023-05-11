@@ -142,6 +142,7 @@ var hierarchy =
     [ "occ::solvent::surface::Surface", "structocc_1_1solvent_1_1surface_1_1Surface.html", null ],
     [ "occ::io::SymmetryData", "structocc_1_1io_1_1SymmetryData.html", null ],
     [ "occ::crystal::SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", null ],
+    [ "occ::crystal::CrystalDimers::SymmetryRelatedDimer", "structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html", null ],
     [ "occ::core::SymOp", "structocc_1_1core_1_1SymOp.html", null ],
     [ "occ::io::Table", "classocc_1_1io_1_1Table.html", null ],
     [ "occ::xtb::TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", null ],

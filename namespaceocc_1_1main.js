@@ -17,7 +17,7 @@ var namespaceocc_1_1main =
     [ "converged_lattice_energies", "namespaceocc_1_1main.html#adc1ccaf1ba538fd1b0c72157e51bdffb", null ],
     [ "converged_xtb_lattice_energies", "namespaceocc_1_1main.html#a636639b98d41eb62542faf3416d5e6b8", null ],
     [ "load_dimer_energy", "namespaceocc_1_1main.html#a4c99afd3455379c53135bd1896c75dad", null ],
-    [ "partition_solvent_surface", "namespaceocc_1_1main.html#a667def99b34bedf8e2e3764cd84848f7", null ],
+    [ "partition_solvent_surface", "namespaceocc_1_1main.html#aa39befd47d2156369617ebd3965cdf28", null ],
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],
     [ "single_point_calculation", "namespaceocc_1_1main.html#a17c5945b306895d7d49fb2e0b9d32e72", null ],
     [ "single_point_calculation", "namespaceocc_1_1main.html#ae6ef0a4f014d37dcbe7339c1e0e6efb8", null ],

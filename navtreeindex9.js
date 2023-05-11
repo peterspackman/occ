@@ -1,6 +1,5 @@
 var NAVTREEINDEX9 =
 {
-"namespaceocc_1_1units.html#af2b5a09e976e46202d8f3be996332ee3":[1,0,2,19,0],
 "namespaceocc_1_1units.html#af6152c17fa3c68fec7ea231f47889bf7":[1,0,2,19,10],
 "namespaceocc_1_1util.html":[1,0,2,20],
 "namespaceocc_1_1util.html#a0f4b4a70d874306db9b67ccc69091f93":[1,0,2,20,3],
@@ -217,7 +216,7 @@ var NAVTREEINDEX9 =
 "smd_8h.html#ac31b31d71c13177bfb15a7579bec119e":[3,0,1,0,11,2,2],
 "solvation__correction_8h.html":[3,0,1,0,11,3],
 "solvation__partition_8h.html":[3,0,1,0,7,3],
-"solvation__partition_8h.html#a667def99b34bedf8e2e3764cd84848f7":[3,0,1,0,7,3,4],
+"solvation__partition_8h.html#aa39befd47d2156369617ebd3965cdf28":[3,0,1,0,7,3,4],
 "solvation__partition_8h.html#ae11bfee5ed2009b345a94b34822a3d8d":[3,0,1,0,7,3,3],
 "solvation__partition_8h.html#ae11bfee5ed2009b345a94b34822a3d8da904a394a586beaef3768b3b664aa966c":[3,0,1,0,7,3,3,1],
 "solvation__partition_8h.html#ae11bfee5ed2009b345a94b34822a3d8dad46944b7474143da3a8f5f49afc5bbfc":[3,0,1,0,7,3,3,0],
@@ -249,5 +248,6 @@ var NAVTREEINDEX9 =
 "structocc_1_1core_1_1Atom.html":[2,0,1,0,4],
 "structocc_1_1core_1_1Atom.html#a2ef625b671ce0c399f7cd94b57a3570b":[2,0,1,0,4,2],
 "structocc_1_1core_1_1Atom.html#a50e8d446909f37e7c41d17aa40c3a9ed":[2,0,1,0,4,0],
-"structocc_1_1core_1_1Atom.html#aa292688d9909d939aff54d40f3dd6ab8":[2,0,1,0,4,6]
+"structocc_1_1core_1_1Atom.html#aa292688d9909d939aff54d40f3dd6ab8":[2,0,1,0,4,6],
+"structocc_1_1core_1_1Atom.html#aad9642b5517f01fadc4f001ee8d029e1":[2,0,1,0,4,7]
 };

@@ -1,6 +1,5 @@
 var NAVTREEINDEX10 =
 {
-"structocc_1_1core_1_1Atom.html#aad9642b5517f01fadc4f001ee8d029e1":[2,0,1,0,4,7],
 "structocc_1_1core_1_1Atom.html#abf19c98a7f74b0967631b64090394630":[2,0,1,0,4,1],
 "structocc_1_1core_1_1Atom.html#acef072f41555ce828f8377b3d9f5701e":[2,0,1,0,4,3],
 "structocc_1_1core_1_1Atom.html#ad45efb996e628bab656ea5a48d48112a":[2,0,1,0,4,5],
@@ -96,11 +95,12 @@ var NAVTREEINDEX10 =
 "structocc_1_1crystal_1_1CrystalAtomRegion.html#afb44e09531a3919dc19d14a873b2c506":[2,0,1,1,1,2],
 "structocc_1_1crystal_1_1CrystalDimers.html":[2,0,1,1,2],
 "structocc_1_1crystal_1_1CrystalDimers.html#a243d8fa85b9ab110971436ef19b2e281":[2,0,1,1,2,2],
-"structocc_1_1crystal_1_1CrystalDimers.html#a31462415705ef86536f7d6d40488dc50":[2,0,1,1,2,5],
-"structocc_1_1crystal_1_1CrystalDimers.html#a46046fc90c4a1411f9a5393e6bb40bb7":[2,0,1,1,2,1],
+"structocc_1_1crystal_1_1CrystalDimers.html#a31462415705ef86536f7d6d40488dc50":[2,0,1,1,2,4],
+"structocc_1_1crystal_1_1CrystalDimers.html#a64bcd1ba7c2106300d03ef64064822f3":[2,0,1,1,2,1],
 "structocc_1_1crystal_1_1CrystalDimers.html#a66e07228b096508be0cd7479e553230e":[2,0,1,1,2,3],
-"structocc_1_1crystal_1_1CrystalDimers.html#aaf716f4f12efd46d4e8f4aae964db6e6":[2,0,1,1,2,4],
-"structocc_1_1crystal_1_1CrystalDimers.html#adf1077318990ba0c5603b5bb0ad43f0c":[2,0,1,1,2,0],
+"structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html":[2,0,1,1,2,0],
+"structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html#a58cd5e96b9493e73fecc8543c11596b1":[2,0,1,1,2,0,1],
+"structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html#a826efaa431b7e107101dc25a1a2fe5e8":[2,0,1,1,2,0,0],
 "structocc_1_1crystal_1_1HKL.html":[2,0,1,1,4],
 "structocc_1_1crystal_1_1HKL.html#a487b5f9ce144ae61d237107138dd5741":[2,0,1,1,4,1],
 "structocc_1_1crystal_1_1HKL.html#a546fd3f0dcf38bc585620810b4beaa28":[2,0,1,1,4,2],

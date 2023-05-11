@@ -1,6 +1,5 @@
 var NAVTREEINDEX1 =
 {
-"classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html#a6c319aaeab76964254f139fe34964740":[2,0,1,1,5,0],
 "classocc_1_1crystal_1_1SpaceGroup.html":[2,0,1,1,6],
 "classocc_1_1crystal_1_1SpaceGroup.html#a07f763a7a098f648115fbe2d891469bc":[2,0,1,1,6,7],
 "classocc_1_1crystal_1_1SpaceGroup.html#a088a1aa6a1b7cc146e56b72b8a78fcff":[2,0,1,1,6,3],
@@ -249,5 +248,6 @@ var NAVTREEINDEX1 =
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba47e5bcc51f0f203b939a13304a02456f":[2,0,1,2,2,3,178],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba47e8d35a8808f2326c8a44a18d0657a4":[2,0,1,2,2,3,217],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba483a47e3155ac6d3e949dfc579299d16":[2,0,1,2,2,3,66],
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba48aa8241122664e609fe6cf32fb97490":[2,0,1,2,2,3,150]
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba48aa8241122664e609fe6cf32fb97490":[2,0,1,2,2,3,150],
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba48e95a11708098012382729c8b6e136d":[2,0,1,2,2,3,90]
 };
