@@ -18,6 +18,7 @@ namespace occ::main {
 using occ::core::Dimer;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
+using occ::crystal::CrystalDimers;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 using occ::scf::SCF;
@@ -32,9 +33,9 @@ struct NeighbourAtoms {
     Vec vdw_radii;
 };
 
-NeighbourAtoms atom_environment(const std::vector<Dimer> &neighbors) {
+NeighbourAtoms atom_environment(const CrystalDimers::MoleculeNeighbors &neighbors) {
     size_t num_atoms = 0;
-    for (const auto &n : neighbors) {
+    for (const auto &[n, unique_index] : neighbors) {
         num_atoms += n.b().size();
     }
 
@@ -42,7 +43,7 @@ NeighbourAtoms atom_environment(const std::vector<Dimer> &neighbors) {
                           Vec(num_atoms)};
     size_t current_idx = 0;
     size_t i = 0;
-    for (const auto &n : neighbors) {
+    for (const auto &[n, unique_index] : neighbors) {
         const auto &mol = n.b();
         size_t N = mol.size();
         result.mol_idx.block(current_idx, 0, N, 1).array() = i;
@@ -59,14 +60,14 @@ NeighbourAtoms atom_environment(const std::vector<Dimer> &neighbors) {
 }
 
 void pair_solvent_energy_contributions(
-    const std::vector<Dimer> &neighbors,
+    const CrystalDimers::MoleculeNeighbors &neighbors,
     std::vector<SolventNeighborContribution> &energy_contribution) {
     // found A -> B contribution, now find B -> A
     for (int i = 0; i < neighbors.size(); i++) {
         auto &ci = energy_contribution[i];
         if (ci.neighbor_set)
             continue;
-        const auto &d1 = neighbors[i];
+        const auto &d1 = neighbors[i].dimer;
 
         for (int j = i; j < neighbors.size(); j++) {
             if (ci.neighbor_set)
@@ -74,7 +75,7 @@ void pair_solvent_energy_contributions(
             auto &cj = energy_contribution[j];
             if (cj.neighbor_set)
                 continue;
-            const auto &d2 = neighbors[j];
+            const auto &d2 = neighbors[j].dimer;
             if (d1.equivalent_in_opposite_frame(d2)) {
                 ci.neighbor_set = true;
                 cj.neighbor_set = true;
@@ -102,11 +103,11 @@ auto calculate_wfn_transform(const Wavefunction &wfn, const Molecule &m,
 }
 
 std::vector<SolventNeighborContribution> partition_by_electron_density(
-    const occ::crystal::Crystal &crystal, const std::string &mol_name,
+    const Crystal &crystal, const std::string &mol_name,
     const std::vector<Wavefunction> &wfns,
     const SolvatedSurfaceProperties &surface,
-    const std::vector<Dimer> &neighbors,
-    const std::vector<Dimer> &nearest_neighbors, const std::string &solvent) {
+    const CrystalDimers::MoleculeNeighbors &neighbors,
+    const CrystalDimers::MoleculeNeighbors &nearest_neighbors, const std::string &solvent) {
 
     std::vector<SolventNeighborContribution> energy_contribution(
         neighbors.size());
@@ -114,7 +115,7 @@ std::vector<SolventNeighborContribution> partition_by_electron_density(
     Mat density_coulomb(surface.coulomb_pos.cols(), nearest_neighbors.size());
     Mat density_cds(surface.cds_pos.cols(), nearest_neighbors.size());
     for (int i = 0; i < nearest_neighbors.size(); i++) {
-        const auto &dimer = nearest_neighbors[i];
+        const auto &dimer = nearest_neighbors[i].dimer;
         Molecule mol_B = dimer.b();
         const auto &wfnb = wfns[mol_B.asymmetric_molecule_idx()];
         Wavefunction B = wfns[mol_B.asymmetric_molecule_idx()];
@@ -157,8 +158,8 @@ std::vector<SolventNeighborContribution>
 compute_solvation_energy_breakdown_nearest_atom(
     const Crystal &crystal, const std::string &mol_name,
     const SolvatedSurfaceProperties &surface,
-    const std::vector<Dimer> &neighbors,
-    const std::vector<Dimer> &nearest_neighbors, const std::string &solvent,
+    const CrystalDimers::MoleculeNeighbors &neighbors,
+    const CrystalDimers::MoleculeNeighbors &nearest_neighbors, const std::string &solvent,
     bool dnorm) {
     using occ::units::angstroms;
     std::vector<SolventNeighborContribution> energy_contribution(
@@ -222,11 +223,11 @@ compute_solvation_energy_breakdown_nearest_atom(
 }
 
 std::vector<SolventNeighborContribution> partition_solvent_surface(
-    SolvationPartitionScheme scheme, const occ::crystal::Crystal &crystal,
+    SolvationPartitionScheme scheme, const Crystal &crystal,
     const std::string &mol_name, const std::vector<occ::qm::Wavefunction> &wfns,
     const SolvatedSurfaceProperties &surface,
-    const std::vector<occ::core::Dimer> &neighbors,
-    const std::vector<occ::core::Dimer> &nearest_neighbors,
+    const CrystalDimers::MoleculeNeighbors &neighbors,
+    const CrystalDimers::MoleculeNeighbors &nearest_neighbors,
     const std::string &solvent) {
     switch (scheme) {
     case SolvationPartitionScheme::NearestAtom:

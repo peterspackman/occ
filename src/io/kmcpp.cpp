@@ -38,7 +38,7 @@ void InputWriter::write(const occ::crystal::Crystal &crystal,
         repr["positions"].push_back(molj["positions"]);
         j["neighbor_energies"].push_back(nlohmann::json::array({}));
         std::vector<std::vector<int>> shifts;
-        for (const auto &n : neighbors[uc_idx_a]) {
+        for (const auto &[n, unique_index] : neighbors[uc_idx_a]) {
             const auto uc_shift = n.b().cell_shift();
             const auto uc_idx_b = n.b().unit_cell_molecule_idx();
             shifts.push_back({uc_shift[0], uc_shift[1], uc_shift[2], uc_idx_b});
@@ -47,7 +47,7 @@ void InputWriter::write(const occ::crystal::Crystal &crystal,
         const auto &neighbors_a = neighbors[uc_idx_a];
         occ::log::debug("Generating all combinations for {} neighbors",
                         neighbors_a.size());
-        for (const auto &n : neighbors_a) {
+        for (const auto &[n, unique_index] : neighbors_a) {
             j["neighbor_energies"][uc_idx_a].push_back(n.interaction_energy() /
                                                        occ::units::KJ_TO_KCAL);
         }

@@ -50,7 +50,7 @@ void print_configuration(const Molecule &m, const OccInput &config) {
     log::info("{: <20s} {: >20d}", "Multiplicity",
               config.electronic.multiplicity);
 
-    log::info("{:—<72s}", fmt::format("Geometry '{}' (au)  ", config.filename));
+    log::info("{:-<72s}", fmt::format("Geometry '{}' (au)  ", config.filename));
     for (const auto &atom : m.atoms()) {
         log::info("{:^3s} {:12.6f} {:12.6f} {:12.6f}",
                   Element(atom.atomic_number).symbol(), atom.x, atom.y, atom.z);
@@ -58,15 +58,15 @@ void print_configuration(const Molecule &m, const OccInput &config) {
 
     double temperature = occ::constants::celsius<double> + 25;
 
-    log::info("{:—<72s}", "Inertia tensor (x 10e-46 kg m^2)  ");
+    log::info("{:-<72s}", "Inertia tensor (x 10e-46 kg m^2)  ");
     print_matrix_xyz(m.inertia_tensor());
-    log::info("{:—<72s}", "Principal moments of inertia  ");
+    log::info("{:-<72s}", "Principal moments of inertia  ");
     print_vector(m.principal_moments_of_inertia());
-    log::info("{:—<72s}", "Rotational constants (GHz)  ");
+    log::info("{:-<72s}", "Rotational constants (GHz)  ");
     print_vector(m.rotational_constants());
     log::info("\n");
 
-    log::info("{:—<72s}",
+    log::info("{:-<72s}",
               fmt::format("Gas-phase properties (at {} K)  ", temperature));
     log::info("Rotational free energy      {: 12.6f} kJ/mol",
               m.rotational_free_energy(temperature));

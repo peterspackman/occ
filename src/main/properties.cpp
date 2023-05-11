@@ -47,7 +47,7 @@ void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
               com.z());
     auto mult = hf.template compute_multipoles<4>(wfn.mo, com);
 
-    log::info("{:—<72s}", "Molecular Multipole Moments (au)  ");
+    log::info("{:-<72s}", "Molecular Multipole Moments (au)  ");
     log::info("{}", mult);
 
     Vec charges = wfn.mulliken_charges();
