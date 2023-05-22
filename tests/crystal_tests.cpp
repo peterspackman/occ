@@ -178,13 +178,11 @@ TEST_CASE("Symmetry unique and unit cell molecules (acetic acid crystal)",
     for (size_t i = 0; i < mol_neighbors.size(); i++) {
         const auto &n = mol_neighbors[i];
         fmt::print("Neighbors for molecule {}\n", i);
-        size_t j = 0;
-        for (const auto &dimer : n) {
+        for (const auto &[dimer, unique_index] : n) {
             auto s_ab = dimer_symop(dimer, acetic);
             fmt::print("R = {:.3f}, symop = {}, unique_idx = {}\n",
                        dimer.nearest_distance(), s_ab.to_string(),
-                       crystal_dimers.unique_dimer_idx[i][j]);
-            j++;
+                       unique_index);
         }
     }
 }

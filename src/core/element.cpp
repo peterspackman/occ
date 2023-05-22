@@ -30,11 +30,15 @@ Element::Element(const std::string &s, bool exact_match)
 }
 
 std::string chemical_formula(const std::vector<Element> &els) {
-    std::vector<Element> el_sorted;
-    for (const auto &el : els)
-        el_sorted.push_back(el);
+    std::vector<Element> el_sorted = els;
 
-    std::sort(el_sorted.begin(), el_sorted.end());
+    // put carbon first
+    std::sort(el_sorted.begin(), el_sorted.end(), 
+	      [](const Element &a, const Element &b) {
+	          if(a == 6) return true;
+		  if(b == 6) return false;
+		  return a < b;
+	      });
     std::string result;
     int count = 1;
     std::string symbol;

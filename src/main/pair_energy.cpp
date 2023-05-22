@@ -515,9 +515,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                            wolf.electric_field_values[mol_idx]);
             }
 
-            for (const auto &dimer : n) {
-                int unique_idx =
-                    all_dimers.unique_dimer_idx[mol_idx][dimer_idx];
+            for (const auto &[dimer, unique_idx] : n) {
                 const auto &e = converged_energies[unique_idx];
 
                 if (e.is_computed) {

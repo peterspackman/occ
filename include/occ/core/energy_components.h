@@ -63,7 +63,7 @@ template <> struct fmt::formatter<occ::core::EnergyComponents> {
 
         auto cats = e.categories();
         for (const auto &c : cats) {
-            result += fmt::format("{:—<72s}\n", c + "  ");
+            result += fmt::format("{:-<72s}\n", c + "  ");
             for (const auto &component : e) {
                 if (printed[component.first])
                     continue;

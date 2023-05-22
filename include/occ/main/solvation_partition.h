@@ -10,6 +10,9 @@
 
 namespace occ::main {
 
+using occ::crystal::Crystal;
+using occ::crystal::CrystalDimers;
+
 enum class SolvationPartitionScheme {
     NearestAtom,
     NearestAtomDnorm,
@@ -76,11 +79,11 @@ struct SolventNeighborContribution {
 };
 
 std::vector<SolventNeighborContribution> partition_solvent_surface(
-    SolvationPartitionScheme scheme, const occ::crystal::Crystal &crystal,
+    SolvationPartitionScheme scheme, const Crystal &crystal,
     const std::string &mol_name, const std::vector<occ::qm::Wavefunction> &wfns,
     const SolvatedSurfaceProperties &surface,
-    const std::vector<occ::core::Dimer> &neighbors,
-    const std::vector<occ::core::Dimer> &nearest_neighbors,
+    const CrystalDimers::MoleculeNeighbors &neighbors,
+    const CrystalDimers::MoleculeNeighbors &nearest_neighbors,
     const std::string &solvent);
 
 } // namespace occ::main

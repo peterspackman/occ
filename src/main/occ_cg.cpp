@@ -126,7 +126,7 @@ calculate_net_dipole(const WavefunctionList &wavefunctions,
          idx++) {
         occ::Vec3 dipole = occ::Vec3::Zero(3);
         size_t j = 0;
-        for (const auto &dimer : crystal_dimers.molecule_neighbors[idx]) {
+        for (const auto &[dimer, unique_idx] : crystal_dimers.molecule_neighbors[idx]) {
             occ::Vec3 center_a = dimer.a().center_of_mass();
             if (j == 0) {
                 const auto &charges =
@@ -178,18 +178,18 @@ void compute_monomer_energies(const std::string &basename,
 }
 
 void write_xyz_neighbors(const std::string &filename,
-                         const std::vector<Dimer> &neighbors) {
+                         const CrystalDimers::MoleculeNeighbors &neighbors) {
     auto neigh = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
                                                 fmt::file::CREATE);
 
     size_t natom = std::accumulate(
         neighbors.begin(), neighbors.end(), 0,
-        [](size_t a, const auto &dimer) { return a + dimer.b().size(); });
+        [](size_t a, const auto &d) { return a + d.dimer.b().size(); });
 
     neigh.print("{}\nel x y z idx\n", natom);
 
     size_t j = 0;
-    for (const auto &dimer : neighbors) {
+    for (const auto &[dimer, unique_idx] : neighbors) {
         auto pos = dimer.b().positions();
         auto els = dimer.b().elements();
         for (size_t a = 0; a < dimer.b().size(); a++) {
@@ -230,16 +230,15 @@ struct AssignedEnergy {
 
 std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
     const CrystalDimers::MoleculeNeighbors &neighbors,
-    const CrystalDimers::UniqueDimerIndices &unique_dimer_indices,
     const std::vector<double> &dimer_energies, double cg_radius) {
     double total_taken{0.0};
     std::vector<AssignedEnergy> crystal_contributions(neighbors.size());
     for (size_t k1 = 0; k1 < crystal_contributions.size(); k1++) {
-        if (neighbors[k1].nearest_distance() <= cg_radius)
+	const auto &[dimerk1, unique_dimer_idx] = neighbors[k1];
+        if (dimerk1.nearest_distance() <= cg_radius)
             continue;
         crystal_contributions[k1].is_nn = false;
-        auto v = neighbors[k1].v_ab().normalized();
-        auto unique_dimer_idx = unique_dimer_indices[k1];
+        auto v = dimerk1.v_ab().normalized();
 
         // skip if not contributing
         if (dimer_energies[unique_dimer_idx] == 0.0)
@@ -249,11 +248,12 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
         double total_dp = 0.0;
         size_t number_interactions = 0;
         for (size_t k2 = 0; k2 < crystal_contributions.size(); k2++) {
-            if (neighbors[k2].nearest_distance() > cg_radius)
+	    const auto &[dimerk2, unique_index_k2] = neighbors[k2];
+            if (dimerk2.nearest_distance() > cg_radius)
                 continue;
             if (k1 == k2)
                 continue;
-            auto v2 = neighbors[k2].v_ab().normalized();
+            auto v2 = dimerk2.v_ab().normalized();
             double dp = v.dot(v2);
             if (dp <= 0.0)
                 continue;
@@ -261,11 +261,12 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
             number_interactions++;
         }
         for (size_t k2 = 0; k2 < crystal_contributions.size(); k2++) {
-            if (neighbors[k2].nearest_distance() > cg_radius)
+	    const auto &[dimerk2, unique_index_k2] = neighbors[k2];
+            if (dimerk2.nearest_distance() > cg_radius)
                 continue;
             if (k1 == k2)
                 continue;
-            auto v2 = neighbors[k2].v_ab().normalized();
+            auto v2 = dimerk2.v_ab().normalized();
             double dp = v.dot(v2);
             if (dp <= 0.0)
                 continue;
@@ -379,7 +380,7 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
         const auto &n_asym = mol_neighbors[asym_idx];
         const auto &interaction_energies = interaction_energies_vec[asym_idx];
 
-        for (auto &dimer : n) {
+        for (auto &[dimer, unique_idx] : n) {
 
             auto shift_b = dimer.b().cell_shift();
             auto idx_b = dimer.b().unit_cell_molecule_idx();
@@ -387,10 +388,10 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
             size_t idx{0};
             bool match_type{false};
             for (idx = 0; idx < n_asym.size(); idx++) {
-                if (dimer.equivalent(n_asym[idx])) {
+                if (dimer.equivalent(n_asym[idx].dimer)) {
                     break;
                 }
-                if (dimer.equivalent_under_rotation(n_asym[idx], rotation)) {
+                if (dimer.equivalent_under_rotation(n_asym[idx].dimer, rotation)) {
                     match_type = true;
                     break;
                 }
@@ -548,7 +549,6 @@ class CEModelCrystalGrowthCalculator {
         const auto &surface_properties = m_solvated_surface_properties[i];
         const auto &full_neighbors = m_full_dimers.molecule_neighbors[i];
         const auto &nearest_neighbors = m_nearest_dimers.molecule_neighbors[i];
-        const auto &unique_dimer_indices = m_full_dimers.unique_dimer_idx[i];
         auto &interactions = m_interaction_energies[i];
 
         const occ::main::SolvationPartitionScheme partition_scheme =
@@ -566,7 +566,7 @@ class CEModelCrystalGrowthCalculator {
         }
         auto crystal_contributions =
             assign_interaction_terms_to_nearest_neighbours(
-                full_neighbors, unique_dimer_indices, dimer_energy_vals,
+                full_neighbors, dimer_energy_vals,
                 m_inner_radius);
         interactions.reserve(full_neighbors.size());
 
@@ -596,8 +596,7 @@ class CEModelCrystalGrowthCalculator {
             " {} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
             "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}";
 
-        for (const auto &dimer : full_neighbors) {
-            size_t unique_idx = unique_dimer_indices[j];
+        for (const auto &[dimer, unique_idx] : full_neighbors) {
             const auto &e = m_dimer_energies[unique_idx];
             if (!e.is_computed) {
                 j++;
@@ -801,12 +800,11 @@ class XTBCrystalGrowthCalculator {
 
         const auto &full_neighbors = m_full_dimers.molecule_neighbors[i];
         const auto &nearest_neighbors = m_nearest_dimers.molecule_neighbors[i];
-        const auto &unique_dimer_indices = m_full_dimers.unique_dimer_idx[i];
         auto &interactions = m_interaction_energies[i];
 
         auto crystal_contributions =
             assign_interaction_terms_to_nearest_neighbours(
-                full_neighbors, unique_dimer_indices, m_dimer_energies,
+                full_neighbors, m_dimer_energies,
                 m_inner_radius);
         interactions.reserve(full_neighbors.size());
 
@@ -827,8 +825,7 @@ class XTBCrystalGrowthCalculator {
         double dimers_solv_total = 0.0;
         {
             size_t j = 0;
-            for (const auto &dimer : full_neighbors) {
-                size_t unique_idx = unique_dimer_indices[j];
+            for (const auto &[dimer, unique_idx] : full_neighbors) {
                 dimers_solv_total += m_solvated_dimer_energies[unique_idx];
                 j++;
             }
@@ -848,8 +845,7 @@ class XTBCrystalGrowthCalculator {
 
         size_t j = 0;
         double total = 0.0;
-        for (const auto &dimer : full_neighbors) {
-            size_t unique_idx = unique_dimer_indices[j];
+        for (const auto &[dimer, unique_idx] : full_neighbors) {
             double e = m_dimer_energies[unique_idx];
             auto symmetry_string = m_crystal.dimer_symmetry_string(dimer);
             double rn = dimer.nearest_distance();

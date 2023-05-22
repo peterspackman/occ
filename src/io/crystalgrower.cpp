@@ -3,27 +3,44 @@
 #include <occ/crystal/crystal.h>
 #include <occ/io/crystalgrower.h>
 #include <string>
+#include <occ/3rdparty/parallel_hashmap/phmap.h> 
+#include <occ/3rdparty/parallel_hashmap/phmap_utils.h> 
 
 namespace occ::io::crystalgrower {
+using occ::crystal::Crystal;
+using occ::crystal::CrystalDimers;
+using SymDimer = CrystalDimers::SymmetryRelatedDimer;
+
+void sort_neighbors(CrystalDimers &dimers) {
+    for(auto &neighbors: dimers.molecule_neighbors) {
+        // sort only the non-unique dimers, by center of mass distance
+        std::stable_sort(neighbors.begin(), neighbors.end(), 
+                  [](const SymDimer &left, const SymDimer &right) {
+	              return left.dimer.centroid_distance() < right.dimer.centroid_distance();
+	          });
+    }
+}
 
 StructureWriter::StructureWriter(const std::string &filename)
     : m_owned_destination(filename), m_dest(m_owned_destination) {}
 
 StructureWriter::StructureWriter(std::ostream &stream) : m_dest(stream) {}
 
-void StructureWriter::write(const occ::crystal::Crystal &crystal,
-                            const occ::crystal::CrystalDimers &uc_dimers) {
+void StructureWriter::write(const Crystal &crystal,
+                            const CrystalDimers &uc_dimers) {
     using occ::units::degrees;
     fmt::print(m_dest, "{}\n\n", "title");
     const auto &uc_molecules = crystal.unit_cell_molecules();
     fmt::print(m_dest, "{}\n\n", uc_molecules.size());
-    const auto &neighbors = uc_dimers.molecule_neighbors;
+    CrystalDimers uc_dimers_copy = uc_dimers;
+    sort_neighbors(uc_dimers_copy);
+    const auto &neighbors = uc_dimers_copy.molecule_neighbors;
     size_t uc_idx = 0;
     for (const auto &mol : uc_molecules) {
         size_t num_neighbors = neighbors[uc_idx].size();
         fmt::print(m_dest, "{} {} (1,0) {}\n\n", mol.name(),
                    mol.unit_cell_molecule_idx() + 1, num_neighbors);
-        for (const auto &n : neighbors[uc_idx]) {
+        for (const auto &[n, unique_index] : neighbors[uc_idx]) {
             const auto uc_shift = n.b().cell_shift();
             const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
             fmt::print(m_dest, "{}({},{},{}) ", uc_idx, uc_shift[0],
@@ -74,10 +91,17 @@ NetWriter::NetWriter(std::ostream &stream) : m_dest(stream) {}
 struct FormulaIndex {
     int count{1};
     char letter{'A'};
+    bool operator==(const FormulaIndex &o) const {
+        return count == o.count && letter == o.letter;
+    }
+
+    friend size_t hash_value(const FormulaIndex &f) {
+        return phmap::HashState().combine(0, f.count, f.letter);
+    }
 };
 
 std::vector<FormulaIndex> build_formula_indices_for_symmetry_unique_molecules(
-    const occ::crystal::Crystal &crystal) {
+    const Crystal &crystal) {
     std::vector<FormulaIndex> result;
     phmap::flat_hash_map<std::string, FormulaIndex> formula_count;
     for (const auto &mol : crystal.symmetry_unique_molecules()) {
@@ -97,29 +121,37 @@ std::vector<FormulaIndex> build_formula_indices_for_symmetry_unique_molecules(
     return result;
 }
 
-void NetWriter::write(const occ::crystal::Crystal &crystal,
-                      const occ::crystal::CrystalDimers &uc_dimers) {
+void NetWriter::write(const Crystal &crystal,
+                      const CrystalDimers &uc_dimers) {
     const auto &uc_molecules = crystal.unit_cell_molecules();
-    const auto &neighbors = uc_dimers.molecule_neighbors;
+    CrystalDimers uc_dimers_copy = uc_dimers;
+    sort_neighbors(uc_dimers_copy);
+    const auto &neighbors = uc_dimers_copy.molecule_neighbors;
+
     size_t uc_idx = 0;
     constexpr double max_de = 1e-4;
 
     std::vector<FormulaIndex> sym_formula_indices =
         build_formula_indices_for_symmetry_unique_molecules(crystal);
 
+    phmap::flat_hash_map<FormulaIndex, std::vector<double>> f2e;
+
     // TODO fix for multiple molecules in asymmetric unit
     // 1A -> 1 is the conformer number, A is the compound i.e. chemical
     // composition id
     for (const auto &mol : uc_molecules) {
-        std::vector<double> unique_interaction_energies;
 
-        std::vector<double> energies_to_print;
         FormulaIndex formula_index =
             sym_formula_indices[mol.asymmetric_molecule_idx()];
+	if(!f2e.contains(formula_index)) {
+	    f2e.insert({formula_index, {}});
+	}
+        std::vector<double> &unique_interaction_energies = f2e[formula_index];
         fmt::print("uc mol {}, asym = {}, formula = {} {}\n", uc_idx,
                    mol.asymmetric_molecule_idx(), formula_index.count,
                    formula_index.letter);
-        for (const auto &n : neighbors[uc_idx]) {
+	auto mol_neighbors = neighbors[uc_idx];
+        for (const auto &[n, unique_index]: neighbors[uc_idx]) {
             const auto uc_shift = n.b().cell_shift();
             const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
             const double e_int = n.interaction_energy();
@@ -145,11 +177,9 @@ void NetWriter::write(const occ::crystal::Crystal &crystal,
                        formula_index.letter, n.a().name(), n.b().name(),
                        uc_shift[0], uc_shift[1], uc_shift[2],
                        n.centroid_distance());
-            energies_to_print.push_back(
-                unique_interaction_energies[interaction_idx - 1]);
         }
-        for (double e : energies_to_print) {
-            fmt::print(m_dest, "{:.4f}\n", e);
+	for(double e: unique_interaction_energies) {
+            fmt::print(m_dest, "{:7.3f}\n", e);
         }
         uc_idx++;
     }
