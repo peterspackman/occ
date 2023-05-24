@@ -1,5 +1,13 @@
 var NAVTREEINDEX9 =
 {
+"namespaceocc_1_1units.html#a5563c83436faca18804169f8ccabc770":[1,0,2,19,4],
+"namespaceocc_1_1units.html#a642ce36788de7fab7975748d7951c62e":[1,0,2,19,2],
+"namespaceocc_1_1units.html#a64d3d2274e49ea9230f4cb8fc31bbb8f":[1,0,2,19,6],
+"namespaceocc_1_1units.html#a82df95b564a97fefb8f9ee088b9b647b":[1,0,2,19,7],
+"namespaceocc_1_1units.html#aad44928ebfc08a95167b037397c9a67d":[1,0,2,19,3],
+"namespaceocc_1_1units.html#ad38a938470af50d5efd5fbc678bb15b7":[1,0,2,19,8],
+"namespaceocc_1_1units.html#ad950de008676fad754f2dcfababc263e":[1,0,2,19,5],
+"namespaceocc_1_1units.html#af2b5a09e976e46202d8f3be996332ee3":[1,0,2,19,0],
 "namespaceocc_1_1units.html#af6152c17fa3c68fec7ea231f47889bf7":[1,0,2,19,10],
 "namespaceocc_1_1util.html":[1,0,2,20],
 "namespaceocc_1_1util.html#a0f4b4a70d874306db9b67ccc69091f93":[1,0,2,20,3],
@@ -241,13 +249,5 @@ var NAVTREEINDEX9 =
 "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4.html#a8e760e662eea87253e276e99b9ea9d4e":[2,0,0,1,2],
 "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4.html#acd0574e88fc3c639a14fe96e4e98d9ae":[2,0,0,1,1],
 "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4.html#aff3f7e85a52be1d1bd228d5701191279":[2,0,0,1,0],
-"structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4.html":[2,0,0,2],
-"structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4.html#a93187cfc3c0036636e45fa8f36129b59":[2,0,0,2,1],
-"structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4.html#aadbb54dff02d9a50fbba928ba41b50c3":[2,0,0,2,0],
-"structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4.html#ae3f8c4aa7b39be4c60a86d0a53de755e":[2,0,0,2,2],
-"structocc_1_1core_1_1Atom.html":[2,0,1,0,4],
-"structocc_1_1core_1_1Atom.html#a2ef625b671ce0c399f7cd94b57a3570b":[2,0,1,0,4,2],
-"structocc_1_1core_1_1Atom.html#a50e8d446909f37e7c41d17aa40c3a9ed":[2,0,1,0,4,0],
-"structocc_1_1core_1_1Atom.html#aa292688d9909d939aff54d40f3dd6ab8":[2,0,1,0,4,6],
-"structocc_1_1core_1_1Atom.html#aad9642b5517f01fadc4f001ee8d029e1":[2,0,1,0,4,7]
+"structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4.html":[2,0,0,2]
 };

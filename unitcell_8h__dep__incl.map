@@ -1,6 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/crystal/unitcell.h" name="/home/runner/work/occ/occ/include/occ/crystal/unitcell.h">
-<area shape="rect" id="node1" title=" " alt="" coords="771,5,944,61"/>
+<area shape="rect" id="node1" title=" " alt="" coords="869,5,1043,61"/>
 <area shape="rect" id="node2" href="$crystal_8h.html" title=" " alt="" coords="771,109,944,165"/>
+<area shape="rect" id="node15" href="$crystal_2surface_8h.html" title=" " alt="" coords="968,109,1141,165"/>
 <area shape="rect" id="node3" href="$cifparser_8h.html" title=" " alt="" coords="5,325,219,366"/>
 <area shape="rect" id="node4" href="$crystal__json_8h.html" title=" " alt="" coords="63,213,252,269"/>
 <area shape="rect" id="node5" href="$crystalgrower_8h.html" title=" " alt="" coords="276,221,521,262"/>

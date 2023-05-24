@@ -49,6 +49,7 @@ var annotated_dup =
         [ "ReciprocalAsymmetricUnit", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit" ],
         [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html", "classocc_1_1crystal_1_1SpaceGroup" ],
         [ "Surface", "classocc_1_1crystal_1_1Surface.html", "classocc_1_1crystal_1_1Surface" ],
+        [ "CrystalSurfaceGenerationParameters", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters" ],
         [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],
         [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ]
       ] ],
