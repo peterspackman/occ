@@ -314,22 +314,38 @@ auto acetic_acid_crystal() {
 
 TEST_CASE("Crystal Surface construction", "[crystal, surface]") {
     Crystal a = acetic_acid_crystal();
-    HKL m{0, 1, 0};
-    Surface surf(m, a);
-    surf.print();
+    HKL m010{0, 1, 0};
+    Surface surf010(m010, a);
+    surf010.print();
+    REQUIRE(surf010.depth_vector().norm() == Catch::Approx(surf010.depth()));
+    REQUIRE(surf010.area() == Catch::Approx(76.5325));
+    HKL m011{0, 1, 1};
+    Surface surf011(m011, a);
+    surf011.print();
+    REQUIRE(surf011.depth_vector().norm() == Catch::Approx(surf011.depth()));
+    REQUIRE(surf011.area() == Catch::Approx(93.9958));
+    HKL m321{3, 2, 1};
+    Surface surf321(m321, a);
+    surf321.print();
+    REQUIRE(surf321.depth_vector().norm() == Catch::Approx(surf321.depth()));
+    REQUIRE(surf321.area() == Catch::Approx(177.2256));
 }
 
-TEST_CASE("Crystal surface generation (ordered by on Dhkl)",
-          "[crystal, surface]") {
+TEST_CASE("Crystal surface generation (dhkl order)", "[crystal, surface]") {
     Crystal a = acetic_acid_crystal();
     occ::timing::StopWatch sw;
     sw.start();
-    auto surfaces = occ::crystal::generate_surfaces(a, 0.1);
+    occ::crystal::CrystalSurfaceGenerationParameters params;
+    params.d_min = 0.1;
+    params.unique = false;
+    auto surfaces = occ::crystal::generate_surfaces(a, params);
     sw.stop();
     size_t n = 0;
     fmt::print("Top 10 surfaces\n");
     for (const auto &surf : surfaces) {
         surf.print();
+        fmt::print("Absent: {}\n",
+                   Surface::check_systematic_absence(a, surf.hkl()));
         n++;
         if (n > 10)
             break;
