@@ -495,8 +495,7 @@ template <typename Procedure> struct SCF {
 
             if (iter == 1) {
                 log::info("{:>4s} {: >20s} {: >12s} {: >12s}  {: >8s}", "#",
-                          "E (Hartrees)", "|\u0394E|/E", "max|FDS-SDF|",
-                          "T (s)");
+                          "E (Hartrees)", "|dE|/E", "max|FDS-SDF|", "T (s)");
             }
             log::info("{:>4d} {:>20.12f} {:>12.5e} {:>12.5e}  {:>8.2e}", iter,
                       energy["total"], ediff_rel, diis_error,

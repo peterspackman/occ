@@ -1,4 +1,5 @@
 #pragma once
+#include <occ/core/dimer.h>
 #include <occ/core/linear_algebra.h>
 
 namespace occ::interaction {
@@ -14,5 +15,8 @@ Mat lennard_jones<0>(Eigen::Ref<const Mat3N> positions,
 template <>
 Mat lennard_jones<1>(Eigen::Ref<const Mat3N> positions,
                      Eigen::Ref<const Mat> params);
+
+double dreiding_type_hb_correction(double eps, double sigma,
+                                   const occ::core::Dimer &dimer);
 
 } // namespace occ::interaction

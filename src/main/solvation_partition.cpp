@@ -33,7 +33,8 @@ struct NeighbourAtoms {
     Vec vdw_radii;
 };
 
-NeighbourAtoms atom_environment(const CrystalDimers::MoleculeNeighbors &neighbors) {
+NeighbourAtoms
+atom_environment(const CrystalDimers::MoleculeNeighbors &neighbors) {
     size_t num_atoms = 0;
     for (const auto &[n, unique_index] : neighbors) {
         num_atoms += n.b().size();
@@ -107,7 +108,8 @@ std::vector<SolventNeighborContribution> partition_by_electron_density(
     const std::vector<Wavefunction> &wfns,
     const SolvatedSurfaceProperties &surface,
     const CrystalDimers::MoleculeNeighbors &neighbors,
-    const CrystalDimers::MoleculeNeighbors &nearest_neighbors, const std::string &solvent) {
+    const CrystalDimers::MoleculeNeighbors &nearest_neighbors,
+    const std::string &solvent) {
 
     std::vector<SolventNeighborContribution> energy_contribution(
         neighbors.size());
@@ -159,8 +161,8 @@ compute_solvation_energy_breakdown_nearest_atom(
     const Crystal &crystal, const std::string &mol_name,
     const SolvatedSurfaceProperties &surface,
     const CrystalDimers::MoleculeNeighbors &neighbors,
-    const CrystalDimers::MoleculeNeighbors &nearest_neighbors, const std::string &solvent,
-    bool dnorm) {
+    const CrystalDimers::MoleculeNeighbors &nearest_neighbors,
+    const std::string &solvent, bool dnorm) {
     using occ::units::angstroms;
     std::vector<SolventNeighborContribution> energy_contribution(
         neighbors.size());
@@ -251,12 +253,12 @@ std::pair<std::vector<SolvatedSurfaceProperties>, std::vector<Wavefunction>>
 calculate_solvated_surfaces(const std::string &basename,
                             const std::vector<Molecule> &mols,
                             const std::vector<Wavefunction> &wfns,
-                            const std::string &solvent_name) {
+                            const std::string &solvent_name,
+                            const std::string &method,
+                            const std::string &basis_name) {
     std::vector<SolvatedSurfaceProperties> result;
     using occ::dft::DFT;
     using occ::solvent::SolvationCorrectedProcedure;
-    const std::string method = "b3lyp";
-    const std::string basis_name = "6-31G**";
     std::vector<Wavefunction> solvated_wfns;
     size_t index = 0;
     for (const auto &wfn : wfns) {

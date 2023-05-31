@@ -6,6 +6,7 @@
 #include <occ/interaction/pairinteraction.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/merge.h>
+#include <occ/qm/orb.h>
 #include <occ/xdm/xdm.h>
 
 namespace occ::interaction {
@@ -13,11 +14,12 @@ using qm::HartreeFock;
 using qm::SpinorbitalKind;
 
 CEModelInteraction::CEModelInteraction(const CEParameterizedModel &facs)
-    : scale_factors(facs) {}
+    : m_scale_factors(facs) {}
 
 template <SpinorbitalKind kind, typename Proc = qm::HartreeFock>
-void compute_ce_model_energies(Wavefunction &wfn, Proc &proc, double precision,
-                               const Mat &Schwarz) {
+void compute_ce_model_energies(Wavefunction &wfn, Proc &proc,
+                               const CEMonomerCalculationParameters &params) {
+
     if (wfn.have_energies) {
         occ::log::debug("Already have monomer energies, skipping");
         return;
@@ -30,7 +32,13 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &proc, double precision,
         wfn.T = proc.compute_kinetic_matrix();
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.H = wfn.V + wfn.T;
-        std::tie(wfn.J, wfn.K) = proc.compute_JK(wfn.mo, precision, Schwarz);
+        if (params.neglect_exchange) {
+            wfn.J = proc.compute_J(wfn.mo, params.precision, params.Schwarz);
+            wfn.K = Mat::Zero(wfn.J.rows(), wfn.J.cols());
+        } else {
+            std::tie(wfn.J, wfn.K) =
+                proc.compute_JK(wfn.mo, params.precision, params.Schwarz);
+        }
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         if constexpr (std::is_same<Proc, dft::DFT>::value) {
             wfn.energy.exchange = proc.exchange_energy_total();
@@ -60,7 +68,13 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &proc, double precision,
         wfn.H = wfn.V + wfn.T;
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
-        std::tie(wfn.J, wfn.K) = proc.compute_JK(wfn.mo, precision, Schwarz);
+        if (params.neglect_exchange) {
+            wfn.J = proc.compute_J(wfn.mo, params.precision, params.Schwarz);
+            wfn.K = Mat::Zero(wfn.J.rows(), wfn.J.cols());
+        } else {
+            std::tie(wfn.J, wfn.K) =
+                proc.compute_JK(wfn.mo, params.precision, params.Schwarz);
+        }
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         if constexpr (std::is_same<Proc, dft::DFT>::value) {
             wfn.energy.exchange = proc.exchange_energy_total();
@@ -99,42 +113,47 @@ void compute_xdm_parameters(Wavefunction &wfn) {
 }
 
 template <typename Proc>
-void compute_ce_model_energies(Wavefunction &wfn, Proc &hf, double precision,
-                               const Mat &Schwarz, bool xdm) {
+void compute_ce_model_energies(Wavefunction &wfn, Proc &hf,
+                               const CEMonomerCalculationParameters &params) {
+
     if (wfn.is_restricted()) {
         occ::log::debug("Restricted wavefunction");
-        compute_ce_model_energies<SpinorbitalKind::Restricted, Proc>(
-            wfn, hf, precision, Schwarz);
+        compute_ce_model_energies<SpinorbitalKind::Restricted, Proc>(wfn, hf,
+                                                                     params);
     } else {
         occ::log::debug("Unrestricted wavefunction");
-        compute_ce_model_energies<SpinorbitalKind::Unrestricted, Proc>(
-            wfn, hf, precision, Schwarz);
+        compute_ce_model_energies<SpinorbitalKind::Unrestricted, Proc>(wfn, hf,
+                                                                       params);
     }
 
-    if (xdm) {
+    if (params.xdm) {
         compute_xdm_parameters(wfn);
     }
 }
 
 void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
-                               double precision, const Mat &Schwarz, bool xdm) {
+                               const CEMonomerCalculationParameters &params) {
     if (wfn.is_restricted()) {
         occ::log::debug("Restricted wavefunction");
         compute_ce_model_energies<SpinorbitalKind::Restricted, HartreeFock>(
-            wfn, hf, precision, Schwarz);
+            wfn, hf, params);
     } else {
         occ::log::debug("Unrestricted wavefunction");
         compute_ce_model_energies<SpinorbitalKind::Unrestricted, HartreeFock>(
-            wfn, hf, precision, Schwarz);
+            wfn, hf, params);
     }
 
-    if (xdm) {
+    if (params.xdm) {
         compute_xdm_parameters(wfn);
     }
 }
 
 void CEModelInteraction::set_use_density_fitting(bool value) {
     m_use_density_fitting = value;
+}
+
+void CEModelInteraction::set_use_xdm_dimer_parameters(bool value) {
+    m_use_xdm_dimer_parameters = value;
 }
 
 void dump_matrix(const Mat &matrix) {
@@ -168,13 +187,35 @@ void CEModelInteraction::compute_monomer_energies(Wavefunction &wfn) const {
     if (m_use_density_fitting) {
         hf.set_density_fitting_basis("def2-universal-jkfit");
     }
-    Mat schwarz = hf.compute_schwarz_ints();
-    fmt::print("Calculating xdm parameters: {}\n", scale_factors.xdm);
-    if (scale_factors.xdm) {
-        fmt::print("XDM damping parameters: {} {}\n", scale_factors.xdm_a1,
-                   scale_factors.xdm_a2);
+    CEMonomerCalculationParameters params;
+    params.precision = precision;
+    params.Schwarz = hf.compute_schwarz_ints();
+    params.xdm = m_scale_factors.xdm;
+
+    fmt::print("Calculating xdm parameters: {}\n", m_scale_factors.xdm);
+    if (m_scale_factors.xdm) {
+        fmt::print("XDM damping parameters: {} {}\n", m_scale_factors.xdm_a1,
+                   m_scale_factors.xdm_a2);
     }
-    compute_ce_model_energies(wfn, hf, precision, schwarz, scale_factors.xdm);
+    fmt::print("Basis has ECPs: {}\n", wfn.basis.have_ecps());
+    compute_ce_model_energies(wfn, hf, params);
+}
+
+double population_difference(const Wavefunction &ABo, const Wavefunction &ABn,
+                             const Mat &S_AB) {
+    Mat Cocc_diff = ABo.mo.Cocc - ABn.mo.Cocc;
+    if (ABn.is_restricted()) {
+        fmt::print("ABo population: {}\n", 2 * (ABo.mo.D * S_AB).trace());
+        fmt::print("ABn population: {}\n", 2 * (ABn.mo.D * S_AB).trace());
+        Mat Ddiff = occ::qm::orb::density_matrix_restricted(Cocc_diff);
+        return 2 * (Ddiff * S_AB).trace();
+
+    } else {
+        Mat Ddiff = occ::qm::orb::density_matrix_unrestricted(
+            Cocc_diff, ABo.num_alpha, ABo.num_beta);
+        return 2 * ((occ::qm::block::a(Ddiff) * S_AB).trace() +
+                    (occ::qm::block::b(Ddiff) * S_AB).trace());
+    }
 }
 
 CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
@@ -190,11 +231,18 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
         hf_b.set_density_fitting_basis("def2-universal-jkfit");
     }
 
-    Mat schwarz_a = hf_a.compute_schwarz_ints();
-    Mat schwarz_b = hf_b.compute_schwarz_ints();
+    CEMonomerCalculationParameters params_a;
+    params_a.precision = precision;
+    params_a.Schwarz = hf_a.compute_schwarz_ints();
+    params_a.xdm = m_scale_factors.xdm;
 
-    compute_ce_model_energies(A, hf_a, precision, schwarz_a, scale_factors.xdm);
-    compute_ce_model_energies(B, hf_b, precision, schwarz_b, scale_factors.xdm);
+    CEMonomerCalculationParameters params_b;
+    params_b.precision = precision;
+    params_b.Schwarz = hf_b.compute_schwarz_ints();
+    params_b.xdm = m_scale_factors.xdm;
+
+    compute_ce_model_energies(A, hf_a, params_a);
+    compute_ce_model_energies(B, hf_b, params_b);
 
     Wavefunction ABn(A, B);
 
@@ -206,10 +254,14 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
                         a.z / occ::units::ANGSTROM_TO_BOHR);
     }
 
-    // Can reuse the same HartreeFock object for both merged wfns: same basis
-    // and atoms
+    // Can reuse the same HartreeFock object for both merged wfns: same
+    // basis and atoms
     auto hf_AB = HartreeFock(ABn.basis);
-    Mat schwarz_ab = hf_AB.compute_schwarz_ints();
+    CEMonomerCalculationParameters params_ab;
+    params_ab.precision = precision;
+    params_ab.Schwarz = hf_AB.compute_schwarz_ints();
+    params_ab.xdm = m_scale_factors.xdm && m_use_xdm_dimer_parameters;
+
     if (m_use_density_fitting) {
         hf_AB.set_density_fitting_basis("def2-universal-jkfit");
     }
@@ -220,10 +272,29 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
 
     ABn.compute_density_matrix();
     ABo.compute_density_matrix();
+    double p = population_difference(ABo, ABn, S_AB);
+
+    occ::log::debug("Population difference: {:10.3g}\n", p);
+    constexpr double p_tolerance = 1e-6;
+    if (p < p_tolerance) {
+        params_ab.neglect_exchange = true;
+    }
+    occ::log::debug("Num atoms A = {}\n", A.atoms.size());
+    occ::log::debug("A num_electrons = {}\n", A.num_electrons);
+    occ::log::debug("A nbf = {}\n", A.basis.nbf());
+    occ::log::debug("A has ECPs = {}\n", A.basis.have_ecps());
+    occ::log::debug("Num atoms B = {}\n", A.atoms.size());
+    occ::log::debug("B num_electrons = {}\n", B.num_electrons);
+    occ::log::debug("B nbf = {}\n", B.basis.nbf());
+    occ::log::debug("B has ECPs = {}\n", A.basis.have_ecps());
+    occ::log::debug("Num atoms AB = {}\n", ABn.atoms.size());
+    occ::log::debug("AB num_electrons = {}\n", ABn.num_electrons);
+    occ::log::debug("AB nbf = {}\n", ABn.basis.nbf());
+    occ::log::debug("AB has ECPs = {}\n", ABn.basis.have_ecps());
 
     // no need to XDM for the combined wavefunctions
-    compute_ce_model_energies(ABn, hf_AB, precision, schwarz_ab, false);
-    compute_ce_model_energies(ABo, hf_AB, precision, schwarz_ab, false);
+    compute_ce_model_energies(ABn, hf_AB, params_ab);
+    compute_ce_model_energies(ABo, hf_AB, params_ab);
 
     occ::log::debug("ABn\n{}\n", ABn.energy);
     occ::log::debug("ABo\n{}\n", ABo.energy);
@@ -234,13 +305,31 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     energy.coulomb = E_ABn.coulomb + E_ABn.nuclear_attraction +
                      E_ABn.nuclear_repulsion + E_ABn.ecp;
     occ::log::debug("Coulomb components:");
+    occ::log::debug("A coulomb term   {:20.12f}", A.energy.coulomb);
+    occ::log::debug("B coulomb term   {:20.12f}", B.energy.coulomb);
     occ::log::debug("ABn coulomb term {:20.12f}", E_ABn.coulomb);
+    occ::log::debug("A en term        {:20.12f}", A.energy.nuclear_attraction);
+    occ::log::debug("B en term        {:20.12f}", B.energy.nuclear_attraction);
     occ::log::debug("ABn en term      {:20.12f}", E_ABn.nuclear_attraction);
-    occ::log::debug("ABn nn term      {:20.12f}", E_ABn.nuclear_repulsion);
+    occ::log::debug("A nn term        {:20.12f}", A.energy.nuclear_repulsion);
+    occ::log::debug("B nn term        {:20.12f}", B.energy.nuclear_repulsion);
+    occ::log::debug("ABn nn term      {:20.12f}", ABn.energy.nuclear_repulsion);
+    occ::log::debug("ABn nn diff term {:20.12f}", E_ABn.nuclear_repulsion);
     occ::log::debug("Total term       {:20.12f}", energy.coulomb);
-    double eABn = ABn.energy.core + ABn.energy.exchange + ABn.energy.coulomb;
-    double eABo = ABo.energy.core + ABo.energy.exchange + ABo.energy.coulomb;
+    double eABn = ABn.energy.core + ABn.energy.coulomb;
+    double eABo = ABo.energy.core + ABo.energy.coulomb;
+    if (!params_ab.neglect_exchange) {
+        eABn += ABn.energy.exchange;
+        eABo += ABo.energy.exchange;
+    } else {
+        E_ABn.exchange = 0.0;
+    }
+
     double E_rep = eABo - eABn;
+    energy.repulsion_component = E_rep;
+    energy.orthogonal_term = eABo;
+    energy.nonorthogonal_term = eABn;
+    energy.exchange_component = E_ABn.exchange;
     energy.exchange_repulsion = E_ABn.exchange + E_rep;
     occ::log::debug("Exchange repulsion components:");
     occ::log::debug("ABn core term      {:20.12f}", ABn.energy.core);
@@ -249,6 +338,8 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     occ::log::debug("ABo core term      {:20.12f}", ABo.energy.core);
     occ::log::debug("ABo exchange term  {:20.12f}", ABo.energy.exchange);
     occ::log::debug("ABo coulomb term   {:20.12f}", ABo.energy.coulomb);
+    occ::log::debug("nonorthogonal term {:20.12f}", eABn);
+    occ::log::debug("orthogonal term    {:20.12f}", eABo);
     occ::log::debug("E_rep term         {:20.12f}", E_rep);
     occ::log::debug("Exchange term      {:20.12f}", E_ABn.exchange);
     occ::log::debug("Total term         {:20.12f}", energy.exchange_repulsion);
@@ -258,39 +349,47 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
                         (ABo.energy.core - ABn.energy.core) +
                         (ABo.energy.coulomb - ABn.energy.coulomb));
 
-    if (scale_factors.xdm) {
-        occ::log::debug("XDM params: {} {}", scale_factors.xdm_a1,
-                        scale_factors.xdm_a2);
-        auto xdm_result = xdm::xdm_dispersion_interaction_energy(
-            {A.atoms, A.xdm_polarizabilities, A.xdm_moments, A.xdm_volumes,
-             A.xdm_free_volumes},
-            {B.atoms, B.xdm_polarizabilities, B.xdm_moments, B.xdm_volumes,
-             B.xdm_free_volumes},
-            {scale_factors.xdm_a1, scale_factors.xdm_a2});
-        occ::xdm::XDM xdm_calc_a(A.basis, A.charge(),
-                                 {scale_factors.xdm_a1, scale_factors.xdm_a2});
-        auto energy_a = xdm_calc_a.energy(A.mo);
-        occ::xdm::XDM xdm_calc_b(B.basis, B.charge(),
-                                 {scale_factors.xdm_a1, scale_factors.xdm_a2});
-        auto energy_b = xdm_calc_b.energy(B.mo);
-        occ::xdm::XDM xdm_calc_ab(ABn.basis, ABn.charge(),
-                                  {scale_factors.xdm_a1, scale_factors.xdm_a2});
-        auto energy_ab = xdm_calc_ab.energy(ABn.mo);
-        energy.dispersion = energy_ab - energy_a - energy_b;
-        fmt::print("energy_ab = {} vs {}\n", energy_ab - energy_a - energy_b,
-                   std::get<0>(xdm_result));
-        A.xdm_polarizabilities = ABn.xdm_polarizabilities.block(
-            0, 0, A.xdm_polarizabilities.rows(), 1);
-        B.xdm_polarizabilities = ABn.xdm_polarizabilities.block(
-            A.xdm_polarizabilities.rows(), 0, B.xdm_polarizabilities.rows(), 1);
+    if (m_scale_factors.xdm) {
+        occ::log::debug("XDM params: {} {}", m_scale_factors.xdm_a1,
+                        m_scale_factors.xdm_a2);
+        if (m_use_xdm_dimer_parameters) {
+            occ::log::debug("Computing dimer parameters for XDM pair energy");
+            occ::xdm::XDM xdm_calc_a(
+                A.basis, A.charge(),
+                {m_scale_factors.xdm_a1, m_scale_factors.xdm_a2});
+            auto energy_a = xdm_calc_a.energy(A.mo);
+            occ::xdm::XDM xdm_calc_b(
+                B.basis, B.charge(),
+                {m_scale_factors.xdm_a1, m_scale_factors.xdm_a2});
+            auto energy_b = xdm_calc_b.energy(B.mo);
+            occ::xdm::XDM xdm_calc_ab(
+                ABn.basis, ABn.charge(),
+                {m_scale_factors.xdm_a1, m_scale_factors.xdm_a2});
+            auto energy_ab = xdm_calc_ab.energy(ABn.mo);
+            energy.dispersion = energy_ab - energy_a - energy_b;
+            A.xdm_polarizabilities = ABn.xdm_polarizabilities.block(
+                0, 0, A.xdm_polarizabilities.rows(), 1);
+            B.xdm_polarizabilities = ABn.xdm_polarizabilities.block(
+                A.xdm_polarizabilities.rows(), 0, B.xdm_polarizabilities.rows(),
+                1);
+        } else {
+            occ::log::debug("Using monomer parameters for XDM pair energy");
+            auto xdm_result = xdm::xdm_dispersion_interaction_energy(
+                {A.atoms, A.xdm_polarizabilities, A.xdm_moments, A.xdm_volumes,
+                 A.xdm_free_volumes},
+                {B.atoms, B.xdm_polarizabilities, B.xdm_moments, B.xdm_volumes,
+                 B.xdm_free_volumes},
+                {m_scale_factors.xdm_a1, m_scale_factors.xdm_a2});
+            energy.dispersion = std::get<0>(xdm_result);
+        }
     } else {
         energy.dispersion = ce_model_dispersion_energy(A.atoms, B.atoms);
     }
     energy.polarization = compute_polarization_energy(A, hf_a, B, hf_b);
 
     energy.total =
-        scale_factors.scaled_total(energy.coulomb, energy.exchange_repulsion,
-                                   energy.polarization, energy.dispersion);
+        m_scale_factors.scaled_total(energy.coulomb, energy.exchange_repulsion,
+                                     energy.polarization, energy.dispersion);
     return energy;
 }
 
@@ -303,26 +402,31 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     constexpr double precision = std::numeric_limits<double>::epsilon();
 
     occ::dft::AtomGridSettings grid_settings{110, 30, 30, 1e-6};
-    double polarization_energy{0.0};
 
+    DFT dft_a(functional, A.basis, grid_settings);
+    DFT dft_b(functional, B.basis, grid_settings);
     {
-        DFT dft_a(functional, A.basis, grid_settings);
         if (m_use_density_fitting) {
             dft_a.set_density_fitting_basis("def2-universal-jfit");
         }
 
-        Mat schwarz_a = dft_a.compute_schwarz_ints();
-        compute_ce_model_energies(A, dft_a, precision, schwarz_a,
-                                  scale_factors.xdm);
+        CEMonomerCalculationParameters params_a;
+        params_a.precision = precision;
+        params_a.Schwarz = dft_a.compute_schwarz_ints();
+        params_a.xdm = m_scale_factors.xdm;
 
-        DFT dft_b(functional, B.basis, grid_settings);
+        compute_ce_model_energies(A, dft_a, params_a);
+
         if (m_use_density_fitting) {
             dft_b.set_density_fitting_basis("def2-universal-jfit");
         }
-        Mat schwarz_b = dft_b.compute_schwarz_ints();
-        compute_ce_model_energies(B, dft_b, precision, schwarz_b,
-                                  scale_factors.xdm);
-        polarization_energy = compute_polarization_energy(A, dft_a, B, dft_b);
+
+        CEMonomerCalculationParameters params_b;
+        params_b.precision = precision;
+        params_b.Schwarz = dft_b.compute_schwarz_ints();
+        params_b.xdm = m_scale_factors.xdm;
+
+        compute_ce_model_energies(B, dft_b, params_b);
     }
 
     Wavefunction ABn(A, B);
@@ -335,10 +439,14 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
                         a.z / occ::units::ANGSTROM_TO_BOHR);
     }
 
-    // Can reuse the same HartreeFock object for both merged wfns: same basis
-    // and atoms
+    // Can reuse the same HartreeFock object for both merged wfns: same
+    // basis and atoms
     auto dft_AB = DFT(functional, ABn.basis, grid_settings);
-    Mat schwarz_ab = dft_AB.compute_schwarz_ints();
+    CEMonomerCalculationParameters params_ab;
+    params_ab.precision = precision;
+    params_ab.Schwarz = dft_AB.compute_schwarz_ints();
+    params_ab.xdm = m_scale_factors.xdm && m_use_xdm_dimer_parameters;
+
     if (m_use_density_fitting) {
         dft_AB.set_density_fitting_basis("def2-universal-jfit");
     }
@@ -350,9 +458,16 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     ABn.compute_density_matrix();
     ABo.compute_density_matrix();
 
+    double p = population_difference(ABo, ABn, S_AB);
+
+    occ::log::debug("Population difference: {:10.3g}\n", p);
+    constexpr double p_tolerance = 1e-6;
+    if (p < p_tolerance) {
+        params_ab.neglect_exchange = true;
+    }
     // no need to XDM for the combined wavefunctions
-    compute_ce_model_energies(ABn, dft_AB, precision, schwarz_ab, false);
-    compute_ce_model_energies(ABo, dft_AB, precision, schwarz_ab, false);
+    compute_ce_model_energies(ABn, dft_AB, params_ab);
+    compute_ce_model_energies(ABo, dft_AB, params_ab);
 
     occ::log::debug("ABn\n{}\n", ABn.energy);
     occ::log::debug("ABo\n{}\n", ABo.energy);
@@ -382,24 +497,47 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     occ::log::debug("Exchange term      {:20.12f}", E_ABn.exchange);
     occ::log::debug("Total term         {:20.12f}", energy.exchange_repulsion);
 
-    if (scale_factors.xdm) {
-        occ::log::debug("XDM params: {} {}", scale_factors.xdm_a1,
-                        scale_factors.xdm_a2);
-        auto xdm_result = xdm::xdm_dispersion_interaction_energy(
-            {A.atoms, A.xdm_polarizabilities, A.xdm_moments, A.xdm_volumes,
-             A.xdm_free_volumes},
-            {B.atoms, B.xdm_polarizabilities, B.xdm_moments, B.xdm_volumes,
-             B.xdm_free_volumes},
-            {scale_factors.xdm_a1, scale_factors.xdm_a2});
-        energy.dispersion = std::get<0>(xdm_result);
+    if (m_scale_factors.xdm) {
+        occ::log::debug("XDM params: {} {}", m_scale_factors.xdm_a1,
+                        m_scale_factors.xdm_a2);
+        if (m_use_xdm_dimer_parameters) {
+            occ::log::debug("Computing dimer parameters for XDM pair energy");
+            occ::xdm::XDM xdm_calc_a(
+                A.basis, A.charge(),
+                {m_scale_factors.xdm_a1, m_scale_factors.xdm_a2});
+            auto energy_a = xdm_calc_a.energy(A.mo);
+            occ::xdm::XDM xdm_calc_b(
+                B.basis, B.charge(),
+                {m_scale_factors.xdm_a1, m_scale_factors.xdm_a2});
+            auto energy_b = xdm_calc_b.energy(B.mo);
+            occ::xdm::XDM xdm_calc_ab(
+                ABn.basis, ABn.charge(),
+                {m_scale_factors.xdm_a1, m_scale_factors.xdm_a2});
+            auto energy_ab = xdm_calc_ab.energy(ABn.mo);
+            energy.dispersion = energy_ab - energy_a - energy_b;
+            A.xdm_polarizabilities = ABn.xdm_polarizabilities.block(
+                0, 0, A.xdm_polarizabilities.rows(), 1);
+            B.xdm_polarizabilities = ABn.xdm_polarizabilities.block(
+                A.xdm_polarizabilities.rows(), 0, B.xdm_polarizabilities.rows(),
+                1);
+        } else {
+            occ::log::debug("Using monomer parameters for XDM pair energy");
+            auto xdm_result = xdm::xdm_dispersion_interaction_energy(
+                {A.atoms, A.xdm_polarizabilities, A.xdm_moments, A.xdm_volumes,
+                 A.xdm_free_volumes},
+                {B.atoms, B.xdm_polarizabilities, B.xdm_moments, B.xdm_volumes,
+                 B.xdm_free_volumes},
+                {m_scale_factors.xdm_a1, m_scale_factors.xdm_a2});
+            energy.dispersion = std::get<0>(xdm_result);
+        }
     } else {
         energy.dispersion = ce_model_dispersion_energy(A.atoms, B.atoms);
     }
-    energy.polarization = polarization_energy;
+    energy.polarization = compute_polarization_energy(A, dft_a, B, dft_b);
 
     energy.total =
-        scale_factors.scaled_total(energy.coulomb, energy.exchange_repulsion,
-                                   energy.polarization, energy.dispersion);
+        m_scale_factors.scaled_total(energy.coulomb, energy.exchange_repulsion,
+                                     energy.polarization, energy.dispersion);
     return energy;
 }
 

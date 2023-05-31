@@ -179,64 +179,6 @@ void compute_monomer_energies(std::vector<Wavefunction> &wfns,
     fmt::print("Finished calculating {} unique monomer energies\n", complete);
 }
 
-auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
-                         const Crystal &c) {
-    int sint = m.asymmetric_unit_symop()(0);
-    SymmetryOperation symop(sint);
-    occ::Mat3N positions = wfn.positions() * BOHR_TO_ANGSTROM;
-
-    occ::Mat3 rotation =
-        c.unit_cell().direct() * symop.rotation() * c.unit_cell().inverse();
-    occ::Vec3 translation =
-        (m.centroid() - (rotation * positions).rowwise().mean()) /
-        BOHR_TO_ANGSTROM;
-    return std::make_pair(rotation, translation);
-}
-
-void write_xyz_dimer(const std::string &filename, const Dimer &dimer) {
-    auto output = fmt::output_file(filename);
-    const auto &pos = dimer.positions();
-    const auto &nums = dimer.atomic_numbers();
-    output.print("{}\n\n", nums.rows());
-    for (size_t i = 0; i < nums.rows(); i++) {
-        output.print("{} {} {} {}\n", Element(nums(i)).symbol(), pos(0, i),
-                     pos(1, i), pos(2, i));
-    }
-}
-
-auto calculate_interaction_energy(const Dimer &dimer,
-                                  const std::vector<Wavefunction> &wfns,
-                                  const Crystal &crystal,
-                                  const std::string &model_name) {
-    Molecule mol_A = dimer.a();
-    Molecule mol_B = dimer.b();
-    const auto &wfna = wfns[mol_A.asymmetric_molecule_idx()];
-    const auto &wfnb = wfns[mol_B.asymmetric_molecule_idx()];
-    Wavefunction A = wfns[mol_A.asymmetric_molecule_idx()];
-    Wavefunction B = wfns[mol_B.asymmetric_molecule_idx()];
-    auto transform_a = calculate_transform(wfna, mol_A, crystal);
-    A.apply_transformation(transform_a.first, transform_a.second);
-
-    occ::Mat3N pos_A = mol_A.positions();
-    occ::Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
-
-    assert(all_close(pos_A, pos_A_t, 1e-5, 1e-5));
-
-    auto transform_b = calculate_transform(wfnb, mol_B, crystal);
-    B.apply_transformation(transform_b.first, transform_b.second);
-
-    const auto &pos_B = mol_B.positions();
-    const auto pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
-    assert(all_close(pos_A, pos_A_t, 1e-5, 1e-5));
-
-    auto model = occ::interaction::ce_model_from_string(model_name);
-
-    CEModelInteraction interaction(model);
-
-    auto interaction_energy = interaction(A, B);
-    return interaction_energy;
-}
-
 void calculate_lattice_energy(const std::string &cif_filename,
                               const std::string &model_name,
                               const LatticeConvergenceSettings settings) {
@@ -271,28 +213,26 @@ void calculate_lattice_energy(const std::string &cif_filename,
         exit(0);
     }
 
-    const std::string row_fmt_string =
-        "{:>7.3f} {:>7.3f} {:>20s} {: 8.3f} {: 8.3f} {: 8.3f} {: 8.3f} {: "
-        "8.3f}\n";
+    const std::string row_fmt_string = "{:>7.3f} {:>7.3f} {:>20s} {: 8.3f} {: "
+                                       "8.3f} {: 8.3f} {: 8.3f} {: 8.3f} {: "
+                                       "8.3f}\n";
     size_t mol_idx{0};
     double etot{0.0}, elat{0.0};
     for (const auto &n : lattice_energy_result.dimers.molecule_neighbors) {
 
         fmt::print("Neighbors for molecule {}\n", mol_idx);
 
-        fmt::print("{:>7s} {:>7s} {:>20s} {:>8s} {:>8s} {:>8s} {:>8s} "
+        fmt::print("{:>7s} {:>7s} {:>20s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s} "
                    "{:>8s}\n",
-                   "Rn", "Rc", "Symop", "E_coul", "E_rep", "E_pol", "E_disp",
-                   "E_tot");
+                   "Rn", "Rc", "Symop", "E_coul", "E_ex", "E_rep", "E_pol",
+                   "E_disp", "E_tot");
         fmt::print("==================================================="
                    "================================\n");
         CEEnergyComponents molecule_total;
 
         size_t j = 0;
-        for (const auto &dimer : n) {
+        for (const auto &[dimer, idx] : n) {
             auto s_ab = dimer_symop(dimer, c);
-            size_t idx =
-                lattice_energy_result.dimers.unique_dimer_idx[mol_idx][j];
             double rn = dimer.nearest_distance();
             double rc = dimer.center_of_mass_distance();
             const auto &e = lattice_energy_result.energy_components[idx];
@@ -300,16 +240,19 @@ void calculate_lattice_energy(const std::string &cif_filename,
                 j++;
                 continue;
             }
-            double ecoul = e.coulomb_kjmol(), erep = e.exchange_kjmol(),
+            double ecoul = e.coulomb_kjmol(), e_exch_rep = e.exchange_kjmol(),
                    epol = e.polarization_kjmol(), edisp = e.dispersion_kjmol(),
-                   etot = e.total_kjmol();
+                   etot = e.total_kjmol(), e_ex = e.exchange_component_kjmol(),
+                   e_rep = e.repulsion_kjmol();
             molecule_total.coulomb += ecoul;
-            molecule_total.exchange_repulsion += erep;
+            molecule_total.exchange_repulsion += e_exch_rep;
+            molecule_total.repulsion_component += e_rep;
+            molecule_total.exchange_component += e_ex;
             molecule_total.polarization += epol;
             molecule_total.dispersion += edisp;
             molecule_total.total += etot;
-            fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, erep, epol, edisp,
-                       etot);
+            fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, e_ex, e_rep, epol,
+                       edisp, etot);
             j++;
         }
         fmt::print("Molecule {} total: {:.3f} kJ/mol ({} pairs)\n", mol_idx,

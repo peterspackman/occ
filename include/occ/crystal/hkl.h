@@ -51,6 +51,11 @@ struct HKL {
             .norm();
     }
 
+    inline Vec3 vector() const {
+        return Vec3(static_cast<double>(h), static_cast<double>(k),
+                    static_cast<double>(l));
+    }
+
     /// The maximum representable HKL structure
     static HKL maximum() {
         return {std::numeric_limits<int>::max(),
@@ -63,6 +68,22 @@ struct HKL {
         return {std::numeric_limits<int>::min(),
                 std::numeric_limits<int>::min(),
                 std::numeric_limits<int>::min()};
+    }
+
+    static HKL floor(const Vec3 &vec) {
+        HKL r;
+        r.h = static_cast<int>(std::floor(vec(0)));
+        r.k = static_cast<int>(std::floor(vec(1)));
+        r.l = static_cast<int>(std::floor(vec(2)));
+        return r;
+    }
+
+    static HKL ceil(const Vec3 &vec) {
+        HKL r;
+        r.h = static_cast<int>(std::ceil(vec(0)));
+        r.k = static_cast<int>(std::ceil(vec(1)));
+        r.l = static_cast<int>(std::ceil(vec(2)));
+        return r;
     }
 };
 } // namespace occ::crystal

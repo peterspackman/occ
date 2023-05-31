@@ -355,8 +355,13 @@ void Crystal::update_unit_cell_molecules() const {
     for (size_t i = 0; i < uc_mol_idx; i++) {
         auto idx = atom_indices[i];
 
-        // sort by asymmetric atom index
-        std::sort(idx.begin(), idx.end(), [&atoms](int a, int b) {
+        // sort by asymmetric atom index, then symop,
+        // but retain ordering otherwise
+        // if they have the same asym atom and symop using stable sort
+        std::stable_sort(idx.begin(), idx.end(), [&atoms](int a, int b) {
+            if (atoms.asym_idx(a) == atoms.asym_idx(b)) {
+                return atoms.symop(a) < atoms.symop(b);
+            }
             return atoms.asym_idx(a) < atoms.asym_idx(b);
         });
         occ::core::Molecule m(atoms.atomic_numbers(idx),
@@ -515,7 +520,7 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
     };
 
     auto sort_func = [](const CrystalDimers::SymmetryRelatedDimer &a,
-		        const CrystalDimers::SymmetryRelatedDimer &b) {
+                        const CrystalDimers::SymmetryRelatedDimer &b) {
         return a.dimer.nearest_distance() < b.dimer.nearest_distance();
     };
 
@@ -523,8 +528,9 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
     for (auto &vec : mol_nbs) {
         std::stable_sort(vec.begin(), vec.end(), sort_func);
         for (auto &d : vec) {
-            size_t idx = std::distance(
-                dimers.begin(), std::find(dimers.begin(), dimers.end(), d.dimer));
+            size_t idx =
+                std::distance(dimers.begin(),
+                              std::find(dimers.begin(), dimers.end(), d.dimer));
             d.unique_index = idx;
         }
     }
@@ -565,7 +571,7 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
         }
     }
 
-    mol_nbs.resize(uc_mols.size()); 
+    mol_nbs.resize(uc_mols.size());
 
     for (int h = lower.h; h <= upper.h; h++) {
         for (int k = lower.k; k <= upper.k; k++) {
@@ -601,7 +607,7 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
     };
 
     auto sort_func = [](const CrystalDimers::SymmetryRelatedDimer &a,
-		        const CrystalDimers::SymmetryRelatedDimer &b) {
+                        const CrystalDimers::SymmetryRelatedDimer &b) {
         return a.dimer.nearest_distance() < b.dimer.nearest_distance();
     };
 
@@ -610,8 +616,9 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
     for (auto &vec : mol_nbs) {
         std::stable_sort(vec.begin(), vec.end(), sort_func);
         for (auto &d : vec) {
-            size_t idx = std::distance(
-                dimers.begin(), std::find(dimers.begin(), dimers.end(), d.dimer));
+            size_t idx =
+                std::distance(dimers.begin(),
+                              std::find(dimers.begin(), dimers.end(), d.dimer));
             d.unique_index = idx;
         }
     }

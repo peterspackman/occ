@@ -3,10 +3,29 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/crystal/hkl.h>
 #include <occ/crystal/unitcell.h>
+#include <vector>
 
 namespace occ::crystal {
 
 class Crystal;
+
+struct SurfaceCutResult {
+    using DimerCounts = std::vector<std::vector<int>>;
+
+    SurfaceCutResult(const CrystalDimers &);
+    std::vector<Molecule> molecules;
+    DimerCounts above;
+    DimerCounts below;
+    DimerCounts slab;
+    DimerCounts bulk;
+    double depth_scale{1.0};
+    Mat3 basis;
+    Vec3 origin;
+    double total_above(const CrystalDimers &) const;
+    double total_below(const CrystalDimers &) const;
+    double total_slab(const CrystalDimers &) const;
+    double total_bulk(const CrystalDimers &) const;
+};
 
 class Surface {
   public:
@@ -23,7 +42,19 @@ class Surface {
     inline double area() const { return m_a_vector.cross(m_b_vector).norm(); }
     Vec3 dipole() const;
     bool cuts_line_segment(const Vec3 &origin, const Vec3 &point1,
-                           const Vec3 &point2) const;
+                           const Vec3 &point2, Vec3 &intersection,
+                           bool infinite = true) const;
+
+    // Pack unit cell molecules below or above the surface with depth
+    // negative depth means below, positive depth means above (as determined by
+    // surface normal), depth is in fractions of the depth of the surface i.e.
+    // interplanar spacing
+    std::vector<Molecule>
+    find_molecule_cell_translations(const std::vector<Molecule> &unit_cell_mols,
+                                    double depth) const;
+
+    SurfaceCutResult
+    count_crystal_dimers_cut_by_surface(const CrystalDimers &) const;
 
     static bool check_systematic_absence(const Crystal &, const HKL &);
     static bool faces_are_equivalent(const Crystal &, const HKL &, const HKL &);

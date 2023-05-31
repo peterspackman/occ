@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
                 double esolv = wfn2.energy.total - wfn.energy.total;
 
                 occ::log::info("{:-<72s}", "Solvation free energy (SMD)  ");
-                occ::log::info("\u0394G(solv)    = {:20.12f} Hartree", esolv);
+                occ::log::info("dG(solv)    = {:20.12f} Hartree", esolv);
                 occ::log::info("            = {:20.12f} kJ/mol",
                                esolv * occ::units::AU_TO_KJ_PER_MOL);
                 occ::log::info("            = {:20.12f} kcal/mol",

@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <fmt/ostream.h>
 #include <occ/crystal/crystal.h>
+#include <occ/interaction/pair_potential.h>
 #include <occ/interaction/wolf.h>
 
 /* Dimer tests */
@@ -50,4 +51,27 @@ TEST_CASE("NaCl wolf sum", "[interaction,wolf]") {
     }
     fmt::print("Wolf energy (NaCl): {}\n", wolf_energy);
     REQUIRE(wolf_energy == Catch::Approx(-0.3302735899347252));
+}
+
+TEST_CASE("Dreiding type HB repulsion", "[interaction]") {
+    occ::IVec els_a(3);
+    els_a << 8, 1, 1;
+    occ::Mat3N pos_a(3, 3);
+    pos_a << -0.70219605, -0.05606026, 0.00994226, -1.02219322, 0.84677578,
+        -0.01148871, 0.25752106, 0.0421215, 0.005219;
+    pos_a.transposeInPlace();
+    occ::IVec els_b(3);
+    els_b << 8, 1, 1;
+
+    occ::Mat3N pos_b(3, 3);
+    pos_b << 2.21510240e+00, 2.67620530e-02, 6.33988000e-04, 2.59172401e+00,
+        -4.11618013e-01, 7.66758370e-01, 2.58736671e+00, -4.49450922e-01,
+        -7.44768514e-01;
+    pos_b.transposeInPlace();
+
+    occ::core::Dimer dimer(occ::core::Molecule(els_a, pos_a),
+                           occ::core::Molecule(els_b, pos_b));
+
+    double t = occ::interaction::dreiding_type_hb_correction(6.6, 2.2, dimer);
+    REQUIRE(t == Catch::Approx(-1.95340359422375));
 }

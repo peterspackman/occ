@@ -52,6 +52,7 @@ struct LatticeConvergenceSettings {
     double radius_increment{3.8}; // angstroms
     double energy_tolerance{1.0}; // kj/mol
     bool wolf_sum{false};
+    bool crystal_field_polarization{false};
     std::string model_name{"ce-b3lyp"};
 };
 

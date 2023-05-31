@@ -1,10 +1,10 @@
 #include <fmt/ostream.h>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <occ/3rdparty/parallel_hashmap/phmap_utils.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/crystalgrower.h>
 #include <string>
-#include <occ/3rdparty/parallel_hashmap/phmap.h> 
-#include <occ/3rdparty/parallel_hashmap/phmap_utils.h> 
 
 namespace occ::io::crystalgrower {
 using occ::crystal::Crystal;
@@ -12,12 +12,13 @@ using occ::crystal::CrystalDimers;
 using SymDimer = CrystalDimers::SymmetryRelatedDimer;
 
 void sort_neighbors(CrystalDimers &dimers) {
-    for(auto &neighbors: dimers.molecule_neighbors) {
+    for (auto &neighbors : dimers.molecule_neighbors) {
         // sort only the non-unique dimers, by center of mass distance
-        std::stable_sort(neighbors.begin(), neighbors.end(), 
-                  [](const SymDimer &left, const SymDimer &right) {
-	              return left.dimer.centroid_distance() < right.dimer.centroid_distance();
-	          });
+        std::stable_sort(neighbors.begin(), neighbors.end(),
+                         [](const SymDimer &left, const SymDimer &right) {
+                             return left.dimer.centroid_distance() <
+                                    right.dimer.centroid_distance();
+                         });
     }
 }
 
@@ -100,8 +101,8 @@ struct FormulaIndex {
     }
 };
 
-std::vector<FormulaIndex> build_formula_indices_for_symmetry_unique_molecules(
-    const Crystal &crystal) {
+std::vector<FormulaIndex>
+build_formula_indices_for_symmetry_unique_molecules(const Crystal &crystal) {
     std::vector<FormulaIndex> result;
     phmap::flat_hash_map<std::string, FormulaIndex> formula_count;
     for (const auto &mol : crystal.symmetry_unique_molecules()) {
@@ -112,7 +113,6 @@ std::vector<FormulaIndex> build_formula_indices_for_symmetry_unique_molecules(
             it->second.count++;
             formula_index = it->second;
         } else {
-            fmt::print("not found\n");
             formula_index.letter += static_cast<char>(formula_count.size());
             formula_count.insert({formula, formula_index});
         }
@@ -121,8 +121,7 @@ std::vector<FormulaIndex> build_formula_indices_for_symmetry_unique_molecules(
     return result;
 }
 
-void NetWriter::write(const Crystal &crystal,
-                      const CrystalDimers &uc_dimers) {
+void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
     const auto &uc_molecules = crystal.unit_cell_molecules();
     CrystalDimers uc_dimers_copy = uc_dimers;
     sort_neighbors(uc_dimers_copy);
@@ -143,15 +142,15 @@ void NetWriter::write(const Crystal &crystal,
 
         FormulaIndex formula_index =
             sym_formula_indices[mol.asymmetric_molecule_idx()];
-	if(!f2e.contains(formula_index)) {
-	    f2e.insert({formula_index, {}});
-	}
+        if (!f2e.contains(formula_index)) {
+            f2e.insert({formula_index, {}});
+        }
         std::vector<double> &unique_interaction_energies = f2e[formula_index];
         fmt::print("uc mol {}, asym = {}, formula = {} {}\n", uc_idx,
                    mol.asymmetric_molecule_idx(), formula_index.count,
                    formula_index.letter);
-	auto mol_neighbors = neighbors[uc_idx];
-        for (const auto &[n, unique_index]: neighbors[uc_idx]) {
+        auto mol_neighbors = neighbors[uc_idx];
+        for (const auto &[n, unique_index] : neighbors[uc_idx]) {
             const auto uc_shift = n.b().cell_shift();
             const auto uc_idx = n.b().unit_cell_molecule_idx() + 1;
             const double e_int = n.interaction_energy();
@@ -178,8 +177,8 @@ void NetWriter::write(const Crystal &crystal,
                        uc_shift[0], uc_shift[1], uc_shift[2],
                        n.centroid_distance());
         }
-	for(double e: unique_interaction_energies) {
-            fmt::print(m_dest, "{:7.3f}\n", e);
+        for (double e : unique_interaction_energies) {
+            fmt::print(m_dest, "{:7.3f}\n", e * occ::units::KJ_TO_KCAL);
         }
         uc_idx++;
     }

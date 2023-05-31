@@ -5,6 +5,7 @@
 #include <occ/gto/rotation.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/orb.h>
 
 namespace occ::qm {
 
@@ -56,17 +57,13 @@ void MolecularOrbitals::update_density_matrix() {
     occ::timing::start(occ::timing::category::la);
     switch (kind) {
     case SpinorbitalKind::Restricted:
-        D = Cocc * Cocc.transpose();
+        D = orb::density_matrix_restricted(Cocc);
         break;
     case SpinorbitalKind::Unrestricted:
-        block::a(D) = Cocc.block(0, 0, n_ao, n_alpha) *
-                      Cocc.block(0, 0, n_ao, n_alpha).transpose();
-        block::b(D) = Cocc.block(n_ao, 0, n_ao, n_beta) *
-                      Cocc.block(n_ao, 0, n_ao, n_beta).transpose();
-        D *= 0.5;
+        D = orb::density_matrix_unrestricted(Cocc, n_alpha, n_beta);
         break;
     case SpinorbitalKind::General:
-        D = (Cocc * Cocc.transpose()) * 0.5;
+        D = orb::density_matrix_general(Cocc);
         break;
     }
     occ::timing::stop(occ::timing::category::la);

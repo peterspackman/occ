@@ -42,7 +42,9 @@ std::pair<std::vector<SolvatedSurfaceProperties>,
 calculate_solvated_surfaces(const std::string &basename,
                             const std::vector<occ::core::Molecule> &mols,
                             const std::vector<occ::qm::Wavefunction> &wfns,
-                            const std::string &solvent_name);
+                            const std::string &solvent_name,
+                            const std::string &method = "b3lyp",
+                            const std::string &basis_name = "6-31g**");
 
 struct SolventNeighborContribution {
     struct AsymPair {

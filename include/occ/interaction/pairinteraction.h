@@ -19,7 +19,7 @@ struct CEParameterizedModel {
     const double dispersion{1.0};
     const std::string name{"Unscaled"};
     bool xdm{false};
-    double xdm_a1{0.65}, xdm_a2{1.70};
+    double xdm_a1{0.21}, xdm_a2{3.05};
     double scaled_total(double coul, double ex, double pol, double disp) const {
         return coulomb * coul + exchange_repulsion * ex + polarization * pol +
                dispersion * disp;
@@ -46,9 +46,16 @@ inline CEParameterizedModel CE_WB97M_SVP{
 inline CEParameterizedModel CE_WB97X_SVP{
     1.0, 0.485, 0.803, 1.0, "CE-WB97X-SVP", true, 0.65, 1.7};
 
-void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &hf,
-                               double precision, const Mat &Schwarz,
-                               bool xdm = false);
+struct CEMonomerCalculationParameters {
+    double precision{1e-12};
+    Mat Schwarz;
+    bool xdm{false};
+    bool neglect_exchange{false};
+};
+
+void compute_ce_model_energies(
+    Wavefunction &wfn, HartreeFock &hf,
+    const CEMonomerCalculationParameters &params = {});
 
 template <typename Procedure>
 double compute_polarization_energy(const Wavefunction &wfn_a,
@@ -74,7 +81,7 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
     using occ::interaction::ce_model_polarization_energy;
     double e_pol = 0.0;
     if (wfn_a.have_xdm_parameters && wfn_b.have_xdm_parameters) {
-        fmt::print("Using XDM polarizability\n");
+        occ::log::trace("Using XDM polarizability");
         using occ::interaction::polarization_energy;
         e_pol = polarization_energy(wfn_a.xdm_polarizabilities, field_a) +
                 polarization_energy(wfn_b.xdm_polarizabilities, field_b);
@@ -118,6 +125,8 @@ inline CEParameterizedModel ce_model_from_string(const std::string &s) {
         return CE_WB97X_SVP;
     if (s == "ce-wb97m-svp")
         return CE_WB97M_SVP;
+    if (s == "ce-xdm-wb97m-v")
+        return CE_WB97M_SVP;
     return CEParameterizedModel{};
 }
 
@@ -127,7 +136,12 @@ struct CEEnergyComponents {
     double polarization{0.0};
     double dispersion{0.0};
     double total{0.0};
+    double exchange_component{0.0};
+    double repulsion_component{0.0};
+    double nonorthogonal_term{0.0};
+    double orthogonal_term{0.0};
     bool is_computed{false};
+
     double coulomb_kjmol() const {
         return occ::units::AU_TO_KJ_PER_MOL * coulomb;
     }
@@ -140,6 +154,15 @@ struct CEEnergyComponents {
     double dispersion_kjmol() const {
         return occ::units::AU_TO_KJ_PER_MOL * dispersion;
     }
+
+    double repulsion_kjmol() const {
+        return occ::units::AU_TO_KJ_PER_MOL * repulsion_component;
+    }
+
+    double exchange_component_kjmol() const {
+        return occ::units::AU_TO_KJ_PER_MOL * exchange_component;
+    }
+
     double total_kjmol() const { return occ::units::AU_TO_KJ_PER_MOL * total; }
 
     inline auto operator-(const CEEnergyComponents &rhs) {
@@ -168,10 +191,14 @@ struct CEModelInteraction {
                                 Wavefunction &) const;
     void set_use_density_fitting(bool value = true);
     void compute_monomer_energies(Wavefunction &) const;
+    void set_use_xdm_dimer_parameters(bool value = true);
+
+    const auto &scale_factors() const { return m_scale_factors; }
 
   private:
-    CEParameterizedModel scale_factors;
+    CEParameterizedModel m_scale_factors;
     bool m_use_density_fitting{false};
+    bool m_use_xdm_dimer_parameters{false};
 };
 
 } // namespace occ::interaction

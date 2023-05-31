@@ -15,7 +15,7 @@ namespace occ::main {
 
 void print_charges(const std::string &charge_type, const Vec &charges,
                    const std::vector<occ::core::Atom> &atoms) {
-    log::info("{:—<72s}", fmt::format("{} charges (au)  ", charge_type));
+    log::info("{:-<72s}", fmt::format("{} charges (au)  ", charge_type));
     for (int i = 0; i < charges.rows(); i++) {
         log::info("{:<6s} {: 9.6f}",
                   core::Element(atoms[i].atomic_number).symbol(), charges(i));

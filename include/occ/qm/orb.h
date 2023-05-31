@@ -4,12 +4,13 @@
 
 namespace occ::qm::orb {
 
-inline auto occupied_restricted(const Mat &orbitals, size_t num_occ) {
+inline auto occupied_restricted(Eigen::Ref<const Mat> orbitals,
+                                size_t num_occ) {
     return orbitals.leftCols(num_occ);
 }
 
-inline auto occupied_unrestricted(const Mat &orbitals, size_t num_alpha,
-                                  size_t num_beta) {
+inline auto occupied_unrestricted(Eigen::Ref<const Mat> orbitals,
+                                  size_t num_alpha, size_t num_beta) {
     size_t nbf = orbitals.rows() / 2;
     Mat occ = Mat::Zero(2 * nbf, std::max(num_alpha, num_beta));
     occ.block(0, 0, nbf, num_alpha) =
@@ -19,11 +20,11 @@ inline auto occupied_unrestricted(const Mat &orbitals, size_t num_alpha,
     return occ;
 }
 
-inline auto density_matrix_restricted(const Mat &occupied_orbitals) {
+inline auto density_matrix_restricted(Eigen::Ref<const Mat> occupied_orbitals) {
     return occupied_orbitals * occupied_orbitals.transpose();
 }
 
-inline auto density_matrix_unrestricted(const Mat &occupied_orbitals,
+inline auto density_matrix_unrestricted(Eigen::Ref<const Mat> occupied_orbitals,
                                         size_t num_alpha, size_t num_beta) {
     size_t rows, cols;
     size_t nbf = occupied_orbitals.rows() / 2;
@@ -38,6 +39,10 @@ inline auto density_matrix_unrestricted(const Mat &occupied_orbitals,
         occupied_orbitals.block(nbf, 0, nbf, num_beta).transpose();
     D *= 0.5;
     return D;
+}
+
+inline auto density_matrix_general(Eigen::Ref<const Mat> occupied_orbitals) {
+    return 0.5 * occupied_orbitals * occupied_orbitals.transpose();
 }
 
 } // namespace occ::qm::orb

@@ -353,6 +353,25 @@ TEST_CASE("Crystal surface generation (dhkl order)", "[crystal, surface]") {
     fmt::print("Generation took {} s\n", sw.read());
 }
 
+TEST_CASE("Crystal surface molecules", "[crystal, surface]") {
+    Crystal a = acetic_acid_crystal();
+    HKL m011{0, 1, 1};
+    Surface surf011(m011, a);
+    surf011.print();
+    auto mols = a.unit_cell_molecules();
+    auto translations = surf011.find_molecule_cell_translations(mols, -10.0);
+    auto dimers = a.unit_cell_dimers(12.0);
+    auto counts = surf011.count_crystal_dimers_cut_by_surface(dimers);
+    for (int i = 0; i < counts.above.size(); i++) {
+        const auto &neighbor_counts = counts.above[i];
+        for (int j = 0; j < neighbor_counts.size(); j++) {
+            if (neighbor_counts[j] > 0) {
+                fmt::print("{} {}: {}\n", i, j, neighbor_counts[j]);
+            }
+        }
+    }
+}
+
 // SymmetryOperation
 
 TEST_CASE("SymmetryOperation constructor", "[symmetry_operation]") {

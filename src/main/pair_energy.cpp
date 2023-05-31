@@ -2,11 +2,13 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
+#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/interaction/coulomb.h>
+#include <occ/interaction/pair_potential.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/wolf.h>
 #include <occ/main/pair_energy.h>
@@ -98,14 +100,15 @@ void PairEnergy::compute() {
 auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
                          const Crystal &c) {
     using occ::crystal::SymmetryOperation;
-    const auto &asym_symops = m.asymmetric_unit_symop();
+
     Mat3N pos_m = m.positions();
     Mat3 rotation;
     Vec3 translation;
+    const auto &symops = c.space_group().symmetry_operations();
+    fmt::print("Num symops to check: {}\n", symops.size());
 
-    for (int i = 0; i < asym_symops.rows(); i++) {
-        int sint = asym_symops(i);
-        SymmetryOperation symop(sint);
+    for (const auto &symop : symops) {
+        int sint = symop.to_int();
         occ::Mat3N positions = wfn.positions() * BOHR_TO_ANGSTROM;
 
         rotation =
@@ -189,6 +192,26 @@ class CEPairEnergyFunctor {
 
         auto interaction_energy = interaction(A, B);
         interaction_energy.is_computed = true;
+
+        /*
+        // TODO delete this
+        bool use_hb_term = false;
+
+        if (use_hb_term) {
+            double hb_term = occ::interaction::dreiding_type_hb_correction(
+                2.21030684, 2.54060627, dimer);
+            fmt::print("HB term: {}\n", hb_term);
+            interaction_energy.exchange_repulsion -=
+                hb_term / occ::units::AU_TO_KJ_PER_MOL;
+
+            interaction_energy.total = model.scaled_total(
+                interaction_energy.coulomb,
+                interaction_energy.exchange_repulsion,
+                interaction_energy.polarization,
+        interaction_energy.dispersion);
+        }
+        */
+
         occ::log::debug("Finished model energy");
         return interaction_energy;
     }
@@ -231,6 +254,11 @@ class CEPairEnergyFunctor {
         return m_partial_charges;
     }
 
+    inline double coulomb_scale_factor() const {
+        auto model = occ::interaction::ce_model_from_string(m_model_name);
+        return model.coulomb;
+    }
+
   private:
     Crystal m_crystal;
     std::string m_model_name{"ce-b3lyp"};
@@ -266,6 +294,7 @@ class XTBPairEnergyFunctor {
 
     inline const auto &partial_charges() { return m_partial_charges; }
     inline const auto &monomer_energies() { return m_monomer_energies; }
+    inline double coulomb_scale_factor() const { return 1.0; }
 
   private:
     Crystal m_crystal;
@@ -475,9 +504,10 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
     occ::log::info("Found {} symmetry unique dimers within max radius {:.3f}\n",
                    all_dimers.unique_dimers.size(), conv.max_radius);
     occ::log::info("Lattice convergence settings:");
-    occ::log::info("Start radius       {: 8.4f} \u212b", conv.min_radius);
-    occ::log::info("Max radius         {: 8.4f} \u212b", conv.max_radius);
-    occ::log::info("Radius increment   {: 8.4f} \u212b", conv.radius_increment);
+    occ::log::info("Start radius       {: 8.4f} angstrom", conv.min_radius);
+    occ::log::info("Max radius         {: 8.4f} angstrom", conv.max_radius);
+    occ::log::info("Radius increment   {: 8.4f} angstrom",
+                   conv.radius_increment);
     occ::log::info("Energy tolerance   {: 8.4f} kJ/mol", conv.energy_tolerance);
 
     WolfSumAccelerator wolf;
@@ -502,14 +532,14 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
         double ecoul_real{0};
         double ecoul_exact_real{0};
         double ecoul_self{0};
-        double coulomb_scale_factor = occ::interaction::CE_B3LYP_631Gdp.coulomb;
+        double coulomb_scale_factor = energy_model.coulomb_scale_factor();
         for (const auto &n : mol_neighbors) {
             double molecule_total{0.0};
             size_t dimer_idx{0};
 
             Mat3N efield = Mat3N::Zero(3, asym_mols[mol_idx].size());
 
-            if (conv.wolf_sum) {
+            if (conv.wolf_sum && conv.crystal_field_polarization) {
                 wolf.electric_field_values[mol_idx].setZero();
                 fmt::print("Field total =\n{}\n",
                            wolf.electric_field_values[mol_idx]);
@@ -525,13 +555,18 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                         ecoul_exact_real += 0.5 * e.coulomb_kjmol();
                         ecoul_real +=
                             0.5 * e_charge * occ::units::AU_TO_KJ_PER_MOL;
-                        wolf.electric_field_values[mol_idx] +=
-                            compute_point_charge_efield(dimer,
-                                                        wolf.asym_charges);
+                        if (conv.crystal_field_polarization) {
+                            wolf.electric_field_values[mol_idx] +=
+                                compute_point_charge_efield(dimer,
+                                                            wolf.asym_charges);
+                        }
                     }
-                    if constexpr (std::is_same<EnergyModel,
-                                               CEPairEnergyFunctor>::value) {
-                        efield += energy_model.electric_field(dimer);
+                    if (conv.crystal_field_polarization) {
+                        if constexpr (std::is_same<
+                                          EnergyModel,
+                                          CEPairEnergyFunctor>::value) {
+                            efield += energy_model.electric_field(dimer);
+                        }
                     }
                 }
                 dimer_idx++;
@@ -541,25 +576,31 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                 ecoul_self += wolf.charge_self_energies[mol_idx] *
                               units::AU_TO_KJ_PER_MOL;
 
-                auto &electric_field = wolf.electric_field_values[mol_idx];
-                fmt::print("Field total =\n{}\n", electric_field);
-                fmt::print("Field total =\n{}\n", efield);
+                if (conv.crystal_field_polarization) {
+                    auto &electric_field = wolf.electric_field_values[mol_idx];
+                    fmt::print("Field total =\n{}\n", electric_field);
+                    fmt::print("Field total =\n{}\n", efield);
+                    if constexpr (std::is_same<EnergyModel,
+                                               CEPairEnergyFunctor>::value) {
+                        const auto &wfn_a =
+                            energy_model.wavefunctions()[mol_idx];
+                        double e_pol_chg =
+                            occ::interaction::polarization_energy(
+                                wfn_a.xdm_polarizabilities, electric_field);
+                        fmt::print("Crystal polarizability (chg): {}\n",
+                                   e_pol_chg * occ::units::AU_TO_KJ_PER_MOL);
+                    }
+                }
+            }
+            if (conv.crystal_field_polarization) {
                 if constexpr (std::is_same<EnergyModel,
                                            CEPairEnergyFunctor>::value) {
                     const auto &wfn_a = energy_model.wavefunctions()[mol_idx];
-                    double e_pol_chg = occ::interaction::polarization_energy(
-                        wfn_a.xdm_polarizabilities, electric_field);
-                    fmt::print("Crystal polarizability (chg): {}\n",
-                               e_pol_chg * occ::units::AU_TO_KJ_PER_MOL);
+                    double e_pol_qm = occ::interaction::polarization_energy(
+                        wfn_a.xdm_polarizabilities, efield);
+                    fmt::print("Crystal polarizability (qm): {}\n",
+                               e_pol_qm * occ::units::AU_TO_KJ_PER_MOL);
                 }
-            }
-            if constexpr (std::is_same<EnergyModel,
-                                       CEPairEnergyFunctor>::value) {
-                const auto &wfn_a = energy_model.wavefunctions()[mol_idx];
-                double e_pol_qm = occ::interaction::polarization_energy(
-                    wfn_a.xdm_polarizabilities, efield);
-                fmt::print("Crystal polarizability (qm): {}\n",
-                           e_pol_qm * occ::units::AU_TO_KJ_PER_MOL);
             }
             mol_idx++;
         }
