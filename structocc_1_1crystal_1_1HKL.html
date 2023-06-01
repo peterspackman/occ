@@ -109,6 +109,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6a5d4c58ad5469a64a3ac169409fc25e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a6a5d4c58ad5469a64a3ac169409fc25e">d</a> (const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;lattice) const</td></tr>
 <tr class="memdesc:a6a5d4c58ad5469a64a3ac169409fc25e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the magnitude of the lattice vector represented by this <code><a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a></code> object.  <a href="structocc_1_1crystal_1_1HKL.html#a6a5d4c58ad5469a64a3ac169409fc25e">More...</a><br /></td></tr>
 <tr class="separator:a6a5d4c58ad5469a64a3ac169409fc25e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a530ac8e0f1f040bc35872bdc013f4c28"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a530ac8e0f1f040bc35872bdc013f4c28">vector</a> () const</td></tr>
+<tr class="separator:a530ac8e0f1f040bc35872bdc013f4c28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -118,6 +120,10 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a38ba73c24b7d6c22fe9fb64f491c6300"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a38ba73c24b7d6c22fe9fb64f491c6300">minimum</a> ()</td></tr>
 <tr class="memdesc:a38ba73c24b7d6c22fe9fb64f491c6300"><td class="mdescLeft">&#160;</td><td class="mdescRight">The minimum representable <a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a> structure.  <a href="structocc_1_1crystal_1_1HKL.html#a38ba73c24b7d6c22fe9fb64f491c6300">More...</a><br /></td></tr>
 <tr class="separator:a38ba73c24b7d6c22fe9fb64f491c6300"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77015915b1d9800d0273713b029b12aa"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a77015915b1d9800d0273713b029b12aa">floor</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;vec)</td></tr>
+<tr class="separator:a77015915b1d9800d0273713b029b12aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a699c9776295411125cbd70c29d871752"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a699c9776295411125cbd70c29d871752">ceil</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;vec)</td></tr>
+<tr class="separator:a699c9776295411125cbd70c29d871752"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -133,6 +139,32 @@ Public Attributes</h2></td></tr>
 <p>The <code><a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a></code> struct is used to represent a triplet of integers (h, k, l) that defines a lattice vector in a crystal lattice. The triplet is typically used to index the reciprocal lattice of the crystal lattice, with h, k, and l being the Miller indices of the lattice vector in the reciprocal lattice.</p>
 <p>The <code><a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a></code> struct provides methods to calculate the magnitude of the lattice vector using the lattice parameters of the crystal lattice, and to compare <code><a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a></code> objects using the magnitude of the lattice vectors. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a699c9776295411125cbd70c29d871752"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a699c9776295411125cbd70c29d871752">&#9670;&nbsp;</a></span>ceil()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> occ::crystal::HKL::ceil </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>vec</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a6a5d4c58ad5469a64a3ac169409fc25e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6a5d4c58ad5469a64a3ac169409fc25e">&#9670;&nbsp;</a></span>d()</h2>
 
@@ -170,6 +202,32 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The magnitude of the lattice vector represented by this <code><a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a></code> object, as a floating-point value. </dd></dl>
+
+</div>
+</div>
+<a id="a77015915b1d9800d0273713b029b12aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77015915b1d9800d0273713b029b12aa">&#9670;&nbsp;</a></span>floor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> occ::crystal::HKL::floor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>vec</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -224,6 +282,31 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The minimum representable <a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a> structure. </p>
+
+</div>
+</div>
+<a id="a530ac8e0f1f040bc35872bdc013f4c28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a530ac8e0f1f040bc35872bdc013f4c28">&#9670;&nbsp;</a></span>vector()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> occ::crystal::HKL::vector </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

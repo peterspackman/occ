@@ -122,6 +122,8 @@ This graph shows which files directly or indirectly include this file:</div>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">occ::interaction::CEParameterizedModel</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1CEMonomerCalculationParameters.html">occ::interaction::CEMonomerCalculationParameters</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">occ::interaction::CEEnergyComponents</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1CEModelInteraction.html">occ::interaction::CEModelInteraction</a></td></tr>
@@ -137,8 +139,8 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a8e3f552ea3d00d1281a854d301425fd9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a8e3f552ea3d00d1281a854d301425fd9">occ::interaction::compute_ce_model_energies</a> (Wavefunction &amp;wfn, HartreeFock &amp;hf, double precision, const Mat &amp;Schwarz, bool xdm=false)</td></tr>
-<tr class="separator:a8e3f552ea3d00d1281a854d301425fd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbfc2d492b38a0fc62c54809113e3585"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#acbfc2d492b38a0fc62c54809113e3585">occ::interaction::compute_ce_model_energies</a> (Wavefunction &amp;wfn, HartreeFock &amp;hf, const CEMonomerCalculationParameters &amp;params={})</td></tr>
+<tr class="separator:acbfc2d492b38a0fc62c54809113e3585"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a221c7ae9914bd537f97657355b28d2"><td class="memTemplParams" colspan="2">template&lt;typename Procedure &gt; </td></tr>
 <tr class="memitem:a1a221c7ae9914bd537f97657355b28d2"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a1a221c7ae9914bd537f97657355b28d2">occ::interaction::compute_polarization_energy</a> (const Wavefunction &amp;wfn_a, const Procedure &amp;proc_a, const Wavefunction &amp;wfn_b, const Procedure &amp;proc_b)</td></tr>
 <tr class="separator:a1a221c7ae9914bd537f97657355b28d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,6 +157,18 @@ Variables</h2></td></tr>
 <tr class="separator:a2b67be4e4d79a02d1787387f8d79b95d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae315fffa8a4ff6f089349659da887eed"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ae315fffa8a4ff6f089349659da887eed">occ::interaction::CE2_XDM</a> {1.0, 0.485, 0.803, 1.0, &quot;CE2-XDM&quot;, true}</td></tr>
 <tr class="separator:ae315fffa8a4ff6f089349659da887eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8040edc634382f8ccda89f8fd4662c18"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a8040edc634382f8ccda89f8fd4662c18">occ::interaction::CE_HF_SVP</a></td></tr>
+<tr class="separator:a8040edc634382f8ccda89f8fd4662c18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab375645b36502de30ffaf150a30f385b"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ab375645b36502de30ffaf150a30f385b">occ::interaction::CE_LDA_SVP</a></td></tr>
+<tr class="separator:ab375645b36502de30ffaf150a30f385b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abca79a4d0379aee84a9b06ff880864db"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#abca79a4d0379aee84a9b06ff880864db">occ::interaction::CE_BLYP_SVP</a></td></tr>
+<tr class="separator:abca79a4d0379aee84a9b06ff880864db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9589cb7ca97080656144503ff7b85e33"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a9589cb7ca97080656144503ff7b85e33">occ::interaction::CE_B3LYP_SVP</a></td></tr>
+<tr class="separator:a9589cb7ca97080656144503ff7b85e33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a558ffb7c60d12f3d8e14bbd548a4f88f"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a558ffb7c60d12f3d8e14bbd548a4f88f">occ::interaction::CE_WB97M_SVP</a></td></tr>
+<tr class="separator:a558ffb7c60d12f3d8e14bbd548a4f88f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3589368681001d4ff81628422139530a"><td class="memItemLeft" align="right" valign="top">CEParameterizedModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a3589368681001d4ff81628422139530a">occ::interaction::CE_WB97X_SVP</a></td></tr>
+<tr class="separator:a3589368681001d4ff81628422139530a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

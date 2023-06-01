@@ -1,12 +1,13 @@
 var namespaceocc_1_1interaction =
 [
     [ "CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", "structocc_1_1interaction_1_1CEParameterizedModel" ],
+    [ "CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", "structocc_1_1interaction_1_1CEMonomerCalculationParameters" ],
     [ "CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", "structocc_1_1interaction_1_1CEEnergyComponents" ],
     [ "CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", "structocc_1_1interaction_1_1CEModelInteraction" ],
     [ "WolfParams", "structocc_1_1interaction_1_1WolfParams.html", "structocc_1_1interaction_1_1WolfParams" ],
     [ "ce_model_from_string", "namespaceocc_1_1interaction.html#a851a8246a3c48018dc6440b39e67cf46", null ],
     [ "ce_model_polarization_energy", "namespaceocc_1_1interaction.html#a5b13ad9a54dd22da274e948db722569b", null ],
-    [ "compute_ce_model_energies", "namespaceocc_1_1interaction.html#a8e3f552ea3d00d1281a854d301425fd9", null ],
+    [ "compute_ce_model_energies", "namespaceocc_1_1interaction.html#acbfc2d492b38a0fc62c54809113e3585", null ],
     [ "compute_polarization_energy", "namespaceocc_1_1interaction.html#a1a221c7ae9914bd537f97657355b28d2", null ],
     [ "coulomb_efield", "namespaceocc_1_1interaction.html#a1b8e5107e4223c67b3996558249c8085", null ],
     [ "coulomb_efield_asym_charges", "namespaceocc_1_1interaction.html#a1306e4778b31ca2ec2748f4fd56b280f", null ],
@@ -15,6 +16,7 @@ var namespaceocc_1_1interaction =
     [ "coulomb_pair_efield", "namespaceocc_1_1interaction.html#a06f8831b4a515fdac1a4fdd76dcac587", null ],
     [ "coulomb_pair_energy", "namespaceocc_1_1interaction.html#ad065486375358d1ab85bf0ddb4fa66f0", null ],
     [ "coulomb_self_energy_asym_charges", "namespaceocc_1_1interaction.html#a12f5d499d46155d63ad2eb4639d47e2c", null ],
+    [ "dreiding_type_hb_correction", "namespaceocc_1_1interaction.html#a4d2be57567aaca117bf4f26cd1f07d08", null ],
     [ "lennard_jones", "namespaceocc_1_1interaction.html#ac892ad982289ce322d71809aa87ce1d8", null ],
     [ "lennard_jones< 0 >", "namespaceocc_1_1interaction.html#aa51a364a1b5e7a44a5c38c7d37b830b4", null ],
     [ "lennard_jones< 1 >", "namespaceocc_1_1interaction.html#ae81abe6ebdcdc5fcfd163d333a2b7387", null ],
@@ -22,6 +24,12 @@ var namespaceocc_1_1interaction =
     [ "wolf_coulomb_energy", "namespaceocc_1_1interaction.html#a26f0c5fa9ceffa2b4eab2fb3a13f490f", null ],
     [ "CE2_XDM", "namespaceocc_1_1interaction.html#ae315fffa8a4ff6f089349659da887eed", null ],
     [ "CE_B3LYP_631Gdp", "namespaceocc_1_1interaction.html#a4f908428d769bd05d401580c302528e8", null ],
+    [ "CE_B3LYP_SVP", "namespaceocc_1_1interaction.html#a9589cb7ca97080656144503ff7b85e33", null ],
+    [ "CE_BLYP_SVP", "namespaceocc_1_1interaction.html#abca79a4d0379aee84a9b06ff880864db", null ],
     [ "CE_HF_321G", "namespaceocc_1_1interaction.html#a4d04ac6dd87227b7fcc8cb762265f883", null ],
+    [ "CE_HF_SVP", "namespaceocc_1_1interaction.html#a8040edc634382f8ccda89f8fd4662c18", null ],
+    [ "CE_LDA_SVP", "namespaceocc_1_1interaction.html#ab375645b36502de30ffaf150a30f385b", null ],
+    [ "CE_WB97M_SVP", "namespaceocc_1_1interaction.html#a558ffb7c60d12f3d8e14bbd548a4f88f", null ],
+    [ "CE_WB97X_SVP", "namespaceocc_1_1interaction.html#a3589368681001d4ff81628422139530a", null ],
     [ "CE_XDM_FIT", "namespaceocc_1_1interaction.html#a2b67be4e4d79a02d1787387f8d79b95d", null ]
 ];

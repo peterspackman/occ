@@ -48,6 +48,7 @@ var annotated_dup =
         [ "HKL", "structocc_1_1crystal_1_1HKL.html", "structocc_1_1crystal_1_1HKL" ],
         [ "ReciprocalAsymmetricUnit", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit" ],
         [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html", "classocc_1_1crystal_1_1SpaceGroup" ],
+        [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],
         [ "Surface", "classocc_1_1crystal_1_1Surface.html", "classocc_1_1crystal_1_1Surface" ],
         [ "CrystalSurfaceGenerationParameters", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters" ],
         [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],
@@ -85,6 +86,7 @@ var annotated_dup =
       ] ],
       [ "interaction", "namespaceocc_1_1interaction.html", [
         [ "CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", "structocc_1_1interaction_1_1CEParameterizedModel" ],
+        [ "CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", "structocc_1_1interaction_1_1CEMonomerCalculationParameters" ],
         [ "CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", "structocc_1_1interaction_1_1CEEnergyComponents" ],
         [ "CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", "structocc_1_1interaction_1_1CEModelInteraction" ],
         [ "WolfParams", "structocc_1_1interaction_1_1WolfParams.html", "structocc_1_1interaction_1_1WolfParams" ]

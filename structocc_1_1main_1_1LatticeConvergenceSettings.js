@@ -1,5 +1,6 @@
 var structocc_1_1main_1_1LatticeConvergenceSettings =
 [
+    [ "crystal_field_polarization", "structocc_1_1main_1_1LatticeConvergenceSettings.html#af0ca83314d92539ca834d1fcc571117e", null ],
     [ "energy_tolerance", "structocc_1_1main_1_1LatticeConvergenceSettings.html#a45872b096a65112b4cbfd680200fbda6", null ],
     [ "max_radius", "structocc_1_1main_1_1LatticeConvergenceSettings.html#aeb2873c939f9306f57e6303762997621", null ],
     [ "min_radius", "structocc_1_1main_1_1LatticeConvergenceSettings.html#a27efb00d0b8b0753d772871f93857e0c", null ],

@@ -1,9 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/log.h" name="/home/runner/work/occ/occ/include/occ/core/log.h">
-<area shape="rect" id="node1" title=" " alt="" coords="224,5,417,47"/>
-<area shape="rect" id="node2" href="$gto_8h.html" title=" " alt="" coords="18,102,205,143"/>
-<area shape="rect" id="node6" href="$scf_8h.html" title=" " alt="" coords="229,102,413,143"/>
-<area shape="rect" id="node7" href="$solvation__correction_8h.html" title=" " alt="" coords="437,95,615,151"/>
-<area shape="rect" id="node3" href="$dft_8h.html" title=" " alt="" coords="22,303,201,344"/>
-<area shape="rect" id="node4" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="26,199,197,255"/>
-<area shape="rect" id="node5" href="$density_8h.html" title=" " alt="" coords="221,199,391,255"/>
+<area shape="rect" id="node1" title=" " alt="" coords="414,5,608,47"/>
+<area shape="rect" id="node2" href="$gto_8h.html" title=" " alt="" coords="19,206,206,247"/>
+<area shape="rect" id="node6" href="$integral__engine_8h.html" title=" " alt="" coords="300,95,504,151"/>
+<area shape="rect" id="node10" href="$scf_8h.html" title=" " alt="" coords="528,102,712,143"/>
+<area shape="rect" id="node11" href="$solvation__correction_8h.html" title=" " alt="" coords="737,95,914,151"/>
+<area shape="rect" id="node3" href="$dft_8h.html" title=" " alt="" coords="120,407,299,448"/>
+<area shape="rect" id="node4" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="27,303,198,359"/>
+<area shape="rect" id="node5" href="$density_8h.html" title=" " alt="" coords="222,303,392,359"/>
+<area shape="rect" id="node7" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="230,199,435,255"/>
+<area shape="rect" id="node8" href="$hf_8h.html" title=" " alt="" coords="416,310,595,351"/>
+<area shape="rect" id="node9" href="$integral__engine__df_8h.html" title=" " alt="" coords="510,199,714,255"/>
 </map>

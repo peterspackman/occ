@@ -1,7 +1,7 @@
 var classocc_1_1xdm_1_1XDM =
 [
     [ "Parameters", "structocc_1_1xdm_1_1XDM_1_1Parameters.html", "structocc_1_1xdm_1_1XDM_1_1Parameters" ],
-    [ "XDM", "classocc_1_1xdm_1_1XDM.html#a74c9e8952728be28c9597bce6d24e122", null ],
+    [ "XDM", "classocc_1_1xdm_1_1XDM.html#a0f66da33942a8561d21662c0bc268bb3", null ],
     [ "atom_volume", "classocc_1_1xdm_1_1XDM.html#a93a8f953acad68c63355b85789ffaf56", null ],
     [ "energy", "classocc_1_1xdm_1_1XDM.html#a04c6a3810478b6e7a53fa09fb7f4fa91", null ],
     [ "forces", "classocc_1_1xdm_1_1XDM.html#a136fd6b157d62e03113a7682288a8e6a", null ],

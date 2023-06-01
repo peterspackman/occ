@@ -124,8 +124,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac4ee6ff5d72363f6b9d0e1a7d0167be3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e7032f4e9bbc7cc347b5185533ab7d9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#a4e7032f4e9bbc7cc347b5185533ab7d9">dipole</a> () const</td></tr>
 <tr class="separator:a4e7032f4e9bbc7cc347b5185533ab7d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a557a4f60310c018bc9744292f6b7cced"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#a557a4f60310c018bc9744292f6b7cced">cuts_line_segment</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;origin, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;point1, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;point2) const</td></tr>
-<tr class="separator:a557a4f60310c018bc9744292f6b7cced"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c0c9d22b330e220276c92accd37ac29"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#a8c0c9d22b330e220276c92accd37ac29">cuts_line_segment</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;origin, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;point1, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;point2, <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;intersection, bool infinite=true) const</td></tr>
+<tr class="separator:a8c0c9d22b330e220276c92accd37ac29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82e605a32e9ce4722ee0e909db1706ba"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#a82e605a32e9ce4722ee0e909db1706ba">find_molecule_cell_translations</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &gt; &amp;unit_cell_mols, double <a class="el" href="classocc_1_1crystal_1_1Surface.html#a63fe34f4472ecb401d49a45650e47ab9">depth</a>) const</td></tr>
+<tr class="separator:a82e605a32e9ce4722ee0e909db1706ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa704567acb0e002086cc7c9d176720bd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html">SurfaceCutResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#aa704567acb0e002086cc7c9d176720bd">count_crystal_dimers_cut_by_surface</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;) const</td></tr>
+<tr class="separator:aa704567acb0e002086cc7c9d176720bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -275,8 +279,26 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a557a4f60310c018bc9744292f6b7cced"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a557a4f60310c018bc9744292f6b7cced">&#9670;&nbsp;</a></span>cuts_line_segment()</h2>
+<a id="aa704567acb0e002086cc7c9d176720bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa704567acb0e002086cc7c9d176720bd">&#9670;&nbsp;</a></span>count_crystal_dimers_cut_by_surface()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html">SurfaceCutResult</a> occ::crystal::Surface::count_crystal_dimers_cut_by_surface </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8c0c9d22b330e220276c92accd37ac29"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c0c9d22b330e220276c92accd37ac29">&#9670;&nbsp;</a></span>cuts_line_segment()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -297,7 +319,19 @@ Static Public Member Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
-          <td class="paramname"><em>point2</em>&#160;</td>
+          <td class="paramname"><em>point2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>intersection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>infinite</em> = <code>true</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -423,6 +457,34 @@ Static Public Member Functions</h2></td></tr>
 <span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a82e605a32e9ce4722ee0e909db1706ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82e605a32e9ce4722ee0e909db1706ba">&#9670;&nbsp;</a></span>find_molecule_cell_translations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a>&gt; occ::crystal::Surface::find_molecule_cell_translations </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_cell_mols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>depth</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>

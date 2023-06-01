@@ -1,5 +1,7 @@
 var NAVTREEINDEX4 =
 {
+"classocc_1_1qm_1_1AOBasis.html#ae4b6905dced13e2daf380579fd5dc8fd":[2,0,1,8,8,8],
+"classocc_1_1qm_1_1AOBasis.html#ae58ba1ba2990433b3d5e034d07cb6b21":[2,0,1,8,8,2],
 "classocc_1_1qm_1_1AOBasis.html#af5141c31b3ed7fdeaac2c42347920b2b":[2,0,1,8,8,34],
 "classocc_1_1qm_1_1AOBasis.html#afa1ab3309d5d54fbc458e4c638b07c7c":[2,0,1,8,8,5],
 "classocc_1_1qm_1_1AOBasis.html#afe5264cbc9e6acacd3d2c15e8ba27674":[2,0,1,8,8,33],
@@ -247,7 +249,5 @@ var NAVTREEINDEX4 =
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#ae4d827edea2ffe93c013a5ad86725041":[2,0,1,12,4,11],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#aed16733a1edd359d5e6e68fdeae61d5e":[2,0,1,12,4,12],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#aee54f309b6b908e9966e6468ff98959c":[2,0,1,12,4,32],
-"classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#af1c4e3919a7bce67294f97976d762b68":[2,0,1,12,4,18],
-"classocc_1_1timing_1_1StopWatch.html":[2,0,1,13,0],
-"classocc_1_1timing_1_1StopWatch.html#a2e73528e87faa3e984e94411af615ce7":[2,0,1,13,0,4]
+"classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#af1c4e3919a7bce67294f97976d762b68":[2,0,1,12,4,18]
 };

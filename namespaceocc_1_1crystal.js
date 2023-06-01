@@ -7,6 +7,7 @@ var namespaceocc_1_1crystal =
     [ "HKL", "structocc_1_1crystal_1_1HKL.html", "structocc_1_1crystal_1_1HKL" ],
     [ "ReciprocalAsymmetricUnit", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit" ],
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html", "classocc_1_1crystal_1_1SpaceGroup" ],
+    [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],
     [ "Surface", "classocc_1_1crystal_1_1Surface.html", "classocc_1_1crystal_1_1Surface" ],
     [ "CrystalSurfaceGenerationParameters", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters" ],
     [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],

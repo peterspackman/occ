@@ -17,10 +17,11 @@ var namespaceocc_1_1qm =
     [ "cint", "namespaceocc_1_1qm_1_1cint.html", "namespaceocc_1_1qm_1_1cint" ],
     [ "guess", "namespaceocc_1_1qm_1_1guess.html", "namespaceocc_1_1qm_1_1guess" ],
     [ "orb", "namespaceocc_1_1qm_1_1orb.html", [
-      [ "density_matrix_restricted", "namespaceocc_1_1qm_1_1orb.html#ad33fc26f33525ddebcd8886565af9d6e", null ],
-      [ "density_matrix_unrestricted", "namespaceocc_1_1qm_1_1orb.html#acc8e0b755126663a63eb71bb60f55939", null ],
-      [ "occupied_restricted", "namespaceocc_1_1qm_1_1orb.html#a155908926c467e9d18171d4ee7a54c9c", null ],
-      [ "occupied_unrestricted", "namespaceocc_1_1qm_1_1orb.html#a6fe071de5cda3dacedfb8f5957a82619", null ]
+      [ "density_matrix_general", "namespaceocc_1_1qm_1_1orb.html#abae4c82b14dce142db3c9c0968487092", null ],
+      [ "density_matrix_restricted", "namespaceocc_1_1qm_1_1orb.html#ae757e0b6402af601350812d093a942cc", null ],
+      [ "density_matrix_unrestricted", "namespaceocc_1_1qm_1_1orb.html#add8052e9d1ed2f9172b9cc2fc18807aa", null ],
+      [ "occupied_restricted", "namespaceocc_1_1qm_1_1orb.html#a2e2acbc1de3b77adcf346f36b6e62180", null ],
+      [ "occupied_unrestricted", "namespaceocc_1_1qm_1_1orb.html#a34ba6e43cd15b16ffd1b7f910189236b", null ]
     ] ],
     [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
     [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
@@ -50,6 +51,5 @@ var namespaceocc_1_1qm =
     [ "mulliken_partition", "namespaceocc_1_1qm.html#ae5bd4847a30d0fdf3a43d13c1e0698be", null ],
     [ "operator<<", "namespaceocc_1_1qm.html#a0dacbd1a6c0a6d40901c695295112cb4", null ],
     [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
-    [ "symmorthonormalize_molecular_orbitals", "namespaceocc_1_1qm.html#afacc82de1f083d227786080b0f4b5449", null ],
-    [ "max_engine_precision", "namespaceocc_1_1qm.html#a90b24634c0c96104d36b75e760f94601", null ]
+    [ "symmorthonormalize_molecular_orbitals", "namespaceocc_1_1qm.html#afacc82de1f083d227786080b0f4b5449", null ]
 ];
