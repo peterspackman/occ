@@ -19,17 +19,21 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
     occ::timing::start(occ::timing::category::df);
     // don't use the shellpair list for this, results in
     // issues with positive-definiteness
+    occ::log::debug("Computing V = (P|Q) in df basis");
     Mat V = m_aux_engine.one_electron_operator(Op::coulomb,
                                                false); // V = (P|Q) in df basis
     occ::timing::stop(occ::timing::category::df);
 
     occ::timing::start(occ::timing::category::la);
+    occ::log::debug("Computing LLt decomposition of V");
     V_LLt = Eigen::LLT<Mat>(V);
     if (V_LLt.info() != Eigen::Success) {
         occ::log::warn(
             "LLT decomposition of Coulomb metric in DF was not successful!");
     }
+    occ::log::debug("Computing Vsqrt");
     Mat Vsqrt = Eigen::SelfAdjointEigenSolver<Mat>(V).operatorSqrt();
+    occ::log::debug("Computing LLt decomposition of Vsqrt");
     Vsqrt_LLt = Eigen::LLT<Mat>(Vsqrt);
     occ::timing::stop(occ::timing::category::la);
 }

@@ -15,10 +15,10 @@ std::pair<Mat, Vec> merge_molecular_orbitals(const Mat &mo_a, const Mat &mo_b,
     for (Eigen::Index i = 0; i < merged_energies.rows(); i++)
         idxs.push_back(i);
     if (sort_by_energy) {
-        std::sort(idxs.begin(), idxs.end(),
-                  [&merged_energies](Eigen::Index a, Eigen::Index b) {
-                      return merged_energies(a) < merged_energies(b);
-                  });
+        std::stable_sort(idxs.begin(), idxs.end(),
+                         [&merged_energies](Eigen::Index a, Eigen::Index b) {
+                             return merged_energies(a) < merged_energies(b);
+                         });
     }
     Vec sorted_energies(merged_energies.rows());
     for (Eigen::Index i = 0; i < merged_energies.rows(); i++) {

@@ -104,11 +104,15 @@ auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
     Mat3N pos_m = m.positions();
     Mat3 rotation;
     Vec3 translation;
-    const auto &symops = c.space_group().symmetry_operations();
-    fmt::print("Num symops to check: {}\n", symops.size());
 
-    for (const auto &symop : symops) {
-        int sint = symop.to_int();
+    phmap::flat_hash_set<int> symops_tested;
+
+    for (int i = 0; i < m.size(); i++) {
+        int sint = m.asymmetric_unit_symop()(i);
+        if (symops_tested.contains(sint))
+            continue;
+        symops_tested.insert(sint);
+        SymmetryOperation symop(sint);
         occ::Mat3N positions = wfn.positions() * BOHR_TO_ANGSTROM;
 
         rotation =
@@ -120,9 +124,14 @@ auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
 
         occ::Mat3N tmp_t = tmp.positions() * BOHR_TO_ANGSTROM;
         double rmsd = (tmp_t - pos_m).norm();
-        occ::log::debug("transform (symop={}) RMSD = {}\n", sint, rmsd);
-        if (rmsd < 1e-3)
+        occ::log::debug("Test transform (symop={}) RMSD = {}\n",
+                        symop.to_string(), rmsd);
+        if (rmsd < 1e-3) {
+            occ::log::debug(
+                "Symop found: RMSD = {}\nrotation\n{}\ntranslation\n{}\n", rmsd,
+                rotation, translation);
             return std::make_pair(rotation, translation);
+        }
     }
     throw std::runtime_error(
         "Unable to determine symmetry operation to transform wavefunction");
@@ -179,12 +188,16 @@ class CEPairEnergyFunctor {
 
         occ::Mat3N pos_A = mol_A.positions();
         occ::Mat3N pos_A_t = A.positions() * BOHR_TO_ANGSTROM;
+        occ::log::debug("Mol A transformed wavefunction positions RMSD = {}",
+                        (pos_A_t - pos_A).norm());
 
         auto transform_b = calculate_transform(B, mol_B, m_crystal);
         B.apply_transformation(transform_b.first, transform_b.second);
 
         Mat3N pos_B = mol_B.positions();
         Mat3N pos_B_t = B.positions() * BOHR_TO_ANGSTROM;
+        occ::log::debug("Mol B transformed wavefunction positions RMSD = {}",
+                        (pos_B_t - pos_B).norm());
 
         auto model = occ::interaction::ce_model_from_string(m_model_name);
 

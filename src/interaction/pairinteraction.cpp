@@ -33,9 +33,11 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &proc,
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         wfn.H = wfn.V + wfn.T;
         if (params.neglect_exchange) {
+            occ::log::debug("neglecting K, only computing J");
             wfn.J = proc.compute_J(wfn.mo, params.precision, params.Schwarz);
             wfn.K = Mat::Zero(wfn.J.rows(), wfn.J.cols());
         } else {
+            occ::log::debug("computing J with K");
             std::tie(wfn.J, wfn.K) =
                 proc.compute_JK(wfn.mo, params.precision, params.Schwarz);
         }
@@ -112,18 +114,17 @@ void compute_xdm_parameters(Wavefunction &wfn) {
     occ::log::debug("Computed xdm_parameters");
 }
 
-template <typename Proc>
-void compute_ce_model_energies(Wavefunction &wfn, Proc &hf,
+void compute_ce_model_energies(Wavefunction &wfn, dft::DFT &hf,
                                const CEMonomerCalculationParameters &params) {
 
     if (wfn.is_restricted()) {
         occ::log::debug("Restricted wavefunction");
-        compute_ce_model_energies<SpinorbitalKind::Restricted, Proc>(wfn, hf,
-                                                                     params);
+        compute_ce_model_energies<SpinorbitalKind::Restricted, dft::DFT>(
+            wfn, hf, params);
     } else {
         occ::log::debug("Unrestricted wavefunction");
-        compute_ce_model_energies<SpinorbitalKind::Unrestricted, Proc>(wfn, hf,
-                                                                       params);
+        compute_ce_model_energies<SpinorbitalKind::Unrestricted, dft::DFT>(
+            wfn, hf, params);
     }
 
     if (params.xdm) {
@@ -185,6 +186,7 @@ void CEModelInteraction::compute_monomer_energies(Wavefunction &wfn) const {
     constexpr double precision = std::numeric_limits<double>::epsilon();
     HartreeFock hf(wfn.basis);
     if (m_use_density_fitting) {
+        occ::log::debug("Setting DF basis: def2-universal-jkfit");
         hf.set_density_fitting_basis("def2-universal-jkfit");
     }
     CEMonomerCalculationParameters params;
@@ -227,6 +229,7 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     HartreeFock hf_a(A.basis);
     HartreeFock hf_b(B.basis);
     if (m_use_density_fitting) {
+        occ::log::debug("Setting DF basis for monomers: def2-universal-jkfit");
         hf_a.set_density_fitting_basis("def2-universal-jkfit");
         hf_b.set_density_fitting_basis("def2-universal-jkfit");
     }
@@ -263,6 +266,7 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     params_ab.xdm = m_scale_factors.xdm && m_use_xdm_dimer_parameters;
 
     if (m_use_density_fitting) {
+        occ::log::debug("Setting DF basis for dimer: def2-universal-jkfit");
         hf_AB.set_density_fitting_basis("def2-universal-jkfit");
     }
 

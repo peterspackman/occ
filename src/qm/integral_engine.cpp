@@ -911,6 +911,15 @@ Vec IntegralEngine::multipole(int order, const MolecularOrbitals &mo,
     }
 }
 
+// helper functions to make chained calls to std::max more clear
+inline double max_of(double p, double q, double r) {
+    return std::max(p, std::max(q, r));
+}
+
+inline double max_of(double p, double q, double r, double s) {
+    return std::max(p, std::max(q, std::max(r, s)));
+}
+
 template <Op op, ShellKind kind, typename Lambda>
 void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
                           const AOBasis &basis, const ShellPairList &shellpairs,
@@ -926,42 +935,46 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
 
     const auto &first_bf = basis.first_bf();
     const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
-    for (int p = 0, pqrs = 0; p < basis.size(); p++) {
+    // <pq|rs>
+    for (size_t p = 0, pqrs = 0; p < basis.size(); p++) {
         const auto &sh1 = basis[p];
         bf[0] = first_bf[p];
         const auto &plist = shellpairs.at(p);
-        for (const int &q : plist) {
+        for (const auto q : plist) {
             bf[1] = first_bf[q];
             const auto &sh2 = basis[q];
-            const auto DnormPQ = do_schwarz_screen ? Dnorm(p, q) : 0.;
-            for (int r = 0; r <= p; r++) {
+
+            // for Schwarz screening
+            const double norm_pq = do_schwarz_screen ? Dnorm(p, q) : 0.0;
+
+            for (size_t r = 0; r <= p; r++) {
                 const auto &sh3 = basis[r];
                 bf[2] = first_bf[r];
+                // check if <pq|ps>, if so ensure s <= q else s <= r
                 const auto s_max = (p == r) ? q : r;
-                const auto DnormPQR =
-                    do_schwarz_screen
-                        ? std::max(Dnorm(p, r), std::max(Dnorm(q, r), DnormPQ))
-                        : 0.;
 
-                for (const int s : shellpairs.at(r)) {
+                const double norm_pqr =
+                    do_schwarz_screen
+                        ? max_of(Dnorm(p, r), Dnorm(q, r), norm_pq)
+                        : 0.0;
+
+                for (const auto s : shellpairs.at(r)) {
                     if (s > s_max)
                         break;
                     if (pqrs++ % nthreads != thread_id)
                         continue;
-                    const auto DnormPQRS =
-                        do_schwarz_screen
-                            ? std::max(
-                                  Dnorm(p, s),
-                                  std::max(Dnorm(q, s),
-                                           std::max(Dnorm(r, s), DnormPQR)))
-                            : 0.0;
+                    const double norm_pqrs =
+                        do_schwarz_screen ? max_of(Dnorm(p, s), Dnorm(q, s),
+                                                   Dnorm(r, s), norm_pqr)
+                                          : 0.0;
                     if (do_schwarz_screen &&
-                        DnormPQRS * Schwarz(p, q) * Schwarz(r, s) < precision)
+                        norm_pqrs * Schwarz(p, q) * Schwarz(r, s) < precision)
                         continue;
 
                     bf[3] = first_bf[s];
                     const auto &sh4 = basis[s];
-                    shell_idx = {p, q, r, s};
+                    shell_idx = {static_cast<int>(p), static_cast<int>(q),
+                                 static_cast<int>(r), static_cast<int>(s)};
 
                     Result args{thread_id, shell_idx, bf,
                                 env.four_center_helper<Op::coulomb, kind>(

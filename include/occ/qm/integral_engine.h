@@ -2,6 +2,7 @@
 #include <array>
 #include <libecpint.hpp>
 #include <occ/core/atom.h>
+#include <occ/core/log.h>
 #include <occ/core/multipole.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
@@ -143,15 +144,21 @@ class IntegralEngine {
 
     template <ShellKind kind>
     inline void compute_shellpairs(double threshold = 1e-12) {
+        occ::log::debug("computing shellpairs (threshold = {}, kind = {}",
+                        threshold,
+                        kind == ShellKind::Cartesian ? "cartesian" : "pure");
         constexpr auto op = Op::overlap;
         const auto nsh = m_aobasis.size();
+        size_t num_significant_shellpairs{0}, num_total_shellpairs{0};
         m_shellpairs.resize(nsh);
         auto buffer = std::make_unique<double[]>(buffer_size_1e());
         for (int p = 0; p < nsh; p++) {
             auto &plist = m_shellpairs[p];
             const auto &sh1 = m_aobasis[p];
             for (int q = 0; q <= p; q++) {
+                num_total_shellpairs++;
                 if (m_aobasis.shells_share_origin(p, q)) {
+                    num_significant_shellpairs++;
                     plist.push_back(q);
                     continue;
                 }
@@ -161,10 +168,13 @@ class IntegralEngine {
                     idxs, nullptr, buffer.get(), nullptr);
                 Eigen::Map<const occ::Mat> tmp(buffer.get(), dims[0], dims[1]);
                 if (tmp.norm() >= threshold) {
+                    num_significant_shellpairs++;
                     plist.push_back(q);
                 }
             }
         }
+        occ::log::debug("significant shellpairs = {} ({} total)",
+                        num_significant_shellpairs, num_total_shellpairs);
     }
 
     Vec multipole(int order, const MolecularOrbitals &mo,

@@ -151,14 +151,13 @@ CifParser::parse_crystal(const std::string &filename) {
                                   m_cell.beta, m_cell.gamma);
 
         if (m_sym.valid()) {
-            if (m_sym.nameHall != "Not set") {
-                occ::log::debug("Using SG name Hall {}", m_sym.nameHall);
-                auto sg = occ::crystal::SpaceGroup(m_sym.nameHall);
-                return occ::crystal::Crystal(asym, sg, uc);
-            }
             if (m_sym.nameHM != "Not set") {
                 occ::log::debug("Using SG nameHM {}", m_sym.nameHM);
                 auto sg = occ::crystal::SpaceGroup(m_sym.nameHM);
+                return occ::crystal::Crystal(asym, sg, uc);
+            } else if (m_sym.nameHall != "Not set") {
+                occ::log::debug("Using SG name Hall {}", m_sym.nameHall);
+                auto sg = occ::crystal::SpaceGroup(m_sym.nameHall);
                 return occ::crystal::Crystal(asym, sg, uc);
             } else if (m_sym.number > 0) {
                 occ::log::debug("Using SG number {}", m_sym.number);

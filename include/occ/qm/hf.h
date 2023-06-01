@@ -13,9 +13,6 @@ using occ::qm::AOBasis;
 using occ::qm::MolecularOrbitals;
 using PointChargeList = std::vector<occ::core::PointCharge>;
 
-/// to use precomputed shell pair data must decide on max precision a priori
-const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
-
 class HartreeFock {
   public:
     HartreeFock(const AOBasis &basis);

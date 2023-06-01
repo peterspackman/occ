@@ -97,6 +97,7 @@ Wavefunction::Wavefunction(const MoldenReader &molden)
 Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
     : num_alpha(wfn_a.num_alpha + wfn_b.num_alpha),
       num_beta(wfn_a.num_beta + wfn_b.num_beta),
+      num_electrons(wfn_a.num_electrons + wfn_b.num_electrons),
       basis(merge_basis_sets(wfn_a.basis, wfn_b.basis)), nbf(basis.nbf()),
       atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms)) {
     spinorbital_kind = (wfn_a.is_restricted() && wfn_b.is_restricted())
@@ -121,11 +122,14 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
         mo.kind = SpinorbitalKind::Restricted;
         // merge occupied orbitals
         Vec occ_energies_merged;
+        occ::log::debug("MO shape {} {}", mo.C.rows(), mo.C.cols());
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
             wfn_a.mo.C.leftCols(wfn_a.num_alpha),
             wfn_b.mo.C.leftCols(wfn_b.num_alpha),
             wfn_a.mo.energies.topRows(wfn_a.num_alpha),
             wfn_b.mo.energies.topRows(wfn_b.num_alpha));
+        occ::log::debug("MO occ merged shape {} {}", C_merged.rows(),
+                        C_merged.cols());
         mo.C.leftCols(num_alpha) = C_merged;
         mo.energies.topRows(num_alpha) = energies_merged;
 
@@ -135,10 +139,14 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
         size_t nv_ab = nv_a + nv_b;
 
         occ::log::debug("Merging virtual orbitals, sorted by energy");
+
         std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
             wfn_a.mo.C.rightCols(nv_a), wfn_b.mo.C.rightCols(nv_b),
             wfn_a.mo.energies.bottomRows(nv_a),
             wfn_b.mo.energies.bottomRows(nv_b));
+
+        occ::log::debug("MO virt merged shape {} {}", C_merged.rows(),
+                        C_merged.cols());
         mo.C.rightCols(nv_ab) = C_merged;
         mo.energies.bottomRows(nv_ab) = energies_merged;
     } else {
