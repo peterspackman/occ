@@ -49,7 +49,7 @@ std::pair<double, double> params(int atomic_number) {
 } // namespace impl
 
 occ::Vec eem_partial_charges(const occ::IVec &atomic_numbers,
-                             occ::Mat3N &positions, double charge) {
+                             const occ::Mat3N &positions, double charge) {
     size_t N = atomic_numbers.rows();
     occ::Vec A(N), B(N);
 

@@ -21,6 +21,7 @@
 #include <occ/io/eigen_json.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
+#include <occ/io/gmf.h>
 #include <occ/io/kmcpp.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/xyz.h>
@@ -989,58 +990,98 @@ void list_available_solvents() {
     }
 }
 
-void calculate_crystal_surface_energies(const Crystal &crystal,
+void calculate_crystal_surface_energies(const std::string &filename,
+                                        const Crystal &crystal,
                                         const CrystalDimers &uc_dimers,
-                                        int max_number_of_surfaces) {
+                                        int max_number_of_surfaces,
+                                        int sign = -1) {
     occ::crystal::CrystalSurfaceGenerationParameters params;
+    occ::io::GMFWriter gmf(crystal);
+    gmf.set_title("created by occ-cg");
+    gmf.set_name(filename);
     params.d_min = 0.1;
     params.unique = true;
     auto surfaces = occ::crystal::generate_surfaces(crystal, params);
-    surfaces[0] = occ::crystal::Surface({1, 0, 0}, crystal);
-    fmt::print("Top 15 surfaces\n");
+    fmt::print("Top {} surfaces\n", max_number_of_surfaces);
     int number_of_surfaces = 0;
+
+    // find unique positions to consider
+    occ::Mat3N unique_positions(3, crystal.unit_cell_molecules().size());
+    fmt::print("Unique positions to check: {}\n", unique_positions.cols());
+    {
+        int i = 0;
+        for (const auto &mol : crystal.unit_cell_molecules()) {
+            unique_positions.col(i) = mol.center_of_mass();
+            i++;
+        }
+    }
+    const double kjmol_jm2_fac = 0.16604390671;
+
     for (const auto &surf : surfaces) {
         fmt::print("{:=^72s}\n", "  Surface  ");
         surf.print();
-        auto result = surf.count_crystal_dimers_cut_by_surface(uc_dimers);
-        size_t num_molecules = result.molecules.size();
+        auto cuts = surf.possible_cuts(unique_positions);
+        fmt::print("{} unique cuts\n", cuts.size());
+        double min_shift = 0.0;
+        double min_energy = std::numeric_limits<double>::max();
 
-        fmt::print("Num molecules = {} ({} in crystal uc)\n", num_molecules,
-                   uc_dimers.molecule_neighbors.size());
+        for (const double &cut : cuts) {
+            fmt::print("cut offset = {:.6f} * depth\n", cut);
+            auto result =
+                surf.count_crystal_dimers_cut_by_surface(uc_dimers, cut);
+            size_t num_molecules = result.molecules.size();
+            fmt::print("Num molecules = {} ({} in crystal uc)\n", num_molecules,
+                       uc_dimers.molecule_neighbors.size());
+            {
+                double surface_energy_a = result.total_above(uc_dimers);
+                fmt::print("Surface energy (A) (kJ/mol) = {:12.3f}\n",
+                           surface_energy_a);
+                surface_energy_a = sign *
+                                   (surface_energy_a * 0.5 / surf.area()) *
+                                   kjmol_jm2_fac;
+                fmt::print("Surface energy (A) (J/m^2)  = {:12.6f}\n",
+                           surface_energy_a);
+            }
 
-        {
-            double surface_energy_a = result.total_above(uc_dimers);
-            fmt::print("Surface energy (A) (kJ/mol) = {:12.3f}\n",
-                       surface_energy_a);
-            surface_energy_a =
-                -(surface_energy_a * 0.5 / surf.area()) * 0.16604390671;
-            fmt::print("Surface energy (A) (J/m^2)  = {:12.6f}\n",
-                       surface_energy_a);
+            {
+                double surface_energy_b = result.total_below(uc_dimers);
+                fmt::print("Surface energy (B) (kJ/mol) = {:12.3f}\n",
+                           surface_energy_b);
+                surface_energy_b = sign *
+                                   (surface_energy_b * 0.5 / surf.area()) *
+                                   kjmol_jm2_fac;
+                fmt::print("Surface energy (B) (J/m^2)  = {:12.6f}\n",
+                           surface_energy_b);
+            }
+
+            {
+                double bulk_energy = result.total_bulk(uc_dimers);
+                double slab_energy = result.total_slab(uc_dimers);
+                fmt::print("Bulk energy (kJ/mol)        = {:12.3f}\n",
+                           bulk_energy);
+                fmt::print("Slab energy (kJ/mol)        = {:12.3f}\n",
+                           slab_energy);
+                double surface_energy = sign * 0.5 * kjmol_jm2_fac *
+                                        (bulk_energy - slab_energy) /
+                                        (surf.area() * 2);
+                fmt::print("Surface energy (S) (J/m^2)  = {:12.6f}\n",
+                           surface_energy);
+                if (surface_energy < min_energy) {
+                    min_shift = cut;
+                    min_energy = surface_energy;
+                }
+            }
         }
 
-        {
-            double surface_energy_b = result.total_below(uc_dimers);
-            fmt::print("Surface energy (B) (kJ/mol) = {:12.3f}\n",
-                       surface_energy_b);
-            surface_energy_b =
-                -(surface_energy_b * 0.5 / surf.area()) * 0.16604390671;
-            fmt::print("Surface energy (B) (J/m^2)  = {:12.6f}\n",
-                       surface_energy_b);
-        }
+        occ::io::GMFWriter::Facet facet{surf.hkl(), min_shift, 1, 1,
+                                        min_energy};
+        gmf.add_facet(facet);
 
-        {
-            double bulk_energy = result.total_bulk(uc_dimers);
-            double slab_energy = result.total_slab(uc_dimers);
-            fmt::print("Bulk energy (kJ/mol)        = {:12.3f}\n", bulk_energy);
-            fmt::print("Slab energy (kJ/mol)        = {:12.3f}\n", slab_energy);
-            fmt::print("Surface energy (S) (J/m^2)  = {:12.6f}\n",
-                       0.5 * 0.16604390671 * (slab_energy - bulk_energy) /
-                           (surf.area() * 2));
-        }
         number_of_surfaces++;
         if (number_of_surfaces >= max_number_of_surfaces)
             break;
     }
+    gmf.write(filename);
 }
 
 int main(int argc, char **argv) {
@@ -1050,6 +1091,7 @@ int main(int argc, char **argv) {
         solvent{"water"}, wfn_choice{"gas"};
 
     int threads{1};
+    int max_facets{0};
     double radius{3.8}, cg_radius{3.8};
     bool write_dump_files{false}, spherical{false};
     bool write_kmcpp_file{false};
@@ -1076,6 +1118,8 @@ int main(int argc, char **argv) {
                  "write out an input file for kmcpp program");
     app.add_flag("--xtb", use_xtb, "use xtb for interaction energies");
     app.add_flag("-d,--dump", write_dump_files, "Write dump files");
+    app.add_flag("--surface-energies", max_facets,
+                 "Calculate surface energies and write .gmf morphology files");
     app.add_flag("--list-available-solvents", list_solvents,
                  "List available solvents and exit");
 
@@ -1222,11 +1266,16 @@ int main(int argc, char **argv) {
                 dest << j.dump(2);
             };
 
-            fmt::print("Crystal surface energies (solvated)\n");
-            calculate_crystal_surface_energies(calc.crystal(), uc_dimers, 10);
-            fmt::print("Crystal surface energies (vaccuum)\n");
-            calculate_crystal_surface_energies(calc.crystal(), uc_dimers_vacuum,
-                                               10);
+            if (max_facets > 0) {
+                fmt::print("Crystal surface energies (solvated)\n");
+                calculate_crystal_surface_energies(
+                    fmt::format("{}_{}.gmf", basename, solvent), calc.crystal(),
+                    uc_dimers, max_facets, 1);
+                fmt::print("Crystal surface energies (vacuum)\n");
+                calculate_crystal_surface_energies(
+                    fmt::format("{}_vacuum.gmf", basename), calc.crystal(),
+                    uc_dimers_vacuum, max_facets, -1);
+            }
 
             write_uc_json(calc.crystal(), uc_dimers);
 

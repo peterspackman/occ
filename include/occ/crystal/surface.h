@@ -20,7 +20,7 @@ struct SurfaceCutResult {
     DimerCounts bulk;
     double depth_scale{1.0};
     Mat3 basis;
-    Vec3 origin;
+    double cut_offset{0.0};
     double total_above(const CrystalDimers &) const;
     double total_below(const CrystalDimers &) const;
     double total_slab(const CrystalDimers &) const;
@@ -41,9 +41,8 @@ class Surface {
     inline const auto &b_vector() const { return m_b_vector; };
     inline double area() const { return m_a_vector.cross(m_b_vector).norm(); }
     Vec3 dipole() const;
-    bool cuts_line_segment(const Vec3 &origin, const Vec3 &point1,
-                           const Vec3 &point2, Vec3 &intersection,
-                           bool infinite = true) const;
+
+    Mat3 basis_matrix(double depth_scale = 1.0) const;
 
     // Pack unit cell molecules below or above the surface with depth
     // negative depth means below, positive depth means above (as determined by
@@ -51,10 +50,15 @@ class Surface {
     // interplanar spacing
     std::vector<Molecule>
     find_molecule_cell_translations(const std::vector<Molecule> &unit_cell_mols,
-                                    double depth) const;
+                                    double depth,
+                                    double cut_offset = 0.0) const;
 
     SurfaceCutResult
-    count_crystal_dimers_cut_by_surface(const CrystalDimers &) const;
+    count_crystal_dimers_cut_by_surface(const CrystalDimers &,
+                                        double cut_offset = 0.0) const;
+
+    std::vector<double> possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
+                                      double epsilon = 1e-6) const;
 
     static bool check_systematic_absence(const Crystal &, const HKL &);
     static bool faces_are_equivalent(const Crystal &, const HKL &, const HKL &);

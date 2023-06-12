@@ -11,6 +11,7 @@
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/gaussian_input_file.h>
+#include <occ/io/gmf.h>
 #include <occ/io/moldenreader.h>
 #include <occ/io/orca_json.h>
 #include <occ/io/qcschema.h>
@@ -2724,4 +2725,50 @@ TEST_CASE("Serial Molecule & Dimer to JSON", "[json,write]") {
     nlohmann::json jd;
     jd["symmetry_unique_dimers"] = dimers.unique_dimers;
     fmt::print("{}\n", jd.dump());
+}
+
+const char *gmf_file_contents = R""""(
+ title: Created by occ
+  name: acetic
+ space: P n a 21
+  cell: 13.310000 4.100000 5.750000  90.000000 90.000000 90.000000
+ morph: unrelaxed equilibrium
+
+miller:    1   1   0
+ 0.000000   1  1      0.0000     0.0000     0.0000     0.0000  -1
+)"""";
+
+TEST_CASE("GMFWriter Tests", "[GMFWriter]") {
+    using occ::io::GMFWriter;
+
+    GMFWriter::Facet facet = {{1, 1, 0}, 0.0, 1, 1, 0.0, 0.0, 0.0, 0.0, -1};
+    auto crystal = acetic_crystal();
+
+    SECTION("Setting properties") {
+        GMFWriter gmf(crystal);
+
+        gmf.set_title("Created by occ");
+        REQUIRE(gmf.title() == "Created by occ");
+        gmf.set_name("acetic");
+        REQUIRE(gmf.name() == "acetic");
+
+        gmf.set_morphology_kind("unrelaxed equilibrium");
+        REQUIRE(gmf.morphology_kind() == "unrelaxed equilibrium");
+
+        gmf.add_facet(facet);
+        REQUIRE(gmf.number_of_facets() == 1);
+    }
+
+    SECTION("Checking file content") {
+        GMFWriter gmf(crystal);
+        gmf.set_title("Created by occ");
+        gmf.set_name("acetic");
+        gmf.set_morphology_kind("unrelaxed equilibrium");
+        gmf.add_facet(facet);
+
+        std::ostringstream gmf_os;
+        gmf.write(gmf_os);
+        std::string contents = gmf_os.str();
+        REQUIRE(gmf_os.str() == gmf_file_contents);
+    }
 }

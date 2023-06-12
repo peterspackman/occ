@@ -3,6 +3,7 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <numeric>
+#include <occ/core/eem.h>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/surface.h>
@@ -43,7 +44,8 @@ std::vector<size_t> argsort(const Vec &vec) {
 
 Surface::Surface(const HKL &miller, const Crystal &crystal)
     : m_hkl{miller}, m_crystal_unit_cell(crystal.unit_cell()) {
-    m_depth = 1.0 / d();
+    int cd = std::gcd(std::gcd(m_hkl.h, m_hkl.k), std::gcd(m_hkl.k, m_hkl.l));
+    m_depth = cd / d();
     Vec3 unit_normal = normal_vector();
 
     std::vector<Vec3> vector_candidates;
@@ -153,6 +155,14 @@ Vec3 Surface::normal_vector() const {
     return v;
 }
 
+Mat3 Surface::basis_matrix(double depth_scale) const {
+    Mat3 basis;
+    basis.col(0) = m_a_vector;
+    basis.col(1) = m_b_vector;
+    basis.col(2) = m_depth_vector * depth_scale;
+    return basis;
+}
+
 double Surface::depth() const { return m_depth; }
 
 double Surface::d() const { return m_hkl.d(m_crystal_unit_cell.reciprocal()); }
@@ -161,6 +171,7 @@ Vec3 Surface::dipole() const { return Vec3(0, 0, 0); }
 
 void Surface::print() const {
     fmt::print("Surface ({:d}, {:d}, {:d})\n", m_hkl.h, m_hkl.k, m_hkl.l);
+    fmt::print("Interplanar spacing {:.3f}\n", d());
     fmt::print("Surface area {:.3f}\n", area());
     fmt::print("A vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})\n",
                m_a_vector(0), m_a_vector(1), m_a_vector(2), m_a_vector.norm());
@@ -169,47 +180,6 @@ void Surface::print() const {
     fmt::print("Depth vector: [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})\n",
                m_depth_vector(0), m_depth_vector(1), m_depth_vector(2),
                depth());
-}
-
-bool Surface::cuts_line_segment(const Vec3 &surface_origin, const Vec3 &point1,
-                                const Vec3 &point2, Vec3 &intersection,
-                                bool infinite) const {
-    constexpr double epsilon = 1e-6;
-    Vec3 line_direction = (point2 - point1).normalized();
-    Vec3 u_n = normal_vector();
-
-    // line is parallel to the plane
-    if (u_n.dot(line_direction) <= epsilon) {
-        return false;
-    }
-
-    // find the intersection of the line segment and the plane
-    double d = (surface_origin - point1).dot(u_n) / u_n.dot(line_direction);
-
-    intersection = point1 + line_direction * d;
-    Vec3 v_i1 = point1 - intersection;
-    Vec3 v_i2 = point2 - intersection;
-
-    // check if both points lie on the same side of the plane
-    if (v_i1.dot(u_n) * v_i2.dot(u_n) > -epsilon) {
-        return false;
-    }
-
-    // if our plane is infinite it therefore must cut
-    if (infinite)
-        return true;
-
-    // Basis matrix of surface
-    Mat3 basis;
-    basis.col(0) = m_a_vector;
-    basis.col(1) = m_b_vector;
-    basis.col(2) = m_depth_vector;
-
-    Vec3 frac_coords = basis.inverse() * (intersection - surface_origin);
-
-    // check if the intersection occurs inside the plane
-    return (-epsilon < frac_coords(0) && frac_coords(0) < (1 + epsilon) &&
-            -epsilon < frac_coords(1) && frac_coords(1) < (1 + epsilon));
 }
 
 std::vector<Surface>
@@ -222,9 +192,7 @@ generate_surfaces(const Crystal &c,
     };
     loop_over_miller_indices(f, c, params);
     std::sort(result.begin(), result.end(),
-              [](const Surface &a, const Surface &b) {
-                  return a.depth() > b.depth();
-              });
+              [](const Surface &a, const Surface &b) { return a.d() < b.d(); });
     return result;
 }
 
@@ -262,17 +230,14 @@ bool Surface::faces_are_equivalent(const Crystal &crystal, const HKL &hkl1,
     return false;
 }
 
-std::vector<Molecule>
-Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
-                                         double depth) const {
+std::vector<Molecule> Surface::find_molecule_cell_translations(
+    const std::vector<Molecule> &mols, double depth, double cut_offset) const {
+    const double epsilon = 1e-6;
     const int num_mols = mols.size();
     std::vector<Molecule> result;
     Vec3 unit_normal = normal_vector();
 
-    Mat3 basis;
-    basis.col(0) = m_a_vector;
-    basis.col(1) = m_b_vector;
-    basis.col(2) = m_depth_vector * depth;
+    Mat3 basis = basis_matrix(depth);
     Mat3 basis_inverse = basis.inverse();
 
     // cb = crystal basis, sb = surface basis
@@ -295,20 +260,34 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
     occ::log::debug("[{:9.3f}, {:9.3f}, {:9.3f}]", sb_in_cb(2, 0),
                     sb_in_cb(2, 1), sb_in_cb(2, 2));
 
+    Vec3 origin_cart = m_depth_vector * cut_offset;
+    Vec3 origin_crystal = m_crystal_unit_cell.to_fractional(origin_cart);
+    Vec3 origin_surf = basis_inverse * origin_cart;
+
     // get box corners in surface coordinates
-    Vec3 upper_vec_surface = Vec3(1.0, 1.0, 1.0);
-    Vec3 lower_vec_surface = Vec3(0.0, 0.0, 0.0);
+    Vec3 zeros = Vec3(0.0, 0.0, 0.0);
+    Vec3 upper_vec_surface = origin_surf.array() + epsilon + 1.0;
+    Vec3 ones = Vec3(1.0, 1.0, 1.0);
+    Vec3 lower_vec_surface = origin_surf.array() + epsilon;
+
+    occ::log::debug("Origin (crystal) = [{:9.3f}, {:9.3f} {:9.3f}]",
+                    origin_crystal(0), origin_crystal(1), origin_crystal(2));
+    occ::log::debug("Origin (cart)    = [{:9.3f}, {:9.3f} {:9.3f}]",
+                    origin_cart(0), origin_cart(1), origin_cart(2));
+    occ::log::debug("Origin (surf)    = [{:9.3f}, {:9.3f} {:9.3f}]",
+                    origin_surf(0), origin_surf(1), origin_surf(2));
 
     // get corners of the surface box in crystal coordinates
     Mat3N corners(3, 8);
-    corners.col(0).setZero();
-    corners.col(1) = sb_in_cb.col(0);
-    corners.col(2) = sb_in_cb.col(1);
-    corners.col(3) = sb_in_cb.col(2);
-    corners.col(4) = sb_in_cb.col(0) + sb_in_cb.col(1);
-    corners.col(5) = sb_in_cb.col(0) + sb_in_cb.col(2);
-    corners.col(6) = sb_in_cb.col(1) + sb_in_cb.col(2);
-    corners.col(7) = sb_in_cb.col(0) + sb_in_cb.col(1) + sb_in_cb.col(2);
+    corners.col(0) = origin_crystal;
+    corners.col(1) = origin_crystal + sb_in_cb.col(0);
+    corners.col(2) = origin_crystal + sb_in_cb.col(1);
+    corners.col(3) = origin_crystal + sb_in_cb.col(2);
+    corners.col(4) = origin_crystal + sb_in_cb.col(0) + sb_in_cb.col(1);
+    corners.col(5) = origin_crystal + sb_in_cb.col(0) + sb_in_cb.col(2);
+    corners.col(6) = origin_crystal + sb_in_cb.col(1) + sb_in_cb.col(2);
+    corners.col(7) =
+        origin_crystal + sb_in_cb.col(0) + sb_in_cb.col(1) + sb_in_cb.col(2);
     Vec3 upper_vec_crystal = corners.rowwise().maxCoeff();
     Vec3 lower_vec_crystal = corners.rowwise().minCoeff();
 
@@ -321,7 +300,7 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
 
     Mat3N centroids(3, num_mols);
     for (int i = 0; i < num_mols; i++)
-        centroids.col(i) = mols[i].center_of_mass();
+        centroids.col(i) = mols[i].centroid();
 
     Mat3N frac_centroids_crystal = m_crystal_unit_cell.to_fractional(centroids);
 
@@ -329,18 +308,19 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
     HKL upper = HKL::ceil(upper_vec_crystal.array() + 0.0);
     HKL lower = HKL::floor(lower_vec_crystal.array() - 0.0);
 
-    auto filename =
-        fmt::format("surface_{}_{}_{}_mols.txt", m_hkl.h, m_hkl.k, m_hkl.l);
+    auto filename = fmt::format("surface_{}_{}_{}_cut{:.3f}_mols.txt", m_hkl.h,
+                                m_hkl.k, m_hkl.l, cut_offset);
     auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
                                                  fmt::file::CREATE);
 
     for (int i = 0; i <= 10; i++) {
         for (int j = 0; j <= 10; j++) {
             for (int k = 0; k <= 20; k++) {
-                output.print("Xe {}\n",
-                             (0.1 * i * basis.col(0) + 0.1 * j * basis.col(1) +
-                              0.05 * k * basis.col(2))
-                                 .transpose());
+                Vec3 pos = origin_cart;
+                pos += 0.1 * i * basis.col(0);
+                pos += 0.1 * j * basis.col(1);
+                pos += 0.05 * k * basis.col(2);
+                output.print("Xe {}\n", pos.transpose());
             }
         }
     }
@@ -349,18 +329,18 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
         for (int k = lower.k; k <= upper.k; k++) {
             for (int l = lower.l; l <= upper.l; l++) {
                 Vec3 frac_t_crystal = HKL{h, k, l}.vector();
+                // cartesian translation of HKL in crystal basis + cut offset
                 Vec3 cart_shift =
                     m_crystal_unit_cell.to_cartesian(frac_t_crystal);
                 output.print("Ru {}\n", cart_shift.transpose());
-                Mat3N tmp = cb_in_sb *
-                            (frac_centroids_crystal.colwise() + frac_t_crystal);
-
+                Mat3N tmp = basis_inverse * (centroids.colwise() + cart_shift);
                 for (int i = 0; i < num_mols; i++) {
 
                     if ((tmp.col(i).array() > lower_vec_surface.array())
                             .all() &&
-                        (tmp.col(i).array() <= upper_vec_surface.array())
+                        (tmp.col(i).array() < upper_vec_surface.array())
                             .all()) {
+                        auto cell_shift = mols[i].cell_shift();
                         auto mol_t = mols[i].translated(cart_shift);
                         mol_t.set_cell_shift({h, k, l});
                         mol_t.set_unit_cell_molecule_idx(i);
@@ -376,6 +356,37 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
             }
         }
     }
+
+    std::vector<Vec> partial_charges;
+    for (const auto &mol : mols) {
+        const auto &nums = mol.atomic_numbers();
+        const auto &pos = mol.positions();
+        partial_charges.push_back(
+            occ::core::charges::eem_partial_charges(nums, pos));
+    }
+
+    // sort them by their depth;
+    std::stable_sort(result.begin(), result.end(),
+                     [&basis_inverse](const Molecule &l, const Molecule &r) {
+                         Vec3 fracl = basis_inverse * l.centroid();
+                         Vec3 fracr = basis_inverse * r.centroid();
+                         return fracl(2) < fracr(2);
+                     });
+
+    Vec3 dipole = Vec3::Zero();
+    for (const auto &mol : result) {
+        const auto &q = partial_charges[mol.unit_cell_molecule_idx()];
+        const auto &pos = mol.positions();
+        for (int i = 0; i < pos.cols(); i++) {
+            dipole.array() += pos.col(i).array() * q(i);
+        }
+    }
+
+    occ::log::info("Dipole (EEM charges): {:.3f} {:.3f} {:.3f}", dipole(0),
+                   dipole(1), dipole(2));
+
+    if (dipole.norm() > 1e-2)
+        bool valid = false;
 
     return result;
 }
@@ -431,9 +442,10 @@ SurfaceCutResult::SurfaceCutResult(const CrystalDimers &dimers) {
 }
 
 SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
-    const CrystalDimers &crystal_dimers) const {
+    const CrystalDimers &crystal_dimers, double cut_offset) const {
+    const double epsilon = 1e-6;
     SurfaceCutResult result(crystal_dimers);
-    result.origin = Vec3(0.0, 0.0, 0.0);
+    result.cut_offset = cut_offset;
 
     double required_depth = 0.0;
     Vec3 unit_normal = normal_vector();
@@ -442,7 +454,7 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
     for (const auto &neighbors : crystal_dimers.molecule_neighbors) {
         molecules.push_back(neighbors[0].dimer.a());
         for (const auto &[dimer, unique_idx] : neighbors) {
-            Vec3 v_ab = dimer.b().center_of_mass() - dimer.a().center_of_mass();
+            Vec3 v_ab = dimer.b().centroid() - dimer.a().centroid();
             required_depth =
                 std::max(required_depth, std::abs(v_ab.dot(unit_normal)));
         }
@@ -451,14 +463,33 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
     fmt::print("Required depth = {} x depth ({:12.6f} angs)\n", depth_scale,
                required_depth);
 
-    result.molecules = find_molecule_cell_translations(molecules, depth_scale);
+    result.molecules =
+        find_molecule_cell_translations(molecules, depth_scale, cut_offset);
 
-    Mat3 basis;
-    basis.col(0) = m_a_vector;
-    basis.col(1) = m_b_vector;
-    basis.col(2) = m_depth_vector * depth_scale;
+    Mat3 basis = basis_matrix(depth_scale);
+    occ::log::debug("Basis");
+    occ::log::debug(
+        "A vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})",
+        basis(0, 0), basis(1, 0), basis(2, 0), basis.col(0).norm());
+    occ::log::debug(
+        "B vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})",
+        basis(0, 1), basis(1, 1), basis(2, 1), basis.col(1).norm());
+    occ::log::debug(
+        "Depth vector: [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})",
+        basis(0, 2), basis(1, 2), basis(2, 2), basis.col(2).norm());
+
+    Vec3 origin = m_depth_vector * cut_offset;
+    occ::log::debug("Origin: [{:9.3f}, {:9.3f}, {:9.3f}]", origin(0), origin(1),
+                    origin(2));
+
+    const double upper_bound = 1.0 + epsilon + cut_offset / depth_scale;
+    const double lower_bound = 0.0 + epsilon + cut_offset / depth_scale;
     Mat3 basis_inverse = basis.inverse();
     result.basis = basis;
+
+    auto cart2surf = [&basis_inverse](const Vec3 &v) {
+        return basis_inverse * v;
+    };
 
     struct CutCount {
         int above{0};
@@ -472,20 +503,18 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
     };
     CutCount total_cut_count;
     int t_index = 0;
-    for (const auto &mol : result.molecules) {
-        auto filename = fmt::format("crystal_surface_{}_{}_{}_t{}.txt", m_hkl.h,
-                                    m_hkl.k, m_hkl.l, t_index);
-        auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
-                                                     fmt::file::CREATE);
+    auto filename = fmt::format("crystal_surface_{}_{}_{}_cut{:.3f}.txt",
+                                m_hkl.h, m_hkl.k, m_hkl.l, cut_offset);
+    auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
+                                                 fmt::file::CREATE);
 
+    for (const auto &mol : result.molecules) {
+        std::vector<std::string> lines;
         int index = mol.unit_cell_molecule_idx();
-        for (int i = 0; i < mol.size(); i++) {
-            const auto &nums = mol.elements();
-            const auto &pos = mol.positions();
-            output.print("{} {:12.6f} {:12.6f} {:12.6f} {} {} {} 0.0 0.0\n",
-                         nums[i].symbol(), pos(0, i), pos(1, i), pos(2, i),
-                         t_index, index, 0);
-        }
+        Vec3 pos = mol.centroid();
+        lines.push_back(
+            fmt::format("{} {:12.6f} {:12.6f} {:12.6f} {} {} {} 0.0 0.0", -1,
+                        pos(0), pos(1), pos(2), t_index, index, 0));
         if (index > result.above.size()) {
             throw std::runtime_error("Must pass unit cell dimers to "
                                      "count_crystal_dimers_cut_by_surface");
@@ -493,11 +522,15 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
         const auto &uc_shift = mol.cell_shift();
         Vec3 shift(uc_shift[0], uc_shift[1], uc_shift[2]);
         Vec3 translation = m_crystal_unit_cell.to_cartesian(shift);
-        Vec3 frac_c = basis_inverse * (mol.center_of_mass());
+        Vec3 frac_c = cart2surf(mol.centroid());
         occ::log::debug("mol in surface index = {}, unit cell index = {}",
                         t_index, index);
         occ::log::debug("Fractional center: {:12.6f} {:12.6f} {:12.6f}",
                         frac_c(0), frac_c(1), frac_c(2));
+        occ::log::debug("Shift (hkl): {} {} {}", uc_shift[0], uc_shift[1],
+                        uc_shift[2]);
+        occ::log::debug("Shift (cart): {:12.6f} {:12.6f} {:12.6f}",
+                        translation(0), translation(1), translation(2));
 
         const auto &neighbors = crystal_dimers.molecule_neighbors[index];
         auto &neighbor_counts_above = result.above[index];
@@ -510,31 +543,31 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
              neighbor_index++) {
             const auto &dimer = neighbors[neighbor_index].dimer;
             double e = dimer.interaction_energy();
-            double r = dimer.center_of_mass_distance();
-            Vec3 c_a = dimer.a().center_of_mass() + translation;
-            Vec3 c_b = dimer.b().center_of_mass() + translation;
+            double r = dimer.centroid_distance();
+            Vec3 c_a = dimer.a().centroid() + translation;
+            Vec3 c_b = dimer.b().centroid() + translation;
             cut_count.neighbors++;
             cut_count.energy_neighbors += e;
             neighbor_counts_bulk[neighbor_index]++;
-            if ((c_a - mol.center_of_mass()).norm() > 1e-3) {
-                fmt::print("Error in difference, mol_a doesn't match "
-                           "translated mol\n");
+            if ((c_a - mol.centroid()).norm() > 1e-3) {
+                occ::log::error(
+                    "check for mol_a translated positions matching failed");
             }
             if ((std::abs(r - (c_a - c_b).norm()) > 1e-3)) {
-                fmt::print("Error in difference, distance doesn't match"
-                           "translated mol\n");
+                occ::log::error(
+                    "check for translated distance in Surface cut failed");
             }
             Molecule mol2 = dimer.b();
             mol2.translate(translation);
             int region = 0;
 
-            Vec3 frac_coords = basis.inverse() * c_b;
-            if (frac_coords(2) > (1 + 1e-6)) {
+            Vec3 frac_coords = cart2surf(c_b);
+            if (frac_coords(2) > upper_bound) {
                 region = 1;
                 cut_count.above++;
                 cut_count.energy_above += e;
                 neighbor_counts_above[neighbor_index]++;
-            } else if (frac_coords(2) < -1e-6) {
+            } else if (frac_coords(2) < lower_bound) {
                 region = 2;
                 cut_count.below++;
                 cut_count.energy_below += e;
@@ -545,13 +578,12 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
                 cut_count.energy_slab += e;
                 neighbor_counts_slab[neighbor_index]++;
             }
-            for (int ii = 0; ii < mol2.size(); ii++) {
-                const auto &nums = mol2.elements();
-                const auto &pos = mol2.positions();
-                output.print("{} {:12.6f} {:12.6f} {:12.6f} {} {} {} {} {}\n",
-                             nums[ii].symbol(), pos(0, ii), pos(1, ii),
-                             pos(2, ii), t_index, index, region, e, r);
-            }
+            Vec3 pos = mol2.centroid();
+            lines.push_back(
+                fmt::format("{} {:12.6f} {:12.6f} {:12.6f} {:3d} {:3d} "
+                            "{:3d} {:12.6f} {:12.6f}",
+                            neighbor_index, pos(0), pos(1), pos(2), t_index,
+                            index, region, e, r));
         }
         total_cut_count.energy_slab += cut_count.energy_slab;
         total_cut_count.energy_above += cut_count.energy_above;
@@ -566,8 +598,20 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
                         cut_count.energy_slab);
         occ::log::debug("Neighbors: {:3d}  e = {:12.6f}", cut_count.neighbors,
                         cut_count.energy_neighbors);
+        output.print("{}\n", lines.size());
+        output.print(
+            R"""(Lattice="{:3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}" Properties="{}" Origin="{:.3f} {:.3f} {:.3f}"{})""",
+            basis(0, 0), basis(1, 0), basis(2, 0), basis(0, 1), basis(1, 1),
+            basis(2, 1), basis(0, 2), basis(1, 2), basis(2, 2),
+            "species:S:1:pos:R:3:t:I:1:uc:I:1:region:I:1:energy:R:1:distance:R:"
+            "1",
+            origin(0), origin(1), origin(2), "\n");
+        for (const auto &line : lines) {
+            output.print("{}\n", line);
+        }
         t_index++;
     }
+
     occ::log::debug("slab energy  (S) = {}", total_cut_count.energy_slab);
     occ::log::debug("above energy (A) = {}", total_cut_count.energy_above);
     occ::log::debug("below energy (B) = {}", total_cut_count.energy_below);
@@ -577,6 +621,31 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
                                               total_cut_count.energy_above -
                                               total_cut_count.energy_below);
     return result;
-}
+} // namespace occ::crystal
 
+std::vector<double>
+Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
+                       double epsilon) const {
+    std::vector<double> result;
+    result.reserve(unique_positions.cols());
+    Mat3 basis = basis_matrix(1.0);
+    Mat3 basis_inverse = basis.inverse();
+
+    Mat3N pos_frac = basis_inverse * unique_positions;
+    for (int i = 0; i < unique_positions.cols(); i++) {
+        double cut = std::fmod(pos_frac(2, i) + 7.0, 1.0);
+        result.push_back(cut);
+    }
+    std::sort(result.begin(), result.end());
+    auto last = std::unique(
+        result.begin(), result.end(),
+        [epsilon](double a, double b) { return std::abs(a - b) < epsilon; });
+
+    result.erase(last, result.end());
+    std::transform(
+        result.begin(), result.end(), result.begin(),
+        [](double value) { return std::round(value * 1000000.0) / 1000000.0; });
+
+    return result;
+}
 } // namespace occ::crystal

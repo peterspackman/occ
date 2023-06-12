@@ -14,6 +14,6 @@ namespace occ::core::charges {
  * sites
  */
 occ::Vec eem_partial_charges(const occ::IVec &atomic_numbers,
-                             occ::Mat3N &positions, double charge = 0.0);
+                             const occ::Mat3N &positions, double charge = 0.0);
 
 } // namespace occ::core::charges
