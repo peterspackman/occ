@@ -38,8 +38,11 @@ void CifParser::extract_atom_sites(const gemmi::cif::Loop &loop) {
             atom.position[2] = gemmi::cif::as_number(loop.val(i, z_idx));
             info_found = true;
         }
-        if (info_found)
+        if (info_found) {
+            if (atom.element.empty())
+                atom.element = atom.site_label;
             m_atoms.push_back(atom);
+        }
     }
 }
 
@@ -133,11 +136,17 @@ CifParser::parse_crystal(const std::string &filename) {
         }
         occ::crystal::AsymmetricUnit asym;
         if (num_atoms() > 0) {
+            occ::log::debug("Found {} atoms _atom_site data block",
+                            num_atoms());
             asym.atomic_numbers.conservativeResize(num_atoms());
             asym.positions.conservativeResize(3, num_atoms());
             int i = 0;
 
             for (const auto &atom : m_atoms) {
+                occ::log::debug(
+                    "Atom element = {}, label = {} position = {} {} {}",
+                    atom.element, atom.site_label, atom.position[0],
+                    atom.position[1], atom.position[2]);
                 asym.positions(0, i) = atom.position[0];
                 asym.positions(1, i) = atom.position[1];
                 asym.positions(2, i) = atom.position[2];
@@ -150,27 +159,59 @@ CifParser::parse_crystal(const std::string &filename) {
         occ::crystal::UnitCell uc(m_cell.a, m_cell.b, m_cell.c, m_cell.alpha,
                                   m_cell.beta, m_cell.gamma);
 
+        occ::crystal::SpaceGroup sg(1);
+        bool found = false;
         if (m_sym.valid()) {
-            if (m_sym.nameHM != "Not set") {
-                occ::log::debug("Using SG nameHM {}", m_sym.nameHM);
-                auto sg = occ::crystal::SpaceGroup(m_sym.nameHM);
-                return occ::crystal::Crystal(asym, sg, uc);
-            } else if (m_sym.nameHall != "Not set") {
-                occ::log::debug("Using SG name Hall {}", m_sym.nameHall);
-                auto sg = occ::crystal::SpaceGroup(m_sym.nameHall);
-                return occ::crystal::Crystal(asym, sg, uc);
-            } else if (m_sym.number > 0) {
-                occ::log::debug("Using SG number {}", m_sym.number);
-                auto sg = occ::crystal::SpaceGroup(m_sym.number);
-                return occ::crystal::Crystal(asym, sg, uc);
-            } else if (m_sym.symops.size() > 0) {
-                occ::log::debug("Using SG symops (len = {})",
+            if (!found && m_sym.nameHM != "Not set") {
+                occ::log::debug("Try using space group HM name: {}",
+                                m_sym.nameHM);
+                const auto *sgdata =
+                    gemmi::find_spacegroup_by_name(m_sym.nameHM);
+                if (sgdata) {
+                    occ::log::debug("Found space group: {}", sgdata->number);
+                    sg = occ::crystal::SpaceGroup(m_sym.nameHM);
+                    found = true;
+                }
+            }
+            if (!found && m_sym.nameHall != "Not set") {
+                const auto *sgdata =
+                    gemmi::find_spacegroup_by_name(m_sym.nameHall);
+                occ::log::debug("Try using space group Hall name: {}",
+                                m_sym.nameHall);
+                if (sgdata) {
+                    occ::log::debug("Found space group: {}", sgdata->number);
+                    sg = occ::crystal::SpaceGroup(m_sym.nameHall);
+                    found = true;
+                }
+            }
+            if (!found && m_sym.symops.size() > 0) {
+                occ::log::debug("Try using space group symops (len = {})",
                                 m_sym.symops.size());
-                auto sg = occ::crystal::SpaceGroup(m_sym.symops);
-                return occ::crystal::Crystal(asym, sg, uc);
+                gemmi::GroupOps ops;
+                for (const auto &symop : m_sym.symops) {
+                    ops.sym_ops.push_back(gemmi::parse_triplet(symop));
+                }
+                const auto *sgdata = gemmi::find_spacegroup_by_ops(ops);
+                if (sgdata) {
+                    occ::log::debug("Found space group: {}", sgdata->number);
+                    sg = occ::crystal::SpaceGroup(m_sym.symops);
+                    found = true;
+                }
+            }
+            if (!found && m_sym.number > 0) {
+                occ::log::debug("Try using space group number: {}",
+                                m_sym.number);
+                const auto *sgdata =
+                    gemmi::find_spacegroup_by_number(m_sym.number);
+                if (sgdata) {
+                    sg = occ::crystal::SpaceGroup(m_sym.number);
+                    found = true;
+                }
             }
         }
-        occ::crystal::SpaceGroup sg("P 1");
+        if (!found)
+            occ::log::warn("Could not determine space group from CIF, using P "
+                           "1 symmetry");
         return occ::crystal::Crystal(asym, sg, uc);
     } catch (const std::exception &e) {
         m_failure_desc = e.what();
@@ -178,6 +219,6 @@ CifParser::parse_crystal(const std::string &filename) {
                         m_failure_desc);
         return std::nullopt;
     }
-}
+} // namespace occ::io
 
 } // namespace occ::io

@@ -39,6 +39,10 @@ Wavefunction::Wavefunction(const OrcaJSONReader &json)
     size_t rows, cols;
 
     mo.kind = spinorbital_kind;
+    mo.n_alpha = num_alpha;
+    mo.n_beta = num_beta;
+    mo.n_ao = nbf;
+
     if (spinorbital_kind == SpinorbitalKind::General) {
         throw std::runtime_error(
             "Reading MOs from Orca json unsupported for General spinorbitals");
@@ -67,6 +71,9 @@ Wavefunction::Wavefunction(const MoldenReader &molden)
     size_t rows, cols;
     nbf = basis.nbf();
     mo.kind = spinorbital_kind;
+    mo.n_alpha = num_alpha;
+    mo.n_beta = num_beta;
+    mo.n_ao = nbf;
 
     if (spinorbital_kind == SpinorbitalKind::General) {
         throw std::runtime_error(
@@ -100,201 +107,9 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
       num_electrons(wfn_a.num_electrons + wfn_b.num_electrons),
       basis(merge_basis_sets(wfn_a.basis, wfn_b.basis)), nbf(basis.nbf()),
       atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms)) {
-    spinorbital_kind = (wfn_a.is_restricted() && wfn_b.is_restricted())
-                           ? SpinorbitalKind::Restricted
-                           : SpinorbitalKind::Unrestricted;
 
-    size_t rows, cols;
-    if (is_restricted())
-        std::tie(rows, cols) =
-            matrix_dimensions<SpinorbitalKind::Restricted>(nbf);
-    else
-        std::tie(rows, cols) =
-            matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
-    mo.C = Mat(rows, cols);
-    mo.energies = occ::Vec(rows);
-    // temporaries for merging orbitals
-    Mat C_merged;
-    occ::Vec energies_merged;
-    occ::log::debug("Merging occupied orbitals, sorted by energy");
-    // TODO refactor
-    if (wfn_a.is_restricted() && wfn_b.is_restricted()) {
-        mo.kind = SpinorbitalKind::Restricted;
-        // merge occupied orbitals
-        Vec occ_energies_merged;
-        occ::log::debug("MO shape {} {}", mo.C.rows(), mo.C.cols());
-        std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-            wfn_a.mo.C.leftCols(wfn_a.num_alpha),
-            wfn_b.mo.C.leftCols(wfn_b.num_alpha),
-            wfn_a.mo.energies.topRows(wfn_a.num_alpha),
-            wfn_b.mo.energies.topRows(wfn_b.num_alpha));
-        occ::log::debug("MO occ merged shape {} {}", C_merged.rows(),
-                        C_merged.cols());
-        mo.C.leftCols(num_alpha) = C_merged;
-        mo.energies.topRows(num_alpha) = energies_merged;
-
-        // merge virtual orbitals
-        size_t nv_a = wfn_a.mo.C.rows() - wfn_a.num_alpha,
-               nv_b = wfn_b.mo.C.rows() - wfn_b.num_alpha;
-        size_t nv_ab = nv_a + nv_b;
-
-        occ::log::debug("Merging virtual orbitals, sorted by energy");
-
-        std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-            wfn_a.mo.C.rightCols(nv_a), wfn_b.mo.C.rightCols(nv_b),
-            wfn_a.mo.energies.bottomRows(nv_a),
-            wfn_b.mo.energies.bottomRows(nv_b));
-
-        occ::log::debug("MO virt merged shape {} {}", C_merged.rows(),
-                        C_merged.cols());
-        mo.C.rightCols(nv_ab) = C_merged;
-        mo.energies.bottomRows(nv_ab) = energies_merged;
-    } else {
-        mo.kind = SpinorbitalKind::Unrestricted;
-        if (wfn_a.is_restricted()) {
-            { // alpha
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.mo.C.leftCols(wfn_a.num_alpha),
-                    block::a(wfn_b.mo.C).leftCols(wfn_b.num_alpha),
-                    wfn_a.mo.energies.topRows(wfn_a.num_alpha),
-                    block::a(wfn_b.mo.energies).topRows(wfn_b.num_alpha));
-                block::a(mo.C).leftCols(num_alpha) = C_merged;
-                block::a(mo.energies).topRows(num_alpha) = energies_merged;
-
-                // merge virtual orbitals
-                size_t nv_a = wfn_a.mo.C.rows() - wfn_a.num_alpha,
-                       nv_b = block::a(wfn_b.mo.C).rows() - wfn_b.num_alpha;
-                size_t nv_ab = nv_a + nv_b;
-
-                occ::log::debug("Merging virtual orbitals, sorted by energy");
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.mo.C.rightCols(nv_a),
-                    block::a(wfn_b.mo.C).rightCols(nv_b),
-                    wfn_a.mo.energies.bottomRows(nv_a),
-                    block::a(wfn_b.mo.energies).bottomRows(nv_b));
-                block::a(mo.C).rightCols(nv_ab) = C_merged;
-                block::a(mo.energies).bottomRows(nv_ab) = energies_merged;
-            }
-            { // beta
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.mo.C.leftCols(wfn_a.num_beta),
-                    block::b(wfn_b.mo.C).leftCols(wfn_b.num_beta),
-                    wfn_a.mo.energies.topRows(wfn_a.num_beta),
-                    block::b(wfn_b.mo.energies).topRows(wfn_b.num_beta));
-                block::b(mo.C).leftCols(num_beta) = C_merged;
-                block::b(mo.energies).topRows(num_beta) = energies_merged;
-
-                // merge virtual orbitals
-                size_t nv_a = wfn_a.mo.C.rows() - wfn_a.num_beta,
-                       nv_b = block::b(wfn_b.mo.C).rows() - wfn_b.num_beta;
-                size_t nv_ab = nv_a + nv_b;
-
-                occ::log::debug("Merging virtual orbitals, sorted by energy");
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    wfn_a.mo.C.rightCols(nv_a),
-                    block::b(wfn_b.mo.C).rightCols(nv_b),
-                    wfn_a.mo.energies.bottomRows(nv_a),
-                    block::b(wfn_b.mo.energies).bottomRows(nv_b));
-                block::b(mo.C).rightCols(nv_ab) = C_merged;
-                block::b(mo.energies).bottomRows(nv_ab) = energies_merged;
-            }
-        } else if (wfn_b.is_restricted()) {
-            { // alpha
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::a(wfn_a.mo.C).leftCols(wfn_a.num_alpha),
-                    wfn_b.mo.C.leftCols(wfn_b.num_alpha),
-                    block::a(wfn_a.mo.energies).topRows(wfn_a.num_alpha),
-                    wfn_b.mo.energies.topRows(wfn_b.num_alpha));
-                block::a(mo.C).leftCols(num_alpha) = C_merged;
-                block::a(mo.energies).topRows(num_alpha) = energies_merged;
-
-                // merge virtual orbitals
-                size_t nv_a = block::a(wfn_a.mo.C).rows() - wfn_a.num_alpha,
-                       nv_b = wfn_b.mo.C.rows() - wfn_b.num_alpha;
-                size_t nv_ab = nv_a + nv_b;
-
-                occ::log::debug("Merging virtual orbitals, sorted by energy");
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::a(wfn_a.mo.C).rightCols(nv_a),
-                    wfn_b.mo.C.rightCols(nv_b),
-                    wfn_a.mo.energies.bottomRows(nv_a),
-                    wfn_b.mo.energies.bottomRows(nv_b));
-                block::a(mo.C).rightCols(nv_ab) = C_merged;
-                block::a(mo.energies).bottomRows(nv_ab) = energies_merged;
-            }
-            { // beta
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::b(wfn_a.mo.C).leftCols(wfn_a.num_beta),
-                    wfn_b.mo.C.leftCols(wfn_b.num_beta),
-                    block::b(wfn_a.mo.energies).topRows(wfn_a.num_beta),
-                    wfn_b.mo.energies.topRows(wfn_b.num_beta));
-                block::b(mo.C).leftCols(num_beta) = C_merged;
-                block::b(mo.energies).topRows(num_beta) = energies_merged;
-
-                // merge virtual orbitals
-                size_t nv_a = block::b(wfn_a.mo.C).rows() - wfn_a.num_beta,
-                       nv_b = wfn_b.mo.C.rows() - wfn_b.num_beta;
-                size_t nv_ab = nv_a + nv_b;
-
-                occ::log::debug("Merging virtual orbitals, sorted by energy");
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::b(wfn_a.mo.C).rightCols(nv_a),
-                    wfn_b.mo.C.rightCols(nv_b),
-                    block::b(wfn_a.mo.energies).bottomRows(nv_a),
-                    wfn_b.mo.energies.bottomRows(nv_b));
-                block::b(mo.C).rightCols(nv_ab) = C_merged;
-                block::b(mo.energies).bottomRows(nv_ab) = energies_merged;
-            }
-        } else {
-            { // alpha
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::a(wfn_a.mo.C).leftCols(wfn_a.num_alpha),
-                    block::a(wfn_b.mo.C).leftCols(wfn_b.num_alpha),
-                    block::a(wfn_a.mo.energies).topRows(wfn_a.num_alpha),
-                    block::a(wfn_b.mo.energies).topRows(wfn_b.num_alpha));
-                block::a(mo.C).leftCols(num_alpha) = C_merged;
-                block::a(mo.energies).topRows(num_alpha) = energies_merged;
-
-                // merge virtual orbitals
-                size_t nv_a = block::a(wfn_a.mo.C).rows() - wfn_a.num_alpha,
-                       nv_b = block::a(wfn_b.mo.C).rows() - wfn_b.num_alpha;
-                size_t nv_ab = nv_a + nv_b;
-
-                occ::log::debug("Merging virtual orbitals, sorted by energy");
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::a(wfn_a.mo.C).rightCols(nv_a),
-                    block::a(wfn_b.mo.C).rightCols(nv_b),
-                    wfn_a.mo.energies.bottomRows(nv_a),
-                    block::a(wfn_b.mo.energies).bottomRows(nv_b));
-                block::a(mo.C).rightCols(nv_ab) = C_merged;
-                block::a(mo.energies).bottomRows(nv_ab) = energies_merged;
-            }
-            { // beta
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::b(wfn_a.mo.C).leftCols(wfn_a.num_beta),
-                    block::b(wfn_b.mo.C).leftCols(wfn_b.num_beta),
-                    block::b(wfn_a.mo.energies).topRows(wfn_a.num_beta),
-                    block::b(wfn_b.mo.energies).topRows(wfn_b.num_beta));
-                block::b(mo.C).leftCols(num_beta) = C_merged;
-                block::b(mo.energies).topRows(num_beta) = energies_merged;
-
-                // merge virtual orbitals
-                size_t nv_a = block::b(wfn_a.mo.C).rows() - wfn_a.num_beta,
-                       nv_b = block::b(wfn_b.mo.C).rows() - wfn_b.num_beta;
-                size_t nv_ab = nv_a + nv_b;
-
-                occ::log::debug("Merging virtual orbitals, sorted by energy");
-                std::tie(C_merged, energies_merged) = merge_molecular_orbitals(
-                    block::b(wfn_a.mo.C).rightCols(nv_a),
-                    block::b(wfn_b.mo.C).rightCols(nv_b),
-                    block::b(wfn_a.mo.energies).bottomRows(nv_a),
-                    block::b(wfn_b.mo.energies).bottomRows(nv_b));
-                block::b(mo.C).rightCols(nv_ab) = C_merged;
-                block::b(mo.energies).bottomRows(nv_ab) = energies_merged;
-            }
-        }
-    }
-
+    mo = MolecularOrbitals(wfn_a.mo, wfn_b.mo);
+    spinorbital_kind = mo.kind;
     update_occupied_orbitals();
 
     if (wfn_a.have_xdm_parameters && wfn_b.have_xdm_parameters) {
@@ -327,28 +142,16 @@ void Wavefunction::update_occupied_orbitals() {
     mo.n_ao = nbf;
     mo.n_alpha = num_alpha;
     mo.n_beta = num_beta;
-    if (mo.C.size() == 0) {
-        return;
-    }
-    if (spinorbital_kind == SpinorbitalKind::General) {
-        throw std::runtime_error(
-            "Reading MOs from g09 unsupported for General spinorbitals");
-    } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        occ::log::debug("num alpha electrons = {}", num_alpha);
-        occ::log::debug("num beta electrons = {}", num_beta);
-        mo.Cocc =
-            occ::qm::orb::occupied_unrestricted(mo.C, num_alpha, num_beta);
-    } else {
-        occ::log::debug("num alpha electrons = {}", num_alpha);
-        occ::log::debug("num beta electrons = {}", num_alpha);
-        mo.Cocc = occ::qm::orb::occupied_restricted(mo.C, num_alpha);
-    }
+    mo.update_occupied_orbitals();
 }
 
 void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
     size_t rows, cols;
     nbf = basis.nbf();
     mo.kind = fchk.spinorbital_kind();
+    mo.n_alpha = num_alpha;
+    mo.n_beta = num_beta;
+    mo.n_ao = nbf;
     if (spinorbital_kind == SpinorbitalKind::General) {
         throw std::runtime_error(
             "Reading MOs from g09 unsupported for General spinorbitals");
@@ -383,33 +186,9 @@ void Wavefunction::compute_density_matrix() {
 
 void Wavefunction::symmetric_orthonormalize_molecular_orbitals(
     const Mat &overlap) {
-    if (spinorbital_kind == SpinorbitalKind::Restricted) {
-        mo.C = symmorthonormalize_molecular_orbitals(mo.C, overlap, num_alpha);
-    } else {
-        block::a(mo.C) = symmorthonormalize_molecular_orbitals(
-            block::a(mo.C), overlap, num_alpha);
-        block::b(mo.C) = symmorthonormalize_molecular_orbitals(
-            block::b(mo.C), overlap, num_beta);
-    }
+    mo = mo.symmetrically_orthonormalized(overlap);
+    // TODO remove this and make sure it's all performed in the mo method
     update_occupied_orbitals();
-}
-
-Mat symmetrically_orthonormalize(const Mat &mat, const Mat &metric) {
-    double threshold = 1.0 / std::numeric_limits<double>::epsilon();
-    Mat SS = mat.transpose() * metric * mat;
-    auto g = occ::core::gensqrtinv(SS, true, threshold);
-    return mat * g.result;
-}
-
-Mat symmorthonormalize_molecular_orbitals(const Mat &mos, const Mat &overlap,
-                                          size_t n_occ) {
-    Mat result(mos.rows(), mos.cols());
-    size_t n_virt = mos.cols() - n_occ;
-    Mat C_occ = mos.leftCols(n_occ);
-    Mat C_virt = mos.rightCols(n_virt);
-    result.leftCols(n_occ) = symmetrically_orthonormalize(C_occ, overlap);
-    result.rightCols(n_virt) = symmetrically_orthonormalize(C_virt, overlap);
-    return result;
 }
 
 void Wavefunction::apply_transformation(const occ::Mat3 &rot,

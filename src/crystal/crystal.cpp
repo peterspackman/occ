@@ -229,10 +229,26 @@ const PeriodicBondGraph &Crystal::unit_cell_connectivity() const {
     return m_bond_graph;
 }
 
+void Crystal::set_connectivity_criteria(bool guess) {
+    m_guess_connectivity = guess;
+}
+
 void Crystal::update_unit_cell_connectivity() const {
     auto s = slab({-1, -1, -1}, {1, 1, 1});
     size_t n_asym = num_sites();
     size_t n_uc = m_unit_cell_atoms.size();
+    m_bond_graph_vertices.clear();
+
+    for (size_t i = 0; i < n_uc; i++) {
+        m_bond_graph_vertices.push_back(
+            m_bond_graph.add_vertex(occ::core::graph::PeriodicVertex{i}));
+    }
+
+    if (!m_guess_connectivity) {
+        m_unit_cell_connectivity_needs_update = false;
+        return;
+    }
+
     occ::Mat3N cart_uc_pos = s.cart_pos.block(0, 0, 3, n_uc);
     occ::Mat3N cart_neighbor_pos =
         s.cart_pos.block(0, n_uc, 3, s.cart_pos.cols() - n_uc);
@@ -244,11 +260,6 @@ void Crystal::update_unit_cell_connectivity() const {
     std::vector<std::pair<size_t, double>> idxs_dists;
     double max_dist = (max_cov * 2 + 0.4) * (max_cov * 2 + 0.4);
     nanoflann::RadiusResultSet results(max_dist, idxs_dists);
-
-    for (size_t i = 0; i < n_uc; i++) {
-        m_bond_graph_vertices.push_back(
-            m_bond_graph.add_vertex(occ::core::graph::PeriodicVertex{i}));
-    }
 
     size_t num_connections = 0;
     auto add_edge = [&](double d, size_t uc_l, size_t uc_r, size_t asym_l,

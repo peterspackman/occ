@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <occ/core/linear_algebra.h>
+#include <occ/crystal/crystal.h>
 #include <occ/crystal/hkl.h>
 #include <occ/crystal/unitcell.h>
 #include <vector>

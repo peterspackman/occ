@@ -1,13 +1,165 @@
 #include <fmt/core.h>
+#include <occ/core/gensqrtinv.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
 #include <occ/qm/expectation.h>
+#include <occ/qm/merge.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/orb.h>
 
 namespace occ::qm {
+
+inline SpinorbitalKind compatible_kind(SpinorbitalKind a, SpinorbitalKind b) {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+
+    /*
+     * Table should look something like this:
+     *
+     * 	 r u g
+     * r R U G
+     * u U U G
+     * g G G G
+     */
+
+    if (a == b) // diagonal
+        return a;
+    if (a == R) // R U G row
+        return b;
+    if (b == R) // R U G col
+        return a;
+    if (a == G)
+        return a; // G G G row
+    return b;     // G G G col (should cover all cases
+}
+
+MolecularOrbitals::MolecularOrbitals(const MolecularOrbitals &mo1,
+                                     const MolecularOrbitals &mo2)
+    : n_alpha(mo1.n_alpha + mo2.n_alpha), n_beta(mo1.n_beta + mo2.n_beta),
+      n_ao(mo2.n_ao + mo1.n_ao), kind(compatible_kind(mo1.kind, mo2.kind)) {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+
+    auto [rows, cols] = matrix_dimensions(kind, n_ao);
+    C = Mat(rows, cols);
+    energies = Vec(rows);
+    // temporaries for merging orbitals
+    occ::log::debug("Merging occupied orbitals, sorted by energy");
+
+    auto merge_mo_block =
+        [](Eigen::Ref<Mat> dest, Eigen::Ref<Vec> dest_energies,
+           Eigen::Ref<const Mat> coeffs1, Eigen::Ref<const Mat> coeffs2,
+           Eigen::Ref<const Vec> energies1, Eigen::Ref<const Vec> energies2) {
+            auto [C_merged, energies_merged] = merge_molecular_orbitals(
+                coeffs1, coeffs2, energies1, energies2);
+            occ::log::debug("MO occ merged shape {} {}", C_merged.rows(),
+                            C_merged.cols());
+            dest = C_merged;
+            dest_energies = energies_merged;
+        };
+
+    // TODO refactor
+    if (kind == R) {
+        occ::log::debug(
+            "Merging spin-restricted occupied orbitals, sorted by energy");
+        merge_mo_block(C.leftCols(n_alpha), energies.topRows(n_alpha),
+                       mo1.C.leftCols(mo1.n_alpha), mo2.C.leftCols(mo2.n_alpha),
+                       mo1.energies.topRows(mo1.n_alpha),
+                       mo2.energies.topRows(mo2.n_alpha));
+
+        // merge virtual orbitals
+        size_t nv_a = mo1.n_ao - mo1.n_alpha;
+        size_t nv_b = mo2.n_ao - mo2.n_alpha;
+        size_t nv_ab = nv_a + nv_b;
+        if (nv_ab > 0) {
+            occ::log::debug(
+                "Merging spin-restricted virtual orbitals, sorted by energy");
+
+            merge_mo_block(C.rightCols(nv_ab), energies.bottomRows(nv_ab),
+                           mo1.C.rightCols(nv_a), mo2.C.rightCols(nv_b),
+                           mo1.energies.bottomRows(nv_a),
+                           mo2.energies.bottomRows(nv_b));
+        }
+    } else if (kind == U) {
+        MolecularOrbitals mo1_u = mo1.as_kind(U);
+        MolecularOrbitals mo2_u = mo2.as_kind(U);
+
+        Eigen::Ref<Mat> alpha_coeffs = block::a(C);
+        Eigen::Ref<Mat> beta_coeffs = block::b(C);
+        Eigen::Ref<Vec> alpha_energies = block::a(energies);
+        Eigen::Ref<Vec> beta_energies = block::b(energies);
+
+        Eigen::Ref<const Mat> alpha_mo1 = block::a(mo1_u.C);
+        Eigen::Ref<const Mat> alpha_mo1_energies = block::a(mo1_u.C);
+        Eigen::Ref<const Mat> beta_mo1 = block::b(mo1_u.C);
+        Eigen::Ref<const Mat> beta_mo1_energies = block::b(mo1_u.C);
+        size_t mo1_na = mo1_u.n_alpha;
+        size_t mo1_nb = mo1_u.n_beta;
+
+        Eigen::Ref<const Mat> alpha_mo2 = block::a(mo2_u.C);
+        Eigen::Ref<const Mat> alpha_mo2_energies = block::a(mo2_u.C);
+        Eigen::Ref<const Mat> beta_mo2 = block::b(mo2_u.C);
+        Eigen::Ref<const Mat> beta_mo2_energies = block::b(mo2_u.C);
+        size_t mo2_na = mo2_u.n_alpha;
+        size_t mo2_nb = mo2_u.n_beta;
+
+        occ::log::debug("Merging alpha spin-unrestricted occupied orbitals, "
+                        "sorted by energy");
+        merge_mo_block(alpha_coeffs.leftCols(n_alpha),
+                       alpha_energies.topRows(n_alpha),
+                       alpha_mo1.leftCols(mo1_na), alpha_mo2.leftCols(mo2_na),
+                       alpha_mo1_energies.topRows(mo1_na),
+                       alpha_mo2_energies.topRows(mo2_na));
+        // merge virtual orbitals
+        size_t nv_a = mo1_u.n_ao - mo1_na;
+        size_t nv_b = mo2_u.n_ao - mo2_na;
+        size_t nv_ab = nv_a + nv_b;
+
+        if (nv_ab > 0) {
+            occ::log::debug("Merging alpha spin-unrestricted virtual orbitals, "
+                            "sorted by energy");
+
+            merge_mo_block(alpha_coeffs.rightCols(nv_ab),
+                           alpha_energies.bottomRows(nv_ab),
+                           alpha_mo1.rightCols(nv_a), alpha_mo2.rightCols(nv_b),
+                           alpha_mo1_energies.bottomRows(nv_a),
+                           alpha_mo2_energies.bottomRows(nv_b));
+        }
+
+        occ::log::debug("Merging beta spin-unrestricted occupied orbitals, "
+                        "sorted by energy");
+        merge_mo_block(beta_coeffs.leftCols(n_beta),
+                       beta_energies.topRows(n_beta), beta_mo1.leftCols(mo1_nb),
+                       beta_mo2.leftCols(mo2_nb),
+                       beta_mo1_energies.topRows(mo1_nb),
+                       beta_mo2_energies.topRows(mo2_nb));
+
+        // merge virtual orbitals
+        nv_a = mo1.n_ao - mo1_nb;
+        nv_b = mo2.n_ao - mo2_nb;
+        nv_ab = nv_a + nv_b;
+
+        if (nv_ab > 0) {
+            occ::log::debug("Merging beta spin-unrestricted virtual orbitals, "
+                            "sorted by energy");
+
+            merge_mo_block(beta_coeffs.rightCols(nv_ab),
+                           beta_energies.bottomRows(nv_ab),
+                           beta_mo1.rightCols(nv_a), beta_mo2.rightCols(nv_b),
+                           beta_mo1_energies.bottomRows(nv_a),
+                           beta_mo2_energies.bottomRows(nv_b));
+        }
+    } else {
+        throw std::runtime_error(
+            "Merging general spinorbitals not implemented");
+    }
+    update_occupied_orbitals();
+    update_density_matrix();
+}
 
 void MolecularOrbitals::update(const Mat &ortho, const Mat &potential) {
     // solve F C = e S C by (conditioned) transformation to F' C' = e C',
@@ -26,10 +178,6 @@ void MolecularOrbitals::update(const Mat &ortho, const Mat &potential) {
 
         block::a(energies) = alpha_eig_solver.eigenvalues();
         block::b(energies) = beta_eig_solver.eigenvalues();
-
-        Cocc = Mat::Zero(2 * n_ao, std::max(n_alpha, n_beta));
-        Cocc.block(0, 0, n_ao, n_alpha) = block::a(C).leftCols(n_alpha);
-        Cocc.block(n_ao, 0, n_ao, n_beta) = block::b(C).leftCols(n_beta);
         break;
     }
     case SpinorbitalKind::Restricted: {
@@ -37,7 +185,6 @@ void MolecularOrbitals::update(const Mat &ortho, const Mat &potential) {
                                                       potential * ortho);
         C = ortho * eig_solver.eigenvectors();
         energies = eig_solver.eigenvalues();
-        Cocc = C.leftCols(n_alpha);
         break;
     }
     case SpinorbitalKind::General: {
@@ -46,11 +193,32 @@ void MolecularOrbitals::update(const Mat &ortho, const Mat &potential) {
                                                       potential * ortho);
         C = ortho * eig_solver.eigenvectors();
         energies = eig_solver.eigenvalues();
-        Cocc = C.leftCols(n_alpha);
         break;
     }
     }
+    update_occupied_orbitals();
     occ::timing::stop(occ::timing::category::mo);
+}
+
+void MolecularOrbitals::update_occupied_orbitals() {
+    if (C.size() == 0) {
+        return;
+    }
+    occ::log::debug("Updating occupied orbitals");
+    occ::log::debug("num alpha electrons = {}", n_alpha);
+    occ::log::debug("num beta electrons  = {}", n_beta);
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+
+    switch (kind) {
+    case U:
+        Cocc = occ::qm::orb::occupied_unrestricted(C, n_alpha, n_beta);
+        break;
+    default:
+        Cocc = occ::qm::orb::occupied_restricted(C, n_alpha);
+        break;
+    }
 }
 
 void MolecularOrbitals::update_density_matrix() {
@@ -192,22 +360,7 @@ void MolecularOrbitals::to_cartesian(const AOBasis &bspure,
     }
     n_ao = bscart.nbf();
     C = Cnew;
-    switch (kind) {
-    case SpinorbitalKind::Restricted: {
-        Cocc = C.leftCols(n_alpha);
-        break;
-    }
-    case SpinorbitalKind::Unrestricted: {
-        Cocc = Mat::Zero(2 * n_ao, std::max(n_alpha, n_beta));
-        Cocc.block(0, 0, n_ao, n_alpha) = block::a(C).leftCols(n_alpha);
-        Cocc.block(n_ao, 0, n_ao, n_beta) = block::b(C).leftCols(n_beta);
-        break;
-    }
-    case SpinorbitalKind::General: {
-        Cocc = C.leftCols(n_alpha);
-        break;
-    }
-    }
+    update_occupied_orbitals();
     update_density_matrix();
 }
 
@@ -259,22 +412,8 @@ void MolecularOrbitals::to_spherical(const AOBasis &bscart,
                 T * cb.block(bf_first_cart, 0, shell_size_cart, cb.cols());
         }
     }
-    switch (kind) {
-    case SpinorbitalKind::Restricted: {
-        Cocc = C.leftCols(n_alpha);
-        break;
-    }
-    case SpinorbitalKind::Unrestricted: {
-        Cocc = Mat::Zero(2 * n_ao, std::max(n_alpha, n_beta));
-        Cocc.block(0, 0, n_ao, n_alpha) = block::a(C).leftCols(n_alpha);
-        Cocc.block(n_ao, 0, n_ao, n_beta) = block::b(C).leftCols(n_beta);
-        break;
-    }
-    case SpinorbitalKind::General: {
-        Cocc = C.leftCols(n_alpha);
-        break;
-    }
-    }
+
+    update_occupied_orbitals();
     update_density_matrix();
 }
 
@@ -290,6 +429,158 @@ double MolecularOrbitals::expectation_value(const Mat &op) const {
     case G:
         return occ::qm::expectation<G>(D, op);
     }
+}
+
+Mat symmetrically_orthonormalize_matrix(const Mat &mat, const Mat &metric) {
+    double threshold = 1.0 / std::numeric_limits<double>::epsilon();
+    Mat SS = mat.transpose() * metric * mat;
+    auto g = occ::core::gensqrtinv(SS, true, threshold);
+    return mat * g.result;
+}
+
+MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
+    // do nothing if we don't have to
+    if (new_kind == kind)
+        return *this;
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+    MolecularOrbitals result = *this;
+
+    auto [rows, cols] = matrix_dimensions(new_kind, n_ao);
+    result.C = Mat::Zero(rows, cols);
+    result.energies = Vec::Zero(rows, cols);
+
+    switch (new_kind) {
+    default: {
+        switch (kind) {
+        case U: {
+            result.C = 0.5 * (block::a(C) + block::b(C));
+            result.energies = 0.5 * (block::a(energies) + block::b(energies));
+            break;
+        }
+        case G: {
+            // seems sensible
+            result.C = 0.5 * (block::aa(C) + block::bb(C));
+            result.energies = 0.5 * (block::aa(energies) + block::bb(energies));
+            break;
+        }
+        default: // impossible
+            throw std::runtime_error(
+                "impossible state in MolecularOrbitals::as_kind");
+        }
+    }
+    case U: {
+        switch (kind) {
+        case R: {
+            block::a(result.C) = C;
+            block::b(result.C) = C;
+            block::a(result.energies) = energies;
+            block::b(result.energies) = energies;
+            break;
+        }
+        case G: {
+            block::a(result.C) = block::aa(C);
+            block::b(result.C) = block::bb(C);
+            block::a(result.energies) = block::aa(energies);
+            block::b(result.energies) = block::bb(energies);
+            break;
+        }
+        default:
+            throw std::runtime_error(
+                "impossible state in MolecularOrbitals::as_kind");
+        }
+    }
+    case G: {
+        switch (kind) {
+        case R: {
+            block::aa(result.C) = C;
+            block::ab(result.C) = C;
+            block::ba(result.C) = C;
+            block::bb(result.C) = C;
+            block::aa(result.energies) = energies;
+            block::ab(result.energies) = energies;
+            block::ba(result.energies) = energies;
+            block::bb(result.energies) = energies;
+            break;
+        }
+        case U: {
+            block::aa(result.C) = block::a(C);
+            block::ab(result.C) = 0.5 * (block::a(C) + block::b(C));
+            block::ba(result.C) = 0.5 * (block::a(C) + block::b(C));
+            block::bb(result.C) = block::b(C);
+            block::aa(result.energies) = block::a(energies);
+            block::ab(result.energies) =
+                0.5 * (block::a(energies) + block::b(energies));
+            block::ba(result.energies) =
+                0.5 * (block::a(energies) + block::b(energies));
+            block::bb(result.energies) = block::b(energies);
+            break;
+        }
+        default:
+            throw std::runtime_error(
+                "impossible state in MolecularOrbitals::as_kind");
+        }
+    }
+    }
+    result.update_occupied_orbitals();
+    result.update_density_matrix();
+    return result;
+}
+
+MolecularOrbitals MolecularOrbitals::symmetrically_orthonormalized(
+    const Mat &overlap_matrix) const {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+
+    MolecularOrbitals result = *this;
+    size_t n_occ = result.Cocc.cols();
+    size_t n_virt = result.C.cols() - n_occ;
+
+    switch (kind) {
+    default: {
+        result.C.leftCols(n_occ) =
+            symmetrically_orthonormalize_matrix(result.Cocc, overlap_matrix);
+
+        if (n_virt > 0) {
+            Mat Cvirt = C.rightCols(n_virt);
+            result.C.rightCols(n_virt) =
+                symmetrically_orthonormalize_matrix(Cvirt, overlap_matrix);
+        }
+        break;
+    }
+    case U: {
+        // alpha spin
+        block::a(result.C).leftCols(n_occ) =
+            symmetrically_orthonormalize_matrix(block::a(result.Cocc),
+                                                overlap_matrix);
+        // beta spin
+        block::b(result.C).leftCols(n_occ) =
+            symmetrically_orthonormalize_matrix(block::b(result.Cocc),
+                                                overlap_matrix);
+
+        if (n_virt > 0) {
+            Mat Cvirt = result.C.rightCols(n_virt);
+
+            block::a(result.C).rightCols(n_virt) =
+                symmetrically_orthonormalize_matrix(block::a(Cvirt),
+                                                    overlap_matrix);
+            block::b(result.C).rightCols(n_virt) =
+                symmetrically_orthonormalize_matrix(block::b(Cvirt),
+                                                    overlap_matrix);
+        }
+        break;
+    }
+    case G: {
+        throw std::runtime_error("Symmetric orthonormalization not implemented "
+                                 "for General spinorbitals");
+        break;
+    }
+    }
+    result.update_occupied_orbitals();
+    result.update_density_matrix();
+    return result;
 }
 
 } // namespace occ::qm

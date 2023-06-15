@@ -93,8 +93,8 @@ struct CrystalAtomRegion {
  */
 struct CrystalDimers {
     struct SymmetryRelatedDimer {
-	occ::core::Dimer dimer;
-	int unique_index{-1};
+        occ::core::Dimer dimer;
+        int unique_index{-1};
     };
     using MoleculeNeighbors = std::vector<SymmetryRelatedDimer>;
     /**
@@ -464,6 +464,11 @@ class Crystal {
     std::string dimer_symmetry_string(const occ::core::Dimer &dimer) const;
 
     /**
+     * \brief Specify the behaviour for guessing/finding bonds.
+     */
+    void set_connectivity_criteria(bool guess = true);
+
+    /**
      * \brief Creates a primitive supercell from a crystal lattice.
      *
      * Given a crystal lattice, this method constructs a new lattice that is a
@@ -486,6 +491,7 @@ class Crystal {
     AsymmetricUnit m_asymmetric_unit;
     SpaceGroup m_space_group;
     UnitCell m_unit_cell;
+    bool m_guess_connectivity{false};
     void update_unit_cell_molecules() const;
     void update_symmetry_unique_molecules() const;
     void update_unit_cell_connectivity() const;

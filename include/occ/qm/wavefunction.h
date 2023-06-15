@@ -113,8 +113,6 @@ struct Wavefunction {
     double xdm_energy{0.0};
 };
 
-Mat symmorthonormalize_molecular_orbitals(const Mat &mos, const Mat &overlap,
-                                          size_t n_occ);
 } // namespace occ::qm
 
 template <> struct fmt::formatter<occ::qm::Energy> {

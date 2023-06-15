@@ -6,6 +6,9 @@ namespace occ::qm {
 class AOBasis;
 
 struct MolecularOrbitals {
+    MolecularOrbitals(const MolecularOrbitals &) = default;
+    MolecularOrbitals() = default;
+    MolecularOrbitals(const MolecularOrbitals &, const MolecularOrbitals &);
     SpinorbitalKind kind{SpinorbitalKind::Restricted};
     size_t n_alpha{0}, n_beta{0}, n_ao{0};
     Mat C;
@@ -14,6 +17,7 @@ struct MolecularOrbitals {
     Vec energies;
     void update(const Mat &ortho, const Mat &potential);
     void update_density_matrix();
+    void update_occupied_orbitals();
     void rotate(const AOBasis &basis, const occ::Mat3 &rotation);
     void to_cartesian(const AOBasis &bspure, const AOBasis &bscart);
     void to_spherical(const AOBasis &bscart, const AOBasis &bspure);
@@ -39,6 +43,10 @@ struct MolecularOrbitals {
             return Cocc.block(n_ao, 0, n_ao, n_alpha);
         }
     }
+
+    MolecularOrbitals
+    symmetrically_orthonormalized(const Mat &overlap_matrix) const;
+    MolecularOrbitals as_kind(SpinorbitalKind) const;
 };
 
 } // namespace occ::qm

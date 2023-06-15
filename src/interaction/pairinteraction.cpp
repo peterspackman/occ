@@ -207,8 +207,8 @@ double population_difference(const Wavefunction &ABo, const Wavefunction &ABn,
                              const Mat &S_AB) {
     Mat Cocc_diff = ABo.mo.Cocc - ABn.mo.Cocc;
     if (ABn.is_restricted()) {
-        fmt::print("ABo population: {}\n", 2 * (ABo.mo.D * S_AB).trace());
-        fmt::print("ABn population: {}\n", 2 * (ABn.mo.D * S_AB).trace());
+        occ::log::debug("ABo population: {}", 2 * (ABo.mo.D * S_AB).trace());
+        occ::log::debug("ABn population: {}", 2 * (ABn.mo.D * S_AB).trace());
         Mat Ddiff = occ::qm::orb::density_matrix_restricted(Cocc_diff);
         return 2 * (Ddiff * S_AB).trace();
 

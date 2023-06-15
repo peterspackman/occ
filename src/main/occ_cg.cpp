@@ -10,7 +10,6 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
-#include <occ/crystal/surface.h>
 #include <occ/dft/dft.h>
 #include <occ/interaction/disp.h>
 #include <occ/interaction/pairinteraction.h>
@@ -21,10 +20,10 @@
 #include <occ/io/eigen_json.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
-#include <occ/io/gmf.h>
 #include <occ/io/kmcpp.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/xyz.h>
+#include <occ/main/crystal_surface_energy.h>
 #include <occ/main/pair_energy.h>
 #include <occ/main/single_point.h>
 #include <occ/main/solvation_partition.h>
@@ -571,6 +570,9 @@ class CEModelCrystalGrowthCalculator {
                 fmt::format("Require {} charges to be specified, found {}",
                             m_molecules.size(), charges.size()));
         }
+        for (int i = 0; i < charges.size(); i++) {
+            m_molecules[i].set_charge(charges[i]);
+        }
     }
 
     std::tuple<CEEnergyComponents, double, double>
@@ -774,6 +776,9 @@ class XTBCrystalGrowthCalculator {
             throw std::runtime_error(
                 fmt::format("Require {} charges to be specified, found {}",
                             m_molecules.size(), charges.size()));
+        }
+        for (int i = 0; i < charges.size(); i++) {
+            m_molecules[i].set_charge(charges[i]);
         }
     }
 
@@ -990,100 +995,6 @@ void list_available_solvents() {
     }
 }
 
-void calculate_crystal_surface_energies(const std::string &filename,
-                                        const Crystal &crystal,
-                                        const CrystalDimers &uc_dimers,
-                                        int max_number_of_surfaces,
-                                        int sign = -1) {
-    occ::crystal::CrystalSurfaceGenerationParameters params;
-    occ::io::GMFWriter gmf(crystal);
-    gmf.set_title("created by occ-cg");
-    gmf.set_name(filename);
-    params.d_min = 0.1;
-    params.unique = true;
-    auto surfaces = occ::crystal::generate_surfaces(crystal, params);
-    fmt::print("Top {} surfaces\n", max_number_of_surfaces);
-    int number_of_surfaces = 0;
-
-    // find unique positions to consider
-    occ::Mat3N unique_positions(3, crystal.unit_cell_molecules().size());
-    fmt::print("Unique positions to check: {}\n", unique_positions.cols());
-    {
-        int i = 0;
-        for (const auto &mol : crystal.unit_cell_molecules()) {
-            unique_positions.col(i) = mol.center_of_mass();
-            i++;
-        }
-    }
-    const double kjmol_jm2_fac = 0.16604390671;
-
-    for (const auto &surf : surfaces) {
-        fmt::print("{:=^72s}\n", "  Surface  ");
-        surf.print();
-        auto cuts = surf.possible_cuts(unique_positions);
-        fmt::print("{} unique cuts\n", cuts.size());
-        double min_shift = 0.0;
-        double min_energy = std::numeric_limits<double>::max();
-
-        for (const double &cut : cuts) {
-            fmt::print("cut offset = {:.6f} * depth\n", cut);
-            auto result =
-                surf.count_crystal_dimers_cut_by_surface(uc_dimers, cut);
-            size_t num_molecules = result.molecules.size();
-            fmt::print("Num molecules = {} ({} in crystal uc)\n", num_molecules,
-                       uc_dimers.molecule_neighbors.size());
-            {
-                double surface_energy_a = result.total_above(uc_dimers);
-                fmt::print("Surface energy (A) (kJ/mol) = {:12.3f}\n",
-                           surface_energy_a);
-                surface_energy_a = sign *
-                                   (surface_energy_a * 0.5 / surf.area()) *
-                                   kjmol_jm2_fac;
-                fmt::print("Surface energy (A) (J/m^2)  = {:12.6f}\n",
-                           surface_energy_a);
-            }
-
-            {
-                double surface_energy_b = result.total_below(uc_dimers);
-                fmt::print("Surface energy (B) (kJ/mol) = {:12.3f}\n",
-                           surface_energy_b);
-                surface_energy_b = sign *
-                                   (surface_energy_b * 0.5 / surf.area()) *
-                                   kjmol_jm2_fac;
-                fmt::print("Surface energy (B) (J/m^2)  = {:12.6f}\n",
-                           surface_energy_b);
-            }
-
-            {
-                double bulk_energy = result.total_bulk(uc_dimers);
-                double slab_energy = result.total_slab(uc_dimers);
-                fmt::print("Bulk energy (kJ/mol)        = {:12.3f}\n",
-                           bulk_energy);
-                fmt::print("Slab energy (kJ/mol)        = {:12.3f}\n",
-                           slab_energy);
-                double surface_energy = sign * 0.5 * kjmol_jm2_fac *
-                                        (bulk_energy - slab_energy) /
-                                        (surf.area() * 2);
-                fmt::print("Surface energy (S) (J/m^2)  = {:12.6f}\n",
-                           surface_energy);
-                if (surface_energy < min_energy) {
-                    min_shift = cut;
-                    min_energy = surface_energy;
-                }
-            }
-        }
-
-        occ::io::GMFWriter::Facet facet{surf.hkl(), min_shift, 1, 1,
-                                        min_energy};
-        gmf.add_facet(facet);
-
-        number_of_surfaces++;
-        if (number_of_surfaces >= max_number_of_surfaces)
-            break;
-    }
-    gmf.write(filename);
-}
-
 int main(int argc, char **argv) {
     CLI::App app(
         "occ-cg - Interactions of molecules with neighbours in a crystal");
@@ -1097,6 +1008,7 @@ int main(int argc, char **argv) {
     bool write_kmcpp_file{false};
     bool use_xtb{false};
     bool list_solvents{false};
+    bool crystal_is_atomic{false};
     std::string model_name{"ce-b3lyp"};
 
     CLI::Option *input_option =
@@ -1118,6 +1030,8 @@ int main(int argc, char **argv) {
                  "write out an input file for kmcpp program");
     app.add_flag("--xtb", use_xtb, "use xtb for interaction energies");
     app.add_flag("-d,--dump", write_dump_files, "Write dump files");
+    app.add_flag("--atomic", crystal_is_atomic,
+                 "Crystal is atomic (i.e. no bonds)");
     app.add_flag("--surface-energies", max_facets,
                  "Calculate surface energies and write .gmf morphology files");
     app.add_flag("--list-available-solvents", list_solvents,
@@ -1148,6 +1062,10 @@ int main(int argc, char **argv) {
     try {
         std::string basename = fs::path(cif_filename).stem().string();
         Crystal c_symm = read_crystal(cif_filename);
+
+        if (crystal_is_atomic) {
+            c_symm.set_connectivity_criteria(false);
+        }
 
         if (use_xtb) {
 
@@ -1268,18 +1186,18 @@ int main(int argc, char **argv) {
 
             if (max_facets > 0) {
                 fmt::print("Crystal surface energies (solvated)\n");
-                calculate_crystal_surface_energies(
+                occ::main::calculate_crystal_surface_energies(
                     fmt::format("{}_{}.gmf", basename, solvent), calc.crystal(),
                     uc_dimers, max_facets, 1);
                 fmt::print("Crystal surface energies (vacuum)\n");
-                calculate_crystal_surface_energies(
+                occ::main::calculate_crystal_surface_energies(
                     fmt::format("{}_vacuum.gmf", basename), calc.crystal(),
                     uc_dimers_vacuum, max_facets, -1);
             }
 
             write_uc_json(calc.crystal(), uc_dimers);
 
-            write_cg_net_file(fmt::format("{}_net.txt", basename),
+            write_cg_net_file(fmt::format("{}_{}_net.txt", basename, solvent),
                               calc.crystal(), uc_dimers);
         }
 
