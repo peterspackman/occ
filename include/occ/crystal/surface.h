@@ -26,6 +26,8 @@ struct SurfaceCutResult {
     double total_below(const CrystalDimers &) const;
     double total_slab(const CrystalDimers &) const;
     double total_bulk(const CrystalDimers &) const;
+    std::vector<std::vector<size_t>>
+    unique_counts_above(const CrystalDimers &) const;
 };
 
 class Surface {

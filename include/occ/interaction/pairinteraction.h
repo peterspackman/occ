@@ -6,6 +6,7 @@
 #include <occ/qm/hf_fwd.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
+#include <string>
 
 namespace occ::interaction {
 
@@ -14,37 +15,49 @@ using occ::qm::Wavefunction;
 
 struct CEParameterizedModel {
     const double coulomb{1.0};
-    const double exchange_repulsion{1.0};
+    const double exchange{1.0};
+    const double repulsion{1.0};
     const double polarization{1.0};
     const double dispersion{1.0};
-    const std::string name{"Unscaled"};
+    std::string name{"Unscaled"};
+    std::string method{"b3lyp"};
+    std::string basis{"6-31g**"};
     bool xdm{false};
-    double xdm_a1{0.21}, xdm_a2{3.05};
-    double scaled_total(double coul, double ex, double pol, double disp) const {
-        return coulomb * coul + exchange_repulsion * ex + polarization * pol +
-               dispersion * disp;
+    double xdm_a1{0.65}, xdm_a2{1.70};
+    double scaled_total(double coul, double ex, double rep, double pol,
+                        double disp) const {
+        return coulomb * coul + exchange * ex + repulsion * rep +
+               polarization * pol + dispersion * disp;
     }
 };
 
-inline CEParameterizedModel CE_HF_321G{1.019, 0.811,   0.651,
-                                       0.901, "CE-HF", false};
-inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573, 0.6177,     0.7399,
-                                            0.8708, "CE-B3LYP", false};
-inline CEParameterizedModel CE_XDM_FIT{1.0, 1.0, 1.0, 1.0, "CE-XDM-FIT", true};
-inline CEParameterizedModel CE2_XDM{1.0, 0.485, 0.803, 1.0, "CE2-XDM", true};
+inline CEParameterizedModel CE_HF_321G{1.019,   0.811, 0.811,   0.651, 0.901,
+                                       "CE-HF", "hf",  "3-21g", false};
+inline CEParameterizedModel CE_B3LYP_631Gdp{1.0573,  0.6177,    0.6177,
+                                            0.7399,  0.8708,    "CE-B3LYP",
+                                            "b3lyp", "6-31g**", false};
+inline CEParameterizedModel CE_XDM_FIT{
+    1.0,       1.0,        1.0,  1.0,  1.0, "CE-XDM-FIT",
+    "wb97m-v", "def2-svp", true, 0.65, 1.70};
 
-inline CEParameterizedModel CE_HF_SVP{1.0,         0.485, 0.803, 1.0,
-                                      "CE-HF-SVP", true,  0.65,  1.7};
-inline CEParameterizedModel CE_LDA_SVP{1.0,          0.485, 0.803, 1.0,
-                                       "CE-LDA-SVP", true,  0.65,  1.7};
-inline CEParameterizedModel CE_BLYP_SVP{1.0,           0.485, 0.803, 1.0,
-                                        "CE-BLYP-SVP", true,  0.65,  1.7};
-inline CEParameterizedModel CE_B3LYP_SVP{
-    1.0, 0.485, 0.803, 1.0, "CE-B3LYP-SVP", true, 0.65, 1.7};
-inline CEParameterizedModel CE_WB97M_SVP{
-    1.0, 0.485, 0.803, 1.0, "CE-WB97M-SVP", true, 0.65, 1.7};
-inline CEParameterizedModel CE_WB97X_SVP{
-    1.0, 0.485, 0.803, 1.0, "CE-WB97X-SVP", true, 0.65, 1.7};
+inline constexpr double CE1p_XDM_KREP{0.77850434};
+
+inline CEParameterizedModel CE1_XDM_WB97MV{
+    1.0,           1.0,        CE1p_XDM_KREP,
+    CE1p_XDM_KREP, 1.0,        "CE1p-XDM-wB97M-V",
+    "wb97m-v",     "def2-svp", true,
+    0.65,          1.70};
+inline CEParameterizedModel CE2_XDM_WB97MV{
+    1.0,       0.485,      0.485, 0.803, 1.0, "CE2p-XDM-wB97M-V",
+    "wb97m-v", "def2-svp", true,  0.65,  1.70};
+
+inline CEParameterizedModel CE5_XDM_WB97MV{
+    1.0051,    0.6705,     0.6,  0.7929, 1.0509, "CE5p-XDM-wB97M-V",
+    "wb97m-v", "def2-svp", true, 0.65,   1.70};
+
+inline CEParameterizedModel CE1_XDM = CE1_XDM_WB97MV;
+inline CEParameterizedModel CE2_XDM = CE2_XDM_WB97MV;
+inline CEParameterizedModel CE5_XDM = CE5_XDM_WB97MV;
 
 struct CEMonomerCalculationParameters {
     double precision{1e-12};
@@ -89,6 +102,8 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
         // if charged atoms, use charged atomic polarizabilities
         bool charged_a = (wfn_a.atoms.size() == 1) && (wfn_a.charge() != 0);
         bool charged_b = (wfn_b.atoms.size() == 1) && (wfn_b.charge() != 0);
+        occ::log::debug("using charged atom polarizabilities: A={} B={}",
+                        charged_a, charged_b);
         e_pol = ce_model_polarization_energy(wfn_a.atomic_numbers(), field_a,
                                              charged_a) +
                 ce_model_polarization_energy(wfn_b.atomic_numbers(), field_b,
@@ -102,42 +117,29 @@ inline CEParameterizedModel ce_model_from_string(const std::string &s) {
         return CE_B3LYP_631Gdp;
     if (s == "ce-hf")
         return CE_HF_321G;
-    if (s == "ce-xdm-fit")
-        return CE_XDM_FIT;
-    const std::string ce2{"ce2-xdm"};
-    if (s.compare(0, ce2.size(), ce2) == 0)
+    if (s == "ce-1p" || s == "ce1p" || s == "ce-1p-xdm")
+        return CE1_XDM;
+    if (s == "ce-2p" || s == "ce2p" || s == "ce-2p-xdm")
         return CE2_XDM;
-    if (s == "ce-b3lyp")
-        return CE_B3LYP_631Gdp;
-    if (s == "ce-hf")
-        return CE_HF_321G;
-    if (s == "ce-xdm-fit")
-        return CE_XDM_FIT;
-    if (s == "ce-hf-svp")
-        return CE_HF_SVP;
-    if (s == "ce-lda-svp")
-        return CE_LDA_SVP;
-    if (s == "ce-blyp-svp")
-        return CE_BLYP_SVP;
-    if (s == "ce-b3lyp-svp")
-        return CE_B3LYP_SVP;
-    if (s == "ce-wb97x-svp")
-        return CE_WB97X_SVP;
-    if (s == "ce-wb97m-svp")
-        return CE_WB97M_SVP;
-    if (s == "ce-xdm-wb97m-v")
-        return CE_WB97M_SVP;
-    return CEParameterizedModel{};
+    if (s == "ce-5p" || s == "ce5p" || s == "ce-5p-xdm")
+        return CE5_XDM;
+    if (s == "ce-1p-wb97m-v" || s == "ce1p-wb97m-v" || s == "ce-1p-wb97m-v")
+        return CE1_XDM;
+    if (s == "ce-2p-wb97m-v" || s == "ce2p-wb97m-v" || s == "ce-2p-wb97m-v")
+        return CE2_XDM;
+    if (s == "ce-5p-wb97m-v" || s == "ce5p-wb97m-v" || s == "ce-5p-wb97m-v")
+        return CE5_XDM;
+    return CE1_XDM;
 }
 
 struct CEEnergyComponents {
     double coulomb{0.0};
-    double exchange_repulsion{0.0};
+    double exchange{0.0};
+    double repulsion{0.0};
     double polarization{0.0};
     double dispersion{0.0};
     double total{0.0};
-    double exchange_component{0.0};
-    double repulsion_component{0.0};
+    double exchange_repulsion{0.0};
     double nonorthogonal_term{0.0};
     double orthogonal_term{0.0};
     bool is_computed{false};
@@ -145,7 +147,7 @@ struct CEEnergyComponents {
     double coulomb_kjmol() const {
         return occ::units::AU_TO_KJ_PER_MOL * coulomb;
     }
-    double exchange_kjmol() const {
+    double exchange_repulsion_kjmol() const {
         return occ::units::AU_TO_KJ_PER_MOL * exchange_repulsion;
     }
     double polarization_kjmol() const {
@@ -156,31 +158,47 @@ struct CEEnergyComponents {
     }
 
     double repulsion_kjmol() const {
-        return occ::units::AU_TO_KJ_PER_MOL * repulsion_component;
+        return occ::units::AU_TO_KJ_PER_MOL * repulsion;
     }
 
-    double exchange_component_kjmol() const {
-        return occ::units::AU_TO_KJ_PER_MOL * exchange_component;
+    double exchange_kjmol() const {
+        return occ::units::AU_TO_KJ_PER_MOL * exchange;
     }
 
     double total_kjmol() const { return occ::units::AU_TO_KJ_PER_MOL * total; }
 
     inline auto operator-(const CEEnergyComponents &rhs) {
         return CEEnergyComponents{coulomb - rhs.coulomb,
-                                  exchange_repulsion - rhs.exchange_repulsion,
+                                  exchange - rhs.exchange,
+                                  repulsion - rhs.repulsion,
                                   polarization - rhs.polarization,
                                   dispersion - rhs.dispersion,
                                   total - rhs.total,
+                                  exchange_repulsion - rhs.exchange_repulsion,
+                                  nonorthogonal_term - rhs.nonorthogonal_term,
+                                  orthogonal_term - rhs.orthogonal_term,
                                   true};
     }
 
     inline auto operator+(const CEEnergyComponents &rhs) {
         return CEEnergyComponents{coulomb + rhs.coulomb,
-                                  exchange_repulsion + rhs.exchange_repulsion,
+                                  exchange + rhs.exchange,
+                                  repulsion + rhs.repulsion,
                                   polarization + rhs.polarization,
                                   dispersion + rhs.dispersion,
                                   total + rhs.total,
+                                  exchange_repulsion + rhs.exchange_repulsion,
+                                  nonorthogonal_term + rhs.nonorthogonal_term,
+                                  orthogonal_term + rhs.orthogonal_term,
                                   true};
+    }
+
+    inline auto operator+=(const CEEnergyComponents &rhs) {
+        *this = *this + rhs;
+    }
+
+    inline auto operator-=(const CEEnergyComponents &rhs) {
+        *this = *this - rhs;
     }
 };
 

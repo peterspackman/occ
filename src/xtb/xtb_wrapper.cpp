@@ -150,6 +150,7 @@ void XTBCalculator::set_solvent(const std::string &solvent) {
 }
 
 double XTBCalculator::single_point_energy() {
+    using subprocess::CalledProcessError;
     using subprocess::CompletedProcess;
     using subprocess::PipeOption;
     using subprocess::RunBuilder;
@@ -170,8 +171,14 @@ double XTBCalculator::single_point_energy() {
         fmt::format("{}", occ::parallel::get_num_threads());
     auto process = subprocess::run(
         command_line,
-        RunBuilder().cerr(PipeOption::pipe).cout(PipeOption::pipe).check(true));
-
+        RunBuilder().cerr(PipeOption::pipe).cout(PipeOption::pipe));
+    if (process.returncode != 0) {
+        occ::log::critical("Error encountered when running xtb, return code = "
+                           "{}, stdout contents:\n{}",
+                           process.returncode, process.cout);
+        occ::log::critical("stderr:\n{}", process.cerr);
+        throw std::runtime_error("Failure when running xtb");
+    }
     read_json_contents("xtbout.json");
     read_engrad_contents(xtbengrad_filename);
     return m_energy;

@@ -491,7 +491,7 @@ class Crystal {
     AsymmetricUnit m_asymmetric_unit;
     SpaceGroup m_space_group;
     UnitCell m_unit_cell;
-    bool m_guess_connectivity{false};
+    bool m_guess_connectivity{true};
     void update_unit_cell_molecules() const;
     void update_symmetry_unique_molecules() const;
     void update_unit_cell_connectivity() const;

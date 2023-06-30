@@ -391,6 +391,40 @@ std::vector<Molecule> Surface::find_molecule_cell_translations(
     return result;
 }
 
+std::vector<std::vector<size_t>>
+unique_counts_from_dimers(const SurfaceCutResult::DimerCounts &counts,
+                          const CrystalDimers &dimers) {
+
+    size_t max_unique_interaction = 0;
+    int max_asym_idx = 0;
+    for (const auto &mol_neighbors : dimers.molecule_neighbors) {
+        for (const auto &pair : mol_neighbors) {
+            max_unique_interaction =
+                std::max(max_unique_interaction, pair.dimer.interaction_id());
+            max_asym_idx = std::max(max_asym_idx,
+                                    pair.dimer.a().asymmetric_molecule_idx());
+        }
+    }
+
+    std::vector<std::vector<size_t>> result;
+    for (size_t i = 0; i <= max_asym_idx; i++) {
+        result.push_back(std::vector<size_t>(max_unique_interaction + 1, 0));
+    }
+
+    for (int i = 0; i < counts.size(); i++) {
+        const auto &neighbor_counts = counts[i];
+        const auto &neighbors = dimers.molecule_neighbors[i];
+        for (int j = 0; j < neighbor_counts.size(); j++) {
+            if (neighbor_counts[j] > 0) {
+                const auto &d = neighbors[j].dimer;
+                size_t asym_idx = d.a().asymmetric_molecule_idx();
+                result[asym_idx][d.interaction_id()] += neighbor_counts[j];
+            }
+        }
+    }
+    return result;
+}
+
 double
 energy_from_counts_and_dimers(const SurfaceCutResult::DimerCounts &counts,
                               const CrystalDimers &dimers) {
@@ -406,6 +440,11 @@ energy_from_counts_and_dimers(const SurfaceCutResult::DimerCounts &counts,
         }
     }
     return energy_total;
+}
+
+std::vector<std::vector<size_t>>
+SurfaceCutResult::unique_counts_above(const CrystalDimers &dimers) const {
+    return unique_counts_from_dimers(above, dimers);
 }
 
 double SurfaceCutResult::total_above(const CrystalDimers &dimers) const {

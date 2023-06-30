@@ -70,6 +70,7 @@ Vec chelpg_charges(const Wavefunction &wfn) {
     distances.conservativeResize(current, num_atoms);
 
     HartreeFock hf(wfn.basis);
+    hf.set_system_charge(wfn.charge());
     Vec esp =
         hf.electronic_electric_potential_contribution(wfn.mo, grid_points) +
         hf.nuclear_electric_potential_contribution(grid_points);

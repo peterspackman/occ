@@ -330,11 +330,11 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     }
 
     double E_rep = eABo - eABn;
-    energy.repulsion_component = E_rep;
+    energy.repulsion = E_rep;
     energy.orthogonal_term = eABo;
     energy.nonorthogonal_term = eABn;
-    energy.exchange_component = E_ABn.exchange;
-    energy.exchange_repulsion = E_ABn.exchange + E_rep;
+    energy.exchange = E_ABn.exchange;
+    energy.exchange_repulsion = energy.repulsion + energy.exchange;
     occ::log::debug("Exchange repulsion components:");
     occ::log::debug("ABn core term      {:20.12f}", ABn.energy.core);
     occ::log::debug("ABn exchange term  {:20.12f}", ABn.energy.exchange);
@@ -391,9 +391,9 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     }
     energy.polarization = compute_polarization_energy(A, hf_a, B, hf_b);
 
-    energy.total =
-        m_scale_factors.scaled_total(energy.coulomb, energy.exchange_repulsion,
-                                     energy.polarization, energy.dispersion);
+    energy.total = m_scale_factors.scaled_total(
+        energy.coulomb, energy.exchange, energy.repulsion, energy.polarization,
+        energy.dispersion);
     return energy;
 }
 
@@ -539,9 +539,10 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     }
     energy.polarization = compute_polarization_energy(A, dft_a, B, dft_b);
 
-    energy.total =
-        m_scale_factors.scaled_total(energy.coulomb, energy.exchange_repulsion,
-                                     energy.polarization, energy.dispersion);
+    energy.total = m_scale_factors.scaled_total(
+        energy.coulomb, energy.exchange, energy.repulsion, energy.polarization,
+        energy.dispersion);
+
     return energy;
 }
 

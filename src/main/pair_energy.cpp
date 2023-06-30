@@ -21,9 +21,8 @@ namespace fs = std::filesystem;
 
 namespace occ::interaction {
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CEEnergyComponents, coulomb,
-                                   exchange_repulsion, polarization, dispersion,
-                                   total)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CEEnergyComponents, coulomb, exchange,
+                                   repulsion, polarization, dispersion, total)
 }
 
 namespace occ::main {
@@ -205,25 +204,6 @@ class CEPairEnergyFunctor {
 
         auto interaction_energy = interaction(A, B);
         interaction_energy.is_computed = true;
-
-        /*
-        // TODO delete this
-        bool use_hb_term = false;
-
-        if (use_hb_term) {
-            double hb_term = occ::interaction::dreiding_type_hb_correction(
-                2.21030684, 2.54060627, dimer);
-            fmt::print("HB term: {}\n", hb_term);
-            interaction_energy.exchange_repulsion -=
-                hb_term / occ::units::AU_TO_KJ_PER_MOL;
-
-            interaction_energy.total = model.scaled_total(
-                interaction_energy.coulomb,
-                interaction_energy.exchange_repulsion,
-                interaction_energy.polarization,
-        interaction_energy.dispersion);
-        }
-        */
 
         occ::log::debug("Finished model energy");
         return interaction_energy;
@@ -540,14 +520,15 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
         }
 
         const auto &mol_neighbors = all_dimers.molecule_neighbors;
-        double etot{0.0};
+        CEEnergyComponents total;
         size_t mol_idx{0};
+        double epol_total{0};
         double ecoul_real{0};
         double ecoul_exact_real{0};
         double ecoul_self{0};
         double coulomb_scale_factor = energy_model.coulomb_scale_factor();
         for (const auto &n : mol_neighbors) {
-            double molecule_total{0.0};
+            CEEnergyComponents molecule_total;
             size_t dimer_idx{0};
 
             Mat3N efield = Mat3N::Zero(3, asym_mols[mol_idx].size());
@@ -562,7 +543,8 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                 const auto &e = converged_energies[unique_idx];
 
                 if (e.is_computed) {
-                    molecule_total += e.total_kjmol();
+                    molecule_total += e;
+                    epol_total += e.polarization_kjmol();
                     if (conv.wolf_sum) {
                         double e_charge = charge_energies[unique_idx];
                         ecoul_exact_real += 0.5 * e.coulomb_kjmol();
@@ -584,7 +566,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                 }
                 dimer_idx++;
             }
-            etot += molecule_total;
+            total += molecule_total;
             if (conv.wolf_sum) {
                 ecoul_self += wolf.charge_self_energies[mol_idx] *
                               units::AU_TO_KJ_PER_MOL;
@@ -617,7 +599,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
             }
             mol_idx++;
         }
-        lattice_energy = 0.5 * etot;
+        lattice_energy = 0.5 * total.total_kjmol();
         if (conv.wolf_sum) {
             occ::log::debug("Charge-charge intramolecular: {}", ecoul_self);
             occ::log::debug("Charge-charge real space: {}", ecoul_real);
@@ -629,11 +611,22 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                                 ecoul_exact_real);
             lattice_energy =
                 coulomb_scale_factor * (wolf.energy - ecoul_self - ecoul_real) +
-                0.5 * etot;
-            occ::log::debug("Wolf corrected lattice energy: {}",
-                            lattice_energy);
+                0.5 * total.total_kjmol();
+            occ::log::info("Wolf corrected lattice energy: {}", lattice_energy);
         }
         occ::log::info("Cycle {} lattice energy: {}", cycle, lattice_energy);
+        occ::log::info("Total polarization term: {:.3f}",
+                       0.5 * total.polarization_kjmol());
+        occ::log::info("Total coulomb term: {:.3f}",
+                       0.5 * total.coulomb_kjmol());
+        occ::log::info("Total dispersion term: {:.3f}",
+                       0.5 * total.dispersion_kjmol());
+        occ::log::info("Total repulsion term: {:.3f}",
+                       0.5 * total.repulsion_kjmol());
+        occ::log::info("Total exchange term: {:.3f}",
+                       0.5 * total.exchange_kjmol());
+        occ::log::info("Wolf correction: {:.3f}",
+                       (wolf.energy - ecoul_self - ecoul_real));
         cycle++;
         current_radius += conv.radius_increment;
     } while (std::abs(lattice_energy - previous_lattice_energy) >
