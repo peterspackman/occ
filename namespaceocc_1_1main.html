@@ -103,6 +103,10 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1main.html',''); initRe
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1FacetEnergies.html">FacetEnergies</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1CrystalSurfaceEnergies.html">CrystalSurfaceEnergies</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1PairEnergy.html">PairEnergy</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a></td></tr>
@@ -124,6 +128,12 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a282767a70848f993aa9b5ea8b03ccbc2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1main_1_1CrystalSurfaceEnergies.html">CrystalSurfaceEnergies</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a282767a70848f993aa9b5ea8b03ccbc2">calculate_crystal_surface_energies</a> (const std::string &amp;filename, const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &amp;crystal, const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a> &amp;uc_dimers, int max_number_of_surfaces, int sign=-1)</td></tr>
+<tr class="separator:a282767a70848f993aa9b5ea8b03ccbc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba21b5380482aa5b17c8fc7a3cb6ca93"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aba21b5380482aa5b17c8fc7a3cb6ca93">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1main_1_1FacetEnergies.html">FacetEnergies</a> &amp;)</td></tr>
+<tr class="separator:aba21b5380482aa5b17c8fc7a3cb6ca93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6a3ddcf8fae6544589ec5d41ef77449"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#ae6a3ddcf8fae6544589ec5d41ef77449">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1main_1_1CrystalSurfaceEnergies.html">CrystalSurfaceEnergies</a> &amp;)</td></tr>
+<tr class="separator:ae6a3ddcf8fae6544589ec5d41ef77449"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c99afd3455379c53135bd1896c75dad"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a4c99afd3455379c53135bd1896c75dad">load_dimer_energy</a> (const std::string &amp;, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;)</td></tr>
 <tr class="separator:a4c99afd3455379c53135bd1896c75dad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16e11a137953997cdd03624b9b825160"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a16e11a137953997cdd03624b9b825160">write_xyz_dimer</a> (const std::string &amp;, const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;, std::optional&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt; energies={})</td></tr>
@@ -180,6 +190,52 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a282767a70848f993aa9b5ea8b03ccbc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a282767a70848f993aa9b5ea8b03ccbc2">&#9670;&nbsp;</a></span>calculate_crystal_surface_energies()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1main_1_1CrystalSurfaceEnergies.html">CrystalSurfaceEnergies</a> occ::main::calculate_crystal_surface_energies </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &amp;&#160;</td>
+          <td class="paramname"><em>crystal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a> &amp;&#160;</td>
+          <td class="paramname"><em>uc_dimers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>max_number_of_surfaces</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sign</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a5bcdc235883e285c89c65c39072780f5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5bcdc235883e285c89c65c39072780f5">&#9670;&nbsp;</a></span>calculate_dispersion()</h2>
 
@@ -545,6 +601,62 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae6a3ddcf8fae6544589ec5d41ef77449"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6a3ddcf8fae6544589ec5d41ef77449">&#9670;&nbsp;</a></span>to_json() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::main::to_json </td>
+          <td>(</td>
+          <td class="paramtype">nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1main_1_1CrystalSurfaceEnergies.html">CrystalSurfaceEnergies</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aba21b5380482aa5b17c8fc7a3cb6ca93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba21b5380482aa5b17c8fc7a3cb6ca93">&#9670;&nbsp;</a></span>to_json() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::main::to_json </td>
+          <td>(</td>
+          <td class="paramtype">nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1main_1_1FacetEnergies.html">FacetEnergies</a> &amp;&#160;</td>
           <td class="paramname">&#160;</td>
         </tr>
         <tr>

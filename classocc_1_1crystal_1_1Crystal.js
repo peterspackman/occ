@@ -9,6 +9,7 @@ var classocc_1_1crystal_1_1Crystal =
     [ "frac", "classocc_1_1crystal_1_1Crystal.html#a070f081cf143d7547bdbcdeeab683f84", null ],
     [ "labels", "classocc_1_1crystal_1_1Crystal.html#af5e5d70c0465f72860ee5b3e68923e41", null ],
     [ "num_sites", "classocc_1_1crystal_1_1Crystal.html#a0e4f57e59b377f98ed9529aa94c7a25e", null ],
+    [ "set_connectivity_criteria", "classocc_1_1crystal_1_1Crystal.html#adc6b3aff8c5397427b2c70daf11a599b", null ],
     [ "slab", "classocc_1_1crystal_1_1Crystal.html#abd2bf4be03979f62a1b4a7c892c10e8b", null ],
     [ "space_group", "classocc_1_1crystal_1_1Crystal.html#a6d031f75ebb73e0817350becc56f2309", null ],
     [ "symmetry_operations", "classocc_1_1crystal_1_1Crystal.html#ac87d6bd7d94dc9fb0c3923e5ab355f40", null ],

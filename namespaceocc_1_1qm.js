@@ -50,6 +50,5 @@ var namespaceocc_1_1qm =
     [ "merge_molecular_orbitals", "namespaceocc_1_1qm.html#a0adc4f738752e141752bed0c8ec9d665", null ],
     [ "mulliken_partition", "namespaceocc_1_1qm.html#ae5bd4847a30d0fdf3a43d13c1e0698be", null ],
     [ "operator<<", "namespaceocc_1_1qm.html#a0dacbd1a6c0a6d40901c695295112cb4", null ],
-    [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
-    [ "symmorthonormalize_molecular_orbitals", "namespaceocc_1_1qm.html#afacc82de1f083d227786080b0f4b5449", null ]
+    [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ]
 ];

@@ -118,6 +118,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac753ffbd5e7bb5e09dc2133ac6d2fcab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a994f96bf46e5f5521f372a609d41d9de"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#a994f96bf46e5f5521f372a609d41d9de">total_bulk</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;) const</td></tr>
 <tr class="separator:a994f96bf46e5f5521f372a609d41d9de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7411a6f96a93c16f2f75588a58a2fd0"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::vector&lt; size_t &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#ad7411a6f96a93c16f2f75588a58a2fd0">unique_counts_above</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;) const</td></tr>
+<tr class="separator:ad7411a6f96a93c16f2f75588a58a2fd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -135,8 +137,8 @@ Public Attributes</h2></td></tr>
 <tr class="separator:aac6acdb6c9f8a711e4e1614723e2bfd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ce18d09bf9b24360367d31fa5d4c3db"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#a8ce18d09bf9b24360367d31fa5d4c3db">basis</a></td></tr>
 <tr class="separator:a8ce18d09bf9b24360367d31fa5d4c3db"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c4ada2b457bed774e95ca832941527f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#a5c4ada2b457bed774e95ca832941527f">origin</a></td></tr>
-<tr class="separator:a5c4ada2b457bed774e95ca832941527f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ffde2af70ab7b57dc0a75aba73a05e9"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#a0ffde2af70ab7b57dc0a75aba73a05e9">cut_offset</a> {0.0}</td></tr>
+<tr class="separator:a0ffde2af70ab7b57dc0a75aba73a05e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a92ff1948c9ee78b6d34fea71e24361f9"></a>
@@ -245,6 +247,24 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="ad7411a6f96a93c16f2f75588a58a2fd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7411a6f96a93c16f2f75588a58a2fd0">&#9670;&nbsp;</a></span>unique_counts_above()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;std::vector&lt;size_t&gt; &gt; occ::crystal::SurfaceCutResult::unique_counts_above </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a6a5712a2a7ca4692603165e55633020b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6a5712a2a7ca4692603165e55633020b">&#9670;&nbsp;</a></span>above</h2>
@@ -302,6 +322,20 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a0ffde2af70ab7b57dc0a75aba73a05e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ffde2af70ab7b57dc0a75aba73a05e9">&#9670;&nbsp;</a></span>cut_offset</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::crystal::SurfaceCutResult::cut_offset {0.0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aac6acdb6c9f8a711e4e1614723e2bfd8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aac6acdb6c9f8a711e4e1614723e2bfd8">&#9670;&nbsp;</a></span>depth_scale</h2>
 
@@ -324,20 +358,6 @@ Public Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">std::vector&lt;<a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a>&gt; occ::crystal::SurfaceCutResult::molecules</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a5c4ada2b457bed774e95ca832941527f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5c4ada2b457bed774e95ca832941527f">&#9670;&nbsp;</a></span>origin</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> occ::crystal::SurfaceCutResult::origin</td>
         </tr>
       </table>
 </div><div class="memdoc">

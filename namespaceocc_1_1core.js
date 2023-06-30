@@ -1,7 +1,7 @@
 var namespaceocc_1_1core =
 [
     [ "charges", "namespaceocc_1_1core_1_1charges.html", [
-      [ "eem_partial_charges", "namespaceocc_1_1core_1_1charges.html#ad1fa03323276b177e37fcf4b82e2767d", null ]
+      [ "eem_partial_charges", "namespaceocc_1_1core_1_1charges.html#afc8eeaf4e95310c70f599a123cb31860", null ]
     ] ],
     [ "diis", "namespaceocc_1_1core_1_1diis.html", "namespaceocc_1_1core_1_1diis" ],
     [ "graph", "namespaceocc_1_1core_1_1graph.html", "namespaceocc_1_1core_1_1graph" ],

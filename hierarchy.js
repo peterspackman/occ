@@ -31,6 +31,7 @@ var hierarchy =
     [ "occ::crystal::CrystalAtomRegion", "structocc_1_1crystal_1_1CrystalAtomRegion.html", null ],
     [ "occ::crystal::CrystalDimers", "structocc_1_1crystal_1_1CrystalDimers.html", null ],
     [ "occ::io::CrystalInput", "structocc_1_1io_1_1CrystalInput.html", null ],
+    [ "occ::main::CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", null ],
     [ "occ::crystal::CrystalSurfaceGenerationParameters", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html", null ],
     [ "occ::dft::DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", null ],
     [ "occ::dft::DFT", "classocc_1_1dft_1_1DFT.html", null ],
@@ -50,6 +51,8 @@ var hierarchy =
     [ "occ::io::ElementBasis", "structocc_1_1io_1_1ElementBasis.html", null ],
     [ "occ::qm::Energy", "structocc_1_1qm_1_1Energy.html", null ],
     [ "occ::io::EngradReader", "classocc_1_1io_1_1EngradReader.html", null ],
+    [ "occ::io::GMFWriter::Facet", "structocc_1_1io_1_1GMFWriter_1_1Facet.html", null ],
+    [ "occ::main::FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", null ],
     [ "std::false_type", null, [
       [ "occ::core::numpy::impl::is_complex< T >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html", null ]
     ] ],
@@ -68,6 +71,7 @@ var hierarchy =
     [ "occ::io::GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", null ],
     [ "occ::core::GenSqrtInvResult", "structocc_1_1core_1_1GenSqrtInvResult.html", null ],
     [ "occ::io::GeometryInput", "structocc_1_1io_1_1GeometryInput.html", null ],
+    [ "occ::io::GMFWriter", "classocc_1_1io_1_1GMFWriter.html", null ],
     [ "occ::core::graph::Graph< VertexType, EdgeType >", "classocc_1_1core_1_1graph_1_1Graph.html", null ],
     [ "occ::gto::GTOValues", "structocc_1_1gto_1_1GTOValues.html", null ],
     [ "occ::qm::HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", null ],

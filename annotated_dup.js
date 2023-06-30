@@ -114,6 +114,7 @@ var annotated_dup =
         [ "FchkReader", "classocc_1_1io_1_1FchkReader.html", "classocc_1_1io_1_1FchkReader" ],
         [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html", "classocc_1_1io_1_1FchkWriter" ],
         [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
+        [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
         [ "ElectronShell", "structocc_1_1io_1_1ElectronShell.html", "structocc_1_1io_1_1ElectronShell" ],
         [ "ECPShell", "structocc_1_1io_1_1ECPShell.html", "structocc_1_1io_1_1ECPShell" ],
         [ "ReferenceData", "structocc_1_1io_1_1ReferenceData.html", "structocc_1_1io_1_1ReferenceData" ],
@@ -141,6 +142,8 @@ var annotated_dup =
         [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ]
       ] ],
       [ "main", "namespaceocc_1_1main.html", [
+        [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
+        [ "CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", "structocc_1_1main_1_1CrystalSurfaceEnergies" ],
         [ "PairEnergy", "structocc_1_1main_1_1PairEnergy.html", "structocc_1_1main_1_1PairEnergy" ],
         [ "LatticeConvergenceSettings", "structocc_1_1main_1_1LatticeConvergenceSettings.html", "structocc_1_1main_1_1LatticeConvergenceSettings" ],
         [ "LatticeEnergyResult", "structocc_1_1main_1_1LatticeEnergyResult.html", "structocc_1_1main_1_1LatticeEnergyResult" ],

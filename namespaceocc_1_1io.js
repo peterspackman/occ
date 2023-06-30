@@ -16,6 +16,7 @@ var namespaceocc_1_1io =
     [ "FchkReader", "classocc_1_1io_1_1FchkReader.html", "classocc_1_1io_1_1FchkReader" ],
     [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html", "classocc_1_1io_1_1FchkWriter" ],
     [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
+    [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
     [ "ElectronShell", "structocc_1_1io_1_1ElectronShell.html", "structocc_1_1io_1_1ElectronShell" ],
     [ "ECPShell", "structocc_1_1io_1_1ECPShell.html", "structocc_1_1io_1_1ECPShell" ],
     [ "ReferenceData", "structocc_1_1io_1_1ReferenceData.html", "structocc_1_1io_1_1ReferenceData" ],
