@@ -344,13 +344,47 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points,
     return result;
 }
 
+void MolecularGrid::ensure_settings() {
+    // make sure lebedev grid levels exist or are clamped etc.
+    {
+        int new_maximum = occ::dft::grid::nearest_grid_level_at_or_above(
+            m_settings.max_angular_points);
+        if (new_maximum != m_settings.max_angular_points) {
+            occ::log::debug("Clamping max angular grid points to next grid "
+                            "level ({} -> {})",
+                            new_maximum, m_settings.max_angular_points);
+            m_settings.max_angular_points = new_maximum;
+        }
+    }
+    {
+        int new_minimum = occ::dft::grid::nearest_grid_level_at_or_above(
+            m_settings.min_angular_points);
+        if (new_minimum != m_settings.min_angular_points) {
+            occ::log::debug("Clamping min angular grid points to next grid "
+                            "level ({} -> {})",
+                            new_minimum, m_settings.min_angular_points);
+            m_settings.min_angular_points = new_minimum;
+        }
+    }
+    occ::log::debug("DFT molecular grid settings:");
+    occ::log::debug("max_angular_points        = {}",
+                    m_settings.max_angular_points);
+    occ::log::debug("min_angular_points        = {}",
+                    m_settings.min_angular_points);
+    occ::log::debug("radial_precision          = {:.3g}",
+                    m_settings.radial_precision);
+    occ::log::debug("reduced grid size (H, He) = {}",
+                    m_settings.reduced_first_row_element_grid);
+}
+
 MolecularGrid::MolecularGrid(const AOBasis &basis,
-                             const AtomGridSettings &settings)
+                             const BeckeGridSettings &settings)
     : m_settings(settings), m_atomic_numbers(basis.atoms().size()),
       m_positions(3, basis.atoms().size()), m_alpha_max(basis.atoms().size()),
       m_l_max(basis.atoms().size()),
       m_alpha_min(basis.l_max() + 1, basis.atoms().size()) {
     occ::timing::start(occ::timing::category::grid_init);
+    ensure_settings();
     size_t natom = basis.atoms().size();
     std::vector<int> unique_atoms;
     const auto atom_map = basis.atom_to_shell();
@@ -456,15 +490,25 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number) {
     double alpha_max = m_alpha_max(atom_idx);
     size_t l_max = m_l_max(atom_idx);
     const occ::Vec &alpha_min = m_alpha_min.col(atom_idx);
+
+    int num_angular = m_settings.max_angular_points;
+    if (m_settings.reduced_first_row_element_grid && atomic_number < 3) {
+        num_angular = occ::dft::grid::nearest_grid_level_below(num_angular);
+        occ::log::debug("Reduced grid size for element {} = {}", atomic_number,
+                        num_angular);
+    } else {
+        occ::log::debug("Max angular points for element {} = {}", atomic_number,
+                        num_angular);
+    }
+
     RadialGrid radial =
         generate_lmg_radial_grid(atomic_number, m_settings.radial_precision,
                                  alpha_max, l_max, alpha_min);
     size_t n_radial = radial.points.rows();
-    AtomGrid result(n_radial * m_settings.max_angular_points);
+    AtomGrid result(n_radial * num_angular);
     radial.weights.array() *= 4 * M_PI;
-    occ::IVec n_angular =
-        prune_nwchem_scheme(atomic_number, m_settings.max_angular_points,
-                            radial.num_points(), radial.points);
+    occ::IVec n_angular = prune_nwchem_scheme(
+        atomic_number, num_angular, radial.num_points(), radial.points);
     for (size_t i = 0; i < n_radial; i++) {
         auto lebedev = grid::lebedev(n_angular(i));
         double r = radial.points(i);

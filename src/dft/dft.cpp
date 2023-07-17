@@ -69,7 +69,7 @@ int DFT::density_derivative() const {
 }
 
 DFT::DFT(const std::string &method, const AOBasis &basis,
-         const AtomGridSettings &grid_settings)
+         const BeckeGridSettings &grid_settings)
     : m_hf(basis), m_grid(basis, grid_settings) {
 
     if (method[0] == 'u') {
@@ -113,7 +113,7 @@ void DFT::set_method(const std::string &method_string, bool unrestricted) {
         occ::log::info("    {} x HF exchange", hfx);
 }
 
-void DFT::set_integration_grid(const AtomGridSettings &settings) {
+void DFT::set_integration_grid(const BeckeGridSettings &settings) {
     const auto &atoms = m_hf.aobasis().atoms();
     if (settings != m_grid.settings()) {
         m_grid = MolecularGrid(m_hf.aobasis(), settings);

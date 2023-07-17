@@ -319,7 +319,7 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
     occ::scf::SCF<occ::qm::HartreeFock> scf(hf);
     double e = scf.compute_scf_energy();
 
-    occ::dft::AtomGridSettings settings;
+    occ::io::BeckeGridSettings settings;
     settings.max_angular_points = 194;
     settings.radial_precision = 1e-5;
     fmt::print("Construct\n");

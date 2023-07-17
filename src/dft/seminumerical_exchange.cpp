@@ -13,7 +13,7 @@ using Buffer = std::vector<double>;
 using IntegralResult = qm::IntegralEngine::IntegralResult<3>;
 
 SemiNumericalExchange::SemiNumericalExchange(const qm::AOBasis &basis,
-                                             const AtomGridSettings &settings)
+                                             const BeckeGridSettings &settings)
     : m_atoms(basis.atoms()), m_basis(basis),
       m_engine(basis.atoms(), basis.shells()), m_grid(m_basis, settings) {
     for (size_t i = 0; i < m_atoms.size(); i++) {

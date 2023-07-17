@@ -5501,4 +5501,142 @@ lebedev(int num_points) {
     assert(N == num_points);
     return result;
 }
+
+int nearest_grid_level_at_or_above(int num_points) {
+    if (num_points <= 1)
+        return 1;
+    if (num_points <= 6)
+        return 6;
+    if (num_points <= 14)
+        return 14;
+    if (num_points <= 26)
+        return 26;
+    if (num_points <= 38)
+        return 38;
+    if (num_points <= 50)
+        return 50;
+    if (num_points <= 74)
+        return 74;
+    if (num_points <= 86)
+        return 86;
+    if (num_points <= 110)
+        return 110;
+    if (num_points <= 146)
+        return 146;
+    if (num_points <= 170)
+        return 170;
+    if (num_points <= 194)
+        return 194;
+    if (num_points <= 230)
+        return 230;
+    if (num_points <= 266)
+        return 266;
+    if (num_points <= 302)
+        return 302;
+    if (num_points <= 350)
+        return 350;
+    if (num_points <= 434)
+        return 434;
+    if (num_points <= 590)
+        return 590;
+    if (num_points <= 770)
+        return 770;
+    if (num_points <= 974)
+        return 974;
+    if (num_points <= 1202)
+        return 1202;
+    if (num_points <= 1454)
+        return 1454;
+    if (num_points <= 1730)
+        return 1730;
+    if (num_points <= 2030)
+        return 2030;
+    if (num_points <= 2354)
+        return 2354;
+    if (num_points <= 2702)
+        return 2702;
+    if (num_points <= 3074)
+        return 3074;
+    if (num_points <= 3470)
+        return 3470;
+    if (num_points <= 3890)
+        return 3890;
+    if (num_points <= 4334)
+        return 4334;
+    if (num_points <= 4802)
+        return 4802;
+    if (num_points <= 5294)
+        return 5294;
+    // biggest grid we have
+    return 5810;
+}
+
+int nearest_grid_level_below(int num_points) {
+    if (num_points <= 1)
+        return 1;
+    if (num_points <= 6)
+        return 1;
+    if (num_points <= 14)
+        return 6;
+    if (num_points <= 26)
+        return 14;
+    if (num_points <= 38)
+        return 26;
+    if (num_points <= 50)
+        return 38;
+    if (num_points <= 74)
+        return 50;
+    if (num_points <= 86)
+        return 74;
+    if (num_points <= 110)
+        return 86;
+    if (num_points <= 146)
+        return 110;
+    if (num_points <= 170)
+        return 146;
+    if (num_points <= 194)
+        return 170;
+    if (num_points <= 230)
+        return 194;
+    if (num_points <= 266)
+        return 230;
+    if (num_points <= 302)
+        return 266;
+    if (num_points <= 350)
+        return 302;
+    if (num_points <= 434)
+        return 350;
+    if (num_points <= 590)
+        return 434;
+    if (num_points <= 770)
+        return 590;
+    if (num_points <= 974)
+        return 770;
+    if (num_points <= 1202)
+        return 974;
+    if (num_points <= 1454)
+        return 1202;
+    if (num_points <= 1730)
+        return 1454;
+    if (num_points <= 2030)
+        return 1730;
+    if (num_points <= 2354)
+        return 2030;
+    if (num_points <= 2702)
+        return 2354;
+    if (num_points <= 3074)
+        return 2702;
+    if (num_points <= 3470)
+        return 3074;
+    if (num_points <= 3890)
+        return 3470;
+    if (num_points <= 4334)
+        return 3890;
+    if (num_points <= 4802)
+        return 4334;
+    if (num_points <= 5294)
+        return 4802;
+    // second biggest grid we have
+    return 5294;
+}
 } // namespace occ::dft::grid

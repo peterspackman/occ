@@ -11,7 +11,7 @@ namespace occ::dft::cosx {
 class SemiNumericalExchange {
 
   public:
-    SemiNumericalExchange(const qm::AOBasis &, const AtomGridSettings & = {});
+    SemiNumericalExchange(const qm::AOBasis &, const BeckeGridSettings & = {});
     Mat compute_K(const qm::MolecularOrbitals &mo,
                   double precision = std::numeric_limits<double>::epsilon(),
                   const occ::Mat &Schwarz = occ::Mat()) const;

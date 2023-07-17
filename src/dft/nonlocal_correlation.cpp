@@ -15,7 +15,7 @@ using PointsRef = Eigen::Ref<const Mat3N>;
 NonLocalCorrelationFunctional::NonLocalCorrelationFunctional() {}
 
 void NonLocalCorrelationFunctional::set_integration_grid(
-    const qm::AOBasis &basis, const AtomGridSettings &settings) {
+    const qm::AOBasis &basis, const BeckeGridSettings &settings) {
     m_nlc_atom_grids.clear();
     MolecularGrid nlc_grid(basis, settings);
 

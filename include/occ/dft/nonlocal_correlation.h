@@ -25,8 +25,9 @@ class NonLocalCorrelationFunctional {
     NonLocalCorrelationFunctional();
     void set_parameters(const Parameters &params);
     void set_integration_grid(const qm::AOBasis &basis,
-                              const AtomGridSettings &settings = {110, 50, 50,
-                                                                  1e-7});
+                              const BeckeGridSettings &settings = {
+                                  110, 50, 50, 1e-7,
+                                  false}); // don't reduce H by default
 
     Result operator()(const qm::AOBasis &, const qm::MolecularOrbitals &);
 

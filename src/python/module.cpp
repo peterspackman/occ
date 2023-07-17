@@ -179,17 +179,17 @@ NB_MODULE(_occ, m) {
              nb::arg("precision") = std::numeric_limits<double>::epsilon(),
              nb::arg("Schwarz") = occ::Mat());
 
-    using occ::dft::AtomGridSettings;
-    nb::class_<AtomGridSettings>(m, "AtomGridSettings")
+    using occ::io::BeckeGridSettings;
+    nb::class_<BeckeGridSettings>(m, "BeckeGridSettings")
         .def(nb::init<>())
-        .def_rw("max_angular_points", &AtomGridSettings::max_angular_points)
-        .def_rw("min_angular_points", &AtomGridSettings::min_angular_points)
-        .def_rw("radial_points", &AtomGridSettings::radial_points)
-        .def_rw("radial_precision", &AtomGridSettings::radial_precision);
+        .def_rw("max_angular_points", &BeckeGridSettings::max_angular_points)
+        .def_rw("min_angular_points", &BeckeGridSettings::min_angular_points)
+        .def_rw("radial_points", &BeckeGridSettings::radial_points)
+        .def_rw("radial_precision", &BeckeGridSettings::radial_precision);
 
     nb::class_<DFT>(m, "DFT")
         .def(nb::init<const std::string &, const AOBasis &,
-                      const AtomGridSettings &>())
+                      const BeckeGridSettings &>())
         .def("nuclear_attraction_matrix",
              &DFT::compute_nuclear_attraction_matrix)
         .def("kinetic_matrix", &DFT::compute_kinetic_matrix)

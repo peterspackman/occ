@@ -4,6 +4,7 @@
 #include <occ/core/element.h>
 #include <occ/core/molecule.h>
 #include <occ/crystal/crystal.h>
+#include <occ/io/grid_settings.h>
 #include <occ/qm/spinorbital.h>
 #include <vector>
 
@@ -33,6 +34,7 @@ struct DriverInput {
 
 struct MethodInput {
     std::string name{"rhf"};
+    BeckeGridSettings dft_grid;
 };
 
 struct BasisSetInput {

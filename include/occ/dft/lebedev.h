@@ -10,4 +10,8 @@
 namespace occ::dft::grid {
 Eigen::Matrix<double, Eigen::Dynamic, 4, Eigen::RowMajor>
 lebedev(int num_points);
-}
+
+int nearest_grid_level_at_or_above(int num_points);
+int nearest_grid_level_below(int num_points);
+
+} // namespace occ::dft::grid

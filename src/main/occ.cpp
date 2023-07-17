@@ -86,32 +86,53 @@ void write_output_files(const OccInput &config, Wavefunction &wfn) {
 int main(int argc, char *argv[]) {
     occ::timing::start(occ::timing::category::global);
     occ::timing::start(occ::timing::category::io);
+
+    OccInput config;
+
     CLI::App app("occ - A program for quantum chemistry");
-    std::string input_file{""}, method{"rhf"}, basis_set{"3-21G"},
-        verbosity{"warn"};
-    std::optional<std::string> df_basis{}, solvent{},
-        solvent_surface_filename{};
-    int threads{1}, charge{0}, multiplicity{1};
-    bool unrestricted{false}, spherical{false};
-    bool xdm_dispersion{false};
+    std::string input_file{""}, verbosity{"normal"};
+    bool unrestricted{false};
 
     CLI::Option *input_option =
         app.add_option("input", input_file, "input file");
     input_option->required();
-    app.add_option("method", method, "method");
-    app.add_option("basis", basis_set, "basis set");
-    app.add_option("-d,--df-basis", df_basis, "basis set");
-    app.add_option("-t,--threads", threads, "number of threads");
-    app.add_option("-c,--charge", charge, "system net charge");
-    app.add_option("--multiplicity", multiplicity, "system multiplicity");
+    app.add_option("method_name", config.method.name, "method name");
+    app.add_option("basis_name", config.basis.name, "basis set name");
+    app.add_option("-t,--threads", config.runtime.nthreads,
+                   "number of threads");
+    // electronic
+    app.add_option("-c,--charge", config.electronic.charge,
+                   "system net charge");
+    app.add_option("--multiplicity", config.electronic.multiplicity,
+                   "system multiplicity");
     app.add_flag("-u,--unrestricted", unrestricted, "use unrestricted SCF");
+
+    // dft grid
+    app.add_option("--dft-grid-max-angular",
+                   config.method.dft_grid.max_angular_points,
+                   "maximum angular grid points for DFT integration");
+    app.add_option("--dft-grid-min-angular",
+                   config.method.dft_grid.min_angular_points,
+                   "minimum angular grid points for DFT integration");
+
+    // basis set
+    app.add_option("-d,--df-basis", config.basis.df_name, "basis set");
+    app.add_flag("--spherical", config.basis.spherical,
+                 "use spherical basis sets");
+    // Solvation
+    app.add_flag("-s,--solvent", config.solvent.solvent_name,
+                 "use spherical basis sets");
+    app.add_flag("-f,--solvent-file", config.solvent.output_surface_filename,
+                 "file to write solvent surface");
+    // XDM
+    app.add_flag("--xdm", config.dispersion.evaluate_correction,
+                 "use XDM dispersion correction");
+    app.add_flag("--xdm-a1", config.dispersion.xdm_a1, "a1 parameter for XDM");
+    app.add_flag("--xdm-a2", config.dispersion.xdm_a2, "a2 parameter for XDM");
+
+    // logging verbosity
     app.add_option("-v,--verbosity", verbosity,
                    "logging verbosity {silent,minimal,normal,verbose,debug}");
-    app.add_flag("--spherical", spherical, "use spherical basis sets");
-    app.add_flag("-s,--solvent", solvent, "use spherical basis sets");
-    app.add_flag("-f,--solvent-file", solvent_surface_filename,
-                 "file to write solvent surface");
-    app.add_flag("--xdm", xdm_dispersion, "use XDM dispersion correction");
 
     CLI11_PARSE(app, argc, argv);
     occ::log::setup_logging(verbosity);
@@ -125,17 +146,14 @@ int main(int argc, char *argv[]) {
     try {
         occ::timing::start(occ::timing::category::io);
 
-        OccInput config;
         config.name = input_file;
         // read input file first so we can override with command line settings
         read_input_file(input_file, config);
         if (config.filename.empty()) {
             config.filename = config.name;
         }
-        config.dispersion.evaluate_correction = xdm_dispersion;
 
         occ::parallel::set_num_threads(std::max(1, config.driver.threads));
-        occ::parallel::set_num_threads(threads);
 
 #ifdef _OPENMP
         std::string thread_type = "OpenMP";
@@ -146,24 +164,15 @@ int main(int argc, char *argv[]) {
                        occ::parallel::get_num_threads(), thread_type,
                        Eigen::nbThreads());
 
-        config.basis.name = basis_set;
-        config.electronic.multiplicity = multiplicity;
-        config.method.name = method;
-        config.electronic.charge = charge;
-        config.basis.spherical = spherical;
         if (config.method.name[0] == 'u')
             unrestricted = true;
-
-        if (df_basis) {
-            config.basis.df_name = *df_basis;
-        }
 
         if ((config.electronic.multiplicity != 1) || unrestricted ||
             config.method.name == "uhf") {
             config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
-            if (config.method.name == "rhf")
+            if (config.method.name == "rhf") {
                 config.method.name = "uhf";
-            else {
+            } else {
                 if (config.method.name[0] != 'u') {
                     config.method.name = "u" + config.method.name;
                 }
@@ -179,17 +188,18 @@ int main(int argc, char *argv[]) {
 
         if (config.driver.driver == "energy") {
             occ::log::debug("Using energy driver");
+            // store solvent name so we can do an unsolvated calculation first
+            std::string stored_solvent_name = config.solvent.solvent_name;
+            config.solvent.solvent_name = "";
+
             Wavefunction wfn = occ::main::single_point_calculation(config);
             write_output_files(config, wfn);
             occ::main::calculate_dispersion(config, wfn);
             occ::main::calculate_properties(config, wfn);
 
-            if (solvent) {
-                config.solvent.solvent_name = *solvent;
+            config.solvent.solvent_name = stored_solvent_name;
 
-                if (solvent_surface_filename)
-                    config.solvent.output_surface_filename =
-                        *solvent_surface_filename;
+            if (!config.solvent.solvent_name.empty()) {
                 Wavefunction wfn2 =
                     occ::main::single_point_calculation(config, wfn);
                 double esolv = wfn2.energy.total - wfn.energy.total;

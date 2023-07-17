@@ -86,13 +86,13 @@ void set_params(DensityFunctional::Params &params, const Mat &rho) {
 class DFT {
 
   public:
-    DFT(const std::string &, const AOBasis &, const AtomGridSettings & = {});
+    DFT(const std::string &, const AOBasis &, const BeckeGridSettings & = {});
     inline const auto &atoms() const { return m_hf.atoms(); }
     inline const auto &aobasis() const { return m_hf.aobasis(); }
     inline auto nbf() const { return m_hf.nbf(); }
     inline Vec3 center_of_mass() const { return m_hf.center_of_mass(); }
 
-    void set_integration_grid(const AtomGridSettings & = {});
+    void set_integration_grid(const BeckeGridSettings & = {});
 
     void set_system_charge(int charge) { m_hf.set_system_charge(charge); }
     int system_charge() const { return m_hf.system_charge(); }

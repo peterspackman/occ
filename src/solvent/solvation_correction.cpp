@@ -16,6 +16,8 @@ ContinuumSolvationModel::ContinuumSolvationModel(
     const std::vector<occ::core::Atom> &atoms, const std::string &solvent)
     : m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()),
       m_solvent_name(solvent), m_cosmo(78.39) {
+    occ::log::debug("Number of atoms for continuum solvation model = {}",
+                    atoms.size());
     phmap::flat_hash_map<int, double> element_radii;
     for (size_t i = 0; i < atoms.size(); i++) {
         m_nuclear_positions(0, i) = atoms[i].x;
@@ -34,7 +36,8 @@ ContinuumSolvationModel::ContinuumSolvationModel(
             element_radii[nuc] = coulomb_radii[i];
     }
 
-    occ::log::info("Intrinsic coulomb radii");
+    occ::log::info("Intrinsic coulomb radii ({} atom types)",
+                   element_radii.size());
     for (const auto &x : element_radii) {
         auto el = occ::core::Element(x.first);
         occ::log::info("{:<7s} {: 12.6f}", el.symbol(), x.second);

@@ -1,28 +1,12 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <occ/io/grid_settings.h>
 #include <occ/qm/shell.h>
 #include <vector>
 
 namespace occ::dft {
 
-struct AtomGridSettings {
-    size_t max_angular_points{302};
-    size_t min_angular_points{50};
-    size_t radial_points{65};
-    double radial_precision{1e-12};
-
-    inline bool operator==(const AtomGridSettings &rhs) const {
-        return (max_angular_points == rhs.max_angular_points) &&
-               (min_angular_points == rhs.min_angular_points) &&
-               (radial_points == rhs.radial_points) &&
-               (radial_precision == rhs.radial_precision);
-    }
-
-    inline bool operator!=(const AtomGridSettings &rhs) const {
-        return !(*this == rhs);
-    }
-};
-
+using occ::io::BeckeGridSettings;
 using occ::qm::AOBasis;
 
 struct AtomGrid {
@@ -58,7 +42,7 @@ AtomGrid generate_atom_grid(size_t atomic_number,
 
 class MolecularGrid {
   public:
-    MolecularGrid(const AOBasis &, const AtomGridSettings &settings = {});
+    MolecularGrid(const AOBasis &, const BeckeGridSettings &settings = {});
     const auto n_atoms() const { return m_atomic_numbers.size(); }
     AtomGrid generate_partitioned_atom_grid(size_t atom_idx) const;
     AtomGrid generate_lmg_atom_grid(size_t atomic_number);
@@ -66,11 +50,13 @@ class MolecularGrid {
     inline const auto &settings() const { return m_settings; }
 
   private:
+    void ensure_settings();
+
     occ::IVec m_atomic_numbers;
     Mat3N m_positions;
     Mat m_dists;
     std::vector<AtomGrid> m_unique_atom_grids;
-    AtomGridSettings m_settings;
+    BeckeGridSettings m_settings;
     std::vector<std::pair<size_t, size_t>> m_grid_atom_blocks;
     Mat3N m_points;
     Vec m_weights;

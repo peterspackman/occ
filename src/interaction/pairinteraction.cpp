@@ -405,7 +405,7 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     using occ::qm::Energy;
     constexpr double precision = std::numeric_limits<double>::epsilon();
 
-    occ::dft::AtomGridSettings grid_settings{110, 30, 30, 1e-6};
+    occ::io::BeckeGridSettings grid_settings{110, 30, 30, 1e-6};
 
     DFT dft_a(functional, A.basis, grid_settings);
     DFT dft_b(functional, B.basis, grid_settings);

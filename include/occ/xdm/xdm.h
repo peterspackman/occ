@@ -36,6 +36,8 @@ class XDM {
 
     inline const auto &polarizabilities() const { return m_polarizabilities; }
 
+    inline const auto &parameters() const { return m_params; }
+
   private:
     void populate_moments(const occ::qm::MolecularOrbitals &mo);
     void populate_polarizabilities();

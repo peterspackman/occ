@@ -27,8 +27,14 @@ void calculate_dispersion(const OccInput &config, const Wavefunction &wfn) {
         return;
     log::info("{:=^72s}", "  Dispersion Correction  ");
     log::info("Method: {}", "XDM");
-    occ::xdm::XDM xdm_calc(wfn.basis, wfn.charge());
+    occ::xdm::XDM xdm_calc(
+        wfn.basis, wfn.charge(),
+        {config.dispersion.xdm_a1, config.dispersion.xdm_a2});
     auto energy = xdm_calc.energy(wfn.mo);
+    log::info("a1                           {:>20.12f}",
+              xdm_calc.parameters().a1);
+    log::info("a2                           {:>20.12f}",
+              xdm_calc.parameters().a2);
     log::info("Energy            	    {:>20.12f} (Hartree)", energy);
     log::info("Corrected total energy      {:>20.12f} (Hartree)\n",
               energy + wfn.energy.total);
