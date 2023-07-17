@@ -8,5 +8,6 @@ var classocc_1_1xdm_1_1XDM =
     [ "free_atom_volume", "classocc_1_1xdm_1_1XDM.html#a1db22887668a7a8c1bb42296a43adb2b", null ],
     [ "hirshfeld_charges", "classocc_1_1xdm_1_1XDM.html#a777d743f27a16d1b964756a92073fd72", null ],
     [ "moments", "classocc_1_1xdm_1_1XDM.html#a33b79f2a27b7a881a8398607f7b1970b", null ],
+    [ "parameters", "classocc_1_1xdm_1_1XDM.html#a8e1ff5957d5bed617337bdf00e13fcfd", null ],
     [ "polarizabilities", "classocc_1_1xdm_1_1XDM.html#afcc6b9708c9cc4cc6f8b43db69ba8899", null ]
 ];

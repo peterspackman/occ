@@ -1,6 +1,5 @@
 var grid_8h =
 [
-    [ "AtomGridSettings", "structocc_1_1dft_1_1AtomGridSettings.html", "structocc_1_1dft_1_1AtomGridSettings" ],
     [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
     [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
     [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],

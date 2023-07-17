@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['j_3538',['J',['../structocc_1_1qm_1_1Wavefunction.html#a100a4122899d164a9281b1f93ac8c674',1,'occ::qm::Wavefunction']]],
-  ['json_5fbasis_3539',['json_basis',['../structocc_1_1io_1_1JsonBasisReader.html#a30cf50557fff5645c5ce3d2a9c16f671',1,'occ::io::JsonBasisReader']]]
+  ['j_3547',['J',['../structocc_1_1qm_1_1Wavefunction.html#a100a4122899d164a9281b1f93ac8c674',1,'occ::qm::Wavefunction']]],
+  ['json_5fbasis_3548',['json_basis',['../structocc_1_1io_1_1JsonBasisReader.html#a30cf50557fff5645c5ce3d2a9c16f671',1,'occ::io::JsonBasisReader']]]
 ];

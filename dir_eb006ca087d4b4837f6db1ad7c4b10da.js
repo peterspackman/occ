@@ -28,6 +28,9 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
       [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
       [ "Facet", "structocc_1_1io_1_1GMFWriter_1_1Facet.html", "structocc_1_1io_1_1GMFWriter_1_1Facet" ]
     ] ],
+    [ "grid_settings.h", "grid__settings_8h.html", [
+      [ "BeckeGridSettings", "structocc_1_1io_1_1BeckeGridSettings.html", "structocc_1_1io_1_1BeckeGridSettings" ]
+    ] ],
     [ "json_basis.h", "json__basis_8h.html", "json__basis_8h" ],
     [ "kmcpp.h", "kmcpp_8h.html", [
       [ "InputWriter", "classocc_1_1io_1_1kmcpp_1_1InputWriter.html", "classocc_1_1io_1_1kmcpp_1_1InputWriter" ]

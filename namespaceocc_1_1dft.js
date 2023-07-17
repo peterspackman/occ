@@ -2,14 +2,15 @@ var namespaceocc_1_1dft =
 [
     [ "cosx", "namespaceocc_1_1dft_1_1cosx.html", "namespaceocc_1_1dft_1_1cosx" ],
     [ "grid", "namespaceocc_1_1dft_1_1grid.html", [
-      [ "lebedev", "namespaceocc_1_1dft_1_1grid.html#a90d305e26bf486c2e358b995b63bad80", null ]
+      [ "lebedev", "namespaceocc_1_1dft_1_1grid.html#a90d305e26bf486c2e358b995b63bad80", null ],
+      [ "nearest_grid_level_at_or_above", "namespaceocc_1_1dft_1_1grid.html#a35ca3f6b79d4da7d209380fa0109f2e9", null ],
+      [ "nearest_grid_level_below", "namespaceocc_1_1dft_1_1grid.html#accdc0c00d40221660ffedd9b63270087", null ]
     ] ],
     [ "impl", "namespaceocc_1_1dft_1_1impl.html", [
       [ "set_params", "namespaceocc_1_1dft_1_1impl.html#a575287e1722269d11bda582e4938d0db", null ]
     ] ],
     [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
     [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
-    [ "AtomGridSettings", "structocc_1_1dft_1_1AtomGridSettings.html", "structocc_1_1dft_1_1AtomGridSettings" ],
     [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
     [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
     [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],

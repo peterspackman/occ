@@ -1,6 +1,6 @@
 var classocc_1_1dft_1_1DFT =
 [
-    [ "DFT", "classocc_1_1dft_1_1DFT.html#a5f9d636b8624bcb448bce4d78c7a3da7", null ],
+    [ "DFT", "classocc_1_1dft_1_1DFT.html#ad120202d5f6fe48cfc2aea9daa80534b", null ],
     [ "active_electrons", "classocc_1_1dft_1_1DFT.html#aac443170a624f7ab6ee636d06c08d3f7", null ],
     [ "aobasis", "classocc_1_1dft_1_1DFT.html#a70d0f6eb16cbb5fd8f0474a2d9cfdf7a", null ],
     [ "atoms", "classocc_1_1dft_1_1DFT.html#a6fef3d3fcfdccd4d013482c382e7549f", null ],
@@ -37,7 +37,7 @@ var classocc_1_1dft_1_1DFT =
     [ "post_scf_nlc_correction", "classocc_1_1dft_1_1DFT.html#af02d6a465080aa7a2f8b8a1947c3d24a", null ],
     [ "range_separated_parameters", "classocc_1_1dft_1_1DFT.html#a27c7379a38a9cf5228468482678178f9", null ],
     [ "set_density_fitting_basis", "classocc_1_1dft_1_1DFT.html#ab2eeda64973fe7c0b9635d290b1b911f", null ],
-    [ "set_integration_grid", "classocc_1_1dft_1_1DFT.html#a30441d9955dee9679731e28a53e6ff79", null ],
+    [ "set_integration_grid", "classocc_1_1dft_1_1DFT.html#a59e99350356124aac0c2535fa7133492", null ],
     [ "set_method", "classocc_1_1dft_1_1DFT.html#a7c1e5755c406ab949225af5e8ae78d1d", null ],
     [ "set_system_charge", "classocc_1_1dft_1_1DFT.html#ab768a8e86c0fb4a4c92545cdfbc3c7f4", null ],
     [ "set_unrestricted", "classocc_1_1dft_1_1DFT.html#a715b8fe4f788c9ad65707d3ce27e692f", null ],

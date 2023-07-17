@@ -7,6 +7,6 @@ var classocc_1_1dft_1_1NonLocalCorrelationFunctional =
     ] ],
     [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a2cbd1531ed6f7d2838ff29b3f2339cf0", null ],
     [ "operator()", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a0018cb3c2db427e4e302fd043aee7bde", null ],
-    [ "set_integration_grid", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a1345d1b6891df1d6b2cc434ca7a03136", null ],
+    [ "set_integration_grid", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a17832ea4b70fdb7ebc8c8197a41fd8e3", null ],
     [ "set_parameters", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#a7c406817ccdef28e55cf0e82f3d4e2b9", null ]
 ];

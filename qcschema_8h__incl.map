@@ -1,14 +1,15 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/qcschema.h" name="/home/runner/work/occ/occ/include/occ/io/qcschema.h">
-<area shape="rect" id="node1" title=" " alt="" coords="1011,5,1234,47"/>
+<area shape="rect" id="node1" title=" " alt="" coords="998,5,1221,47"/>
 <area shape="rect" id="node2" title=" " alt="" coords="2412,415,2468,442"/>
 <area shape="rect" id="node3" title=" " alt="" coords="43,169,115,196"/>
 <area shape="rect" id="node4" href="$element_8h.html" title=" " alt="" coords="143,415,289,442"/>
-<area shape="rect" id="node7" href="$occ__input_8h.html" title=" " alt="" coords="1227,95,1365,121"/>
+<area shape="rect" id="node7" href="$occ__input_8h.html" title=" " alt="" coords="1336,95,1475,121"/>
 <area shape="rect" id="node5" title=" " alt="" coords="599,497,657,524"/>
 <area shape="rect" id="node6" title=" " alt="" coords="241,497,303,524"/>
 <area shape="rect" id="node8" href="$molecule_8h.html" title=" " alt="" coords="1736,326,1888,353"/>
-<area shape="rect" id="node15" href="$crystal_8h.html" title=" " alt="" coords="1379,169,1531,196"/>
-<area shape="rect" id="node39" href="$spinorbital_8h.html" title=" " alt="" coords="2312,169,2467,196"/>
+<area shape="rect" id="node15" href="$crystal_8h.html" title=" " alt="" coords="1329,169,1481,196"/>
+<area shape="rect" id="node39" href="$grid__settings_8h.html" title=" " alt="" coords="1505,169,1665,196"/>
+<area shape="rect" id="node40" href="$spinorbital_8h.html" title=" " alt="" coords="2312,169,2467,196"/>
 <area shape="rect" id="node9" href="$atom_8h.html" title=" " alt="" coords="1762,415,1889,442"/>
 <area shape="rect" id="node10" href="$linear__algebra_8h.html" title=" " alt="" coords="1555,497,1741,524"/>
 <area shape="rect" id="node14" title=" " alt="" coords="1683,415,1738,442"/>
@@ -38,5 +39,5 @@
 <area shape="rect" id="node36" title=" " alt="" coords="1033,497,1148,524"/>
 <area shape="rect" id="node37" title=" " alt="" coords="1172,497,1233,524"/>
 <area shape="rect" id="node38" title=" " alt="" coords="1257,497,1332,524"/>
-<area shape="rect" id="node40" href="$qm_2opmatrix_8h.html" title=" " alt="" coords="2317,244,2461,271"/>
+<area shape="rect" id="node41" href="$qm_2opmatrix_8h.html" title=" " alt="" coords="2317,244,2461,271"/>
 </map>
