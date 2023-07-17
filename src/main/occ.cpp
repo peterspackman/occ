@@ -90,16 +90,19 @@ int main(int argc, char *argv[]) {
     OccInput config;
 
     CLI::App app("occ - A program for quantum chemistry");
+    app.allow_config_extras(CLI::config_extras_mode::error);
     std::string input_file{""}, verbosity{"normal"};
     bool unrestricted{false};
 
     CLI::Option *input_option =
-        app.add_option("input", input_file, "input file");
+        app.add_option("input,--geometry-filename,--geometry_filename",
+                       input_file, "input file");
     input_option->required();
-    app.add_option("method_name", config.method.name, "method name");
-    app.add_option("basis_name", config.basis.name, "basis set name");
-    app.add_option("-t,--threads", config.runtime.nthreads,
-                   "number of threads");
+    app.set_config("--config", "occ.toml",
+                   "Read configuration from an ini or TOML file", false);
+    app.add_option("method_name,--method", config.method.name, "method name");
+    app.add_option("basis_name,--basis", config.basis.name, "basis set name");
+    app.add_option("-t,--threads", config.runtime.threads, "number of threads");
     // electronic
     app.add_option("-c,--charge", config.electronic.charge,
                    "system net charge");
@@ -108,27 +111,38 @@ int main(int argc, char *argv[]) {
     app.add_flag("-u,--unrestricted", unrestricted, "use unrestricted SCF");
 
     // dft grid
-    app.add_option("--dft-grid-max-angular",
+    app.add_option("--dft-grid-max-angular,--dft_grid_max_angular",
                    config.method.dft_grid.max_angular_points,
                    "maximum angular grid points for DFT integration");
-    app.add_option("--dft-grid-min-angular",
+    app.add_option("--dft-grid-min-angular,--dft_grid_min_angular",
                    config.method.dft_grid.min_angular_points,
                    "minimum angular grid points for DFT integration");
+    app.add_option("--dft-grid-radial-precision,--dft_grid_radial_precision",
+                   config.method.dft_grid.radial_precision,
+                   "radial precision for DFT integration");
+    app.add_option(
+        "--dft-grid-reduce-light-elements,--dft_grid_reduce_light_elements",
+        config.method.dft_grid.reduced_first_row_element_grid,
+        "radial precision for DFT integration");
 
     // basis set
-    app.add_option("-d,--df-basis", config.basis.df_name, "basis set");
+    app.add_option("-d,--df-basis,--density_fitting_basis",
+                   config.basis.df_name, "basis set");
     app.add_flag("--spherical", config.basis.spherical,
                  "use spherical basis sets");
     // Solvation
-    app.add_flag("-s,--solvent", config.solvent.solvent_name,
+    app.add_flag("-s,--solvent,--solvent_name", config.solvent.solvent_name,
                  "use spherical basis sets");
-    app.add_flag("-f,--solvent-file", config.solvent.output_surface_filename,
+    app.add_flag("-f,--solvent-file,--solvent_file",
+                 config.solvent.output_surface_filename,
                  "file to write solvent surface");
     // XDM
     app.add_flag("--xdm", config.dispersion.evaluate_correction,
                  "use XDM dispersion correction");
-    app.add_flag("--xdm-a1", config.dispersion.xdm_a1, "a1 parameter for XDM");
-    app.add_flag("--xdm-a2", config.dispersion.xdm_a2, "a2 parameter for XDM");
+    app.add_flag("--xdm-a1,--xdm_a1", config.dispersion.xdm_a1,
+                 "a1 parameter for XDM");
+    app.add_flag("--xdm-a2,--xdm_a2", config.dispersion.xdm_a2,
+                 "a2 parameter for XDM");
 
     // logging verbosity
     app.add_option("-v,--verbosity", verbosity,
@@ -153,7 +167,7 @@ int main(int argc, char *argv[]) {
             config.filename = config.name;
         }
 
-        occ::parallel::set_num_threads(std::max(1, config.driver.threads));
+        occ::parallel::set_num_threads(std::max(1, config.runtime.threads));
 
 #ifdef _OPENMP
         std::string thread_type = "OpenMP";

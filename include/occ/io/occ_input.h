@@ -29,7 +29,6 @@ struct GeometryInput {
 
 struct DriverInput {
     std::string driver{"energy"};
-    int threads{1};
 };
 
 struct MethodInput {
@@ -49,7 +48,7 @@ struct SolventInput {
 };
 
 struct RuntimeInput {
-    int nthreads{1};
+    int threads{1};
     std::string output_filename{""};
 };
 

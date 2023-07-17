@@ -108,7 +108,7 @@ void QCSchemaReader::parse(std::istream &is) {
 void QCSchemaReader::update_occ_input(OccInput &result) const {
     result.name = input.name;
     result.driver.driver = input.driver;
-    result.driver.threads = input.threads;
+    result.runtime.threads = input.threads;
     result.pair = input.pair_input;
     result.geometry.elements = input.topology.elements;
     result.geometry.positions = input.topology.positions;
