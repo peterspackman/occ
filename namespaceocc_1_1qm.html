@@ -128,6 +128,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCFConvergenceSettings.html">SCFConvergenceSettings</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Shell.html">Shell</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a></td></tr>
@@ -176,6 +178,10 @@ Functions</h2></td></tr>
 <tr class="memitem:ac8a55dbc14f641aaa3c836398faeb519"><td class="memTemplParams" colspan="2">template&lt;SpinorbitalKind sk, Shell::Kind kind&gt; </td></tr>
 <tr class="memitem:ac8a55dbc14f641aaa3c836398faeb519"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519">shellblock_norm</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a> &amp;basis, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;matrix) noexcept</td></tr>
 <tr class="separator:ac8a55dbc14f641aaa3c836398faeb519"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affbc8f01fc592caa8b8095e3357c8693"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#affbc8f01fc592caa8b8095e3357c8693">get_spinorbital_kind_from_string</a> (const std::string &amp;s, <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> &amp;sk)</td></tr>
+<tr class="separator:affbc8f01fc592caa8b8095e3357c8693"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40cf6764e46ed92ca114f4858d415943"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a40cf6764e46ed92ca114f4858d415943">spinorbital_kind_to_string</a> (const <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> &amp;sk)</td></tr>
+<tr class="separator:a40cf6764e46ed92ca114f4858d415943"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b54bd00e156937a556a831d524017a6"><td class="memTemplParams" colspan="2">template&lt;SpinorbitalKind kind&gt; </td></tr>
 <tr class="memitem:a6b54bd00e156937a556a831d524017a6"><td class="memTemplItemLeft" align="right" valign="top">constexpr std::pair&lt; size_t, size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a6b54bd00e156937a556a831d524017a6">matrix_dimensions</a> (size_t nbf)</td></tr>
 <tr class="separator:a6b54bd00e156937a556a831d524017a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -300,6 +306,42 @@ template&lt;typename TA &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="affbc8f01fc592caa8b8095e3357c8693"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affbc8f01fc592caa8b8095e3357c8693">&#9670;&nbsp;</a></span>get_spinorbital_kind_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::qm::get_spinorbital_kind_from_string </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> &amp;&#160;</td>
+          <td class="paramname"><em>sk</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
@@ -594,6 +636,32 @@ template&lt;SpinorbitalKind sk, Shell::Kind kind&gt; </div>
   </td>
   <td class="mlabels-right">
 <span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a40cf6764e46ed92ca114f4858d415943"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40cf6764e46ed92ca114f4858d415943">&#9670;&nbsp;</a></span>spinorbital_kind_to_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const char* occ::qm::spinorbital_kind_to_string </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> &amp;&#160;</td>
+          <td class="paramname"><em>sk</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">

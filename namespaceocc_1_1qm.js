@@ -29,6 +29,7 @@ var namespaceocc_1_1qm =
     [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
     [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
+    [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
     [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
     [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
     [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
@@ -42,6 +43,7 @@ var namespaceocc_1_1qm =
     [ "chelpg_charges", "namespaceocc_1_1qm.html#a44d0c2cc10936b5fce7b0f4086155b6e", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a7f9747809d33a47c63c971414cfb7321", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a2a982da10e9beee254cd5401c9e3028a", null ],
+    [ "get_spinorbital_kind_from_string", "namespaceocc_1_1qm.html#affbc8f01fc592caa8b8095e3357c8693", null ],
     [ "gto_norm", "namespaceocc_1_1qm.html#ae0b480dbee1ea4975ed32811499c9234", null ],
     [ "matrix_dimensions", "namespaceocc_1_1qm.html#a6b54bd00e156937a556a831d524017a6", null ],
     [ "matrix_dimensions", "namespaceocc_1_1qm.html#aad3cab60aa741a3e00edaa626e247a30", null ],
@@ -50,5 +52,6 @@ var namespaceocc_1_1qm =
     [ "merge_molecular_orbitals", "namespaceocc_1_1qm.html#a0adc4f738752e141752bed0c8ec9d665", null ],
     [ "mulliken_partition", "namespaceocc_1_1qm.html#ae5bd4847a30d0fdf3a43d13c1e0698be", null ],
     [ "operator<<", "namespaceocc_1_1qm.html#a0dacbd1a6c0a6d40901c695295112cb4", null ],
-    [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ]
+    [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
+    [ "spinorbital_kind_to_string", "namespaceocc_1_1qm.html#a40cf6764e46ed92ca114f4858d415943", null ]
 ];

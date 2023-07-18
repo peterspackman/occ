@@ -1,10 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/fchkreader.h" name="/home/runner/work/occ/occ/include/occ/io/fchkreader.h">
-<area shape="rect" id="node1" title=" " alt="" coords="347,5,574,47"/>
-<area shape="rect" id="node2" href="$wavefunction_8h.html" title=" " alt="" coords="333,95,588,136"/>
+<area shape="rect" id="node1" title=" " alt="" coords="509,5,735,47"/>
+<area shape="rect" id="node2" href="$wavefunction_8h.html" title=" " alt="" coords="495,95,749,136"/>
 <area shape="rect" id="node3" href="$pairinteraction_8h.html" title=" " alt="" coords="5,184,204,240"/>
 <area shape="rect" id="node4" href="$pair__energy_8h.html" title=" " alt="" coords="87,288,258,344"/>
-<area shape="rect" id="node5" href="$properties_8h.html" title=" " alt="" coords="278,184,449,240"/>
-<area shape="rect" id="node6" href="$single__point_8h.html" title=" " alt="" coords="473,184,643,240"/>
-<area shape="rect" id="node7" href="$solvation__partition_8h.html" title=" " alt="" coords="667,184,838,240"/>
-<area shape="rect" id="node8" href="$scf_8h.html" title=" " alt="" coords="862,191,1046,233"/>
+<area shape="rect" id="node5" href="$wavefunction__json_8h.html" title=" " alt="" coords="279,184,512,240"/>
+<area shape="rect" id="node6" href="$properties_8h.html" title=" " alt="" coords="537,184,707,240"/>
+<area shape="rect" id="node7" href="$single__point_8h.html" title=" " alt="" coords="731,184,902,240"/>
+<area shape="rect" id="node8" href="$solvation__partition_8h.html" title=" " alt="" coords="926,184,1097,240"/>
+<area shape="rect" id="node9" href="$scf_8h.html" title=" " alt="" coords="1121,191,1305,233"/>
 </map>

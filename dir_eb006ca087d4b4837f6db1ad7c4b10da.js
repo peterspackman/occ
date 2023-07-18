@@ -49,5 +49,9 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
       [ "QCSchemaInput", "structocc_1_1io_1_1QCSchemaInput.html", "structocc_1_1io_1_1QCSchemaInput" ],
       [ "QCSchemaReader", "classocc_1_1io_1_1QCSchemaReader.html", "classocc_1_1io_1_1QCSchemaReader" ]
     ] ],
+    [ "wavefunction_json.h", "wavefunction__json_8h.html", [
+      [ "JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
+      [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ]
+    ] ],
     [ "xyz.h", "xyz_8h.html", "xyz_8h" ]
 ];

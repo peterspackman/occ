@@ -1,10 +1,11 @@
 <map id="occ::scf::SCF&lt; Procedure &gt;" name="occ::scf::SCF&lt; Procedure &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="592,133,791,160"/>
-<area shape="rect" id="node2" href="$classocc_1_1qm_1_1CDIIS.html" title=" " alt="" coords="329,5,445,32"/>
+<area shape="rect" id="node1" title=" " alt="" coords="719,159,917,185"/>
+<area shape="rect" id="node2" href="$classocc_1_1qm_1_1CDIIS.html" title=" " alt="" coords="344,5,460,32"/>
 <area shape="rect" id="node3" href="$classocc_1_1core_1_1diis_1_1DIIS.html" title=" " alt="" coords="18,5,163,32"/>
-<area shape="rect" id="node4" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="289,133,485,160"/>
+<area shape="rect" id="node4" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="304,133,500,160"/>
 <area shape="rect" id="node5" title=" " alt="" coords="61,104,121,131"/>
-<area shape="rect" id="node6" href="$classocc_1_1qm_1_1EDIIS.html" title=" " alt="" coords="330,184,445,211"/>
-<area shape="rect" id="node7" href="$classocc_1_1core_1_1EnergyComponents.html" title="Storage class for components of energy, separated by the dot character." alt="" coords="280,235,495,261"/>
-<area shape="rect" id="node8" title=" " alt="" coords="5,227,176,269"/>
+<area shape="rect" id="node6" href="$structocc_1_1qm_1_1SCFConvergenceSettings.html" title=" " alt="" coords="280,184,524,211"/>
+<area shape="rect" id="node7" href="$classocc_1_1qm_1_1EDIIS.html" title=" " alt="" coords="345,235,459,261"/>
+<area shape="rect" id="node8" href="$classocc_1_1core_1_1EnergyComponents.html" title="Storage class for components of energy, separated by the dot character." alt="" coords="295,285,509,312"/>
+<area shape="rect" id="node9" title=" " alt="" coords="5,278,176,319"/>
 </map>

@@ -139,9 +139,13 @@ var annotated_dup =
         [ "QCSchemaModel", "structocc_1_1io_1_1QCSchemaModel.html", "structocc_1_1io_1_1QCSchemaModel" ],
         [ "QCSchemaInput", "structocc_1_1io_1_1QCSchemaInput.html", "structocc_1_1io_1_1QCSchemaInput" ],
         [ "QCSchemaReader", "classocc_1_1io_1_1QCSchemaReader.html", "classocc_1_1io_1_1QCSchemaReader" ],
+        [ "JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
+        [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ],
         [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ]
       ] ],
       [ "main", "namespaceocc_1_1main.html", [
+        [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
+        [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
         [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
         [ "CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", "structocc_1_1main_1_1CrystalSurfaceEnergies" ],
         [ "PairEnergy", "structocc_1_1main_1_1PairEnergy.html", "structocc_1_1main_1_1PairEnergy" ],
@@ -165,6 +169,7 @@ var annotated_dup =
         [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
         [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
         [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
+        [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
         [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
         [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
         [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],

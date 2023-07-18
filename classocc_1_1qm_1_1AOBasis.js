@@ -31,7 +31,7 @@ var classocc_1_1qm_1_1AOBasis =
     [ "name", "classocc_1_1qm_1_1AOBasis.html#a35d2005c72764eecc443aa99a164628a", null ],
     [ "nbf", "classocc_1_1qm_1_1AOBasis.html#a68bb71e7afdce6f995f53c3fb9076459", null ],
     [ "nsh", "classocc_1_1qm_1_1AOBasis.html#ac3e7c8ed5fead9d3333cd4c6c0f1dbd7", null ],
-    [ "operator==", "classocc_1_1qm_1_1AOBasis.html#a0a2c579156c21bed161b62efabeae625", null ],
+    [ "operator==", "classocc_1_1qm_1_1AOBasis.html#ae1fe6cd135b0aab41c75c882ec3435eb", null ],
     [ "operator[]", "classocc_1_1qm_1_1AOBasis.html#abe601e1a774a140b2b4e6a7eb5467498", null ],
     [ "rotate", "classocc_1_1qm_1_1AOBasis.html#afe5264cbc9e6acacd3d2c15e8ba27674", null ],
     [ "set_ecp_electrons", "classocc_1_1qm_1_1AOBasis.html#af5141c31b3ed7fdeaac2c42347920b2b", null ],

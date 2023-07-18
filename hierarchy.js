@@ -85,6 +85,8 @@ var hierarchy =
     [ "occ::core::Interpolator1D< T, mapping >", "classocc_1_1core_1_1Interpolator1D.html", null ],
     [ "occ::io::JsonBasis", "structocc_1_1io_1_1JsonBasis.html", null ],
     [ "occ::io::JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", null ],
+    [ "occ::io::JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", null ],
+    [ "occ::io::JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", null ],
     [ "occ::main::LatticeConvergenceSettings", "structocc_1_1main_1_1LatticeConvergenceSettings.html", null ],
     [ "occ::main::LatticeEnergyResult", "structocc_1_1main_1_1LatticeEnergyResult.html", null ],
     [ "occ::geometry::IndexCache::Layer", "structocc_1_1geometry_1_1IndexCache_1_1Layer.html", null ],
@@ -132,6 +134,7 @@ var hierarchy =
     [ "occ::io::RowConfiguration", "structocc_1_1io_1_1RowConfiguration.html", null ],
     [ "occ::io::RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", null ],
     [ "occ::scf::SCF< Procedure >", "structocc_1_1scf_1_1SCF.html", null ],
+    [ "occ::qm::SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", null ],
     [ "occ::dft::cosx::SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", null ],
     [ "occ::qm::Shell", "structocc_1_1qm_1_1Shell.html", null ],
     [ "occ::slater::Shell", "classocc_1_1slater_1_1Shell.html", null ],
@@ -157,6 +160,10 @@ var hierarchy =
       [ "occ::core::numpy::impl::is_complex< std::complex< T > >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html", null ]
     ] ],
     [ "occ::crystal::UnitCell", "classocc_1_1crystal_1_1UnitCell.html", null ],
+    [ "CLI::Validator", null, [
+      [ "occ::main::MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", null ],
+      [ "occ::main::SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", null ]
+    ] ],
     [ "occ::qm::Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", null ],
     [ "occ::interaction::WolfParams", "structocc_1_1interaction_1_1WolfParams.html", null ],
     [ "occ::xdm::XDM", "classocc_1_1xdm_1_1XDM.html", null ],

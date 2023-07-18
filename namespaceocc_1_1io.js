@@ -42,6 +42,8 @@ var namespaceocc_1_1io =
     [ "QCSchemaModel", "structocc_1_1io_1_1QCSchemaModel.html", "structocc_1_1io_1_1QCSchemaModel" ],
     [ "QCSchemaInput", "structocc_1_1io_1_1QCSchemaInput.html", "structocc_1_1io_1_1QCSchemaInput" ],
     [ "QCSchemaReader", "classocc_1_1io_1_1QCSchemaReader.html", "classocc_1_1io_1_1QCSchemaReader" ],
+    [ "JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
+    [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ],
     [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ],
     [ "ElementMap", "namespaceocc_1_1io.html#a1efce7bea0b305ecc32572cf3cf95539", null ],
     [ "Position", "namespaceocc_1_1io.html#ab6b5ddc9e2fba0c4afd73066cced9721", null ],

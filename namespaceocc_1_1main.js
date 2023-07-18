@@ -1,5 +1,8 @@
 var namespaceocc_1_1main =
 [
+    [ "validator", "namespaceocc_1_1main_1_1validator.html", null ],
+    [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
+    [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
     [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
     [ "CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", "structocc_1_1main_1_1CrystalSurfaceEnergies" ],
     [ "PairEnergy", "structocc_1_1main_1_1PairEnergy.html", "structocc_1_1main_1_1PairEnergy" ],
