@@ -12,6 +12,7 @@
 #include <occ/qm/guess_density.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/opmatrix.h>
+#include <occ/qm/scf_convergence_settings.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
@@ -56,7 +57,7 @@ template <typename Procedure> struct SCF {
         Vpc = Mat::Zero(rows, cols);
         energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
         if (!m_procedure.supports_incremental_fock_build())
-            start_incremental_F_threshold = 0.0;
+            convergence_settings.incremental_fock_threshold = 0.0;
     }
 
     inline int n_alpha() const { return n_occ; }
@@ -429,7 +430,7 @@ template <typename Procedure> struct SCF {
             incremental = true;
 
             if (not incremental_Fbuild_started &&
-                diis_error < start_incremental_F_threshold) {
+                convergence_settings.start_incremental_fock(diis_error)) {
                 incremental_Fbuild_started = true;
                 reset_incremental_fock_formation = false;
                 last_reset_iteration = iter - 1;
@@ -503,8 +504,8 @@ template <typename Procedure> struct SCF {
             std::cout << std::flush;
             total_time += time_elapsed.count();
 
-        } while (((ediff_rel > energy_convergence_threshold) ||
-                  (diis_error > commutator_convergence_threshold)) &&
+        } while (!convergence_settings.energy_and_commutator_converged(
+                     ediff_rel, diis_error) &&
                  (iter < maxiter));
         log::info("{} spinorbital SCF energy converged after {:.5f} seconds",
                   scf_kind(), total_time);
@@ -513,6 +514,7 @@ template <typename Procedure> struct SCF {
         return energy["total"];
     }
 
+    occ::qm::SCFConvergenceSettings convergence_settings;
     Procedure &m_procedure;
     int n_electrons{0}, n_frozen_electrons{0};
     int n_occ{0};
@@ -520,8 +522,6 @@ template <typename Procedure> struct SCF {
     occ::core::EnergyComponents energy;
     int maxiter{100};
     size_t nbf{0};
-    double energy_convergence_threshold = 1e-6;
-    double commutator_convergence_threshold = 1e-5;
     int iter = 0;
     double diis_error{1.0};
     double ediff_rel = 0.0;
@@ -531,7 +531,6 @@ template <typename Procedure> struct SCF {
     bool reset_incremental_fock_formation = false;
     bool incremental_Fbuild_started = false;
     bool converged{false};
-    double start_incremental_F_threshold = 1e-4;
     double next_reset_threshold = 0.0;
     size_t last_reset_iteration = 0;
     occ::qm::MolecularOrbitals mo;

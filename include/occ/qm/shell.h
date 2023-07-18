@@ -146,7 +146,7 @@ class AOBasis {
     inline auto max_ecp_shell_size() const { return m_max_ecp_shell_size; }
     static AOBasis load(const AtomList &atoms, const std::string &name);
 
-    bool operator==(const AOBasis &rhs);
+    bool operator==(const AOBasis &rhs) const;
 
     void calculate_shell_cutoffs();
 

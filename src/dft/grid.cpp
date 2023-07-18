@@ -345,6 +345,15 @@ AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points,
 }
 
 void MolecularGrid::ensure_settings() {
+
+    if (m_settings.max_angular_points < m_settings.min_angular_points) {
+        m_settings.max_angular_points = m_settings.min_angular_points + 1;
+        occ::log::warn(
+            "Invalid maximum angular grid points < minimum angular grid points "
+            "- will be set equal to the minimum + 1 ({} points)",
+            m_settings.max_angular_points);
+    }
+
     // make sure lebedev grid levels exist or are clamped etc.
     {
         int new_maximum = occ::dft::grid::nearest_grid_level_at_or_above(
@@ -356,6 +365,7 @@ void MolecularGrid::ensure_settings() {
             m_settings.max_angular_points = new_maximum;
         }
     }
+
     {
         int new_minimum = occ::dft::grid::nearest_grid_level_at_or_above(
             m_settings.min_angular_points);
@@ -366,6 +376,7 @@ void MolecularGrid::ensure_settings() {
             m_settings.min_angular_points = new_minimum;
         }
     }
+
     occ::log::debug("DFT molecular grid settings:");
     occ::log::debug("max_angular_points        = {}",
                     m_settings.max_angular_points);
@@ -505,10 +516,11 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number) {
         generate_lmg_radial_grid(atomic_number, m_settings.radial_precision,
                                  alpha_max, l_max, alpha_min);
     size_t n_radial = radial.points.rows();
-    AtomGrid result(n_radial * num_angular);
     radial.weights.array() *= 4 * M_PI;
     occ::IVec n_angular = prune_nwchem_scheme(
         atomic_number, num_angular, radial.num_points(), radial.points);
+
+    AtomGrid result(n_angular.sum());
     for (size_t i = 0; i < n_radial; i++) {
         auto lebedev = grid::lebedev(n_angular(i));
         double r = radial.points(i);
@@ -520,8 +532,8 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number) {
         num_points += lebedev.rows();
     }
     result.atomic_number = atomic_number;
-    result.points.conservativeResize(3, num_points);
-    result.weights.conservativeResize(num_points);
+    occ::log::debug("{} total grid points for element {}", result.points.cols(),
+                    atomic_number);
     return result;
 }
 

@@ -655,7 +655,7 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
     return result;
 }
 
-bool AOBasis::operator==(const AOBasis &rhs) {
+bool AOBasis::operator==(const AOBasis &rhs) const {
     return (m_shells == rhs.m_shells) && (m_ecp_shells == rhs.m_ecp_shells);
 }
 

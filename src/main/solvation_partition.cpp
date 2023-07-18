@@ -294,7 +294,7 @@ calculate_solvated_surfaces(const std::string &basename,
                 SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
                 SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv,
                                                           wfn.mo.kind);
-                scf.start_incremental_F_threshold = 0.0;
+                scf.convergence_settings.incremental_fock_threshold = 0.0;
                 scf.set_charge_multiplicity(wfn.charge(), wfn.multiplicity());
                 double e = scf.compute_scf_energy();
                 Wavefunction wfn = scf.wavefunction();
@@ -320,7 +320,7 @@ calculate_solvated_surfaces(const std::string &basename,
             occ::dft::DFT ks(method, basis);
             SolvationCorrectedProcedure<DFT> proc_solv(ks, solvent_name);
             SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv, wfn.mo.kind);
-            scf.start_incremental_F_threshold = 0.0;
+            scf.convergence_settings.incremental_fock_threshold = 0.0;
             scf.set_charge_multiplicity(wfn.charge(), wfn.multiplicity());
             double e = scf.compute_scf_energy();
             Wavefunction wfn = scf.wavefunction();

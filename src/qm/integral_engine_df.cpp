@@ -31,10 +31,6 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
         occ::log::warn(
             "LLT decomposition of Coulomb metric in DF was not successful!");
     }
-    occ::log::debug("Computing Vsqrt");
-    Mat Vsqrt = Eigen::SelfAdjointEigenSolver<Mat>(V).operatorSqrt();
-    occ::log::debug("Computing LLt decomposition of Vsqrt");
-    Vsqrt_LLt = Eigen::LLT<Mat>(Vsqrt);
     occ::timing::stop(occ::timing::category::la);
 }
 
@@ -383,26 +379,23 @@ inline auto jk_lambda_direct_unpolarized(std::vector<Vec> &gg,
         auto &g = gg[args.thread];
         size_t offset = 0;
         size_t nocc = mo.Cocc.cols();
-        auto c3 = mo.Cocc.block(args.bf[1], 0, args.dims[1], nocc);
+        const auto c2 = mo.Cocc.block(args.bf[0], 0, args.dims[0], nocc);
+        const auto c3 = mo.Cocc.block(args.bf[1], 0, args.dims[1], nocc);
+        const auto Dblock1 =
+            mo.D.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]);
+        const auto Dblock2 =
+            mo.D.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]);
+
         Mat c3_term(args.dims[0], nocc);
+        Mat c2_term(args.dims[1], nocc);
 
         if (args.bf[0] != args.bf[1]) {
-            auto c2 = mo.Cocc.block(args.bf[0], 0, args.dims[0], nocc);
-            Mat c2_term(args.dims[1], nocc);
             for (size_t r = args.bf[2]; r < args.bf[2] + args.dims[2]; r++) {
                 Eigen::Map<const Mat> buf_mat(args.buffer + offset,
                                               args.dims[0], args.dims[1]);
-                g(r) += (mo.D.block(args.bf[0], args.bf[1], args.dims[0],
-                                    args.dims[1])
-                             .array() *
-                         buf_mat.array())
-                            .sum();
+                g(r) += (Dblock1.array() * buf_mat.array()).sum();
                 c3_term = buf_mat * c3;
-                g(r) += (mo.D.block(args.bf[1], args.bf[0], args.dims[1],
-                                    args.dims[0])
-                             .array() *
-                         buf_mat.transpose().array())
-                            .sum();
+                g(r) += (Dblock2.array() * buf_mat.transpose().array()).sum();
                 c2_term = buf_mat.transpose() * c2;
 
                 for (int i = 0; i < nocc; i++) {
@@ -418,11 +411,7 @@ inline auto jk_lambda_direct_unpolarized(std::vector<Vec> &gg,
             for (size_t r = args.bf[2]; r < args.bf[2] + args.dims[2]; r++) {
                 Eigen::Map<const Mat> buf_mat(args.buffer + offset,
                                               args.dims[0], args.dims[1]);
-                g(r) += (mo.D.block(args.bf[0], args.bf[1], args.dims[0],
-                                    args.dims[1])
-                             .array() *
-                         buf_mat.array())
-                            .sum();
+                g(r) += (Dblock1.array() * buf_mat.array()).sum();
                 c3_term = buf_mat * c3;
 
                 for (int i = 0; i < nocc; i++) {
@@ -615,21 +604,21 @@ Mat stored_coulomb_kernel_g(const Mat &ints, const AOBasis &aobasis,
 Mat stored_exchange_kernel_r(const Mat &ints, const AOBasis &aobasis,
                              const AOBasis &auxbasis,
                              const MolecularOrbitals &mo,
-                             const Eigen::LLT<Mat> Vsqrt_LLt) {
+                             const Eigen::LLT<Mat> &V_LLt) {
     const auto nbf = aobasis.nbf();
     const auto ndf = auxbasis.nbf();
     Mat K = Mat::Zero(nbf, nbf);
     // temporaries
     Mat iuP = Mat::Zero(nbf, ndf);
-    Mat B(nbf, ndf);
+    Mat X(nbf, ndf);
     for (size_t i = 0; i < mo.Cocc.cols(); i++) {
         auto c = mo.Cocc.col(i);
         for (size_t r = 0; r < ndf; r++) {
             const auto vu = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
             iuP.col(r) = (vu * c);
         }
-        B = Vsqrt_LLt.solve(iuP.transpose());
-        K.noalias() += B.transpose() * B;
+        X = V_LLt.solve(iuP.transpose());
+        K.noalias() += iuP * X;
     }
     return K;
 }
@@ -637,7 +626,7 @@ Mat stored_exchange_kernel_r(const Mat &ints, const AOBasis &aobasis,
 Mat stored_exchange_kernel_u(const Mat &ints, const AOBasis &aobasis,
                              const AOBasis &auxbasis,
                              const MolecularOrbitals &mo,
-                             const Eigen::LLT<Mat> Vsqrt_LLt) {
+                             const Eigen::LLT<Mat> &V_LLt) {
     const auto nbf = aobasis.nbf();
     const auto ndf = auxbasis.nbf();
     const auto [rows, cols] =
@@ -645,7 +634,7 @@ Mat stored_exchange_kernel_u(const Mat &ints, const AOBasis &aobasis,
     Mat K = Mat::Zero(rows, cols);
     // temporaries
     Mat iuPa = Mat::Zero(nbf, ndf), iuPb = Mat::Zero(nbf, ndf);
-    Mat Ba(nbf, ndf), Bb(nbf, ndf);
+    Mat Xa(nbf, ndf), Xb(nbf, ndf);
     for (size_t i = 0; i < mo.Cocc.cols(); i++) {
         auto ca = block::a(mo.Cocc.col(i));
         auto cb = block::b(mo.Cocc.col(i));
@@ -654,10 +643,10 @@ Mat stored_exchange_kernel_u(const Mat &ints, const AOBasis &aobasis,
             iuPa.col(r) = (vu * ca);
             iuPb.col(r) = (vu * cb);
         }
-        Ba = Vsqrt_LLt.solve(iuPa.transpose());
-        Bb = Vsqrt_LLt.solve(iuPb.transpose());
-        block::a(K).noalias() += Ba.transpose() * Ba;
-        block::b(K).noalias() += Bb.transpose() * Bb;
+        Xa = V_LLt.solve(iuPa.transpose());
+        Xb = V_LLt.solve(iuPb.transpose());
+        block::a(K).noalias() += iuPa * Xa;
+        block::b(K).noalias() += iuPb * Xb;
     }
     return K;
 }
@@ -665,7 +654,7 @@ Mat stored_exchange_kernel_u(const Mat &ints, const AOBasis &aobasis,
 Mat stored_exchange_kernel_g(const Mat &ints, const AOBasis &aobasis,
                              const AOBasis &auxbasis,
                              const MolecularOrbitals &mo,
-                             const Eigen::LLT<Mat> Vsqrt_LLt) {
+                             const Eigen::LLT<Mat> &V_LLt) {
     const auto nbf = aobasis.nbf();
     const auto ndf = auxbasis.nbf();
     const auto [rows, cols] =
@@ -673,7 +662,7 @@ Mat stored_exchange_kernel_g(const Mat &ints, const AOBasis &aobasis,
     Mat K = Mat::Zero(rows, cols);
     // temporaries
     Mat iuPa = Mat::Zero(nbf, ndf), iuPb = Mat::Zero(nbf, ndf);
-    Mat Ba(nbf, ndf), Bb(nbf, ndf);
+    Mat Xa(nbf, ndf), Xb(nbf, ndf);
     for (size_t i = 0; i < mo.Cocc.cols(); i++) {
         auto ca = block::a(mo.Cocc.col(i));
         auto cb = block::b(mo.Cocc.col(i));
@@ -682,12 +671,12 @@ Mat stored_exchange_kernel_g(const Mat &ints, const AOBasis &aobasis,
             iuPa.col(r) = (vu * ca);
             iuPb.col(r) = (vu * cb);
         }
-        Ba = Vsqrt_LLt.solve(iuPa.transpose());
-        Bb = Vsqrt_LLt.solve(iuPb.transpose());
-        block::aa(K).noalias() += Ba.transpose() * Ba;
-        block::bb(K).noalias() += Bb.transpose() * Bb;
-        block::ab(K).noalias() += (Ba.transpose() * Bb) + (Bb.transpose() * Ba);
-        block::ba(K).noalias() += (Ba.transpose() * Bb) + (Bb.transpose() * Ba);
+        Xa = V_LLt.solve(iuPa.transpose());
+        Xb = V_LLt.solve(iuPb.transpose());
+        block::aa(K).noalias() += iuPa * Xa;
+        block::bb(K).noalias() += iuPb * Xb;
+        block::ab(K).noalias() += (iuPa * Xb) + (iuPb * Xa);
+        block::ba(K).noalias() += (iuPa * Xb) + (iuPb * Xa);
     }
     return K;
 }
@@ -697,10 +686,10 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
                              const qm::AOBasis &aobasis,
                              const qm::AOBasis &auxbasis,
                              const ShellPairList &shellpairs,
+                             occ::qm::cint::Optimizer &opt,
                              int thread_id = 0) noexcept {
     occ::timing::start(occ::timing::category::ints3c2e);
     auto nthreads = occ::parallel::get_num_threads();
-    occ::qm::cint::Optimizer opt(env, Op::coulomb, 3);
     size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
                      auxbasis.max_shell_size();
     auto buffer = std::make_unique<double[]>(bufsize);
@@ -728,7 +717,7 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
                 const auto &shq = aobasis[q];
                 shell_idx = {p, q, auxP + nsh_ao};
                 args.dims = env.three_center_helper<Op::coulomb, kind>(
-                    shell_idx, nullptr, buffer.get(), nullptr);
+                    shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
                 if (args.dims[0] > -1) {
                     f(args);
                 }
@@ -741,6 +730,7 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
 void IntegralEngineDF::compute_stored_integrals() {
     occ::timing::start(occ::timing::category::df);
     if (m_integral_store.rows() == 0) {
+        occ::log::info("Storing 3-center integrals");
         size_t nbf = m_ao_engine.nbf();
         size_t ndf = m_aux_engine.nbf();
         m_integral_store = Mat::Zero(nbf * nbf, ndf);
@@ -760,16 +750,17 @@ void IntegralEngineDF::compute_stored_integrals() {
             }
         };
 
+        occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
         auto lambda2 = [&](int thread_id) {
             if (m_ao_engine.is_spherical()) {
                 three_center_aux_kernel<ShellKind::Spherical>(
                     lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
-                    m_ao_engine.auxbasis(), m_ao_engine.shellpairs(),
+                    m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt,
                     thread_id);
             } else {
                 three_center_aux_kernel<ShellKind::Cartesian>(
                     lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
-                    m_ao_engine.auxbasis(), m_ao_engine.shellpairs(),
+                    m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt,
                     thread_id);
             }
         };
@@ -782,7 +773,8 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_exchange_operator_kernel_r(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
-                                      const Eigen::LLT<Mat> &Vsqrt_LLt) {
+                                      const Eigen::LLT<Mat> &V_LLt,
+                                      occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     size_t nocc = mo.Cocc.cols();
@@ -790,14 +782,14 @@ Mat direct_exchange_operator_kernel_r(IntegralEngine &engine,
     const auto ndf = engine.auxbasis().nbf();
     Mat K = Mat::Zero(nbf, nbf);
     std::vector<Mat> iuP(nocc * nthreads, Mat::Zero(nbf, ndf));
-    Mat B(nbf, ndf);
+    Mat X(nbf, ndf);
 
     auto klambda = k_lambda_direct_r(iuP, mo);
 
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(klambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
@@ -806,8 +798,8 @@ Mat direct_exchange_operator_kernel_r(IntegralEngine &engine,
     }
 
     for (size_t i = 0; i < nocc; i++) {
-        B = Vsqrt_LLt.solve(iuP[i].transpose());
-        K.noalias() += B.transpose() * B;
+        X = V_LLt.solve(iuP[i].transpose());
+        K.noalias() += iuP[i] * X;
     }
 
     occ::timing::stop(occ::timing::category::df);
@@ -818,7 +810,8 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_exchange_operator_kernel_u(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
-                                      const Eigen::LLT<Mat> &Vsqrt_LLt) {
+                                      const Eigen::LLT<Mat> &V_LLt,
+                                      occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     size_t nocc = mo.Cocc.cols();
@@ -829,14 +822,14 @@ Mat direct_exchange_operator_kernel_u(IntegralEngine &engine,
     Mat K = Mat::Zero(rows, cols);
     std::vector<Mat> iuPa(nocc * nthreads, Mat::Zero(nbf, ndf));
     std::vector<Mat> iuPb(nocc * nthreads, Mat::Zero(nbf, ndf));
-    Mat Ba(nbf, ndf), Bb(nbf, ndf);
+    Mat Xa(nbf, ndf), Xb(nbf, ndf);
 
     auto klambda = k_lambda_direct_u(iuPa, iuPb, mo);
 
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(klambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
@@ -846,10 +839,10 @@ Mat direct_exchange_operator_kernel_u(IntegralEngine &engine,
     }
 
     for (size_t i = 0; i < nocc; i++) {
-        Ba = Vsqrt_LLt.solve(iuPa[i].transpose());
-        Bb = Vsqrt_LLt.solve(iuPb[i].transpose());
-        block::a(K).noalias() += Ba.transpose() * Ba;
-        block::b(K).noalias() += Bb.transpose() * Bb;
+        Xa = V_LLt.solve(iuPa[i].transpose());
+        Xb = V_LLt.solve(iuPb[i].transpose());
+        block::a(K).noalias() += iuPa[i] * Xa;
+        block::b(K).noalias() += iuPb[i] * Xb;
     }
 
     block::a(K) += block::a(K).transpose().eval();
@@ -864,7 +857,8 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
-                                      const Eigen::LLT<Mat> &Vsqrt_LLt) {
+                                      const Eigen::LLT<Mat> &V_LLt,
+                                      occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     size_t nocc = mo.Cocc.cols();
@@ -875,14 +869,14 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
     Mat K = Mat::Zero(rows, cols);
     std::vector<Mat> iuPa(nocc * nthreads, Mat::Zero(nbf, ndf));
     std::vector<Mat> iuPb(nocc * nthreads, Mat::Zero(nbf, ndf));
-    Mat Ba(nbf, ndf), Bb(nbf, ndf);
+    Mat Xa(nbf, ndf), Xb(nbf, ndf);
 
     auto klambda = k_lambda_direct_u(iuPa, iuPb, mo);
 
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(klambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
@@ -892,12 +886,12 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
     }
 
     for (size_t i = 0; i < nocc; i++) {
-        Ba = Vsqrt_LLt.solve(iuPa[i].transpose());
-        Bb = Vsqrt_LLt.solve(iuPb[i].transpose());
-        block::aa(K).noalias() += Ba.transpose() * Ba;
-        block::bb(K).noalias() += Bb.transpose() * Bb;
-        block::ab(K).noalias() += Ba.transpose() * Bb + Bb.transpose() * Ba;
-        block::ba(K).noalias() += Ba.transpose() * Bb + Bb.transpose() * Ba;
+        Xa = V_LLt.solve(iuPa[i].transpose());
+        Xb = V_LLt.solve(iuPb[i].transpose());
+        block::aa(K).noalias() += iuPa[i] * Xa;
+        block::bb(K).noalias() += iuPb[i] * Xb;
+        block::ab(K).noalias() += (iuPa[i] * Xb) + (iuPb[i] * Xa);
+        block::ba(K).noalias() += (iuPa[i] * Xb) + (iuPb[i] * Xa);
     }
 
     block::aa(K) += block::aa(K).transpose().eval();
@@ -919,41 +913,43 @@ Mat IntegralEngineDF::exchange(const MolecularOrbitals &mo) {
         compute_stored_integrals();
         switch (mo.kind) {
         default: // Restricted
-            return stored_exchange_kernel_r(
-                m_integral_store, m_ao_engine.aobasis(), m_ao_engine.auxbasis(),
-                mo, Vsqrt_LLt);
+            return stored_exchange_kernel_r(m_integral_store,
+                                            m_ao_engine.aobasis(),
+                                            m_ao_engine.auxbasis(), mo, V_LLt);
         case U:
-            return stored_exchange_kernel_u(
-                m_integral_store, m_ao_engine.aobasis(), m_ao_engine.auxbasis(),
-                mo, Vsqrt_LLt);
+            return stored_exchange_kernel_u(m_integral_store,
+                                            m_ao_engine.aobasis(),
+                                            m_ao_engine.auxbasis(), mo, V_LLt);
         case G:
-            return stored_exchange_kernel_g(
-                m_integral_store, m_ao_engine.aobasis(), m_ao_engine.auxbasis(),
-                mo, Vsqrt_LLt);
+            return stored_exchange_kernel_g(m_integral_store,
+                                            m_ao_engine.aobasis(),
+                                            m_ao_engine.auxbasis(), mo, V_LLt);
         }
     } else if (m_ao_engine.is_spherical()) {
+        occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
         switch (mo.kind) {
         default: // Restricted
             return direct_exchange_operator_kernel_r<ShellKind::Spherical>(
-                m_ao_engine, m_aux_engine, mo, Vsqrt_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         case U:
             return direct_exchange_operator_kernel_u<ShellKind::Spherical>(
-                m_ao_engine, m_aux_engine, mo, Vsqrt_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         case G:
             return direct_exchange_operator_kernel_g<ShellKind::Spherical>(
-                m_ao_engine, m_aux_engine, mo, Vsqrt_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         }
     } else {
+        occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
         switch (mo.kind) {
         default: // Restricted
             return direct_exchange_operator_kernel_r<ShellKind::Cartesian>(
-                m_ao_engine, m_aux_engine, mo, Vsqrt_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         case U:
             return direct_exchange_operator_kernel_u<ShellKind::Cartesian>(
-                m_ao_engine, m_aux_engine, mo, Vsqrt_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         case G:
             return direct_exchange_operator_kernel_g<ShellKind::Cartesian>(
-                m_ao_engine, m_aux_engine, mo, Vsqrt_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         }
     }
 }
@@ -962,7 +958,8 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_coulomb_operator_kernel_r(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
-                                     const Eigen::LLT<Mat> &V_LLt) {
+                                     const Eigen::LLT<Mat> &V_LLt,
+                                     occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
@@ -975,7 +972,7 @@ Mat direct_coulomb_operator_kernel_r(IntegralEngine &engine,
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(glambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
@@ -988,7 +985,7 @@ Mat direct_coulomb_operator_kernel_r(IntegralEngine &engine,
     auto lambda2 = [&](int thread_id) {
         three_center_aux_kernel<kind>(jlambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda2);
 
@@ -1003,7 +1000,8 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_coulomb_operator_kernel_u(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
-                                     const Eigen::LLT<Mat> &V_LLt) {
+                                     const Eigen::LLT<Mat> &V_LLt,
+                                     occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
@@ -1019,7 +1017,7 @@ Mat direct_coulomb_operator_kernel_u(IntegralEngine &engine,
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(glambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
@@ -1034,7 +1032,7 @@ Mat direct_coulomb_operator_kernel_u(IntegralEngine &engine,
     auto lambda2 = [&](int thread_id) {
         three_center_aux_kernel<kind>(jlambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda2);
 
@@ -1058,7 +1056,8 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
-                                     const Eigen::LLT<Mat> &V_LLt) {
+                                     const Eigen::LLT<Mat> &V_LLt,
+                                     occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     const auto nthreads = occ::parallel::get_num_threads();
     const auto nbf = engine.aobasis().nbf();
@@ -1074,7 +1073,7 @@ Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(glambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
@@ -1089,7 +1088,7 @@ Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
     auto lambda2 = [&](int thread_id) {
         three_center_aux_kernel<kind>(jlambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda2);
 
@@ -1131,28 +1130,30 @@ Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
                                            m_ao_engine.auxbasis(), mo, V_LLt);
         }
     } else if (m_ao_engine.is_spherical()) {
+        occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
         switch (mo.kind) {
         default: // Restricted
             return direct_coulomb_operator_kernel_r<ShellKind::Spherical>(
-                m_ao_engine, m_aux_engine, mo, V_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         case U:
             return direct_coulomb_operator_kernel_u<ShellKind::Spherical>(
-                m_ao_engine, m_aux_engine, mo, V_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         case G:
             return direct_coulomb_operator_kernel_g<ShellKind::Spherical>(
-                m_ao_engine, m_aux_engine, mo, V_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         }
     } else {
+        occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
         switch (mo.kind) {
         default: // Restricted
             return direct_coulomb_operator_kernel_r<ShellKind::Cartesian>(
-                m_ao_engine, m_aux_engine, mo, V_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         case U:
             return direct_coulomb_operator_kernel_u<ShellKind::Cartesian>(
-                m_ao_engine, m_aux_engine, mo, V_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         case G:
             return direct_coulomb_operator_kernel_g<ShellKind::Cartesian>(
-                m_ao_engine, m_aux_engine, mo, V_LLt);
+                m_ao_engine, m_aux_engine, mo, V_LLt, opt);
         }
     }
 }
@@ -1161,7 +1162,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_r(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
-    const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     size_t nocc = mo.Cocc.cols();
     const auto nthreads = occ::parallel::get_num_threads();
@@ -1175,26 +1176,25 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_r(
     std::vector<Mat> iuP(nocc, Mat::Zero(nbf, ndf));
 
     auto jk_lambda_1 = jk_lambda_direct_unpolarized(gg, iuP, mo);
-    auto lambda = [&](int thread_id) {
+    auto lambda = [&jk_lambda_1, &engine, &opt](int thread_id) {
         three_center_aux_kernel<kind>(jk_lambda_1, engine.env(),
                                       engine.aobasis(), engine.auxbasis(),
-                                      engine.shellpairs(), thread_id);
+                                      engine.shellpairs(), opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
     for (int i = 1; i < nthreads; i++)
         gg[0] += gg[i];
 
-    auto klambda = [&](int thread_id) {
-        Mat B(nbf, ndf);
+    auto klambda = [&, V_LLt](int thread_id) {
+        Mat X(nbf, ndf);
         for (size_t i = 0; i < nocc; i++) {
             if (i % nthreads != thread_id)
                 continue;
-            B = Vsqrt_LLt.solve(iuP[i].transpose());
-            KK[thread_id].noalias() += B.transpose() * B;
+            X = V_LLt.solve(iuP[i].transpose());
+            KK[thread_id].noalias() += iuP[i] * X;
         }
     };
-
     occ::parallel::parallel_do(klambda);
 
     occ::timing::start(occ::timing::category::la);
@@ -1205,7 +1205,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_r(
     auto lambda2 = [&](int thread_id) {
         three_center_aux_kernel<kind>(jlambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda2);
 
@@ -1222,7 +1222,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
-    const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     size_t nocc = mo.n_ao;
     const auto nthreads = occ::parallel::get_num_threads();
@@ -1247,7 +1247,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(jk_lambda_1, engine.env(),
                                       engine.aobasis(), engine.auxbasis(),
-                                      engine.shellpairs(), thread_id);
+                                      engine.shellpairs(), opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
@@ -1257,15 +1257,15 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
     }
 
     auto klambda = [&](int thread_id) {
-        Mat Ba = Mat::Zero(nbf, ndf);
-        Mat Bb = Mat::Zero(nbf, ndf);
+        Mat Xa = Mat::Zero(nbf, ndf);
+        Mat Xb = Mat::Zero(nbf, ndf);
         for (size_t i = 0; i < nocc; i++) {
             if (i % nthreads != thread_id)
                 continue;
-            Ba = Vsqrt_LLt.solve(iuP_alpha[i].transpose());
-            Bb = Vsqrt_LLt.solve(iuP_beta[i].transpose());
-            block::a(KK[thread_id]).noalias() += Ba.transpose() * Ba;
-            block::b(KK[thread_id]).noalias() += Bb.transpose() * Bb;
+            Xa = V_LLt.solve(iuP_alpha[i].transpose());
+            Xb = V_LLt.solve(iuP_beta[i].transpose());
+            block::a(KK[thread_id]).noalias() += iuP_alpha[i] * Xa;
+            block::b(KK[thread_id]).noalias() += iuP_beta[i] * Xb;
         }
     };
 
@@ -1280,7 +1280,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
     auto lambda2 = [&](int thread_id) {
         three_center_aux_kernel<kind>(jlambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda2);
 
@@ -1308,7 +1308,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
-    const Eigen::LLT<Mat> &Vsqrt_LLt) {
+    occ::qm::cint::Optimizer &opt) {
     occ::timing::start(occ::timing::category::df);
     size_t nocc = mo.n_alpha; // number of electrons == n_alpha for general
     const auto nthreads = occ::parallel::get_num_threads();
@@ -1333,7 +1333,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(jk_lambda_1, engine.env(),
                                       engine.aobasis(), engine.auxbasis(),
-                                      engine.shellpairs(), thread_id);
+                                      engine.shellpairs(), opt, thread_id);
     };
     occ::parallel::parallel_do(lambda);
 
@@ -1342,24 +1342,24 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
         gg_beta[0] += gg_beta[i];
     }
 
-    auto klambda = [&iuP_alpha, &iuP_beta, &KK, Vsqrt_LLt, nthreads, nocc, nbf,
+    auto klambda = [&iuP_alpha, &iuP_beta, &KK, &V_LLt, nthreads, nocc, nbf,
                     ndf](int thread_id) {
         auto &Kpart = KK[thread_id];
         auto aa_part = block::aa(Kpart);
         auto ab_part = block::ab(Kpart);
         auto ba_part = block::ba(Kpart);
         auto bb_part = block::bb(Kpart);
-        Mat Ba = Mat::Zero(nbf, ndf);
-        Mat Bb = Ba;
+        Mat Xa = Mat::Zero(nbf, ndf);
+        Mat Xb = Mat::Zero(nbf, ndf);
         for (size_t i = 0; i < nocc; i++) {
             if (i % nthreads != thread_id)
                 continue;
-            Ba = Vsqrt_LLt.solve(iuP_alpha[i].transpose());
-            Bb = Vsqrt_LLt.solve(iuP_beta[i].transpose());
-            aa_part.noalias() += Ba.transpose() * Ba;
-            bb_part.noalias() += Bb.transpose() * Bb;
-            ab_part.noalias() += Ba.transpose() * Bb + Bb.transpose() * Ba;
-            ba_part.noalias() += Ba.transpose() * Bb + Bb.transpose() * Ba;
+            Xa = V_LLt.solve(iuP_alpha[i].transpose());
+            Xb = V_LLt.solve(iuP_beta[i].transpose());
+            aa_part.noalias() += iuP_alpha[i] * Xa;
+            bb_part.noalias() += iuP_beta[i] * Xb;
+            ab_part.noalias() += (iuP_alpha[i] * Xb) + (iuP_beta[i] * Xa);
+            ba_part.noalias() += (iuP_alpha[i] * Xb) + (iuP_beta[i] * Xa);
         }
     };
 
@@ -1374,7 +1374,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
     auto lambda2 = [&](int thread_id) {
         three_center_aux_kernel<kind>(jlambda, engine.env(), engine.aobasis(),
                                       engine.auxbasis(), engine.shellpairs(),
-                                      thread_id);
+                                      opt, thread_id);
     };
     occ::parallel::parallel_do(lambda2);
 
@@ -1418,34 +1418,36 @@ IntegralEngineDF::coulomb_and_exchange(const MolecularOrbitals &mo) {
         compute_stored_integrals();
         return {coulomb(mo), exchange(mo)};
     } else if (m_ao_engine.is_spherical()) {
+        occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
         switch (mo.kind) {
         default: // Restricted
             return direct_coulomb_and_exchange_operator_kernel_r<
                 ShellKind::Spherical>(m_ao_engine, m_aux_engine, mo, V_LLt,
-                                      Vsqrt_LLt);
+                                      opt);
         case U:
             return direct_coulomb_and_exchange_operator_kernel_u<
                 ShellKind::Spherical>(m_ao_engine, m_aux_engine, mo, V_LLt,
-                                      Vsqrt_LLt);
+                                      opt);
         case G:
             return direct_coulomb_and_exchange_operator_kernel_g<
                 ShellKind::Spherical>(m_ao_engine, m_aux_engine, mo, V_LLt,
-                                      Vsqrt_LLt);
+                                      opt);
         }
     } else {
+        occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
         switch (mo.kind) {
         default:
             return direct_coulomb_and_exchange_operator_kernel_r<
                 ShellKind::Cartesian>(m_ao_engine, m_aux_engine, mo, V_LLt,
-                                      Vsqrt_LLt);
+                                      opt);
         case U:
             return direct_coulomb_and_exchange_operator_kernel_u<
                 ShellKind::Cartesian>(m_ao_engine, m_aux_engine, mo, V_LLt,
-                                      Vsqrt_LLt);
+                                      opt);
         case G:
             return direct_coulomb_and_exchange_operator_kernel_g<
                 ShellKind::Cartesian>(m_ao_engine, m_aux_engine, mo, V_LLt,
-                                      Vsqrt_LLt);
+                                      opt);
         }
     }
 }

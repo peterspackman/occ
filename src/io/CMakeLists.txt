@@ -16,6 +16,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_input.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/orca_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/qcschema.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xyz.cpp"
     ${OCC_INCLUDE_FILES}
 )

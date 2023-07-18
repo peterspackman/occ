@@ -17,6 +17,7 @@
 #include <occ/io/occ_input.h>
 #include <occ/io/qcschema.h>
 #include <occ/io/xyz.h>
+#include <occ/main/cli_validators.h>
 #include <occ/main/pair_energy.h>
 #include <occ/main/properties.h>
 #include <occ/main/single_point.h>
@@ -97,8 +98,9 @@ int main(int argc, char *argv[]) {
     CLI::Option *input_option =
         app.add_option("input,--geometry-filename,--geometry_filename",
                        input_file, "input file");
+    input_option->check(CLI::ExistingFile);
     input_option->required();
-    app.set_config("--config", "occ.toml",
+    app.set_config("--config", "occ_input.toml",
                    "Read configuration from an ini or TOML file", false);
     app.add_option("method_name,--method", config.method.name, "method name");
     app.add_option("basis_name,--basis", config.basis.name, "basis set name");
@@ -106,8 +108,11 @@ int main(int argc, char *argv[]) {
     // electronic
     app.add_option("-c,--charge", config.electronic.charge,
                    "system net charge");
-    app.add_option("--multiplicity", config.electronic.multiplicity,
-                   "system multiplicity");
+    auto *multiplicity_option =
+        app.add_option("--multiplicity", config.electronic.multiplicity,
+                       "system multiplicity");
+    multiplicity_option->check(occ::main::validator::Multiplicity);
+
     app.add_flag("-u,--unrestricted", unrestricted, "use unrestricted SCF");
 
     // dft grid

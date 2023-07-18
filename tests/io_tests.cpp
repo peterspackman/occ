@@ -15,6 +15,7 @@
 #include <occ/io/moldenreader.h>
 #include <occ/io/orca_json.h>
 #include <occ/io/qcschema.h>
+#include <occ/io/wavefunction_json.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <sstream>
@@ -1152,7 +1153,7 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
     obs.set_pure(true);
     HartreeFock hf(obs);
     occ::scf::SCF<HartreeFock> scf(hf);
-    scf.energy_convergence_threshold = 1e-8;
+    scf.convergence_settings.energy_threshold = 1e-8;
     double e = scf.compute_scf_energy();
 
     occ::qm::Wavefunction wfn = scf.wavefunction();
@@ -2771,4 +2772,34 @@ TEST_CASE("GMFWriter Tests", "[GMFWriter]") {
         std::string contents = gmf_os.str();
         REQUIRE(gmf_os.str() == gmf_file_contents);
     }
+}
+
+TEST_CASE("Read/Write Wavefunction JSON", "[JSON]") {
+    using occ::io::JsonWavefunctionReader;
+    using occ::io::JsonWavefunctionWriter;
+    std::vector<occ::core::Atom> atoms{
+        {8, -1.32695761, -0.10593856, 0.01878821},
+        {1, -1.93166418, 1.60017351, -0.02171049},
+        {1, 0.48664409, 0.07959806, 0.00986248}};
+
+    auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
+    obs.set_pure(true);
+    HartreeFock hf(obs);
+    occ::scf::SCF<HartreeFock> scf(hf);
+    scf.convergence_settings.energy_threshold = 1e-8;
+    double e = scf.compute_scf_energy();
+
+    occ::qm::Wavefunction wfn = scf.wavefunction();
+
+    JsonWavefunctionWriter writer;
+
+    std::string json_contents = writer.to_string(wfn);
+    std::istringstream json_stream(json_contents);
+
+    JsonWavefunctionReader reader(json_stream);
+
+    auto wfn2 = reader.wavefunction();
+
+    REQUIRE(wfn.basis == wfn2.basis);
+    REQUIRE(wfn.atoms.size() == wfn2.atoms.size());
 }

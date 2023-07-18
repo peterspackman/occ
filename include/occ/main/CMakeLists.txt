@@ -1,4 +1,5 @@
 set(OCC_MAIN_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_surface_energy.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.h"

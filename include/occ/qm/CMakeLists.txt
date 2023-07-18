@@ -11,6 +11,7 @@ set(OCC_QM_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/orb.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/partitioning.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/scf_convergence_settings.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/shell.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/shellblock_norm.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/spinorbital.h"

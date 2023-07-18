@@ -79,12 +79,18 @@ if("${LBFGSpp_ADDED}")
     target_include_directories(LBFGSpp::LBFGSpp INTERFACE "${LBFGSpp_SOURCE_DIR}/include")
 endif()
 
+if("${USE_QCINT}")
+    set(LIBCINT_REPOSITORY "sunqm/qcint")
+else()
+    set(LIBCINT_REPOSITORY "sunqm/libcint")
+endif()
+
 CPMAddPackage(
     NAME libcint
-    GITHUB_REPOSITORY "sunqm/libcint"
+    GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
     GIT_TAG master
     OPTIONS "WITH_FORTRAN OFF" "WITH_CINT2_INTERFACE OFF" "ENABLE_STATIC ON" "BUILD_SHARED_LIBS OFF" "PYPZPX ON" "BUILD_MARCH_NATIVE ON" "WITH_RANGE_COULOMB ON"
-    VERSION "5.1.5"
+    VERSION "5.4.0"
 )
 add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(libcint::libcint INTERFACE cint)

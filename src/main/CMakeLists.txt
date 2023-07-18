@@ -1,4 +1,5 @@
 add_library(occ_main
+    "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_surface_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
@@ -17,6 +18,7 @@ target_link_libraries(occ_main
     occ_solvent
     occ_interaction
     occ_crystal
+    CLI11::CLI11
 )
 target_include_directories(occ_main PUBLIC 
     ${OCC_INCLUDE_DIR} 
@@ -31,7 +33,6 @@ target_link_libraries(xdm
     PUBLIC
     occ_main
     occ_xdm
-    CLI11::CLI11
 )
 
 set_target_properties(xdm
@@ -43,7 +44,6 @@ add_executable(occ "${CMAKE_CURRENT_SOURCE_DIR}/occ.cpp")
 target_link_libraries(occ
     PUBLIC
     occ_main
-    CLI11::CLI11
 )
 set_target_properties(occ
     PROPERTIES
@@ -78,7 +78,6 @@ target_link_libraries(occ-cg
     occ_crystal
     occ_interaction
     occ_main
-    CLI11::CLI11
 )
 
 set_target_properties(occ-cg
@@ -126,7 +125,6 @@ target_link_libraries(occ-elat
     occ_crystal
     occ_interaction
     occ_main
-    CLI11::CLI11
 )
 
 set_target_properties(occ-elat
@@ -141,7 +139,6 @@ target_link_libraries(occ-xtb
     occ_main
     occ_xtb
     LBFGSpp::LBFGSpp
-    CLI11::CLI11
 )
 
 set_target_properties(occ-xtb

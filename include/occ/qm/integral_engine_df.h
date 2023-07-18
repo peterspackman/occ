@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/IterativeLinearSolvers>
 #include <occ/qm/integral_engine.h>
 
 namespace occ::qm {
@@ -57,7 +58,7 @@ class IntegralEngineDF {
 
     mutable IntegralEngine m_ao_engine;  // engine with ao basis & aux basis
     mutable IntegralEngine m_aux_engine; // engine with just aux basis
-    Eigen::LLT<Mat> V_LLt, Vsqrt_LLt;
+    Eigen::LLT<Mat> V_LLt;
     Mat m_integral_store;
     Policy m_policy{Policy::Choose};
     size_t m_integral_store_memory_limit{512 * 1024 * 1024}; // 512 MiB

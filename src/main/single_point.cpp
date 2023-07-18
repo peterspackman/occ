@@ -94,7 +94,7 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
     scf.set_charge_multiplicity(config.electronic.charge,
                                 config.electronic.multiplicity);
     if (!config.basis.df_name.empty())
-        scf.start_incremental_F_threshold = 0.0;
+        scf.convergence_settings.incremental_fock_threshold = 0.0;
 
     double e = scf.compute_scf_energy();
     if constexpr (std::is_same<T, DFT>::value) {
@@ -121,7 +121,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
         SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv, SK);
         scf.set_charge_multiplicity(config.electronic.charge,
                                     config.electronic.multiplicity);
-        scf.start_incremental_F_threshold = 0.0;
+        scf.convergence_settings.incremental_fock_threshold = 0.0;
         scf.set_initial_guess_from_wfn(wfn);
         double e = scf.compute_scf_energy();
         if (!config.solvent.output_surface_filename.empty())
@@ -138,7 +138,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
         scf.set_charge_multiplicity(config.electronic.charge,
                                     config.electronic.multiplicity);
         scf.set_initial_guess_from_wfn(wfn);
-        scf.start_incremental_F_threshold = 0.0;
+        scf.convergence_settings.incremental_fock_threshold = 0.0;
         double e = scf.compute_scf_energy();
         if (!config.solvent.output_surface_filename.empty())
             proc_solv.write_surface_file(
