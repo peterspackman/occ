@@ -1,6 +1,7 @@
 add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_surface_energy.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
@@ -18,6 +19,8 @@ target_link_libraries(occ_main
     occ_solvent
     occ_interaction
     occ_crystal
+    occ_slater
+    occ_geometry
     CLI11::CLI11
 )
 target_include_directories(occ_main PUBLIC 
@@ -89,10 +92,7 @@ add_executable(hs EXCLUDE_FROM_ALL
     "${CMAKE_CURRENT_SOURCE_DIR}/hs.cpp")
 target_link_libraries(hs
     PUBLIC
-    occ_geometry
-    occ_slater
-    occ_solvent
-    occ_io
+    occ_main
     CLI11::CLI11
 )
 set_target_properties(hs

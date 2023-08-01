@@ -6,20 +6,24 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <occ/3rdparty/parallel_hashmap/phmap.h>
-#include <occ/core/interpolator.h>
+#include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
-#include <occ/core/molecule.h>
 #include <occ/core/numpy.h>
+#include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>
 #include <occ/geometry/marching_cubes.h>
 #include <occ/io/xyz.h>
-#include <occ/slater/slaterbasis.h>
+#include <occ/main/isosurface.h>
 
 namespace fs = std::filesystem;
+using occ::IVec;
+using occ::Mat3N;
+using occ::Vec3;
 using occ::core::Element;
 using occ::core::Interpolator1D;
 using occ::core::Molecule;
+using occ::main::StockholderWeightFunctor;
 
 void write_ply_file(const std::string &filename,
                     const std::vector<float> &vertices,
@@ -43,91 +47,6 @@ void write_ply_file(const std::string &filename,
         file.print("3 {} {} {}\n", faces[idx], faces[idx + 1], faces[idx + 2]);
     }
 }
-
-struct HirshfeldBasis {
-    std::vector<Eigen::Vector3d> coordinates;
-    double buffer = 6.0;
-    const Molecule &interior, exterior;
-    Eigen::Vector3d origin{0, 0, 0};
-    size_t num_interior{0};
-    double length{0.0};
-    float iso = 0.5;
-    float fac = 0.5;
-    mutable int num_calls{0};
-    std::vector<int> elements;
-    phmap::flat_hash_map<int,
-                         Interpolator1D<double, occ::core::DomainMapping::Log>>
-        interpolators;
-
-    HirshfeldBasis(const Molecule &in, Molecule &ext)
-        : interior(in), exterior(ext) {
-        auto nums_in = in.atomic_numbers();
-        auto pos_in = in.positions();
-        auto nums_ext = ext.atomic_numbers();
-        auto pos_ext = ext.positions();
-        pos_in.array() *= occ::units::ANGSTROM_TO_BOHR;
-        pos_ext.array() *= occ::units::ANGSTROM_TO_BOHR;
-        Eigen::Vector3d minp_in = pos_in.rowwise().minCoeff();
-        Eigen::Vector3d maxp_in = pos_in.rowwise().maxCoeff();
-        Eigen::Vector3d minp_ext = pos_ext.rowwise().minCoeff();
-        Eigen::Vector3d maxp_ext = pos_ext.rowwise().maxCoeff();
-
-        num_interior = in.size();
-        auto basis = occ::slater::load_slaterbasis("thakkar");
-        for (size_t i = 0; i < in.size(); i++) {
-            int el = nums_in[i];
-            coordinates.push_back(pos_in.col(i));
-            elements.push_back(el);
-            auto search = interpolators.find(el);
-            if (search == interpolators.end()) {
-                auto b = basis[Element(el).symbol()];
-                auto func = [&b](double x) { return b.rho(x); };
-                interpolators[el] =
-                    Interpolator1D<double, occ::core::DomainMapping::Log>(
-                        func, 0.1, 20.0, 4096);
-            }
-        }
-
-        for (size_t i = 0; i < ext.size(); i++) {
-            int el = nums_ext[i];
-            elements.push_back(el);
-            coordinates.push_back(pos_ext.col(i));
-            auto search = interpolators.find(el);
-            if (search == interpolators.end()) {
-                auto b = basis[Element(el).symbol()];
-                auto func = [&b](double x) { return b.rho(x); };
-                interpolators[el] =
-                    Interpolator1D<double, occ::core::DomainMapping::Log>(
-                        func, 0.1, 20.0, 4096);
-            }
-        }
-        origin = minp_in;
-        origin.array() -= buffer;
-        length = (maxp_in - origin).maxCoeff() + buffer;
-        fac = 1.0 / length;
-        fmt::print("Bottom left\n{}\nlength\n{}\n", origin, length);
-    }
-
-    float operator()(float x, float y, float z) const {
-        num_calls++;
-        float tot_i{0.0}, tot_e{0.0};
-        Eigen::Vector3d pos{static_cast<double>(x * length + origin(0)),
-                            static_cast<double>(y * length + origin(1)),
-                            static_cast<double>(z * length + origin(2))};
-        for (size_t i = 0; i < coordinates.size(); i++) {
-            int el = elements[i];
-            double r = (pos - coordinates[i]).norm();
-            auto interp = interpolators.at(el);
-            double rho = static_cast<float>(interp(r));
-            if (i >= num_interior)
-                tot_e += rho;
-            else
-                tot_i += rho;
-        }
-        double v = iso - tot_i / (tot_i + tot_e);
-        return fac * v;
-    }
-};
 
 struct SlaterBasis {
     const double buffer = 5.0;
@@ -157,7 +76,7 @@ struct SlaterBasis {
         }
         origin = minp;
         length = (maxp - minp).maxCoeff();
-        fac = 0.25 / length;
+        fac = 1.0 / length;
         fmt::print("Bottom left\n{}\nlength\n{}\n", origin, length);
     }
 
@@ -197,14 +116,17 @@ as_matrices(const SlaterBasis &b, const std::vector<float> &vertices,
 }
 
 std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi>
-as_matrices(const HirshfeldBasis &b, const std::vector<float> &vertices,
+as_matrices(const StockholderWeightFunctor &b,
+            const std::vector<float> &vertices,
             const std::vector<uint32_t> indices) {
     Eigen::Matrix3Xf verts(3, vertices.size() / 3);
     Eigen::Matrix3Xi faces(3, indices.size() / 3);
+    float length = b.side_length();
+    const auto &origin = b.origin();
     for (size_t i = 0; i < vertices.size(); i += 3) {
-        verts(0, i / 3) = vertices[i] * b.length + b.origin(0);
-        verts(1, i / 3) = vertices[i + 1] * b.length + b.origin(1);
-        verts(2, i / 3) = vertices[i + 2] * b.length + b.origin(2);
+        verts(0, i / 3) = vertices[i] * length + origin(0);
+        verts(1, i / 3) = vertices[i + 1] * length + origin(1);
+        verts(2, i / 3) = vertices[i + 2] * length + origin(2);
     }
     for (size_t i = 0; i < indices.size(); i += 3) {
         faces(0, i / 3) = indices[i];
@@ -222,7 +144,8 @@ int main(int argc, char *argv[]) {
         "occ-hs - A program for Hirshfeld and promolecule surface generation");
     std::string geometry_filename{""};
     std::optional<std::string> environment_filename{};
-    int threads{1};
+    int threads{1}, max_depth{4};
+    double separation{0.2};
 
     CLI::Option *input_option = app.add_option(
         "geometry_file", geometry_filename, "xyz file of geometry");
@@ -234,6 +157,8 @@ int main(int argc, char *argv[]) {
     app.add_option("-S,--maximum-separation", maximum_separation,
                    "Maximum separation for surface construction");
     app.add_flag("-t,--threads", threads, "Number of threads");
+    app.add_option("--max-depth", max_depth, "Maximum voxel depth");
+    app.add_option("--separation", separation, "targt voxel separation");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -260,19 +185,32 @@ int main(int argc, char *argv[]) {
                        atom.z);
         }
 
-        auto basis = HirshfeldBasis(m1, m2);
-        size_t max_depth = 7;
+        auto basis = StockholderWeightFunctor(
+            m1, m2, separation * occ::units::ANGSTROM_TO_BOHR);
         size_t min_depth = 3;
+        occ::timing::StopWatch sw;
+        max_depth = basis.subdivisions();
         fmt::print("Min depth = {}, max depth = {}\n", min_depth, max_depth);
         auto mc = occ::geometry::mc::LinearHashedMarchingCubes(max_depth);
+        // auto mc = occ::geometry::mc::MarchingCubes(std::pow(2, max_depth));
         mc.min_depth = min_depth;
+        fmt::print("Separation: {}\n",
+                   (basis.side_length() / std::pow(2, max_depth)) *
+                       occ::units::BOHR_TO_ANGSTROM);
+        fmt::print("Voxel count: {}\n",
+                   std::pow(std::pow(2, max_depth) + 1, 3));
         std::vector<float> vertices;
         std::vector<uint32_t> faces;
+        sw.start();
         mc.extract(basis, vertices, faces);
+        sw.stop();
         double max_calls = std::pow(2, 3 * max_depth);
-        fmt::print("{} calls ({} % of conventional)\n", basis.num_calls,
-                   (basis.num_calls / max_calls) * 100);
+        fmt::print("{} calls ({} % of conventional)\n", basis.num_calls(),
+                   (basis.num_calls() / max_calls) * 100);
+        fmt::print("Took {} s\n", sw.read());
 
+        fmt::print("{} vertices, {} faces\n", vertices.size() / 3,
+                   faces.size() / 3);
         auto [v, f] = as_matrices(basis, vertices, faces);
 
         occ::core::numpy::save_npy("verts.npy", v);

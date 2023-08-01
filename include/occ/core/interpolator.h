@@ -1,8 +1,13 @@
 #include <cmath>
 #include <fmt/core.h>
+#include <occ/core/linear_algebra.h>
+#include <occ/core/macros.h>
 
 namespace occ::core {
 
+template <typename T> OCC_ALWAYS_INLINE T lerp(T v0, T v1, T t) {
+    return (1 - t) * v0 + t * v1;
+}
 /**
  * An enum to specify the mapping of the domain of inputs for interpolation.
  *
@@ -41,10 +46,8 @@ template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
      *
      */
     template <typename F>
-    Interpolator1D(const F &f, T left, T right, size_t N) {
-        m_domain.reserve(N);
-        m_range.reserve(N);
-
+    Interpolator1D(const F &f, T left, T right, size_t N)
+        : m_domain(N), m_range(N) {
         T l_mapped, u_mapped;
 
         if constexpr (mapping == Log) {
@@ -67,8 +70,8 @@ template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
                 x = x * x;
             }
             T y = f(x);
-            m_domain.push_back(x);
-            m_range.push_back(y);
+            m_domain(i) = x;
+            m_range(i) = y;
         }
 
         if constexpr (mapping == Log) {
@@ -84,6 +87,7 @@ template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
 
         l_fill = m_range[0];
         u_fill = m_range[m_range.size() - 1];
+        m_dx = m_domain.size() / (u_domain - l_domain);
     }
 
     /**
@@ -96,36 +100,85 @@ template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
      * yield the f(left) and f(right) values from the original
      * construction of the Interpolator1D.
      */
-    T operator()(T x) const {
+    OCC_ALWAYS_INLINE T operator()(T x) const {
         size_t N = m_domain.size();
-        T domain_distance = u_domain - l_domain;
-        T dval;
-        if constexpr (mapping == Log) {
-            dval = std::log(x);
-        } else if constexpr (mapping == SquareRoot) {
-            dval = std::sqrt(x);
+        if constexpr (mapping == Linear) {
+            T guess = m_dx * (x - l_domain);
+
+            // branchless here seems to be 50% slower
+            size_t j = static_cast<size_t>(std::floor(guess));
+
+            if (j <= 0)
+                return l_fill;
+            if (j >= N - 1)
+                return u_fill;
+            T t = (x - m_domain[j]) / (m_domain[j + 1] - m_domain[j]);
+            return lerp(m_range[j], m_range[j + 1], t);
         } else {
-            dval = x;
+
+            T dval = x;
+            if constexpr (mapping == Log) {
+                dval = std::log(x);
+            } else if constexpr (mapping == SquareRoot) {
+                dval = std::sqrt(x);
+            }
+            T guess = (dval - l_domain) * m_dx;
+            size_t j = static_cast<size_t>(std::floor(guess));
+            // linear search after the guess might be required due to domain
+            // distortion
+            if (j <= 0)
+                return l_fill;
+            if (j >= (N - 1))
+                return u_fill;
+            do {
+                j++;
+            } while (m_domain[j] < x);
+
+            T slope =
+                (m_range[j] - m_range[j - 1]) / (m_domain[j] - m_domain[j - 1]);
+            return m_range[j - 1] + (x - m_domain[j - 1]) * slope;
         }
-        T guess = N * (dval - l_domain) / domain_distance;
-        size_t j = static_cast<size_t>(std::floor(guess));
+    }
 
-        if (j <= 0)
-            return l_fill;
-        if (j >= (N - 1))
-            return u_fill;
-        do
-            j++;
-        while (m_domain[j] < x);
+    Eigen::Array<T, Eigen::Dynamic, 1>
+    operator()(const Eigen::Array<T, Eigen::Dynamic, 1> &xs) const {
+        static_assert(
+            mapping == Linear,
+            "Vectorised interpolation only implemented for linear mapping");
+        Eigen::Array<T, Eigen::Dynamic, 1> results(xs.size());
+        size_t N = m_domain.size();
+        Eigen::Array<int, Eigen::Dynamic, 1> js =
+            (m_dx * (xs - l_domain)).template cast<int>();
+        js = js.min(N - 2); // Clamp js to avoid going out of range
 
-        T slope =
-            (m_range[j] - m_range[j - 1]) / (m_domain[j] - m_domain[j - 1]);
-        return m_range[j - 1] + (x - m_domain[j - 1]) * slope;
+        // Compute weights for interpolation
+        Eigen::Array<T, Eigen::Dynamic, 1> weights =
+            (xs - m_domain(js)) / (m_domain(js + 1) - m_domain(js));
+
+        // Linear interpolation
+        results = (1 - weights) * m_range(js) + weights * m_range(js + 1);
+
+        // Fill values outside domain
+        results = (xs < m_domain(0)).select(l_fill, results);
+        results = (xs > m_domain(N - 1)).select(u_fill, results);
+
+        return results;
+    }
+
+    T find_threshold(T threshold_value) const {
+        Eigen::Index index;
+        bool found = (m_range < threshold_value).maxCoeff(&index);
+        if (found) {
+            return m_domain(index);
+        } else {
+            return u_domain;
+        }
     }
 
   private:
     T l_domain, u_domain, l_fill, u_fill;
-    std::vector<T> m_domain, m_range;
+    T m_dx;
+    Eigen::Array<T, Eigen::Dynamic, 1> m_domain, m_range;
 };
 
 } // namespace occ::core
