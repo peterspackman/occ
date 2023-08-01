@@ -111,9 +111,13 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4af49e0c39503c9aa96b742d7ddef3fb"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Interpolator1D.html#a4af49e0c39503c9aa96b742d7ddef3fb">Interpolator1D</a> (const F &amp;f, T left, T right, size_t N)</td></tr>
 <tr class="memdesc:a4af49e0c39503c9aa96b742d7ddef3fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an <a class="el" href="classocc_1_1core_1_1Interpolator1D.html" title="Class for interpolating one-dimensional functions.">Interpolator1D</a> from a given function.  <a href="classocc_1_1core_1_1Interpolator1D.html#a4af49e0c39503c9aa96b742d7ddef3fb">More...</a><br /></td></tr>
 <tr class="separator:a4af49e0c39503c9aa96b742d7ddef3fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9cc5aa7cacbc9a5b0d7d128cb2e47238"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Interpolator1D.html#a9cc5aa7cacbc9a5b0d7d128cb2e47238">operator()</a> (T x) const</td></tr>
-<tr class="memdesc:a9cc5aa7cacbc9a5b0d7d128cb2e47238"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the interpolated function at the value provided.  <a href="classocc_1_1core_1_1Interpolator1D.html#a9cc5aa7cacbc9a5b0d7d128cb2e47238">More...</a><br /></td></tr>
-<tr class="separator:a9cc5aa7cacbc9a5b0d7d128cb2e47238"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09a5904f6ed68c2b18818e5b1aa8e215"><td class="memItemLeft" align="right" valign="top"><a class="el" href="macros_8h.html#a977ed134d162150ea585a992d17914d2">OCC_ALWAYS_INLINE</a> T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Interpolator1D.html#a09a5904f6ed68c2b18818e5b1aa8e215">operator()</a> (T x) const</td></tr>
+<tr class="memdesc:a09a5904f6ed68c2b18818e5b1aa8e215"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the interpolated function at the value provided.  <a href="classocc_1_1core_1_1Interpolator1D.html#a09a5904f6ed68c2b18818e5b1aa8e215">More...</a><br /></td></tr>
+<tr class="separator:a09a5904f6ed68c2b18818e5b1aa8e215"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5bd8db6fa01210324220f1b0390428d"><td class="memItemLeft" align="right" valign="top">Eigen::Array&lt; T, Eigen::Dynamic, 1 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Interpolator1D.html#ae5bd8db6fa01210324220f1b0390428d">operator()</a> (const Eigen::Array&lt; T, Eigen::Dynamic, 1 &gt; &amp;xs) const</td></tr>
+<tr class="separator:ae5bd8db6fa01210324220f1b0390428d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44a35addd871012eca73e2bb2ea2b8b3"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Interpolator1D.html#a44a35addd871012eca73e2bb2ea2b8b3">find_threshold</a> (T threshold_value) const</td></tr>
+<tr class="separator:a44a35addd871012eca73e2bb2ea2b8b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename T, DomainMapping mapping = Linear&gt;<br />
@@ -216,8 +220,8 @@ template&lt;typename F &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a9cc5aa7cacbc9a5b0d7d128cb2e47238"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9cc5aa7cacbc9a5b0d7d128cb2e47238">&#9670;&nbsp;</a></span>operator()()</h2>
+<a id="a44a35addd871012eca73e2bb2ea2b8b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44a35addd871012eca73e2bb2ea2b8b3">&#9670;&nbsp;</a></span>find_threshold()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -228,7 +232,63 @@ template&lt;typename T , DomainMapping mapping = Linear&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">T <a class="el" href="classocc_1_1core_1_1Interpolator1D.html">occ::core::Interpolator1D</a>&lt; T, mapping &gt;::operator() </td>
+          <td class="memname">T <a class="el" href="classocc_1_1core_1_1Interpolator1D.html">occ::core::Interpolator1D</a>&lt; T, mapping &gt;::find_threshold </td>
+          <td>(</td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>threshold_value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae5bd8db6fa01210324220f1b0390428d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5bd8db6fa01210324220f1b0390428d">&#9670;&nbsp;</a></span>operator()() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , DomainMapping mapping = Linear&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Eigen::Array&lt;T, Eigen::Dynamic, 1&gt; <a class="el" href="classocc_1_1core_1_1Interpolator1D.html">occ::core::Interpolator1D</a>&lt; T, mapping &gt;::operator() </td>
+          <td>(</td>
+          <td class="paramtype">const Eigen::Array&lt; T, Eigen::Dynamic, 1 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>xs</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a09a5904f6ed68c2b18818e5b1aa8e215"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09a5904f6ed68c2b18818e5b1aa8e215">&#9670;&nbsp;</a></span>operator()() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , DomainMapping mapping = Linear&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="macros_8h.html#a977ed134d162150ea585a992d17914d2">OCC_ALWAYS_INLINE</a> T <a class="el" href="classocc_1_1core_1_1Interpolator1D.html">occ::core::Interpolator1D</a>&lt; T, mapping &gt;::operator() </td>
           <td>(</td>
           <td class="paramtype">T&#160;</td>
           <td class="paramname"><em>x</em></td><td>)</td>

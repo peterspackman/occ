@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['sgdata_3905',['SGData',['../namespaceocc_1_1crystal.html#a6be09bba05cb5f7143b28c936b9da7b1',1,'occ::crystal']]],
-  ['shellkind_3906',['ShellKind',['../classocc_1_1qm_1_1IntegralEngine.html#aad6e359ffc13cdfc74206628f401bdcb',1,'occ::qm::IntegralEngine::ShellKind()'],['../classocc_1_1qm_1_1IntegralEngineDF.html#a29db451c79bd0a390387b2cd9d2fe430',1,'occ::qm::IntegralEngineDF::ShellKind()']]],
-  ['shelllist_3907',['ShellList',['../classocc_1_1qm_1_1IntegralEngine.html#a258ba56c84633fd533b698e0142889b6',1,'occ::qm::IntegralEngine::ShellList()'],['../classocc_1_1qm_1_1IntegralEngineDF.html#a3d4b5b79a3b49a350be881aab1a27af0',1,'occ::qm::IntegralEngineDF::ShellList()'],['../classocc_1_1qm_1_1AOBasis.html#a5bb63e4c1c805184a0a2062153977adb',1,'occ::qm::AOBasis::ShellList()']]],
-  ['shellpairlist_3908',['ShellPairList',['../classocc_1_1qm_1_1IntegralEngine.html#a743c7f2a53bfd4a836b05c1a46837741',1,'occ::qm::IntegralEngine::ShellPairList()'],['../classocc_1_1qm_1_1IntegralEngineDF.html#a342d5b2713c20583c74d70926526a498',1,'occ::qm::IntegralEngineDF::ShellPairList()']]]
+  ['result_3945',['Result',['../classocc_1_1core_1_1Combinations.html#a3e796a96cef7e89b91eba7c1c1fb898d',1,'occ::core::Combinations']]],
+  ['rowvec_3946',['RowVec',['../namespaceocc.html#a2be511c632e07bd3b62cfa0005ce443d',1,'occ']]],
+  ['rowvec3_3947',['RowVec3',['../namespaceocc.html#a24fc356bbdefdca4157997750ee02964',1,'occ']]],
+  ['rowvec4_3948',['RowVec4',['../namespaceocc.html#a8a1b01836705169c4372c04b71bd6ec6',1,'occ']]]
 ];
