@@ -1,3 +1,4 @@
+#include <occ/core/log.h>
 #include <occ/main/isosurface.h>
 
 namespace occ::main {
@@ -76,12 +77,12 @@ StockholderWeightFunctor::StockholderWeightFunctor(
 
     double new_m_cube_side_length =
         m_target_separation * std::pow(2, m_subdivisions);
-    fmt::print("m_cube_side_length: {}\n", m_cube_side_length);
-    fmt::print("Target separation: {}\n", m_target_separation);
-    fmt::print("Suggested side m_cube_side_length: {}\n",
-               new_m_cube_side_length);
-    fmt::print("Subdivisions: {} (cube size = {})\n", m_subdivisions,
-               new_m_cube_side_length / std::pow(2, m_subdivisions));
+    occ::log::debug("Cube side length: {}", m_cube_side_length);
+    occ::log::debug("Target separation: {}", m_target_separation);
+    occ::log::debug("Suggested side m_cube_side_length: {}",
+                    new_m_cube_side_length);
+    occ::log::debug("Subdivisions: {} (cube size = {})\n", m_subdivisions,
+                    new_m_cube_side_length / std::pow(2, m_subdivisions));
     m_cube_side_length = new_m_cube_side_length;
 
     // set up bounding box to short cut if
@@ -94,8 +95,74 @@ StockholderWeightFunctor::StockholderWeightFunctor(
     // i.e. their diagonals are sqrt(3)
     //
     m_diagonal_scale_factor = 1.0 / m_cube_side_length;
-    fmt::print("Bottom left\n{}\nm_cube_side_length\n{}\n", m_origin,
-               m_cube_side_length);
+    occ::log::debug("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
+                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
+}
+
+PromoleculeDensityFunctor::PromoleculeDensityFunctor(
+    const occ::core::Molecule &mol, float sep, const InterpolatorParams &params)
+    : m_target_separation(sep), m_interpolator_params(params) {
+
+    const auto &elements = mol.atomic_numbers();
+    Mat3N coordinates = mol.positions().array() * occ::units::ANGSTROM_TO_BOHR;
+
+    Eigen::Vector3f minimum_pos =
+        coordinates.rowwise().minCoeff().cast<float>();
+    Eigen::Vector3f maximum_pos =
+        coordinates.rowwise().maxCoeff().cast<float>();
+
+    auto basis = occ::slater::load_slaterbasis("thakkar");
+    phmap::flat_hash_map<int, std::vector<int>> tmp_map;
+    for (size_t i = 0; i < elements.rows(); i++) {
+        int el = elements(i);
+        tmp_map[el].push_back(i);
+        auto search = m_interpolators.find(el);
+        if (search == m_interpolators.end()) {
+            auto b = basis[occ::core::Element(el).symbol()];
+            auto func = [&b](float x) { return b.rho(std::sqrt(x)); };
+            m_interpolators[el] = LinearInterpolatorFloat(
+                func, m_interpolator_params.domain_lower,
+                m_interpolator_params.domain_upper,
+                m_interpolator_params.num_points);
+        }
+    }
+
+    for (const auto &kv : tmp_map) {
+        m_atom_interpolators.push_back(
+            {m_interpolators.at(kv.first),
+             coordinates(Eigen::all, kv.second).cast<float>()});
+        m_atom_interpolators.back().threshold =
+            m_atom_interpolators.back().interpolator.find_threshold(1e-8);
+    }
+
+    m_origin = minimum_pos.array() - m_buffer;
+    m_cube_side_length = (maximum_pos - m_origin).maxCoeff() + m_buffer;
+
+    m_subdivisions = std::ceil(
+        std::log(m_cube_side_length / m_target_separation) / std::log(2));
+
+    double new_m_cube_side_length =
+        m_target_separation * std::pow(2, m_subdivisions);
+    occ::log::debug("Cube side length: {}", m_cube_side_length);
+    occ::log::debug("Target separation: {}", m_target_separation);
+    occ::log::debug("Suggested side m_cube_side_length: {}",
+                    new_m_cube_side_length);
+    occ::log::debug("Subdivisions: {} (cube size = {})", m_subdivisions,
+                    new_m_cube_side_length / std::pow(2, m_subdivisions));
+    m_cube_side_length = new_m_cube_side_length;
+
+    // set up bounding box to short cut if
+    // we have a very anisotropic molecule
+    m_bounding_box.lower = m_origin;
+    m_bounding_box.upper = maximum_pos.cast<float>();
+    m_bounding_box.upper.array() += m_buffer;
+
+    // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
+    // i.e. their diagonals are sqrt(3)
+    //
+    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
+    occ::log::debug("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
+                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
 
 } // namespace occ::main

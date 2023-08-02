@@ -23,11 +23,12 @@ using occ::Vec3;
 using occ::core::Element;
 using occ::core::Interpolator1D;
 using occ::core::Molecule;
+using occ::main::PromoleculeDensityFunctor;
 using occ::main::StockholderWeightFunctor;
 
 void write_ply_file(const std::string &filename,
-                    const std::vector<float> &vertices,
-                    const std::vector<uint32_t> &faces) {
+                    const Eigen::Matrix3Xf &vertices,
+                    const Eigen::Matrix3Xi &faces) {
     auto file = fmt::output_file(filename);
     file.print("ply\n");
     file.print("format ascii 1.0\n");
@@ -39,85 +40,18 @@ void write_ply_file(const std::string &filename,
     file.print("element face {}\n", faces.size() / 3);
     file.print("property list uchar int vertex_index\n");
     file.print("end_header\n");
-    for (size_t idx = 0; idx < vertices.size(); idx += 3) {
-        file.print("{} {} {}\n", vertices[idx], vertices[idx + 1],
-                   vertices[idx + 2]);
+    for (size_t idx = 0; idx < vertices.cols(); idx++) {
+        file.print("{} {} {}\n", vertices(0, idx), vertices(1, idx),
+                   vertices(2, idx));
     }
-    for (size_t idx = 0; idx < faces.size(); idx += 3) {
-        file.print("3 {} {} {}\n", faces[idx], faces[idx + 1], faces[idx + 2]);
+    for (size_t idx = 0; idx < faces.cols(); idx++) {
+        file.print("3 {} {} {}\n", faces(0, idx), faces(1, idx), faces(2, idx));
     }
 }
 
-struct SlaterBasis {
-    const double buffer = 5.0;
-    std::vector<Eigen::Vector3d> coordinates;
-    std::vector<occ::slater::Basis> basis;
-    const Molecule &molecule;
-    Eigen::Vector3d origin{0, 0, 0};
-    double length{0.0};
-    float iso = 0.02;
-    float fac = 0.5;
-    mutable std::chrono::duration<double> time{0};
-    mutable int num_calls{0};
-
-    SlaterBasis(const Molecule &mol) : molecule(mol) {
-        auto nums = molecule.atomic_numbers();
-        auto pos = molecule.positions();
-        pos.array() *= occ::units::ANGSTROM_TO_BOHR;
-        Eigen::Vector3d minp = pos.rowwise().minCoeff();
-        Eigen::Vector3d maxp = pos.rowwise().maxCoeff();
-        minp.array() -= buffer;
-        maxp.array() += buffer;
-        auto basis_set = occ::slater::load_slaterbasis("thakkar");
-        for (size_t i = 0; i < molecule.size(); i++) {
-            int el = nums[i];
-            coordinates.push_back(pos.col(i));
-            basis.emplace_back(basis_set[Element(el).symbol()]);
-        }
-        origin = minp;
-        length = (maxp - minp).maxCoeff();
-        fac = 1.0 / length;
-        fmt::print("Bottom left\n{}\nlength\n{}\n", origin, length);
-    }
-
-    float operator()(float x, float y, float z) const {
-        num_calls++;
-        auto t1 = std::chrono::high_resolution_clock::now();
-        float result = 0.0;
-        Eigen::Vector3d pos{static_cast<double>(x * length + origin(0)),
-                            static_cast<double>(y * length + origin(1)),
-                            static_cast<double>(z * length + origin(2))};
-        for (size_t i = 0; i < coordinates.size(); i++) {
-            double r = (pos - coordinates[i]).norm();
-            result += static_cast<float>(basis[i].rho(r));
-        }
-        auto t2 = std::chrono::high_resolution_clock::now();
-        time += t2 - t1;
-        return fac * (iso - result);
-    }
-};
-
+template <typename F>
 std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi>
-as_matrices(const SlaterBasis &b, const std::vector<float> &vertices,
-            const std::vector<uint32_t> indices) {
-    Eigen::Matrix3Xf verts(3, vertices.size() / 3);
-    Eigen::Matrix3Xi faces(3, indices.size() / 3);
-    for (size_t i = 0; i < vertices.size(); i += 3) {
-        verts(0, i / 3) = vertices[i] * b.length + b.origin(0);
-        verts(1, i / 3) = vertices[i + 1] * b.length + b.origin(1);
-        verts(2, i / 3) = vertices[i + 2] * b.length + b.origin(2);
-    }
-    for (size_t i = 0; i < indices.size(); i += 3) {
-        faces(0, i / 3) = indices[i];
-        faces(1, i / 3) = indices[i + 2];
-        faces(2, i / 3) = indices[i + 1];
-    }
-    return {verts, faces};
-}
-
-std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi>
-as_matrices(const StockholderWeightFunctor &b,
-            const std::vector<float> &vertices,
+as_matrices(const F &b, const std::vector<float> &vertices,
             const std::vector<uint32_t> indices) {
     Eigen::Matrix3Xf verts(3, vertices.size() / 3);
     Eigen::Matrix3Xi faces(3, indices.size() / 3);
@@ -133,7 +67,40 @@ as_matrices(const StockholderWeightFunctor &b,
         faces(1, i / 3) = indices[i + 2];
         faces(2, i / 3) = indices[i + 1];
     }
+    verts.array() *= occ::units::BOHR_TO_ANGSTROM;
     return {verts, faces};
+}
+
+template <typename F> void extract_surface(F &func) {
+    size_t min_depth = 3;
+    occ::timing::StopWatch sw;
+    size_t max_depth = func.subdivisions();
+    occ::log::debug("minimum subdivisions = {}, maximum subdivisions = {}",
+                    min_depth, max_depth);
+    auto mc = occ::geometry::mc::LinearHashedMarchingCubes(max_depth);
+    mc.min_depth = min_depth;
+    occ::log::debug("target separation: {}",
+                    (func.side_length() / std::pow(2, max_depth)) *
+                        occ::units::BOHR_TO_ANGSTROM);
+    occ::log::debug("naive voxel count: {}",
+                    std::pow(std::pow(2, max_depth) + 1, 3));
+    std::vector<float> vertices;
+    std::vector<uint32_t> faces;
+    sw.start();
+    mc.extract(func, vertices, faces);
+    sw.stop();
+    double max_calls = std::pow(2, 3 * max_depth);
+    occ::log::debug("{} calls ({} % of conventional)", func.num_calls(),
+                    (func.num_calls() / max_calls) * 100);
+    occ::log::info("Surface extraction took {:.5f} s", sw.read());
+
+    occ::log::info("Surface has {} vertices, {} faces", vertices.size() / 3,
+                   faces.size() / 3);
+    auto [v, f] = as_matrices(func, vertices, faces);
+
+    occ::core::numpy::save_npy("verts.npy", v);
+    occ::core::numpy::save_npy("faces.npy", f);
+    write_ply_file("surface.ply", v, f);
 }
 
 int main(int argc, char *argv[]) {
@@ -142,10 +109,11 @@ int main(int argc, char *argv[]) {
 
     CLI::App app(
         "occ-hs - A program for Hirshfeld and promolecule surface generation");
-    std::string geometry_filename{""};
+    std::string geometry_filename{""}, verbosity{"normal"};
     std::optional<std::string> environment_filename{};
     int threads{1}, max_depth{4};
     double separation{0.2};
+    float isovalue{0.02};
 
     CLI::Option *input_option = app.add_option(
         "geometry_file", geometry_filename, "xyz file of geometry");
@@ -159,93 +127,59 @@ int main(int argc, char *argv[]) {
     app.add_flag("-t,--threads", threads, "Number of threads");
     app.add_option("--max-depth", max_depth, "Maximum voxel depth");
     app.add_option("--separation", separation, "targt voxel separation");
+    app.add_option("--isovalue", isovalue, "targt isovalue");
+    // logging verbosity
+    app.add_option("-v,--verbosity", verbosity,
+                   "logging verbosity {silent,minimal,normal,verbose,debug}");
 
     CLI11_PARSE(app, argc, argv);
 
-    occ::log::set_level(occ::log::level::debug);
-    spdlog::set_level(spdlog::level::debug);
+    occ::log::setup_logging(verbosity);
 
     if (environment_filename) {
         Molecule m1 = occ::io::molecule_from_xyz_file(geometry_filename);
         Molecule m2 = occ::io::molecule_from_xyz_file(*environment_filename);
 
-        fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename, "sym", "x", "y", "z");
+        occ::log::info("Interior has {} atoms", m1.size());
+        occ::log::debug("Input geometry {}");
+        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}", geometry_filename,
+                        "sym", "x", "y", "z");
         for (const auto &atom : m1.atoms()) {
-            fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
-                       Element(atom.atomic_number).symbol(), atom.x, atom.y,
-                       atom.z);
+            occ::log::debug("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
+                            Element(atom.atomic_number).symbol(), atom.x,
+                            atom.y, atom.z);
         }
 
-        fmt::print("Environment geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename, "sym", "x", "y", "z");
+        occ::log::info("Environment has {} atoms", m2.size());
+        occ::log::debug("Input geometry {}");
+        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}", geometry_filename,
+                        "sym", "x", "y", "z");
         for (const auto &atom : m2.atoms()) {
-            fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
-                       Element(atom.atomic_number).symbol(), atom.x, atom.y,
-                       atom.z);
+            occ::log::debug("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
+                            Element(atom.atomic_number).symbol(), atom.x,
+                            atom.y, atom.z);
         }
 
-        auto basis = StockholderWeightFunctor(
+        auto func = StockholderWeightFunctor(
             m1, m2, separation * occ::units::ANGSTROM_TO_BOHR);
-        size_t min_depth = 3;
-        occ::timing::StopWatch sw;
-        max_depth = basis.subdivisions();
-        fmt::print("Min depth = {}, max depth = {}\n", min_depth, max_depth);
-        auto mc = occ::geometry::mc::LinearHashedMarchingCubes(max_depth);
-        // auto mc = occ::geometry::mc::MarchingCubes(std::pow(2, max_depth));
-        mc.min_depth = min_depth;
-        fmt::print("Separation: {}\n",
-                   (basis.side_length() / std::pow(2, max_depth)) *
-                       occ::units::BOHR_TO_ANGSTROM);
-        fmt::print("Voxel count: {}\n",
-                   std::pow(std::pow(2, max_depth) + 1, 3));
-        std::vector<float> vertices;
-        std::vector<uint32_t> faces;
-        sw.start();
-        mc.extract(basis, vertices, faces);
-        sw.stop();
-        double max_calls = std::pow(2, 3 * max_depth);
-        fmt::print("{} calls ({} % of conventional)\n", basis.num_calls(),
-                   (basis.num_calls() / max_calls) * 100);
-        fmt::print("Took {} s\n", sw.read());
-
-        fmt::print("{} vertices, {} faces\n", vertices.size() / 3,
-                   faces.size() / 3);
-        auto [v, f] = as_matrices(basis, vertices, faces);
-
-        occ::core::numpy::save_npy("verts.npy", v);
-        occ::core::numpy::save_npy("faces.npy", f);
-        write_ply_file("surface.ply", vertices, faces);
+        extract_surface(func);
     } else {
         Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
+        occ::log::info("Molecule has {} atoms", m.size());
 
-        fmt::print("Input geometry {}\n{:3s} {:^10s} {:^10s} {:^10s}\n",
-                   geometry_filename, "sym", "x", "y", "z");
+        occ::log::debug("Input geometry {}");
+        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}", geometry_filename,
+                        "sym", "x", "y", "z");
         for (const auto &atom : m.atoms()) {
-            fmt::print("{:^3s} {:10.6f} {:10.6f} {:10.6f}\n",
-                       Element(atom.atomic_number).symbol(), atom.x, atom.y,
-                       atom.z);
+            occ::log::debug("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
+                            Element(atom.atomic_number).symbol(), atom.x,
+                            atom.y, atom.z);
         }
 
-        auto basis = SlaterBasis(m);
-        size_t max_depth = 6;
-        size_t min_depth = 1;
-        fmt::print("Min depth = {}, max depth = {}\n", min_depth, max_depth);
-        auto mc = occ::geometry::mc::LinearHashedMarchingCubes(max_depth);
-        auto mc_conventional =
-            occ::geometry::mc::MarchingCubes(std::pow(2, max_depth));
-        mc.min_depth = min_depth;
-        std::vector<float> vertices;
-        std::vector<uint32_t> faces;
-        fmt::print("Linear hashed\n");
-        auto t1 = std::chrono::high_resolution_clock::now();
-        mc.extract(basis, vertices, faces);
-        size_t num_calls_hashed = basis.num_calls;
-        auto t2 = std::chrono::high_resolution_clock::now();
-        fmt::print("{} calls hashed, {} total, {} calls\n", num_calls_hashed,
-                   std::chrono::duration<double>(t2 - t1).count(),
-                   basis.time.count());
-        write_ply_file("surface_hashed.ply", vertices, faces);
+        auto func = PromoleculeDensityFunctor(
+            m, separation * occ::units::ANGSTROM_TO_BOHR);
+        func.set_isovalue(isovalue);
+        extract_surface(func);
     }
     return 0;
 }
