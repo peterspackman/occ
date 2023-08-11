@@ -18,7 +18,7 @@ var searchData=
   ['index_5fcache_2eh_1039',['index_cache.h',['../index__cache_8h.html',1,'']]],
   ['index_5fof_1040',['index_of',['../namespaceocc_1_1util.html#a9037ebd16e941e0148ed07eb1d0b9696',1,'occ::util']]],
   ['indexcache_1041',['IndexCache',['../structocc_1_1geometry_1_1IndexCache.html#a8f712851bd4814c96639475ba627ef43',1,'occ::geometry::IndexCache::IndexCache()'],['../structocc_1_1geometry_1_1IndexCache.html',1,'occ::geometry::IndexCache']]],
-  ['inertia_5ftensor_1042',['inertia_tensor',['../namespaceocc_1_1core.html#a9201f84a536bf7194bf669c250db4707',1,'occ::core::inertia_tensor()'],['../classocc_1_1core_1_1Molecule.html#a30c475324a15a737f0c693832817d9a3',1,'occ::core::Molecule::inertia_tensor()']]],
+  ['inertia_5ftensor_1042',['inertia_tensor',['../classocc_1_1core_1_1Molecule.html#a30c475324a15a737f0c693832817d9a3',1,'occ::core::Molecule::inertia_tensor()'],['../namespaceocc_1_1core.html#a9201f84a536bf7194bf669c250db4707',1,'occ::core::inertia_tensor()']]],
   ['inertia_5ftensor_2eh_1043',['inertia_tensor.h',['../inertia__tensor_8h.html',1,'']]],
   ['initial_1044',['initial',['../structocc_1_1solvent_1_1COSMO_1_1Result.html#aeb5bd79e92dec387e409657c53ac9019',1,'occ::solvent::COSMO::Result']]],
   ['input_1045',['input',['../classocc_1_1io_1_1QCSchemaReader.html#a3da4408d6c2514d42307dd3eec8972e0',1,'occ::io::QCSchemaReader']]],
@@ -77,8 +77,9 @@ var searchData=
   ['is_5ftriclinic_1098',['is_triclinic',['../classocc_1_1crystal_1_1UnitCell.html#ae53bbb083a1b295251f52dd54454fd8c',1,'occ::crystal::UnitCell']]],
   ['is_5fwater_1099',['is_water',['../structocc_1_1solvent_1_1SMDSolventParameters.html#a7cf2870a401d4a6081262935ffb5ad70',1,'occ::solvent::SMDSolventParameters']]],
   ['isosurface_2eh_1100',['isosurface.h',['../isosurface_8h.html',1,'']]],
-  ['iter_1101',['iter',['../structocc_1_1scf_1_1SCF.html#aa2ddf68ffe3163242d06d2e71499b5c8',1,'occ::scf::SCF']]],
-  ['iterate_5fover_5fshell_1102',['iterate_over_shell',['../namespaceocc_1_1gto.html#a3ef2d30b82e02565d58a55a33da880f8',1,'occ::gto']]],
-  ['ivec_1103',['IVec',['../namespaceocc.html#a1c36353e752d77ead2a53790410bfaee',1,'occ']]],
-  ['ivec3_1104',['IVec3',['../namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3',1,'occ']]]
+  ['isovalue_1101',['isovalue',['../classocc_1_1main_1_1PromoleculeDensityFunctor.html#a3043fea0ff25a7430e5cb4a418ae7ebf',1,'occ::main::PromoleculeDensityFunctor::isovalue()'],['../classocc_1_1main_1_1StockholderWeightFunctor.html#a125beee37a244db13586682a0eedf565',1,'occ::main::StockholderWeightFunctor::isovalue()']]],
+  ['iter_1102',['iter',['../structocc_1_1scf_1_1SCF.html#aa2ddf68ffe3163242d06d2e71499b5c8',1,'occ::scf::SCF']]],
+  ['iterate_5fover_5fshell_1103',['iterate_over_shell',['../namespaceocc_1_1gto.html#a3ef2d30b82e02565d58a55a33da880f8',1,'occ::gto']]],
+  ['ivec_1104',['IVec',['../namespaceocc.html#a1c36353e752d77ead2a53790410bfaee',1,'occ']]],
+  ['ivec3_1105',['IVec3',['../namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3',1,'occ']]]
 ];

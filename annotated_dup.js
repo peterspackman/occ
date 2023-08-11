@@ -152,6 +152,7 @@ var annotated_dup =
         [ "AtomInterpolator", "structocc_1_1main_1_1AtomInterpolator.html", "structocc_1_1main_1_1AtomInterpolator" ],
         [ "InterpolatorParams", "structocc_1_1main_1_1InterpolatorParams.html", "structocc_1_1main_1_1InterpolatorParams" ],
         [ "StockholderWeightFunctor", "classocc_1_1main_1_1StockholderWeightFunctor.html", "classocc_1_1main_1_1StockholderWeightFunctor" ],
+        [ "PromoleculeDensityFunctor", "classocc_1_1main_1_1PromoleculeDensityFunctor.html", "classocc_1_1main_1_1PromoleculeDensityFunctor" ],
         [ "PairEnergy", "structocc_1_1main_1_1PairEnergy.html", "structocc_1_1main_1_1PairEnergy" ],
         [ "LatticeConvergenceSettings", "structocc_1_1main_1_1LatticeConvergenceSettings.html", "structocc_1_1main_1_1LatticeConvergenceSettings" ],
         [ "LatticeEnergyResult", "structocc_1_1main_1_1LatticeEnergyResult.html", "structocc_1_1main_1_1LatticeEnergyResult" ],
