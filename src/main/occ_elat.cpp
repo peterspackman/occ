@@ -112,7 +112,7 @@ calculate_wavefunctions(const std::string &basename,
                 SCF<occ::dft::DFT> scf(rks, SpinorbitalKind::Restricted);
 
                 scf.set_charge_multiplicity(0, 1);
-                scf.start_incremental_F_threshold = 0.0;
+                scf.convergence_settings.incremental_fock_threshold = 0.0;
                 double e = scf.compute_scf_energy();
                 auto wfn = scf.wavefunction();
                 occ::io::FchkWriter fchk(fchk_path.string());

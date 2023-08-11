@@ -1207,7 +1207,7 @@ int main(int argc, char **argv) {
                 nlohmann::json j;
                 j["surface_energies"] = surface_energies;
                 j["vacuum"] = calc.crystal_interaction_energies();
-                j[solvent] = calc.interaction_energies();
+                j["solvated"] = calc.interaction_energies();
                 std::ofstream destination(
                     fmt::format("{}_surface_energies.json", basename));
                 destination << j.dump(2);
