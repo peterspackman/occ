@@ -1037,8 +1037,9 @@ int main(int argc, char **argv) {
     app.add_flag("-d,--dump", write_dump_files, "Write dump files");
     app.add_flag("--atomic", crystal_is_atomic,
                  "Crystal is atomic (i.e. no bonds)");
-    app.add_flag("--surface-energies", max_facets,
-                 "Calculate surface energies and write .gmf morphology files");
+    app.add_option(
+        "--surface-energies", max_facets,
+        "Calculate surface energies and write .gmf morphology files");
     app.add_flag("--list-available-solvents", list_solvents,
                  "List available solvents and exit");
 
