@@ -1,5 +1,6 @@
 var NAVTREEINDEX7 =
 {
+"multipole_8h.html#a4c43c80b170febf6fb0c2e6fbaa82d9a":[3,0,1,0,0,22,4],
 "multipole_8h.html#a81996a954007c566ed079bb15a274ba4":[3,0,1,0,0,22,2],
 "multipole_8h.html#aa9090dcf8213bf9e23ac3851ed4f5e52":[3,0,1,0,0,22,3],
 "namespaceEigen.html":[1,0,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX7 =
 "namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a7819680dd900c9f6ff33a854f3159299":[1,0,2,1,6,0,2],
 "namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6ac63c90b1f95247383cdf9f87b298c287":[1,0,2,1,6,0,4],
 "namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6ad12c2b2f63410e718dd07f97022fc650":[1,0,2,1,6,0,3],
-"namespaceocc_1_1crystal.html":[1,0,2,2],
-"namespaceocc_1_1crystal.html#a007770fccb2ec3a01d53a7e8785a8753":[1,0,2,2,18]
+"namespaceocc_1_1crystal.html":[1,0,2,2]
 };

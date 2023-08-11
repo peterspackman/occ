@@ -1,5 +1,6 @@
 var NAVTREEINDEX12 =
 {
+"structocc_1_1io_1_1GaussianInputFile.html#a628de25c3f39d03eab329228dfbb131e":[2,0,1,6,13,9],
 "structocc_1_1io_1_1GaussianInputFile.html#a7cba2587e2748a36a50c477ec2f76ac0":[2,0,1,6,13,16],
 "structocc_1_1io_1_1GaussianInputFile.html#a850b604d43d3ec02a65c33b4cabd43c9":[2,0,1,6,13,10],
 "structocc_1_1io_1_1GaussianInputFile.html#a98936711a676e25811c26f24513ef9d5":[2,0,1,6,13,3],
@@ -248,6 +249,5 @@ var NAVTREEINDEX12 =
 "structocc_1_1qm_1_1MolecularOrbitals.html#aa522e0500f30141a65584a398a1994ef":[2,0,1,8,6,16],
 "structocc_1_1qm_1_1MolecularOrbitals.html#aceac60326b4eebca0dbe7a6b43a7766c":[2,0,1,8,6,4],
 "structocc_1_1qm_1_1MolecularOrbitals.html#ad6b3bbf1cea784720981d1ec00adbf32":[2,0,1,8,6,3],
-"structocc_1_1qm_1_1MolecularOrbitals.html#add93919459e859112a7ee63fbddb9269":[2,0,1,8,6,7],
-"structocc_1_1qm_1_1MolecularOrbitals.html#adfd73ec3e0f6cd915c15839f03e88c73":[2,0,1,8,6,18]
+"structocc_1_1qm_1_1MolecularOrbitals.html#add93919459e859112a7ee63fbddb9269":[2,0,1,8,6,7]
 };

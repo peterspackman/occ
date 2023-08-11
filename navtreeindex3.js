@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf4f161449aa4409885e2b9c9e3ab0066":[2,0,1,2,2,3,30],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf59f17cec9b52607a81012d892a1b785":[2,0,1,2,2,3,12],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf5bf012315983e62c25bc769eb74caa7":[2,0,1,2,2,3,110],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf5fabd1f94ac1e1bf95a07c20875e2f4":[2,0,1,2,2,3,139],
@@ -248,6 +249,5 @@ var NAVTREEINDEX3 =
 "classocc_1_1main_1_1StockholderWeightFunctor.html#afaef43345a00a4d74220924dcea84707":[2,0,1,7,7,6],
 "classocc_1_1qm_1_1AOBasis.html":[2,0,1,8,9],
 "classocc_1_1qm_1_1AOBasis.html#a0151fc291b2ca27d0a55d10a8a58b416":[2,0,1,8,9,35],
-"classocc_1_1qm_1_1AOBasis.html#a04b92d079f470b5dff5c07be17e33c25":[2,0,1,8,9,7],
-"classocc_1_1qm_1_1AOBasis.html#a0d90de12a0b9148131fc990f5c2cd11f":[2,0,1,8,9,26]
+"classocc_1_1qm_1_1AOBasis.html#a04b92d079f470b5dff5c07be17e33c25":[2,0,1,8,9,7]
 };

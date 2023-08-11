@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"functions_eval_l.html":[2,3,5,7],
 "functions_eval_m.html":[2,3,5,8],
 "functions_eval_o.html":[2,3,5,9],
 "functions_eval_p.html":[2,3,5,10],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "morton_8h.html#af9ae04407cbd8a2acd91a55741fe7b88":[3,0,1,0,3,4,21],
 "morton_8h.html#afe18a561919ce3b475669d2edcb92cdd":[3,0,1,0,3,4,18],
 "multipole_8h.html":[3,0,1,0,0,22],
-"multipole_8h.html#a2c13a8ff8a8712711388809ff8ca9aec":[3,0,1,0,0,22,5],
-"multipole_8h.html#a4c43c80b170febf6fb0c2e6fbaa82d9a":[3,0,1,0,0,22,4]
+"multipole_8h.html#a2c13a8ff8a8712711388809ff8ca9aec":[3,0,1,0,0,22,5]
 };

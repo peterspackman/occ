@@ -1,5 +1,6 @@
 var NAVTREEINDEX13 =
 {
+"structocc_1_1qm_1_1MolecularOrbitals.html#adfd73ec3e0f6cd915c15839f03e88c73":[2,0,1,8,6,18],
 "structocc_1_1qm_1_1MolecularOrbitals.html#af3da598a6b3ea22870c18410fceede51":[2,0,1,8,6,23],
 "structocc_1_1qm_1_1MolecularOrbitals.html#afa0c011f3ddd499a5a0b09597ebc62d9":[2,0,1,8,6,20],
 "structocc_1_1qm_1_1SCFConvergenceSettings.html":[2,0,1,8,7],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "unitcell_8h.html":[3,0,1,0,1,6],
 "unitcell_8h.html#a007770fccb2ec3a01d53a7e8785a8753":[3,0,1,0,1,6,5],
 "unitcell_8h.html#a1a44c3e06d68376a3160ea89a23cd97d":[3,0,1,0,1,6,3],
-"unitcell_8h.html#a392f8e219e4cd936e2d59947cafb8f51":[3,0,1,0,1,6,7],
-"unitcell_8h.html#a6beca695cc1de3e1e434ce2f60c6cea5":[3,0,1,0,1,6,4]
+"unitcell_8h.html#a392f8e219e4cd936e2d59947cafb8f51":[3,0,1,0,1,6,7]
 };

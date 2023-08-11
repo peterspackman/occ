@@ -1,5 +1,6 @@
 var NAVTREEINDEX10 =
 {
+"quasirandom_8h.html#abeb0483db6e31121318847e734ed6cf5":[3,0,1,0,0,29,0],
 "range__separated__parameters_8h.html":[3,0,1,0,2,5],
 "rotation_8h.html":[3,0,1,0,4,2],
 "rotation_8h.html#a87896059da6dd98c6c0e9f39ffca5321":[3,0,1,0,4,2,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX10 =
 "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html#ac6c7904be7f47c3596341683cf6235df":[2,0,1,2,6,1,1],
 "structocc_1_1dft_1_1RadialGrid.html":[2,0,1,2,4],
 "structocc_1_1dft_1_1RadialGrid.html#a265a8e9304c1700c7132b56f4a350bad":[2,0,1,2,4,4],
-"structocc_1_1dft_1_1RadialGrid.html#a3ee41b0c7f65417708fcdc27c911a186":[2,0,1,2,4,3],
-"structocc_1_1dft_1_1RadialGrid.html#a54d566252c8ab0b7de61500eedf5812a":[2,0,1,2,4,2]
+"structocc_1_1dft_1_1RadialGrid.html#a3ee41b0c7f65417708fcdc27c911a186":[2,0,1,2,4,3]
 };
