@@ -3,6 +3,7 @@
 #include <istream>
 #include <occ/core/element.h>
 #include <occ/core/molecule.h>
+#include <occ/core/point_charge.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/grid_settings.h>
 #include <occ/qm/spinorbital.h>
@@ -13,6 +14,7 @@ using occ::core::Element;
 using occ::qm::SpinorbitalKind;
 
 using Position = std::array<double, 3>;
+using PointChargeList = std::vector<occ::core::PointCharge>;
 
 struct ElectronInput {
     int multiplicity{1};
@@ -25,6 +27,7 @@ struct GeometryInput {
     std::vector<Element> elements;
     occ::core::Molecule molecule() const;
     void set_molecule(const occ::core::Molecule &);
+    PointChargeList point_charges;
 };
 
 struct DriverInput {

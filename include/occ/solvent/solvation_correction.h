@@ -15,6 +15,7 @@ namespace occ::solvent {
 
 using occ::qm::MolecularOrbitals;
 using occ::qm::SpinorbitalKind;
+using PointChargeList = std::vector<occ::core::PointCharge>;
 
 class ContinuumSolvationModel {
   public:
@@ -159,6 +160,10 @@ template <typename Proc> class SolvationCorrectedProcedure {
         return m_proc.nuclear_repulsion_energy();
     }
 
+    inline double nuclear_point_charge_interaction_energy(const PointChargeList &pc) const {
+        return m_proc.nuclear_point_charge_interaction_energy(pc);
+    }
+
     void update_scf_energy(occ::core::EnergyComponents &energy,
                            bool incremental) const {
 
@@ -195,6 +200,10 @@ template <typename Proc> class SolvationCorrectedProcedure {
     }
 
     auto compute_schwarz_ints() const { return m_proc.compute_schwarz_ints(); }
+
+    inline auto compute_point_charge_interaction_matrix(const PointChargeList &pc) {
+        return m_proc.compute_point_charge_interaction_matrix(pc);
+    }
 
     void update_core_hamiltonian(const MolecularOrbitals &mo, occ::Mat &H) {
         occ::timing::start(occ::timing::category::solvent);

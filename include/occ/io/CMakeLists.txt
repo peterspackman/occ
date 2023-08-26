@@ -15,6 +15,7 @@ set(OCC_IO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/kmcpp.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/moldenreader.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_input.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pc.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/qcschema.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_json.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/xyz.h"

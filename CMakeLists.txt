@@ -47,6 +47,12 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 
+if("${WITH_PYTHON_BINDINGS}")
+    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+    message(STATUS "Enabled python bindings, setting CMAKE_POSITION_INDEPENDENT_CODE globally")
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 find_package(OpenMP REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -56,13 +62,6 @@ endif()
 
 if("${USE_SYSTEM_BLAS}")
     find_package(BLAS REQUIRED)
-endif()
-
-
-if("${WITH_PYTHON_BINDINGS}")
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-    message(STATUS "Enabled python bindings, setting CMAKE_POSITION_INDEPENDENT_CODE globally")
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")

@@ -20,6 +20,7 @@ namespace occ::dft {
 using occ::qm::expectation;
 using occ::qm::MolecularOrbitals;
 using occ::qm::SpinorbitalKind;
+using PointChargeList = std::vector<occ::core::PointCharge>;
 
 using occ::IVec;
 using occ::Mat3N;
@@ -148,6 +149,11 @@ class DFT {
         return m_hf.nuclear_repulsion_energy();
     }
 
+    inline double nuclear_point_charge_interaction_energy(const PointChargeList &pc) const {
+        return m_hf.nuclear_point_charge_interaction_energy(pc);
+    }
+
+
     auto compute_kinetic_matrix() const {
         return m_hf.compute_kinetic_matrix();
     }
@@ -164,9 +170,7 @@ class DFT {
         return m_hf.compute_effective_core_potential_matrix();
     }
 
-    auto compute_point_charge_interaction_matrix(
-        const std::vector<std::pair<double, std::array<double, 3>>>
-            &point_charges) const {
+    auto compute_point_charge_interaction_matrix(const PointChargeList &point_charges) const {
         return m_hf.compute_point_charge_interaction_matrix(point_charges);
     }
 

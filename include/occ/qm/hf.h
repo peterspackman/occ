@@ -40,6 +40,7 @@ class HartreeFock {
     void set_system_charge(int charge);
     void set_density_fitting_basis(const std::string &);
     double nuclear_repulsion_energy() const;
+    double nuclear_point_charge_interaction_energy(const PointChargeList &) const;
 
     Mat compute_fock(const MolecularOrbitals &mo,
                      double precision = std::numeric_limits<double>::epsilon(),

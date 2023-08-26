@@ -15,6 +15,7 @@
 #include <occ/io/fchkwriter.h>
 #include <occ/io/gaussian_input_file.h>
 #include <occ/io/occ_input.h>
+#include <occ/io/pc.h>
 #include <occ/io/qcschema.h>
 #include <occ/io/xyz.h>
 #include <occ/main/cli_validators.h>
@@ -92,7 +93,7 @@ int main(int argc, char *argv[]) {
 
     CLI::App app("occ - A program for quantum chemistry");
     app.allow_config_extras(CLI::config_extras_mode::error);
-    std::string input_file{""}, verbosity{"normal"};
+    std::string input_file{""}, verbosity{"normal"}, point_charge_filename{""};
     bool unrestricted{false};
 
     CLI::Option *input_option =
@@ -135,6 +136,8 @@ int main(int argc, char *argv[]) {
                    config.basis.df_name, "basis set");
     app.add_flag("--spherical", config.basis.spherical,
                  "use spherical basis sets");
+    // point charges
+    app.add_flag("--point-charges", point_charge_filename, "file listing point charges");
     // Solvation
     app.add_flag("-s,--solvent,--solvent_name", config.solvent.solvent_name,
                  "use spherical basis sets");
@@ -170,6 +173,11 @@ int main(int argc, char *argv[]) {
         read_input_file(input_file, config);
         if (config.filename.empty()) {
             config.filename = config.name;
+        }
+
+        if(!point_charge_filename.empty()) {
+            occ::io::PointChargeFileReader pc(point_charge_filename);
+            pc.update_occ_input(config);
         }
 
         occ::parallel::set_num_threads(std::max(1, config.runtime.threads));

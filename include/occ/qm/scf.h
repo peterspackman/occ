@@ -27,6 +27,8 @@ using qm::SpinorbitalKind::General;
 using qm::SpinorbitalKind::Restricted;
 using qm::SpinorbitalKind::Unrestricted;
 using util::is_odd;
+using PointChargeList = std::vector<occ::core::PointCharge>;
+
 namespace block = qm::block;
 
 template <typename Procedure> struct SCF {
@@ -245,6 +247,7 @@ template <typename Procedure> struct SCF {
     void set_core_matrices() {
 
         bool calc_ecp = m_procedure.have_effective_core_potentials();
+        bool calc_pc = m_point_charges.size() > 0;
         switch (mo.kind) {
         case SpinorbitalKind::Restricted: {
             S = m_procedure.compute_overlap_matrix();
@@ -252,6 +255,10 @@ template <typename Procedure> struct SCF {
             V = m_procedure.compute_nuclear_attraction_matrix();
             if (calc_ecp) {
                 Vecp = m_procedure.compute_effective_core_potential_matrix();
+            }
+            if (calc_pc) {
+                occ::log::info("CALC PC");
+                Vpc = m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
             }
             break;
         }
@@ -267,6 +274,12 @@ template <typename Procedure> struct SCF {
                     m_procedure.compute_effective_core_potential_matrix();
                 block::b(Vecp) = block::a(Vecp);
             }
+            if (calc_pc) {
+                block::a(Vpc) =
+                    m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
+                block::b(Vpc) = block::a(Vecp);
+
+            }
             break;
         }
         case SpinorbitalKind::General: {
@@ -281,10 +294,16 @@ template <typename Procedure> struct SCF {
                     m_procedure.compute_effective_core_potential_matrix();
                 block::bb(Vecp) = block::aa(Vecp);
             }
+            if (calc_pc) {
+                block::aa(Vpc) =
+                    m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
+                block::bb(Vpc) = block::aa(Vecp);
+            }
+
             break;
         }
         }
-        H = T + V + Vecp;
+        H = T + V + Vecp + Vpc;
     }
 
     void set_initial_guess_from_wfn(const Wavefunction &wfn) {
@@ -363,6 +382,12 @@ template <typename Procedure> struct SCF {
         occ::timing::stop(occ::timing::category::guess);
     }
 
+    void set_point_charges(const PointChargeList &charges) {
+        log::info("Including potential from {} point charges", charges.size());
+        energy["nuclear.point_charge"] = m_procedure.nuclear_point_charge_interaction_energy(charges);
+        m_point_charges = charges;
+    }
+
     void update_scf_energy(bool incremental) {
 
         if (!incremental) {
@@ -380,10 +405,17 @@ template <typename Procedure> struct SCF {
                 energy["electronic"] - energy["electronic.1e"];
             energy["total"] =
                 energy["electronic"] + energy["nuclear.repulsion"];
+            const auto pcloc = energy.find("nuclear.point_charge");
+            if (pcloc != energy.end()) {
+                energy["total"] += pcloc->second;
+            }
             occ::timing::stop(occ::timing::category::la);
         }
         if (m_procedure.have_effective_core_potentials()) {
             energy["electronic.ecp"] = expectation(mo.kind, mo.D, Vecp);
+        }
+        if (m_point_charges.size() > 0) {
+            energy["electronic.point_charge"] = 2 * expectation(mo.kind, mo.D, Vpc);
         }
         m_procedure.update_scf_energy(energy, incremental);
     }
@@ -425,7 +457,7 @@ template <typename Procedure> struct SCF {
             // Last iteration's energy and density
             auto ehf_last = energy["electronic"];
             D_last = mo.D;
-            H = T + V + Vecp;
+            H = T + V + Vecp + Vpc;
             m_procedure.update_core_hamiltonian(mo, H);
             incremental = true;
 
@@ -537,6 +569,7 @@ template <typename Procedure> struct SCF {
     Mat S, T, V, H, K, X, Xinv, F, Vpc, Vecp;
     double XtX_condition_number;
     bool m_have_initial_guess{false};
+    PointChargeList m_point_charges;
 };
 
 } // namespace occ::scf

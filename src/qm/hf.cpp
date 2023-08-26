@@ -55,6 +55,23 @@ double HartreeFock::nuclear_repulsion_energy() const {
     return enuc;
 }
 
+
+double HartreeFock::nuclear_point_charge_interaction_energy(const PointChargeList &pc) const {
+  double etot = 0.0;
+    for (auto i = 0; i < m_atoms.size(); i++)
+        for (const auto &[q, pos]: pc) {
+            auto xij = m_atoms[i].x - pos[0];
+            auto yij = m_atoms[i].y - pos[1];
+            auto zij = m_atoms[i].z - pos[2];
+            auto r2 = xij * xij + yij * yij + zij * zij;
+            auto r = sqrt(r2);
+            etot += (m_atoms[i].atomic_number - m_frozen_electrons[i]) *
+                    q / r;
+        }
+    return etot;
+
+}
+
 Mat HartreeFock::compute_fock(const MolecularOrbitals &mo, double precision,
                               const Mat &Schwarz) const {
     if (m_df_engine) {
