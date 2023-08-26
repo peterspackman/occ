@@ -145,6 +145,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a27c7379a38a9cf5228468482678178f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ca57b2a5d2e483f9299485f11564779"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a2ca57b2a5d2e483f9299485f11564779">nuclear_repulsion_energy</a> () const</td></tr>
 <tr class="separator:a2ca57b2a5d2e483f9299485f11564779"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6dd3d626e56d2a501c28476f0daa44b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#ad6dd3d626e56d2a501c28476f0daa44b">nuclear_point_charge_interaction_energy</a> (const <a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">PointChargeList</a> &amp;pc) const</td></tr>
+<tr class="separator:ad6dd3d626e56d2a501c28476f0daa44b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af779fee96a421244967a75b1510ab0ce"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#af779fee96a421244967a75b1510ab0ce">compute_kinetic_matrix</a> () const</td></tr>
 <tr class="separator:af779fee96a421244967a75b1510ab0ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13ce905070b05b9e8618be1042f6dddc"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a13ce905070b05b9e8618be1042f6dddc">compute_overlap_matrix</a> () const</td></tr>
@@ -153,8 +155,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a62cdb0fee5a170bfc25154e750b81204"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a772912fd4df034b5f315cdd3d347bb94"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a772912fd4df034b5f315cdd3d347bb94">compute_effective_core_potential_matrix</a> () const</td></tr>
 <tr class="separator:a772912fd4df034b5f315cdd3d347bb94"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9da4bc94a4b17ef4238e3980660c1d15"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a9da4bc94a4b17ef4238e3980660c1d15">compute_point_charge_interaction_matrix</a> (const std::vector&lt; std::pair&lt; double, std::array&lt; double, 3 &gt;&gt;&gt; &amp;point_charges) const</td></tr>
-<tr class="separator:a9da4bc94a4b17ef4238e3980660c1d15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac04a3cd5cf8eeccacd9b276fea2766bf"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#ac04a3cd5cf8eeccacd9b276fea2766bf">compute_point_charge_interaction_matrix</a> (const <a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">PointChargeList</a> &amp;point_charges) const</td></tr>
+<tr class="separator:ac04a3cd5cf8eeccacd9b276fea2766bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35a5f0b71f5bd8817ee37e1f1d452764"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a35a5f0b71f5bd8817ee37e1f1d452764">compute_schwarz_ints</a> () const</td></tr>
 <tr class="separator:a35a5f0b71f5bd8817ee37e1f1d452764"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14321390683baab8da79843cd40373ff"><td class="memTemplParams" colspan="2">template&lt;unsigned int order = 1&gt; </td></tr>
@@ -752,8 +754,8 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
-<a id="a9da4bc94a4b17ef4238e3980660c1d15"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9da4bc94a4b17ef4238e3980660c1d15">&#9670;&nbsp;</a></span>compute_point_charge_interaction_matrix()</h2>
+<a id="ac04a3cd5cf8eeccacd9b276fea2766bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac04a3cd5cf8eeccacd9b276fea2766bf">&#9670;&nbsp;</a></span>compute_point_charge_interaction_matrix()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -764,7 +766,7 @@ template&lt;unsigned int order = 1&gt; </div>
         <tr>
           <td class="memname">auto occ::dft::DFT::compute_point_charge_interaction_matrix </td>
           <td>(</td>
-          <td class="paramtype">const std::vector&lt; std::pair&lt; double, std::array&lt; double, 3 &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">PointChargeList</a> &amp;&#160;</td>
           <td class="paramname"><em>point_charges</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -1174,6 +1176,32 @@ template&lt;unsigned int order = 1&gt; </div>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
           <td class="paramname"><em>pts</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad6dd3d626e56d2a501c28476f0daa44b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6dd3d626e56d2a501c28476f0daa44b">&#9670;&nbsp;</a></span>nuclear_point_charge_interaction_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::dft::DFT::nuclear_point_charge_interaction_energy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">PointChargeList</a> &amp;&#160;</td>
+          <td class="paramname"><em>pc</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>

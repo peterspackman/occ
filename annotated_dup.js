@@ -134,6 +134,7 @@ var annotated_dup =
         [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
         [ "OccInput", "structocc_1_1io_1_1OccInput.html", "structocc_1_1io_1_1OccInput" ],
         [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
+        [ "PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", "structocc_1_1io_1_1PointChargeFileReader" ],
         [ "QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", "structocc_1_1io_1_1QCSchemaBond" ],
         [ "QCSchemaTopology", "structocc_1_1io_1_1QCSchemaTopology.html", "structocc_1_1io_1_1QCSchemaTopology" ],
         [ "QCSchemaModel", "structocc_1_1io_1_1QCSchemaModel.html", "structocc_1_1io_1_1QCSchemaModel" ],

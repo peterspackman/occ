@@ -129,6 +129,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa9168e86e6fbb8c00c7887626fabf630"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1c4e3919a7bce67294f97976d762b68"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#af1c4e3919a7bce67294f97976d762b68">nuclear_repulsion_energy</a> () const</td></tr>
 <tr class="separator:af1c4e3919a7bce67294f97976d762b68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08c90cd65912fc98da899656f5513082"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a08c90cd65912fc98da899656f5513082">nuclear_point_charge_interaction_energy</a> (const <a class="el" href="namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830">PointChargeList</a> &amp;pc) const</td></tr>
+<tr class="separator:a08c90cd65912fc98da899656f5513082"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0420c31b20a38016fd5b15e5f0c6d26f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a0420c31b20a38016fd5b15e5f0c6d26f">update_scf_energy</a> (<a class="el" href="classocc_1_1core_1_1EnergyComponents.html">occ::core::EnergyComponents</a> &amp;energy, bool incremental) const</td></tr>
 <tr class="separator:a0420c31b20a38016fd5b15e5f0c6d26f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a444bee11238b6bcf639eeac109d1726c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a444bee11238b6bcf639eeac109d1726c">compute_kinetic_matrix</a> () const</td></tr>
@@ -141,6 +143,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3dd011c41ab9daf957c5b56184565168"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84160c5b08ad9ad401402d8030919546"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a84160c5b08ad9ad401402d8030919546">compute_schwarz_ints</a> () const</td></tr>
 <tr class="separator:a84160c5b08ad9ad401402d8030919546"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2846cb49217364e8e8c98fdfd7141351"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2846cb49217364e8e8c98fdfd7141351">compute_point_charge_interaction_matrix</a> (const <a class="el" href="namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830">PointChargeList</a> &amp;pc)</td></tr>
+<tr class="separator:a2846cb49217364e8e8c98fdfd7141351"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee54f309b6b908e9966e6468ff98959c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#aee54f309b6b908e9966e6468ff98959c">update_core_hamiltonian</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a> &amp;H)</td></tr>
 <tr class="separator:aee54f309b6b908e9966e6468ff98959c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e612b158511738fe88cefcfcb3788fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2e612b158511738fe88cefcfcb3788fe">compute_fock</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, double precision=std::numeric_limits&lt; double &gt;::epsilon(), const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
@@ -621,6 +625,34 @@ template&lt;typename Proc &gt; </div>
 
 </div>
 </div>
+<a id="a2846cb49217364e8e8c98fdfd7141351"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2846cb49217364e8e8c98fdfd7141351">&#9670;&nbsp;</a></span>compute_point_charge_interaction_matrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Proc &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::compute_point_charge_interaction_matrix </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830">PointChargeList</a> &amp;&#160;</td>
+          <td class="paramname"><em>pc</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a84160c5b08ad9ad401402d8030919546"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a84160c5b08ad9ad401402d8030919546">&#9670;&nbsp;</a></span>compute_schwarz_ints()</h2>
 
@@ -717,6 +749,34 @@ template&lt;typename Proc &gt; </div>
           <td class="memname">auto <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::nbf </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a08c90cd65912fc98da899656f5513082"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08c90cd65912fc98da899656f5513082">&#9670;&nbsp;</a></span>nuclear_point_charge_interaction_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Proc &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::nuclear_point_charge_interaction_energy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830">PointChargeList</a> &amp;&#160;</td>
+          <td class="paramname"><em>pc</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>

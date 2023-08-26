@@ -121,6 +121,7 @@ var hierarchy =
     [ "occ::dft::DensityFunctional::Params", "structocc_1_1dft_1_1DensityFunctional_1_1Params.html", null ],
     [ "occ::core::graph::PeriodicEdge", "structocc_1_1core_1_1graph_1_1PeriodicEdge.html", null ],
     [ "occ::core::graph::PeriodicVertex", "structocc_1_1core_1_1graph_1_1PeriodicVertex.html", null ],
+    [ "occ::io::PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", null ],
     [ "occ::geometry::MIndex::Position", "structocc_1_1geometry_1_1MIndex_1_1Position.html", null ],
     [ "occ::main::PromoleculeDensityFunctor", "classocc_1_1main_1_1PromoleculeDensityFunctor.html", null ],
     [ "occ::io::QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", null ],

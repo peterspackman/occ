@@ -42,6 +42,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "orca_json.h", "orca__json_8h.html", [
       [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ]
     ] ],
+    [ "pc.h", "pc_8h.html", "pc_8h" ],
     [ "qcschema.h", "qcschema_8h.html", [
       [ "QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", "structocc_1_1io_1_1QCSchemaBond" ],
       [ "QCSchemaTopology", "structocc_1_1io_1_1QCSchemaTopology.html", "structocc_1_1io_1_1QCSchemaTopology" ],

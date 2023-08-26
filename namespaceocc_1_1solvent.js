@@ -14,5 +14,6 @@ var namespaceocc_1_1solvent =
     [ "COSMO", "classocc_1_1solvent_1_1COSMO.html", "classocc_1_1solvent_1_1COSMO" ],
     [ "SMDSolventParameters", "structocc_1_1solvent_1_1SMDSolventParameters.html", "structocc_1_1solvent_1_1SMDSolventParameters" ],
     [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html", "classocc_1_1solvent_1_1ContinuumSolvationModel" ],
-    [ "SolvationCorrectedProcedure", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html", "classocc_1_1solvent_1_1SolvationCorrectedProcedure" ]
+    [ "SolvationCorrectedProcedure", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html", "classocc_1_1solvent_1_1SolvationCorrectedProcedure" ],
+    [ "PointChargeList", "namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830", null ]
 ];

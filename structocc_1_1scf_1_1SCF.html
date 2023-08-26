@@ -102,7 +102,8 @@ $(document).ready(function(){initNavTree('structocc_1_1scf_1_1SCF.html',''); ini
 <div class="dynheader">
 Collaboration diagram for occ::scf::SCF&lt; Procedure &gt;:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="structocc_1_1scf_1_1SCF__coll__graph.svg" width="923" height="326"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="structocc_1_1scf_1_1SCF__coll__graph.svg" width="923" height="326"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -139,6 +140,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a18d045a1dee5d0f5758f6839ba823a14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab037d9ae8e80a64375206bdcb15fc2cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scf_1_1SCF.html#ab037d9ae8e80a64375206bdcb15fc2cc">compute_initial_guess</a> ()</td></tr>
 <tr class="separator:ab037d9ae8e80a64375206bdcb15fc2cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea97406ae3421e0e295d0f8caaa8a7e4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scf_1_1SCF.html#aea97406ae3421e0e295d0f8caaa8a7e4">set_point_charges</a> (const <a class="el" href="namespaceocc_1_1scf.html#aa5b1dd0cadecc542170da12ca2be0666">PointChargeList</a> &amp;charges)</td></tr>
+<tr class="separator:aea97406ae3421e0e295d0f8caaa8a7e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24543e14a2ca4ee5d13854f15a8df718"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scf_1_1SCF.html#a24543e14a2ca4ee5d13854f15a8df718">update_scf_energy</a> (bool incremental)</td></tr>
 <tr class="separator:a24543e14a2ca4ee5d13854f15a8df718"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53178532f3f5c5b446a4da84dbe0a90d"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scf_1_1SCF.html#a53178532f3f5c5b446a4da84dbe0a90d">scf_kind</a> () const</td></tr>
@@ -214,6 +217,8 @@ Public Attributes</h2></td></tr>
 <tr class="separator:af4933e6d285f8fb6f99f8f172b93eee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac4ce0aa3c108a5c4bbd3c7f967526047"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scf_1_1SCF.html#ac4ce0aa3c108a5c4bbd3c7f967526047">m_have_initial_guess</a> {false}</td></tr>
 <tr class="separator:ac4ce0aa3c108a5c4bbd3c7f967526047"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6905271fcd341f52ed375659e23086ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1scf.html#aa5b1dd0cadecc542170da12ca2be0666">PointChargeList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scf_1_1SCF.html#a6905271fcd341f52ed375659e23086ff">m_point_charges</a></td></tr>
+<tr class="separator:a6905271fcd341f52ed375659e23086ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a54607f4a1d68cb1a8a720887b97a7f57"></a>
@@ -674,6 +679,34 @@ template&lt;typename Procedure &gt; </div>
 
 </div>
 </div>
+<a id="aea97406ae3421e0e295d0f8caaa8a7e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea97406ae3421e0e295d0f8caaa8a7e4">&#9670;&nbsp;</a></span>set_point_charges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Procedure &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="structocc_1_1scf_1_1SCF.html">occ::scf::SCF</a>&lt; Procedure &gt;::set_point_charges </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1scf.html#aa5b1dd0cadecc542170da12ca2be0666">PointChargeList</a> &amp;&#160;</td>
+          <td class="paramname"><em>charges</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="af35c0039f2a8b890109d776414d9fe37"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af35c0039f2a8b890109d776414d9fe37">&#9670;&nbsp;</a></span>update_occupied_orbital_count()</h2>
 
@@ -975,6 +1008,22 @@ template&lt;typename Procedure &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">bool <a class="el" href="structocc_1_1scf_1_1SCF.html">occ::scf::SCF</a>&lt; Procedure &gt;::m_have_initial_guess {false}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6905271fcd341f52ed375659e23086ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6905271fcd341f52ed375659e23086ff">&#9670;&nbsp;</a></span>m_point_charges</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Procedure &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc_1_1scf.html#aa5b1dd0cadecc542170da12ca2be0666">PointChargeList</a> <a class="el" href="structocc_1_1scf_1_1SCF.html">occ::scf::SCF</a>&lt; Procedure &gt;::m_point_charges</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -37,6 +37,7 @@ var namespaceocc_1_1io =
     [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
     [ "OccInput", "structocc_1_1io_1_1OccInput.html", "structocc_1_1io_1_1OccInput" ],
     [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
+    [ "PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", "structocc_1_1io_1_1PointChargeFileReader" ],
     [ "QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", "structocc_1_1io_1_1QCSchemaBond" ],
     [ "QCSchemaTopology", "structocc_1_1io_1_1QCSchemaTopology.html", "structocc_1_1io_1_1QCSchemaTopology" ],
     [ "QCSchemaModel", "structocc_1_1io_1_1QCSchemaModel.html", "structocc_1_1io_1_1QCSchemaModel" ],
@@ -46,9 +47,12 @@ var namespaceocc_1_1io =
     [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ],
     [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ],
     [ "ElementMap", "namespaceocc_1_1io.html#a1efce7bea0b305ecc32572cf3cf95539", null ],
+    [ "PointChargeList", "namespaceocc_1_1io.html#a2032b9063a04cbcda0dca503cdbf2e7d", null ],
     [ "Position", "namespaceocc_1_1io.html#ab6b5ddc9e2fba0c4afd73066cced9721", null ],
     [ "build", "namespaceocc_1_1io.html#a0b4154c8ab12aa7b60925e2a2b6acbe2", null ],
     [ "build", "namespaceocc_1_1io.html#a0b19dda27e50ff77a11e8e61654b1569", null ],
     [ "molecule_from_xyz_file", "namespaceocc_1_1io.html#aaaed42365ec5e0da71939b3b8646ff6e", null ],
-    [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ]
+    [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
+    [ "point_charges_from_file", "namespaceocc_1_1io.html#a2a22c66ac558d0eb4f4e7e36074e9f86", null ],
+    [ "point_charges_from_string", "namespaceocc_1_1io.html#aeac82123c761e5f9e7cbad3710821a46", null ]
 ];
