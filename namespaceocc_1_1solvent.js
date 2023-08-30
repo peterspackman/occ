@@ -15,5 +15,7 @@ var namespaceocc_1_1solvent =
     [ "SMDSolventParameters", "structocc_1_1solvent_1_1SMDSolventParameters.html", "structocc_1_1solvent_1_1SMDSolventParameters" ],
     [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html", "classocc_1_1solvent_1_1ContinuumSolvationModel" ],
     [ "SolvationCorrectedProcedure", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html", "classocc_1_1solvent_1_1SolvationCorrectedProcedure" ],
-    [ "PointChargeList", "namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830", null ]
+    [ "DielectricMap", "namespaceocc_1_1solvent.html#a32b60ce481477b709f609c108ea3c661", null ],
+    [ "PointChargeList", "namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830", null ],
+    [ "SMDParameterMap", "namespaceocc_1_1solvent.html#a5e40344c58285edb91e316ad2a61c50d", null ]
 ];

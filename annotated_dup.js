@@ -69,14 +69,16 @@ var annotated_dup =
       [ "geometry", "namespaceocc_1_1geometry.html", [
         [ "mc", "namespaceocc_1_1geometry_1_1mc.html", [
           [ "impl", "namespaceocc_1_1geometry_1_1mc_1_1impl.html", [
-            [ "Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge" ]
+            [ "Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge" ],
+            [ "EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash" ]
           ] ],
           [ "LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes" ],
           [ "MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1MarchingCubes" ]
         ] ],
         [ "IndexCache", "structocc_1_1geometry_1_1IndexCache.html", "structocc_1_1geometry_1_1IndexCache" ],
         [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
-        [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ]
+        [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
+        [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ]
       ] ],
       [ "gto", "namespaceocc_1_1gto.html", [
         [ "GTOValues", "structocc_1_1gto_1_1GTOValues.html", "structocc_1_1gto_1_1GTOValues" ],
@@ -132,6 +134,7 @@ var annotated_dup =
         [ "DispersionCorrectionInput", "structocc_1_1io_1_1DispersionCorrectionInput.html", "structocc_1_1io_1_1DispersionCorrectionInput" ],
         [ "CrystalInput", "structocc_1_1io_1_1CrystalInput.html", "structocc_1_1io_1_1CrystalInput" ],
         [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
+        [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
         [ "OccInput", "structocc_1_1io_1_1OccInput.html", "structocc_1_1io_1_1OccInput" ],
         [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
         [ "PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", "structocc_1_1io_1_1PointChargeFileReader" ],

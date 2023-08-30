@@ -37,6 +37,10 @@ var timings_8h =
       [ "fft", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a0a42fe5f2ac3f6c76f70f06a2def547d", null ],
       [ "xdm", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a7c33115a77204969afbddfe52e260d16", null ],
       [ "solvent", "timings_8h.html#a089c88a4231531abae301355d6ba8c16abaf639845bdbe70396a9bd527534f821", null ],
+      [ "isosurface_function", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a5c7050e04bc3e7ac378b7d617f593a2c", null ],
+      [ "mc_octree", "timings_8h.html#a089c88a4231531abae301355d6ba8c16afe4fdd8f2287d086d57c64978ab62a61", null ],
+      [ "mc_primal", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a19f7785f6d5ade0be208b72e4a6bd6a2", null ],
+      [ "mc_surface", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a172622eca494dac3ba8060bc574eec0b", null ],
       [ "global", "timings_8h.html#a089c88a4231531abae301355d6ba8c16aa593d8f8f4e0489f836e07e4f4220cbf", null ],
       [ "_group_count", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a6f051406d3501a7e49a73b8fa2aef406", null ]
     ] ],

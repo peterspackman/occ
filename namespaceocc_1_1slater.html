@@ -91,6 +91,7 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1slater.html',''); init
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">occ::slater Namespace Reference</div>  </div>
@@ -107,24 +108,44 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ae12d0bf0b6ac1dd14469ae9cb162fb98"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1slater.html#ae12d0bf0b6ac1dd14469ae9cb162fb98">SlaterBasisSetMap</a> = ankerl::unordered_dense::map&lt; std::string, <a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a> &gt;</td></tr>
+<tr class="separator:ae12d0bf0b6ac1dd14469ae9cb162fb98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:af4bbb4cf10de22eb518bb535f1d6deec"><td class="memItemLeft" align="right" valign="top">phmap::flat_hash_map&lt; std::string, <a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1slater.html#af4bbb4cf10de22eb518bb535f1d6deec">load_slaterbasis</a> (const std::string &amp;)</td></tr>
-<tr class="separator:af4bbb4cf10de22eb518bb535f1d6deec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bce24e1ecc8ee07a8b183f7031ff809"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1slater.html#ae12d0bf0b6ac1dd14469ae9cb162fb98">SlaterBasisSetMap</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1slater.html#a9bce24e1ecc8ee07a8b183f7031ff809">load_slaterbasis</a> (const std::string &amp;)</td></tr>
+<tr class="separator:a9bce24e1ecc8ee07a8b183f7031ff809"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01a666fbffdfbdf2a710bec42b725612"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1slater.html#a01a666fbffdfbdf2a710bec42b725612">slaterbasis_for_atoms</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;, const std::string &amp;basis_name=&quot;thakkar&quot;, const std::vector&lt; int &gt; &amp;oxidation_states={})</td></tr>
 <tr class="separator:a01a666fbffdfbdf2a710bec42b725612"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>evaluation of Slater-type orbitals, their derivatives etc. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a id="af4bbb4cf10de22eb518bb535f1d6deec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4bbb4cf10de22eb518bb535f1d6deec">&#9670;&nbsp;</a></span>load_slaterbasis()</h2>
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="ae12d0bf0b6ac1dd14469ae9cb162fb98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae12d0bf0b6ac1dd14469ae9cb162fb98">&#9670;&nbsp;</a></span>SlaterBasisSetMap</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">phmap::flat_hash_map&lt;std::string, <a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a>&gt; occ::slater::load_slaterbasis </td>
+          <td class="memname">using <a class="el" href="namespaceocc_1_1slater.html#ae12d0bf0b6ac1dd14469ae9cb162fb98">occ::slater::SlaterBasisSetMap</a> = typedef ankerl::unordered_dense::map&lt;std::string, <a class="el" href="classocc_1_1slater_1_1Basis.html">Basis</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a9bce24e1ecc8ee07a8b183f7031ff809"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9bce24e1ecc8ee07a8b183f7031ff809">&#9670;&nbsp;</a></span>load_slaterbasis()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc_1_1slater.html#ae12d0bf0b6ac1dd14469ae9cb162fb98">SlaterBasisSetMap</a> occ::slater::load_slaterbasis </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>

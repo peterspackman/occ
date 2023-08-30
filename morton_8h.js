@@ -2,6 +2,7 @@ var morton_8h =
 [
     [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
     [ "Position", "structocc_1_1geometry_1_1MIndex_1_1Position.html", "structocc_1_1geometry_1_1MIndex_1_1Position" ],
+    [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
     [ "floating_type", "morton_8h.html#acf080699dbc8adfc07ad0f98fa4b5e14", null ],
     [ "integer_type", "morton_8h.html#a2dd3b248b105650e26e3fbc372043957", null ],
     [ "dilateM0", "morton_8h.html#a592768353d7a42e030df52fbbd9ed021", null ],

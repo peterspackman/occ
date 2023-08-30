@@ -1,5 +1,8 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/macros.h" name="/home/runner/work/occ/occ/include/occ/core/macros.h">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,176,61"/>
+<area shape="rect" id="node1" title=" " alt="" coords="108,5,279,61"/>
 <area shape="rect" id="node2" href="$interpolator_8h.html" title=" " alt="" coords="5,109,176,165"/>
+<area shape="rect" id="node4" href="$morton_8h.html" title=" " alt="" coords="200,109,392,165"/>
 <area shape="rect" id="node3" href="$isosurface_8h.html" title=" " alt="" coords="5,213,176,269"/>
+<area shape="rect" id="node5" href="$linear__hashed__octree_8h.html" title=" " alt="" coords="200,213,392,269"/>
+<area shape="rect" id="node6" href="$linear__hashed__marching__cubes_8h.html" title=" " alt="" coords="200,317,392,388"/>
 </map>

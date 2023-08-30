@@ -46,6 +46,7 @@ var hierarchy =
     [ "occ::qm::IntegralEngine::ECPCenter", "structocc_1_1qm_1_1IntegralEngine_1_1ECPCenter.html", null ],
     [ "occ::io::ECPShell", "structocc_1_1io_1_1ECPShell.html", null ],
     [ "occ::geometry::mc::impl::Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", null ],
+    [ "occ::geometry::mc::impl::EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", null ],
     [ "occ::qm::EDIIS", "classocc_1_1qm_1_1EDIIS.html", null ],
     [ "occ::io::ElectronInput", "structocc_1_1io_1_1ElectronInput.html", null ],
     [ "occ::io::ElectronShell", "structocc_1_1io_1_1ElectronShell.html", null ],
@@ -63,9 +64,6 @@ var hierarchy =
     [ "occ::io::impl::FchkScalarWriter", "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html", null ],
     [ "occ::io::impl::FchkVectorWriter", "structocc_1_1io_1_1impl_1_1FchkVectorWriter.html", null ],
     [ "occ::io::FchkWriter", "classocc_1_1io_1_1FchkWriter.html", null ],
-    [ "phmap::flat_hash_map", null, [
-      [ "occ::core::EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", null ]
-    ] ],
     [ "fmt::formatter< occ::core::EnergyComponents >", "structfmt_1_1formatter_3_01occ_1_1core_1_1EnergyComponents_01_4.html", null ],
     [ "fmt::formatter< occ::core::Multipole< L > >", "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4.html", null ],
     [ "fmt::formatter< occ::qm::Energy >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4.html", null ],
@@ -87,6 +85,7 @@ var hierarchy =
     [ "occ::core::Interpolator1D< T, mapping >", "classocc_1_1core_1_1Interpolator1D.html", null ],
     [ "occ::core::Interpolator1D< float, occ::core::DomainMapping::Linear >", "classocc_1_1core_1_1Interpolator1D.html", null ],
     [ "occ::main::InterpolatorParams", "structocc_1_1main_1_1InterpolatorParams.html", null ],
+    [ "occ::io::IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", null ],
     [ "occ::io::JsonBasis", "structocc_1_1io_1_1JsonBasis.html", null ],
     [ "occ::io::JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", null ],
     [ "occ::io::JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", null ],
@@ -96,9 +95,13 @@ var hierarchy =
     [ "occ::geometry::IndexCache::Layer", "structocc_1_1geometry_1_1IndexCache_1_1Layer.html", null ],
     [ "occ::geometry::mc::LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", null ],
     [ "occ::geometry::LinearHashedOctree< N >", "structocc_1_1geometry_1_1LinearHashedOctree.html", null ],
+    [ "ankerl::unordered_dense::map", null, [
+      [ "occ::core::EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", null ]
+    ] ],
     [ "occ::geometry::mc::MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", null ],
     [ "occ::io::MethodInput", "structocc_1_1io_1_1MethodInput.html", null ],
     [ "occ::geometry::MIndex", "structocc_1_1geometry_1_1MIndex.html", null ],
+    [ "occ::geometry::MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", null ],
     [ "occ::io::MoldenReader", "classocc_1_1io_1_1MoldenReader.html", null ],
     [ "occ::dft::MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", null ],
     [ "occ::qm::MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", null ],

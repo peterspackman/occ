@@ -1,7 +1,7 @@
 var structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes =
 [
-    [ "EdgeMap", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#aabb32201c6c03075af8b986d88db8f03", null ],
-    [ "VertexMap", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a29ad71e22c1e982827b1d322544c6432", null ],
+    [ "EdgeMap", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#aeaf554c65eb8ac132712300f31522ce0", null ],
+    [ "VertexMap", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a95a1d2eb4148d74beb80838a2cc5b035", null ],
     [ "LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a1b69d5abfde7d96bb7a31a3579275a21", null ],
     [ "extract", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a8c468a7de6cfc9b542877fc18ca706a9", null ],
     [ "extract_normal", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a863af49e8caca2167cc8560632a99861", null ],

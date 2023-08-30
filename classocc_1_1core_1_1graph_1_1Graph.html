@@ -106,14 +106,14 @@ Public Types</h2></td></tr>
 <tr class="separator:a69eec975dcb7bc0b236c59de7fd36dbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23b85985d095cb6cd7d75a8bc3f4a98b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a> = std::size_t</td></tr>
 <tr class="separator:a23b85985d095cb6cd7d75a8bc3f4a98b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b7f202a4c591ff21a4f0e6a0b82fc89"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a4b7f202a4c591ff21a4f0e6a0b82fc89">Edges</a> = phmap::flat_hash_map&lt; <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a>, EdgeType &gt;</td></tr>
-<tr class="separator:a4b7f202a4c591ff21a4f0e6a0b82fc89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8fb24609919bff510a72a610de14a3a"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#ae8fb24609919bff510a72a610de14a3a">Vertices</a> = phmap::flat_hash_map&lt; <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, VertexType &gt;</td></tr>
-<tr class="separator:ae8fb24609919bff510a72a610de14a3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b209b5b1a77d81beb54921f446d6ca9"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a8b209b5b1a77d81beb54921f446d6ca9">NeighborList</a> = phmap::flat_hash_map&lt; <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a> &gt;</td></tr>
-<tr class="separator:a8b209b5b1a77d81beb54921f446d6ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14ce21adb01d8b414616a9c68e8381ea"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a14ce21adb01d8b414616a9c68e8381ea">AdjacencyList</a> = phmap::flat_hash_map&lt; <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a8b209b5b1a77d81beb54921f446d6ca9">NeighborList</a> &gt;</td></tr>
-<tr class="separator:a14ce21adb01d8b414616a9c68e8381ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3441b6a794d3c502e093c58ea1a1cbe"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#ad3441b6a794d3c502e093c58ea1a1cbe">Edges</a> = ankerl::unordered_dense::map&lt; <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a>, EdgeType &gt;</td></tr>
+<tr class="separator:ad3441b6a794d3c502e093c58ea1a1cbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42bd137b797bc7ae5de78317a20b5ae6"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a42bd137b797bc7ae5de78317a20b5ae6">Vertices</a> = ankerl::unordered_dense::map&lt; <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, VertexType &gt;</td></tr>
+<tr class="separator:a42bd137b797bc7ae5de78317a20b5ae6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac292a906add129ea2cc5f6b06e20b5c9"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#ac292a906add129ea2cc5f6b06e20b5c9">NeighborList</a> = ankerl::unordered_dense::map&lt; <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a> &gt;</td></tr>
+<tr class="separator:ac292a906add129ea2cc5f6b06e20b5c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb882b718ba7b061a878356df3e3ceea"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#abb882b718ba7b061a878356df3e3ceea">AdjacencyList</a> = ankerl::unordered_dense::map&lt; <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#ac292a906add129ea2cc5f6b06e20b5c9">NeighborList</a> &gt;</td></tr>
+<tr class="separator:abb882b718ba7b061a878356df3e3ceea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -169,8 +169,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a508eda2f56f04bd4aa24c23d7539dc6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="a14ce21adb01d8b414616a9c68e8381ea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a14ce21adb01d8b414616a9c68e8381ea">&#9670;&nbsp;</a></span>AdjacencyList</h2>
+<a id="abb882b718ba7b061a878356df3e3ceea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb882b718ba7b061a878356df3e3ceea">&#9670;&nbsp;</a></span>AdjacencyList</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -178,7 +178,7 @@ Public Member Functions</h2></td></tr>
 template&lt;typename VertexType , typename EdgeType &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html">occ::core::graph::Graph</a>&lt; VertexType, EdgeType &gt;::<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a14ce21adb01d8b414616a9c68e8381ea">AdjacencyList</a> =  phmap::flat_hash_map&lt;<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a8b209b5b1a77d81beb54921f446d6ca9">NeighborList</a>&gt;</td>
+          <td class="memname">using <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html">occ::core::graph::Graph</a>&lt; VertexType, EdgeType &gt;::<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#abb882b718ba7b061a878356df3e3ceea">AdjacencyList</a> =  ankerl::unordered_dense::map&lt;<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#ac292a906add129ea2cc5f6b06e20b5c9">NeighborList</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -201,8 +201,8 @@ template&lt;typename VertexType , typename EdgeType &gt; </div>
 
 </div>
 </div>
-<a id="a4b7f202a4c591ff21a4f0e6a0b82fc89"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b7f202a4c591ff21a4f0e6a0b82fc89">&#9670;&nbsp;</a></span>Edges</h2>
+<a id="ad3441b6a794d3c502e093c58ea1a1cbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3441b6a794d3c502e093c58ea1a1cbe">&#9670;&nbsp;</a></span>Edges</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -210,15 +210,15 @@ template&lt;typename VertexType , typename EdgeType &gt; </div>
 template&lt;typename VertexType , typename EdgeType &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html">occ::core::graph::Graph</a>&lt; VertexType, EdgeType &gt;::<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a4b7f202a4c591ff21a4f0e6a0b82fc89">Edges</a> =  phmap::flat_hash_map&lt;<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a>, EdgeType&gt;</td>
+          <td class="memname">using <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html">occ::core::graph::Graph</a>&lt; VertexType, EdgeType &gt;::<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#ad3441b6a794d3c502e093c58ea1a1cbe">Edges</a> =  ankerl::unordered_dense::map&lt;<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a>, EdgeType&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a8b209b5b1a77d81beb54921f446d6ca9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8b209b5b1a77d81beb54921f446d6ca9">&#9670;&nbsp;</a></span>NeighborList</h2>
+<a id="ac292a906add129ea2cc5f6b06e20b5c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac292a906add129ea2cc5f6b06e20b5c9">&#9670;&nbsp;</a></span>NeighborList</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -226,7 +226,7 @@ template&lt;typename VertexType , typename EdgeType &gt; </div>
 template&lt;typename VertexType , typename EdgeType &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html">occ::core::graph::Graph</a>&lt; VertexType, EdgeType &gt;::<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a8b209b5b1a77d81beb54921f446d6ca9">NeighborList</a> =  phmap::flat_hash_map&lt;<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a>&gt;</td>
+          <td class="memname">using <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html">occ::core::graph::Graph</a>&lt; VertexType, EdgeType &gt;::<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#ac292a906add129ea2cc5f6b06e20b5c9">NeighborList</a> =  ankerl::unordered_dense::map&lt;<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b">EdgeDescriptor</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -249,8 +249,8 @@ template&lt;typename VertexType , typename EdgeType &gt; </div>
 
 </div>
 </div>
-<a id="ae8fb24609919bff510a72a610de14a3a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae8fb24609919bff510a72a610de14a3a">&#9670;&nbsp;</a></span>Vertices</h2>
+<a id="a42bd137b797bc7ae5de78317a20b5ae6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42bd137b797bc7ae5de78317a20b5ae6">&#9670;&nbsp;</a></span>Vertices</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -258,7 +258,7 @@ template&lt;typename VertexType , typename EdgeType &gt; </div>
 template&lt;typename VertexType , typename EdgeType &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html">occ::core::graph::Graph</a>&lt; VertexType, EdgeType &gt;::<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#ae8fb24609919bff510a72a610de14a3a">Vertices</a> =  phmap::flat_hash_map&lt;<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, VertexType&gt;</td>
+          <td class="memname">using <a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html">occ::core::graph::Graph</a>&lt; VertexType, EdgeType &gt;::<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a42bd137b797bc7ae5de78317a20b5ae6">Vertices</a> =  ankerl::unordered_dense::map&lt;<a class="el" href="classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe">VertexDescriptor</a>, VertexType&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">

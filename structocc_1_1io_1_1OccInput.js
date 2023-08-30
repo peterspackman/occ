@@ -7,6 +7,7 @@ var structocc_1_1io_1_1OccInput =
     [ "electronic", "structocc_1_1io_1_1OccInput.html#a7b1f1f34d390ecab75dcf3829df717f4", null ],
     [ "filename", "structocc_1_1io_1_1OccInput.html#a97cac454d95d3ca0a8e3254e12ea89ba", null ],
     [ "geometry", "structocc_1_1io_1_1OccInput.html#a97dafd7a784c2197440448e8e1ecebab", null ],
+    [ "isosurface", "structocc_1_1io_1_1OccInput.html#a6ad30b951f1df0206af8ea7932b05d73", null ],
     [ "method", "structocc_1_1io_1_1OccInput.html#ae1fa54c3904401b05c90c314e8e9956c", null ],
     [ "name", "structocc_1_1io_1_1OccInput.html#ad336df45cb14f54c1cdb29e6e36eafb1", null ],
     [ "pair", "structocc_1_1io_1_1OccInput.html#a7ebd347b623564ffed440e6ceec0dae7", null ],
