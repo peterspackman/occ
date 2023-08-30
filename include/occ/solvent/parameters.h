@@ -1,5 +1,5 @@
 #pragma once
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 
 namespace occ::solvent {
 
@@ -17,7 +17,9 @@ struct SMDSolventParameters {
     bool is_water{false};                // flag if this is water
 };
 
-static inline phmap::flat_hash_map<std::string, double> dielectric_constant{
+using DielectricMap = ankerl::unordered_dense::map<std::string, double>;
+
+static inline DielectricMap dielectric_constant{
     {"acetic acid", 6.2528},
     {"acetone", 20.493},
     {"acetonitrile", 35.688},
@@ -199,10 +201,11 @@ static inline phmap::flat_hash_map<std::string, double> dielectric_constant{
     {"water", 78.400},
 };
 
+using SMDParameterMap = ankerl::unordered_dense::map<std::string, SMDSolventParameters>;
 /*
  * Parameters taken from https://comp.chem.umn.edu/solvation/mnsddb.pdf
  */
-static inline phmap::flat_hash_map<std::string, SMDSolventParameters>
+static inline SMDParameterMap 
     smd_solvent_parameters{
         {"1,1,1-trichloroethane",
          {1.4379, 1.4313, 0.0, 0.09, 36.24, 7.0826, 0.0, 0.60}},

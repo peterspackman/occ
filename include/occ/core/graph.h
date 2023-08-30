@@ -1,5 +1,5 @@
 #pragma once
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 #include <optional>
 #include <queue>
 #include <stack>
@@ -12,11 +12,11 @@ template <typename VertexType, typename EdgeType> class Graph {
     using VertexDescriptor = std::size_t;
     using EdgeDescriptor = std::size_t;
 
-    using Edges = phmap::flat_hash_map<EdgeDescriptor, EdgeType>;
-    using Vertices = phmap::flat_hash_map<VertexDescriptor, VertexType>;
+    using Edges = ankerl::unordered_dense::map<EdgeDescriptor, EdgeType>;
+    using Vertices = ankerl::unordered_dense::map<VertexDescriptor, VertexType>;
 
-    using NeighborList = phmap::flat_hash_map<VertexDescriptor, EdgeDescriptor>;
-    using AdjacencyList = phmap::flat_hash_map<VertexDescriptor, NeighborList>;
+    using NeighborList = ankerl::unordered_dense::map<VertexDescriptor, EdgeDescriptor>;
+    using AdjacencyList = ankerl::unordered_dense::map<VertexDescriptor, NeighborList>;
 
     Graph() = default;
 
@@ -75,7 +75,7 @@ template <typename VertexType, typename EdgeType> class Graph {
 
     template <typename T>
     void depth_first_traversal(VertexDescriptor source, T &func) const {
-        phmap::flat_hash_set<VertexDescriptor> visited;
+        ankerl::unordered_dense::set<VertexDescriptor> visited;
         std::stack<VertexDescriptor> store;
         store.push(source);
         while (!store.empty()) {
@@ -94,7 +94,7 @@ template <typename VertexType, typename EdgeType> class Graph {
 
     template <typename T>
     void breadth_first_traversal(VertexDescriptor source, T &func) const {
-        phmap::flat_hash_set<VertexDescriptor> visited;
+        ankerl::unordered_dense::set<VertexDescriptor> visited;
         std::queue<VertexDescriptor> store;
         store.push(source);
         while (!store.empty()) {
@@ -114,7 +114,7 @@ template <typename VertexType, typename EdgeType> class Graph {
     template <typename T>
     void breadth_first_traversal_with_edge(VertexDescriptor source,
                                            T &func) const {
-        phmap::flat_hash_set<VertexDescriptor> visited;
+        ankerl::unordered_dense::set<VertexDescriptor> visited;
         std::queue<
             std::tuple<VertexDescriptor, VertexDescriptor, EdgeDescriptor>>
             store;
@@ -134,7 +134,7 @@ template <typename VertexType, typename EdgeType> class Graph {
     }
 
     template <typename T> void connected_component_traversal(T &func) {
-        phmap::flat_hash_set<VertexDescriptor> visited;
+        ankerl::unordered_dense::set<VertexDescriptor> visited;
         size_t current_component{0};
         auto call_with_component = [&current_component,
                                     &func](const VertexDescriptor &desc) {
@@ -150,7 +150,7 @@ template <typename VertexType, typename EdgeType> class Graph {
     }
 
     auto connected_components() const {
-        phmap::flat_hash_map<VertexDescriptor, size_t> components;
+        ankerl::unordered_dense::map<VertexDescriptor, size_t> components;
         size_t current_component{0};
         auto set_component = [&current_component,
                               &components](const VertexDescriptor &desc) {

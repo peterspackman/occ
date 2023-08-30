@@ -2,7 +2,7 @@
 #include <array>
 #include <fstream>
 #include <istream>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
@@ -154,8 +154,8 @@ class FchkWriter {
     std::string m_method{"unknown_method"};
     std::string m_basis_name{"unknown_basis"};
     FchkType m_type{SP};
-    phmap::flat_hash_map<std::string, impl::fchk_scalar> m_scalars;
-    phmap::flat_hash_map<std::string, impl::fchk_vector> m_vectors;
+    ankerl::unordered_dense::map<std::string, impl::fchk_scalar> m_scalars;
+    ankerl::unordered_dense::map<std::string, impl::fchk_vector> m_vectors;
     std::ofstream m_owned_destination;
     std::ostream &m_dest;
 };

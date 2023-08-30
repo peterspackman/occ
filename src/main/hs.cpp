@@ -5,7 +5,6 @@
 #include <filesystem>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/numpy.h>
@@ -135,6 +134,7 @@ int main(int argc, char *argv[]) {
     CLI11_PARSE(app, argc, argv);
 
     occ::log::setup_logging(verbosity);
+    occ::timing::start(occ::timing::category::global);
 
     if (environment_filename) {
         Molecule m1 = occ::io::molecule_from_xyz_file(geometry_filename);
@@ -181,5 +181,7 @@ int main(int argc, char *argv[]) {
         func.set_isovalue(isovalue);
         extract_surface(func);
     }
+    occ::timing::stop(occ::timing::category::global);
+    occ::timing::print_timings();
     return 0;
 }

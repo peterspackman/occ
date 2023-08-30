@@ -13,6 +13,12 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+    NAME unordered_dense
+    GITHUB_REPOSITORY "martinus/unordered_dense"
+    VERSION "4.0.4"
+)
+
+CPMAddPackage(
     NAME scnlib
     GITHUB_REPOSITORY "eliaskosunen/scnlib"
     VERSION "1.1.2"

@@ -319,7 +319,7 @@ void evaluate_two_center_with_shellpairs(Lambda &f,
     for (int p = 0, pq = 0; p < basis.size(); p++) {
         int bf1 = first_bf[p];
         const auto &sh1 = basis[p];
-        for (const int &q : shellpairs.at(p)) {
+        for (const int &q : shellpairs[p]) {
             if (pq++ % nthreads != thread_id)
                 continue;
             int bf2 = first_bf[q];
@@ -449,7 +449,7 @@ void evaluate_two_center_ecp_with_shellpairs(
 
         dims[0] = sh1.ncartesian();
 
-        for (const int &q : shellpairs.at(p)) {
+        for (const int &q : shellpairs[p]) {
             if (pq++ % nthreads != thread_id)
                 continue;
             const auto &sh2 = shells[q];
@@ -939,7 +939,7 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
     for (size_t p = 0, pqrs = 0; p < basis.size(); p++) {
         const auto &sh1 = basis[p];
         bf[0] = first_bf[p];
-        const auto &plist = shellpairs.at(p);
+        const auto &plist = shellpairs[p];
         for (const auto q : plist) {
             bf[1] = first_bf[q];
             const auto &sh2 = basis[q];
@@ -958,7 +958,7 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
                         ? max_of(Dnorm(p, r), Dnorm(q, r), norm_pq)
                         : 0.0;
 
-                for (const auto s : shellpairs.at(r)) {
+                for (const auto s : shellpairs[r]) {
                     if (s > s_max)
                         break;
                     if (pqrs++ % nthreads != thread_id)
@@ -1529,7 +1529,7 @@ Mat schwarz_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
         for (int p = 0, pq = 0; p < nsh; p++) {
             int bf1 = first_bf[p];
             const auto &sh1 = basis[p];
-            for (const int &q : shellpairs.at(p)) {
+            for (const int &q : shellpairs[p]) {
                 if (pq++ % nthreads != thread_id)
                     continue;
                 int bf2 = first_bf[q];
@@ -1597,7 +1597,7 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
             args.bf[0] = first_bf_ao[p];
             args.shell[0] = p;
             const auto &shp = aobasis[p];
-            const auto &plist = shellpairs.at(p);
+            const auto &plist = shellpairs[p];
             for (const int &q : plist) {
                 args.bf[1] = first_bf_ao[q];
                 args.shell[1] = q;

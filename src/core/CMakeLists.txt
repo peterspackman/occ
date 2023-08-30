@@ -39,6 +39,7 @@ target_link_libraries(occ_core
     spdlog::spdlog
     OpenMP::OpenMP_CXX
     Threads::Threads
+    unordered_dense::unordered_dense
     _subprocess
 )
 target_include_directories(occ_core PUBLIC 

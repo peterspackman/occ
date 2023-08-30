@@ -1,6 +1,6 @@
 #pragma once
 #include <fmt/format.h>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 #include <vector>
 
 namespace occ::core {
@@ -10,7 +10,7 @@ namespace occ::core {
  *
  * Really just a convenience wrapper around a hash map.
  */
-class EnergyComponents : public phmap::flat_hash_map<std::string, double> {
+class EnergyComponents : public ankerl::unordered_dense::map<std::string, double> {
   public:
     /**
      * The categories in this set of energy components
@@ -59,26 +59,26 @@ template <> struct fmt::formatter<occ::core::EnergyComponents> {
         std::string result = fmt::format("\n{:32s} {:>20s}\n\n", "Component",
                                          "Energy (Hartree)");
 
-        phmap::flat_hash_map<std::string, bool> printed;
+        ankerl::unordered_dense::set<std::string> printed;
 
         auto cats = e.categories();
         for (const auto &c : cats) {
             result += fmt::format("{:-<72s}\n", c + "  ");
             for (const auto &component : e) {
-                if (printed[component.first])
+                if (printed.find(component.first) != printed.end())
                     continue;
 
                 if (component.first.rfind(c, 0) == 0) {
                     result += fmt::format(fmt_string, component.first,
                                           component.second);
-                    printed[component.first] = true;
+                    printed.insert(component.first);
                 }
             }
         }
 
         result += fmt::format("\n\n");
         for (const auto &component : e) {
-            if (!printed[component.first])
+            if (printed.find(component.first) == printed.end())
                 result +=
                     fmt::format(fmt_string, component.first, component.second);
         }

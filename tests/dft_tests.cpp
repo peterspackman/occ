@@ -312,15 +312,19 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
-        {1, 0.48664409, 0.07959806, 0.00986248}};
+        {1, 0.48664409, 0.07959806, 0.00986248},
+
+    };
     auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
     basis.set_pure(false);
     auto hf = occ::qm::HartreeFock(basis);
+    hf.set_density_fitting_basis("def2-universal-jkfit");
     occ::scf::SCF<occ::qm::HartreeFock> scf(hf);
     double e = scf.compute_scf_energy();
 
     occ::io::BeckeGridSettings settings;
-    settings.max_angular_points = 194;
+    settings.max_angular_points = 50;
+    settings.min_angular_points = 14;
     settings.radial_precision = 1e-5;
     fmt::print("Construct\n");
     occ::dft::cosx::SemiNumericalExchange sgx(basis, settings);

@@ -1,6 +1,5 @@
 #include <fmt/ostream.h>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
-#include <occ/3rdparty/parallel_hashmap/phmap_utils.h>
+#include <ankerl/unordered_dense.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/crystalgrower.h>
@@ -95,16 +94,20 @@ struct FormulaIndex {
     bool operator==(const FormulaIndex &o) const {
         return count == o.count && letter == o.letter;
     }
+};
 
-    friend size_t hash_value(const FormulaIndex &f) {
-        return phmap::HashState().combine(0, f.count, f.letter);
+struct FormulaIndexHash {
+    uint64_t operator()(const FormulaIndex &x) const noexcept {
+        return ankerl::unordered_dense::detail::wyhash::mix(x.count,
+                                                            x.letter);
     }
 };
+
 
 std::vector<FormulaIndex>
 build_formula_indices_for_symmetry_unique_molecules(const Crystal &crystal) {
     std::vector<FormulaIndex> result;
-    phmap::flat_hash_map<std::string, FormulaIndex> formula_count;
+    ankerl::unordered_dense::map<std::string, FormulaIndex> formula_count;
     for (const auto &mol : crystal.symmetry_unique_molecules()) {
         std::string formula = occ::core::chemical_formula(mol.elements());
         auto it = formula_count.find(formula);
@@ -133,7 +136,7 @@ void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
     std::vector<FormulaIndex> sym_formula_indices =
         build_formula_indices_for_symmetry_unique_molecules(crystal);
 
-    phmap::flat_hash_map<FormulaIndex, std::vector<double>> f2e;
+    ankerl::unordered_dense::map<FormulaIndex, std::vector<double>, FormulaIndexHash> f2e;
 
     // TODO fix for multiple molecules in asymmetric unit
     // 1A -> 1 is the conformer number, A is the compound i.e. chemical

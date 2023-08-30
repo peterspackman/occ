@@ -74,14 +74,12 @@ Mat SemiNumericalExchange::compute_overlap_matrix() const {
 }
 
 template <ShellKind kind, typename Lambda>
-void three_center_screened_aux_kernel(Lambda &f,
-                                      qm::cint::IntegralEnvironment &env,
-                                      const qm::AOBasis &aobasis,
-                                      const qm::AOBasis &auxbasis,
-                                      const ShellPairList &shellpairs,
-                                      int thread_id = 0) noexcept {
+void three_center_screened_aux_kernel(
+    Lambda &f, qm::cint::IntegralEnvironment &env, const qm::AOBasis &aobasis,
+    const qm::AOBasis &auxbasis, const ShellPairList &shellpairs,
+
+    occ::qm::cint::Optimizer &opt, int thread_id = 0) noexcept {
     auto nthreads = occ::parallel::get_num_threads();
-    occ::qm::cint::Optimizer opt(env, Op::coulomb, 3);
     size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
                      auxbasis.max_shell_size();
     auto buffer = std::make_unique<double[]>(bufsize);
@@ -131,7 +129,7 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
     size_t nbf = m_basis.nbf();
     const auto &D = mo.D;
     Mat D2 = 2 * D;
-    constexpr size_t BLOCKSIZE = 64;
+    constexpr size_t BLOCKSIZE = 128;
     using occ::parallel::nthreads;
 
     Mat Sn = Mat::Zero(nbf, nbf);
@@ -141,6 +139,33 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
     const auto &basis = m_engine.aobasis();
     const auto nshells = basis.nsh();
     const auto shell2bf = basis.first_bf();
+    occ::qm::cint::Optimizer opt(m_engine.env(), Op::coulomb, 3);
+
+    Mat Fg(BLOCKSIZE, nbf);
+    Mat Gg(BLOCKSIZE, nbf);
+    Mat rho(BLOCKSIZE, 1);
+
+    auto f = [&Gg, &Fg](const qm::IntegralEngine::IntegralResult<3> &args) {
+        int n = args.shell[2];
+        Eigen::Map<const Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
+        Gg.block(n, args.bf[1], 1, args.dims[1]) +=
+            Fg.block(n, args.bf[0], 1, args.dims[0]) * tmp;
+        if (args.shell[0] != args.shell[1]) {
+            Gg.block(n, args.bf[0], 1, args.dims[0]) +=
+                Fg.block(n, args.bf[1], 1, args.dims[1]) * tmp.transpose();
+        }
+    };
+    auto lambda = [&](int thread_id) {
+        if (m_engine.is_spherical()) {
+            three_center_screened_aux_kernel<qm::Shell::Kind::Spherical>(
+                f, m_engine.env(), m_engine.aobasis(), m_engine.auxbasis(),
+                m_engine.shellpairs(), opt, thread_id);
+        } else {
+            three_center_screened_aux_kernel<qm::Shell::Kind::Cartesian>(
+                f, m_engine.env(), m_engine.aobasis(), m_engine.auxbasis(),
+                m_engine.shellpairs(), opt, thread_id);
+        }
+    };
 
     // compute J, K
     for (const auto &atom_grid : m_atom_grids) {
@@ -149,7 +174,6 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
         const size_t npt_total = atom_pts.cols();
         const size_t num_blocks = npt_total / BLOCKSIZE + 1;
         std::vector<occ::core::PointCharge> chgs(1);
-        Mat rho(BLOCKSIZE, 1);
         occ::gto::GTOValues ao;
         for (size_t block = 0; block < num_blocks; block++) {
             Eigen::Index l = block * BLOCKSIZE;
@@ -176,37 +200,11 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
             m_engine.set_dummy_basis(dummy_atoms, aux_shells);
 
             Mat wao = ao.phi.array().colwise() * weights_block.array();
-            Mat Fg = wao * D2q;
+            Fg = wao * D2q;
+            Gg.setZero();
 
-            Mat Gg = Mat::Zero(Fg.rows(), Fg.cols());
-            auto f = [&Gg,
-                      &Fg](const qm::IntegralEngine::IntegralResult<3> &args) {
-                int n = args.shell[2];
-                Eigen::Map<const Mat> tmp(args.buffer, args.dims[0],
-                                          args.dims[1]);
-                Gg.block(n, args.bf[1], 1, args.dims[1]) +=
-                    Fg.block(n, args.bf[0], 1, args.dims[0]) * tmp;
-                if (args.shell[0] != args.shell[1]) {
-                    Gg.block(n, args.bf[0], 1, args.dims[0]) +=
-                        Fg.block(n, args.bf[1], 1, args.dims[1]) *
-                        tmp.transpose();
-                }
-            };
-            auto lambda = [&](int thread_id) {
-                if (m_engine.is_spherical()) {
-                    three_center_screened_aux_kernel<
-                        qm::Shell::Kind::Spherical>(
-                        f, m_engine.env(), m_engine.aobasis(),
-                        m_engine.auxbasis(), m_engine.shellpairs(), thread_id);
-                } else {
-                    three_center_screened_aux_kernel<
-                        qm::Shell::Kind::Cartesian>(
-                        f, m_engine.env(), m_engine.aobasis(),
-                        m_engine.auxbasis(), m_engine.shellpairs(), thread_id);
-                }
-            };
             occ::parallel::parallel_do(lambda);
-            K.noalias() -= ao.phi.transpose() * Gg;
+            K.noalias() -= ao.phi.transpose() * Gg.block(0, 0, npt, nbf);
         }
     }
 

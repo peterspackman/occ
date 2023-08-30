@@ -1,5 +1,5 @@
 #include <istream>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 #include <occ/core/element.h>
 #include <vector>
 
@@ -34,7 +34,7 @@ struct ElementBasis {
     int ecp_electrons{0};
 };
 
-using ElementMap = phmap::flat_hash_map<int, ElementBasis>;
+using ElementMap = ankerl::unordered_dense::map<int, ElementBasis>;
 
 struct JsonBasis {
     std::string version;

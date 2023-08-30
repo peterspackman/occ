@@ -1,5 +1,5 @@
 #pragma once
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <string>
@@ -10,6 +10,7 @@ namespace occ::slater {
 using occ::IVec;
 using occ::Mat;
 using occ::Vec;
+
 
 class Shell {
   public:
@@ -57,7 +58,9 @@ class Basis {
     std::vector<Shell> m_shells;
 };
 
-phmap::flat_hash_map<std::string, Basis> load_slaterbasis(const std::string &);
+using SlaterBasisSetMap = ankerl::unordered_dense::map<std::string, Basis>;
+
+SlaterBasisSetMap load_slaterbasis(const std::string &);
 
 std::vector<Basis>
 slaterbasis_for_atoms(const std::vector<occ::core::Atom> &,

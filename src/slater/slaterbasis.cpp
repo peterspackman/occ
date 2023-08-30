@@ -197,7 +197,7 @@ void Basis::unnormalize() {
     }
 }
 
-phmap::flat_hash_map<std::string, Basis>
+SlaterBasisSetMap
 load_slaterbasis(const std::string &name) {
     namespace fs = std::filesystem;
     fs::path path;
@@ -211,7 +211,7 @@ load_slaterbasis(const std::string &name) {
     }
     path /= name;
     path.replace_extension("json");
-    phmap::flat_hash_map<std::string, Basis> basis_set;
+    SlaterBasisSetMap basis_set;
 
     if (!fs::exists(path)) {
         throw std::runtime_error("Could not locate slater basis file " +

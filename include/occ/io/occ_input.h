@@ -78,6 +78,11 @@ struct PairInput {
     std::string model_name{"ce-b3lyp"};
 };
 
+struct IsosurfaceInput {
+  GeometryInput interior_geometry;
+  GeometryInput exterior_geometry;
+};
+
 struct OccInput {
     DriverInput driver;
     RuntimeInput runtime;
@@ -89,6 +94,7 @@ struct OccInput {
     SolventInput solvent;
     DispersionCorrectionInput dispersion;
     CrystalInput crystal;
+    IsosurfaceInput isosurface;
     std::string name{""};
     std::string filename{""};
 };

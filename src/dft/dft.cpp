@@ -1,6 +1,6 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 #include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -22,7 +22,7 @@ struct FuncComponent {
     double hfx{0.0};
 };
 
-const phmap::flat_hash_map<std::string, std::vector<FuncComponent>>
+const ankerl::unordered_dense::map<std::string, std::vector<FuncComponent>>
     builtin_functionals({
         {"b3lyp", {{dfid::hyb_gga_xc_b3lyp, 1.0}}},
         {"b3pw91", {{dfid::hyb_gga_xc_b3pw91, 1.0}}},

@@ -2,7 +2,7 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/timings.h>
@@ -104,7 +104,7 @@ auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
     Mat3 rotation;
     Vec3 translation;
 
-    phmap::flat_hash_set<int> symops_tested;
+    ankerl::unordered_dense::set<int> symops_tested;
 
     for (int i = 0; i < m.size(); i++) {
         int sint = m.asymmetric_unit_symop()(i);

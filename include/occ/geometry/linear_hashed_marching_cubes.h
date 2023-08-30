@@ -1,4 +1,6 @@
 #pragma once
+#include <ankerl/unordered_dense.h>
+#include <occ/core/timings.h>
 #include <occ/geometry/linear_hashed_octree.h>
 #include <occ/geometry/marching_cubes.h>
 
@@ -14,16 +16,20 @@ struct Edge {
     bool operator==(const Edge &other) const {
         return (from == other.from) && (to == other.to);
     }
-    friend size_t hash_value(const Edge &e) {
-        return phmap::HashState().combine(0, e.from, e.to);
+};
+
+struct EdgeHash {
+    uint64_t operator()(const Edge &x) const noexcept {
+        return ankerl::unordered_dense::detail::wyhash::mix(x.from.code,
+                                                            x.to.code);
     }
 };
 
 } // namespace impl
 
 struct LinearHashedMarchingCubes {
-    using VertexMap = phmap::flat_hash_map<MIndex, size_t>;
-    using EdgeMap = phmap::flat_hash_map<impl::Edge, size_t>;
+    using VertexMap = ankerl::unordered_dense::map<MIndex, size_t, MIndexHash>;
+    using EdgeMap = ankerl::unordered_dense::map<impl::Edge, size_t, impl::EdgeHash>;
     size_t max_depth{6};
     size_t min_depth{2};
     float tolerance{1e-6};
@@ -83,11 +89,20 @@ struct LinearHashedMarchingCubes {
     template <typename S, typename E>
     void extract_impl(const S &source, E &extract_fn,
                       std::vector<uint32_t> &indices) {
+
+        occ::timing::start(occ::timing::category::mc_octree);
         auto octree = build_octree(source);
+        occ::timing::stop(occ::timing::category::mc_octree);
+
+        occ::timing::start(occ::timing::category::mc_primal);
         auto primal_vertices = compute_primal_vertices(octree);
+        occ::timing::stop(occ::timing::category::mc_primal);
         size_t base_index = 0;
+
+        occ::timing::start(occ::timing::category::mc_surface);
         extract_surface(octree, primal_vertices, indices, base_index,
                         extract_fn);
+        occ::timing::stop(occ::timing::category::mc_surface);
     }
 
     VertexMap compute_primal_vertices(const LinearHashedOctree<float> &octree) {
@@ -98,7 +113,7 @@ struct LinearHashedMarchingCubes {
                 auto vertex = key.primal(level, i);
                 if (vertex.code != 0) {
                     if (primal_vertices.contains(vertex)) {
-                        auto existing_level = primal_vertices.at(vertex);
+                        auto existing_level = primal_vertices[vertex];
                         if (level > existing_level) {
                             primal_vertices[vertex] = level;
                         }

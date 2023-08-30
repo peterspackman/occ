@@ -1,6 +1,6 @@
 #pragma once
+#include <ankerl/unordered_dense.h>
 #include <deque>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
 #include <occ/geometry/morton.h>
 #include <optional>
 #include <vector>
@@ -8,7 +8,7 @@
 namespace occ::geometry {
 
 template <typename N> struct LinearHashedOctree {
-    using NodeMap = phmap::flat_hash_map<MIndex, N>;
+    using NodeMap = ankerl::unordered_dense::map<MIndex, N, MIndexHash>;
     NodeMap nodes;
     std::vector<MIndex> leaves;
 
@@ -25,8 +25,9 @@ template <typename N> struct LinearHashedOctree {
             auto node = construct_node(key);
 
             if (should_refine(key, node)) {
-                for (uint_fast8_t i = 0; i < 8; ++i)
+                for (int i = 0; i < 8; ++i) {
                     queue.push_back(key.child(i));
+                }
             } else {
                 leaves.push_back(key);
             }

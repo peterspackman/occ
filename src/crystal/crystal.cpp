@@ -339,7 +339,7 @@ void Crystal::update_unit_cell_molecules() const {
     std::vector<std::vector<int>> atom_indices;
     std::vector<std::vector<std::pair<size_t, size_t>>> mol_bonds;
     Mat3N shifts = Mat3N::Zero(3, atoms.size());
-    phmap::flat_hash_set<vertex_desc> visited;
+    ankerl::unordered_dense::set<vertex_desc> visited;
     auto visitor = [&](const vertex_desc &v, const vertex_desc &prev,
                        const edge_desc &e) {
         auto &idxs = atom_indices[uc_mol_idx];

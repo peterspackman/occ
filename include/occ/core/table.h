@@ -1,7 +1,7 @@
 #pragma once
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <occ/3rdparty/parallel_hashmap/phmap.h>
+#include <ankerl/unordered_dense.h>
 #include <occ/core/linear_algebra.h>
 #include <optional>
 #include <string>
@@ -116,7 +116,7 @@ class Table {
   private:
     std::vector<std::string> m_column_order;
     RowConfiguration m_row_config;
-    phmap::flat_hash_map<std::string, std::vector<std::string>> m_columns;
-    phmap::flat_hash_map<std::string, ColumnConfiguration> m_column_config;
+    ankerl::unordered_dense::map<std::string, std::vector<std::string>> m_columns;
+    ankerl::unordered_dense::map<std::string, ColumnConfiguration> m_column_config;
 };
 } // namespace occ::io

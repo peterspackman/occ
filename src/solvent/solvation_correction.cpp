@@ -18,7 +18,7 @@ ContinuumSolvationModel::ContinuumSolvationModel(
       m_solvent_name(solvent), m_cosmo(78.39) {
     occ::log::debug("Number of atoms for continuum solvation model = {}",
                     atoms.size());
-    phmap::flat_hash_map<int, double> element_radii;
+    ankerl::unordered_dense::map<int, double> element_radii;
     for (size_t i = 0; i < atoms.size(); i++) {
         m_nuclear_positions(0, i) = atoms[i].x;
         m_nuclear_positions(1, i) = atoms[i].y;

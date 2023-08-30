@@ -2,7 +2,7 @@
 #include <cmath>
 
 namespace occ::units {
-constexpr double BOHR_TO_ANGSTROM = 0.52917749;
+constexpr double BOHR_TO_ANGSTROM = 0.529177210903;
 constexpr double ANGSTROM_TO_BOHR = 1 / BOHR_TO_ANGSTROM;
 constexpr double AU_TO_KJ_PER_MOL = 2625.499639;
 constexpr double AU_TO_PER_CM = 219474.63;

@@ -129,6 +129,11 @@ class DFT {
         }
 
         energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
+
+        const auto pcloc = energy.find("nuclear.point_charge");
+        if (pcloc != energy.end()) {
+            energy["total"] += pcloc->second;
+        }
     }
     bool supports_incremental_fock_build() const { return false; }
     inline bool have_effective_core_potentials() const {
@@ -401,8 +406,7 @@ class DFT {
             J = m_hf.compute_J(mo, precision, Schwarz);
             ecoul = expectation(mo.kind, mo.D, J);
         }
-        occ::log::debug("EXC_dft = {}, EXC = {}, E_coul = {}\n", m_exc_dft, exc,
-                        ecoul);
+        occ::log::debug("E_xc (DFT): {:20.12f}  E_ex: {:20.12f} E_coul: {:20.12f}", m_exc_dft, exc, ecoul);
         m_exchange_energy = m_exc_dft + exc;
         m_two_electron_energy += m_exchange_energy + ecoul;
         return {J, K};
@@ -421,10 +425,7 @@ class DFT {
     inline double post_scf_nlc_correction(const MolecularOrbitals &mo) {
         if (have_nonlocal_correlation()) {
             auto nlc_result = m_nlc(m_hf.aobasis(), mo);
-            occ::log::debug("NLC energy = {}", nlc_result.energy);
             m_nlc_energy = nlc_result.energy;
-            occ::log::debug("NLC Vxc = {} {}", nlc_result.Vxc.rows(),
-                            nlc_result.Vxc.cols());
         }
         return m_nlc_energy;
     }

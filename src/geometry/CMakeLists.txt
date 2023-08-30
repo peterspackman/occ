@@ -10,6 +10,7 @@ target_link_libraries(occ_geometry
     PUBLIC 
     Eigen3::Eigen 
     fmt::fmt
+    unordered_dense::unordered_dense
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}
     scn::scn

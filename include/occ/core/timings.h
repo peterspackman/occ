@@ -41,6 +41,10 @@ enum category {
     fft,
     xdm,
     solvent,
+    isosurface_function,
+    mc_octree,
+    mc_primal,
+    mc_surface,
     global,
     _group_count
 };

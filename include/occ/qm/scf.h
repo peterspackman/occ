@@ -257,7 +257,6 @@ template <typename Procedure> struct SCF {
                 Vecp = m_procedure.compute_effective_core_potential_matrix();
             }
             if (calc_pc) {
-                occ::log::info("CALC PC");
                 Vpc = m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
             }
             break;
@@ -277,7 +276,7 @@ template <typename Procedure> struct SCF {
             if (calc_pc) {
                 block::a(Vpc) =
                     m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
-                block::b(Vpc) = block::a(Vecp);
+                block::b(Vpc) = block::a(Vpc);
 
             }
             break;
@@ -297,7 +296,7 @@ template <typename Procedure> struct SCF {
             if (calc_pc) {
                 block::aa(Vpc) =
                     m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
-                block::bb(Vpc) = block::aa(Vecp);
+                block::bb(Vpc) = block::aa(Vpc);
             }
 
             break;
@@ -385,6 +384,7 @@ template <typename Procedure> struct SCF {
     void set_point_charges(const PointChargeList &charges) {
         log::info("Including potential from {} point charges", charges.size());
         energy["nuclear.point_charge"] = m_procedure.nuclear_point_charge_interaction_energy(charges);
+        energy["nuclear.total"] = energy["nuclear.point_charge"] + energy["nuclear.repulsion"];
         m_point_charges = charges;
     }
 

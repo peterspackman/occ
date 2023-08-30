@@ -204,9 +204,7 @@ void MolecularOrbitals::update_occupied_orbitals() {
     if (C.size() == 0) {
         return;
     }
-    occ::log::debug("Updating occupied orbitals");
-    occ::log::debug("num alpha electrons = {}", n_alpha);
-    occ::log::debug("num beta electrons  = {}", n_beta);
+    occ::log::debug("Updating occupied orbitals, n_a = {}, n_b = {}", n_alpha, n_beta);
     constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;

@@ -2,14 +2,5 @@ set(OCC_3RDPARTY_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cint_wrapper.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/nanoflann.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pocketfft.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/btree.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/meminfo.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/phmap.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/phmap_base.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/phmap_bits.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/phmap_config.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/phmap_dump.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/phmap_fwd_decl.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parallel_hashmap/phmap_utils.h"
     PARENT_SCOPE
 )
