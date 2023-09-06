@@ -30,3 +30,5 @@ target_include_directories(_subprocess
 if("${MSVC}")
     target_compile_options(_subprocess PUBLIC -Zc:__cplusplus)
 endif()
+
+add_subdirectory(gau2grid)

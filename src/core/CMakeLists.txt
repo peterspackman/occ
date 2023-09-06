@@ -30,6 +30,13 @@ if("${USE_SYSTEM_BLAS}")
     target_compile_definitions(occ_core PUBLIC EIGEN_USE_BLAS)
 endif()
 
+if("${USE_OPENMP}")
+target_link_libraries(occ_core
+    PUBLIC
+    OpenMP::OpenMP_CXX
+)
+endif()
+
 target_link_libraries(occ_core
     PUBLIC 
     Eigen3::Eigen 
@@ -37,7 +44,6 @@ target_link_libraries(occ_core
     LBFGSpp::LBFGSpp
     scn::scn
     spdlog::spdlog
-    OpenMP::OpenMP_CXX
     Threads::Threads
     unordered_dense::unordered_dense
     _subprocess

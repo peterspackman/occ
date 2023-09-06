@@ -25,13 +25,6 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-    NAME gau2grid
-    GITHUB_REPOSITORY "dgasmith/gau2grid"
-    GIT_TAG "master"
-    OPTIONS "DISABLE_PRAGMA ${GG_NO_PRAGMA}" "ENABLE_XHOST ${ENABLE_HOST_OPT}" "BUILD_FPIC OFF" "BUILD_SHARED_LIBS OFF"
-)
-
-CPMAddPackage(
     NAME "nlohmann_json"
     GITHUB_REPOSITORY "nlohmann/json"
     VERSION "3.10.4"

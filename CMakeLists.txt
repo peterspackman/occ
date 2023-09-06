@@ -6,7 +6,7 @@ set(PROJECT_VERSION_PATCH "2")
 
 project(occ
     VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
-    LANGUAGES CXX
+    LANGUAGES CXX C
 )
 
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
@@ -38,6 +38,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" ON)
     option(USE_QCINT "Use SIMD optimised qcint rather than libcint" OFF)
+    option(USE_OPENMP "Use OpenMP for threading rather than std::thread" ON)
     option(GG_NO_PRAGMA "Define the __GG_NO_PRAGMA macro" OFF)
     option(ENABLE_HOST_OPT "Enable -march=native and similar flags" ON)
     if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -53,7 +54,10 @@ if("${WITH_PYTHON_BINDINGS}")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
+if("${USE_OPENMP}")
 find_package(OpenMP REQUIRED)
+endif()
+
 find_package(Threads REQUIRED)
 
 if("${USE_SYSTEM_EIGEN}")
