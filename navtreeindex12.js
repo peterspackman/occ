@@ -1,5 +1,9 @@
 var NAVTREEINDEX12 =
 {
+"structocc_1_1io_1_1ElectronShell.html#abafdeba233095d917ecd08979e77b967":[2,0,1,6,16,2],
+"structocc_1_1io_1_1ElementBasis.html":[2,0,1,6,19],
+"structocc_1_1io_1_1ElementBasis.html#a08cd23c76cbcd8bc2549b0714f009ab1":[2,0,1,6,19,2],
+"structocc_1_1io_1_1ElementBasis.html#a2d0a626bb44910269510ed3ee82ea8ae":[2,0,1,6,19,0],
 "structocc_1_1io_1_1ElementBasis.html#a60953083ceb13fb88f8bf441c7207822":[2,0,1,6,19,3],
 "structocc_1_1io_1_1ElementBasis.html#ac5c1aad75fe8870b107649977a5a4b48":[2,0,1,6,19,1],
 "structocc_1_1io_1_1FchkReader_1_1FchkBasis.html":[2,0,1,6,11,0],
@@ -245,9 +249,5 @@ var NAVTREEINDEX12 =
 "structocc_1_1main_1_1SolventNeighborContribution.html#adbc4a203ad6d3afc9647a498bcbab77e":[2,0,1,7,13,1],
 "structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html":[2,0,1,7,13,0],
 "structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a4ff20df115d72beaad252ac37a9833a0":[2,0,1,7,13,0,2],
-"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a67b47d2e66ba94432792a3e37c4cdfa1":[2,0,1,7,13,0,1],
-"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#ab434becae61c3354617a836dfc070ac9":[2,0,1,7,13,0,3],
-"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#adcb102138f6caf8593aa6db558a94b97":[2,0,1,7,13,0,0],
-"structocc_1_1main_1_1SpinorbitalKindValidator.html":[2,0,1,7,1],
-"structocc_1_1main_1_1SpinorbitalKindValidator.html#adf0ffde98ce16c2f18ea24c0b5e0542d":[2,0,1,7,1,0]
+"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a67b47d2e66ba94432792a3e37c4cdfa1":[2,0,1,7,13,0,1]
 };

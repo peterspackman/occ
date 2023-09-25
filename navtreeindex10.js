@@ -1,5 +1,7 @@
 var NAVTREEINDEX10 =
 {
+"point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6af623e75af30e62bbd73d6df5b50bb7b5":[3,0,1,0,0,28,2,2],
+"point__group_8h.html#ac6db91e18131313dac99bf8aab66fa20":[3,0,1,0,0,28,4],
 "polarization_8h.html":[3,0,1,0,5,4],
 "polarization_8h.html#a3f579e72d12f4f6e07a7aa8cae1217a7":[3,0,1,0,5,4,1],
 "polarization_8h.html#a5b13ad9a54dd22da274e948db722569b":[3,0,1,0,5,4,0],
@@ -247,7 +249,5 @@ var NAVTREEINDEX10 =
 "structocc_1_1dft_1_1AtomGrid.html#aa085f1b9f645b2ab72adcfbb818098cb":[2,0,1,2,3,5],
 "structocc_1_1dft_1_1AtomGrid.html#ab11fc6823ee2edefd2c64d4952732778":[2,0,1,2,3,2],
 "structocc_1_1dft_1_1AtomGrid.html#acbaf3d025645b6498f515df17f3674b5":[2,0,1,2,3,0],
-"structocc_1_1dft_1_1AtomGrid.html#ae73a8ccec3285955770ebdd8e8528f2b":[2,0,1,2,3,1],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html":[2,0,1,2,2,0],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a1188c0c50d86687d8c431ccb0746c1ef":[2,0,1,2,2,0,0]
+"structocc_1_1dft_1_1AtomGrid.html#ae73a8ccec3285955770ebdd8e8528f2b":[2,0,1,2,3,1]
 };

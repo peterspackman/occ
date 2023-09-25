@@ -1,5 +1,6 @@
 var NAVTREEINDEX8 =
 {
+"namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a148ea7093674697c378aa80037a48421":[1,0,2,1,6,0,0],
 "namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a47dca7f6bec6de240a2ddf49d0b85a5f":[1,0,2,1,6,0,1],
 "namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a7819680dd900c9f6ff33a854f3159299":[1,0,2,1,6,0,2],
 "namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6ac63c90b1f95247383cdf9f87b298c287":[1,0,2,1,6,0,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX8 =
 "namespaceocc_1_1qm_1_1cint_1_1impl.html":[1,0,2,13,1,0],
 "namespaceocc_1_1qm_1_1guess.html":[1,0,2,13,2],
 "namespaceocc_1_1qm_1_1guess.html#a933946b1be85bd3cb3ccc5922d0839ff":[1,0,2,13,2,2],
-"namespaceocc_1_1qm_1_1guess.html#acb0a9b7918ce5f813b34eb9e6ac97ecb":[1,0,2,13,2,1],
-"namespaceocc_1_1qm_1_1guess_1_1impl.html":[1,0,2,13,2,0]
+"namespaceocc_1_1qm_1_1guess.html#acb0a9b7918ce5f813b34eb9e6ac97ecb":[1,0,2,13,2,1]
 };

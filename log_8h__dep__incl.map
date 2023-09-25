@@ -1,13 +1,15 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/log.h" name="/home/runner/work/occ/occ/include/occ/core/log.h">
-<area shape="rect" id="node1" title=" " alt="" coords="414,5,608,47"/>
-<area shape="rect" id="node2" href="$gto_8h.html" title=" " alt="" coords="19,206,206,247"/>
-<area shape="rect" id="node6" href="$integral__engine_8h.html" title=" " alt="" coords="300,95,504,151"/>
-<area shape="rect" id="node10" href="$scf_8h.html" title=" " alt="" coords="528,102,712,143"/>
-<area shape="rect" id="node11" href="$solvation__correction_8h.html" title=" " alt="" coords="737,95,914,151"/>
-<area shape="rect" id="node3" href="$dft_8h.html" title=" " alt="" coords="120,407,299,448"/>
-<area shape="rect" id="node4" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="27,303,198,359"/>
-<area shape="rect" id="node5" href="$density_8h.html" title=" " alt="" coords="222,303,392,359"/>
-<area shape="rect" id="node7" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="230,199,435,255"/>
-<area shape="rect" id="node8" href="$hf_8h.html" title=" " alt="" coords="416,310,595,351"/>
-<area shape="rect" id="node9" href="$integral__engine__df_8h.html" title=" " alt="" coords="510,199,714,255"/>
+<area shape="rect" id="node1" title=" " alt="" coords="438,5,631,47"/>
+<area shape="rect" id="node2" href="$linear__hashed__octree_8h.html" title=" " alt="" coords="85,95,277,151"/>
+<area shape="rect" id="node4" href="$gto_8h.html" title=" " alt="" coords="221,213,408,255"/>
+<area shape="rect" id="node8" href="$integral__engine_8h.html" title=" " alt="" coords="433,95,637,151"/>
+<area shape="rect" id="node12" href="$scf_8h.html" title=" " alt="" coords="661,102,845,143"/>
+<area shape="rect" id="node13" href="$solvation__correction_8h.html" title=" " alt="" coords="870,95,1047,151"/>
+<area shape="rect" id="node3" href="$linear__hashed__marching__cubes_8h.html" title=" " alt="" coords="5,199,197,269"/>
+<area shape="rect" id="node5" href="$dft_8h.html" title=" " alt="" coords="323,421,501,463"/>
+<area shape="rect" id="node6" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="229,317,400,373"/>
+<area shape="rect" id="node7" href="$density_8h.html" title=" " alt="" coords="424,317,595,373"/>
+<area shape="rect" id="node9" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="432,206,637,262"/>
+<area shape="rect" id="node10" href="$hf_8h.html" title=" " alt="" coords="619,325,797,366"/>
+<area shape="rect" id="node11" href="$integral__engine__df_8h.html" title=" " alt="" coords="713,206,917,262"/>
 </map>

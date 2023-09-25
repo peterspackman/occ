@@ -1,8 +1,10 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/parallel.h" name="/home/runner/work/occ/occ/include/occ/core/parallel.h">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,176,61"/>
-<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="72,407,251,448"/>
-<area shape="rect" id="node3" href="$integral__engine_8h.html" title=" " alt="" coords="129,109,333,165"/>
-<area shape="rect" id="node4" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="59,213,264,269"/>
-<area shape="rect" id="node5" href="$hf_8h.html" title=" " alt="" coords="212,317,391,359"/>
-<area shape="rect" id="node6" href="$integral__engine__df_8h.html" title=" " alt="" coords="339,213,543,269"/>
+<area shape="rect" id="node1" title=" " alt="" coords="55,5,226,61"/>
+<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="166,421,344,463"/>
+<area shape="rect" id="node3" href="$linear__hashed__octree_8h.html" title=" " alt="" coords="44,109,236,165"/>
+<area shape="rect" id="node5" href="$integral__engine_8h.html" title=" " alt="" coords="330,109,534,165"/>
+<area shape="rect" id="node4" href="$linear__hashed__marching__cubes_8h.html" title=" " alt="" coords="44,213,236,284"/>
+<area shape="rect" id="node6" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="260,221,466,277"/>
+<area shape="rect" id="node7" href="$hf_8h.html" title=" " alt="" coords="414,332,592,373"/>
+<area shape="rect" id="node8" href="$integral__engine__df_8h.html" title=" " alt="" coords="541,221,745,277"/>
 </map>

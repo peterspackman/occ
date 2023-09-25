@@ -38,6 +38,7 @@ var timings_8h =
       [ "xdm", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a7c33115a77204969afbddfe52e260d16", null ],
       [ "solvent", "timings_8h.html#a089c88a4231531abae301355d6ba8c16abaf639845bdbe70396a9bd527534f821", null ],
       [ "isosurface_function", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a5c7050e04bc3e7ac378b7d617f593a2c", null ],
+      [ "isosurface_properties", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a36a59ece494ec16dfe097747815e9774", null ],
       [ "mc_octree", "timings_8h.html#a089c88a4231531abae301355d6ba8c16afe4fdd8f2287d086d57c64978ab62a61", null ],
       [ "mc_primal", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a19f7785f6d5ade0be208b72e4a6bd6a2", null ],
       [ "mc_surface", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a172622eca494dac3ba8060bc574eec0b", null ],

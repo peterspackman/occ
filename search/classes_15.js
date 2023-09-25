@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['xdm_2375',['XDM',['../classocc_1_1xdm_1_1XDM.html',1,'occ::xdm']]],
-  ['xdmatomlist_2376',['XDMAtomList',['../structocc_1_1xdm_1_1XDMAtomList.html',1,'occ::xdm']]],
-  ['xtbcalculator_2377',['XTBCalculator',['../classocc_1_1xtb_1_1XTBCalculator.html',1,'occ::xtb']]],
-  ['xyzfilereader_2378',['XyzFileReader',['../structocc_1_1io_1_1XyzFileReader.html',1,'occ::io']]]
+  ['xdm_2383',['XDM',['../classocc_1_1xdm_1_1XDM.html',1,'occ::xdm']]],
+  ['xdmatomlist_2384',['XDMAtomList',['../structocc_1_1xdm_1_1XDMAtomList.html',1,'occ::xdm']]],
+  ['xtbcalculator_2385',['XTBCalculator',['../classocc_1_1xtb_1_1XTBCalculator.html',1,'occ::xtb']]],
+  ['xyzfilereader_2386',['XyzFileReader',['../structocc_1_1io_1_1XyzFileReader.html',1,'occ::io']]]
 ];

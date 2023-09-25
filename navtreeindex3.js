@@ -1,6 +1,5 @@
 var NAVTREEINDEX3 =
 {
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf3648c0c95d583c8ebb2c6029dabf391":[2,0,1,2,2,3,213],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf4f161449aa4409885e2b9c9e3ab0066":[2,0,1,2,2,3,30],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf59f17cec9b52607a81012d892a1b785":[2,0,1,2,2,3,12],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf5bf012315983e62c25bc769eb74caa7":[2,0,1,2,2,3,110],
@@ -240,14 +239,15 @@ var NAVTREEINDEX3 =
 "classocc_1_1main_1_1PromoleculeDensityFunctor.html#aa276751aeede1a7d3a190e0d62efd4bc":[2,0,1,7,8,3],
 "classocc_1_1main_1_1PromoleculeDensityFunctor.html#ab5f766cc869f8df240fa668a76a8880b":[2,0,1,7,8,5],
 "classocc_1_1main_1_1StockholderWeightFunctor.html":[2,0,1,7,7],
-"classocc_1_1main_1_1StockholderWeightFunctor.html#a0911cb2698ae28709c75d17bfb8d32a5":[2,0,1,7,7,7],
-"classocc_1_1main_1_1StockholderWeightFunctor.html#a125beee37a244db13586682a0eedf565":[2,0,1,7,7,1],
-"classocc_1_1main_1_1StockholderWeightFunctor.html#a3b8bd62ec5114968c1730d693c6f22bd":[2,0,1,7,7,2],
-"classocc_1_1main_1_1StockholderWeightFunctor.html#a5a337915f034eed9dd609d4396169645":[2,0,1,7,7,3],
-"classocc_1_1main_1_1StockholderWeightFunctor.html#a9dbc90b3558ebb5b5ad8ab509a8ca529":[2,0,1,7,7,5],
+"classocc_1_1main_1_1StockholderWeightFunctor.html#a0911cb2698ae28709c75d17bfb8d32a5":[2,0,1,7,7,9],
+"classocc_1_1main_1_1StockholderWeightFunctor.html#a125beee37a244db13586682a0eedf565":[2,0,1,7,7,2],
+"classocc_1_1main_1_1StockholderWeightFunctor.html#a2938c4fe8f4f8cac6959714aa16d44e8":[2,0,1,7,7,6],
+"classocc_1_1main_1_1StockholderWeightFunctor.html#a3b8bd62ec5114968c1730d693c6f22bd":[2,0,1,7,7,3],
+"classocc_1_1main_1_1StockholderWeightFunctor.html#a5a337915f034eed9dd609d4396169645":[2,0,1,7,7,4],
+"classocc_1_1main_1_1StockholderWeightFunctor.html#a9dbc90b3558ebb5b5ad8ab509a8ca529":[2,0,1,7,7,7],
 "classocc_1_1main_1_1StockholderWeightFunctor.html#aae6778bd2e3328337f67be8c54298463":[2,0,1,7,7,0],
-"classocc_1_1main_1_1StockholderWeightFunctor.html#af6a520f56cc6c69f26498756fcdf80ad":[2,0,1,7,7,4],
-"classocc_1_1main_1_1StockholderWeightFunctor.html#afaef43345a00a4d74220924dcea84707":[2,0,1,7,7,6],
-"classocc_1_1qm_1_1AOBasis.html":[2,0,1,8,9],
-"classocc_1_1qm_1_1AOBasis.html#a0151fc291b2ca27d0a55d10a8a58b416":[2,0,1,8,9,35]
+"classocc_1_1main_1_1StockholderWeightFunctor.html#abfddd591fede68cb5bdb77e4a6153ca8":[2,0,1,7,7,1],
+"classocc_1_1main_1_1StockholderWeightFunctor.html#af6a520f56cc6c69f26498756fcdf80ad":[2,0,1,7,7,5],
+"classocc_1_1main_1_1StockholderWeightFunctor.html#afaef43345a00a4d74220924dcea84707":[2,0,1,7,7,8],
+"classocc_1_1qm_1_1AOBasis.html":[2,0,1,8,9]
 };

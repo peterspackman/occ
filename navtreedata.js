@@ -67,21 +67,21 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"",
-"classocc_1_1crystal_1_1Crystal.html#af61a6255cfcd1d9a8f062c0c065a54b8",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba40d2871299e56c7c2d701049f8471087",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf3648c0c95d583c8ebb2c6029dabf391",
-"classocc_1_1qm_1_1AOBasis.html#a04b92d079f470b5dff5c07be17e33c25",
-"classocc_1_1solvent_1_1ContinuumSolvationModel.html#acf85e42e998f2fc66eabff3a3f574884",
-"functions_eval_e.html",
-"morton_8h.html#af58bc3aac961b99b901f57732dae647c",
-"namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a47dca7f6bec6de240a2ddf49d0b85a5f",
-"namespaceocc_1_1qm_1_1guess_1_1impl.html#ab96ae5bd96dea3585af27790ec098004",
-"polarization_8h.html",
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a301c3fdf8d60e2c0c81fd97cbef3ab01",
-"structocc_1_1io_1_1ElementBasis.html#a60953083ceb13fb88f8bf441c7207822",
-"structocc_1_1qm_1_1Energy.html",
-"timings_8h.html#a089c88a4231531abae301355d6ba8c16a19f7785f6d5ade0be208b72e4a6bd6a2"
+"annotated.html",
+"classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba412b2a7d54949a2a5c8644f190468f6c",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf4f161449aa4409885e2b9c9e3ab0066",
+"classocc_1_1qm_1_1AOBasis.html#a0151fc291b2ca27d0a55d10a8a58b416",
+"classocc_1_1solvent_1_1ContinuumSolvationModel.html#ac9753dd4fcfb9350d3ad775c5dd100b5",
+"functions_eval_d.html",
+"morton_8h.html#ae9bdd8c8693f8fdb6789e268a55c2a00",
+"namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a148ea7093674697c378aa80037a48421",
+"namespaceocc_1_1qm_1_1guess_1_1impl.html",
+"point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6af623e75af30e62bbd73d6df5b50bb7b5",
+"structocc_1_1dft_1_1DensityFunctional_1_1Params.html",
+"structocc_1_1io_1_1ElectronShell.html#abafdeba233095d917ecd08979e77b967",
+"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#ab434becae61c3354617a836dfc070ac9",
+"timings_8h.html#a089c88a4231531abae301355d6ba8c16"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

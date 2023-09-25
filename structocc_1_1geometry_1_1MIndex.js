@@ -4,6 +4,7 @@ var structocc_1_1geometry_1_1MIndex =
     [ "center", "structocc_1_1geometry_1_1MIndex.html#a1fc0b5df03d15b0067ffe8f00d4aa11d", null ],
     [ "child", "structocc_1_1geometry_1_1MIndex.html#a48c1c84ff4c07db6db402bc70be2c4c6", null ],
     [ "dual", "structocc_1_1geometry_1_1MIndex.html#ae49b9e6b58025b6a2ef4853dcf96d2f8", null ],
+    [ "get_children", "structocc_1_1geometry_1_1MIndex.html#af82433636831898a8b686b4c008d7e09", null ],
     [ "level", "structocc_1_1geometry_1_1MIndex.html#a8949deaf811a4a0f38c18e4dc76e92ea", null ],
     [ "operator!=", "structocc_1_1geometry_1_1MIndex.html#a521caf9662f91aba2ed460a0a1672df8", null ],
     [ "operator+", "structocc_1_1geometry_1_1MIndex.html#a33dd14b0c5f94a399fa5a036aa3d2531", null ],

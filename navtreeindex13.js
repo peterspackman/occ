@@ -1,5 +1,9 @@
 var NAVTREEINDEX13 =
 {
+"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#ab434becae61c3354617a836dfc070ac9":[2,0,1,7,13,0,3],
+"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#adcb102138f6caf8593aa6db558a94b97":[2,0,1,7,13,0,0],
+"structocc_1_1main_1_1SpinorbitalKindValidator.html":[2,0,1,7,1],
+"structocc_1_1main_1_1SpinorbitalKindValidator.html#adf0ffde98ce16c2f18ea24c0b5e0542d":[2,0,1,7,1,0],
 "structocc_1_1qm_1_1Energy.html":[2,0,1,8,10],
 "structocc_1_1qm_1_1Energy.html#a1e1b6c6bb0c4f288931bb5d09357894c":[2,0,1,8,10,5],
 "structocc_1_1qm_1_1Energy.html#a4247f24bb22d36b605c6ac7545f04167":[2,0,1,8,10,3],
@@ -245,9 +249,5 @@ var NAVTREEINDEX13 =
 "table_8h.html":[3,0,1,0,0,31],
 "tblite__wrapper_8h.html":[3,0,1,0,13,0],
 "tblite__wrapper_8h.html#aa9524920b7508c4f768c5d2e4f88590b":[3,0,1,0,13,0,1],
-"timings_8h.html":[3,0,1,0,0,32],
-"timings_8h.html#a089c88a4231531abae301355d6ba8c16":[3,0,1,0,0,32,4],
-"timings_8h.html#a089c88a4231531abae301355d6ba8c16a0a42fe5f2ac3f6c76f70f06a2def547d":[3,0,1,0,0,32,4,29],
-"timings_8h.html#a089c88a4231531abae301355d6ba8c16a0de8fcfe054abfbb35249b23e09eec82":[3,0,1,0,0,32,4,2],
-"timings_8h.html#a089c88a4231531abae301355d6ba8c16a172622eca494dac3ba8060bc574eec0b":[3,0,1,0,0,32,4,35]
+"timings_8h.html":[3,0,1,0,0,32]
 };
