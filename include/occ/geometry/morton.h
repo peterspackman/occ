@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <occ/core/macros.h>
@@ -67,6 +68,14 @@ struct MIndex {
 
     OCC_ALWAYS_INLINE MIndex child(uint8_t idx) const {
         return MIndex{code << 3 | static_cast<integer_type>(idx)};
+    }
+
+    OCC_ALWAYS_INLINE void get_children(std::array<MIndex, 8> &arr) const {
+        auto cleft3 = code << 3;
+
+        for (integer_type idx = 0; idx < 8; idx++) {
+            arr[idx] = MIndex{cleft3 | idx};
+        }
     }
 
     OCC_ALWAYS_INLINE Position center() const {

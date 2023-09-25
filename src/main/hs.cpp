@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
+#include <occ/core/kdtree.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/numpy.h>
@@ -24,6 +25,22 @@ using occ::core::Interpolator1D;
 using occ::core::Molecule;
 using occ::main::PromoleculeDensityFunctor;
 using occ::main::StockholderWeightFunctor;
+
+struct VertexProperties {
+    VertexProperties() {}
+    VertexProperties(int size)
+        : de(size), di(size), de_idx(size), di_idx(size), de_norm(size),
+          di_norm(size), de_norm_idx(size), di_norm_idx(size), dnorm(size) {}
+    Eigen::VectorXf de;
+    Eigen::VectorXf di;
+    Eigen::VectorXi de_idx;
+    Eigen::VectorXi di_idx;
+    Eigen::VectorXf de_norm;
+    Eigen::VectorXf di_norm;
+    Eigen::VectorXi de_norm_idx;
+    Eigen::VectorXi di_norm_idx;
+    Eigen::VectorXf dnorm;
+};
 
 void write_ply_file(const std::string &filename,
                     const Eigen::Matrix3Xf &vertices,
@@ -45,6 +62,30 @@ void write_ply_file(const std::string &filename,
     }
     for (size_t idx = 0; idx < faces.cols(); idx++) {
         file.print("3 {} {} {}\n", faces(0, idx), faces(1, idx), faces(2, idx));
+    }
+}
+
+void write_obj_file(const std::string &filename,
+                    const Eigen::Matrix3Xf &vertices,
+                    const Eigen::Matrix3Xi &faces,
+                    const VertexProperties &properties) {
+    auto file = fmt::output_file(filename);
+    file.print("# vertices\n");
+    for (size_t idx = 0; idx < vertices.cols(); idx++) {
+        file.print("v {} {} {}\n", vertices(0, idx), vertices(1, idx),
+                   vertices(2, idx));
+    }
+    file.print("# faces\n");
+    for (size_t idx = 0; idx < faces.cols(); idx++) {
+        int f1 = faces(0, idx) + 1;
+        int f2 = faces(1, idx) + 1;
+        int f3 = faces(2, idx) + 1;
+        file.print("f {}/{} {}/{} {}/{}\n", f1, f1, f2, f2, f3, f3);
+    }
+    file.print("# dnorm di\n");
+    for (size_t idx = 0; idx < vertices.cols(); idx++) {
+        file.print("vt {} {} {}\n", properties.dnorm(idx), properties.de(idx),
+                   properties.de(idx));
     }
 }
 
@@ -70,7 +111,8 @@ as_matrices(const F &b, const std::vector<float> &vertices,
     return {verts, faces};
 }
 
-template <typename F> void extract_surface(F &func) {
+template <typename F>
+std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi> extract_surface(F &func) {
     size_t min_depth = 3;
     occ::timing::StopWatch sw;
     size_t max_depth = func.subdivisions();
@@ -95,11 +137,99 @@ template <typename F> void extract_surface(F &func) {
 
     occ::log::info("Surface has {} vertices, {} faces", vertices.size() / 3,
                    faces.size() / 3);
-    auto [v, f] = as_matrices(func, vertices, faces);
+    return as_matrices(func, vertices, faces);
+}
 
-    occ::core::numpy::save_npy("verts.npy", v);
-    occ::core::numpy::save_npy("faces.npy", f);
-    write_ply_file("surface.ply", v, f);
+VertexProperties compute_surface_properties(const Molecule &m1,
+                                            const Molecule &m2,
+                                            const Eigen::Matrix3Xf vertices) {
+    Eigen::Matrix3Xf inside = m1.positions().cast<float>();
+    Eigen::Matrix3Xf outside = m2.positions().cast<float>();
+    Eigen::VectorXf vdw_inside = m1.vdw_radii().cast<float>();
+    Eigen::VectorXf vdw_outside = m2.vdw_radii().cast<float>();
+
+    VertexProperties properties(vertices.cols());
+    int nthreads = occ::parallel::get_num_threads();
+
+    occ::core::KDTree<float> interior_tree(inside.rows(), inside,
+                                           occ::core::max_leaf);
+    interior_tree.index->buildIndex();
+
+    occ::core::KDTree<float> exterior_tree(outside.rows(), outside,
+                                           occ::core::max_leaf);
+    exterior_tree.index->buildIndex();
+
+    occ::log::info("Indexes built");
+    constexpr size_t num_results = 6;
+
+    auto fill_properties = [&](int thread_id) {
+        std::vector<size_t> indices(num_results);
+        std::vector<float> dist_sq(num_results);
+        std::vector<float> dist_norm(num_results);
+
+        for (int i = 0; i < vertices.cols(); i++) {
+            if (i % nthreads != thread_id)
+                continue;
+
+            Eigen::Vector3f v = vertices.col(i);
+            {
+
+                float dist_inside_norm = std::numeric_limits<float>::max();
+                nanoflann::KNNResultSet<float> results(num_results);
+                results.init(&indices[0], &dist_sq[0]);
+                bool populated = interior_tree.index->findNeighbors(
+                    results, v.data(), nanoflann::SearchParams());
+                properties.di(i) = std::sqrt(dist_sq[0]);
+                properties.di_idx(i) = indices[0];
+
+                size_t inside_idx = 0;
+                for (int idx = 0; idx < results.size(); idx++) {
+
+                    float vdw = vdw_inside(indices[idx]);
+                    float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
+
+                    if (dnorm < dist_inside_norm) {
+                        inside_idx = indices[idx];
+                        dist_inside_norm = dnorm;
+                    }
+                }
+                properties.di_norm(i) = dist_inside_norm;
+                properties.di_norm_idx(i) = inside_idx;
+            }
+
+            {
+                float dist_outside_norm = std::numeric_limits<float>::max();
+                nanoflann::KNNResultSet<float> results(num_results);
+                results.init(&indices[0], &dist_sq[0]);
+                bool populated = exterior_tree.index->findNeighbors(
+                    results, v.data(), nanoflann::SearchParams());
+                properties.de(i) = std::sqrt(dist_sq[0]);
+                properties.de_idx(i) = indices[0];
+
+                size_t outside_idx = 0;
+                for (int idx = 0; idx < results.size(); idx++) {
+
+                    float vdw = vdw_outside(indices[idx]);
+                    float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
+
+                    if (dnorm < dist_outside_norm) {
+                        outside_idx = indices[idx];
+                        dist_outside_norm = dnorm;
+                    }
+                }
+                properties.de_norm(i) = dist_outside_norm;
+                properties.de_norm_idx(i) = outside_idx;
+            }
+
+            properties.dnorm(i) = properties.de_norm(i) + properties.di_norm(i);
+        }
+    };
+
+    occ::timing::start(occ::timing::category::isosurface_properties);
+    occ::parallel::parallel_do(fill_properties);
+    occ::timing::stop(occ::timing::category::isosurface_properties);
+
+    return properties;
 }
 
 int main(int argc, char *argv[]) {
@@ -113,6 +243,7 @@ int main(int argc, char *argv[]) {
     int threads{1}, max_depth{4};
     double separation{0.2};
     float isovalue{0.02};
+    float background_density{0.0};
 
     CLI::Option *input_option = app.add_option(
         "geometry_file", geometry_filename, "xyz file of geometry");
@@ -123,10 +254,12 @@ int main(int argc, char *argv[]) {
                    "Minimum separation for surface construction");
     app.add_option("-S,--maximum-separation", maximum_separation,
                    "Maximum separation for surface construction");
-    app.add_flag("-t,--threads", threads, "Number of threads");
+    app.add_option("-t,--threads", threads, "Number of threads");
     app.add_option("--max-depth", max_depth, "Maximum voxel depth");
     app.add_option("--separation", separation, "targt voxel separation");
-    app.add_option("--isovalue", isovalue, "targt isovalue");
+    app.add_option("--isovalue", isovalue, "target isovalue");
+    app.add_option("--background-density", background_density,
+                   "add background density to close surface");
     // logging verbosity
     app.add_option("-v,--verbosity", verbosity,
                    "logging verbosity {silent,minimal,normal,verbose,debug}");
@@ -134,7 +267,13 @@ int main(int argc, char *argv[]) {
     CLI11_PARSE(app, argc, argv);
 
     occ::log::setup_logging(verbosity);
+    occ::parallel::set_num_threads(std::max(threads, 1));
     occ::timing::start(occ::timing::category::global);
+
+    Eigen::Matrix3Xf v;
+    Eigen::Matrix3Xi f;
+
+    VertexProperties properties;
 
     if (environment_filename) {
         Molecule m1 = occ::io::molecule_from_xyz_file(geometry_filename);
@@ -162,7 +301,16 @@ int main(int argc, char *argv[]) {
 
         auto func = StockholderWeightFunctor(
             m1, m2, separation * occ::units::ANGSTROM_TO_BOHR);
-        extract_surface(func);
+        func.set_background_density(background_density);
+        std::tie(v, f) = extract_surface(func);
+        Eigen::Vector3f lower_left = v.rowwise().minCoeff();
+        Eigen::Vector3f upper_right = v.rowwise().maxCoeff();
+        occ::log::info("Lower corner of mesh: [{:.3f} {:.3f} {:.3f}]",
+                       lower_left(0), lower_left(1), lower_left(2));
+        occ::log::info("Upper corner of mesh: [{:.3f} {:.3f} {:.3f}]",
+                       upper_right(0), upper_right(1), upper_right(2));
+
+        properties = compute_surface_properties(m1, m2, v);
     } else {
         Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
         occ::log::info("Molecule has {} atoms", m.size());
@@ -179,8 +327,12 @@ int main(int argc, char *argv[]) {
         auto func = PromoleculeDensityFunctor(
             m, separation * occ::units::ANGSTROM_TO_BOHR);
         func.set_isovalue(isovalue);
-        extract_surface(func);
+        std::tie(v, f) = extract_surface(func);
     }
+
+    occ::log::info("Writing surface to {}", "surface.obj");
+    write_obj_file("surface.obj", v, f, properties);
+
     occ::timing::stop(occ::timing::category::global);
     occ::timing::print_timings();
     return 0;

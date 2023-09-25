@@ -42,6 +42,7 @@ enum category {
     xdm,
     solvent,
     isosurface_function,
+    isosurface_properties,
     mc_octree,
     mc_primal,
     mc_surface,

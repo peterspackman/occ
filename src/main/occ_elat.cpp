@@ -151,7 +151,7 @@ void calculate_lattice_energy(const std::string &cif_filename,
                               const std::string &model_name,
                               const LatticeConvergenceSettings settings) {
     std::string filename = cif_filename;
-    std::string basename = fs::path(filename).stem();
+    std::string basename = fs::path(filename).stem().string();
     Crystal c = read_crystal(filename);
     fmt::print("Energy model: {}\n", model_name);
     fmt::print("Loaded crystal from {}\n", filename);

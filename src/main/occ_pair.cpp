@@ -38,7 +38,7 @@ struct Pair {
 Wavefunction load_wavefunction(const std::string &filename) {
     namespace fs = std::filesystem;
     using occ::util::to_lower;
-    std::string ext = fs::path(filename).extension();
+    std::string ext = fs::path(filename).extension().string();
     to_lower(ext);
     if (ext == ".fchk") {
         occ::log::debug("Loading Gaussian fchk file from {}", filename);

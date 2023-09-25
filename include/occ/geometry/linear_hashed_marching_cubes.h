@@ -1,5 +1,7 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
+#include <mutex>
+#include <occ/3rdparty/concurrentqueue.h>
 #include <occ/core/timings.h>
 #include <occ/geometry/linear_hashed_octree.h>
 #include <occ/geometry/marching_cubes.h>
@@ -20,8 +22,7 @@ struct Edge {
 
 struct EdgeHash {
     uint64_t operator()(const Edge &x) const noexcept {
-        return ankerl::unordered_dense::detail::wyhash::mix(x.from.code,
-                                                            x.to.code);
+        return ankerl::unordered_dense::detail::wyhash::hash(&x, sizeof(x));
     }
 };
 
@@ -29,7 +30,8 @@ struct EdgeHash {
 
 struct LinearHashedMarchingCubes {
     using VertexMap = ankerl::unordered_dense::map<MIndex, size_t, MIndexHash>;
-    using EdgeMap = ankerl::unordered_dense::map<impl::Edge, size_t, impl::EdgeHash>;
+    using EdgeMap =
+        ankerl::unordered_dense::map<impl::Edge, size_t, impl::EdgeHash>;
     size_t max_depth{6};
     size_t min_depth{2};
     float tolerance{1e-6};
@@ -112,6 +114,7 @@ struct LinearHashedMarchingCubes {
             for (uint_fast8_t i = 0; i < 8; i++) {
                 auto vertex = key.primal(level, i);
                 if (vertex.code != 0) {
+                    const auto level = vertex.level();
                     if (primal_vertices.contains(vertex)) {
                         auto existing_level = primal_vertices[vertex];
                         if (level > existing_level) {
@@ -124,6 +127,7 @@ struct LinearHashedMarchingCubes {
             }
         };
         octree.visit_leaves(visitor);
+
         return primal_vertices;
     }
 
@@ -142,9 +146,10 @@ struct LinearHashedMarchingCubes {
         MIndex key;
         size_t level;
         const MIndex one{};
-        for (const auto &kv : primal_vertices) {
-            key = kv.first;
-            level = kv.second;
+        // this can technically be parallelised, but in order
+        // to achieve good performance would need substantial rewrite
+        // in its logic
+        for (const auto &[key, level] : primal_vertices) {
             for (uint_fast8_t i = 0; i < 8; i++) {
                 MIndex m = key.dual(level, i);
                 while (m > one) {
@@ -198,7 +203,7 @@ struct LinearHashedMarchingCubes {
             } else {
                 auto index = base_index;
                 base_index++;
-                index_map[edge_key] = index;
+                index_map.insert(search, {edge_key, index});
                 indices.push_back(index);
                 auto offset = get_offset(values[u], values[v]);
                 auto vertex = interpolate(corners[u], corners[v], offset);

@@ -69,7 +69,8 @@ class StockholderWeightFunctor {
         }
 
         occ::timing::stop(occ::timing::category::isosurface_function);
-        return m_diagonal_scale_factor * (m_isovalue - tot_i / (tot_i + tot_e));
+        return m_diagonal_scale_factor *
+               (m_isovalue - tot_i / (tot_i + tot_e + m_background_density));
     }
 
     inline float isovalue() const { return m_isovalue; }
@@ -79,6 +80,11 @@ class StockholderWeightFunctor {
     inline int subdivisions() const { return m_subdivisions; }
     inline int num_calls() const { return m_num_calls; }
 
+    inline void set_background_density(float rho) {
+        m_background_density = rho;
+    }
+    inline float background_density() const { return m_background_density; }
+
   private:
     float m_diagonal_scale_factor{0.5f};
     float m_buffer{6.0};
@@ -86,6 +92,7 @@ class StockholderWeightFunctor {
     InterpolatorParams m_interpolator_params;
     Eigen::Vector3f m_origin;
     float m_isovalue{0.5};
+    float m_background_density{0.0};
     mutable int m_num_calls{0};
     int m_subdivisions{1};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};

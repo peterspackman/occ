@@ -20,8 +20,8 @@ CPMAddPackage(
 
 CPMAddPackage(
     NAME scnlib
-    GITHUB_REPOSITORY "eliaskosunen/scnlib"
-    VERSION "1.1.2"
+    GITHUB_REPOSITORY "peterspackman/scnlib"
+    GIT_TAG "master"
 )
 
 CPMAddPackage(
@@ -102,8 +102,8 @@ target_include_directories(
 
 CPMAddPackage(
     NAME libecpint
-    GITHUB_REPOSITORY "robashaw/libecpint"
-    GIT_TAG "v1.0.7"
+    GITHUB_REPOSITORY "peterspackman/libecpint"
+    GIT_TAG "master"
     OPTIONS "LIBECPINT_BUILD_TESTS OFF" "LIBECPINT_BUILD_DOCS OFF"
 )
 

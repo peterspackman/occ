@@ -83,6 +83,8 @@ const char *category_name(category cat) {
         return "J matrix";
     case isosurface_function:
         return "Isosurface function";
+    case isosurface_properties:
+        return "Isosurface properties";
     case mc_octree:
         return "Marching cubes octree";
     case mc_primal:
@@ -96,19 +98,33 @@ const char *category_name(category cat) {
 
 void print_timings() {
     const auto categories = {
-        ints1e,     ints4c2e,
-        ints3c2e,   io,
-        guess,      mo,
-        diis,       dft,
-        rho,        dft_xc,
-        dft_nlc,    gto,
-        ecp,        assoc_legendre,
-        fft,        jmat,
-        jkmat,      fock,
-        df,         xdm,
-        solvent,    isosurface_function,
-        mc_octree,  mc_primal,
-        mc_surface, global,
+        ints1e,
+        ints4c2e,
+        ints3c2e,
+        io,
+        guess,
+        mo,
+        diis,
+        dft,
+        rho,
+        dft_xc,
+        dft_nlc,
+        gto,
+        ecp,
+        assoc_legendre,
+        fft,
+        jmat,
+        jkmat,
+        fock,
+        df,
+        xdm,
+        solvent,
+        isosurface_function,
+        isosurface_properties,
+        mc_octree,
+        mc_primal,
+        mc_surface,
+        global,
     };
     log::info("Wall clock time by category (s)");
     for (const auto &cat : categories) {
