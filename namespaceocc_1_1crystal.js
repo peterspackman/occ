@@ -17,6 +17,7 @@ var namespaceocc_1_1crystal =
     [ "generate_surfaces", "namespaceocc_1_1crystal.html#a767641f5e505c6ba72960c44777b7191", null ],
     [ "hexagonal_cell", "namespaceocc_1_1crystal.html#a9e01d3b4dd9257ecd1fac2bfba8947c3", null ],
     [ "monoclinic_cell", "namespaceocc_1_1crystal.html#a1a44c3e06d68376a3160ea89a23cd97d", null ],
+    [ "muldin", "namespaceocc_1_1crystal.html#a26d9bda66566c34a362b22bdad581b2b", null ],
     [ "orthorhombic_cell", "namespaceocc_1_1crystal.html#a6beca695cc1de3e1e434ce2f60c6cea5", null ],
     [ "rhombohedral_cell", "namespaceocc_1_1crystal.html#a007770fccb2ec3a01d53a7e8785a8753", null ],
     [ "tetragonal_cell", "namespaceocc_1_1crystal.html#a98f5c57ae46b355f7154a19c3729ea90", null ],

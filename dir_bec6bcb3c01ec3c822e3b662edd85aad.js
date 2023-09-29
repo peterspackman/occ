@@ -12,6 +12,7 @@ var dir_bec6bcb3c01ec3c822e3b662edd85aad =
     [ "hkl.h", "hkl_8h.html", [
       [ "HKL", "structocc_1_1crystal_1_1HKL.html", "structocc_1_1crystal_1_1HKL" ]
     ] ],
+    [ "muldin.h", "muldin_8h.html", "muldin_8h" ],
     [ "spacegroup.h", "spacegroup_8h.html", "spacegroup_8h" ],
     [ "surface.h", "crystal_2surface_8h.html", "crystal_2surface_8h" ],
     [ "symmetryoperation.h", "symmetryoperation_8h.html", [

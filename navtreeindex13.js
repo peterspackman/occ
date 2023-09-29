@@ -1,5 +1,11 @@
 var NAVTREEINDEX13 =
 {
+"structocc_1_1main_1_1SolventNeighborContribution.html#aa0a9578e72792dbd2608b99af072777e":[2,0,1,7,13,4],
+"structocc_1_1main_1_1SolventNeighborContribution.html#abd621a2d10fa723d6262e57757119f44":[2,0,1,7,13,3],
+"structocc_1_1main_1_1SolventNeighborContribution.html#adbc4a203ad6d3afc9647a498bcbab77e":[2,0,1,7,13,1],
+"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html":[2,0,1,7,13,0],
+"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a4ff20df115d72beaad252ac37a9833a0":[2,0,1,7,13,0,2],
+"structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a67b47d2e66ba94432792a3e37c4cdfa1":[2,0,1,7,13,0,1],
 "structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#ab434becae61c3354617a836dfc070ac9":[2,0,1,7,13,0,3],
 "structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#adcb102138f6caf8593aa6db558a94b97":[2,0,1,7,13,0,0],
 "structocc_1_1main_1_1SpinorbitalKindValidator.html":[2,0,1,7,1],
@@ -243,11 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1xdm_1_1XDMAtomList.html#ad27b3f49e16b6b24616769f7460d92b4":[2,0,1,14,0,2],
 "structocc_1_1xdm_1_1XDMAtomList.html#afbd660a6a10b29cb7cf471d1586a2dbf":[2,0,1,14,0,4],
 "structocc_1_1xdm_1_1XDM_1_1Parameters.html":[2,0,1,14,1,0],
-"structocc_1_1xdm_1_1XDM_1_1Parameters.html#ad8105cd00918a9cdb07c6ad1189f63b5":[2,0,1,14,1,0,1],
-"structocc_1_1xdm_1_1XDM_1_1Parameters.html#af6f6b497cd6148d75bb4f799e82d9f8a":[2,0,1,14,1,0,0],
-"symmetryoperation_8h.html":[3,0,1,0,1,5],
-"table_8h.html":[3,0,1,0,0,31],
-"tblite__wrapper_8h.html":[3,0,1,0,13,0],
-"tblite__wrapper_8h.html#aa9524920b7508c4f768c5d2e4f88590b":[3,0,1,0,13,0,1],
-"timings_8h.html":[3,0,1,0,0,32]
+"structocc_1_1xdm_1_1XDM_1_1Parameters.html#ad8105cd00918a9cdb07c6ad1189f63b5":[2,0,1,14,1,0,1]
 };

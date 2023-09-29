@@ -1,5 +1,11 @@
 var NAVTREEINDEX10 =
 {
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5afea813d4ddba3c46cf8b8e664b92cdaa":[3,0,1,0,0,28,3,6],
+"point__group_8h.html#ab561d38b11fc9c420c92a46a8dfea6ce":[3,0,1,0,0,28,5],
+"point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6":[3,0,1,0,0,28,2],
+"point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6a5206560a306a2e085a437fd258eb57ce":[3,0,1,0,0,28,2,3],
+"point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6a6adf97f83acf6453d4a6a4b1070f3754":[3,0,1,0,0,28,2,0],
+"point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6ac1d9f50f86825a1a2302ec2449c17196":[3,0,1,0,0,28,2,1],
 "point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6af623e75af30e62bbd73d6df5b50bb7b5":[3,0,1,0,0,28,2,2],
 "point__group_8h.html#ac6db91e18131313dac99bf8aab66fa20":[3,0,1,0,0,28,4],
 "polarization_8h.html":[3,0,1,0,5,4],
@@ -88,8 +94,8 @@ var NAVTREEINDEX10 =
 "solvent_2surface_8h.html":[3,0,1,0,11,4],
 "solvent_2surface_8h.html#a0c804f320cbbdb26d5fb19deba8acc4b":[3,0,1,0,11,4,1],
 "solvent_2surface_8h.html#ab61ed1203478ce52410badabeda7fd7a":[3,0,1,0,11,4,2],
-"spacegroup_8h.html":[3,0,1,0,1,3],
-"spacegroup_8h.html#a6be09bba05cb5f7143b28c936b9da7b1":[3,0,1,0,1,3,2],
+"spacegroup_8h.html":[3,0,1,0,1,4],
+"spacegroup_8h.html#a6be09bba05cb5f7143b28c936b9da7b1":[3,0,1,0,1,4,2],
 "spinorbital_8h.html":[3,0,1,0,8,19],
 "spinorbital_8h.html#a40cf6764e46ed92ca114f4858d415943":[3,0,1,0,8,19,4],
 "spinorbital_8h.html#a6b54bd00e156937a556a831d524017a6":[3,0,1,0,8,19,2],
@@ -243,11 +249,5 @@ var NAVTREEINDEX10 =
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ad7411a6f96a93c16f2f75588a58a2fd0":[2,0,1,1,7,6],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ada05745757a4a657b678de61a7184eb4":[2,0,1,1,7,9],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ae52c7e9b26f98e54c97913fc7ab9a868":[2,0,1,1,7,13],
-"structocc_1_1dft_1_1AtomGrid.html":[2,0,1,2,3],
-"structocc_1_1dft_1_1AtomGrid.html#a30065460e55708aae8779a76be27b507":[2,0,1,2,3,3],
-"structocc_1_1dft_1_1AtomGrid.html#a3b8fc99090905e8bed82283a3cd37107":[2,0,1,2,3,4],
-"structocc_1_1dft_1_1AtomGrid.html#aa085f1b9f645b2ab72adcfbb818098cb":[2,0,1,2,3,5],
-"structocc_1_1dft_1_1AtomGrid.html#ab11fc6823ee2edefd2c64d4952732778":[2,0,1,2,3,2],
-"structocc_1_1dft_1_1AtomGrid.html#acbaf3d025645b6498f515df17f3674b5":[2,0,1,2,3,0],
-"structocc_1_1dft_1_1AtomGrid.html#ae73a8ccec3285955770ebdd8e8528f2b":[2,0,1,2,3,1]
+"structocc_1_1dft_1_1AtomGrid.html":[2,0,1,2,3]
 };
