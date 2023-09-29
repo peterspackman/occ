@@ -43,6 +43,14 @@ class UnitCell {
     /// Volume of the unit cell in cubic Angstroms
     inline double volume() const { return m_volume; }
 
+    inline Mat3 metric_tensor() const {
+        return m_direct.transpose() * m_direct;
+    }
+
+    inline Mat3 reciprocal_metric_tensor() const {
+        return m_reciprocal.transpose() * m_reciprocal;
+    }
+
     /**
      * Set the length of the a-axis.
      *

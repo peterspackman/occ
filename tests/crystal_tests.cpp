@@ -1,11 +1,13 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <fmt/ostream.h>
 #include <iostream>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/crystal/crystal.h>
+#include <occ/crystal/muldin.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/surface.h>
 #include <occ/crystal/symmetryoperation.h>
@@ -383,4 +385,115 @@ TEST_CASE("SymmetryOperation Seitz matrix", "[symmetry_operation]") {
     auto id = SymmetryOperation(16484);
     REQUIRE(all_close(id.seitz(), Eigen::Matrix4d::Identity()));
     REQUIRE(all_close(id.rotation(), id.inverted().rotation()));
+}
+
+TEST_CASE("MULDIN 3d", "[transformations]") {
+    occ::Vec3 hkl(1.0, 1.0, 0.0);
+    occ::Mat3 result = occ::crystal::muldin(hkl);
+    fmt::print("hkl\n{}\n", hkl);
+    fmt::print("Result\n{}\n", result);
+    {
+        occ::Vec3 inp(1.0, 1.0, 0.0);
+        occ::Mat3 result;
+        result << 0, 1, 1, 0, 0, 1, 1, 0, 0;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(1.0, 0.0, 0.0);
+        occ::Mat3 result;
+        result << 0, 0, 1, 1, 0, 0, 0, 1, 0;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(0.0, 0.0, 1.0);
+        occ::Mat3 result;
+        result << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+
+        occ::Vec3 inp(-5.0, -1.0, 1.0);
+        occ::Mat3 result;
+        result << -1, 0, -5, 0, -1, -1, 0, 0, 1;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(2.0, 0.0, -3.0);
+        occ::Mat3 result;
+        result << 0, 1, 2, 1, 0, 0, 0, -1, -3;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(1.0, 1.0, -1.0);
+        occ::Mat3 result;
+        result << 0, 1, 1, 1, 0, 1, 0, 0, -1;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(-3.0, -2.0, 0.0);
+        occ::Mat3 result;
+        result << 0, -2, -3, 0, -1, -2, 1, 0, 0;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(0.0, -1.0, -3.0);
+        occ::Mat3 result;
+        result << 1, 0, 0, 0, -1, -1, 0, -2, -3;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(-1.0, -2.0, 0.0);
+        occ::Mat3 result;
+        result << 0, -1, -1, 0, -1, -2, 1, 0, 0;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(-3.0, -4.0, -3.0);
+        occ::Mat3 result;
+        result << -2, -1, -3, -3, 0, -4, -2, 0, -3;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(1.0, -5.0, -2.0);
+        occ::Mat3 result;
+        result << 1, 0, 1, -1, -1, -5, -1, 0, -2;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(-5.0, 0.0, 3.0);
+        occ::Mat3 result;
+        result << 0, -2, -5, 1, 0, 0, 0, 1, 3;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+    {
+        occ::Vec3 inp(-1.0, 4.0, -5.0);
+        occ::Mat3 result;
+        result << -1, -1, -1, 3, 4, 4, -3, -4, -5;
+        REQUIRE(all_close(result, occ::crystal::muldin(inp)));
+    }
+}
+
+TEST_CASE("MULDIN surface transform", "[transformations]") {
+    occ::Mat3N hkl_examples(3, 10);
+    hkl_examples << 1, 0, 0, 2, 3, 4, 5, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1,
+        0, 0, 1, 0, 1, 3, 2, 0, 1, 1;
+
+    occ::crystal::UnitCell cell(12.93, 12.3, 16.1, occ::units::radians(90),
+                                occ::units::radians(115.9),
+                                occ::units::radians(90));
+
+    double volume = cell.volume();
+    occ::Vec3 zeros(0, 0, 0);
+
+    for (int i = 0; i < hkl_examples.cols(); i++) {
+        occ::Mat3 S = occ::crystal::muldin(hkl_examples.col(i));
+        occ::Mat3 transform = S.inverse().transpose();
+        occ::Mat3 D = cell.direct() * transform;
+        occ::Vec3 normal_vector =
+            (cell.reciprocal() * hkl_examples.col(i)).normalized();
+        occ::Vec3 dps = normal_vector.transpose() * D;
+        REQUIRE_THAT(dps(0), Catch::Matchers::WithinAbs(0.0, 1e-12));
+        REQUIRE_THAT(dps(1), Catch::Matchers::WithinAbs(0.0, 1e-12));
+        REQUIRE_THAT(D.determinant(), Catch::Matchers::WithinAbs(volume, 1e-6));
+    }
 }

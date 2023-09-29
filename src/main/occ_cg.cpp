@@ -1090,12 +1090,18 @@ int main(int argc, char **argv) {
             calc.evaluate_molecular_surroundings();
 
             auto uc_dimers = calc.crystal().unit_cell_dimers(cg_radius);
+            auto uc_dimers_vacuum = uc_dimers;
             write_cg_structure_file(fmt::format("{}_cg.txt", basename),
                                     calc.crystal(), uc_dimers);
 
             auto solution_terms_uc = map_unique_interactions_to_uc_molecules(
                 calc.crystal(), calc.full_dimers(), uc_dimers,
                 calc.solution_terms(), calc.interaction_energies());
+
+            auto solution_terms_uc_throwaway =
+                map_unique_interactions_to_uc_molecules(
+                    calc.crystal(), calc.full_dimers(), uc_dimers_vacuum,
+                    calc.solution_terms(), calc.crystal_interaction_energies());
 
             if (write_kmcpp_file) {
                 write_kmcpp_input_file(fmt::format("{}_kmcpp.json", basename),
@@ -1104,6 +1110,27 @@ int main(int argc, char **argv) {
             }
             write_cg_net_file(fmt::format("{}_net.txt", basename),
                               calc.crystal(), uc_dimers);
+
+            if (max_facets > 0) {
+                fmt::print("Crystal surface energies (solvated)\n");
+                auto surface_energies =
+                    occ::main::calculate_crystal_surface_energies(
+                        fmt::format("{}_{}.gmf", basename, solvent),
+                        calc.crystal(), uc_dimers, max_facets, 1);
+                fmt::print("Crystal surface energies (vacuum)\n");
+                auto vacuum_surface_energies =
+                    occ::main::calculate_crystal_surface_energies(
+                        fmt::format("{}_vacuum.gmf", basename), calc.crystal(),
+                        uc_dimers_vacuum, max_facets, -1);
+
+                nlohmann::json j;
+                j["surface_energies"] = surface_energies;
+                j["vacuum"] = calc.crystal_interaction_energies();
+                j["solvated"] = calc.interaction_energies();
+                std::ofstream destination(
+                    fmt::format("{}_surface_energies.json", basename));
+                destination << j.dump(2);
+            }
 
         } else {
             auto calc = CEModelCrystalGrowthCalculator(c_symm, solvent);
