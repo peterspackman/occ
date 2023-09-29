@@ -67,21 +67,21 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"",
+"annotated.html",
 "classocc_1_1crystal_1_1Crystal.html#af61a6255cfcd1d9a8f062c0c065a54b8",
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3ec4d1b0a89bb34f5c10a0427fb957bc",
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf1a56bf609a29e002323405a78d84ee9",
-"classocc_1_1main_1_1StockholderWeightFunctor.html#af6a520f56cc6c69f26498756fcdf80ad",
-"classocc_1_1solvent_1_1ContinuumSolvationModel.html#aae81c7679910c83a0c435dba11d6607c",
-"functions_enum.html",
-"morton_8h.html#ad907bbcdf26df45340df276fe917a6f2",
-"namespaceocc_1_1core_1_1opt.html",
-"namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfaaf78fdfe54f702c4a8d411b2d1e520ed",
-"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5afea813d4ddba3c46cf8b8e664b92cdaa",
-"structocc_1_1dft_1_1AtomGrid.html#a30065460e55708aae8779a76be27b507",
-"structocc_1_1io_1_1ElectronInput.html#aec4261d5ac245728559a7c85acd92b0b",
-"structocc_1_1main_1_1SolventNeighborContribution.html#aa0a9578e72792dbd2608b99af072777e",
-"structocc_1_1xdm_1_1XDM_1_1Parameters.html#af6f6b497cd6148d75bb4f799e82d9f8a"
+"classocc_1_1main_1_1StockholderWeightFunctor.html#abfddd591fede68cb5bdb77e4a6153ca8",
+"classocc_1_1solvent_1_1ContinuumSolvationModel.html#a8a7503beb334fbe4af454325902a0b04",
+"functions_d.html",
+"morton_8h.html#ab14b40b65a041c5ae3fb029f86dc160a",
+"namespaceocc_1_1core_1_1numpy_1_1impl.html#ac581510b2f923033e76817d0f3d16121",
+"namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa9c126c20047e421bde49e44ed51ae805",
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5af8da003b4166108e7b83421634e72cdd",
+"structocc_1_1crystal_1_1SurfaceCutResult.html#ae52c7e9b26f98e54c97913fc7ab9a868",
+"structocc_1_1io_1_1ElectronInput.html#a6a4f43f3e1f80fe028dc77ff19e7c717",
+"structocc_1_1main_1_1SolventNeighborContribution.html#a64f95ad70982f6619b6f379198f76df7",
+"structocc_1_1xdm_1_1XDM_1_1Parameters.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

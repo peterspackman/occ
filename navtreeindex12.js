@@ -1,5 +1,7 @@
 var NAVTREEINDEX12 =
 {
+"structocc_1_1io_1_1ElectronInput.html#a6a4f43f3e1f80fe028dc77ff19e7c717":[2,0,1,6,23,0],
+"structocc_1_1io_1_1ElectronInput.html#a86542811622d7948f2920ba9f79cdc5b":[2,0,1,6,23,1],
 "structocc_1_1io_1_1ElectronInput.html#aec4261d5ac245728559a7c85acd92b0b":[2,0,1,6,23,2],
 "structocc_1_1io_1_1ElectronShell.html":[2,0,1,6,16],
 "structocc_1_1io_1_1ElectronShell.html#a6754384783492c58ca433365211cbf88":[2,0,1,6,16,1],
@@ -247,7 +249,5 @@ var NAVTREEINDEX12 =
 "structocc_1_1main_1_1SolventNeighborContribution.html":[2,0,1,7,13],
 "structocc_1_1main_1_1SolventNeighborContribution.html#a2be9658639661bd64e3e88df2f4ff795":[2,0,1,7,13,5],
 "structocc_1_1main_1_1SolventNeighborContribution.html#a369a1d754e9f7d3b97139d8bedc0bdb2":[2,0,1,7,13,6],
-"structocc_1_1main_1_1SolventNeighborContribution.html#a4fff0dac713a36342bec013d7754a088":[2,0,1,7,13,2],
-"structocc_1_1main_1_1SolventNeighborContribution.html#a64f95ad70982f6619b6f379198f76df7":[2,0,1,7,13,8],
-"structocc_1_1main_1_1SolventNeighborContribution.html#a8ffff518f00ce90d944daf950ca01055":[2,0,1,7,13,7]
+"structocc_1_1main_1_1SolventNeighborContribution.html#a4fff0dac713a36342bec013d7754a088":[2,0,1,7,13,2]
 };

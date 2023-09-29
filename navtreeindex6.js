@@ -1,5 +1,7 @@
 var NAVTREEINDEX6 =
 {
+"functions_d.html":[2,3,0,4],
+"functions_e.html":[2,3,0,5],
 "functions_enum.html":[2,3,4],
 "functions_eval.html":[2,3,5],
 "functions_eval.html":[2,3,5,0],
@@ -61,8 +63,8 @@ var NAVTREEINDEX6 =
 "functions_type.html":[2,3,3],
 "functions_u.html":[2,3,0,21],
 "functions_v.html":[2,3,0,22],
-"functions_vars.html":[2,3,2],
 "functions_vars.html":[2,3,2,0],
+"functions_vars.html":[2,3,2],
 "functions_vars_a.html":[2,3,2,1],
 "functions_vars_b.html":[2,3,2,2],
 "functions_vars_c.html":[2,3,2,3],
@@ -247,7 +249,5 @@ var NAVTREEINDEX6 =
 "morton_8h.html#a8caa66299a5ee5ca0daa80cd1d7f40c9":[3,0,1,0,3,4,14],
 "morton_8h.html#a9eb97780a4cb099ab656eee404bf6095":[3,0,1,0,3,4,16],
 "morton_8h.html#aa384f5658b6af633506bcf119cbed129":[3,0,1,0,3,4,24],
-"morton_8h.html#aa7b612e46691dffc4dda7c25c76f1713":[3,0,1,0,3,4,23],
-"morton_8h.html#ab14b40b65a041c5ae3fb029f86dc160a":[3,0,1,0,3,4,20],
-"morton_8h.html#acf080699dbc8adfc07ad0f98fa4b5e14":[3,0,1,0,3,4,3]
+"morton_8h.html#aa7b612e46691dffc4dda7c25c76f1713":[3,0,1,0,3,4,23]
 };

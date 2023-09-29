@@ -1,6 +1,5 @@
 var NAVTREEINDEX0 =
 {
-"":[1,0,1],
 "annotated.html":[2,0],
 "asymmetric__unit_8h.html":[3,0,1,0,1,0],
 "atom_8h.html":[3,0,1,0,0,0],
@@ -106,11 +105,12 @@ var NAVTREEINDEX0 =
 "classocc_1_1core_1_1Fraction.html#af97107feeb1a33a8290808541bbd09bb":[2,0,1,0,10,6],
 "classocc_1_1core_1_1Fraction.html#afbbcf78563161f51e7757a1c1bb2a6a9":[2,0,1,0,10,10],
 "classocc_1_1core_1_1Interpolator1D.html":[2,0,1,0,12],
-"classocc_1_1core_1_1Interpolator1D.html#a09a5904f6ed68c2b18818e5b1aa8e215":[2,0,1,0,12,4],
+"classocc_1_1core_1_1Interpolator1D.html#a09a5904f6ed68c2b18818e5b1aa8e215":[2,0,1,0,12,5],
 "classocc_1_1core_1_1Interpolator1D.html#a3c856a02d8b55ef8ed08afa302ad1f6c":[2,0,1,0,12,0],
 "classocc_1_1core_1_1Interpolator1D.html#a44a35addd871012eca73e2bb2ea2b8b3":[2,0,1,0,12,2],
 "classocc_1_1core_1_1Interpolator1D.html#a4af49e0c39503c9aa96b742d7ddef3fb":[2,0,1,0,12,1],
-"classocc_1_1core_1_1Interpolator1D.html#ae5bd8db6fa01210324220f1b0390428d":[2,0,1,0,12,3],
+"classocc_1_1core_1_1Interpolator1D.html#ace81a63a0dbe5712a49cf0c8460e590a":[2,0,1,0,12,3],
+"classocc_1_1core_1_1Interpolator1D.html#ae5bd8db6fa01210324220f1b0390428d":[2,0,1,0,12,4],
 "classocc_1_1core_1_1MolecularPointGroup.html":[2,0,1,0,16],
 "classocc_1_1core_1_1MolecularPointGroup.html#a3893b7daff7607aca51891ec9b6fe6ff":[2,0,1,0,16,5],
 "classocc_1_1core_1_1MolecularPointGroup.html#a994ddddf953ecb6e4a326b330185e420":[2,0,1,0,16,4],

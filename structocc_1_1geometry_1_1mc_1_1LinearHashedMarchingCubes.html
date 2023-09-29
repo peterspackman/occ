@@ -120,9 +120,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8c468a7de6cfc9b542877fc18ca706a9"><td class="memTemplParams" colspan="2">template&lt;typename S &gt; </td></tr>
 <tr class="memitem:a8c468a7de6cfc9b542877fc18ca706a9"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a8c468a7de6cfc9b542877fc18ca706a9">extract</a> (const S &amp;source, std::vector&lt; float &gt; &amp;vertices, std::vector&lt; uint32_t &gt; &amp;indices)</td></tr>
 <tr class="separator:a8c468a7de6cfc9b542877fc18ca706a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a863af49e8caca2167cc8560632a99861"><td class="memTemplParams" colspan="2">template&lt;typename S &gt; </td></tr>
-<tr class="memitem:a863af49e8caca2167cc8560632a99861"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a863af49e8caca2167cc8560632a99861">extract_normal</a> (const S &amp;source, std::vector&lt; float &gt; &amp;vertices, std::vector&lt; uint32_t &gt; &amp;indices)</td></tr>
-<tr class="separator:a863af49e8caca2167cc8560632a99861"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acffdf5719e9bc30779a559449ec9d3a8"><td class="memTemplParams" colspan="2">template&lt;typename S &gt; </td></tr>
+<tr class="memitem:acffdf5719e9bc30779a559449ec9d3a8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#acffdf5719e9bc30779a559449ec9d3a8">extract_with_normals</a> (const S &amp;source, std::vector&lt; float &gt; &amp;vertices, std::vector&lt; uint32_t &gt; &amp;indices, std::vector&lt; float &gt; &amp;normals)</td></tr>
+<tr class="separator:acffdf5719e9bc30779a559449ec9d3a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -234,8 +234,8 @@ template&lt;typename S &gt; </div>
 
 </div>
 </div>
-<a id="a863af49e8caca2167cc8560632a99861"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a863af49e8caca2167cc8560632a99861">&#9670;&nbsp;</a></span>extract_normal()</h2>
+<a id="acffdf5719e9bc30779a559449ec9d3a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acffdf5719e9bc30779a559449ec9d3a8">&#9670;&nbsp;</a></span>extract_with_normals()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -246,7 +246,7 @@ template&lt;typename S &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void occ::geometry::mc::LinearHashedMarchingCubes::extract_normal </td>
+          <td class="memname">void occ::geometry::mc::LinearHashedMarchingCubes::extract_with_normals </td>
           <td>(</td>
           <td class="paramtype">const S &amp;&#160;</td>
           <td class="paramname"><em>source</em>, </td>
@@ -261,7 +261,13 @@ template&lt;typename S &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::vector&lt; uint32_t &gt; &amp;&#160;</td>
-          <td class="paramname"><em>indices</em>&#160;</td>
+          <td class="paramname"><em>indices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>normals</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
