@@ -87,6 +87,11 @@ template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
 
         l_fill = m_range[0];
         u_fill = m_range[m_range.size() - 1];
+
+        l_fill_grad = (m_range[1] - m_range[0]) / (m_domain[1] - m_domain[0]);
+        u_fill_grad =
+            (m_range[m_range.size() - 1] - m_range[m_range.size() - 2]) /
+            (m_domain[m_domain.size() - 1] - m_domain[m_domain.size() - 2]);
         m_dx = m_domain.size() / (u_domain - l_domain);
     }
 
@@ -140,6 +145,45 @@ template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
         }
     }
 
+    OCC_ALWAYS_INLINE T gradient(T x) const {
+        size_t N = m_domain.size();
+        if constexpr (mapping == Linear) {
+            T guess = m_dx * (x - l_domain);
+
+            // branchless here seems to be 50% slower
+            size_t j = static_cast<size_t>(std::floor(guess));
+
+            if (j <= 0)
+                return l_fill_grad;
+            if (j >= N - 1)
+                return u_fill_grad;
+            return (m_range[j + 1] - m_range[j]) /
+                   (m_domain[j + 1] - m_domain[j]);
+        } else {
+
+            T dval = x;
+            if constexpr (mapping == Log) {
+                dval = std::log(x);
+            } else if constexpr (mapping == SquareRoot) {
+                dval = std::sqrt(x);
+            }
+            T guess = (dval - l_domain) * m_dx;
+            size_t j = static_cast<size_t>(std::floor(guess));
+            // linear search after the guess might be required due to domain
+            // distortion
+            if (j <= 0)
+                return l_fill;
+            if (j >= (N - 1))
+                return u_fill;
+            do {
+                j++;
+            } while (m_domain[j] < x);
+
+            return (m_range[j + 1] - m_range[j]) /
+                   (m_domain[j + 1] - m_domain[j]);
+        }
+    }
+
     Eigen::Array<T, Eigen::Dynamic, 1>
     operator()(const Eigen::Array<T, Eigen::Dynamic, 1> &xs) const {
         static_assert(
@@ -176,7 +220,7 @@ template <typename T, DomainMapping mapping = Linear> class Interpolator1D {
     }
 
   private:
-    T l_domain, u_domain, l_fill, u_fill;
+    T l_domain, u_domain, l_fill, u_fill, l_fill_grad, u_fill_grad;
     T m_dx;
     Eigen::Array<T, Eigen::Dynamic, 1> m_domain, m_range;
 };

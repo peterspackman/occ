@@ -1,14 +1,12 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
 #include <deque>
-#include <execution> // For std::execution::par
-#include <mutex>     // For std::mutex
+#include <mutex>
 #include <occ/3rdparty/concurrentqueue.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/geometry/morton.h>
 #include <optional>
-#include <shared_mutex> // For std::shared_timed_mutex
 #include <thread>
 #include <vector>
 

@@ -73,6 +73,53 @@ class StockholderWeightFunctor {
                (m_isovalue - tot_i / (tot_i + tot_e + m_background_density));
     }
 
+    OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
+        double tot_i{0.0}, tot_e{0.0};
+        Eigen::Vector3f tot_i_g(0.0, 0.0, 0.0), tot_e_g(0.0, 0.0, 0.0);
+        Eigen::Vector3f pos{x * m_cube_side_length + m_origin(0),
+                            y * m_cube_side_length + m_origin(1),
+                            z * m_cube_side_length + m_origin(2)};
+
+        if (!m_bounding_box.inside(pos))
+            return pos.normalized(); // zero normal
+        m_num_calls++;
+        occ::timing::start(occ::timing::category::isosurface_function);
+
+        float min_r = std::numeric_limits<float>::max();
+        Eigen::Vector3f min_v;
+
+        for (const auto &[interp, interp_positions, threshold, interior] :
+             m_atom_interpolators) {
+            for (int i = 0; i < interp_positions.cols(); i++) {
+                Eigen::Vector3f v = interp_positions.col(i) - pos;
+                float r = v.squaredNorm();
+                if (r > threshold)
+                    continue;
+                else if (r < min_r) {
+                    min_r = r;
+                    min_v = v;
+                }
+                float rho = interp(r);
+                float grad_rho = interp.gradient(r);
+                if (i < interior) {
+                    tot_i += rho;
+                    tot_i_g.array() += 2 * v.array() * grad_rho;
+                } else {
+                    tot_e += rho;
+                    tot_e_g.array() += 2 * v.array() * grad_rho;
+                }
+            }
+        }
+
+        double tot = tot_i + tot_e + m_background_density;
+        Eigen::Vector3f result =
+            ((tot_i_g.array() * tot_e - tot_e_g.array() * tot_i) / (tot * tot));
+        occ::timing::stop(occ::timing::category::isosurface_function);
+        if (result.squaredNorm() < 1e-6)
+            return -min_v.normalized();
+        return result.normalized();
+    }
+
     inline float isovalue() const { return m_isovalue; }
     inline void set_isovalue(float iso) { m_isovalue = iso; }
     inline float side_length() const { return m_cube_side_length; }
@@ -122,12 +169,11 @@ class PromoleculeDensityFunctor {
         occ::timing::start(occ::timing::category::isosurface_function);
         for (const auto &[interp, interp_positions, threshold, interior] :
              m_atom_interpolators) {
-            Eigen::VectorXf r =
-                (interp_positions.colwise() - pos).colwise().squaredNorm();
-            for (int i = 0; i < r.rows(); i++) {
-                if (r(i) > threshold)
+            for (int i = 0; i < interp_positions.cols(); i++) {
+                float r = (interp_positions.col(i) - pos).squaredNorm();
+                if (r > threshold)
                     continue;
-                float rho = interp(r(i));
+                float rho = interp(r);
                 result += rho;
             }
         }
@@ -137,6 +183,36 @@ class PromoleculeDensityFunctor {
         // near linear near the critical point
         occ::timing::stop(occ::timing::category::isosurface_function);
         return m_diagonal_scale_factor * (0.5 - result / (result + m_isovalue));
+    }
+
+    OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
+        double result{0.0};
+        Eigen::Vector3f grad(0.0, 0.0, 0.0);
+        Eigen::Vector3f pos{x * m_cube_side_length + m_origin(0),
+                            y * m_cube_side_length + m_origin(1),
+                            z * m_cube_side_length + m_origin(2)};
+
+        if (!m_bounding_box.inside(pos))
+            return pos.normalized(); // zero normal
+        m_num_calls++;
+        occ::timing::start(occ::timing::category::isosurface_function);
+
+        for (const auto &[interp, interp_positions, threshold, interior] :
+             m_atom_interpolators) {
+            for (int i = 0; i < interp_positions.cols(); i++) {
+                Eigen::Vector3f v = interp_positions.col(i) - pos;
+                float r = v.squaredNorm();
+                if (r > threshold)
+                    continue;
+                float rho = interp(r);
+                float grad_rho = interp.gradient(r);
+                result += rho;
+                grad.array() += 2 * v.array() * grad_rho;
+            }
+        }
+
+        occ::timing::stop(occ::timing::category::isosurface_function);
+        return grad.normalized();
     }
 
     inline float isovalue() const { return m_isovalue; }

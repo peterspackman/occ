@@ -26,6 +26,16 @@ using occ::core::Molecule;
 using occ::main::PromoleculeDensityFunctor;
 using occ::main::StockholderWeightFunctor;
 
+struct IsosurfaceMesh {
+    IsosurfaceMesh() {}
+    IsosurfaceMesh(size_t num_vertices, size_t num_faces)
+        : vertices(3, num_vertices), faces(3, num_faces),
+          normals(3, num_vertices) {}
+    Eigen::Matrix3Xf vertices;
+    Eigen::Matrix3Xi faces;
+    Eigen::Matrix3Xf normals;
+};
+
 struct VertexProperties {
     VertexProperties() {}
     VertexProperties(int size)
@@ -65,54 +75,63 @@ void write_ply_file(const std::string &filename,
     }
 }
 
-void write_obj_file(const std::string &filename,
-                    const Eigen::Matrix3Xf &vertices,
-                    const Eigen::Matrix3Xi &faces,
+void write_obj_file(const std::string &filename, const IsosurfaceMesh &mesh,
                     const VertexProperties &properties) {
     auto file = fmt::output_file(filename);
     file.print("# vertices\n");
-    for (size_t idx = 0; idx < vertices.cols(); idx++) {
-        file.print("v {} {} {}\n", vertices(0, idx), vertices(1, idx),
-                   vertices(2, idx));
+    for (size_t idx = 0; idx < mesh.vertices.cols(); idx++) {
+        file.print("v {} {} {}\n", mesh.vertices(0, idx), mesh.vertices(1, idx),
+                   mesh.vertices(2, idx));
+    }
+    file.print("# vertex normals\n");
+    for (size_t idx = 0; idx < mesh.vertices.cols(); idx++) {
+        file.print("vn {} {} {}\n", mesh.normals(0, idx), mesh.normals(1, idx),
+                   mesh.normals(2, idx));
     }
     file.print("# faces\n");
-    for (size_t idx = 0; idx < faces.cols(); idx++) {
-        int f1 = faces(0, idx) + 1;
-        int f2 = faces(1, idx) + 1;
-        int f3 = faces(2, idx) + 1;
+    for (size_t idx = 0; idx < mesh.faces.cols(); idx++) {
+        int f1 = mesh.faces(0, idx) + 1;
+        int f2 = mesh.faces(1, idx) + 1;
+        int f3 = mesh.faces(2, idx) + 1;
         file.print("f {}/{} {}/{} {}/{}\n", f1, f1, f2, f2, f3, f3);
     }
     file.print("# dnorm di\n");
-    for (size_t idx = 0; idx < vertices.cols(); idx++) {
+    for (size_t idx = 0; idx < properties.dnorm.rows(); idx++) {
         file.print("vt {} {} {}\n", properties.dnorm(idx), properties.de(idx),
                    properties.de(idx));
     }
 }
 
 template <typename F>
-std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi>
-as_matrices(const F &b, const std::vector<float> &vertices,
-            const std::vector<uint32_t> indices) {
-    Eigen::Matrix3Xf verts(3, vertices.size() / 3);
-    Eigen::Matrix3Xi faces(3, indices.size() / 3);
+IsosurfaceMesh as_mesh(const F &b, const std::vector<float> &vertices,
+                       const std::vector<uint32_t> &indices,
+                       const std::vector<float> &normals) {
+
+    IsosurfaceMesh result(vertices.size() / 3, indices.size() / 3);
+
     float length = b.side_length();
     const auto &origin = b.origin();
     for (size_t i = 0; i < vertices.size(); i += 3) {
-        verts(0, i / 3) = vertices[i] * length + origin(0);
-        verts(1, i / 3) = vertices[i + 1] * length + origin(1);
-        verts(2, i / 3) = vertices[i + 2] * length + origin(2);
+        result.vertices(0, i / 3) = vertices[i] * length + origin(0);
+        result.vertices(1, i / 3) = vertices[i + 1] * length + origin(1);
+        result.vertices(2, i / 3) = vertices[i + 2] * length + origin(2);
+
+        Eigen::Vector3f normal(normals[i], normals[i + 1], normals[i + 2]);
+        result.normals.col(i / 3) = normal.normalized();
     }
+
+    result.vertices.array() *= occ::units::BOHR_TO_ANGSTROM;
+
     for (size_t i = 0; i < indices.size(); i += 3) {
-        faces(0, i / 3) = indices[i];
-        faces(1, i / 3) = indices[i + 2];
-        faces(2, i / 3) = indices[i + 1];
+        result.faces(0, i / 3) = indices[i];
+        result.faces(1, i / 3) = indices[i + 2];
+        result.faces(2, i / 3) = indices[i + 1];
     }
-    verts.array() *= occ::units::BOHR_TO_ANGSTROM;
-    return {verts, faces};
+
+    return result;
 }
 
-template <typename F>
-std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi> extract_surface(F &func) {
+template <typename F> IsosurfaceMesh extract_surface(F &func) {
     size_t min_depth = 3;
     occ::timing::StopWatch sw;
     size_t max_depth = func.subdivisions();
@@ -126,9 +145,10 @@ std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi> extract_surface(F &func) {
     occ::log::debug("naive voxel count: {}",
                     std::pow(std::pow(2, max_depth) + 1, 3));
     std::vector<float> vertices;
+    std::vector<float> normals;
     std::vector<uint32_t> faces;
     sw.start();
-    mc.extract(func, vertices, faces);
+    mc.extract_with_normals(func, vertices, faces, normals);
     sw.stop();
     double max_calls = std::pow(2, 3 * max_depth);
     occ::log::debug("{} calls ({} % of conventional)", func.num_calls(),
@@ -137,12 +157,12 @@ std::pair<Eigen::Matrix3Xf, Eigen::Matrix3Xi> extract_surface(F &func) {
 
     occ::log::info("Surface has {} vertices, {} faces", vertices.size() / 3,
                    faces.size() / 3);
-    return as_matrices(func, vertices, faces);
+    return as_mesh(func, vertices, faces, normals);
 }
 
 VertexProperties compute_surface_properties(const Molecule &m1,
                                             const Molecule &m2,
-                                            const Eigen::Matrix3Xf vertices) {
+                                            const Eigen::Matrix3Xf &vertices) {
     Eigen::Matrix3Xf inside = m1.positions().cast<float>();
     Eigen::Matrix3Xf outside = m2.positions().cast<float>();
     Eigen::VectorXf vdw_inside = m1.vdw_radii().cast<float>();
@@ -270,9 +290,7 @@ int main(int argc, char *argv[]) {
     occ::parallel::set_num_threads(std::max(threads, 1));
     occ::timing::start(occ::timing::category::global);
 
-    Eigen::Matrix3Xf v;
-    Eigen::Matrix3Xi f;
-
+    IsosurfaceMesh mesh;
     VertexProperties properties;
 
     if (environment_filename) {
@@ -302,15 +320,8 @@ int main(int argc, char *argv[]) {
         auto func = StockholderWeightFunctor(
             m1, m2, separation * occ::units::ANGSTROM_TO_BOHR);
         func.set_background_density(background_density);
-        std::tie(v, f) = extract_surface(func);
-        Eigen::Vector3f lower_left = v.rowwise().minCoeff();
-        Eigen::Vector3f upper_right = v.rowwise().maxCoeff();
-        occ::log::info("Lower corner of mesh: [{:.3f} {:.3f} {:.3f}]",
-                       lower_left(0), lower_left(1), lower_left(2));
-        occ::log::info("Upper corner of mesh: [{:.3f} {:.3f} {:.3f}]",
-                       upper_right(0), upper_right(1), upper_right(2));
-
-        properties = compute_surface_properties(m1, m2, v);
+        mesh = extract_surface(func);
+        properties = compute_surface_properties(m1, m2, mesh.vertices);
     } else {
         Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
         occ::log::info("Molecule has {} atoms", m.size());
@@ -327,11 +338,18 @@ int main(int argc, char *argv[]) {
         auto func = PromoleculeDensityFunctor(
             m, separation * occ::units::ANGSTROM_TO_BOHR);
         func.set_isovalue(isovalue);
-        std::tie(v, f) = extract_surface(func);
+        mesh = extract_surface(func);
     }
 
+    Eigen::Vector3f lower_left = mesh.vertices.rowwise().minCoeff();
+    Eigen::Vector3f upper_right = mesh.vertices.rowwise().maxCoeff();
+    occ::log::info("Lower corner of mesh: [{:.3f} {:.3f} {:.3f}]",
+                   lower_left(0), lower_left(1), lower_left(2));
+    occ::log::info("Upper corner of mesh: [{:.3f} {:.3f} {:.3f}]",
+                   upper_right(0), upper_right(1), upper_right(2));
+
     occ::log::info("Writing surface to {}", "surface.obj");
-    write_obj_file("surface.obj", v, f, properties);
+    write_obj_file("surface.obj", mesh, properties);
 
     occ::timing::stop(occ::timing::category::global);
     occ::timing::print_timings();

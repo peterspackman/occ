@@ -98,7 +98,7 @@ StockholderWeightFunctor::StockholderWeightFunctor(
     // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
     // i.e. their diagonals are sqrt(3)
     //
-    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
+    m_diagonal_scale_factor = 2.0 / m_cube_side_length;
     occ::log::debug("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
                     m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
@@ -173,7 +173,7 @@ void PromoleculeDensityFunctor::update_region_for_isovalue() {
     // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
     // i.e. their diagonals are sqrt(3)
     //
-    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
+    m_diagonal_scale_factor = 2.0 / m_cube_side_length;
     occ::log::debug("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
                     m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
