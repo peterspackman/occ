@@ -48,8 +48,7 @@ void InputWriter::write(const occ::crystal::Crystal &crystal,
         occ::log::debug("Generating all combinations for {} neighbors",
                         neighbors_a.size());
         for (const auto &[n, unique_index] : neighbors_a) {
-            j["neighbor_energies"][uc_idx_a].push_back(n.interaction_energy() /
-                                                       occ::units::KJ_TO_KCAL);
+            j["neighbor_energies"][uc_idx_a].push_back(n.interaction_energy());
         }
         uc_idx_a++;
     }
