@@ -1,5 +1,6 @@
 var NAVTREEINDEX13 =
 {
+"structocc_1_1main_1_1SolventNeighborContribution.html#a4fff0dac713a36342bec013d7754a088":[2,0,1,7,13,2],
 "structocc_1_1main_1_1SolventNeighborContribution.html#a64f95ad70982f6619b6f379198f76df7":[2,0,1,7,13,8],
 "structocc_1_1main_1_1SolventNeighborContribution.html#a8ffff518f00ce90d944daf950ca01055":[2,0,1,7,13,7],
 "structocc_1_1main_1_1SolventNeighborContribution.html#aa0a9578e72792dbd2608b99af072777e":[2,0,1,7,13,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1xdm_1_1XDMAtomList.html#a18b9df4c564933952231433d0ccf0b65":[2,0,1,14,0,1],
 "structocc_1_1xdm_1_1XDMAtomList.html#a3aac4da929f48e22952558eb5b46edb3":[2,0,1,14,0,3],
 "structocc_1_1xdm_1_1XDMAtomList.html#a860e07150c74e25e8842701850f70155":[2,0,1,14,0,0],
-"structocc_1_1xdm_1_1XDMAtomList.html#ad27b3f49e16b6b24616769f7460d92b4":[2,0,1,14,0,2],
-"structocc_1_1xdm_1_1XDMAtomList.html#afbd660a6a10b29cb7cf471d1586a2dbf":[2,0,1,14,0,4]
+"structocc_1_1xdm_1_1XDMAtomList.html#ad27b3f49e16b6b24616769f7460d92b4":[2,0,1,14,0,2]
 };
