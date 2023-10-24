@@ -81,12 +81,12 @@ StockholderWeightFunctor::StockholderWeightFunctor(
 
     double new_m_cube_side_length =
         m_target_separation * std::pow(2, m_subdivisions);
-    occ::log::debug("Cube side length: {}", m_cube_side_length);
-    occ::log::debug("Target separation: {}", m_target_separation);
-    occ::log::debug("Suggested side m_cube_side_length: {}",
-                    new_m_cube_side_length);
-    occ::log::debug("Subdivisions: {} (cube size = {})\n", m_subdivisions,
-                    new_m_cube_side_length / std::pow(2, m_subdivisions));
+    occ::log::info("Cube side length: {}", m_cube_side_length);
+    occ::log::info("Target separation: {}", m_target_separation);
+    occ::log::info("Suggested side m_cube_side_length: {}",
+                   new_m_cube_side_length);
+    occ::log::info("Subdivisions: {} (cube size = {})\n", m_subdivisions,
+                   new_m_cube_side_length / std::pow(2, m_subdivisions));
     m_cube_side_length = new_m_cube_side_length;
 
     // set up bounding box to short cut if
@@ -98,9 +98,9 @@ StockholderWeightFunctor::StockholderWeightFunctor(
     // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
     // i.e. their diagonals are sqrt(3)
     //
-    m_diagonal_scale_factor = 2.0 / m_cube_side_length;
-    occ::log::debug("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
-                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
+    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
+    occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
+                   m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
 
 PromoleculeDensityFunctor::PromoleculeDensityFunctor(
@@ -155,13 +155,13 @@ void PromoleculeDensityFunctor::update_region_for_isovalue() {
 
     double new_m_cube_side_length =
         m_target_separation * std::pow(2, m_subdivisions);
-    occ::log::debug("Buffer region: {}", m_buffer);
-    occ::log::debug("Cube side length: {}", m_cube_side_length);
-    occ::log::debug("Target separation: {}", m_target_separation);
-    occ::log::debug("Suggested side m_cube_side_length: {}",
-                    new_m_cube_side_length);
-    occ::log::debug("Subdivisions: {} (cube size = {})", m_subdivisions,
-                    new_m_cube_side_length / std::pow(2, m_subdivisions));
+    occ::log::info("Buffer region: {}", m_buffer);
+    occ::log::info("Cube side length: {}", m_cube_side_length);
+    occ::log::info("Target separation: {}", m_target_separation);
+    occ::log::info("Suggested side m_cube_side_length: {}",
+                   new_m_cube_side_length);
+    occ::log::info("Subdivisions: {} (cube size = {})", m_subdivisions,
+                   new_m_cube_side_length / std::pow(2, m_subdivisions));
     m_cube_side_length = new_m_cube_side_length;
 
     // set up bounding box to short cut if
@@ -173,9 +173,9 @@ void PromoleculeDensityFunctor::update_region_for_isovalue() {
     // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
     // i.e. their diagonals are sqrt(3)
     //
-    m_diagonal_scale_factor = 2.0 / m_cube_side_length;
-    occ::log::debug("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
-                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
+    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
+    occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
+                   m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
 
 } // namespace occ::main

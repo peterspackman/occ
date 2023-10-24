@@ -12,7 +12,6 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>
-#include <occ/geometry/marching_cubes.h>
 #include <occ/io/xyz.h>
 #include <occ/main/isosurface.h>
 
@@ -132,7 +131,7 @@ IsosurfaceMesh as_mesh(const F &b, const std::vector<float> &vertices,
 }
 
 template <typename F> IsosurfaceMesh extract_surface(F &func) {
-    size_t min_depth = 3;
+    size_t min_depth = 4;
     occ::timing::StopWatch sw;
     size_t max_depth = func.subdivisions();
     occ::log::debug("minimum subdivisions = {}, maximum subdivisions = {}",
@@ -253,9 +252,6 @@ VertexProperties compute_surface_properties(const Molecule &m1,
 }
 
 int main(int argc, char *argv[]) {
-    double minimum_separation = 0.05;
-    double maximum_separation = 0.5;
-
     CLI::App app(
         "occ-hs - A program for Hirshfeld and promolecule surface generation");
     std::string geometry_filename{""}, verbosity{"normal"};
@@ -270,10 +266,6 @@ int main(int argc, char *argv[]) {
     input_option->required();
     app.add_option("environment_file", environment_filename,
                    "xyz file of surroundings for Hirshfeld surface");
-    app.add_option("-s,--minimum-separation", minimum_separation,
-                   "Minimum separation for surface construction");
-    app.add_option("-S,--maximum-separation", maximum_separation,
-                   "Maximum separation for surface construction");
     app.add_option("-t,--threads", threads, "Number of threads");
     app.add_option("--max-depth", max_depth, "Maximum voxel depth");
     app.add_option("--separation", separation, "targt voxel separation");

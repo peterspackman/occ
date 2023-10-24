@@ -36,6 +36,15 @@ struct InterpolatorParams {
     float domain_upper{144.0};
 };
 
+inline float smoothstep(float x, float l, float u) {
+    float x2 = x * x;
+    if (x < 0.0)
+        return l;
+    if (x > 1.0)
+        return u;
+    return (u - l) * (x2 - 2.0f * x2 * x) + l;
+}
+
 class StockholderWeightFunctor {
   public:
     StockholderWeightFunctor(const occ::core::Molecule &in,
@@ -69,8 +78,9 @@ class StockholderWeightFunctor {
         }
 
         occ::timing::stop(occ::timing::category::isosurface_function);
-        return m_diagonal_scale_factor *
-               (m_isovalue - tot_i / (tot_i + tot_e + m_background_density));
+        float v = (m_isovalue - tot_i / (tot_i + tot_e + m_background_density));
+
+        return m_diagonal_scale_factor * v;
     }
 
     OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
@@ -134,7 +144,7 @@ class StockholderWeightFunctor {
 
   private:
     float m_diagonal_scale_factor{0.5f};
-    float m_buffer{6.0};
+    float m_buffer{8.0};
     float m_cube_side_length{0.0};
     InterpolatorParams m_interpolator_params;
     Eigen::Vector3f m_origin;
@@ -178,11 +188,9 @@ class PromoleculeDensityFunctor {
             }
         }
 
-        float normalized = result / m_isovalue;
-        // this works as a kind of logistic function, makes the behaviour
-        // near linear near the critical point
         occ::timing::stop(occ::timing::category::isosurface_function);
-        return m_diagonal_scale_factor * (0.5 - result / (result + m_isovalue));
+        float v = 0.5 - (result / (m_isovalue + result));
+        return m_diagonal_scale_factor * v;
     }
 
     OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
@@ -231,7 +239,7 @@ class PromoleculeDensityFunctor {
     void update_region_for_isovalue();
     float m_diagonal_scale_factor{0.5f};
 
-    float m_buffer{2.0};
+    float m_buffer{8.0};
     float m_cube_side_length{0.0};
     InterpolatorParams m_interpolator_params;
     Eigen::Vector3f m_origin, m_minimum_atom_pos, m_maximum_atom_pos;

@@ -99,7 +99,7 @@ void three_center_screened_aux_kernel(
             args.bf[0] = first_bf_ao[p];
             args.shell[0] = p;
             const auto &shp = aobasis[p];
-            const auto &plist = shellpairs.at(p);
+            const auto &plist = shellpairs[p];
             if ((shp.extent > 0.0) &&
                 (shp.origin - shauxP.origin).norm() > shp.extent) {
                 continue;
@@ -167,6 +167,9 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
         }
     };
 
+    std::vector<qm::Atom> dummy_atoms;
+    std::vector<qm::Shell> aux_shells;
+
     // compute J, K
     for (const auto &atom_grid : m_atom_grids) {
         const auto &atom_pts = atom_grid.points;
@@ -182,15 +185,14 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
             if (npt <= 0)
                 continue;
 
-            std::vector<qm::Atom> dummy_atoms(npt);
-            std::vector<qm::Shell> aux_shells(npt);
-
             const auto &pts_block = atom_pts.middleCols(l, npt);
             const auto &weights_block = atom_weights.segment(l, npt);
             occ::gto::evaluate_basis(basis, pts_block, ao, 0);
             if (ao.phi.maxCoeff() < precision)
                 continue;
 
+            dummy_atoms.resize(npt);
+            aux_shells.resize(npt);
             for (size_t pt = 0; pt < npt; pt++) {
                 dummy_atoms[pt] = {0, pts_block(0, pt), pts_block(1, pt),
                                    pts_block(2, pt)};

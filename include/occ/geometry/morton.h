@@ -40,8 +40,9 @@ struct MIndex {
         if (code == 0)
             return 0;
         return static_cast<integer_type>(
-            std::floor(std::log(code) * constants::inv_log2x3));
+            std::floor(std::log2(code) / 3));
     }
+
     OCC_ALWAYS_INLINE floating_type size() const {
         return 1.0 / ((2 << level()));
     }
@@ -124,10 +125,36 @@ struct MIndex {
         }
     }
 
+    OCC_ALWAYS_INLINE std::array<MIndex, 8> primals(integer_type lvl) const {
+        using namespace constants;
+        integer_type k = 1 << (3 * lvl);
+        integer_type k_plus_one = k << 1;
+        std::array<MIndex, 8> result;
+        for(integer_type idx = 0; idx < 8; idx++) {
+          MIndex vk = *this + MIndex{idx};
+          integer_type dk = (vk - MIndex{k}).code;
+          if (vk.code >= k_plus_one || ((dk & dilateTX) == 0) ||
+              ((dk & dilateTY) == 0) || ((dk & dilateTZ) == 0)) {
+              result[idx] = MIndex{0};
+          } else {
+              result[idx] = MIndex{vk.code << (3 * (max_level - lvl))};
+          }
+        }
+        return result;
+    }
+
+
     OCC_ALWAYS_INLINE MIndex dual(integer_type lvl, integer_type idx) const {
         MIndex dk{code >> (3 * (constants::max_level - lvl))};
         return dk - MIndex{idx};
     }
+
+    OCC_ALWAYS_INLINE void fill_duals(integer_type lvl, std::array<MIndex, 8> &values) const {
+        for(integer_type idx = 0; idx < 8; idx++) {
+          values[idx] = MIndex{code >> (3 * (constants::max_level - lvl))} - MIndex{idx};
+        }
+    }
+
 
     bool operator<(const MIndex &other) const { return code < other.code; }
     bool operator!=(const MIndex &other) const { return code != other.code; }

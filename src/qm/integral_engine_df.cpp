@@ -710,7 +710,7 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
             args.bf[0] = first_bf_ao[p];
             args.shell[0] = p;
             const auto &shp = aobasis[p];
-            const auto &plist = shellpairs.at(p);
+            const auto &plist = shellpairs[p];
             for (const int &q : plist) {
                 args.bf[1] = first_bf_ao[q];
                 args.shell[1] = q;

@@ -29,14 +29,15 @@ struct EdgeHash {
 } // namespace impl
 
 struct LinearHashedMarchingCubes {
-    using VertexMap = ankerl::unordered_dense::map<MIndex, size_t, MIndexHash>;
+    using VertexMap =
+        ankerl::unordered_dense::map<MIndex, uint64_t, MIndexHash>;
     using EdgeMap =
-        ankerl::unordered_dense::map<impl::Edge, size_t, impl::EdgeHash>;
+        ankerl::unordered_dense::map<impl::Edge, uint64_t, impl::EdgeHash>;
     size_t max_depth{6};
     size_t min_depth{2};
     float tolerance{1e-6};
 
-    LinearHashedMarchingCubes(size_t depth) : max_depth(depth) {}
+    LinearHashedMarchingCubes(uint64_t depth) : max_depth(depth) {}
 
     template <typename S>
     void extract(const S &source, std::vector<float> &vertices,
@@ -96,10 +97,12 @@ struct LinearHashedMarchingCubes {
 
         occ::timing::start(occ::timing::category::mc_octree);
         auto octree = build_octree(source);
+        occ::log::info("Octree nodes    {}", octree.nodes.size());
         occ::timing::stop(occ::timing::category::mc_octree);
 
         occ::timing::start(occ::timing::category::mc_primal);
         auto primal_vertices = compute_primal_vertices(octree);
+        occ::log::info("Primal vertices {}", primal_vertices.size());
         occ::timing::stop(occ::timing::category::mc_primal);
         size_t base_index = 0;
 
@@ -111,25 +114,24 @@ struct LinearHashedMarchingCubes {
 
     VertexMap compute_primal_vertices(const LinearHashedOctree<float> &octree) {
         VertexMap primal_vertices;
-        auto visitor = [&primal_vertices](const MIndex &key) {
+        for (const auto &key : octree.leaves) {
             const auto level = key.level();
+            std::array<MIndex, 8> primals = key.primals(level);
             for (uint_fast8_t i = 0; i < 8; i++) {
-                auto vertex = key.primal(level, i);
+                auto vertex = primals[i];
                 if (vertex.code != 0) {
                     const auto level = vertex.level();
-                    if (primal_vertices.contains(vertex)) {
-                        auto existing_level = primal_vertices[vertex];
-                        if (level > existing_level) {
-                            primal_vertices[vertex] = level;
+                    auto kv = primal_vertices.find(vertex);
+                    if (kv != primal_vertices.end()) {
+                        if (level > kv->second) {
+                            kv->second = level;
                         }
                     } else {
-                        primal_vertices[vertex] = level;
+                        primal_vertices.insert(kv, {vertex, level});
                     }
                 }
             }
-        };
-        octree.visit_leaves(visitor);
-
+        }
         return primal_vertices;
     }
 
@@ -151,14 +153,15 @@ struct LinearHashedMarchingCubes {
         // this can technically be parallelised, but in order
         // to achieve good performance would need substantial rewrite
         // in its logic
-        for (const auto &[key, level] : primal_vertices) {
+        for (const auto &[key, level] : primal_vertices.values()) {
+            key.fill_duals(level, duals);
             for (uint_fast8_t i = 0; i < 8; i++) {
-                MIndex m = key.dual(level, i);
+                MIndex m = duals[i];
                 while (m > one) {
-                    auto distance = octree.get(m);
-                    if (distance.has_value()) {
+                    auto distance = octree.nodes.find(m);
+                    if (distance != octree.nodes.end()) {
                         duals[i] = m;
-                        dual_distances[i] = distance.value();
+                        dual_distances[i] = distance->second;
                         break;
                     }
                     m = m.parent();

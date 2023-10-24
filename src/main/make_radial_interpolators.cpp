@@ -6,8 +6,8 @@
 int main(int argc, char *argv[]) {
     constexpr int num_points = 4096;
     auto basis = occ::slater::load_slaterbasis("thakkar");
-    occ::Vec domain = occ::Vec::LinSpaced(num_points, -4, 3);
-    domain = Eigen::exp(domain.array());
+    occ::Vec domain =
+        occ::Vec::LinSpaced(num_points, 0.04, 400.0).array().sqrt();
     auto rho = occ::MatRM(103, num_points);
     auto grad_rho = occ::MatRM(103, num_points);
     for (size_t i = 1; i <= 103; i++) {

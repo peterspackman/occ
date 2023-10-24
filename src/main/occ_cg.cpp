@@ -476,6 +476,23 @@ class CEModelCrystalGrowthCalculator {
         return m_solvated_surface_properties;
     }
 
+    inline void dipole_correction() {
+        auto dipoles =
+            calculate_net_dipole(m_gas_phase_wavefunctions, m_full_dimers);
+        double V =
+            4.0 * M_PI * m_outer_radius * m_outer_radius * m_outer_radius / 3.0;
+        for (int i = 0; i < dipoles.size(); i++) {
+            const auto &dipole = dipoles[i];
+            fmt::print(
+                "Net dipole for molecule shell {} = ({:.3f} {:.3f} {:.3f})\n",
+                i, dipole(0), dipole(1), dipole(2));
+            double e = -2 * M_PI * dipole.squaredNorm() / (3 * V) *
+                       occ::units::AU_TO_KJ_PER_MOL;
+            fmt::print("Energy = {:.6f} ({:.3f} per molecule)\n", e,
+                       e / (2 * m_full_dimers.molecule_neighbors[i].size()));
+        }
+    }
+
     inline auto &crystal() { return m_crystal; }
     inline const auto &name() { return m_basename; }
     inline const auto &solvent() { return m_solvent; }
@@ -1245,6 +1262,8 @@ int main(int argc, char **argv) {
 
             write_cg_net_file(fmt::format("{}_{}_net.txt", basename, solvent),
                               calc.crystal(), uc_dimers);
+
+            calc.dipole_correction();
         }
 
     } catch (const char *ex) {

@@ -216,7 +216,7 @@ struct CEModelInteraction {
   private:
     CEParameterizedModel m_scale_factors;
     bool m_use_density_fitting{false};
-    bool m_use_xdm_dimer_parameters{false};
+    bool m_use_xdm_dimer_parameters{true};
 };
 
 } // namespace occ::interaction
