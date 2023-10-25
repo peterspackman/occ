@@ -51,6 +51,10 @@ class FchkReader {
         PureCartesianD,
         PureCartesianF,
         ECP_RNFroz,
+        ECP_NLP,
+        ECP_CLP1,
+        ECP_CLP2,
+        ECP_ZLP,
     };
 
     FchkReader(const std::string &filename);
@@ -117,6 +121,8 @@ class FchkReader {
     void parse(std::istream &);
     void open(const std::string &filename);
     void close();
+    void warn_about_ecp_reading();
+
     LineLabel resolve_line(const std::string &) const;
 
     std::ifstream m_fchk_file;
@@ -139,6 +145,10 @@ class FchkReader {
     std::vector<double> m_scf_density;
     std::vector<double> m_mp2_density;
     std::vector<double> m_ecp_frozen;
+    std::vector<int> m_ecp_nlp;
+    std::vector<double> m_ecp_clp1;
+    std::vector<double> m_ecp_clp2;
+    std::vector<double> m_ecp_zlp;
     FchkBasis m_basis;
 };
 

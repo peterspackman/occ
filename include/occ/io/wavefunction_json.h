@@ -1,5 +1,13 @@
 #pragma once
+#include <nlohmann/json.hpp>
 #include <occ/qm/wavefunction.h>
+
+namespace occ::qm {
+
+void from_json(const nlohmann::json &J, Energy &energy);
+void to_json(nlohmann::json &J, const Energy &energy);
+
+} // namespace occ::qm
 
 namespace occ::io {
 

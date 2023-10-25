@@ -390,8 +390,12 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
     }
 
     m_hirshfeld_charges = Vec::Zero(num_atoms);
+    const auto &ecp_electrons = m_basis.ecp_electrons();
     for (int i = 0; i < num_atoms; i++) {
         m_hirshfeld_charges(i) = static_cast<double>(atoms[i].atomic_number);
+        if (ecp_electrons.size() >= i) {
+            m_hirshfeld_charges(i) -= ecp_electrons[i];
+        }
     }
     double num_electrons{0.0};
     double num_electrons_promol{0.0};

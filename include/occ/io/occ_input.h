@@ -71,19 +71,21 @@ struct PairInput {
     std::string source_a{"none"};
     Mat3 rotation_a{Mat3::Identity()};
     Vec3 translation_a{Vec3::Zero()};
-
+    int ecp_electrons_a{0};
     std::string source_b{"none"};
     Mat3 rotation_b{Mat3::Identity()};
     Vec3 translation_b{Vec3::Zero()};
+    int ecp_electrons_b{0};
     std::string model_name{"ce-b3lyp"};
 };
 
 struct IsosurfaceInput {
-  GeometryInput interior_geometry;
-  GeometryInput exterior_geometry;
+    GeometryInput interior_geometry;
+    GeometryInput exterior_geometry;
 };
 
 struct OccInput {
+    std::string verbosity{"normal"};
     DriverInput driver;
     RuntimeInput runtime;
     ElectronInput electronic;

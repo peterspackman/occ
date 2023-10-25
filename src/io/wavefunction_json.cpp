@@ -1,5 +1,6 @@
 #include <cctype>
 #include <nlohmann/json.hpp>
+#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/json_basis.h>
@@ -120,22 +121,28 @@ void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
     for (const auto &x : J.at("atoms")) {
         wfn.atoms.push_back(x);
     }
+    occ::log::debug("Loaded atoms from json");
 
     std::vector<occ::qm::Shell> ao_shells;
     const auto &basis = J.at("orbital basis");
     for (const auto &x : basis.at("shells")) {
         ao_shells.push_back(x);
     }
+    occ::log::debug("Loaded ao shells from json");
 
     std::vector<occ::qm::Shell> ecp_shells;
+    std::vector<int> ecp_electrons;
+    basis.at("ecp electrons").get_to(ecp_electrons);
     if (basis.contains("ecp shells")) {
         for (const auto &x : basis.at("ecp shells")) {
             ecp_shells.push_back(x);
         }
+        occ::log::debug("Loaded ecp shells from json");
     }
 
     wfn.basis =
         occ::qm::AOBasis(wfn.atoms, ao_shells, basis.at("name"), ecp_shells);
+    wfn.basis.set_ecp_electrons(ecp_electrons);
 
     if (J.contains("kinetic energy matrix")) {
         J.at("kinetic energy matrix").get_to(wfn.T);
@@ -191,6 +198,7 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
     nlohmann::json basis;
     basis["name"] = wfn.basis.name();
     basis["shells"] = wfn.basis.shells();
+    basis["ecp electrons"] = wfn.basis.ecp_electrons();
 
     if (wfn.basis.ecp_shells().size() > 0) {
         basis["ecp shells"] = wfn.basis.ecp_shells();
@@ -265,7 +273,9 @@ void JsonWavefunctionReader::set_filename(const std::string &name) {
 
 void JsonWavefunctionReader::parse(std::istream &file) {
     nlohmann::json j;
+    occ::log::debug("Try loading JSON file...");
     file >> j;
+    occ::log::debug("Valid JSON data");
     j.get_to(m_wavefunction);
 }
 

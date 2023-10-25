@@ -43,6 +43,14 @@ void FchkReader::open(const std::string &filename) {
 
 void FchkReader::close() { m_fchk_file.close(); }
 
+void FchkReader::warn_about_ecp_reading() {
+    if (!m_have_ecps) {
+        occ::log::warn(
+            "Reading ECP basis is not supported - expect bad results.");
+        m_have_ecps = true;
+    }
+}
+
 FchkReader::LineLabel FchkReader::resolve_line(const std::string &line) const {
     std::string lt = trim_copy(line);
     if (startswith(lt, "Number of electrons", false))
@@ -99,6 +107,14 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string &line) const {
         return LineLabel::PureCartesianF;
     if (startswith(lt, "ECP-RNFroz", false))
         return LineLabel::ECP_RNFroz;
+    if (startswith(lt, "ECP-NLP", false))
+        return LineLabel::ECP_NLP;
+    if (startswith(lt, "ECP-CLP1", false))
+        return LineLabel::ECP_CLP1;
+    if (startswith(lt, "ECP-CLP2", false))
+        return LineLabel::ECP_CLP2;
+    if (startswith(lt, "ECP-ZLP", false))
+        return LineLabel::ECP_ZLP;
     return LineLabel::Unknown;
 }
 
@@ -246,7 +262,32 @@ void FchkReader::parse(std::istream &stream) {
             break;
         }
         case LineLabel::ECP_RNFroz: {
+            warn_about_ecp_reading();
             auto result = scn::scan(line, "ECP-RNFroz R N= {}", count);
+            read_matrix_block<double>(stream, m_ecp_frozen, count);
+            break;
+        }
+        case LineLabel::ECP_NLP: {
+            warn_about_ecp_reading();
+            auto result = scn::scan(line, "ECP-NLP R N= {}", count);
+            read_matrix_block<int>(stream, m_ecp_nlp, count);
+            break;
+        }
+        case LineLabel::ECP_CLP1: {
+            warn_about_ecp_reading();
+            auto result = scn::scan(line, "ECP-CLP1 R N= {}", count);
+            read_matrix_block<double>(stream, m_ecp_clp1, count);
+            break;
+        }
+        case LineLabel::ECP_CLP2: {
+            warn_about_ecp_reading();
+            auto result = scn::scan(line, "ECP-CLP2 R N= {}", count);
+            read_matrix_block<double>(stream, m_ecp_frozen, count);
+            break;
+        }
+        case LineLabel::ECP_ZLP: {
+            warn_about_ecp_reading();
+            auto result = scn::scan(line, "ECP-ZLP N= {}", count);
             read_matrix_block<double>(stream, m_ecp_frozen, count);
             break;
         }
@@ -328,8 +369,12 @@ occ::qm::AOBasis FchkReader::basis_set() const {
     auto result = occ::qm::AOBasis(atoms(), bs);
     if (m_ecp_frozen.size() > 0) {
         result.ecp_electrons().clear();
+        int i = 0;
         for (const auto &d : m_ecp_frozen) {
             result.ecp_electrons().push_back(static_cast<int>(d));
+            occ::log::debug("ECP electrons for atom {}: {}", i,
+                            static_cast<int>(d));
+            i++;
         }
     }
     result.set_pure(any_pure);

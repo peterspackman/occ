@@ -1,8 +1,8 @@
+#include <ankerl/unordered_dense.h>
 #include <filesystem>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
-#include <ankerl/unordered_dense.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/timings.h>
@@ -11,6 +11,7 @@
 #include <occ/interaction/pair_potential.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/wolf.h>
+#include <occ/io/wavefunction_json.h>
 #include <occ/main/pair_energy.h>
 #include <occ/qm/chelpg.h>
 #include <occ/xtb/xtb_wrapper.h>
@@ -42,14 +43,24 @@ Wavefunction load_wavefunction(const std::string &filename) {
     std::string ext = fs::path(filename).extension().string();
     to_lower(ext);
     if (ext == ".fchk") {
+        occ::log::debug("Loading Gaussian fchk file from {}", filename);
         using occ::io::FchkReader;
         FchkReader fchk(filename);
         return Wavefunction(fchk);
-    }
-    if (ext == ".molden" || ext == ".input") {
+    } else if (ext == ".molden" || ext == ".input") {
+        occ::log::debug("Loading molden file from {}", filename);
         using occ::io::MoldenReader;
         MoldenReader molden(filename);
+        occ::log::debug("Wavefunction has {} atoms", molden.atoms().size());
         return Wavefunction(molden);
+    } else if (ext == ".json") {
+        occ::log::debug("Loading OCC JSON wavefunction from {}", filename);
+        occ::io::JsonWavefunctionReader reader(filename);
+        return reader.wavefunction();
+    } else if (ext == ".orca.json") {
+        occ::log::debug("Loading Orca JSON file from {}", filename);
+        occ::io::OrcaJSONReader json(filename);
+        return Wavefunction(json);
     }
     throw std::runtime_error(
         "Unknown file extension when reading wavefunction: " + ext);
@@ -69,6 +80,27 @@ PairEnergy::PairEnergy(const occ::io::OccInput &input) {
 
     a.wfn.apply_transformation(a.rotation, a.translation);
     b.wfn.apply_transformation(b.rotation, b.translation);
+    occ::log::debug(
+        "Transformed atomic positions for monomer A (charge = {}, ecp = {})",
+        a.wfn.charge(), a.wfn.basis.ecp_electrons().size() > 0);
+    for (const auto &a : a.wfn.atoms) {
+        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}",
+                        occ::core::Element(a.atomic_number).symbol(),
+                        a.x / occ::units::ANGSTROM_TO_BOHR,
+                        a.y / occ::units::ANGSTROM_TO_BOHR,
+                        a.z / occ::units::ANGSTROM_TO_BOHR);
+    }
+    occ::log::debug(
+        "Transformed atomic positions for monomer B (charge = {}, ecp = {})",
+        b.wfn.charge(), b.wfn.basis.ecp_electrons().size() > 0);
+    for (const auto &a : b.wfn.atoms) {
+        occ::log::debug("{} {:20.12f} {:20.12f} {:20.12f}",
+                        occ::core::Element(a.atomic_number).symbol(),
+                        a.x / occ::units::ANGSTROM_TO_BOHR,
+                        a.y / occ::units::ANGSTROM_TO_BOHR,
+                        a.z / occ::units::ANGSTROM_TO_BOHR);
+    }
+    model = occ::interaction::ce_model_from_string(input.pair.model_name);
 }
 
 void PairEnergy::compute() {
@@ -77,23 +109,23 @@ void PairEnergy::compute() {
     auto interaction_energy = interaction(a.wfn, b.wfn);
     occ::timing::stop(occ::timing::category::global);
 
-    fmt::print("Monomer A energies\n{}\n", a.wfn.energy);
-    fmt::print("Monomer B energies\n{}\n", b.wfn.energy);
+    occ::log::info("Monomer A energies\n{}", a.wfn.energy);
+    occ::log::info("Monomer B energies\n{}", b.wfn.energy);
 
-    fmt::print("\nDimer\n");
+    occ::log::info("Dimer");
 
-    fmt::print("Component              Energy (kJ/mol)\n\n");
-    fmt::print("Coulomb               {: 12.6f}\n",
-               interaction_energy.coulomb_kjmol());
-    fmt::print("Exchange-repulsion    {: 12.6f}\n",
-               interaction_energy.exchange_kjmol());
-    fmt::print("Polarization          {: 12.6f}\n",
-               interaction_energy.polarization_kjmol());
-    fmt::print("Dispersion            {: 12.6f}\n",
-               interaction_energy.dispersion_kjmol());
-    fmt::print("__________________________________\n");
-    fmt::print("Total 		      {: 12.6f}\n",
-               interaction_energy.total_kjmol());
+    occ::log::info("Component              Energy (kJ/mol)\n");
+    occ::log::info("Coulomb               {: 12.6f}",
+                   interaction_energy.coulomb_kjmol());
+    occ::log::info("Exchange-repulsion    {: 12.6f}",
+                   interaction_energy.exchange_kjmol());
+    occ::log::info("Polarization          {: 12.6f}",
+                   interaction_energy.polarization_kjmol());
+    occ::log::info("Dispersion            {: 12.6f}",
+                   interaction_energy.dispersion_kjmol());
+    occ::log::info("__________________________________");
+    occ::log::info("Total 		      {: 12.6f}",
+                   interaction_energy.total_kjmol());
 }
 
 auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
@@ -535,8 +567,8 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
 
             if (conv.wolf_sum && conv.crystal_field_polarization) {
                 wolf.electric_field_values[mol_idx].setZero();
-                fmt::print("Field total =\n{}\n",
-                           wolf.electric_field_values[mol_idx]);
+                occ::log::debug("Field total =\n{}\n",
+                                wolf.electric_field_values[mol_idx]);
             }
 
             for (const auto &[dimer, unique_idx] : n) {
@@ -573,8 +605,8 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
 
                 if (conv.crystal_field_polarization) {
                     auto &electric_field = wolf.electric_field_values[mol_idx];
-                    fmt::print("Field total =\n{}\n", electric_field);
-                    fmt::print("Field total =\n{}\n", efield);
+                    occ::log::info("Field total =\n{}", electric_field);
+                    occ::log::info("Field total =\n{}", efield);
                     if constexpr (std::is_same<EnergyModel,
                                                CEPairEnergyFunctor>::value) {
                         const auto &wfn_a =
@@ -582,8 +614,9 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                         double e_pol_chg =
                             occ::interaction::polarization_energy(
                                 wfn_a.xdm_polarizabilities, electric_field);
-                        fmt::print("Crystal polarizability (chg): {}\n",
-                                   e_pol_chg * occ::units::AU_TO_KJ_PER_MOL);
+                        occ::log::debug("Crystal polarizability (chg): {}",
+                                        e_pol_chg *
+                                            occ::units::AU_TO_KJ_PER_MOL);
                     }
                 }
             }
@@ -593,8 +626,8 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                     const auto &wfn_a = energy_model.wavefunctions()[mol_idx];
                     double e_pol_qm = occ::interaction::polarization_energy(
                         wfn_a.xdm_polarizabilities, efield);
-                    fmt::print("Crystal polarizability (qm): {}\n",
-                               e_pol_qm * occ::units::AU_TO_KJ_PER_MOL);
+                    occ::log::debug("Crystal polarizability (qm): {}",
+                                    e_pol_qm * occ::units::AU_TO_KJ_PER_MOL);
                 }
             }
             mol_idx++;

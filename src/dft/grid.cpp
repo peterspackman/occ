@@ -532,8 +532,8 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number) {
         num_points += lebedev.rows();
     }
     result.atomic_number = atomic_number;
-    occ::log::info("{} total grid points for element {} ({} radial)",
-                   result.points.cols(), atomic_number, n_angular.rows());
+    occ::log::debug("{} total grid points for element {} ({} radial)",
+                    result.points.cols(), atomic_number, n_angular.rows());
     return result;
 }
 

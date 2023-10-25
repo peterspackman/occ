@@ -29,6 +29,7 @@ using Mat3NConstRef = Eigen::Ref<const Mat3N>;
 using MatN3 = Eigen::MatrixX3d;
 using MatN3ConstRef = Eigen::Ref<const MatN3>;
 using Mat3 = Eigen::Matrix3d;
+using Mat3RM = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>;
 using Mat3ConstRef = Eigen::Ref<const Mat3>;
 using Mat4 = Eigen::Matrix4d;
 using Mat4ConstRef = Eigen::Ref<const Mat4>;

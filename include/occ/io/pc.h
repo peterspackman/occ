@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
 #include <istream>
 #include <occ/core/point_charge.h>
+#include <vector>
 
 namespace occ::io {
 
@@ -21,7 +21,10 @@ struct PointChargeFileReader {
     void parse(std::istream &);
 };
 
-PointChargeList point_charges_from_file(const std::string &);
-PointChargeList point_charges_from_string(const std::string &);
+PointChargeFileReader::PointChargeList
+point_charges_from_file(const std::string &);
+
+PointChargeFileReader::PointChargeList
+point_charges_from_string(const std::string &);
 
 } // namespace occ::io

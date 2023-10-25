@@ -14,11 +14,11 @@ using occ::qm::HartreeFock;
 using occ::qm::Wavefunction;
 
 struct CEParameterizedModel {
-    const double coulomb{1.0};
-    const double exchange{1.0};
-    const double repulsion{1.0};
-    const double polarization{1.0};
-    const double dispersion{1.0};
+    double coulomb{1.0};
+    double exchange{1.0};
+    double repulsion{1.0};
+    double polarization{1.0};
+    double dispersion{1.0};
     std::string name{"Unscaled"};
     std::string method{"b3lyp"};
     std::string basis{"6-31g**"};
@@ -82,12 +82,22 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
 
     occ::Mat3N field_a =
         proc_b.electronic_electric_field_contribution(wfn_b.mo, pos_a);
-    field_a += proc_b.nuclear_electric_field_contribution(pos_a);
+    occ::log::debug("Field (e) at A due to B\n{}\n",
+                    field_a.colwise().squaredNorm());
+    occ::Mat3N field_a_n = proc_b.nuclear_electric_field_contribution(pos_a);
+    occ::log::debug("Field (n) at A due to B\n{}\n",
+                    field_a_n.colwise().squaredNorm());
+    field_a += field_a_n;
     occ::log::debug("Field at A due to B\n{}\n",
                     field_a.colwise().squaredNorm());
     occ::Mat3N field_b =
         proc_a.electronic_electric_field_contribution(wfn_a.mo, pos_b);
-    field_b += proc_a.nuclear_electric_field_contribution(pos_b);
+    occ::Mat3N field_b_n = proc_a.nuclear_electric_field_contribution(pos_b);
+    occ::log::debug("Field (e) at B due to A\n{}\n",
+                    field_b.colwise().squaredNorm());
+    occ::log::debug("Field (n) at B due to A\n{}\n",
+                    field_b_n.colwise().squaredNorm());
+    field_b += field_b_n;
     occ::log::debug("Field at B due to A\n{}\n",
                     field_b.colwise().squaredNorm());
 
@@ -129,6 +139,7 @@ inline CEParameterizedModel ce_model_from_string(const std::string &s) {
         return CE2_XDM;
     if (s == "ce-5p-wb97m-v" || s == "ce5p-wb97m-v" || s == "ce-5p-wb97m-v")
         return CE5_XDM;
+    occ::log::warn("Unknown model, defaulting to CE-1p");
     return CE1_XDM;
 }
 

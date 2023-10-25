@@ -20,5 +20,6 @@ using spdlog::level::warn;
 } // namespace level
 
 void setup_logging(const std::string &verbosity);
+void setup_logging(int verbosity);
 
 } // namespace occ::log

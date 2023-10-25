@@ -3,6 +3,7 @@
 #include <gemmi/version.hpp>
 #include <occ/3rdparty/cint_wrapper.h>
 #include <occ/core/log.h>
+#include <occ/core/parallel.h>
 #include <occ/main/version.h>
 #include <xc.h>
 
@@ -56,5 +57,14 @@ subprocess           Calling external subprocesses
 )",
               eigen_version_string, fmt_version_string, gemmi_version_string,
               cint_version_string, xc_version_string, spdlog_version_string);
+
+#ifdef _OPENMP
+    std::string thread_type = "OpenMP";
+#else
+    std::string thread_type = "std";
+#endif
+    occ::log::info("\nParallelization: {} {} threads, {} eigen threads",
+                   occ::parallel::get_num_threads(), thread_type,
+                   Eigen::nbThreads());
 }
 } // namespace occ::main

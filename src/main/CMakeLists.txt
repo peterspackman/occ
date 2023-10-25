@@ -5,6 +5,8 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_partition.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
     ${OCC_INCLUDE_FILES}
@@ -55,13 +57,6 @@ set_target_properties(occ
 
 # Use for GCC time report when compiling occ
 # target_compile_options(occ PRIVATE "-ftime-report")
-
-add_executable(occ-pair "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp")
-target_link_libraries(occ-pair PUBLIC occ_interaction occ_xdm CLI11::CLI11)
-set_target_properties(occ-pair
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
 
 add_executable(make_radial_interpolators EXCLUDE_FROM_ALL
     "${CMAKE_CURRENT_SOURCE_DIR}/make_radial_interpolators.cpp")

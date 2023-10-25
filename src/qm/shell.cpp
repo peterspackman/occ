@@ -656,7 +656,8 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
 }
 
 bool AOBasis::operator==(const AOBasis &rhs) const {
-    return (m_shells == rhs.m_shells) && (m_ecp_shells == rhs.m_ecp_shells);
+    return (m_ecp_electrons == rhs.m_ecp_electrons) &&
+           (m_shells == rhs.m_shells) && (m_ecp_shells == rhs.m_ecp_shells);
 }
 
 void AOBasis::rotate(const occ::Mat3 &rotation) {

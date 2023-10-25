@@ -23,4 +23,29 @@ void setup_logging(const std::string &verbosity) {
     spdlog::set_pattern("%v");
 }
 
+void setup_logging(int verbosity) {
+    auto level = occ::log::level::info;
+    switch (verbosity) {
+    case 4:
+        level = occ::log::level::trace;
+        break;
+    case 3:
+        level = occ::log::level::debug;
+        break;
+    case 1:
+        level = occ::log::level::warn;
+        break;
+    case 0:
+        level = occ::log::level::critical;
+        break;
+    default:
+        level = occ::log::level::info;
+        break;
+    }
+    occ::log::set_level(level);
+    spdlog::set_level(level);
+    // store the last 32 debug messages in a buffer
+    spdlog::enable_backtrace(32);
+    spdlog::set_pattern("%v");
+}
 } // namespace occ::log

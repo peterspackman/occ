@@ -74,4 +74,6 @@ converged_xtb_lattice_energies(const Crystal &crystal,
                                const std::string &basename = "crystal_dimer",
                                const LatticeConvergenceSettings conv = {});
 
+Wavefunction load_wavefunction(const std::string &filename);
+
 } // namespace occ::main

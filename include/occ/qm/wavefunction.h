@@ -68,6 +68,7 @@ struct Wavefunction {
         for (const auto &atom : atoms)
             c += atom.atomic_number;
         c -= num_electrons;
+        c -= basis.total_ecp_electrons();
         return c;
     }
     inline int n_alpha() const { return num_alpha; }

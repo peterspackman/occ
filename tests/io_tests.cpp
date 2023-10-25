@@ -2803,3 +2803,30 @@ TEST_CASE("Read/Write Wavefunction JSON", "[JSON]") {
     REQUIRE(wfn.basis == wfn2.basis);
     REQUIRE(wfn.atoms.size() == wfn2.atoms.size());
 }
+
+TEST_CASE("Read/Write Wavefunction JSON with ECP", "[JSON]") {
+    using occ::io::JsonWavefunctionReader;
+    using occ::io::JsonWavefunctionWriter;
+    std::vector<occ::core::Atom> atoms{{86, 0.0, 0.0, 0.0}};
+
+    auto obs = occ::qm::AOBasis::load(atoms, "def2-svp");
+    obs.set_pure(true);
+    HartreeFock hf(obs);
+    occ::scf::SCF<HartreeFock> scf(hf);
+    scf.convergence_settings.energy_threshold = 1e-8;
+    double e = scf.compute_scf_energy();
+
+    occ::qm::Wavefunction wfn = scf.wavefunction();
+
+    JsonWavefunctionWriter writer;
+
+    std::string json_contents = writer.to_string(wfn);
+    std::istringstream json_stream(json_contents);
+
+    JsonWavefunctionReader reader(json_stream);
+
+    auto wfn2 = reader.wavefunction();
+
+    REQUIRE(wfn.basis == wfn2.basis);
+    REQUIRE(wfn.atoms.size() == wfn2.atoms.size());
+}

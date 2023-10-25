@@ -8,6 +8,7 @@
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
+#include <occ/io/wavefunction_json.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/merge.h>
 #include <occ/qm/orb.h>
@@ -327,14 +328,17 @@ void Wavefunction::save(FchkWriter &fchk) {
     fchk.set_vector("Shell to atom map", shell2atom);
 
     if (have_ecps) {
+        occ::log::warn("Writing ECP information to fchk - this is very likely "
+                       "unsupported and not working");
         // TODO finish ECP writing routines
-        occ::log::debug("Writing ECP information to fchk\n");
         fchk.set_vector<int, double>("ECP-RNFroz", basis.ecp_electrons());
         std::vector<double> ecp_clp1;
         std::vector<double> ecp_clp2;
         std::vector<int> ecp_nlp;
         std::vector<double> ecp_zlp;
         std::vector<int> ecp_lmax(atoms.size(), 0);
+        std::vector<int> ecp_kfirst;
+        std::vector<int> ecp_klast;
         int ecp_max_length = 0;
         const auto &ecp_shell2atom = basis.ecp_shell_to_atom();
         int shell_index = 0;
