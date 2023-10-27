@@ -1,5 +1,5 @@
+#include <bits/std_abs.h>
 #include <cmath>
-#include <exception>
 #include <occ/xdm/becke_hole.h>
 
 namespace occ::xdm {

@@ -40,8 +40,7 @@ DensityFunctional::evaluate(const Params &params) const {
     }
     case HGGA:
     case GGA: {
-        assert(("Sigma array must be provided for GGA functionals",
-                params.sigma.cols() > 0));
+        assert(params.sigma.cols() > 0);
         xc_gga_exc_vxc(&func, n_pts, params.rho.data(), params.sigma.data(),
                        result.exc.data(), result.vrho.data(),
                        result.vsigma.data());
@@ -49,12 +48,9 @@ DensityFunctional::evaluate(const Params &params) const {
     }
     case HMGGA:
     case MGGA: {
-        assert(("Sigma array must be provided for MGGA functionals",
-                params.sigma.cols() > 0));
-        assert(("Laplacian array must be provided for MGGA functionals",
-                params.laplacian.cols() > 0));
-        assert(("Tau array must be provided for MGGA functionals",
-                params.tau.cols() > 0));
+        assert(params.sigma.cols() > 0);
+        assert(params.laplacian.cols() > 0);
+        assert(params.tau.cols() > 0);
         xc_mgga_exc_vxc(&func, n_pts, params.rho.data(), params.sigma.data(),
                         params.laplacian.data(), params.tau.data(),
                         result.exc.data(), result.vrho.data(),

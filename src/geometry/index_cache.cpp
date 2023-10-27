@@ -1,4 +1,9 @@
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 #include <occ/geometry/index_cache.h>
+#include <vector>
 
 namespace occ::geometry {
 

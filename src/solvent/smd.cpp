@@ -320,8 +320,9 @@ int get_second_element(ElementPair p) {
         return O;
     case O_P:
         return P;
+    default:
+        return -1;
     }
-    return -1;
 }
 
 ElementPair get_element_pair(int z1, int z2) {

@@ -1,9 +1,19 @@
+#include <algorithm>
+#include <cctype>
+#include <exception>
 #include <fmt/core.h>
 #include <fstream>
+#include <initializer_list>
+#include <map>
+#include <memory>
 #include <nlohmann/json.hpp>
+#include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/json_basis.h>
+#include <spdlog/spdlog.h>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace occ::io {

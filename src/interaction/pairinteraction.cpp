@@ -10,6 +10,7 @@
 #include <occ/xdm/xdm.h>
 
 namespace occ::interaction {
+
 using qm::HartreeFock;
 using qm::SpinorbitalKind;
 

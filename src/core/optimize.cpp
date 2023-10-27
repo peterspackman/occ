@@ -1,5 +1,7 @@
+#include <bits/std_abs.h>
 #include <functional>
 #include <occ/core/optimize.h>
+#include <stddef.h>
 
 namespace occ::core::opt {
 
