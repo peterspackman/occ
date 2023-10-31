@@ -1,8 +1,8 @@
-#include <fmt/core.h>
 #include <iostream>
 #include <occ/core/element.h>
 #include <occ/core/kdtree.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
 
 namespace occ::crystal {
@@ -119,13 +119,13 @@ CrystalAtomRegion Crystal::atom_surroundings(int asym_idx,
             std::min(lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
     }
 
-    fmt::print("Slab size: ({} {} {}), ({} {} {})\n", lower.h, lower.k, lower.l,
-               upper.h, upper.k, upper.l);
+    occ::log::debug("Slab size: ({} {} {}), ({} {} {})", lower.h, lower.k,
+                    lower.l, upper.h, upper.k, upper.l);
     auto atom_slab = slab(lower, upper);
     occ::core::KDTree<double> tree(atom_slab.cart_pos.rows(),
                                    atom_slab.cart_pos, occ::core::max_leaf);
     tree.index->buildIndex();
-    fmt::print("Index built\n");
+    occ::log::trace("Index built");
 
     std::vector<std::pair<Eigen::Index, double>> idxs_dists;
     nanoflann::RadiusResultSet results(radius * radius, idxs_dists);
@@ -139,13 +139,12 @@ CrystalAtomRegion Crystal::atom_surroundings(int asym_idx,
     if (idxs_dists.size() < 1)
         return result;
     result.resize(idxs_dists.size()); // -1 for the self
-    fmt::print("Found {} neighbours out of {}\n", idxs_dists.size(),
-               atom_slab.cart_pos.cols());
+    occ::log::debug("Found {} neighbours out of {}", idxs_dists.size(),
+                    atom_slab.cart_pos.cols());
 
     int result_idx = 0;
     for (const auto &[idx, d] : idxs_dists) {
         if (d < 1e-3) {
-            fmt::print("Skipping self\n");
             continue;
         }
         result.frac_pos.col(result_idx) = atom_slab.frac_pos.col(idx);
@@ -155,7 +154,7 @@ CrystalAtomRegion Crystal::atom_surroundings(int asym_idx,
         result.symop(result_idx) = atom_slab.symop(idx);
         result_idx++;
     }
-    fmt::print("Stored {} neighbours\n", result_idx);
+    occ::log::debug("Stored {} neighbours", result_idx);
     result.resize(result_idx);
     return result;
 }
@@ -258,7 +257,12 @@ void Crystal::update_unit_cell_connectivity() const {
     auto covalent_radii = m_asymmetric_unit.covalent_radii();
     double max_cov = covalent_radii.maxCoeff();
     std::vector<std::pair<size_t, double>> idxs_dists;
-    double max_dist = (max_cov * 2 + 0.4) * (max_cov * 2 + 0.4);
+    double bond_tolerance = occ::core::get_bond_tolerance();
+    double max_dist =
+        (max_cov * 2 + bond_tolerance) * (max_cov * 2 + bond_tolerance);
+    occ::log::debug(
+        "Automatic bond detection via covalent radius + tolerance ({})",
+        bond_tolerance);
     nanoflann::RadiusResultSet results(max_dist, idxs_dists);
 
     size_t num_connections = 0;
@@ -286,7 +290,8 @@ void Crystal::update_unit_cell_connectivity() const {
             double cov_b = covalent_radii(asym_idx_r);
             double d = (cart_uc_pos.col(uc_idx_l) - cart_uc_pos.col(uc_idx_r))
                            .squaredNorm();
-            double threshold = (cov_a + cov_b + 0.4) * (cov_a + cov_b + 0.4);
+            double threshold = (cov_a + cov_b + bond_tolerance) *
+                               (cov_a + cov_b + bond_tolerance);
             if (d < threshold) {
                 add_edge(d, uc_idx_l, uc_idx_r, asym_idx_l, asym_idx_r,
                          m_unit_cell_atoms.frac_pos.col(uc_idx_r));
@@ -305,7 +310,8 @@ void Crystal::update_unit_cell_connectivity() const {
                 continue;
             size_t asym_idx_r = m_unit_cell_atoms.asym_idx(uc_idx_r);
             double cov_b = covalent_radii(asym_idx_r);
-            if (d < ((cov_a + cov_b + 0.4) * (cov_a + cov_b + 0.4))) {
+            if (d < ((cov_a + cov_b + bond_tolerance) *
+                     (cov_a + cov_b + bond_tolerance))) {
                 auto pos = s.frac_pos.col(idx + n_uc);
                 add_edge(d, uc_idx_l, uc_idx_r, asym_idx_l, asym_idx_r, pos);
             }

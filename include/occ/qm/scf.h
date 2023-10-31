@@ -257,7 +257,8 @@ template <typename Procedure> struct SCF {
                 Vecp = m_procedure.compute_effective_core_potential_matrix();
             }
             if (calc_pc) {
-                Vpc = m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
+                Vpc = m_procedure.compute_point_charge_interaction_matrix(
+                    m_point_charges);
             }
             break;
         }
@@ -275,9 +276,9 @@ template <typename Procedure> struct SCF {
             }
             if (calc_pc) {
                 block::a(Vpc) =
-                    m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
+                    m_procedure.compute_point_charge_interaction_matrix(
+                        m_point_charges);
                 block::b(Vpc) = block::a(Vpc);
-
             }
             break;
         }
@@ -295,7 +296,8 @@ template <typename Procedure> struct SCF {
             }
             if (calc_pc) {
                 block::aa(Vpc) =
-                    m_procedure.compute_point_charge_interaction_matrix(m_point_charges);
+                    m_procedure.compute_point_charge_interaction_matrix(
+                        m_point_charges);
                 block::bb(Vpc) = block::aa(Vpc);
             }
 
@@ -365,6 +367,7 @@ template <typename Procedure> struct SCF {
             const auto tstart = std::chrono::high_resolution_clock::now();
             auto minbs =
                 occ::qm::AOBasis::load(m_procedure.atoms(), OCC_MINIMAL_BASIS);
+            occ::log::debug("Loaded minimal basis {}", OCC_MINIMAL_BASIS);
             minbs.set_pure(m_procedure.aobasis().is_pure());
             occ::qm::MolecularOrbitals mo_minbs;
             mo_minbs.kind = mo.kind;
@@ -383,8 +386,10 @@ template <typename Procedure> struct SCF {
 
     void set_point_charges(const PointChargeList &charges) {
         log::info("Including potential from {} point charges", charges.size());
-        energy["nuclear.point_charge"] = m_procedure.nuclear_point_charge_interaction_energy(charges);
-        energy["nuclear.total"] = energy["nuclear.point_charge"] + energy["nuclear.repulsion"];
+        energy["nuclear.point_charge"] =
+            m_procedure.nuclear_point_charge_interaction_energy(charges);
+        energy["nuclear.total"] =
+            energy["nuclear.point_charge"] + energy["nuclear.repulsion"];
         m_point_charges = charges;
     }
 
@@ -415,7 +420,8 @@ template <typename Procedure> struct SCF {
             energy["electronic.ecp"] = expectation(mo.kind, mo.D, Vecp);
         }
         if (m_point_charges.size() > 0) {
-            energy["electronic.point_charge"] = 2 * expectation(mo.kind, mo.D, Vpc);
+            energy["electronic.point_charge"] =
+                2 * expectation(mo.kind, mo.D, Vpc);
         }
         m_procedure.update_scf_energy(energy, incremental);
     }

@@ -430,7 +430,13 @@ class CEModelCrystalGrowthCalculator {
         : m_crystal(crystal),
           m_molecules(m_crystal.symmetry_unique_molecules()),
           m_solvent(solvent), m_interaction_energies(m_molecules.size()),
-          m_crystal_interaction_energies(m_molecules.size()) {}
+          m_crystal_interaction_energies(m_molecules.size()) {
+        occ::log::info("found {} symmetry unique molecules:\n{:<10s} {:>32s}",
+                       m_molecules.size(), "index", "name");
+        for (int i = 0; i < m_molecules.size(); i++) {
+            occ::log::info("{:<4d} {:>32s}", i, m_molecules[i].name());
+        }
+    }
 
     void set_basename(const std::string &basename) { m_basename = basename; }
     void set_wavefunction_choice(WavefunctionChoice choice) {
@@ -1014,6 +1020,7 @@ int main(int argc, char **argv) {
     int threads{1};
     int max_facets{0};
     double radius{3.8}, cg_radius{3.8};
+    double bond_tolerance{0.4};
     bool write_dump_files{false}, spherical{false};
     bool write_kmcpp_file{false};
     bool use_xtb{false};
@@ -1048,9 +1055,13 @@ int main(int argc, char **argv) {
     app.add_flag("--list-available-solvents", list_solvents,
                  "List available solvents and exit");
 
+    app.add_option("--covalent-bond-tolerance", bond_tolerance,
+                   "tolerance for covalent bond detection (angstroms)");
+
     CLI11_PARSE(app, argc, argv);
 
     occ::log::setup_logging(verbosity);
+    occ::core::set_bond_tolerance(bond_tolerance);
 
     if (list_solvents) {
         list_available_solvents();

@@ -126,12 +126,17 @@ JsonBasisReader::JsonBasisReader(const std::string &filename)
     : m_filename(filename) {
     occ::timing::start(occ::timing::category::io);
     std::ifstream file(filename);
+    if (!file.good())
+        throw std::runtime_error("JsonBasisReader file stream: bad");
+    occ::log::trace("Loading JSON basis from file {}", filename);
     parse(file);
     occ::timing::stop(occ::timing::category::io);
 }
 
 JsonBasisReader::JsonBasisReader(std::istream &file) : m_filename("_istream_") {
     occ::timing::start(occ::timing::category::io);
+    if (!file.good())
+        throw std::runtime_error("JsonBasisReader file stream: bad");
     parse(file);
     occ::timing::stop(occ::timing::category::io);
 }
@@ -139,6 +144,9 @@ JsonBasisReader::JsonBasisReader(std::istream &file) : m_filename("_istream_") {
 void JsonBasisReader::parse(std::istream &is) {
     nlohmann::json j;
     is >> j;
+    if (!j.contains("elements"))
+        throw std::runtime_error("JSON basis has no key 'elements'");
+    occ::log::trace("JSON basis has {} elements", j["elements"].size());
     for (auto it = j["elements"].begin(); it != j["elements"].end(); ++it) {
         int atomic_number = 1;
         if (std::isdigit(it.key()[0])) {
@@ -146,8 +154,10 @@ void JsonBasisReader::parse(std::istream &is) {
             occ::log::trace("Reading JSON basis Z = {}", atomic_number);
         } else {
             Element el(it.key());
+            occ::log::trace("Reading JSON basis el = {}", it.key());
             atomic_number = el.atomic_number();
         }
+        occ::log::trace("inserting: basis for Z = {}", atomic_number);
         json_basis.elements.insert(
             {atomic_number, it.value().get<ElementBasis>()});
     }

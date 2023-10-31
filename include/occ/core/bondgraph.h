@@ -1,6 +1,13 @@
 #pragma once
 #include <occ/core/graph.h>
 
+namespace occ::core {
+inline double covalent_bond_tolerance = 0.4;
+inline void set_bond_tolerance(float t) { covalent_bond_tolerance = t; }
+inline double get_bond_tolerance() { return covalent_bond_tolerance; }
+
+} // namespace occ::core
+
 namespace occ::core::graph {
 
 /**
