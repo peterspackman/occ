@@ -1,6 +1,5 @@
 var NAVTREEINDEX11 =
 {
-"structocc_1_1crystal_1_1SurfaceCutResult.html#ada05745757a4a657b678de61a7184eb4":[2,0,1,1,7,9],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ae52c7e9b26f98e54c97913fc7ab9a868":[2,0,1,1,7,13],
 "structocc_1_1dft_1_1AtomGrid.html":[2,0,1,2,3],
 "structocc_1_1dft_1_1AtomGrid.html#a30065460e55708aae8779a76be27b507":[2,0,1,2,3,3],
@@ -249,5 +248,6 @@ var NAVTREEINDEX11 =
 "structocc_1_1io_1_1ECPShell.html#a69933672b9cf93cbe29569080a2746d5":[2,0,1,6,17,1],
 "structocc_1_1io_1_1ECPShell.html#a85f4fc8aaceb075ca442add9f78cbc0d":[2,0,1,6,17,3],
 "structocc_1_1io_1_1ECPShell.html#a957134f0422029fb7793156bcacbf6f8":[2,0,1,6,17,2],
-"structocc_1_1io_1_1ECPShell.html#aeedeb8f2465144018b498a55c42dfaeb":[2,0,1,6,17,0]
+"structocc_1_1io_1_1ECPShell.html#aeedeb8f2465144018b498a55c42dfaeb":[2,0,1,6,17,0],
+"structocc_1_1io_1_1ElectronInput.html":[2,0,1,6,23]
 };

@@ -1,5 +1,7 @@
 var structocc_1_1solvent_1_1SMDSolventParameters =
 [
+    [ "SMDSolventParameters", "structocc_1_1solvent_1_1SMDSolventParameters.html#a6d12635e594e03497369894436f59981", null ],
+    [ "SMDSolventParameters", "structocc_1_1solvent_1_1SMDSolventParameters.html#a610ccd5c330eba2d83fcf0f1ac5193d2", null ],
     [ "acidity", "structocc_1_1solvent_1_1SMDSolventParameters.html#a986045b51eaa207a46cc54c7f67e323a", null ],
     [ "aromaticity", "structocc_1_1solvent_1_1SMDSolventParameters.html#a1a1d9721c900d3ab2c6ebfb59fb0e459", null ],
     [ "basicity", "structocc_1_1solvent_1_1SMDSolventParameters.html#a6d02b2512e40c71095f8c6e6a6ea2528", null ],
