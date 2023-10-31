@@ -853,9 +853,9 @@ class XTBCrystalGrowthCalculator {
                 process_neighbors_for_symmetry_unique_molecule(
                     i, fmt::format("{}_{}_{}", m_basename, i, m_solvent));
 
-            m_solution_terms[i] = solution_term;
+            m_solution_terms[i] = solution_term * AU_TO_KJ_PER_MOL;
             m_lattice_energies.push_back(mol_total);
-            write_energy_summary(mol_total, m_molecules[i], m_solution_terms[i],
+            write_energy_summary(mol_total, m_molecules[i], solution_term,
                                  mol_total_interaction_energy);
         }
     }
@@ -967,10 +967,13 @@ class XTBCrystalGrowthCalculator {
             }
 
             occ::xtb::XTBCalculator xtb(m);
-            m_gas_phase_energies.push_back(xtb.single_point_energy());
+            double e_gas = xtb.single_point_energy();
+            m_gas_phase_energies.push_back(e_gas);
             m_partial_charges.push_back(xtb.partial_charges());
             xtb.set_solvent(m_solvent);
-            m_solvated_energies.push_back(xtb.single_point_energy());
+            double e_solv = xtb.single_point_energy();
+            m_solvated_energies.push_back(e_solv);
+            occ::log::info("Solvation free energy: {:12.6f}\n", e_solv - e_gas);
             index++;
         }
     }

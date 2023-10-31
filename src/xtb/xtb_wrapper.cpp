@@ -163,7 +163,7 @@ double XTBCalculator::single_point_energy() {
     std::vector<std::string> command_line{
         m_xtb_executable_path, xtbinput_filename, "--json", "--grad"};
     if (!m_solvent.empty()) {
-        command_line.push_back("--alpb");
+        command_line.push_back("--cpcmx");
         command_line.push_back(m_solvent);
     }
 

@@ -232,7 +232,7 @@ bool Surface::faces_are_equivalent(const Crystal &crystal, const HKL &hkl1,
 
 std::vector<Molecule> Surface::find_molecule_cell_translations(
     const std::vector<Molecule> &mols, double depth, double cut_offset) const {
-    const double epsilon = 1e-6;
+    const double epsilon = 1e-3;
     const int num_mols = mols.size();
     std::vector<Molecule> result;
     Vec3 unit_normal = normal_vector();
@@ -297,6 +297,12 @@ std::vector<Molecule> Surface::find_molecule_cell_translations(
     occ::log::debug("Upper corner crystal: [{:9.3f}, {:9.3f}, {:9.3f}]",
                     upper_vec_crystal(0), upper_vec_crystal(1),
                     upper_vec_crystal(2));
+    occ::log::debug("Lower corner surface: [{:9.3f}, {:9.3f}, {:9.3f}]",
+                    lower_vec_surface(0), lower_vec_surface(1),
+                    lower_vec_surface(2));
+    occ::log::debug("Upper corner surface: [{:9.3f}, {:9.3f}, {:9.3f}]",
+                    upper_vec_surface(0), upper_vec_surface(1),
+                    upper_vec_surface(2));
 
     Mat3N centroids(3, num_mols);
     for (int i = 0; i < num_mols; i++)
@@ -305,8 +311,8 @@ std::vector<Molecule> Surface::find_molecule_cell_translations(
     Mat3N frac_centroids_crystal = m_crystal_unit_cell.to_fractional(centroids);
 
     // buffer these with an extra 1 cell - may not be necessary
-    HKL upper = HKL::ceil(upper_vec_crystal.array() + 0.0);
-    HKL lower = HKL::floor(lower_vec_crystal.array() - 0.0);
+    HKL upper = HKL::ceil(upper_vec_crystal.array() + 1.0);
+    HKL lower = HKL::floor(lower_vec_crystal.array() - 1.0);
 
     for (int h = lower.h; h <= upper.h; h++) {
         for (int k = lower.k; k <= upper.k; k++) {
@@ -328,6 +334,12 @@ std::vector<Molecule> Surface::find_molecule_cell_translations(
                         mol_t.set_unit_cell_molecule_idx(i);
                         const auto &tpos = mol_t.positions();
                         result.push_back(mol_t);
+                        Vec3 centroid = mol_t.centroid();
+                        Vec3 centroid_frac = basis_inverse * centroid;
+                        occ::log::debug(
+                            "Molecule {} added with fractional (surface) "
+                            "centroid: [{:9.3f}, {:9.3f}, {:9.3f}]",
+                            i, tmp(0, i), tmp(1, i), tmp(2, i));
                     }
                 }
             }
@@ -459,7 +471,7 @@ SurfaceCutResult::SurfaceCutResult(const CrystalDimers &dimers) {
 
 SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
     const CrystalDimers &crystal_dimers, double cut_offset) const {
-    const double epsilon = 1e-6;
+    const double epsilon = 1e-3;
     SurfaceCutResult result(crystal_dimers);
     result.cut_offset = cut_offset;
 

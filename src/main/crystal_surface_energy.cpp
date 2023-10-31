@@ -30,13 +30,13 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
     {
         int i = 0;
         for (const auto &mol : crystal.unit_cell_molecules()) {
-            unique_positions.col(i) = mol.center_of_mass();
+            unique_positions.col(i) = mol.centroid();
             i++;
         }
     }
     const double kjmol_jm2_fac = 0.16604390671;
 
-    for (const auto &surf : surfaces) {
+    for (auto &surf : surfaces) {
         fmt::print("{:=^72s}\n", "  Surface  ");
         surf.print();
         auto cuts = surf.possible_cuts(unique_positions);
