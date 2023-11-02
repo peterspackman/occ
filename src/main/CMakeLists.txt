@@ -2,9 +2,11 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_surface_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/monomer_wavefunctions.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_partition.cpp"
@@ -105,24 +107,6 @@ target_link_libraries(occ-desc
     CLI11::CLI11
 )
 set_target_properties(occ-desc
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-
-add_executable(occ-elat EXCLUDE_FROM_ALL
-    "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp")
-target_link_libraries(occ-elat
-    PUBLIC
-    occ_qm
-    occ_dft
-    occ_io
-    occ_crystal
-    occ_interaction
-    occ_main
-)
-
-set_target_properties(occ-elat
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
