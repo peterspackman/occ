@@ -1,4 +1,4 @@
-#include <bits/std_abs.h>
+#include <cmath>
 #include <functional>
 #include <occ/core/optimize.h>
 #include <stddef.h>

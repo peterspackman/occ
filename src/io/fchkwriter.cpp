@@ -188,7 +188,7 @@ void FchkVectorWriter::operator()(const std::vector<bool> &values) {
     const std::string value_format{"{:1d}"};
     fmt::print(destination, "{:40s}   L   N={:12d}\n", key, values.size());
     int count = 0;
-    for (const auto &value : values) {
+    for (bool value : values) {
         fmt::print(destination, fmt::runtime(value_format), value);
         count++;
         if (count % num_per_line == 0)

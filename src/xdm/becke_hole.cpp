@@ -1,4 +1,3 @@
-#include <bits/std_abs.h>
 #include <cmath>
 #include <occ/xdm/becke_hole.h>
 

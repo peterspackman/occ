@@ -1,11 +1,11 @@
 #ifndef _WIN32
+
 #include "ProcessBuilder.hpp"
 #include "basic_types.hpp"
 #include "environ.hpp"
 #include "pipe.hpp"
 #include "shell_utils.hpp"
 #include <cstring>
-#include <ext/alloc_traits.h>
 #include <iosfwd>
 #include <map>
 #include <mutex>
@@ -15,6 +15,10 @@
 #include <string>
 #include <utility>
 #include <vector>
+#ifndef __APPLE__
+#include <alloc_traits.h>
+#endif
+
 
 extern "C" char **environ;
 

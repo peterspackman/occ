@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <utility>
 #include <vector>
+#include <string>
+#include <sstream>
 
 #ifdef _WIN32
 #include <windows.h>
