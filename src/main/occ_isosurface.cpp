@@ -1,6 +1,3 @@
-#include <CLI/App.hpp>
-#include <CLI/Config.hpp>
-#include <CLI/Formatter.hpp>
 #include <chrono>
 #include <filesystem>
 #include <fmt/os.h>
@@ -14,6 +11,7 @@
 #include <occ/geometry/linear_hashed_marching_cubes.h>
 #include <occ/io/xyz.h>
 #include <occ/main/isosurface.h>
+#include <occ/main/occ_isosurface.h>
 
 namespace fs = std::filesystem;
 using occ::IVec;
@@ -251,48 +249,45 @@ VertexProperties compute_surface_properties(const Molecule &m1,
     return properties;
 }
 
-int main(int argc, char *argv[]) {
-    CLI::App app(
-        "occ-hs - A program for Hirshfeld and promolecule surface generation");
-    std::string geometry_filename{""}, verbosity{"normal"};
-    std::optional<std::string> environment_filename{};
-    int threads{1}, max_depth{4};
-    double separation{0.2};
-    float isovalue{0.02};
-    float background_density{0.0};
+namespace occ::main {
 
-    CLI::Option *input_option = app.add_option(
-        "geometry_file", geometry_filename, "xyz file of geometry");
-    input_option->required();
-    app.add_option("environment_file", environment_filename,
-                   "xyz file of surroundings for Hirshfeld surface");
-    app.add_option("-t,--threads", threads, "Number of threads");
-    app.add_option("--max-depth", max_depth, "Maximum voxel depth");
-    app.add_option("--separation", separation, "targt voxel separation");
-    app.add_option("--isovalue", isovalue, "target isovalue");
-    app.add_option("--background-density", background_density,
-                   "add background density to close surface");
-    // logging verbosity
-    app.add_option("-v,--verbosity", verbosity,
-                   "logging verbosity {silent,minimal,normal,verbose,debug}");
+CLI::App *add_isosurface_subcommand(CLI::App &app) {
+    CLI::App *iso =
+        app.add_subcommand("isosurface", "compute molecular isosurfaces");
+    auto config = std::make_shared<IsosurfaceConfig>();
 
-    CLI11_PARSE(app, argc, argv);
+    iso->add_option("geometry", config->geometry_filename,
+                    "input geometry file (xyz)")
+        ->required();
 
-    occ::log::setup_logging(verbosity);
-    occ::parallel::set_num_threads(std::max(threads, 1));
-    occ::timing::start(occ::timing::category::global);
+    iso->add_option("environment", config->environment_filename,
+                    "environment geometry file (xyz)");
 
+    iso->add_option("--max-depth", config->max_depth, "Maximum voxel depth");
+    iso->add_option("--separation", config->separation,
+                    "targt voxel separation");
+    iso->add_option("--isovalue", config->isovalue, "target isovalue");
+    iso->add_option("--background-density", config->background_density,
+                    "add background density to close surface");
+
+    iso->fallthrough();
+    iso->callback([config]() { run_isosurface_subcommand(*config); });
+    return iso;
+}
+
+void run_isosurface_subcommand(IsosurfaceConfig const &config) {
     IsosurfaceMesh mesh;
     VertexProperties properties;
 
-    if (environment_filename) {
-        Molecule m1 = occ::io::molecule_from_xyz_file(geometry_filename);
-        Molecule m2 = occ::io::molecule_from_xyz_file(*environment_filename);
+    if (!config.environment_filename.empty()) {
+        Molecule m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+        Molecule m2 =
+            occ::io::molecule_from_xyz_file(config.environment_filename);
 
         occ::log::info("Interior has {} atoms", m1.size());
         occ::log::debug("Input geometry {}");
-        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}", geometry_filename,
-                        "sym", "x", "y", "z");
+        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}",
+                        config.geometry_filename, "sym", "x", "y", "z");
         for (const auto &atom : m1.atoms()) {
             occ::log::debug("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
                             Element(atom.atomic_number).symbol(), atom.x,
@@ -301,8 +296,8 @@ int main(int argc, char *argv[]) {
 
         occ::log::info("Environment has {} atoms", m2.size());
         occ::log::debug("Input geometry {}");
-        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}", geometry_filename,
-                        "sym", "x", "y", "z");
+        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}",
+                        config.geometry_filename, "sym", "x", "y", "z");
         for (const auto &atom : m2.atoms()) {
             occ::log::debug("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
                             Element(atom.atomic_number).symbol(), atom.x,
@@ -310,17 +305,17 @@ int main(int argc, char *argv[]) {
         }
 
         auto func = StockholderWeightFunctor(
-            m1, m2, separation * occ::units::ANGSTROM_TO_BOHR);
-        func.set_background_density(background_density);
+            m1, m2, config.separation * occ::units::ANGSTROM_TO_BOHR);
+        func.set_background_density(config.background_density);
         mesh = extract_surface(func);
         properties = compute_surface_properties(m1, m2, mesh.vertices);
     } else {
-        Molecule m = occ::io::molecule_from_xyz_file(geometry_filename);
+        Molecule m = occ::io::molecule_from_xyz_file(config.geometry_filename);
         occ::log::info("Molecule has {} atoms", m.size());
 
         occ::log::debug("Input geometry {}");
-        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}", geometry_filename,
-                        "sym", "x", "y", "z");
+        occ::log::debug("{:3s} {:^10s} {:^10s} {:^10s}",
+                        config.geometry_filename, "sym", "x", "y", "z");
         for (const auto &atom : m.atoms()) {
             occ::log::debug("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
                             Element(atom.atomic_number).symbol(), atom.x,
@@ -328,8 +323,8 @@ int main(int argc, char *argv[]) {
         }
 
         auto func = PromoleculeDensityFunctor(
-            m, separation * occ::units::ANGSTROM_TO_BOHR);
-        func.set_isovalue(isovalue);
+            m, config.separation * occ::units::ANGSTROM_TO_BOHR);
+        func.set_isovalue(config.isovalue);
         mesh = extract_surface(func);
     }
 
@@ -342,8 +337,6 @@ int main(int argc, char *argv[]) {
 
     occ::log::info("Writing surface to {}", "surface.obj");
     write_obj_file("surface.obj", mesh, properties);
-
-    occ::timing::stop(occ::timing::category::global);
-    occ::timing::print_timings();
-    return 0;
 }
+
+} // namespace occ::main

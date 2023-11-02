@@ -3,6 +3,7 @@
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/main/occ_elat.h>
+#include <occ/main/occ_isosurface.h>
 #include <occ/main/occ_pair.h>
 #include <occ/main/occ_scf.h>
 
@@ -40,6 +41,7 @@ int main(int argc, char *argv[]) {
     auto *scf = occ::main::add_scf_subcommand(app);
     auto *pair = occ::main::add_pair_subcommand(app);
     auto *elat = occ::main::add_elat_subcommand(app);
+    auto *iso = occ::main::add_isosurface_subcommand(app);
     app.require_subcommand();
 
     const std::string error_format =

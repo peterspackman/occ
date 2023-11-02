@@ -121,29 +121,29 @@ namespace occ::main {
 
 CLI::App *add_elat_subcommand(CLI::App &app) {
 
-    CLI::App *pair =
+    CLI::App *elat =
         app.add_subcommand("elat", "compute crystal lattice energy");
     auto config = std::make_shared<LatticeConvergenceSettings>();
 
-    pair->add_option("crystal", config->crystal_filename,
+    elat->add_option("crystal", config->crystal_filename,
                      "input crystal structure (CIF)")
         ->required();
-    pair->add_option("-m,--model", config->model_name, "Energy model");
-    pair->add_option("--json", config->output_json_filename,
+    elat->add_option("-m,--model", config->model_name, "Energy model");
+    elat->add_option("--json", config->output_json_filename,
                      "JSON filename for output");
-    pair->add_option("-r,--radius", config->max_radius,
+    elat->add_option("-r,--radius", config->max_radius,
                      "maximum radius (Angstroms) for neighbours");
-    pair->add_option("--radius-increment", config->radius_increment,
+    elat->add_option("--radius-increment", config->radius_increment,
                      "step size (Angstroms) direct space summation");
-    pair->add_flag("-w,--wolf", config->wolf_sum,
+    elat->add_flag("-w,--wolf", config->wolf_sum,
                    "accelerate convergence using Wolf sum");
-    pair->add_flag(
+    elat->add_flag(
         "--crystal-polarization,--crystal_polarization",
         config->crystal_field_polarization,
         "calculate polarization term using full crystal electric field");
-    pair->fallthrough();
-    pair->callback([config]() { run_elat_subcommand(*config); });
-    return pair;
+    elat->fallthrough();
+    elat->callback([config]() { run_elat_subcommand(*config); });
+    return elat;
 }
 
 void run_elat_subcommand(const LatticeConvergenceSettings &settings) {

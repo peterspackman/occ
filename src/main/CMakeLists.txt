@@ -6,6 +6,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
@@ -81,18 +82,6 @@ target_link_libraries(occ-cg
 )
 
 set_target_properties(occ-cg
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-add_executable(hs EXCLUDE_FROM_ALL
-    "${CMAKE_CURRENT_SOURCE_DIR}/hs.cpp")
-target_link_libraries(hs
-    PUBLIC
-    occ_main
-    CLI11::CLI11
-)
-set_target_properties(hs
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
