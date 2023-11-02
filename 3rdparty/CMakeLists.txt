@@ -1,21 +1,21 @@
 CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"
-    VERSION "9.1.0"
-    GIT_TAG "9.1.0"
+    VERSION "10.1.1"
+    GIT_TAG "10.1.1"
 )
 
 CPMAddPackage(
     NAME spdlog
     GITHUB_REPOSITORY "gabime/spdlog"
     OPTIONS "SPDLOG_FMT_EXTERNAL ON"
-    VERSION "1.10.0"
+    VERSION "1.12.0"
 )
 
 CPMAddPackage(
     NAME unordered_dense
     GITHUB_REPOSITORY "martinus/unordered_dense"
-    VERSION "4.0.4"
+    VERSION "4.1.2"
 )
 
 CPMAddPackage(
@@ -33,7 +33,7 @@ CPMAddPackage(
 CPMAddPackage(
     NAME CLI11
     GITHUB_REPOSITORY "CLIUtils/CLI11"
-    GIT_TAG "1a26afab049bb75c0523a754d62b961439248d44"
+    VERSION "2.3.2"
 )
 
 if(NOT "${USE_SYSTEM_EIGEN}")
@@ -89,7 +89,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
     GIT_TAG master
     OPTIONS "WITH_FORTRAN OFF" "WITH_CINT2_INTERFACE OFF" "ENABLE_STATIC ON" "BUILD_SHARED_LIBS OFF" "PYPZPX ON" "BUILD_MARCH_NATIVE ON" "WITH_RANGE_COULOMB ON"
-    VERSION "5.4.0"
+    VERSION "6.0.0"
 )
 add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(libcint::libcint INTERFACE cint)
@@ -111,7 +111,7 @@ if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc
     GIT_REPOSITORY "https://gitlab.com/libxc/libxc.git"
-    GIT_TAG 5.2.3
+    GIT_TAG 6.2.2
     OPTIONS "BUILD_TESTING OFF" "ENABLE_XHOST ${ENABLE_HOST_OPT}" "BUILD_FPIC ${WITH_PYTHON_BINDINGS}"
 )
 add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 
