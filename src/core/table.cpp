@@ -23,14 +23,15 @@ size_t Table::num_rows() const {
 
 void Table::print() const {
     for (const auto &key : m_column_order) {
-        fmt::print(m_column_config.at(key).format_string(), key);
+        std::string fs = m_column_config.at(key).format_string();
+        fmt::print(fmt::runtime(fs), key);
     }
     fmt::print("\n");
     for (size_t row = 0; row < num_rows(); row++) {
         for (const std::string &key : m_column_order) {
             const auto &c = m_columns.at(key);
             const auto &config = m_column_config.at(key);
-            fmt::print(config.format_string(),
+            fmt::print(fmt::runtime(config.format_string()),
                        (row < c.size()) ? c[row] : config.fill_value);
         }
         fmt::print("\n");

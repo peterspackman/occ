@@ -1,5 +1,6 @@
-#include <fmt/ostream.h>
 #include <ankerl/unordered_dense.h>
+#include <fmt/ostream.h>
+#include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/crystalgrower.h>
@@ -98,11 +99,9 @@ struct FormulaIndex {
 
 struct FormulaIndexHash {
     uint64_t operator()(const FormulaIndex &x) const noexcept {
-        return ankerl::unordered_dense::detail::wyhash::mix(x.count,
-                                                            x.letter);
+        return ankerl::unordered_dense::detail::wyhash::mix(x.count, x.letter);
     }
 };
-
 
 std::vector<FormulaIndex>
 build_formula_indices_for_symmetry_unique_molecules(const Crystal &crystal) {
@@ -136,7 +135,9 @@ void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
     std::vector<FormulaIndex> sym_formula_indices =
         build_formula_indices_for_symmetry_unique_molecules(crystal);
 
-    ankerl::unordered_dense::map<FormulaIndex, std::vector<double>, FormulaIndexHash> f2e;
+    ankerl::unordered_dense::map<FormulaIndex, std::vector<double>,
+                                 FormulaIndexHash>
+        f2e;
 
     // TODO fix for multiple molecules in asymmetric unit
     // 1A -> 1 is the conformer number, A is the compound i.e. chemical
@@ -149,9 +150,9 @@ void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
             f2e.insert({formula_index, {}});
         }
         std::vector<double> &unique_interaction_energies = f2e[formula_index];
-        fmt::print("uc mol {}, asym = {}, formula = {} {}\n", uc_idx,
-                   mol.asymmetric_molecule_idx(), formula_index.count,
-                   formula_index.letter);
+        occ::log::debug("uc mol {}, asym = {}, formula = {} {}", uc_idx,
+                        mol.asymmetric_molecule_idx(), formula_index.count,
+                        formula_index.letter);
         auto mol_neighbors = neighbors[uc_idx];
         for (const auto &[n, unique_index] : neighbors[uc_idx]) {
             const auto uc_shift = n.b().cell_shift();

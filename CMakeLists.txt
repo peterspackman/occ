@@ -101,7 +101,7 @@ endif()
 
 include(GNUInstallDirs)
 include(InstallRequiredSystemLibraries)
-install(TARGETS occ occ-cg
+install(TARGETS occ
     EXPORT occ-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

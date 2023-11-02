@@ -109,8 +109,8 @@ void PairEnergy::compute() {
     auto interaction_energy = interaction(a.wfn, b.wfn);
     occ::timing::stop(occ::timing::category::global);
 
-    occ::log::info("Monomer A energies\n{}", a.wfn.energy);
-    occ::log::info("Monomer B energies\n{}", b.wfn.energy);
+    occ::log::info("Monomer A energies\n{}", a.wfn.energy.to_string());
+    occ::log::info("Monomer B energies\n{}", b.wfn.energy.to_string());
 
     occ::log::info("Dimer");
 

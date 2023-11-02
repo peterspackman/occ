@@ -1,7 +1,7 @@
 #pragma once
+#include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <ankerl/unordered_dense.h>
 #include <occ/core/linear_algebra.h>
 #include <optional>
 #include <string>
@@ -66,7 +66,7 @@ class Table {
         size_t num_added = 0;
         size_t cell_width = name.size();
         for (const auto &val : column) {
-            std::string cell = fmt::format(fmt_string, val);
+            std::string cell = fmt::format(fmt::runtime(fmt_string), val);
             cell_width = std::max(cell_width, cell.size());
             col.push_back(cell);
             num_added++;
@@ -94,7 +94,8 @@ class Table {
             size_t num_added = 0;
             size_t cell_width = colname.size();
             for (Eigen::Index r = 0; r < num_values; r++) {
-                std::string cell = fmt::format(fmt_string, a(r, c));
+                std::string cell =
+                    fmt::format(fmt::runtime(fmt_string), a(r, c));
                 cell_width = std::max(cell_width, cell.size());
                 col.push_back(cell);
                 num_added++;
@@ -116,7 +117,9 @@ class Table {
   private:
     std::vector<std::string> m_column_order;
     RowConfiguration m_row_config;
-    ankerl::unordered_dense::map<std::string, std::vector<std::string>> m_columns;
-    ankerl::unordered_dense::map<std::string, ColumnConfiguration> m_column_config;
+    ankerl::unordered_dense::map<std::string, std::vector<std::string>>
+        m_columns;
+    ankerl::unordered_dense::map<std::string, ColumnConfiguration>
+        m_column_config;
 };
 } // namespace occ::io

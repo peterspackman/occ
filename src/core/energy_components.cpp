@@ -15,4 +15,33 @@ std::vector<std::string> EnergyComponents::categories() const {
     return result;
 }
 
+std::string EnergyComponents::to_string() const {
+    std::string result =
+        fmt::format("\n{:32s} {:>20s}\n\n", "Component", "Energy (Hartree)");
+
+    ankerl::unordered_dense::set<std::string> printed;
+
+    auto cats = categories();
+    for (const auto &c : cats) {
+        result += fmt::format("{:-<72s}\n", c + "  ");
+        for (const auto &component : *this) {
+            if (printed.find(component.first) != printed.end())
+                continue;
+
+            if (component.first.rfind(c, 0) == 0) {
+                result += fmt::format("{:32s} {:20.12f}\n", component.first,
+                                      component.second);
+                printed.insert(component.first);
+            }
+        }
+    }
+
+    result += fmt::format("\n\n");
+    for (const auto &component : *this) {
+        if (printed.find(component.first) == printed.end())
+            result += fmt::format("{:32s} {:20.12f}\n", component.first,
+                                  component.second);
+    }
+    return result;
+}
 } // namespace occ::core

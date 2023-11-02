@@ -17,22 +17,12 @@
 #include <occ/qm/wavefunction.h>
 
 namespace fs = std::filesystem;
-using occ::core::Dimer;
-using occ::core::Element;
-using occ::core::Molecule;
 using occ::crystal::Crystal;
-using occ::crystal::SymmetryOperation;
 using occ::interaction::CEEnergyComponents;
-using occ::interaction::CEModelInteraction;
 using occ::main::LatticeConvergenceSettings;
-using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
-using occ::units::AU_TO_KCAL_PER_MOL;
-using occ::units::AU_TO_KJ_PER_MOL;
-using occ::units::BOHR_TO_ANGSTROM;
-using occ::util::all_close;
 
-Crystal read_crystal(const std::string &filename) {
+inline Crystal read_crystal(const std::string &filename) {
     occ::io::CifParser parser;
     return parser.parse_crystal(filename).value();
 }
@@ -103,8 +93,8 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
                    e_rep = e.repulsion_kjmol(), epol = e.polarization_kjmol(),
                    edisp = e.dispersion_kjmol(), etot_mol = e.total_kjmol();
             molecule_total = molecule_total + e;
-            occ::log::info(row_fmt_string, rn, rc, s_ab, ecoul, e_ex, e_rep,
-                           epol, edisp, etot_mol);
+            occ::log::info(fmt::runtime(row_fmt_string), rn, rc, s_ab, ecoul,
+                           e_ex, e_rep, epol, edisp, etot_mol);
             j++;
         }
         occ::log::info("Molecule {} total: {:.3f} kJ/mol ({} pairs)\n", mol_idx,

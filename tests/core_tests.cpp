@@ -170,10 +170,10 @@ TEST_CASE("Multipole constructor", "[multipole]") {
     auto d = Multipole<1>{};
     auto q = Multipole<2>{};
     auto o = Multipole<3>{};
-    fmt::print("Charge\n{}\n", c);
-    fmt::print("Dipole\n{}\n", d);
-    fmt::print("Quadrupole\n{}\n", q);
-    fmt::print("Octupole\n{}\n", o);
+    fmt::print("Charge\n{}\n", c.to_string());
+    fmt::print("Dipole\n{}\n", d.to_string());
+    fmt::print("Quadrupole\n{}\n", q.to_string());
+    fmt::print("Octupole\n{}\n", o.to_string());
     REQUIRE(c.charge() == 0.0);
 }
 
@@ -182,7 +182,7 @@ TEST_CASE("Multipole addition", "[multipole]") {
                            10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0}};
     auto q = Multipole<2>{{1.0, 0.0, 0.0, 0.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0}};
     auto sum_oq = o + q;
-    fmt::print("Result\n{}\n", sum_oq);
+    fmt::print("Result\n{}\n", sum_oq.to_string());
     for (unsigned int i = 0; i < o.num_components; i++) {
         if (i < q.num_components)
             REQUIRE(sum_oq.components[i] ==

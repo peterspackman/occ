@@ -7,6 +7,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_cg.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
@@ -33,7 +34,7 @@ target_include_directories(occ_main PUBLIC
     ${GEMMI_INCLUDE_DIR}
 )
 
-target_compile_features(occ_main PUBLIC cxx_std_17)
+target_compile_features(occ_main PUBLIC cxx_std_20)
 
 add_executable(xdm EXCLUDE_FROM_ALL 
     "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")
@@ -65,51 +66,6 @@ add_executable(make_radial_interpolators EXCLUDE_FROM_ALL
     "${CMAKE_CURRENT_SOURCE_DIR}/make_radial_interpolators.cpp")
 target_link_libraries(make_radial_interpolators PUBLIC occ_slater)
 set_target_properties(make_radial_interpolators
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-add_executable(occ-cg "${CMAKE_CURRENT_SOURCE_DIR}/occ_cg.cpp")
-target_link_libraries(occ-cg
-    PUBLIC
-    occ_qm
-    occ_dft
-    occ_solvent
-    occ_io
-    occ_crystal
-    occ_interaction
-    occ_main
-)
-
-set_target_properties(occ-cg
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-add_executable(occ-desc EXCLUDE_FROM_ALL
-    "${CMAKE_CURRENT_SOURCE_DIR}/occ_desc.cpp")
-target_link_libraries(occ-desc
-    PUBLIC
-    occ_slater
-    occ_sht
-    occ_io
-    CLI11::CLI11
-)
-set_target_properties(occ-desc
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-add_executable(occ-xtb EXCLUDE_FROM_ALL
-	"${CMAKE_CURRENT_SOURCE_DIR}/xtb.cpp")
-target_link_libraries(occ-xtb
-    PUBLIC
-    occ_main
-    occ_xtb
-    LBFGSpp::LBFGSpp
-)
-
-set_target_properties(occ-xtb
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )

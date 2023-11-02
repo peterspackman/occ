@@ -52,6 +52,18 @@ struct Energy {
             ecp + rhs.ecp,
         };
     }
+    inline std::string to_string() const {
+        return fmt::format("{:10s} {:20.12f}\n"
+                           "{:10s} {:20.12f}\n"
+                           "{:10s} {:20.12f}\n"
+                           "{:10s} {:20.12f}\n"
+                           "{:10s} {:20.12f}\n"
+                           "{:10s} {:20.12f}\n"
+                           "{:10s} {:20.12f}\n",
+                           "E_coul", coulomb, "E_ex", exchange, "E_nn",
+                           nuclear_repulsion, "E_en", nuclear_attraction,
+                           "E_kin", kinetic, "E_1e", core, "E_ecp", ecp);
+    }
 };
 
 struct Wavefunction {
@@ -115,32 +127,3 @@ struct Wavefunction {
 };
 
 } // namespace occ::qm
-
-template <> struct fmt::formatter<occ::qm::Energy> {
-    char presentation{'f'};
-
-    constexpr auto parse(format_parse_context &ctx) {
-        auto it = ctx.begin(), end = ctx.end();
-        if (it != end && (*it == 'f' || *it == 'e'))
-            presentation = *it++;
-
-        if (it != end && *it != '}')
-            throw format_error("invalid format");
-
-        return it;
-    }
-
-    template <typename FormatContext>
-    auto format(const occ::qm::Energy &e, FormatContext &ctx) {
-        auto fmt_string = fmt::format("{{:32s}} {{:20.12{}}}\n", presentation);
-        auto result = format_to(ctx.out(), fmt_string, "E_coul", e.coulomb);
-        result = format_to(ctx.out(), fmt_string, "E_ex", e.exchange);
-        result = format_to(ctx.out(), fmt_string, "E_nn", e.nuclear_repulsion);
-        result = format_to(ctx.out(), fmt_string, "E_en", e.nuclear_attraction);
-        result = format_to(ctx.out(), fmt_string, "E_kin", e.kinetic);
-        result = format_to(ctx.out(), fmt_string, "E_1e", e.core);
-        if (e.ecp != 0.0)
-            result = format_to(ctx.out(), fmt_string, "E_ecp", e.ecp);
-        return result;
-    }
-};

@@ -35,4 +35,4 @@ target_include_directories(occ_io PUBLIC
     ${GEMMI_INCLUDE_DIR}
 )
 
-target_compile_features(occ_io PUBLIC cxx_std_17)
+target_compile_features(occ_io PUBLIC cxx_std_20)

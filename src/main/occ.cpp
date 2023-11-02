@@ -2,6 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
+#include <occ/main/occ_cg.h>
 #include <occ/main/occ_elat.h>
 #include <occ/main/occ_isosurface.h>
 #include <occ/main/occ_pair.h>
@@ -39,13 +40,13 @@ int main(int argc, char *argv[]) {
     verbosity_option->force_callback();
 
     auto *scf = occ::main::add_scf_subcommand(app);
+    auto *cg = occ::main::add_cg_subcommand(app);
     auto *pair = occ::main::add_pair_subcommand(app);
     auto *elat = occ::main::add_elat_subcommand(app);
     auto *iso = occ::main::add_isosurface_subcommand(app);
     app.require_subcommand();
 
-    const std::string error_format =
-        "exception:\n    {}\nterminating program.\n";
+    constexpr char *error_format = "exception:\n    {}\nterminating program.\n";
     try {
         CLI11_PARSE(app, argc, argv);
     } catch (const char *ex) {

@@ -151,136 +151,82 @@ template <unsigned int L> struct Multipole {
         }
         return result;
     }
-};
 
-} // namespace occ::core
-
-template <unsigned int L> struct fmt::formatter<occ::core::Multipole<L>> {
-    char presentation = 'f';
-    constexpr auto parse(format_parse_context &ctx) -> decltype(ctx.begin()) {
-        auto it = ctx.begin(), end = ctx.end();
-        if (it != end && (*it == 'f' || *it == 'e'))
-            presentation = *it++;
-
-        if (it != end && *it != '}')
-            throw format_error("invalid format");
-        return it;
-    }
-
-    template <typename FormatContext>
-    auto format(const occ::core::Multipole<L> &m, FormatContext &ctx)
-        -> decltype(ctx.out()) {
-        constexpr auto &names = occ::core::multipole_component_names;
+    inline std::string to_string() const {
+        constexpr auto names = multipole_component_names;
         if constexpr (L == 0) {
-            return format_to(ctx.out(),
-                             presentation == 'f' ? "{:5s} {:12.6f}\n"
-                                                 : "{:5s} {:12.6e}\n",
-                             names[0], m.components[0]);
+            return fmt::format("{:5s} {:12.6f}\n", names[0], components[0]);
         } else if constexpr (L == 1) {
-            return format_to(
-                ctx.out(),
-                presentation == 'f'
-                    ? "{:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                    : "{:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n",
-                names[0], m.components[0], names[1], m.components[1], names[2],
-                m.components[2], names[3], m.components[3]);
+            return fmt::format("{:5s} {:12.6f}\n"
+                               "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} "
+                               "{:12.6f}\n",
+                               names[0], components[0], names[1], components[1],
+                               names[2], components[2], names[3],
+                               components[3]);
         } else if constexpr (L == 2) {
-            return format_to(
-                ctx.out(),
-                presentation == 'f'
-                    ? "{:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                    : "{:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n",
-                names[0], m.components[0], names[1], m.components[1], names[2],
-                m.components[2], names[3], m.components[3], names[4],
-                m.components[4], names[5], m.components[5], names[6],
-                m.components[6], names[7], m.components[7], names[8],
-                m.components[8], names[9], m.components[9]);
+            return fmt::format(
+                "{:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n",
+                names[0], components[0], names[1], components[1], names[2],
+                components[2], names[3], components[3], names[4], components[4],
+                names[5], components[5], names[6], components[6], names[7],
+                components[7], names[8], components[8], names[9],
+                components[9]);
         } else if constexpr (L == 3) {
-            return format_to(
-                ctx.out(),
-                presentation == 'f'
-                    ? "{:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}\n"
-                    : "{:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}\n",
-                names[0], m.components[0], names[1], m.components[1], names[2],
-                m.components[2], names[3], m.components[3], names[4],
-                m.components[4], names[5], m.components[5], names[6],
-                m.components[6], names[7], m.components[7], names[8],
-                m.components[8], names[9], m.components[9], names[10],
-                m.components[10], names[11], m.components[11], names[12],
-                m.components[12], names[13], m.components[13], names[14],
-                m.components[14], names[15], m.components[15], names[16],
-                m.components[16], names[17], m.components[17], names[18],
-                m.components[18], names[19], m.components[19]);
+            return fmt::format(
+                "{:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}\n",
+                names[0], components[0], names[1], components[1], names[2],
+                components[2], names[3], components[3], names[4], components[4],
+                names[5], components[5], names[6], components[6], names[7],
+                components[7], names[8], components[8], names[9], components[9],
+                names[10], components[10], names[11], components[11], names[12],
+                components[12], names[13], components[13], names[14],
+                components[14], names[15], components[15], names[16],
+                components[16], names[17], components[17], names[18],
+                components[18], names[19], components[19]);
         } else if constexpr (L == 4) {
-            return format_to(
-                ctx.out(),
-                presentation == 'f'
-                    ? "{:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                    : "{:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}    {:5s} {:12.6e}    {:5s} {:12.6e}\n"
-                      "{:5s} {:12.6e}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
-                      "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n",
-                names[0], m.components[0], names[1], m.components[1], names[2],
-                m.components[2], names[3], m.components[3], names[4],
-                m.components[4], names[5], m.components[5], names[6],
-                m.components[6], names[7], m.components[7], names[8],
-                m.components[8], names[9], m.components[9], names[10],
-                m.components[10], names[11], m.components[11], names[12],
-                m.components[12], names[13], m.components[13], names[14],
-                m.components[14], names[15], m.components[15], names[16],
-                m.components[16], names[17], m.components[17], names[18],
-                m.components[18], names[19], m.components[19], names[20],
-                m.components[20], names[21], m.components[21], names[22],
-                m.components[22], names[23], m.components[23], names[24],
-                m.components[24], names[25], m.components[25], names[26],
-                m.components[26], names[27], m.components[27], names[28],
-                m.components[28], names[29], m.components[29], names[30],
-                m.components[30], names[31], m.components[31], names[32],
-                m.components[32], names[33], m.components[33], names[34],
-                m.components[34]);
+            return fmt::format(
+                "{:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n"
+                "{:5s} {:12.6f}    {:5s} {:12.6f}    {:5s} {:12.6f}\n",
+                names[0], components[0], names[1], components[1], names[2],
+                components[2], names[3], components[3], names[4], components[4],
+                names[5], components[5], names[6], components[6], names[7],
+                components[7], names[8], components[8], names[9], components[9],
+                names[10], components[10], names[11], components[11], names[12],
+                components[12], names[13], components[13], names[14],
+                components[14], names[15], components[15], names[16],
+                components[16], names[17], components[17], names[18],
+                components[18], names[19], components[19], names[20],
+                components[20], names[21], components[21], names[22],
+                components[22], names[23], components[23], names[24],
+                components[24], names[25], components[25], names[26],
+                components[26], names[27], components[27], names[28],
+                components[28], names[29], components[29], names[30],
+                components[30], names[31], components[31], names[32],
+                components[32], names[33], components[33], names[34],
+                components[34]);
         }
     }
 };
+
+} // namespace occ::core

@@ -158,31 +158,6 @@ void CEModelInteraction::set_use_xdm_dimer_parameters(bool value) {
     m_use_xdm_dimer_parameters = value;
 }
 
-void dump_matrix(const Mat &matrix) {
-    size_t maxdim = std::max(matrix.rows(), matrix.cols());
-    Eigen::Index fields = 5;
-
-    if (fields == 0)
-        fields = matrix.rows();
-    size_t n_block = static_cast<size_t>((matrix.cols() - 0.1) / fields) + 1;
-    for (size_t block = 0; block < n_block; block++) {
-        Eigen::Index f = fields * block;
-        Eigen::Index l = std::min(f + fields, matrix.cols());
-        fmt::print("{:8s}", " ");
-        for (size_t j = f; j < l; j++) {
-            fmt::print(" {:8d}", j);
-        }
-        fmt::print("\n");
-        for (size_t i = 0; i < matrix.rows(); i++) {
-            fmt::print("{:8d}", i);
-            for (size_t j = f; j < l; j++) {
-                fmt::print(" {:8.5f}", matrix(i, j));
-            }
-            fmt::print("\n");
-        }
-    }
-}
-
 void CEModelInteraction::compute_monomer_energies(Wavefunction &wfn) const {
     constexpr double precision = std::numeric_limits<double>::epsilon();
     HartreeFock hf(wfn.basis);
@@ -195,12 +170,11 @@ void CEModelInteraction::compute_monomer_energies(Wavefunction &wfn) const {
     params.Schwarz = hf.compute_schwarz_ints();
     params.xdm = m_scale_factors.xdm;
 
-    fmt::print("Calculating xdm parameters: {}\n", m_scale_factors.xdm);
+    occ::log::info("Calculating xdm parameters: {}", m_scale_factors.xdm);
     if (m_scale_factors.xdm) {
-        fmt::print("XDM damping parameters: {} {}\n", m_scale_factors.xdm_a1,
-                   m_scale_factors.xdm_a2);
+        occ::log::info("XDM damping parameters: {} {}", m_scale_factors.xdm_a1,
+                       m_scale_factors.xdm_a2);
     }
-    fmt::print("Basis has ECPs: {}\n", wfn.basis.have_ecps());
     compute_ce_model_energies(wfn, hf, params);
 }
 
@@ -301,8 +275,8 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     compute_ce_model_energies(ABn, hf_AB, params_ab);
     compute_ce_model_energies(ABo, hf_AB, params_ab);
 
-    occ::log::debug("ABn\n{}\n", ABn.energy);
-    occ::log::debug("ABo\n{}\n", ABo.energy);
+    occ::log::debug("ABn\n{}\n", ABn.energy.to_string());
+    occ::log::debug("ABo\n{}\n", ABo.energy.to_string());
 
     Energy E_ABn = ABn.energy - (A.energy + B.energy);
 
@@ -474,8 +448,8 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     compute_ce_model_energies(ABn, dft_AB, params_ab);
     compute_ce_model_energies(ABo, dft_AB, params_ab);
 
-    occ::log::debug("ABn\n{}\n", ABn.energy);
-    occ::log::debug("ABo\n{}\n", ABo.energy);
+    occ::log::debug("ABn\n{}\n", ABn.energy.to_string());
+    occ::log::debug("ABo\n{}\n", ABo.energy.to_string());
 
     Energy E_ABn = ABn.energy - (A.energy + B.energy);
 

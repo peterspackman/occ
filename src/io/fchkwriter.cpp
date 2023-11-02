@@ -144,7 +144,7 @@ void FchkVectorWriter::operator()(const std::vector<int> &values) {
     fmt::print(destination, "{:40s}   I   N={:12d}\n", key, values.size());
     int count = 0;
     for (const auto &value : values) {
-        fmt::print(destination, value_format, value);
+        fmt::print(destination, fmt::runtime(value_format), value);
         count++;
         if (count % num_per_line == 0)
             fmt::print(destination, "\n");
@@ -159,7 +159,7 @@ void FchkVectorWriter::operator()(const std::vector<double> &values) {
     fmt::print(destination, "{:40s}   R   N={:12d}\n", key, values.size());
     int count = 0;
     for (const auto &value : values) {
-        fmt::print(destination, value_format, value);
+        fmt::print(destination, fmt::runtime(value_format), value);
         count++;
         if (count % num_per_line == 0)
             fmt::print(destination, "\n");
@@ -174,7 +174,7 @@ void FchkVectorWriter::operator()(const std::vector<std::string> &values) {
     fmt::print(destination, "{:40s}   C   N={:12d}\n", key, values.size());
     int count = 0;
     for (const auto &value : values) {
-        fmt::print(destination, value_format, value);
+        fmt::print(destination, fmt::runtime(value_format), value);
         count++;
         if (count % num_per_line == 0)
             fmt::print(destination, "\n");
@@ -189,7 +189,7 @@ void FchkVectorWriter::operator()(const std::vector<bool> &values) {
     fmt::print(destination, "{:40s}   L   N={:12d}\n", key, values.size());
     int count = 0;
     for (const auto &value : values) {
-        fmt::print(destination, value_format, value);
+        fmt::print(destination, fmt::runtime(value_format), value);
         count++;
         if (count % num_per_line == 0)
             fmt::print(destination, "\n");

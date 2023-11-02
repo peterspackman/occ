@@ -547,7 +547,7 @@ template <typename Procedure> struct SCF {
                  (iter < maxiter));
         log::info("{} spinorbital SCF energy converged after {:.5f} seconds",
                   scf_kind(), total_time);
-        log::info("{}", energy);
+        log::info("{}", energy.to_string());
         converged = true;
         return energy["total"];
     }
