@@ -32,27 +32,6 @@ using occ::units::AU_TO_KJ_PER_MOL;
 using occ::units::BOHR_TO_ANGSTROM;
 using occ::util::all_close;
 
-std::string dimer_symop(const occ::core::Dimer &dimer, const Crystal &crystal) {
-    const auto &a = dimer.a();
-    const auto &b = dimer.b();
-    if (a.asymmetric_molecule_idx() != b.asymmetric_molecule_idx())
-        return "-";
-
-    int sa_int = a.asymmetric_unit_symop()(0);
-    int sb_int = b.asymmetric_unit_symop()(0);
-
-    SymmetryOperation symop_a(sa_int);
-    SymmetryOperation symop_b(sb_int);
-
-    auto symop_ab = symop_b * symop_a.inverted();
-    occ::Vec3 c_a =
-        symop_ab(crystal.to_fractional(a.positions())).rowwise().mean();
-    occ::Vec3 v_ab = crystal.to_fractional(b.centroid()) - c_a;
-
-    symop_ab = symop_ab.translated(v_ab);
-    return symop_ab.to_string();
-}
-
 Crystal read_crystal(const std::string &filename) {
     occ::io::CifParser parser;
     return parser.parse_crystal(filename).value();
@@ -62,14 +41,14 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
     std::string filename = settings.crystal_filename;
     std::string basename = fs::path(filename).stem().string();
     Crystal c = read_crystal(filename);
-    fmt::print("Energy model: {}\n", settings.model_name);
-    fmt::print("Loaded crystal from {}\n", filename);
+    occ::log::info("Energy model: {}", settings.model_name);
+    occ::log::info("Loaded crystal from {}", filename);
     auto molecules = c.symmetry_unique_molecules();
-    fmt::print("Symmetry unique molecules in {}: {}\n", filename,
-               molecules.size());
+    occ::log::info("Symmetry unique molecules in {}: {}", filename,
+                   molecules.size());
 
     std::vector<Wavefunction> wfns;
-    fmt::print("Calculating symmetry unique dimers\n");
+    occ::log::info("Calculating symmetry unique dimers");
     occ::crystal::CrystalDimers crystal_dimers;
     std::vector<CEEnergyComponents> energies;
     occ::main::LatticeEnergyResult lattice_energy_result;
@@ -87,31 +66,32 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
 
     const auto &dimers = lattice_energy_result.dimers.unique_dimers;
     if (dimers.size() < 1) {
-        fmt::print("No dimers found using neighbour radius {:.3f}\n",
-                   settings.max_radius);
+        occ::log::error("No dimers found using neighbour radius {:.3f}",
+                        settings.max_radius);
         exit(0);
     }
 
     const std::string row_fmt_string = "{:>7.3f} {:>7.3f} {:>20s} {: 8.3f} {: "
                                        "8.3f} {: 8.3f} {: 8.3f} {: 8.3f} {: "
-                                       "8.3f}\n";
+                                       "8.3f}";
     size_t mol_idx{0};
     double etot{0.0}, elat{0.0};
     for (const auto &n : lattice_energy_result.dimers.molecule_neighbors) {
 
-        fmt::print("Neighbors for molecule {}\n", mol_idx);
+        occ::log::info("Neighbors for molecule {}", mol_idx);
 
-        fmt::print("{:>7s} {:>7s} {:>20s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s} "
-                   "{:>8s}\n",
-                   "Rn", "Rc", "Symop", "E_coul", "E_ex", "E_rep", "E_pol",
-                   "E_disp", "E_tot");
-        fmt::print("==================================================="
-                   "================================\n");
+        occ::log::info(
+            "{:>7s} {:>7s} {:>20s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s} "
+            "{:>8s}",
+            "Rn", "Rc", "Symop", "E_coul", "E_ex", "E_rep", "E_pol", "E_disp",
+            "E_tot");
+        occ::log::info("==================================================="
+                       "================================");
         CEEnergyComponents molecule_total;
 
         size_t j = 0;
         for (const auto &[dimer, idx] : n) {
-            auto s_ab = dimer_symop(dimer, c);
+            auto s_ab = c.dimer_symmetry_string(dimer);
             double rn = dimer.nearest_distance();
             double rc = dimer.center_of_mass_distance();
             const auto &e = lattice_energy_result.energy_components[idx];
@@ -123,18 +103,18 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
                    e_rep = e.repulsion_kjmol(), epol = e.polarization_kjmol(),
                    edisp = e.dispersion_kjmol(), etot_mol = e.total_kjmol();
             molecule_total = molecule_total + e;
-            fmt::print(row_fmt_string, rn, rc, s_ab, ecoul, e_ex, e_rep, epol,
-                       edisp, etot_mol);
+            occ::log::info(row_fmt_string, rn, rc, s_ab, ecoul, e_ex, e_rep,
+                           epol, edisp, etot_mol);
             j++;
         }
-        fmt::print("Molecule {} total: {:.3f} kJ/mol ({} pairs)\n", mol_idx,
-                   molecule_total.total_kjmol(), j);
+        occ::log::info("Molecule {} total: {:.3f} kJ/mol ({} pairs)\n", mol_idx,
+                       molecule_total.total_kjmol(), j);
         etot += molecule_total.total_kjmol();
         mol_idx++;
     }
-    fmt::print("Final energy: {:.3f} kJ/mol\n", etot * 0.5);
-    fmt::print("Lattice energy: {:.3f} kJ/mol\n",
-               lattice_energy_result.lattice_energy);
+    occ::log::info("Final energy: {:.3f} kJ/mol", etot * 0.5);
+    occ::log::info("Lattice energy: {:.3f} kJ/mol",
+                   lattice_energy_result.lattice_energy);
 }
 
 namespace occ::main {
