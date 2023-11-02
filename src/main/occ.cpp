@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     auto *iso = occ::main::add_isosurface_subcommand(app);
     app.require_subcommand();
 
-    constexpr char *error_format = "exception:\n    {}\nterminating program.\n";
+    constexpr auto *error_format = "exception:\n    {}\nterminating program.\n";
     try {
         CLI11_PARSE(app, argc, argv);
     } catch (const char *ex) {

@@ -15,10 +15,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#ifndef __APPLE__
-#include <alloc_traits.h>
-#endif
-
 
 extern "C" char **environ;
 
