@@ -104,7 +104,7 @@ CPMAddPackage(
     NAME libecpint
     GITHUB_REPOSITORY "peterspackman/libecpint"
     GIT_TAG "master"
-    OPTIONS "LIBECPINT_BUILD_TESTS OFF" "LIBECPINT_BUILD_DOCS OFF"
+    OPTIONS "LIBECPINT_BUILD_TESTS OFF" "LIBECPINT_BUILD_DOCS OFF" "LIBECPINT_USE_PUGIXML OFF"
 )
 
 if(NOT "${USE_SYSTEM_LIBXC}")
@@ -129,6 +129,6 @@ if("${WITH_PYTHON_BINDINGS}")
 CPMAddPackage(
     NAME nanobind
     GITHUB_REPOSITORY "wjakob/nanobind"
-    GIT_TAG "v1.1.1"
+    GIT_TAG "v1.6.2"
 )
 endif()

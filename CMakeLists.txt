@@ -20,7 +20,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(SKBUILD)
   set(WITH_PYTHON_BINDINGS ON)
-  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 
@@ -48,10 +47,13 @@ endif()
 
 
 if("${WITH_PYTHON_BINDINGS}")
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+    find_package(Python REQUIRED COMPONENTS Interpreter Development.Module
+	OPTIONAL_COMPONENTS Development.SABIModule)
     message(STATUS "Enabled python bindings, setting CMAKE_POSITION_INDEPENDENT_CODE globally")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
+
+
 
 if("${USE_OPENMP}")
 find_package(OpenMP REQUIRED)

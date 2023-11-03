@@ -36,10 +36,10 @@ using occ::crystal::Crystal;
 using occ::crystal::CrystalAtomRegion;
 using occ::crystal::CrystalDimers;
 using SymmetryRelatedDimer = occ::crystal::CrystalDimers::SymmetryRelatedDimer;
+using occ::crystal::HKL;
 using occ::crystal::SpaceGroup;
 using occ::crystal::SymmetryOperation;
 using occ::crystal::UnitCell;
-using occ::crystal::HKL;
 using occ::dft::DFT;
 using occ::qm::AOBasis;
 using occ::qm::HartreeFock;
@@ -52,7 +52,7 @@ constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
 constexpr auto G = occ::qm::SpinorbitalKind::General;
 
-NB_MODULE(_occ, m) {
+NB_MODULE(_occpy, m) {
     nb::class_<Element>(m, "Element")
         .def(nb::init<const std::string &>())
         .def("symbol", &Element::symbol)
@@ -64,7 +64,6 @@ NB_MODULE(_occ, m) {
         .def("__repr__", [](const Element &a) {
             return "<occ.Element '" + a.symbol() + "'>";
         });
-
     nb::class_<Atom>(m, "Atom")
         .def_rw("atomic_number", &Atom::atomic_number)
         .def_prop_rw("position", &Atom::position, &Atom::set_position)
@@ -172,6 +171,7 @@ NB_MODULE(_occ, m) {
         .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
         .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
         .def("scf", [](HartreeFock &hf) { return HF(hf); })
+        /*
         .def("coulomb_matrix", &HartreeFock::compute_J, nb::arg("mo"),
              nb::arg("precision") = std::numeric_limits<double>::epsilon(),
              nb::arg("Schwarz") = occ::Mat())
@@ -182,8 +182,10 @@ NB_MODULE(_occ, m) {
         .def("fock_matrix", &HartreeFock::compute_fock, nb::arg("mo"),
              nb::arg("precision") = std::numeric_limits<double>::epsilon(),
              nb::arg("Schwarz") = occ::Mat())
+             */
         .def("__repr__", [](const HartreeFock &hf) {
-            return fmt::format("<occ.HartreeFock ({} atoms)>", hf.atoms().size())
+            return fmt::format("<occ.HartreeFock ({} atoms)>",
+                               hf.atoms().size());
         });
 
     using occ::io::BeckeGridSettings;
@@ -205,9 +207,11 @@ NB_MODULE(_occ, m) {
         .def("set_method", &DFT::set_method, nb::arg("method_string"),
              nb::arg("unrestricted") = false)
         .def("set_unrestricted", &DFT::set_unrestricted)
+        /*
         .def("fock_matrix", &DFT::compute_fock, nb::arg("mo"),
              nb::arg("precision") = std::numeric_limits<double>::epsilon(),
              nb::arg("Schwarz") = occ::Mat())
+             */
         .def("scf", [](DFT &dft) { return KS(dft); })
         .def("__repr__", [](const DFT &dft) {
             return fmt::format("<occ.DFT ({} atoms)>", dft.atoms().size());
@@ -252,8 +256,7 @@ NB_MODULE(_occ, m) {
         .def_rw("k", &HKL::k)
         .def_rw("l", &HKL::l)
         .def("__repr__", [](const HKL &hkl) {
-            return fmt::format(
-                "<occ.HKL [{} {} {}]>", hkl.h, hkl.k, hkl.l);
+            return fmt::format("<occ.HKL [{} {} {}]>", hkl.h, hkl.k, hkl.l);
         });
 
     nb::class_<Crystal>(m, "Crystal")
@@ -265,7 +268,8 @@ NB_MODULE(_occ, m) {
         .def("unit_cell_dimers", &Crystal::unit_cell_dimers)
         .def("atom_surroundings", &Crystal::atom_surroundings)
         .def("dimer_symmetry_string", &Crystal::dimer_symmetry_string)
-        .def("asymmetric_unit_atom_surroundings", &Crystal::asymmetric_unit_atom_surroundings)
+        .def("asymmetric_unit_atom_surroundings",
+             &Crystal::asymmetric_unit_atom_surroundings)
         .def("num_sites", &Crystal::num_sites)
         .def("labels", &Crystal::labels)
         .def("to_fractional", &Crystal::to_fractional)
@@ -274,35 +278,38 @@ NB_MODULE(_occ, m) {
         .def("slab", &Crystal::slab)
         .def("asymmetric_unit",
              nb::overload_cast<>(&Crystal::asymmetric_unit, nb::const_))
-        .def_static("create_primitive_supercell", &Crystal::create_primitive_supercell)
-        .def_static("from_cif_file", [](const std::string &filename) {
-            occ::io::CifParser parser;
-            return parser.parse_crystal(filename).value();
-        })
+        .def_static("create_primitive_supercell",
+                    &Crystal::create_primitive_supercell)
+        .def_static("from_cif_file",
+                    [](const std::string &filename) {
+                        occ::io::CifParser parser;
+                        return parser.parse_crystal(filename).value();
+                    })
         .def("__repr__", [](const Crystal &c) {
-            return fmt::format(
-                "<occ.Crystal {} {}>", c.asymmetric_unit().chemical_formula(), c.space_group().symbol());
+            return fmt::format("<occ.Crystal {} {}>",
+                               c.asymmetric_unit().chemical_formula(),
+                               c.space_group().symbol());
         });
 
     nb::class_<CrystalAtomRegion>(m, "CrystalAtomRegion")
-      .def_ro("frac_pos", &CrystalAtomRegion::frac_pos)
-      .def_ro("cart_pos", &CrystalAtomRegion::cart_pos)
-      .def_ro("asym_idx", &CrystalAtomRegion::asym_idx)
-      .def_ro("atomic_numbers", &CrystalAtomRegion::atomic_numbers)
-      .def_ro("symop", &CrystalAtomRegion::symop)
-      .def("size", &CrystalAtomRegion::size)
-      .def("__repr__", [](const CrystalAtomRegion &region) {
-          return fmt::format("<occ.CrystalAtomRegion (n={})>", region.size());
-      });
+        .def_ro("frac_pos", &CrystalAtomRegion::frac_pos)
+        .def_ro("cart_pos", &CrystalAtomRegion::cart_pos)
+        .def_ro("asym_idx", &CrystalAtomRegion::asym_idx)
+        .def_ro("atomic_numbers", &CrystalAtomRegion::atomic_numbers)
+        .def_ro("symop", &CrystalAtomRegion::symop)
+        .def("size", &CrystalAtomRegion::size)
+        .def("__repr__", [](const CrystalAtomRegion &region) {
+            return fmt::format("<occ.CrystalAtomRegion (n={})>", region.size());
+        });
 
     nb::class_<SymmetryRelatedDimer>(m, "SymmetryRelatedDimer")
-      .def_ro("unique_index", &SymmetryRelatedDimer::unique_index)
-      .def_ro("dimer", &SymmetryRelatedDimer::dimer);
+        .def_ro("unique_index", &SymmetryRelatedDimer::unique_index)
+        .def_ro("dimer", &SymmetryRelatedDimer::dimer);
 
     nb::class_<CrystalDimers>(m, "CrystalDimers")
-      .def_ro("radius", &CrystalDimers::radius)
-      .def_ro("unique_dimers", &CrystalDimers::unique_dimers)
-      .def_ro("molecule_neighbors", &CrystalDimers::molecule_neighbors);
+        .def_ro("radius", &CrystalDimers::radius)
+        .def_ro("unique_dimers", &CrystalDimers::unique_dimers)
+        .def_ro("molecule_neighbors", &CrystalDimers::molecule_neighbors);
 
     nb::class_<AsymmetricUnit>(m, "AsymmetricUnit")
         .def_rw("positions", &AsymmetricUnit::positions)
