@@ -1053,11 +1053,8 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
     return cg;
 }
 
-void run_cg_subcommand(CGConfig const &config) {
-    if (config.list_solvents) {
-        list_available_solvents();
-        return;
-    }
+CGResult run_cg(CGConfig const &config) {
+    CGResult result;
     std::string basename =
         fs::path(config.lattice_settings.crystal_filename).stem().string();
     Crystal c_symm = read_crystal(config.lattice_settings.crystal_filename);
@@ -1243,6 +1240,15 @@ void run_cg_subcommand(CGConfig const &config) {
 
         calc.dipole_correction();
     }
+    return result;
+}
+
+void run_cg_subcommand(CGConfig const &config) {
+    if (config.list_solvents) {
+        list_available_solvents();
+        return;
+    }
+    (void)run_cg(config);
 }
 
 } // namespace occ::main

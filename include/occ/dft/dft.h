@@ -154,10 +154,10 @@ class DFT {
         return m_hf.nuclear_repulsion_energy();
     }
 
-    inline double nuclear_point_charge_interaction_energy(const PointChargeList &pc) const {
+    inline double
+    nuclear_point_charge_interaction_energy(const PointChargeList &pc) const {
         return m_hf.nuclear_point_charge_interaction_energy(pc);
     }
-
 
     auto compute_kinetic_matrix() const {
         return m_hf.compute_kinetic_matrix();
@@ -175,7 +175,8 @@ class DFT {
         return m_hf.compute_effective_core_potential_matrix();
     }
 
-    auto compute_point_charge_interaction_matrix(const PointChargeList &point_charges) const {
+    auto compute_point_charge_interaction_matrix(
+        const PointChargeList &point_charges) const {
         return m_hf.compute_point_charge_interaction_matrix(point_charges);
     }
 
@@ -406,7 +407,9 @@ class DFT {
             J = m_hf.compute_J(mo, precision, Schwarz);
             ecoul = expectation(mo.kind, mo.D, J);
         }
-        occ::log::debug("E_xc (DFT): {:20.12f}  E_ex: {:20.12f} E_coul: {:20.12f}", m_exc_dft, exc, ecoul);
+        occ::log::debug(
+            "E_xc (DFT): {:20.12f}  E_ex: {:20.12f} E_coul: {:20.12f}",
+            m_exc_dft, exc, ecoul);
         m_exchange_energy = m_exc_dft + exc;
         m_two_electron_energy += m_exchange_energy + ecoul;
         return {J, K};
@@ -473,6 +476,8 @@ class DFT {
                     bool unrestricted = false);
 
     void set_unrestricted(bool unrestricted);
+
+    inline const std::string &method_string() const { return m_method_string; }
 
   private:
     std::string m_method_string{"svwn5"};

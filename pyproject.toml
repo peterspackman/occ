@@ -15,7 +15,7 @@ classifiers = [
     "License :: GPLv3",
 ]
 # Optional: runtime dependency specification
-# dependencies = [ "cryptography >=41.0" ]
+dependencies = ["numpy"]
 
 [project.urls]
 Homepage = "https://github.com/peterspackman/occ"
@@ -30,8 +30,6 @@ build-dir = "build-{wheel_tag}"
 # Build stable ABI wheels for CPython 3.12+
 wheel.py-api = "cp312"
 cmake.targets = ["_occpy"]
-
-cmake.build-type = "Debug"
 
 [tool.cibuildwheel]
 # Necessary to see build output from the actual compilation

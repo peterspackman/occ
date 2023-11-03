@@ -19,7 +19,11 @@ struct CGConfig {
     bool crystal_is_atomic{false};
 };
 
+struct CGResult {};
+
 CLI::App *add_cg_subcommand(CLI::App &app);
+
+CGResult run_cg(CGConfig const &);
 void run_cg_subcommand(CGConfig const &);
 
 } // namespace occ::main

@@ -1,10 +1,13 @@
 #include <fmt/core.h>
 #include <nanobind/eigen/dense.h>
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/tuple.h>
 #include <nanobind/stl/vector.h>
 #include <occ/core/element.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/parallel.h>
 #include <occ/crystal/crystal.h>
@@ -14,6 +17,7 @@
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
 #include <occ/io/xyz.h>
+#include <occ/main/occ_cg.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
@@ -171,18 +175,18 @@ NB_MODULE(_occpy, m) {
         .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
         .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
         .def("scf", [](HartreeFock &hf) { return HF(hf); })
-        /*
-        .def("coulomb_matrix", &HartreeFock::compute_J, nb::arg("mo"),
-             nb::arg("precision") = std::numeric_limits<double>::epsilon(),
-             nb::arg("Schwarz") = occ::Mat())
-        .def("coulomb_and_exchange_matrices", &HartreeFock::compute_JK,
-             nb::arg("mo"),
-             nb::arg("precision") = std::numeric_limits<double>::epsilon(),
-             nb::arg("Schwarz") = occ::Mat())
-        .def("fock_matrix", &HartreeFock::compute_fock, nb::arg("mo"),
-             nb::arg("precision") = std::numeric_limits<double>::epsilon(),
-             nb::arg("Schwarz") = occ::Mat())
-             */
+        .def("coulomb_matrix",
+             [](const HartreeFock &hf, const MolecularOrbitals &mo) {
+                 return hf.compute_J(mo);
+             })
+        .def("coulomb_and_exchange_matrices",
+             [](const HartreeFock &hf, const MolecularOrbitals &mo) {
+                 return hf.compute_JK(mo);
+             })
+        .def("fock_matrix",
+             [](const HartreeFock &hf, const MolecularOrbitals &mo) {
+                 return hf.compute_fock(mo);
+             })
         .def("__repr__", [](const HartreeFock &hf) {
             return fmt::format("<occ.HartreeFock ({} atoms)>",
                                hf.atoms().size());
@@ -197,6 +201,7 @@ NB_MODULE(_occpy, m) {
         .def_rw("radial_precision", &BeckeGridSettings::radial_precision);
 
     nb::class_<DFT>(m, "DFT")
+        .def(nb::init<const std::string &, const AOBasis &>())
         .def(nb::init<const std::string &, const AOBasis &,
                       const BeckeGridSettings &>())
         .def("nuclear_attraction_matrix",
@@ -207,14 +212,14 @@ NB_MODULE(_occpy, m) {
         .def("set_method", &DFT::set_method, nb::arg("method_string"),
              nb::arg("unrestricted") = false)
         .def("set_unrestricted", &DFT::set_unrestricted)
-        /*
-        .def("fock_matrix", &DFT::compute_fock, nb::arg("mo"),
-             nb::arg("precision") = std::numeric_limits<double>::epsilon(),
-             nb::arg("Schwarz") = occ::Mat())
-             */
+        .def("fock_matrix",
+             [](DFT &dft, const MolecularOrbitals &mo) {
+                 return dft.compute_fock(mo);
+             })
         .def("scf", [](DFT &dft) { return KS(dft); })
         .def("__repr__", [](const DFT &dft) {
-            return fmt::format("<occ.DFT ({} atoms)>", dft.atoms().size());
+            return fmt::format("<occ.DFT {} ({} atoms)>", dft.method_string(),
+                               dft.atoms().size());
         });
 
     nb::class_<Molecule>(m, "Molecule")
@@ -238,9 +243,8 @@ NB_MODULE(_occpy, m) {
                     })
         .def("__repr__", [](const Molecule &mol) {
             auto com = mol.center_of_mass();
-            return fmt::format(
-                "<occ.Molecule {}, center=[{:.5f}, {:.5f}, {:.5f}]>",
-                mol.name(), com.x(), com.y(), com.z());
+            return fmt::format("<occ.Molecule {} @[{:.5f}, {:.5f}, {:.5f}]>",
+                               mol.name(), com.x(), com.y(), com.z());
         });
 
     // occ::crystal
@@ -339,6 +343,18 @@ NB_MODULE(_occpy, m) {
                                uc.cell_type(), uc.a(), uc.b(), uc.c());
         });
 
+    using occ::main::CGConfig;
+    nb::class_<CGConfig>(m, "CrystalGrowthConfig")
+        .def(nb::init<>())
+        .def_rw("cg_radius", &CGConfig::cg_radius)
+        .def_rw("solvent", &CGConfig::solvent)
+        .def_rw("wavefunction_choice", &CGConfig::wavefunction_choice)
+        .def_rw("num_surface_energies", &CGConfig::max_facets);
+
+    m.def("calculate_crystal_growth_energies",
+          [](const CGConfig &config) { occ::main::run_cg(config); });
+
+    m.def("setup_logging", [](int v) { occ::log::setup_logging(v); });
     m.def("set_num_threads", [](int n) { occ::parallel::set_num_threads(n); });
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
