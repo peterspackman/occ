@@ -1,7 +1,11 @@
 #pragma once
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
-#include <occ/3rdparty/eigen-fmt/fmt.h>
+#include <fmt/ostream.h>
+
+template <typename T>
+requires std::is_base_of_v<Eigen::DenseBase<T>, T> struct fmt::formatter<T>
+    : ostream_formatter {};
 
 namespace occ {
 using DMatRM =
