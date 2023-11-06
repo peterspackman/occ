@@ -1,7 +1,5 @@
 #include <algorithm>
-#include <fmt/core.h>
 #include <fmt/os.h>
-#include <fmt/ostream.h>
 #include <numeric>
 #include <occ/core/eem.h>
 #include <occ/core/log.h>
@@ -170,16 +168,18 @@ double Surface::d() const { return m_hkl.d(m_crystal_unit_cell.reciprocal()); }
 Vec3 Surface::dipole() const { return Vec3(0, 0, 0); }
 
 void Surface::print() const {
-    fmt::print("Surface ({:d}, {:d}, {:d})\n", m_hkl.h, m_hkl.k, m_hkl.l);
-    fmt::print("Interplanar spacing {:.3f}\n", d());
-    fmt::print("Surface area {:.3f}\n", area());
-    fmt::print("A vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})\n",
-               m_a_vector(0), m_a_vector(1), m_a_vector(2), m_a_vector.norm());
-    fmt::print("B vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})\n",
-               m_b_vector(0), m_b_vector(1), m_b_vector(2), m_b_vector.norm());
-    fmt::print("Depth vector: [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})\n",
-               m_depth_vector(0), m_depth_vector(1), m_depth_vector(2),
-               depth());
+    occ::log::info("\nSurface ({:d}, {:d}, {:d})", m_hkl.h, m_hkl.k, m_hkl.l);
+    occ::log::info("Interplanar spacing {:.3f}", d());
+    occ::log::info("Surface area {:.3f}", area());
+    occ::log::info(
+        "A vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})",
+        m_a_vector(0), m_a_vector(1), m_a_vector(2), m_a_vector.norm());
+    occ::log::info(
+        "B vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})",
+        m_b_vector(0), m_b_vector(1), m_b_vector(2), m_b_vector.norm());
+    occ::log::info(
+        "Depth vector: [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})\n",
+        m_depth_vector(0), m_depth_vector(1), m_depth_vector(2), depth());
 }
 
 std::vector<Surface>
@@ -488,8 +488,8 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
         }
     }
     double depth_scale = std::ceil(required_depth / m_depth_vector.norm());
-    fmt::print("Required depth = {} x depth ({:12.6f} angs)\n", depth_scale,
-               required_depth);
+    occ::log::debug("Required depth = {} x depth ({:12.6f} angs)", depth_scale,
+                    required_depth);
 
     result.molecules =
         find_molecule_cell_translations(molecules, depth_scale, cut_offset);
