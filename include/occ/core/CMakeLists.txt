@@ -27,7 +27,6 @@ set(OCC_CORE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/parallel.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/quasirandom.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/sparsevoxelgrid.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/sqlite_datastore.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/table.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/units.h"

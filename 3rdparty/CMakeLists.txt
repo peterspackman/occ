@@ -132,15 +132,3 @@ CPMAddPackage(
     GIT_TAG "v1.6.2"
 )
 endif()
-
-if(NOT "${USE_SYSTEM_SQLITE}")
-CPMAddPackage(
-    NAME SQLite
-    GITHUB_REPOSITORY "azadkuh/sqlite-amalgamation"
-    GIT_TAG "3.38.2"
-    VERSION "3.38.2"
-)
-add_library(SQLite::SQLite3 INTERFACE IMPORTED GLOBAL)
-target_link_libraries(SQLite::SQLite3 INTERFACE SQLite3)
-target_include_directories(SQLite::SQLite3 INTERFACE "${SQLite_SOURCE_DIR}")
-endif()

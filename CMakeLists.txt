@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
 set(PROJECT_VERSION_MAJOR "0")
-set(PROJECT_VERSION_MINOR "3")
-set(PROJECT_VERSION_PATCH "2")
+set(PROJECT_VERSION_MINOR "4")
+set(PROJECT_VERSION_PATCH "0")
 
 project(occ
     VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
@@ -35,7 +35,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" OFF)
     option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" OFF)
-    option(USE_SYSTEM_SQLITE "Use SQLITE installed on system" OFF)
     option(USE_QCINT "Use SIMD optimised qcint rather than libcint" OFF)
     option(USE_OPENMP "Use OpenMP for threading rather than std::thread" ON)
     option(GG_NO_PRAGMA "Define the __GG_NO_PRAGMA macro" OFF)
@@ -68,10 +67,6 @@ endif()
 
 if("${USE_SYSTEM_BLAS}")
     find_package(BLAS REQUIRED)
-endif()
-
-if("${USE_SYSTEM_SQLITE}")
-    find_package(SQLite REQUIRED)
 endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")

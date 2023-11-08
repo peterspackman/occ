@@ -11,7 +11,6 @@
 #include <occ/core/optimize.h>
 #include <occ/core/point_group.h>
 #include <occ/core/quasirandom.h>
-#include <occ/core/sqlite_datastore.h>
 #include <occ/core/table.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
@@ -489,30 +488,4 @@ TEST_CASE("Quasirandom KGF", "[quasirandom]") {
         0.646106212725611, 0.19580669062758105, 0.7455071685295511;
 
     REQUIRE(occ::util::all_close(pts, expected));
-}
-
-TEST_CASE("sqlite", "[sqlite]") {
-    occ::core::sqlite::Connection *conn =
-        new occ::core::sqlite::Connection(":memory:");
-
-    auto *cursor = conn->cursor();
-    REQUIRE(cursor);
-
-    cursor->execute("create table foobar (id integer primary key "
-                    "autoincrement, name text, value text);");
-    cursor->execute("insert into foobar (name, value) values (?, ?);", "%s %s",
-                    "foo", "bar");
-    cursor->execute("insert into foobar (name, value) values (?, ?);",
-                    "%.3s %.*s", "derp", 5, "lorem ipsum");
-
-    cursor->execute("select id, name from foobar");
-
-    occ::core::sqlite::Row row;
-    while (row = cursor->next()) {
-        fmt::print("{} = {}, {} = {}\n", row.column_name(0), row.get_text(0),
-                   row.column_name(1), row.get_text(1));
-    }
-
-    delete cursor;
-    delete conn;
 }
