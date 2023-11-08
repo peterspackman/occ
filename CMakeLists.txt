@@ -35,6 +35,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" OFF)
     option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" OFF)
+    option(USE_SYSTEM_SQLITE "Use SQLITE installed on system" OFF)
     option(USE_QCINT "Use SIMD optimised qcint rather than libcint" OFF)
     option(USE_OPENMP "Use OpenMP for threading rather than std::thread" ON)
     option(GG_NO_PRAGMA "Define the __GG_NO_PRAGMA macro" OFF)
@@ -67,6 +68,10 @@ endif()
 
 if("${USE_SYSTEM_BLAS}")
     find_package(BLAS REQUIRED)
+endif()
+
+if("${USE_SYSTEM_SQLITE}")
+    find_package(SQLite REQUIRED)
 endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")

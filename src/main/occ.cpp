@@ -69,6 +69,6 @@ int main(int argc, char *argv[]) {
 
     occ::timing::stop(occ::timing::global);
     occ::timing::print_timings();
-    occ::log::info("A job well done\n");
+    occ::log::info("A job well done");
     return 0;
 }

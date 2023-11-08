@@ -21,13 +21,13 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
     params.d_min = 0.1;
     params.unique = true;
     auto surfaces = crystal::generate_surfaces(crystal, params);
-    log::info("Top {} surfaces", max_number_of_surfaces);
+    log::debug("Top {} surfaces", max_number_of_surfaces);
     int number_of_surfaces = 0;
     constexpr double tolerance{1e-5};
 
     // find unique positions to consider
     Mat3N unique_positions(3, crystal.unit_cell_molecules().size());
-    log::info("Unique positions to check: {}", unique_positions.cols());
+    log::debug("Unique positions to check: {}", unique_positions.cols());
     {
         int i = 0;
         for (const auto &mol : crystal.unit_cell_molecules()) {
@@ -38,25 +38,26 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
     constexpr double KJ_PER_MOL_TO_J_PER_M2 = 0.16604390671;
 
     for (auto &surf : surfaces) {
-        log::info("{:-^72s}", fmt::format("  {} {} {} surface  ", surf.hkl().h,
-                                          surf.hkl().k, surf.hkl().l));
+        const auto hkl = surf.hkl();
+        log::debug("{:-^72s}",
+                   fmt::format("  {} {} {} surface  ", hkl.h, hkl.k, hkl.l));
         surf.print();
         auto cuts = surf.possible_cuts(unique_positions);
-        log::info("{} unique cuts", cuts.size());
+        log::debug("{} unique cuts", cuts.size());
         double min_shift = 0.0;
         double min_energy = std::numeric_limits<double>::max();
         bool found_valid_cut = false;
 
         for (const double &cut : cuts) {
-            log::info("\nCut @ {:.6f} * depth", cut);
+            log::debug("\nCut @ {:.6f} * depth", cut);
             auto surface_cut_result =
                 surf.count_crystal_dimers_cut_by_surface(uc_dimers, cut);
             size_t num_molecules = surface_cut_result.molecules.size();
-            FacetEnergies f{surf.hkl(), cut,
+            FacetEnergies f{hkl, cut,
                             surface_cut_result.unique_counts_above(uc_dimers),
                             0.0, surf.area()};
-            log::info("Num molecules = {} ({} in crystal uc)", num_molecules,
-                      uc_dimers.molecule_neighbors.size());
+            log::debug("Num molecules = {} ({} in crystal uc)", num_molecules,
+                       uc_dimers.molecule_neighbors.size());
             double surface_energy_a{0.0}, surface_energy_b{0.0};
             {
                 surface_energy_a = surface_cut_result.total_above(uc_dimers);
@@ -87,10 +88,10 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
             {
                 double bulk_energy = surface_cut_result.total_bulk(uc_dimers);
                 double slab_energy = surface_cut_result.total_slab(uc_dimers);
-                log::info("Bulk energy (kJ/mol)        = {:12.3f}",
-                          bulk_energy);
-                log::info("Slab energy (kJ/mol)        = {:12.3f}",
-                          slab_energy);
+                log::debug("Bulk energy (kJ/mol)        = {:12.3f}",
+                           bulk_energy);
+                log::debug("Slab energy (kJ/mol)        = {:12.3f}",
+                           slab_energy);
                 double surface_energy = sign * 0.5 * KJ_PER_MOL_TO_J_PER_M2 *
                                         (bulk_energy - slab_energy) /
                                         (surf.area() * 2);
@@ -101,15 +102,14 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
                         "different results to cut above or below");
                 }
 
-                log::info("Surface energy (S) (J/m^2)  = {:12.6f}",
-                          surface_energy);
+                log::debug("Surface energy (S) (J/m^2)  = {:12.6f}",
+                           surface_energy);
 
                 if ((surface_energy > 0.0) && (surface_energy < min_energy)) {
                     min_shift = cut;
                     min_energy = surface_energy;
                     found_valid_cut = true;
                 } else if (surface_energy <= 0.0) {
-                    const auto hkl = surf.hkl();
                     log::warn("Invalid surface energy encountered: "
                               "surface ({}, {}, {}), e = {:12.6f}",
                               hkl.h, hkl.k, hkl.l, surface_energy);
@@ -118,13 +118,13 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
         }
 
         if (found_valid_cut) {
-            log::info("\nMinimum energy cut:           {:12.6f}", min_shift);
-            log::info("Corresponding surface energy: {:12.6f}\n", min_energy);
-            io::GMFWriter::Facet facet{surf.hkl(), min_shift, 1, 1, min_energy};
+            log::info("({} {} {}) cut = {:6.3f}, energy = {:9.6f}", hkl.h,
+                      hkl.k, hkl.l, min_shift, min_energy);
+            io::GMFWriter::Facet facet{hkl, min_shift, 1, 1, min_energy};
             gmf.add_facet(facet);
         } else {
-            log::warn("No valid (energy > 0) cuts for surface {} {} {}",
-                      surf.hkl().h, surf.hkl().k, surf.hkl().l);
+            log::warn("No valid (energy > 0) cuts for surface {} {} {}", hkl.h,
+                      hkl.k, hkl.l);
         }
 
         number_of_surfaces++;

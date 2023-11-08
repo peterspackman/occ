@@ -352,8 +352,8 @@ int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
                 dimer, asym_charges);
         current_dimer++;
     }
-    occ::log::info("Finished calculating {} unique dimer coulomb energies",
-                   computed_dimers);
+    occ::log::debug("Finished calculating {} unique dimer coulomb energies",
+                    computed_dimers);
     return computed_dimers;
 }
 
@@ -648,18 +648,18 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
             occ::log::info("Wolf corrected lattice energy: {}", lattice_energy);
         }
         occ::log::info("Cycle {} lattice energy: {}", cycle, lattice_energy);
-        occ::log::info("Total polarization term: {:.3f}",
-                       0.5 * total.polarization_kjmol());
-        occ::log::info("Total coulomb term: {:.3f}",
-                       0.5 * total.coulomb_kjmol());
-        occ::log::info("Total dispersion term: {:.3f}",
-                       0.5 * total.dispersion_kjmol());
-        occ::log::info("Total repulsion term: {:.3f}",
-                       0.5 * total.repulsion_kjmol());
-        occ::log::info("Total exchange term: {:.3f}",
-                       0.5 * total.exchange_kjmol());
-        occ::log::info("Wolf correction: {:.3f}",
-                       (wolf.energy - ecoul_self - ecoul_real));
+        occ::log::debug("Total polarization term: {:.3f}",
+                        0.5 * total.polarization_kjmol());
+        occ::log::debug("Total coulomb term: {:.3f}",
+                        0.5 * total.coulomb_kjmol());
+        occ::log::debug("Total dispersion term: {:.3f}",
+                        0.5 * total.dispersion_kjmol());
+        occ::log::debug("Total repulsion term: {:.3f}",
+                        0.5 * total.repulsion_kjmol());
+        occ::log::debug("Total exchange term: {:.3f}",
+                        0.5 * total.exchange_kjmol());
+        occ::log::debug("Wolf correction: {:.3f}",
+                        (wolf.energy - ecoul_self - ecoul_real));
         cycle++;
         current_radius += conv.radius_increment;
     } while (std::abs(lattice_energy - previous_lattice_energy) >

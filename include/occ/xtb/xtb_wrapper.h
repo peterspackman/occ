@@ -38,6 +38,7 @@ class XTBCalculator {
     void update_structure(const Mat3N &positions);
     void update_structure(const Mat3N &positions, const Mat3 &lattice);
     void set_solvent(const std::string &solvent_name);
+    void set_solvation_model(const std::string &);
 
     occ::crystal::Crystal to_crystal() const;
     occ::core::Molecule to_molecule() const;
@@ -67,6 +68,7 @@ class XTBCalculator {
     double m_temperature{0.0};
     double m_damping_factor{1.0};
     std::string m_solvent{""};
+    std::string m_solvation_model{"cpcmx"};
     std::string m_xtb_executable_path{"xtb"};
 };
 

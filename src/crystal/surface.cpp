@@ -168,16 +168,15 @@ double Surface::d() const { return m_hkl.d(m_crystal_unit_cell.reciprocal()); }
 Vec3 Surface::dipole() const { return Vec3(0, 0, 0); }
 
 void Surface::print() const {
-    occ::log::info("\nSurface ({:d}, {:d}, {:d})", m_hkl.h, m_hkl.k, m_hkl.l);
-    occ::log::info("Interplanar spacing {:.3f}", d());
-    occ::log::info("Surface area {:.3f}", area());
-    occ::log::info(
+    occ::log::info("({} {} {}) spacing = {:.3f} area = {:.3f}", m_hkl.h,
+                   m_hkl.k, m_hkl.l, d(), area());
+    occ::log::debug(
         "A vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})",
         m_a_vector(0), m_a_vector(1), m_a_vector(2), m_a_vector.norm());
-    occ::log::info(
+    occ::log::debug(
         "B vector    : [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})",
         m_b_vector(0), m_b_vector(1), m_b_vector(2), m_b_vector.norm());
-    occ::log::info(
+    occ::log::debug(
         "Depth vector: [{:9.3f}, {:9.3f}, {:9.3f}] (length = {:9.3f})\n",
         m_depth_vector(0), m_depth_vector(1), m_depth_vector(2), depth());
 }
@@ -371,8 +370,8 @@ std::vector<Molecule> Surface::find_molecule_cell_translations(
         }
     }
 
-    occ::log::info("Dipole (EEM charges): {:.3f} {:.3f} {:.3f}", dipole(0),
-                   dipole(1), dipole(2));
+    occ::log::debug("Dipole (EEM charges): {:.3f} {:.3f} {:.3f}", dipole(0),
+                    dipole(1), dipole(2));
 
     if (dipole.norm() > 1e-2)
         bool valid = false;
