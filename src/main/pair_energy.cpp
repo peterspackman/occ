@@ -117,8 +117,10 @@ void PairEnergy::compute() {
     occ::log::info("Component              Energy (kJ/mol)\n");
     occ::log::info("Coulomb               {: 12.6f}",
                    interaction_energy.coulomb_kjmol());
-    occ::log::info("Exchange-repulsion    {: 12.6f}",
+    occ::log::info("Exchange              {: 12.6f}",
                    interaction_energy.exchange_kjmol());
+    occ::log::info("Repulsion             {: 12.6f}",
+                   interaction_energy.repulsion_kjmol());
     occ::log::info("Polarization          {: 12.6f}",
                    interaction_energy.polarization_kjmol());
     occ::log::info("Dispersion            {: 12.6f}",
