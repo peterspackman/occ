@@ -28,6 +28,7 @@ struct GeometryInput {
     occ::core::Molecule molecule() const;
     void set_molecule(const occ::core::Molecule &);
     PointChargeList point_charges;
+    std::string point_charge_filename{""};
 };
 
 struct DriverInput {

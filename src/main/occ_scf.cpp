@@ -13,6 +13,7 @@
 #include <occ/io/crystal_json.h>
 #include <occ/io/gaussian_input_file.h>
 #include <occ/io/occ_input.h>
+#include <occ/io/pc.h>
 #include <occ/io/qcschema.h>
 #include <occ/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
@@ -87,9 +88,6 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
         app.add_subcommand("scf", "Perform an SCF on a molecular geometry");
     scf->fallthrough();
 
-    std::string verbosity{"normal"}, point_charge_filename{""};
-    bool unrestricted{false};
-
     CLI::Option *input_option =
         scf->add_option("input,--geometry-filename,--geometry_filename",
                         config->filename, "input file");
@@ -134,8 +132,11 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
     scf->add_flag("--spherical", config->basis.spherical,
                   "use spherical basis sets");
     // point charges
-    scf->add_flag("--point-charges", point_charge_filename,
-                  "file listing point charges");
+    CLI::Option *pc_option = scf->add_option(
+        "--point-charges,--point_charge_file",
+        config->geometry.point_charge_filename, "file listing point charges");
+    pc_option->check(CLI::ExistingFile);
+
     // Solvation
     scf->add_flag("-s,--solvent,--solvent_name", config->solvent.solvent_name,
                   "use spherical basis sets");
@@ -190,6 +191,12 @@ void run_scf_subcommand(occ::io::OccInput &config) {
         occ::log::info("Spinorbital kind: Restricted");
     }
     occ::timing::stop(occ::timing::category::io);
+
+    if (!config.geometry.point_charge_filename.empty()) {
+        occ::io::PointChargeFileReader pc(
+            config.geometry.point_charge_filename);
+        pc.update_occ_input(config);
+    }
 
     occ::log::debug("Using energy driver");
     // store solvent name so we can do an unsolvated calculation first
