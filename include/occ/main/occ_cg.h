@@ -32,7 +32,7 @@ struct CGDimer {
     int unique_dimer_index{-1};
     double interaction_energy{0.0};
     DimerSolventTerm solvent_term{};
-    double cystal_contribution{0.0};
+    double crystal_contribution{0.0};
     bool nearest_neighbor{false};
 };
 

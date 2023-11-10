@@ -33,6 +33,7 @@ using occ::IVec;
 using occ::Mat3N;
 using occ::Vec3;
 using occ::core::Atom;
+using occ::core::Dimer;
 using occ::core::Element;
 using occ::core::Molecule;
 using occ::crystal::AsymmetricUnit;
@@ -247,6 +248,13 @@ NB_MODULE(_occpy, m) {
                                mol.name(), com.x(), com.y(), com.z());
         });
 
+    nb::class_<Dimer>(m, "Dimer")
+        .def(nb::init<const Molecule &, const Molecule &>())
+        .def(nb::init<const std::vector<Atom> &, const std::vector<Atom> &>())
+        .def_prop_ro("a", &Dimer::a)
+        .def_prop_ro("b", &Dimer::b)
+        .def_prop_rw("name", &Dimer::name, &Dimer::set_name);
+
     // occ::crystal
     nb::class_<HKL>(m, "HKL")
         .def(nb::init<int, int, int>())
@@ -344,15 +352,55 @@ NB_MODULE(_occpy, m) {
         });
 
     using occ::main::CGConfig;
+    using occ::main::CGDimer;
+    using occ::main::CGResult;
+    using occ::main::DimerSolventTerm;
+    using occ::main::LatticeConvergenceSettings;
+
+    nb::class_<LatticeConvergenceSettings>(m, "LatticeConvergenceSettings")
+        .def(nb::init<>())
+        .def_rw("min_radius", &LatticeConvergenceSettings::min_radius)
+        .def_rw("max_radius", &LatticeConvergenceSettings::max_radius)
+        .def_rw("radius_increment",
+                &LatticeConvergenceSettings::radius_increment)
+        .def_rw("energy_tolerance",
+                &LatticeConvergenceSettings::energy_tolerance)
+        .def_rw("wolf_sum", &LatticeConvergenceSettings::energy_tolerance)
+        .def_rw("crystal_field_polarization",
+                &LatticeConvergenceSettings::crystal_field_polarization)
+        .def_rw("model_name", &LatticeConvergenceSettings::model_name)
+        .def_rw("crystal_filename",
+                &LatticeConvergenceSettings::crystal_filename)
+        .def_rw("output_json_filename",
+                &LatticeConvergenceSettings::output_json_filename);
+
     nb::class_<CGConfig>(m, "CrystalGrowthConfig")
         .def(nb::init<>())
+        .def_rw("lattice_settings", &CGConfig::lattice_settings)
         .def_rw("cg_radius", &CGConfig::cg_radius)
         .def_rw("solvent", &CGConfig::solvent)
         .def_rw("wavefunction_choice", &CGConfig::wavefunction_choice)
         .def_rw("num_surface_energies", &CGConfig::max_facets);
 
+    nb::class_<DimerSolventTerm>(m, "DimerSolventTerm")
+        .def_ro("ab", &DimerSolventTerm::ab)
+        .def_ro("ba", &DimerSolventTerm::ba)
+        .def_ro("total", &DimerSolventTerm::total);
+
+    nb::class_<CGDimer>(m, "CGDimer")
+        .def_ro("dimer", &CGDimer::dimer)
+        .def_ro("unique_dimer_index", &CGDimer::unique_dimer_index)
+        .def_ro("interaction_energy", &CGDimer::interaction_energy)
+        .def_ro("solvent_term", &CGDimer::solvent_term)
+        .def_ro("crystal_contribution", &CGDimer::crystal_contribution)
+        .def_ro("nearest_neighbor", &CGDimer::nearest_neighbor);
+
+    nb::class_<CGResult>(m, "CGResult")
+        .def_ro("pair_energies", &CGResult::pair_energies)
+        .def_ro("total_energies", &CGResult::total_energies);
+
     m.def("calculate_crystal_growth_energies",
-          [](const CGConfig &config) { occ::main::run_cg(config); });
+          [](const CGConfig &config) { return occ::main::run_cg(config); });
 
     m.def("setup_logging", [](int v) { occ::log::setup_logging(v); });
     m.def("set_num_threads", [](int n) { occ::parallel::set_num_threads(n); });

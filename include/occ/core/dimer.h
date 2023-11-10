@@ -285,8 +285,12 @@ class Dimer {
      */
     bool equivalent_under_rotation(const Dimer &b, const occ::Mat3 &rot) const;
 
+    inline const auto &name() const { return m_name; }
+    inline void set_name(const std::string &name) { m_name = name; }
+
   private:
     Molecule m_a, m_b;
+    std::string m_name{"dimer"};
     size_t m_uc_idx_a{0}, m_uc_idx_b{0};
     size_t m_interaction_id{0};
     double m_interaction_energy{0};

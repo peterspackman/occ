@@ -519,6 +519,7 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
                             std::get<2>(asym_mol.nearest_atom(mol_translated));
                         if ((distance < radius) && (distance > 1e-1)) {
                             Dimer d(asym_mol, mol_translated);
+                            d.set_name(dimer_symmetry_string(d));
                             mol_nbs[asym_idx_a].push_back({d, -1});
                             if (std::any_of(
                                     dimers.begin(), dimers.end(),
@@ -605,6 +606,7 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
                             std::get<2>(uc_mol1.nearest_atom(mol_translated));
                         if ((distance < radius) && (distance > 1e-1)) {
                             Dimer d(uc_mol1, mol_translated);
+                            d.set_name(dimer_symmetry_string(d));
                             mol_nbs[uc_idx_a].push_back({d, -1});
                             if (std::any_of(
                                     dimers.begin(), dimers.end(),

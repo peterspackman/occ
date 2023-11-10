@@ -266,7 +266,7 @@ calculate_solvated_surfaces(const std::string &basename,
         fs::path props_path(fmt::format("{}_{}_{}_surface.json", basename,
                                         index, solvent_name));
         fs::path json_wfn_path(
-            fmt::format("{}_{}_{}.fchk", basename, index, solvent_name));
+            fmt::format("{}_{}_{}.owf.json", basename, index, solvent_name));
         if (fs::exists(props_path)) {
             occ::log::info("Loading surface properties from {}",
                            props_path.string());
