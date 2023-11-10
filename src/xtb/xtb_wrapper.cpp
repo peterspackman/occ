@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fmt/core.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -13,8 +14,14 @@
 using occ::core::Dimer;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
+namespace fs = std::filesystem;
 
 namespace occ::xtb {
+
+inline bool try_remove_file(const std::string &filename) {
+    fs::path file_path(filename);
+    return fs::remove(file_path);
+}
 
 struct XTBJsonOutput {
     double energy{0.0};
@@ -179,8 +186,18 @@ double XTBCalculator::single_point_energy() {
         occ::log::critical("stderr:\n{}", process.cerr);
         throw std::runtime_error("Failure when running xtb");
     }
+
+    try_remove_file(xtbinput_filename);
+    try_remove_file("wbo");
+    try_remove_file("xtbrestart");
+    try_remove_file("charges");
+    try_remove_file("energy");
+    try_remove_file("gradient");
+    try_remove_file("xtbtopo.mol");
     read_json_contents("xtbout.json");
+    try_remove_file("xtbout.json");
     read_engrad_contents(xtbengrad_filename);
+    try_remove_file(xtbengrad_filename);
     return m_energy;
 }
 

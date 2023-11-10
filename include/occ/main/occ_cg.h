@@ -1,6 +1,8 @@
 #pragma once
 #include <CLI/App.hpp>
+#include <occ/core/dimer.h>
 #include <occ/main/pair_energy.h>
+#include <vector>
 
 namespace occ::main {
 
@@ -19,7 +21,31 @@ struct CGConfig {
     bool crystal_is_atomic{false};
 };
 
-struct CGResult {};
+struct DimerSolventTerm {
+    double ab{0.0};
+    double ba{0.0};
+    double total{0.0};
+};
+
+struct CGDimer {
+    core::Dimer dimer;
+    int unique_dimer_index{-1};
+    double interaction_energy{0.0};
+    DimerSolventTerm solvent_term{};
+    double cystal_contribution{0.0};
+    bool nearest_neighbor{false};
+};
+
+struct EnergyTotal {
+    double crystal_energy{0.0};
+    double interaction_energy{0.0};
+    double solution_term{0.0};
+};
+
+struct CGResult {
+    std::vector<std::vector<CGDimer>> pair_energies;
+    std::vector<EnergyTotal> total_energies;
+};
 
 CLI::App *add_cg_subcommand(CLI::App &app);
 
