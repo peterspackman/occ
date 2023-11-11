@@ -56,7 +56,11 @@ endif()
 
 
 if("${USE_OPENMP}")
-find_package(OpenMP REQUIRED)
+find_package(OpenMP)
+if(NOT "${OpenMP_FOUND}")
+  message(STATUS "Could not find OpenMP, building without")
+  set(USE_OPENMP OFF)
+endif()
 endif()
 
 find_package(Threads REQUIRED)
