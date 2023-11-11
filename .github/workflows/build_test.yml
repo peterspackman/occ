@@ -56,9 +56,11 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ${{github.workspace}}/build/docs/html
 
+    - name: Package
+      run: cpack -G TXZ --config ${{github.workspace}}/build/CPackConfig.cmake
 
     - name: Upload binaries
       uses: actions/upload-artifact@v3
       with:
         name: binaries
-        path: ${{github.workspace}}/build/bin
+        path: ${{github.workspace}}/build/*.xz
