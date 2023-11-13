@@ -333,21 +333,25 @@ struct MarchingCubes {
         extract_impl(source, fn, indices);
     }
 
+
     template <typename S>
-    void extract_normal(const S &source, std::vector<float> &vertices,
-                        std::vector<uint32_t> &indices) {
-        auto fn = [&vertices, &source](const Eigen::Vector3f &vertex) {
+    void extract_with_normals(const S &source, std::vector<float> &vertices,
+                              std::vector<uint32_t> &indices,
+                              std::vector<float> &normals) {
+        auto fn = [&vertices, &source,
+                   &normals](const Eigen::Vector3f &vertex) {
             auto normal = source.normal(vertex(0), vertex(1), vertex(2));
             vertices.push_back(vertex[0]);
             vertices.push_back(vertex[1]);
             vertices.push_back(vertex[2]);
-            vertices.push_back(normal[0]);
-            vertices.push_back(normal[1]);
-            vertices.push_back(normal[2]);
+            normals.push_back(normal[0]);
+            normals.push_back(normal[1]);
+            normals.push_back(normal[2]);
         };
 
         extract_impl(source, fn, indices);
     }
+
 
   private:
     template <typename S, typename E>

@@ -10,6 +10,8 @@
 #include <occ/core/units.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>
 #include <occ/io/xyz.h>
+#include <occ/io/obj.h>
+#include <occ/io/ply.h>
 #include <occ/main/isosurface.h>
 #include <occ/main/occ_isosurface.h>
 
@@ -22,82 +24,9 @@ using occ::core::Interpolator1D;
 using occ::core::Molecule;
 using occ::main::PromoleculeDensityFunctor;
 using occ::main::StockholderWeightFunctor;
+using occ::io::IsosurfaceMesh;
+using occ::io::VertexProperties;
 
-struct IsosurfaceMesh {
-    IsosurfaceMesh() {}
-    IsosurfaceMesh(size_t num_vertices, size_t num_faces)
-        : vertices(3, num_vertices), faces(3, num_faces),
-          normals(3, num_vertices) {}
-    Eigen::Matrix3Xf vertices;
-    Eigen::Matrix3Xi faces;
-    Eigen::Matrix3Xf normals;
-};
-
-struct VertexProperties {
-    VertexProperties() {}
-    VertexProperties(int size)
-        : de(size), di(size), de_idx(size), di_idx(size), de_norm(size),
-          di_norm(size), de_norm_idx(size), di_norm_idx(size), dnorm(size) {}
-    Eigen::VectorXf de;
-    Eigen::VectorXf di;
-    Eigen::VectorXi de_idx;
-    Eigen::VectorXi di_idx;
-    Eigen::VectorXf de_norm;
-    Eigen::VectorXf di_norm;
-    Eigen::VectorXi de_norm_idx;
-    Eigen::VectorXi di_norm_idx;
-    Eigen::VectorXf dnorm;
-};
-
-void write_ply_file(const std::string &filename,
-                    const Eigen::Matrix3Xf &vertices,
-                    const Eigen::Matrix3Xi &faces) {
-    auto file = fmt::output_file(filename);
-    file.print("ply\n");
-    file.print("format ascii 1.0\n");
-    file.print("comment exported from CrystalExplorer\n");
-    file.print("element vertex {}\n", vertices.size() / 3);
-    file.print("property float x\n");
-    file.print("property float y\n");
-    file.print("property float z\n");
-    file.print("element face {}\n", faces.size() / 3);
-    file.print("property list uchar int vertex_index\n");
-    file.print("end_header\n");
-    for (size_t idx = 0; idx < vertices.cols(); idx++) {
-        file.print("{} {} {}\n", vertices(0, idx), vertices(1, idx),
-                   vertices(2, idx));
-    }
-    for (size_t idx = 0; idx < faces.cols(); idx++) {
-        file.print("3 {} {} {}\n", faces(0, idx), faces(1, idx), faces(2, idx));
-    }
-}
-
-void write_obj_file(const std::string &filename, const IsosurfaceMesh &mesh,
-                    const VertexProperties &properties) {
-    auto file = fmt::output_file(filename);
-    file.print("# vertices\n");
-    for (size_t idx = 0; idx < mesh.vertices.cols(); idx++) {
-        file.print("v {} {} {}\n", mesh.vertices(0, idx), mesh.vertices(1, idx),
-                   mesh.vertices(2, idx));
-    }
-    file.print("# vertex normals\n");
-    for (size_t idx = 0; idx < mesh.vertices.cols(); idx++) {
-        file.print("vn {} {} {}\n", mesh.normals(0, idx), mesh.normals(1, idx),
-                   mesh.normals(2, idx));
-    }
-    file.print("# faces\n");
-    for (size_t idx = 0; idx < mesh.faces.cols(); idx++) {
-        int f1 = mesh.faces(0, idx) + 1;
-        int f2 = mesh.faces(1, idx) + 1;
-        int f3 = mesh.faces(2, idx) + 1;
-        file.print("f {}/{} {}/{} {}/{}\n", f1, f1, f2, f2, f3, f3);
-    }
-    file.print("# dnorm di\n");
-    for (size_t idx = 0; idx < properties.dnorm.rows(); idx++) {
-        file.print("vt {} {} {}\n", properties.dnorm(idx), properties.de(idx),
-                   properties.de(idx));
-    }
-}
 
 template <typename F>
 IsosurfaceMesh as_mesh(const F &b, const std::vector<float> &vertices,
