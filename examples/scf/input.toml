@@ -1,0 +1,6 @@
+[scf]
+geometry_filename = "water.xyz"
+method = "b3lyp"
+basis = "6-31G"
+# tight grid settings
+dft_grid_max_angular = 590

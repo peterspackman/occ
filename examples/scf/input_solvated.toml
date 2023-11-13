@@ -1,0 +1,5 @@
+[scf]
+geometry_filename = "water.xyz"
+method = "b3lyp"
+basis = "6-31G"
+solvent = "water"
