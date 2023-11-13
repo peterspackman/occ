@@ -110,7 +110,7 @@ void pipe_thread(FILE *input, PipeHandle output, bool bautoclose) {
     thread.detach();
 }
 void pipe_thread(std::string &input, PipeHandle output, bool bautoclose) {
-    std::thread thread([input(move(input)), output, bautoclose]() {
+    std::thread thread([input(std::move(input)), output, bautoclose]() {
         AutoClosePipe autoclose(output, bautoclose);
 
         std::size_t pos = 0;

@@ -38,7 +38,7 @@ build-verbosity = 1
 # Optional: run pytest to ensure that the package was correctly built
 # test-command = "pytest {project}/tests"
 # test-requires = "pytest"
-skip = ["cp38-*", "pp38-*"] # Skip CPython and PyPy 3.8
+skip = ["cp38-*", "pp*"] # Skip CPython and PyPy 3.8
 archs = ["auto64"]          # Only target 64 bit architectures
 
 # Needed for full C++17 support on macOS
