@@ -365,10 +365,7 @@ void Wavefunction::save(FchkWriter &fchk) {
     }
 
     // TODO fix this is wrong
-    fchk.set_scalar("Virial ratio",
-                    -(energy.nuclear_repulsion + energy.nuclear_attraction +
-                      energy.coulomb + energy.exchange) /
-                        energy.kinetic);
+    fchk.set_scalar("Virial ratio", -2 * energy.total / energy.kinetic);
     fchk.set_scalar("SCF ratio", energy.total);
     fchk.set_scalar("Total ratio", energy.total);
 

@@ -72,7 +72,7 @@ double HartreeFock::nuclear_point_charge_interaction_energy(
     return etot;
 }
 
-Mat HartreeFock::compute_fock(const MolecularOrbitals &mo, double precision,
+Mat HartreeFock::compute_fock(const MolecularOrbitals &mo,
                               const Mat &Schwarz) const {
     if (m_df_engine) {
         return m_df_engine->fock_operator(mo);
@@ -114,7 +114,7 @@ Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
 }
 
 std::pair<Mat, Mat> HartreeFock::compute_JK(const MolecularOrbitals &mo,
-                                            double precision,
+
                                             const Mat &Schwarz) const {
     if (m_df_engine) {
         return m_df_engine->coulomb_and_exchange(mo);
@@ -123,7 +123,7 @@ std::pair<Mat, Mat> HartreeFock::compute_JK(const MolecularOrbitals &mo,
     }
 }
 
-Mat HartreeFock::compute_J(const MolecularOrbitals &mo, double precision,
+Mat HartreeFock::compute_J(const MolecularOrbitals &mo,
                            const Mat &Schwarz) const {
     if (m_df_engine) {
         return m_df_engine->coulomb(mo);

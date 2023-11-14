@@ -38,6 +38,7 @@ struct DriverInput {
 struct MethodInput {
     std::string name{"rhf"};
     BeckeGridSettings dft_grid;
+    double integral_precision{1e-12};
 };
 
 struct BasisSetInput {

@@ -60,7 +60,6 @@ inline CEParameterizedModel CE2_XDM = CE2_XDM_WB97MV;
 inline CEParameterizedModel CE5_XDM = CE5_XDM_WB97MV;
 
 struct CEMonomerCalculationParameters {
-    double precision{1e-12};
     Mat Schwarz;
     bool xdm{false};
     bool neglect_exchange{false};

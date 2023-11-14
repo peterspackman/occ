@@ -490,15 +490,8 @@ template <typename Procedure> struct SCF {
             }
 
             // build a new Fock matrix
-            // totally empirical precision variation, involves the condition
-            // number
-            const auto precision_F =
-                std::min(std::min(1e-3 / XtX_condition_number, 1e-7),
-                         std::max(diis_error / 1e4,
-                                  std::numeric_limits<double>::epsilon()));
-
             std::swap(mo.D, D_diff);
-            F += m_procedure.compute_fock(mo, precision_F, K);
+            F += m_procedure.compute_fock(mo, K);
             std::swap(mo.D, D_diff);
 
             // compute HF energy with the non-extrapolated Fock matrix

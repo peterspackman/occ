@@ -26,6 +26,7 @@ class IntegralEngineDF {
     inline void set_integral_policy(Policy p) { m_policy = p; }
 
     void set_range_separated_omega(double omega);
+    void set_precision(double precision);
 
   private:
     inline size_t num_rows() const {
@@ -55,6 +56,8 @@ class IntegralEngineDF {
         }
         return (m_policy == Policy::Stored);
     }
+
+    double m_precision{1e-12};
 
     mutable IntegralEngine m_ao_engine;  // engine with ao basis & aux basis
     mutable IntegralEngine m_aux_engine; // engine with just aux basis

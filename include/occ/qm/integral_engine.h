@@ -197,6 +197,8 @@ class IntegralEngine {
         m_env.set_range_separated_omega(omega);
     }
 
+    inline void set_precision(double precision) { m_precision = precision; }
+
   private:
     double m_precision{1e-12};
     AOBasis m_aobasis, m_auxbasis;

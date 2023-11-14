@@ -334,7 +334,7 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
     fmt::print("Compute K SGX done\n");
     occ::Mat Jexact, Kexact;
     sw.start(1);
-    std::tie(Jexact, Kexact) = hf.compute_JK(scf.mo, 1e-12, occ::Mat());
+    std::tie(Jexact, Kexact) = hf.compute_JK(scf.mo, occ::Mat());
     sw.stop(1);
     int i, j;
     fmt::print("K - Kexact: {:12.8f}\n",
