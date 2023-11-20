@@ -993,7 +993,7 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 Mat fock_operator_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
                          const ShellPairList &shellpairs,
-                         const MolecularOrbitals &mo,
+                         const MolecularOrbitals &mo, double precision = 1e-12,
                          const Mat &Schwarz = Mat()) {
     using Result = IntegralEngine::IntegralResult<4>;
     auto nthreads = occ::parallel::get_num_threads();
@@ -1029,7 +1029,7 @@ Mat fock_operator_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     };
     auto lambda = [&](int thread_id) {
         evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm,
-                                       Schwarz, 1e-12, thread_id);
+                                       Schwarz, precision, thread_id);
     };
     occ::timing::start(occ::timing::category::fock);
     occ::parallel::parallel_do(lambda);
@@ -1064,7 +1064,7 @@ Mat fock_operator_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 Mat coulomb_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
                    const ShellPairList &shellpairs, const MolecularOrbitals &mo,
-                   const Mat &Schwarz = Mat()) {
+                   double precision = 1e-12, const Mat &Schwarz = Mat()) {
     using Result = IntegralEngine::IntegralResult<4>;
     auto nthreads = occ::parallel::get_num_threads();
     constexpr Op op = Op::coulomb;
@@ -1098,7 +1098,7 @@ Mat coulomb_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     };
     auto lambda = [&](int thread_id) {
         evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm,
-                                       Schwarz, 1e-12, thread_id);
+                                       Schwarz, precision, thread_id);
     };
     occ::timing::start(occ::timing::category::fock);
     occ::parallel::parallel_do(lambda);
@@ -1138,6 +1138,7 @@ std::pair<Mat, Mat> coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
                                                 const AOBasis &basis,
                                                 const ShellPairList &shellpairs,
                                                 const MolecularOrbitals &mo,
+                                                double precision = 1e-12,
                                                 const Mat &Schwarz = Mat()) {
     using Result = IntegralEngine::IntegralResult<4>;
     auto nthreads = occ::parallel::get_num_threads();
@@ -1175,7 +1176,7 @@ std::pair<Mat, Mat> coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
     };
     auto lambda = [&](int thread_id) {
         evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm,
-                                       Schwarz, 1e-12, thread_id);
+                                       Schwarz, precision, thread_id);
     };
     occ::timing::start(occ::timing::category::fock);
     occ::parallel::parallel_do(lambda);
@@ -1246,28 +1247,28 @@ Mat IntegralEngine::fock_operator(SpinorbitalKind sk,
     case R:
         if (spherical) {
             return fock_operator_kernel<R, Sph>(m_env, m_aobasis, m_shellpairs,
-                                                mo, Schwarz);
+                                                mo, m_precision, Schwarz);
         } else {
             return fock_operator_kernel<R, Cart>(m_env, m_aobasis, m_shellpairs,
-                                                 mo, Schwarz);
+                                                 mo, m_precision, Schwarz);
         }
         break;
     case U:
         if (spherical) {
             return fock_operator_kernel<U, Sph>(m_env, m_aobasis, m_shellpairs,
-                                                mo, Schwarz);
+                                                mo, m_precision, Schwarz);
         } else {
             return fock_operator_kernel<U, Cart>(m_env, m_aobasis, m_shellpairs,
-                                                 mo, Schwarz);
+                                                 mo, m_precision, Schwarz);
         }
 
     case G:
         if (spherical) {
             return fock_operator_kernel<G, Sph>(m_env, m_aobasis, m_shellpairs,
-                                                mo, Schwarz);
+                                                mo, m_precision, Schwarz);
         } else {
             return fock_operator_kernel<G, Cart>(m_env, m_aobasis, m_shellpairs,
-                                                 mo, Schwarz);
+                                                 mo, m_precision, Schwarz);
         }
     }
 }
@@ -1285,28 +1286,28 @@ Mat IntegralEngine::coulomb(SpinorbitalKind sk, const MolecularOrbitals &mo,
     case R:
         if (spherical) {
             return coulomb_kernel<R, Sph>(m_env, m_aobasis, m_shellpairs, mo,
-                                          Schwarz);
+                                          m_precision, Schwarz);
         } else {
             return coulomb_kernel<R, Cart>(m_env, m_aobasis, m_shellpairs, mo,
-                                           Schwarz);
+                                           m_precision, Schwarz);
         }
         break;
     case U:
         if (spherical) {
             return coulomb_kernel<U, Sph>(m_env, m_aobasis, m_shellpairs, mo,
-                                          Schwarz);
+                                          m_precision, Schwarz);
         } else {
             return coulomb_kernel<U, Cart>(m_env, m_aobasis, m_shellpairs, mo,
-                                           Schwarz);
+                                           m_precision, Schwarz);
         }
 
     case G:
         if (spherical) {
             return coulomb_kernel<G, Sph>(m_env, m_aobasis, m_shellpairs, mo,
-                                          Schwarz);
+                                          m_precision, Schwarz);
         } else {
             return coulomb_kernel<G, Cart>(m_env, m_aobasis, m_shellpairs, mo,
-                                           Schwarz);
+                                           m_precision, Schwarz);
         }
     }
 }
@@ -1324,28 +1325,28 @@ std::pair<Mat, Mat> IntegralEngine::coulomb_and_exchange(
     case R:
         if (spherical) {
             return coulomb_and_exchange_kernel<R, Sph>(
-                m_env, m_aobasis, m_shellpairs, mo, Schwarz);
+                m_env, m_aobasis, m_shellpairs, mo, m_precision, Schwarz);
         } else {
             return coulomb_and_exchange_kernel<R, Cart>(
-                m_env, m_aobasis, m_shellpairs, mo, Schwarz);
+                m_env, m_aobasis, m_shellpairs, mo, m_precision, Schwarz);
         }
         break;
     case U:
         if (spherical) {
             return coulomb_and_exchange_kernel<U, Sph>(
-                m_env, m_aobasis, m_shellpairs, mo, Schwarz);
+                m_env, m_aobasis, m_shellpairs, mo, m_precision, Schwarz);
         } else {
             return coulomb_and_exchange_kernel<U, Cart>(
-                m_env, m_aobasis, m_shellpairs, mo, Schwarz);
+                m_env, m_aobasis, m_shellpairs, mo, m_precision, Schwarz);
         }
 
     case G:
         if (spherical) {
             return coulomb_and_exchange_kernel<G, Sph>(
-                m_env, m_aobasis, m_shellpairs, mo, Schwarz);
+                m_env, m_aobasis, m_shellpairs, mo, m_precision, Schwarz);
         } else {
             return coulomb_and_exchange_kernel<G, Cart>(
-                m_env, m_aobasis, m_shellpairs, mo, Schwarz);
+                m_env, m_aobasis, m_shellpairs, mo, m_precision, Schwarz);
         }
     }
 }

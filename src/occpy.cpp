@@ -176,6 +176,7 @@ NB_MODULE(_occpy, m) {
         .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
         .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
         .def("scf", [](HartreeFock &hf) { return HF(hf); })
+        .def("set_precision", &HartreeFock::set_precision)
         .def("coulomb_matrix",
              [](const HartreeFock &hf, const MolecularOrbitals &mo) {
                  return hf.compute_J(mo);
@@ -210,6 +211,7 @@ NB_MODULE(_occpy, m) {
         .def("kinetic_matrix", &DFT::compute_kinetic_matrix)
         .def("overlap_matrix", &DFT::compute_overlap_matrix)
         .def("nuclear_repulsion", &DFT::nuclear_repulsion_energy)
+        .def("set_precision", &HartreeFock::set_precision)
         .def("set_method", &DFT::set_method, nb::arg("method_string"),
              nb::arg("unrestricted") = false)
         .def("set_unrestricted", &DFT::set_unrestricted)

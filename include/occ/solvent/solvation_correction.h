@@ -147,6 +147,11 @@ template <typename Proc> class SolvationCorrectedProcedure {
     inline Vec3 center_of_mass() const { return m_proc.center_of_mass(); }
 
     void set_system_charge(int charge) { m_proc.set_system_charge(charge); }
+
+    inline void set_precision(double precision) {
+        m_proc.set_precision(precision);
+    }
+
     int system_charge() const { return m_proc.system_charge(); }
     int total_electrons() const { return m_proc.total_electrons(); }
     int active_electrons() const { return m_proc.active_electrons(); }
@@ -160,7 +165,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
         return m_proc.nuclear_repulsion_energy();
     }
 
-    inline double nuclear_point_charge_interaction_energy(const PointChargeList &pc) const {
+    inline double
+    nuclear_point_charge_interaction_energy(const PointChargeList &pc) const {
         return m_proc.nuclear_point_charge_interaction_energy(pc);
     }
 
@@ -201,7 +207,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
 
     auto compute_schwarz_ints() const { return m_proc.compute_schwarz_ints(); }
 
-    inline auto compute_point_charge_interaction_matrix(const PointChargeList &pc) {
+    inline auto
+    compute_point_charge_interaction_matrix(const PointChargeList &pc) {
         return m_proc.compute_point_charge_interaction_matrix(pc);
     }
 
@@ -262,9 +269,8 @@ template <typename Proc> class SolvationCorrectedProcedure {
     }
 
     Mat compute_fock(const MolecularOrbitals &mo,
-                     double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const {
-        return m_proc.compute_fock(mo, precision, Schwarz);
+        return m_proc.compute_fock(mo, Schwarz);
     }
 
     Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,

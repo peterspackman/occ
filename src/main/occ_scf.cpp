@@ -111,6 +111,9 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
         },
         "use unrestricted SCF");
 
+    scf->add_option("--integral-precision,--integral_precision",
+                    config->method.integral_precision,
+                    "cutoff for integral screening");
     // dft grid
     scf->add_option("--dft-grid-max-angular,--dft_grid_max_angular",
                     config->method.dft_grid.max_angular_points,

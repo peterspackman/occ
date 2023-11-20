@@ -103,8 +103,13 @@ class DFT {
         return m_hf.frozen_electrons();
     }
 
-    void set_density_fitting_basis(const std::string &density_fitting_basis) {
+    inline void
+    set_density_fitting_basis(const std::string &density_fitting_basis) {
         m_hf.set_density_fitting_basis(density_fitting_basis);
+    }
+
+    inline void set_precision(double precision) {
+        m_hf.set_precision(precision);
     }
 
     double exchange_correlation_energy() const { return m_exc_dft; }
@@ -203,8 +208,7 @@ class DFT {
 
     template <int derivative_order,
               SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
-    Mat compute_K_dft(const MolecularOrbitals &mo, double precision,
-                      const Mat &Schwarz) {
+    Mat compute_K_dft(const MolecularOrbitals &mo, const Mat &Schwarz) {
         using occ::parallel::nthreads;
         const auto &basis = m_hf.aobasis();
         const auto &atoms = m_hf.atoms();
@@ -322,31 +326,27 @@ class DFT {
         return K;
     }
 
-    inline Mat
-    compute_J(const MolecularOrbitals &mo,
-              double precision = std::numeric_limits<double>::epsilon(),
-              const Mat &Schwarz = Mat()) const {
-        return m_hf.compute_J(mo, precision, Schwarz);
+    inline Mat compute_J(const MolecularOrbitals &mo,
+                         const Mat &Schwarz = Mat()) const {
+        return m_hf.compute_J(mo, Schwarz);
     }
 
-    inline Mat
-    compute_vxc(const MolecularOrbitals &mo,
-                double precision = std::numeric_limits<double>::epsilon(),
-                const Mat &Schwarz = Mat()) {
+    inline Mat compute_vxc(const MolecularOrbitals &mo,
+                           const Mat &Schwarz = Mat()) {
         int deriv = density_derivative();
         switch (mo.kind) {
         case SpinorbitalKind::Unrestricted: {
             occ::log::debug("Unrestricted vxc evaluation");
             switch (deriv) {
             case 0:
-                return compute_K_dft<0, SpinorbitalKind::Unrestricted>(
-                    mo, precision, Schwarz);
+                return compute_K_dft<0, SpinorbitalKind::Unrestricted>(mo,
+                                                                       Schwarz);
             case 1:
-                return compute_K_dft<1, SpinorbitalKind::Unrestricted>(
-                    mo, precision, Schwarz);
+                return compute_K_dft<1, SpinorbitalKind::Unrestricted>(mo,
+                                                                       Schwarz);
             case 2:
-                return compute_K_dft<2, SpinorbitalKind::Unrestricted>(
-                    mo, precision, Schwarz);
+                return compute_K_dft<2, SpinorbitalKind::Unrestricted>(mo,
+                                                                       Schwarz);
             default:
                 throw std::runtime_error(
                     "Not implemented: DFT for derivative order > 2");
@@ -355,14 +355,14 @@ class DFT {
         case SpinorbitalKind::Restricted: {
             switch (deriv) {
             case 0:
-                return compute_K_dft<0, SpinorbitalKind::Restricted>(
-                    mo, precision, Schwarz);
+                return compute_K_dft<0, SpinorbitalKind::Restricted>(mo,
+                                                                     Schwarz);
             case 1:
-                return compute_K_dft<1, SpinorbitalKind::Restricted>(
-                    mo, precision, Schwarz);
+                return compute_K_dft<1, SpinorbitalKind::Restricted>(mo,
+                                                                     Schwarz);
             case 2:
-                return compute_K_dft<2, SpinorbitalKind::Restricted>(
-                    mo, precision, Schwarz);
+                return compute_K_dft<2, SpinorbitalKind::Restricted>(mo,
+                                                                     Schwarz);
             default:
                 throw std::runtime_error(
                     "Not implemented: DFT for derivative order > 2");
@@ -374,23 +374,21 @@ class DFT {
         }
     }
 
-    inline std::pair<Mat, Mat>
-    compute_JK(const MolecularOrbitals &mo,
-               double precision = std::numeric_limits<double>::epsilon(),
-               const Mat &Schwarz = Mat()) {
+    inline std::pair<Mat, Mat> compute_JK(const MolecularOrbitals &mo,
+                                          const Mat &Schwarz = Mat()) {
 
         Mat J;
-        Mat K = -compute_vxc(mo, precision, Schwarz);
+        Mat K = -compute_vxc(mo, Schwarz);
         double ecoul{0.0}, exc{0.0};
         double exchange_factor = exact_exchange_factor();
         RangeSeparatedParameters rs = range_separated_parameters();
         if (rs.omega != 0.0) {
             // range separated hybrid
             Mat Ksr;
-            std::tie(J, Ksr) = m_hf.compute_JK(mo, precision, Schwarz);
+            std::tie(J, Ksr) = m_hf.compute_JK(mo, Schwarz);
             m_hf.set_range_separated_omega(rs.omega);
             Mat Jlr, Klr;
-            std::tie(Jlr, Klr) = m_hf.compute_JK(mo, precision, Schwarz);
+            std::tie(Jlr, Klr) = m_hf.compute_JK(mo, Schwarz);
             Mat Khf = Ksr * (rs.alpha + rs.beta) + Klr * (-rs.beta);
             ecoul = expectation(mo.kind, mo.D, J);
             exc = -expectation(mo.kind, mo.D, Khf);
@@ -399,12 +397,12 @@ class DFT {
         } else if (exchange_factor != 0.0) {
             // global hybrid
             Mat Khf;
-            std::tie(J, Khf) = m_hf.compute_JK(mo, precision, Schwarz);
+            std::tie(J, Khf) = m_hf.compute_JK(mo, Schwarz);
             ecoul = expectation(mo.kind, mo.D, J);
             exc = -expectation(mo.kind, mo.D, Khf) * exchange_factor;
             K.noalias() += Khf * exchange_factor;
         } else {
-            J = m_hf.compute_J(mo, precision, Schwarz);
+            J = m_hf.compute_J(mo, Schwarz);
             ecoul = expectation(mo.kind, mo.D, J);
         }
         occ::log::debug(
@@ -433,10 +431,8 @@ class DFT {
         return m_nlc_energy;
     }
 
-    Mat compute_fock(const MolecularOrbitals &mo,
-                     double precision = std::numeric_limits<double>::epsilon(),
-                     const Mat &Schwarz = Mat()) {
-        auto [J, K] = compute_JK(mo, precision, Schwarz);
+    Mat compute_fock(const MolecularOrbitals &mo, const Mat &Schwarz = Mat()) {
+        auto [J, K] = compute_JK(mo, Schwarz);
         return J - K;
     }
 

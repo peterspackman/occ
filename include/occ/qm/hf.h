@@ -37,23 +37,30 @@ class HartreeFock {
     inline bool have_effective_core_potentials() const {
         return m_engine.have_effective_core_potentials();
     }
+
     void set_system_charge(int charge);
     void set_density_fitting_basis(const std::string &);
+
+    inline void set_precision(double precision) {
+        m_engine.set_precision(precision);
+
+        if (m_df_engine != nullptr) {
+            m_df_engine->set_precision(precision);
+        }
+    }
+
     double nuclear_repulsion_energy() const;
-    double nuclear_point_charge_interaction_energy(const PointChargeList &) const;
+    double
+    nuclear_point_charge_interaction_energy(const PointChargeList &) const;
 
     Mat compute_fock(const MolecularOrbitals &mo,
-                     double precision = std::numeric_limits<double>::epsilon(),
                      const Mat &Schwarz = Mat()) const;
 
     Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                  const qm::AOBasis &bs, bool is_shell_diagonal);
-    std::pair<Mat, Mat>
-    compute_JK(const MolecularOrbitals &mo,
-               double precision = std::numeric_limits<double>::epsilon(),
-               const Mat &Schwarz = Mat()) const;
+    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals &mo,
+                                   const Mat &Schwarz = Mat()) const;
     Mat compute_J(const MolecularOrbitals &mo,
-                  double precision = std::numeric_limits<double>::epsilon(),
                   const Mat &Schwarz = Mat()) const;
 
     Mat compute_kinetic_matrix() const;

@@ -165,7 +165,6 @@ void compute_monomer_energies(const std::string &basename,
             std::cout << std::flush;
             HartreeFock hf(wfn.basis);
             occ::interaction::CEMonomerCalculationParameters params;
-            params.precision = 1e-8;
             params.Schwarz = hf.compute_schwarz_ints();
             occ::interaction::compute_ce_model_energies(wfn, hf, params);
             occ::log::debug("Writing monomer energies to {}",

@@ -35,12 +35,11 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &proc,
         wfn.H = wfn.V + wfn.T;
         if (params.neglect_exchange) {
             occ::log::debug("neglecting K, only computing J");
-            wfn.J = proc.compute_J(wfn.mo, params.precision, params.Schwarz);
+            wfn.J = proc.compute_J(wfn.mo, params.Schwarz);
             wfn.K = Mat::Zero(wfn.J.rows(), wfn.J.cols());
         } else {
             occ::log::debug("computing J with K");
-            std::tie(wfn.J, wfn.K) =
-                proc.compute_JK(wfn.mo, params.precision, params.Schwarz);
+            std::tie(wfn.J, wfn.K) = proc.compute_JK(wfn.mo, params.Schwarz);
         }
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         if constexpr (std::is_same<Proc, dft::DFT>::value) {
@@ -72,11 +71,10 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &proc,
         wfn.energy.nuclear_attraction = 2 * expectation<kind>(wfn.mo.D, wfn.V);
         wfn.energy.kinetic = 2 * expectation<kind>(wfn.mo.D, wfn.T);
         if (params.neglect_exchange) {
-            wfn.J = proc.compute_J(wfn.mo, params.precision, params.Schwarz);
+            wfn.J = proc.compute_J(wfn.mo, params.Schwarz);
             wfn.K = Mat::Zero(wfn.J.rows(), wfn.J.cols());
         } else {
-            std::tie(wfn.J, wfn.K) =
-                proc.compute_JK(wfn.mo, params.precision, params.Schwarz);
+            std::tie(wfn.J, wfn.K) = proc.compute_JK(wfn.mo, params.Schwarz);
         }
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         if constexpr (std::is_same<Proc, dft::DFT>::value) {
@@ -159,14 +157,12 @@ void CEModelInteraction::set_use_xdm_dimer_parameters(bool value) {
 }
 
 void CEModelInteraction::compute_monomer_energies(Wavefunction &wfn) const {
-    constexpr double precision = std::numeric_limits<double>::epsilon();
     HartreeFock hf(wfn.basis);
     if (m_use_density_fitting) {
         occ::log::debug("Setting DF basis: def2-universal-jkfit");
         hf.set_density_fitting_basis("def2-universal-jkfit");
     }
     CEMonomerCalculationParameters params;
-    params.precision = precision;
     params.Schwarz = hf.compute_schwarz_ints();
     params.xdm = m_scale_factors.xdm;
 
@@ -199,7 +195,6 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
                                                   Wavefunction &B) const {
     using occ::disp::ce_model_dispersion_energy;
     using occ::qm::Energy;
-    constexpr double precision = std::numeric_limits<double>::epsilon();
 
     HartreeFock hf_a(A.basis);
     HartreeFock hf_b(B.basis);
@@ -210,12 +205,10 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     }
 
     CEMonomerCalculationParameters params_a;
-    params_a.precision = precision;
     params_a.Schwarz = hf_a.compute_schwarz_ints();
     params_a.xdm = m_scale_factors.xdm;
 
     CEMonomerCalculationParameters params_b;
-    params_b.precision = precision;
     params_b.Schwarz = hf_b.compute_schwarz_ints();
     params_b.xdm = m_scale_factors.xdm;
 
@@ -236,7 +229,6 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     // basis and atoms
     auto hf_AB = HartreeFock(ABn.basis);
     CEMonomerCalculationParameters params_ab;
-    params_ab.precision = precision;
     params_ab.Schwarz = hf_AB.compute_schwarz_ints();
     params_ab.xdm = m_scale_factors.xdm && m_use_xdm_dimer_parameters;
 
@@ -378,7 +370,6 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     using occ::dft::DFT;
     using occ::disp::ce_model_dispersion_energy;
     using occ::qm::Energy;
-    constexpr double precision = std::numeric_limits<double>::epsilon();
 
     occ::io::BeckeGridSettings grid_settings{110, 30, 30, 1e-6};
 
@@ -390,7 +381,6 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
         }
 
         CEMonomerCalculationParameters params_a;
-        params_a.precision = precision;
         params_a.Schwarz = dft_a.compute_schwarz_ints();
         params_a.xdm = m_scale_factors.xdm;
 
@@ -401,7 +391,6 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
         }
 
         CEMonomerCalculationParameters params_b;
-        params_b.precision = precision;
         params_b.Schwarz = dft_b.compute_schwarz_ints();
         params_b.xdm = m_scale_factors.xdm;
 
@@ -422,7 +411,6 @@ CEEnergyComponents CEModelInteraction::dft_pair(const std::string &functional,
     // basis and atoms
     auto dft_AB = DFT(functional, ABn.basis, grid_settings);
     CEMonomerCalculationParameters params_ab;
-    params_ab.precision = precision;
     params_ab.Schwarz = dft_AB.compute_schwarz_ints();
     params_ab.xdm = m_scale_factors.xdm && m_use_xdm_dimer_parameters;
 

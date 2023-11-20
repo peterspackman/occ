@@ -287,6 +287,7 @@ class Dimer {
 
     inline const auto &name() const { return m_name; }
     inline void set_name(const std::string &name) { m_name = name; }
+    std::string xyz_string() const;
 
   private:
     Molecule m_a, m_b;
