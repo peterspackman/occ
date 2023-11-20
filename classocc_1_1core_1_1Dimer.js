@@ -28,5 +28,6 @@ var classocc_1_1core_1_1Dimer =
     [ "set_interaction_id", "classocc_1_1core_1_1Dimer.html#a32974c70fb2b8cc19366c01964c3f825", null ],
     [ "symmetry_relation", "classocc_1_1core_1_1Dimer.html#a1f5f57d63a79965de783d861b8534cbe", null ],
     [ "v_ab", "classocc_1_1core_1_1Dimer.html#a4df94c42d8bcff3385004dcc8182b7aa", null ],
-    [ "vdw_radii", "classocc_1_1core_1_1Dimer.html#aa99b809b88c986b2b33c4e2b921f03ef", null ]
+    [ "vdw_radii", "classocc_1_1core_1_1Dimer.html#aa99b809b88c986b2b33c4e2b921f03ef", null ],
+    [ "xyz_string", "classocc_1_1core_1_1Dimer.html#a50560d68e5ecc4ab45c482eaf6a2817f", null ]
 ];

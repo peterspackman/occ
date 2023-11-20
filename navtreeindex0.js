@@ -44,6 +44,7 @@ var NAVTREEINDEX0 =
 "classocc_1_1core_1_1Dimer.html#a33a5b9311064e46c8b842ce570b94d19":[2,0,1,0,7,13],
 "classocc_1_1core_1_1Dimer.html#a4829e10924eb3034996a9bedc2ada54a":[2,0,1,0,7,1],
 "classocc_1_1core_1_1Dimer.html#a4df94c42d8bcff3385004dcc8182b7aa":[2,0,1,0,7,24],
+"classocc_1_1core_1_1Dimer.html#a50560d68e5ecc4ab45c482eaf6a2817f":[2,0,1,0,7,26],
 "classocc_1_1core_1_1Dimer.html#a6bc91db9e1de88a6f6938155293c3586":[2,0,1,0,7,12],
 "classocc_1_1core_1_1Dimer.html#a735ed50bc1d2b5232338b85f2bf5ce96":[2,0,1,0,7,19],
 "classocc_1_1core_1_1Dimer.html#a75fc39854deb7d0ed65aad47f028b6a3":[2,0,1,0,7,20],
@@ -248,6 +249,5 @@ var NAVTREEINDEX0 =
 "classocc_1_1crystal_1_1Crystal.html#adc6b3aff8c5397427b2c70daf11a599b":[2,0,1,1,3,9],
 "classocc_1_1crystal_1_1Crystal.html#ade1987a84960462dafac4eba6f365da0":[2,0,1,1,3,2],
 "classocc_1_1crystal_1_1Crystal.html#ae6844966f92d3fc01a7a481fc5f101d3":[2,0,1,1,3,14],
-"classocc_1_1crystal_1_1Crystal.html#ae99864bf434db546e3cb9d4dae31df4c":[2,0,1,1,3,13],
-"classocc_1_1crystal_1_1Crystal.html#af5e5d70c0465f72860ee5b3e68923e41":[2,0,1,1,3,7]
+"classocc_1_1crystal_1_1Crystal.html#ae99864bf434db546e3cb9d4dae31df4c":[2,0,1,1,3,13]
 };

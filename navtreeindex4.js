@@ -1,5 +1,6 @@
 var NAVTREEINDEX4 =
 {
+"classocc_1_1main_1_1StockholderWeightFunctor.html#aae6778bd2e3328337f67be8c54298463":[2,0,1,7,7,0],
 "classocc_1_1main_1_1StockholderWeightFunctor.html#abfddd591fede68cb5bdb77e4a6153ca8":[2,0,1,7,7,1],
 "classocc_1_1main_1_1StockholderWeightFunctor.html#ac9b6384ae20e5cdae9d1e81e421f9a15":[2,0,1,7,7,3],
 "classocc_1_1main_1_1StockholderWeightFunctor.html#af6a520f56cc6c69f26498756fcdf80ad":[2,0,1,7,7,6],
@@ -248,6 +249,5 @@ var NAVTREEINDEX4 =
 "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a78b03c5a9f98ce64224079e24a22d182":[2,0,1,12,3,8],
 "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a813a268632db10211faaa7636be9ef23":[2,0,1,12,3,18],
 "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a84274c2d7895d7681e853149389eaa6b":[2,0,1,12,3,13],
-"classocc_1_1solvent_1_1ContinuumSolvationModel.html#a85be781c6207e33e6b289efc4de0f268":[2,0,1,12,3,15],
-"classocc_1_1solvent_1_1ContinuumSolvationModel.html#a867bbc701aafa0ac582d9e2127d92a5a":[2,0,1,12,3,12]
+"classocc_1_1solvent_1_1ContinuumSolvationModel.html#a85be781c6207e33e6b289efc4de0f268":[2,0,1,12,3,15]
 };
