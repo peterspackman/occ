@@ -285,6 +285,8 @@ class Dimer {
      */
     bool equivalent_under_rotation(const Dimer &b, const occ::Mat3 &rot) const;
 
+    std::string xyz_string() const;
+
   private:
     Molecule m_a, m_b;
     size_t m_uc_idx_a{0}, m_uc_idx_b{0};
