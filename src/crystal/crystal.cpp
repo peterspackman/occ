@@ -485,19 +485,19 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
 
     for (size_t i = 0; i < m_asymmetric_unit.size(); i++) {
         const auto &pos = m_asymmetric_unit.positions.col(i);
-        upper.h =
-            std::max(upper.h, static_cast<int>(ceil(pos(0) + frac_radius(0))));
-        upper.k =
-            std::max(upper.k, static_cast<int>(ceil(pos(1) + frac_radius(1))));
-        upper.l =
-            std::max(upper.l, static_cast<int>(ceil(pos(2) + frac_radius(2))));
+        upper.h = std::max(upper.h,
+                           static_cast<int>(ceil(pos(0) + frac_radius(0))) + 1);
+        upper.k = std::max(upper.k,
+                           static_cast<int>(ceil(pos(1) + frac_radius(1))) + 1);
+        upper.l = std::max(upper.l,
+                           static_cast<int>(ceil(pos(2) + frac_radius(2))) + 1);
 
-        lower.h =
-            std::min(lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
-        lower.k =
-            std::min(lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
-        lower.l =
-            std::min(lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
+        lower.h = std::min(
+            lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))) - 1);
+        lower.k = std::min(
+            lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))) - 1);
+        lower.l = std::min(
+            lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))) - 1);
     }
 
     const auto &uc_mols = unit_cell_molecules();
@@ -573,19 +573,19 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
         Mat3N pos_frac = to_fractional(mol.positions());
         for (size_t i = 0; i < pos_frac.cols(); i++) {
             const auto &pos = pos_frac.col(i);
-            upper.h = std::max(upper.h,
-                               static_cast<int>(ceil(pos(0) + frac_radius(0))));
-            upper.k = std::max(upper.k,
-                               static_cast<int>(ceil(pos(1) + frac_radius(1))));
-            upper.l = std::max(upper.l,
-                               static_cast<int>(ceil(pos(2) + frac_radius(2))));
+            upper.h = std::max(
+                upper.h, static_cast<int>(ceil(pos(0) + frac_radius(0))) + 1);
+            upper.k = std::max(
+                upper.k, static_cast<int>(ceil(pos(1) + frac_radius(1))) + 1);
+            upper.l = std::max(
+                upper.l, static_cast<int>(ceil(pos(2) + frac_radius(2))) + 1);
 
             lower.h = std::min(
-                lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
+                lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))) - 1);
             lower.k = std::min(
-                lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
+                lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))) - 1);
             lower.l = std::min(
-                lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
+                lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))) - 1);
         }
     }
 
