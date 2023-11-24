@@ -1,4 +1,5 @@
 #include "utf8_to_utf16.hpp"
+#include <cassert>
 #include <codecvt>
 #include <locale>
 

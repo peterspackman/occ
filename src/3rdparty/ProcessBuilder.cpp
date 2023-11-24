@@ -1,5 +1,6 @@
 #include "ProcessBuilder.hpp"
 #include "shell_utils.hpp"
+#include "utf8_to_utf16.hpp"
 #include <chrono>
 #include <cstdio>
 #include <cstring>
@@ -8,10 +9,13 @@
 #include <signal.h>
 #include <stdexcept>
 #include <stdlib.h>
-#include <sys/wait.h>
 #include <thread>
 #include <utility>
 #include <variant>
+
+#ifndef _WIN32
+#include <sys/wait.h>
+#endif
 
 using std::nullptr_t;
 
