@@ -21,7 +21,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/qcschema.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xyz.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_IO_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_io

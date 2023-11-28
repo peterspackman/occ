@@ -12,7 +12,7 @@ add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/shell.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_QM_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_qm

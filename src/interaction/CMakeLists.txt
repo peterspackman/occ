@@ -5,7 +5,7 @@ add_library(occ_interaction
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_potential.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/polarization.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_INTERACTION_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_interaction

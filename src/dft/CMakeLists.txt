@@ -6,7 +6,7 @@ add_library(occ_dft
     "${CMAKE_CURRENT_SOURCE_DIR}/nonlocal_correlation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/seminumerical_exchange.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xc_potential_matrix.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_DFT_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_dft

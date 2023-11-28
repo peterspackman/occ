@@ -1,7 +1,7 @@
 add_library(occ_xtb
     STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/xtb_wrapper.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_XTB_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_xtb
@@ -35,7 +35,7 @@ target_link_libraries(TBLite::TBLite INTERFACE tblite-lib tblite "${CMAKE_Fortra
 add_library(occ_tblite
     STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/tblite_wrapper.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_XTB_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_tblite

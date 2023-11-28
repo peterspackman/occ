@@ -25,6 +25,7 @@ using MaskArray = Eigen::Array<bool, Eigen::Dynamic, 1>;
 using MaskMat = Eigen::Array<bool, Eigen::Dynamic, Eigen::Dynamic>;
 
 using IMat = Eigen::MatrixXi;
+using IMat3N = Eigen::Matrix3Xi;
 using Mat = Eigen::MatrixXd;
 using MatRef = Eigen::Ref<Eigen::MatrixXd>;
 using MatConstRef = Eigen::Ref<const Eigen::MatrixXd>;

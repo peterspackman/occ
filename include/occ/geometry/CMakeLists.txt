@@ -1,6 +1,15 @@
-set(OCC_CORE_INCLUDE_FILES
+set(OCC_GEOMETRY_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/index_cache.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_hashed_octree.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/marching_cubes.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/morton.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/convex_hull.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/half_edge_mesh.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/math_utils.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/mesh.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/plane.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pool.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/quickhull.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ray.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wulff.h"
     PARENT_SCOPE)

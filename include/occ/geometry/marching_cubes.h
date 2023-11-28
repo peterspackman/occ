@@ -333,7 +333,6 @@ struct MarchingCubes {
         extract_impl(source, fn, indices);
     }
 
-
     template <typename S>
     void extract_with_normals(const S &source, std::vector<float> &vertices,
                               std::vector<uint32_t> &indices,
@@ -351,7 +350,6 @@ struct MarchingCubes {
 
         extract_impl(source, fn, indices);
     }
-
 
   private:
     template <typename S, typename E>

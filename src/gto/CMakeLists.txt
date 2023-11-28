@@ -2,7 +2,7 @@ add_library(occ_gto
     "${CMAKE_CURRENT_SOURCE_DIR}/density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gto.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/rotation.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_GTO_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_gto

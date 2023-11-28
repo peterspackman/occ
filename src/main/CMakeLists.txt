@@ -13,7 +13,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_partition.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_MAIN_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_main

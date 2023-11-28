@@ -1,5 +1,5 @@
-#include <occ/io/obj.h>
 #include <fmt/os.h>
+#include <occ/io/obj.h>
 
 namespace occ::io {
 
@@ -11,10 +11,12 @@ void write_obj_file(const std::string &filename, const IsosurfaceMesh &mesh,
         file.print("v {} {} {}\n", mesh.vertices(0, idx), mesh.vertices(1, idx),
                    mesh.vertices(2, idx));
     }
-    file.print("# vertex normals\n");
-    for (size_t idx = 0; idx < mesh.vertices.cols(); idx++) {
-        file.print("vn {} {} {}\n", mesh.normals(0, idx), mesh.normals(1, idx),
-                   mesh.normals(2, idx));
+    if (mesh.normals.cols() > 0) {
+        file.print("# vertex normals\n");
+        for (size_t idx = 0; idx < mesh.normals.cols(); idx++) {
+            file.print("vn {} {} {}\n", mesh.normals(0, idx),
+                       mesh.normals(1, idx), mesh.normals(2, idx));
+        }
     }
     file.print("# faces\n");
     for (size_t idx = 0; idx < mesh.faces.cols(); idx++) {
@@ -30,4 +32,4 @@ void write_obj_file(const std::string &filename, const IsosurfaceMesh &mesh,
     }
 }
 
-}
+} // namespace occ::io

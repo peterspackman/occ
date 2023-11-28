@@ -1,6 +1,6 @@
 add_library(occ_slater
     "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_SLATER_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_slater

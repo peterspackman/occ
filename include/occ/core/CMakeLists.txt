@@ -14,7 +14,7 @@ set(OCC_CORE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/kabsch.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/logger.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/log.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/macros.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubes.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubestables.h"

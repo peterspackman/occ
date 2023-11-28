@@ -2,7 +2,7 @@ add_library(occ_sht
     "${CMAKE_CURRENT_SOURCE_DIR}/legendre.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/quadrature.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sht.cpp"
-    ${OCC_INCLUDE_FILES}
+    ${OCC_SHT_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_sht

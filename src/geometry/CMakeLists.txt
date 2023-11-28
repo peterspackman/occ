@@ -3,18 +3,14 @@ add_library(occ_geometry
     "${CMAKE_CURRENT_SOURCE_DIR}/marching_cubes.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/marching_cubes_data.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/morton.cpp"
-    ${OCC_CORE_INCLUDE_FILES}
+    "${CMAKE_CURRENT_SOURCE_DIR}/quickhull.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wulff.cpp"
+    ${OCC_GEOMETRY_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_geometry
     PUBLIC 
-    Eigen3::Eigen 
-    fmt::fmt
-    unordered_dense::unordered_dense
-    ${BLAS_LIBRARIES}
-    ${LAPACK_LIBRARIES}
-    scn::scn
-    spdlog::spdlog
+    occ_core
 )
 target_include_directories(occ_geometry PUBLIC 
     ${OCC_INCLUDE_DIR} 
