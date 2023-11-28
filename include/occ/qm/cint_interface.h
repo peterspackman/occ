@@ -1,6 +1,6 @@
 #pragma once
-#include <occ/qm/shell.h>
 #include <occ/core/multipole.h>
+#include <occ/qm/shell.h>
 
 #include <occ/3rdparty/cint_wrapper.h>
 namespace occ::qm::cint {
@@ -8,11 +8,10 @@ namespace occ::qm::cint {
 using occ::core::Atom;
 
 namespace impl {
-template<bool flag = false> 
-void static_invalid_operator() {
-  static_assert(flag, "Invalid operator");
+template <bool flag = false> void static_invalid_operator() {
+    static_assert(flag, "Invalid operator");
 }
-}
+} // namespace impl
 
 enum class Operator {
     overlap,
@@ -196,9 +195,9 @@ class IntegralEnvironment {
     }
 
     template <Operator OP, Shell::Kind ST>
-    inline std::array<int, 2> two_center_helper_grad(std::array<int, 2> shells,
-                                                    libcint::CINTOpt *opt,
-                                                    double *buffer, double *cache) {
+    inline std::array<int, 2>
+    two_center_helper_grad(std::array<int, 2> shells, libcint::CINTOpt *opt,
+                           double *buffer, double *cache) {
         std::array<int, 2> dims{cgto<ST>(shells[0]), cgto<ST>(shells[1])};
         if constexpr (ST == Shell::Kind::Spherical) {
             if constexpr (OP == Operator::overlap)
@@ -348,7 +347,7 @@ class IntegralEnvironment {
     template <Operator OP, Shell::Kind ST>
     inline std::array<int, 4>
     four_center_helper_grad(std::array<int, 4> shells, libcint::CINTOpt *opt,
-                       double *buffer, double *cache) {
+                            double *buffer, double *cache) {
         static_assert(OP == Operator::coulomb, "not a two-electron operator");
         std::array<int, 4> dims{
             cgto<ST>(shells[0]),
@@ -364,10 +363,10 @@ class IntegralEnvironment {
                                              basis_data_ptr(), num_basis(),
                                              env_data_ptr(), opt, cache);
         } else {
-            nonzero = libcint::int2e_ip1_cart(buffer, dims.data(), shells.data(),
-                                              atom_data_ptr(), num_atoms(),
-                                              basis_data_ptr(), num_basis(),
-                                              env_data_ptr(), opt, cache);
+            nonzero = libcint::int2e_ip1_cart(
+                buffer, dims.data(), shells.data(), atom_data_ptr(),
+                num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(), opt,
+                cache);
         }
         if (nonzero == 0) {
             dims[0] = -1;
@@ -418,15 +417,15 @@ class IntegralEnvironment {
         int nonzero = 0;
 
         if constexpr (ST == Shell::Kind::Spherical) {
-            nonzero = libcint::int3c2e_ip1_sph(buffer, dims.data(), shells.data(),
-                                               atom_data_ptr(), num_atoms(),
-                                               basis_data_ptr(), num_basis(),
-                                               env_data_ptr(), opt, cache);
+            nonzero = libcint::int3c2e_ip1_sph(
+                buffer, dims.data(), shells.data(), atom_data_ptr(),
+                num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(), opt,
+                cache);
         } else {
-            nonzero = libcint::int3c2e_ip1_cart(buffer, dims.data(), shells.data(),
-                                                atom_data_ptr(), num_atoms(),
-                                                basis_data_ptr(), num_basis(),
-                                                env_data_ptr(), opt, cache);
+            nonzero = libcint::int3c2e_ip1_cart(
+                buffer, dims.data(), shells.data(), atom_data_ptr(),
+                num_atoms(), basis_data_ptr(), num_basis(), env_data_ptr(), opt,
+                cache);
         }
 
         if (nonzero == 0) {
@@ -494,29 +493,31 @@ class IntegralEnvironment {
         fmt::print("\n");
     }
 
-    inline size_t buffer_size_1e(const Operator op = Operator::overlap, int grad = 0) const {
+    inline size_t buffer_size_1e(const Operator op = Operator::overlap,
+                                 int grad = 0) const {
         auto bufsize = m_max_shell_size * m_max_shell_size;
-        switch(grad) {
-          case 1:
-              return bufsize * 3;
-          case 2:
-              return bufsize * 9;
-          default:
-              break;
+        switch (grad) {
+        case 1:
+            return bufsize * 3;
+        case 2:
+            return bufsize * 9;
+        default:
+            break;
         }
 
         switch (op) {
+        // libcint doesn't just return unique components but the full tensor...
         case Operator::dipole:
-            bufsize *= occ::core::num_unique_multipole_components(1);
+            bufsize *= 3;
             break;
         case Operator::quadrupole:
-            bufsize *= occ::core::num_unique_multipole_components(2);
+            bufsize *= 3 * 3;
             break;
         case Operator::octapole:
-            bufsize *= occ::core::num_unique_multipole_components(3);
+            bufsize *= 3 * 3 * 3;
             break;
         case Operator::hexadecapole:
-            bufsize *= occ::core::num_unique_multipole_components(4);
+            bufsize *= 3 * 3 * 3 * 3;
             break;
         default:
             break;
@@ -526,28 +527,27 @@ class IntegralEnvironment {
 
     inline size_t buffer_size_3e(int grad = 0) const {
         auto bufsize = m_max_shell_size * buffer_size_1e();
-        switch(grad) {
-          case 1:
+        switch (grad) {
+        case 1:
             return bufsize * 3;
-          case 2:
+        case 2:
             return bufsize * 9;
-          default:
+        default:
             return bufsize;
         }
     }
 
     inline size_t buffer_size_2e(int grad = 0) const {
         auto bufsize = std::pow(m_max_shell_size, 4);
-        switch(grad) {
-          case 1:
+        switch (grad) {
+        case 1:
             return bufsize * 3;
-          case 2:
+        case 2:
             return bufsize * 9;
-          default:
+        default:
             return bufsize;
         }
     }
-
 
   private:
     size_t m_max_shell_size{0};
@@ -558,7 +558,8 @@ class IntegralEnvironment {
 
 class Optimizer {
   public:
-    Optimizer(IntegralEnvironment &env, Operator op, int num_center, int grad = 0);
+    Optimizer(IntegralEnvironment &env, Operator op, int num_center,
+              int grad = 0);
     ~Optimizer();
     inline auto optimizer_ptr() { return m_optimizer; }
 
