@@ -305,3 +305,61 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
     }
 }
+
+occ::Mat3N atomic_gradients(const occ::Mat & D, const occ::qm::MatTriple &grad, const occ::qm::AOBasis &basis) {
+  const auto &bf_to_atom = basis.bf_to_atom();
+  occ::Mat3N result(3, basis.atoms().size());
+  occ::Mat weighted_grad_x = D.cwiseProduct(grad.x);
+  occ::Mat weighted_grad_y = D.cwiseProduct(grad.y);
+  occ::Mat weighted_grad_z = D.cwiseProduct(grad.z);
+
+  for (int bf1 = 0; bf1 < basis.nbf(); bf1++) {
+      int atom1 = bf_to_atom[bf1];
+
+      for (int bf2 = 0; bf2 < basis.nbf(); bf2++) {
+          int atom2 = bf_to_atom[bf2];
+
+          // Accumulate gradient contributions
+          result(atom1, 0) += weighted_grad_x(bf1, bf2);
+          result(atom1, 1) += weighted_grad_y(bf1, bf2);
+          result(atom1, 2) += weighted_grad_z(bf1, bf2);
+
+          if (atom1 != atom2) {
+              result(atom2, 0) += weighted_grad_x(bf1, bf2);
+              result(atom2, 1) += weighted_grad_y(bf1, bf2);
+              result(atom2, 2) += weighted_grad_z(bf1, bf2);
+          }
+      }
+  }
+  return result;
+}
+
+TEST_CASE("Integral gradients", "[integrals]") {
+  std::vector<occ::core::Atom> atoms{
+        {8, -1.32695761, -0.10593856, 0.01878821},
+        {1, -1.93166418, 1.60017351, -0.02171049},
+        {1, 0.48664409, 0.07959806, 0.00986248}};
+
+  auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+
+  occ::Mat D(obs.nbf(), obs.nbf());
+  D.setConstant(0.301228);
+
+  occ::qm::IntegralEngine engine(obs);
+  HartreeFock hf(obs);
+  auto grad = hf.compute_nuclear_attraction_gradient();
+  fmt::print("Nuclear\n");
+  fmt::print("X:\n{}\n", grad.x);
+  fmt::print("Y:\n{}\n", grad.y);
+  fmt::print("Z:\n{}\n", grad.z);
+
+  auto d = atomic_gradients(D, grad, obs);
+  fmt::print("Atom gradients:\n{}\n", d);
+
+  grad = hf.compute_kinetic_gradient();
+  fmt::print("kinetic\n");
+  fmt::print("X:\n{}\n", grad.x);
+  fmt::print("Y:\n{}\n", grad.y);
+  fmt::print("Z:\n{}\n", grad.z);
+
+}

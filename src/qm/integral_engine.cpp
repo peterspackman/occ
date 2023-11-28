@@ -246,38 +246,13 @@ using IntEnv = cint::IntegralEnvironment;
 using ShellKind = Shell::Kind;
 using Op = cint::Operator;
 
-size_t buffer_size_1e(const AOBasis &basis, Op op = Op::overlap) {
-    auto bufsize = basis.max_shell_size() * basis.max_shell_size();
-    switch (op) {
-    case Op::dipole:
-        bufsize *= 3;
-        break;
-    case Op::quadrupole:
-        bufsize *= 3 * 3;
-        break;
-    case Op::octapole:
-        bufsize *= 3 * 3 * 3;
-        break;
-    case Op::hexadecapole:
-        bufsize *= 3 * 3 * 3 * 3;
-        break;
-    default:
-        break;
-    }
-    return bufsize;
-}
-
-size_t buffer_size_2e(const AOBasis &basis) {
-    return buffer_size_1e(basis) * buffer_size_1e(basis);
-}
-
 template <Op op, ShellKind kind, typename Lambda>
 void evaluate_two_center(Lambda &f, cint::IntegralEnvironment &env,
                          const AOBasis &basis, int thread_id = 0) {
     using Result = IntegralEngine::IntegralResult<2>;
     occ::qm::cint::Optimizer opt(env, op, 2);
     auto nthreads = occ::parallel::get_num_threads();
-    auto bufsize = buffer_size_1e(basis, op);
+    auto bufsize = env.buffer_size_1e(op);
     const auto nsh = basis.size();
 
     auto buffer = std::make_unique<double[]>(bufsize);
@@ -312,7 +287,7 @@ void evaluate_two_center_with_shellpairs(Lambda &f,
     using Result = IntegralEngine::IntegralResult<2>;
     occ::qm::cint::Optimizer opt(env, op, 2);
     auto nthreads = occ::parallel::get_num_threads();
-    auto bufsize = buffer_size_1e(basis, op);
+    auto bufsize = env.buffer_size_1e(op);
 
     auto buffer = std::make_unique<double[]>(bufsize);
     const auto &first_bf = basis.first_bf();
@@ -336,6 +311,7 @@ void evaluate_two_center_with_shellpairs(Lambda &f,
         }
     }
 }
+
 template <Op op, ShellKind kind = ShellKind::Cartesian>
 Mat one_electron_operator_kernel(const AOBasis &basis,
                                  cint::IntegralEnvironment &env,
@@ -429,6 +405,7 @@ Mat IntegralEngine::one_electron_operator(Op op,
         break;
     }
 }
+
 
 template <typename Lambda>
 void evaluate_two_center_ecp_with_shellpairs(
@@ -929,7 +906,7 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
     occ::timing::start(occ::timing::category::ints4c2e);
     auto nthreads = occ::parallel::get_num_threads();
     occ::qm::cint::Optimizer opt(env, Op::coulomb, 4);
-    auto buffer = std::make_unique<double[]>(buffer_size_2e(basis));
+    auto buffer = std::make_unique<double[]>(env.buffer_size_2e());
     std::array<int, 4> shell_idx;
     std::array<int, 4> bf;
 
@@ -1375,7 +1352,7 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
     auto lambda = [&](int thread_id) {
         auto &F = Fmats[thread_id];
         occ::qm::cint::Optimizer opt(m_env, Op::coulomb, 4);
-        auto buffer = std::make_unique<double[]>(buffer_size_2e());
+        auto buffer = std::make_unique<double[]>(m_env.buffer_size_2e());
 
         std::array<int, 4> idxs;
         // loop over permutationally-unique set of shells
@@ -1526,7 +1503,7 @@ Mat schwarz_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     };
 
     auto lambda = [&](int thread_id) {
-        auto buffer = std::make_unique<double[]>(buffer_size_2e(basis));
+        auto buffer = std::make_unique<double[]>(env.buffer_size_2e());
         for (int p = 0, pq = 0; p < nsh; p++) {
             int bf1 = first_bf[p];
             const auto &sh1 = basis[p];

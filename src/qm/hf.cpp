@@ -210,4 +210,22 @@ Vec HartreeFock::nuclear_electric_potential_contribution(
 
 Mat HartreeFock::compute_schwarz_ints() const { return m_engine.schwarz(); }
 
+
+MatTriple HartreeFock::compute_kinetic_gradient() const {
+  using Op = occ::qm::cint::Operator;
+  return m_engine.one_electron_operator_grad(Op::kinetic);
+}
+
+MatTriple HartreeFock::compute_overlap_gradient() const {
+  using Op = occ::qm::cint::Operator;
+  return m_engine.one_electron_operator_grad(Op::overlap);
+}
+
+MatTriple HartreeFock::compute_nuclear_attraction_gradient() const {
+  using Op = occ::qm::cint::Operator;
+  return m_engine.one_electron_operator_grad(Op::nuclear);
+}
+
+
+
 } // namespace occ::qm

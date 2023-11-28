@@ -16,6 +16,10 @@
 
 namespace occ::qm {
 
+struct MatTriple {
+  Mat x, y, z;
+};
+
 class IntegralEngine {
   public:
     struct ECPCenter {
@@ -127,6 +131,9 @@ class IntegralEngine {
     }
 
     Mat one_electron_operator(Op op, bool use_shellpair_list = true) const;
+
+    MatTriple one_electron_operator_grad(Op op, bool use_shellpair_list = true) const;
+
     Mat effective_core_potential(bool use_shellpair_list = true) const;
     Mat fock_operator(SpinorbitalKind, const MolecularOrbitals &mo,
                       const Mat &Schwarz = Mat()) const;
@@ -151,7 +158,7 @@ class IntegralEngine {
         const auto nsh = m_aobasis.size();
         size_t num_significant_shellpairs{0}, num_total_shellpairs{0};
         m_shellpairs.resize(nsh);
-        auto buffer = std::make_unique<double[]>(buffer_size_1e());
+        auto buffer = std::make_unique<double[]>(m_env.buffer_size_1e(op));
         for (int p = 0; p < nsh; p++) {
             auto &plist = m_shellpairs[p];
             const auto &sh1 = m_aobasis[p];
@@ -214,34 +221,7 @@ class IntegralEngine {
     int m_ecp_ao_max_l{0};
     int m_ecp_max_l{0};
 
-    inline size_t buffer_size_1e(const Op op = Op::overlap) const {
-        auto bufsize = m_aobasis.max_shell_size() * m_aobasis.max_shell_size();
-        switch (op) {
-        case Op::dipole:
-            bufsize *= occ::core::num_unique_multipole_components(1);
-            break;
-        case Op::quadrupole:
-            bufsize *= occ::core::num_unique_multipole_components(2);
-            break;
-        case Op::octapole:
-            bufsize *= occ::core::num_unique_multipole_components(3);
-            break;
-        case Op::hexadecapole:
-            bufsize *= occ::core::num_unique_multipole_components(4);
-            break;
-        default:
-            break;
-        }
-        return bufsize;
-    }
-
-    inline size_t buffer_size_3e() const {
-        return m_auxbasis.max_shell_size() * buffer_size_1e();
-    }
-
-    inline size_t buffer_size_2e() const {
-        return buffer_size_1e() * buffer_size_1e();
-    }
+    
 };
 
 } // namespace occ::qm

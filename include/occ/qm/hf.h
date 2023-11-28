@@ -64,8 +64,14 @@ class HartreeFock {
                   const Mat &Schwarz = Mat()) const;
 
     Mat compute_kinetic_matrix() const;
+    MatTriple compute_kinetic_gradient() const;
+
     Mat compute_overlap_matrix() const;
+    MatTriple compute_overlap_gradient() const;
+
     Mat compute_nuclear_attraction_matrix() const;
+    MatTriple compute_nuclear_attraction_gradient() const;
+
     Mat compute_effective_core_potential_matrix() const;
     Mat compute_point_charge_interaction_matrix(
         const PointChargeList &point_charges) const;
