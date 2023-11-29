@@ -20,7 +20,7 @@ class IntegralEngineDF {
 
     Mat exchange(const MolecularOrbitals &mo);
     Mat coulomb(const MolecularOrbitals &mo);
-    std::pair<Mat, Mat> coulomb_and_exchange(const MolecularOrbitals &mo);
+    JKPair coulomb_and_exchange(const MolecularOrbitals &mo);
     Mat fock_operator(const MolecularOrbitals &mo);
 
     inline void set_integral_policy(Policy p) { m_policy = p; }

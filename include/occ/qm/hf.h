@@ -58,8 +58,11 @@ class HartreeFock {
 
     Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                  const qm::AOBasis &bs, bool is_shell_diagonal);
-    std::pair<Mat, Mat> compute_JK(const MolecularOrbitals &mo,
-                                   const Mat &Schwarz = Mat()) const;
+    JKPair compute_JK(const MolecularOrbitals &mo,
+                      const Mat &Schwarz = Mat()) const;
+
+    const auto &integral_engine() const { return m_engine; }
+
     Mat compute_J(const MolecularOrbitals &mo,
                   const Mat &Schwarz = Mat()) const;
 

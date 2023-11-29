@@ -39,7 +39,9 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &proc,
             wfn.K = Mat::Zero(wfn.J.rows(), wfn.J.cols());
         } else {
             occ::log::debug("computing J with K");
-            std::tie(wfn.J, wfn.K) = proc.compute_JK(wfn.mo, params.Schwarz);
+            qm::JKPair jk = proc.compute_JK(wfn.mo, params.Schwarz);
+            wfn.J = jk.J;
+            wfn.K = jk.K;
         }
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         if constexpr (std::is_same<Proc, dft::DFT>::value) {
@@ -74,7 +76,9 @@ void compute_ce_model_energies(Wavefunction &wfn, Proc &proc,
             wfn.J = proc.compute_J(wfn.mo, params.Schwarz);
             wfn.K = Mat::Zero(wfn.J.rows(), wfn.J.cols());
         } else {
-            std::tie(wfn.J, wfn.K) = proc.compute_JK(wfn.mo, params.Schwarz);
+            qm::JKPair jk = proc.compute_JK(wfn.mo, params.Schwarz);
+            wfn.J = jk.J;
+            wfn.K = jk.K;
         }
         wfn.energy.coulomb = expectation<kind>(wfn.mo.D, wfn.J);
         if constexpr (std::is_same<Proc, dft::DFT>::value) {
@@ -263,9 +267,25 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     occ::log::debug("AB nbf = {}\n", ABn.basis.nbf());
     occ::log::debug("AB has ECPs = {}\n", ABn.basis.have_ecps());
 
+    /*
+    std::vector<qm::MolecularOrbitals> mos{ABn.mo, ABo.mo};
+    auto jkpair = hf_AB.integral_engine().coulomb_and_exchange_list(
+        ABn.mo.kind, mos, params_ab.Schwarz);
+    fmt::print("J1: {}\n", jkpair[0].J.sum());
+    fmt::print("K1: {}\n", jkpair[0].K.sum());
+    fmt::print("J2: {}\n", jkpair[1].J.sum());
+    fmt::print("K1: {}\n", jkpair[1].K.sum());
+    */
     // no need to XDM for the combined wavefunctions
     compute_ce_model_energies(ABn, hf_AB, params_ab);
     compute_ce_model_energies(ABo, hf_AB, params_ab);
+
+    /*
+    fmt::print("J1: {}\n", ABn.J.sum());
+    fmt::print("K1: {}\n", ABn.K.sum());
+    fmt::print("J2: {}\n", ABo.J.sum());
+    fmt::print("K1: {}\n", ABo.K.sum());
+    */
 
     occ::log::debug("ABn\n{}\n", ABn.energy.to_string());
     occ::log::debug("ABo\n{}\n", ABo.energy.to_string());

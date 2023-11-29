@@ -73,18 +73,16 @@ TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
     occ::Mat Kexact(2, 2);
     Kexact << 1.18164378, 1.05837468, 1.05837468, 1.18164378;
 
-    occ::Mat Japprox, Kapprox;
-    std::tie(Japprox, Kapprox) = hf.compute_JK(mo);
-    occ::Mat F = 2 * (Japprox - Kapprox);
+    occ::qm::JKPair jk_approx = hf.compute_JK(mo);
+    occ::Mat F = 2 * (jk_approx.J - jk_approx.K);
     fmt::print("Fexact\n{}\n", Fexact);
     fmt::print("Fapprox\n{}\n", F);
 
     fmt::print("Jexact\n{}\n", Jexact);
-    fmt::print("Japprox\n{}\n", Japprox);
+    fmt::print("Japprox\n{}\n", jk_approx.J);
 
-    std::tie(Japprox, Kapprox) = hf.compute_JK(mo);
     fmt::print("Kexact\n{}\n", Kexact);
-    fmt::print("Kapprox\n{}\n", 2 * Kapprox);
+    fmt::print("Kapprox\n{}\n", 2 * jk_approx.K);
 }
 
 TEST_CASE("Electric Field evaluation H2/STO-3G") {
@@ -306,60 +304,60 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
     }
 }
 
-occ::Mat3N atomic_gradients(const occ::Mat & D, const occ::qm::MatTriple &grad, const occ::qm::AOBasis &basis) {
-  const auto &bf_to_atom = basis.bf_to_atom();
-  occ::Mat3N result(3, basis.atoms().size());
-  occ::Mat weighted_grad_x = D.cwiseProduct(grad.x);
-  occ::Mat weighted_grad_y = D.cwiseProduct(grad.y);
-  occ::Mat weighted_grad_z = D.cwiseProduct(grad.z);
+occ::Mat3N atomic_gradients(const occ::Mat &D, const occ::qm::MatTriple &grad,
+                            const occ::qm::AOBasis &basis) {
+    const auto &bf_to_atom = basis.bf_to_atom();
+    occ::Mat3N result(3, basis.atoms().size());
+    occ::Mat weighted_grad_x = D.cwiseProduct(grad.x);
+    occ::Mat weighted_grad_y = D.cwiseProduct(grad.y);
+    occ::Mat weighted_grad_z = D.cwiseProduct(grad.z);
 
-  for (int bf1 = 0; bf1 < basis.nbf(); bf1++) {
-      int atom1 = bf_to_atom[bf1];
+    for (int bf1 = 0; bf1 < basis.nbf(); bf1++) {
+        int atom1 = bf_to_atom[bf1];
 
-      for (int bf2 = 0; bf2 < basis.nbf(); bf2++) {
-          int atom2 = bf_to_atom[bf2];
+        for (int bf2 = 0; bf2 < basis.nbf(); bf2++) {
+            int atom2 = bf_to_atom[bf2];
 
-          // Accumulate gradient contributions
-          result(atom1, 0) += weighted_grad_x(bf1, bf2);
-          result(atom1, 1) += weighted_grad_y(bf1, bf2);
-          result(atom1, 2) += weighted_grad_z(bf1, bf2);
+            // Accumulate gradient contributions
+            result(atom1, 0) += weighted_grad_x(bf1, bf2);
+            result(atom1, 1) += weighted_grad_y(bf1, bf2);
+            result(atom1, 2) += weighted_grad_z(bf1, bf2);
 
-          if (atom1 != atom2) {
-              result(atom2, 0) += weighted_grad_x(bf1, bf2);
-              result(atom2, 1) += weighted_grad_y(bf1, bf2);
-              result(atom2, 2) += weighted_grad_z(bf1, bf2);
-          }
-      }
-  }
-  return result;
+            if (atom1 != atom2) {
+                result(atom2, 0) += weighted_grad_x(bf1, bf2);
+                result(atom2, 1) += weighted_grad_y(bf1, bf2);
+                result(atom2, 2) += weighted_grad_z(bf1, bf2);
+            }
+        }
+    }
+    return result;
 }
 
 TEST_CASE("Integral gradients", "[integrals]") {
-  std::vector<occ::core::Atom> atoms{
+    std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
 
-  auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+    auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
 
-  occ::Mat D(obs.nbf(), obs.nbf());
-  D.setConstant(0.301228);
+    occ::Mat D(obs.nbf(), obs.nbf());
+    D.setConstant(0.301228);
 
-  occ::qm::IntegralEngine engine(obs);
-  HartreeFock hf(obs);
-  auto grad = hf.compute_nuclear_attraction_gradient();
-  fmt::print("Nuclear\n");
-  fmt::print("X:\n{}\n", grad.x);
-  fmt::print("Y:\n{}\n", grad.y);
-  fmt::print("Z:\n{}\n", grad.z);
+    occ::qm::IntegralEngine engine(obs);
+    HartreeFock hf(obs);
+    auto grad = hf.compute_nuclear_attraction_gradient();
+    fmt::print("Nuclear\n");
+    fmt::print("X:\n{}\n", grad.x);
+    fmt::print("Y:\n{}\n", grad.y);
+    fmt::print("Z:\n{}\n", grad.z);
 
-  auto d = atomic_gradients(D, grad, obs);
-  fmt::print("Atom gradients:\n{}\n", d);
+    auto d = atomic_gradients(D, grad, obs);
+    fmt::print("Atom gradients:\n{}\n", d);
 
-  grad = hf.compute_kinetic_gradient();
-  fmt::print("kinetic\n");
-  fmt::print("X:\n{}\n", grad.x);
-  fmt::print("Y:\n{}\n", grad.y);
-  fmt::print("Z:\n{}\n", grad.z);
-
+    grad = hf.compute_kinetic_gradient();
+    fmt::print("kinetic\n");
+    fmt::print("X:\n{}\n", grad.x);
+    fmt::print("Y:\n{}\n", grad.y);
+    fmt::print("Z:\n{}\n", grad.z);
 }

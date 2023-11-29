@@ -6,6 +6,32 @@
 namespace occ::qm {
 
 namespace impl {
+
+template <SpinorbitalKind sk>
+void accumulate_operator_symmetric(const Mat &source, Mat &dest) {
+    if constexpr (sk == SpinorbitalKind::Restricted) {
+        dest.noalias() += (source + source.transpose());
+    } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
+        auto source_a = occ::qm::block::a(source);
+        auto source_b = occ::qm::block::b(source);
+        occ::qm::block::a(dest).noalias() += (source_a + source_a.transpose());
+        occ::qm::block::b(dest).noalias() += (source_b + source_b.transpose());
+    } else if constexpr (sk == SpinorbitalKind::General) {
+        auto source_aa = occ::qm::block::aa(source);
+        auto source_ab = occ::qm::block::ab(source);
+        auto source_ba = occ::qm::block::ba(source);
+        auto source_bb = occ::qm::block::bb(source);
+        occ::qm::block::aa(dest).noalias() +=
+            (source_aa + source_aa.transpose());
+        occ::qm::block::ab(dest).noalias() +=
+            (source_ab + source_ab.transpose());
+        occ::qm::block::ba(dest).noalias() +=
+            (source_ba + source_ba.transpose());
+        occ::qm::block::bb(dest).noalias() +=
+            (source_bb + source_bb.transpose());
+    }
+}
+
 inline void fock_inner_r(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0,
                          int bf1, int bf2, int bf3, double value) {
     F(bf0, bf1) += D(bf2, bf3) * value;
@@ -405,7 +431,6 @@ Mat IntegralEngine::one_electron_operator(Op op,
         break;
     }
 }
-
 
 template <typename Lambda>
 void evaluate_two_center_ecp_with_shellpairs(
@@ -1015,23 +1040,7 @@ Mat fock_operator_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     Mat F = Mat::Zero(Fmats[0].rows(), Fmats[0].cols());
 
     for (const auto &part : Fmats) {
-        if constexpr (sk == SpinorbitalKind::Restricted) {
-            F.noalias() += (part + part.transpose());
-        } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
-            auto Fa = occ::qm::block::a(part);
-            auto Fb = occ::qm::block::b(part);
-            occ::qm::block::a(F).noalias() += (Fa + Fa.transpose());
-            occ::qm::block::b(F).noalias() += (Fb + Fb.transpose());
-        } else if constexpr (sk == SpinorbitalKind::General) {
-            auto Faa = occ::qm::block::aa(part);
-            auto Fab = occ::qm::block::ab(part);
-            auto Fba = occ::qm::block::ba(part);
-            auto Fbb = occ::qm::block::bb(part);
-            occ::qm::block::aa(F).noalias() += (Faa + Faa.transpose());
-            occ::qm::block::ab(F).noalias() += (Fab + Fab.transpose());
-            occ::qm::block::ba(F).noalias() += (Fba + Fba.transpose());
-            occ::qm::block::bb(F).noalias() += (Fbb + Fbb.transpose());
-        }
+        impl::accumulate_operator_symmetric<sk>(part, F);
     }
     F *= 0.5;
 
@@ -1084,39 +1093,19 @@ Mat coulomb_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     Mat J = Mat::Zero(Jmats[0].rows(), Jmats[0].cols());
 
     for (size_t i = 0; i < nthreads; i++) {
-        if constexpr (sk == SpinorbitalKind::Restricted) {
-            J.noalias() += (Jmats[i] + Jmats[i].transpose());
-        } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
-            {
-                auto Ja = occ::qm::block::a(Jmats[i]);
-                auto Jb = occ::qm::block::b(Jmats[i]);
-                occ::qm::block::a(J).noalias() += (Ja + Ja.transpose());
-                occ::qm::block::b(J).noalias() += (Jb + Jb.transpose());
-            }
-        } else if constexpr (sk == SpinorbitalKind::General) {
-            {
-                auto Jaa = occ::qm::block::aa(Jmats[i]);
-                auto Jab = occ::qm::block::ab(Jmats[i]);
-                auto Jba = occ::qm::block::ba(Jmats[i]);
-                auto Jbb = occ::qm::block::bb(Jmats[i]);
-                occ::qm::block::aa(J).noalias() += (Jaa + Jaa.transpose());
-                occ::qm::block::ab(J).noalias() += (Jab + Jab.transpose());
-                occ::qm::block::ba(J).noalias() += (Jba + Jba.transpose());
-                occ::qm::block::bb(J).noalias() += (Jbb + Jbb.transpose());
-            }
-        }
+        impl::accumulate_operator_symmetric<sk>(Jmats[i], J);
     }
     J *= 0.5;
     return J;
 }
 
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
-std::pair<Mat, Mat> coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
-                                                const AOBasis &basis,
-                                                const ShellPairList &shellpairs,
-                                                const MolecularOrbitals &mo,
-                                                double precision = 1e-12,
-                                                const Mat &Schwarz = Mat()) {
+JKPair coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
+                                   const AOBasis &basis,
+                                   const ShellPairList &shellpairs,
+                                   const MolecularOrbitals &mo,
+                                   double precision = 1e-12,
+                                   const Mat &Schwarz = Mat()) {
     using Result = IntegralEngine::IntegralResult<4>;
     auto nthreads = occ::parallel::get_num_threads();
     constexpr Op op = Op::coulomb;
@@ -1159,55 +1148,16 @@ std::pair<Mat, Mat> coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
     occ::parallel::parallel_do(lambda);
     occ::timing::stop(occ::timing::category::fock);
 
-    std::pair<Mat, Mat> JK(Mat::Zero(Jmats[0].rows(), Jmats[0].cols()),
-                           Mat::Zero(Kmats[0].rows(), Kmats[0].cols()));
-
-    Mat &J = JK.first;
-    Mat &K = JK.second;
+    JKPair result{Mat::Zero(Jmats[0].rows(), Jmats[0].cols()),
+                  Mat::Zero(Kmats[0].rows(), Kmats[0].cols())};
 
     for (size_t i = 0; i < nthreads; i++) {
-        if constexpr (sk == SpinorbitalKind::Restricted) {
-            J.noalias() += (Jmats[i] + Jmats[i].transpose());
-            K.noalias() += (Kmats[i] + Kmats[i].transpose());
-        } else if constexpr (sk == SpinorbitalKind::Unrestricted) {
-            {
-                auto Ja = occ::qm::block::a(Jmats[i]);
-                auto Jb = occ::qm::block::b(Jmats[i]);
-                occ::qm::block::a(J).noalias() += (Ja + Ja.transpose());
-                occ::qm::block::b(J).noalias() += (Jb + Jb.transpose());
-            }
-            {
-                auto Ka = occ::qm::block::a(Kmats[i]);
-                auto Kb = occ::qm::block::b(Kmats[i]);
-                occ::qm::block::a(K).noalias() += (Ka + Ka.transpose());
-                occ::qm::block::b(K).noalias() += (Kb + Kb.transpose());
-            }
-        } else if constexpr (sk == SpinorbitalKind::General) {
-            {
-                auto Jaa = occ::qm::block::aa(Jmats[i]);
-                auto Jab = occ::qm::block::ab(Jmats[i]);
-                auto Jba = occ::qm::block::ba(Jmats[i]);
-                auto Jbb = occ::qm::block::bb(Jmats[i]);
-                occ::qm::block::aa(J).noalias() += (Jaa + Jaa.transpose());
-                occ::qm::block::ab(J).noalias() += (Jab + Jab.transpose());
-                occ::qm::block::ba(J).noalias() += (Jba + Jba.transpose());
-                occ::qm::block::bb(J).noalias() += (Jbb + Jbb.transpose());
-            }
-            {
-                auto Kaa = occ::qm::block::aa(Kmats[i]);
-                auto Kab = occ::qm::block::ab(Kmats[i]);
-                auto Kba = occ::qm::block::ba(Kmats[i]);
-                auto Kbb = occ::qm::block::bb(Kmats[i]);
-                occ::qm::block::aa(K).noalias() += (Kaa + Kaa.transpose());
-                occ::qm::block::ab(K).noalias() += (Kab + Kab.transpose());
-                occ::qm::block::ba(K).noalias() += (Kba + Kba.transpose());
-                occ::qm::block::bb(K).noalias() += (Kbb + Kbb.transpose());
-            }
-        }
+        impl::accumulate_operator_symmetric<sk>(Jmats[i], result.J);
+        impl::accumulate_operator_symmetric<sk>(Kmats[i], result.K);
     }
-    J *= 0.5;
-    K *= 0.5;
-    return JK;
+    result.J *= 0.5;
+    result.K *= 0.5;
+    return result;
 }
 
 Mat IntegralEngine::fock_operator(SpinorbitalKind sk,
@@ -1289,8 +1239,9 @@ Mat IntegralEngine::coulomb(SpinorbitalKind sk, const MolecularOrbitals &mo,
     }
 }
 
-std::pair<Mat, Mat> IntegralEngine::coulomb_and_exchange(
-    SpinorbitalKind sk, const MolecularOrbitals &mo, const Mat &Schwarz) const {
+JKPair IntegralEngine::coulomb_and_exchange(SpinorbitalKind sk,
+                                            const MolecularOrbitals &mo,
+                                            const Mat &Schwarz) const {
     constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;
@@ -1324,6 +1275,121 @@ std::pair<Mat, Mat> IntegralEngine::coulomb_and_exchange(
         } else {
             return coulomb_and_exchange_kernel<G, Cart>(
                 m_env, m_aobasis, m_shellpairs, mo, m_precision, Schwarz);
+        }
+    }
+}
+
+template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
+std::vector<JKPair> coulomb_and_exchange_kernel_list(
+    cint::IntegralEnvironment &env, const AOBasis &basis,
+    const ShellPairList &shellpairs, const std::vector<MolecularOrbitals> &mos,
+    double precision = 1e-12, const Mat &Schwarz = Mat()) {
+
+    using Result = IntegralEngine::IntegralResult<4>;
+    auto nthreads = occ::parallel::get_num_threads();
+    constexpr Op op = Op::coulomb;
+
+    std::vector<std::vector<JKPair>> jkpairs;
+    const int rows = mos[0].D.rows();
+    const int cols = mos[0].D.cols();
+
+    for (const auto &mo : mos) {
+        jkpairs.emplace_back(std::vector<JKPair>(
+            nthreads, JKPair{Mat::Zero(rows, cols), Mat::Zero(rows, cols)}));
+    }
+    Mat Dnorm = shellblock_norm<sk, kind>(basis, mos[0].D);
+
+    auto f = [&mos, &jkpairs](const Result &args) {
+        auto pq_degree = (args.shell[0] == args.shell[1]) ? 1 : 2;
+        auto pr_qs_degree = (args.shell[0] == args.shell[2])
+                                ? (args.shell[1] == args.shell[3] ? 1 : 2)
+                                : 2;
+        auto rs_degree = (args.shell[2] == args.shell[3]) ? 1 : 2;
+        auto scale = pq_degree * rs_degree * pr_qs_degree;
+
+        for (int mo_index = 0; mo_index < mos.size(); mo_index++) {
+            const auto &D = mos[mo_index].D;
+            auto &J = jkpairs[mo_index][args.thread].J;
+            auto &K = jkpairs[mo_index][args.thread].K;
+
+            for (auto f3 = 0, f0123 = 0; f3 != args.dims[3]; ++f3) {
+                const auto bf3 = f3 + args.bf[3];
+                for (auto f2 = 0; f2 != args.dims[2]; ++f2) {
+                    const auto bf2 = f2 + args.bf[2];
+                    for (auto f1 = 0; f1 != args.dims[1]; ++f1) {
+                        const auto bf1 = f1 + args.bf[1];
+                        for (auto f0 = 0; f0 != args.dims[0]; ++f0, ++f0123) {
+                            const auto bf0 = f0 + args.bf[0];
+                            const auto value = args.buffer[f0123] * scale;
+                            impl::delegate_jk<sk>(D, J, K, bf0, bf1, bf2, bf3,
+                                                  value);
+                        }
+                    }
+                }
+            }
+        }
+    };
+    auto lambda = [&](int thread_id) {
+        evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm,
+                                       Schwarz, precision, thread_id);
+    };
+    occ::timing::start(occ::timing::category::fock);
+    occ::parallel::parallel_do(lambda);
+    occ::timing::stop(occ::timing::category::fock);
+
+    std::vector<JKPair> results;
+    for (size_t mo_index = 0; mo_index < mos.size(); mo_index++) {
+        JKPair result{Mat::Zero(rows, cols), Mat::Zero(rows, cols)};
+        const auto mo_jk = jkpairs[mo_index];
+        for (size_t i = 0; i < nthreads; i++) {
+            const auto &J = mo_jk[i].J;
+            const auto &K = mo_jk[i].K;
+            impl::accumulate_operator_symmetric<sk>(J, result.J);
+            impl::accumulate_operator_symmetric<sk>(K, result.K);
+        }
+        result.J *= 0.5;
+        result.K *= 0.5;
+        results.push_back(result);
+    }
+    return results;
+}
+
+std::vector<JKPair> IntegralEngine::coulomb_and_exchange_list(
+    SpinorbitalKind sk, const std::vector<MolecularOrbitals> &mos,
+    const Mat &Schwarz) const {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+    constexpr auto Sph = ShellKind::Spherical;
+    constexpr auto Cart = ShellKind::Cartesian;
+    bool spherical = is_spherical();
+    switch (sk) {
+    default:
+    case R:
+        if (spherical) {
+            return coulomb_and_exchange_kernel_list<R, Sph>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        } else {
+            return coulomb_and_exchange_kernel_list<R, Cart>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        }
+        break;
+    case U:
+        if (spherical) {
+            return coulomb_and_exchange_kernel_list<U, Sph>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        } else {
+            return coulomb_and_exchange_kernel_list<U, Cart>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        }
+
+    case G:
+        if (spherical) {
+            return coulomb_and_exchange_kernel_list<G, Sph>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        } else {
+            return coulomb_and_exchange_kernel_list<G, Cart>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
         }
     }
 }

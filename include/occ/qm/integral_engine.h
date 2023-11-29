@@ -17,7 +17,11 @@
 namespace occ::qm {
 
 struct MatTriple {
-  Mat x, y, z;
+    Mat x, y, z;
+};
+
+struct JKPair {
+    Mat J, K;
 };
 
 class IntegralEngine {
@@ -132,7 +136,8 @@ class IntegralEngine {
 
     Mat one_electron_operator(Op op, bool use_shellpair_list = true) const;
 
-    MatTriple one_electron_operator_grad(Op op, bool use_shellpair_list = true) const;
+    MatTriple one_electron_operator_grad(Op op,
+                                         bool use_shellpair_list = true) const;
 
     Mat effective_core_potential(bool use_shellpair_list = true) const;
     Mat fock_operator(SpinorbitalKind, const MolecularOrbitals &mo,
@@ -141,9 +146,13 @@ class IntegralEngine {
                                   bool is_shell_diagonal);
     Mat coulomb(SpinorbitalKind, const MolecularOrbitals &mo,
                 const Mat &Schwarz = Mat()) const;
-    std::pair<Mat, Mat> coulomb_and_exchange(SpinorbitalKind,
-                                             const MolecularOrbitals &mo,
-                                             const Mat &Schwarz = Mat()) const;
+    JKPair coulomb_and_exchange(SpinorbitalKind, const MolecularOrbitals &mo,
+                                const Mat &Schwarz = Mat()) const;
+
+    std::vector<JKPair>
+    coulomb_and_exchange_list(SpinorbitalKind,
+                              const std::vector<MolecularOrbitals> &mos,
+                              const Mat &Schwarz = Mat()) const;
 
     Mat
     point_charge_potential(const std::vector<occ::core::PointCharge> &charges);
@@ -220,8 +229,6 @@ class IntegralEngine {
         m_ecp; // might need to track center info for derivatives
     int m_ecp_ao_max_l{0};
     int m_ecp_max_l{0};
-
-    
 };
 
 } // namespace occ::qm

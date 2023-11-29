@@ -1159,7 +1159,7 @@ Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
 }
 
 template <ShellKind kind = ShellKind::Cartesian>
-std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_r(
+JKPair direct_coulomb_and_exchange_operator_kernel_r(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
     occ::qm::cint::Optimizer &opt) {
@@ -1219,7 +1219,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_r(
 }
 
 template <ShellKind kind = ShellKind::Cartesian>
-std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
+JKPair direct_coulomb_and_exchange_operator_kernel_u(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
     occ::qm::cint::Optimizer &opt) {
@@ -1305,7 +1305,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_u(
 }
 
 template <ShellKind kind = ShellKind::Cartesian>
-std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
+JKPair direct_coulomb_and_exchange_operator_kernel_g(
     IntegralEngine &engine, IntegralEngine &engine_aux,
     const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
     occ::qm::cint::Optimizer &opt) {
@@ -1408,8 +1408,7 @@ std::pair<Mat, Mat> direct_coulomb_and_exchange_operator_kernel_g(
     return {J, K};
 }
 
-std::pair<Mat, Mat>
-IntegralEngineDF::coulomb_and_exchange(const MolecularOrbitals &mo) {
+JKPair IntegralEngineDF::coulomb_and_exchange(const MolecularOrbitals &mo) {
     constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;

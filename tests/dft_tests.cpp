@@ -332,13 +332,12 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
     occ::Mat result = sgx.compute_K(scf.mo);
     sw.stop(0);
     fmt::print("Compute K SGX done\n");
-    occ::Mat Jexact, Kexact;
     sw.start(1);
-    std::tie(Jexact, Kexact) = hf.compute_JK(scf.mo, occ::Mat());
+    occ::qm::JKPair jk_exact = hf.compute_JK(scf.mo, occ::Mat());
     sw.stop(1);
     int i, j;
     fmt::print("K - Kexact: {:12.8f}\n",
-               (result - Kexact).array().cwiseAbs().maxCoeff(&i, &j));
+               (result - jk_exact.K).array().cwiseAbs().maxCoeff(&i, &j));
     /*
     const auto &bf2shell = sgx.engine().aobasis().bf_to_shell();
     int s1 = bf2shell[i];

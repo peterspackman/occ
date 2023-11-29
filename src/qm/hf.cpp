@@ -113,9 +113,8 @@ Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
     }
 }
 
-std::pair<Mat, Mat> HartreeFock::compute_JK(const MolecularOrbitals &mo,
-
-                                            const Mat &Schwarz) const {
+JKPair HartreeFock::compute_JK(const MolecularOrbitals &mo,
+                               const Mat &Schwarz) const {
     if (m_df_engine) {
         return m_df_engine->coulomb_and_exchange(mo);
     } else {
@@ -210,22 +209,19 @@ Vec HartreeFock::nuclear_electric_potential_contribution(
 
 Mat HartreeFock::compute_schwarz_ints() const { return m_engine.schwarz(); }
 
-
 MatTriple HartreeFock::compute_kinetic_gradient() const {
-  using Op = occ::qm::cint::Operator;
-  return m_engine.one_electron_operator_grad(Op::kinetic);
+    using Op = occ::qm::cint::Operator;
+    return m_engine.one_electron_operator_grad(Op::kinetic);
 }
 
 MatTriple HartreeFock::compute_overlap_gradient() const {
-  using Op = occ::qm::cint::Operator;
-  return m_engine.one_electron_operator_grad(Op::overlap);
+    using Op = occ::qm::cint::Operator;
+    return m_engine.one_electron_operator_grad(Op::overlap);
 }
 
 MatTriple HartreeFock::compute_nuclear_attraction_gradient() const {
-  using Op = occ::qm::cint::Operator;
-  return m_engine.one_electron_operator_grad(Op::nuclear);
+    using Op = occ::qm::cint::Operator;
+    return m_engine.one_electron_operator_grad(Op::nuclear);
 }
-
-
 
 } // namespace occ::qm

@@ -374,43 +374,43 @@ class DFT {
         }
     }
 
-    inline std::pair<Mat, Mat> compute_JK(const MolecularOrbitals &mo,
-                                          const Mat &Schwarz = Mat()) {
+    inline qm::JKPair compute_JK(const MolecularOrbitals &mo,
+                                 const Mat &Schwarz = Mat()) {
 
-        Mat J;
-        Mat K = -compute_vxc(mo, Schwarz);
+        qm::JKPair jk;
+        jk.K = -compute_vxc(mo, Schwarz);
         double ecoul{0.0}, exc{0.0};
         double exchange_factor = exact_exchange_factor();
         RangeSeparatedParameters rs = range_separated_parameters();
         if (rs.omega != 0.0) {
             // range separated hybrid
-            Mat Ksr;
-            std::tie(J, Ksr) = m_hf.compute_JK(mo, Schwarz);
+            qm::JKPair jk_short_range = m_hf.compute_JK(mo, Schwarz);
+            jk.J = jk_short_range.J;
+
             m_hf.set_range_separated_omega(rs.omega);
-            Mat Jlr, Klr;
-            std::tie(Jlr, Klr) = m_hf.compute_JK(mo, Schwarz);
-            Mat Khf = Ksr * (rs.alpha + rs.beta) + Klr * (-rs.beta);
-            ecoul = expectation(mo.kind, mo.D, J);
+            qm::JKPair jk_long_range = m_hf.compute_JK(mo, Schwarz);
+            Mat Khf = jk_short_range.K * (rs.alpha + rs.beta) +
+                      jk_long_range.K * (-rs.beta);
             exc = -expectation(mo.kind, mo.D, Khf);
-            K.noalias() += Khf;
+            jk.K.noalias() += Khf;
             m_hf.set_range_separated_omega(0.0);
         } else if (exchange_factor != 0.0) {
             // global hybrid
-            Mat Khf;
-            std::tie(J, Khf) = m_hf.compute_JK(mo, Schwarz);
-            ecoul = expectation(mo.kind, mo.D, J);
-            exc = -expectation(mo.kind, mo.D, Khf) * exchange_factor;
-            K.noalias() += Khf * exchange_factor;
+            qm::JKPair jk_hf = m_hf.compute_JK(mo, Schwarz);
+            jk.J = jk_hf.J;
+
+            exc = -expectation(mo.kind, mo.D, jk_hf.K) * exchange_factor;
+            jk.K.noalias() += jk_hf.K * exchange_factor;
         } else {
-            J = m_hf.compute_J(mo, Schwarz);
-            ecoul = expectation(mo.kind, mo.D, J);
+            jk.J = m_hf.compute_J(mo, Schwarz);
         }
+        ecoul = expectation(mo.kind, mo.D, jk.J);
         occ::log::debug(
             "E_xc (DFT): {:20.12f}  E_ex: {:20.12f} E_coul: {:20.12f}",
             m_exc_dft, exc, ecoul);
         m_exchange_energy = m_exc_dft + exc;
         m_two_electron_energy += m_exchange_energy + ecoul;
-        return {J, K};
+        return jk;
     }
 
     inline bool have_nonlocal_correlation() const {
