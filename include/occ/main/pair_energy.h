@@ -15,6 +15,7 @@ using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEParameterizedModel;
 using occ::qm::Wavefunction;
 
+
 struct PairEnergy {
     struct Monomer {
         occ::qm::Wavefunction wfn;
@@ -30,6 +31,19 @@ struct PairEnergy {
     CEParameterizedModel model{occ::interaction::CE_B3LYP_631Gdp};
     CEEnergyComponents energy;
 };
+
+
+struct PairEnergyStore {
+  enum class Kind {JSON, Xyz, Memory};
+
+  bool save(int id, const Dimer &d, const CEEnergyComponents &);
+  bool load(int id, const Dimer &d, CEEnergyComponents &);
+  std::string dimer_filename(int id, const Dimer &d);
+
+  Kind kind{Kind::JSON};
+  std::string name;
+};
+
 
 bool load_dimer_energy(const std::string &, CEEnergyComponents &);
 bool write_xyz_dimer(const std::string &, const Dimer &,

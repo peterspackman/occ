@@ -1,6 +1,5 @@
 #pragma once
 #include <array>
-#include <libecpint.hpp>
 #include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/multipole.h>
@@ -14,6 +13,10 @@
 #include <optional>
 #include <vector>
 
+#if HAVE_ECPINT
+#include <libecpint.hpp>
+#endif
+
 namespace occ::qm {
 
 struct MatTriple {
@@ -26,10 +29,6 @@ struct JKPair {
 
 class IntegralEngine {
   public:
-    struct ECPCenter {
-        int index{0};
-        libecpint::ECP ecp;
-    };
 
     template <size_t num_centers> struct IntegralResult {
         int thread{0};
@@ -149,6 +148,11 @@ class IntegralEngine {
     JKPair coulomb_and_exchange(SpinorbitalKind, const MolecularOrbitals &mo,
                                 const Mat &Schwarz = Mat()) const;
 
+    std::vector<Mat>
+    coulomb_list(SpinorbitalKind,
+                              const std::vector<MolecularOrbitals> &mos,
+                              const Mat &Schwarz = Mat()) const;
+
     std::vector<JKPair>
     coulomb_and_exchange_list(SpinorbitalKind,
                               const std::vector<MolecularOrbitals> &mos,
@@ -223,10 +227,12 @@ class IntegralEngine {
     mutable IntEnv m_env;
 
     bool m_have_ecp{false};
+#if HAVE_ECPINT
     std::vector<libecpint::GaussianShell> m_ecp_gaussian_shells;
     std::vector<libecpint::GaussianShell> m_ecp_aux_gaussian_shells;
     std::vector<libecpint::ECP>
         m_ecp; // might need to track center info for derivatives
+#endif
     int m_ecp_ao_max_l{0};
     int m_ecp_max_l{0};
 };

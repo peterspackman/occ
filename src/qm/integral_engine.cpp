@@ -432,6 +432,7 @@ Mat IntegralEngine::one_electron_operator(Op op,
     }
 }
 
+#if HAVE_ECPINT
 template <typename Lambda>
 void evaluate_two_center_ecp_with_shellpairs(
     Lambda &f, const std::vector<libecpint::GaussianShell> &shells,
@@ -532,6 +533,7 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
     return results[0];
 }
 
+
 Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
     if (!have_effective_core_potentials())
         throw std::runtime_error(
@@ -612,6 +614,17 @@ void IntegralEngine::set_effective_core_potentials(
 
     m_have_ecp = true;
 }
+#else
+
+Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
+  throw std::runtime_error("Not compiled with libecpint");
+}
+void IntegralEngine::set_effective_core_potentials(
+    const ShellList &ecp_shells, const std::vector<int> &ecp_electrons) {
+  throw std::runtime_error("Not compiled with libecpint");
+}
+
+#endif
 
 template <int order, SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
@@ -1280,6 +1293,117 @@ JKPair IntegralEngine::coulomb_and_exchange(SpinorbitalKind sk,
 }
 
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
+std::vector<Mat> coulomb_kernel_list(
+    cint::IntegralEnvironment &env, const AOBasis &basis,
+    const ShellPairList &shellpairs, const std::vector<MolecularOrbitals> &mos,
+    double precision = 1e-12, const Mat &Schwarz = Mat()) {
+
+    using Result = IntegralEngine::IntegralResult<4>;
+    auto nthreads = occ::parallel::get_num_threads();
+    constexpr Op op = Op::coulomb;
+
+    std::vector<std::vector<Mat>> js;
+    const int rows = mos[0].D.rows();
+    const int cols = mos[0].D.cols();
+
+    for (const auto &mo : mos) {
+        js.emplace_back(std::vector<Mat>(
+            nthreads, Mat::Zero(rows, cols)));
+    }
+    Mat Dnorm = shellblock_norm<sk, kind>(basis, mos[0].D);
+
+    auto f = [&mos, &js](const Result &args) {
+        auto pq_degree = (args.shell[0] == args.shell[1]) ? 1 : 2;
+        auto pr_qs_degree = (args.shell[0] == args.shell[2])
+                                ? (args.shell[1] == args.shell[3] ? 1 : 2)
+                                : 2;
+        auto rs_degree = (args.shell[2] == args.shell[3]) ? 1 : 2;
+        auto scale = pq_degree * rs_degree * pr_qs_degree;
+
+        for (int mo_index = 0; mo_index < mos.size(); mo_index++) {
+            const auto &D = mos[mo_index].D;
+            auto &J = js[mo_index][args.thread];
+
+            for (auto f3 = 0, f0123 = 0; f3 != args.dims[3]; ++f3) {
+                const auto bf3 = f3 + args.bf[3];
+                for (auto f2 = 0; f2 != args.dims[2]; ++f2) {
+                    const auto bf2 = f2 + args.bf[2];
+                    for (auto f1 = 0; f1 != args.dims[1]; ++f1) {
+                        const auto bf1 = f1 + args.bf[1];
+                        for (auto f0 = 0; f0 != args.dims[0]; ++f0, ++f0123) {
+                            const auto bf0 = f0 + args.bf[0];
+                            const auto value = args.buffer[f0123] * scale;
+                            impl::delegate_j<sk>(D, J, bf0, bf1, bf2, bf3,
+                                                 value);
+                        }
+                    }
+                }
+            }
+        }
+    };
+    auto lambda = [&](int thread_id) {
+        evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm,
+                                       Schwarz, precision, thread_id);
+    };
+    occ::timing::start(occ::timing::category::fock);
+    occ::parallel::parallel_do(lambda);
+    occ::timing::stop(occ::timing::category::fock);
+
+    std::vector<Mat> results;
+    for (size_t mo_index = 0; mo_index < mos.size(); mo_index++) {
+        Mat result = Mat::Zero(rows, cols);
+        const auto mo_jk = js[mo_index];
+        for (size_t i = 0; i < nthreads; i++) {
+            const auto &J = mo_jk[i];
+            impl::accumulate_operator_symmetric<sk>(J, result);
+        }
+        result *= 0.5;
+        results.push_back(result);
+    }
+    return results;
+}
+
+std::vector<Mat> IntegralEngine::coulomb_list(
+    SpinorbitalKind sk, const std::vector<MolecularOrbitals> &mos,
+    const Mat &Schwarz) const {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+    constexpr auto Sph = ShellKind::Spherical;
+    constexpr auto Cart = ShellKind::Cartesian;
+    bool spherical = is_spherical();
+    switch (sk) {
+    default:
+    case R:
+        if (spherical) {
+            return coulomb_kernel_list<R, Sph>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        } else {
+            return coulomb_kernel_list<R, Cart>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        }
+        break;
+    case U:
+        if (spherical) {
+            return coulomb_kernel_list<U, Sph>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        } else {
+            return coulomb_kernel_list<U, Cart>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        }
+
+    case G:
+        if (spherical) {
+            return coulomb_kernel_list<G, Sph>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        } else {
+            return coulomb_kernel_list<G, Cart>(
+                m_env, m_aobasis, m_shellpairs, mos, m_precision, Schwarz);
+        }
+    }
+}
+
+template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 std::vector<JKPair> coulomb_and_exchange_kernel_list(
     cint::IntegralEnvironment &env, const AOBasis &basis,
     const ShellPairList &shellpairs, const std::vector<MolecularOrbitals> &mos,
@@ -1707,6 +1831,7 @@ Mat IntegralEngine::point_charge_potential(
     }
 }
 
+#if HAVE_ECPINT
 Vec electric_potential_ecp_kernel(std::vector<libecpint::ECP> &ecps,
                                   int ecp_lmax, const Mat3N &points) {
     Vec result = Vec::Zero(points.cols());
@@ -1726,6 +1851,7 @@ Vec electric_potential_ecp_kernel(std::vector<libecpint::ECP> &ecps,
     }
     return result;
 }
+#endif
 
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 Vec electric_potential_kernel(cint::IntegralEnvironment &env,

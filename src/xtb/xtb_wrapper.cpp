@@ -42,17 +42,17 @@ struct XTBJsonOutput {
 };
 
 void from_json(const nlohmann::json &J, XTBJsonOutput &out) {
-    J.at("total energy").get_to(out.energy);
-    J.at("HOMO-LUMO gap/eV").get_to(out.homo_lumo_gap);
-    J.at("electronic energy").get_to(out.electronic_energy);
-    J.at("dipole").get_to(out.dipole);
-
     auto maybe_get = [&](const char *name, auto &dest) {
         if (J.contains(name)) {
             J.at(name).get_to(dest);
         }
     };
 
+    maybe_get("total energy", out.energy);
+    maybe_get("HOMO-LUMO gap/eV", out.homo_lumo_gap);
+    maybe_get("electronic energy", out.electronic_energy);
+
+    maybe_get("dipole", out.dipole);
     maybe_get("partial charges", out.partial_charges);
     maybe_get("atomic dipole moments", out.atomic_dipoles);
     maybe_get("atomic quadrupole moments", out.atomic_quadrupoles);

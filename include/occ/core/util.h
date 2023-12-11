@@ -8,6 +8,7 @@
 #include <occ/core/linear_algebra.h>
 #include <string>
 #include <vector>
+#include <chrono>
 
 namespace occ::util {
 
@@ -148,6 +149,43 @@ std::string human_readable_size(T number, const std::string &suffix) {
     }
     return fmt::format("{:.1f}{}{}", num, "Yi", suffix);
 }
+
+inline std::string human_readable_time(std::chrono::milliseconds duration) {
+    typedef std::chrono::duration<int, std::ratio<86400>> days;
+    auto d = std::chrono::duration_cast<days>(duration);
+    duration -= d;
+    auto h = std::chrono::duration_cast<std::chrono::hours>(duration);
+    duration -= h;
+    auto m = std::chrono::duration_cast<std::chrono::minutes>(duration);
+    duration -= m;
+    auto s = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    duration -= s;
+
+    auto dc = d.count();
+    auto hc = h.count();
+    auto mc = m.count();
+    auto sc = s.count();
+    auto msc = duration.count();
+
+    std::string result; 
+    if (dc) {
+      result = fmt::format("{}d", dc);
+    }
+    if (hc) {
+      result = fmt::format("{}{}{}h", result, result.empty() ? "" : " ", hc);
+    }
+    if (mc) {
+      result = fmt::format("{}{}{}m", result, result.empty() ? "" : " ", mc);
+    }
+    if (sc) {
+      result = fmt::format("{}{}{}s", result, result.empty() ? "" : " ", sc);
+    }
+    if(msc) {
+      result = fmt::format("{}{}{}ms", result, result.empty() ? "" : " ", msc);
+    }
+    return result;
+}
+
 
 template <class M, class N>
 constexpr std::common_type_t<M, N> smallest_common_factor(M m, N n) {

@@ -38,7 +38,7 @@ void from_json(const nlohmann::json &j,
         if constexpr (Rows == 1) {
             jrows.push_back(jcols);
         } else if constexpr (Cols == 1) {
-            for (unsigned int i = 0; i < jcols.size(); ++i) {
+            for (nlohmann::json::size_type i = 0; i < jcols.size(); ++i) {
                 jrows.push_back({jcols.at(i)});
             }
         } else {

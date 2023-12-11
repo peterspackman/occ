@@ -42,20 +42,20 @@ inline CEParameterizedModel CE_XDM_FIT{
 
 inline constexpr double CE1p_XDM_KREP{0.77850434};
 
-inline CEParameterizedModel CE1_XDM_WB97MV{
+inline CEParameterizedModel CE1_XDM_B3LYP{
     1.0,           1.0,        CE1p_XDM_KREP,
-    CE1p_XDM_KREP, 1.0,        "CE1p-XDM-wB97M-V",
-    "wb97m-v",     "def2-svp", true,
+    CE1p_XDM_KREP, 1.0,        "CE-1p-B3LYP",
+    "b3lyp",     "def2-svp", true,
     0.65,          1.70};
 inline CEParameterizedModel CE2_XDM_WB97MV{
     1.0,       0.485,      0.485, 0.803, 1.0, "CE2p-XDM-wB97M-V",
-    "wb97m-v", "def2-svp", true,  0.65,  1.70};
+    "b3lyp", "def2-svp", true,  0.65,  1.70};
 
 inline CEParameterizedModel CE5_XDM_WB97MV{
     1.0051,    0.6705,     0.6,  0.7929, 1.0509, "CE5p-XDM-wB97M-V",
     "wb97m-v", "def2-svp", true, 0.65,   1.70};
 
-inline CEParameterizedModel CE1_XDM = CE1_XDM_WB97MV;
+inline CEParameterizedModel CE1_XDM = CE1_XDM_B3LYP;
 inline CEParameterizedModel CE2_XDM = CE2_XDM_WB97MV;
 inline CEParameterizedModel CE5_XDM = CE5_XDM_WB97MV;
 
@@ -215,8 +215,6 @@ struct CEEnergyComponents {
 struct CEModelInteraction {
     CEModelInteraction(const CEParameterizedModel &);
     CEEnergyComponents operator()(Wavefunction &, Wavefunction &) const;
-    CEEnergyComponents dft_pair(const std::string &, Wavefunction &,
-                                Wavefunction &) const;
     void set_use_density_fitting(bool value = true);
     void compute_monomer_energies(Wavefunction &) const;
     void set_use_xdm_dimer_parameters(bool value = true);
@@ -226,7 +224,7 @@ struct CEModelInteraction {
   private:
     CEParameterizedModel m_scale_factors;
     bool m_use_density_fitting{false};
-    bool m_use_xdm_dimer_parameters{true};
+    bool m_use_xdm_dimer_parameters{false};
 };
 
 } // namespace occ::interaction

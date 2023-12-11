@@ -122,6 +122,17 @@ JKPair HartreeFock::compute_JK(const MolecularOrbitals &mo,
     }
 }
 
+std::vector<JKPair> HartreeFock::compute_JK_list(const std::vector<MolecularOrbitals> &mos,
+                                            const Mat &Schwarz) const {
+    return m_engine.coulomb_and_exchange_list(mos[0].kind, mos, Schwarz);
+}
+
+std::vector<Mat> HartreeFock::compute_J_list(const std::vector<MolecularOrbitals> &mos,
+                                            const Mat &Schwarz) const {
+    return m_engine.coulomb_list(mos[0].kind, mos, Schwarz);
+}
+
+
 Mat HartreeFock::compute_J(const MolecularOrbitals &mo,
                            const Mat &Schwarz) const {
     if (m_df_engine) {

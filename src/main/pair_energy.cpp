@@ -1,5 +1,6 @@
 #include <ankerl/unordered_dense.h>
 #include <filesystem>
+#include <fmt/chrono.h>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
@@ -17,6 +18,7 @@
 #include <occ/xtb/xtb_wrapper.h>
 #include <optional>
 #include <scn/scn.h>
+#include <occ/core/progress.h>
 
 namespace fs = std::filesystem;
 
@@ -381,28 +383,47 @@ int compute_dimer_energies_radius(
 
     size_t current_dimer{0};
     size_t computed_dimers{0};
+    size_t dimers_to_compute{0};
+    for (size_t i = 0; i < dimers.size(); i++) {
+        const auto &dimer = dimers[i];
+        if (dimer.nearest_distance() > radius || dimer_energies[i].is_computed) continue;
+        dimers_to_compute++;
+    }
+
+    PairEnergyStore store{PairEnergyStore::Kind::Xyz, fmt::format("{}_dimers", basename)};
+    occ::core::ProgressTracker progress(dimers_to_compute);
+
     for (const auto &dimer : dimers) {
         auto tprev = sw.read();
         sw.start();
-
-        CEEnergyComponents &dimer_energy = dimer_energies[current_dimer];
-        std::string dimer_energy_file(
-            fmt::format("{}_dimer_{}_energies.xyz", basename, current_dimer));
-
-        if (dimer.nearest_distance() > radius || dimer_energy.is_computed ||
-            load_dimer_energy(dimer_energy_file, dimer_energy)) {
-            current_dimer++;
-            continue;
-        }
-        computed_dimers++;
 
         const auto &a = dimer.a();
         const auto &b = dimer.b();
         const auto asym_idx_a = a.asymmetric_molecule_idx();
         const auto asym_idx_b = b.asymmetric_molecule_idx();
         const auto shift_b = dimer.b().cell_shift();
-        occ::log::info(
-            "{} ({}[{}] - {}[{} + ({},{},{})]), Rc = {: 5.2f}", current_dimer++,
+        std::string dimer_name = dimer.name();
+
+        CEEnergyComponents &dimer_energy = dimer_energies[current_dimer];
+        std::string dimer_energy_file(
+            fmt::format("{}_dimer_{}_energies.xyz", basename, current_dimer));
+
+        if (dimer.nearest_distance() > radius || dimer_energy.is_computed) {
+          current_dimer++;
+          continue;
+        }
+        if(store.load(current_dimer, dimer, dimer_energy)) {
+          progress.update(computed_dimers, dimers_to_compute, 
+                              fmt::format("Load [{}|{}]: {}", asym_idx_a, asym_idx_b, dimer_name));
+          computed_dimers++;
+          current_dimer++;
+          continue;
+        }
+
+        progress.update(computed_dimers, dimers_to_compute, 
+                        fmt::format("E[{}|{}]: {}", asym_idx_a, asym_idx_b, dimer_name));
+        occ::log::debug(
+            "{} ({}[{}] - {}[{} + ({},{},{})]), Rc = {: 5.2f}", current_dimer,
             asym_idx_a,
             SymmetryOperation(a.asymmetric_unit_symop()(0)).to_string(),
             asym_idx_b,
@@ -413,12 +434,14 @@ int compute_dimer_energies_radius(
         std::cout << std::flush;
         dimer_energy = energy_model(dimer);
         sw.stop();
-        occ::log::info("Took {:.3f} seconds", sw.read() - tprev);
-        write_xyz_dimer(dimer_energy_file, dimer, dimer_energy);
-        std::cout << std::flush;
+        occ::log::debug("Took {:.3f} seconds", sw.read() - tprev);
+        store.save(current_dimer, dimer, dimer_energy);
+        computed_dimers++;
+        current_dimer++;
     }
-    occ::log::info("Finished calculating {} unique dimer interaction energies",
-                   computed_dimers);
+    progress.clear();
+    occ::log::info("Finished calculating {} unique dimer interaction energies in {:%H:%M:%S}",
+                   computed_dimers, std::chrono::round<std::chrono::seconds>(progress.time_taken()));
     return computed_dimers;
 }
 
@@ -438,7 +461,7 @@ bool load_dimer_energy(const std::string &filename,
                        CEEnergyComponents &energies) {
     if (!fs::exists(filename))
         return false;
-    occ::log::info("Load dimer energies from {}", filename);
+    occ::log::debug("Load dimer energies from {}", filename);
     std::ifstream file(filename);
     std::string line;
     std::getline(file, line);
@@ -687,6 +710,23 @@ converged_xtb_lattice_energies(const Crystal &crystal,
 
     XTBPairEnergyFunctor energy_model(crystal);
     return converged_lattice_energies(energy_model, crystal, basename, conv);
+}
+
+std::string PairEnergyStore::dimer_filename(int id, const Dimer &d) {
+  return fmt::format("dimer_{}.xyz", id);
+}
+
+bool PairEnergyStore::save(int id, const Dimer &d, const CEEnergyComponents &e) {
+  fs::path parent(name);
+  if(!fs::exists(parent)) {
+    fs::create_directories(parent);
+  }
+  return write_xyz_dimer((parent / fs::path(dimer_filename(id, d))).string(), d, e);
+}
+
+bool PairEnergyStore::load(int id, const Dimer &d, CEEnergyComponents &e) {
+  fs::path parent(name);
+  return load_dimer_energy((parent / fs::path(dimer_filename(id, d))).string(), e);
 }
 
 } // namespace occ::main

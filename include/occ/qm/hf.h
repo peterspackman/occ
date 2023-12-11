@@ -61,10 +61,14 @@ class HartreeFock {
     JKPair compute_JK(const MolecularOrbitals &mo,
                       const Mat &Schwarz = Mat()) const;
 
-    const auto &integral_engine() const { return m_engine; }
+    std::vector<JKPair> compute_JK_list(const std::vector<MolecularOrbitals> &mo,
+                                   const Mat &Schwarz = Mat()) const;
 
     Mat compute_J(const MolecularOrbitals &mo,
                   const Mat &Schwarz = Mat()) const;
+
+    std::vector<Mat> compute_J_list(const std::vector<MolecularOrbitals> &mo,
+                                   const Mat &Schwarz = Mat()) const;
 
     Mat compute_kinetic_matrix() const;
     MatTriple compute_kinetic_gradient() const;
