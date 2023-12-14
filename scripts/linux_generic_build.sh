@@ -13,7 +13,7 @@ fi
 cmake . -B"${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release \
 	-DENABLE_HOST_OPT=OFF -GNinja \
 	-DCMAKE_CXX_FLAGS="-O2 -march=skylake -static-libgcc -static-libstdc++" \
-	-DCMAKE_C_FLAGS="-march=skylake -O2 -static-libgcc" \
+	-DCMAKE_C_FLAGS="-march=skylake -O2 -static-libgcc" -DBUILD_DOCS=ON \
 	-DCPACK_SYSTEM_NAME="${NAME}"
 
 cmake --build "${BUILD_DIR}" --target occ
