@@ -6,7 +6,7 @@ NAME="windows"
 if [ $# -gt 0 ]; then
     ARCH="$1"
 fi
-if [ $# -gt 2 ]; then
+if [ $# -gt 1 ]; then
    NAME="$2"
 fi
 IMAGE="dockcross/windows-static-x64-posix"
