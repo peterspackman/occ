@@ -2,9 +2,9 @@ name: Build & Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -16,7 +16,7 @@ jobs:
   build:
     strategy:
       matrix:
-        include: 
+        include:
           - os: macos-latest
             architecture: "arm64"
             script: macos_generic_build.sh
@@ -39,15 +39,14 @@ jobs:
             name: "windows-x86_64"
 
     runs-on: ${{ matrix.os }}
-
     steps:
     - uses: actions/checkout@v3
-
     - name: Install Dependencies Linux
       if: matrix.name == 'linux-x86_64'
       run: |
         sudo apt update
-        sudo apt install -y python3-numpy libpthread-stubs0-dev doxygen graphviz ninja-build
+        sudo apt install -y python3-numpy libpthread-stubs0-dev \
+            doxygen graphviz ninja-build
 
     - name: Install Dependencies Mac
       if: matrix.name == 'linux-x86_64'
@@ -65,19 +64,19 @@ jobs:
     - name: Run build script
       run: |
         ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
-    
+
 #   - name: Test
 #     working-directory: ${{github.workspace}}/build
-#     # Execute tests defined by the CMake configuration.  
+#     # Execute tests defined by the CMake configuration.
 #     # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
 #     run: ctest -C ${{env.BUILD_TYPE}}
-#     
+#
     - name: Build Documentation
       if: matrix.name == 'linux-x86_64'
       run: cmake --build ${{github.workspace}}/build --target docs
 
     - name: Deploy Documentation
-      if: startsWith(matrix.name, "linux-x86_64")
+      if: matrix.name == 'linux-x86_64'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -94,7 +93,6 @@ jobs:
     needs: build
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
-
     - name: Checkout code
       uses: actions/checkout@v3
 
@@ -106,7 +104,6 @@ jobs:
 
     - name: Release
       uses: softprops/action-gh-release@v1
-      with: 
-        files: | 
+      with:
+        files: |
           binaries/*
-
