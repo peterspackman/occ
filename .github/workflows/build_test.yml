@@ -85,7 +85,7 @@ jobs:
     - name: Upload binaries
       uses: actions/upload-artifact@v3
       with:
-        name: binaries
+        name: binaries-${{ github.sha }}
         path: ${{github.workspace}}/build/*.xz
 
   create-release:
@@ -100,7 +100,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         path: binaries
-        name: binaries
+        name: binaries-${{ github.sha }}
 
     - name: Release
       uses: softprops/action-gh-release@v1
