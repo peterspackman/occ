@@ -43,7 +43,6 @@ jobs:
       run: |
         brew install ninja doxygen graphviz
 
-
     - name: Cache CPM Dependencies
       uses: actions/cache@v3
       with:
@@ -54,7 +53,7 @@ jobs:
 
     - name: Run build script
       run: |
-        ./scripts/${{matrix.script}} ${{matrix.architecture}}
+        ./scripts/${{matrix.script}} "${{matrix.architecture}}"
     
 #   - name: Test
 #     working-directory: ${{github.workspace}}/build
