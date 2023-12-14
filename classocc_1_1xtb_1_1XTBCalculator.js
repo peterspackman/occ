@@ -22,6 +22,7 @@ var classocc_1_1xtb_1_1XTBCalculator =
     [ "set_max_iterations", "classocc_1_1xtb_1_1XTBCalculator.html#ab69b1877c79c496e812d7a29e028a590", null ],
     [ "set_mixer_damping", "classocc_1_1xtb_1_1XTBCalculator.html#aed9d7d8e4725ffb5a1efe484fd878276", null ],
     [ "set_num_unpaired_electrons", "classocc_1_1xtb_1_1XTBCalculator.html#abaae76f233e893c1043ce7d4e68f3c0e", null ],
+    [ "set_solvation_model", "classocc_1_1xtb_1_1XTBCalculator.html#a30170ecfa038288277136a3092a9a211", null ],
     [ "set_solvent", "classocc_1_1xtb_1_1XTBCalculator.html#a7316001e9116147494013a2ab299b5ec", null ],
     [ "set_temperature", "classocc_1_1xtb_1_1XTBCalculator.html#aa42dda7f7de7cb7a0db84b15dcb871d5", null ],
     [ "single_point_energy", "classocc_1_1xtb_1_1XTBCalculator.html#a550cee39c712e4b5d31748cae07d0b63", null ],

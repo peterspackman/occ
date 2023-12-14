@@ -134,7 +134,8 @@ $(document).ready(function(){initNavTree('functions_n.html',''); initResizable()
 : <a class="el" href="structocc_1_1scf_1_1SCF.html#a8fc1ce34d1b842aaadc77d94a92a8f7f">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>name()
-: <a class="el" href="classocc_1_1core_1_1Element.html#a86de5d0e637d52fa50356cf59cd812cf">occ::core::Element</a>
+: <a class="el" href="classocc_1_1core_1_1Dimer.html#a12a969f5bc6ce30cb19597d38a7c9d70">occ::core::Dimer</a>
+, <a class="el" href="classocc_1_1core_1_1Element.html#a86de5d0e637d52fa50356cf59cd812cf">occ::core::Element</a>
 , <a class="el" href="classocc_1_1core_1_1Molecule.html#a4b7f9ec5e29fc2c6f4ff90a52a6dad84">occ::core::Molecule</a>
 , <a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a55d0285c35ab287a1d64460045b06e47">occ::dft::DensityFunctional</a>
 , <a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html#ab4c98dfcd36c81872cff7e48472b3a13">occ::interaction::CEParameterizedModel</a>
@@ -144,6 +145,7 @@ $(document).ready(function(){initNavTree('functions_n.html',''); initResizable()
 , <a class="el" href="structocc_1_1io_1_1MethodInput.html#af4981564cd1ab46491dd18dc65a5a8f9">occ::io::MethodInput</a>
 , <a class="el" href="structocc_1_1io_1_1OccInput.html#ad336df45cb14f54c1cdb29e6e36eafb1">occ::io::OccInput</a>
 , <a class="el" href="structocc_1_1io_1_1QCSchemaInput.html#aff7d5cba0bb606d0edb9972eb03ac68e">occ::io::QCSchemaInput</a>
+, <a class="el" href="structocc_1_1main_1_1PairEnergyStore.html#ad4e0c2ea456972da672b1dcc4ebafe65">occ::main::PairEnergyStore</a>
 , <a class="el" href="classocc_1_1qm_1_1AOBasis.html#a35d2005c72764eecc443aa99a164628a">occ::qm::AOBasis</a>
 </li>
 <li>nameHall
@@ -170,6 +172,9 @@ $(document).ready(function(){initNavTree('functions_n.html',''); initResizable()
 </li>
 <li>nearest_distance()
 : <a class="el" href="classocc_1_1core_1_1Dimer.html#afe58b1f9b512706bf80165df9633ac11">occ::core::Dimer</a>
+</li>
+<li>nearest_neighbor
+: <a class="el" href="structocc_1_1main_1_1CGDimer.html#a61a6ee36d8a95c0229ed7daca2bbbb4b">occ::main::CGDimer</a>
 </li>
 <li>needs_nlc_correction()
 : <a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#acd2ba08a314b100c1d67bd08a743500c">occ::dft::DensityFunctional</a>
@@ -213,12 +218,17 @@ $(document).ready(function(){initNavTree('functions_n.html',''); initResizable()
 <li>norm()
 : <a class="el" href="structocc_1_1qm_1_1Shell.html#a9121829c615ae2e1bf593423e33e6de6">occ::qm::Shell</a>
 </li>
-<li>normal()
-: <a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#afc68ae8eaffd631b0f043c58f8965e12">occ::main::PromoleculeDensityFunctor</a>
+<li>normal
+: <a class="el" href="structocc_1_1geometry_1_1Facet.html#a57916835a2a1a9d8781d23c89f5d2a18">occ::geometry::Facet</a>
+, <a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#afc68ae8eaffd631b0f043c58f8965e12">occ::main::PromoleculeDensityFunctor</a>
 , <a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#ac9b6384ae20e5cdae9d1e81e421f9a15">occ::main::StockholderWeightFunctor</a>
+, <a class="el" href="classquickhull_1_1Plane.html#a9c9dca8ff2c4bbec7dbce6ce12b5925b">quickhull::Plane&lt; T &gt;</a>
 </li>
 <li>normal_vector()
 : <a class="el" href="classocc_1_1crystal_1_1Surface.html#a45f037c499af57243668675fa0a5523c">occ::crystal::Surface</a>
+</li>
+<li>normals
+: <a class="el" href="structocc_1_1io_1_1IsosurfaceMesh.html#adb7a3805528abd2ea9e53fc71324460f">occ::io::IsosurfaceMesh</a>
 </li>
 <li>now()
 : <a class="el" href="classocc_1_1timing_1_1StopWatch.html#abc30ef7a25176bd39602506766d9b9f8">occ::timing::StopWatch&lt; count &gt;</a>
@@ -304,8 +314,8 @@ $(document).ready(function(){initNavTree('functions_n.html',''); initResizable()
 , <a class="el" href="structocc_1_1qm_1_1Wavefunction.html#a9a452de1888bbfd88b5330fe0c1545c4">occ::qm::Wavefunction</a>
 </li>
 <li>num_calls
-: <a class="el" href="structocc_1_1core_1_1opt_1_1bracket1d.html#a26665ade988d3c482f9aa3848c1cd492">occ::core::opt::bracket1d</a>
-, <a class="el" href="classocc_1_1core_1_1opt_1_1Brent.html#ade6677b765fe0fa6fd39588288759576">occ::core::opt::Brent</a>
+: <a class="el" href="structocc_1_1core_1_1opt_1_1bracket1d.html#ac7390bccddf70d6815d14ee20cd2f074">occ::core::opt::bracket1d&lt; Function &gt;</a>
+, <a class="el" href="classocc_1_1core_1_1opt_1_1Brent.html#a178f362e94244fd3b08b8ceb447ba253">occ::core::opt::Brent&lt; Function &gt;</a>
 , <a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#a645e4f7b76bd1fe588405bb732fc2601">occ::main::PromoleculeDensityFunctor</a>
 , <a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#a3b8bd62ec5114968c1730d693c6f22bd">occ::main::StockholderWeightFunctor</a>
 </li>

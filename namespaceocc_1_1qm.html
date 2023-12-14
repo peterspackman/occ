@@ -122,6 +122,10 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html">HartreeFock</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1MatTriple.html">MatTriple</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1JKPair.html">JKPair</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html">IntegralEngine</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html">IntegralEngineDF</a></td></tr>
@@ -154,6 +158,10 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:aea99ff092d8022a134859b02bc81a705"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aea99ff092d8022a134859b02bc81a705">from_json</a> (const nlohmann::json &amp;J, <a class="el" href="structocc_1_1qm_1_1Energy.html">Energy</a> &amp;energy)</td></tr>
+<tr class="separator:aea99ff092d8022a134859b02bc81a705"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af56a1ad02bf6c763085926a57c0c60f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4">to_json</a> (nlohmann::json &amp;J, const <a class="el" href="structocc_1_1qm_1_1Energy.html">Energy</a> &amp;energy)</td></tr>
+<tr class="separator:af56a1ad02bf6c763085926a57c0c60f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a44d0c2cc10936b5fce7b0f4086155b6e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a44d0c2cc10936b5fce7b0f4086155b6e">chelpg_charges</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;wfn)</td></tr>
 <tr class="separator:a44d0c2cc10936b5fce7b0f4086155b6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f9747809d33a47c63c971414cfb7321"><td class="memTemplParams" colspan="2">template&lt;SpinorbitalKind kind, typename TA &gt; </td></tr>
@@ -299,6 +307,34 @@ template&lt;typename TA &gt; </div>
           <td></td>
           <td class="paramtype">const TA &amp;&#160;</td>
           <td class="paramname"><em>right</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aea99ff092d8022a134859b02bc81a705"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea99ff092d8022a134859b02bc81a705">&#9670;&nbsp;</a></span>from_json()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::qm::from_json </td>
+          <td>(</td>
+          <td class="paramtype">const nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>J</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1qm_1_1Energy.html">Energy</a> &amp;&#160;</td>
+          <td class="paramname"><em>energy</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -664,6 +700,34 @@ template&lt;SpinorbitalKind sk, Shell::Kind kind&gt; </div>
 <span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="af56a1ad02bf6c763085926a57c0c60f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af56a1ad02bf6c763085926a57c0c60f4">&#9670;&nbsp;</a></span>to_json()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::qm::to_json </td>
+          <td>(</td>
+          <td class="paramtype">nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>J</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Energy.html">Energy</a> &amp;&#160;</td>
+          <td class="paramname"><em>energy</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>

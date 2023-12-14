@@ -1,34 +1,35 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/wavefunction_json.h" name="/home/runner/work/occ/occ/include/occ/io/wavefunction_json.h">
-<area shape="rect" id="node1" title=" " alt="" coords="418,5,651,61"/>
-<area shape="rect" id="node2" href="$wavefunction_8h.html" title=" " alt="" coords="448,109,621,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="145,408,234,435"/>
-<area shape="rect" id="node4" href="$linear__algebra_8h.html" title=" " alt="" coords="905,483,1090,509"/>
-<area shape="rect" id="node8" href="$fchkreader_8h.html" title=" " alt="" coords="613,184,758,211"/>
-<area shape="rect" id="node11" href="$shell_8h.html" title=" " alt="" coords="1038,259,1154,285"/>
-<area shape="rect" id="node24" href="$spinorbital_8h.html" title=" " alt="" coords="411,259,565,285"/>
-<area shape="rect" id="node26" href="$fchkwriter_8h.html" title=" " alt="" coords="1017,184,1159,211"/>
-<area shape="rect" id="node29" href="$moldenreader_8h.html" title=" " alt="" coords="239,184,406,211"/>
-<area shape="rect" id="node31" href="$orca__json_8h.html" title=" " alt="" coords="783,184,921,211"/>
-<area shape="rect" id="node32" href="$mo_8h.html" title=" " alt="" coords="481,184,588,211"/>
-<area shape="rect" id="node5" title=" " alt="" coords="809,565,911,591"/>
-<area shape="rect" id="node6" title=" " alt="" coords="935,565,1059,591"/>
-<area shape="rect" id="node7" title=" " alt="" coords="1083,557,1226,599"/>
-<area shape="rect" id="node9" title=" " alt="" coords="737,259,810,285"/>
-<area shape="rect" id="node10" title=" " alt="" coords="640,259,712,285"/>
-<area shape="rect" id="node23" title=" " alt="" coords="966,408,1029,435"/>
-<area shape="rect" id="node12" title=" " alt="" coords="1480,408,1536,435"/>
-<area shape="rect" id="node13" title=" " alt="" coords="1039,333,1119,360"/>
-<area shape="rect" id="node14" href="$atom_8h.html" title=" " alt="" coords="1194,408,1321,435"/>
-<area shape="rect" id="node15" href="$point__charge_8h.html" title=" " alt="" coords="1295,333,1471,360"/>
-<area shape="rect" id="node16" href="$util_8h.html" title=" " alt="" coords="579,333,693,360"/>
-<area shape="rect" id="node17" title=" " alt="" coords="576,408,661,435"/>
-<area shape="rect" id="node18" title=" " alt="" coords="686,408,751,435"/>
-<area shape="rect" id="node19" title=" " alt="" coords="776,408,891,435"/>
-<area shape="rect" id="node20" title=" " alt="" coords="392,408,453,435"/>
-<area shape="rect" id="node21" title=" " alt="" coords="477,408,552,435"/>
-<area shape="rect" id="node22" title=" " alt="" coords="309,408,368,435"/>
-<area shape="rect" id="node25" href="$qm_2opmatrix_8h.html" title=" " alt="" coords="360,333,504,360"/>
-<area shape="rect" id="node27" title=" " alt="" coords="1346,259,1537,285"/>
-<area shape="rect" id="node28" title=" " alt="" coords="1561,259,1629,285"/>
-<area shape="rect" id="node30" title=" " alt="" coords="152,259,227,285"/>
+<area shape="rect" id="node1" title=" " alt="" coords="367,5,601,61"/>
+<area shape="rect" id="node2" title=" " alt="" coords="319,109,465,136"/>
+<area shape="rect" id="node3" href="$wavefunction_8h.html" title=" " alt="" coords="489,109,663,136"/>
+<area shape="rect" id="node4" title=" " alt="" coords="221,408,310,435"/>
+<area shape="rect" id="node5" href="$linear__algebra_8h.html" title=" " alt="" coords="506,483,691,509"/>
+<area shape="rect" id="node9" href="$fchkreader_8h.html" title=" " alt="" coords="503,184,649,211"/>
+<area shape="rect" id="node12" href="$shell_8h.html" title=" " alt="" coords="1175,259,1291,285"/>
+<area shape="rect" id="node25" href="$spinorbital_8h.html" title=" " alt="" coords="348,259,503,285"/>
+<area shape="rect" id="node27" href="$fchkwriter_8h.html" title=" " alt="" coords="1143,184,1284,211"/>
+<area shape="rect" id="node30" href="$moldenreader_8h.html" title=" " alt="" coords="845,184,1011,211"/>
+<area shape="rect" id="node32" href="$orca__json_8h.html" title=" " alt="" coords="673,184,812,211"/>
+<area shape="rect" id="node33" href="$mo_8h.html" title=" " alt="" coords="372,184,479,211"/>
+<area shape="rect" id="node6" title=" " alt="" coords="518,557,621,584"/>
+<area shape="rect" id="node7" title=" " alt="" coords="645,557,769,584"/>
+<area shape="rect" id="node8" title=" " alt="" coords="320,557,435,584"/>
+<area shape="rect" id="node10" title=" " alt="" coords="578,259,651,285"/>
+<area shape="rect" id="node11" title=" " alt="" coords="777,259,849,285"/>
+<area shape="rect" id="node23" title=" " alt="" coords="994,408,1057,435"/>
+<area shape="rect" id="node13" title=" " alt="" coords="1472,408,1528,435"/>
+<area shape="rect" id="node14" title=" " alt="" coords="1132,333,1212,360"/>
+<area shape="rect" id="node15" href="$atom_8h.html" title=" " alt="" coords="1159,408,1286,435"/>
+<area shape="rect" id="node16" href="$point__charge_8h.html" title=" " alt="" coords="1287,333,1463,360"/>
+<area shape="rect" id="node17" href="$util_8h.html" title=" " alt="" coords="487,333,601,360"/>
+<area shape="rect" id="node18" title=" " alt="" coords="385,408,471,435"/>
+<area shape="rect" id="node19" title=" " alt="" coords="495,408,561,435"/>
+<area shape="rect" id="node20" title=" " alt="" coords="636,408,697,435"/>
+<area shape="rect" id="node21" title=" " alt="" coords="721,408,796,435"/>
+<area shape="rect" id="node22" title=" " alt="" coords="911,408,969,435"/>
+<area shape="rect" id="node24" title=" " alt="" coords="820,408,887,435"/>
+<area shape="rect" id="node26" href="$qm_2opmatrix_8h.html" title=" " alt="" coords="319,333,463,360"/>
+<area shape="rect" id="node28" title=" " alt="" coords="1589,259,1779,285"/>
+<area shape="rect" id="node29" title=" " alt="" coords="1803,259,1871,285"/>
+<area shape="rect" id="node31" title=" " alt="" coords="1025,259,1100,285"/>
 </map>

@@ -121,8 +121,14 @@ $(document).ready(function(){initNavTree('functions_t.html',''); initResizable()
 <li>three_center_helper()
 : <a class="el" href="classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a778432d0aaa00ef6ff07c06016811669">occ::qm::cint::IntegralEnvironment</a>
 </li>
+<li>three_center_helper_grad()
+: <a class="el" href="classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2024d258edacfd4844767481eb37bc45">occ::qm::cint::IntegralEnvironment</a>
+</li>
 <li>threshold
 : <a class="el" href="structocc_1_1main_1_1AtomInterpolator.html#a9ec7e5aad087c7d8411613bbd93380fc">occ::main::AtomInterpolator</a>
+</li>
+<li>time_taken()
+: <a class="el" href="classocc_1_1core_1_1ProgressTracker.html#a8ad3d8e472b3ea8cfa5de58d1ecfa75d">occ::core::ProgressTracker</a>
 </li>
 <li>title()
 : <a class="el" href="classocc_1_1io_1_1GMFWriter.html#a8e60d60d05429a82b2deb82c9d82b718">occ::io::GMFWriter</a>
@@ -154,10 +160,13 @@ $(document).ready(function(){initNavTree('functions_t.html',''); initResizable()
 : <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html#a8105d19fe3bf101b657249855e76cf93">occ::qm::MolecularOrbitals</a>
 </li>
 <li>to_string()
-: <a class="el" href="classocc_1_1core_1_1Fraction.html#a7142b7f5e4b86fa4275992257080321c">occ::core::Fraction</a>
+: <a class="el" href="classocc_1_1core_1_1EnergyComponents.html#a79cf4b78a91a1a07086f2f1ffdc38b76">occ::core::EnergyComponents</a>
+, <a class="el" href="classocc_1_1core_1_1Fraction.html#a7142b7f5e4b86fa4275992257080321c">occ::core::Fraction</a>
+, <a class="el" href="structocc_1_1core_1_1Multipole.html#a53934eae5bcd402298342fa5cb98b554">occ::core::Multipole&lt; L &gt;</a>
 , <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#ad35e82190753560d13a02faf97e65193">occ::crystal::SymmetryOperation</a>
 , <a class="el" href="structocc_1_1gto_1_1Momenta.html#a008826a398ebc9e1e26bd60863551e85">occ::gto::Momenta</a>
 , <a class="el" href="structocc_1_1io_1_1JsonWavefunctionWriter.html#ab75d7ffd23cca5efc15bd14f330398c5">occ::io::JsonWavefunctionWriter</a>
+, <a class="el" href="structocc_1_1qm_1_1Energy.html#a1e5fc6a11bc3c4e1d6f177dfab59b342">occ::qm::Energy</a>
 </li>
 <li>tolerance
 : <a class="el" href="structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a56b65923e8f48b4a4f35a3911058bb85">occ::geometry::mc::LinearHashedMarchingCubes</a>
@@ -170,6 +179,7 @@ $(document).ready(function(){initNavTree('functions_t.html',''); initResizable()
 </li>
 <li>total
 : <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html#aff932ac66d6b00d6576d5d6bf75b02c8">occ::interaction::CEEnergyComponents</a>
+, <a class="el" href="structocc_1_1main_1_1DimerSolventTerm.html#a2d988bacba2daa8bc6464c0ff0d0eb2a">occ::main::DimerSolventTerm</a>
 , <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a67b47d2e66ba94432792a3e37c4cdfa1">occ::main::SolventNeighborContribution::AsymPair</a>
 , <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution.html#a4fff0dac713a36342bec013d7754a088">occ::main::SolventNeighborContribution</a>
 , <a class="el" href="structocc_1_1qm_1_1Energy.html#ae2b2edb62a26361a9d86d06e66de1018">occ::qm::Energy</a>
@@ -193,6 +203,9 @@ $(document).ready(function(){initNavTree('functions_t.html',''); initResizable()
 : <a class="el" href="classocc_1_1dft_1_1DFT.html#a996d8893d39f7e830710ef2c9153710d">occ::dft::DFT</a>
 , <a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a88e0831a15c11701ff7e96258c9ab221">occ::qm::HartreeFock</a>
 , <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a0b3d3dba1225f53d5301d47e37c7c424">occ::solvent::SolvationCorrectedProcedure&lt; Proc &gt;</a>
+</li>
+<li>total_energies
+: <a class="el" href="structocc_1_1main_1_1CGResult.html#a29da30dcd7a07960fe91b9cc6bd71281">occ::main::CGResult</a>
 </li>
 <li>total_kjmol()
 : <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html#a53972764db2abc187d98730d375f728f">occ::interaction::CEEnergyComponents</a>
@@ -232,15 +245,25 @@ $(document).ready(function(){initNavTree('functions_t.html',''); initResizable()
 </li>
 <li>translation_a
 : <a class="el" href="structocc_1_1io_1_1PairInput.html#a517512a434f4f75ad15df16ee798a172">occ::io::PairInput</a>
+, <a class="el" href="structocc_1_1main_1_1OccPairInput.html#a8a1af249e36c4cbcaaa47d49492108a6">occ::main::OccPairInput</a>
 </li>
 <li>translation_b
 : <a class="el" href="structocc_1_1io_1_1PairInput.html#abbd899768b0ec869a42170f6eae87817">occ::io::PairInput</a>
+, <a class="el" href="structocc_1_1main_1_1OccPairInput.html#af8eeddf0d3be932579cd0a877d562620">occ::main::OccPairInput</a>
 </li>
 <li>translational_free_energy()
 : <a class="el" href="classocc_1_1core_1_1Molecule.html#a6cd8a56bd237cf4ee22694783519010e">occ::core::Molecule</a>
 </li>
+<li>triangles
+: <a class="el" href="structocc_1_1geometry_1_1Facet.html#aee5337cbd5d8734f08468f78f410d45e">occ::geometry::Facet</a>
+, <a class="el" href="classocc_1_1geometry_1_1WulffConstruction.html#ac830176084cdb515f4cecbd41a9aeefa">occ::geometry::WulffConstruction</a>
+, <a class="el" href="classquickhull_1_1ConvexHull.html#a256ecdc49161d618c7bfab0c24f482b4">quickhull::ConvexHull&lt; T &gt;</a>
+</li>
 <li>two_center_helper()
 : <a class="el" href="classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a01d56b2523d03f81c67d5ee308b74713">occ::qm::cint::IntegralEnvironment</a>
+</li>
+<li>two_center_helper_grad()
+: <a class="el" href="classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2c5395b0a535f31002db74d4e16d3ad3">occ::qm::cint::IntegralEnvironment</a>
 </li>
 </ul>
 </div><!-- contents -->

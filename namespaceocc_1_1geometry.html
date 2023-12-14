@@ -92,7 +92,8 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1geometry.html',''); in
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">occ::geometry Namespace Reference</div>  </div>
 </div><!--header-->
@@ -118,6 +119,10 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1MIndexHash.html">MIndexHash</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1Facet.html">Facet</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1geometry_1_1WulffConstruction.html">WulffConstruction</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -125,6 +130,11 @@ Typedefs</h2></td></tr>
 <tr class="separator:a2dd3b248b105650e26e3fbc372043957"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf080699dbc8adfc07ad0f98fa4b5e14"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1geometry.html#acf080699dbc8adfc07ad0f98fa4b5e14">floating_type</a> = double</td></tr>
 <tr class="separator:acf080699dbc8adfc07ad0f98fa4b5e14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a9732049bcf1992f1891ecd54b7b1d31a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1geometry.html#a9732049bcf1992f1891ecd54b7b1d31a">project_to_plane</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;)</td></tr>
+<tr class="separator:a9732049bcf1992f1891ecd54b7b1d31a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>computational geometry functionality - marching cubes, Morton codes etc. </p>
@@ -151,6 +161,35 @@ Typedefs</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">using <a class="el" href="namespaceocc_1_1geometry.html#a2dd3b248b105650e26e3fbc372043957">occ::geometry::integer_type</a> = typedef uint64_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a9732049bcf1992f1891ecd54b7b1d31a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9732049bcf1992f1891ecd54b7b1d31a">&#9670;&nbsp;</a></span>project_to_plane()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> occ::geometry::project_to_plane </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

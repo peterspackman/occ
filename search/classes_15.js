@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['xdm_2392',['XDM',['../classocc_1_1xdm_1_1XDM.html',1,'occ::xdm']]],
-  ['xdmatomlist_2393',['XDMAtomList',['../structocc_1_1xdm_1_1XDMAtomList.html',1,'occ::xdm']]],
-  ['xtbcalculator_2394',['XTBCalculator',['../classocc_1_1xtb_1_1XTBCalculator.html',1,'occ::xtb']]],
-  ['xyzfilereader_2395',['XyzFileReader',['../structocc_1_1io_1_1XyzFileReader.html',1,'occ::io']]]
+  ['wavefunction_2603',['Wavefunction',['../structocc_1_1qm_1_1Wavefunction.html',1,'occ::qm']]],
+  ['wolfparams_2604',['WolfParams',['../structocc_1_1interaction_1_1WolfParams.html',1,'occ::interaction']]],
+  ['wulffconstruction_2605',['WulffConstruction',['../classocc_1_1geometry_1_1WulffConstruction.html',1,'occ::geometry']]]
 ];

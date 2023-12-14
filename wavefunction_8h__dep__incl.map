@@ -1,10 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/wavefunction.h" name="/home/runner/work/occ/occ/include/occ/qm/wavefunction.h">
-<area shape="rect" id="node1" title=" " alt="" coords="495,5,749,47"/>
-<area shape="rect" id="node2" href="$pairinteraction_8h.html" title=" " alt="" coords="5,95,204,151"/>
-<area shape="rect" id="node3" href="$pair__energy_8h.html" title=" " alt="" coords="87,199,258,255"/>
-<area shape="rect" id="node4" href="$wavefunction__json_8h.html" title=" " alt="" coords="279,95,512,151"/>
-<area shape="rect" id="node5" href="$properties_8h.html" title=" " alt="" coords="537,95,707,151"/>
-<area shape="rect" id="node6" href="$single__point_8h.html" title=" " alt="" coords="731,95,902,151"/>
-<area shape="rect" id="node7" href="$solvation__partition_8h.html" title=" " alt="" coords="926,95,1097,151"/>
-<area shape="rect" id="node8" href="$scf_8h.html" title=" " alt="" coords="1121,102,1305,143"/>
+<area shape="rect" id="node1" title=" " alt="" coords="631,5,886,47"/>
+<area shape="rect" id="node2" href="$pairinteraction_8h.html" title=" " alt="" coords="21,95,219,151"/>
+<area shape="rect" id="node3" href="$pair__energy_8h.html" title=" " alt="" coords="103,199,273,255"/>
+<area shape="rect" id="node6" href="$wavefunction__json_8h.html" title=" " alt="" coords="294,95,527,151"/>
+<area shape="rect" id="node7" href="$monomer__wavefunctions_8h.html" title=" " alt="" coords="552,95,755,151"/>
+<area shape="rect" id="node8" href="$properties_8h.html" title=" " alt="" coords="779,95,949,151"/>
+<area shape="rect" id="node9" href="$single__point_8h.html" title=" " alt="" coords="973,95,1144,151"/>
+<area shape="rect" id="node10" href="$solvation__partition_8h.html" title=" " alt="" coords="1168,95,1339,151"/>
+<area shape="rect" id="node11" href="$scf_8h.html" title=" " alt="" coords="1363,102,1547,143"/>
+<area shape="rect" id="node4" href="$occ__cg_8h.html" title=" " alt="" coords="5,303,176,359"/>
+<area shape="rect" id="node5" href="$occ__elat_8h.html" title=" " alt="" coords="200,303,371,359"/>
 </map>

@@ -8,7 +8,7 @@ var pairinteraction_8h =
     [ "compute_ce_model_energies", "pairinteraction_8h.html#acbfc2d492b38a0fc62c54809113e3585", null ],
     [ "compute_polarization_energy", "pairinteraction_8h.html#a1a221c7ae9914bd537f97657355b28d2", null ],
     [ "CE1_XDM", "pairinteraction_8h.html#a4fdd0625bcd94a0ebf3bbe1a1c6b1f54", null ],
-    [ "CE1_XDM_WB97MV", "pairinteraction_8h.html#a6b71f1a571ef3cd4f84493e7db9c81b8", null ],
+    [ "CE1_XDM_B3LYP", "pairinteraction_8h.html#aa2dfda909310a8cb15cc12f70eb0733b", null ],
     [ "CE1p_XDM_KREP", "pairinteraction_8h.html#a7d76bec4434b729fd4be29391d667982", null ],
     [ "CE2_XDM", "pairinteraction_8h.html#ae315fffa8a4ff6f089349659da887eed", null ],
     [ "CE2_XDM_WB97MV", "pairinteraction_8h.html#a1ed614d8704386615f4091558ad2cb25", null ],

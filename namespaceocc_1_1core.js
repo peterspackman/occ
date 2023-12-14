@@ -34,6 +34,8 @@ var namespaceocc_1_1core =
     [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
     [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
     [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
+    [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
+    [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ],
     [ "KDTree", "namespaceocc_1_1core.html#acfa0e22cd0e47292fb5034e99d2432cb", null ],
     [ "PointCharge", "namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1", null ],
     [ "DomainMapping", "namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35", [
@@ -107,6 +109,7 @@ var namespaceocc_1_1core =
     [ "cyclic_group", "namespaceocc_1_1core.html#ac6db91e18131313dac99bf8aab66fa20", null ],
     [ "dihedral_group", "namespaceocc_1_1core.html#ab561d38b11fc9c420c92a46a8dfea6ce", null ],
     [ "gensqrtinv", "namespaceocc_1_1core.html#ab25be21637f89ed6ac96910483c65e51", null ],
+    [ "get_bond_tolerance", "namespaceocc_1_1core.html#a80ea5632e2f6e7ab784b0168c3b67d10", null ],
     [ "inertia_tensor", "namespaceocc_1_1core.html#a9201f84a536bf7194bf669c250db4707", null ],
     [ "lerp", "namespaceocc_1_1core.html#aec7ecfa2dc83b10e2e48637fdb4726e8", null ],
     [ "make_point_charges", "namespaceocc_1_1core.html#af98aa2a081c496fb5c4f937c0fbb09e2", null ],
@@ -117,10 +120,12 @@ var namespaceocc_1_1core =
     [ "operator==", "namespaceocc_1_1core.html#a37135c20ce515720fe3ad99d94a41b14", null ],
     [ "quasirandom_kgf", "namespaceocc_1_1core.html#abeb0483db6e31121318847e734ed6cf5", null ],
     [ "rotate_atoms", "namespaceocc_1_1core.html#a8e073a0d2e7882cf21f657c55f73d41c", null ],
+    [ "set_bond_tolerance", "namespaceocc_1_1core.html#a062390827251be4cdda8275f26d42230", null ],
     [ "to_json", "namespaceocc_1_1core.html#ab95c8b5f9a97a8201ee43e1831d957c2", null ],
     [ "to_json", "namespaceocc_1_1core.html#ab539a0fe1dedd7d494d33ba2aec7157b", null ],
     [ "total_num_multipole_components", "namespaceocc_1_1core.html#a4c43c80b170febf6fb0c2e6fbaa82d9a", null ],
     [ "translate_atoms", "namespaceocc_1_1core.html#a03ad31d684771525fec5bd1c8d0524a8", null ],
+    [ "covalent_bond_tolerance", "namespaceocc_1_1core.html#a5ab8e34cdda6bb4f9065e51d0a930d2b", null ],
     [ "max_leaf", "namespaceocc_1_1core.html#a19df90100f5a4ddba86433c350fa160a", null ],
     [ "multipole_component_names", "namespaceocc_1_1core.html#a2c13a8ff8a8712711388809ff8ca9aec", null ]
 ];

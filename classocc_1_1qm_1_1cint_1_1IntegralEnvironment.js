@@ -8,10 +8,14 @@ var classocc_1_1qm_1_1cint_1_1IntegralEnvironment =
     [ "basis_data_ptr", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#ab1ecfe32a43673e3cae7377e82e7832a", null ],
     [ "basis_env_size_bytes", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a3ab00d114057290c27e1acca7104bcdf", null ],
     [ "basis_info_size_bytes", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a5ff5dc2d946dacf7f3e8e5ff1458026b", null ],
+    [ "buffer_size_1e", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#af1b5d26e954d07b9a416d06bd19b4ba3", null ],
+    [ "buffer_size_2e", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a28c0cb972986dd89304cf6d0fc9a9d3b", null ],
+    [ "buffer_size_3e", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a13369dd53aa50b905a43335a993bd49d", null ],
     [ "cgto", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a806291b79ac048531c5c3d62fcf4ca07", null ],
     [ "env_data_ptr", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a23acb88501d059a9279ad0ee1cab04de", null ],
     [ "env_data_ptr", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a1831a15641cf2a8d9cc8a3139c124cc9", null ],
     [ "four_center_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a0c79aa53227b2ba7fa45d9285dd55e71", null ],
+    [ "four_center_helper_grad", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#af142ec4f630345515266c7a9e3ad81d8", null ],
     [ "num_atoms", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#ada9edf4865b11217897781e3f1dd87a1", null ],
     [ "num_basis", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a4a261038765cd212475def63cbb5dc9d", null ],
     [ "print", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#acba0d6c594b226c0c1f9cb60a1253178", null ],
@@ -20,6 +24,8 @@ var classocc_1_1qm_1_1cint_1_1IntegralEnvironment =
     [ "set_common_origin", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#ade16168dbf4b0728492185b6494e0ddf", null ],
     [ "set_range_separated_omega", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#ae7717e46d0bf3973b99139287b38f7b1", null ],
     [ "three_center_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a778432d0aaa00ef6ff07c06016811669", null ],
+    [ "three_center_helper_grad", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2024d258edacfd4844767481eb37bc45", null ],
     [ "total_cgto", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a5343ced989f8fecfec53c20af6902341", null ],
-    [ "two_center_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a01d56b2523d03f81c67d5ee308b74713", null ]
+    [ "two_center_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a01d56b2523d03f81c67d5ee308b74713", null ],
+    [ "two_center_helper_grad", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2c5395b0a535f31002db74d4e16d3ad3", null ]
 ];

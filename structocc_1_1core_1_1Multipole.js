@@ -10,5 +10,6 @@ var structocc_1_1core_1_1Multipole =
     [ "octupole", "structocc_1_1core_1_1Multipole.html#afe5a62086b5c0e8cd547a4d71bc0c908", null ],
     [ "operator+", "structocc_1_1core_1_1Multipole.html#a927867b5cb72bfd153f8dac59f65b23d", null ],
     [ "quadrupole", "structocc_1_1core_1_1Multipole.html#ad9926f94e904e9de454786d60e36f4a8", null ],
+    [ "to_string", "structocc_1_1core_1_1Multipole.html#a53934eae5bcd402298342fa5cb98b554", null ],
     [ "components", "structocc_1_1core_1_1Multipole.html#aecb78a9af395f1e18244204e70eb5b21", null ]
 ];

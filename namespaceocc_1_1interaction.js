@@ -23,7 +23,7 @@ var namespaceocc_1_1interaction =
     [ "polarization_energy", "namespaceocc_1_1interaction.html#a3f579e72d12f4f6e07a7aa8cae1217a7", null ],
     [ "wolf_coulomb_energy", "namespaceocc_1_1interaction.html#a26f0c5fa9ceffa2b4eab2fb3a13f490f", null ],
     [ "CE1_XDM", "namespaceocc_1_1interaction.html#a4fdd0625bcd94a0ebf3bbe1a1c6b1f54", null ],
-    [ "CE1_XDM_WB97MV", "namespaceocc_1_1interaction.html#a6b71f1a571ef3cd4f84493e7db9c81b8", null ],
+    [ "CE1_XDM_B3LYP", "namespaceocc_1_1interaction.html#aa2dfda909310a8cb15cc12f70eb0733b", null ],
     [ "CE1p_XDM_KREP", "namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982", null ],
     [ "CE2_XDM", "namespaceocc_1_1interaction.html#ae315fffa8a4ff6f089349659da887eed", null ],
     [ "CE2_XDM_WB97MV", "namespaceocc_1_1interaction.html#a1ed614d8704386615f4091558ad2cb25", null ],

@@ -15,7 +15,10 @@ var namespaceocc_1_1qm =
       [ "bb", "namespaceocc_1_1qm_1_1block.html#a0bc0a924c072a5951d3fab6ee085b317", null ]
     ] ],
     [ "cint", "namespaceocc_1_1qm_1_1cint.html", "namespaceocc_1_1qm_1_1cint" ],
-    [ "guess", "namespaceocc_1_1qm_1_1guess.html", "namespaceocc_1_1qm_1_1guess" ],
+    [ "guess", "namespaceocc_1_1qm_1_1guess.html", [
+      [ "minimal_basis_nao", "namespaceocc_1_1qm_1_1guess.html#acb0a9b7918ce5f813b34eb9e6ac97ecb", null ],
+      [ "minimal_basis_occupation_vector", "namespaceocc_1_1qm_1_1guess.html#a933946b1be85bd3cb3ccc5922d0839ff", null ]
+    ] ],
     [ "orb", "namespaceocc_1_1qm_1_1orb.html", [
       [ "density_matrix_general", "namespaceocc_1_1qm_1_1orb.html#abae4c82b14dce142db3c9c0968487092", null ],
       [ "density_matrix_restricted", "namespaceocc_1_1qm_1_1orb.html#ae757e0b6402af601350812d093a942cc", null ],
@@ -26,6 +29,8 @@ var namespaceocc_1_1qm =
     [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
     [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
     [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
+    [ "MatTriple", "structocc_1_1qm_1_1MatTriple.html", "structocc_1_1qm_1_1MatTriple" ],
+    [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
     [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
     [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
@@ -43,6 +48,7 @@ var namespaceocc_1_1qm =
     [ "chelpg_charges", "namespaceocc_1_1qm.html#a44d0c2cc10936b5fce7b0f4086155b6e", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a7f9747809d33a47c63c971414cfb7321", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a2a982da10e9beee254cd5401c9e3028a", null ],
+    [ "from_json", "namespaceocc_1_1qm.html#aea99ff092d8022a134859b02bc81a705", null ],
     [ "get_spinorbital_kind_from_string", "namespaceocc_1_1qm.html#affbc8f01fc592caa8b8095e3357c8693", null ],
     [ "gto_norm", "namespaceocc_1_1qm.html#ae0b480dbee1ea4975ed32811499c9234", null ],
     [ "matrix_dimensions", "namespaceocc_1_1qm.html#a6b54bd00e156937a556a831d524017a6", null ],
@@ -53,5 +59,6 @@ var namespaceocc_1_1qm =
     [ "mulliken_partition", "namespaceocc_1_1qm.html#ae5bd4847a30d0fdf3a43d13c1e0698be", null ],
     [ "operator<<", "namespaceocc_1_1qm.html#a0dacbd1a6c0a6d40901c695295112cb4", null ],
     [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
-    [ "spinorbital_kind_to_string", "namespaceocc_1_1qm.html#a40cf6764e46ed92ca114f4858d415943", null ]
+    [ "spinorbital_kind_to_string", "namespaceocc_1_1qm.html#a40cf6764e46ed92ca114f4858d415943", null ],
+    [ "to_json", "namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4", null ]
 ];

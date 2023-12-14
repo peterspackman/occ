@@ -1,9 +1,7 @@
 var annotated_dup =
 [
     [ "fmt", null, [
-      [ "formatter< occ::core::EnergyComponents >", "structfmt_1_1formatter_3_01occ_1_1core_1_1EnergyComponents_01_4.html", "structfmt_1_1formatter_3_01occ_1_1core_1_1EnergyComponents_01_4" ],
-      [ "formatter< occ::core::Multipole< L > >", "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4.html", "structfmt_1_1formatter_3_01occ_1_1core_1_1Multipole_3_01L_01_4_01_4" ],
-      [ "formatter< occ::qm::Energy >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Energy_01_4" ]
+      [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ]
     ] ],
     [ "occ", "namespaceocc.html", [
       [ "core", "namespaceocc_1_1core.html", [
@@ -38,7 +36,9 @@ var annotated_dup =
         [ "Molecule", "classocc_1_1core_1_1Molecule.html", "classocc_1_1core_1_1Molecule" ],
         [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
         [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
-        [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ]
+        [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
+        [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
+        [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ]
       ] ],
       [ "crystal", "namespaceocc_1_1crystal.html", [
         [ "AsymmetricUnit", "structocc_1_1crystal_1_1AsymmetricUnit.html", "structocc_1_1crystal_1_1AsymmetricUnit" ],
@@ -78,7 +78,9 @@ var annotated_dup =
         [ "IndexCache", "structocc_1_1geometry_1_1IndexCache.html", "structocc_1_1geometry_1_1IndexCache" ],
         [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
         [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
-        [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ]
+        [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
+        [ "Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
+        [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ]
       ] ],
       [ "gto", "namespaceocc_1_1gto.html", [
         [ "GTOValues", "structocc_1_1gto_1_1GTOValues.html", "structocc_1_1gto_1_1GTOValues" ],
@@ -124,6 +126,8 @@ var annotated_dup =
         [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
         [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
         [ "MoldenReader", "classocc_1_1io_1_1MoldenReader.html", "classocc_1_1io_1_1MoldenReader" ],
+        [ "IsosurfaceMesh", "structocc_1_1io_1_1IsosurfaceMesh.html", "structocc_1_1io_1_1IsosurfaceMesh" ],
+        [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ],
         [ "ElectronInput", "structocc_1_1io_1_1ElectronInput.html", "structocc_1_1io_1_1ElectronInput" ],
         [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
         [ "DriverInput", "structocc_1_1io_1_1DriverInput.html", "structocc_1_1io_1_1DriverInput" ],
@@ -157,7 +161,15 @@ var annotated_dup =
         [ "InterpolatorParams", "structocc_1_1main_1_1InterpolatorParams.html", "structocc_1_1main_1_1InterpolatorParams" ],
         [ "StockholderWeightFunctor", "classocc_1_1main_1_1StockholderWeightFunctor.html", "classocc_1_1main_1_1StockholderWeightFunctor" ],
         [ "PromoleculeDensityFunctor", "classocc_1_1main_1_1PromoleculeDensityFunctor.html", "classocc_1_1main_1_1PromoleculeDensityFunctor" ],
+        [ "CGConfig", "structocc_1_1main_1_1CGConfig.html", "structocc_1_1main_1_1CGConfig" ],
+        [ "DimerSolventTerm", "structocc_1_1main_1_1DimerSolventTerm.html", "structocc_1_1main_1_1DimerSolventTerm" ],
+        [ "CGDimer", "structocc_1_1main_1_1CGDimer.html", "structocc_1_1main_1_1CGDimer" ],
+        [ "EnergyTotal", "structocc_1_1main_1_1EnergyTotal.html", "structocc_1_1main_1_1EnergyTotal" ],
+        [ "CGResult", "structocc_1_1main_1_1CGResult.html", "structocc_1_1main_1_1CGResult" ],
+        [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
+        [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
         [ "PairEnergy", "structocc_1_1main_1_1PairEnergy.html", "structocc_1_1main_1_1PairEnergy" ],
+        [ "PairEnergyStore", "structocc_1_1main_1_1PairEnergyStore.html", "structocc_1_1main_1_1PairEnergyStore" ],
         [ "LatticeConvergenceSettings", "structocc_1_1main_1_1LatticeConvergenceSettings.html", "structocc_1_1main_1_1LatticeConvergenceSettings" ],
         [ "LatticeEnergyResult", "structocc_1_1main_1_1LatticeEnergyResult.html", "structocc_1_1main_1_1LatticeEnergyResult" ],
         [ "SolvatedSurfaceProperties", "structocc_1_1main_1_1SolvatedSurfaceProperties.html", "structocc_1_1main_1_1SolvatedSurfaceProperties" ],
@@ -175,6 +187,8 @@ var annotated_dup =
         [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
         [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
         [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
+        [ "MatTriple", "structocc_1_1qm_1_1MatTriple.html", "structocc_1_1qm_1_1MatTriple" ],
+        [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
         [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
         [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
         [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
@@ -215,5 +229,15 @@ var annotated_dup =
         [ "TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", "classocc_1_1xtb_1_1TbliteCalculator" ],
         [ "XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html", "classocc_1_1xtb_1_1XTBCalculator" ]
       ] ]
+    ] ],
+    [ "quickhull", "namespacequickhull.html", [
+      [ "ConvexHull", "classquickhull_1_1ConvexHull.html", "classquickhull_1_1ConvexHull" ],
+      [ "HalfEdgeMesh", "classquickhull_1_1HalfEdgeMesh.html", "classquickhull_1_1HalfEdgeMesh" ],
+      [ "MeshBuilder", "classquickhull_1_1MeshBuilder.html", "classquickhull_1_1MeshBuilder" ],
+      [ "Plane", "classquickhull_1_1Plane.html", "classquickhull_1_1Plane" ],
+      [ "Pool", "classquickhull_1_1Pool.html", "classquickhull_1_1Pool" ],
+      [ "DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", "structquickhull_1_1DiagnosticsData" ],
+      [ "QuickHull", "classquickhull_1_1QuickHull.html", "classquickhull_1_1QuickHull" ],
+      [ "Ray", "structquickhull_1_1Ray.html", "structquickhull_1_1Ray" ]
     ] ]
 ];

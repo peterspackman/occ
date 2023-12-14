@@ -16,8 +16,7 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "eem.h", "eem_8h.html", "eem_8h" ],
     [ "element.h", "element_8h.html", "element_8h" ],
     [ "energy_components.h", "energy__components_8h.html", [
-      [ "EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", "classocc_1_1core_1_1EnergyComponents" ],
-      [ "formatter< occ::core::EnergyComponents >", "structfmt_1_1formatter_3_01occ_1_1core_1_1EnergyComponents_01_4.html", "structfmt_1_1formatter_3_01occ_1_1core_1_1EnergyComponents_01_4" ]
+      [ "EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", "classocc_1_1core_1_1EnergyComponents" ]
     ] ],
     [ "fraction.h", "fraction_8h.html", [
       [ "Fraction", "classocc_1_1core_1_1Fraction.html", "classocc_1_1core_1_1Fraction" ]
@@ -47,6 +46,10 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "parallel.h", "parallel_8h.html", "parallel_8h" ],
     [ "point_charge.h", "point__charge_8h.html", "point__charge_8h" ],
     [ "point_group.h", "point__group_8h.html", "point__group_8h" ],
+    [ "progress.h", "progress_8h.html", [
+      [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
+      [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ]
+    ] ],
     [ "quasirandom.h", "quasirandom_8h.html", "quasirandom_8h" ],
     [ "rotor.h", "rotor_8h.html", "rotor_8h" ],
     [ "table.h", "table_8h.html", [

@@ -1,5 +1,7 @@
 var structocc_1_1io_1_1PairInput =
 [
+    [ "ecp_electrons_a", "structocc_1_1io_1_1PairInput.html#a82d54c977bc62fc37f0158e08df229ee", null ],
+    [ "ecp_electrons_b", "structocc_1_1io_1_1PairInput.html#ac743bf0bc52a691f29d57aea0f252902", null ],
     [ "model_name", "structocc_1_1io_1_1PairInput.html#a28a0616467657f53bbffeb75dea27b7a", null ],
     [ "rotation_a", "structocc_1_1io_1_1PairInput.html#a10fbba78c058750022b154ceea824870", null ],
     [ "rotation_b", "structocc_1_1io_1_1PairInput.html#a6d262ffdbe465d9e77b43256d9bfba9a", null ],

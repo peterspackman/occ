@@ -25,6 +25,8 @@ var namespaceocc_1_1io =
     [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
     [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
     [ "MoldenReader", "classocc_1_1io_1_1MoldenReader.html", "classocc_1_1io_1_1MoldenReader" ],
+    [ "IsosurfaceMesh", "structocc_1_1io_1_1IsosurfaceMesh.html", "structocc_1_1io_1_1IsosurfaceMesh" ],
+    [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ],
     [ "ElectronInput", "structocc_1_1io_1_1ElectronInput.html", "structocc_1_1io_1_1ElectronInput" ],
     [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
     [ "DriverInput", "structocc_1_1io_1_1DriverInput.html", "structocc_1_1io_1_1DriverInput" ],
@@ -54,6 +56,8 @@ var namespaceocc_1_1io =
     [ "build", "namespaceocc_1_1io.html#a0b19dda27e50ff77a11e8e61654b1569", null ],
     [ "molecule_from_xyz_file", "namespaceocc_1_1io.html#aaaed42365ec5e0da71939b3b8646ff6e", null ],
     [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
-    [ "point_charges_from_file", "namespaceocc_1_1io.html#a2a22c66ac558d0eb4f4e7e36074e9f86", null ],
-    [ "point_charges_from_string", "namespaceocc_1_1io.html#aeac82123c761e5f9e7cbad3710821a46", null ]
+    [ "point_charges_from_file", "namespaceocc_1_1io.html#ac7b49e759281fa2bff63c6e075a41559", null ],
+    [ "point_charges_from_string", "namespaceocc_1_1io.html#a3903e63674924c2d0b6cf6089690b474", null ],
+    [ "write_obj_file", "namespaceocc_1_1io.html#aec74af2b9b519a64663daa2fb77e4719", null ],
+    [ "write_ply_file", "namespaceocc_1_1io.html#a8b8b6eb8568d47e85b96130c3c57268d", null ]
 ];

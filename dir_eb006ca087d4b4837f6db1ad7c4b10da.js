@@ -38,11 +38,13 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "moldenreader.h", "moldenreader_8h.html", [
       [ "MoldenReader", "classocc_1_1io_1_1MoldenReader.html", "classocc_1_1io_1_1MoldenReader" ]
     ] ],
+    [ "obj.h", "obj_8h.html", "obj_8h" ],
     [ "occ_input.h", "occ__input_8h.html", "occ__input_8h" ],
     [ "orca_json.h", "orca__json_8h.html", [
       [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ]
     ] ],
     [ "pc.h", "pc_8h.html", "pc_8h" ],
+    [ "ply.h", "ply_8h.html", "ply_8h" ],
     [ "qcschema.h", "qcschema_8h.html", [
       [ "QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", "structocc_1_1io_1_1QCSchemaBond" ],
       [ "QCSchemaTopology", "structocc_1_1io_1_1QCSchemaTopology.html", "structocc_1_1io_1_1QCSchemaTopology" ],
@@ -50,9 +52,6 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
       [ "QCSchemaInput", "structocc_1_1io_1_1QCSchemaInput.html", "structocc_1_1io_1_1QCSchemaInput" ],
       [ "QCSchemaReader", "classocc_1_1io_1_1QCSchemaReader.html", "classocc_1_1io_1_1QCSchemaReader" ]
     ] ],
-    [ "wavefunction_json.h", "wavefunction__json_8h.html", [
-      [ "JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
-      [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ]
-    ] ],
+    [ "wavefunction_json.h", "wavefunction__json_8h.html", "wavefunction__json_8h" ],
     [ "xyz.h", "xyz_8h.html", "xyz_8h" ]
 ];

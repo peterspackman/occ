@@ -12,5 +12,6 @@ var structocc_1_1io_1_1OccInput =
     [ "name", "structocc_1_1io_1_1OccInput.html#ad336df45cb14f54c1cdb29e6e36eafb1", null ],
     [ "pair", "structocc_1_1io_1_1OccInput.html#a7ebd347b623564ffed440e6ceec0dae7", null ],
     [ "runtime", "structocc_1_1io_1_1OccInput.html#a376ccf0ea82ab03e97682fb1cee74b61", null ],
-    [ "solvent", "structocc_1_1io_1_1OccInput.html#aac482fa4a4cc38924bea2617bda4a10f", null ]
+    [ "solvent", "structocc_1_1io_1_1OccInput.html#aac482fa4a4cc38924bea2617bda4a10f", null ],
+    [ "verbosity", "structocc_1_1io_1_1OccInput.html#aca74211f47f069313d03c54deef8152b", null ]
 ];

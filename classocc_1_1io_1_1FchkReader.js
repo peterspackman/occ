@@ -28,7 +28,11 @@ var classocc_1_1io_1_1FchkReader =
       [ "MP2Density", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a624ee8b61ada97bc5f765ec432f450fb", null ],
       [ "PureCartesianD", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41ab91b63606fe786d2340d327ce479ba0d", null ],
       [ "PureCartesianF", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a78ff9133158c31f8d6fee3c324eff5e3", null ],
-      [ "ECP_RNFroz", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a1525d5f8131064e235488f56906a4cab", null ]
+      [ "ECP_RNFroz", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a1525d5f8131064e235488f56906a4cab", null ],
+      [ "ECP_NLP", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a4859a3ece91eaf31f6748730bd4df5c0", null ],
+      [ "ECP_CLP1", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a4555ada57bd7d50b5cc6fe0ce8afbd6c", null ],
+      [ "ECP_CLP2", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a23e68cce29fdc8c115a55b27a933782e", null ],
+      [ "ECP_ZLP", "classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a5ec47784f0a4f102575972ddf962169f", null ]
     ] ],
     [ "FchkReader", "classocc_1_1io_1_1FchkReader.html#ac8b775ff72e71b2d5b8f817052801fa5", null ],
     [ "FchkReader", "classocc_1_1io_1_1FchkReader.html#a5bf8b703741a130f21b4891ddea3df19", null ],

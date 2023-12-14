@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['wavefunction_2390',['Wavefunction',['../structocc_1_1qm_1_1Wavefunction.html',1,'occ::qm']]],
-  ['wolfparams_2391',['WolfParams',['../structocc_1_1interaction_1_1WolfParams.html',1,'occ::interaction']]]
+  ['vertexproperties_2602',['VertexProperties',['../structocc_1_1io_1_1VertexProperties.html',1,'occ::io']]]
 ];

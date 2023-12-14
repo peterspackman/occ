@@ -1,5 +1,6 @@
 var linear__algebra_8h =
 [
+    [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ],
     [ "Array", "linear__algebra_8h.html#adcde17020b7a59d8967444a69ade46e7", null ],
     [ "CArray", "linear__algebra_8h.html#a9612be8ac7539e3b45fc93514e4f7bd5", null ],
     [ "CMat", "linear__algebra_8h.html#abcae3213d0f169e3e6fc03865b017066", null ],
@@ -20,6 +21,7 @@ var linear__algebra_8h =
     [ "FMatRM", "linear__algebra_8h.html#ab81e249aad152e21cfbf2acbbd65dc40", null ],
     [ "IArray", "linear__algebra_8h.html#a91d94f0967f1b6ead86d6f7753a7fd5d", null ],
     [ "IMat", "linear__algebra_8h.html#a8e99b55ef120037802c81e10c57f6852", null ],
+    [ "IMat3N", "linear__algebra_8h.html#a4490a73b347d3c4e6be5973638313726", null ],
     [ "IMatRM", "linear__algebra_8h.html#a60c5d54c6e66dbdd325a2472e0d054f3", null ],
     [ "IVec", "linear__algebra_8h.html#a1c36353e752d77ead2a53790410bfaee", null ],
     [ "IVec3", "linear__algebra_8h.html#a22e6fea5025901b5dee48e48a69dcce3", null ],
@@ -30,6 +32,7 @@ var linear__algebra_8h =
     [ "Mat3ConstRef", "linear__algebra_8h.html#ae6658a71f1ab626bb34cd517eebdfff2", null ],
     [ "Mat3N", "linear__algebra_8h.html#a9dcff6c717bd7b042c3eaa6af9a69b8b", null ],
     [ "Mat3NConstRef", "linear__algebra_8h.html#a437f3d1ad27db4224c05f4772b08269c", null ],
+    [ "Mat3RM", "linear__algebra_8h.html#a51b32ae780ab19cd293012894deaa24b", null ],
     [ "Mat4", "linear__algebra_8h.html#a42d884160a85b77b0c6e02723c4e42b1", null ],
     [ "Mat4ConstRef", "linear__algebra_8h.html#a4583e9d21da96377bedd2b9755dd4c85", null ],
     [ "Mat4N", "linear__algebra_8h.html#a61d928e54a4aefae054e2f13abd5ed49", null ],
