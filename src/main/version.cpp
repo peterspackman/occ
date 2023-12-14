@@ -45,6 +45,7 @@ gau2grid             Gaussian basis function evaluation (v 2.0.7)
 gemmi                CIF parsing & structure refinement (v {})
 LBFGS++              L-BFGS implementation
 libcint              Electron integrals using GTOs (v {})
+libecpint            Electron integrals for ECPs (v {})
 libxc                Density functional implementations (v {})
 nanoflann	     KDtree implementation
 nlohmann::json       JSON parser
@@ -56,7 +57,7 @@ subprocess           Calling external subprocesses
 
 )",
               eigen_version_string, fmt_version_string, gemmi_version_string,
-              cint_version_string, xc_version_string, spdlog_version_string);
+              cint_version_string, "1.0.7", xc_version_string, spdlog_version_string);
 
 #ifdef _OPENMP
     std::string thread_type = "OpenMP";

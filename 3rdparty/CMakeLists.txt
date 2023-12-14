@@ -100,15 +100,6 @@ target_include_directories(
     "${libcint_BINARY_DIR}/include"
 )
 
-if("${USE_ECPINT}")
-CPMAddPackage(
-    NAME libecpint
-    GITHUB_REPOSITORY "peterspackman/libecpint"
-    GIT_TAG "master"
-    OPTIONS "LIBECPINT_BUILD_TESTS OFF" "LIBECPINT_BUILD_DOCS OFF" "LIBECPINT_USE_PUGIXML OFF"
-)
-endif()
-
 if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc

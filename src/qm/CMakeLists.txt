@@ -22,21 +22,14 @@ target_link_libraries(occ_qm
     occ_io
     occ_gto
     libcint::libcint
+    libecpint_static
 )
 target_include_directories(occ_qm PUBLIC 
     ${OCC_INCLUDE_DIR} 
     ${GEMMI_INCLUDE_DIR}
 )
 
-if("${USE_ECPINT}")
-  target_link_libraries(occ_qm
-    PUBLIC
-    ECPINT::ecpint
-  )
-  target_compile_definitions(occ_qm PUBLIC HAVE_ECPINT=1)
-else()
-  target_compile_definitions(occ_qm PUBLIC HAVE_ECPINT=0)
-endif()
+target_compile_definitions(occ_qm PUBLIC HAVE_ECPINT=1)
 
 target_compile_features(occ_qm PUBLIC cxx_std_20)
 
