@@ -38,7 +38,7 @@ jobs:
       if: startsWith(runner.os, 'Linux')
       run: |
         sudo apt update
-        sudo apt install -y python3-numpy libpthread-stubs0-dev doxygen graphviz
+        sudo apt install -y python3-numpy libpthread-stubs0-dev doxygen graphviz ninja-build
 
     - name: Install Dependencies Mac
       if: startsWith(runner.os, 'macOS')
