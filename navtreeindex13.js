@@ -1,5 +1,6 @@
 var NAVTREEINDEX13 =
 {
+"structocc_1_1io_1_1JsonBasis.html#a9b49e9c4de1c022ba2bc571803477d77":[2,0,1,6,20,0],
 "structocc_1_1io_1_1JsonBasis.html#ac0f932ab3765bab60478853c2a0a857b":[2,0,1,6,20,1],
 "structocc_1_1io_1_1JsonBasis.html#ae2a993a112ef7e5b19efad0cda8aa75d":[2,0,1,6,20,3],
 "structocc_1_1io_1_1JsonBasisReader.html":[2,0,1,6,21],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#a14c97a7c72640362285c633ed9aab4f2":[2,0,1,7,20,3],
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#a2f3d17543c7ee6d317442ff049137683":[2,0,1,7,20,1],
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#a37b3c31883b00764214a2b73a4d8ac28":[2,0,1,7,20,2],
-"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a3dac4601dddb5da6b092f5ac7c447501":[2,0,1,7,20,5],
-"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a561f6e9187a2f1c04b9b486ce6a84062":[2,0,1,7,20,10]
+"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a3dac4601dddb5da6b092f5ac7c447501":[2,0,1,7,20,5]
 };

@@ -1,5 +1,6 @@
 var NAVTREEINDEX10 =
 {
+"namespaceocc_1_1util.html#ae2517b57e7d81d1014fd1e24f2672105":[1,0,2,20,5],
 "namespaceocc_1_1util.html#ae5ffcca8bb59c6e4ab747d1c7a435f50":[1,0,2,20,7],
 "namespaceocc_1_1util.html#afc65a7eebcc2d86e81d9ef634fcdeb7e":[1,0,2,20,1],
 "namespaceocc_1_1xdm.html":[1,0,2,21],
@@ -248,6 +249,5 @@ var NAVTREEINDEX10 =
 "sht_8h.html":[3,0,1,0,9,2],
 "single__point_8h.html":[3,0,1,0,7,11],
 "single__point_8h.html#a17c5945b306895d7d49fb2e0b9d32e72":[3,0,1,0,7,11,0],
-"single__point_8h.html#ae6ef0a4f014d37dcbe7339c1e0e6efb8":[3,0,1,0,7,11,1],
-"slaterbasis_8h.html":[3,0,1,0,10,0]
+"single__point_8h.html#ae6ef0a4f014d37dcbe7339c1e0e6efb8":[3,0,1,0,7,11,1]
 };

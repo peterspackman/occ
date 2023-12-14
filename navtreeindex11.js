@@ -1,5 +1,6 @@
 var NAVTREEINDEX11 =
 {
+"slaterbasis_8h.html":[3,0,1,0,10,0],
 "slaterbasis_8h.html#a01a666fbffdfbdf2a710bec42b725612":[3,0,1,0,10,0,4],
 "slaterbasis_8h.html#a9bce24e1ecc8ee07a8b183f7031ff809":[3,0,1,0,10,0,3],
 "slaterbasis_8h.html#ae12d0bf0b6ac1dd14469ae9cb162fb98":[3,0,1,0,10,0,2],
@@ -248,6 +249,5 @@ var NAVTREEINDEX11 =
 "structocc_1_1geometry_1_1LinearHashedOctree.html#af2455ae67cdee78d34db8830bd2124ea":[2,0,1,3,2,4],
 "structocc_1_1geometry_1_1LinearHashedOctree.html#af4bc5a329ba19a7be0a7e9359d2e60ea":[2,0,1,3,2,1],
 "structocc_1_1geometry_1_1MIndex.html":[2,0,1,3,3],
-"structocc_1_1geometry_1_1MIndex.html#a00fc8fb1d9f512454d4ca5779255b573":[2,0,1,3,3,12],
-"structocc_1_1geometry_1_1MIndex.html#a1066aa790017c136fda66872feea20ab":[2,0,1,3,3,13]
+"structocc_1_1geometry_1_1MIndex.html#a00fc8fb1d9f512454d4ca5779255b573":[2,0,1,3,3,12]
 };

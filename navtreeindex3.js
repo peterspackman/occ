@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbae5d8295bd72290a5deb8e7f84e3f6d6d":[2,0,1,2,2,3,143],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbae66b863c866d4d73c53c6ab52515c446":[2,0,1,2,2,3,164],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbae6b71958df78e05663b2693dee97461a":[2,0,1,2,2,3,145],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbae7c5c08245b9f665888274a4c51bb3eb":[2,0,1,2,2,3,291],
@@ -248,6 +249,5 @@ var NAVTREEINDEX3 =
 "classocc_1_1io_1_1crystalgrower_1_1NetWriter.html#a69980bff8ccc890a9154695e610f2d7e":[2,0,1,6,0,1,0],
 "classocc_1_1io_1_1crystalgrower_1_1NetWriter.html#abb155a5555498929cbfd48dec3b5e24c":[2,0,1,6,0,1,2],
 "classocc_1_1io_1_1crystalgrower_1_1NetWriter.html#ad214351fbb2e8b3eabcf8d3e30d15c23":[2,0,1,6,0,1,1],
-"classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html":[2,0,1,6,0,0],
-"classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html#a0e92b26abd55a657684d072957c57d2b":[2,0,1,6,0,0,0]
+"classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html":[2,0,1,6,0,0]
 };

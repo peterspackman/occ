@@ -1,5 +1,6 @@
 var NAVTREEINDEX7 =
 {
+"kabsch_8h.html":[3,0,1,0,0,15],
 "kabsch_8h.html#a9e103d9ebbd8d958bd03c6b3f33c9d0e":[3,0,1,0,0,15,0],
 "kdtree_8h.html":[3,0,1,0,0,16],
 "kdtree_8h.html#a19df90100f5a4ddba86433c350fa160a":[3,0,1,0,0,16,1],
@@ -248,6 +249,5 @@ var NAVTREEINDEX7 =
 "namespaceocc_1_1constants.html#ad15cfaf6b92331a5d83ba2b86c65434f":[1,0,2,0,5],
 "namespaceocc_1_1constants.html#ae0a7aca05941fa0a634ebffe288274bb":[1,0,2,0,1],
 "namespaceocc_1_1constants.html#ae858a811c43d86ce39ec058c2bacee69":[1,0,2,0,13],
-"namespaceocc_1_1constants.html#aeff0d6a98f5b60da9e64a1e0da951efa":[1,0,2,0,10],
-"namespaceocc_1_1constants.html#af02d5dad057833bdf47f163a43f4ff59":[1,0,2,0,18]
+"namespaceocc_1_1constants.html#aeff0d6a98f5b60da9e64a1e0da951efa":[1,0,2,0,10]
 };

@@ -1,5 +1,6 @@
 var NAVTREEINDEX14 =
 {
+"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a561f6e9187a2f1c04b9b486ce6a84062":[2,0,1,7,20,10],
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#a60adb51eab205c89acfad36cd23e2188":[2,0,1,7,20,8],
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#a92dcc13d6bb9712415fc1a23872e7f0b":[2,0,1,7,20,0],
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#aca6e5d1a4e1ac3b95b64d75e5fc49e9d":[2,0,1,7,20,6],
@@ -248,6 +249,5 @@ var NAVTREEINDEX14 =
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a1a1d9721c900d3ab2c6ebfb59fb0e459":[2,0,1,12,2,3],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a1bc6e5f6342353d3d8ae773238310221":[2,0,1,12,2,10],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a265e4c22704aa43c0bb2086b63ed239c":[2,0,1,12,2,6],
-"structocc_1_1solvent_1_1SMDSolventParameters.html#a610ccd5c330eba2d83fcf0f1ac5193d2":[2,0,1,12,2,1],
-"structocc_1_1solvent_1_1SMDSolventParameters.html#a6d02b2512e40c71095f8c6e6a6ea2528":[2,0,1,12,2,4]
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a610ccd5c330eba2d83fcf0f1ac5193d2":[2,0,1,12,2,1]
 };

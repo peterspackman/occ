@@ -1,5 +1,6 @@
 var NAVTREEINDEX8 =
 {
+"namespaceocc_1_1constants.html#af02d5dad057833bdf47f163a43f4ff59":[1,0,2,0,18],
 "namespaceocc_1_1constants.html#af3b7637a3ea361aad972db2fa5f36602":[1,0,2,0,7],
 "namespaceocc_1_1core.html":[1,0,2,1],
 "namespaceocc_1_1core.html#a03ad31d684771525fec5bd1c8d0524a8":[1,0,2,1,48],
@@ -248,6 +249,5 @@ var NAVTREEINDEX8 =
 "namespaceocc_1_1interaction.html#a1306e4778b31ca2ec2748f4fd56b280f":[1,0,2,8,10],
 "namespaceocc_1_1interaction.html#a1a221c7ae9914bd537f97657355b28d2":[1,0,2,8,8],
 "namespaceocc_1_1interaction.html#a1b8e5107e4223c67b3996558249c8085":[1,0,2,8,9],
-"namespaceocc_1_1interaction.html#a1ed614d8704386615f4091558ad2cb25":[1,0,2,8,26],
-"namespaceocc_1_1interaction.html#a26f0c5fa9ceffa2b4eab2fb3a13f490f":[1,0,2,8,21]
+"namespaceocc_1_1interaction.html#a1ed614d8704386615f4091558ad2cb25":[1,0,2,8,26]
 };

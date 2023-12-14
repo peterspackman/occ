@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"core_2opmatrix_8h.html#ab14eed5d13a60f48089d6634448c2d86":[3,0,1,0,0,24,4],
 "core_2opmatrix_8h.html#adff2ac04a289a00b32da24ad8a4aa8b6":[3,0,1,0,0,24,3],
 "core_2opmatrix_8h.html#aebe1bd54b6ca1259aa134ff0b62ae924":[3,0,1,0,0,24,5],
 "core__json_8h.html":[3,0,1,0,6,3],
@@ -95,8 +96,8 @@ var NAVTREEINDEX6 =
 "functions_d.html":[2,3,0,4],
 "functions_e.html":[2,3,0,5],
 "functions_enum.html":[2,3,4],
-"functions_eval.html":[2,3,5],
 "functions_eval.html":[2,3,5,0],
+"functions_eval.html":[2,3,5],
 "functions_eval_d.html":[2,3,5,1],
 "functions_eval_e.html":[2,3,5,2],
 "functions_eval_f.html":[2,3,5,3],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "isosurface_8h.html#a42d30ff9d26135aa0ed4bf402f0c5693":[3,0,1,0,7,2,5],
 "isosurface_8h.html#aeb1f8b40d5c5ef459e024e453a52d2d9":[3,0,1,0,7,2,6],
 "json__basis_8h.html":[3,0,1,0,6,13],
-"json__basis_8h.html#a2e0d0088e3a6c463309cc364c41e1aaf":[3,0,1,0,6,13,6],
-"kabsch_8h.html":[3,0,1,0,0,15]
+"json__basis_8h.html#a2e0d0088e3a6c463309cc364c41e1aaf":[3,0,1,0,6,13,6]
 };
