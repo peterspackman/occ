@@ -18,11 +18,16 @@ jobs:
       matrix:
         include: 
           - os: macos-latest
-            architecture: [x86_64, arm64]
+            architecture: x86_64
+          - os: macos-latest
+            architecture: arm64
             script: macos_generic_build.sh
           - os: ubuntu-latest
             architecture: x86_64
-            script: [linux_generic_build.sh, dockcross-windows.sh]
+            script: linux_generic_build.sh
+          - os: ubuntu-latest
+            architecture: x86_64
+            script: dockcross-windows.sh
 
     runs-on: ${{ matrix.os }}
 
