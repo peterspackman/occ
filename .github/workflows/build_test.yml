@@ -42,14 +42,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install Dependencies Linux
-      if: matrix.name == 'linux-x86_64'
+      if: startsWith(runner.os, 'Linux')
       run: |
         sudo apt update
         sudo apt install -y python3-numpy libpthread-stubs0-dev \
             doxygen graphviz ninja-build
 
     - name: Install Dependencies Mac
-      if: matrix.name == 'linux-x86_64'
+      if: startsWith(runner.os, 'macOS')
       run: |
         brew install ninja doxygen graphviz
 
