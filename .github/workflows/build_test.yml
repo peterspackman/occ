@@ -35,6 +35,12 @@ jobs:
         sudo apt update
         sudo apt install -y python3-numpy libpthread-stubs0-dev doxygen graphviz
 
+    - name: Install Dependencies Mac
+      if: startsWith(runner.os, 'macOS')
+      run: |
+        brew install ninja doxygen graphviz
+
+
     - name: Cache CPM Dependencies
       uses: actions/cache@v3
       with:
