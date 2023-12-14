@@ -19,6 +19,7 @@ jobs:
         include: 
           - os: macos-latest
             architecture: x86_64
+            script: macos_generic_build.sh
           - os: macos-latest
             architecture: arm64
             script: macos_generic_build.sh
