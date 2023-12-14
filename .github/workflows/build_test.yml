@@ -44,13 +44,13 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Dependencies Linux
-      if: startsWith(runner.os, 'Linux')
+      if: matrix.name == 'linux-x86_64'
       run: |
         sudo apt update
         sudo apt install -y python3-numpy libpthread-stubs0-dev doxygen graphviz ninja-build
 
     - name: Install Dependencies Mac
-      if: startsWith(runner.os, 'macOS')
+      if: matrix.name == 'linux-x86_64'
       run: |
         brew install ninja doxygen graphviz
 
@@ -73,7 +73,7 @@ jobs:
 #     run: ctest -C ${{env.BUILD_TYPE}}
 #     
     - name: Build Documentation
-      if: startsWith(matrix.name, "linux-x86_64")
+      if: matrix.name == 'linux-x86_64'
       run: cmake --build ${{github.workspace}}/build --target docs
 
     - name: Deploy Documentation
