@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-BUILD_DIR="build-generic"
+BUILD_DIR="build"
 MIN_VERSION="10.15"
 ARCH="x86_64"
 
