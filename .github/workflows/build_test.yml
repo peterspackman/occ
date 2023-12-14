@@ -20,12 +20,15 @@ jobs:
           - os: macos-latest
             architecture: arm64;x86_64
             script: macos_generic_build.sh
+            name: "macos-universal"
           - os: ubuntu-latest
             architecture: x86_64
             script: linux_generic_build.sh
+            name: "linux-x86_64"
           - os: ubuntu-latest
             architecture: x86_64
             script: dockcross-windows.sh
+            name: "windows-x86_64"
 
     runs-on: ${{ matrix.os }}
 
@@ -49,7 +52,7 @@ jobs:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
           ${{github.workspace}}/build
-        key: ${{ runner.os }}-occ-build-cache
+        key: ${{ matrix.name}}-occ-build-cache
 
     - name: Run build script
       run: |
