@@ -72,20 +72,41 @@ jobs:
 #     # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
 #     run: ctest -C ${{env.BUILD_TYPE}}
 #     
-#   - name: Build Documentation
-#     run: cmake --build ${{github.workspace}}/build --target docs
+   - name: Build Documentation
+     if: startsWith(matrix.name, "linux-x86_64")
+     run: cmake --build ${{github.workspace}}/build --target docs
 
-#   - name: Deploy Documentation
-#     uses: peaceiris/actions-gh-pages@v3
-#     with:
-#       github_token: ${{ secrets.GITHUB_TOKEN }}
-#       publish_dir: ${{github.workspace}}/build/docs/html
-
-#   - name: Package
-#     run: cpack -G TXZ --config ${{github.workspace}}/build/CPackConfig.cmake
+   - name: Deploy Documentation
+     if: startsWith(matrix.name, "linux-x86_64")
+     uses: peaceiris/actions-gh-pages@v3
+     with:
+       github_token: ${{ secrets.GITHUB_TOKEN }}
+       publish_dir: ${{github.workspace}}/build/docs/html
 
     - name: Upload binaries
       uses: actions/upload-artifact@v3
       with:
         name: binaries
         path: ${{github.workspace}}/build/*.xz
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: binaries
+        name: binaries
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with: 
+        files: | 
+          binaries/*
+
