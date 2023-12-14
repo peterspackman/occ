@@ -42,7 +42,6 @@ jobs:
       if: startsWith(runner.os, 'macOS')
       run: |
         brew install ninja doxygen graphviz
-        sudo softwareupdate --install-rosetta --agree-to-license
 
 
     - name: Cache CPM Dependencies
