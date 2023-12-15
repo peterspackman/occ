@@ -5,7 +5,7 @@ var structocc_1_1scf_1_1SCF =
     [ "charge", "structocc_1_1scf_1_1SCF.html#aa9a126213f525420d9c0988835a752e0", null ],
     [ "compute_initial_guess", "structocc_1_1scf_1_1SCF.html#ab037d9ae8e80a64375206bdcb15fc2cc", null ],
     [ "compute_scf_energy", "structocc_1_1scf_1_1SCF.html#ab135fdcc7ba4327b330e20936c31e9ae", null ],
-    [ "compute_soad", "structocc_1_1scf_1_1SCF.html#a10f13e5147f312fa4eb18a4f27e5e0ff", null ],
+    [ "compute_soad", "structocc_1_1scf_1_1SCF.html#a475b87443220efc0e554cb8da25a8b3b", null ],
     [ "multiplicity", "structocc_1_1scf_1_1SCF.html#a35dfde55a207230743d1e1b8ef87eff7", null ],
     [ "n_alpha", "structocc_1_1scf_1_1SCF.html#a4875073e48c4230d68e4a9b835b8ac14", null ],
     [ "n_beta", "structocc_1_1scf_1_1SCF.html#a8bef5243f681a9bfd4657e1999d7ac21", null ],

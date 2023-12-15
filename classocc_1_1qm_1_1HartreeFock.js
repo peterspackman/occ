@@ -21,6 +21,7 @@ var classocc_1_1qm_1_1HartreeFock =
     [ "compute_nuclear_multipoles", "classocc_1_1qm_1_1HartreeFock.html#a3bc5b25ed89b1bab05233c155ff7918f", null ],
     [ "compute_overlap_gradient", "classocc_1_1qm_1_1HartreeFock.html#a34abab4a8d8d04fa503bb786106daa0f", null ],
     [ "compute_overlap_matrix", "classocc_1_1qm_1_1HartreeFock.html#a18c0b2c73c1304c1bb7e9bbdceba5f65", null ],
+    [ "compute_overlap_matrix", "classocc_1_1qm_1_1HartreeFock.html#a2daa9182d0352b1cf6a82621f7bc2f36", null ],
     [ "compute_point_charge_interaction_matrix", "classocc_1_1qm_1_1HartreeFock.html#afe3098988017e35b0299efdd1cb062ac", null ],
     [ "compute_schwarz_ints", "classocc_1_1qm_1_1HartreeFock.html#a412bb5564965a89bcf44a6539eafb720", null ],
     [ "electronic_electric_field_contribution", "classocc_1_1qm_1_1HartreeFock.html#ada3af15b615fe28ede762ce094ff31ac", null ],
