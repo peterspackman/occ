@@ -160,7 +160,7 @@ template <typename Procedure> struct SCF {
 
     const auto &atoms() const { return m_procedure.atoms(); }
 
-    Mat compute_soad() const {
+    Mat compute_soad(const Mat &overlap_minbs) const {
         // computes Superposition-Of-Atomic-Densities guess for the
         // molecular density matrix in minimal basis; occupies subshells by
         // smearing electrons evenly over the orbitals compute number of
@@ -221,6 +221,11 @@ template <typename Procedure> struct SCF {
                 D_minbs(i, i) -= v;
             }
         }
+
+	for(int bf = 0; bf < D_minbs.rows(); bf++) {
+	    occ::log::debug("Normalising overlap min basis bf{} = {}\n", bf, overlap_minbs(bf, bf));
+	    D_minbs(bf, bf) /= std::sqrt(overlap_minbs(bf, bf));
+	}
 
         occ::log::debug("Minimal basis guess diagonal sum: {}", D_minbs.sum());
         return D_minbs * 0.5; // we use densities normalized to # of electrons/2
@@ -341,8 +346,9 @@ template <typename Procedure> struct SCF {
         }
 
         log::info("Computing initial guess using SOAD in minimal basis");
-        auto D_minbs = compute_soad(); // compute guess in minimal basis
+        Mat D_minbs;
         if (m_procedure.aobasis().name() == OCC_MINIMAL_BASIS) {
+	    D_minbs = compute_soad(m_procedure.compute_overlap_matrix()); // compute guess in minimal basis
             switch (mo.kind) {
             case Restricted:
                 mo.D = D_minbs;
@@ -367,8 +373,9 @@ template <typename Procedure> struct SCF {
             const auto tstart = std::chrono::high_resolution_clock::now();
             auto minbs =
                 occ::qm::AOBasis::load(m_procedure.atoms(), OCC_MINIMAL_BASIS);
-            occ::log::debug("Loaded minimal basis {}", OCC_MINIMAL_BASIS);
             minbs.set_pure(m_procedure.aobasis().is_pure());
+	    D_minbs = compute_soad(m_procedure.compute_overlap_matrix(minbs)); // compute guess in minimal basis
+            occ::log::debug("Loaded minimal basis {}", OCC_MINIMAL_BASIS);
             occ::qm::MolecularOrbitals mo_minbs;
             mo_minbs.kind = mo.kind;
             mo_minbs.D = D_minbs;

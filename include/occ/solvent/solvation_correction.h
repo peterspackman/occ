@@ -197,6 +197,10 @@ template <typename Proc> class SolvationCorrectedProcedure {
         return m_proc.compute_overlap_matrix();
     }
 
+    auto compute_overlap_matrix(const occ::qm::AOBasis &bs) const {
+        return m_proc.compute_overlap_matrix(bs);
+    }
+
     auto compute_nuclear_attraction_matrix() const {
         return m_proc.compute_nuclear_attraction_matrix();
     }

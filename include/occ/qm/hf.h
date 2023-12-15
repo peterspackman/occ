@@ -74,6 +74,7 @@ class HartreeFock {
     MatTriple compute_kinetic_gradient() const;
 
     Mat compute_overlap_matrix() const;
+    Mat compute_overlap_matrix(const occ::qm::AOBasis &basis) const;
     MatTriple compute_overlap_gradient() const;
 
     Mat compute_nuclear_attraction_matrix() const;

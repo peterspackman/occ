@@ -154,6 +154,13 @@ Mat HartreeFock::compute_overlap_matrix() const {
     return m_engine.one_electron_operator(Op::overlap);
 }
 
+
+Mat HartreeFock::compute_overlap_matrix(const occ::qm::AOBasis &basis) const {
+    using Op = occ::qm::cint::Operator;
+    occ::qm::IntegralEngine temporary_engine(basis);
+    return temporary_engine.one_electron_operator(Op::overlap);
+}
+
 Mat HartreeFock::compute_nuclear_attraction_matrix() const {
     using Kind = occ::qm::Shell::Kind;
     using Op = occ::qm::cint::Operator;

@@ -17,12 +17,14 @@ void update_occupation_subshell(std::vector<double> &destination, int size,
                                         ? 2 * size
                                         : num_electrons_remaining;
     num_electrons_remaining -= electrons_allocated;
-    const double electrons_per_orbital =
-        (electrons_allocated % size == 0)
-            ? static_cast<double>(electrons_allocated / size)
-            : (static_cast<double>(electrons_allocated)) / size;
+    const double electrons_per_orbital = static_cast<double>(electrons_allocated) / size;
     for (size_t f = 0; f < size; f++) {
-        destination.push_back(electrons_per_orbital);
+	if(size == 6 && f < 3) {
+	    destination.push_back(electrons_per_orbital / std::sqrt(5));
+	}
+	else {
+	    destination.push_back(electrons_per_orbital);
+	}
     }
 }
 
