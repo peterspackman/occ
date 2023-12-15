@@ -81,8 +81,8 @@ var NAVTREEINDEX =
 "slaterbasis_8h.html",
 "structocc_1_1geometry_1_1MIndex.html#a1066aa790017c136fda66872feea20ab",
 "structocc_1_1io_1_1JsonBasis.html#a9b49e9c4de1c022ba2bc571803477d77",
-"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a561f6e9187a2f1c04b9b486ce6a84062",
-"structocc_1_1solvent_1_1SMDSolventParameters.html#a6d02b2512e40c71095f8c6e6a6ea2528"
+"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a3dac4601dddb5da6b092f5ac7c447501",
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a610ccd5c330eba2d83fcf0f1ac5193d2"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

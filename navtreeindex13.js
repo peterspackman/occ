@@ -199,10 +199,11 @@ var NAVTREEINDEX13 =
 "structocc_1_1main_1_1LatticeConvergenceSettings.html":[2,0,1,7,18],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#a27efb00d0b8b0753d772871f93857e0c":[2,0,1,7,18,4],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#a45872b096a65112b4cbfd680200fbda6":[2,0,1,7,18,2],
-"structocc_1_1main_1_1LatticeConvergenceSettings.html#a5f8407d8400ba8d859b5be9f669efc7d":[2,0,1,7,18,8],
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#a5f8407d8400ba8d859b5be9f669efc7d":[2,0,1,7,18,9],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#a6fa0e962f4dadfba65aa2ae7efd8fb29":[2,0,1,7,18,6],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#a86dd15e8d6bf0634c2a57f18c77ffdc0":[2,0,1,7,18,7],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#aa22ed80b36a37c91a9940143d83fcb6b":[2,0,1,7,18,5],
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#ab1ee600a5ce6fa4a1845ad188bf8054b":[2,0,1,7,18,8],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#adff8eb316738f0249efe8557fd0370b1":[2,0,1,7,18,1],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#aeb2873c939f9306f57e6303762997621":[2,0,1,7,18,3],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#af0ca83314d92539ca834d1fcc571117e":[2,0,1,7,18,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#a0bd01d41a88a0a6eef09aaef19ed532f":[2,0,1,7,20,7],
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#a14c97a7c72640362285c633ed9aab4f2":[2,0,1,7,20,3],
 "structocc_1_1main_1_1SolvatedSurfaceProperties.html#a2f3d17543c7ee6d317442ff049137683":[2,0,1,7,20,1],
-"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a37b3c31883b00764214a2b73a4d8ac28":[2,0,1,7,20,2],
-"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a3dac4601dddb5da6b092f5ac7c447501":[2,0,1,7,20,5]
+"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a37b3c31883b00764214a2b73a4d8ac28":[2,0,1,7,20,2]
 };

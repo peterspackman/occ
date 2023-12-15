@@ -8,5 +8,6 @@ var structocc_1_1main_1_1LatticeConvergenceSettings =
     [ "model_name", "structocc_1_1main_1_1LatticeConvergenceSettings.html#aa22ed80b36a37c91a9940143d83fcb6b", null ],
     [ "output_json_filename", "structocc_1_1main_1_1LatticeConvergenceSettings.html#a6fa0e962f4dadfba65aa2ae7efd8fb29", null ],
     [ "radius_increment", "structocc_1_1main_1_1LatticeConvergenceSettings.html#a86dd15e8d6bf0634c2a57f18c77ffdc0", null ],
+    [ "spherical_basis", "structocc_1_1main_1_1LatticeConvergenceSettings.html#ab1ee600a5ce6fa4a1845ad188bf8054b", null ],
     [ "wolf_sum", "structocc_1_1main_1_1LatticeConvergenceSettings.html#a5f8407d8400ba8d859b5be9f669efc7d", null ]
 ];

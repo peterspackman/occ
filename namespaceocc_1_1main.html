@@ -182,10 +182,10 @@ Functions</h2></td></tr>
 <tr class="separator:ae6a3ddcf8fae6544589ec5d41ef77449"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb1f8b40d5c5ef459e024e453a52d2d9"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aeb1f8b40d5c5ef459e024e453a52d2d9">smoothstep</a> (float x, float l, float u)</td></tr>
 <tr class="separator:aeb1f8b40d5c5ef459e024e453a52d2d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0dcc8532aa7c3f1735e7b21248ee9f40"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a0dcc8532aa7c3f1735e7b21248ee9f40">calculate_wavefunction</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a> &amp;mol, const std::string &amp;name, const std::string &amp;energy_model)</td></tr>
-<tr class="separator:a0dcc8532aa7c3f1735e7b21248ee9f40"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc305e3ce1a87bf9b16de5950e38c79c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1main.html#ac85c86d6d9a88925da1c4fd9831a3d05">WavefunctionList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#abc305e3ce1a87bf9b16de5950e38c79c">calculate_wavefunctions</a> (const std::string &amp;basename, const <a class="el" href="namespaceocc_1_1main.html#aacf219b1a5bc1d456fccd140b29ff763">MoleculeList</a> &amp;molecules, const std::string &amp;energy_model)</td></tr>
-<tr class="separator:abc305e3ce1a87bf9b16de5950e38c79c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff03b48a0375593fb2ca7183421d129d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aff03b48a0375593fb2ca7183421d129d">calculate_wavefunction</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a> &amp;mol, const std::string &amp;name, const std::string &amp;energy_model, bool spherical)</td></tr>
+<tr class="separator:aff03b48a0375593fb2ca7183421d129d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac854257809b5d362970c1d2ca6706e00"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1main.html#ac85c86d6d9a88925da1c4fd9831a3d05">WavefunctionList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#ac854257809b5d362970c1d2ca6706e00">calculate_wavefunctions</a> (const std::string &amp;basename, const <a class="el" href="namespaceocc_1_1main.html#aacf219b1a5bc1d456fccd140b29ff763">MoleculeList</a> &amp;molecules, const std::string &amp;energy_model, bool spherical)</td></tr>
+<tr class="separator:ac854257809b5d362970c1d2ca6706e00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acfb5af7abecb5e5c5057d9197f174eb0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#acfb5af7abecb5e5c5057d9197f174eb0">compute_monomer_energies</a> (const std::string &amp;basename, <a class="el" href="namespaceocc_1_1main.html#ac85c86d6d9a88925da1c4fd9831a3d05">WavefunctionList</a> &amp;wavefunctions, const std::string &amp;model_name)</td></tr>
 <tr class="separator:acfb5af7abecb5e5c5057d9197f174eb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1972f6336fcde6853a48a7f7faa57172"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a1972f6336fcde6853a48a7f7faa57172">add_cg_subcommand</a> (CLI::App &amp;app)</td></tr>
@@ -503,8 +503,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a0dcc8532aa7c3f1735e7b21248ee9f40"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0dcc8532aa7c3f1735e7b21248ee9f40">&#9670;&nbsp;</a></span>calculate_wavefunction()</h2>
+<a id="aff03b48a0375593fb2ca7183421d129d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff03b48a0375593fb2ca7183421d129d">&#9670;&nbsp;</a></span>calculate_wavefunction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -525,7 +525,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>energy_model</em>&#160;</td>
+          <td class="paramname"><em>energy_model</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>spherical</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -537,8 +543,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="abc305e3ce1a87bf9b16de5950e38c79c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abc305e3ce1a87bf9b16de5950e38c79c">&#9670;&nbsp;</a></span>calculate_wavefunctions()</h2>
+<a id="ac854257809b5d362970c1d2ca6706e00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac854257809b5d362970c1d2ca6706e00">&#9670;&nbsp;</a></span>calculate_wavefunctions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -559,7 +565,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>energy_model</em>&#160;</td>
+          <td class="paramname"><em>energy_model</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>spherical</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
