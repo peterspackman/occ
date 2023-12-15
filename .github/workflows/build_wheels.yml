@@ -1,6 +1,11 @@
 name: Build python wheels
 
-on: [release]
+on:
+  push:
+    tags: "v*"
+  pull_request:
+    tags: "v*"
+
 
 jobs:
   build_wheels:

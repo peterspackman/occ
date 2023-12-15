@@ -16,6 +16,6 @@ cmake . -B"${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_C_FLAGS="-march=skylake -O2 -static-libgcc" -DBUILD_DOCS=ON \
 	-DCPACK_SYSTEM_NAME="${NAME}"
 
-cmake --build "${BUILD_DIR}" --target occ
+cmake --build "${BUILD_DIR}"
 
 cd "${BUILD_DIR}" && cpack -G TXZ && cd -
