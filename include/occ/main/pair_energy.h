@@ -70,6 +70,7 @@ struct LatticeConvergenceSettings {
     std::string model_name{"ce-b3lyp"};
     std::string crystal_filename{""};
     std::string output_json_filename{""};
+    bool spherical_basis{false};
 };
 
 struct LatticeEnergyResult {

@@ -44,7 +44,8 @@ void compute_monomer_energies(const std::string &basename,
 
 Wavefunction calculate_wavefunction(const Molecule &mol,
                                     const std::string &name,
-                                    const std::string &energy_model) {
+                                    const std::string &energy_model,
+				    bool spherical) {
     fs::path json_path(fmt::format("{}.owf.json", name));
     if (fs::exists(json_path)) {
         occ::log::info("Loading gas phase wavefunction from {}",
@@ -60,6 +61,7 @@ Wavefunction calculate_wavefunction(const Molecule &mol,
     occ::io::OccInput input;
     input.method.name = parameterized_model.method;
     input.basis.name = parameterized_model.basis;
+    input.basis.spherical = spherical;
     input.geometry.set_molecule(mol);
     input.electronic.charge = mol.charge();
     input.electronic.multiplicity = mol.multiplicity();
@@ -72,7 +74,8 @@ Wavefunction calculate_wavefunction(const Molecule &mol,
 
 WavefunctionList calculate_wavefunctions(const std::string &basename,
                                          const std::vector<Molecule> &molecules,
-                                         const std::string &energy_model) {
+                                         const std::string &energy_model,
+					 bool spherical) {
     WavefunctionList wavefunctions;
     size_t index = 0;
     for (const auto &m : molecules) {
@@ -85,7 +88,7 @@ WavefunctionList calculate_wavefunctions(const std::string &basename,
         }
         std::string name = fmt::format("{}_{}", basename, index);
         wavefunctions.emplace_back(
-            calculate_wavefunction(m, name, energy_model));
+            calculate_wavefunction(m, name, energy_model, spherical));
         index++;
     }
     return wavefunctions;

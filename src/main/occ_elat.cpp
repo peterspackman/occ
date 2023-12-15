@@ -47,7 +47,8 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
             converged_xtb_lattice_energies(c, basename, settings);
     } else {
         wfns = occ::main::calculate_wavefunctions(basename, molecules,
-                                                  settings.model_name);
+                                                  settings.model_name,
+						  settings.spherical_basis);
         occ::main::compute_monomer_energies(basename, wfns,
                                             settings.model_name);
         lattice_energy_result = occ::main::converged_lattice_energies(
@@ -127,6 +128,8 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
                      "step size (Angstroms) direct space summation");
     elat->add_flag("-w,--wolf", config->wolf_sum,
                    "accelerate convergence using Wolf sum");
+    elat->add_flag("--spherical", config->spherical_basis,
+                   "use pure spherical basis sets");
     elat->add_flag(
         "--crystal-polarization,--crystal_polarization",
         config->crystal_field_polarization,
