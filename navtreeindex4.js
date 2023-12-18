@@ -1,6 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html":[2,0,1,6,0,0],
 "classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html#a0e92b26abd55a657684d072957c57d2b":[2,0,1,6,0,0,0],
 "classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html#a247b4eeaa2cd06d1da8c994560c4cd75":[2,0,1,6,0,0,1],
 "classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html#a8bd3ae66b03f81f3482a6c4cc33c93c5":[2,0,1,6,0,0,2],
@@ -94,7 +93,6 @@ var NAVTREEINDEX4 =
 "classocc_1_1qm_1_1HartreeFock.html#a1d7f4bc70aa12e9643479e4be4ee3674":[2,0,1,8,3,25],
 "classocc_1_1qm_1_1HartreeFock.html#a26985e1a8a73553c86f411af703ef1e0":[2,0,1,8,3,43],
 "classocc_1_1qm_1_1HartreeFock.html#a29562a744052698a544a09db4d44f177":[2,0,1,8,3,12],
-"classocc_1_1qm_1_1HartreeFock.html#a2daa9182d0352b1cf6a82621f7bc2f36":[2,0,1,8,3,21],
 "classocc_1_1qm_1_1HartreeFock.html#a33c1a92f68a2204a5fa99e84e591249d":[2,0,1,8,3,14],
 "classocc_1_1qm_1_1HartreeFock.html#a34abab4a8d8d04fa503bb786106daa0f":[2,0,1,8,3,19],
 "classocc_1_1qm_1_1HartreeFock.html#a3bc5b25ed89b1bab05233c155ff7918f":[2,0,1,8,3,18],
@@ -108,6 +106,7 @@ var NAVTREEINDEX4 =
 "classocc_1_1qm_1_1HartreeFock.html#a883701124a6a81cba0382d25f52ef059":[2,0,1,8,3,3],
 "classocc_1_1qm_1_1HartreeFock.html#a88e0831a15c11701ff7e96258c9ab221":[2,0,1,8,3,40],
 "classocc_1_1qm_1_1HartreeFock.html#a918643efdca01c353816afc11964dda6":[2,0,1,8,3,7],
+"classocc_1_1qm_1_1HartreeFock.html#a946bbf064d78d4673c269112144e2460":[2,0,1,8,3,21],
 "classocc_1_1qm_1_1HartreeFock.html#aa647a1c6fc2b4b81d195b87797e086fc":[2,0,1,8,3,28],
 "classocc_1_1qm_1_1HartreeFock.html#aa7239e014bfc3d127c6bd424bd4a3bc6":[2,0,1,8,3,10],
 "classocc_1_1qm_1_1HartreeFock.html#aab39e5a166fb4efcb85f11d2796bf42f":[2,0,1,8,3,42],
@@ -249,5 +248,6 @@ var NAVTREEINDEX4 =
 "classocc_1_1sht_1_1SHT.html#af15cd98e05e39ee5e394fe60393a7d8a":[2,0,1,10,1,9],
 "classocc_1_1slater_1_1Basis.html":[2,0,1,11,1],
 "classocc_1_1slater_1_1Basis.html#a38a25bc6e6a58202906eb6271d73c207":[2,0,1,11,1,0],
-"classocc_1_1slater_1_1Basis.html#a4052d553c370c5e64c3365e8eee9d9fe":[2,0,1,11,1,6]
+"classocc_1_1slater_1_1Basis.html#a4052d553c370c5e64c3365e8eee9d9fe":[2,0,1,11,1,6],
+"classocc_1_1slater_1_1Basis.html#a4de3da12b0c48b9be0776106cedf1198":[2,0,1,11,1,2]
 };

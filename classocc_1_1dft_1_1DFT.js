@@ -17,7 +17,7 @@ var classocc_1_1dft_1_1DFT =
     [ "compute_nuclear_attraction_matrix", "classocc_1_1dft_1_1DFT.html#a62cdb0fee5a170bfc25154e750b81204", null ],
     [ "compute_nuclear_multipoles", "classocc_1_1dft_1_1DFT.html#a4a8dec962a9902612816a6b3459d01d8", null ],
     [ "compute_overlap_matrix", "classocc_1_1dft_1_1DFT.html#a13ce905070b05b9e8618be1042f6dddc", null ],
-    [ "compute_overlap_matrix", "classocc_1_1dft_1_1DFT.html#a43b423d017396c461e7c939e2c710619", null ],
+    [ "compute_overlap_matrix_for_basis", "classocc_1_1dft_1_1DFT.html#a642535bcd3cf08783e06b0d00c9bd6c2", null ],
     [ "compute_point_charge_interaction_matrix", "classocc_1_1dft_1_1DFT.html#ac04a3cd5cf8eeccacd9b276fea2766bf", null ],
     [ "compute_schwarz_ints", "classocc_1_1dft_1_1DFT.html#a35a5f0b71f5bd8817ee37e1f1d452764", null ],
     [ "compute_vxc", "classocc_1_1dft_1_1DFT.html#a63ad152c3d4b15de72c9b7ee74359c11", null ],

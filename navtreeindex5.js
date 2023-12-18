@@ -1,6 +1,5 @@
 var NAVTREEINDEX5 =
 {
-"classocc_1_1slater_1_1Basis.html#a4de3da12b0c48b9be0776106cedf1198":[2,0,1,11,1,2],
 "classocc_1_1slater_1_1Basis.html#a6f2ddbeaa645c290923e0f382d4a9035":[2,0,1,11,1,7],
 "classocc_1_1slater_1_1Basis.html#a7a1a2b2790f25e0713c4f9ba6f174ad1":[2,0,1,11,1,3],
 "classocc_1_1slater_1_1Basis.html#aa4cd8b5a9bbce2683721c4b020151c05":[2,0,1,11,1,8],
@@ -64,7 +63,6 @@ var NAVTREEINDEX5 =
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2846cb49217364e8e8c98fdfd7141351":[2,0,1,12,4,15],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a28950d1bb46d046a3cb891a70c8ac2f2":[2,0,1,12,4,34],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2a55a4f56f1f5ca0531ea2cdf78838b9":[2,0,1,12,4,6],
-"classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a316093e43920cf6db012ae39e0efb5d2":[2,0,1,12,4,14],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a338336affd2fe3499d87c02073c66d7c":[2,0,1,12,4,31],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a380409236af52db48cda4bfce7b48978":[2,0,1,12,4,39],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a3a1a43d6b5097d1462d70581b0b779fb":[2,0,1,12,4,4],
@@ -76,6 +74,7 @@ var NAVTREEINDEX5 =
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a69c3bd110d2cb81b28f601852842cd4d":[2,0,1,12,4,19],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a6f76c2f9926d860b59b2993ea1570894":[2,0,1,12,4,29],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a71a54ffe1f65d23acd2f4bfe0237f368":[2,0,1,12,4,17],
+"classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a753093b9a8e84ffe6b381a1824b79514":[2,0,1,12,4,14],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a79d7e5e4f5a063771b4755f4ebe1c11f":[2,0,1,12,4,26],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a82b6b391f362eeee6addeb18bcb9fd76":[2,0,1,12,4,0],
 "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a84160c5b08ad9ad401402d8030919546":[2,0,1,12,4,16],
@@ -249,5 +248,6 @@ var NAVTREEINDEX5 =
 "conversion_8h.html#ade56e4e18329929c4f38ec76e7983451":[3,0,1,0,6,2,2],
 "conversion_8h.html#af1855b5fdc70096d956b525371c6b94f":[3,0,1,0,6,2,4],
 "convex__hull_8h.html":[3,0,1,0,3,0],
-"core_2opmatrix_8h.html":[3,0,1,0,0,24]
+"core_2opmatrix_8h.html":[3,0,1,0,0,24],
+"core_2opmatrix_8h.html#a33d56a720add65e6dd20c5dff42276bd":[3,0,1,0,0,24,2]
 };

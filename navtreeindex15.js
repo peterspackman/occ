@@ -1,6 +1,5 @@
 var NAVTREEINDEX15 =
 {
-"structocc_1_1solvent_1_1SMDSolventParameters.html#a1a1d9721c900d3ab2c6ebfb59fb0e459":[2,0,1,12,2,3],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a1bc6e5f6342353d3d8ae773238310221":[2,0,1,12,2,10],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a265e4c22704aa43c0bb2086b63ed239c":[2,0,1,12,2,6],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a610ccd5c330eba2d83fcf0f1ac5193d2":[2,0,1,12,2,1],
@@ -169,5 +168,6 @@ var NAVTREEINDEX15 =
 "xtb__wrapper_8h.html":[3,0,1,0,13,1],
 "xyz_8h.html":[3,0,1,0,6,23],
 "xyz_8h.html#a9e545a9864ef7cba94ea648e321f9899":[3,0,1,0,6,23,2],
-"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,6,23,1]
+"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,6,23,1],
+"":[1,0,1]
 };

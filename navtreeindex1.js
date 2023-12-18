@@ -1,6 +1,5 @@
 var NAVTREEINDEX1 =
 {
-"classocc_1_1crystal_1_1Crystal.html#a6d031f75ebb73e0817350becc56f2309":[2,0,1,1,3,11],
 "classocc_1_1crystal_1_1Crystal.html#a754afc33acff3b61f2fc8e3738ffb688":[2,0,1,1,3,1],
 "classocc_1_1crystal_1_1Crystal.html#a7d88c14753f98a230d5580f5ec0fc80d":[2,0,1,1,3,5],
 "classocc_1_1crystal_1_1Crystal.html#a898abef35af88fd667638b377f0175ed":[2,0,1,1,3,18],
@@ -124,7 +123,6 @@ var NAVTREEINDEX1 =
 "classocc_1_1dft_1_1DFT.html#a303480bc0bacbb8f42a42d68efe240c3":[2,0,1,2,1,27],
 "classocc_1_1dft_1_1DFT.html#a35a5f0b71f5bd8817ee37e1f1d452764":[2,0,1,2,1,19],
 "classocc_1_1dft_1_1DFT.html#a4308079d17acb47266887d62dc137e5e":[2,0,1,2,1,24],
-"classocc_1_1dft_1_1DFT.html#a43b423d017396c461e7c939e2c710619":[2,0,1,2,1,17],
 "classocc_1_1dft_1_1DFT.html#a457021dad1846051129e7f7183797e77":[2,0,1,2,1,30],
 "classocc_1_1dft_1_1DFT.html#a45b6bac4a630b7fc16b259dc96d1a67c":[2,0,1,2,1,48],
 "classocc_1_1dft_1_1DFT.html#a4a8dec962a9902612816a6b3459d01d8":[2,0,1,2,1,15],
@@ -133,6 +131,7 @@ var NAVTREEINDEX1 =
 "classocc_1_1dft_1_1DFT.html#a59e99350356124aac0c2535fa7133492":[2,0,1,2,1,40],
 "classocc_1_1dft_1_1DFT.html#a62cdb0fee5a170bfc25154e750b81204":[2,0,1,2,1,14],
 "classocc_1_1dft_1_1DFT.html#a63ad152c3d4b15de72c9b7ee74359c11":[2,0,1,2,1,20],
+"classocc_1_1dft_1_1DFT.html#a642535bcd3cf08783e06b0d00c9bd6c2":[2,0,1,2,1,17],
 "classocc_1_1dft_1_1DFT.html#a66645ba265d222416c8154a93e845017":[2,0,1,2,1,4],
 "classocc_1_1dft_1_1DFT.html#a6fef3d3fcfdccd4d013482c382e7549f":[2,0,1,2,1,3],
 "classocc_1_1dft_1_1DFT.html#a70d0f6eb16cbb5fd8f0474a2d9cfdf7a":[2,0,1,2,1,2],
@@ -249,5 +248,6 @@ var NAVTREEINDEX1 =
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba32376baae703594fd62252d776b96984":[2,0,1,2,2,3,183],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba325b23acb4fda953e235dd550201a451":[2,0,1,2,2,3,28],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba33aee8e28c10efffeca95ee1c856f775":[2,0,1,2,2,3,346],
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3441e7c42a831ef8a30110603180ccd2":[2,0,1,2,2,3,14]
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3441e7c42a831ef8a30110603180ccd2":[2,0,1,2,2,3,14],
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba34786de0cfd400fa34c20a40d4baa86d":[2,0,1,2,2,3,244]
 };
