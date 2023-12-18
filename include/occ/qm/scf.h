@@ -223,8 +223,10 @@ template <typename Procedure> struct SCF {
         }
 
 	for(int bf = 0; bf < D_minbs.rows(); bf++) {
-	    occ::log::debug("Normalising overlap min basis bf{} = {}\n", bf, overlap_minbs(bf, bf));
-	    D_minbs(bf, bf) /= std::sqrt(overlap_minbs(bf, bf));
+	    const double ovlp = overlap_minbs(bf, bf);
+	    if(std::abs(ovlp - 1.0) > 1e-6)
+		occ::log::debug("Normalising overlap min basis bf{} = {}", bf, ovlp);
+	    D_minbs(bf, bf) /= std::sqrt(ovlp);
 	}
 
         occ::log::debug("Minimal basis guess diagonal sum: {}", D_minbs.sum());
