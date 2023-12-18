@@ -224,12 +224,16 @@ template <typename Procedure> struct SCF {
 
 	for(int bf = 0; bf < D_minbs.rows(); bf++) {
 	    const double ovlp = overlap_minbs(bf, bf);
-	    if(std::abs(ovlp - 1.0) > 1e-6)
+	    if(std::abs(ovlp - 1.0) > 1e-6) {
 		occ::log::debug("Normalising overlap min basis bf{} = {}", bf, ovlp);
-	    D_minbs(bf, bf) /= std::sqrt(ovlp);
+	    }
+	    D_minbs(bf, bf) /= ovlp;
 	}
-
-        occ::log::debug("Minimal basis guess diagonal sum: {}", D_minbs.sum());
+	double diagonal_sum = (D_minbs * overlap_minbs).diagonal().sum();;
+	double difference = diagonal_sum - n_electrons;
+        occ::log::debug("Minimal basis guess diagonal sum: {}", diagonal_sum);
+	if(std::abs(difference) > 1e-6)
+	    occ::log::warn("Warning! Difference between diagonal sum and num electrons: {}", difference);
         return D_minbs * 0.5; // we use densities normalized to # of electrons/2
     }
 
