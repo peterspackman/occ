@@ -172,8 +172,8 @@ class DFT {
         return m_hf.compute_overlap_matrix();
     }
 
-    auto compute_overlap_matrix(const occ::qm::AOBasis &bs) const {
-        return m_hf.compute_overlap_matrix(bs);
+    auto compute_overlap_matrix_for_basis(const occ::qm::AOBasis &bs) const {
+        return m_hf.compute_overlap_matrix_for_basis(bs);
     }
 
     auto compute_nuclear_attraction_matrix() const {

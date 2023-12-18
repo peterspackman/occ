@@ -174,6 +174,7 @@ NB_MODULE(_occpy, m) {
              &HartreeFock::set_density_fitting_basis)
         .def("kinetic_matrix", &HartreeFock::compute_kinetic_matrix)
         .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
+        .def("overlap_matrix_for_basis", &HartreeFock::compute_overlap_matrix_for_basis)
         .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
         .def("scf", [](HartreeFock &hf) { return HF(hf); })
         .def("set_precision", &HartreeFock::set_precision)

@@ -374,7 +374,7 @@ template <typename Procedure> struct SCF {
             auto minbs =
                 occ::qm::AOBasis::load(m_procedure.atoms(), OCC_MINIMAL_BASIS);
             minbs.set_pure(m_procedure.aobasis().is_pure());
-	    D_minbs = compute_soad(m_procedure.compute_overlap_matrix(minbs)); // compute guess in minimal basis
+	    D_minbs = compute_soad(m_procedure.compute_overlap_matrix_for_basis(minbs)); // compute guess in minimal basis
             occ::log::debug("Loaded minimal basis {}", OCC_MINIMAL_BASIS);
             occ::qm::MolecularOrbitals mo_minbs;
             mo_minbs.kind = mo.kind;

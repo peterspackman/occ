@@ -155,7 +155,7 @@ Mat HartreeFock::compute_overlap_matrix() const {
 }
 
 
-Mat HartreeFock::compute_overlap_matrix(const occ::qm::AOBasis &basis) const {
+Mat HartreeFock::compute_overlap_matrix_for_basis(const occ::qm::AOBasis &basis) const {
     using Op = occ::qm::cint::Operator;
     occ::qm::IntegralEngine temporary_engine(basis);
     return temporary_engine.one_electron_operator(Op::overlap);
