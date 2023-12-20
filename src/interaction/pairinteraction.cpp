@@ -213,7 +213,7 @@ double population_difference(const Wavefunction &ABo, const Wavefunction &ABn,
 
     } else {
         Mat Ddiff = occ::qm::orb::density_matrix_unrestricted(
-            Cocc_diff, ABo.num_alpha, ABo.num_beta);
+            Cocc_diff, ABo.mo.n_alpha, ABo.mo.n_beta);
         return 2 * ((occ::qm::block::a(Ddiff) * S_AB).trace() +
                     (occ::qm::block::b(Ddiff) * S_AB).trace());
     }

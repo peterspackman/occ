@@ -74,7 +74,7 @@ struct Wavefunction {
     Wavefunction(const OrcaJSONReader &);
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
 
-    inline int multiplicity() const { return abs(num_beta - num_alpha) + 1; }
+    inline int multiplicity() const { return abs(n_beta() - n_alpha()) + 1; }
     inline int charge() const {
         size_t c = 0;
         for (const auto &atom : atoms)
@@ -83,10 +83,10 @@ struct Wavefunction {
         c -= basis.total_ecp_electrons();
         return c;
     }
-    inline int n_alpha() const { return num_alpha; }
-    inline int n_beta() const { return num_beta; }
+    inline int n_alpha() const { return mo.n_alpha; }
+    inline int n_beta() const { return mo.n_beta; }
     bool is_restricted() const {
-        return spinorbital_kind == SpinorbitalKind::Restricted;
+        return mo.kind == SpinorbitalKind::Restricted;
     }
     void update_occupied_orbitals();
     void set_molecular_orbitals(const FchkReader &fchk);
@@ -106,9 +106,6 @@ struct Wavefunction {
 
     void save(FchkWriter &);
 
-    SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
-    int num_alpha{0};
-    int num_beta{0};
     int num_electrons{0};
     int num_frozen_electrons{0};
     AOBasis basis;

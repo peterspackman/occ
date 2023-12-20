@@ -24,8 +24,7 @@ using occ::qm::merge_basis_sets;
 using occ::qm::merge_molecular_orbitals;
 
 Wavefunction::Wavefunction(const FchkReader &fchk)
-    : spinorbital_kind(fchk.spinorbital_kind()), num_alpha(fchk.num_alpha()),
-      num_beta(fchk.num_beta()), num_electrons(fchk.num_electrons()),
+    : num_electrons(fchk.num_electrons()),
       basis(fchk.basis_set()), nbf(basis.nbf()), atoms(fchk.atoms()) {
     energy.total = fchk.scf_energy();
     set_molecular_orbitals(fchk);
@@ -33,21 +32,20 @@ Wavefunction::Wavefunction(const FchkReader &fchk)
 }
 
 Wavefunction::Wavefunction(const OrcaJSONReader &json)
-    : spinorbital_kind(json.spinorbital_kind()), num_alpha(json.num_alpha()),
-      num_beta(json.num_beta()), num_electrons(json.num_electrons()),
+    : num_electrons(json.num_electrons()),
       basis(json.basis_set()), nbf(basis.nbf()), atoms(json.atoms()) {
     energy.total = json.scf_energy();
     size_t rows, cols;
 
-    mo.kind = spinorbital_kind;
-    mo.n_alpha = num_alpha;
-    mo.n_beta = num_beta;
+    mo.kind = json.spinorbital_kind();
+    mo.n_alpha = json.num_alpha();
+    mo.n_beta = json.num_beta();
     mo.n_ao = nbf;
 
-    if (spinorbital_kind == SpinorbitalKind::General) {
+    if (mo.kind == SpinorbitalKind::General) {
         throw std::runtime_error(
             "Reading MOs from Orca json unsupported for General spinorbitals");
-    } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+    } else if (mo.kind == SpinorbitalKind::Unrestricted) {
         std::tie(rows, cols) =
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
         mo.C = Mat(rows, cols);
@@ -65,21 +63,19 @@ Wavefunction::Wavefunction(const OrcaJSONReader &json)
 }
 
 Wavefunction::Wavefunction(const MoldenReader &molden)
-    : spinorbital_kind(molden.spinorbital_kind()),
-      num_alpha(molden.num_alpha()), num_beta(molden.num_beta()),
-      num_electrons(molden.num_electrons()), basis(molden.basis_set()),
+    : num_electrons(molden.num_electrons()), basis(molden.basis_set()),
       nbf(molden.nbf()), atoms(molden.atoms()) {
     size_t rows, cols;
     nbf = basis.nbf();
-    mo.kind = spinorbital_kind;
-    mo.n_alpha = num_alpha;
-    mo.n_beta = num_beta;
+    mo.kind = molden.spinorbital_kind();
+    mo.n_alpha = molden.num_alpha();
+    mo.n_beta = molden.num_beta();
     mo.n_ao = nbf;
 
-    if (spinorbital_kind == SpinorbitalKind::General) {
+    if (mo.kind == SpinorbitalKind::General) {
         throw std::runtime_error(
             "Reading MOs from g09 unsupported for General spinorbitals");
-    } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+    } else if (mo.kind == SpinorbitalKind::Unrestricted) {
         std::tie(rows, cols) =
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
         mo.C = Mat(rows, cols);
@@ -103,14 +99,11 @@ Wavefunction::Wavefunction(const MoldenReader &molden)
 }
 
 Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
-    : num_alpha(wfn_a.num_alpha + wfn_b.num_alpha),
-      num_beta(wfn_a.num_beta + wfn_b.num_beta),
-      num_electrons(wfn_a.num_electrons + wfn_b.num_electrons),
+    : num_electrons(wfn_a.num_electrons + wfn_b.num_electrons),
       basis(merge_basis_sets(wfn_a.basis, wfn_b.basis)), nbf(basis.nbf()),
       atoms(merge_atoms(wfn_a.atoms, wfn_b.atoms)) {
 
     mo = MolecularOrbitals(wfn_a.mo, wfn_b.mo);
-    spinorbital_kind = mo.kind;
     update_occupied_orbitals();
 
     if (wfn_a.have_xdm_parameters && wfn_b.have_xdm_parameters) {
@@ -140,9 +133,6 @@ Wavefunction::Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b)
 }
 
 void Wavefunction::update_occupied_orbitals() {
-    mo.n_ao = nbf;
-    mo.n_alpha = num_alpha;
-    mo.n_beta = num_beta;
     mo.update_occupied_orbitals();
 }
 
@@ -150,13 +140,13 @@ void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
     size_t rows, cols;
     nbf = basis.nbf();
     mo.kind = fchk.spinorbital_kind();
-    mo.n_alpha = num_alpha;
-    mo.n_beta = num_beta;
+    mo.n_alpha = fchk.num_alpha();
+    mo.n_beta = fchk.num_beta();
     mo.n_ao = nbf;
-    if (spinorbital_kind == SpinorbitalKind::General) {
+    if (mo.kind == SpinorbitalKind::General) {
         throw std::runtime_error(
             "Reading MOs from g09 unsupported for General spinorbitals");
-    } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+    } else if (mo.kind == SpinorbitalKind::Unrestricted) {
         std::tie(rows, cols) =
             occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
         mo.C = Mat(rows, cols);
@@ -174,15 +164,7 @@ void Wavefunction::set_molecular_orbitals(const FchkReader &fchk) {
 }
 
 void Wavefunction::compute_density_matrix() {
-    if (spinorbital_kind == SpinorbitalKind::General) {
-        throw std::runtime_error(
-            "Reading MOs from g09 unsupported for General spinorbitals");
-    } else if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-        mo.D = occ::qm::orb::density_matrix_unrestricted(mo.Cocc, num_alpha,
-                                                         num_beta);
-    } else {
-        mo.D = occ::qm::orb::density_matrix_restricted(mo.Cocc);
-    }
+    mo.update_density_matrix();
 }
 
 void Wavefunction::symmetric_orthonormalize_molecular_orbitals(
@@ -242,8 +224,8 @@ void Wavefunction::save(FchkWriter &fchk) {
     fchk.set_scalar("Multiplicity", multiplicity());
     fchk.set_scalar("SCF Energy", energy.total);
     fchk.set_scalar("Number of electrons", num_electrons);
-    fchk.set_scalar("Number of alpha electrons", num_alpha);
-    fchk.set_scalar("Number of beta electrons", num_beta);
+    fchk.set_scalar("Number of alpha electrons", mo.n_alpha);
+    fchk.set_scalar("Number of beta electrons", mo.n_beta);
     fchk.set_scalar("Number of basis functions", nbf);
     fchk.set_scalar("Number of independent functions", nbf);
     fchk.set_scalar("Number of point charges in /Mol/", 0);
@@ -282,15 +264,15 @@ void Wavefunction::save(FchkWriter &fchk) {
 
     std::vector<double> density_lower_triangle, spin_density_lower_triangle;
 
-    if (spinorbital_kind == SpinorbitalKind::Unrestricted) {
+    if (mo.kind == SpinorbitalKind::Unrestricted) {
         fchk.set_vector("Alpha Orbital Energies", block::a(mo_fchk.energies));
         fchk.set_vector("Alpha MO coefficients", block::a(mo_fchk.C));
         fchk.set_vector("Beta Orbital Energies", block::b(mo_fchk.energies));
         fchk.set_vector("Beta MO coefficients", block::b(mo_fchk.C));
         Mat occ_fchk =
-            occ::qm::orb::occupied_unrestricted(mo_fchk.C, num_alpha, num_beta);
-        Dfchk = occ::qm::orb::density_matrix_unrestricted(occ_fchk, num_alpha,
-                                                          num_beta);
+            occ::qm::orb::occupied_unrestricted(mo_fchk.C, mo.n_alpha, mo.n_beta);
+        Dfchk = occ::qm::orb::density_matrix_unrestricted(occ_fchk, mo.n_alpha,
+                                                          mo.n_beta);
 
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
         spin_density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
@@ -306,7 +288,7 @@ void Wavefunction::save(FchkWriter &fchk) {
     } else {
         fchk.set_vector("Alpha Orbital Energies", mo_fchk.energies);
         fchk.set_vector("Alpha MO coefficients", mo_fchk.C);
-        Mat occ_fchk = occ::qm::orb::occupied_restricted(mo_fchk.C, num_alpha);
+        Mat occ_fchk = occ::qm::orb::occupied_restricted(mo_fchk.C, mo.n_alpha);
         Dfchk = occ::qm::orb::density_matrix_restricted(occ_fchk);
         density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
         for (Eigen::Index row = 0; row < nbf; row++) {
@@ -393,7 +375,7 @@ Vec Wavefunction::mulliken_charges() const {
 
     Vec charges = Vec::Zero(atoms.size());
 
-    switch (spinorbital_kind) {
+    switch(mo.kind) {
     case SpinorbitalKind::Unrestricted:
         charges =
             -2 * occ::qm::mulliken_partition<SpinorbitalKind::Unrestricted>(

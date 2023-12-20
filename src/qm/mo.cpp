@@ -181,8 +181,8 @@ void MolecularOrbitals::update(const Mat &ortho, const Mat &potential) {
         break;
     }
     case SpinorbitalKind::Restricted: {
-        Eigen::SelfAdjointEigenSolver<Mat> eig_solver(ortho.transpose() *
-                                                      potential * ortho);
+	Mat tmp = ortho.transpose() * potential * ortho;
+        Eigen::SelfAdjointEigenSolver<Mat> eig_solver(tmp);
         C = ortho * eig_solver.eigenvectors();
         energies = eig_solver.eigenvalues();
         break;

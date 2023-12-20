@@ -110,8 +110,6 @@ void to_json(nlohmann::json &J, const occ::core::Atom &atom) {
 namespace occ::qm {
 void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
     wfn.atoms.clear();
-    J.at("alpha electrons").get_to(wfn.num_alpha);
-    J.at("beta electrons").get_to(wfn.num_alpha);
     J.at("electrons").get_to(wfn.num_electrons);
     J.at("frozen electrons").get_to(wfn.num_electrons);
     J.at("basis functions").get_to(wfn.nbf);
@@ -185,8 +183,6 @@ void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
 }
 
 void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
-    J["alpha electrons"] = wfn.num_alpha;
-    J["beta electrons"] = wfn.num_alpha;
     J["electrons"] = wfn.num_electrons;
     J["frozen electrons"] = wfn.num_electrons;
     J["basis functions"] = wfn.nbf;

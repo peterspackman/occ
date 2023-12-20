@@ -38,6 +38,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_QCINT "Use SIMD optimised qcint rather than libcint" OFF)
     option(USE_OPENMP "Use OpenMP for threading rather than std::thread" ON)
     option(GG_NO_PRAGMA "Define the __GG_NO_PRAGMA macro" OFF)
+    option(EMSCRIPTEN "Using emscripten" OFF)
     option(ENABLE_HOST_OPT "Enable -march=native and similar flags" ON)
     if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
       set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
@@ -72,6 +73,23 @@ endif()
 if("${USE_SYSTEM_BLAS}")
     find_package(BLAS REQUIRED)
 endif()
+
+if(${EMSCRIPTEN})
+message(STATUS "Emscripten build flags")
+# Set compiler and linker flags for pthreads
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -s USE_PTHREADS=1")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -s USE_PTHREADS=1")
+
+# Set Emscripten-specific options
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s NO_EXIT_RUNTIME=1")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s EXPORTED_RUNTIME_METHODS=['callMain']")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/js/pre.js")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ALLOW_MEMORY_GROWTH=1")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s STACK_SIZE=5MB")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_PTHREADS=1 -pthread -s SHARED_MEMORY=1")
+message(STATUS "${CMAKE_EXE_LINKER_FLAGS}")
+endif()
+
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")
 # don't use install commands from third party

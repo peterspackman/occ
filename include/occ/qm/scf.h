@@ -85,10 +85,9 @@ template <typename Procedure> struct SCF {
         wfn.basis = m_procedure.aobasis();
         wfn.nbf = wfn.basis.nbf();
         wfn.mo = mo;
-        wfn.num_alpha = n_alpha();
-        wfn.num_beta = n_beta();
         wfn.num_electrons = n_electrons;
         wfn.num_frozen_electrons = n_frozen_electrons;
+	wfn.have_energies = true;
         wfn.energy.core = energy.at("electronic.1e");
         wfn.energy.kinetic = energy.at("electronic.kinetic");
         wfn.energy.nuclear_attraction = energy.at("electronic.nuclear");
@@ -98,7 +97,6 @@ template <typename Procedure> struct SCF {
         if (energy.contains("electronic.exchange"))
             wfn.energy.exchange = energy.at("electronic.exchange");
         wfn.energy.total = energy.at("total");
-        wfn.spinorbital_kind = mo.kind;
         wfn.T = T;
         wfn.V = V;
         return wfn;
