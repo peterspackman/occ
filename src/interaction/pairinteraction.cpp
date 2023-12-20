@@ -119,10 +119,10 @@ template <SpinorbitalKind kind>
 void compute_ce_model_energies(Wavefunction &wfn, HartreeFock &proc,
                                const CEMonomerCalculationParameters &params) {
 
-    if (wfn.have_energies) {
-        occ::log::debug("Already have monomer energies, skipping");
-        return;
-    }
+    //if (wfn.have_energies) {
+    //    occ::log::debug("Already have monomer energies, skipping");
+    //    return;
+    //}
     using occ::qm::expectation;
     using occ::qm::matrix_dimensions;
     compute_ce_core_matrices<kind>(wfn, proc);
