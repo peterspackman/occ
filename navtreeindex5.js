@@ -1,5 +1,6 @@
 var NAVTREEINDEX5 =
 {
+"classocc_1_1slater_1_1Basis.html#a4de3da12b0c48b9be0776106cedf1198":[2,0,1,11,1,2],
 "classocc_1_1slater_1_1Basis.html#a6f2ddbeaa645c290923e0f382d4a9035":[2,0,1,11,1,7],
 "classocc_1_1slater_1_1Basis.html#a7a1a2b2790f25e0713c4f9ba6f174ad1":[2,0,1,11,1,3],
 "classocc_1_1slater_1_1Basis.html#aa4cd8b5a9bbce2683721c4b020151c05":[2,0,1,11,1,8],
@@ -248,6 +249,5 @@ var NAVTREEINDEX5 =
 "conversion_8h.html#ade56e4e18329929c4f38ec76e7983451":[3,0,1,0,6,2,2],
 "conversion_8h.html#af1855b5fdc70096d956b525371c6b94f":[3,0,1,0,6,2,4],
 "convex__hull_8h.html":[3,0,1,0,3,0],
-"core_2opmatrix_8h.html":[3,0,1,0,0,24],
-"core_2opmatrix_8h.html#a33d56a720add65e6dd20c5dff42276bd":[3,0,1,0,0,24,2]
+"core_2opmatrix_8h.html":[3,0,1,0,0,24]
 };
