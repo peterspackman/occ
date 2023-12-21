@@ -1,5 +1,6 @@
 var NAVTREEINDEX11 =
 {
+"single__point_8h.html":[3,0,1,0,7,11],
 "single__point_8h.html#a17c5945b306895d7d49fb2e0b9d32e72":[3,0,1,0,7,11,0],
 "single__point_8h.html#ae6ef0a4f014d37dcbe7339c1e0e6efb8":[3,0,1,0,7,11,1],
 "slaterbasis_8h.html":[3,0,1,0,10,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX11 =
 "structocc_1_1geometry_1_1LinearHashedOctree.html#aabdf4143867fc80fcf288cc01f305193":[2,0,1,3,2,2],
 "structocc_1_1geometry_1_1LinearHashedOctree.html#ac2c8e26645ea06f0a6935ae5c5aa2158":[2,0,1,3,2,3],
 "structocc_1_1geometry_1_1LinearHashedOctree.html#af156bc41e4d48988161c622e88cf37a0":[2,0,1,3,2,0],
-"structocc_1_1geometry_1_1LinearHashedOctree.html#af2455ae67cdee78d34db8830bd2124ea":[2,0,1,3,2,4],
-"structocc_1_1geometry_1_1LinearHashedOctree.html#af4bc5a329ba19a7be0a7e9359d2e60ea":[2,0,1,3,2,1]
+"structocc_1_1geometry_1_1LinearHashedOctree.html#af2455ae67cdee78d34db8830bd2124ea":[2,0,1,3,2,4]
 };
