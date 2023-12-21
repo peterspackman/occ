@@ -34,7 +34,7 @@ void print_header() {
 
 a library and program for quantum chemistry
 
-copyright (C) 2020-2022 Peter Spackman 
+copyright (C) 2020-2024 Peter Spackman 
 
 this version of occ makes use of the following third party libraries:
 
