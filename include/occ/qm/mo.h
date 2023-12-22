@@ -15,9 +15,11 @@ struct MolecularOrbitals {
     Mat Cocc;
     Mat D;
     Vec energies;
+    Vec occupation;
     void update(const Mat &ortho, const Mat &potential);
     void update_density_matrix();
     void update_occupied_orbitals();
+    void update_occupied_orbitals_fractional();
     void rotate(const AOBasis &basis, const occ::Mat3 &rotation);
     void to_cartesian(const AOBasis &bspure, const AOBasis &bscart);
     void to_spherical(const AOBasis &bscart, const AOBasis &bspure);
