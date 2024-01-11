@@ -216,6 +216,12 @@ void MolecularOrbitals::update_occupied_orbitals() {
 	occupation.topRows(n_alpha).setConstant(1.0);
 	occupation.block(n_ao, 0, n_beta, 1).setConstant(1.0);
         break;
+    case G:
+        Cocc = occ::qm::orb::occupied_restricted(C, n_alpha);
+	occupation = Vec::Zero(n_ao * 2);
+	occupation.topRows(n_alpha).setConstant(1.0);
+	occupation.block(n_ao, 0, n_beta, 1).setConstant(1.0);
+        break;
     default:
         Cocc = occ::qm::orb::occupied_restricted(C, n_alpha);
 	occupation = Vec::Zero(n_ao);
