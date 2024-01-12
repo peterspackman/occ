@@ -1,5 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <fmt/ostream.h>
 #include <iostream>
 #include <occ/core/linear_algebra.h>
@@ -18,6 +19,7 @@ using occ::Mat3;
 using occ::qm::HartreeFock;
 using occ::qm::SpinorbitalKind;
 using occ::util::all_close;
+using Catch::Matchers::WithinAbs;
 
 // Basis
 
@@ -301,6 +303,25 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
         scf.convergence_settings.energy_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
+    }
+}
+
+TEST_CASE("Water smearing", "[scf]") {
+    std::vector<occ::core::Atom> atoms{
+        {8, -1.32695761, -0.10593856, 0.01878821},
+        {1, -1.93166418, 1.60017351, -0.02171049},
+        {1, 0.48664409, 0.07959806, 0.00986248}};
+
+    SECTION("def2-tzvp gaussian smearing") {
+        auto obs = occ::qm::AOBasis::load(atoms, "def2-tzvp");
+        obs.set_pure(true);
+        HartreeFock hf(obs);
+        occ::scf::SCF<HartreeFock> scf(hf);
+        scf.convergence_settings.energy_threshold = 1e-8;
+        scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Gaussian;
+        double e = scf.compute_scf_energy();
+        REQUIRE_THAT(e, WithinAbs(-76.05865498037967, 1e-5));
+        REQUIRE_THAT(scf.mo.smearing.entropy, WithinAbs(7.96170908141554e-06, 1e-5));
     }
 }
 

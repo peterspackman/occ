@@ -1,9 +1,11 @@
 #pragma once
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/orbital_smearing.h>
 
 namespace occ::qm {
 
 class AOBasis;
+
 
 struct MolecularOrbitals {
     MolecularOrbitals(const MolecularOrbitals &) = default;
@@ -16,6 +18,8 @@ struct MolecularOrbitals {
     Mat D;
     Vec energies;
     Vec occupation;
+    OrbitalSmearing smearing;
+
     void update(const Mat &ortho, const Mat &potential);
     void update_density_matrix();
     void update_occupied_orbitals();
@@ -50,5 +54,6 @@ struct MolecularOrbitals {
     symmetrically_orthonormalized(const Mat &overlap_matrix) const;
     MolecularOrbitals as_kind(SpinorbitalKind) const;
 };
+
 
 } // namespace occ::qm
