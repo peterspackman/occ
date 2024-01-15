@@ -110,14 +110,24 @@ class LineSearch {
     void set_right(double x) { m_bracket.xb = x; }
     double right() const { return m_bracket.xb; }
 
+    void set_guess(double x) { m_have_guess = true; m_bracket.xc = x; }
+    double guess() const { return m_bracket.xc; }
+
   private:
     void optimize() {
-      m_bracket.bracket_function(m_func);
-
-      if (m_bracket.num_calls == 0) {
-         occ::log::error("Bracketing failed");
-         return;
+      if(m_have_guess) {
+        m_bracket.fa = m_func(m_bracket.xa);
+        m_bracket.fb = m_func(m_bracket.xb);
+        m_bracket.fc = m_func(m_bracket.xc);
       }
+      else {
+        m_bracket.bracket_function(m_func);
+        if (m_bracket.num_calls == 0) {
+          occ::log::error("Bracketing failed");
+          return;
+        }
+      }
+
 
       auto xa = m_bracket.xa;
       auto xb = m_bracket.xb;
@@ -234,10 +244,12 @@ class LineSearch {
 
     Bracket1D<Function> m_bracket;
     Function &m_func;
+    bool m_have_guess{false};
     double m_tolerance{1e-8};
     size_t m_max_iter{500};
     double m_xmin{0.0};
     double m_fval{0.0};
+    double m_guess{0.0};
     size_t m_iter{0};
     size_t m_num_calls{0};
 };

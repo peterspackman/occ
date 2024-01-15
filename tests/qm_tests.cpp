@@ -306,22 +306,147 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
     }
 }
 
-TEST_CASE("Water smearing", "[scf]") {
+
+TEST_CASE("Smearing functions", "[smearing]") {
+    occ::qm::MolecularOrbitals mo;
+    mo.energies = occ::Vec(43);
+
+    mo.energies <<
+        -20.7759836,   -1.75714997,  -0.6755331,   -0.47838917,  -0.34397101,
+         0.39919219,    0.53017716,   0.84601736,   0.91026033,   0.93422352,
+         0.93541066,    1.07197252,   1.1152775,    1.74421062,   1.78568455,
+         1.87179641,    2.12778396,   2.22487896,   2.41855156,   2.63997607,
+         2.69396251,    2.72429482,   2.94010404,   2.99844011,   3.27233171,
+         3.29230622,    3.30213655,   3.40824971,   4.35313802,   4.62532886,
+         5.78639639,    5.89978906,   6.07407985,   6.11565547,   6.16161542,
+         6.80026627,    6.96537841,   7.04215449,   7.10247792,   7.17168709,
+         7.63716226,    7.75364544,  45.00621777;
+
+
+
+    SECTION("Fermi") {
+        occ::qm::OrbitalSmearing smearing;
+        smearing.sigma = 0.095;
+        smearing.mu = -0.06;
+        smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
+
+        occ::Vec res = smearing.calculate_fermi_occupations(mo);
+
+        occ::Vec expected(43);
+        expected <<
+           1.00000000e+00, 9.99999983e-01, 9.98467461e-01, 9.87920549e-01,
+           9.52082391e-01, 7.89497886e-03, 2.00042906e-03, 7.21259277e-05,
+           3.66791050e-05, 2.85019162e-05, 2.81479763e-05, 6.68591892e-06,
+           4.23830834e-06, 5.64954547e-09, 3.65102304e-09, 1.47486548e-09,
+           9.96552046e-11, 3.58614765e-11, 4.66927912e-12, 4.53944824e-13,
+           2.57159713e-13, 1.86869380e-13, 1.92735534e-14, 1.04298300e-14,
+           5.83681688e-16, 4.73001131e-16, 4.26503520e-16, 1.39580290e-16,
+           0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+           0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+           0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+           0.00000000e+00, 0.00000000e+00, 0.00000000e+00;
+
+        REQUIRE(all_close(res, expected, 1e-5, 1e-5));
+
+    }
+
+    SECTION("Gaussian") {
+        occ::qm::OrbitalSmearing smearing;
+        smearing.sigma = 0.095;
+        smearing.mu = -0.06;
+        smearing.kind = occ::qm::OrbitalSmearing::Kind::Gaussian;
+
+        occ::Vec res = smearing.calculate_gaussian_occupations(mo);
+
+        occ::Vec expected(43);
+        expected <<
+            1.00000000e+000, 1.00000000e+000, 1.00000000e+000, 1.00000000e+000,
+            9.99988176e-001, 4.07898292e-012, 7.77329733e-019, 9.27770037e-042,
+            1.37265551e-047, 7.27343202e-050, 5.59196626e-050, 5.15237259e-064,
+            7.72244086e-069, 3.37305069e-159, 1.71315914e-166, 3.63807591e-182,
+            5.75589727e-233, 6.97443443e-254, 2.59504226e-298, 0.00000000e+000,
+            0.00000000e+000, 0.00000000e+000, 0.00000000e+000, 0.00000000e+000,
+            0.00000000e+000, 0.00000000e+000, 0.00000000e+000, 0.00000000e+000,
+            0.00000000e+000, 0.00000000e+000, 0.00000000e+000, 0.00000000e+000,
+            0.00000000e+000, 0.00000000e+000, 0.00000000e+000, 0.00000000e+000,
+            0.00000000e+000, 0.00000000e+000, 0.00000000e+000, 0.00000000e+000,
+            0.00000000e+000, 0.00000000e+000, 0.00000000e+000;
+        REQUIRE(all_close(res, expected, 1e-5, 1e-5));
+
+    }
+
+    SECTION("Linear") {
+        occ::qm::OrbitalSmearing smearing;
+        smearing.sigma = 0.5;
+        smearing.mu = -0.02;
+        smearing.kind = occ::qm::OrbitalSmearing::Kind::Linear;
+
+        occ::Vec res = smearing.calculate_linear_occupations(mo);
+
+        occ::Vec expected(43);
+        expected <<
+           1.        , 1.        , 1.        , 0.99653708, 0.93802759,
+           0.0130598 , 0.        , 0.        , 0.        , 0.        ,
+           0.        , 0.        , 0.        , 0.        , 0.        ,
+           0.        , 0.        , 0.        , 0.        , 0.        ,
+           0.        , 0.        , 0.        , 0.        , 0.        ,
+           0.        , 0.        , 0.        , 0.        , 0.        ,
+           0.        , 0.        , 0.        , 0.        , 0.        ,
+           0.        , 0.        , 0.        , 0.        , 0.        ,
+           0.        , 0.        , 0.;
+
+        REQUIRE(all_close(res, expected, 1e-5, 1e-5));
+
+    }
+}
+
+TEST_CASE("Water smearing", "[smearing]") {
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
         {1, 0.48664409, 0.07959806, 0.00986248}};
 
-    SECTION("def2-tzvp gaussian smearing") {
-        auto obs = occ::qm::AOBasis::load(atoms, "def2-tzvp");
-        obs.set_pure(true);
+    SECTION("fermi") {
+        auto obs = occ::qm::AOBasis::load(atoms, "sto-3g");
         HartreeFock hf(obs);
         occ::scf::SCF<HartreeFock> scf(hf);
-        scf.convergence_settings.energy_threshold = 1e-8;
-        scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Gaussian;
+
+        scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
+        scf.mo.smearing.sigma = 0.095;
+
         double e = scf.compute_scf_energy();
-        REQUIRE_THAT(e, WithinAbs(-76.05865498037967, 1e-5));
+        REQUIRE_THAT(e, WithinAbs(-75.89870176985075, 1e-5));
+        REQUIRE_THAT(scf.mo.smearing.mu, WithinAbs(-0.15727158, 1e-5));
+        REQUIRE_THAT(scf.mo.smearing.entropy, WithinAbs(0.4192266753490035, 1e-5));
+    }
+
+
+    SECTION("def2-tzvp gaussian smearing") {
+        auto obs = occ::qm::AOBasis::load(atoms, "def2-svp");
+        HartreeFock hf(obs);
+        occ::scf::SCF<HartreeFock> scf(hf);
+
+        scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Gaussian;
+        scf.mo.smearing.sigma = 0.095;
+        double e = scf.compute_scf_energy();
+        REQUIRE_THAT(e, WithinAbs(-75.96195505230332, 1e-5));
+        REQUIRE_THAT(scf.mo.smearing.mu, WithinAbs(-0.16158451, 1e-5));
         REQUIRE_THAT(scf.mo.smearing.entropy, WithinAbs(7.96170908141554e-06, 1e-5));
+    }
+
+
+    SECTION("def2-tzvp linear smearing") {
+        auto obs = occ::qm::AOBasis::load(atoms, "def2-svp");
+        HartreeFock hf(obs);
+        occ::scf::SCF<HartreeFock> scf(hf);
+
+        scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Linear;
+        scf.mo.smearing.sigma = 0.095;
+
+        double e = scf.compute_scf_energy();
+        REQUIRE_THAT(e, WithinAbs(-75.96195542573669, 1e-5));
+        REQUIRE_THAT(scf.mo.smearing.mu, WithinAbs(-0.05052896, 1e-5));
+        REQUIRE_THAT(scf.mo.smearing.entropy, WithinAbs(0.0010295636988847288, 1e-5));
     }
 }
 
