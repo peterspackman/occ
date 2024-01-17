@@ -78,11 +78,11 @@ var NAVTREEINDEX =
 "namespaceocc_1_1constants.html#ae0a7aca05941fa0a634ebffe288274bb",
 "namespaceocc_1_1interaction.html#a1a221c7ae9914bd537f97657355b28d2",
 "namespaceocc_1_1util.html#a6f51f739edda8b52f57efbf43ccbd104",
-"single__point_8h.html",
-"structocc_1_1geometry_1_1LinearHashedOctree.html#af4bc5a329ba19a7be0a7e9359d2e60ea",
-"structocc_1_1io_1_1IsosurfaceMesh.html#adb7a3805528abd2ea9e53fc71324460f",
-"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a14c97a7c72640362285c633ed9aab4f2",
-"structocc_1_1solvent_1_1SMDSolventParameters.html#a610ccd5c330eba2d83fcf0f1ac5193d2"
+"sht_8h.html",
+"structocc_1_1geometry_1_1LinearHashedOctree.html#af2455ae67cdee78d34db8830bd2124ea",
+"structocc_1_1io_1_1IsosurfaceMesh.html#a95ebbf4a6c504ae75c7b93a27e65bb1e",
+"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a0bd01d41a88a0a6eef09aaef19ed532f",
+"structocc_1_1solvent_1_1COSMO_1_1Result.html#a91804df1e591a42d31de7ab412eee3a1"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

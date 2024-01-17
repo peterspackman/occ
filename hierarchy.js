@@ -131,6 +131,7 @@ var hierarchy =
     [ "occ::core::numpy::NumpyArray", "structocc_1_1core_1_1numpy_1_1NumpyArray.html", null ],
     [ "occ::io::OccInput", "structocc_1_1io_1_1OccInput.html", null ],
     [ "occ::main::OccPairInput", "structocc_1_1main_1_1OccPairInput.html", null ],
+    [ "occ::qm::Oniom< HighLevel, LowLevel >", "structocc_1_1qm_1_1Oniom.html", null ],
     [ "occ::qm::cint::Optimizer", "classocc_1_1qm_1_1cint_1_1Optimizer.html", null ],
     [ "occ::io::OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", null ],
     [ "ostream_formatter", null, [

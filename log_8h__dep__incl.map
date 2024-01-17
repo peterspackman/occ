@@ -1,11 +1,12 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/log.h" name="/home/runner/work/occ/occ/include/occ/core/log.h">
-<area shape="rect" id="node1" title=" " alt="" coords="429,5,622,47"/>
-<area shape="rect" id="node2" href="$linear__hashed__octree_8h.html" title=" " alt="" coords="51,95,243,151"/>
+<area shape="rect" id="node1" title=" " alt="" coords="506,5,699,47"/>
+<area shape="rect" id="node2" href="$linear__hashed__octree_8h.html" title=" " alt="" coords="56,95,248,151"/>
 <area shape="rect" id="node4" href="$gto_8h.html" title=" " alt="" coords="221,213,408,255"/>
-<area shape="rect" id="node8" href="$guess__density_8h.html" title=" " alt="" coords="363,95,555,151"/>
+<area shape="rect" id="node8" href="$guess__density_8h.html" title=" " alt="" coords="373,95,565,151"/>
 <area shape="rect" id="node9" href="$scf_8h.html" title=" " alt="" coords="432,213,616,255"/>
 <area shape="rect" id="node10" href="$integral__engine_8h.html" title=" " alt="" coords="641,95,845,151"/>
-<area shape="rect" id="node14" href="$solvation__correction_8h.html" title=" " alt="" coords="869,95,1046,151"/>
+<area shape="rect" id="node14" href="$oniom_8h.html" title=" " alt="" coords="869,102,1075,143"/>
+<area shape="rect" id="node15" href="$solvation__correction_8h.html" title=" " alt="" coords="1099,95,1277,151"/>
 <area shape="rect" id="node3" href="$linear__hashed__marching__cubes_8h.html" title=" " alt="" coords="5,199,197,269"/>
 <area shape="rect" id="node5" href="$dft_8h.html" title=" " alt="" coords="384,421,563,463"/>
 <area shape="rect" id="node6" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="291,317,461,373"/>

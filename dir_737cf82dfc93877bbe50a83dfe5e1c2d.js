@@ -25,6 +25,9 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "mo.h", "mo_8h.html", [
       [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ]
     ] ],
+    [ "oniom.h", "oniom_8h.html", [
+      [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ]
+    ] ],
     [ "opmatrix.h", "qm_2opmatrix_8h.html", "qm_2opmatrix_8h" ],
     [ "orb.h", "orb_8h.html", "orb_8h" ],
     [ "partitioning.h", "partitioning_8h.html", "partitioning_8h" ],

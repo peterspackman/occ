@@ -1,5 +1,11 @@
 var NAVTREEINDEX15 =
 {
+"structocc_1_1solvent_1_1COSMO_1_1Result.html#a91804df1e591a42d31de7ab412eee3a1":[2,0,1,12,1,0,1],
+"structocc_1_1solvent_1_1COSMO_1_1Result.html#aeb5bd79e92dec387e409657c53ac9019":[2,0,1,12,1,0,2],
+"structocc_1_1solvent_1_1SMDSolventParameters.html":[2,0,1,12,2],
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a1a1d9721c900d3ab2c6ebfb59fb0e459":[2,0,1,12,2,3],
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a1bc6e5f6342353d3d8ae773238310221":[2,0,1,12,2,10],
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a265e4c22704aa43c0bb2086b63ed239c":[2,0,1,12,2,6],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a610ccd5c330eba2d83fcf0f1ac5193d2":[2,0,1,12,2,1],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a6d02b2512e40c71095f8c6e6a6ea2528":[2,0,1,12,2,4],
 "structocc_1_1solvent_1_1SMDSolventParameters.html#a6d12635e594e03497369894436f59981":[2,0,1,12,2,0],
@@ -144,7 +150,7 @@ var NAVTREEINDEX15 =
 "util_8h.html#afc65a7eebcc2d86e81d9ef634fcdeb7e":[3,0,1,0,0,35,1],
 "version_8h.html":[3,0,1,0,7,13],
 "version_8h.html#ae6120cd9d924a194e7f3a1decd5cb6d8":[3,0,1,0,7,13,0],
-"wavefunction_8h.html":[3,0,1,0,8,20],
+"wavefunction_8h.html":[3,0,1,0,8,21],
 "wavefunction__json_8h.html":[3,0,1,0,6,22],
 "wavefunction__json_8h.html#aea99ff092d8022a134859b02bc81a705":[3,0,1,0,6,22,2],
 "wavefunction__json_8h.html#af56a1ad02bf6c763085926a57c0c60f4":[3,0,1,0,6,22,3],

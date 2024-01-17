@@ -1,5 +1,6 @@
 var NAVTREEINDEX13 =
 {
+"structocc_1_1io_1_1IsosurfaceMesh.html#a95ebbf4a6c504ae75c7b93a27e65bb1e":[2,0,1,6,23,2],
 "structocc_1_1io_1_1IsosurfaceMesh.html#adb7a3805528abd2ea9e53fc71324460f":[2,0,1,6,23,3],
 "structocc_1_1io_1_1JsonBasis.html":[2,0,1,6,20],
 "structocc_1_1io_1_1JsonBasis.html#a94da8234322c04e48ddd105b8bbc5d36":[2,0,1,6,20,2],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1main_1_1PairEnergy_1_1Monomer.html#a12f9b43e589fb3b27f57c62c2c8f91cf":[2,0,1,7,16,0,1],
 "structocc_1_1main_1_1PairEnergy_1_1Monomer.html#a170c40b597187b436a34982754e7e36d":[2,0,1,7,16,0,2],
 "structocc_1_1main_1_1PairEnergy_1_1Monomer.html#a7c37ec4ef2b7f38f3c828ba2fc68b3bb":[2,0,1,7,16,0,0],
-"structocc_1_1main_1_1SolvatedSurfaceProperties.html":[2,0,1,7,20],
-"structocc_1_1main_1_1SolvatedSurfaceProperties.html#a0bd01d41a88a0a6eef09aaef19ed532f":[2,0,1,7,20,7]
+"structocc_1_1main_1_1SolvatedSurfaceProperties.html":[2,0,1,7,20]
 };
