@@ -11,6 +11,7 @@
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/oniom.h>
 #include <vector>
 
 using occ::Mat;
@@ -360,4 +361,49 @@ TEST_CASE("Integral gradients", "[integrals]") {
     fmt::print("X:\n{}\n", grad.x);
     fmt::print("Y:\n{}\n", grad.y);
     fmt::print("Z:\n{}\n", grad.z);
+}
+
+TEST_CASE("Oniom ethane", "[oniom]") {
+    using occ::core::Atom;
+    using occ::scf::SCF;
+    std::vector<Atom> atoms {
+	{1, 2.239513249136882, -0.007369927999015981, 1.8661035638534056},
+	{6, 1.4203174061693364, -0.042518815378938354, -0.039495255174213845},
+	{1, 2.205120251808141, 1.5741410315846955, -1.075820515343538},
+	{1, 2.1079883802313657, -1.7629245718671818, -0.9722635783317236},
+	{6, -1.4203174061693364, 0.042518815378938354, 0.039495255174213845},
+	{1, -2.205120251808141, -1.5748969216358768, 1.0746866802667663},
+	{1, -2.108366325256956, 1.762357654328796, 0.9733974134084954},
+	{1, -2.2393242766240866, 0.00831479056299239, -1.8661035638534056}
+    };
+
+    Atom artificial_h1 = atoms[1];
+    artificial_h1.atomic_number = 1;
+    
+    Atom artificial_h2 = atoms[4];
+    artificial_h2.atomic_number = 1;
+
+    std::vector<Atom> methane1{
+	atoms[0], atoms[1], atoms[2], atoms[3], artificial_h2
+    };
+
+    std::vector<Atom> methane2 {
+	artificial_h1, atoms[4], atoms[5], atoms[6], atoms[7]
+    };
+
+    HartreeFock system_low(occ::qm::AOBasis::load(atoms, "STO-3G"));
+    HartreeFock methane1_low(occ::qm::AOBasis::load(methane1, "STO-3G"));
+    HartreeFock methane2_low(occ::qm::AOBasis::load(methane2, "STO-3G"));
+
+    HartreeFock methane1_high(occ::qm::AOBasis::load(methane1, "def2-tzvp"));
+    HartreeFock methane2_high(occ::qm::AOBasis::load(methane2, "def2-tzvp"));
+
+    using Proc = SCF<HartreeFock>;
+    occ::qm::Oniom<Proc, Proc> oniom{
+	{SCF(methane1_high), SCF(methane2_high)},
+	{SCF(methane1_low), SCF(methane2_low)},
+	SCF(system_low)
+    };
+
+    fmt::print("Total energy: {}\n", oniom.compute_scf_energy());
 }

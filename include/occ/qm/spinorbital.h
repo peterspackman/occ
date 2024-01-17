@@ -11,14 +11,14 @@ inline bool get_spinorbital_kind_from_string(const std::string &s,
                                              SpinorbitalKind &sk) {
     std::string lc = occ::util::to_lower_copy(s);
     bool valid = false;
-    if (lc == "r" || "rhf" || lc == "restricted" || lc == "spin-restricted") {
+    if ((lc == "r") || (lc == "rhf") || (lc == "restricted") || (lc == "spin-restricted")) {
         sk = SpinorbitalKind::Restricted;
         valid = true;
-    } else if (lc == "u" || lc == "uhf" || lc == "unrestricted" ||
-               lc == "spin-unrestricted") {
+    } else if ((lc == "u") || (lc == "uhf") || (lc == "unrestricted") ||
+               (lc == "spin-unrestricted")) {
         sk = SpinorbitalKind::Unrestricted;
         valid = true;
-    } else if (lc == "g" || lc == "ghf" || lc == "general") {
+    } else if ((lc == "g") || (lc == "ghf") || (lc == "general")) {
         sk = SpinorbitalKind::General;
         valid = true;
     }

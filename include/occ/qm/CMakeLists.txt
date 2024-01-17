@@ -7,6 +7,7 @@ set(OCC_QM_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/oniom.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/opmatrix.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/orb.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/partitioning.h"

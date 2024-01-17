@@ -212,6 +212,11 @@ double population_difference(const Wavefunction &ABo, const Wavefunction &ABn,
         return 2 * (Ddiff * S_AB).trace();
 
     } else {
+        occ::log::debug("ABo a population: {}", 2 * (occ::qm::block::a(ABo.mo.D) * S_AB).trace());
+        occ::log::debug("ABn a population: {}", 2 * (occ::qm::block::a(ABo.mo.D) * S_AB).trace());
+
+        occ::log::debug("ABo b population: {}", 2 * (occ::qm::block::b(ABo.mo.D) * S_AB).trace());
+        occ::log::debug("ABn b population: {}", 2 * (occ::qm::block::b(ABo.mo.D) * S_AB).trace());
         Mat Ddiff = occ::qm::orb::density_matrix_unrestricted(
             Cocc_diff, ABo.mo.n_alpha, ABo.mo.n_beta);
         return 2 * ((occ::qm::block::a(Ddiff) * S_AB).trace() +
@@ -302,7 +307,16 @@ CEEnergyComponents CEModelInteraction::operator()(Wavefunction &A,
     */
     // no need to XDM for the combined wavefunctions
     //
-    compute_ce_model_energies_int<SpinorbitalKind::Restricted>(ABn, ABo, hf_AB, params_ab);
+    switch(ABn.mo.kind) {
+	case SpinorbitalKind::Restricted:
+	    compute_ce_model_energies_int<SpinorbitalKind::Restricted>(ABn, ABo, hf_AB, params_ab);
+	    break;
+	case SpinorbitalKind::Unrestricted:
+	    compute_ce_model_energies_int<SpinorbitalKind::Unrestricted>(ABn, ABo, hf_AB, params_ab);
+	    break;
+	default:
+	    throw std::runtime_error("Invalid spinorbital kind for CE model energies");
+    }
 
     /*
     fmt::print("J1: {}\n", ABn.J.sum());
