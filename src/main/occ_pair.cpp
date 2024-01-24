@@ -225,7 +225,7 @@ void run_pair_subcommand(OccPairInput const &input) {
     pair_energy.compute();
 
     if (!input.output_json_filename.empty()) {
-	occ::log::debug("Writing JSPN output to {}", input.output_json_filename);
+	occ::log::debug("Writing JSON output to {}", input.output_json_filename);
         write_json(pair_energy, input.output_json_filename);
     }
 }

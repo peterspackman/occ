@@ -3,6 +3,7 @@
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/main/occ_cg.h>
+#include <occ/main/occ_dimers.h>
 #include <occ/main/occ_elat.h>
 #include <occ/main/occ_isosurface.h>
 #include <occ/main/occ_pair.h>
@@ -39,11 +40,15 @@ int main(int argc, char *argv[]) {
     verbosity_option->run_callback_for_default();
     verbosity_option->force_callback();
 
-    auto *scf = occ::main::add_scf_subcommand(app);
+    // add all the subcommands here
     auto *cg = occ::main::add_cg_subcommand(app);
-    auto *pair = occ::main::add_pair_subcommand(app);
+    auto *dimers = occ::main::add_dimers_subcommand(app);
     auto *elat = occ::main::add_elat_subcommand(app);
     auto *iso = occ::main::add_isosurface_subcommand(app);
+    auto *pair = occ::main::add_pair_subcommand(app);
+    auto *scf = occ::main::add_scf_subcommand(app);
+
+    // ensure we have a subcommand
     app.require_subcommand();
 
     constexpr auto *error_format = "exception:\n    {}\nterminating program.\n";

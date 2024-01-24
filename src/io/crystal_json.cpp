@@ -1,5 +1,6 @@
 #include <occ/io/crystal_json.h>
 #include <occ/io/eigen_json.h>
+#include <occ/io/core_json.h>
 
 namespace occ::crystal {
 
@@ -71,6 +72,36 @@ void to_json(nlohmann::json &j, const CrystalAtomRegion &region) {
     j["asymmetric atom index"] = region.asym_idx.transpose();
     j["atomic numbers"] = region.atomic_numbers.transpose();
     j["symmetry operation"] = region.symop.transpose();
+}
+
+
+void to_json(nlohmann::json &j, const CrystalDimers &dimers) {
+    j["generation radius"] = dimers.radius;
+
+    nlohmann::json unique_dimers;
+    for(const auto &dimer: dimers.unique_dimers) {
+	nlohmann::json d = dimer;
+	unique_dimers.push_back(d);
+    }
+
+    nlohmann::json neighbors_json;
+    for(const auto &neighbors: dimers.molecule_neighbors) {
+	nlohmann::json molecule_neighbors;
+	nlohmann::json molecule_neighbor_idxs;
+        for(const auto &[dimer, idx]: neighbors) {
+	    molecule_neighbors.push_back(dimer);
+	    molecule_neighbor_idxs.push_back(idx);
+	}
+
+	nlohmann::json neighbor{
+	    {"dimers", molecule_neighbors},
+	    {"unique dimer index", molecule_neighbor_idxs}
+	};
+	neighbors_json.push_back(neighbor);
+    }
+    
+    j["neighbors"] = neighbors_json;
+
 }
 
 } // namespace occ::crystal

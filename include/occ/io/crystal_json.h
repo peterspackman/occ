@@ -10,5 +10,6 @@ void to_json(nlohmann::json &j, const SpaceGroup &);
 void to_json(nlohmann::json &j, const SymmetryOperation &);
 void to_json(nlohmann::json &j, const UnitCell &);
 void to_json(nlohmann::json &j, const CrystalAtomRegion &);
+void to_json(nlohmann::json &j, const CrystalDimers &);
 
 } // namespace occ::crystal
