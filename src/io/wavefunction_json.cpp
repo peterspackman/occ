@@ -12,6 +12,7 @@ namespace occ::qm {
 void from_json(const nlohmann::json &J, occ::qm::MolecularOrbitals &mo) {
     bool valid_sk = occ::qm::get_spinorbital_kind_from_string(
         J.at("spinorbital kind"), mo.kind);
+    if(! valid_sk) throw std::runtime_error("Found invalid spinorbital kind in JSON");
 
     J.at("alpha electrons").get_to(mo.n_alpha);
     J.at("beta electrons").get_to(mo.n_beta);

@@ -165,7 +165,7 @@ double Surface::depth() const { return m_depth; }
 
 double Surface::d() const { return m_hkl.d(m_crystal_unit_cell.reciprocal()); }
 
-Vec3 Surface::dipole() const { return Vec3(0, 0, 0); }
+Vec3 Surface::dipole() const { return m_dipole; }
 
 void Surface::print() const {
     occ::log::info("({} {} {}) spacing = {:.3f} area = {:.3f}", m_hkl.h,
@@ -186,7 +186,7 @@ generate_surfaces(const Crystal &c,
                   const CrystalSurfaceGenerationParameters &params) {
     std::vector<Surface> result;
     auto f = [&](const HKL &m) {
-        if (!Surface::check_systematic_absence(c, m))
+        if (params.systematic_absences_allowed || !Surface::check_systematic_absence(c, m))
             result.emplace_back(Surface(m, c));
     };
     loop_over_miller_indices(f, c, params);
@@ -230,7 +230,7 @@ bool Surface::faces_are_equivalent(const Crystal &crystal, const HKL &hkl1,
 }
 
 std::vector<Molecule> Surface::find_molecule_cell_translations(
-    const std::vector<Molecule> &mols, double depth, double cut_offset) const {
+    const std::vector<Molecule> &mols, double depth, double cut_offset) {
     const double epsilon = 1e-3;
     const int num_mols = mols.size();
     std::vector<Molecule> result;
@@ -361,19 +361,19 @@ std::vector<Molecule> Surface::find_molecule_cell_translations(
                          return fracl(2) < fracr(2);
                      });
 
-    Vec3 dipole = Vec3::Zero();
+    m_dipole = Vec3::Zero();
     for (const auto &mol : result) {
         const auto &q = partial_charges[mol.unit_cell_molecule_idx()];
         const auto &pos = mol.positions();
         for (int i = 0; i < pos.cols(); i++) {
-            dipole.array() += pos.col(i).array() * q(i);
+            m_dipole.array() += pos.col(i).array() * q(i);
         }
     }
 
-    occ::log::debug("Dipole (EEM charges): {:.3f} {:.3f} {:.3f}", dipole(0),
-                    dipole(1), dipole(2));
+    occ::log::debug("Dipole (EEM charges): {:.3f} {:.3f} {:.3f}", m_dipole(0),
+                    m_dipole(1), m_dipole(2));
 
-    if (dipole.norm() > 1e-2)
+    if (m_dipole.norm() > 1e-2)
         bool valid = false;
 
     return result;
@@ -469,7 +469,7 @@ SurfaceCutResult::SurfaceCutResult(const CrystalDimers &dimers) {
 }
 
 SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
-    const CrystalDimers &crystal_dimers, double cut_offset) const {
+    const CrystalDimers &crystal_dimers, double cut_offset) {
     const double epsilon = 1e-3;
     SurfaceCutResult result(crystal_dimers);
     result.cut_offset = cut_offset;
@@ -509,8 +509,8 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
     occ::log::debug("Origin: [{:9.3f}, {:9.3f}, {:9.3f}]", origin(0), origin(1),
                     origin(2));
 
-    const double upper_bound = 1.0 + epsilon + cut_offset / depth_scale;
-    const double lower_bound = 0.0 + epsilon + cut_offset / depth_scale;
+    const double upper_bound = (1.0 + cut_offset / depth_scale) + epsilon;
+    const double lower_bound = (cut_offset / depth_scale) - epsilon;
     Mat3 basis_inverse = basis.inverse();
     result.basis = basis;
 
@@ -602,7 +602,7 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
                 cut_count.above++;
                 cut_count.energy_above += e;
                 neighbor_counts_above[neighbor_index]++;
-            } else if (frac_coords(2) < lower_bound) {
+            } else if (frac_coords(2) <= lower_bound) {
                 region = 2;
                 cut_count.below++;
                 cut_count.energy_below += e;
@@ -651,31 +651,45 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
                                               total_cut_count.energy_above -
                                               total_cut_count.energy_below);
     return result;
-} // namespace occ::crystal
-
-std::vector<double>
-Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
-                       double epsilon) const {
+}
+std::vector<double> Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions, double epsilon) const {
     std::vector<double> result;
-    result.reserve(unique_positions.cols());
+    result.reserve(unique_positions.cols() - 1); // Adjust for between positions
+
     Mat3 basis = basis_matrix(1.0);
     Mat3 basis_inverse = basis.inverse();
 
     Mat3N pos_frac = basis_inverse * unique_positions;
-    for (int i = 0; i < unique_positions.cols(); i++) {
-        double cut = std::fmod(pos_frac(2, i) + 7.0, 1.0);
-        result.push_back(cut);
-    }
-    std::sort(result.begin(), result.end());
-    auto last = std::unique(
-        result.begin(), result.end(),
-        [epsilon](double a, double b) { return std::abs(a - b) < epsilon; });
 
+    // Get sorted distances along surface normal
+    std::vector<double> zpos(pos_frac.cols());
+    for (int i = 0; i < pos_frac.cols(); ++i) {
+	zpos[i] = pos_frac(2, i);
+    }
+    std::sort(zpos.begin(), zpos.end());
+
+    // Calculate midpoints between unique distances along normal
+    // ensuring we're between 0 and 1
+    for (size_t i = 0; i < zpos.size() - 1; ++i) {
+	double mid = 0.5 * (zpos[i] + zpos[i + 1]);
+	result.push_back(std::fmod(mid + 7.0, 1.0));
+    }
+
+    // Add a cut between the last and first (periodic) 
+    double mid = 0.5 * (zpos.back() + (zpos.front() + 1.0));
+    result.push_back(std::fmod(mid + 7.0, 1.0)); // Ensure within [0,1)
+
+    // Remove duplicates
+    std::sort(result.begin(), result.end());
+    auto last = std::unique(result.begin(), result.end(),
+			    [epsilon](double a, double b) { return std::abs(a - b) < epsilon; });
     result.erase(last, result.end());
-    std::transform(
-        result.begin(), result.end(), result.begin(),
-        [](double value) { return std::round(value * 1000000.0) / 1000000.0; });
+
+    // Round to mitigate floating-point arithmetic issues
+    std::transform(result.begin(), result.end(), result.begin(),
+		   [](double value) { return std::round(value * 1000000.0) / 1000000.0; });
 
     return result;
 }
+
 } // namespace occ::crystal

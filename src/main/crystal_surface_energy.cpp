@@ -97,9 +97,13 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
                                         (surf.area() * 2);
                 if (std::abs(surface_energy - surface_energy_a) > tolerance ||
                     std::abs(surface_energy - surface_energy_b) > tolerance) {
+		    const auto &dipole = surf.dipole();
                     log::warn(
-                        "Discrepency in surface energies: bulk - slab yields "
-                        "different results to cut above or below");
+                        "Discrepency in surface energies for ({} {} {}) cut {:.3f}",
+			hkl.h, hkl.k, hkl.l, cut
+		    );
+		    log::warn("bulk - slab yields different results to cut above or below");
+		    log::warn("Surface dipole: D = ({:.3f}, {:.3f}, {:.3f})", dipole(0), dipole(1), dipole(2));
                 }
 
                 log::debug("Surface energy (S) (J/m^2)  = {:12.6f}",

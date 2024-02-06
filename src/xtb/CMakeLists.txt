@@ -56,4 +56,7 @@ target_include_directories(occ_tblite PUBLIC
 )
 
 target_compile_features(occ_tblite PUBLIC cxx_std_20)
+target_compile_definitions(occ_tblite PUBLIC OCC_HAVE_TBLITE)
+
+target_link_libraries(occ_xtb PUBLIC occ_tblite)
 endif()
