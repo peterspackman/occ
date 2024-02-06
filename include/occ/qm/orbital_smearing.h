@@ -18,7 +18,10 @@ struct OrbitalSmearing {
     double sigma{0.095};
     double entropy{0.0};
     void smear_orbitals(MolecularOrbitals &);
+
     double calculate_entropy(const MolecularOrbitals &) const;
+    inline double ec_entropy() const { return -sigma * entropy; }
+
     Vec calculate_fermi_occupations(const MolecularOrbitals &) const;
     Vec calculate_gaussian_occupations(const MolecularOrbitals &) const;
     Vec calculate_linear_occupations(const MolecularOrbitals &) const;

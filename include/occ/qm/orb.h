@@ -11,7 +11,7 @@ inline auto occupied_restricted(Eigen::Ref<const Mat> orbitals,
 
 inline auto occupied_restricted_fractional(Eigen::Ref<const Mat> orbitals,
                                            Eigen::Ref<const Vec> occupations) {
-    return orbitals * occupations.asDiagonal();
+    return orbitals * occupations.array().sqrt().matrix().asDiagonal();
 }
 
 inline auto occupied_unrestricted(Eigen::Ref<const Mat> orbitals,

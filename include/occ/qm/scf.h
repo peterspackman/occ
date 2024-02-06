@@ -485,7 +485,7 @@ template <typename Procedure> struct SCF {
                 next_reset_threshold = diis_error / 10;
                 log::debug("starting incremental fock build");
             }
-            if (reset_incremental_fock_formation ||
+            if (true || reset_incremental_fock_formation ||
                 not incremental_Fbuild_started) {
                 F = H;
                 D_diff = mo.D;
