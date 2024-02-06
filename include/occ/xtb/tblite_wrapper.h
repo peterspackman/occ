@@ -8,6 +8,7 @@ extern "C" {
 #include "tblite/calculator.h"
 #include "tblite/error.h"
 #include "tblite/structure.h"
+#include "tblite/container.h"
 #include "tblite/version.h"
 }
 
@@ -36,6 +37,8 @@ class TbliteCalculator {
     void set_max_iterations(int iterations);
     void set_temperature(double temp);
     void set_mixer_damping(double damping_factor);
+
+    bool set_solvent(const std::string &);
 
     Vec charges() const;
     Mat bond_orders() const;
@@ -68,6 +71,7 @@ class TbliteCalculator {
     tblite_result m_tb_result{nullptr};
     tblite_structure m_tb_structure{nullptr};
     tblite_calculator m_tb_calc{nullptr};
+    tblite_container m_solvent_container{nullptr};
 };
 
 std::string tblite_version();

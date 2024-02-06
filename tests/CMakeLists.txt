@@ -1,7 +1,7 @@
 CPMAddPackage(
     NAME catch
     GITHUB_REPOSITORY "catchorg/Catch2"
-    GIT_TAG v3.1.0
+    GIT_TAG v3.5.2
 )
 
 list(APPEND CMAKE_MODULE_PATH "${catch_SOURCE_DIR}/extras")
@@ -55,3 +55,7 @@ catch_discover_tests(solvent_tests)
 add_executable(xdm_tests "${CMAKE_CURRENT_SOURCE_DIR}/xdm_tests.cpp")
 target_link_libraries(xdm_tests PRIVATE occ_xdm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(xdm_tests)
+
+add_executable(xtb_tests "${CMAKE_CURRENT_SOURCE_DIR}/xtb_tests.cpp")
+target_link_libraries(xtb_tests PRIVATE occ_xtb Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(xtb_tests)

@@ -54,11 +54,11 @@ class Surface {
     std::vector<Molecule>
     find_molecule_cell_translations(const std::vector<Molecule> &unit_cell_mols,
                                     double depth,
-                                    double cut_offset = 0.0) const;
+                                    double cut_offset = 0.0);
 
     SurfaceCutResult
     count_crystal_dimers_cut_by_surface(const CrystalDimers &,
-                                        double cut_offset = 0.0) const;
+                                        double cut_offset = 0.0);
 
     std::vector<double> possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
                                       double epsilon = 1e-6) const;
@@ -73,6 +73,7 @@ class Surface {
     Vec3 m_a_vector;
     Vec3 m_b_vector;
     Vec3 m_depth_vector;
+    Vec3 m_dipole{0.0, 0.0, 0.0};
     double m_angle{0.0};
 };
 
@@ -80,6 +81,7 @@ struct CrystalSurfaceGenerationParameters {
     double d_min{0.1};
     double d_max{1.0};
     bool unique{true};
+    bool systematic_absences_allowed{true};
 };
 
 std::vector<Surface>

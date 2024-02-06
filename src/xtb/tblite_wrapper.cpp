@@ -3,7 +3,7 @@
 #include <fmt/core.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
-#include <occ/xtb/xtb_wrapper.h>
+#include <occ/xtb/tblite_wrapper.h>
 
 using occ::core::Dimer;
 using occ::core::Molecule;
@@ -237,6 +237,31 @@ Crystal TbliteCalculator::to_crystal() const {
 Molecule TbliteCalculator::to_molecule() const {
     return Molecule(m_atomic_numbers,
                     m_positions_bohr / occ::units::BOHR_TO_ANGSTROM);
+}
+
+bool TbliteCalculator::set_solvent(const std::string &solvent_name) {
+
+    // TODO currently the api doesn't expose the information required to
+    // get the solvation free energy...
+    // So we're missing the self energy of the container for example and
+    // only have the internal energy of the wavefunction.
+    
+    std::string str_copy = solvent_name;
+    occ::log::debug("Constructing container for solvent='{}'", solvent_name);
+    m_solvent_container = tblite_new_cpcm_solvation_solvent(m_tb_ctx, m_tb_structure, m_tb_calc, &str_copy.front());
+    if (tblite_check_context(m_tb_ctx)) {
+	occ::log::error("Failure creating solvent container in tblite");
+        return false;
+    }
+
+    tblite_calculator_push_back(m_tb_ctx, m_tb_calc, &m_solvent_container);
+
+    if (tblite_check_context(m_tb_ctx)) {
+	occ::log::error("Failure in pushing back solvent container in tblite");
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace occ::xtb
