@@ -375,6 +375,8 @@ TEST_CASE("H2 smearing", "[smearing]") {
         -0.25006385, -0.26093526, -0.2633199 , -0.2638024 , -0.26389139,
         -0.26390591;
 
+    occ::Vec energies(16);
+
     for(int i = 0; i < separations.rows(); i++) {
 	std::vector<occ::core::Atom> atoms{
 	    {1, 0.0, 0.0, 0.0},
@@ -388,14 +390,12 @@ TEST_CASE("H2 smearing", "[smearing]") {
         scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
         scf.mo.smearing.sigma = 0.095;
 
-        double e = scf.compute_scf_energy();
+        energies(i) = scf.compute_scf_energy();
 
-
-        REQUIRE_THAT(e, WithinAbs(expected_energies(i), 1e-5));
+        REQUIRE_THAT(energies(i), WithinAbs(expected_energies(i), 1e-5));
         REQUIRE_THAT(scf.mo.smearing.ec_entropy(), 
 		     WithinAbs(expected_correlations(i), 1e-5));
     }
-
 }
 
 occ::Mat3N atomic_gradients(const occ::Mat &D, const occ::qm::MatTriple &grad,
