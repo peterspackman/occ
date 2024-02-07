@@ -134,6 +134,9 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                     config->basis.df_name, "basis set");
     scf->add_flag("--spherical", config->basis.spherical,
                   "use spherical basis sets");
+
+    scf->add_option("--orbital-smearing-sigma,--orbital_smearing_sigma",
+		    config->method.orbital_smearing_sigma, "Orbital smearing sigma");
     // point charges
     CLI::Option *pc_option = scf->add_option(
         "--point-charges,--point_charge_file",

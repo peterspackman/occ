@@ -50,6 +50,10 @@ void print_configuration(const Molecule &m, const OccInput &config) {
     log::info("{: <20s} {: >20d}", "Multiplicity",
               config.electronic.multiplicity);
 
+    if(config.method.orbital_smearing_sigma != 0.0) {
+	log::info("{: <20s} {: >12.5f}", "Orbital smearing sigma", config.method.orbital_smearing_sigma);
+    }
+
     log::info("{:-<72s}", fmt::format("Geometry '{}' (au)  ", config.filename));
     for (const auto &atom : m.atoms()) {
         log::info("{:^3s} {:12.6f} {:12.6f} {:12.6f}",
@@ -99,8 +103,14 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
     scf.set_charge_multiplicity(config.electronic.charge,
                                 config.electronic.multiplicity);
     scf.set_point_charges(config.geometry.point_charges);
-    if (!config.basis.df_name.empty())
+    if (!config.basis.df_name.empty()) {
         scf.convergence_settings.incremental_fock_threshold = 0.0;
+    }
+
+    if(config.method.orbital_smearing_sigma != 0.0) {
+	scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
+	scf.mo.smearing.sigma = config.method.orbital_smearing_sigma;
+    }
 
     double e = scf.compute_scf_energy();
     if constexpr (std::is_same<T, DFT>::value) {
@@ -111,6 +121,13 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
             log::info("Corrected total energy:          {: 20.12f}", e);
         }
     }
+
+    if(config.method.orbital_smearing_sigma != 0.0) {
+	log::info("Correlation entropy approx.      {: 20.12f}", scf.mo.smearing.ec_entropy());
+	log::info("Free energy                      {: 20.12f}", e + scf.mo.smearing.ec_entropy());
+	log::info("Energy (zero point)              {: 20.12f}", e + 0.5 * scf.mo.smearing.ec_entropy());
+    }
+
     return scf.wavefunction();
 }
 
