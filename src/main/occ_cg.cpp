@@ -615,11 +615,13 @@ class CEModelCrystalGrowthCalculator {
 
         occ::log::warn("Neighbors for asymmetric molecule {}", molname);
 
-        occ::log::warn("nn {:>7s} {:>7s} {:>20s} "
+        occ::log::warn("nn {:>3s} {:>7s} {:>7s} {:>20s} "
                        "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}",
+		       "id",
                        "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA", "E_S",
                        "E_nn", "E_int");
-        occ::log::warn(std::string(88, '='));
+
+        occ::log::warn(std::string(91, '='));
 
         size_t j = 0;
         occ::main::EnergyTotal total;
@@ -634,7 +636,7 @@ class CEModelCrystalGrowthCalculator {
         total.solution_term = surface_properties.esolv * AU_TO_KJ_PER_MOL;
 
         const std::string row_fmt_string =
-            " {} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
+            " {} {:>3d} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
             "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}";
 
         for (const auto &[dimer, unique_idx] : full_neighbors) {
@@ -682,13 +684,13 @@ class CEModelCrystalGrowthCalculator {
             solvent_term.total = solvent_neighbor_contribution.total_kjmol();
 
             if (is_nearest_neighbor) {
-                occ::log::warn(fmt::runtime(row_fmt_string), "|", rn, rc,
+                occ::log::warn(fmt::runtime(row_fmt_string), "|", unique_idx, rn, rc,
                                symmetry_string, e.total_kjmol(),
                                solvent_term.ab, solvent_term.ba,
                                solvent_term.total, crystal_contribution,
                                interaction_energy);
             } else {
-                occ::log::debug(fmt::runtime(row_fmt_string), " ", rn, rc,
+                occ::log::debug(fmt::runtime(row_fmt_string), " ", unique_idx, rn, rc,
                                 symmetry_string, e.total_kjmol(),
                                 solvent_term.ab, solvent_term.ba,
                                 solvent_term.total, crystal_contribution,
@@ -948,7 +950,7 @@ class XTBCrystalGrowthCalculator {
             AU_TO_KJ_PER_MOL;
 
         const std::string row_fmt_string =
-            " {} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
+            " {} {:>3s} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
             "{: 7.2f} {: 7.2f} {: 7.2f}";
 
         double dimers_solv_total = 0.0;
@@ -968,11 +970,12 @@ class XTBCrystalGrowthCalculator {
 
         occ::log::warn("Neighbors for asymmetric molecule {}", molname);
 
-        occ::log::warn("nn {:>7s} {:>7s} {:>20s} "
+        occ::log::warn("nn {:>3s} {:>7s} {:>7s} {:>20s} "
                        "{:>7s} {:>7s} {:>7s} {:>7s}",
+		       "id",
                        "Rn", "Rc", "Symop", "E_crys", "E_solv", "E_nn",
                        "E_int");
-        occ::log::warn(std::string(88, '='));
+        occ::log::warn(std::string(91, '='));
 
         size_t j = 0;
         for (const auto &[dimer, unique_idx] : full_neighbors) {
@@ -1006,11 +1009,11 @@ class XTBCrystalGrowthCalculator {
             }
 
             if (is_nearest_neighbor) {
-                occ::log::warn(fmt::runtime(row_fmt_string), "|", rn, rc,
+                occ::log::warn(fmt::runtime(row_fmt_string), "|", unique_idx, rn, rc,
                                symmetry_string, e, solvent_term.total,
                                crystal_contribution, interaction_energy);
             } else {
-                occ::log::debug(fmt::runtime(row_fmt_string), " ", rn, rc,
+                occ::log::debug(fmt::runtime(row_fmt_string), " ", unique_idx, rn, rc,
                                 symmetry_string, e, solvent_term.total,
                                 crystal_contribution, interaction_energy);
             }
