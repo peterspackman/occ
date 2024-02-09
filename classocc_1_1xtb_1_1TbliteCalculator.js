@@ -22,6 +22,7 @@ var classocc_1_1xtb_1_1TbliteCalculator =
     [ "set_max_iterations", "classocc_1_1xtb_1_1TbliteCalculator.html#a80788532d8740f658b0394adc6277d88", null ],
     [ "set_mixer_damping", "classocc_1_1xtb_1_1TbliteCalculator.html#ae23775b0bdecaf90a7ffe0936cf6d317", null ],
     [ "set_num_unpaired_electrons", "classocc_1_1xtb_1_1TbliteCalculator.html#a79f692e204cf635e570cb77f41b06cb4", null ],
+    [ "set_solvent", "classocc_1_1xtb_1_1TbliteCalculator.html#a42ecdd363c747b600be2d3fe9f8bbe6d", null ],
     [ "set_temperature", "classocc_1_1xtb_1_1TbliteCalculator.html#a7aadef898ec8f2ea3348b999f20f2ca3", null ],
     [ "single_point_energy", "classocc_1_1xtb_1_1TbliteCalculator.html#af77a804389306046a8c8897e78aec088", null ],
     [ "to_crystal", "classocc_1_1xtb_1_1TbliteCalculator.html#a49845610b4095d10b602dc2d11136901", null ],

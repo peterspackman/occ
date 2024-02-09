@@ -15,6 +15,7 @@ var namespaceocc_1_1main =
     [ "CGDimer", "structocc_1_1main_1_1CGDimer.html", "structocc_1_1main_1_1CGDimer" ],
     [ "EnergyTotal", "structocc_1_1main_1_1EnergyTotal.html", "structocc_1_1main_1_1EnergyTotal" ],
     [ "CGResult", "structocc_1_1main_1_1CGResult.html", "structocc_1_1main_1_1CGResult" ],
+    [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
     [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
     [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
     [ "PairEnergy", "structocc_1_1main_1_1PairEnergy.html", "structocc_1_1main_1_1PairEnergy" ],
@@ -32,6 +33,7 @@ var namespaceocc_1_1main =
       [ "ElectronDensity", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8dad47101755289809d537b90d5f1737add", null ]
     ] ],
     [ "add_cg_subcommand", "namespaceocc_1_1main.html#a1972f6336fcde6853a48a7f7faa57172", null ],
+    [ "add_dimers_subcommand", "namespaceocc_1_1main.html#aaeed2365b00deca734218b96303b1cea", null ],
     [ "add_elat_subcommand", "namespaceocc_1_1main.html#a7eb1b77b98bb6ae47077f8c955b6c755", null ],
     [ "add_isosurface_subcommand", "namespaceocc_1_1main.html#aa5d6c4b53cd9a8369581a8d2d6f5c111", null ],
     [ "add_pair_subcommand", "namespaceocc_1_1main.html#a7a2d00ec80ed8226b66219510afa4c21", null ],
@@ -52,6 +54,7 @@ var namespaceocc_1_1main =
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],
     [ "run_cg", "namespaceocc_1_1main.html#a84a13fde7a5f757cfe4d3b92a93c73d8", null ],
     [ "run_cg_subcommand", "namespaceocc_1_1main.html#aa3e66b684794acfcab5f0c1b58aee3e1", null ],
+    [ "run_dimers_subcommand", "namespaceocc_1_1main.html#a5f883983a0b5d4e64d68868752bafe01", null ],
     [ "run_elat_subcommand", "namespaceocc_1_1main.html#a1d0fbd4fdd6e361e60c7c9f33330a3cc", null ],
     [ "run_isosurface_subcommand", "namespaceocc_1_1main.html#a5b0918a9f7c9d68a1491f739586b2555", null ],
     [ "run_pair_subcommand", "namespaceocc_1_1main.html#a608fdd74696cf1352fcd7d9ec6879158", null ],
