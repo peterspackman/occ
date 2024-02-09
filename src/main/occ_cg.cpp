@@ -631,9 +631,7 @@ class CEModelCrystalGrowthCalculator {
                 return x.is_nn ? a + 1 : a;
             });
 
-        total.solution_term =
-            (surface_properties.dg_gas + surface_properties.dg_correction) *
-            AU_TO_KJ_PER_MOL;
+        total.solution_term = surface_properties.esolv * AU_TO_KJ_PER_MOL;
 
         const std::string row_fmt_string =
             " {} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "

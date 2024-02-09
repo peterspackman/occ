@@ -297,6 +297,7 @@ calculate_solvated_surfaces(const std::string &basename,
                 scf.convergence_settings.incremental_fock_threshold = 0.0;
                 scf.set_charge_multiplicity(wfn.charge(), wfn.multiplicity());
                 double e = scf.compute_scf_energy();
+		occ::log::info("Writing solvated wavefunction file to {}", json_wfn_path.string());
                 Wavefunction wfn = scf.wavefunction();
                 occ::io::JsonWavefunctionWriter wfn_writer;
                 wfn_writer.write(wfn, json_wfn_path.string());
@@ -318,6 +319,7 @@ calculate_solvated_surfaces(const std::string &basename,
             double e = scf.compute_scf_energy();
             Wavefunction wfn = scf.wavefunction();
 
+	    occ::log::info("Writing solvated wavefunction file to {}", json_wfn_path.string());
             occ::io::JsonWavefunctionWriter wfn_writer;
             wfn_writer.write(wfn, json_wfn_path.string());
             solvated_wfns.push_back(wfn);
@@ -334,10 +336,10 @@ calculate_solvated_surfaces(const std::string &basename,
             auto elec = proc_solv.surface_electronic_energy_elements(scf.mo);
             auto pol = proc_solv.surface_polarization_energy_elements();
             props.e_coulomb = nuc + elec + pol;
-            occ::log::debug("sum e_nuc {:12.6f}\n", nuc.array().sum());
-            occ::log::debug("sum e_ele {:12.6f}\n", elec.array().sum());
-            occ::log::debug("sum e_pol {:12.6f}\n", pol.array().sum());
-            occ::log::debug("sum e_cds {:12.6f}\n", props.e_cds.array().sum());
+            occ::log::debug("sum e_nuc {:12.6f}", nuc.array().sum());
+            occ::log::debug("sum e_ele {:12.6f}", elec.array().sum());
+            occ::log::debug("sum e_pol {:12.6f}", pol.array().sum());
+            occ::log::debug("sum e_cds {:12.6f}", props.e_cds.array().sum());
             double esolv = nuc.array().sum() + elec.array().sum() +
                            pol.array().sum() + props.e_cds.array().sum();
 
@@ -388,6 +390,7 @@ calculate_solvated_surfaces(const std::string &basename,
                 (props.dg_ele / coul_areas.array().sum()) * coul_areas.array();
 
             {
+		occ::log::info("Writing solvated surface properties to {}", props_path.string());
                 std::ofstream ofs(props_path.string());
                 nlohmann::json j = props;
                 ofs << j;
