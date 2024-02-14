@@ -16,6 +16,7 @@
 #include <occ/io/pc.h>
 #include <occ/io/qcschema.h>
 #include <occ/io/wavefunction_json.h>
+#include <occ/io/fchkwriter.h>
 #include <occ/io/xyz.h>
 #include <occ/main/cli_validators.h>
 #include <occ/main/occ_scf.h>
@@ -70,15 +71,40 @@ void read_input_file(const std::string &filename, OccInput &config) {
 }
 
 void write_output_files(const OccInput &config, Wavefunction &wfn) {
-    fs::path json_path = config.filename;
-    if (!config.solvent.solvent_name.empty()) {
-        json_path.replace_extension(".solvated.owf.json");
-    } else {
-        json_path.replace_extension(".owf.json");
+    for(const auto &format: config.output.formats) {
+	fs::path path = config.filename;
+	if (!config.solvent.solvent_name.empty()) {
+	    path.replace_extension(fmt::format(".solvated.owf.{}", format));
+	} else {
+	    path.replace_extension(fmt::format(".owf.{}", format));
+	}
+	if(format == "json" || format == "ubjson" || format == "cbor" || format == "msgpack" || format == "bson") {
+	    occ::io::JsonWavefunctionWriter json_writer;
+	    if(format == "ubjson") {
+		json_writer.set_format(io::JsonWavefunctionWriter::Format::UBJSON);
+	    }
+	    else if(format == "cbor") {
+		json_writer.set_format(io::JsonWavefunctionWriter::Format::CBOR);
+	    }
+	    else if(format == "msgpack") {
+		json_writer.set_format(io::JsonWavefunctionWriter::Format::MSGPACK);
+	    }
+	    else if(format == "bson") {
+		json_writer.set_format(io::JsonWavefunctionWriter::Format::BSON);
+	    }
+	    json_writer.write(wfn, path.string());
+	    occ::log::info("wavefunction stored in {}", path.string());
+	}
+	else if(format == "fchk") {
+	    occ::io::FchkWriter fchk_writer(path.string());
+	    wfn.save(fchk_writer);
+	    fchk_writer.write();
+	    occ::log::info("wavefunction stored in {}", path.string());
+	}
+	else {
+	    occ::log::warn("Unknown wavefunction format: {}, skipping writing", format);
+	}
     }
-    occ::io::JsonWavefunctionWriter json_writer;
-    json_writer.write(wfn, json_path.string());
-    occ::log::info("wavefunction stored in {}", json_path.string());
 }
 
 CLI::App *add_scf_subcommand(CLI::App &app) {
@@ -99,6 +125,10 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
     // electronic
     scf->add_option("-c,--charge", config->electronic.charge,
                     "system net charge");
+
+    scf->add_option("-o,--output", config->output.formats,
+                    "output formats");
+
     auto *multiplicity_option =
         scf->add_option("--multiplicity", config->electronic.multiplicity,
                         "system multiplicity");

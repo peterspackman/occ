@@ -293,11 +293,50 @@ JsonWavefunctionWriter::to_string(const qm::Wavefunction &wfn) const {
 
 void JsonWavefunctionWriter::write(const qm::Wavefunction &wfn,
                                    const std::string &filename) const {
+    using FMT = JsonWavefunctionWriter::Format;
 
-    std::ofstream dest(filename);
+    std::ios_base::openmode mode = std::ios_base::out;
+
+    switch(m_format) {
+	case FMT::JSON:
+	    break;
+	case FMT::CBOR:    // fallthrough
+	case FMT::UBJSON:  // fallthrough
+	case FMT::MSGPACK: // fallthrough
+	case FMT::BSON:
+	    mode |= std::ios_base::binary;
+	    break;
+    }
+
+    std::ofstream dest(filename, mode);
     occ::timing::start(occ::timing::category::io);
     nlohmann::json j = wfn;
-    dest << j.dump(m_shiftwidth);
+    switch(m_format) {
+	case FMT::JSON:
+	    dest << j.dump(m_shiftwidth);
+	    break;
+	case FMT::UBJSON: {
+	    std::vector<uint8_t> ubjson = nlohmann::json::to_ubjson(j);
+	    dest.write(reinterpret_cast<const char*>(ubjson.data()), ubjson.size());
+	    break;
+        }
+	case FMT::CBOR: {
+	    std::vector<uint8_t> cbor = nlohmann::json::to_cbor(j);
+	    dest.write(reinterpret_cast<const char*>(cbor.data()), cbor.size());
+	    break;
+	}
+	case FMT::MSGPACK: {
+	    std::vector<uint8_t> msgpack = nlohmann::json::to_msgpack(j);
+	    dest.write(reinterpret_cast<const char*>(msgpack.data()), msgpack.size());
+	    break;
+	}
+	case FMT::BSON: {
+	    std::vector<uint8_t> bson = nlohmann::json::to_bson(j);
+	    dest.write(reinterpret_cast<const char*>(bson.data()), bson.size());
+	    break;
+	}
+
+    }
     occ::timing::stop(occ::timing::category::io);
 }
 

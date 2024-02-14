@@ -26,14 +26,26 @@ struct JsonWavefunctionReader {
 
 struct JsonWavefunctionWriter {
   public:
+    enum Format {
+	JSON,
+	UBJSON,
+	CBOR,
+	BSON,
+	MSGPACK,
+    };
     JsonWavefunctionWriter();
     void write(const qm::Wavefunction &, const std::string &) const;
     void write(const qm::Wavefunction &, std::ostream &) const;
     std::string to_string(const qm::Wavefunction &) const;
 
+    inline void set_format(Format format) {
+	m_format = format;
+    }
+
     void set_shiftwidth(int);
 
   private:
+    Format m_format{JSON};
     int m_shiftwidth{2};
 };
 

@@ -31,6 +31,10 @@ struct GeometryInput {
     std::string point_charge_filename{""};
 };
 
+struct OutputInput {
+    std::vector<std::string> formats{"json"};
+};
+
 struct DriverInput {
     std::string driver{"energy"};
 };
@@ -99,6 +103,7 @@ struct OccInput {
     DispersionCorrectionInput dispersion;
     CrystalInput crystal;
     IsosurfaceInput isosurface;
+    OutputInput output;
     std::string name{""};
     std::string filename{""};
 };
