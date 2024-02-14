@@ -9,12 +9,16 @@
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
 #include <occ/io/wavefunction_json.h>
+#include <occ/io/wavefunction_json.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/merge.h>
 #include <occ/qm/orb.h>
 #include <occ/qm/partitioning.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace occ::qm {
 
@@ -395,6 +399,48 @@ Vec Wavefunction::mulliken_charges() const {
         charges(i) += atoms[i].atomic_number - ecp_electrons[i];
     }
     return charges;
+}
+
+Wavefunction Wavefunction::load(const std::string &filename) {
+    fs::path path(filename);
+    std::string ext = path.extension().string();
+    if(ext == ".fchk") {
+	FchkReader reader(filename);
+	return Wavefunction(reader);
+    }
+    else if(ext ==  ".molden") {
+	MoldenReader reader(filename);
+	return Wavefunction(reader);
+    }
+    else if(io::valid_json_format_string(ext)) {
+	io::JsonFormat fmt = io::json_format(ext);
+	io::JsonWavefunctionReader reader(filename, fmt);
+	return reader.wavefunction();
+    }
+    else throw std::runtime_error(
+	fmt::format("Unknown wavefunction format: '{}', could not read in", ext)
+    );
+}
+
+bool Wavefunction::save(const std::string &filename) {
+    fs::path path(filename);
+    std::string ext = path.extension().string();
+    if(io::valid_json_format_string(ext)) {
+	occ::io::JsonWavefunctionWriter json_writer;
+	json_writer.set_format(ext);
+	json_writer.write(*this, path.string());
+	occ::log::info("wavefunction stored in {}", path.string());
+	return true;
+    }
+    else if(ext == "fchk" || ext == ".fchk") {
+	occ::io::FchkWriter fchk_writer(path.string());
+	save(fchk_writer);
+	fchk_writer.write();
+	occ::log::info("wavefunction stored in {}", path.string());
+	return true;
+    }
+    occ::log::warn("Unknown wavefunction format: '{}', skipping writing", ext);
+    return false;
 }
 
 } // namespace occ::qm

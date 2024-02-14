@@ -78,32 +78,7 @@ void write_output_files(const OccInput &config, Wavefunction &wfn) {
 	} else {
 	    path.replace_extension(fmt::format(".owf.{}", format));
 	}
-	if(format == "json" || format == "ubjson" || format == "cbor" || format == "msgpack" || format == "bson") {
-	    occ::io::JsonWavefunctionWriter json_writer;
-	    if(format == "ubjson") {
-		json_writer.set_format(io::JsonWavefunctionWriter::Format::UBJSON);
-	    }
-	    else if(format == "cbor") {
-		json_writer.set_format(io::JsonWavefunctionWriter::Format::CBOR);
-	    }
-	    else if(format == "msgpack") {
-		json_writer.set_format(io::JsonWavefunctionWriter::Format::MSGPACK);
-	    }
-	    else if(format == "bson") {
-		json_writer.set_format(io::JsonWavefunctionWriter::Format::BSON);
-	    }
-	    json_writer.write(wfn, path.string());
-	    occ::log::info("wavefunction stored in {}", path.string());
-	}
-	else if(format == "fchk") {
-	    occ::io::FchkWriter fchk_writer(path.string());
-	    wfn.save(fchk_writer);
-	    fchk_writer.write();
-	    occ::log::info("wavefunction stored in {}", path.string());
-	}
-	else {
-	    occ::log::warn("Unknown wavefunction format: {}, skipping writing", format);
-	}
+	wfn.save(path.string());
     }
 }
 

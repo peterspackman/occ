@@ -245,10 +245,21 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
 
 namespace occ::io {
 
-JsonWavefunctionReader::JsonWavefunctionReader(const std::string &filename)
-    : m_filename{filename} {
+JsonWavefunctionReader::JsonWavefunctionReader(const std::string &filename, JsonFormat fmt)
+    : m_filename{filename}, m_format(fmt) {
     occ::timing::start(occ::timing::category::io);
-    std::ifstream file(filename);
+    std::ios_base::openmode mode = std::ios_base::out;
+    switch(m_format) {
+	case JsonFormat::JSON:
+	    break;
+	case JsonFormat::CBOR:    // fallthrough
+	case JsonFormat::UBJSON:  // fallthrough
+	case JsonFormat::MSGPACK: // fallthrough
+	case JsonFormat::BSON:
+	    mode |= std::ios_base::binary;
+	    break;
+    }
+    std::ifstream file(filename, mode);
     parse(file);
     occ::timing::stop(occ::timing::category::io);
 }
@@ -270,9 +281,31 @@ void JsonWavefunctionReader::set_filename(const std::string &name) {
 
 void JsonWavefunctionReader::parse(std::istream &file) {
     nlohmann::json j;
-    occ::log::debug("Try loading JSON file...");
-    file >> j;
-    occ::log::debug("Valid JSON data");
+    switch(m_format) {
+	case JsonFormat::JSON:
+	    file >> j;
+	    break;
+	case JsonFormat::UBJSON: {
+	    std::vector<uint8_t> ubjson(std::istreambuf_iterator<char>(file), {});
+	    j = nlohmann::json::from_ubjson(ubjson);
+	    break;
+        }
+	case JsonFormat::CBOR: {
+	    std::vector<uint8_t> cbor(std::istreambuf_iterator<char>(file), {});
+	    j = nlohmann::json::from_cbor(cbor);
+	    break;
+	}
+	case JsonFormat::MSGPACK: {
+	    std::vector<uint8_t> msgpack(std::istreambuf_iterator<char>(file), {});
+	    j = nlohmann::json::from_msgpack(msgpack);
+	    break;
+	}
+	case JsonFormat::BSON: {
+	    std::vector<uint8_t> bson(std::istreambuf_iterator<char>(file), {});
+	    j = nlohmann::json::from_bson(bson);
+	    break;
+	}
+    }
     j.get_to(m_wavefunction);
 }
 
@@ -293,17 +326,15 @@ JsonWavefunctionWriter::to_string(const qm::Wavefunction &wfn) const {
 
 void JsonWavefunctionWriter::write(const qm::Wavefunction &wfn,
                                    const std::string &filename) const {
-    using FMT = JsonWavefunctionWriter::Format;
-
     std::ios_base::openmode mode = std::ios_base::out;
 
     switch(m_format) {
-	case FMT::JSON:
+	case JsonFormat::JSON:
 	    break;
-	case FMT::CBOR:    // fallthrough
-	case FMT::UBJSON:  // fallthrough
-	case FMT::MSGPACK: // fallthrough
-	case FMT::BSON:
+	case JsonFormat::CBOR:    // fallthrough
+	case JsonFormat::UBJSON:  // fallthrough
+	case JsonFormat::MSGPACK: // fallthrough
+	case JsonFormat::BSON:
 	    mode |= std::ios_base::binary;
 	    break;
     }
@@ -312,25 +343,25 @@ void JsonWavefunctionWriter::write(const qm::Wavefunction &wfn,
     occ::timing::start(occ::timing::category::io);
     nlohmann::json j = wfn;
     switch(m_format) {
-	case FMT::JSON:
+	case JsonFormat::JSON:
 	    dest << j.dump(m_shiftwidth);
 	    break;
-	case FMT::UBJSON: {
+	case JsonFormat::UBJSON: {
 	    std::vector<uint8_t> ubjson = nlohmann::json::to_ubjson(j);
 	    dest.write(reinterpret_cast<const char*>(ubjson.data()), ubjson.size());
 	    break;
         }
-	case FMT::CBOR: {
+	case JsonFormat::CBOR: {
 	    std::vector<uint8_t> cbor = nlohmann::json::to_cbor(j);
 	    dest.write(reinterpret_cast<const char*>(cbor.data()), cbor.size());
 	    break;
 	}
-	case FMT::MSGPACK: {
+	case JsonFormat::MSGPACK: {
 	    std::vector<uint8_t> msgpack = nlohmann::json::to_msgpack(j);
 	    dest.write(reinterpret_cast<const char*>(msgpack.data()), msgpack.size());
 	    break;
 	}
-	case FMT::BSON: {
+	case JsonFormat::BSON: {
 	    std::vector<uint8_t> bson = nlohmann::json::to_bson(j);
 	    dest.write(reinterpret_cast<const char*>(bson.data()), bson.size());
 	    break;

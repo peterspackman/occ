@@ -74,6 +74,8 @@ struct Wavefunction {
     Wavefunction(const OrcaJSONReader &);
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
 
+    static Wavefunction load(const std::string &);
+
     inline int multiplicity() const { return abs(n_beta() - n_alpha()) + 1; }
     inline int charge() const {
         size_t c = 0;
@@ -105,6 +107,7 @@ struct Wavefunction {
     Mat3N electric_field(const Mat3N &points) const;
 
     void save(FchkWriter &);
+    bool save(const std::string &filename);
 
     int num_electrons{0};
     int num_frozen_electrons{0};
