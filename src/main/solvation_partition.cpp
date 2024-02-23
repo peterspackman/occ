@@ -279,8 +279,7 @@ calculate_solvated_surfaces(const std::string &basename,
             if (fs::exists(json_wfn_path)) {
                 occ::log::info("Loading solvated wavefunction from {}",
                                json_wfn_path.string());
-                occ::io::JsonWavefunctionReader reader(json_wfn_path.string());
-                solvated_wfns.emplace_back(reader.wavefunction());
+                solvated_wfns.emplace_back(Wavefunction::load(json_wfn_path.string()));
             } else {
                 occ::qm::AOBasis basis =
                     occ::qm::AOBasis::load(wfn.atoms, basis_name);
@@ -299,8 +298,7 @@ calculate_solvated_surfaces(const std::string &basename,
                 double e = scf.compute_scf_energy();
 		occ::log::info("Writing solvated wavefunction file to {}", json_wfn_path.string());
                 Wavefunction wfn = scf.wavefunction();
-                occ::io::JsonWavefunctionWriter wfn_writer;
-                wfn_writer.write(wfn, json_wfn_path.string());
+		wfn.save(json_wfn_path.string());
                 solvated_wfns.push_back(wfn);
             }
         } else {
@@ -320,8 +318,7 @@ calculate_solvated_surfaces(const std::string &basename,
             Wavefunction wfn = scf.wavefunction();
 
 	    occ::log::info("Writing solvated wavefunction file to {}", json_wfn_path.string());
-            occ::io::JsonWavefunctionWriter wfn_writer;
-            wfn_writer.write(wfn, json_wfn_path.string());
+	    wfn.save(json_wfn_path.string());
             solvated_wfns.push_back(wfn);
 
             SolvatedSurfaceProperties props;

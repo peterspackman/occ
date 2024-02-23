@@ -35,16 +35,13 @@
 #include <scn/scn.h>
 
 namespace fs = std::filesystem;
-using occ::core::Dimer;
 using occ::core::Element;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::CrystalDimers;
 using occ::crystal::SymmetryOperation;
 using occ::qm::HartreeFock;
-using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
-using occ::scf::SCF;
 using occ::units::AU_TO_KJ_PER_MOL;
 using occ::units::BOHR_TO_ANGSTROM;
 using SolventNeighborContributionList =
@@ -62,16 +59,13 @@ inline Crystal read_crystal(const std::string &filename) {
     return parser.parse_crystal(filename).value();
 }
 
-Wavefunction calculate_wavefunction(const Molecule &mol,
-                                    const std::string &name,
-                                    const std::string &energy_model) {
+Wavefunction load_or_calculate_wavefunction(const Molecule &mol,
+					    const std::string &name,
+					    const std::string &energy_model) {
     fs::path json_path(fmt::format("{}.owf.json", name));
     if (fs::exists(json_path)) {
-        occ::log::info("Loading gas phase wavefunction from {}",
-                       json_path.string());
-        using occ::io::JsonWavefunctionReader;
-        JsonWavefunctionReader json_wfn_reader(json_path.string());
-        return json_wfn_reader.wavefunction();
+	occ::log::info("Loading wavefunction from {}", json_path.string());
+	return Wavefunction::load(json_path);
     }
 
     auto parameterized_model =
@@ -83,10 +77,10 @@ Wavefunction calculate_wavefunction(const Molecule &mol,
     input.geometry.set_molecule(mol);
     input.electronic.charge = mol.charge();
     input.electronic.multiplicity = mol.multiplicity();
+
     auto wfn = occ::main::single_point_calculation(input);
 
-    occ::io::JsonWavefunctionWriter writer;
-    writer.write(wfn, json_path.string());
+    wfn.save(json_path.string());
     return wfn;
 }
 
@@ -105,7 +99,7 @@ WavefunctionList calculate_wavefunctions(const std::string &basename,
         }
         std::string name = fmt::format("{}_{}", basename, index);
         wavefunctions.emplace_back(
-            calculate_wavefunction(m, name, energy_model));
+            load_or_calculate_wavefunction(m, name, energy_model));
         index++;
     }
     return wavefunctions;
@@ -975,7 +969,7 @@ class XTBCrystalGrowthCalculator {
 		       "id",
                        "Rn", "Rc", "Symop", "E_crys", "E_solv", "E_nn",
                        "E_int");
-        occ::log::warn(std::string(91, '='));
+        occ::log::warn(std::string(92, '='));
 
         size_t j = 0;
         for (const auto &[dimer, unique_idx] : full_neighbors) {
