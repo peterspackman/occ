@@ -116,6 +116,10 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
         },
         "use unrestricted SCF");
 
+    scf->add_option("--basis-set-directory,--basis_set_directory",
+                    config->basis.basis_set_directory,
+                    "override basis set directory");
+
     scf->add_option("--integral-precision,--integral_precision",
                     config->method.integral_precision,
                     "cutoff for integral screening");

@@ -48,6 +48,7 @@ struct MethodInput {
 struct BasisSetInput {
     std::string name{"3-21G"};
     std::string df_name{""};
+    std::string basis_set_directory{""};
     bool spherical{false};
 };
 

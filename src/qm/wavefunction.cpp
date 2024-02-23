@@ -377,23 +377,8 @@ Vec Wavefunction::mulliken_charges() const {
     HartreeFock hf(basis);
     Mat overlap = hf.compute_overlap_matrix();
 
-    Vec charges = Vec::Zero(atoms.size());
+    Vec charges = -2 * occ::qm::mulliken_partition(basis, mo, overlap);
 
-    switch(mo.kind) {
-    case SpinorbitalKind::Unrestricted:
-        charges =
-            -2 * occ::qm::mulliken_partition<SpinorbitalKind::Unrestricted>(
-                     basis, mo.D, overlap);
-        break;
-    case SpinorbitalKind::General:
-        charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::General>(
-                           basis, mo.D, overlap);
-        break;
-    default:
-        charges = -2 * occ::qm::mulliken_partition<SpinorbitalKind::Restricted>(
-                           basis, mo.D, overlap);
-        break;
-    }
     const auto &ecp_electrons = basis.ecp_electrons();
     for (size_t i = 0; i < atoms.size(); i++) {
         charges(i) += atoms[i].atomic_number - ecp_electrons[i];

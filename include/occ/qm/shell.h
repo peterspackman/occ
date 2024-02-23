@@ -11,6 +11,9 @@ namespace occ::qm {
 
 using occ::core::Atom;
 
+
+void override_basis_set_directory(const std::string &s);
+
 double gto_norm(int l, double alpha);
 
 struct Shell {

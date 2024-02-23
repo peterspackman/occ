@@ -68,6 +68,15 @@ static constexpr std::array<int64_t, 31> df_Kminus1 = {{1LL,
 
 namespace occ::qm {
 
+namespace impl {
+static std::string basis_set_directory_override{""};
+}
+
+void override_basis_set_directory(const std::string &s) {
+    impl::basis_set_directory_override = s;
+}
+
+
 double gint(int n, double alpha) {
     double n1_2 = 0.5 * (n + 1);
     return std::tgamma(n1_2) / (2 * std::pow(alpha, n1_2));
@@ -553,7 +562,8 @@ std::string canonicalize_name(const std::string &name) {
 
 std::string data_path() {
     std::string path{"."};
-    const char *data_path_env = getenv("OCC_BASIS_PATH");
+    const char *data_path_env = 
+	impl::basis_set_directory_override.empty() ? getenv("OCC_BASIS_PATH") : impl::basis_set_directory_override.c_str();
     if (data_path_env) {
         path = data_path_env;
     } else {

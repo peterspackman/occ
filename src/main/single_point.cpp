@@ -159,6 +159,10 @@ single_point_driver(const OccInput &config,
     Molecule m = config.geometry.molecule();
     print_configuration(m, config);
 
+    if(!config.basis.basis_set_directory.empty()) {
+	occ::log::info("Overriding environment basis set directory with: '{}'", config.basis.basis_set_directory);
+	occ::qm::override_basis_set_directory(config.basis.basis_set_directory);
+    }
     auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
 
     if (config.solvent.solvent_name.empty()) {

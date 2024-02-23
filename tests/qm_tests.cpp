@@ -8,6 +8,7 @@
 #include <occ/gto/rotation.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/partitioning.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
@@ -406,4 +407,31 @@ TEST_CASE("Oniom ethane", "[oniom]") {
     };
 
     fmt::print("Total energy: {}\n", oniom.compute_scf_energy());
+}
+
+TEST_CASE("Mulliken partition", "[partitioning]") {
+    std::vector<occ::core::Atom> atoms{
+        {8, -1.32695761, -0.10593856, 0.01878821},
+        {1, -1.93166418, 1.60017351, -0.02171049},
+        {1, 0.48664409, 0.07959806, 0.00986248}};
+
+    auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
+
+    auto hf = HartreeFock(obs);
+    occ::scf::SCF<HartreeFock> scf(hf);
+    double e = scf.compute_scf_energy();
+
+    auto wfn = scf.wavefunction();
+
+    auto charges = wfn.mulliken_charges();
+    fmt::print("Charges:\n{}\n", charges);
+    occ::Vec expected(3);
+    expected << -0.724463, 0.363043, 0.361419;
+    fmt::print("Expected:\n{}\n", expected);
+    REQUIRE(all_close(expected, charges, 1e-5, 1e-5));
+
+    auto energies = occ::qm::mulliken_partition(obs, wfn.mo, wfn.V);
+    double total = occ::qm::expectation(wfn.mo.kind, wfn.mo.D, wfn.V);
+    fmt::print("Partitioned energy\n{}\n", energies);
+    REQUIRE(energies.sum() == Catch::Approx(total));
 }
