@@ -29,6 +29,7 @@ var namespaceocc_1_1io =
     [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ],
     [ "ElectronInput", "structocc_1_1io_1_1ElectronInput.html", "structocc_1_1io_1_1ElectronInput" ],
     [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
+    [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
     [ "DriverInput", "structocc_1_1io_1_1DriverInput.html", "structocc_1_1io_1_1DriverInput" ],
     [ "MethodInput", "structocc_1_1io_1_1MethodInput.html", "structocc_1_1io_1_1MethodInput" ],
     [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
@@ -52,12 +53,21 @@ var namespaceocc_1_1io =
     [ "ElementMap", "namespaceocc_1_1io.html#a2e0d0088e3a6c463309cc364c41e1aaf", null ],
     [ "PointChargeList", "namespaceocc_1_1io.html#a2032b9063a04cbcda0dca503cdbf2e7d", null ],
     [ "Position", "namespaceocc_1_1io.html#ab6b5ddc9e2fba0c4afd73066cced9721", null ],
+    [ "JsonFormat", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3", [
+      [ "JSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8", null ],
+      [ "UBJSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d", null ],
+      [ "CBOR", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a6009014cf7f117c0a14c14fdb971e9e8", null ],
+      [ "BSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3ac3f11a091527e2df921d8d916f13c4d9", null ],
+      [ "MSGPACK", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94", null ]
+    ] ],
     [ "build", "namespaceocc_1_1io.html#a0b4154c8ab12aa7b60925e2a2b6acbe2", null ],
     [ "build", "namespaceocc_1_1io.html#a0b19dda27e50ff77a11e8e61654b1569", null ],
+    [ "json_format", "namespaceocc_1_1io.html#a099816a1d1f5ac39efdf73b50c8f6efc", null ],
     [ "molecule_from_xyz_file", "namespaceocc_1_1io.html#aaaed42365ec5e0da71939b3b8646ff6e", null ],
     [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
     [ "point_charges_from_file", "namespaceocc_1_1io.html#ac7b49e759281fa2bff63c6e075a41559", null ],
     [ "point_charges_from_string", "namespaceocc_1_1io.html#a3903e63674924c2d0b6cf6089690b474", null ],
+    [ "valid_json_format_string", "namespaceocc_1_1io.html#a03fbffee6c9f175af30275db3fe30f69", null ],
     [ "write_obj_file", "namespaceocc_1_1io.html#aec74af2b9b519a64663daa2fb77e4719", null ],
     [ "write_ply_file", "namespaceocc_1_1io.html#a8b8b6eb8568d47e85b96130c3c57268d", null ]
 ];

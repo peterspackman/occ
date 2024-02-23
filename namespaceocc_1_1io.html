@@ -93,6 +93,7 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1io.html',''); initResi
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">occ::io Namespace Reference</div>  </div>
@@ -165,6 +166,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GeometryInput.html">GeometryInput</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1OutputInput.html">OutputInput</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1DriverInput.html">DriverInput</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1MethodInput.html">MethodInput</a></td></tr>
@@ -215,6 +218,19 @@ Typedefs</h2></td></tr>
 <tr class="memitem:a2032b9063a04cbcda0dca503cdbf2e7d"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a2032b9063a04cbcda0dca503cdbf2e7d">PointChargeList</a> = std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a> &gt;</td></tr>
 <tr class="separator:a2032b9063a04cbcda0dca503cdbf2e7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ac216ed773cc0fb9fcb04e266ac5c24a3"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3">JsonFormat</a> { <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8">JSON</a>
+, <a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d">UBJSON</a>
+, <a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a6009014cf7f117c0a14c14fdb971e9e8">CBOR</a>
+, <a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3ac3f11a091527e2df921d8d916f13c4d9">BSON</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94">MSGPACK</a>
+<br />
+ }</td></tr>
+<tr class="separator:ac216ed773cc0fb9fcb04e266ac5c24a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:aec74af2b9b519a64663daa2fb77e4719"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#aec74af2b9b519a64663daa2fb77e4719">write_obj_file</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1io_1_1IsosurfaceMesh.html">IsosurfaceMesh</a> &amp;mesh, const <a class="el" href="structocc_1_1io_1_1VertexProperties.html">VertexProperties</a> &amp;properties)</td></tr>
@@ -231,6 +247,10 @@ Functions</h2></td></tr>
 <tr class="separator:a3903e63674924c2d0b6cf6089690b474"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b8b6eb8568d47e85b96130c3c57268d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a8b8b6eb8568d47e85b96130c3c57268d">write_ply_file</a> (const std::string &amp;filename, const Eigen::Matrix3Xf &amp;vertices, const Eigen::Matrix3Xi &amp;faces)</td></tr>
 <tr class="separator:a8b8b6eb8568d47e85b96130c3c57268d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a099816a1d1f5ac39efdf73b50c8f6efc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3">JsonFormat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a099816a1d1f5ac39efdf73b50c8f6efc">json_format</a> (const std::string &amp;str)</td></tr>
+<tr class="separator:a099816a1d1f5ac39efdf73b50c8f6efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03fbffee6c9f175af30275db3fe30f69"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a03fbffee6c9f175af30275db3fe30f69">valid_json_format_string</a> (const std::string &amp;str)</td></tr>
+<tr class="separator:a03fbffee6c9f175af30275db3fe30f69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaaed42365ec5e0da71939b3b8646ff6e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#aaaed42365ec5e0da71939b3b8646ff6e">molecule_from_xyz_file</a> (const std::string &amp;)</td></tr>
 <tr class="separator:aaaed42365ec5e0da71939b3b8646ff6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e545a9864ef7cba94ea648e321f9899"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899">molecule_from_xyz_string</a> (const std::string &amp;)</td></tr>
@@ -281,6 +301,36 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ac216ed773cc0fb9fcb04e266ac5c24a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac216ed773cc0fb9fcb04e266ac5c24a3">&#9670;&nbsp;</a></span>JsonFormat</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3">occ::io::JsonFormat</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8"></a>JSON&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d"></a>UBJSON&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac216ed773cc0fb9fcb04e266ac5c24a3a6009014cf7f117c0a14c14fdb971e9e8"></a>CBOR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac216ed773cc0fb9fcb04e266ac5c24a3ac3f11a091527e2df921d8d916f13c4d9"></a>BSON&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94"></a>MSGPACK&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a0b4154c8ab12aa7b60925e2a2b6acbe2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0b4154c8ab12aa7b60925e2a2b6acbe2">&#9670;&nbsp;</a></span>build() <span class="overload">[1/2]</span></h2>
@@ -318,6 +368,32 @@ template&lt;typename T &gt; </div>
           <td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a099816a1d1f5ac39efdf73b50c8f6efc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a099816a1d1f5ac39efdf73b50c8f6efc">&#9670;&nbsp;</a></span>json_format()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3">JsonFormat</a> occ::io::json_format </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
@@ -390,6 +466,32 @@ template&lt;typename T &gt; </div>
           <td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a03fbffee6c9f175af30275db3fe30f69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03fbffee6c9f175af30275db3fe30f69">&#9670;&nbsp;</a></span>valid_json_format_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::io::valid_json_format_string </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

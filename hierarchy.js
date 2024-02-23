@@ -138,6 +138,7 @@ var hierarchy =
     [ "ostream_formatter", null, [
       [ "fmt::formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ]
     ] ],
+    [ "occ::io::OutputInput", "structocc_1_1io_1_1OutputInput.html", null ],
     [ "occ::main::PairEnergy", "structocc_1_1main_1_1PairEnergy.html", null ],
     [ "occ::main::PairEnergyStore", "structocc_1_1main_1_1PairEnergyStore.html", null ],
     [ "occ::io::PairInput", "structocc_1_1io_1_1PairInput.html", null ],

@@ -19,6 +19,7 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "n_alpha", "structocc_1_1qm_1_1Wavefunction.html#a8daf27a97832b5c52c0a0585bdb422df", null ],
     [ "n_beta", "structocc_1_1qm_1_1Wavefunction.html#ab7d7a63446003b31a1e97cff023fcd32", null ],
     [ "positions", "structocc_1_1qm_1_1Wavefunction.html#a2308219fe83df9f370085814447579a4", null ],
+    [ "save", "structocc_1_1qm_1_1Wavefunction.html#a288032ef7130eb91c228571c27f3c1de", null ],
     [ "save", "structocc_1_1qm_1_1Wavefunction.html#a75fe338f7494dfdbc765f3230106cab8", null ],
     [ "set_molecular_orbitals", "structocc_1_1qm_1_1Wavefunction.html#accd795481115e410d038f02030905adf", null ],
     [ "symmetric_orthonormalize_molecular_orbitals", "structocc_1_1qm_1_1Wavefunction.html#aadcb825d6970a24ecf390ddea6240f75", null ],
