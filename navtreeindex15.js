@@ -1,6 +1,5 @@
 var NAVTREEINDEX15 =
 {
-"structocc_1_1scf_1_1SCF.html#a7b70e254d8f3e67c8b3ae56d495628b9":[2,0,1,9,0,1],
 "structocc_1_1scf_1_1SCF.html#a7fc3189e2369210f590f620f0194e994":[2,0,1,9,0,15],
 "structocc_1_1scf_1_1SCF.html#a843caaa0c0feb95618acf484908c96da":[2,0,1,9,0,22],
 "structocc_1_1scf_1_1SCF.html#a883ba7bab2205b1e0bcba6943beb8d27":[2,0,1,9,0,19],
@@ -213,5 +212,6 @@ var NAVTREEINDEX15 =
 "xtb__wrapper_8h.html":[3,0,1,0,13,1],
 "xyz_8h.html":[3,0,1,0,6,23],
 "xyz_8h.html#a9e545a9864ef7cba94ea648e321f9899":[3,0,1,0,6,23,2],
-"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,6,23,1]
+"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,6,23,1],
+"":[1,0,1]
 };

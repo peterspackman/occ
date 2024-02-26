@@ -1,6 +1,5 @@
 var NAVTREEINDEX13 =
 {
-"structocc_1_1io_1_1GaussianInputFile.html#ab5f6a48ed9ad124a77d876985ec26f49":[2,0,1,6,13,2],
 "structocc_1_1io_1_1GaussianInputFile.html#acdd8cdc5cd156e9a93fc60641d2a06c1":[2,0,1,6,13,11],
 "structocc_1_1io_1_1GaussianInputFile.html#ad204ebe90935561a19420424e61bde0a":[2,0,1,6,13,8],
 "structocc_1_1io_1_1GaussianInputFile.html#adac2581d87f503db48d846060b0a9b67":[2,0,1,6,13,6],
@@ -249,5 +248,6 @@ var NAVTREEINDEX13 =
 "structocc_1_1main_1_1LatticeEnergyResult.html#a9634bc60061b59dd60843e6640bf8f0a":[2,0,1,7,20,1],
 "structocc_1_1main_1_1MultiplicityValidator.html":[2,0,1,7,0],
 "structocc_1_1main_1_1MultiplicityValidator.html#a92cab2102459e9c057937773e05338ed":[2,0,1,7,0,0],
-"structocc_1_1main_1_1OccPairInput.html":[2,0,1,7,16]
+"structocc_1_1main_1_1OccPairInput.html":[2,0,1,7,16],
+"structocc_1_1main_1_1OccPairInput.html#a099647640b487a95d65faab8e2ef5fdc":[2,0,1,7,16,4]
 };
