@@ -1,6 +1,5 @@
 var NAVTREEINDEX0 =
 {
-"":[1,0,1],
 "annotated.html":[2,0],
 "asymmetric__unit_8h.html":[3,0,1,0,1,0],
 "atom_8h.html":[3,0,1,0,0,0],
@@ -249,5 +248,6 @@ var NAVTREEINDEX0 =
 "classocc_1_1crystal_1_1Crystal.html#a116f176e72cb178db6087915ac493ad0":[2,0,1,1,3,3],
 "classocc_1_1crystal_1_1Crystal.html#a2777bc54a23a6aee6ecd35805ab1d5e3":[2,0,1,1,3,19],
 "classocc_1_1crystal_1_1Crystal.html#a3a16c39c8623f66d907980b8b8231484":[2,0,1,1,3,17],
-"classocc_1_1crystal_1_1Crystal.html#a5ef5f5c6ae413169e2fb77305f98af9a":[2,0,1,1,3,16]
+"classocc_1_1crystal_1_1Crystal.html#a5ef5f5c6ae413169e2fb77305f98af9a":[2,0,1,1,3,16],
+"classocc_1_1crystal_1_1Crystal.html#a6d031f75ebb73e0817350becc56f2309":[2,0,1,1,3,11]
 };
