@@ -37,6 +37,10 @@ jobs:
             name: "linux-x86_64"
           - os: ubuntu-latest
             architecture: x86_64
+            script: linux_static_build.sh
+            name: "linux-x86_64-static"
+          - os: ubuntu-latest
+            architecture: x86_64
             script: dockcross-windows.sh
             name: "windows-x86_64"
 
