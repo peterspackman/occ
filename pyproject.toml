@@ -12,7 +12,7 @@ authors = [
     { name = "Peter Spackman", email = "peterspackman@fastmail.com" },
 ]
 classifiers = [
-    "License :: GPLv3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
 # Optional: runtime dependency specification
 dependencies = ["numpy"]
