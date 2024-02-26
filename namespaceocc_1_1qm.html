@@ -178,9 +178,10 @@ Functions</h2></td></tr>
 <tr class="separator:a096777b12f35eca1e096b98cb195817c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91124ce2c2c6b7076609857d5896247d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a91124ce2c2c6b7076609857d5896247d">merge_atoms</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;, const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;)</td></tr>
 <tr class="separator:a91124ce2c2c6b7076609857d5896247d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae5bd4847a30d0fdf3a43d13c1e0698be"><td class="memTemplParams" colspan="2">template&lt;SpinorbitalKind kind&gt; </td></tr>
-<tr class="memitem:ae5bd4847a30d0fdf3a43d13c1e0698be"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ae5bd4847a30d0fdf3a43d13c1e0698be">mulliken_partition</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a> &amp;basis, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;D, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;op)</td></tr>
-<tr class="separator:ae5bd4847a30d0fdf3a43d13c1e0698be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbd3ff1729602847daf45753f527aa15"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#abbd3ff1729602847daf45753f527aa15">mulliken_partition</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt; op)</td></tr>
+<tr class="separator:abbd3ff1729602847daf45753f527aa15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdfb91e16998995013688d5f811b5996"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#abdfb91e16998995013688d5f811b5996">override_basis_set_directory</a> (const std::string &amp;s)</td></tr>
+<tr class="separator:abdfb91e16998995013688d5f811b5996"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0b480dbee1ea4975ed32811499c9234"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ae0b480dbee1ea4975ed32811499c9234">gto_norm</a> (int l, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>)</td></tr>
 <tr class="separator:ae0b480dbee1ea4975ed32811499c9234"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0dacbd1a6c0a6d40901c695295112cb4"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a0dacbd1a6c0a6d40901c695295112cb4">operator&lt;&lt;</a> (std::ostream &amp;stream, const <a class="el" href="structocc_1_1qm_1_1Shell.html">Shell</a> &amp;shell)</td></tr>
@@ -578,13 +579,11 @@ template&lt;SpinorbitalKind kind&gt; </div>
 
 </div>
 </div>
-<a id="ae5bd4847a30d0fdf3a43d13c1e0698be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae5bd4847a30d0fdf3a43d13c1e0698be">&#9670;&nbsp;</a></span>mulliken_partition()</h2>
+<a id="abbd3ff1729602847daf45753f527aa15"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abbd3ff1729602847daf45753f527aa15">&#9670;&nbsp;</a></span>mulliken_partition()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;SpinorbitalKind kind&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::qm::mulliken_partition </td>
@@ -595,13 +594,13 @@ template&lt;SpinorbitalKind kind&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
-          <td class="paramname"><em>D</em>, </td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt;&#160;</td>
           <td class="paramname"><em>op</em>&#160;</td>
         </tr>
         <tr>
@@ -636,6 +635,24 @@ template&lt;SpinorbitalKind kind&gt; </div>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="abdfb91e16998995013688d5f811b5996"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdfb91e16998995013688d5f811b5996">&#9670;&nbsp;</a></span>override_basis_set_directory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::qm::override_basis_set_directory </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>s</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
