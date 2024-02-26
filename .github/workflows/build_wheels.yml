@@ -27,7 +27,7 @@ jobs:
           CIBW_ARCHS_LINUX: auto
           CIBW_ARCHS_MACOS: auto universal2
           CIBW_ARCHS_WINDOWS: auto
-          CIBW_TEST_SKIP: *
+          CIBW_TEST_SKIP: ${{matrix.pyver}}-*
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
