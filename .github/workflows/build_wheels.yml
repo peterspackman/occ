@@ -42,7 +42,7 @@ jobs:
     needs: build_wheels
     environment:
       name: pypi
-      url: https://pypi.org/p/chmpy/
+      url: https://pypi.org/p/occpy/
     permissions:
       id-token: write
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
