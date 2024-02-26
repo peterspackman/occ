@@ -81,7 +81,6 @@ NB_MODULE(_occpy, m) {
         .def_ro("origin", &Shell::origin)
         .def_ro("exponents", &Shell::exponents)
         .def_ro("contraction_coefficients", &Shell::contraction_coefficients)
-        .def_ro("contraction_coefficients", &Shell::contraction_coefficients)
         .def("num_contractions", &Shell::num_contractions)
         .def("num_primitives", &Shell::num_primitives)
         .def("norm", &Shell::norm)
@@ -410,6 +409,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-    m.attr("__version__") = "dev";
+    m.attr("__version__") = "0.5.5";
 #endif
 }
