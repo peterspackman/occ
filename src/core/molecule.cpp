@@ -66,6 +66,14 @@ Vec Molecule::vdw_radii() const {
     return radii;
 }
 
+Vec Molecule::covalent_radii() const {
+    Vec radii(size());
+    for (size_t i = 0; i < radii.size(); i++) {
+        radii(i) = static_cast<double>(m_elements[i].covalent_radius());
+    }
+    return radii;
+}
+
 Vec Molecule::atomic_masses() const {
     Vec masses(size());
     for (size_t i = 0; i < masses.size(); i++) {

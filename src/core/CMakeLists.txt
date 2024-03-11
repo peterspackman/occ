@@ -4,6 +4,7 @@ add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/diis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dimer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/eem.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/eeq.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/energy_components.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"

@@ -9,6 +9,7 @@
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
 #include <occ/solvent/surface.h>
+#include <occ/solvent/draco.h>
 
 using occ::Mat;
 using occ::Mat3N;
@@ -128,7 +129,7 @@ TEST_CASE("SMD CDS energy (naphthol)", "[solvent]") {
     auto nums = mol.atomic_numbers();
     auto pos = mol.positions();
     Mat3N pos_bohr = pos * occ::units::ANGSTROM_TO_BOHR;
-    auto params = occ::solvent::smd_solvent_parameters["water"];
+    auto params = occ::solvent::get_smd_parameters("water");
 
     Vec cds_radii = occ::solvent::smd::cds_radii(nums, params);
     auto surface =
@@ -183,4 +184,13 @@ TEST_CASE("SMD CDS energy (naphthol)", "[solvent]") {
     fmt::print("C  {:.3f}\n", C);
     fmt::print("N  {:.3f}\n", N);
     fmt::print("Cl {:.3f}\n", Cl);
+}
+
+TEST_CASE("draco", "[solvent]") {
+    auto mol = occ::io::molecule_from_xyz_string(UREA);
+    auto nums = mol.atomic_numbers();
+    auto pos = mol.positions();
+
+    Vec cn = occ::solvent::draco::coordination_numbers(mol.atoms());
+    fmt::print("Coordination numbers:\n{}\n", cn);
 }

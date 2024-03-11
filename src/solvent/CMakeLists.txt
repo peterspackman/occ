@@ -1,6 +1,7 @@
 add_library(occ_solvent
     "${CMAKE_CURRENT_SOURCE_DIR}/cosmo.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/draco.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parameters.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_correction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp"

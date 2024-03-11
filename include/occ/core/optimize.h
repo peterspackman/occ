@@ -160,7 +160,7 @@ class Brent {
               double dx_temp = deltax;
               deltax = rat;
               if ((p > tmp2 * (a - x)) && (p < tmp2 * (b - x)) &&
-                  (std::abs(p), std::abs(0.5 * tmp2 * dx_temp))) {
+                  (std::abs(p) < std::abs(0.5 * tmp2 * dx_temp))) {
                   rat = p * 1.0 / tmp2;
                   u = x + rat;
                   if (((u - a) < tol2) || ((b - u) < tol2)) {

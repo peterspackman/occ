@@ -1042,24 +1042,6 @@ class XTBCrystalGrowthCalculator {
     bool m_use_wolf_sum{false};
 };
 
-void list_available_solvents() {
-    occ::log::info("{: <32s} {:>10s} {:>10s} {:>10s} {:>10s} {:>10s} "
-
-                   "{:>10s} {:>10s}",
-                   "Solvent", "n (293K)", "acidity", "basicity", "gamma",
-                   "dielectric", "aromatic", "%F,Cl,Br");
-    occ::log::info("{:-<110s}", "");
-    for (const auto &solvent : occ::solvent::smd_solvent_parameters) {
-        const auto &param = solvent.second;
-        occ::log::info("{:<32s} {:10.4f} {:10.4f} {:10.4f} {:10.4f} "
-                       "{:10.4f} {:10.4f} {:10.4f}",
-                       solvent.first, param.refractive_index_293K,
-                       param.acidity, param.basicity, param.gamma,
-                       param.dielectric, param.aromaticity,
-                       param.electronegative_halogenicity);
-    }
-}
-
 namespace occ::main {
 
 CLI::App *add_cg_subcommand(CLI::App &app) {
@@ -1242,7 +1224,7 @@ CGResult run_cg(CGConfig const &config) {
 
 void run_cg_subcommand(CGConfig const &config) {
     if (config.list_solvents) {
-        list_available_solvents();
+	occ::solvent::list_available_solvents();
         return;
     }
     (void)run_cg(config);

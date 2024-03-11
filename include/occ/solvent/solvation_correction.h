@@ -22,6 +22,10 @@ class ContinuumSolvationModel {
     ContinuumSolvationModel(const std::vector<occ::core::Atom> &,
                             const std::string &solvent = "water");
 
+    ContinuumSolvationModel(const std::vector<occ::core::Atom> &,
+			    const Vec &atomic_charges,
+                            const std::string &solvent = "water");
+
     void set_solvent(const std::string &);
     const std::string &solvent() const { return m_solvent_name; }
 
@@ -93,6 +97,12 @@ class ContinuumSolvationModel {
     void write_surface_file(const std::string &filename);
 
   private:
+    void initialize_surfaces();
+
+    Vec m_coulomb_radii;
+    Vec m_cds_radii;
+    Vec m_atomic_charges;
+
     std::string m_solvent_name;
     Mat3N m_nuclear_positions;
     Vec m_nuclear_charges;
