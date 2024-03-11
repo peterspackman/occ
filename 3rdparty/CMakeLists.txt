@@ -24,16 +24,22 @@ CPMAddPackage(
     GIT_TAG "master"
 )
 
-CPMAddPackage(
-    NAME "nlohmann_json"
-    GITHUB_REPOSITORY "nlohmann/json"
-    VERSION "3.10.4"
-)
+#CPMAddPackage(
+#    NAME "nlohmann_json"
+#    GITHUB_REPOSITORY "nlohmann/json"
+#    VERSION "3.10.4"
+#)
 
 CPMAddPackage(
     NAME CLI11
     GITHUB_REPOSITORY "CLIUtils/CLI11"
     VERSION "2.3.2"
+)
+
+CPMAddPackage(
+    NAME mlx
+    GITHUB_REPOSITORY "ml-explore/mlx"
+    VERSION "0.6.0"
 )
 
 if(NOT "${USE_SYSTEM_EIGEN}")

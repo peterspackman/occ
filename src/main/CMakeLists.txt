@@ -70,3 +70,12 @@ set_target_properties(make_radial_interpolators
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+add_executable(occ-mlx EXCLUDE_FROM_ALL 
+    "${CMAKE_CURRENT_SOURCE_DIR}/mlx.cpp")
+target_link_libraries(occ-mlx
+    PUBLIC
+    mlx
+    Eigen3::Eigen
+)
+target_compile_features(occ-mlx PUBLIC cxx_std_20)
