@@ -119,7 +119,6 @@ constexpr int max_elem{87};
 Vec eeq_coordination_numbers(const IVec &atomic_numbers,
 			     const Mat3N &positions) {
     const int N = atomic_numbers.rows();
-    constexpr double eps = 1e-12;
     constexpr double kcn = 7.5;
 
     Vec cn = Vec::Zero(N);
@@ -128,11 +127,11 @@ Vec eeq_coordination_numbers(const IVec &atomic_numbers,
 
     for(int i = 0; i < N; i++) {
 	const int ni = atomic_numbers(i);
-	for(int j = 0; j <= i; j++ ) {
+	for(int j = 0; j < i; j++ ) {
 	    const int nj = atomic_numbers(j);
 
 	    const double r2 = (positions.col(i) - positions.col(j)).squaredNorm();
-	    if(r2 > cutoff2 || r2 < eps) continue;
+	    if(r2 > cutoff2) continue;
 	    const double r = std::sqrt(r2);
 
 	    const double rc = (impl::covalent[ni] + impl::covalent[nj]) * occ::units::ANGSTROM_TO_BOHR;

@@ -492,7 +492,6 @@ TEST_CASE("Quasirandom KGF", "[quasirandom]") {
     REQUIRE(occ::util::all_close(pts, expected));
 }
 
-
 TEST_CASE("EEM water", "[charge]") {
     occ::Mat3N pos(3, 3);
     occ::IVec nums(3);

@@ -610,7 +610,7 @@ void load_solvent_parameters() {
     }
     else {
 	nlohmann::json json_data;
-	occ::log::info("Loading SMD parameters from {}", smd_filepath);
+	occ::log::debug("Loading SMD parameters from {}", smd_filepath);
 	std::ifstream input(smd_filepath);
 	input >> json_data;
 	for(const auto &j: json_data.items()) {
@@ -632,7 +632,7 @@ nlohmann::json load_draco_parameters() {
     }
     else {
 	nlohmann::json json_data;
-	occ::log::info("Loading DRACO parameters from {}", draco_filepath);
+	occ::log::debug("Loading DRACO parameters from {}", draco_filepath);
 	std::ifstream input(draco_filepath);
 	input >> json_data;
 	return json_data;

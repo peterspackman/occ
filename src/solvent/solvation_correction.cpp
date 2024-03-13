@@ -52,6 +52,8 @@ ContinuumSolvationModel::ContinuumSolvationModel(
 
     IVec nums = m_nuclear_charges.cast<int>();
     set_solvent(m_solvent_name);
+
+    occ::log::warn("DRACO implementation currently assumes EEQ charges");
     m_coulomb_radii =
         occ::solvent::draco::smd_coulomb_radii(m_atomic_charges, atoms, m_params);
     m_cds_radii = occ::solvent::smd::cds_radii(nums, m_params);
