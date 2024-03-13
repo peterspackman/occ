@@ -659,7 +659,6 @@ SMDSolventParameters get_smd_parameters(const std::string &name) {
 
 void list_available_solvents() {
     occ::log::info("{: <32s} {:>10s} {:>10s} {:>10s} {:>10s} {:>10s} "
-
                    "{:>10s} {:>10s}",
                    "Solvent", "n (293K)", "acidity", "basicity", "gamma",
                    "dielectric", "aromatic", "%F,Cl,Br");

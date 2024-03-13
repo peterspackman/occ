@@ -197,12 +197,12 @@ TEST_CASE("SMD CDS energy (naphthol)", "[solvent]") {
 TEST_CASE("draco", "[solvent]") {
     auto mol = occ::io::molecule_from_xyz_string(WATER);
     auto nums = mol.atomic_numbers();
-    auto pos = mol.positions();
+    auto pos = mol.positions() * occ::units::ANGSTROM_TO_BOHR;
     auto params = occ::solvent::get_smd_parameters("toluene");
 
-    Vec cn = occ::solvent::draco::coordination_numbers(mol.atoms());
+    Vec cn = occ::solvent::draco::coordination_numbers(nums, pos);
     fmt::print("Coordination numbers:\n{}\n", cn);
     Vec q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
 
-    Vec radii = occ::solvent::draco::smd_coulomb_radii(q, mol.atoms(), params);
+    Vec radii = occ::solvent::draco::smd_coulomb_radii(q, nums, pos, params);
 }

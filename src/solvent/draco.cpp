@@ -36,23 +36,24 @@ inline double gfn_count(double k, double r, double r0) {
     return 1.0/(1.0 + std::exp(-k*(r0/r-1.0)));
 }
 
-Vec coordination_numbers(const std::vector<core::Atom> &atoms) {
+Vec coordination_numbers(const IVec &nums, const Mat3N &pos_bohr) {
     constexpr double ka = 10.0; // steepness of first counting func
     constexpr double kb = 20.0; // steepness of second counting func
     constexpr double r_shift = 2.0; // offset of second counting func
     constexpr double default_cutoff = 25.0;
     constexpr double cutoff2 = default_cutoff * default_cutoff;
 
-    Vec cn = Vec::Zero(atoms.size());
+    const int N = nums.rows();
+    Vec cn = Vec::Zero(nums.rows());
 
-    for(int i = 0; i < atoms.size(); i++) {
-	const auto &ai = atoms[i];
-	const double cov_i = impl::get_covalent_radius_d3(ai.atomic_number);
+    for(int i = 0; i < N; i++) {
+	const double cov_i = impl::get_covalent_radius_d3(nums(i));
+	Vec3 pos_i = pos_bohr.col(i);
 	for(int j = 0; j < i; j++) {
-	    const auto &aj = atoms[j];
-	    double r2 = ai.square_distance(aj);
+	    Vec3 pos_j = pos_bohr.col(j);
+	    double r2 = (pos_i - pos_j).squaredNorm();
 	    if(r2 > cutoff2) continue;
-	    const double cov_j = impl::get_covalent_radius_d3(aj.atomic_number);
+	    const double cov_j = impl::get_covalent_radius_d3(nums(j));
 	    double r = std::sqrt(r2);
 	    double rc = cov_i + cov_j;
 	    double count = gfn_count(ka, r, rc) * gfn_count(kb, r, rc + r_shift);
@@ -65,123 +66,7 @@ Vec coordination_numbers(const std::vector<core::Atom> &atoms) {
     return cn;
 }
 
-
-/*
-   subroutine calc_radii(mol, q, radtype, solvent, prefac, expo, o_shift, &
-                  & radii_in, cn, k1, radii_out, atoms_to_change_radii, damp_small_rad,&
-                  & dqdr, dcndr, drdr)
-      use iso_fortran_env, only: output_unit
-      !> Molecular structure data
-      type(structure_type), intent(inout) :: mol
-      !> Charge model charges
-      real(wp), intent(in) :: q(mol%nat)
-
-      !> Parameter
-      real(wp), intent(in) :: prefac(:), expo(:), o_shift(:), k1(:)
-
-      !> Coordination number
-      real(wp), intent(in) :: cn(:)
-
-      !> Derivatives
-      real(wp), intent(in), optional, contiguous :: dqdr(:, :, :), dcndr(:, :, :)
-      real(wp), intent(out), allocatable, optional :: drdr(:, :, :)
-
-      !> Solvent
-      character(len=*), intent(in) :: solvent
-      !> Radii type
-      character(len=*), intent(in) :: radtype
-      !> Damping if radii too small?
-      logical, intent(in) :: damp_small_rad
-      !> Radii to be scaled
-      integer, intent(in) :: atoms_to_change_radii(:)
-      real(wp), intent(in) :: radii_in(mol%nat)
-      real(wp), intent(out) :: radii_out(mol%nat)
-      real(wp) :: asym, x3, x2, x1, a, b, c, d, k
-      real(wp) :: eps, alpha_beta_scaling_h, alpha_beta_scaling_o
-      real(wp) :: alpha, beta
-      real(wp) :: outer
-
-      real(wp), parameter :: pi = 4.0_wp*atan(1.0_wp)
-
-      integer :: i
-
-      logical :: grad
-
-      character(len=*), parameter :: source = "calc_radii"
-
-      alpha = get_alpha(solvent)
-      beta = get_beta(solvent)
-      eps = get_eps(trim(solvent))
-
-      grad = present(dqdr) .and. present(dcndr) .and. present(drdr)
-      if (grad) allocate (drdr(3, mol%nat, mol%nat))
-
-      do i = 1, mol%nat
-         if (any(atoms_to_change_radii == mol%num(mol%id(i)))) then
-            a = prefac(mol%num(mol%id(i)))
-            b = expo(mol%num(mol%id(i)))
-            k = k1(mol%num(mol%id(i)))
-            radii_out(i) = erf(a*(q(i) + k*q(i)*cn(i) - b)) + 1
-            if (damp_small_rad .and. (radii_out(i) < min_rad(radtype))) &
-                    & radii_out(i) = min_rad(radtype) !Set value to minimal radii tested
-            if (grad) then
-               outer = 2*exp(-a**2*(q(i) + k*q(i)*cn(i) - b)**2)/sqrt(pi)
-               drdr(:, :, i) = a*(dqdr(:, :, i) + k*dqdr(:, :, i)*cn(i) + q(i)*k*dcndr(:, :, i))*outer
-            end if
-         else
-            radii_out(i) = radii_in(i)/aatoau
-         end if
-      end do
-
-      select case (radtype)
-      case ('bondi')
-         !Use the scaling on bondi radii
-         do i = 1, mol%nat
-            if (any(atoms_to_change_radii == mol%num(mol%id(i)))) then
-               radii_out(i) = radii_out(i)*(radii_in(i)/aatoau)
-               if (grad) then
-                  drdr(:, :, i) = drdr(:, :, i)*(radii_in(i)/aatoau)
-               end if
-            end if
-         end do
-
-      case ('cpcm', 'cosmo')
-         !Use the scaling on cpcm radii
-         do i = 1, mol%nat
-            if (any(atoms_to_change_radii == mol%num(mol%id(i)))) then
-               !> Change only radii of Oxygene (H-bond acceptor)
-               if (mol%num(mol%id(i)) == 8 .AND. get_alpha(solvent) < 0.43) then
-                  radii_out(i) = radii_out(i) + (o_shift(mol%num(mol%id(i)))*(0.43 - get_alpha(solvent)))
-               end if
-               radii_out(i) = radii_out(i)*(radii_in(i)/aatoau)
-               if (grad) then
-                  drdr(:, :, i) = drdr(:, :, i)*(radii_in(i)/aatoau)
-               end if
-            end if
-         end do
-
-      case ('smd')
-         !Use the scaling on SMD radii
-         do i = 1, mol%nat
-            if (any(atoms_to_change_radii == mol%num(mol%id(i)))) then
-               !> Change only radii of Oxygene (H-bond acceptor)
-               if (mol%num(mol%id(i)) == 8 .AND. get_alpha(solvent) < 0.43) then
-                  radii_out(i) = radii_out(i) + (o_shift(mol%num(mol%id(i)))*(0.43 - get_alpha(solvent)))
-               end if
-               radii_out(i) = radii_out(i)*(radii_in(i)/aatoau)
-               if (grad) then
-                  drdr(:, :, i) = drdr(:, :, i)*(radii_in(i)/aatoau)
-               end if
-            end if
-         end do
-      end select
-
-   end subroutine calc_radii
-
-end module draco_calc
-*/
-
-Vec smd_coulomb_radii(const Vec &charges, const std::vector<core::Atom> &atoms, const SMDSolventParameters &params) {
+Vec smd_coulomb_radii(const Vec &charges, const IVec &nums, const Mat3N &pos_bohr,  const SMDSolventParameters &params) {
     nlohmann::json draco_params = load_draco_parameters();
     if(draco_params.empty()) throw std::runtime_error("No draco parameters set: did you set the OCC_DATA_PATH environment variable?");
 
@@ -200,13 +85,14 @@ Vec smd_coulomb_radii(const Vec &charges, const std::vector<core::Atom> &atoms, 
 	draco_params["eeq_smd"]["o_shift"].get_to(o_shift);
     }
 
-    auto cn = coordination_numbers(atoms);
+    auto cn = coordination_numbers(nums, pos_bohr);
 
-    Vec result(atoms.size());
-    Vec unscaled(atoms.size());
+    const int N = nums.rows();
+    Vec result(N);
+    Vec unscaled(N);
 
-    for(int i = 0; i < atoms.size(); i++) {
-	const int num = atoms[i].atomic_number;
+    for(int i = 0; i < N; i++) {
+	const int num = nums(i);
 	const int idx = num - 1;
 	double a = prefactors[idx];
 	double b = exponents[idx];
@@ -222,9 +108,9 @@ Vec smd_coulomb_radii(const Vec &charges, const std::vector<core::Atom> &atoms, 
 
     occ::log::debug("DRACO scaled radii results:");
     occ::log::debug("{:>4s} {:>4s} {:>12s} {:>12s} {:>12s} {:>12s}", "idx", "sym", "charge", "cn", "scaled", "smd");
-    for(int i = 0; i < atoms.size(); i++) {
+    for(int i = 0; i < N; i++) {
 	occ::log::debug("{:4d} {:>4s} {: 12.5f} {: 12.5f} {: 12.5f} {: 12.5f}",
-		       i, core::Element(atoms[i].atomic_number).symbol(),
+		       i, core::Element(nums(i)).symbol(),
 		       charges(i), cn(i),
 		       result(i) * occ::units::BOHR_TO_ANGSTROM, unscaled(i) * occ::units::BOHR_TO_ANGSTROM);
     }
