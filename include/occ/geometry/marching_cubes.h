@@ -2,9 +2,18 @@
 #include <array>
 #include <occ/core/linear_algebra.h>
 #include <occ/geometry/index_cache.h>
+#include <type_traits>
 #include <vector>
 
 namespace occ::geometry::mc {
+
+namespace impl {
+template<typename T, typename = void>
+struct has_fill_layer : std::false_type {};
+
+template<typename T>
+struct has_fill_layer<T, std::void_t<decltype(std::declval<T>().fill_layer(std::declval<float>(), std::declval<Eigen::Ref<Eigen::MatrixXf>>()))>> : std::true_type {};
+}
 
 namespace tables {
 static const uint8_t CORNERS[8][3] = {
@@ -318,8 +327,8 @@ template <typename T> T interpolate(T a, T b, float t) {
 
 struct MarchingCubes {
     size_t size;
-    std::vector<float> layer0, layer1;
-    MarchingCubes(size_t s) : size(s), layer0(s * s), layer1(s * s) {}
+    Eigen::MatrixXf layer0, layer1;
+    MarchingCubes(size_t s) : size(s), layer0(s, s), layer1(s, s) {}
 
     template <typename S>
     void extract(const S &source, std::vector<float> &vertices,
@@ -360,11 +369,16 @@ struct MarchingCubes {
         const size_t size_less_one = size - 1;
         const float size_inv = 1.0 / size_less_one;
 
-        for (size_t y = 0; y < size; y++) {
-            for (size_t x = 0; x < size; x++) {
-                layer0[y * size + x] = source(x * size_inv, y * size_inv, 0.0);
-            }
-        }
+	if constexpr(impl::has_fill_layer<S>::value) {
+	    source.fill_layer(0.0, layer0);
+	}
+	else {
+	    for (size_t y = 0; y < size; y++) {
+		for (size_t x = 0; x < size; x++) {
+		    layer0(x, y) = source(x * size_inv, y * size_inv, 0.0);
+		}
+	    }
+	}
 
         std::array<Eigen::Vector3f, 8> corners{Eigen::Vector3f::Zero()};
         std::array<float, 8> values{0.0f};
@@ -373,12 +387,17 @@ struct MarchingCubes {
         uint32_t index = 0;
 
         for (size_t z = 0; z < size; z++) {
-            for (size_t y = 0; y < size; y++) {
-                for (size_t x = 0; x < size; x++) {
-                    layer1[y * size + x] =
-                        source(x * size_inv, y * size_inv, (z + 1) * size_inv);
-                }
-            }
+	    if constexpr(impl::has_fill_layer<S>::value) {
+		source.fill_layer((z + 1) * size_inv, layer1);
+	    }
+	    else {
+		for (size_t y = 0; y < size; y++) {
+		    for (size_t x = 0; x < size; x++) {
+			layer1(x, y) =
+			    source(x * size_inv, y * size_inv, (z + 1) * size_inv);
+		    }
+		}
+	    }
 
             for (size_t y = 0; y < size_less_one; y++) {
                 for (size_t x = 0; x < size_less_one; x++) {
@@ -390,9 +409,9 @@ struct MarchingCubes {
                                       (z + cz) * size_inv};
 
                         if (cz == 0) {
-                            values[i] = layer0[(y + cy) * size + x + cx];
+                            values[i] = layer0(x + cx, y + cy);
                         } else {
-                            values[i] = layer1[(y + cy) * size + x + cx];
+                            values[i] = layer1(x + cx, y + cy);
                         }
                     }
 
