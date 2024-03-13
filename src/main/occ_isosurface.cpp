@@ -9,6 +9,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>
+#include <occ/geometry/marching_cubes.h>
 #include <occ/io/xyz.h>
 #include <occ/io/obj.h>
 #include <occ/io/ply.h>
@@ -58,6 +59,31 @@ IsosurfaceMesh as_mesh(const F &b, const std::vector<float> &vertices,
 }
 
 template <typename F> IsosurfaceMesh extract_surface(F &func) {
+    occ::timing::StopWatch sw;
+    size_t max_depth = func.subdivisions();
+    auto mc = occ::geometry::mc::MarchingCubes(std::pow(2, max_depth));
+    occ::log::debug("target separation: {}",
+                    (func.side_length() / std::pow(2, max_depth)) *
+                        occ::units::BOHR_TO_ANGSTROM);
+    occ::log::debug("naive voxel count: {}",
+                    std::pow(std::pow(2, max_depth) + 1, 3));
+    std::vector<float> vertices;
+    std::vector<float> normals;
+    std::vector<uint32_t> faces;
+    sw.start();
+    mc.extract_with_normals(func, vertices, faces, normals);
+    sw.stop();
+    double max_calls = std::pow(2, 3 * max_depth);
+    occ::log::debug("{} calls ({} % of conventional)", func.num_calls(),
+                    (func.num_calls() / max_calls) * 100);
+    occ::log::info("Surface extraction took {:.5f} s", sw.read());
+
+    occ::log::info("Surface has {} vertices, {} faces", vertices.size() / 3,
+                   faces.size() / 3);
+    return as_mesh(func, vertices, faces, normals);
+}
+
+template <typename F> IsosurfaceMesh extract_surface_hashed(F &func) {
     size_t min_depth = 4;
     occ::timing::StopWatch sw;
     size_t max_depth = func.subdivisions();
@@ -196,8 +222,12 @@ CLI::App *add_isosurface_subcommand(CLI::App &app) {
     iso->add_option("--separation", config->separation,
                     "targt voxel separation");
     iso->add_option("--isovalue", config->isovalue, "target isovalue");
+    iso->add_flag("--hashed", config->use_hashed_mc, "use linear hashed octree");
     iso->add_option("--background-density", config->background_density,
                     "add background density to close surface");
+
+    iso->add_option("--output,-o", config->output_filename,
+                    "destination to write file");
 
     iso->fallthrough();
     iso->callback([config]() { run_isosurface_subcommand(*config); });
@@ -236,7 +266,12 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
         auto func = StockholderWeightFunctor(
             m1, m2, config.separation * occ::units::ANGSTROM_TO_BOHR);
         func.set_background_density(config.background_density);
-        mesh = extract_surface(func);
+	if(config.use_hashed_mc) {
+	    mesh = extract_surface_hashed(func);
+	}
+	else {
+	    mesh = extract_surface(func);
+	}
         properties = compute_surface_properties(m1, m2, mesh.vertices);
     } else {
         Molecule m = occ::io::molecule_from_xyz_file(config.geometry_filename);
@@ -254,7 +289,12 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
         auto func = PromoleculeDensityFunctor(
             m, config.separation * occ::units::ANGSTROM_TO_BOHR);
         func.set_isovalue(config.isovalue);
-        mesh = extract_surface(func);
+	if(config.use_hashed_mc) {
+	    mesh = extract_surface_hashed(func);
+	}
+	else {
+	    mesh = extract_surface(func);
+	}
     }
 
     Eigen::Vector3f lower_left = mesh.vertices.rowwise().minCoeff();
@@ -264,8 +304,8 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
     occ::log::info("Upper corner of mesh: [{:.3f} {:.3f} {:.3f}]",
                    upper_right(0), upper_right(1), upper_right(2));
 
-    occ::log::info("Writing surface to {}", "surface.obj");
-    write_obj_file("surface.obj", mesh, properties);
+    occ::log::info("Writing surface to {}", config.output_filename);
+    write_obj_file(config.output_filename, mesh, properties);
 }
 
 } // namespace occ::main
