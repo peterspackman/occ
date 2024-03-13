@@ -6,6 +6,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/slater/slaterbasis.h>
+#include <occ/gto/density.h>
 #include <vector>
 
 namespace occ::main {
@@ -18,6 +19,7 @@ struct AxisAlignedBoundingBox {
         return (lower.array() <= point.array()).all() &&
                (upper.array() >= point.array()).all();
     }
+
 };
 
 using LinearInterpolatorFloat =
@@ -253,5 +255,82 @@ class PromoleculeDensityFunctor {
 
     ankerl::unordered_dense::map<int, LinearInterpolatorFloat> m_interpolators;
 };
+
+
+class ElectronDensityFunctor {
+  public:
+    ElectronDensityFunctor(const occ::qm::Wavefunction &wfn, float sep);
+
+    float operator()(float x, float y, float z) const {
+        float result{0.0};
+        Mat3N pos(3, 1);
+	pos(0, 0) = x * m_cube_side_length + m_origin(0);
+	pos(1, 0) = y * m_cube_side_length + m_origin(1);
+	pos(2, 0) = z * m_cube_side_length + m_origin(2);
+
+	Eigen::Vector3f posf = pos.col(0).cast<float>();
+        if (!m_bounding_box.inside(posf))
+            return 1.0e8; // return an arbitrary large distance
+        m_num_calls++;
+
+        occ::timing::start(occ::timing::category::isosurface_function);
+
+	auto rho = occ::density::evaluate_density_on_grid<0>(m_wfn, pos);
+	result = rho(0);
+        occ::timing::stop(occ::timing::category::isosurface_function);
+        float v = 0.5 - (result / (m_isovalue + result));
+        return m_diagonal_scale_factor * v;
+    }
+
+    OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
+        double result{0.0};
+        Eigen::Vector3f grad(0.0, 0.0, 0.0);
+        Mat3N pos(3, 1);
+	pos(0, 0) = x * m_cube_side_length + m_origin(0);
+	pos(1, 0) = y * m_cube_side_length + m_origin(1);
+	pos(2, 0) = z * m_cube_side_length + m_origin(2);
+
+	Eigen::Vector3f posf = pos.col(0).cast<float>();
+        if (!m_bounding_box.inside(posf))
+            return posf.normalized();
+
+        m_num_calls++;
+        occ::timing::start(occ::timing::category::isosurface_function);
+	auto rho = occ::density::evaluate_density_on_grid<1>(m_wfn, pos);
+	grad(0) = -rho(0, 1);
+	grad(1) = -rho(0, 2);
+	grad(2) = -rho(0, 3);
+        occ::timing::stop(occ::timing::category::isosurface_function);
+        return grad.normalized();
+    }
+
+    inline float isovalue() const { return m_isovalue; }
+
+    inline void set_isovalue(float iso) {
+        m_isovalue = iso;
+        update_region_for_isovalue();
+    }
+
+    inline float side_length() const { return m_cube_side_length; }
+    inline const auto &origin() const { return m_origin; }
+    inline int subdivisions() const { return m_subdivisions; }
+    inline int num_calls() const { return m_num_calls; }
+
+  private:
+    void update_region_for_isovalue();
+    float m_diagonal_scale_factor{0.5f};
+
+    float m_buffer{8.0};
+    float m_cube_side_length{0.0};
+    qm::Wavefunction m_wfn;
+    Eigen::Vector3f m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
+    float m_isovalue{0.002};
+    mutable int m_num_calls{0};
+    int m_subdivisions{1};
+    float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
+
+    AxisAlignedBoundingBox m_bounding_box;
+};
+
 
 } // namespace occ::main

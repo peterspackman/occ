@@ -75,6 +75,7 @@ struct Wavefunction {
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
 
     static Wavefunction load(const std::string &);
+    static bool is_likely_wavefunction_filename(const std::string &);
 
     inline int multiplicity() const { return abs(n_beta() - n_alpha()) + 1; }
     inline int charge() const {

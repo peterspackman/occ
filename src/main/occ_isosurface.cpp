@@ -238,7 +238,19 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
     IsosurfaceMesh mesh;
     VertexProperties properties;
 
-    if (!config.environment_filename.empty()) {
+    if(occ::qm::Wavefunction::is_likely_wavefunction_filename(config.geometry_filename)) {
+
+	auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
+        auto func = ElectronDensityFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
+        func.set_isovalue(config.isovalue);
+	if(config.use_hashed_mc) {
+	    mesh = extract_surface_hashed(func);
+	}
+	else {
+	    mesh = extract_surface(func);
+	}
+    }
+    else if (!config.environment_filename.empty()) {
         Molecule m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
         Molecule m2 =
             occ::io::molecule_from_xyz_file(config.environment_filename);

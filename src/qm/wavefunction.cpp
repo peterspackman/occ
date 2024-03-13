@@ -406,6 +406,14 @@ Wavefunction Wavefunction::load(const std::string &filename) {
 	fmt::format("Unknown wavefunction format: '{}', could not read in", ext)
     );
 }
+bool Wavefunction::is_likely_wavefunction_filename(const std::string &filename) {
+    fs::path path(filename);
+    std::string ext = path.extension().string();
+    if(ext == ".fchk") return true;
+    else if(ext ==  ".molden") return true;
+    else if(io::valid_json_format_string(ext)) return true;
+    return false;
+}
 
 bool Wavefunction::save(const std::string &filename) {
     fs::path path(filename);

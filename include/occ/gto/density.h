@@ -2,6 +2,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/wavefunction.h>
 
 namespace occ::density {
 using occ::qm::SpinorbitalKind;
@@ -69,5 +70,23 @@ Mat evaluate_density_on_grid(const qm::AOBasis &basis, const Mat &D,
     auto gto_values = occ::gto::evaluate_basis(basis, grid_pts, max_derivative);
     return evaluate_density<max_derivative, spinorbital_kind>(D, gto_values);
 }
+
+template <size_t max_derivative>
+Mat evaluate_density_on_grid(const qm::Wavefunction &wfn, const occ::Mat3 &grid_pts) {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+
+    auto gto_values = occ::gto::evaluate_basis(wfn.basis, grid_pts, max_derivative);
+    switch(wfn.mo.kind) {
+	case R:
+	    return evaluate_density<max_derivative, R>(wfn.mo.D, gto_values);
+	case U:
+	    return evaluate_density<max_derivative, U>(wfn.mo.D, gto_values);
+	case G:
+	    throw std::runtime_error("Invalid spinorbital kind (general)");
+    }
+}
+
 
 } // namespace occ::density

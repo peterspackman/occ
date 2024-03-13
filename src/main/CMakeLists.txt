@@ -28,6 +28,7 @@ target_link_libraries(occ_main
     occ_crystal
     occ_slater
     occ_geometry
+    occ_gto
     CLI11::CLI11
 )
 target_include_directories(occ_main PUBLIC 
