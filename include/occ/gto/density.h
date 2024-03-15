@@ -72,7 +72,7 @@ Mat evaluate_density_on_grid(const qm::AOBasis &basis, const Mat &D,
 }
 
 template <size_t max_derivative>
-Mat evaluate_density_on_grid(const qm::Wavefunction &wfn, const occ::Mat3 &grid_pts) {
+Mat evaluate_density_on_grid(const qm::Wavefunction &wfn, const occ::Mat &grid_pts) {
     constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;

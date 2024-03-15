@@ -44,6 +44,8 @@ struct MolecularOrbitals {
         }
     }
 
+    Mat density_matrix_single_mo(int mo_index) const;
+
     MolecularOrbitals
     symmetrically_orthonormalized(const Mat &overlap_matrix) const;
     MolecularOrbitals as_kind(SpinorbitalKind) const;

@@ -11,8 +11,16 @@ namespace impl {
 template<typename T, typename = void>
 struct has_fill_layer : std::false_type {};
 
+template<typename T, typename = void>
+struct has_fill_normals : std::false_type {};
+
 template<typename T>
 struct has_fill_layer<T, std::void_t<decltype(std::declval<T>().fill_layer(std::declval<float>(), std::declval<Eigen::Ref<Eigen::MatrixXf>>()))>> : std::true_type {};
+
+template<typename T>
+struct has_fill_normals<T, std::void_t<decltype(
+	std::declval<T>().fill_normals(std::declval<const std::vector<float>&>(), std::declval<std::vector<float>&>()))>> : std::true_type {};
+
 }
 
 namespace tables {
@@ -348,16 +356,23 @@ struct MarchingCubes {
                               std::vector<float> &normals) {
         auto fn = [&vertices, &source,
                    &normals](const Eigen::Vector3f &vertex) {
-            auto normal = source.normal(vertex(0), vertex(1), vertex(2));
             vertices.push_back(vertex[0]);
             vertices.push_back(vertex[1]);
             vertices.push_back(vertex[2]);
-            normals.push_back(normal[0]);
-            normals.push_back(normal[1]);
-            normals.push_back(normal[2]);
+
+	    if constexpr(!impl::has_fill_normals<S>::value) {
+		auto normal = source.normal(vertex(0), vertex(1), vertex(2));
+		normals.push_back(normal[0]);
+		normals.push_back(normal[1]);
+		normals.push_back(normal[2]);
+	    }
         };
 
         extract_impl(source, fn, indices);
+	if constexpr(impl::has_fill_normals<S>::value) {
+	    fmt::print("Filling normals\n");
+	    source.fill_normals(vertices, normals);
+	}
     }
 
   private:

@@ -226,4 +226,52 @@ void ElectronDensityFunctor::update_region_for_isovalue() {
                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
 
+ElectricPotentialFunctor::ElectricPotentialFunctor(
+    const occ::qm::Wavefunction &wfn, float sep) 
+    : m_wfn(wfn), m_hf(wfn.basis), m_target_separation(sep) {
+
+    occ::core::Molecule mol(m_wfn.atoms);
+    Mat3N coordinates = mol.positions().array() * occ::units::ANGSTROM_TO_BOHR;
+
+    m_minimum_atom_pos = coordinates.rowwise().minCoeff().cast<float>();
+    m_maximum_atom_pos = coordinates.rowwise().maxCoeff().cast<float>();
+
+    update_region_for_isovalue();
+}
+
+void ElectricPotentialFunctor::update_region_for_isovalue() {
+
+    m_buffer = 5.0;
+
+    m_origin = m_minimum_atom_pos.array() - m_buffer;
+    m_cube_side_length = (m_maximum_atom_pos - m_origin).maxCoeff() + m_buffer;
+
+    m_subdivisions = std::ceil(
+        std::log(m_cube_side_length / m_target_separation) / std::log(2));
+
+    double new_m_cube_side_length =
+        m_target_separation * std::pow(2, m_subdivisions);
+    occ::log::info("Buffer region: {}", m_buffer);
+    occ::log::info("Cube side length: {}", m_cube_side_length);
+    occ::log::info("Target separation: {}", m_target_separation);
+    occ::log::info("Suggested side m_cube_side_length: {}",
+                   new_m_cube_side_length);
+    occ::log::info("Subdivisions: {} (cube size = {})", m_subdivisions,
+                   new_m_cube_side_length / std::pow(2, m_subdivisions));
+    m_cube_side_length = new_m_cube_side_length;
+
+    // set up bounding box to short cut if
+    // we have a very anisotropic molecule
+    m_bounding_box.lower = m_origin;
+    m_bounding_box.upper = m_maximum_atom_pos;
+    m_bounding_box.upper.array() += m_buffer;
+
+    // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
+    // i.e. their diagonals are sqrt(3)
+    //
+    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
+    occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
+                   m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
+}
+
 } // namespace occ::main

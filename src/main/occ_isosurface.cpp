@@ -218,6 +218,9 @@ CLI::App *add_isosurface_subcommand(CLI::App &app) {
     iso->add_option("environment", config->environment_filename,
                     "environment geometry file (xyz)");
 
+    iso->add_option("--kind", config->kind,
+                    "surface kind");
+
     iso->add_option("--max-depth", config->max_depth, "Maximum voxel depth");
     iso->add_option("--separation", config->separation,
                     "targt voxel separation");
@@ -239,14 +242,16 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
     VertexProperties properties;
 
     if(occ::qm::Wavefunction::is_likely_wavefunction_filename(config.geometry_filename)) {
-
-	auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
-        auto func = ElectronDensityFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
-        func.set_isovalue(config.isovalue);
-	if(config.use_hashed_mc) {
-	    mesh = extract_surface_hashed(func);
+	if(config.kind == "esp") {
+	    auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
+	    auto func = ElectricPotentialFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
+	    func.set_isovalue(config.isovalue);
+	    mesh = extract_surface(func);
 	}
 	else {
+	    auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
+	    auto func = ElectronDensityFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
+	    func.set_isovalue(config.isovalue);
 	    mesh = extract_surface(func);
 	}
     }

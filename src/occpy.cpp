@@ -126,6 +126,8 @@ NB_MODULE(_occpy, m) {
         .def("translate", &Wavefunction::apply_translation)
         .def("transform", &Wavefunction::apply_transformation)
         .def("charge", &Wavefunction::charge)
+	.def_static("load", &Wavefucntion::load)
+	.def("save", &Wavefucntion::save)
         .def_ro("basis", &Wavefunction::basis)
         .def("to_fchk",
              [](Wavefunction &wfn, const std::string &filename) {
@@ -175,7 +177,10 @@ NB_MODULE(_occpy, m) {
         .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
         .def("overlap_matrix_for_basis", &HartreeFock::compute_overlap_matrix_for_basis)
         .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
-        .def("scf", [](HartreeFock &hf) { return HF(hf); })
+        .def("scf", [](HartreeFock &hf, bool u = false) { 
+		if(u) return HF(hf, U); 
+		else return HF(hf, R); 
+	})
         .def("set_precision", &HartreeFock::set_precision)
         .def("coulomb_matrix",
              [](const HartreeFock &hf, const MolecularOrbitals &mo) {
@@ -219,7 +224,10 @@ NB_MODULE(_occpy, m) {
              [](DFT &dft, const MolecularOrbitals &mo) {
                  return dft.compute_fock(mo);
              })
-        .def("scf", [](DFT &dft) { return KS(dft); })
+	.def("scf", [](DFT &dft, bool u = false) { 
+		if(u) return KS(dft, U); 
+		else return KS(dft, R); 
+	})
         .def("__repr__", [](const DFT &dft) {
             return fmt::format("<occ.DFT {} ({} atoms)>", dft.method_string(),
                                dft.atoms().size());

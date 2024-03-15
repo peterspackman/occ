@@ -104,6 +104,12 @@ struct Wavefunction {
 
     Vec mulliken_charges() const;
 
+    Vec electron_density(const Mat3N &points) const;
+    Mat3N electron_density_gradient(const Mat3N &points) const;
+
+    Vec electron_density_mo(const Mat3N &points, int mo_index) const;
+    Mat3N electron_density_mo_gradient(const Mat3N &points, int mo_index) const;
+
     Vec electric_potential(const Mat3N &points) const;
     Mat3N electric_field(const Mat3N &points) const;
 

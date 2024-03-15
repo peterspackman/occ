@@ -581,4 +581,14 @@ MolecularOrbitals MolecularOrbitals::symmetrically_orthonormalized(
     return result;
 }
 
+Mat MolecularOrbitals::density_matrix_single_mo(int mo_index) const {
+    if (C.size() == 0 || mo_index >= C.cols()) {
+        return Mat::Zero(C.rows(), C.rows());
+    }
+
+    Vec ci = C.col(mo_index);
+    Mat D = 2 * ci * ci.transpose();
+    return D;
+}
+
 } // namespace occ::qm
