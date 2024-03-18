@@ -7,6 +7,7 @@
 #include <occ/core/units.h>
 #include <occ/slater/slaterbasis.h>
 #include <occ/gto/density.h>
+#include <occ/core/parallel.h>
 #include <occ/qm/hf.h>
 #include <vector>
 
@@ -33,9 +34,7 @@ void fill_layer(Func &f, const FillParams &params,
     }
     pos.row(2).setConstant(offset * params.side_length + params.origin(2));
 
-    occ::timing::start(occ::timing::category::isosurface_function);
-    Vec values = f(pos);
-    occ::timing::stop(occ::timing::category::isosurface_function);
+    auto values = f(pos);
 
     for(int x = 0, idx = 0; x < layer.rows(); x++) {
 	for(int y = 0; y < layer.cols(); y++) {
@@ -58,9 +57,7 @@ void fill_normals(Func &f, const FillParams &params,
 	pos(2, i) = cube_pos(2, i) * params.side_length + params.origin(2);
     }
 
-    occ::timing::start(occ::timing::category::isosurface_function);
     Mat3N grad = f(pos);
-    occ::timing::stop(occ::timing::category::isosurface_function);
     for(int i = 0; i < grad.cols(); i++) {
 	Vec3 normal = -grad.col(i).normalized();
 	normals.push_back(normal(0));
@@ -98,15 +95,6 @@ struct InterpolatorParams {
     float domain_upper{144.0};
 };
 
-inline float smoothstep(float x, float l, float u) {
-    float x2 = x * x;
-    if (x < 0.0)
-        return l;
-    if (x > 1.0)
-        return u;
-    return (u - l) * (x2 - 2.0f * x2 * x) + l;
-}
-
 class StockholderWeightFunctor {
   public:
     StockholderWeightFunctor(const occ::core::Molecule &in,
@@ -122,7 +110,6 @@ class StockholderWeightFunctor {
         if (!m_bounding_box.inside(pos))
             return 1.0e8; // return an arbitrary large distance
         m_num_calls++;
-        occ::timing::start(occ::timing::category::isosurface_function);
 
         for (const auto &[interp, interp_positions, threshold, interior] :
              m_atom_interpolators) {
@@ -139,63 +126,67 @@ class StockholderWeightFunctor {
             }
         }
 
-        occ::timing::stop(occ::timing::category::isosurface_function);
-        float v = (m_isovalue - tot_i / (tot_i + tot_e + m_background_density));
-
-        return m_diagonal_scale_factor * v;
+        return m_isovalue - tot_i / (tot_i + tot_e + m_background_density);
     }
 
-    void fill_layer_is_slower(float offset, Eigen::Ref<Eigen::MatrixXf> layer) const {
-	Eigen::Matrix3Xf pos(3, layer.size());
-	size_t size = std::pow(2, m_subdivisions);
-        const size_t size_less_one = size - 1;
-        const float size_inv = 1.0 / size_less_one;
-	int i = 0;
-
-	for(int x = 0; x < layer.rows(); x++) {
-	    for(int y = 0; y < layer.cols(); y++) {
-		pos(0, i) = (x * size_inv) * m_cube_side_length + m_origin(0);
-		pos(1, i) = (y * size_inv) * m_cube_side_length + m_origin(1);
-		pos(2, i) = offset * m_cube_side_length + m_origin(2);
-		i++;
-	    }
-	}
+    void fill_layer(float offset, Eigen::Ref<Eigen::MatrixXf> layer) const {
 
         m_num_calls += layer.size();
+	auto func = [&](const Mat3N &pos) {
+	    Eigen::VectorXf inside(pos.cols());
+	    Eigen::VectorXf outside(pos.cols());
 
-	Eigen::VectorXf rs(pos.cols());
-	Eigen::VectorXf tot_i = Eigen::VectorXf::Zero(pos.cols());
-	Eigen::VectorXf tot_e = Eigen::VectorXf::Zero(pos.cols());
-
-        for (const auto &[interp, interp_positions, threshold, interior] :
-             m_atom_interpolators) {
-            for (int i = 0; i < interp_positions.cols(); i++) {
-		rs.array() = (pos.colwise() - interp_positions.col(i)).colwise().squaredNorm();
-		auto &dest = (i < interior) ? tot_i : tot_e;
-
-		occ::timing::start(occ::timing::category::isosurface_function);
-		for(int j = 0; j < pos.cols(); j++) {
-		    if (rs(j) > threshold)
+	    int num_threads = occ::parallel::get_num_threads();
+	    auto inner_func = [&](int thread_id) {
+		int total_elements = pos.cols();
+		int block_size = total_elements / num_threads;
+		int start_index = thread_id * block_size;
+		int end_index = start_index + block_size;
+		if(thread_id == num_threads - 1) {
+		    end_index = total_elements;
+		}
+		for(int pt = start_index; pt < end_index; pt++) {
+		    Eigen::Vector3f p = pos.col(pt).cast<float>();
+		    if (!m_bounding_box.inside(p)) {
+			inside(pt) = 0.0;
+			outside(pt) = 1e8;
 			continue;
-		    float rho = interp(rs(j));
-		    dest(j) += rho;
-		}
-		occ::timing::stop(occ::timing::category::isosurface_function);
-            }
-        }
+		    }
+		    m_num_calls++;
+		    float tot_i = 0.0;
+		    float tot_e = m_background_density;
 
-	i = 0;
-	for(int x = 0; x < layer.rows(); x++) {
-	    for(int y = 0; y < layer.cols(); y++) {
-		if((tot_i(i) + tot_e(i)) < 1e-12) layer(x, y) = 1e8;
-		else {
-		layer(x, y) = 
-		    m_diagonal_scale_factor * (m_isovalue - tot_i(i) / (tot_i(i) + tot_e(i) + m_background_density));
+		    for (const auto &[interp, interp_positions, threshold, interior] :
+			 m_atom_interpolators) {
+			for (int i = 0; i < interp_positions.cols(); i++) {
+			    float r = (interp_positions.col(i) - p).squaredNorm();
+			    if (r > threshold)
+				continue;
+			    float rho = interp(r);
+			    if (i < interior) {
+				tot_i += rho;
+			    } else {
+				tot_e += rho;
+			    }
+			}
+		    }
+		    inside(pt) = tot_i;
+		    outside(pt) = tot_e;
 		}
-		i++;
-	    }
-	}
+	    };
+	    occ::parallel::parallel_do(inner_func);
+	    return inside.array() / (inside.array() + outside.array());
+	};
+	impl::FillParams params{
+	    m_origin,
+	    m_cube_side_length,
+	    m_target_separation,
+	    m_isovalue
+	};
+
+	impl::fill_layer(func, params, offset, layer);
     }
+
 
     OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
         double tot_i{0.0}, tot_e{0.0};
@@ -207,7 +198,6 @@ class StockholderWeightFunctor {
         if (!m_bounding_box.inside(pos))
             return pos.normalized(); // zero normal
         m_num_calls++;
-        occ::timing::start(occ::timing::category::isosurface_function);
 
         float min_r = std::numeric_limits<float>::max();
         Eigen::Vector3f min_v;
@@ -238,17 +228,19 @@ class StockholderWeightFunctor {
         double tot = tot_i + tot_e + m_background_density;
         Eigen::Vector3f result =
             ((tot_i_g.array() * tot_e - tot_e_g.array() * tot_i) / (tot * tot));
-        occ::timing::stop(occ::timing::category::isosurface_function);
         if (result.squaredNorm() < 1e-6)
             return -min_v.normalized();
         return result.normalized();
+    }
+
+    inline int cubes_per_side() const { 
+	return std::ceil(side_length() / m_target_separation); 
     }
 
     inline float isovalue() const { return m_isovalue; }
     inline void set_isovalue(float iso) { m_isovalue = iso; }
     inline float side_length() const { return m_cube_side_length; }
     inline const auto &origin() const { return m_origin; }
-    inline int subdivisions() const { return m_subdivisions; }
     inline int num_calls() const { return m_num_calls; }
 
     inline void set_background_density(float rho) {
@@ -257,7 +249,6 @@ class StockholderWeightFunctor {
     inline float background_density() const { return m_background_density; }
 
   private:
-    float m_diagonal_scale_factor{0.5f};
     float m_buffer{8.0};
     float m_cube_side_length{0.0};
     InterpolatorParams m_interpolator_params;
@@ -265,7 +256,6 @@ class StockholderWeightFunctor {
     float m_isovalue{0.5};
     float m_background_density{0};
     mutable int m_num_calls{0};
-    int m_subdivisions{1};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
     size_t m_num_interior{0};
 
@@ -290,7 +280,6 @@ class PromoleculeDensityFunctor {
             return 1.0e8; // return an arbitrary large distance
         m_num_calls++;
 
-        occ::timing::start(occ::timing::category::isosurface_function);
         for (const auto &[interp, interp_positions, threshold, interior] :
              m_atom_interpolators) {
             for (int i = 0; i < interp_positions.cols(); i++) {
@@ -302,55 +291,7 @@ class PromoleculeDensityFunctor {
             }
         }
 
-        occ::timing::stop(occ::timing::category::isosurface_function);
-        float v = 0.5 - (result / (m_isovalue + result));
-        return m_diagonal_scale_factor * v;
-    }
-
-    void fill_layer_is_slower(float offset, Eigen::Ref<Eigen::MatrixXf> layer) const {
-	Eigen::Matrix3Xf pos(3, layer.size());
-	size_t size = std::pow(2, m_subdivisions);
-        const size_t size_less_one = size - 1;
-        const float size_inv = 1.0 / size_less_one;
-	int i = 0;
-
-	for(int x = 0; x < layer.rows(); x++) {
-	    for(int y = 0; y < layer.cols(); y++) {
-		pos(0, i) = (x * size_inv) * m_cube_side_length + m_origin(0);
-		pos(1, i) = (y * size_inv) * m_cube_side_length + m_origin(1);
-		pos(2, i) = offset * m_cube_side_length + m_origin(2);
-		i++;
-	    }
-	}
-
-        m_num_calls += layer.size();
-
-	Eigen::VectorXf rs(pos.cols());
-	Eigen::VectorXf rho = Eigen::VectorXf::Zero(pos.cols());
-
-        for (const auto &[interp, interp_positions, threshold, interior] :
-             m_atom_interpolators) {
-            for (int i = 0; i < interp_positions.cols(); i++) {
-		rs.array() = (pos.colwise() - interp_positions.col(i)).colwise().squaredNorm();
-		occ::timing::start(occ::timing::category::isosurface_function);
-		for(int j = 0; j < pos.cols(); j++) {
-		    if (rs(j) > threshold)
-			continue;
-		    float tmp = interp(rs(j));
-		    rho(j) += tmp;
-		}
-		occ::timing::stop(occ::timing::category::isosurface_function);
-            }
-        }
-
-	i = 0;
-	for(int x = 0; x < layer.rows(); x++) {
-	    for(int y = 0; y < layer.cols(); y++) {
-		layer(x, y) = 
-		    m_diagonal_scale_factor * (0.5 - (rho(i) / (m_isovalue + rho(i))));
-		i++;
-	    }
-	}
+        return m_isovalue - result;
     }
 
     OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
@@ -363,7 +304,6 @@ class PromoleculeDensityFunctor {
         if (!m_bounding_box.inside(pos))
             return pos.normalized(); // zero normal
         m_num_calls++;
-        occ::timing::start(occ::timing::category::isosurface_function);
 
         for (const auto &[interp, interp_positions, threshold, interior] :
              m_atom_interpolators) {
@@ -379,10 +319,12 @@ class PromoleculeDensityFunctor {
             }
         }
 
-        occ::timing::stop(occ::timing::category::isosurface_function);
         return grad.normalized();
     }
 
+    inline int cubes_per_side() const { 
+	return std::ceil(side_length() / m_target_separation); 
+    }
     inline float isovalue() const { return m_isovalue; }
 
     inline void set_isovalue(float iso) {
@@ -392,12 +334,10 @@ class PromoleculeDensityFunctor {
 
     inline float side_length() const { return m_cube_side_length; }
     inline const auto &origin() const { return m_origin; }
-    inline int subdivisions() const { return m_subdivisions; }
     inline int num_calls() const { return m_num_calls; }
 
   private:
     void update_region_for_isovalue();
-    float m_diagonal_scale_factor{0.5f};
 
     float m_buffer{8.0};
     float m_cube_side_length{0.0};
@@ -405,7 +345,6 @@ class PromoleculeDensityFunctor {
     Eigen::Vector3f m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
     float m_isovalue{0.002};
     mutable int m_num_calls{0};
-    int m_subdivisions{1};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
 
     AxisAlignedBoundingBox m_bounding_box;
@@ -460,6 +399,10 @@ class ElectronDensityFunctor {
 	impl::fill_normals(func, params, vertices, normals);
     }
 
+    inline int cubes_per_side() const { 
+	return std::ceil(side_length() / m_target_separation); 
+    }
+
     inline float isovalue() const { return m_isovalue; }
 
     inline void set_isovalue(float iso) {
@@ -469,12 +412,10 @@ class ElectronDensityFunctor {
 
     inline float side_length() const { return m_cube_side_length; }
     inline const auto &origin() const { return m_origin; }
-    inline int subdivisions() const { return m_subdivisions; }
     inline int num_calls() const { return m_num_calls; }
 
   private:
     void update_region_for_isovalue();
-    float m_diagonal_scale_factor{0.5f};
 
     int m_mo_index{-1};
     float m_buffer{5.0};
@@ -483,7 +424,6 @@ class ElectronDensityFunctor {
     Eigen::Vector3f m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
     float m_isovalue{0.002};
     mutable int m_num_calls{0};
-    int m_subdivisions{1};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
 
     AxisAlignedBoundingBox m_bounding_box;
@@ -541,15 +481,17 @@ class ElectricPotentialFunctor {
             return posf.normalized();
 
         m_num_calls++;
-        occ::timing::start(occ::timing::category::isosurface_function);
 	Mat3N efield = m_hf.electronic_electric_field_contribution(m_wfn.mo, pos);
 	efield += m_hf.nuclear_electric_field_contribution(pos);
 
 	grad(0) = -efield(0, 0);
 	grad(1) = -efield(1, 0);
 	grad(2) = -efield(2, 0);
-        occ::timing::stop(occ::timing::category::isosurface_function);
         return grad.normalized();
+    }
+
+    inline int cubes_per_side() const { 
+	return std::ceil(side_length() / m_target_separation); 
     }
 
     inline float isovalue() const { return m_isovalue; }
@@ -561,12 +503,10 @@ class ElectricPotentialFunctor {
 
     inline float side_length() const { return m_cube_side_length; }
     inline const auto &origin() const { return m_origin; }
-    inline int subdivisions() const { return m_subdivisions; }
     inline int num_calls() const { return m_num_calls; }
 
   private:
     void update_region_for_isovalue();
-    float m_diagonal_scale_factor{0.5f};
     qm::HartreeFock m_hf;
     float m_buffer{5.0};
     float m_cube_side_length{0.0};
@@ -574,7 +514,6 @@ class ElectricPotentialFunctor {
     Eigen::Vector3f m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
     float m_isovalue{0.002};
     mutable int m_num_calls{0};
-    int m_subdivisions{1};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
 
     AxisAlignedBoundingBox m_bounding_box;

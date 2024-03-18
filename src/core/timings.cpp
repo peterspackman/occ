@@ -88,6 +88,8 @@ const char *category_name(category cat) {
         return "J matrix";
     case isosurface_function:
         return "Isosurface function";
+    case isosurface_normals:
+        return "Isosurface normals";
     case isosurface_properties:
         return "Isosurface properties";
     case mc_octree:
@@ -125,6 +127,7 @@ void print_timings() {
         xdm,
         solvent,
         isosurface_function,
+	isosurface_normals,
         isosurface_properties,
         mc_octree,
         mc_primal,

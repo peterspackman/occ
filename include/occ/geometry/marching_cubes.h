@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/timings.h>
 #include <occ/geometry/index_cache.h>
 #include <type_traits>
 #include <vector>
@@ -360,19 +361,22 @@ struct MarchingCubes {
             vertices.push_back(vertex[1]);
             vertices.push_back(vertex[2]);
 
+	    occ::timing::start(occ::timing::isosurface_normals);
 	    if constexpr(!impl::has_fill_normals<S>::value) {
 		auto normal = source.normal(vertex(0), vertex(1), vertex(2));
 		normals.push_back(normal[0]);
 		normals.push_back(normal[1]);
 		normals.push_back(normal[2]);
 	    }
+	    occ::timing::stop(occ::timing::isosurface_normals);
         };
 
         extract_impl(source, fn, indices);
+	    occ::timing::start(occ::timing::isosurface_normals);
 	if constexpr(impl::has_fill_normals<S>::value) {
-	    fmt::print("Filling normals\n");
 	    source.fill_normals(vertices, normals);
 	}
+	occ::timing::stop(occ::timing::isosurface_normals);
     }
 
   private:
@@ -384,6 +388,7 @@ struct MarchingCubes {
         const size_t size_less_one = size - 1;
         const float size_inv = 1.0 / size_less_one;
 
+	occ::timing::start(occ::timing::isosurface_function);
 	if constexpr(impl::has_fill_layer<S>::value) {
 	    source.fill_layer(0.0, layer0);
 	}
@@ -394,6 +399,7 @@ struct MarchingCubes {
 		}
 	    }
 	}
+	occ::timing::stop(occ::timing::isosurface_function);
 
         std::array<Eigen::Vector3f, 8> corners{Eigen::Vector3f::Zero()};
         std::array<float, 8> values{0.0f};
@@ -402,6 +408,7 @@ struct MarchingCubes {
         uint32_t index = 0;
 
         for (size_t z = 0; z < size; z++) {
+	    occ::timing::start(occ::timing::isosurface_function);
 	    if constexpr(impl::has_fill_layer<S>::value) {
 		source.fill_layer((z + 1) * size_inv, layer1);
 	    }
@@ -413,6 +420,7 @@ struct MarchingCubes {
 		    }
 		}
 	    }
+	    occ::timing::stop(occ::timing::isosurface_function);
 
             for (size_t y = 0; y < size_less_one; y++) {
                 for (size_t x = 0; x < size_less_one; x++) {

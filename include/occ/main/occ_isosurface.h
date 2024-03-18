@@ -11,6 +11,7 @@ struct IsosurfaceConfig {
     double isovalue{0.02};
     double background_density{0.0};
     bool use_hashed_mc{false};
+    bool binary_output{true};
     std::string kind{"promol"};
     std::string output_filename{"surface.obj"};
 };

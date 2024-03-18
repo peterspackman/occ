@@ -76,18 +76,10 @@ StockholderWeightFunctor::StockholderWeightFunctor(
     m_cube_side_length =
         (interior_m_maximum_atom_pos - m_origin).maxCoeff() + m_buffer;
 
-    m_subdivisions = std::ceil(
-        std::log(m_cube_side_length / m_target_separation) / std::log(2));
+    occ::log::info("Buffer region: {:.3f} bohr", m_buffer);
+    occ::log::info("Cube side length: {:.3f} bohr", m_cube_side_length);
+    occ::log::info("Target separation: {:.3f} bohr", m_target_separation);
 
-    double new_m_cube_side_length =
-        m_target_separation * std::pow(2, m_subdivisions);
-    occ::log::info("Cube side length: {}", m_cube_side_length);
-    occ::log::info("Target separation: {}", m_target_separation);
-    occ::log::info("Suggested side m_cube_side_length: {}",
-                   new_m_cube_side_length);
-    occ::log::info("Subdivisions: {} (cube size = {})\n", m_subdivisions,
-                   new_m_cube_side_length / std::pow(2, m_subdivisions));
-    m_cube_side_length = new_m_cube_side_length;
 
     // set up bounding box to short cut if
     // we have a very anisotropic molecule
@@ -95,10 +87,6 @@ StockholderWeightFunctor::StockholderWeightFunctor(
     m_bounding_box.upper = interior_m_maximum_atom_pos.cast<float>();
     m_bounding_box.upper.array() += m_buffer;
 
-    // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
-    // i.e. their diagonals are sqrt(3)
-    //
-    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
     occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
@@ -150,19 +138,10 @@ void PromoleculeDensityFunctor::update_region_for_isovalue() {
     m_origin = m_minimum_atom_pos.array() - m_buffer;
     m_cube_side_length = (m_maximum_atom_pos - m_origin).maxCoeff() + m_buffer;
 
-    m_subdivisions = std::ceil(
-        std::log(m_cube_side_length / m_target_separation) / std::log(2));
+    occ::log::info("Buffer region: {:.3f} bohr", m_buffer);
+    occ::log::info("Cube side length: {:.3f} bohr", m_cube_side_length);
+    occ::log::info("Target separation: {:.3f} bohr", m_target_separation);
 
-    double new_m_cube_side_length =
-        m_target_separation * std::pow(2, m_subdivisions);
-    occ::log::info("Buffer region: {}", m_buffer);
-    occ::log::info("Cube side length: {}", m_cube_side_length);
-    occ::log::info("Target separation: {}", m_target_separation);
-    occ::log::info("Suggested side m_cube_side_length: {}",
-                   new_m_cube_side_length);
-    occ::log::info("Subdivisions: {} (cube size = {})", m_subdivisions,
-                   new_m_cube_side_length / std::pow(2, m_subdivisions));
-    m_cube_side_length = new_m_cube_side_length;
 
     // set up bounding box to short cut if
     // we have a very anisotropic molecule
@@ -170,10 +149,6 @@ void PromoleculeDensityFunctor::update_region_for_isovalue() {
     m_bounding_box.upper = m_maximum_atom_pos;
     m_bounding_box.upper.array() += m_buffer;
 
-    // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
-    // i.e. their diagonals are sqrt(3)
-    //
-    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
     occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
@@ -198,19 +173,10 @@ void ElectronDensityFunctor::update_region_for_isovalue() {
     m_origin = m_minimum_atom_pos.array() - m_buffer;
     m_cube_side_length = (m_maximum_atom_pos - m_origin).maxCoeff() + m_buffer;
 
-    m_subdivisions = std::ceil(
-        std::log(m_cube_side_length / m_target_separation) / std::log(2));
+    occ::log::info("Buffer region: {:.3f} bohr", m_buffer);
+    occ::log::info("Cube side length: {:.3f} bohr", m_cube_side_length);
+    occ::log::info("Target separation: {:.3f} bohr", m_target_separation);
 
-    double new_m_cube_side_length =
-        m_target_separation * std::pow(2, m_subdivisions);
-    occ::log::info("Buffer region: {}", m_buffer);
-    occ::log::info("Cube side length: {}", m_cube_side_length);
-    occ::log::info("Target separation: {}", m_target_separation);
-    occ::log::info("Suggested side m_cube_side_length: {}",
-                   new_m_cube_side_length);
-    occ::log::info("Subdivisions: {} (cube size = {})", m_subdivisions,
-                   new_m_cube_side_length / std::pow(2, m_subdivisions));
-    m_cube_side_length = new_m_cube_side_length;
 
     // set up bounding box to short cut if
     // we have a very anisotropic molecule
@@ -218,10 +184,6 @@ void ElectronDensityFunctor::update_region_for_isovalue() {
     m_bounding_box.upper = m_maximum_atom_pos;
     m_bounding_box.upper.array() += m_buffer;
 
-    // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
-    // i.e. their diagonals are sqrt(3)
-    //
-    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
     occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
@@ -246,19 +208,9 @@ void ElectricPotentialFunctor::update_region_for_isovalue() {
     m_origin = m_minimum_atom_pos.array() - m_buffer;
     m_cube_side_length = (m_maximum_atom_pos - m_origin).maxCoeff() + m_buffer;
 
-    m_subdivisions = std::ceil(
-        std::log(m_cube_side_length / m_target_separation) / std::log(2));
-
-    double new_m_cube_side_length =
-        m_target_separation * std::pow(2, m_subdivisions);
-    occ::log::info("Buffer region: {}", m_buffer);
-    occ::log::info("Cube side length: {}", m_cube_side_length);
-    occ::log::info("Target separation: {}", m_target_separation);
-    occ::log::info("Suggested side m_cube_side_length: {}",
-                   new_m_cube_side_length);
-    occ::log::info("Subdivisions: {} (cube size = {})", m_subdivisions,
-                   new_m_cube_side_length / std::pow(2, m_subdivisions));
-    m_cube_side_length = new_m_cube_side_length;
+    occ::log::info("Buffer region: {:.3f} bohr", m_buffer);
+    occ::log::info("Cube side length: {:.3f} bohr", m_cube_side_length);
+    occ::log::info("Target separation: {:.3f} bohr", m_target_separation);
 
     // set up bounding box to short cut if
     // we have a very anisotropic molecule
@@ -266,10 +218,6 @@ void ElectricPotentialFunctor::update_region_for_isovalue() {
     m_bounding_box.upper = m_maximum_atom_pos;
     m_bounding_box.upper.array() += m_buffer;
 
-    // we have a scale m_diagonal_scale_factortor as the cubes are unit cubes
-    // i.e. their diagonals are sqrt(3)
-    //
-    m_diagonal_scale_factor = 1.0 / m_cube_side_length;
     occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
                    m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
 }
