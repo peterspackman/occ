@@ -14,6 +14,8 @@
 #include <occ/core/table.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
+#include <occ/core/eeq.h>
+#include <occ/core/eem.h>
 
 /* Dimer tests */
 using occ::core::Dimer;
@@ -488,4 +490,42 @@ TEST_CASE("Quasirandom KGF", "[quasirandom]") {
         0.646106212725611, 0.19580669062758105, 0.7455071685295511;
 
     REQUIRE(occ::util::all_close(pts, expected));
+}
+
+TEST_CASE("EEM water", "[charge]") {
+    occ::Mat3N pos(3, 3);
+    occ::IVec nums(3);
+    nums << 8, 1, 1;
+    pos << -0.7021961, -1.0221932, 0.2575211,
+           -0.0560603,  0.8467758, 0.0421215,
+	    0.0099423, -0.0114887, 0.0052190;
+
+    auto q = occ::core::charges::eem_partial_charges(nums, pos, 0.0);
+    fmt::print("EEM water charges:\n{}\n", q);
+
+    occ::Vec expected_q(3);
+    expected_q << -0.637207, 0.319851, 0.317356;
+    REQUIRE(occ::util::all_close(expected_q, q, 1e-5, 1e-5));
+}
+
+TEST_CASE("EEQ water", "[charge]") {
+    occ::Mat3N pos(3, 3);
+    occ::IVec nums(3);
+    nums << 8, 1, 1;
+    pos << -0.7021961, -1.0221932, 0.2575211,
+           -0.0560603,  0.8467758, 0.0421215,
+	    0.0099423, -0.0114887, 0.0052190;
+
+    auto cn = occ::core::charges::eeq_coordination_numbers(nums, pos);
+    fmt::print("EEQ water coordination numbers:\n{}\n", cn);
+    occ::Vec expected(3);
+    expected << 2.0, 1.00401, 1.00401;
+    REQUIRE(occ::util::all_close(cn, expected, 1e-3, 1e-3));
+
+    auto q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
+    fmt::print("EEQ water charges:\n{}\n", q);
+
+    occ::Vec expected_q(3);
+    expected_q << -0.591878, 0.296985, 0.294893;
+    REQUIRE(occ::util::all_close(expected_q, q, 1e-5, 1e-5));
 }

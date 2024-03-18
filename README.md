@@ -155,5 +155,5 @@ occ h2o.xyz b3lyp 6-31g
 ```
 
 ### Basis set locations
-*note* The path the `occ` will use to search for basis sets can be configured with the `OCC_BASIS_PATH` environment variable,
+*note* The path the `occ` will use to search for basis sets can be configured with the `OCC_DATA_PATH` environment variable,
 or you can simply make the basis set available in your working directory.

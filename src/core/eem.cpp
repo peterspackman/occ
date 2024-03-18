@@ -1,4 +1,5 @@
 #include <occ/core/eem.h>
+#include <occ/core/units.h>
 
 namespace occ::core::charges {
 namespace impl {
@@ -66,7 +67,7 @@ occ::Vec eem_partial_charges(const occ::IVec &atomic_numbers,
 
     for (size_t i = 0; i < N; i++) {
         for (size_t j = i + 1; j < N; j++) {
-            double norm = (positions.col(i) - positions.col(j)).norm();
+            double norm = occ::units::ANGSTROM_TO_BOHR * (positions.col(i) - positions.col(j)).norm();
             if (norm != 0.0)
                 M(i, j) = 1.0 / norm;
             else

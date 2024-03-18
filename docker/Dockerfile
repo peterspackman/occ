@@ -18,5 +18,5 @@ RUN curl -s https://api.github.com/repos/peterspackman/occ/releases/latest \
 RUN tar -xf occ-latest-linux-x86_64.tar.xz --strip-components=1 && \
     rm occ-latest-linux-x86_64.tar.xz
 
-ENV OCC_BASIS_PATH /opt/share/occ
+ENV OCC_DATA_PATH /opt/share/occ
 CMD ["/opt/bin/occ"]

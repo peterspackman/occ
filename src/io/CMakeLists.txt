@@ -19,6 +19,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/pc.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ply.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/qcschema.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/solvent_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/tinyply.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xyz.cpp"
@@ -29,6 +30,7 @@ target_link_libraries(occ_io
     PUBLIC 
     occ_core
     occ_crystal
+    occ_solvent
     occ_qm
     gemmi::gemmi
     nlohmann_json::nlohmann_json

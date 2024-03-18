@@ -9,6 +9,8 @@
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
 #include <occ/solvent/surface.h>
+#include <occ/solvent/draco.h>
+#include <occ/core/eeq.h>
 
 using occ::Mat;
 using occ::Mat3N;
@@ -42,6 +44,13 @@ TEST_CASE("COSMO self energy", "[solvent]") {
 }
 
 // SMD tests
+const char *WATER = R""""(3
+
+O   -0.7021961  -0.0560603   0.0099423
+H   -1.0221932   0.8467758  -0.0114887
+H    0.2575211   0.0421215   0.0052190
+)"""";
+
 
 const char *NAPHTHOL = R""""(19
 
@@ -128,7 +137,7 @@ TEST_CASE("SMD CDS energy (naphthol)", "[solvent]") {
     auto nums = mol.atomic_numbers();
     auto pos = mol.positions();
     Mat3N pos_bohr = pos * occ::units::ANGSTROM_TO_BOHR;
-    auto params = occ::solvent::smd_solvent_parameters["water"];
+    auto params = occ::solvent::get_smd_parameters("water");
 
     Vec cds_radii = occ::solvent::smd::cds_radii(nums, params);
     auto surface =
@@ -183,4 +192,17 @@ TEST_CASE("SMD CDS energy (naphthol)", "[solvent]") {
     fmt::print("C  {:.3f}\n", C);
     fmt::print("N  {:.3f}\n", N);
     fmt::print("Cl {:.3f}\n", Cl);
+}
+
+TEST_CASE("draco", "[solvent]") {
+    auto mol = occ::io::molecule_from_xyz_string(WATER);
+    auto nums = mol.atomic_numbers();
+    auto pos = mol.positions() * occ::units::ANGSTROM_TO_BOHR;
+    auto params = occ::solvent::get_smd_parameters("toluene");
+
+    Vec cn = occ::solvent::draco::coordination_numbers(nums, pos);
+    fmt::print("Coordination numbers:\n{}\n", cn);
+    Vec q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
+
+    Vec radii = occ::solvent::draco::smd_coulomb_radii(q, nums, pos, params);
 }

@@ -118,12 +118,14 @@ template <typename T, SpinorbitalKind SK>
 Wavefunction run_solvated_method(const Wavefunction &wfn,
                                  const OccInput &config) {
     using occ::solvent::SolvationCorrectedProcedure;
+
     if constexpr (std::is_same<T, DFT>::value) {
         DFT ks(config.method.name, wfn.basis, config.method.dft_grid);
         if (!config.basis.df_name.empty())
             ks.set_density_fitting_basis(config.basis.df_name);
+	ks.set_system_charge(config.electronic.charge);
         SolvationCorrectedProcedure<DFT> proc_solv(ks,
-                                                   config.solvent.solvent_name);
+                                                   config.solvent.solvent_name, config.solvent.radii_scaling);
         SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv, SK);
         scf.set_charge_multiplicity(config.electronic.charge,
                                     config.electronic.multiplicity);
@@ -136,10 +138,11 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
         return scf.wavefunction();
     } else {
         T proc(wfn.basis);
+	proc.set_system_charge(config.electronic.charge);
         if (!config.basis.df_name.empty())
             proc.set_density_fitting_basis(config.basis.df_name);
         SolvationCorrectedProcedure<T> proc_solv(proc,
-                                                 config.solvent.solvent_name);
+                                                 config.solvent.solvent_name, config.solvent.radii_scaling);
         SCF<SolvationCorrectedProcedure<T>> scf(proc_solv, SK);
         scf.set_charge_multiplicity(config.electronic.charge,
                                     config.electronic.multiplicity);

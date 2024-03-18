@@ -169,6 +169,15 @@ class Molecule {
     Vec vdw_radii() const;
 
     /**
+     * The van der Waals radii for the atoms in this Molecule
+     *
+     * \returns a newly constructed Vec containing van der Waals radii
+     *
+     * Creates a vector, they are not stored internally to the Molecule object.
+     */
+    Vec covalent_radii() const;
+
+    /**
      * The atomic masses of the atoms in this Molecule
      *
      * \returns a newly constructed Vec containing the masses.

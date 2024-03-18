@@ -563,7 +563,7 @@ std::string canonicalize_name(const std::string &name) {
 std::string data_path() {
     std::string path{"."};
     const char *data_path_env = 
-	impl::basis_set_directory_override.empty() ? getenv("OCC_BASIS_PATH") : impl::basis_set_directory_override.c_str();
+	impl::basis_set_directory_override.empty() ? getenv("OCC_DATA_PATH") : impl::basis_set_directory_override.c_str();
     if (data_path_env) {
         path = data_path_env;
     } else {
