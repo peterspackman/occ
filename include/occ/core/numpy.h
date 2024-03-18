@@ -197,7 +197,7 @@ inline NumpyArray load_npy(const std::string &fname) {
 namespace impl {
 
 template <typename T>
-std::vector<char> &operator+=(std::vector<char> &lhs, const T rhs) {
+inline std::vector<char> &operator+=(std::vector<char> &lhs, const T rhs) {
     // write in little endian
     for (size_t byte = 0; byte < sizeof(T); byte++) {
         char val = *((char *)&rhs + byte);
@@ -207,13 +207,13 @@ std::vector<char> &operator+=(std::vector<char> &lhs, const T rhs) {
 }
 
 template <>
-std::vector<char> &operator+=(std::vector<char> &lhs, const std::string rhs) {
+inline std::vector<char> &operator+=(std::vector<char> &lhs, const std::string rhs) {
     lhs.insert(lhs.end(), rhs.begin(), rhs.end());
     return lhs;
 }
 
 template <>
-std::vector<char> &operator+=(std::vector<char> &lhs, const char *rhs) {
+inline std::vector<char> &operator+=(std::vector<char> &lhs, const char *rhs) {
     // write in little endian
     size_t len = strlen(rhs);
     lhs.reserve(len);
@@ -226,7 +226,7 @@ std::vector<char> &operator+=(std::vector<char> &lhs, const char *rhs) {
 } // namespace impl
 
 template <typename ScalarType, bool column_major = false>
-std::vector<char> create_npy_header(const std::vector<size_t> &shape) {
+inline std::vector<char> create_npy_header(const std::vector<size_t> &shape) {
     using namespace impl;
     std::vector<char> dict;
     dict += "{'descr': '";
@@ -310,7 +310,7 @@ inline void save_npy(const std::string &filename, const ScalarType *data,
 }
 
 template <typename T>
-void save_npy(const std::string &filename, const Eigen::DenseBase<T> &mat,
+inline void save_npy(const std::string &filename, const Eigen::DenseBase<T> &mat,
               std::string mode = "w") {
     std::vector<size_t> shape{static_cast<size_t>(mat.rows()),
                               static_cast<size_t>(mat.cols())};
@@ -328,7 +328,7 @@ void save_npy(const std::string &filename, const Eigen::DenseBase<T> &mat,
 }
 
 template <typename T, bool column_major = false>
-void save_npy(const std::string &filename, const std::vector<T> &data,
+inline void save_npy(const std::string &filename, const std::vector<T> &data,
               std::string mode = "w") {
     std::vector<size_t> shape;
     shape.push_back(data.size());
