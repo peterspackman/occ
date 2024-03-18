@@ -33,6 +33,12 @@ CLI::App *add_cube_subcommand(CLI::App &app) {
     cube->add_option("property", config->property,
                     "property to evaluate (default=density)");
 
+    cube->add_option("spin", config->spin,
+                    "spin (for e.g. electron density) [alpha,beta,default=both]");
+
+    cube->add_option("--mo", config->mo_number,
+                    "MO number (for e.g. electron density) [default=-1 i.e. all]");
+
     cube->add_option("-n,--divisions", config->divisions,
                     "how many times to divide space");
     cube->add_option("--points", config->points_filename,
@@ -52,6 +58,11 @@ void run_cube_subcommand(CubeConfig const &config) {
 
     if(Wavefunction::is_likely_wavefunction_filename(config.input_filename)) {
 	wfn = Wavefunction::load(config.input_filename);
+	occ::log::info("Loaded wavefunction from {}", config.input_filename);
+	occ::log::info("Spinorbital kind: {}", occ::qm::spinorbital_kind_to_string(wfn.mo.kind));
+	occ::log::info("Num alpha:        {}", wfn.mo.n_alpha);
+	occ::log::info("Num beta:         {}", wfn.mo.n_beta);
+	occ::log::info("Num AOs:          {}", wfn.mo.n_ao);
 	have_wfn = true;
     }
     else {
@@ -82,6 +93,22 @@ void run_cube_subcommand(CubeConfig const &config) {
     else if(config.property == "rho") {
 	require_wfn();
 	ElectronDensityFunctor func(wfn);
+	func.mo_index = config.mo_number;
+	occ::log::info("MO number:    {}", config.mo_number);
+	cube.fill_data_from_function(func);
+    }
+    else if(config.property == "rho_alpha") {
+	require_wfn();
+	ElectronDensityFunctor func(wfn);
+	func.spin = ElectronDensityFunctor::Spin::Alpha;
+	func.mo_index = config.mo_number;
+	cube.fill_data_from_function(func);
+    }
+    else if(config.property == "rho_beta") {
+	require_wfn();
+	ElectronDensityFunctor func(wfn);
+	func.spin = ElectronDensityFunctor::Spin::Beta;
+	func.mo_index = config.mo_number;
 	cube.fill_data_from_function(func);
     }
     else if (config.property == "esp") {

@@ -42,6 +42,7 @@ struct ElectronDensityFunctor {
 
     const Wavefunction &wfn;
     Spin spin{Spin::Total};
+    int mo_index{-1};
 };
 
 

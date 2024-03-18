@@ -9,6 +9,9 @@ struct CubeConfig {
     std::string points_filename{""};
     std::string output_filename{"out.cube"};
 
+    std::string spin{"both"};
+    int mo_number{-1};
+
     int divisions{10};
 };
 

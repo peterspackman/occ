@@ -46,13 +46,19 @@ ElectronDensityFunctor::ElectronDensityFunctor(const Wavefunction &w, Spin s) : 
 void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest) {
 
     constexpr auto R = qm::SpinorbitalKind::Restricted;
-    constexpr auto U = qm::SpinorbitalKind::Restricted;
+    constexpr auto U = qm::SpinorbitalKind::Unrestricted;
+    constexpr auto G = qm::SpinorbitalKind::General;
 
     auto gto_values = occ::gto::evaluate_basis(wfn.basis, points, 0);
 
+    Mat D = wfn.mo.D;
+    if(mo_index >= 0) {
+	D = wfn.mo.density_matrix_single_mo(mo_index);
+    }
+
     switch(wfn.mo.kind) {
 	case U: {
-	    Vec tmp = occ::density::evaluate_density<0, U>(wfn.mo.D, gto_values);
+	    Vec tmp = occ::density::evaluate_density<0, U>(D, gto_values);
 	    switch(spin) {
 		case Spin::Total:
 		    dest += qm::block::a(tmp);
@@ -65,10 +71,17 @@ void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::R
 		    dest += qm::block::b(tmp);
 		    break;
 	    }
-	    
+	    break;
 	}
-	default:
-	    occ::density::evaluate_density<0, R>(wfn.mo.D, gto_values, dest);
+	case G: {
+	    throw std::runtime_error("General case not implemented");
+	    break;
+	}
+	default: {
+	    Vec tmp = occ::density::evaluate_density<0, R>(D, gto_values);
+	    dest += tmp;
+	    break;
+	}
     }
 }
 
