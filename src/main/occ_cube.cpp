@@ -90,6 +90,15 @@ void run_cube_subcommand(CubeConfig const &config) {
 	EEQEspFunctor func(wfn.atoms);
 	cube.fill_data_from_function(func);
     }
+    else if(config.property == "promolecule") {
+	PromolDensityFunctor func(wfn.atoms);
+	cube.fill_data_from_function(func);
+    }
+    else if(config.property == "deformation_density") {
+	require_wfn();
+	DeformationDensityFunctor func(wfn);
+	cube.fill_data_from_function(func);
+    }
     else if(config.property == "rho") {
 	require_wfn();
 	ElectronDensityFunctor func(wfn);

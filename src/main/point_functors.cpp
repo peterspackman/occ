@@ -2,6 +2,8 @@
 #include <occ/core/units.h>
 #include <occ/gto/density.h>
 #include <occ/core/eeq.h>
+#include <occ/slater/slaterbasis.h>
+#include <occ/core/element.h>
 
 namespace occ::main {
 
@@ -40,6 +42,63 @@ void EEQEspFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> r
     }
 }
 
+PromolDensityFunctor::PromolDensityFunctor(const AtomList &a) : atoms(a) {
+
+    auto basis = occ::slater::load_slaterbasis("thakkar");
+    ankerl::unordered_dense::map<int, std::vector<int>> tmp_map;
+    occ::log::debug("Loaded slater basis");
+
+    // TODO handle charges
+    Eigen::Matrix3Xf coordinates(3, atoms.size());
+    for(int i = 0; i < atoms.size(); i++) {
+	coordinates(0, i) = atoms[i].x;
+	coordinates(1, i) = atoms[i].y;
+	coordinates(2, i) = atoms[i].z;
+    }
+
+    occ::log::debug("Built coordinates");
+
+    for (size_t i = 0; i < atoms.size(); i++) {
+        int el = atoms[i].atomic_number;
+        tmp_map[el].push_back(i);
+    }
+    occ::log::debug("Built interpolators");
+
+    for (const auto &[el, idxs]: tmp_map) {
+	auto b = basis[occ::core::Element(el).symbol()];
+	auto func = [&b](float x) { return b.rho(std::sqrt(x)); };
+	atom_interpolators.push_back(pfimpl::AtomInterpolator{
+		pfimpl::LinearInterpolatorFloat(
+		func, interpolator_params.domain_lower,
+		interpolator_params.domain_upper,
+		interpolator_params.num_points),
+	    coordinates(Eigen::all, idxs)
+	});
+    }
+
+    for(auto &ai: atom_interpolators) {
+	ai.threshold = ai.interpolator.find_threshold(1e-8);
+    }
+    occ::log::debug("Built atom interpolators");
+}
+
+void PromolDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest) {
+    for(int pt = 0; pt < points.cols(); pt++) {
+        float result{0.0};
+	Eigen::Vector3f pos = points.col(pt).cast<float>();
+        for (const auto &[interp, interp_positions, threshold] :
+             atom_interpolators) {
+            for (int i = 0; i < interp_positions.cols(); i++) {
+                float r = (interp_positions.col(i) - pos).squaredNorm();
+                if (r > threshold)
+                    continue;
+                float rho = interp(r);
+                result += rho;
+            }
+        }
+	dest(pt) += result;
+    }
+}
 
 ElectronDensityFunctor::ElectronDensityFunctor(const Wavefunction &w, Spin s) : wfn(w), spin(s) {}
 
@@ -51,7 +110,7 @@ void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::R
 
     auto gto_values = occ::gto::evaluate_basis(wfn.basis, points, 0);
 
-    Mat D = wfn.mo.D;
+    Mat D = 2 * wfn.mo.D;
     if(mo_index >= 0) {
 	D = wfn.mo.density_matrix_single_mo(mo_index);
     }
@@ -85,6 +144,20 @@ void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::R
     }
 }
 
+DeformationDensityFunctor::DeformationDensityFunctor(const Wavefunction &wfn,
+	ElectronDensityFunctor::Spin spin) : rho_func(wfn, spin), pro_func(wfn.atoms) {}
+
+void DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest) {
+    Vec tmp = Vec::Zero(dest.rows(), dest.cols());
+    rho_func(points, dest);
+    pro_func(points, tmp);
+    if(rho_func.spin != ElectronDensityFunctor::Spin::Total) {
+	dest -= 0.5 * tmp;
+    }
+    else {
+	dest -= tmp;
+    }
+}
 
 
 }
