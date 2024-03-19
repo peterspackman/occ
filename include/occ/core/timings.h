@@ -16,6 +16,7 @@ enum category {
     la,
     guess,
     mo,
+    cube_evaluation,
     diis,
     grid_init,
     grid_points,

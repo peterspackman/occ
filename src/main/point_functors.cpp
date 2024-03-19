@@ -100,7 +100,7 @@ void PromolDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref
     }
 }
 
-ElectronDensityFunctor::ElectronDensityFunctor(const Wavefunction &w, Spin s) : wfn(w), spin(s) {}
+ElectronDensityFunctor::ElectronDensityFunctor(const Wavefunction &w, SpinConstraint s) : wfn(w), spin(s) {}
 
 void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest) {
 
@@ -119,14 +119,14 @@ void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::R
 	case U: {
 	    Vec tmp = occ::density::evaluate_density<0, U>(D, gto_values);
 	    switch(spin) {
-		case Spin::Total:
+		case SpinConstraint::Total:
 		    dest += qm::block::a(tmp);
 		    dest += qm::block::b(tmp);
 		    break;
-		case Spin::Alpha:
+		case SpinConstraint::Alpha:
 		    dest += qm::block::a(tmp);
 		    break;
-		case Spin::Beta:
+		case SpinConstraint::Beta:
 		    dest += qm::block::b(tmp);
 		    break;
 	    }
@@ -145,13 +145,13 @@ void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::R
 }
 
 DeformationDensityFunctor::DeformationDensityFunctor(const Wavefunction &wfn,
-	ElectronDensityFunctor::Spin spin) : rho_func(wfn, spin), pro_func(wfn.atoms) {}
+	SpinConstraint spin) : rho_func(wfn, spin), pro_func(wfn.atoms) {}
 
 void DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest) {
     Vec tmp = Vec::Zero(dest.rows(), dest.cols());
     rho_func(points, dest);
     pro_func(points, tmp);
-    if(rho_func.spin != ElectronDensityFunctor::Spin::Total) {
+    if(rho_func.spin != SpinConstraint::Total) {
 	dest -= 0.5 * tmp;
     }
     else {
@@ -159,5 +159,42 @@ void DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen
     }
 }
 
+XCDensityFunctor::XCDensityFunctor(
+    const Wavefunction &w, const std::string &functional, SpinConstraint s) : 
+	wfn(w), ks(functional, w.basis) { }
+
+void XCDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest) {
+
+    int deriv = ks.density_derivative();
+    Mat D2 = wfn.mo.D * 2;
+    Mat rho = occ::density::evaluate_density_on_grid<2>(wfn, points);
+
+    constexpr auto R = qm::SpinorbitalKind::Restricted;
+    constexpr auto U = qm::SpinorbitalKind::Unrestricted;
+    constexpr auto G = qm::SpinorbitalKind::General;
+
+
+    dft::DensityFunctional::Family family{dft::DensityFunctional::Family::MGGA};
+    dft::DensityFunctional::Params params(points.cols(), family, wfn.mo.kind);
+    // just always do MGGA for now 
+    switch(wfn.mo.kind) {
+	case R: {
+	    dft::impl::set_params<R, 2>(params, rho);
+	    break;
+	}
+	case U: {
+	    dft::impl::set_params<U, 2>(params, rho);
+	    break;
+	}
+	default: {
+	    throw std::runtime_error("Not implemented: general spinorbitals with DFT");
+	}
+    }
+    dft::DensityFunctional::Result res(points.cols(), family, wfn.mo.kind);
+    for (const auto &func : ks.functionals()) {
+	res += func.evaluate(params);
+    }
+    dest += res.exc;
+}
 
 }

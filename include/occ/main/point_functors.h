@@ -4,6 +4,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/qm/hf.h>
+#include <occ/dft/dft.h>
 #include <occ/core/interpolator.h>
 #include <ankerl/unordered_dense.h>
 
@@ -26,6 +27,12 @@ struct InterpolatorParams {
 };
 
 }
+
+enum class SpinConstraint {
+    Total,
+    Alpha,
+    Beta
+};
 
 using AtomList = std::vector<occ::core::Atom>;
 using occ::qm::Wavefunction;
@@ -61,28 +68,29 @@ struct PromolDensityFunctor {
 };
 
 struct ElectronDensityFunctor {
-    enum class Spin {
-	Total,
-	Alpha,
-	Beta
-    };
-
-
-    ElectronDensityFunctor(const Wavefunction &wfn, Spin spin = Spin::Total);
+    ElectronDensityFunctor(const Wavefunction &wfn, SpinConstraint spin = SpinConstraint::Total);
     void operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest);
 
     const Wavefunction &wfn;
-    Spin spin{Spin::Total};
+    SpinConstraint spin{SpinConstraint::Total};
     int mo_index{-1};
 };
 
 
 struct DeformationDensityFunctor {
-    DeformationDensityFunctor(const Wavefunction &wfn, ElectronDensityFunctor::Spin = ElectronDensityFunctor::Spin::Total);
+    DeformationDensityFunctor(const Wavefunction &wfn, SpinConstraint = SpinConstraint::Total);
     void operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest);
 
     PromolDensityFunctor pro_func;
     ElectronDensityFunctor rho_func;
+};
+
+
+struct XCDensityFunctor {
+    XCDensityFunctor(const Wavefunction &wfn, const std::string &functional, SpinConstraint = SpinConstraint::Total);
+    void operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest);
+    const Wavefunction &wfn;
+    dft::DFT ks;
 };
 
 }

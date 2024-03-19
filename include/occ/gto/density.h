@@ -80,9 +80,9 @@ Mat evaluate_density_on_grid(const qm::Wavefunction &wfn, const occ::Mat &grid_p
     auto gto_values = occ::gto::evaluate_basis(wfn.basis, grid_pts, max_derivative);
     switch(wfn.mo.kind) {
 	case R:
-	    return evaluate_density<max_derivative, R>(wfn.mo.D, gto_values);
+	    return evaluate_density<max_derivative, R>(wfn.mo.D * 2, gto_values);
 	case U:
-	    return evaluate_density<max_derivative, U>(wfn.mo.D, gto_values);
+	    return evaluate_density<max_derivative, U>(wfn.mo.D * 2, gto_values);
 	case G:
 	    throw std::runtime_error("Invalid spinorbital kind (general)");
     }

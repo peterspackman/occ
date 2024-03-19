@@ -479,6 +479,8 @@ class DFT {
 
     inline const std::string &method_string() const { return m_method_string; }
 
+    inline const auto &functionals() const { return m_funcs; }
+
   private:
     std::string m_method_string{"svwn5"};
     occ::qm::HartreeFock m_hf;

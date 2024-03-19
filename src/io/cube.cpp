@@ -7,10 +7,10 @@ Cube::Cube() : basis(Mat3::Identity()) {}
 
 void Cube::write_header_to_stream(std::ostream &out) {
     // Write the header
-    fmt::print(out, "{}\n{}\n", "comment 0", "comment 1");
+    fmt::print(out, "{}\n{}\n", name, description);
     fmt::print(out, "{:5d} {:12.6f} {:12.6f} {:12.6f}\n", atoms.size(), origin.x(), origin.y(), origin.z());
     for(int i = 0; i < 3; i ++) {
-	fmt::print(out, "{:5d} {:12.6f} {:12.6f} {:12.6f}\n", divisions(i), basis(0, i), basis(1, i), basis(2, i));
+	fmt::print(out, "{:5d} {:12.6f} {:12.6f} {:12.6f}\n", steps(i), basis(0, i), basis(1, i), basis(2, i));
     }
 
     auto gc = [&](int i) {

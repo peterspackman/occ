@@ -32,6 +32,8 @@ const char *category_name(category cat) {
         return "linear algebra";
     case guess:
         return "Initial guess";
+    case cube_evaluation:
+	return "Cube evaluation";
     case mo:
         return "MO update";
     case diis:
@@ -110,6 +112,7 @@ void print_timings() {
         ints3c2e,
         io,
         guess,
+	cube_evaluation,
         mo,
         diis,
         dft,

@@ -10,9 +10,14 @@ struct CubeConfig {
     std::string output_filename{"out.cube"};
 
     std::string spin{"both"};
+    std::string functional{"blyp"};
     int mo_number{-1};
 
-    int divisions{10};
+    std::vector<int> steps;
+    std::vector<double> da;
+    std::vector<double> db;
+    std::vector<double> dc;
+    std::vector<double> origin;
 };
 
 CLI::App *add_cube_subcommand(CLI::App &app);
