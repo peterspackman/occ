@@ -98,7 +98,7 @@ $(document).ready(function(){initNavTree('structocc_1_1io_1_1IsosurfaceMesh.html
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;obj.h&gt;</code></p>
+<p><code>#include &lt;isosurface_mesh.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -109,12 +109,12 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a7dc39f124e19c9104dd09bb0edabe8da"><td class="memItemLeft" align="right" valign="top">Eigen::Matrix3Xf&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1IsosurfaceMesh.html#a7dc39f124e19c9104dd09bb0edabe8da">vertices</a></td></tr>
-<tr class="separator:a7dc39f124e19c9104dd09bb0edabe8da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95ebbf4a6c504ae75c7b93a27e65bb1e"><td class="memItemLeft" align="right" valign="top">Eigen::Matrix3Xi&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1IsosurfaceMesh.html#a95ebbf4a6c504ae75c7b93a27e65bb1e">faces</a></td></tr>
-<tr class="separator:a95ebbf4a6c504ae75c7b93a27e65bb1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb7a3805528abd2ea9e53fc71324460f"><td class="memItemLeft" align="right" valign="top">Eigen::Matrix3Xf&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1IsosurfaceMesh.html#adb7a3805528abd2ea9e53fc71324460f">normals</a></td></tr>
-<tr class="separator:adb7a3805528abd2ea9e53fc71324460f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a9dcf432e7f32240ee78929184ce38f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1IsosurfaceMesh.html#a0a9dcf432e7f32240ee78929184ce38f">vertices</a></td></tr>
+<tr class="separator:a0a9dcf432e7f32240ee78929184ce38f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59e633e979f7a51cc0a8090041dedfad"><td class="memItemLeft" align="right" valign="top">std::vector&lt; uint32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1IsosurfaceMesh.html#a59e633e979f7a51cc0a8090041dedfad">faces</a></td></tr>
+<tr class="separator:a59e633e979f7a51cc0a8090041dedfad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68a0a9f780f3ee19594c1b0077b86694"><td class="memItemLeft" align="right" valign="top">std::vector&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1IsosurfaceMesh.html#a68a0a9f780f3ee19594c1b0077b86694">normals</a></td></tr>
+<tr class="separator:a68a0a9f780f3ee19594c1b0077b86694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a7deb855a1fda2c3b0d77c28bd1c7a317"></a>
@@ -179,42 +179,42 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a95ebbf4a6c504ae75c7b93a27e65bb1e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a95ebbf4a6c504ae75c7b93a27e65bb1e">&#9670;&nbsp;</a></span>faces</h2>
+<a id="a59e633e979f7a51cc0a8090041dedfad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59e633e979f7a51cc0a8090041dedfad">&#9670;&nbsp;</a></span>faces</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Eigen::Matrix3Xi occ::io::IsosurfaceMesh::faces</td>
+          <td class="memname">std::vector&lt;uint32_t&gt; occ::io::IsosurfaceMesh::faces</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="adb7a3805528abd2ea9e53fc71324460f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adb7a3805528abd2ea9e53fc71324460f">&#9670;&nbsp;</a></span>normals</h2>
+<a id="a68a0a9f780f3ee19594c1b0077b86694"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68a0a9f780f3ee19594c1b0077b86694">&#9670;&nbsp;</a></span>normals</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Eigen::Matrix3Xf occ::io::IsosurfaceMesh::normals</td>
+          <td class="memname">std::vector&lt;float&gt; occ::io::IsosurfaceMesh::normals</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a7dc39f124e19c9104dd09bb0edabe8da"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7dc39f124e19c9104dd09bb0edabe8da">&#9670;&nbsp;</a></span>vertices</h2>
+<a id="a0a9dcf432e7f32240ee78929184ce38f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a9dcf432e7f32240ee78929184ce38f">&#9670;&nbsp;</a></span>vertices</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Eigen::Matrix3Xf occ::io::IsosurfaceMesh::vertices</td>
+          <td class="memname">std::vector&lt;float&gt; occ::io::IsosurfaceMesh::vertices</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -222,7 +222,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>/home/runner/work/occ/occ/include/occ/io/<a class="el" href="obj_8h.html">obj.h</a></li>
+<li>/home/runner/work/occ/occ/include/occ/io/<a class="el" href="isosurface__mesh_8h.html">isosurface_mesh.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

@@ -92,7 +92,8 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1solvent.html',''); ini
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">occ::solvent Namespace Reference</div>  </div>
 </div><!--header-->
@@ -104,6 +105,8 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1solvent.html',''); ini
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceocc_1_1solvent_1_1cosmo"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1cosmo.html">cosmo</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceocc_1_1solvent_1_1draco"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1draco.html">draco</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceocc_1_1solvent_1_1smd"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1smd.html">smd</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,30 +126,27 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a32b60ce481477b709f609c108ea3c661"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a32b60ce481477b709f609c108ea3c661">DielectricMap</a> = ankerl::unordered_dense::map&lt; std::string, double &gt;</td></tr>
-<tr class="separator:a32b60ce481477b709f609c108ea3c661"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e40344c58285edb91e316ad2a61c50d"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a5e40344c58285edb91e316ad2a61c50d">SMDParameterMap</a> = ankerl::unordered_dense::map&lt; std::string, <a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">SMDSolventParameters</a> &gt;</td></tr>
-<tr class="separator:a5e40344c58285edb91e316ad2a61c50d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad78ce13e9c04c521dc426920b5595830"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830">PointChargeList</a> = std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a> &gt;</td></tr>
 <tr class="separator:ad78ce13e9c04c521dc426920b5595830"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a6386bda2c9d519a9aada86278bf41d2e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a6386bda2c9d519a9aada86278bf41d2e">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">SMDSolventParameters</a> &amp;)</td></tr>
+<tr class="separator:a6386bda2c9d519a9aada86278bf41d2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bdc2d131165da54fed389c3aa96ee51"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a8bdc2d131165da54fed389c3aa96ee51">from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">SMDSolventParameters</a> &amp;)</td></tr>
+<tr class="separator:a8bdc2d131165da54fed389c3aa96ee51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ec60ec6ae249db4d19306e670c03649"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a2ec60ec6ae249db4d19306e670c03649">get_dielectric</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:a2ec60ec6ae249db4d19306e670c03649"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb9911f245379dfd8e6b17ce52ed2f86"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">SMDSolventParameters</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#aeb9911f245379dfd8e6b17ce52ed2f86">get_smd_parameters</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:aeb9911f245379dfd8e6b17ce52ed2f86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a044a8b7a97364d93a956602f7e7c220b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a044a8b7a97364d93a956602f7e7c220b">list_available_solvents</a> ()</td></tr>
+<tr class="separator:a044a8b7a97364d93a956602f7e7c220b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f1f7d0599fb7191b010e196091d473b"><td class="memItemLeft" align="right" valign="top">nlohmann::json&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a6f1f7d0599fb7191b010e196091d473b">load_draco_parameters</a> ()</td></tr>
+<tr class="separator:a6f1f7d0599fb7191b010e196091d473b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>solvation models for correction of QM methods (implicit only for now) </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
-<a id="a32b60ce481477b709f609c108ea3c661"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a32b60ce481477b709f609c108ea3c661">&#9670;&nbsp;</a></span>DielectricMap</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">using <a class="el" href="namespaceocc_1_1solvent.html#a32b60ce481477b709f609c108ea3c661">occ::solvent::DielectricMap</a> = typedef ankerl::unordered_dense::map&lt;std::string, double&gt;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="ad78ce13e9c04c521dc426920b5595830"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad78ce13e9c04c521dc426920b5595830">&#9670;&nbsp;</a></span>PointChargeList</h2>
 
@@ -161,14 +161,127 @@ Typedefs</h2></td></tr>
 
 </div>
 </div>
-<a id="a5e40344c58285edb91e316ad2a61c50d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5e40344c58285edb91e316ad2a61c50d">&#9670;&nbsp;</a></span>SMDParameterMap</h2>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a8bdc2d131165da54fed389c3aa96ee51"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bdc2d131165da54fed389c3aa96ee51">&#9670;&nbsp;</a></span>from_json()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="namespaceocc_1_1solvent.html#a5e40344c58285edb91e316ad2a61c50d">occ::solvent::SMDParameterMap</a> = typedef ankerl::unordered_dense::map&lt;std::string, <a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">SMDSolventParameters</a>&gt;</td>
+          <td class="memname">void occ::solvent::from_json </td>
+          <td>(</td>
+          <td class="paramtype">const nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">SMDSolventParameters</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2ec60ec6ae249db4d19306e670c03649"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ec60ec6ae249db4d19306e670c03649">&#9670;&nbsp;</a></span>get_dielectric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::solvent::get_dielectric </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aeb9911f245379dfd8e6b17ce52ed2f86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb9911f245379dfd8e6b17ce52ed2f86">&#9670;&nbsp;</a></span>get_smd_parameters()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">SMDSolventParameters</a> occ::solvent::get_smd_parameters </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a044a8b7a97364d93a956602f7e7c220b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a044a8b7a97364d93a956602f7e7c220b">&#9670;&nbsp;</a></span>list_available_solvents()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::solvent::list_available_solvents </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6f1f7d0599fb7191b010e196091d473b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f1f7d0599fb7191b010e196091d473b">&#9670;&nbsp;</a></span>load_draco_parameters()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">nlohmann::json occ::solvent::load_draco_parameters </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6386bda2c9d519a9aada86278bf41d2e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6386bda2c9d519a9aada86278bf41d2e">&#9670;&nbsp;</a></span>to_json()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::solvent::to_json </td>
+          <td>(</td>
+          <td class="paramtype">nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">SMDSolventParameters</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

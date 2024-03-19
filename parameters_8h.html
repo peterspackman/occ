@@ -90,30 +90,29 @@ $(document).ready(function(){initNavTree('parameters_8h.html',''); initResizable
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">parameters.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;ankerl/unordered_dense.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="smd__parameters_8h.html">occ/solvent/smd_parameters.h</a>&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;<a class="el" href="solvent__json_8h.html">occ/io/solvent_json.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for parameters.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="parameters_8h__incl.svg" width="202" height="142"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="parameters_8h__incl.svg" width="523" height="216"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="parameters_8h__dep__incl.svg" width="435" height="171"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="parameters_8h__dep__incl.svg" width="435" height="171"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1solvent_1_1SMDSolventParameters.html">occ::solvent::SMDSolventParameters</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceocc"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html">occ</a></td></tr>
@@ -122,12 +121,16 @@ Namespaces</h2></td></tr>
 <tr class="memdesc:namespaceocc_1_1solvent"><td class="mdescLeft">&#160;</td><td class="mdescRight">solvation models for correction of QM methods (implicit only for now) <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a32b60ce481477b709f609c108ea3c661"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a32b60ce481477b709f609c108ea3c661">occ::solvent::DielectricMap</a> = ankerl::unordered_dense::map&lt; std::string, double &gt;</td></tr>
-<tr class="separator:a32b60ce481477b709f609c108ea3c661"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e40344c58285edb91e316ad2a61c50d"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a5e40344c58285edb91e316ad2a61c50d">occ::solvent::SMDParameterMap</a> = ankerl::unordered_dense::map&lt; std::string, SMDSolventParameters &gt;</td></tr>
-<tr class="separator:a5e40344c58285edb91e316ad2a61c50d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a2ec60ec6ae249db4d19306e670c03649"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a2ec60ec6ae249db4d19306e670c03649">occ::solvent::get_dielectric</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:a2ec60ec6ae249db4d19306e670c03649"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb9911f245379dfd8e6b17ce52ed2f86"><td class="memItemLeft" align="right" valign="top">SMDSolventParameters&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#aeb9911f245379dfd8e6b17ce52ed2f86">occ::solvent::get_smd_parameters</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:aeb9911f245379dfd8e6b17ce52ed2f86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a044a8b7a97364d93a956602f7e7c220b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a044a8b7a97364d93a956602f7e7c220b">occ::solvent::list_available_solvents</a> ()</td></tr>
+<tr class="separator:a044a8b7a97364d93a956602f7e7c220b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f1f7d0599fb7191b010e196091d473b"><td class="memItemLeft" align="right" valign="top">nlohmann::json&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent.html#a6f1f7d0599fb7191b010e196091d473b">occ::solvent::load_draco_parameters</a> ()</td></tr>
+<tr class="separator:a6f1f7d0599fb7191b010e196091d473b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

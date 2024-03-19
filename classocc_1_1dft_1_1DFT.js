@@ -28,6 +28,7 @@ var classocc_1_1dft_1_1DFT =
     [ "exchange_correlation_energy", "classocc_1_1dft_1_1DFT.html#ac06b1281795187215bfb3a1e09ae3e31", null ],
     [ "exchange_energy_total", "classocc_1_1dft_1_1DFT.html#a1745046d6553d3e4ffea885fa0433c36", null ],
     [ "frozen_electrons", "classocc_1_1dft_1_1DFT.html#a303480bc0bacbb8f42a42d68efe240c3", null ],
+    [ "functionals", "classocc_1_1dft_1_1DFT.html#af8e85c53ec59876f20d8d3182dd9b958", null ],
     [ "have_effective_core_potentials", "classocc_1_1dft_1_1DFT.html#a7fb559557c33ed2b0b82db6b6f0ff180", null ],
     [ "have_nonlocal_correlation", "classocc_1_1dft_1_1DFT.html#a7e237bbe14bf1bf96961500864178228", null ],
     [ "hf", "classocc_1_1dft_1_1DFT.html#a457021dad1846051129e7f7183797e77", null ],

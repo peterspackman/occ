@@ -99,15 +99,18 @@ $(document).ready(function(){initNavTree('density_8h.html',''); initResizable();
 <div class="textblock"><code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="gto_8h.html">occ/gto/gto.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="spinorbital_8h.html">occ/qm/spinorbital.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="wavefunction_8h.html">occ/qm/wavefunction.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for density.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="density_8h__incl.svg" width="1612" height="515"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="density_8h__incl.svg" width="2792" height="590"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="density_8h__dep__incl.svg" width="190" height="156"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="density_8h__dep__incl.svg" width="384" height="275"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -149,6 +152,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a24577651553647722e9c29b1323ae5ab"><td class="memTemplParams" colspan="2">template&lt;size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted&gt; </td></tr>
 <tr class="memitem:a24577651553647722e9c29b1323ae5ab"><td class="memTemplItemLeft" align="right" valign="top">Mat&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1density.html#a24577651553647722e9c29b1323ae5ab">occ::density::evaluate_density_on_grid</a> (const qm::AOBasis &amp;basis, const Mat &amp;D, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a> &amp;grid_pts)</td></tr>
 <tr class="separator:a24577651553647722e9c29b1323ae5ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e0f211ca1b17f8b15f28527673195a6"><td class="memTemplParams" colspan="2">template&lt;size_t max_derivative&gt; </td></tr>
+<tr class="memitem:a6e0f211ca1b17f8b15f28527673195a6"><td class="memTemplItemLeft" align="right" valign="top">Mat&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1density.html#a6e0f211ca1b17f8b15f28527673195a6">occ::density::evaluate_density_on_grid</a> (const qm::Wavefunction &amp;wfn, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a> &amp;grid_pts)</td></tr>
+<tr class="separator:a6e0f211ca1b17f8b15f28527673195a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

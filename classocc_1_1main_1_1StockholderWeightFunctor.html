@@ -105,8 +105,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aae6778bd2e3328337f67be8c54298463"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a337915f034eed9dd609d4396169645"><td class="memItemLeft" align="right" valign="top"><a class="el" href="macros_8h.html#a977ed134d162150ea585a992d17914d2">OCC_ALWAYS_INLINE</a> float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#a5a337915f034eed9dd609d4396169645">operator()</a> (float x, float y, float z) const</td></tr>
 <tr class="separator:a5a337915f034eed9dd609d4396169645"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac573cbccfef7ff8281287b749fc57c99"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#ac573cbccfef7ff8281287b749fc57c99">fill_layer</a> (float offset, Eigen::Ref&lt; Eigen::MatrixXf &gt; layer) const</td></tr>
+<tr class="separator:ac573cbccfef7ff8281287b749fc57c99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac9b6384ae20e5cdae9d1e81e421f9a15"><td class="memItemLeft" align="right" valign="top"><a class="el" href="macros_8h.html#a977ed134d162150ea585a992d17914d2">OCC_ALWAYS_INLINE</a> Eigen::Vector3f&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#ac9b6384ae20e5cdae9d1e81e421f9a15">normal</a> (float x, float y, float z) const</td></tr>
 <tr class="separator:ac9b6384ae20e5cdae9d1e81e421f9a15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a609458cbcc41264b75284df36749b16b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#a609458cbcc41264b75284df36749b16b">cubes_per_side</a> () const</td></tr>
+<tr class="separator:a609458cbcc41264b75284df36749b16b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a125beee37a244db13586682a0eedf565"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#a125beee37a244db13586682a0eedf565">isovalue</a> () const</td></tr>
 <tr class="separator:a125beee37a244db13586682a0eedf565"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9dbc90b3558ebb5b5ad8ab509a8ca529"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#a9dbc90b3558ebb5b5ad8ab509a8ca529">set_isovalue</a> (float iso)</td></tr>
@@ -115,8 +119,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:afaef43345a00a4d74220924dcea84707"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6a520f56cc6c69f26498756fcdf80ad"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#af6a520f56cc6c69f26498756fcdf80ad">origin</a> () const</td></tr>
 <tr class="separator:af6a520f56cc6c69f26498756fcdf80ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0911cb2698ae28709c75d17bfb8d32a5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#a0911cb2698ae28709c75d17bfb8d32a5">subdivisions</a> () const</td></tr>
-<tr class="separator:a0911cb2698ae28709c75d17bfb8d32a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b8bd62ec5114968c1730d693c6f22bd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#a3b8bd62ec5114968c1730d693c6f22bd">num_calls</a> () const</td></tr>
 <tr class="separator:a3b8bd62ec5114968c1730d693c6f22bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2938c4fe8f4f8cac6959714aa16d44e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html#a2938c4fe8f4f8cac6959714aa16d44e8">set_background_density</a> (float rho)</td></tr>
@@ -180,6 +182,67 @@ Public Member Functions</h2></td></tr>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a609458cbcc41264b75284df36749b16b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a609458cbcc41264b75284df36749b16b">&#9670;&nbsp;</a></span>cubes_per_side()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::main::StockholderWeightFunctor::cubes_per_side </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac573cbccfef7ff8281287b749fc57c99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac573cbccfef7ff8281287b749fc57c99">&#9670;&nbsp;</a></span>fill_layer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::main::StockholderWeightFunctor::fill_layer </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Eigen::Ref&lt; Eigen::MatrixXf &gt;&#160;</td>
+          <td class="paramname"><em>layer</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
         </tr>
       </table>
   </td>
@@ -413,31 +476,6 @@ Public Member Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">float occ::main::StockholderWeightFunctor::side_length </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a0911cb2698ae28709c75d17bfb8d32a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0911cb2698ae28709c75d17bfb8d32a5">&#9670;&nbsp;</a></span>subdivisions()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int occ::main::StockholderWeightFunctor::subdivisions </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>

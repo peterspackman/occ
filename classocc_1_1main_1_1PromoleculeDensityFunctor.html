@@ -107,6 +107,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa276751aeede1a7d3a190e0d62efd4bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc68ae8eaffd631b0f043c58f8965e12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="macros_8h.html#a977ed134d162150ea585a992d17914d2">OCC_ALWAYS_INLINE</a> Eigen::Vector3f&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#afc68ae8eaffd631b0f043c58f8965e12">normal</a> (float x, float y, float z) const</td></tr>
 <tr class="separator:afc68ae8eaffd631b0f043c58f8965e12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1fb1e6a5d5de5441c9d1c77c5922f3c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#af1fb1e6a5d5de5441c9d1c77c5922f3c">cubes_per_side</a> () const</td></tr>
+<tr class="separator:af1fb1e6a5d5de5441c9d1c77c5922f3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3043fea0ff25a7430e5cb4a418ae7ebf"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#a3043fea0ff25a7430e5cb4a418ae7ebf">isovalue</a> () const</td></tr>
 <tr class="separator:a3043fea0ff25a7430e5cb4a418ae7ebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5f766cc869f8df240fa668a76a8880b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#ab5f766cc869f8df240fa668a76a8880b">set_isovalue</a> (float iso)</td></tr>
@@ -115,8 +117,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a658a09ee3903596f6d9cd6f1ef416440"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a393413bdaa39c08abc591870fc22bfbc"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#a393413bdaa39c08abc591870fc22bfbc">origin</a> () const</td></tr>
 <tr class="separator:a393413bdaa39c08abc591870fc22bfbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a530f8975cdeb90647bc279b5378b0043"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#a530f8975cdeb90647bc279b5378b0043">subdivisions</a> () const</td></tr>
-<tr class="separator:a530f8975cdeb90647bc279b5378b0043"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a645e4f7b76bd1fe588405bb732fc2601"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html#a645e4f7b76bd1fe588405bb732fc2601">num_calls</a> () const</td></tr>
 <tr class="separator:a645e4f7b76bd1fe588405bb732fc2601"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -156,6 +156,31 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="af1fb1e6a5d5de5441c9d1c77c5922f3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1fb1e6a5d5de5441c9d1c77c5922f3c">&#9670;&nbsp;</a></span>cubes_per_side()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::main::PromoleculeDensityFunctor::cubes_per_side </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a3043fea0ff25a7430e5cb4a418ae7ebf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3043fea0ff25a7430e5cb4a418ae7ebf">&#9670;&nbsp;</a></span>isovalue()</h2>
 
@@ -352,31 +377,6 @@ Public Member Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">float occ::main::PromoleculeDensityFunctor::side_length </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a530f8975cdeb90647bc279b5378b0043"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a530f8975cdeb90647bc279b5378b0043">&#9670;&nbsp;</a></span>subdivisions()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int occ::main::PromoleculeDensityFunctor::subdivisions </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>

@@ -33,6 +33,7 @@ var namespaceocc =
       [ "evaluate_density< 2, SpinorbitalKind::Restricted >", "namespaceocc_1_1density.html#ac4d8bc72d17e9305f3d8acf7cf4da6da", null ],
       [ "evaluate_density< 2, SpinorbitalKind::Unrestricted >", "namespaceocc_1_1density.html#ad1c082a27c8964d750f29ef2768d12a3", null ],
       [ "evaluate_density_on_grid", "namespaceocc_1_1density.html#a24577651553647722e9c29b1323ae5ab", null ],
+      [ "evaluate_density_on_grid", "namespaceocc_1_1density.html#a6e0f211ca1b17f8b15f28527673195a6", null ],
       [ "num_components", "namespaceocc_1_1density.html#aede17985150ad037bb98e3eec4c221ed", null ]
     ] ],
     [ "dft", "namespaceocc_1_1dft.html", "namespaceocc_1_1dft" ],

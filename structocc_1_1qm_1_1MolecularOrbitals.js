@@ -4,6 +4,7 @@ var structocc_1_1qm_1_1MolecularOrbitals =
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html#a0f55c5adf97d1ed17fc5274b5bd11d57", null ],
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html#a3124c3227fc0adfff138689f2bd893e4", null ],
     [ "as_kind", "structocc_1_1qm_1_1MolecularOrbitals.html#ad6b3bbf1cea784720981d1ec00adbf32", null ],
+    [ "density_matrix_single_mo", "structocc_1_1qm_1_1MolecularOrbitals.html#a606469f90346269c57f67766a5aeefb8", null ],
     [ "expectation_value", "structocc_1_1qm_1_1MolecularOrbitals.html#aceac60326b4eebca0dbe7a6b43a7766c", null ],
     [ "incorporate_norm", "structocc_1_1qm_1_1MolecularOrbitals.html#a1106c90f3735a7a3c257e59b6e6f9ce9", null ],
     [ "occ_alpha", "structocc_1_1qm_1_1MolecularOrbitals.html#a986ba6612cfa074a623515775f37b84d", null ],

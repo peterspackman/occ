@@ -1,6 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/dft/range_separated_parameters.h" name="/home/runner/work/occ/occ/include/occ/dft/range_separated_parameters.h">
 <area shape="rect" id="node1" title=" " alt="" coords="5,5,235,61"/>
 <area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="20,317,199,359"/>
-<area shape="rect" id="node3" href="$functional_8h.html" title=" " alt="" coords="96,109,267,165"/>
-<area shape="rect" id="node4" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="147,213,317,269"/>
+<area shape="rect" id="node4" href="$functional_8h.html" title=" " alt="" coords="96,109,267,165"/>
+<area shape="rect" id="node3" href="$point__functors_8h.html" title=" " alt="" coords="24,407,195,463"/>
+<area shape="rect" id="node5" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="147,213,317,269"/>
 </map>

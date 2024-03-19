@@ -105,15 +105,21 @@ $(document).ready(function(){initNavTree('isosurface_8h.html',''); initResizable
 <code>#include &lt;<a class="el" href="timings_8h.html">occ/core/timings.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="units_8h.html">occ/core/units.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="slaterbasis_8h.html">occ/slater/slaterbasis.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="density_8h.html">occ/gto/density.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="parallel_8h.html">occ/core/parallel.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="hf_8h.html">occ/qm/hf.h</a>&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for isosurface.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="isosurface_8h__incl.svg" width="1538" height="366"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="isosurface_8h__incl.svg" width="4032" height="739"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1impl_1_1FillParams.html">occ::main::impl::FillParams</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1AxisAlignedBoundingBox.html">occ::main::AxisAlignedBoundingBox</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1AtomInterpolator.html">occ::main::AtomInterpolator</a></td></tr>
@@ -124,6 +130,10 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html">occ::main::PromoleculeDensityFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1ElectronDensityFunctor.html">occ::main::ElectronDensityFunctor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1ElectricPotentialFunctor.html">occ::main::ElectricPotentialFunctor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
@@ -131,6 +141,8 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceocc_1_1main"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html">occ::main</a></td></tr>
 <tr class="memdesc:namespaceocc_1_1main"><td class="mdescLeft">&#160;</td><td class="mdescRight">main module for functionaliity related to single point energies etc. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceocc_1_1main_1_1impl"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main_1_1impl.html">occ::main::impl</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -140,8 +152,12 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aeb1f8b40d5c5ef459e024e453a52d2d9"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aeb1f8b40d5c5ef459e024e453a52d2d9">occ::main::smoothstep</a> (float x, float l, float u)</td></tr>
-<tr class="separator:aeb1f8b40d5c5ef459e024e453a52d2d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2784c68ac7b8713cffe64d14880676a8"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
+<tr class="memitem:a2784c68ac7b8713cffe64d14880676a8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main_1_1impl.html#a2784c68ac7b8713cffe64d14880676a8">occ::main::impl::fill_layer</a> (Func &amp;f, const FillParams &amp;params, float offset, Eigen::Ref&lt; Eigen::MatrixXf &gt; layer)</td></tr>
+<tr class="separator:a2784c68ac7b8713cffe64d14880676a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a372541ad43c155004acc9e5f7b3a1d3d"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
+<tr class="memitem:a372541ad43c155004acc9e5f7b3a1d3d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main_1_1impl.html#a372541ad43c155004acc9e5f7b3a1d3d">occ::main::impl::fill_normals</a> (Func &amp;f, const FillParams &amp;params, const std::vector&lt; float &gt; &amp;vertices, std::vector&lt; float &gt; &amp;normals)</td></tr>
+<tr class="separator:a372541ad43c155004acc9e5f7b3a1d3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

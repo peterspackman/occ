@@ -1,10 +1,12 @@
 var classocc_1_1solvent_1_1ContinuumSolvationModel =
 [
-    [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#abd241b012459ad497b6214faa49db935", null ],
+    [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a7e297a1a1386a405acdb8a0b330690f4", null ],
     [ "apparent_surface_charge", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#ac9753dd4fcfb9350d3ad775c5dd100b5", null ],
+    [ "charge", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a60e07a2d161bc57be8e7d62ab71a0ed8", null ],
     [ "nuclear_charges", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a556a3f7cdaf6dbb04995fbdda5ee9801", null ],
     [ "nuclear_positions", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a15795c4c77fac2c5cdbc6966ce98bfad", null ],
     [ "num_surface_points", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a936dc1977ce7d65b0edf41bd9e7d140b", null ],
+    [ "set_charge", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a073600a35c23cff83da88f05fdaab2c6", null ],
     [ "set_solvent", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a76f305f5d7bd06dc692540c965a25dfc", null ],
     [ "set_surface_potential", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#aae81c7679910c83a0c435dba11d6607c", null ],
     [ "smd_cds_energy", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a0ca60b4310eb19fe131e16dc9e707d67", null ],

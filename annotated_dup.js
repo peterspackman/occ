@@ -70,7 +70,11 @@ var annotated_dup =
         [ "mc", "namespaceocc_1_1geometry_1_1mc.html", [
           [ "impl", "namespaceocc_1_1geometry_1_1mc_1_1impl.html", [
             [ "Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge" ],
-            [ "EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash" ]
+            [ "EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash" ],
+            [ "has_fill_layer", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer.html", null ],
+            [ "has_fill_normals", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals.html", null ],
+            [ "has_fill_layer< T, std::void_t< decltype(std::declval< T >().fill_layer(std::declval< float >(), std::declval< Eigen::Ref< Eigen::MatrixXf >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer_3_01T_00_01std_1_1void__t_3_01decltype_012440534cfad48502b5540770ce75c85.html", null ],
+            [ "has_fill_normals< T, std::void_t< decltype(std::declval< T >().fill_normals(std::declval< const std::vector< float > & >(), std::declval< std::vector< float > & >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals_3_01T_00_01std_1_1void__t_3_01decltype127bc92b5282ec611bd1ef77c682737f.html", null ]
           ] ],
           [ "LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes" ],
           [ "MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1MarchingCubes" ]
@@ -113,12 +117,15 @@ var annotated_dup =
         [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
         [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
         [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
+        [ "Cube", "classocc_1_1io_1_1Cube.html", "classocc_1_1io_1_1Cube" ],
         [ "EngradReader", "classocc_1_1io_1_1EngradReader.html", "classocc_1_1io_1_1EngradReader" ],
         [ "FchkReader", "classocc_1_1io_1_1FchkReader.html", "classocc_1_1io_1_1FchkReader" ],
         [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html", "classocc_1_1io_1_1FchkWriter" ],
         [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
         [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
         [ "BeckeGridSettings", "structocc_1_1io_1_1BeckeGridSettings.html", "structocc_1_1io_1_1BeckeGridSettings" ],
+        [ "IsosurfaceMesh", "structocc_1_1io_1_1IsosurfaceMesh.html", "structocc_1_1io_1_1IsosurfaceMesh" ],
+        [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ],
         [ "ElectronShell", "structocc_1_1io_1_1ElectronShell.html", "structocc_1_1io_1_1ElectronShell" ],
         [ "ECPShell", "structocc_1_1io_1_1ECPShell.html", "structocc_1_1io_1_1ECPShell" ],
         [ "ReferenceData", "structocc_1_1io_1_1ReferenceData.html", "structocc_1_1io_1_1ReferenceData" ],
@@ -126,8 +133,6 @@ var annotated_dup =
         [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
         [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
         [ "MoldenReader", "classocc_1_1io_1_1MoldenReader.html", "classocc_1_1io_1_1MoldenReader" ],
-        [ "IsosurfaceMesh", "structocc_1_1io_1_1IsosurfaceMesh.html", "structocc_1_1io_1_1IsosurfaceMesh" ],
-        [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ],
         [ "ElectronInput", "structocc_1_1io_1_1ElectronInput.html", "structocc_1_1io_1_1ElectronInput" ],
         [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
         [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
@@ -153,6 +158,13 @@ var annotated_dup =
         [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ]
       ] ],
       [ "main", "namespaceocc_1_1main.html", [
+        [ "impl", "namespaceocc_1_1main_1_1impl.html", [
+          [ "FillParams", "structocc_1_1main_1_1impl_1_1FillParams.html", "structocc_1_1main_1_1impl_1_1FillParams" ]
+        ] ],
+        [ "pfimpl", "namespaceocc_1_1main_1_1pfimpl.html", [
+          [ "AtomInterpolator", "structocc_1_1main_1_1pfimpl_1_1AtomInterpolator.html", "structocc_1_1main_1_1pfimpl_1_1AtomInterpolator" ],
+          [ "InterpolatorParams", "structocc_1_1main_1_1pfimpl_1_1InterpolatorParams.html", "structocc_1_1main_1_1pfimpl_1_1InterpolatorParams" ]
+        ] ],
         [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
         [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
         [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
@@ -162,11 +174,14 @@ var annotated_dup =
         [ "InterpolatorParams", "structocc_1_1main_1_1InterpolatorParams.html", "structocc_1_1main_1_1InterpolatorParams" ],
         [ "StockholderWeightFunctor", "classocc_1_1main_1_1StockholderWeightFunctor.html", "classocc_1_1main_1_1StockholderWeightFunctor" ],
         [ "PromoleculeDensityFunctor", "classocc_1_1main_1_1PromoleculeDensityFunctor.html", "classocc_1_1main_1_1PromoleculeDensityFunctor" ],
+        [ "ElectronDensityFunctor", "classocc_1_1main_1_1ElectronDensityFunctor.html", "classocc_1_1main_1_1ElectronDensityFunctor" ],
+        [ "ElectricPotentialFunctor", "classocc_1_1main_1_1ElectricPotentialFunctor.html", "classocc_1_1main_1_1ElectricPotentialFunctor" ],
         [ "CGConfig", "structocc_1_1main_1_1CGConfig.html", "structocc_1_1main_1_1CGConfig" ],
         [ "DimerSolventTerm", "structocc_1_1main_1_1DimerSolventTerm.html", "structocc_1_1main_1_1DimerSolventTerm" ],
         [ "CGDimer", "structocc_1_1main_1_1CGDimer.html", "structocc_1_1main_1_1CGDimer" ],
         [ "EnergyTotal", "structocc_1_1main_1_1EnergyTotal.html", "structocc_1_1main_1_1EnergyTotal" ],
         [ "CGResult", "structocc_1_1main_1_1CGResult.html", "structocc_1_1main_1_1CGResult" ],
+        [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
         [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
         [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
@@ -174,6 +189,11 @@ var annotated_dup =
         [ "PairEnergyStore", "structocc_1_1main_1_1PairEnergyStore.html", "structocc_1_1main_1_1PairEnergyStore" ],
         [ "LatticeConvergenceSettings", "structocc_1_1main_1_1LatticeConvergenceSettings.html", "structocc_1_1main_1_1LatticeConvergenceSettings" ],
         [ "LatticeEnergyResult", "structocc_1_1main_1_1LatticeEnergyResult.html", "structocc_1_1main_1_1LatticeEnergyResult" ],
+        [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
+        [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
+        [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
+        [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
+        [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ],
         [ "SolvatedSurfaceProperties", "structocc_1_1main_1_1SolvatedSurfaceProperties.html", "structocc_1_1main_1_1SolvatedSurfaceProperties" ],
         [ "SolventNeighborContribution", "structocc_1_1main_1_1SolventNeighborContribution.html", "structocc_1_1main_1_1SolventNeighborContribution" ]
       ] ],
@@ -242,5 +262,13 @@ var annotated_dup =
       [ "DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", "structquickhull_1_1DiagnosticsData" ],
       [ "QuickHull", "classquickhull_1_1QuickHull.html", "classquickhull_1_1QuickHull" ],
       [ "Ray", "structquickhull_1_1Ray.html", "structquickhull_1_1Ray" ]
+    ] ],
+    [ "tinyply", "namespacetinyply.html", [
+      [ "PropertyInfo", "structtinyply_1_1PropertyInfo.html", "structtinyply_1_1PropertyInfo" ],
+      [ "Buffer", "classtinyply_1_1Buffer.html", "classtinyply_1_1Buffer" ],
+      [ "PlyData", "structtinyply_1_1PlyData.html", "structtinyply_1_1PlyData" ],
+      [ "PlyProperty", "structtinyply_1_1PlyProperty.html", "structtinyply_1_1PlyProperty" ],
+      [ "PlyElement", "structtinyply_1_1PlyElement.html", "structtinyply_1_1PlyElement" ],
+      [ "PlyFile", "structtinyply_1_1PlyFile.html", "structtinyply_1_1PlyFile" ]
     ] ]
 ];

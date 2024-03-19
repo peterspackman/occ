@@ -101,6 +101,12 @@ Functions</h2></td></tr>
 <tr class="memitem:afc8eeaf4e95310c70f599a123cb31860"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core_1_1charges.html#afc8eeaf4e95310c70f599a123cb31860">eem_partial_charges</a> (const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;positions, double charge=0.0)</td></tr>
 <tr class="memdesc:afc8eeaf4e95310c70f599a123cb31860"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the atomic partial charges of atoms at provided positions, constraining the net charge.  <a href="namespaceocc_1_1core_1_1charges.html#afc8eeaf4e95310c70f599a123cb31860">More...</a><br /></td></tr>
 <tr class="separator:afc8eeaf4e95310c70f599a123cb31860"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59d2e91d6545b9ae54aee6a3b58568a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core_1_1charges.html#a59d2e91d6545b9ae54aee6a3b58568a4">eeq_coordination_numbers</a> (const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;positions)</td></tr>
+<tr class="memdesc:a59d2e91d6545b9ae54aee6a3b58568a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the atomic coordination numbers of atoms at provided positions, for the EEQ method described in <a href="https://dx.doi.org/10.1063/1.5090222">https://dx.doi.org/10.1063/1.5090222</a>.  <a href="namespaceocc_1_1core_1_1charges.html#a59d2e91d6545b9ae54aee6a3b58568a4">More...</a><br /></td></tr>
+<tr class="separator:a59d2e91d6545b9ae54aee6a3b58568a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7458ef40901e8bc1cf3e10327619ce50"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core_1_1charges.html#a7458ef40901e8bc1cf3e10327619ce50">eeq_partial_charges</a> (const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;positions, double charge=0.0)</td></tr>
+<tr class="memdesc:a7458ef40901e8bc1cf3e10327619ce50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the atomic partial charges of atoms at provided positions, constraining the net charge, using the EEQ method described in <a href="https://dx.doi.org/10.1063/1.5090222">https://dx.doi.org/10.1063/1.5090222</a>.  <a href="namespaceocc_1_1core_1_1charges.html#a7458ef40901e8bc1cf3e10327619ce50">More...</a><br /></td></tr>
+<tr class="separator:a7458ef40901e8bc1cf3e10327619ce50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="afc8eeaf4e95310c70f599a123cb31860"></a>
@@ -136,6 +142,89 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Determine the atomic partial charges of atoms at provided positions, constraining the net charge. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atomic_numbers</td><td>const IVec&amp; of length N atomic numbers </td></tr>
+    <tr><td class="paramname">positions</td><td>const Mat3N&amp; of dimensions (3, N) positions in Angstroms </td></tr>
+    <tr><td class="paramname">charge</td><td>double of the system net charge (default 0 i.e. neutral)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>charges Vec representing partial charges at each of the N atomic sites </dd></dl>
+
+</div>
+</div>
+<a id="a59d2e91d6545b9ae54aee6a3b58568a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59d2e91d6545b9ae54aee6a3b58568a4">&#9670;&nbsp;</a></span>eeq_coordination_numbers()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::core::charges::eeq_coordination_numbers </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;&#160;</td>
+          <td class="paramname"><em>atomic_numbers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Determine the atomic coordination numbers of atoms at provided positions, for the EEQ method described in <a href="https://dx.doi.org/10.1063/1.5090222">https://dx.doi.org/10.1063/1.5090222</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atomic_numbers</td><td>const IVec&amp; of length N atomic numbers </td></tr>
+    <tr><td class="paramname">positions</td><td>const Mat3N&amp; of dimensions (3, N) positions in Angstroms</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>cn Vec representing (fractional) coordination numbers for each of the N atoms </dd></dl>
+
+</div>
+</div>
+<a id="a7458ef40901e8bc1cf3e10327619ce50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7458ef40901e8bc1cf3e10327619ce50">&#9670;&nbsp;</a></span>eeq_partial_charges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::core::charges::eeq_partial_charges </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;&#160;</td>
+          <td class="paramname"><em>atomic_numbers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>charge</em> = <code>0.0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Determine the atomic partial charges of atoms at provided positions, constraining the net charge, using the EEQ method described in <a href="https://dx.doi.org/10.1063/1.5090222">https://dx.doi.org/10.1063/1.5090222</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">atomic_numbers</td><td>const IVec&amp; of length N atomic numbers </td></tr>

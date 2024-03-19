@@ -23,6 +23,7 @@ var classocc_1_1core_1_1Molecule =
     [ "center_of_mass", "classocc_1_1core_1_1Molecule.html#afc094599b239b3ae11026bd60a8c8f88", null ],
     [ "centroid", "classocc_1_1core_1_1Molecule.html#a7d6a5437786d7d326dccaa895caa2b60", null ],
     [ "charge", "classocc_1_1core_1_1Molecule.html#a175e5557530ab797b968f779780fb0f8", null ],
+    [ "covalent_radii", "classocc_1_1core_1_1Molecule.html#adb8b99d61d09fe26e038a4a953343101", null ],
     [ "elements", "classocc_1_1core_1_1Molecule.html#a8cae6413aa5acd0ca8f54656008caac4", null ],
     [ "inertia_tensor", "classocc_1_1core_1_1Molecule.html#a30c475324a15a737f0c693832817d9a3", null ],
     [ "interatomic_distances", "classocc_1_1core_1_1Molecule.html#ae33d424cee77fe490157484ac5cf1495", null ],

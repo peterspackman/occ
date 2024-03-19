@@ -1,7 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/energy_components.h" name="/home/runner/work/occ/occ/include/occ/core/energy_components.h">
-<area shape="rect" id="node1" title=" " alt="" coords="176,5,347,61"/>
-<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="5,213,184,255"/>
-<area shape="rect" id="node3" href="$hf_8h.html" title=" " alt="" coords="69,117,248,158"/>
-<area shape="rect" id="node4" href="$scf_8h.html" title=" " alt="" coords="272,117,456,158"/>
-<area shape="rect" id="node5" href="$solvation__correction_8h.html" title=" " alt="" coords="481,109,658,165"/>
+<area shape="rect" id="node1" title=" " alt="" coords="239,5,409,61"/>
+<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="5,221,184,262"/>
+<area shape="rect" id="node4" href="$hf_8h.html" title=" " alt="" coords="132,117,311,158"/>
+<area shape="rect" id="node6" href="$scf_8h.html" title=" " alt="" coords="335,117,519,158"/>
+<area shape="rect" id="node7" href="$solvation__correction_8h.html" title=" " alt="" coords="543,109,721,165"/>
+<area shape="rect" id="node3" href="$point__functors_8h.html" title=" " alt="" coords="72,317,243,373"/>
+<area shape="rect" id="node5" href="$isosurface_8h.html" title=" " alt="" coords="259,213,429,269"/>
 </map>

@@ -1,7 +1,9 @@
 var namespaceocc_1_1core =
 [
     [ "charges", "namespaceocc_1_1core_1_1charges.html", [
-      [ "eem_partial_charges", "namespaceocc_1_1core_1_1charges.html#afc8eeaf4e95310c70f599a123cb31860", null ]
+      [ "eem_partial_charges", "namespaceocc_1_1core_1_1charges.html#afc8eeaf4e95310c70f599a123cb31860", null ],
+      [ "eeq_coordination_numbers", "namespaceocc_1_1core_1_1charges.html#a59d2e91d6545b9ae54aee6a3b58568a4", null ],
+      [ "eeq_partial_charges", "namespaceocc_1_1core_1_1charges.html#a7458ef40901e8bc1cf3e10327619ce50", null ]
     ] ],
     [ "diis", "namespaceocc_1_1core_1_1diis.html", "namespaceocc_1_1core_1_1diis" ],
     [ "graph", "namespaceocc_1_1core_1_1graph.html", "namespaceocc_1_1core_1_1graph" ],
