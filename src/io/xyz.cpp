@@ -4,7 +4,7 @@
 #include <occ/core/units.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/xyz.h>
-#include <scn/scn.h>
+#include <scn/scan.h>
 
 namespace occ::io {
 using occ::core::Element;
@@ -24,21 +24,24 @@ XyzFileReader::XyzFileReader(std::istream &stream) { parse(stream); }
 void XyzFileReader::parse(std::istream &is) {
     std::string line;
     std::getline(is, line);
-    int num_atoms;
-    auto scan_result = scn::scan(line, "{}", num_atoms);
+    auto result = scn::scan<int>(line, "{}");
+    if(!result) {
+	occ::log::error("failed reading atom count line");
+	return;
+    }
+    int num_atoms = result->value();
     std::vector<occ::core::Atom> atoms;
     positions.reserve(num_atoms);
     elements.reserve(num_atoms);
     // comment line
     std::getline(is, comment);
-    double x, y, z;
-    std::string el;
     while (std::getline(is, line) && num_atoms > 0) {
-        auto result = scn::scan(line, "{} {} {} {}", el, x, y, z);
+        auto result = scn::scan<std::string, double, double, double>(line, "{} {} {} {}");
         if (!result) {
             occ::log::error("failed reading {}", result.error().msg());
             continue;
         }
+	auto &[el, x, y, z] = result->values();
         occ::log::debug("Found atom line: {} {} {} {}", el, x, y, z);
         elements.emplace_back(occ::core::Element(el));
         positions.emplace_back(std::array<double, 3>{x, y, z});

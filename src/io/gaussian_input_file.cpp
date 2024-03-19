@@ -5,7 +5,7 @@
 #include <occ/io/gaussian_input_file.h>
 #include <occ/io/occ_input.h>
 #include <regex>
-#include <scn/scn.h>
+#include <scn/scan.h>
 
 namespace occ::io {
 
@@ -84,13 +84,13 @@ void GaussianInputFile::parse_route_line(const std::string &line) {
 
 void GaussianInputFile::parse_charge_multiplicity_line(
     const std::string &line) {
-    auto result = scn::scan(line, "{} {}", charge, multiplicity);
+    auto result = scn::scan<int, int>(line, "{} {}");
+    std::tie(charge, multiplicity) = result->values();
 }
 
 void GaussianInputFile::parse_atom_line(const std::string &line) {
-    double x, y, z;
-    std::string symbol;
-    auto result = scn::scan(line, "{} {} {} {}", symbol, x, y, z);
+    auto result = scn::scan<std::string, double, double, double>(line, "{} {} {} {}");
+    auto &[symbol, x, y, z] = result->values();
     atomic_positions.push_back({x, y, z});
     elements.emplace_back(occ::core::Element(symbol));
 }

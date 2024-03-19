@@ -2,7 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/engrad.h>
-#include <scn/scn.h>
+#include <scn/scan.h>
 
 namespace occ::io {
 
@@ -36,29 +36,34 @@ void EngradReader::parse(std::istream &stream) {
 
     skip_comment_lines();
 
-    auto scan_result = scn::scan_default(current_line, m_num_atoms);
+    auto na_result = scn::scan<int>(current_line, "{}");
+    m_num_atoms = na_result->value();
 
     m_gradient = Mat3N(3, m_num_atoms);
     m_positions = Mat3N(3, m_num_atoms);
     m_atomic_numbers = IVec(m_num_atoms);
 
     skip_comment_lines();
-    scan_result = scn::scan_default(current_line, m_energy);
+    auto e_result = scn::scan<double>(current_line, "{}");
+    m_energy = e_result->value();
 
     skip_comment_lines();
     for (int i = 0; i < m_num_atoms * 3; i++) {
         int component = i % 3;
         int atom = i / 3;
-        scan_result =
-            scn::scan_default(current_line, m_gradient(component, atom));
+        auto g_result = scn::scan<double>(current_line, "{}");
+	m_gradient(component, atom) = g_result->value();
         std::getline(stream, current_line);
     }
 
     skip_comment_lines();
     for (int i = 0; i < m_num_atoms; i++) {
-        scan_result = scn::scan_default(current_line, m_atomic_numbers(i),
-                                        m_positions(0, i), m_positions(1, i),
-                                        m_positions(2, i));
+        auto scan_result = scn::scan<int, double, double, double>(current_line, "{} {} {} {}");
+	auto &[n, x, y, z] = scan_result->values();
+	m_atomic_numbers(i) = n;
+	m_positions(0, i) = x;
+	m_positions(1, i) = y;
+	m_positions(2, i) = z;
         std::getline(stream, current_line);
     }
 }

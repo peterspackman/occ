@@ -408,6 +408,19 @@ s   3 1.0
     nlc.set_parameters(
         {occ::dft::NonLocalCorrelationFunctional::Kind::VV10, 6.0, 0.01});
 
+    fmt::print("{} atoms read\n", wfn.atoms.size());
+    for(const auto &atom: wfn.atoms) {
+	fmt::print("{} {:12.5f} {:12.5f} {:12.5f}\n", atom.atomic_number, atom.x, atom.y, atom.z);
+    }
+    fmt::print("wfn num e = {}\n", wfn.num_electrons);
+    fmt::print("Mo energies\n{}\n", wfn.mo.energies);
+    fmt::print("MO coefficients\n{}\n", wfn.mo.C);
+    fmt::print("MO occupied\n{}\n", wfn.mo.Cocc);
+    fmt::print("MO D\n{}\n", wfn.mo.D);
+    fmt::print("Basis shells {}\n", wfn.basis.size());
+    for(const auto &sh: wfn.basis.shells()) {
+	fmt::print("Shell {} primitives {}\n", sh.symbol(), sh.num_primitives());
+    }
     auto result = nlc(wfn.basis, wfn.mo);
     double expected = 0.0089406089;
     fmt::print("NLC = {} vs {}\n", result.energy, expected);

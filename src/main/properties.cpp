@@ -9,7 +9,7 @@
 #include <occ/qm/chelpg.h>
 #include <occ/qm/hf.h>
 #include <occ/xdm/xdm.h>
-#include <scn/scn.h>
+#include <scn/scan.h>
 
 namespace occ::main {
 
@@ -74,13 +74,14 @@ void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
             std::ifstream is(filename);
             std::string line;
             std::getline(is, line);
-            int num{0}, idx{0};
-            auto scan_result = scn::scan(line, "{}", num);
+            int idx{0};
+            auto scan_result = scn::scan<int>(line, "{}");
+	    auto & num = scan_result->value();
             points = Mat3N(3, num);
             // comment line
-            double x, y, z;
             while (std::getline(is, line) && num > 0) {
-                auto result = scn::scan(line, "{} {} {}", x, y, z);
+                auto result = scn::scan<double, double, double>(line, "{} {} {}");
+		auto &[x, y, z] = result->values();
                 if (!result) {
                     occ::log::error("failed reading {}", result.error().msg());
                     continue;

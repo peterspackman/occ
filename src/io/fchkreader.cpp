@@ -3,7 +3,7 @@
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/io/fchkreader.h>
-#include <scn/scn.h>
+#include <scn/scan.h>
 
 namespace occ::io {
 
@@ -17,7 +17,11 @@ void read_matrix_block(std::istream &stream, std::vector<T> &destination,
     std::string line;
     while (destination.size() < count) {
         std::getline(stream, line);
-        auto result = scn::scan_list(line, destination);
+	auto input = scn::ranges::subrange{line};
+	while(auto result = scn::scan<T>(input, "{}")) {
+	    destination.push_back(result->value());
+	    input = result->range();
+	}
     }
 }
 
@@ -120,174 +124,185 @@ FchkReader::LineLabel FchkReader::resolve_line(const std::string &line) const {
 
 void FchkReader::parse(std::istream &stream) {
     std::string line;
-    size_t count;
     while (std::getline(stream, line)) {
         switch (resolve_line(line)) {
         case LineLabel::NumElectrons: {
             auto result =
-                scn::scan(line, "Number of electrons I {}", m_num_electrons);
+                scn::scan<int>(line, "Number of electrons I {}");
+	    m_num_electrons = result->value();
             break;
         }
         case LineLabel::SCFEnergy: {
-            auto result = scn::scan(line, "SCF Energy R {}", m_scf_energy);
+            auto result = scn::scan<double>(line, "SCF Energy R {}");
+	    m_scf_energy = result->value();
             break;
         }
         case LineLabel::NumBasisFunctions: {
-            auto result = scn::scan(line, "Number of basis functions I {}",
-                                    m_num_basis_functions);
+            auto result = scn::scan<int>(line, "Number of basis functions I {}");
+	    m_num_basis_functions = result->value();
             break;
         }
         case LineLabel::NumAlpha: {
-            auto result =
-                scn::scan(line, "Number of alpha electrons I {}", m_num_alpha);
+            auto result = scn::scan<int>(line, "Number of alpha electrons I {}");
+	    m_num_alpha = result->value();
             break;
         }
         case LineLabel::NumBeta: {
-            auto result =
-                scn::scan(line, "Number of beta electrons I {}", m_num_beta);
+            auto result = scn::scan<int>(line, "Number of beta electrons I {}");
+	    m_num_beta = result->value();
             break;
         }
         case LineLabel::AtomicNumbers: {
-            auto result = scn::scan(line, "Atomic numbers I N= {}", count);
+            auto result = scn::scan<size_t>(line, "Atomic numbers I N= {}");
+	    auto &count = result->value();
             read_matrix_block<int>(stream, m_atomic_numbers, count);
             break;
         }
         case LineLabel::NuclearCharges: {
-            auto result = scn::scan(line, "Nuclear charges R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Nuclear charges R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_nuclear_charges, count);
             break;
         }
         case LineLabel::AtomicPositions: {
-            auto result =
-                scn::scan(line, "Current cartesian coordinates R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Current cartesian coordinates R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_atomic_positions, count);
             break;
         }
         case LineLabel::AlphaMO: {
-            auto result =
-                scn::scan(line, "Alpha MO coefficients R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Alpha MO coefficients R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_alpha_mos, count);
             break;
         }
         case LineLabel::BetaMO: {
-            auto result =
-                scn::scan(line, "Beta MO coefficients R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Beta MO coefficients R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_beta_mos, count);
             break;
         }
         case LineLabel::AlphaMOEnergies: {
-            auto result =
-                scn::scan(line, "Alpha Orbital Energies R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Alpha Orbital Energies R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_alpha_mo_energies, count);
             break;
         }
         case LineLabel::BetaMOEnergies: {
-            auto result =
-                scn::scan(line, "Beta Orbital Energies R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Beta Orbital Energies R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_beta_mo_energies, count);
             break;
         }
         case LineLabel::NumShells: {
-            auto result = scn::scan(line, "Number of contracted shells I {}",
-                                    m_basis.num_shells);
+            auto result = scn::scan<int>(line, "Number of contracted shells I {}");
+	    m_basis.num_shells = result->value();
             break;
         }
         case LineLabel::NumPrimitiveShells: {
-            auto result = scn::scan(line, "Number of primitive shells I {}",
-                                    m_basis.num_primitives);
+            auto result = scn::scan<int>(line, "Number of primitive shells I {}");
+	    m_basis.num_primitives = result->value();
             break;
         }
         case LineLabel::ShellTypes: {
-            auto result = scn::scan(line, "Shell types I N= {}", count);
+            auto result = scn::scan<size_t>(line, "Shell types I N= {}");
+	    auto & count = result->value();
             read_matrix_block<int>(stream, m_basis.shell_types, count);
             break;
         }
         case LineLabel::PrimitivesPerShell: {
-            auto result = scn::scan(
-                line, "Number of primitives per shell I N= {}", count);
+            auto result = scn::scan<size_t>(line, "Number of primitives per shell I N= {}");
+	    auto &count = result->value();
             read_matrix_block<int>(stream, m_basis.primitives_per_shell, count);
             break;
         }
         case LineLabel::ShellToAtomMap: {
-            auto result = scn::scan(line, "Shell to atom map I N= {}", count);
+            auto result = scn::scan<size_t>(line, "Shell to atom map I N= {}");
+	    auto &count = result->value();
             read_matrix_block<int>(stream, m_basis.shell2atom, count);
             break;
         }
         case LineLabel::PrimitiveExponents: {
-            auto result = scn::scan(line, "Primitive exponents R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Primitive exponents R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_basis.primitive_exponents,
                                       count);
             break;
         }
         case LineLabel::ContractionCoefficients: {
-            auto result =
-                scn::scan(line, "Contraction coefficients R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Contraction coefficients R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_basis.contraction_coefficients,
                                       count);
             break;
         }
         case LineLabel::SPContractionCoefficients: {
-            auto result = scn::scan(
-                line, "P(S=P) Contraction coefficients R N= {}", count);
+            auto result = scn::scan<size_t>(line, "P(S=P) Contraction coefficients R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(
                 stream, m_basis.sp_contraction_coefficients, count);
             break;
         }
         case LineLabel::ShellCoordinates: {
-            auto result =
-                scn::scan(line, "Coordinates of each shell R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Coordinates of each shell R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_basis.shell_coordinates, count);
             break;
         }
         case LineLabel::SCFDensity: {
-            auto result = scn::scan(line, "Total SCF Density R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Total SCF Density R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_scf_density, count);
             break;
         }
         case LineLabel::MP2Density: {
-            auto result = scn::scan(line, "Total MP2 Density R N= {}", count);
+            auto result = scn::scan<size_t>(line, "Total MP2 Density R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_mp2_density, count);
             break;
         }
         case LineLabel::PureCartesianD: {
-            auto result =
-                scn::scan(line, "Pure/Cartesian d shells I {}", count);
-            m_cartesian_d = (count == 1);
+            auto result = scn::scan<int>(line, "Pure/Cartesian d shells I {}");
+            m_cartesian_d = (result->value() == 1);
             break;
         }
         case LineLabel::PureCartesianF: {
-            auto result =
-                scn::scan(line, "Pure/Cartesian f shells I {}", count);
-            m_cartesian_f = (count == 1);
+            auto result = scn::scan<int>(line, "Pure/Cartesian f shells I {}");
+            m_cartesian_f = (result->value() == 1);
             break;
         }
         case LineLabel::ECP_RNFroz: {
             warn_about_ecp_reading();
-            auto result = scn::scan(line, "ECP-RNFroz R N= {}", count);
+            auto result = scn::scan<size_t>(line, "ECP-RNFroz R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_ecp_frozen, count);
             break;
         }
         case LineLabel::ECP_NLP: {
             warn_about_ecp_reading();
-            auto result = scn::scan(line, "ECP-NLP R N= {}", count);
+            auto result = scn::scan<size_t>(line, "ECP-NLP R N= {}");
+	    auto &count = result->value();
             read_matrix_block<int>(stream, m_ecp_nlp, count);
             break;
         }
         case LineLabel::ECP_CLP1: {
             warn_about_ecp_reading();
-            auto result = scn::scan(line, "ECP-CLP1 R N= {}", count);
+            auto result = scn::scan<size_t>(line, "ECP-CLP1 R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_ecp_clp1, count);
             break;
         }
         case LineLabel::ECP_CLP2: {
             warn_about_ecp_reading();
-            auto result = scn::scan(line, "ECP-CLP2 R N= {}", count);
+            auto result = scn::scan<size_t>(line, "ECP-CLP2 R N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_ecp_frozen, count);
             break;
         }
         case LineLabel::ECP_ZLP: {
             warn_about_ecp_reading();
-            auto result = scn::scan(line, "ECP-ZLP N= {}", count);
+            auto result = scn::scan<size_t>(line, "ECP-ZLP N= {}");
+	    auto &count = result->value();
             read_matrix_block<double>(stream, m_ecp_frozen, count);
             break;
         }

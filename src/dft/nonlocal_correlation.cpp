@@ -150,6 +150,7 @@ NonLocalCorrelationFunctional::vv10(const qm::AOBasis &basis,
     }
 
     Mat rho(npt, occ::density::num_components(derivative_order));
+    fmt::print("D2\n{}\n", D2);
     auto gto_vals = occ::gto::evaluate_basis(basis, points, derivative_order);
 
     occ::density::evaluate_density<derivative_order, spinorbital_kind>(

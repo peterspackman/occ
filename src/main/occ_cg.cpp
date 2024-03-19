@@ -32,7 +32,6 @@
 #include <occ/qm/wavefunction.h>
 #include <occ/solvent/solvation_correction.h>
 #include <occ/xtb/xtb_wrapper.h>
-#include <scn/scn.h>
 
 namespace fs = std::filesystem;
 using occ::core::Element;

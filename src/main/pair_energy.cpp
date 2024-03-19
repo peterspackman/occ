@@ -17,7 +17,6 @@
 #include <occ/qm/chelpg.h>
 #include <occ/xtb/xtb_wrapper.h>
 #include <optional>
-#include <scn/scn.h>
 #include <occ/core/progress.h>
 
 namespace fs = std::filesystem;

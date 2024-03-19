@@ -3,7 +3,7 @@
 #include <occ/core/units.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/pc.h>
-#include <scn/scn.h>
+#include <scn/scan.h>
 
 namespace occ::io {
 
@@ -21,17 +21,21 @@ PointChargeFileReader::PointChargeFileReader(std::istream &stream) { parse(strea
 void PointChargeFileReader::parse(std::istream &is) {
     std::string line;
     std::getline(is, line);
-    int num_charges;
-    auto scan_result = scn::scan(line, "{}", num_charges);
+    auto scan_result = scn::scan<int>(line, "{}");
+    if(!scan_result) {
+	occ::log::error("failed reading charge count line");
+	return;
+    }
+    int num_charges = scan_result->value();
     point_charges.reserve(num_charges);
     // no comment line
-    double q, x, y, z;
     while (std::getline(is, line) && num_charges > 0) {
-        auto result = scn::scan(line, "{} {} {} {}", q, x, y, z);
+        auto result = scn::scan<double, double, double, double>(line, "{} {} {} {}");
         if (!result) {
             occ::log::error("failed reading {}", result.error().msg());
             continue;
         }
+	auto [q, x, y, z] = result->values();
         x *= occ::units::ANGSTROM_TO_BOHR;
         y *= occ::units::ANGSTROM_TO_BOHR;
         z *= occ::units::ANGSTROM_TO_BOHR;

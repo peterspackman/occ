@@ -5,9 +5,14 @@
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/io/moldenreader.h>
-#include <scn/scn.h>
+#include <scn/scan.h>
 
 constexpr size_t expected_max_line_length{1024};
+
+inline void fail_with_error(const std::string &msg, const std::string &line) {
+    throw std::runtime_error(fmt::format(
+        "Unable to parse molden file, error: {}, line = '{}'", msg, line));
+}
 
 namespace occ::io {
 using occ::util::startswith;
@@ -94,12 +99,17 @@ void MoldenReader::parse_atoms_section(const std::optional<std::string> &args,
             break;
         }
         pos = stream.tellg();
-        std::string symbol;
-        int idx;
         occ::core::Atom atom;
-        auto scan_result =
-            scn::scan_default(m_current_line, symbol, idx, atom.atomic_number,
-                              atom.x, atom.y, atom.z);
+
+        auto scan_result = 
+            scn::scan<std::string, int, int, double, double, double>(m_current_line, "{} {} {} {} {} {}");
+	auto &[symbol, idx, num, x, y, z] = scan_result->values();
+
+	atom.atomic_number = num;
+	atom.x = x;
+	atom.y = y;
+	atom.z = z;
+
         if (factor != 1.0) {
             atom.x *= factor;
             atom.y *= factor;
@@ -169,22 +179,21 @@ inline occ::qm::Shell parse_molden_shell(const std::array<double, 3> &position,
     occ::qm::Shell::Kind shell_kind = pure ? occ::qm::Shell::Kind::Spherical
                                            : occ::qm::Shell::Kind::Cartesian;
 
-    std::string shell_type;
-    int num_primitives, second;
-    auto result = scn::make_result(line_buffer);
-    if (!(result = scn::scan_default(result.range(), shell_type, num_primitives,
-                                     second))) {
-        fmt::print("Error: {}\n", result.error().msg());
-        throw std::runtime_error(fmt::format(
-            "Unable to parse molden file, error: {}", result.error().msg()));
+    auto result = scn::scan<std::string, int, int>(line_buffer, "{} {} {}");
+    if (!result) {
+	fail_with_error(result.error().msg(), line_buffer);
     }
+    auto & [shell_type, num_primitives, second] = result->values();
     std::vector<double> alpha, coeffs;
     alpha.reserve(num_primitives), coeffs.reserve(num_primitives);
     int l = l_from_char(shell_type[0]);
     for (int i = 0; i < num_primitives; i++) {
         std::getline(stream, line_buffer);
-        double e, c;
-        auto scan_result = scn::scan_default(line_buffer, e, c);
+        auto scan_result = scn::scan<double, double>(line_buffer, "{} {}");
+	if(!scan_result) {
+	    fail_with_error(result.error().msg(), line_buffer);
+	}
+	auto &[e, c] = scan_result->values();
         alpha.push_back(e);
         coeffs.push_back(c);
     }
@@ -228,8 +237,12 @@ void MoldenReader::parse_gto_section(const std::optional<std::string> &args,
             break;
         }
         pos = stream.tellg();
-        int atom_idx, second;
-        auto scan_result = scn::scan_default(m_current_line, atom_idx, second);
+
+        auto scan_result = scn::scan<int, int>(m_current_line, "{} {}");
+	if(!scan_result) 
+	    fail_with_error(scan_result.error().msg(), m_current_line);
+	auto &[atom_idx, second] = scan_result->values();
+
         assert(atom_idx <= m_atoms.size());
         std::array<double, 3> position{m_atoms[atom_idx - 1].x,
                                        m_atoms[atom_idx - 1].y,
@@ -247,48 +260,44 @@ void MoldenReader::parse_gto_section(const std::optional<std::string> &args,
     }
 }
 
-inline void fail_with_error(const std::string &msg, const std::string &line) {
-    throw std::runtime_error(fmt::format(
-        "Unable to parse molden file, error: {}, line = '{}'", msg, line));
-}
-
 void MoldenReader::parse_mo(size_t &mo_a, size_t &mo_b, std::istream &stream) {
     double energy{0.0};
     bool alpha{false};
     double occupation{0.0};
     while (std::getline(stream, m_current_line)) {
         trim(m_current_line);
-        auto result = scn::make_result(m_current_line);
         if (startswith(m_current_line, "Sym", true)) {
 
         } else if (startswith(m_current_line, "Ene", true)) {
-            if (!(result = scn::scan(result.range(), "Ene= {}", energy))) {
+	    auto result = scn::scan<double>(m_current_line, "Ene= {}");
+            if (!result) {
                 fail_with_error(result.error().msg(), m_current_line);
             }
+	    energy = result->value();
         } else if (startswith(m_current_line, "Spin", true)) {
-            std::string spin;
-            if (!(result = scn::scan(result.range(), "Spin= {}", spin))) {
+	    auto result = scn::scan<std::string>(m_current_line, "Spin= {}");
+            if (!result) {
                 fail_with_error(result.error().msg(), m_current_line);
             }
+	    auto spin = result->value();
             to_lower(spin);
             alpha = (spin == "alpha");
         } else if (startswith(m_current_line, "Occup", true)) {
-            if (!(result =
-                      scn::scan(result.range(), "Occup= {}", occupation))) {
+	    auto result = scn::scan<double>(m_current_line, "Occup= {}");
+            if (!result) {
                 fail_with_error(result.error().msg(), m_current_line);
             }
+	    occupation = result->value();
             m_num_electrons += occupation;
         } else {
             for (size_t i = 0; i < nbf(); i++) {
                 if (i > 0)
                     std::getline(stream, m_current_line);
-                int idx;
-                double coeff;
-                auto scan_result = scn::make_result(m_current_line);
-                if (!(scan_result =
-                          scn::scan_default(scan_result.range(), idx, coeff))) {
+                auto scan_result = scn::scan<int, double>(m_current_line, "{} {}");
+                if (!scan_result) {
                     fail_with_error(scan_result.error().msg(), m_current_line);
                 }
+		auto &[idx, coeff] = scan_result->values();
                 if (alpha) {
                     m_molecular_orbitals_alpha(idx - 1, mo_a) = coeff;
                     m_energies_alpha(mo_a) = energy;

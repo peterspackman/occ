@@ -20,15 +20,16 @@ CPMAddPackage(
 
 CPMAddPackage(
     NAME scnlib
-    GITHUB_REPOSITORY "peterspackman/scnlib"
-    GIT_TAG "master"
+    GITHUB_REPOSITORY "eliaskosunen/scnlib"
+    VERSION "2.0.2"
+    OPTIONS "SIMDUTF_TESTS OFF" "ENABLE_FULL OFF"
 )
 
 
 CPMAddPackage(
     NAME CLI11
     GITHUB_REPOSITORY "CLIUtils/CLI11"
-    VERSION "2.3.2"
+    VERSION "2.4.1"
 )
 
 if("${USE_MLX}")
@@ -64,7 +65,7 @@ endif()
 CPMAddPackage(
     NAME gemmi
     GITHUB_REPOSITORY project-gemmi/gemmi
-    VERSION "0.6.3"
+    VERSION "0.6.5"
     DOWNLOAD_ONLY YES
 )
 
@@ -99,7 +100,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
     GIT_TAG master
     OPTIONS "WITH_FORTRAN OFF" "WITH_CINT2_INTERFACE OFF" "ENABLE_STATIC ON" "BUILD_SHARED_LIBS OFF" "PYPZPX ON" "BUILD_MARCH_NATIVE ON" "WITH_RANGE_COULOMB ON"
-    VERSION "6.0.0"
+    VERSION "6.1.2"
 )
 add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(libcint::libcint INTERFACE cint)
@@ -113,7 +114,7 @@ target_include_directories(
 if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc
-    URL "http://www.tddft.org/programs/libxc/down.php?file=6.2.2/libxc-6.2.2.tar.gz"
+    URL "https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz"
     OPTIONS "BUILD_TESTING OFF" "ENABLE_XHOST ${ENABLE_HOST_OPT}" "BUILD_FPIC ${WITH_PYTHON_BINDINGS}"
 )
 add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 
