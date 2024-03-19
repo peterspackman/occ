@@ -32,6 +32,8 @@ const char *category_name(category cat) {
         return "linear algebra";
     case guess:
         return "Initial guess";
+    case cube_evaluation:
+	return "Cube evaluation";
     case mo:
         return "MO update";
     case diis:
@@ -88,6 +90,8 @@ const char *category_name(category cat) {
         return "J matrix";
     case isosurface_function:
         return "Isosurface function";
+    case isosurface_normals:
+        return "Isosurface normals";
     case isosurface_properties:
         return "Isosurface properties";
     case mc_octree:
@@ -108,6 +112,7 @@ void print_timings() {
         ints3c2e,
         io,
         guess,
+	cube_evaluation,
         mo,
         diis,
         dft,
@@ -125,6 +130,7 @@ void print_timings() {
         xdm,
         solvent,
         isosurface_function,
+	isosurface_normals,
         isosurface_properties,
         mc_octree,
         mc_primal,

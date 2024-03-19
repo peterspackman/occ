@@ -55,6 +55,7 @@ struct BasisSetInput {
 struct SolventInput {
     std::string solvent_name{""};
     std::string output_surface_filename{""};
+    bool radii_scaling{false};
 };
 
 struct RuntimeInput {

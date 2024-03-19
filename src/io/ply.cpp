@@ -1,5 +1,6 @@
 #include <occ/io/ply.h>
 #include <fmt/os.h>
+#include <occ/io/tinyply.h>
 
 namespace occ::io {
 
@@ -9,7 +10,7 @@ void write_ply_file(const std::string &filename,
     auto file = fmt::output_file(filename);
     file.print("ply\n");
     file.print("format ascii 1.0\n");
-    file.print("comment exported from CrystalExplorer\n");
+    file.print("comment exported from OCC\n");
     file.print("element vertex {}\n", vertices.size() / 3);
     file.print("property float x\n");
     file.print("property float y\n");

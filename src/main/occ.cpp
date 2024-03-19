@@ -3,6 +3,7 @@
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/main/occ_cg.h>
+#include <occ/main/occ_cube.h>
 #include <occ/main/occ_dimers.h>
 #include <occ/main/occ_elat.h>
 #include <occ/main/occ_isosurface.h>
@@ -42,6 +43,7 @@ int main(int argc, char *argv[]) {
 
     // add all the subcommands here
     auto *cg = occ::main::add_cg_subcommand(app);
+    auto *cube = occ::main::add_cube_subcommand(app);
     auto *dimers = occ::main::add_dimers_subcommand(app);
     auto *elat = occ::main::add_elat_subcommand(app);
     auto *iso = occ::main::add_isosurface_subcommand(app);

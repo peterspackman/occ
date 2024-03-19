@@ -75,6 +75,7 @@ struct Wavefunction {
     Wavefunction(const Wavefunction &wfn_a, const Wavefunction &wfn_b);
 
     static Wavefunction load(const std::string &);
+    static bool is_likely_wavefunction_filename(const std::string &);
 
     inline int multiplicity() const { return abs(n_beta() - n_alpha()) + 1; }
     inline int charge() const {
@@ -102,6 +103,12 @@ struct Wavefunction {
     occ::IVec atomic_numbers() const;
 
     Vec mulliken_charges() const;
+
+    Vec electron_density(const Mat3N &points) const;
+    Mat3N electron_density_gradient(const Mat3N &points) const;
+
+    Vec electron_density_mo(const Mat3N &points, int mo_index) const;
+    Mat3N electron_density_mo_gradient(const Mat3N &points, int mo_index) const;
 
     Vec electric_potential(const Mat3N &points) const;
     Mat3N electric_field(const Mat3N &points) const;

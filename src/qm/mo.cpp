@@ -581,4 +581,26 @@ MolecularOrbitals MolecularOrbitals::symmetrically_orthonormalized(
     return result;
 }
 
+Mat MolecularOrbitals::density_matrix_single_mo(int mo_index) const {
+    Mat Ctmp = Mat::Zero(C.rows(), C.cols());
+
+    Mat result;
+
+    Ctmp.col(mo_index) = C.col(mo_index);
+    occ::timing::start(occ::timing::category::la);
+    switch (kind) {
+    case SpinorbitalKind::Restricted:
+        result = orb::density_matrix_restricted(Ctmp);
+        break;
+    case SpinorbitalKind::Unrestricted:
+        result = orb::density_matrix_unrestricted(Ctmp, Ctmp.cols(), Ctmp.cols());
+        break;
+    case SpinorbitalKind::General:
+        result = orb::density_matrix_general(Ctmp);
+        break;
+    }
+    occ::timing::stop(occ::timing::category::la);
+    return result;
+}
+
 } // namespace occ::qm

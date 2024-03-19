@@ -10,6 +10,10 @@ struct IsosurfaceConfig {
     double separation{0.2};
     double isovalue{0.02};
     double background_density{0.0};
+    bool use_hashed_mc{false};
+    bool binary_output{true};
+    std::string kind{"promol"};
+    std::string output_filename{"surface.obj"};
 };
 
 CLI::App *add_isosurface_subcommand(CLI::App &app);

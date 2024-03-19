@@ -47,6 +47,13 @@ struct Atom {
         double dx = xx - x, dy = yy - y, dz = zz - z;
         return dx * dx + dy * dy + dz * dz;
     }
+
+    /// the square euclidean distance from another atom (Bohr^2)
+    inline double square_distance(const Atom &other) const {
+        double dx = other.x - x, dy = other.y - y, dz = other.z - z;
+        return dx * dx + dy * dy + dz * dz;
+    }
+
 };
 
 /// returns true if two Atoms have the same element and are at the exact same

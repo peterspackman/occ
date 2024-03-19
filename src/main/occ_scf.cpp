@@ -150,17 +150,19 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
     pc_option->check(CLI::ExistingFile);
 
     // Solvation
-    scf->add_flag("-s,--solvent,--solvent_name", config->solvent.solvent_name,
-                  "use spherical basis sets");
-    scf->add_flag("-f,--solvent-file,--solvent_file",
-                  config->solvent.output_surface_filename,
-                  "file to write solvent surface");
+    scf->add_option("-s,--solvent,--solvent_name", config->solvent.solvent_name,
+		    "Solvent name");
+    scf->add_option("-f,--solvent-file,--solvent_file",
+		    config->solvent.output_surface_filename,
+		    "file to write solvent surface");
+    scf->add_flag("--solvent-radii-scaling,--solvent_radii_scaling,--draco", config->solvent.radii_scaling,
+                  "use DRACO for radii scaling");
     // XDM
     scf->add_flag("--xdm", config->dispersion.evaluate_correction,
                   "use XDM dispersion correction");
-    scf->add_flag("--xdm-a1,--xdm_a1", config->dispersion.xdm_a1,
+    scf->add_option("--xdm-a1,--xdm_a1", config->dispersion.xdm_a1,
                   "a1 parameter for XDM");
-    scf->add_flag("--xdm-a2,--xdm_a2", config->dispersion.xdm_a2,
+    scf->add_option("--xdm-a2,--xdm_a2", config->dispersion.xdm_a2,
                   "a2 parameter for XDM");
 
     scf->callback([config]() { run_scf_subcommand(*config); });

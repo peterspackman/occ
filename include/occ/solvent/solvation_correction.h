@@ -20,7 +20,7 @@ using PointChargeList = std::vector<occ::core::PointCharge>;
 class ContinuumSolvationModel {
   public:
     ContinuumSolvationModel(const std::vector<occ::core::Atom> &,
-                            const std::string &solvent = "water");
+                            const std::string &solvent = "water", double charge = 0.0, bool draco=false);
 
     void set_solvent(const std::string &);
     const std::string &solvent() const { return m_solvent_name; }
@@ -42,6 +42,9 @@ class ContinuumSolvationModel {
     double surface_polarization_energy();
     double surface_charge() const { return m_asc.array().sum(); }
     double smd_cds_energy() const;
+
+    inline double charge() const { return m_charge; }
+    inline void set_charge(double charge) { m_charge = charge; initialize_surfaces(); }
 
     Vec surface_cds_energy_elements() const;
     Vec surface_polarization_energy_elements() const;
@@ -93,6 +96,14 @@ class ContinuumSolvationModel {
     void write_surface_file(const std::string &filename);
 
   private:
+    void initialize_surfaces();
+    void update_radii();
+
+    double m_charge{0.0};
+    Vec m_coulomb_radii;
+    Vec m_cds_radii;
+    Vec m_atomic_charges;
+
     std::string m_solvent_name;
     Mat3N m_nuclear_positions;
     Vec m_nuclear_charges;
@@ -105,14 +116,16 @@ class ContinuumSolvationModel {
     SMDSolventParameters m_params;
 
     COSMO m_cosmo;
+    bool m_scale_radii{false};
 };
 
 template <typename Proc> class SolvationCorrectedProcedure {
   public:
     SolvationCorrectedProcedure(Proc &proc,
-                                const std::string &solvent = "water")
+                                const std::string &solvent = "water",
+				bool radii_scaling = false)
         : m_atoms(proc.atoms()), m_proc(proc),
-          m_solvation_model(proc.atoms(), solvent) {
+          m_solvation_model(proc.atoms(), solvent, m_proc.system_charge(), radii_scaling) {
         occ::Mat3N pos(3, m_atoms.size());
         occ::IVec nums(m_atoms.size());
         for (int i = 0; i < m_atoms.size(); i++) {
@@ -146,13 +159,14 @@ template <typename Proc> class SolvationCorrectedProcedure {
 
     inline Vec3 center_of_mass() const { return m_proc.center_of_mass(); }
 
-    void set_system_charge(int charge) { m_proc.set_system_charge(charge); }
+    void set_system_charge(int charge) { m_proc.set_system_charge(charge); m_solvation_model.set_charge(charge); }
 
     inline void set_precision(double precision) {
         m_proc.set_precision(precision);
     }
 
-    int system_charge() const { return m_proc.system_charge(); }
+    inline int system_charge() const { return m_proc.system_charge(); }
+
     int total_electrons() const { return m_proc.total_electrons(); }
     int active_electrons() const { return m_proc.active_electrons(); }
     inline const auto &frozen_electrons() const {

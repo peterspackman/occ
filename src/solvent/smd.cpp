@@ -719,4 +719,17 @@ Vec cds_radii(const IVec &nums, const SMDSolventParameters &params) {
     return result * occ::units::ANGSTROM_TO_BOHR;
 }
 
+
+Vec intrinsic_coulomb_radii(const std::vector<core::Atom> &atoms, const SMDSolventParameters &params) {
+    IVec nums(atoms.size());
+    for(int i = 0; i < atoms.size(); i++) nums(i) = atoms[i].atomic_number;
+    return intrinsic_coulomb_radii(nums, params);
+}
+
+Vec cds_radii(const std::vector<core::Atom> &atoms, const SMDSolventParameters &params) {
+    IVec nums(atoms.size());
+    for(int i = 0; i < atoms.size(); i++) nums(i) = atoms[i].atomic_number;
+    return cds_radii(nums, params);
+}
+
 } // namespace occ::solvent::smd

@@ -17,6 +17,7 @@
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
 #include <filesystem>
+#include <occ/gto/density.h>
 
 namespace fs = std::filesystem;
 
@@ -386,6 +387,45 @@ Vec Wavefunction::mulliken_charges() const {
     return charges;
 }
 
+Vec Wavefunction::electron_density(const Mat3N &pos) const {
+    return occ::density::evaluate_density_on_grid<0>(*this, pos);
+}
+
+Mat3N Wavefunction::electron_density_gradient(const Mat3N &pos) const {
+    return occ::density::evaluate_density_on_grid<1>(*this, pos).rightCols(3).transpose();
+}
+
+Vec Wavefunction::electron_density_mo(const Mat3N &pos, int mo_index) const {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+
+
+    switch(mo.kind) {
+	case R: {
+	    auto D = mo.density_matrix_single_mo(mo_index);
+	    return occ::density::evaluate_density_on_grid<0, R>(basis, D, pos);
+	}
+	default:
+	    throw std::runtime_error("Only restricted case for mo density implemented");
+    }
+}
+
+Mat3N Wavefunction::electron_density_mo_gradient(const Mat3N &pos, int mo_index) const {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+
+
+    switch(mo.kind) {
+	case R: {
+	    auto D = mo.density_matrix_single_mo(mo_index);
+	    return occ::density::evaluate_density_on_grid<1, R>(basis, D, pos).rightCols(3).transpose();
+	}
+	default:
+	    throw std::runtime_error("Only restricted case for mo density implemented");
+    }
+}
+
+
 Wavefunction Wavefunction::load(const std::string &filename) {
     fs::path path(filename);
     std::string ext = path.extension().string();
@@ -405,6 +445,14 @@ Wavefunction Wavefunction::load(const std::string &filename) {
     else throw std::runtime_error(
 	fmt::format("Unknown wavefunction format: '{}', could not read in", ext)
     );
+}
+bool Wavefunction::is_likely_wavefunction_filename(const std::string &filename) {
+    fs::path path(filename);
+    std::string ext = path.extension().string();
+    if(ext == ".fchk") return true;
+    else if(ext ==  ".molden") return true;
+    else if(io::valid_json_format_string(ext)) return true;
+    return false;
 }
 
 bool Wavefunction::save(const std::string &filename) {

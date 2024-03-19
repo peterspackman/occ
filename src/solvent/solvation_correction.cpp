@@ -8,32 +8,53 @@
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
 #include <occ/solvent/solvation_correction.h>
+#include <occ/solvent/draco.h>
+#include <occ/core/eeq.h>
 #include <occ/solvent/surface.h>
 
 namespace occ::solvent {
 
 ContinuumSolvationModel::ContinuumSolvationModel(
-    const std::vector<occ::core::Atom> &atoms, const std::string &solvent)
-    : m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()),
-      m_solvent_name(solvent), m_cosmo(78.39) {
+    const std::vector<occ::core::Atom> &atoms, const std::string &solvent, double charge, bool scale_radii)
+    : m_charge(charge), m_atomic_charges(Vec::Zero(atoms.size())), m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()),
+      m_solvent_name(solvent), m_cosmo(78.39), m_scale_radii(scale_radii) {
     occ::log::debug("Number of atoms for continuum solvation model = {}",
                     atoms.size());
-    ankerl::unordered_dense::map<int, double> element_radii;
     for (size_t i = 0; i < atoms.size(); i++) {
         m_nuclear_positions(0, i) = atoms[i].x;
         m_nuclear_positions(1, i) = atoms[i].y;
         m_nuclear_positions(2, i) = atoms[i].z;
         m_nuclear_charges(i) = atoms[i].atomic_number;
     }
+    set_solvent(m_solvent_name);
+}
+
+void ContinuumSolvationModel::update_radii() {
+    IVec nums = m_nuclear_charges.cast<int>();
+    if(m_scale_radii) {
+	m_atomic_charges = occ::core::charges::eeq_partial_charges(nums, m_nuclear_positions * occ::units::BOHR_TO_ANGSTROM, m_charge);
+	occ::log::warn("DRACO implementation currently assumes EEQ charges");
+	occ::log::warn("Predicted EEQ charges (net = {}):\n{}", m_charge, m_atomic_charges);
+	m_coulomb_radii =
+	    occ::solvent::draco::smd_coulomb_radii(m_atomic_charges, nums, m_nuclear_positions, m_params);
+    }
+    else {
+	m_coulomb_radii =
+	    occ::solvent::smd::intrinsic_coulomb_radii(nums, m_params);
+    }
+    m_cds_radii = occ::solvent::smd::cds_radii(nums, m_params);
+}
+
+void ContinuumSolvationModel::initialize_surfaces() {
+    update_radii();
     IVec nums = m_nuclear_charges.cast<int>();
 
-    set_solvent(m_solvent_name);
-    Vec coulomb_radii =
-        occ::solvent::smd::intrinsic_coulomb_radii(nums, m_params);
+    ankerl::unordered_dense::map<int, double> element_radii;
+
     for (int i = 0; i < nums.rows(); i++) {
         int nuc = m_nuclear_charges(i);
         if (!element_radii.contains(nuc))
-            element_radii[nuc] = coulomb_radii[i];
+            element_radii[nuc] = m_coulomb_radii(i);
     }
 
     occ::log::info("Intrinsic coulomb radii ({} atom types)",
@@ -42,18 +63,16 @@ ContinuumSolvationModel::ContinuumSolvationModel(
         auto el = occ::core::Element(x.first);
         occ::log::info("{:<7s} {: 12.6f}", el.symbol(), x.second);
     }
-    auto s = occ::solvent::surface::solvent_surface(coulomb_radii, nums,
+    auto s = occ::solvent::surface::solvent_surface(m_coulomb_radii, nums,
                                                     m_nuclear_positions, 0.0);
     m_surface_positions_coulomb = s.vertices;
     m_surface_areas_coulomb = s.areas;
     m_surface_atoms_coulomb = s.atom_index;
-
-    Vec cds_radii = occ::solvent::smd::cds_radii(nums, m_params);
     element_radii.clear();
     for (int i = 0; i < nums.rows(); i++) {
         int nuc = m_nuclear_charges(i);
         if (!element_radii.contains(nuc))
-            element_radii[nuc] = cds_radii[i];
+            element_radii[nuc] = m_cds_radii[i];
     }
 
     occ::log::info("CDS radii");
@@ -63,7 +82,7 @@ ContinuumSolvationModel::ContinuumSolvationModel(
     }
 
     auto s_cds = occ::solvent::surface::solvent_surface(
-        cds_radii, nums, m_nuclear_positions, 0.0);
+        m_cds_radii, nums, m_nuclear_positions, 0.0);
     m_surface_positions_cds = s_cds.vertices;
     m_surface_areas_cds = s_cds.areas;
     m_surface_atoms_cds = s_cds.atom_index;
@@ -104,10 +123,7 @@ void ContinuumSolvationModel::set_surface_potential(const Vec &potential) {
 
 void ContinuumSolvationModel::set_solvent(const std::string &solvent) {
     m_solvent_name = solvent;
-    if (!occ::solvent::smd_solvent_parameters.contains(m_solvent_name))
-        throw std::runtime_error(
-            fmt::format("Unknown solvent '{}'", m_solvent_name));
-    m_params = occ::solvent::smd_solvent_parameters[m_solvent_name];
+    m_params = occ::solvent::get_smd_parameters(m_solvent_name);
     occ::log::info("Using SMD solvent '{}'", m_solvent_name);
     occ::log::info("Parameters:");
     occ::log::info("Dielectric                    {: 9.4f}",
@@ -125,6 +141,7 @@ void ContinuumSolvationModel::set_solvent(const std::string &solvent) {
                        m_params.electronegative_halogenicity);
     }
     m_cosmo = COSMO(m_params.dielectric);
+    initialize_surfaces();
 }
 
 const Vec &ContinuumSolvationModel::apparent_surface_charge() {

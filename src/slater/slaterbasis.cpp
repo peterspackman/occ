@@ -201,7 +201,7 @@ SlaterBasisSetMap
 load_slaterbasis(const std::string &name) {
     namespace fs = std::filesystem;
     fs::path path;
-    const char *basis_path_env = getenv("OCC_BASIS_PATH");
+    const char *basis_path_env = getenv("OCC_DATA_PATH");
     if (basis_path_env) {
         // TODO check
         path = basis_path_env;
