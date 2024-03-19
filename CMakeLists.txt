@@ -133,7 +133,9 @@ install(TARGETS occ
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(DIRECTORY basis DESTINATION "share/occ")
+install(DIRECTORY share/basis DESTINATION "share/occ")
+install(DIRECTORY share/solvent DESTINATION "share/occ")
+
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FixBundle.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/cmake/FixBundle.cmake"
