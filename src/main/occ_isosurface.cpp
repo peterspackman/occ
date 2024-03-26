@@ -109,6 +109,7 @@ template <typename F>
 IsosurfaceMesh extract_surface(F &func) {
     occ::timing::StopWatch sw;
     auto cubes = func.cubes_per_side();
+    occ::log::info("Marching cubes voxels: {}x{}x{}", cubes(0), cubes(1), cubes(2));
     auto mc = occ::geometry::mc::MarchingCubes(cubes(0), cubes(1), cubes(2));
 
     std::vector<float> vertices;
@@ -122,6 +123,9 @@ IsosurfaceMesh extract_surface(F &func) {
 
     occ::log::info("Surface has {} vertices, {} faces", vertices.size() / 3,
                    faces.size() / 3);
+    if(vertices.size() < 3) {
+	throw std::runtime_error("Invalid isosurface encountered, not enough vertices?");
+    }
     return as_mesh(func, vertices, faces, normals);
 }
 
@@ -287,12 +291,14 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 
     if(occ::qm::Wavefunction::is_likely_wavefunction_filename(config.geometry_filename)) {
 	if(config.kind == "esp") {
+	    occ::log::info("Isosurface kind: ESP");
 	    auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
 	    auto func = iso::ElectricPotentialFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
 	    func.set_isovalue(config.isovalue);
 	    mesh = extract_surface(func);
 	}
 	else {
+	    occ::log::info("Isosurface kind: electron density");
 	    auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
 	    auto func = iso::ElectronDensityFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
 	    func.set_isovalue(config.isovalue);
@@ -303,14 +309,16 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 	occ::io::CifParser parser;
 	auto crystal = parser.parse_crystal(config.geometry_filename).value();
 	if(config.kind == "void") {
+	    occ::log::info("Isosurface kind: void");
 	    auto func = iso::VoidSurfaceFunctor(crystal, config.separation * occ::units::ANGSTROM_TO_BOHR);
-	    func.set_isovalue(-config.isovalue);
+	    func.set_isovalue(config.isovalue);
 	    mesh = extract_surface(func);
 	}
     }
     else if (config.kind == "hirshfeld") {
 	if(config.environment_filename.empty()) throw std::runtime_error("Hirshfeld surface requires exterior region");
 
+	occ::log::info("Isosurface kind: Hirshfeld");
         Molecule m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
         Molecule m2 =
             occ::io::molecule_from_xyz_file(config.environment_filename);
@@ -325,6 +333,7 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 	
         properties = compute_surface_properties(m1, m2, Eigen::Map<const Eigen::Matrix3Xf>(mesh.vertices.data(), 3, mesh.vertices.size() / 3));
     } else {
+	occ::log::info("Isosurface kind: promolecule density");
         Molecule m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
         occ::log::info("Interior region has {} atoms", m1.size());
 

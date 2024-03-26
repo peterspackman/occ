@@ -37,8 +37,8 @@ void ElectricPotentialFunctor::update_region_for_isovalue() {
     m_bounding_box.upper = m_maximum_atom_pos;
     m_bounding_box.upper.array() += m_buffer;
 
-    occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
-                   m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
+    occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}]",
+                   m_origin(0), m_origin(1), m_origin(2));
 }
 
 }

@@ -11,8 +11,6 @@ class VoidSurfaceFunctor {
     VoidSurfaceFunctor(const crystal::Crystal &crystal, float sep,
                        const InterpolatorParams &params = {});
 
-    bool inside_cell(const Eigen::Vector3f &p) const;
-
     inline void remap_vertices(const std::vector<float> &v, std::vector<float> &dest) const {
 	dest.resize(v.size());
 	Eigen::Map<const Eigen::Matrix3Xf> vertices(v.data(), 3, v.size() / 3);
@@ -44,18 +42,21 @@ class VoidSurfaceFunctor {
     inline void fill_layer(float offset, Eigen::Ref<Eigen::MatrixXf> layer) const {
 
 	Mat3N pos_frac(3, layer.size());
+	const auto cubes = cubes_per_side();
+
+        const float inv_x = 1.0 / cubes(0);
+        const float inv_y = 1.0 / cubes(1);
+
 	for(int x = 0, idx = 0; x < layer.rows(); x++) {
 	    for(int y = 0; y < layer.cols(); y++) {
-		pos_frac(0, idx) = x;
-		pos_frac(1, idx) = y;
+		pos_frac(0, idx) = x * inv_x;
+		pos_frac(1, idx) = y * inv_y;
 		idx++;
 	    }
 	}
 	pos_frac.row(2).setConstant(offset);
-	fmt::print("pos_frac\n{}\n", pos_frac.leftCols(5));
 
-	Eigen::Matrix3Xf positions = m_crystal.to_cartesian(pos_frac).cast<float>();
-	fmt::print("pos \n{}\n", positions.leftCols(5));
+	Eigen::Matrix3Xf positions = occ::units::ANGSTROM_TO_BOHR * m_crystal.to_cartesian(pos_frac).cast<float>();
 
 	auto f = [&](const Eigen::Matrix3Xf &pos) {
 	    Eigen::VectorXf rho(pos.cols());
@@ -93,7 +94,6 @@ class VoidSurfaceFunctor {
 
 
 	auto values = f(positions);
-	fmt::print("Rho:\n{}\n", values.topRows(5));
 
 	for(int x = 0, idx = 0; x < layer.rows(); x++) {
 	    for(int y = 0; y < layer.cols(); y++) {

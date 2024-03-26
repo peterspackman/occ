@@ -66,13 +66,6 @@ VoidSurfaceFunctor::VoidSurfaceFunctor(const occ::crystal::Crystal &crystal,
     update_region_for_isovalue();
 }
 
-bool VoidSurfaceFunctor::inside_cell(const Eigen::Vector3f &p) const {
-    Vec3 pangs = p.cast<double>() * occ::units::BOHR_TO_ANGSTROM;
-    Vec3 v = m_crystal.to_fractional(pangs);
-    bool res = (v.array() < 1.0).all() && (v.array() >= 0.0).all();
-    return res;
-}
-
 void VoidSurfaceFunctor::update_region_for_isovalue() {
 
     m_origin.setConstant(0);

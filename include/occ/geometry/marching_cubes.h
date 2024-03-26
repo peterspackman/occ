@@ -443,7 +443,7 @@ struct MarchingCubes {
                         if (cz == 0) {
                             values[i] = layer0(x + cx, y + cy);
                         } else {
-                            values[i] = layer1(x + cx, y +cy);
+                            values[i] = layer1(x + cx, y + cy);
                         }
                     }
 
