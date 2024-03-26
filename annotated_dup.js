@@ -157,10 +157,20 @@ var annotated_dup =
         [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ],
         [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ]
       ] ],
-      [ "main", "namespaceocc_1_1main.html", [
-        [ "impl", "namespaceocc_1_1main_1_1impl.html", [
-          [ "FillParams", "structocc_1_1main_1_1impl_1_1FillParams.html", "structocc_1_1main_1_1impl_1_1FillParams" ]
+      [ "isosurface", "namespaceocc_1_1isosurface.html", [
+        [ "impl", "namespaceocc_1_1isosurface_1_1impl.html", [
+          [ "FillParams", "structocc_1_1isosurface_1_1impl_1_1FillParams.html", "structocc_1_1isosurface_1_1impl_1_1FillParams" ]
         ] ],
+        [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
+        [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
+        [ "InterpolatorParams", "structocc_1_1isosurface_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1InterpolatorParams" ],
+        [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
+        [ "ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", "classocc_1_1isosurface_1_1ElectronDensityFunctor" ],
+        [ "PromoleculeDensityFunctor", "classocc_1_1isosurface_1_1PromoleculeDensityFunctor.html", "classocc_1_1isosurface_1_1PromoleculeDensityFunctor" ],
+        [ "StockholderWeightFunctor", "classocc_1_1isosurface_1_1StockholderWeightFunctor.html", "classocc_1_1isosurface_1_1StockholderWeightFunctor" ],
+        [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ]
+      ] ],
+      [ "main", "namespaceocc_1_1main.html", [
         [ "pfimpl", "namespaceocc_1_1main_1_1pfimpl.html", [
           [ "AtomInterpolator", "structocc_1_1main_1_1pfimpl_1_1AtomInterpolator.html", "structocc_1_1main_1_1pfimpl_1_1AtomInterpolator" ],
           [ "InterpolatorParams", "structocc_1_1main_1_1pfimpl_1_1InterpolatorParams.html", "structocc_1_1main_1_1pfimpl_1_1InterpolatorParams" ]
@@ -169,13 +179,6 @@ var annotated_dup =
         [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
         [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
         [ "CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", "structocc_1_1main_1_1CrystalSurfaceEnergies" ],
-        [ "AxisAlignedBoundingBox", "structocc_1_1main_1_1AxisAlignedBoundingBox.html", "structocc_1_1main_1_1AxisAlignedBoundingBox" ],
-        [ "AtomInterpolator", "structocc_1_1main_1_1AtomInterpolator.html", "structocc_1_1main_1_1AtomInterpolator" ],
-        [ "InterpolatorParams", "structocc_1_1main_1_1InterpolatorParams.html", "structocc_1_1main_1_1InterpolatorParams" ],
-        [ "StockholderWeightFunctor", "classocc_1_1main_1_1StockholderWeightFunctor.html", "classocc_1_1main_1_1StockholderWeightFunctor" ],
-        [ "PromoleculeDensityFunctor", "classocc_1_1main_1_1PromoleculeDensityFunctor.html", "classocc_1_1main_1_1PromoleculeDensityFunctor" ],
-        [ "ElectronDensityFunctor", "classocc_1_1main_1_1ElectronDensityFunctor.html", "classocc_1_1main_1_1ElectronDensityFunctor" ],
-        [ "ElectricPotentialFunctor", "classocc_1_1main_1_1ElectricPotentialFunctor.html", "classocc_1_1main_1_1ElectricPotentialFunctor" ],
         [ "CGConfig", "structocc_1_1main_1_1CGConfig.html", "structocc_1_1main_1_1CGConfig" ],
         [ "DimerSolventTerm", "structocc_1_1main_1_1DimerSolventTerm.html", "structocc_1_1main_1_1DimerSolventTerm" ],
         [ "CGDimer", "structocc_1_1main_1_1CGDimer.html", "structocc_1_1main_1_1CGDimer" ],
@@ -192,6 +195,7 @@ var annotated_dup =
         [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
         [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
         [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
+        [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],
         [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
         [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ],
         [ "SolvatedSurfaceProperties", "structocc_1_1main_1_1SolvatedSurfaceProperties.html", "structocc_1_1main_1_1SolvatedSurfaceProperties" ],

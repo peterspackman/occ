@@ -5,7 +5,7 @@ var point__functors_8h =
     [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
     [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
     [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
-    [ "ElectronDensityFunctor", "classocc_1_1main_1_1ElectronDensityFunctor.html", "classocc_1_1main_1_1ElectronDensityFunctor" ],
+    [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],
     [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
     [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ],
     [ "AtomList", "point__functors_8h.html#a28fb2b00851f8aa959f1188eb702d21d", null ],

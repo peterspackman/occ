@@ -1,8 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/gto/gto.h" name="/home/runner/work/occ/occ/include/occ/gto/gto.h">
-<area shape="rect" id="node1" title=" " alt="" coords="18,5,204,47"/>
-<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="19,206,198,247"/>
-<area shape="rect" id="node4" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="26,95,196,151"/>
-<area shape="rect" id="node5" href="$density_8h.html" title=" " alt="" coords="220,95,391,151"/>
-<area shape="rect" id="node3" href="$point__functors_8h.html" title=" " alt="" coords="23,303,194,359"/>
-<area shape="rect" id="node6" href="$isosurface_8h.html" title=" " alt="" coords="222,199,392,255"/>
+<area shape="rect" id="node1" title=" " alt="" coords="18,5,205,47"/>
+<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="22,199,201,240"/>
+<area shape="rect" id="node4" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="26,95,197,151"/>
+<area shape="rect" id="node5" href="$density_8h.html" title=" " alt="" coords="221,95,391,151"/>
+<area shape="rect" id="node3" href="$point__functors_8h.html" title=" " alt="" coords="26,288,197,344"/>
 </map>

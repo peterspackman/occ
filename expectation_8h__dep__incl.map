@@ -1,12 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/expectation.h" name="/home/runner/work/occ/occ/include/occ/qm/expectation.h">
 <area shape="rect" id="node1" title=" " alt="" coords="345,5,588,47"/>
 <area shape="rect" id="node2" href="$integral__engine_8h.html" title=" " alt="" coords="146,95,350,151"/>
-<area shape="rect" id="node9" href="$scf_8h.html" title=" " alt="" coords="375,102,559,143"/>
-<area shape="rect" id="node10" href="$solvation__correction_8h.html" title=" " alt="" coords="583,95,761,151"/>
+<area shape="rect" id="node10" href="$scf_8h.html" title=" " alt="" coords="375,102,559,143"/>
+<area shape="rect" id="node11" href="$solvation__correction_8h.html" title=" " alt="" coords="583,95,761,151"/>
 <area shape="rect" id="node3" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="5,199,211,255"/>
 <area shape="rect" id="node4" href="$hf_8h.html" title=" " alt="" coords="228,303,407,344"/>
-<area shape="rect" id="node8" href="$integral__engine__df_8h.html" title=" " alt="" coords="286,199,490,255"/>
+<area shape="rect" id="node9" href="$integral__engine__df_8h.html" title=" " alt="" coords="286,199,490,255"/>
 <area shape="rect" id="node5" href="$dft_8h.html" title=" " alt="" coords="101,399,280,441"/>
-<area shape="rect" id="node6" href="$point__functors_8h.html" title=" " alt="" coords="168,496,339,552"/>
-<area shape="rect" id="node7" href="$isosurface_8h.html" title=" " alt="" coords="355,392,525,448"/>
+<area shape="rect" id="node6" href="$point__functors_8h.html" title=" " alt="" coords="133,496,304,552"/>
+<area shape="rect" id="node7" href="$electric__potential_8h.html" title=" " alt="" coords="355,392,551,448"/>
+<area shape="rect" id="node8" href="$isosurface_8h.html" title=" " alt="" coords="355,496,551,552"/>
 </map>

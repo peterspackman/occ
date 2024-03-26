@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>occ: /home/runner/work/occ/occ/include/occ/main/isosurface.h File Reference</title>
+<title>occ: /home/runner/work/occ/occ/include/occ/isosurface/isosurface.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,82 +89,27 @@ $(document).ready(function(){initNavTree('isosurface_8h.html',''); initResizable
 </div>
 
 <div class="header">
-  <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">isosurface.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;ankerl/unordered_dense.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="interpolator_8h.html">occ/core/interpolator.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="molecule_8h.html">occ/core/molecule.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="timings_8h.html">occ/core/timings.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="units_8h.html">occ/core/units.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="slaterbasis_8h.html">occ/slater/slaterbasis.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="density_8h.html">occ/gto/density.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="parallel_8h.html">occ/core/parallel.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="hf_8h.html">occ/qm/hf.h</a>&gt;</code><br />
-<code>#include &lt;vector&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="electric__potential_8h.html">occ/isosurface/electric_potential.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="electron__density_8h.html">occ/isosurface/electron_density.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="promolecule__density_8h.html">occ/isosurface/promolecule_density.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="stockholder__weight_8h.html">occ/isosurface/stockholder_weight.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="void_8h.html">occ/isosurface/void.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for isosurface.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="isosurface_8h__incl.svg" width="4032" height="739"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+<div class="center"><iframe scrolling="no" frameborder="0" src="isosurface_8h__incl.svg" width="3534" height="872"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
 </div>
 </div>
-</div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1impl_1_1FillParams.html">occ::main::impl::FillParams</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1AxisAlignedBoundingBox.html">occ::main::AxisAlignedBoundingBox</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1AtomInterpolator.html">occ::main::AtomInterpolator</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1InterpolatorParams.html">occ::main::InterpolatorParams</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1StockholderWeightFunctor.html">occ::main::StockholderWeightFunctor</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PromoleculeDensityFunctor.html">occ::main::PromoleculeDensityFunctor</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1ElectronDensityFunctor.html">occ::main::ElectronDensityFunctor</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1ElectricPotentialFunctor.html">occ::main::ElectricPotentialFunctor</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
-Namespaces</h2></td></tr>
-<tr class="memitem:namespaceocc"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html">occ</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceocc_1_1main"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html">occ::main</a></td></tr>
-<tr class="memdesc:namespaceocc_1_1main"><td class="mdescLeft">&#160;</td><td class="mdescRight">main module for functionaliity related to single point energies etc. <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceocc_1_1main_1_1impl"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main_1_1impl.html">occ::main::impl</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a42d30ff9d26135aa0ed4bf402f0c5693"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a42d30ff9d26135aa0ed4bf402f0c5693">occ::main::LinearInterpolatorFloat</a> = <a class="el" href="classocc_1_1core_1_1Interpolator1D.html">occ::core::Interpolator1D</a>&lt; float, <a class="el" href="namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35acfbaf4c160987f5ac229af3f525afb36">occ::core::DomainMapping::Linear</a> &gt;</td></tr>
-<tr class="separator:a42d30ff9d26135aa0ed4bf402f0c5693"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:a2784c68ac7b8713cffe64d14880676a8"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
-<tr class="memitem:a2784c68ac7b8713cffe64d14880676a8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main_1_1impl.html#a2784c68ac7b8713cffe64d14880676a8">occ::main::impl::fill_layer</a> (Func &amp;f, const FillParams &amp;params, float offset, Eigen::Ref&lt; Eigen::MatrixXf &gt; layer)</td></tr>
-<tr class="separator:a2784c68ac7b8713cffe64d14880676a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a372541ad43c155004acc9e5f7b3a1d3d"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
-<tr class="memitem:a372541ad43c155004acc9e5f7b3a1d3d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main_1_1impl.html#a372541ad43c155004acc9e5f7b3a1d3d">occ::main::impl::fill_normals</a> (Func &amp;f, const FillParams &amp;params, const std::vector&lt; float &gt; &amp;vertices, std::vector&lt; float &gt; &amp;normals)</td></tr>
-<tr class="separator:a372541ad43c155004acc9e5f7b3a1d3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-</div><!-- contents -->
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_8b7861ad11e4db9a5e6a6da237b17e56.html">occ</a></li><li class="navelem"><a class="el" href="dir_887d2295614e9dc3eeb401126e7efc97.html">main</a></li><li class="navelem"><a class="el" href="isosurface_8h.html">isosurface.h</a></li>
+    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_8b7861ad11e4db9a5e6a6da237b17e56.html">occ</a></li><li class="navelem"><a class="el" href="dir_1a14498e607873dfee7d343320ff1cba.html">isosurface</a></li><li class="navelem"><a class="el" href="isosurface_8h.html">isosurface.h</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
