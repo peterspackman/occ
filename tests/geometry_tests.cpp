@@ -76,6 +76,30 @@ TEST_CASE("Marching cubes 128x128x128 on torus function", "[geometry]") {
     fmt::print("{} function calls\n", s.num_calls);
 }
 
+TEST_CASE("Marching cubes sphere uneven", "[geometry]") {
+    MarchingCubes m(32, 8, 16);
+    sphere s;
+    occ::timing::StopWatch<1> sw;
+    std::vector<float> vertices;
+    std::vector<uint32_t> indices;
+    sw.start(0);
+    m.extract(s, vertices, indices);
+    sw.stop(0);
+    fmt::print("{} vertices, {} faces in {}\n", vertices.size() / 3,
+               indices.size() / 3, sw.read(0));
+    auto verts = fmt::output_file("verts.txt");
+    for (size_t i = 0; i < vertices.size(); i += 3) {
+        verts.print("{:20.12f} {:20.12f} {:20.12f}\n", vertices[i],
+                    vertices[i + 1], vertices[i + 2]);
+    }
+    auto faces = fmt::output_file("faces.txt");
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        faces.print("{:12d} {:12d} {:12d}\n", indices[i], indices[i + 2],
+                    indices[i + 1]);
+    }
+    fmt::print("{} function calls\n", s.num_calls);
+}
+
 /*
 TEST_CASE("Linear hashed marching cubes", "[geometry]")
 {

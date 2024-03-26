@@ -70,6 +70,8 @@ class CifParser {
     size_t num_atoms() const { return m_atoms.size(); }
     std::optional<occ::crystal::Crystal> parse_crystal(const std::string &);
 
+    static bool is_likely_cif_filename(const std::string &);
+
   private:
     void extract_atom_sites(const gemmi::cif::Loop &);
     void extract_cell_parameter(const gemmi::cif::Pair &);

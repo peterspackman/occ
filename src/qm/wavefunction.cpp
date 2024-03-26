@@ -446,6 +446,7 @@ Wavefunction Wavefunction::load(const std::string &filename) {
 	fmt::format("Unknown wavefunction format: '{}', could not read in", ext)
     );
 }
+
 bool Wavefunction::is_likely_wavefunction_filename(const std::string &filename) {
     fs::path path(filename);
     std::string ext = path.extension().string();

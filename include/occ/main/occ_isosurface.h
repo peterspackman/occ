@@ -13,7 +13,7 @@ struct IsosurfaceConfig {
     bool use_hashed_mc{false};
     bool binary_output{true};
     std::string kind{"promol"};
-    std::string output_filename{"surface.obj"};
+    std::string output_filename{"surface.ply"};
 };
 
 CLI::App *add_isosurface_subcommand(CLI::App &app);

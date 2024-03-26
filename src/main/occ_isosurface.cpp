@@ -9,12 +9,14 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/geometry/marching_cubes.h>
+#include <occ/io/cifparser.h>
 #include <occ/io/xyz.h>
 #include <occ/io/obj.h>
 #include <occ/io/ply.h>
 #include <occ/io/tinyply.h>
-#include <occ/main/isosurface.h>
+#include <occ/isosurface/isosurface.h>
 #include <occ/main/occ_isosurface.h>
+#include <occ/crystal/crystal.h>
 
 namespace fs = std::filesystem;
 using occ::IVec;
@@ -23,10 +25,10 @@ using occ::Vec3;
 using occ::core::Element;
 using occ::core::Interpolator1D;
 using occ::core::Molecule;
-using occ::main::PromoleculeDensityFunctor;
-using occ::main::StockholderWeightFunctor;
+using occ::crystal::Crystal;
 using occ::io::IsosurfaceMesh;
 using occ::io::VertexProperties;
+namespace iso = occ::isosurface;
 
 
 void write_mesh_file(const std::string &filename, const IsosurfaceMesh &mesh,
@@ -75,24 +77,17 @@ void write_mesh_file(const std::string &filename, const IsosurfaceMesh &mesh,
 }
 
 template <typename F>
-IsosurfaceMesh as_mesh(const F &b, const std::vector<float> &vertices,
+IsosurfaceMesh as_mesh(const F &func, const std::vector<float> &vertices,
                        const std::vector<uint32_t> &indices,
                        const std::vector<float> &normals) {
 
     IsosurfaceMesh result;
 
-    result.vertices.resize(vertices.size());
+    func.remap_vertices(vertices, result.vertices);
     result.normals.resize(vertices.size());
     result.faces.resize(indices.size());
 
-
-    float length = b.side_length();
-    const auto &origin = b.origin();
-    for (size_t i = 0; i < vertices.size(); i += 3) {
-        result.vertices[i] = occ::units::BOHR_TO_ANGSTROM * (vertices[i] * length + origin(0));
-        result.vertices[i + 1] = occ::units::BOHR_TO_ANGSTROM * (vertices[i + 1] * length + origin(1));
-        result.vertices[i + 2] = occ::units::BOHR_TO_ANGSTROM * (vertices[i + 2] * length + origin(2));
-
+    for (size_t i = 0; i < normals.size(); i += 3) {
         Eigen::Vector3f normal = Eigen::Vector3f(normals[i], normals[i + 1], normals[i + 2]);
 	normal.normalize();
 	result.normals[i] = normal(0);
@@ -110,10 +105,11 @@ IsosurfaceMesh as_mesh(const F &b, const std::vector<float> &vertices,
     return result;
 }
 
-template <typename F> IsosurfaceMesh extract_surface(F &func) {
+template <typename F>
+IsosurfaceMesh extract_surface(F &func) {
     occ::timing::StopWatch sw;
-    size_t cubes = func.cubes_per_side();
-    auto mc = occ::geometry::mc::MarchingCubes(cubes);
+    auto cubes = func.cubes_per_side();
+    auto mc = occ::geometry::mc::MarchingCubes(cubes(0), cubes(1), cubes(2));
 
     std::vector<float> vertices;
     std::vector<float> normals;
@@ -130,12 +126,11 @@ template <typename F> IsosurfaceMesh extract_surface(F &func) {
 }
 
 VertexProperties compute_surface_properties(const Molecule &m1,
-                                            const Molecule &m2,
+                                            std::optional<Molecule> m2,
                                             Eigen::Ref<const Eigen::Matrix3Xf> vertices) {
     Eigen::Matrix3Xf inside = m1.positions().cast<float>();
-    Eigen::Matrix3Xf outside = m2.positions().cast<float>();
     Eigen::VectorXf vdw_inside = m1.vdw_radii().cast<float>();
-    Eigen::VectorXf vdw_outside = m2.vdw_radii().cast<float>();
+
 
     VertexProperties properties;
     int nthreads = occ::parallel::get_num_threads();
@@ -144,18 +139,14 @@ VertexProperties compute_surface_properties(const Molecule &m1,
                                            occ::core::max_leaf);
     interior_tree.index->buildIndex();
 
-    occ::core::KDTree<float> exterior_tree(outside.rows(), outside,
-                                           occ::core::max_leaf);
-    exterior_tree.index->buildIndex();
 
-    occ::log::info("Indexes built");
     constexpr size_t num_results = 6;
     const size_t N = vertices.cols();
 
     std::vector<float> di(N), de(N), di_norm(N), de_norm(N), dnorm(N);
     std::vector<int> di_idx(N), de_idx(N), di_norm_idx(N), de_norm_idx(N);
 
-    auto fill_properties = [&](int thread_id) {
+    auto fill_interior_properties = [&](int thread_id) {
         std::vector<size_t> indices(num_results);
         std::vector<float> dist_sq(num_results);
         std::vector<float> dist_norm(num_results);
@@ -165,73 +156,94 @@ VertexProperties compute_surface_properties(const Molecule &m1,
                 continue;
 
             Eigen::Vector3f v = vertices.col(i);
-            {
+	    float dist_inside_norm = std::numeric_limits<float>::max();
+	    nanoflann::KNNResultSet<float> results(num_results);
+	    results.init(&indices[0], &dist_sq[0]);
+	    bool populated = interior_tree.index->findNeighbors(
+		results, v.data(), nanoflann::SearchParams());
+	    di[i] = std::sqrt(dist_sq[0]);
+	    di_idx[i] = indices[0];
 
-                float dist_inside_norm = std::numeric_limits<float>::max();
-                nanoflann::KNNResultSet<float> results(num_results);
-                results.init(&indices[0], &dist_sq[0]);
-                bool populated = interior_tree.index->findNeighbors(
-                    results, v.data(), nanoflann::SearchParams());
-                di[i] = std::sqrt(dist_sq[0]);
-                di_idx[i] = indices[0];
+	    size_t inside_idx = 0;
+	    for (int idx = 0; idx < results.size(); idx++) {
 
-                size_t inside_idx = 0;
-                for (int idx = 0; idx < results.size(); idx++) {
+		float vdw = vdw_inside(indices[idx]);
+		float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
 
-                    float vdw = vdw_inside(indices[idx]);
-                    float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
-
-                    if (dnorm < dist_inside_norm) {
-                        inside_idx = indices[idx];
-                        dist_inside_norm = dnorm;
-                    }
-                }
-                di_norm[i] = dist_inside_norm;
-                di_norm_idx[i] = inside_idx;
-            }
-
-            {
-                float dist_outside_norm = std::numeric_limits<float>::max();
-                nanoflann::KNNResultSet<float> results(num_results);
-                results.init(&indices[0], &dist_sq[0]);
-                bool populated = exterior_tree.index->findNeighbors(
-                    results, v.data(), nanoflann::SearchParams());
-                de[i] = std::sqrt(dist_sq[0]);
-                de_idx[i] = indices[0];
-
-                size_t outside_idx = 0;
-                for (int idx = 0; idx < results.size(); idx++) {
-
-                    float vdw = vdw_outside(indices[idx]);
-                    float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
-
-                    if (dnorm < dist_outside_norm) {
-                        outside_idx = indices[idx];
-                        dist_outside_norm = dnorm;
-                    }
-                }
-                de_norm[i] = dist_outside_norm;
-                de_norm_idx[i] = outside_idx;
-            }
-
-            dnorm[i] = de_norm[i] + di_norm[i];
+		if (dnorm < dist_inside_norm) {
+		    inside_idx = indices[idx];
+		    dist_inside_norm = dnorm;
+		}
+	    }
+	    di_norm[i] = dist_inside_norm;
+	    di_norm_idx[i] = inside_idx;
         }
     };
 
+
     occ::timing::start(occ::timing::category::isosurface_properties);
-    occ::parallel::parallel_do(fill_properties);
+    occ::parallel::parallel_do(fill_interior_properties);
     occ::timing::stop(occ::timing::category::isosurface_properties);
+
 
     properties.add_property("di", di);
     properties.add_property("di_idx", di_idx);
-    properties.add_property("de", de);
-    properties.add_property("de_idx", de_idx);
     properties.add_property("di_norm", di_norm);
     properties.add_property("di_norm_idx", di_norm_idx);
-    properties.add_property("de_norm", de_norm);
-    properties.add_property("de_norm_idx", de_norm_idx);
-    properties.add_property("dnorm", dnorm);
 
+    if(m2) {
+
+	Eigen::Matrix3Xf outside = (*m2).positions().cast<float>();
+	Eigen::VectorXf vdw_outside = (*m2).vdw_radii().cast<float>();
+	occ::core::KDTree<float> exterior_tree(outside.rows(), outside,
+					       occ::core::max_leaf);
+	exterior_tree.index->buildIndex();
+	auto fill_exterior_properties = [&](int thread_id) {
+	    std::vector<size_t> indices(num_results);
+	    std::vector<float> dist_sq(num_results);
+	    std::vector<float> dist_norm(num_results);
+
+	    for (int i = 0; i < vertices.cols(); i++) {
+		if (i % nthreads != thread_id)
+		    continue;
+
+		Eigen::Vector3f v = vertices.col(i);
+		float dist_outside_norm = std::numeric_limits<float>::max();
+		nanoflann::KNNResultSet<float> results(num_results);
+		results.init(&indices[0], &dist_sq[0]);
+		bool populated = exterior_tree.index->findNeighbors(
+		    results, v.data(), nanoflann::SearchParams());
+		de[i] = std::sqrt(dist_sq[0]);
+		de_idx[i] = indices[0];
+
+		size_t outside_idx = 0;
+		for (int idx = 0; idx < results.size(); idx++) {
+
+		    float vdw = vdw_outside(indices[idx]);
+		    float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
+
+		    if (dnorm < dist_outside_norm) {
+			outside_idx = indices[idx];
+			dist_outside_norm = dnorm;
+		    }
+		}
+		de_norm[i] = dist_outside_norm;
+		de_norm_idx[i] = outside_idx;
+		dnorm[i] = de_norm[i] + di_norm[i];
+	    }
+	};
+	occ::timing::start(occ::timing::category::isosurface_properties);
+	occ::parallel::parallel_do(fill_exterior_properties);
+	occ::timing::stop(occ::timing::category::isosurface_properties);
+
+	properties.add_property("de_idx", de_idx);
+	properties.add_property("de", de);
+	properties.add_property("de_norm", de_norm);
+	properties.add_property("de_norm_idx", de_norm_idx);
+	properties.add_property("dnorm", dnorm);
+
+    }
+    
     return properties;
 }
 
@@ -276,14 +288,23 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
     if(occ::qm::Wavefunction::is_likely_wavefunction_filename(config.geometry_filename)) {
 	if(config.kind == "esp") {
 	    auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
-	    auto func = ElectricPotentialFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
+	    auto func = iso::ElectricPotentialFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
 	    func.set_isovalue(config.isovalue);
 	    mesh = extract_surface(func);
 	}
 	else {
 	    auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
-	    auto func = ElectronDensityFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
+	    auto func = iso::ElectronDensityFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
 	    func.set_isovalue(config.isovalue);
+	    mesh = extract_surface(func);
+	}
+    }
+    else if(occ::io::CifParser::is_likely_cif_filename(config.geometry_filename)) {
+	occ::io::CifParser parser;
+	auto crystal = parser.parse_crystal(config.geometry_filename).value();
+	if(config.kind == "void") {
+	    auto func = iso::VoidSurfaceFunctor(crystal, config.separation * occ::units::ANGSTROM_TO_BOHR);
+	    func.set_isovalue(-config.isovalue);
 	    mesh = extract_surface(func);
 	}
     }
@@ -297,7 +318,7 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
         occ::log::info("Interior region has {} atoms", m1.size());
         occ::log::info("Exterior region has {} atoms", m2.size());
 
-        auto func = StockholderWeightFunctor(
+        auto func = iso::StockholderWeightFunctor(
             m1, m2, config.separation * occ::units::ANGSTROM_TO_BOHR);
         func.set_background_density(config.background_density);
 	mesh = extract_surface(func);
@@ -307,7 +328,7 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
         Molecule m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
         occ::log::info("Interior region has {} atoms", m1.size());
 
-        auto func = PromoleculeDensityFunctor(
+        auto func = iso::PromoleculeDensityFunctor(
             m1, config.separation * occ::units::ANGSTROM_TO_BOHR);
         func.set_isovalue(config.isovalue);
 	mesh = extract_surface(func);
@@ -316,6 +337,9 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 	    Molecule m2 =
 		occ::io::molecule_from_xyz_file(config.environment_filename);
 	    properties = compute_surface_properties(m1, m2, Eigen::Map<const Eigen::Matrix3Xf>(mesh.vertices.data(), 3, mesh.vertices.size() / 3));
+	}
+	else {
+	    properties = compute_surface_properties(m1, {}, Eigen::Map<const Eigen::Matrix3Xf>(mesh.vertices.data(), 3, mesh.vertices.size() / 3));
 	}
     }
     Eigen::Map<const Eigen::Matrix3Xf> verts(mesh.vertices.data(), 3, mesh.vertices.size() / 3);

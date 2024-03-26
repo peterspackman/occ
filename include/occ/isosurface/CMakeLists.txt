@@ -1,0 +1,8 @@
+set(OCC_ISOSURFACE_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/electric_potential.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/electron_density.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/promolecule_density.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/stockholder_weight.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/void.h"
+    PARENT_SCOPE)

@@ -1,9 +1,12 @@
 ﻿#include <gemmi/numb.hpp>
 #include <iostream>
+#include <filesystem>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/io/cifparser.h>
+
+namespace fs = std::filesystem;
 
 namespace occ::io {
 
@@ -219,6 +222,13 @@ CifParser::parse_crystal(const std::string &filename) {
                         m_failure_desc);
         return std::nullopt;
     }
-} // namespace occ::io
+}
+
+bool CifParser::is_likely_cif_filename(const std::string &filename) {
+    fs::path path(filename);
+    std::string ext = path.extension().string();
+    if(ext == ".cif") return true;
+    return false;
+}
 
 } // namespace occ::io

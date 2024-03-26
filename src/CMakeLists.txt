@@ -13,6 +13,7 @@ add_subdirectory(solvent)
 add_subdirectory(xdm)
 add_subdirectory(xtb)
 
+add_subdirectory(isosurface)
 add_subdirectory(main)
 
 if("${WITH_PYTHON_BINDINGS}")

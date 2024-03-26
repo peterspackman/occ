@@ -335,9 +335,12 @@ template <typename T> T interpolate(T a, T b, float t) {
 } // namespace impl
 
 struct MarchingCubes {
-    size_t size;
+    size_t size_x, size_y, size_z;
     Eigen::MatrixXf layer0, layer1;
-    MarchingCubes(size_t s) : size(s), layer0(s, s), layer1(s, s) {}
+
+    MarchingCubes(size_t s) : size_x(s), size_y(s), size_z(s), layer0(size_x, size_y), layer1(size_x, size_y) {}
+
+    MarchingCubes(size_t x, size_t y, size_t z) : size_x(x), size_y(y), size_z(z), layer0(size_x, size_y), layer1(size_x, size_y) {}
 
     template <typename S>
     void extract(const S &source, std::vector<float> &vertices,
@@ -385,17 +388,23 @@ struct MarchingCubes {
                       std::vector<uint32_t> &indices) {
         using namespace tables;
         using namespace impl;
-        const size_t size_less_one = size - 1;
-        const float size_inv = 1.0 / size_less_one;
+
+        const size_t size_less_one_x = size_x - 1;
+        const size_t size_less_one_y = size_y - 1;
+        const size_t size_less_one_z = size_z - 1;
+
+        const float size_inv_x = 1.0 / size_less_one_x;
+        const float size_inv_y = 1.0 / size_less_one_y;
+        const float size_inv_z = 1.0 / size_less_one_z;
 
 	occ::timing::start(occ::timing::isosurface_function);
 	if constexpr(impl::has_fill_layer<S>::value) {
 	    source.fill_layer(0.0, layer0);
 	}
 	else {
-	    for (size_t y = 0; y < size; y++) {
-		for (size_t x = 0; x < size; x++) {
-		    layer0(x, y) = source(x * size_inv, y * size_inv, 0.0);
+	    for (size_t y = 0; y < size_y; y++) {
+		for (size_t x = 0; x < size_x; x++) {
+		    layer0(x, y) = source(x * size_inv_x, y * size_inv_y, 0.0);
 		}
 	    }
 	}
@@ -404,37 +413,37 @@ struct MarchingCubes {
         std::array<Eigen::Vector3f, 8> corners{Eigen::Vector3f::Zero()};
         std::array<float, 8> values{0.0f};
 
-        IndexCache index_cache(size);
+        IndexCache index_cache(size_x, size_y);
         uint32_t index = 0;
 
-        for (size_t z = 0; z < size; z++) {
+        for (size_t z = 0; z < size_z; z++) {
 	    occ::timing::start(occ::timing::isosurface_function);
 	    if constexpr(impl::has_fill_layer<S>::value) {
-		source.fill_layer((z + 1) * size_inv, layer1);
+		source.fill_layer((z + 1) * size_inv_z, layer1);
 	    }
 	    else {
-		for (size_t y = 0; y < size; y++) {
-		    for (size_t x = 0; x < size; x++) {
+		for (size_t y = 0; y < size_y; y++) {
+		    for (size_t x = 0; x < size_x; x++) {
 			layer1(x, y) =
-			    source(x * size_inv, y * size_inv, (z + 1) * size_inv);
+			    source(x * size_inv_x, y * size_inv_y, (z + 1) * size_inv_z);
 		    }
 		}
 	    }
 	    occ::timing::stop(occ::timing::isosurface_function);
 
-            for (size_t y = 0; y < size_less_one; y++) {
-                for (size_t x = 0; x < size_less_one; x++) {
+            for (size_t y = 0; y < size_less_one_y; y++) {
+                for (size_t x = 0; x < size_less_one_x; x++) {
                     for (size_t i = 0; i < 8; i++) {
                         const auto corner = CORNERS[i];
                         const auto cx = corner[0], cy = corner[1],
                                    cz = corner[2];
-                        corners[i] = {(x + cx) * size_inv, (y + cy) * size_inv,
-                                      (z + cz) * size_inv};
+                        corners[i] = {(x + cx) * size_inv_x, (y + cy) * size_inv_y,
+                                      (z + cz) * size_inv_z};
 
                         if (cz == 0) {
                             values[i] = layer0(x + cx, y + cy);
                         } else {
-                            values[i] = layer1(x + cx, y + cy);
+                            values[i] = layer1(x + cx, y +cy);
                         }
                     }
 

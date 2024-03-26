@@ -1,7 +1,6 @@
 add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_surface_energy.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/monomer_wavefunctions.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.cpp"
@@ -27,6 +26,7 @@ target_link_libraries(occ_main
     occ_dft
     occ_solvent
     occ_interaction
+    occ_isosurface
     occ_crystal
     occ_slater
     occ_geometry

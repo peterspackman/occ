@@ -13,22 +13,29 @@ template <typename T> void set_zero(T &t) {
 }
 
 IndexCache::IndexCache(size_t s)
-    : size(s), layer0(size * size), layer1(size * size), row0(size * size),
-      row1(size * size) {}
+    : size_x(s), size_y(s),
+      layer0(size_x, size_y), layer1(size_x, size_y),
+      row0(size_x), row1(size_x) {}
+
+IndexCache::IndexCache(size_t x, size_t y)
+    : size_x(x), size_y(y), 
+      layer0(size_x, size_y), layer1(size_x, size_y),
+      row0(size_x), row1(size_x) {}
+
 
 void IndexCache::put(size_t x, size_t y, size_t edge, size_t index) {
     if (edge >= 4 && edge <= 7)
-        layer1[y * size + x].element[edge - 4] = index;
+        layer1(x, y).element[edge - 4] = index;
 
     switch (edge) {
     case 6:
-        row1[x].element[0] = index;
+        row1(x).element[0] = index;
         break;
     case 11:
-        row1[x].element[1] = index;
+        row1(x).element[1] = index;
         break;
     case 10:
-        row1[x].element[2] = index;
+        row1(x).element[2] = index;
         break;
     default:
         break;
@@ -51,16 +58,16 @@ uint32_t IndexCache::get(size_t x, size_t y, size_t edge) {
     case 1:
     case 2:
     case 3:
-        result = layer0[y * size + x].element[edge];
+        result = layer0(x, y).element[edge];
         break;
     case 4:
-        result = row0[x].element[0];
+        result = row0(x).element[0];
         break;
     case 8:
-        result = row0[x].element[1];
+        result = row0(x).element[1];
         break;
     case 9:
-        result = row0[x].element[2];
+        result = row0(x).element[2];
         break;
     case 7:
     case 11:
@@ -89,8 +96,9 @@ void IndexCache::advance_row() {
 void IndexCache::advance_layer() {
     std::swap(layer0, layer1);
     set_zero(cell0);
-    for (auto &row : row0)
-        set_zero(row.element);
+    for(int i = 0; i < row0.rows(); i++) {
+	set_zero(row0(i).element);
+    }
 }
 
 } // namespace occ::geometry
