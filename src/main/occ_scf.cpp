@@ -181,29 +181,6 @@ void run_scf_subcommand(occ::io::OccInput &config) {
     if (config.filename.empty()) {
         config.filename = config.name;
     }
-
-    bool unrestricted =
-        config.electronic.spinorbital_kind == SpinorbitalKind::Unrestricted;
-    if (config.method.name[0] == 'u')
-        unrestricted = true;
-
-    if ((config.electronic.multiplicity != 1) || unrestricted ||
-        config.method.name == "uhf") {
-        config.electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
-        if (config.method.name == "rhf") {
-            config.method.name = "uhf";
-        } else {
-            if (config.method.name[0] != 'u') {
-                config.method.name = "u" + config.method.name;
-            }
-        }
-        occ::log::info("Spinorbital kind: Unrestricted");
-    } else if (config.method.name == "ghf") {
-        config.electronic.spinorbital_kind = SpinorbitalKind::General;
-        occ::log::info("Spinorbital kind: General");
-    } else {
-        occ::log::info("Spinorbital kind: Restricted");
-    }
     occ::timing::stop(occ::timing::category::io);
 
     if (!config.geometry.point_charge_filename.empty()) {

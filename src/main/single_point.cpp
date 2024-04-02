@@ -5,6 +5,7 @@
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/solvent/solvation_correction.h>
+#include <occ/main/method_parser.h>
 
 namespace occ::main {
 
@@ -88,6 +89,8 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
     if (!config.basis.df_name.empty())
         proc.set_density_fitting_basis(config.basis.df_name);
 
+    occ::log::info("Spinorbital kind: {}", spinorbital_kind_to_string(SK));
+
     occ::log::trace("Setting integral precision: {}",
                     config.method.integral_precision);
     proc.set_precision(config.method.integral_precision);
@@ -161,62 +164,47 @@ single_point_driver(const OccInput &config,
                     const std::optional<Wavefunction> &guess = {}) {
     Molecule m = config.geometry.molecule();
     print_configuration(m, config);
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
 
     if(!config.basis.basis_set_directory.empty()) {
 	occ::log::info("Overriding environment basis set directory with: '{}'", config.basis.basis_set_directory);
 	occ::qm::override_basis_set_directory(config.basis.basis_set_directory);
     }
     auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
+    auto method_kind = method_kind_from_string(config.method.name);
+    auto guess_sk = determine_spinorbital_kind(config.method.name, config.electronic.multiplicity, method_kind);
+    auto conf_sk = config.electronic.spinorbital_kind;
 
     if (config.solvent.solvent_name.empty()) {
-        if (config.method.name == "rhf")
-            return run_method<HartreeFock, SpinorbitalKind::Restricted>(
-                m, basis, config);
-        else if (config.method.name == "ghf")
-            return run_method<HartreeFock, SpinorbitalKind::General>(m, basis,
-                                                                     config);
-        else if (config.method.name == "uhf")
-            return run_method<HartreeFock, SpinorbitalKind::Unrestricted>(
-                m, basis, config);
-        else {
-            if (config.electronic.spinorbital_kind ==
-                SpinorbitalKind::Unrestricted) {
-                return run_method<DFT, SpinorbitalKind::Unrestricted>(m, basis,
-                                                                      config);
-            } else {
-                return run_method<DFT, SpinorbitalKind::Restricted>(m, basis,
-                                                                    config);
-            }
-        }
+	switch(method_kind) {
+	    case MethodKind::HF: {
+		if (guess_sk == U || conf_sk == U) return run_method<HartreeFock, U>(m, basis, config);
+		else if(guess_sk == G || conf_sk == G) return run_method<HartreeFock, G>(m, basis, config);
+		else return run_method<HartreeFock, R>(m, basis, config);
+		break;
+	    }
+	    case MethodKind::DFT: {
+		if (guess_sk == U || conf_sk == U) return run_method<DFT, U>(m, basis, config);
+		else return run_method<DFT, R>(m, basis, config);
+		break;
+	    }
+	}
     } else {
-        if (config.method.name == "ghf") {
-            log::info("Hartree-Fock + SMD with general spinorbitals");
-            return run_solvated_method<HartreeFock, SpinorbitalKind::General>(
-                *guess, config);
-        } else if (config.method.name == "rhf") {
-            log::info("Hartree-Fock + SMD with restricted spinorbitals");
-            return run_solvated_method<HartreeFock,
-                                       SpinorbitalKind::Restricted>(*guess,
-                                                                    config);
-        } else if (config.method.name == "uhf") {
-            log::info("Hartree-Fock + SMD with unrestricted spinorbitals");
-            return run_solvated_method<HartreeFock,
-                                       SpinorbitalKind::Unrestricted>(*guess,
-                                                                      config);
-        } else {
-            if (config.electronic.spinorbital_kind ==
-                SpinorbitalKind::Restricted) {
-                log::info("Kohn-Sham DFT + SMD with restricted "
-                          "spinorbitals");
-                return run_solvated_method<DFT, SpinorbitalKind::Restricted>(
-                    *guess, config);
-            } else {
-                log::info("Kohn-Sham DFT + SMD with unrestricted "
-                          "spinorbitals");
-                return run_solvated_method<DFT, SpinorbitalKind::Unrestricted>(
-                    *guess, config);
-            }
-        }
+	switch(method_kind) {
+	    case MethodKind::HF: {
+		if (guess_sk == U || conf_sk == U) return run_solvated_method<HartreeFock, U>(*guess, config);
+		else if(guess_sk == G || conf_sk == G) return run_solvated_method<HartreeFock, G>(*guess, config);
+		else return run_solvated_method<HartreeFock, R>(*guess, config);
+		break;
+	    }
+	    case MethodKind::DFT: {
+		if (guess_sk == U || conf_sk == U) return run_solvated_method<DFT, U>(*guess, config);
+		else return run_solvated_method<DFT, R>(*guess, config);
+		break;
+	    }
+	}
     }
 }
 
