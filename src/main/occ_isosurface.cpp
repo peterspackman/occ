@@ -272,7 +272,7 @@ CLI::App *add_isosurface_subcommand(CLI::App &app) {
 
     iso->add_option("--max-depth", config->max_depth, "Maximum voxel depth");
     iso->add_option("--separation", config->separation,
-                    "targt voxel separation");
+                    "targt voxel separation (Bohr)");
     iso->add_option("--isovalue", config->isovalue, "target isovalue");
     iso->add_option("--background-density", config->background_density,
                     "add background density to close surface");
@@ -293,14 +293,14 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 	if(config.kind == "esp") {
 	    occ::log::info("Isosurface kind: ESP");
 	    auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
-	    auto func = iso::ElectricPotentialFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
+	    auto func = iso::ElectricPotentialFunctor(wfn, config.separation);
 	    func.set_isovalue(config.isovalue);
 	    mesh = extract_surface(func);
 	}
 	else {
 	    occ::log::info("Isosurface kind: electron density");
 	    auto wfn = occ::qm::Wavefunction::load(config.geometry_filename);
-	    auto func = iso::ElectronDensityFunctor(wfn, config.separation * occ::units::ANGSTROM_TO_BOHR);
+	    auto func = iso::ElectronDensityFunctor(wfn, config.separation);
 	    func.set_isovalue(config.isovalue);
 	    mesh = extract_surface(func);
 	}
@@ -310,7 +310,7 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 	auto crystal = parser.parse_crystal(config.geometry_filename).value();
 	if(config.kind == "void") {
 	    occ::log::info("Isosurface kind: void");
-	    auto func = iso::VoidSurfaceFunctor(crystal, config.separation * occ::units::ANGSTROM_TO_BOHR);
+	    auto func = iso::VoidSurfaceFunctor(crystal, config.separation);
 	    func.set_isovalue(config.isovalue);
 	    mesh = extract_surface(func);
 	}
@@ -326,8 +326,7 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
         occ::log::info("Interior region has {} atoms", m1.size());
         occ::log::info("Exterior region has {} atoms", m2.size());
 
-        auto func = iso::StockholderWeightFunctor(
-            m1, m2, config.separation * occ::units::ANGSTROM_TO_BOHR);
+        auto func = iso::StockholderWeightFunctor(m1, m2, config.separation);
         func.set_background_density(config.background_density);
 	mesh = extract_surface(func);
 	
@@ -337,8 +336,7 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
         Molecule m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
         occ::log::info("Interior region has {} atoms", m1.size());
 
-        auto func = iso::PromoleculeDensityFunctor(
-            m1, config.separation * occ::units::ANGSTROM_TO_BOHR);
+        auto func = iso::PromoleculeDensityFunctor(m1, config.separation);
         func.set_isovalue(config.isovalue);
 	mesh = extract_surface(func);
 

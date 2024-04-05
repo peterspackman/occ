@@ -147,7 +147,7 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
     std::string method = occ::util::trim_copy(method_string);
     occ::util::to_lower(method);
 
-    auto tokens = occ::util::tokenize(method_string, " ");
+    auto tokens = occ::util::tokenize(method, " ");
     occ::log::info("Functionals:");
     for (const auto &token : tokens) {
         std::string m = token;

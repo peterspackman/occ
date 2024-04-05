@@ -206,7 +206,7 @@ void run_cube_subcommand(CubeConfig const &config) {
 	wfn.atoms = m.atoms();
     }
 
-    occ::log::info("Loaded molecule from xyz file, found {} atoms", wfn.atoms.size());
+    occ::log::info("System has {} atoms", wfn.atoms.size());
 
     if(!config.points_filename.empty()) {
 	evaluate_custom_points(wfn, config, have_wfn);
