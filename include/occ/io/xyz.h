@@ -21,6 +21,8 @@ struct XyzFileReader {
     OccInput as_occ_input() const;
     void update_occ_input(OccInput &) const;
 
+    static bool is_likely_xyz_filename(const std::string &filename);
+
   private:
     void parse(std::istream &);
 };

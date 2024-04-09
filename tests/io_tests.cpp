@@ -2832,7 +2832,7 @@ TEST_CASE("Read/Write Wavefunction JSON with ECP", "[JSON]") {
     REQUIRE(wfn.atoms.size() == wfn2.atoms.size());
 }
 
-TEST_CASE("Write DFTB gen", "[write]") {
+TEST_CASE("read/write dftb gen format", "[write,read]") {
     auto acetic = acetic_crystal();
     SECTION("Crystal") {
 	std::string gen_contents;
@@ -2844,7 +2844,7 @@ TEST_CASE("Write DFTB gen", "[write]") {
 	    gen.write(gen_contents_stream);
 	    gen_contents = gen_contents_stream.str();
 	}
-	fmt::print("DFTB gen contents:\n{}\n", gen_contents);
+	fmt::print("dftb gen contents (crystal):\n{}\n", gen_contents);
 
 	{
 	    std::istringstream gen_contents_stream(gen_contents);
@@ -2865,7 +2865,7 @@ TEST_CASE("Write DFTB gen", "[write]") {
 	    gen.write(gen_contents_stream);
 	    gen_contents = gen_contents_stream.str();
 	}
-	fmt::print("DFTB gen contents:\n{}\n", gen_contents);
+	fmt::print("dftb gen contents (molecule):\n{}\n", gen_contents);
 
 	{
 	    std::istringstream gen_contents_stream(gen_contents);
@@ -2876,6 +2876,4 @@ TEST_CASE("Write DFTB gen", "[write]") {
 	    REQUIRE(acetic_read.atomic_numbers() == mol.atomic_numbers());
 	}
     }
-    
-    REQUIRE(true);
 }

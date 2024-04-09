@@ -4,7 +4,10 @@
 #include <occ/core/units.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/xyz.h>
+#include <filesystem>
 #include <scn/scan.h>
+
+namespace fs = std::filesystem;
 
 namespace occ::io {
 using occ::core::Element;
@@ -52,6 +55,13 @@ void XyzFileReader::parse(std::istream &is) {
 void XyzFileReader::update_occ_input(OccInput &result) const {
     result.geometry.positions = positions;
     result.geometry.elements = elements;
+}
+
+bool XyzFileReader::is_likely_xyz_filename(const std::string &filename) {
+    fs::path path(filename);
+    std::string ext = path.extension().string();
+    if(ext == ".xyz") return true;
+    return false;
 }
 
 OccInput XyzFileReader::as_occ_input() const {

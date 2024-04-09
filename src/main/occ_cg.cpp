@@ -14,7 +14,7 @@
 #include <occ/interaction/disp.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
-#include <occ/io/cifparser.h>
+#include <occ/io/load_geometry.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystalgrower.h>
 #include <occ/io/eigen_json.h>
@@ -52,11 +52,6 @@ using WavefunctionList = std::vector<Wavefunction>;
 using DimerEnergies = std::vector<CEEnergyComponents>;
 
 enum class WavefunctionChoice { GasPhase, Solvated };
-
-inline Crystal read_crystal(const std::string &filename) {
-    occ::io::CifParser parser;
-    return parser.parse_crystal(filename).value();
-}
 
 Wavefunction load_or_calculate_wavefunction(const Molecule &mol,
 					    const std::string &name,
@@ -427,6 +422,7 @@ class CEModelCrystalGrowthCalculator {
                        m_molecules.size(), "index", "name");
         for (int i = 0; i < m_molecules.size(); i++) {
             occ::log::info("{:<4d} {:>32s}", i, m_molecules[i].name());
+	    occ::log::debug("Atomic numbers\n{}\n", m_molecules[i].atomic_numbers());
         }
     }
 
@@ -1086,7 +1082,7 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
 template <class Calculator> CGResult run_cg_impl(CGConfig const &config) {
     std::string basename =
         fs::path(config.lattice_settings.crystal_filename).stem().string();
-    Crystal c_symm = read_crystal(config.lattice_settings.crystal_filename);
+    Crystal c_symm = occ::io::load_crystal(config.lattice_settings.crystal_filename);
 
     if (config.crystal_is_atomic) {
         c_symm.set_connectivity_criteria(false);
@@ -1218,7 +1214,7 @@ CGResult run_cg(CGConfig const &config) {
     CGResult result;
     std::string basename =
         fs::path(config.lattice_settings.crystal_filename).stem().string();
-    Crystal c_symm = read_crystal(config.lattice_settings.crystal_filename);
+    Crystal c_symm = occ::io::load_crystal(config.lattice_settings.crystal_filename);
 
     if (config.crystal_is_atomic) {
         c_symm.set_connectivity_criteria(false);

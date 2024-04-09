@@ -105,7 +105,8 @@ void DftbGenFormat::parse(std::istream &stream) {
     for(int i = 0; i < num_atoms; i++) {
 	std::getline(stream, line);
 	auto [idx, el, x, y, z] = parse_atom_line(line);
-	m_atomic_numbers(i) = element_map[el].atomic_number();
+	// dftb gen indexes are start from 1
+	m_atomic_numbers(i) = element_map[el - 1].atomic_number();
 	m_positions(0, i) = x;
 	m_positions(1, i) = y;
 	m_positions(2, i) = z;
