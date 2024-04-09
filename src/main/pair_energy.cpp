@@ -104,11 +104,10 @@ PairEnergy::PairEnergy(const occ::io::OccInput &input) {
     model = occ::interaction::ce_model_from_string(input.pair.model_name);
 }
 
-void PairEnergy::compute() {
+CEEnergyComponents PairEnergy::compute() {
 
     CEModelInteraction interaction(model);
-    auto interaction_energy = interaction(a.wfn, b.wfn);
-    occ::timing::stop(occ::timing::category::global);
+    energy = interaction(a.wfn, b.wfn);
 
     occ::log::info("Monomer A energies\n{}", a.wfn.energy.to_string());
     occ::log::info("Monomer B energies\n{}", b.wfn.energy.to_string());
@@ -117,18 +116,19 @@ void PairEnergy::compute() {
 
     occ::log::info("Component              Energy (kJ/mol)\n");
     occ::log::info("Coulomb               {: 12.6f}",
-                   interaction_energy.coulomb_kjmol());
+                   energy.coulomb_kjmol());
     occ::log::info("Exchange              {: 12.6f}",
-                   interaction_energy.exchange_kjmol());
+                   energy.exchange_kjmol());
     occ::log::info("Repulsion             {: 12.6f}",
-                   interaction_energy.repulsion_kjmol());
+                   energy.repulsion_kjmol());
     occ::log::info("Polarization          {: 12.6f}",
-                   interaction_energy.polarization_kjmol());
+                   energy.polarization_kjmol());
     occ::log::info("Dispersion            {: 12.6f}",
-                   interaction_energy.dispersion_kjmol());
+                   energy.dispersion_kjmol());
     occ::log::info("__________________________________");
     occ::log::info("Total 		      {: 12.6f}",
-                   interaction_energy.total_kjmol());
+                   energy.total_kjmol());
+    return energy;
 }
 
 auto calculate_transform(const Wavefunction &wfn, const Molecule &m,

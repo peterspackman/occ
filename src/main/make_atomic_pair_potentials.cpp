@@ -6,13 +6,21 @@
 #include <occ/core/element.h>
 #include <occ/main/pair_energy.h>
 #include <occ/main/single_point.h>
+#include <occ/core/progress.h>
+#include <fmt/os.h>
 
-occ::core::Molecule make_molecule(const std::string &element) {
+using occ::qm::Wavefunction;
+using occ::core::Molecule;
+using occ::interaction::CEEnergyComponents;
+using occ::interaction::CEModelInteraction;
+
+Molecule make_molecule(const std::string &element) {
     auto el = occ::core::Element(element);
     return occ::core::Molecule({{el.atomic_number(), 0.0, 0.0, 0.0}});
 }
 
-occ::qm::Wavefunction get_wavefunction(occ::core::Molecule molecule, int charge) {
+// copy the molecule so we can modify it
+Wavefunction get_wavefunction(Molecule molecule, int charge) {
     occ::io::OccInput config;
     config.method.name = "b3lyp";
     config.basis.name = "def2-svp";
@@ -27,6 +35,20 @@ occ::qm::Wavefunction get_wavefunction(occ::core::Molecule molecule, int charge)
     return occ::main::single_point_calculation(config);
 }
 
+// copy the wavefunctions so we can modify them
+CEEnergyComponents compute_pair_energy(Wavefunction wfn_a,
+				       Wavefunction wfn_b,
+				       double separation, bool dimer_xdm = true) {
+
+    // assumes that B is at the origin (as is A)
+    wfn_b.apply_transformation(occ::Mat3::Identity(), occ::Vec3(0.0, 0.0, separation));
+
+    auto model = occ::interaction::ce_model_from_string("ce-1p");
+    CEModelInteraction interaction(model);
+    interaction.set_use_xdm_dimer_parameters(dimer_xdm);
+    return interaction(wfn_a, wfn_b);
+}
+
 int main(int argc, char *argv[]) {
     occ::timing::start(occ::timing::category::global);
     occ::timing::start(occ::timing::category::io);
@@ -35,6 +57,7 @@ int main(int argc, char *argv[]) {
     int min_charge_cation{0}, min_charge_anion{0};
     int max_charge_cation{0}, max_charge_anion{0};
     int alternative_multiplicity{2};
+    bool use_xdm_dimer_parameters{true};
 
     CLI::App app("make_atomic_pair_potentials - generate (charged) pair potentials");
     app.allow_config_extras(CLI::config_extras_mode::error);
@@ -76,10 +99,12 @@ int main(int argc, char *argv[]) {
 	std::vector<occ::qm::Wavefunction> cation_wfns, anion_wfns;
 
 	for(int i = min_charge_cation; i <= max_charge_cation; i++) {
+	    occ::log::info("Wavefunction for {}{:+d}", symbol_a, i);
 	    cation_wfns.push_back(get_wavefunction(cation, i));
 	}
 
 	for(int i = min_charge_anion; i <= max_charge_anion; i++) {
+	    occ::log::info("Wavefunction for {}{:+d}", symbol_b, -i);
 	    anion_wfns.push_back(get_wavefunction(anion, -i));
 	}
 
@@ -87,17 +112,49 @@ int main(int argc, char *argv[]) {
 
 	std::vector<double> separations{1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0};
 
-	for(double sep: separations) {
-	    for(const auto &wfn_a: cation_wfns) {
-		for(const auto &wfn_b: anion_wfns) {
-		    occ::log::info("{:s}{:+d} {:s}{:+d} (sep: {:.3f})",
+	size_t dimers_to_compute = separations.size() * cation_wfns.size() * anion_wfns.size();
+	occ::core::ProgressTracker progress(dimers_to_compute);
+	size_t computed_dimers{0};
+	for(const auto &wfn_a: cation_wfns) {
+	    for(const auto &wfn_b: anion_wfns) {
+		auto output = fmt::output_file(
+		    fmt::format("{}_{}_{}_{}.txt", symbol_a, wfn_a.charge(), symbol_b, wfn_b.charge()));
+		output.print("{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\n",
+			     "coulomb", "exchange", "repulsion", "polarization", "dispersion", "total");
+		for(double sep: separations) {
+		    occ::log::debug("Dimer: {:s}{:+d} {:s}{:+d} (sep: {:.3f})",
 			symbol_a, wfn_a.charge(), 
 			symbol_b, wfn_b.charge(),
 			sep);
+
+		    auto energy = compute_pair_energy(wfn_a, wfn_b, sep);
+
+		    double e_coul = energy.coulomb_kjmol();
+		    double e_exch = energy.exchange_kjmol();
+		    double e_rep = energy.repulsion_kjmol();
+		    double e_pol = energy.polarization_kjmol();
+		    double e_disp = energy.dispersion_kjmol();
+		    double e_tot = energy.total_kjmol();
+
+		    occ::log::debug("Component              Energy (kJ/mol)\n");
+		    occ::log::debug("Coulomb               {: 12.6f}", e_coul);
+		    occ::log::debug("Exchange              {: 12.6f}", e_exch);
+		    occ::log::debug("Repulsion             {: 12.6f}", e_rep);
+		    occ::log::debug("Polarization          {: 12.6f}", e_pol);
+		    occ::log::debug("Dispersion            {: 12.6f}", e_disp);
+		    occ::log::debug("__________________________________");
+		    occ::log::debug("Total 		      {: 12.6f}", e_tot);
+		    computed_dimers++;
+		    output.print("{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\n", e_coul, e_exch, e_rep, e_pol, e_disp, e_tot);
+
+		    progress.update(computed_dimers, dimers_to_compute, 
+                        fmt::format("E[{}{:+d}|{}{:+d}] @ {:.3f}", symbol_a, wfn_a.charge(), symbol_b, wfn_b.charge(), sep));
+
 		}
 	    }
 	}
-
+	progress.clear();
+	occ::log::info("Computed {} pairwise interactions", computed_dimers);
 
     } catch (const char *ex) {
         occ::log::error(error_format, ex);

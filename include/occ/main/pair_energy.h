@@ -25,7 +25,7 @@ struct PairEnergy {
 
     PairEnergy(const occ::io::OccInput &input);
 
-    void compute();
+    CEEnergyComponents compute();
     Monomer a;
     Monomer b;
     CEParameterizedModel model{occ::interaction::CE_B3LYP_631Gdp};
