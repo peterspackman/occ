@@ -82,3 +82,15 @@ target_link_libraries(occ-mlx
     Eigen3::Eigen
 )
 target_compile_features(occ-mlx PUBLIC cxx_std_20)
+
+add_executable(make_atomic_pair_potentials EXCLUDE_FROM_ALL 
+    "${CMAKE_CURRENT_SOURCE_DIR}/make_atomic_pair_potentials.cpp")
+target_link_libraries(make_atomic_pair_potentials 
+    PUBLIC
+    occ_main
+)
+target_compile_features(make_atomic_pair_potentials PUBLIC cxx_std_20)
+set_target_properties(make_atomic_pair_potentials 
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)

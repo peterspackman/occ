@@ -29,10 +29,16 @@ using occ::Vec;
 
 namespace block = occ::qm::block;
 
-std::vector<DensityFunctional> parse_method(const std::string &method_string,
-                                            bool polarized = false);
 
 namespace impl {
+
+struct Functionals {
+    std::vector<DensityFunctional> unpolarized;
+    std::vector<DensityFunctional> polarized;
+};
+
+Functionals parse_method(const std::string &method_string);
+
 
 template <SpinorbitalKind spinorbital_kind, int derivative_order>
 void set_params(DensityFunctional::Params &params, const Mat &rho) {
@@ -147,7 +153,7 @@ class DFT {
 
     int density_derivative() const;
     inline double exact_exchange_factor() const {
-        return std::accumulate(m_funcs.begin(), m_funcs.end(), 0.0,
+        return std::accumulate(m_funcs.polarized.begin(), m_funcs.polarized.end(), 0.0,
                                [&](double a, const auto &v) {
                                    return a + v.exact_exchange_factor();
                                });
@@ -245,7 +251,9 @@ class DFT {
         std::vector<double> energies(occ::parallel::nthreads, 0.0);
         std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
         std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
-        const auto &funcs = m_funcs;
+
+        const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted) ?
+	    m_funcs.polarized : m_funcs.unpolarized;
         size_t atom_grid_idx{0};
         for (const auto &atom_grid : m_atom_grids) {
             const auto &atom_pts = atom_grid.points;
@@ -418,7 +426,7 @@ class DFT {
     }
 
     inline bool have_nonlocal_correlation() const {
-        for (const auto &func : m_funcs) {
+        for (const auto &func : m_funcs.unpolarized) {
             if (func.needs_nlc_correction()) {
                 return true;
             }
@@ -472,10 +480,7 @@ class DFT {
         return;
     }
 
-    void set_method(const std::string &method_string,
-                    bool unrestricted = false);
-
-    void set_unrestricted(bool unrestricted);
+    void set_method(const std::string &method_string);
 
     inline const std::string &method_string() const { return m_method_string; }
 
@@ -485,7 +490,7 @@ class DFT {
     std::string m_method_string{"svwn5"};
     occ::qm::HartreeFock m_hf;
     MolecularGrid m_grid;
-    std::vector<DensityFunctional> m_funcs;
+    impl::Functionals m_funcs;
     std::vector<AtomGrid> m_atom_grids;
     NonLocalCorrelationFunctional m_nlc;
     mutable double m_two_electron_energy{0.0};

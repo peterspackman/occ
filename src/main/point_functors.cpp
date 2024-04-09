@@ -191,7 +191,10 @@ void XCDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec
 	}
     }
     dft::DensityFunctional::Result res(points.cols(), family, wfn.mo.kind);
-    for (const auto &func : ks.functionals()) {
+    const auto &functionals = ks.functionals();
+    const auto &funcs = (wfn.mo.kind == qm::SpinorbitalKind::Unrestricted) ?
+	functionals.polarized : functionals.unpolarized;
+    for (const auto &func : funcs) {
 	res += func.evaluate(params);
     }
     dest += res.exc;

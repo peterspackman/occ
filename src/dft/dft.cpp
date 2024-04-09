@@ -62,7 +62,7 @@ const ankerl::unordered_dense::map<std::string, std::vector<FuncComponent>>
 
 int DFT::density_derivative() const {
     int deriv = 0;
-    for (const auto &func : m_funcs) {
+    for (const auto &func : m_funcs.unpolarized) {
         deriv = std::max(deriv, func.derivative_order());
     }
     return deriv;
@@ -71,32 +71,28 @@ int DFT::density_derivative() const {
 DFT::DFT(const std::string &method, const AOBasis &basis,
          const BeckeGridSettings &grid_settings)
     : m_hf(basis), m_grid(basis, grid_settings) {
-
-    if (method[0] == 'u') {
-        set_method(method.substr(1), true);
-        fmt::print("Unrestricted\n");
-    } else {
-        set_method(method, false);
-    }
+    set_method(method);
     set_integration_grid(grid_settings);
 }
 
-void DFT::set_unrestricted(bool unrestricted) {
-    set_method(m_method_string, unrestricted);
-}
+void DFT::set_method(const std::string &method_string) {
+    if(m_method_string == method_string) return;
 
-void DFT::set_method(const std::string &method_string, bool unrestricted) {
+    if(m_method_string != method_string) {
+	occ::log::info("DFT method string: {}", method_string);
+    }
     m_method_string = method_string;
-    m_funcs = parse_method(method_string, unrestricted);
-    for (const auto &func : m_funcs) {
+    m_funcs = impl::parse_method(method_string);
+
+    for (const auto &func : m_funcs.unpolarized) {
         occ::log::debug(
-            "Functional: {} {} {}, exact exchange = {}, polarized = {}",
+            "Functional: {} {} {}, exact exchange = {}",
             func.name(), func.kind_string(), func.family_string(),
             func.exact_exchange_factor(), func.polarized());
     }
 
     m_rs_params = {};
-    for (const auto &func : m_funcs) {
+    for (const auto &func : m_funcs.unpolarized) {
         auto rs = func.range_separated_parameters();
         if (rs.omega != 0.0) {
             m_rs_params = rs;
@@ -109,8 +105,9 @@ void DFT::set_method(const std::string &method_string, bool unrestricted) {
     }
 
     double hfx = exact_exchange_factor();
-    if (hfx > 0.0)
-        occ::log::info("    {} x HF exchange", hfx);
+    if (hfx > 0.0) {
+        occ::log::debug("    {} x HF exchange", hfx);
+    }
 }
 
 void DFT::set_integration_grid(const BeckeGridSettings &settings) {
@@ -133,7 +130,7 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
     occ::log::debug("Grid point creation took {} seconds",
                     occ::timing::total(occ::timing::grid_points));
 
-    for (const auto &func : m_funcs) {
+    for (const auto &func : m_funcs.unpolarized) {
         if (func.needs_nlc_correction()) {
             m_nlc.set_integration_grid(m_hf.aobasis());
             break;
@@ -141,9 +138,16 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
     }
 }
 
-std::vector<DensityFunctional> parse_method(const std::string &method_string,
-                                            bool polarized) {
-    std::vector<DensityFunctional> funcs;
+RangeSeparatedParameters DFT::range_separated_parameters() const {
+    return m_rs_params;
+}
+
+
+
+namespace impl {
+Functionals parse_method(const std::string &method_string) {
+
+    Functionals result;
     std::string method = occ::util::trim_copy(method_string);
     occ::util::to_lower(method);
 
@@ -161,28 +165,36 @@ std::vector<DensityFunctional> parse_method(const std::string &method_string,
             occ::log::debug("Found builtin functional combination for {}", m);
             for (const auto &func : combo) {
                 occ::log::debug("id: {}", static_cast<int>(func.id));
-                auto f = DensityFunctional(func.id, polarized);
+
+                auto f = DensityFunctional(func.id, false);
+                auto fp = DensityFunctional(func.id, true);
+
                 occ::log::debug("scale factor: {}", func.factor);
+
                 f.set_scale_factor(func.factor);
+                fp.set_scale_factor(func.factor);
+
                 if (func.factor != 1.0) {
                     occ::log::info("    {} x {}", func.factor, f.name());
                 } else {
                     occ::log::info("    {}", f.name());
                 }
-                if (func.hfx > 0.0)
+                if (func.hfx > 0.0) {
                     f.set_exchange_factor(func.hfx);
-                funcs.push_back(f);
+                    fp.set_exchange_factor(func.hfx);
+		}
+                result.unpolarized.push_back(f);
+                result.polarized.push_back(fp);
             }
         } else {
             occ::log::info("    {}", token);
-            funcs.push_back(DensityFunctional(token, polarized));
+	    result.unpolarized.emplace_back(token, false);
+	    result.polarized.emplace_back(token, true);
         }
     }
-    return funcs;
+    return result;
 }
 
-RangeSeparatedParameters DFT::range_separated_parameters() const {
-    return m_rs_params;
 }
 
 } // namespace occ::dft
