@@ -7,6 +7,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystalgrower.h>
+#include <occ/io/dftb_gen.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
@@ -2829,4 +2830,52 @@ TEST_CASE("Read/Write Wavefunction JSON with ECP", "[JSON]") {
 
     REQUIRE(wfn.basis == wfn2.basis);
     REQUIRE(wfn.atoms.size() == wfn2.atoms.size());
+}
+
+TEST_CASE("Write DFTB gen", "[write]") {
+    auto acetic = acetic_crystal();
+    SECTION("Crystal") {
+	std::string gen_contents;
+
+	{
+	    occ::io::DftbGenFormat gen;
+	    gen.set_crystal(acetic);
+	    std::ostringstream gen_contents_stream;
+	    gen.write(gen_contents_stream);
+	    gen_contents = gen_contents_stream.str();
+	}
+	fmt::print("DFTB gen contents:\n{}\n", gen_contents);
+
+	{
+	    std::istringstream gen_contents_stream(gen_contents);
+	    occ::io::DftbGenFormat gen;
+	    gen.parse(gen_contents_stream);
+	    auto acetic_read = gen.crystal().value();
+	    REQUIRE(all_close(acetic_read.unit_cell().direct(), acetic.unit_cell().direct()));
+	    REQUIRE(acetic_read.asymmetric_unit().size() == 4 * acetic.asymmetric_unit().size());
+	}
+    }
+    SECTION("Molecule") {
+	std::string gen_contents;
+	auto mol = acetic.symmetry_unique_molecules()[0];
+	{
+	    occ::io::DftbGenFormat gen;
+	    gen.set_molecule(mol);
+	    std::ostringstream gen_contents_stream;
+	    gen.write(gen_contents_stream);
+	    gen_contents = gen_contents_stream.str();
+	}
+	fmt::print("DFTB gen contents:\n{}\n", gen_contents);
+
+	{
+	    std::istringstream gen_contents_stream(gen_contents);
+	    occ::io::DftbGenFormat gen;
+	    gen.parse(gen_contents_stream);
+	    auto acetic_read = gen.molecule().value();
+	    REQUIRE(all_close(acetic_read.positions(), mol.positions()));
+	    REQUIRE(acetic_read.atomic_numbers() == mol.atomic_numbers());
+	}
+    }
+    
+    REQUIRE(true);
 }

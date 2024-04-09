@@ -6,6 +6,7 @@ set(OCC_IO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_json.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystalgrower.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/cube.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dftb_gen.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/eigen_json.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/engrad.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.h"

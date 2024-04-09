@@ -6,6 +6,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystalgrower.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cube.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dftb_gen.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/engrad.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkreader.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.cpp"

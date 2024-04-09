@@ -18,17 +18,16 @@ void to_json(nlohmann::json &j, const Matrix<ScalarType, Rows, Cols> &mat) {
 }
 
 template <typename ScalarType, int Rows, int Cols>
-void from_json(const nlohmann::json &j,
-               Matrix<ScalarType, Rows, Cols> &dest_mat) {
+void from_json(const nlohmann::json &j, Matrix<ScalarType, Rows, Cols> &dest_mat) {
     nlohmann::json jcols;
     if (j.is_array()) {
         if (j.empty())
             return;
         jcols = j;
     } else if (j.is_number()) {
-        jcols.push_back(j);
+        jcols = nlohmann::json::array({j});
     } else {
-        throw "expected array or number for matrix conversion";
+        throw std::runtime_error("expected array or number for matrix conversion");
     }
 
     nlohmann::json jrows;
@@ -36,13 +35,13 @@ void from_json(const nlohmann::json &j,
         jrows = jcols;
     } else {
         if constexpr (Rows == 1) {
-            jrows.push_back(jcols);
+            jrows = nlohmann::json::array({jcols});
         } else if constexpr (Cols == 1) {
-            for (nlohmann::json::size_type i = 0; i < jcols.size(); ++i) {
-                jrows.push_back({jcols.at(i)});
+            for (const auto& item : jcols) {
+                jrows.push_back(nlohmann::json::array({item}));
             }
         } else {
-            throw "Expected a matrix, received a vector.";
+            throw std::runtime_error("Expected a matrix, received a vector.");
         }
     }
 
@@ -50,21 +49,20 @@ void from_json(const nlohmann::json &j,
     const auto cols = jrows.front().size();
     if ((Rows >= 0 && static_cast<int>(rows) != Rows) ||
         (Cols >= 0 && static_cast<int>(cols) != Cols)) {
-        throw fmt::format(
-            "Expected matrix of size {} {}, received matrix of size {} {}",
-            Rows, Cols, rows, cols);
+        throw std::runtime_error(fmt::format(
+            "Expected matrix of size {}x{}, received matrix of size {}x{}",
+            Rows, Cols, rows, cols));
     }
 
     dest_mat.resize(rows, cols);
-    for (int r = 0; r < rows; r++) {
+    for (size_t r = 0; r < rows; r++) {
         if (jrows.at(r).size() != cols) {
-            throw "inconsistent matrix size: some rows have different numbers "
-                  "of columns";
+            throw std::runtime_error("inconsistent matrix size: some rows have different numbers of columns");
         }
         auto row = dest_mat.row(r);
         const auto &jrow = jrows.at(r);
-        for (int c = 0; c < cols; c++) {
-            row(c) = jrow.at(c);
+        for (size_t c = 0; c < cols; c++) {
+            row(c) = jrow.at(c).get<ScalarType>();
         }
     }
 }

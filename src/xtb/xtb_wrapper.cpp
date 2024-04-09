@@ -156,6 +156,10 @@ void XTBCalculator::set_solvent(const std::string &solvent) {
     m_solvent = solvent;
 }
 
+void XTBCalculator::set_solvation_model(const std::string &model) {
+    m_solvation_model = model;
+}
+
 double XTBCalculator::single_point_energy() {
     using subprocess::CalledProcessError;
     using subprocess::CompletedProcess;

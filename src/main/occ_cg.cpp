@@ -839,6 +839,7 @@ class XTBCrystalGrowthCalculator {
             if (dimer.nearest_distance() <= 3.8) {
                 occ::xtb::XTBCalculator xtb(dimer);
                 xtb.set_solvent(m_solvent);
+		xtb.set_solvation_model(m_solvation_model);
                 int a_idx = dimer.a().asymmetric_molecule_idx();
                 int b_idx = dimer.a().asymmetric_molecule_idx();
                 m_solvated_dimer_energies[unique_idx] =
@@ -890,7 +891,7 @@ class XTBCrystalGrowthCalculator {
             {
                 occ::xtb::XTBCalculator xtb(m);
                 sw_gas.start();
-                double e_gas = xtb.single_point_energy();
+                e_gas = xtb.single_point_energy();
                 sw_gas.stop();
                 m_gas_phase_energies.push_back(e_gas);
                 m_partial_charges.push_back(xtb.partial_charges());
@@ -898,8 +899,9 @@ class XTBCrystalGrowthCalculator {
             {
                 occ::xtb::XTBCalculator xtb(m);
                 xtb.set_solvent(m_solvent);
+		xtb.set_solvation_model(m_solvation_model);
                 sw_solv.start();
-                double e_solv = xtb.single_point_energy();
+                e_solv = xtb.single_point_energy();
                 sw_solv.stop();
                 m_solvated_energies.push_back(e_solv);
             }
@@ -914,6 +916,8 @@ class XTBCrystalGrowthCalculator {
         occ::log::info("Solution phase calculations took {:.6f} seconds",
                        sw_solv.read());
     }
+
+    void set_solvation_model(const std::string &model) { m_solvation_model = model; }
 
   private:
     std::tuple<occ::main::EnergyTotal, std::vector<occ::main::CGDimer>>
@@ -942,9 +946,6 @@ class XTBCrystalGrowthCalculator {
             (m_solvated_energies[i] - m_gas_phase_energies[i]) *
             AU_TO_KJ_PER_MOL;
 
-        const std::string row_fmt_string =
-            " {} {:>3s} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
-            "{: 7.2f} {: 7.2f} {: 7.2f}";
 
         double dimers_solv_total = 0.0;
         {
@@ -1001,15 +1002,18 @@ class XTBCrystalGrowthCalculator {
                 interaction_energy = 0;
             }
 
-            if (is_nearest_neighbor) {
-                occ::log::warn(fmt::runtime(row_fmt_string), "|", unique_idx, rn, rc,
-                               symmetry_string, e, solvent_term.total,
-                               crystal_contribution, interaction_energy);
-            } else {
-                occ::log::debug(fmt::runtime(row_fmt_string), " ", unique_idx, rn, rc,
-                                symmetry_string, e, solvent_term.total,
-                                crystal_contribution, interaction_energy);
-            }
+	    if(is_nearest_neighbor) {
+		occ::log::warn(" {} {:>3d} {: 7.2f} {: 7.2f} {:>20s} {: 7.2f} {: 7.2f} {: 7.2f} {: 8.2f}",
+			       '|', unique_idx, rn, rc, symmetry_string, e, solvent_term.total,
+			       crystal_contribution, interaction_energy);
+
+	    }
+	    else {
+		occ::log::debug(" {} {:>3d} {: 7.2f} {: 7.2f} {:>20s} {: 7.2f} {: 7.2f} {: 7.2f} {: 8.2f}",
+			       ' ', unique_idx, rn, rc, symmetry_string, e, solvent_term.total,
+			       crystal_contribution, interaction_energy);
+	    }
+
             dimer_energy_results.emplace_back(occ::main::CGDimer{
                 dimer, unique_idx, interaction_energy, solvent_term,
                 crystal_contribution, is_nearest_neighbor});
@@ -1026,6 +1030,7 @@ class XTBCrystalGrowthCalculator {
     std::string m_solvent;
     std::string m_basename;
     std::string m_model{"gfn2-xtb"};
+    std::string m_solvation_model{"cpcmx"};
     bool m_output{true};
     std::vector<double> m_gas_phase_energies;
     std::vector<occ::Vec> m_partial_charges;
@@ -1064,6 +1069,7 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
     cg->add_flag("--write-kmcpp", config->write_kmcpp_file,
                  "write out an input file for kmcpp program");
     cg->add_flag("--xtb", config->use_xtb, "use xtb for interaction energies");
+    cg->add_option("--xtb-solvation-model,--xtb_solvation_model", config->xtb_solvation_model, "solvation model for use with xtb interaction energies");
     cg->add_flag("-d,--dump", config->write_dump_files, "Write dump files");
     cg->add_flag("--atomic", config->crystal_is_atomic,
                  "Crystal is atomic (i.e. no bonds)");
@@ -1100,6 +1106,11 @@ template <class Calculator> CGResult run_cg_impl(CGConfig const &config) {
         calc.set_molecule_charges(charges);
         calc.set_use_wolf_sum(true);
         calc.set_use_crystal_polarization(true);
+    }
+
+    if constexpr(std::is_same<Calculator, XTBCrystalGrowthCalculator>::value) {
+	occ::log::info("XTB solvation model: {}", config.xtb_solvation_model);
+	calc.set_solvation_model(config.xtb_solvation_model);
     }
 
     calc.set_wavefunction_choice(config.wavefunction_choice == "gas"
