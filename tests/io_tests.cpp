@@ -2850,7 +2850,9 @@ TEST_CASE("read/write dftb gen format", "[write,read]") {
 	    std::istringstream gen_contents_stream(gen_contents);
 	    occ::io::DftbGenFormat gen;
 	    gen.parse(gen_contents_stream);
-	    auto acetic_read = gen.crystal().value();
+	    auto maybe_crystal = gen.crystal();
+	    REQUIRE(maybe_crystal);
+	    auto acetic_read = maybe_crystal.value();
 	    REQUIRE(all_close(acetic_read.unit_cell().direct(), acetic.unit_cell().direct()));
 	    REQUIRE(acetic_read.asymmetric_unit().size() == 4 * acetic.asymmetric_unit().size());
 	}
@@ -2871,7 +2873,9 @@ TEST_CASE("read/write dftb gen format", "[write,read]") {
 	    std::istringstream gen_contents_stream(gen_contents);
 	    occ::io::DftbGenFormat gen;
 	    gen.parse(gen_contents_stream);
-	    auto acetic_read = gen.molecule().value();
+	    auto maybe_molecule = gen.molecule();
+	    REQUIRE(maybe_molecule);
+	    auto acetic_read = maybe_molecule.value();
 	    REQUIRE(all_close(acetic_read.positions(), mol.positions()));
 	    REQUIRE(acetic_read.atomic_numbers() == mol.atomic_numbers());
 	}

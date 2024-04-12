@@ -50,7 +50,7 @@ std::vector<Element> parse_elements_line(const std::string &line) {
         input = result->range();
     }
 
-    occ::log::debug("Found {} element symbols", element_map.size());
+    occ::log::info("Found {} element symbols", element_map.size());
     return element_map;
 }
 
@@ -96,6 +96,7 @@ void DftbGenFormat::parse(std::istream &stream) {
 
     m_atomic_numbers.resize(num_atoms);
     m_positions.resize(3, num_atoms);
+    m_symbol_index.resize(num_atoms);
 
     // read element symbols line
     std::getline(stream, line);
@@ -105,8 +106,9 @@ void DftbGenFormat::parse(std::istream &stream) {
     for(int i = 0; i < num_atoms; i++) {
 	std::getline(stream, line);
 	auto [idx, el, x, y, z] = parse_atom_line(line);
+	m_symbol_index(i) = el - 1;
 	// dftb gen indexes are start from 1
-	m_atomic_numbers(i) = element_map[el - 1].atomic_number();
+	m_atomic_numbers(i) = element_map[m_symbol_index(i)].atomic_number();
 	m_positions(0, i) = x;
 	m_positions(1, i) = y;
 	m_positions(2, i) = z;
@@ -214,7 +216,7 @@ void DftbGenFormat::write(std::ostream &stream) {
     for(size_t i = 0; i < num_atoms(); i++) {
 	fmt::print(stream, 
 		   "{:5d} {:3d} {:20.12e} {:20.12e} {:20.12e}\n", 
-		   i + 1, m_symbol_index(i),
+		   i + 1, m_symbol_index(i) + 1,
 		   m_positions(0, i), m_positions(1, i), m_positions(2, i));
     }
 
