@@ -11,5 +11,6 @@ var structocc_1_1main_1_1CGConfig =
     [ "use_xtb", "structocc_1_1main_1_1CGConfig.html#a094ff8304cb6532897bb2deca08924bc", null ],
     [ "wavefunction_choice", "structocc_1_1main_1_1CGConfig.html#a4b25390f9a2d1cd157826818d99801ed", null ],
     [ "write_dump_files", "structocc_1_1main_1_1CGConfig.html#af034b76854f64d8bee7f39f1a5400f40", null ],
-    [ "write_kmcpp_file", "structocc_1_1main_1_1CGConfig.html#a91d326a12653227b551bdd4465630d20", null ]
+    [ "write_kmcpp_file", "structocc_1_1main_1_1CGConfig.html#a91d326a12653227b551bdd4465630d20", null ],
+    [ "xtb_solvation_model", "structocc_1_1main_1_1CGConfig.html#a8f8b28d0d3d9e32e19757d0177f42c90", null ]
 ];

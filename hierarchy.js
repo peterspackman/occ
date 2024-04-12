@@ -46,6 +46,7 @@ var hierarchy =
     [ "occ::main::DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", null ],
     [ "occ::dft::DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", null ],
     [ "occ::dft::DFT", "classocc_1_1dft_1_1DFT.html", null ],
+    [ "occ::io::DftbGenFormat", "classocc_1_1io_1_1DftbGenFormat.html", null ],
     [ "quickhull::DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", null ],
     [ "occ::core::diis::DIIS", "classocc_1_1core_1_1diis_1_1DIIS.html", [
       [ "occ::qm::CDIIS", "classocc_1_1qm_1_1CDIIS.html", null ]
@@ -88,6 +89,7 @@ var hierarchy =
     [ "occ::io::FchkWriter", "classocc_1_1io_1_1FchkWriter.html", null ],
     [ "occ::isosurface::impl::FillParams", "structocc_1_1isosurface_1_1impl_1_1FillParams.html", null ],
     [ "occ::core::Fraction", "classocc_1_1core_1_1Fraction.html", null ],
+    [ "occ::dft::impl::Functionals", "structocc_1_1dft_1_1impl_1_1Functionals.html", null ],
     [ "occ::io::GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", null ],
     [ "occ::core::GenSqrtInvResult", "structocc_1_1core_1_1GenSqrtInvResult.html", null ],
     [ "occ::io::GeometryInput", "structocc_1_1io_1_1GeometryInput.html", null ],

@@ -30,6 +30,10 @@ var namespaceocc_1_1main =
     [ "AtomList", "namespaceocc_1_1main.html#a28fb2b00851f8aa959f1188eb702d21d", null ],
     [ "MoleculeList", "namespaceocc_1_1main.html#aacf219b1a5bc1d456fccd140b29ff763", null ],
     [ "WavefunctionList", "namespaceocc_1_1main.html#ac85c86d6d9a88925da1c4fd9831a3d05", null ],
+    [ "MethodKind", "namespaceocc_1_1main.html#a5363c601baefd04c151463f96c28f72a", [
+      [ "HF", "namespaceocc_1_1main.html#a5363c601baefd04c151463f96c28f72aa498ab1ea4aab0295389f6c51484cca6c", null ],
+      [ "DFT", "namespaceocc_1_1main.html#a5363c601baefd04c151463f96c28f72aacca8fc743f62bb262491fb02b5c0fd73", null ]
+    ] ],
     [ "SolvationPartitionScheme", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8d", [
       [ "NearestAtom", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8dad46944b7474143da3a8f5f49afc5bbfc", null ],
       [ "NearestAtomDnorm", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8da904a394a586beaef3768b3b664aa966c", null ],
@@ -57,8 +61,10 @@ var namespaceocc_1_1main =
     [ "compute_monomer_energies", "namespaceocc_1_1main.html#acfb5af7abecb5e5c5057d9197f174eb0", null ],
     [ "converged_lattice_energies", "namespaceocc_1_1main.html#adc1ccaf1ba538fd1b0c72157e51bdffb", null ],
     [ "converged_xtb_lattice_energies", "namespaceocc_1_1main.html#a636639b98d41eb62542faf3416d5e6b8", null ],
+    [ "determine_spinorbital_kind", "namespaceocc_1_1main.html#a517403a352ae4f468b87150d6276432d", null ],
     [ "load_dimer_energy", "namespaceocc_1_1main.html#a4c99afd3455379c53135bd1896c75dad", null ],
     [ "load_wavefunction", "namespaceocc_1_1main.html#a2ee9eb0dd00aa1eb20e198760be0412b", null ],
+    [ "method_kind_from_string", "namespaceocc_1_1main.html#ac40858d416a82a962744b6a615487ac1", null ],
     [ "partition_solvent_surface", "namespaceocc_1_1main.html#aa39befd47d2156369617ebd3965cdf28", null ],
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],
     [ "run_cg", "namespaceocc_1_1main.html#a84a13fde7a5f757cfe4d3b92a93c73d8", null ],

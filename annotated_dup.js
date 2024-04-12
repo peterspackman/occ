@@ -58,6 +58,9 @@ var annotated_dup =
         [ "cosx", "namespaceocc_1_1dft_1_1cosx.html", [
           [ "SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange" ]
         ] ],
+        [ "impl", "namespaceocc_1_1dft_1_1impl.html", [
+          [ "Functionals", "structocc_1_1dft_1_1impl_1_1Functionals.html", "structocc_1_1dft_1_1impl_1_1Functionals" ]
+        ] ],
         [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
         [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
         [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
@@ -118,6 +121,7 @@ var annotated_dup =
         [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
         [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
         [ "Cube", "classocc_1_1io_1_1Cube.html", "classocc_1_1io_1_1Cube" ],
+        [ "DftbGenFormat", "classocc_1_1io_1_1DftbGenFormat.html", "classocc_1_1io_1_1DftbGenFormat" ],
         [ "EngradReader", "classocc_1_1io_1_1EngradReader.html", "classocc_1_1io_1_1EngradReader" ],
         [ "FchkReader", "classocc_1_1io_1_1FchkReader.html", "classocc_1_1io_1_1FchkReader" ],
         [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html", "classocc_1_1io_1_1FchkWriter" ],
