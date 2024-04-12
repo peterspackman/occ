@@ -7,12 +7,14 @@
 #include <occ/main/pair_energy.h>
 #include <occ/main/single_point.h>
 #include <occ/core/progress.h>
+#include <occ/qm/hf.h>
 #include <fmt/os.h>
 
 using occ::qm::Wavefunction;
 using occ::core::Molecule;
 using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEModelInteraction;
+using occ::qm::HartreeFock;
 
 Molecule make_molecule(const std::string &element) {
     auto el = occ::core::Element(element);
@@ -34,6 +36,27 @@ Wavefunction get_wavefunction(Molecule molecule, int charge) {
     config.geometry.set_molecule(molecule);
     return occ::main::single_point_calculation(config);
 }
+
+void compute_wfn_monomer_energies(const std::string &basename, std::vector<Wavefunction> &wavefunctions) {
+    size_t index = 0;
+    for (auto &wfn : wavefunctions) {
+	HartreeFock hf(wfn.basis);
+	occ::interaction::CEMonomerCalculationParameters params;
+	params.Schwarz = hf.compute_schwarz_ints();
+	params.xdm = true;
+
+	occ::log::info("Computing monomer energies for {} {}", basename, wfn.charge());
+	occ::interaction::compute_ce_model_energies(wfn, hf, params);
+	auto output = fmt::output_file(fmt::format("{}_{}.txt", basename, wfn.charge()));
+	output.print("Monomer energy terms (Hartree)\n{}\n", wfn.energy.to_string());
+	output.print("XDM Polarizability:\n{}\n\n", wfn.xdm_polarizabilities);
+	output.print("XDM Moments:\n{}\n\n", wfn.xdm_moments);
+	output.print("XDM Volumes:\n{}\n\n", wfn.xdm_volumes);
+	output.print("XDM Free volumes:\n{}\n\n", wfn.xdm_free_volumes);
+        index++;
+    }
+}
+
 
 // copy the wavefunctions so we can modify them
 CEEnergyComponents compute_pair_energy(Wavefunction wfn_a,
@@ -102,11 +125,13 @@ int main(int argc, char *argv[]) {
 	    occ::log::info("Wavefunction for {}{:+d}", symbol_a, i);
 	    cation_wfns.push_back(get_wavefunction(cation, i));
 	}
+	compute_wfn_monomer_energies(symbol_a, cation_wfns);
 
 	for(int i = min_charge_anion; i <= max_charge_anion; i++) {
 	    occ::log::info("Wavefunction for {}{:+d}", symbol_b, -i);
 	    anion_wfns.push_back(get_wavefunction(anion, -i));
 	}
+	compute_wfn_monomer_energies(symbol_b, anion_wfns);
 
 	occ::log::info("have {} cation, {} anion wavefunctions", cation_wfns.size(), anion_wfns.size());
 
