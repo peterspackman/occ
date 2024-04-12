@@ -17,7 +17,8 @@ Mat3N project_to_plane(const Mat3N &points, const Vec3 &plane_normal) {
     Vec v = projected_points.transpose() * b_vector;
 
     Mat3N result = Mat3N::Zero(3, points.cols());
-    result << u.transpose(), v.transpose();
+    result.row(0) = u.transpose();
+    result.row(1) = v.transpose();
 
     return result;
 }
