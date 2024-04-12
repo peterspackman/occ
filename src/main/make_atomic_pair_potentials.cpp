@@ -64,7 +64,7 @@ CEEnergyComponents compute_pair_energy(Wavefunction wfn_a,
 				       double separation, bool dimer_xdm = true) {
 
     // assumes that B is at the origin (as is A)
-    wfn_b.apply_transformation(occ::Mat3::Identity(), occ::Vec3(0.0, 0.0, separation));
+    wfn_b.apply_transformation(occ::Mat3::Identity(), occ::Vec3(0.0, 0.0, separation * occ::units::ANGSTROM_TO_BOHR));
 
     auto model = occ::interaction::ce_model_from_string("ce-1p");
     CEModelInteraction interaction(model);
@@ -144,10 +144,10 @@ int main(int argc, char *argv[]) {
 	    for(const auto &wfn_b: anion_wfns) {
 		auto output = fmt::output_file(
 		    fmt::format("{}_{}_{}_{}.txt", symbol_a, wfn_a.charge(), symbol_b, wfn_b.charge()));
-		output.print("{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\n",
+		output.print("{:>6s}\t{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\t{:>20s}\n", "r_angs",
 			     "coulomb", "exchange", "repulsion", "polarization", "dispersion", "total");
 		for(double sep: separations) {
-		    occ::log::debug("Dimer: {:s}{:+d} {:s}{:+d} (sep: {:.3f})",
+		    occ::log::debug("Dimer: {:s}{:+d} {:s}{:+d} (sep: {:.3f} Angs)",
 			symbol_a, wfn_a.charge(), 
 			symbol_b, wfn_b.charge(),
 			sep);
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
 		    occ::log::debug("__________________________________");
 		    occ::log::debug("Total 		      {: 12.6f}", e_tot);
 		    computed_dimers++;
-		    output.print("{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\n", e_coul, e_exch, e_rep, e_pol, e_disp, e_tot);
+		    output.print("{:6.1f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\t{:20.6f}\n", sep, e_coul, e_exch, e_rep, e_pol, e_disp, e_tot);
 
 		    progress.update(computed_dimers, dimers_to_compute, 
                         fmt::format("E[{}{:+d}|{}{:+d}] @ {:.3f}", symbol_a, wfn_a.charge(), symbol_b, wfn_b.charge(), sep));
