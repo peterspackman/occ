@@ -10,7 +10,7 @@ enum class MethodKind {
 };
 
 
-inline constexpr qm::SpinorbitalKind determine_spinorbital_kind(const std::string &name, int multiplicity, MethodKind method_kind) {
+inline qm::SpinorbitalKind determine_spinorbital_kind(const std::string &name, int multiplicity, MethodKind method_kind) {
     auto lc = occ::util::to_lower_copy(name);
     switch(method_kind) {
 	case MethodKind::HF: {
@@ -26,7 +26,7 @@ inline constexpr qm::SpinorbitalKind determine_spinorbital_kind(const std::strin
     }
 }
 
-inline constexpr MethodKind method_kind_from_string(const std::string &name) {
+inline MethodKind method_kind_from_string(const std::string &name) {
     auto lc = occ::util::to_lower_copy(name);
     if(lc == "hf" || 
        lc == "rhf" || 
