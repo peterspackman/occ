@@ -27,6 +27,10 @@ struct JKPair {
     Mat J, K;
 };
 
+struct JKTriple {
+    MatTriple J, K;
+};
+
 class IntegralEngine {
   public:
 
@@ -145,6 +149,12 @@ class IntegralEngine {
                                   bool is_shell_diagonal);
     Mat coulomb(SpinorbitalKind, const MolecularOrbitals &mo,
                 const Mat &Schwarz = Mat()) const;
+
+    MatTriple coulomb_grad(SpinorbitalKind, const MolecularOrbitals &mo,
+			   const Mat &Schwarz = Mat()) const;
+
+    JKTriple coulomb_exchange_grad(SpinorbitalKind, const MolecularOrbitals &mo,
+			           const Mat &Schwarz = Mat()) const;
     JKPair coulomb_and_exchange(SpinorbitalKind, const MolecularOrbitals &mo,
                                 const Mat &Schwarz = Mat()) const;
 

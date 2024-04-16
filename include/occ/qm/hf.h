@@ -60,12 +60,17 @@ class HartreeFock {
                                  const qm::AOBasis &bs, bool is_shell_diagonal);
     JKPair compute_JK(const MolecularOrbitals &mo,
                       const Mat &Schwarz = Mat()) const;
+    JKTriple compute_JK_gradient(const MolecularOrbitals &mo,
+				 const Mat &Schwarz = Mat()) const;
 
     std::vector<JKPair> compute_JK_list(const std::vector<MolecularOrbitals> &mo,
                                    const Mat &Schwarz = Mat()) const;
 
     Mat compute_J(const MolecularOrbitals &mo,
                   const Mat &Schwarz = Mat()) const;
+
+    MatTriple compute_J_gradient(const MolecularOrbitals &mo,
+				 const Mat &Schwarz = Mat()) const;
 
     std::vector<Mat> compute_J_list(const std::vector<MolecularOrbitals> &mo,
                                    const Mat &Schwarz = Mat()) const;

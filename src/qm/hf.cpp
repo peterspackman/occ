@@ -142,6 +142,16 @@ Mat HartreeFock::compute_J(const MolecularOrbitals &mo,
     }
 }
 
+MatTriple HartreeFock::compute_J_gradient(const MolecularOrbitals &mo,
+					  const Mat &Schwarz) const {
+    return m_engine.coulomb_grad(mo.kind, mo, Schwarz);
+}
+
+JKTriple HartreeFock::compute_JK_gradient(const MolecularOrbitals &mo,
+				          const Mat &Schwarz) const {
+    return m_engine.coulomb_exchange_grad(mo.kind, mo, Schwarz);
+}
+
 Mat HartreeFock::compute_kinetic_matrix() const {
     using Kind = occ::qm::Shell::Kind;
     using Op = occ::qm::cint::Operator;
