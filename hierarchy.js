@@ -115,6 +115,7 @@ var hierarchy =
     [ "occ::io::IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", null ],
     [ "occ::io::IsosurfaceMesh", "structocc_1_1io_1_1IsosurfaceMesh.html", null ],
     [ "occ::qm::JKPair", "structocc_1_1qm_1_1JKPair.html", null ],
+    [ "occ::qm::JKTriple", "structocc_1_1qm_1_1JKTriple.html", null ],
     [ "occ::io::JsonBasis", "structocc_1_1io_1_1JsonBasis.html", null ],
     [ "occ::io::JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", null ],
     [ "occ::io::JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", null ],

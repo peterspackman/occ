@@ -8,9 +8,9 @@
  viewBox="0.00 0.00 301.00 269.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 265.5)">
 <title>Graphical Class Hierarchy</title>
-<!-- Node215 -->
+<!-- Node216 -->
 <g id="node1" class="node">
-<title>Node215</title>
+<title>Node216</title>
 <g id="a_node1"><a xlink:title=" ">
 <polygon fill="none" stroke="#bfbfbf" points="0,-149 0,-168 84,-168 84,-149 0,-149"/>
 <text text-anchor="middle" x="42" y="-156" font-family="Helvetica,sans-Serif" font-size="10.00">std::true_type</text>
@@ -28,15 +28,15 @@
 </a>
 </g>
 </g>
-<!-- Node215&#45;&gt;Node0 -->
+<!-- Node216&#45;&gt;Node0 -->
 <g id="edge1" class="edge">
-<title>Node215&#45;&gt;Node0</title>
+<title>Node216&#45;&gt;Node0</title>
 <path fill="none" stroke="midnightblue" d="M63.26,-174.3C78.3,-185.49 99.64,-200.27 120,-210.5 126.75,-213.89 133.97,-217.06 141.25,-219.98"/>
 <polygon fill="midnightblue" stroke="midnightblue" points="65.28,-171.44 55.2,-168.19 61.05,-177.02 65.28,-171.44"/>
 </g>
-<!-- Node217 -->
+<!-- Node218 -->
 <g id="node3" class="node">
-<title>Node217</title>
+<title>Node218</title>
 <g id="a_node3"><a xlink:href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer_3_01T_00_01std_1_1void__t_3_01decltype_012440534cfad48502b5540770ce75c85.html" target="_top" xlink:title=" ">
 <polygon fill="none" stroke="black" points="120,-116 120,-201 293,-201 293,-116 120,-116"/>
 <text text-anchor="start" x="128" y="-189" font-family="Helvetica,sans-Serif" font-size="10.00">occ::geometry::mc::</text>
@@ -49,15 +49,15 @@
 </a>
 </g>
 </g>
-<!-- Node215&#45;&gt;Node217 -->
+<!-- Node216&#45;&gt;Node218 -->
 <g id="edge2" class="edge">
-<title>Node215&#45;&gt;Node217</title>
+<title>Node216&#45;&gt;Node218</title>
 <path fill="none" stroke="midnightblue" d="M94.12,-158.5C102.33,-158.5 111.02,-158.5 119.78,-158.5"/>
 <polygon fill="midnightblue" stroke="midnightblue" points="94.01,-155 84.01,-158.5 94.01,-162 94.01,-155"/>
 </g>
-<!-- Node218 -->
+<!-- Node219 -->
 <g id="node4" class="node">
-<title>Node218</title>
+<title>Node219</title>
 <g id="a_node4"><a xlink:href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals_3_01T_00_01std_1_1void__t_3_01decltype127bc92b5282ec611bd1ef77c682737f.html" target="_top" xlink:title=" ">
 <polygon fill="none" stroke="black" points="120.5,-0.5 120.5,-96.5 292.5,-96.5 292.5,-0.5 120.5,-0.5"/>
 <text text-anchor="start" x="128.5" y="-84.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::geometry::mc::</text>
@@ -71,9 +71,9 @@
 </a>
 </g>
 </g>
-<!-- Node215&#45;&gt;Node218 -->
+<!-- Node216&#45;&gt;Node219 -->
 <g id="edge3" class="edge">
-<title>Node215&#45;&gt;Node218</title>
+<title>Node216&#45;&gt;Node219</title>
 <path fill="none" stroke="midnightblue" d="M65.71,-143.13C83.6,-131.02 109.57,-113.43 134.29,-96.71"/>
 <polygon fill="midnightblue" stroke="midnightblue" points="63.46,-140.43 57.14,-148.93 67.38,-146.22 63.46,-140.43"/>
 </g>

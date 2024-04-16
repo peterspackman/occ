@@ -31,6 +31,7 @@ var namespaceocc_1_1qm =
     [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
     [ "MatTriple", "structocc_1_1qm_1_1MatTriple.html", "structocc_1_1qm_1_1MatTriple" ],
     [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
+    [ "JKTriple", "structocc_1_1qm_1_1JKTriple.html", "structocc_1_1qm_1_1JKTriple" ],
     [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
     [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],

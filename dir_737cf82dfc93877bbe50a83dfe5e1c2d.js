@@ -15,6 +15,7 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "integral_engine.h", "integral__engine_8h.html", [
       [ "MatTriple", "structocc_1_1qm_1_1MatTriple.html", "structocc_1_1qm_1_1MatTriple" ],
       [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
+      [ "JKTriple", "structocc_1_1qm_1_1JKTriple.html", "structocc_1_1qm_1_1JKTriple" ],
       [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
       [ "IntegralResult", "structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html", "structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult" ]
     ] ],

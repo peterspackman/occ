@@ -1,5 +1,8 @@
 var NAVTREEINDEX6 =
 {
+"classquickhull_1_1ConvexHull.html#aad8734459888b204c059b7ef83068daa":[2,0,2,0,1],
+"classquickhull_1_1ConvexHull.html#ad7015992c7dcb5c662ee92f1aee6732d":[2,0,2,0,5],
+"classquickhull_1_1ConvexHull.html#adf972161981b987b34023195687d80e0":[2,0,2,0,9],
 "classquickhull_1_1ConvexHull.html#ae565d83a1c2be08f765ca84c61af6843":[2,0,2,0,4],
 "classquickhull_1_1HalfEdgeMesh.html":[2,0,2,1],
 "classquickhull_1_1HalfEdgeMesh.html#a26c6228ea43b1e44740b0ebcacda1ba3":[2,0,2,1,6],
@@ -246,8 +249,5 @@ var NAVTREEINDEX6 =
 "functions_m.html":[2,3,0,13],
 "functions_n.html":[2,3,0,14],
 "functions_o.html":[2,3,0,15],
-"functions_p.html":[2,3,0,16],
-"functions_q.html":[2,3,0,17],
-"functions_r.html":[2,3,0,18],
-"functions_rela.html":[2,3,6]
+"functions_p.html":[2,3,0,16]
 };

@@ -1,5 +1,11 @@
 var NAVTREEINDEX16 =
 {
+"structocc_1_1scf_1_1SCF.html#a7a29fe0b7e7b651bac3671e0d991357d":[2,0,1,10,0,50],
+"structocc_1_1scf_1_1SCF.html#a7b70e254d8f3e67c8b3ae56d495628b9":[2,0,1,10,0,1],
+"structocc_1_1scf_1_1SCF.html#a7fc3189e2369210f590f620f0194e994":[2,0,1,10,0,15],
+"structocc_1_1scf_1_1SCF.html#a843caaa0c0feb95618acf484908c96da":[2,0,1,10,0,22],
+"structocc_1_1scf_1_1SCF.html#a883ba7bab2205b1e0bcba6943beb8d27":[2,0,1,10,0,19],
+"structocc_1_1scf_1_1SCF.html#a8bef5243f681a9bfd4657e1999d7ac21":[2,0,1,10,0,8],
 "structocc_1_1scf_1_1SCF.html#a8fc1ce34d1b842aaadc77d94a92a8f7f":[2,0,1,10,0,41],
 "structocc_1_1scf_1_1SCF.html#a9b1a942b4f607339ac3f256dc596a4d6":[2,0,1,10,0,49],
 "structocc_1_1scf_1_1SCF.html#aa09ac33f684b703df19829536eaaf399":[2,0,1,10,0,35],
@@ -243,11 +249,5 @@ var NAVTREEINDEX16 =
 "wavefunction__json_8h.html#aea99ff092d8022a134859b02bc81a705":[3,0,1,0,6,28,3],
 "wavefunction__json_8h.html#af56a1ad02bf6c763085926a57c0c60f4":[3,0,1,0,6,28,5],
 "wolf_8h.html":[3,0,1,0,5,5],
-"wolf_8h.html#a26f0c5fa9ceffa2b4eab2fb3a13f490f":[3,0,1,0,5,5,1],
-"wulff_8h.html":[3,0,1,0,3,13],
-"wulff_8h.html#a9732049bcf1992f1891ecd54b7b1d31a":[3,0,1,0,3,13,2],
-"xc__potential__matrix_8h.html":[3,0,1,0,2,7],
-"xc__potential__matrix_8h.html#a0f9bc77776e89d8bf4ea65677f0639a5":[3,0,1,0,2,7,5],
-"xc__potential__matrix_8h.html#a13f24b9204a53c944f36e5d0a2e759af":[3,0,1,0,2,7,6],
-"xc__potential__matrix_8h.html#a1b07d66d6a706b5c97d4565076539e9c":[3,0,1,0,2,7,0]
+"wolf_8h.html#a26f0c5fa9ceffa2b4eab2fb3a13f490f":[3,0,1,0,5,5,1]
 };
