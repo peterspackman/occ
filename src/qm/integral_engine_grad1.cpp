@@ -448,9 +448,7 @@ MatTriple coulomb_kernel_grad(cint::IntegralEnvironment &env, const AOBasis &bas
 	results[0].z.noalias() += results[i].z;
     }
 
-    results[0].x.array() *= -2;
-    results[0].y.array() *= -2;
-    results[0].z.array() *= -2;
+    results[0].scale_by(-2.0);
     return results[0];
 }
 
@@ -537,9 +535,8 @@ JKTriple coulomb_exchange_kernel_grad(IntEnv &env,
 	kmats[0].z.noalias() += kmats[i].z;
     }
 
-    jmats[0].x.array() *= -2;
-    jmats[0].y.array() *= -2;
-    jmats[0].z.array() *= -2;
+    jmats[0].scale_by(-2.0);
+    kmats[0].scale_by(0.5);
     return {jmats[0], kmats[0]};
 }
 
@@ -578,6 +575,59 @@ JKTriple IntegralEngine::coulomb_exchange_grad(
                                                m_precision, Schwarz);
         } else {
             return coulomb_exchange_kernel_grad<G, Cart>(m_env, m_aobasis, m_shellpairs, mo,
+                                                m_precision, Schwarz);
+        }
+    }
+}
+
+template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
+MatTriple fock_kernel_grad(IntEnv &env, 
+			   const AOBasis &basis,
+			   const ShellPairList &shellpairs,
+			   const MolecularOrbitals &mo,
+		           double precision = 1e-12,
+			   const Mat &Schwarz = Mat()) {
+   auto [J, K] = coulomb_exchange_kernel_grad<sk, kind>(env, basis, shellpairs, mo, precision, Schwarz);
+   J.x -= K.x;
+   J.y -= K.y;
+   J.z -= K.z;
+   return J;
+}
+
+MatTriple IntegralEngine::fock_operator_grad(SpinorbitalKind sk, const MolecularOrbitals &mo,
+					     const Mat &Schwarz) const {
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+    constexpr auto Sph = ShellKind::Spherical;
+    constexpr auto Cart = ShellKind::Cartesian;
+    bool spherical = is_spherical();
+    switch (sk) {
+    default:
+    case R:
+        if (spherical) {
+            return fock_kernel_grad<R, Sph>(m_env, m_aobasis, m_shellpairs, mo,
+                                               m_precision, Schwarz);
+        } else {
+            return fock_kernel_grad<R, Cart>(m_env, m_aobasis, m_shellpairs, mo,
+                                                m_precision, Schwarz);
+        }
+        break;
+    case U:
+        if (spherical) {
+            return fock_kernel_grad<U, Sph>(m_env, m_aobasis, m_shellpairs, mo,
+                                               m_precision, Schwarz);
+        } else {
+            return fock_kernel_grad<U, Cart>(m_env, m_aobasis, m_shellpairs, mo,
+                                                m_precision, Schwarz);
+        }
+
+    case G:
+        if (spherical) {
+            return fock_kernel_grad<G, Sph>(m_env, m_aobasis, m_shellpairs, mo,
+                                               m_precision, Schwarz);
+        } else {
+            return fock_kernel_grad<G, Cart>(m_env, m_aobasis, m_shellpairs, mo,
                                                 m_precision, Schwarz);
         }
     }

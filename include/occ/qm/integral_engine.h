@@ -21,6 +21,11 @@ namespace occ::qm {
 
 struct MatTriple {
     Mat x, y, z;
+    inline void scale_by(double fac) {
+	x.array() *= fac;
+	y.array() *= fac;
+	z.array() *= fac;
+    }
 };
 
 struct JKPair {
@@ -147,6 +152,10 @@ class IntegralEngine {
                       const Mat &Schwarz = Mat()) const;
     Mat fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
                                   bool is_shell_diagonal);
+
+    MatTriple fock_operator_grad(SpinorbitalKind, const MolecularOrbitals &mo,
+			         const Mat &Schwarz = Mat()) const;
+
     Mat coulomb(SpinorbitalKind, const MolecularOrbitals &mo,
                 const Mat &Schwarz = Mat()) const;
 

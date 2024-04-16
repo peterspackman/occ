@@ -337,14 +337,6 @@ occ::Mat3N atomic_gradients(const occ::Mat &D, const occ::qm::MatTriple &grad,
 
 TEST_CASE("Integral gradients", "[integrals]") {
 
-    /*
-    std::vector<occ::core::Atom> atoms{
-        {1, 0.0, 0.0, 0.0},
-	{1, 0.0, 0.0, 1.4 * occ::units::ANGSTROM_TO_BOHR}
-    };
-    auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
-    */
-   
     std::vector<occ::core::Atom> atoms{
         {8, -1.32695761, -0.10593856, 0.01878821},
         {1, -1.93166418, 1.60017351, -0.02171049},
@@ -363,12 +355,14 @@ TEST_CASE("Integral gradients", "[integrals]") {
    -0.027249, -0.037120, 0.711984, 0.111189, -0.004447, -0.189923, 0.606432;
 
     
-    //occ::Mat D(obs.nbf(), obs.nbf());
-    //D.setConstant(0.77178414);
     occ::qm::MolecularOrbitals mo;
     mo.kind = occ::qm::SpinorbitalKind::Restricted;
     mo.D = D * 0.5;
-    std::cout << "D\n" << std::setprecision(4) << mo.D << '\n';
+
+    occ::qm::IntegralEngine engine(obs);
+    HartreeFock hf(obs);
+    auto [J, K] = hf.compute_JK(mo);
+    auto [grad, grad_k] = hf.compute_JK_gradient(mo);
 
     occ::Mat Xref(obs.nbf(), obs.nbf()), Yref(obs.nbf(), obs.nbf()), Zref(obs.nbf(), obs.nbf());
 
@@ -399,24 +393,40 @@ TEST_CASE("Integral gradients", "[integrals]") {
       0.02122,  0.06226, -0.02148,  0.06149,  1.36441,  0.01937,  0.01674,
       0.00458,  0.01327,  0.01392,  0.00148,  1.34587, -0.00939,  0.00377;
 
-    occ::qm::IntegralEngine engine(obs);
-    HartreeFock hf(obs);
-    auto [J, K] = hf.compute_JK(mo);
-    auto [grad, grad_k] = hf.compute_JK_gradient(mo);
-    /*
-    std::cout << "J:\n" << std::setprecision(4) << J << '\n';
-    std::cout << "X:\n" << std::setprecision(4) << grad.x << '\n';
-    std::cout << "Y:\n" << std::setprecision(4) << grad.y << '\n';
-    std::cout << "Z:\n" << std::setprecision(4) << grad.z << '\n';
-    */
+    
     REQUIRE(all_close(grad.x, Xref, 1e-5, 1e-5));
     REQUIRE(all_close(grad.y, Yref, 1e-5, 1e-5));
     REQUIRE(all_close(grad.z, Zref, 1e-5, 1e-5));
 
-    std::cout << "K:\n" << std::setprecision(4) << K << '\n';
-    std::cout << "KX:\n" << std::setprecision(4) << grad_k.x << '\n';
-    std::cout << "KY:\n" << std::setprecision(4) << grad_k.y << '\n';
-    std::cout << "KZ:\n" << std::setprecision(4) << grad_k.z << '\n';
+    Xref <<
+      0.02578, -0.06436,  1.28249,  0.09634, -0.00124, -0.09719,  0.30588,
+      0.00034, -0.00791,  0.57682,  0.01804, -0.00023, -0.10010,  0.31664,
+     -4.04562, -1.38240,  0.15905,  0.07964, -0.00240, -0.45088, -0.20785,
+      0.00565,  0.00970,  0.01519, -0.05754,  0.00105, -0.08108,  0.03159,
+     -0.00007, -0.00013, -0.00071,  0.00106, -0.01162,  0.00198, -0.00137,
+      0.08256,  0.14178,  0.13574,  0.09923, -0.00230,  0.07807,  0.14131,
+     -0.24018, -0.42145, -0.12875, -0.02855,  0.00147, -0.18523, -0.22229;
+    Yref <<
+      0.04098, -0.10140,  0.09628,  1.37646,  0.00895,  0.29431,  0.03805,
+      0.00054, -0.01202,  0.01806,  0.59557,  0.00164,  0.30414,  0.03958,
+      0.00565,  0.00970,  0.01519, -0.05754,  0.00105, -0.08108,  0.03159,
+     -4.04016, -1.37206, -0.01624,  0.14585, -0.00444, -0.23608, -0.46844,
+      0.00054,  0.00083,  0.00110, -0.00268, -0.01815, -0.00526,  0.00032,
+     -0.23054, -0.40240,  0.09643, -0.09421,  0.00684, -0.21117, -0.13764,
+     -0.02378, -0.04384, -0.02571,  0.16718,  0.00064,  0.06778, -0.01980;
+    Zref <<
+     -0.00107,  0.00265, -0.00124,  0.00895,  1.74979, -0.00700, -0.00167,
+     -0.00001,  0.00031, -0.00023,  0.00164,  0.66388, -0.00724, -0.00174,
+     -0.00007, -0.00013, -0.00071,  0.00106, -0.01162,  0.00198, -0.00137,
+      0.00054,  0.00083,  0.00110, -0.00268, -0.01815, -0.00526,  0.00032,
+     -4.01780, -1.33735,  0.03156,  0.04934, -0.00034, -0.45775, -0.45243,
+      0.00547,  0.00955, -0.00223,  0.00683,  0.19326,  0.00500,  0.00304,
+      0.00116,  0.00209,  0.00140,  0.00064,  0.19059, -0.00122,  0.00102;
+
+    REQUIRE(all_close(grad_k.x, Xref, 1e-5, 1e-5));
+    REQUIRE(all_close(grad_k.y, Yref, 1e-5, 1e-5));
+    REQUIRE(all_close(grad_k.z, Zref, 1e-5, 1e-5));
+
 
     //auto d = atomic_gradients(D, grad, obs);
     //fmt::print("Atom gradients:\n{}\n", d);
