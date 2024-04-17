@@ -1,4 +1,5 @@
 #include <catch2/catch_approx.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <fmt/ostream.h>
 #include <occ/core/dimer.h>
@@ -24,6 +25,9 @@ using occ::core::Molecule;
 using occ::core::Multipole;
 using occ::core::SymOp;
 using occ::util::all_close;
+
+using Catch::Matchers::WithinAbs;
+using Catch::Approx;
 
 TEST_CASE("Dimer constructor", "[dimer]") {
     occ::Mat3N pos(3, 3), pos2(3, 3);
@@ -79,9 +83,9 @@ TEST_CASE("Dimer separations", "[dimer]") {
 
     Dimer dim(m, m2);
 
-    REQUIRE(dim.nearest_distance() == Catch::Approx(0.8605988136));
-    REQUIRE(dim.centroid_distance() == Catch::Approx(1.8479851333));
-    REQUIRE(dim.center_of_mass_distance() == Catch::Approx(2.5186418514));
+    REQUIRE(dim.nearest_distance() == Approx(0.8605988136));
+    REQUIRE(dim.centroid_distance() == Approx(1.8479851333));
+    REQUIRE(dim.center_of_mass_distance() == Approx(2.5186418514));
 }
 
 // Element tests
@@ -214,23 +218,48 @@ double sx(double x) { return std::sin(x); }
 
 double ax(double x) { return std::abs(x - 4); }
 
-TEST_CASE("Brents method find minimum") {
-    auto x2 = [](double x) { return (x - 0.5) * (x - 0.5); };
-    occ::core::opt::Brent brent(x2);
-    double xmin = brent.xmin();
-    fmt::print("Found minimum of (x - 0.5)^2 in {} evaluations: ({}, {})\n",
-               brent.num_calls(), xmin, brent.f_xmin());
-    REQUIRE(xmin == Catch::Approx(0.5));
-    occ::core::opt::Brent brentsin(sx);
-    xmin = brentsin.xmin();
-    fmt::print("Found a minimum of sin(x) in {} evaluations: ({}, {})\n",
-               brentsin.num_calls(), xmin, brentsin.f_xmin());
-    REQUIRE(std::abs(xmin) == Catch::Approx(M_PI / 2));
+TEST_CASE("Line search") {
+    using occ::core::opt::LineSearch;
 
-    occ::core::opt::Brent ba(ax);
-    xmin = ba.xmin();
-    fmt::print("Found minimum of abs(x - 4) in {} evaluations ({}, {})\n",
-               ba.num_calls(), xmin, ba.f_xmin());
+    auto info = [](const std::string &desc, int num_iter, double x, double y) {
+        occ::log::info("Found minimum of {} in {} evaluations: ({:.3f}, {:.3f})",
+                        desc, num_iter, x, y);
+    };
+
+    SECTION("quadratic") {
+        for(double a = -9.5; a < 10.0; a += 1.0) {
+            auto x2 = [&a](double x) { return (x - a) * (x - a); };
+            LineSearch b(x2);
+            double xmin = b.xmin();
+            double fmin = b.f_xmin();
+            REQUIRE_THAT(xmin, WithinAbs(a, 1e-6));
+            info(fmt::format("(x - {:.2f})^2", a), b.num_calls(), xmin, fmin);
+        }
+    }
+
+    SECTION("gaussian") {
+        for(double a = 0.5; a < 10.0; a += 1.0) {
+            auto gx = [&a](double x) { return - std::exp(- a * x*x); };
+            LineSearch b(gx);
+            double xmin = b.xmin();
+            double fmin = b.f_xmin();
+            REQUIRE_THAT(xmin, WithinAbs(0, 1e-6));
+            REQUIRE_THAT(fmin, WithinAbs(-1, 1e-6));
+            info(fmt::format("- exp(-{:.2f} x^2)", a), b.num_calls(), xmin, fmin);
+        }
+    }
+
+    SECTION("abs") {
+        for(double a = -9.5; a < 10.0; a += 1.0) {
+            auto absx = [&a](double x) { return std::abs(x - a); };
+            LineSearch b(absx);
+            double xmin = b.xmin();
+            double fmin = b.f_xmin();
+            REQUIRE_THAT(xmin, WithinAbs(a, 1e-6));
+            REQUIRE_THAT(fmin, WithinAbs(0, 1e-6));
+            info(fmt::format("abs(x - {:.2f})", a), b.num_calls(), xmin, fmin);
+        }
+    }
 }
 
 // Molecular Point Group

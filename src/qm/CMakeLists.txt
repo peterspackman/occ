@@ -12,6 +12,7 @@ add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/mo.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/oniom.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/partitioning.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/orbital_smearing.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/shell.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"

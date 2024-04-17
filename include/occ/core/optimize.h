@@ -1,10 +1,11 @@
 #pragma once
 #include <functional>
+#include <occ/core/log.h>
 
 namespace occ::core::opt {
 
 template<typename Function>
-struct bracket1d {
+struct Bracket1D {
     static constexpr double golden_ratio{1.618034};
     static constexpr double small_eps{1e-21};
     double xa{0.0}, xb{1.0}, xc;
@@ -86,9 +87,9 @@ struct bracket1d {
 };
 
 template <class Function>
-class Brent {
+class LineSearch {
   public:
-    Brent(Function &func, double tol = 1e-8, size_t maxiter = 500) : m_func(func), m_tolerance(tol), m_max_iter(maxiter) {}
+    LineSearch(Function &func, double tol = 1e-8, size_t maxiter = 500) : m_func(func), m_tolerance(tol), m_max_iter(maxiter) {}
 
     const auto num_calls() const { return m_num_calls; }
     double xmin() {
@@ -104,11 +105,30 @@ class Brent {
     }
 
     void set_left(double x) { m_bracket.xa = x; }
+    double left() const { return m_bracket.xa; }
+
     void set_right(double x) { m_bracket.xb = x; }
+    double right() const { return m_bracket.xb; }
+
+    void set_guess(double x) { m_have_guess = true; m_bracket.xc = x; }
+    double guess() const { return m_bracket.xc; }
 
   private:
     void optimize() {
-      m_bracket.bracket_function(m_func);
+      if(m_have_guess) {
+        m_bracket.fa = m_func(m_bracket.xa);
+        m_bracket.fb = m_func(m_bracket.xb);
+        m_bracket.fc = m_func(m_bracket.xc);
+      }
+      else {
+        m_bracket.bracket_function(m_func);
+        if (m_bracket.num_calls == 0) {
+          occ::log::error("Bracketing failed");
+          return;
+        }
+      }
+
+
       auto xa = m_bracket.xa;
       auto xb = m_bracket.xb;
       auto xc = m_bracket.xc;
@@ -222,12 +242,14 @@ class Brent {
       m_num_calls = num_calls;
     }
 
-    bracket1d<Function> m_bracket;
+    Bracket1D<Function> m_bracket;
     Function &m_func;
+    bool m_have_guess{false};
     double m_tolerance{1e-8};
     size_t m_max_iter{500};
     double m_xmin{0.0};
     double m_fval{0.0};
+    double m_guess{0.0};
     size_t m_iter{0};
     size_t m_num_calls{0};
 };

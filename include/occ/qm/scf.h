@@ -324,7 +324,7 @@ template <typename Procedure> struct SCF {
         set_core_matrices();
         F = H;
         set_conditioning_orthogonalizer();
-        mo.update_density_matrix();
+        mo.update(X, F);
     }
 
     void compute_initial_guess() {
@@ -344,7 +344,6 @@ template <typename Procedure> struct SCF {
             log::info(
                 "Computing initial guess using core hamiltonian with ECPs");
             mo.update(X, F);
-            mo.update_density_matrix();
             occ::timing::stop(occ::timing::category::guess);
             return;
         }
@@ -385,13 +384,13 @@ template <typename Procedure> struct SCF {
             mo_minbs.D = D_minbs;
             F += m_procedure.compute_fock_mixed_basis(mo_minbs, minbs, true);
             mo.update(X, F);
-            mo.update_density_matrix();
 
             const auto tstop = std::chrono::high_resolution_clock::now();
             const std::chrono::duration<double> time_elapsed = tstop - tstart;
             log::debug("SOAD projection into AO basis took {:.5f} s",
                        time_elapsed.count());
         }
+        m_have_initial_guess = true;
         occ::timing::stop(occ::timing::category::guess);
     }
 
@@ -486,7 +485,7 @@ template <typename Procedure> struct SCF {
                 next_reset_threshold = diis_error / 10;
                 log::debug("starting incremental fock build");
             }
-            if (reset_incremental_fock_formation ||
+            if (true || reset_incremental_fock_formation ||
                 not incremental_Fbuild_started) {
                 F = H;
                 D_diff = mo.D;
@@ -530,7 +529,6 @@ template <typename Procedure> struct SCF {
                 reset_incremental_fock_formation = true;
 
             mo.update(X, F_diis);
-            mo.update_density_matrix();
             D_diff = mo.D - D_last;
 
             const auto tstop = std::chrono::high_resolution_clock::now();

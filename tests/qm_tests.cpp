@@ -1,5 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <iostream>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
@@ -19,6 +20,7 @@ using occ::Mat3;
 using occ::qm::HartreeFock;
 using occ::qm::SpinorbitalKind;
 using occ::util::all_close;
+using Catch::Matchers::WithinAbs;
 
 // Basis
 
@@ -302,6 +304,97 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
         scf.convergence_settings.energy_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
+    }
+}
+
+
+TEST_CASE("Smearing functions", "[smearing]") {
+    occ::qm::MolecularOrbitals mo;
+    mo.energies = occ::Vec(43);
+
+    mo.energies <<
+        -20.7759836,   -1.75714997,  -0.6755331,   -0.47838917,  -0.34397101,
+         0.39919219,    0.53017716,   0.84601736,   0.91026033,   0.93422352,
+         0.93541066,    1.07197252,   1.1152775,    1.74421062,   1.78568455,
+         1.87179641,    2.12778396,   2.22487896,   2.41855156,   2.63997607,
+         2.69396251,    2.72429482,   2.94010404,   2.99844011,   3.27233171,
+         3.29230622,    3.30213655,   3.40824971,   4.35313802,   4.62532886,
+         5.78639639,    5.89978906,   6.07407985,   6.11565547,   6.16161542,
+         6.80026627,    6.96537841,   7.04215449,   7.10247792,   7.17168709,
+         7.63716226,    7.75364544,  45.00621777;
+
+
+
+    SECTION("Fermi") {
+        occ::qm::OrbitalSmearing smearing;
+        smearing.sigma = 0.095;
+        smearing.mu = -0.06;
+        smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
+
+        occ::Vec res = smearing.calculate_fermi_occupations(mo);
+
+        occ::Vec expected(43);
+        expected <<
+           1.00000000e+00, 9.99999983e-01, 9.98467461e-01, 9.87920549e-01,
+           9.52082391e-01, 7.89497886e-03, 2.00042906e-03, 7.21259277e-05,
+           3.66791050e-05, 2.85019162e-05, 2.81479763e-05, 6.68591892e-06,
+           4.23830834e-06, 5.64954547e-09, 3.65102304e-09, 1.47486548e-09,
+           9.96552046e-11, 3.58614765e-11, 4.66927912e-12, 4.53944824e-13,
+           2.57159713e-13, 1.86869380e-13, 1.92735534e-14, 1.04298300e-14,
+           5.83681688e-16, 4.73001131e-16, 4.26503520e-16, 1.39580290e-16,
+           0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+           0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+           0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+           0.00000000e+00, 0.00000000e+00, 0.00000000e+00;
+
+        REQUIRE(all_close(res, expected, 1e-5, 1e-5));
+
+	// override occupations to be exactly the right thing
+	mo.occupation = expected;
+	smearing.entropy = smearing.calculate_entropy(mo);
+	REQUIRE(smearing.ec_entropy() == Catch::Approx(-0.06301068258742577));
+    }
+}
+
+TEST_CASE("H2 smearing", "[smearing]") {
+    occ::Vec expected_energies(16), expected_correlations(16), separations(16);
+
+    expected_energies <<
+	-1.05401645, -1.10204847, -1.10241449, -1.09833917, -1.0429699 ,
+        -0.96723086, -0.89171816, -0.82552549, -0.77490759, -0.74204562,
+        -0.72385175, -0.71057038, -0.7076913 , -0.70707591, -0.70694503,
+        -0.70691935;
+
+    separations <<
+	1.0, 1.3, 1.4, 1.5, 2.0, 2.5, 3.0, 3.5, 
+	4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0;
+
+    expected_correlations <<
+	-0.02090322, -0.02916732, -0.03247401, -0.03609615, -0.0596489 ,
+        -0.09272139, -0.13295573, -0.17469005, -0.21056677, -0.2356074 ,
+        -0.25006385, -0.26093526, -0.2633199 , -0.2638024 , -0.26389139,
+        -0.26390591;
+
+    occ::Vec energies(16);
+
+    for(int i = 0; i < separations.rows(); i++) {
+	std::vector<occ::core::Atom> atoms{
+	    {1, 0.0, 0.0, 0.0},
+	    {1, separations(i), 0.0, 0.0}
+	};
+        auto obs = occ::qm::AOBasis::load(atoms, "cc-pvdz");
+	obs.set_pure(true);
+        HartreeFock hf(obs);
+        occ::scf::SCF<HartreeFock> scf(hf);
+
+        scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
+        scf.mo.smearing.sigma = 0.095;
+
+        energies(i) = scf.compute_scf_energy();
+
+        REQUIRE_THAT(energies(i), WithinAbs(expected_energies(i), 1e-5));
+        REQUIRE_THAT(scf.mo.smearing.ec_entropy(), 
+		     WithinAbs(expected_correlations(i), 1e-5));
     }
 }
 

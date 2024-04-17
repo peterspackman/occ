@@ -9,6 +9,11 @@ inline auto occupied_restricted(Eigen::Ref<const Mat> orbitals,
     return orbitals.leftCols(num_occ);
 }
 
+inline auto occupied_restricted_fractional(Eigen::Ref<const Mat> orbitals,
+                                           Eigen::Ref<const Vec> occupations) {
+    return orbitals * occupations.array().sqrt().matrix().asDiagonal();
+}
+
 inline auto occupied_unrestricted(Eigen::Ref<const Mat> orbitals,
                                   size_t num_alpha, size_t num_beta) {
     size_t nbf = orbitals.rows() / 2;
@@ -18,6 +23,16 @@ inline auto occupied_unrestricted(Eigen::Ref<const Mat> orbitals,
     occ.block(nbf, 0, nbf, num_beta) =
         occ::qm::block::b(orbitals).leftCols(num_beta);
     return occ;
+}
+
+inline auto occupied_unrestricted_fractional(Eigen::Ref<const Mat> orbitals,
+                                  Eigen::Ref<const Vec> occupations) {
+    namespace block = occ::qm::block;
+    size_t nbf = orbitals.rows() / 2;
+    Mat Cocc = Mat::Zero(2 * nbf, nbf);
+    block::a(Cocc) = block::a(orbitals) * block::a(occupations).asDiagonal();
+    block::b(Cocc) = block::b(orbitals) * block::b(occupations).asDiagonal();
+    return Cocc;
 }
 
 inline auto density_matrix_restricted(Eigen::Ref<const Mat> occupied_orbitals) {

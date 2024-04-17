@@ -60,32 +60,34 @@ constexpr auto G = occ::qm::SpinorbitalKind::General;
 NB_MODULE(_occpy, m) {
     nb::class_<Element>(m, "Element")
         .def(nb::init<const std::string &>())
-        .def("symbol", &Element::symbol)
-        .def("mass", &Element::mass)
-        .def("name", &Element::name)
-        .def("van_der_waals_radius", &Element::van_der_waals_radius)
-        .def("covalent_radius", &Element::covalent_radius)
-        .def("atomic_number", &Element::atomic_number)
+        .def("symbol", &Element::symbol, "the symbol of the element e.g. H, He ...")
+        .def("mass", &Element::mass, "mass number of the element e.g. 12.01 for C")
+        .def("name", &Element::name, "the name of the element e.g hydrogen, helium...'")
+        .def("van_der_waals_radius", &Element::van_der_waals_radius, "bondi van der Waals radius for element")
+        .def("covalent_radius", &Element::covalent_radius, "covalent radius for element")
+        .def("atomic_number", &Element::atomic_number, "atomic number e.g. 1, 2 ...")
         .def("__repr__", [](const Element &a) {
-            return "<occ.Element '" + a.symbol() + "'>";
+            return "<Element '" + a.symbol() + "'>";
         });
+
     nb::class_<Atom>(m, "Atom")
-        .def_rw("atomic_number", &Atom::atomic_number)
-        .def_prop_rw("position", &Atom::position, &Atom::set_position)
+	.def(nb::init<int, double, double, double>())
+        .def_rw("atomic_number", &Atom::atomic_number, "atomic number for corresponding element")
+        .def_prop_rw("position", &Atom::position, &Atom::set_position, "Cartesian position of the atom (Bohr)")
         .def("__repr__", [](const Atom &a) {
-            return fmt::format("<occ.Atom {} [{:.5f}, {:.5f}, {:.5f}>",
+            return fmt::format("<Atom {} [{:.5f}, {:.5f}, {:.5f}>",
                                a.atomic_number, a.x, a.y, a.z);
         });
 
     nb::class_<Shell>(m, "Shell")
-        .def_ro("origin", &Shell::origin)
-        .def_ro("exponents", &Shell::exponents)
-        .def_ro("contraction_coefficients", &Shell::contraction_coefficients)
-        .def("num_contractions", &Shell::num_contractions)
-        .def("num_primitives", &Shell::num_primitives)
-        .def("norm", &Shell::norm)
+        .def_ro("origin", &Shell::origin, "shell position/origin (Bohr)")
+        .def_ro("exponents", &Shell::exponents, "array of exponents for primitives in this shell")
+        .def_ro("contraction_coefficients", &Shell::contraction_coefficients, "array of contraction coefficients for in this shell")
+        .def("num_contractions", &Shell::num_contractions, "number of contractions")
+        .def("num_primitives", &Shell::num_primitives, "number of primitive gaussians")
+        .def("norm", &Shell::norm, "norm of the shell")
         .def("__repr__", [](const Shell &s) {
-            return fmt::format("<occ.Shell l={} [{:.5f}, {:.5f}, {:.5f}]>", s.l,
+            return fmt::format("<Shell l={} [{:.5f}, {:.5f}, {:.5f}]>", s.l,
                                s.origin(0), s.origin(1), s.origin(2));
         });
 
@@ -104,7 +106,8 @@ NB_MODULE(_occpy, m) {
         .def("l_max", &AOBasis::l_max)
         .def("name", &AOBasis::name)
         .def("__repr__", [](const AOBasis &basis) {
-            return fmt::format("<occ.AOBasis nsh={} nbf={} natoms={}>",
+            return fmt::format("<AOBasis ({}) nsh={} nbf={} natoms={}>",
+			       basis.name(),
                                basis.nsh(), basis.nbf(), basis.atoms().size());
         });
 
@@ -155,7 +158,13 @@ NB_MODULE(_occpy, m) {
         .def("set_initial_guess", &HF::set_initial_guess_from_wfn)
         .def("scf_kind", &HF::scf_kind)
         .def("run", &HF::compute_scf_energy)
-        .def("wavefunction", &HF::wavefunction);
+        .def("wavefunction", &HF::wavefunction)
+        .def("__repr__", [](const HF &hf) {
+            return fmt::format("<SCF(HF) ({}, {} atoms)>",
+			       hf.m_procedure.aobasis().name(),
+                               hf.m_procedure.atoms().size());
+        });
+
 
     using KS = SCF<DFT>;
 
@@ -165,7 +174,13 @@ NB_MODULE(_occpy, m) {
         .def("set_initial_guess", &KS::set_initial_guess_from_wfn)
         .def("scf_kind", &KS::scf_kind)
         .def("run", &KS::compute_scf_energy)
-        .def("wavefunction", &KS::wavefunction);
+        .def("wavefunction", &KS::wavefunction)
+        .def("__repr__", [](const KS &ks) {
+            return fmt::format("<SCF(KS) ({}, {} atoms)>",
+			       ks.m_procedure.aobasis().name(),
+                               ks.m_procedure.atoms().size());
+        });
+
 
     nb::class_<HartreeFock>(m, "HartreeFock")
         .def(nb::init<const AOBasis &>())
@@ -195,7 +210,8 @@ NB_MODULE(_occpy, m) {
                  return hf.compute_fock(mo);
              })
         .def("__repr__", [](const HartreeFock &hf) {
-            return fmt::format("<occ.HartreeFock ({} atoms)>",
+            return fmt::format("<HartreeFock ({}, {} atoms)>",
+			       hf.aobasis().name(),
                                hf.atoms().size());
         });
 
@@ -205,7 +221,13 @@ NB_MODULE(_occpy, m) {
         .def_rw("max_angular_points", &BeckeGridSettings::max_angular_points)
         .def_rw("min_angular_points", &BeckeGridSettings::min_angular_points)
         .def_rw("radial_points", &BeckeGridSettings::radial_points)
-        .def_rw("radial_precision", &BeckeGridSettings::radial_precision);
+        .def_rw("radial_precision", &BeckeGridSettings::radial_precision)
+        .def("__repr__", [](const BeckeGridSettings &settings) {
+            return fmt::format("<BeckeGridSettings ang=({},{}) radial={}, prec={:.2g}>",
+                               settings.min_angular_points, settings.max_angular_points,
+			       settings.radial_points, settings.radial_precision);
+        });
+
 
     nb::class_<DFT>(m, "DFT")
         .def(nb::init<const std::string &, const AOBasis &>())
@@ -229,7 +251,8 @@ NB_MODULE(_occpy, m) {
 		else return KS(dft, R); 
 	})
         .def("__repr__", [](const DFT &dft) {
-            return fmt::format("<occ.DFT {} ({} atoms)>", dft.method_string(),
+            return fmt::format("<DFT {} ({}, {} atoms)>", dft.method_string(),
+			       dft.aobasis().name(),
                                dft.atoms().size());
         });
 
@@ -254,7 +277,7 @@ NB_MODULE(_occpy, m) {
                     })
         .def("__repr__", [](const Molecule &mol) {
             auto com = mol.center_of_mass();
-            return fmt::format("<occ.Molecule {} @[{:.5f}, {:.5f}, {:.5f}]>",
+            return fmt::format("<Molecule {} @[{:.5f}, {:.5f}, {:.5f}]>",
                                mol.name(), com.x(), com.y(), com.z());
         });
 
@@ -278,7 +301,7 @@ NB_MODULE(_occpy, m) {
         .def_rw("k", &HKL::k)
         .def_rw("l", &HKL::l)
         .def("__repr__", [](const HKL &hkl) {
-            return fmt::format("<occ.HKL [{} {} {}]>", hkl.h, hkl.k, hkl.l);
+            return fmt::format("<HKL [{} {} {}]>", hkl.h, hkl.k, hkl.l);
         });
 
     nb::class_<Crystal>(m, "Crystal")
@@ -308,7 +331,7 @@ NB_MODULE(_occpy, m) {
                         return parser.parse_crystal(filename).value();
                     })
         .def("__repr__", [](const Crystal &c) {
-            return fmt::format("<occ.Crystal {} {}>",
+            return fmt::format("<Crystal {} {}>",
                                c.asymmetric_unit().chemical_formula(),
                                c.space_group().symbol());
         });
@@ -321,7 +344,7 @@ NB_MODULE(_occpy, m) {
         .def_ro("symop", &CrystalAtomRegion::symop)
         .def("size", &CrystalAtomRegion::size)
         .def("__repr__", [](const CrystalAtomRegion &region) {
-            return fmt::format("<occ.CrystalAtomRegion (n={})>", region.size());
+            return fmt::format("<CrystalAtomRegion (n={})>", region.size());
         });
 
     nb::class_<SymmetryRelatedDimer>(m, "SymmetryRelatedDimer")
@@ -341,7 +364,7 @@ NB_MODULE(_occpy, m) {
         .def_rw("labels", &AsymmetricUnit::labels)
         .def("__len__", &AsymmetricUnit::size)
         .def("__repr__", [](const AsymmetricUnit &asym) {
-            return fmt::format("<occ.AsymmetricUnit {}>",
+            return fmt::format("<AsymmetricUnit {}>",
                                asym.chemical_formula());
         });
 
@@ -357,7 +380,7 @@ NB_MODULE(_occpy, m) {
         .def("to_cartesian", &UnitCell::to_cartesian)
         .def("cell_type", &UnitCell::cell_type)
         .def("__repr__", [](const UnitCell &uc) {
-            return fmt::format("<occ.UnitCell {} ({:.5f}, {:.5f}, {:.5f})>",
+            return fmt::format("<UnitCell {} ({:.5f}, {:.5f}, {:.5f})>",
                                uc.cell_type(), uc.a(), uc.b(), uc.c());
         });
 
@@ -408,6 +431,14 @@ NB_MODULE(_occpy, m) {
     nb::class_<CGResult>(m, "CGResult")
         .def_ro("pair_energies", &CGResult::pair_energies)
         .def_ro("total_energies", &CGResult::total_energies);
+
+    nb::class_<occ::main::EnergyTotal>(m, "CGEnergyTotal")
+	.def_ro("crystal", &occ::main::EnergyTotal::crystal_energy)
+	.def_ro("int", &occ::main::EnergyTotal::interaction_energy)
+	.def_ro("solution", &occ::main::EnergyTotal::solution_term)
+	.def("__repr__", [](const occ::main::EnergyTotal &tot) {
+	    return fmt::format("(crys={:.6f}, int={:.6f}, sol={:.6f})", tot.crystal_energy, tot.interaction_energy, tot.solution_term);
+	});
 
     m.def("calculate_crystal_growth_energies",
           [](const CGConfig &config) { return occ::main::run_cg(config); });

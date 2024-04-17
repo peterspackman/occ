@@ -197,6 +197,9 @@ void MolecularOrbitals::update(const Mat &ortho, const Mat &potential) {
     }
     }
     update_occupied_orbitals();
+    smearing.smear_orbitals(*this);
+    update_density_matrix();
+
     occ::timing::stop(occ::timing::category::mo);
 }
 
@@ -212,9 +215,42 @@ void MolecularOrbitals::update_occupied_orbitals() {
     switch (kind) {
     case U:
         Cocc = occ::qm::orb::occupied_unrestricted(C, n_alpha, n_beta);
+	occupation = Vec::Zero(n_ao * 2);
+	occupation.topRows(n_alpha).setConstant(1.0);
+	occupation.block(n_ao, 0, n_beta, 1).setConstant(1.0);
+        break;
+    case G:
+        Cocc = occ::qm::orb::occupied_restricted(C, n_alpha);
+	occupation = Vec::Zero(n_ao * 2);
+	occupation.topRows(n_alpha).setConstant(1.0);
+	occupation.block(n_ao, 0, n_beta, 1).setConstant(1.0);
         break;
     default:
         Cocc = occ::qm::orb::occupied_restricted(C, n_alpha);
+	occupation = Vec::Zero(n_ao);
+	occupation.topRows(n_alpha).setConstant(1.0);
+        break;
+    }
+}
+
+void MolecularOrbitals::update_occupied_orbitals_fractional() {
+    if (C.size() == 0) {
+        return;
+    }
+    occ::log::debug("Updating occupied orbitals, n_a = {}, n_b = {}", n_alpha, n_beta);
+    constexpr auto R = SpinorbitalKind::Restricted;
+    constexpr auto U = SpinorbitalKind::Unrestricted;
+    constexpr auto G = SpinorbitalKind::General;
+
+    switch (kind) {
+    case U:
+	throw std::runtime_error("not implemented");
+        break;
+    case G:
+	throw std::runtime_error("not implemented");
+        break;
+    default:
+        Cocc = occ::qm::orb::occupied_restricted_fractional(C, occupation);
         break;
     }
 }
