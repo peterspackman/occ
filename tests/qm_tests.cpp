@@ -6,6 +6,7 @@
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
+#include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/partitioning.h>
@@ -307,7 +308,6 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
     }
 }
 
-
 TEST_CASE("Smearing functions", "[smearing]") {
     occ::qm::MolecularOrbitals mo;
     mo.energies = occ::Vec(43);
@@ -398,36 +398,6 @@ TEST_CASE("H2 smearing", "[smearing]") {
     }
 }
 
-occ::Mat3N atomic_gradients(const occ::Mat &D, const occ::qm::MatTriple &grad,
-                            const occ::qm::AOBasis &basis) {
-    const auto &bf_to_atom = basis.bf_to_atom();
-    occ::Mat3N result(3, basis.atoms().size());
-    occ::Mat weighted_grad_x = D.cwiseProduct(grad.x);
-    occ::Mat weighted_grad_y = D.cwiseProduct(grad.y);
-    occ::Mat weighted_grad_z = D.cwiseProduct(grad.z);
-
-    for (int bf1 = 0; bf1 < basis.nbf(); bf1++) {
-        int atom1 = bf_to_atom[bf1];
-
-        for (int bf2 = 0; bf2 < basis.nbf(); bf2++) {
-            int atom2 = bf_to_atom[bf2];
-
-            // Accumulate gradient contributions
-            result(atom1, 0) += weighted_grad_x(bf1, bf2);
-            result(atom1, 1) += weighted_grad_y(bf1, bf2);
-            result(atom1, 2) += weighted_grad_z(bf1, bf2);
-
-            if (atom1 != atom2) {
-                result(atom2, 0) += weighted_grad_x(bf1, bf2);
-                result(atom2, 1) += weighted_grad_y(bf1, bf2);
-                result(atom2, 2) += weighted_grad_z(bf1, bf2);
-            }
-        }
-    }
-    return result;
-}
-
-
 TEST_CASE("Integral gradients", "[integrals]") {
 
     std::vector<occ::core::Atom> atoms{
@@ -437,7 +407,9 @@ TEST_CASE("Integral gradients", "[integrals]") {
 
     auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
 
-    occ::Mat D(obs.nbf(), obs.nbf());
+    occ::Vec e(obs.nbf()), occ(obs.nbf());
+    e << -20.2434, -1.2673, -0.6143, -0.4545, -0.3916, 0.6029, 0.7350;
+    occ::Mat D(obs.nbf(), obs.nbf()), C(obs.nbf(), obs.nbf());
     D <<
     2.106529, -0.447611, 0.057951, 0.091761, -0.002396, -0.027622, -0.027249,
    -0.447611, 1.974382, -0.328030, -0.521593, 0.013615, -0.038544, -0.037120,
@@ -447,10 +419,24 @@ TEST_CASE("Integral gradients", "[integrals]") {
    -0.027622, -0.038544, -0.203698, 0.689851, -0.016473, 0.603384, -0.189923,
    -0.027249, -0.037120, 0.711984, 0.111189, -0.004447, -0.189923, 0.606432;
 
+    C <<
+     0.99414, -0.23288, -0.00108,  0.10350,  0.00000, -0.13135,  0.00403,
+     0.02646,  0.83484,  0.00590, -0.53804, -0.00000,  0.87498, -0.02968,
+     0.00228,  0.06746,  0.51167,  0.41522,  0.00241,  0.42062,  0.82123,
+     0.00368,  0.10998, -0.32748,  0.65195,  0.02458,  0.61693, -0.54485,
+    -0.00010, -0.00287,  0.00682, -0.01703,  0.99969, -0.01618,  0.01142,
+    -0.00596,  0.15957, -0.44585,  0.27823,  0.00000, -0.77288,  0.85930,
+    -0.00587,  0.15700,  0.44567,  0.28269, -0.00000, -0.81270, -0.81126;
+
+    occ << 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0;
+
     
     occ::qm::MolecularOrbitals mo;
     mo.kind = occ::qm::SpinorbitalKind::Restricted;
     mo.D = D * 0.5;
+    mo.energies = e;
+    mo.occupation = occ;
+    mo.C = C;
 
     occ::qm::IntegralEngine engine(obs);
     HartreeFock hf(obs);
@@ -520,20 +506,33 @@ TEST_CASE("Integral gradients", "[integrals]") {
     REQUIRE(all_close(grad_k.y, Yref, 1e-5, 1e-5));
     REQUIRE(all_close(grad_k.z, Zref, 1e-5, 1e-5));
 
+    occ::Mat3N nuc_expected(3, 3);
+    nuc_expected <<
+      1.57939,  0.91879, -2.49818, 
+      2.54459, -2.36485, -0.17974,
+     -0.06637,  0.05594,  0.01043;
 
-    //auto d = atomic_gradients(D, grad, obs);
-    //fmt::print("Atom gradients:\n{}\n", d);
+    auto g = occ::qm::GradientEvaluator(hf);
+    REQUIRE(all_close(g.nuclear_repulsion(), nuc_expected, 1e-5, 1e-5));
 
-    /*
-    grad = hf.compute_kinetic_gradient();
-    fmt::print("kinetic\n");
-    std::cout << "X:\n" << std::setprecision(2) << grad.x << '\n';
-    std::cout << "Y:\n" << std::setprecision(2) << grad.y << '\n';
-    std::cout << "Z:\n" << std::setprecision(2) << grad.z << '\n';
+    occ::Mat3N elec_expected(3, 3);
+    elec_expected <<
+     -1.55750, -0.91352,  2.47102,
+     -2.49540,  2.32632,  0.16908,
+      0.06511, -0.05501, -0.01010;
+    REQUIRE(all_close(g.electronic(mo), elec_expected, 1e-4, 1e-4));
 
-    d = atomic_gradients(D, grad, obs);
-    fmt::print("Atom gradients:\n{}\n", d);
-    */
+
+    occ::Mat3N expected_atom_gradients(3, 3);
+    expected_atom_gradients << 
+      0.02189,  0.00527, -0.02716,
+      0.04919, -0.03853, -0.01067,
+     -0.00126,  0.00093,  0.00033;
+
+    auto atom_gradients = g(mo);
+    std::cout << "Atom gradients\n" << std::setprecision(4) << atom_gradients << '\n';
+    std::cout << "Diff\n" << std::setprecision(4) << atom_gradients - expected_atom_gradients << '\n';
+    REQUIRE(all_close(atom_gradients, expected_atom_gradients, 1e-4, 1e-4));
 }
 
 TEST_CASE("Oniom ethane", "[oniom]") {

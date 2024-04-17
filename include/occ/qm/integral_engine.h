@@ -19,15 +19,6 @@
 
 namespace occ::qm {
 
-struct MatTriple {
-    Mat x, y, z;
-    inline void scale_by(double fac) {
-	x.array() *= fac;
-	y.array() *= fac;
-	z.array() *= fac;
-    }
-};
-
 struct JKPair {
     Mat J, K;
 };
@@ -215,6 +206,9 @@ class IntegralEngine {
         occ::log::debug("significant shellpairs = {} ({} total)",
                         num_significant_shellpairs, num_total_shellpairs);
     }
+
+    Mat rinv_operator_atom_center(size_t atom_index, bool use_shellpair_list = true) const;
+    MatTriple rinv_operator_grad_atom(size_t atom_index, bool use_shellpair_list = true) const;
 
     Vec multipole(int order, const MolecularOrbitals &mo,
                   const Vec3 &origin = {0, 0, 0}) const;

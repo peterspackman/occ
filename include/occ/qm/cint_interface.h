@@ -21,7 +21,8 @@ enum class Operator {
     dipole,
     quadrupole,
     octapole,
-    hexadecapole
+    hexadecapole,
+    rinv,
 };
 
 namespace impl {
@@ -151,12 +152,24 @@ class IntegralEnvironment {
         m_env_data[libcint::common_origin_offset + 2] = origin[2];
     }
 
+    void set_rinv_origin(const std::array<double, 3> &origin) {
+        m_env_data[libcint::rinv_origin_offset] = origin[0];
+        m_env_data[libcint::rinv_origin_offset + 1] = origin[1];
+        m_env_data[libcint::rinv_origin_offset + 2] = origin[2];
+    }
+
+    void set_rinv_zeta(double zeta) {
+	m_env_data[libcint::rinv_zeta_offset] = zeta;
+    }
+
     size_t atom_info_size_bytes() const {
         return m_atom_info.size() * sizeof(impl::AtomInfo);
     }
+
     size_t basis_info_size_bytes() const {
         return m_basis_info.size() * sizeof(impl::BasisInfo);
     }
+
     size_t basis_env_size_bytes() const {
         return m_env_data.size() * sizeof(double);
     }
@@ -220,6 +233,12 @@ class IntegralEnvironment {
                                          atom_data_ptr(), num_atoms(),
                                          basis_data_ptr(), num_basis(),
                                          env_data_ptr(), opt, cache);
+	    else if constexpr(OP == Operator::rinv)
+		libcint::int1e_iprinv_sph(buffer, dims.data(), shells.data(),
+                                          atom_data_ptr(), num_atoms(),
+                                          basis_data_ptr(), num_basis(),
+                                          env_data_ptr(), opt, cache);
+
             else {
                 impl::static_invalid_operator();
             }
@@ -240,6 +259,11 @@ class IntegralEnvironment {
                                           atom_data_ptr(), num_atoms(),
                                           basis_data_ptr(), num_basis(),
                                           env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::rinv)
+                libcint::int1e_iprinv_cart(buffer, dims.data(), shells.data(),
+                                           atom_data_ptr(), num_atoms(),
+                                           basis_data_ptr(), num_basis(),
+                                           env_data_ptr(), opt, cache);
             else if constexpr (OP == Operator::coulomb)
                 libcint::int2c2e_ip1_cart(buffer, dims.data(), shells.data(),
                                           atom_data_ptr(), num_atoms(),
@@ -298,7 +322,11 @@ class IntegralEnvironment {
                                         atom_data_ptr(), num_atoms(),
                                         basis_data_ptr(), num_basis(),
                                         env_data_ptr(), opt, cache);
-
+            else if constexpr (OP == Operator::rinv)
+                libcint::int1e_rinv_sph(buffer, dims.data(), shells.data(),
+                                        atom_data_ptr(), num_atoms(),
+                                        basis_data_ptr(), num_basis(),
+                                        env_data_ptr(), opt, cache);
         } else {
             if constexpr (OP == Operator::overlap)
                 libcint::int1e_ovlp_cart(buffer, dims.data(), shells.data(),
@@ -337,6 +365,11 @@ class IntegralEnvironment {
                                         env_data_ptr(), opt, cache);
             else if constexpr (OP == Operator::hexadecapole)
                 libcint::int1e_rrrr_cart(buffer, dims.data(), shells.data(),
+                                         atom_data_ptr(), num_atoms(),
+                                         basis_data_ptr(), num_basis(),
+                                         env_data_ptr(), opt, cache);
+            else if constexpr (OP == Operator::rinv)
+                libcint::int1e_rinv_cart(buffer, dims.data(), shells.data(),
                                          atom_data_ptr(), num_atoms(),
                                          basis_data_ptr(), num_basis(),
                                          env_data_ptr(), opt, cache);

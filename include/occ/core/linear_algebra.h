@@ -68,4 +68,16 @@ using DVec3 = Eigen::Vector3d;
 
 using IVec = Eigen::VectorXi;
 using IVec3 = Eigen::Vector3i;
+
+struct MatTriple {
+
+    Mat x, y, z;
+
+    MatTriple operator+(const MatTriple &rhs) const;
+    MatTriple operator-(const MatTriple &rhs) const;
+
+    void scale_by(double fac);
+    void symmetrize();
+};
+
 }; // namespace occ

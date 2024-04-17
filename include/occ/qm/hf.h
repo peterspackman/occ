@@ -50,11 +50,16 @@ class HartreeFock {
     }
 
     double nuclear_repulsion_energy() const;
+    Mat3N nuclear_repulsion_gradient() const;
+
     double
     nuclear_point_charge_interaction_energy(const PointChargeList &) const;
 
     Mat compute_fock(const MolecularOrbitals &mo,
                      const Mat &Schwarz = Mat()) const;
+
+    MatTriple compute_fock_gradient(const MolecularOrbitals &mo,
+				    const Mat &Schwarz = Mat()) const;
 
     Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                  const qm::AOBasis &bs, bool is_shell_diagonal);
@@ -84,6 +89,8 @@ class HartreeFock {
 
     Mat compute_nuclear_attraction_matrix() const;
     MatTriple compute_nuclear_attraction_gradient() const;
+
+    MatTriple compute_rinv_gradient_for_atom(size_t atom_index) const;
 
     Mat compute_effective_core_potential_matrix() const;
     Mat compute_point_charge_interaction_matrix(

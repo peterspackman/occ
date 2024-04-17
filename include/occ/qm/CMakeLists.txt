@@ -1,6 +1,7 @@
 set(OCC_QM_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/chelpg.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/expectation.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gradients.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/guess_density.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf_fwd.h"

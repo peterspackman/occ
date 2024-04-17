@@ -26,13 +26,35 @@ inline auto occupied_unrestricted(Eigen::Ref<const Mat> orbitals,
 }
 
 inline auto occupied_unrestricted_fractional(Eigen::Ref<const Mat> orbitals,
-                                  Eigen::Ref<const Vec> occupations) {
-    namespace block = occ::qm::block;
+					     Eigen::Ref<const Vec> occupations) {
+
     size_t nbf = orbitals.rows() / 2;
-    Mat Cocc = Mat::Zero(2 * nbf, nbf);
-    block::a(Cocc) = block::a(orbitals) * block::a(occupations).asDiagonal();
-    block::b(Cocc) = block::b(orbitals) * block::b(occupations).asDiagonal();
-    return Cocc;
+    auto [rows, cols] =
+        occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+    Mat occ(rows, cols);
+    block::a(occ) = 
+	    block::a(orbitals) * block::a(occupations).array().sqrt().matrix().asDiagonal();
+    block::b(occ) = 
+	    block::b(orbitals) * block::b(occupations).array().sqrt().matrix().asDiagonal();
+    return occ;
+}
+
+inline auto weighted_density_matrix_restricted(Eigen::Ref<const Mat> orbitals, 
+					       Eigen::Ref<const Vec> weights) {
+
+    return orbitals * weights.asDiagonal() * orbitals.transpose();
+}
+
+
+inline auto weighted_density_matrix_unrestricted(Eigen::Ref<const Mat> orbitals, 
+					         Eigen::Ref<const Vec> weights) {
+
+    size_t nbf = orbitals.rows() / 2;
+    auto [rows, cols] = occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
+    Mat D(rows, cols);
+    block::a(D) = block::a(orbitals) * block::a(weights).asDiagonal() * block::a(orbitals).transpose();
+    block::b(D) = block::b(orbitals) * block::b(weights).asDiagonal() * block::b(orbitals).transpose();
+    return D;
 }
 
 inline auto density_matrix_restricted(Eigen::Ref<const Mat> occupied_orbitals) {

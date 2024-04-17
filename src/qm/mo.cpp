@@ -244,10 +244,10 @@ void MolecularOrbitals::update_occupied_orbitals_fractional() {
 
     switch (kind) {
     case U:
-	throw std::runtime_error("not implemented");
+        Cocc = occ::qm::orb::occupied_unrestricted_fractional(C, occupation);
         break;
     case G:
-	throw std::runtime_error("not implemented");
+        Cocc = occ::qm::orb::occupied_restricted_fractional(C, occupation);
         break;
     default:
         Cocc = occ::qm::orb::occupied_restricted_fractional(C, occupation);
@@ -266,6 +266,20 @@ void MolecularOrbitals::update_density_matrix() {
         break;
     case SpinorbitalKind::General:
         D = orb::density_matrix_general(Cocc);
+        break;
+    }
+    occ::timing::stop(occ::timing::category::la);
+}
+
+
+Mat MolecularOrbitals::energy_weighted_density_matrix() const {
+    occ::timing::start(occ::timing::category::la);
+    switch (kind) {
+    case SpinorbitalKind::Unrestricted:
+	return orb::weighted_density_matrix_unrestricted(C, energies.array() * occupation.array());
+	break;
+    default:
+	return orb::weighted_density_matrix_restricted(C, energies.array() * occupation.array());
         break;
     }
     occ::timing::stop(occ::timing::category::la);

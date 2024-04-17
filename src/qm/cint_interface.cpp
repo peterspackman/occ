@@ -72,6 +72,11 @@ void Optimizer::create1or2c(IntegralEnvironment &env) {
                                       env.num_atoms(), env.basis_data_ptr(),
                                       env.num_basis(), env.env_data_ptr());
         break;
+    case Operator::rinv:
+        libcint::int1e_rinv_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                      env.num_atoms(), env.basis_data_ptr(),
+                                      env.num_basis(), env.env_data_ptr());
+        break;
     }
 }
 
@@ -97,6 +102,11 @@ void Optimizer::create1or2c_grad(IntegralEnvironment &env) {
                                         env.num_atoms(), env.basis_data_ptr(),
                                         env.num_basis(), env.env_data_ptr());
         break;
+    case Operator::rinv:
+        libcint::int1e_iprinv_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                        env.num_atoms(), env.basis_data_ptr(),
+                                        env.num_basis(), env.env_data_ptr());
+	break;
     default:
         throw std::runtime_error("Invalid operator for gradient in cint::Optimizer");
     }

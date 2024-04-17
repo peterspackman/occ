@@ -50,6 +50,7 @@ struct MolecularOrbitals {
         }
     }
 
+    Mat energy_weighted_density_matrix() const;
     Mat density_matrix_single_mo(int mo_index) const;
 
     MolecularOrbitals

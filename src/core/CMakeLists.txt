@@ -11,6 +11,7 @@ add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/gensqrtinv.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/kabsch.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/inertia_tensor.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/log.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/meshgrid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"

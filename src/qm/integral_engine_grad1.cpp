@@ -284,6 +284,32 @@ MatTriple IntegralEngine::one_electron_operator_grad(Op op,
     }
 }
 
+MatTriple IntegralEngine::rinv_operator_grad_atom(size_t atom_index, bool use_shellpair_list) const {
+    const auto &atoms = m_aobasis.atoms();
+    if(atom_index > atoms.size()) throw std::runtime_error("Invalid atom index for rinv operator");
+
+    bool spherical = is_spherical();
+    constexpr auto Cart = ShellKind::Cartesian;
+    constexpr auto Sph = ShellKind::Spherical;
+    ShellPairList empty_shellpairs = {};
+    const auto &shellpairs =
+        use_shellpair_list ? m_shellpairs : empty_shellpairs;
+
+    std::array<double, 3> origin{atoms[atom_index].x, atoms[atom_index].y, atoms[atom_index].z};
+    m_env.set_rinv_origin(origin);
+    MatTriple result;
+
+    if (spherical) {
+	result = one_electron_operator_grad_kernel<Op::rinv, Sph>(
+	    m_aobasis, m_env, shellpairs);
+    } else {
+	result = one_electron_operator_grad_kernel<Op::rinv, Cart>(
+	    m_aobasis, m_env, shellpairs);
+    }
+    m_env.set_rinv_origin({0.0, 0.0, 0.0});
+    return result;
+}
+
 // helper functions to make chained calls to std::max more clear
 inline double max_of(double p, double q, double r) {
     return std::max(p, std::max(q, r));
