@@ -21,8 +21,8 @@ var annotated_dup =
           [ "NumpyArray", "structocc_1_1core_1_1numpy_1_1NumpyArray.html", "structocc_1_1core_1_1numpy_1_1NumpyArray" ]
         ] ],
         [ "opt", "namespaceocc_1_1core_1_1opt.html", [
-          [ "bracket1d", "structocc_1_1core_1_1opt_1_1bracket1d.html", "structocc_1_1core_1_1opt_1_1bracket1d" ],
-          [ "Brent", "classocc_1_1core_1_1opt_1_1Brent.html", "classocc_1_1core_1_1opt_1_1Brent" ]
+          [ "Bracket1D", "structocc_1_1core_1_1opt_1_1Bracket1D.html", "structocc_1_1core_1_1opt_1_1Bracket1D" ],
+          [ "LineSearch", "classocc_1_1core_1_1opt_1_1LineSearch.html", "classocc_1_1core_1_1opt_1_1LineSearch" ]
         ] ],
         [ "Atom", "structocc_1_1core_1_1Atom.html", "structocc_1_1core_1_1Atom" ],
         [ "Combinations", "classocc_1_1core_1_1Combinations.html", "classocc_1_1core_1_1Combinations" ],
@@ -216,14 +216,15 @@ var annotated_dup =
         ] ],
         [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
         [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
+        [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
         [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
-        [ "MatTriple", "structocc_1_1qm_1_1MatTriple.html", "structocc_1_1qm_1_1MatTriple" ],
         [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
         [ "JKTriple", "structocc_1_1qm_1_1JKTriple.html", "structocc_1_1qm_1_1JKTriple" ],
         [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
         [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
         [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
         [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
+        [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
         [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
         [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
         [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
@@ -260,7 +261,8 @@ var annotated_dup =
       [ "xtb", "namespaceocc_1_1xtb.html", [
         [ "TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", "classocc_1_1xtb_1_1TbliteCalculator" ],
         [ "XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html", "classocc_1_1xtb_1_1XTBCalculator" ]
-      ] ]
+      ] ],
+      [ "MatTriple", "structocc_1_1MatTriple.html", "structocc_1_1MatTriple" ]
     ] ],
     [ "quickhull", "namespacequickhull.html", [
       [ "ConvexHull", "classquickhull_1_1ConvexHull.html", "classquickhull_1_1ConvexHull" ],

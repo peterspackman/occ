@@ -5,6 +5,7 @@ var structocc_1_1qm_1_1MolecularOrbitals =
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html#a3124c3227fc0adfff138689f2bd893e4", null ],
     [ "as_kind", "structocc_1_1qm_1_1MolecularOrbitals.html#ad6b3bbf1cea784720981d1ec00adbf32", null ],
     [ "density_matrix_single_mo", "structocc_1_1qm_1_1MolecularOrbitals.html#a606469f90346269c57f67766a5aeefb8", null ],
+    [ "energy_weighted_density_matrix", "structocc_1_1qm_1_1MolecularOrbitals.html#a7cfccac3930555cf2e48f8312b879666", null ],
     [ "expectation_value", "structocc_1_1qm_1_1MolecularOrbitals.html#aceac60326b4eebca0dbe7a6b43a7766c", null ],
     [ "incorporate_norm", "structocc_1_1qm_1_1MolecularOrbitals.html#a1106c90f3735a7a3c257e59b6e6f9ce9", null ],
     [ "occ_alpha", "structocc_1_1qm_1_1MolecularOrbitals.html#a986ba6612cfa074a623515775f37b84d", null ],
@@ -17,6 +18,7 @@ var structocc_1_1qm_1_1MolecularOrbitals =
     [ "update", "structocc_1_1qm_1_1MolecularOrbitals.html#a42ecb5682f81b685d1ede3638156c102", null ],
     [ "update_density_matrix", "structocc_1_1qm_1_1MolecularOrbitals.html#a990f27714faa71015ad31e2bca3742f3", null ],
     [ "update_occupied_orbitals", "structocc_1_1qm_1_1MolecularOrbitals.html#a5387188d07730670762b780d38fa02d0", null ],
+    [ "update_occupied_orbitals_fractional", "structocc_1_1qm_1_1MolecularOrbitals.html#a983f16c16403d5cfed61ed74ea5aab60", null ],
     [ "C", "structocc_1_1qm_1_1MolecularOrbitals.html#aa522e0500f30141a65584a398a1994ef", null ],
     [ "Cocc", "structocc_1_1qm_1_1MolecularOrbitals.html#a0248712d5c2b4df471eaa392adb63913", null ],
     [ "D", "structocc_1_1qm_1_1MolecularOrbitals.html#adfd73ec3e0f6cd915c15839f03e88c73", null ],
@@ -24,5 +26,7 @@ var structocc_1_1qm_1_1MolecularOrbitals =
     [ "kind", "structocc_1_1qm_1_1MolecularOrbitals.html#afa0c011f3ddd499a5a0b09597ebc62d9", null ],
     [ "n_alpha", "structocc_1_1qm_1_1MolecularOrbitals.html#a68a06cec7337738e22d949bc44803c8d", null ],
     [ "n_ao", "structocc_1_1qm_1_1MolecularOrbitals.html#a2b43899d050235b2bae0b56e19e778c2", null ],
-    [ "n_beta", "structocc_1_1qm_1_1MolecularOrbitals.html#af3da598a6b3ea22870c18410fceede51", null ]
+    [ "n_beta", "structocc_1_1qm_1_1MolecularOrbitals.html#af3da598a6b3ea22870c18410fceede51", null ],
+    [ "occupation", "structocc_1_1qm_1_1MolecularOrbitals.html#a04a7137a39194f9af5ec0c8be811d3d2", null ],
+    [ "smearing", "structocc_1_1qm_1_1MolecularOrbitals.html#ac6b75eb89b5812e0cc4e55ca896d6b75", null ]
 ];

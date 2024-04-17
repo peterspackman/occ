@@ -1,4 +1,5 @@
 <map id="occ::qm::MolecularOrbitals" name="occ::qm::MolecularOrbitals">
-<area shape="rect" id="node1" title=" " alt="" coords="5,124,201,151"/>
-<area shape="rect" id="node2" title=" " alt="" coords="73,5,133,32"/>
+<area shape="rect" id="node1" title=" " alt="" coords="74,124,270,151"/>
+<area shape="rect" id="node2" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="5,5,192,32"/>
+<area shape="rect" id="node3" title=" " alt="" coords="217,5,277,32"/>
 </map>

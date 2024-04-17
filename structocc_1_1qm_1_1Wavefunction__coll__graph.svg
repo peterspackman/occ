@@ -12,8 +12,8 @@
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="103.5,-0.5 103.5,-19.5 231.5,-19.5 231.5,-0.5 103.5,-0.5"/>
-<text text-anchor="middle" x="167.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::Wavefunction</text>
+<polygon fill="#bfbfbf" stroke="black" points="204.5,-0.5 204.5,-19.5 332.5,-19.5 332.5,-0.5 204.5,-0.5"/>
+<text text-anchor="middle" x="268.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::Wavefunction</text>
 </a>
 </g>
 </g>
@@ -29,66 +29,82 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M59.22,-58.63C64.9,-51.36 72.27,-43.37 80.5,-38 93.35,-29.61 108.95,-23.71 123.37,-19.6"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="56.04,-57.05 53,-67.2 61.71,-61.16 56.04,-57.05"/>
-<text text-anchor="middle" x="99" y="-41" font-family="Helvetica,sans-Serif" font-size="10.00"> energy</text>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M86.57,-64.51C130.31,-51.65 200.18,-31.09 239.38,-19.56"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="85.45,-61.19 76.85,-67.37 87.43,-67.9 85.45,-61.19"/>
+<text text-anchor="middle" x="190" y="-41" font-family="Helvetica,sans-Serif" font-size="10.00"> energy</text>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">
 <title>Node3</title>
 <g id="a_node3"><a xlink:href="structocc_1_1qm_1_1MolecularOrbitals.html" target="_top" xlink:title=" ">
-<polygon fill="none" stroke="black" points="169,-67.5 169,-86.5 316,-86.5 316,-67.5 169,-67.5"/>
-<text text-anchor="middle" x="242.5" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::MolecularOrbitals</text>
+<polygon fill="none" stroke="black" points="113,-67.5 113,-86.5 260,-86.5 260,-67.5 113,-67.5"/>
+<text text-anchor="middle" x="186.5" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::MolecularOrbitals</text>
 </a>
 </g>
 </g>
 <!-- Node3&#45;&gt;Node1 -->
 <g id="edge2" class="edge">
 <title>Node3&#45;&gt;Node1</title>
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M224.45,-60.36C209.71,-47.58 189.41,-29.99 177.45,-19.63"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="222.54,-63.33 232.39,-67.23 227.12,-58.04 222.54,-63.33"/>
-<text text-anchor="middle" x="219" y="-41" font-family="Helvetica,sans-Serif" font-size="10.00"> mo</text>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M205.78,-60.71C221.94,-47.91 244.42,-30.09 257.62,-19.63"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="203.22,-58.28 197.56,-67.23 207.57,-63.76 203.22,-58.28"/>
+<text text-anchor="middle" x="242" y="-41" font-family="Helvetica,sans-Serif" font-size="10.00"> mo</text>
 </g>
 <!-- Node4 -->
 <g id="node4" class="node">
 <title>Node4</title>
-<g id="a_node4"><a xlink:title=" ">
-<polygon fill="none" stroke="#bfbfbf" points="125,-156.5 125,-175.5 170,-175.5 170,-156.5 125,-156.5"/>
-<text text-anchor="middle" x="147.5" y="-163.5" font-family="Helvetica,sans-Serif" font-size="10.00">size_t</text>
+<g id="a_node4"><a xlink:href="structocc_1_1qm_1_1OrbitalSmearing.html" target="_top" xlink:title=" ">
+<polygon fill="none" stroke="black" points="97.5,-156.5 97.5,-175.5 237.5,-175.5 237.5,-156.5 97.5,-156.5"/>
+<text text-anchor="middle" x="167.5" y="-163.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::OrbitalSmearing</text>
 </a>
 </g>
-</g>
-<!-- Node4&#45;&gt;Node1 -->
-<g id="edge4" class="edge">
-<title>Node4&#45;&gt;Node1</title>
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M143.01,-146.61C138.88,-126.73 134.28,-94.23 140.5,-67 144.59,-49.11 155.15,-30.29 161.79,-19.66"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="139.62,-147.5 145.24,-156.48 146.45,-145.96 139.62,-147.5"/>
-<text text-anchor="middle" x="150" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00"> nbf</text>
 </g>
 <!-- Node4&#45;&gt;Node3 -->
 <g id="edge3" class="edge">
 <title>Node4&#45;&gt;Node3</title>
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M164.44,-149.48C184.47,-131.14 217.1,-101.26 233.08,-86.62"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="161.97,-147.01 156.96,-156.34 166.69,-152.17 161.97,-147.01"/>
-<text text-anchor="middle" x="233.5" y="-130" font-family="Helvetica,sans-Serif" font-size="10.00"> n_alpha</text>
-<text text-anchor="middle" x="233.5" y="-119" font-family="Helvetica,sans-Serif" font-size="10.00">n_ao</text>
-<text text-anchor="middle" x="233.5" y="-108" font-family="Helvetica,sans-Serif" font-size="10.00">n_beta</text>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M165.12,-146.02C164.27,-133.99 164.36,-118.26 168.5,-105 170.58,-98.33 174.87,-91.79 178.74,-86.81"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="161.66,-146.61 166.13,-156.21 168.63,-145.92 161.66,-146.61"/>
+<text text-anchor="middle" x="193" y="-119" font-family="Helvetica,sans-Serif" font-size="10.00"> smearing</text>
 </g>
 <!-- Node5 -->
 <g id="node5" class="node">
 <title>Node5</title>
-<g id="a_node5"><a xlink:href="classocc_1_1qm_1_1AOBasis.html" target="_top" xlink:title=" ">
-<polygon fill="none" stroke="black" points="334,-67.5 334,-86.5 435,-86.5 435,-67.5 334,-67.5"/>
-<text text-anchor="middle" x="384.5" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::AOBasis</text>
+<g id="a_node5"><a xlink:title=" ">
+<polygon fill="none" stroke="#bfbfbf" points="265,-156.5 265,-175.5 310,-175.5 310,-156.5 265,-156.5"/>
+<text text-anchor="middle" x="287.5" y="-163.5" font-family="Helvetica,sans-Serif" font-size="10.00">size_t</text>
 </a>
 </g>
 </g>
 <!-- Node5&#45;&gt;Node1 -->
 <g id="edge5" class="edge">
 <title>Node5&#45;&gt;Node1</title>
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M345.87,-64.43C302.9,-51.56 234.5,-31.07 196.09,-19.56"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="345.1,-67.85 355.68,-67.37 347.11,-61.15 345.1,-67.85"/>
-<text text-anchor="middle" x="304" y="-41" font-family="Helvetica,sans-Serif" font-size="10.00"> basis</text>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M286.26,-146.42C285.4,-134.55 284.11,-118.85 282.5,-105 278.85,-73.53 272.8,-36.39 270,-19.79"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="282.77,-146.71 286.96,-156.44 289.76,-146.22 282.77,-146.71"/>
+<text text-anchor="middle" x="289" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00"> nbf</text>
+</g>
+<!-- Node5&#45;&gt;Node3 -->
+<g id="edge4" class="edge">
+<title>Node5&#45;&gt;Node3</title>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M259.55,-151.64C252.91,-147.76 246.13,-143.16 240.5,-138 227.32,-125.92 229.44,-118.3 217.5,-105 211.49,-98.31 203.89,-91.66 197.72,-86.64"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="257.93,-154.74 268.39,-156.46 261.29,-148.6 257.93,-154.74"/>
+<text text-anchor="middle" x="261.5" y="-130" font-family="Helvetica,sans-Serif" font-size="10.00"> n_alpha</text>
+<text text-anchor="middle" x="261.5" y="-119" font-family="Helvetica,sans-Serif" font-size="10.00">n_ao</text>
+<text text-anchor="middle" x="261.5" y="-108" font-family="Helvetica,sans-Serif" font-size="10.00">n_beta</text>
+</g>
+<!-- Node6 -->
+<g id="node6" class="node">
+<title>Node6</title>
+<g id="a_node6"><a xlink:href="classocc_1_1qm_1_1AOBasis.html" target="_top" xlink:title=" ">
+<polygon fill="none" stroke="black" points="334,-67.5 334,-86.5 435,-86.5 435,-67.5 334,-67.5"/>
+<text text-anchor="middle" x="384.5" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::AOBasis</text>
+</a>
+</g>
+</g>
+<!-- Node6&#45;&gt;Node1 -->
+<g id="edge6" class="edge">
+<title>Node6&#45;&gt;Node1</title>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M360.03,-62.29C337.04,-49.4 303.34,-30.52 283.9,-19.63"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="358.42,-65.4 368.86,-67.23 361.84,-59.29 358.42,-65.4"/>
+<text text-anchor="middle" x="347" y="-41" font-family="Helvetica,sans-Serif" font-size="10.00"> basis</text>
 </g>
 </g>
 </svg>

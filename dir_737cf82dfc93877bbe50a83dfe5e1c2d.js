@@ -9,11 +9,13 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
       [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ]
     ] ],
     [ "expectation.h", "expectation_8h.html", "expectation_8h" ],
+    [ "gradients.h", "gradients_8h.html", [
+      [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ]
+    ] ],
     [ "guess_density.h", "guess__density_8h.html", "guess__density_8h" ],
     [ "hf.h", "hf_8h.html", "hf_8h" ],
     [ "hf_fwd.h", "hf__fwd_8h.html", null ],
     [ "integral_engine.h", "integral__engine_8h.html", [
-      [ "MatTriple", "structocc_1_1qm_1_1MatTriple.html", "structocc_1_1qm_1_1MatTriple" ],
       [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
       [ "JKTriple", "structocc_1_1qm_1_1JKTriple.html", "structocc_1_1qm_1_1JKTriple" ],
       [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
@@ -31,6 +33,9 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     ] ],
     [ "opmatrix.h", "qm_2opmatrix_8h.html", "qm_2opmatrix_8h" ],
     [ "orb.h", "orb_8h.html", "orb_8h" ],
+    [ "orbital_smearing.h", "orbital__smearing_8h.html", [
+      [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ]
+    ] ],
     [ "partitioning.h", "partitioning_8h.html", "partitioning_8h" ],
     [ "scf.h", "scf_8h.html", "scf_8h" ],
     [ "scf_convergence_settings.h", "scf__convergence__settings_8h.html", [

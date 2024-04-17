@@ -41,8 +41,8 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "numpy.h", "numpy_8h.html", "numpy_8h" ],
     [ "opmatrix.h", "core_2opmatrix_8h.html", "core_2opmatrix_8h" ],
     [ "optimize.h", "optimize_8h.html", [
-      [ "bracket1d", "structocc_1_1core_1_1opt_1_1bracket1d.html", "structocc_1_1core_1_1opt_1_1bracket1d" ],
-      [ "Brent", "classocc_1_1core_1_1opt_1_1Brent.html", "classocc_1_1core_1_1opt_1_1Brent" ]
+      [ "Bracket1D", "structocc_1_1core_1_1opt_1_1Bracket1D.html", "structocc_1_1core_1_1opt_1_1Bracket1D" ],
+      [ "LineSearch", "classocc_1_1core_1_1opt_1_1LineSearch.html", "classocc_1_1core_1_1opt_1_1LineSearch" ]
     ] ],
     [ "parallel.h", "parallel_8h.html", "parallel_8h" ],
     [ "point_charge.h", "point__charge_8h.html", "point__charge_8h" ],

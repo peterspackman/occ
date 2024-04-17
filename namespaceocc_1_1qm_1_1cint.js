@@ -11,6 +11,7 @@ var namespaceocc_1_1qm_1_1cint =
       [ "dipole", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfab3e74e3ddf2a48dead0bc9d1eb83050f", null ],
       [ "quadrupole", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa4a00b7f9940a3aba263c61a41def14bd", null ],
       [ "octapole", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfaa9d23b7f24e04107cfa5d238580c3ff7", null ],
-      [ "hexadecapole", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfaaf78fdfe54f702c4a8d411b2d1e520ed", null ]
+      [ "hexadecapole", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfaaf78fdfe54f702c4a8d411b2d1e520ed", null ],
+      [ "rinv", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfac2df8b4c86aa4cd120ee084969ffd4ca", null ]
     ] ]
 ];

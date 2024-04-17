@@ -12,7 +12,8 @@ var cint__interface_8h =
       [ "dipole", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bfab3e74e3ddf2a48dead0bc9d1eb83050f", null ],
       [ "quadrupole", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa4a00b7f9940a3aba263c61a41def14bd", null ],
       [ "octapole", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bfaa9d23b7f24e04107cfa5d238580c3ff7", null ],
-      [ "hexadecapole", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bfaaf78fdfe54f702c4a8d411b2d1e520ed", null ]
+      [ "hexadecapole", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bfaaf78fdfe54f702c4a8d411b2d1e520ed", null ],
+      [ "rinv", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bfac2df8b4c86aa4cd120ee084969ffd4ca", null ]
     ] ],
     [ "static_invalid_operator", "cint__interface_8h.html#af64f6c0b9080ba195b11f052b8743dfd", null ]
 ];

@@ -68,23 +68,23 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classocc_1_1crystal_1_1Crystal.html#a6d031f75ebb73e0817350becc56f2309",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba34786de0cfd400fa34c20a40d4baa86d",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbae52b49e96fceaa9ee0c622b447e1841e",
-"classocc_1_1io_1_1OrcaJSONReader.html#aa62e7e2afda3204f5a4a2797d6a34bca",
-"classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710da8ca3074133a77a7a6fb965a9b08ac3c2",
-"classquickhull_1_1ConvexHull.html#aad8734459888b204c059b7ef83068daa",
-"functions_q.html",
-"namespacemembers_func.html",
-"namespaceocc_1_1crystal.html#a6be09bba05cb5f7143b28c936b9da7b1",
-"namespaceocc_1_1qm.html#a40cf6764e46ed92ca114f4858d415943",
-"pair__energy_8h.html#a2ee9eb0dd00aa1eb20e198760be0412b",
-"structocc_1_1core_1_1Multipole.html#a26f7f02d703c5053bb2a2d1cbc17ca97",
-"structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html#adbd66dff215e71e0f85b3fd97b4cc4bb",
-"structocc_1_1io_1_1OccInput.html#aca74211f47f069313d03c54deef8152b",
-"structocc_1_1main_1_1PairEnergy_1_1Monomer.html",
-"structocc_1_1scf_1_1SCF.html#a7a29fe0b7e7b651bac3671e0d991357d",
-"wulff_8h.html"
+"classocc_1_1crystal_1_1Crystal.html#a0e4f57e59b377f98ed9529aa94c7a25e",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba312b77ac25e635d4fc781845c825c223",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbade43c64b184fb3a47e530d7351a77935",
+"classocc_1_1io_1_1OrcaJSONReader.html#a887374ee9794549b6d32d0abf9232a5c",
+"classocc_1_1qm_1_1IntegralEngine.html#ad209475e84d6b9169f7fc6ecea01b290",
+"classocc_1_1xtb_1_1XTBCalculator.html#a89532ff7d55d2708e373f59a698e094d",
+"functions_func_s.html",
+"muldin_8h.html#a26d9bda66566c34a362b22bdad581b2b",
+"namespaceocc_1_1core_1_1opt.html",
+"namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8dad47101755289809d537b90d5f1737add",
+"occ__input_8h.html#a0b4154c8ab12aa7b60925e2a2b6acbe2",
+"spinorbital_8h.html#af7593c3db0168047bf727de310e0eeb4",
+"structocc_1_1geometry_1_1MIndex.html#a9b0dafe8f79fbe99375100227d7f6d2f",
+"structocc_1_1io_1_1JsonBasisReader.html",
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#ab1ee600a5ce6fa4a1845ad188bf8054b",
+"structocc_1_1qm_1_1Wavefunction.html#ad88762bcfd80595fa83b21df0b620d02",
+"tinyply_8h.html#a1c02ca67a9f151d99cac780bace69df9a5f90af42814c0a419d715d43ae54fd7a"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

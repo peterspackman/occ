@@ -17,8 +17,7 @@ var hierarchy =
     [ "occ::io::BeckeGridSettings", "structocc_1_1io_1_1BeckeGridSettings.html", null ],
     [ "occ::io::ColumnConfiguration::Border", "structocc_1_1io_1_1ColumnConfiguration_1_1Border.html", null ],
     [ "occ::io::RowConfiguration::Border", "structocc_1_1io_1_1RowConfiguration_1_1Border.html", null ],
-    [ "occ::core::opt::bracket1d< Function >", "structocc_1_1core_1_1opt_1_1bracket1d.html", null ],
-    [ "occ::core::opt::Brent< Function >", "classocc_1_1core_1_1opt_1_1Brent.html", null ],
+    [ "occ::core::opt::Bracket1D< Function >", "structocc_1_1core_1_1opt_1_1Bracket1D.html", null ],
     [ "tinyply::Buffer", "classtinyply_1_1Buffer.html", null ],
     [ "occ::interaction::CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", null ],
     [ "occ::io::CellData", "structocc_1_1io_1_1CellData.html", null ],
@@ -94,6 +93,7 @@ var hierarchy =
     [ "occ::core::GenSqrtInvResult", "structocc_1_1core_1_1GenSqrtInvResult.html", null ],
     [ "occ::io::GeometryInput", "structocc_1_1io_1_1GeometryInput.html", null ],
     [ "occ::io::GMFWriter", "classocc_1_1io_1_1GMFWriter.html", null ],
+    [ "occ::qm::GradientEvaluator< Proc >", "classocc_1_1qm_1_1GradientEvaluator.html", null ],
     [ "occ::core::graph::Graph< VertexType, EdgeType >", "classocc_1_1core_1_1graph_1_1Graph.html", null ],
     [ "occ::gto::GTOValues", "structocc_1_1gto_1_1GTOValues.html", null ],
     [ "quickhull::HalfEdgeMesh< FloatType, IndexType >::HalfEdge", "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html", null ],
@@ -125,11 +125,12 @@ var hierarchy =
     [ "occ::geometry::IndexCache::Layer", "structocc_1_1geometry_1_1IndexCache_1_1Layer.html", null ],
     [ "occ::geometry::mc::LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", null ],
     [ "occ::geometry::LinearHashedOctree< N >", "structocc_1_1geometry_1_1LinearHashedOctree.html", null ],
+    [ "occ::core::opt::LineSearch< Function >", "classocc_1_1core_1_1opt_1_1LineSearch.html", null ],
     [ "ankerl::unordered_dense::map", null, [
       [ "occ::core::EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", null ]
     ] ],
     [ "occ::geometry::mc::MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", null ],
-    [ "occ::qm::MatTriple", "structocc_1_1qm_1_1MatTriple.html", null ],
+    [ "occ::MatTriple", "structocc_1_1MatTriple.html", null ],
     [ "quickhull::MeshBuilder< T >", "classquickhull_1_1MeshBuilder.html", null ],
     [ "quickhull::MeshBuilder< FloatType >", "classquickhull_1_1MeshBuilder.html", null ],
     [ "occ::io::MethodInput", "structocc_1_1io_1_1MethodInput.html", null ],
@@ -151,6 +152,7 @@ var hierarchy =
     [ "occ::main::OccPairInput", "structocc_1_1main_1_1OccPairInput.html", null ],
     [ "occ::qm::Oniom< HighLevel, LowLevel >", "structocc_1_1qm_1_1Oniom.html", null ],
     [ "occ::qm::cint::Optimizer", "classocc_1_1qm_1_1cint_1_1Optimizer.html", null ],
+    [ "occ::qm::OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", null ],
     [ "occ::io::OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", null ],
     [ "ostream_formatter", null, [
       [ "fmt::formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ]

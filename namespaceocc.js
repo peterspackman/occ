@@ -87,6 +87,7 @@ var namespaceocc =
     ] ],
     [ "xdm", "namespaceocc_1_1xdm.html", "namespaceocc_1_1xdm" ],
     [ "xtb", "namespaceocc_1_1xtb.html", "namespaceocc_1_1xtb" ],
+    [ "MatTriple", "structocc_1_1MatTriple.html", "structocc_1_1MatTriple" ],
     [ "Array", "namespaceocc.html#adcde17020b7a59d8967444a69ade46e7", null ],
     [ "CArray", "namespaceocc.html#a9612be8ac7539e3b45fc93514e4f7bd5", null ],
     [ "CMat", "namespaceocc.html#abcae3213d0f169e3e6fc03865b017066", null ],
