@@ -65,6 +65,7 @@ var namespaceocc_1_1main =
     [ "load_dimer_energy", "namespaceocc_1_1main.html#a4c99afd3455379c53135bd1896c75dad", null ],
     [ "load_wavefunction", "namespaceocc_1_1main.html#a2ee9eb0dd00aa1eb20e198760be0412b", null ],
     [ "method_kind_from_string", "namespaceocc_1_1main.html#ac40858d416a82a962744b6a615487ac1", null ],
+    [ "optimization_calculation", "namespaceocc_1_1main.html#a550e068a512e8315cf0ae9a43dfe7466", null ],
     [ "partition_solvent_surface", "namespaceocc_1_1main.html#aa39befd47d2156369617ebd3965cdf28", null ],
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],
     [ "run_cg", "namespaceocc_1_1main.html#a84a13fde7a5f757cfe4d3b92a93c73d8", null ],

@@ -1,5 +1,8 @@
 var NAVTREEINDEX14 =
 {
+"structocc_1_1io_1_1JsonBasis.html#a9b49e9c4de1c022ba2bc571803477d77":[2,0,1,6,24,0],
+"structocc_1_1io_1_1JsonBasis.html#ac0f932ab3765bab60478853c2a0a857b":[2,0,1,6,24,1],
+"structocc_1_1io_1_1JsonBasis.html#ae2a993a112ef7e5b19efad0cda8aa75d":[2,0,1,6,24,3],
 "structocc_1_1io_1_1JsonBasisReader.html":[2,0,1,6,25],
 "structocc_1_1io_1_1JsonBasisReader.html#a0cdc40d774c9aef43c38b0bfdf70aeec":[2,0,1,6,25,2],
 "structocc_1_1io_1_1JsonBasisReader.html#a30cf50557fff5645c5ce3d2a9c16f671":[2,0,1,6,25,5],
@@ -246,8 +249,5 @@ var NAVTREEINDEX14 =
 "structocc_1_1main_1_1LatticeConvergenceSettings.html":[2,0,1,8,16],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#a27efb00d0b8b0753d772871f93857e0c":[2,0,1,8,16,4],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#a45872b096a65112b4cbfd680200fbda6":[2,0,1,8,16,2],
-"structocc_1_1main_1_1LatticeConvergenceSettings.html#a5f8407d8400ba8d859b5be9f669efc7d":[2,0,1,8,16,9],
-"structocc_1_1main_1_1LatticeConvergenceSettings.html#a6fa0e962f4dadfba65aa2ae7efd8fb29":[2,0,1,8,16,6],
-"structocc_1_1main_1_1LatticeConvergenceSettings.html#a86dd15e8d6bf0634c2a57f18c77ffdc0":[2,0,1,8,16,7],
-"structocc_1_1main_1_1LatticeConvergenceSettings.html#aa22ed80b36a37c91a9940143d83fcb6b":[2,0,1,8,16,5]
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#a5f8407d8400ba8d859b5be9f669efc7d":[2,0,1,8,16,9]
 };

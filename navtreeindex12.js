@@ -1,5 +1,8 @@
 var NAVTREEINDEX12 =
 {
+"spinorbital_8h.html#a40cf6764e46ed92ca114f4858d415943":[3,0,1,0,9,22,4],
+"spinorbital_8h.html#a6b54bd00e156937a556a831d524017a6":[3,0,1,0,9,22,2],
+"spinorbital_8h.html#aad3cab60aa741a3e00edaa626e247a30":[3,0,1,0,9,22,3],
 "spinorbital_8h.html#af7593c3db0168047bf727de310e0eeb4":[3,0,1,0,9,22,0],
 "spinorbital_8h.html#af7593c3db0168047bf727de310e0eeb4a0da9cfa44fd984f48640ab63a399399d":[3,0,1,0,9,22,0,2],
 "spinorbital_8h.html#af7593c3db0168047bf727de310e0eeb4a637317163a8a9d4712705b6bb0ae5799":[3,0,1,0,9,22,0,1],
@@ -246,8 +249,5 @@ var NAVTREEINDEX12 =
 "structocc_1_1geometry_1_1MIndex.html#a33dd14b0c5f94a399fa5a036aa3d2531":[2,0,1,3,3,8],
 "structocc_1_1geometry_1_1MIndex.html#a446f917c5073e3b2b37fce919e9095a8":[2,0,1,3,3,17],
 "structocc_1_1geometry_1_1MIndex.html#a48c1c84ff4c07db6db402bc70be2c4c6":[2,0,1,3,3,2],
-"structocc_1_1geometry_1_1MIndex.html#a521caf9662f91aba2ed460a0a1672df8":[2,0,1,3,3,7],
-"structocc_1_1geometry_1_1MIndex.html#a5def72b2e9ae9626308a1c582ff4c6fc":[2,0,1,3,3,4],
-"structocc_1_1geometry_1_1MIndex.html#a8949deaf811a4a0f38c18e4dc76e92ea":[2,0,1,3,3,6],
-"structocc_1_1geometry_1_1MIndex.html#a984251091ed6565ae88ca91629c1c2ef":[2,0,1,3,3,15]
+"structocc_1_1geometry_1_1MIndex.html#a521caf9662f91aba2ed460a0a1672df8":[2,0,1,3,3,7]
 };

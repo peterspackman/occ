@@ -75,16 +75,16 @@ var NAVTREEINDEX =
 "classocc_1_1qm_1_1IntegralEngine.html#ad209475e84d6b9169f7fc6ecea01b290",
 "classocc_1_1xtb_1_1XTBCalculator.html#a89532ff7d55d2708e373f59a698e094d",
 "functions_func_s.html",
-"muldin_8h.html#a26d9bda66566c34a362b22bdad581b2b",
-"namespaceocc_1_1core_1_1opt.html",
-"namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8dad47101755289809d537b90d5f1737add",
-"occ__input_8h.html#a0b4154c8ab12aa7b60925e2a2b6acbe2",
-"spinorbital_8h.html#af7593c3db0168047bf727de310e0eeb4",
-"structocc_1_1geometry_1_1MIndex.html#a9b0dafe8f79fbe99375100227d7f6d2f",
-"structocc_1_1io_1_1JsonBasisReader.html",
-"structocc_1_1main_1_1LatticeConvergenceSettings.html#ab1ee600a5ce6fa4a1845ad188bf8054b",
-"structocc_1_1qm_1_1Wavefunction.html#ad88762bcfd80595fa83b21df0b620d02",
-"tinyply_8h.html#a1c02ca67a9f151d99cac780bace69df9a5f90af42814c0a419d715d43ae54fd7a"
+"morton_8h.html#afe18a561919ce3b475669d2edcb92cdd",
+"namespaceocc_1_1core_1_1numpy_1_1impl.html#ac581510b2f923033e76817d0f3d16121",
+"namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8d",
+"occ__elat_8h.html#a7eb1b77b98bb6ae47077f8c955b6c755",
+"spinorbital_8h.html#a40cf6764e46ed92ca114f4858d415943",
+"structocc_1_1geometry_1_1MIndex.html#a5def72b2e9ae9626308a1c582ff4c6fc",
+"structocc_1_1io_1_1JsonBasis.html#a9b49e9c4de1c022ba2bc571803477d77",
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#a6fa0e962f4dadfba65aa2ae7efd8fb29",
+"structocc_1_1qm_1_1Wavefunction.html#ad0e4e1c4f93b97a3e479d3dbba47ef05",
+"tinyply_8h.html#a1c02ca67a9f151d99cac780bace69df9a139882c654db8a57f7c3092de1dd0b02"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
