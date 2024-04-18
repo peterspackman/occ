@@ -23,6 +23,7 @@
 #include <occ/main/pair_energy.h>
 #include <occ/main/properties.h>
 #include <occ/main/single_point.h>
+#include <occ/main/geometry_optimization.h>
 #include <occ/main/version.h>
 #include <spdlog/cfg/env.h>
 #include <xc.h>
@@ -116,6 +117,10 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
         },
         "use unrestricted SCF");
 
+    scf->add_option("--driver",
+                    config->driver.driver,
+                    "override driver");
+
     scf->add_option("--basis-set-directory,--basis_set_directory",
                     config->basis.basis_set_directory,
                     "override basis set directory");
@@ -192,29 +197,34 @@ void run_scf_subcommand(occ::io::OccInput &config) {
         pc.update_occ_input(config);
     }
 
-    occ::log::debug("Using energy driver");
-    // store solvent name so we can do an unsolvated calculation first
-    std::string stored_solvent_name = config.solvent.solvent_name;
-    config.solvent.solvent_name = "";
+    occ::log::info("Driver: {}", config.driver.driver);
+    if(config.driver.driver == "opt") {
+	Wavefunction wfn = optimization_calculation(config);
+    }
+    else {
+	// store solvent name so we can do an unsolvated calculation first
+	std::string stored_solvent_name = config.solvent.solvent_name;
+	config.solvent.solvent_name = "";
 
-    Wavefunction wfn = occ::main::single_point_calculation(config);
-    write_output_files(config, wfn);
-    occ::main::calculate_dispersion(config, wfn);
-    occ::main::calculate_properties(config, wfn);
+	Wavefunction wfn = occ::main::single_point_calculation(config);
+	write_output_files(config, wfn);
+	occ::main::calculate_dispersion(config, wfn);
+	occ::main::calculate_properties(config, wfn);
 
-    config.solvent.solvent_name = stored_solvent_name;
+	config.solvent.solvent_name = stored_solvent_name;
 
-    if (!config.solvent.solvent_name.empty()) {
-        Wavefunction wfn2 = occ::main::single_point_calculation(config, wfn);
-        double esolv = wfn2.energy.total - wfn.energy.total;
+	if (!config.solvent.solvent_name.empty()) {
+	    Wavefunction wfn2 = occ::main::single_point_calculation(config, wfn);
+	    double esolv = wfn2.energy.total - wfn.energy.total;
 
-        occ::log::info("{:-<72s}", "Solvation free energy (SMD)  ");
-        occ::log::info("dG(solv)    = {:20.12f} Hartree", esolv);
-        occ::log::info("            = {:20.12f} kJ/mol",
-                       esolv * occ::units::AU_TO_KJ_PER_MOL);
-        occ::log::info("            = {:20.12f} kcal/mol",
-                       esolv * occ::units::AU_TO_KCAL_PER_MOL);
-        write_output_files(config, wfn2);
+	    occ::log::info("{:-<72s}", "Solvation free energy (SMD)  ");
+	    occ::log::info("dG(solv)    = {:20.12f} Hartree", esolv);
+	    occ::log::info("            = {:20.12f} kJ/mol",
+			   esolv * occ::units::AU_TO_KJ_PER_MOL);
+	    occ::log::info("            = {:20.12f} kcal/mol",
+			   esolv * occ::units::AU_TO_KCAL_PER_MOL);
+	    write_output_files(config, wfn2);
+	}
     }
 }
 

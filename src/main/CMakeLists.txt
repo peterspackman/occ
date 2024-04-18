@@ -1,6 +1,7 @@
 add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_surface_energy.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/geometry_optimization.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/monomer_wavefunctions.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.cpp"
