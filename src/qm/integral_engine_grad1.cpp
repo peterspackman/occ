@@ -40,14 +40,14 @@ inline void k_inner_g_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> K,
     const auto Dab = occ::qm::block::ab(D);
     const auto Dba = occ::qm::block::ba(D);
     const auto Dbb = occ::qm::block::bb(D);
-    Kaa(bf0, bf2) += Daa(bf1, bf3) * value;
-    Kaa(bf0, bf3) += Daa(bf1, bf2) * value;
-    Kbb(bf0, bf2) += Dbb(bf1, bf3) * value;
-    Kbb(bf0, bf3) += Dbb(bf1, bf2) * value;
-    Kab(bf0, bf2) += (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-    Kab(bf0, bf3) += (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
-    Kba(bf0, bf2) += (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-    Kba(bf0, bf3) += (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
+    Kaa(bf0, bf2) -= Daa(bf1, bf3) * value;
+    Kaa(bf0, bf3) -= Daa(bf1, bf2) * value;
+    Kbb(bf0, bf2) -= Dbb(bf1, bf3) * value;
+    Kbb(bf0, bf3) -= Dbb(bf1, bf2) * value;
+    Kab(bf0, bf2) -= (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
+    Kab(bf0, bf3) -= (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
+    Kba(bf0, bf2) -= (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
+    Kba(bf0, bf3) -= (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
 }
 
 inline void j_inner_u_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0,
@@ -66,14 +66,14 @@ inline void k_inner_u_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> K,
     auto Kb = occ::qm::block::b(K);
     const auto Da = occ::qm::block::a(D);
     const auto Db = occ::qm::block::b(D);
-    Ka(bf0, bf2) += Da(bf1, bf3) * value;
-    Ka(bf0, bf3) += Da(bf1, bf2) * value;
-    Kb(bf0, bf2) += Db(bf1, bf3) * value;
-    Kb(bf0, bf3) += Db(bf1, bf2) * value;
+    Ka(bf0, bf2) -= 2 * Da(bf1, bf3) * value;
+    Ka(bf0, bf3) -= 2 * Da(bf1, bf2) * value;
+    Kb(bf0, bf2) -= 2 * Db(bf1, bf3) * value;
+    Kb(bf0, bf3) -= 2 * Db(bf1, bf2) * value;
 }
 
 template <occ::qm::SpinorbitalKind sk>
-void delegate_j(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
+void delegate_j_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
                 int bf2, int bf3, double value) {
     if constexpr (sk == SpinorbitalKind::Restricted) {
         j_inner_r_grad(D, J, bf0, bf1, bf2, bf3, value);
@@ -85,7 +85,7 @@ void delegate_j(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0, int bf1,
 }
 
 template <occ::qm::SpinorbitalKind sk>
-void delegate_k(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> K, int bf0, int bf1,
+void delegate_k_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> K, int bf0, int bf1,
                 int bf2, int bf3, double value) {
     if constexpr (sk == SpinorbitalKind::Restricted) {
         k_inner_r_grad(D, K, bf0, bf1, bf2, bf3, value);
@@ -369,8 +369,9 @@ void evaluate_four_center_grad(Lambda &f, IntEnv &env,
 					    shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr
 				    ),
 				    buffer.get()};
-			if (args.dims[0] > -1)
+			if (args.dims[0] > -1) {
 			    f(args);
+			}
 		    }
 		    // QP | RS and QP | SR
 		    if(p != q) {
@@ -386,8 +387,9 @@ void evaluate_four_center_grad(Lambda &f, IntEnv &env,
 					    shell_idx2, opt.optimizer_ptr(), buffer.get(), nullptr
 				    ),
 				    buffer.get()};
-			if (args2.dims[0] > -1)
+			if (args2.dims[0] > -1) {
 			    f(args2);
+			}
 		    }
                 }
             }
@@ -406,13 +408,13 @@ inline void four_center_inner_loop(Func &store,
 
         const auto num_elements = args.dims[0] * args.dims[1] * args.dims[2] * args.dims[3];
 	
-        for (auto f3 = 0, f0123 = 0; f3 != args.dims[3]; ++f3) {
+        for (auto f3 = 0, f0123 = 0; f3 < args.dims[3]; ++f3) {
             const auto bf3 = f3 + args.bf[3];
-            for (auto f2 = 0; f2 != args.dims[2]; ++f2) {
+            for (auto f2 = 0; f2 < args.dims[2]; ++f2) {
                 const auto bf2 = f2 + args.bf[2];
-                for (auto f1 = 0; f1 != args.dims[1]; ++f1) {
+                for (auto f1 = 0; f1 < args.dims[1]; ++f1) {
                     const auto bf1 = f1 + args.bf[1];
-                    for (auto f0 = 0; f0 != args.dims[0]; ++f0, f0123++) {
+                    for (auto f0 = 0; f0 < args.dims[0]; ++f0, ++f0123) {
                         const auto bf0 = f0 + args.bf[0];
 			// x
 			store(D, dest.x, bf0, bf1, bf2, bf3,
@@ -430,12 +432,14 @@ inline void four_center_inner_loop(Func &store,
         }
 }
 
+template <SpinorbitalKind sk>
 std::vector<MatTriple> initialize_result_matrices(size_t nbf, size_t nthreads) {
+    auto [rows, cols] = occ::qm::matrix_dimensions<sk>(nbf);
     std::vector<MatTriple> results(nthreads);
     for(auto &r: results) {
-	r.x = Mat::Zero(nbf, nbf);
-	r.y = Mat::Zero(nbf, nbf);
-	r.z = Mat::Zero(nbf, nbf);
+	r.x = Mat::Zero(rows, cols);
+	r.y = Mat::Zero(rows, cols);
+	r.z = Mat::Zero(rows, cols);
     }
     return results;
 }
@@ -450,14 +454,14 @@ MatTriple coulomb_kernel_grad(cint::IntegralEnvironment &env, const AOBasis &bas
 
     const auto nbf = basis.nbf();
 
-    auto results = initialize_result_matrices(nbf, nthreads);
+    auto results = initialize_result_matrices<sk>(nbf, nthreads);
     Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
 
 
     const auto &D = mo.D;
     auto f = [&D, &results](const Result &args) {
         auto &dest = results[args.thread];
-	four_center_inner_loop(impl::delegate_j<sk>, args, D, dest);
+	four_center_inner_loop(impl::delegate_j_grad<sk>, args, D, dest);
     };
     auto lambda = [&](int thread_id) {
         evaluate_four_center_grad<op, kind>(f, env, basis, shellpairs, Dnorm,
@@ -532,16 +536,17 @@ JKTriple coulomb_exchange_kernel_grad(IntEnv &env,
 
     const auto nbf = basis.nbf();
 
-    auto jmats = initialize_result_matrices(nbf, nthreads);
-    auto kmats = initialize_result_matrices(nbf, nthreads);
+    auto jmats = initialize_result_matrices<sk>(nbf, nthreads);
+    auto kmats = initialize_result_matrices<sk>(nbf, nthreads);
     Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
 
     const auto &D = mo.D;
     auto f = [&D, &jmats, &kmats](const Result &args) {
         auto &dest_j = jmats[args.thread];
+	four_center_inner_loop(impl::delegate_j_grad<sk>, args, D, dest_j);
+
         auto &dest_k = kmats[args.thread];
-	four_center_inner_loop(impl::delegate_j<sk>, args, D, dest_j);
-	four_center_inner_loop(impl::delegate_k<sk>, args, D, dest_k);
+	four_center_inner_loop(impl::delegate_k_grad<sk>, args, D, dest_k);
     };
     auto lambda = [&](int thread_id) {
         evaluate_four_center_grad<op, kind>(f, env, basis, shellpairs, Dnorm,
