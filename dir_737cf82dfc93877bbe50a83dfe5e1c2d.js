@@ -9,9 +9,7 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
       [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ]
     ] ],
     [ "expectation.h", "expectation_8h.html", "expectation_8h" ],
-    [ "gradients.h", "gradients_8h.html", [
-      [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ]
-    ] ],
+    [ "gradients.h", "gradients_8h.html", "gradients_8h" ],
     [ "guess_density.h", "guess__density_8h.html", "guess__density_8h" ],
     [ "hf.h", "hf_8h.html", "hf_8h" ],
     [ "hf_fwd.h", "hf__fwd_8h.html", null ],

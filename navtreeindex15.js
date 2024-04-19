@@ -1,5 +1,10 @@
 var NAVTREEINDEX15 =
 {
+"structocc_1_1main_1_1IsosurfaceConfig.html#abf39098935613cd5bcbc202b79922041":[2,0,1,8,12,6],
+"structocc_1_1main_1_1LatticeConvergenceSettings.html":[2,0,1,8,16],
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#a27efb00d0b8b0753d772871f93857e0c":[2,0,1,8,16,4],
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#a45872b096a65112b4cbfd680200fbda6":[2,0,1,8,16,2],
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#a5f8407d8400ba8d859b5be9f669efc7d":[2,0,1,8,16,9],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#a6fa0e962f4dadfba65aa2ae7efd8fb29":[2,0,1,8,16,6],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#a86dd15e8d6bf0634c2a57f18c77ffdc0":[2,0,1,8,16,7],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#aa22ed80b36a37c91a9940143d83fcb6b":[2,0,1,8,16,5],
@@ -244,10 +249,5 @@ var NAVTREEINDEX15 =
 "structocc_1_1qm_1_1Wavefunction.html#a9c0c9b293186d195abea31989f73de3b":[2,0,1,9,16,6],
 "structocc_1_1qm_1_1Wavefunction.html#aabd1a572f6191e584031382110a36c82":[2,0,1,9,16,4],
 "structocc_1_1qm_1_1Wavefunction.html#aadcb825d6970a24ecf390ddea6240f75":[2,0,1,9,16,26],
-"structocc_1_1qm_1_1Wavefunction.html#aaf7128bc1ccbb72f1a7ca8d37a53129a":[2,0,1,9,16,47],
-"structocc_1_1qm_1_1Wavefunction.html#ab7d7a63446003b31a1e97cff023fcd32":[2,0,1,9,16,21],
-"structocc_1_1qm_1_1Wavefunction.html#ac3a3c9b80a14f33b5dda58effbf677c9":[2,0,1,9,16,7],
-"structocc_1_1qm_1_1Wavefunction.html#ac8c58f857497fa46557d6812aec31346":[2,0,1,9,16,43],
-"structocc_1_1qm_1_1Wavefunction.html#accd795481115e410d038f02030905adf":[2,0,1,9,16,25],
-"structocc_1_1qm_1_1Wavefunction.html#acf001664b44d7693881b72d19643a18e":[2,0,1,9,16,19]
+"structocc_1_1qm_1_1Wavefunction.html#aaf7128bc1ccbb72f1a7ca8d37a53129a":[2,0,1,9,16,47]
 };

@@ -69,6 +69,8 @@ var NAVTREEINDEX7 =
 "globals_func.html":[3,1,1],
 "gmf_8h.html":[3,0,1,0,6,13],
 "gradients_8h.html":[3,0,1,0,9,5],
+"gradients_8h.html#a62eb74092482256f843a653357ad87e7":[3,0,1,0,9,5,2],
+"gradients_8h.html#a90d330aae8695310847c6faf75fb6a1d":[3,0,1,0,9,5,1],
 "graph_8h.html":[3,0,1,0,0,13],
 "grid_8h.html":[3,0,1,0,2,2],
 "grid_8h.html#a029911cd55275040f0a26ee8d48581d8":[3,0,1,0,2,2,10],
@@ -247,7 +249,5 @@ var NAVTREEINDEX7 =
 "morton_8h.html#ad907bbcdf26df45340df276fe917a6f2":[3,0,1,0,3,8,12],
 "morton_8h.html#adaa29285400ae45cba987ab78a6cb912":[3,0,1,0,3,8,17],
 "morton_8h.html#add382c816f1f7693abf57e1ce0300efb":[3,0,1,0,3,8,18],
-"morton_8h.html#ae9bdd8c8693f8fdb6789e268a55c2a00":[3,0,1,0,3,8,10],
-"morton_8h.html#af58bc3aac961b99b901f57732dae647c":[3,0,1,0,3,8,13],
-"morton_8h.html#af9ae04407cbd8a2acd91a55741fe7b88":[3,0,1,0,3,8,22]
+"morton_8h.html#ae9bdd8c8693f8fdb6789e268a55c2a00":[3,0,1,0,3,8,10]
 };

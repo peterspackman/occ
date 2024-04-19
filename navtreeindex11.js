@@ -1,5 +1,10 @@
 var NAVTREEINDEX11 =
 {
+"occ__dimers_8h.html":[3,0,1,0,8,7],
+"occ__dimers_8h.html#a5f883983a0b5d4e64d68868752bafe01":[3,0,1,0,8,7,2],
+"occ__dimers_8h.html#aaeed2365b00deca734218b96303b1cea":[3,0,1,0,8,7,1],
+"occ__elat_8h.html":[3,0,1,0,8,8],
+"occ__elat_8h.html#a1d0fbd4fdd6e361e60c7c9f33330a3cc":[3,0,1,0,8,8,1],
 "occ__elat_8h.html#a7eb1b77b98bb6ae47077f8c955b6c755":[3,0,1,0,8,8,0],
 "occ__input_8h.html":[3,0,1,0,6,21],
 "occ__input_8h.html#a0b19dda27e50ff77a11e8e61654b1569":[3,0,1,0,6,21,15],
@@ -244,10 +249,5 @@ var NAVTREEINDEX11 =
 "solvent_2surface_8h.html":[3,0,1,0,12,6],
 "solvent_2surface_8h.html#a0c804f320cbbdb26d5fb19deba8acc4b":[3,0,1,0,12,6,1],
 "solvent_2surface_8h.html#ab61ed1203478ce52410badabeda7fd7a":[3,0,1,0,12,6,2],
-"solvent__json_8h.html":[3,0,1,0,6,26],
-"solvent__json_8h.html#a6386bda2c9d519a9aada86278bf41d2e":[3,0,1,0,6,26,1],
-"solvent__json_8h.html#a8bdc2d131165da54fed389c3aa96ee51":[3,0,1,0,6,26,0],
-"spacegroup_8h.html":[3,0,1,0,1,4],
-"spacegroup_8h.html#a6be09bba05cb5f7143b28c936b9da7b1":[3,0,1,0,1,4,2],
-"spinorbital_8h.html":[3,0,1,0,9,22]
+"solvent__json_8h.html":[3,0,1,0,6,26]
 };

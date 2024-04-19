@@ -19,6 +19,10 @@ var namespaceocc_1_1qm =
       [ "minimal_basis_nao", "namespaceocc_1_1qm_1_1guess.html#acb0a9b7918ce5f813b34eb9e6ac97ecb", null ],
       [ "minimal_basis_occupation_vector", "namespaceocc_1_1qm_1_1guess.html#a933946b1be85bd3cb3ccc5922d0839ff", null ]
     ] ],
+    [ "impl", "namespaceocc_1_1qm_1_1impl.html", [
+      [ "accumulate1", "namespaceocc_1_1qm_1_1impl.html#a90d330aae8695310847c6faf75fb6a1d", null ],
+      [ "accumulate2", "namespaceocc_1_1qm_1_1impl.html#a62eb74092482256f843a653357ad87e7", null ]
+    ] ],
     [ "orb", "namespaceocc_1_1qm_1_1orb.html", [
       [ "density_matrix_general", "namespaceocc_1_1qm_1_1orb.html#abae4c82b14dce142db3c9c0968487092", null ],
       [ "density_matrix_restricted", "namespaceocc_1_1qm_1_1orb.html#ae757e0b6402af601350812d093a942cc", null ],
