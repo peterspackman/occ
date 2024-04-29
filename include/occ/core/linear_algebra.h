@@ -47,6 +47,12 @@ using CMatN3 = Eigen::Matrix3Xcd;
 using CMat3 = Eigen::Matrix3cd;
 using CMat4 = Eigen::Matrix4cd;
 
+using FMat = Eigen::MatrixXf;
+using FMat3N = Eigen::Matrix3Xf;
+using FMatN3 = Eigen::MatrixX3f;
+using FMat3 = Eigen::Matrix3f;
+using FMat4 = Eigen::Matrix3f;
+
 using DMat = Eigen::MatrixXd;
 using DMat3N = Eigen::Matrix3Xd;
 using DMatN3 = Eigen::MatrixX3d;
@@ -55,7 +61,6 @@ using DMat4 = Eigen::Matrix4d;
 
 using RowVec = Eigen::RowVectorXd;
 using Vec = Eigen::VectorXd;
-using CVec = Eigen::VectorXcd;
 using RowVec3 = Eigen::RowVector3d;
 using Vec3 = Eigen::Vector3d;
 using RowVec4 = Eigen::RowVector4d;
@@ -63,8 +68,12 @@ using Vec4 = Eigen::Vector4d;
 using Vec6 = Eigen::Matrix<double, 6, 1>;
 using Vec10 = Eigen::Matrix<double, 10, 1>;
 
+using CVec = Eigen::VectorXcd;
 using DVec = Eigen::VectorXd;
 using DVec3 = Eigen::Vector3d;
+using FVec = Eigen::VectorXf;
+using FVec3 = Eigen::Vector3f;
+using FVec2 = Eigen::Vector2f;
 
 using IVec = Eigen::VectorXi;
 using IVec3 = Eigen::Vector3i;

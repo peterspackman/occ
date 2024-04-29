@@ -14,10 +14,10 @@ ElectricPotentialFunctor::ElectricPotentialFunctor(
     m_minimum_atom_pos = coordinates.rowwise().minCoeff().cast<float>();
     m_maximum_atom_pos = coordinates.rowwise().maxCoeff().cast<float>();
 
-    update_region_for_isovalue();
+    update_region();
 }
 
-void ElectricPotentialFunctor::update_region_for_isovalue() {
+void ElectricPotentialFunctor::update_region() {
 
     m_buffer = 5.0;
 

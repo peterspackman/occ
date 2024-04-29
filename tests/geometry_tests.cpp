@@ -20,21 +20,16 @@ using occ::geometry::mc::LinearHashedMarchingCubes;
 using occ::geometry::mc::MarchingCubes;
 
 struct sphere {
-    float origin[3] = {0.5, 0.5, 0.5};
+    occ::FVec3 origin{0.5, 0.5, 0.5};
     float radius = 0.4;
     mutable int num_calls = 0;
-    float operator()(float x, float y, float z) const {
+    float operator()(const occ::FVec3 &pos) const {
         num_calls++;
-        float x1 = x - origin[0], y1 = y - origin[1], z1 = z - origin[2];
-        return sqrt(x1 * x1 + y1 * y1 + z1 * z1) - radius;
+        return (pos - origin).norm() - radius;
     }
 
-    std::array<float, 3> normal(float x, float y, float z) const {
-        std::array<float, 3> res{x - origin[0], y - origin[1], z - origin[2]};
-        float norm = sqrt(res[0] * res[0] + res[1] * res[1] + res[2] * res[2]);
-        for (auto &x : res)
-            x /= norm;
-        return res;
+    occ::FVec3 normal(const occ::FVec3 &pos) const {
+	return (pos - origin).normalized();
     }
 };
 
@@ -43,9 +38,9 @@ struct torus {
     const float r2 = 0.1f;
 
     mutable int num_calls = 0;
-    float operator()(float x, float y, float z) const {
+    float operator()(const occ::FVec3 &pos) const {
         num_calls++;
-        float x1 = x - 0.5, y1 = y - 0.5, z1 = z - 0.5;
+        float x1 = pos.x() - 0.5, y1 = pos.y() - 0.5, z1 = pos.z() - 0.5;
         float qx = sqrt(x1 * x1 + y1 * y1) - r1;
         float l = sqrt(qx * qx + z1 * z1);
         return l - r2;
@@ -573,5 +568,47 @@ TEST_CASE("Sphere tests", "[qh]") {
         if (i == 100) {
             break;
         }
+    }
+}
+
+float sphere_mean_curvature(float radius) {
+    return 1.0f / radius;
+}
+
+float sphere_gaussian_curvature(float radius) {
+    return 1.0f / (radius * radius);
+}
+
+
+TEST_CASE("Curvature calculations for sphere", "[curvature]") {
+    const float radius = 0.4f;
+    const float tolerance = 1e-2f; // Tolerance for curvature comparisons
+    sphere s;
+    s.radius = radius;
+
+    occ::geometry::mc::MarchingCubes mc(32, 32, 32); // Marching cubes resolution
+    std::vector<float> vertices, normals, curvatures;
+    std::vector<uint32_t> indices;
+
+    mc.extract_with_curvature(s, vertices, indices, normals, curvatures);
+
+    REQUIRE(vertices.size() > 1);
+    REQUIRE(vertices.size() % 3 == 0);
+    REQUIRE(normals.size() % 3 == 0);
+    REQUIRE(curvatures.size() % 2 == 0);
+
+    for (size_t i = 0; i < vertices.size(); i += 3) {
+        float x = vertices[i];
+        float y = vertices[i + 1];
+        float z = vertices[i + 2];
+
+        float mean_curvature = curvatures[i / 3 * 2];
+        float gaussian_curvature = curvatures[i / 3 * 2 + 1];
+
+        float ref_mean_curvature = sphere_mean_curvature(radius);
+        float ref_gaussian_curvature = sphere_gaussian_curvature(radius);
+
+	REQUIRE(mean_curvature == Catch::Approx(ref_mean_curvature).epsilon(tolerance));
+	REQUIRE(gaussian_curvature == Catch::Approx(ref_gaussian_curvature).epsilon(tolerance));
     }
 }

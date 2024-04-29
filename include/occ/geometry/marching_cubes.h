@@ -9,297 +9,24 @@
 namespace occ::geometry::mc {
 
 namespace impl {
-template<typename T, typename = void>
-struct has_fill_layer : std::false_type {};
 
 template<typename T, typename = void>
-struct has_fill_normals : std::false_type {};
+struct has_batch_evaluate: std::false_type {};
 
 template<typename T>
-struct has_fill_layer<T, std::void_t<decltype(std::declval<T>().fill_layer(std::declval<float>(), std::declval<Eigen::Ref<Eigen::MatrixXf>>()))>> : std::true_type {};
-
-template<typename T>
-struct has_fill_normals<T, std::void_t<decltype(
-	std::declval<T>().fill_normals(std::declval<const std::vector<float>&>(), std::declval<std::vector<float>&>()))>> : std::true_type {};
+struct has_batch_evaluate<T, std::void_t<decltype(std::declval<T>().batch(
+	    std::declval<Eigen::Ref<const FMat3N>>(), std::declval<Eigen::Ref<FVec>>()))>> : std::true_type {};
 
 }
 
 namespace tables {
-static const uint8_t CORNERS[8][3] = {
-    {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0},
-    {0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1},
-};
-
-/// The corners used by each edge in a call
-static const uint8_t EDGE_CONNECTION[12][2] = {
-    {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6},
-    {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
-};
-
-/// Maps the signs of each corner in a cell to the set of triangles spanning the
-/// active edges
-static const int8_t TRIANGLE_CONNECTION[256][16] = {
-    {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 8, 3, 9, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 3, 1, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {9, 2, 10, 0, 2, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {2, 8, 3, 2, 10, 8, 10, 9, 8, -1, -1, -1, -1, -1, -1, -1},
-    {3, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 11, 2, 8, 11, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 9, 0, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 11, 2, 1, 9, 11, 9, 8, 11, -1, -1, -1, -1, -1, -1, -1},
-    {3, 10, 1, 11, 10, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 10, 1, 0, 8, 10, 8, 11, 10, -1, -1, -1, -1, -1, -1, -1},
-    {3, 9, 0, 3, 11, 9, 11, 10, 9, -1, -1, -1, -1, -1, -1, -1},
-    {9, 8, 10, 10, 8, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 3, 0, 7, 3, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 1, 9, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 1, 9, 4, 7, 1, 7, 3, 1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 10, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {3, 4, 7, 3, 0, 4, 1, 2, 10, -1, -1, -1, -1, -1, -1, -1},
-    {9, 2, 10, 9, 0, 2, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1},
-    {2, 10, 9, 2, 9, 7, 2, 7, 3, 7, 9, 4, -1, -1, -1, -1},
-    {8, 4, 7, 3, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {11, 4, 7, 11, 2, 4, 2, 0, 4, -1, -1, -1, -1, -1, -1, -1},
-    {9, 0, 1, 8, 4, 7, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1},
-    {4, 7, 11, 9, 4, 11, 9, 11, 2, 9, 2, 1, -1, -1, -1, -1},
-    {3, 10, 1, 3, 11, 10, 7, 8, 4, -1, -1, -1, -1, -1, -1, -1},
-    {1, 11, 10, 1, 4, 11, 1, 0, 4, 7, 11, 4, -1, -1, -1, -1},
-    {4, 7, 8, 9, 0, 11, 9, 11, 10, 11, 0, 3, -1, -1, -1, -1},
-    {4, 7, 11, 4, 11, 9, 9, 11, 10, -1, -1, -1, -1, -1, -1, -1},
-    {9, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {9, 5, 4, 0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 5, 4, 1, 5, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {8, 5, 4, 8, 3, 5, 3, 1, 5, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 10, 9, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {3, 0, 8, 1, 2, 10, 4, 9, 5, -1, -1, -1, -1, -1, -1, -1},
-    {5, 2, 10, 5, 4, 2, 4, 0, 2, -1, -1, -1, -1, -1, -1, -1},
-    {2, 10, 5, 3, 2, 5, 3, 5, 4, 3, 4, 8, -1, -1, -1, -1},
-    {9, 5, 4, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 11, 2, 0, 8, 11, 4, 9, 5, -1, -1, -1, -1, -1, -1, -1},
-    {0, 5, 4, 0, 1, 5, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1},
-    {2, 1, 5, 2, 5, 8, 2, 8, 11, 4, 8, 5, -1, -1, -1, -1},
-    {10, 3, 11, 10, 1, 3, 9, 5, 4, -1, -1, -1, -1, -1, -1, -1},
-    {4, 9, 5, 0, 8, 1, 8, 10, 1, 8, 11, 10, -1, -1, -1, -1},
-    {5, 4, 0, 5, 0, 11, 5, 11, 10, 11, 0, 3, -1, -1, -1, -1},
-    {5, 4, 8, 5, 8, 10, 10, 8, 11, -1, -1, -1, -1, -1, -1, -1},
-    {9, 7, 8, 5, 7, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {9, 3, 0, 9, 5, 3, 5, 7, 3, -1, -1, -1, -1, -1, -1, -1},
-    {0, 7, 8, 0, 1, 7, 1, 5, 7, -1, -1, -1, -1, -1, -1, -1},
-    {1, 5, 3, 3, 5, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {9, 7, 8, 9, 5, 7, 10, 1, 2, -1, -1, -1, -1, -1, -1, -1},
-    {10, 1, 2, 9, 5, 0, 5, 3, 0, 5, 7, 3, -1, -1, -1, -1},
-    {8, 0, 2, 8, 2, 5, 8, 5, 7, 10, 5, 2, -1, -1, -1, -1},
-    {2, 10, 5, 2, 5, 3, 3, 5, 7, -1, -1, -1, -1, -1, -1, -1},
-    {7, 9, 5, 7, 8, 9, 3, 11, 2, -1, -1, -1, -1, -1, -1, -1},
-    {9, 5, 7, 9, 7, 2, 9, 2, 0, 2, 7, 11, -1, -1, -1, -1},
-    {2, 3, 11, 0, 1, 8, 1, 7, 8, 1, 5, 7, -1, -1, -1, -1},
-    {11, 2, 1, 11, 1, 7, 7, 1, 5, -1, -1, -1, -1, -1, -1, -1},
-    {9, 5, 8, 8, 5, 7, 10, 1, 3, 10, 3, 11, -1, -1, -1, -1},
-    {5, 7, 0, 5, 0, 9, 7, 11, 0, 1, 0, 10, 11, 10, 0, -1},
-    {11, 10, 0, 11, 0, 3, 10, 5, 0, 8, 0, 7, 5, 7, 0, -1},
-    {11, 10, 5, 7, 11, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {10, 6, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 3, 5, 10, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {9, 0, 1, 5, 10, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 8, 3, 1, 9, 8, 5, 10, 6, -1, -1, -1, -1, -1, -1, -1},
-    {1, 6, 5, 2, 6, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 6, 5, 1, 2, 6, 3, 0, 8, -1, -1, -1, -1, -1, -1, -1},
-    {9, 6, 5, 9, 0, 6, 0, 2, 6, -1, -1, -1, -1, -1, -1, -1},
-    {5, 9, 8, 5, 8, 2, 5, 2, 6, 3, 2, 8, -1, -1, -1, -1},
-    {2, 3, 11, 10, 6, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {11, 0, 8, 11, 2, 0, 10, 6, 5, -1, -1, -1, -1, -1, -1, -1},
-    {0, 1, 9, 2, 3, 11, 5, 10, 6, -1, -1, -1, -1, -1, -1, -1},
-    {5, 10, 6, 1, 9, 2, 9, 11, 2, 9, 8, 11, -1, -1, -1, -1},
-    {6, 3, 11, 6, 5, 3, 5, 1, 3, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 11, 0, 11, 5, 0, 5, 1, 5, 11, 6, -1, -1, -1, -1},
-    {3, 11, 6, 0, 3, 6, 0, 6, 5, 0, 5, 9, -1, -1, -1, -1},
-    {6, 5, 9, 6, 9, 11, 11, 9, 8, -1, -1, -1, -1, -1, -1, -1},
-    {5, 10, 6, 4, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 3, 0, 4, 7, 3, 6, 5, 10, -1, -1, -1, -1, -1, -1, -1},
-    {1, 9, 0, 5, 10, 6, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1},
-    {10, 6, 5, 1, 9, 7, 1, 7, 3, 7, 9, 4, -1, -1, -1, -1},
-    {6, 1, 2, 6, 5, 1, 4, 7, 8, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 5, 5, 2, 6, 3, 0, 4, 3, 4, 7, -1, -1, -1, -1},
-    {8, 4, 7, 9, 0, 5, 0, 6, 5, 0, 2, 6, -1, -1, -1, -1},
-    {7, 3, 9, 7, 9, 4, 3, 2, 9, 5, 9, 6, 2, 6, 9, -1},
-    {3, 11, 2, 7, 8, 4, 10, 6, 5, -1, -1, -1, -1, -1, -1, -1},
-    {5, 10, 6, 4, 7, 2, 4, 2, 0, 2, 7, 11, -1, -1, -1, -1},
-    {0, 1, 9, 4, 7, 8, 2, 3, 11, 5, 10, 6, -1, -1, -1, -1},
-    {9, 2, 1, 9, 11, 2, 9, 4, 11, 7, 11, 4, 5, 10, 6, -1},
-    {8, 4, 7, 3, 11, 5, 3, 5, 1, 5, 11, 6, -1, -1, -1, -1},
-    {5, 1, 11, 5, 11, 6, 1, 0, 11, 7, 11, 4, 0, 4, 11, -1},
-    {0, 5, 9, 0, 6, 5, 0, 3, 6, 11, 6, 3, 8, 4, 7, -1},
-    {6, 5, 9, 6, 9, 11, 4, 7, 9, 7, 11, 9, -1, -1, -1, -1},
-    {10, 4, 9, 6, 4, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 10, 6, 4, 9, 10, 0, 8, 3, -1, -1, -1, -1, -1, -1, -1},
-    {10, 0, 1, 10, 6, 0, 6, 4, 0, -1, -1, -1, -1, -1, -1, -1},
-    {8, 3, 1, 8, 1, 6, 8, 6, 4, 6, 1, 10, -1, -1, -1, -1},
-    {1, 4, 9, 1, 2, 4, 2, 6, 4, -1, -1, -1, -1, -1, -1, -1},
-    {3, 0, 8, 1, 2, 9, 2, 4, 9, 2, 6, 4, -1, -1, -1, -1},
-    {0, 2, 4, 4, 2, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {8, 3, 2, 8, 2, 4, 4, 2, 6, -1, -1, -1, -1, -1, -1, -1},
-    {10, 4, 9, 10, 6, 4, 11, 2, 3, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 2, 2, 8, 11, 4, 9, 10, 4, 10, 6, -1, -1, -1, -1},
-    {3, 11, 2, 0, 1, 6, 0, 6, 4, 6, 1, 10, -1, -1, -1, -1},
-    {6, 4, 1, 6, 1, 10, 4, 8, 1, 2, 1, 11, 8, 11, 1, -1},
-    {9, 6, 4, 9, 3, 6, 9, 1, 3, 11, 6, 3, -1, -1, -1, -1},
-    {8, 11, 1, 8, 1, 0, 11, 6, 1, 9, 1, 4, 6, 4, 1, -1},
-    {3, 11, 6, 3, 6, 0, 0, 6, 4, -1, -1, -1, -1, -1, -1, -1},
-    {6, 4, 8, 11, 6, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {7, 10, 6, 7, 8, 10, 8, 9, 10, -1, -1, -1, -1, -1, -1, -1},
-    {0, 7, 3, 0, 10, 7, 0, 9, 10, 6, 7, 10, -1, -1, -1, -1},
-    {10, 6, 7, 1, 10, 7, 1, 7, 8, 1, 8, 0, -1, -1, -1, -1},
-    {10, 6, 7, 10, 7, 1, 1, 7, 3, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 6, 1, 6, 8, 1, 8, 9, 8, 6, 7, -1, -1, -1, -1},
-    {2, 6, 9, 2, 9, 1, 6, 7, 9, 0, 9, 3, 7, 3, 9, -1},
-    {7, 8, 0, 7, 0, 6, 6, 0, 2, -1, -1, -1, -1, -1, -1, -1},
-    {7, 3, 2, 6, 7, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {2, 3, 11, 10, 6, 8, 10, 8, 9, 8, 6, 7, -1, -1, -1, -1},
-    {2, 0, 7, 2, 7, 11, 0, 9, 7, 6, 7, 10, 9, 10, 7, -1},
-    {1, 8, 0, 1, 7, 8, 1, 10, 7, 6, 7, 10, 2, 3, 11, -1},
-    {11, 2, 1, 11, 1, 7, 10, 6, 1, 6, 7, 1, -1, -1, -1, -1},
-    {8, 9, 6, 8, 6, 7, 9, 1, 6, 11, 6, 3, 1, 3, 6, -1},
-    {0, 9, 1, 11, 6, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {7, 8, 0, 7, 0, 6, 3, 11, 0, 11, 6, 0, -1, -1, -1, -1},
-    {7, 11, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {7, 6, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {3, 0, 8, 11, 7, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 1, 9, 11, 7, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {8, 1, 9, 8, 3, 1, 11, 7, 6, -1, -1, -1, -1, -1, -1, -1},
-    {10, 1, 2, 6, 11, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 10, 3, 0, 8, 6, 11, 7, -1, -1, -1, -1, -1, -1, -1},
-    {2, 9, 0, 2, 10, 9, 6, 11, 7, -1, -1, -1, -1, -1, -1, -1},
-    {6, 11, 7, 2, 10, 3, 10, 8, 3, 10, 9, 8, -1, -1, -1, -1},
-    {7, 2, 3, 6, 2, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {7, 0, 8, 7, 6, 0, 6, 2, 0, -1, -1, -1, -1, -1, -1, -1},
-    {2, 7, 6, 2, 3, 7, 0, 1, 9, -1, -1, -1, -1, -1, -1, -1},
-    {1, 6, 2, 1, 8, 6, 1, 9, 8, 8, 7, 6, -1, -1, -1, -1},
-    {10, 7, 6, 10, 1, 7, 1, 3, 7, -1, -1, -1, -1, -1, -1, -1},
-    {10, 7, 6, 1, 7, 10, 1, 8, 7, 1, 0, 8, -1, -1, -1, -1},
-    {0, 3, 7, 0, 7, 10, 0, 10, 9, 6, 10, 7, -1, -1, -1, -1},
-    {7, 6, 10, 7, 10, 8, 8, 10, 9, -1, -1, -1, -1, -1, -1, -1},
-    {6, 8, 4, 11, 8, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {3, 6, 11, 3, 0, 6, 0, 4, 6, -1, -1, -1, -1, -1, -1, -1},
-    {8, 6, 11, 8, 4, 6, 9, 0, 1, -1, -1, -1, -1, -1, -1, -1},
-    {9, 4, 6, 9, 6, 3, 9, 3, 1, 11, 3, 6, -1, -1, -1, -1},
-    {6, 8, 4, 6, 11, 8, 2, 10, 1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 10, 3, 0, 11, 0, 6, 11, 0, 4, 6, -1, -1, -1, -1},
-    {4, 11, 8, 4, 6, 11, 0, 2, 9, 2, 10, 9, -1, -1, -1, -1},
-    {10, 9, 3, 10, 3, 2, 9, 4, 3, 11, 3, 6, 4, 6, 3, -1},
-    {8, 2, 3, 8, 4, 2, 4, 6, 2, -1, -1, -1, -1, -1, -1, -1},
-    {0, 4, 2, 4, 6, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 9, 0, 2, 3, 4, 2, 4, 6, 4, 3, 8, -1, -1, -1, -1},
-    {1, 9, 4, 1, 4, 2, 2, 4, 6, -1, -1, -1, -1, -1, -1, -1},
-    {8, 1, 3, 8, 6, 1, 8, 4, 6, 6, 10, 1, -1, -1, -1, -1},
-    {10, 1, 0, 10, 0, 6, 6, 0, 4, -1, -1, -1, -1, -1, -1, -1},
-    {4, 6, 3, 4, 3, 8, 6, 10, 3, 0, 3, 9, 10, 9, 3, -1},
-    {10, 9, 4, 6, 10, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 9, 5, 7, 6, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 3, 4, 9, 5, 11, 7, 6, -1, -1, -1, -1, -1, -1, -1},
-    {5, 0, 1, 5, 4, 0, 7, 6, 11, -1, -1, -1, -1, -1, -1, -1},
-    {11, 7, 6, 8, 3, 4, 3, 5, 4, 3, 1, 5, -1, -1, -1, -1},
-    {9, 5, 4, 10, 1, 2, 7, 6, 11, -1, -1, -1, -1, -1, -1, -1},
-    {6, 11, 7, 1, 2, 10, 0, 8, 3, 4, 9, 5, -1, -1, -1, -1},
-    {7, 6, 11, 5, 4, 10, 4, 2, 10, 4, 0, 2, -1, -1, -1, -1},
-    {3, 4, 8, 3, 5, 4, 3, 2, 5, 10, 5, 2, 11, 7, 6, -1},
-    {7, 2, 3, 7, 6, 2, 5, 4, 9, -1, -1, -1, -1, -1, -1, -1},
-    {9, 5, 4, 0, 8, 6, 0, 6, 2, 6, 8, 7, -1, -1, -1, -1},
-    {3, 6, 2, 3, 7, 6, 1, 5, 0, 5, 4, 0, -1, -1, -1, -1},
-    {6, 2, 8, 6, 8, 7, 2, 1, 8, 4, 8, 5, 1, 5, 8, -1},
-    {9, 5, 4, 10, 1, 6, 1, 7, 6, 1, 3, 7, -1, -1, -1, -1},
-    {1, 6, 10, 1, 7, 6, 1, 0, 7, 8, 7, 0, 9, 5, 4, -1},
-    {4, 0, 10, 4, 10, 5, 0, 3, 10, 6, 10, 7, 3, 7, 10, -1},
-    {7, 6, 10, 7, 10, 8, 5, 4, 10, 4, 8, 10, -1, -1, -1, -1},
-    {6, 9, 5, 6, 11, 9, 11, 8, 9, -1, -1, -1, -1, -1, -1, -1},
-    {3, 6, 11, 0, 6, 3, 0, 5, 6, 0, 9, 5, -1, -1, -1, -1},
-    {0, 11, 8, 0, 5, 11, 0, 1, 5, 5, 6, 11, -1, -1, -1, -1},
-    {6, 11, 3, 6, 3, 5, 5, 3, 1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 10, 9, 5, 11, 9, 11, 8, 11, 5, 6, -1, -1, -1, -1},
-    {0, 11, 3, 0, 6, 11, 0, 9, 6, 5, 6, 9, 1, 2, 10, -1},
-    {11, 8, 5, 11, 5, 6, 8, 0, 5, 10, 5, 2, 0, 2, 5, -1},
-    {6, 11, 3, 6, 3, 5, 2, 10, 3, 10, 5, 3, -1, -1, -1, -1},
-    {5, 8, 9, 5, 2, 8, 5, 6, 2, 3, 8, 2, -1, -1, -1, -1},
-    {9, 5, 6, 9, 6, 0, 0, 6, 2, -1, -1, -1, -1, -1, -1, -1},
-    {1, 5, 8, 1, 8, 0, 5, 6, 8, 3, 8, 2, 6, 2, 8, -1},
-    {1, 5, 6, 2, 1, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 3, 6, 1, 6, 10, 3, 8, 6, 5, 6, 9, 8, 9, 6, -1},
-    {10, 1, 0, 10, 0, 6, 9, 5, 0, 5, 6, 0, -1, -1, -1, -1},
-    {0, 3, 8, 5, 6, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {10, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {11, 5, 10, 7, 5, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {11, 5, 10, 11, 7, 5, 8, 3, 0, -1, -1, -1, -1, -1, -1, -1},
-    {5, 11, 7, 5, 10, 11, 1, 9, 0, -1, -1, -1, -1, -1, -1, -1},
-    {10, 7, 5, 10, 11, 7, 9, 8, 1, 8, 3, 1, -1, -1, -1, -1},
-    {11, 1, 2, 11, 7, 1, 7, 5, 1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 3, 1, 2, 7, 1, 7, 5, 7, 2, 11, -1, -1, -1, -1},
-    {9, 7, 5, 9, 2, 7, 9, 0, 2, 2, 11, 7, -1, -1, -1, -1},
-    {7, 5, 2, 7, 2, 11, 5, 9, 2, 3, 2, 8, 9, 8, 2, -1},
-    {2, 5, 10, 2, 3, 5, 3, 7, 5, -1, -1, -1, -1, -1, -1, -1},
-    {8, 2, 0, 8, 5, 2, 8, 7, 5, 10, 2, 5, -1, -1, -1, -1},
-    {9, 0, 1, 5, 10, 3, 5, 3, 7, 3, 10, 2, -1, -1, -1, -1},
-    {9, 8, 2, 9, 2, 1, 8, 7, 2, 10, 2, 5, 7, 5, 2, -1},
-    {1, 3, 5, 3, 7, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 7, 0, 7, 1, 1, 7, 5, -1, -1, -1, -1, -1, -1, -1},
-    {9, 0, 3, 9, 3, 5, 5, 3, 7, -1, -1, -1, -1, -1, -1, -1},
-    {9, 8, 7, 5, 9, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {5, 8, 4, 5, 10, 8, 10, 11, 8, -1, -1, -1, -1, -1, -1, -1},
-    {5, 0, 4, 5, 11, 0, 5, 10, 11, 11, 3, 0, -1, -1, -1, -1},
-    {0, 1, 9, 8, 4, 10, 8, 10, 11, 10, 4, 5, -1, -1, -1, -1},
-    {10, 11, 4, 10, 4, 5, 11, 3, 4, 9, 4, 1, 3, 1, 4, -1},
-    {2, 5, 1, 2, 8, 5, 2, 11, 8, 4, 5, 8, -1, -1, -1, -1},
-    {0, 4, 11, 0, 11, 3, 4, 5, 11, 2, 11, 1, 5, 1, 11, -1},
-    {0, 2, 5, 0, 5, 9, 2, 11, 5, 4, 5, 8, 11, 8, 5, -1},
-    {9, 4, 5, 2, 11, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {2, 5, 10, 3, 5, 2, 3, 4, 5, 3, 8, 4, -1, -1, -1, -1},
-    {5, 10, 2, 5, 2, 4, 4, 2, 0, -1, -1, -1, -1, -1, -1, -1},
-    {3, 10, 2, 3, 5, 10, 3, 8, 5, 4, 5, 8, 0, 1, 9, -1},
-    {5, 10, 2, 5, 2, 4, 1, 9, 2, 9, 4, 2, -1, -1, -1, -1},
-    {8, 4, 5, 8, 5, 3, 3, 5, 1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 4, 5, 1, 0, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {8, 4, 5, 8, 5, 3, 9, 0, 5, 0, 3, 5, -1, -1, -1, -1},
-    {9, 4, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 11, 7, 4, 9, 11, 9, 10, 11, -1, -1, -1, -1, -1, -1, -1},
-    {0, 8, 3, 4, 9, 7, 9, 11, 7, 9, 10, 11, -1, -1, -1, -1},
-    {1, 10, 11, 1, 11, 4, 1, 4, 0, 7, 4, 11, -1, -1, -1, -1},
-    {3, 1, 4, 3, 4, 8, 1, 10, 4, 7, 4, 11, 10, 11, 4, -1},
-    {4, 11, 7, 9, 11, 4, 9, 2, 11, 9, 1, 2, -1, -1, -1, -1},
-    {9, 7, 4, 9, 11, 7, 9, 1, 11, 2, 11, 1, 0, 8, 3, -1},
-    {11, 7, 4, 11, 4, 2, 2, 4, 0, -1, -1, -1, -1, -1, -1, -1},
-    {11, 7, 4, 11, 4, 2, 8, 3, 4, 3, 2, 4, -1, -1, -1, -1},
-    {2, 9, 10, 2, 7, 9, 2, 3, 7, 7, 4, 9, -1, -1, -1, -1},
-    {9, 10, 7, 9, 7, 4, 10, 2, 7, 8, 7, 0, 2, 0, 7, -1},
-    {3, 7, 10, 3, 10, 2, 7, 4, 10, 1, 10, 0, 4, 0, 10, -1},
-    {1, 10, 2, 8, 7, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 9, 1, 4, 1, 7, 7, 1, 3, -1, -1, -1, -1, -1, -1, -1},
-    {4, 9, 1, 4, 1, 7, 0, 8, 1, 8, 7, 1, -1, -1, -1, -1},
-    {4, 0, 3, 7, 4, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {4, 8, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {9, 10, 8, 10, 11, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {3, 0, 9, 3, 9, 11, 11, 9, 10, -1, -1, -1, -1, -1, -1, -1},
-    {0, 1, 10, 0, 10, 8, 8, 10, 11, -1, -1, -1, -1, -1, -1, -1},
-    {3, 1, 10, 11, 3, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 2, 11, 1, 11, 9, 9, 11, 8, -1, -1, -1, -1, -1, -1, -1},
-    {3, 0, 9, 3, 9, 11, 1, 2, 9, 2, 11, 9, -1, -1, -1, -1},
-    {0, 2, 11, 8, 0, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {3, 2, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {2, 3, 8, 2, 8, 10, 10, 8, 9, -1, -1, -1, -1, -1, -1, -1},
-    {9, 10, 2, 0, 9, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {2, 3, 8, 2, 8, 10, 0, 1, 8, 1, 10, 8, -1, -1, -1, -1},
-    {1, 10, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {1, 3, 8, 9, 1, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-    {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-};
-
+extern const std::array<std::array<uint_fast8_t, 3>, 8> CORNERS;
+extern const std::array<std::array<uint_fast8_t, 2>, 12> EDGE_CONNECTION;
+extern const std::array<std::array<int_fast8_t, 16>, 256> TRIANGLE_CONNECTION;
 } // namespace tables
 
 namespace impl {
+
 template <typename E>
 void march_cube(const std::array<float, 8> &values, E &edge_func) {
     using namespace tables;
@@ -336,16 +63,53 @@ template <typename T> T interpolate(T a, T b, float t) {
 
 struct MarchingCubes {
     size_t size_x, size_y, size_z;
-    Eigen::MatrixXf layer0, layer1;
 
-    MarchingCubes(size_t s) : size_x(s), size_y(s), size_z(s), layer0(size_x, size_y), layer1(size_x, size_y) {}
+    FVec3 origin{0.0f, 0.0f, 0.0f};
+    FVec3 lengths{1.0f, 1.0f, 1.0f};
+    FVec3 scale{1.0f, 1.0f, 1.0f};
+    float isovalue = 0.0f;
+    FMat3N layer_positions;
 
-    MarchingCubes(size_t x, size_t y, size_t z) : size_x(x), size_y(y), size_z(z), layer0(size_x, size_y), layer1(size_x, size_y) {}
+    std::array<FMat, 4> layers;
+
+    inline void set_origin_and_side_lengths(const FVec3 &o, const FVec3 &l) {
+	origin = o;
+	lengths = l;
+	scale(0) = lengths(0) / (size_x);
+	scale(1) = lengths(1) / (size_y);
+	scale(2) = lengths(2) / (size_z);
+
+	layer_positions = FMat3N(3, size_x * size_y);
+	for (size_t y = 0, idx = 0; y < size_y; y++) {
+	    for (size_t x = 0; x < size_x; x++, idx++) {
+		layer_positions(0, idx) = x * scale(0) + origin(0);
+		layer_positions(1, idx) = y * scale(1) + origin(1);
+	    }
+	}
+
+    }
+
+
+    MarchingCubes(size_t s) : size_x(s), size_y(s), size_z(s) {
+	for(int i = 0; i < layers.size(); i++) {
+	    layers[i] = FMat::Zero(size_x, size_y);
+	}
+	set_origin_and_side_lengths(origin, lengths);
+    }
+
+    MarchingCubes(size_t x, size_t y, size_t z) : size_x(x), size_y(y), size_z(z) {
+	for(int i = 0; i < layers.size(); i++) {
+	    layers[i] = FMat::Zero(size_x, size_y);
+	}
+	set_origin_and_side_lengths(origin, lengths);
+    }
 
     template <typename S>
     void extract(const S &source, std::vector<float> &vertices,
                  std::vector<uint32_t> &indices) {
-        auto fn = [&vertices](const Eigen::Vector3f &vertex) {
+        auto fn = [&vertices](const FVec3 &vertex, 
+		              const FVec3 &gradient,
+			      const FMat3 &hessian) {
             vertices.push_back(vertex(0));
             vertices.push_back(vertex(1));
             vertices.push_back(vertex(2));
@@ -359,27 +123,74 @@ struct MarchingCubes {
                               std::vector<uint32_t> &indices,
                               std::vector<float> &normals) {
         auto fn = [&vertices, &source,
-                   &normals](const Eigen::Vector3f &vertex) {
+                   &normals](const FVec3 &vertex,
+		             const FVec3 &gradient,
+			     const FMat3 &hessian) {
             vertices.push_back(vertex[0]);
             vertices.push_back(vertex[1]);
             vertices.push_back(vertex[2]);
 
 	    occ::timing::start(occ::timing::isosurface_normals);
-	    if constexpr(!impl::has_fill_normals<S>::value) {
-		auto normal = source.normal(vertex(0), vertex(1), vertex(2));
-		normals.push_back(normal[0]);
-		normals.push_back(normal[1]);
-		normals.push_back(normal[2]);
-	    }
+	    // Normalize the gradient and use it as the normal
+	    FVec3 normal = -gradient.normalized();
+	    normals.push_back(normal[0]);
+	    normals.push_back(normal[1]);
+	    normals.push_back(normal[2]);
 	    occ::timing::stop(occ::timing::isosurface_normals);
         };
 
-        extract_impl(source, fn, indices);
-	    occ::timing::start(occ::timing::isosurface_normals);
-	if constexpr(impl::has_fill_normals<S>::value) {
-	    source.fill_normals(vertices, normals);
-	}
 	occ::timing::stop(occ::timing::isosurface_normals);
+    }
+
+    template <typename S>
+    void extract_with_curvature(const S &source, std::vector<float> &vertices,
+				std::vector<uint32_t> &indices,
+				std::vector<float> &normals,
+				std::vector<float> &curvatures) {
+
+	auto fn = [&vertices, &normals, &curvatures](const FVec3 &vertex,
+						     const FVec3 &gradient,
+						     const FMat3 &hessian) {
+	    vertices.push_back(vertex(0));
+	    vertices.push_back(vertex(1));
+	    vertices.push_back(vertex(2));
+
+	    FVec3 g = gradient;
+	    FMat3 h = hessian;
+	    // Normalize the gradient and use it as the normal
+	    float l = g.norm();
+	    FVec3 normal = g / l;
+
+	    normals.push_back(-normal[0]);
+	    normals.push_back(-normal[1]);
+	    normals.push_back(-normal[2]);
+
+	    // Evaluate surface tangents u, v
+	    FVec3 u(normal[1], -normal[0], 0.0f);
+	    if (u.isZero()) {
+		u = FVec3(-normal[2], 0.0f, normal[0]);
+	    }
+	    u.normalize();
+	    FVec3 v = normal.cross(u);
+
+	    // Construct the UV matrix
+	    Eigen::Matrix<float, 3, 2> UV;
+	    UV.col(0) = u;
+	    UV.col(1) = v;
+
+	    // Calculate the shape operator matrix S
+	    Eigen::Matrix2f shape = (UV.transpose() * h * UV) / l;
+
+	    // Calculate mean and Gaussian curvatures
+	    float mean_curvature = shape.trace() / 2;
+	    float gaussian_curvature = shape.determinant();
+
+	    // Store the curvatures
+	    curvatures.push_back(mean_curvature);
+	    curvatures.push_back(gaussian_curvature);
+	};
+
+	extract_impl(source, fn, indices);
     }
 
   private:
@@ -393,62 +204,119 @@ struct MarchingCubes {
         const size_t size_less_one_y = size_y - 1;
         const size_t size_less_one_z = size_z - 1;
 
-        const float size_inv_x = 1.0 / size_less_one_x;
-        const float size_inv_y = 1.0 / size_less_one_y;
-        const float size_inv_z = 1.0 / size_less_one_z;
+        std::array<FVec3, 8> corners{FVec3::Zero()};
 
-	occ::timing::start(occ::timing::isosurface_function);
-	if constexpr(impl::has_fill_layer<S>::value) {
-	    source.fill_layer(0.0, layer0);
-	}
-	else {
-	    for (size_t y = 0; y < size_y; y++) {
-		for (size_t x = 0; x < size_x; x++) {
-		    layer0(x, y) = source(x * size_inv_x, y * size_inv_y, 0.0);
-		}
-	    }
-	}
-	occ::timing::stop(occ::timing::isosurface_function);
-
-        std::array<Eigen::Vector3f, 8> corners{Eigen::Vector3f::Zero()};
         std::array<float, 8> values{0.0f};
+	std::array<FVec3, 8> vertex_gradients;
+	std::array<FMat3, 8> vertex_hessians;
 
         IndexCache index_cache(size_x, size_y);
         uint32_t index = 0;
 
-        for (size_t z = 0; z < size_z; z++) {
+	for (size_t z = 0; z < size_z; z++) {
 	    occ::timing::start(occ::timing::isosurface_function);
-	    if constexpr(impl::has_fill_layer<S>::value) {
-		source.fill_layer((z + 1) * size_inv_z, layer1);
+
+	    if constexpr(impl::has_batch_evaluate<S>::value) {
+
+		if (z == 0) {
+		    layer_positions.row(2).setConstant(-scale(2) + origin(2));
+		    source.batch(layer_positions, Eigen::Map<FVec>(layers[0].data(), layers[0].size()));
+		    layer_positions.row(2).setConstant(origin(2));
+		    source.batch(layer_positions, Eigen::Map<FVec>(layers[1].data(), layers[1].size()));
+		    layer_positions.row(2).setConstant(scale(2) + origin(2));
+		    source.batch(layer_positions, Eigen::Map<FVec>(layers[2].data(), layers[2].size()));
+		    layer_positions.row(2).setConstant(2 * scale(2) + origin(2));
+		    source.batch(layer_positions, Eigen::Map<FVec>(layers[3].data(), layers[3].size()));
+		} else {
+		    layers[0] = layers[1];
+		    layers[1] = layers[2];
+		    layers[2] = layers[3];
+		    layer_positions.row(2).setConstant((z + 1) * scale(2) + origin(2));
+		    source.batch(layer_positions, Eigen::Map<FVec>(layers[3].data(), layers[3].size()));
+		}
 	    }
 	    else {
-		for (size_t y = 0; y < size_y; y++) {
-		    for (size_t x = 0; x < size_x; x++) {
-			layer1(x, y) =
-			    source(x * size_inv_x, y * size_inv_y, (z + 1) * size_inv_z);
+		if (z == 0) {
+		    for (size_t y = 0; y < size_y; y++) {
+			for (size_t x = 0; x < size_x; x++) {
+			    FVec3 pos;
+			    pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), origin(2) -scale(2)};
+			    layers[0](x, y) = source(pos);
+			    pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), origin(2)};
+			    layers[1](x, y) = source(pos);
+			    pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), origin(2) + scale(2)};
+			    layers[2](x, y) = source(pos);
+			    pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), origin(2) + 2 * scale(2)};
+			    layers[3](x, y) = source(pos);
+			}
 		    }
-		}
+		} else {
+		    layers[0] = layers[1];
+		    layers[1] = layers[2];
+		    layers[2] = layers[3];
+		    FVec3 pos;
+		    for (size_t y = 0; y < size_y; y++) {
+			for (size_t x = 0; x < size_x; x++) {
+			    pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), (z + 1) * scale(2) + origin(2)};
+			    layers[3](x, y) = source(pos);
+			}
+		    }
+		} 
+
 	    }
 	    occ::timing::stop(occ::timing::isosurface_function);
 
             for (size_t y = 0; y < size_less_one_y; y++) {
                 for (size_t x = 0; x < size_less_one_x; x++) {
-                    for (size_t i = 0; i < 8; i++) {
-                        const auto corner = CORNERS[i];
-                        const auto cx = corner[0], cy = corner[1],
-                                   cz = corner[2];
-                        corners[i] = {(x + cx) * size_inv_x, (y + cy) * size_inv_y,
-                                      (z + cz) * size_inv_z};
+		    const float fac_x = 2.0 / (scale(0));
+		    const float fac_y = 2.0 / (scale(1));
+		    const float fac_z = 2.0 / (scale(2));
 
-                        if (cz == 0) {
-                            values[i] = layer0(x + cx, y + cy);
-                        } else {
-                            values[i] = layer1(x + cx, y + cy);
-                        }
-                    }
+		    for (size_t i = 0; i < 8; i++) {
+			const auto corner = CORNERS[i];
+			const auto cx = corner[0], cy = corner[1], cz = corner[2];
+			corners[i] = {(x + cx) * scale(0) + origin(0), (y + cy) * scale(1) + origin(1),
+				      (z + cz) * scale(2) + origin(2)};
 
-                    auto fn = [&extract_fn, &index_cache, &indices, &index,
-                               &corners, &values, &x, &y](size_t edge) {
+			const int idx = (cz == 0) ? 1 : 2;
+			const FMat& layer = layers[idx];
+			values[i] = layer(x + cx, y + cy);
+
+			// Calculate gradient and Hessian
+			const size_t xp = std::min(x + cx + 1, size_x - 1);
+			const size_t xm = (x + cx > 0) ? x + cx - 1 : 0;
+			const size_t yp = std::min(y + cy + 1, size_y - 1);
+			const size_t ym = (y + cy > 0) ? y + cy - 1 : 0;
+
+			const Eigen::MatrixXf& layerp = (cz == 0) ? layers[2] : layers[3];
+			const Eigen::MatrixXf& layerm = (cz == 0) ? layers[0] : layers[1];
+
+			const float fx_plus = layer(xp, y + cy);
+			const float fx_minus = layer(xm, y + cy);
+			const float fy_plus = layer(x + cx, yp);
+			const float fy_minus = layer(x + cx, ym);
+			const float fz_plus = layerp(x + cx, y + cy);
+			const float fz_minus = layerm(x + cx, y + cy);
+
+			vertex_gradients[i] = FVec3(
+			    (fx_plus - fx_minus) * fac_x,
+			    (fy_plus - fy_minus) * fac_y,
+			    (fz_plus - fz_minus) * fac_z
+			);
+
+			vertex_hessians[i] = FMat3::Zero();
+			vertex_hessians[i](0, 0) = (fx_plus + fx_minus - 2.0f * values[i]) * fac_x * fac_x;
+			vertex_hessians[i](1, 1) = (fy_plus + fy_minus - 2.0f * values[i]) * fac_y * fac_y;
+			vertex_hessians[i](2, 2) = (fz_plus + fz_minus - 2.0f * values[i]) * fac_z * fac_z;
+			vertex_hessians[i](1, 0) = vertex_hessians[i](0, 1) = ((layer(xp, yp) - layer(xp, ym) - layer(xm, yp) + layer(xm, ym)) * 0.25f) * fac_x * fac_y;
+			vertex_hessians[i](2, 0) = vertex_hessians[i](0, 2) = ((layerp(xp, y + cy) - layerp(xm, y + cy) - layerm(xp, y + cy) + layerm(xm, y + cy)) * 0.25f) * fac_x * fac_z;
+			vertex_hessians[i](2, 1) = vertex_hessians[i](1, 2) = ((layerp(x + cx, yp) - layerp(x + cx, ym) - layerm(x + cx, yp) + layerm(x + cx, ym)) * 0.25f) * fac_y * fac_z;
+
+			// Form an SDF based on isovalue
+			// Won't affect gradients as it's a constant shift
+			values[i] = values[i] - isovalue;
+		    }
+                    auto fn = [&](size_t edge) {
                         const uint32_t cached_index =
                             index_cache.get(x, y, edge);
                         if (cached_index > 0) {
@@ -462,9 +330,11 @@ struct MarchingCubes {
                             index += 1;
 
                             float offset = get_offset(values[u], values[v]);
-                            Eigen::Vector3f vertex =
+                            FVec3 vertex =
                                 interpolate(corners[u], corners[v], offset);
-                            extract_fn(vertex);
+			    FVec3 gradient = interpolate(vertex_gradients[u], vertex_gradients[v], offset);
+			    FMat3 hessian = interpolate(vertex_hessians[u], vertex_hessians[v], offset);
+                            extract_fn(vertex, gradient, hessian);
                         }
                     };
 
@@ -474,8 +344,6 @@ struct MarchingCubes {
                 index_cache.advance_row();
             }
             index_cache.advance_layer();
-
-            std::swap(layer0, layer1);
         }
     }
 };

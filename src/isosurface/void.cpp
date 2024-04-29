@@ -36,6 +36,8 @@ VoidSurfaceFunctor::VoidSurfaceFunctor(const occ::crystal::Crystal &crystal,
     const auto &elements = slab.atomic_numbers;
     Mat3N coordinates = slab.cart_pos.array() * occ::units::ANGSTROM_TO_BOHR;
 
+    m_molecule = occ::core::Molecule(elements, slab.cart_pos);
+
     m_minimum_atom_pos = coordinates.rowwise().minCoeff().cast<float>();
     m_maximum_atom_pos = coordinates.rowwise().maxCoeff().cast<float>();
 
@@ -63,10 +65,10 @@ VoidSurfaceFunctor::VoidSurfaceFunctor(const occ::crystal::Crystal &crystal,
             m_atom_interpolators.back().interpolator.find_threshold(1e-8);
     }
 
-    update_region_for_isovalue();
+    update_region();
 }
 
-void VoidSurfaceFunctor::update_region_for_isovalue() {
+void VoidSurfaceFunctor::update_region() {
 
     m_origin.setConstant(0);
     Eigen::Vector3f max_pos =

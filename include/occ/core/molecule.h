@@ -30,6 +30,8 @@ class Molecule {
 
     using CellShift = std::array<int, 3>;
 
+    inline explicit Molecule() {}
+
     /**
      * Construct a Molecule from a vector of atomic numbers and positions
      *

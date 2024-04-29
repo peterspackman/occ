@@ -12,14 +12,12 @@ class StockholderWeightFunctor {
                              occ::core::Molecule &ext, float sep,
                              const InterpolatorParams & = {});
 
-
     inline void remap_vertices(const std::vector<float> &v, std::vector<float> &dest) const {
 	impl::remap_vertices(*this, v, dest);
     }
 
-    OCC_ALWAYS_INLINE float operator()(float x, float y, float z) const {
-        double tot_i{0.0}, tot_e{0.0};
-        auto pos = impl::remap_point(x, y, z, m_cube_side_length, m_origin);
+    OCC_ALWAYS_INLINE float operator()(const FVec3 &pos) const {
+        double tot_i{0.0}, tot_e{m_background_density};
 
         if (!m_bounding_box.inside(pos))
             return 1.0e8; // return an arbitrary large distance
@@ -40,72 +38,56 @@ class StockholderWeightFunctor {
             }
         }
 
-        return m_isovalue - tot_i / (tot_i + tot_e + m_background_density);
+        return tot_i / (tot_i + tot_e);
     }
 
-    void fill_layer(float offset, Eigen::Ref<Eigen::MatrixXf> layer) const {
-
+    void batch(Eigen::Ref<const FMat3N> pos, Eigen::Ref<FVec> layer) const {
         m_num_calls += layer.size();
-	auto func = [&](const Mat3N &pos) {
-	    Eigen::VectorXf inside(pos.cols());
-	    Eigen::VectorXf outside(pos.cols());
 
-	    int num_threads = occ::parallel::get_num_threads();
-	    auto inner_func = [&](int thread_id) {
-		int total_elements = pos.cols();
-		int block_size = total_elements / num_threads;
-		int start_index = thread_id * block_size;
-		int end_index = start_index + block_size;
-		if(thread_id == num_threads - 1) {
-		    end_index = total_elements;
+	int num_threads = occ::parallel::get_num_threads();
+	auto inner_func = [&](int thread_id) {
+	    int total_elements = pos.cols();
+	    int block_size = total_elements / num_threads;
+	    int start_index = thread_id * block_size;
+	    int end_index = start_index + block_size;
+	    if(thread_id == num_threads - 1) {
+		end_index = total_elements;
+	    }
+	    for(int pt = start_index; pt < end_index; pt++) {
+		Eigen::Vector3f p = pos.col(pt);
+		if (!m_bounding_box.inside(p)) {
+		    layer(pt) = 0.0;
+		    continue;
 		}
-		for(int pt = start_index; pt < end_index; pt++) {
-		    Eigen::Vector3f p = pos.col(pt).cast<float>();
-		    if (!m_bounding_box.inside(p)) {
-			inside(pt) = 0.0;
-			outside(pt) = 1e8;
-			continue;
-		    }
-		    m_num_calls++;
-		    float tot_i = 0.0;
-		    float tot_e = m_background_density;
+		m_num_calls++;
+		float tot_i = 0.0;
+		float tot_e = m_background_density;
 
-		    for (const auto &[interp, interp_positions, threshold, interior] :
-			 m_atom_interpolators) {
-			for (int i = 0; i < interp_positions.cols(); i++) {
-			    float r = (interp_positions.col(i) - p).squaredNorm();
-			    if (r > threshold)
-				continue;
-			    float rho = interp(r);
-			    if (i < interior) {
-				tot_i += rho;
-			    } else {
-				tot_e += rho;
-			    }
+		for (const auto &[interp, interp_positions, threshold, interior] :
+		     m_atom_interpolators) {
+		    for (int i = 0; i < interp_positions.cols(); i++) {
+			float r = (interp_positions.col(i) - p).squaredNorm();
+			if (r > threshold)
+			    continue;
+			float rho = interp(r);
+			if (i < interior) {
+			    tot_i += rho;
+			} else {
+			    tot_e += rho;
 			}
 		    }
-		    inside(pt) = tot_i;
-		    outside(pt) = tot_e;
 		}
-	    };
-	    occ::parallel::parallel_do(inner_func);
-	    return inside.array() / (inside.array() + outside.array());
+		layer(pt) = tot_i / (tot_i + tot_e);
+	    }
 	};
-	impl::FillParams params{
-	    m_origin,
-	    m_cube_side_length(2),
-	    m_target_separation,
-	    m_isovalue
-	};
-
-	impl::fill_layer(func, params, offset, layer);
+	occ::parallel::parallel_do(inner_func);
     }
 
 
     OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
         double tot_i{0.0}, tot_e{0.0};
         Eigen::Vector3f tot_i_g(0.0, 0.0, 0.0), tot_e_g(0.0, 0.0, 0.0);
-        auto pos = impl::remap_point(x, y, z, m_cube_side_length, m_origin);
+        auto pos = Eigen::Vector3f(x, y, z);
 
         if (!m_bounding_box.inside(pos))
             return pos.normalized(); // zero normal
@@ -151,8 +133,6 @@ class StockholderWeightFunctor {
 	return (side_length().array() / m_target_separation).ceil().cast<int>();
     }
 
-    inline float isovalue() const { return m_isovalue; }
-    inline void set_isovalue(float iso) { m_isovalue = iso; }
     inline const auto &origin() const { return m_origin; }
     inline int num_calls() const { return m_num_calls; }
 
@@ -166,7 +146,6 @@ class StockholderWeightFunctor {
     Eigen::Vector3f m_cube_side_length;
     InterpolatorParams m_interpolator_params;
     Eigen::Vector3f m_origin;
-    float m_isovalue{0.5};
     float m_background_density{0};
     mutable int m_num_calls{0};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};

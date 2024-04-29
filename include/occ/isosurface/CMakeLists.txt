@@ -1,4 +1,5 @@
 set(OCC_ISOSURFACE_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/curvature.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/electric_potential.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/electron_density.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.h"

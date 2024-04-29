@@ -1,7 +1,7 @@
 #pragma once
-#include <cwchar>
 #include <occ/qm/mo.h>
 #include <occ/qm/expectation.h>
+#include <occ/core/log.h>
 
 namespace occ::qm {
 
@@ -72,6 +72,7 @@ public:
 	const auto &bf_to_atom = basis.bf_to_atom();
 	const auto &first_bf = basis.first_bf();
 	const auto &atom_to_shell = basis.atom_to_shell();
+	occ::log::info("computing atomic gradients");
 
 	Mat3N result = Mat3N::Zero(3, atoms.size());
 	auto ovlp = m_proc.compute_overlap_gradient();

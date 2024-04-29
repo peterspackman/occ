@@ -14,9 +14,8 @@ class PromoleculeDensityFunctor {
 	impl::remap_vertices(*this, v, dest);
     }
 
-    float operator()(float x, float y, float z) const {
+    OCC_ALWAYS_INLINE float operator()(const FVec3 &pos) const {
         float result{0.0};
-        auto pos = impl::remap_point(x, y, z, m_cube_side_length, m_origin);
 
         if (!m_bounding_box.inside(pos))
             return 1.0e8; // return an arbitrary large distance
@@ -33,13 +32,12 @@ class PromoleculeDensityFunctor {
             }
         }
 
-        return m_isovalue - result;
+        return result;
     }
 
-    OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {
+    OCC_ALWAYS_INLINE FVec3 gradient(const FVec3 &pos) const {
         double result{0.0};
-        Eigen::Vector3f grad(0.0, 0.0, 0.0);
-        auto pos = impl::remap_point(x, y, z, m_cube_side_length, m_origin);
+        FVec3 grad = FVec3::Zero();
 
         if (!m_bounding_box.inside(pos))
             return pos.normalized(); // zero normal
@@ -48,7 +46,7 @@ class PromoleculeDensityFunctor {
         for (const auto &[interp, interp_positions, threshold, interior] :
              m_atom_interpolators) {
             for (int i = 0; i < interp_positions.cols(); i++) {
-                Eigen::Vector3f v = interp_positions.col(i) - pos;
+                FVec3 v = interp_positions.col(i) - pos;
                 float r = v.squaredNorm();
                 if (r > threshold)
                     continue;
@@ -58,8 +56,7 @@ class PromoleculeDensityFunctor {
                 grad.array() += 2 * v.array() * grad_rho;
             }
         }
-
-        return grad.normalized();
+        return grad;
     }
 
     inline const auto &side_length() const { return m_cube_side_length; }
@@ -67,8 +64,6 @@ class PromoleculeDensityFunctor {
     inline Eigen::Vector3i cubes_per_side() const { 
 	return (side_length().array() / m_target_separation).ceil().cast<int>();
     }
-
-    inline float isovalue() const { return m_isovalue; }
 
     inline void set_isovalue(float iso) {
         m_isovalue = iso;
@@ -82,9 +77,9 @@ class PromoleculeDensityFunctor {
     void update_region_for_isovalue();
 
     float m_buffer{8.0};
-    Eigen::Vector3f m_cube_side_length;
+    FVec3 m_cube_side_length;
     InterpolatorParams m_interpolator_params;
-    Eigen::Vector3f m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
+    FVec3 m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
     float m_isovalue{0.002};
     mutable int m_num_calls{0};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
