@@ -90,171 +90,19 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1isosurface_1_1impl.htm
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">occ::isosurface::impl Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1impl_1_1FillParams.html">FillParams</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:abae2390506cc2e954612a36c45d115b2"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
-<tr class="memitem:abae2390506cc2e954612a36c45d115b2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#abae2390506cc2e954612a36c45d115b2">fill_layer</a> (Func &amp;f, const <a class="el" href="structocc_1_1isosurface_1_1impl_1_1FillParams.html">FillParams</a> &amp;params, float offset, Eigen::Ref&lt; Eigen::MatrixXf &gt; layer)</td></tr>
-<tr class="separator:abae2390506cc2e954612a36c45d115b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a380a10dfef8ea64e1e86698d1886fd52"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
 <tr class="memitem:a380a10dfef8ea64e1e86698d1886fd52"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a380a10dfef8ea64e1e86698d1886fd52">remap_vertices</a> (const Func &amp;f, const std::vector&lt; float &gt; &amp;v, std::vector&lt; float &gt; &amp;dest)</td></tr>
 <tr class="separator:a380a10dfef8ea64e1e86698d1886fd52"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75c467de08d0a437b929b204dea52026"><td class="memItemLeft" align="right" valign="top">Eigen::Vector3f&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a75c467de08d0a437b929b204dea52026">remap_point</a> (float x, float y, float z, const Eigen::Vector3f &amp;cube, const Eigen::Vector3f &amp;o) noexcept</td></tr>
-<tr class="separator:a75c467de08d0a437b929b204dea52026"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1d4eecb07bc17e06308521869178798"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
-<tr class="memitem:ad1d4eecb07bc17e06308521869178798"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#ad1d4eecb07bc17e06308521869178798">fill_normals</a> (Func &amp;f, const <a class="el" href="structocc_1_1isosurface_1_1impl_1_1FillParams.html">FillParams</a> &amp;params, const std::vector&lt; float &gt; &amp;vertices, std::vector&lt; float &gt; &amp;normals)</td></tr>
-<tr class="separator:ad1d4eecb07bc17e06308521869178798"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="abae2390506cc2e954612a36c45d115b2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abae2390506cc2e954612a36c45d115b2">&#9670;&nbsp;</a></span>fill_layer()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class Func &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void occ::isosurface::impl::fill_layer </td>
-          <td>(</td>
-          <td class="paramtype">Func &amp;&#160;</td>
-          <td class="paramname"><em>f</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structocc_1_1isosurface_1_1impl_1_1FillParams.html">FillParams</a> &amp;&#160;</td>
-          <td class="paramname"><em>params</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>offset</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Eigen::Ref&lt; Eigen::MatrixXf &gt;&#160;</td>
-          <td class="paramname"><em>layer</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ad1d4eecb07bc17e06308521869178798"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1d4eecb07bc17e06308521869178798">&#9670;&nbsp;</a></span>fill_normals()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class Func &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void occ::isosurface::impl::fill_normals </td>
-          <td>(</td>
-          <td class="paramtype">Func &amp;&#160;</td>
-          <td class="paramname"><em>f</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structocc_1_1isosurface_1_1impl_1_1FillParams.html">FillParams</a> &amp;&#160;</td>
-          <td class="paramname"><em>params</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::vector&lt; float &gt; &amp;&#160;</td>
-          <td class="paramname"><em>vertices</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
-          <td class="paramname"><em>normals</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a75c467de08d0a437b929b204dea52026"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a75c467de08d0a437b929b204dea52026">&#9670;&nbsp;</a></span>remap_point()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">Eigen::Vector3f occ::isosurface::impl::remap_point </td>
-          <td>(</td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>z</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const Eigen::Vector3f &amp;&#160;</td>
-          <td class="paramname"><em>cube</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const Eigen::Vector3f &amp;&#160;</td>
-          <td class="paramname"><em>o</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a380a10dfef8ea64e1e86698d1886fd52"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a380a10dfef8ea64e1e86698d1886fd52">&#9670;&nbsp;</a></span>remap_vertices()</h2>
 

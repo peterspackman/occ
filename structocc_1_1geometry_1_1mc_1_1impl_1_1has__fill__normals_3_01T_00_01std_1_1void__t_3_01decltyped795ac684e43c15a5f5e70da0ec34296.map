@@ -1,4 +1,0 @@
-<map id="occ::geometry::mc::impl::has_fill_normals&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().fill_normals(std::declval&lt; const std::vector&lt; float &gt; &amp; &gt;(), std::declval&lt; std::vector&lt; float &gt; &amp; &gt;()))&gt; &gt;" name="occ::geometry::mc::impl::has_fill_normals&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().fill_normals(std::declval&lt; const std::vector&lt; float &gt; &amp; &gt;(), std::declval&lt; std::vector&lt; float &gt; &amp; &gt;()))&gt; &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="5,80,235,209"/>
-<area shape="rect" id="node2" title=" " alt="" coords="64,5,176,32"/>
-</map>

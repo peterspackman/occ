@@ -1,11 +1,12 @@
 var marching__cubes_8h =
 [
-    [ "has_fill_layer", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer.html", null ],
-    [ "has_fill_normals", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals.html", null ],
-    [ "has_fill_layer< T, std::void_t< decltype(std::declval< T >().fill_layer(std::declval< float >(), std::declval< Eigen::Ref< Eigen::MatrixXf >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer_3_01T_00_01std_1_1void__t_3_01decltype_012440534cfad48502b5540770ce75c85.html", null ],
-    [ "has_fill_normals< T, std::void_t< decltype(std::declval< T >().fill_normals(std::declval< const std::vector< float > & >(), std::declval< std::vector< float > & >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals_3_01T_00_01std_1_1void__t_3_01decltype127bc92b5282ec611bd1ef77c682737f.html", null ],
+    [ "has_batch_evaluate", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ],
+    [ "has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N >>(), std::declval< Eigen::Ref< FVec >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyc53da7eeae9ee1d678c974c152124f3c.html", null ],
     [ "MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1MarchingCubes" ],
     [ "get_offset", "marching__cubes_8h.html#af21221977d61e288ddba8a816749fca5", null ],
     [ "interpolate", "marching__cubes_8h.html#a18252dc104a0feefd61c7126dbc79f5e", null ],
-    [ "march_cube", "marching__cubes_8h.html#ab84d90947c9a8a551a5873fd338d064a", null ]
+    [ "march_cube", "marching__cubes_8h.html#ab84d90947c9a8a551a5873fd338d064a", null ],
+    [ "CORNERS", "marching__cubes_8h.html#a1a5c5b112ee6e4201820cc34d4c1ac9b", null ],
+    [ "EDGE_CONNECTION", "marching__cubes_8h.html#a8e4452143a2501aa06f77604e3c30d0c", null ],
+    [ "TRIANGLE_CONNECTION", "marching__cubes_8h.html#a397c7de94dc2f1ed420bed1cd96964d8", null ]
 ];

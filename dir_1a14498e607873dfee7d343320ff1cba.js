@@ -1,6 +1,7 @@
 var dir_1a14498e607873dfee7d343320ff1cba =
 [
     [ "common.h", "common_8h.html", "common_8h" ],
+    [ "curvature.h", "curvature_8h.html", "curvature_8h" ],
     [ "electric_potential.h", "electric__potential_8h.html", [
       [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ]
     ] ],

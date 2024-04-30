@@ -5,7 +5,8 @@ var namespaces_dup =
       [ "to_json", "namespaceEigen.html#acafa7906b609fc09d79248632b59b9f8", null ]
     ] ],
     [ "fmt", null, [
-      [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ]
+      [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ],
+      [ "formatter< occ::qm::Shell >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4" ]
     ] ],
     [ "occ", "namespaceocc.html", "namespaceocc" ],
     [ "quickhull", "namespacequickhull.html", "namespacequickhull" ],

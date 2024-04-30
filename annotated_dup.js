@@ -1,7 +1,8 @@
 var annotated_dup =
 [
     [ "fmt", null, [
-      [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ]
+      [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ],
+      [ "formatter< occ::qm::Shell >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4" ]
     ] ],
     [ "occ", "namespaceocc.html", [
       [ "core", "namespaceocc_1_1core.html", [
@@ -74,10 +75,8 @@ var annotated_dup =
           [ "impl", "namespaceocc_1_1geometry_1_1mc_1_1impl.html", [
             [ "Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge" ],
             [ "EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash" ],
-            [ "has_fill_layer", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer.html", null ],
-            [ "has_fill_normals", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals.html", null ],
-            [ "has_fill_layer< T, std::void_t< decltype(std::declval< T >().fill_layer(std::declval< float >(), std::declval< Eigen::Ref< Eigen::MatrixXf >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer_3_01T_00_01std_1_1void__t_3_01decltype_012440534cfad48502b5540770ce75c85.html", null ],
-            [ "has_fill_normals< T, std::void_t< decltype(std::declval< T >().fill_normals(std::declval< const std::vector< float > & >(), std::declval< std::vector< float > & >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals_3_01T_00_01std_1_1void__t_3_01decltype127bc92b5282ec611bd1ef77c682737f.html", null ]
+            [ "has_batch_evaluate", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ],
+            [ "has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N >>(), std::declval< Eigen::Ref< FVec >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyc53da7eeae9ee1d678c974c152124f3c.html", null ]
           ] ],
           [ "LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes" ],
           [ "MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1MarchingCubes" ]
@@ -162,12 +161,10 @@ var annotated_dup =
         [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ]
       ] ],
       [ "isosurface", "namespaceocc_1_1isosurface.html", [
-        [ "impl", "namespaceocc_1_1isosurface_1_1impl.html", [
-          [ "FillParams", "structocc_1_1isosurface_1_1impl_1_1FillParams.html", "structocc_1_1isosurface_1_1impl_1_1FillParams" ]
-        ] ],
         [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
         [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
         [ "InterpolatorParams", "structocc_1_1isosurface_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1InterpolatorParams" ],
+        [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
         [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
         [ "ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", "classocc_1_1isosurface_1_1ElectronDensityFunctor" ],
         [ "PromoleculeDensityFunctor", "classocc_1_1isosurface_1_1PromoleculeDensityFunctor.html", "classocc_1_1isosurface_1_1PromoleculeDensityFunctor" ],

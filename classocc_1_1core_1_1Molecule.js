@@ -6,6 +6,7 @@ var classocc_1_1core_1_1Molecule =
       [ "Centroid", "classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da6c2d48822f51238ae93fa27d054764d4", null ],
       [ "CenterOfMass", "classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da69b3d7faa64d0e963797dc516a3d1a70", null ]
     ] ],
+    [ "Molecule", "classocc_1_1core_1_1Molecule.html#a053485fb0a1f14056756096c079865b3", null ],
     [ "Molecule", "classocc_1_1core_1_1Molecule.html#a42a0eaa7cdfc2a0742cf582d1cad5e25", null ],
     [ "Molecule", "classocc_1_1core_1_1Molecule.html#a2aeaafb397bc9206faf4524c7b945511", null ],
     [ "Molecule", "classocc_1_1core_1_1Molecule.html#a1ab5c42d2a7ea5b38f9c903d66f7f209", null ],

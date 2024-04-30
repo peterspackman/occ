@@ -102,11 +102,14 @@ $(document).ready(function(){initNavTree('structocc_1_1geometry_1_1mc_1_1Marchin
 <div class="dynheader">
 Collaboration diagram for occ::geometry::mc::MarchingCubes:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="structocc_1_1geometry_1_1mc_1_1MarchingCubes__coll__graph.svg" width="162" height="171"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="structocc_1_1geometry_1_1mc_1_1MarchingCubes__coll__graph.svg" width="162" height="171"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:ad2dd328c670f6a0f91223f36923a2026"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#ad2dd328c670f6a0f91223f36923a2026">set_origin_and_side_lengths</a> (const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;o, const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;l)</td></tr>
+<tr class="separator:ad2dd328c670f6a0f91223f36923a2026"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a124555a0a11ccf7719d562e7d0e5e8f1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#a124555a0a11ccf7719d562e7d0e5e8f1">MarchingCubes</a> (size_t s)</td></tr>
 <tr class="separator:a124555a0a11ccf7719d562e7d0e5e8f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9955e654dbdcf0720c82063cb14b1fb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#ad9955e654dbdcf0720c82063cb14b1fb">MarchingCubes</a> (size_t x, size_t y, size_t z)</td></tr>
@@ -117,6 +120,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa42b9306dce604e705b09db398c927cc"><td class="memTemplParams" colspan="2">template&lt;typename S &gt; </td></tr>
 <tr class="memitem:aa42b9306dce604e705b09db398c927cc"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#aa42b9306dce604e705b09db398c927cc">extract_with_normals</a> (const S &amp;source, std::vector&lt; float &gt; &amp;vertices, std::vector&lt; uint32_t &gt; &amp;indices, std::vector&lt; float &gt; &amp;normals)</td></tr>
 <tr class="separator:aa42b9306dce604e705b09db398c927cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb5d5e1cd812ed8dea7c362c6ddd2479"><td class="memTemplParams" colspan="2">template&lt;typename S &gt; </td></tr>
+<tr class="memitem:abb5d5e1cd812ed8dea7c362c6ddd2479"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#abb5d5e1cd812ed8dea7c362c6ddd2479">extract_with_curvature</a> (const S &amp;source, std::vector&lt; float &gt; &amp;vertices, std::vector&lt; uint32_t &gt; &amp;indices, std::vector&lt; float &gt; &amp;normals, std::vector&lt; float &gt; &amp;curvatures)</td></tr>
+<tr class="separator:abb5d5e1cd812ed8dea7c362c6ddd2479"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -126,10 +132,18 @@ Public Attributes</h2></td></tr>
 <tr class="separator:aa98efebc7bf23665dde69407eb18e226"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acae0b1e387a674697f88d9ce94e2b18b"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#acae0b1e387a674697f88d9ce94e2b18b">size_z</a></td></tr>
 <tr class="separator:acae0b1e387a674697f88d9ce94e2b18b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac346768bd50bbe01835353bcc1041f8d"><td class="memItemLeft" align="right" valign="top">Eigen::MatrixXf&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#ac346768bd50bbe01835353bcc1041f8d">layer0</a></td></tr>
-<tr class="separator:ac346768bd50bbe01835353bcc1041f8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a027bc0e1932f18b5ced84fcb0891bb98"><td class="memItemLeft" align="right" valign="top">Eigen::MatrixXf&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#a027bc0e1932f18b5ced84fcb0891bb98">layer1</a></td></tr>
-<tr class="separator:a027bc0e1932f18b5ced84fcb0891bb98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd837cabe3b7aa403c611a454398b30f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#acd837cabe3b7aa403c611a454398b30f">origin</a> {0.0f, 0.0f, 0.0f}</td></tr>
+<tr class="separator:acd837cabe3b7aa403c611a454398b30f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7482806d88b3f2fb78ff702a019e572"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#ac7482806d88b3f2fb78ff702a019e572">lengths</a> {1.0f, 1.0f, 1.0f}</td></tr>
+<tr class="separator:ac7482806d88b3f2fb78ff702a019e572"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad663aa7a2f1db73246a2bdd8f8e7a688"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#ad663aa7a2f1db73246a2bdd8f8e7a688">scale</a> {1.0f, 1.0f, 1.0f}</td></tr>
+<tr class="separator:ad663aa7a2f1db73246a2bdd8f8e7a688"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af68df9995efc2b28ddb588b54a459946"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#af68df9995efc2b28ddb588b54a459946">isovalue</a> = 0.0f</td></tr>
+<tr class="separator:af68df9995efc2b28ddb588b54a459946"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabfb2b54904681a0e541162dc2aaab0b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae40efa7687123d59b22c55dd623bc2fc">FMat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#aabfb2b54904681a0e541162dc2aaab0b">layer_positions</a></td></tr>
+<tr class="separator:aabfb2b54904681a0e541162dc2aaab0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d85933545875136b06981cf996d5509"><td class="memItemLeft" align="right" valign="top">std::array&lt; <a class="el" href="namespaceocc.html#a026715166508cbdcdf58481185c0b3ea">FMat</a>, 4 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#a8d85933545875136b06981cf996d5509">layers</a></td></tr>
+<tr class="separator:a8d85933545875136b06981cf996d5509"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a124555a0a11ccf7719d562e7d0e5e8f1"></a>
@@ -245,6 +259,62 @@ template&lt;typename S &gt; </div>
 
 </div>
 </div>
+<a id="abb5d5e1cd812ed8dea7c362c6ddd2479"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb5d5e1cd812ed8dea7c362c6ddd2479">&#9670;&nbsp;</a></span>extract_with_curvature()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename S &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::geometry::mc::MarchingCubes::extract_with_curvature </td>
+          <td>(</td>
+          <td class="paramtype">const S &amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vertices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; uint32_t &gt; &amp;&#160;</td>
+          <td class="paramname"><em>indices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>normals</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>curvatures</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aa42b9306dce604e705b09db398c927cc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa42b9306dce604e705b09db398c927cc">&#9670;&nbsp;</a></span>extract_with_normals()</h2>
 
@@ -295,29 +365,121 @@ template&lt;typename S &gt; </div>
 
 </div>
 </div>
+<a id="ad2dd328c670f6a0f91223f36923a2026"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad2dd328c670f6a0f91223f36923a2026">&#9670;&nbsp;</a></span>set_origin_and_side_lengths()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::geometry::mc::MarchingCubes::set_origin_and_side_lengths </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>o</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>l</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="ac346768bd50bbe01835353bcc1041f8d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac346768bd50bbe01835353bcc1041f8d">&#9670;&nbsp;</a></span>layer0</h2>
+<a id="af68df9995efc2b28ddb588b54a459946"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af68df9995efc2b28ddb588b54a459946">&#9670;&nbsp;</a></span>isovalue</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Eigen::MatrixXf occ::geometry::mc::MarchingCubes::layer0</td>
+          <td class="memname">float occ::geometry::mc::MarchingCubes::isovalue = 0.0f</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a027bc0e1932f18b5ced84fcb0891bb98"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a027bc0e1932f18b5ced84fcb0891bb98">&#9670;&nbsp;</a></span>layer1</h2>
+<a id="aabfb2b54904681a0e541162dc2aaab0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabfb2b54904681a0e541162dc2aaab0b">&#9670;&nbsp;</a></span>layer_positions</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Eigen::MatrixXf occ::geometry::mc::MarchingCubes::layer1</td>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae40efa7687123d59b22c55dd623bc2fc">FMat3N</a> occ::geometry::mc::MarchingCubes::layer_positions</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8d85933545875136b06981cf996d5509"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d85933545875136b06981cf996d5509">&#9670;&nbsp;</a></span>layers</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;<a class="el" href="namespaceocc.html#a026715166508cbdcdf58481185c0b3ea">FMat</a>, 4&gt; occ::geometry::mc::MarchingCubes::layers</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac7482806d88b3f2fb78ff702a019e572"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac7482806d88b3f2fb78ff702a019e572">&#9670;&nbsp;</a></span>lengths</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> occ::geometry::mc::MarchingCubes::lengths {1.0f, 1.0f, 1.0f}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acd837cabe3b7aa403c611a454398b30f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd837cabe3b7aa403c611a454398b30f">&#9670;&nbsp;</a></span>origin</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> occ::geometry::mc::MarchingCubes::origin {0.0f, 0.0f, 0.0f}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad663aa7a2f1db73246a2bdd8f8e7a688"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad663aa7a2f1db73246a2bdd8f8e7a688">&#9670;&nbsp;</a></span>scale</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> occ::geometry::mc::MarchingCubes::scale {1.0f, 1.0f, 1.0f}</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -73,5 +73,6 @@ var namespaceocc_1_1io =
     [ "point_charges_from_string", "namespaceocc_1_1io.html#a3903e63674924c2d0b6cf6089690b474", null ],
     [ "valid_json_format_string", "namespaceocc_1_1io.html#a03fbffee6c9f175af30275db3fe30f69", null ],
     [ "write_obj_file", "namespaceocc_1_1io.html#aec74af2b9b519a64663daa2fb77e4719", null ],
-    [ "write_ply_file", "namespaceocc_1_1io.html#a8b8b6eb8568d47e85b96130c3c57268d", null ]
+    [ "write_ply_file", "namespaceocc_1_1io.html#a8b8b6eb8568d47e85b96130c3c57268d", null ],
+    [ "write_ply_mesh", "namespaceocc_1_1io.html#abd4eeade13601bbdbcb78ac434cbce41", null ]
 ];

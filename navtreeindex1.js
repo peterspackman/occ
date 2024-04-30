@@ -1,5 +1,7 @@
 var NAVTREEINDEX1 =
 {
+"classocc_1_1crystal_1_1Crystal.html#a05ba2aa184d1d4fc05a18c339c766c90":[2,0,1,1,3,0],
+"classocc_1_1crystal_1_1Crystal.html#a070f081cf143d7547bdbcdeeab683f84":[2,0,1,1,3,6],
 "classocc_1_1crystal_1_1Crystal.html#a0e4f57e59b377f98ed9529aa94c7a25e":[2,0,1,1,3,8],
 "classocc_1_1crystal_1_1Crystal.html#a116f176e72cb178db6087915ac493ad0":[2,0,1,1,3,3],
 "classocc_1_1crystal_1_1Crystal.html#a2777bc54a23a6aee6ecd35805ab1d5e3":[2,0,1,1,3,19],
@@ -247,7 +249,5 @@ var NAVTREEINDEX1 =
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2b86bc4ead94edf1730a2fc3e534fcf6":[2,0,1,2,3,3,122],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2b8932dd4f582fafc9ec9583b5350b2d":[2,0,1,2,3,3,192],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2ccad8e96a5b622a4d12a9efb3b2c8af":[2,0,1,2,3,3,297],
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2d06068baeffd27931a4e756ef520360":[2,0,1,2,3,3,234],
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2d8881d1b16d0f82c28d59471a9dbd79":[2,0,1,2,3,3,0],
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2f2f66d0c1f89c54a2dea234132f15b9":[2,0,1,2,3,3,111]
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2d06068baeffd27931a4e756ef520360":[2,0,1,2,3,3,234]
 };

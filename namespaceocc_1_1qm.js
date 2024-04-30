@@ -68,7 +68,6 @@ var namespaceocc_1_1qm =
     [ "merge_basis_sets", "namespaceocc_1_1qm.html#a096777b12f35eca1e096b98cb195817c", null ],
     [ "merge_molecular_orbitals", "namespaceocc_1_1qm.html#a0adc4f738752e141752bed0c8ec9d665", null ],
     [ "mulliken_partition", "namespaceocc_1_1qm.html#abbd3ff1729602847daf45753f527aa15", null ],
-    [ "operator<<", "namespaceocc_1_1qm.html#a0dacbd1a6c0a6d40901c695295112cb4", null ],
     [ "override_basis_set_directory", "namespaceocc_1_1qm.html#abdfb91e16998995013688d5f811b5996", null ],
     [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
     [ "spinorbital_kind_to_string", "namespaceocc_1_1qm.html#a40cf6764e46ed92ca114f4858d415943", null ],

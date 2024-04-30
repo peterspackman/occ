@@ -78,15 +78,13 @@ var hierarchy =
     [ "occ::main::FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", null ],
     [ "std::false_type", null, [
       [ "occ::core::numpy::impl::is_complex< T >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html", null ],
-      [ "occ::geometry::mc::impl::has_fill_layer< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer.html", null ],
-      [ "occ::geometry::mc::impl::has_fill_normals< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals.html", null ]
+      [ "occ::geometry::mc::impl::has_batch_evaluate< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ]
     ] ],
     [ "occ::io::FchkReader::FchkBasis", "structocc_1_1io_1_1FchkReader_1_1FchkBasis.html", null ],
     [ "occ::io::FchkReader", "classocc_1_1io_1_1FchkReader.html", null ],
     [ "occ::io::impl::FchkScalarWriter", "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html", null ],
     [ "occ::io::impl::FchkVectorWriter", "structocc_1_1io_1_1impl_1_1FchkVectorWriter.html", null ],
     [ "occ::io::FchkWriter", "classocc_1_1io_1_1FchkWriter.html", null ],
-    [ "occ::isosurface::impl::FillParams", "structocc_1_1isosurface_1_1impl_1_1FillParams.html", null ],
     [ "occ::core::Fraction", "classocc_1_1core_1_1Fraction.html", null ],
     [ "occ::dft::impl::Functionals", "structocc_1_1dft_1_1impl_1_1Functionals.html", null ],
     [ "occ::io::GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", null ],
@@ -145,6 +143,9 @@ var hierarchy =
     [ "occ::gto::MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", null ],
     [ "occ::main::PairEnergy::Monomer", "structocc_1_1main_1_1PairEnergy_1_1Monomer.html", null ],
     [ "occ::core::Multipole< L >", "structocc_1_1core_1_1Multipole.html", null ],
+    [ "nested_formatter", null, [
+      [ "fmt::formatter< occ::qm::Shell >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html", null ]
+    ] ],
     [ "occ::io::crystalgrower::NetWriter", "classocc_1_1io_1_1crystalgrower_1_1NetWriter.html", null ],
     [ "occ::dft::NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", null ],
     [ "occ::core::numpy::NumpyArray", "structocc_1_1core_1_1numpy_1_1NumpyArray.html", null ],
@@ -213,6 +214,7 @@ var hierarchy =
     [ "occ::io::crystalgrower::StructureWriter", "classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html", null ],
     [ "occ::crystal::Surface", "classocc_1_1crystal_1_1Surface.html", null ],
     [ "occ::solvent::surface::Surface", "structocc_1_1solvent_1_1surface_1_1Surface.html", null ],
+    [ "occ::isosurface::SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", null ],
     [ "occ::crystal::SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", null ],
     [ "occ::io::SymmetryData", "structocc_1_1io_1_1SymmetryData.html", null ],
     [ "occ::crystal::SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", null ],
@@ -223,8 +225,7 @@ var hierarchy =
     [ "occ::core::TerminalSize", "structocc_1_1core_1_1TerminalSize.html", null ],
     [ "std::true_type", null, [
       [ "occ::core::numpy::impl::is_complex< std::complex< T > >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html", null ],
-      [ "occ::geometry::mc::impl::has_fill_layer< T, std::void_t< decltype(std::declval< T >().fill_layer(std::declval< float >(), std::declval< Eigen::Ref< Eigen::MatrixXf >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__layer_3_01T_00_01std_1_1void__t_3_01decltype_012440534cfad48502b5540770ce75c85.html", null ],
-      [ "occ::geometry::mc::impl::has_fill_normals< T, std::void_t< decltype(std::declval< T >().fill_normals(std::declval< const std::vector< float > & >(), std::declval< std::vector< float > & >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__fill__normals_3_01T_00_01std_1_1void__t_3_01decltype127bc92b5282ec611bd1ef77c682737f.html", null ]
+      [ "occ::geometry::mc::impl::has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N >>(), std::declval< Eigen::Ref< FVec >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyc53da7eeae9ee1d678c974c152124f3c.html", null ]
     ] ],
     [ "occ::crystal::UnitCell", "classocc_1_1crystal_1_1UnitCell.html", null ],
     [ "CLI::Validator", null, [

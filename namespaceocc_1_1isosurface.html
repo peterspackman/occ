@@ -92,7 +92,8 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1isosurface.html',''); 
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">occ::isosurface Namespace Reference</div>  </div>
 </div><!--header-->
@@ -111,6 +112,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1InterpolatorParams.html">InterpolatorParams</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1SurfaceCurvature.html">SurfaceCurvature</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectricPotentialFunctor.html">ElectricPotentialFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html">ElectronDensityFunctor</a></td></tr>
@@ -126,6 +129,11 @@ Classes</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:a5c2777640a8f63915e0d79fdcc302f6c"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a5c2777640a8f63915e0d79fdcc302f6c">LinearInterpolatorFloat</a> = <a class="el" href="classocc_1_1core_1_1Interpolator1D.html">occ::core::Interpolator1D</a>&lt; float, occ::core::DomainMapping::Linear &gt;</td></tr>
 <tr class="separator:a5c2777640a8f63915e0d79fdcc302f6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a3770fbe091fed343b7379fa56c5a96cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1isosurface_1_1SurfaceCurvature.html">SurfaceCurvature</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a3770fbe091fed343b7379fa56c5a96cc">calculate_curvature</a> (const std::vector&lt; float &gt; &amp;mean, const std::vector&lt; float &gt; &amp;gaussian)</td></tr>
+<tr class="separator:a3770fbe091fed343b7379fa56c5a96cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a5c2777640a8f63915e0d79fdcc302f6c"></a>
@@ -136,6 +144,35 @@ Typedefs</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">using <a class="el" href="namespaceocc_1_1isosurface.html#a5c2777640a8f63915e0d79fdcc302f6c">occ::isosurface::LinearInterpolatorFloat</a> = typedef <a class="el" href="classocc_1_1core_1_1Interpolator1D.html">occ::core::Interpolator1D</a>&lt;float, occ::core::DomainMapping::Linear&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a3770fbe091fed343b7379fa56c5a96cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3770fbe091fed343b7379fa56c5a96cc">&#9670;&nbsp;</a></span>calculate_curvature()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1isosurface_1_1SurfaceCurvature.html">SurfaceCurvature</a> occ::isosurface::calculate_curvature </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mean</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>gaussian</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -105,14 +105,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a25876aa5158a3380d88cba1adef49048"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7137f84e6a277d1dc2250c65128e95bd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html#a7137f84e6a277d1dc2250c65128e95bd">remap_vertices</a> (const std::vector&lt; float &gt; &amp;v, std::vector&lt; float &gt; &amp;dest) const</td></tr>
 <tr class="separator:a7137f84e6a277d1dc2250c65128e95bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a754e5744a1fd1a18dd4b6ed58cc6a7f2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html#a754e5744a1fd1a18dd4b6ed58cc6a7f2">fill_layer</a> (float offset, Eigen::Ref&lt; Eigen::MatrixXf &gt; layer) const</td></tr>
-<tr class="separator:a754e5744a1fd1a18dd4b6ed58cc6a7f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8d26e36ef78a568839fd6a800c8b798"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html#ab8d26e36ef78a568839fd6a800c8b798">fill_normals</a> (const std::vector&lt; float &gt; &amp;vertices, std::vector&lt; float &gt; &amp;normals) const</td></tr>
-<tr class="separator:ab8d26e36ef78a568839fd6a800c8b798"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa3e32ac9cb4669789ad7dd10976ccfbe"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html#aa3e32ac9cb4669789ad7dd10976ccfbe">isovalue</a> () const</td></tr>
-<tr class="separator:aa3e32ac9cb4669789ad7dd10976ccfbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73a292af8de41ff08345bcb698af94ce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html#a73a292af8de41ff08345bcb698af94ce">set_isovalue</a> (float iso)</td></tr>
-<tr class="separator:a73a292af8de41ff08345bcb698af94ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc45e48eb81315233d80d97e54b72545"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html#abc45e48eb81315233d80d97e54b72545">batch</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#ae40efa7687123d59b22c55dd623bc2fc">FMat3N</a> &gt; pos, Eigen::Ref&lt; <a class="el" href="namespaceocc.html#a02ba53886690b76ebea4b6b0d3168f65">FVec</a> &gt; layer) const</td></tr>
+<tr class="separator:abc45e48eb81315233d80d97e54b72545"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abfe37d383cf6e9a494cc12c802a8012b"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html#abfe37d383cf6e9a494cc12c802a8012b">side_length</a> () const</td></tr>
 <tr class="separator:abfe37d383cf6e9a494cc12c802a8012b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac14bae5b76e38af000aca459937bc6e7"><td class="memItemLeft" align="right" valign="top">Eigen::Vector3i&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html#ac14bae5b76e38af000aca459937bc6e7">cubes_per_side</a> () const</td></tr>
@@ -152,8 +146,8 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ac14bae5b76e38af000aca459937bc6e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac14bae5b76e38af000aca459937bc6e7">&#9670;&nbsp;</a></span>cubes_per_side()</h2>
+<a id="abc45e48eb81315233d80d97e54b72545"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc45e48eb81315233d80d97e54b72545">&#9670;&nbsp;</a></span>batch()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,40 +156,15 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Eigen::Vector3i occ::isosurface::ElectronDensityFunctor::cubes_per_side </td>
+          <td class="memname">void occ::isosurface::ElectronDensityFunctor::batch </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a754e5744a1fd1a18dd4b6ed58cc6a7f2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a754e5744a1fd1a18dd4b6ed58cc6a7f2">&#9670;&nbsp;</a></span>fill_layer()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void occ::isosurface::ElectronDensityFunctor::fill_layer </td>
-          <td>(</td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>offset</em>, </td>
+          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#ae40efa7687123d59b22c55dd623bc2fc">FMat3N</a> &gt;&#160;</td>
+          <td class="paramname"><em>pos</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Eigen::Ref&lt; Eigen::MatrixXf &gt;&#160;</td>
+          <td class="paramtype">Eigen::Ref&lt; <a class="el" href="namespaceocc.html#a02ba53886690b76ebea4b6b0d3168f65">FVec</a> &gt;&#160;</td>
           <td class="paramname"><em>layer</em>&#160;</td>
         </tr>
         <tr>
@@ -213,8 +182,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ab8d26e36ef78a568839fd6a800c8b798"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8d26e36ef78a568839fd6a800c8b798">&#9670;&nbsp;</a></span>fill_normals()</h2>
+<a id="ac14bae5b76e38af000aca459937bc6e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac14bae5b76e38af000aca459937bc6e7">&#9670;&nbsp;</a></span>cubes_per_side()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -223,43 +192,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void occ::isosurface::ElectronDensityFunctor::fill_normals </td>
-          <td>(</td>
-          <td class="paramtype">const std::vector&lt; float &gt; &amp;&#160;</td>
-          <td class="paramname"><em>vertices</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
-          <td class="paramname"><em>normals</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa3e32ac9cb4669789ad7dd10976ccfbe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa3e32ac9cb4669789ad7dd10976ccfbe">&#9670;&nbsp;</a></span>isovalue()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">float occ::isosurface::ElectronDensityFunctor::isovalue </td>
+          <td class="memname">Eigen::Vector3i occ::isosurface::ElectronDensityFunctor::cubes_per_side </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -349,32 +282,6 @@ Public Member Functions</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a73a292af8de41ff08345bcb698af94ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a73a292af8de41ff08345bcb698af94ce">&#9670;&nbsp;</a></span>set_isovalue()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void occ::isosurface::ElectronDensityFunctor::set_isovalue </td>
-          <td>(</td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>iso</em></td><td>)</td>
-          <td></td>
         </tr>
       </table>
   </td>
