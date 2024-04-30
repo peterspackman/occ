@@ -5,6 +5,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/util.h>
+#include <fmt/core.h>
 #include <vector>
 
 namespace occ::qm {
@@ -170,6 +171,12 @@ class AOBasis {
     Shell::Kind m_kind{Shell::Kind::Cartesian};
 };
 
-std::ostream &operator<<(std::ostream &stream, const Shell &shell);
+
 
 } // namespace occ::qm
+
+
+template<>
+struct fmt::formatter<occ::qm::Shell> : nested_formatter<double> {
+    auto format(const occ::qm::Shell&, format_context& ctx) const -> format_context::iterator;
+};

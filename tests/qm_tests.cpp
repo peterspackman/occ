@@ -33,7 +33,7 @@ TEST_CASE("AOBasis set pure spherical") {
     auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
     basis.set_pure(true);
     for (const auto &sh : basis.shells()) {
-        std::cout << sh << '\n';
+	fmt::print("{: 12.4f}\n", sh);
     }
 }
 
@@ -44,7 +44,7 @@ TEST_CASE("AOBasis load") {
         {1, 0.48664409, 0.07959806, 0.00986248}};
     occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "6-31G");
     for (const auto &sh : basis.shells()) {
-        std::cout << sh << '\n';
+	fmt::print("{: 12.4f}\n", sh);
     }
 }
 
@@ -530,8 +530,9 @@ TEST_CASE("Integral gradients", "[integrals]") {
      -0.00126,  0.00093,  0.00033;
 
     auto atom_gradients = g(mo);
-    std::cout << "Atom gradients\n" << std::setprecision(4) << atom_gradients << '\n';
-    std::cout << "Diff\n" << std::setprecision(4) << atom_gradients - expected_atom_gradients << '\n';
+
+    fmt::print("Atom gradients\n{}\n", atom_gradients);
+    fmt::print("Difference\n{}\n", atom_gradients - expected_atom_gradients);
     REQUIRE(all_close(atom_gradients, expected_atom_gradients, 1e-4, 1e-4));
 }
 

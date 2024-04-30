@@ -523,19 +523,6 @@ void AOBasis::merge(const AOBasis &rhs) {
     m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);
 }
 
-std::ostream &operator<<(std::ostream &stream, const Shell &shell) {
-    stream << shell.symbol() << " (" << shell.origin(0) << ","
-           << shell.origin(1) << ", " << shell.origin(2) << ")\n";
-    stream << "exp   contr\n";
-    for (int i = 0; i < shell.num_primitives(); i++) {
-        stream << " " << shell.exponents(i);
-        for (int j = 0; j < shell.num_contractions(); j++) {
-            stream << " " << shell.contraction_coefficients(i, j);
-        }
-        stream << "\n";
-    }
-    return stream;
-}
 
 std::string canonicalize_name(const std::string &name) {
     auto result = name;
@@ -729,3 +716,20 @@ uint_fast8_t AOBasis::ecp_l_max() const {
 }
 
 } // namespace occ::qm
+
+auto fmt::formatter<occ::qm::Shell>::format(const occ::qm::Shell& shell, format_context& ctx) const -> decltype(ctx.out()) {
+    auto out = ctx.out();
+    out = fmt::format_to(out, "{} [{}, {}, {}]\n  exponents  | contraction coefficients\n", shell.symbol(), 
+		nested(shell.origin(0)), nested(shell.origin(1)), nested(shell.origin(2)));
+    
+    for (int i = 0; i < shell.num_primitives(); i++) {
+	out = fmt::format_to(out, "{} |", nested(shell.exponents(i)));
+	for (int j = 0; j < shell.num_contractions(); j++) {
+	    out = fmt::format_to(out, " {}", nested(shell.contraction_coefficients(i, j)));
+	}
+	out = fmt::format_to(out, "\n");
+    }
+    
+    return out;
+}
+
