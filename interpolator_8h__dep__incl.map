@@ -1,11 +1,14 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/interpolator.h" name="/home/runner/work/occ/occ/include/occ/core/interpolator.h">
-<area shape="rect" id="node1" title=" " alt="" coords="562,5,733,61"/>
-<area shape="rect" id="node2" href="$common_8h.html" title=" " alt="" coords="445,109,641,165"/>
-<area shape="rect" id="node9" href="$point__functors_8h.html" title=" " alt="" coords="666,109,837,165"/>
-<area shape="rect" id="node3" href="$electric__potential_8h.html" title=" " alt="" coords="5,213,201,269"/>
-<area shape="rect" id="node5" href="$electron__density_8h.html" title=" " alt="" coords="225,213,421,269"/>
-<area shape="rect" id="node6" href="$promolecule__density_8h.html" title=" " alt="" coords="445,213,641,269"/>
-<area shape="rect" id="node7" href="$stockholder__weight_8h.html" title=" " alt="" coords="665,213,861,269"/>
-<area shape="rect" id="node8" href="$void_8h.html" title=" " alt="" coords="885,213,1081,269"/>
-<area shape="rect" id="node4" href="$isosurface_8h.html" title=" " alt="" coords="445,317,641,373"/>
+<area shape="rect" id="node1" title=" " alt="" coords="311,5,482,61"/>
+<area shape="rect" id="node2" href="$promolecule__shape_8h.html" title=" " alt="" coords="5,109,207,165"/>
+<area shape="rect" id="node3" href="$common_8h.html" title=" " alt="" coords="231,109,427,165"/>
+<area shape="rect" id="node10" href="$promolecule_8h.html" title=" " alt="" coords="379,213,550,269"/>
+<area shape="rect" id="node12" href="$point__functors_8h.html" title=" " alt="" coords="502,109,673,165"/>
+<area shape="rect" id="node4" href="$electric__potential_8h.html" title=" " alt="" coords="161,421,357,477"/>
+<area shape="rect" id="node6" href="$electron__density_8h.html" title=" " alt="" coords="7,317,203,373"/>
+<area shape="rect" id="node7" href="$promolecule__density_8h.html" title=" " alt="" coords="329,317,525,373"/>
+<area shape="rect" id="node8" href="$stockholder__weight_8h.html" title=" " alt="" coords="440,421,636,477"/>
+<area shape="rect" id="node9" href="$void_8h.html" title=" " alt="" coords="617,213,813,269"/>
+<area shape="rect" id="node5" href="$isosurface_8h.html" title=" " alt="" coords="304,525,500,581"/>
+<area shape="rect" id="node11" href="$hirshfeld_8h.html" title=" " alt="" coords="550,317,721,373"/>
 </map>

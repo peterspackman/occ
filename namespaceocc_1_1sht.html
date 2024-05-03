@@ -106,17 +106,85 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1sht_1_1SHT.html">SHT</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1sht_1_1SphericalHarmonics.html">SphericalHarmonics</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:aa6b0f5277da2c3270164c46c1d367825"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1sht.html#aa6b0f5277da2c3270164c46c1d367825">clebsch</a> (int j1, int m1, int j2, int m2, int j, int m) noexcept</td></tr>
+<tr class="separator:aa6b0f5277da2c3270164c46c1d367825"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b9ef92a3b5fc6f216f571cb277fa08c"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>, <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1sht.html#a3b9ef92a3b5fc6f216f571cb277fa08c">gauss_legendre_quadrature</a> (int N)</td></tr>
 <tr class="separator:a3b9ef92a3b5fc6f216f571cb277fa08c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac947b8b44ffb01ab845ad31172ef09b2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1sht.html#ac947b8b44ffb01ab845ad31172ef09b2">gauss_legendre_quadrature</a> (<a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;roots, <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;weights, int N)</td></tr>
 <tr class="separator:ac947b8b44ffb01ab845ad31172ef09b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a274e4a7913c9ef3062dc6f1abd98ddd6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1sht.html#a274e4a7913c9ef3062dc6f1abd98ddd6">wigner3j</a> (double l2, double l3, double m1, double m2, double m3)</td></tr>
+<tr class="separator:a274e4a7913c9ef3062dc6f1abd98ddd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a0282146506fc4dccafcd660f1c41de"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1sht.html#a7a0282146506fc4dccafcd660f1c41de">wigner3j_single</a> (double l1, double l2, double l3, double m1, double m2, double m3)</td></tr>
+<tr class="separator:a7a0282146506fc4dccafcd660f1c41de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>spherical harmonic transforms </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="aa6b0f5277da2c3270164c46c1d367825"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa6b0f5277da2c3270164c46c1d367825">&#9670;&nbsp;</a></span>clebsch()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::sht::clebsch </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>j1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>j2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a3b9ef92a3b5fc6f216f571cb277fa08c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3b9ef92a3b5fc6f216f571cb277fa08c">&#9670;&nbsp;</a></span>gauss_legendre_quadrature() <span class="overload">[1/2]</span></h2>
 
@@ -158,6 +226,104 @@ Functions</h2></td></tr>
           <td></td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>N</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a274e4a7913c9ef3062dc6f1abd98ddd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a274e4a7913c9ef3062dc6f1abd98ddd6">&#9670;&nbsp;</a></span>wigner3j()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::sht::wigner3j </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>l2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>l3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>m1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>m2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>m3</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7a0282146506fc4dccafcd660f1c41de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a0282146506fc4dccafcd660f1c41de">&#9670;&nbsp;</a></span>wigner3j_single()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::sht::wigner3j_single </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>l1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>l2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>l3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>m1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>m2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>m3</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

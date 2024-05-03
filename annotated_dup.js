@@ -55,6 +55,10 @@ var annotated_dup =
         [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],
         [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ]
       ] ],
+      [ "descriptors", "namespaceocc_1_1descriptors.html", [
+        [ "PromoleculeDensityShape", "structocc_1_1descriptors_1_1PromoleculeDensityShape.html", "structocc_1_1descriptors_1_1PromoleculeDensityShape" ],
+        [ "Steinhardt", "classocc_1_1descriptors_1_1Steinhardt.html", "classocc_1_1descriptors_1_1Steinhardt" ]
+      ] ],
       [ "dft", "namespaceocc_1_1dft.html", [
         [ "cosx", "namespaceocc_1_1dft_1_1cosx.html", [
           [ "SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange" ]
@@ -233,9 +237,14 @@ var annotated_dup =
       ] ],
       [ "sht", "namespaceocc_1_1sht.html", [
         [ "AssocLegendreP", "classocc_1_1sht_1_1AssocLegendreP.html", "classocc_1_1sht_1_1AssocLegendreP" ],
-        [ "SHT", "classocc_1_1sht_1_1SHT.html", "classocc_1_1sht_1_1SHT" ]
+        [ "SHT", "classocc_1_1sht_1_1SHT.html", "classocc_1_1sht_1_1SHT" ],
+        [ "SphericalHarmonics", "classocc_1_1sht_1_1SphericalHarmonics.html", "classocc_1_1sht_1_1SphericalHarmonics" ]
       ] ],
       [ "slater", "namespaceocc_1_1slater.html", [
+        [ "StockholderWeight", "classocc_1_1slater_1_1StockholderWeight.html", "classocc_1_1slater_1_1StockholderWeight" ],
+        [ "AtomInterpolator", "structocc_1_1slater_1_1AtomInterpolator.html", "structocc_1_1slater_1_1AtomInterpolator" ],
+        [ "InterpolatorParams", "structocc_1_1slater_1_1InterpolatorParams.html", "structocc_1_1slater_1_1InterpolatorParams" ],
+        [ "PromoleculeDensity", "classocc_1_1slater_1_1PromoleculeDensity.html", "classocc_1_1slater_1_1PromoleculeDensity" ],
         [ "Shell", "classocc_1_1slater_1_1Shell.html", "classocc_1_1slater_1_1Shell" ],
         [ "Basis", "classocc_1_1slater_1_1Basis.html", "classocc_1_1slater_1_1Basis" ]
       ] ],

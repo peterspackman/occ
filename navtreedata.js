@@ -67,24 +67,24 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"",
-"classocc_1_1crystal_1_1Crystal.html#a05ba2aa184d1d4fc05a18c339c766c90",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2d8881d1b16d0f82c28d59471a9dbd79",
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbadd1e802b3d6fa22033719322b0b139bd",
-"classocc_1_1io_1_1OrcaJSONReader.html#a72cb9b5bd509a9605a4f7ee43e4e1db7",
-"classocc_1_1qm_1_1IntegralEngine.html#afa05a49965de81c5999abc077906fb82",
-"classocc_1_1xtb_1_1XTBCalculator.html#adda5860af7e1a9d55c38922cba6ed6ff",
-"functions_h.html",
-"morton_8h.html#add382c816f1f7693abf57e1ce0300efb",
-"namespaceocc_1_1core_1_1numpy.html#a4c201dd32910b0f4d0c82c69756fe40f",
-"namespaceocc_1_1main.html#a9154bffbc00f2a7302ceae3d043c3c2da6132295fcf5570fb8b0a944ef322a598",
-"numpy_8h.html#adc6403ac94eaf175a371507dca6f72b9",
-"solvation__correction_8h.html#ad78ce13e9c04c521dc426920b5595830",
-"structocc_1_1geometry_1_1LinearHashedOctree.html#a28d52223aa8718096eb5ceae7f68ec78",
-"structocc_1_1io_1_1GaussianInputFile.html#ae317dd5fddcf2b91d3b6ed15e6697995",
-"structocc_1_1main_1_1EnergyTotal.html#a312f626328c95277205cf087c960e0fb",
-"structocc_1_1qm_1_1Shell.html#a4ca9272d5d211d20aafcedee53ead279",
-"structtinyply_1_1PlyProperty.html#ac027e11a7df78e9db1c73cace08de5bb"
+"annotated.html",
+"classocc_1_1crystal_1_1Crystal.html#a070f081cf143d7547bdbcdeeab683f84",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2aaebb82543fbfa538c9fc6943e20d1c",
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbad4cacf091bd9ff35d89667c305d084c8",
+"classocc_1_1io_1_1OrcaJSONReader.html#a1b87bbcabe766decf496db234a187ba8",
+"classocc_1_1qm_1_1IntegralEngine.html#adad7c1aee35fd070e9c62be7604efd10",
+"classocc_1_1xtb_1_1XTBCalculator.html#a14740bc1fea74dc2c9b0b177fe7329cd",
+"functions_func.html",
+"method__parser_8h.html#a5363c601baefd04c151463f96c28f72aacca8fc743f62bb262491fb02b5c0fd73",
+"namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6",
+"namespaceocc_1_1log_1_1level.html",
+"namespacequickhull_1_1mathutils.html",
+"scf__convergence__settings_8h.html",
+"structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#a3760282b351b9b0381a1303452b242aa",
+"structocc_1_1io_1_1ElectronInput.html#aec4261d5ac245728559a7c85acd92b0b",
+"structocc_1_1main_1_1CGDimer.html#a49fa24dd4384c177b5a12b99279352bf",
+"structocc_1_1qm_1_1MolecularOrbitals.html#a8dba8226ec196b2eff33a266f488d7f0",
+"structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html#a9e4c6c2c4eb56e4219a88022c7826846"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

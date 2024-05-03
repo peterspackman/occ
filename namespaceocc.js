@@ -36,6 +36,7 @@ var namespaceocc =
       [ "evaluate_density_on_grid", "namespaceocc_1_1density.html#a6e0f211ca1b17f8b15f28527673195a6", null ],
       [ "num_components", "namespaceocc_1_1density.html#aede17985150ad037bb98e3eec4c221ed", null ]
     ] ],
+    [ "descriptors", "namespaceocc_1_1descriptors.html", "namespaceocc_1_1descriptors" ],
     [ "dft", "namespaceocc_1_1dft.html", "namespaceocc_1_1dft" ],
     [ "disp", "namespaceocc_1_1disp.html", [
       [ "ce_model_dispersion_energy", "namespaceocc_1_1disp.html#a115cdd33241e95fcf9e5f7cd7745fe6d", null ]
