@@ -1,3 +1,4 @@
+#pragma once
 #include <cmath>
 #include <fmt/core.h>
 #include <occ/core/linear_algebra.h>

@@ -1,4 +1,6 @@
 add_library(occ_slater
+    "${CMAKE_CURRENT_SOURCE_DIR}/hirshfeld.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/promolecule.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.cpp"
     ${OCC_SLATER_INCLUDE_FILES}
 )

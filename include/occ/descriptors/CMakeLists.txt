@@ -1,0 +1,4 @@
+set(OCC_DESCRIPTORS_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/promolecule_shape.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/steinhardt.h"
+    PARENT_SCOPE)

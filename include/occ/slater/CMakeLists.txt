@@ -1,3 +1,5 @@
 set(OCC_SLATER_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/promolecule.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/slaterbasis.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/hirshfeld.h"
     PARENT_SCOPE)

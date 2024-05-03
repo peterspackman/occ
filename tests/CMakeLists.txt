@@ -48,6 +48,10 @@ add_executable(slater_tests "${CMAKE_CURRENT_SOURCE_DIR}/slater_tests.cpp")
 target_link_libraries(slater_tests PRIVATE occ_slater Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(slater_tests)
 
+add_executable(descriptors_tests "${CMAKE_CURRENT_SOURCE_DIR}/descriptors_tests.cpp")
+target_link_libraries(descriptors_tests PRIVATE occ_descriptors Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(descriptors_tests)
+
 add_executable(solvent_tests "${CMAKE_CURRENT_SOURCE_DIR}/solvent_tests.cpp")
 target_link_libraries(solvent_tests PRIVATE occ_solvent occ_io Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(solvent_tests)

@@ -1,5 +1,6 @@
 add_subdirectory(occ/core)
 add_subdirectory(occ/crystal)
+add_subdirectory(occ/descriptors)
 add_subdirectory(occ/dft)
 add_subdirectory(occ/geometry)
 add_subdirectory(occ/gto)
@@ -21,6 +22,7 @@ endif()
 set(OCC_INCLUDE_FILES
     ${OCC_CORE_INCLUDE_FILES}
     ${OCC_CRYSTAL_INCLUDE_FILES}
+    ${OCC_DESCRIPTORS_INCLUDE_FILES}
     ${OCC_DFT_INCLUDE_FILES}
     ${OCC_GEOMETRY_INCLUDE_FILES}
     ${OCC_GTO_INCLUDE_FILES}

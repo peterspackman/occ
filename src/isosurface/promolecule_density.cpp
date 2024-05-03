@@ -5,48 +5,20 @@
 namespace occ::isosurface {
 
 PromoleculeDensityFunctor::PromoleculeDensityFunctor(
-    const occ::core::Molecule &mol, float sep, const InterpolatorParams &params)
-    : m_target_separation(sep), m_interpolator_params(params) {
+    const occ::core::Molecule &mol, float sep, const occ::slater::InterpolatorParams &params)
+    : m_target_separation(sep), m_promol(mol, params) {
 
-    const auto &elements = mol.atomic_numbers();
-    Mat3N coordinates = mol.positions().array() * occ::units::ANGSTROM_TO_BOHR;
+    FMat3N coordinates = (mol.positions().array() * occ::units::ANGSTROM_TO_BOHR).cast<float>();
 
-    m_minimum_atom_pos = coordinates.rowwise().minCoeff().cast<float>();
-    m_maximum_atom_pos = coordinates.rowwise().maxCoeff().cast<float>();
-
-    auto basis = occ::slater::load_slaterbasis("thakkar");
-    ankerl::unordered_dense::map<int, std::vector<int>> tmp_map;
-    for (size_t i = 0; i < elements.rows(); i++) {
-        int el = elements(i);
-        tmp_map[el].push_back(i);
-        auto search = m_interpolators.find(el);
-        if (search == m_interpolators.end()) {
-            auto b = basis[occ::core::Element(el).symbol()];
-            auto func = [&b](float x) { return b.rho(std::sqrt(x)); };
-            m_interpolators[el] = LinearInterpolatorFloat(
-                func, m_interpolator_params.domain_lower,
-                m_interpolator_params.domain_upper,
-                m_interpolator_params.num_points);
-        }
-    }
-
-    for (const auto &kv : tmp_map) {
-        m_atom_interpolators.push_back(
-            {m_interpolators.at(kv.first),
-             coordinates(Eigen::all, kv.second).cast<float>()});
-        m_atom_interpolators.back().threshold =
-            m_atom_interpolators.back().interpolator.find_threshold(1e-8);
-    }
+    m_minimum_atom_pos = coordinates.rowwise().minCoeff();
+    m_maximum_atom_pos = coordinates.rowwise().maxCoeff();
 
     update_region_for_isovalue();
 }
 
 void PromoleculeDensityFunctor::update_region_for_isovalue() {
 
-    for (const auto &[interp, coords, threshold, interior] :
-         m_atom_interpolators) {
-        m_buffer = std::max(interp.find_threshold(m_isovalue) + 1.0f, m_buffer);
-    }
+    m_buffer = m_promol.maximum_distance_heuristic(m_isovalue, 1.0f);
 
     m_origin = m_minimum_atom_pos.array() - m_buffer;
     m_cube_side_length =
