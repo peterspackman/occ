@@ -116,7 +116,7 @@ void OrbitalSmearing::smear_orbitals(MolecularOrbitals &mo) {
     mo.update_occupied_orbitals_fractional();
 
     entropy = calculate_entropy(mo);
-    occ::log::debug("HOMO: {}, LUMO: {}", mo.energies(n_occ -1), mo.energies(n_occ));
+    occ::log::debug("HOMO: {}, LUMO: {}, fmin = {}", mo.energies(n_occ -1), mo.energies(n_occ), fmin);
     occ::log::debug("mu: {}, entropy: {}, ec_entropy: {}", mu, entropy, -sigma * entropy);
 
 }

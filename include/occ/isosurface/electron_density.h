@@ -40,7 +40,6 @@ class ElectronDensityFunctor {
     FVec3 m_cube_side_length;
     qm::Wavefunction m_wfn;
     FVec3 m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
-    float m_isovalue{0.002};
     mutable int m_num_calls{0};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
 

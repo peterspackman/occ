@@ -318,7 +318,6 @@ RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points) {
 
 AtomGrid generate_atom_grid(size_t atomic_number, size_t max_angular_points,
                             size_t radial_points) {
-    const double rm = 1.0;
     AtomGrid result(radial_points * max_angular_points);
 
     size_t num_points = 0;
@@ -390,9 +389,11 @@ void MolecularGrid::ensure_settings() {
 
 MolecularGrid::MolecularGrid(const AOBasis &basis,
                              const BeckeGridSettings &settings)
-    : m_settings(settings), m_atomic_numbers(basis.atoms().size()),
-      m_positions(3, basis.atoms().size()), m_alpha_max(basis.atoms().size()),
+    : m_atomic_numbers(basis.atoms().size()),
+      m_positions(3, basis.atoms().size()), 
+      m_settings(settings), 
       m_l_max(basis.atoms().size()),
+      m_alpha_max(basis.atoms().size()),
       m_alpha_min(basis.l_max() + 1, basis.atoms().size()) {
     occ::timing::start(occ::timing::category::grid_init);
     ensure_settings();
@@ -410,7 +411,6 @@ MolecularGrid::MolecularGrid(const AOBasis &basis,
         int max_l = basis.l_max();
         for (const auto &shell_idx : atom_map[i]) {
             const auto &shell = basis[shell_idx];
-            int j = 0;
             for (int i = atom_min_alpha.size(); i < max_l + 1; i++) {
                 atom_min_alpha.push_back(std::numeric_limits<double>::max());
             }
@@ -442,7 +442,7 @@ AtomGrid MolecularGrid::generate_partitioned_atom_grid(size_t atom_idx) const {
     AtomGrid grid;
     grid.atomic_number = -1;
     for (const auto &ugrid : m_unique_atom_grids) {
-        if (ugrid.atomic_number == m_atomic_numbers(atom_idx)) {
+        if (ugrid.atomic_number == atomic_number) {
             grid = ugrid;
         }
     }

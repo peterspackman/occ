@@ -345,10 +345,7 @@ int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
             current_dimer++;
             continue;
         }
-        auto tprev = sw.read();
         sw.start();
-        const auto asym_idx_a = dimer.a().asymmetric_molecule_idx();
-        const auto asym_idx_b = dimer.b().asymmetric_molecule_idx();
 
         charge_energies[current_dimer] =
             occ::interaction::coulomb_interaction_energy_asym_charges(
@@ -361,9 +358,6 @@ int compute_coulomb_energies_radius(const std::vector<Dimer> &dimers,
 }
 
 Mat3N compute_point_charge_efield(const Dimer &dimer, const Vec &asym_charges) {
-    const auto asym_idx_a = dimer.a().asymmetric_molecule_idx();
-    const auto asym_idx_b = dimer.b().asymmetric_molecule_idx();
-
     return occ::interaction::coulomb_efield_asym_charges(dimer, asym_charges)
         .first;
 }

@@ -21,7 +21,7 @@ Molecule::Molecule(const IVec &nums, const Mat3N &pos)
 
 Molecule::Molecule(const std::vector<Element> &elements,
                    const std::vector<std::array<double, 3>> &positions)
-    : m_elements(elements), m_atomicNumbers(elements.size()),
+    : m_atomicNumbers(elements.size()), m_elements(elements), 
       m_positions(3, positions.size()) {
     for (size_t i = 0; i < size(); i++) {
         m_atomicNumbers(i) = m_elements[i].atomic_number();

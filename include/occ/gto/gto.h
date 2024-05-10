@@ -30,7 +30,6 @@ template <bool Cartesian = true>
 inline std::vector<std::string> shell_component_labels(int l) {
     if (l == 0)
         return {std::string{shell_labels[0]}};
-    int i, j, k;
 
     std::vector<std::string> labels;
     auto f = [&labels](int i, int j, int k, int l) {
@@ -135,7 +134,6 @@ struct MomentaSpherical {
 inline std::vector<Momenta> cartesian_subshell_ordering(int l) {
     if (l == 0)
         return {{0, 0, 0}};
-    int i = 0, j = 0, k = 0;
     std::vector<Momenta> powers;
     auto f = [&powers](int i, int j, int k, int l) {
         powers.push_back({i, j, k});
@@ -147,7 +145,6 @@ inline std::vector<Momenta> cartesian_subshell_ordering(int l) {
 inline std::vector<MomentaSpherical> spherical_subshell_ordering(int l) {
     if (l == 0)
         return {MomentaSpherical{}};
-    int m = 0;
     std::vector<MomentaSpherical> moments;
     auto f = [&moments](int l, int m) { moments.push_back({l, m}); };
     occ::gto::iterate_over_shell<false>(f, l);

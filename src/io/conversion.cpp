@@ -82,7 +82,6 @@ Mat from_gaussian_order_cartesian(const occ::qm::AOBasis &basis,
         "internal convention");
     auto shell2bf = basis.first_bf();
     Mat result(mo.rows(), mo.cols());
-    size_t ncols = mo.cols();
     for (size_t i = 0; i < basis.size(); i++) {
         const auto &shell = basis.shells()[i];
         size_t bf_first = shell2bf[i];
@@ -117,7 +116,6 @@ Mat to_gaussian_order_cartesian(const occ::qm::AOBasis &basis, const Mat &mo) {
                     "internal convention");
     auto shell2bf = basis.first_bf();
     Mat result(mo.rows(), mo.cols());
-    size_t ncols = mo.cols();
     for (size_t i = 0; i < basis.size(); i++) {
         const auto &shell = basis.shells()[i];
         size_t bf_first = shell2bf[i];
@@ -151,7 +149,6 @@ Mat to_gaussian_order_spherical(const occ::qm::AOBasis &basis, const Mat &mo) {
                     "internal convention");
     auto shell2bf = basis.first_bf();
     Mat result(mo.rows(), mo.cols());
-    size_t ncols = mo.cols();
     for (size_t i = 0; i < basis.size(); i++) {
         const auto &shell = basis.shells()[i];
         size_t bf_first = shell2bf[i];

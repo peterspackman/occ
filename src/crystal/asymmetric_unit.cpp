@@ -13,8 +13,8 @@ AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums)
 
 AsymmetricUnit::AsymmetricUnit(const Mat3N &frac_pos, const IVec &nums,
                                const std::vector<std::string> &site_labels)
-    : positions(frac_pos), atomic_numbers(nums), labels(site_labels),
-      occupations(nums.rows()), charges(nums.rows()) {
+    : positions(frac_pos), atomic_numbers(nums), occupations(nums.rows()),
+      charges(nums.rows()), labels(site_labels) {
     charges = atomic_numbers.cast<double>();
     occupations.setConstant(1.0);
 }

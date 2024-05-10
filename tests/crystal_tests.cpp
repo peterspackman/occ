@@ -108,6 +108,7 @@ TEST_CASE("AsymmetricUnit constructor", "[crystal]") {
 
 TEST_CASE("UnitCell constructor", "[crystal]") {
     UnitCell ice = occ::crystal::rhombohedral_cell(7.78, radians(113.1));
+    REQUIRE(ice.a() == Catch::Approx(7.78));
 }
 
 TEST_CASE("Symmetry unique and unit cell molecules (ice-II crystal)",

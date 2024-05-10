@@ -90,7 +90,6 @@ coulomb_interaction_energy_asym_charges(const occ::core::Dimer &dimer,
 double coulomb_self_energy_asym_charges(const occ::core::Molecule &mol,
                                         Eigen::Ref<const Vec> charges_asym) {
     const auto &pos = mol.positions();
-    double energy = 0.0;
     const auto &asym_atom = mol.asymmetric_unit_idx();
     auto idx_to_charge = [&charges_asym](int idx) { return charges_asym(idx); };
     Vec charges = asym_atom.unaryExpr(idx_to_charge);

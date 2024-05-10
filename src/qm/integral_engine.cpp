@@ -164,12 +164,8 @@ inline void fock_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0,
 inline void j_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0,
                       int bf1, int bf2, int bf3, double value) {
     auto Jaa = occ::qm::block::aa(J);
-    auto Jab = occ::qm::block::ab(J);
-    auto Jba = occ::qm::block::ba(J);
     auto Jbb = occ::qm::block::bb(J);
     const auto Daa = occ::qm::block::aa(D);
-    const auto Dab = occ::qm::block::ab(D);
-    const auto Dba = occ::qm::block::ba(D);
     const auto Dbb = occ::qm::block::bb(D);
 
     // J aa
@@ -184,8 +180,6 @@ inline void jk_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J,
                        Eigen::Ref<Mat> K, int bf0, int bf1, int bf2, int bf3,
                        double value) {
     auto Jaa = occ::qm::block::aa(J);
-    auto Jab = occ::qm::block::ab(J);
-    auto Jba = occ::qm::block::ba(J);
     auto Jbb = occ::qm::block::bb(J);
     auto Kaa = occ::qm::block::aa(K);
     auto Kab = occ::qm::block::ab(K);
@@ -285,12 +279,10 @@ void evaluate_two_center(Lambda &f, cint::IntegralEnvironment &env,
     const auto &first_bf = basis.first_bf();
     for (int p = 0, pq = 0; p < nsh; p++) {
         int bf1 = first_bf[p];
-        const auto &sh1 = basis[p];
         for (int q = 0; q <= p; q++) {
             if (pq++ % nthreads != thread_id)
                 continue;
             int bf2 = first_bf[q];
-            const auto &sh2 = basis[q];
             std::array<int, 2> idxs{p, q};
             Result args{thread_id,
                         idxs,
@@ -319,13 +311,11 @@ void evaluate_two_center_with_shellpairs(Lambda &f,
     const auto &first_bf = basis.first_bf();
     for (int p = 0, pq = 0; p < basis.size(); p++) {
         int bf1 = first_bf[p];
-        const auto &sh1 = basis[p];
-        for (const int &q : shellpairs[p]) {
+        for (const auto &q : shellpairs[p]) {
             if (pq++ % nthreads != thread_id)
                 continue;
             int bf2 = first_bf[q];
-            const auto &sh2 = basis[q];
-            std::array<int, 2> idxs{p, q};
+            std::array<int, 2> idxs{p, static_cast<int>(q)};
             Result args{thread_id,
                         idxs,
                         {bf1, bf2},
@@ -477,14 +467,14 @@ void evaluate_two_center_ecp_with_shellpairs(
 
         dims[0] = sh1.ncartesian();
 
-        for (const int &q : shellpairs[p]) {
+        for (const auto &q : shellpairs[p]) {
             if (pq++ % nthreads != thread_id)
                 continue;
             const auto &sh2 = shells[q];
             dims[1] = sh2.ncartesian();
             libecpint::TwoIndex<double> buffer(dims[0], dims[1], 0.0);
 
-            std::array<int, 2> idxs{p, q};
+            std::array<int, 2> idxs{p, static_cast<int>(q)};
             for (const auto &U : ecps) {
                 ecp_integral.compute_shell_pair(U, sh1, sh2, tmp);
                 buffer.add(tmp);
@@ -502,9 +492,6 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
                         int ecp_max_l, const ShellPairList &shellpairs) {
     using Result = IntegralEngine::IntegralResult<2>;
     auto nthreads = occ::parallel::get_num_threads();
-    const int nbf = std::accumulate(
-        aoshells.begin(), aoshells.end(), 0,
-        [](int a, const auto &x) { return a + x.ncartesian(); });
 
     std::vector<Mat> results;
     results.emplace_back(Mat::Zero(aobasis.nbf(), aobasis.nbf()));
@@ -512,45 +499,58 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
         results.push_back(results[0]);
     }
 
-    std::vector<Mat> cart2sph;
     if constexpr (kind == ShellKind::Spherical) {
-        for (int i = 0; i <= ao_max_l; i++) {
-            cart2sph.push_back(
-                occ::gto::cartesian_to_spherical_transformation_matrix(i));
-        }
-    }
+	std::vector<Mat> cart2sph;
+	for (int i = 0; i <= ao_max_l; i++) {
+	    cart2sph.push_back(
+		occ::gto::cartesian_to_spherical_transformation_matrix(i));
+	}
 
-    auto f = [&results, &aobasis, &cart2sph](const Result &args) {
-        auto &result = results[args.thread];
-        Eigen::Map<const occ::MatRM> tmp(args.buffer, args.dims[0],
-                                         args.dims[1]);
-        const int bf0 = aobasis.first_bf()[args.shell[0]];
-        const int bf1 = aobasis.first_bf()[args.shell[1]];
-        if constexpr (kind == ShellKind::Spherical) {
-            const int dim0 = aobasis[args.shell[0]].size();
-            const int dim1 = aobasis[args.shell[1]].size();
-            const int l0 = aobasis[args.shell[0]].l;
-            const int l1 = aobasis[args.shell[1]].l;
-            result.block(bf0, bf1, dim0, dim1) =
-                cart2sph[l0] * tmp * cart2sph[l1].transpose();
-            if (args.shell[0] != args.shell[1]) {
-                result.block(bf1, bf0, dim1, dim0) =
-                    result.block(bf0, bf1, dim0, dim1).transpose();
-            }
-        } else {
-            result.block(bf0, bf1, args.dims[0], args.dims[1]) = tmp;
-            if (args.shell[0] != args.shell[1]) {
-                result.block(bf1, bf0, args.dims[1], args.dims[0]) =
-                    tmp.transpose();
-            }
-        }
+	auto f = [&results, &aobasis, &cart2sph](const Result &args) {
+	    auto &result = results[args.thread];
+	    Eigen::Map<const occ::MatRM> tmp(args.buffer, args.dims[0],
+					     args.dims[1]);
+	    const int bf0 = aobasis.first_bf()[args.shell[0]];
+	    const int bf1 = aobasis.first_bf()[args.shell[1]];
+	    const int dim0 = aobasis[args.shell[0]].size();
+	    const int dim1 = aobasis[args.shell[1]].size();
+	    const int l0 = aobasis[args.shell[0]].l;
+	    const int l1 = aobasis[args.shell[1]].l;
+	    result.block(bf0, bf1, dim0, dim1) =
+		cart2sph[l0] * tmp * cart2sph[l1].transpose();
+	    if (args.shell[0] != args.shell[1]) {
+		result.block(bf1, bf0, dim1, dim0) =
+		    result.block(bf0, bf1, dim0, dim1).transpose();
+	    }
+	};
+	auto lambda = [&](int thread_id) {
+	    evaluate_two_center_ecp_with_shellpairs(
+		f, aoshells, ecps, ao_max_l, ecp_max_l, shellpairs, thread_id);
+	};
+	occ::parallel::parallel_do(lambda);
+
+    } else {
+	auto f = [&results, &aobasis](const Result &args) {
+	    auto &result = results[args.thread];
+	    Eigen::Map<const occ::MatRM> tmp(args.buffer, args.dims[0],
+					     args.dims[1]);
+	    const int bf0 = aobasis.first_bf()[args.shell[0]];
+	    const int bf1 = aobasis.first_bf()[args.shell[1]];
+
+	    result.block(bf0, bf1, args.dims[0], args.dims[1]) = tmp;
+	    if (args.shell[0] != args.shell[1]) {
+		result.block(bf1, bf0, args.dims[1], args.dims[0]) =
+		    tmp.transpose();
+	    }
+	};
+	auto lambda = [&](int thread_id) {
+	    evaluate_two_center_ecp_with_shellpairs(
+		f, aoshells, ecps, ao_max_l, ecp_max_l, shellpairs, thread_id);
+	};
+	occ::parallel::parallel_do(lambda);
+
     };
 
-    auto lambda = [&](int thread_id) {
-        evaluate_two_center_ecp_with_shellpairs(
-            f, aoshells, ecps, ao_max_l, ecp_max_l, shellpairs, thread_id);
-    };
-    occ::parallel::parallel_do(lambda);
 
     for (auto i = 1; i < nthreads; ++i) {
         results[0].noalias() += results[i];
@@ -587,7 +587,6 @@ Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
 
 void IntegralEngine::set_effective_core_potentials(
     const ShellList &ecp_shells, const std::vector<int> &ecp_electrons) {
-    int num_shells = m_aobasis.size();
     const auto &atoms = m_aobasis.atoms();
     for (const auto &sh : m_aobasis.shells()) {
         libecpint::GaussianShell ecpint_shell(
@@ -743,7 +742,6 @@ Vec multipole_kernel(const AOBasis &basis, cint::IntegralEnvironment &env,
     results[0] *= -2;
     // TODO refactor this
     Vec unique(occ::core::num_unique_multipole_components(order));
-    int offset = 0;
     if constexpr (order <= 1) {
         return results[0];
     } else if constexpr (order == 2) {
@@ -977,18 +975,15 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
     const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
     // <pq|rs>
     for (size_t p = 0, pqrs = 0; p < basis.size(); p++) {
-        const auto &sh1 = basis[p];
         bf[0] = first_bf[p];
         const auto &plist = shellpairs[p];
         for (const auto q : plist) {
             bf[1] = first_bf[q];
-            const auto &sh2 = basis[q];
 
             // for Schwarz screening
             const double norm_pq = do_schwarz_screen ? Dnorm(p, q) : 0.0;
 
             for (size_t r = 0; r <= p; r++) {
-                const auto &sh3 = basis[r];
                 bf[2] = first_bf[r];
                 // check if <pq|ps>, if so ensure s <= q else s <= r
                 const auto s_max = (p == r) ? q : r;
@@ -1012,7 +1007,6 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
                         continue;
 
                     bf[3] = first_bf[s];
-                    const auto &sh4 = basis[s];
                     shell_idx = {static_cast<int>(p), static_cast<int>(q),
                                  static_cast<int>(r), static_cast<int>(s)};
 
@@ -1327,14 +1321,11 @@ std::vector<Mat> coulomb_kernel_list(
     auto nthreads = occ::parallel::get_num_threads();
     constexpr Op op = Op::coulomb;
 
-    std::vector<std::vector<Mat>> js;
     const int rows = mos[0].D.rows();
     const int cols = mos[0].D.cols();
 
-    for (const auto &mo : mos) {
-        js.emplace_back(std::vector<Mat>(
-            nthreads, Mat::Zero(rows, cols)));
-    }
+    std::vector<std::vector<Mat>> js(mos.size(), std::vector<Mat>(nthreads, Mat::Zero(rows, cols)));
+
     Mat Dnorm = shellblock_norm<sk, kind>(basis, mos[0].D);
 
     auto f = [&mos, &js](const Result &args) {
@@ -1438,14 +1429,14 @@ std::vector<JKPair> coulomb_and_exchange_kernel_list(
     auto nthreads = occ::parallel::get_num_threads();
     constexpr Op op = Op::coulomb;
 
-    std::vector<std::vector<JKPair>> jkpairs;
     const int rows = mos[0].D.rows();
     const int cols = mos[0].D.cols();
 
-    for (const auto &mo : mos) {
-        jkpairs.emplace_back(std::vector<JKPair>(
-            nthreads, JKPair{Mat::Zero(rows, cols), Mat::Zero(rows, cols)}));
-    }
+    std::vector<std::vector<JKPair>> jkpairs(
+	    mos.size(), 
+	    std::vector<JKPair>(nthreads, JKPair{Mat::Zero(rows, cols), Mat::Zero(rows, cols)})
+    );
+
     Mat Dnorm = shellblock_norm<sk, kind>(basis, mos[0].D);
 
     auto f = [&mos, &jkpairs](const Result &args) {
@@ -1569,7 +1560,6 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
         occ::qm::cint::Optimizer opt(m_env, Op::coulomb, 4);
         auto buffer = std::make_unique<double[]>(m_env.buffer_size_2e());
 
-        std::array<int, 4> idxs;
         // loop over permutationally-unique set of shells
         for (int s1 = 0, s1234 = 0; s1 != nsh; ++s1) {
             int bf1_first = shell2bf[s1]; // first basis function in this shell
@@ -1721,13 +1711,11 @@ Mat schwarz_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
         auto buffer = std::make_unique<double[]>(env.buffer_size_2e());
         for (int p = 0, pq = 0; p < nsh; p++) {
             int bf1 = first_bf[p];
-            const auto &sh1 = basis[p];
-            for (const int &q : shellpairs[p]) {
+            for (const auto &q : shellpairs[p]) {
                 if (pq++ % nthreads != thread_id)
                     continue;
                 int bf2 = first_bf[q];
-                const auto &sh2 = basis[q];
-                std::array<int, 4> idxs{p, q, p, q};
+                std::array<int, 4> idxs{p, static_cast<int>(q), p, static_cast<int>(q)};
                 Result args{thread_id,
                             idxs,
                             {bf1, bf2, bf1, bf2},
@@ -1783,19 +1771,16 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
     for (int auxP = 0; auxP < auxbasis.size(); auxP++) {
         if (auxP % nthreads != thread_id)
             continue;
-        const auto &shauxP = auxbasis[auxP];
         args.bf[2] = first_bf_aux[auxP];
         args.shell[2] = auxP;
         for (int p = 0; p < aobasis.size(); p++) {
             args.bf[0] = first_bf_ao[p];
             args.shell[0] = p;
-            const auto &shp = aobasis[p];
             const auto &plist = shellpairs[p];
-            for (const int &q : plist) {
+            for (const auto &q : plist) {
                 args.bf[1] = first_bf_ao[q];
                 args.shell[1] = q;
-                const auto &shq = aobasis[q];
-                shell_idx = {p, q, auxP + static_cast<int>(aobasis.size())};
+                shell_idx = {p, static_cast<int>(q), auxP + static_cast<int>(aobasis.size())};
                 args.dims = env.three_center_helper<Op::coulomb, kind>(
                     shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
                 if (args.dims[0] > -1) {
@@ -1814,10 +1799,9 @@ Mat point_charge_potential_kernel(cint::IntegralEnvironment &env,
                                   const ShellPairList &shellpairs) {
     using Result = IntegralEngine::IntegralResult<3>;
     auto nthreads = occ::parallel::get_num_threads();
-    size_t nsh = aobasis.size();
     const auto nbf = aobasis.nbf();
     std::vector<Mat> results(nthreads, Mat::Zero(nbf, nbf));
-    auto f = [nsh, &results](const Result &args) {
+    auto f = [&results](const Result &args) {
         auto &result = results[args.thread];
         Eigen::Map<const Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
         result.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) += tmp;

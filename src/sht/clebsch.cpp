@@ -10,7 +10,7 @@ double clebsch(int j1, int m1, int j2, int m2, int j, int m) noexcept {
    double res = 0.0;
 
    int j1nm1, jnj2pm1, j2pm2, jnj1nm2, j1pj2nj;
-   int k, mink, maxk, iphase;
+   int mink, maxk, iphase;
    double tmp;
 
    if(abs(m1) > j1) return res;

@@ -184,7 +184,6 @@ class IntegralEngine {
         auto buffer = std::make_unique<double[]>(m_env.buffer_size_1e(op));
         for (int p = 0; p < nsh; p++) {
             auto &plist = m_shellpairs[p];
-            const auto &sh1 = m_aobasis[p];
             for (int q = 0; q <= p; q++) {
                 num_total_shellpairs++;
                 if (m_aobasis.shells_share_origin(p, q)) {
@@ -192,7 +191,6 @@ class IntegralEngine {
                     plist.push_back(q);
                     continue;
                 }
-                const auto &sh2 = m_aobasis[q];
                 std::array<int, 2> idxs{p, q};
                 std::array<int, 2> dims = m_env.two_center_helper<op, kind>(
                     idxs, nullptr, buffer.get(), nullptr);

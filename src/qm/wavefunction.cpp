@@ -262,8 +262,6 @@ void Wavefunction::save(FchkWriter &fchk) {
                     atomic_prop.array().round().cast<int>());
     fchk.set_vector("Real atomic weights", atomic_prop);
 
-    bool spherical = basis.is_pure();
-
     auto mo_fchk = occ::io::conversion::orb::to_gaussian_order(basis, mo);
     Mat Dfchk;
 
@@ -397,8 +395,6 @@ Mat3N Wavefunction::electron_density_gradient(const Mat3N &pos) const {
 
 Vec Wavefunction::electron_density_mo(const Mat3N &pos, int mo_index) const {
     constexpr auto R = SpinorbitalKind::Restricted;
-    constexpr auto U = SpinorbitalKind::Unrestricted;
-
 
     switch(mo.kind) {
 	case R: {
@@ -412,8 +408,6 @@ Vec Wavefunction::electron_density_mo(const Mat3N &pos, int mo_index) const {
 
 Mat3N Wavefunction::electron_density_mo_gradient(const Mat3N &pos, int mo_index) const {
     constexpr auto R = SpinorbitalKind::Restricted;
-    constexpr auto U = SpinorbitalKind::Unrestricted;
-
 
     switch(mo.kind) {
 	case R: {

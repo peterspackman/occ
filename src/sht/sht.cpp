@@ -50,9 +50,10 @@ int closest_int_with_only_prime_factors_up_to_fmax(int n, int fmax = 7) {
 }
 
 SHT::SHT(size_t lm)
-    : m_lmax(lm), m_plm(lm),
+    : m_lmax(lm),
       m_nphi(closest_int_with_only_prime_factors_up_to_fmax(2 * lm + 1)),
-      m_fft_shape({m_nphi}) {
+      m_fft_shape({m_nphi}),
+      m_plm(lm) {
     m_phi = Vec(m_nphi);
     for (size_t i = 0; i < m_nphi; i++) {
         m_phi(i) = (2 * M_PI * i) / m_nphi;

@@ -112,7 +112,6 @@ class HartreeFock {
     compute_electronic_multipoles(const MolecularOrbitals &mo,
                                   const Vec3 &o = {0.0, 0.0, 0.0}) const {
         occ::core::Multipole<order> result;
-        const auto &D = mo.D;
         int offset = 0;
         for (int i = 0; i <= order; i++) {
             Vec c = m_engine.multipole(i, mo, o);

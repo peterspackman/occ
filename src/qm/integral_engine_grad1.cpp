@@ -149,11 +149,11 @@ void evaluate_two_center_with_shellpairs_grad(Lambda &f, IntEnv &env,
     const auto &first_bf = basis.first_bf();
     for (int p = 0, pq = 0; p < basis.size(); p++) {
         int bf1 = first_bf[p];
-        for (const int &q : shellpairs[p]) {
+        for (const auto &q : shellpairs[p]) {
             if (pq++ % nthreads != thread_id)
                 continue;
             int bf2 = first_bf[q];
-            std::array<int, 2> idxs{p, q};
+            std::array<int, 2> idxs{p, static_cast<int>(q)};
             Result args{thread_id,
                         idxs,
                         {bf1, bf2},
@@ -164,7 +164,7 @@ void evaluate_two_center_with_shellpairs_grad(Lambda &f, IntEnv &env,
                 f(args);
 
             if(p != q) {
-                std::array<int, 2> idxs2{q, p};
+                std::array<int, 2> idxs2{static_cast<int>(q), p};
                 Result args2{thread_id,
                             idxs2,
                             {bf2, bf1},
@@ -332,7 +332,6 @@ void evaluate_four_center_grad(Lambda &f, IntEnv &env,
     std::array<int, 4> shell_idx;
     std::array<int, 4> bf;
 
-    const auto &atom_idx = basis.shell_to_atom();
     const auto &first_bf = basis.first_bf();
 
     const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;

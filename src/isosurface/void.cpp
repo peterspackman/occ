@@ -4,10 +4,12 @@
 
 namespace occ::isosurface {
 
-VoidSurfaceFunctor::VoidSurfaceFunctor(const occ::crystal::Crystal &crystal,
-				       float sep, const InterpolatorParams &params) : m_crystal(crystal), 
-					  m_target_separation(sep),
-					  m_interpolator_params(params) {
+VoidSurfaceFunctor::VoidSurfaceFunctor(
+	const occ::crystal::Crystal &crystal,
+	float sep, const InterpolatorParams &params) : 
+    m_crystal(crystal), 
+    m_interpolator_params(params),
+    m_target_separation(sep) {
 
     double radius = m_buffer;
     const auto &uc_atoms = m_crystal.unit_cell_atoms();

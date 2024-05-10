@@ -249,7 +249,7 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
 namespace occ::io {
 
 JsonWavefunctionReader::JsonWavefunctionReader(const std::string &filename, JsonFormat fmt)
-    : m_filename{filename}, m_format(fmt) {
+    : m_format(fmt), m_filename{filename} {
     occ::timing::start(occ::timing::category::io);
     std::ios_base::openmode mode = std::ios_base::out;
     switch(m_format) {

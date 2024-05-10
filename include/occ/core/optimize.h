@@ -132,9 +132,6 @@ class LineSearch {
       auto xa = m_bracket.xa;
       auto xb = m_bracket.xb;
       auto xc = m_bracket.xc;
-      auto fa = m_bracket.fa;
-      auto fb = m_bracket.fb;
-      auto fc = m_bracket.fc;
       size_t num_calls = m_bracket.num_calls;
       double min_tol{1e-11};
       double cg{0.3819660};

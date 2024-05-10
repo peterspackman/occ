@@ -509,16 +509,30 @@ class DensityFunctional {
     bool polarized() const { return m_polarized; }
     Family family() const {
         xc_func_type func;
-        int err = xc_func_init(&func, static_cast<int>(m_func_id),
+	int integer_id = static_cast<int>(m_func_id);
+        int err = xc_func_init(&func, integer_id,
                                m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+	if(err != 0) {
+	    throw std::runtime_error(
+		    fmt::format("Error initialiizing functional with id: {}", integer_id)
+	    );
+	}
         Family f = static_cast<Family>(func.info->family);
         xc_func_end(&func);
         return f;
     }
     Kind kind() const {
         xc_func_type func;
-        int err = xc_func_init(&func, static_cast<int>(m_func_id),
+
+	int integer_id = static_cast<int>(m_func_id);
+        int err = xc_func_init(&func, integer_id,
                                m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+	if(err != 0) {
+	    throw std::runtime_error(
+		    fmt::format("Error initialiizing functional with id: {}", integer_id)
+	    );
+	}
+
         Kind k = static_cast<Kind>(func.info->kind);
         xc_func_end(&func);
         return k;
@@ -547,8 +561,15 @@ class DensityFunctional {
         case HGGA:
         case HMGGA: {
             xc_func_type func;
-            int err = xc_func_init(&func, static_cast<int>(m_func_id),
+	    int integer_id = static_cast<int>(m_func_id);
+            int err = xc_func_init(&func, integer_id,
                                    m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+	    if(err != 0) {
+		throw std::runtime_error(
+			fmt::format("Error initialiizing functional with id: {}", integer_id)
+		);
+	    }
+
             double fac = xc_hyb_exx_coef(&func);
             xc_func_end(&func);
             return fac;
@@ -564,8 +585,15 @@ class DensityFunctional {
         case HGGA:
         case HMGGA: {
             xc_func_type func;
-            int err = xc_func_init(&func, static_cast<int>(m_func_id),
+	    int integer_id = static_cast<int>(m_func_id);
+            int err = xc_func_init(&func, integer_id,
                                    m_polarized ? XC_POLARIZED : XC_UNPOLARIZED);
+	    if(err != 0) {
+		throw std::runtime_error(
+			fmt::format("Error initialiizing functional with id: {}", integer_id)
+		);
+	    }
+
             xc_hyb_cam_coef(&func, &params.omega, &params.alpha, &params.beta);
             xc_func_end(&func);
             return params;

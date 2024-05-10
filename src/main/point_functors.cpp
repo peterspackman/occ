@@ -145,7 +145,7 @@ void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::R
 }
 
 DeformationDensityFunctor::DeformationDensityFunctor(const Wavefunction &wfn,
-	SpinConstraint spin) : rho_func(wfn, spin), pro_func(wfn.atoms) {}
+	SpinConstraint spin) : pro_func(wfn.atoms), rho_func(wfn, spin) {}
 
 void DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest) {
     Vec tmp = Vec::Zero(dest.rows(), dest.cols());
@@ -165,13 +165,11 @@ XCDensityFunctor::XCDensityFunctor(
 
 void XCDensityFunctor::operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest) {
 
-    int deriv = ks.density_derivative();
     Mat D2 = wfn.mo.D * 2;
     Mat rho = occ::density::evaluate_density_on_grid<2>(wfn, points);
 
     constexpr auto R = qm::SpinorbitalKind::Restricted;
     constexpr auto U = qm::SpinorbitalKind::Unrestricted;
-    constexpr auto G = qm::SpinorbitalKind::General;
 
 
     dft::DensityFunctional::Family family{dft::DensityFunctional::Family::MGGA};

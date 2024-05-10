@@ -13,7 +13,6 @@ namespace occ::qm {
 
 inline SpinorbitalKind compatible_kind(SpinorbitalKind a, SpinorbitalKind b) {
     constexpr auto R = SpinorbitalKind::Restricted;
-    constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;
 
     /*
@@ -38,11 +37,12 @@ inline SpinorbitalKind compatible_kind(SpinorbitalKind a, SpinorbitalKind b) {
 
 MolecularOrbitals::MolecularOrbitals(const MolecularOrbitals &mo1,
                                      const MolecularOrbitals &mo2)
-    : n_alpha(mo1.n_alpha + mo2.n_alpha), n_beta(mo1.n_beta + mo2.n_beta),
-      n_ao(mo2.n_ao + mo1.n_ao), kind(compatible_kind(mo1.kind, mo2.kind)) {
+    : kind(compatible_kind(mo1.kind, mo2.kind)),
+      n_alpha(mo1.n_alpha + mo2.n_alpha),
+      n_beta(mo1.n_beta + mo2.n_beta),
+      n_ao(mo2.n_ao + mo1.n_ao) {
     constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
-    constexpr auto G = SpinorbitalKind::General;
 
     auto [rows, cols] = matrix_dimensions(kind, n_ao);
     C = Mat(rows, cols);
@@ -208,7 +208,6 @@ void MolecularOrbitals::update_occupied_orbitals() {
         return;
     }
     occ::log::debug("Updating occupied orbitals, n_a = {}, n_b = {}", n_alpha, n_beta);
-    constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;
 
@@ -238,7 +237,6 @@ void MolecularOrbitals::update_occupied_orbitals_fractional() {
         return;
     }
     occ::log::debug("Updating occupied orbitals, n_a = {}, n_b = {}", n_alpha, n_beta);
-    constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;
 
@@ -304,7 +302,6 @@ void MolecularOrbitals::rotate(const AOBasis &basis, const Mat3 &rotation) {
         size_t bf_first = shell2bf[s];
         size_t shell_size = shell.size();
         int l = shell.l;
-        bool pure = shell.is_pure();
         Mat rot = rotation_matrices[l];
         if (kind == SpinorbitalKind::Restricted) {
             occ::log::trace("Restricted MO rotation");
@@ -363,8 +360,6 @@ void MolecularOrbitals::to_cartesian(const AOBasis &bspure,
     const auto shell2bf_pure = bspure.first_bf();
     const auto shell2bf_cart = bscart.first_bf();
     occ::log::debug("Converting MO from spherical to Cartesian");
-    const auto &shells_pure = bspure.shells();
-    const auto &shells_cart = bscart.shells();
 
     // fail early if we already have the right number of AOs
     if (bspure.nbf() == bscart.nbf())
@@ -417,8 +412,6 @@ void MolecularOrbitals::to_spherical(const AOBasis &bscart,
     const auto shell2bf_pure = bspure.first_bf();
     const auto shell2bf_cart = bscart.first_bf();
     occ::log::debug("Converting MO from Cartesian to spherical (lossy)");
-    const auto &shells_pure = bspure.shells();
-    const auto &shells_cart = bscart.shells();
 
     // fail early if we already have the right number of AOs
     if (bspure.nbf() == bscart.nbf())
@@ -578,7 +571,6 @@ MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
 
 MolecularOrbitals MolecularOrbitals::symmetrically_orthonormalized(
     const Mat &overlap_matrix) const {
-    constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;
 

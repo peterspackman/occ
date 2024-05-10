@@ -173,8 +173,7 @@ template <typename Procedure> struct SCF {
         // compute the minimal basis density
         Mat D_minbs = Mat::Zero(nao, nao);
         size_t ao_offset = 0; // first AO of this atom
-        int atom_index = 0;
-        const auto &frozen_electrons = m_procedure.frozen_electrons();
+        //const auto &frozen_electrons = m_procedure.frozen_electrons();
         for (const auto &atom : atoms()) {
             const auto Z = atom.atomic_number;
             // the following code might be useful for a minimal
@@ -207,7 +206,6 @@ template <typename Procedure> struct SCF {
                 D_minbs(ao_offset + bf, ao_offset + bf) = occ;
                 bf++;
             }
-            atom_index++;
             ao_offset += occvec.size();
         }
 

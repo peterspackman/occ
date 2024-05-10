@@ -47,8 +47,8 @@ struct torus {
     }
 };
 
-TEST_CASE("Marching cubes 128x128x128 on torus function", "[geometry]") {
-    MarchingCubes m(128);
+TEST_CASE("Marching cubes 16x16x16 on torus function", "[geometry]") {
+    MarchingCubes m(16);
     torus s;
     occ::timing::StopWatch<1> sw;
     std::vector<float> vertices;

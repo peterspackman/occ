@@ -18,7 +18,6 @@ double common_fac(int l, bool spherical) {
 Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
     occ::log::trace("Evaluating decay cutoff (threshold = 1e-12) for AOBasis");
     occ::timing::start(occ::timing::category::gto);
-    size_t nbf = basis.nbf();
     size_t natoms = basis.atoms().size();
     auto shell2bf = basis.first_bf();
     auto atom2shell = basis.atom_to_shell();
@@ -39,7 +38,6 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
             const auto &sh = basis[shell_idx];
             pts.colwise() += sh.origin;
             occ::timing::start(occ::timing::category::gto_shell);
-            size_t bf = shell2bf[shell_idx];
             double *output = values.data();
             const double *xyz = pts.data();
             long int xyz_stride = 3;

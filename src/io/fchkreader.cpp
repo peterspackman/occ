@@ -40,7 +40,7 @@ FchkReader::FchkReader(std::istream &filehandle) {
 
 void FchkReader::open(const std::string &filename) {
     m_fchk_file.open(filename);
-    if (m_fchk_file.fail() | m_fchk_file.bad()) {
+    if (m_fchk_file.fail() || m_fchk_file.bad()) {
         throw std::runtime_error("Unable to open fchk file: " + filename);
     }
 }

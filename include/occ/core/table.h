@@ -63,7 +63,7 @@ class Table {
             config.alignment = ColumnConfiguration::Alignment::right;
         auto &col = m_columns[name];
         col.reserve(num_values);
-        size_t num_added = 0;
+        size_t num_added{0};
         size_t cell_width = name.size();
         for (const auto &val : column) {
             std::string cell = fmt::format(fmt::runtime(fmt_string), val);
@@ -91,14 +91,12 @@ class Table {
             config.alignment = ColumnConfiguration::Alignment::right;
             auto &col = m_columns[colname];
             col.reserve(num_values);
-            size_t num_added = 0;
             size_t cell_width = colname.size();
             for (Eigen::Index r = 0; r < num_values; r++) {
                 std::string cell =
                     fmt::format(fmt::runtime(fmt_string), a(r, c));
                 cell_width = std::max(cell_width, cell.size());
                 col.push_back(cell);
-                num_added++;
             }
             config.width = static_cast<uint_fast8_t>(cell_width);
             m_column_config[colname] = config;

@@ -27,8 +27,9 @@ void HartreeFock::set_density_fitting_basis(
 }
 
 HartreeFock::HartreeFock(const AOBasis &basis)
-    : m_atoms(basis.atoms()), m_engine(basis),
-      m_frozen_electrons(basis.atoms().size(), 0) {
+    : m_atoms(basis.atoms()),
+      m_frozen_electrons(basis.atoms().size(), 0),
+      m_engine(basis) {
 
     for (const auto &a : m_atoms) {
         m_num_e += a.atomic_number;
@@ -116,7 +117,6 @@ Mat HartreeFock::compute_effective_core_potential_matrix() const {
 Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                           const qm::AOBasis &bs,
                                           bool is_shell_diagonal) {
-    using Kind = occ::qm::Shell::Kind;
     if (mo_minbs.kind == SpinorbitalKind::Restricted) {
         return m_engine.fock_operator_mixed_basis(mo_minbs.D, bs,
                                                   is_shell_diagonal);
@@ -181,13 +181,11 @@ JKTriple HartreeFock::compute_JK_gradient(const MolecularOrbitals &mo,
 }
 
 Mat HartreeFock::compute_kinetic_matrix() const {
-    using Kind = occ::qm::Shell::Kind;
     using Op = occ::qm::cint::Operator;
     return m_engine.one_electron_operator(Op::kinetic);
 }
 
 Mat HartreeFock::compute_overlap_matrix() const {
-    using Kind = occ::qm::Shell::Kind;
     using Op = occ::qm::cint::Operator;
     return m_engine.one_electron_operator(Op::overlap);
 }
@@ -200,7 +198,6 @@ Mat HartreeFock::compute_overlap_matrix_for_basis(const occ::qm::AOBasis &basis)
 }
 
 Mat HartreeFock::compute_nuclear_attraction_matrix() const {
-    using Kind = occ::qm::Shell::Kind;
     using Op = occ::qm::cint::Operator;
     return m_engine.one_electron_operator(Op::nuclear);
 }
@@ -228,7 +225,6 @@ Mat3N HartreeFock::nuclear_electric_field_contribution(
 
 Mat3N HartreeFock::electronic_electric_field_contribution(
     const MolecularOrbitals &mo, const Mat3N &positions) const {
-    const auto &D = mo.D;
     double delta = 1e-8;
     occ::Mat3N efield_fd(positions.rows(), positions.cols());
     for (size_t i = 0; i < 3; i++) {
@@ -244,7 +240,6 @@ Mat3N HartreeFock::electronic_electric_field_contribution(
 
 Vec HartreeFock::electronic_electric_potential_contribution(
     const MolecularOrbitals &mo, const Mat3N &positions) const {
-    const auto &D = mo.D;
     return m_engine.electric_potential(mo, positions);
 }
 

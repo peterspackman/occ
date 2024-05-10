@@ -221,7 +221,6 @@ class DFT {
     Mat compute_K_dft(const MolecularOrbitals &mo, const Mat &Schwarz) {
         using occ::parallel::nthreads;
         const auto &basis = m_hf.aobasis();
-        const auto &atoms = m_hf.atoms();
         size_t K_rows, K_cols;
         size_t nbf = basis.nbf();
         const auto &D = mo.D;
@@ -254,7 +253,6 @@ class DFT {
 
         const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted) ?
 	    m_funcs.polarized : m_funcs.unpolarized;
-        size_t atom_grid_idx{0};
         for (const auto &atom_grid : m_atom_grids) {
             const auto &atom_pts = atom_grid.points;
             const auto &atom_weights = atom_grid.weights;
@@ -299,7 +297,7 @@ class DFT {
                         alpha_densities[thread_id] += tot_density_a;
                         beta_densities[thread_id] += tot_density_b;
                     }
-                    // if(max_density_block < m_density_threshold) continue;
+                    if(max_density_block < m_density_threshold) continue;
 
                     DensityFunctional::Params params(npt, family,
                                                      spinorbital_kind);
@@ -324,7 +322,6 @@ class DFT {
             occ::timing::start(occ::timing::category::dft_xc);
             occ::parallel::parallel_do(lambda);
             occ::timing::stop(occ::timing::category::dft_xc);
-            atom_grid_idx++;
         }
         for (size_t i = 0; i < nthreads; i++) {
             K += Kt[i];

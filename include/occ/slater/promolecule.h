@@ -47,7 +47,6 @@ public:
     }
 
     OCC_ALWAYS_INLINE FVec3 gradient(const FVec3 &pos) const {
-        double result{0.0};
         FVec3 grad = FVec3::Zero();
         for (const auto &[interp, interp_positions, threshold] :
              m_atom_interpolators) {
@@ -56,9 +55,7 @@ public:
                 float r = v.squaredNorm();
                 if (r > threshold)
                     continue;
-                float rho = interp(r);
                 float grad_rho = interp.gradient(r);
-                result += rho;
                 grad.array() += 2 * v.array() * grad_rho;
             }
         }

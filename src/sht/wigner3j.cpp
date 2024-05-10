@@ -48,8 +48,8 @@ Vec wigner3j(double l2, double l3, double m1, double m2, double m3) {
     const double huge = std::sqrt(std::numeric_limits<double>::max() / 20.0);
     const double huge_sentinel = std::sqrt(huge);
     constexpr double tiny = std::numeric_limits<double>::min();
-    const double tiny_sentinel = std::sqrt(tiny);
     constexpr double eps = std::numeric_limits<double>::epsilon();
+    const double tiny_sentinel = std::sqrt(tiny + eps);
 
     if(!(std::fabs(m1 + m2 + m3) < eps &&
 	 std::fabs(m2) <= l2 + eps &&
@@ -125,7 +125,7 @@ Vec wigner3j(double l2, double l3, double m1, double m2, double m3) {
 		    an = impl::alpha_term_backward(l1, l2, l3, m1, m2, m3);
 		    beta = impl::beta_term_backward(l1, l2, l3, m1, m2, m3);
 
-		    result(j) = an * result(j + 1) + beta * result(j + 2);
+		    result(j) = an * result(j + 2) + beta * result(j + 2);
 
 		    if (std::fabs(result(j)) > huge_sentinel) {
 			occ::log::debug("renormalized backward recursion in wigner3j");

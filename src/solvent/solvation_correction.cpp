@@ -16,8 +16,9 @@ namespace occ::solvent {
 
 ContinuumSolvationModel::ContinuumSolvationModel(
     const std::vector<occ::core::Atom> &atoms, const std::string &solvent, double charge, bool scale_radii)
-    : m_charge(charge), m_atomic_charges(Vec::Zero(atoms.size())), m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()),
-      m_solvent_name(solvent), m_cosmo(78.39), m_scale_radii(scale_radii) {
+    : m_charge(charge), m_atomic_charges(Vec::Zero(atoms.size())),
+      m_solvent_name(solvent), m_nuclear_positions(3, atoms.size()), m_nuclear_charges(atoms.size()),
+      m_cosmo(78.39), m_scale_radii(scale_radii) {
     occ::log::debug("Number of atoms for continuum solvation model = {}",
                     atoms.size());
     for (size_t i = 0; i < atoms.size(); i++) {

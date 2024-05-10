@@ -711,11 +711,10 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
             args.shell[0] = p;
             const auto &shp = aobasis[p];
             const auto &plist = shellpairs[p];
-            for (const int &q : plist) {
+            for (const auto &q : plist) {
                 args.bf[1] = first_bf_ao[q];
                 args.shell[1] = q;
-                const auto &shq = aobasis[q];
-                shell_idx = {p, q, auxP + nsh_ao};
+                shell_idx = {p, static_cast<int>(q), auxP + nsh_ao};
                 args.dims = env.three_center_helper<Op::coulomb, kind>(
                     shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
                 if (args.dims[0] > -1) {

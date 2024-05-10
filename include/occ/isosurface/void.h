@@ -76,13 +76,8 @@ class VoidSurfaceFunctor {
         Eigen::Vector3f grad(0.0, 0.0, 0.0);
         Eigen::Vector3f pos = occ::units::ANGSTROM_TO_BOHR * m_crystal.to_cartesian(Vec3(x, y, z)).cast<float>();
 	
-
-	Vec3 pangs = pos.cast<double>() * occ::units::BOHR_TO_ANGSTROM;
-	Vec3 v = m_crystal.to_fractional(pangs);
-
         m_num_calls++;
 
-        double result{0.0};
         for (const auto &[interp, interp_positions, threshold, interior] :
              m_atom_interpolators) {
             for (int i = 0; i < interp_positions.cols(); i++) {
@@ -90,9 +85,7 @@ class VoidSurfaceFunctor {
                 float r = v.squaredNorm();
                 if (r > threshold)
                     continue;
-                float rho = interp(r);
                 float grad_rho = interp.gradient(r);
-                result += rho;
                 grad.array() += 2 * v.array() * grad_rho;
             }
         }
@@ -120,7 +113,6 @@ class VoidSurfaceFunctor {
     Eigen::Vector3f m_cube_side_length;
     InterpolatorParams m_interpolator_params;
     Eigen::Vector3f m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
-    float m_isovalue{0.002};
     mutable int m_num_calls{0};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
 

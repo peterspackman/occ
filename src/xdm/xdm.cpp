@@ -28,15 +28,11 @@ xdm_dispersion_interaction_energy(const XDMAtomList &atom_info_a,
                                   const XDMAtomList &atom_info_b,
                                   const XDM::Parameters &params) {
     const auto &atoms_a = atom_info_a.atoms;
-    const auto &volume_a = atom_info_a.volume;
     const auto &moments_a = atom_info_a.moments;
-    const auto &volume_free_a = atom_info_a.volume_free;
     const auto &polarizabilities_a = atom_info_a.polarizabilities;
 
     const auto &atoms_b = atom_info_b.atoms;
-    const auto &volume_b = atom_info_b.volume;
     const auto &moments_b = atom_info_b.moments;
-    const auto &volume_free_b = atom_info_b.volume_free;
     const auto &polarizabilities_b = atom_info_b.polarizabilities;
 
     const size_t num_atoms_a = atoms_a.size();
@@ -309,7 +305,7 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
     if (unrestricted)
         num_rows_factor = 2;
 
-    constexpr double density_tolerance = 1e-10;
+    //constexpr double density_tolerance = 1e-10;
     constexpr int max_derivative{2};
     std::vector<Vec> tl_hirshfeld_charges(nthreads, Vec::Zero(num_atoms));
     std::vector<Vec> tl_volumes(nthreads, Vec::Zero(num_atoms));

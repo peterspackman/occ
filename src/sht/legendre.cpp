@@ -28,8 +28,6 @@ double AssocLegendreP::operator()(size_t l, size_t m, double x) const {
 
 void AssocLegendreP::evaluate_batch(double x, Vec &result) const {
     size_t idx = 0;
-    double tmp1 = 1 - x * x;
-    double sqrt_tmp1 = std::sqrt(tmp1);
     for (size_t m = 0; m <= l_max; m++) {
         for (size_t l = m; l <= l_max; l++) {
             if (l == m) {

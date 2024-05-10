@@ -76,8 +76,7 @@ double V(int m, int n, int l, std::vector<Mat> &rotation_matrices) {
         // Note there is apparent errata in[1, 4, 4b] dealing with this
         // particular case.[4b] writes it should be P *(1 - d) + P *(1 - d) ^
         // 0.5
-         // [1] writes it as P *(1 + d) + P *(1 - d) ^ 0.5, \
-                                   but going through the math by hand,
+        // [1] writes it as P *(1 + d) + P *(1 - d) ^ 0.5, but going through the math by hand,
         // you must have it as P *(1 - d) + P *(1 + d) ^ 0.5 to form a 2 ^ .5
         // term, which parallels the case where m> 0.
         return P(1, m + 1, n, l, rotation_matrices) *

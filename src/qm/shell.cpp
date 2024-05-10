@@ -9,63 +9,6 @@
 
 namespace fs = std::filesystem;
 
-namespace detail {
-/// fac[k] = k!
-static constexpr std::array<int64_t, 21> fac = {{1LL,
-                                                 1LL,
-                                                 2LL,
-                                                 6LL,
-                                                 24LL,
-                                                 120LL,
-                                                 720LL,
-                                                 5040LL,
-                                                 40320LL,
-                                                 362880LL,
-                                                 3628800LL,
-                                                 39916800LL,
-                                                 479001600LL,
-                                                 6227020800LL,
-                                                 87178291200LL,
-                                                 1307674368000LL,
-                                                 20922789888000LL,
-                                                 355687428096000LL,
-                                                 6402373705728000LL,
-                                                 121645100408832000LL,
-                                                 2432902008176640000LL}};
-/// df_Kminus1[k] = (k-1)!!
-static constexpr std::array<int64_t, 31> df_Kminus1 = {{1LL,
-                                                        1LL,
-                                                        1LL,
-                                                        2LL,
-                                                        3LL,
-                                                        8LL,
-                                                        15LL,
-                                                        48LL,
-                                                        105LL,
-                                                        384LL,
-                                                        945LL,
-                                                        3840LL,
-                                                        10395LL,
-                                                        46080LL,
-                                                        135135LL,
-                                                        645120LL,
-                                                        2027025LL,
-                                                        10321920LL,
-                                                        34459425LL,
-                                                        185794560LL,
-                                                        654729075LL,
-                                                        3715891200LL,
-                                                        13749310575LL,
-                                                        81749606400LL,
-                                                        316234143225LL,
-                                                        1961990553600LL,
-                                                        7905853580625LL,
-                                                        51011754393600LL,
-                                                        213458046676875LL,
-                                                        1428329123020800LL,
-                                                        6190283353629375LL}};
-} // namespace detail
-
 namespace occ::qm {
 
 namespace impl {
@@ -404,11 +347,14 @@ bool Shell::is_pure() const { return kind == Spherical; }
 AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
                  const std::vector<Shell> &shells, const std::string &name,
                  const ShellList &ecp_shells)
-    : m_basis_name(name), m_atoms(atoms), m_shells(shells),
-      m_shell_to_atom_idx(shells.size()), m_atom_to_shell_idxs(atoms.size()),
+    : m_basis_name(name), m_atoms(atoms),
+      m_shells(shells),  m_ecp_shells(ecp_shells),
+      m_shell_to_atom_idx(shells.size()),
       m_ecp_shell_to_atom_idx(ecp_shells.size()),
-      m_atom_to_ecp_shell_idxs(atoms.size()), m_ecp_shells(ecp_shells),
-      m_ecp_electrons(atoms.size(), 0), m_bf_to_shell(), m_bf_to_atom() {
+      m_bf_to_shell(), m_bf_to_atom(),
+      m_atom_to_shell_idxs(atoms.size()),
+      m_atom_to_ecp_shell_idxs(atoms.size()),
+      m_ecp_electrons(atoms.size(), 0)  {
 
     size_t shell_idx = 0;
     for (const auto &shell : m_shells) {
@@ -563,7 +509,6 @@ std::string data_path() {
     // validate basis_path = path + "/basis"
     std::string basis_path = path + std::string("/basis");
     bool path_exists = fs::exists(basis_path);
-    bool error = false;
     std::string errmsg;
     if (!path_exists) { // try without "/basis"
         occ::log::warn("There is a problem with the basis set directory, the "
@@ -671,11 +616,9 @@ void AOBasis::rotate(const occ::Mat3 &rotation) {
     }
 
     // nothing needs to happen to ECPs besides their
-    int ecp_shell_idx = 0;
     for (auto &shell : m_ecp_shells) {
         auto rot_pos = rotation * shell.origin;
         shell.origin = rot_pos;
-        ecp_shell_idx++;
     }
 }
 
@@ -691,11 +634,9 @@ void AOBasis::translate(const occ::Vec3 &translation) {
         shell_idx++;
     }
 
-    int ecp_shell_idx = 0;
     for (auto &shell : m_ecp_shells) {
         auto t_pos = translation + shell.origin;
         shell.origin = t_pos;
-        ecp_shell_idx++;
     }
 }
 

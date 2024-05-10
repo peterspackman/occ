@@ -66,7 +66,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
                                        "8.3f} {: 8.3f} {: 8.3f} {: 8.3f} {: "
                                        "8.3f}";
     size_t mol_idx{0};
-    double etot{0.0}, elat{0.0};
+    double etot{0.0};
     for (const auto &n : lattice_energy_result.dimers.molecule_neighbors) {
 
         occ::log::info("Neighbors for molecule {}", mol_idx);

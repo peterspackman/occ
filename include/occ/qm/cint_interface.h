@@ -605,6 +605,8 @@ class Optimizer {
     void create3c_grad(IntegralEnvironment &);
     void create4c_grad(IntegralEnvironment &);
 
+    inline int grad() const { return m_grad; };
+
     Operator m_op{Operator::coulomb};
     int m_num_center{1};
     int m_grad{0};

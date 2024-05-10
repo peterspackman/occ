@@ -10,6 +10,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cg.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cube.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_describe.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
@@ -32,6 +33,8 @@ target_link_libraries(occ_main
     occ_slater
     occ_geometry
     occ_gto
+    occ_sht
+    occ_descriptors
     CLI11::CLI11
 )
 target_include_directories(occ_main PUBLIC 

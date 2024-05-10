@@ -3,6 +3,8 @@
 #include <occ/descriptors/steinhardt.h>
 #include <occ/core/util.h>
 #include <fmt/ostream.h>
+#include <iostream>
+#include <chrono>
 
 namespace timer {
 
@@ -20,6 +22,13 @@ inline auto time() {
 } // namespace timer
 
 
+inline void print_vec(const std::string &name, const occ::Vec &v) {
+    fmt::print("{}\n", name);
+    for(int i = 0; i < v.rows(); i++) {
+	fmt::print(" {:12.6f}", v(i));
+    }
+    fmt::print("\n");
+}
 
 TEST_CASE("Steinhardt q parameters", "[steinhardt]") {
     using Catch::Matchers::WithinAbs;
@@ -34,7 +43,7 @@ TEST_CASE("Steinhardt q parameters", "[steinhardt]") {
                       1, -1,  1, -1,  1, -1,  1, -1;
 
         occ::Vec q = steinhardt.compute_q(positions);
-	fmt::print("Cubic Q\n{}\n", q);
+	print_vec("Cubic Q", q);
 
         REQUIRE(q.size() == 7);
         REQUIRE_THAT(q(0), WithinAbs(1.0, eps));
@@ -45,7 +54,7 @@ TEST_CASE("Steinhardt q parameters", "[steinhardt]") {
         REQUIRE_THAT(q(5), WithinAbs(0.0, eps));
         REQUIRE(q(6) > 0.1);
 	occ::Vec w = steinhardt.compute_w(positions);
-	fmt::print("Cubic W\n{}\n", w);
+	print_vec("Cubic W", w);
     }
 
     SECTION("Octahedral symmetry") {
@@ -56,7 +65,7 @@ TEST_CASE("Steinhardt q parameters", "[steinhardt]") {
                       0,  0,  0,  0,  1, -1;
 
         occ::Vec q = steinhardt.compute_q(positions);
-	fmt::print("Octahedral Q\n{}\n", q);
+	print_vec("Octahedral Q", q);
 
         REQUIRE(q.size() == 7);
         REQUIRE_THAT(q(0), WithinAbs(1.0, eps));
@@ -67,7 +76,7 @@ TEST_CASE("Steinhardt q parameters", "[steinhardt]") {
         REQUIRE_THAT(q(5), WithinAbs(0.0, eps));
         REQUIRE(q(6) > 0.1);
 	occ::Vec w = steinhardt.compute_w(positions);
-	fmt::print("Octahedral W\n{}\n", w);
+	print_vec("Octahedral W", w);
     }
 
     SECTION("Tetrahedral symmetry") {
@@ -80,7 +89,7 @@ TEST_CASE("Steinhardt q parameters", "[steinhardt]") {
         positions.col(3) = occ::Vec3{ 0.0, -1.0,  1 / std::sqrt(2.0)};
 
         occ::Vec q = steinhardt.compute_q(positions);
-	fmt::print("Tetrahedral Q\n{}\n", q);
+	print_vec("Tetrahedral Q", q);
 
         REQUIRE(q.size() == 7);
         REQUIRE_THAT(q(0), WithinAbs(1.0, eps));
@@ -91,41 +100,36 @@ TEST_CASE("Steinhardt q parameters", "[steinhardt]") {
         REQUIRE_THAT(q(5), WithinAbs(0.0, eps));
         REQUIRE(q(6) > 0.1);
 	occ::Vec w = steinhardt.compute_w(positions);
-	fmt::print("Tetrahedral W\n{}\n", w);
+	print_vec("Tetrahedral W", w);
     }
 
     SECTION("Icosahedral symmetry") {
         Steinhardt steinhardt(6);
         occ::Mat3N positions(3, 12);
+	const double gr = 0.5 * (1.0 + std::sqrt(5));
 
-	positions.col(0) =  occ::Vec3{ 0.52573111,  0.85065081,  0.        };
-	positions.col(1) =  occ::Vec3{ 0.52573111,  0.85065081,  0.        };
-	positions.col(2) =  occ::Vec3{-0.52573111, -0.85065081,  0.        };
-	positions.col(3) =  occ::Vec3{-0.52573111, -0.85065081,  0.        };
-	positions.col(4) =  occ::Vec3{ 0.        , -0.52573111,  0.85065081};
-	positions.col(5) =  occ::Vec3{ 0.        ,  0.52573111,  0.85065081};
-	positions.col(6) =  occ::Vec3{ 0.        , -0.52573111, -0.85065081};
-	positions.col(7) =  occ::Vec3{ 0.        ,  0.52573111, -0.85065081};
-	positions.col(8) =  occ::Vec3{ 0.85065081,  0.        , -0.52573111};
-	positions.col(9) =  occ::Vec3{ 0.85065081,  0.        ,  0.52573111};
-	positions.col(10) = occ::Vec3{-0.85065081,  0.        , -0.52573111};
-	positions.col(11) = occ::Vec3{-0.85065081,  0.        ,  0.52573111};
-
-	fmt::print("Mean pos\n{}\n", positions.rowwise().mean());
+	positions.col(0) =  occ::Vec3{ 0.0,  1.0,  gr};
+	positions.col(1) =  occ::Vec3{ 0.0,  1.0, -gr};
+	positions.col(2) =  occ::Vec3{ 0.0, -1.0,  gr};
+	positions.col(3) =  occ::Vec3{ 0.0, -1.0, -gr};
+	positions.col(4) =  occ::Vec3{ 1.0,  gr, 0.0};
+	positions.col(5) =  occ::Vec3{ 1.0, -gr, 0.0};
+	positions.col(6) =  occ::Vec3{-1.0,  gr, 0.0};
+	positions.col(7) =  occ::Vec3{-1.0, -gr, 0.0};
+	positions.col(8) =  occ::Vec3{ gr, 0.0,  1.0};
+	positions.col(9) =  occ::Vec3{ gr, 0.0, -1.0};
+	positions.col(10) = occ::Vec3{-gr, 0.0,  1.0};
+	positions.col(11) = occ::Vec3{-gr, 0.0, -1.0};
 
         occ::Vec q = steinhardt.compute_q(positions);
-	fmt::print("Icosahedral Q\n{}\n", q);
+	print_vec("Icosahedral Q", q);
 
         REQUIRE(q.size() == 7);
         REQUIRE_THAT(q(0), WithinAbs(1.0, eps));
-        REQUIRE_THAT(q(1), WithinAbs(0.0, eps));
-        REQUIRE(q(2) > 0.1);
-        REQUIRE_THAT(q(3), WithinAbs(0.0, eps));
-	REQUIRE(q(4) > 0.1);
-        REQUIRE_THAT(q(5), WithinAbs(0.0, eps));
-        REQUIRE(q(6) > 0.1);
+        REQUIRE_THAT(q(4), WithinAbs(0.0, eps));
+        REQUIRE_THAT(q(6), WithinAbs(0.66332495807107972, eps));
 
 	occ::Vec w = steinhardt.compute_w(positions);
-	fmt::print("Icosahedral W\n{}\n", w);
+	print_vec("Icosahedral W", w);
     }
 }

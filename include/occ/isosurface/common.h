@@ -10,8 +10,6 @@ namespace impl {
 
 template<class Func>
 void remap_vertices(const Func &f, const std::vector<float> &v, std::vector<float> &dest) {
-    const auto &length = f.side_length();
-    const auto &origin = f.origin();
     dest.resize(v.size());
     for(int i = 0; i < v.size(); i += 3) {
        dest[i] = occ::units::BOHR_TO_ANGSTROM * v[i];

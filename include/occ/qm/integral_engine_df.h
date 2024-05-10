@@ -39,7 +39,7 @@ class IntegralEngineDF {
             for (const auto &s2 : shellpairs.at(s1)) {
                 pairs_size += aobasis[s2].size();
             }
-            n += s1 * pairs_size;
+            n += s1_size * pairs_size;
         }
         return n;
     }

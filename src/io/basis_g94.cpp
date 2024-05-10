@@ -96,7 +96,6 @@ read_shell(const std::string &file_dot_g94, bool force_cartesian_d,
                         exps.emplace_back(e);
                         coeffs.emplace_back(c);
                     }
-                    auto pure = force_cartesian_d ? (l > 2) : (l > 1);
                     ref_shells.at(Z).push_back(
                         occ::qm::Shell(l, exps, {coeffs}, {0, 0, 0}));
                 } else { // split the SP shells

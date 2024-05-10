@@ -55,11 +55,12 @@ CVec SphericalHarmonics::evaluate(Eigen::Ref<const Vec3> pos) {
 }
 
 void SphericalHarmonics::evaluate(Eigen::Ref<const Vec3> pos, Eigen::Ref<CVec> result) {
+    constexpr double epsilon = 1e-12;
     using cplx = std::complex<double>;
     double ct = pos.z();
     m_plm_evaluator.evaluate_batch(ct, m_plm);
 
-    const double st = std::sqrt(1.0 - ct * ct);
+    const double st = (std::abs(1.0 - ct) > epsilon) ? std::sqrt(1.0 - ct * ct) : 0.0;
 
 
     Eigen::Index plm_idx = 0;
@@ -69,7 +70,7 @@ void SphericalHarmonics::evaluate(Eigen::Ref<const Vec3> pos, Eigen::Ref<CVec> r
 	plm_idx++;
     }
 
-    const cplx c((st > 1e-12) ? (pos.x() / st) : 0.0, (st > 1e-12) ? (pos.y() / st) : 0.0); 
+    const cplx c((st > epsilon) ? (pos.x() / st) : 0.0, (st > 1e-12) ? (pos.y() / st) : 0.0); 
     cplx cm = c;
     for (int m = 1; m <= m_lmax; m++) {
 	int sign = (m_phase & (m & 1)) ? -1 : 1;

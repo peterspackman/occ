@@ -7,7 +7,7 @@ namespace occ::dft {
 
 DensityFunctional::DensityFunctional(DensityFunctional::Identifier id,
                                      bool polarized)
-    : m_polarized(polarized), m_func_id(id) {
+    : m_func_id(id), m_polarized(polarized) {
     char *cstr = xc_functional_get_name(id);
     m_func_name = std::string(cstr);
     free(cstr);

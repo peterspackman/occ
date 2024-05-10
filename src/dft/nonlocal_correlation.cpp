@@ -128,9 +128,11 @@ NonLocalCorrelationFunctional::vv10(const qm::AOBasis &basis,
 
     const Mat D2 = 2 * mo.D;
 
+    /*
     size_t num_rows_factor = 1;
     if (spinorbital_kind == SpinorbitalKind::Unrestricted)
         num_rows_factor = 2;
+    */
 
     Mat Vxc = Mat::Zero(D2.rows(), D2.cols());
 
@@ -150,7 +152,6 @@ NonLocalCorrelationFunctional::vv10(const qm::AOBasis &basis,
     }
 
     Mat rho(npt, occ::density::num_components(derivative_order));
-    fmt::print("D2\n{}\n", D2);
     auto gto_vals = occ::gto::evaluate_basis(basis, points, derivative_order);
 
     occ::density::evaluate_density<derivative_order, spinorbital_kind>(

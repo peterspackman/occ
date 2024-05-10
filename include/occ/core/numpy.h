@@ -137,8 +137,8 @@ inline void parse_numpy_header(std::istream &file, size_t &word_size,
 inline void parse_numpy_header(unsigned char *buffer, size_t &word_size,
                                std::vector<size_t> &shape,
                                bool &fortran_order) {
-    uint8_t major_version = *reinterpret_cast<uint8_t *>(buffer + 6);
-    uint8_t minor_version = *reinterpret_cast<uint8_t *>(buffer + 7);
+    //uint8_t major_version = *reinterpret_cast<uint8_t *>(buffer + 6);
+    //uint8_t minor_version = *reinterpret_cast<uint8_t *>(buffer + 7);
     uint8_t header_length = *reinterpret_cast<uint8_t *>(buffer + 8);
     const std::string header(reinterpret_cast<const char *>(buffer + 9),
                              header_length);

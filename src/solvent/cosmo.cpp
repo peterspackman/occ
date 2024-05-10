@@ -21,6 +21,7 @@ Vec solvation_radii(const IVec &nums) {
         double r = 2.223;
         if (n <= 17 && n > 0)
             r = radii[n - 1];
+	result(i) = r;
     }
     return result * occ::units::ANGSTROM_TO_BOHR;
 }

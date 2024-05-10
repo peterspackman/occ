@@ -24,7 +24,6 @@ class ElectricPotentialFunctor {
 
 
     OCC_ALWAYS_INLINE FVec3 normal(const FVec3 &posf) const {
-        double result{0.0};
         FVec3 grad(0.0, 0.0, 0.0);
 
         if (!m_bounding_box.inside(posf))
@@ -57,7 +56,6 @@ class ElectricPotentialFunctor {
     FVec3 m_cube_side_length;
     qm::Wavefunction m_wfn;
     FVec3 m_origin, m_minimum_atom_pos, m_maximum_atom_pos;
-    float m_isovalue{0.002};
     mutable int m_num_calls{0};
     float m_target_separation{0.2 * occ::units::ANGSTROM_TO_BOHR};
 

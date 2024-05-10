@@ -6,7 +6,7 @@ namespace occ::isosurface {
 
 ElectricPotentialFunctor::ElectricPotentialFunctor(
     const occ::qm::Wavefunction &wfn, float sep) 
-    : m_wfn(wfn), m_hf(wfn.basis), m_target_separation(sep) {
+    : m_hf(wfn.basis), m_wfn(wfn), m_target_separation(sep) {
 
     core::Molecule mol(m_wfn.atoms);
     Mat3N coordinates = mol.positions().array() * occ::units::ANGSTROM_TO_BOHR;

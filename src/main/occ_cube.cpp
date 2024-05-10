@@ -101,7 +101,6 @@ Mat3N read_points_file(const std::string& filename) {
 
     Mat3N points(3, n);
 
-    double px, py, pz;
     for (int i = 0; i < n; ++i) {
 	std::getline(file, line);
 	auto scan_result = scn::scan<double, double, double>(line, "{} {} {}");

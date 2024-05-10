@@ -103,7 +103,7 @@ OrcaJSONReader::OrcaJSONReader(std::istream &filehandle) {
 
 void OrcaJSONReader::open(const std::string &filename) {
     m_json_file.open(filename);
-    if (m_json_file.fail() | m_json_file.bad()) {
+    if (m_json_file.fail() || m_json_file.bad()) {
         throw std::runtime_error("Unable to open fchk file: " + filename);
     }
 }
@@ -207,7 +207,6 @@ void OrcaJSONReader::parse(std::istream &stream) {
 
     const auto &mos = mol["MolecularOrbitals"]["MOs"];
     const auto &mo_labels = mol["MolecularOrbitals"]["OrbitalLabels"];
-    size_t num_mos = mos.size();
     m_alpha_energies = Vec(nbf);
     m_alpha_coeffs = Mat(nbf, nbf);
     m_alpha_labels.reserve(nbf);

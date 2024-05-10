@@ -22,7 +22,7 @@ inline std::string to_string(Rotor r) {
 
 inline Rotor classify(double IA, double IB, double IC, double epsilon = 1e-12) {
     bool ab_same = std::abs(IA - IB) < epsilon;
-    bool ac_same = std::abs(IA - IC) < epsilon;
+    //bool ac_same = std::abs(IA - IC) < epsilon;
     bool bc_same = std::abs(IB - IC) < epsilon;
     if (bc_same) {
         if (ab_same)
