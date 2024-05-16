@@ -218,6 +218,7 @@ struct CEModelInteraction {
     void set_use_density_fitting(bool value = true);
     void compute_monomer_energies(Wavefunction &) const;
     void set_use_xdm_dimer_parameters(bool value = true);
+    inline bool using_xdm_dimer_parameters() const { return m_use_xdm_dimer_parameters; }
 
     const auto &scale_factors() const { return m_scale_factors; }
 

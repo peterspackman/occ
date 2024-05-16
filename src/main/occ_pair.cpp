@@ -17,10 +17,44 @@
 #include <occ/io/moldenreader.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/orca_json.h>
+#include <occ/io/wavefunction_json.h>
 #include <occ/main/occ_pair.h>
 #include <occ/main/pair_energy.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
+
+namespace occ::interaction {
+
+inline void to_json(nlohmann::json &j, const CEEnergyComponents &e) {
+    j["coulomb"] = e.coulomb;
+    j["exchange"] = e.exchange;
+    j["repulsion"] = e.repulsion;
+    j["polarization"] = e.polarization;
+    j["dispersion"] = e.dispersion;
+    j["total"] = e.total;
+    j["exchange_repulsion"] = e.exchange_repulsion;
+    j["orthogonal_term_extra"] = e.orthogonal_term;
+    j["nonorthogonal_term_extra"] = e.nonorthogonal_term;
+}
+
+inline void to_json(nlohmann::json &j, const CEParameterizedModel &m) {
+    auto &factors = j["scale_factors"];
+    factors["coulomb"] = m.coulomb;
+    factors["exchange"] = m.exchange;
+    factors["repulsion"] = m.repulsion;
+    factors["polarization"] = m.polarization;
+    factors["dispersion"] = m.dispersion;
+    j["name"] = m.name;
+    j["method"] = m.method;
+    j["basis"] = m.basis;
+    j["xdm_dispersion"] = m.xdm;
+    if(m.xdm) {
+	j["xdm_a1"] = m.xdm_a1;
+	j["xdm_a2"] = m.xdm_a2;
+    }
+}
+
+}
 
 namespace occ::main {
 namespace fs = std::filesystem;
@@ -48,10 +82,15 @@ void write_json(const PairEnergy &pair, const std::string &filename) {
     nlohmann::json j;
     auto &a_json = j["a"];
     auto &b_json = j["b"];
+    auto &pair_energy = j["interaction_energy"];
     store_xdm_parameters(pair.a.wfn, a_json["xdm_parameters"]);
     store_xdm_parameters(pair.b.wfn, b_json["xdm_parameters"]);
 
-    out << j;
+    a_json["energy_components"] = pair.a.wfn.energy;
+    b_json["energy_components"] = pair.b.wfn.energy;
+    pair_energy = pair.energy;
+    j["interaction_model"] = pair.model;
+    out << j.dump(2);
 }
 
 void load_matrix(const nlohmann::json &json, Mat3 &mat) {
@@ -176,7 +215,7 @@ CLI::App *add_pair_subcommand(CLI::App &app) {
     pair->add_option("--rotation-a,--rotation_a", config->rotation_a,
                      "Rotation for monomer A (row major order)")
         ->expected(9);
-    pair->add_option("--rotation-b,--rotation_b", config->translation_b,
+    pair->add_option("--rotation-b,--rotation_b", config->rotation_b,
                      "Rotation for monomer B (row major order)")
         ->expected(9);
 
