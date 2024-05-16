@@ -46,6 +46,7 @@ var hierarchy =
     [ "occ::main::CubeConfig", "structocc_1_1main_1_1CubeConfig.html", null ],
     [ "occ::main::DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", null ],
     [ "occ::dft::DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", null ],
+    [ "occ::main::DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", null ],
     [ "occ::dft::DFT", "classocc_1_1dft_1_1DFT.html", null ],
     [ "occ::io::DftbGenFormat", "classocc_1_1io_1_1DftbGenFormat.html", null ],
     [ "quickhull::DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", null ],

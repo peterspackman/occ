@@ -7,6 +7,7 @@ var dir_887d2295614e9dc3eeb401126e7efc97 =
     [ "monomer_wavefunctions.h", "monomer__wavefunctions_8h.html", "monomer__wavefunctions_8h" ],
     [ "occ_cg.h", "occ__cg_8h.html", "occ__cg_8h" ],
     [ "occ_cube.h", "occ__cube_8h.html", "occ__cube_8h" ],
+    [ "occ_describe.h", "occ__describe_8h.html", "occ__describe_8h" ],
     [ "occ_dimers.h", "occ__dimers_8h.html", "occ__dimers_8h" ],
     [ "occ_elat.h", "occ__elat_8h.html", "occ__elat_8h" ],
     [ "occ_isosurface.h", "occ__isosurface_8h.html", "occ__isosurface_8h" ],

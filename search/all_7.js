@@ -1,10 +1,9 @@
 var searchData=
 [
-  ['gamma_835',['gamma',['../classocc_1_1crystal_1_1UnitCell.html#a7d98a3f2c34c238e93a39f2cd5774986',1,'occ::crystal::UnitCell::gamma()'],['../structocc_1_1solvent_1_1SMDSolventParameters.html#a884e449aa53fd9aa97e2b2b08c536edc',1,'occ::solvent::SMDSolventParameters::gamma()'],['../structocc_1_1io_1_1CellData.html#ab6d1e9fabaaa499b49d84b2b7449166e',1,'occ::io::CellData::gamma()']]],
-  ['gauss_5flegendre_5fquadrature_836',['gauss_legendre_quadrature',['../namespaceocc_1_1sht.html#a3b9ef92a3b5fc6f216f571cb277fa08c',1,'occ::sht::gauss_legendre_quadrature(int N)'],['../namespaceocc_1_1sht.html#ac947b8b44ffb01ab845ad31172ef09b2',1,'occ::sht::gauss_legendre_quadrature(Vec &amp;roots, Vec &amp;weights, int N)']]],
-  ['gaussian_837',['Gaussian',['../namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894adf2160db9f5d5a7d7b6c660268b53eea',1,'occ::gto']]],
-  ['gaussian_838',['gaussian',['../structocc_1_1isosurface_1_1SurfaceCurvature.html#ae05f6a9ce4acf0a1663bf9e99bbbf464',1,'occ::isosurface::SurfaceCurvature']]],
-  ['gaussian_839',['Gaussian',['../structocc_1_1qm_1_1OrbitalSmearing.html#a26515ea8a13c53b346bfdd953513c0dcafedf7ba6075fb5526a7ace0b9385528d',1,'occ::qm::OrbitalSmearing']]],
+  ['gamma_836',['gamma',['../classocc_1_1crystal_1_1UnitCell.html#a7d98a3f2c34c238e93a39f2cd5774986',1,'occ::crystal::UnitCell::gamma()'],['../structocc_1_1solvent_1_1SMDSolventParameters.html#a884e449aa53fd9aa97e2b2b08c536edc',1,'occ::solvent::SMDSolventParameters::gamma()'],['../structocc_1_1io_1_1CellData.html#ab6d1e9fabaaa499b49d84b2b7449166e',1,'occ::io::CellData::gamma()']]],
+  ['gauss_5flegendre_5fquadrature_837',['gauss_legendre_quadrature',['../namespaceocc_1_1sht.html#a3b9ef92a3b5fc6f216f571cb277fa08c',1,'occ::sht::gauss_legendre_quadrature(int N)'],['../namespaceocc_1_1sht.html#ac947b8b44ffb01ab845ad31172ef09b2',1,'occ::sht::gauss_legendre_quadrature(Vec &amp;roots, Vec &amp;weights, int N)']]],
+  ['gaussian_838',['Gaussian',['../namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894adf2160db9f5d5a7d7b6c660268b53eea',1,'occ::gto::Gaussian()'],['../structocc_1_1qm_1_1OrbitalSmearing.html#a26515ea8a13c53b346bfdd953513c0dcafedf7ba6075fb5526a7ace0b9385528d',1,'occ::qm::OrbitalSmearing::Gaussian()']]],
+  ['gaussian_839',['gaussian',['../structocc_1_1isosurface_1_1SurfaceCurvature.html#ae05f6a9ce4acf0a1663bf9e99bbbf464',1,'occ::isosurface::SurfaceCurvature']]],
   ['gaussian_5fcurvature_840',['gaussian_curvature',['../structocc_1_1io_1_1IsosurfaceMesh.html#ae4f5bf750792adca29ede7731e68f4d3',1,'occ::io::IsosurfaceMesh']]],
   ['gaussian_5finput_5ffile_2eh_841',['gaussian_input_file.h',['../gaussian__input__file_8h.html',1,'']]],
   ['gaussianinputfile_842',['GaussianInputFile',['../structocc_1_1io_1_1GaussianInputFile.html#ab5f6a48ed9ad124a77d876985ec26f49',1,'occ::io::GaussianInputFile::GaussianInputFile(std::istream &amp;)'],['../structocc_1_1io_1_1GaussianInputFile.html#afb3195f539c0a885294c889d457da274',1,'occ::io::GaussianInputFile::GaussianInputFile(const std::string &amp;)'],['../structocc_1_1io_1_1GaussianInputFile.html',1,'occ::io::GaussianInputFile']]],
@@ -24,7 +23,7 @@ var searchData=
   ['gensqrtinv_2eh_856',['gensqrtinv.h',['../gensqrtinv_8h.html',1,'']]],
   ['gensqrtinvresult_857',['GenSqrtInvResult',['../structocc_1_1core_1_1GenSqrtInvResult.html',1,'occ::core']]],
   ['geometry_858',['geometry',['../structocc_1_1io_1_1OccInput.html#a97dafd7a784c2197440448e8e1ecebab',1,'occ::io::OccInput']]],
-  ['geometry_5ffilename_859',['geometry_filename',['../structocc_1_1main_1_1IsosurfaceConfig.html#a7ee45184433d00970661846c5ad9d8f1',1,'occ::main::IsosurfaceConfig']]],
+  ['geometry_5ffilename_859',['geometry_filename',['../structocc_1_1main_1_1DescribeConfig.html#a93a2005d18e521873a4d33499825bc5a',1,'occ::main::DescribeConfig::geometry_filename()'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a7ee45184433d00970661846c5ad9d8f1',1,'occ::main::IsosurfaceConfig::geometry_filename()']]],
   ['geometry_5foptimization_2eh_860',['geometry_optimization.h',['../geometry__optimization_8h.html',1,'']]],
   ['geometryinput_861',['GeometryInput',['../structocc_1_1io_1_1GeometryInput.html',1,'occ::io']]],
   ['get_862',['get',['../structocc_1_1geometry_1_1LinearHashedOctree.html#af2455ae67cdee78d34db8830bd2124ea',1,'occ::geometry::LinearHashedOctree::get()'],['../classquickhull_1_1Pool.html#a5517eaa1a2452d761dc439849c2e6d26',1,'quickhull::Pool::get()'],['../classtinyply_1_1Buffer.html#a6a0cef4ab44cd04e107f066e5df26d34',1,'tinyply::Buffer::get()'],['../structocc_1_1geometry_1_1IndexCache.html#a691ecf078a22d0bafc1e512a17309a74',1,'occ::geometry::IndexCache::get()']]],

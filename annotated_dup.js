@@ -190,6 +190,7 @@ var annotated_dup =
         [ "EnergyTotal", "structocc_1_1main_1_1EnergyTotal.html", "structocc_1_1main_1_1EnergyTotal" ],
         [ "CGResult", "structocc_1_1main_1_1CGResult.html", "structocc_1_1main_1_1CGResult" ],
         [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
+        [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
         [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
         [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
