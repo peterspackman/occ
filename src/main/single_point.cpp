@@ -207,6 +207,9 @@ single_point_driver(const OccInput &config,
 		else return run_method<DFT, R>(m, basis, config);
 		break;
 	    }
+	    default: {
+		throw std::runtime_error("Unknown method kind");
+	    }
 	}
     } else {
 	switch(method_kind) {
@@ -220,6 +223,9 @@ single_point_driver(const OccInput &config,
 		if (guess_sk == U || conf_sk == U) return run_solvated_method<DFT, U>(*guess, config);
 		else return run_solvated_method<DFT, R>(*guess, config);
 		break;
+	    }
+	    default: {
+		throw std::runtime_error("Unknown method kind");
 	    }
 	}
     }
