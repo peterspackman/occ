@@ -25,7 +25,7 @@ struct GaussianInputFile {
     std::string route_tag{"#"};
     std::string comment;
     MethodType method_type{Other};
-    unsigned int charge{0}, multiplicity{1};
+    int charge{0}, multiplicity{1};
     occ::qm::SpinorbitalKind spinorbital_kind() const;
 
     OccInput as_occ_input() const;

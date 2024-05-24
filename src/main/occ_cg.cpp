@@ -59,7 +59,7 @@ Wavefunction load_or_calculate_wavefunction(const Molecule &mol,
     fs::path json_path(fmt::format("{}.owf.json", name));
     if (fs::exists(json_path)) {
 	occ::log::info("Loading wavefunction from {}", json_path.string());
-	return Wavefunction::load(json_path);
+	return Wavefunction::load(json_path.string());
     }
 
     auto parameterized_model =
