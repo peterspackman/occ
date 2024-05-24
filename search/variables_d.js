@@ -59,6 +59,6 @@ var searchData=
   ['monomer_5fb_4635',['monomer_b',['../structocc_1_1main_1_1OccPairInput.html#afb2ff1f862acada8841aa6454040f05a',1,'occ::main::OccPairInput']]],
   ['monomer_5fdirectory_4636',['monomer_directory',['../structocc_1_1main_1_1OccPairInput.html#a099647640b487a95d65faab8e2ef5fdc',1,'occ::main::OccPairInput']]],
   ['mu_4637',['mu',['../structocc_1_1qm_1_1OrbitalSmearing.html#aee957e15c328a9a48368d37d07e6f51f',1,'occ::qm::OrbitalSmearing']]],
-  ['multiplicity_4638',['multiplicity',['../structocc_1_1io_1_1QCSchemaTopology.html#ab8130ecd68b857adc1b2f965019fa88e',1,'occ::io::QCSchemaTopology::multiplicity()'],['../structocc_1_1io_1_1ElectronInput.html#a86542811622d7948f2920ba9f79cdc5b',1,'occ::io::ElectronInput::multiplicity()'],['../structocc_1_1io_1_1GaussianInputFile.html#aabcc6b1d59e9729b80f6cea6ce0f71fb',1,'occ::io::GaussianInputFile::multiplicity()']]],
+  ['multiplicity_4638',['multiplicity',['../structocc_1_1io_1_1QCSchemaTopology.html#ab8130ecd68b857adc1b2f965019fa88e',1,'occ::io::QCSchemaTopology::multiplicity()'],['../structocc_1_1io_1_1ElectronInput.html#a86542811622d7948f2920ba9f79cdc5b',1,'occ::io::ElectronInput::multiplicity()'],['../structocc_1_1io_1_1GaussianInputFile.html#aa935acc1429aa8c92f11d4831a8ee2ff',1,'occ::io::GaussianInputFile::multiplicity()']]],
   ['multipole_5fcomponent_5fnames_4639',['multipole_component_names',['../namespaceocc_1_1core.html#a2c13a8ff8a8712711388809ff8ca9aec',1,'occ::core']]]
 ];
