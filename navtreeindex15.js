@@ -1,5 +1,6 @@
 var NAVTREEINDEX15 =
 {
+"structocc_1_1main_1_1CGConfig.html#a8f8b28d0d3d9e32e19757d0177f42c90":[2,0,1,9,5,12],
 "structocc_1_1main_1_1CGConfig.html#a91d326a12653227b551bdd4465630d20":[2,0,1,9,5,11],
 "structocc_1_1main_1_1CGConfig.html#ab2a09022bbbf64a3a3077508e5a6ce36":[2,0,1,9,5,3],
 "structocc_1_1main_1_1CGConfig.html#ac93e90da36e44bf38d266ae92c60ef07":[2,0,1,9,5,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX15 =
 "structocc_1_1qm_1_1JKTriple.html":[2,0,1,10,6],
 "structocc_1_1qm_1_1JKTriple.html#a905ca251f5e3e20c04aac5b98f01c24d":[2,0,1,10,6,1],
 "structocc_1_1qm_1_1JKTriple.html#af887c8e35c8abef62febd016b6b220e2":[2,0,1,10,6,0],
-"structocc_1_1qm_1_1MolecularOrbitals.html":[2,0,1,10,9],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a0014eb8a8e2bf3c82aee9b037e994b95":[2,0,1,10,9,22]
+"structocc_1_1qm_1_1MolecularOrbitals.html":[2,0,1,10,9]
 };

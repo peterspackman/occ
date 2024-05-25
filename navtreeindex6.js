@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"classocc_1_1xtb_1_1TbliteCalculator.html#af77a804389306046a8c8897e78aec088":[2,0,1,17,0,21],
 "classocc_1_1xtb_1_1TbliteCalculator.html#afbeb57fc604e7f0a602d151d1a4c5077":[2,0,1,17,0,10],
 "classocc_1_1xtb_1_1XTBCalculator.html":[2,0,1,17,1],
 "classocc_1_1xtb_1_1XTBCalculator.html#a049125df9bc5f95ba95218f3d98aa4ff":[2,0,1,17,1,3],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "functions_eval_h.html":[2,3,5,5],
 "functions_eval_k.html":[2,3,5,6],
 "functions_eval_l.html":[2,3,5,7],
-"functions_eval_m.html":[2,3,5,8],
-"functions_eval_o.html":[2,3,5,9]
+"functions_eval_m.html":[2,3,5,8]
 };

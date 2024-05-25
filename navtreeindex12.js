@@ -1,5 +1,6 @@
 var NAVTREEINDEX12 =
 {
+"rotor_8h.html#a83d27cb1f9a59dbb3740a5e6d4375530":[3,0,1,0,0,32,2],
 "rotor_8h.html#ae72a79f0509c18c91fbbe23883c2c2c6":[3,0,1,0,0,32,0],
 "rotor_8h.html#ae72a79f0509c18c91fbbe23883c2c2c6a148ea7093674697c378aa80037a48421":[3,0,1,0,0,32,0,0],
 "rotor_8h.html#ae72a79f0509c18c91fbbe23883c2c2c6a47dca7f6bec6de240a2ddf49d0b85a5f":[3,0,1,0,0,32,0,1],
@@ -248,6 +249,5 @@ var NAVTREEINDEX12 =
 "structocc_1_1dft_1_1DensityFunctional_1_1Params.html#af028612e19149c997d40173e9bcdd225":[2,0,1,3,3,0,3],
 "structocc_1_1dft_1_1DensityFunctional_1_1Result.html":[2,0,1,3,3,1],
 "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a0c4b7fe6cd337ad1fd81cda9e16dae57":[2,0,1,3,3,1,2],
-"structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a453890a7a3191a83adcce326d23dab2e":[2,0,1,3,3,1,0],
-"structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a659bf80a550d33f3d1e3766d28a55f61":[2,0,1,3,3,1,1]
+"structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a453890a7a3191a83adcce326d23dab2e":[2,0,1,3,3,1,0]
 };
