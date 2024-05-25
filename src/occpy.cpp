@@ -129,8 +129,8 @@ NB_MODULE(_occpy, m) {
         .def("translate", &Wavefunction::apply_translation)
         .def("transform", &Wavefunction::apply_transformation)
         .def("charge", &Wavefunction::charge)
-	.def_static("load", &Wavefucntion::load)
-	.def("save", &Wavefucntion::save)
+	.def_static("load", &Wavefunction::load)
+	.def("save", nb::overload_cast<const std::string &>(&Wavefunction::save))
         .def_ro("basis", &Wavefunction::basis)
         .def("to_fchk",
              [](Wavefunction &wfn, const std::string &filename) {
@@ -192,10 +192,10 @@ NB_MODULE(_occpy, m) {
         .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
         .def("overlap_matrix_for_basis", &HartreeFock::compute_overlap_matrix_for_basis)
         .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
-        .def("scf", [](HartreeFock &hf, bool u = false) { 
+        .def("scf", [](HartreeFock &hf, bool unrestricted = false) { 
 		if(u) return HF(hf, U); 
 		else return HF(hf, R); 
-	})
+	}, "unrestricted"_a = false)
         .def("set_precision", &HartreeFock::set_precision)
         .def("coulomb_matrix",
              [](const HartreeFock &hf, const MolecularOrbitals &mo) {
@@ -239,17 +239,15 @@ NB_MODULE(_occpy, m) {
         .def("overlap_matrix", &DFT::compute_overlap_matrix)
         .def("nuclear_repulsion", &DFT::nuclear_repulsion_energy)
         .def("set_precision", &HartreeFock::set_precision)
-        .def("set_method", &DFT::set_method, nb::arg("method_string"),
-             nb::arg("unrestricted") = false)
-        .def("set_unrestricted", &DFT::set_unrestricted)
+        .def("set_method", &DFT::set_method)
         .def("fock_matrix",
              [](DFT &dft, const MolecularOrbitals &mo) {
                  return dft.compute_fock(mo);
              })
-	.def("scf", [](DFT &dft, bool u = false) { 
-		if(u) return KS(dft, U); 
+	.def("scf", [](DFT &dft, bool unrestricted) { 
+		if(unrestricted) return KS(dft, U); 
 		else return KS(dft, R); 
-	})
+	}, "unrestricted"_a = false)
         .def("__repr__", [](const DFT &dft) {
             return fmt::format("<DFT {} ({}, {} atoms)>", dft.method_string(),
 			       dft.aobasis().name(),
