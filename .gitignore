@@ -3,3 +3,4 @@ CMakeLists.txt.user
 .vscode/
 tags
 *.swp
+.DS_Store
