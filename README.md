@@ -151,7 +151,7 @@ By default `occ -h` will print out its usage options, but basic usage
 given a geometry e.g. `h2o.xyz` format would be:
 
 ```
-occ h2o.xyz b3lyp 6-31g
+occ scf h2o.xyz b3lyp 6-31g
 ```
 
 ### Basis set locations

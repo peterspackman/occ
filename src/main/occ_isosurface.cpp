@@ -72,8 +72,8 @@ std::string to_string(IsosurfaceConfig::Surface surface) {
 
 template <typename F>
 IsosurfaceMesh as_mesh(const F &func, const std::vector<float> &vertices,
-                       const std::vector<uint32_t> &indices,
-                       const std::vector<float> &normals,
+		       const std::vector<uint32_t> &indices,
+		       const std::vector<float> &normals,
 		       const std::vector<float> &curvature) {
 
     IsosurfaceMesh result;
@@ -85,7 +85,7 @@ IsosurfaceMesh as_mesh(const F &func, const std::vector<float> &vertices,
     result.mean_curvature.reserve(curvature.size() / 2);
 
     for (size_t i = 0; i < normals.size(); i += 3) {
-        Eigen::Vector3f normal = Eigen::Vector3f(normals[i], normals[i + 1], normals[i + 2]);
+	Eigen::Vector3f normal = Eigen::Vector3f(normals[i], normals[i + 1], normals[i + 2]);
 	result.normals[i] = normal(0);
 	result.normals[i + 1] = normal(1);
 	result.normals[i + 2] = normal(2);
@@ -114,6 +114,7 @@ IsosurfaceMesh extract_surface(F &func, float isovalue) {
     auto mc = occ::geometry::mc::MarchingCubes(cubes(0), cubes(1), cubes(2));
     mc.set_origin_and_side_lengths(func.origin(), func.side_length());
     mc.isovalue = isovalue;
+    mc.flip_normals = (isovalue < 0.0);
 
     std::vector<float> vertices;
     std::vector<float> normals;
@@ -126,7 +127,7 @@ IsosurfaceMesh extract_surface(F &func, float isovalue) {
     occ::log::info("Surface extraction took {:.5f} s", sw.read());
 
     occ::log::info("Surface has {} vertices, {} faces", vertices.size() / 3,
-                   faces.size() / 3);
+		   faces.size() / 3);
     if(vertices.size() < 3) {
 	throw std::runtime_error("Invalid isosurface encountered, not enough vertices?");
     }
@@ -146,7 +147,7 @@ VertexProperties compute_atom_surface_properties(const Molecule &m1, const Molec
 	Eigen::VectorXf vdw_inside = m1.vdw_radii().cast<float>();
 
 	occ::core::KDTree<float> interior_tree(inside.rows(), inside,
-					       occ::core::max_leaf);
+					occ::core::max_leaf);
 	interior_tree.index->buildIndex();
 
 	FVec di(N);
@@ -159,7 +160,7 @@ VertexProperties compute_atom_surface_properties(const Molecule &m1, const Molec
 
 	    for (int i = 0; i < vertices.cols(); i++) {
 		if (i % nthreads != thread_id)
-		    continue;
+		continue;
 
 		Eigen::Vector3f v = vertices.col(i);
 		float dist_inside_norm = std::numeric_limits<float>::max();
@@ -204,7 +205,7 @@ VertexProperties compute_atom_surface_properties(const Molecule &m1, const Molec
 	Eigen::Matrix3Xf outside = m2.positions().cast<float>();
 	Eigen::VectorXf vdw_outside = m2.vdw_radii().cast<float>();
 	occ::core::KDTree<float> exterior_tree(outside.rows(), outside,
-					       occ::core::max_leaf);
+					occ::core::max_leaf);
 	exterior_tree.index->buildIndex();
 	auto fill_exterior_properties = [&](int thread_id) {
 	    std::vector<size_t> indices(num_results);
@@ -213,7 +214,7 @@ VertexProperties compute_atom_surface_properties(const Molecule &m1, const Molec
 
 	    for (int i = 0; i < vertices.cols(); i++) {
 		if (i % nthreads != thread_id)
-		    continue;
+		continue;
 
 		Eigen::Vector3f v = vertices.col(i);
 		float dist_outside_norm = std::numeric_limits<float>::max();
@@ -256,7 +257,7 @@ VertexProperties compute_atom_surface_properties(const Molecule &m1, const Molec
 	}
 
     }
-    
+
     return properties;
 }
 
@@ -431,44 +432,44 @@ void ensure_isosurface_configuration_valid(const IsosurfaceConfig &config, bool 
 
 CLI::App *add_isosurface_subcommand(CLI::App &app) {
     CLI::App *iso =
-        app.add_subcommand("isosurface", "compute molecular isosurfaces");
+	app.add_subcommand("isosurface", "compute molecular isosurfaces");
     auto config = std::make_shared<IsosurfaceConfig>();
 
     iso->add_option("geometry", config->geometry_filename,
-                    "input geometry file (xyz)")
-        ->required();
+		    "input geometry file (xyz)")
+	->required();
 
     iso->add_option("environment", config->environment_filename,
-                    "environment geometry file (xyz)");
+		    "environment geometry file (xyz)");
 
     iso->add_option("--kind", config->kind,
-                    "surface kind");
+		    "surface kind");
 
     iso->add_flag("--binary,!--ascii", config->binary_output, "Write binary/ascii file format (default binary)");
 
     iso->add_option("--wavefunction,-w", config->wavefunction_filename,
 		    "Wavefunction filename for geometry");
     iso->add_option("--wfn-rotation,--wfn_rotation", config->wfn_rotation,
-                     "Rotation for supplied wavefunction (row major order)")
-        ->expected(9);
+		    "Rotation for supplied wavefunction (row major order)")
+	->expected(9);
 
     iso->add_option("--wfn-translation,--wfn_translation", config->wfn_translation,
-                     "Translation for monomer A")
-        ->expected(3);
+		    "Translation for wavefunction (Angstrom)")
+	->expected(3);
 
     iso->add_option("--properties,--additional_properties",
-	            config->additional_properties,
-                    "Additional properties to compute");
+		    config->additional_properties,
+		    "Additional properties to compute");
 
     iso->add_option("--max-depth", config->max_depth, "Maximum voxel depth");
     iso->add_option("--separation", config->separation,
-                    "targt voxel separation (Bohr)");
+		    "targt voxel separation (Angstrom)");
     iso->add_option("--isovalue", config->isovalue, "target isovalue");
     iso->add_option("--background-density", config->background_density,
-                    "add background density to close surface");
+		    "add background density to close surface");
 
     iso->add_option("--output,-o", config->output_filename,
-                    "destination to write file");
+		    "destination to write file");
 
     iso->fallthrough();
     iso->callback([config]() { run_isosurface_subcommand(*config); });
@@ -478,12 +479,12 @@ CLI::App *add_isosurface_subcommand(CLI::App &app) {
 Wavefunction load_wfn(const IsosurfaceConfig &config) {
     Wavefunction wfn;
     if(Wavefunction::is_likely_wavefunction_filename(
-		config.wavefunction_filename)) {
+	config.wavefunction_filename)) {
 	occ::log::info("Loading wavefunction data from '{}'", config.wavefunction_filename);
 	wfn = Wavefunction::load(config.wavefunction_filename);
     }
     else if(Wavefunction::is_likely_wavefunction_filename(
-		config.geometry_filename)) {
+	config.geometry_filename)) {
 	occ::log::info("Loading wavefunction data from geometry file '{}'", config.geometry_filename);
 	wfn = Wavefunction::load(config.geometry_filename);
     }
@@ -491,16 +492,18 @@ Wavefunction load_wfn(const IsosurfaceConfig &config) {
 	occ::log::info("Loaded wavefunction, applying transformation:");
 	occ::Mat3 rotation = Eigen::Map<const Mat3RM>(config.wfn_rotation.data());
 	occ::log::info("Rotation\n{}", rotation);
-	occ::Vec3 translation = Eigen::Map<const Vec3>(config.wfn_translation.data());
-	occ::log::info("Translation\n{}", translation.transpose());
+	occ::Vec3 translation = Eigen::Map<const Vec3>(config.wfn_translation.data()) * occ::units::ANGSTROM_TO_BOHR;
+	occ::log::info("Translation (Bohr)\n{}", translation.transpose());
 	wfn.apply_transformation(rotation, translation);
     }
     return wfn;
 }
 
-void run_isosurface_subcommand(IsosurfaceConfig const &config) {
+void run_isosurface_subcommand(IsosurfaceConfig config) {
     IsosurfaceMesh mesh;
     VertexProperties properties;
+    bool use_wfn_mol = false;
+    config.separation *= occ::units::ANGSTROM_TO_BOHR;
 
     const auto properties_to_compute = config.surface_properties();
     if(properties_to_compute.size() > 0) {
@@ -510,10 +513,20 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 	}
     }
 
+
+    if(Wavefunction::is_likely_wavefunction_filename(config.geometry_filename)) {
+	config.wavefunction_filename = config.geometry_filename;
+	use_wfn_mol = true;
+    }
+
     Wavefunction wfn = load_wfn(config);
     bool have_wfn = wfn.atoms.size() > 0;
 
     Molecule m1, m2;
+
+    if(use_wfn_mol) {
+	m1 = Molecule(wfn.atoms);
+    }
 
     bool have_crystal = occ::io::CifParser::is_likely_cif_filename(config.geometry_filename);
     ensure_isosurface_configuration_valid(config, have_wfn, have_crystal);
@@ -546,7 +559,9 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 	    break;
 	}
 	case IsosurfaceConfig::Surface::Hirshfeld: {
-	    m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+	    if(!use_wfn_mol) {
+		m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+	    }
 
 	    occ::log::info("Interior region has {} atoms", m1.size());
 	    occ::log::info("Exterior region has {} atoms", m2.size());
@@ -557,12 +572,25 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
 	    break;
 	}
 	case IsosurfaceConfig::Surface::PromoleculeDensity: {
-	    m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+	    if(!use_wfn_mol) {
+		m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+	    }
 	    occ::log::info("Interior region has {} atoms", m1.size());
 	    auto func = iso::PromoleculeDensityFunctor(m1, config.separation);
 	    func.set_isovalue(config.isovalue);
 	    mesh = extract_surface(func, config.isovalue);
 	    break;
+	}
+	case IsosurfaceConfig::Surface::DeformationDensity: {
+	    if(!use_wfn_mol) {
+		m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+	    }
+	    occ::log::info("Interior region has {} atoms", m1.size());
+	    auto func = iso::DeformationDensityFunctor(m1, wfn, config.separation);
+	    func.set_isovalue(config.isovalue);
+	    mesh = extract_surface(func, config.isovalue);
+	    break;
+
 	}
 	default: {
 	    throw std::runtime_error("Not implemented");
@@ -596,9 +624,9 @@ void run_isosurface_subcommand(IsosurfaceConfig const &config) {
     Eigen::Vector3f lower_left = verts.rowwise().minCoeff();
     Eigen::Vector3f upper_right = verts.rowwise().maxCoeff();
     occ::log::info("Lower corner of mesh: [{:.3f} {:.3f} {:.3f}]",
-                   lower_left(0), lower_left(1), lower_left(2));
+		   lower_left(0), lower_left(1), lower_left(2));
     occ::log::info("Upper corner of mesh: [{:.3f} {:.3f} {:.3f}]",
-                   upper_right(0), upper_right(1), upper_right(2));
+		   upper_right(0), upper_right(1), upper_right(2));
 
     occ::log::info("Writing surface to {}", config.output_filename);
     occ::io::write_ply_mesh(config.output_filename, mesh, properties, config.binary_output);

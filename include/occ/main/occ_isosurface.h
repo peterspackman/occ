@@ -61,5 +61,5 @@ struct IsosurfaceConfig {
 };
 
 CLI::App *add_isosurface_subcommand(CLI::App &app);
-void run_isosurface_subcommand(IsosurfaceConfig const &);
+void run_isosurface_subcommand(IsosurfaceConfig);
 } // namespace occ::main
