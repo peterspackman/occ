@@ -1,6 +1,5 @@
 var NAVTREEINDEX1 =
 {
-"classocc_1_1crystal_1_1Crystal.html#a05ba2aa184d1d4fc05a18c339c766c90":[2,0,1,1,3,0],
 "classocc_1_1crystal_1_1Crystal.html#a070f081cf143d7547bdbcdeeab683f84":[2,0,1,1,3,6],
 "classocc_1_1crystal_1_1Crystal.html#a0e4f57e59b377f98ed9529aa94c7a25e":[2,0,1,1,3,8],
 "classocc_1_1crystal_1_1Crystal.html#a116f176e72cb178db6087915ac493ad0":[2,0,1,1,3,3],
@@ -249,5 +248,6 @@ var NAVTREEINDEX1 =
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2200486c01305b02b9ff48b4e9fdaf19":[2,0,1,3,3,3,85],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba2405c255294331bfdef4325cb789fd50":[2,0,1,3,3,3,197],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba250b284a1a7f248021453fd078362b18":[2,0,1,3,3,3,257],
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba283e70dc55f842906d1233e2f446d4ec":[2,0,1,3,3,3,162]
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba283e70dc55f842906d1233e2f446d4ec":[2,0,1,3,3,3,162],
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba285146c004d82bee9496d4482cdb5b2a":[2,0,1,3,3,3,262]
 };

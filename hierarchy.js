@@ -44,6 +44,7 @@ var hierarchy =
     [ "occ::crystal::CrystalSurfaceGenerationParameters", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html", null ],
     [ "occ::io::Cube", "classocc_1_1io_1_1Cube.html", null ],
     [ "occ::main::CubeConfig", "structocc_1_1main_1_1CubeConfig.html", null ],
+    [ "occ::isosurface::DeformationDensityFunctor", "classocc_1_1isosurface_1_1DeformationDensityFunctor.html", null ],
     [ "occ::main::DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", null ],
     [ "occ::dft::DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", null ],
     [ "occ::main::DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", null ],

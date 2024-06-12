@@ -1,5 +1,15 @@
 var NAVTREEINDEX17 =
 {
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a6d12635e594e03497369894436f59981":[2,0,1,14,2,0],
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a7cf2870a401d4a6081262935ffb5ad70":[2,0,1,14,2,8],
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a884e449aa53fd9aa97e2b2b08c536edc":[2,0,1,14,2,7],
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a91ef1cd42cff9e48f3fa5fb10f5a6594":[2,0,1,14,2,5],
+"structocc_1_1solvent_1_1SMDSolventParameters.html#a986045b51eaa207a46cc54c7f67e323a":[2,0,1,14,2,2],
+"structocc_1_1solvent_1_1SMDSolventParameters.html#aa962c330a93a114152421bce0ad62132":[2,0,1,14,2,9],
+"structocc_1_1solvent_1_1surface_1_1Surface.html":[2,0,1,14,0,0],
+"structocc_1_1solvent_1_1surface_1_1Surface.html#a1a6b590b4949a6aa3582054eb1170a68":[2,0,1,14,0,0,0],
+"structocc_1_1solvent_1_1surface_1_1Surface.html#a769c5d142fa957e869e642db833d77dd":[2,0,1,14,0,0,1],
+"structocc_1_1solvent_1_1surface_1_1Surface.html#ac6e8d5b47c8086a330927a8ead975a14":[2,0,1,14,0,0,2],
 "structocc_1_1xdm_1_1XDMAtomList.html":[2,0,1,16,0],
 "structocc_1_1xdm_1_1XDMAtomList.html#a18b9df4c564933952231433d0ccf0b65":[2,0,1,16,0,1],
 "structocc_1_1xdm_1_1XDMAtomList.html#a3aac4da929f48e22952558eb5b46edb3":[2,0,1,16,0,3],
@@ -183,7 +193,7 @@ var NAVTREEINDEX17 =
 "util_8h.html#afc65a7eebcc2d86e81d9ef634fcdeb7e":[3,0,1,0,0,36,1],
 "version_8h.html":[3,0,1,0,9,18],
 "version_8h.html#ae6120cd9d924a194e7f3a1decd5cb6d8":[3,0,1,0,9,18,0],
-"void_8h.html":[3,0,1,0,8,7],
+"void_8h.html":[3,0,1,0,8,8],
 "wavefunction_8h.html":[3,0,1,0,10,23],
 "wavefunction__json_8h.html":[3,0,1,0,7,28],
 "wavefunction__json_8h.html#a03fbffee6c9f175af30275db3fe30f69":[3,0,1,0,7,28,6],
@@ -217,5 +227,6 @@ var NAVTREEINDEX17 =
 "xtb__wrapper_8h.html":[3,0,1,0,15,1],
 "xyz_8h.html":[3,0,1,0,7,29],
 "xyz_8h.html#a9e545a9864ef7cba94ea648e321f9899":[3,0,1,0,7,29,2],
-"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,7,29,1]
+"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,7,29,1],
+"":[1,0,1]
 };

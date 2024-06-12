@@ -1,5 +1,14 @@
 var NAVTREEINDEX12 =
 {
+"quickhull_8h.html":[3,0,1,0,4,11],
+"quickhull_8h.html#aed54901ccc77c377d9d2f94ce6a0888c":[3,0,1,0,4,11,2],
+"range__separated__parameters_8h.html":[3,0,1,0,3,5],
+"ray_8h.html":[3,0,1,0,4,12],
+"rotation_8h.html":[3,0,1,0,5,2],
+"rotation_8h.html#a87896059da6dd98c6c0e9f39ffca5321":[3,0,1,0,5,2,0],
+"rotation_8h.html#a9f75a6dae6170c6eb9e52bb98c445d80":[3,0,1,0,5,2,1],
+"rotor_8h.html":[3,0,1,0,0,32],
+"rotor_8h.html#a6afb43a55d3c5722239c777d40bc4e43":[3,0,1,0,0,32,1],
 "rotor_8h.html#a83d27cb1f9a59dbb3740a5e6d4375530":[3,0,1,0,0,32,2],
 "rotor_8h.html#ae72a79f0509c18c91fbbe23883c2c2c6":[3,0,1,0,0,32,0],
 "rotor_8h.html#ae72a79f0509c18c91fbbe23883c2c2c6a148ea7093674697c378aa80037a48421":[3,0,1,0,0,32,0,0],
@@ -74,7 +83,7 @@ var NAVTREEINDEX12 =
 "spinorbital_8h.html#af7593c3db0168047bf727de310e0eeb4a7eb505a798e7bd90ce15f4467154e837":[3,0,1,0,10,22,0,0],
 "spinorbital_8h.html#affbc8f01fc592caa8b8095e3357c8693":[3,0,1,0,10,22,1],
 "steinhardt_8h.html":[3,0,1,0,2,1],
-"stockholder__weight_8h.html":[3,0,1,0,8,6],
+"stockholder__weight_8h.html":[3,0,1,0,8,7],
 "structfmt_1_1formatter_3_01T_01_4.html":[2,0,0,0],
 "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html":[2,0,0,1],
 "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html#a66acd14ccd530067fd553d57cd5708f4":[2,0,0,1,0],
@@ -240,14 +249,5 @@ var NAVTREEINDEX12 =
 "structocc_1_1dft_1_1AtomGrid.html#ab11fc6823ee2edefd2c64d4952732778":[2,0,1,3,4,2],
 "structocc_1_1dft_1_1AtomGrid.html#acbaf3d025645b6498f515df17f3674b5":[2,0,1,3,4,0],
 "structocc_1_1dft_1_1AtomGrid.html#ae73a8ccec3285955770ebdd8e8528f2b":[2,0,1,3,4,1],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html":[2,0,1,3,3,0],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a1188c0c50d86687d8c431ccb0746c1ef":[2,0,1,3,3,0,0],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a301c3fdf8d60e2c0c81fd97cbef3ab01":[2,0,1,3,3,0,5],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a768960af35d0a9d29448e0ec1b3f6574":[2,0,1,3,3,0,1],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a8c2047138b2f7079ba92afc3cd30dd89":[2,0,1,3,3,0,2],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#aa785173461f7bb2e42b12cac74d46640":[2,0,1,3,3,0,4],
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#af028612e19149c997d40173e9bcdd225":[2,0,1,3,3,0,3],
-"structocc_1_1dft_1_1DensityFunctional_1_1Result.html":[2,0,1,3,3,1],
-"structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a0c4b7fe6cd337ad1fd81cda9e16dae57":[2,0,1,3,3,1,2],
-"structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a453890a7a3191a83adcce326d23dab2e":[2,0,1,3,3,1,0]
+"structocc_1_1dft_1_1DensityFunctional_1_1Params.html":[2,0,1,3,3,0]
 };

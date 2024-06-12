@@ -7,6 +7,7 @@ var namespaceocc_1_1isosurface =
     [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
     [ "InterpolatorParams", "structocc_1_1isosurface_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1InterpolatorParams" ],
     [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
+    [ "DeformationDensityFunctor", "classocc_1_1isosurface_1_1DeformationDensityFunctor.html", "classocc_1_1isosurface_1_1DeformationDensityFunctor" ],
     [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
     [ "ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", "classocc_1_1isosurface_1_1ElectronDensityFunctor" ],
     [ "PromoleculeDensityFunctor", "classocc_1_1isosurface_1_1PromoleculeDensityFunctor.html", "classocc_1_1isosurface_1_1PromoleculeDensityFunctor" ],
