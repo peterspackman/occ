@@ -8,9 +8,9 @@
  viewBox="0.00 0.00 304.00 154.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 150)">
 <title>Graphical Class Hierarchy</title>
-<!-- Node230 -->
+<!-- Node231 -->
 <g id="node1" class="node">
-<title>Node230</title>
+<title>Node231</title>
 <g id="a_node1"><a xlink:title=" ">
 <polygon fill="none" stroke="#bfbfbf" points="0,-74.5 0,-93.5 84,-93.5 84,-74.5 0,-74.5"/>
 <text text-anchor="middle" x="42" y="-81.5" font-family="Helvetica,sans-Serif" font-size="10.00">std::true_type</text>
@@ -28,15 +28,15 @@
 </a>
 </g>
 </g>
-<!-- Node230&#45;&gt;Node0 -->
+<!-- Node231&#45;&gt;Node0 -->
 <g id="edge1" class="edge">
-<title>Node230&#45;&gt;Node0</title>
+<title>Node231&#45;&gt;Node0</title>
 <path fill="none" stroke="midnightblue" d="M90.97,-95.99C103.74,-99.19 117.86,-102.72 131.72,-106.18"/>
 <polygon fill="midnightblue" stroke="midnightblue" points="91.59,-92.54 81.04,-93.51 89.89,-99.33 91.59,-92.54"/>
 </g>
-<!-- Node232 -->
+<!-- Node233 -->
 <g id="node3" class="node">
-<title>Node232</title>
+<title>Node233</title>
 <g id="a_node3"><a xlink:href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyc53da7eeae9ee1d678c974c152124f3c.html" target="_top" xlink:title=" ">
 <polygon fill="none" stroke="black" points="120,-0.5 120,-85.5 296,-85.5 296,-0.5 120,-0.5"/>
 <text text-anchor="start" x="128" y="-73.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::geometry::mc::</text>
@@ -49,9 +49,9 @@
 </a>
 </g>
 </g>
-<!-- Node230&#45;&gt;Node232 -->
+<!-- Node231&#45;&gt;Node233 -->
 <g id="edge2" class="edge">
-<title>Node230&#45;&gt;Node232</title>
+<title>Node231&#45;&gt;Node233</title>
 <path fill="none" stroke="midnightblue" d="M91.01,-72C100.13,-69.72 109.94,-67.27 119.84,-64.79"/>
 <polygon fill="midnightblue" stroke="midnightblue" points="89.89,-68.67 81.04,-74.49 91.59,-75.46 89.89,-68.67"/>
 </g>

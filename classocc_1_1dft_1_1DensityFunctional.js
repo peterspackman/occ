@@ -345,6 +345,8 @@ var classocc_1_1dft_1_1DensityFunctional =
       [ "mgga_x_scan", "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbabc1b3f8d98e6a289a413acf5b1dd210c", null ],
       [ "mgga_c_scan", "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaa223d41864d5948c1f52eda45ec5aabd", null ],
       [ "mgga_c_mn15", "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbabee00173670edffdc441ec9c8f6ffab6", null ],
+      [ "mgga_x_r2scan", "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf1f9e252fd36f63dfaf846c45ce0bf84", null ],
+      [ "mgga_c_r2scan", "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba4119e118c38cf8c000889e30d6ea61de", null ],
       [ "hyb_mgga_x_dldf", "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaeb6420dac0c4442f89d3a99b31adc1f1", null ],
       [ "hyb_mgga_x_ms2h", "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbacd7d214a8b9730b0e751c9c984d7754b", null ],
       [ "hyb_mgga_x_mn12_sx", "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba289ffcc34fb6a179e79c8005fdf88abe", null ],

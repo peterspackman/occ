@@ -140,6 +140,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1OccPairInput.html">OccPairInput</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1SurfaceCutsConfig.html">SurfaceCutsConfig</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1PairEnergy.html">PairEnergy</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1PairEnergyStore.html">PairEnergyStore</a></td></tr>
@@ -245,6 +247,10 @@ Functions</h2></td></tr>
 <tr class="separator:a43e390cf6e2a407ce206d694c20b0092"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af07650be8ef15ef61770377f8d14ed82"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#af07650be8ef15ef61770377f8d14ed82">run_scf_subcommand</a> (<a class="el" href="structocc_1_1io_1_1OccInput.html">occ::io::OccInput</a> &amp;config)</td></tr>
 <tr class="separator:af07650be8ef15ef61770377f8d14ed82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75481247439e9605a852973eeb051309"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a75481247439e9605a852973eeb051309">add_surface_cuts_subcommand</a> (CLI::App &amp;app)</td></tr>
+<tr class="separator:a75481247439e9605a852973eeb051309"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae3df6594d05a9ba23c3faa1775bf850"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aae3df6594d05a9ba23c3faa1775bf850">run_surface_cuts_subcommand</a> (<a class="el" href="structocc_1_1main_1_1SurfaceCutsConfig.html">SurfaceCutsConfig</a>)</td></tr>
+<tr class="separator:aae3df6594d05a9ba23c3faa1775bf850"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c99afd3455379c53135bd1896c75dad"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a4c99afd3455379c53135bd1896c75dad">load_dimer_energy</a> (const std::string &amp;, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;)</td></tr>
 <tr class="separator:a4c99afd3455379c53135bd1896c75dad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16e11a137953997cdd03624b9b825160"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a16e11a137953997cdd03624b9b825160">write_xyz_dimer</a> (const std::string &amp;, const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;, std::optional&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt; energies={})</td></tr>
@@ -533,6 +539,24 @@ Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">CLI::App* occ::main::add_scf_subcommand </td>
+          <td>(</td>
+          <td class="paramtype">CLI::App &amp;&#160;</td>
+          <td class="paramname"><em>app</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a75481247439e9605a852973eeb051309"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75481247439e9605a852973eeb051309">&#9670;&nbsp;</a></span>add_surface_cuts_subcommand()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CLI::App* occ::main::add_surface_cuts_subcommand </td>
           <td>(</td>
           <td class="paramtype">CLI::App &amp;&#160;</td>
           <td class="paramname"><em>app</em></td><td>)</td>
@@ -1293,6 +1317,24 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structocc_1_1io_1_1OccInput.html">occ::io::OccInput</a> &amp;&#160;</td>
           <td class="paramname"><em>config</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aae3df6594d05a9ba23c3faa1775bf850"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae3df6594d05a9ba23c3faa1775bf850">&#9670;&nbsp;</a></span>run_surface_cuts_subcommand()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::main::run_surface_cuts_subcommand </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1main_1_1SurfaceCutsConfig.html">SurfaceCutsConfig</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
