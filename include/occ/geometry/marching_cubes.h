@@ -235,7 +235,7 @@ private:
           layers[0] = layers[1];
           layers[1] = layers[2];
           layers[2] = layers[3];
-          layer_positions.row(2).setConstant((z + 1) * scale(2) + origin(2));
+          layer_positions.row(2).setConstant((z + 2) * scale(2) + origin(2));
           source.batch(layer_positions, Eigen::Map<FVec>(layers[3].data(), layers[3].size()));
         }
       }
@@ -261,7 +261,7 @@ private:
           FVec3 pos;
           for (size_t y = 0; y < size_y; y++) {
             for (size_t x = 0; x < size_x; x++) {
-              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), (z + 1) * scale(2) + origin(2)};
+              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), (z + 2) * scale(2) + origin(2)};
               layers[3](x, y) = source(pos);
             }
           }

@@ -55,6 +55,7 @@ const ankerl::unordered_dense::map<std::string, std::vector<FuncComponent>>
         {"tpss", {{dfid::mgga_x_tpss}, {dfid::mgga_c_tpss}}},
         {"b86bpbe", {{dfid::gga_x_b86_mgc}, {dfid::gga_c_pbe}}},
         {"b86bpbeh", {{dfid::gga_x_b86_mgc, 0.75, 0.25}, {dfid::gga_c_pbe}}},
+        {"r2scan", {{dfid::mgga_x_r2scan}, {dfid::mgga_c_r2scan}}},
         {"wb97x", {{dfid::hyb_gga_xc_wb97x}}},
         {"wb97m", {{dfid::hyb_mgga_xc_wb97m_v}}},
         {"wb97m-v", {{dfid::hyb_mgga_xc_wb97m_v}}},

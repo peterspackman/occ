@@ -356,6 +356,8 @@ class DensityFunctional {
         mgga_x_scan = XC_MGGA_X_SCAN,
         mgga_c_scan = XC_MGGA_C_SCAN,
         mgga_c_mn15 = XC_MGGA_C_MN15,
+        mgga_x_r2scan = XC_MGGA_X_R2SCAN,
+        mgga_c_r2scan = XC_MGGA_C_R2SCAN,
         hyb_mgga_x_dldf = XC_HYB_MGGA_X_DLDF,
         hyb_mgga_x_ms2h = XC_HYB_MGGA_X_MS2H,
         hyb_mgga_x_mn12_sx = XC_HYB_MGGA_X_MN12_SX,

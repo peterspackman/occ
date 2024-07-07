@@ -10,6 +10,7 @@
 #include <occ/main/occ_isosurface.h>
 #include <occ/main/occ_pair.h>
 #include <occ/main/occ_scf.h>
+#include <occ/main/occ_surface_cuts.h>
 
 int main(int argc, char *argv[]) {
     occ::timing::start(occ::timing::category::global);
@@ -51,6 +52,7 @@ int main(int argc, char *argv[]) {
     auto *iso = occ::main::add_isosurface_subcommand(app);
     auto *pair = occ::main::add_pair_subcommand(app);
     auto *scf = occ::main::add_scf_subcommand(app);
+    auto *cuts = occ::main::add_surface_cuts_subcommand(app);
 
     // ensure we have a subcommand
     app.require_subcommand();
