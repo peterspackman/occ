@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['netwriter_2872',['NetWriter',['../classocc_1_1io_1_1crystalgrower_1_1NetWriter.html',1,'occ::io::crystalgrower']]],
-  ['nonlocalcorrelationfunctional_2873',['NonLocalCorrelationFunctional',['../classocc_1_1dft_1_1NonLocalCorrelationFunctional.html',1,'occ::dft']]],
-  ['numpyarray_2874',['NumpyArray',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html',1,'occ::core::numpy']]]
+  ['netwriter_2870',['NetWriter',['../classocc_1_1io_1_1crystalgrower_1_1NetWriter.html',1,'occ::io::crystalgrower']]],
+  ['nonlocalcorrelationfunctional_2871',['NonLocalCorrelationFunctional',['../classocc_1_1dft_1_1NonLocalCorrelationFunctional.html',1,'occ::dft']]],
+  ['numpyarray_2872',['NumpyArray',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html',1,'occ::core::numpy']]]
 ];

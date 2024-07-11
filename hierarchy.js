@@ -50,6 +50,7 @@ var hierarchy =
     [ "occ::main::DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", null ],
     [ "occ::dft::DFT", "classocc_1_1dft_1_1DFT.html", null ],
     [ "occ::io::DftbGenFormat", "classocc_1_1io_1_1DftbGenFormat.html", null ],
+    [ "occ::disp::DFTD4Params", "structocc_1_1disp_1_1DFTD4Params.html", null ],
     [ "quickhull::DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", null ],
     [ "occ::core::diis::DIIS", "classocc_1_1core_1_1diis_1_1DIIS.html", [
       [ "occ::qm::CDIIS", "classocc_1_1qm_1_1CDIIS.html", null ]

@@ -38,9 +38,7 @@ var namespaceocc =
     ] ],
     [ "descriptors", "namespaceocc_1_1descriptors.html", "namespaceocc_1_1descriptors" ],
     [ "dft", "namespaceocc_1_1dft.html", "namespaceocc_1_1dft" ],
-    [ "disp", "namespaceocc_1_1disp.html", [
-      [ "ce_model_dispersion_energy", "namespaceocc_1_1disp.html#a115cdd33241e95fcf9e5f7cd7745fe6d", null ]
-    ] ],
+    [ "disp", "namespaceocc_1_1disp.html", "namespaceocc_1_1disp" ],
     [ "geometry", "namespaceocc_1_1geometry.html", "namespaceocc_1_1geometry" ],
     [ "gto", "namespaceocc_1_1gto.html", "namespaceocc_1_1gto" ],
     [ "interaction", "namespaceocc_1_1interaction.html", "namespaceocc_1_1interaction" ],

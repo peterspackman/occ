@@ -74,6 +74,9 @@ var annotated_dup =
         [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
         [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ]
       ] ],
+      [ "disp", "namespaceocc_1_1disp.html", [
+        [ "DFTD4Params", "structocc_1_1disp_1_1DFTD4Params.html", "structocc_1_1disp_1_1DFTD4Params" ]
+      ] ],
       [ "geometry", "namespaceocc_1_1geometry.html", [
         [ "mc", "namespaceocc_1_1geometry_1_1mc.html", [
           [ "impl", "namespaceocc_1_1geometry_1_1mc_1_1impl.html", [
