@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <ankerl/unordered_dense.h>
 #include <fmt/os.h>
 #include <numeric>
 #include <occ/core/eem.h>
@@ -9,24 +10,32 @@
 
 namespace occ::crystal {
 
+struct HKLHash {
+  using is_avalanching = void;
+  [[nodiscard]] auto operator()(HKL const &idx) const noexcept -> uint64_t {
+    static_assert(std::has_unique_object_representations_v<HKL>);
+    return ankerl::unordered_dense::detail::wyhash::hash(&idx, sizeof(idx));
+  }
+};
+
 template <typename T>
 void loop_over_miller_indices(
     T &func, const Crystal &c,
     const CrystalSurfaceGenerationParameters &params) {
   const auto &uc = c.unit_cell();
   HKL limits = uc.hkl_limits(params.d_min);
-  const auto rasu = c.space_group().reciprocal_asu();
   const Mat3 &lattice = uc.reciprocal();
   HKL m;
-  for (m.h = -limits.h; m.h <= limits.h; m.h++)
-    for (m.k = -limits.k; m.k <= limits.k; m.k++)
-      for (m.l = -limits.l; m.l <= limits.l; m.l++) {
-        if (!params.unique || rasu.is_in(m)) {
-          double d = m.d(lattice);
-          if (d > params.d_min && d < params.d_max)
-            func(m);
+  for (m.h = limits.h; m.h >= -limits.h; m.h--) {
+    for (m.k = limits.k; m.k >= -limits.k; m.k--) {
+      for (m.l = limits.l; m.l >= -limits.l; m.l--) {
+        double d = m.d(lattice);
+        if (d > params.d_min && d < params.d_max) {
+          func(m);
         }
       }
+    }
+  }
 }
 
 std::vector<size_t> argsort(const Vec &vec) {
@@ -181,18 +190,67 @@ void Surface::print() const {
       m_depth_vector(0), m_depth_vector(1), m_depth_vector(2), depth());
 }
 
+// Helper function to apply rotation to HKL
+HKL apply_rotation(const SymmetryOperation &symop, const HKL &hkl) {
+  Vec3 v(hkl.h, hkl.k, hkl.l);
+  Vec3 rotated = symop.rotation() * v;
+  return HKL{
+    static_cast<int>(std::round(rotated(0))),
+    static_cast<int>(std::round(rotated(1))),
+    static_cast<int>(std::round(rotated(2)))
+  };
+}
+
 std::vector<Surface>
 generate_surfaces(const Crystal &c,
                   const CrystalSurfaceGenerationParameters &params) {
   std::vector<Surface> result;
-  auto f = [&](const HKL &m) {
-    if (params.systematic_absences_allowed ||
-        !Surface::check_systematic_absence(c, m))
-      result.emplace_back(Surface(m, c));
-  };
-  loop_over_miller_indices(f, c, params);
+  ankerl::unordered_dense::set<HKL, HKLHash> unique_hkls;
+  auto point_group = c.space_group();
+
+  if(params.unique) {
+    auto f = [&](HKL m) {
+      if(params.reduced) {
+        int cd = std::gcd(std::gcd(m.h, m.k), std::gcd(m.k, m.l));
+        m = HKL{m.h / cd, m.k / cd, m.l / cd};
+      }
+      if (!unique_hkls.contains(m)) {
+        bool is_unique = true;
+        for (const auto &symop : point_group.symmetry_operations()) {
+          HKL rotated_hkl = apply_rotation(symop, m);
+          if (unique_hkls.contains(rotated_hkl)) {
+            is_unique = false;
+            break;
+          }
+        }
+        if (is_unique) {
+          result.emplace_back(Surface(m, c));
+          for (const auto &symop : point_group.symmetry_operations()) {
+            unique_hkls.insert(apply_rotation(symop, m));
+          }
+        }
+      }
+    };
+
+    loop_over_miller_indices(f, c, params);
+  }
+  else {
+    auto f = [&](HKL m) {
+      if(params.reduced) {
+        int cd = std::gcd(std::gcd(m.h, m.k), std::gcd(m.k, m.l));
+        m = HKL{m.h / cd, m.k / cd, m.l / cd};
+      }
+      if (!unique_hkls.contains(m)) {
+        result.emplace_back(Surface(m, c));
+        unique_hkls.insert(m);
+      }
+    };
+    loop_over_miller_indices(f, c, params);
+  }
+
   std::sort(result.begin(), result.end(),
             [](const Surface &a, const Surface &b) { return a.d() < b.d(); });
+
   return result;
 }
 

@@ -1,5 +1,6 @@
 add_subdirectory(3rdparty)
 add_subdirectory(core)
+add_subdirectory(disp)
 add_subdirectory(crystal)
 add_subdirectory(interaction)
 add_subdirectory(geometry)

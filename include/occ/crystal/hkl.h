@@ -85,5 +85,9 @@ struct HKL {
         r.l = static_cast<int>(std::ceil(vec(2)));
         return r;
     }
+
+    inline bool operator==(const HKL &rhs) const {
+        return (h == rhs.h) && (k == rhs.k) && (l == rhs.l);
+    }
 };
 } // namespace occ::crystal
