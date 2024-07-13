@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <occ/crystal/unitcell.h>
 #include <string>
 
 namespace occ::crystal {
@@ -114,7 +115,15 @@ class SymmetryOperation {
      *
      * \returns Mat3 containing describing the rotation.
      */
-    Mat3 rotation() const { return m_seitz.block<3, 3>(0, 0); }
+    inline Mat3 rotation() const { return m_seitz.block<3, 3>(0, 0); }
+
+    /**
+     * Convert the rotation matrix to Cartesian coordinates
+     *
+     * \param cell The UnitCell object representing the crystal structure
+     * \returns Mat3 The rotation matrix in Cartesian coordinates
+     */
+    Mat3 cartesian_rotation(const UnitCell& cell) const;
 
     /**
      * The translation component of the matrix representation of this symop

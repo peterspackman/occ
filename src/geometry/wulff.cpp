@@ -29,26 +29,48 @@ void Facet::reorder(const Mat3N &points) {
 
     Mat3N points_2d = project_to_plane(points, normal);
 
-    Vec3 centroid = points_2d.rowwise().mean();
+    Vec3 centroid = points_2d.col(0);
     Mat3N directions = points_2d.colwise() - centroid;
-    for (int i = 0; i < directions.cols(); ++i) {
+    for (int i = 1; i < directions.cols(); ++i) {
         directions.col(i).normalize();
     }
+    fmt::print("Directions\n{}\n", directions);
+        // Create a vector of indices for sorting
+    std::vector<size_t> indices(point_index.size() - 1);
+    std::iota(indices.begin(), indices.end(), 1);
 
-    std::sort(
-        point_index.begin(), point_index.end(), [&directions](int i1, int i2) {
+    // Sort the indices based on the angles in the directions array
+    std::sort(indices.begin(), indices.end(), 
+        [&directions](size_t i1, size_t i2) {
             double angle1 = std::atan2(directions(1, i1), directions(0, i1));
             double angle2 = std::atan2(directions(1, i2), directions(0, i2));
             return angle1 < angle2;
         });
+
+    // Create a new sorted point_index array
+    std::vector<int> sorted_point_index(point_index.size());
+    sorted_point_index[0] = point_index[0];  // Keep the first index unchanged
+    for (size_t i = 0; i < indices.size(); ++i) {
+        sorted_point_index[i + 1] = point_index[indices[i]];
+    }
+
+    // Replace the original point_index with the sorted version
+    point_index = std::move(sorted_point_index);
 }
 
-void Facet::reorder_and_triangulate(const Mat3N &points) {
+void Facet::reorder_and_triangulate(const Mat3N &all_points) {
     if (point_index.empty())
         return;
 
     // assumes we have at least 3 points
     const size_t N = point_index.size();
+    Mat3N points = all_points(Eigen::all, point_index);
+
+    for(int i = 0; i < point_index.size(); i++) {
+        fmt::print("{} ", point_index[i]);
+    }
+    fmt::print("\n");
+
     reorder(points);
 
     this->triangles = IMat3N(3, N - 2);
@@ -58,6 +80,11 @@ void Facet::reorder_and_triangulate(const Mat3N &points) {
         Eigen::Map<const IVec>(point_index.data() + 1, N - 2);
     this->triangles.row(2) =
         Eigen::Map<const IVec>(point_index.data() + 2, N - 2);
+    for(int i = 0; i < point_index.size(); i++) {
+        fmt::print("{} ", point_index[i]);
+    }
+    fmt::print("\n");
+    fmt::print("triangles\n{}\n", triangles);
 }
 
 WulffConstruction::WulffConstruction(
@@ -85,6 +112,8 @@ WulffConstruction::WulffConstruction(
 
     occ::log::debug("Convex hull has {} faces, {} vertices",
                     hull.triangles().cols(), hull.vertices().cols());
+    occ::log::debug("Hull triangles:\n{}\n", hull.triangles());
+    occ::log::debug("Hull vertices:\n{}\n", hull.vertices());
     IMat3N triangles = hull.triangles().cast<int>();
     extract_wulff_from_dual_hull_simplices(triangles);
 }

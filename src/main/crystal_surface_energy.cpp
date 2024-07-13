@@ -25,7 +25,6 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
   int number_of_surfaces = 0;
   constexpr double tolerance{1e-5};
 
-  // find unique positions to consider
   Mat3N unique_positions(3, crystal.unit_cell_molecules().size());
   log::debug("Unique positions to check: {}", unique_positions.cols());
   {

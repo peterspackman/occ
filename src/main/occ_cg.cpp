@@ -11,6 +11,7 @@
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/dft/dft.h>
+#include <occ/geometry/wulff.h>
 #include <occ/interaction/disp.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
@@ -20,6 +21,7 @@
 #include <occ/io/kmcpp.h>
 #include <occ/io/load_geometry.h>
 #include <occ/io/occ_input.h>
+#include <occ/io/ply.h>
 #include <occ/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
 #include <occ/main/crystal_surface_energy.h>
@@ -346,9 +348,10 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
 
     SymmetryOperation symop(s_int);
 
-    const auto &rotation = symop.rotation();
+    occ::Mat3 rotation = symop.cartesian_rotation(crystal.unit_cell());
     occ::log::debug("Asymmetric unit symop: {} (has handedness change: {})",
                     symop.to_string(), rotation.determinant() < 0);
+    occ::log::debug("Cartesian rotation matrix:\n{}", rotation);
 
     size_t j = 0;
     const auto &asymmetric_neighbors = mol_neighbors[asym_idx];
@@ -369,7 +372,12 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
       bool match_type{false};
       for (idx = 0; idx < asymmetric_neighbors.size(); idx++) {
         const auto &d_a = asymmetric_neighbors[idx].dimer;
+        if(d_a.nearest_distance() > uc_dimers.radius) continue;
         if (dimer.equivalent(d_a)) {
+          break;
+        }
+        if (dimer.equivalent_in_opposite_frame(d_a)) {
+          match_type = true;
           break;
         }
         if (dimer.equivalent_under_rotation(d_a, rotation)) {
@@ -388,6 +396,7 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
             "Matching interaction index exceeds number of known "
             "interactions energies");
       }
+      occ::log::trace("Found match for uc dimer");
       double rn = dimer.nearest_distance();
       double rc = dimer.centroid_distance();
 
@@ -739,7 +748,6 @@ public:
       : m_crystal(crystal), m_molecules(m_crystal.symmetry_unique_molecules()),
         m_solvent(solvent), m_interaction_energies(m_molecules.size()),
         m_crystal_interaction_energies(m_molecules.size()) {
-    init_monomer_energies();
   }
 
   // do nothing
@@ -876,6 +884,7 @@ public:
       {
         occ::xtb::XTBCalculator xtb(m);
         xtb.set_solvent(m_solvent);
+        occ::log::info("Solvation: {} using {}", m_solvent, m_solvation_model);
         xtb.set_solvation_model(m_solvation_model);
         sw_solv.start();
         e_solv = xtb.single_point_energy();
@@ -1099,6 +1108,8 @@ template <class Calculator> CGResult run_cg_impl(CGConfig const &config) {
     calc.set_use_crystal_polarization(true);
   }
 
+
+
   if constexpr (std::is_same<Calculator, XTBCrystalGrowthCalculator>::value) {
     occ::log::info("XTB solvation model: {}", config.xtb_solvation_model);
     calc.set_solvation_model(config.xtb_solvation_model);
@@ -1188,8 +1199,31 @@ template <class Calculator> CGResult run_cg_impl(CGConfig const &config) {
             fmt::format("{}_vacuum.gmf", basename), calc.crystal(),
             uc_dimers_vacuum, config.max_facets, -1);
 
+    auto write_wulff = [](const CrystalSurfaceEnergies &s) {
+      const auto &sg = s.crystal.space_group();
+      occ::Vec energies(s.facets.size());
+      occ::Mat3N hkl(3, s.facets.size());
+      for(size_t f = 0; f < s.facets.size(); f++) {
+        const auto &facet = s.facets[f];
+        hkl(0, f) = facet.hkl.h;
+        hkl(1, f) = facet.hkl.k;
+        hkl(2, f) = facet.hkl.l;
+        energies(f) = facet.energy;
+      }
+      auto [symop_id, expanded_hkl] = sg.apply_rotations(hkl);
+      occ::Vec expanded_energies = energies.replicate(sg.symmetry_operations().size(), 1);
+      fmt::print("Energies\n{}\n", expanded_energies);
+      fmt::print("hkl\n{}\n", expanded_hkl);
+      occ::Mat3N directions = s.crystal.unit_cell().to_reciprocal(expanded_hkl);
+      directions.colwise().normalize();
+      fmt::print("Directions\n{}\n", directions);
+      auto wulff = occ::geometry::WulffConstruction(directions, expanded_energies);
+      occ::io::IsosurfaceMesh mesh = occ::io::mesh_from_vertices_faces(wulff.vertices(), wulff.triangles());
+      occ::io::write_ply_mesh("wulff.ply", mesh, {}, false);
+    };
     nlohmann::json j;
     j["surface_energies"] = surface_energies;
+    write_wulff(surface_energies);
     j["vacuum"] = calc.crystal_interaction_energies();
     j["solvated"] = calc.interaction_energies();
     std::string surf_energy_filename =

@@ -137,4 +137,26 @@ SpaceGroup::apply_all_symmetry_operations(const Mat3N &frac) const {
     }
     return {generators, transformed};
 }
+
+std::pair<IVec, Mat3N>
+SpaceGroup::apply_rotations(const Mat3N &frac) const {
+    int nSites = frac.cols();
+    int nSymops = m_symops.size();
+    Mat3N transformed(3, nSites * nSymops);
+    IVec generators(nSites * nSymops);
+    transformed.block(0, 0, 3, nSites) = frac.block(0, 0, 3, nSites);
+    for (int i = 0; i < nSites; i++) {
+        generators(i) = 16484;
+    }
+    int offset = nSites;
+    for (const auto &symop : m_symops) {
+        if (symop.is_identity())
+            continue;
+        int code = symop.to_int();
+        generators.block(offset, 0, nSites, 1).setConstant(code);
+        transformed.block(0, offset, frac.rows(), frac.cols()) = symop.rotation() * frac;
+        offset += nSites;
+    }
+    return {generators, transformed};
+}
 } // namespace occ::crystal

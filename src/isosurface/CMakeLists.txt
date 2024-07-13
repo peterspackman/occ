@@ -1,6 +1,7 @@
 add_library(occ_isosurface
     "${CMAKE_CURRENT_SOURCE_DIR}/curvature.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/deformation_density.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/eeq_esp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/electric_potential.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/electron_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.cpp"

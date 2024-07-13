@@ -1,6 +1,7 @@
 #include <occ/core/dimer.h>
 #include <occ/core/kabsch.h>
 #include <occ/core/util.h>
+#include <occ/core/log.h>
 
 #include <fmt/ostream.h>
 
@@ -110,22 +111,38 @@ bool Dimer::operator==(const Dimer &rhs) const {
     if (!same_asymmetric_molecule_idxs(rhs))
         return false;
     constexpr double eps = 1e-7;
-    double centroid_diff = abs(centroid_distance() - rhs.centroid_distance());
-    if (centroid_diff > eps)
+    double da = centroid_distance();
+    double db = rhs.centroid_distance();
+
+    if (abs(da - db) > eps) {
+        occ::log::trace("Centroid-centroid distance {:.7f} vs {:.7f}", da, db);
         return false;
-    double com_diff =
-        abs(center_of_mass_distance() - rhs.center_of_mass_distance());
-    if (com_diff > eps)
+    }
+
+    da = center_of_mass_distance();
+    db = rhs.center_of_mass_distance();
+
+    if (abs(da - db) > eps) {
+        occ::log::trace("COM-COM distance {:.7f} vs {:.7f}", da, db);
         return false;
-    double nearest_diff = abs(nearest_distance() - rhs.nearest_distance());
-    if (nearest_diff > eps)
+    }
+
+    da = nearest_distance();
+    db = rhs.nearest_distance();
+    if (abs(da - db) > eps) {
+        occ::log::trace("nearest-nearest distance {:.7f} vs {:.7f}", da, db);
         return false;
+    }
+
     bool aa_eq = m_a.is_equivalent_to(rhs.m_a);
     bool bb_eq = m_b.is_equivalent_to(rhs.m_b);
-    if (aa_eq && bb_eq)
+    occ::log::trace("aa eq: {} bb eq: {}", aa_eq, bb_eq);
+    if (aa_eq && bb_eq) {
         return true;
+    }
     bool ba_eq = m_b.is_equivalent_to(rhs.m_a);
     bool ab_eq = m_a.is_equivalent_to(rhs.m_b);
+    occ::log::trace("ab eq: {} ba eq: {}", ab_eq, ba_eq);
     return ab_eq && ba_eq;
 }
 
@@ -158,10 +175,13 @@ bool Dimer::equivalent(const occ::core::Dimer &rhs) const {
     size_t d2_na = rhs.m_a.size();
     size_t d1_nb = m_b.size();
     size_t d2_nb = rhs.m_b.size();
-    if ((d1_na != d2_na) || (d1_nb != d2_nb))
+    if ((d1_na != d2_na) || (d1_nb != d2_nb)) {
+        occ::log::trace("Dimers have different numbers of atoms in A & B");
         return false;
-    if (*this != rhs)
+    }
+    if (*this != rhs) {
         return false;
+    }
 
     Vec3 Od1 = m_a.centroid();
     Vec3 Od2 = rhs.m_a.centroid();

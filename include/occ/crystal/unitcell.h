@@ -166,6 +166,17 @@ class UnitCell {
         return m_inverse * coords;
     }
 
+    /**
+     * Convert a given matrix of coordinates from Cartesian to fractional
+     *
+     * \param coords Mat3N of Cartesian coordinates
+     *
+     * \returns Mat3N of fractional coordinates
+     */
+    inline auto to_reciprocal(const Mat3N &coords) const {
+        return m_reciprocal * coords;
+    }
+
     /// The direct matrix of this unit cell (columns are lattice vectors)
     inline const auto &direct() const { return m_direct; }
     /// The reciprocal matrix of this unit cell (columns are reciprocal lattice

@@ -565,8 +565,8 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
   occ::log::debug("Origin: [{:9.3f}, {:9.3f}, {:9.3f}]", origin(0), origin(1),
                   origin(2));
 
-  const double upper_bound = (1.0 + cut_offset / depth_scale) + epsilon;
-  const double lower_bound = (cut_offset / depth_scale) + epsilon;
+  const double upper_bound = (1.0 + cut_offset / depth_scale) - epsilon;
+  const double lower_bound = (cut_offset / depth_scale) - epsilon;
   Mat3 basis_inverse = basis.inverse();
   result.basis = basis;
 
@@ -717,21 +717,26 @@ Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
   Mat3N pos_frac = basis_inverse * unique_positions;
 
   // Get sorted distances along surface normal
+  // add 1/13 to offset from possible special positions
   std::vector<double> zpos(pos_frac.cols());
   for (int i = 0; i < pos_frac.cols(); ++i) {
-    zpos[i] = pos_frac(2, i);
+    zpos[i] = pos_frac(2, i) + 1.0 / 13;
   }
   std::sort(zpos.begin(), zpos.end());
+
+  // cuts are made at 7/13 offset as that almost guarantees
+  // we won't land at some special position, which can happen 
+  // a lot by using 0.5
 
   // Calculate midpoints between unique distances along normal
   // ensuring we're between 0 and 1
   for (size_t i = 0; i < zpos.size() - 1; ++i) {
-    double mid = 0.5 * (zpos[i] + zpos[i + 1]);
+    double mid = 6.0/13 * (zpos[i] + zpos[i + 1]);
     result.push_back(std::fmod(mid + 7.0, 1.0));
   }
 
   // Add a cut between the last and first (periodic)
-  double mid = 0.5 * (zpos.back() + (zpos.front() + 1.0));
+  double mid = 6.0/13 * (zpos.back() + (zpos.front() + 1.0));
   result.push_back(std::fmod(mid + 7.0, 1.0)); // Ensure within [0,1)
 
   // Remove duplicates

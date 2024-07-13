@@ -728,6 +728,12 @@ class Molecule {
      */
     bool is_equivalent_to(const Molecule &rhs) const;
 
+
+    inline void set_partial_charges(const Vec &v) { m_partial_charges = v; }
+    inline const auto & partial_charges() { return m_partial_charges; }
+
+    Vec esp_partial_charges(const occ::Mat3N &positions) const;
+
   private:
     int m_charge{0};
     int m_multiplicity{1};
@@ -744,6 +750,7 @@ class Molecule {
     std::vector<Element> m_elements;
     Mat3 m_asymmetric_unit_rotation = Mat3::Identity(3, 3);
     Vec3 m_asymmetric_unit_translation = Vec3::Zero(3);
+    Vec m_partial_charges;
     CellShift m_cell_shift{0, 0, 0};
 };
 

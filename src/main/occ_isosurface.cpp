@@ -18,6 +18,7 @@
 #include <occ/isosurface/curvature.h>
 #include <occ/isosurface/isosurface.h>
 #include <occ/main/occ_isosurface.h>
+#include <occ/core/eeq.h>
 
 namespace fs = std::filesystem;
 using occ::FVec;
@@ -38,7 +39,7 @@ namespace occ::main {
 std::string to_string(IsosurfaceConfig::Property prop) {
   switch (prop) {
   case IsosurfaceConfig::Property::Dnorm:
-    return "d_norm";
+    return "dnorm";
   case IsosurfaceConfig::Property::Dint_norm:
     return "di_norm";
   case IsosurfaceConfig::Property::Dint:
@@ -355,6 +356,7 @@ IsosurfaceConfig::surface_properties() const {
       IsosurfaceConfig::Property::Dint_norm,
       IsosurfaceConfig::Property::ShapeIndex,
       IsosurfaceConfig::Property::Curvedness,
+      IsosurfaceConfig::Property::EEQ_ESP,
   };
 
   if (have_environment_file()) {
@@ -373,6 +375,8 @@ IsosurfaceConfig::surface_properties() const {
           {"electron density", IsosurfaceConfig::Property::ElectronDensity},
           {"rho", IsosurfaceConfig::Property::ElectronDensity},
           {"density", IsosurfaceConfig::Property::ElectronDensity},
+          {"eeq_esp", IsosurfaceConfig::Property::EEQ_ESP},
+          {"esp", IsosurfaceConfig::Property::ESP},
       };
 
   for (const auto &p : properties) {
@@ -551,6 +555,37 @@ Wavefunction load_wfn(const IsosurfaceConfig &config) {
   return wfn;
 }
 
+FVec compute_surface_property(IsosurfaceConfig::Property prop, 
+                              Eigen::Ref<const Eigen::Matrix3Xf> vertices,
+                              const Molecule &m1, const Molecule &m2,
+                              const Wavefunction & wfn = {}) {
+
+  FVec result = FVec::Zero(vertices.cols());
+
+  switch (prop) {
+  case IsosurfaceConfig::Property::ESP: {
+    auto func = iso::ElectricPotentialFunctor(wfn, 0.2);
+    func.batch(vertices, result);
+    break;
+  }
+  case IsosurfaceConfig::Property::EEQ_ESP: {
+    auto m = m1;
+    auto q = occ::core::charges::eeq_partial_charges(m.atomic_numbers(), m.positions(), m.charge());
+    occ::log::info("Molecule partial charges (EEQ)\n{}", q);
+    m.set_partial_charges(q);
+    auto func = iso::ElectricPotentialFunctorPC(m);
+    func.batch(vertices, result);
+    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(), result.maxCoeff(), result.mean());
+    occ::log::info("Computed EEQ ESP for {} vertices", func.num_calls());
+    break;
+  }
+  default:
+    break;
+  }
+
+  return result;
+}
+
 void run_isosurface_subcommand(IsosurfaceConfig config) {
   IsosurfaceMesh mesh;
   VertexProperties properties;
@@ -676,6 +711,8 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
       continue;
     if (properties.iprops.contains(s))
       continue;
+    occ::log::info("Need to compute: {}", s);
+    properties.add_property(s, compute_surface_property(prop, verts, m1, m2, wfn));
   }
 
   Eigen::Vector3f lower_left = verts.rowwise().minCoeff();

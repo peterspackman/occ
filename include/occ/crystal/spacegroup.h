@@ -127,6 +127,8 @@ class SpaceGroup {
      */
     std::pair<IVec, Mat3N> apply_all_symmetry_operations(const Mat3N &) const;
 
+    std::pair<IVec, Mat3N> apply_rotations(const Mat3N &) const;
+
     inline auto reciprocal_asu() const {
         return ReciprocalAsymmetricUnit(m_sgdata);
     }
