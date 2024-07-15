@@ -13,6 +13,7 @@ var structocc_1_1crystal_1_1SurfaceCutResult =
     [ "bulk", "structocc_1_1crystal_1_1SurfaceCutResult.html#a71a6f5c816f7f7c4fa331685ed49d8de", null ],
     [ "cut_offset", "structocc_1_1crystal_1_1SurfaceCutResult.html#a0ffde2af70ab7b57dc0a75aba73a05e9", null ],
     [ "depth_scale", "structocc_1_1crystal_1_1SurfaceCutResult.html#aac6acdb6c9f8a711e4e1614723e2bfd8", null ],
+    [ "exyz", "structocc_1_1crystal_1_1SurfaceCutResult.html#aea999ead77ad8fa6f68ac0a8342c21ea", null ],
     [ "molecules", "structocc_1_1crystal_1_1SurfaceCutResult.html#ae52c7e9b26f98e54c97913fc7ab9a868", null ],
     [ "slab", "structocc_1_1crystal_1_1SurfaceCutResult.html#a6da1bfa757a318a2f833f10fa6e93c38", null ]
 ];

@@ -244,7 +244,7 @@ var NAVTREEINDEX12 =
 "structocc_1_1crystal_1_1SurfaceCutResult.html":[2,0,1,1,7],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#a0ffde2af70ab7b57dc0a75aba73a05e9":[2,0,1,1,7,11],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#a6a5712a2a7ca4692603165e55633020b":[2,0,1,1,7,7],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#a6da1bfa757a318a2f833f10fa6e93c38":[2,0,1,1,7,14],
+"structocc_1_1crystal_1_1SurfaceCutResult.html#a6da1bfa757a318a2f833f10fa6e93c38":[2,0,1,1,7,15],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#a71a6f5c816f7f7c4fa331685ed49d8de":[2,0,1,1,7,10],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#a8ce18d09bf9b24360367d31fa5d4c3db":[2,0,1,1,7,8],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#a92ff1948c9ee78b6d34fea71e24361f9":[2,0,1,1,7,0],

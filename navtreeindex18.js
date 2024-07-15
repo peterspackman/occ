@@ -1,5 +1,6 @@
 var NAVTREEINDEX18 =
 {
+"wulff_8h.html#a9732049bcf1992f1891ecd54b7b1d31a":[3,0,1,0,5,13,2],
 "xc__potential__matrix_8h.html":[3,0,1,0,3,7],
 "xc__potential__matrix_8h.html#a0f9bc77776e89d8bf4ea65677f0639a5":[3,0,1,0,3,7,5],
 "xc__potential__matrix_8h.html#a13f24b9204a53c944f36e5d0a2e759af":[3,0,1,0,3,7,6],

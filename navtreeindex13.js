@@ -6,7 +6,8 @@ var NAVTREEINDEX13 =
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ad63c9859fc9f5dae8e20b450fa6a977a":[2,0,1,1,7,1],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ad7411a6f96a93c16f2f75588a58a2fd0":[2,0,1,1,7,6],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ada05745757a4a657b678de61a7184eb4":[2,0,1,1,7,9],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#ae52c7e9b26f98e54c97913fc7ab9a868":[2,0,1,1,7,13],
+"structocc_1_1crystal_1_1SurfaceCutResult.html#ae52c7e9b26f98e54c97913fc7ab9a868":[2,0,1,1,7,14],
+"structocc_1_1crystal_1_1SurfaceCutResult.html#aea999ead77ad8fa6f68ac0a8342c21ea":[2,0,1,1,7,13],
 "structocc_1_1descriptors_1_1PromoleculeDensityShape.html":[2,0,1,2,0],
 "structocc_1_1descriptors_1_1PromoleculeDensityShape.html#a9d9d6ee67685e4f7b072418e0162a7f5":[2,0,1,2,0,2],
 "structocc_1_1descriptors_1_1PromoleculeDensityShape_1_1AtomInterpolator.html":[2,0,1,2,0,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1io_1_1AtomData.html#a7bfe751ff8cb70d495fe08f624c81ed1":[2,0,1,8,6,1],
 "structocc_1_1io_1_1AtomData.html#acf390e048b718898584e9ec21d341ce7":[2,0,1,8,6,4],
 "structocc_1_1io_1_1AtomData.html#adff2337e85e8035dd10c9fe862c2a029":[2,0,1,8,6,2],
-"structocc_1_1io_1_1BasisSetInput.html":[2,0,1,8,32],
-"structocc_1_1io_1_1BasisSetInput.html#a56e8d8ae52f0cea5480597c2ee381487":[2,0,1,8,32,1]
+"structocc_1_1io_1_1BasisSetInput.html":[2,0,1,8,32]
 };
