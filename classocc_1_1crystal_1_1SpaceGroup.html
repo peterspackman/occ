@@ -137,6 +137,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afdb17bd2439880e23a2ef99b85f72b6e"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a>, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#afdb17bd2439880e23a2ef99b85f72b6e">apply_all_symmetry_operations</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;) const</td></tr>
 <tr class="memdesc:afdb17bd2439880e23a2ef99b85f72b6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply all symmetry operations to a provided set of fractional coordinates, with the identity symop always first.  <a href="classocc_1_1crystal_1_1SpaceGroup.html#afdb17bd2439880e23a2ef99b85f72b6e">More...</a><br /></td></tr>
 <tr class="separator:afdb17bd2439880e23a2ef99b85f72b6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a101255086a54fff6bbdfee4d9048af46"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a>, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#a101255086a54fff6bbdfee4d9048af46">apply_rotations</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;) const</td></tr>
+<tr class="separator:a101255086a54fff6bbdfee4d9048af46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fb7dcdb4f921f5b53eecf30eb6abbfb"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#a4fb7dcdb4f921f5b53eecf30eb6abbfb">reciprocal_asu</a> () const</td></tr>
 <tr class="separator:a4fb7dcdb4f921f5b53eecf30eb6abbfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -299,6 +301,24 @@ Public Member Functions</h2></td></tr>
 
 <p>Apply all symmetry operations to a provided set of fractional coordinates, with the identity symop always first. </p>
 <dl class="section return"><dt>Returns</dt><dd>a pair of <code>IVec</code>, <code>Mat3N</code> corresponding to the integer representation <code><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a36f45c065997cc06351555c67b28e6ca" title="The integer representation of this symop.">SymmetryOperation::to_int</a></code> of the symop applied to each point, and the points after that symop application. If N points were provided and this <a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html" title="This class represents a space group.">SpaceGroup</a> has 8 symmetry operations, then the resulting <code>IVec</code> will have dimension (N*8,) and the <code>Mat3N</code> of coordinates will have dimension (3, N*8). </dd></dl>
+
+</div>
+</div>
+<a id="a101255086a54fff6bbdfee4d9048af46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a101255086a54fff6bbdfee4d9048af46">&#9670;&nbsp;</a></span>apply_rotations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt;<a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a>, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&gt; occ::crystal::SpaceGroup::apply_rotations </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

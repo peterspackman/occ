@@ -188,6 +188,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa799530884afa42f47f2dee674f4464c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#aa799530884afa42f47f2dee674f4464c">to_fractional</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;coords) const</td></tr>
 <tr class="memdesc:aa799530884afa42f47f2dee674f4464c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a given matrix of coordinates from Cartesian to fractional.  <a href="classocc_1_1crystal_1_1UnitCell.html#aa799530884afa42f47f2dee674f4464c">More...</a><br /></td></tr>
 <tr class="separator:aa799530884afa42f47f2dee674f4464c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94d048f35e37a1cf01aea93c04c396a9"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a94d048f35e37a1cf01aea93c04c396a9">to_reciprocal</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;coords) const</td></tr>
+<tr class="memdesc:a94d048f35e37a1cf01aea93c04c396a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a given matrix of coordinates from Cartesian to fractional.  <a href="classocc_1_1crystal_1_1UnitCell.html#a94d048f35e37a1cf01aea93c04c396a9">More...</a><br /></td></tr>
+<tr class="separator:a94d048f35e37a1cf01aea93c04c396a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e8b2dd53561096c134821f226fa42b4"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a9e8b2dd53561096c134821f226fa42b4">direct</a> () const</td></tr>
 <tr class="memdesc:a9e8b2dd53561096c134821f226fa42b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The direct matrix of this unit cell (columns are lattice vectors)  <a href="classocc_1_1crystal_1_1UnitCell.html#a9e8b2dd53561096c134821f226fa42b4">More...</a><br /></td></tr>
 <tr class="separator:a9e8b2dd53561096c134821f226fa42b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1268,6 +1271,41 @@ Public Member Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">auto occ::crystal::UnitCell::to_fractional </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>coords</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Convert a given matrix of coordinates from Cartesian to fractional. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">coords</td><td>Mat3N of Cartesian coordinates</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Mat3N of fractional coordinates </dd></dl>
+
+</div>
+</div>
+<a id="a94d048f35e37a1cf01aea93c04c396a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94d048f35e37a1cf01aea93c04c396a9">&#9670;&nbsp;</a></span>to_reciprocal()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto occ::crystal::UnitCell::to_reciprocal </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
           <td class="paramname"><em>coords</em></td><td>)</td>

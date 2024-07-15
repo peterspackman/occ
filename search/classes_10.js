@@ -1,12 +1,12 @@
 var searchData=
 [
-  ['radialgrid_2908',['RadialGrid',['../structocc_1_1dft_1_1RadialGrid.html',1,'occ::dft']]],
-  ['rangeseparatedparameters_2909',['RangeSeparatedParameters',['../structocc_1_1dft_1_1RangeSeparatedParameters.html',1,'occ::dft']]],
-  ['ray_2910',['Ray',['../structquickhull_1_1Ray.html',1,'quickhull']]],
-  ['reciprocalasymmetricunit_2911',['ReciprocalAsymmetricUnit',['../classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html',1,'occ::crystal']]],
-  ['referencedata_2912',['ReferenceData',['../structocc_1_1io_1_1ReferenceData.html',1,'occ::io']]],
-  ['result_2913',['Result',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html',1,'occ::dft::DensityFunctional::Result'],['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html',1,'occ::dft::NonLocalCorrelationFunctional::Result'],['../structocc_1_1solvent_1_1COSMO_1_1Result.html',1,'occ::solvent::COSMO::Result']]],
-  ['row_2914',['Row',['../structocc_1_1geometry_1_1IndexCache_1_1Row.html',1,'occ::geometry::IndexCache']]],
-  ['rowconfiguration_2915',['RowConfiguration',['../structocc_1_1io_1_1RowConfiguration.html',1,'occ::io']]],
-  ['runtimeinput_2916',['RuntimeInput',['../structocc_1_1io_1_1RuntimeInput.html',1,'occ::io']]]
+  ['radialgrid_2916',['RadialGrid',['../structocc_1_1dft_1_1RadialGrid.html',1,'occ::dft']]],
+  ['rangeseparatedparameters_2917',['RangeSeparatedParameters',['../structocc_1_1dft_1_1RangeSeparatedParameters.html',1,'occ::dft']]],
+  ['ray_2918',['Ray',['../structquickhull_1_1Ray.html',1,'quickhull']]],
+  ['reciprocalasymmetricunit_2919',['ReciprocalAsymmetricUnit',['../classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html',1,'occ::crystal']]],
+  ['referencedata_2920',['ReferenceData',['../structocc_1_1io_1_1ReferenceData.html',1,'occ::io']]],
+  ['result_2921',['Result',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html',1,'occ::dft::DensityFunctional::Result'],['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html',1,'occ::dft::NonLocalCorrelationFunctional::Result'],['../structocc_1_1solvent_1_1COSMO_1_1Result.html',1,'occ::solvent::COSMO::Result']]],
+  ['row_2922',['Row',['../structocc_1_1geometry_1_1IndexCache_1_1Row.html',1,'occ::geometry::IndexCache']]],
+  ['rowconfiguration_2923',['RowConfiguration',['../structocc_1_1io_1_1RowConfiguration.html',1,'occ::io']]],
+  ['runtimeinput_2924',['RuntimeInput',['../structocc_1_1io_1_1RuntimeInput.html',1,'occ::io']]]
 ];

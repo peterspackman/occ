@@ -299,6 +299,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aad44825e77f93d4bb384ecd15ea823d8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#aad44825e77f93d4bb384ecd15ea823d8">is_equivalent_to</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;rhs) const</td></tr>
 <tr class="memdesc:aad44825e77f93d4bb384ecd15ea823d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether this <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> and another are equivalent.  <a href="classocc_1_1core_1_1Molecule.html#aad44825e77f93d4bb384ecd15ea823d8">More...</a><br /></td></tr>
 <tr class="separator:aad44825e77f93d4bb384ecd15ea823d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d1fa1cc54d1dd4adcfb49f9fe00ba97"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a7d1fa1cc54d1dd4adcfb49f9fe00ba97">set_partial_charges</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;v)</td></tr>
+<tr class="separator:a7d1fa1cc54d1dd4adcfb49f9fe00ba97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1927f09a5fc3e75ec1f0e9fc77e0e4af"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a1927f09a5fc3e75ec1f0e9fc77e0e4af">partial_charges</a> ()</td></tr>
+<tr class="separator:a1927f09a5fc3e75ec1f0e9fc77e0e4af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab83f314388fb60d9e0d30928748bf87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#aab83f314388fb60d9e0d30928748bf87">esp_partial_charges</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;<a class="el" href="classocc_1_1core_1_1Molecule.html#ae68caf640cd66bc2d922e4d418f79fb9">positions</a>) const</td></tr>
+<tr class="separator:aab83f314388fb60d9e0d30928748bf87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Storage class for relevant information of a <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a>. </p>
@@ -924,6 +930,24 @@ template&lt;typename N , typename D &gt; </div>
 
 </div>
 </div>
+<a id="aab83f314388fb60d9e0d30928748bf87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab83f314388fb60d9e0d30928748bf87">&#9670;&nbsp;</a></span>esp_partial_charges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::core::Molecule::esp_partial_charges </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>positions</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a30c475324a15a737f0c693832817d9a3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a30c475324a15a737f0c693832817d9a3">&#9670;&nbsp;</a></span>inertia_tensor()</h2>
 
@@ -1151,6 +1175,31 @@ template&lt;typename N , typename D &gt; </div>
 <p>The number of electrons in this molecule. </p>
 <dl class="section return"><dt>Returns</dt><dd>an integer representing total number of electrons.</dd></dl>
 <p><a class="el" href="classocc_1_1core_1_1Molecule.html#a175e5557530ab797b968f779780fb0f8" title="The net charge of this Molecule.">Molecule::charge</a> is incorporated, so the result should be the sum of atomic numbers - net charge (as electrons have -ve charge). </p>
+
+</div>
+</div>
+<a id="a1927f09a5fc3e75ec1f0e9fc77e0e4af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1927f09a5fc3e75ec1f0e9fc77e0e4af">&#9670;&nbsp;</a></span>partial_charges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const auto&amp; occ::core::Molecule::partial_charges </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -1799,6 +1848,32 @@ template&lt;typename N , typename D &gt; </div>
   </dd>
 </dl>
 <p>See <a class="el" href="classocc_1_1core_1_1Molecule.html#a4b7f9ec5e29fc2c6f4ff90a52a6dad84" title="Get the name for this molecule.">Molecule::name</a> </p>
+
+</div>
+</div>
+<a id="a7d1fa1cc54d1dd4adcfb49f9fe00ba97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d1fa1cc54d1dd4adcfb49f9fe00ba97">&#9670;&nbsp;</a></span>set_partial_charges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::core::Molecule::set_partial_charges </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname"><em>v</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

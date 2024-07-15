@@ -6,6 +6,7 @@ var classocc_1_1crystal_1_1SpaceGroup =
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a088a1aa6a1b7cc146e56b72b8a78fcff", null ],
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a667cf2536049112012106daf690a637f", null ],
     [ "apply_all_symmetry_operations", "classocc_1_1crystal_1_1SpaceGroup.html#afdb17bd2439880e23a2ef99b85f72b6e", null ],
+    [ "apply_rotations", "classocc_1_1crystal_1_1SpaceGroup.html#a101255086a54fff6bbdfee4d9048af46", null ],
     [ "has_H_R_choice", "classocc_1_1crystal_1_1SpaceGroup.html#a3216f2dfca408e7ce217319fddb33e73", null ],
     [ "number", "classocc_1_1crystal_1_1SpaceGroup.html#a07f763a7a098f648115fbe2d891469bc", null ],
     [ "reciprocal_asu", "classocc_1_1crystal_1_1SpaceGroup.html#a4fb7dcdb4f921f5b53eecf30eb6abbfb", null ],

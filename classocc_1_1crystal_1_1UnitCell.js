@@ -41,5 +41,6 @@ var classocc_1_1crystal_1_1UnitCell =
     [ "set_gamma", "classocc_1_1crystal_1_1UnitCell.html#a44606f8e40c9994fd37a9fb7f6a56267", null ],
     [ "to_cartesian", "classocc_1_1crystal_1_1UnitCell.html#af4a5f5427b7ba5a5ed0d6608357815c2", null ],
     [ "to_fractional", "classocc_1_1crystal_1_1UnitCell.html#aa799530884afa42f47f2dee674f4464c", null ],
+    [ "to_reciprocal", "classocc_1_1crystal_1_1UnitCell.html#a94d048f35e37a1cf01aea93c04c396a9", null ],
     [ "volume", "classocc_1_1crystal_1_1UnitCell.html#ab1c0d16c80ecc6f38aabe02670a14616", null ]
 ];

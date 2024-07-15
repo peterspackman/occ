@@ -66,6 +66,7 @@ var hierarchy =
     [ "occ::qm::EDIIS", "classocc_1_1qm_1_1EDIIS.html", null ],
     [ "occ::main::EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", null ],
     [ "occ::isosurface::ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", null ],
+    [ "occ::isosurface::ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", null ],
     [ "occ::isosurface::ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", null ],
     [ "occ::main::ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", null ],
     [ "occ::io::ElectronInput", "structocc_1_1io_1_1ElectronInput.html", null ],

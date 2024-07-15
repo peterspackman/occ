@@ -67,6 +67,7 @@ var namespaceocc_1_1io =
     [ "json_format", "namespaceocc_1_1io.html#a099816a1d1f5ac39efdf73b50c8f6efc", null ],
     [ "load_crystal", "namespaceocc_1_1io.html#a7fb33629fa205abb730a047f5968e93f", null ],
     [ "load_molecule", "namespaceocc_1_1io.html#a07416418ded69a01d477d8c00ef8a825", null ],
+    [ "mesh_from_vertices_faces", "namespaceocc_1_1io.html#af03fc39fad0c56f09e1d6a4598d4ca1a", null ],
     [ "molecule_from_xyz_file", "namespaceocc_1_1io.html#aaaed42365ec5e0da71939b3b8646ff6e", null ],
     [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
     [ "point_charges_from_file", "namespaceocc_1_1io.html#ac7b49e759281fa2bff63c6e075a41559", null ],

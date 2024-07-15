@@ -37,10 +37,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "grid_settings.h", "grid__settings_8h.html", [
       [ "BeckeGridSettings", "structocc_1_1io_1_1BeckeGridSettings.html", "structocc_1_1io_1_1BeckeGridSettings" ]
     ] ],
-    [ "isosurface_mesh.h", "isosurface__mesh_8h.html", [
-      [ "IsosurfaceMesh", "structocc_1_1io_1_1IsosurfaceMesh.html", "structocc_1_1io_1_1IsosurfaceMesh" ],
-      [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ]
-    ] ],
+    [ "isosurface_mesh.h", "isosurface__mesh_8h.html", "isosurface__mesh_8h" ],
     [ "json_basis.h", "json__basis_8h.html", "json__basis_8h" ],
     [ "kmcpp.h", "kmcpp_8h.html", [
       [ "InputWriter", "classocc_1_1io_1_1kmcpp_1_1InputWriter.html", "classocc_1_1io_1_1kmcpp_1_1InputWriter" ]

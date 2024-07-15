@@ -137,6 +137,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab86819a427877077109be10d5c6cf0cb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#ab86819a427877077109be10d5c6cf0cb">rotation</a> () const</td></tr>
 <tr class="memdesc:ab86819a427877077109be10d5c6cf0cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">The 3x3 rotation component of the matrix representation of this symop.  <a href="classocc_1_1crystal_1_1SymmetryOperation.html#ab86819a427877077109be10d5c6cf0cb">More...</a><br /></td></tr>
 <tr class="separator:ab86819a427877077109be10d5c6cf0cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afefeffdb95745cf448866ac74ea88c7e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#afefeffdb95745cf448866ac74ea88c7e">cartesian_rotation</a> (const <a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a> &amp;cell) const</td></tr>
+<tr class="memdesc:afefeffdb95745cf448866ac74ea88c7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert the rotation matrix to Cartesian coordinates.  <a href="classocc_1_1crystal_1_1SymmetryOperation.html#afefeffdb95745cf448866ac74ea88c7e">More...</a><br /></td></tr>
+<tr class="separator:afefeffdb95745cf448866ac74ea88c7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60fb8d93ab3dc83902a53b5f749de89e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a60fb8d93ab3dc83902a53b5f749de89e">translation</a> () const</td></tr>
 <tr class="memdesc:a60fb8d93ab3dc83902a53b5f749de89e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The translation component of the matrix representation of this symop.  <a href="classocc_1_1crystal_1_1SymmetryOperation.html#a60fb8d93ab3dc83902a53b5f749de89e">More...</a><br /></td></tr>
 <tr class="separator:a60fb8d93ab3dc83902a53b5f749de89e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -273,6 +276,33 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Mat3N containing the transformed coordinates.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Coords are assumed to be in fractional. </dd></dl>
+
+</div>
+</div>
+<a id="afefeffdb95745cf448866ac74ea88c7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afefeffdb95745cf448866ac74ea88c7e">&#9670;&nbsp;</a></span>cartesian_rotation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> occ::crystal::SymmetryOperation::cartesian_rotation </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a> &amp;&#160;</td>
+          <td class="paramname"><em>cell</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convert the rotation matrix to Cartesian coordinates. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cell</td><td>The <a class="el" href="classocc_1_1crystal_1_1UnitCell.html" title="This class represents a unit cell of a crystal lattice.">UnitCell</a> object representing the crystal structure </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Mat3 The rotation matrix in Cartesian coordinates </dd></dl>
 
 </div>
 </div>
