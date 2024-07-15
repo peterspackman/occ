@@ -2,6 +2,7 @@
 #include <occ/crystal/surface.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/gmf.h>
+#include <fmt/os.h>
 #include <occ/main/crystal_surface_energy.h>
 
 namespace occ::main {
@@ -10,14 +11,14 @@ using occ::crystal::Crystal;
 using occ::crystal::CrystalDimers;
 
 CrystalSurfaceEnergies calculate_crystal_surface_energies(
-    const std::string &filename, const Crystal &crystal,
+    const std::string &basename, const Crystal &crystal,
     const CrystalDimers &uc_dimers, int max_number_of_surfaces, int sign) {
   CrystalSurfaceEnergies result{crystal, {}, {}};
 
   crystal::CrystalSurfaceGenerationParameters params;
   io::GMFWriter gmf(crystal);
   gmf.set_title("created by occ-cg");
-  gmf.set_name(filename);
+  gmf.set_name(basename);
   params.d_min = 0.1;
   params.unique = true;
   auto surfaces = crystal::generate_surfaces(crystal, params);
@@ -36,6 +37,8 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
   }
   constexpr double KJ_PER_MOL_TO_J_PER_M2 = 0.16604390671;
 
+  auto output = fmt::output_file(fmt::format("{}_surface_cuts.xyz", basename));
+
   for (auto &surf : surfaces) {
     const auto hkl = surf.hkl();
     log::debug("{:-^72s}",
@@ -51,6 +54,7 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
       log::debug("\nCut @ {:.6f} * depth", cut);
       auto surface_cut_result =
           surf.count_crystal_dimers_cut_by_surface(uc_dimers, cut);
+      output.print("{}", surface_cut_result.exyz);
       size_t num_molecules = surface_cut_result.molecules.size();
       FacetEnergies f{hkl, cut,
                       surface_cut_result.unique_counts_above(uc_dimers), 0.0,
@@ -124,7 +128,7 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
     if (number_of_surfaces >= max_number_of_surfaces)
       break;
   }
-  gmf.write(filename);
+  gmf.write(fmt::format("{}.gmf", basename));
   return result;
 }
 

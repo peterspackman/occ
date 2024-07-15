@@ -372,7 +372,8 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
       bool match_type{false};
       for (idx = 0; idx < asymmetric_neighbors.size(); idx++) {
         const auto &d_a = asymmetric_neighbors[idx].dimer;
-        if(d_a.nearest_distance() > uc_dimers.radius) continue;
+        if (d_a.nearest_distance() > uc_dimers.radius)
+          continue;
         if (dimer.equivalent(d_a)) {
           break;
         }
@@ -747,8 +748,7 @@ public:
   XTBCrystalGrowthCalculator(const Crystal &crystal, const std::string &solvent)
       : m_crystal(crystal), m_molecules(m_crystal.symmetry_unique_molecules()),
         m_solvent(solvent), m_interaction_energies(m_molecules.size()),
-        m_crystal_interaction_energies(m_molecules.size()) {
-  }
+        m_crystal_interaction_energies(m_molecules.size()) {}
 
   // do nothing
   inline void set_wavefunction_choice(WavefunctionChoice choice) {}
@@ -1082,6 +1082,29 @@ inline Mat calculate_directional_correlation_matrix(
   return result;
 }
 
+inline void write_wulff(const std::string &filename,
+                        const CrystalSurfaceEnergies &s) {
+  const auto &sg = s.crystal.space_group();
+  occ::Vec energies(s.facets.size());
+  occ::Mat3N hkl(3, s.facets.size());
+  for (size_t f = 0; f < s.facets.size(); f++) {
+    const auto &facet = s.facets[f];
+    hkl(0, f) = facet.hkl.h;
+    hkl(1, f) = facet.hkl.k;
+    hkl(2, f) = facet.hkl.l;
+    energies(f) = facet.energy;
+  }
+  auto [symop_id, expanded_hkl] = sg.apply_rotations(hkl);
+  occ::Vec expanded_energies =
+      energies.replicate(sg.symmetry_operations().size(), 1);
+  occ::Mat3N directions = s.crystal.unit_cell().to_reciprocal(expanded_hkl);
+  directions.colwise().normalize();
+  auto wulff = occ::geometry::WulffConstruction(directions, expanded_energies);
+  occ::io::IsosurfaceMesh mesh =
+      occ::io::mesh_from_vertices_faces(wulff.vertices(), wulff.triangles());
+  occ::io::write_ply_mesh(filename, mesh, {}, false);
+}
+
 template <class Calculator> CGResult run_cg_impl(CGConfig const &config) {
   std::string basename =
       fs::path(config.lattice_settings.crystal_filename).stem().string();
@@ -1107,8 +1130,6 @@ template <class Calculator> CGResult run_cg_impl(CGConfig const &config) {
     calc.set_use_wolf_sum(true);
     calc.set_use_crystal_polarization(true);
   }
-
-
 
   if constexpr (std::is_same<Calculator, XTBCrystalGrowthCalculator>::value) {
     occ::log::info("XTB solvation model: {}", config.xtb_solvation_model);
@@ -1191,39 +1212,20 @@ template <class Calculator> CGResult run_cg_impl(CGConfig const &config) {
   if (config.max_facets > 0) {
     occ::log::info("Crystal surface energies (solvated)");
     auto surface_energies = occ::main::calculate_crystal_surface_energies(
-        fmt::format("{}_{}.gmf", basename, config.solvent), calc.crystal(),
+        fmt::format("{}_{}", basename, config.solvent), calc.crystal(),
         uc_dimers, config.max_facets, 1);
     occ::log::info("Crystal surface energies (vacuum)");
     auto vacuum_surface_energies =
         occ::main::calculate_crystal_surface_energies(
-            fmt::format("{}_vacuum.gmf", basename), calc.crystal(),
+            fmt::format("{}_vacuum", basename), calc.crystal(),
             uc_dimers_vacuum, config.max_facets, -1);
 
-    auto write_wulff = [](const CrystalSurfaceEnergies &s) {
-      const auto &sg = s.crystal.space_group();
-      occ::Vec energies(s.facets.size());
-      occ::Mat3N hkl(3, s.facets.size());
-      for(size_t f = 0; f < s.facets.size(); f++) {
-        const auto &facet = s.facets[f];
-        hkl(0, f) = facet.hkl.h;
-        hkl(1, f) = facet.hkl.k;
-        hkl(2, f) = facet.hkl.l;
-        energies(f) = facet.energy;
-      }
-      auto [symop_id, expanded_hkl] = sg.apply_rotations(hkl);
-      occ::Vec expanded_energies = energies.replicate(sg.symmetry_operations().size(), 1);
-      fmt::print("Energies\n{}\n", expanded_energies);
-      fmt::print("hkl\n{}\n", expanded_hkl);
-      occ::Mat3N directions = s.crystal.unit_cell().to_reciprocal(expanded_hkl);
-      directions.colwise().normalize();
-      fmt::print("Directions\n{}\n", directions);
-      auto wulff = occ::geometry::WulffConstruction(directions, expanded_energies);
-      occ::io::IsosurfaceMesh mesh = occ::io::mesh_from_vertices_faces(wulff.vertices(), wulff.triangles());
-      occ::io::write_ply_mesh("wulff.ply", mesh, {}, false);
-    };
     nlohmann::json j;
     j["surface_energies"] = surface_energies;
-    write_wulff(surface_energies);
+    write_wulff(fmt::format("{}_{}.ply", basename, config.solvent),
+                surface_energies);
+    write_wulff(fmt::format("{}_vacuum.ply", basename, config.solvent),
+                vacuum_surface_energies);
     j["vacuum"] = calc.crystal_interaction_energies();
     j["solvated"] = calc.interaction_energies();
     std::string surf_energy_filename =

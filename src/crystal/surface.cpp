@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <ankerl/unordered_dense.h>
-#include <fmt/os.h>
 #include <numeric>
 #include <occ/core/eem.h>
 #include <occ/core/log.h>
@@ -586,10 +585,6 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
   };
   CutCount total_cut_count;
   int t_index = 0;
-  auto filename = fmt::format("crystal_surface_{}_{}_{}_cut{:.3f}.txt", m_hkl.h,
-                              m_hkl.k, m_hkl.l, cut_offset);
-  auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
-                                               fmt::file::CREATE);
 
   std::vector<std::string> lines;
   for (const auto &mol : result.molecules) {
@@ -684,15 +679,16 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
     t_index++;
   }
 
-  output.print("{}\n", lines.size());
-  output.print(
-      R"""(Lattice="{:3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}" Properties={} Origin="{:.3f} {:.3f} {:.3f}"{})""",
+  fmt::format_to(std::back_inserter(result.exyz), "{}\n", lines.size());
+  fmt::format_to(std::back_inserter(result.exyz), 
+      R"""(MillerH={} MillerK={} MillerL={} Cut={:.3f} Lattice="{:3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}" Properties={} Origin="{:.3f} {:.3f} {:.3f}"{})""",
+      m_hkl.h, m_hkl.k, m_hkl.l, cut_offset,
       basis(0, 0), basis(1, 0), basis(2, 0), basis(0, 1), basis(1, 1),
       basis(2, 1), basis(0, 2), basis(1, 2), basis(2, 2),
       "species:S:1:pos:R:3:mol_idx:I:1:uc_idx:I:1", 0.0, 0.0, 0.0, "\n");
 
   for (const auto &line : lines) {
-    output.print("{}\n", line);
+    fmt::format_to(std::back_inserter(result.exyz), "{}\n", line);
   }
 
   occ::log::debug("slab energy  (S) = {}", total_cut_count.energy_slab);
@@ -705,6 +701,16 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
                                             total_cut_count.energy_below);
   return result;
 }
+
+
+
+template<typename T, class F>
+inline void remove_duplicates_sorted(std::vector<T> &vec, F& func) {
+  auto last = std::unique(vec.begin(), vec.end(), func);
+  vec.erase(last, vec.end());
+}
+
+
 std::vector<double>
 Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
                        double epsilon) const {
@@ -720,9 +726,16 @@ Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
   // add 1/13 to offset from possible special positions
   std::vector<double> zpos(pos_frac.cols());
   for (int i = 0; i < pos_frac.cols(); ++i) {
-    zpos[i] = pos_frac(2, i) + 1.0 / 13;
+    zpos[i] = std::fmod(pos_frac(2, i) + 7.0, 1.0);
   }
   std::sort(zpos.begin(), zpos.end());
+
+  auto pos_eq = [epsilon](double a, double b) {
+    return std::abs(a - b) < epsilon;
+  };
+
+  remove_duplicates_sorted(zpos, pos_eq);
+  occ::log::debug("{} unique z positions to consider for cut");
 
   // cuts are made at 7/13 offset as that almost guarantees
   // we won't land at some special position, which can happen 
@@ -731,21 +744,17 @@ Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
   // Calculate midpoints between unique distances along normal
   // ensuring we're between 0 and 1
   for (size_t i = 0; i < zpos.size() - 1; ++i) {
-    double mid = 6.0/13 * (zpos[i] + zpos[i + 1]);
+    double mid = 0.5 * (zpos[i] + zpos[i + 1]);
     result.push_back(std::fmod(mid + 7.0, 1.0));
   }
 
   // Add a cut between the last and first (periodic)
-  double mid = 6.0/13 * (zpos.back() + (zpos.front() + 1.0));
+  double mid = 0.5 * (zpos.back() + (zpos.front() + 1.0));
   result.push_back(std::fmod(mid + 7.0, 1.0)); // Ensure within [0,1)
 
   // Remove duplicates
   std::sort(result.begin(), result.end());
-  auto last =
-      std::unique(result.begin(), result.end(), [epsilon](double a, double b) {
-        return std::abs(a - b) < epsilon;
-      });
-  result.erase(last, result.end());
+  remove_duplicates_sorted(result, pos_eq);
 
   // Round to mitigate floating-point arithmetic issues
   std::transform(

@@ -15,6 +15,7 @@ struct SurfaceCutResult {
 
   SurfaceCutResult(const CrystalDimers &);
   std::vector<Molecule> molecules;
+  std::string exyz;
   DimerCounts above;
   DimerCounts below;
   DimerCounts slab;

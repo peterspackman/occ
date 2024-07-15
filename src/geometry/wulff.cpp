@@ -6,158 +6,153 @@
 namespace occ::geometry {
 
 Mat3N project_to_plane(const Mat3N &points, const Vec3 &plane_normal) {
-    Mat3N projected_points =
-        points.array() -
-        (plane_normal * (plane_normal.transpose() * points)).array();
+  Mat3N projected_points =
+      points.array() -
+      (plane_normal * (plane_normal.transpose() * points)).array();
 
-    Vec3 a_vector = projected_points.col(1) - projected_points.col(0);
-    Vec3 b_vector = plane_normal.cross(a_vector);
+  Vec3 a_vector = projected_points.col(1) - projected_points.col(0);
+  Vec3 b_vector = plane_normal.cross(a_vector);
 
-    Vec u = projected_points.transpose() * a_vector;
-    Vec v = projected_points.transpose() * b_vector;
+  Vec u = projected_points.transpose() * a_vector;
+  Vec v = projected_points.transpose() * b_vector;
 
-    Mat3N result = Mat3N::Zero(3, points.cols());
-    result.row(0) = u.transpose();
-    result.row(1) = v.transpose();
+  Mat3N result = Mat3N::Zero(3, points.cols());
+  result.row(0) = u.transpose();
+  result.row(1) = v.transpose();
 
-    return result;
+  return result;
 }
 
 void Facet::reorder(const Mat3N &points) {
-    if (point_index.empty())
-        return;
+  if (point_index.empty())
+    return;
 
-    Mat3N points_2d = project_to_plane(points, normal);
+  Mat3N points_2d = project_to_plane(points, normal);
 
-    Vec3 centroid = points_2d.col(0);
-    Mat3N directions = points_2d.colwise() - centroid;
-    for (int i = 1; i < directions.cols(); ++i) {
-        directions.col(i).normalize();
-    }
-    fmt::print("Directions\n{}\n", directions);
-        // Create a vector of indices for sorting
-    std::vector<size_t> indices(point_index.size() - 1);
-    std::iota(indices.begin(), indices.end(), 1);
+  Vec3 centroid = points_2d.col(0);
+  Mat3N directions = points_2d.colwise() - centroid;
+  for (int i = 1; i < directions.cols(); ++i) {
+    directions.col(i).normalize();
+  }
+  // Create a vector of indices for sorting
+  std::vector<size_t> indices(point_index.size() - 1);
+  std::iota(indices.begin(), indices.end(), 1);
 
-    // Sort the indices based on the angles in the directions array
-    std::sort(indices.begin(), indices.end(), 
-        [&directions](size_t i1, size_t i2) {
-            double angle1 = std::atan2(directions(1, i1), directions(0, i1));
-            double angle2 = std::atan2(directions(1, i2), directions(0, i2));
-            return angle1 < angle2;
-        });
+  // Sort the indices based on the angles in the directions array
+  std::sort(indices.begin(), indices.end(),
+            [&directions](size_t i1, size_t i2) {
+              double angle1 = std::atan2(directions(1, i1), directions(0, i1));
+              double angle2 = std::atan2(directions(1, i2), directions(0, i2));
+              return angle1 < angle2;
+            });
 
-    // Create a new sorted point_index array
-    std::vector<int> sorted_point_index(point_index.size());
-    sorted_point_index[0] = point_index[0];  // Keep the first index unchanged
-    for (size_t i = 0; i < indices.size(); ++i) {
-        sorted_point_index[i + 1] = point_index[indices[i]];
-    }
+  // Create a new sorted point_index array
+  std::vector<int> sorted_point_index(point_index.size());
+  sorted_point_index[0] = point_index[0]; // Keep the first index unchanged
+  for (size_t i = 0; i < indices.size(); ++i) {
+    sorted_point_index[i + 1] = point_index[indices[i]];
+  }
 
-    // Replace the original point_index with the sorted version
-    point_index = std::move(sorted_point_index);
+  // Replace the original point_index with the sorted version
+  point_index = std::move(sorted_point_index);
 }
 
 void Facet::reorder_and_triangulate(const Mat3N &all_points) {
-    if (point_index.empty())
-        return;
+  if (point_index.empty())
+    return;
 
-    // assumes we have at least 3 points
-    const size_t N = point_index.size();
-    Mat3N points = all_points(Eigen::all, point_index);
+  // assumes we have at least 3 points
+  const size_t N = point_index.size();
+  Mat3N points = all_points(Eigen::all, point_index);
 
-    for(int i = 0; i < point_index.size(); i++) {
-        fmt::print("{} ", point_index[i]);
-    }
-    fmt::print("\n");
+  reorder(points);
 
-    reorder(points);
+  this->triangles = IMat3N(3, N - 2);
 
-    this->triangles = IMat3N(3, N - 2);
-
-    this->triangles.row(0).array() = point_index[0];
-    this->triangles.row(1) =
-        Eigen::Map<const IVec>(point_index.data() + 1, N - 2);
-    this->triangles.row(2) =
-        Eigen::Map<const IVec>(point_index.data() + 2, N - 2);
-    for(int i = 0; i < point_index.size(); i++) {
-        fmt::print("{} ", point_index[i]);
-    }
-    fmt::print("\n");
-    fmt::print("triangles\n{}\n", triangles);
+  this->triangles.row(0).array() = point_index[0];
+  this->triangles.row(1) =
+      Eigen::Map<const IVec>(point_index.data() + 1, N - 2);
+  this->triangles.row(2) =
+      Eigen::Map<const IVec>(point_index.data() + 2, N - 2);
 }
 
 WulffConstruction::WulffConstruction(
     const Mat3N &facet_normals, const Vec &facet_energies,
     const std::vector<std::string> &facet_labels) {
 
-    const size_t N = facet_energies.rows();
+  const size_t N = facet_energies.rows();
 
-    Mat3N dual_points(3, N);
-    for (int i = 0; i < N; i++) {
-        double energy = facet_energies(i);
-        // dual = p / (|p|^2), since we haven't scaled p just divide by energy
-        Vec3 dual = facet_normals.col(i).array() / energy;
-        m_facets.push_back(Facet{energy, facet_normals.col(i),
-                                 (facet_labels.size() > i)
-                                     ? facet_labels[i]
-                                     : fmt::format("facet_{}", i),
-                                 dual});
-        dual_points.col(i) = dual;
-    }
-    quickhull::QuickHull<double> hull_builder;
+  Mat3N dual_points(3, N);
+  for (int i = 0; i < N; i++) {
+    double energy = facet_energies(i);
+    // dual = p / (|p|^2), since we haven't scaled p just divide by energy
+    Vec3 dual = facet_normals.col(i).array() / energy;
+    m_facets.push_back(Facet{energy, facet_normals.col(i),
+                             (facet_labels.size() > i)
+                                 ? facet_labels[i]
+                                 : fmt::format("facet_{}", i),
+                             dual});
+    dual_points.col(i) = dual;
+  }
+  quickhull::QuickHull<double> hull_builder;
 
-    auto hull = hull_builder.getConvexHull(dual_points.data(),
-                                           dual_points.cols(), true);
+  auto hull =
+      hull_builder.getConvexHull(dual_points.data(), dual_points.cols(), true);
 
-    occ::log::debug("Convex hull has {} faces, {} vertices",
-                    hull.triangles().cols(), hull.vertices().cols());
-    occ::log::debug("Hull triangles:\n{}\n", hull.triangles());
-    occ::log::debug("Hull vertices:\n{}\n", hull.vertices());
-    IMat3N triangles = hull.triangles().cast<int>();
-    extract_wulff_from_dual_hull_simplices(triangles);
+  occ::log::debug("Convex hull has {} faces, {} vertices",
+                  hull.triangles().cols(), hull.vertices().cols());
+  occ::log::debug("Hull triangles:\n{}\n", hull.triangles());
+  occ::log::debug("Hull vertices:\n{}\n", hull.vertices());
+  IMat3N triangles = hull.triangles().cast<int>();
+  extract_wulff_from_dual_hull_simplices(triangles);
 }
 
 void WulffConstruction::extract_wulff_from_dual_hull_simplices(
     const IMat3N &simplices) {
 
-    m_wulff_vertices = Mat3N(3, simplices.cols());
-    for (int i = 0; i < m_wulff_vertices.cols(); i++) {
-        auto &facet_a = m_facets[simplices(0, i)];
-        auto &facet_b = m_facets[simplices(1, i)];
-        auto &facet_c = m_facets[simplices(2, i)];
-        m_wulff_vertices.col(i) =
-            (facet_b.dual - facet_a.dual).cross(facet_c.dual - facet_a.dual);
-        double scale_factor =
-            facet_a.energy / m_wulff_vertices.col(i).dot(facet_a.normal);
-        m_wulff_vertices.col(i).array() *= scale_factor;
+  m_wulff_vertices = Mat3N(3, simplices.cols());
+  for (int i = 0; i < m_wulff_vertices.cols(); i++) {
+    auto &facet_a = m_facets[simplices(0, i)];
+    auto &facet_b = m_facets[simplices(1, i)];
+    auto &facet_c = m_facets[simplices(2, i)];
+    m_wulff_vertices.col(i) =
+        (facet_b.dual - facet_a.dual).cross(facet_c.dual - facet_a.dual);
 
-        // push_back facet_indices
-        facet_a.point_index.push_back(i);
-        facet_b.point_index.push_back(i);
-        facet_c.point_index.push_back(i);
+    double fac = m_wulff_vertices.col(i).dot(facet_a.normal);
+    if (std::abs(fac) < 1e-6) {
+      occ::log::warn("zero or near zero scaling factor in wulff construction - "
+                     "check if system is 2D or is missing facets!");
     }
 
-    size_t N = 0;
-    for (auto &facet : m_facets) {
-        facet.reorder_and_triangulate(m_wulff_vertices);
-        if (facet.point_index.size() > 0) {
-            N += facet.triangles.cols();
-        }
-    }
+    double scale_factor = facet_a.energy / fac;
+    m_wulff_vertices.col(i).array() *= scale_factor;
 
-    m_wulff_triangles = IMat3N(3, N);
-    m_wulff_triangle_indices = IVec(N);
-    N = 0;
-    for (int f = 0; f < m_facets.size(); f++) {
-        const auto &facet = m_facets[f];
-        if (facet.point_index.size() <= 0)
-            continue;
-        int size = facet.triangles.cols();
-        m_wulff_triangles.block(0, N, 3, size) = facet.triangles;
-        m_wulff_triangle_indices.block(N, 0, size, 1).array() = f;
-        N += size;
+    // push_back facet_indices
+    facet_a.point_index.push_back(i);
+    facet_b.point_index.push_back(i);
+    facet_c.point_index.push_back(i);
+  }
+
+  size_t N = 0;
+  for (auto &facet : m_facets) {
+    facet.reorder_and_triangulate(m_wulff_vertices);
+    if (facet.point_index.size() > 0) {
+      N += facet.triangles.cols();
     }
+  }
+
+  m_wulff_triangles = IMat3N(3, N);
+  m_wulff_triangle_indices = IVec(N);
+  N = 0;
+  for (int f = 0; f < m_facets.size(); f++) {
+    const auto &facet = m_facets[f];
+    if (facet.point_index.size() <= 0)
+      continue;
+    int size = facet.triangles.cols();
+    m_wulff_triangles.block(0, N, 3, size) = facet.triangles;
+    m_wulff_triangle_indices.block(N, 0, size, 1).array() = f;
+    N += size;
+  }
 }
 
 const Mat3N &WulffConstruction::vertices() const { return m_wulff_vertices; }
