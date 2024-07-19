@@ -277,7 +277,6 @@ bool Surface::faces_are_equivalent(const Crystal &crystal, const HKL &hkl1,
                                    const HKL &hkl2) {
   IVec3 a(hkl1.h, hkl1.k, hkl1.l);
   IVec3 b(hkl2.h, hkl2.k, hkl2.l);
-  constexpr double position_tolerance = 1e-6;
   for (const auto &symop : crystal.space_group().symmetry_operations()) {
     Eigen::Matrix3i rot = symop.rotation().cast<int>();
     IVec3 a_rotated = rot * a;
@@ -293,7 +292,6 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
   const double epsilon = 1e-3;
   const int num_mols = mols.size();
   std::vector<Molecule> result;
-  Vec3 unit_normal = normal_vector();
 
   Mat3 basis = basis_matrix(depth);
   Mat3 basis_inverse = basis.inverse();
@@ -383,14 +381,10 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
 
           if ((tmp.col(i).array() > lower_vec_surface.array()).all() &&
               (tmp.col(i).array() < upper_vec_surface.array()).all()) {
-            auto cell_shift = mols[i].cell_shift();
             auto mol_t = mols[i].translated(cart_shift);
             mol_t.set_cell_shift({h, k, l});
             mol_t.set_unit_cell_molecule_idx(i);
-            const auto &tpos = mol_t.positions();
             result.push_back(mol_t);
-            Vec3 centroid = mol_t.centroid();
-            Vec3 centroid_frac = basis_inverse * centroid;
             occ::log::debug("Molecule {} added with fractional (surface) "
                             "centroid: [{:9.3f}, {:9.3f}, {:9.3f}]",
                             i, tmp(0, i), tmp(1, i), tmp(2, i));
@@ -428,8 +422,9 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
   occ::log::debug("Dipole (EEM charges): {:.3f} {:.3f} {:.3f}", m_dipole(0),
                   m_dipole(1), m_dipole(2));
 
-  if (m_dipole.norm() > 1e-2)
-    bool valid = false;
+  if (m_dipole.norm() > 1e-2) {
+    occ::log::warn("Nonzero dipole encountered for surface: {}", cut_offset);
+  }
 
   return result;
 }
@@ -642,26 +637,21 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
       }
       Molecule mol2 = dimer.b();
       mol2.translate(translation);
-      int region = 0;
 
       Vec3 frac_coords = cart2surf(c_b);
       if (frac_coords(2) > upper_bound) {
-        region = 1;
         cut_count.above++;
         cut_count.energy_above += e;
         neighbor_counts_above[neighbor_index]++;
       } else if (frac_coords(2) <= lower_bound) {
-        region = 2;
         cut_count.below++;
         cut_count.energy_below += e;
         neighbor_counts_below[neighbor_index]++;
       } else {
-        region = 3;
         cut_count.slab++;
         cut_count.energy_slab += e;
         neighbor_counts_slab[neighbor_index]++;
       }
-      Vec3 pos = mol2.centroid();
     }
     total_cut_count.energy_slab += cut_count.energy_slab;
     total_cut_count.energy_above += cut_count.energy_above;

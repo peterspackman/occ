@@ -234,7 +234,6 @@ void Crystal::set_connectivity_criteria(bool guess) {
 
 void Crystal::update_unit_cell_connectivity() const {
     auto s = slab({-1, -1, -1}, {1, 1, 1});
-    size_t n_asym = num_sites();
     size_t n_uc = m_unit_cell_atoms.size();
     m_bond_graph_vertices.clear();
 
@@ -568,7 +567,6 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
 
     const auto &uc_mols = unit_cell_molecules();
 
-    size_t mol_idx = 0;
     for (const auto &mol : uc_mols) {
         Mat3N pos_frac = to_fractional(mol.positions());
         for (size_t i = 0; i < pos_frac.cols(); i++) {

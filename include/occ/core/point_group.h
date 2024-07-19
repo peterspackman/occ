@@ -261,7 +261,8 @@ class MolecularPointGroup {
     Mat3 inertia_tensor;
     Vec eigenvalues;
     Mat3 eigenvectors;
-    double tol = 0.3, etol = 1e-2, mtol = 1e-1;
+    double m_tolerance{0.3};
+    double m_etolerance{1e-2};
 };
 
 } // namespace occ::core

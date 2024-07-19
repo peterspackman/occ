@@ -91,13 +91,13 @@ bool is_valid_symop(const SymOp &op, Eigen::Ref<const Mat3N> positions) {
 }
 
 IVec smallest_off_axis_group(const occ::core::Molecule &mol, const Vec3 &axis) {
-    double tol = 0.1;
+    const double tolerance = 0.1;
     const auto &pos = mol.positions();
     const auto els = mol.atomic_numbers();
     const size_t N = els.rows();
 
-    auto off_axis = [&axis, &tol](const Vec3 &site) {
-        return site.cross(axis).norm() > tol;
+    auto off_axis = [&axis, &tolerance](const Vec3 &site) {
+        return site.cross(axis).norm() > tolerance;
     };
 
     IVec mask(N);
@@ -143,7 +143,7 @@ void MolecularPointGroup::init() {
     eigenvalues = solver.eigenvalues();
     eigenvectors = solver.eigenvectors();
     rotor_type = occ::core::rotor::classify(eigenvalues(0), eigenvalues(1),
-                                            eigenvalues(2), etol);
+                                            eigenvalues(2), m_etolerance);
     symmetry_operations.push_back(SymOp());
     switch (rotor_type) {
     case Rotor::Linear:
@@ -213,7 +213,7 @@ void MolecularPointGroup::find_spherical_axes() {
                 test_axes.col(2) = coords.col(k) - coords.col(j);
                 for (int c = 0; c < 3; c++) {
                     Vec3 test_axis = test_axes.col(c);
-                    if (test_axis.norm() < tol)
+                    if (test_axis.norm() < m_tolerance)
                         continue;
                     auto op = SymOp::from_axis_angle(test_axis, 180);
                     if (is_valid_symop(op, pos)) {
@@ -223,7 +223,7 @@ void MolecularPointGroup::find_spherical_axes() {
                 }
                 Vec3 test_axis = (coords.col(j) - coords.col(i))
                                      .cross(coords.col(k) - coords.col(i));
-                if (test_axis.norm() < tol)
+                if (test_axis.norm() < m_tolerance)
                     continue;
                 for (int r = 3; r < 6; r++) {
                     if (rot_found[r])
@@ -429,7 +429,7 @@ bool MolecularPointGroup::check_perpendicular_r2_axis(const Vec3 &axis) {
             if (min_set(j) < 1)
                 continue;
             Vec3 test_axis = (positions.col(i) - positions.col(j)).cross(axis);
-            if (test_axis.norm() > tol) {
+            if (test_axis.norm() > m_tolerance) {
                 auto op = SymOp::from_axis_angle(test_axis, 180);
                 if (is_valid_symop(op, positions)) {
                     symmetry_operations.push_back(op);
@@ -458,7 +458,7 @@ MirrorType MolecularPointGroup::find_mirror(const Vec3 &axis) {
             if (els(i) != els(j))
                 continue;
             Vec3 normal = positions.col(i) - positions.col(j);
-            if (normal.dot(axis) >= tol)
+            if (normal.dot(axis) >= m_tolerance)
                 continue;
 
             SymOp op = SymOp::reflection(normal);
@@ -468,8 +468,8 @@ MirrorType MolecularPointGroup::find_mirror(const Vec3 &axis) {
             if (rotational_symmetry.size() > 1) {
                 mirror_type = MirrorType::D;
                 for (const auto &r : rotational_symmetry) {
-                    if (((r.first - axis).norm() >= tol) &&
-                        ((r.first.dot(normal) < tol))) {
+                    if (((r.first - axis).norm() >= m_tolerance) &&
+                        ((r.first.dot(normal) < m_tolerance))) {
                         mirror_type = MirrorType::V;
                         break;
                     }
@@ -550,9 +550,9 @@ void MolecularPointGroup::init_cyclic() {
 
 void MolecularPointGroup::init_symmetric_top() {
     Eigen::Index ind{1};
-    if (std::abs(eigenvalues(0) - eigenvalues(1)) < etol)
+    if (std::abs(eigenvalues(0) - eigenvalues(1)) < m_etolerance)
         ind = 2;
-    else if (std::abs(eigenvalues(1) - eigenvalues(2)) < etol)
+    else if (std::abs(eigenvalues(1) - eigenvalues(2)) < m_etolerance)
         ind = 0;
 
     Vec3 unique_axis = eigenvectors.col(ind);

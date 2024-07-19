@@ -196,6 +196,7 @@ compute_atom_surface_properties(const Molecule &m1, const Molecule &m2,
         results.init(&indices[0], &dist_sq[0]);
         bool populated = interior_tree.index->findNeighbors(
             results, v.data(), nanoflann::SearchParams());
+        if(!populated) continue;
         di(i) = std::sqrt(dist_sq[0]);
         di_idx(i) = indices[0];
 
@@ -248,6 +249,7 @@ compute_atom_surface_properties(const Molecule &m1, const Molecule &m2,
         results.init(&indices[0], &dist_sq[0]);
         bool populated = exterior_tree.index->findNeighbors(
             results, v.data(), nanoflann::SearchParams());
+        if(!populated) continue;
         de(i) = std::sqrt(dist_sq[0]);
         de_idx(i) = indices[0];
 

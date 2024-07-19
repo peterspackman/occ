@@ -217,7 +217,7 @@ private:
     IndexCache index_cache(size_x, size_y);
     uint32_t index = 0;
 
-    for (size_t z = 0; z < size_z; z++) {
+    for (size_t z = 0; z < size_less_one_z; z++) {
       occ::timing::start(occ::timing::isosurface_function);
 
       if constexpr(impl::has_batch_evaluate<S>::value) {

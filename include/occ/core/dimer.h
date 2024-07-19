@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/core/molecule.h>
+#include <ankerl/unordered_dense.h>
 #include <optional>
 
 namespace occ::core {
@@ -195,15 +196,24 @@ public:
    * Set the value of the interaction energy for this Dimer
    *
    * \param e a double representing the interaction energy.
+   * \param key a string labelling the component of the interaction energy.
    */
-  inline void set_interaction_energy(double e) { m_interaction_energy = e; }
+  void set_interaction_energy(double e, const std::string &key = "total");
 
   /**
    * Get the stored interaction energy for this Dimer.
    *
+   * \param key a string labelling the component of the interaction energy.
+   *
    * \returns a double representing the interaction energy (default = 0.0)
    */
-  inline double interaction_energy() const { return m_interaction_energy; }
+  double interaction_energy(const std::string &key = "total") const;
+
+  inline void set_interaction_energies(const ankerl::unordered_dense::map<std::string, double>& e) {
+    m_interaction_energies = e;
+  }
+
+  inline const auto &interaction_energies() const { return m_interaction_energies; }
 
   /**
    * Check if two dimers have the same asymmetric molecul indexes
@@ -292,9 +302,8 @@ public:
 private:
   Molecule m_a, m_b;
   std::string m_name{"dimer"};
-  size_t m_uc_idx_a{0}, m_uc_idx_b{0};
   size_t m_interaction_id{0};
-  double m_interaction_energy{0};
+  ankerl::unordered_dense::map<std::string, double> m_interaction_energies;
 };
 
 } // namespace occ::core

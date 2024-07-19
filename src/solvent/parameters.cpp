@@ -27,7 +27,6 @@ std::string solvent_data_path() {
     }
     std::string solvent_data_path = path + std::string("/solvent");
     bool path_exists = fs::exists(solvent_data_path);
-    bool error = false;
     std::string errmsg;
     if (!path_exists) { // try without "/solvent"
         occ::log::warn("There is a problem with the solvent data directory, the "

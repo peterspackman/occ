@@ -15,7 +15,8 @@ using IntegralResult = qm::IntegralEngine::IntegralResult<3>;
 SemiNumericalExchange::SemiNumericalExchange(const qm::AOBasis &basis,
                                              const BeckeGridSettings &settings)
     : m_atoms(basis.atoms()), m_basis(basis),
-      m_engine(basis.atoms(), basis.shells()), m_grid(m_basis, settings) {
+      m_grid(m_basis, settings),
+      m_engine(basis.atoms(), basis.shells()) {
     for (size_t i = 0; i < m_atoms.size(); i++) {
         m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
     }
@@ -104,7 +105,7 @@ void three_center_screened_aux_kernel(
                 (shp.origin - shauxP.origin).norm() > shp.extent) {
                 continue;
             }
-            for (const int &q : plist) {
+            for (const int q : plist) {
                 args.bf[1] = first_bf_ao[q];
                 args.shell[1] = q;
                 const auto &shq = aobasis[q];
@@ -137,7 +138,6 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
     Mat D2q = m_overlap_projector * D2;
     Mat K = Mat::Zero(nbf, nbf);
     const auto &basis = m_engine.aobasis();
-    const auto nshells = basis.nsh();
     const auto shell2bf = basis.first_bf();
     occ::qm::cint::Optimizer opt(m_engine.env(), Op::coulomb, 3);
 

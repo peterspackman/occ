@@ -22,9 +22,8 @@ Molecule::Molecule(const IVec &nums, const Mat3N &pos)
 
 Molecule::Molecule(const std::vector<Element> &elements,
                    const std::vector<std::array<double, 3>> &positions)
-    : m_atomicNumbers(elements.size()), m_elements(elements),
-      m_positions(3, positions.size()),
-      m_partial_charges(Vec::Zero(elements.size())) {
+    : m_atomicNumbers(elements.size()), m_positions(3, positions.size()),
+      m_elements(elements), m_partial_charges(Vec::Zero(elements.size())) {
   for (size_t i = 0; i < size(); i++) {
     m_atomicNumbers(i) = m_elements[i].atomic_number();
     m_positions(0, i) = positions[i][0];
@@ -35,7 +34,7 @@ Molecule::Molecule(const std::vector<Element> &elements,
 }
 
 Molecule::Molecule(const std::vector<occ::core::Atom> &atoms)
-    : m_positions(3, atoms.size()), m_atomicNumbers(atoms.size()),
+    : m_atomicNumbers(atoms.size()), m_positions(3, atoms.size()),
       m_partial_charges(Vec::Zero(atoms.size())) {
   m_elements.reserve(atoms.size());
   for (size_t i = 0; i < atoms.size(); i++) {
@@ -119,8 +118,11 @@ Vec3 Molecule::rotational_constants() const {
     return Vec3::Zero();
   constexpr double GHz_factor{505.379045961437 * 1e23 /
                               occ::constants::avogadro<double>};
+
+  /*
   constexpr double per_cm_factor{16.8576304198232 * 1e23 /
                                  occ::constants::avogadro<double>};
+  */
 
   return (GHz_factor / principal_moments_of_inertia().array())
       .unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
@@ -304,17 +306,16 @@ double Molecule::molar_mass() const {
          atomic_masses().array().sum();
 }
 
-Vec Molecule::esp_partial_charges(
-    const Mat3N &positions_angs) const {
-    Vec result = Vec::Zero(positions_angs.cols());
-    for(int i = 0; i < m_partial_charges.rows(); i++) {
-        double q = m_partial_charges(i) / occ::units::ANGSTROM_TO_BOHR;
-        Vec3 atom_pos = m_positions.col(i);
-        auto ab = positions_angs.colwise() - atom_pos;
-        auto r = ab.colwise().norm();
-        result.array() += q / r.array();
-    }
-    return result;
+Vec Molecule::esp_partial_charges(const Mat3N &positions_angs) const {
+  Vec result = Vec::Zero(positions_angs.cols());
+  for (int i = 0; i < m_partial_charges.rows(); i++) {
+    double q = m_partial_charges(i) / occ::units::ANGSTROM_TO_BOHR;
+    Vec3 atom_pos = m_positions.col(i);
+    auto ab = positions_angs.colwise() - atom_pos;
+    auto r = ab.colwise().norm();
+    result.array() += q / r.array();
+  }
+  return result;
 }
 
 } // namespace occ::core

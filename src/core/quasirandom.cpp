@@ -28,7 +28,7 @@ Mat quasirandom_kgf(size_t ndims, size_t count, size_t seed) {
 
     for (int i = 0; i < count; i++) {
         result.col(i) = (a.array() * (seed + i + 1)).unaryExpr([](double x) {
-            return std::fmod(x + 0.5, 1.0);
+            return std::fmod(x + offset, 1.0);
         });
     }
     return result;

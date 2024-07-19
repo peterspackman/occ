@@ -585,7 +585,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
 
             if (conv.wolf_sum && conv.crystal_field_polarization) {
                 wolf.electric_field_values[mol_idx].setZero();
-                occ::log::debug("Field total =\n{}\n",
+                occ::log::debug("Field total for dimer {} =\n{}\n", dimer_idx,
                                 wolf.electric_field_values[mol_idx]);
             }
 
@@ -616,6 +616,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
                 }
                 dimer_idx++;
             }
+            occ::log::debug("epol total = {}", epol_total);
             total += molecule_total;
             if (conv.wolf_sum) {
                 ecoul_self += wolf.charge_self_energies[mol_idx] *

@@ -703,13 +703,11 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
     for (int auxP = 0; auxP < auxbasis.size(); auxP++) {
         if (auxP % nthreads != thread_id)
             continue;
-        const auto &shauxP = auxbasis[auxP];
         args.bf[2] = first_bf_aux[auxP];
         args.shell[2] = auxP;
         for (int p = 0; p < aobasis.size(); p++) {
             args.bf[0] = first_bf_ao[p];
             args.shell[0] = p;
-            const auto &shp = aobasis[p];
             const auto &plist = shellpairs[p];
             for (const auto &q : plist) {
                 args.bf[1] = first_bf_ao[q];
@@ -904,7 +902,6 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
 }
 
 Mat IntegralEngineDF::exchange(const MolecularOrbitals &mo) {
-    constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;
     bool direct = !use_stored_integrals();
@@ -966,7 +963,6 @@ Mat direct_coulomb_operator_kernel_r(IntegralEngine &engine,
     std::vector<Vec> gg(nthreads, Vec::Zero(ndf));
     std::vector<Mat> JJ(nthreads, Mat::Zero(nbf, nbf));
 
-    const auto &D = mo.D;
     auto glambda = g_lambda_direct_r(gg, mo);
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(glambda, engine.env(), engine.aobasis(),
@@ -1011,7 +1007,6 @@ Mat direct_coulomb_operator_kernel_u(IntegralEngine &engine,
     std::vector<Vec> gg_beta(nthreads, Vec::Zero(ndf));
     std::vector<Mat> JJ(nthreads, Mat::Zero(rows, cols));
 
-    const auto &D = mo.D;
     auto glambda = g_lambda_direct_u(gg_alpha, gg_beta, mo);
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(glambda, engine.env(), engine.aobasis(),
@@ -1067,7 +1062,6 @@ Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
     std::vector<Vec> gg_beta(nthreads, Vec::Zero(ndf));
     std::vector<Mat> JJ(nthreads, Mat::Zero(rows, cols));
 
-    const auto &D = mo.D;
     auto glambda = g_lambda_direct_g(gg_alpha, gg_beta, mo);
     auto lambda = [&](int thread_id) {
         three_center_aux_kernel<kind>(glambda, engine.env(), engine.aobasis(),
@@ -1109,7 +1103,6 @@ Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
 
 Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
     bool direct = !use_stored_integrals();
-    constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;
     if (!direct) {
@@ -1408,7 +1401,6 @@ JKPair direct_coulomb_and_exchange_operator_kernel_g(
 }
 
 JKPair IntegralEngineDF::coulomb_and_exchange(const MolecularOrbitals &mo) {
-    constexpr auto R = SpinorbitalKind::Restricted;
     constexpr auto U = SpinorbitalKind::Unrestricted;
     constexpr auto G = SpinorbitalKind::General;
     bool direct = !use_stored_integrals();
