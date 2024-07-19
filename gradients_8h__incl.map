@@ -1,23 +1,23 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/gradients.h" name="/home/runner/work/occ/occ/include/occ/qm/gradients.h">
-<area shape="rect" id="node1" title=" " alt="" coords="676,5,903,47"/>
-<area shape="rect" id="node2" href="$mo_8h.html" title=" " alt="" coords="736,95,843,121"/>
-<area shape="rect" id="node19" href="$expectation_8h.html" title=" " alt="" coords="550,95,712,121"/>
-<area shape="rect" id="node20" href="$log_8h.html" title=" " alt="" coords="867,95,979,121"/>
-<area shape="rect" id="node3" href="$spinorbital_8h.html" title=" " alt="" coords="554,169,708,196"/>
-<area shape="rect" id="node18" href="$orbital__smearing_8h.html" title=" " alt="" coords="778,244,972,271"/>
-<area shape="rect" id="node4" href="$linear__algebra_8h.html" title=" " alt="" coords="782,319,968,345"/>
-<area shape="rect" id="node8" href="$util_8h.html" title=" " alt="" coords="402,244,516,271"/>
-<area shape="rect" id="node17" href="$qm_2opmatrix_8h.html" title=" " alt="" coords="559,244,703,271"/>
-<area shape="rect" id="node5" title=" " alt="" coords="892,393,994,420"/>
-<area shape="rect" id="node6" title=" " alt="" coords="744,393,868,420"/>
-<area shape="rect" id="node7" title=" " alt="" coords="300,393,415,420"/>
-<area shape="rect" id="node9" title=" " alt="" coords="23,319,108,345"/>
-<area shape="rect" id="node10" title=" " alt="" coords="133,319,198,345"/>
-<area shape="rect" id="node11" title=" " alt="" coords="222,319,312,345"/>
-<area shape="rect" id="node12" title=" " alt="" coords="336,319,398,345"/>
-<area shape="rect" id="node13" title=" " alt="" coords="422,319,496,345"/>
-<area shape="rect" id="node14" title=" " alt="" coords="520,319,579,345"/>
-<area shape="rect" id="node15" title=" " alt="" coords="604,319,666,345"/>
-<area shape="rect" id="node16" title=" " alt="" coords="691,319,758,345"/>
-<area shape="rect" id="node21" title=" " alt="" coords="861,169,985,196"/>
+<area shape="rect" id="node1" title=" " alt="" coords="516,5,743,47"/>
+<area shape="rect" id="node2" href="$log_8h.html" title=" " alt="" coords="412,95,524,121"/>
+<area shape="rect" id="node4" href="$expectation_8h.html" title=" " alt="" coords="548,95,711,121"/>
+<area shape="rect" id="node20" href="$mo_8h.html" title=" " alt="" coords="735,95,842,121"/>
+<area shape="rect" id="node3" title=" " alt="" coords="405,169,529,196"/>
+<area shape="rect" id="node5" href="$spinorbital_8h.html" title=" " alt="" coords="554,169,708,196"/>
+<area shape="rect" id="node6" href="$linear__algebra_8h.html" title=" " alt="" coords="782,319,968,345"/>
+<area shape="rect" id="node10" href="$util_8h.html" title=" " alt="" coords="402,244,516,271"/>
+<area shape="rect" id="node19" href="$qm_2opmatrix_8h.html" title=" " alt="" coords="559,244,703,271"/>
+<area shape="rect" id="node7" title=" " alt="" coords="892,393,994,420"/>
+<area shape="rect" id="node8" title=" " alt="" coords="744,393,868,420"/>
+<area shape="rect" id="node9" title=" " alt="" coords="300,393,415,420"/>
+<area shape="rect" id="node11" title=" " alt="" coords="23,319,108,345"/>
+<area shape="rect" id="node12" title=" " alt="" coords="133,319,198,345"/>
+<area shape="rect" id="node13" title=" " alt="" coords="222,319,312,345"/>
+<area shape="rect" id="node14" title=" " alt="" coords="336,319,398,345"/>
+<area shape="rect" id="node15" title=" " alt="" coords="422,319,496,345"/>
+<area shape="rect" id="node16" title=" " alt="" coords="520,319,579,345"/>
+<area shape="rect" id="node17" title=" " alt="" coords="604,319,666,345"/>
+<area shape="rect" id="node18" title=" " alt="" coords="691,319,758,345"/>
+<area shape="rect" id="node21" href="$orbital__smearing_8h.html" title=" " alt="" coords="778,244,972,271"/>
 </map>

@@ -1,5 +1,7 @@
 var NAVTREEINDEX12 =
 {
+"promolecule_8h.html#a344d0083a38816bf7d272e697ca21264":[3,0,1,0,13,1,3],
+"promolecule__density_8h.html":[3,0,1,0,9,7],
 "promolecule__shape_8h.html":[3,0,1,0,2,0],
 "properties_8h.html":[3,0,1,0,10,16],
 "properties_8h.html#a0b6643aee3051aa1eea447c1f1225282":[3,0,1,0,10,16,1],
@@ -247,7 +249,5 @@ var NAVTREEINDEX12 =
 "structocc_1_1crystal_1_1SurfaceCutResult.html#a6da1bfa757a318a2f833f10fa6e93c38":[2,0,1,1,7,15],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#a71a6f5c816f7f7c4fa331685ed49d8de":[2,0,1,1,7,10],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#a8ce18d09bf9b24360367d31fa5d4c3db":[2,0,1,1,7,8],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#a92ff1948c9ee78b6d34fea71e24361f9":[2,0,1,1,7,0],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#a994f96bf46e5f5521f372a609d41d9de":[2,0,1,1,7,4],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#a9e103361e0330a64e673a0f8e9be2e37":[2,0,1,1,7,3]
+"structocc_1_1crystal_1_1SurfaceCutResult.html#a92ff1948c9ee78b6d34fea71e24361f9":[2,0,1,1,7,0]
 };

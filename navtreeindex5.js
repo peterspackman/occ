@@ -1,5 +1,7 @@
 var NAVTREEINDEX5 =
 {
+"classocc_1_1qm_1_1IntegralEngine.html#a679759ca53239c716e06c0be9bf78ca6":[2,0,1,11,7,23],
+"classocc_1_1qm_1_1IntegralEngine.html#a6adbc6987c1b6f5e1858def1499aa97b":[2,0,1,11,7,25],
 "classocc_1_1qm_1_1IntegralEngine.html#a6f28294ee07d96ac95b936c701a80464":[2,0,1,11,7,2],
 "classocc_1_1qm_1_1IntegralEngine.html#a743c7f2a53bfd4a836b05c1a46837741":[2,0,1,11,7,6],
 "classocc_1_1qm_1_1IntegralEngine.html#a760c49e279e4a3562d7c90333e626225":[2,0,1,11,7,27],
@@ -247,7 +249,5 @@ var NAVTREEINDEX5 =
 "classocc_1_1xtb_1_1TbliteCalculator.html#a0dcd9a2cb32d724c016eeb8c54ee2fee":[2,0,1,18,0,7],
 "classocc_1_1xtb_1_1TbliteCalculator.html#a148142e2e7533aa7212065080d4a0528":[2,0,1,18,0,13],
 "classocc_1_1xtb_1_1TbliteCalculator.html#a23084447bbbc2207b2363ad7a2646ec1":[2,0,1,18,0,6],
-"classocc_1_1xtb_1_1TbliteCalculator.html#a23ebcbaa095224d4bde72f3b35349ebf":[2,0,1,18,0,9],
-"classocc_1_1xtb_1_1TbliteCalculator.html#a2b86e4a9ee00d06ee09e5ce253892859":[2,0,1,18,0,25],
-"classocc_1_1xtb_1_1TbliteCalculator.html#a42ecdd363c747b600be2d3fe9f8bbe6d":[2,0,1,18,0,19]
+"classocc_1_1xtb_1_1TbliteCalculator.html#a23ebcbaa095224d4bde72f3b35349ebf":[2,0,1,18,0,9]
 };

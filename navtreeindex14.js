@@ -1,5 +1,7 @@
 var NAVTREEINDEX14 =
 {
+"structocc_1_1io_1_1AtomData.html#adff2337e85e8035dd10c9fe862c2a029":[2,0,1,8,6,2],
+"structocc_1_1io_1_1BasisSetInput.html":[2,0,1,8,32],
 "structocc_1_1io_1_1BasisSetInput.html#a56e8d8ae52f0cea5480597c2ee381487":[2,0,1,8,32,1],
 "structocc_1_1io_1_1BasisSetInput.html#a5da5e9f4a8f5628d241332f1134fe2c1":[2,0,1,8,32,2],
 "structocc_1_1io_1_1BasisSetInput.html#ac77cc4b663859efd918737cc3d93a811":[2,0,1,8,32,0],
@@ -247,7 +249,5 @@ var NAVTREEINDEX14 =
 "structocc_1_1io_1_1XyzFileReader.html":[2,0,1,8,49],
 "structocc_1_1io_1_1XyzFileReader.html#a15b0e5718998cfbff89b01193f570b16":[2,0,1,8,49,3],
 "structocc_1_1io_1_1XyzFileReader.html#a4380d2b1e0aa88c713249c04aba60e81":[2,0,1,8,49,4],
-"structocc_1_1io_1_1XyzFileReader.html#a4b4222343c963908605f7eea0990132d":[2,0,1,8,49,2],
-"structocc_1_1io_1_1XyzFileReader.html#a692a767876914a2813adb24cf5a1a62b":[2,0,1,8,49,0],
-"structocc_1_1io_1_1XyzFileReader.html#a7c5f5ab54ce2f1e05915af8c3bbb5881":[2,0,1,8,49,6]
+"structocc_1_1io_1_1XyzFileReader.html#a4b4222343c963908605f7eea0990132d":[2,0,1,8,49,2]
 };
