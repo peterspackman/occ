@@ -65,6 +65,7 @@ var hierarchy =
     [ "occ::geometry::mc::impl::EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", null ],
     [ "occ::qm::EDIIS", "classocc_1_1qm_1_1EDIIS.html", null ],
     [ "occ::main::EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", null ],
+    [ "occ::core::ElasticTensor", "classocc_1_1core_1_1ElasticTensor.html", null ],
     [ "occ::isosurface::ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", null ],
     [ "occ::isosurface::ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", null ],
     [ "occ::isosurface::ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", null ],

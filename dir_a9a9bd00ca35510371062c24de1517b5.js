@@ -15,6 +15,9 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     ] ],
     [ "eem.h", "eem_8h.html", "eem_8h" ],
     [ "eeq.h", "eeq_8h.html", "eeq_8h" ],
+    [ "elastic_tensor.h", "elastic__tensor_8h.html", [
+      [ "ElasticTensor", "classocc_1_1core_1_1ElasticTensor.html", "classocc_1_1core_1_1ElasticTensor" ]
+    ] ],
     [ "element.h", "element_8h.html", "element_8h" ],
     [ "energy_components.h", "energy__components_8h.html", [
       [ "EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", "classocc_1_1core_1_1EnergyComponents" ]

@@ -27,6 +27,7 @@ var namespaceocc_1_1core =
     [ "Combinations", "classocc_1_1core_1_1Combinations.html", "classocc_1_1core_1_1Combinations" ],
     [ "ConditioningOrthogonalizerResult", "structocc_1_1core_1_1ConditioningOrthogonalizerResult.html", "structocc_1_1core_1_1ConditioningOrthogonalizerResult" ],
     [ "Dimer", "classocc_1_1core_1_1Dimer.html", "classocc_1_1core_1_1Dimer" ],
+    [ "ElasticTensor", "classocc_1_1core_1_1ElasticTensor.html", "classocc_1_1core_1_1ElasticTensor" ],
     [ "Element", "classocc_1_1core_1_1Element.html", "classocc_1_1core_1_1Element" ],
     [ "EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", "classocc_1_1core_1_1EnergyComponents" ],
     [ "Fraction", "classocc_1_1core_1_1Fraction.html", "classocc_1_1core_1_1Fraction" ],
