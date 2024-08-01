@@ -16,6 +16,7 @@
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
 #include <occ/io/core_json.h>
+#include <occ/io/crystal_json.h>
 #include <occ/io/crystalgrower.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/kmcpp.h>
@@ -53,7 +54,8 @@ using occ::main::SolvatedSurfaceProperties;
 using WavefunctionList = std::vector<Wavefunction>;
 using DimerEnergies = std::vector<CEEnergyComponents>;
 
-using InteractionEnergyComponents = ankerl::unordered_dense::map<std::string, double>;
+using InteractionEnergyComponents =
+    ankerl::unordered_dense::map<std::string, double>;
 using InteractionEnergies = std::vector<InteractionEnergyComponents>;
 
 enum class WavefunctionChoice { GasPhase, Solvated };
@@ -404,13 +406,12 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
       double rn = dimer.nearest_distance();
       double rc = dimer.centroid_distance();
 
-
       dimer.set_interaction_energies(interaction_energies[idx]);
       dimer.set_interaction_id(idx);
       occ::log::debug(
           "{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f} {}", j, idx_b,
-          fmt::format("{},{},{}", shift_b[0], shift_b[1], shift_b[2]), dimer.interaction_energy(),
-          rc, match_type);
+          fmt::format("{},{},{}", shift_b[0], shift_b[1], shift_b[2]),
+          dimer.interaction_energy(), rc, match_type);
       j++;
     }
   }
@@ -630,7 +631,8 @@ public:
       const auto &e = m_dimer_energies[unique_idx];
       if (!e.is_computed) {
         interactions.push_back(InteractionEnergyComponents{{"total", 0.0}});
-        interactions_crystal.push_back(InteractionEnergyComponents{{"total", 0.0}});
+        interactions_crystal.push_back(
+            InteractionEnergyComponents{{"total", 0.0}});
         j++;
         continue;
       }
@@ -642,7 +644,6 @@ public:
       bool is_nearest_neighbor = crystal_contributions[j].is_nn;
 
       occ::Vec3 v_ab = dimer.v_ab();
-
 
       const double e_nn = crystal_contributions[j].energy;
       const double e_crys = e.total_kjmol();
@@ -666,36 +667,36 @@ public:
 
       double interaction_energy = solvent_term.total - e_crys - e_nn;
 
-
       if (is_nearest_neighbor) {
         total.interaction_energy += interaction_energy;
         interactions.push_back(InteractionEnergyComponents{
-         {"nn", e_nn},
-         {"coulomb", e_coul},
-         {"polarization", e_pol},
-         {"repulsion", e_rep},
-         {"exchange", e_exch},
-         {"dispersion", e_disp},
-         {"crystal", e_crys},
-         {"solvent_ab", solvent_term.ab},
-         {"solvent_ba", solvent_term.ba},
-         {"solvent", solvent_term.total},
-         {"total", interaction_energy},
+            {"nn", e_nn},
+            {"coulomb", e_coul},
+            {"polarization", e_pol},
+            {"repulsion", e_rep},
+            {"exchange", e_exch},
+            {"dispersion", e_disp},
+            {"crystal", e_crys},
+            {"solvent_ab", solvent_term.ab},
+            {"solvent_ba", solvent_term.ba},
+            {"solvent", solvent_term.total},
+            {"total", interaction_energy},
         });
 
         interactions_crystal.push_back(InteractionEnergyComponents{
-         {"nn", e_nn},
-         {"coulomb", e_coul},
-         {"polarization", e_pol},
-         {"repulsion", e_rep},
-         {"exchange", e_exch},
-         {"dispersion", e_disp},
-         {"crystal", e_crys},
-         {"total", e_crys + e_nn},
+            {"nn", e_nn},
+            {"coulomb", e_coul},
+            {"polarization", e_pol},
+            {"repulsion", e_rep},
+            {"exchange", e_exch},
+            {"dispersion", e_disp},
+            {"crystal", e_crys},
+            {"total", e_crys + e_nn},
         });
       } else {
         interactions.push_back(InteractionEnergyComponents{{"total", 0.0}});
-        interactions_crystal.push_back(InteractionEnergyComponents{{"total", 0.0}});
+        interactions_crystal.push_back(
+            InteractionEnergyComponents{{"total", 0.0}});
         interaction_energy = 0;
       }
 
@@ -1006,19 +1007,18 @@ private:
       if (is_nearest_neighbor) {
         total.interaction_energy += interaction_energy;
         interactions.push_back(InteractionEnergyComponents{
-          {"nn", crystal_contributions[j].energy},
-          {"crystal", e},
-          {"solv", solvent_term.total},
-          {"total", interaction_energy},
+            {"nn", crystal_contributions[j].energy},
+            {"crystal", e},
+            {"solv", solvent_term.total},
+            {"total", interaction_energy},
         });
 
         interactions_crystal.push_back(InteractionEnergyComponents{
-          {"crystal", e},
-          {"total", e + crystal_contributions[j].energy}
-        });
+            {"crystal", e}, {"total", e + crystal_contributions[j].energy}});
       } else {
         interactions.push_back(InteractionEnergyComponents{{"total", 0.0}});
-        interactions_crystal.push_back(InteractionEnergyComponents{{"total", 0.0}});
+        interactions_crystal.push_back(
+            InteractionEnergyComponents{{"total", 0.0}});
         interaction_energy = 0;
       }
 
@@ -1145,6 +1145,69 @@ inline void write_wulff(const std::string &filename,
   occ::io::write_ply_mesh(filename, mesh, {}, false);
 }
 
+void write_cg_dimers(const std::string &basename, const std::string &solvent,
+                     const occ::crystal::Crystal &crystal,
+                     const CGResult &result) {
+  nlohmann::json j;
+  j["result_type"] = "cg";
+  j["title"] = basename;
+  j["solvent"] = solvent;
+
+  j["crystal"] = crystal;
+
+  j["totals_per_molecule"] = {};
+  for (const auto &mol_total : result.total_energies) {
+    nlohmann::json e;
+    e["crystal_energy"] = mol_total.crystal_energy;
+    e["interaction_energy"] = mol_total.interaction_energy;
+    e["solution_term"] = mol_total.solution_term;
+    j["totals_per_molecule"].push_back(e);
+  }
+
+  const auto &uc_atoms = crystal.unit_cell_atoms();
+
+  j["pairs"] = {};
+  for (const auto &mol_pairs : result.pair_energies) {
+    nlohmann::json m;
+    for (const auto &cg_dimer : mol_pairs) {
+      nlohmann::json d;
+      d["unique_dimer_index"] = cg_dimer.unique_dimer_index;
+      d["interaction_energy"] = cg_dimer.interaction_energy;
+      d["crystal_contribution"] = cg_dimer.crystal_contribution;
+      d["is_nearest_neighbor"] = cg_dimer.nearest_neighbor;
+      d["solvent_ab"] = cg_dimer.solvent_term.ab;
+      d["solvent_ba"] = cg_dimer.solvent_term.ba;
+      d["solvent_total"] = cg_dimer.solvent_term.total;
+      d["uc_atom_offsets"] = {};
+      nlohmann::json offsets_a = {};
+      const auto &a = cg_dimer.dimer.a();
+      const auto &a_idx = a.unit_cell_idx();
+      const auto &a_pos = a.positions();
+      for (int i = 0; i < a_idx.rows(); i++) {
+        occ::Vec3 offset = crystal.to_fractional(
+            uc_atoms.cart_pos.col(a_idx(i)) - a_pos.col(i));
+        Eigen::Vector3i o = offset.cast<int>();
+        offsets_a.push_back(std::array<int, 4>{a_idx(i), o(0), o(1), o(2)});
+      }
+      nlohmann::json offsets_b = {};
+      const auto &b = cg_dimer.dimer.b();
+      const auto &b_idx = b.unit_cell_idx();
+      const auto &b_pos = b.positions();
+      for (int i = 0; i < b_idx.rows(); i++) {
+        occ::Vec3 offset = crystal.to_fractional(
+            uc_atoms.cart_pos.col(b_idx(i)) - b_pos.col(i));
+        Eigen::Vector3i o = offset.cast<int>();
+        offsets_a.push_back(std::array<int, 4>{b_idx(i), o(0), o(1), o(2)});
+      }
+      d["uc_atom_offsets"] = {offsets_a, offsets_b};
+      m.push_back(d);
+    }
+    j["pairs"].push_back(m);
+  }
+  std::ofstream dest(fmt::format("{}_{}_cg_results.json", basename, solvent));
+  dest << j.dump(2);
+}
+
 void write_uc_json(const std::string &basename, const std::string &solvent,
                    const occ::crystal::Crystal &crystal,
                    const occ::crystal::CrystalDimers &dimers) {
@@ -1178,7 +1241,7 @@ void write_uc_json(const std::string &basename, const std::string &solvent,
     const auto &neighbors_a = neighbors[uc_idx_a];
     for (const auto &[n, unique_idx] : neighbors_a) {
       nlohmann::json energies;
-      for(const auto &[k, v]: n.interaction_energies()) {
+      for (const auto &[k, v] : n.interaction_energies()) {
         energies[k] = v;
       }
       j["neighbor_energies"][uc_idx_a].push_back(energies);
@@ -1279,6 +1342,7 @@ template <class Calculator> CGResult run_cg_impl(CGConfig const &config) {
     destination << j.dump(2);
   }
 
+  write_cg_dimers(basename, config.solvent, calc.crystal(), result);
   write_uc_json(basename, config.solvent, calc.crystal(), uc_dimers);
 
   write_cg_net_file(fmt::format("{}_{}_net.txt", basename, config.solvent),

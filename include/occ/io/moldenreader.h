@@ -66,9 +66,11 @@ class MoldenReader {
         return m_molecular_orbitals_beta;
     }
 
-    const occ::Vec &alpha_mo_energies() const { return m_energies_alpha; }
+    const Vec &alpha_occupations() const { return m_occupations_alpha; }
+    const Vec &beta_occupations() const { return m_occupations_beta; }
 
-    const occ::Vec &beta_mo_energies() const { return m_energies_beta; }
+    const Vec &alpha_mo_energies() const { return m_energies_alpha; }
+    const Vec &beta_mo_energies() const { return m_energies_beta; }
 
     Mat convert_mo_coefficients_from_molden_convention(const occ::qm::AOBasis &,
                                                        const Mat &) const;
@@ -92,6 +94,8 @@ class MoldenReader {
     Mat m_molecular_orbitals_beta;
     occ::Vec m_energies_alpha;
     occ::Vec m_energies_beta;
+    occ::Vec m_occupations_alpha;
+    occ::Vec m_occupations_beta;
     double m_total_alpha_occupation{0};
     double m_total_beta_occupation{0};
     double m_num_electrons{0};

@@ -47,18 +47,25 @@ void Crystal::update_unit_cell_atoms() const {
     }
   }
   Eigen::VectorXi idxs(uc_pos.cols() - mask.count());
+  Eigen::VectorXi uc_idxs(uc_pos.cols() - mask.count());
   size_t n = 0;
   occ::Mat3N uc_pos_masked(3, idxs.rows());
   for (size_t i = 0; i < uc_pos.cols(); i++) {
     if (!mask(i)) {
       idxs(n) = i;
+      uc_idxs(n) = n;
       uc_pos_masked.col(n) = uc_pos.col(i);
       n++;
     }
   }
-  m_unit_cell_atoms = CrystalAtomRegion{
-      uc_pos_masked, m_unit_cell.to_cartesian(uc_pos_masked),
-      idxs.unaryExpr(asym_idx), idxs.unaryExpr(uc_nums), idxs.unaryExpr(sym)};
+  m_unit_cell_atoms = CrystalAtomRegion{uc_pos_masked,
+                                        m_unit_cell.to_cartesian(uc_pos_masked),
+                                        idxs.unaryExpr(asym_idx),
+                                        uc_idxs,
+                                        IMat3N::Zero(3, uc_pos_masked.cols()),
+                                        idxs.unaryExpr(uc_nums),
+                                        idxs.unaryExpr(sym)};
+  m_unit_cell_atoms.disorder_group = IVec::Zero(idxs.rows());
   m_unit_cell_atoms_needs_update = false;
 }
 
@@ -72,9 +79,13 @@ CrystalAtomRegion Crystal::slab(const HKL &lower, const HKL &upper) const {
   const int cols = uc_atoms.frac_pos.cols();
   result.frac_pos.resize(3, ncells * n_uc);
   result.frac_pos.block(0, 0, rows, cols) = uc_atoms.frac_pos;
+  result.hkl = IMat3N::Zero(3, ncells * n_uc);
+  result.hkl.block(0, 0, 3, cols) = uc_atoms.hkl;
   result.asym_idx = uc_atoms.asym_idx.replicate(ncells, 1);
+  result.uc_idx = uc_atoms.uc_idx.replicate(ncells, 1);
   result.symop = uc_atoms.symop.replicate(ncells, 1);
   result.atomic_numbers = uc_atoms.atomic_numbers.replicate(ncells, 1);
+  result.disorder_group = uc_atoms.disorder_group.replicate(ncells, 1);
   int offset = n_uc;
   for (int h = lower.h; h <= upper.h; h++) {
     for (int k = lower.k; k <= upper.k; k++) {
@@ -85,7 +96,10 @@ CrystalAtomRegion Crystal::slab(const HKL &lower, const HKL &upper) const {
         tmp.colwise() +=
             Eigen::Vector3d{static_cast<double>(h), static_cast<double>(k),
                             static_cast<double>(l)};
+        auto tmphkl = uc_atoms.hkl;
+        tmphkl.colwise() += IVec3{h, k, l};
         result.frac_pos.block(0, offset, rows, cols) = tmp;
+        result.hkl.block(0, offset, 3, cols) = tmphkl;
         offset += n_uc;
       }
     }
@@ -149,8 +163,10 @@ CrystalAtomRegion Crystal::atom_surroundings(int asym_idx,
     result.frac_pos.col(result_idx) = atom_slab.frac_pos.col(idx);
     result.atomic_numbers(result_idx) = atom_slab.atomic_numbers(idx);
     result.asym_idx(result_idx) = atom_slab.asym_idx(idx);
+    result.uc_idx(result_idx) = atom_slab.uc_idx(idx);
     result.cart_pos.col(result_idx) = atom_slab.cart_pos.col(idx);
     result.symop(result_idx) = atom_slab.symop(idx);
+    result.disorder_group(result_idx) = atom_slab.disorder_group(idx);
     result_idx++;
   }
   occ::log::debug("Stored {} neighbours", result_idx);
@@ -207,8 +223,10 @@ Crystal::asymmetric_unit_atom_surroundings(double radius) const {
       reg.frac_pos.col(result_idx) = atom_slab.frac_pos.col(idx);
       reg.atomic_numbers(result_idx) = atom_slab.atomic_numbers(idx);
       reg.asym_idx(result_idx) = atom_slab.asym_idx(idx);
+      reg.uc_idx(result_idx) = atom_slab.uc_idx(idx);
       reg.cart_pos.col(result_idx) = atom_slab.cart_pos.col(idx);
       reg.symop(result_idx) = atom_slab.symop(idx);
+      reg.disorder_group(result_idx) = atom_slab.disorder_group(idx);
       result_idx++;
     }
     reg.resize(result_idx);

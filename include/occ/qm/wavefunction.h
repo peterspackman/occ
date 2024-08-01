@@ -91,7 +91,6 @@ struct Wavefunction {
     bool is_restricted() const {
         return mo.kind == SpinorbitalKind::Restricted;
     }
-    void update_occupied_orbitals();
     void set_molecular_orbitals(const FchkReader &fchk);
     void compute_density_matrix();
     void symmetric_orthonormalize_molecular_orbitals(const Mat &overlap);

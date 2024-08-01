@@ -20,14 +20,15 @@ public:
 
     for (int x = 0, i = 0; x < steps(0); x++) {
       for (int y = 0; y < steps(1); y++) {
-        for (int z = 0; z < steps(2); z++) {
+        for (int z = 0; z < steps(2); z++, i++) {
           points.col(i) = basis * Vec3(x, y, z) + origin;
-          i++;
         }
       }
     }
     func(points, data);
   }
+
+  void center_molecule();
 
   void write_data_to_file(const std::string &);
   void write_data_to_stream(std::ostream &);

@@ -49,6 +49,19 @@ struct CrystalAtomRegion {
   IVec asym_idx;
 
   /**
+   * \brief The indices of the uc units containing the atoms in the
+   *        region, expressed as a vector of size n. Each element of the
+   *        vector represents the index of the asymmetric unit that contains
+   *        the corresponding atom.
+   */
+  IVec uc_idx;
+
+  /**
+   * \brief The cell index of this atom
+   */
+  IMat3N hkl;
+
+  /**
    * \brief The atomic numbers of the atoms in the region, expressed as a
    *        vector of size n.
    */
@@ -63,6 +76,11 @@ struct CrystalAtomRegion {
   IVec symop;
 
   /**
+   * \brief Disorder group
+   */
+  IVec disorder_group;
+
+  /**
    * \brief Resizes the region to contain the given number of atoms.
    *
    * \param n The new size of the region, i.e., the number of atoms it will
@@ -71,9 +89,12 @@ struct CrystalAtomRegion {
   void resize(size_t n) {
     frac_pos.resize(3, n);
     cart_pos.resize(3, n);
+    hkl.resize(3, n);
     asym_idx.resize(n);
+    uc_idx.resize(n);
     atomic_numbers.resize(n);
     symop.resize(n);
+    disorder_group.resize(n);
   }
 
   /**
