@@ -14,6 +14,10 @@ var namespaceocc_1_1crystal =
     [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ],
     [ "SGData", "namespaceocc_1_1crystal.html#a6be09bba05cb5f7143b28c936b9da7b1", null ],
     [ "cubic_cell", "namespaceocc_1_1crystal.html#a78a9c35cd26a715ea7cfbee259ea95e5", null ],
+    [ "from_json", "namespaceocc_1_1crystal.html#a1b0def4d76564c3bd44a0a26aaf20696", null ],
+    [ "from_json", "namespaceocc_1_1crystal.html#a98deaa48845ef1ff8349a8f48d507227", null ],
+    [ "from_json", "namespaceocc_1_1crystal.html#a58e0cdaffa9e0d2f161bcdf2f60ceb06", null ],
+    [ "from_json", "namespaceocc_1_1crystal.html#abb6be90380608688a16b260359e80bb1", null ],
     [ "generate_surfaces", "namespaceocc_1_1crystal.html#a767641f5e505c6ba72960c44777b7191", null ],
     [ "hexagonal_cell", "namespaceocc_1_1crystal.html#a9e01d3b4dd9257ecd1fac2bfba8947c3", null ],
     [ "monoclinic_cell", "namespaceocc_1_1crystal.html#a1a44c3e06d68376a3160ea89a23cd97d", null ],
@@ -22,11 +26,8 @@ var namespaceocc_1_1crystal =
     [ "rhombohedral_cell", "namespaceocc_1_1crystal.html#a007770fccb2ec3a01d53a7e8785a8753", null ],
     [ "tetragonal_cell", "namespaceocc_1_1crystal.html#a98f5c57ae46b355f7154a19c3729ea90", null ],
     [ "to_json", "namespaceocc_1_1crystal.html#a8ab409801d9b3ca75a9528b748bde20f", null ],
-    [ "to_json", "namespaceocc_1_1crystal.html#a2805a26d13a13d6c74d7c5d77907895a", null ],
     [ "to_json", "namespaceocc_1_1crystal.html#a4466df2db52fbe0d73f56dae16f5fa99", null ],
     [ "to_json", "namespaceocc_1_1crystal.html#a1a9da008728d1c41260106983703d4b3", null ],
-    [ "to_json", "namespaceocc_1_1crystal.html#a77fae939890c4e2938cc9e45839361d2", null ],
-    [ "to_json", "namespaceocc_1_1crystal.html#a5273130e3aad2e9e605c6121166b33d2", null ],
     [ "to_json", "namespaceocc_1_1crystal.html#a78a508982101caacc049a2989ca1cf01", null ],
     [ "triclinic_cell", "namespaceocc_1_1crystal.html#a392f8e219e4cd936e2d59947cafb8f51", null ]
 ];

@@ -4,6 +4,12 @@ var annotated_dup =
       [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ],
       [ "formatter< occ::qm::Shell >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4" ]
     ] ],
+    [ "nlohmann", "namespacenlohmann.html", [
+      [ "adl_serializer< occ::core::Dimer >", "structnlohmann_1_1adl__serializer_3_01occ_1_1core_1_1Dimer_01_4.html", null ],
+      [ "adl_serializer< occ::crystal::SymmetryOperation >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1SymmetryOperation_01_4.html", null ],
+      [ "adl_serializer< occ::crystal::SpaceGroup >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1SpaceGroup_01_4.html", null ],
+      [ "adl_serializer< occ::crystal::Crystal >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1Crystal_01_4.html", null ]
+    ] ],
     [ "occ", "namespaceocc.html", [
       [ "core", "namespaceocc_1_1core.html", [
         [ "diis", "namespaceocc_1_1core_1_1diis.html", [

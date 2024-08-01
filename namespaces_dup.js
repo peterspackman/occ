@@ -8,6 +8,7 @@ var namespaces_dup =
       [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ],
       [ "formatter< occ::qm::Shell >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4" ]
     ] ],
+    [ "nlohmann", "namespacenlohmann.html", "namespacenlohmann" ],
     [ "occ", "namespaceocc.html", "namespaceocc" ],
     [ "quickhull", "namespacequickhull.html", "namespacequickhull" ],
     [ "tinyply", "namespacetinyply.html", "namespacetinyply" ]

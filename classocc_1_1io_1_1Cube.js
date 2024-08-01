@@ -2,6 +2,7 @@ var classocc_1_1io_1_1Cube =
 [
     [ "AtomList", "classocc_1_1io_1_1Cube.html#a4d95f98f4715c26b9a2c5b384994b571", null ],
     [ "Cube", "classocc_1_1io_1_1Cube.html#a13b916518ff7186d15183b8ab118113d", null ],
+    [ "center_molecule", "classocc_1_1io_1_1Cube.html#adc807a868526a0f064d1ae5e0b54df9a", null ],
     [ "fill_data_from_function", "classocc_1_1io_1_1Cube.html#aa08d75421d3624f408ef7831d8414308", null ],
     [ "write_data_to_file", "classocc_1_1io_1_1Cube.html#ac396d323d56cfac70293ae35d8d59d70", null ],
     [ "write_data_to_stream", "classocc_1_1io_1_1Cube.html#a25834e69ce357751075b9370e271542f", null ],

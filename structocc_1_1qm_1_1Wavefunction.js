@@ -27,7 +27,6 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "save", "structocc_1_1qm_1_1Wavefunction.html#a75fe338f7494dfdbc765f3230106cab8", null ],
     [ "set_molecular_orbitals", "structocc_1_1qm_1_1Wavefunction.html#accd795481115e410d038f02030905adf", null ],
     [ "symmetric_orthonormalize_molecular_orbitals", "structocc_1_1qm_1_1Wavefunction.html#aadcb825d6970a24ecf390ddea6240f75", null ],
-    [ "update_occupied_orbitals", "structocc_1_1qm_1_1Wavefunction.html#a2fc06ae619f37751687fbfc7e5ca5c09", null ],
     [ "atoms", "structocc_1_1qm_1_1Wavefunction.html#afeccdf21f185580812da868d561af166", null ],
     [ "basis", "structocc_1_1qm_1_1Wavefunction.html#a4fa282437c5da86e074c9b69baf7d730", null ],
     [ "energy", "structocc_1_1qm_1_1Wavefunction.html#ad88762bcfd80595fa83b21df0b620d02", null ],
