@@ -1,6 +1,5 @@
 var classocc_1_1core_1_1Molecule =
 [
-    [ "CellShift", "classocc_1_1core_1_1Molecule.html#a047148b9f133a8a293bcf0c4cb74af3e", null ],
     [ "Origin", "classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19d", [
       [ "Cartesian", "classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da795677a5adbe34164848fd04fc280f18", null ],
       [ "Centroid", "classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da6c2d48822f51238ae93fa27d054764d4", null ],
@@ -20,7 +19,7 @@ var classocc_1_1core_1_1Molecule =
     [ "atomic_numbers", "classocc_1_1core_1_1Molecule.html#add630ec5be9fd509c4ef1980e991c275", null ],
     [ "atoms", "classocc_1_1core_1_1Molecule.html#a93f7a741a4de2781cb26095165559a9f", null ],
     [ "bonds", "classocc_1_1core_1_1Molecule.html#a4fe6ac6c67510422b185ef96d241d1c8", null ],
-    [ "cell_shift", "classocc_1_1core_1_1Molecule.html#af262d7cd0a111709bbf27cfe2aaa1964", null ],
+    [ "cell_shift", "classocc_1_1core_1_1Molecule.html#a58efc833193cdeb25e25cf4c83d8960e", null ],
     [ "center_of_mass", "classocc_1_1core_1_1Molecule.html#afc094599b239b3ae11026bd60a8c8f88", null ],
     [ "centroid", "classocc_1_1core_1_1Molecule.html#a7d6a5437786d7d326dccaa895caa2b60", null ],
     [ "charge", "classocc_1_1core_1_1Molecule.html#a175e5557530ab797b968f779780fb0f8", null ],
@@ -52,13 +51,14 @@ var classocc_1_1core_1_1Molecule =
     [ "set_asymmetric_unit_symop", "classocc_1_1core_1_1Molecule.html#a15770d2a798f3999b4051904c0715178", null ],
     [ "set_asymmetric_unit_transformation", "classocc_1_1core_1_1Molecule.html#afeb07fa6ed184313cca484c07f1965cc", null ],
     [ "set_bonds", "classocc_1_1core_1_1Molecule.html#af3c830e1874223f520a2d4dd6856767c", null ],
-    [ "set_cell_shift", "classocc_1_1core_1_1Molecule.html#a4cb681d992f386907dc0097f83fcc44a", null ],
+    [ "set_cell_shift", "classocc_1_1core_1_1Molecule.html#a39048da6bf383e723e58dc8dd6d0b27e", null ],
     [ "set_charge", "classocc_1_1core_1_1Molecule.html#a6db76f2ee69b21df4389dbf572e7ae64", null ],
     [ "set_multiplicity", "classocc_1_1core_1_1Molecule.html#a20ccb2353b97c739c4099c11e0238a1b", null ],
     [ "set_name", "classocc_1_1core_1_1Molecule.html#af30a3010257f85cb70a3858901ef155c", null ],
     [ "set_partial_charges", "classocc_1_1core_1_1Molecule.html#a7d1fa1cc54d1dd4adcfb49f9fe00ba97", null ],
     [ "set_unit_cell_idx", "classocc_1_1core_1_1Molecule.html#aecc69b0767bd01cf17a54cb41afbda2c", null ],
     [ "set_unit_cell_molecule_idx", "classocc_1_1core_1_1Molecule.html#ada2428b681e91c541bc4437c0783ceab", null ],
+    [ "set_unit_cell_shift", "classocc_1_1core_1_1Molecule.html#a0dfd9ecf6ce4303e4e879abcc5a0b077", null ],
     [ "size", "classocc_1_1core_1_1Molecule.html#a866533eddaa2fef1a9ee8becca5ceb3d", null ],
     [ "transform", "classocc_1_1core_1_1Molecule.html#aa94b500c15f8470826c2f45907d222d8", null ],
     [ "transform", "classocc_1_1core_1_1Molecule.html#ada11c701796158a754b1b141447d67c6", null ],
@@ -69,5 +69,6 @@ var classocc_1_1core_1_1Molecule =
     [ "translational_free_energy", "classocc_1_1core_1_1Molecule.html#a6cd8a56bd237cf4ee22694783519010e", null ],
     [ "unit_cell_idx", "classocc_1_1core_1_1Molecule.html#a84aead86e165ed67fd63ce656aceef9e", null ],
     [ "unit_cell_molecule_idx", "classocc_1_1core_1_1Molecule.html#a8ac37dced2f13a048f959712b89babe5", null ],
+    [ "unit_cell_shift", "classocc_1_1core_1_1Molecule.html#ab1a0a8bfb2be7ee7624b3ff36b005776", null ],
     [ "vdw_radii", "classocc_1_1core_1_1Molecule.html#af743fefbee242d8f282fff32d43e4fee", null ]
 ];

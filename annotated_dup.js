@@ -95,6 +95,7 @@ var annotated_dup =
           [ "LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes" ],
           [ "MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1MarchingCubes" ]
         ] ],
+        [ "IcosphereMesh", "classocc_1_1geometry_1_1IcosphereMesh.html", "classocc_1_1geometry_1_1IcosphereMesh" ],
         [ "IndexCache", "structocc_1_1geometry_1_1IndexCache.html", "structocc_1_1geometry_1_1IndexCache" ],
         [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
         [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
@@ -204,6 +205,7 @@ var annotated_dup =
         [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
         [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
+        [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
         [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
         [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
         [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],

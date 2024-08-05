@@ -136,6 +136,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1DimerGenerationSettings.html">DimerGenerationSettings</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1ElasticSettings.html">ElasticSettings</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1IsosurfaceConfig.html">IsosurfaceConfig</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1OccPairInput.html">OccPairInput</a></td></tr>
@@ -231,6 +233,10 @@ Functions</h2></td></tr>
 <tr class="separator:aaeed2365b00deca734218b96303b1cea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f883983a0b5d4e64d68868752bafe01"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a5f883983a0b5d4e64d68868752bafe01">run_dimers_subcommand</a> (<a class="el" href="structocc_1_1main_1_1DimerGenerationSettings.html">DimerGenerationSettings</a> const &amp;)</td></tr>
 <tr class="separator:a5f883983a0b5d4e64d68868752bafe01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44d4dc8403f1e4be8bc1f3d50a741c48"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a44d4dc8403f1e4be8bc1f3d50a741c48">add_elastic_subcommand</a> (CLI::App &amp;app)</td></tr>
+<tr class="separator:a44d4dc8403f1e4be8bc1f3d50a741c48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0cb4759bb53f318980215942c97c03b2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a0cb4759bb53f318980215942c97c03b2">run_elastic_subcommand</a> (<a class="el" href="structocc_1_1main_1_1ElasticSettings.html">ElasticSettings</a> const &amp;)</td></tr>
+<tr class="separator:a0cb4759bb53f318980215942c97c03b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eb1b77b98bb6ae47077f8c955b6c755"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a7eb1b77b98bb6ae47077f8c955b6c755">add_elat_subcommand</a> (CLI::App &amp;app)</td></tr>
 <tr class="separator:a7eb1b77b98bb6ae47077f8c955b6c755"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d0fbd4fdd6e361e60c7c9f33330a3cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a1d0fbd4fdd6e361e60c7c9f33330a3cc">run_elat_subcommand</a> (<a class="el" href="structocc_1_1main_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a> const &amp;)</td></tr>
@@ -467,6 +473,24 @@ Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">CLI::App* occ::main::add_dimers_subcommand </td>
+          <td>(</td>
+          <td class="paramtype">CLI::App &amp;&#160;</td>
+          <td class="paramname"><em>app</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a44d4dc8403f1e4be8bc1f3d50a741c48"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44d4dc8403f1e4be8bc1f3d50a741c48">&#9670;&nbsp;</a></span>add_elastic_subcommand()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CLI::App* occ::main::add_elastic_subcommand </td>
           <td>(</td>
           <td class="paramtype">CLI::App &amp;&#160;</td>
           <td class="paramname"><em>app</em></td><td>)</td>
@@ -1244,6 +1268,24 @@ Functions</h2></td></tr>
           <td class="memname">void occ::main::run_dimers_subcommand </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structocc_1_1main_1_1DimerGenerationSettings.html">DimerGenerationSettings</a> const &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0cb4759bb53f318980215942c97c03b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0cb4759bb53f318980215942c97c03b2">&#9670;&nbsp;</a></span>run_elastic_subcommand()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::main::run_elastic_subcommand </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1main_1_1ElasticSettings.html">ElasticSettings</a> const &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>

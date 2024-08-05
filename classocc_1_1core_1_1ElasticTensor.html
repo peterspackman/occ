@@ -115,12 +115,10 @@ Public Types</h2></td></tr>
 <tr class="separator:a16b58532c9162fd7b89f596baa177fff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a388fe418684a58557509da35c2fc2f6b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a> = Eigen::Ref&lt; const Eigen::Vector&lt; double, 3 &gt; &gt;</td></tr>
 <tr class="separator:a388fe418684a58557509da35c2fc2f6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee7cf3df8b3d3ec89237ae36ae674f25"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aee7cf3df8b3d3ec89237ae36ae674f25">Mat6</a> = Eigen::Matrix&lt; double, 6, 6 &gt;</td></tr>
-<tr class="separator:aee7cf3df8b3d3ec89237ae36ae674f25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a087e55d5ad3c45c033ad159a08bd0b73"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a087e55d5ad3c45c033ad159a08bd0b73">ElasticTensor</a> (Eigen::Ref&lt; const <a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aee7cf3df8b3d3ec89237ae36ae674f25">Mat6</a> &gt; c_voigt)</td></tr>
+<tr class="memitem:a087e55d5ad3c45c033ad159a08bd0b73"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a087e55d5ad3c45c033ad159a08bd0b73">ElasticTensor</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a> &gt; c_voigt)</td></tr>
 <tr class="separator:a087e55d5ad3c45c033ad159a08bd0b73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ba08527110a2db722a5c870e7034bca"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a8ba08527110a2db722a5c870e7034bca">youngs_modulus_angular</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a16b58532c9162fd7b89f596baa177fff">AngularDirection</a>) const</td></tr>
 <tr class="separator:a8ba08527110a2db722a5c870e7034bca"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -136,12 +134,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a860ac6cfdd246d0975b5d9f29d2184d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abfac72800952ea643b9a5df88e29ddf8"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#abfac72800952ea643b9a5df88e29ddf8">shear_modulus</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>, <a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>) const</td></tr>
 <tr class="separator:abfac72800952ea643b9a5df88e29ddf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf1c73becd2d20b0c4a045085be32dd9"><td class="memItemLeft" align="right" valign="top">std::pair&lt; double, double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#abf1c73becd2d20b0c4a045085be32dd9">shear_modulus_minmax</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>) const</td></tr>
+<tr class="separator:abf1c73becd2d20b0c4a045085be32dd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37c229788c90e7df349246c1f0ab11c5"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a37c229788c90e7df349246c1f0ab11c5">poisson_ratio_angular</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a16b58532c9162fd7b89f596baa177fff">AngularDirection</a>, double angle) const</td></tr>
 <tr class="separator:a37c229788c90e7df349246c1f0ab11c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d9757beebf8d46bf69b6082f5f5e052"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a4d9757beebf8d46bf69b6082f5f5e052">poisson_ratio</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>, double angle) const</td></tr>
 <tr class="separator:a4d9757beebf8d46bf69b6082f5f5e052"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae44d9adb89a43b34e0ccc0881df9d423"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#ae44d9adb89a43b34e0ccc0881df9d423">poisson_ratio</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>, <a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>) const</td></tr>
 <tr class="separator:ae44d9adb89a43b34e0ccc0881df9d423"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71c032931fa28ab5ccf7b6823803713c"><td class="memItemLeft" align="right" valign="top">std::pair&lt; double, double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a71c032931fa28ab5ccf7b6823803713c">poisson_ratio_minmax</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>) const</td></tr>
+<tr class="separator:a71c032931fa28ab5ccf7b6823803713c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a084f4f6a0ef8fb3b2e0701f4273b6bca"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a084f4f6a0ef8fb3b2e0701f4273b6bca">average_bulk_modulus</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288">AveragingScheme</a> avg=<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288ae7714c603656b8e2241b1131a79a009e">AveragingScheme::Hill</a>) const</td></tr>
 <tr class="separator:a084f4f6a0ef8fb3b2e0701f4273b6bca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0709de61cdc0a2259d6b9b53603bd91a"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a0709de61cdc0a2259d6b9b53603bd91a">average_shear_modulus</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288">AveragingScheme</a> avg=<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288ae7714c603656b8e2241b1131a79a009e">AveragingScheme::Hill</a>) const</td></tr>
@@ -150,9 +152,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5a84d8b1f2462cb0bcf8209725350532"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aedd8c53b39e0f1e0b08f3c7b080509d3"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aedd8c53b39e0f1e0b08f3c7b080509d3">average_poisson_ratio</a> (<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288">AveragingScheme</a> avg=<a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288ae7714c603656b8e2241b1131a79a009e">AveragingScheme::Hill</a>) const</td></tr>
 <tr class="separator:aedd8c53b39e0f1e0b08f3c7b080509d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a642ef95f4ccd6c6ac5f0ff473d3b3a37"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aee7cf3df8b3d3ec89237ae36ae674f25">Mat6</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a642ef95f4ccd6c6ac5f0ff473d3b3a37">voigt_s</a> () const</td></tr>
+<tr class="memitem:a642ef95f4ccd6c6ac5f0ff473d3b3a37"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a642ef95f4ccd6c6ac5f0ff473d3b3a37">voigt_s</a> () const</td></tr>
 <tr class="separator:a642ef95f4ccd6c6ac5f0ff473d3b3a37"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f12756dc202a7f6349827d33785c9ab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aee7cf3df8b3d3ec89237ae36ae674f25">Mat6</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a5f12756dc202a7f6349827d33785c9ab">voigt_c</a> () const</td></tr>
+<tr class="memitem:a5f12756dc202a7f6349827d33785c9ab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a5f12756dc202a7f6349827d33785c9ab">voigt_c</a> () const</td></tr>
 <tr class="separator:a5f12756dc202a7f6349827d33785c9ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2089bb56e71a899621a6bc3b236f918"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aa2089bb56e71a899621a6bc3b236f918">component</a> (int i, int j, int k, int l) const</td></tr>
 <tr class="separator:aa2089bb56e71a899621a6bc3b236f918"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,20 +188,6 @@ Public Member Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">using <a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">occ::core::ElasticTensor::CartesianDirection</a> =  Eigen::Ref&lt;const Eigen::Vector&lt;double, 3&gt; &gt;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aee7cf3df8b3d3ec89237ae36ae674f25"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aee7cf3df8b3d3ec89237ae36ae674f25">&#9670;&nbsp;</a></span>Mat6</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">using <a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aee7cf3df8b3d3ec89237ae36ae674f25">occ::core::ElasticTensor::Mat6</a> =  Eigen::Matrix&lt;double, 6, 6&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -248,7 +236,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">occ::core::ElasticTensor::ElasticTensor </td>
           <td>(</td>
-          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aee7cf3df8b3d3ec89237ae36ae674f25">Mat6</a> &gt;&#160;</td>
+          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a> &gt;&#160;</td>
           <td class="paramname"><em>c_voigt</em></td><td>)</td>
           <td></td>
         </tr>
@@ -535,6 +523,24 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a71c032931fa28ab5ccf7b6823803713c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71c032931fa28ab5ccf7b6823803713c">&#9670;&nbsp;</a></span>poisson_ratio_minmax()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt;double, double&gt; occ::core::ElasticTensor::poisson_ratio_minmax </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="abfac72800952ea643b9a5df88e29ddf8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abfac72800952ea643b9a5df88e29ddf8">&#9670;&nbsp;</a></span>shear_modulus() <span class="overload">[1/2]</span></h2>
 
@@ -619,6 +625,24 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="abf1c73becd2d20b0c4a045085be32dd9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf1c73becd2d20b0c4a045085be32dd9">&#9670;&nbsp;</a></span>shear_modulus_minmax()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt;double, double&gt; occ::core::ElasticTensor::shear_modulus_minmax </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b">CartesianDirection</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a5f12756dc202a7f6349827d33785c9ab"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5f12756dc202a7f6349827d33785c9ab">&#9670;&nbsp;</a></span>voigt_c()</h2>
 
@@ -626,7 +650,7 @@ Public Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aee7cf3df8b3d3ec89237ae36ae674f25">Mat6</a> occ::core::ElasticTensor::voigt_c </td>
+          <td class="memname"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a> occ::core::ElasticTensor::voigt_c </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -643,7 +667,7 @@ Public Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aee7cf3df8b3d3ec89237ae36ae674f25">Mat6</a> occ::core::ElasticTensor::voigt_s </td>
+          <td class="memname"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a> occ::core::ElasticTensor::voigt_s </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>

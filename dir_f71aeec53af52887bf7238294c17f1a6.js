@@ -8,6 +8,9 @@ var dir_f71aeec53af52887bf7238294c17f1a6 =
       [ "HalfEdge", "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html", "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge" ],
       [ "Face", "structquickhull_1_1HalfEdgeMesh_1_1Face.html", "structquickhull_1_1HalfEdgeMesh_1_1Face" ]
     ] ],
+    [ "icosphere_mesh.h", "icosphere__mesh_8h.html", [
+      [ "IcosphereMesh", "classocc_1_1geometry_1_1IcosphereMesh.html", "classocc_1_1geometry_1_1IcosphereMesh" ]
+    ] ],
     [ "index_cache.h", "index__cache_8h.html", [
       [ "IndexCache", "structocc_1_1geometry_1_1IndexCache.html", "structocc_1_1geometry_1_1IndexCache" ],
       [ "Layer", "structocc_1_1geometry_1_1IndexCache_1_1Layer.html", "structocc_1_1geometry_1_1IndexCache_1_1Layer" ],

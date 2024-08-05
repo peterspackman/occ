@@ -23,6 +23,7 @@ var namespaceocc_1_1geometry =
       [ "shift2B", "namespaceocc_1_1geometry_1_1constants.html#aa384f5658b6af633506bcf119cbed129", null ]
     ] ],
     [ "mc", "namespaceocc_1_1geometry_1_1mc.html", "namespaceocc_1_1geometry_1_1mc" ],
+    [ "IcosphereMesh", "classocc_1_1geometry_1_1IcosphereMesh.html", "classocc_1_1geometry_1_1IcosphereMesh" ],
     [ "IndexCache", "structocc_1_1geometry_1_1IndexCache.html", "structocc_1_1geometry_1_1IndexCache" ],
     [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
     [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],

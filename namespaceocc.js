@@ -130,6 +130,7 @@ var namespaceocc =
     [ "Mat4", "namespaceocc.html#a42d884160a85b77b0c6e02723c4e42b1", null ],
     [ "Mat4ConstRef", "namespaceocc.html#a4583e9d21da96377bedd2b9755dd4c85", null ],
     [ "Mat4N", "namespaceocc.html#a61d928e54a4aefae054e2f13abd5ed49", null ],
+    [ "Mat6", "namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19", null ],
     [ "MatConstRef", "namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558", null ],
     [ "MatN3", "namespaceocc.html#a6dd10d46de914e7901a02bd2f2fa805a", null ],
     [ "MatN3ConstRef", "namespaceocc.html#a152273807a66bf06678e613ceffb24c8", null ],
