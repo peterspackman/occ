@@ -1,6 +1,5 @@
 var NAVTREEINDEX12 =
 {
-"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a7205636bb6ee2cc464c30ce1cda43caa":[3,0,1,0,0,30,3,46],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a727999d580f3708378e3d903ddfa246d":[3,0,1,0,0,30,3,8],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a7e8b9f5cab4a8fe24fad9fe4b7452702":[3,0,1,0,0,30,3,7],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a8021f7e4b05dada0ad3d47567e52249e":[3,0,1,0,0,30,3,49],
@@ -249,5 +248,6 @@ var NAVTREEINDEX12 =
 "structocc_1_1core_1_1opt_1_1Bracket1D.html#a8710b4e2a7fde4345564d9bba83e59b8":[2,0,2,0,3,0,5],
 "structocc_1_1core_1_1opt_1_1Bracket1D.html#a89f2f3402ba91e0fa9a13473b4bb09a2":[2,0,2,0,3,0,6],
 "structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e488385fae973b497dafce502c6b6a8":[2,0,2,0,3,0,0],
-"structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9":[2,0,2,0,3,0,4]
+"structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9":[2,0,2,0,3,0,4],
+"structocc_1_1core_1_1opt_1_1Bracket1D.html#a9f0a93393fdf7a4c36153e96a4323394":[2,0,2,0,3,0,2]
 };

@@ -1,6 +1,5 @@
 var NAVTREEINDEX14 =
 {
-"structocc_1_1gto_1_1MomentaSpherical.html#ab885c51ceb96de3dd38cccaf279de5e7":[2,0,2,6,2,0],
 "structocc_1_1interaction_1_1CEEnergyComponents.html":[2,0,2,7,2],
 "structocc_1_1interaction_1_1CEEnergyComponents.html#a0a94238e8aedd82c25010d252a192a3f":[2,0,2,7,2,19],
 "structocc_1_1interaction_1_1CEEnergyComponents.html#a19591b6ade54751ff02ee4fd03b98c3b":[2,0,2,7,2,14],
@@ -249,5 +248,6 @@ var NAVTREEINDEX14 =
 "structocc_1_1io_1_1PointChargeFileReader.html":[2,0,2,8,41],
 "structocc_1_1io_1_1PointChargeFileReader.html#a4e1423e691f7cf4a65e1fe8fc2bfb7a2":[2,0,2,8,41,3],
 "structocc_1_1io_1_1PointChargeFileReader.html#a6fa98db3228e6bcdd747ef6bceefa123":[2,0,2,8,41,4],
-"structocc_1_1io_1_1PointChargeFileReader.html#a7d195f52b65453f75c813d2e569e284d":[2,0,2,8,41,2]
+"structocc_1_1io_1_1PointChargeFileReader.html#a7d195f52b65453f75c813d2e569e284d":[2,0,2,8,41,2],
+"structocc_1_1io_1_1PointChargeFileReader.html#a98c3bc82e643157fe6974ba407c21a98":[2,0,2,8,41,0]
 };

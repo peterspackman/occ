@@ -1,6 +1,5 @@
 var NAVTREEINDEX15 =
 {
-"structocc_1_1io_1_1PointChargeFileReader.html#a98c3bc82e643157fe6974ba407c21a98":[2,0,2,8,41,0],
 "structocc_1_1io_1_1PointChargeFileReader.html#aecf8ca80856e8ba275fd49920f7631d1":[2,0,2,8,41,1],
 "structocc_1_1io_1_1QCSchemaBond.html":[2,0,2,8,42],
 "structocc_1_1io_1_1QCSchemaBond.html#a5f4c31ab90d5b06f7dcb8039eb0f32fa":[2,0,2,8,42,2],
@@ -249,5 +248,6 @@ var NAVTREEINDEX15 =
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#ab1ee600a5ce6fa4a1845ad188bf8054b":[2,0,2,10,19,8],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#adff8eb316738f0249efe8557fd0370b1":[2,0,2,10,19,1],
 "structocc_1_1main_1_1LatticeConvergenceSettings.html#aeb2873c939f9306f57e6303762997621":[2,0,2,10,19,3],
-"structocc_1_1main_1_1LatticeConvergenceSettings.html#af0ca83314d92539ca834d1fcc571117e":[2,0,2,10,19,0]
+"structocc_1_1main_1_1LatticeConvergenceSettings.html#af0ca83314d92539ca834d1fcc571117e":[2,0,2,10,19,0],
+"structocc_1_1main_1_1LatticeEnergyResult.html":[2,0,2,10,20]
 };
