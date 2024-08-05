@@ -22,7 +22,7 @@ chmod +x ./dockcross
     -DENABLE_HOST_OPT=OFF -DGG_NO_PRAGMA=ON \
     -DCPACK_SYSTEM_NAME="${NAME}"
 
-./dockcross cmake --build ${BUILD_DIR} occ
+./dockcross cmake --build ${BUILD_DIR} --target occ
 
 ./dockcross bash -c "cd build && cpack -G TXZ"
 

@@ -69,7 +69,7 @@ jobs:
 
     - name: Run build script
       run: |
-        rm build/*.xz
+        rm -f build/*.xz
         ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
 
     - name: Test
@@ -93,8 +93,9 @@ jobs:
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
-        name: occ-binaries-${{ matrix.runs-on }}
+        name: occ-binaries-${{ matrix.name }}
         path: ${{github.workspace}}/build/*.xz
+        overwrite: true
 
   create-release:
     runs-on: ubuntu-latest
