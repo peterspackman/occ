@@ -109,7 +109,8 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: binaries
-        name: occ-binaries-*
+        pattern: occ-binaries-*
+        merge-multiple: true
 
     - name: Release
       uses: softprops/action-gh-release@v1
