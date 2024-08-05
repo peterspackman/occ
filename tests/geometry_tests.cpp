@@ -1,10 +1,12 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_random.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <fmt/core.h>
 #include <fmt/os.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
+#include <occ/geometry/icosphere_mesh.h>
 #include <occ/geometry/linear_hashed_marching_cubes.h>
 #include <occ/geometry/marching_cubes.h>
 #include <occ/geometry/math_utils.h>
@@ -16,6 +18,7 @@
 
 // Marching Cubes
 
+using Catch::Matchers::WithinAbs;
 using occ::geometry::mc::LinearHashedMarchingCubes;
 using occ::geometry::mc::MarchingCubes;
 
@@ -603,5 +606,120 @@ TEST_CASE("Curvature calculations for sphere", "[curvature]") {
             Catch::Approx(ref_mean_curvature).epsilon(tolerance));
     REQUIRE(gaussian_curvature ==
             Catch::Approx(ref_gaussian_curvature).epsilon(tolerance));
+  }
+}
+
+struct PairHash {
+  size_t operator()(const std::pair<int, int> &p) const {
+    return ankerl::unordered_dense::hash<int>{}(p.first) ^
+           (ankerl::unordered_dense::hash<int>{}(p.second) << 1);
+  }
+};
+
+TEST_CASE("IcosphereMesh", "[icosphere]") {
+  using occ::geometry::IcosphereMesh;
+
+  SECTION("Initial construction") {
+    IcosphereMesh icosphere(0);
+
+    REQUIRE(icosphere.vertices().cols() == 12);
+    REQUIRE(icosphere.faces().cols() == 20);
+  }
+
+  SECTION("Vertex normalization") {
+    IcosphereMesh icosphere(0);
+    const auto &vertices = icosphere.vertices();
+
+    for (int i = 0; i < vertices.cols(); ++i) {
+      REQUIRE_THAT(vertices.col(i).norm(), WithinAbs(1.0, 1e-6));
+    }
+  }
+
+  SECTION("Face indices are valid") {
+    IcosphereMesh icosphere(0);
+    const auto &faces = icosphere.faces();
+    const auto &vertices = icosphere.vertices();
+
+    for (int i = 0; i < faces.cols(); ++i) {
+      REQUIRE(faces(0, i) >= 0);
+      REQUIRE(faces(1, i) >= 0);
+      REQUIRE(faces(2, i) >= 0);
+      REQUIRE(faces(0, i) < vertices.cols());
+      REQUIRE(faces(1, i) < vertices.cols());
+      REQUIRE(faces(2, i) < vertices.cols());
+    }
+  }
+
+  SECTION("Subdivision increases complexity") {
+    for (size_t i = 0; i < 3; ++i) {
+      IcosphereMesh icosphere(i);
+      auto [num_vertices, num_faces] = IcosphereMesh::compute_sizes(i);
+
+      REQUIRE(icosphere.vertices().cols() == num_vertices);
+      REQUIRE(icosphere.faces().cols() == num_faces);
+
+      if (i > 0) {
+        auto [prev_vertices, prev_faces] = IcosphereMesh::compute_sizes(i - 1);
+        REQUIRE(num_vertices > prev_vertices);
+        REQUIRE(num_faces > prev_faces);
+      }
+    }
+  }
+  using occ::Vec3;
+
+  SECTION("Midpoint calculation") {
+    IcosphereMesh icosphere0(0);
+    IcosphereMesh icosphere1(1);
+    const auto &vertices = icosphere1.vertices();
+    const auto &faces = icosphere0.faces();
+
+    const double tolerance =
+        1e-7; // Tightened tolerance based on normalized calculations
+
+    ankerl::unordered_dense::set<std::pair<int, int>, PairHash> checked_edges;
+
+    for (int i = 0; i < faces.cols(); ++i) {
+      for (int j = 0; j < 3; ++j) {
+        int v1 = faces(j, i);
+        int v2 = faces((j + 1) % 3, i);
+
+        if (v1 > v2)
+          std::swap(v1, v2);
+
+        // Skip if we've already checked this edge
+        if (checked_edges.find({v1, v2}) != checked_edges.end()) {
+          continue;
+        }
+        checked_edges.insert({v1, v2});
+
+        // Calculate expected midpoint
+        Vec3 expected_midpoint =
+            (vertices.col(v1) + vertices.col(v2)).normalized();
+
+        // Find the actual midpoint vertex
+        Vec3 actual_midpoint;
+        bool midpoint_found = false;
+        for (int k = 12; k < vertices.cols(); ++k) {
+          if ((vertices.col(k) - expected_midpoint).norm() < tolerance) {
+            actual_midpoint = vertices.col(k);
+            midpoint_found = true;
+            break;
+          }
+        }
+
+        INFO("Checking edge (" << v1 << ", " << v2 << ")");
+        INFO("Expected midpoint: " << expected_midpoint.transpose());
+        INFO("Vertex " << v1 << ": " << vertices.col(v1).transpose());
+        INFO("Vertex " << v2 << ": " << vertices.col(v2).transpose());
+        INFO("Vertices\n" << vertices.transpose());
+
+        REQUIRE(midpoint_found);
+
+        if (midpoint_found) {
+          INFO("Actual midpoint: " << actual_midpoint.transpose());
+          REQUIRE_THAT(actual_midpoint.norm(), WithinAbs(1.0, tolerance));
+        }
+      }
+    }
   }
 }

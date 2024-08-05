@@ -39,7 +39,6 @@ void write_ply_mesh(const std::string &filename, const IsosurfaceMesh &mesh,
       tinyply::Type::INVALID, 0);
 
   if (mesh.normals.size() > 0) {
-    fmt::print("Writing normals\n");
     ply_file.add_properties_to_element(
         "vertex", {"nx", "ny", "nz"}, tinyply::Type::FLOAT32,
         mesh.normals.size() / 3,

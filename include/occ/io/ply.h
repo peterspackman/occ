@@ -10,5 +10,5 @@ void write_ply_file(const std::string &filename,
                     const Eigen::Matrix3Xi &faces);
 
 void write_ply_mesh(const std::string &filename, const IsosurfaceMesh &mesh,
-		    const VertexProperties &properties, bool binary = true);
-}
+                    const VertexProperties &properties, bool binary = true);
+} // namespace occ::io

@@ -68,7 +68,7 @@ void from_json(const nlohmann::json &j, occ::core::Molecule &mol) {
     mol.set_unit_cell_idx(uc_idx);
   }
   if (j.contains("cell shift")) {
-    std::array<int, 3> cell_shift = j["cell shift"].get<std::array<int, 3>>();
+    auto cell_shift = j["cell shift"].get<IVec3>();
     mol.set_cell_shift(cell_shift);
   }
 }

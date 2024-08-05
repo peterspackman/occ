@@ -28,8 +28,6 @@ class Molecule {
                       */
     };
 
-    using CellShift = std::array<int, 3>;
-
     inline explicit Molecule() {}
 
     /**
@@ -209,7 +207,7 @@ class Molecule {
      *
      * See Molecule::cell_shift
      */
-    void set_cell_shift(const CellShift &shift);
+    void set_cell_shift(const IVec3 &shift);
 
     /**
      * Get the unit cell offset for this Molecule (default 000)
@@ -218,7 +216,7 @@ class Molecule {
      *
      * See Molecule::set_cell_shift
      */
-    const CellShift &cell_shift() const;
+    const IVec3 &cell_shift() const;
 
     /**
      * The geometric centre of this molecule
@@ -464,6 +462,19 @@ class Molecule {
     void set_unit_cell_idx(const IVec &idx) { m_uc_idx = idx; }
 
     /**
+     * Set the unit cell atom shifts for all atoms in this Molecule
+     *
+     * \param shifts an IMat3N containing the relevant shifts to generate the
+     * atoms of this molecule from the unit cell atoms of the Crystal 
+     * associated with this Molecule.
+     *
+     * See also Molecule::set_cell_shift if you wish to set the
+     * unit cell molecule shift rather than atom indices.
+     */
+    void set_unit_cell_shift(const IMat3N &shifts) { m_uc_shifts = shifts; }
+
+
+    /**
      * Set the asymmetric unit atom indices for all atoms in this Molecule
      *
      * \param idx an IVec containing the relevant indices into the set of
@@ -499,6 +510,18 @@ class Molecule {
      * for the molecule index rather than atom indices.
      */
     const auto &unit_cell_idx() const { return m_uc_idx; }
+
+    /**
+     * Get the unit cell atom shifts for all atoms in this Molecule
+     *
+     * \return an IMat3N containing the relevant shifts to generate the
+     * atoms of this molecule from the unit cell atoms of the Crystal 
+     * associated with this Molecule.
+     *
+     * See also Molecule::cell_shift if you wish to get the
+     * unit cell molecule shift rather than atom indices.
+     */
+    const auto &unit_cell_shift() const { return m_uc_shifts; }
 
     /**
      * Get the asymmetric unit atom indices for all atoms in this Molecule
@@ -744,6 +767,7 @@ class Molecule {
     IVec m_atomicNumbers;
     Mat3N m_positions;
     IVec m_uc_idx;
+    IMat3N m_uc_shifts;
     IVec m_asym_idx;
     IVec m_asym_symop;
     std::vector<std::pair<size_t, size_t>> m_bonds;
@@ -751,7 +775,7 @@ class Molecule {
     Mat3 m_asymmetric_unit_rotation = Mat3::Identity(3, 3);
     Vec3 m_asymmetric_unit_translation = Vec3::Zero(3);
     Vec m_partial_charges;
-    CellShift m_cell_shift{0, 0, 0};
+    IVec3 m_cell_shift{0, 0, 0};
 };
 
 } // namespace occ::core

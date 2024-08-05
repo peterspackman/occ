@@ -1,4 +1,5 @@
 #include <occ/core/elastic_tensor.h>
+#include <occ/core/optimize.h>
 
 namespace occ::core {
 
@@ -29,7 +30,7 @@ std::pair<Vec3, Vec3> shear_directions(double theta, double phi, double chi) {
   return {axis, shear_dir};
 }
 
-ElasticTensor::ElasticTensor(Eigen::Ref<const ElasticTensor::Mat6> c_voigt)
+ElasticTensor::ElasticTensor(Eigen::Ref<const Mat6> c_voigt)
     : m_c(c_voigt), m_s(c_voigt.inverse()) {
 
   Eigen::Matrix<int, 3, 3> vm;
@@ -115,6 +116,25 @@ double ElasticTensor::shear_modulus(CartesianDirection a,
   return 0.25 / sum;
 }
 
+
+std::pair<double, double>
+ElasticTensor::shear_modulus_minmax(CartesianDirection n) const {
+  double min_v = std::numeric_limits<double>::max();
+  double max_v = std::numeric_limits<double>::lowest();
+
+  const int num_steps = 360;
+  const double step = 2 * M_PI / num_steps;
+
+  for (int i = 0; i < num_steps; ++i) {
+    double angle = i * step;
+    double v = shear_modulus(n, angle);
+    min_v = std::min(min_v, v);
+    max_v = std::max(max_v, v);
+  }
+
+  return {min_v, max_v};
+}
+
 double ElasticTensor::poisson_ratio_angular(AngularDirection dir,
                                             double angle) const {
   auto [axis, shear_dir] = shear_directions(dir[0], dir[1], angle);
@@ -141,6 +161,24 @@ double ElasticTensor::poisson_ratio(CartesianDirection a,
     }
   }
   return -numerator / denominator;
+}
+
+std::pair<double, double>
+ElasticTensor::poisson_ratio_minmax(CartesianDirection n) const {
+  double min_poisson = std::numeric_limits<double>::max();
+  double max_poisson = std::numeric_limits<double>::lowest();
+
+  const int num_steps = 360;
+  const double step = 2 * M_PI / num_steps;
+
+  for (int i = 0; i < num_steps; ++i) {
+    double angle = i * step;
+    double poisson = poisson_ratio(n, angle);
+    min_poisson = std::min(min_poisson, poisson);
+    max_poisson = std::max(max_poisson, poisson);
+  }
+
+  return {min_poisson, max_poisson};
 }
 
 double ElasticTensor::average_bulk_modulus(AveragingScheme avg) const {
@@ -196,9 +234,9 @@ double ElasticTensor::average_poisson_ratio(AveragingScheme avg) const {
   return (3 * K - 2 * G) / (2 * (3 * K + G));
 }
 
-ElasticTensor::Mat6 ElasticTensor::voigt_s() const { return m_s; }
+Mat6 ElasticTensor::voigt_s() const { return m_s; }
 
-ElasticTensor::Mat6 ElasticTensor::voigt_c() const { return m_c; }
+Mat6 ElasticTensor::voigt_c() const { return m_c; }
 
 double ElasticTensor::component(int i, int j, int k, int l) const {
   return m_components[i][j][k][l];

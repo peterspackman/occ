@@ -295,11 +295,15 @@ void Molecule::set_asymmetric_unit_symop(const IVec &symop) {
   m_asym_symop = symop;
 }
 
-void Molecule::set_cell_shift(const Molecule::CellShift &shift) {
+void Molecule::set_cell_shift(const IVec3 &shift) {
+  IVec3 diff = shift - m_cell_shift;
   m_cell_shift = shift;
+  if(m_uc_shifts.size() > 0) {
+    m_uc_shifts.colwise() += diff;
+  }
 }
 
-const Molecule::CellShift &Molecule::cell_shift() const { return m_cell_shift; }
+const IVec3 &Molecule::cell_shift() const { return m_cell_shift; }
 
 double Molecule::molar_mass() const {
   return occ::constants::molar_mass_constant<double> *

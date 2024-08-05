@@ -7,6 +7,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_elastic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cg.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cube.cpp"

@@ -1171,33 +1171,37 @@ void write_cg_dimers(const std::string &basename, const std::string &solvent,
     nlohmann::json m;
     for (const auto &cg_dimer : mol_pairs) {
       nlohmann::json d;
-      d["unique_dimer_index"] = cg_dimer.unique_dimer_index;
-      d["interaction_energy"] = cg_dimer.interaction_energy;
-      d["crystal_contribution"] = cg_dimer.crystal_contribution;
-      d["is_nearest_neighbor"] = cg_dimer.nearest_neighbor;
-      d["solvent_ab"] = cg_dimer.solvent_term.ab;
-      d["solvent_ba"] = cg_dimer.solvent_term.ba;
-      d["solvent_total"] = cg_dimer.solvent_term.total;
-      d["uc_atom_offsets"] = {};
+      nlohmann::json e;
+      e["unique_dimer_index"] = cg_dimer.unique_dimer_index;
+      e["interaction_energy"] = cg_dimer.interaction_energy;
+      e["crystal_contribution"] = cg_dimer.crystal_contribution;
+      e["is_nearest_neighbor"] = cg_dimer.nearest_neighbor;
+      e["solvent_ab"] = cg_dimer.solvent_term.ab;
+      e["solvent_ba"] = cg_dimer.solvent_term.ba;
+      e["solvent_total"] = cg_dimer.solvent_term.total;
+      d["energies"] = e;
+
       nlohmann::json offsets_a = {};
-      const auto &a = cg_dimer.dimer.a();
-      const auto &a_idx = a.unit_cell_idx();
-      const auto &a_pos = a.positions();
-      for (int i = 0; i < a_idx.rows(); i++) {
-        occ::Vec3 offset = crystal.to_fractional(
-            uc_atoms.cart_pos.col(a_idx(i)) - a_pos.col(i));
-        Eigen::Vector3i o = offset.cast<int>();
-        offsets_a.push_back(std::array<int, 4>{a_idx(i), o(0), o(1), o(2)});
+      {
+        const auto &a = cg_dimer.dimer.a();
+        const auto &a_uc_idx = a.unit_cell_idx();
+        const auto &a_uc_shift = a.unit_cell_shift();
+        for (int i = 0; i < a_uc_idx.rows(); i++) {
+          offsets_a.push_back(std::array<int, 4>{a_uc_idx(i), a_uc_shift(0, i),
+                                                 a_uc_shift(1, i),
+                                                 a_uc_shift(2, i)});
+        }
       }
       nlohmann::json offsets_b = {};
-      const auto &b = cg_dimer.dimer.b();
-      const auto &b_idx = b.unit_cell_idx();
-      const auto &b_pos = b.positions();
-      for (int i = 0; i < b_idx.rows(); i++) {
-        occ::Vec3 offset = crystal.to_fractional(
-            uc_atoms.cart_pos.col(b_idx(i)) - b_pos.col(i));
-        Eigen::Vector3i o = offset.cast<int>();
-        offsets_a.push_back(std::array<int, 4>{b_idx(i), o(0), o(1), o(2)});
+      {
+        const auto &b = cg_dimer.dimer.b();
+        const auto &b_uc_idx = b.unit_cell_idx();
+        const auto &b_uc_shift = b.unit_cell_shift();
+        for (int i = 0; i < b_uc_idx.rows(); i++) {
+          offsets_b.push_back(std::array<int, 4>{b_uc_idx(i), b_uc_shift(0, i),
+                                                 b_uc_shift(1, i),
+                                                 b_uc_shift(2, i)});
+        }
       }
       d["uc_atom_offsets"] = {offsets_a, offsets_b};
       m.push_back(d);

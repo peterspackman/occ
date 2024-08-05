@@ -7,9 +7,22 @@ namespace occ::io {
 
 struct IsosurfaceMesh {
   IsosurfaceMesh() {}
+
   IsosurfaceMesh(size_t num_vertices, size_t num_faces)
       : vertices(3 * num_vertices), faces(3 * num_faces),
         normals(3 * num_vertices) {}
+
+  IsosurfaceMesh(Eigen::Ref<const Mat3N> v, Eigen::Ref<const IMat3N> f) :
+      vertices(3 * v.cols()), faces(3 * f.cols()) {
+    std::copy(v.data(), v.data() + v.size(), vertices.begin());
+    std::copy(f.data(), f.data() + f.size(), faces.begin());
+  }
+
+  inline void set_normals(Eigen::Ref<const Mat3N> n) {
+    normals.resize(3 * n.cols());
+    std::copy(n.data(), n.data() + n.size(), normals.begin());
+  }
+
   std::vector<float> vertices;
   std::vector<uint32_t> faces;
   std::vector<float> normals;
