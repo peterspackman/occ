@@ -18,19 +18,19 @@ jobs:
 
     steps:
       - name: Checkout repos
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.1
+        uses: pypa/cibuildwheel@v2
         env:
           CIBW_BUILD: ${{matrix.pyver}}-*
-          CIBW_ARCHS_LINUX: auto
-          CIBW_ARCHS_MACOS: auto universal2
-          CIBW_ARCHS_WINDOWS: auto
+          CIBW_ARCHS_LINUX: auto64
+          CIBW_ARCHS_MACOS: auto64 universal2
+          CIBW_ARCHS_WINDOWS: auto64
           CIBW_TEST_SKIP: ${{matrix.pyver}}-*
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
           name: wheels
@@ -45,7 +45,7 @@ jobs:
       id-token: write
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels 
         path: dist

@@ -46,7 +46,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install Dependencies Linux
       if: startsWith(runner.os, 'Linux')
       run: |
@@ -60,15 +60,16 @@ jobs:
         brew install ninja doxygen graphviz
 
     - name: Cache CPM Dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
           ${{github.workspace}}/build
-        key: ${{ matrix.name}}-occ-build-cache
+        key: ${{ matrix.name }}-occ-build-cache
 
     - name: Run build script
       run: |
+        rm build/*.xz
         ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
 
     - name: Test
@@ -90,9 +91,9 @@ jobs:
         publish_dir: ${{github.workspace}}/build/docs/html
 
     - name: Upload binaries
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: binaries-${{ github.sha }}
+        name: occ-binaries-${{ matrix.runs-on }}
         path: ${{github.workspace}}/build/*.xz
 
   create-release:
@@ -104,10 +105,10 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: binaries
-        name: binaries-${{ github.sha }}
+        name: occ-binaries-*
 
     - name: Release
       uses: softprops/action-gh-release@v1
