@@ -1,5 +1,6 @@
 var NAVTREEINDEX17 =
 {
+"structocc_1_1qm_1_1Wavefunction.html#ad9c41ce01930b500d91bfd2f7d3138df":[2,0,2,11,16,16],
 "structocc_1_1qm_1_1Wavefunction.html#ae08a06da9603384e7c53e3db64194054":[2,0,2,11,16,1],
 "structocc_1_1qm_1_1Wavefunction.html#ae35e51e1af138bb7ddcea5091abb6b50":[2,0,2,11,16,18],
 "structocc_1_1qm_1_1Wavefunction.html#af2c5a35542bc33db7ec0b65397fedc46":[2,0,2,11,16,38],
@@ -248,6 +249,5 @@ var NAVTREEINDEX17 =
 "timings_8h.html#a569e4ae0cf6bae02ad21601b764f6518":[3,0,1,0,0,35,1],
 "timings_8h.html#a70cb6c7362561ec9d3dd674ac2cb1464":[3,0,1,0,0,35,10],
 "timings_8h.html#a71b3a3c4467a63df8fcf8f3c2a637ddd":[3,0,1,0,0,35,7],
-"timings_8h.html#aad01fabdb9306e6156d76ac590766690":[3,0,1,0,0,35,9],
-"timings_8h.html#ac322722ef93738b18db0c38c559f9806":[3,0,1,0,0,35,3]
+"timings_8h.html#aad01fabdb9306e6156d76ac590766690":[3,0,1,0,0,35,9]
 };

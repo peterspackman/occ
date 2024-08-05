@@ -1,5 +1,6 @@
 var NAVTREEINDEX16 =
 {
+"structocc_1_1main_1_1LatticeEnergyResult.html":[2,0,2,10,20],
 "structocc_1_1main_1_1LatticeEnergyResult.html#a48aa8e4ce25b76ea99e6a93f87fdb773":[2,0,2,10,20,0],
 "structocc_1_1main_1_1LatticeEnergyResult.html#a80bddde83ae26fd9b8ad05778aa1f471":[2,0,2,10,20,2],
 "structocc_1_1main_1_1LatticeEnergyResult.html#a9634bc60061b59dd60843e6640bf8f0a":[2,0,2,10,20,1],
@@ -248,6 +249,5 @@ var NAVTREEINDEX16 =
 "structocc_1_1qm_1_1Wavefunction.html#ad0e4e1c4f93b97a3e479d3dbba47ef05":[2,0,2,11,16,30],
 "structocc_1_1qm_1_1Wavefunction.html#ad21d7a1665b3110488107c0bee1995c0":[2,0,2,11,16,13],
 "structocc_1_1qm_1_1Wavefunction.html#ad359584b249ac59547ab8abc73298640":[2,0,2,11,16,15],
-"structocc_1_1qm_1_1Wavefunction.html#ad88762bcfd80595fa83b21df0b620d02":[2,0,2,11,16,29],
-"structocc_1_1qm_1_1Wavefunction.html#ad9c41ce01930b500d91bfd2f7d3138df":[2,0,2,11,16,16]
+"structocc_1_1qm_1_1Wavefunction.html#ad88762bcfd80595fa83b21df0b620d02":[2,0,2,11,16,29]
 };

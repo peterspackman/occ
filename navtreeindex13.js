@@ -1,5 +1,6 @@
 var NAVTREEINDEX13 =
 {
+"structocc_1_1core_1_1opt_1_1Bracket1D.html#a9f0a93393fdf7a4c36153e96a4323394":[2,0,2,0,3,0,2],
 "structocc_1_1core_1_1opt_1_1Bracket1D.html#aaf9dfc19de0ae51deae06b605e579b8c":[2,0,2,0,3,0,9],
 "structocc_1_1core_1_1opt_1_1Bracket1D.html#ac10a80b0968fdde8d4f53511d564bd15":[2,0,2,0,3,0,3],
 "structocc_1_1core_1_1opt_1_1Bracket1D.html#ad91fe5d4f71afca2fccb853378a7782a":[2,0,2,0,3,0,7],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1gto_1_1Momenta.html#ae79ed47cd35f89ff068e8615970acbc8":[2,0,2,6,1,3],
 "structocc_1_1gto_1_1Momenta.html#af0edf1d8bba9d9a449cc98d32f86d3bb":[2,0,2,6,1,2],
 "structocc_1_1gto_1_1MomentaSpherical.html":[2,0,2,6,2],
-"structocc_1_1gto_1_1MomentaSpherical.html#a8a9b58d31cc767f52e3c86b89a382430":[2,0,2,6,2,1],
-"structocc_1_1gto_1_1MomentaSpherical.html#ab885c51ceb96de3dd38cccaf279de5e7":[2,0,2,6,2,0]
+"structocc_1_1gto_1_1MomentaSpherical.html#a8a9b58d31cc767f52e3c86b89a382430":[2,0,2,6,2,1]
 };
