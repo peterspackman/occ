@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['x_2741',['x',['../structocc_1_1geometry_1_1MIndex_1_1Position.html#a044ef3191f2c9a6713fa7f8abbd205ed',1,'occ::geometry::MIndex::Position::x()'],['../structocc_1_1MatTriple.html#af1a59f4569695984baa61a00ca5e71dc',1,'occ::MatTriple::x()'],['../structocc_1_1core_1_1Atom.html#aa292688d9909d939aff54d40f3dd6ab8',1,'occ::core::Atom::x()']]],
-  ['x_2742',['X',['../structocc_1_1scf_1_1SCF.html#ab0d3d895f7b127606e4fe48509b7b63d',1,'occ::scf::SCF']]],
+  ['x_2741',['X',['../structocc_1_1scf_1_1SCF.html#ab0d3d895f7b127606e4fe48509b7b63d',1,'occ::scf::SCF']]],
+  ['x_2742',['x',['../structocc_1_1geometry_1_1MIndex_1_1Position.html#a044ef3191f2c9a6713fa7f8abbd205ed',1,'occ::geometry::MIndex::Position::x()'],['../structocc_1_1MatTriple.html#af1a59f4569695984baa61a00ca5e71dc',1,'occ::MatTriple::x()'],['../structocc_1_1core_1_1Atom.html#aa292688d9909d939aff54d40f3dd6ab8',1,'occ::core::Atom::x()']]],
   ['xa_2743',['xa',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#ad91fe5d4f71afca2fccb853378a7782a',1,'occ::core::opt::Bracket1D']]],
   ['xb_2744',['xb',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#af2ba1af118422ae3dc55a09aa8644223',1,'occ::core::opt::Bracket1D']]],
   ['xc_2745',['xc',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#aaf9dfc19de0ae51deae06b605e579b8c',1,'occ::core::opt::Bracket1D']]],
