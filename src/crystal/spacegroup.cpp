@@ -66,13 +66,15 @@ SpaceGroup::SpaceGroup(const std::vector<SymmetryOperation> &symops)
     : m_symops(symops) {
     occ::log::debug("Initializing space group from symops "
                     "(std::vector<SymmetryOperation>)");
-    gemmi::GroupOps ops;
+    std::vector<gemmi::Op> operations;
     for (const auto &symop : symops) {
-        ops.sym_ops.push_back(gemmi::parse_triplet(symop.to_string()));
+        operations.push_back(gemmi::parse_triplet(symop.to_string()));
     }
+    gemmi::GroupOps ops = gemmi::split_centering_vectors(operations);
     m_sgdata = gemmi::find_spacegroup_by_ops(ops);
     if (m_sgdata != nullptr) {
         occ::log::debug("Found space group: {}", m_sgdata->hm);
+        m_symops.clear();
         for (const auto &op : m_sgdata->operations()) {
             m_symops.push_back(SymmetryOperation(op.triplet()));
         }
