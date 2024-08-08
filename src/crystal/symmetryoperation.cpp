@@ -183,4 +183,22 @@ Mat3 SymmetryOperation::cartesian_rotation(const UnitCell &cell) const {
   return direct * frac_rotation * inverse;
 }
 
+Vec6 SymmetryOperation::rotate_adp(Eigen::Ref<const Vec6> adp) const {
+  // Convert ADP vector to 3x3 symmetric matrix
+  Mat3 u;
+  // clang-format off
+  u << adp(0), adp(3), adp(4),
+       adp(3), adp(1), adp(5),
+       adp(4), adp(5), adp(2);
+  // clang-format on
+
+  // Perform tensor transformation: U' = R * U * R^T
+  Mat3 u_rot = rotation() * u * rotation().transpose();
+
+  Vec6 result;
+  result << u_rot(0, 0), u_rot(1, 1), u_rot(2, 2),
+      u_rot(0, 1), u_rot(0, 2), u_rot(1, 2);
+  return result;
+}
+
 } // namespace occ::crystal

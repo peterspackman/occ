@@ -15,8 +15,22 @@ struct AtomData {
   std::string site_label;
   std::string residue_name;
   std::string chain_id;
+  std::string adp_type;
   int residue_number;
-  double position[3];
+  double x{0.0};
+  double y{0.0};
+  double z{0.0};
+  double uiso{0.0};
+};
+
+struct AdpData {
+  std::string aniso_label;
+  double u11{0.0};
+  double u22{0.0};
+  double u33{0.0};
+  double u12{0.0};
+  double u13{0.0};
+  double u23{0.0};
 };
 
 struct CellData {
@@ -81,6 +95,15 @@ private:
     FracX,
     FracY,
     FracZ,
+    AdpType,
+    Uiso,
+    AdpLabel,
+    AdpU11,
+    AdpU22,
+    AdpU33,
+    AdpU12,
+    AdpU13,
+    AdpU23
   };
 
   enum class CellField {
@@ -101,11 +124,12 @@ private:
   void extract_symmetry_data(const gemmi::cif::Pair &);
   std::string m_failure_desc;
   std::vector<AtomData> m_atoms;
+  ankerl::unordered_dense::map<std::string, AdpData> m_adps;
   SymmetryData m_sym;
   CellData m_cell;
 
   static void set_atom_data(int index, const std::vector<AtomField> &fields,
-                            const gemmi::cif::Loop &loop, AtomData &atom);
+                            const gemmi::cif::Loop &loop, AtomData &atom, AdpData &adp);
 
   static const ankerl::unordered_dense::map<std::string, AtomField>
       m_known_atom_fields;

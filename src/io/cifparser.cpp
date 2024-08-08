@@ -19,6 +19,15 @@ const ankerl::unordered_dense::map<std::string, CifParser::AtomField>
         {"_atom_site_fract_x", AtomField::FracX},
         {"_atom_site_fract_y", AtomField::FracY},
         {"_atom_site_fract_z", AtomField::FracZ},
+        {"_atom_site_adp_type", AtomField::AdpType},
+        {"_atom_site_u_iso_or_equiv", AtomField::Uiso},
+        {"_atom_site_aniso_label", AtomField::AdpLabel},
+        {"_atom_site_aniso_u_11", AtomField::AdpU11},
+        {"_atom_site_aniso_u_22", AtomField::AdpU22},
+        {"_atom_site_aniso_u_33", AtomField::AdpU33},
+        {"_atom_site_aniso_u_12", AtomField::AdpU12},
+        {"_atom_site_aniso_u_13", AtomField::AdpU13},
+        {"_atom_site_aniso_u_23", AtomField::AdpU23},
     };
 
 const ankerl::unordered_dense::map<std::string, CifParser::CellField>
@@ -42,7 +51,7 @@ const ankerl::unordered_dense::map<std::string, CifParser::SymmetryField>
 CifParser::CifParser() {}
 
 void CifParser::set_atom_data(int index, const std::vector<AtomField> &fields,
-                              const Loop &loop, AtomData &atom) {
+                              const Loop &loop, AtomData &atom, AdpData &adp) {
   using enum CifParser::AtomField;
   using gemmi::cif::as_number;
 
@@ -57,13 +66,40 @@ void CifParser::set_atom_data(int index, const std::vector<AtomField> &fields,
       atom.element = value;
       break;
     case FracX:
-      atom.position[0] = as_number(value);
+      atom.x = as_number(value);
       break;
     case FracY:
-      atom.position[1] = as_number(value);
+      atom.y = as_number(value);
       break;
     case FracZ:
-      atom.position[2] = as_number(value);
+      atom.z = as_number(value);
+      break;
+    case AdpType:
+      atom.adp_type = value;
+      break;
+    case Uiso:
+      atom.uiso = as_number(value);
+      break;
+    case AdpLabel:
+      adp.aniso_label = value;
+      break;
+    case AdpU11:
+      adp.u11 = as_number(value);
+      break;
+    case AdpU22:
+      adp.u22 = as_number(value);
+      break;
+    case AdpU33:
+      adp.u33 = as_number(value);
+      break;
+    case AdpU12:
+      adp.u12 = as_number(value);
+      break;
+    case AdpU13:
+      adp.u13 = as_number(value);
+      break;
+    case AdpU23:
+      adp.u23 = as_number(value);
       break;
     default:
       break;
@@ -77,7 +113,7 @@ void CifParser::extract_atom_sites(const Loop &loop) {
   bool found_info = false;
   // Map tags to fields
   for (size_t i = 0; i < loop.tags.size(); ++i) {
-    const auto &tag = loop.tags[i];
+    const auto tag = occ::util::to_lower_copy(loop.tags[i]);
     const auto kv = m_known_atom_fields.find(tag);
     if (kv != m_known_atom_fields.end()) {
       fields[i] = kv->second;
@@ -88,13 +124,18 @@ void CifParser::extract_atom_sites(const Loop &loop) {
 
   if (!found_info)
     return;
+
+  m_atoms.resize(loop.length());
   for (size_t i = 0; i < loop.length(); i++) {
-    AtomData atom;
-    set_atom_data(i, fields, loop, atom);
-    // use the site label if we have no element type
+    AdpData adp;
+    auto &atom = m_atoms[i];
+    set_atom_data(i, fields, loop, atom, adp);
     if (atom.element.empty())
       atom.element = atom.site_label;
-    m_atoms.push_back(atom);
+
+    if(!adp.aniso_label.empty()) {
+      m_adps.insert({adp.aniso_label, adp});
+    }
   }
   occ::log::debug("Found {} atom sites", m_atoms.size());
 }
@@ -243,28 +284,50 @@ CifParser::parse_crystal(const std::string &filename) {
       occ::log::debug("Failed reading crystal: {}", m_failure_desc);
       return std::nullopt;
     }
+
+    occ::crystal::UnitCell uc(m_cell.a, m_cell.b, m_cell.c, m_cell.alpha,
+                              m_cell.beta, m_cell.gamma);
+
     occ::crystal::AsymmetricUnit asym;
     if (num_atoms() > 0) {
       occ::log::debug("Found {} atoms _atom_site data block", num_atoms());
-      asym.atomic_numbers.conservativeResize(num_atoms());
-      asym.positions.conservativeResize(3, num_atoms());
+      asym.atomic_numbers.resize(num_atoms());
+      asym.positions.resize(3, num_atoms());
+      asym.adps.resize(6, num_atoms());
+
       int i = 0;
 
       for (const auto &atom : m_atoms) {
         occ::log::debug("Atom element = {}, label = {} position = {} {} {}",
-                        atom.element, atom.site_label, atom.position[0],
-                        atom.position[1], atom.position[2]);
-        asym.positions(0, i) = atom.position[0];
-        asym.positions(1, i) = atom.position[1];
-        asym.positions(2, i) = atom.position[2];
+                        atom.element, atom.site_label, atom.x,
+                        atom.y, atom.z);
+        asym.positions(0, i) = atom.x;
+        asym.positions(1, i) = atom.y;
+        asym.positions(2, i) = atom.z;
         asym.atomic_numbers(i) =
             occ::core::Element(atom.element).atomic_number();
         asym.labels.push_back(atom.site_label);
+
+        // set Uiso in case we don't have an adp, by default should be 0 anyway;
+        asym.adps(0, i) = atom.uiso;
+        asym.adps(1, i) = atom.uiso;
+        asym.adps(2, i) = atom.uiso;
+
+        const auto kv = m_adps.find(atom.site_label);
+        if(kv != m_adps.end()) {
+          const auto &adp = kv->second;
+          asym.adps(0, i) = adp.u11;
+          asym.adps(1, i) = adp.u22;
+          asym.adps(2, i) = adp.u33;
+          asym.adps(3, i) = adp.u12;
+          asym.adps(4, i) = adp.u13;
+          asym.adps(5, i) = adp.u23;
+          occ::log::debug("Have ADP for atom {}: {}", i, asym.adps.col(i).transpose());
+        }
         i++;
       }
     }
-    occ::crystal::UnitCell uc(m_cell.a, m_cell.b, m_cell.c, m_cell.alpha,
-                              m_cell.beta, m_cell.gamma);
+    occ::log::debug("Cartesian ADPs\n{}\n", uc.to_cartesian_adp(asym.adps).transpose());
 
     occ::crystal::SpaceGroup sg(1);
     bool found = false;
