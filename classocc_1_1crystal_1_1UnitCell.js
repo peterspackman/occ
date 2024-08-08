@@ -7,6 +7,8 @@ var classocc_1_1crystal_1_1UnitCell =
     [ "a", "classocc_1_1crystal_1_1UnitCell.html#a02bc62be5b7171cf0dd95d837bf7032d", null ],
     [ "a_star_vector", "classocc_1_1crystal_1_1UnitCell.html#ab317b8b1c46f7189c27f6bee1c47a32e", null ],
     [ "a_vector", "classocc_1_1crystal_1_1UnitCell.html#a0032187c788fe7811aedf06904c4a16f", null ],
+    [ "adp_adhoc_direct", "classocc_1_1crystal_1_1UnitCell.html#a4f67c3bc0c43614aade2d013eaff9c8c", null ],
+    [ "adp_adhoc_inverse", "classocc_1_1crystal_1_1UnitCell.html#ab22ef293e889f061a0045c879bbefa20", null ],
     [ "alpha", "classocc_1_1crystal_1_1UnitCell.html#a163b84fe62fc90967efb037de882a1c4", null ],
     [ "angles", "classocc_1_1crystal_1_1UnitCell.html#a33c963c34d7bf5de09fb708bc18c01bc", null ],
     [ "b", "classocc_1_1crystal_1_1UnitCell.html#a02f3ca3750c633457f670818b737fe4f", null ],
@@ -40,7 +42,9 @@ var classocc_1_1crystal_1_1UnitCell =
     [ "set_c", "classocc_1_1crystal_1_1UnitCell.html#a86f098d364d253cdee92cac572ed6afd", null ],
     [ "set_gamma", "classocc_1_1crystal_1_1UnitCell.html#a44606f8e40c9994fd37a9fb7f6a56267", null ],
     [ "to_cartesian", "classocc_1_1crystal_1_1UnitCell.html#af4a5f5427b7ba5a5ed0d6608357815c2", null ],
+    [ "to_cartesian_adp", "classocc_1_1crystal_1_1UnitCell.html#a8e1904141349963059bdcbd78dd13ef4", null ],
     [ "to_fractional", "classocc_1_1crystal_1_1UnitCell.html#aa799530884afa42f47f2dee674f4464c", null ],
+    [ "to_fractional_adp", "classocc_1_1crystal_1_1UnitCell.html#acc5a410f98c801f1794229d724276a17", null ],
     [ "to_reciprocal", "classocc_1_1crystal_1_1UnitCell.html#a94d048f35e37a1cf01aea93c04c396a9", null ],
     [ "volume", "classocc_1_1crystal_1_1UnitCell.html#ab1c0d16c80ecc6f38aabe02670a14616", null ]
 ];

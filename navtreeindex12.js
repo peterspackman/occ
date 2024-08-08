@@ -1,5 +1,11 @@
 var NAVTREEINDEX12 =
 {
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a35973cc996dc50cbf582b8c799611a6a":[3,0,1,0,0,30,3,30],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a387428cc16d4b2b205e1f94fbd113d7d":[3,0,1,0,0,30,3,18],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a3abe124ecc82bf2c2e22e6058f38c50c":[3,0,1,0,0,30,3,4],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a41997c74c566640513d1d23ad5c38108":[3,0,1,0,0,30,3,31],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a5bb1aa42f0605aab04353fc99d3bb3f4":[3,0,1,0,0,30,3,29],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a6fd5bce0a0270467f657066323880d96":[3,0,1,0,0,30,3,1],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a7205636bb6ee2cc464c30ce1cda43caa":[3,0,1,0,0,30,3,46],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a727999d580f3708378e3d903ddfa246d":[3,0,1,0,0,30,3,8],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a7e8b9f5cab4a8fe24fad9fe4b7452702":[3,0,1,0,0,30,3,7],
@@ -243,11 +249,5 @@ var NAVTREEINDEX12 =
 "structocc_1_1core_1_1numpy_1_1NumpyArray.html#ab93073c6c0dec1361751260330efcd41":[2,0,2,0,2,1,9],
 "structocc_1_1core_1_1numpy_1_1NumpyArray.html#aba6cf6d429d4200cccb65c5515f1858f":[2,0,2,0,2,1,2],
 "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html":[2,0,2,0,2,0,0],
-"structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html":[2,0,2,0,2,0,1],
-"structocc_1_1core_1_1opt_1_1Bracket1D.html":[2,0,2,0,3,0],
-"structocc_1_1core_1_1opt_1_1Bracket1D.html#a1c093b79a7db65e370044e33274784b2":[2,0,2,0,3,0,1],
-"structocc_1_1core_1_1opt_1_1Bracket1D.html#a8710b4e2a7fde4345564d9bba83e59b8":[2,0,2,0,3,0,5],
-"structocc_1_1core_1_1opt_1_1Bracket1D.html#a89f2f3402ba91e0fa9a13473b4bb09a2":[2,0,2,0,3,0,6],
-"structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e488385fae973b497dafce502c6b6a8":[2,0,2,0,3,0,0],
-"structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9":[2,0,2,0,3,0,4]
+"structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html":[2,0,2,0,2,0,1]
 };

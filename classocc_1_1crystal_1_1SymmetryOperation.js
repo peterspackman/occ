@@ -14,6 +14,7 @@ var classocc_1_1crystal_1_1SymmetryOperation =
     [ "operator==", "classocc_1_1crystal_1_1SymmetryOperation.html#a81cf31b335c5874044350777ad96a362", null ],
     [ "operator>", "classocc_1_1crystal_1_1SymmetryOperation.html#a32dab436d7a5ffa72b53a4198e3357ae", null ],
     [ "operator>=", "classocc_1_1crystal_1_1SymmetryOperation.html#a5787201aa07292036215a90eb2bf9ce2", null ],
+    [ "rotate_adp", "classocc_1_1crystal_1_1SymmetryOperation.html#af79d2bf93cc8e4eb5ca74940ffae64d7", null ],
     [ "rotation", "classocc_1_1crystal_1_1SymmetryOperation.html#ab86819a427877077109be10d5c6cf0cb", null ],
     [ "seitz", "classocc_1_1crystal_1_1SymmetryOperation.html#a7f015dfac57d18aa40c8b73d28c5c84e", null ],
     [ "to_int", "classocc_1_1crystal_1_1SymmetryOperation.html#a36f45c065997cc06351555c67b28e6ca", null ],

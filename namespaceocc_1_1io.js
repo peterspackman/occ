@@ -9,6 +9,7 @@ var namespaceocc_1_1io =
     [ "RowConfiguration", "structocc_1_1io_1_1RowConfiguration.html", "structocc_1_1io_1_1RowConfiguration" ],
     [ "Table", "classocc_1_1io_1_1Table.html", "classocc_1_1io_1_1Table" ],
     [ "AtomData", "structocc_1_1io_1_1AtomData.html", "structocc_1_1io_1_1AtomData" ],
+    [ "AdpData", "structocc_1_1io_1_1AdpData.html", "structocc_1_1io_1_1AdpData" ],
     [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
     [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
     [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],

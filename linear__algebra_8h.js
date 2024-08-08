@@ -46,6 +46,7 @@ var linear__algebra_8h =
     [ "Mat4ConstRef", "linear__algebra_8h.html#a4583e9d21da96377bedd2b9755dd4c85", null ],
     [ "Mat4N", "linear__algebra_8h.html#a61d928e54a4aefae054e2f13abd5ed49", null ],
     [ "Mat6", "linear__algebra_8h.html#abc0f8b29c42815ff2318bb8c63673c19", null ],
+    [ "Mat6N", "linear__algebra_8h.html#a13573be5fe3aedf9fe72eae888ce1166", null ],
     [ "MatConstRef", "linear__algebra_8h.html#ab1a478ffb0d7260c682e8a81b45a3558", null ],
     [ "MatN3", "linear__algebra_8h.html#a6dd10d46de914e7901a02bd2f2fa805a", null ],
     [ "MatN3ConstRef", "linear__algebra_8h.html#a152273807a66bf06678e613ceffb24c8", null ],

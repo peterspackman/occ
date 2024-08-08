@@ -3,6 +3,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "basis_g94.h", "basis__g94_8h.html", "basis__g94_8h" ],
     [ "cifparser.h", "cifparser_8h.html", [
       [ "AtomData", "structocc_1_1io_1_1AtomData.html", "structocc_1_1io_1_1AtomData" ],
+      [ "AdpData", "structocc_1_1io_1_1AdpData.html", "structocc_1_1io_1_1AdpData" ],
       [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
       [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
       [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ]
