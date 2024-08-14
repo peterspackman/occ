@@ -136,3 +136,11 @@ CPMAddPackage(
     GIT_TAG "v2.0.0"
 )
 endif()
+
+if("${WITH_LUA}")
+CPMAddPackage(
+  NAME sol2
+  GITHUB_REPOSITORY ThePhD/sol2
+  VERSION 3.3.0
+)
+endif()

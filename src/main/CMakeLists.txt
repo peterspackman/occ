@@ -9,6 +9,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elastic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_lua.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cg.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cube.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_dimers.cpp"
@@ -21,6 +22,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
     ${OCC_MAIN_INCLUDE_FILES}
 )
+
 
 target_link_libraries(occ_main
     PUBLIC 
@@ -45,6 +47,7 @@ target_include_directories(occ_main PUBLIC
 )
 
 target_compile_features(occ_main PUBLIC cxx_std_20)
+target_compile_definitions(occ_main PUBLIC OCC_LUA_BINDINGS ${WITH_LUA})
 
 add_executable(xdm EXCLUDE_FROM_ALL 
     "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")
@@ -53,6 +56,12 @@ target_link_libraries(xdm
     occ_main
     occ_xdm
 )
+
+if("${WITH_LUA}")
+find_package(Lua REQUIRED)
+target_include_directories(occ_main PRIVATE ${LUA_INCLUDE_DIR})
+target_link_libraries(occ_main PRIVATE sol2::sol2 ${LUA_LIBRARIES})
+endif()
 
 set_target_properties(xdm
     PROPERTIES
