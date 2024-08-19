@@ -125,7 +125,7 @@ void CifParser::extract_atom_sites(const Loop &loop) {
   if (!found_info)
     return;
 
-  m_atoms.resize(loop.length());
+  m_atoms.resize(std::max(m_atoms.size(), loop.length()));
   for (size_t i = 0; i < loop.length(); i++) {
     AdpData adp;
     auto &atom = m_atoms[i];
@@ -293,7 +293,7 @@ CifParser::parse_crystal(const std::string &filename) {
       occ::log::debug("Found {} atoms _atom_site data block", num_atoms());
       asym.atomic_numbers.resize(num_atoms());
       asym.positions.resize(3, num_atoms());
-      asym.adps.resize(6, num_atoms());
+      asym.adps = Mat6N::Zero(6, num_atoms());
 
       int i = 0;
 

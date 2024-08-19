@@ -106,6 +106,14 @@ struct AsymmetricUnit {
   Vec covalent_radii() const;
 
   /**
+   * \brief Returns the van der Waals radii of the atoms in the asymmetric unit.
+   *
+   * \return A vector of size n containing the van der Waals radii of the atoms
+   * in the unit cell, in the same order as their atomic numbers.
+   */
+  Vec vdw_radii() const;
+
+  /**
    * \brief Generates default labels for the atoms in the unit cell.
    *
    * The default labels are assigned based on the chemical element of each

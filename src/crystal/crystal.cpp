@@ -709,4 +709,13 @@ Crystal::dimer_symmetry_string(const occ::core::Dimer &dimer) const {
 
 double Crystal::volume() const { return m_unit_cell.volume(); }
 
+SiteMappingTable Crystal::atom_site_mapping_table() const {
+  return SiteMappingTable::build_atom_table(*this);
+}
+
+SiteMappingTable Crystal::molecule_site_mapping_table() const {
+  return SiteMappingTable::build_molecule_table(*this);
+}
+
+
 } // namespace occ::crystal

@@ -7,6 +7,7 @@
 #include <occ/crystal/hkl.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/unitcell.h>
+#include <occ/crystal/site_mapping_table.h>
 #include <vector>
 
 namespace occ::crystal {
@@ -508,6 +509,9 @@ public:
    * the original lattice.
    */
   static Crystal create_primitive_supercell(const Crystal &c, HKL hkl);
+
+  SiteMappingTable atom_site_mapping_table() const;
+  SiteMappingTable molecule_site_mapping_table() const;
 
 private:
   AsymmetricUnit m_asymmetric_unit;

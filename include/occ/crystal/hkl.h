@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/core.h>
 #include <occ/core/linear_algebra.h>
 
 namespace occ::crystal {
@@ -17,77 +18,90 @@ namespace occ::crystal {
  * `HKL` objects using the magnitude of the lattice vectors.
  */
 struct HKL {
-    int h{0}, k{0}, l{0};
+  int h{0}, k{0}, l{0};
 
-    /**
-     * \brief Calculates the magnitude of the lattice vector represented by this
-     * `HKL` object.
-     *
-     * The magnitude of the lattice vector is calculated using the lattice
-     * parameters of the crystal lattice, as follows:
-     *
-     * \f[
-     *
-     *  d = \sqrt{h^2 a^2 + k^2 b^2 + l^2 c^2 + 2 hk ab \cos \gamma + 2 hl ac
-     * \cos \beta + 2 kl bc \cos \alpha}
-     *
-     * \f]
-     *
-     * where (h, k, l) are the Miller indices of the lattice vector, and (a, b,
-     * c) and
-     * (\f$\alpha\f$, \f$\beta\f$, \f$\gamma\f$) are the lattice parameters of
-     * the crystal lattice.
-     *
-     * \param lattice The lattice parameters of the crystal lattice, represented
-     * as a 3x3 matrix. The matrix must have the lattice vectors as columns, in
-     * the order (a, b, c).
-     *
-     * \return The magnitude of the lattice vector represented by this `HKL`
-     * object, as a floating-point value.
-     */
-    inline double d(const Mat3 &lattice) const {
-        return Vec3(h * lattice.col(0) + k * lattice.col(1) +
-                    l * lattice.col(2))
-            .norm();
-    }
+  /**
+   * \brief Calculates the magnitude of the lattice vector represented by this
+   * `HKL` object.
+   *
+   * The magnitude of the lattice vector is calculated using the lattice
+   * parameters of the crystal lattice, as follows:
+   *
+   * \f[
+   *
+   *  d = \sqrt{h^2 a^2 + k^2 b^2 + l^2 c^2 + 2 hk ab \cos \gamma + 2 hl ac
+   * \cos \beta + 2 kl bc \cos \alpha}
+   *
+   * \f]
+   *
+   * where (h, k, l) are the Miller indices of the lattice vector, and (a, b,
+   * c) and
+   * (\f$\alpha\f$, \f$\beta\f$, \f$\gamma\f$) are the lattice parameters of
+   * the crystal lattice.
+   *
+   * \param lattice The lattice parameters of the crystal lattice, represented
+   * as a 3x3 matrix. The matrix must have the lattice vectors as columns, in
+   * the order (a, b, c).
+   *
+   * \return The magnitude of the lattice vector represented by this `HKL`
+   * object, as a floating-point value.
+   */
+  double d(const Mat3 &lattice) const;
 
-    inline Vec3 vector() const {
-        return Vec3(static_cast<double>(h), static_cast<double>(k),
-                    static_cast<double>(l));
-    }
+  /// The maximum representable HKL structure
+  static HKL maximum() {
+    return {std::numeric_limits<int>::max(), std::numeric_limits<int>::max(),
+            std::numeric_limits<int>::max()};
+  }
 
-    /// The maximum representable HKL structure
-    static HKL maximum() {
-        return {std::numeric_limits<int>::max(),
-                std::numeric_limits<int>::max(),
-                std::numeric_limits<int>::max()};
-    }
+  /// The minimum representable HKL structure
+  static HKL minimum() {
+    return {std::numeric_limits<int>::min(), std::numeric_limits<int>::min(),
+            std::numeric_limits<int>::min()};
+  }
 
-    /// The minimum representable HKL structure
-    static HKL minimum() {
-        return {std::numeric_limits<int>::min(),
-                std::numeric_limits<int>::min(),
-                std::numeric_limits<int>::min()};
-    }
+  static HKL floor(const Vec3 &vec);
+  static HKL ceil(const Vec3 &vec);
 
-    static HKL floor(const Vec3 &vec) {
-        HKL r;
-        r.h = static_cast<int>(std::floor(vec(0)));
-        r.k = static_cast<int>(std::floor(vec(1)));
-        r.l = static_cast<int>(std::floor(vec(2)));
-        return r;
-    }
+  Vec3 vector() const;
+  static HKL from_vector(const Vec3 &vec);
 
-    static HKL ceil(const Vec3 &vec) {
-        HKL r;
-        r.h = static_cast<int>(std::ceil(vec(0)));
-        r.k = static_cast<int>(std::ceil(vec(1)));
-        r.l = static_cast<int>(std::ceil(vec(2)));
-        return r;
-    }
+  inline bool operator==(const HKL &rhs) const {
+    return (h == rhs.h) && (k == rhs.k) && (l == rhs.l);
+  }
 
-    inline bool operator==(const HKL &rhs) const {
-        return (h == rhs.h) && (k == rhs.k) && (l == rhs.l);
-    }
+  inline HKL operator-(const HKL &rhs) const {
+    return HKL{h - rhs.h, k - rhs.k, l - rhs.l};
+  }
+
+  inline bool operator<(const HKL &rhs) const {
+    return std::tie(h, k, l) < std::tie(rhs.h, rhs.k, rhs.l);
+  }
+
+  inline bool operator>(const HKL &rhs) const {
+    return std::tie(h, k, l) > std::tie(rhs.h, rhs.k, rhs.l);
+  }
+
+  inline HKL operator+(const HKL &rhs) const {
+    return HKL{h + rhs.h, k + rhs.k, l + rhs.l};
+  }
+  inline HKL &operator+=(const HKL &rhs) {
+    h += rhs.h;
+    k += rhs.k;
+    l += rhs.l;
+    return *this;
+  }
+
+  inline HKL &operator-=(const HKL &rhs) {
+    h -= rhs.h;
+    k -= rhs.k;
+    l -= rhs.l;
+    return *this;
+  }
 };
 } // namespace occ::crystal
+
+template <> struct fmt::formatter<occ::crystal::HKL> : nested_formatter<int> {
+  auto format(const occ::crystal::HKL &,
+              format_context &ctx) const -> format_context::iterator;
+};

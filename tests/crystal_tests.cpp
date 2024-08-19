@@ -1,12 +1,14 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/matchers/catch_matchers_vector.hpp>
 #include <fmt/ostream.h>
 #include <iostream>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/crystal/crystal.h>
+#include <occ/crystal/dimer_mapping_table.h>
 #include <occ/crystal/muldin.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/surface.h>
@@ -14,6 +16,7 @@
 
 using occ::Mat3N;
 using occ::MatN3;
+using occ::Vec3;
 using occ::crystal::AsymmetricUnit;
 using occ::crystal::Crystal;
 using occ::crystal::HKL;
@@ -615,5 +618,362 @@ TEST_CASE("UnitCell ADP conversion", "[crystal][unitcell]") {
     // expected so the tolerance must be a bit coarse
     REQUIRE(expected.isApprox(cart_adps, 1e-3));
     REQUIRE(back_to_frac.isApprox(frac_adps, 1e-10));
+  }
+}
+
+TEST_CASE("Atom mapping table", "[crystal][unitcell]") {
+  using occ::crystal::SiteMappingTable;
+  Crystal crystal = acetic_acid_crystal();
+  SiteMappingTable atom_table = SiteMappingTable::build_atom_table(crystal);
+  const auto &atoms = crystal.unit_cell_atoms();
+  const auto &symops = crystal.symmetry_operations();
+
+  SECTION("Table Size") {
+    for (size_t i = 0; i < atom_table.size(); ++i) {
+      fmt::print("Atom {}:\n", i);
+      auto symops = atom_table.get_symmetry_operations(i);
+      for (const auto &[symop, offset] : symops) {
+        auto target = atom_table.get_target(i, symop, offset);
+        if (target) {
+          fmt::print("  {} ({} {} {}) -> Atom {}\n",
+                     SymmetryOperation(symop).to_string(), offset.h, offset.k,
+                     offset.l, *target);
+        }
+      }
+    }
+    CHECK(atom_table.size() == atoms.size());
+  }
+
+  SECTION("Identity Mapping") {
+    for (size_t i = 0; i < atoms.size(); ++i) {
+      auto target =
+          atom_table.get_target(i, 16484, {0, 0, 0}); // 16484 is identity
+      REQUIRE(target.has_value());
+      CHECK(*target == i);
+    }
+  }
+
+  SECTION("Symmetry Operations") {
+    for (size_t i = 0; i < atoms.size(); ++i) {
+      auto symops_with_offsets = atom_table.get_symmetry_operations(i);
+      CHECK(symops_with_offsets.size() == symops.size());
+    }
+  }
+
+  SECTION("Neighbor Consistency") {
+    for (size_t i = 0; i < atoms.size(); ++i) {
+      auto neighbors = atom_table.get_neighbors(i);
+      auto symops_with_offsets = atom_table.get_symmetry_operations(i);
+
+      CHECK(neighbors.size() == symops_with_offsets.size());
+
+      for (const auto &[symop_int, offset] : symops_with_offsets) {
+        auto target = atom_table.get_target(i, symop_int, offset);
+        REQUIRE(target.has_value());
+        CHECK_THAT(neighbors, Catch::Matchers::VectorContains(*target));
+      }
+    }
+  }
+
+  SECTION("Edge Consistency") {
+    for (size_t i = 0; i < atoms.size(); ++i) {
+      auto neighbors = atom_table.get_neighbors(i);
+      for (const auto &neighbor : neighbors) {
+        auto edges = atom_table.get_edges(i, neighbor);
+        CHECK(!edges.empty());
+        for (const auto &edge : edges) {
+          CHECK(edge.source == i);
+          CHECK(edge.target == neighbor);
+          auto target = atom_table.get_target(i, edge.symop, edge.offset);
+          REQUIRE(target.has_value());
+          CHECK(*target == neighbor);
+        }
+      }
+    }
+  }
+
+  SECTION("Atom Type Preservation") {
+    for (size_t i = 0; i < atoms.size(); ++i) {
+      auto symops_with_offsets = atom_table.get_symmetry_operations(i);
+      for (const auto &[symop_int, offset] : symops_with_offsets) {
+        auto target = atom_table.get_target(i, symop_int, offset);
+        REQUIRE(target.has_value());
+        CHECK(atoms.atomic_numbers(i) == atoms.atomic_numbers(*target));
+      }
+    }
+  }
+
+  SECTION("Atom position consistency") {
+    for (size_t i = 0; i < atoms.size(); ++i) {
+      auto symops_with_offsets = atom_table.get_symmetry_operations(i);
+      for (const auto &[symop_int, offset] : symops_with_offsets) {
+        auto target = atom_table.get_target(i, symop_int, offset);
+        REQUIRE(target.has_value());
+        occ::Vec3 pos = offset.vector() + atoms.frac_pos.col(*target);
+        occ::Vec3 pos_symop =
+            SymmetryOperation(symop_int).apply(atoms.frac_pos.col(i));
+        REQUIRE(pos.isApprox(pos_symop));
+        CHECK(atoms.atomic_numbers(i) == atoms.atomic_numbers(*target));
+      }
+    }
+  }
+}
+
+using occ::crystal::DimerIndex;
+using occ::crystal::HKL;
+using occ::crystal::SiteMappingTable;
+
+TEST_CASE("Molecule mapping table", "[crystal][unitcell]") {
+  using occ::crystal::SiteMappingTable;
+  Crystal crystal = acetic_acid_crystal();
+  SiteMappingTable molecule_table =
+      SiteMappingTable::build_molecule_table(crystal);
+  const auto &molecules = crystal.unit_cell_molecules();
+  const auto &symops = crystal.symmetry_operations();
+
+  SECTION("Table Size") {
+    // Print out the molecule mapping table
+    for (size_t i = 0; i < molecule_table.size(); ++i) {
+      fmt::print("Molecule {}:\n", i);
+      auto symops = molecule_table.get_symmetry_operations(i);
+      for (const auto &[symop, offset] : symops) {
+        auto target = molecule_table.get_target(i, symop, offset);
+        if (target) {
+          fmt::print("  {} ({} {} {}) -> Molecule {}\n",
+                     SymmetryOperation(symop).to_string(), offset.h, offset.k,
+                     offset.l, *target);
+        }
+      }
+    }
+    CHECK(molecule_table.size() == molecules.size());
+  }
+
+  SECTION("Identity Mapping") {
+    for (size_t i = 0; i < molecules.size(); ++i) {
+      auto target =
+          molecule_table.get_target(i, 16484, {0, 0, 0}); // 16484 is identity
+      REQUIRE(target.has_value());
+      CHECK(*target == i);
+    }
+  }
+
+  SECTION("Symmetry Operations") {
+    for (size_t i = 0; i < molecules.size(); ++i) {
+      auto symops_with_offsets = molecule_table.get_symmetry_operations(i);
+      CHECK(symops_with_offsets.size() == symops.size());
+    }
+  }
+
+  SECTION("Neighbor Consistency") {
+    for (size_t i = 0; i < molecules.size(); ++i) {
+      auto neighbors = molecule_table.get_neighbors(i);
+      auto symops_with_offsets = molecule_table.get_symmetry_operations(i);
+      CHECK(neighbors.size() == symops_with_offsets.size());
+      for (const auto &[symop_int, offset] : symops_with_offsets) {
+        auto target = molecule_table.get_target(i, symop_int, offset);
+        REQUIRE(target.has_value());
+        CHECK_THAT(neighbors, Catch::Matchers::VectorContains(*target));
+      }
+    }
+  }
+
+  SECTION("Edge Consistency") {
+    for (size_t i = 0; i < molecules.size(); ++i) {
+      auto neighbors = molecule_table.get_neighbors(i);
+      for (const auto &neighbor : neighbors) {
+        auto edges = molecule_table.get_edges(i, neighbor);
+        CHECK(!edges.empty());
+        for (const auto &edge : edges) {
+          CHECK(edge.source == i);
+          CHECK(edge.target == neighbor);
+          auto target = molecule_table.get_target(i, edge.symop, edge.offset);
+          REQUIRE(target.has_value());
+          CHECK(*target == neighbor);
+        }
+      }
+    }
+  }
+
+  SECTION("Molecule Type Preservation") {
+    for (size_t i = 0; i < molecules.size(); ++i) {
+      auto symops_with_offsets = molecule_table.get_symmetry_operations(i);
+      for (const auto &[symop_int, offset] : symops_with_offsets) {
+        auto target = molecule_table.get_target(i, symop_int, offset);
+        REQUIRE(target.has_value());
+        CHECK(molecules[i].is_equivalent_to(molecules[*target]));
+      }
+    }
+  }
+
+  SECTION("Centroid Consistency") {
+    const double tolerance = 1e-6;
+    for (size_t i = 0; i < molecules.size(); ++i) {
+      auto symops_with_offsets = molecule_table.get_symmetry_operations(i);
+      for (const auto &[symop_int, offset] : symops_with_offsets) {
+        auto target = molecule_table.get_target(i, symop_int, offset);
+        REQUIRE(target.has_value());
+
+        Vec3 centroid_i = crystal.to_fractional(molecules[i].centroid());
+        Vec3 centroid_target =
+            crystal.to_fractional(molecules[*target].centroid());
+
+        Vec3 transformed_centroid =
+            SymmetryOperation(symop_int).apply(centroid_i);
+        transformed_centroid += Vec3(offset.h, offset.k, offset.l);
+
+        // Wrap the transformed centroid back to the unit cell
+        for (int j = 0; j < 3; ++j) {
+          transformed_centroid[j] -= std::floor(transformed_centroid[j]);
+        }
+
+        CHECK((transformed_centroid - centroid_target).norm() < tolerance);
+      }
+    }
+  }
+}
+
+using occ::crystal::DimerIndex;
+using occ::crystal::DimerMappingTable;
+using occ::crystal::SiteIndex;
+
+DimerIndex make_dimer(int a_offset, int a_h, int a_k, int a_l, int b_offset,
+                      int b_h, int b_k, int b_l) {
+  return DimerIndex{SiteIndex{a_offset, HKL{a_h, a_k, a_l}},
+                    SiteIndex{b_offset, HKL{b_h, b_k, b_l}}};
+}
+
+TEST_CASE("DimerMappingTable construction and basic properties",
+          "[crystal][dimer]") {
+  Crystal crystal = acetic_acid_crystal();
+  auto dimers = crystal.unit_cell_dimers(3.8); // Assuming this method exists
+
+  SECTION("Construction without inversion") {
+    DimerMappingTable table =
+        DimerMappingTable::build_dimer_table(crystal, dimers, false);
+
+    REQUIRE(table.unique_dimers().size() == 56);
+    REQUIRE(table.symmetry_unique_dimers().size() == 14);
+  }
+
+  SECTION("Construction with inversion") {
+    DimerMappingTable table =
+        DimerMappingTable::build_dimer_table(crystal, dimers, true);
+
+    REQUIRE(table.unique_dimers().size() == 28);
+    REQUIRE(table.symmetry_unique_dimers().size() == 7);
+  }
+}
+
+TEST_CASE("DimerMappingTable symmetry_unique_dimer", "[crystal][dimer]") {
+  Crystal crystal = acetic_acid_crystal();
+  auto dimers = crystal.unit_cell_dimers(3.8);
+  DimerMappingTable table =
+      DimerMappingTable::build_dimer_table(crystal, dimers, true);
+
+  SECTION("Known dimer") {
+    DimerIndex test_dimer = make_dimer(0, 0, 0, 0, 1, -1, 0, -1);
+    DimerIndex expected_unique = make_dimer(0, 0, 0, 0, 1, -1, 0, -1);
+
+    REQUIRE(table.symmetry_unique_dimer(test_dimer) == expected_unique);
+  }
+
+  SECTION("Symmetry-related dimer") {
+    DimerIndex test_dimer = make_dimer(1, 0, 0, 0, 0, 1, 0, 1);
+    DimerIndex expected_unique = make_dimer(0, 0, 0, 0, 1, -1, 0, -1);
+
+    REQUIRE(table.symmetry_unique_dimer(test_dimer) == expected_unique);
+  }
+
+  SECTION("Unknown dimer") {
+    DimerIndex test_dimer = make_dimer(0, 0, 0, 0, 3, 2, 2, 2);
+
+    REQUIRE(table.symmetry_unique_dimer(test_dimer) == test_dimer);
+  }
+}
+
+TEST_CASE("DimerMappingTable symmetry_related_dimers", "[crystal][dimer]") {
+  Crystal crystal = acetic_acid_crystal();
+  auto dimers = crystal.unit_cell_dimers(3.8);
+  DimerMappingTable table =
+      DimerMappingTable::build_dimer_table(crystal, dimers, false);
+
+  SECTION("Known dimer") {
+    DimerIndex test_dimer = make_dimer(0, 0, 0, 0, 1, -1, 0, -1);
+    auto related_dimers = table.symmetry_related_dimers(test_dimer);
+
+    REQUIRE(related_dimers.size() == 4);
+    REQUIRE(std::find(related_dimers.begin(), related_dimers.end(),
+                      make_dimer(0, 0, 0, 0, 1, -1, 0, -1)) !=
+            related_dimers.end());
+    REQUIRE(std::find(related_dimers.begin(), related_dimers.end(),
+                      make_dimer(1, 0, 0, 0, 0, 1, 0, 0)) !=
+            related_dimers.end());
+  }
+
+  SECTION("Unknown dimer") {
+    DimerIndex test_dimer = make_dimer(0, 0, 0, 0, 3, 2, 2, 2);
+    auto related_dimers = table.symmetry_related_dimers(test_dimer);
+
+    REQUIRE(related_dimers.size() == 1);
+    REQUIRE(related_dimers[0] == test_dimer);
+  }
+}
+
+TEST_CASE("DimerMappingTable with inversion", "[crystal][dimer]") {
+  Crystal crystal = acetic_acid_crystal();
+  auto dimers = crystal.unit_cell_dimers(3.8);
+  DimerMappingTable table =
+      DimerMappingTable::build_dimer_table(crystal, dimers, true);
+
+  SECTION("Inverted dimer") {
+    DimerIndex dimer = make_dimer(0, 0, 0, 0, 1, -1, 0, -1);
+    DimerIndex inverted_dimer = make_dimer(1, 0, 0, 0, 0, 1, 0, 1);
+
+    REQUIRE(table.symmetry_unique_dimer(dimer) ==
+            table.symmetry_unique_dimer(inverted_dimer));
+  }
+
+  SECTION("Symmetry-related dimers with inversion") {
+    DimerIndex dimer = make_dimer(0, 0, 0, 0, 1, -1, 0, -1);
+    auto related_dimers = table.symmetry_related_dimers(dimer);
+
+    REQUIRE(related_dimers.size() == 4); 
+    REQUIRE(std::find(related_dimers.begin(), related_dimers.end(),
+                      make_dimer(0, 0, 0, 0, 1, -1, 0, -1)) !=
+            related_dimers.end());
+  }
+}
+
+TEST_CASE("DimerMappingTable consistency", "[crystal][dimer]") {
+  Crystal crystal = acetic_acid_crystal();
+  auto dimers = crystal.unit_cell_dimers(3.8);
+  DimerMappingTable table_no_inv =
+      DimerMappingTable::build_dimer_table(crystal, dimers, false);
+  DimerMappingTable table_inv =
+      DimerMappingTable::build_dimer_table(crystal, dimers, true);
+
+  SECTION("Symmetry-unique dimers are consistent") {
+    REQUIRE(table_no_inv.symmetry_unique_dimers().size() == 2 * 
+            table_inv.symmetry_unique_dimers().size());
+
+    for (const auto &dimer : table_inv.symmetry_unique_dimers()) {
+      const auto &sym = table_no_inv.symmetry_unique_dimers();
+      REQUIRE(std::find(sym.begin(), sym.end(), dimer) != sym.end());
+    }
+  }
+
+  SECTION("All unique dimers map to symmetry-unique dimers") {
+    for (const auto &dimer : table_no_inv.unique_dimers()) {
+      const auto &sym = table_no_inv.symmetry_unique_dimers();
+      REQUIRE(std::find(sym.begin(), sym.end(),
+                        table_no_inv.symmetry_unique_dimer(dimer)) !=
+              sym.end());
+    }
+
+    for (const auto &dimer : table_inv.unique_dimers()) {
+      const auto &sym = table_no_inv.symmetry_unique_dimers();
+      REQUIRE(std::find(sym.begin(), sym.end(),
+                        table_inv.symmetry_unique_dimer(dimer)) != sym.end());
+    }
   }
 }
