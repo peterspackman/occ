@@ -2,6 +2,7 @@ var annotated_dup =
 [
     [ "fmt", null, [
       [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ],
+      [ "formatter< occ::crystal::HKL >", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4.html", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4" ],
       [ "formatter< occ::qm::Shell >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4" ]
     ] ],
     [ "nlohmann", "namespacenlohmann.html", [
@@ -53,7 +54,17 @@ var annotated_dup =
         [ "CrystalAtomRegion", "structocc_1_1crystal_1_1CrystalAtomRegion.html", "structocc_1_1crystal_1_1CrystalAtomRegion" ],
         [ "CrystalDimers", "structocc_1_1crystal_1_1CrystalDimers.html", "structocc_1_1crystal_1_1CrystalDimers" ],
         [ "Crystal", "classocc_1_1crystal_1_1Crystal.html", "classocc_1_1crystal_1_1Crystal" ],
+        [ "DimerIndex", "structocc_1_1crystal_1_1DimerIndex.html", "structocc_1_1crystal_1_1DimerIndex" ],
+        [ "DimerIndexHash", "structocc_1_1crystal_1_1DimerIndexHash.html", "structocc_1_1crystal_1_1DimerIndexHash" ],
+        [ "DimerMappingEdge", "structocc_1_1crystal_1_1DimerMappingEdge.html", "structocc_1_1crystal_1_1DimerMappingEdge" ],
+        [ "DimerMappingVertex", "structocc_1_1crystal_1_1DimerMappingVertex.html", "structocc_1_1crystal_1_1DimerMappingVertex" ],
+        [ "DimerMappingTable", "classocc_1_1crystal_1_1DimerMappingTable.html", "classocc_1_1crystal_1_1DimerMappingTable" ],
         [ "HKL", "structocc_1_1crystal_1_1HKL.html", "structocc_1_1crystal_1_1HKL" ],
+        [ "SiteIndex", "structocc_1_1crystal_1_1SiteIndex.html", "structocc_1_1crystal_1_1SiteIndex" ],
+        [ "SiteIndexHash", "structocc_1_1crystal_1_1SiteIndexHash.html", "structocc_1_1crystal_1_1SiteIndexHash" ],
+        [ "SiteMappingEdge", "structocc_1_1crystal_1_1SiteMappingEdge.html", "structocc_1_1crystal_1_1SiteMappingEdge" ],
+        [ "SiteMappingVertex", "structocc_1_1crystal_1_1SiteMappingVertex.html", "structocc_1_1crystal_1_1SiteMappingVertex" ],
+        [ "SiteMappingTable", "classocc_1_1crystal_1_1SiteMappingTable.html", "classocc_1_1crystal_1_1SiteMappingTable" ],
         [ "ReciprocalAsymmetricUnit", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit" ],
         [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html", "classocc_1_1crystal_1_1SpaceGroup" ],
         [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],

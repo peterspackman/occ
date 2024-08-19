@@ -1,0 +1,5 @@
+<map id="occ::crystal::DimerMappingEdge" name="occ::crystal::DimerMappingEdge">
+<area shape="rect" id="node1" title=" " alt="" coords="5,109,237,136"/>
+<area shape="rect" id="node2" title=" " alt="" coords="31,5,91,32"/>
+<area shape="rect" id="node3" href="$structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice." alt="" coords="116,5,247,32"/>
+</map>

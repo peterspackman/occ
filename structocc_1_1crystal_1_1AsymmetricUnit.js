@@ -7,6 +7,7 @@ var structocc_1_1crystal_1_1AsymmetricUnit =
     [ "covalent_radii", "structocc_1_1crystal_1_1AsymmetricUnit.html#aed9a446d0a4a024e5c36659c06c0f6af", null ],
     [ "generate_default_labels", "structocc_1_1crystal_1_1AsymmetricUnit.html#ac3169830b3e06bec810ddccae1b5ba1a", null ],
     [ "size", "structocc_1_1crystal_1_1AsymmetricUnit.html#a34d14b49d9b97fe31cd84f214984db28", null ],
+    [ "vdw_radii", "structocc_1_1crystal_1_1AsymmetricUnit.html#a67ab1d6777e0c009b0c089c5f9f95250", null ],
     [ "adps", "structocc_1_1crystal_1_1AsymmetricUnit.html#a3aaf2fdf6ca0b9df54c2af8c55744ea4", null ],
     [ "atomic_numbers", "structocc_1_1crystal_1_1AsymmetricUnit.html#a016c61ec1684c8b9f147f28b3bc8cf66", null ],
     [ "charges", "structocc_1_1crystal_1_1AsymmetricUnit.html#a3e8fd54ba5ce351c709629ce39fd5c45", null ],

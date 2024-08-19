@@ -1,39 +1,41 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/crystalgrower.h" name="/home/runner/work/occ/occ/include/occ/io/crystalgrower.h">
-<area shape="rect" id="node1" title=" " alt="" coords="668,5,913,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="617,95,690,121"/>
-<area shape="rect" id="node3" href="$crystal_8h.html" title=" " alt="" coords="715,95,867,121"/>
-<area shape="rect" id="node20" title=" " alt="" coords="1623,483,1686,509"/>
-<area shape="rect" id="node4" href="$bondgraph_8h.html" title=" " alt="" coords="265,169,426,196"/>
-<area shape="rect" id="node10" href="$dimer_8h.html" title=" " alt="" coords="433,244,562,271"/>
-<area shape="rect" id="node11" href="$molecule_8h.html" title=" " alt="" coords="525,326,677,353"/>
-<area shape="rect" id="node14" href="$linear__algebra_8h.html" title=" " alt="" coords="498,483,683,509"/>
-<area shape="rect" id="node22" href="$asymmetric__unit_8h.html" title=" " alt="" coords="1431,319,1606,360"/>
-<area shape="rect" id="node23" href="$hkl_8h.html" title=" " alt="" coords="652,408,780,435"/>
-<area shape="rect" id="node24" href="$spacegroup_8h.html" title=" " alt="" coords="955,169,1138,196"/>
-<area shape="rect" id="node28" href="$unitcell_8h.html" title=" " alt="" coords="941,326,1097,353"/>
-<area shape="rect" id="node5" href="$graph_8h.html" title=" " alt="" coords="242,244,371,271"/>
-<area shape="rect" id="node6" title=" " alt="" coords="211,326,402,353"/>
-<area shape="rect" id="node7" title=" " alt="" coords="427,326,501,353"/>
-<area shape="rect" id="node8" title=" " alt="" coords="125,326,187,353"/>
-<area shape="rect" id="node9" title=" " alt="" coords="43,326,101,353"/>
-<area shape="rect" id="node12" title=" " alt="" coords="441,408,497,435"/>
-<area shape="rect" id="node13" href="$atom_8h.html" title=" " alt="" coords="290,408,417,435"/>
-<area shape="rect" id="node18" href="$element_8h.html" title=" " alt="" coords="1445,408,1592,435"/>
-<area shape="rect" id="node21" title=" " alt="" coords="573,408,627,435"/>
-<area shape="rect" id="node15" title=" " alt="" coords="609,557,711,584"/>
-<area shape="rect" id="node16" title=" " alt="" coords="461,557,585,584"/>
-<area shape="rect" id="node17" title=" " alt="" coords="937,557,1052,584"/>
-<area shape="rect" id="node19" title=" " alt="" coords="1433,483,1492,509"/>
-<area shape="rect" id="node25" title=" " alt="" coords="1356,244,1521,271"/>
-<area shape="rect" id="node26" title=" " alt="" coords="904,244,955,271"/>
-<area shape="rect" id="node27" href="$symmetryoperation_8h.html" title=" " alt="" coords="979,244,1216,271"/>
-<area shape="rect" id="node29" href="$units_8h.html" title=" " alt="" coords="957,408,1081,435"/>
-<area shape="rect" id="node31" href="$util_8h.html" title=" " alt="" coords="1105,408,1218,435"/>
-<area shape="rect" id="node30" title=" " alt="" coords="707,483,770,509"/>
-<area shape="rect" id="node32" title=" " alt="" coords="1233,483,1319,509"/>
-<area shape="rect" id="node33" title=" " alt="" coords="1343,483,1409,509"/>
-<area shape="rect" id="node34" title=" " alt="" coords="794,483,883,509"/>
-<area shape="rect" id="node35" title=" " alt="" coords="908,483,969,509"/>
-<area shape="rect" id="node36" title=" " alt="" coords="993,483,1068,509"/>
-<area shape="rect" id="node37" title=" " alt="" coords="1092,483,1159,509"/>
+<area shape="rect" id="node1" title=" " alt="" coords="751,5,997,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="700,95,773,121"/>
+<area shape="rect" id="node3" href="$crystal_8h.html" title=" " alt="" coords="798,95,950,121"/>
+<area shape="rect" id="node20" title=" " alt="" coords="1793,497,1856,524"/>
+<area shape="rect" id="node4" href="$bondgraph_8h.html" title=" " alt="" coords="180,177,341,203"/>
+<area shape="rect" id="node10" href="$dimer_8h.html" title=" " alt="" coords="327,259,456,285"/>
+<area shape="rect" id="node11" href="$molecule_8h.html" title=" " alt="" coords="489,341,641,367"/>
+<area shape="rect" id="node14" href="$linear__algebra_8h.html" title=" " alt="" coords="656,497,841,524"/>
+<area shape="rect" id="node22" href="$asymmetric__unit_8h.html" title=" " alt="" coords="1612,333,1787,375"/>
+<area shape="rect" id="node23" href="$hkl_8h.html" title=" " alt="" coords="846,423,974,449"/>
+<area shape="rect" id="node25" href="$spacegroup_8h.html" title=" " alt="" coords="1373,177,1556,203"/>
+<area shape="rect" id="node29" href="$unitcell_8h.html" title=" " alt="" coords="1141,341,1297,367"/>
+<area shape="rect" id="node38" href="$site__mapping__table_8h.html" title=" " alt="" coords="653,169,837,211"/>
+<area shape="rect" id="node5" href="$graph_8h.html" title=" " alt="" coords="172,259,301,285"/>
+<area shape="rect" id="node6" title=" " alt="" coords="273,341,464,367"/>
+<area shape="rect" id="node7" title=" " alt="" coords="174,341,249,367"/>
+<area shape="rect" id="node8" title=" " alt="" coords="5,341,68,367"/>
+<area shape="rect" id="node9" title=" " alt="" coords="92,341,149,367"/>
+<area shape="rect" id="node12" title=" " alt="" coords="382,423,438,449"/>
+<area shape="rect" id="node13" href="$atom_8h.html" title=" " alt="" coords="513,423,640,449"/>
+<area shape="rect" id="node18" href="$element_8h.html" title=" " alt="" coords="1539,423,1686,449"/>
+<area shape="rect" id="node21" title=" " alt="" coords="716,423,771,449"/>
+<area shape="rect" id="node15" title=" " alt="" coords="629,572,732,599"/>
+<area shape="rect" id="node16" title=" " alt="" coords="756,572,880,599"/>
+<area shape="rect" id="node17" title=" " alt="" coords="1009,572,1123,599"/>
+<area shape="rect" id="node19" title=" " alt="" coords="1591,497,1650,524"/>
+<area shape="rect" id="node24" title=" " alt="" coords="865,497,955,524"/>
+<area shape="rect" id="node26" title=" " alt="" coords="1317,259,1482,285"/>
+<area shape="rect" id="node27" title=" " alt="" coords="1506,259,1557,285"/>
+<area shape="rect" id="node28" href="$symmetryoperation_8h.html" title=" " alt="" coords="1005,259,1242,285"/>
+<area shape="rect" id="node30" href="$units_8h.html" title=" " alt="" coords="1049,423,1173,449"/>
+<area shape="rect" id="node32" href="$util_8h.html" title=" " alt="" coords="1249,423,1363,449"/>
+<area shape="rect" id="node31" title=" " alt="" coords="979,497,1041,524"/>
+<area shape="rect" id="node33" title=" " alt="" coords="1207,497,1293,524"/>
+<area shape="rect" id="node34" title=" " alt="" coords="1317,497,1383,524"/>
+<area shape="rect" id="node35" title=" " alt="" coords="1407,497,1469,524"/>
+<area shape="rect" id="node36" title=" " alt="" coords="1493,497,1567,524"/>
+<area shape="rect" id="node37" title=" " alt="" coords="1066,497,1133,524"/>
+<area shape="rect" id="node39" href="$site__index_8h.html" title=" " alt="" coords="653,259,828,285"/>
 </map>
