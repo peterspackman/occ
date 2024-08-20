@@ -134,8 +134,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a38ba73c24b7d6c22fe9fb64f491c6300"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a38ba73c24b7d6c22fe9fb64f491c6300">minimum</a> ()</td></tr>
 <tr class="memdesc:a38ba73c24b7d6c22fe9fb64f491c6300"><td class="mdescLeft">&#160;</td><td class="mdescRight">The minimum representable <a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a> structure.  <a href="structocc_1_1crystal_1_1HKL.html#a38ba73c24b7d6c22fe9fb64f491c6300">More...</a><br /></td></tr>
 <tr class="separator:a38ba73c24b7d6c22fe9fb64f491c6300"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77015915b1d9800d0273713b029b12aa"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a77015915b1d9800d0273713b029b12aa">floor</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;vec)</td></tr>
-<tr class="separator:a77015915b1d9800d0273713b029b12aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ccfcfe8858fdb69cbde03b52da18265"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a5ccfcfe8858fdb69cbde03b52da18265">floor</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;vec, double tolerance=1e-8)</td></tr>
+<tr class="separator:a5ccfcfe8858fdb69cbde03b52da18265"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a699c9776295411125cbd70c29d871752"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a699c9776295411125cbd70c29d871752">ceil</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;vec)</td></tr>
 <tr class="separator:a699c9776295411125cbd70c29d871752"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20df94b969c30773f2cbc94963152f9b"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1HKL.html#a20df94b969c30773f2cbc94963152f9b">from_vector</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;vec)</td></tr>
@@ -213,8 +213,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a77015915b1d9800d0273713b029b12aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a77015915b1d9800d0273713b029b12aa">&#9670;&nbsp;</a></span>floor()</h2>
+<a id="a5ccfcfe8858fdb69cbde03b52da18265"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ccfcfe8858fdb69cbde03b52da18265">&#9670;&nbsp;</a></span>floor()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -226,8 +226,18 @@ Public Attributes</h2></td></tr>
           <td class="memname">static <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> occ::crystal::HKL::floor </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
-          <td class="paramname"><em>vec</em></td><td>)</td>
+          <td class="paramname"><em>vec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tolerance</em> = <code>1e-8</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>

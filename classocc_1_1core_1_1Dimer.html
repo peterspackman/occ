@@ -119,6 +119,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af856f2a6ef28504ab31fc780cd3f846d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#af856f2a6ef28504ab31fc780cd3f846d">Dimer</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;atoms_A, const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;atoms_B)</td></tr>
 <tr class="memdesc:af856f2a6ef28504ab31fc780cd3f846d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from two std::vector&lt;Atom&gt; objects.  <a href="classocc_1_1core_1_1Dimer.html#af856f2a6ef28504ab31fc780cd3f846d">More...</a><br /></td></tr>
 <tr class="separator:af856f2a6ef28504ab31fc780cd3f846d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5169447bcd6b1ee737faa2e793e059d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#ad5169447bcd6b1ee737faa2e793e059d">centroid</a> () const</td></tr>
+<tr class="separator:ad5169447bcd6b1ee737faa2e793e059d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0b417d51478f806226d2c295c0c180c"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#ab0b417d51478f806226d2c295c0c180c">a</a> () const</td></tr>
 <tr class="memdesc:ab0b417d51478f806226d2c295c0c180c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience wrapper to access the <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> instance for <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> A.  <a href="classocc_1_1core_1_1Dimer.html#ab0b417d51478f806226d2c295c0c180c">More...</a><br /></td></tr>
 <tr class="separator:ab0b417d51478f806226d2c295c0c180c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -183,15 +185,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a95c38a560a674cb4e35b489b7b61e884"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#a95c38a560a674cb4e35b489b7b61e884">operator!=</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;rhs) const</td></tr>
 <tr class="memdesc:a95c38a560a674cb4e35b489b7b61e884"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if two dimers are not identical under some transformation.  <a href="classocc_1_1core_1_1Dimer.html#a95c38a560a674cb4e35b489b7b61e884">More...</a><br /></td></tr>
 <tr class="separator:a95c38a560a674cb4e35b489b7b61e884"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad09715ff93e71ede7aff1ab59fe6d681"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#ad09715ff93e71ede7aff1ab59fe6d681">equivalent_in_opposite_frame</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;<a class="el" href="classocc_1_1core_1_1Dimer.html#ad029a80da5a84b199add290f3e70aa8c">b</a>) const</td></tr>
-<tr class="memdesc:ad09715ff93e71ede7aff1ab59fe6d681"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if two dimers are identical in the opposite reference frame.  <a href="classocc_1_1core_1_1Dimer.html#ad09715ff93e71ede7aff1ab59fe6d681">More...</a><br /></td></tr>
-<tr class="separator:ad09715ff93e71ede7aff1ab59fe6d681"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac81e2dd8e3439f1e83f553f6d02a12bc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#ac81e2dd8e3439f1e83f553f6d02a12bc">equivalent</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;<a class="el" href="classocc_1_1core_1_1Dimer.html#ad029a80da5a84b199add290f3e70aa8c">b</a>) const</td></tr>
-<tr class="memdesc:ac81e2dd8e3439f1e83f553f6d02a12bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if two dimers are identical in the same reference frame.  <a href="classocc_1_1core_1_1Dimer.html#ac81e2dd8e3439f1e83f553f6d02a12bc">More...</a><br /></td></tr>
-<tr class="separator:ac81e2dd8e3439f1e83f553f6d02a12bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93fcbc0709c83393279c2b3218da8d07"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#a93fcbc0709c83393279c2b3218da8d07">equivalent_under_rotation</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;<a class="el" href="classocc_1_1core_1_1Dimer.html#ad029a80da5a84b199add290f3e70aa8c">b</a>, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">occ::Mat3</a> &amp;rot) const</td></tr>
-<tr class="memdesc:a93fcbc0709c83393279c2b3218da8d07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if two dimers are identical in the same reference frame after some rotation.  <a href="classocc_1_1core_1_1Dimer.html#a93fcbc0709c83393279c2b3218da8d07">More...</a><br /></td></tr>
-<tr class="separator:a93fcbc0709c83393279c2b3218da8d07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a340a266b660a41e6b7469287ace12385"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#a340a266b660a41e6b7469287ace12385">equivalent_in_opposite_frame</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;<a class="el" href="classocc_1_1core_1_1Dimer.html#ad029a80da5a84b199add290f3e70aa8c">b</a>, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;rot=Mat3::Identity()) const</td></tr>
+<tr class="memdesc:a340a266b660a41e6b7469287ace12385"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if two dimers are identical in the opposite reference frame.  <a href="classocc_1_1core_1_1Dimer.html#a340a266b660a41e6b7469287ace12385">More...</a><br /></td></tr>
+<tr class="separator:a340a266b660a41e6b7469287ace12385"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1aa5e08158dd124da55efa80c3ee1a5f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#a1aa5e08158dd124da55efa80c3ee1a5f">equivalent</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;<a class="el" href="classocc_1_1core_1_1Dimer.html#ad029a80da5a84b199add290f3e70aa8c">b</a>, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;rot=Mat3::Identity()) const</td></tr>
+<tr class="memdesc:a1aa5e08158dd124da55efa80c3ee1a5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if two dimers are identical in the same reference frame.  <a href="classocc_1_1core_1_1Dimer.html#a1aa5e08158dd124da55efa80c3ee1a5f">More...</a><br /></td></tr>
+<tr class="separator:a1aa5e08158dd124da55efa80c3ee1a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12a969f5bc6ce30cb19597d38a7c9d70"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#a12a969f5bc6ce30cb19597d38a7c9d70">name</a> () const</td></tr>
 <tr class="separator:a12a969f5bc6ce30cb19597d38a7c9d70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee8ee4d7fc83bdd82c2b40cee8f436ff"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#aee8ee4d7fc83bdd82c2b40cee8f436ff">set_name</a> (const std::string &amp;<a class="el" href="classocc_1_1core_1_1Dimer.html#a12a969f5bc6ce30cb19597d38a7c9d70">name</a>)</td></tr>
@@ -415,6 +414,23 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ad5169447bcd6b1ee737faa2e793e059d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5169447bcd6b1ee737faa2e793e059d">&#9670;&nbsp;</a></span>centroid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> occ::core::Dimer::centroid </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a8196feca9f584788ed72957cfc5baa04"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8196feca9f584788ed72957cfc5baa04">&#9670;&nbsp;</a></span>centroid_distance()</h2>
 
@@ -463,8 +479,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac81e2dd8e3439f1e83f553f6d02a12bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac81e2dd8e3439f1e83f553f6d02a12bc">&#9670;&nbsp;</a></span>equivalent()</h2>
+<a id="a1aa5e08158dd124da55efa80c3ee1a5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1aa5e08158dd124da55efa80c3ee1a5f">&#9670;&nbsp;</a></span>equivalent()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -473,69 +489,13 @@ Public Member Functions</h2></td></tr>
           <td class="memname">bool occ::core::Dimer::equivalent </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;&#160;</td>
-          <td class="paramname"><em>b</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Check if two dimers are identical in the same reference frame. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">b</td><td>another <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> object </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> objects are found to be equivalent.</dd></dl>
-<p>This is defined such that that <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> b will be equivalent if <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> B from the reference frame of <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> A is equivalent to <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> rhs.B in the reference frame of rhs.A </p>
-
-</div>
-</div>
-<a id="ad09715ff93e71ede7aff1ab59fe6d681"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad09715ff93e71ede7aff1ab59fe6d681">&#9670;&nbsp;</a></span>equivalent_in_opposite_frame()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool occ::core::Dimer::equivalent_in_opposite_frame </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;&#160;</td>
-          <td class="paramname"><em>b</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Check if two dimers are identical in the opposite reference frame. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">b</td><td>another <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> object </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> objects are found to be equivalent.</dd></dl>
-<p>The opposite reference frame here is that <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> b will be equivalent if <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> B from the reference frame of <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> A is equivalent to <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> rhs.A in the reference frame of rhs.B </p>
-
-</div>
-</div>
-<a id="a93fcbc0709c83393279c2b3218da8d07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93fcbc0709c83393279c2b3218da8d07">&#9670;&nbsp;</a></span>equivalent_under_rotation()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool occ::core::Dimer::equivalent_under_rotation </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;&#160;</td>
           <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">occ::Mat3</a> &amp;&#160;</td>
-          <td class="paramname"><em>rot</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;&#160;</td>
+          <td class="paramname"><em>rot</em> = <code>Mat3::Identity()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -545,16 +505,55 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Check if two dimers are identical in the same reference frame after some rotation. </p>
+<p>Check if two dimers are identical in the same reference frame. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">b</td><td>another <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> object. </td></tr>
-    <tr><td class="paramname">rot</td><td>a Matrix representing a rotation. </td></tr>
+    <tr><td class="paramname">b</td><td>another <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> object </td></tr>
+    <tr><td class="paramname">rot</td><td>a Matrix representing a rotation, applied to A. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> objects are found to be equivalent.</dd></dl>
-<p><a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> b will be equivalent if <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> B from the reference frame of <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> A is equivalent to <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> rhs.B in the reference frame of rhs.A after rotation rot has been applied to both Molecules in this <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> </p>
+<p>This is defined such that that <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> b will be equivalent if <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> B from the reference frame of <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> A is equivalent to <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> rhs.B in the reference frame of rhs.A </p>
+
+</div>
+</div>
+<a id="a340a266b660a41e6b7469287ace12385"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a340a266b660a41e6b7469287ace12385">&#9670;&nbsp;</a></span>equivalent_in_opposite_frame()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::core::Dimer::equivalent_in_opposite_frame </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;&#160;</td>
+          <td class="paramname"><em>rot</em> = <code>Mat3::Identity()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if two dimers are identical in the opposite reference frame. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">b</td><td>another <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> object </td></tr>
+    <tr><td class="paramname">rot</td><td>a Matrix representing a rotation, applied to A. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> objects are found to be equivalent.</dd></dl>
+<p>The opposite reference frame here is that <a class="el" href="classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects.">Dimer</a> b will be equivalent if <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> B from the reference frame of <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> A is equivalent to <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> rhs.A in the reference frame of rhs.B </p>
 
 </div>
 </div>

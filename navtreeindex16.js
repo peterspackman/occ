@@ -1,5 +1,11 @@
 var NAVTREEINDEX16 =
 {
+"structocc_1_1main_1_1EEQEspFunctor.html#afc76e58e7ff1f06f6a03d76761799dec":[2,0,2,10,21,3],
+"structocc_1_1main_1_1ElasticSettings.html":[2,0,2,10,13],
+"structocc_1_1main_1_1ElasticSettings.html#a002dc0c6cfb56200a738c7834802a93b":[2,0,2,10,13,4],
+"structocc_1_1main_1_1ElasticSettings.html#a7b1f946a80d7749a70a5d1289cda03c4":[2,0,2,10,13,0],
+"structocc_1_1main_1_1ElasticSettings.html#ad683d4f0b3770743840f1800d0fb0666":[2,0,2,10,13,1],
+"structocc_1_1main_1_1ElasticSettings.html#ae2a130784a7a542862d1b797b861709f":[2,0,2,10,13,2],
 "structocc_1_1main_1_1ElasticSettings.html#aff08365669eee6a4566849dc13cb94e5":[2,0,2,10,13,3],
 "structocc_1_1main_1_1ElectronDensityFunctor.html":[2,0,2,10,24],
 "structocc_1_1main_1_1ElectronDensityFunctor.html#a011b3ebfe1ed8913d8c62f48c28ee082":[2,0,2,10,24,1],
@@ -243,11 +249,5 @@ var NAVTREEINDEX16 =
 "structocc_1_1qm_1_1OrbitalSmearing.html#a44fe28f16ccf12724c746ae6ffd23536":[2,0,2,11,11,3],
 "structocc_1_1qm_1_1OrbitalSmearing.html#a5db822355336730e2015a96f312b4869":[2,0,2,11,11,8],
 "structocc_1_1qm_1_1OrbitalSmearing.html#a69e98702b0c8a88d5dd13a1a4da37674":[2,0,2,11,11,4],
-"structocc_1_1qm_1_1OrbitalSmearing.html#a73677534970989b3cbb6f7e76bda6e0b":[2,0,2,11,11,9],
-"structocc_1_1qm_1_1OrbitalSmearing.html#a7504009d169a0ef3248bf98d1e4f4b64":[2,0,2,11,11,5],
-"structocc_1_1qm_1_1OrbitalSmearing.html#a798b14f074a6dba00e978b810919c3b1":[2,0,2,11,11,2],
-"structocc_1_1qm_1_1OrbitalSmearing.html#aee957e15c328a9a48368d37d07e6f51f":[2,0,2,11,11,10],
-"structocc_1_1qm_1_1SCFConvergenceSettings.html":[2,0,2,11,12],
-"structocc_1_1qm_1_1SCFConvergenceSettings.html#a1cd45ebef86a6763c97ab267122a601c":[2,0,2,11,12,5],
-"structocc_1_1qm_1_1SCFConvergenceSettings.html#a48bdffb3bffc59c5d8a60f1288e1aee5":[2,0,2,11,12,2]
+"structocc_1_1qm_1_1OrbitalSmearing.html#a73677534970989b3cbb6f7e76bda6e0b":[2,0,2,11,11,9]
 };

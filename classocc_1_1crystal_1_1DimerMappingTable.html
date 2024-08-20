@@ -112,11 +112,21 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a28e89019110b5740377867946eb71758"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e5f826faca39cf97eebae3348faaba5"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1DimerMappingTable.html#a6e5f826faca39cf97eebae3348faaba5">symmetry_unique_dimer_map</a> () const</td></tr>
 <tr class="separator:a6e5f826faca39cf97eebae3348faaba5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d8d3b1c2ede23c81a348785236b11bb"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>, <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1DimerMappingTable.html#a0d8d3b1c2ede23c81a348785236b11bb">dimer_positions</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">core::Dimer</a> &amp;) const</td></tr>
+<tr class="separator:a0d8d3b1c2ede23c81a348785236b11bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c5b87f993de4e898b40b5ba05f0b22f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1DimerMappingTable.html#a3c5b87f993de4e898b40b5ba05f0b22f">dimer_index</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">core::Dimer</a> &amp;) const</td></tr>
+<tr class="separator:a3c5b87f993de4e898b40b5ba05f0b22f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a949138e24177098e717a3bc39ddda7cf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1DimerMappingTable.html#a949138e24177098e717a3bc39ddda7cf">dimer_index</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;) const</td></tr>
+<tr class="separator:a949138e24177098e717a3bc39ddda7cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaffa5a8c134e6a94728d291289df0675"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1DimerMappingTable.html#aaffa5a8c134e6a94728d291289df0675">canonical_dimer_index</a> (const <a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> &amp;) const</td></tr>
+<tr class="separator:aaffa5a8c134e6a94728d291289df0675"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:adf26f9e23ab3a7f2ad39ec802cc1dc87"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classocc_1_1crystal_1_1DimerMappingTable.html">DimerMappingTable</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1DimerMappingTable.html#adf26f9e23ab3a7f2ad39ec802cc1dc87">build_dimer_table</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;dimers, bool consider_inversion)</td></tr>
 <tr class="separator:adf26f9e23ab3a7f2ad39ec802cc1dc87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba08d0a5a41bd89f8711d6887025f26b"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1DimerMappingTable.html#aba08d0a5a41bd89f8711d6887025f26b">normalized_dimer_index</a> (const <a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> &amp;)</td></tr>
+<tr class="separator:aba08d0a5a41bd89f8711d6887025f26b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="adf26f9e23ab3a7f2ad39ec802cc1dc87"></a>
@@ -150,6 +160,114 @@ Static Public Member Functions</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aaffa5a8c134e6a94728d291289df0675"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaffa5a8c134e6a94728d291289df0675">&#9670;&nbsp;</a></span>canonical_dimer_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> occ::crystal::DimerMappingTable::canonical_dimer_index </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3c5b87f993de4e898b40b5ba05f0b22f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c5b87f993de4e898b40b5ba05f0b22f">&#9670;&nbsp;</a></span>dimer_index() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> occ::crystal::DimerMappingTable::dimer_index </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Dimer.html">core::Dimer</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a949138e24177098e717a3bc39ddda7cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a949138e24177098e717a3bc39ddda7cf">&#9670;&nbsp;</a></span>dimer_index() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> occ::crystal::DimerMappingTable::dimer_index </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0d8d3b1c2ede23c81a348785236b11bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d8d3b1c2ede23c81a348785236b11bb">&#9670;&nbsp;</a></span>dimer_positions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt;<a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>, <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>&gt; occ::crystal::DimerMappingTable::dimer_positions </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Dimer.html">core::Dimer</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aba08d0a5a41bd89f8711d6887025f26b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba08d0a5a41bd89f8711d6887025f26b">&#9670;&nbsp;</a></span>normalized_dimer_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> occ::crystal::DimerMappingTable::normalized_dimer_index </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
