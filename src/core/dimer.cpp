@@ -32,6 +32,11 @@ Vec3 Dimer::v_ab() const {
   return o_b - o_a;
 }
 
+
+Vec3 Dimer::centroid() const {
+  return positions().rowwise().mean();
+}
+
 std::optional<occ::Mat4> Dimer::symmetry_relation() const {
   if (!m_a.is_comparable_to(m_b))
     return std::nullopt;
@@ -111,8 +116,15 @@ bool Dimer::operator==(const Dimer &rhs) const {
   if (!same_asymmetric_molecule_idxs(rhs))
     return false;
   constexpr double eps = 1e-7;
-  double da = centroid_distance();
-  double db = rhs.centroid_distance();
+  double da = nearest_distance();
+  double db = rhs.nearest_distance();
+  if (abs(da - db) > eps) {
+    occ::log::trace("nearest-nearest distance {:.7f} vs {:.7f}", da, db);
+    return false;
+  }
+
+  da = centroid_distance();
+  db = rhs.centroid_distance();
 
   if (abs(da - db) > eps) {
     occ::log::trace("Centroid-centroid distance {:.7f} vs {:.7f}", da, db);
@@ -124,13 +136,6 @@ bool Dimer::operator==(const Dimer &rhs) const {
 
   if (abs(da - db) > eps) {
     occ::log::trace("COM-COM distance {:.7f} vs {:.7f}", da, db);
-    return false;
-  }
-
-  da = nearest_distance();
-  db = rhs.nearest_distance();
-  if (abs(da - db) > eps) {
-    occ::log::trace("nearest-nearest distance {:.7f} vs {:.7f}", da, db);
     return false;
   }
 
@@ -146,7 +151,7 @@ bool Dimer::operator==(const Dimer &rhs) const {
   return ab_eq && ba_eq;
 }
 
-bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
+bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs, const Mat3 &rotation) const {
   size_t d1_na = m_a.size();
   size_t d2_na = rhs.m_a.size();
   size_t d1_nb = m_b.size();
@@ -156,49 +161,34 @@ bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs) const {
   if (*this != rhs)
     return false;
 
-  Vec3 Od1 = m_b.centroid();
-  Vec3 Od2 = rhs.m_a.centroid();
+  occ::log::trace("Rotation:\n{}\n", rotation);
+  Vec3 Od1 = rotation * centroid();
+  occ::log::trace("This centroid:{}", Od1.transpose());
+  Vec3 Od2 = rhs.centroid();
+  occ::log::trace("RHS centroid:{}", Od2.transpose());
   // positions d1 (with A <-> B swapped)
-  Mat3N posd1 = positions(MoleculeOrder::BA);
+  Mat3N posd1 = rotation * positions(MoleculeOrder::BA);
   posd1.colwise() -= Od1;
   // positions d2
   Mat3N posd2 = rhs.positions(MoleculeOrder::AB);
   posd2.colwise() -= Od2;
+  double rmsd = (posd1 - posd2).norm();
+  if(rmsd < 1e-5) return true;
+  occ::log::trace("positions\n{}", (posd1 - posd2).transpose());
+  occ::log::trace("RMSD: {:.5f}", rmsd);
 
   occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2, false);
   Mat3N posd1_rot = rot * posd1;
-  return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
+
+
+  rmsd = (posd1_rot - posd2).norm();
+  bool match = occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
+  occ::log::trace("in Dimer::equivalent_in_opposite_frame, RMSD: {:.5f} ({})", rmsd, match);
+  return match;
 }
 
-bool Dimer::equivalent(const occ::core::Dimer &rhs) const {
-  size_t d1_na = m_a.size();
-  size_t d2_na = rhs.m_a.size();
-  size_t d1_nb = m_b.size();
-  size_t d2_nb = rhs.m_b.size();
-  if ((d1_na != d2_na) || (d1_nb != d2_nb)) {
-    occ::log::trace("Dimers have different numbers of atoms in A & B");
-    return false;
-  }
-  if (*this != rhs) {
-    return false;
-  }
-
-  Vec3 Od1 = m_a.centroid();
-  Vec3 Od2 = rhs.m_a.centroid();
-  // positions d1
-  Mat3N posd1 = positions(MoleculeOrder::AB);
-  posd1.colwise() -= Od1;
-  // positions d2
-  Mat3N posd2 = rhs.positions(MoleculeOrder::AB);
-  posd2.colwise() -= Od2;
-
-  occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
-  Mat3N posd1_rot = rot * posd1;
-  return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
-}
-
-bool Dimer::equivalent_under_rotation(const occ::core::Dimer &rhs,
-                                      const occ::Mat3 &rotation) const {
+bool Dimer::equivalent(const occ::core::Dimer &rhs,
+                       const occ::Mat3 &rotation) const {
   size_t d1_na = m_a.size();
   size_t d2_na = rhs.m_a.size();
   size_t d1_nb = m_b.size();
@@ -208,8 +198,9 @@ bool Dimer::equivalent_under_rotation(const occ::core::Dimer &rhs,
   if (*this != rhs)
     return false;
 
-  Vec3 Od1 = rotation * m_a.centroid();
-  Vec3 Od2 = rhs.m_a.centroid();
+  occ::log::trace("Rotation:\n{}\n", rotation);
+  Vec3 Od1 = rotation * centroid();
+  Vec3 Od2 = rhs.centroid();
   // positions d1
   Mat3N posd1 = rotation * positions(MoleculeOrder::AB);
   posd1.colwise() -= Od1;
@@ -217,9 +208,18 @@ bool Dimer::equivalent_under_rotation(const occ::core::Dimer &rhs,
   Mat3N posd2 = rhs.positions(MoleculeOrder::AB);
   posd2.colwise() -= Od2;
 
+  double rmsd = (posd1 - posd2).norm();
+  if(rmsd < 1e-5) return true;
+  occ::log::trace("positions\n{}", (posd1 - posd2).transpose());
+  occ::log::trace("RMSD: {:.5f}", rmsd);
+
   occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);
   Mat3N posd1_rot = rot * posd1;
-  return occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
+
+  rmsd = (posd1_rot - posd2).norm();
+  bool match = occ::util::all_close(posd1_rot, posd2, 1e-5, 1e-5);
+  occ::log::trace("in Dimer::equivalent, RMSD: {:.5f} ({})", rmsd, match);
+  return match;
 }
 
 std::string Dimer::xyz_string() const {

@@ -52,6 +52,8 @@ public:
   Dimer(const std::vector<occ::core::Atom> &atoms_A,
         const std::vector<occ::core::Atom> &atoms_B);
 
+  Vec3 centroid() const;
+
   /**
    * Convenience wrapper to access the Molecule instance for Molecule A
    *
@@ -260,40 +262,27 @@ public:
    * Check if two dimers are identical in the opposite reference frame
    *
    * \param b another Dimer object
+   * \param rot a Matrix representing a rotation, applied to A.
    * \returns True if the Dimer objects are found to be equivalent.
    *
    * The opposite reference frame here is that Dimer b will be equivalent
    * if Molecule B from the reference frame of Molecule A is equivalent to
    * Molecule rhs.A in the reference frame of rhs.B
    */
-  bool equivalent_in_opposite_frame(const Dimer &b) const;
+  bool equivalent_in_opposite_frame(const Dimer &b, const Mat3 &rot = Mat3::Identity()) const;
 
   /**
    * Check if two dimers are identical in the same reference frame
    *
    * \param b another Dimer object
+   * \param rot a Matrix representing a rotation, applied to A.
    * \returns True if the Dimer objects are found to be equivalent.
    *
    * This is defined such that that Dimer b will be equivalent
    * if Molecule B from the reference frame of Molecule A is equivalent to
    * Molecule rhs.B in the reference frame of rhs.A
    */
-  bool equivalent(const Dimer &b) const;
-
-  /**
-   * Check if two dimers are identical in the same reference frame after some
-   * rotation
-   *
-   * \param b another Dimer object.
-   * \param rot a Matrix representing a rotation.
-   * \returns True if the Dimer objects are found to be equivalent.
-   *
-   * Dimer b will be equivalent
-   * if Molecule B from the reference frame of Molecule A is equivalent to
-   * Molecule rhs.B in the reference frame of rhs.A after rotation rot has
-   * been applied to both Molecules in this Dimer
-   */
-  bool equivalent_under_rotation(const Dimer &b, const occ::Mat3 &rot) const;
+  bool equivalent(const Dimer &b, const Mat3 &rot = Mat3::Identity()) const;
 
   inline const auto &name() const { return m_name; }
   inline void set_name(const std::string &name) { m_name = name; }

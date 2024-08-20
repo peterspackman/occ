@@ -60,7 +60,7 @@ struct HKL {
             std::numeric_limits<int>::min()};
   }
 
-  static HKL floor(const Vec3 &vec);
+  static HKL floor(const Vec3 &vec, double tolerance=1e-8);
   static HKL ceil(const Vec3 &vec);
 
   Vec3 vector() const;

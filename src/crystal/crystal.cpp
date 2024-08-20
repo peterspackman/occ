@@ -284,9 +284,9 @@ void Crystal::update_unit_cell_connectivity() const {
   size_t num_connections = 0;
   auto add_edge = [&](double d, size_t uc_l, size_t uc_r, size_t asym_l,
                       size_t asym_r, const occ::Vec3 &pos) {
-    int h = static_cast<int>(floor(pos(0)));
-    int k = static_cast<int>(floor(pos(1)));
-    int l = static_cast<int>(floor(pos(2)));
+    int h = static_cast<int>(floor(pos(0) + 1e-8));
+    int k = static_cast<int>(floor(pos(1) + 1e-8));
+    int l = static_cast<int>(floor(pos(2) + 1e-8));
     occ::core::graph::PeriodicEdge left_right{sqrt(d), uc_l, uc_r, asym_l,
                                               asym_r,  h,    k,    l};
     m_bond_graph.add_edge(m_bond_graph_vertices[uc_l],

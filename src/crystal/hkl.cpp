@@ -12,11 +12,11 @@ Vec3 HKL::vector() const {
               static_cast<double>(l));
 }
 
-HKL HKL::floor(const Vec3 &vec) {
+HKL HKL::floor(const Vec3 &vec, double epsilon) {
   HKL r;
-  r.h = static_cast<int>(std::floor(vec(0)));
-  r.k = static_cast<int>(std::floor(vec(1)));
-  r.l = static_cast<int>(std::floor(vec(2)));
+  r.h = static_cast<int>(std::floor(vec(0) + epsilon));
+  r.k = static_cast<int>(std::floor(vec(1) + epsilon));
+  r.l = static_cast<int>(std::floor(vec(2) + epsilon));
   return r;
 }
 

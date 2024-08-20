@@ -1,8 +1,14 @@
 #pragma once
+#include <fmt/core.h>
 #include <occ/core/graph.h>
 #include <occ/crystal/site_index.h>
+#include <occ/crystal/unitcell.h>
 #include <utility>
 #include <vector>
+
+namespace occ::core {
+class Dimer;
+}
 
 namespace occ::crystal {
 
@@ -60,20 +66,44 @@ public:
                                              bool consider_inversion);
 
   DimerIndex symmetry_unique_dimer(const DimerIndex &dimer) const;
-  std::vector<DimerIndex> symmetry_related_dimers(const DimerIndex &dimer) const;
+  std::vector<DimerIndex>
+  symmetry_related_dimers(const DimerIndex &dimer) const;
 
   inline const auto &unique_dimers() const { return m_unique_dimers; }
-  inline const auto &symmetry_unique_dimers() const { return m_symmetry_unique_dimers; }
-  inline const auto &symmetry_unique_dimer_map() const { return m_symmetry_unique_dimer_map; }
+  inline const auto &symmetry_unique_dimers() const {
+    return m_symmetry_unique_dimers;
+  }
+  inline const auto &symmetry_unique_dimer_map() const {
+    return m_symmetry_unique_dimer_map;
+  }
+
+  std::pair<Vec3, Vec3> dimer_positions(const core::Dimer &) const;
+  DimerIndex dimer_index(const core::Dimer &) const;
+  DimerIndex dimer_index(const Vec3 &, const Vec3 &) const;
+
+  static DimerIndex normalized_dimer_index(const DimerIndex &);
+  DimerIndex canonical_dimer_index(const DimerIndex &) const;
 
 private:
+  UnitCell m_cell;
+  Mat3N m_centroids;
   std::vector<DimerIndex> m_unique_dimers;
   std::vector<DimerIndex> m_symmetry_unique_dimers;
-  ankerl::unordered_dense::map<DimerIndex, DimerIndex, DimerIndexHash> m_unique_dimer_map;
-  ankerl::unordered_dense::map<DimerIndex, DimerIndex, DimerIndexHash> m_symmetry_unique_dimer_map;
-  ankerl::unordered_dense::map<DimerIndex, std::vector<DimerIndex>, DimerIndexHash> m_symmetry_related_dimers;
+  std::vector<int> m_asym_crystal_dimer_indices;
+  ankerl::unordered_dense::map<DimerIndex, DimerIndex, DimerIndexHash>
+      m_unique_dimer_map;
+  ankerl::unordered_dense::map<DimerIndex, DimerIndex, DimerIndexHash>
+      m_symmetry_unique_dimer_map;
+  ankerl::unordered_dense::map<DimerIndex, std::vector<DimerIndex>,
+                               DimerIndexHash>
+      m_symmetry_related_dimers;
   bool m_consider_inversion{false};
-
 };
 
 } // namespace occ::crystal
+
+template <>
+struct fmt::formatter<occ::crystal::DimerIndex> : nested_formatter<int> {
+  auto format(const occ::crystal::DimerIndex &,
+              format_context &ctx) const -> format_context::iterator;
+};

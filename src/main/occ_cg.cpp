@@ -10,6 +10,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
+#include <occ/crystal/dimer_mapping_table.h>
 #include <occ/dft/dft.h>
 #include <occ/geometry/wulff.h>
 #include <occ/interaction/disp.h>
@@ -327,6 +328,22 @@ void write_energy_summary(double total, const Molecule &molecule,
                  total_interaction_energy);
 }
 
+inline void write_dimer(const std::string &filename,
+                        const occ::core::Dimer &dimer) {
+
+  using occ::core::Element;
+  auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
+                                               fmt::file::CREATE);
+  const auto &pos = dimer.positions();
+  const auto &nums = dimer.atomic_numbers();
+  output.print("{}\n", nums.rows());
+  output.print("\n");
+  for (size_t i = 0; i < nums.rows(); i++) {
+    output.print("{:5s} {:12.5f} {:12.5f} {:12.5f}\n",
+                 Element(nums(i)).symbol(), pos(0, i), pos(1, i), pos(2, i));
+  }
+}
+
 std::vector<double> map_unique_interactions_to_uc_molecules(
     const Crystal &crystal, const CrystalDimers &dimers,
     CrystalDimers &uc_dimers, const std::vector<double> &solution_terms,
@@ -335,6 +352,8 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
   auto &uc_neighbors = uc_dimers.molecule_neighbors;
   const auto &mol_neighbors = dimers.molecule_neighbors;
 
+  auto mapping = occ::crystal::DimerMappingTable::build_dimer_table(
+      crystal, uc_dimers, false);
   std::vector<double> solution_terms_uc(uc_neighbors.size());
   // map interactions surrounding UC molecules to symmetry unique
   // interactions
@@ -343,22 +362,8 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
     size_t asym_idx = m.asymmetric_molecule_idx();
     solution_terms_uc[i] = solution_terms[asym_idx];
 
-    const auto &m_asym = crystal.symmetry_unique_molecules()[asym_idx];
     auto &unit_cell_neighbors = uc_neighbors[i];
 
-    occ::log::debug("Molecule {} has {} neighbours within {:.3f}", i,
-                    unit_cell_neighbors.size(), uc_dimers.radius);
-    occ::log::debug("Unit cell index = {}, asymmetric index = {}", i, asym_idx);
-    int s_int = m.asymmetric_unit_symop()(0);
-
-    SymmetryOperation symop(s_int);
-
-    occ::Mat3 rotation = symop.cartesian_rotation(crystal.unit_cell());
-    occ::log::debug("Asymmetric unit symop: {} (has handedness change: {})",
-                    symop.to_string(), rotation.determinant() < 0);
-    occ::log::debug("Cartesian rotation matrix:\n{}", rotation);
-
-    size_t j = 0;
     const auto &asymmetric_neighbors = mol_neighbors[asym_idx];
     const auto &interaction_energies = interaction_energies_vec[asym_idx];
     occ::log::debug("Num asym neighbors = {}, num interaction energies = {}",
@@ -368,34 +373,47 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
                     unit_cell_neighbors.size());
     occ::log::debug("{:<7s} {:>7s} {:>10s} {:>7s} {:>7s}", "N", "b", "Tb",
                     "E_int", "R");
+
+    int j = 0;
     for (auto &[dimer, unique_idx] : unit_cell_neighbors) {
 
       auto shift_b = dimer.b().cell_shift();
       auto idx_b = dimer.b().unit_cell_molecule_idx();
+      const auto dimer_index =
+          mapping.canonical_dimer_index(mapping.dimer_index(dimer));
+
+      const auto &related = mapping.symmetry_related_dimers(dimer_index);
+      ankerl::unordered_dense::set<occ::crystal::DimerIndex,
+                                   occ::crystal::DimerIndexHash>
+          related_set(related.begin(), related.end());
+      occ::log::trace("Related dimers: {}", related_set.size());
+      for (const auto &d : related_set) {
+        occ::log::trace(" {}", d);
+      }
 
       size_t idx{0};
-      bool match_type{false};
       for (idx = 0; idx < asymmetric_neighbors.size(); idx++) {
         const auto &d_a = asymmetric_neighbors[idx].dimer;
-        if (d_a.nearest_distance() > uc_dimers.radius)
-          continue;
-        if (dimer.equivalent(d_a)) {
-          break;
-        }
-        if (dimer.equivalent_in_opposite_frame(d_a)) {
-          match_type = true;
-          break;
-        }
-        if (dimer.equivalent_under_rotation(d_a, rotation)) {
-          match_type = true;
+        occ::log::trace("Candidate dimer: {} {}", d_a.a().name(),
+                        d_a.b().name());
+        auto idx_asym = mapping.canonical_dimer_index(mapping.dimer_index(d_a));
+        occ::log::trace("Candidate: {}", idx_asym);
+        if (related_set.contains(idx_asym)) {
+          occ::log::trace("Given dimer:          {} ({})",
+                          mapping.dimer_index(dimer), dimer_index);
+          occ::log::trace("Found matching dimer: {} ({})",
+                          mapping.dimer_index(d_a), idx_asym);
           break;
         }
       }
       if (idx >= asymmetric_neighbors.size()) {
+        auto idx = mapping.dimer_index(dimer);
+        auto sidx = mapping.symmetry_unique_dimer(idx);
+        write_dimer("unmatched_dimer.xyz", dimer);
         throw std::runtime_error(
             fmt::format("No matching interaction found for uc_mol "
-                        "= {}, dimer = {}\n",
-                        i, j));
+                        "= {}, dimer = {}, wrote 'unmatched_dimer.xyz' file\n",
+                        i, dimer_index));
       }
       if (idx >= interaction_energies.size()) {
         throw std::runtime_error(
@@ -409,9 +427,9 @@ std::vector<double> map_unique_interactions_to_uc_molecules(
       dimer.set_interaction_energies(interaction_energies[idx]);
       dimer.set_interaction_id(idx);
       occ::log::debug(
-          "{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f} {}", j, idx_b,
+          "{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f}", j, idx_b,
           fmt::format("{},{},{}", shift_b[0], shift_b[1], shift_b[2]),
-          dimer.interaction_energy(), rc, match_type);
+          dimer.interaction_energy(), rc);
       j++;
     }
   }
