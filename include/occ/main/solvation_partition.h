@@ -1,3 +1,4 @@
+#pragma once
 #include <nlohmann/json.hpp>
 #include <occ/core/dimer.h>
 #include <occ/core/linear_algebra.h>
