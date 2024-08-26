@@ -1,5 +1,6 @@
 #pragma once
 #include <numeric>
+#include <cstdint>
 #include <string>
 
 namespace occ::core {

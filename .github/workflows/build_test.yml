@@ -1,5 +1,4 @@
 name: Build & Test
-
 on:
   push:
     branches: ["main"]
@@ -7,13 +6,10 @@ on:
   pull_request:
     branches: ["main"]
     tags: "v*"
-
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   CPM_SOURCE_CACHE: ${{github.workspace}}/cache/cpm
   OCC_DATA_PATH: ${{github.workspace}}/share
-
 jobs:
   build:
     strategy:
@@ -39,11 +35,10 @@ jobs:
             architecture: x86_64
             script: linux_static_build.sh
             name: "linux-x86_64-static"
-          - os: ubuntu-latest
+          - os: windows-latest
             architecture: x86_64
-            script: dockcross-windows.sh
+            script: windows_build.ps1
             name: "windows-x86_64"
-
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -53,12 +48,14 @@ jobs:
         sudo apt update
         sudo apt install -y python3-numpy libpthread-stubs0-dev \
             doxygen graphviz ninja-build
-
     - name: Install Dependencies Mac
       if: startsWith(runner.os, 'macOS')
       run: |
         brew install ninja doxygen graphviz
-
+    - name: Install Dependencies Windows
+      if: startsWith(runner.os, 'Windows')
+      run: |
+        choco install ninja -y
     - name: Cache CPM Dependencies
       uses: actions/cache@v4
       with:
@@ -66,12 +63,15 @@ jobs:
           ${{env.CPM_SOURCE_CACHE}}
           ${{github.workspace}}/build
         key: ${{ matrix.name }}-occ-build-cache
-
     - name: Run build script
+      shell: pwsh
       run: |
-        rm -f build/*.xz
-        ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
-
+        Remove-Item -Path build/*.xz -ErrorAction SilentlyContinue
+        if ($env:RUNNER_OS -eq "Windows") {
+          ./scripts/${{matrix.script}} -Architecture "${{matrix.architecture}}" -Name "${{matrix.name}}"
+        } else {
+          ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
+        }
     - name: Test
       if: matrix.name == 'linux-x86_64'
       working-directory: ${{github.workspace}}/build

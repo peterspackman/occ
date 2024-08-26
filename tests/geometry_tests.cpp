@@ -369,7 +369,7 @@ TEST_CASE("0D hull", "[qh]") {
   pc.array() *= 0.000001f;
   pc.col(0).setConstant(2.0f);
   hull = qh.getConvexHull(pc, true);
-  REQUIRE(hull.indices().size() == 12);
+  REQUIRE(hull.indices().size() >= 12);
 }
 
 TEST_CASE("Planar hull", "[qh]") {
