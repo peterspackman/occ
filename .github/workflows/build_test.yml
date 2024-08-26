@@ -42,20 +42,24 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
+
     - name: Install Dependencies Linux
       if: startsWith(runner.os, 'Linux')
       run: |
         sudo apt update
         sudo apt install -y python3-numpy libpthread-stubs0-dev \
             doxygen graphviz ninja-build
+
     - name: Install Dependencies Mac
       if: startsWith(runner.os, 'macOS')
       run: |
         brew install ninja doxygen graphviz
+
     - name: Install Dependencies Windows
       if: startsWith(runner.os, 'Windows')
       run: |
         choco install ninja -y
+
     - name: Cache CPM Dependencies
       uses: actions/cache@v4
       with:
@@ -63,22 +67,25 @@ jobs:
           ${{env.CPM_SOURCE_CACHE}}
           ${{github.workspace}}/build
         key: ${{ matrix.name }}-occ-build-cache
-    - name: Run build script
+
+    - name: Run build script (non-Windows)
+      if: runner.os != 'Windows'
+      run: |
+        rm -f build/*.xz
+        ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
+
+    - name: Run build script (Windows)
+      if: runner.os == 'Windows'
       shell: pwsh
       run: |
         Remove-Item -Path build/*.xz -ErrorAction SilentlyContinue
-        if ($env:RUNNER_OS -eq "Windows") {
-          ./scripts/${{matrix.script}} -Architecture "${{matrix.architecture}}" -Name "${{matrix.name}}"
-        } else {
-          ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
-        }
+        ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
+
     - name: Test
       if: matrix.name == 'linux-x86_64'
       working-directory: ${{github.workspace}}/build
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure
- 
+
     - name: Build Documentation
       if: matrix.name == 'linux-x86_64'
       run: cmake --build ${{github.workspace}}/build --target docs
@@ -102,9 +109,9 @@ jobs:
     needs: build
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
+
     - name: Checkout code
       uses: actions/checkout@v3
-
     - name: Download Artifacts
       uses: actions/download-artifact@v4
       with:

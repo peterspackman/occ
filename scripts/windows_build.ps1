@@ -10,6 +10,8 @@ if ($args.Count -gt 1) {
     $NAME = $args[1]
 }
 
+Write-Output "NAME = $NAME, ARCH = $ARCH"
+
 # Ensure GCC (MinGW-w64) is installed and in PATH
 if (!(Get-Command gcc -ErrorAction SilentlyContinue)) {
     Write-Error "GCC not found. Please install MinGW-w64 and add it to your PATH."
@@ -59,7 +61,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Package the project
 Push-Location $BUILD_DIR
-cpack -G ZIP
+cpack -G TXZ
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Packaging failed."
     exit $LASTEXITCODE
