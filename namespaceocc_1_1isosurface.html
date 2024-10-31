@@ -112,17 +112,23 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1InterpolatorParams.html">InterpolatorParams</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1BatchFunctor.html">BatchFunctor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1SurfaceCurvature.html">SurfaceCurvature</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1DeformationDensityFunctor.html">DeformationDensityFunctor</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html">MCDeformationDensityFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html">ElectricPotentialFunctorPC</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectricPotentialFunctor.html">ElectricPotentialFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html">MCElectricPotentialFunctor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1ElectronDensityFunctor.html">ElectronDensityFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1PromoleculeDensityFunctor.html">PromoleculeDensityFunctor</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1MCElectronDensityFunctor.html">MCElectronDensityFunctor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor.html">MCPromoleculeDensityFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1StockholderWeightFunctor.html">StockholderWeightFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -136,6 +142,12 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:aefc2795980f901c0814eeb8eb1984c69"><td class="memTemplParams" colspan="2">template&lt;typename F &gt; </td></tr>
+<tr class="memitem:aefc2795980f901c0814eeb8eb1984c69"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#aefc2795980f901c0814eeb8eb1984c69">BatchFunctor</a> (F &amp;&amp;) -&gt; <a class="el" href="classocc_1_1isosurface_1_1BatchFunctor.html">BatchFunctor</a>&lt; std::remove_reference_t&lt; F &gt;&gt;</td></tr>
+<tr class="separator:aefc2795980f901c0814eeb8eb1984c69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83e50fe4bb35393c8c5706d07102c456"><td class="memTemplParams" colspan="2">template&lt;typename F , typename... Args&gt; </td></tr>
+<tr class="memitem:a83e50fe4bb35393c8c5706d07102c456"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a83e50fe4bb35393c8c5706d07102c456">make_batch_functor</a> (Args &amp;&amp;...args)</td></tr>
+<tr class="separator:a83e50fe4bb35393c8c5706d07102c456"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3770fbe091fed343b7379fa56c5a96cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1isosurface_1_1SurfaceCurvature.html">SurfaceCurvature</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a3770fbe091fed343b7379fa56c5a96cc">calculate_curvature</a> (const std::vector&lt; float &gt; &amp;mean, const std::vector&lt; float &gt; &amp;gaussian)</td></tr>
 <tr class="separator:a3770fbe091fed343b7379fa56c5a96cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -155,6 +167,26 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="aefc2795980f901c0814eeb8eb1984c69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aefc2795980f901c0814eeb8eb1984c69">&#9670;&nbsp;</a></span>BatchFunctor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename F &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1isosurface_1_1BatchFunctor.html">occ::isosurface::BatchFunctor</a> </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> -&gt;  <a class="el" href="classocc_1_1isosurface_1_1BatchFunctor.html">BatchFunctor</a>&lt; std::remove_reference_t&lt; F &gt;&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a3770fbe091fed343b7379fa56c5a96cc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3770fbe091fed343b7379fa56c5a96cc">&#9670;&nbsp;</a></span>calculate_curvature()</h2>
 
@@ -177,6 +209,26 @@ Functions</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a83e50fe4bb35393c8c5706d07102c456"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83e50fe4bb35393c8c5706d07102c456">&#9670;&nbsp;</a></span>make_batch_functor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename F , typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto occ::isosurface::make_batch_functor </td>
+          <td>(</td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">

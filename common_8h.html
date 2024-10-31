@@ -98,19 +98,22 @@ $(document).ready(function(){initNavTree('common_8h.html',''); initResizable(); 
 <div class="title">common.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="interpolator_8h.html">occ/core/interpolator.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="units_8h.html">occ/core/units.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="interpolator_8h.html">occ/core/interpolator.h</a>&gt;</code><br />
+<code>#include &lt;utility&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for common.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="common_8h__incl.svg" width="664" height="291"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="common_8h__incl.svg" width="670" height="291"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="common_8h__dep__incl.svg" width="1166" height="483"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="common_8h__dep__incl.svg" width="1166" height="483"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -120,6 +123,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1AtomInterpolator.html">occ::isosurface::AtomInterpolator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1InterpolatorParams.html">occ::isosurface::InterpolatorParams</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1BatchFunctor.html">occ::isosurface::BatchFunctor&lt; F &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -141,6 +146,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a380a10dfef8ea64e1e86698d1886fd52"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
 <tr class="memitem:a380a10dfef8ea64e1e86698d1886fd52"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a380a10dfef8ea64e1e86698d1886fd52">occ::isosurface::impl::remap_vertices</a> (const Func &amp;f, const std::vector&lt; float &gt; &amp;v, std::vector&lt; float &gt; &amp;dest)</td></tr>
 <tr class="separator:a380a10dfef8ea64e1e86698d1886fd52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefc2795980f901c0814eeb8eb1984c69"><td class="memTemplParams" colspan="2">template&lt;typename F &gt; </td></tr>
+<tr class="memitem:aefc2795980f901c0814eeb8eb1984c69"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#aefc2795980f901c0814eeb8eb1984c69">occ::isosurface::BatchFunctor</a> (F &amp;&amp;) -&gt; BatchFunctor&lt; std::remove_reference_t&lt; F &gt;&gt;</td></tr>
+<tr class="separator:aefc2795980f901c0814eeb8eb1984c69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83e50fe4bb35393c8c5706d07102c456"><td class="memTemplParams" colspan="2">template&lt;typename F , typename... Args&gt; </td></tr>
+<tr class="memitem:a83e50fe4bb35393c8c5706d07102c456"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a83e50fe4bb35393c8c5706d07102c456">occ::isosurface::make_batch_functor</a> (Args &amp;&amp;...args)</td></tr>
+<tr class="separator:a83e50fe4bb35393c8c5706d07102c456"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

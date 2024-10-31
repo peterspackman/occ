@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['mathutils_3146',['mathutils',['../namespacequickhull_1_1mathutils.html',1,'quickhull']]],
-  ['quickhull_3147',['quickhull',['../namespacequickhull.html',1,'']]]
+  ['mathutils_3164',['mathutils',['../namespacequickhull_1_1mathutils.html',1,'quickhull']]],
+  ['quickhull_3165',['quickhull',['../namespacequickhull.html',1,'']]]
 ];

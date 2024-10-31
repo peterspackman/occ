@@ -1,22 +1,23 @@
 <map id="/home/runner/work/occ/occ/include/occ/slater/hirshfeld.h" name="/home/runner/work/occ/occ/include/occ/slater/hirshfeld.h">
-<area shape="rect" id="node1" title=" " alt="" coords="482,5,653,61"/>
-<area shape="rect" id="node2" href="$promolecule_8h.html" title=" " alt="" coords="476,109,659,136"/>
-<area shape="rect" id="node3" href="$common_8h.html" title=" " alt="" coords="372,184,560,211"/>
-<area shape="rect" id="node10" href="$interpolator_8h.html" title=" " alt="" coords="113,259,280,285"/>
-<area shape="rect" id="node14" title=" " alt="" coords="769,184,960,211"/>
-<area shape="rect" id="node15" href="$molecule_8h.html" title=" " alt="" coords="593,184,745,211"/>
-<area shape="rect" id="node4" href="$linear__algebra_8h.html" title=" " alt="" coords="415,333,600,360"/>
-<area shape="rect" id="node8" href="$units_8h.html" title=" " alt="" coords="304,259,428,285"/>
-<area shape="rect" id="node13" title=" " alt="" coords="713,333,776,360"/>
-<area shape="rect" id="node5" title=" " alt="" coords="319,408,421,435"/>
-<area shape="rect" id="node6" title=" " alt="" coords="445,408,569,435"/>
-<area shape="rect" id="node7" title=" " alt="" coords="594,408,709,435"/>
-<area shape="rect" id="node9" title=" " alt="" coords="317,333,380,360"/>
-<area shape="rect" id="node11" title=" " alt="" coords="169,333,259,360"/>
-<area shape="rect" id="node12" href="$macros_8h.html" title=" " alt="" coords="5,333,145,360"/>
-<area shape="rect" id="node16" title=" " alt="" coords="757,259,813,285"/>
-<area shape="rect" id="node17" href="$atom_8h.html" title=" " alt="" coords="605,259,732,285"/>
-<area shape="rect" id="node18" href="$element_8h.html" title=" " alt="" coords="837,259,983,285"/>
-<area shape="rect" id="node20" title=" " alt="" coords="1008,259,1063,285"/>
-<area shape="rect" id="node19" title=" " alt="" coords="881,333,939,360"/>
+<area shape="rect" id="node1" title=" " alt="" coords="246,5,417,61"/>
+<area shape="rect" id="node2" href="$promolecule_8h.html" title=" " alt="" coords="240,109,423,136"/>
+<area shape="rect" id="node3" title=" " alt="" coords="37,184,228,211"/>
+<area shape="rect" id="node4" href="$interpolator_8h.html" title=" " alt="" coords="61,259,228,285"/>
+<area shape="rect" id="node12" href="$molecule_8h.html" title=" " alt="" coords="682,184,834,211"/>
+<area shape="rect" id="node19" href="$common_8h.html" title=" " alt="" coords="304,184,492,211"/>
+<area shape="rect" id="node5" title=" " alt="" coords="325,333,388,360"/>
+<area shape="rect" id="node6" title=" " alt="" coords="169,333,259,360"/>
+<area shape="rect" id="node7" href="$linear__algebra_8h.html" title=" " alt="" coords="435,333,620,360"/>
+<area shape="rect" id="node11" href="$macros_8h.html" title=" " alt="" coords="5,333,145,360"/>
+<area shape="rect" id="node8" title=" " alt="" coords="339,408,441,435"/>
+<area shape="rect" id="node9" title=" " alt="" coords="465,408,589,435"/>
+<area shape="rect" id="node10" title=" " alt="" coords="614,408,729,435"/>
+<area shape="rect" id="node13" title=" " alt="" coords="789,259,845,285"/>
+<area shape="rect" id="node14" href="$atom_8h.html" title=" " alt="" coords="637,259,764,285"/>
+<area shape="rect" id="node15" href="$element_8h.html" title=" " alt="" coords="869,259,1015,285"/>
+<area shape="rect" id="node18" title=" " alt="" coords="1040,259,1095,285"/>
+<area shape="rect" id="node16" title=" " alt="" coords="913,333,971,360"/>
+<area shape="rect" id="node17" title=" " alt="" coords="735,333,797,360"/>
+<area shape="rect" id="node20" href="$units_8h.html" title=" " alt="" coords="336,259,460,285"/>
+<area shape="rect" id="node21" title=" " alt="" coords="252,259,312,285"/>
 </map>
