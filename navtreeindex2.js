@@ -1,6 +1,5 @@
 var NAVTREEINDEX2 =
 {
-"classocc_1_1dft_1_1DensityFunctional.html#a71d7ef494b9b7ce10c97c29e0eb96c72":[2,0,2,3,3,9],
 "classocc_1_1dft_1_1DensityFunctional.html#a77a8689e628eb8cb5d20dea3b3b57c55":[2,0,2,3,3,5],
 "classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadf":[2,0,2,3,3,2],
 "classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa03cb5b2621bd370f44ffd8953877cc62":[2,0,2,3,3,2,4],
@@ -249,5 +248,6 @@ var NAVTREEINDEX2 =
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaa055d91b7370002ec97732aedfbf981c":[2,0,2,3,3,3,101],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaa1a122dafec1c5fcb25488bf452ea760":[2,0,2,3,3,3,26],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaa223d41864d5948c1f52eda45ec5aabd":[2,0,2,3,3,3,333],
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaa287a19b6fce829e63cbd61adb53f347":[2,0,2,3,3,3,266]
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaa287a19b6fce829e63cbd61adb53f347":[2,0,2,3,3,3,266],
+"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaa4b395d771e2a7953647d17732839edc":[2,0,2,3,3,3,340]
 };
