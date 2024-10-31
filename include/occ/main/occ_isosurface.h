@@ -39,7 +39,7 @@ struct IsosurfaceConfig {
   std::string environment_filename{""};
   size_t max_depth{4};
   double separation{0.2};
-  double isovalue{0.02};
+  std::vector<double> isovalues{0.02};
   double background_density{0.0};
   bool use_hashed_mc{false};
   std::string wavefunction_filename{""};
@@ -48,8 +48,9 @@ struct IsosurfaceConfig {
   int orbital_index{0};
   bool binary_output{true};
   std::string kind{"promolecule_density"};
-  std::string output_filename{"surface.ply"};
+  std::string output_template{"surface{}.ply"};
   std::vector<std::string> additional_properties{};
+  std::vector<int> orbital_indices{};
 
   std::vector<Property> surface_properties() const;
   Surface surface_type() const;
@@ -58,6 +59,10 @@ struct IsosurfaceConfig {
   bool requires_environment() const;
   bool requires_wavefunction() const;
   bool have_environment_file() const;
+
+  // New helper methods
+  std::string format_output_filename(size_t index, std::optional<std::string> label = std::nullopt) const;
+  bool has_multiple_outputs() const;
 };
 
 CLI::App *add_isosurface_subcommand(CLI::App &app);

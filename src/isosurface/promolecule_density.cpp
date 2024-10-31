@@ -4,7 +4,7 @@
 
 namespace occ::isosurface {
 
-PromoleculeDensityFunctor::PromoleculeDensityFunctor(
+MCPromoleculeDensityFunctor::MCPromoleculeDensityFunctor(
     const occ::core::Molecule &mol, float sep, const occ::slater::InterpolatorParams &params)
     : m_target_separation(sep), m_promol(mol, params) {
 
@@ -16,7 +16,7 @@ PromoleculeDensityFunctor::PromoleculeDensityFunctor(
     update_region_for_isovalue();
 }
 
-void PromoleculeDensityFunctor::update_region_for_isovalue() {
+void MCPromoleculeDensityFunctor::update_region_for_isovalue() {
 
     m_buffer = m_promol.maximum_distance_heuristic(m_isovalue, 1.0f);
 

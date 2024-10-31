@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
+#include <occ/core/eeq.h>
 #include <occ/core/kdtree.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
@@ -18,7 +19,6 @@
 #include <occ/isosurface/curvature.h>
 #include <occ/isosurface/isosurface.h>
 #include <occ/main/occ_isosurface.h>
-#include <occ/core/eeq.h>
 
 namespace fs = std::filesystem;
 using occ::FVec;
@@ -132,7 +132,8 @@ IsosurfaceMesh as_mesh(const F &func, const std::vector<float> &vertices,
   return result;
 }
 
-template <typename F> IsosurfaceMesh extract_surface(F &func, float isovalue, bool flip=false) {
+template <typename F>
+IsosurfaceMesh extract_surface(F &func, float isovalue, bool flip = false) {
   occ::timing::StopWatch sw;
   auto cubes = func.cubes_per_side();
   occ::log::info("Marching cubes voxels: {}x{}x{}", cubes(0), cubes(1),
@@ -141,6 +142,7 @@ template <typename F> IsosurfaceMesh extract_surface(F &func, float isovalue, bo
   mc.set_origin_and_side_lengths(func.origin(), func.side_length());
   mc.isovalue = isovalue;
   mc.flip_normals = (isovalue < 0.0) || flip;
+  if(mc.flip_normals) occ::log::info("Negative isovalue provided, will flip normals");
 
   std::vector<float> vertices;
   std::vector<float> normals;
@@ -196,7 +198,8 @@ compute_atom_surface_properties(const Molecule &m1, const Molecule &m2,
         results.init(&indices[0], &dist_sq[0]);
         bool populated = interior_tree.index->findNeighbors(
             results, v.data(), nanoflann::SearchParams());
-        if(!populated) continue;
+        if (!populated)
+          continue;
         di(i) = std::sqrt(dist_sq[0]);
         di_idx(i) = indices[0];
 
@@ -249,7 +252,8 @@ compute_atom_surface_properties(const Molecule &m1, const Molecule &m2,
         results.init(&indices[0], &dist_sq[0]);
         bool populated = exterior_tree.index->findNeighbors(
             results, v.data(), nanoflann::SearchParams());
-        if(!populated) continue;
+        if (!populated)
+          continue;
         de(i) = std::sqrt(dist_sq[0]);
         de_idx(i) = indices[0];
 
@@ -376,6 +380,7 @@ IsosurfaceConfig::surface_properties() const {
           // Electron density
           {"electron density", IsosurfaceConfig::Property::ElectronDensity},
           {"rho", IsosurfaceConfig::Property::ElectronDensity},
+          {"orbital", IsosurfaceConfig::Property::Orbital},
           {"density", IsosurfaceConfig::Property::ElectronDensity},
           {"eeq_esp", IsosurfaceConfig::Property::EEQ_ESP},
           {"esp", IsosurfaceConfig::Property::ESP},
@@ -467,6 +472,25 @@ bool IsosurfaceConfig::requires_wavefunction() const {
   return false;
 }
 
+std::string IsosurfaceConfig::format_output_filename(
+    size_t index, std::optional<std::string> label) const {
+  if (!has_multiple_outputs() && index == 0 && !label) {
+    return fmt::format(fmt::runtime(output_template), "");
+  }
+
+  if (label) {
+    return fmt::format(fmt::runtime(output_template), *label);
+  } else {
+    return fmt::format(fmt::runtime(output_template), index);
+  }
+}
+
+bool IsosurfaceConfig::has_multiple_outputs() const {
+  return isovalues.size() > 1 ||
+         ((surface_type() == IsosurfaceConfig::Surface::Orbital) &&
+          (orbital_indices.size() > 1));
+}
+
 void ensure_isosurface_configuration_valid(const IsosurfaceConfig &config,
                                            bool have_wavefunction,
                                            bool have_crystal) {
@@ -519,12 +543,19 @@ CLI::App *add_isosurface_subcommand(CLI::App &app) {
   iso->add_option("--max-depth", config->max_depth, "Maximum voxel depth");
   iso->add_option("--separation", config->separation,
                   "targt voxel separation (Angstrom)");
-  iso->add_option("--isovalue", config->isovalue, "target isovalue");
+
+  iso->add_option("--isovalue", config->isovalues,
+                  "target isovalue(s)")
+      ->expected(-1); // Allow multiple isovalues
+
+  iso->add_option("--orbital", config->orbital_indices,
+                  "orbital indices (for orbital surfaces)")
+      ->expected(-1); // Allow multiple orbital indices
+
+  iso->add_option("-o,--output-template", config->output_template,
+                  "template for output files (use {} for index placement)");
   iso->add_option("--background-density", config->background_density,
                   "add background density to close surface");
-
-  iso->add_option("--output,-o", config->output_filename,
-                  "destination to write file");
 
   iso->fallthrough();
   iso->callback([config]() { run_isosurface_subcommand(*config); });
@@ -557,27 +588,71 @@ Wavefunction load_wfn(const IsosurfaceConfig &config) {
   return wfn;
 }
 
-FVec compute_surface_property(IsosurfaceConfig::Property prop, 
+FVec compute_surface_property(IsosurfaceConfig::Property prop,
                               Eigen::Ref<const Eigen::Matrix3Xf> vertices,
                               const Molecule &m1, const Molecule &m2,
-                              const Wavefunction & wfn = {}) {
+                              const IsosurfaceConfig &config,
+                              const Wavefunction &wfn = {}) {
 
   FVec result = FVec::Zero(vertices.cols());
 
   switch (prop) {
+  case IsosurfaceConfig::Property::PromoleculeDensity: {
+    auto func = iso::BatchFunctor<slater::PromoleculeDensity>(m1);
+    func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
+    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
+                   result.maxCoeff(), result.mean());
+    occ::log::info("Computed Promoecule Density for {} vertices",
+                   func.num_calls());
+    break;
+  }
+  case IsosurfaceConfig::Property::ElectronDensity: {
+    auto func = iso::ElectronDensityFunctor(wfn);
+    func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
+    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
+                   result.maxCoeff(), result.mean());
+    occ::log::info("Computed Electron Density for {} vertices",
+                   func.num_calls());
+    break;
+  }
+  case IsosurfaceConfig::Property::Orbital: {
+    // Handle orbital property
+    if (config.orbital_indices.empty()) {
+      throw std::runtime_error(
+          "No orbital indices specified for orbital property");
+    }
+
+    auto func = iso::ElectronDensityFunctor(wfn, -1);
+    int prev_calls = 0;
+    for (int orbital_index : config.orbital_indices) {
+      func.set_orbital_index(orbital_index);
+      func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
+      occ::log::info("Computed Orbital {} Density for {} vertices", orbital_index,
+                     func.num_calls() - prev_calls);
+      occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
+                     result.maxCoeff(), result.mean());
+      prev_calls = func.num_calls();
+    }
+    break;
+  }
   case IsosurfaceConfig::Property::ESP: {
-    auto func = iso::ElectricPotentialFunctor(wfn, 0.2);
+    auto func = iso::ElectricPotentialFunctor(wfn);
     func.batch(vertices, result);
+    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
+                   result.maxCoeff(), result.mean());
+    occ::log::info("Computed ESP (QM) for {} vertices", func.num_calls());
     break;
   }
   case IsosurfaceConfig::Property::EEQ_ESP: {
     auto m = m1;
-    auto q = occ::core::charges::eeq_partial_charges(m.atomic_numbers(), m.positions(), m.charge());
+    auto q = occ::core::charges::eeq_partial_charges(m.atomic_numbers(),
+                                                     m.positions(), m.charge());
     occ::log::info("Molecule partial charges (EEQ)\n{}", q);
     m.set_partial_charges(q);
     auto func = iso::ElectricPotentialFunctorPC(m);
     func.batch(vertices, result);
-    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(), result.maxCoeff(), result.mean());
+    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
+                   result.maxCoeff(), result.mean());
     occ::log::info("Computed EEQ ESP for {} vertices", func.num_calls());
     break;
   }
@@ -626,107 +701,135 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
 
   const auto surface_type = config.surface_type();
   occ::log::info("Isosurface kind: {}", to_string(surface_type));
-  switch (config.surface_type()) {
-  case IsosurfaceConfig::Surface::ESP: {
-    auto func = iso::ElectricPotentialFunctor(wfn, config.separation);
-    mesh = extract_surface(func, config.isovalue);
-    break;
+
+  // Ensure we have at least one isovalue
+  if (config.isovalues.empty()) {
+    config.isovalues.push_back(0.02);
   }
-  case IsosurfaceConfig::Surface::ElectronDensity: {
-    auto func = iso::ElectronDensityFunctor(wfn, config.separation);
-    mesh = extract_surface(func, config.isovalue);
-    break;
-  }
-  case IsosurfaceConfig::Surface::CrystalVoid: {
-    occ::io::CifParser parser;
-    auto crystal = parser.parse_crystal(config.geometry_filename).value();
-    auto func = iso::VoidSurfaceFunctor(crystal, config.separation);
-    if (m2.size() == 0) {
-      m2 = func.molecule();
+
+  // Loop over all isovalues
+  for (size_t iso_idx = 0; iso_idx < config.isovalues.size(); iso_idx++) {
+    const double isovalue = config.isovalues[iso_idx];
+    occ::log::info("Processing isovalue {}: {}", iso_idx, isovalue);
+
+    IsosurfaceMesh mesh;
+    VertexProperties properties;
+
+    switch (config.surface_type()) {
+    case IsosurfaceConfig::Surface::ESP: {
+      auto func = iso::MCElectricPotentialFunctor(wfn, config.separation);
+      mesh = extract_surface(func, isovalue);
+      break;
     }
-    mesh = extract_surface(func, config.isovalue, true);
-    break;
-  }
-  case IsosurfaceConfig::Surface::Hirshfeld: {
-    if (!use_wfn_mol) {
-      m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+    case IsosurfaceConfig::Surface::ElectronDensity: {
+      auto func = iso::MCElectronDensityFunctor(wfn, config.separation);
+      mesh = extract_surface(func, isovalue);
+      break;
+    }
+    case IsosurfaceConfig::Surface::CrystalVoid: {
+      occ::io::CifParser parser;
+      auto crystal = parser.parse_crystal(config.geometry_filename).value();
+      auto func = iso::VoidSurfaceFunctor(crystal, config.separation);
+      if (m2.size() == 0) {
+        m2 = func.molecule();
+      }
+      mesh = extract_surface(func, isovalue, true);
+      break;
+    }
+    case IsosurfaceConfig::Surface::Hirshfeld: {
+      if (!use_wfn_mol) {
+        m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+      }
+
+      occ::log::info("Interior region has {} atoms", m1.size());
+      occ::log::info("Exterior region has {} atoms", m2.size());
+
+      auto func = iso::StockholderWeightFunctor(m1, m2, config.separation);
+      func.set_background_density(config.background_density);
+      mesh = extract_surface(func, 0.5f); // Hirshfeld always uses 0.5
+      break;
+    }
+    case IsosurfaceConfig::Surface::PromoleculeDensity: {
+      if (!use_wfn_mol) {
+        m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+      }
+      occ::log::info("Interior region has {} atoms", m1.size());
+      auto func = iso::MCPromoleculeDensityFunctor(m1, config.separation);
+      func.set_isovalue(isovalue);
+      mesh = extract_surface(func, isovalue);
+      break;
+    }
+    case IsosurfaceConfig::Surface::DeformationDensity: {
+      if (!use_wfn_mol) {
+        m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+      }
+      occ::log::info("Interior region has {} atoms", m1.size());
+      auto func = iso::MCDeformationDensityFunctor(m1, wfn, config.separation);
+      func.set_isovalue(isovalue);
+      mesh = extract_surface(func, isovalue);
+      break;
+    }
+    case IsosurfaceConfig::Surface::Orbital: {
+      if (config.orbital_indices.empty()) {
+        throw std::runtime_error(
+            "No orbital indices specified for orbital property");
+      }
+      auto func = iso::MCElectronDensityFunctor(wfn, config.separation, config.orbital_indices[0]);
+      mesh = extract_surface(func, isovalue);
+      break;
     }
 
-    occ::log::info("Interior region has {} atoms", m1.size());
-    occ::log::info("Exterior region has {} atoms", m2.size());
-
-    auto func = iso::StockholderWeightFunctor(m1, m2, config.separation);
-    func.set_background_density(config.background_density);
-    mesh = extract_surface(func, 0.5f);
-    break;
-  }
-  case IsosurfaceConfig::Surface::PromoleculeDensity: {
-    if (!use_wfn_mol) {
-      m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
+    default: {
+      throw std::runtime_error("Not implemented");
+      break;
     }
-    occ::log::info("Interior region has {} atoms", m1.size());
-    auto func = iso::PromoleculeDensityFunctor(m1, config.separation);
-    func.set_isovalue(config.isovalue);
-    mesh = extract_surface(func, config.isovalue);
-    break;
-  }
-  case IsosurfaceConfig::Surface::DeformationDensity: {
-    if (!use_wfn_mol) {
-      m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
     }
-    occ::log::info("Interior region has {} atoms", m1.size());
-    auto func = iso::DeformationDensityFunctor(m1, wfn, config.separation);
-    func.set_isovalue(config.isovalue);
-    mesh = extract_surface(func, config.isovalue);
-    break;
+
+    Eigen::Map<const FMat3N> verts(mesh.vertices.data(), 3,
+                                   mesh.vertices.size() / 3);
+    Eigen::Map<const FMat3N> normals(mesh.normals.data(), 3,
+                                     mesh.normals.size() / 3);
+    Eigen::Map<const Eigen::Matrix<uint32_t, 3, Eigen::Dynamic>> faces(
+        mesh.faces.data(), 3, mesh.faces.size() / 3);
+
+    occ::log::info("Computing surface curvature properties");
+    auto c = occ::isosurface::calculate_curvature(mesh.mean_curvature,
+                                                  mesh.gaussian_curvature);
+
+    occ::log::info("Computing atom internal/external neighbor properties");
+    properties = compute_atom_surface_properties(m1, m2, verts);
+
+    properties.add_property("shape_index", c.shape_index);
+    properties.add_property("curvedness", c.curvedness);
+    properties.add_property("gaussian_curvature", c.gaussian);
+    properties.add_property("mean_curvature", c.mean);
+    properties.add_property("k1", c.k1);
+    properties.add_property("k2", c.k2);
+
+    for (const auto &prop : properties_to_compute) {
+      const auto s = to_string(prop);
+      if (properties.fprops.contains(s))
+        continue;
+      if (properties.iprops.contains(s))
+        continue;
+      occ::log::info("Need to compute: {}", s);
+      properties.add_property(
+          s, compute_surface_property(prop, verts, m1, m2, config, wfn));
+    }
+
+    Eigen::Vector3f lower_left = verts.rowwise().minCoeff();
+    Eigen::Vector3f upper_right = verts.rowwise().maxCoeff();
+    occ::log::info("Lower corner of mesh: [{:.3f} {:.3f} {:.3f}]",
+                   lower_left(0), lower_left(1), lower_left(2));
+    occ::log::info("Upper corner of mesh: [{:.3f} {:.3f} {:.3f}]",
+                   upper_right(0), upper_right(1), upper_right(2));
+
+    // Generate output filename based on index
+    std::string output_filename = config.format_output_filename(iso_idx);
+    occ::log::info("Writing surface to {}", output_filename);
+    occ::io::write_ply_mesh(output_filename, mesh, properties,
+                            config.binary_output);
   }
-  default: {
-    throw std::runtime_error("Not implemented");
-    break;
-  }
-  }
-
-  Eigen::Map<const FMat3N> verts(mesh.vertices.data(), 3,
-                                 mesh.vertices.size() / 3);
-  Eigen::Map<const FMat3N> normals(mesh.normals.data(), 3,
-                                   mesh.normals.size() / 3);
-  Eigen::Map<const Eigen::Matrix<uint32_t, 3, Eigen::Dynamic>> faces(
-      mesh.faces.data(), 3, mesh.faces.size() / 3);
-
-  occ::log::info("Computing surface curvature properties");
-  auto c = occ::isosurface::calculate_curvature(mesh.mean_curvature,
-                                                mesh.gaussian_curvature);
-
-  occ::log::info("Computing atom internal/external neighbor properties");
-  properties = compute_atom_surface_properties(m1, m2, verts);
-
-  properties.add_property("shape_index", c.shape_index);
-  properties.add_property("curvedness", c.curvedness);
-  properties.add_property("gaussian_curvature", c.gaussian);
-  properties.add_property("mean_curvature", c.mean);
-  properties.add_property("k1", c.k1);
-  properties.add_property("k2", c.k2);
-
-  for (const auto &prop : properties_to_compute) {
-    const auto s = to_string(prop);
-    if (properties.fprops.contains(s))
-      continue;
-    if (properties.iprops.contains(s))
-      continue;
-    occ::log::info("Need to compute: {}", s);
-    properties.add_property(s, compute_surface_property(prop, verts, m1, m2, wfn));
-  }
-
-  Eigen::Vector3f lower_left = verts.rowwise().minCoeff();
-  Eigen::Vector3f upper_right = verts.rowwise().maxCoeff();
-  occ::log::info("Lower corner of mesh: [{:.3f} {:.3f} {:.3f}]", lower_left(0),
-                 lower_left(1), lower_left(2));
-  occ::log::info("Upper corner of mesh: [{:.3f} {:.3f} {:.3f}]", upper_right(0),
-                 upper_right(1), upper_right(2));
-
-  occ::log::info("Writing surface to {}", config.output_filename);
-  occ::io::write_ply_mesh(config.output_filename, mesh, properties,
-                          config.binary_output);
 }
 
 } // namespace occ::main

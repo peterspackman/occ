@@ -1,11 +1,10 @@
 FROM ubuntu:latest
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     curl \
     jq \
     xz-utils \
-    libquadmath0 \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -18,5 +17,5 @@ RUN curl -s https://api.github.com/repos/peterspackman/occ/releases/latest \
 RUN tar -xf occ-latest-linux-x86_64.tar.xz --strip-components=1 && \
     rm occ-latest-linux-x86_64.tar.xz
 
-ENV OCC_DATA_PATH /opt/share/occ
+ENV OCC_DATA_PATH=/opt/share/occ
 CMD ["/opt/bin/occ"]

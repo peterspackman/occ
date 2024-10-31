@@ -2,7 +2,7 @@
 
 namespace occ::isosurface {
 
-DeformationDensityFunctor::DeformationDensityFunctor(
+MCDeformationDensityFunctor::MCDeformationDensityFunctor(
     const occ::core::Molecule &mol,
     const occ::qm::Wavefunction &wfn, float sep,
     const occ::slater::InterpolatorParams &params) : 
