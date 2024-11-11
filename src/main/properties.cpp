@@ -22,6 +22,15 @@ void print_charges(const std::string &charge_type, const Vec &charges,
     }
 }
 
+void write_charges(const std::string &filename, const Vec &charges, const std::vector<occ::core::Atom> &atoms) {
+
+    auto output = fmt::output_file(filename);
+    output.print("{}\nCharges from OCC\n", charges.rows());
+    for(int i = 0; i < charges.rows(); i++) {
+        output.print("{:12.6f} {:12.6f} {:12.6f} {:12.6f}\n", charges(i), atoms[i].x, atoms[i].y, atoms[i].z);
+    }
+}
+
 void calculate_dispersion(const OccInput &config, const Wavefunction &wfn) {
     if (!config.dispersion.evaluate_correction)
         return;
@@ -59,10 +68,11 @@ void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
     Vec charges = wfn.mulliken_charges();
     print_charges("Mulliken", charges, wfn.atoms);
 
-    bool do_chelpg = false;
-    if (do_chelpg) {
+    if (!config.chelpg_filename.empty()) {
         Vec charges_chelpg = occ::qm::chelpg_charges(wfn);
         print_charges("CHELPG", charges_chelpg, wfn.atoms);
+        write_charges(config.chelpg_filename, charges_chelpg, wfn.atoms);
+        log::info("Wrote CHELPG charges to {}", config.chelpg_filename);
     }
     bool do_esp = false;
     // TODO make this flexible

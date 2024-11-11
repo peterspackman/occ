@@ -109,6 +109,7 @@ struct OccInput {
     OutputInput output;
     std::string name{""};
     std::string filename{""};
+    std::string chelpg_filename{""};
 };
 
 template <typename T> OccInput build(const std::string &filename) {
