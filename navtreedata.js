@@ -83,9 +83,9 @@ var NAVTREEINDEX =
 "structocc_1_1core_1_1GenSqrtInvResult.html#aceb2f5f77d2f8889d03e1b1e0eb85b33",
 "structocc_1_1geometry_1_1IndexCache.html#afa072f076aa14693617b9578d0f6be9c",
 "structocc_1_1io_1_1GMFWriter_1_1Facet.html#a8126a803dd78af1f3aa337bbd4ed8c86",
-"structocc_1_1main_1_1DescribeConfig.html",
-"structocc_1_1qm_1_1MolecularOrbitals.html#adfd73ec3e0f6cd915c15839f03e88c73",
-"structquickhull_1_1MeshBuilder_1_1Face.html#ab92770cedd8f58ed6a44e56b04aa0d2d"
+"structocc_1_1main_1_1DeformationDensityFunctor.html#aa36dfb95e439b7e58b9796ec10d2487f",
+"structocc_1_1qm_1_1MolecularOrbitals.html#add93919459e859112a7ee63fbddb9269",
+"structquickhull_1_1MeshBuilder_1_1Face.html#ab4716d5bd1dc131e8ff9d08f9a14117f"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

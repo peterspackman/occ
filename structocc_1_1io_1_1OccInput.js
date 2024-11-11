@@ -1,6 +1,7 @@
 var structocc_1_1io_1_1OccInput =
 [
     [ "basis", "structocc_1_1io_1_1OccInput.html#ab4875cbdc57b0515f325c778f1f5268f", null ],
+    [ "chelpg_filename", "structocc_1_1io_1_1OccInput.html#aef5f7890c798e8731e6c7d390c0fe2e1", null ],
     [ "crystal", "structocc_1_1io_1_1OccInput.html#a4da29e603126b14bb3301e3a950d7eb2", null ],
     [ "dispersion", "structocc_1_1io_1_1OccInput.html#ab14c9a6b4bb174ec3da352082becc93b", null ],
     [ "driver", "structocc_1_1io_1_1OccInput.html#a8fd51de86d7ca64fe2e7ecb77996597d", null ],
