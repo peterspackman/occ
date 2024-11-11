@@ -26,8 +26,9 @@ void write_charges(const std::string &filename, const Vec &charges, const std::v
 
     auto output = fmt::output_file(filename);
     output.print("{}\nCharges from OCC\n", charges.rows());
+    auto fac = occ::units::BOHR_TO_ANGSTROM;
     for(int i = 0; i < charges.rows(); i++) {
-        output.print("{:12.6f} {:12.6f} {:12.6f} {:12.6f}\n", charges(i), atoms[i].x, atoms[i].y, atoms[i].z);
+        output.print("{:12.6f} {:12.6f} {:12.6f} {:12.6f}\n", charges(i), atoms[i].x * fac, atoms[i].y * fac, atoms[i].z * fac);
     }
 }
 
