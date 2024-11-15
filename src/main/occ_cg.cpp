@@ -1170,6 +1170,7 @@ void write_cg_dimers(const std::string &basename, const std::string &solvent,
   j["result_type"] = "cg";
   j["title"] = basename;
   j["solvent"] = solvent;
+  j["model"] = fmt::format("crystalclear, solvent='{}'", solvent);
 
   j["crystal"] = crystal;
 
