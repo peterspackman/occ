@@ -1,6 +1,5 @@
 var NAVTREEINDEX16 =
 {
-"structocc_1_1main_1_1DeformationDensityFunctor.html#a9d2d0bab3acbb3ae7c035f594b8f6344":[2,0,2,10,25,2],
 "structocc_1_1main_1_1DeformationDensityFunctor.html#aa36dfb95e439b7e58b9796ec10d2487f":[2,0,2,10,25,1],
 "structocc_1_1main_1_1DescribeConfig.html":[2,0,2,10,11],
 "structocc_1_1main_1_1DescribeConfig.html#a5e2d072d7d47e276124861b8f567d211":[2,0,2,10,11,2],
@@ -249,5 +248,6 @@ var NAVTREEINDEX16 =
 "structocc_1_1qm_1_1MolecularOrbitals.html#a990f27714faa71015ad31e2bca3742f3":[2,0,2,11,9,16],
 "structocc_1_1qm_1_1MolecularOrbitals.html#aa522e0500f30141a65584a398a1994ef":[2,0,2,11,9,19],
 "structocc_1_1qm_1_1MolecularOrbitals.html#ac6b75eb89b5812e0cc4e55ca896d6b75":[2,0,2,11,9,28],
-"structocc_1_1qm_1_1MolecularOrbitals.html#aceac60326b4eebca0dbe7a6b43a7766c":[2,0,2,11,9,6]
+"structocc_1_1qm_1_1MolecularOrbitals.html#aceac60326b4eebca0dbe7a6b43a7766c":[2,0,2,11,9,6],
+"structocc_1_1qm_1_1MolecularOrbitals.html#ad6b3bbf1cea784720981d1ec00adbf32":[2,0,2,11,9,3]
 };
