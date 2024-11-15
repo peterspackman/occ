@@ -112,6 +112,7 @@ inline void write_elat_json(const std::string &basename,
   j["title"] = basename;
   j["crystal"] = crystal;
   j["model"] = model;
+  j["has_permutation_symmetry"] = true;
 
   const auto &uc_atoms = crystal.unit_cell_atoms();
 
