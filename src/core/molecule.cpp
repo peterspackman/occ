@@ -23,7 +23,7 @@ Molecule::Molecule(const IVec &nums, const Mat3N &pos)
 Molecule::Molecule(const std::vector<Element> &elements,
                    const std::vector<std::array<double, 3>> &positions)
     : m_atomicNumbers(elements.size()), m_positions(3, positions.size()),
-      m_elements(elements), m_partial_charges(Vec::Zero(elements.size())) {
+      m_elements(elements), m_partial_charges(Vec::Zero(positions.size())) {
   for (size_t i = 0; i < size(); i++) {
     m_atomicNumbers(i) = m_elements[i].atomic_number();
     m_positions(0, i) = positions[i][0];
@@ -298,7 +298,7 @@ void Molecule::set_asymmetric_unit_symop(const IVec &symop) {
 void Molecule::set_cell_shift(const IVec3 &shift) {
   IVec3 diff = shift - m_cell_shift;
   m_cell_shift = shift;
-  if(m_uc_shifts.size() > 0) {
+  if (m_uc_shifts.size() > 0) {
     m_uc_shifts.colwise() += diff;
   }
 }

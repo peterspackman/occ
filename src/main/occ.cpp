@@ -83,5 +83,7 @@ int main(int argc, char *argv[]) {
     occ::timing::stop(occ::timing::global);
     occ::timing::print_timings();
     occ::log::info("A job well done");
+    // flush all FILE* streams before closing
+    std::fflush(nullptr);
     return 0;
 }

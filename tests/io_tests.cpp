@@ -16,6 +16,7 @@
 #include <occ/io/gmf.h>
 #include <occ/io/moldenreader.h>
 #include <occ/io/orca_json.h>
+#include <occ/io/ply.h>
 #include <occ/io/qcschema.h>
 #include <occ/io/wavefunction_json.h>
 #include <occ/qm/hf.h>
@@ -2945,5 +2946,71 @@ TEST_CASE("crystal_json", "[write,read]") {
     REQUIRE(d.labels() == s.labels());
     REQUIRE(d.unit_cell().direct().isApprox(s.unit_cell().direct()));
   }
+}
 
+TEST_CASE("Write PLY mesh validation", "[io][ply]") {
+  using occ::io::IsosurfaceMesh;
+  using occ::io::VertexProperties;
+  SECTION("Valid small mesh") {
+    IsosurfaceMesh mesh;
+    mesh.vertices = {0.0f, 0.0f, 0.0f,
+                     1.0f, 0.0f, 0.0f,
+                     0.0f, 1.0f, 0.0f};
+    mesh.faces = {0, 1, 2};
+    mesh.normals = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
+
+    VertexProperties properties;
+    properties.fprops["test_float"] = {1.0f, 2.0f, 3.0f};
+    properties.iprops["test_int"] = {1, 2, 3};
+
+    // Test both binary and ASCII formats
+    SECTION("ASCII format") {
+      std::stringstream ss;
+      REQUIRE_NOTHROW(write_ply_mesh("test.ply", mesh, properties, false));
+    }
+
+    SECTION("Binary format") {
+      std::stringstream ss;
+      REQUIRE_NOTHROW(write_ply_mesh("test.ply", mesh, properties, true));
+    }
+  }
+
+  SECTION("Error handling") {
+    IsosurfaceMesh empty_mesh;
+    VertexProperties empty_props;
+
+    SECTION("Empty mesh") {
+      REQUIRE_THROWS(
+          write_ply_mesh("test.ply", empty_mesh, empty_props, false));
+    }
+
+    SECTION("Mismatched property sizes") {
+      IsosurfaceMesh mesh;
+      mesh.vertices = {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+      VertexProperties bad_props;
+      bad_props.fprops["test"] = {1.0f}; // Wrong size
+      REQUIRE_THROWS(write_ply_mesh("test.ply", mesh, bad_props, false));
+    }
+
+    SECTION("Invalid file path") {
+      IsosurfaceMesh mesh;
+      mesh.vertices = {0.0f, 0.0f, 0.0f};
+      REQUIRE_THROWS(
+          write_ply_mesh("/invalid/path/test.ply", mesh, empty_props, false));
+    }
+  }
+
+  SECTION("Large mesh handling") {
+    IsosurfaceMesh large_mesh;
+    // Create a larger mesh with many vertices/faces
+    const int num_vertices = 1000000;
+    large_mesh.vertices.resize(num_vertices * 3);
+    large_mesh.faces.resize((num_vertices - 2) * 3);
+
+    VertexProperties properties;
+    properties.fprops["test"] = std::vector<float>(num_vertices, 1.0f);
+
+    REQUIRE_NOTHROW(
+        write_ply_mesh("large_test.ply", large_mesh, properties, true));
+  }
 }

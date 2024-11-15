@@ -1,6 +1,6 @@
 #pragma once
-#include <occ/core/molecule.h>
 #include <ankerl/unordered_dense.h>
+#include <occ/core/molecule.h>
 #include <optional>
 
 namespace occ::core {
@@ -211,11 +211,20 @@ public:
    */
   double interaction_energy(const std::string &key = "total") const;
 
-  inline void set_interaction_energies(const ankerl::unordered_dense::map<std::string, double>& e) {
+  inline void set_interaction_energies(
+      const ankerl::unordered_dense::map<std::string, double> &e) {
     m_interaction_energies = e;
   }
 
-  inline const auto &interaction_energies() const { return m_interaction_energies; }
+  /**
+   * Get the stored interaction energy components for this Dimer.
+   *
+   * \returns a map representing the interaction energies, index by string
+   * identifiers
+   */
+  inline const auto &interaction_energies() const {
+    return m_interaction_energies;
+  }
 
   /**
    * Check if two dimers have the same asymmetric molecul indexes
@@ -269,7 +278,8 @@ public:
    * if Molecule B from the reference frame of Molecule A is equivalent to
    * Molecule rhs.A in the reference frame of rhs.B
    */
-  bool equivalent_in_opposite_frame(const Dimer &b, const Mat3 &rot = Mat3::Identity()) const;
+  bool equivalent_in_opposite_frame(const Dimer &b,
+                                    const Mat3 &rot = Mat3::Identity()) const;
 
   /**
    * Check if two dimers are identical in the same reference frame
