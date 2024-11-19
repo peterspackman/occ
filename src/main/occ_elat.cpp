@@ -162,6 +162,31 @@ inline void write_elat_json(const std::string &basename,
   dest << j.dump(2);
 }
 
+inline void set_molecule_charges(const std::string &charge_string,
+                                 std::vector<occ::core::Molecule> &molecules) {
+  if (charge_string.empty()) {
+    occ::log::info("No charges provided assuming neutral molecules");
+    return;
+  }
+
+  std::vector<int> charges;
+  auto tokens = occ::util::tokenize(charge_string, ",");
+  for (const auto &token : tokens) {
+    charges.push_back(std::stoi(token));
+  }
+  if (charges.size() != molecules.size()) {
+    throw std::runtime_error(
+        fmt::format("Require {} charges to be specified, found {}",
+                    molecules.size(), charges.size()));
+  }
+  for (int i = 0; i < charges.size(); i++) {
+    occ::log::info("Setting net charge for molecule {} = {}", i, charges[i]);
+    molecules[i].set_charge(charges[i]);
+  }
+}
+
+
+
 void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   std::string filename = settings.crystal_filename;
   std::string basename = fs::path(filename).stem().string();
@@ -169,6 +194,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   occ::log::info("Energy model: {}", settings.model_name);
   occ::log::info("Loaded crystal from {}", filename);
   auto molecules = c.symmetry_unique_molecules();
+  set_molecule_charges(settings.charge_string, molecules);
   occ::log::info("Symmetry unique molecules in {}: {}", filename,
                  molecules.size());
 
@@ -257,6 +283,7 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
                    "JSON filename for output");
   elat->add_option("-r,--radius", config->max_radius,
                    "maximum radius (Angstroms) for neighbours");
+  elat->add_option("--charges", config->charge_string, "system net charge");
   elat->add_option("--radius-increment", config->radius_increment,
                    "step size (Angstroms) direct space summation");
   elat->add_flag("-w,--wolf", config->wolf_sum,

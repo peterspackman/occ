@@ -11,7 +11,7 @@ public:
 
   inline void batch(Eigen::Ref<const FMat3N> pos, Eigen::Ref<FVec> layer) const {
     m_num_calls += layer.size();
-    Mat3N dpos = pos.cast<double>().array() * occ::units::ANGSTROM_TO_BOHR;
+    Mat3N dpos = pos.cast<double>().array();
     Vec esp = m_hf.electronic_electric_potential_contribution(m_wfn.mo, dpos);
     esp += m_hf.nuclear_electric_potential_contribution(dpos);
     layer = esp.cast<float>();

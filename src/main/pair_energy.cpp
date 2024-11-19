@@ -610,8 +610,8 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
 
         if (conv.crystal_field_polarization) {
           auto &electric_field = wolf.electric_field_values[mol_idx];
-          occ::log::info("Field total =\n{}", electric_field);
-          occ::log::info("Field total =\n{}", efield);
+          occ::log::debug("Field total =\n{}", electric_field);
+          occ::log::debug("Field total =\n{}", efield);
           if constexpr (std::is_same<EnergyModel, CEPairEnergyFunctor>::value) {
             const auto &wfn_a = energy_model.wavefunctions()[mol_idx];
             double e_pol_chg = occ::interaction::polarization_energy(
@@ -634,17 +634,16 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
     }
     lattice_energy = 0.5 * total.total_kjmol();
     if (conv.wolf_sum) {
-      occ::log::debug("Charge-charge intramolecular: {}", ecoul_self);
-      occ::log::debug("Charge-charge real space: {}", ecoul_real);
-      occ::log::debug("Wolf energy: {}", wolf.energy);
-      occ::log::debug("Coulomb (exact) real: {}", ecoul_exact_real);
-      occ::log::debug("Wolf - intra: {}", wolf.energy - ecoul_self);
-      occ::log::debug("Wolf corrected Coulomb total: {}",
+      occ::log::info("Charge-charge intramolecular: {}", ecoul_self);
+      occ::log::info("Charge-charge real space: {}", ecoul_real);
+      occ::log::info("Wolf energy: {}", wolf.energy);
+      occ::log::info("Coulomb (exact) real: {}", ecoul_exact_real);
+      occ::log::info("Wolf - intra: {}", wolf.energy - ecoul_self);
+      occ::log::info("Wolf corrected Coulomb total: {}",
                       wolf.energy - ecoul_self - ecoul_real + ecoul_exact_real);
       lattice_energy =
           coulomb_scale_factor * (wolf.energy - ecoul_self - ecoul_real) +
           0.5 * total.total_kjmol();
-      occ::log::info("Wolf corrected lattice energy: {}", lattice_energy);
     }
     occ::log::info("Cycle {} lattice energy: {}", cycle, lattice_energy);
     occ::log::debug("Total polarization term: {:.3f}",

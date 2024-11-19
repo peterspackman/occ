@@ -71,6 +71,7 @@ struct LatticeConvergenceSettings {
     std::string crystal_filename{""};
     std::string output_json_filename{""};
     bool spherical_basis{false};
+    std::string charge_string;
 };
 
 struct LatticeEnergyResult {

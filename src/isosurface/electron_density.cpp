@@ -4,7 +4,9 @@
 
 namespace occ::isosurface {
 
-ElectronDensityFunctor::ElectronDensityFunctor(const occ::qm::Wavefunction &wfn, int mo_index): m_wfn(wfn), m_mo_index(mo_index) {}
+ElectronDensityFunctor::ElectronDensityFunctor(const occ::qm::Wavefunction &wfn,
+                                               int mo_index)
+    : m_wfn(wfn), m_mo_index(mo_index) {}
 
 MCElectronDensityFunctor::MCElectronDensityFunctor(
     const occ::qm::Wavefunction &wfn, float sep, int mo_index)
@@ -37,8 +39,8 @@ void MCElectronDensityFunctor::update_region() {
   m_bounding_box.upper = m_maximum_atom_pos;
   m_bounding_box.upper.array() += m_buffer;
 
-  occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}], side length = {}",
-                 m_origin(0), m_origin(1), m_origin(2), m_cube_side_length);
+  occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}]", m_origin(0),
+                 m_origin(1), m_origin(2));
 }
 
 } // namespace occ::isosurface

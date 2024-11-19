@@ -637,7 +637,7 @@ FVec compute_surface_property(IsosurfaceConfig::Property prop,
   }
   case IsosurfaceConfig::Property::ESP: {
     auto func = iso::ElectricPotentialFunctor(wfn);
-    func.batch(vertices, result);
+    func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
     occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
                    result.maxCoeff(), result.mean());
     occ::log::info("Computed ESP (QM) for {} vertices", func.num_calls());
