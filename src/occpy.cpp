@@ -51,7 +51,7 @@ using occ::qm::HartreeFock;
 using occ::qm::MolecularOrbitals;
 using occ::qm::Shell;
 using occ::qm::Wavefunction;
-using occ::scf::SCF;
+using occ::qm::SCF;
 
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;

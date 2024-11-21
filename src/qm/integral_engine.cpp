@@ -4,6 +4,7 @@
 #include "detail/multipole_kernel.h"
 #include "detail/schwarz_kernel.h"
 #include "detail/three_center_kernels.h"
+#include <cmath>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/qm/integral_engine.h>
@@ -717,6 +718,67 @@ Mat IntegralEngine::point_charge_potential(
     return detail::point_charge_potential_kernel<ShellKind::Cartesian>(
         m_env, m_aobasis, m_auxbasis, m_shellpairs);
   }
+}
+
+Mat IntegralEngine::wolf_point_charge_potential(
+    const std::vector<occ::core::PointCharge> &charges, double alpha,
+    double cutoff) {
+  // First term in self-energy correction
+  double erfc_term = std::erfc(alpha * cutoff) / cutoff;
+
+  // Second term in self-energy correction (2α/√π)exp(-α²Rc²)
+  double gaussian_term = (2.0 * alpha / std::sqrt(M_PI)) *
+                         std::exp(-alpha * alpha * cutoff * cutoff);
+
+  // Total self-energy correction
+  double self_term = erfc_term + gaussian_term;
+
+  /*
+   * Wolf sum decomposition:
+   * V_wolf(r) = erfc(αr)/r - [erfc(αRc)/Rc + (2α/√π)exp(-α²Rc²)]
+   *
+   * Using: erfc(αr)/r = 1/r - erf(αr)/r
+   *
+   * Matrix elements:
+   * <μ|V_wolf|ν> = <μ|1/r|ν> - <μ|erf(αr)/r|ν> - self_term * <μ|1|ν>
+   *
+   * Where:
+   * - <μ|1/r|ν> is the regular point charge potential (Vq)
+   * - <μ|erf(αr)/r|ν> is computed using gaussian charge distribution (Vgauss)
+   * - <μ|1|ν> is the overlap integral (S)
+   */
+
+  // Regular point charge potential
+  Mat Vq = point_charge_potential(charges);
+
+  // Overlap matrix for self-term
+  Mat S = one_electron_operator(Op::overlap);
+
+  // Gaussian charge distribution potential
+  Mat Vgauss;
+  ShellList dummy_shells;
+  dummy_shells.reserve(charges.size());
+  for (size_t i = 0; i < charges.size(); i++) {
+    dummy_shells.push_back(Shell(charges[i], alpha));
+  }
+  set_auxiliary_basis(dummy_shells, true);
+
+  if (is_spherical()) {
+    Vgauss = detail::point_charge_potential_kernel<ShellKind::Spherical>(
+        m_env, m_aobasis, m_auxbasis, m_shellpairs);
+  } else {
+    Vgauss = detail::point_charge_potential_kernel<ShellKind::Cartesian>(
+        m_env, m_aobasis, m_auxbasis, m_shellpairs);
+  }
+
+  fmt::print("Wolf potential decomposition:\n");
+  fmt::print("Point charge potential (Vq):\n{}\n", Vq);
+  fmt::print("Gaussian potential (Vg):\n{}\n", Vgauss);
+  fmt::print("Self term: erfc(αRc)/Rc + (2α/√π)exp(-α²Rc²) = {}\n", self_term);
+  fmt::print("Self term * overlap:\n{}\n", self_term * S);
+  fmt::print("Final Wolf potential:\n{}\n", Vq - Vgauss - self_term * S);
+
+  return Vq - Vgauss - self_term * S;
 }
 
 #if HAVE_ECPINT

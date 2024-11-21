@@ -316,7 +316,7 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
     auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
     basis.set_pure(false);
     auto hf = occ::qm::HartreeFock(basis);
-    occ::scf::SCF<occ::qm::HartreeFock> scf(hf);
+    occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
     double e = scf.compute_scf_energy();
 
     occ::io::BeckeGridSettings settings;
@@ -329,11 +329,11 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
     occ::timing::StopWatch<2> sw;
     sw.start(0);
     fmt::print("Compute K SGX\n");
-    occ::Mat result = sgx.compute_K(scf.mo);
+    occ::Mat result = sgx.compute_K(scf.molecular_orbitals());
     sw.stop(0);
     fmt::print("Compute K SGX done\n");
     sw.start(1);
-    occ::qm::JKPair jk_exact = hf.compute_JK(scf.mo, occ::Mat());
+    occ::qm::JKPair jk_exact = hf.compute_JK(scf.molecular_orbitals(), occ::Mat());
     sw.stop(1);
     int i, j;
     fmt::print("K - Kexact: {:12.8f}\n",

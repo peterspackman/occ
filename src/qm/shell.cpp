@@ -89,9 +89,8 @@ Shell::Shell(const int ang, const std::vector<double> &expo,
   origin = {pos[0], pos[1], pos[2]};
 }
 
-Shell::Shell(const occ::core::PointCharge &point_charge)
+Shell::Shell(const occ::core::PointCharge &point_charge, double alpha)
     : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
-  constexpr double alpha = 1e16;
   exponents(0) = alpha;
   contraction_coefficients(0, 0) =
       -point_charge.first / (2 * constants::sqrt_pi<double> * gint(2, alpha));

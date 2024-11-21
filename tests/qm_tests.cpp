@@ -155,7 +155,7 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
     fmt::print("Rotation by:\n{}\n", rotation);
 
     auto hf = HartreeFock(basis);
-    occ::scf::SCF<HartreeFock> scf(hf);
+    occ::qm::SCF<HartreeFock> scf(hf);
     double e = scf.compute_scf_energy();
 
     occ::qm::AOBasis rot_basis = basis;
@@ -163,7 +163,7 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
     auto rot_atoms = rot_basis.atoms();
     fmt::print("rot_basis.size() {}\n", rot_basis.size());
     auto hf_rot = HartreeFock(rot_basis);
-    occ::scf::SCF<HartreeFock> scf_rot(hf_rot);
+    occ::qm::SCF<HartreeFock> scf_rot(hf_rot);
     double e_rot = scf_rot.compute_scf_energy();
 
     REQUIRE(e == Catch::Approx(e_rot));
@@ -211,14 +211,14 @@ TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
     auto hf_rot = HartreeFock(rot_basis);
     REQUIRE(hf.nuclear_repulsion_energy() ==
             Catch::Approx(hf_rot.nuclear_repulsion_energy()));
-    occ::scf::SCF<HartreeFock> scf(hf);
+    occ::qm::SCF<HartreeFock> scf(hf);
     double e = scf.compute_scf_energy();
-    occ::qm::MolecularOrbitals mos = scf.mo;
-    Mat C_occ = mos.C.leftCols(scf.n_occ);
+    occ::qm::MolecularOrbitals mos = scf.ctx.mo;
+    Mat C_occ = mos.C.leftCols(scf.ctx.n_occ);
     Mat D = C_occ * C_occ.transpose();
 
     mos.rotate(rot_basis, rotation);
-    Mat rot_C_occ = mos.C.leftCols(scf.n_occ);
+    Mat rot_C_occ = mos.C.leftCols(scf.ctx.n_occ);
     Mat rot_D = rot_C_occ * rot_C_occ.transpose();
 
     double e_en = occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(
@@ -242,7 +242,7 @@ TEST_CASE("Water RHF SCF energy", "[scf]") {
     SECTION("STO-3G") {
         auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock> scf(hf);
+        occ::qm::SCF<HartreeFock> scf(hf);
         scf.convergence_settings.energy_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
@@ -251,7 +251,7 @@ TEST_CASE("Water RHF SCF energy", "[scf]") {
     SECTION("3-21G") {
         auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock> scf(hf);
+        occ::qm::SCF<HartreeFock> scf(hf);
         scf.convergence_settings.energy_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
@@ -267,7 +267,7 @@ TEST_CASE("Water UHF SCF energy", "[scf]") {
     SECTION("STO-3G") {
         auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock> scf(hf, SpinorbitalKind::Unrestricted);
+        occ::qm::SCF<HartreeFock> scf(hf, SpinorbitalKind::Unrestricted);
         scf.convergence_settings.energy_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
@@ -276,7 +276,7 @@ TEST_CASE("Water UHF SCF energy", "[scf]") {
     SECTION("3-21G") {
         auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock> scf(hf, SpinorbitalKind::Unrestricted);
+        occ::qm::SCF<HartreeFock> scf(hf, SpinorbitalKind::Unrestricted);
         scf.convergence_settings.energy_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
@@ -292,7 +292,7 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
     SECTION("STO-3G") {
         auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock> scf(hf, SpinorbitalKind::General);
+        occ::qm::SCF<HartreeFock> scf(hf, SpinorbitalKind::General);
         scf.convergence_settings.energy_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-74.963706080054).epsilon(1e-8));
@@ -301,7 +301,7 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
     SECTION("3-21G") {
         auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock> scf(hf, SpinorbitalKind::General);
+        occ::qm::SCF<HartreeFock> scf(hf, SpinorbitalKind::General);
         scf.convergence_settings.energy_threshold = 1e-8;
         double e = scf.compute_scf_energy();
         REQUIRE(e == Catch::Approx(-75.585325673488).epsilon(1e-8));
@@ -385,15 +385,15 @@ TEST_CASE("H2 smearing", "[smearing]") {
         auto obs = occ::qm::AOBasis::load(atoms, "cc-pvdz");
 	obs.set_pure(true);
         HartreeFock hf(obs);
-        occ::scf::SCF<HartreeFock> scf(hf);
+        occ::qm::SCF<HartreeFock> scf(hf);
 
-        scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
-        scf.mo.smearing.sigma = 0.095;
+        scf.ctx.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
+        scf.ctx.mo.smearing.sigma = 0.095;
 
         energies(i) = scf.compute_scf_energy();
 
         REQUIRE_THAT(energies(i), WithinAbs(expected_energies(i), 1e-5));
-        REQUIRE_THAT(scf.mo.smearing.ec_entropy(), 
+        REQUIRE_THAT(scf.ctx.mo.smearing.ec_entropy(), 
 		     WithinAbs(expected_correlations(i), 1e-5));
     }
 }
@@ -538,7 +538,7 @@ TEST_CASE("Integral gradients", "[integrals]") {
 
 TEST_CASE("Oniom ethane", "[oniom]") {
     using occ::core::Atom;
-    using occ::scf::SCF;
+    using occ::qm::SCF;
     std::vector<Atom> atoms {
 	{1, 2.239513249136882, -0.007369927999015981, 1.8661035638534056},
 	{6, 1.4203174061693364, -0.042518815378938354, -0.039495255174213845},
@@ -590,7 +590,7 @@ TEST_CASE("Mulliken partition", "[partitioning]") {
     auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
 
     auto hf = HartreeFock(obs);
-    occ::scf::SCF<HartreeFock> scf(hf);
+    occ::qm::SCF<HartreeFock> scf(hf);
     double e = scf.compute_scf_energy();
 
     auto wfn = scf.wavefunction();

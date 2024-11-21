@@ -170,6 +170,9 @@ class IntegralEngine {
 
     Mat
     point_charge_potential(const std::vector<occ::core::PointCharge> &charges);
+
+    Mat
+    wolf_point_charge_potential(const std::vector<occ::core::PointCharge> &charges, double alpha, double cutoff_radius);
     Vec electric_potential(const MolecularOrbitals &mo, const Mat3N &points);
 
     template <ShellKind kind>

@@ -1,5 +1,6 @@
 add_library(occ_dft
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dft_method.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/functional.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.cpp"

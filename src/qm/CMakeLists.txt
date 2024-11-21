@@ -15,6 +15,7 @@ add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/orbital_smearing.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/shell.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/scf_method.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
     ${OCC_QM_INCLUDE_FILES}
 )

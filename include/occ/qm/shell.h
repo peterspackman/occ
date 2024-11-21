@@ -30,7 +30,7 @@ struct Shell {
     Shell(int, const std::vector<double> &expo,
           const std::vector<std::vector<double>> &contr,
           const std::array<double, 3> &pos);
-    Shell(const occ::core::PointCharge &);
+    Shell(const occ::core::PointCharge &, double alpha = 1e16);
     Shell();
 
     bool operator==(const Shell &other) const;

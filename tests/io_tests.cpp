@@ -1152,7 +1152,7 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
   auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
   obs.set_pure(true);
   HartreeFock hf(obs);
-  occ::scf::SCF<HartreeFock> scf(hf);
+  occ::qm::SCF<HartreeFock> scf(hf);
   scf.convergence_settings.energy_threshold = 1e-8;
   double e = scf.compute_scf_energy();
 
@@ -2784,7 +2784,7 @@ TEST_CASE("Read/Write Wavefunction JSON", "[JSON]") {
   auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
   obs.set_pure(true);
   HartreeFock hf(obs);
-  occ::scf::SCF<HartreeFock> scf(hf);
+  occ::qm::SCF<HartreeFock> scf(hf);
   scf.convergence_settings.energy_threshold = 1e-8;
   double e = scf.compute_scf_energy();
 
@@ -2811,7 +2811,7 @@ TEST_CASE("Read/Write Wavefunction JSON with ECP", "[JSON]") {
   auto obs = occ::qm::AOBasis::load(atoms, "def2-svp");
   obs.set_pure(true);
   HartreeFock hf(obs);
-  occ::scf::SCF<HartreeFock> scf(hf);
+  occ::qm::SCF<HartreeFock> scf(hf);
   scf.convergence_settings.energy_threshold = 1e-8;
   double e = scf.compute_scf_energy();
 
