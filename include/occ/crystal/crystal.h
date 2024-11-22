@@ -5,9 +5,9 @@
 #include <occ/core/molecule.h>
 #include <occ/crystal/asymmetric_unit.h>
 #include <occ/crystal/hkl.h>
+#include <occ/crystal/site_mapping_table.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/unitcell.h>
-#include <occ/crystal/site_mapping_table.h>
 #include <vector>
 
 namespace occ::crystal {

@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/qm/cint_interface.h>
-#include <occ/qm/shell.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/shell.h>
 #include <vector>
 
 namespace occ::qm::detail {

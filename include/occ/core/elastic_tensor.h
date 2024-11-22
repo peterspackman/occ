@@ -1,6 +1,6 @@
 #pragma once
-#include <occ/core/linear_algebra.h>
 #include <Eigen/Geometry>
+#include <occ/core/linear_algebra.h>
 
 namespace occ::core {
 
@@ -17,7 +17,6 @@ namespace occ::core {
  */
 class ElasticTensor {
 public:
-
   enum class AveragingScheme { Voigt, Reuss, Hill, Numerical };
 
   using AngularDirection = Eigen::Ref<const Eigen::Vector<double, 2>>;
@@ -57,7 +56,6 @@ public:
   double &component(int i, int j, int k, int l);
 
 private:
-
   Mat6 m_c;
   Mat6 m_s;
   double m_components[3][3][3][3];

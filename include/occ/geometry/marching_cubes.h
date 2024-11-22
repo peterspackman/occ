@@ -10,14 +10,16 @@ namespace occ::geometry::mc {
 
 namespace impl {
 
-template<typename T, typename = void>
-struct has_batch_evaluate: std::false_type {};
+template <typename T, typename = void>
+struct has_batch_evaluate : std::false_type {};
 
-template<typename T>
+template <typename T>
 struct has_batch_evaluate<T, std::void_t<decltype(std::declval<T>().batch(
-  std::declval<Eigen::Ref<const FMat3N>>(), std::declval<Eigen::Ref<FVec>>()))>> : std::true_type {};
+                                 std::declval<Eigen::Ref<const FMat3N>>(),
+                                 std::declval<Eigen::Ref<FVec>>()))>>
+    : std::true_type {};
 
-}
+} // namespace impl
 
 namespace tables {
 extern const std::array<std::array<uint_fast8_t, 3>, 8> CORNERS;
@@ -88,19 +90,18 @@ struct MarchingCubes {
         layer_positions(1, idx) = y * scale(1) + origin(1);
       }
     }
-
   }
 
-
   MarchingCubes(size_t s) : size_x(s), size_y(s), size_z(s) {
-    for(int i = 0; i < layers.size(); i++) {
+    for (int i = 0; i < layers.size(); i++) {
       layers[i] = FMat::Zero(size_x, size_y);
     }
     set_origin_and_side_lengths(origin, lengths);
   }
 
-  MarchingCubes(size_t x, size_t y, size_t z) : size_x(x), size_y(y), size_z(z) {
-    for(int i = 0; i < layers.size(); i++) {
+  MarchingCubes(size_t x, size_t y, size_t z)
+      : size_x(x), size_y(y), size_z(z) {
+    for (int i = 0; i < layers.size(); i++) {
       layers[i] = FMat::Zero(size_x, size_y);
     }
     set_origin_and_side_lengths(origin, lengths);
@@ -109,13 +110,12 @@ struct MarchingCubes {
   template <typename S>
   void extract(const S &source, std::vector<float> &vertices,
                std::vector<uint32_t> &indices) {
-    auto fn = [&vertices](const FVec3 &vertex, 
-                          const FVec3 &gradient,
+    auto fn = [&vertices](const FVec3 &vertex, const FVec3 &gradient,
                           const FMat3 &hessian) {
-        vertices.push_back(vertex(0));
-        vertices.push_back(vertex(1));
-        vertices.push_back(vertex(2));
-      };
+      vertices.push_back(vertex(0));
+      vertices.push_back(vertex(1));
+      vertices.push_back(vertex(2));
+    };
 
     extract_impl(source, fn, indices);
   }
@@ -125,22 +125,21 @@ struct MarchingCubes {
                             std::vector<uint32_t> &indices,
                             std::vector<float> &normals) {
     int sign = flip_normals ? 1 : -1;
-    auto fn = [sign, &vertices, &source,
-      &normals](const FVec3 &vertex,
-                const FVec3 &gradient,
-                const FMat3 &hessian) {
-        vertices.push_back(vertex[0]);
-        vertices.push_back(vertex[1]);
-        vertices.push_back(vertex[2]);
+    auto fn = [sign, &vertices, &source, &normals](const FVec3 &vertex,
+                                                   const FVec3 &gradient,
+                                                   const FMat3 &hessian) {
+      vertices.push_back(vertex[0]);
+      vertices.push_back(vertex[1]);
+      vertices.push_back(vertex[2]);
 
-        occ::timing::start(occ::timing::isosurface_normals);
-        // Normalize the gradient and use it as the normal
-        FVec3 normal = sign * gradient.normalized();
-        normals.push_back(normal[0]);
-        normals.push_back(normal[1]);
-        normals.push_back(normal[2]);
-        occ::timing::stop(occ::timing::isosurface_normals);
-      };
+      occ::timing::start(occ::timing::isosurface_normals);
+      // Normalize the gradient and use it as the normal
+      FVec3 normal = sign * gradient.normalized();
+      normals.push_back(normal[0]);
+      normals.push_back(normal[1]);
+      normals.push_back(normal[2]);
+      occ::timing::stop(occ::timing::isosurface_normals);
+    };
 
     occ::timing::stop(occ::timing::isosurface_normals);
   }
@@ -154,45 +153,44 @@ struct MarchingCubes {
     auto fn = [sign, &vertices, &normals, &curvatures](const FVec3 &vertex,
                                                        const FVec3 &gradient,
                                                        const FMat3 &hessian) {
-        vertices.push_back(vertex(0));
-        vertices.push_back(vertex(1));
-        vertices.push_back(vertex(2));
+      vertices.push_back(vertex(0));
+      vertices.push_back(vertex(1));
+      vertices.push_back(vertex(2));
 
-        FVec3 g = gradient;
-        FMat3 h = hessian;
-        // Normalize the gradient and use it as the normal
-        float l = g.norm();
-        FVec3 normal = g / l;
+      FVec3 g = gradient;
+      FMat3 h = hessian;
+      // Normalize the gradient and use it as the normal
+      float l = g.norm();
+      FVec3 normal = g / l;
 
+      normals.push_back(sign * normal[0]);
+      normals.push_back(sign * normal[1]);
+      normals.push_back(sign * normal[2]);
 
-        normals.push_back(sign * normal[0]);
-        normals.push_back(sign * normal[1]);
-        normals.push_back(sign * normal[2]);
+      // Evaluate surface tangents u, v
+      FVec3 u(-sign * normal[1], sign * normal[0], 0.0f);
+      if (u.isZero()) {
+        u = FVec3(sign * normal[2], 0.0f, -sign * normal[0]);
+      }
+      u.normalize();
+      FVec3 v = normal.cross(u);
 
-        // Evaluate surface tangents u, v
-        FVec3 u(- sign * normal[1], sign * normal[0], 0.0f);
-        if (u.isZero()) {
-          u = FVec3(sign * normal[2], 0.0f, - sign * normal[0]);
-        }
-        u.normalize();
-        FVec3 v = normal.cross(u);
+      // Construct the UV matrix
+      Eigen::Matrix<float, 3, 2> UV;
+      UV.col(0) = u;
+      UV.col(1) = v;
 
-        // Construct the UV matrix
-        Eigen::Matrix<float, 3, 2> UV;
-        UV.col(0) = u;
-        UV.col(1) = v;
+      // Calculate the shape operator matrix S
+      Eigen::Matrix2f shape = (UV.transpose() * h * UV) / l;
 
-        // Calculate the shape operator matrix S
-        Eigen::Matrix2f shape = (UV.transpose() * h * UV) / l;
+      // Calculate mean and Gaussian curvatures
+      float mean_curvature = shape.trace() / 2;
+      float gaussian_curvature = shape.determinant();
 
-        // Calculate mean and Gaussian curvatures
-        float mean_curvature = shape.trace() / 2;
-        float gaussian_curvature = shape.determinant();
-
-        // Store the curvatures
-        curvatures.push_back(mean_curvature);
-        curvatures.push_back(gaussian_curvature);
-      };
+      // Store the curvatures
+      curvatures.push_back(mean_curvature);
+      curvatures.push_back(gaussian_curvature);
+    };
 
     extract_impl(source, fn, indices);
   }
@@ -220,37 +218,45 @@ private:
     for (size_t z = 0; z < size_less_one_z; z++) {
       occ::timing::start(occ::timing::isosurface_function);
 
-      if constexpr(impl::has_batch_evaluate<S>::value) {
+      if constexpr (impl::has_batch_evaluate<S>::value) {
 
         if (z == 0) {
           layer_positions.row(2).setConstant(-scale(2) + origin(2));
-          source.batch(layer_positions, Eigen::Map<FVec>(layers[0].data(), layers[0].size()));
+          source.batch(layer_positions,
+                       Eigen::Map<FVec>(layers[0].data(), layers[0].size()));
           layer_positions.row(2).setConstant(origin(2));
-          source.batch(layer_positions, Eigen::Map<FVec>(layers[1].data(), layers[1].size()));
+          source.batch(layer_positions,
+                       Eigen::Map<FVec>(layers[1].data(), layers[1].size()));
           layer_positions.row(2).setConstant(scale(2) + origin(2));
-          source.batch(layer_positions, Eigen::Map<FVec>(layers[2].data(), layers[2].size()));
+          source.batch(layer_positions,
+                       Eigen::Map<FVec>(layers[2].data(), layers[2].size()));
           layer_positions.row(2).setConstant(2 * scale(2) + origin(2));
-          source.batch(layer_positions, Eigen::Map<FVec>(layers[3].data(), layers[3].size()));
+          source.batch(layer_positions,
+                       Eigen::Map<FVec>(layers[3].data(), layers[3].size()));
         } else {
           layers[0] = layers[1];
           layers[1] = layers[2];
           layers[2] = layers[3];
           layer_positions.row(2).setConstant((z + 2) * scale(2) + origin(2));
-          source.batch(layer_positions, Eigen::Map<FVec>(layers[3].data(), layers[3].size()));
+          source.batch(layer_positions,
+                       Eigen::Map<FVec>(layers[3].data(), layers[3].size()));
         }
-      }
-      else {
+      } else {
         if (z == 0) {
           for (size_t y = 0; y < size_y; y++) {
             for (size_t x = 0; x < size_x; x++) {
               FVec3 pos;
-              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), origin(2) -scale(2)};
+              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1),
+                     origin(2) - scale(2)};
               layers[0](x, y) = source(pos);
-              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), origin(2)};
+              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1),
+                     origin(2)};
               layers[1](x, y) = source(pos);
-              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), origin(2) + scale(2)};
+              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1),
+                     origin(2) + scale(2)};
               layers[2](x, y) = source(pos);
-              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), origin(2) + 2 * scale(2)};
+              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1),
+                     origin(2) + 2 * scale(2)};
               layers[3](x, y) = source(pos);
             }
           }
@@ -261,12 +267,12 @@ private:
           FVec3 pos;
           for (size_t y = 0; y < size_y; y++) {
             for (size_t x = 0; x < size_x; x++) {
-              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1), (z + 2) * scale(2) + origin(2)};
+              pos = {x * scale(0) + origin(0), y * scale(1) + origin(1),
+                     (z + 2) * scale(2) + origin(2)};
               layers[3](x, y) = source(pos);
             }
           }
-        } 
-
+        }
       }
       occ::timing::stop(occ::timing::isosurface_function);
 
@@ -279,11 +285,12 @@ private:
           for (size_t i = 0; i < 8; i++) {
             const auto corner = CORNERS[i];
             const auto cx = corner[0], cy = corner[1], cz = corner[2];
-            corners[i] = {(x + cx) * scale(0) + origin(0), (y + cy) * scale(1) + origin(1),
-              (z + cz) * scale(2) + origin(2)};
+            corners[i] = {(x + cx) * scale(0) + origin(0),
+                          (y + cy) * scale(1) + origin(1),
+                          (z + cz) * scale(2) + origin(2)};
 
             const int idx = (cz == 0) ? 1 : 2;
-            const FMat& layer = layers[idx];
+            const FMat &layer = layers[idx];
             values[i] = layer(x + cx, y + cy);
 
             // Calculate gradient and Hessian
@@ -292,8 +299,8 @@ private:
             const size_t yp = std::min(y + cy + 1, size_y - 1);
             const size_t ym = (y + cy > 0) ? y + cy - 1 : 0;
 
-            const Eigen::MatrixXf& layerp = (cz == 0) ? layers[2] : layers[3];
-            const Eigen::MatrixXf& layerm = (cz == 0) ? layers[0] : layers[1];
+            const Eigen::MatrixXf &layerp = (cz == 0) ? layers[2] : layers[3];
+            const Eigen::MatrixXf &layerm = (cz == 0) ? layers[0] : layers[1];
 
             const float fx_plus = layer(xp, y + cy);
             const float fx_minus = layer(xm, y + cy);
@@ -302,27 +309,39 @@ private:
             const float fz_plus = layerp(x + cx, y + cy);
             const float fz_minus = layerm(x + cx, y + cy);
 
-            vertex_gradients[i] = FVec3(
-              (fx_plus - fx_minus) * fac_x,
-              (fy_plus - fy_minus) * fac_y,
-              (fz_plus - fz_minus) * fac_z
-            );
+            vertex_gradients[i] = FVec3((fx_plus - fx_minus) * fac_x,
+                                        (fy_plus - fy_minus) * fac_y,
+                                        (fz_plus - fz_minus) * fac_z);
 
             vertex_hessians[i] = FMat3::Zero();
-            vertex_hessians[i](0, 0) = (fx_plus + fx_minus - 2.0f * values[i]) * fac_x * fac_x;
-            vertex_hessians[i](1, 1) = (fy_plus + fy_minus - 2.0f * values[i]) * fac_y * fac_y;
-            vertex_hessians[i](2, 2) = (fz_plus + fz_minus - 2.0f * values[i]) * fac_z * fac_z;
-            vertex_hessians[i](1, 0) = vertex_hessians[i](0, 1) = ((layer(xp, yp) - layer(xp, ym) - layer(xm, yp) + layer(xm, ym)) * 0.25f) * fac_x * fac_y;
-            vertex_hessians[i](2, 0) = vertex_hessians[i](0, 2) = ((layerp(xp, y + cy) - layerp(xm, y + cy) - layerm(xp, y + cy) + layerm(xm, y + cy)) * 0.25f) * fac_x * fac_z;
-            vertex_hessians[i](2, 1) = vertex_hessians[i](1, 2) = ((layerp(x + cx, yp) - layerp(x + cx, ym) - layerm(x + cx, yp) + layerm(x + cx, ym)) * 0.25f) * fac_y * fac_z;
+            vertex_hessians[i](0, 0) =
+                (fx_plus + fx_minus - 2.0f * values[i]) * fac_x * fac_x;
+            vertex_hessians[i](1, 1) =
+                (fy_plus + fy_minus - 2.0f * values[i]) * fac_y * fac_y;
+            vertex_hessians[i](2, 2) =
+                (fz_plus + fz_minus - 2.0f * values[i]) * fac_z * fac_z;
+            vertex_hessians[i](1, 0) = vertex_hessians[i](0, 1) =
+                ((layer(xp, yp) - layer(xp, ym) - layer(xm, yp) +
+                  layer(xm, ym)) *
+                 0.25f) *
+                fac_x * fac_y;
+            vertex_hessians[i](2, 0) = vertex_hessians[i](0, 2) =
+                ((layerp(xp, y + cy) - layerp(xm, y + cy) - layerm(xp, y + cy) +
+                  layerm(xm, y + cy)) *
+                 0.25f) *
+                fac_x * fac_z;
+            vertex_hessians[i](2, 1) = vertex_hessians[i](1, 2) =
+                ((layerp(x + cx, yp) - layerp(x + cx, ym) - layerm(x + cx, yp) +
+                  layerm(x + cx, ym)) *
+                 0.25f) *
+                fac_y * fac_z;
 
             // Form an SDF based on isovalue
             // Won't affect gradients as it's a constant shift
             values[i] = values[i] - isovalue;
           }
           auto fn = [&](size_t edge) {
-            const uint32_t cached_index =
-              index_cache.get(x, y, edge);
+            const uint32_t cached_index = index_cache.get(x, y, edge);
             if (cached_index > 0) {
               indices.push_back(cached_index);
             } else {
@@ -334,10 +353,11 @@ private:
               index += 1;
 
               float offset = get_offset(values[u], values[v]);
-              FVec3 vertex =
-                interpolate(corners[u], corners[v], offset);
-              FVec3 gradient = interpolate(vertex_gradients[u], vertex_gradients[v], offset);
-              FMat3 hessian = interpolate(vertex_hessians[u], vertex_hessians[v], offset);
+              FVec3 vertex = interpolate(corners[u], corners[v], offset);
+              FVec3 gradient =
+                  interpolate(vertex_gradients[u], vertex_gradients[v], offset);
+              FMat3 hessian =
+                  interpolate(vertex_hessians[u], vertex_hessians[v], offset);
               extract_fn(vertex, gradient, hessian);
             }
           };

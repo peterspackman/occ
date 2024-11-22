@@ -4,11 +4,11 @@
 namespace occ::core {
 
 struct GenSqrtInvResult {
-    Mat result;
-    Mat result_inverse;
-    size_t n_cond;
-    double condition_number;
-    double result_condition_number;
+  Mat result;
+  Mat result_inverse;
+  size_t n_cond;
+  double condition_number;
+  double result_condition_number;
 };
 
 // returns {X,X^{-1},rank,A_condition_number,result_A_condition_number}, where

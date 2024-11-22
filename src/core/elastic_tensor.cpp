@@ -116,7 +116,6 @@ double ElasticTensor::shear_modulus(CartesianDirection a,
   return 0.25 / sum;
 }
 
-
 std::pair<double, double>
 ElasticTensor::shear_modulus_minmax(CartesianDirection n) const {
   double min_v = std::numeric_limits<double>::max();

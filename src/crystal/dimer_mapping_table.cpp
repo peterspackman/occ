@@ -38,36 +38,35 @@ inline Vec3 wrap_to_unit_cell(const Vec3 &v) {
 inline SiteIndex find_matching_position(const Mat3N &positions,
                                         const Vec3 &point,
                                         double tolerance = 1e-5) {
-    int matching_index = -1;
-    double min_distance = std::numeric_limits<double>::max();
-    Vec3 cell_offset = Vec3::Zero();
+  int matching_index = -1;
+  double min_distance = std::numeric_limits<double>::max();
+  Vec3 cell_offset = Vec3::Zero();
 
-    for (int i = 0; i < positions.cols(); i++) {
-        Vec3 diff = point - positions.col(i);
-        Vec3 wrapped_diff = diff.array() - diff.array().round();
-        Vec3 current_cell_offset = diff - wrapped_diff;
+  for (int i = 0; i < positions.cols(); i++) {
+    Vec3 diff = point - positions.col(i);
+    Vec3 wrapped_diff = diff.array() - diff.array().round();
+    Vec3 current_cell_offset = diff - wrapped_diff;
 
-        double d = wrapped_diff.squaredNorm();
-        if (d < min_distance) {
-            min_distance = d;
-            matching_index = i;
-            cell_offset = current_cell_offset;
-        }
+    double d = wrapped_diff.squaredNorm();
+    if (d < min_distance) {
+      min_distance = d;
+      matching_index = i;
+      cell_offset = current_cell_offset;
     }
+  }
 
-    if (min_distance < tolerance * tolerance) {
-        return SiteIndex{matching_index, HKL{
-            static_cast<int>(std::round(cell_offset(0))),
-            static_cast<int>(std::round(cell_offset(1))),
-            static_cast<int>(std::round(cell_offset(2)))
-        }};
-    }
-    occ::log::warn("Could not find matching position for:");
-    occ::log::warn("point: {}", point.transpose());
-    occ::log::warn("cell_offset: {}", cell_offset.transpose());
-    occ::log::warn("min_distance: {}", std::sqrt(min_distance));
+  if (min_distance < tolerance * tolerance) {
+    return SiteIndex{matching_index,
+                     HKL{static_cast<int>(std::round(cell_offset(0))),
+                         static_cast<int>(std::round(cell_offset(1))),
+                         static_cast<int>(std::round(cell_offset(2)))}};
+  }
+  occ::log::warn("Could not find matching position for:");
+  occ::log::warn("point: {}", point.transpose());
+  occ::log::warn("cell_offset: {}", cell_offset.transpose());
+  occ::log::warn("min_distance: {}", std::sqrt(min_distance));
 
-    return SiteIndex{-1, HKL{0, 0, 0}};
+  return SiteIndex{-1, HKL{0, 0, 0}};
 }
 
 std::pair<Vec3, Vec3>
@@ -210,8 +209,8 @@ DimerMappingTable::build_dimer_table(const Crystal &crystal,
 } // namespace occ::crystal
 
 auto fmt::formatter<occ::crystal::DimerIndex>::format(
-    const occ::crystal::DimerIndex &idx,
-    format_context &ctx) const -> decltype(ctx.out()) {
+    const occ::crystal::DimerIndex &idx, format_context &ctx) const
+    -> decltype(ctx.out()) {
   return fmt::format_to(ctx.out(), "DimerIndex [{} {} -> {} {}]", idx.a.offset,
                         idx.a.hkl, idx.b.offset, idx.b.hkl);
 }

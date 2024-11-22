@@ -937,7 +937,7 @@ TEST_CASE("DimerMappingTable with inversion", "[crystal][dimer]") {
     DimerIndex dimer = make_dimer(0, 0, 0, 0, 1, -1, 0, -1);
     auto related_dimers = table.symmetry_related_dimers(dimer);
 
-    REQUIRE(related_dimers.size() == 4); 
+    REQUIRE(related_dimers.size() == 4);
     REQUIRE(std::find(related_dimers.begin(), related_dimers.end(),
                       make_dimer(0, 0, 0, 0, 1, -1, 0, -1)) !=
             related_dimers.end());
@@ -953,8 +953,8 @@ TEST_CASE("DimerMappingTable consistency", "[crystal][dimer]") {
       DimerMappingTable::build_dimer_table(crystal, dimers, true);
 
   SECTION("Symmetry-unique dimers are consistent") {
-    REQUIRE(table_no_inv.symmetry_unique_dimers().size() == 2 * 
-            table_inv.symmetry_unique_dimers().size());
+    REQUIRE(table_no_inv.symmetry_unique_dimers().size() ==
+            2 * table_inv.symmetry_unique_dimers().size());
 
     for (const auto &dimer : table_inv.symmetry_unique_dimers()) {
       const auto &sym = table_no_inv.symmetry_unique_dimers();

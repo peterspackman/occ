@@ -81,8 +81,7 @@ public:
   Mat3N nuclear_repulsion_gradient() const;
   Vec nuclear_electric_potential_contribution(const Mat3N &) const;
   Mat3N nuclear_electric_field_contribution(const Mat3N &) const;
-  void set_frozen_electrons(const std::vector<int>&);
-
+  void set_frozen_electrons(const std::vector<int> &);
 };
 
 // Template to check if a type meets SCF method requirements

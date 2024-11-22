@@ -133,7 +133,7 @@ void CifParser::extract_atom_sites(const Loop &loop) {
     if (atom.element.empty())
       atom.element = atom.site_label;
 
-    if(!adp.aniso_label.empty()) {
+    if (!adp.aniso_label.empty()) {
       m_adps.insert({adp.aniso_label, adp});
     }
   }
@@ -269,7 +269,9 @@ CifParser::parse_crystal(const std::string &filename) {
                           item.loop.length());
           extract_atom_sites(item.loop);
         } else if (item.has_prefix("_sym") | item.has_prefix("_space_group")) {
-          occ::log::debug("Extracting _symmetry or _space_group loop with {} items", item.loop.length());
+          occ::log::debug(
+              "Extracting _symmetry or _space_group loop with {} items",
+              item.loop.length());
           extract_symmetry_operations(item.loop);
         }
       }
@@ -299,8 +301,7 @@ CifParser::parse_crystal(const std::string &filename) {
 
       for (const auto &atom : m_atoms) {
         occ::log::debug("Atom element = {}, label = {} position = {} {} {}",
-                        atom.element, atom.site_label, atom.x,
-                        atom.y, atom.z);
+                        atom.element, atom.site_label, atom.x, atom.y, atom.z);
         asym.positions(0, i) = atom.x;
         asym.positions(1, i) = atom.y;
         asym.positions(2, i) = atom.z;
@@ -314,7 +315,7 @@ CifParser::parse_crystal(const std::string &filename) {
         asym.adps(2, i) = atom.uiso;
 
         const auto kv = m_adps.find(atom.site_label);
-        if(kv != m_adps.end()) {
+        if (kv != m_adps.end()) {
           const auto &adp = kv->second;
           asym.adps(0, i) = adp.u11;
           asym.adps(1, i) = adp.u22;
@@ -322,12 +323,14 @@ CifParser::parse_crystal(const std::string &filename) {
           asym.adps(3, i) = adp.u12;
           asym.adps(4, i) = adp.u13;
           asym.adps(5, i) = adp.u23;
-          occ::log::debug("Have ADP for atom {}: {}", i, asym.adps.col(i).transpose());
+          occ::log::debug("Have ADP for atom {}: {}", i,
+                          asym.adps.col(i).transpose());
         }
         i++;
       }
     }
-    occ::log::debug("Cartesian ADPs\n{}\n", uc.to_cartesian_adp(asym.adps).transpose());
+    occ::log::debug("Cartesian ADPs\n{}\n",
+                    uc.to_cartesian_adp(asym.adps).transpose());
 
     occ::crystal::SpaceGroup sg(1);
     bool found = false;

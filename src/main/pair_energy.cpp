@@ -640,7 +640,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
       occ::log::info("Coulomb (exact) real: {}", ecoul_exact_real);
       occ::log::info("Wolf - intra: {}", wolf.energy - ecoul_self);
       occ::log::info("Wolf corrected Coulomb total: {}",
-                      wolf.energy - ecoul_self - ecoul_real + ecoul_exact_real);
+                     wolf.energy - ecoul_self - ecoul_real + ecoul_exact_real);
       lattice_energy =
           coulomb_scale_factor * (wolf.energy - ecoul_self - ecoul_real) +
           0.5 * total.total_kjmol();

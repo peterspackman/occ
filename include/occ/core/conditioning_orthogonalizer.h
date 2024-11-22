@@ -4,9 +4,9 @@
 namespace occ::core {
 
 struct ConditioningOrthogonalizerResult {
-    Mat result;
-    Mat result_inverse;
-    double result_condition_number;
+  Mat result;
+  Mat result_inverse;
+  double result_condition_number;
 };
 
 ConditioningOrthogonalizerResult

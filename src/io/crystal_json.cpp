@@ -106,8 +106,7 @@ void from_json(const nlohmann::json &j, CrystalDimers &dimers) {
 
     for (size_t i = 0; i < dimers_json.size(); ++i) {
       neighbors.push_back(CrystalDimers::SymmetryRelatedDimer{
-                dimers_json[i].get<occ::core::Dimer>(),
-                indices_json[i].get<int>()});
+          dimers_json[i].get<occ::core::Dimer>(), indices_json[i].get<int>()});
     }
     dimers.molecule_neighbors.push_back(std::move(neighbors));
   }

@@ -1,5 +1,5 @@
-#include <occ/qm/integral_engine.h>
 #include "kernel_traits.h"
+#include <occ/qm/integral_engine.h>
 
 namespace occ::qm::detail {
 

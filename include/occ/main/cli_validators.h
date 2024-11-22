@@ -4,11 +4,11 @@
 namespace occ::main {
 
 struct MultiplicityValidator : public CLI::Validator {
-    MultiplicityValidator();
+  MultiplicityValidator();
 };
 
 struct SpinorbitalKindValidator : public CLI::Validator {
-    SpinorbitalKindValidator();
+  SpinorbitalKindValidator();
 };
 
 namespace validator {

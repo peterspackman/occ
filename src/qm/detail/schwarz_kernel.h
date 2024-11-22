@@ -56,4 +56,4 @@ Mat schwarz_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
 
   return results[0];
 }
-}
+} // namespace occ::qm::detail

@@ -13,10 +13,10 @@
 #include <occ/qm/mo.h>
 #include <occ/qm/opmatrix.h>
 #include <occ/qm/scf_convergence_settings.h>
+#include <occ/qm/scf_method.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
-#include <occ/qm/scf_method.h>
 
 namespace occ::qm {
 
@@ -31,17 +31,17 @@ using util::is_odd;
 using PointChargeList = std::vector<occ::core::PointCharge>;
 
 struct SCFContext {
-    Mat S, T, V, H, K, X, Xinv, F, Vpc, Vecp;
-    double XtX_condition_number{0.0};
-    int n_electrons{0};
-    int n_frozen_electrons{0};
-    int n_occ{0};
-    int n_unpaired_electrons{0};
-    size_t nbf{0};
-    bool converged{false};
-    occ::core::EnergyComponents energy;
-    occ::qm::MolecularOrbitals mo;
-    PointChargeList point_charges;
+  Mat S, T, V, H, K, X, Xinv, F, Vpc, Vecp;
+  double XtX_condition_number{0.0};
+  int n_electrons{0};
+  int n_frozen_electrons{0};
+  int n_occ{0};
+  int n_unpaired_electrons{0};
+  size_t nbf{0};
+  bool converged{false};
+  occ::core::EnergyComponents energy;
+  occ::qm::MolecularOrbitals mo;
+  PointChargeList point_charges;
 };
 
 template <SCFMethod Procedure> struct SCF {
@@ -92,4 +92,3 @@ template <SCFMethod Procedure> struct SCF {
 } // namespace occ::qm
 
 #include <occ/qm/scf_impl.h>
-

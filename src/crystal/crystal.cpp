@@ -717,5 +717,4 @@ SiteMappingTable Crystal::molecule_site_mapping_table() const {
   return SiteMappingTable::build_molecule_table(*this);
 }
 
-
 } // namespace occ::crystal

@@ -20,9 +20,9 @@ using occ::core::Dimer;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
 using occ::crystal::CrystalDimers;
+using occ::qm::SCF;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
-using occ::qm::SCF;
 using occ::solvent::SolvationCorrectedProcedure;
 using occ::units::AU_TO_KJ_PER_MOL;
 using occ::units::BOHR_TO_ANGSTROM;
@@ -325,7 +325,8 @@ calculate_solvated_surfaces(const std::string &basename,
       props.a_coulomb = coul_areas;
       props.a_cds = cds_areas;
       auto nuc = proc_solv.surface_nuclear_energy_elements();
-      auto elec = proc_solv.surface_electronic_energy_elements(scf.molecular_orbitals());
+      auto elec = proc_solv.surface_electronic_energy_elements(
+          scf.molecular_orbitals());
       auto pol = proc_solv.surface_polarization_energy_elements();
       props.e_coulomb = nuc + elec + pol;
       occ::log::debug("sum e_nuc {:12.6f}", nuc.array().sum());

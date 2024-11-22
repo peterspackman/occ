@@ -4,8 +4,8 @@
 #include <fmt/ostream.h>
 
 template <typename T>
-requires std::is_base_of_v<Eigen::DenseBase<T>, T> struct fmt::formatter<T>
-    : ostream_formatter {};
+  requires std::is_base_of_v<Eigen::DenseBase<T>, T>
+struct fmt::formatter<T> : ostream_formatter {};
 
 namespace occ {
 using DMatRM =
@@ -82,13 +82,13 @@ using IVec3 = Eigen::Vector3i;
 
 struct MatTriple {
 
-    Mat x, y, z;
+  Mat x, y, z;
 
-    MatTriple operator+(const MatTriple &rhs) const;
-    MatTriple operator-(const MatTriple &rhs) const;
+  MatTriple operator+(const MatTriple &rhs) const;
+  MatTriple operator-(const MatTriple &rhs) const;
 
-    void scale_by(double fac);
-    void symmetrize();
+  void scale_by(double fac);
+  void symmetrize();
 };
 
 }; // namespace occ

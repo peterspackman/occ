@@ -142,7 +142,8 @@ IsosurfaceMesh extract_surface(F &func, float isovalue, bool flip = false) {
   mc.set_origin_and_side_lengths(func.origin(), func.side_length());
   mc.isovalue = isovalue;
   mc.flip_normals = (isovalue < 0.0) || flip;
-  if(mc.flip_normals) occ::log::info("Negative isovalue provided, will flip normals");
+  if (mc.flip_normals)
+    occ::log::info("Negative isovalue provided, will flip normals");
 
   std::vector<float> vertices;
   std::vector<float> normals;
@@ -627,8 +628,8 @@ FVec compute_surface_property(IsosurfaceConfig::Property prop,
     for (int orbital_index : config.orbital_indices) {
       func.set_orbital_index(orbital_index);
       func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
-      occ::log::info("Computed Orbital {} Density for {} vertices", orbital_index,
-                     func.num_calls() - prev_calls);
+      occ::log::info("Computed Orbital {} Density for {} vertices",
+                     orbital_index, func.num_calls() - prev_calls);
       occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
                      result.maxCoeff(), result.mean());
       prev_calls = func.num_calls();
@@ -774,7 +775,8 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
         throw std::runtime_error(
             "No orbital indices specified for orbital property");
       }
-      auto func = iso::MCElectronDensityFunctor(wfn, config.separation, config.orbital_indices[0]);
+      auto func = iso::MCElectronDensityFunctor(wfn, config.separation,
+                                                config.orbital_indices[0]);
       mesh = extract_surface(func, isovalue);
       break;
     }

@@ -17,7 +17,7 @@ SiteMappingTable SiteMappingTable::build_atom_table(const Crystal &crystal) {
   const double tolerance = 1e-6;
 
   // Iterate over symmetry operations
-  for (const auto &symop: symops) {
+  for (const auto &symop : symops) {
 
     // Apply symmetry operation to all fractional positions at once
     Mat3N transformed_pos = symop.apply(atoms.frac_pos);
@@ -113,8 +113,8 @@ std::optional<size_t> SiteMappingTable::get_target(size_t source, int symop,
   return std::nullopt;
 }
 
-std::optional<std::pair<size_t, HKL>> SiteMappingTable::get_target_and_offset(size_t source,
-                                                              int symop) const {
+std::optional<std::pair<size_t, HKL>>
+SiteMappingTable::get_target_and_offset(size_t source, int symop) const {
   for (const auto &[edge_descriptor, edge] : m_graph.edges()) {
     if (edge.source == source && edge.symop == symop) {
       return std::make_pair(edge.target, edge.offset);

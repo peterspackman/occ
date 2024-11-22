@@ -14,9 +14,9 @@ using occ::core::Molecule;
 using occ::dft::DFT;
 using occ::io::OccInput;
 using occ::qm::HartreeFock;
+using occ::qm::SCF;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
-using occ::qm::SCF;
 
 void print_matrix_xyz(const Mat &m) {
   for (size_t i = 0; i < 3; i++) {

@@ -2953,9 +2953,7 @@ TEST_CASE("Write PLY mesh validation", "[io][ply]") {
   using occ::io::VertexProperties;
   SECTION("Valid small mesh") {
     IsosurfaceMesh mesh;
-    mesh.vertices = {0.0f, 0.0f, 0.0f,
-                     1.0f, 0.0f, 0.0f,
-                     0.0f, 1.0f, 0.0f};
+    mesh.vertices = {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
     mesh.faces = {0, 1, 2};
     mesh.normals = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 

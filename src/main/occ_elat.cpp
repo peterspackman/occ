@@ -72,8 +72,7 @@ inline void map_interactions_to_uc(const Crystal &crystal,
         const auto &d_a = asymmetric_neighbors[idx].dimer;
         occ::log::trace("Candidate dimer: {} {}", d_a.a().name(),
                         d_a.b().name());
-        auto idx_asym =
-            mapping.canonical_dimer_index(mapping.dimer_index(d_a));
+        auto idx_asym = mapping.canonical_dimer_index(mapping.dimer_index(d_a));
         occ::log::trace("Candidate: {}", idx_asym);
         if (related_set.contains(idx_asym)) {
           occ::log::trace("Given dimer:          {} ({})",
@@ -119,14 +118,15 @@ inline void write_elat_json(const std::string &basename,
   j["pairs"] = {};
   for (const auto &mol_pairs : dimers.molecule_neighbors) {
     nlohmann::json m;
-    for (const auto &[dimer, unique_idx]: mol_pairs) {
+    for (const auto &[dimer, unique_idx] : mol_pairs) {
       nlohmann::json d;
       nlohmann::json e;
       const auto &unique_dimer = dimers.unique_dimers[unique_idx];
       const auto &energies = unique_dimer.interaction_energies();
-      if(energies.at("total") == 0.0) continue;
+      if (energies.at("total") == 0.0)
+        continue;
       e["unique_dimer_index"] = unique_idx;
-      for(const auto &[k, v]: energies) {
+      for (const auto &[k, v] : energies) {
         e[k] = v;
       }
       d["energies"] = e;
@@ -184,8 +184,6 @@ inline void set_molecule_charges(const std::string &charge_string,
     molecules[i].set_charge(charges[i]);
   }
 }
-
-
 
 void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   std::string filename = settings.crystal_filename;
@@ -265,7 +263,8 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   occ::log::info("Lattice energy: {:.3f} kJ/mol",
                  lattice_energy_result.lattice_energy);
 
-  write_elat_json(basename, settings.model_name, c, lattice_energy_result.dimers);
+  write_elat_json(basename, settings.model_name, c,
+                  lattice_energy_result.dimers);
 }
 
 namespace occ::main {

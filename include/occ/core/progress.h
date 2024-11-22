@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace occ::core {
 
@@ -16,7 +16,7 @@ public:
   ProgressTracker(int total);
 
   void set_tty(bool);
-  void update(int progress, int total, const std::string description= "");
+  void update(int progress, int total, const std::string description = "");
   void reset();
 
   void clear();
@@ -42,4 +42,4 @@ private:
   bool m_is_tty{false};
 };
 
-}
+} // namespace occ::core

@@ -3,9 +3,9 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
+#include <occ/dft/dft_method.h>
 #include <occ/dft/functional.h>
 #include <occ/dft/grid.h>
-#include <occ/dft/dft_method.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/range_separated_parameters.h>
 #include <occ/dft/xc_potential_matrix.h>

@@ -4,8 +4,8 @@
 namespace occ::interaction {
 
 struct WolfParams {
-    double cutoff{16.0}; // Angstroms;
-    double eta{0.2};     // 1/Angstroms
+  double cutoff{16.0}; // Angstroms;
+  double eta{0.2};     // 1/Angstroms
 };
 
 double wolf_coulomb_energy(double qi, const Vec3 &pi, Eigen::Ref<const Vec> qj,

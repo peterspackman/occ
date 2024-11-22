@@ -566,7 +566,6 @@ TEST_CASE("Elastic tensor", "[elastic_tensor]") {
       0.000, 0.000, 0.000, 0.000, 14.545, 0.000, 0.006, -3.654, -0.094, -4.528,
       0.000, 10.771, 0.000, 0.000, 0.000, 0.000, 0.006, 0.000, 11.947;
 
-
   ElasticTensor elastic(tensor);
 
   SECTION("Basics") {

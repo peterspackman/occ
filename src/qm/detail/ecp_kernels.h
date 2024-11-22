@@ -3,8 +3,8 @@
 
 #include "kernel_traits.h"
 #include <occ/core/timings.h>
-#include <occ/qm/integral_engine.h>
 #include <occ/gto/gto.h>
+#include <occ/qm/integral_engine.h>
 
 namespace occ::qm::detail {
 
