@@ -140,6 +140,8 @@ public:
    */
   Vec3 translation() const { return m_seitz.block<3, 1>(0, 3); }
 
+  inline bool has_translation() const { return !translation().isZero(); }
+
   /// Shorthand for `SymmetryOperation::apply`
   auto operator()(const Mat3N &frac) const { return apply(frac); }
 

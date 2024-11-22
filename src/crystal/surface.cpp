@@ -190,14 +190,17 @@ void Surface::print() const {
 }
 
 // Helper function to apply rotation to HKL
-HKL apply_rotation(const SymmetryOperation &symop, const HKL &hkl) {
+HKL apply_rotation(const SymmetryOperation &symop, const HKL &hkl,
+                   const Crystal &c) {
+  const auto &R = c.unit_cell().reciprocal();
+  const auto &RI = c.unit_cell().direct().transpose();
+
   Vec3 v(hkl.h, hkl.k, hkl.l);
-  Vec3 rotated = symop.rotation() * v;
-  return HKL{
-    static_cast<int>(std::round(rotated(0))),
-    static_cast<int>(std::round(rotated(1))),
-    static_cast<int>(std::round(rotated(2)))
-  };
+  Vec3 hkl_frac = c.to_fractional(RI * v);
+  Vec3 rotated = R * c.to_cartesian(symop.rotation() * v);
+  return HKL{static_cast<int>(std::round(rotated(0))),
+             static_cast<int>(std::round(rotated(1))),
+             static_cast<int>(std::round(rotated(2)))};
 }
 
 std::vector<Surface>
@@ -205,18 +208,20 @@ generate_surfaces(const Crystal &c,
                   const CrystalSurfaceGenerationParameters &params) {
   std::vector<Surface> result;
   ankerl::unordered_dense::set<HKL, HKLHash> unique_hkls;
-  auto point_group = c.space_group();
+  auto sg = c.space_group();
 
-  if(params.unique) {
+  if (params.unique) {
     auto f = [&](HKL m) {
-      if(params.reduced) {
+      if (params.reduced) {
         int cd = std::gcd(std::gcd(m.h, m.k), std::gcd(m.k, m.l));
         m = HKL{m.h / cd, m.k / cd, m.l / cd};
       }
       if (!unique_hkls.contains(m)) {
         bool is_unique = true;
-        for (const auto &symop : point_group.symmetry_operations()) {
-          HKL rotated_hkl = apply_rotation(symop, m);
+        for (const auto &symop : sg.symmetry_operations()) {
+          if (symop.has_translation())
+            continue;
+          HKL rotated_hkl = apply_rotation(symop, m, c);
           if (unique_hkls.contains(rotated_hkl)) {
             is_unique = false;
             break;
@@ -224,18 +229,19 @@ generate_surfaces(const Crystal &c,
         }
         if (is_unique) {
           result.emplace_back(Surface(m, c));
-          for (const auto &symop : point_group.symmetry_operations()) {
-            unique_hkls.insert(apply_rotation(symop, m));
+          for (const auto &symop : sg.symmetry_operations()) {
+            if (symop.has_translation())
+              continue;
+            unique_hkls.insert(apply_rotation(symop, m, c));
           }
         }
       }
     };
 
     loop_over_miller_indices(f, c, params);
-  }
-  else {
+  } else {
     auto f = [&](HKL m) {
-      if(params.reduced) {
+      if (params.reduced) {
         int cd = std::gcd(std::gcd(m.h, m.k), std::gcd(m.k, m.l));
         m = HKL{m.h / cd, m.k / cd, m.l / cd};
       }
@@ -670,12 +676,13 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
   }
 
   fmt::format_to(std::back_inserter(result.exyz), "{}\n", lines.size());
-  fmt::format_to(std::back_inserter(result.exyz), 
+  fmt::format_to(
+      std::back_inserter(result.exyz),
       R"""(MillerH={} MillerK={} MillerL={} Cut={:.3f} Lattice="{:3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}" Properties={} Origin="{:.3f} {:.3f} {:.3f}"{})""",
-      m_hkl.h, m_hkl.k, m_hkl.l, cut_offset,
-      basis(0, 0), basis(1, 0), basis(2, 0), basis(0, 1), basis(1, 1),
-      basis(2, 1), basis(0, 2), basis(1, 2), basis(2, 2),
-      "species:S:1:pos:R:3:mol_idx:I:1:uc_idx:I:1", 0.0, 0.0, 0.0, "\n");
+      m_hkl.h, m_hkl.k, m_hkl.l, cut_offset, basis(0, 0), basis(1, 0),
+      basis(2, 0), basis(0, 1), basis(1, 1), basis(2, 1), basis(0, 2),
+      basis(1, 2), basis(2, 2), "species:S:1:pos:R:3:mol_idx:I:1:uc_idx:I:1",
+      0.0, 0.0, 0.0, "\n");
 
   for (const auto &line : lines) {
     fmt::format_to(std::back_inserter(result.exyz), "{}\n", line);
@@ -692,14 +699,11 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
   return result;
 }
 
-
-
-template<typename T, class F>
-inline void remove_duplicates_sorted(std::vector<T> &vec, F& func) {
+template <typename T, class F>
+inline void remove_duplicates_sorted(std::vector<T> &vec, F &func) {
   auto last = std::unique(vec.begin(), vec.end(), func);
   vec.erase(last, vec.end());
 }
-
 
 std::vector<double>
 Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
@@ -728,7 +732,7 @@ Surface::possible_cuts(Eigen::Ref<const Mat3N> unique_positions,
   occ::log::debug("{} unique z positions to consider for cut");
 
   // cuts are made at 7/13 offset as that almost guarantees
-  // we won't land at some special position, which can happen 
+  // we won't land at some special position, which can happen
   // a lot by using 0.5
 
   // Calculate midpoints between unique distances along normal
