@@ -5,6 +5,7 @@ var classocc_1_1crystal_1_1SymmetryOperation =
     [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html#a064709207cf8f8e39f13fe98385ad85f", null ],
     [ "apply", "classocc_1_1crystal_1_1SymmetryOperation.html#abd68051bacf33165ffc39ac743d470b9", null ],
     [ "cartesian_rotation", "classocc_1_1crystal_1_1SymmetryOperation.html#afefeffdb95745cf448866ac74ea88c7e", null ],
+    [ "has_translation", "classocc_1_1crystal_1_1SymmetryOperation.html#a3b485206556fa24be1ba9b0545bb6efc", null ],
     [ "inverted", "classocc_1_1crystal_1_1SymmetryOperation.html#a69c016843e9d1338bfd85f655bdd00a4", null ],
     [ "is_identity", "classocc_1_1crystal_1_1SymmetryOperation.html#a2fb626a7ec05c2c43b1dceb6ba5e739d", null ],
     [ "operator()", "classocc_1_1crystal_1_1SymmetryOperation.html#a98ead7195f184aee423194578a19f8ac", null ],

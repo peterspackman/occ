@@ -1,9 +1,10 @@
 var searchData=
 [
-  ['halfedgemesh_3840',['HalfEdgeMesh',['../classquickhull_1_1HalfEdgeMesh.html#a39c068f72403abd3d39a73ad53d4e5c2',1,'quickhull::HalfEdgeMesh']]],
-  ['hartreefock_3841',['HartreeFock',['../classocc_1_1qm_1_1HartreeFock.html#a626f4e045b22ec9fdd77167f6a6c73d1',1,'occ::qm::HartreeFock']]],
-  ['has_5fh_5fr_5fchoice_3842',['has_H_R_choice',['../classocc_1_1crystal_1_1SpaceGroup.html#a3216f2dfca408e7ce217319fddb33e73',1,'occ::crystal::SpaceGroup']]],
-  ['has_5fmultiple_5foutputs_3843',['has_multiple_outputs',['../structocc_1_1main_1_1IsosurfaceConfig.html#aee06bff586eceb41ca17699075abb610',1,'occ::main::IsosurfaceConfig']]],
+  ['halfedgemesh_3839',['HalfEdgeMesh',['../classquickhull_1_1HalfEdgeMesh.html#a39c068f72403abd3d39a73ad53d4e5c2',1,'quickhull::HalfEdgeMesh']]],
+  ['hartreefock_3840',['HartreeFock',['../classocc_1_1qm_1_1HartreeFock.html#a626f4e045b22ec9fdd77167f6a6c73d1',1,'occ::qm::HartreeFock']]],
+  ['has_5fh_5fr_5fchoice_3841',['has_H_R_choice',['../classocc_1_1crystal_1_1SpaceGroup.html#a3216f2dfca408e7ce217319fddb33e73',1,'occ::crystal::SpaceGroup']]],
+  ['has_5fmultiple_5foutputs_3842',['has_multiple_outputs',['../structocc_1_1main_1_1IsosurfaceConfig.html#aee06bff586eceb41ca17699075abb610',1,'occ::main::IsosurfaceConfig']]],
+  ['has_5ftranslation_3843',['has_translation',['../classocc_1_1crystal_1_1SymmetryOperation.html#a3b485206556fa24be1ba9b0545bb6efc',1,'occ::crystal::SymmetryOperation']]],
   ['have_5fauxiliary_5fbasis_3844',['have_auxiliary_basis',['../classocc_1_1qm_1_1IntegralEngine.html#a08cea425ae58a64dd3bae4cf57918b59',1,'occ::qm::IntegralEngine']]],
   ['have_5fecps_3845',['have_ecps',['../classocc_1_1qm_1_1AOBasis.html#a2fe63928d95a5ff70dc48cca061bef59',1,'occ::qm::AOBasis']]],
   ['have_5feffective_5fcore_5fpotentials_3846',['have_effective_core_potentials',['../classocc_1_1dft_1_1DFT.html#a7fb559557c33ed2b0b82db6b6f0ff180',1,'occ::dft::DFT::have_effective_core_potentials()'],['../classocc_1_1qm_1_1HartreeFock.html#ac17ad4acfedab14cdc90f3ee62a86d72',1,'occ::qm::HartreeFock::have_effective_core_potentials()'],['../classocc_1_1qm_1_1IntegralEngine.html#ac2c23d3299a0d5bff011b47fd7ced30d',1,'occ::qm::IntegralEngine::have_effective_core_potentials()'],['../classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a57c48514b7c7b9d2ee26f17be261f4d2',1,'occ::solvent::SolvationCorrectedProcedure::have_effective_core_potentials()']]],

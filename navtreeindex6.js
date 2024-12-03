@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"classocc_1_1solvent_1_1ContinuumSolvationModel.html#a60e07a2d161bc57be8e7d62ab71a0ed8":[2,0,2,15,3,2],
 "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a6bac32045f79497e516364ce64de16e2":[2,0,2,15,3,18],
 "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a76f305f5d7bd06dc692540c965a25dfc":[2,0,2,15,3,7],
 "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a78b03c5a9f98ce64224079e24a22d182":[2,0,2,15,3,10],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "coulomb_8h.html#aef5dce7a34d94ea4f83d22352c0fe450":[3,0,1,0,7,0,2],
 "crystal_2surface_8h.html":[3,0,1,0,1,8],
 "crystal_2surface_8h.html#a767641f5e505c6ba72960c44777b7191":[3,0,1,0,1,8,3],
-"crystal_8h.html":[3,0,1,0,1,1],
-"crystal__json_8h.html":[3,0,1,0,8,4]
+"crystal_8h.html":[3,0,1,0,1,1]
 };

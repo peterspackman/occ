@@ -1,5 +1,6 @@
 var NAVTREEINDEX13 =
 {
+"structocc_1_1core_1_1GenSqrtInvResult.html#abaf8723d380d711ed2808a4cd3c51b66":[2,0,2,0,12,0],
 "structocc_1_1core_1_1GenSqrtInvResult.html#ac311f21fe72f6db5d3e6a4fccf62dba8":[2,0,2,0,12,2],
 "structocc_1_1core_1_1GenSqrtInvResult.html#aceb2f5f77d2f8889d03e1b1e0eb85b33":[2,0,2,0,12,3],
 "structocc_1_1core_1_1Multipole.html":[2,0,2,0,15],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1geometry_1_1IndexCache.html#a8f712851bd4814c96639475ba627ef43":[2,0,2,5,2,2],
 "structocc_1_1geometry_1_1IndexCache.html#ac3d4e3e535680afb29f94c47edca23c4":[2,0,2,5,2,13],
 "structocc_1_1geometry_1_1IndexCache.html#ad1092db41d379740f3e7add3624d6918":[2,0,2,5,2,3],
-"structocc_1_1geometry_1_1IndexCache.html#ad5ecb4ddc6106018a6a2ed08aaabdc47":[2,0,2,5,2,8],
-"structocc_1_1geometry_1_1IndexCache.html#ae6e1611067c5d8697443145ab0624889":[2,0,2,5,2,15]
+"structocc_1_1geometry_1_1IndexCache.html#ad5ecb4ddc6106018a6a2ed08aaabdc47":[2,0,2,5,2,8]
 };
