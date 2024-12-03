@@ -457,9 +457,13 @@ NB_MODULE(_occpy, m) {
 
   m.def("setup_logging", [](int v) { occ::log::setup_logging(v); });
   m.def("set_num_threads", [](int n) { occ::parallel::set_num_threads(n); });
+  m.def("set_data_directory", [](const std::string & s) {
+    occ::qm::override_basis_set_directory(s);
+});
+
 #ifdef VERSION_INFO
-  m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
+m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.6.6";
+m.attr("__version__") = "0.6.6";
 #endif
 }
