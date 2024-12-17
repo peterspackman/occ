@@ -37,6 +37,7 @@ target_link_libraries(occ_main
     occ_gto
     occ_sht
     occ_descriptors
+    occ_cg
     CLI11::CLI11
 )
 target_include_directories(occ_main PUBLIC 

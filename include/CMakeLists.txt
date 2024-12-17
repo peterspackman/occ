@@ -13,14 +13,16 @@ add_subdirectory(occ/sht)
 add_subdirectory(occ/slater)
 add_subdirectory(occ/xdm)
 add_subdirectory(occ/3rdparty)
+
 if("${WITH_XTB}")
-add_subdirectory(occ/xtb)
+  add_subdirectory(occ/xtb)
 else()
-set(OCC_XTB_INCLUDE_FILES "")
+  set(OCC_XTB_INCLUDE_FILES "")
 endif()
 
 set(OCC_INCLUDE_FILES
     ${OCC_CORE_INCLUDE_FILES}
+    ${OCC_CG_INCLUDE_FILES}
     ${OCC_CRYSTAL_INCLUDE_FILES}
     ${OCC_DESCRIPTORS_INCLUDE_FILES}
     ${OCC_DFT_INCLUDE_FILES}

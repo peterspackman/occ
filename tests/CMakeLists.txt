@@ -63,3 +63,7 @@ catch_discover_tests(xdm_tests)
 add_executable(xtb_tests "${CMAKE_CURRENT_SOURCE_DIR}/xtb_tests.cpp")
 target_link_libraries(xtb_tests PRIVATE occ_xtb Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(xtb_tests)
+
+add_executable(cg_tests "${CMAKE_CURRENT_SOURCE_DIR}/cg_tests.cpp")
+target_link_libraries(cg_tests PRIVATE occ_cg Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(cg_tests)

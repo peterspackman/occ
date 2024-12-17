@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fmt/os.h>
 #include <fstream>
+#include <occ/cg/smd_solvation.h>
 #include <occ/core/kabsch.h>
 #include <occ/core/log.h>
 #include <occ/core/point_group.h>
@@ -38,23 +39,23 @@
 #include <occ/xtb/xtb_wrapper.h>
 
 namespace fs = std::filesystem;
+using occ::core::Dimer;
 using occ::core::Element;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
-using occ::core::Dimer;
 using occ::crystal::CrystalDimers;
-using occ::crystal::SymmetryOperation;
-using occ::crystal::DimerMappingTable;
 using occ::crystal::DimerIndex;
 using occ::crystal::DimerIndexHash;
+using occ::crystal::DimerMappingTable;
+using occ::crystal::SymmetryOperation;
 using occ::qm::HartreeFock;
 using occ::qm::Wavefunction;
 using occ::units::AU_TO_KJ_PER_MOL;
 using occ::units::BOHR_TO_ANGSTROM;
 using SolventNeighborContributionList =
-    std::vector<occ::main::SolventNeighborContribution>;
+    std::vector<occ::cg::SolvationContribution>;
+using occ::cg::SMDSolventSurfaces;
 using occ::interaction::CEEnergyComponents;
-using occ::main::SolvatedSurfaceProperties;
 
 using WavefunctionList = std::vector<Wavefunction>;
 using DimerEnergies = std::vector<CEEnergyComponents>;
@@ -332,8 +333,7 @@ void write_energy_summary(double total, const Molecule &molecule,
                  total_interaction_energy);
 }
 
-inline void write_dimer(const std::string &filename,
-                        const Dimer &dimer) {
+inline void write_dimer(const std::string &filename, const Dimer &dimer) {
 
   using occ::core::Element;
   auto output = fmt::output_file(filename, fmt::file::WRONLY | O_TRUNC |
@@ -351,8 +351,7 @@ inline void write_dimer(const std::string &filename,
 class InteractionMapper {
 public:
   InteractionMapper(const Crystal &crystal, const CrystalDimers &dimers,
-                    CrystalDimers &uc_dimers,
-                    bool consider_inversion = false)
+                    CrystalDimers &uc_dimers, bool consider_inversion = false)
       : m_crystal(crystal), m_dimers(dimers), m_uc_dimers(uc_dimers),
         m_mapping_table(DimerMappingTable::build_dimer_table(
             crystal, uc_dimers, consider_inversion)) {}
@@ -395,7 +394,8 @@ private:
   void map_neighbor_interactions(
       size_t mol_idx,
       std::vector<CrystalDimers::SymmetryRelatedDimer> &unit_cell_neighbors,
-      const std::vector<CrystalDimers::SymmetryRelatedDimer> &asymmetric_neighbors,
+      const std::vector<CrystalDimers::SymmetryRelatedDimer>
+          &asymmetric_neighbors,
       const InteractionEnergies &interaction_energies) {
     for (size_t j = 0; j < unit_cell_neighbors.size(); j++) {
       auto &[dimer, unique_idx] = unit_cell_neighbors[j];
@@ -404,10 +404,10 @@ private:
     }
   }
 
-  void map_single_dimer(
-      size_t mol_idx, size_t neighbor_idx, Dimer &dimer,
-      const std::vector<CrystalDimers::SymmetryRelatedDimer> &asymmetric_neighbors,
-      const InteractionEnergies &interaction_energies) {
+  void map_single_dimer(size_t mol_idx, size_t neighbor_idx, Dimer &dimer,
+                        const std::vector<CrystalDimers::SymmetryRelatedDimer>
+                            &asymmetric_neighbors,
+                        const InteractionEnergies &interaction_energies) {
     const auto dimer_index = m_mapping_table.canonical_dimer_index(
         m_mapping_table.dimer_index(dimer));
     const auto &related = m_mapping_table.symmetry_related_dimers(dimer_index);
@@ -434,7 +434,8 @@ private:
 
   size_t find_matching_interaction(
       const Dimer &dimer, const DimerIndex &dimer_index,
-      const std::vector<CrystalDimers::SymmetryRelatedDimer> &asymmetric_neighbors,
+      const std::vector<CrystalDimers::SymmetryRelatedDimer>
+          &asymmetric_neighbors,
       const ankerl::unordered_dense::set<DimerIndex, DimerIndexHash>
           &related_set) const {
 
@@ -463,8 +464,9 @@ private:
                     dimer_index));
   }
 
-  void update_dimer_properties(Dimer &dimer, size_t interaction_id,
-                               const InteractionEnergyComponents &energy) const {
+  void
+  update_dimer_properties(Dimer &dimer, size_t interaction_id,
+                          const InteractionEnergyComponents &energy) const {
     dimer.set_interaction_energies(energy);
     dimer.set_interaction_id(interaction_id);
   }
@@ -499,14 +501,13 @@ private:
 };
 
 std::vector<double> map_unique_interactions_to_uc_molecules(
-    const Crystal& crystal,
-    const CrystalDimers& dimers,
-    CrystalDimers& uc_dimers,
-    const std::vector<double>& solution_terms,
-    const std::vector<InteractionEnergies>& interaction_energies_vec, bool inversion) {
-    
-    InteractionMapper mapper(crystal, dimers, uc_dimers, inversion);
-    return mapper.map_interactions(solution_terms, interaction_energies_vec);
+    const Crystal &crystal, const CrystalDimers &dimers,
+    CrystalDimers &uc_dimers, const std::vector<double> &solution_terms,
+    const std::vector<InteractionEnergies> &interaction_energies_vec,
+    bool inversion) {
+
+  InteractionMapper mapper(crystal, dimers, uc_dimers, inversion);
+  return mapper.map_interactions(solution_terms, interaction_energies_vec);
 }
 
 class CEModelCrystalGrowthCalculator {
@@ -608,10 +609,18 @@ public:
           occ::interaction::ce_model_from_string(m_model);
       occ::timing::StopWatch sw;
       sw.start();
-      std::tie(m_solvated_surface_properties, m_solvated_wavefunctions) =
-          occ::main::calculate_solvated_surfaces(
-              m_basename, m_molecules, m_gas_phase_wavefunctions, m_solvent,
-              parameterized_model.method, parameterized_model.basis);
+
+      occ::cg::SMDSettings smd_settings;
+      smd_settings.method = parameterized_model.method;
+      smd_settings.basis = parameterized_model.basis;
+
+      occ::cg::SMDCalculator smd_calc(m_basename, m_molecules,
+                                      m_gas_phase_wavefunctions, m_solvent,
+                                      smd_settings);
+      auto result = smd_calc.calculate();
+      m_solvated_surface_properties = result.surfaces;
+      m_solvated_wavefunctions = result.wavefunctions;
+
       sw.stop();
       occ::log::info("Solution phase wavefunctions took {:.6f} seconds",
                      sw.read());
@@ -712,7 +721,8 @@ public:
         crystal_contributions.begin(), crystal_contributions.end(), 0,
         [](size_t a, const AssignedEnergy &x) { return x.is_nn ? a + 1 : a; });
 
-    total.solution_term = surface_properties.esolv * AU_TO_KJ_PER_MOL;
+    total.solution_term =
+        surface_properties.total_solvation_energy * AU_TO_KJ_PER_MOL;
 
     const std::string row_fmt_string =
         " {} {:>3d} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
@@ -747,14 +757,15 @@ public:
       total.crystal_energy += e_crys;
 
       occ::main::DimerSolventTerm solvent_term;
-      solvent_term.ab = (solvent_neighbor_contribution.coulomb.ab +
-                         solvent_neighbor_contribution.cds.ab) *
+      solvent_term.ab = (solvent_neighbor_contribution.coulomb().forward +
+                         solvent_neighbor_contribution.cds().forward) *
                         AU_TO_KJ_PER_MOL;
-      solvent_term.ba = (solvent_neighbor_contribution.coulomb.ba +
-                         solvent_neighbor_contribution.cds.ba) *
+      solvent_term.ba = (solvent_neighbor_contribution.coulomb().reverse +
+                         solvent_neighbor_contribution.cds().reverse) *
                         AU_TO_KJ_PER_MOL;
 
-      solvent_term.total = solvent_neighbor_contribution.total_kjmol();
+      solvent_term.total =
+          solvent_neighbor_contribution.total_energy() * AU_TO_KJ_PER_MOL;
 
       double interaction_energy = solvent_term.total - e_crys - e_nn;
 
@@ -855,7 +866,7 @@ private:
   std::string m_basename;
   WavefunctionList m_gas_phase_wavefunctions;
   WavefunctionList m_solvated_wavefunctions;
-  std::vector<SolvatedSurfaceProperties> m_solvated_surface_properties;
+  std::vector<SMDSolventSurfaces> m_solvated_surface_properties;
   CrystalDimers m_full_dimers;
   DimerEnergies m_dimer_energies;
   CrystalDimers m_nearest_dimers;
