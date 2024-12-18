@@ -5,6 +5,7 @@
 #include <fmt/os.h>
 #include <fstream>
 #include <occ/cg/smd_solvation.h>
+#include <occ/cg/distance_partition.h>
 #include <occ/core/kabsch.h>
 #include <occ/core/log.h>
 #include <occ/core/point_group.h>
@@ -31,7 +32,6 @@
 #include <occ/main/occ_cg.h>
 #include <occ/main/pair_energy.h>
 #include <occ/main/single_point.h>
-#include <occ/main/solvation_partition.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
@@ -687,12 +687,12 @@ public:
     auto &interactions = m_interaction_energies[i];
     auto &interactions_crystal = m_crystal_interaction_energies[i];
 
-    const occ::main::SolvationPartitionScheme partition_scheme =
-        occ::main::SolvationPartitionScheme::NearestAtom;
+    constexpr bool use_dnorm = false;
 
-    auto solvation_breakdown = occ::main::partition_solvent_surface(
-        partition_scheme, m_crystal, molname, outer_wavefunctions(),
-        surface_properties, full_neighbors, nearest_neighbors, m_solvent);
+    occ::cg::SolventSurfacePartitioner p(m_crystal, full_neighbors);
+    p.set_basename(molname);
+    p.set_use_normalized_distance(use_dnorm);
+    auto solvation_breakdown = p.partition(nearest_neighbors, surface_properties);
 
     std::vector<double> dimer_energy_vals;
     for (const auto &de : m_dimer_energies) {

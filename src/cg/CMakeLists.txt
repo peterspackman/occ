@@ -1,4 +1,5 @@
 add_library(occ_cg
+    "${CMAKE_CURRENT_SOURCE_DIR}/distance_partition.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/neighbor_atoms.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/result_types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd_solvation.cpp"
