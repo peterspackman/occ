@@ -1,7 +1,8 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/hf.h" name="/home/runner/work/occ/occ/include/occ/qm/hf.h">
-<area shape="rect" id="node1" title=" " alt="" coords="132,5,311,47"/>
-<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="5,102,184,143"/>
-<area shape="rect" id="node3" href="$point__functors_8h.html" title=" " alt="" coords="37,199,208,255"/>
-<area shape="rect" id="node4" href="$electric__potential_8h.html" title=" " alt="" coords="259,95,455,151"/>
-<area shape="rect" id="node5" href="$isosurface_8h.html" title=" " alt="" coords="259,199,455,255"/>
+<area shape="rect" id="node1" title=" " alt="" coords="219,5,397,47"/>
+<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="92,102,271,143"/>
+<area shape="rect" id="node4" href="$point__functors_8h.html" title=" " alt="" coords="205,199,376,255"/>
+<area shape="rect" id="node5" href="$electric__potential_8h.html" title=" " alt="" coords="382,95,578,151"/>
+<area shape="rect" id="node3" href="$smd__solvation_8h.html" title=" " alt="" coords="5,199,181,255"/>
+<area shape="rect" id="node6" href="$isosurface_8h.html" title=" " alt="" coords="401,199,597,255"/>
 </map>

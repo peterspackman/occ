@@ -1,5 +1,6 @@
 var namespaceocc =
 [
+    [ "cg", "namespaceocc_1_1cg.html", "namespaceocc_1_1cg" ],
     [ "constants", "namespaceocc_1_1constants.html", [
       [ "angstroms_per_bohr", "namespaceocc_1_1constants.html#a8ef26d946f61840df424fb1725aef117", null ],
       [ "avogadro", "namespaceocc_1_1constants.html#ae0a7aca05941fa0a634ebffe288274bb", null ],

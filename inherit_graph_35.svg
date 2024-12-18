@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="node1" class="node">
 <title>Node0</title>
-<g id="a_node1"><a xlink:href="structocc_1_1crystal_1_1CrystalAtomRegion.html" target="_top" xlink:title="A class representing a region of atoms in a crystal lattice.">
+<g id="a_node1"><a xlink:href="classocc_1_1core_1_1MolecularPointGroup.html" target="_top" xlink:title="Storage class for a point group describing a Molecule.">
 <polygon fill="none" stroke="black" points="0,-0.5 0,-30.5 139,-30.5 139,-0.5 0,-0.5"/>
-<text text-anchor="start" x="8" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::crystal::CrystalAtom</text>
-<text text-anchor="middle" x="69.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">Region</text>
+<text text-anchor="start" x="8" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::core::MolecularPoint</text>
+<text text-anchor="middle" x="69.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">Group</text>
 </a>
 </g>
 </g>

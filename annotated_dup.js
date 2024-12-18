@@ -13,6 +13,20 @@ var annotated_dup =
       [ "adl_serializer< occ::crystal::Crystal >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1Crystal_01_4.html", null ]
     ] ],
     [ "occ", "namespaceocc.html", [
+      [ "cg", "namespaceocc_1_1cg.html", [
+        [ "SolventSurfacePartitioner", "classocc_1_1cg_1_1SolventSurfacePartitioner.html", "classocc_1_1cg_1_1SolventSurfacePartitioner" ],
+        [ "NeighborAtoms", "structocc_1_1cg_1_1NeighborAtoms.html", "structocc_1_1cg_1_1NeighborAtoms" ],
+        [ "DimerResult", "structocc_1_1cg_1_1DimerResult.html", "structocc_1_1cg_1_1DimerResult" ],
+        [ "MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", "structocc_1_1cg_1_1MoleculeResult" ],
+        [ "CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
+        [ "SMDSettings", "structocc_1_1cg_1_1SMDSettings.html", "structocc_1_1cg_1_1SMDSettings" ],
+        [ "SMDCalculator", "classocc_1_1cg_1_1SMDCalculator.html", "classocc_1_1cg_1_1SMDCalculator" ],
+        [ "ContributionPair", "structocc_1_1cg_1_1ContributionPair.html", "structocc_1_1cg_1_1ContributionPair" ],
+        [ "SolvationContribution", "classocc_1_1cg_1_1SolvationContribution.html", "classocc_1_1cg_1_1SolvationContribution" ],
+        [ "NeighborContribution", "structocc_1_1cg_1_1NeighborContribution.html", "structocc_1_1cg_1_1NeighborContribution" ],
+        [ "SolventSurface", "structocc_1_1cg_1_1SolventSurface.html", "structocc_1_1cg_1_1SolventSurface" ],
+        [ "SMDSolventSurfaces", "structocc_1_1cg_1_1SMDSolventSurfaces.html", "structocc_1_1cg_1_1SMDSolventSurfaces" ]
+      ] ],
       [ "core", "namespaceocc_1_1core.html", [
         [ "diis", "namespaceocc_1_1core_1_1diis.html", [
           [ "DIIS", "classocc_1_1core_1_1diis_1_1DIIS.html", "classocc_1_1core_1_1diis_1_1DIIS" ]
@@ -234,9 +248,7 @@ var annotated_dup =
         [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
         [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],
         [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
-        [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ],
-        [ "SolvatedSurfaceProperties", "structocc_1_1main_1_1SolvatedSurfaceProperties.html", "structocc_1_1main_1_1SolvatedSurfaceProperties" ],
-        [ "SolventNeighborContribution", "structocc_1_1main_1_1SolventNeighborContribution.html", "structocc_1_1main_1_1SolventNeighborContribution" ]
+        [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ]
       ] ],
       [ "qm", "namespaceocc_1_1qm.html", [
         [ "cint", "namespaceocc_1_1qm_1_1cint.html", [

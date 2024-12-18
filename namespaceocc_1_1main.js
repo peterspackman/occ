@@ -28,19 +28,12 @@ var namespaceocc_1_1main =
     [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],
     [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
     [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ],
-    [ "SolvatedSurfaceProperties", "structocc_1_1main_1_1SolvatedSurfaceProperties.html", "structocc_1_1main_1_1SolvatedSurfaceProperties" ],
-    [ "SolventNeighborContribution", "structocc_1_1main_1_1SolventNeighborContribution.html", "structocc_1_1main_1_1SolventNeighborContribution" ],
     [ "AtomList", "namespaceocc_1_1main.html#a28fb2b00851f8aa959f1188eb702d21d", null ],
     [ "MoleculeList", "namespaceocc_1_1main.html#aacf219b1a5bc1d456fccd140b29ff763", null ],
     [ "WavefunctionList", "namespaceocc_1_1main.html#ac85c86d6d9a88925da1c4fd9831a3d05", null ],
     [ "MethodKind", "namespaceocc_1_1main.html#a5363c601baefd04c151463f96c28f72a", [
       [ "HF", "namespaceocc_1_1main.html#a5363c601baefd04c151463f96c28f72aa498ab1ea4aab0295389f6c51484cca6c", null ],
       [ "DFT", "namespaceocc_1_1main.html#a5363c601baefd04c151463f96c28f72aacca8fc743f62bb262491fb02b5c0fd73", null ]
-    ] ],
-    [ "SolvationPartitionScheme", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8d", [
-      [ "NearestAtom", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8dad46944b7474143da3a8f5f49afc5bbfc", null ],
-      [ "NearestAtomDnorm", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8da904a394a586beaef3768b3b664aa966c", null ],
-      [ "ElectronDensity", "namespaceocc_1_1main.html#ae11bfee5ed2009b345a94b34822a3d8dad47101755289809d537b90d5f1737add", null ]
     ] ],
     [ "SpinConstraint", "namespaceocc_1_1main.html#a9154bffbc00f2a7302ceae3d043c3c2d", [
       [ "Total", "namespaceocc_1_1main.html#a9154bffbc00f2a7302ceae3d043c3c2da96b0141273eabab320119c467cdcaf17", null ],
@@ -72,7 +65,6 @@ var namespaceocc_1_1main =
     [ "load_wavefunction", "namespaceocc_1_1main.html#a2ee9eb0dd00aa1eb20e198760be0412b", null ],
     [ "method_kind_from_string", "namespaceocc_1_1main.html#ac40858d416a82a962744b6a615487ac1", null ],
     [ "optimization_calculation", "namespaceocc_1_1main.html#a550e068a512e8315cf0ae9a43dfe7466", null ],
-    [ "partition_solvent_surface", "namespaceocc_1_1main.html#aa39befd47d2156369617ebd3965cdf28", null ],
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],
     [ "run_cg", "namespaceocc_1_1main.html#a84a13fde7a5f757cfe4d3b92a93c73d8", null ],
     [ "run_cg_subcommand", "namespaceocc_1_1main.html#aa3e66b684794acfcab5f0c1b58aee3e1", null ],

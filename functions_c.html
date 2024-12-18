@@ -108,6 +108,9 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 <li>c_vector()
 : <a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a72ad8d54607b3d6bcc1c5c92a10173aa">occ::crystal::UnitCell</a>
 </li>
+<li>calculate()
+: <a class="el" href="classocc_1_1cg_1_1SMDCalculator.html#aa5f78da8acab36f5f11d6513dee1fcf0">occ::cg::SMDCalculator</a>
+</li>
 <li>calculate_entropy()
 : <a class="el" href="structocc_1_1qm_1_1OrbitalSmearing.html#a1a94a9e36436c89ef33a2942904371bb">occ::qm::OrbitalSmearing</a>
 </li>
@@ -146,13 +149,12 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 : <a class="el" href="classocc_1_1core_1_1EnergyComponents.html#a49ad21f15402e4a704102fbb2b1835a5">occ::core::EnergyComponents</a>
 </li>
 <li>cds
-: <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution.html#aa0a9578e72792dbd2608b99af072777e">occ::main::SolventNeighborContribution</a>
+: <a class="el" href="structocc_1_1cg_1_1NeighborContribution.html#af097f9535d18472d42739a16f4b21e94">occ::cg::NeighborContribution</a>
+, <a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html#a298982b198c9453047ed799433d650f6">occ::cg::SMDSolventSurfaces</a>
+, <a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#af60ce60f96388e5d653ba9d259e2d5ac">occ::cg::SolvationContribution</a>
 </li>
-<li>cds_area
-: <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution.html#a2be9658639661bd64e3e88df2f4ff795">occ::main::SolventNeighborContribution</a>
-</li>
-<li>cds_pos
-: <a class="el" href="structocc_1_1main_1_1SolvatedSurfaceProperties.html#a37b3c31883b00764214a2b73a4d8ac28">occ::main::SolvatedSurfaceProperties</a>
+<li>cds_area()
+: <a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac3e315a84fd2350dd09f486a047d1fbb">occ::cg::SolvationContribution</a>
 </li>
 <li>ceil()
 : <a class="el" href="structocc_1_1crystal_1_1HKL.html#a699c9776295411125cbd70c29d871752">occ::crystal::HKL</a>
@@ -486,6 +488,9 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 <li>convergence_settings
 : <a class="el" href="structocc_1_1scf_1_1SCF.html#a5b2353997ba1bd0e550acaa94bfe2d95">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
+<li>convergence_threshold
+: <a class="el" href="structocc_1_1cg_1_1SMDSettings.html#a3af5ab06c6f5fcd42cfc6eb3552eb29a">occ::cg::SMDSettings</a>
+</li>
 <li>convert_mo_coefficients_from_molden_convention()
 : <a class="el" href="classocc_1_1io_1_1MoldenReader.html#a7024b8098816bc3023c3ce142005bc25">occ::io::MoldenReader</a>
 </li>
@@ -502,9 +507,11 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 : <a class="el" href="classocc_1_1solvent_1_1COSMO.html#adc1d8a2ef0b74f9b7181ddd5eb230134">occ::solvent::COSMO</a>
 </li>
 <li>coulomb
-: <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html#a928f73adc0c50ea5e3000819374ae032">occ::interaction::CEEnergyComponents</a>
+: <a class="el" href="structocc_1_1cg_1_1NeighborContribution.html#aa51fec02d7f58490638a8e7eededbee6">occ::cg::NeighborContribution</a>
+, <a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html#a580e1474448d8513d85be4167545eb13">occ::cg::SMDSolventSurfaces</a>
+, <a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#aa99985209fc2d6d52fc9b0b86fc810dc">occ::cg::SolvationContribution</a>
+, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html#a928f73adc0c50ea5e3000819374ae032">occ::interaction::CEEnergyComponents</a>
 , <a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html#a44d7e9c5334e1eaaaf9764a1378299f3">occ::interaction::CEParameterizedModel</a>
-, <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution.html#a369a1d754e9f7d3b97139d8bedc0bdb2">occ::main::SolventNeighborContribution</a>
 , <a class="el" href="structocc_1_1qm_1_1Energy.html#a4247f24bb22d36b605c6ac7545f04167">occ::qm::Energy</a>
 , <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#af7665a67486c11a494eecb1a722b56fa">occ::qm::IntegralEngine</a>
 , <a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#aee5eb7b7e4932050142d507a7a628fb4">occ::qm::IntegralEngineDF</a>
@@ -516,8 +523,8 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 <li>coulomb_and_exchange_list()
 : <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a0164a30d993e81737066009d671a00b5">occ::qm::IntegralEngine</a>
 </li>
-<li>coulomb_area
-: <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution.html#a8ffff518f00ce90d944daf950ca01055">occ::main::SolventNeighborContribution</a>
+<li>coulomb_area()
+: <a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#aaef01d6d837f5a36ae8cdc727bb8dac1">occ::cg::SolvationContribution</a>
 </li>
 <li>coulomb_exchange_grad()
 : <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#ae25575cc9283afe696a48b1c02ae2084">occ::qm::IntegralEngine</a>
@@ -530,9 +537,6 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 </li>
 <li>coulomb_list()
 : <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a4e959b6483eb1a6ca3293bfe94e63992">occ::qm::IntegralEngine</a>
-</li>
-<li>coulomb_pos
-: <a class="el" href="structocc_1_1main_1_1SolvatedSurfaceProperties.html#a14c97a7c72640362285c633ed9aab4f2">occ::main::SolvatedSurfaceProperties</a>
 </li>
 <li>count
 : <a class="el" href="structocc_1_1main_1_1SurfaceCutsConfig.html#a1ccc787f05daee2ddec9c05cab064ed8">occ::main::SurfaceCutsConfig</a>

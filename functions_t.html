@@ -114,7 +114,10 @@ $(document).ready(function(){initNavTree('functions_t.html',''); initResizable()
 : <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a301c3fdf8d60e2c0c81fd97cbef3ab01">occ::dft::DensityFunctional::Params</a>
 </li>
 <li>TbliteCalculator()
-: <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a23084447bbbc2207b2363ad7a2646ec1">occ::xtb::TbliteCalculator</a>
+: <a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#ae4fc4cc2c9e9f2876ee1097f5684a97a">occ::xtb::TbliteCalculator</a>
+</li>
+<li>temperature
+: <a class="el" href="structocc_1_1cg_1_1SMDSettings.html#a2b9bc61dd9fa2e1ef20f63bfd92a0a42">occ::cg::SMDSettings</a>
 </li>
 <li>tensor_filename
 : <a class="el" href="structocc_1_1main_1_1ElasticSettings.html#a002dc0c6cfb56200a738c7834802a93b">occ::main::ElasticSettings</a>
@@ -203,15 +206,17 @@ $(document).ready(function(){initNavTree('functions_t.html',''); initResizable()
 <li>topology
 : <a class="el" href="structocc_1_1io_1_1QCSchemaInput.html#a42cb4a53d27ebb7496ad643b6514cf8f">occ::io::QCSchemaInput</a>
 </li>
-<li>total
-: <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html#aff932ac66d6b00d6576d5d6bf75b02c8">occ::interaction::CEEnergyComponents</a>
+<li>total()
+: <a class="el" href="structocc_1_1cg_1_1ContributionPair.html#a4ec440830777a2a7b4204e0eac0f668b">occ::cg::ContributionPair</a>
+, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html#aff932ac66d6b00d6576d5d6bf75b02c8">occ::interaction::CEEnergyComponents</a>
 , <a class="el" href="structocc_1_1main_1_1DimerSolventTerm.html#a2d988bacba2daa8bc6464c0ff0d0eb2a">occ::main::DimerSolventTerm</a>
-, <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution_1_1AsymPair.html#a67b47d2e66ba94432792a3e37c4cdfa1">occ::main::SolventNeighborContribution::AsymPair</a>
-, <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution.html#a4fff0dac713a36342bec013d7754a088">occ::main::SolventNeighborContribution</a>
 , <a class="el" href="structocc_1_1qm_1_1Energy.html#ae2b2edb62a26361a9d86d06e66de1018">occ::qm::Energy</a>
 </li>
 <li>total_above()
 : <a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#ad5189b7d0d14df4cc165dc9f55658d0f">occ::crystal::SurfaceCutResult</a>
+</li>
+<li>total_area()
+: <a class="el" href="structocc_1_1cg_1_1SolventSurface.html#ae943022a5c6f8d2b8fcd2a2b9e541049">occ::cg::SolventSurface</a>
 </li>
 <li>total_below()
 : <a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#a9e103361e0330a64e673a0f8e9be2e37">occ::crystal::SurfaceCutResult</a>
@@ -233,18 +238,27 @@ $(document).ready(function(){initNavTree('functions_t.html',''); initResizable()
 <li>total_energies
 : <a class="el" href="structocc_1_1main_1_1CGResult.html#a29da30dcd7a07960fe91b9cc6bd71281">occ::main::CGResult</a>
 </li>
+<li>total_energy()
+: <a class="el" href="structocc_1_1cg_1_1DimerResult.html#ac988e2b3d717f73394e99bc0b591089e">occ::cg::DimerResult</a>
+, <a class="el" href="structocc_1_1cg_1_1MoleculeResult.html#a2f876e3b4e2c81cb5236d618ae5b62e4">occ::cg::MoleculeResult</a>
+, <a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html#a25552dd92342d3dbe60595d0ec1c3f21">occ::cg::SMDSolventSurfaces</a>
+, <a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac25088690b52d4b7f6223240f62cbfce">occ::cg::SolvationContribution</a>
+, <a class="el" href="structocc_1_1cg_1_1SolventSurface.html#a485b2e580eec9dfc07476873630f26c7">occ::cg::SolventSurface</a>
+</li>
 <li>total_kjmol()
 : <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html#a53972764db2abc187d98730d375f728f">occ::interaction::CEEnergyComponents</a>
-, <a class="el" href="structocc_1_1main_1_1SolventNeighborContribution.html#abd621a2d10fa723d6262e57757119f44">occ::main::SolventNeighborContribution</a>
 </li>
 <li>total_slab()
 : <a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#ac753ffbd5e7bb5e09dc2133ac6d2fcab">occ::crystal::SurfaceCutResult</a>
+</li>
+<li>total_solvation_energy
+: <a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html#a903ecceb27d1a10e95964c0215c950bb">occ::cg::SMDSolventSurfaces</a>
 </li>
 <li>total_time
 : <a class="el" href="structocc_1_1scf_1_1SCF.html#a5c327165454abfe720ad8f62ec9b8808">occ::scf::SCF&lt; Procedure &gt;</a>
 </li>
 <li>transform()
-: <a class="el" href="classocc_1_1core_1_1Molecule.html#aa94b500c15f8470826c2f45907d222d8">occ::core::Molecule</a>
+: <a class="el" href="classocc_1_1core_1_1Molecule.html#ada11c701796158a754b1b141447d67c6">occ::core::Molecule</a>
 </li>
 <li>transformation
 : <a class="el" href="structocc_1_1core_1_1SymOp.html#a343379abc2b645254001374a1ec49716">occ::core::SymOp</a>

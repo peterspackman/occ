@@ -1,8 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/dft/grid.h" name="/home/runner/work/occ/occ/include/occ/dft/grid.h">
-<area shape="rect" id="node1" title=" " alt="" coords="176,5,347,61"/>
-<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="5,213,184,255"/>
-<area shape="rect" id="node4" href="$nonlocal__correlation_8h.html" title=" " alt="" coords="71,109,241,165"/>
-<area shape="rect" id="node5" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="265,109,471,165"/>
-<area shape="rect" id="node6" href="$xdm_8h.html" title=" " alt="" coords="495,117,697,158"/>
-<area shape="rect" id="node3" href="$point__functors_8h.html" title=" " alt="" coords="9,303,180,359"/>
+<area shape="rect" id="node1" title=" " alt="" coords="273,5,444,61"/>
+<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="103,213,281,255"/>
+<area shape="rect" id="node5" href="$nonlocal__correlation_8h.html" title=" " alt="" coords="168,109,339,165"/>
+<area shape="rect" id="node6" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="363,109,568,165"/>
+<area shape="rect" id="node7" href="$xdm_8h.html" title=" " alt="" coords="592,117,795,158"/>
+<area shape="rect" id="node3" href="$smd__solvation_8h.html" title=" " alt="" coords="5,303,181,359"/>
+<area shape="rect" id="node4" href="$point__functors_8h.html" title=" " alt="" coords="205,303,376,359"/>
 </map>
