@@ -3,12 +3,14 @@
 #include <filesystem>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <iostream>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
+#include <occ/driver/geometry_optimization.h>
+#include <occ/driver/single_point.h>
+#include <occ/interaction/pair_energy.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/fchkwriter.h>
@@ -19,11 +21,8 @@
 #include <occ/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
 #include <occ/main/cli_validators.h>
-#include <occ/main/geometry_optimization.h>
 #include <occ/main/occ_scf.h>
-#include <occ/main/pair_energy.h>
 #include <occ/main/properties.h>
-#include <occ/main/single_point.h>
 #include <occ/main/version.h>
 #include <spdlog/cfg/env.h>
 #include <xc.h>
@@ -198,13 +197,13 @@ void run_scf_subcommand(occ::io::OccInput &config) {
 
   occ::log::info("Driver: {}", config.driver.driver);
   if (config.driver.driver == "opt") {
-    Wavefunction wfn = optimization_calculation(config);
+    Wavefunction wfn = driver::geometry_optimization(config);
   } else {
     // store solvent name so we can do an unsolvated calculation first
     std::string stored_solvent_name = config.solvent.solvent_name;
     config.solvent.solvent_name = "";
 
-    Wavefunction wfn = occ::main::single_point_calculation(config);
+    Wavefunction wfn = occ::driver::single_point(config);
     write_output_files(config, wfn);
     occ::main::calculate_dispersion(config, wfn);
     occ::main::calculate_properties(config, wfn);
@@ -212,7 +211,7 @@ void run_scf_subcommand(occ::io::OccInput &config) {
     config.solvent.solvent_name = stored_solvent_name;
 
     if (!config.solvent.solvent_name.empty()) {
-      Wavefunction wfn2 = occ::main::single_point_calculation(config, wfn);
+      Wavefunction wfn2 = occ::driver::single_point(config, wfn);
       double esolv = wfn2.energy.total - wfn.energy.total;
 
       occ::log::info("{:-<72s}", "Solvation free energy (SMD)  ");

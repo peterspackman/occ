@@ -1,13 +1,13 @@
 #include <occ/core/constants.h>
 #include <occ/dft/dft.h>
+#include <occ/driver/method_parser.h>
+#include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
-#include <occ/main/method_parser.h>
-#include <occ/main/single_point.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/solvent/solvation_correction.h>
 
-namespace occ::main {
+namespace occ::driver {
 
 using occ::core::Element;
 using occ::core::Molecule;
@@ -245,13 +245,12 @@ single_point_driver(const OccInput &config,
   }
 }
 
-Wavefunction single_point_calculation(const OccInput &config) {
+Wavefunction single_point(const OccInput &config) {
   return single_point_driver(config);
 }
 
-Wavefunction single_point_calculation(const OccInput &config,
-                                      const Wavefunction &wfn) {
+Wavefunction single_point(const OccInput &config, const Wavefunction &wfn) {
   return single_point_driver(config, wfn);
 }
 
-} // namespace occ::main
+} // namespace occ::driver

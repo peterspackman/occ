@@ -4,7 +4,7 @@
 #include <occ/io/occ_input.h>
 #include <occ/io/wavefunction_json.h>
 #include <occ/main/monomer_wavefunctions.h>
-#include <occ/main/single_point.h>
+#include <occ/driver/single_point.h>
 
 namespace fs = std::filesystem;
 
@@ -65,7 +65,7 @@ Wavefunction calculate_wavefunction(const Molecule &mol,
     input.geometry.set_molecule(mol);
     input.electronic.charge = mol.charge();
     input.electronic.multiplicity = mol.multiplicity();
-    auto wfn = occ::main::single_point_calculation(input);
+    auto wfn = occ::driver::single_point(input);
 
     occ::io::JsonWavefunctionWriter writer;
     writer.write(wfn, json_path.string());

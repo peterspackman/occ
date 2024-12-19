@@ -10,11 +10,12 @@
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/interaction/coulomb.h>
+#include <occ/interaction/interaction_json.h>
+#include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pair_potential.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/wolf.h>
 #include <occ/io/wavefunction_json.h>
-#include <occ/main/pair_energy.h>
 #include <occ/qm/chelpg.h>
 #include <occ/xtb/xtb_wrapper.h>
 #include <optional>
@@ -23,18 +24,9 @@ namespace fs = std::filesystem;
 
 namespace occ::interaction {
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CEEnergyComponents, coulomb, exchange,
-                                   repulsion, polarization, dispersion, total)
-}
-
-namespace occ::main {
-
 using occ::core::Dimer;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
-using occ::interaction::CEEnergyComponents;
-using occ::interaction::CEModelInteraction;
-using occ::interaction::CEParameterizedModel;
 using occ::qm::Wavefunction;
 using occ::units::BOHR_TO_ANGSTROM;
 
@@ -640,7 +632,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
       occ::log::info("Coulomb (exact) real: {}", ecoul_exact_real);
       occ::log::info("Wolf - intra: {}", wolf.energy - ecoul_self);
       occ::log::info("Wolf corrected Coulomb total: {}",
-                      wolf.energy - ecoul_self - ecoul_real + ecoul_exact_real);
+                     wolf.energy - ecoul_self - ecoul_real + ecoul_exact_real);
       lattice_energy =
           coulomb_scale_factor * (wolf.energy - ecoul_self - ecoul_real) +
           0.5 * total.total_kjmol();

@@ -2,8 +2,8 @@
 #include <occ/io/occ_input.h>
 #include <occ/qm/wavefunction.h>
 
-namespace occ::main {
+namespace occ::driver {
 
-qm::Wavefunction optimization_calculation(const io::OccInput &);
+qm::Wavefunction geometry_optimization(const io::OccInput &);
 
 } // namespace occ::main

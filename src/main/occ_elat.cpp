@@ -17,13 +17,12 @@
 #include <occ/io/eigen_json.h>
 #include <occ/main/monomer_wavefunctions.h>
 #include <occ/main/occ_elat.h>
-#include <occ/main/pair_energy.h>
 #include <occ/qm/wavefunction.h>
 
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;
 using occ::interaction::CEEnergyComponents;
-using occ::main::LatticeConvergenceSettings;
+using occ::interaction::LatticeConvergenceSettings;
 using occ::qm::Wavefunction;
 
 inline Crystal read_crystal(const std::string &filename) {
@@ -72,8 +71,7 @@ inline void map_interactions_to_uc(const Crystal &crystal,
         const auto &d_a = asymmetric_neighbors[idx].dimer;
         occ::log::trace("Candidate dimer: {} {}", d_a.a().name(),
                         d_a.b().name());
-        auto idx_asym =
-            mapping.canonical_dimer_index(mapping.dimer_index(d_a));
+        auto idx_asym = mapping.canonical_dimer_index(mapping.dimer_index(d_a));
         occ::log::trace("Candidate: {}", idx_asym);
         if (related_set.contains(idx_asym)) {
           occ::log::trace("Given dimer:          {} ({})",
@@ -119,14 +117,15 @@ inline void write_elat_json(const std::string &basename,
   j["pairs"] = {};
   for (const auto &mol_pairs : dimers.molecule_neighbors) {
     nlohmann::json m;
-    for (const auto &[dimer, unique_idx]: mol_pairs) {
+    for (const auto &[dimer, unique_idx] : mol_pairs) {
       nlohmann::json d;
       nlohmann::json e;
       const auto &unique_dimer = dimers.unique_dimers[unique_idx];
       const auto &energies = unique_dimer.interaction_energies();
-      if(energies.at("total") == 0.0) continue;
+      if (energies.at("total") == 0.0)
+        continue;
       e["unique_dimer_index"] = unique_idx;
-      for(const auto &[k, v]: energies) {
+      for (const auto &[k, v] : energies) {
         e[k] = v;
       }
       d["energies"] = e;
@@ -185,8 +184,6 @@ inline void set_molecule_charges(const std::string &charge_string,
   }
 }
 
-
-
 void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   std::string filename = settings.crystal_filename;
   std::string basename = fs::path(filename).stem().string();
@@ -202,7 +199,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   occ::log::info("Calculating symmetry unique dimers");
   occ::crystal::CrystalDimers crystal_dimers;
   std::vector<CEEnergyComponents> energies;
-  occ::main::LatticeEnergyResult lattice_energy_result;
+  occ::interaction::LatticeEnergyResult lattice_energy_result;
   if (settings.model_name == "xtb") {
     lattice_energy_result =
         converged_xtb_lattice_energies(c, basename, settings);
@@ -210,7 +207,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
     wfns = occ::main::calculate_wavefunctions(
         basename, molecules, settings.model_name, settings.spherical_basis);
     occ::main::compute_monomer_energies(basename, wfns, settings.model_name);
-    lattice_energy_result = occ::main::converged_lattice_energies(
+    lattice_energy_result = occ::interaction::converged_lattice_energies(
         c, wfns, wfns, basename, settings);
   }
 
@@ -265,7 +262,8 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   occ::log::info("Lattice energy: {:.3f} kJ/mol",
                  lattice_energy_result.lattice_energy);
 
-  write_elat_json(basename, settings.model_name, c, lattice_energy_result.dimers);
+  write_elat_json(basename, settings.model_name, c,
+                  lattice_energy_result.dimers);
 }
 
 namespace occ::main {

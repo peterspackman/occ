@@ -1,12 +1,13 @@
 add_library(occ_cg
     "${CMAKE_CURRENT_SOURCE_DIR}/distance_partition.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/interaction_mapper.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/neighbor_atoms.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/result_types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd_solvation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_contribution.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvent_surface.cpp"
-    ${OCC_MAIN_INCLUDE_FILES}
+    ${OCC_CG_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_cg
