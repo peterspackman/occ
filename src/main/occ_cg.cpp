@@ -110,7 +110,12 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
       "--symmetric-solvent-contribution,--symmetric_solvent_contribution",
       config->symmetric_solvent_contribution,
       "Crystal growth interactions will have permutational symmetry (i.e. A->B "
-      "== B->A)");
+      "== B->A) (default: false)");
+  cg->add_flag(
+      "--gamma-point-molecules,--gamma_point_molecules",
+      config->gamma_point_molecules,
+      "Enforce that the resulting unit cell molecules (e.g. in the net file) "
+      "must have geometric centroids in the range [0,1) (default: true)");
   cg->add_option("--surface-energies", config->max_facets,
                  "Calculate surface energies and write .gmf morphology files");
   cg->add_flag("--list-available-solvents", config->list_solvents,
@@ -290,6 +295,8 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   Crystal c_symm =
       occ::io::load_crystal(config.lattice_settings.crystal_filename);
 
+  c_symm.set_gamma_point_unit_cell_molecules(config.gamma_point_molecules);
+
   if (config.crystal_is_atomic) {
     c_symm.set_connectivity_criteria(false);
   }
@@ -307,7 +314,10 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   if (config.use_xtb)
     opts.use_asymmetric_partition = false;
 
-  occ::log::info("Enforcing asymmetry via partitioning: {}", opts.use_asymmetric_partition);
+  occ::log::info("Enforcing asymmetry via partitioning:   {}",
+                 opts.use_asymmetric_partition);
+  occ::log::info("Enforcing unit cell molecules in gamma: {}",
+                 config.gamma_point_molecules);
 
   opts.wavefunction_choice =
       (config.wavefunction_choice == "gas" ? WavefunctionChoice::GasPhase
@@ -389,14 +399,6 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
 
 occ::cg::CrystalGrowthResult run_cg(CGConfig const &config) {
   occ::cg::CrystalGrowthResult result;
-  std::string basename =
-      fs::path(config.lattice_settings.crystal_filename).stem().string();
-  Crystal c_symm =
-      occ::io::load_crystal(config.lattice_settings.crystal_filename);
-
-  if (config.crystal_is_atomic) {
-    c_symm.set_connectivity_criteria(false);
-  }
 
   if (config.use_xtb) {
     result = run_cg_impl<driver::XTBCrystalGrowthCalculator>(config);

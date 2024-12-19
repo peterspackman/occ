@@ -384,7 +384,9 @@ void Crystal::update_unit_cell_molecules() const {
     g.breadth_first_traversal_with_edge(v.first, visitor);
     uc_mol_idx++;
   }
+
   Mat3N cart_pos = to_cartesian(atoms.frac_pos + shifts.cast<double>());
+
   for (size_t i = 0; i < uc_mol_idx; i++) {
     auto idx = atom_indices[i];
 
@@ -401,6 +403,30 @@ void Crystal::update_unit_cell_molecules() const {
     IMat3N shift_hkl = shifts(Eigen::all, idx);
 
     occ::core::Molecule m(atoms.atomic_numbers(idx), cart_pos({0, 1, 2}, idx));
+
+    if (m_enforce_gamma_point) {
+      Vec3 frac_centroid = to_fractional(m.centroid());
+      IVec3 centroid_shift;
+      centroid_shift[0] = -std::floor(frac_centroid[0]);
+      centroid_shift[1] = -std::floor(frac_centroid[1]);
+      centroid_shift[2] = -std::floor(frac_centroid[2]);
+      occ::log::debug("Frac centroid before shift to gamma point: {}",
+                      frac_centroid.transpose());
+      occ::log::debug(
+          "Frac centroid after shift: {}",
+          (frac_centroid + centroid_shift.cast<double>()).transpose());
+
+      if (centroid_shift.squaredNorm() > 0) {
+        // Apply shift to atomic positions
+        Mat3N shifted_cart_pos = cart_pos({0, 1, 2}, idx);
+        shifted_cart_pos += to_cartesian(centroid_shift.cast<double>());
+        m = occ::core::Molecule(atoms.atomic_numbers(idx), shifted_cart_pos);
+
+        // Update unit cell shifts
+        shift_hkl.colwise() += centroid_shift;
+      }
+    }
+
     m.set_unit_cell_idx(Eigen::Map<const IVec>(idx.data(), idx.size()));
     m.set_unit_cell_shift(shift_hkl);
     m.set_asymmetric_unit_idx(atoms.asym_idx(idx));
@@ -716,6 +742,5 @@ SiteMappingTable Crystal::atom_site_mapping_table() const {
 SiteMappingTable Crystal::molecule_site_mapping_table() const {
   return SiteMappingTable::build_molecule_table(*this);
 }
-
 
 } // namespace occ::crystal
