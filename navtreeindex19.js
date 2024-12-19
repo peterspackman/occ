@@ -1,6 +1,5 @@
 var NAVTREEINDEX19 =
 {
-"structtinyply_1_1PlyProperty.html#a09f3468bec410252ddf5a800e41238dd":[2,0,4,3,1],
 "structtinyply_1_1PlyProperty.html#a3edb1456bb7a1992ee5abfe1c9eb462e":[2,0,4,3,3],
 "structtinyply_1_1PlyProperty.html#a559fbd4a46f6d1c8f277ea15e357c283":[2,0,4,3,6],
 "structtinyply_1_1PlyProperty.html#a99574f7f41aea686235487fe27e3dd70":[2,0,4,3,4],
@@ -147,5 +146,6 @@ var NAVTREEINDEX19 =
 "xtb__wrapper_8h.html":[3,0,1,0,18,1],
 "xyz_8h.html":[3,0,1,0,10,29],
 "xyz_8h.html#a9e545a9864ef7cba94ea648e321f9899":[3,0,1,0,10,29,2],
-"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,10,29,1]
+"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,10,29,1],
+"":[1,0,1]
 };

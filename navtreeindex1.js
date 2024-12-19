@@ -1,6 +1,5 @@
 var NAVTREEINDEX1 =
 {
-"classocc_1_1core_1_1Molecule.html#ab02f0e08968a12525fc644d1493cef66":[2,0,2,1,14,10],
 "classocc_1_1core_1_1Molecule.html#ab1a0a8bfb2be7ee7624b3ff36b005776":[2,0,2,1,14,65],
 "classocc_1_1core_1_1Molecule.html#ad5bf525c9bacd163759f4f9dff28a71e":[2,0,2,1,14,27],
 "classocc_1_1core_1_1Molecule.html#ada11c701796158a754b1b141447d67c6":[2,0,2,1,14,57],
@@ -249,5 +248,6 @@ var NAVTREEINDEX1 =
 "classocc_1_1dft_1_1DFT.html#a642535bcd3cf08783e06b0d00c9bd6c2":[2,0,2,4,2,17],
 "classocc_1_1dft_1_1DFT.html#a66645ba265d222416c8154a93e845017":[2,0,2,4,2,4],
 "classocc_1_1dft_1_1DFT.html#a6fef3d3fcfdccd4d013482c382e7549f":[2,0,2,4,2,3],
-"classocc_1_1dft_1_1DFT.html#a70d0f6eb16cbb5fd8f0474a2d9cfdf7a":[2,0,2,4,2,2]
+"classocc_1_1dft_1_1DFT.html#a70d0f6eb16cbb5fd8f0474a2d9cfdf7a":[2,0,2,4,2,2],
+"classocc_1_1dft_1_1DFT.html#a772912fd4df034b5f315cdd3d347bb94":[2,0,2,4,2,5]
 };

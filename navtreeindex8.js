@@ -1,6 +1,5 @@
 var NAVTREEINDEX8 =
 {
-"functions_g.html":[2,3,0,7],
 "functions_h.html":[2,3,0,8],
 "functions_i.html":[2,3,0,9],
 "functions_j.html":[2,3,0,10],
@@ -99,8 +98,8 @@ var NAVTREEINDEX8 =
 "hirshfeld_8h.html":[3,0,1,0,15,0],
 "hkl_8h.html":[3,0,1,0,2,3],
 "icosphere__mesh_8h.html":[3,0,1,0,7,2],
-"index.html":[],
 "index.html":[0],
+"index.html":[],
 "index.html#example":[0,1],
 "index.html#welcome":[0,0],
 "index__cache_8h.html":[3,0,1,0,7,3],
@@ -249,5 +248,6 @@ var NAVTREEINDEX8 =
 "monomer__wavefunctions_8h.html#aff03b48a0375593fb2ca7183421d129d":[3,0,1,0,12,2,2],
 "morton_8h.html":[3,0,1,0,7,9],
 "morton_8h.html#a010534004696eacdb05cb19ddaed11f9":[3,0,1,0,7,9,6],
-"morton_8h.html#a092a2e423b91229159486db8af7911d6":[3,0,1,0,7,9,15]
+"morton_8h.html#a092a2e423b91229159486db8af7911d6":[3,0,1,0,7,9,15],
+"morton_8h.html#a254a7fccbfc24351697d29291c7fc9e6":[3,0,1,0,7,9,7]
 };

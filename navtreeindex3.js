@@ -1,6 +1,5 @@
 var NAVTREEINDEX3 =
 {
-"classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8cd0abbd8124bedca632405c31264335":[2,0,2,4,3,3,33],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8ec6a6d03929da47a06b7bd86c3ce989":[2,0,2,4,3,3,169],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8ece4690fc848a1f5e85785ef3874b05":[2,0,2,4,3,3,49],
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8eddc53adc074d6a7f66dac3f1109807":[2,0,2,4,3,3,148],
@@ -249,5 +248,6 @@ var NAVTREEINDEX3 =
 "classocc_1_1geometry_1_1WulffConstruction.html#ad97b6edf6e87f20b885f19c57a225666":[2,0,2,7,7,1],
 "classocc_1_1io_1_1CifParser.html":[2,0,2,10,10],
 "classocc_1_1io_1_1CifParser.html#a15f387695473b73a93d90ade095a4c60":[2,0,2,10,10,3],
-"classocc_1_1io_1_1CifParser.html#a1ab1e4c679d64e809524e77ce81c0283":[2,0,2,10,10,0]
+"classocc_1_1io_1_1CifParser.html#a1ab1e4c679d64e809524e77ce81c0283":[2,0,2,10,10,0],
+"classocc_1_1io_1_1CifParser.html#a5ac05c22834794e5600431ed8eeac439":[2,0,2,10,10,2]
 };

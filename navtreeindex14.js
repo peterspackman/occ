@@ -1,6 +1,5 @@
 var NAVTREEINDEX14 =
 {
-"structocc_1_1core_1_1Multipole.html#a53934eae5bcd402298342fa5cb98b554":[2,0,2,1,15,10],
 "structocc_1_1core_1_1Multipole.html#a5b0907917a29b98bfe8b4b0aa21d3981":[2,0,2,1,15,5],
 "structocc_1_1core_1_1Multipole.html#a6d4d4591048065b2f686976812fd51b1":[2,0,2,1,15,1],
 "structocc_1_1core_1_1Multipole.html#a927867b5cb72bfd153f8dac59f65b23d":[2,0,2,1,15,8],
@@ -249,5 +248,6 @@ var NAVTREEINDEX14 =
 "structocc_1_1geometry_1_1IndexCache.html#ad5ecb4ddc6106018a6a2ed08aaabdc47":[2,0,2,7,2,8],
 "structocc_1_1geometry_1_1IndexCache.html#ae6e1611067c5d8697443145ab0624889":[2,0,2,7,2,15],
 "structocc_1_1geometry_1_1IndexCache.html#aee3ee3c4823684a189874add15d35e9e":[2,0,2,7,2,9],
-"structocc_1_1geometry_1_1IndexCache.html#afa072f076aa14693617b9578d0f6be9c":[2,0,2,7,2,5]
+"structocc_1_1geometry_1_1IndexCache.html#afa072f076aa14693617b9578d0f6be9c":[2,0,2,7,2,5],
+"structocc_1_1geometry_1_1IndexCache_1_1Layer.html":[2,0,2,7,2,0]
 };

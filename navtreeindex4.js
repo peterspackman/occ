@@ -1,6 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"classocc_1_1io_1_1CifParser.html#a5ac05c22834794e5600431ed8eeac439":[2,0,2,10,10,2],
 "classocc_1_1io_1_1CifParser.html#a704d3611e27976891ccc503d4e08f57f":[2,0,2,10,10,9],
 "classocc_1_1io_1_1CifParser.html#a7e5f1ad512156b266694f3e29945c007":[2,0,2,10,10,5],
 "classocc_1_1io_1_1CifParser.html#a947042666e86dabc6abe39fd05b30d6e":[2,0,2,10,10,8],
@@ -249,5 +248,6 @@ var NAVTREEINDEX4 =
 "classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html#a2c80b22c62ba3b260b714658876c2e5f":[2,0,2,11,8,2],
 "classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html#a5954152c9adbe635e5f0f7f245e4be9a":[2,0,2,11,8,5],
 "classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html#a79954d32f3b0bd6c3a37acc099a3dded":[2,0,2,11,8,3],
-"classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html#af13acdfd4ccd9b6fcd720c499cab1167":[2,0,2,11,8,4]
+"classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html#af13acdfd4ccd9b6fcd720c499cab1167":[2,0,2,11,8,4],
+"classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html#af45d2b21f5c42d7f0217e968d35f3cf6":[2,0,2,11,8,1]
 };
