@@ -29,7 +29,6 @@ var hierarchy =
     [ "tinyply::Buffer", "classtinyply_1_1Buffer.html", null ],
     [ "occ::interaction::CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", null ],
     [ "occ::io::CellData", "structocc_1_1io_1_1CellData.html", null ],
-    [ "occ::driver::CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", null ],
     [ "occ::interaction::CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", null ],
     [ "occ::interaction::CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", null ],
     [ "occ::interaction::CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", null ],
@@ -45,6 +44,11 @@ var hierarchy =
     [ "occ::crystal::Crystal", "classocc_1_1crystal_1_1Crystal.html", null ],
     [ "occ::crystal::CrystalAtomRegion", "structocc_1_1crystal_1_1CrystalAtomRegion.html", null ],
     [ "occ::crystal::CrystalDimers", "structocc_1_1crystal_1_1CrystalDimers.html", null ],
+    [ "occ::driver::CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", [
+      [ "occ::driver::CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", null ],
+      [ "occ::driver::XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", null ]
+    ] ],
+    [ "occ::driver::CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", null ],
     [ "occ::cg::CrystalGrowthDimer", "structocc_1_1cg_1_1CrystalGrowthDimer.html", null ],
     [ "occ::cg::CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", null ],
     [ "occ::io::CrystalInput", "structocc_1_1io_1_1CrystalInput.html", null ],
@@ -291,6 +295,5 @@ var hierarchy =
     [ "occ::xdm::XDM", "classocc_1_1xdm_1_1XDM.html", null ],
     [ "occ::xdm::XDMAtomList", "structocc_1_1xdm_1_1XDMAtomList.html", null ],
     [ "occ::xtb::XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html", null ],
-    [ "occ::driver::XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", null ],
     [ "occ::io::XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", null ]
 ];

@@ -175,9 +175,17 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:adc6b3aff8c5397427b2c70daf11a599b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify the behaviour for guessing/finding bonds.  <a href="classocc_1_1crystal_1_1Crystal.html#adc6b3aff8c5397427b2c70daf11a599b">More...</a><br /></td></tr>
 <tr class="separator:adc6b3aff8c5397427b2c70daf11a599b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a933e32a75af9d3e9b566ba644a85c5cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1SiteMappingTable.html">SiteMappingTable</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#a933e32a75af9d3e9b566ba644a85c5cd">atom_site_mapping_table</a> () const</td></tr>
+<tr class="memdesc:a933e32a75af9d3e9b566ba644a85c5cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a mapping table for atomic sites in the crystal.  <a href="classocc_1_1crystal_1_1Crystal.html#a933e32a75af9d3e9b566ba644a85c5cd">More...</a><br /></td></tr>
 <tr class="separator:a933e32a75af9d3e9b566ba644a85c5cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab2be058389fa10fa8ca87764ea11705"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1SiteMappingTable.html">SiteMappingTable</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#aab2be058389fa10fa8ca87764ea11705">molecule_site_mapping_table</a> () const</td></tr>
+<tr class="memdesc:aab2be058389fa10fa8ca87764ea11705"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a mapping table for molecular sites in the crystal.  <a href="classocc_1_1crystal_1_1Crystal.html#aab2be058389fa10fa8ca87764ea11705">More...</a><br /></td></tr>
 <tr class="separator:aab2be058389fa10fa8ca87764ea11705"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d86677ab74155fe342e4a5dd196c0e2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#a8d86677ab74155fe342e4a5dd196c0e2">gamma_point_unit_cell_molecules</a> () const</td></tr>
+<tr class="memdesc:a8d86677ab74155fe342e4a5dd196c0e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if molecules are enforced to have centroids in the gamma point.  <a href="classocc_1_1crystal_1_1Crystal.html#a8d86677ab74155fe342e4a5dd196c0e2">More...</a><br /></td></tr>
+<tr class="separator:a8d86677ab74155fe342e4a5dd196c0e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a106b6a4dc8c12110faf2e3a12c9ded9c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#a106b6a4dc8c12110faf2e3a12c9ded9c">set_gamma_point_unit_cell_molecules</a> (bool set)</td></tr>
+<tr class="memdesc:a106b6a4dc8c12110faf2e3a12c9ded9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Controls enforcement of molecule centroids in the gamma point.  <a href="classocc_1_1crystal_1_1Crystal.html#a106b6a4dc8c12110faf2e3a12c9ded9c">More...</a><br /></td></tr>
+<tr class="separator:a106b6a4dc8c12110faf2e3a12c9ded9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -335,6 +343,10 @@ Static Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Creates a mapping table for atomic sites in the crystal. </p>
+<p>Generates a table that maps atomic sites in the crystal to their equivalent positions under symmetry operations. This is useful for analyzing site equivalences and symmetry relationships.</p>
+<dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="classocc_1_1crystal_1_1SiteMappingTable.html">SiteMappingTable</a> object containing the atomic site mappings. </dd></dl>
+
 </div>
 </div>
 <a id="af61a6255cfcd1d9a8f062c0c065a54b8"></a>
@@ -414,7 +426,7 @@ Static Public Member Functions</h2></td></tr>
 <p>Given a crystal lattice, this method constructs a new lattice that is a primitive supercell of the original lattice. The dimensions of the supercell are given in the <a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a> parameter, and all symmetry beyond translational symmetry is removed in the resulting crystal.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">c</td><td>The crystal lattice from which to create the primitive supercell.</td></tr>
+    <tr><td class="paramname">c</td><td>The crystal lattice from which to create the primitive supercell. </td></tr>
     <tr><td class="paramname">hkl</td><td>The lattice vector triplet (h, k, l) that defines the primitive supercell.</td></tr>
   </table>
   </dd>
@@ -480,6 +492,35 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a8d86677ab74155fe342e4a5dd196c0e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d86677ab74155fe342e4a5dd196c0e2">&#9670;&nbsp;</a></span>gamma_point_unit_cell_molecules()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::crystal::Crystal::gamma_point_unit_cell_molecules </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if molecules are enforced to have centroids in the gamma point. </p>
+<p>Returns whether unit cell molecules are currently being enforced to have their geometric centroids in the range [0,1) for each fractional coordinate.</p>
+<dl class="section return"><dt>Returns</dt><dd>True if gamma point enforcement is enabled, false otherwise. </dd></dl>
+
+</div>
+</div>
 <a id="af5e5d70c0465f72860ee5b3e68923e41"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af5e5d70c0465f72860ee5b3e68923e41">&#9670;&nbsp;</a></span>labels()</h2>
 
@@ -523,6 +564,10 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Creates a mapping table for molecular sites in the crystal. </p>
+<p>Generates a table that maps molecular sites in the crystal to their equivalent positions under symmetry operations. This helps identify molecular symmetry relationships and equivalent molecular positions.</p>
+<dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="classocc_1_1crystal_1_1SiteMappingTable.html">SiteMappingTable</a> object containing the molecular site mappings. </dd></dl>
 
 </div>
 </div>
@@ -572,6 +617,48 @@ Static Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Specify the behaviour for guessing/finding bonds. </p>
+<p>Controls whether bonds should be automatically determined based on atomic positions and covalent radii. When enabled, bonds are guessed using distance criteria. When disabled, no bonds are created.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">guess</td><td>If true, enables automatic bond detection. If false, disables bond detection. Defaults to true. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a106b6a4dc8c12110faf2e3a12c9ded9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a106b6a4dc8c12110faf2e3a12c9ded9c">&#9670;&nbsp;</a></span>set_gamma_point_unit_cell_molecules()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::crystal::Crystal::set_gamma_point_unit_cell_molecules </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>set</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Controls enforcement of molecule centroids in the gamma point. </p>
+<p>Sets whether unit cell molecules should have their geometric centroids enforced to lie within the range [0,1) for each fractional coordinate. When enabled, molecules will be shifted to satisfy this constraint while maintaining their internal structure and connectivity.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">set</td><td>If true, enforces gamma point centering. If false, allows molecules to have centroids outside the [0,1) range. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

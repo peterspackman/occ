@@ -116,6 +116,8 @@ var annotated_dup =
       ] ],
       [ "driver", "namespaceocc_1_1driver.html", [
         [ "AssignedEnergy", "structocc_1_1driver_1_1AssignedEnergy.html", "structocc_1_1driver_1_1AssignedEnergy" ],
+        [ "CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions" ],
+        [ "CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", "classocc_1_1driver_1_1CrystalGrowthCalculator" ],
         [ "CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator" ],
         [ "XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator" ]
       ] ],
