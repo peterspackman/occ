@@ -40,6 +40,7 @@ var namespaceocc =
     [ "descriptors", "namespaceocc_1_1descriptors.html", "namespaceocc_1_1descriptors" ],
     [ "dft", "namespaceocc_1_1dft.html", "namespaceocc_1_1dft" ],
     [ "disp", "namespaceocc_1_1disp.html", "namespaceocc_1_1disp" ],
+    [ "driver", "namespaceocc_1_1driver.html", "namespaceocc_1_1driver" ],
     [ "geometry", "namespaceocc_1_1geometry.html", "namespaceocc_1_1geometry" ],
     [ "gto", "namespaceocc_1_1gto.html", "namespaceocc_1_1gto" ],
     [ "interaction", "namespaceocc_1_1interaction.html", "namespaceocc_1_1interaction" ],

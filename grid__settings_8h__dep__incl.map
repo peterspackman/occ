@@ -1,21 +1,22 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/grid_settings.h" name="/home/runner/work/occ/occ/include/occ/io/grid_settings.h">
-<area shape="rect" id="node1" title=" " alt="" coords="949,5,1120,61"/>
-<area shape="rect" id="node2" href="$grid_8h.html" title=" " alt="" coords="380,109,551,165"/>
-<area shape="rect" id="node9" href="$occ__input_8h.html" title=" " alt="" coords="1519,109,1689,165"/>
-<area shape="rect" id="node3" href="$dft_8h.html" title=" " alt="" coords="103,325,281,366"/>
-<area shape="rect" id="node6" href="$nonlocal__correlation_8h.html" title=" " alt="" coords="168,213,339,269"/>
-<area shape="rect" id="node7" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="363,213,568,269"/>
-<area shape="rect" id="node8" href="$xdm_8h.html" title=" " alt="" coords="592,221,795,262"/>
+<area shape="rect" id="node1" title=" " alt="" coords="797,5,968,61"/>
+<area shape="rect" id="node2" href="$grid_8h.html" title=" " alt="" coords="540,109,711,165"/>
+<area shape="rect" id="node10" href="$occ__input_8h.html" title=" " alt="" coords="1056,317,1227,373"/>
+<area shape="rect" id="node3" href="$dft_8h.html" title=" " alt="" coords="201,325,380,366"/>
+<area shape="rect" id="node7" href="$nonlocal__correlation_8h.html" title=" " alt="" coords="328,213,499,269"/>
+<area shape="rect" id="node8" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="523,213,728,269"/>
+<area shape="rect" id="node9" href="$xdm_8h.html" title=" " alt="" coords="752,221,955,262"/>
 <area shape="rect" id="node4" href="$smd__solvation_8h.html" title=" " alt="" coords="5,421,181,477"/>
-<area shape="rect" id="node5" href="$point__functors_8h.html" title=" " alt="" coords="205,421,376,477"/>
-<area shape="rect" id="node10" href="$cifparser_8h.html" title=" " alt="" coords="819,221,1032,262"/>
-<area shape="rect" id="node11" href="$qcschema_8h.html" title=" " alt="" coords="1057,221,1279,262"/>
-<area shape="rect" id="node12" href="$geometry__optimization_8h.html" title=" " alt="" coords="1303,213,1494,269"/>
-<area shape="rect" id="node13" href="$occ__pair_8h.html" title=" " alt="" coords="1519,213,1689,269"/>
-<area shape="rect" id="node14" href="$occ__scf_8h.html" title=" " alt="" coords="1713,213,1884,269"/>
-<area shape="rect" id="node15" href="$pair__energy_8h.html" title=" " alt="" coords="1908,213,2079,269"/>
-<area shape="rect" id="node18" href="$properties_8h.html" title=" " alt="" coords="2127,213,2297,269"/>
-<area shape="rect" id="node19" href="$single__point_8h.html" title=" " alt="" coords="2321,213,2492,269"/>
-<area shape="rect" id="node16" href="$occ__cg_8h.html" title=" " alt="" coords="1811,317,1981,373"/>
-<area shape="rect" id="node17" href="$occ__elat_8h.html" title=" " alt="" coords="2005,317,2176,373"/>
+<area shape="rect" id="node6" href="$point__functors_8h.html" title=" " alt="" coords="205,421,376,477"/>
+<area shape="rect" id="node5" href="$crystal__growth_8h.html" title=" " alt="" coords="616,525,787,581"/>
+<area shape="rect" id="node11" href="$geometry__optimization_8h.html" title=" " alt="" coords="401,421,591,477"/>
+<area shape="rect" id="node12" href="$single__point_8h.html" title=" " alt="" coords="616,421,787,477"/>
+<area shape="rect" id="node13" href="$pair__energy_8h.html" title=" " alt="" coords="811,421,1010,477"/>
+<area shape="rect" id="node16" href="$cifparser_8h.html" title=" " alt="" coords="1035,429,1248,470"/>
+<area shape="rect" id="node17" href="$qcschema_8h.html" title=" " alt="" coords="1273,429,1495,470"/>
+<area shape="rect" id="node18" href="$occ__pair_8h.html" title=" " alt="" coords="1520,421,1691,477"/>
+<area shape="rect" id="node19" href="$occ__scf_8h.html" title=" " alt="" coords="1715,421,1885,477"/>
+<area shape="rect" id="node20" href="$properties_8h.html" title=" " alt="" coords="1909,421,2080,477"/>
+<area shape="rect" id="node14" href="$occ__cg_8h.html" title=" " alt="" coords="817,525,988,581"/>
+<area shape="rect" id="node15" href="$occ__elat_8h.html" title=" " alt="" coords="1012,525,1183,581"/>
 </map>

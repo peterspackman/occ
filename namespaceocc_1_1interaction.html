@@ -103,6 +103,14 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1interaction.html','');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1PairEnergy.html">PairEnergy</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1PairEnergyStore.html">PairEnergyStore</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1LatticeEnergyResult.html">LatticeEnergyResult</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1CEMonomerCalculationParameters.html">CEMonomerCalculationParameters</a></td></tr>
@@ -130,6 +138,20 @@ Functions</h2></td></tr>
 <tr class="separator:a1306e4778b31ca2ec2748f4fd56b280f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12f5d499d46155d63ad2eb4639d47e2c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a12f5d499d46155d63ad2eb4639d47e2c">coulomb_self_energy_asym_charges</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a> &amp;, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt; charges)</td></tr>
 <tr class="separator:a12f5d499d46155d63ad2eb4639d47e2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a791baf9effcc4c35e6fdeccd123068"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a1a791baf9effcc4c35e6fdeccd123068">load_dimer_energy</a> (const std::string &amp;, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;)</td></tr>
+<tr class="separator:a1a791baf9effcc4c35e6fdeccd123068"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58209bfc15002c650e2d781869d8525b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a58209bfc15002c650e2d781869d8525b">write_xyz_dimer</a> (const std::string &amp;, const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;, std::optional&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt; energies={})</td></tr>
+<tr class="separator:a58209bfc15002c650e2d781869d8525b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a570d7d65859b017ca8b0d7d087a1442d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a570d7d65859b017ca8b0d7d087a1442d">ce_model_energy</a> (const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;dimer, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_a, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_b, const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal)</td></tr>
+<tr class="separator:a570d7d65859b017ca8b0d7d087a1442d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85417b911940abf0af341367b4f2b7af"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a85417b911940abf0af341367b4f2b7af">ce_model_energies</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &gt; &amp;dimers, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_a, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_b, const std::string &amp;basename=&quot;dimer&quot;)</td></tr>
+<tr class="separator:a85417b911940abf0af341367b4f2b7af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66529e907f6ca8c88b3532af11f69fe9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1LatticeEnergyResult.html">LatticeEnergyResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a66529e907f6ca8c88b3532af11f69fe9">converged_lattice_energies</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_a, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;wfns_b, const std::string &amp;basename=&quot;crystal_dimer&quot;, const <a class="el" href="structocc_1_1interaction_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a> conv={})</td></tr>
+<tr class="separator:a66529e907f6ca8c88b3532af11f69fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae24d2dd5e52ac38e905c07de84075d26"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1LatticeEnergyResult.html">LatticeEnergyResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ae24d2dd5e52ac38e905c07de84075d26">converged_xtb_lattice_energies</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;crystal, const std::string &amp;basename=&quot;crystal_dimer&quot;, const <a class="el" href="structocc_1_1interaction_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a> conv={})</td></tr>
+<tr class="separator:ae24d2dd5e52ac38e905c07de84075d26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09bfb2f8b77b94b050f32c8d64f97130"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a09bfb2f8b77b94b050f32c8d64f97130">load_wavefunction</a> (const std::string &amp;filename)</td></tr>
+<tr class="separator:a09bfb2f8b77b94b050f32c8d64f97130"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac892ad982289ce322d71809aa87ce1d8"><td class="memTemplParams" colspan="2">template&lt;int derivative_order = 0&gt; </td></tr>
 <tr class="memitem:ac892ad982289ce322d71809aa87ce1d8"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ac892ad982289ce322d71809aa87ce1d8">lennard_jones</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; positions, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt; params)</td></tr>
 <tr class="separator:ac892ad982289ce322d71809aa87ce1d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -181,6 +203,92 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>interactions energies including CrystalExplorer model energies </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="a85417b911940abf0af341367b4f2b7af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85417b911940abf0af341367b4f2b7af">&#9670;&nbsp;</a></span>ce_model_energies()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a>&gt; occ::interaction::ce_model_energies </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
+          <td class="paramname"><em>crystal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dimers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>wfns_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>wfns_b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>basename</em> = <code>&quot;dimer&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a570d7d65859b017ca8b0d7d087a1442d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a570d7d65859b017ca8b0d7d087a1442d">&#9670;&nbsp;</a></span>ce_model_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> occ::interaction::ce_model_energy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;&#160;</td>
+          <td class="paramname"><em>dimer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>wfns_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>wfns_b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
+          <td class="paramname"><em>crystal</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a851a8246a3c48018dc6440b39e67cf46"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a851a8246a3c48018dc6440b39e67cf46">&#9670;&nbsp;</a></span>ce_model_from_string()</h2>
 
@@ -306,6 +414,86 @@ template&lt;typename Procedure &gt; </div>
           <td></td>
           <td class="paramtype">const Procedure &amp;&#160;</td>
           <td class="paramname"><em>proc_b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a66529e907f6ca8c88b3532af11f69fe9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66529e907f6ca8c88b3532af11f69fe9">&#9670;&nbsp;</a></span>converged_lattice_energies()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1interaction_1_1LatticeEnergyResult.html">LatticeEnergyResult</a> occ::interaction::converged_lattice_energies </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
+          <td class="paramname"><em>crystal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>wfns_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>wfns_b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>basename</em> = <code>&quot;crystal_dimer&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1interaction_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a>&#160;</td>
+          <td class="paramname"><em>conv</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae24d2dd5e52ac38e905c07de84075d26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae24d2dd5e52ac38e905c07de84075d26">&#9670;&nbsp;</a></span>converged_xtb_lattice_energies()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1interaction_1_1LatticeEnergyResult.html">LatticeEnergyResult</a> occ::interaction::converged_xtb_lattice_energies </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
+          <td class="paramname"><em>crystal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>basename</em> = <code>&quot;crystal_dimer&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1interaction_1_1LatticeConvergenceSettings.html">LatticeConvergenceSettings</a>&#160;</td>
+          <td class="paramname"><em>conv</em> = <code>{}</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -667,6 +855,52 @@ template&lt;&gt; </div>
 
 </div>
 </div>
+<a id="a1a791baf9effcc4c35e6fdeccd123068"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a791baf9effcc4c35e6fdeccd123068">&#9670;&nbsp;</a></span>load_dimer_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::interaction::load_dimer_energy </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a09bfb2f8b77b94b050f32c8d64f97130"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09bfb2f8b77b94b050f32c8d64f97130">&#9670;&nbsp;</a></span>load_wavefunction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> occ::interaction::load_wavefunction </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a3f579e72d12f4f6e07a7aa8cae1217a7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3f579e72d12f4f6e07a7aa8cae1217a7">&#9670;&nbsp;</a></span>polarization_energy()</h2>
 
@@ -741,6 +975,40 @@ template&lt;&gt; </div>
 
 </div>
 </div>
+<a id="a58209bfc15002c650e2d781869d8525b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58209bfc15002c650e2d781869d8525b">&#9670;&nbsp;</a></span>write_xyz_dimer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::interaction::write_xyz_dimer </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::optional&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt;&#160;</td>
+          <td class="paramname"><em>energies</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Variable Documentation</h2>
 <a id="a4fdd0625bcd94a0ebf3bbe1a1c6b1f54"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4fdd0625bcd94a0ebf3bbe1a1c6b1f54">&#9670;&nbsp;</a></span>CE1_XDM</h2>
@@ -784,10 +1052,8 @@ template&lt;&gt; </div>
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">{</div>
-<div class="line">    1.0,           1.0,        <a class="code" href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">CE1p_XDM_KREP</a>,</div>
-<div class="line">    <a class="code" href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">CE1p_XDM_KREP</a>, 1.0,        <span class="stringliteral">&quot;CE-1p-B3LYP&quot;</span>,</div>
-<div class="line">    <span class="stringliteral">&quot;b3lyp&quot;</span>,     <span class="stringliteral">&quot;def2-svp&quot;</span>, <span class="keyword">true</span>,</div>
-<div class="line">    0.65,          1.70}</div>
+<div class="line">    1.0,     1.0,        <a class="code" href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">CE1p_XDM_KREP</a>, <a class="code" href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">CE1p_XDM_KREP</a>, 1.0, <span class="stringliteral">&quot;CE-1p-B3LYP&quot;</span>,</div>
+<div class="line">    <span class="stringliteral">&quot;b3lyp&quot;</span>, <span class="stringliteral">&quot;def2-svp&quot;</span>, <span class="keyword">true</span>,          0.65,          1.70}</div>
 <div class="ttc" id="anamespaceocc_1_1interaction_html_a7d76bec4434b729fd4be29391d667982"><div class="ttname"><a href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">occ::interaction::CE1p_XDM_KREP</a></div><div class="ttdeci">constexpr double CE1p_XDM_KREP</div><div class="ttdef"><b>Definition:</b> pairinteraction.h:43</div></div>
 </div><!-- fragment -->
 </div>
@@ -856,7 +1122,7 @@ template&lt;&gt; </div>
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">{</div>
-<div class="line">    1.0,       0.485,      0.485, 0.803, 1.0, <span class="stringliteral">&quot;CE2p-XDM-wB97M-V&quot;</span>,</div>
+<div class="line">    1.0,     0.485,      0.485, 0.803, 1.0, <span class="stringliteral">&quot;CE2p-XDM-wB97M-V&quot;</span>,</div>
 <div class="line">    <span class="stringliteral">&quot;b3lyp&quot;</span>, <span class="stringliteral">&quot;def2-svp&quot;</span>, <span class="keyword">true</span>,  0.65,  1.70}</div>
 </div><!-- fragment -->
 </div>

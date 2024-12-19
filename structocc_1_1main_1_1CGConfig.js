@@ -3,7 +3,7 @@ var structocc_1_1main_1_1CGConfig =
     [ "cg_radius", "structocc_1_1main_1_1CGConfig.html#a857f9947f757ffb72478b4ca80445c3d", null ],
     [ "charge_string", "structocc_1_1main_1_1CGConfig.html#ad71f8f0b0fa5b41b83a3c948284c19e5", null ],
     [ "crystal_is_atomic", "structocc_1_1main_1_1CGConfig.html#a0ba99fda414aff63bf7bf025341572fe", null ],
-    [ "lattice_settings", "structocc_1_1main_1_1CGConfig.html#ab2a09022bbbf64a3a3077508e5a6ce36", null ],
+    [ "lattice_settings", "structocc_1_1main_1_1CGConfig.html#a0122d81feb84e28a7c1d500bf642572d", null ],
     [ "list_solvents", "structocc_1_1main_1_1CGConfig.html#ac93e90da36e44bf38d266ae92c60ef07", null ],
     [ "max_facets", "structocc_1_1main_1_1CGConfig.html#ae61f25f4eb24d64ece5319b2d73817ad", null ],
     [ "solvent", "structocc_1_1main_1_1CGConfig.html#a89cb2917fc77e54f04b6624c9ab921ee", null ],

@@ -1,0 +1,5 @@
+<map id="occ::cg::CrystalGrowthDimer" name="occ::cg::CrystalGrowthDimer">
+<area shape="rect" id="node1" title=" " alt="" coords="59,95,267,121"/>
+<area shape="rect" id="node2" href="$classocc_1_1core_1_1Dimer.html" title="Storage class for relevant information of a dimer (pair) of Molecule objects." alt="" coords="5,5,133,32"/>
+<area shape="rect" id="node3" href="$structocc_1_1cg_1_1DimerSolventTerm.html" title=" " alt="" coords="158,5,354,32"/>
+</map>
