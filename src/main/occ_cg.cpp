@@ -106,6 +106,11 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_flag("-d,--dump", config->write_dump_files, "Write dump files");
   cg->add_flag("--atomic", config->crystal_is_atomic,
                "Crystal is atomic (i.e. no bonds)");
+  cg->add_flag(
+      "--symmetric-solvent-contribution,--symmetric_solvent_contribution",
+      config->symmetric_solvent_contribution,
+      "Crystal growth interactions will have permutational symmetry (i.e. A->B "
+      "== B->A)");
   cg->add_option("--surface-energies", config->max_facets,
                  "Calculate surface energies and write .gmf morphology files");
   cg->add_flag("--list-available-solvents", config->list_solvents,
@@ -159,15 +164,15 @@ inline void write_wulff(const std::string &filename,
   occ::io::write_ply_mesh(filename, mesh, {}, false);
 }
 
-void write_cg_dimers(const std::string &basename, const std::string &solvent,
+void write_cg_dimers(const occ::driver::CrystalGrowthCalculatorOptions &opts,
                      const occ::crystal::Crystal &crystal,
                      const occ::cg::CrystalGrowthResult &result) {
   nlohmann::json j;
   j["result_type"] = "cg";
-  j["title"] = basename;
-  j["solvent"] = solvent;
-  j["model"] = fmt::format("crystalclear, solvent='{}'", solvent);
-  j["has_perumutation_symmetry"] = false;
+  j["title"] = opts.basename;
+  j["solvent"] = opts.solvent;
+  j["model"] = fmt::format("crystalclear, solvent='{}'", opts.solvent);
+  j["has_permutation_symmetry"] = !opts.use_asymmetric_partition;
 
   j["crystal"] = crystal;
 
@@ -224,7 +229,8 @@ void write_cg_dimers(const std::string &basename, const std::string &solvent,
     }
     j["pairs"].push_back(m);
   }
-  std::ofstream dest(fmt::format("{}_{}_cg_results.json", basename, solvent));
+  std::ofstream dest(
+      fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent));
   dest << j.dump(2);
 }
 
@@ -288,35 +294,46 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
     c_symm.set_connectivity_criteria(false);
   }
 
-  auto calc = Calculator(c_symm, config.solvent);
+  occ::driver::CrystalGrowthCalculatorOptions opts;
+  opts.solvent = config.solvent;
+  opts.basename = basename;
+  opts.write_debug_output_files = config.write_dump_files;
+  opts.energy_model = config.lattice_settings.model_name;
+  opts.xtb_solvation_model = config.xtb_solvation_model;
+  opts.use_asymmetric_partition = !config.symmetric_solvent_contribution;
+
+  // just ensure this is true for further outputs as the xtb calculation is
+  // always symmetric
+  if (config.use_xtb)
+    opts.use_asymmetric_partition = false;
+
+  occ::log::info("Enforcing asymmetry via partitioning: {}", opts.use_asymmetric_partition);
+
+  opts.wavefunction_choice =
+      (config.wavefunction_choice == "gas" ? WavefunctionChoice::GasPhase
+                                           : WavefunctionChoice::Solvated);
+  opts.inner_radius = config.cg_radius;
+  opts.outer_radius = config.lattice_settings.max_radius;
+
   // Setup calculator parameters
-  calc.set_basename(basename);
-  calc.set_output_verbosity(config.write_dump_files);
-  calc.set_energy_model(config.lattice_settings.model_name);
+  std::vector<int> charges;
   if (!config.charge_string.empty()) {
-    std::vector<int> charges;
     auto tokens = occ::util::tokenize(config.charge_string, ",");
     for (const auto &token : tokens) {
       charges.push_back(std::stoi(token));
     }
+    opts.use_wolf_sum = true;
+    opts.use_crystal_polarization = true;
+  }
+
+  auto calc = Calculator(c_symm, opts);
+
+  if (charges.size() != 0) {
     calc.set_molecule_charges(charges);
-    calc.set_use_wolf_sum(true);
-    calc.set_use_crystal_polarization(true);
   }
-
-  if constexpr (std::is_same<Calculator,
-                             driver::XTBCrystalGrowthCalculator>::value) {
-    occ::log::info("XTB solvation model: {}", config.xtb_solvation_model);
-    calc.set_solvation_model(config.xtb_solvation_model);
-  }
-
-  calc.set_wavefunction_choice(config.wavefunction_choice == "gas"
-                                   ? WavefunctionChoice::GasPhase
-                                   : WavefunctionChoice::Solvated);
 
   calc.init_monomer_energies();
-  calc.converge_lattice_energy(config.cg_radius,
-                               config.lattice_settings.max_radius);
+  calc.converge_lattice_energy();
 
   occ::cg::CrystalGrowthResult result = calc.evaluate_molecular_surroundings();
 
@@ -327,11 +344,7 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
 
   auto solution_terms_uc = map_unique_interactions_to_uc_molecules(
       calc.crystal(), calc.full_dimers(), uc_dimers, calc.solution_terms(),
-      calc.interaction_energies(), false);
-
-  auto solution_terms_uc_throwaway = map_unique_interactions_to_uc_molecules(
-      calc.crystal(), calc.full_dimers(), uc_dimers_vacuum,
-      calc.solution_terms(), calc.crystal_interaction_energies(), true);
+      calc.interaction_energies(), !opts.use_asymmetric_partition);
 
   if (config.write_kmcpp_file) {
     write_kmcpp_input_file(fmt::format("{}_kmcpp.json", basename),
@@ -364,7 +377,7 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
     destination << j.dump(2);
   }
 
-  write_cg_dimers(basename, config.solvent, calc.crystal(), result);
+  write_cg_dimers(opts, calc.crystal(), result);
   write_uc_json(basename, config.solvent, calc.crystal(), uc_dimers);
 
   write_cg_net_file(fmt::format("{}_{}_net.txt", basename, config.solvent),

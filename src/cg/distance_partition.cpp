@@ -77,6 +77,9 @@ SolventSurfacePartitioner::partition_nearest_atom(
     const SMDSolventSurfaces &surface) {
   using occ::units::angstroms;
   std::vector<SolvationContribution> energy_contribution(m_neighbors.size());
+  for (auto &contrib : energy_contribution) {
+    contrib.set_antisymmetrize(should_antisymmetrize());
+  }
 
   auto natoms = NeighborAtoms(nearest);
 

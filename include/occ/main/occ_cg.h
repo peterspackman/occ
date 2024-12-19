@@ -17,6 +17,7 @@ struct CGConfig {
   bool spherical{false};
   bool write_kmcpp_file{false};
   bool use_xtb{false};
+  bool symmetric_solvent_contribution{false};
   std::string xtb_solvation_model{"cpcmx"};
   bool list_solvents{false};
   bool crystal_is_atomic{false};

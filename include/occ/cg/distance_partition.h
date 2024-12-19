@@ -27,11 +27,20 @@ public:
   [[nodiscard]] std::vector<SolvationContribution>
   partition(const NeighborList &nearest, const SMDSolventSurfaces &surface);
 
+  [[nodiscard]] inline bool should_antisymmetrize() const {
+    return m_antisymmetrize;
+  }
+  inline void set_should_antisymmetrize(bool should) {
+    m_antisymmetrize = should;
+  }
+
 private:
   std::vector<SolvationContribution>
-  partition_nearest_atom(const NeighborList &nearest,  const SMDSolventSurfaces &surface);
+  partition_nearest_atom(const NeighborList &nearest,
+                         const SMDSolventSurfaces &surface);
 
   std::string m_basename{"molecule_solvent"};
+  bool m_antisymmetrize{true};
   bool m_use_dnorm{true};
   bool m_should_write_surface_files{true};
   const crystal::Crystal &m_crystal;

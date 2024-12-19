@@ -50,28 +50,23 @@ private:
     }
   };
 
-  // Load cached calculation if available
   bool try_load_cached(const CacheFiles &cache, SMDSolventSurfaces &,
                        occ::qm::Wavefunction &) const;
 
-  // Perform new calculation
   std::pair<SMDSolventSurfaces, occ::qm::Wavefunction>
   perform_calculation(const occ::core::Molecule &mol,
                       const occ::qm::Wavefunction &gas_wfn, size_t index);
 
-  // Save calculation results
   void save_calculation(const CacheFiles &cache,
                         const SMDSolventSurfaces &surface,
                         occ::qm::Wavefunction &wfn) const;
 
-  // Calculate free energy components
   void calculate_free_energy_components(SMDSolventSurfaces &surface,
                                         const occ::core::Molecule &mol,
                                         double original_energy,
                                         double solvated_energy,
                                         double surface_energy) const;
 
-  // Member variables
   std::string m_basename;
   std::string m_solvent;
   SMDSettings m_settings;

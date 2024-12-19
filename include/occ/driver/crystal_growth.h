@@ -39,23 +39,39 @@ std::vector<occ::Vec3>
 calculate_net_dipole(const WavefunctionList &wavefunctions,
                      const crystal::CrystalDimers &crystal_dimers);
 
-class CEModelCrystalGrowthCalculator {
+struct CrystalGrowthCalculatorOptions {
+  std::string solvent{"water"};
+  std::string basename{"calculation"};
+  std::string energy_model{"ce-b3lyp"};
+
+  bool use_asymmetric_partition{true};
+  bool use_wolf_sum{false};
+  bool use_crystal_polarization{false};
+  bool write_debug_output_files{true};
+  double inner_radius{3.8};
+  double outer_radius{3.8};
+  std::string xtb_solvation_model{"cpcmx"};
+  WavefunctionChoice wavefunction_choice{WavefunctionChoice::GasPhase};
+};
+
+class CrystalGrowthCalculator {
 public:
-  CEModelCrystalGrowthCalculator(const crystal::Crystal &crystal,
-                                 const std::string &solvent);
-  void set_basename(const std::string &basename) { m_basename = basename; }
-  void set_wavefunction_choice(WavefunctionChoice choice) {
-    m_wfn_choice = choice;
+  explicit CrystalGrowthCalculator(
+      const crystal::Crystal &crystal,
+      const CrystalGrowthCalculatorOptions &options);
+
+  inline void set_options(const CrystalGrowthCalculatorOptions &opts) {
+    m_options = opts;
   }
 
-  void set_output_verbosity(bool output) { m_output = output; }
-
-  void set_energy_model(const std::string &model) { m_model = model; }
+  inline const auto &options() const { return m_options; }
+  inline auto &options() { return m_options; }
 
   inline auto &gas_phase_wavefunctions() { return m_gas_phase_wavefunctions; }
   inline auto &solvated_wavefunctions() { return m_solvated_wavefunctions; }
+
   inline auto &inner_wavefunctions() {
-    switch (m_wfn_choice) {
+    switch (options().wavefunction_choice) {
     case WavefunctionChoice::Solvated:
       return solvated_wavefunctions();
     default:
@@ -64,22 +80,19 @@ public:
   }
 
   inline auto &outer_wavefunctions() {
-    switch (m_wfn_choice) {
+    switch (options().wavefunction_choice) {
     case WavefunctionChoice::Solvated:
       return solvated_wavefunctions();
     default:
       return gas_phase_wavefunctions();
     }
   }
+
   inline auto &solvated_surface_properties() {
     return m_solvated_surface_properties;
   }
 
-  void dipole_correction();
-
   inline auto &crystal() { return m_crystal; }
-  inline const auto &name() { return m_basename; }
-  inline const auto &solvent() { return m_solvent; }
   inline const auto &molecules() { return m_molecules; }
 
   inline auto &nearest_dimers() { return m_nearest_dimers; }
@@ -92,35 +105,21 @@ public:
     return m_crystal_interaction_energies;
   }
 
-  inline void set_use_wolf_sum(bool value) { m_use_wolf_sum = value; }
-  inline void set_use_crystal_polarization(bool value) {
-    m_use_crystal_polarization = value;
-  }
-
-  void init_monomer_energies();
-
-  void converge_lattice_energy(double inner_radius, double outer_radius);
-
   void set_molecule_charges(const std::vector<int> &charges);
+  virtual void init_monomer_energies() = 0;
+  virtual void converge_lattice_energy() = 0;
 
-  std::tuple<cg::EnergyTotal, std::vector<cg::CrystalGrowthDimer>>
-  process_neighbors_for_symmetry_unique_molecule(int i,
-                                                 const std::string &molname);
+  virtual std::tuple<cg::EnergyTotal, std::vector<cg::CrystalGrowthDimer>>
+  process_neighbors_for_symmetry_unique_molecule(
+      int i, const std::string &molname) = 0;
 
-  cg::CrystalGrowthResult evaluate_molecular_surroundings();
+  virtual cg::CrystalGrowthResult evaluate_molecular_surroundings() = 0;
   const auto &lattice_energies() const { return m_lattice_energies; }
 
-private:
-  bool m_output{true};
-  bool m_use_wolf_sum{false};
-  bool m_use_crystal_polarization{false};
-  WavefunctionChoice m_wfn_choice{WavefunctionChoice::GasPhase};
+protected:
   crystal::Crystal m_crystal;
   std::vector<occ::core::Molecule> m_molecules;
   std::vector<double> m_lattice_energies;
-  std::string m_solvent;
-  std::string m_model;
-  std::string m_basename;
   WavefunctionList m_gas_phase_wavefunctions;
   WavefunctionList m_solvated_wavefunctions;
   std::vector<cg::SMDSolventSurfaces> m_solvated_surface_properties;
@@ -131,79 +130,47 @@ private:
   std::vector<cg::Energies> m_interaction_energies;
   std::vector<cg::Energies> m_crystal_interaction_energies;
   std::vector<double> m_solution_terms;
-  double m_inner_radius{0.0}, m_outer_radius{0.0};
-};
-
-class XTBCrystalGrowthCalculator {
-public:
-  XTBCrystalGrowthCalculator(const crystal::Crystal &crystal,
-                             const std::string &solvent);
-
-  // do nothing
-  inline void set_wavefunction_choice(WavefunctionChoice choice) {}
-  inline void set_energy_model(const std::string &model) { m_model = model; }
-  inline void set_use_crystal_polarization(bool value) {}
-  void set_output_verbosity(bool output) { m_output = output; }
-
-  inline auto &crystal() { return m_crystal; }
-  inline const auto &name() { return m_basename; }
-  inline const auto &solvent() { return m_solvent; }
-  inline const auto &molecules() { return m_molecules; }
-
-  inline auto &nearest_dimers() { return m_nearest_dimers; }
-  inline auto &full_dimers() { return m_full_dimers; }
-  inline auto &dimer_energies() { return m_dimer_energies; }
-
-  inline auto &solution_terms() { return m_solution_terms; }
-  inline auto &interaction_energies() { return m_interaction_energies; }
-  inline auto &crystal_interaction_energies() {
-    return m_crystal_interaction_energies;
-  }
-
-  inline void set_use_wolf_sum(bool value) { m_use_wolf_sum = value; }
-
-  inline void set_basename(const std::string &basename) {
-    m_basename = basename;
-  }
-  inline void set_solvation_model(const std::string &model) {
-    m_solvation_model = model;
-  }
-
-  void set_molecule_charges(const std::vector<int> &charges);
-
-  void converge_lattice_energy(double inner_radius, double outer_radius);
-
-  occ::cg::CrystalGrowthResult evaluate_molecular_surroundings();
-
-  void init_monomer_energies();
 
 private:
-  std::tuple<occ::cg::EnergyTotal, std::vector<occ::cg::CrystalGrowthDimer>>
-  process_neighbors_for_symmetry_unique_molecule(int i,
-                                                 const std::string &molname);
+  CrystalGrowthCalculatorOptions m_options;
+};
 
-  const auto &lattice_energies() const { return m_lattice_energies; }
+class CEModelCrystalGrowthCalculator : public CrystalGrowthCalculator {
+public:
+  explicit CEModelCrystalGrowthCalculator(
+      const crystal::Crystal &crystal,
+      const CrystalGrowthCalculatorOptions &options);
 
-  crystal::Crystal m_crystal;
-  std::vector<occ::core::Molecule> m_molecules;
-  std::vector<double> m_lattice_energies;
-  std::string m_solvent;
-  std::string m_basename;
-  std::string m_model{"gfn2-xtb"};
-  std::string m_solvation_model{"cpcmx"};
-  bool m_output{true};
+  void init_monomer_energies() override;
+  void converge_lattice_energy() override;
+
+  cg::CrystalGrowthResult evaluate_molecular_surroundings() override;
+
+  std::tuple<cg::EnergyTotal, std::vector<cg::CrystalGrowthDimer>>
+  process_neighbors_for_symmetry_unique_molecule(
+      int i, const std::string &molname) override;
+};
+
+class XTBCrystalGrowthCalculator : public CrystalGrowthCalculator {
+public:
+  explicit XTBCrystalGrowthCalculator(
+      const crystal::Crystal &crystal,
+      const CrystalGrowthCalculatorOptions &options);
+
+  void init_monomer_energies() override;
+  void converge_lattice_energy() override;
+
+  cg::CrystalGrowthResult evaluate_molecular_surroundings() override;
+
+  std::tuple<cg::EnergyTotal, std::vector<cg::CrystalGrowthDimer>>
+  process_neighbors_for_symmetry_unique_molecule(
+      int i, const std::string &molname) override;
+
   std::vector<double> m_gas_phase_energies;
   std::vector<occ::Vec> m_partial_charges;
   std::vector<double> m_solvated_energies;
-  crystal::CrystalDimers m_full_dimers;
   std::vector<double> m_dimer_energies;
   std::vector<double> m_solvated_dimer_energies;
-  crystal::CrystalDimers m_nearest_dimers;
-  std::vector<cg::Energies> m_interaction_energies;
-  std::vector<cg::Energies> m_crystal_interaction_energies;
-  std::vector<double> m_solution_terms;
-  double m_inner_radius{0.0}, m_outer_radius{0.0};
-  bool m_use_wolf_sum{false};
 };
 
 } // namespace occ::driver
