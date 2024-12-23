@@ -115,6 +115,7 @@ var namespaceocc_1_1core =
     [ "gensqrtinv", "namespaceocc_1_1core.html#ab25be21637f89ed6ac96910483c65e51", null ],
     [ "get_bond_tolerance", "namespaceocc_1_1core.html#a80ea5632e2f6e7ab784b0168c3b67d10", null ],
     [ "inertia_tensor", "namespaceocc_1_1core.html#a9201f84a536bf7194bf669c250db4707", null ],
+    [ "label_molecules_by_chemical_formula", "namespaceocc_1_1core.html#a06bd80d9c43fa53a3494e04f9bbb79c6", null ],
     [ "lerp", "namespaceocc_1_1core.html#aec7ecfa2dc83b10e2e48637fdb4726e8", null ],
     [ "make_point_charges", "namespaceocc_1_1core.html#af98aa2a081c496fb5c4f937c0fbb09e2", null ],
     [ "meshgrid", "namespaceocc_1_1core.html#a1b5ac87c6e642780e44fb02f22f6305d", null ],
