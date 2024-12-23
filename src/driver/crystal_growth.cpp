@@ -136,8 +136,9 @@ calculate_wavefunctions(const std::string &basename,
   WavefunctionList wavefunctions;
   size_t index = 0;
   for (const auto &m : molecules) {
-    occ::log::info("Molecule ({})\n{:3s} {:^10s} {:^10s} {:^10s}", index, "sym",
-                   "x", "y", "z");
+    occ::log::info(
+        "Geometry for molecule {} ({})\n{:3s} {:^10s} {:^10s} {:^10s}", index,
+        m.name(), "sym", "x", "y", "z");
     for (const auto &atom : m.atoms()) {
       occ::log::info("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
                      core::Element(atom.atomic_number).symbol(), atom.x, atom.y,
@@ -255,11 +256,13 @@ CrystalGrowthCalculator::CrystalGrowthCalculator(
     : m_crystal(crystal), m_molecules(m_crystal.symmetry_unique_molecules()),
       m_options(options), m_interaction_energies(m_molecules.size()),
       m_crystal_interaction_energies(m_molecules.size()) {
-  occ::log::info("found {} symmetry unique molecules:\n{:<10s} {:>32s}",
-                 m_molecules.size(), "index", "name");
-  for (int i = 0; i < m_molecules.size(); i++) {
-    occ::log::info("{:<4d} {:>32s}", i, m_molecules[i].name());
-    occ::log::debug("Atomic numbers\n{}\n", m_molecules[i].atomic_numbers());
+  const auto N = m_molecules.size();
+  occ::log::info("Found {} symmetry unique molecule{}\n{:<5s} {:<5s} {:>32s}",
+                 N, N > 1 ? "s" : "", "index", "label", "formula");
+  for (int i = 0; i < N; i++) {
+    const auto &mol = m_molecules[i];
+    occ::log::info("{:<5d} {:<5s} {:>32s}", i, mol.name(),
+                   occ::core::chemical_formula(mol.elements()));
   }
 }
 

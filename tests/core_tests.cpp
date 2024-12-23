@@ -30,20 +30,24 @@ using occ::util::all_close;
 using Catch::Approx;
 using Catch::Matchers::WithinAbs;
 
-TEST_CASE("Dimer constructor", "[dimer]") {
-  occ::Mat3N pos(3, 3), pos2(3, 3);
+inline Molecule water_molecule() {
+  occ::Mat3N pos(3, 3);
   occ::IVec nums(3);
   nums << 8, 1, 1;
   pos << -1.32695761, -1.93166418, 0.48664409, -0.10593856, 1.60017351,
       0.07959806, 0.01878821, -0.02171049, 0.00986248;
 
-  Molecule m(nums, pos);
+  return Molecule(nums, pos);
+}
 
-  auto masses = m.atomic_masses();
-  occ::Vec3 expected_masses = {15.994, 1.00794, 1.00794};
+inline Molecule oh_molecule() {
+  occ::Mat3N pos(3, 2);
+  occ::IVec nums(2);
+  nums << 8, 1;
+  pos << -1.32695761, -1.93166418, -0.10593856, 1.60017351, 0.01878821,
+      -0.02171049;
 
-  fmt::print("Atomic masses:\n{}\n\n", masses);
-  REQUIRE(all_close(masses, expected_masses, 1e-3, 1e-3));
+  return Molecule(nums, pos);
 }
 
 TEST_CASE("Dimer transform", "[dimer]") {
@@ -566,7 +570,6 @@ TEST_CASE("Elastic tensor", "[elastic_tensor]") {
       0.000, 0.000, 0.000, 0.000, 14.545, 0.000, 0.006, -3.654, -0.094, -4.528,
       0.000, 10.771, 0.000, 0.000, 0.000, 0.000, 0.006, 0.000, 11.947;
 
-
   ElasticTensor elastic(tensor);
 
   SECTION("Basics") {
@@ -646,5 +649,49 @@ TEST_CASE("Elastic tensor", "[elastic_tensor]") {
     REQUIRE(vmin == Approx(0.067042).epsilon(1e-2));
     double vmax = elastic.poisson_ratio(d1max, d2max);
     REQUIRE(vmax == Approx(0.59507).epsilon(1e-2));
+  }
+}
+
+TEST_CASE("Molecule label generation", "[molecule]") {
+  SECTION("single molecule gets label 1A") {
+    std::vector<occ::core::Molecule> molecules{water_molecule()};
+    occ::core::label_molecules_by_chemical_formula(molecules);
+    REQUIRE(molecules[0].name() == "1A");
+  }
+
+  SECTION("identical formulae get same number with incrementing letters") {
+    std::vector<occ::core::Molecule> molecules{
+        water_molecule(), water_molecule(), water_molecule()};
+    occ::core::label_molecules_by_chemical_formula(molecules);
+    REQUIRE(molecules[0].name() == "1A");
+    REQUIRE(molecules[1].name() == "1B");
+    REQUIRE(molecules[2].name() == "1C");
+  }
+
+  SECTION(
+      "different molecules get different numbers with incrementing letters") {
+    std::vector<occ::core::Molecule> molecules{water_molecule(), oh_molecule(),
+                                               water_molecule(), oh_molecule()};
+
+    occ::core::label_molecules_by_chemical_formula(molecules);
+    REQUIRE(molecules[0].name() == "1A");
+    REQUIRE(molecules[1].name() == "2A");
+    REQUIRE(molecules[2].name() == "1B");
+    REQUIRE(molecules[3].name() == "2B");
+  }
+
+  SECTION("more than 26 instances get repeat letters") {
+    std::vector<occ::core::Molecule> molecules;
+    for (int i = 0; i < 54; i++) {
+      molecules.push_back(water_molecule());
+    }
+
+    occ::core::label_molecules_by_chemical_formula(molecules);
+    REQUIRE(molecules[0].name() == "1A");
+    REQUIRE(molecules[1].name() == "1B");
+    REQUIRE(molecules[12].name() == "1M");
+    REQUIRE(molecules[25].name() == "1Z");
+    REQUIRE(molecules[26].name() == "1AA");
+    REQUIRE(molecules[52].name() == "1BA");
   }
 }

@@ -54,8 +54,10 @@ private:
   void handle_unmatched_dimer(const Dimer &dimer,
                               const DimerIndex &dimer_index) const;
 
-  void update_dimer_properties(Dimer &dimer, size_t interaction_id,
-                               const EnergyComponents &energy) const;
+  void update_dimer_properties(
+      Dimer &dimer, size_t interaction_id,
+      const std::vector<CrystalDimers::SymmetryRelatedDimer> &asym_dimers,
+      const Energies &energies) const;
 
   void log_neighbor_info(size_t mol_idx, size_t uc_neighbors_size,
                          size_t asym_neighbors_size,

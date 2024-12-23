@@ -298,11 +298,30 @@ public:
   inline void set_name(const std::string &name) { m_name = name; }
   std::string xyz_string() const;
 
+  /**
+   * Set the value of a property for this Dimer
+   *
+   * \param key a string labelling the property.
+   * \param value a string containing the value of the property
+   */
+  inline void set_property(const std::string &key, const std::string &value) {
+    m_additional_properties[key] = value;
+  }
+
+  inline const auto &properties() const { return m_additional_properties; }
+
+  inline void set_properties(
+      const ankerl::unordered_dense::map<std::string, std::string> &p) {
+    m_additional_properties = p;
+  }
+
 private:
   Molecule m_a, m_b;
   std::string m_name{"dimer"};
   size_t m_interaction_id{0};
   ankerl::unordered_dense::map<std::string, double> m_interaction_energies;
+  ankerl::unordered_dense::map<std::string, std::string>
+      m_additional_properties;
 };
 
 } // namespace occ::core

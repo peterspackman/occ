@@ -91,8 +91,8 @@ void InteractionMapper::map_single_dimer(
                              "known interactions energies");
   }
 
-  update_dimer_properties(dimer, interaction_idx,
-                          interaction_energies[interaction_idx]);
+  update_dimer_properties(dimer, interaction_idx, asymmetric_neighbors,
+                          interaction_energies);
   log_dimer_info(neighbor_idx, dimer);
 }
 
@@ -136,8 +136,12 @@ void InteractionMapper::handle_unmatched_dimer(
 }
 
 void InteractionMapper::update_dimer_properties(
-    Dimer &dimer, size_t interaction_id, const EnergyComponents &energy) const {
-  dimer.set_interaction_energies(energy);
+    Dimer &dimer, size_t interaction_id,
+    const std::vector<CrystalDimers::SymmetryRelatedDimer> &asym_dimers,
+    const Energies &energies) const {
+
+  dimer.set_property("asymmetric_dimer", fmt::format("dimer_{}", asym_dimers[interaction_id].unique_index));
+  dimer.set_interaction_energies(energies[interaction_id]);
   dimer.set_interaction_id(interaction_id);
 }
 

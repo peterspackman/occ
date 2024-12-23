@@ -1,5 +1,5 @@
+#include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
-#include <fstream>
 #include <occ/core/constants.h>
 #include <occ/core/inertia_tensor.h>
 #include <occ/core/linear_algebra.h>
@@ -7,7 +7,6 @@
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
-#include <sstream>
 
 namespace occ::core {
 
@@ -320,6 +319,47 @@ Vec Molecule::esp_partial_charges(const Mat3N &positions_angs) const {
     result.array() += q / r.array();
   }
   return result;
+}
+
+inline std::string next_label(std::string current = "") {
+  if (current.empty())
+    return "A";
+  int pos = current.size() - 1;
+  while (pos >= 0) {
+    if (current[pos] < 'Z') {
+      current[pos]++;
+      return current;
+    }
+    current[pos] = 'A';
+    pos--;
+  }
+  return "A" + current;
+}
+
+void label_molecules_by_chemical_formula(
+    std::vector<occ::core::Molecule> &molecules) {
+  struct LabelInfo {
+    int formula_id;
+    std::string current_letter;
+  };
+  ankerl::unordered_dense::map<std::string, LabelInfo> formula_to_label;
+  int next_id = 1;
+
+  for (auto &molecule : molecules) {
+    auto formula = chemical_formula(molecule.elements());
+    auto it = formula_to_label.find(formula);
+    if (it == formula_to_label.end()) {
+      // New formula type encountered
+      formula_to_label[formula] = {next_id++, "A"};
+      molecule.set_name(std::to_string(formula_to_label[formula].formula_id) +
+                        "A");
+    } else {
+      // Existing formula type - use same ID but next letter
+      it->second.current_letter = next_label(it->second.current_letter);
+      molecule.set_name(std::to_string(it->second.formula_id) +
+                        it->second.current_letter);
+    }
+  }
 }
 
 } // namespace occ::core

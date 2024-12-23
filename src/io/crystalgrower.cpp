@@ -122,6 +122,16 @@ build_formula_indices_for_symmetry_unique_molecules(const Crystal &crystal) {
   return result;
 }
 
+inline std::string get_asymmetric_dimer_name(const core::Dimer &n) {
+  const auto &properties = n.properties();
+  std::string name = "";
+  const auto kv = properties.find("asymmetric_dimer");
+  if (kv != properties.end()) {
+    name = kv->second;
+  }
+  return name;
+}
+
 void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
   const auto &uc_molecules = crystal.unit_cell_molecules();
   CrystalDimers uc_dimers_copy = uc_dimers;
@@ -172,10 +182,12 @@ void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
             1 + std::distance(unique_interaction_energies.begin(), match);
       }
 
-      fmt::print(m_dest, "{}:[{}{}][{}-{}]({},{},{}) R={:.3f}\n",
+      auto dimer_name = get_asymmetric_dimer_name(n);
+
+      fmt::print(m_dest, "{}:[{}{}][{}-{}]({},{},{}) {} R={:.3f}\n",
                  interaction_idx, formula_index.count, formula_index.letter,
                  n.a().name(), n.b().name(), uc_shift[0], uc_shift[1],
-                 uc_shift[2], n.centroid_distance());
+                 uc_shift[2], dimer_name, n.centroid_distance());
     }
     for (double e : unique_interaction_energies) {
       fmt::print(m_dest, "{:7.3f}\n", e * occ::units::KJ_TO_KCAL);

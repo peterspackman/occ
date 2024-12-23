@@ -386,6 +386,10 @@ void Crystal::update_unit_cell_molecules() const {
   }
 
   Mat3N cart_pos = to_cartesian(atoms.frac_pos + shifts.cast<double>());
+  auto clean_small_values = [](const Vec3 &v, double epsilon = 1e-14) {
+    return v.unaryExpr(
+        [epsilon](double x) { return (std::abs(x) < epsilon) ? 0.0 : x; });
+  };
 
   for (size_t i = 0; i < uc_mol_idx; i++) {
     auto idx = atom_indices[i];
@@ -405,16 +409,17 @@ void Crystal::update_unit_cell_molecules() const {
     occ::core::Molecule m(atoms.atomic_numbers(idx), cart_pos({0, 1, 2}, idx));
 
     if (m_enforce_gamma_point) {
-      Vec3 frac_centroid = to_fractional(m.centroid());
+      Vec3 frac_centroid = clean_small_values(to_fractional(m.centroid()));
       IVec3 centroid_shift;
       centroid_shift[0] = -std::floor(frac_centroid[0]);
       centroid_shift[1] = -std::floor(frac_centroid[1]);
       centroid_shift[2] = -std::floor(frac_centroid[2]);
-      occ::log::debug(
-          "Frac centroid before shift to gamma point: {}, shift = {}\n",
-          frac_centroid.transpose(), centroid_shift);
 
       if (centroid_shift.squaredNorm() > 0) {
+        occ::log::debug(
+            "Frac centroid before shift to gamma point: {}, shift = {}",
+            frac_centroid.transpose(), centroid_shift.transpose());
+
         // Apply shift to atomic positions
         Mat3N shifted_cart_pos = cart_pos({0, 1, 2}, idx);
         Vec3 centroid_shift_cart = to_cartesian(centroid_shift.cast<double>());
@@ -423,11 +428,12 @@ void Crystal::update_unit_cell_molecules() const {
 
         // Update unit cell shifts
         shift_hkl.colwise() += centroid_shift;
+
+        occ::log::debug(
+            "Frac centroid after shift to gamma point : {}",
+            (clean_small_values(to_fractional(m.centroid())).transpose()));
       }
     }
-
-    occ::log::debug("Frac centroid of molecule: {}\n",
-                    (to_fractional(m.centroid())).transpose());
 
     m.set_unit_cell_idx(Eigen::Map<const IVec>(idx.data(), idx.size()));
     m.set_unit_cell_shift(shift_hkl);
@@ -513,6 +519,8 @@ void Crystal::update_symmetry_unique_molecules() const {
       }
     }
   }
+
+  occ::core::label_molecules_by_chemical_formula(m_symmetry_unique_molecules);
   m_symmetry_unique_molecules_needs_update = false;
 }
 
