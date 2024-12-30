@@ -16,11 +16,11 @@ public:
                   .cast<float>();
     } else {
       layer = m_wfn.electron_density(pos.cast<double>()).cast<float>();
-    }
+   }
   }
 
   inline int num_calls() const { return m_num_calls; }
-  inline void set_orbital_index(int idx) { m_mo_index = idx; }
+  void set_orbital_index(int idx);
 
 private:
   mutable int m_num_calls{0};

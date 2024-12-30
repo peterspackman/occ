@@ -4,6 +4,16 @@
 
 namespace occ::main {
 
+struct OrbitalIndex {
+  enum class Reference { Absolute, HOMO, LUMO };
+
+  int offset{0};
+  Reference reference{Reference::Absolute};
+
+  int resolve(int nalpha, int nbeta) const;
+  std::string format() const;
+};
+
 struct IsosurfaceConfig {
   enum class Surface {
     PromoleculeDensity,
@@ -50,7 +60,8 @@ struct IsosurfaceConfig {
   std::string kind{"promolecule_density"};
   std::string output_template{"surface{}.ply"};
   std::vector<std::string> additional_properties{};
-  std::vector<int> orbital_indices{};
+  std::vector<OrbitalIndex> orbital_indices{};
+  std::string orbitals_input{"homo"};
 
   std::vector<Property> surface_properties() const;
   Surface surface_type() const;
@@ -60,8 +71,6 @@ struct IsosurfaceConfig {
   bool requires_wavefunction() const;
   bool have_environment_file() const;
 
-  // New helper methods
-  std::string format_output_filename(size_t index, std::optional<std::string> label = std::nullopt) const;
   bool has_multiple_outputs() const;
 };
 

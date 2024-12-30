@@ -6,7 +6,19 @@ namespace occ::isosurface {
 
 ElectronDensityFunctor::ElectronDensityFunctor(const occ::qm::Wavefunction &wfn,
                                                int mo_index)
-    : m_wfn(wfn), m_mo_index(mo_index) {}
+    : m_wfn(wfn) {
+  set_orbital_index(mo_index);
+}
+
+void ElectronDensityFunctor::set_orbital_index(int idx) {
+  m_mo_index = idx;
+  if (m_mo_index >= m_wfn.mo.n_ao) {
+    std::string desc = fmt::format(
+        "Invalid MO index in ElectronDensityFunctor: {} (have {} AOs)",
+        m_mo_index, m_wfn.mo.n_ao);
+    throw std::runtime_error(desc);
+  }
+}
 
 MCElectronDensityFunctor::MCElectronDensityFunctor(
     const occ::qm::Wavefunction &wfn, float sep, int mo_index)
