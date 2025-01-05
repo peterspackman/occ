@@ -403,9 +403,9 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
 
   occ::log::warn("Neighbors for asymmetric molecule {}", molname);
 
-  occ::log::warn("nn {:>3s} {:>7s} {:>7s} {:>20s} "
+  occ::log::warn("nn {:>3s} {:>5s} {:>5s} {:<28s} "
                  "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}",
-                 "id", "Rn", "Rc", "Symop", "E_crys", "ES_AB", "ES_BA", "E_S",
+                 "id", "Rn", "Rc", "Description", "E_crys", "ES_AB", "ES_BA", "E_S",
                  "E_nn", "E_int");
 
   occ::log::warn(std::string(91, '='));
@@ -422,7 +422,7 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
       surface_properties.total_solvation_energy * occ::units::AU_TO_KJ_PER_MOL;
 
   const std::string row_fmt_string =
-      " {} {:>3d} {:>7.2f} {:>7.2f} {:>20s} {: 7.2f} "
+      " {} {:>3d} {:>5.2f} {:>5.2f} {:<28s} {: 7.2f} "
       "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}";
 
   for (const auto &[dimer, unique_idx] : full_neighbors) {
@@ -434,7 +434,7 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
       continue;
     }
     const auto &solvent_neighbor_contribution = solvation_breakdown[j];
-    auto symmetry_string = crystal().dimer_symmetry_string(dimer);
+    auto dimer_name = dimer.name();
     double rn = dimer.nearest_distance();
     double rc = dimer.centroid_distance();
     double crystal_contribution = crystal_contributions[j].energy;
@@ -499,12 +499,12 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
 
     if (is_nearest_neighbor) {
       occ::log::warn(fmt::runtime(row_fmt_string), "|", unique_idx, rn, rc,
-                     symmetry_string, e.total_kjmol(), solvent_term.ab,
+                     dimer_name, e.total_kjmol(), solvent_term.ab,
                      solvent_term.ba, solvent_term.total, crystal_contribution,
                      interaction_energy);
     } else {
       occ::log::debug(fmt::runtime(row_fmt_string), " ", unique_idx, rn, rc,
-                      symmetry_string, e.total_kjmol(), solvent_term.ab,
+                      dimer_name, e.total_kjmol(), solvent_term.ab,
                       solvent_term.ba, solvent_term.total, crystal_contribution,
                       interaction_energy);
     }
@@ -716,7 +716,7 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
 
   occ::log::warn("Neighbors for asymmetric molecule {}", molname);
 
-  occ::log::warn("nn {:>3s} {:>7s} {:>7s} {:>20s} "
+  occ::log::warn("nn {:>3s} {:>7s} {:>7s} {:>32s} "
                  "{:>7s} {:>7s} {:>7s} {:>7s}",
                  "id", "Rn", "Rc", "Symop", "E_crys", "E_solv", "E_nn",
                  "E_int");
@@ -725,7 +725,7 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
   size_t j = 0;
   for (const auto &[dimer, unique_idx] : full_neighbors) {
     double e = m_dimer_energies[unique_idx];
-    auto symmetry_string = m_crystal.dimer_symmetry_string(dimer);
+    auto dimer_name = dimer.name();
     double rn = dimer.nearest_distance();
     double rc = dimer.centroid_distance();
     double crystal_contribution = crystal_contributions[j].energy;
@@ -761,16 +761,15 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     }
 
     if (is_nearest_neighbor) {
-      occ::log::warn(" {} {:>3d} {: 7.2f} {: 7.2f} {:>20s} {: 7.2f} {: 7.2f} "
+      occ::log::warn(" {} {:>3d} {: 7.2f} {: 7.2f} {:>32s} {: 7.2f} {: 7.2f} "
                      "{: 7.2f} {: 8.2f}",
-                     '|', unique_idx, rn, rc, symmetry_string, e,
-                     solvent_term.total, crystal_contribution,
-                     interaction_energy);
+                     '|', unique_idx, rn, rc, dimer_name, e, solvent_term.total,
+                     crystal_contribution, interaction_energy);
 
     } else {
       occ::log::debug(" {} {:>3d} {: 7.2f} {: 7.2f} {:>20s} {: 7.2f} {: "
                       "7.2f} {: 7.2f} {: 8.2f}",
-                      ' ', unique_idx, rn, rc, symmetry_string, e,
+                      ' ', unique_idx, rn, rc, dimer_name, e,
                       solvent_term.total, crystal_contribution,
                       interaction_energy);
     }

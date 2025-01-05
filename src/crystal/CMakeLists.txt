@@ -1,6 +1,7 @@
 add_library(occ_crystal
     "${CMAKE_CURRENT_SOURCE_DIR}/asymmetric_unit.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dimer_labeller.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dimer_mapping_table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hkl.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/muldin.cpp"

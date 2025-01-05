@@ -14,6 +14,7 @@
 #include <occ/crystal/surface.h>
 #include <occ/crystal/symmetryoperation.h>
 
+using occ::IVec3;
 using occ::Mat3N;
 using occ::MatN3;
 using occ::Vec3;
@@ -1249,5 +1250,40 @@ TEST_CASE("Ibuprofen dimer generation debug", "[crystal][ibuprofen]") {
 
     REQUIRE(dimers_without.unique_dimers.size() ==
             dimers_with.unique_dimers.size());
+  }
+}
+
+TEST_CASE("Cell shift computation", "[crystal]") {
+  SECTION("simple positive differences") {
+    Vec3 uc_center(1.7, 0.2, 0.8);
+    Vec3 asym_center(0.0, 0.0, 0.0);
+    SymmetryOperation identity("x,y,z");
+    IVec3 shift = Crystal::compute_cell_shift(uc_center, asym_center, identity);
+    REQUIRE(shift(0) == 2);
+    REQUIRE(shift(1) == 0);
+    REQUIRE(shift(2) == 1);
+  }
+
+  SECTION("simple negative differences") {
+    Vec3 uc_center(-1.7, -0.2, -0.8);
+    Vec3 asym_center(0.0, 0.0, 0.0);
+    SymmetryOperation identity("x,y,z");
+    IVec3 shift = Crystal::compute_cell_shift(uc_center, asym_center, identity);
+    REQUIRE(shift(0) == -2);
+    REQUIRE(shift(1) == 0);
+    REQUIRE(shift(2) == -1);
+  }
+
+  SECTION("mixed positive/negative with symmetry") {
+    Crystal crystal = acetic_acid_crystal();
+    const auto &uc_mols = crystal.unit_cell_molecules();
+    const auto &asym_mols = crystal.symmetry_unique_molecules();
+    const auto &uc_mol = uc_mols[2];
+    Vec3 uc_center = crystal.to_fractional(uc_mol.centroid());
+    Vec3 asym_center = crystal.to_fractional(
+        asym_mols[uc_mol.asymmetric_molecule_idx()].centroid());
+    SymmetryOperation symop(uc_mol.asymmetric_unit_symop()(0));
+    IVec3 shift = Crystal::compute_cell_shift(uc_center, asym_center, symop);
+    REQUIRE(shift == uc_mol.cell_shift());
   }
 }

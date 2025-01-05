@@ -1,11 +1,19 @@
-#include <iostream>
 #include <occ/core/element.h>
 #include <occ/core/kdtree.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
+#include <occ/crystal/dimer_labeller.h>
 
 namespace occ::crystal {
+
+IVec3 Crystal::compute_cell_shift(const Vec3 &dest, const Vec3 &source,
+                                  const SymmetryOperation &source_symop) {
+  Vec3 diff = dest - source_symop.apply(source);
+  return (diff.array() > 0)
+      .select((diff + Vec3(0.5, 0.5, 0.5)).cast<int>(),
+              (diff - Vec3(0.5, 0.5, 0.5)).cast<int>());
+}
 
 // Atom Slab
 const CrystalAtomRegion &Crystal::unit_cell_atoms() const {
@@ -338,8 +346,10 @@ void Crystal::update_unit_cell_connectivity() const {
 }
 
 const std::vector<occ::core::Molecule> &Crystal::unit_cell_molecules() const {
-  if (m_unit_cell_molecules_needs_update)
+  if (m_unit_cell_molecules_needs_update) {
     update_unit_cell_molecules();
+    update_symmetry_unique_molecules();
+  }
   return m_unit_cell_molecules;
 }
 
@@ -508,19 +518,30 @@ void Crystal::update_symmetry_unique_molecules() const {
       continue;
     const auto uc_mol_asym = uc_mol.asymmetric_unit_idx();
     const auto uc_mol_size = uc_mol.size();
+    Vec3 uc_center = to_fractional(uc_mol.centroid());
+    auto uc_symop = SymmetryOperation(uc_mol.asymmetric_unit_symop()(0));
     for (const auto &asym_mol : m_symmetry_unique_molecules) {
+      Vec3 asym_center = to_fractional(asym_mol.centroid());
       const auto asym_mol_size = asym_mol.size();
       if (asym_mol_size != uc_mol_size)
         continue;
       const auto asym_mol_asym = asym_mol.asymmetric_unit_idx();
       if ((uc_mol_asym.array() == asym_mol_asym.array()).all()) {
         uc_mol.set_asymmetric_molecule_idx(asym_mol.asymmetric_molecule_idx());
+        Vec3 diff = uc_center - uc_symop.apply(asym_center);
+        uc_mol.set_cell_shift(
+            compute_cell_shift(uc_center, asym_center, uc_symop));
         break;
       }
     }
   }
 
   occ::core::label_molecules_by_chemical_formula(m_symmetry_unique_molecules);
+  for (auto &mol : m_unit_cell_molecules) {
+    // TODO set symop that generates it
+    mol.set_name(
+        m_symmetry_unique_molecules[mol.asymmetric_molecule_idx()].name());
+  }
   m_symmetry_unique_molecules_needs_update = false;
 }
 
@@ -566,12 +587,11 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
           int asym_idx_a = asym_mol.asymmetric_molecule_idx();
           for (const auto &uc_mol : uc_mols) {
             auto mol_translated = uc_mol.translated(cart_shift);
-            mol_translated.set_cell_shift({h, k, l});
+            mol_translated.set_cell_shift(IVec3{h, k, l} + uc_mol.cell_shift());
             double distance =
                 std::get<2>(asym_mol.nearest_atom(mol_translated));
             if ((distance < radius) && (distance > 1e-1)) {
               Dimer d(asym_mol, mol_translated);
-              d.set_name(dimer_symmetry_string(d));
               mol_nbs[asym_idx_a].push_back({d, -1});
               if (std::any_of(dimers.begin(), dimers.end(),
                               [&d](const Dimer &d2) { return d == d2; }))
@@ -594,12 +614,20 @@ CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {
   };
 
   std::stable_sort(dimers.begin(), dimers.end(), dimer_sort_func);
+
+  // Label the unique dimers after sorting
+  auto labeller = SymmetryDimerLabeller(*this);
+  for (auto &dimer : dimers) {
+    dimer.set_name(labeller(dimer));
+  }
+
   for (auto &vec : mol_nbs) {
     std::stable_sort(vec.begin(), vec.end(), sort_func);
     for (auto &d : vec) {
       size_t idx = std::distance(
           dimers.begin(), std::find(dimers.begin(), dimers.end(), d.dimer));
       d.unique_index = idx;
+      d.dimer.set_name(labeller(d.dimer));
     }
   }
   return result;
@@ -650,11 +678,11 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
         for (const auto &uc_mol1 : uc_mols) {
           for (const auto &uc_mol2 : uc_mols) {
             auto mol_translated = uc_mol2.translated(cart_shift);
-            mol_translated.set_cell_shift({h, k, l});
+            mol_translated.set_cell_shift(IVec3{h, k, l} +
+                                          uc_mol2.cell_shift());
             double distance = std::get<2>(uc_mol1.nearest_atom(mol_translated));
             if ((distance < radius) && (distance > 1e-1)) {
               Dimer d(uc_mol1, mol_translated);
-              d.set_name(dimer_symmetry_string(d));
               mol_nbs[uc_idx_a].push_back({d, -1});
               if (std::any_of(dimers.begin(), dimers.end(),
                               [&d](const Dimer &d2) { return d == d2; }))
@@ -679,12 +707,18 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
 
   std::stable_sort(dimers.begin(), dimers.end(), dimer_sort_func);
 
+  auto labeller = SymmetryDimerLabeller(*this);
+  for (auto &dimer : dimers) {
+    dimer.set_name(labeller(dimer));
+  }
+
   for (auto &vec : mol_nbs) {
     std::stable_sort(vec.begin(), vec.end(), sort_func);
     for (auto &d : vec) {
       size_t idx = std::distance(
           dimers.begin(), std::find(dimers.begin(), dimers.end(), d.dimer));
       d.unique_index = idx;
+      d.dimer.set_name(labeller(d.dimer));
     }
   }
   return result;
