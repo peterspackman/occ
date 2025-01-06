@@ -159,8 +159,9 @@ void InteractionMapper::log_neighbor_info(size_t mol_idx,
 
 void InteractionMapper::log_dimer_info(size_t neighbor_idx,
                                        const Dimer &dimer) const {
-  auto shift_b = dimer.b().cell_shift();
+  const auto& uc_mols = m_crystal.unit_cell_molecules();
   auto idx_b = dimer.b().unit_cell_molecule_idx();
+  auto shift_b = dimer.b().cell_shift() - uc_mols[idx_b].cell_shift();
   double rc = dimer.centroid_distance();
 
   occ::log::debug("{:<7d} {:>7d} {:>10s} {:7.2f} {:7.3f}", neighbor_idx, idx_b,

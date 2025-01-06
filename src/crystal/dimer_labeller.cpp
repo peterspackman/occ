@@ -3,12 +3,7 @@
 namespace occ::crystal {
 
 std::string SymmetryDimerLabeller::format_symop_with_translation(
-    const SymmetryOperation &symop, const IVec3 &translation) {
-  SymmetryOperationFormat format{
-      "{:>6s}", // fmt string
-      ","       // delimiter
-  };
-
+    const SymmetryOperation &symop, const IVec3 &translation) const {
   auto s = symop.translated(translation.cast<double>());
   return s.to_string(format);
 }
@@ -16,10 +11,10 @@ std::string SymmetryDimerLabeller::format_symop_with_translation(
 std::string
 SymmetryDimerLabeller::format_molecule_part(const std::string &name,
                                             const SymmetryOperation &symop,
-                                            const IVec3 &translation) {
+                                            const IVec3 &translation) const {
   if (symop.is_identity() && translation.isZero())
     return name;
-  return fmt::format("{}[{}]", name,
+  return fmt::format("{}({})", name,
                      format_symop_with_translation(symop, translation));
 }
 

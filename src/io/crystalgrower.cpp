@@ -3,6 +3,7 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
+#include <occ/crystal/dimer_labeller.h>
 #include <occ/io/crystalgrower.h>
 #include <string>
 
@@ -33,19 +34,24 @@ void StructureWriter::write(const Crystal &crystal,
   fmt::print(m_dest, "{}\n\n", "title");
   const auto &uc_molecules = crystal.unit_cell_molecules();
   fmt::print(m_dest, "{}\n\n", uc_molecules.size());
+
+  const auto &uc_mols = crystal.unit_cell_molecules();
   CrystalDimers uc_dimers_copy = uc_dimers;
   sort_neighbors(uc_dimers_copy);
+
   const auto &neighbors = uc_dimers_copy.molecule_neighbors;
   size_t uc_idx = 0;
   for (const auto &mol : uc_molecules) {
     size_t num_neighbors = neighbors[uc_idx].size();
-    fmt::print(m_dest, "{} {} (1,0) {}\n\n", mol.name(),
+    fmt::print(m_dest, "{} {} (1,0) {}\n\n",
+               core::chemical_formula(mol.elements()),
                mol.unit_cell_molecule_idx() + 1, num_neighbors);
     for (const auto &[n, unique_index] : neighbors[uc_idx]) {
-      const auto uc_shift = n.b().cell_shift();
-      const auto uc_idx_b = n.b().unit_cell_molecule_idx() + 1;
-      fmt::print(m_dest, "{}({},{},{}) ", uc_idx_b, uc_shift[0], uc_shift[1],
-                 uc_shift[2]);
+      const auto &b = n.b();
+      const auto uc_idx_b = b.unit_cell_molecule_idx() + 1;
+      const auto uc_shift = b.cell_shift() - uc_mols[uc_idx_b - 1].cell_shift();
+      fmt::print(m_dest, "{}({},{},{}) ", uc_idx_b, uc_shift.x(), uc_shift.y(),
+                 uc_shift.z());
     }
     fmt::print(m_dest, "\n\nX 0[0]\n\n");
 
@@ -138,6 +144,10 @@ void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
   sort_neighbors(uc_dimers_copy);
   const auto &neighbors = uc_dimers_copy.molecule_neighbors;
 
+  auto dimer_labeller = crystal::SymmetryDimerLabeller(crystal);
+  dimer_labeller.connection = "-";
+  dimer_labeller.format.fmt_string = "{}";
+
   size_t uc_idx = 0;
   constexpr double max_de = 1e-4;
 
@@ -184,10 +194,9 @@ void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
 
       auto dimer_name = get_asymmetric_dimer_name(n);
 
-      fmt::print(m_dest, "{}:[{}{}][{}-{}]({},{},{}) {} R={:.3f}\n",
-                 interaction_idx, formula_index.count, formula_index.letter,
-                 n.a().name(), n.b().name(), uc_shift[0], uc_shift[1],
-                 uc_shift[2], dimer_name, n.centroid_distance());
+      fmt::print(m_dest, "{}:[{}{}][{}] {} R={:.3f}\n", interaction_idx,
+                 formula_index.count, formula_index.letter, dimer_labeller(n),
+                 dimer_name, n.centroid_distance());
     }
     for (double e : unique_interaction_energies) {
       fmt::print(m_dest, "{:7.3f}\n", e * occ::units::KJ_TO_KCAL);

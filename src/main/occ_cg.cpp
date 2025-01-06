@@ -239,55 +239,6 @@ void write_cg_dimers(const occ::driver::CrystalGrowthCalculatorOptions &opts,
   dest << j.dump(2);
 }
 
-void write_uc_json(const std::string &basename, const std::string &solvent,
-                   const occ::crystal::Crystal &crystal,
-                   const occ::crystal::CrystalDimers &dimers) {
-  nlohmann::json j;
-  j["result_type"] = "cg";
-  j["title"] = basename;
-  const auto &uc_molecules = crystal.unit_cell_molecules();
-  j["unique_sites"] = uc_molecules.size();
-  const auto &neighbors = dimers.molecule_neighbors;
-  nlohmann::json molecules_json;
-  molecules_json["kind"] = "atoms";
-  j["lattice_vectors"] = crystal.unit_cell().direct();
-  molecules_json["elements"] = {};
-  molecules_json["positions"] = {};
-  j["neighbor_offsets"] = {};
-  size_t uc_idx_a = 0;
-  j["neighbor_energies"] = {};
-  j["neighbor_direction_correlations"] = {};
-  for (const auto &mol : uc_molecules) {
-    nlohmann::json molj = mol;
-    molecules_json["elements"].push_back(molj["elements"]);
-    molecules_json["positions"].push_back(molj["positions"]);
-    j["neighbor_energies"].push_back(nlohmann::json::array({}));
-    std::vector<std::vector<int>> shifts;
-    for (const auto &[n, unique_idx] : neighbors[uc_idx_a]) {
-      const auto uc_shift = n.b().cell_shift();
-      const auto uc_idx_b = n.b().unit_cell_molecule_idx();
-      shifts.push_back({uc_shift[0], uc_shift[1], uc_shift[2], uc_idx_b});
-    }
-    j["neighbor_offsets"][uc_idx_a] = shifts;
-    const auto &neighbors_a = neighbors[uc_idx_a];
-    for (const auto &[n, unique_idx] : neighbors_a) {
-      nlohmann::json energies;
-      for (const auto &[k, v] : n.interaction_energies()) {
-        energies[k] = v;
-      }
-      j["neighbor_energies"][uc_idx_a].push_back(energies);
-    }
-    auto corr = calculate_directional_correlation_matrix(neighbors[uc_idx_a]);
-    j["neighbor_direction_correlations"].push_back(corr);
-    uc_idx_a++;
-  }
-  j["molecules"] = molecules_json;
-
-  std::ofstream dest(
-      fmt::format("{}_{}_uc_interactions.json", basename, solvent));
-  dest << j.dump(2);
-}
-
 template <class Calculator>
 occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   std::string basename =
@@ -388,8 +339,6 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   }
 
   write_cg_dimers(opts, calc.crystal(), result);
-  write_uc_json(basename, config.solvent, calc.crystal(), uc_dimers);
-
   write_cg_net_file(fmt::format("{}_{}_net.txt", basename, config.solvent),
                     calc.crystal(), uc_dimers);
 
