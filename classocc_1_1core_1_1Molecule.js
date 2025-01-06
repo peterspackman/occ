@@ -51,7 +51,7 @@ var classocc_1_1core_1_1Molecule =
     [ "set_asymmetric_unit_symop", "classocc_1_1core_1_1Molecule.html#a15770d2a798f3999b4051904c0715178", null ],
     [ "set_asymmetric_unit_transformation", "classocc_1_1core_1_1Molecule.html#afeb07fa6ed184313cca484c07f1965cc", null ],
     [ "set_bonds", "classocc_1_1core_1_1Molecule.html#af3c830e1874223f520a2d4dd6856767c", null ],
-    [ "set_cell_shift", "classocc_1_1core_1_1Molecule.html#a39048da6bf383e723e58dc8dd6d0b27e", null ],
+    [ "set_cell_shift", "classocc_1_1core_1_1Molecule.html#ab38fd08ea1bd76b798d20f616da608a2", null ],
     [ "set_charge", "classocc_1_1core_1_1Molecule.html#a6db76f2ee69b21df4389dbf572e7ae64", null ],
     [ "set_multiplicity", "classocc_1_1core_1_1Molecule.html#a20ccb2353b97c739c4099c11e0238a1b", null ],
     [ "set_name", "classocc_1_1core_1_1Molecule.html#af30a3010257f85cb70a3858901ef155c", null ],

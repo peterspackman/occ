@@ -68,7 +68,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "",
-"classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da6c2d48822f51238ae93fa27d054764d4",
+"classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da795677a5adbe34164848fd04fc280f18",
 "classocc_1_1dft_1_1DFT.html#a59e99350356124aac0c2535fa7133492",
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba883ebb74b7f5d386435069ce4f1b10d1",
 "classocc_1_1geometry_1_1WulffConstruction.html",

@@ -165,9 +165,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a93f7a741a4de2781cb26095165559a9f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">core::Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a93f7a741a4de2781cb26095165559a9f">atoms</a> () const</td></tr>
 <tr class="memdesc:a93f7a741a4de2781cb26095165559a9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert the atoms represented by this molecule to a std:vector&lt;Atom&gt;  <a href="classocc_1_1core_1_1Molecule.html#a93f7a741a4de2781cb26095165559a9f">More...</a><br /></td></tr>
 <tr class="separator:a93f7a741a4de2781cb26095165559a9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39048da6bf383e723e58dc8dd6d0b27e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a39048da6bf383e723e58dc8dd6d0b27e">set_cell_shift</a> (const <a class="el" href="namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3">IVec3</a> &amp;shift)</td></tr>
-<tr class="memdesc:a39048da6bf383e723e58dc8dd6d0b27e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the unit cell offset for this <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> (default 000)  <a href="classocc_1_1core_1_1Molecule.html#a39048da6bf383e723e58dc8dd6d0b27e">More...</a><br /></td></tr>
-<tr class="separator:a39048da6bf383e723e58dc8dd6d0b27e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab38fd08ea1bd76b798d20f616da608a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#ab38fd08ea1bd76b798d20f616da608a2">set_cell_shift</a> (const <a class="el" href="namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3">IVec3</a> &amp;shift, bool update_atoms=true)</td></tr>
+<tr class="memdesc:ab38fd08ea1bd76b798d20f616da608a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the unit cell offset for this <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> (default 000)  <a href="classocc_1_1core_1_1Molecule.html#ab38fd08ea1bd76b798d20f616da608a2">More...</a><br /></td></tr>
+<tr class="separator:ab38fd08ea1bd76b798d20f616da608a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58efc833193cdeb25e25cf4c83d8960e"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3">IVec3</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a58efc833193cdeb25e25cf4c83d8960e">cell_shift</a> () const</td></tr>
 <tr class="memdesc:a58efc833193cdeb25e25cf4c83d8960e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the unit cell offset for this <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> (default 000)  <a href="classocc_1_1core_1_1Molecule.html#a58efc833193cdeb25e25cf4c83d8960e">More...</a><br /></td></tr>
 <tr class="separator:a58efc833193cdeb25e25cf4c83d8960e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -796,7 +796,7 @@ template&lt;typename N , typename D &gt; </div>
 
 <p>Get the unit cell offset for this <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> (default 000) </p>
 <dl class="section return"><dt>Returns</dt><dd>the CellShift stored in this <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a></dd></dl>
-<p>See <a class="el" href="classocc_1_1core_1_1Molecule.html#a39048da6bf383e723e58dc8dd6d0b27e" title="Set the unit cell offset for this Molecule (default 000)">Molecule::set_cell_shift</a> </p>
+<p>See <a class="el" href="classocc_1_1core_1_1Molecule.html#ab38fd08ea1bd76b798d20f616da608a2" title="Set the unit cell offset for this Molecule (default 000)">Molecule::set_cell_shift</a> </p>
 
 </div>
 </div>
@@ -1708,8 +1708,8 @@ template&lt;typename N , typename D &gt; </div>
 
 </div>
 </div>
-<a id="a39048da6bf383e723e58dc8dd6d0b27e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a39048da6bf383e723e58dc8dd6d0b27e">&#9670;&nbsp;</a></span>set_cell_shift()</h2>
+<a id="ab38fd08ea1bd76b798d20f616da608a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab38fd08ea1bd76b798d20f616da608a2">&#9670;&nbsp;</a></span>set_cell_shift()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1718,8 +1718,18 @@ template&lt;typename N , typename D &gt; </div>
           <td class="memname">void occ::core::Molecule::set_cell_shift </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3">IVec3</a> &amp;&#160;</td>
-          <td class="paramname"><em>shift</em></td><td>)</td>
+          <td class="paramname"><em>shift</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>update_atoms</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1967,7 +1977,7 @@ template&lt;typename N , typename D &gt; </div>
   </table>
   </dd>
 </dl>
-<p>See also <a class="el" href="classocc_1_1core_1_1Molecule.html#a39048da6bf383e723e58dc8dd6d0b27e" title="Set the unit cell offset for this Molecule (default 000)">Molecule::set_cell_shift</a> if you wish to set the unit cell molecule shift rather than atom indices. </p>
+<p>See also <a class="el" href="classocc_1_1core_1_1Molecule.html#ab38fd08ea1bd76b798d20f616da608a2" title="Set the unit cell offset for this Molecule (default 000)">Molecule::set_cell_shift</a> if you wish to set the unit cell molecule shift rather than atom indices. </p>
 
 </div>
 </div>
