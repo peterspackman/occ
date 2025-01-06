@@ -11,6 +11,7 @@ add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gensqrtinv.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/kabsch.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/kalman_estimator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/inertia_tensor.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/log.cpp"

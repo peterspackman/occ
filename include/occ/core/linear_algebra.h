@@ -4,8 +4,8 @@
 #include <fmt/ostream.h>
 
 template <typename T>
-requires std::is_base_of_v<Eigen::DenseBase<T>, T> struct fmt::formatter<T>
-    : ostream_formatter {};
+  requires std::is_base_of_v<Eigen::DenseBase<T>, T>
+struct fmt::formatter<T> : ostream_formatter {};
 
 namespace occ {
 using DMatRM =
@@ -34,6 +34,7 @@ using Mat3NConstRef = Eigen::Ref<const Mat3N>;
 using MatN3 = Eigen::MatrixX3d;
 using MatN3ConstRef = Eigen::Ref<const MatN3>;
 using Mat3 = Eigen::Matrix3d;
+using Mat2 = Eigen::Matrix2d;
 using Mat3RM = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>;
 using Mat3ConstRef = Eigen::Ref<const Mat3>;
 using Mat4 = Eigen::Matrix4d;
@@ -65,6 +66,7 @@ using RowVec = Eigen::RowVectorXd;
 using Vec = Eigen::VectorXd;
 using RowVec3 = Eigen::RowVector3d;
 using Vec3 = Eigen::Vector3d;
+using Vec2 = Eigen::Vector2d;
 using RowVec4 = Eigen::RowVector4d;
 using Vec4 = Eigen::Vector4d;
 using Vec6 = Eigen::Matrix<double, 6, 1>;
@@ -82,13 +84,13 @@ using IVec3 = Eigen::Vector3i;
 
 struct MatTriple {
 
-    Mat x, y, z;
+  Mat x, y, z;
 
-    MatTriple operator+(const MatTriple &rhs) const;
-    MatTriple operator-(const MatTriple &rhs) const;
+  MatTriple operator+(const MatTriple &rhs) const;
+  MatTriple operator-(const MatTriple &rhs) const;
 
-    void scale_by(double fac);
-    void symmetrize();
+  void scale_by(double fac);
+  void symmetrize();
 };
 
 }; // namespace occ

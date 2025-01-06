@@ -403,12 +403,12 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
 
   occ::log::warn("Neighbors for asymmetric molecule {}", molname);
 
-  occ::log::warn("nn {:>3s} {:>5s} {:>5s} {:<24s} "
+  occ::log::warn("nn {:>3s} {:>5s} {:>5s} {:<28s} "
                  "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}",
                  "id", "Rn", "Rc", "Label", "E_crys", "ES_AB", "ES_BA", "E_S",
                  "E_nn", "E_int");
 
-  occ::log::warn(std::string(91, '='));
+  occ::log::warn(std::string(95, '='));
 
   size_t j = 0;
   cg::EnergyTotal total;
@@ -422,7 +422,7 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
       surface_properties.total_solvation_energy * occ::units::AU_TO_KJ_PER_MOL;
 
   const std::string row_fmt_string =
-      " {} {:>3d} {:>5.2f} {:>5.2f} {:<24s} {: 7.2f} "
+      " {} {:>3d} {:>5.2f} {:>5.2f} {:<28s} {: 7.2f} "
       "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}";
 
   for (const auto &[dimer, unique_idx] : full_neighbors) {
@@ -716,11 +716,11 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
 
   occ::log::warn("Neighbors for asymmetric molecule {}", molname);
 
-  occ::log::warn("nn {:>3s} {:>7s} {:>7s} {:<24s} "
+  occ::log::warn("nn {:>3s} {:>7s} {:>7s} {:<28s} "
                  "{:>7s} {:>7s} {:>7s} {:>7s}",
-                 "id", "Rn", "Rc", "Symop", "E_crys", "E_solv", "E_nn",
+                 "id", "Rn", "Rc", "Label", "E_crys", "E_solv", "E_nn",
                  "E_int");
-  occ::log::warn(std::string(79, '='));
+  occ::log::warn(std::string(83, '='));
 
   size_t j = 0;
   for (const auto &[dimer, unique_idx] : full_neighbors) {
@@ -761,13 +761,13 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     }
 
     if (is_nearest_neighbor) {
-      occ::log::warn(" {} {:>3d} {: 7.2f} {: 7.2f} {:<24s} {: 7.2f} {: 7.2f} "
+      occ::log::warn(" {} {:>3d} {: 7.2f} {: 7.2f} {:<28s} {: 7.2f} {: 7.2f} "
                      "{: 7.2f} {: 7.2f}",
                      '|', unique_idx, rn, rc, dimer_name, e, solvent_term.total,
                      crystal_contribution, interaction_energy);
 
     } else {
-      occ::log::debug(" {} {:>3d} {: 7.2f} {: 7.2f} {:<24s} {: 7.2f} {: "
+      occ::log::debug(" {} {:>3d} {: 7.2f} {: 7.2f} {:<28s} {: 7.2f} {: "
                       "7.2f} {: 7.2f} {: 7.2f}",
                       ' ', unique_idx, rn, rc, dimer_name, e,
                       solvent_term.total, crystal_contribution,
