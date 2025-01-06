@@ -192,6 +192,7 @@ var hierarchy =
     [ "occ::main::OccPairInput", "structocc_1_1main_1_1OccPairInput.html", null ],
     [ "occ::qm::Oniom< HighLevel, LowLevel >", "structocc_1_1qm_1_1Oniom.html", null ],
     [ "occ::qm::cint::Optimizer", "classocc_1_1qm_1_1cint_1_1Optimizer.html", null ],
+    [ "occ::main::OrbitalIndex", "structocc_1_1main_1_1OrbitalIndex.html", null ],
     [ "occ::qm::OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", null ],
     [ "occ::io::OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", null ],
     [ "ostream_formatter", null, [
@@ -271,7 +272,9 @@ var hierarchy =
     [ "occ::crystal::SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", null ],
     [ "occ::main::SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", null ],
     [ "occ::io::SymmetryData", "structocc_1_1io_1_1SymmetryData.html", null ],
+    [ "occ::crystal::SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", null ],
     [ "occ::crystal::SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", null ],
+    [ "occ::crystal::SymmetryOperationFormat", "structocc_1_1crystal_1_1SymmetryOperationFormat.html", null ],
     [ "occ::crystal::CrystalDimers::SymmetryRelatedDimer", "structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html", null ],
     [ "occ::core::SymOp", "structocc_1_1core_1_1SymOp.html", null ],
     [ "occ::io::Table", "classocc_1_1io_1_1Table.html", null ],

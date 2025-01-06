@@ -192,6 +192,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a4d4ea535cdfd79d7cbe3d98baf155972"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#a4d4ea535cdfd79d7cbe3d98baf155972">create_primitive_supercell</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> hkl)</td></tr>
 <tr class="memdesc:a4d4ea535cdfd79d7cbe3d98baf155972"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a primitive supercell from a crystal lattice.  <a href="classocc_1_1crystal_1_1Crystal.html#a4d4ea535cdfd79d7cbe3d98baf155972">More...</a><br /></td></tr>
 <tr class="separator:a4d4ea535cdfd79d7cbe3d98baf155972"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed5e05bde7fc6f3dca77c173007ab53e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3">IVec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#aed5e05bde7fc6f3dca77c173007ab53e">compute_cell_shift</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;to, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;from, const <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a> &amp;symop_from)</td></tr>
+<tr class="separator:aed5e05bde7fc6f3dca77c173007ab53e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A class representing a crystal structure. </p>
@@ -385,6 +387,48 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structocc_1_1crystal_1_1CrystalAtomRegion.html" title="A class representing a region of atoms in a crystal lattice.">CrystalAtomRegion</a></code> object containing the atoms within the specified radius of the specified atom. The <code><a class="el" href="structocc_1_1crystal_1_1CrystalAtomRegion.html" title="A class representing a region of atoms in a crystal lattice.">CrystalAtomRegion</a></code> class provides methods to access the positions, atomic numbers, and symmetry operations of the atoms in the region. </dd></dl>
+
+</div>
+</div>
+<a id="aed5e05bde7fc6f3dca77c173007ab53e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed5e05bde7fc6f3dca77c173007ab53e">&#9670;&nbsp;</a></span>compute_cell_shift()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3">IVec3</a> occ::crystal::Crystal::compute_cell_shift </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>to</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a> &amp;&#160;</td>
+          <td class="paramname"><em>symop_from</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

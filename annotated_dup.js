@@ -73,6 +73,7 @@ var annotated_dup =
         [ "CrystalAtomRegion", "structocc_1_1crystal_1_1CrystalAtomRegion.html", "structocc_1_1crystal_1_1CrystalAtomRegion" ],
         [ "CrystalDimers", "structocc_1_1crystal_1_1CrystalDimers.html", "structocc_1_1crystal_1_1CrystalDimers" ],
         [ "Crystal", "classocc_1_1crystal_1_1Crystal.html", "classocc_1_1crystal_1_1Crystal" ],
+        [ "SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", "structocc_1_1crystal_1_1SymmetryDimerLabeller" ],
         [ "DimerIndex", "structocc_1_1crystal_1_1DimerIndex.html", "structocc_1_1crystal_1_1DimerIndex" ],
         [ "DimerIndexHash", "structocc_1_1crystal_1_1DimerIndexHash.html", "structocc_1_1crystal_1_1DimerIndexHash" ],
         [ "DimerMappingEdge", "structocc_1_1crystal_1_1DimerMappingEdge.html", "structocc_1_1crystal_1_1DimerMappingEdge" ],
@@ -89,6 +90,7 @@ var annotated_dup =
         [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],
         [ "Surface", "classocc_1_1crystal_1_1Surface.html", "classocc_1_1crystal_1_1Surface" ],
         [ "CrystalSurfaceGenerationParameters", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters" ],
+        [ "SymmetryOperationFormat", "structocc_1_1crystal_1_1SymmetryOperationFormat.html", "structocc_1_1crystal_1_1SymmetryOperationFormat" ],
         [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],
         [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ]
       ] ],
@@ -247,6 +249,7 @@ var annotated_dup =
         [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
         [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
+        [ "OrbitalIndex", "structocc_1_1main_1_1OrbitalIndex.html", "structocc_1_1main_1_1OrbitalIndex" ],
         [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
         [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
         [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],

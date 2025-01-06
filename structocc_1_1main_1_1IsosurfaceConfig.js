@@ -28,7 +28,6 @@ var structocc_1_1main_1_1IsosurfaceConfig =
       [ "Orbital", "structocc_1_1main_1_1IsosurfaceConfig.html#a30f6a10307c455ced574d076fbdd4c5ea510b953097388490c29e4e4991fc369e", null ],
       [ "CrystalVoid", "structocc_1_1main_1_1IsosurfaceConfig.html#a30f6a10307c455ced574d076fbdd4c5ea952816358b862ae659756eaacb56a8cb", null ]
     ] ],
-    [ "format_output_filename", "structocc_1_1main_1_1IsosurfaceConfig.html#a892fdae67a7ae2be2a80d0a0a43bdad4", null ],
     [ "has_multiple_outputs", "structocc_1_1main_1_1IsosurfaceConfig.html#aee06bff586eceb41ca17699075abb610", null ],
     [ "have_environment_file", "structocc_1_1main_1_1IsosurfaceConfig.html#a879cad66fa499cff4b0322b09a2ab8fa", null ],
     [ "requires_crystal", "structocc_1_1main_1_1IsosurfaceConfig.html#a4190bb1af0b994a919d2fae9d512870c", null ],
@@ -45,7 +44,8 @@ var structocc_1_1main_1_1IsosurfaceConfig =
     [ "kind", "structocc_1_1main_1_1IsosurfaceConfig.html#a2546771f14c7f2fa652c4739a52dbd3d", null ],
     [ "max_depth", "structocc_1_1main_1_1IsosurfaceConfig.html#abf39098935613cd5bcbc202b79922041", null ],
     [ "orbital_index", "structocc_1_1main_1_1IsosurfaceConfig.html#a03cd4a7907477d2b1ea6345da4b766cd", null ],
-    [ "orbital_indices", "structocc_1_1main_1_1IsosurfaceConfig.html#ae8ca6db320172fdcd611d1607764a51e", null ],
+    [ "orbital_indices", "structocc_1_1main_1_1IsosurfaceConfig.html#a4c7a1160b9158fcf85ae8b5f8278f29e", null ],
+    [ "orbitals_input", "structocc_1_1main_1_1IsosurfaceConfig.html#a02d8e3626d22e4303fa84a1c09a56b0c", null ],
     [ "output_template", "structocc_1_1main_1_1IsosurfaceConfig.html#a110865256ab58bb4d42bbdd1af8d3817", null ],
     [ "separation", "structocc_1_1main_1_1IsosurfaceConfig.html#a17909a41863a0ef9ff3e8de68b5e7441", null ],
     [ "use_hashed_mc", "structocc_1_1main_1_1IsosurfaceConfig.html#a423a2bb9f53e953a763de2ef0ff1ae80", null ],

@@ -1,9 +1,0 @@
-<map id="occ::main::PairEnergy::Monomer" name="occ::main::PairEnergy::Monomer">
-<area shape="rect" id="node1" title=" " alt="" coords="282,303,445,344"/>
-<area shape="rect" id="node2" href="$structocc_1_1qm_1_1Wavefunction.html" title=" " alt="" coords="278,213,449,240"/>
-<area shape="rect" id="node3" href="$structocc_1_1qm_1_1Energy.html" title=" " alt="" coords="5,124,132,151"/>
-<area shape="rect" id="node4" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="156,124,352,151"/>
-<area shape="rect" id="node5" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="135,5,322,32"/>
-<area shape="rect" id="node6" title=" " alt="" coords="359,5,419,32"/>
-<area shape="rect" id="node7" href="$classocc_1_1qm_1_1AOBasis.html" title=" " alt="" coords="451,124,585,151"/>
-</map>

@@ -9,6 +9,9 @@ var dir_bec6bcb3c01ec3c822e3b662edd85aad =
       [ "SymmetryRelatedDimer", "structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html", "structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer" ],
       [ "Crystal", "classocc_1_1crystal_1_1Crystal.html", "classocc_1_1crystal_1_1Crystal" ]
     ] ],
+    [ "dimer_labeller.h", "dimer__labeller_8h.html", [
+      [ "SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", "structocc_1_1crystal_1_1SymmetryDimerLabeller" ]
+    ] ],
     [ "dimer_mapping_table.h", "dimer__mapping__table_8h.html", "dimer__mapping__table_8h" ],
     [ "hkl.h", "hkl_8h.html", [
       [ "HKL", "structocc_1_1crystal_1_1HKL.html", "structocc_1_1crystal_1_1HKL" ],
@@ -23,6 +26,7 @@ var dir_bec6bcb3c01ec3c822e3b662edd85aad =
     [ "spacegroup.h", "spacegroup_8h.html", "spacegroup_8h" ],
     [ "surface.h", "crystal_2surface_8h.html", "crystal_2surface_8h" ],
     [ "symmetryoperation.h", "symmetryoperation_8h.html", [
+      [ "SymmetryOperationFormat", "structocc_1_1crystal_1_1SymmetryOperationFormat.html", "structocc_1_1crystal_1_1SymmetryOperationFormat" ],
       [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ]
     ] ],
     [ "unitcell.h", "unitcell_8h.html", "unitcell_8h" ]
