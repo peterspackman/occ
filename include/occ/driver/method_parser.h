@@ -14,7 +14,7 @@ inline qm::SpinorbitalKind determine_spinorbital_kind(const std::string &name,
                                                       MethodKind method_kind) {
   auto lc = occ::util::to_lower_copy(name);
   switch (method_kind) {
-  case MethodKind::HF: {
+  default: { // default to HartreeFock
     if (lc[0] == 'g')
       return qm::SpinorbitalKind::General;
     else if (lc[0] == 'u' || multiplicity > 1)

@@ -24,9 +24,9 @@ int IcosphereMesh::add_vertex(const Vec3 &p) {
 
 int IcosphereMesh::add_midpoint(size_t p1, size_t p2) {
   int64_t l = std::min(p1, p2);
-  int64_t  u = std::max(p1, p2);
+  int64_t u = std::max(p1, p2);
   // assume that we won't have more than 2^32 points...
-  int64_t  key = (l << 32) + u;
+  int64_t key = (l << 32) + u;
 
   auto it = midpoint_cache.find(key);
   if (it != midpoint_cache.end()) {
@@ -80,7 +80,7 @@ IcosphereMesh::IcosphereMesh(size_t subdivisions) {
     size_t new_face_index = 0;
     for (size_t f = 0; f < m_faces.cols(); f++) {
       IVec3 tri = m_faces.col(f);
-      size_t a = tri[0], b = tri[1], c = tri[2];
+      int a = tri[0], b = tri[1], c = tri[2];
       int ab = add_midpoint(a, b);
       int bc = add_midpoint(b, c);
       int ca = add_midpoint(c, a);

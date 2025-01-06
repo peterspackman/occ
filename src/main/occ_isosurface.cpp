@@ -62,6 +62,8 @@ std::string to_string(IsosurfaceConfig::Property prop) {
     return "orbital_density";
   case IsosurfaceConfig::Property::SpinDensity:
     return "spin_density";
+  default:
+    return "unknown_property";
   }
 }
 
@@ -85,6 +87,8 @@ std::string to_string(IsosurfaceConfig::Surface surface) {
     return "spin_density";
   case IsosurfaceConfig::Surface::CrystalVoid:
     return "void";
+  default:
+    return "unknown_surface";
   }
 }
 
