@@ -530,7 +530,7 @@ void Crystal::update_symmetry_unique_molecules() const {
         uc_mol.set_asymmetric_molecule_idx(asym_mol.asymmetric_molecule_idx());
         Vec3 diff = uc_center - uc_symop.apply(asym_center);
         uc_mol.set_cell_shift(
-            compute_cell_shift(uc_center, asym_center, uc_symop));
+            compute_cell_shift(uc_center, asym_center, uc_symop), false);
         break;
       }
     }

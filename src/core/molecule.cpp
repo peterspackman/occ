@@ -294,10 +294,10 @@ void Molecule::set_asymmetric_unit_symop(const IVec &symop) {
   m_asym_symop = symop;
 }
 
-void Molecule::set_cell_shift(const IVec3 &shift) {
+void Molecule::set_cell_shift(const IVec3 &shift, bool update_atoms) {
   IVec3 diff = shift - m_cell_shift;
   m_cell_shift = shift;
-  if (m_uc_shifts.size() > 0) {
+  if (update_atoms && (m_uc_shifts.size() > 0)) {
     m_uc_shifts.colwise() += diff;
   }
 }

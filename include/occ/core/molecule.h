@@ -207,7 +207,7 @@ public:
    *
    * See Molecule::cell_shift
    */
-  void set_cell_shift(const IVec3 &shift);
+  void set_cell_shift(const IVec3 &shift, bool update_atoms = true);
 
   /**
    * Get the unit cell offset for this Molecule (default 000)
