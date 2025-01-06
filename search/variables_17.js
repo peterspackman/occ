@@ -1,20 +1,16 @@
 var searchData=
 [
-  ['x_5450',['x',['../structocc_1_1MatTriple.html#af1a59f4569695984baa61a00ca5e71dc',1,'occ::MatTriple::x()'],['../structocc_1_1geometry_1_1MIndex_1_1Position.html#a044ef3191f2c9a6713fa7f8abbd205ed',1,'occ::geometry::MIndex::Position::x()'],['../structocc_1_1io_1_1AtomData.html#a9513ae6c202458b8994f13e0c21d174c',1,'occ::io::AtomData::x()']]],
-  ['x_5451',['X',['../structocc_1_1scf_1_1SCF.html#ab0d3d895f7b127606e4fe48509b7b63d',1,'occ::scf::SCF']]],
-  ['x_5452',['x',['../structocc_1_1core_1_1Atom.html#aa292688d9909d939aff54d40f3dd6ab8',1,'occ::core::Atom']]],
-  ['xa_5453',['xa',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#ad91fe5d4f71afca2fccb853378a7782a',1,'occ::core::opt::Bracket1D']]],
-  ['xb_5454',['xb',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#af2ba1af118422ae3dc55a09aa8644223',1,'occ::core::opt::Bracket1D']]],
-  ['xc_5455',['xc',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#aaf9dfc19de0ae51deae06b605e579b8c',1,'occ::core::opt::Bracket1D']]],
-  ['xdm_5456',['xdm',['../structocc_1_1interaction_1_1CEParameterizedModel.html#af2b454a9827ba93f167efae3c3e495d3',1,'occ::interaction::CEParameterizedModel::xdm()'],['../structocc_1_1interaction_1_1CEMonomerCalculationParameters.html#ab55ebe661d3c9e9986d724667db187fa',1,'occ::interaction::CEMonomerCalculationParameters::xdm()']]],
-  ['xdm_5fa1_5457',['xdm_a1',['../structocc_1_1io_1_1DispersionCorrectionInput.html#a26a0b07e5fea1ee8a82010b2cebc73e7',1,'occ::io::DispersionCorrectionInput::xdm_a1()'],['../structocc_1_1interaction_1_1CEParameterizedModel.html#aa086a1dc4c47da207dd901889ffe05e9',1,'occ::interaction::CEParameterizedModel::xdm_a1()']]],
-  ['xdm_5fa2_5458',['xdm_a2',['../structocc_1_1interaction_1_1CEParameterizedModel.html#abc29fc22033011b7dfeff7fbe02b3b93',1,'occ::interaction::CEParameterizedModel::xdm_a2()'],['../structocc_1_1io_1_1DispersionCorrectionInput.html#ad0e4c4b708b9d5fae32f0b0414a5fed5',1,'occ::io::DispersionCorrectionInput::xdm_a2()']]],
-  ['xdm_5fenergy_5459',['xdm_energy',['../structocc_1_1qm_1_1Wavefunction.html#ac8c58f857497fa46557d6812aec31346',1,'occ::qm::Wavefunction']]],
-  ['xdm_5ffree_5fvolumes_5460',['xdm_free_volumes',['../structocc_1_1qm_1_1Wavefunction.html#a4bf4d041cd116f44076b95f63adfa1e0',1,'occ::qm::Wavefunction']]],
-  ['xdm_5fmoments_5461',['xdm_moments',['../structocc_1_1qm_1_1Wavefunction.html#a5df841fc2fffdab81434015d2be081b2',1,'occ::qm::Wavefunction']]],
-  ['xdm_5fpolarizabilities_5462',['xdm_polarizabilities',['../structocc_1_1qm_1_1Wavefunction.html#a5b3b64147fd6ae2fd88d8f0bab4493bf',1,'occ::qm::Wavefunction']]],
-  ['xdm_5fvolumes_5463',['xdm_volumes',['../structocc_1_1qm_1_1Wavefunction.html#aaf7128bc1ccbb72f1a7ca8d37a53129a',1,'occ::qm::Wavefunction']]],
-  ['xinv_5464',['Xinv',['../structocc_1_1scf_1_1SCF.html#ab54249dd1f13fadd3d01d108d46ae70f',1,'occ::scf::SCF']]],
-  ['xtb_5fsolvation_5fmodel_5465',['xtb_solvation_model',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#acc9345a3f29790b7bd452f95a1c66756',1,'occ::driver::CrystalGrowthCalculatorOptions::xtb_solvation_model()'],['../structocc_1_1main_1_1CGConfig.html#a8f8b28d0d3d9e32e19757d0177f42c90',1,'occ::main::CGConfig::xtb_solvation_model()']]],
-  ['xtx_5fcondition_5fnumber_5466',['XtX_condition_number',['../structocc_1_1scf_1_1SCF.html#af4933e6d285f8fb6f99f8f172b93eee3',1,'occ::scf::SCF']]]
+  ['wavefunction_5fchoice_5458',['wavefunction_choice',['../structocc_1_1main_1_1CGConfig.html#a4b25390f9a2d1cd157826818d99801ed',1,'occ::main::CGConfig::wavefunction_choice()'],['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a5760679b30588b899de05651c80915ff',1,'occ::driver::CrystalGrowthCalculatorOptions::wavefunction_choice()']]],
+  ['wavefunction_5ffilename_5459',['wavefunction_filename',['../structocc_1_1main_1_1IsosurfaceConfig.html#af5b2d438eb77cf730ee9fc60b90b8e08',1,'occ::main::IsosurfaceConfig']]],
+  ['wavefunctions_5460',['wavefunctions',['../structocc_1_1cg_1_1SMDCalculator_1_1Result.html#a10166353515646f11b0ce9c1f1fe2b17',1,'occ::cg::SMDCalculator::Result']]],
+  ['weights_5461',['weights',['../structocc_1_1dft_1_1AtomGrid.html#aa085f1b9f645b2ab72adcfbb818098cb',1,'occ::dft::AtomGrid::weights()'],['../structocc_1_1dft_1_1RadialGrid.html#a265a8e9304c1700c7132b56f4a350bad',1,'occ::dft::RadialGrid::weights()']]],
+  ['wfn_5462',['wfn',['../structocc_1_1main_1_1XCDensityFunctor.html#a5c16a849d21f49eb400b943f7263a2fa',1,'occ::main::XCDensityFunctor::wfn()'],['../structocc_1_1main_1_1ElectronDensityFunctor.html#a2a42bd9762d308dde5021ad0212e396b',1,'occ::main::ElectronDensityFunctor::wfn()'],['../structocc_1_1main_1_1EspFunctor.html#a327094ab34f3cb821d14881ddda704a6',1,'occ::main::EspFunctor::wfn()'],['../structocc_1_1interaction_1_1PairEnergy_1_1Monomer.html#a2c238e9713ceae587cbba68f1fc51435',1,'occ::interaction::PairEnergy::Monomer::wfn()']]],
+  ['wfn_5frotation_5463',['wfn_rotation',['../structocc_1_1main_1_1IsosurfaceConfig.html#a9b6e3f58e6569516515d8c77e07722dd',1,'occ::main::IsosurfaceConfig']]],
+  ['wfn_5ftranslation_5464',['wfn_translation',['../structocc_1_1main_1_1IsosurfaceConfig.html#a91585b7a3438f82e7a51bad29eb999f8',1,'occ::main::IsosurfaceConfig']]],
+  ['width_5465',['width',['../structocc_1_1io_1_1ColumnConfiguration.html#adc415c69232a6e3b14a1b3c438eb154f',1,'occ::io::ColumnConfiguration']]],
+  ['wolf_5fsum_5466',['wolf_sum',['../structocc_1_1interaction_1_1LatticeConvergenceSettings.html#ae7706adb9809f3f4273361d8569da3bd',1,'occ::interaction::LatticeConvergenceSettings']]],
+  ['word_5fsize_5467',['word_size',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html#a455e788bcc8463da34a9bcd7c4dc5eb5',1,'occ::core::numpy::NumpyArray']]],
+  ['write_5fdebug_5foutput_5ffiles_5468',['write_debug_output_files',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a7760b10637da3c750090de79e94b44c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
+  ['write_5fdump_5ffiles_5469',['write_dump_files',['../structocc_1_1main_1_1CGConfig.html#af034b76854f64d8bee7f39f1a5400f40',1,'occ::main::CGConfig']]],
+  ['write_5fkmcpp_5ffile_5470',['write_kmcpp_file',['../structocc_1_1main_1_1CGConfig.html#a91d326a12653227b551bdd4465630d20',1,'occ::main::CGConfig']]]
 ];

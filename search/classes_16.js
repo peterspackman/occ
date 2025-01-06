@@ -1,9 +1,6 @@
 var searchData=
 [
-  ['xcdensityfunctor_3271',['XCDensityFunctor',['../structocc_1_1main_1_1XCDensityFunctor.html',1,'occ::main']]],
-  ['xdm_3272',['XDM',['../classocc_1_1xdm_1_1XDM.html',1,'occ::xdm']]],
-  ['xdmatomlist_3273',['XDMAtomList',['../structocc_1_1xdm_1_1XDMAtomList.html',1,'occ::xdm']]],
-  ['xtbcalculator_3274',['XTBCalculator',['../classocc_1_1xtb_1_1XTBCalculator.html',1,'occ::xtb']]],
-  ['xtbcrystalgrowthcalculator_3275',['XTBCrystalGrowthCalculator',['../classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html',1,'occ::driver']]],
-  ['xyzfilereader_3276',['XyzFileReader',['../structocc_1_1io_1_1XyzFileReader.html',1,'occ::io']]]
+  ['wavefunction_3276',['Wavefunction',['../structocc_1_1qm_1_1Wavefunction.html',1,'occ::qm']]],
+  ['wolfparams_3277',['WolfParams',['../structocc_1_1interaction_1_1WolfParams.html',1,'occ::interaction']]],
+  ['wulffconstruction_3278',['WulffConstruction',['../classocc_1_1geometry_1_1WulffConstruction.html',1,'occ::geometry']]]
 ];

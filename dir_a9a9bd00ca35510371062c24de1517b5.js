@@ -32,6 +32,9 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "inertia_tensor.h", "inertia__tensor_8h.html", "inertia__tensor_8h" ],
     [ "interpolator.h", "interpolator_8h.html", "interpolator_8h" ],
     [ "kabsch.h", "kabsch_8h.html", "kabsch_8h" ],
+    [ "kalman_estimator.h", "kalman__estimator_8h.html", [
+      [ "KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", "structocc_1_1core_1_1KalmanEstimator" ]
+    ] ],
     [ "kdtree.h", "kdtree_8h.html", "kdtree_8h" ],
     [ "linear_algebra.h", "linear__algebra_8h.html", "linear__algebra_8h" ],
     [ "log.h", "log_8h.html", "log_8h" ],

@@ -61,6 +61,7 @@ var annotated_dup =
         [ "Fraction", "classocc_1_1core_1_1Fraction.html", "classocc_1_1core_1_1Fraction" ],
         [ "GenSqrtInvResult", "structocc_1_1core_1_1GenSqrtInvResult.html", "structocc_1_1core_1_1GenSqrtInvResult" ],
         [ "Interpolator1D", "classocc_1_1core_1_1Interpolator1D.html", "classocc_1_1core_1_1Interpolator1D" ],
+        [ "KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", "structocc_1_1core_1_1KalmanEstimator" ],
         [ "Molecule", "classocc_1_1core_1_1Molecule.html", "classocc_1_1core_1_1Molecule" ],
         [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
         [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],

@@ -148,6 +148,7 @@ var hierarchy =
     [ "occ::io::JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", null ],
     [ "occ::io::JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", null ],
     [ "occ::io::JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", null ],
+    [ "occ::core::KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", null ],
     [ "occ::interaction::LatticeConvergenceSettings", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html", null ],
     [ "occ::interaction::LatticeEnergyResult", "structocc_1_1interaction_1_1LatticeEnergyResult.html", null ],
     [ "occ::geometry::IndexCache::Layer", "structocc_1_1geometry_1_1IndexCache_1_1Layer.html", null ],

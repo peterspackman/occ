@@ -1,16 +1,19 @@
 var searchData=
 [
-  ['wavefunction_5fchoice_5437',['wavefunction_choice',['../structocc_1_1main_1_1CGConfig.html#a4b25390f9a2d1cd157826818d99801ed',1,'occ::main::CGConfig::wavefunction_choice()'],['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a5760679b30588b899de05651c80915ff',1,'occ::driver::CrystalGrowthCalculatorOptions::wavefunction_choice()']]],
-  ['wavefunction_5ffilename_5438',['wavefunction_filename',['../structocc_1_1main_1_1IsosurfaceConfig.html#af5b2d438eb77cf730ee9fc60b90b8e08',1,'occ::main::IsosurfaceConfig']]],
-  ['wavefunctions_5439',['wavefunctions',['../structocc_1_1cg_1_1SMDCalculator_1_1Result.html#a10166353515646f11b0ce9c1f1fe2b17',1,'occ::cg::SMDCalculator::Result']]],
-  ['weights_5440',['weights',['../structocc_1_1dft_1_1AtomGrid.html#aa085f1b9f645b2ab72adcfbb818098cb',1,'occ::dft::AtomGrid::weights()'],['../structocc_1_1dft_1_1RadialGrid.html#a265a8e9304c1700c7132b56f4a350bad',1,'occ::dft::RadialGrid::weights()']]],
-  ['wfn_5441',['wfn',['../structocc_1_1main_1_1XCDensityFunctor.html#a5c16a849d21f49eb400b943f7263a2fa',1,'occ::main::XCDensityFunctor::wfn()'],['../structocc_1_1main_1_1ElectronDensityFunctor.html#a2a42bd9762d308dde5021ad0212e396b',1,'occ::main::ElectronDensityFunctor::wfn()'],['../structocc_1_1main_1_1EspFunctor.html#a327094ab34f3cb821d14881ddda704a6',1,'occ::main::EspFunctor::wfn()'],['../structocc_1_1interaction_1_1PairEnergy_1_1Monomer.html#a2c238e9713ceae587cbba68f1fc51435',1,'occ::interaction::PairEnergy::Monomer::wfn()']]],
-  ['wfn_5frotation_5442',['wfn_rotation',['../structocc_1_1main_1_1IsosurfaceConfig.html#a9b6e3f58e6569516515d8c77e07722dd',1,'occ::main::IsosurfaceConfig']]],
-  ['wfn_5ftranslation_5443',['wfn_translation',['../structocc_1_1main_1_1IsosurfaceConfig.html#a91585b7a3438f82e7a51bad29eb999f8',1,'occ::main::IsosurfaceConfig']]],
-  ['width_5444',['width',['../structocc_1_1io_1_1ColumnConfiguration.html#adc415c69232a6e3b14a1b3c438eb154f',1,'occ::io::ColumnConfiguration']]],
-  ['wolf_5fsum_5445',['wolf_sum',['../structocc_1_1interaction_1_1LatticeConvergenceSettings.html#ae7706adb9809f3f4273361d8569da3bd',1,'occ::interaction::LatticeConvergenceSettings']]],
-  ['word_5fsize_5446',['word_size',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html#a455e788bcc8463da34a9bcd7c4dc5eb5',1,'occ::core::numpy::NumpyArray']]],
-  ['write_5fdebug_5foutput_5ffiles_5447',['write_debug_output_files',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a7760b10637da3c750090de79e94b44c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
-  ['write_5fdump_5ffiles_5448',['write_dump_files',['../structocc_1_1main_1_1CGConfig.html#af034b76854f64d8bee7f39f1a5400f40',1,'occ::main::CGConfig']]],
-  ['write_5fkmcpp_5ffile_5449',['write_kmcpp_file',['../structocc_1_1main_1_1CGConfig.html#a91d326a12653227b551bdd4465630d20',1,'occ::main::CGConfig']]]
+  ['v_5442',['V',['../structocc_1_1qm_1_1Wavefunction.html#a97b5d5261d3b6147fc30b77e5e22eceb',1,'occ::qm::Wavefunction::V()'],['../structocc_1_1scf_1_1SCF.html#a534e8fa6515072bee484fbef43e7a4c9',1,'occ::scf::SCF::V()']]],
+  ['vdw_5fradii_5443',['vdw_radii',['../structocc_1_1cg_1_1NeighborAtoms.html#a2a3f4a4a43c593ffe795cd97a07d6486',1,'occ::cg::NeighborAtoms']]],
+  ['vecp_5444',['Vecp',['../structocc_1_1scf_1_1SCF.html#a9b1a942b4f607339ac3f256dc596a4d6',1,'occ::scf::SCF::Vecp()'],['../structocc_1_1qm_1_1Wavefunction.html#a4d848ec48354a4905c7c80d491445f0b',1,'occ::qm::Wavefunction::Vecp()']]],
+  ['verbosity_5445',['verbosity',['../structocc_1_1io_1_1OccInput.html#aca74211f47f069313d03c54deef8152b',1,'occ::io::OccInput']]],
+  ['version_5446',['version',['../structocc_1_1io_1_1JsonBasis.html#ae2a993a112ef7e5b19efad0cda8aa75d',1,'occ::io::JsonBasis']]],
+  ['vertices_5447',['vertices',['../structocc_1_1io_1_1IsosurfaceMesh.html#a0a9dcf432e7f32240ee78929184ce38f',1,'occ::io::IsosurfaceMesh::vertices()'],['../structocc_1_1solvent_1_1surface_1_1Surface.html#ac6e8d5b47c8086a330927a8ead975a14',1,'occ::solvent::surface::Surface::vertices()']]],
+  ['vlaplacian_5448',['vlaplacian',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a95fb5fdb34c777019ec6d1665ae56e9e',1,'occ::dft::DensityFunctional::Result']]],
+  ['volume_5449',['volume',['../structocc_1_1xdm_1_1XDMAtomList.html#a3aac4da929f48e22952558eb5b46edb3',1,'occ::xdm::XDMAtomList']]],
+  ['volume_5ffree_5450',['volume_free',['../structocc_1_1xdm_1_1XDMAtomList.html#afbd660a6a10b29cb7cf471d1586a2dbf',1,'occ::xdm::XDMAtomList']]],
+  ['vpc_5451',['Vpc',['../structocc_1_1scf_1_1SCF.html#a7a29fe0b7e7b651bac3671e0d991357d',1,'occ::scf::SCF']]],
+  ['vrho_5452',['vrho',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a6b51518e57c1eb49d81a96f2ca7c10a5',1,'occ::dft::DensityFunctional::Result']]],
+  ['vsigma_5453',['vsigma',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a68b7e62e47d58a6398c5fca0bd53195e',1,'occ::dft::DensityFunctional::Result']]],
+  ['vtau_5454',['vtau',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a96eb40c588a3e7284a7995e903a89a8b',1,'occ::dft::DensityFunctional::Result']]],
+  ['vv10_5fb_5455',['vv10_b',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#a44a8b6272f8badc82d97237e21f18c47',1,'occ::dft::NonLocalCorrelationFunctional::Parameters']]],
+  ['vv10_5fc_5456',['vv10_C',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#ad42a134595a7ffff24c624c5305e0d08',1,'occ::dft::NonLocalCorrelationFunctional::Parameters']]],
+  ['vxc_5457',['Vxc',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html#ac6c7904be7f47c3596341683cf6235df',1,'occ::dft::NonLocalCorrelationFunctional::Result']]]
 ];

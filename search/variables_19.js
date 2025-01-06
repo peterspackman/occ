@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['z_5468',['z',['../structocc_1_1core_1_1Atom.html#aede8f1260e49c2f76c3ce656c19e836e',1,'occ::core::Atom::z()'],['../structocc_1_1MatTriple.html#a0e634fbdf83ae6a676d515a580741aaf',1,'occ::MatTriple::z()'],['../structocc_1_1geometry_1_1MIndex_1_1Position.html#af43434fa772142b4d018fd8b61ab5904',1,'occ::geometry::MIndex::Position::z()'],['../structocc_1_1io_1_1AtomData.html#a0dc956b2c5da42d45f5c26a5d823c679',1,'occ::io::AtomData::z()']]]
+  ['y_5488',['y',['../structocc_1_1core_1_1Atom.html#aad9642b5517f01fadc4f001ee8d029e1',1,'occ::core::Atom::y()'],['../structocc_1_1MatTriple.html#a352501c6aeb729d627759ddb2d8ee1d2',1,'occ::MatTriple::y()'],['../structocc_1_1geometry_1_1MIndex_1_1Position.html#a24e3efeeff30f6707002e576dd16f73a',1,'occ::geometry::MIndex::Position::y()'],['../structocc_1_1io_1_1AtomData.html#ae639c1aa3fb62d4ef8a8326615b8cb2a',1,'occ::io::AtomData::y()']]]
 ];

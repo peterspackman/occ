@@ -37,6 +37,7 @@ var linear__algebra_8h =
     [ "MaskArray", "linear__algebra_8h.html#a99704cf50b48af7001fa4157de57c6ce", null ],
     [ "MaskMat", "linear__algebra_8h.html#a482a63a0c0c6efd9778a4e19a7ee7b76", null ],
     [ "Mat", "linear__algebra_8h.html#a96a6c94f06b8bd220e5edf14b7655e3f", null ],
+    [ "Mat2", "linear__algebra_8h.html#aaa1ae8c96b18af2a59d8a07a1163e6b9", null ],
     [ "Mat3", "linear__algebra_8h.html#a42ba6c49f2c1fab31c69b47a36cc1da1", null ],
     [ "Mat3ConstRef", "linear__algebra_8h.html#ae6658a71f1ab626bb34cd517eebdfff2", null ],
     [ "Mat3N", "linear__algebra_8h.html#a9dcff6c717bd7b042c3eaa6af9a69b8b", null ],
@@ -58,6 +59,7 @@ var linear__algebra_8h =
     [ "RowVec4", "linear__algebra_8h.html#a8a1b01836705169c4372c04b71bd6ec6", null ],
     [ "Vec", "linear__algebra_8h.html#af51d15e9008089919e6a8c5a09724f7f", null ],
     [ "Vec10", "linear__algebra_8h.html#a5a1b1abdb6c6e01f434f30f4571d049e", null ],
+    [ "Vec2", "linear__algebra_8h.html#a87f795a8761276115f79bf88e7ff6514", null ],
     [ "Vec3", "linear__algebra_8h.html#ae42d4cdd65ae47e7067b39d66ce2e0e1", null ],
     [ "Vec4", "linear__algebra_8h.html#ae89d745b26c15115153317e5d90b6e93", null ],
     [ "Vec6", "linear__algebra_8h.html#a8165087ef72495abb134eb0a03ea6ec2", null ]
