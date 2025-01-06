@@ -1,5 +1,8 @@
 var NAVTREEINDEX19 =
 {
+"structquickhull_1_1MeshBuilder_1_1Face.html#abe5ce0be063c4060a166ece91c8a433b":[2,0,3,2,0,11],
+"structquickhull_1_1MeshBuilder_1_1Face.html#ad6e577119e698441d74e7ade014ace2a":[2,0,3,2,0,10],
+"structquickhull_1_1MeshBuilder_1_1Face.html#ae6ffd551b175e8268fc6d6a7357c1413":[2,0,3,2,0,4],
 "structquickhull_1_1MeshBuilder_1_1Face.html#af4b80c6fcac338950cbf4777dfed9a14":[2,0,3,2,0,5],
 "structquickhull_1_1MeshBuilder_1_1HalfEdge.html":[2,0,3,2,1],
 "structquickhull_1_1MeshBuilder_1_1HalfEdge.html#a20755694eb355665ac8cba74c23bbfa3":[2,0,3,2,1,1],
@@ -186,6 +189,5 @@ var NAVTREEINDEX19 =
 "xtb__wrapper_8h.html":[3,0,1,0,18,1],
 "xyz_8h.html":[3,0,1,0,10,29],
 "xyz_8h.html#a9e545a9864ef7cba94ea648e321f9899":[3,0,1,0,10,29,2],
-"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,10,29,1],
-"":[1,0,1]
+"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,10,29,1]
 };

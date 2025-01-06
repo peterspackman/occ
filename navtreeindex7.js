@@ -1,5 +1,6 @@
 var NAVTREEINDEX7 =
 {
+"classquickhull_1_1MeshBuilder.html#a0a4434ce48f2e1f79e36072432bd891d":[2,0,3,2,12],
 "classquickhull_1_1MeshBuilder.html#a26e4bfa3bb3595df724eecd32ed7b477":[2,0,3,2,10],
 "classquickhull_1_1MeshBuilder.html#a472db0c35de317b657d3090e25f8cc18":[2,0,3,2,8],
 "classquickhull_1_1MeshBuilder.html#a5da5150fc876b9536f83fc717fe5c9d1":[2,0,3,2,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX7 =
 "functions_func_o.html":[2,3,1,14],
 "functions_func_p.html":[2,3,1,15],
 "functions_func_q.html":[2,3,1,16],
-"functions_func_r.html":[2,3,1,17],
-"functions_func_s.html":[2,3,1,18]
+"functions_func_r.html":[2,3,1,17]
 };
