@@ -1,6 +1,5 @@
 var NAVTREEINDEX16 =
 {
-"structocc_1_1io_1_1BasisSetInput.html":[2,0,2,10,33],
 "structocc_1_1io_1_1BasisSetInput.html#a56e8d8ae52f0cea5480597c2ee381487":[2,0,2,10,33,1],
 "structocc_1_1io_1_1BasisSetInput.html#a5da5e9f4a8f5628d241332f1134fe2c1":[2,0,2,10,33,2],
 "structocc_1_1io_1_1BasisSetInput.html#ac77cc4b663859efd918737cc3d93a811":[2,0,2,10,33,0],
@@ -249,5 +248,6 @@ var NAVTREEINDEX16 =
 "structocc_1_1io_1_1VertexProperties.html#ad03ae5bf4e2a912521c8a185a617c0dc":[2,0,2,10,20,0],
 "structocc_1_1io_1_1VertexProperties.html#aefee644de7e869c6fb93061a6308ced7":[2,0,2,10,20,4],
 "structocc_1_1io_1_1XyzFileReader.html":[2,0,2,10,50],
-"structocc_1_1io_1_1XyzFileReader.html#a15b0e5718998cfbff89b01193f570b16":[2,0,2,10,50,3]
+"structocc_1_1io_1_1XyzFileReader.html#a15b0e5718998cfbff89b01193f570b16":[2,0,2,10,50,3],
+"structocc_1_1io_1_1XyzFileReader.html#a4380d2b1e0aa88c713249c04aba60e81":[2,0,2,10,50,4]
 };

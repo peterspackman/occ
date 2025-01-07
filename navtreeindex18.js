@@ -1,6 +1,5 @@
 var NAVTREEINDEX18 =
 {
-"structocc_1_1qm_1_1MolecularOrbitals.html#a37b87111ecefe7abdd1fb708dc5173ad":[2,0,2,13,9,12],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a42ecb5682f81b685d1ede3638156c102":[2,0,2,13,9,15],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a5094978d6f838ecb6d1928556cf7bfed":[2,0,2,13,9,10],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a5387188d07730670762b780d38fa02d0":[2,0,2,13,9,17],
@@ -249,5 +248,6 @@ var NAVTREEINDEX18 =
 "structocc_1_1xdm_1_1XDMAtomList.html#afbd660a6a10b29cb7cf471d1586a2dbf":[2,0,2,19,0,4],
 "structocc_1_1xdm_1_1XDM_1_1Parameters.html":[2,0,2,19,1,0],
 "structocc_1_1xdm_1_1XDM_1_1Parameters.html#ad8105cd00918a9cdb07c6ad1189f63b5":[2,0,2,19,1,0,1],
-"structocc_1_1xdm_1_1XDM_1_1Parameters.html#af6f6b497cd6148d75bb4f799e82d9f8a":[2,0,2,19,1,0,0]
+"structocc_1_1xdm_1_1XDM_1_1Parameters.html#af6f6b497cd6148d75bb4f799e82d9f8a":[2,0,2,19,1,0,0],
+"structquickhull_1_1DiagnosticsData.html":[2,0,3,5]
 };
