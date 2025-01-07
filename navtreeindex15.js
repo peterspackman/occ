@@ -1,6 +1,5 @@
 var NAVTREEINDEX15 =
 {
-"structocc_1_1dft_1_1impl_1_1Functionals.html#aa5b6555de156adbc00aa6a5a25986e49":[2,0,2,4,1,0,1],
 "structocc_1_1disp_1_1DFTD4Params.html":[2,0,2,5,0],
 "structocc_1_1disp_1_1DFTD4Params.html#a0c5300048b142f437a194bca7d817109":[2,0,2,5,0,4],
 "structocc_1_1disp_1_1DFTD4Params.html#a247afc50179628b1a81dbfabe8f2fd32":[2,0,2,5,0,6],
@@ -249,5 +248,6 @@ var NAVTREEINDEX15 =
 "structocc_1_1io_1_1AtomData.html#a9513ae6c202458b8994f13e0c21d174c":[2,0,2,10,6,7],
 "structocc_1_1io_1_1AtomData.html#acf390e048b718898584e9ec21d341ce7":[2,0,2,10,6,4],
 "structocc_1_1io_1_1AtomData.html#ae639c1aa3fb62d4ef8a8326615b8cb2a":[2,0,2,10,6,8],
-"structocc_1_1io_1_1AtomData.html#affe761b31e20913973c5e2d28f64e52d":[2,0,2,10,6,6]
+"structocc_1_1io_1_1AtomData.html#affe761b31e20913973c5e2d28f64e52d":[2,0,2,10,6,6],
+"structocc_1_1io_1_1BasisSetInput.html":[2,0,2,10,33]
 };

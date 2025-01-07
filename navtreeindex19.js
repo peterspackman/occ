@@ -1,6 +1,5 @@
 var NAVTREEINDEX19 =
 {
-"structquickhull_1_1DiagnosticsData.html":[2,0,3,5],
 "structquickhull_1_1DiagnosticsData.html#af3c02ce754ecc18bf4bf49e943be44c4":[2,0,3,5,1],
 "structquickhull_1_1DiagnosticsData.html#afee5e9313774517c90af8c76ef6b2b8f":[2,0,3,5,0],
 "structquickhull_1_1HalfEdgeMesh_1_1Face.html":[2,0,3,1,0],
@@ -208,5 +207,6 @@ var NAVTREEINDEX19 =
 "xtb__wrapper_8h.html":[3,0,1,0,18,1],
 "xyz_8h.html":[3,0,1,0,10,29],
 "xyz_8h.html#a9e545a9864ef7cba94ea648e321f9899":[3,0,1,0,10,29,2],
-"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,10,29,1]
+"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,10,29,1],
+"":[1,0,1]
 };
