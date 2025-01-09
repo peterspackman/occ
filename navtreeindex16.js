@@ -1,5 +1,9 @@
 var NAVTREEINDEX16 =
 {
+"structocc_1_1io_1_1BasisSetInput.html#a5da5e9f4a8f5628d241332f1134fe2c1":[2,0,2,10,33,2],
+"structocc_1_1io_1_1BasisSetInput.html#ac77cc4b663859efd918737cc3d93a811":[2,0,2,10,33,0],
+"structocc_1_1io_1_1BasisSetInput.html#ae76763f5563aa0146239e939cd782357":[2,0,2,10,33,3],
+"structocc_1_1io_1_1BeckeGridSettings.html":[2,0,2,10,18],
 "structocc_1_1io_1_1BeckeGridSettings.html#a07a0c9028df0cc908137b5b5f7214eb8":[2,0,2,10,18,6],
 "structocc_1_1io_1_1BeckeGridSettings.html#a431e52e0c9e867463826b6f70e0e307e":[2,0,2,10,18,2],
 "structocc_1_1io_1_1BeckeGridSettings.html#a44fd46ffa46f5cdad657965dc4283224":[2,0,2,10,18,0],
@@ -245,9 +249,5 @@ var NAVTREEINDEX16 =
 "structocc_1_1io_1_1XyzFileReader.html":[2,0,2,10,50],
 "structocc_1_1io_1_1XyzFileReader.html#a15b0e5718998cfbff89b01193f570b16":[2,0,2,10,50,3],
 "structocc_1_1io_1_1XyzFileReader.html#a4380d2b1e0aa88c713249c04aba60e81":[2,0,2,10,50,4],
-"structocc_1_1io_1_1XyzFileReader.html#a4b4222343c963908605f7eea0990132d":[2,0,2,10,50,2],
-"structocc_1_1io_1_1XyzFileReader.html#a692a767876914a2813adb24cf5a1a62b":[2,0,2,10,50,0],
-"structocc_1_1io_1_1XyzFileReader.html#a7c5f5ab54ce2f1e05915af8c3bbb5881":[2,0,2,10,50,6],
-"structocc_1_1io_1_1XyzFileReader.html#ae0633069f684508fc31ebf9c95b4944e":[2,0,2,10,50,5],
-"structocc_1_1io_1_1XyzFileReader.html#af8adcab62558518da3e5fc592441702d":[2,0,2,10,50,7]
+"structocc_1_1io_1_1XyzFileReader.html#a4b4222343c963908605f7eea0990132d":[2,0,2,10,50,2]
 };

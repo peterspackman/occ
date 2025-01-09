@@ -1,5 +1,9 @@
 var NAVTREEINDEX19 =
 {
+"structquickhull_1_1DiagnosticsData.html#afee5e9313774517c90af8c76ef6b2b8f":[2,0,3,5,0],
+"structquickhull_1_1HalfEdgeMesh_1_1Face.html":[2,0,3,1,0],
+"structquickhull_1_1HalfEdgeMesh_1_1Face.html#a3eef09b5bcb1d38899d2dbd45c6a6bd7":[2,0,3,1,0,0],
+"structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html":[2,0,3,1,1],
 "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html#a02bc58a683e289e62bc2ed975e7a05cf":[2,0,3,1,1,0],
 "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html#a58557577dab5ad9f6563e87c5671ca4b":[2,0,3,1,1,1],
 "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html#a9e4c6c2c4eb56e4219a88022c7826846":[2,0,3,1,1,2],

@@ -138,6 +138,10 @@ Functions</h2></td></tr>
 <tr class="separator:a1306e4778b31ca2ec2748f4fd56b280f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12f5d499d46155d63ad2eb4639d47e2c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a12f5d499d46155d63ad2eb4639d47e2c">coulomb_self_energy_asym_charges</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a> &amp;, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt; charges)</td></tr>
 <tr class="separator:a12f5d499d46155d63ad2eb4639d47e2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a208d2eacf7ce54ef9229c9bb070df86a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a208d2eacf7ce54ef9229c9bb070df86a">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;)</td></tr>
+<tr class="separator:a208d2eacf7ce54ef9229c9bb070df86a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3711d6671357216305554442fceb3d49"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a3711d6671357216305554442fceb3d49">from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;)</td></tr>
+<tr class="separator:a3711d6671357216305554442fceb3d49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a791baf9effcc4c35e6fdeccd123068"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a1a791baf9effcc4c35e6fdeccd123068">load_dimer_energy</a> (const std::string &amp;, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;)</td></tr>
 <tr class="separator:a1a791baf9effcc4c35e6fdeccd123068"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58209bfc15002c650e2d781869d8525b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a58209bfc15002c650e2d781869d8525b">write_xyz_dimer</a> (const std::string &amp;, const <a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a> &amp;, std::optional&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &gt; energies={})</td></tr>
@@ -765,6 +769,34 @@ template&lt;typename Procedure &gt; </div>
 
 </div>
 </div>
+<a id="a3711d6671357216305554442fceb3d49"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3711d6671357216305554442fceb3d49">&#9670;&nbsp;</a></span>from_json()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::interaction::from_json </td>
+          <td>(</td>
+          <td class="paramtype">const nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ac892ad982289ce322d71809aa87ce1d8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac892ad982289ce322d71809aa87ce1d8">&#9670;&nbsp;</a></span>lennard_jones()</h2>
 
@@ -918,6 +950,34 @@ template&lt;&gt; </div>
           <td></td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;&#160;</td>
           <td class="paramname"><em>efield</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a208d2eacf7ce54ef9229c9bb070df86a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a208d2eacf7ce54ef9229c9bb070df86a">&#9670;&nbsp;</a></span>to_json()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::interaction::to_json </td>
+          <td>(</td>
+          <td class="paramtype">nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>

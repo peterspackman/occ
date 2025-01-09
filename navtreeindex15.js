@@ -1,5 +1,9 @@
 var NAVTREEINDEX15 =
 {
+"structocc_1_1disp_1_1DFTD4Params.html#a0c5300048b142f437a194bca7d817109":[2,0,2,5,0,4],
+"structocc_1_1disp_1_1DFTD4Params.html#a247afc50179628b1a81dbfabe8f2fd32":[2,0,2,5,0,6],
+"structocc_1_1disp_1_1DFTD4Params.html#a4f43cb073c0db433d0ecd791eed0ebc0":[2,0,2,5,0,5],
+"structocc_1_1disp_1_1DFTD4Params.html#a5c47d030a5c9f5a2a8f1d84bb3bceec4":[2,0,2,5,0,3],
 "structocc_1_1disp_1_1DFTD4Params.html#a9a179d795730570e46909fda18a2347f":[2,0,2,5,0,0],
 "structocc_1_1disp_1_1DFTD4Params.html#aba64be4bc74f75bb957e3342b40f9b7f":[2,0,2,5,0,2],
 "structocc_1_1disp_1_1DFTD4Params.html#ac3fd30399a73d1f1b07cfb29a5b17175":[2,0,2,5,0,1],
@@ -245,9 +249,5 @@ var NAVTREEINDEX15 =
 "structocc_1_1io_1_1AtomData.html#ae639c1aa3fb62d4ef8a8326615b8cb2a":[2,0,2,10,6,8],
 "structocc_1_1io_1_1AtomData.html#affe761b31e20913973c5e2d28f64e52d":[2,0,2,10,6,6],
 "structocc_1_1io_1_1BasisSetInput.html":[2,0,2,10,33],
-"structocc_1_1io_1_1BasisSetInput.html#a56e8d8ae52f0cea5480597c2ee381487":[2,0,2,10,33,1],
-"structocc_1_1io_1_1BasisSetInput.html#a5da5e9f4a8f5628d241332f1134fe2c1":[2,0,2,10,33,2],
-"structocc_1_1io_1_1BasisSetInput.html#ac77cc4b663859efd918737cc3d93a811":[2,0,2,10,33,0],
-"structocc_1_1io_1_1BasisSetInput.html#ae76763f5563aa0146239e939cd782357":[2,0,2,10,33,3],
-"structocc_1_1io_1_1BeckeGridSettings.html":[2,0,2,10,18]
+"structocc_1_1io_1_1BasisSetInput.html#a56e8d8ae52f0cea5480597c2ee381487":[2,0,2,10,33,1]
 };
