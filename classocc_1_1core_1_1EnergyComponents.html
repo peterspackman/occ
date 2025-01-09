@@ -142,7 +142,7 @@ Public Member Functions</h2></td></tr>
 <p>The categories in this set of energy components. </p>
 <dl class="section return"><dt>Returns</dt><dd>a std::vector&lt;std::string&gt; of category names</dd></dl>
 <p>Category names are determined by finding keys separated by the <code>.</code> character, for example:</p>
-<div class="fragment"><div class="line"><a class="code" href="namespaceocc_1_1cg.html#a9afd3dd272fb411f72a8cc994eb32c6a">EnergyComponents</a> comps{</div>
+<div class="fragment"><div class="line">EnergyComponents comps{</div>
 <div class="line">  {<span class="stringliteral">&quot;electronic.1e&quot;</span>, 0.5},</div>
 <div class="line">  {<span class="stringliteral">&quot;electronic.2e&quot;</span>, 0.25},</div>
 <div class="line">  {<span class="stringliteral">&quot;nuclear.relativistic&quot;</span>, 0.2},</div>
@@ -151,7 +151,6 @@ Public Member Functions</h2></td></tr>
 <div class="line"> </div>
 <div class="line"><span class="comment">// will return a vector of {&quot;electronic&quot;, &quot;nuclear&quot;}</span></div>
 <div class="line"><span class="keyword">auto</span> c = comps.categories();</div>
-<div class="ttc" id="anamespaceocc_1_1cg_html_a9afd3dd272fb411f72a8cc994eb32c6a"><div class="ttname"><a href="namespaceocc_1_1cg.html#a9afd3dd272fb411f72a8cc994eb32c6a">occ::cg::EnergyComponents</a></div><div class="ttdeci">ankerl::unordered_dense::map&lt; std::string, double &gt; EnergyComponents</div><div class="ttdef"><b>Definition:</b> crystal_growth_energies.h:10</div></div>
 </div><!-- fragment --> 
 </div>
 </div>

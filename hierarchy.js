@@ -49,7 +49,6 @@ var hierarchy =
       [ "occ::driver::XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", null ]
     ] ],
     [ "occ::driver::CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", null ],
-    [ "occ::cg::CrystalGrowthDimer", "structocc_1_1cg_1_1CrystalGrowthDimer.html", null ],
     [ "occ::cg::CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", null ],
     [ "occ::io::CrystalInput", "structocc_1_1io_1_1CrystalInput.html", null ],
     [ "occ::main::CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", null ],

@@ -1,5 +1,8 @@
 var NAVTREEINDEX7 =
 {
+"classquickhull_1_1HalfEdgeMesh.html#ab402c285845b81a40a451c4431467899":[2,0,3,1,3],
+"classquickhull_1_1MeshBuilder.html":[2,0,3,2],
+"classquickhull_1_1MeshBuilder.html#a0a4434ce48f2e1f79e36072432bd891d":[2,0,3,2,12],
 "classquickhull_1_1MeshBuilder.html#a26e4bfa3bb3595df724eecd32ed7b477":[2,0,3,2,10],
 "classquickhull_1_1MeshBuilder.html#a472db0c35de317b657d3090e25f8cc18":[2,0,3,2,8],
 "classquickhull_1_1MeshBuilder.html#a5da5150fc876b9536f83fc717fe5c9d1":[2,0,3,2,4],
@@ -105,10 +108,6 @@ var NAVTREEINDEX7 =
 "crystal__growth_8h.html#a93e7aa58c1e87808d00d580da61457db":[3,0,1,0,6,0,7],
 "crystal__growth_8h.html#a93e7aa58c1e87808d00d580da61457dba550806ba1cc6d56dc8f9a0c80b4c6aff":[3,0,1,0,6,0,7,0],
 "crystal__growth_8h.html#a93e7aa58c1e87808d00d580da61457dbaa5ef8df0c19a30ae226c7569085b0ea7":[3,0,1,0,6,0,7,1],
-"crystal__growth__energies_8h.html":[3,0,1,0,0,1],
-"crystal__growth__energies_8h.html#a7762e81f9ba0d56146b01d14781d90eb":[3,0,1,0,0,1,4],
-"crystal__growth__energies_8h.html#a9afd3dd272fb411f72a8cc994eb32c6a":[3,0,1,0,0,1,5],
-"crystal__growth__energies_8h.html#aaf558e3d85f900ba4c4e30d6f35bfed8":[3,0,1,0,0,1,6],
 "crystal__json_8h.html":[3,0,1,0,10,4],
 "crystal__json_8h.html#a1a9da008728d1c41260106983703d4b3":[3,0,1,0,10,4,9],
 "crystal__json_8h.html#a1b0def4d76564c3bd44a0a26aaf20696":[3,0,1,0,10,4,3],
@@ -174,8 +173,8 @@ var NAVTREEINDEX7 =
 "dir_f71aeec53af52887bf7238294c17f1a6.html":[3,0,1,0,7],
 "disp_8h.html":[3,0,1,0,9,1],
 "disp_8h.html#a115cdd33241e95fcf9e5f7cd7745fe6d":[3,0,1,0,9,1,0],
-"distance__partition_8h.html":[3,0,1,0,0,2],
-"distance__partition_8h.html#a48533d39bf477dcc431b1993ff46f20e":[3,0,1,0,0,2,1],
+"distance__partition_8h.html":[3,0,1,0,0,1],
+"distance__partition_8h.html#a48533d39bf477dcc431b1993ff46f20e":[3,0,1,0,0,1,1],
 "draco_8h.html":[3,0,1,0,16,1],
 "draco_8h.html#a6730930178f0aa7b1c8f43ab1074a09e":[3,0,1,0,16,1,0],
 "draco_8h.html#aea12a14dd3edd10a91b88e9dc5d3c1e9":[3,0,1,0,16,1,1],
@@ -215,8 +214,8 @@ var NAVTREEINDEX7 =
 "functions_d.html":[2,3,0,4],
 "functions_e.html":[2,3,0,5],
 "functions_enum.html":[2,3,4],
-"functions_eval.html":[2,3,5],
 "functions_eval.html":[2,3,5,0],
+"functions_eval.html":[2,3,5],
 "functions_eval_d.html":[2,3,5,1],
 "functions_eval_e.html":[2,3,5,2],
 "functions_eval_f.html":[2,3,5,3],
@@ -249,5 +248,6 @@ var NAVTREEINDEX7 =
 "functions_func_p.html":[2,3,1,15],
 "functions_func_q.html":[2,3,1,16],
 "functions_func_r.html":[2,3,1,17],
-"functions_func_s.html":[2,3,1,18]
+"functions_func_s.html":[2,3,1,18],
+"functions_func_t.html":[2,3,1,19]
 };

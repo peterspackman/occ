@@ -14,15 +14,14 @@ var annotated_dup =
     ] ],
     [ "occ", "namespaceocc.html", [
       [ "cg", "namespaceocc_1_1cg.html", [
-        [ "EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", "structocc_1_1cg_1_1EnergyTotal" ],
-        [ "DimerSolventTerm", "structocc_1_1cg_1_1DimerSolventTerm.html", "structocc_1_1cg_1_1DimerSolventTerm" ],
-        [ "CrystalGrowthDimer", "structocc_1_1cg_1_1CrystalGrowthDimer.html", "structocc_1_1cg_1_1CrystalGrowthDimer" ],
-        [ "CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
         [ "SolventSurfacePartitioner", "classocc_1_1cg_1_1SolventSurfacePartitioner.html", "classocc_1_1cg_1_1SolventSurfacePartitioner" ],
         [ "InteractionMapper", "classocc_1_1cg_1_1InteractionMapper.html", "classocc_1_1cg_1_1InteractionMapper" ],
         [ "NeighborAtoms", "structocc_1_1cg_1_1NeighborAtoms.html", "structocc_1_1cg_1_1NeighborAtoms" ],
+        [ "DimerSolventTerm", "structocc_1_1cg_1_1DimerSolventTerm.html", "structocc_1_1cg_1_1DimerSolventTerm" ],
+        [ "EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", "structocc_1_1cg_1_1EnergyTotal" ],
         [ "DimerResult", "structocc_1_1cg_1_1DimerResult.html", "structocc_1_1cg_1_1DimerResult" ],
         [ "MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", "structocc_1_1cg_1_1MoleculeResult" ],
+        [ "CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
         [ "SMDSettings", "structocc_1_1cg_1_1SMDSettings.html", "structocc_1_1cg_1_1SMDSettings" ],
         [ "SMDCalculator", "classocc_1_1cg_1_1SMDCalculator.html", "classocc_1_1cg_1_1SMDCalculator" ],
         [ "ContributionPair", "structocc_1_1cg_1_1ContributionPair.html", "structocc_1_1cg_1_1ContributionPair" ],

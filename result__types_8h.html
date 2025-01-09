@@ -99,16 +99,29 @@ $(document).ready(function(){initNavTree('result__types_8h.html',''); initResiza
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;ankerl/unordered_dense.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="dimer_8h.html">occ/core/dimer.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="pairinteraction_8h.html">occ/interaction/pairinteraction.h</a>&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for result_types.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="result__types_8h__incl.svg" width="372" height="142"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="result__types_8h__incl.svg" width="2743" height="664"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
+</div>
+</div><div class="textblock"><div class="dynheader">
+This graph shows which files directly or indirectly include this file:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="result__types_8h__dep__incl.svg" width="619" height="171"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1DimerSolventTerm.html">occ::cg::DimerSolventTerm</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1EnergyTotal.html">occ::cg::EnergyTotal</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1DimerResult.html">occ::cg::DimerResult</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MoleculeResult.html">occ::cg::MoleculeResult</a></td></tr>
@@ -127,8 +140,14 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:aaf558e3d85f900ba4c4e30d6f35bfed8"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#aaf558e3d85f900ba4c4e30d6f35bfed8">occ::cg::PairEnergies</a> = std::vector&lt; <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">occ::interaction::CEEnergyComponents</a> &gt;</td></tr>
+<tr class="separator:aaf558e3d85f900ba4c4e30d6f35bfed8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3855b410636d4421f6f9f75415acae22"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a3855b410636d4421f6f9f75415acae22">occ::cg::CGEnergyComponents</a> = ankerl::unordered_dense::map&lt; std::string, double &gt;</td></tr>
 <tr class="separator:a3855b410636d4421f6f9f75415acae22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2efdad243923360f192e3e2d5d48bfb0"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a2efdad243923360f192e3e2d5d48bfb0">occ::cg::CGEnergies</a> = std::vector&lt; CGEnergyComponents &gt;</td></tr>
+<tr class="separator:a2efdad243923360f192e3e2d5d48bfb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a999cd08c97d17040789562269d22d453"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a999cd08c97d17040789562269d22d453">occ::cg::DimerResults</a> = std::vector&lt; DimerResult &gt;</td></tr>
+<tr class="separator:a999cd08c97d17040789562269d22d453"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -136,7 +155,7 @@ Variables</h2></td></tr>
 <tr class="separator:a52191a7a043727249b9a432722c9b621"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96b2395fd4b8fedbb8f19dd2de466764"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg_1_1components.html#a96b2395fd4b8fedbb8f19dd2de466764">occ::cg::components::crystal_total</a> = &quot;Crystal Total&quot;</td></tr>
 <tr class="separator:a96b2395fd4b8fedbb8f19dd2de466764"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56b4910865fb1f2ae2d9e9247620a973"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg_1_1components.html#a56b4910865fb1f2ae2d9e9247620a973">occ::cg::components::crystal_nn</a> = &quot;Crystal (reassigned)&quot;</td></tr>
+<tr class="memitem:a56b4910865fb1f2ae2d9e9247620a973"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg_1_1components.html#a56b4910865fb1f2ae2d9e9247620a973">occ::cg::components::crystal_nn</a> = &quot;Crystal (redistributed)&quot;</td></tr>
 <tr class="separator:a56b4910865fb1f2ae2d9e9247620a973"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74ecaf37d47fd970093c5feea7cad3ab"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg_1_1components.html#a74ecaf37d47fd970093c5feea7cad3ab">occ::cg::components::solvation_ab</a> = &quot;Solvation (A-&gt;B)&quot;</td></tr>
 <tr class="separator:a74ecaf37d47fd970093c5feea7cad3ab"><td class="memSeparator" colspan="2">&#160;</td></tr>

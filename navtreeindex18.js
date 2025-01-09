@@ -1,10 +1,5 @@
 var NAVTREEINDEX18 =
 {
-"structocc_1_1qm_1_1MolecularOrbitals.html#a42ecb5682f81b685d1ede3638156c102":[2,0,2,13,9,15],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a5094978d6f838ecb6d1928556cf7bfed":[2,0,2,13,9,10],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a5387188d07730670762b780d38fa02d0":[2,0,2,13,9,17],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a606469f90346269c57f67766a5aeefb8":[2,0,2,13,9,4],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a61ce38e9829e0021c0c52f0e6af99236":[2,0,2,13,9,0],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a68a06cec7337738e22d949bc44803c8d":[2,0,2,13,9,24],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a7cfccac3930555cf2e48f8312b879666":[2,0,2,13,9,5],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a8105d19fe3bf101b657249855e76cf93":[2,0,2,13,9,14],
@@ -249,5 +244,10 @@ var NAVTREEINDEX18 =
 "structocc_1_1xdm_1_1XDM_1_1Parameters.html":[2,0,2,19,1,0],
 "structocc_1_1xdm_1_1XDM_1_1Parameters.html#ad8105cd00918a9cdb07c6ad1189f63b5":[2,0,2,19,1,0,1],
 "structocc_1_1xdm_1_1XDM_1_1Parameters.html#af6f6b497cd6148d75bb4f799e82d9f8a":[2,0,2,19,1,0,0],
-"structquickhull_1_1DiagnosticsData.html":[2,0,3,5]
+"structquickhull_1_1DiagnosticsData.html":[2,0,3,5],
+"structquickhull_1_1DiagnosticsData.html#af3c02ce754ecc18bf4bf49e943be44c4":[2,0,3,5,1],
+"structquickhull_1_1DiagnosticsData.html#afee5e9313774517c90af8c76ef6b2b8f":[2,0,3,5,0],
+"structquickhull_1_1HalfEdgeMesh_1_1Face.html":[2,0,3,1,0],
+"structquickhull_1_1HalfEdgeMesh_1_1Face.html#a3eef09b5bcb1d38899d2dbd45c6a6bd7":[2,0,3,1,0,0],
+"structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html":[2,0,3,1,1]
 };

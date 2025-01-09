@@ -1,10 +1,5 @@
 var NAVTREEINDEX17 =
 {
-"structocc_1_1io_1_1XyzFileReader.html#a4b4222343c963908605f7eea0990132d":[2,0,2,10,50,2],
-"structocc_1_1io_1_1XyzFileReader.html#a692a767876914a2813adb24cf5a1a62b":[2,0,2,10,50,0],
-"structocc_1_1io_1_1XyzFileReader.html#a7c5f5ab54ce2f1e05915af8c3bbb5881":[2,0,2,10,50,6],
-"structocc_1_1io_1_1XyzFileReader.html#ae0633069f684508fc31ebf9c95b4944e":[2,0,2,10,50,5],
-"structocc_1_1io_1_1XyzFileReader.html#af8adcab62558518da3e5fc592441702d":[2,0,2,10,50,7],
 "structocc_1_1io_1_1XyzFileReader.html#afa2d466954fd9184b905bace11347d20":[2,0,2,10,50,1],
 "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html":[2,0,2,10,1,0],
 "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html#a19ad1c5a7ffbed1e2870789c5a9258c5":[2,0,2,10,1,0,4],
@@ -249,5 +244,10 @@ var NAVTREEINDEX17 =
 "structocc_1_1qm_1_1MolecularOrbitals.html#a1106c90f3735a7a3c257e59b6e6f9ce9":[2,0,2,13,9,7],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a2b43899d050235b2bae0b56e19e778c2":[2,0,2,13,9,25],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a3124c3227fc0adfff138689f2bd893e4":[2,0,2,13,9,2],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a37b87111ecefe7abdd1fb708dc5173ad":[2,0,2,13,9,12]
+"structocc_1_1qm_1_1MolecularOrbitals.html#a37b87111ecefe7abdd1fb708dc5173ad":[2,0,2,13,9,12],
+"structocc_1_1qm_1_1MolecularOrbitals.html#a42ecb5682f81b685d1ede3638156c102":[2,0,2,13,9,15],
+"structocc_1_1qm_1_1MolecularOrbitals.html#a5094978d6f838ecb6d1928556cf7bfed":[2,0,2,13,9,10],
+"structocc_1_1qm_1_1MolecularOrbitals.html#a5387188d07730670762b780d38fa02d0":[2,0,2,13,9,17],
+"structocc_1_1qm_1_1MolecularOrbitals.html#a606469f90346269c57f67766a5aeefb8":[2,0,2,13,9,4],
+"structocc_1_1qm_1_1MolecularOrbitals.html#a61ce38e9829e0021c0c52f0e6af99236":[2,0,2,13,9,0]
 };
