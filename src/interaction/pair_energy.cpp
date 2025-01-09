@@ -444,7 +444,7 @@ bool load_dimer_energy(const std::string &filename,
   std::string line;
   std::getline(file, line);
   std::getline(file, line);
-  energies = nlohmann::json::parse(line).get<CEEnergyComponents>();
+  energies = nlohmann::json::parse(line);
   energies.is_computed = true;
   return true;
 }

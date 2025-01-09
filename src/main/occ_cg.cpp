@@ -211,7 +211,7 @@ inline void write_cg_dimers(
       nlohmann::json d;
       nlohmann::json e;
       auto label = dimer_labeller(dimer);
-      std::string cg_id{"??"};
+      std::string cg_id = fmt::format("U-{}", dimer_result.unique_idx);
       const auto kv = cg_labels.find(label);
       if (kv != cg_labels.end()) {
         cg_id = kv->second;

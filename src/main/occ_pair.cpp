@@ -28,11 +28,11 @@ namespace occ::interaction {
 
 inline void to_json(nlohmann::json &j, const CEParameterizedModel &m) {
   auto &factors = j["scale_factors"];
-  factors["coulomb"] = m.coulomb;
-  factors["exchange"] = m.exchange;
-  factors["repulsion"] = m.repulsion;
-  factors["polarization"] = m.polarization;
-  factors["dispersion"] = m.dispersion;
+  factors["Coulomb"] = m.coulomb;
+  factors["Exchange"] = m.exchange;
+  factors["Repulsion"] = m.repulsion;
+  factors["Polarization"] = m.polarization;
+  factors["Dispersion"] = m.dispersion;
   j["name"] = m.name;
   j["method"] = m.method;
   j["basis"] = m.basis;

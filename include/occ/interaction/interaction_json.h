@@ -4,7 +4,7 @@
 
 namespace occ::interaction {
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CEEnergyComponents, coulomb, exchange,
-                                   repulsion, polarization, dispersion, total)
+void to_json(nlohmann::json &j, const CEEnergyComponents&);
+void from_json(const nlohmann::json &j, CEEnergyComponents&);
 
 } // namespace occ::interaction
