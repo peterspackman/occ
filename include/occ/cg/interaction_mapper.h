@@ -1,5 +1,5 @@
 #pragma once
-#include <occ/cg/crystal_growth_energies.h>
+#include <occ/cg/result_types.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
 
@@ -20,13 +20,13 @@ public:
 
   std::vector<double>
   map_interactions(const std::vector<double> &solution_terms,
-                   const std::vector<Energies> &interaction_energies_vec);
+                   const std::vector<DimerResults> &interaction_energies_vec);
 
 private:
   void map_molecule_interactions(
       size_t mol_idx, const Molecule &mol,
       const std::vector<double> &solution_terms,
-      const std::vector<Energies> &interaction_energies_vec,
+      const std::vector<DimerResults> &interaction_energies_vec,
       std::vector<double> &solution_terms_uc);
 
   void map_neighbor_interactions(
@@ -34,12 +34,12 @@ private:
       std::vector<CrystalDimers::SymmetryRelatedDimer> &unit_cell_neighbors,
       const std::vector<CrystalDimers::SymmetryRelatedDimer>
           &asymmetric_neighbors,
-      const Energies &interaction_energies);
+      const DimerResults &interaction_energies);
 
   void map_single_dimer(size_t mol_idx, size_t neighbor_idx, Dimer &dimer,
                         const std::vector<CrystalDimers::SymmetryRelatedDimer>
                             &asymmetric_neighbors,
-                        const Energies &interaction_energies);
+                        const DimerResults &interaction_energies);
 
   ankerl::unordered_dense::set<DimerIndex, DimerIndexHash>
   build_related_set(const std::vector<DimerIndex> &related) const;
@@ -57,7 +57,7 @@ private:
   void update_dimer_properties(
       Dimer &dimer, size_t interaction_id,
       const std::vector<CrystalDimers::SymmetryRelatedDimer> &asym_dimers,
-      const Energies &energies) const;
+      const DimerResults &energies) const;
 
   void log_neighbor_info(size_t mol_idx, size_t uc_neighbors_size,
                          size_t asym_neighbors_size,

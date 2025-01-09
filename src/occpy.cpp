@@ -395,9 +395,10 @@ NB_MODULE(_occpy, m) {
                            uc.cell_type(), uc.a(), uc.b(), uc.c());
       });
 
-  using occ::cg::CrystalGrowthDimer;
   using occ::cg::CrystalGrowthResult;
+  using occ::cg::DimerResult;
   using occ::cg::DimerSolventTerm;
+  using occ::cg::MoleculeResult;
   using occ::interaction::LatticeConvergenceSettings;
   using occ::main::CGConfig;
 
@@ -428,17 +429,22 @@ NB_MODULE(_occpy, m) {
       .def_ro("ba", &DimerSolventTerm::ba)
       .def_ro("total", &DimerSolventTerm::total);
 
-  nb::class_<CrystalGrowthDimer>(m, "CrystalGrowthDimer")
-      .def_ro("dimer", &CrystalGrowthDimer::dimer)
-      .def_ro("unique_dimer_index", &CrystalGrowthDimer::unique_dimer_index)
-      .def_ro("interaction_energy", &CrystalGrowthDimer::interaction_energy)
-      .def_ro("solvent_term", &CrystalGrowthDimer::solvent_term)
-      .def_ro("crystal_contribution", &CrystalGrowthDimer::crystal_contribution)
-      .def_ro("nearest_neighbor", &CrystalGrowthDimer::nearest_neighbor);
+  nb::class_<DimerResult>(m, "DimerResult")
+      .def_ro("dimer", &DimerResult::dimer)
+      .def_ro("unique_idx", &DimerResult::unique_idx)
+      .def("total_energy", &DimerResult::total_energy)
+      .def("energy_component", &DimerResult::energy_component)
+      .def_ro("is_nearest_neighbor", &DimerResult::is_nearest_neighbor);
+
+  nb::class_<MoleculeResult>(m, "MoleculeResult")
+      .def_ro("dimer_results", &MoleculeResult::dimer_results)
+      .def_ro("total", &MoleculeResult::total)
+      .def_ro("has_inversion_symmetry", &MoleculeResult::has_inversion_symmetry)
+      .def("total_energy", &MoleculeResult::total_energy)
+      .def("energy_component", &MoleculeResult::energy_component);
 
   nb::class_<CrystalGrowthResult>(m, "CrystalGrowthResult")
-      .def_ro("pair_energies", &CrystalGrowthResult::pair_energies)
-      .def_ro("total_energies", &CrystalGrowthResult::total_energies);
+      .def_ro("molecule_results", &CrystalGrowthResult::molecule_results);
 
   nb::class_<occ::cg::EnergyTotal>(m, "CrystalGrowthEnergyTotal")
       .def_ro("crystal", &occ::cg::EnergyTotal::crystal_energy)

@@ -27,6 +27,9 @@ public:
     BA = false /**< The B molecule data is first, then A */
   };
 
+  // Default (empty) constructor.
+  Dimer() = default;
+
   /**
    * Constructor from two Molecule objects
    *
@@ -200,7 +203,7 @@ public:
    * \param e a double representing the interaction energy.
    * \param key a string labelling the component of the interaction energy.
    */
-  void set_interaction_energy(double e, const std::string &key = "total");
+  void set_interaction_energy(double e, const std::string &key = "Total");
 
   /**
    * Get the stored interaction energy for this Dimer.
@@ -209,7 +212,7 @@ public:
    *
    * \returns a double representing the interaction energy (default = 0.0)
    */
-  double interaction_energy(const std::string &key = "total") const;
+  double interaction_energy(const std::string &key = "Total") const;
 
   inline void set_interaction_energies(
       const ankerl::unordered_dense::map<std::string, double> &e) {

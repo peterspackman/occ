@@ -29,7 +29,7 @@ InteractionMapper::InteractionMapper(const Crystal &crystal,
 
 std::vector<double> InteractionMapper::map_interactions(
     const std::vector<double> &solution_terms,
-    const std::vector<Energies> &interaction_energies_vec) {
+    const std::vector<DimerResults> &interaction_energies_vec) {
   const auto &uc_molecules = m_crystal.unit_cell_molecules();
   std::vector<double> solution_terms_uc(m_uc_dimers.molecule_neighbors.size());
 
@@ -44,7 +44,7 @@ std::vector<double> InteractionMapper::map_interactions(
 void InteractionMapper::map_molecule_interactions(
     size_t mol_idx, const Molecule &mol,
     const std::vector<double> &solution_terms,
-    const std::vector<Energies> &interaction_energies_vec,
+    const std::vector<DimerResults> &interaction_energies_vec,
     std::vector<double> &solution_terms_uc) {
   size_t asym_idx = mol.asymmetric_molecule_idx();
   solution_terms_uc[mol_idx] = solution_terms[asym_idx];
@@ -65,7 +65,7 @@ void InteractionMapper::map_neighbor_interactions(
     std::vector<CrystalDimers::SymmetryRelatedDimer> &unit_cell_neighbors,
     const std::vector<CrystalDimers::SymmetryRelatedDimer>
         &asymmetric_neighbors,
-    const Energies &interaction_energies) {
+    const DimerResults &interaction_energies) {
   for (size_t j = 0; j < unit_cell_neighbors.size(); j++) {
     auto &[dimer, unique_idx] = unit_cell_neighbors[j];
     map_single_dimer(mol_idx, j, dimer, asymmetric_neighbors,
@@ -77,7 +77,7 @@ void InteractionMapper::map_single_dimer(
     size_t mol_idx, size_t neighbor_idx, Dimer &dimer,
     const std::vector<CrystalDimers::SymmetryRelatedDimer>
         &asymmetric_neighbors,
-    const Energies &interaction_energies) {
+    const DimerResults &interaction_energies) {
   const auto dimer_index =
       m_mapping_table.canonical_dimer_index(m_mapping_table.dimer_index(dimer));
   const auto &related = m_mapping_table.symmetry_related_dimers(dimer_index);
@@ -138,10 +138,12 @@ void InteractionMapper::handle_unmatched_dimer(
 void InteractionMapper::update_dimer_properties(
     Dimer &dimer, size_t interaction_id,
     const std::vector<CrystalDimers::SymmetryRelatedDimer> &asym_dimers,
-    const Energies &energies) const {
+    const DimerResults &energies) const {
 
-  dimer.set_property("asymmetric_dimer", fmt::format("dimer_{}", asym_dimers[interaction_id].unique_index));
-  dimer.set_interaction_energies(energies[interaction_id]);
+  dimer.set_property(
+      "asymmetric_dimer",
+      fmt::format("dimer_{}", asym_dimers[interaction_id].unique_index));
+  dimer.set_interaction_energies(energies[interaction_id].energy_components);
   dimer.set_interaction_id(interaction_id);
 }
 
@@ -159,7 +161,7 @@ void InteractionMapper::log_neighbor_info(size_t mol_idx,
 
 void InteractionMapper::log_dimer_info(size_t neighbor_idx,
                                        const Dimer &dimer) const {
-  const auto& uc_mols = m_crystal.unit_cell_molecules();
+  const auto &uc_mols = m_crystal.unit_cell_molecules();
   auto idx_b = dimer.b().unit_cell_molecule_idx();
   auto shift_b = dimer.b().cell_shift() - uc_mols[idx_b].cell_shift();
   double rc = dimer.centroid_distance();

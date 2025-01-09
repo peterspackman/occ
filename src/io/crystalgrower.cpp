@@ -94,40 +94,6 @@ NetWriter::NetWriter(const std::string &filename)
 
 NetWriter::NetWriter(std::ostream &stream) : m_dest(stream) {}
 
-struct FormulaIndex {
-  int count{1};
-  char letter{'A'};
-  bool operator==(const FormulaIndex &o) const {
-    return count == o.count && letter == o.letter;
-  }
-};
-
-struct FormulaIndexHash {
-  uint64_t operator()(const FormulaIndex &x) const noexcept {
-    return ankerl::unordered_dense::detail::wyhash::mix(x.count, x.letter);
-  }
-};
-
-std::vector<FormulaIndex>
-build_formula_indices_for_symmetry_unique_molecules(const Crystal &crystal) {
-  std::vector<FormulaIndex> result;
-  ankerl::unordered_dense::map<std::string, FormulaIndex> formula_count;
-  for (const auto &mol : crystal.symmetry_unique_molecules()) {
-    std::string formula = occ::core::chemical_formula(mol.elements());
-    auto it = formula_count.find(formula);
-    FormulaIndex formula_index;
-    if (it != formula_count.end()) {
-      it->second.count++;
-      formula_index = it->second;
-    } else {
-      formula_index.letter += static_cast<char>(formula_count.size());
-      formula_count.insert({formula, formula_index});
-    }
-    result.push_back(formula_index);
-  }
-  return result;
-}
-
 inline std::string get_asymmetric_dimer_name(const core::Dimer &n) {
   const auto &properties = n.properties();
   std::string name = "";
@@ -139,6 +105,7 @@ inline std::string get_asymmetric_dimer_name(const core::Dimer &n) {
 }
 
 void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
+  m_interaction_labels.clear();
   const auto &uc_molecules = crystal.unit_cell_molecules();
   CrystalDimers uc_dimers_copy = uc_dimers;
   sort_neighbors(uc_dimers_copy);
@@ -151,27 +118,12 @@ void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
   size_t uc_idx = 0;
   constexpr double max_de = 1e-4;
 
-  std::vector<FormulaIndex> sym_formula_indices =
-      build_formula_indices_for_symmetry_unique_molecules(crystal);
+  ankerl::unordered_dense::map<std::string, std::vector<double>> f2e;
 
-  ankerl::unordered_dense::map<FormulaIndex, std::vector<double>,
-                               FormulaIndexHash>
-      f2e;
-
-  // TODO fix for multiple molecules in asymmetric unit
-  // 1A -> 1 is the conformer number, A is the compound i.e. chemical
-  // composition id
   for (const auto &mol : uc_molecules) {
 
-    FormulaIndex formula_index =
-        sym_formula_indices[mol.asymmetric_molecule_idx()];
-    if (!f2e.contains(formula_index)) {
-      f2e.insert({formula_index, {}});
-    }
+    std::string formula_index = mol.name();
     std::vector<double> &unique_interaction_energies = f2e[formula_index];
-    occ::log::debug("uc mol {}, asym = {}, formula = {} {}", uc_idx,
-                    mol.asymmetric_molecule_idx(), formula_index.count,
-                    formula_index.letter);
     auto mol_neighbors = neighbors[uc_idx];
     for (const auto &[n, unique_index] : neighbors[uc_idx]) {
       const auto uc_shift = n.b().cell_shift();
@@ -192,11 +144,14 @@ void NetWriter::write(const Crystal &crystal, const CrystalDimers &uc_dimers) {
             1 + std::distance(unique_interaction_energies.begin(), match);
       }
 
-      auto dimer_name = get_asymmetric_dimer_name(n);
+      auto asym_dimer_filename = get_asymmetric_dimer_name(n);
+      auto dimer_label = dimer_labeller(n);
+      m_interaction_labels.insert(
+          {dimer_label, fmt::format("{}-{}", formula_index, interaction_idx)});
 
-      fmt::print(m_dest, "{}:[{}{}][{}] {} R={:.3f}\n", interaction_idx,
-                 formula_index.count, formula_index.letter, dimer_labeller(n),
-                 dimer_name, n.centroid_distance());
+      fmt::print(m_dest, "{}:[{}][{}] {} R={:.3f}\n", interaction_idx,
+                 formula_index, dimer_label, asym_dimer_filename,
+                 n.centroid_distance());
     }
     for (double e : unique_interaction_energies) {
       fmt::print(m_dest, "{:7.3f}\n", e * occ::units::KJ_TO_KCAL);

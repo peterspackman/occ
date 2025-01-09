@@ -1,6 +1,6 @@
 #pragma once
 #include <CLI/App.hpp>
-#include <occ/cg/crystal_growth_energies.h>
+#include <occ/cg/result_types.h>
 #include <occ/core/dimer.h>
 #include <occ/interaction/pair_energy.h>
 

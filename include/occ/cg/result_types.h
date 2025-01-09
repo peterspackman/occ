@@ -1,16 +1,21 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
+#include <occ/core/dimer.h>
+#include <occ/interaction/pairinteraction.h>
 #include <string>
 #include <vector>
 
 namespace occ::cg {
+
+using PairEnergies = std::vector<occ::interaction::CEEnergyComponents>;
 using CGEnergyComponents = ankerl::unordered_dense::map<std::string, double>;
+using CGEnergies = std::vector<CGEnergyComponents>;
 
 namespace components {
 
 constexpr const char *total = "Total";
 constexpr const char *crystal_total = "Crystal Total";
-constexpr const char *crystal_nn = "Crystal (reassigned)";
+constexpr const char *crystal_nn = "Crystal (redistributed)";
 constexpr const char *solvation_ab = "Solvation (A->B)";
 constexpr const char *solvation_ba = "Solvation (B->A)";
 constexpr const char *solvation_total = "Solvation Total";
@@ -22,9 +27,22 @@ constexpr const char *exchange = "Exchange";
 
 } // namespace components
 
+struct DimerSolventTerm {
+  double ab{0.0};
+  double ba{0.0};
+  double total{0.0};
+};
+
+struct EnergyTotal {
+  double crystal_energy{0.0};
+  double interaction_energy{0.0};
+  double solution_term{0.0};
+};
+
 struct DimerResult {
+  occ::core::Dimer dimer;
   bool is_nearest_neighbor{false};
-  size_t unique_idx{0};
+  int unique_idx{0};
 
   CGEnergyComponents energy_components{{components::total, 0.0},
                                        {components::crystal_total, 0.0},
@@ -38,6 +56,8 @@ struct DimerResult {
   bool has_energy_component(const std::string &key) const;
 };
 
+using DimerResults = std::vector<DimerResult>;
+
 struct MoleculeResult {
   CGEnergyComponents energy_components{{components::total, 0.0},
                                        {components::crystal_total, 0.0},
@@ -45,6 +65,8 @@ struct MoleculeResult {
 
   std::vector<DimerResult> dimer_results;
   bool has_inversion_symmetry{true};
+
+  cg::EnergyTotal total;
 
   double total_energy() const;
   void add_dimer_result(const DimerResult &dimer);

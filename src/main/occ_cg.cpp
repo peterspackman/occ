@@ -13,6 +13,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
+#include <occ/crystal/dimer_labeller.h>
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/dft/dft.h>
 #include <occ/driver/crystal_growth.h>
@@ -41,36 +42,38 @@
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;
 using occ::crystal::CrystalDimers;
-
 using occ::driver::WavefunctionChoice;
 
-void write_cg_structure_file(const std::string &filename,
-                             const Crystal &crystal,
-                             const CrystalDimers &uc_dimers) {
+inline void write_cg_structure_file(const std::string &filename,
+                                    const Crystal &crystal,
+                                    const CrystalDimers &uc_dimers) {
   occ::log::info("Writing crystalgrower structure file to '{}'", filename);
   occ::io::crystalgrower::StructureWriter cg_structure_writer(filename);
   cg_structure_writer.write(crystal, uc_dimers);
 }
 
-void write_cg_net_file(const std::string &filename, const Crystal &crystal,
-                       const CrystalDimers &uc_dimers) {
+inline auto write_cg_net_file(const std::string &filename,
+                              const Crystal &crystal,
+                              const CrystalDimers &uc_dimers) {
   occ::log::info("Writing crystalgrower net file to '{}'", filename);
   occ::io::crystalgrower::NetWriter cg_net_writer(filename);
   cg_net_writer.write(crystal, uc_dimers);
+  return cg_net_writer.interaction_labels();
 }
 
-void write_kmcpp_input_file(const std::string &filename, const Crystal &crystal,
-                            const CrystalDimers &uc_dimers,
-                            const std::vector<double> &solution_terms) {
+inline void write_kmcpp_input_file(const std::string &filename,
+                                   const Crystal &crystal,
+                                   const CrystalDimers &uc_dimers,
+                                   const std::vector<double> &solution_terms) {
   occ::log::info("Writing kmcpp structure file to '{}'", filename);
   occ::io::kmcpp::InputWriter kmcpp_structure_writer(filename);
   kmcpp_structure_writer.write(crystal, uc_dimers, solution_terms);
 }
 
-std::vector<double> map_unique_interactions_to_uc_molecules(
+inline std::vector<double> map_unique_interactions_to_uc_molecules(
     const Crystal &crystal, const CrystalDimers &dimers,
     CrystalDimers &uc_dimers, const std::vector<double> &solution_terms,
-    const std::vector<occ::cg::Energies> &interaction_energies_vec,
+    const std::vector<occ::cg::DimerResults> &interaction_energies_vec,
     bool inversion) {
 
   occ::cg::InteractionMapper mapper(crystal, dimers, uc_dimers, inversion);
@@ -169,9 +172,12 @@ inline void write_wulff(const std::string &filename,
   occ::io::write_ply_mesh(filename, mesh, {}, false);
 }
 
-void write_cg_dimers(const occ::driver::CrystalGrowthCalculatorOptions &opts,
-                     const occ::crystal::Crystal &crystal,
-                     const occ::cg::CrystalGrowthResult &result) {
+inline void write_cg_dimers(
+    const occ::driver::CrystalGrowthCalculatorOptions &opts,
+    const occ::crystal::Crystal &crystal,
+    const occ::cg::CrystalGrowthResult &result,
+    const occ::io::crystalgrower::NetWriter::InteractionLabels &cg_labels) {
+
   nlohmann::json j;
   j["result_type"] = "cg";
   j["title"] = opts.basename;
@@ -182,7 +188,8 @@ void write_cg_dimers(const occ::driver::CrystalGrowthCalculatorOptions &opts,
   j["crystal"] = crystal;
 
   j["totals_per_molecule"] = {};
-  for (const auto &mol_total : result.total_energies) {
+  for (const auto &mol_result : result.molecule_results) {
+    const auto &mol_total = mol_result.total;
     nlohmann::json e;
     e["crystal_energy"] = mol_total.crystal_energy;
     e["interaction_energy"] = mol_total.interaction_energy;
@@ -192,24 +199,34 @@ void write_cg_dimers(const occ::driver::CrystalGrowthCalculatorOptions &opts,
 
   const auto &uc_atoms = crystal.unit_cell_atoms();
 
+  auto dimer_labeller = occ::crystal::SymmetryDimerLabeller(crystal);
+  dimer_labeller.connection = "-";
+  dimer_labeller.format.fmt_string = "{}";
+
   j["pairs"] = {};
-  for (const auto &mol_pairs : result.pair_energies) {
+  for (const auto &mol_result : result.molecule_results) {
     nlohmann::json m;
-    for (const auto &cg_dimer : mol_pairs) {
+    for (const auto &dimer_result : mol_result.dimer_results) {
+      const auto &dimer = dimer_result.dimer;
       nlohmann::json d;
       nlohmann::json e;
-      e["unique_dimer_index"] = cg_dimer.unique_dimer_index;
-      e["interaction_energy"] = cg_dimer.interaction_energy;
-      e["crystal_contribution"] = cg_dimer.crystal_contribution;
-      e["is_nearest_neighbor"] = cg_dimer.nearest_neighbor;
-      e["solvent_ab"] = cg_dimer.solvent_term.ab;
-      e["solvent_ba"] = cg_dimer.solvent_term.ba;
-      e["solvent_total"] = cg_dimer.solvent_term.total;
+      auto label = dimer_labeller(dimer);
+      std::string cg_id{"??"};
+      const auto kv = cg_labels.find(label);
+      if (kv != cg_labels.end()) {
+        cg_id = kv->second;
+      }
+      for (const auto &[k, v] : dimer_result.energy_components) {
+        e[k] = v;
+      }
+      d["Nearest Neighbor"] = dimer_result.is_nearest_neighbor;
+      d["Unique Index"] = dimer_result.unique_idx;
+      d["Crystalgrower Identifier"] = cg_id;
       d["energies"] = e;
 
       nlohmann::json offsets_a = {};
       {
-        const auto &a = cg_dimer.dimer.a();
+        const auto &a = dimer.a();
         const auto &a_uc_idx = a.unit_cell_idx();
         const auto &a_uc_shift = a.unit_cell_shift();
         for (int i = 0; i < a_uc_idx.rows(); i++) {
@@ -220,7 +237,7 @@ void write_cg_dimers(const occ::driver::CrystalGrowthCalculatorOptions &opts,
       }
       nlohmann::json offsets_b = {};
       {
-        const auto &b = cg_dimer.dimer.b();
+        const auto &b = dimer.b();
         const auto &b_uc_idx = b.unit_cell_idx();
         const auto &b_uc_shift = b.unit_cell_shift();
         for (int i = 0; i < b_uc_idx.rows(); i++) {
@@ -307,6 +324,13 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
       calc.crystal(), calc.full_dimers(), uc_dimers, calc.solution_terms(),
       calc.interaction_energies(), !opts.use_asymmetric_partition);
 
+  // TODO tidy this up, but for now just do the same thing for crystal energies
+  // too so we get vacuum surface energies
+  auto vacuum_terms_uc = map_unique_interactions_to_uc_molecules(
+      calc.crystal(), calc.full_dimers(), uc_dimers_vacuum,
+      calc.solution_terms(), calc.crystal_interaction_energies(),
+      !opts.use_asymmetric_partition);
+
   if (config.write_kmcpp_file) {
     write_kmcpp_input_file(fmt::format("{}_kmcpp.json", basename),
                            calc.crystal(), uc_dimers, solution_terms_uc);
@@ -329,8 +353,27 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
                 surface_energies);
     write_wulff(fmt::format("{}_vacuum.ply", basename, config.solvent),
                 vacuum_surface_energies);
-    j["vacuum"] = calc.crystal_interaction_energies();
-    j["solvated"] = calc.interaction_energies();
+
+    // TODO refactor this
+    nlohmann::json vacuum_energies;
+    for (const auto &mol : calc.crystal_interaction_energies()) {
+      nlohmann::json tmp;
+      for (const auto &v : mol) {
+        tmp.push_back(v.energy_components);
+      }
+      vacuum_energies.push_back(tmp);
+    }
+    nlohmann::json solvated_energies;
+    for (const auto &mol : calc.interaction_energies()) {
+      nlohmann::json tmp;
+      for (const auto &v : mol) {
+        tmp.push_back(v.energy_components);
+      }
+      solvated_energies.push_back(tmp);
+    }
+    j["vacuum"] = vacuum_energies;
+    j["solvated"] = solvated_energies;
+
     std::string surf_energy_filename =
         fmt::format("{}_surface_energies.json", basename);
     occ::log::info("Writing surface energies to '{}'", surf_energy_filename);
@@ -338,9 +381,11 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
     destination << j.dump(2);
   }
 
-  write_cg_dimers(opts, calc.crystal(), result);
-  write_cg_net_file(fmt::format("{}_{}_net.txt", basename, config.solvent),
-                    calc.crystal(), uc_dimers);
+  auto cg_interaction_labels =
+      write_cg_net_file(fmt::format("{}_{}_net.txt", basename, config.solvent),
+                        calc.crystal(), uc_dimers);
+
+  write_cg_dimers(opts, calc.crystal(), result, cg_interaction_labels);
 
   // calc.dipole_correction();
   return result;

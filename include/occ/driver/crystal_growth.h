@@ -1,6 +1,6 @@
 #pragma once
-#include <occ/cg/crystal_growth_energies.h>
 #include <occ/cg/distance_partition.h>
+#include <occ/cg/result_types.h>
 #include <occ/cg/smd_solvation.h>
 #include <occ/cg/solvation_contribution.h>
 #include <occ/cg/solvent_surface.h>
@@ -15,8 +15,6 @@
 #include <occ/interaction/pairinteraction.h>
 #include <occ/io/wavefunction_json.h>
 #include <occ/qm/wavefunction.h>
-#include <string>
-#include <vector>
 
 namespace occ::driver {
 
@@ -109,8 +107,7 @@ public:
   virtual void init_monomer_energies() = 0;
   virtual void converge_lattice_energy() = 0;
 
-  virtual std::tuple<cg::EnergyTotal, std::vector<cg::CrystalGrowthDimer>>
-  process_neighbors_for_symmetry_unique_molecule(
+  virtual cg::MoleculeResult process_neighbors_for_symmetry_unique_molecule(
       int i, const std::string &molname) = 0;
 
   virtual cg::CrystalGrowthResult evaluate_molecular_surroundings() = 0;
@@ -127,8 +124,8 @@ protected:
   cg::PairEnergies m_dimer_energies;
   crystal::CrystalDimers m_nearest_dimers;
   std::vector<SolventNeighborContributionList> m_solvation_breakdowns;
-  std::vector<cg::Energies> m_interaction_energies;
-  std::vector<cg::Energies> m_crystal_interaction_energies;
+  std::vector<cg::DimerResults> m_interaction_energies;
+  std::vector<cg::DimerResults> m_crystal_interaction_energies;
   std::vector<double> m_solution_terms;
 
 private:
@@ -146,8 +143,7 @@ public:
 
   cg::CrystalGrowthResult evaluate_molecular_surroundings() override;
 
-  std::tuple<cg::EnergyTotal, std::vector<cg::CrystalGrowthDimer>>
-  process_neighbors_for_symmetry_unique_molecule(
+  cg::MoleculeResult process_neighbors_for_symmetry_unique_molecule(
       int i, const std::string &molname) override;
 };
 
@@ -162,8 +158,7 @@ public:
 
   cg::CrystalGrowthResult evaluate_molecular_surroundings() override;
 
-  std::tuple<cg::EnergyTotal, std::vector<cg::CrystalGrowthDimer>>
-  process_neighbors_for_symmetry_unique_molecule(
+  cg::MoleculeResult process_neighbors_for_symmetry_unique_molecule(
       int i, const std::string &molname) override;
 
   std::vector<double> m_gas_phase_energies;

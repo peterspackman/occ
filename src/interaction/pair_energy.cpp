@@ -661,12 +661,12 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
     }
     auto &dimer = converged_dimers.unique_dimers[i];
     const auto &e = converged_energies[i];
-    dimer.set_interaction_energy(e.coulomb_kjmol(), "coulomb");
-    dimer.set_interaction_energy(e.exchange_kjmol(), "exchange");
-    dimer.set_interaction_energy(e.repulsion_kjmol(), "repulsion");
-    dimer.set_interaction_energy(e.dispersion_kjmol(), "dispersion");
-    dimer.set_interaction_energy(e.polarization_kjmol(), "polarization");
-    dimer.set_interaction_energy(e.total_kjmol(), "total");
+    dimer.set_interaction_energy(e.coulomb_kjmol(), "Coulomb");
+    dimer.set_interaction_energy(e.exchange_kjmol(), "Exchange");
+    dimer.set_interaction_energy(e.repulsion_kjmol(), "Repulsion");
+    dimer.set_interaction_energy(e.dispersion_kjmol(), "Dispersion");
+    dimer.set_interaction_energy(e.polarization_kjmol(), "Polarization");
+    dimer.set_interaction_energy(e.total_kjmol(), "Total");
   }
   return {lattice_energy, converged_dimers, converged_energies};
 }
@@ -710,4 +710,4 @@ bool PairEnergyStore::load(int id, const Dimer &d, CEEnergyComponents &e) {
                            e);
 }
 
-} // namespace occ::main
+} // namespace occ::interaction
