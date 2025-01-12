@@ -17,6 +17,7 @@ using ShellPairList = std::vector<std::vector<size_t>>;
 using IntEnv = cint::IntegralEnvironment;
 using ShellKind = Shell::Kind;
 using Op = cint::Operator;
+using occ::core::PointCharge;
 
 Mat IntegralEngine::one_electron_operator(Op op,
                                           bool use_shellpair_list) const {
@@ -704,11 +705,11 @@ Mat IntegralEngine::schwarz() const {
  * Three-center integrals
  */
 Mat IntegralEngine::point_charge_potential(
-    const std::vector<occ::core::PointCharge> &charges) {
+    const std::vector<PointCharge> &charges, double alpha) {
   ShellList dummy_shells;
   dummy_shells.reserve(charges.size());
   for (size_t i = 0; i < charges.size(); i++) {
-    dummy_shells.push_back(Shell(charges[i]));
+    dummy_shells.push_back(Shell(charges[i], alpha));
   }
   set_auxiliary_basis(dummy_shells, true);
   if (is_spherical()) {
@@ -721,64 +722,71 @@ Mat IntegralEngine::point_charge_potential(
 }
 
 Mat IntegralEngine::wolf_point_charge_potential(
-    const std::vector<occ::core::PointCharge> &charges, double alpha,
+    const std::vector<PointCharge> &external_charges,
+    const std::vector<double> &atomic_partial_charges, double alpha,
     double cutoff) {
-  // First term in self-energy correction
-  double erfc_term = std::erfc(alpha * cutoff) / cutoff;
 
-  // Second term in self-energy correction (2α/√π)exp(-α²Rc²)
-  double gaussian_term = (2.0 * alpha / std::sqrt(M_PI)) *
-                         std::exp(-alpha * alpha * cutoff * cutoff);
-
-  // Total self-energy correction
-  double self_term = erfc_term + gaussian_term;
-
-  /*
-   * Wolf sum decomposition:
-   * V_wolf(r) = erfc(αr)/r - [erfc(αRc)/Rc + (2α/√π)exp(-α²Rc²)]
-   *
-   * Using: erfc(αr)/r = 1/r - erf(αr)/r
-   *
-   * Matrix elements:
-   * <μ|V_wolf|ν> = <μ|1/r|ν> - <μ|erf(αr)/r|ν> - self_term * <μ|1|ν>
-   *
-   * Where:
-   * - <μ|1/r|ν> is the regular point charge potential (Vq)
-   * - <μ|erf(αr)/r|ν> is computed using gaussian charge distribution (Vgauss)
-   * - <μ|1|ν> is the overlap integral (S)
-   */
-
-  // Regular point charge potential
-  Mat Vq = point_charge_potential(charges);
-
-  // Overlap matrix for self-term
-  Mat S = one_electron_operator(Op::overlap);
+  // TODO cutoff based on distance from centroid of molecule?
+  std::vector<PointCharge> charges;
+  for (const auto pc : external_charges) {
+    auto rij = pc.position().norm();
+    if (rij > cutoff)
+      continue;
+    charges.push_back(pc);
+  }
 
   // Gaussian charge distribution potential
-  Mat Vgauss;
+  Mat Vext, Vintra;
   ShellList dummy_shells;
+
+  // add nuclear charge
   dummy_shells.reserve(charges.size());
-  for (size_t i = 0; i < charges.size(); i++) {
-    dummy_shells.push_back(Shell(charges[i], alpha));
+  for (const auto &charge : charges) {
+    dummy_shells.push_back(Shell(charge));
   }
+  // unit shell
   set_auxiliary_basis(dummy_shells, true);
 
+  double old_omega = m_env.range_separated_omega();
+  m_env.set_range_separated_omega(-alpha);
+
   if (is_spherical()) {
-    Vgauss = detail::point_charge_potential_kernel<ShellKind::Spherical>(
+    Vext = detail::point_charge_potential_kernel<ShellKind::Spherical>(
         m_env, m_aobasis, m_auxbasis, m_shellpairs);
   } else {
-    Vgauss = detail::point_charge_potential_kernel<ShellKind::Cartesian>(
+    Vext = detail::point_charge_potential_kernel<ShellKind::Cartesian>(
         m_env, m_aobasis, m_auxbasis, m_shellpairs);
   }
 
-  fmt::print("Wolf potential decomposition:\n");
-  fmt::print("Point charge potential (Vq):\n{}\n", Vq);
-  fmt::print("Gaussian potential (Vg):\n{}\n", Vgauss);
-  fmt::print("Self term: erfc(αRc)/Rc + (2α/√π)exp(-α²Rc²) = {}\n", self_term);
-  fmt::print("Self term * overlap:\n{}\n", self_term * S);
-  fmt::print("Final Wolf potential:\n{}\n", Vq - Vgauss - self_term * S);
+  dummy_shells.clear();
+  double total_charge = 0.0;
+  const auto &atoms = m_aobasis.atoms();
+  for (int i = 0; i < atoms.size(); i++) {
+    dummy_shells.push_back(
+        Shell(PointCharge(atomic_partial_charges[i], atoms[i].position())));
+    total_charge += atomic_partial_charges[i];
+  }
+  set_auxiliary_basis(dummy_shells, true);
+  m_env.set_range_separated_omega(alpha);
 
-  return Vq - Vgauss - self_term * S;
+  if (is_spherical()) {
+    Vintra = detail::point_charge_potential_kernel<ShellKind::Spherical>(
+        m_env, m_aobasis, m_auxbasis, m_shellpairs);
+  } else {
+    Vintra = detail::point_charge_potential_kernel<ShellKind::Cartesian>(
+        m_env, m_aobasis, m_auxbasis, m_shellpairs);
+  }
+
+  m_env.set_range_separated_omega(old_omega);
+
+  total_charge += std::accumulate(
+      charges.begin(), charges.end(),
+      0.0, // initial value
+      [](double sum, const PointCharge &pc) { return sum + pc.charge(); });
+  double background_term = total_charge * std::erfc(alpha * cutoff) / cutoff;
+
+  Mat S = one_electron_operator(Op::overlap);
+  return Vext - Vintra + background_term * S;
 }
 
 #if HAVE_ECPINT
@@ -814,8 +822,7 @@ Vec IntegralEngine::electric_potential(const MolecularOrbitals &mo,
   dummy_shells.reserve(points.cols());
   Vec result = Vec::Zero(points.cols());
   for (size_t i = 0; i < points.cols(); i++) {
-    dummy_shells.push_back(
-        Shell({1.0, {points(0, i), points(1, i), points(2, i)}}));
+    dummy_shells.push_back(Shell(PointCharge(1.0, points.col(i))));
   }
   set_auxiliary_basis(dummy_shells, true);
 

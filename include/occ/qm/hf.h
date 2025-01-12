@@ -41,6 +41,9 @@ public:
   }
 
   double nuclear_point_charge_interaction_energy(const PointChargeList &) const;
+  double wolf_point_charge_interaction_energy(const PointChargeList &,
+                                              const std::vector<double> &partial_charges,
+                                              double alpha, double rc) const;
 
   Mat compute_fock(const MolecularOrbitals &mo,
                    const Mat &Schwarz = Mat()) const;
@@ -80,7 +83,11 @@ public:
 
   Mat compute_effective_core_potential_matrix() const;
   Mat compute_point_charge_interaction_matrix(
-      const PointChargeList &point_charges) const;
+      const PointChargeList &point_charges, double alpha = 1e16) const;
+
+  Mat compute_wolf_interaction_matrix(const PointChargeList &point_charges,
+                                      const std::vector<double> &partial_charges,
+                                      double alpha, double rc) const;
 
   Mat3N electronic_electric_field_contribution(const MolecularOrbitals &mo,
                                                const Mat3N &) const;
@@ -107,10 +114,9 @@ public:
 
   template <unsigned int order = 1>
   auto compute_nuclear_multipoles(const Vec3 &o = {0.0, 0.0, 0.0}) const {
-    std::array<double, 3> c{o(0), o(1), o(2)};
     auto charges = occ::core::make_point_charges(m_atoms);
     return occ::core::Multipole<order>{
-        occ::core::compute_multipoles<order>(charges, c)};
+        occ::core::compute_multipoles<order>(charges, o)};
   }
 
   template <int order>

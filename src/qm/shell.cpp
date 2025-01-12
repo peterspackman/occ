@@ -93,10 +93,10 @@ Shell::Shell(const occ::core::PointCharge &point_charge, double alpha)
     : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
   exponents(0) = alpha;
   contraction_coefficients(0, 0) =
-      -point_charge.first / (2 * constants::sqrt_pi<double> * gint(2, alpha));
+      -point_charge.charge() / (2 * constants::sqrt_pi<double> * gint(2, alpha));
   u_coefficients = contraction_coefficients;
-  origin = {point_charge.second[0], point_charge.second[1],
-            point_charge.second[2]};
+  const auto &pos = point_charge.position();
+  origin = {pos.x(), pos.y(), pos.z()};
 }
 
 Shell::Shell() : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {

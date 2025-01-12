@@ -64,13 +64,12 @@ public:
                                          const Proc &p) const {
     Vec result(m_surface_areas_coulomb.rows());
     Mat X;
-    std::vector<std::pair<double, std::array<double, 3>>> point_charges;
-    point_charges.emplace_back(0, std::array<double, 3>{0.0, 0.0, 0.0});
+    std::vector<core::PointCharge> point_charges;
+    point_charges.emplace_back(0, 0.0, 0.0, 0.0);
     for (int i = 0; i < m_surface_areas_coulomb.rows(); i++) {
-      point_charges[0].first = m_asc(i);
-      point_charges[0].second[0] = m_surface_positions_coulomb(0, i);
-      point_charges[0].second[1] = m_surface_positions_coulomb(1, i);
-      point_charges[0].second[2] = m_surface_positions_coulomb(2, i);
+      point_charges[0].set_charge(m_asc(i));
+      point_charges[0].set_position(m_surface_positions_coulomb.col(i));
+
       X = p.compute_point_charge_interaction_matrix(point_charges);
       switch (mo.kind) {
       case SpinorbitalKind::Restricted: {
@@ -139,7 +138,7 @@ public:
 
     for (int i = 0; i < m_solvation_model.num_surface_points(); i++) {
       const auto &pt = m_solvation_model.surface_positions_coulomb().col(i);
-      m_point_charges.push_back({0.0, {pt(0), pt(1), pt(2)}});
+      m_point_charges.emplace_back(0.0, pt);
     }
 
     m_cds_solvation_energy = m_solvation_model.smd_cds_energy();
@@ -239,7 +238,7 @@ public:
     m_solvation_model.set_surface_potential(v);
     auto asc = m_solvation_model.apparent_surface_charge();
     for (int i = 0; i < m_point_charges.size(); i++) {
-      m_point_charges[i].first = asc(i);
+      m_point_charges[i].set_charge(asc(i));
     }
     double surface_energy = m_solvation_model.surface_polarization_energy();
     m_nuclear_solvation_energy = m_qn.dot(asc);
@@ -352,7 +351,7 @@ private:
   const std::vector<occ::core::Atom> &m_atoms;
   Proc &m_proc;
   ContinuumSolvationModel m_solvation_model;
-  std::vector<std::pair<double, std::array<double, 3>>> m_point_charges;
+  std::vector<core::PointCharge> m_point_charges;
   double m_electronic_solvation_energy{0.0}, m_nuclear_solvation_energy{0.0},
       m_surface_solvation_energy, m_cds_solvation_energy;
   Mat m_X;

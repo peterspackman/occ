@@ -9,6 +9,7 @@ struct BeckeGridSettings {
   double radial_precision{1e-8};
   bool reduced_first_row_element_grid{true};
   std::string pruning_scheme{"nwchem"};
+  std::string filename{""};
 
   inline bool operator==(const BeckeGridSettings &rhs) const {
     return (max_angular_points == rhs.max_angular_points) &&

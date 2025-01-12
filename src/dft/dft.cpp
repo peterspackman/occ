@@ -1,6 +1,7 @@
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+#include <fmt/os.h>
 #include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -83,6 +84,24 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
                   occ::timing::total(occ::timing::grid_init));
   occ::log::debug("Grid point creation took {} seconds",
                   occ::timing::total(occ::timing::grid_points));
+
+  if(!settings.filename.empty()) {
+    occ::log::info("Writing DFT grids to {}", settings.filename);
+    auto grid_file = fmt::output_file(settings.filename);
+    int atom_idx = 0;
+    for(const auto &grid: m_atom_grids) {
+      grid_file.print("Atom grid {} Z = {}\n", atom_idx, grid.atomic_number);
+      grid_file.print("{:>20s} {:>20s} {:>20s} {:>20s}\n", "weight", "x", "y", "z");
+      for(int i = 0; i < grid.num_points(); i++) {
+        double w = grid.weights(i);
+        double x = grid.points(0, i);
+        double y = grid.points(1, i);
+        double z = grid.points(2, i);
+        grid_file.print("{: 20.12e} {: 20.12e} {: 20.12e} {: 20.12e}\n", w, x, y, z);
+      }
+      atom_idx++;
+    }
+  }
 
   for (const auto &func : m_funcs.unpolarized) {
     if (func.needs_nlc_correction()) {

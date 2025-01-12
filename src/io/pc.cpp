@@ -43,7 +43,7 @@ void PointChargeFileReader::parse(std::istream &is) {
     y *= occ::units::ANGSTROM_TO_BOHR;
     z *= occ::units::ANGSTROM_TO_BOHR;
     occ::log::debug("Found point charge line: {} {} {} {}", q, x, y, z);
-    point_charges.emplace_back(occ::core::PointCharge{q, {x, y, z}});
+    point_charges.emplace_back(occ::core::PointCharge(q, x, y, z));
     num_charges--;
   }
 }

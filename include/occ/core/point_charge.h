@@ -4,14 +4,36 @@
 #include <occ/core/linear_algebra.h>
 
 namespace occ::core {
-using PointCharge = std::pair<double, std::array<double, 3>>;
+
+// In point_charge.h
+class PointCharge {
+public:
+  PointCharge(double charge, double x, double y, double z)
+      : m_charge(charge), m_position(x, y, z) {}
+
+  PointCharge(double charge, const std::array<double, 3> &pos)
+      : m_charge(charge), m_position(pos[0], pos[1], pos[2]) {}
+
+  PointCharge(double charge, const Vec3 &pos)
+      : m_charge(charge), m_position(pos) {}
+
+  inline double charge() const { return m_charge; }
+  inline void set_charge(double q) { m_charge = q; }
+  inline const auto &position() const { return m_position; }
+  inline void set_position(const Vec3 &pos) { m_position = pos; }
+
+private:
+  double m_charge;
+  Vec3 m_position;
+};
 
 std::vector<PointCharge> inline make_point_charges(
     const std::vector<Atom> &atoms) {
-  std::vector<PointCharge> q(atoms.size());
+  std::vector<PointCharge> q;
+  q.reserve(atoms.size());
   for (const auto &atom : atoms) {
-    q.emplace_back(static_cast<double>(atom.atomic_number),
-                   std::array<double, 3>{{atom.x, atom.y, atom.z}});
+    q.emplace_back(static_cast<double>(atom.atomic_number), atom.x, atom.y,
+                   atom.z);
   }
   return q;
 }
@@ -25,17 +47,17 @@ constexpr unsigned int num_multipole_components(unsigned int order) {
 
 template <unsigned int order = 0>
 inline auto compute_multipoles(const std::vector<PointCharge> &charges,
-                               std::array<double, 3> origin = {0.0, 0.0, 0.0}) {
+                               const Vec3 &origin = Vec3::Zero()) {
   constexpr unsigned int ncomp = num_multipole_components(order);
 
   std::array<double, ncomp> result{0.0};
-  for (int i = 0; i < charges.size(); i++) {
-    const auto &charge = charges[i].first;
-    const auto &pos = charges[i].second;
+  for (const auto &pc : charges) {
+    const double charge = pc.charge();
     result[0] += charge;
-    const double x = pos[0] - origin[0];
-    const double y = pos[1] - origin[1];
-    const double z = pos[2] - origin[2];
+    const Vec3 d = pc.position() - origin;
+    const double x = d.x();
+    const double y = d.y();
+    const double z = d.z();
     if constexpr (order > 0) {
       result[1] += charge * x;
       result[2] += charge * y;

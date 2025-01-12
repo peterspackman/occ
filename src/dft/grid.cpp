@@ -1,5 +1,6 @@
 #include <occ/core/atom.h>
 #include <occ/core/log.h>
+#include <occ/core/units.h>
 #include <occ/core/timings.h>
 #include <occ/dft/grid.h>
 #include <occ/dft/lebedev.h>
@@ -249,6 +250,7 @@ RadialGrid generate_lmg_radial_grid(size_t atomic_number,
       h = std::min(h, lmg_h(radial_precision, i, 0.1 * (r_outer - r_inner)));
     }
   }
+  occ::log::debug("LMG grid r_inner = {}, r_outer = {}, h = {}", r_inner, r_outer, h);
   assert(r_outer > h);
   double c = r_inner / (std::exp(h) - 1.0);
   size_t num_radial = static_cast<int>(std::log(1.0 + (r_outer / c)) / h);

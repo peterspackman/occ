@@ -190,9 +190,14 @@ void Surface::print() const {
 }
 
 // Helper function to apply rotation to HKL
-HKL apply_rotation(const SymmetryOperation &symop, const HKL &hkl) {
+HKL apply_rotation(const SymmetryOperation &symop, const HKL &hkl,
+                   const Crystal &c) {
+  const auto &R = c.unit_cell().reciprocal();
+  const auto &RI = c.unit_cell().direct().transpose();
+
   Vec3 v(hkl.h, hkl.k, hkl.l);
-  Vec3 rotated = symop.rotation() * v;
+  Vec3 hkl_frac = c.to_fractional(RI * v);
+  Vec3 rotated = R * c.to_cartesian(symop.rotation() * v);
   return HKL{static_cast<int>(std::round(rotated(0))),
              static_cast<int>(std::round(rotated(1))),
              static_cast<int>(std::round(rotated(2)))};
@@ -203,7 +208,7 @@ generate_surfaces(const Crystal &c,
                   const CrystalSurfaceGenerationParameters &params) {
   std::vector<Surface> result;
   ankerl::unordered_dense::set<HKL, HKLHash> unique_hkls;
-  auto point_group = c.space_group();
+  auto sg = c.space_group();
 
   if (params.unique) {
     auto f = [&](HKL m) {
@@ -213,8 +218,10 @@ generate_surfaces(const Crystal &c,
       }
       if (!unique_hkls.contains(m)) {
         bool is_unique = true;
-        for (const auto &symop : point_group.symmetry_operations()) {
-          HKL rotated_hkl = apply_rotation(symop, m);
+        for (const auto &symop : sg.symmetry_operations()) {
+          if (symop.has_translation())
+            continue;
+          HKL rotated_hkl = apply_rotation(symop, m, c);
           if (unique_hkls.contains(rotated_hkl)) {
             is_unique = false;
             break;
@@ -222,8 +229,10 @@ generate_surfaces(const Crystal &c,
         }
         if (is_unique) {
           result.emplace_back(Surface(m, c));
-          for (const auto &symop : point_group.symmetry_operations()) {
-            unique_hkls.insert(apply_rotation(symop, m));
+          for (const auto &symop : sg.symmetry_operations()) {
+            if (symop.has_translation())
+              continue;
+            unique_hkls.insert(apply_rotation(symop, m, c));
           }
         }
       }

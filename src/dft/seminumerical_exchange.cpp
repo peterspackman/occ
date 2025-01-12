@@ -174,7 +174,6 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
     const auto &atom_weights = atom_grid.weights;
     const size_t npt_total = atom_pts.cols();
     const size_t num_blocks = npt_total / BLOCKSIZE + 1;
-    std::vector<occ::core::PointCharge> chgs(1);
     occ::gto::GTOValues ao;
     for (size_t block = 0; block < num_blocks; block++) {
       Eigen::Index l = block * BLOCKSIZE;

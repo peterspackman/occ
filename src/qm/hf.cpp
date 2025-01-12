@@ -1,3 +1,4 @@
+#include <occ/core/constants.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/parallel.h>
@@ -29,71 +30,59 @@ HartreeFock::HartreeFock(const AOBasis &basis)
 }
 
 double HartreeFock::nuclear_point_charge_interaction_energy(
-    const PointChargeList &pc) const {
+    const PointChargeList &point_charges) const {
   double etot = 0.0;
 
   int i = 0;
   for (const auto &atom : atoms()) {
+    const auto pos_a = atom.position();
     double Z = atom.atomic_number - m_frozen_electrons[i];
 
-    for (const auto &[q, pos] : pc) {
-      auto xij = atom.x - pos[0];
-      auto yij = atom.y - pos[1];
-      auto zij = atom.z - pos[2];
-      auto r2 = xij * xij + yij * yij + zij * zij;
-      auto r = std::sqrt(r2);
-      etot += Z * q / r;
+    for (const auto &pc : point_charges) {
+      const auto &pos_pc = pc.position();
+      etot += Z * pc.charge() / (pos_pc - pos_a).norm();
     }
     i++;
   }
   return etot;
 }
 
-/*
-double HartreeFock::nuclear_point_charge_interaction_energy(
-    const PointChargeList &pc) const {
-  double etot = 0.0;
-  const double alpha = 0.01;                             // damping parameter
-  const double rc = 12.0 * occ::units::ANGSTROM_TO_BOHR; // cutoff radius
+double HartreeFock::wolf_point_charge_interaction_energy(
+    const PointChargeList &point_charges,
+    const std::vector<double> &partial_charges, double alpha_angs,
+    double rc_angs) const {
+  if (point_charges.size() == 0)
+    return 0.0;
+  const double alpha = alpha_angs / occ::units::ANGSTROM_TO_BOHR;
+  const double rc = rc_angs * occ::units::ANGSTROM_TO_BOHR; // cutoff radius
 
   // Pre-calculate Wolf self-terms
-  const double erfc_term = std::erfc(alpha * rc) / rc;
-  const double gaussian_term =
-      (2.0 * alpha / std::sqrt(M_PI)) * std::exp(-alpha * alpha * rc * rc);
-  const double self_term = erfc_term + gaussian_term;
+  const double t2 = std::erfc(alpha * rc) / rc;
+  const double t3 = (t2 + 2 * alpha / occ::constants::sqrt_pi<double>);
 
+  double total = 0.0;
   // Nuclear-point charge interactions
   int i = 0;
   for (const auto &atom : atoms()) {
+    const auto pos_a = atom.position();
     double Z = atom.atomic_number - m_frozen_electrons[i];
-
-    for (const auto &[q, pos] : pc) {
-      auto xij = atom.x - pos[0];
-      auto yij = atom.y - pos[1];
-      auto zij = atom.z - pos[2];
-      auto r2 = xij * xij + yij * yij + zij * zij;
-      auto r = std::sqrt(r2);
-
-      if (r > rc)
-        continue;
-
-      // Direct Coulomb with error function damping
-      etot += Z * q * std::erfc(alpha * r) / r;
-
-      // Wolf correction term
-      etot -= Z * q * self_term;
+    double q = partial_charges[i];
+    double total_i = 0.0;
+    for (const auto &pc : point_charges) {
+      const auto &pos_pc = pc.position();
+      const double rij = (pos_pc - pos_a).norm();
+      if(rij > rc) continue;
+      const double qj = pc.charge();
+      total_i += qj * (std::erfc(alpha * rij) / rij - t2);
     }
     i++;
+    total_i -= q * t3;
+    total += Z * total_i;
   }
 
-  // Point charge self-terms
-  for (const auto &[q, pos] : pc) {
-    etot -= 0.5 * q * q * self_term;
-  }
-
-  return etot;
+  // TODO intramolecular terms
+  return total;
 }
-*/
 
 Mat HartreeFock::compute_fock(const MolecularOrbitals &mo,
                               const Mat &Schwarz) const {
@@ -203,13 +192,16 @@ Mat HartreeFock::compute_nuclear_attraction_matrix() const {
 }
 
 Mat HartreeFock::compute_point_charge_interaction_matrix(
-    const PointChargeList &point_charges) const {
-  /*
-  const double alpha = 0.01;
+    const PointChargeList &point_charges, double alpha) const {
+  return m_engine.point_charge_potential(point_charges, alpha);
+}
+
+Mat HartreeFock::compute_wolf_interaction_matrix(
+    const PointChargeList &point_charges,
+    const std::vector<double> &partial_charges, double alpha, double rc) const {
   return m_engine.wolf_point_charge_potential(
-      point_charges, 12.0 * occ::units::ANGSTROM_TO_BOHR, alpha);
-  */
-  return m_engine.point_charge_potential(point_charges);
+      point_charges, partial_charges, alpha / occ::units::ANGSTROM_TO_BOHR,
+      rc * occ::units::ANGSTROM_TO_BOHR);
 }
 
 Mat3N HartreeFock::electronic_electric_field_contribution(
