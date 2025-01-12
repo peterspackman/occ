@@ -10,11 +10,11 @@ namespace occ::core::charges {
  * \param atomic_numbers const IVec& of length N atomic numbers
  * \param positions const Mat3N& of dimensions (3, N) positions in Angstroms
  *
- * \returns cn Vec representing (fractional) coordination numbers for each of the N atoms
+ * \returns cn Vec representing (fractional) coordination numbers for each of
+ * the N atoms
  */
 Vec eeq_coordination_numbers(const occ::IVec &atomic_numbers,
                              const occ::Mat3N &positions);
-
 
 /**
  * Determine the atomic partial charges of atoms at provided positions,
@@ -30,6 +30,5 @@ Vec eeq_coordination_numbers(const occ::IVec &atomic_numbers,
  */
 Vec eeq_partial_charges(const occ::IVec &atomic_numbers,
                         const occ::Mat3N &positions, double charge = 0.0);
-
 
 } // namespace occ::core::charges

@@ -6,4 +6,4 @@ namespace occ::driver {
 
 qm::Wavefunction geometry_optimization(const io::OccInput &);
 
-} // namespace occ::main
+} // namespace occ::driver

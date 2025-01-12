@@ -2,16 +2,17 @@
 #include <catch2/catch_test_macros.hpp>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
+#include <occ/core/eeq.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/io/xyz.h>
 #include <occ/solvent/cosmo.h>
+#include <occ/solvent/draco.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
 #include <occ/solvent/surface.h>
-#include <occ/solvent/draco.h>
-#include <occ/core/eeq.h>
 
+using occ::format_matrix;
 using occ::Mat;
 using occ::Mat3N;
 using occ::Vec;
@@ -21,26 +22,26 @@ using occ::solvent::COSMO;
 
 TEST_CASE("COSMO self energy", "[solvent]") {
 
-    auto pts = Mat3N(3, 12);
-    pts << -0.525731, 0.525731, -0.525731, 0.525731, 0.0, 0.0, 0.0, 0.0,
-        0.850651, 0.850651, -0.850651, -0.850651, 0.850651, 0.850651, -0.850651,
-        -0.850651, -0.525731, 0.525731, -0.525731, 0.525731, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.850651, 0.850651, -0.850651, -0.850651, -0.525731,
-        0.525731, -0.525731, 0.527531;
+  auto pts = Mat3N(3, 12);
+  pts << -0.525731, 0.525731, -0.525731, 0.525731, 0.0, 0.0, 0.0, 0.0, 0.850651,
+      0.850651, -0.850651, -0.850651, 0.850651, 0.850651, -0.850651, -0.850651,
+      -0.525731, 0.525731, -0.525731, 0.525731, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.850651, 0.850651, -0.850651, -0.850651, -0.525731, 0.525731,
+      -0.525731, 0.527531;
 
-    auto areas = Vec(12);
-    areas.setConstant(0.79787845);
+  auto areas = Vec(12);
+  areas.setConstant(0.79787845);
 
-    auto charges = Vec(12);
-    charges.topRows(6).setConstant(-0.05);
-    charges.bottomRows(6).setConstant(0.05);
-    const COSMO c(78.4);
-    COSMO::Result result = c(pts, areas, charges);
-    fmt::print("Final energy: {}\n", result.energy);
-    fmt::print("InitialFinal charges:\n{}\n", result.initial);
-    fmt::print("Converged charges:\n{}\n", result.converged);
+  auto charges = Vec(12);
+  charges.topRows(6).setConstant(-0.05);
+  charges.bottomRows(6).setConstant(0.05);
+  const COSMO c(78.4);
+  COSMO::Result result = c(pts, areas, charges);
+  fmt::print("Final energy: {}\n", result.energy);
+  fmt::print("InitialFinal charges:\n{}\n", format_matrix(result.initial));
+  fmt::print("Converged charges:\n{}\n", format_matrix(result.converged));
 
-    REQUIRE(result.energy == Catch::Approx(-0.0042715403));
+  REQUIRE(result.energy == Catch::Approx(-0.0042715403));
 }
 
 // SMD tests
@@ -50,7 +51,6 @@ O   -0.7021961  -0.0560603   0.0099423
 H   -1.0221932   0.8467758  -0.0114887
 H    0.2575211   0.0421215   0.0052190
 )"""";
-
 
 const char *NAPHTHOL = R""""(19
 
@@ -133,76 +133,75 @@ H   2.612031   3.407432   2.520566
 )"""";
 
 TEST_CASE("SMD CDS energy (naphthol)", "[solvent]") {
-    auto mol = occ::io::molecule_from_xyz_string(NAPHTHOL);
-    auto nums = mol.atomic_numbers();
-    auto pos = mol.positions();
-    Mat3N pos_bohr = pos * occ::units::ANGSTROM_TO_BOHR;
-    auto params = occ::solvent::get_smd_parameters("water");
+  auto mol = occ::io::molecule_from_xyz_string(NAPHTHOL);
+  auto nums = mol.atomic_numbers();
+  auto pos = mol.positions();
+  Mat3N pos_bohr = pos * occ::units::ANGSTROM_TO_BOHR;
+  auto params = occ::solvent::get_smd_parameters("water");
 
-    Vec cds_radii = occ::solvent::smd::cds_radii(nums, params);
-    auto surface =
-        occ::solvent::surface::solvent_surface(cds_radii, nums, pos_bohr, 0.0);
-    const auto &surface_positions = surface.vertices;
-    const auto &surface_areas = surface.areas;
-    const auto &surface_atoms = surface.atom_index;
+  Vec cds_radii = occ::solvent::smd::cds_radii(nums, params);
+  auto surface =
+      occ::solvent::surface::solvent_surface(cds_radii, nums, pos_bohr, 0.0);
+  const auto &surface_positions = surface.vertices;
+  const auto &surface_areas = surface.areas;
+  const auto &surface_atoms = surface.atom_index;
 
-    auto output = fmt::output_file(
-        "desloratadine.cpcm", fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
-    output.print("{}\nelement, x, y, z, atom_idx, area\n",
-                 surface_areas.rows());
-    for (size_t i = 0; i < surface_areas.rows(); i++) {
-        output.print("{:4d} {: 12.6f} {: 12.6f} {: 12.6f} {:4d} {: 12.6f}\n",
-                     nums(surface_atoms(i)), surface_positions(0, i),
-                     surface_positions(1, i), surface_positions(2, i),
-                     surface_atoms(i), surface_areas(i));
-    }
+  auto output = fmt::output_file(
+      "desloratadine.cpcm", fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
+  output.print("{}\nelement, x, y, z, atom_idx, area\n", surface_areas.rows());
+  for (size_t i = 0; i < surface_areas.rows(); i++) {
+    output.print("{:4d} {: 12.6f} {: 12.6f} {: 12.6f} {:4d} {: 12.6f}\n",
+                 nums(surface_atoms(i)), surface_positions(0, i),
+                 surface_positions(1, i), surface_positions(2, i),
+                 surface_atoms(i), surface_areas(i));
+  }
 
-    Vec surface_areas_per_atom_angs = Vec::Zero(nums.rows());
-    const double conversion_factor =
-        occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
-    for (int i = 0; i < surface_areas.rows(); i++) {
-        surface_areas_per_atom_angs(surface_atoms(i)) +=
-            conversion_factor * surface_areas(i);
-    }
+  Vec surface_areas_per_atom_angs = Vec::Zero(nums.rows());
+  const double conversion_factor =
+      occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
+  for (int i = 0; i < surface_areas.rows(); i++) {
+    surface_areas_per_atom_angs(surface_atoms(i)) +=
+        conversion_factor * surface_areas(i);
+  }
 
-    auto surface_tension =
-        occ::solvent::smd::atomic_surface_tension(params, nums, pos);
+  auto surface_tension =
+      occ::solvent::smd::atomic_surface_tension(params, nums, pos);
 
-    double H{0.0}, C{0.0}, N{0.0}, Cl{0.0};
-    for (int i = 0; i < surface_areas_per_atom_angs.rows(); i++) {
-        if (nums(i) == 1)
-            H += surface_areas_per_atom_angs(i);
-        else if (nums(i) == 6)
-            C += surface_areas_per_atom_angs(i);
-        else if (nums(i) == 7)
-            N += surface_areas_per_atom_angs(i);
-        else if (nums(i) == 17)
-            Cl += surface_areas_per_atom_angs(i);
-        fmt::print("{:<7d} {:10.3f} {:10.3f} {:10.3f}\n", nums(i),
-                   surface_areas_per_atom_angs(i), surface_tension(i),
-                   surface_areas_per_atom_angs(i) * surface_tension(i));
-    }
-    double total_area = surface_areas_per_atom_angs.array().sum();
-    fmt::print("Total area = {:.4f}\n", total_area);
-    double atomic_term = surface_areas_per_atom_angs.dot(surface_tension);
+  double H{0.0}, C{0.0}, N{0.0}, Cl{0.0};
+  for (int i = 0; i < surface_areas_per_atom_angs.rows(); i++) {
+    if (nums(i) == 1)
+      H += surface_areas_per_atom_angs(i);
+    else if (nums(i) == 6)
+      C += surface_areas_per_atom_angs(i);
+    else if (nums(i) == 7)
+      N += surface_areas_per_atom_angs(i);
+    else if (nums(i) == 17)
+      Cl += surface_areas_per_atom_angs(i);
+    fmt::print("{:<7d} {:10.3f} {:10.3f} {:10.3f}\n", nums(i),
+               surface_areas_per_atom_angs(i), surface_tension(i),
+               surface_areas_per_atom_angs(i) * surface_tension(i));
+  }
+  double total_area = surface_areas_per_atom_angs.array().sum();
+  fmt::print("Total area = {:.4f}\n", total_area);
+  double atomic_term = surface_areas_per_atom_angs.dot(surface_tension);
 
-    fmt::print("CDS energy: {:.4f} kcal/mol\n", atomic_term / 1000);
-    fmt::print("SASA:\n");
-    fmt::print("H  {:.3f}\n", H);
-    fmt::print("C  {:.3f}\n", C);
-    fmt::print("N  {:.3f}\n", N);
-    fmt::print("Cl {:.3f}\n", Cl);
+  fmt::print("CDS energy: {:.4f} kcal/mol\n", atomic_term / 1000);
+  fmt::print("SASA:\n");
+  fmt::print("H  {:.3f}\n", H);
+  fmt::print("C  {:.3f}\n", C);
+  fmt::print("N  {:.3f}\n", N);
+  fmt::print("Cl {:.3f}\n", Cl);
 }
 
 TEST_CASE("draco", "[solvent]") {
-    auto mol = occ::io::molecule_from_xyz_string(WATER);
-    auto nums = mol.atomic_numbers();
-    auto pos = mol.positions() * occ::units::ANGSTROM_TO_BOHR;
-    auto params = occ::solvent::get_smd_parameters("toluene");
+  auto mol = occ::io::molecule_from_xyz_string(WATER);
+  auto nums = mol.atomic_numbers();
+  auto pos = mol.positions() * occ::units::ANGSTROM_TO_BOHR;
+  auto params = occ::solvent::get_smd_parameters("toluene");
 
-    Vec cn = occ::solvent::draco::coordination_numbers(nums, pos);
-    fmt::print("Coordination numbers:\n{}\n", cn);
-    Vec q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
+  Vec cn = occ::solvent::draco::coordination_numbers(nums, pos);
+  fmt::print("Coordination numbers:\n{}\n", format_matrix(cn));
+  Vec q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
 
-    Vec radii = occ::solvent::draco::smd_coulomb_radii(q, nums, pos, params);
+  Vec radii = occ::solvent::draco::smd_coulomb_radii(q, nums, pos, params);
 }

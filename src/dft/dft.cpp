@@ -1,6 +1,6 @@
+#include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <ankerl/unordered_dense.h>
 #include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -17,9 +17,9 @@ using occ::qm::SpinorbitalKind;
 using dfid = DensityFunctional::Identifier;
 
 struct FuncComponent {
-    dfid id;
-    double factor{1.0};
-    double hfx{0.0};
+  dfid id;
+  double factor{1.0};
+  double hfx{0.0};
 };
 
 const ankerl::unordered_dense::map<std::string, std::vector<FuncComponent>>
@@ -62,140 +62,138 @@ const ankerl::unordered_dense::map<std::string, std::vector<FuncComponent>>
     });
 
 int DFT::density_derivative() const {
-    int deriv = 0;
-    for (const auto &func : m_funcs.unpolarized) {
-        deriv = std::max(deriv, func.derivative_order());
-    }
-    return deriv;
+  int deriv = 0;
+  for (const auto &func : m_funcs.unpolarized) {
+    deriv = std::max(deriv, func.derivative_order());
+  }
+  return deriv;
 }
 
 DFT::DFT(const std::string &method, const AOBasis &basis,
          const BeckeGridSettings &grid_settings)
     : m_hf(basis), m_grid(basis, grid_settings) {
-    set_method(method);
-    set_integration_grid(grid_settings);
+  set_method(method);
+  set_integration_grid(grid_settings);
 }
 
 void DFT::set_method(const std::string &method_string) {
-    if(m_method_string == method_string) return;
+  if (m_method_string == method_string)
+    return;
 
-    if(m_method_string != method_string) {
-	occ::log::info("DFT method string: {}", method_string);
-    }
-    m_method_string = method_string;
-    m_funcs = impl::parse_method(method_string);
+  if (m_method_string != method_string) {
+    occ::log::info("DFT method string: {}", method_string);
+  }
+  m_method_string = method_string;
+  m_funcs = impl::parse_method(method_string);
 
-    for (const auto &func : m_funcs.unpolarized) {
-        occ::log::debug(
-            "Functional: {} {} {}, exact exchange = {}",
-            func.name(), func.kind_string(), func.family_string(),
-            func.exact_exchange_factor(), func.polarized());
-    }
+  for (const auto &func : m_funcs.unpolarized) {
+    occ::log::debug("Functional: {} {} {}, exact exchange = {}", func.name(),
+                    func.kind_string(), func.family_string(),
+                    func.exact_exchange_factor(), func.polarized());
+  }
 
-    m_rs_params = {};
-    for (const auto &func : m_funcs.unpolarized) {
-        auto rs = func.range_separated_parameters();
-        if (rs.omega != 0.0) {
-            m_rs_params = rs;
-        }
+  m_rs_params = {};
+  for (const auto &func : m_funcs.unpolarized) {
+    auto rs = func.range_separated_parameters();
+    if (rs.omega != 0.0) {
+      m_rs_params = rs;
     }
-    if (m_rs_params.omega != 0.0) {
-        occ::log::info("    RS omega = {}", m_rs_params.omega);
-        occ::log::info("    RS alpha = {}", m_rs_params.alpha);
-        occ::log::info("    RS beta  = {}", m_rs_params.beta);
-    }
+  }
+  if (m_rs_params.omega != 0.0) {
+    occ::log::info("    RS omega = {}", m_rs_params.omega);
+    occ::log::info("    RS alpha = {}", m_rs_params.alpha);
+    occ::log::info("    RS beta  = {}", m_rs_params.beta);
+  }
 
-    double hfx = exact_exchange_factor();
-    if (hfx > 0.0) {
-        occ::log::debug("    {} x HF exchange", hfx);
-    }
+  double hfx = exact_exchange_factor();
+  if (hfx > 0.0) {
+    occ::log::debug("    {} x HF exchange", hfx);
+  }
 }
 
 void DFT::set_integration_grid(const BeckeGridSettings &settings) {
-    const auto &atoms = m_hf.aobasis().atoms();
-    if (settings != m_grid.settings()) {
-        m_grid = MolecularGrid(m_hf.aobasis(), settings);
-    }
-    occ::log::debug("start calculating atom grids... ");
-    m_atom_grids.clear();
-    for (size_t i = 0; i < atoms.size(); i++) {
-        m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
-    }
-    size_t num_grid_points = std::accumulate(
-        m_atom_grids.begin(), m_atom_grids.end(), 0.0,
-        [&](double tot, const auto &grid) { return tot + grid.points.cols(); });
-    occ::log::info("finished calculating atom grids ({} points)",
-                   num_grid_points);
-    occ::log::debug("Grid initialization took {} seconds",
-                    occ::timing::total(occ::timing::grid_init));
-    occ::log::debug("Grid point creation took {} seconds",
-                    occ::timing::total(occ::timing::grid_points));
+  const auto &atoms = m_hf.aobasis().atoms();
+  if (settings != m_grid.settings()) {
+    m_grid = MolecularGrid(m_hf.aobasis(), settings);
+  }
+  occ::log::debug("start calculating atom grids... ");
+  m_atom_grids.clear();
+  for (size_t i = 0; i < atoms.size(); i++) {
+    m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
+  }
+  size_t num_grid_points = std::accumulate(
+      m_atom_grids.begin(), m_atom_grids.end(), 0.0,
+      [&](double tot, const auto &grid) { return tot + grid.points.cols(); });
+  occ::log::info("finished calculating atom grids ({} points)",
+                 num_grid_points);
+  occ::log::debug("Grid initialization took {} seconds",
+                  occ::timing::total(occ::timing::grid_init));
+  occ::log::debug("Grid point creation took {} seconds",
+                  occ::timing::total(occ::timing::grid_points));
 
-    for (const auto &func : m_funcs.unpolarized) {
-        if (func.needs_nlc_correction()) {
-            m_nlc.set_integration_grid(m_hf.aobasis());
-            break;
-        }
+  for (const auto &func : m_funcs.unpolarized) {
+    if (func.needs_nlc_correction()) {
+      m_nlc.set_integration_grid(m_hf.aobasis());
+      break;
     }
+  }
 }
 
 RangeSeparatedParameters DFT::range_separated_parameters() const {
-    return m_rs_params;
+  return m_rs_params;
 }
-
-
 
 namespace impl {
 Functionals parse_method(const std::string &method_string) {
 
-    Functionals result;
-    std::string method = occ::util::trim_copy(method_string);
-    occ::util::to_lower(method);
+  Functionals result;
+  std::string method = occ::util::trim_copy(method_string);
+  occ::util::to_lower(method);
 
-    auto tokens = occ::util::tokenize(method, " ");
-    occ::log::info("Functionals:");
-    for (const auto &token : tokens) {
-        std::string m = token;
-        occ::log::debug("Token: {}", m);
-        if (m[0] == 'u') {
-            // TODO handle unrestricted convenience case
-            m = m.substr(1);
-        }
-        if (builtin_functionals.contains(m)) {
-            auto combo = builtin_functionals.at(m);
-            occ::log::debug("Found builtin functional combination for {}", m);
-            for (const auto &func : combo) {
-                occ::log::debug("id: {}", static_cast<int>(func.id));
-
-                auto f = DensityFunctional(func.id, false);
-                auto fp = DensityFunctional(func.id, true);
-
-                occ::log::debug("scale factor: {}", func.factor);
-
-                f.set_scale_factor(func.factor);
-                fp.set_scale_factor(func.factor);
-
-                if (func.factor != 1.0) {
-                    occ::log::info("    {} x {}", func.factor, f.name());
-                } else {
-                    occ::log::info("    {}", f.name());
-                }
-                if (func.hfx > 0.0) {
-                    f.set_exchange_factor(func.hfx);
-                    fp.set_exchange_factor(func.hfx);
-		}
-                result.unpolarized.push_back(f);
-                result.polarized.push_back(fp);
-            }
-        } else {
-            occ::log::info("    {}", token);
-	    result.unpolarized.emplace_back(token, false);
-	    result.polarized.emplace_back(token, true);
-        }
+  auto tokens = occ::util::tokenize(method, " ");
+  occ::log::info("Functionals:");
+  for (const auto &token : tokens) {
+    std::string m = token;
+    occ::log::debug("Token: {}", m);
+    if (m[0] == 'u') {
+      // TODO handle unrestricted convenience case
+      m = m.substr(1);
     }
-    return result;
+    if (builtin_functionals.contains(m)) {
+      auto combo = builtin_functionals.at(m);
+      occ::log::debug("Found builtin functional combination for {}", m);
+      for (const auto &func : combo) {
+        occ::log::debug("id: {}", static_cast<int>(func.id));
+
+        auto f = DensityFunctional(func.id, false);
+        auto fp = DensityFunctional(func.id, true);
+
+        occ::log::debug("scale factor: {}", func.factor);
+
+        f.set_scale_factor(func.factor);
+        fp.set_scale_factor(func.factor);
+
+        if (func.factor != 1.0) {
+          occ::log::info("    {} x {}", func.factor, f.name());
+        } else {
+          occ::log::info("    {}", f.name());
+        }
+        if (func.hfx > 0.0) {
+          f.set_exchange_factor(func.hfx);
+          fp.set_exchange_factor(func.hfx);
+        }
+        result.unpolarized.push_back(f);
+        result.polarized.push_back(fp);
+      }
+    } else {
+      occ::log::info("    {}", token);
+      result.unpolarized.emplace_back(token, false);
+      result.polarized.emplace_back(token, true);
+    }
+  }
+  return result;
 }
 
-}
+} // namespace impl
 
 } // namespace occ::dft

@@ -567,8 +567,7 @@ public:
     m_enforce_gamma_point = set;
   }
 
-  static IVec3 compute_cell_shift(const Vec3 &to,
-                                  const Vec3 &from,
+  static IVec3 compute_cell_shift(const Vec3 &to, const Vec3 &from,
                                   const SymmetryOperation &symop_from);
 
 private:

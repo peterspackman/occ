@@ -90,9 +90,9 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   calculate_free_energy_components(surfaces, mol, original_energy,
                                    solvated_energy, surface_energy);
 
-  surfaces.electronic_energies =
-      (surfaces.electronic_contribution / surfaces.coulomb.areas.array().sum()) *
-      surfaces.coulomb.areas.array();
+  surfaces.electronic_energies = (surfaces.electronic_contribution /
+                                  surfaces.coulomb.areas.array().sum()) *
+                                 surfaces.coulomb.areas.array();
 
   return {surfaces, solvated_wfn};
 }

@@ -129,7 +129,8 @@ private:
   CellData m_cell;
 
   static void set_atom_data(int index, const std::vector<AtomField> &fields,
-                            const gemmi::cif::Loop &loop, AtomData &atom, AdpData &adp);
+                            const gemmi::cif::Loop &loop, AtomData &atom,
+                            AdpData &adp);
 
   static const ankerl::unordered_dense::map<std::string, AtomField>
       m_known_atom_fields;

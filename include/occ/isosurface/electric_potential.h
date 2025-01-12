@@ -9,7 +9,8 @@ class ElectricPotentialFunctor {
 public:
   ElectricPotentialFunctor(const occ::qm::Wavefunction &wfn);
 
-  inline void batch(Eigen::Ref<const FMat3N> pos, Eigen::Ref<FVec> layer) const {
+  inline void batch(Eigen::Ref<const FMat3N> pos,
+                    Eigen::Ref<FVec> layer) const {
     m_num_calls += layer.size();
     Mat3N dpos = pos.cast<double>().array();
     Vec esp = m_hf.electronic_electric_potential_contribution(m_wfn.mo, dpos);
@@ -25,8 +26,7 @@ private:
   mutable int m_num_calls{0};
 };
 
-
-class MCElectricPotentialFunctor{
+class MCElectricPotentialFunctor {
 public:
   MCElectricPotentialFunctor(const occ::qm::Wavefunction &wfn, float sep = 0.2);
 
@@ -35,7 +35,8 @@ public:
     impl::remap_vertices(*this, v, dest);
   }
 
-  inline void batch(Eigen::Ref<const FMat3N> pos, Eigen::Ref<FVec> layer) const {
+  inline void batch(Eigen::Ref<const FMat3N> pos,
+                    Eigen::Ref<FVec> layer) const {
     m_esp.batch(pos, layer);
   }
 

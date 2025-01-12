@@ -14,4 +14,4 @@ template <> struct adl_serializer<occ::core::Dimer> {
   static occ::core::Dimer from_json(const json &);
   static void to_json(json &j, const occ::core::Dimer &);
 };
-}
+} // namespace nlohmann

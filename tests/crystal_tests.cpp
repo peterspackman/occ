@@ -14,6 +14,7 @@
 #include <occ/crystal/surface.h>
 #include <occ/crystal/symmetryoperation.h>
 
+using occ::format_matrix;
 using occ::IVec3;
 using occ::Mat3N;
 using occ::MatN3;
@@ -394,8 +395,8 @@ TEST_CASE("SymmetryOperation Seitz matrix", "[symmetry_operation]") {
 TEST_CASE("MULDIN 3d", "[transformations]") {
   occ::Vec3 hkl(1.0, 1.0, 0.0);
   occ::Mat3 result = occ::crystal::muldin(hkl);
-  fmt::print("hkl\n{}\n", hkl);
-  fmt::print("Result\n{}\n", result);
+  fmt::print("hkl\n{}\n", format_matrix(hkl));
+  fmt::print("Result\n{}\n", format_matrix(result));
   {
     occ::Vec3 inp(1.0, 1.0, 0.0);
     occ::Mat3 result;
@@ -509,8 +510,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     SymmetryOperation identity("x,y,z");
     Vec6 adp(1.0, 2.0, 3.0, 0.1, 0.2, 0.3);
     Vec6 rotated_adp = identity.rotate_adp(adp);
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(adp)));
     REQUIRE(rotated_adp.isApprox(adp));
   }
 
@@ -519,8 +520,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 adp(1.0, 2.0, 3.0, 0.1, 0.2, 0.3);
     Vec6 expected_adp(2.0, 1.0, 3.0, -0.1, -0.3, 0.2);
     Vec6 rotated_adp = rot_z.rotate_adp(adp);
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", expected_adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(expected_adp)));
     REQUIRE(rotated_adp.isApprox(expected_adp, 1e-10));
   }
 
@@ -529,8 +530,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 adp(1.0, 2.0, 3.0, 0.1, 0.2, 0.3);
     Vec6 rotated_adp = inversion.rotate_adp(adp);
 
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(adp)));
     REQUIRE(rotated_adp.isApprox(adp));
   }
 
@@ -540,8 +541,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 expected_adp(1.0, 2.0, 3.0, -0.1, -0.2, 0.3);
     Vec6 rotated_adp = mirror_x.rotate_adp(adp);
 
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", expected_adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(expected_adp)));
     REQUIRE(rotated_adp.isApprox(expected_adp, 1e-10));
   }
 
@@ -551,8 +552,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 expected_adp(2.0, 1.0, 3.0, -0.1, -0.3, 0.2);
     Vec6 rotated_adp = rot_trans.rotate_adp(adp);
 
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", expected_adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(expected_adp)));
     REQUIRE(rotated_adp.isApprox(expected_adp, 1e-10));
   }
 
@@ -562,8 +563,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 expected_adp(3.0, 1.0, 2.0, 0.2, 0.3, 0.1);
     Vec6 rotated_adp = general_rot.rotate_adp(adp);
 
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", expected_adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(expected_adp)));
     REQUIRE(rotated_adp.isApprox(expected_adp, 1e-10));
   }
 
@@ -571,8 +572,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     SymmetryOperation translation("x+1/2,y+1/4,z+1/3");
     Vec6 adp(1.0, 2.0, 3.0, 0.1, 0.2, 0.3);
     Vec6 rotated_adp = translation.rotate_adp(adp);
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(adp)));
     REQUIRE(rotated_adp.isApprox(adp));
   }
 }
@@ -606,14 +607,14 @@ TEST_CASE("UnitCell ADP conversion", "[crystal][unitcell]") {
                 0.00083, -0.00171, -0.00392, -0.00053;
     // clang-format on
 
-    INFO(fmt::format("original\n{}\n", frac_adps));
+    INFO(fmt::format("original\n{}\n", format_matrix(frac_adps)));
 
     Mat6N cart_adps = cell.to_cartesian_adp(frac_adps);
-    INFO(fmt::format("expected cartesian\n{}\n", expected));
-    INFO(fmt::format("cartesian\n{}\n", cart_adps));
+    INFO(fmt::format("expected cartesian\n{}\n", format_matrix(expected)));
+    INFO(fmt::format("cartesian\n{}\n", format_matrix(cart_adps)));
 
     Mat6N back_to_frac = cell.to_fractional_adp(cart_adps);
-    INFO(fmt::format("back\n{}\n", back_to_frac));
+    INFO(fmt::format("back\n{}\n", format_matrix(back_to_frac)));
 
     // we're only giving 3 decimal places in the frac adps, and 4 in the
     // expected so the tolerance must be a bit coarse

@@ -6,9 +6,9 @@
 namespace occ::main {
 
 struct SurfaceCutsConfig {
-    std::string filename{""};
-    double dmin{0.1};
-    size_t count{10};
+  std::string filename{""};
+  double dmin{0.1};
+  size_t count{10};
 };
 
 CLI::App *add_surface_cuts_subcommand(CLI::App &app);

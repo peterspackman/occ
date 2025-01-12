@@ -40,7 +40,8 @@ void SolvationContribution::add_cds_area(double value, bool is_forward) {
 
 double SolvationContribution::total_energy() const {
   double total = m_coulomb.total() + m_cds.total();
-  if(!m_antisymmetrize) return total;
+  if (!m_antisymmetrize)
+    return total;
 
   // Account for asymmetric contributions
   double asymmetric_difference =

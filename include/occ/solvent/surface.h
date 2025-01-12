@@ -4,9 +4,9 @@
 namespace occ::solvent::surface {
 
 struct Surface {
-    Mat3N vertices;
-    Vec areas;
-    IVec atom_index;
+  Mat3N vertices;
+  Vec areas;
+  IVec atom_index;
 };
 
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,

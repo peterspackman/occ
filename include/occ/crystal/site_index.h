@@ -15,8 +15,8 @@ struct SiteIndex {
 
 struct SiteIndexHash {
   using is_avalanching = void;
-  [[nodiscard]] auto
-  operator()(SiteIndex const &idx) const noexcept -> uint64_t {
+  [[nodiscard]] auto operator()(SiteIndex const &idx) const noexcept
+      -> uint64_t {
     static_assert(std::has_unique_object_representations_v<SiteIndex>);
     return ankerl::unordered_dense::detail::wyhash::hash(&idx, sizeof(idx));
   }

@@ -163,14 +163,17 @@ CLI::App *add_elastic_subcommand(CLI::App &app) {
 void run_elastic_subcommand(const ElasticSettings &settings) {
   ElasticTensor tensor = read_tensor(settings.tensor_filename);
   occ::log::info("Loaded tensor from {}", settings.tensor_filename);
-  occ::log::info("{:-<40s}\n{}", "Voigt C matrix (GPa) ", tensor.voigt_c());
-  occ::log::info("{:-<40s}\n{}", "Voigt S matrix (GPa^-1) ", tensor.voigt_s());
+  occ::log::info("{:-<40s}\n{}", "Voigt C matrix (GPa) ",
+                 format_matrix(tensor.voigt_c()));
+  occ::log::info("{:-<40s}\n{}", "Voigt S matrix (GPa^-1) ",
+                 format_matrix(tensor.voigt_s()));
 
   Eigen::SelfAdjointEigenSolver<occ::Mat6> solv(tensor.voigt_c());
   occ::Vec6 e = solv.eigenvalues();
 
-  occ::log::info("{:-<40s}\n{}", "Eigenvalues of Voigt C (GPa) ",
-                 e.transpose());
+  occ::log::info("{:-<40s}", "Eigenvalues of Voigt C (GPa) ");
+  occ::log::info("{:12.5f} {:12.5f} {:12.5f} {:12.5f} {:12.5f} {:12.5f}", e(0),
+                 e(1), e(2), e(3), e(4), e(5));
 
   print_averaged_properties(tensor);
   write_meshes(tensor, settings.subdivisions, "elastic");

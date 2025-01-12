@@ -20,7 +20,6 @@ target_link_libraries(occ_isosurface
     occ_slater
     occ_geometry
     occ_gto
-    spdlog::spdlog
     Threads::Threads
     unordered_dense::unordered_dense
 )

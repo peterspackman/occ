@@ -238,12 +238,18 @@ void run_pair_subcommand(OccPairInput const &input) {
                      input.monomer_directory);
   }
   occ::log::debug("Rotation A (det = {}):\n{}",
-                  config.pair.rotation_a.determinant(), config.pair.rotation_a);
-  occ::log::debug("Translation A: {}", config.pair.translation_a.transpose());
+                  config.pair.rotation_a.determinant(),
+                  format_matrix(config.pair.rotation_a));
+  const auto &ta = config.pair.translation_a;
+  occ::log::debug("Translation A: [{:.5f}, {:.5f}, {:.5f}]", ta(0), ta(1),
+                  ta(2));
 
   occ::log::debug("Rotation B (det = {}):\n{}",
-                  config.pair.rotation_b.determinant(), config.pair.rotation_b);
-  occ::log::debug("Translation B: {}", config.pair.translation_b.transpose());
+                  config.pair.rotation_b.determinant(),
+                  format_matrix(config.pair.rotation_b));
+  const auto &tb = config.pair.translation_b;
+  occ::log::debug("Translation B: [{:.5f}, {:.5f}, {:.5f}]", tb(0), tb(1),
+                  tb(2));
 
   PairEnergy pair_energy(config);
 

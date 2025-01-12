@@ -426,9 +426,11 @@ void Crystal::update_unit_cell_molecules() const {
       centroid_shift[2] = -std::floor(frac_centroid[2]);
 
       if (centroid_shift.squaredNorm() > 0) {
-        occ::log::debug(
-            "Frac centroid before shift to gamma point: {}, shift = {}",
-            frac_centroid.transpose(), centroid_shift.transpose());
+        occ::log::debug("Frac centroid before shift to gamma point: [{:.5f}, "
+                        "{:.5f}, {:.5f}], shift = ({}, {}, {})",
+                        frac_centroid.x(), frac_centroid.y(), frac_centroid.z(),
+                        centroid_shift(0), centroid_shift(1),
+                        centroid_shift(2));
 
         // Apply shift to atomic positions
         Mat3N shifted_cart_pos = cart_pos({0, 1, 2}, idx);
@@ -439,9 +441,10 @@ void Crystal::update_unit_cell_molecules() const {
         // Update unit cell shifts
         shift_hkl.colwise() += centroid_shift;
 
-        occ::log::debug(
-            "Frac centroid after shift to gamma point : {}",
-            (clean_small_values(to_fractional(m.centroid())).transpose()));
+        Vec3 tmp = clean_small_values(to_fractional(m.centroid()));
+        occ::log::debug("Frac centroid after shift to gamma point : [{:.5f}, "
+                        "{:.5f}, {:.5f}]",
+                        tmp.x(), tmp.y(), tmp.z());
       }
     }
 

@@ -323,14 +323,16 @@ CifParser::parse_crystal(const std::string &filename) {
           asym.adps(3, i) = adp.u12;
           asym.adps(4, i) = adp.u13;
           asym.adps(5, i) = adp.u23;
-          occ::log::debug("Have ADP for atom {}: {}", i,
-                          asym.adps.col(i).transpose());
+          const auto &c = asym.adps.col(i);
+          occ::log::debug("Have ADP for atom {}: [{:.3f}, {:.3f}, {:.3f}, "
+                          "{:.3f}, {:.3f}, {:.3f}]",
+                          i, c(0), c(1), c(2), c(3), c(4), c(5));
         }
         i++;
       }
     }
-    occ::log::debug("Cartesian ADPs\n{}\n",
-                    uc.to_cartesian_adp(asym.adps).transpose());
+    occ::log::debug("Cartesian ADPs\n{}",
+                    format_matrix(uc.to_cartesian_adp(asym.adps).transpose()));
 
     occ::crystal::SpaceGroup sg(1);
     bool found = false;

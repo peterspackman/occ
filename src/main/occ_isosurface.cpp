@@ -707,11 +707,12 @@ Wavefunction load_wfn(const IsosurfaceConfig &config) {
   if (wfn.atoms.size() > 0) {
     occ::log::info("Loaded wavefunction, applying transformation:");
     occ::Mat3 rotation = Eigen::Map<const Mat3RM>(config.wfn_rotation.data());
-    occ::log::info("Rotation\n{}", rotation);
+    occ::log::info("Rotation\n{}", format_matrix(rotation));
     occ::Vec3 translation =
         Eigen::Map<const Vec3>(config.wfn_translation.data()) *
         occ::units::ANGSTROM_TO_BOHR;
-    occ::log::info("Translation (Bohr)\n{}", translation.transpose());
+    occ::log::info("Translation (Bohr) [{:.5f}, {:.5f}, {:.5f}]",
+                   translation(0), translation(1), translation(2));
     wfn.apply_transformation(rotation, translation);
   }
   return wfn;
@@ -777,7 +778,10 @@ FVec compute_surface_property(IsosurfaceConfig::Property prop,
     auto m = m1;
     auto q = occ::core::charges::eeq_partial_charges(m.atomic_numbers(),
                                                      m.positions(), m.charge());
-    occ::log::info("Molecule partial charges (EEQ)\n{}", q);
+    occ::log::info("Molecule partial charges (EEQ)");
+    for (int i = 0; i < q.rows(); i++) {
+      occ::log::info("Atom {}: {:12.5f}", i, q(i));
+    }
     m.set_partial_charges(q);
     auto func = iso::ElectricPotentialFunctorPC(m);
     func.batch(vertices, result);

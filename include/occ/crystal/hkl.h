@@ -60,7 +60,7 @@ struct HKL {
             std::numeric_limits<int>::min()};
   }
 
-  static HKL floor(const Vec3 &vec, double tolerance=1e-8);
+  static HKL floor(const Vec3 &vec, double tolerance = 1e-8);
   static HKL ceil(const Vec3 &vec);
 
   Vec3 vector() const;
@@ -102,6 +102,6 @@ struct HKL {
 } // namespace occ::crystal
 
 template <> struct fmt::formatter<occ::crystal::HKL> : nested_formatter<int> {
-  auto format(const occ::crystal::HKL &,
-              format_context &ctx) const -> format_context::iterator;
+  auto format(const occ::crystal::HKL &, format_context &ctx) const
+      -> format_context::iterator;
 };

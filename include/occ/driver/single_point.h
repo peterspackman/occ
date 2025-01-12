@@ -7,4 +7,4 @@ namespace occ::driver {
 qm::Wavefunction single_point(const io::OccInput &);
 qm::Wavefunction single_point(const io::OccInput &, const qm::Wavefunction &);
 
-} // namespace occ::main
+} // namespace occ::driver

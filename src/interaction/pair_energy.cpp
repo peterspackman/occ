@@ -148,8 +148,7 @@ auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
     occ::log::debug("Test transform (symop={}) RMSD = {}\n", symop.to_string(),
                     rmsd);
     if (rmsd < 1e-3) {
-      occ::log::debug("Symop found: RMSD = {}\nrotation\n{}\ntranslation\n{}\n",
-                      rmsd, rotation, translation);
+      occ::log::debug("Symop found: RMSD = {:12.5f}");
       return std::make_pair(rotation, translation);
     }
   }
@@ -467,8 +466,9 @@ struct WolfSumAccelerator {
     for (int i = 0; i < partial_charges.size(); i++) {
       const auto &asymmetric_atom_indices = asym_mols[i].asymmetric_unit_idx();
       const auto &charge_vector = partial_charges[i];
-      occ::log::info("Charges {}\n{}", i, charge_vector);
+      occ::log::info("Charges used in wolf for molecule {}", i);
       for (int j = 0; j < charge_vector.rows(); j++) {
+        occ::log::info("Atom {}: {:12.5f}", j, charge_vector(j));
         asym_charges(asymmetric_atom_indices(j)) = charge_vector(j);
       }
     }
@@ -567,7 +567,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
       if (conv.wolf_sum && conv.crystal_field_polarization) {
         wolf.electric_field_values[mol_idx].setZero();
         occ::log::debug("Field total for dimer {} =\n{}\n", dimer_idx,
-                        wolf.electric_field_values[mol_idx]);
+                        format_matrix(wolf.electric_field_values[mol_idx]));
       }
 
       for (const auto &[dimer, unique_idx] : n) {
@@ -602,8 +602,8 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
 
         if (conv.crystal_field_polarization) {
           auto &electric_field = wolf.electric_field_values[mol_idx];
-          occ::log::debug("Field total =\n{}", electric_field);
-          occ::log::debug("Field total =\n{}", efield);
+          occ::log::debug("Field total =\n{}", format_matrix(electric_field));
+          occ::log::debug("Field total =\n{}", format_matrix(efield));
           if constexpr (std::is_same<EnergyModel, CEPairEnergyFunctor>::value) {
             const auto &wfn_a = energy_model.wavefunctions()[mol_idx];
             double e_pol_chg = occ::interaction::polarization_energy(

@@ -1,22 +1,19 @@
-#include <occ/main/occ_surface_cuts.h>
+#include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/surface.h>
 #include <occ/io/load_geometry.h>
-#include <occ/core/log.h>
+#include <occ/main/occ_surface_cuts.h>
 
 using occ::crystal::Crystal;
 
 namespace occ::main {
-
-
 
 CLI::App *add_surface_cuts_subcommand(CLI::App &app) {
   CLI::App *cuts =
       app.add_subcommand("surface_cuts", "compute surface cuts for a crystal");
   auto config = std::make_shared<SurfaceCutsConfig>();
 
-  cuts->add_option("crystal", config->filename,
-                  "input geometry file (crystal)")
+  cuts->add_option("crystal", config->filename, "input geometry file (crystal)")
       ->required();
 
   cuts->add_option("--dmin", config->dmin, "Minimum interplanar spacing");
@@ -58,12 +55,11 @@ void run_surface_cuts_subcommand(SurfaceCutsConfig config) {
     for (const double &cut : cuts) {
       log::debug("\nCut @ {:.6f} * depth", cut);
     }
-      
+
     number_of_surfaces++;
     if (number_of_surfaces >= config.count)
       break;
   }
-
 }
 
-}
+} // namespace occ::main

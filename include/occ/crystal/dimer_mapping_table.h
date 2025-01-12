@@ -39,8 +39,8 @@ struct DimerIndex {
 
 struct DimerIndexHash {
   using is_avalanching = void;
-  [[nodiscard]] auto
-  operator()(DimerIndex const &idx) const noexcept -> uint64_t {
+  [[nodiscard]] auto operator()(DimerIndex const &idx) const noexcept
+      -> uint64_t {
     static_assert(std::has_unique_object_representations_v<DimerIndex>);
     return ankerl::unordered_dense::detail::wyhash::hash(&idx, sizeof(idx));
   }
@@ -104,6 +104,6 @@ private:
 
 template <>
 struct fmt::formatter<occ::crystal::DimerIndex> : nested_formatter<int> {
-  auto format(const occ::crystal::DimerIndex &,
-              format_context &ctx) const -> format_context::iterator;
+  auto format(const occ::crystal::DimerIndex &, format_context &ctx) const
+      -> format_context::iterator;
 };

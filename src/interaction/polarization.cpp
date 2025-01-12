@@ -41,26 +41,26 @@ static const std::array<double, 110> Charged_atomic_polarizibility{
 
 double ce_model_polarization_energy(const occ::IVec &atomic_numbers,
                                     const occ::Mat3N &field, bool charged) {
-    auto fsq = field.colwise().squaredNorm();
-    const auto &polarizabilities =
-        charged ? Charged_atomic_polarizibility : Thakkar_atomic_polarizability;
-    double epol = 0.0;
-    for (auto i = 0; i < atomic_numbers.rows(); i++) {
-        int n = atomic_numbers(i);
-        double pol_fac = polarizabilities[n - 1];
-        epol += pol_fac * fsq(i);
-    }
-    return epol * -0.5;
+  auto fsq = field.colwise().squaredNorm();
+  const auto &polarizabilities =
+      charged ? Charged_atomic_polarizibility : Thakkar_atomic_polarizability;
+  double epol = 0.0;
+  for (auto i = 0; i < atomic_numbers.rows(); i++) {
+    int n = atomic_numbers(i);
+    double pol_fac = polarizabilities[n - 1];
+    epol += pol_fac * fsq(i);
+  }
+  return epol * -0.5;
 }
 
 double polarization_energy(const occ::Vec &polarizabilities,
                            const occ::Mat3N &field) {
-    auto fsq = field.colwise().squaredNorm();
-    double epol = 0.0;
-    for (auto i = 0; i < polarizabilities.rows(); i++) {
-        epol += polarizabilities(i) * fsq(i);
-    }
-    return epol * -0.5;
+  auto fsq = field.colwise().squaredNorm();
+  double epol = 0.0;
+  for (auto i = 0; i < polarizabilities.rows(); i++) {
+    epol += polarizabilities(i) * fsq(i);
+  }
+  return epol * -0.5;
 }
 
 } // namespace occ::interaction

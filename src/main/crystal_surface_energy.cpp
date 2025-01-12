@@ -1,8 +1,8 @@
+#include <fmt/os.h>
 #include <occ/core/log.h>
 #include <occ/crystal/surface.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/gmf.h>
-#include <fmt/os.h>
 #include <occ/main/crystal_surface_energy.h>
 
 namespace occ::main {
