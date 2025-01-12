@@ -404,12 +404,13 @@ public:
   }
 
   template <Shell::Kind ST>
-  inline std::array<int, 3> three_center_rs_helper(std::array<int, 3> shells,
-                                                   int unit_shell_index, 
-                                               libcint::CINTOpt *opt,
-                                               double *buffer, double *cache) {
-    std::array<int, 4> four_shells{shells[0], shells[1], shells[2], unit_shell_index};
-    auto dims_4c = four_center_helper<Operator::coulomb, ST>(four_shells, opt, buffer, cache);
+  inline std::array<int, 3>
+  three_center_rs_helper(std::array<int, 3> shells, int unit_shell_index,
+                         libcint::CINTOpt *opt, double *buffer, double *cache) {
+    std::array<int, 4> four_shells{shells[0], shells[1], shells[2],
+                                   unit_shell_index};
+    auto dims_4c = four_center_helper<Operator::coulomb, ST>(four_shells, opt,
+                                                             buffer, cache);
     // IMPORTANT -- need to multiply the result by the norm of shells[2]
     return {dims_4c[0], dims_4c[1], dims_4c[2]};
   }

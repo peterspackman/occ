@@ -41,9 +41,9 @@ public:
   }
 
   double nuclear_point_charge_interaction_energy(const PointChargeList &) const;
-  double wolf_point_charge_interaction_energy(const PointChargeList &,
-                                              const std::vector<double> &partial_charges,
-                                              double alpha, double rc) const;
+  double wolf_point_charge_interaction_energy(
+      const PointChargeList &, const std::vector<double> &partial_charges,
+      double alpha, double rc) const;
 
   Mat compute_fock(const MolecularOrbitals &mo,
                    const Mat &Schwarz = Mat()) const;
@@ -85,9 +85,10 @@ public:
   Mat compute_point_charge_interaction_matrix(
       const PointChargeList &point_charges, double alpha = 1e16) const;
 
-  Mat compute_wolf_interaction_matrix(const PointChargeList &point_charges,
-                                      const std::vector<double> &partial_charges,
-                                      double alpha, double rc) const;
+  Mat compute_wolf_interaction_matrix(
+      const PointChargeList &point_charges,
+      const std::vector<double> &partial_charges, double alpha,
+      double rc) const;
 
   Mat3N electronic_electric_field_contribution(const MolecularOrbitals &mo,
                                                const Mat3N &) const;

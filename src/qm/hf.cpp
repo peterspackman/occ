@@ -71,7 +71,8 @@ double HartreeFock::wolf_point_charge_interaction_energy(
     for (const auto &pc : point_charges) {
       const auto &pos_pc = pc.position();
       const double rij = (pos_pc - pos_a).norm();
-      if(rij > rc) continue;
+      if (rij > rc)
+        continue;
       const double qj = pc.charge();
       total_i += qj * (std::erfc(alpha * rij) / rij - t2);
     }

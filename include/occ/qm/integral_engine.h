@@ -168,9 +168,8 @@ public:
                              double alpha = 1e16);
 
   Mat wolf_point_charge_potential(
-      const std::vector<occ::core::PointCharge> &charges, 
-      const std::vector<double> &partial_charges, 
-      double alpha,
+      const std::vector<occ::core::PointCharge> &charges,
+      const std::vector<double> &partial_charges, double alpha,
       double cutoff_radius);
   Vec electric_potential(const MolecularOrbitals &mo, const Mat3N &points);
 
