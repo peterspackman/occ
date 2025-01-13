@@ -1,5 +1,6 @@
 var NAVTREEINDEX13 =
 {
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5aa3deb6e481689f1d3303caecb8a6c401":[3,0,1,0,1,31,3,22],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5aa92c5ff6e57ac12e7428f0eb33d9318a":[3,0,1,0,1,31,3,16],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5aafb0fced528eaac5fe170b763cda5975":[3,0,1,0,1,31,3,44],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5ab1522194d726a396729c3148c2b3a0bd":[3,0,1,0,1,31,3,27],
@@ -248,6 +249,5 @@ var NAVTREEINDEX13 =
 "structocc_1_1cg_1_1SMDSettings.html#ab7d0e075a13f6aa5248265d83124fd69":[2,0,2,0,8,2],
 "structocc_1_1cg_1_1SMDSettings.html#adc34f08ec1409e88786f669e0c786ec5":[2,0,2,0,8,3],
 "structocc_1_1cg_1_1SMDSettings.html#ae84924cfd8476cd591c18474b261ecc5":[2,0,2,0,8,0],
-"structocc_1_1cg_1_1SMDSolventSurfaces.html":[2,0,2,0,14],
-"structocc_1_1cg_1_1SMDSolventSurfaces.html#a1ef49829fdb8e379787d9b2ebe176d84":[2,0,2,0,14,4]
+"structocc_1_1cg_1_1SMDSolventSurfaces.html":[2,0,2,0,14]
 };

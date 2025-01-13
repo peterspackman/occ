@@ -1,5 +1,6 @@
 var NAVTREEINDEX18 =
 {
+"structocc_1_1qm_1_1Energy.html#acd7201ed1a336788248bfff3e3451841":[2,0,2,13,18,5],
 "structocc_1_1qm_1_1Energy.html#ad9300be23b3273cef7ded0b9fc4a4847":[2,0,2,13,18,7],
 "structocc_1_1qm_1_1Energy.html#ae2b2edb62a26361a9d86d06e66de1018":[2,0,2,13,18,10],
 "structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html":[2,0,2,13,7,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX18 =
 "structocc_1_1slater_1_1InterpolatorParams.html#a45adf7b01ff03b8ee9970530bc6067c1":[2,0,2,15,2,1],
 "structocc_1_1slater_1_1InterpolatorParams.html#ab4143c1cc31ffa3978b8ddf0dbed5be1":[2,0,2,15,2,0],
 "structocc_1_1solvent_1_1COSMO_1_1Result.html":[2,0,2,16,1,0],
-"structocc_1_1solvent_1_1COSMO_1_1Result.html#a0081ce2dc697ddd596bf150a4e72919d":[2,0,2,16,1,0,0],
-"structocc_1_1solvent_1_1COSMO_1_1Result.html#a91804df1e591a42d31de7ab412eee3a1":[2,0,2,16,1,0,1]
+"structocc_1_1solvent_1_1COSMO_1_1Result.html#a0081ce2dc697ddd596bf150a4e72919d":[2,0,2,16,1,0,0]
 };
