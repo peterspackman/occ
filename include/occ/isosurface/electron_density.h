@@ -16,7 +16,7 @@ public:
                   .cast<float>();
     } else {
       layer = m_wfn.electron_density(pos.cast<double>()).cast<float>();
-   }
+    }
   }
 
   inline int num_calls() const { return m_num_calls; }

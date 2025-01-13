@@ -18,7 +18,7 @@ template <typename T> constexpr auto radians(T x) { return x * PI / 180; }
 template <typename T> constexpr auto degrees(T x) { return x * 180 / PI; }
 
 template <typename T> constexpr auto angstroms(T x) {
-    return BOHR_TO_ANGSTROM * x;
+  return BOHR_TO_ANGSTROM * x;
 }
 
 } // namespace occ::units

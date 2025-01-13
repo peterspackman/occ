@@ -5,19 +5,35 @@ namespace occ::geometry::mc {
 namespace tables {
 
 const std::array<std::array<uint_fast8_t, 3>, 8> CORNERS{{
-    {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0},
-    {0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1},
+    {0, 0, 0},
+    {1, 0, 0},
+    {1, 1, 0},
+    {0, 1, 0},
+    {0, 0, 1},
+    {1, 0, 1},
+    {1, 1, 1},
+    {0, 1, 1},
 }};
 
 /// The corners used by each edge in a call
 const std::array<std::array<uint_fast8_t, 2>, 12> EDGE_CONNECTION{{
-    {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6},
-    {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
+    {0, 1},
+    {1, 2},
+    {2, 3},
+    {3, 0},
+    {4, 5},
+    {5, 6},
+    {6, 7},
+    {7, 4},
+    {0, 4},
+    {1, 5},
+    {2, 6},
+    {3, 7},
 }};
 
 /// Maps the signs of each corner in a cell to the set of triangles spanning the
 /// active edges
-const std::array<std::array<int_fast8_t, 16>, 256> TRIANGLE_CONNECTION {{
+const std::array<std::array<int_fast8_t, 16>, 256> TRIANGLE_CONNECTION{{
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -276,6 +292,6 @@ const std::array<std::array<int_fast8_t, 16>, 256> TRIANGLE_CONNECTION {{
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 }};
 
-}
+} // namespace tables
 
-}
+} // namespace occ::geometry::mc

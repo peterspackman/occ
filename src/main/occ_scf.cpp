@@ -24,7 +24,6 @@
 #include <occ/main/occ_scf.h>
 #include <occ/main/properties.h>
 #include <occ/main/version.h>
-#include <spdlog/cfg/env.h>
 #include <xc.h>
 
 namespace occ::main {

@@ -10,6 +10,7 @@
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/parallel.h>
+#include <occ/core/point_charge.h>
 #include <occ/crystal/crystal.h>
 #include <occ/dft/dft.h>
 #include <occ/io/cifparser.h>
@@ -18,6 +19,7 @@
 #include <occ/io/moldenreader.h>
 #include <occ/io/xyz.h>
 #include <occ/main/occ_cg.h>
+#include <occ/qm/expectation.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
@@ -30,12 +32,14 @@ namespace nb = nanobind;
 using namespace nb::literals;
 
 using occ::IVec;
+using occ::Mat;
 using occ::Mat3N;
 using occ::Vec3;
 using occ::core::Atom;
 using occ::core::Dimer;
 using occ::core::Element;
 using occ::core::Molecule;
+using occ::core::PointCharge;
 using occ::crystal::AsymmetricUnit;
 using occ::crystal::Crystal;
 using occ::crystal::CrystalAtomRegion;
@@ -47,9 +51,9 @@ using occ::dft::DFT;
 using occ::qm::AOBasis;
 using occ::qm::HartreeFock;
 using occ::qm::MolecularOrbitals;
+using occ::qm::SCF;
 using occ::qm::Shell;
 using occ::qm::Wavefunction;
-using occ::scf::SCF;
 
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
@@ -84,7 +88,21 @@ NB_MODULE(_occpy, m) {
                            a.x, a.y, a.z);
       });
 
+  nb::class_<PointCharge>(m, "PointCharge")
+      .def(nb::init<double, double, double, double>())
+      .def(nb::init<double, std::array<double, 3>>())
+      .def(nb::init<double, const occ::Vec3 &>())
+      .def_prop_rw("charge", &PointCharge::charge, &PointCharge::set_charge)
+      .def_prop_rw("position", &PointCharge::position,
+                   &PointCharge::set_position)
+      .def("__repr__", [](const PointCharge &pc) {
+        const auto &pos = pc.position();
+        return fmt::format("<PointCharge q={:.5f} [{:.5f}, {:.5f}, {:.5f}]>",
+                           pc.charge(), pos.x(), pos.y(), pos.z());
+      });
+
   nb::class_<Shell>(m, "Shell")
+      .def(nb::init<PointCharge, double>())
       .def_ro("origin", &Shell::origin, "shell position/origin (Bohr)")
       .def_ro("exponents", &Shell::exponents,
               "array of exponents for primitives in this shell")
@@ -127,7 +145,10 @@ NB_MODULE(_occpy, m) {
       .def_rw("orbital_coeffs", &MolecularOrbitals::C)
       .def_rw("occupied_orbital_coeffs", &MolecularOrbitals::Cocc)
       .def_rw("density_matrix", &MolecularOrbitals::D)
-      .def_rw("orbital_energies", &MolecularOrbitals::energies);
+      .def_rw("orbital_energies", &MolecularOrbitals::energies)
+      .def("expectation_value", [](const MolecularOrbitals &mo, const Mat &op) {
+        return 2 * occ::qm::expectation(mo.kind, mo.D, op);
+      });
 
   nb::class_<Wavefunction>(m, "Wavefunction")
       .def_rw("molecular_orbitals", &Wavefunction::mo)
@@ -191,6 +212,17 @@ NB_MODULE(_occpy, m) {
 
   nb::class_<HartreeFock>(m, "HartreeFock")
       .def(nb::init<const AOBasis &>())
+      .def("point_charge_interaction_energy",
+           &HartreeFock::nuclear_point_charge_interaction_energy)
+      .def("wolf_point_charge_interaction_energy",
+           &HartreeFock::wolf_point_charge_interaction_energy)
+      .def("point_charge_interaction_matrix",
+           &HartreeFock::compute_point_charge_interaction_matrix,
+           "point_charges"_a, "alpha"_a = 1e16)
+      .def("wolf_interaction_matrix",
+           &HartreeFock::compute_wolf_interaction_matrix)
+      .def("nuclear_attraction_matrix",
+           &HartreeFock::compute_nuclear_attraction_matrix)
       .def("nuclear_attraction_matrix",
            &HartreeFock::compute_nuclear_attraction_matrix)
       .def("set_density_fitting_basis", &HartreeFock::set_density_fitting_basis)

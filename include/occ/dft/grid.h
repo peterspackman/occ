@@ -10,20 +10,20 @@ using occ::io::BeckeGridSettings;
 using occ::qm::AOBasis;
 
 struct AtomGrid {
-    AtomGrid() {}
-    AtomGrid(size_t num_points) : points(3, num_points), weights(num_points) {}
-    inline size_t num_points() const { return weights.size(); }
-    uint_fast8_t atomic_number;
-    Mat3N points;
-    Vec weights;
+  AtomGrid() {}
+  AtomGrid(size_t num_points) : points(3, num_points), weights(num_points) {}
+  inline size_t num_points() const { return weights.size(); }
+  uint_fast8_t atomic_number;
+  Mat3N points;
+  Vec weights;
 };
 
 struct RadialGrid {
-    RadialGrid() {}
-    RadialGrid(size_t num_points) : points(num_points), weights(num_points) {}
-    inline size_t num_points() const { return weights.size(); }
-    Vec points;
-    Vec weights;
+  RadialGrid() {}
+  RadialGrid(size_t num_points) : points(num_points), weights(num_points) {}
+  inline size_t num_points() const { return weights.size(); }
+  Vec points;
+  Vec weights;
 };
 
 IVec prune_nwchem_scheme(size_t nuclear_charge, size_t max_angular,
@@ -41,27 +41,27 @@ AtomGrid generate_atom_grid(size_t atomic_number,
                             size_t radial_points = 50);
 
 class MolecularGrid {
-  public:
-    MolecularGrid(const AOBasis &, const BeckeGridSettings &settings = {});
-    const auto n_atoms() const { return m_atomic_numbers.size(); }
-    AtomGrid generate_partitioned_atom_grid(size_t atom_idx) const;
-    AtomGrid generate_lmg_atom_grid(size_t atomic_number);
+public:
+  MolecularGrid(const AOBasis &, const BeckeGridSettings &settings = {});
+  const auto n_atoms() const { return m_atomic_numbers.size(); }
+  AtomGrid generate_partitioned_atom_grid(size_t atom_idx) const;
+  AtomGrid generate_lmg_atom_grid(size_t atomic_number);
 
-    inline const auto &settings() const { return m_settings; }
+  inline const auto &settings() const { return m_settings; }
 
-  private:
-    void ensure_settings();
+private:
+  void ensure_settings();
 
-    occ::IVec m_atomic_numbers;
-    Mat3N m_positions;
-    Mat m_dists;
-    std::vector<AtomGrid> m_unique_atom_grids;
-    BeckeGridSettings m_settings;
-    std::vector<std::pair<size_t, size_t>> m_grid_atom_blocks;
-    Mat3N m_points;
-    Vec m_weights;
-    IVec m_l_max;
-    Vec m_alpha_max;
-    Mat m_alpha_min;
+  occ::IVec m_atomic_numbers;
+  Mat3N m_positions;
+  Mat m_dists;
+  std::vector<AtomGrid> m_unique_atom_grids;
+  BeckeGridSettings m_settings;
+  std::vector<std::pair<size_t, size_t>> m_grid_atom_blocks;
+  Mat3N m_points;
+  Vec m_weights;
+  IVec m_l_max;
+  Vec m_alpha_max;
+  Mat m_alpha_min;
 };
 } // namespace occ::dft

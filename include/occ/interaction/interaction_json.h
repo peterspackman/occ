@@ -4,7 +4,7 @@
 
 namespace occ::interaction {
 
-void to_json(nlohmann::json &j, const CEEnergyComponents&);
-void from_json(const nlohmann::json &j, CEEnergyComponents&);
+void to_json(nlohmann::json &j, const CEEnergyComponents &);
+void from_json(const nlohmann::json &j, CEEnergyComponents &);
 
 } // namespace occ::interaction

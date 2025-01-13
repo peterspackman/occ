@@ -1,45 +1,46 @@
-#include <occ/solvent/parameters.h>
-#include <fmt/core.h>
-#include <occ/core/log.h>
 #include <filesystem>
-#include <occ/io/solvent_json.h>
+#include <fmt/core.h>
 #include <fstream>
+#include <occ/core/log.h>
+#include <occ/io/solvent_json.h>
+#include <occ/solvent/parameters.h>
 
 namespace fs = std::filesystem;
 
 namespace impl {
 bool solvent_parameter_data_initialized{false};
 static std::string data_path_directory_override{""};
-}
+} // namespace impl
 
 namespace occ::solvent {
 
 void override_data_path_directory(const std::string &s) {
-    impl::data_path_directory_override = s;
+  impl::data_path_directory_override = s;
 }
 
 std::string solvent_data_path() {
-    std::string path{"."};
-    const char *data_path_env = 
-	impl::data_path_directory_override.empty() ? getenv("OCC_DATA_PATH") : impl::data_path_directory_override.c_str();
-    if (data_path_env) {
-        path = data_path_env;
-    }
-    std::string solvent_data_path = path + std::string("/solvent");
-    bool path_exists = fs::exists(solvent_data_path);
-    std::string errmsg;
-    if (!path_exists) { // try without "/solvent"
-        occ::log::warn("There is a problem with the solvent data directory, the "
-                       "path '{}' is not valid (does not exist)",
-                       solvent_data_path);
-        solvent_data_path = fs::current_path().string();
-    } else if (!fs::is_directory(solvent_data_path)) {
-        occ::log::warn("There is a problem with the solvent data directory, the "
-                       "path '{}' is not valid (not a directory)",
-                       solvent_data_path);
-        solvent_data_path = fs::current_path().string();
-    }
-    return solvent_data_path ;
+  std::string path{"."};
+  const char *data_path_env = impl::data_path_directory_override.empty()
+                                  ? getenv("OCC_DATA_PATH")
+                                  : impl::data_path_directory_override.c_str();
+  if (data_path_env) {
+    path = data_path_env;
+  }
+  std::string solvent_data_path = path + std::string("/solvent");
+  bool path_exists = fs::exists(solvent_data_path);
+  std::string errmsg;
+  if (!path_exists) { // try without "/solvent"
+    occ::log::warn("There is a problem with the solvent data directory, the "
+                   "path '{}' is not valid (does not exist)",
+                   solvent_data_path);
+    solvent_data_path = fs::current_path().string();
+  } else if (!fs::is_directory(solvent_data_path)) {
+    occ::log::warn("There is a problem with the solvent data directory, the "
+                   "path '{}' is not valid (not a directory)",
+                   solvent_data_path);
+    solvent_data_path = fs::current_path().string();
+  }
+  return solvent_data_path;
 }
 
 using DielectricMap = ankerl::unordered_dense::map<std::string, double>;
@@ -592,85 +593,87 @@ static inline SMDParameterMap smd_solvent_parameters{
      SMDSolventParameters(1.4958, 1.4932, 0.0, 0.16, 40.32, 2.2705, 0.75, 0.0)},
 };
 
-
 void load_solvent_parameters() {
-    if(impl::solvent_parameter_data_initialized) return;
-    impl::solvent_parameter_data_initialized = true;
+  if (impl::solvent_parameter_data_initialized)
+    return;
+  impl::solvent_parameter_data_initialized = true;
 
-    std::string data_path = solvent_data_path();
+  std::string data_path = solvent_data_path();
 
-    std::string smd_filepath = "smd.json";
-    if (!fs::exists(smd_filepath)) {
-        smd_filepath = data_path + "/" + smd_filepath;
-    }
+  std::string smd_filepath = "smd.json";
+  if (!fs::exists(smd_filepath)) {
+    smd_filepath = data_path + "/" + smd_filepath;
+  }
 
-    if(!fs::exists(smd_filepath)) {
-	occ::log::debug("Skip loading SMD parameters from {}: file does not exist", smd_filepath);
+  if (!fs::exists(smd_filepath)) {
+    occ::log::debug("Skip loading SMD parameters from {}: file does not exist",
+                    smd_filepath);
+  } else {
+    nlohmann::json json_data;
+    occ::log::debug("Loading SMD parameters from {}", smd_filepath);
+    std::ifstream input(smd_filepath);
+    input >> json_data;
+    for (const auto &j : json_data.items()) {
+      smd_solvent_parameters[j.key()] = j.value();
     }
-    else {
-	nlohmann::json json_data;
-	occ::log::debug("Loading SMD parameters from {}", smd_filepath);
-	std::ifstream input(smd_filepath);
-	input >> json_data;
-	for(const auto &j: json_data.items()) {
-	    smd_solvent_parameters[j.key()] = j.value();
-	}
-    }
+  }
 }
 
 nlohmann::json load_draco_parameters() {
-    std::string data_path = solvent_data_path();
+  std::string data_path = solvent_data_path();
 
-    std::string draco_filepath = "draco.json";
-    if (!fs::exists(draco_filepath)) {
-        draco_filepath = data_path + "/" + draco_filepath;
-    }
+  std::string draco_filepath = "draco.json";
+  if (!fs::exists(draco_filepath)) {
+    draco_filepath = data_path + "/" + draco_filepath;
+  }
 
-    if(!fs::exists(draco_filepath)) {
-	occ::log::debug("Skip loading DRACO parameters from {}: file does not exist", draco_filepath);
-    }
-    else {
-	nlohmann::json json_data;
-	occ::log::debug("Loading DRACO parameters from {}", draco_filepath);
-	std::ifstream input(draco_filepath);
-	input >> json_data;
-	return json_data;
-    }
-    return {};
+  if (!fs::exists(draco_filepath)) {
+    occ::log::debug(
+        "Skip loading DRACO parameters from {}: file does not exist",
+        draco_filepath);
+  } else {
+    nlohmann::json json_data;
+    occ::log::debug("Loading DRACO parameters from {}", draco_filepath);
+    std::ifstream input(draco_filepath);
+    input >> json_data;
+    return json_data;
+  }
+  return {};
 }
 
 double get_dielectric(const std::string &name) {
-    const auto kv = dielectric_constant.find(name);
-    if(kv == dielectric_constant.end()) {
-	throw std::runtime_error(fmt::format("Unknown solvent name for dielectric constant: '{}'", name));
-    }
-    return kv->second;
+  const auto kv = dielectric_constant.find(name);
+  if (kv == dielectric_constant.end()) {
+    throw std::runtime_error(fmt::format(
+        "Unknown solvent name for dielectric constant: '{}'", name));
+  }
+  return kv->second;
 }
 
 SMDSolventParameters get_smd_parameters(const std::string &name) {
-    load_solvent_parameters();
-    const auto kv = smd_solvent_parameters.find(name);
-    if(kv == smd_solvent_parameters.end()) {
-	throw std::runtime_error(fmt::format("Unknown SMD solvent name: '{}'", name));
-    }
-    return kv->second;
+  load_solvent_parameters();
+  const auto kv = smd_solvent_parameters.find(name);
+  if (kv == smd_solvent_parameters.end()) {
+    throw std::runtime_error(
+        fmt::format("Unknown SMD solvent name: '{}'", name));
+  }
+  return kv->second;
 }
 
 void list_available_solvents() {
-    occ::log::info("{: <32s} {:>10s} {:>10s} {:>10s} {:>10s} {:>10s} "
-                   "{:>10s} {:>10s}",
-                   "Solvent", "n (293K)", "acidity", "basicity", "gamma",
-                   "dielectric", "aromatic", "%F,Cl,Br");
-    occ::log::info("{:-<110s}", "");
-    for (const auto &solvent : occ::solvent::smd_solvent_parameters) {
-        const auto &param = solvent.second;
-        occ::log::info("{:<32s} {:10.4f} {:10.4f} {:10.4f} {:10.4f} "
-                       "{:10.4f} {:10.4f} {:10.4f}",
-                       solvent.first, param.refractive_index_293K,
-                       param.acidity, param.basicity, param.gamma,
-                       param.dielectric, param.aromaticity,
-                       param.electronegative_halogenicity);
-    }
+  occ::log::info("{: <32s} {:>10s} {:>10s} {:>10s} {:>10s} {:>10s} "
+                 "{:>10s} {:>10s}",
+                 "Solvent", "n (293K)", "acidity", "basicity", "gamma",
+                 "dielectric", "aromatic", "%F,Cl,Br");
+  occ::log::info("{:-<110s}", "");
+  for (const auto &solvent : occ::solvent::smd_solvent_parameters) {
+    const auto &param = solvent.second;
+    occ::log::info("{:<32s} {:10.4f} {:10.4f} {:10.4f} {:10.4f} "
+                   "{:10.4f} {:10.4f} {:10.4f}",
+                   solvent.first, param.refractive_index_293K, param.acidity,
+                   param.basicity, param.gamma, param.dielectric,
+                   param.aromaticity, param.electronegative_halogenicity);
+  }
 }
 
-}
+} // namespace occ::solvent

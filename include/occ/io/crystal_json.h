@@ -31,8 +31,7 @@ template <> struct adl_serializer<occ::crystal::SpaceGroup> {
 
 template <> struct adl_serializer<occ::crystal::Crystal> {
   static occ::crystal::Crystal from_json(const json &);
-  static void to_json(json &j, const occ::crystal::Crystal&);
+  static void to_json(json &j, const occ::crystal::Crystal &);
 };
-
 
 } // namespace nlohmann

@@ -101,8 +101,8 @@ WulffConstruction::WulffConstruction(
 
   occ::log::debug("Convex hull has {} faces, {} vertices",
                   hull.triangles().cols(), hull.vertices().cols());
-  occ::log::debug("Hull triangles:\n{}\n", hull.triangles());
-  occ::log::debug("Hull vertices:\n{}\n", hull.vertices());
+  occ::log::debug("Hull triangles:\n{}", format_matrix(hull.triangles(), "{:6d}"));
+  occ::log::debug("Hull vertices:\n{}", format_matrix(hull.vertices()));
   IMat3N triangles = hull.triangles().cast<int>();
   extract_wulff_from_dual_hull_simplices(triangles);
 }

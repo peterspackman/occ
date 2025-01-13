@@ -1,4 +1,5 @@
 #include <fmt/os.h>
+#include <fmt/ostream.h>
 #include <occ/io/cube.h>
 
 namespace occ::io {
@@ -36,7 +37,8 @@ void Cube::write_data_to_file(const std::string &destination) {
 }
 
 void Cube::write_data_to_stream(std::ostream &out) {
-  if(data.size() < 1) throw std::runtime_error("No data in cube");
+  if (data.size() < 1)
+    throw std::runtime_error("No data in cube");
   for (int x = 0, i = 0; x < steps(0); x++) {
     for (int y = 0; y < steps(1); y++) {
       for (int z = 0; z < steps(2); z++, i++) {
@@ -50,17 +52,16 @@ void Cube::write_data_to_stream(std::ostream &out) {
   }
 }
 
-
 void Cube::center_molecule() {
-    Vec3 center = 0.5 * basis * steps.cast<double>();
+  Vec3 center = 0.5 * basis * steps.cast<double>();
 
-    Vec3 centroid = Vec3::Zero();
-    for (const auto& atom : atoms) {
-      centroid += Vec3(atom.x, atom.y, atom.z);
-    }
-    centroid /= atoms.size();
+  Vec3 centroid = Vec3::Zero();
+  for (const auto &atom : atoms) {
+    centroid += Vec3(atom.x, atom.y, atom.z);
+  }
+  centroid /= atoms.size();
 
-    origin = centroid - center;
+  origin = centroid - center;
 }
 
 } // namespace occ::io

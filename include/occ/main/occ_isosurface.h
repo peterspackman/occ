@@ -71,6 +71,10 @@ struct IsosurfaceConfig {
   bool requires_wavefunction() const;
   bool have_environment_file() const;
 
+  // New helper methods
+  std::string
+  format_output_filename(size_t index,
+                         std::optional<std::string> label = std::nullopt) const;
   bool has_multiple_outputs() const;
 };
 

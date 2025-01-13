@@ -37,34 +37,34 @@ std::array<double, 110> Grimme06_r_6_disp_coeff{
 
 double ce_model_dispersion_energy(std::vector<Atom> &atoms_a,
                                   std::vector<Atom> &atoms_b) {
-    /*
-    Return Grimmes's D2 dispersion energy between "self" and "atom"s.
-    Based on C6 terms from Grimme (2006) J. Comp. Chem.  27(15) p. 1787
-    E_disp = sum over atoms (C6 / r^6).
-    */
-    double result = 0.0;
-    double d = 20.0;
+  /*
+  Return Grimmes's D2 dispersion energy between "self" and "atom"s.
+  Based on C6 terms from Grimme (2006) J. Comp. Chem.  27(15) p. 1787
+  E_disp = sum over atoms (C6 / r^6).
+  */
+  double result = 0.0;
+  double d = 20.0;
 
-    for (const auto &atom_i : atoms_a) {
-        size_t ni = atom_i.atomic_number;
-        double ai = Grimme06_a_6_disp_coeff[ni - 1];
-        double ri = Grimme06_r_6_disp_coeff[ni - 1];
+  for (const auto &atom_i : atoms_a) {
+    size_t ni = atom_i.atomic_number;
+    double ai = Grimme06_a_6_disp_coeff[ni - 1];
+    double ri = Grimme06_r_6_disp_coeff[ni - 1];
 
-        for (const auto &atom_j : atoms_b) {
-            size_t nj = atom_j.atomic_number;
-            double aj = Grimme06_a_6_disp_coeff[nj - 1];
-            double rj = Grimme06_r_6_disp_coeff[nj - 1];
+    for (const auto &atom_j : atoms_b) {
+      size_t nj = atom_j.atomic_number;
+      double aj = Grimme06_a_6_disp_coeff[nj - 1];
+      double rj = Grimme06_r_6_disp_coeff[nj - 1];
 
-            double rr = ri + rj;
-            double dx = atom_i.x - atom_j.x;
-            double dy = atom_i.y - atom_j.y;
-            double dz = atom_i.z - atom_j.z;
-            double rij = sqrt(dx * dx + dy * dy + dz * dz);
-            double damping_factor = (1 / (1 + std::exp(-d * (rij / (rr)-1))));
-            result += -(ai * aj / pow(rij, 6) * damping_factor);
-        }
+      double rr = ri + rj;
+      double dx = atom_i.x - atom_j.x;
+      double dy = atom_i.y - atom_j.y;
+      double dz = atom_i.z - atom_j.z;
+      double rij = sqrt(dx * dx + dy * dy + dz * dz);
+      double damping_factor = (1 / (1 + std::exp(-d * (rij / (rr)-1))));
+      result += -(ai * aj / pow(rij, 6) * damping_factor);
     }
-    return result;
+  }
+  return result;
 }
 
 } // namespace occ::disp

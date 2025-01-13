@@ -9,22 +9,22 @@ namespace occ::io {
 struct OccInput;
 
 struct XyzFileReader {
-    using Position = std::array<double, 3>;
+  using Position = std::array<double, 3>;
 
-    XyzFileReader(std::istream &);
-    XyzFileReader(const std::string &);
+  XyzFileReader(std::istream &);
+  XyzFileReader(const std::string &);
 
-    std::vector<occ::core::Element> elements;
-    std::vector<Position> positions;
-    std::string comment;
+  std::vector<occ::core::Element> elements;
+  std::vector<Position> positions;
+  std::string comment;
 
-    OccInput as_occ_input() const;
-    void update_occ_input(OccInput &) const;
+  OccInput as_occ_input() const;
+  void update_occ_input(OccInput &) const;
 
-    static bool is_likely_xyz_filename(const std::string &filename);
+  static bool is_likely_xyz_filename(const std::string &filename);
 
-  private:
-    void parse(std::istream &);
+private:
+  void parse(std::istream &);
 };
 
 occ::core::Molecule molecule_from_xyz_file(const std::string &);

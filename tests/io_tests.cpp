@@ -23,9 +23,9 @@
 #include <occ/qm/scf.h>
 #include <sstream>
 
+using occ::format_matrix;
 using occ::qm::HartreeFock;
 using occ::util::all_close;
-// CrystalGrower
 
 auto acetic_crystal() {
   const std::vector<std::string> labels = {"C1", "C2", "H1", "H2",
@@ -572,9 +572,13 @@ TEST_CASE("Read H2 fchk contents", "[read]") {
   occ::io::FchkReader reader(fchk);
   REQUIRE(reader.num_alpha() == 1);
   REQUIRE(reader.num_basis_functions() == 2);
-  fmt::print("Alpha MOs:\n{}\n", reader.alpha_mo_coefficients());
-  fmt::print("Alpha MO energies:\n{}\n", reader.alpha_mo_energies());
-  fmt::print("Positions:\n{}\n", reader.atomic_positions());
+  fmt::print("Alpha MOs:\n{}\n", format_matrix(reader.alpha_mo_coefficients()));
+  fmt::print("Alpha MO energies:\n");
+  const auto &energies = reader.alpha_mo_energies();
+  for (int i = 0; i < energies.rows(); i++) {
+    fmt::print("{:12.5f}\n", energies(i));
+  }
+  fmt::print("Positions:\n{}\n", format_matrix(reader.atomic_positions()));
   REQUIRE(reader.basis().primitive_exponents[0] == Catch::Approx(3.42525091));
 
   occ::io::FchkReader::FchkBasis basis = reader.basis();
@@ -585,7 +589,7 @@ TEST_CASE("Read H2 fchk contents", "[read]") {
   //        fmt::print("\n{}\n", shell);
   //    }
   auto density = reader.scf_density_matrix();
-  fmt::print("Density matrix\n{}\n", density);
+  fmt::print("Density matrix\n{}\n", format_matrix(density));
 
   REQUIRE(density(1, 0) == Catch::Approx(0.301228));
 }
@@ -609,11 +613,21 @@ TEST_CASE("Read water UHF fchk file", "[read]") {
   REQUIRE(reader.num_alpha() == 5);
   REQUIRE(reader.num_beta() == 5);
   REQUIRE(reader.num_basis_functions() == 13);
-  fmt::print("Alpha MOs:\n{}\n", reader.alpha_mo_coefficients());
-  fmt::print("Beta MOs:\n{}\n", reader.alpha_mo_coefficients());
-  fmt::print("Alpha MO energies:\n{}\n", reader.alpha_mo_energies());
-  fmt::print("Beta MO energies:\n{}\n", reader.alpha_mo_energies());
-  fmt::print("Positions:\n{}\n", reader.atomic_positions());
+  fmt::print("Alpha MOs:\n{}\n", format_matrix(reader.alpha_mo_coefficients()));
+  fmt::print("Beta MOs:\n{}\n", format_matrix(reader.beta_mo_coefficients()));
+  fmt::print("Alpha MO energies:\n");
+  const auto &energies = reader.alpha_mo_energies();
+  for (int i = 0; i < energies.rows(); i++) {
+    fmt::print("{:12.5f}\n", energies(i));
+  }
+
+  fmt::print("Beta MO energies:\n");
+  const auto &energies_beta = reader.beta_mo_energies();
+  for (int i = 0; i < energies_beta.rows(); i++) {
+    fmt::print("{:12.5f}\n", energies_beta(i));
+  }
+
+  fmt::print("Positions:\n{}\n", format_matrix(reader.atomic_positions()));
   CHECK(reader.basis().primitive_exponents[0] == Catch::Approx(3.22037000e02));
 
   occ::io::FchkReader::FchkBasis basis = reader.basis();
@@ -1152,7 +1166,7 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
   auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
   obs.set_pure(true);
   HartreeFock hf(obs);
-  occ::scf::SCF<HartreeFock> scf(hf);
+  occ::qm::SCF<HartreeFock> scf(hf);
   scf.convergence_settings.energy_threshold = 1e-8;
   double e = scf.compute_scf_energy();
 
@@ -1181,8 +1195,8 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
   SECTION("Rotate by I") {
     occ::Mat rot = occ::Mat::Identity(3, 3);
     wfn2.apply_rotation(rot);
-    fmt::print("orig MOs\n{}\n", wfn.mo.C);
-    fmt::print("rot  MOs\n{}\n", wfn2.mo.C);
+    fmt::print("orig MOs\n{}\n", format_matrix(wfn.mo.C));
+    fmt::print("rot  MOs\n{}\n", format_matrix(wfn2.mo.C));
     check_wavefunctions(wfn, wfn2);
   }
 }
@@ -2658,16 +2672,23 @@ TEST_CASE("Read orca output JSON H2", "[read]") {
 
   std::istringstream json_istream(json_contents);
   occ::io::OrcaJSONReader reader(json_istream);
-  fmt::print("Atomic numbers:\n{}\n", reader.atomic_numbers());
-  fmt::print("Atomic positions:\n{}\n", reader.atom_positions());
+  occ::IVec nums(2);
+  nums << 1, 1;
+  REQUIRE(nums == reader.atomic_numbers());
+
+  occ::Mat3N pos = occ::Mat3N::Zero(3, 2);
+  pos(2, 1) = 2.6456165874897524;
+
+  REQUIRE(occ::util::all_close(pos, reader.atom_positions()));
+
   std::vector<occ::core::Atom> atoms = reader.atoms();
   Mat S1 = reader.overlap_matrix();
-  fmt::print("ORCA Overlap matrix:\n{}\n", S1);
+  fmt::print("ORCA Overlap matrix:\n{}\n", format_matrix(S1));
 
   HartreeFock hf(reader.basis_set());
   Mat S2 = hf.compute_overlap_matrix();
-  fmt::print("OUR Overlap matrix:\n{}\n", S2);
-  fmt::print("Difference\n{}\n", S2 - S1);
+  fmt::print("OUR Overlap matrix:\n{}\n", format_matrix(S2));
+  fmt::print("Difference\n{}\n", format_matrix(S2 - S1));
   REQUIRE(occ::util::all_close(S1, S2));
 }
 
@@ -2784,7 +2805,7 @@ TEST_CASE("Read/Write Wavefunction JSON", "[JSON]") {
   auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
   obs.set_pure(true);
   HartreeFock hf(obs);
-  occ::scf::SCF<HartreeFock> scf(hf);
+  occ::qm::SCF<HartreeFock> scf(hf);
   scf.convergence_settings.energy_threshold = 1e-8;
   double e = scf.compute_scf_energy();
 
@@ -2811,7 +2832,7 @@ TEST_CASE("Read/Write Wavefunction JSON with ECP", "[JSON]") {
   auto obs = occ::qm::AOBasis::load(atoms, "def2-svp");
   obs.set_pure(true);
   HartreeFock hf(obs);
-  occ::scf::SCF<HartreeFock> scf(hf);
+  occ::qm::SCF<HartreeFock> scf(hf);
   scf.convergence_settings.energy_threshold = 1e-8;
   double e = scf.compute_scf_energy();
 
@@ -2953,9 +2974,7 @@ TEST_CASE("Write PLY mesh validation", "[io][ply]") {
   using occ::io::VertexProperties;
   SECTION("Valid small mesh") {
     IsosurfaceMesh mesh;
-    mesh.vertices = {0.0f, 0.0f, 0.0f,
-                     1.0f, 0.0f, 0.0f,
-                     0.0f, 1.0f, 0.0f};
+    mesh.vertices = {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
     mesh.faces = {0, 1, 2};
     mesh.normals = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 

@@ -29,8 +29,8 @@ public:
                                    const HKL &offset) const;
 
   // Get target vertex given a source and a symmetry operation
-  std::optional<std::pair<size_t, HKL>> get_target_and_offset(size_t source, int symop) const;
-
+  std::optional<std::pair<size_t, HKL>> get_target_and_offset(size_t source,
+                                                              int symop) const;
 
   // Get all neighbors of a vertex
   std::vector<size_t> get_neighbors(size_t source) const;

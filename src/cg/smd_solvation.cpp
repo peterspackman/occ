@@ -53,7 +53,7 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   occ::dft::DFT ks(m_settings.method, basis);
   occ::solvent::SolvationCorrectedProcedure<occ::dft::DFT> proc_solv(ks,
                                                                      m_solvent);
-  occ::scf::SCF<occ::solvent::SolvationCorrectedProcedure<occ::dft::DFT>> scf(
+  occ::qm::SCF<occ::solvent::SolvationCorrectedProcedure<occ::dft::DFT>> scf(
       proc_solv, gas_wfn.mo.kind);
 
   scf.convergence_settings.incremental_fock_threshold =
@@ -73,7 +73,7 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   surfaces.cds.energies = proc_solv.surface_cds_energy_elements();
 
   auto nuc = proc_solv.surface_nuclear_energy_elements();
-  auto elec = proc_solv.surface_electronic_energy_elements(scf.mo);
+  auto elec = proc_solv.surface_electronic_energy_elements(scf.ctx.mo);
   auto pol = proc_solv.surface_polarization_energy_elements();
   surfaces.coulomb.energies = nuc + elec + pol;
 
@@ -90,9 +90,9 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   calculate_free_energy_components(surfaces, mol, original_energy,
                                    solvated_energy, surface_energy);
 
-  surfaces.electronic_energies =
-      (surfaces.electronic_contribution / surfaces.coulomb.areas.array().sum()) *
-      surfaces.coulomb.areas.array();
+  surfaces.electronic_energies = (surfaces.electronic_contribution /
+                                  surfaces.coulomb.areas.array().sum()) *
+                                 surfaces.coulomb.areas.array();
 
   return {surfaces, solvated_wfn};
 }

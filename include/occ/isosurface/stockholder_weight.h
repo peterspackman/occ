@@ -88,4 +88,5 @@ private:
   occ::slater::StockholderWeight m_hirshfeld;
   AxisAlignedBoundingBox m_bounding_box;
 };
+
 } // namespace occ::isosurface

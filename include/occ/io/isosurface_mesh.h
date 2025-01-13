@@ -12,8 +12,8 @@ struct IsosurfaceMesh {
       : vertices(3 * num_vertices), faces(3 * num_faces),
         normals(3 * num_vertices) {}
 
-  IsosurfaceMesh(Eigen::Ref<const Mat3N> v, Eigen::Ref<const IMat3N> f) :
-      vertices(3 * v.cols()), faces(3 * f.cols()) {
+  IsosurfaceMesh(Eigen::Ref<const Mat3N> v, Eigen::Ref<const IMat3N> f)
+      : vertices(3 * v.cols()), faces(3 * f.cols()) {
     std::copy(v.data(), v.data() + v.size(), vertices.begin());
     std::copy(f.data(), f.data() + f.size(), faces.begin());
   }
@@ -30,20 +30,23 @@ struct IsosurfaceMesh {
   std::vector<float> gaussian_curvature;
 };
 
-inline IsosurfaceMesh mesh_from_vertices_faces(Eigen::Ref<const Mat3N> vertices, Eigen::Ref<const IMat3N> faces) {
-    IsosurfaceMesh result;
+inline IsosurfaceMesh mesh_from_vertices_faces(Eigen::Ref<const Mat3N> vertices,
+                                               Eigen::Ref<const IMat3N> faces) {
+  IsosurfaceMesh result;
 
-    // Copy vertices
-    result.vertices.resize(3 * vertices.cols());
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> vertices_map(result.vertices.data(), 3, vertices.cols());
-    vertices_map = vertices.cast<float>();
+  // Copy vertices
+  result.vertices.resize(3 * vertices.cols());
+  Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> vertices_map(
+      result.vertices.data(), 3, vertices.cols());
+  vertices_map = vertices.cast<float>();
 
-    // Copy faces
-    result.faces.resize(3 * faces.cols());
-    Eigen::Map<Eigen::Matrix<uint32_t, Eigen::Dynamic, Eigen::Dynamic>> faces_map(result.faces.data(), 3, faces.cols());
-    faces_map = faces.cast<uint32_t>();
+  // Copy faces
+  result.faces.resize(3 * faces.cols());
+  Eigen::Map<Eigen::Matrix<uint32_t, Eigen::Dynamic, Eigen::Dynamic>> faces_map(
+      result.faces.data(), 3, faces.cols());
+  faces_map = faces.cast<uint32_t>();
 
-    return result;
+  return result;
 }
 
 struct VertexProperties {

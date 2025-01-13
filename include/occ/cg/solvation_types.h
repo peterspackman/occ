@@ -1,8 +1,8 @@
 #pragma once
-#include <occ/core/linear_algebra.h>
 #include <occ/cg/neighbor_atoms.h>
 #include <occ/cg/solvation_contribution.h>
 #include <occ/cg/solvent_surface.h>
+#include <occ/core/linear_algebra.h>
 #include <string>
 #include <vector>
 

@@ -11,9 +11,9 @@ using occ::core::Molecule;
 using occ::dft::DFT;
 using occ::io::OccInput;
 using occ::qm::HartreeFock;
+using occ::qm::SCF;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
-using occ::scf::SCF;
 
 namespace occ::driver {
 
@@ -61,13 +61,13 @@ run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
   }
 
   if (config.method.orbital_smearing_sigma != 0.0) {
-    scf.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
-    scf.mo.smearing.sigma = config.method.orbital_smearing_sigma;
+    scf.ctx.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
+    scf.ctx.mo.smearing.sigma = config.method.orbital_smearing_sigma;
   }
 
   double e = scf.compute_scf_energy();
   if constexpr (std::is_same<T, DFT>::value) {
-    double enlc = proc.post_scf_nlc_correction(scf.mo);
+    double enlc = proc.post_scf_nlc_correction(scf.ctx.mo);
     if (enlc != 0.0) {
       log::info("Post SCF NLC correction:         {: 20.12f}", enlc);
       e += enlc;
@@ -77,11 +77,11 @@ run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
 
   if (config.method.orbital_smearing_sigma != 0.0) {
     log::info("Correlation entropy approx.      {: 20.12f}",
-              scf.mo.smearing.ec_entropy());
+              scf.ctx.mo.smearing.ec_entropy());
     log::info("Free energy                      {: 20.12f}",
-              e + scf.mo.smearing.ec_entropy());
+              e + scf.ctx.mo.smearing.ec_entropy());
     log::info("Energy (zero point)              {: 20.12f}",
-              e + 0.5 * scf.mo.smearing.ec_entropy());
+              e + 0.5 * scf.ctx.mo.smearing.ec_entropy());
   }
 
   auto wfn = scf.wavefunction();

@@ -10,21 +10,21 @@
 namespace occ::main {
 
 void print_header() {
-    const std::string xc_version_string{XC_VERSION};
-    const auto eigen_version_string =
-        fmt::format("{}.{}.{}", EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION,
-                    EIGEN_MINOR_VERSION);
-    const std::string cint_version_string{libcint::cint_version_string};
-    const std::string gemmi_version_string{GEMMI_VERSION};
-    const int fmt_major = FMT_VERSION / 10000;
-    const int fmt_minor = (FMT_VERSION % 10000) / 100;
-    const int fmt_patch = (FMT_VERSION % 100);
-    const std::string fmt_version_string =
-        fmt::format("{}.{}.{}", fmt_major, fmt_minor, fmt_patch);
-    const std::string spdlog_version_string = fmt::format(
-        "{}.{}.{}", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
+  const std::string xc_version_string{XC_VERSION};
+  const auto eigen_version_string =
+      fmt::format("{}.{}.{}", EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION,
+                  EIGEN_MINOR_VERSION);
+  const std::string cint_version_string{libcint::cint_version_string};
+  const std::string gemmi_version_string{GEMMI_VERSION};
+  const int fmt_major = FMT_VERSION / 10000;
+  const int fmt_minor = (FMT_VERSION % 10000) / 100;
+  const int fmt_patch = (FMT_VERSION % 100);
+  const std::string fmt_version_string =
+      fmt::format("{}.{}.{}", fmt_major, fmt_minor, fmt_patch);
+  const std::string spdlog_version_string = fmt::format(
+      "{}.{}.{}", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 
-    log::info(R"(
+  log::info(R"(
    
 	 Open
 	  \
@@ -57,16 +57,17 @@ subprocess           Calling external subprocesses
 tinyply              Writing .ply (mesh) files in binary/ASCII format
 
 )",
-              eigen_version_string, fmt_version_string, gemmi_version_string,
-              cint_version_string, "1.0.7", xc_version_string, spdlog_version_string);
+            eigen_version_string, fmt_version_string, gemmi_version_string,
+            cint_version_string, "1.0.7", xc_version_string,
+            spdlog_version_string);
 
 #ifdef _OPENMP
-    std::string thread_type = "OpenMP";
+  std::string thread_type = "OpenMP";
 #else
-    std::string thread_type = "std";
+  std::string thread_type = "std";
 #endif
-    occ::log::info("\nParallelization: {} {} threads, {} eigen threads",
-                   occ::parallel::get_num_threads(), thread_type,
-                   Eigen::nbThreads());
+  occ::log::info("\nParallelization: {} {} threads, {} eigen threads",
+                 occ::parallel::get_num_threads(), thread_type,
+                 Eigen::nbThreads());
 }
 } // namespace occ::main

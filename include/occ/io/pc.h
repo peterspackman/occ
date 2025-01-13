@@ -8,17 +8,17 @@ namespace occ::io {
 struct OccInput;
 
 struct PointChargeFileReader {
-    using PointChargeList = std::vector<occ::core::PointCharge>;
+  using PointChargeList = std::vector<occ::core::PointCharge>;
 
-    PointChargeFileReader(std::istream &);
-    PointChargeFileReader(const std::string &);
+  PointChargeFileReader(std::istream &);
+  PointChargeFileReader(const std::string &);
 
-    PointChargeList point_charges;
+  PointChargeList point_charges;
 
-    void update_occ_input(OccInput &) const;
+  void update_occ_input(OccInput &) const;
 
-  private:
-    void parse(std::istream &);
+private:
+  void parse(std::istream &);
 };
 
 PointChargeFileReader::PointChargeList

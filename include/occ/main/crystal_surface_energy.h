@@ -7,17 +7,17 @@
 namespace occ::main {
 
 struct FacetEnergies {
-    occ::crystal::HKL hkl;
-    double offset{0.0};
-    std::vector<std::vector<size_t>> interaction_energy_counts;
-    double energy{0.0};
-    double area{0.0};
+  occ::crystal::HKL hkl;
+  double offset{0.0};
+  std::vector<std::vector<size_t>> interaction_energy_counts;
+  double energy{0.0};
+  double area{0.0};
 };
 
 struct CrystalSurfaceEnergies {
-    occ::crystal::Crystal crystal;
-    std::vector<double> unique_interaction_energies;
-    std::vector<FacetEnergies> facets;
+  occ::crystal::Crystal crystal;
+  std::vector<double> unique_interaction_energies;
+  std::vector<FacetEnergies> facets;
 };
 
 CrystalSurfaceEnergies

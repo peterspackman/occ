@@ -23,7 +23,8 @@ NeighborAtoms::NeighborAtoms(
         mol.atomic_numbers().array();
     vdw_radii.block(current_idx, 0, N, 1).array() =
         mol.vdw_radii().array() / units::BOHR_TO_ANGSTROM;
-    positions.block(0, current_idx, 3, N) = mol.positions() / units::BOHR_TO_ANGSTROM;
+    positions.block(0, current_idx, 3, N) =
+        mol.positions() / units::BOHR_TO_ANGSTROM;
     current_idx += N;
     i++;
   }
