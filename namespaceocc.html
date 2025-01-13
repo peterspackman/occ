@@ -92,7 +92,8 @@ $(document).ready(function(){initNavTree('namespaceocc.html',''); initResizable(
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">occ Namespace Reference</div>  </div>
 </div><!--header-->
@@ -303,6 +304,12 @@ Typedefs</h2></td></tr>
 <tr class="separator:a1c36353e752d77ead2a53790410bfaee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22e6fea5025901b5dee48e48a69dcce3"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3">IVec3</a> = Eigen::Vector3i</td></tr>
 <tr class="separator:a22e6fea5025901b5dee48e48a69dcce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a1628129daf6f63dc508b04725802fceb"><td class="memTemplParams" colspan="2">template&lt;typename Derived &gt; </td></tr>
+<tr class="memitem:a1628129daf6f63dc508b04725802fceb"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc.html#a1628129daf6f63dc508b04725802fceb">format_matrix</a> (const Eigen::DenseBase&lt; Derived &gt; &amp;matrix, std::string_view fmt_str=&quot;{:12.5f}&quot;)</td></tr>
+<tr class="separator:a1628129daf6f63dc508b04725802fceb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="adcde17020b7a59d8967444a69ade46e7"></a>
@@ -1153,6 +1160,37 @@ Typedefs</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">using <a class="el" href="namespaceocc.html#a8165087ef72495abb134eb0a03ea6ec2">occ::Vec6</a> = typedef Eigen::Matrix&lt;double, 6, 1&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a1628129daf6f63dc508b04725802fceb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1628129daf6f63dc508b04725802fceb">&#9670;&nbsp;</a></span>format_matrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Derived &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::format_matrix </td>
+          <td>(</td>
+          <td class="paramtype">const Eigen::DenseBase&lt; Derived &gt; &amp;&#160;</td>
+          <td class="paramname"><em>matrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>fmt_str</em> = <code>&quot;{:12.5f}&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

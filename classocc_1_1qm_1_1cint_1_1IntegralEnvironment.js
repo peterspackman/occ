@@ -27,6 +27,7 @@ var classocc_1_1qm_1_1cint_1_1IntegralEnvironment =
     [ "set_rinv_zeta", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a0afe528b0d5e93b4eaedca34af10985e", null ],
     [ "three_center_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a778432d0aaa00ef6ff07c06016811669", null ],
     [ "three_center_helper_grad", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2024d258edacfd4844767481eb37bc45", null ],
+    [ "three_center_rs_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a72e428d5090970eaaa8efd7a4740b754", null ],
     [ "total_cgto", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a5343ced989f8fecfec53c20af6902341", null ],
     [ "two_center_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a01d56b2523d03f81c67d5ee308b74713", null ],
     [ "two_center_helper_grad", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2c5395b0a535f31002db74d4e16d3ad3", null ]

@@ -45,12 +45,15 @@ var namespaceocc_1_1qm =
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
     [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
     [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
+    [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
+    [ "SCF", "structocc_1_1qm_1_1SCF.html", "structocc_1_1qm_1_1SCF" ],
     [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
+    [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html", "classocc_1_1qm_1_1SCFMethodBase" ],
     [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
     [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
     [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
     [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ],
-    [ "PointChargeList", "namespaceocc_1_1qm.html#a65f45dea4bbd4b16531247f902984cb3", null ],
+    [ "PointChargeList", "namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb", null ],
     [ "SpinorbitalKind", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4", [
       [ "Restricted", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a7eb505a798e7bd90ce15f4467154e837", null ],
       [ "Unrestricted", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a637317163a8a9d4712705b6bb0ae5799", null ],
@@ -71,5 +74,12 @@ var namespaceocc_1_1qm =
     [ "override_basis_set_directory", "namespaceocc_1_1qm.html#abdfb91e16998995013688d5f811b5996", null ],
     [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
     [ "spinorbital_kind_to_string", "namespaceocc_1_1qm.html#a40cf6764e46ed92ca114f4858d415943", null ],
-    [ "to_json", "namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4", null ]
+    [ "to_json", "namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4", null ],
+    [ "DensityFittingMethod", "namespaceocc_1_1qm.html#aae1e3f7fdcc408ad6beb784b5cf10258", null ],
+    [ "is_scf_method_v", "namespaceocc_1_1qm.html#af7275368e99175434508cc27a5d3659c", null ],
+    [ "OCC_MINIMAL_BASIS", "namespaceocc_1_1qm.html#a63b52a23d7e4463ee5f726dfe9c93a16", null ],
+    [ "PointChargeMethod", "namespaceocc_1_1qm.html#a4ea50ddb6fb2fbfeb235d5373a16f5e0", null ],
+    [ "SCFMethod", "namespaceocc_1_1qm.html#a2cbde6963d852d92d50c1f6ed907da35", null ],
+    [ "supports_density_fitting_v", "namespaceocc_1_1qm.html#adaccff0ae547b4b5613387ec864850cf", null ],
+    [ "supports_point_charges_v", "namespaceocc_1_1qm.html#acda93790f6f9b38ccc9e412012ac9fb9", null ]
 ];

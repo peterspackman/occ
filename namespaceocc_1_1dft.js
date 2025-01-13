@@ -6,8 +6,11 @@ var namespaceocc_1_1dft =
       [ "nearest_grid_level_at_or_above", "namespaceocc_1_1dft_1_1grid.html#a35ca3f6b79d4da7d209380fa0109f2e9", null ],
       [ "nearest_grid_level_below", "namespaceocc_1_1dft_1_1grid.html#accdc0c00d40221660ffedd9b63270087", null ]
     ] ],
-    [ "impl", "namespaceocc_1_1dft_1_1impl.html", "namespaceocc_1_1dft_1_1impl" ],
+    [ "impl", "namespaceocc_1_1dft_1_1impl.html", [
+      [ "set_params", "namespaceocc_1_1dft_1_1impl.html#a575287e1722269d11bda582e4938d0db", null ]
+    ] ],
     [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
+    [ "Functionals", "structocc_1_1dft_1_1Functionals.html", "structocc_1_1dft_1_1Functionals" ],
     [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
     [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
     [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
@@ -21,6 +24,7 @@ var namespaceocc_1_1dft =
     [ "generate_lmg_radial_grid", "namespaceocc_1_1dft.html#a2c30408fc6ed138cc86a5f9fdbb999b7", null ],
     [ "generate_mura_knowles_radial_grid", "namespaceocc_1_1dft.html#a9520536a6dd8ed259e1e7c818bfc317f", null ],
     [ "generate_treutler_alrichs_radial_grid", "namespaceocc_1_1dft.html#a8900e894dfe2f28ad918387924d3f192", null ],
+    [ "parse_dft_method", "namespaceocc_1_1dft.html#aceeb7540b1112eec3d738fc036a7a1e7", null ],
     [ "prune_numgrid_scheme", "namespaceocc_1_1dft.html#ac917154ee4170b18b3d6339435ef004c", null ],
     [ "prune_nwchem_scheme", "namespaceocc_1_1dft.html#a029911cd55275040f0a26ee8d48581d8", null ],
     [ "xc_potential_matrix", "namespaceocc_1_1dft.html#a1b07d66d6a706b5c97d4565076539e9c", null ],

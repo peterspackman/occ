@@ -128,16 +128,16 @@
 <g id="node7" class="node">
 <title>Node7</title>
 <g id="a_node7"><a xlink:title=" ">
-<polygon fill="none" stroke="#bfbfbf" points="212,-0.5 212,-19.5 298,-19.5 298,-0.5 212,-0.5"/>
-<text text-anchor="middle" x="255" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">fmt/ostream.h</text>
+<polygon fill="none" stroke="#bfbfbf" points="211.5,-0.5 211.5,-19.5 278.5,-19.5 278.5,-0.5 211.5,-0.5"/>
+<text text-anchor="middle" x="245" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">fmt/core.h</text>
 </a>
 </g>
 </g>
 <!-- Node4&#45;&gt;Node7 -->
 <g id="edge6" class="edge">
 <title>Node4&#45;&gt;Node7</title>
-<path fill="none" stroke="midnightblue" d="M164.35,-56.32C181.67,-47.66 208.52,-34.24 228.5,-24.25"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="230.31,-27.26 237.69,-19.65 227.18,-21 230.31,-27.26"/>
+<path fill="none" stroke="midnightblue" d="M162.75,-56.32C178.32,-47.74 202.38,-34.49 220.46,-24.52"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="222.22,-27.55 229.29,-19.65 218.85,-21.42 222.22,-27.55"/>
 </g>
 </g>
 </svg>

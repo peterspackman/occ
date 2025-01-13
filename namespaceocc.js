@@ -55,7 +55,7 @@ var namespaceocc =
       [ "nthreads", "namespaceocc_1_1parallel.html#a741632208b7a212fbc58e0432ca851f6", null ]
     ] ],
     [ "qm", "namespaceocc_1_1qm.html", "namespaceocc_1_1qm" ],
-    [ "scf", "namespaceocc_1_1scf.html", "namespaceocc_1_1scf" ],
+    [ "scf", "namespaceocc_1_1scf.html", null ],
     [ "sht", "namespaceocc_1_1sht.html", "namespaceocc_1_1sht" ],
     [ "slater", "namespaceocc_1_1slater.html", "namespaceocc_1_1slater" ],
     [ "solvent", "namespaceocc_1_1solvent.html", "namespaceocc_1_1solvent" ],
@@ -149,5 +149,6 @@ var namespaceocc =
     [ "Vec2", "namespaceocc.html#a87f795a8761276115f79bf88e7ff6514", null ],
     [ "Vec3", "namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1", null ],
     [ "Vec4", "namespaceocc.html#ae89d745b26c15115153317e5d90b6e93", null ],
-    [ "Vec6", "namespaceocc.html#a8165087ef72495abb134eb0a03ea6ec2", null ]
+    [ "Vec6", "namespaceocc.html#a8165087ef72495abb134eb0a03ea6ec2", null ],
+    [ "format_matrix", "namespaceocc.html#a1628129daf6f63dc508b04725802fceb", null ]
 ];

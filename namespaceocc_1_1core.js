@@ -36,12 +36,12 @@ var namespaceocc_1_1core =
     [ "KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", "structocc_1_1core_1_1KalmanEstimator" ],
     [ "Molecule", "classocc_1_1core_1_1Molecule.html", "classocc_1_1core_1_1Molecule" ],
     [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
+    [ "PointCharge", "classocc_1_1core_1_1PointCharge.html", "classocc_1_1core_1_1PointCharge" ],
     [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
     [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
     [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
     [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ],
     [ "KDTree", "namespaceocc_1_1core.html#acfa0e22cd0e47292fb5034e99d2432cb", null ],
-    [ "PointCharge", "namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1", null ],
     [ "DomainMapping", "namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35", [
       [ "Linear", "namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35acfbaf4c160987f5ac229af3f525afb36", null ],
       [ "SquareRoot", "namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35a70da9110621ed7cd7e701b83a93d129e", null ],
@@ -108,7 +108,7 @@ var namespaceocc_1_1core =
       [ "Ih", "namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a88c76da6f1765be3b493b1a553401488", null ]
     ] ],
     [ "chemical_formula", "namespaceocc_1_1core.html#a92246b981947e4e0f8af40db12185a2b", null ],
-    [ "compute_multipoles", "namespaceocc_1_1core.html#a5d14d698edcee5a42fc93feb37d9d645", null ],
+    [ "compute_multipoles", "namespaceocc_1_1core.html#a9ef36df550be7b8380e0fc954abdeb53", null ],
     [ "conditioning_orthogonalizer", "namespaceocc_1_1core.html#acb1efd48a3840bc7034d3586dd2e5c6d", null ],
     [ "cyclic_group", "namespaceocc_1_1core.html#ac6db91e18131313dac99bf8aab66fa20", null ],
     [ "dihedral_group", "namespaceocc_1_1core.html#ab561d38b11fc9c420c92a46a8dfea6ce", null ],

@@ -5,7 +5,7 @@ var structocc_1_1qm_1_1Shell =
       [ "Spherical", "structocc_1_1qm_1_1Shell.html#a937504c99e9ce9492392d26dac2b699dad2f2fc68c3ed408763fd65472f3d080f", null ]
     ] ],
     [ "Shell", "structocc_1_1qm_1_1Shell.html#a350a1ac244ac98719a508fa11fc682fd", null ],
-    [ "Shell", "structocc_1_1qm_1_1Shell.html#adabc3cffd5be16c4263bd89281636c26", null ],
+    [ "Shell", "structocc_1_1qm_1_1Shell.html#ae19150c9be126ea1c224b2b0cea91e42", null ],
     [ "Shell", "structocc_1_1qm_1_1Shell.html#ac6ebd60c7417364b314b758b7b6d381b", null ],
     [ "coeff_normalized", "structocc_1_1qm_1_1Shell.html#a166a72250ff08a60b938dd7fe01fa0b1", null ],
     [ "coeffs_normalized_for_libecpint", "structocc_1_1qm_1_1Shell.html#a63bda0e76ffb995bc6e95fdba750391a", null ],

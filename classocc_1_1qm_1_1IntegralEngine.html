@@ -185,8 +185,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a4e959b6483eb1a6ca3293bfe94e63992"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0164a30d993e81737066009d671a00b5"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1qm_1_1JKPair.html">JKPair</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a0164a30d993e81737066009d671a00b5">coulomb_and_exchange_list</a> (<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a>, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &gt; &amp;mos, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
 <tr class="separator:a0164a30d993e81737066009d671a00b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa05a49965de81c5999abc077906fb82"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#afa05a49965de81c5999abc077906fb82">point_charge_potential</a> (const std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a> &gt; &amp;charges)</td></tr>
-<tr class="separator:afa05a49965de81c5999abc077906fb82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add65cd8402dc6f799c8893888c5a8f0b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#add65cd8402dc6f799c8893888c5a8f0b">point_charge_potential</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt; &amp;charges, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>=1e16)</td></tr>
+<tr class="separator:add65cd8402dc6f799c8893888c5a8f0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab72fa71f2d1be11c91cf4d711721c280"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#ab72fa71f2d1be11c91cf4d711721c280">wolf_point_charge_potential</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt; &amp;charges, const std::vector&lt; double &gt; &amp;partial_charges, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>, double cutoff_radius)</td></tr>
+<tr class="separator:ab72fa71f2d1be11c91cf4d711721c280"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85c99dd9716c4146e001603baccef706"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a85c99dd9716c4146e001603baccef706">electric_potential</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;points)</td></tr>
 <tr class="separator:a85c99dd9716c4146e001603baccef706"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd797ad0f1fed9730320c94cf4e77310"><td class="memTemplParams" colspan="2">template&lt;ShellKind kind&gt; </td></tr>
@@ -1180,8 +1182,8 @@ template&lt;ShellKind kind&gt; </div>
 
 </div>
 </div>
-<a id="afa05a49965de81c5999abc077906fb82"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa05a49965de81c5999abc077906fb82">&#9670;&nbsp;</a></span>point_charge_potential()</h2>
+<a id="add65cd8402dc6f799c8893888c5a8f0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add65cd8402dc6f799c8893888c5a8f0b">&#9670;&nbsp;</a></span>point_charge_potential()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1189,9 +1191,19 @@ template&lt;ShellKind kind&gt; </div>
         <tr>
           <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::qm::IntegralEngine::point_charge_potential </td>
           <td>(</td>
-          <td class="paramtype">const std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>charges</em></td><td>)</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>charges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>alpha</em> = <code>1e16</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1494,6 +1506,46 @@ template&lt;ShellKind kind&gt; </div>
 <span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab72fa71f2d1be11c91cf4d711721c280"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab72fa71f2d1be11c91cf4d711721c280">&#9670;&nbsp;</a></span>wolf_point_charge_potential()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::qm::IntegralEngine::wolf_point_charge_potential </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>charges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>partial_charges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cutoff_radius</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>

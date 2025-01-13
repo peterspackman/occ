@@ -115,6 +115,8 @@ Namespaces</h2></td></tr>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1Functionals.html">Functionals</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DensityFunctional.html">DensityFunctional</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a></td></tr>
@@ -130,11 +132,13 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a150d1d7afb286c7d1ae56289ee2a24f9"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">PointChargeList</a> = std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a> &gt;</td></tr>
+<tr class="memitem:a150d1d7afb286c7d1ae56289ee2a24f9"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">PointChargeList</a> = std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt;</td></tr>
 <tr class="separator:a150d1d7afb286c7d1ae56289ee2a24f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:aceeb7540b1112eec3d738fc036a7a1e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1Functionals.html">Functionals</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aceeb7540b1112eec3d738fc036a7a1e7">parse_dft_method</a> (const std::string &amp;method_string)</td></tr>
+<tr class="separator:aceeb7540b1112eec3d738fc036a7a1e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a029911cd55275040f0a26ee8d48581d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a029911cd55275040f0a26ee8d48581d8">prune_nwchem_scheme</a> (size_t nuclear_charge, size_t max_angular, size_t num_radial, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;radii)</td></tr>
 <tr class="separator:a029911cd55275040f0a26ee8d48581d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac917154ee4170b18b3d6339435ef004c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ac917154ee4170b18b3d6339435ef004c">prune_numgrid_scheme</a> (size_t nuclear_charge, size_t max_angular, size_t min_angular, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;radii)</td></tr>
@@ -184,7 +188,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">occ::dft::PointChargeList</a> = typedef std::vector&lt;<a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a>&gt;</td>
+          <td class="memname">using <a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">occ::dft::PointChargeList</a> = typedef std::vector&lt;<a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -345,6 +349,24 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
           <td class="paramname"><em>num_points</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aceeb7540b1112eec3d738fc036a7a1e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aceeb7540b1112eec3d738fc036a7a1e7">&#9670;&nbsp;</a></span>parse_dft_method()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1dft_1_1Functionals.html">Functionals</a> occ::dft::parse_dft_method </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>method_string</em></td><td>)</td>
           <td></td>
         </tr>
       </table>

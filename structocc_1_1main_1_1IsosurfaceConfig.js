@@ -28,6 +28,7 @@ var structocc_1_1main_1_1IsosurfaceConfig =
       [ "Orbital", "structocc_1_1main_1_1IsosurfaceConfig.html#a30f6a10307c455ced574d076fbdd4c5ea510b953097388490c29e4e4991fc369e", null ],
       [ "CrystalVoid", "structocc_1_1main_1_1IsosurfaceConfig.html#a30f6a10307c455ced574d076fbdd4c5ea952816358b862ae659756eaacb56a8cb", null ]
     ] ],
+    [ "format_output_filename", "structocc_1_1main_1_1IsosurfaceConfig.html#a892fdae67a7ae2be2a80d0a0a43bdad4", null ],
     [ "has_multiple_outputs", "structocc_1_1main_1_1IsosurfaceConfig.html#aee06bff586eceb41ca17699075abb610", null ],
     [ "have_environment_file", "structocc_1_1main_1_1IsosurfaceConfig.html#a879cad66fa499cff4b0322b09a2ab8fa", null ],
     [ "requires_crystal", "structocc_1_1main_1_1IsosurfaceConfig.html#a4190bb1af0b994a919d2fae9d512870c", null ],

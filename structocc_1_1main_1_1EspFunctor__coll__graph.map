@@ -1,10 +1,11 @@
 <map id="occ::main::EspFunctor" name="occ::main::EspFunctor">
-<area shape="rect" id="node1" title=" " alt="" coords="116,303,280,329"/>
-<area shape="rect" id="node2" href="$classocc_1_1qm_1_1HartreeFock.html" title=" " alt="" coords="94,213,254,240"/>
-<area shape="rect" id="node3" href="$structocc_1_1qm_1_1Wavefunction.html" title=" " alt="" coords="278,213,449,240"/>
-<area shape="rect" id="node4" href="$structocc_1_1qm_1_1Energy.html" title=" " alt="" coords="5,124,132,151"/>
-<area shape="rect" id="node5" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="156,124,352,151"/>
-<area shape="rect" id="node6" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="135,5,322,32"/>
-<area shape="rect" id="node7" title=" " alt="" coords="359,5,419,32"/>
-<area shape="rect" id="node8" href="$classocc_1_1qm_1_1AOBasis.html" title=" " alt="" coords="451,124,585,151"/>
+<area shape="rect" id="node1" title=" " alt="" coords="847,81,1011,108"/>
+<area shape="rect" id="node2" href="$classocc_1_1qm_1_1HartreeFock.html" title=" " alt="" coords="604,31,764,57"/>
+<area shape="rect" id="node3" href="$classocc_1_1qm_1_1SCFMethodBase.html" title=" " alt="" coords="310,5,497,32"/>
+<area shape="rect" id="node4" href="$structocc_1_1qm_1_1Wavefunction.html" title=" " alt="" coords="599,107,769,133"/>
+<area shape="rect" id="node5" href="$structocc_1_1qm_1_1Energy.html" title=" " alt="" coords="340,56,467,83"/>
+<area shape="rect" id="node6" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="305,107,501,133"/>
+<area shape="rect" id="node7" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="5,40,192,67"/>
+<area shape="rect" id="node8" title=" " alt="" coords="69,136,129,163"/>
+<area shape="rect" id="node9" href="$classocc_1_1qm_1_1AOBasis.html" title=" " alt="" coords="336,220,471,247"/>
 </map>

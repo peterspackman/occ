@@ -94,7 +94,8 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1qm.html',''); initResi
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">occ::qm Namespace Reference</div>  </div>
 </div><!--header-->
@@ -140,7 +141,13 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1OrbitalSmearing.html">OrbitalSmearing</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCFContext.html">SCFContext</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCFConvergenceSettings.html">SCFConvergenceSettings</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1SCFMethodBase.html">SCFMethodBase</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Shell.html">Shell</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -153,8 +160,8 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a65f45dea4bbd4b16531247f902984cb3"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a65f45dea4bbd4b16531247f902984cb3">PointChargeList</a> = std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a> &gt;</td></tr>
-<tr class="separator:a65f45dea4bbd4b16531247f902984cb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c56c4d6028bbf6ac60ba72a0c4c70eb"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">PointChargeList</a> = std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt;</td></tr>
+<tr class="separator:a0c56c4d6028bbf6ac60ba72a0c4c70eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -202,18 +209,41 @@ Functions</h2></td></tr>
 <tr class="separator:a6b54bd00e156937a556a831d524017a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad3cab60aa741a3e00edaa626e247a30"><td class="memItemLeft" align="right" valign="top">constexpr std::pair&lt; size_t, size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aad3cab60aa741a3e00edaa626e247a30">matrix_dimensions</a> (<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> kind, size_t nbf)</td></tr>
 <tr class="separator:aad3cab60aa741a3e00edaa626e247a30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a63b52a23d7e4463ee5f726dfe9c93a16"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a63b52a23d7e4463ee5f726dfe9c93a16">OCC_MINIMAL_BASIS</a> = &quot;sto-3g&quot;</td></tr>
+<tr class="separator:a63b52a23d7e4463ee5f726dfe9c93a16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2cbde6963d852d92d50c1f6ed907da35"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a2cbde6963d852d92d50c1f6ed907da35"><td class="memTemplItemLeft" align="right" valign="top">concept&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a2cbde6963d852d92d50c1f6ed907da35">SCFMethod</a></td></tr>
+<tr class="separator:a2cbde6963d852d92d50c1f6ed907da35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae1e3f7fdcc408ad6beb784b5cf10258"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aae1e3f7fdcc408ad6beb784b5cf10258"><td class="memTemplItemLeft" align="right" valign="top">concept&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aae1e3f7fdcc408ad6beb784b5cf10258">DensityFittingMethod</a></td></tr>
+<tr class="separator:aae1e3f7fdcc408ad6beb784b5cf10258"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ea50ddb6fb2fbfeb235d5373a16f5e0"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a4ea50ddb6fb2fbfeb235d5373a16f5e0"><td class="memTemplItemLeft" align="right" valign="top">concept&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a4ea50ddb6fb2fbfeb235d5373a16f5e0">PointChargeMethod</a></td></tr>
+<tr class="separator:a4ea50ddb6fb2fbfeb235d5373a16f5e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7275368e99175434508cc27a5d3659c"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:af7275368e99175434508cc27a5d3659c"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#af7275368e99175434508cc27a5d3659c">is_scf_method_v</a> = <a class="el" href="namespaceocc_1_1qm.html#a2cbde6963d852d92d50c1f6ed907da35">SCFMethod</a>&lt;T&gt;</td></tr>
+<tr class="separator:af7275368e99175434508cc27a5d3659c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaccff0ae547b4b5613387ec864850cf"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:adaccff0ae547b4b5613387ec864850cf"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#adaccff0ae547b4b5613387ec864850cf">supports_density_fitting_v</a> = <a class="el" href="namespaceocc_1_1qm.html#aae1e3f7fdcc408ad6beb784b5cf10258">DensityFittingMethod</a>&lt;T&gt;</td></tr>
+<tr class="separator:adaccff0ae547b4b5613387ec864850cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acda93790f6f9b38ccc9e412012ac9fb9"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:acda93790f6f9b38ccc9e412012ac9fb9"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#acda93790f6f9b38ccc9e412012ac9fb9">supports_point_charges_v</a> = <a class="el" href="namespaceocc_1_1qm.html#a4ea50ddb6fb2fbfeb235d5373a16f5e0">PointChargeMethod</a>&lt;T&gt;</td></tr>
+<tr class="separator:acda93790f6f9b38ccc9e412012ac9fb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>quantum mechanics/quantum chemistry functionality including Hartree-Fock and more </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
-<a id="a65f45dea4bbd4b16531247f902984cb3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a65f45dea4bbd4b16531247f902984cb3">&#9670;&nbsp;</a></span>PointChargeList</h2>
+<a id="a0c56c4d6028bbf6ac60ba72a0c4c70eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c56c4d6028bbf6ac60ba72a0c4c70eb">&#9670;&nbsp;</a></span>PointChargeList</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="namespaceocc_1_1qm.html#a65f45dea4bbd4b16531247f902984cb3">occ::qm::PointChargeList</a> = typedef std::vector&lt;<a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a>&gt;</td>
+          <td class="memname">typedef std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt; <a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">occ::qm::PointChargeList</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -723,6 +753,182 @@ template&lt;SpinorbitalKind sk, Shell::Kind kind&gt; </div>
           <td></td><td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="aae1e3f7fdcc408ad6beb784b5cf10258"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae1e3f7fdcc408ad6beb784b5cf10258">&#9670;&nbsp;</a></span>DensityFittingMethod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">concept occ::qm::DensityFittingMethod</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    SCFMethod&lt;T&gt; &amp;&amp; requires(T method, <span class="keyword">const</span> std::string &amp;df_basis) {</div>
+<div class="line">      { method.set_density_fitting_basis(df_basis) } -&gt; std::same_as&lt;void&gt;;</div>
+<div class="line">    }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="af7275368e99175434508cc27a5d3659c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7275368e99175434508cc27a5d3659c">&#9670;&nbsp;</a></span>is_scf_method_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool occ::qm::is_scf_method_v = <a class="el" href="namespaceocc_1_1qm.html#a2cbde6963d852d92d50c1f6ed907da35">SCFMethod</a>&lt;T&gt;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a63b52a23d7e4463ee5f726dfe9c93a16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63b52a23d7e4463ee5f726dfe9c93a16">&#9670;&nbsp;</a></span>OCC_MINIMAL_BASIS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr auto occ::qm::OCC_MINIMAL_BASIS = &quot;sto-3g&quot;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4ea50ddb6fb2fbfeb235d5373a16f5e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ea50ddb6fb2fbfeb235d5373a16f5e0">&#9670;&nbsp;</a></span>PointChargeMethod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">concept occ::qm::PointChargeMethod</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    SCFMethod&lt;T&gt; &amp;&amp; requires(T method, <span class="keyword">const</span> <a class="code" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">PointChargeList</a> &amp;charges) {</div>
+<div class="line">      {</div>
+<div class="line">        method.nuclear_point_charge_interaction_energy(charges)</div>
+<div class="line">      } -&gt; std::same_as&lt;double&gt;;</div>
+<div class="line">      {</div>
+<div class="line">        method.compute_point_charge_interaction_matrix(charges)</div>
+<div class="line">      } -&gt; std::same_as&lt;Mat&gt;;</div>
+<div class="line">    }</div>
+<div class="ttc" id="anamespaceocc_1_1dft_html_a150d1d7afb286c7d1ae56289ee2a24f9"><div class="ttname"><a href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">occ::dft::PointChargeList</a></div><div class="ttdeci">std::vector&lt; occ::core::PointCharge &gt; PointChargeList</div><div class="ttdef"><b>Definition:</b> dft.h:24</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a2cbde6963d852d92d50c1f6ed907da35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2cbde6963d852d92d50c1f6ed907da35">&#9670;&nbsp;</a></span>SCFMethod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">concept occ::qm::SCFMethod</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    requires(T method, <span class="keyword">const</span> MolecularOrbitals &amp;<a class="code" href="namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a9438912000d031c4e60ee6964858de7a">mo</a>, <span class="keyword">const</span> <a class="code" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;schwarz,</div>
+<div class="line">             <a class="code" href="classocc_1_1core_1_1EnergyComponents.html">occ::core::EnergyComponents</a> &amp;energy) {</div>
+<div class="line">      { method.compute_fock(<a class="code" href="namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a9438912000d031c4e60ee6964858de7a">mo</a>, schwarz) } -&gt; std::same_as&lt;Mat&gt;;</div>
+<div class="line">      { method.compute_schwarz_ints() } -&gt; std::same_as&lt;Mat&gt;;</div>
+<div class="line">      { method.nuclear_repulsion_energy() } -&gt; std::same_as&lt;double&gt;;</div>
+<div class="line">      { method.update_scf_energy(energy, <span class="keyword">true</span>) } -&gt; std::same_as&lt;void&gt;;</div>
+<div class="line">      { method.nbf() } -&gt; std::same_as&lt;size_t&gt;;</div>
+<div class="line">      { method.atoms() } -&gt; std::same_as&lt;const std::vector&lt;occ::core::Atom&gt; &amp;&gt;;</div>
+<div class="line">      { method.aobasis() } -&gt; std::same_as&lt;const AOBasis &amp;&gt;;</div>
+<div class="line">      { method.active_electrons() } -&gt; std::same_as&lt;int&gt;;</div>
+<div class="line">      { method.total_electrons() } -&gt; std::same_as&lt;int&gt;;</div>
+<div class="line">      { method.have_effective_core_potentials() } -&gt; std::same_as&lt;bool&gt;;</div>
+<div class="line">      { method.usual_scf_energy() } -&gt; std::same_as&lt;bool&gt;;</div>
+<div class="line">      { method.supports_incremental_fock_build() } -&gt; std::same_as&lt;bool&gt;;</div>
+<div class="line">    }</div>
+<div class="ttc" id="aclassocc_1_1core_1_1EnergyComponents_html"><div class="ttname"><a href="classocc_1_1core_1_1EnergyComponents.html">occ::core::EnergyComponents</a></div><div class="ttdoc">Storage class for components of energy, separated by the dot character.</div><div class="ttdef"><b>Definition:</b> energy_components.h:14</div></div>
+<div class="ttc" id="anamespaceocc_1_1timing_html_a089c88a4231531abae301355d6ba8c16a9438912000d031c4e60ee6964858de7a"><div class="ttname"><a href="namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a9438912000d031c4e60ee6964858de7a">occ::timing::mo</a></div><div class="ttdeci">@ mo</div><div class="ttdef"><b>Definition:</b> timings.h:18</div></div>
+<div class="ttc" id="anamespaceocc_html_a96a6c94f06b8bd220e5edf14b7655e3f"><div class="ttname"><a href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a></div><div class="ttdeci">Eigen::MatrixXd Mat</div><div class="ttdef"><b>Definition:</b> linear_algebra.h:25</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="adaccff0ae547b4b5613387ec864850cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adaccff0ae547b4b5613387ec864850cf">&#9670;&nbsp;</a></span>supports_density_fitting_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool occ::qm::supports_density_fitting_v = <a class="el" href="namespaceocc_1_1qm.html#aae1e3f7fdcc408ad6beb784b5cf10258">DensityFittingMethod</a>&lt;T&gt;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acda93790f6f9b38ccc9e412012ac9fb9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acda93790f6f9b38ccc9e412012ac9fb9">&#9670;&nbsp;</a></span>supports_point_charges_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool occ::qm::supports_point_charges_v = <a class="el" href="namespaceocc_1_1qm.html#a4ea50ddb6fb2fbfeb235d5373a16f5e0">PointChargeMethod</a>&lt;T&gt;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

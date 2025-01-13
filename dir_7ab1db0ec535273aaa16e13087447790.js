@@ -1,6 +1,7 @@
 var dir_7ab1db0ec535273aaa16e13087447790 =
 [
     [ "dft.h", "dft_8h.html", "dft_8h" ],
+    [ "dft_method.h", "dft__method_8h.html", "dft__method_8h" ],
     [ "functional.h", "functional_8h.html", [
       [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
       [ "Result", "structocc_1_1dft_1_1DensityFunctional_1_1Result.html", "structocc_1_1dft_1_1DensityFunctional_1_1Result" ],

@@ -159,6 +159,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1Multipole.html">Multipole</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Templated storage class for <a class="el" href="structocc_1_1core_1_1Multipole.html" title="Templated storage class for Multipole expansions.">Multipole</a> expansions.  <a href="structocc_1_1core_1_1Multipole.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1PointCharge.html">PointCharge</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1SymOp.html">SymOp</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure/utility class for a point group symmetry operation.  <a href="structocc_1_1core_1_1SymOp.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -175,8 +177,6 @@ Typedefs</h2></td></tr>
 <tr class="memitem:acfa0e22cd0e47292fb5034e99d2432cb"><td class="memTemplParams" colspan="2">template&lt;typename NumericType &gt; </td></tr>
 <tr class="memitem:acfa0e22cd0e47292fb5034e99d2432cb"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#acfa0e22cd0e47292fb5034e99d2432cb">KDTree</a> = nanoflann::KDTreeEigenMatrixAdaptor&lt; Eigen::Matrix&lt; NumericType, 3, Eigen::Dynamic &gt;, 3, nanoflann::metric_L2, false &gt;</td></tr>
 <tr class="separator:acfa0e22cd0e47292fb5034e99d2432cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f64dc712e796e5de8e118f4585feda1"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">PointCharge</a> = std::pair&lt; double, std::array&lt; double, 3 &gt; &gt;</td></tr>
-<tr class="separator:a0f64dc712e796e5de8e118f4585feda1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -303,13 +303,13 @@ Functions</h2></td></tr>
 <tr class="memitem:a4c43c80b170febf6fb0c2e6fbaa82d9a"><td class="memItemLeft" align="right" valign="top">constexpr unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a4c43c80b170febf6fb0c2e6fbaa82d9a">total_num_multipole_components</a> (int L)</td></tr>
 <tr class="memdesc:a4c43c80b170febf6fb0c2e6fbaa82d9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The total number of unique multipole components up to and including a given angular momentum.  <a href="namespaceocc_1_1core.html#a4c43c80b170febf6fb0c2e6fbaa82d9a">More...</a><br /></td></tr>
 <tr class="separator:a4c43c80b170febf6fb0c2e6fbaa82d9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af98aa2a081c496fb5c4f937c0fbb09e2"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">PointCharge</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#af98aa2a081c496fb5c4f937c0fbb09e2">make_point_charges</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">Atom</a> &gt; &amp;atoms)</td></tr>
+<tr class="memitem:af98aa2a081c496fb5c4f937c0fbb09e2"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">PointCharge</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#af98aa2a081c496fb5c4f937c0fbb09e2">make_point_charges</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">Atom</a> &gt; &amp;atoms)</td></tr>
 <tr class="separator:af98aa2a081c496fb5c4f937c0fbb09e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f3fa1f660631563bb333498dd2b6f2d"><td class="memItemLeft" align="right" valign="top">constexpr unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a7f3fa1f660631563bb333498dd2b6f2d">num_multipole_components</a> (unsigned int order)</td></tr>
 <tr class="separator:a7f3fa1f660631563bb333498dd2b6f2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d14d698edcee5a42fc93feb37d9d645"><td class="memTemplParams" colspan="2">template&lt;unsigned int order = 0&gt; </td></tr>
-<tr class="memitem:a5d14d698edcee5a42fc93feb37d9d645"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a5d14d698edcee5a42fc93feb37d9d645">compute_multipoles</a> (const std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">PointCharge</a> &gt; &amp;charges, std::array&lt; double, 3 &gt; origin={0.0, 0.0, 0.0})</td></tr>
-<tr class="separator:a5d14d698edcee5a42fc93feb37d9d645"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ef36df550be7b8380e0fc954abdeb53"><td class="memTemplParams" colspan="2">template&lt;unsigned int order = 0&gt; </td></tr>
+<tr class="memitem:a9ef36df550be7b8380e0fc954abdeb53"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a9ef36df550be7b8380e0fc954abdeb53">compute_multipoles</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">PointCharge</a> &gt; &amp;charges, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;origin=Vec3::Zero())</td></tr>
+<tr class="separator:a9ef36df550be7b8380e0fc954abdeb53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab561d38b11fc9c420c92a46a8dfea6ce"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5">PointGroup</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ab561d38b11fc9c420c92a46a8dfea6ce">dihedral_group</a> (int, <a class="el" href="namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6">MirrorType</a>)</td></tr>
 <tr class="separator:ab561d38b11fc9c420c92a46a8dfea6ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6db91e18131313dac99bf8aab66fa20"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5">PointGroup</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ac6db91e18131313dac99bf8aab66fa20">cyclic_group</a> (int, <a class="el" href="namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6">MirrorType</a>)</td></tr>
@@ -346,20 +346,6 @@ template&lt;typename NumericType &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">using <a class="el" href="namespaceocc_1_1core.html#acfa0e22cd0e47292fb5034e99d2432cb">occ::core::KDTree</a> = typedef nanoflann::KDTreeEigenMatrixAdaptor&lt; Eigen::Matrix&lt;NumericType, 3, Eigen::Dynamic&gt;, 3, nanoflann::metric_L2, false&gt;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a0f64dc712e796e5de8e118f4585feda1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f64dc712e796e5de8e118f4585feda1">&#9670;&nbsp;</a></span>PointCharge</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">using <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a> = typedef std::pair&lt;double, std::array&lt;double, 3&gt; &gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -570,8 +556,8 @@ template&lt;typename NumericType &gt; </div>
 
 </div>
 </div>
-<a id="a5d14d698edcee5a42fc93feb37d9d645"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5d14d698edcee5a42fc93feb37d9d645">&#9670;&nbsp;</a></span>compute_multipoles()</h2>
+<a id="a9ef36df550be7b8380e0fc954abdeb53"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ef36df550be7b8380e0fc954abdeb53">&#9670;&nbsp;</a></span>compute_multipoles()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -584,14 +570,14 @@ template&lt;unsigned int order = 0&gt; </div>
         <tr>
           <td class="memname">auto occ::core::compute_multipoles </td>
           <td>(</td>
-          <td class="paramtype">const std::vector&lt; <a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">PointCharge</a> &gt; &amp;&#160;</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">PointCharge</a> &gt; &amp;&#160;</td>
           <td class="paramname"><em>charges</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::array&lt; double, 3 &gt;&#160;</td>
-          <td class="paramname"><em>origin</em> = <code>{0.0,&#160;0.0,&#160;0.0}</code>&#160;</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>origin</em> = <code>Vec3::Zero()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -871,7 +857,7 @@ template&lt;typename T &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;<a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">PointCharge</a>&gt; occ::core::make_point_charges </td>
+          <td class="memname">std::vector&lt;<a class="el" href="classocc_1_1core_1_1PointCharge.html">PointCharge</a>&gt; occ::core::make_point_charges </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">Atom</a> &gt; &amp;&#160;</td>
           <td class="paramname"><em>atoms</em></td><td>)</td>

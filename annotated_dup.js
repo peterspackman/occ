@@ -1,7 +1,6 @@
 var annotated_dup =
 [
     [ "fmt", null, [
-      [ "formatter< T >", "structfmt_1_1formatter_3_01T_01_4.html", null ],
       [ "formatter< occ::crystal::DimerIndex >", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1DimerIndex_01_4.html", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1DimerIndex_01_4" ],
       [ "formatter< occ::crystal::HKL >", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4.html", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4" ],
       [ "formatter< occ::qm::Shell >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4" ]
@@ -63,6 +62,7 @@ var annotated_dup =
         [ "KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", "structocc_1_1core_1_1KalmanEstimator" ],
         [ "Molecule", "classocc_1_1core_1_1Molecule.html", "classocc_1_1core_1_1Molecule" ],
         [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
+        [ "PointCharge", "classocc_1_1core_1_1PointCharge.html", "classocc_1_1core_1_1PointCharge" ],
         [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
         [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
         [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
@@ -102,10 +102,8 @@ var annotated_dup =
         [ "cosx", "namespaceocc_1_1dft_1_1cosx.html", [
           [ "SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange" ]
         ] ],
-        [ "impl", "namespaceocc_1_1dft_1_1impl.html", [
-          [ "Functionals", "structocc_1_1dft_1_1impl_1_1Functionals.html", "structocc_1_1dft_1_1impl_1_1Functionals" ]
-        ] ],
         [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
+        [ "Functionals", "structocc_1_1dft_1_1Functionals.html", "structocc_1_1dft_1_1Functionals" ],
         [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
         [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
         [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
@@ -280,14 +278,14 @@ var annotated_dup =
         [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
         [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
         [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
+        [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
+        [ "SCF", "structocc_1_1qm_1_1SCF.html", "structocc_1_1qm_1_1SCF" ],
         [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
+        [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html", "classocc_1_1qm_1_1SCFMethodBase" ],
         [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
         [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
         [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
         [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ]
-      ] ],
-      [ "scf", "namespaceocc_1_1scf.html", [
-        [ "SCF", "structocc_1_1scf_1_1SCF.html", "structocc_1_1scf_1_1SCF" ]
       ] ],
       [ "sht", "namespaceocc_1_1sht.html", [
         [ "AssocLegendreP", "classocc_1_1sht_1_1AssocLegendreP.html", "classocc_1_1sht_1_1AssocLegendreP" ],

@@ -90,8 +90,8 @@ $(document).ready(function(){initNavTree('point__charge_8h.html',''); initResiza
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">point_charge.h File Reference</div>  </div>
@@ -103,15 +103,21 @@ $(document).ready(function(){initNavTree('point__charge_8h.html',''); initResiza
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for point_charge.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="point__charge_8h__incl.svg" width="407" height="291"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="point__charge_8h__incl.svg" width="382" height="291"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="point__charge_8h__dep__incl.svg" width="4028" height="884"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+<div class="center"><iframe scrolling="no" frameborder="0" src="point__charge_8h__dep__incl.svg" width="4290" height="884"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
 </div>
 </div>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceocc"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html">occ</a></td></tr>
@@ -120,20 +126,15 @@ Namespaces</h2></td></tr>
 <tr class="memdesc:namespaceocc_1_1core"><td class="mdescLeft">&#160;</td><td class="mdescRight">fundamental functionality for linear algebra, utilities, molecules and more <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a0f64dc712e796e5de8e118f4585feda1"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a0f64dc712e796e5de8e118f4585feda1">occ::core::PointCharge</a> = std::pair&lt; double, std::array&lt; double, 3 &gt; &gt;</td></tr>
-<tr class="separator:a0f64dc712e796e5de8e118f4585feda1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:af98aa2a081c496fb5c4f937c0fbb09e2"><td class="memItemLeft" align="right" valign="top">std::vector&lt; PointCharge &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#af98aa2a081c496fb5c4f937c0fbb09e2">occ::core::make_point_charges</a> (const std::vector&lt; Atom &gt; &amp;atoms)</td></tr>
 <tr class="separator:af98aa2a081c496fb5c4f937c0fbb09e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f3fa1f660631563bb333498dd2b6f2d"><td class="memItemLeft" align="right" valign="top">constexpr unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a7f3fa1f660631563bb333498dd2b6f2d">occ::core::num_multipole_components</a> (unsigned int order)</td></tr>
 <tr class="separator:a7f3fa1f660631563bb333498dd2b6f2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d14d698edcee5a42fc93feb37d9d645"><td class="memTemplParams" colspan="2">template&lt;unsigned int order = 0&gt; </td></tr>
-<tr class="memitem:a5d14d698edcee5a42fc93feb37d9d645"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a5d14d698edcee5a42fc93feb37d9d645">occ::core::compute_multipoles</a> (const std::vector&lt; PointCharge &gt; &amp;charges, std::array&lt; double, 3 &gt; origin={0.0, 0.0, 0.0})</td></tr>
-<tr class="separator:a5d14d698edcee5a42fc93feb37d9d645"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ef36df550be7b8380e0fc954abdeb53"><td class="memTemplParams" colspan="2">template&lt;unsigned int order = 0&gt; </td></tr>
+<tr class="memitem:a9ef36df550be7b8380e0fc954abdeb53"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a9ef36df550be7b8380e0fc954abdeb53">occ::core::compute_multipoles</a> (const std::vector&lt; PointCharge &gt; &amp;charges, const Vec3 &amp;origin=Vec3::Zero())</td></tr>
+<tr class="separator:a9ef36df550be7b8380e0fc954abdeb53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

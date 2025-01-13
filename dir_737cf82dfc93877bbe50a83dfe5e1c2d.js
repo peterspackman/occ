@@ -39,6 +39,8 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "scf_convergence_settings.h", "scf__convergence__settings_8h.html", [
       [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ]
     ] ],
+    [ "scf_impl.h", "scf__impl_8h.html", null ],
+    [ "scf_method.h", "scf__method_8h.html", "scf__method_8h" ],
     [ "shell.h", "shell_8h.html", "shell_8h" ],
     [ "shellblock_norm.h", "shellblock__norm_8h.html", "shellblock__norm_8h" ],
     [ "spinorbital.h", "spinorbital_8h.html", "spinorbital_8h" ],
