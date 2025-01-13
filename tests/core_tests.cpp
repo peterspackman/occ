@@ -30,20 +30,24 @@ using occ::util::all_close;
 using Catch::Approx;
 using Catch::Matchers::WithinAbs;
 
-TEST_CASE("Dimer constructor", "[dimer]") {
-  occ::Mat3N pos(3, 3), pos2(3, 3);
+inline Molecule water_molecule() {
+  occ::Mat3N pos(3, 3);
   occ::IVec nums(3);
   nums << 8, 1, 1;
   pos << -1.32695761, -1.93166418, 0.48664409, -0.10593856, 1.60017351,
       0.07959806, 0.01878821, -0.02171049, 0.00986248;
 
-  Molecule m(nums, pos);
+  return Molecule(nums, pos);
+}
 
-  auto masses = m.atomic_masses();
-  occ::Vec3 expected_masses = {15.994, 1.00794, 1.00794};
+inline Molecule oh_molecule() {
+  occ::Mat3N pos(3, 2);
+  occ::IVec nums(2);
+  nums << 8, 1;
+  pos << -1.32695761, -1.93166418, -0.10593856, 1.60017351, 0.01878821,
+      -0.02171049;
 
-  fmt::print("Atomic masses:\n{}\n\n", masses);
-  REQUIRE(all_close(masses, expected_masses, 1e-3, 1e-3));
+  return Molecule(nums, pos);
 }
 
 TEST_CASE("Dimer transform", "[dimer]") {
@@ -59,15 +63,15 @@ TEST_CASE("Dimer transform", "[dimer]") {
 
   Dimer dim(m, m2);
 
-  fmt::print("m1\n{}\n", m.positions());
-  fmt::print("m2\n{}\n", m2.positions());
+  fmt::print("m1\n{}\n", occ::format_matrix(m.positions()));
+  fmt::print("m2\n{}\n", occ::format_matrix(m2.positions()));
 
   auto transform = dim.symmetry_relation().value();
 
-  fmt::print("Transform matrix:\n{}\n", transform);
+  fmt::print("Transform matrix:\n{}\n", occ::format_matrix(transform));
   m.transform(transform, Molecule::Origin::Centroid);
-  fmt::print("m1\n{}\n", m.positions());
-  fmt::print("m2\n{}\n", m2.positions());
+  fmt::print("m1\n{}\n", occ::format_matrix(m.positions()));
+  fmt::print("m2\n{}\n", occ::format_matrix(m2.positions()));
   REQUIRE(all_close(m.positions(), m2.positions(), 1e-5, 1e-5));
 }
 
@@ -123,7 +127,7 @@ TEST_CASE("Molecule atom properties", "[molecule]") {
   auto masses = m.atomic_masses();
   occ::Vec3 expected_masses = {15.994, 1.00794, 1.00794};
 
-  fmt::print("Atomic masses:\n{}\n\n", masses);
+  fmt::print("Atomic masses:\n{}\n", occ::format_matrix(masses));
   REQUIRE(all_close(masses, expected_masses, 1e-3, 1e-3));
 }
 
@@ -137,12 +141,12 @@ TEST_CASE("Molecule centroids", "[molecule]") {
 
   occ::Vec3 expected_centroid = {-0.92399257, 0.524611, 0.0023134};
   occ::Vec3 calc_centroid = m.centroid();
-  fmt::print("Calculated centroid:\n{}\n\n", calc_centroid);
+  fmt::print("Calculated centroid:\n{}\n", occ::format_matrix(calc_centroid));
   REQUIRE(all_close(expected_centroid, calc_centroid, 1e-05, 1e-05));
 
   occ::Vec3 expected_com = {-1.25932093, -0.000102380208, 0.0160229578};
   occ::Vec3 calc_com = m.center_of_mass();
-  fmt::print("Calculated center of mass:\n{}\n\n", calc_com);
+  fmt::print("Calculated center of mass:\n{}\n", occ::format_matrix(calc_com));
   REQUIRE(all_close(expected_com, calc_com, 1e-05, 1e-05));
 }
 
@@ -165,8 +169,9 @@ TEST_CASE("Molecule rotation & translation", "[molecule]") {
   auto expected_pos = pos;
   expected_pos.bottomRows(2).array() *= -1;
   m.rotate(rotation180);
-  fmt::print("Rot:\n{}\n", rotation180.linear());
-  fmt::print("Expected:\n{}\nFound:\n{}\n", expected_pos, m.positions());
+  fmt::print("Rot:\n{}\n", occ::format_matrix(rotation180.linear()));
+  fmt::print("Expected:\n{}\nFound:\n{}\n", occ::format_matrix(expected_pos),
+             occ::format_matrix(m.positions()));
   REQUIRE(all_close(expected_pos, m.positions()));
 }
 
@@ -269,9 +274,9 @@ TEST_CASE("Point group Symop constructors", "[point_group]") {
   double angle = 90.0;
   occ::Vec3 rotvec = angle * axis;
   auto s = SymOp::from_axis_angle(axis, angle);
-  fmt::print("Transformation:\n{}\n", s.transformation);
+  fmt::print("Transformation:\n{}\n", occ::format_matrix(s.transformation));
   auto s2 = SymOp::from_rotation_vector(rotvec);
-  fmt::print("Transformation:\n{}\n", s.transformation);
+  fmt::print("Transformation:\n{}\n", occ::format_matrix(s.transformation));
 }
 
 TEST_CASE("PointGroup determination water = C2v", "[point_group]") {
@@ -302,7 +307,7 @@ TEST_CASE("PointGroup determination O2 = Dooh", "[point_group]") {
 
   fmt::print("Oxygen group: {}\n", pg.point_group_string());
   for (const auto &sym : pg.symops()) {
-    fmt::print("symop:\n{}\n", sym.transformation);
+    fmt::print("symop:\n{}\n", occ::format_matrix(sym.transformation));
   }
   for (const auto &sym : pg.rotational_symmetries()) {
     fmt::print("rotational symmetry: {}\n", sym.second);
@@ -325,7 +330,7 @@ TEST_CASE("PointGroup determination BF3 = D3h", "[point_group]") {
 
   fmt::print("BF3 group: {}\n", pg.point_group_string());
   for (const auto &sym : pg.symops()) {
-    fmt::print("symop:\n{}\n", sym.transformation);
+    fmt::print("symop:\n{}\n", occ::format_matrix(sym.transformation));
   }
   for (const auto &sym : pg.rotational_symmetries()) {
     fmt::print("rotational symmetry: {}\n", sym.second);
@@ -380,7 +385,7 @@ TEST_CASE("PointGroup determination cube of atoms = Oh", "[point_group]") {
   MolecularPointGroup pg(m);
   fmt::print("Cube group: {}\n", pg.point_group_string());
   for (const auto &sym : pg.symops()) {
-    fmt::print("symop:\n{}\n", sym.transformation);
+    fmt::print("symop:\n{}\n", occ::format_matrix(sym.transformation));
   }
   for (const auto &sym : pg.rotational_symmetries()) {
     fmt::print("rotational symmetry: {}\n", sym.second);
@@ -529,7 +534,7 @@ TEST_CASE("EEM water", "[charge]") {
       0.0099423, -0.0114887, 0.0052190;
 
   auto q = occ::core::charges::eem_partial_charges(nums, pos, 0.0);
-  fmt::print("EEM water charges:\n{}\n", q);
+  fmt::print("EEM water charges:\n{}\n", occ::format_matrix(q));
 
   occ::Vec expected_q(3);
   expected_q << -0.637207, 0.319851, 0.317356;
@@ -544,13 +549,13 @@ TEST_CASE("EEQ water", "[charge]") {
       0.0099423, -0.0114887, 0.0052190;
 
   auto cn = occ::core::charges::eeq_coordination_numbers(nums, pos);
-  fmt::print("EEQ water coordination numbers:\n{}\n", cn);
+  fmt::print("EEQ water coordination numbers:\n{}\n", occ::format_matrix(cn));
   occ::Vec expected(3);
   expected << 2.0, 1.00401, 1.00401;
   REQUIRE(occ::util::all_close(cn, expected, 1e-3, 1e-3));
 
   auto q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
-  fmt::print("EEQ water charges:\n{}\n", q);
+  fmt::print("EEQ water charges:\n{}\n", occ::format_matrix(q));
 
   occ::Vec expected_q(3);
   expected_q << -0.591878, 0.296985, 0.294893;
@@ -572,7 +577,7 @@ TEST_CASE("Elastic tensor", "[elastic_tensor]") {
     REQUIRE(occ::util::all_close(tensor, elastic.voigt_c(), 1e-6, 1e-6));
     REQUIRE(
         occ::util::all_close(tensor.inverse(), elastic.voigt_s(), 1e-6, 1e-6));
-    fmt::print("Voigt S\n{}\n", elastic.voigt_s());
+    fmt::print("Voigt S\n{}\n", occ::format_matrix(elastic.voigt_s()));
   }
 
   SECTION("Voigt Averages") {
@@ -645,5 +650,49 @@ TEST_CASE("Elastic tensor", "[elastic_tensor]") {
     REQUIRE(vmin == Approx(0.067042).epsilon(1e-2));
     double vmax = elastic.poisson_ratio(d1max, d2max);
     REQUIRE(vmax == Approx(0.59507).epsilon(1e-2));
+  }
+}
+
+TEST_CASE("Molecule label generation", "[molecule]") {
+  SECTION("single molecule gets label 1A") {
+    std::vector<occ::core::Molecule> molecules{water_molecule()};
+    occ::core::label_molecules_by_chemical_formula(molecules);
+    REQUIRE(molecules[0].name() == "1A");
+  }
+
+  SECTION("identical formulae get same number with incrementing letters") {
+    std::vector<occ::core::Molecule> molecules{
+        water_molecule(), water_molecule(), water_molecule()};
+    occ::core::label_molecules_by_chemical_formula(molecules);
+    REQUIRE(molecules[0].name() == "1A");
+    REQUIRE(molecules[1].name() == "1B");
+    REQUIRE(molecules[2].name() == "1C");
+  }
+
+  SECTION(
+      "different molecules get different numbers with incrementing letters") {
+    std::vector<occ::core::Molecule> molecules{water_molecule(), oh_molecule(),
+                                               water_molecule(), oh_molecule()};
+
+    occ::core::label_molecules_by_chemical_formula(molecules);
+    REQUIRE(molecules[0].name() == "1A");
+    REQUIRE(molecules[1].name() == "2A");
+    REQUIRE(molecules[2].name() == "1B");
+    REQUIRE(molecules[3].name() == "2B");
+  }
+
+  SECTION("more than 26 instances get repeat letters") {
+    std::vector<occ::core::Molecule> molecules;
+    for (int i = 0; i < 54; i++) {
+      molecules.push_back(water_molecule());
+    }
+
+    occ::core::label_molecules_by_chemical_formula(molecules);
+    REQUIRE(molecules[0].name() == "1A");
+    REQUIRE(molecules[1].name() == "1B");
+    REQUIRE(molecules[12].name() == "1M");
+    REQUIRE(molecules[25].name() == "1Z");
+    REQUIRE(molecules[26].name() == "1AA");
+    REQUIRE(molecules[52].name() == "1BA");
   }
 }

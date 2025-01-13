@@ -5,6 +5,11 @@
 
 namespace occ::crystal {
 
+struct SymmetryOperationFormat {
+  std::string fmt_string{"{}"};
+  std::string delimiter{","};
+};
+
 /**
  * Class representing a 3D symmetry operation
  *
@@ -63,7 +68,7 @@ public:
    * \returns std::string representing the symop e.g. "+x,+y,+z" for the
    * identity
    */
-  std::string to_string() const;
+  std::string to_string(const SymmetryOperationFormat & = {}) const;
 
   /**
    * Returns an inverted copy of this symmetry operation e.g. (x,y,z) ->

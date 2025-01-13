@@ -46,8 +46,6 @@ using occ::crystal::CrystalAtomRegion;
 using occ::crystal::CrystalDimers;
 using SymmetryRelatedDimer = occ::crystal::CrystalDimers::SymmetryRelatedDimer;
 using occ::crystal::HKL;
-using occ::crystal::SpaceGroup;
-using occ::crystal::SymmetryOperation;
 using occ::crystal::UnitCell;
 using occ::dft::DFT;
 using occ::qm::AOBasis;
@@ -429,11 +427,12 @@ NB_MODULE(_occpy, m) {
                            uc.cell_type(), uc.a(), uc.b(), uc.c());
       });
 
+  using occ::cg::CrystalGrowthResult;
+  using occ::cg::DimerResult;
+  using occ::cg::DimerSolventTerm;
+  using occ::cg::MoleculeResult;
+  using occ::interaction::LatticeConvergenceSettings;
   using occ::main::CGConfig;
-  using occ::main::CGDimer;
-  using occ::main::CGResult;
-  using occ::main::DimerSolventTerm;
-  using occ::main::LatticeConvergenceSettings;
 
   nb::class_<LatticeConvergenceSettings>(m, "LatticeConvergenceSettings")
       .def(nb::init<>())
@@ -462,23 +461,28 @@ NB_MODULE(_occpy, m) {
       .def_ro("ba", &DimerSolventTerm::ba)
       .def_ro("total", &DimerSolventTerm::total);
 
-  nb::class_<CGDimer>(m, "CGDimer")
-      .def_ro("dimer", &CGDimer::dimer)
-      .def_ro("unique_dimer_index", &CGDimer::unique_dimer_index)
-      .def_ro("interaction_energy", &CGDimer::interaction_energy)
-      .def_ro("solvent_term", &CGDimer::solvent_term)
-      .def_ro("crystal_contribution", &CGDimer::crystal_contribution)
-      .def_ro("nearest_neighbor", &CGDimer::nearest_neighbor);
+  nb::class_<DimerResult>(m, "DimerResult")
+      .def_ro("dimer", &DimerResult::dimer)
+      .def_ro("unique_idx", &DimerResult::unique_idx)
+      .def("total_energy", &DimerResult::total_energy)
+      .def("energy_component", &DimerResult::energy_component)
+      .def_ro("is_nearest_neighbor", &DimerResult::is_nearest_neighbor);
 
-  nb::class_<CGResult>(m, "CGResult")
-      .def_ro("pair_energies", &CGResult::pair_energies)
-      .def_ro("total_energies", &CGResult::total_energies);
+  nb::class_<MoleculeResult>(m, "MoleculeResult")
+      .def_ro("dimer_results", &MoleculeResult::dimer_results)
+      .def_ro("total", &MoleculeResult::total)
+      .def_ro("has_inversion_symmetry", &MoleculeResult::has_inversion_symmetry)
+      .def("total_energy", &MoleculeResult::total_energy)
+      .def("energy_component", &MoleculeResult::energy_component);
 
-  nb::class_<occ::main::EnergyTotal>(m, "CGEnergyTotal")
-      .def_ro("crystal", &occ::main::EnergyTotal::crystal_energy)
-      .def_ro("int", &occ::main::EnergyTotal::interaction_energy)
-      .def_ro("solution", &occ::main::EnergyTotal::solution_term)
-      .def("__repr__", [](const occ::main::EnergyTotal &tot) {
+  nb::class_<CrystalGrowthResult>(m, "CrystalGrowthResult")
+      .def_ro("molecule_results", &CrystalGrowthResult::molecule_results);
+
+  nb::class_<occ::cg::EnergyTotal>(m, "CrystalGrowthEnergyTotal")
+      .def_ro("crystal", &occ::cg::EnergyTotal::crystal_energy)
+      .def_ro("int", &occ::cg::EnergyTotal::interaction_energy)
+      .def_ro("solution", &occ::cg::EnergyTotal::solution_term)
+      .def("__repr__", [](const occ::cg::EnergyTotal &tot) {
         return fmt::format("(crys={:.6f}, int={:.6f}, sol={:.6f})",
                            tot.crystal_energy, tot.interaction_energy,
                            tot.solution_term);
@@ -495,6 +499,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.6.6";
+  m.attr("__version__") = "0.6.8";
 #endif
 }

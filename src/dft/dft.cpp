@@ -116,5 +116,4 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
 RangeSeparatedParameters DFT::range_separated_parameters() const {
   return m_rs_params;
 }
-
 } // namespace occ::dft

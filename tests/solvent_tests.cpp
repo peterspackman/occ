@@ -12,6 +12,7 @@
 #include <occ/solvent/smd.h>
 #include <occ/solvent/surface.h>
 
+using occ::format_matrix;
 using occ::Mat;
 using occ::Mat3N;
 using occ::Vec;
@@ -37,8 +38,8 @@ TEST_CASE("COSMO self energy", "[solvent]") {
   const COSMO c(78.4);
   COSMO::Result result = c(pts, areas, charges);
   fmt::print("Final energy: {}\n", result.energy);
-  fmt::print("InitialFinal charges:\n{}\n", result.initial);
-  fmt::print("Converged charges:\n{}\n", result.converged);
+  fmt::print("InitialFinal charges:\n{}\n", format_matrix(result.initial));
+  fmt::print("Converged charges:\n{}\n", format_matrix(result.converged));
 
   REQUIRE(result.energy == Catch::Approx(-0.0042715403));
 }
@@ -199,7 +200,7 @@ TEST_CASE("draco", "[solvent]") {
   auto params = occ::solvent::get_smd_parameters("toluene");
 
   Vec cn = occ::solvent::draco::coordination_numbers(nums, pos);
-  fmt::print("Coordination numbers:\n{}\n", cn);
+  fmt::print("Coordination numbers:\n{}\n", format_matrix(cn));
   Vec q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
 
   Vec radii = occ::solvent::draco::smd_coulomb_radii(q, nums, pos, params);

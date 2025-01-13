@@ -15,8 +15,9 @@ constexpr int num_components(int deriv_order) {
     return 4;
   case 2:
     return 6;
+  default:
+    return 1;
   }
-  return 1;
 }
 
 template <size_t max_derivative,

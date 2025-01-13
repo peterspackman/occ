@@ -14,6 +14,7 @@ set(OCC_CORE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/graph.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/inertia_tensor.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/kabsch.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/kalman_estimator.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/kdtree.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_algebra.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/log.h"

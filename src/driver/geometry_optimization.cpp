@@ -1,8 +1,8 @@
 #include <LBFGS.h>
 #include <fmt/os.h>
 #include <occ/dft/dft.h>
-#include <occ/main/geometry_optimization.h>
-#include <occ/main/method_parser.h>
+#include <occ/driver/geometry_optimization.h>
+#include <occ/driver/method_parser.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -15,7 +15,7 @@ using occ::qm::SCF;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
 
-namespace occ::main {
+namespace occ::driver {
 
 occ::qm::AOBasis load_basis_set_opt(const Molecule &m, const std::string &name,
                                     bool spherical) {
@@ -127,7 +127,7 @@ std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
   }
 }
 
-Wavefunction optimization_calculation(const OccInput &config) {
+Wavefunction geometry_optimization(const OccInput &config) {
 
   Wavefunction wfn;
   Mat3N gradient;
@@ -177,4 +177,4 @@ Wavefunction optimization_calculation(const OccInput &config) {
   return wfn;
 }
 
-} // namespace occ::main
+} // namespace occ::driver

@@ -194,9 +194,8 @@ double ElasticTensor::average_bulk_modulus(AveragingScheme avg) const {
     return KR;
   case AveragingScheme::Hill:
     return (KV + KR) / 2.0;
-  case AveragingScheme::Numerical:
-    // Implement numerical averaging if needed
-    return (KV + KR) / 2.0;
+  default:
+    return (KV + KR) / 2.0; // Default to Hill
   }
 }
 
@@ -215,9 +214,8 @@ double ElasticTensor::average_shear_modulus(AveragingScheme avg) const {
     return GR;
   case AveragingScheme::Hill:
     return (GV + GR) / 2.0;
-  case AveragingScheme::Numerical:
-    // Implement numerical averaging if needed
-    return (GV + GR) / 2.0;
+  default:
+    return (GV + GR) / 2.0; // Default to Hill
   }
 }
 

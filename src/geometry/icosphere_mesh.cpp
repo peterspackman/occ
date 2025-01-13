@@ -80,7 +80,7 @@ IcosphereMesh::IcosphereMesh(size_t subdivisions) {
     size_t new_face_index = 0;
     for (size_t f = 0; f < m_faces.cols(); f++) {
       IVec3 tri = m_faces.col(f);
-      size_t a = tri[0], b = tri[1], c = tri[2];
+      int a = tri[0], b = tri[1], c = tri[2];
       int ab = add_midpoint(a, b);
       int bc = add_midpoint(b, c);
       int ca = add_midpoint(c, a);

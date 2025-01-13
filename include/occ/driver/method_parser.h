@@ -2,7 +2,7 @@
 #include <occ/core/util.h>
 #include <occ/qm/spinorbital.h>
 
-namespace occ::main {
+namespace occ::driver {
 
 enum class MethodKind {
   HF,
@@ -14,7 +14,7 @@ inline qm::SpinorbitalKind determine_spinorbital_kind(const std::string &name,
                                                       MethodKind method_kind) {
   auto lc = occ::util::to_lower_copy(name);
   switch (method_kind) {
-  case MethodKind::HF: {
+  default: { // default to HartreeFock
     if (lc[0] == 'g')
       return qm::SpinorbitalKind::General;
     else if (lc[0] == 'u' || multiplicity > 1)
@@ -41,4 +41,4 @@ inline MethodKind method_kind_from_string(const std::string &name) {
   return MethodKind::DFT;
 };
 
-} // namespace occ::main
+} // namespace occ::driver

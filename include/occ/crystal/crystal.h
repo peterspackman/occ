@@ -488,6 +488,13 @@ public:
 
   /**
    * \brief Specify the behaviour for guessing/finding bonds.
+   *
+   * Controls whether bonds should be automatically determined based on
+   * atomic positions and covalent radii. When enabled, bonds are guessed
+   * using distance criteria. When disabled, no bonds are created.
+   *
+   * \param guess If true, enables automatic bond detection. If false,
+   * disables bond detection. Defaults to true.
    */
   void set_connectivity_criteria(bool guess = true);
 
@@ -501,7 +508,6 @@ public:
    *
    * \param c The crystal lattice from which to create the primitive
    * supercell.
-   *
    * \param hkl The lattice vector triplet (h, k, l) that defines
    * the primitive supercell.
    *
@@ -510,8 +516,59 @@ public:
    */
   static Crystal create_primitive_supercell(const Crystal &c, HKL hkl);
 
+  /**
+   * \brief Creates a mapping table for atomic sites in the crystal.
+   *
+   * Generates a table that maps atomic sites in the crystal to their
+   * equivalent positions under symmetry operations. This is useful for
+   * analyzing site equivalences and symmetry relationships.
+   *
+   * \return A SiteMappingTable object containing the atomic site mappings.
+   */
   SiteMappingTable atom_site_mapping_table() const;
+
+  /**
+   * \brief Creates a mapping table for molecular sites in the crystal.
+   *
+   * Generates a table that maps molecular sites in the crystal to their
+   * equivalent positions under symmetry operations. This helps identify
+   * molecular symmetry relationships and equivalent molecular positions.
+   *
+   * \return A SiteMappingTable object containing the molecular site mappings.
+   */
   SiteMappingTable molecule_site_mapping_table() const;
+
+  /**
+   * \brief Checks if molecules are enforced to have centroids in the gamma
+   * point.
+   *
+   * Returns whether unit cell molecules are currently being enforced to have
+   * their geometric centroids in the range [0,1) for each fractional
+   * coordinate.
+   *
+   * \return True if gamma point enforcement is enabled, false otherwise.
+   */
+  inline bool gamma_point_unit_cell_molecules() const {
+    return m_enforce_gamma_point;
+  }
+
+  /**
+   * \brief Controls enforcement of molecule centroids in the gamma point.
+   *
+   * Sets whether unit cell molecules should have their geometric centroids
+   * enforced to lie within the range [0,1) for each fractional coordinate.
+   * When enabled, molecules will be shifted to satisfy this constraint while
+   * maintaining their internal structure and connectivity.
+   *
+   * \param set If true, enforces gamma point centering. If false, allows
+   * molecules to have centroids outside the [0,1) range.
+   */
+  inline void set_gamma_point_unit_cell_molecules(bool set) {
+    m_enforce_gamma_point = set;
+  }
+
+  static IVec3 compute_cell_shift(const Vec3 &to, const Vec3 &from,
+                                  const SymmetryOperation &symop_from);
 
 private:
   AsymmetricUnit m_asymmetric_unit;
@@ -522,6 +579,8 @@ private:
   void update_symmetry_unique_molecules() const;
   void update_unit_cell_connectivity() const;
   void update_unit_cell_atoms() const;
+
+  bool m_enforce_gamma_point{false};
 
   mutable std::vector<typename PeriodicBondGraph::VertexDescriptor>
       m_bond_graph_vertices;

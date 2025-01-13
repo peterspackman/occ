@@ -159,11 +159,13 @@ bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs,
   if (*this != rhs)
     return false;
 
-  occ::log::trace("Rotation:\n{}\n", rotation);
+  occ::log::trace("Rotation:\n{}", format_matrix(rotation));
   Vec3 Od1 = rotation * centroid();
-  occ::log::trace("This centroid:{}", Od1.transpose());
+  occ::log::trace("This centroid: [{:.5f}, {:.5f}, {:.5f}]", Od1.x(), Od1.y(),
+                  Od1.z());
   Vec3 Od2 = rhs.centroid();
-  occ::log::trace("RHS centroid:{}", Od2.transpose());
+  occ::log::trace("RHS centroid:  [{:.5f}, {:.5f}, {:.5f}]", Od2.x(), Od2.y(),
+                  Od2.z());
   // positions d1 (with A <-> B swapped)
   Mat3N posd1 = rotation * positions(MoleculeOrder::BA);
   posd1.colwise() -= Od1;
@@ -173,7 +175,8 @@ bool Dimer::equivalent_in_opposite_frame(const Dimer &rhs,
   double rmsd = (posd1 - posd2).norm();
   if (rmsd < 1e-5)
     return true;
-  occ::log::trace("positions\n{}", (posd1 - posd2).transpose());
+  const Mat diff = (posd1 - posd2).transpose();
+  occ::log::trace("Positions\n{}", format_matrix(diff));
   occ::log::trace("RMSD: {:.5f}", rmsd);
 
   occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2, false);
@@ -197,7 +200,7 @@ bool Dimer::equivalent(const occ::core::Dimer &rhs,
   if (*this != rhs)
     return false;
 
-  occ::log::trace("Rotation:\n{}\n", rotation);
+  occ::log::trace("Rotation:\n{}", format_matrix(rotation));
   Vec3 Od1 = rotation * centroid();
   Vec3 Od2 = rhs.centroid();
   // positions d1
@@ -210,7 +213,8 @@ bool Dimer::equivalent(const occ::core::Dimer &rhs,
   double rmsd = (posd1 - posd2).norm();
   if (rmsd < 1e-5)
     return true;
-  occ::log::trace("positions\n{}", (posd1 - posd2).transpose());
+  const Mat diff = (posd1 - posd2).transpose();
+  occ::log::trace("Positions\n{}", format_matrix(diff));
   occ::log::trace("RMSD: {:.5f}", rmsd);
 
   occ::Mat3 rot = kabsch_rotation_matrix(posd1, posd2);

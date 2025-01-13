@@ -73,6 +73,11 @@ public:
     return m_hirshfeld.background_density();
   }
 
+  inline const auto &bounding_box() const { return m_bounding_box; }
+  inline const auto &weight_function() const { return m_hirshfeld; }
+
+  inline void update_num_calls(int n) const { m_num_calls += n; }
+
 private:
   float m_buffer{8.0};
   Eigen::Vector3f m_cube_side_length;

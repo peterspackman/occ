@@ -6,6 +6,7 @@
 #include <occ/core/util.h>
 #include <occ/xdm/xdm.h>
 
+using occ::format_matrix;
 using occ::Mat;
 using occ::Mat3N;
 using occ::Vec;
@@ -84,7 +85,7 @@ TEST_CASE("Water XDM dispersion energy", "[xdm]") {
   std::tie(energy, forces) = occ::xdm::xdm_dispersion_energy(inp, params);
 
   REQUIRE(energy == Catch::Approx(expected).margin(1e-8));
-  fmt::print("Forces:\n{}\n", forces);
-  fmt::print("Expected forces:\n{}\n", expected_forces);
+  fmt::print("Forces:\n{}\n", format_matrix(forces));
+  fmt::print("Expected forces:\n{}\n", format_matrix(expected_forces));
   REQUIRE(occ::util::all_close(forces, expected_forces, 1e-8, 1e-8));
 }

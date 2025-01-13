@@ -1,4 +1,5 @@
 #include <fmt/os.h>
+#include <fmt/ostream.h>
 #include <occ/core/timings.h>
 #include <occ/io/ply.h>
 #include <occ/io/tinyply.h>

@@ -14,6 +14,8 @@
 #include <occ/crystal/surface.h>
 #include <occ/crystal/symmetryoperation.h>
 
+using occ::format_matrix;
+using occ::IVec3;
 using occ::Mat3N;
 using occ::MatN3;
 using occ::Vec3;
@@ -393,8 +395,8 @@ TEST_CASE("SymmetryOperation Seitz matrix", "[symmetry_operation]") {
 TEST_CASE("MULDIN 3d", "[transformations]") {
   occ::Vec3 hkl(1.0, 1.0, 0.0);
   occ::Mat3 result = occ::crystal::muldin(hkl);
-  fmt::print("hkl\n{}\n", hkl);
-  fmt::print("Result\n{}\n", result);
+  fmt::print("hkl\n{}\n", format_matrix(hkl));
+  fmt::print("Result\n{}\n", format_matrix(result));
   {
     occ::Vec3 inp(1.0, 1.0, 0.0);
     occ::Mat3 result;
@@ -508,8 +510,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     SymmetryOperation identity("x,y,z");
     Vec6 adp(1.0, 2.0, 3.0, 0.1, 0.2, 0.3);
     Vec6 rotated_adp = identity.rotate_adp(adp);
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(adp)));
     REQUIRE(rotated_adp.isApprox(adp));
   }
 
@@ -518,8 +520,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 adp(1.0, 2.0, 3.0, 0.1, 0.2, 0.3);
     Vec6 expected_adp(2.0, 1.0, 3.0, -0.1, -0.3, 0.2);
     Vec6 rotated_adp = rot_z.rotate_adp(adp);
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", expected_adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(expected_adp)));
     REQUIRE(rotated_adp.isApprox(expected_adp, 1e-10));
   }
 
@@ -528,8 +530,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 adp(1.0, 2.0, 3.0, 0.1, 0.2, 0.3);
     Vec6 rotated_adp = inversion.rotate_adp(adp);
 
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(adp)));
     REQUIRE(rotated_adp.isApprox(adp));
   }
 
@@ -539,8 +541,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 expected_adp(1.0, 2.0, 3.0, -0.1, -0.2, 0.3);
     Vec6 rotated_adp = mirror_x.rotate_adp(adp);
 
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", expected_adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(expected_adp)));
     REQUIRE(rotated_adp.isApprox(expected_adp, 1e-10));
   }
 
@@ -550,8 +552,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 expected_adp(2.0, 1.0, 3.0, -0.1, -0.3, 0.2);
     Vec6 rotated_adp = rot_trans.rotate_adp(adp);
 
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", expected_adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(expected_adp)));
     REQUIRE(rotated_adp.isApprox(expected_adp, 1e-10));
   }
 
@@ -561,8 +563,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     Vec6 expected_adp(3.0, 1.0, 2.0, 0.2, 0.3, 0.1);
     Vec6 rotated_adp = general_rot.rotate_adp(adp);
 
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", expected_adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(expected_adp)));
     REQUIRE(rotated_adp.isApprox(expected_adp, 1e-10));
   }
 
@@ -570,8 +572,8 @@ TEST_CASE("SymmetryOperation ADP rotation", "[crystal][symmetry]") {
     SymmetryOperation translation("x+1/2,y+1/4,z+1/3");
     Vec6 adp(1.0, 2.0, 3.0, 0.1, 0.2, 0.3);
     Vec6 rotated_adp = translation.rotate_adp(adp);
-    INFO(fmt::format("rotated : {}\n", rotated_adp.transpose()));
-    INFO(fmt::format("expected: {}\n", adp.transpose()));
+    INFO(fmt::format("rotated : {}\n", format_matrix(rotated_adp)));
+    INFO(fmt::format("expected: {}\n", format_matrix(adp)));
     REQUIRE(rotated_adp.isApprox(adp));
   }
 }
@@ -605,14 +607,14 @@ TEST_CASE("UnitCell ADP conversion", "[crystal][unitcell]") {
                 0.00083, -0.00171, -0.00392, -0.00053;
     // clang-format on
 
-    INFO(fmt::format("original\n{}\n", frac_adps));
+    INFO(fmt::format("original\n{}\n", format_matrix(frac_adps)));
 
     Mat6N cart_adps = cell.to_cartesian_adp(frac_adps);
-    INFO(fmt::format("expected cartesian\n{}\n", expected));
-    INFO(fmt::format("cartesian\n{}\n", cart_adps));
+    INFO(fmt::format("expected cartesian\n{}\n", format_matrix(expected)));
+    INFO(fmt::format("cartesian\n{}\n", format_matrix(cart_adps)));
 
     Mat6N back_to_frac = cell.to_fractional_adp(cart_adps);
-    INFO(fmt::format("back\n{}\n", back_to_frac));
+    INFO(fmt::format("back\n{}\n", format_matrix(back_to_frac)));
 
     // we're only giving 3 decimal places in the frac adps, and 4 in the
     // expected so the tolerance must be a bit coarse
@@ -975,5 +977,314 @@ TEST_CASE("DimerMappingTable consistency", "[crystal][dimer]") {
       REQUIRE(std::find(sym.begin(), sym.end(),
                         table_inv.symmetry_unique_dimer(dimer)) != sym.end());
     }
+  }
+}
+
+auto ibuprofen_asym() {
+  const std::vector<std::string> labels = {
+      "O1",  "O2",  "C1",  "C2",  "C3",  "C4",  "C5",  "C6",  "C7",
+      "C8",  "C9",  "C10", "C11", "C12", "C13", "H1",  "H2",  "H3",
+      "H4",  "H5",  "H6",  "H7",  "H8",  "H9",  "H10", "H11", "H12",
+      "H13", "H14", "H15", "H16", "H17", "H18"};
+
+  occ::IVec nums(labels.size());
+  occ::Mat positions(labels.size(), 3);
+  for (size_t i = 0; i < labels.size(); i++) {
+    nums(i) = occ::core::Element(labels[i]).atomic_number();
+  }
+
+  positions << 0.3792, 0.4968, 0.4148, // O1
+      0.4969, 0.3117, 0.4375,          // O2
+      0.4162, 0.3483, 0.3962,          // C1
+      0.3501, 0.2207, 0.3217,          // C2
+      0.3996, 0.1089, 0.2383,          // C3
+      0.3038, 0.1238, 0.4203,          // C4
+      0.2173, 0.1726, 0.4466,          // C5
+      0.1760, 0.0902, 0.5385,          // C6
+      0.2203, -0.0484, 0.6065,         // C7
+      0.3079, -0.0965, 0.5821,         // C8
+      0.3486, -0.0127, 0.4879,         // C9
+      0.1741, -0.1385, 0.7045,         // C10
+      0.0970, -0.2639, 0.6467,         // C11
+      0.0414, -0.3210, 0.7486,         // C12
+      0.1373, -0.4152, 0.5836,         // C13
+      0.4256, 0.5679, 0.4704,          // H1
+      0.2952, 0.2914, 0.2604,          // H2
+      0.4572, 0.0401, 0.2957,          // H3
+      0.4308, 0.1831, 0.1693,          // H4
+      0.3509, 0.0167, 0.1870,          // H5
+      0.1819, 0.2809, 0.3955,          // H6
+      0.1070, 0.1277, 0.5567,          // H7
+      0.3465, -0.1990, 0.6368,         // H8
+      0.4178, -0.0546, 0.4737,         // H9
+      0.2261, -0.2096, 0.7703,         // H10
+      0.1460, -0.0447, 0.7637,         // H11
+      0.0511, -0.1938, 0.5723,         // H12
+      0.0874, -0.3850, 0.8263,         // H13
+      0.0095, -0.2138, 0.7903,         // H14
+      -0.0156, -0.4021, 0.7030,        // H15
+      0.1805, -0.3744, 0.5143,         // H16
+      0.0808, -0.4953, 0.5352,         // H17
+      0.1822, -0.4898, 0.6561;         // H18
+
+  return AsymmetricUnit(positions.transpose(), nums, labels);
+}
+
+TEST_CASE("Ibuprofen unit cell molecules basic properties",
+          "[crystal][ibuprofen]") {
+  AsymmetricUnit asym = ibuprofen_asym();
+  SpaceGroup sg(14); // P21/c
+  UnitCell cell = occ::crystal::monoclinic_cell(14.397, 7.818, 10.506,
+                                                occ::units::radians(99.7));
+  Crystal ibuprofen(asym, sg, cell);
+
+  SECTION("Basic molecule count") {
+    const auto &uc_mols = ibuprofen.unit_cell_molecules();
+    REQUIRE(uc_mols.size() == 4); // P21/c should give 4 molecules in unit cell
+    REQUIRE(ibuprofen.symmetry_unique_molecules().size() ==
+            1); // One unique molecule
+  }
+
+  SECTION("Molecule sizes") {
+    const auto &uc_mols = ibuprofen.unit_cell_molecules();
+    for (const auto &mol : uc_mols) {
+      REQUIRE(mol.size() == 33); // Each ibuprofen has 33 atoms
+    }
+  }
+}
+
+TEST_CASE("Ibuprofen gamma point molecule centering", "[crystal][ibuprofen]") {
+  AsymmetricUnit asym = ibuprofen_asym();
+  SpaceGroup sg(14);
+  UnitCell cell = occ::crystal::monoclinic_cell(14.397, 7.818, 10.506,
+                                                occ::units::radians(99.7));
+
+  SECTION("Default behavior - no gamma point centering") {
+    Crystal ibuprofen(asym, sg, cell);
+    ibuprofen.set_gamma_point_unit_cell_molecules(false);
+    const auto &uc_mols = ibuprofen.unit_cell_molecules();
+
+    // Check centroids are preserved without enforced centering
+    std::vector<Vec3> centroids;
+    for (const auto &mol : uc_mols) {
+      Vec3 frac_centroid = ibuprofen.to_fractional(mol.centroid());
+      centroids.push_back(frac_centroid);
+    }
+
+    // Original centroids should be related by symmetry operations
+    const auto &symops = ibuprofen.symmetry_operations();
+    REQUIRE(centroids.size() == 4);
+  }
+
+  SECTION("Gamma point centering enabled") {
+    Crystal ibuprofen(asym, sg, cell);
+    ibuprofen.set_gamma_point_unit_cell_molecules(true);
+    const auto &uc_mols = ibuprofen.unit_cell_molecules();
+
+    // All molecule centroids should be in [0,1) range
+    for (const auto &mol : uc_mols) {
+      Vec3 frac_centroid = ibuprofen.to_fractional(mol.centroid());
+      INFO("Fractional centroid: " << frac_centroid.transpose());
+
+      for (int i = 0; i < 3; i++) {
+        REQUIRE(frac_centroid[i] >= 0.0);
+        REQUIRE(frac_centroid[i] < 1.0);
+      }
+    }
+  }
+}
+
+TEST_CASE("Ibuprofen molecule connectivity preservation",
+          "[crystal][ibuprofen]") {
+  AsymmetricUnit asym = ibuprofen_asym();
+  SpaceGroup sg(14);
+  UnitCell cell = occ::crystal::monoclinic_cell(14.397, 7.818, 10.506,
+                                                occ::units::radians(99.7));
+
+  SECTION("Connectivity with and without gamma point centering") {
+    Crystal ibuprofen1(asym, sg, cell);
+    // Get molecules without centering
+    ibuprofen1.set_gamma_point_unit_cell_molecules(false);
+    const auto mols_without = ibuprofen1.unit_cell_molecules();
+
+    // Get molecules with centering
+    Crystal ibuprofen2(asym, sg, cell);
+    ibuprofen2.set_gamma_point_unit_cell_molecules(true);
+    const auto mols_with = ibuprofen2.unit_cell_molecules();
+
+    REQUIRE(mols_without.size() == mols_with.size());
+
+    // Check that molecule graphs are preserved
+    for (size_t i = 0; i < mols_without.size(); i++) {
+      const auto &mol1 = mols_without[i];
+      const auto &mol2 = mols_with[i];
+
+      // Check atom types match
+      REQUIRE(mol1.atomic_numbers() == mol2.atomic_numbers());
+
+      Mat3N pos1 = mol1.positions();
+      Mat3N pos2 = mol2.positions();
+
+      for (int j = 0; j < pos1.cols(); j++) {
+        for (int k = j + 1; k < pos1.cols(); k++) {
+          double d1 = (pos1.col(j) - pos1.col(k)).norm();
+          double d2 = (pos2.col(j) - pos2.col(k)).norm();
+          REQUIRE(d1 == Catch::Approx(d2).margin(1e-10));
+        }
+      }
+    }
+  }
+}
+
+TEST_CASE("Ibuprofen dimer generation", "[crystal][ibuprofen]") {
+  AsymmetricUnit asym = ibuprofen_asym();
+  SpaceGroup sg(14);
+  UnitCell cell = occ::crystal::monoclinic_cell(14.397, 7.818, 10.506,
+                                                occ::units::radians(99.7));
+
+  SECTION("Dimer count consistency") {
+    // Get dimers with and without gamma point centering
+    Crystal ibuprofen1(asym, sg, cell);
+    ibuprofen1.set_gamma_point_unit_cell_molecules(false);
+    auto dimers_without = ibuprofen1.symmetry_unique_dimers(5.0);
+
+    Crystal ibuprofen2(asym, sg, cell);
+    ibuprofen2.set_gamma_point_unit_cell_molecules(true);
+    auto dimers_with = ibuprofen2.symmetry_unique_dimers(5.0);
+
+    // Number of unique dimers should be same
+    REQUIRE(dimers_without.unique_dimers.size() ==
+            dimers_with.unique_dimers.size());
+
+    // Check dimer distances match
+    for (size_t i = 0; i < dimers_without.unique_dimers.size(); i++) {
+      const auto &d1 = dimers_without.unique_dimers[i];
+      const auto &d2 = dimers_with.unique_dimers[i];
+      REQUIRE(d1.nearest_distance() ==
+              Catch::Approx(d2.nearest_distance()).margin(1e-10));
+    }
+  }
+}
+
+TEST_CASE("Ibuprofen dimer generation debug", "[crystal][ibuprofen]") {
+  AsymmetricUnit asym = ibuprofen_asym();
+  SpaceGroup sg(14);
+  UnitCell cell = occ::crystal::monoclinic_cell(14.397, 7.818, 10.506,
+                                                occ::units::radians(99.7));
+
+  SECTION("Compare dimer properties") {
+    Crystal ibuprofen1(asym, sg, cell);
+    ibuprofen1.set_gamma_point_unit_cell_molecules(false);
+    auto dimers_without = ibuprofen1.symmetry_unique_dimers(5.0);
+
+    Crystal ibuprofen2(asym, sg, cell);
+    ibuprofen2.set_gamma_point_unit_cell_molecules(true);
+    auto dimers_with = ibuprofen2.symmetry_unique_dimers(5.0);
+
+    fmt::print("\nWithout gamma point centering ({} dimers):\n",
+               dimers_without.unique_dimers.size());
+    for (size_t i = 0; i < dimers_without.unique_dimers.size(); i++) {
+      const auto &d = dimers_without.unique_dimers[i];
+      fmt::print("Dimer {}: dist={:.4f}, symop={}\n", i, d.nearest_distance(),
+                 ibuprofen1.dimer_symmetry_string(d));
+    }
+
+    fmt::print("\nWith gamma point centering ({} dimers):\n",
+               dimers_with.unique_dimers.size());
+    for (size_t i = 0; i < dimers_with.unique_dimers.size(); i++) {
+      const auto &d = dimers_with.unique_dimers[i];
+      fmt::print("Dimer {}: dist={:.4f}, symop={}\n", i, d.nearest_distance(),
+                 ibuprofen2.dimer_symmetry_string(d));
+    }
+
+    // Print molecule centroids for comparison
+    fmt::print("\nMolecule centroids without centering:\n");
+    for (const auto &mol : ibuprofen1.unit_cell_molecules()) {
+      Vec3 frac_centroid = ibuprofen1.to_fractional(mol.centroid());
+      fmt::print("Molecule {}: ({:.4f}, {:.4f}, {:.4f})\n",
+                 mol.unit_cell_molecule_idx(), frac_centroid[0],
+                 frac_centroid[1], frac_centroid[2]);
+    }
+
+    fmt::print("\nMolecule centroids with centering:\n");
+    for (const auto &mol : ibuprofen2.unit_cell_molecules()) {
+      Vec3 frac_centroid = ibuprofen2.to_fractional(mol.centroid());
+      fmt::print("Molecule {}: ({:.4f}, {:.4f}, {:.4f})\n",
+                 mol.unit_cell_molecule_idx(), frac_centroid[0],
+                 frac_centroid[1], frac_centroid[2]);
+    }
+
+    // Compare specific dimer properties
+    std::vector<std::pair<double, std::string>> dimer_props_without;
+    std::vector<std::pair<double, std::string>> dimer_props_with;
+
+    for (const auto &d : dimers_without.unique_dimers) {
+      dimer_props_without.push_back(
+          {d.nearest_distance(), ibuprofen1.dimer_symmetry_string(d)});
+    }
+
+    for (const auto &d : dimers_with.unique_dimers) {
+      dimer_props_with.push_back(
+          {d.nearest_distance(), ibuprofen2.dimer_symmetry_string(d)});
+    }
+
+    // Sort both sets by distance and symmetry string for comparison
+    auto sort_fn = [](const auto &a, const auto &b) {
+      if (std::abs(a.first - b.first) < 1e-6) {
+        return a.second < b.second;
+      }
+      return a.first < b.first;
+    };
+
+    std::sort(dimer_props_without.begin(), dimer_props_without.end(), sort_fn);
+    std::sort(dimer_props_with.begin(), dimer_props_with.end(), sort_fn);
+
+    fmt::print("\nSorted unique properties:\n");
+    fmt::print("Without centering:\n");
+    for (const auto &[dist, symop] : dimer_props_without) {
+      fmt::print("{:.4f} {}\n", dist, symop);
+    }
+    fmt::print("\nWith centering:\n");
+    for (const auto &[dist, symop] : dimer_props_with) {
+      fmt::print("{:.4f} {}\n", dist, symop);
+    }
+
+    REQUIRE(dimers_without.unique_dimers.size() ==
+            dimers_with.unique_dimers.size());
+  }
+}
+
+TEST_CASE("Cell shift computation", "[crystal]") {
+  SECTION("simple positive differences") {
+    Vec3 uc_center(1.7, 0.2, 0.8);
+    Vec3 asym_center(0.0, 0.0, 0.0);
+    SymmetryOperation identity("x,y,z");
+    IVec3 shift = Crystal::compute_cell_shift(uc_center, asym_center, identity);
+    REQUIRE(shift(0) == 2);
+    REQUIRE(shift(1) == 0);
+    REQUIRE(shift(2) == 1);
+  }
+
+  SECTION("simple negative differences") {
+    Vec3 uc_center(-1.7, -0.2, -0.8);
+    Vec3 asym_center(0.0, 0.0, 0.0);
+    SymmetryOperation identity("x,y,z");
+    IVec3 shift = Crystal::compute_cell_shift(uc_center, asym_center, identity);
+    REQUIRE(shift(0) == -2);
+    REQUIRE(shift(1) == 0);
+    REQUIRE(shift(2) == -1);
+  }
+
+  SECTION("mixed positive/negative with symmetry") {
+    Crystal crystal = acetic_acid_crystal();
+    const auto &uc_mols = crystal.unit_cell_molecules();
+    const auto &asym_mols = crystal.symmetry_unique_molecules();
+    const auto &uc_mol = uc_mols[2];
+    Vec3 uc_center = crystal.to_fractional(uc_mol.centroid());
+    Vec3 asym_center = crystal.to_fractional(
+        asym_mols[uc_mol.asymmetric_molecule_idx()].centroid());
+    SymmetryOperation symop(uc_mol.asymmetric_unit_symop()(0));
+    IVec3 shift = Crystal::compute_cell_shift(uc_center, asym_center, symop);
+    REQUIRE(shift == uc_mol.cell_shift());
   }
 }

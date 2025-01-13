@@ -11,6 +11,7 @@
 #include <vector>
 
 using Catch::Approx;
+using occ::format_matrix;
 using occ::Mat;
 
 // GTO
@@ -21,21 +22,21 @@ TEST_CASE("GTO values derivatives & 2nd derivatives H2/STO-3G") {
   occ::qm::AOBasis aobasis = occ::qm::AOBasis::load(atoms, "sto-3g");
   Mat grid_pts = Mat::Identity(3, 4);
   auto gto_values = occ::gto::evaluate_basis(aobasis, grid_pts, 2);
-  fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
-  fmt::print("phi_x\n{}\n", gto_values.phi_x);
-  fmt::print("phi_y\n{}\n", gto_values.phi_y);
-  fmt::print("phi_z\n{}\n", gto_values.phi_z);
-  fmt::print("phi_xx\n{}\n", gto_values.phi_xx);
-  fmt::print("phi_xy\n{}\n", gto_values.phi_xy);
-  fmt::print("phi_xz\n{}\n", gto_values.phi_xz);
-  fmt::print("phi_yy\n{}\n", gto_values.phi_yy);
-  fmt::print("phi_yz\n{}\n", gto_values.phi_yz);
-  fmt::print("phi_zz\n{}\n", gto_values.phi_zz);
+  fmt::print("Gto values\nphi:\n{}\n", format_matrix(gto_values.phi));
+  fmt::print("phi_x\n{}\n", format_matrix(gto_values.phi_x));
+  fmt::print("phi_y\n{}\n", format_matrix(gto_values.phi_y));
+  fmt::print("phi_z\n{}\n", format_matrix(gto_values.phi_z));
+  fmt::print("phi_xx\n{}\n", format_matrix(gto_values.phi_xx));
+  fmt::print("phi_xy\n{}\n", format_matrix(gto_values.phi_xy));
+  fmt::print("phi_xz\n{}\n", format_matrix(gto_values.phi_xz));
+  fmt::print("phi_yy\n{}\n", format_matrix(gto_values.phi_yy));
+  fmt::print("phi_yz\n{}\n", format_matrix(gto_values.phi_yz));
+  fmt::print("phi_zz\n{}\n", format_matrix(gto_values.phi_zz));
 
   Mat D(2, 2);
   D.setConstant(0.60245569);
   auto rho = occ::density::evaluate_density_on_grid<2>(aobasis, D, grid_pts);
-  fmt::print("Rho\n{}\n", rho);
+  fmt::print("Rho\n{}\n", format_matrix(rho));
 }
 
 TEST_CASE("GTO values derivatives & density H2/3-21G") {
@@ -44,10 +45,10 @@ TEST_CASE("GTO values derivatives & density H2/3-21G") {
   occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "3-21G");
   auto grid_pts = Mat::Identity(3, 4);
   auto gto_values = occ::gto::evaluate_basis(basis, grid_pts, 1);
-  fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
-  fmt::print("phi_x\n{}\n", gto_values.phi_x);
-  fmt::print("phi_y\n{}\n", gto_values.phi_y);
-  fmt::print("phi_z\n{}\n", gto_values.phi_z);
+  fmt::print("Gto values\nphi:\n{}\n", format_matrix(gto_values.phi));
+  fmt::print("phi_x\n{}\n", format_matrix(gto_values.phi_x));
+  fmt::print("phi_y\n{}\n", format_matrix(gto_values.phi_y));
+  fmt::print("phi_z\n{}\n", format_matrix(gto_values.phi_z));
 
   Mat D(4, 4);
   D << 0.175416203439, 0.181496024303, 0.175416203439, 0.181496024303,
@@ -56,7 +57,7 @@ TEST_CASE("GTO values derivatives & density H2/3-21G") {
       0.181496024303, 0.187786568128, 0.181496024303, 0.187786568128;
 
   auto rho = occ::density::evaluate_density_on_grid<1>(basis, D, grid_pts);
-  fmt::print("Rho\n{}\n", rho);
+  fmt::print("Rho\n{}\n", format_matrix(rho));
 }
 
 TEST_CASE("GTO values derivatives & density H2/STO-3G Unrestricted") {
@@ -65,18 +66,18 @@ TEST_CASE("GTO values derivatives & density H2/STO-3G Unrestricted") {
   occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "sto-3g");
   auto grid_pts = Mat::Identity(3, 4);
   auto gto_values = occ::gto::evaluate_basis(basis, grid_pts, 1);
-  fmt::print("Gto values\nphi:\n{}\n", gto_values.phi);
-  fmt::print("phi_x\n{}\n", gto_values.phi_x);
-  fmt::print("phi_y\n{}\n", gto_values.phi_y);
-  fmt::print("phi_z\n{}\n", gto_values.phi_z);
+  fmt::print("Gto values\nphi:\n{}\n", format_matrix(gto_values.phi));
+  fmt::print("phi_x\n{}\n", format_matrix(gto_values.phi_x));
+  fmt::print("phi_y\n{}\n", format_matrix(gto_values.phi_y));
+  fmt::print("phi_z\n{}\n", format_matrix(gto_values.phi_z));
 
   Mat D(4, 2);
   D.block(0, 0, 2, 2).setConstant(0.30122784);
   D.block(2, 0, 2, 2).setConstant(0.30122784);
   auto rho = occ::density::evaluate_density_on_grid<
       1, occ::qm::SpinorbitalKind::Unrestricted>(basis, D, grid_pts);
-  fmt::print("Rho alpha\n{}\n", occ::qm::block::a(rho));
-  fmt::print("Rho beta\n{}\n", occ::qm::block::b(rho));
+  fmt::print("Rho alpha\n{}\n", format_matrix(occ::qm::block::a(rho)));
+  fmt::print("Rho beta\n{}\n", format_matrix(occ::qm::block::b(rho)));
 }
 
 TEST_CASE("Spherical GTO rotations") {
@@ -102,7 +103,7 @@ TEST_CASE("Spherical GTO rotations") {
     auto rotations =
         occ::gto::spherical_gaussian_rotation_matrices(3, rotation_matrix);
 
-    fmt::print("Rotation matrix\n{}\n", rotation_matrix);
+    fmt::print("Rotation matrix\n{}\n", format_matrix(rotation_matrix));
     // order 0
     Mat r0(1, 1);
     r0.setConstant(1.0);
@@ -113,8 +114,8 @@ TEST_CASE("Spherical GTO rotations") {
     Mat r1(3, 3);
     r1 << std::cos(alpha), 0, std::sin(alpha), 0, 1, 0, -std::sin(alpha), 0,
         std::cos(alpha);
-    fmt::print("Found  (l == 1)\n{}\n", rotations[1]);
-    fmt::print("Expect (l == 1)\n{}\n", r1);
+    fmt::print("Found  (l == 1)\n{}\n", format_matrix(rotations[1]));
+    fmt::print("Expect (l == 1)\n{}\n", format_matrix(r1));
     REQUIRE(all_close(r1, rotations[1], 1e-10, 1e-10));
 
     // order 2
@@ -122,8 +123,8 @@ TEST_CASE("Spherical GTO rotations") {
     r2 << cos(2 * alpha), 0, 0, 0, sin(2 * alpha), 0, cos(alpha), 0, sin(alpha),
         0, 0, 0, 1, 0, 0, 0, -sin(alpha), 0, cos(alpha), 0, -sin(2 * alpha), 0,
         0, 0, cos(2 * alpha);
-    fmt::print("Found  (l == 2)\n{}\n", rotations[2]);
-    fmt::print("Expect (l == 2)\n{}\n", r2);
+    fmt::print("Found  (l == 2)\n{}\n", format_matrix(rotations[2]));
+    fmt::print("Expect (l == 2)\n{}\n", format_matrix(r2));
     REQUIRE(all_close(r2, rotations[2], 1e-10, 1e-10));
 
     // order 3
@@ -133,8 +134,8 @@ TEST_CASE("Spherical GTO rotations") {
         1, 0, 0, 0, 0, 0, -sin(alpha), 0, cos(alpha), 0, 0, 0, -sin(2 * alpha),
         0, 0, 0, cos(2 * alpha), 0, -sin(3 * alpha), 0, 0, 0, 0, 0,
         cos(3 * alpha);
-    fmt::print("Found  (l == 3)\n{}\n", rotations[3]);
-    fmt::print("Expect (l == 3)\n{}\n", r2);
+    fmt::print("Found  (l == 3)\n{}\n", format_matrix(rotations[3]));
+    fmt::print("Expect (l == 3)\n{}\n", format_matrix(r2));
     REQUIRE(all_close(r3, rotations[3], 1e-10, 1e-10));
   }
 

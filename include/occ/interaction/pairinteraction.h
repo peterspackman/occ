@@ -1,6 +1,6 @@
 #pragma once
 #include <fmt/core.h>
-#include <memory>
+#include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/interaction/polarization.h>
 #include <occ/qm/hf_fwd.h>
@@ -10,8 +10,8 @@
 
 namespace occ::interaction {
 
-using occ::qm::HartreeFock;
-using occ::qm::Wavefunction;
+using qm::HartreeFock;
+using qm::Wavefunction;
 
 struct CEParameterizedModel {
   double coulomb{1.0};
@@ -77,38 +77,48 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
   auto pos_a = wfn_a.positions();
   auto pos_b = wfn_b.positions();
 
-  occ::Mat3N field_a =
+  Mat3N field_a =
       proc_b.electronic_electric_field_contribution(wfn_b.mo, pos_a);
-  occ::log::debug("Field (e) at A due to B\n{}\n",
-                  field_a.colwise().squaredNorm());
-  occ::Mat3N field_a_n = proc_b.nuclear_electric_field_contribution(pos_a);
-  occ::log::debug("Field (n) at A due to B\n{}\n",
-                  field_a_n.colwise().squaredNorm());
-  field_a += field_a_n;
-  occ::log::debug("Field at A due to B\n{}\n", field_a.colwise().squaredNorm());
-  occ::Mat3N field_b =
-      proc_a.electronic_electric_field_contribution(wfn_a.mo, pos_b);
-  occ::Mat3N field_b_n = proc_a.nuclear_electric_field_contribution(pos_b);
-  occ::log::debug("Field (e) at B due to A\n{}\n",
-                  field_b.colwise().squaredNorm());
-  occ::log::debug("Field (n) at B due to A\n{}\n",
-                  field_b_n.colwise().squaredNorm());
-  field_b += field_b_n;
-  occ::log::debug("Field at B due to A\n{}\n", field_b.colwise().squaredNorm());
+  Vec3 tmp = field_a.colwise().squaredNorm();
+  log::debug("Field (ele) at A due to B [{:.5f}, {:.5f}, {:.5f}]", tmp(0),
+             tmp(1), tmp(2));
+  Mat3N field_a_n = proc_b.nuclear_electric_field_contribution(pos_a);
+  tmp = field_a_n.colwise().squaredNorm();
+  log::debug("Field (nuc) at A due to B [{:.5f}, {:.5f}, {:.5f}]", tmp(0),
+             tmp(1), tmp(2));
 
-  using occ::interaction::ce_model_polarization_energy;
+  field_a += field_a_n;
+  tmp = field_a.colwise().squaredNorm();
+  log::debug("Field (net) at A due to B [{:.5f}, {:.5f}, {:.5f}]", tmp(0),
+             tmp(1), tmp(2));
+
+  Mat3N field_b =
+      proc_a.electronic_electric_field_contribution(wfn_a.mo, pos_b);
+  Mat3N field_b_n = proc_a.nuclear_electric_field_contribution(pos_b);
+  tmp = field_b.colwise().squaredNorm();
+  log::debug("Field (ele) at B due to A [{:.5f}, {:.5f}, {:.5f}]", tmp(0),
+             tmp(1), tmp(2));
+  tmp = field_b_n.colwise().squaredNorm();
+  log::debug("Field (nuc) at B due to A [{:.5f}, {:.5f}, {:.5f}]", tmp(0),
+             tmp(1), tmp(2));
+  field_b += field_b_n;
+  tmp = field_b.colwise().squaredNorm();
+  log::debug("Field (net) at B due to A [{:.5f}, {:.5f}, {:.5f}]", tmp(0),
+             tmp(1), tmp(2));
+
+  using interaction::ce_model_polarization_energy;
   double e_pol = 0.0;
   if (wfn_a.have_xdm_parameters && wfn_b.have_xdm_parameters) {
-    occ::log::trace("Using XDM polarizability");
-    using occ::interaction::polarization_energy;
+    log::trace("Using XDM polarizability");
+    using interaction::polarization_energy;
     e_pol = polarization_energy(wfn_a.xdm_polarizabilities, field_a) +
             polarization_energy(wfn_b.xdm_polarizabilities, field_b);
   } else {
     // if charged atoms, use charged atomic polarizabilities
     bool charged_a = (wfn_a.atoms.size() == 1) && (wfn_a.charge() != 0);
     bool charged_b = (wfn_b.atoms.size() == 1) && (wfn_b.charge() != 0);
-    occ::log::debug("using charged atom polarizabilities: A={} B={}", charged_a,
-                    charged_b);
+    log::debug("using charged atom polarizabilities: A={} B={}", charged_a,
+               charged_b);
     e_pol = ce_model_polarization_energy(wfn_a.atomic_numbers(), field_a,
                                          charged_a) +
             ce_model_polarization_energy(wfn_b.atomic_numbers(), field_b,
@@ -134,7 +144,7 @@ inline CEParameterizedModel ce_model_from_string(const std::string &s) {
     return CE2_XDM;
   if (s == "ce-5p-wb97m-v" || s == "ce5p-wb97m-v" || s == "ce-5p-wb97m-v")
     return CE5_XDM;
-  occ::log::warn("Unknown model, defaulting to CE-1p");
+  log::warn("Unknown model, defaulting to CE-1p");
   return CE1_XDM;
 }
 
@@ -150,28 +160,22 @@ struct CEEnergyComponents {
   double orthogonal_term{0.0};
   bool is_computed{false};
 
-  double coulomb_kjmol() const {
-    return occ::units::AU_TO_KJ_PER_MOL * coulomb;
-  }
+  double coulomb_kjmol() const { return units::AU_TO_KJ_PER_MOL * coulomb; }
   double exchange_repulsion_kjmol() const {
-    return occ::units::AU_TO_KJ_PER_MOL * exchange_repulsion;
+    return units::AU_TO_KJ_PER_MOL * exchange_repulsion;
   }
   double polarization_kjmol() const {
-    return occ::units::AU_TO_KJ_PER_MOL * polarization;
+    return units::AU_TO_KJ_PER_MOL * polarization;
   }
   double dispersion_kjmol() const {
-    return occ::units::AU_TO_KJ_PER_MOL * dispersion;
+    return units::AU_TO_KJ_PER_MOL * dispersion;
   }
 
-  double repulsion_kjmol() const {
-    return occ::units::AU_TO_KJ_PER_MOL * repulsion;
-  }
+  double repulsion_kjmol() const { return units::AU_TO_KJ_PER_MOL * repulsion; }
 
-  double exchange_kjmol() const {
-    return occ::units::AU_TO_KJ_PER_MOL * exchange;
-  }
+  double exchange_kjmol() const { return units::AU_TO_KJ_PER_MOL * exchange; }
 
-  double total_kjmol() const { return occ::units::AU_TO_KJ_PER_MOL * total; }
+  double total_kjmol() const { return units::AU_TO_KJ_PER_MOL * total; }
 
   inline auto operator-(const CEEnergyComponents &rhs) {
     return CEEnergyComponents{coulomb - rhs.coulomb,

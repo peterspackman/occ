@@ -1,6 +1,8 @@
 add_library(occ_interaction
     "${CMAKE_CURRENT_SOURCE_DIR}/coulomb.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/disp.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/interaction_json.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_potential.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/polarization.cpp"
@@ -15,6 +17,7 @@ target_link_libraries(occ_interaction
     occ_qm
     occ_io
     occ_xdm
+    occ_xtb
 )
 target_include_directories(occ_interaction PUBLIC 
     ${OCC_INCLUDE_DIR} 

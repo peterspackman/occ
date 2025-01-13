@@ -10,6 +10,8 @@
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/interaction/disp.h>
+#include <occ/interaction/interaction_json.h>
+#include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
 #include <occ/io/eigen_json.h>
@@ -19,31 +21,18 @@
 #include <occ/io/orca_json.h>
 #include <occ/io/wavefunction_json.h>
 #include <occ/main/occ_pair.h>
-#include <occ/main/pair_energy.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::interaction {
 
-inline void to_json(nlohmann::json &j, const CEEnergyComponents &e) {
-  j["coulomb"] = e.coulomb;
-  j["exchange"] = e.exchange;
-  j["repulsion"] = e.repulsion;
-  j["polarization"] = e.polarization;
-  j["dispersion"] = e.dispersion;
-  j["total"] = e.total;
-  j["exchange_repulsion"] = e.exchange_repulsion;
-  j["orthogonal_term_extra"] = e.orthogonal_term;
-  j["nonorthogonal_term_extra"] = e.nonorthogonal_term;
-}
-
 inline void to_json(nlohmann::json &j, const CEParameterizedModel &m) {
   auto &factors = j["scale_factors"];
-  factors["coulomb"] = m.coulomb;
-  factors["exchange"] = m.exchange;
-  factors["repulsion"] = m.repulsion;
-  factors["polarization"] = m.polarization;
-  factors["dispersion"] = m.dispersion;
+  factors["Coulomb"] = m.coulomb;
+  factors["Exchange"] = m.exchange;
+  factors["Repulsion"] = m.repulsion;
+  factors["Polarization"] = m.polarization;
+  factors["Dispersion"] = m.dispersion;
   j["name"] = m.name;
   j["method"] = m.method;
   j["basis"] = m.basis;
@@ -62,6 +51,7 @@ namespace fs = std::filesystem;
 using occ::Mat3;
 using occ::Vec3;
 using occ::interaction::CEModelInteraction;
+using occ::interaction::PairEnergy;
 using occ::qm::Wavefunction;
 
 void store_xdm_parameters(const Wavefunction &wfn, nlohmann::json &j) {
@@ -248,12 +238,18 @@ void run_pair_subcommand(OccPairInput const &input) {
                      input.monomer_directory);
   }
   occ::log::debug("Rotation A (det = {}):\n{}",
-                  config.pair.rotation_a.determinant(), config.pair.rotation_a);
-  occ::log::debug("Translation A: {}", config.pair.translation_a.transpose());
+                  config.pair.rotation_a.determinant(),
+                  format_matrix(config.pair.rotation_a));
+  const auto &ta = config.pair.translation_a;
+  occ::log::debug("Translation A: [{:.5f}, {:.5f}, {:.5f}]", ta(0), ta(1),
+                  ta(2));
 
   occ::log::debug("Rotation B (det = {}):\n{}",
-                  config.pair.rotation_b.determinant(), config.pair.rotation_b);
-  occ::log::debug("Translation B: {}", config.pair.translation_b.transpose());
+                  config.pair.rotation_b.determinant(),
+                  format_matrix(config.pair.rotation_b));
+  const auto &tb = config.pair.translation_b;
+  occ::log::debug("Translation B: [{:.5f}, {:.5f}, {:.5f}]", tb(0), tb(1),
+                  tb(2));
 
   PairEnergy pair_energy(config);
 

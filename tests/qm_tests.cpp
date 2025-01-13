@@ -1,7 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include <iostream>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
@@ -17,6 +16,7 @@
 #include <vector>
 
 using Catch::Matchers::WithinAbs;
+using occ::format_matrix;
 using occ::Mat;
 using occ::Mat3;
 using occ::qm::HartreeFock;
@@ -64,7 +64,7 @@ TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
 
   mo.Cocc = mo.C.leftCols(1);
   mo.D = mo.Cocc * mo.Cocc.transpose();
-  fmt::print("D:\n{}\n", mo.D);
+  fmt::print("D:\n{}\n", format_matrix(mo.D));
 
   occ::Mat Fexact(2, 2);
   Fexact << 1.50976125, 0.7301775, 0.7301775, 1.50976125;
@@ -77,14 +77,14 @@ TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
 
   occ::qm::JKPair jk_approx = hf.compute_JK(mo);
   occ::Mat F = 2 * (jk_approx.J - jk_approx.K);
-  fmt::print("Fexact\n{}\n", Fexact);
-  fmt::print("Fapprox\n{}\n", F);
+  fmt::print("Fexact\n{}\n", format_matrix(Fexact));
+  fmt::print("Fapprox\n{}\n", format_matrix(F));
 
-  fmt::print("Jexact\n{}\n", Jexact);
-  fmt::print("Japprox\n{}\n", jk_approx.J);
+  fmt::print("Jexact\n{}\n", format_matrix(Jexact));
+  fmt::print("Japprox\n{}\n", format_matrix(jk_approx.J));
 
-  fmt::print("Kexact\n{}\n", Kexact);
-  fmt::print("Kapprox\n{}\n", 2 * jk_approx.K);
+  fmt::print("Kexact\n{}\n", format_matrix(Kexact));
+  fmt::print("Kapprox\n{}\n", format_matrix(2 * jk_approx.K));
 }
 
 TEST_CASE("Electric Field evaluation H2/STO-3G") {
@@ -104,11 +104,11 @@ TEST_CASE("Electric Field evaluation H2/STO-3G") {
   expected_esp << -1.37628, -1.37628, -1.95486, -1.45387;
 
   auto field_values = hf.nuclear_electric_field_contribution(grid_pts);
-  fmt::print("Grid points\n{}\n", grid_pts);
-  fmt::print("Nuclear E field values:\n{}\n", field_values);
+  fmt::print("Grid points\n{}\n", format_matrix(grid_pts));
+  fmt::print("Nuclear E field values:\n{}\n", format_matrix(field_values));
 
   auto esp = hf.electronic_electric_potential_contribution(mo, grid_pts);
-  fmt::print("ESP:\n{}\n", esp);
+  fmt::print("ESP:\n{}\n", format_matrix(esp));
   REQUIRE(all_close(esp, expected_esp, 1e-5, 1e-5));
   occ::Mat expected_efield(field_values.rows(), field_values.cols());
   occ::Mat efield;
@@ -125,7 +125,7 @@ TEST_CASE("Electric Field evaluation H2/STO-3G") {
     efield_fd.row(i) = -(esp_d - esp) / delta;
   }
   REQUIRE(all_close(efield_fd, expected_efield, 1e-5, 1e-5));
-  fmt::print("Electric field FD:\n{}\n", efield_fd);
+  fmt::print("Electric field FD:\n{}\n", format_matrix(efield_fd));
 }
 
 // MO Rotation
@@ -148,7 +148,7 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
   fmt::print("basis.size() {}\n", basis.size());
   Mat3 rotation =
       Eigen::AngleAxisd(M_PI / 2, occ::Vec3{0, 1, 0}).toRotationMatrix();
-  fmt::print("Rotation by:\n{}\n", rotation);
+  fmt::print("Rotation by:\n{}\n", format_matrix(rotation));
 
   auto hf = HartreeFock(basis);
   occ::qm::SCF<HartreeFock> scf(hf);
@@ -191,8 +191,9 @@ TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
       0.423, Eigen::Vector3d(0.234, -0.642, 0.829).normalized()));
   Mat3 rotation = r.toRotationMatrix();
 
-  fmt::print("Rotation by:\n{}\n", rotation);
-  fmt::print("Distances before rotation:\n{}\n", interatomic_distances(atoms));
+  fmt::print("Rotation by:\n{}\n", format_matrix(rotation));
+  fmt::print("Distances before rotation:\n{}\n",
+             format_matrix(interatomic_distances(atoms)));
   auto hf = HartreeFock(basis);
 
   auto rot_basis = basis;
@@ -201,7 +202,7 @@ TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
   auto shell2atom = rot_basis.shell_to_atom();
 
   fmt::print("Distances after rotation:\n{}\n",
-             interatomic_distances(rot_atoms));
+             format_matrix(interatomic_distances(rot_atoms)));
   auto hf_rot = HartreeFock(rot_basis);
   REQUIRE(hf.nuclear_repulsion_energy() ==
           Catch::Approx(hf_rot.nuclear_repulsion_energy()));
@@ -494,8 +495,9 @@ TEST_CASE("Integral gradients", "[integrals]") {
 
   auto atom_gradients = g(mo);
 
-  fmt::print("Atom gradients\n{}\n", atom_gradients);
-  fmt::print("Difference\n{}\n", atom_gradients - expected_atom_gradients);
+  fmt::print("Atom gradients\n{}\n", format_matrix(atom_gradients));
+  fmt::print("Difference\n{}\n",
+             format_matrix(atom_gradients - expected_atom_gradients));
   REQUIRE(all_close(atom_gradients, expected_atom_gradients, 1e-4, 1e-4));
 }
 
@@ -553,14 +555,14 @@ TEST_CASE("Mulliken partition", "[partitioning]") {
   auto wfn = scf.wavefunction();
 
   auto charges = wfn.mulliken_charges();
-  fmt::print("Charges:\n{}\n", charges);
+  fmt::print("Charges:\n{}\n", format_matrix(charges));
   occ::Vec expected(3);
   expected << -0.724463, 0.363043, 0.361419;
-  fmt::print("Expected:\n{}\n", expected);
+  fmt::print("Expected:\n{}\n", format_matrix(expected));
   REQUIRE(all_close(expected, charges, 1e-5, 1e-5));
 
   auto energies = occ::qm::mulliken_partition(obs, wfn.mo, wfn.V);
   double total = occ::qm::expectation(wfn.mo.kind, wfn.mo.D, wfn.V);
-  fmt::print("Partitioned energy\n{}\n", energies);
+  fmt::print("Partitioned energy\n{}\n", format_matrix(energies));
   REQUIRE(energies.sum() == Catch::Approx(total));
 }

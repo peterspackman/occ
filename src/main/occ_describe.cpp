@@ -13,6 +13,8 @@ std::string to_string(DescribeConfig::Descriptor desc) {
   switch (desc) {
   case DescribeConfig::Descriptor::Steinhardt:
     return "steinhardt";
+  default:
+    return "unknown descriptor";
   }
 }
 

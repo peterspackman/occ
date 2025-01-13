@@ -6,6 +6,7 @@
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>
 
+using occ::format_matrix;
 using occ::util::all_close;
 
 std::array<double, 38> domain_data{
@@ -25,18 +26,18 @@ TEST_CASE("Grad and rho consistency") {
   Vec r0(1);
   r0(0) = 0.0;
   fmt::print("H(0) = {}\n", H.rho(0.0));
-  fmt::print("H([0.0]) = {}\n", H.rho(r0));
+  fmt::print("H([0.0]) = {}\n", format_matrix(H.rho(r0)));
   Vec r = Vec::LinSpaced(4, 0.2, 2);
 
   Vec rho = H.rho(r);
   Vec grad_rho = H.grad_rho(r);
-  fmt::print("r\n{}\nH.rho\n{}\n", r, rho);
+  fmt::print("r\n{}\nH.rho\n{}\n", format_matrix(r), format_matrix(rho));
   Vec grad_rho_fd = (H.rho(r.array() + 1e-8) - H.rho(r.array() - 1e-8)) / 2e-8;
-  fmt::print("H.grad_rho:\n{}\n", grad_rho);
-  fmt::print("H.grad_rho_fd:\n{}\n", grad_rho_fd);
+  fmt::print("H.grad_rho:\n{}\n", format_matrix(grad_rho));
+  fmt::print("H.grad_rho_fd:\n{}\n", format_matrix(grad_rho_fd));
   REQUIRE(all_close(grad_rho, grad_rho_fd, 1e-5, 1e-5));
   rho = C.rho(r);
-  fmt::print("r\n{}\nC.rho\n{}\n", r, rho);
+  fmt::print("r\n{}\nC.rho\n{}\n", format_matrix(r), format_matrix(rho));
   grad_rho = C.grad_rho(r);
   grad_rho_fd = (C.rho(r.array() + 1e-8) - C.rho(r.array() - 1e-8)) / 2e-8;
   REQUIRE(all_close(grad_rho, grad_rho_fd, 1e-5, 1e-5));
@@ -78,7 +79,7 @@ TEST_CASE("H atom slater basis density") {
       0.112388, 0.106950, 0.101774, 0.096850;
 
   auto rho = H.rho(domain);
-  fmt::print("Diff:\n{}\n", rho - expected);
+  fmt::print("Diff:\n{}\n", format_matrix(rho - expected));
 
   REQUIRE(all_close(rho, expected, 1e-5, 1e-5));
 }
@@ -100,12 +101,12 @@ TEST_CASE("Ag atom slater basis density") {
 
   auto rho = Ag.rho(domain);
 
-  fmt::print("Ag errors\n{}\n", rho - expected);
+  fmt::print("Ag errors\n{}\n", format_matrix(rho - expected));
   for (const auto &sh : Ag.shells()) {
-    fmt::print("c:\n{}\n", sh.c());
-    fmt::print("z:\n{}\n", sh.z());
-    fmt::print("n:\n{}\n", sh.n());
-    fmt::print("occ:\n{}\n", sh.occupation());
+    fmt::print("c:\n{}\n", format_matrix(sh.c()));
+    fmt::print("z:\n{}\n", format_matrix(sh.z(), "{}"));
+    fmt::print("n:\n{}\n", format_matrix(sh.n(), "{}"));
+    fmt::print("occ:\n{}\n", format_matrix(sh.occupation(), "{}"));
   }
   REQUIRE(all_close(rho, expected, 1e-5, 1e-5));
 }

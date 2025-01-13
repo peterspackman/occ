@@ -6,7 +6,7 @@
 #include <occ/core/parallel.h>
 #include <occ/core/progress.h>
 #include <occ/core/timings.h>
-#include <occ/main/pair_energy.h>
+#include <occ/interaction/pair_energy.h>
 #include <occ/main/single_point.h>
 #include <occ/qm/hf.h>
 

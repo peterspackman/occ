@@ -94,7 +94,6 @@ public:
                                                const Mat3N &) const;
   Vec electronic_electric_potential_contribution(const MolecularOrbitals &mo,
                                                  const Mat3N &) const;
-
   Mat compute_schwarz_ints() const;
   void update_core_hamiltonian(const MolecularOrbitals &mo, Mat &H) { return; }
   template <int order>

@@ -1,27 +1,27 @@
 CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"
-    VERSION "11.0.1"
-    GIT_TAG "11.0.1"
+    VERSION "11.0.2"
+    GIT_TAG "11.0.2"
 )
 
 CPMAddPackage(
     NAME spdlog
     GITHUB_REPOSITORY "gabime/spdlog"
     OPTIONS "SPDLOG_FMT_EXTERNAL ON"
-    VERSION "1.14.1"
+    VERSION "1.15.0"
 )
 
 CPMAddPackage(
     NAME unordered_dense
     GITHUB_REPOSITORY "martinus/unordered_dense"
-    VERSION "4.1.2"
+    VERSION "4.5.0"
 )
 
 CPMAddPackage(
     NAME scnlib
     GITHUB_REPOSITORY "eliaskosunen/scnlib"
-    VERSION "2.0.2"
+    VERSION "4.0.1"
     OPTIONS "SIMDUTF_TESTS OFF" "ENABLE_FULL OFF"
 )
 
@@ -29,7 +29,7 @@ CPMAddPackage(
 CPMAddPackage(
     NAME CLI11
     GITHUB_REPOSITORY "CLIUtils/CLI11"
-    VERSION "2.4.1"
+    VERSION "2.4.2"
 )
 
 if("${USE_MLX}")

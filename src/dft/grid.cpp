@@ -252,6 +252,7 @@ RadialGrid generate_lmg_radial_grid(size_t atomic_number,
   }
   occ::log::debug("LMG grid r_inner = {}, r_outer = {}, h = {}", r_inner,
                   r_outer, h);
+
   assert(r_outer > h);
   double c = r_inner / (std::exp(h) - 1.0);
   size_t num_radial = static_cast<int>(std::log(1.0 + (r_outer / c)) / h);

@@ -108,9 +108,12 @@ std::pair<double, Mat3N> xdm_dispersion_energy(const XDMAtomList &atom_info,
   const size_t num_atoms = atoms.size();
   using occ::Vec3;
 
-  occ::log::debug("Volumes\n{}\n", volume);
-  occ::log::debug("Volumes free\n{}\n", volume_free);
-  occ::log::debug("Polarizabilities: \n{}\n", polarizabilities);
+  occ::log::debug("{:>20s} {:>20s} {:>20s}", "Volume", "Volume Free",
+                  "Polarizability");
+  for (int i = 0; i < volume.rows(); i++) {
+    occ::log::debug("{:20.12f} {:20.12f} {:20.12f}", volume(i), volume_free(i),
+                    polarizabilities(i));
+  }
   Mat3N forces = Mat3N::Zero(3, num_atoms);
   double edisp = 0.0;
   for (int i = 0; i < num_atoms; i++) {
@@ -262,7 +265,7 @@ double XDM::energy(const occ::qm::MolecularOrbitals &mo) {
   occ::timing::start(occ::timing::category::xdm);
   populate_moments(mo);
   populate_polarizabilities();
-  occ::log::debug("moments\n{}\n", m_moments);
+  occ::log::debug("moments\n{}", format_matrix(m_moments));
 
   std::tie(m_energy, m_forces) = xdm_dispersion_energy(
       {m_basis.atoms(), m_polarizabilities, m_moments, m_volume, m_volume_free},
@@ -401,7 +404,10 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
 
   occ::log::debug("Num electrons {:20.12f}, promolecule {:20.12f}\n",
                   num_electrons, num_electrons_promol);
-  occ::log::debug("Hirshfeld charges:\n{}", m_hirshfeld_charges);
+  occ::log::debug("Hirshfeld charges");
+  for (int i = 0; i < m_hirshfeld_charges.rows(); i++) {
+    occ::log::debug("Atom {}: {:12.5f}", i, m_hirshfeld_charges(i));
+  }
 }
 
 void XDM::populate_polarizabilities() {

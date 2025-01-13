@@ -10,11 +10,12 @@
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/interaction/coulomb.h>
+#include <occ/interaction/interaction_json.h>
+#include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pair_potential.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/wolf.h>
 #include <occ/io/wavefunction_json.h>
-#include <occ/main/pair_energy.h>
 #include <occ/qm/chelpg.h>
 #include <occ/xtb/xtb_wrapper.h>
 #include <optional>
@@ -23,18 +24,9 @@ namespace fs = std::filesystem;
 
 namespace occ::interaction {
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CEEnergyComponents, coulomb, exchange,
-                                   repulsion, polarization, dispersion, total)
-}
-
-namespace occ::main {
-
 using occ::core::Dimer;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
-using occ::interaction::CEEnergyComponents;
-using occ::interaction::CEModelInteraction;
-using occ::interaction::CEParameterizedModel;
 using occ::qm::Wavefunction;
 using occ::units::BOHR_TO_ANGSTROM;
 
@@ -156,8 +148,7 @@ auto calculate_transform(const Wavefunction &wfn, const Molecule &m,
     occ::log::debug("Test transform (symop={}) RMSD = {}\n", symop.to_string(),
                     rmsd);
     if (rmsd < 1e-3) {
-      occ::log::debug("Symop found: RMSD = {}\nrotation\n{}\ntranslation\n{}\n",
-                      rmsd, rotation, translation);
+      occ::log::debug("Symop found: RMSD = {:12.5f}");
       return std::make_pair(rotation, translation);
     }
   }
@@ -452,7 +443,7 @@ bool load_dimer_energy(const std::string &filename,
   std::string line;
   std::getline(file, line);
   std::getline(file, line);
-  energies = nlohmann::json::parse(line).get<CEEnergyComponents>();
+  energies = nlohmann::json::parse(line);
   energies.is_computed = true;
   return true;
 }
@@ -475,8 +466,9 @@ struct WolfSumAccelerator {
     for (int i = 0; i < partial_charges.size(); i++) {
       const auto &asymmetric_atom_indices = asym_mols[i].asymmetric_unit_idx();
       const auto &charge_vector = partial_charges[i];
-      occ::log::info("Charges {}\n{}", i, charge_vector);
+      occ::log::info("Charges used in wolf for molecule {}", i);
       for (int j = 0; j < charge_vector.rows(); j++) {
+        occ::log::info("Atom {}: {:12.5f}", j, charge_vector(j));
         asym_charges(asymmetric_atom_indices(j)) = charge_vector(j);
       }
     }
@@ -575,7 +567,7 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
       if (conv.wolf_sum && conv.crystal_field_polarization) {
         wolf.electric_field_values[mol_idx].setZero();
         occ::log::debug("Field total for dimer {} =\n{}\n", dimer_idx,
-                        wolf.electric_field_values[mol_idx]);
+                        format_matrix(wolf.electric_field_values[mol_idx]));
       }
 
       for (const auto &[dimer, unique_idx] : n) {
@@ -610,8 +602,8 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
 
         if (conv.crystal_field_polarization) {
           auto &electric_field = wolf.electric_field_values[mol_idx];
-          occ::log::debug("Field total =\n{}", electric_field);
-          occ::log::debug("Field total =\n{}", efield);
+          occ::log::debug("Field total =\n{}", format_matrix(electric_field));
+          occ::log::debug("Field total =\n{}", format_matrix(efield));
           if constexpr (std::is_same<EnergyModel, CEPairEnergyFunctor>::value) {
             const auto &wfn_a = energy_model.wavefunctions()[mol_idx];
             double e_pol_chg = occ::interaction::polarization_energy(
@@ -669,12 +661,12 @@ converged_lattice_energies(EnergyModel &energy_model, const Crystal &crystal,
     }
     auto &dimer = converged_dimers.unique_dimers[i];
     const auto &e = converged_energies[i];
-    dimer.set_interaction_energy(e.coulomb_kjmol(), "coulomb");
-    dimer.set_interaction_energy(e.exchange_kjmol(), "exchange");
-    dimer.set_interaction_energy(e.repulsion_kjmol(), "repulsion");
-    dimer.set_interaction_energy(e.dispersion_kjmol(), "dispersion");
-    dimer.set_interaction_energy(e.polarization_kjmol(), "polarization");
-    dimer.set_interaction_energy(e.total_kjmol(), "total");
+    dimer.set_interaction_energy(e.coulomb_kjmol(), "Coulomb");
+    dimer.set_interaction_energy(e.exchange_kjmol(), "Exchange");
+    dimer.set_interaction_energy(e.repulsion_kjmol(), "Repulsion");
+    dimer.set_interaction_energy(e.dispersion_kjmol(), "Dispersion");
+    dimer.set_interaction_energy(e.polarization_kjmol(), "Polarization");
+    dimer.set_interaction_energy(e.total_kjmol(), "Total");
   }
   return {lattice_energy, converged_dimers, converged_energies};
 }
@@ -718,4 +710,4 @@ bool PairEnergyStore::load(int id, const Dimer &d, CEEnergyComponents &e) {
                            e);
 }
 
-} // namespace occ::main
+} // namespace occ::interaction

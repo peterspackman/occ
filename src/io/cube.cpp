@@ -1,4 +1,5 @@
 #include <fmt/os.h>
+#include <fmt/ostream.h>
 #include <occ/io/cube.h>
 
 namespace occ::io {

@@ -38,8 +38,10 @@ void ContinuumSolvationModel::update_radii() {
     m_atomic_charges = occ::core::charges::eeq_partial_charges(
         nums, m_nuclear_positions * occ::units::BOHR_TO_ANGSTROM, m_charge);
     occ::log::warn("DRACO implementation currently assumes EEQ charges");
-    occ::log::warn("Predicted EEQ charges (net = {}):\n{}", m_charge,
-                   m_atomic_charges);
+    occ::log::warn("Predicted EEQ charges (net = {})", m_charge);
+    for (int i = 0; i < m_atomic_charges.size(); i++) {
+      occ::log::warn("Atom {}: {:.5f}", i, m_atomic_charges(i));
+    }
     m_coulomb_radii = occ::solvent::draco::smd_coulomb_radii(
         m_atomic_charges, nums, m_nuclear_positions, m_params);
   } else {

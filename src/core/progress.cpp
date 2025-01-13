@@ -7,7 +7,6 @@
 #include <iostream>
 #include <occ/core/log.h>
 #include <string>
-#include <thread>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <io.h>
@@ -86,16 +85,25 @@ void ProgressTracker::move_cursor_to_bottom() {
 
 void ProgressTracker::update(int progress, int total,
                              const std::string description) {
+  if (!m_started) {
+    m_started = true;
+    m_time_points.push_back(std::chrono::high_resolution_clock::now());
+  }
 
-  m_time_points.push_back(std::chrono::high_resolution_clock::now());
+  if (progress != m_current_progress) {
+    m_time_points.push_back(std::chrono::high_resolution_clock::now());
+    m_current_progress = progress;
+  }
+
   estimate_time_remaining();
 
-  std::string eta_string = "";
+  std::string eta_string;
   if (m_time_points.size() > 1) {
     eta_string = occ::util::human_readable_time(
         std::chrono::duration_cast<std::chrono::milliseconds>(
             m_estimated_time_remaining));
   }
+
   float percent = static_cast<float>(progress) / total;
   if (!m_is_tty) {
     occ::log::info("{: <40s} {}/{} {: >3d}% {}", description, progress, total,
@@ -142,23 +150,41 @@ void ProgressTracker::clear() { clear_progress_line(); }
 void ProgressTracker::set_tty(bool value) { m_is_tty = value; }
 
 void ProgressTracker::estimate_time_remaining() {
-  int completed =
-      m_time_points.size() -
-      1; // Subtract 1 because the first time point is the start time
-  int remaining = m_total - completed;
+  if (m_time_points.empty())
+    return;
 
-  // Calculate durations and moving average
-  double avg = 0.0;
-  for (int i = std::max(1, completed - m_window + 1); i <= completed; ++i) {
-    avg += std::chrono::duration_cast<std::chrono::duration<double>>(
-               m_time_points[i] - m_time_points[i - 1])
-               .count();
+  auto now = std::chrono::high_resolution_clock::now();
+  double current_t =
+      std::chrono::duration<double>(now - m_time_points.front()).count();
+
+  // Calculate progress volatility if we have enough data points
+  if (m_time_points.size() >= 3) {
+    Eigen::VectorXd velocities(m_time_points.size() - 1);
+    for (size_t i = 1; i < m_time_points.size(); ++i) {
+      auto dt = std::chrono::duration_cast<std::chrono::duration<double>>(
+                    m_time_points[i] - m_time_points[i - 1])
+                    .count();
+      velocities[i - 1] = dt > 0 ? 1.0 / dt : 0.0;
+    }
+
+    double mean = velocities.mean();
+    double variance = (velocities.array() - mean).square().mean();
+
+    // Adjust noise parameters based on observed variance
+    double process_noise = std::clamp(variance * 0.1, 0.01, 1.0);
+    double measurement_noise = std::clamp(variance, 0.1, 10.0);
+
+    m_time_estimator.adjust_noise(process_noise, measurement_noise);
   }
-  avg /= std::min(completed, m_window);
 
-  // Estimate remaining time
-  m_average_time = std::chrono::duration<double>(avg);
-  m_estimated_time_remaining = std::chrono::duration<double>(avg * remaining);
+  m_time_estimator.update(m_current_progress, current_t);
+  double remaining_seconds = m_time_estimator.estimate_remaining(m_total);
+  m_estimated_time_remaining = std::chrono::duration<double>(remaining_seconds);
+
+  // If you want to use the uncertainty:
+  double uncertainty_seconds = m_time_estimator.time_uncertainty(m_total);
+  // Convert to chrono duration only when needed for display
+  auto uncertainty = std::chrono::duration<double>(uncertainty_seconds);
 }
 
 std::chrono::duration<double> ProgressTracker::time_taken() const {

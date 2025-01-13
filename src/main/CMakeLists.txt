@@ -1,12 +1,9 @@
 add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_surface_energy.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/geometry_optimization.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/monomer_wavefunctions.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elastic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cg.cpp"
@@ -17,7 +14,6 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_surface_cuts.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/solvation_partition.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
     ${OCC_MAIN_INCLUDE_FILES}
 )
@@ -28,6 +24,7 @@ target_link_libraries(occ_main
     occ_xtb
     occ_qm
     occ_dft
+    occ_driver
     occ_solvent
     occ_interaction
     occ_isosurface
@@ -37,6 +34,7 @@ target_link_libraries(occ_main
     occ_gto
     occ_sht
     occ_descriptors
+    occ_cg
     CLI11::CLI11
 )
 target_include_directories(occ_main PUBLIC 

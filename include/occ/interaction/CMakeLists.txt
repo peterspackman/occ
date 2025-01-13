@@ -1,6 +1,7 @@
 set(OCC_INTERACTION_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/coulomb.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/disp.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/interaction_json.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_potential.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/polarization.h"

@@ -3,16 +3,13 @@
 #include <occ/crystal/crystal.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/io/occ_input.h>
-#include <occ/main/pair_energy.h>
 #include <occ/qm/wavefunction.h>
 #include <optional>
 
-namespace occ::main {
+namespace occ::interaction {
 
 using occ::core::Dimer;
 using occ::crystal::Crystal;
-using occ::interaction::CEEnergyComponents;
-using occ::interaction::CEParameterizedModel;
 using occ::qm::Wavefunction;
 
 struct PairEnergy {
@@ -91,4 +88,4 @@ converged_xtb_lattice_energies(const Crystal &crystal,
 
 Wavefunction load_wavefunction(const std::string &filename);
 
-} // namespace occ::main
+} // namespace occ::interaction

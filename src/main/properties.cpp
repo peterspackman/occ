@@ -113,7 +113,7 @@ void calculate_properties(const OccInput &config, const Wavefunction &wfn) {
     esp.leftCols(3) = points.transpose();
     esp.col(3) = wfn.electric_potential(points);
     output.print("{}\n", esp.rows());
-    output.print("{}\n", esp);
+    output.print("{}\n", format_matrix(esp, "{}"));
     log::info("Finishing computing ESP");
   }
 }

@@ -3,7 +3,6 @@
 #include <initializer_list>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
-#include <spdlog/spdlog.h>
 #include <stddef.h>
 
 namespace occ::timing {

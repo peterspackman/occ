@@ -207,7 +207,7 @@ public:
    *
    * See Molecule::cell_shift
    */
-  void set_cell_shift(const IVec3 &shift);
+  void set_cell_shift(const IVec3 &shift, bool update_atoms = true);
 
   /**
    * Get the unit cell offset for this Molecule (default 000)
@@ -774,5 +774,8 @@ private:
   Vec m_partial_charges;
   IVec3 m_cell_shift{0, 0, 0};
 };
+
+void label_molecules_by_chemical_formula(
+    std::vector<occ::core::Molecule> &molecules);
 
 } // namespace occ::core

@@ -17,13 +17,12 @@
 #include <occ/io/eigen_json.h>
 #include <occ/main/monomer_wavefunctions.h>
 #include <occ/main/occ_elat.h>
-#include <occ/main/pair_energy.h>
 #include <occ/qm/wavefunction.h>
 
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;
 using occ::interaction::CEEnergyComponents;
-using occ::main::LatticeConvergenceSettings;
+using occ::interaction::LatticeConvergenceSettings;
 using occ::qm::Wavefunction;
 
 inline Crystal read_crystal(const std::string &filename) {
@@ -200,7 +199,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   occ::log::info("Calculating symmetry unique dimers");
   occ::crystal::CrystalDimers crystal_dimers;
   std::vector<CEEnergyComponents> energies;
-  occ::main::LatticeEnergyResult lattice_energy_result;
+  occ::interaction::LatticeEnergyResult lattice_energy_result;
   if (settings.model_name == "xtb") {
     lattice_energy_result =
         converged_xtb_lattice_energies(c, basename, settings);
@@ -208,7 +207,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
     wfns = occ::main::calculate_wavefunctions(
         basename, molecules, settings.model_name, settings.spherical_basis);
     occ::main::compute_monomer_energies(basename, wfns, settings.model_name);
-    lattice_energy_result = occ::main::converged_lattice_energies(
+    lattice_energy_result = occ::interaction::converged_lattice_energies(
         c, wfns, wfns, basename, settings);
   }
 

@@ -1,5 +1,3 @@
-#include <chrono>
-#include <filesystem>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <occ/core/eeq.h>
@@ -20,15 +18,11 @@
 #include <occ/isosurface/isosurface.h>
 #include <occ/main/occ_isosurface.h>
 
-namespace fs = std::filesystem;
 using occ::FVec;
 using occ::IVec;
 using occ::Mat3N;
 using occ::Vec3;
-using occ::core::Element;
-using occ::core::Interpolator1D;
 using occ::core::Molecule;
-using occ::crystal::Crystal;
 using occ::io::IsosurfaceMesh;
 using occ::io::VertexProperties;
 using occ::qm::Wavefunction;
@@ -68,6 +62,8 @@ std::string to_string(IsosurfaceConfig::Property prop) {
     return "orbital_density";
   case IsosurfaceConfig::Property::SpinDensity:
     return "spin_density";
+  default:
+    return "unknown_property";
   }
 }
 
@@ -91,8 +87,151 @@ std::string to_string(IsosurfaceConfig::Surface surface) {
     return "spin_density";
   case IsosurfaceConfig::Surface::CrystalVoid:
     return "void";
+  default:
+    return "unknown_surface";
   }
 }
+
+struct ParameterCombination {
+  double isovalue{0.0};
+  std::optional<OrbitalIndex> orbital_index;
+};
+
+std::vector<ParameterCombination>
+generate_parameter_combinations(const IsosurfaceConfig &config) {
+  std::vector<ParameterCombination> params;
+
+  if (config.surface_type() == IsosurfaceConfig::Surface::Orbital) {
+    // Generate all combinations of orbitals and isovalues
+    for (double isovalue : config.isovalues) {
+      for (const auto &orbital : config.orbital_indices) {
+        params.push_back({isovalue, orbital});
+      }
+    }
+  } else {
+    // Just use isovalues
+    for (double isovalue : config.isovalues) {
+      params.push_back({isovalue});
+    }
+  }
+  return params;
+}
+
+void parse_orbital_descriptions(std::vector<OrbitalIndex> &indices,
+                                const std::string &input) {
+  std::vector<std::string> orbital_specs;
+  std::stringstream ss(input);
+  std::string token;
+  while (std::getline(ss, token, ',')) {
+    token.erase(0, token.find_first_not_of(" \t"));
+    token.erase(token.find_last_not_of(" \t") + 1);
+    if (!token.empty()) {
+      orbital_specs.push_back(token);
+    }
+  }
+
+  indices.clear();
+  for (const auto &spec : orbital_specs) {
+    std::string spec_lower = spec;
+    std::transform(spec_lower.begin(), spec_lower.end(), spec_lower.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    // Remove all spaces
+    spec_lower.erase(
+        std::remove_if(spec_lower.begin(), spec_lower.end(), ::isspace),
+        spec_lower.end());
+
+    OrbitalIndex idx;
+
+    // Check if it's a pure number
+    if (std::all_of(spec_lower.begin(), spec_lower.end(),
+                    [](char c) { return std::isdigit(c) || c == '-'; })) {
+      try {
+        int num = std::stoi(spec_lower);
+        if (num == 0) {
+          throw std::runtime_error("Orbital indices must be non-zero");
+        }
+        idx.reference = OrbitalIndex::Reference::Absolute;
+        idx.offset = num - 1; // Convert to 0-based
+      } catch (const std::exception &e) {
+        throw std::runtime_error(
+            fmt::format("Invalid orbital index: {}", spec));
+      }
+    } else {
+      bool is_homo = spec_lower.find("homo") == 0;
+      bool is_lumo = spec_lower.find("lumo") == 0;
+
+      if (!is_homo && !is_lumo) {
+        throw std::runtime_error(
+            fmt::format("Invalid orbital specification: {}", spec));
+      }
+
+      idx.reference = is_homo ? OrbitalIndex::Reference::HOMO
+                              : OrbitalIndex::Reference::LUMO;
+
+      // Just parse everything after homo/lumo as the offset
+      std::string offset_str = spec_lower.substr(4);
+      try {
+        idx.offset = offset_str.empty() ? 0 : std::stoi(offset_str);
+      } catch (const std::exception &e) {
+        throw std::runtime_error(
+            fmt::format("Invalid orbital offset in: {}", spec));
+      }
+    }
+    indices.push_back(idx);
+  }
+
+  if (indices.empty()) {
+    throw std::runtime_error("No valid orbital specifications provided");
+  }
+}
+
+std::string
+format_output_filename(const ParameterCombination &params,
+                       const IsosurfaceConfig &config,
+                       std::optional<std::string> label = std::nullopt) {
+  if (label) {
+    return fmt::format(fmt::runtime(config.output_template), *label);
+  } else if (!config.has_multiple_outputs() && !label) {
+    return fmt::format(fmt::runtime(config.output_template), "");
+  } else {
+    std::string generated_label;
+    if (params.orbital_index) {
+      generated_label = fmt::format("{}_{}", params.isovalue,
+                                    (*params.orbital_index).format());
+    } else {
+      generated_label = fmt::format("{}", params.isovalue);
+    }
+    return fmt::format(fmt::runtime(config.output_template), generated_label);
+  }
+}
+
+int OrbitalIndex::resolve(int num_alpha, int num_beta) const {
+  int homo = num_alpha - 1;
+  switch (reference) {
+  case Reference::Absolute:
+    return offset;
+  case Reference::HOMO:
+    return homo + offset;
+  case Reference::LUMO:
+    return (homo + 1) + offset;
+  }
+  throw std::runtime_error("Invalid orbital reference type");
+}
+
+// Format for output
+std::string OrbitalIndex::format() const {
+  switch (reference) {
+  case Reference::Absolute:
+    return std::to_string(offset); // Convert to 1-based for display
+  case Reference::HOMO:
+    return offset == 0 ? "HOMO" : fmt::format("HOMO{:+d}", offset);
+  case Reference::LUMO:
+    return offset == 0 ? "LUMO" : fmt::format("LUMO{:+d}", offset);
+  }
+  throw std::runtime_error("Invalid orbital reference type");
+}
+
 } // namespace occ::main
 
 template <typename F>
@@ -317,6 +456,9 @@ IsosurfaceConfig::Surface IsosurfaceConfig::surface_type() const {
           {"electron density", IsosurfaceConfig::Surface::ElectronDensity},
           {"rho", IsosurfaceConfig::Surface::ElectronDensity},
           {"density", IsosurfaceConfig::Surface::ElectronDensity},
+          // Molecular orbitals
+          {"orbital", IsosurfaceConfig::Surface::Orbital},
+          {"mo", IsosurfaceConfig::Surface::Orbital},
           // Promolecule
           {"promol", IsosurfaceConfig::Surface::PromoleculeDensity},
           {"pro", IsosurfaceConfig::Surface::PromoleculeDensity},
@@ -473,19 +615,6 @@ bool IsosurfaceConfig::requires_wavefunction() const {
   return false;
 }
 
-std::string IsosurfaceConfig::format_output_filename(
-    size_t index, std::optional<std::string> label) const {
-  if (!has_multiple_outputs() && index == 0 && !label) {
-    return fmt::format(fmt::runtime(output_template), "");
-  }
-
-  if (label) {
-    return fmt::format(fmt::runtime(output_template), *label);
-  } else {
-    return fmt::format(fmt::runtime(output_template), index);
-  }
-}
-
 bool IsosurfaceConfig::has_multiple_outputs() const {
   return isovalues.size() > 1 ||
          ((surface_type() == IsosurfaceConfig::Surface::Orbital) &&
@@ -549,9 +678,8 @@ CLI::App *add_isosurface_subcommand(CLI::App &app) {
                   "target isovalue(s)")
       ->expected(-1); // Allow multiple isovalues
 
-  iso->add_option("--orbital", config->orbital_indices,
-                  "orbital indices (for orbital surfaces)")
-      ->expected(-1); // Allow multiple orbital indices
+  iso->add_option("--orbitals", config->orbitals_input,
+                  "orbital indices (for orbital surfaces)");
 
   iso->add_option("-o,--output-template", config->output_template,
                   "template for output files (use {} for index placement)");
@@ -579,11 +707,12 @@ Wavefunction load_wfn(const IsosurfaceConfig &config) {
   if (wfn.atoms.size() > 0) {
     occ::log::info("Loaded wavefunction, applying transformation:");
     occ::Mat3 rotation = Eigen::Map<const Mat3RM>(config.wfn_rotation.data());
-    occ::log::info("Rotation\n{}", rotation);
+    occ::log::info("Rotation\n{}", format_matrix(rotation));
     occ::Vec3 translation =
         Eigen::Map<const Vec3>(config.wfn_translation.data()) *
         occ::units::ANGSTROM_TO_BOHR;
-    occ::log::info("Translation (Bohr)\n{}", translation.transpose());
+    occ::log::info("Translation (Bohr) [{:.5f}, {:.5f}, {:.5f}]",
+                   translation(0), translation(1), translation(2));
     wfn.apply_transformation(rotation, translation);
   }
   return wfn;
@@ -625,11 +754,12 @@ FVec compute_surface_property(IsosurfaceConfig::Property prop,
 
     auto func = iso::ElectronDensityFunctor(wfn, -1);
     int prev_calls = 0;
-    for (int orbital_index : config.orbital_indices) {
-      func.set_orbital_index(orbital_index);
+    for (const auto &orbital_index : config.orbital_indices) {
+      func.set_orbital_index(
+          orbital_index.resolve(wfn.mo.n_alpha, wfn.mo.n_beta));
       func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
       occ::log::info("Computed Orbital {} Density for {} vertices",
-                     orbital_index, func.num_calls() - prev_calls);
+                     orbital_index.format(), func.num_calls() - prev_calls);
       occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
                      result.maxCoeff(), result.mean());
       prev_calls = func.num_calls();
@@ -648,7 +778,10 @@ FVec compute_surface_property(IsosurfaceConfig::Property prop,
     auto m = m1;
     auto q = occ::core::charges::eeq_partial_charges(m.atomic_numbers(),
                                                      m.positions(), m.charge());
-    occ::log::info("Molecule partial charges (EEQ)\n{}", q);
+    occ::log::info("Molecule partial charges (EEQ)");
+    for (int i = 0; i < q.rows(); i++) {
+      occ::log::info("Atom {}: {:12.5f}", i, q(i));
+    }
     m.set_partial_charges(q);
     auto func = iso::ElectricPotentialFunctorPC(m);
     func.batch(vertices, result);
@@ -708,10 +841,25 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
     config.isovalues.push_back(0.02);
   }
 
+  // In run_isosurface_subcommand, where we resolve the indices:
+
+  if (surface_type == IsosurfaceConfig::Surface::Orbital) {
+    parse_orbital_descriptions(config.orbital_indices, config.orbitals_input);
+  }
+
+  auto parameter_combinations =
+      occ::main::generate_parameter_combinations(config);
+
   // Loop over all isovalues
-  for (size_t iso_idx = 0; iso_idx < config.isovalues.size(); iso_idx++) {
-    const double isovalue = config.isovalues[iso_idx];
-    occ::log::info("Processing isovalue {}: {}", iso_idx, isovalue);
+  for (const auto &params : parameter_combinations) {
+
+    const double isovalue = params.isovalue;
+    if (params.orbital_index) {
+      occ::log::info("Processing surface isovalue = {} (orbital = {})",
+                     isovalue, (*params.orbital_index).format());
+    } else {
+      occ::log::info("Processing surface isovalue = {}", isovalue);
+    }
 
     IsosurfaceMesh mesh;
     VertexProperties properties;
@@ -771,12 +919,14 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
       break;
     }
     case IsosurfaceConfig::Surface::Orbital: {
-      if (config.orbital_indices.empty()) {
+
+      if (!params.orbital_index) {
         throw std::runtime_error(
-            "No orbital indices specified for orbital property");
+            "No orbital index specified for orbital property");
       }
-      auto func = iso::MCElectronDensityFunctor(wfn, config.separation,
-                                                config.orbital_indices[0]);
+      auto func = iso::MCElectronDensityFunctor(
+          wfn, config.separation,
+          (*params.orbital_index).resolve(wfn.mo.n_alpha, wfn.mo.n_beta));
       mesh = extract_surface(func, isovalue);
       break;
     }
@@ -827,7 +977,7 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
                    upper_right(0), upper_right(1), upper_right(2));
 
     // Generate output filename based on index
-    std::string output_filename = config.format_output_filename(iso_idx);
+    std::string output_filename = format_output_filename(params, config);
     occ::log::info("Writing surface to {}", output_filename);
     occ::io::write_ply_mesh(output_filename, mesh, properties,
                             config.binary_output);

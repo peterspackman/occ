@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <occ/core/kalman_estimator.h>
 #include <string>
 #include <vector>
 
@@ -34,11 +35,15 @@ private:
   int m_total{0};
   int m_current{0};
   int m_window{5};
+  int m_current_progress{0};
+  bool m_started{false};
   std::vector<TimePoint> m_time_points;
   std::string m_name{"Progress"};
   std::chrono::duration<double> m_average_time;
   std::chrono::duration<double> m_estimated_time_remaining;
+  std::chrono::duration<double> m_estimated_time_uncertainty;
   TerminalSize m_tsize;
+  KalmanEstimator m_time_estimator;
   bool m_is_tty{false};
 };
 

@@ -1,11 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
-#include <fmt/ostream.h>
-
-template <typename T>
-  requires std::is_base_of_v<Eigen::DenseBase<T>, T>
-struct fmt::formatter<T> : ostream_formatter {};
+#include <fmt/core.h>
 
 namespace occ {
 using DMatRM =
@@ -34,6 +30,7 @@ using Mat3NConstRef = Eigen::Ref<const Mat3N>;
 using MatN3 = Eigen::MatrixX3d;
 using MatN3ConstRef = Eigen::Ref<const MatN3>;
 using Mat3 = Eigen::Matrix3d;
+using Mat2 = Eigen::Matrix2d;
 using Mat3RM = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>;
 using Mat3ConstRef = Eigen::Ref<const Mat3>;
 using Mat4 = Eigen::Matrix4d;
@@ -65,6 +62,7 @@ using RowVec = Eigen::RowVectorXd;
 using Vec = Eigen::VectorXd;
 using RowVec3 = Eigen::RowVector3d;
 using Vec3 = Eigen::Vector3d;
+using Vec2 = Eigen::Vector2d;
 using RowVec4 = Eigen::RowVector4d;
 using Vec4 = Eigen::Vector4d;
 using Vec6 = Eigen::Matrix<double, 6, 1>;
@@ -90,5 +88,34 @@ struct MatTriple {
   void scale_by(double fac);
   void symmetrize();
 };
+
+template <typename Derived>
+std::string format_matrix(const Eigen::DenseBase<Derived> &matrix,
+                          std::string_view fmt_str = "{:12.5f}") {
+  const auto &derived = matrix.derived();
+  fmt::memory_buffer out;
+
+  // For vectors, always format as a row vector
+  const Eigen::Index rows = derived.cols() == 1 ? 1 : derived.rows();
+  const Eigen::Index cols =
+      derived.cols() == 1 ? derived.rows() : derived.cols();
+
+  // Pre-allocate with rough estimate of size needed
+  out.reserve(rows * cols * (fmt_str.size() + 2));
+
+  for (Eigen::Index i = 0; i < rows; ++i) {
+    if (i != 0)
+      fmt::format_to(std::back_inserter(out), "\n");
+    for (Eigen::Index j = 0; j < cols; ++j) {
+      if (j != 0)
+        fmt::format_to(std::back_inserter(out), " ");
+      // For vectors, transpose the access if it's a column vector
+      const auto val = derived.cols() == 1 ? derived(j, 0) : derived(i, j);
+      fmt::format_to(std::back_inserter(out), fmt::runtime(fmt_str), val);
+    }
+  }
+
+  return fmt::to_string(out);
+}
 
 }; // namespace occ

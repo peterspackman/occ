@@ -52,53 +52,53 @@ CifParser::CifParser() {}
 
 void CifParser::set_atom_data(int index, const std::vector<AtomField> &fields,
                               const Loop &loop, AtomData &atom, AdpData &adp) {
-  using enum CifParser::AtomField;
+  using Field = CifParser::AtomField;
   using gemmi::cif::as_number;
 
   for (int field_index = 0; field_index < fields.size(); field_index++) {
     const auto &field = fields[field_index];
     const auto &value = loop.val(index, field_index);
     switch (field) {
-    case Label:
+    case Field::Label:
       atom.site_label = value;
       break;
-    case Element:
+    case Field::Element:
       atom.element = value;
       break;
-    case FracX:
+    case Field::FracX:
       atom.x = as_number(value);
       break;
-    case FracY:
+    case Field::FracY:
       atom.y = as_number(value);
       break;
-    case FracZ:
+    case Field::FracZ:
       atom.z = as_number(value);
       break;
-    case AdpType:
+    case Field::AdpType:
       atom.adp_type = value;
       break;
-    case Uiso:
+    case Field::Uiso:
       atom.uiso = as_number(value);
       break;
-    case AdpLabel:
+    case Field::AdpLabel:
       adp.aniso_label = value;
       break;
-    case AdpU11:
+    case Field::AdpU11:
       adp.u11 = as_number(value);
       break;
-    case AdpU22:
+    case Field::AdpU22:
       adp.u22 = as_number(value);
       break;
-    case AdpU33:
+    case Field::AdpU33:
       adp.u33 = as_number(value);
       break;
-    case AdpU12:
+    case Field::AdpU12:
       adp.u12 = as_number(value);
       break;
-    case AdpU13:
+    case Field::AdpU13:
       adp.u13 = as_number(value);
       break;
-    case AdpU23:
+    case Field::AdpU23:
       adp.u23 = as_number(value);
       break;
     default:
@@ -141,7 +141,7 @@ void CifParser::extract_atom_sites(const Loop &loop) {
 }
 
 void CifParser::extract_cell_parameter(const gemmi::cif::Pair &pair) {
-  using enum CifParser::CellField;
+  using Field = CifParser::CellField;
   using gemmi::cif::as_number;
   using occ::units::radians;
 
@@ -153,22 +153,22 @@ void CifParser::extract_cell_parameter(const gemmi::cif::Pair &pair) {
   }
   const auto &value = pair.back();
   switch (kv->second) {
-  case LengthA:
+  case Field::LengthA:
     m_cell.a = as_number(value);
     break;
-  case LengthB:
+  case Field::LengthB:
     m_cell.b = as_number(value);
     break;
-  case LengthC:
+  case Field::LengthC:
     m_cell.c = as_number(value);
     break;
-  case AngleAlpha:
+  case Field::AngleAlpha:
     m_cell.alpha = radians(as_number(value));
     break;
-  case AngleBeta:
+  case Field::AngleBeta:
     m_cell.beta = radians(as_number(value));
     break;
-  case AngleGamma:
+  case Field::AngleGamma:
     m_cell.gamma = radians(as_number(value));
     break;
   default:
@@ -208,7 +208,7 @@ void CifParser::extract_symmetry_operations(const gemmi::cif::Loop &loop) {
 }
 
 void CifParser::extract_symmetry_data(const gemmi::cif::Pair &pair) {
-  using enum CifParser::SymmetryField;
+  using Field = CifParser::SymmetryField;
   using gemmi::cif::as_number;
 
   const auto &tag = occ::util::to_lower_copy(pair.front());
@@ -219,13 +219,13 @@ void CifParser::extract_symmetry_data(const gemmi::cif::Pair &pair) {
   }
   const auto &value = pair.back();
   switch (kv->second) {
-  case HallSymbol:
+  case Field::HallSymbol:
     m_sym.nameHall = value;
     break;
-  case HMSymbol:
+  case Field::HMSymbol:
     m_sym.nameHM = value;
     break;
-  case Number:
+  case Field::Number:
     m_sym.number = as_number(value);
     break;
   default:
@@ -323,14 +323,16 @@ CifParser::parse_crystal(const std::string &filename) {
           asym.adps(3, i) = adp.u12;
           asym.adps(4, i) = adp.u13;
           asym.adps(5, i) = adp.u23;
-          occ::log::debug("Have ADP for atom {}: {}", i,
-                          asym.adps.col(i).transpose());
+          const auto &c = asym.adps.col(i);
+          occ::log::debug("Have ADP for atom {}: [{:.3f}, {:.3f}, {:.3f}, "
+                          "{:.3f}, {:.3f}, {:.3f}]",
+                          i, c(0), c(1), c(2), c(3), c(4), c(5));
         }
         i++;
       }
     }
-    occ::log::debug("Cartesian ADPs\n{}\n",
-                    uc.to_cartesian_adp(asym.adps).transpose());
+    occ::log::debug("Cartesian ADPs\n{}",
+                    format_matrix(uc.to_cartesian_adp(asym.adps).transpose()));
 
     occ::crystal::SpaceGroup sg(1);
     bool found = false;

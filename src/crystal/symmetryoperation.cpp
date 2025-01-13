@@ -1,3 +1,4 @@
+#include <cmath>
 #include <occ/core/fraction.h>
 #include <occ/core/util.h>
 #include <occ/crystal/symmetryoperation.h>
@@ -81,7 +82,8 @@ void decode_string(std::string code, Mat4 &seitz) {
   seitz(3, 3) = 1.0;
 }
 
-std::string encode_string(const Mat4 &seitz) {
+std::string encode_string(const Mat4 &seitz,
+                          const SymmetryOperationFormat &format) {
   /* Encode a rotation matrix (of -1, 0, 1s) and (rational) translation vector
   into string form e.g. 1/2-x,z-1/3,-y-1/6
   */
@@ -104,10 +106,15 @@ std::string encode_string(const Mat4 &seitz) {
         v += symbols.substr(j, 1);
       }
     }
-    res.push_back(v);
+    res.push_back(fmt::format(fmt::runtime(format.fmt_string), v));
   }
-  std::string result = join(res, ",");
+  std::string result = join(res, format.delimiter);
   return result;
+}
+
+std::string
+SymmetryOperation::to_string(const SymmetryOperationFormat &format) const {
+  return encode_string(m_seitz, format);
 }
 
 int encode_int(const Mat4 &seitz) {
@@ -165,10 +172,6 @@ Mat3N SymmetryOperation::apply(const Mat3N &positions) const {
   Mat3N result = rot * positions;
   result.colwise() += trans;
   return result;
-}
-
-std::string SymmetryOperation::to_string() const {
-  return encode_string(m_seitz);
 }
 
 int SymmetryOperation::to_int() const { return encode_int(m_seitz); }

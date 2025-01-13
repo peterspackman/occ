@@ -1,6 +1,12 @@
 build/
+debug/
 CMakeLists.txt.user
 .vscode/
 tags
 *.swp
 .DS_Store
+.cache
+tmp/
+uv.lock
+compile_commands.json
+__pycache__
