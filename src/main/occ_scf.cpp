@@ -56,7 +56,7 @@ void read_input_file(const std::string &filename, OccInput &config) {
   } else if (ext == ".cif") {
     occ::log::debug("Detected CIF input");
     occ::io::CifParser cif;
-    auto crystal = cif.parse_crystal(filename);
+    auto crystal = cif.parse_crystal_from_file(filename);
     if (!crystal)
       throw std::runtime_error(fmt::format("Could not parse crystal: {}",
                                            cif.failure_description()));

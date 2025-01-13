@@ -31,6 +31,16 @@
 namespace nb = nanobind;
 using namespace nb::literals;
 
+template <typename K, typename V>
+inline nb::dict
+convert_map_to_dict(const ankerl::unordered_dense::map<K, V> &map) {
+  nb::dict result;
+  for (const auto &[key, value] : map) {
+    result[nb::cast(key)] = nb::cast(value);
+  }
+  return result;
+}
+
 using occ::IVec;
 using occ::Mat;
 using occ::Mat3N;
@@ -372,8 +382,14 @@ NB_MODULE(_occpy, m) {
       .def_static("from_cif_file",
                   [](const std::string &filename) {
                     occ::io::CifParser parser;
-                    return parser.parse_crystal(filename).value();
+                    return parser.parse_crystal_from_file(filename).value();
                   })
+      .def_static("from_cif_string",
+                  [](const std::string &contents) {
+                    occ::io::CifParser parser;
+                    return parser.parse_crystal_from_string(contents).value();
+                  })
+
       .def("__repr__", [](const Crystal &c) {
         return fmt::format("<Crystal {} {}>",
                            c.asymmetric_unit().chemical_formula(),
@@ -466,6 +482,10 @@ NB_MODULE(_occpy, m) {
       .def_ro("unique_idx", &DimerResult::unique_idx)
       .def("total_energy", &DimerResult::total_energy)
       .def("energy_component", &DimerResult::energy_component)
+      .def("energy_components",
+           [](const DimerResult &d) {
+             return convert_map_to_dict(d.energy_components);
+           })
       .def_ro("is_nearest_neighbor", &DimerResult::is_nearest_neighbor);
 
   nb::class_<MoleculeResult>(m, "MoleculeResult")
@@ -473,6 +493,10 @@ NB_MODULE(_occpy, m) {
       .def_ro("total", &MoleculeResult::total)
       .def_ro("has_inversion_symmetry", &MoleculeResult::has_inversion_symmetry)
       .def("total_energy", &MoleculeResult::total_energy)
+      .def("energy_components",
+           [](const MoleculeResult &m) {
+             return convert_map_to_dict(m.energy_components);
+           })
       .def("energy_component", &MoleculeResult::energy_component);
 
   nb::class_<CrystalGrowthResult>(m, "CrystalGrowthResult")
@@ -499,6 +523,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.6.8";
+  m.attr("__version__") = "0.6.9";
 #endif
 }

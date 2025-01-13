@@ -83,7 +83,12 @@ public:
   bool crystal_valid() const { return symmetry_valid() && cell_valid(); }
   const std::string &failure_description() const { return m_failure_desc; }
   size_t num_atoms() const { return m_atoms.size(); }
-  std::optional<occ::crystal::Crystal> parse_crystal(const std::string &);
+  std::optional<occ::crystal::Crystal>
+  parse_crystal_from_file(const std::string &);
+  std::optional<occ::crystal::Crystal>
+  parse_crystal_from_string(const std::string &);
+  std::optional<occ::crystal::Crystal>
+  parse_crystal_from_document(const gemmi::cif::Document &);
 
   static bool is_likely_cif_filename(const std::string &);
 

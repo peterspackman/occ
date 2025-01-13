@@ -119,7 +119,7 @@ SolventSurfacePartitioner::partition_nearest_atom(
   // Process coulomb contributions
   PartitionedSurface cds;
   cds.positions = surface.cds.positions;
-  cds.molecule_index = IVec(surface.coulomb.size());
+  cds.molecule_index = IVec(surface.cds.size());
   cds.energies = surface.cds.energies;
 
   for (size_t i = 0; i < surface.cds.size(); i++) {

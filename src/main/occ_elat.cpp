@@ -27,7 +27,7 @@ using occ::qm::Wavefunction;
 
 inline Crystal read_crystal(const std::string &filename) {
   occ::io::CifParser parser;
-  return parser.parse_crystal(filename).value();
+  return parser.parse_crystal_from_file(filename).value();
 }
 
 inline void map_interactions_to_uc(const Crystal &crystal,

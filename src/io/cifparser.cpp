@@ -245,11 +245,23 @@ void CifParser::extract_symmetry_data(const gemmi::cif::Pair &pair) {
 }
 
 std::optional<occ::crystal::Crystal>
-CifParser::parse_crystal(const std::string &filename) {
+CifParser::parse_crystal_from_file(const std::string &filename) {
+  auto doc = gemmi::cif::read_file(filename);
+  occ::log::debug("Gemmi read cif: {}", filename);
+  return parse_crystal_from_document(doc);
+}
+
+std::optional<occ::crystal::Crystal>
+CifParser::parse_crystal_from_string(const std::string &contents) {
+  auto doc = gemmi::cif::read_string(contents);
+  occ::log::debug("Gemmi read cif from string (size = {})", contents.size());
+  return parse_crystal_from_document(doc);
+}
+
+std::optional<occ::crystal::Crystal>
+CifParser::parse_crystal_from_document(const gemmi::cif::Document &doc) {
   using gemmi::cif::ItemType;
   try {
-    auto doc = gemmi::cif::read_file(filename);
-    occ::log::debug("Gemmi read cif: {}", filename);
     auto block = doc.blocks.front();
     for (const auto &item : block.items) {
       if (item.type == ItemType::Pair) {

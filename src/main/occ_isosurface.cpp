@@ -877,7 +877,7 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
     }
     case IsosurfaceConfig::Surface::CrystalVoid: {
       occ::io::CifParser parser;
-      auto crystal = parser.parse_crystal(config.geometry_filename).value();
+      auto crystal = parser.parse_crystal_from_file(config.geometry_filename).value();
       auto func = iso::VoidSurfaceFunctor(crystal, config.separation);
       if (m2.size() == 0) {
         m2 = func.molecule();

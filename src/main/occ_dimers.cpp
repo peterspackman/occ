@@ -16,7 +16,7 @@ using occ::crystal::Crystal;
 
 inline Crystal read_crystal(const std::string &filename) {
   occ::io::CifParser parser;
-  return parser.parse_crystal(filename).value();
+  return parser.parse_crystal_from_file(filename).value();
 }
 
 namespace occ::main {
