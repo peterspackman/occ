@@ -1,20 +1,21 @@
 var NAVTREEINDEX4 =
 {
-"classocc_1_1geometry_1_1WulffConstruction.html#a691f23799751a762a2af3bb49151a3b6":[2,0,2,7,7,3],
 "classocc_1_1geometry_1_1WulffConstruction.html#aafc421bac4476bde28c6b603086d1673":[2,0,2,7,7,0],
 "classocc_1_1geometry_1_1WulffConstruction.html#ac830176084cdb515f4cecbd41a9aeefa":[2,0,2,7,7,2],
 "classocc_1_1geometry_1_1WulffConstruction.html#ad97b6edf6e87f20b885f19c57a225666":[2,0,2,7,7,1],
 "classocc_1_1io_1_1CifParser.html":[2,0,2,10,10],
 "classocc_1_1io_1_1CifParser.html#a15f387695473b73a93d90ade095a4c60":[2,0,2,10,10,3],
 "classocc_1_1io_1_1CifParser.html#a1ab1e4c679d64e809524e77ce81c0283":[2,0,2,10,10,0],
+"classocc_1_1io_1_1CifParser.html#a3edb7be72173ca9da161bb95d9408df5":[2,0,2,10,10,7],
 "classocc_1_1io_1_1CifParser.html#a5ac05c22834794e5600431ed8eeac439":[2,0,2,10,10,2],
-"classocc_1_1io_1_1CifParser.html#a704d3611e27976891ccc503d4e08f57f":[2,0,2,10,10,9],
+"classocc_1_1io_1_1CifParser.html#a704d3611e27976891ccc503d4e08f57f":[2,0,2,10,10,11],
 "classocc_1_1io_1_1CifParser.html#a7e5f1ad512156b266694f3e29945c007":[2,0,2,10,10,5],
-"classocc_1_1io_1_1CifParser.html#a947042666e86dabc6abe39fd05b30d6e":[2,0,2,10,10,8],
+"classocc_1_1io_1_1CifParser.html#a904d66d0984a30bde845ce913a40adb3":[2,0,2,10,10,9],
+"classocc_1_1io_1_1CifParser.html#a947042666e86dabc6abe39fd05b30d6e":[2,0,2,10,10,10],
 "classocc_1_1io_1_1CifParser.html#ad68319d0d9a18cb990d367efa5fc0087":[2,0,2,10,10,4],
 "classocc_1_1io_1_1CifParser.html#adab265a105e6583e1fa957f30d191084":[2,0,2,10,10,1],
-"classocc_1_1io_1_1CifParser.html#ae8308eb2b428a2e21edabcabd505fd1f":[2,0,2,10,10,7],
 "classocc_1_1io_1_1CifParser.html#afdbcf7aaaaded13adfc63df1a4141d11":[2,0,2,10,10,6],
+"classocc_1_1io_1_1CifParser.html#afe2b3ab067b32aed1bc42b244f475ac7":[2,0,2,10,10,8],
 "classocc_1_1io_1_1Cube.html":[2,0,2,10,11],
 "classocc_1_1io_1_1Cube.html#a13b916518ff7186d15183b8ab118113d":[2,0,2,10,11,1],
 "classocc_1_1io_1_1Cube.html#a1bd8ac27d649d27a3079d7d9344444b6":[2,0,2,10,11,9],
@@ -248,6 +249,5 @@ var NAVTREEINDEX4 =
 "classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html#a214023a8772f7f26f23ce30c3d0145a9":[2,0,2,11,5,4],
 "classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html#a37d7d46bfb5a2866885ad1a9ab9d4bf6":[2,0,2,11,5,5],
 "classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html#a3bf2ee766e10b6ccd82d190891d87bb3":[2,0,2,11,5,6],
-"classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html#a44b6e6897117ceaea662b203a93ea780":[2,0,2,11,5,2],
-"classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html#aa47a1036fbdb988f54af8616c1b0d504":[2,0,2,11,5,0]
+"classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html#a44b6e6897117ceaea662b203a93ea780":[2,0,2,11,5,2]
 };

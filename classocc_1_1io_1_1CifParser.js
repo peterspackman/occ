@@ -7,7 +7,9 @@ var classocc_1_1io_1_1CifParser =
     [ "crystal_valid", "classocc_1_1io_1_1CifParser.html#ad68319d0d9a18cb990d367efa5fc0087", null ],
     [ "failure_description", "classocc_1_1io_1_1CifParser.html#a7e5f1ad512156b266694f3e29945c007", null ],
     [ "num_atoms", "classocc_1_1io_1_1CifParser.html#afdbcf7aaaaded13adfc63df1a4141d11", null ],
-    [ "parse_crystal", "classocc_1_1io_1_1CifParser.html#ae8308eb2b428a2e21edabcabd505fd1f", null ],
+    [ "parse_crystal_from_document", "classocc_1_1io_1_1CifParser.html#a3edb7be72173ca9da161bb95d9408df5", null ],
+    [ "parse_crystal_from_file", "classocc_1_1io_1_1CifParser.html#afe2b3ab067b32aed1bc42b244f475ac7", null ],
+    [ "parse_crystal_from_string", "classocc_1_1io_1_1CifParser.html#a904d66d0984a30bde845ce913a40adb3", null ],
     [ "symmetry_data", "classocc_1_1io_1_1CifParser.html#a947042666e86dabc6abe39fd05b30d6e", null ],
     [ "symmetry_valid", "classocc_1_1io_1_1CifParser.html#a704d3611e27976891ccc503d4e08f57f", null ]
 ];

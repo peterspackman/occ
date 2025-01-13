@@ -1,5 +1,6 @@
 var NAVTREEINDEX19 =
 {
+"structocc_1_1solvent_1_1COSMO_1_1Result.html#a0081ce2dc697ddd596bf150a4e72919d":[2,0,2,16,1,0,0],
 "structocc_1_1solvent_1_1COSMO_1_1Result.html#a91804df1e591a42d31de7ab412eee3a1":[2,0,2,16,1,0,1],
 "structocc_1_1solvent_1_1COSMO_1_1Result.html#aeb5bd79e92dec387e409657c53ac9019":[2,0,2,16,1,0,2],
 "structocc_1_1solvent_1_1SMDSolventParameters.html":[2,0,2,16,2],
@@ -235,5 +236,6 @@ var NAVTREEINDEX19 =
 "xtb__wrapper_8h.html":[3,0,1,0,18,1],
 "xyz_8h.html":[3,0,1,0,10,29],
 "xyz_8h.html#a9e545a9864ef7cba94ea648e321f9899":[3,0,1,0,10,29,2],
-"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,10,29,1]
+"xyz_8h.html#aaaed42365ec5e0da71939b3b8646ff6e":[3,0,1,0,10,29,1],
+"":[1,0,1]
 };

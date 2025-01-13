@@ -1,5 +1,6 @@
 var NAVTREEINDEX7 =
 {
+"classquickhull_1_1ConvexHull.html#a484ec2ee6e125672ae6bb40722e1f799":[2,0,3,0,3],
 "classquickhull_1_1ConvexHull.html#a684ea91f0e43ce36f937cc18f27352e8":[2,0,3,0,2],
 "classquickhull_1_1ConvexHull.html#a7eb802a4bb5e60864060dd890fff0c1f":[2,0,3,0,7],
 "classquickhull_1_1ConvexHull.html#aa2d59e7709c6ebfc05bb96766c385ea0":[2,0,3,0,8],
@@ -248,6 +249,5 @@ var NAVTREEINDEX7 =
 "functions_func_c.html":[2,3,1,2],
 "functions_func_d.html":[2,3,1,3],
 "functions_func_e.html":[2,3,1,4],
-"functions_func_f.html":[2,3,1,5],
-"functions_func_g.html":[2,3,1,6]
+"functions_func_f.html":[2,3,1,5]
 };

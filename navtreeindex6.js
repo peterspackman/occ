@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2024d258edacfd4844767481eb37bc45":[2,0,2,13,0,1,26],
 "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2183d4d7f2cb785ac4ef1843c4be1b13":[2,0,2,13,0,1,1],
 "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a23acb88501d059a9279ad0ee1cab04de":[2,0,2,13,0,1,12],
 "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a28c0cb972986dd89304cf6d0fc9a9d3b":[2,0,2,13,0,1,9],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "classocc_1_1xtb_1_1XTBCalculator.html#aed9d7d8e4725ffb5a1efe484fd878276":[2,0,2,19,1,17],
 "classquickhull_1_1ConvexHull.html":[2,0,3,0],
 "classquickhull_1_1ConvexHull.html#a256ecdc49161d618c7bfab0c24f482b4":[2,0,3,0,6],
-"classquickhull_1_1ConvexHull.html#a43ff3e57232d56a6d17719fbee643de6":[2,0,3,0,0],
-"classquickhull_1_1ConvexHull.html#a484ec2ee6e125672ae6bb40722e1f799":[2,0,3,0,3]
+"classquickhull_1_1ConvexHull.html#a43ff3e57232d56a6d17719fbee643de6":[2,0,3,0,0]
 };
