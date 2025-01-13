@@ -1,6 +1,5 @@
 var NAVTREEINDEX18 =
 {
-"structocc_1_1qm_1_1Energy.html#aaadb77e3db1bc2c273e3b9b0005378ec":[2,0,2,13,18,3],
 "structocc_1_1qm_1_1Energy.html#aae897a7c7de3066fb8bc2b24e933285d":[2,0,2,13,18,8],
 "structocc_1_1qm_1_1Energy.html#acd7201ed1a336788248bfff3e3451841":[2,0,2,13,18,5],
 "structocc_1_1qm_1_1Energy.html#ad9300be23b3273cef7ded0b9fc4a4847":[2,0,2,13,18,7],
@@ -249,5 +248,6 @@ var NAVTREEINDEX18 =
 "structocc_1_1slater_1_1InterpolatorParams.html":[2,0,2,15,2],
 "structocc_1_1slater_1_1InterpolatorParams.html#a376589b69d1dfecc2019d943c3b84708":[2,0,2,15,2,2],
 "structocc_1_1slater_1_1InterpolatorParams.html#a45adf7b01ff03b8ee9970530bc6067c1":[2,0,2,15,2,1],
-"structocc_1_1slater_1_1InterpolatorParams.html#ab4143c1cc31ffa3978b8ddf0dbed5be1":[2,0,2,15,2,0]
+"structocc_1_1slater_1_1InterpolatorParams.html#ab4143c1cc31ffa3978b8ddf0dbed5be1":[2,0,2,15,2,0],
+"structocc_1_1solvent_1_1COSMO_1_1Result.html":[2,0,2,16,1,0]
 };
