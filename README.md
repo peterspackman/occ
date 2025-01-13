@@ -1,159 +1,188 @@
 # Open Computational Chemistry (OCC)
 <img src="https://github.com/peterspackman/occ/raw/main/docs/static/occ.png" width=640/>
 
-[![Build & Test](https://github.com/peterspackman/occ/actions/workflows/build_test.yml/badge.svg)](https://github.com/peterspackman/occ/actions/workflows/build_test.yml) 
+[![Build & Test](https://github.com/peterspackman/occ/actions/workflows/build_test.yml/badge.svg)](https://github.com/peterspackman/occ/actions/workflows/build_test.yml)
+[![PyPI version](https://badge.fury.io/py/occ.svg)](https://badge.fury.io/py/occ)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/occ)](https://pypi.org/project/occ/)
 [![DOI](https://zenodo.org/badge/292276139.svg)](https://zenodo.org/doi/10.5281/zenodo.10703204)
 
+A next-generation quantum chemistry and crystallography program and library, designed for modern computational workflows.
 
+> **Note**: OCC is in active development and undergoes frequent changes. The API and features are not yet stable.
 
-A next generation quantum chemistry and crystallography program and library.
+## Installation
 
-**Note**: occ is in early development, and is undergoing substantial changes regularly - it is not stable, and features are being added & developed rapidly.
+### From PyPI
+
+The easiest way to install OCC is via pip:
+
+```bash
+pip install occpy
+```
+
+Supported Python versions:
+- Python 3.10, 3.11, 3.12, 3.13
+
+Pre-built wheels are available for:
+- Linux (x86_64)
+- macOS (x86_64 and ARM64/Apple Silicon via universal2 wheels)
 
 ## Features
 
-### Quantum chemistry 
+### Quantum Chemistry
 
-Occ is already a fairly fully featured program for ground-state single point calculations in quantum chemistry, including:
-- Hartree-Fock (Restricted, Unrestricted and General Spinorbitals)
-- Density-Functional Theory (Restricted & Unrestricted Spinorbitals)
-    - The LDA, GGA and meta-GGA approximations are supported
-    - Global hybrid functionals (range-separated will be added in the future)
-- Density fitting (RI-JK) using an auxiliary basis for all above methods
-- Implicit solvation via SMD
+OCC provides comprehensive functionality for ground-state single-point calculations:
 
-Seminumerical exchange (i.e. chain of spheres/COSX) has been implemented, but the performance is not yet good enough to be useful.
+- **Electronic Structure Methods**
+  - Hartree-Fock (Restricted, Unrestricted, and General Spinorbitals)
+  - Density-Functional Theory (Restricted & Unrestricted)
+    - Supported approximations: LDA, GGA, meta-GGA
+    - Global hybrid functionals (range-separated support planned)
+  - Density fitting (RI-JK) with auxiliary basis sets
+  - Implicit solvation via SMD
+  - XDM dispersion model
 
-Property calculations that are currently available
-- Molecular and atomic multipole moments up to hexadecapole (only Mulliken partitioning is implemented)
-- Electrostatic potential calculations
-- Electron density (of course)
-- CHELPG charges
+- **Property Calculations**
+  - Molecular and atomic multipole moments (up to hexadecapole)
+  - Electron density, Electrostatic potential
+  - CHELPG charges
+  - Isosurfaces, generation of volumetric data and more...
 
-I've recently added an implementation of the XDM dispersion model, which will be properly interfaced and made convenient to use
-in the future.
+### Crystal Structure Analysis
 
-Not yet implemented:
-- Gradients (and optimization of geometries)
-- Perturbation theory (e.g. MP2)
-- Coupled-cluster methods
+- CIF file processing (via gemmi)
+- Advanced periodic analysis:
+  - Fast periodic bond detection
+  - Symmetry-unique molecule generation
+  - Dimer identification
+- Energy calculations:
+  - CrystalExplorer model energies
+  - Automatic direct space lattice energy summation
+  - Wolf summation for neutral molecular crystals
+- Surface analysis:
+  - Hirshfeld surfaces
+  - Promolecule surfaces
 
-### Crystal structures
+### Additional Features
 
-- Reading CIF files (via gemmi)
-- Fast periodic bond detection, generation of symmetry unique molecules, dimers and more...
-- CrystalExplorer model energies
-- Automatic direct space summation of lattice energies for neutral molecular crystals including Wolf summation.
-- Hirshfeld surfaces, and promolecule surfaces
-
-### Misc
-- Spherical harmonic transforms using FFTs
-- Molecular point group detection/determination
-- Reading/writing Gaussian fchk files (including MO normalization and reordering of basis functions)
-- Reading molden files (including MO normalization and reordering of basis functions)
-- Writing numpy `.npy` arrays
-- Reading QCSchema formatted JSON files.
-- Reading basic Gaussian input files
-- Marching cubes
-- Morton codes for linear-hashed octrees
+- Spherical harmonic transforms (FFT-based)
+- Molecular point group detection
+- File format support:
+  - Gaussian fchk files (read/write)
+  - Molden files
+  - NumPy `.npy` arrays (write)
+  - QCSchema JSON
+  - Basic Gaussian input files
+- Geometric algorithms:
+  - Marching cubes
+  - Morton codes for linear-hashed octrees
 - Electronegativity equilibration method for charges
+- Python bindings via nanobind
 
-First steps have been taken, with a proof of concept python interface for convenience & scripting using pybind11.
+## Python API Examples
 
-## Compilation
+```python
+import occ
 
-occ requires a compliant C++17 compiler e.g. GCC-10 or newer.
+# Set up basic configuration
+occ.setup_logging(1)  # Configure logging level
+occ.set_data_directory("/path/to/basis/sets")  # Optional: Set basis set path
+
+# Load molecule from XYZ file
+mol = occ.Molecule.from_xyz_file("h2o.xyz")
+
+# Basic Hartree-Fock calculation
+basis = occ.AOBasis.load("6-31G", mol.atoms())
+hf = occ.HartreeFock(basis)
+scf = hf.scf(unrestricted=False)  # Restricted calculation
+scf.set_charge_multiplicity(0, 1)  # Neutral singlet
+energy = scf.run()
+wfn = scf.wavefunction()
+
+# DFT calculation
+dft = occ.DFT("B3LYP", basis)
+ks = dft.scf(unrestricted=False)
+ks.set_charge_multiplicity(0, 1)
+energy = ks.run()
+
+# Crystal structure analysis
+crystal = occ.Crystal.from_cif_file("structure.cif")
+dimers = crystal.symmetry_unique_dimers(radius=10.0)  # Get unique dimers within 10 Å
+```
+
+For more examples and detailed API documentation, please refer to the [documentation](docs_url_here).
+
+## Build from Source
+
+### Prerequisites
+
+- C++17 compliant compiler (GCC 10+ recommended)
+- CMake 3.15+
+- Ninja (recommended) or Make
 
 ### Dependencies
 
-occ makes use of the the following open source libraries:
+OCC uses modern C++ libraries to provide its functionality:
 
-- [cxxopts](https://github.com/jarro2783/cxxopts)
-- [Eigen3](https://eigen.tuxfamily.org/)(`eigen3-dev`)
-- [fmt](https://github.com/fmtlib/fmt)
-- [gau2grid](https://github.com/dgasmith/gau2grid)
-- [gemmi](https://gemmi.readthedocs.io/)
-- [LBFGS++](https://lbfgspp.statr.me/)
-- [libcint](https://github.com/sunqm/libcint)
-- [libxc](http://www.tddft.org/programs/libxc/)
-- [nanoflann](https://github.com/jlblancoc/nanoflann)
-- [nlohmann/json](https://github.com/nlohmann/json)
-- [pocketFFT](https://github.com/hayguen/pocketfft)
-- [scnlib](https://github.com/eliaskosunen/scnlib)
-- [spdlog](https://github.com/gabime/spdlog)
+| Library | Version | Description |
+|---------|---------|-------------|
+| [CLI11](https://github.com/CLIUtils/CLI11) | 2.4.2 | Command line parser |
+| [Eigen3](https://eigen.tuxfamily.org/) | 3.4.0+ | Linear algebra |
+| [fmt](https://github.com/fmtlib/fmt) | 11.0.2 | String formatting |
+| [gemmi](https://gemmi.readthedocs.io/) | 0.6.5 | Crystallographic file handling |
+| [LBFGS++](https://lbfgspp.statr.me/) | master | Optimization algorithms |
+| [libcint](https://github.com/sunqm/libcint) | 6.1.2 | Gaussian integrals |
+| [libxc](http://www.tddft.org/programs/libxc/) | 6.2.2 | Exchange-correlation functionals |
+| [nlohmann/json](https://github.com/nlohmann/json) | 3.11.3 | JSON handling |
+| [scnlib](https://github.com/eliaskosunen/scnlib) | 4.0.1 | String parsing |
+| [spdlog](https://github.com/gabime/spdlog) | 1.15.0 | Logging |
+| [unordered_dense](https://github.com/martinus/unordered_dense) | 4.5.0 | Hash containers |
 
-And for the library tests/benchmarks:
+Optional dependencies:
+- [nanobind](https://github.com/wjakob/nanobind) (2.4.0) - For Python bindings
 
-- [catch2](https://github.com/catchorg/Catch2)
+Most dependencies are automatically handled through [CPM](https://github.com/cpm-cmake/CPM.cmake). System-installed versions of Eigen3 and libxc can be used if available.
 
+### Build Instructions
 
-### Getting the source code
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/peterspackman/occ.git
+   cd occ
+   ```
 
-First clone the repository:
-```
-git clone https://github.com/peterspackman/occ.git
-```
+2. Configure dependency caching (recommended):
+   ```bash
+   export CPM_SOURCE_CACHE="$HOME/.cache/cpm"
+   ```
 
-### Getting dependencies
+3. Build with CMake:
+   ```bash
+   mkdir build && cd build
+   
+   # Using system dependencies (if available)
+   cmake .. -GNinja
 
-Most of the dependencies can be downloaded and compiled via [CPM](https://github.com/cpm-cmake/CPM.cmake),
-but you may wish to use system installed dependencies for `libxc` and `eigen3` which will be searched for by default.
-Note `occ` requires eigen version 3.4 or newer, which most operating systems do not package by default.
+   # OR download all dependencies
+   cmake .. -GNinja -DUSE_SYSTEM_LIBXC=OFF -DUSE_SYSTEM_EIGEN=OFF
 
-### Caching dependency downloads
+   # Build the executable
+   ninja occ
+   ```
 
-If you wish to download and compile all dependencies, but you're a developer or want to avoid downloading
-the dependencies every new build, I'd recommend setting up a source cache for CPM
-via the environment variable `CPM_SOURCE_CACHE` e.g. adding the following to your environment.
+### CMake Options
 
-```
-export CPM_SOURCE_CACHE="$HOME/.cache/cpm"
-```
+- `USE_SYSTEM_LIBXC`: Use system-installed libxc (default: ON)
+- `USE_SYSTEM_EIGEN`: Use system-installed Eigen3 (default: ON)
+- `WITH_PYTHON_BINDINGS`: Build Python bindings (default: OFF)
+- `USE_MLX`: Enable MLX integration (default: OFF)
+- `USE_QCINT`: Use QCInt instead of libcint (default: OFF)
+- `ENABLE_HOST_OPT`: Enable host-specific optimizations (default: OFF)
 
-#### 
+## Contributing
 
-For building the repository I highly recommend using [ninja](https://ninja-build.org/) rather
-than make.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-Once the dependencies are installed, start an out-of-source build e.g.
-```
-mkdir build && cd build
-cmake .. -GNinja
-```
+## Citation
 
-**OR**, if you'd rather download all dependencies you could call cmake with:
-
-```
-cmake .. -GNinja \
-    -DUSE_SYSTEM_LIBXC=OFF \
-    -DUSE_SYSTEM_EIGEN=OFF
-```
-
-Generally, speedups can be achieved by allowing the compiler to optimize for your platform using `-march=native` or similar flags.
-
-Finally, to build the binary `occ`, running
-
-```
-ninja occ
-```
-
-will result in the binary being built under the `bin` directory wherever
-your build directory is located
-
-## Usage
-
-All following usage is a work in progress, expect significant changes
-constantly for the time-being while the exact input format is decided.
-
-### occ
-
-By default `occ -h` will print out its usage options, but basic usage
-given a geometry e.g. `h2o.xyz` format would be:
-
-```
-occ scf h2o.xyz b3lyp 6-31g
-```
-
-### Basis set locations
-*note* The path the `occ` will use to search for basis sets can be configured with the `OCC_DATA_PATH` environment variable,
-or you can simply make the basis set available in your working directory.
+If you use OCC in your research, please cite the appropriate papers for all functionals, methods etc. you use, along with the citations for the core dependencies here.
