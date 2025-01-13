@@ -26,6 +26,7 @@ int DFT::density_derivative() const {
 DFT::DFT(const std::string &method, const AOBasis &basis,
          const BeckeGridSettings &grid_settings)
     : SCFMethodBase(basis.atoms()), m_hf(basis), m_grid(basis, grid_settings) {
+  update_electron_count();
   set_method(method);
   set_integration_grid(grid_settings);
 }

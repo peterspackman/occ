@@ -1,15 +1,15 @@
 CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"
-    VERSION "11.0.2"
-    GIT_TAG "11.0.2"
+    VERSION "11.1.0"
+    GIT_TAG "11.1.0"
 )
 
 CPMAddPackage(
     NAME spdlog
     GITHUB_REPOSITORY "gabime/spdlog"
     OPTIONS "SPDLOG_FMT_EXTERNAL ON"
-    VERSION "1.15.0"
+    VERSION "1.x"
 )
 
 CPMAddPackage(
