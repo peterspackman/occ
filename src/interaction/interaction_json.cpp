@@ -36,6 +36,11 @@ void from_json(const nlohmann::json &j, CEEnergyComponents &c) {
     j.at("Polarization").get_to(c.polarization);
   if (j.contains("polarization"))
     j.at("polarization").get_to(c.polarization);
+
+  if (j.contains("Total"))
+    j.at("Total").get_to(c.total);
+  if (j.contains("total"))
+    j.at("total").get_to(c.total);
 }
 
 } // namespace occ::interaction
