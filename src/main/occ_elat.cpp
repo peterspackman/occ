@@ -284,6 +284,10 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
   elat->add_option("--charges", config->charge_string, "system net charge");
   elat->add_option("--radius-increment", config->radius_increment,
                    "step size (Angstroms) direct space summation");
+  elat->add_option(
+      "--convergence-threshold,--convergence_threshold",
+      config->energy_tolerance,
+      "energy convergence threshold (kJ/mol) for direct space summation");
   elat->add_flag("-w,--wolf", config->wolf_sum,
                  "accelerate convergence using Wolf sum");
   elat->add_flag("--spherical", config->spherical_basis,

@@ -93,6 +93,10 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "maximum radius (Angstroms) for neighbours");
   cg->add_option("-m,--model", config->lattice_settings.model_name,
                  "energy model");
+  cg->add_option(
+      "--convergence-threshold,--convergence_threshold",
+      config->lattice_settings.energy_tolerance,
+      "energy convergence threshold (kJ/mol) for direct space summation");
   cg->add_option("-c,--cg-radius", config->cg_radius,
                  "maximum radius (Angstroms) for nearest neighbours in CG "
                  "file (must be <= radius)");
