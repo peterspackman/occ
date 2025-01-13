@@ -1,5 +1,6 @@
 var NAVTREEINDEX14 =
 {
+"structocc_1_1cg_1_1SMDSettings.html#ae84924cfd8476cd591c18474b261ecc5":[2,0,2,0,8,0],
 "structocc_1_1cg_1_1SMDSolventSurfaces.html":[2,0,2,0,14],
 "structocc_1_1cg_1_1SMDSolventSurfaces.html#a1ef49829fdb8e379787d9b2ebe176d84":[2,0,2,0,14,4],
 "structocc_1_1cg_1_1SMDSolventSurfaces.html#a25552dd92342d3dbe60595d0ec1c3f21":[2,0,2,0,14,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX14 =
 "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a659bf80a550d33f3d1e3766d28a55f61":[2,0,2,4,3,1,1],
 "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a68b7e62e47d58a6398c5fca0bd53195e":[2,0,2,4,3,1,9],
 "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a6b51518e57c1eb49d81a96f2ca7c10a5":[2,0,2,4,3,1,8],
-"structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a74c5389c3f5b14349c2c518bb4fed04f":[2,0,2,4,3,1,5],
-"structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a95fb5fdb34c777019ec6d1665ae56e9e":[2,0,2,4,3,1,7]
+"structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a74c5389c3f5b14349c2c518bb4fed04f":[2,0,2,4,3,1,5]
 };

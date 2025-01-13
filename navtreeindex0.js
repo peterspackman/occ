@@ -1,5 +1,6 @@
 var NAVTREEINDEX0 =
 {
+"":[1,0,1],
 "annotated.html":[2,0],
 "asymmetric__unit_8h.html":[3,0,1,0,2,0],
 "atom_8h.html":[3,0,1,0,1,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX0 =
 "classocc_1_1core_1_1Molecule.html#aa3551be74259730df65333a995ac52dd":[2,0,2,1,15,37],
 "classocc_1_1core_1_1Molecule.html#aa58c79d4bd72b65d837a29321ddb96a5":[2,0,2,1,15,35],
 "classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19d":[2,0,2,1,15,0],
-"classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da69b3d7faa64d0e963797dc516a3d1a70":[2,0,2,1,15,0,2],
-"classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da6c2d48822f51238ae93fa27d054764d4":[2,0,2,1,15,0,1]
+"classocc_1_1core_1_1Molecule.html#aa7e44f6a5dabaad1ded1d6256099c19da69b3d7faa64d0e963797dc516a3d1a70":[2,0,2,1,15,0,2]
 };
