@@ -40,9 +40,12 @@
 #include <occ/solvent/solvation_correction.h>
 
 namespace fs = std::filesystem;
+using occ::cg::CrystalGrowthResult;
 using occ::crystal::Crystal;
 using occ::crystal::CrystalDimers;
 using occ::driver::WavefunctionChoice;
+using InteractionLabels = occ::io::crystalgrower::NetWriter::InteractionLabels;
+using Options = occ::driver::CrystalGrowthCalculatorOptions;
 
 inline void write_cg_structure_file(const std::string &filename,
                                     const Crystal &crystal,
@@ -176,21 +179,9 @@ inline void write_wulff(const std::string &filename,
   occ::io::write_ply_mesh(filename, mesh, {}, false);
 }
 
-inline void write_cg_dimers(
-    const occ::driver::CrystalGrowthCalculatorOptions &opts,
-    const occ::crystal::Crystal &crystal,
-    const occ::cg::CrystalGrowthResult &result,
-    const occ::io::crystalgrower::NetWriter::InteractionLabels &cg_labels) {
-
-  nlohmann::json j;
-  j["result_type"] = "cg";
-  j["title"] = opts.basename;
-  j["solvent"] = opts.solvent;
-  j["model"] = fmt::format("crystalclear, solvent='{}'", opts.solvent);
-  j["has_permutation_symmetry"] = !opts.use_asymmetric_partition;
-
-  j["crystal"] = crystal;
-
+inline void serialize_cg_dimers(nlohmann::json &j, const Crystal &crystal,
+                                const CrystalGrowthResult &result,
+                                const InteractionLabels &cg_labels) {
   j["totals_per_molecule"] = {};
   for (const auto &mol_result : result.molecule_results) {
     const auto &mol_total = mol_result.total;
@@ -255,13 +246,69 @@ inline void write_cg_dimers(
     }
     j["pairs"].push_back(m);
   }
-  std::ofstream dest(
-      fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent));
-  dest << j.dump(2);
+}
+
+inline void
+serialize_cg_results(nlohmann::json &j, const Options &opts,
+                     const occ::crystal::Crystal &crystal,
+                     const nlohmann::json &surface_energies_json = {}) {
+
+  j["result_type"] = "cg";
+  j["title"] = opts.basename;
+  j["solvent"] = opts.solvent;
+  j["model"] = fmt::format("crystalclear, solvent='{}'", opts.solvent);
+  j["has_permutation_symmetry"] = !opts.use_asymmetric_partition;
+
+  j["crystal"] = crystal;
+}
+
+template <typename Calculator>
+inline void compute_and_serialize_surface_cuts(
+    Calculator &calc, nlohmann::json &j, const Options &opts,
+    const CrystalDimers &uc_dimers, const CrystalDimers &uc_dimers_vacuum,
+    int max_facets) {
+
+  occ::log::info("Crystal surface energies (solvated)");
+  auto surface_energies = occ::main::calculate_crystal_surface_energies(
+      fmt::format("{}_{}", opts.basename, opts.solvent), calc.crystal(),
+      uc_dimers, max_facets, 1);
+
+  occ::log::info("Crystal surface energies (vacuum)");
+  auto vacuum_surface_energies = occ::main::calculate_crystal_surface_energies(
+      fmt::format("{}_vacuum", opts.basename), calc.crystal(), uc_dimers_vacuum,
+      max_facets, -1);
+
+  j["surface_energies"] = surface_energies;
+  write_wulff(fmt::format("{}_{}.ply", opts.basename, opts.solvent),
+              surface_energies);
+  write_wulff(fmt::format("{}_vacuum.ply", opts.basename),
+              vacuum_surface_energies);
+
+  // TODO refactor this
+  nlohmann::json vacuum_energies;
+  for (const auto &mol : calc.crystal_interaction_energies()) {
+    nlohmann::json tmp;
+    for (const auto &v : mol) {
+      tmp.push_back(v.energy_components);
+    }
+    vacuum_energies.push_back(tmp);
+  }
+  nlohmann::json solvated_energies;
+  for (const auto &mol : calc.interaction_energies()) {
+    nlohmann::json tmp;
+    for (const auto &v : mol) {
+      tmp.push_back(v.energy_components);
+    }
+    solvated_energies.push_back(tmp);
+  }
+  j["vacuum"] = vacuum_energies;
+  j["solvated"] = solvated_energies;
+
+  occ::log::info("Appending surface energies to json output");
 }
 
 template <class Calculator>
-occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
+CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   std::string basename =
       fs::path(config.lattice_settings.crystal_filename).stem().string();
   Crystal c_symm =
@@ -273,7 +320,7 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
     c_symm.set_connectivity_criteria(false);
   }
 
-  occ::driver::CrystalGrowthCalculatorOptions opts;
+  Options opts;
   opts.solvent = config.solvent;
   opts.basename = basename;
   opts.write_debug_output_files = config.write_dump_files;
@@ -317,7 +364,7 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   calc.init_monomer_energies();
   calc.converge_lattice_energy();
 
-  occ::cg::CrystalGrowthResult result = calc.evaluate_molecular_surroundings();
+  CrystalGrowthResult result = calc.evaluate_molecular_surroundings();
 
   auto uc_dimers = calc.crystal().unit_cell_dimers(config.cg_radius);
   auto uc_dimers_vacuum = uc_dimers;
@@ -328,8 +375,8 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
       calc.crystal(), calc.full_dimers(), uc_dimers, calc.solution_terms(),
       calc.interaction_energies(), !opts.use_asymmetric_partition);
 
-  // TODO tidy this up, but for now just do the same thing for crystal energies
-  // too so we get vacuum surface energies
+  // TODO tidy this up, but for now just do the same thing for crystal
+  // energies too so we get vacuum surface energies
   auto vacuum_terms_uc = map_unique_interactions_to_uc_molecules(
       calc.crystal(), calc.full_dimers(), uc_dimers_vacuum,
       calc.solution_terms(), calc.crystal_interaction_energies(),
@@ -340,63 +387,36 @@ occ::cg::CrystalGrowthResult run_cg_impl(CGConfig const &config) {
                            calc.crystal(), uc_dimers, solution_terms_uc);
   }
 
+  nlohmann::json surface_cuts_json;
+
   if (config.max_facets > 0) {
-    occ::log::info("Crystal surface energies (solvated)");
-    auto surface_energies = occ::main::calculate_crystal_surface_energies(
-        fmt::format("{}_{}", basename, config.solvent), calc.crystal(),
-        uc_dimers, config.max_facets, 1);
-    occ::log::info("Crystal surface energies (vacuum)");
-    auto vacuum_surface_energies =
-        occ::main::calculate_crystal_surface_energies(
-            fmt::format("{}_vacuum", basename), calc.crystal(),
-            uc_dimers_vacuum, config.max_facets, -1);
-
-    nlohmann::json j;
-    j["surface_energies"] = surface_energies;
-    write_wulff(fmt::format("{}_{}.ply", basename, config.solvent),
-                surface_energies);
-    write_wulff(fmt::format("{}_vacuum.ply", basename, config.solvent),
-                vacuum_surface_energies);
-
-    // TODO refactor this
-    nlohmann::json vacuum_energies;
-    for (const auto &mol : calc.crystal_interaction_energies()) {
-      nlohmann::json tmp;
-      for (const auto &v : mol) {
-        tmp.push_back(v.energy_components);
-      }
-      vacuum_energies.push_back(tmp);
-    }
-    nlohmann::json solvated_energies;
-    for (const auto &mol : calc.interaction_energies()) {
-      nlohmann::json tmp;
-      for (const auto &v : mol) {
-        tmp.push_back(v.energy_components);
-      }
-      solvated_energies.push_back(tmp);
-    }
-    j["vacuum"] = vacuum_energies;
-    j["solvated"] = solvated_energies;
-
-    std::string surf_energy_filename =
-        fmt::format("{}_surface_energies.json", basename);
-    occ::log::info("Writing surface energies to '{}'", surf_energy_filename);
-    std::ofstream destination(surf_energy_filename);
-    destination << j.dump(2);
+    compute_and_serialize_surface_cuts(calc, surface_cuts_json, opts, uc_dimers,
+                                       uc_dimers_vacuum, config.max_facets);
   }
 
   auto cg_interaction_labels =
       write_cg_net_file(fmt::format("{}_{}_net.txt", basename, config.solvent),
                         calc.crystal(), uc_dimers);
 
-  write_cg_dimers(opts, calc.crystal(), result, cg_interaction_labels);
+  nlohmann::json results_json;
+  serialize_cg_results(results_json, opts, calc.crystal());
+  serialize_cg_dimers(results_json, calc.crystal(), result,
+                      cg_interaction_labels);
+
+  if (!surface_cuts_json.is_null()) {
+    results_json["surface_cuts"] = surface_cuts_json;
+  }
+
+  std::ofstream dest(
+      fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent));
+  dest << results_json.dump(2);
 
   // calc.dipole_correction();
   return result;
 }
 
-occ::cg::CrystalGrowthResult run_cg(CGConfig const &config) {
-  occ::cg::CrystalGrowthResult result;
+CrystalGrowthResult run_cg(CGConfig const &config) {
+  CrystalGrowthResult result;
 
   if (config.use_xtb) {
     result = run_cg_impl<driver::XTBCrystalGrowthCalculator>(config);

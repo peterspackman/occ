@@ -5,7 +5,7 @@
 namespace occ::qm {
 
 SCFMethodBase::SCFMethodBase(const std::vector<core::Atom> &atoms)
-    : m_atoms(atoms) {}
+    : m_atoms(atoms), m_frozen_electrons(atoms.size(), 0) {}
 
 Vec3 SCFMethodBase::center_of_mass() const {
   auto mol = occ::core::Molecule(m_atoms);
