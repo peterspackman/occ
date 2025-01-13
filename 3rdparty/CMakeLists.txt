@@ -133,6 +133,6 @@ if("${WITH_PYTHON_BINDINGS}")
 CPMAddPackage(
     NAME nanobind
     GITHUB_REPOSITORY "wjakob/nanobind"
-    GIT_TAG "v2.0.0"
+    GIT_TAG "v2.4.0"
 )
 endif()

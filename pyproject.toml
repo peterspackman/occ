@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core >=0.4.3", "nanobind >=2.2.0", "cmake>3.29", "ninja; platform_system!='Windows'"]
+requires = ["scikit-build-core >=0.4.3", "cmake>3.29", "ninja; platform_system!='Windows'"]
 build-backend = "scikit_build_core.build"
 
 [project]
