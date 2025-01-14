@@ -598,7 +598,7 @@ void XTBCrystalGrowthCalculator::converge_lattice_energy() {
       xtb.set_solvent(opts.solvent);
       xtb.set_solvation_model(opts.xtb_solvation_model);
       int a_idx = dimer.a().asymmetric_molecule_idx();
-      int b_idx = dimer.a().asymmetric_molecule_idx();
+      int b_idx = dimer.b().asymmetric_molecule_idx();
       m_solvated_dimer_energies[unique_idx] = xtb.single_point_energy() -
                                               m_solvated_energies[a_idx] -
                                               m_solvated_energies[b_idx];

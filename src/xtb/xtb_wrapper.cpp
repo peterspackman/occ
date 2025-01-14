@@ -198,6 +198,8 @@ double XTBCalculator::single_point_energy() {
   try_remove_file("energy");
   try_remove_file("gradient");
   try_remove_file("xtbtopo.mol");
+  try_remove_file("xtb.cosmo");
+  try_remove_file("fort.6");
   read_json_contents("xtbout.json");
   try_remove_file("xtbout.json");
   read_engrad_contents(xtbengrad_filename);
