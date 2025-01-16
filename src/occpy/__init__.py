@@ -1,8 +1,11 @@
 from pathlib import Path
 import site
 import warnings
-from ._occpy import setup_logging, set_data_directory
-from ._occpy import *
+from ._occpy import setup_logging, set_data_directory, set_num_threads
+from ._occpy.core import Atom, Element, Molecule, Dimer
+from ._occpy.crystal import Crystal
+from ._occpy.qm import AOBasis, HartreeFock, Shell, Wavefunction
+from ._occpy.dft import DFT
 
 # Set up logging first
 setup_logging(0)
@@ -18,34 +21,18 @@ if not _data_dir.exists():
 set_data_directory(str(_data_dir))
 
 __all__ = [
-    "AOBasis",
-    "AsymmetricUnit",
     "Atom",
-    "BeckeGridSettings",
+    "AOBasis",
     "calculate_crystal_growth_energies",
     "Crystal",
-    "CrystalAtomRegion",
-    "CrystalDimers",
-    "CrystalGrowthConfig",
-    "CGDimer",
-    "CGEnergyTotal",
-    "CGResult",
     "DFT",
     "Dimer",
-    "DimerSolventTerm",
     "Element",
     "HartreeFock",
-    "HF",
-    "HKL",
-    "KS",
-    "LatticeConvergenceSettings",
-    "MolecularOrbitals",
     "Molecule",
     "set_data_directory",
     "set_num_threads",
     "setup_logging",
     "Shell",
-    "SymmetryRelatedDimer",
-    "UnitCell",
     "Wavefunction",
 ]
