@@ -231,9 +231,9 @@ double ElasticTensor::average_poisson_ratio(AveragingScheme avg) const {
   return (3 * K - 2 * G) / (2 * (3 * K + G));
 }
 
-Mat6 ElasticTensor::voigt_s() const { return m_s; }
+const Mat6 &ElasticTensor::voigt_s() const { return m_s; }
 
-Mat6 ElasticTensor::voigt_c() const { return m_c; }
+const Mat6 &ElasticTensor::voigt_c() const { return m_c; }
 
 double ElasticTensor::component(int i, int j, int k, int l) const {
   return m_components[i][j][k][l];

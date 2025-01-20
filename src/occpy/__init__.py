@@ -2,10 +2,10 @@ from pathlib import Path
 import site
 import warnings
 from ._occpy import setup_logging, set_data_directory, set_num_threads
-from ._occpy.core import Atom, Element, Molecule, Dimer
-from ._occpy.crystal import Crystal
-from ._occpy.qm import AOBasis, HartreeFock, Shell, Wavefunction
-from ._occpy.dft import DFT
+from .core import Atom, Element, Molecule, Dimer
+from .crystal import Crystal
+from .qm import AOBasis, HartreeFock, Shell, Wavefunction
+from .dft import DFT
 
 # Set up logging first
 setup_logging(0)
@@ -24,12 +24,16 @@ __all__ = [
     "Atom",
     "AOBasis",
     "calculate_crystal_growth_energies",
+    "core",
+    "crystal",
     "Crystal",
+    "dft",
     "DFT",
     "Dimer",
     "Element",
     "HartreeFock",
     "Molecule",
+    "qm",
     "set_data_directory",
     "set_num_threads",
     "setup_logging",

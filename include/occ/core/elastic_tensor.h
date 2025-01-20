@@ -49,11 +49,14 @@ public:
   double
   average_poisson_ratio(AveragingScheme avg = AveragingScheme::Hill) const;
 
-  Mat6 voigt_s() const;
-  Mat6 voigt_c() const;
+  const Mat6 &voigt_s() const;
+  const Mat6 &voigt_c() const;
 
   double component(int i, int j, int k, int l) const;
   double &component(int i, int j, int k, int l);
+
+  inline double *data() { return &m_components[0][0][0][0]; }
+  inline double const *data() const { return &m_components[0][0][0][0]; }
 
 private:
   Mat6 m_c;

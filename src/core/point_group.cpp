@@ -71,6 +71,11 @@ SymOp SymOp::inversion() {
   return SymOp(transformation);
 }
 
+SymOp SymOp::identity() {
+  Mat4 transformation = Mat4::Identity();
+  return SymOp(transformation);
+}
+
 bool is_valid_symop(const SymOp &op, Eigen::Ref<const Mat3N> positions) {
   auto nc = op.apply(positions);
   const size_t N = positions.cols();
