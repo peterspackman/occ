@@ -1,8 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/geometry/morton.h" name="/home/runner/work/occ/occ/include/occ/geometry/morton.h">
-<area shape="rect" id="node1" title=" " alt="" coords="131,5,323,61"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,109,91,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="115,109,171,136"/>
-<area shape="rect" id="node4" title=" " alt="" coords="195,109,258,136"/>
-<area shape="rect" id="node5" title=" " alt="" coords="283,109,349,136"/>
-<area shape="rect" id="node6" href="$macros_8h.html" title=" " alt="" coords="374,109,514,136"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="131,5,323,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,91,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,62,85,104,83,100,171,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="115,108,171,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="203,62,166,100,162,96,199,58"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="195,108,258,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="229,60,229,94,224,94,224,60"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="283,108,349,133"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="256,58,296,96,292,100,252,62"/>
+<area shape="rect" id="Node000006" href="$macros_8h.html" title=" " alt="" coords="374,108,514,133"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="294,58,403,101,401,105,292,63"/>
 </map>

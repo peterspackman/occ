@@ -1,7 +1,7 @@
 var classquickhull_1_1QuickHull =
 [
-    [ "getConvexHull", "classquickhull_1_1QuickHull.html#a0489d033ab416ff559d0aecacdd8b371", null ],
-    [ "getConvexHull", "classquickhull_1_1QuickHull.html#ab1a4c0e703ae24b62a371611ac78e343", null ],
-    [ "getConvexHullAsMesh", "classquickhull_1_1QuickHull.html#abeee85f4389a131e7e7eb3000ef672e8", null ],
-    [ "getDiagnostics", "classquickhull_1_1QuickHull.html#a2976696f1f0a38b267e009c484de2930", null ]
+    [ "getConvexHull", "classquickhull_1_1QuickHull.html#acf47337469e799297aaa2f1bc1d332ab", null ],
+    [ "getConvexHull", "classquickhull_1_1QuickHull.html#a262941be4c506845587fda9629c7d012", null ],
+    [ "getConvexHullAsMesh", "classquickhull_1_1QuickHull.html#af85855aef0027573cfcfcdded0352d26", null ],
+    [ "getDiagnostics", "classquickhull_1_1QuickHull.html#ab35d1e7a2f5bb32e7594fb8e38292bcb", null ]
 ];

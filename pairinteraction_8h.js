@@ -1,9 +1,9 @@
 var pairinteraction_8h =
 [
-    [ "CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", "structocc_1_1interaction_1_1CEParameterizedModel" ],
-    [ "CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", "structocc_1_1interaction_1_1CEMonomerCalculationParameters" ],
-    [ "CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", "structocc_1_1interaction_1_1CEEnergyComponents" ],
-    [ "CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", "structocc_1_1interaction_1_1CEModelInteraction" ],
+    [ "occ::interaction::CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", "structocc_1_1interaction_1_1CEParameterizedModel" ],
+    [ "occ::interaction::CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", "structocc_1_1interaction_1_1CEMonomerCalculationParameters" ],
+    [ "occ::interaction::CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", "structocc_1_1interaction_1_1CEEnergyComponents" ],
+    [ "occ::interaction::CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", "structocc_1_1interaction_1_1CEModelInteraction" ],
     [ "ce_model_from_string", "pairinteraction_8h.html#a851a8246a3c48018dc6440b39e67cf46", null ],
     [ "compute_ce_model_energies", "pairinteraction_8h.html#acbfc2d492b38a0fc62c54809113e3585", null ],
     [ "compute_polarization_energy", "pairinteraction_8h.html#a1a221c7ae9914bd537f97657355b28d2", null ],

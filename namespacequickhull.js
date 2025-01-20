@@ -9,11 +9,11 @@ var namespacequickhull =
       [ "triangle_normal", "namespacequickhull_1_1mathutils.html#ab849223c5d17fd3f5f52d0c9aaf5fdc8", null ]
     ] ],
     [ "ConvexHull", "classquickhull_1_1ConvexHull.html", "classquickhull_1_1ConvexHull" ],
+    [ "DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", "structquickhull_1_1DiagnosticsData" ],
     [ "HalfEdgeMesh", "classquickhull_1_1HalfEdgeMesh.html", "classquickhull_1_1HalfEdgeMesh" ],
     [ "MeshBuilder", "classquickhull_1_1MeshBuilder.html", "classquickhull_1_1MeshBuilder" ],
     [ "Plane", "classquickhull_1_1Plane.html", "classquickhull_1_1Plane" ],
     [ "Pool", "classquickhull_1_1Pool.html", "classquickhull_1_1Pool" ],
-    [ "DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", "structquickhull_1_1DiagnosticsData" ],
     [ "QuickHull", "classquickhull_1_1QuickHull.html", "classquickhull_1_1QuickHull" ],
     [ "Ray", "structquickhull_1_1Ray.html", "structquickhull_1_1Ray" ],
     [ "defaultEps", "namespacequickhull.html#aed54901ccc77c377d9d2f94ce6a0888c", null ]

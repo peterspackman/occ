@@ -1,5 +1,7 @@
 <map id="occ::driver::CrystalGrowthCalculator" name="occ::driver::CrystalGrowthCalculator">
-<area shape="rect" id="node1" title=" " alt="" coords="107,109,298,151"/>
-<area shape="rect" id="node2" href="$structocc_1_1crystal_1_1CrystalDimers.html" title="A class representing the molecular dimers in a crystal lattice." alt="" coords="5,5,203,32"/>
-<area shape="rect" id="node3" href="$classocc_1_1crystal_1_1Crystal.html" title="A class representing a crystal structure." alt="" coords="227,5,378,32"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="84,108,275,148"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1crystal_1_1Crystal.html" title="A class representing a crystal structure." alt="" coords="5,5,156,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,39,164,106,160,110,99,43"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1crystal_1_1CrystalDimers.html" title="A class representing the molecular dimers in a crystal lattice." alt="" coords="181,5,378,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="261,42,199,110,195,106,258,39"/>
 </map>

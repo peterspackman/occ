@@ -1,4 +1,5 @@
 <map id="occ::geometry::mc::impl::has_batch_evaluate&lt; T, typename &gt;" name="occ::geometry::mc::impl::has_batch_evaluate&lt; T, typename &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="5,80,195,136"/>
-<area shape="rect" id="node2" title=" " alt="" coords="41,5,159,32"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,79,195,133"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="41,5,159,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,44,103,79,97,79,97,44"/>
 </map>

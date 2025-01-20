@@ -1,4 +1,5 @@
 <map id="occ::crystal::SiteMappingVertex" name="occ::crystal::SiteMappingVertex">
-<area shape="rect" id="node1" title=" " alt="" coords="5,95,191,136"/>
-<area shape="rect" id="node2" title=" " alt="" coords="68,5,128,32"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,93,191,133"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="68,5,128,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,44,101,93,95,93,95,44"/>
 </map>

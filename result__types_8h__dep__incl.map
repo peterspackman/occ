@@ -1,6 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/cg/result_types.h" name="/home/runner/work/occ/occ/include/occ/cg/result_types.h">
-<area shape="rect" id="node1" title=" " alt="" coords="241,5,426,61"/>
-<area shape="rect" id="node2" href="$interaction__mapper_8h.html" title=" " alt="" coords="5,109,224,165"/>
-<area shape="rect" id="node3" href="$crystal__growth_8h.html" title=" " alt="" coords="248,109,419,165"/>
-<area shape="rect" id="node4" href="$occ__cg_8h.html" title=" " alt="" coords="443,109,613,165"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="241,5,426,60"/>
+<area shape="rect" id="Node000002" href="$interaction__mapper_8h.html" title=" " alt="" coords="5,108,224,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="265,68,173,110,171,106,263,63"/>
+<area shape="rect" id="Node000003" href="$crystal__growth_8h.html" title=" " alt="" coords="248,108,419,163"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="336,74,336,108,331,108,331,74"/>
+<area shape="rect" id="Node000004" href="$occ__cg_8h.html" title=" " alt="" coords="443,108,613,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="397,64,478,106,476,110,395,69"/>
 </map>

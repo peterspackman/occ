@@ -1,5 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/isosurface_mesh.h" name="/home/runner/work/occ/occ/include/occ/io/isosurface_mesh.h">
-<area shape="rect" id="node1" title=" " alt="" coords="88,5,300,61"/>
-<area shape="rect" id="node2" href="$obj_8h.html" title=" " alt="" coords="5,109,183,151"/>
-<area shape="rect" id="node3" href="$ply_8h.html" title=" " alt="" coords="207,109,381,151"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="88,5,300,60"/>
+<area shape="rect" id="Node000002" href="$obj_8h.html" title=" " alt="" coords="5,108,183,148"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,72,116,110,112,106,154,68"/>
+<area shape="rect" id="Node000003" href="$ply_8h.html" title=" " alt="" coords="207,108,381,148"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="234,68,276,106,272,110,231,72"/>
 </map>

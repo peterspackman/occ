@@ -7,6 +7,6 @@ var classocc_1_1slater_1_1Basis =
     [ "renormalize", "classocc_1_1slater_1_1Basis.html#ad9b586da8e9072327cf4b8f822a71748", null ],
     [ "rho", "classocc_1_1slater_1_1Basis.html#ac106bbd2b7069486c05dc0658875a1e1", null ],
     [ "rho", "classocc_1_1slater_1_1Basis.html#a4052d553c370c5e64c3365e8eee9d9fe", null ],
-    [ "shells", "classocc_1_1slater_1_1Basis.html#a6f2ddbeaa645c290923e0f382d4a9035", null ],
+    [ "shells", "classocc_1_1slater_1_1Basis.html#a2b4f607a8cc8f7dc6d53fd0226fdcbf7", null ],
     [ "unnormalize", "classocc_1_1slater_1_1Basis.html#aa4cd8b5a9bbce2683721c4b020151c05", null ]
 ];

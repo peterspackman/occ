@@ -1,4 +1,5 @@
 <map id="occ::main::PromolDensityFunctor" name="occ::main::PromolDensityFunctor">
-<area shape="rect" id="node1" title=" " alt="" coords="5,109,195,151"/>
-<area shape="rect" id="node2" href="$structocc_1_1main_1_1pfimpl_1_1InterpolatorParams.html" title=" " alt="" coords="27,5,173,47"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,108,195,148"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1main_1_1pfimpl_1_1InterpolatorParams.html" title=" " alt="" coords="27,5,173,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,59,103,108,97,108,97,59"/>
 </map>

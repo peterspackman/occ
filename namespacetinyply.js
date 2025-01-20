@@ -1,11 +1,11 @@
 var namespacetinyply =
 [
-    [ "PropertyInfo", "structtinyply_1_1PropertyInfo.html", "structtinyply_1_1PropertyInfo" ],
     [ "Buffer", "classtinyply_1_1Buffer.html", "classtinyply_1_1Buffer" ],
     [ "PlyData", "structtinyply_1_1PlyData.html", "structtinyply_1_1PlyData" ],
-    [ "PlyProperty", "structtinyply_1_1PlyProperty.html", "structtinyply_1_1PlyProperty" ],
     [ "PlyElement", "structtinyply_1_1PlyElement.html", "structtinyply_1_1PlyElement" ],
     [ "PlyFile", "structtinyply_1_1PlyFile.html", "structtinyply_1_1PlyFile" ],
+    [ "PlyProperty", "structtinyply_1_1PlyProperty.html", "structtinyply_1_1PlyProperty" ],
+    [ "PropertyInfo", "structtinyply_1_1PropertyInfo.html", "structtinyply_1_1PropertyInfo" ],
     [ "Type", "namespacetinyply.html#a1c02ca67a9f151d99cac780bace69df9", [
       [ "INVALID", "namespacetinyply.html#a1c02ca67a9f151d99cac780bace69df9accc0377a8afbf50e7094f5c23a8af223", null ],
       [ "INT8", "namespacetinyply.html#a1c02ca67a9f151d99cac780bace69df9aee9d73311ff0658494edfff14c3ec1e3", null ],

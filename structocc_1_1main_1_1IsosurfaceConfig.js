@@ -34,7 +34,7 @@ var structocc_1_1main_1_1IsosurfaceConfig =
     [ "requires_crystal", "structocc_1_1main_1_1IsosurfaceConfig.html#a4190bb1af0b994a919d2fae9d512870c", null ],
     [ "requires_environment", "structocc_1_1main_1_1IsosurfaceConfig.html#a3c178ae02a8308780e0bd1cc61aee663", null ],
     [ "requires_wavefunction", "structocc_1_1main_1_1IsosurfaceConfig.html#a10b6ce6bfd3c00be0efdb49ec541aae0", null ],
-    [ "surface_properties", "structocc_1_1main_1_1IsosurfaceConfig.html#a7f2fa72972a12b6fc5330d0a25d8af77", null ],
+    [ "surface_properties", "structocc_1_1main_1_1IsosurfaceConfig.html#a74837bbc87fe07cf139541639b551774", null ],
     [ "surface_type", "structocc_1_1main_1_1IsosurfaceConfig.html#aaeedd6d00f6fce721d1f6a4b33c8a719", null ],
     [ "additional_properties", "structocc_1_1main_1_1IsosurfaceConfig.html#a3b5e762a5044012faa7a01af5b76e3da", null ],
     [ "background_density", "structocc_1_1main_1_1IsosurfaceConfig.html#a8808840444526af444b1fdab99e6ebeb", null ],

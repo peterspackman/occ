@@ -1,5 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/geometry/pool.h" name="/home/runner/work/occ/occ/include/occ/geometry/pool.h">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,197,61"/>
-<area shape="rect" id="node2" title=" " alt="" coords="16,109,93,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="118,109,181,136"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,197,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="16,108,93,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="89,61,70,97,65,95,85,59"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="118,108,181,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="118,59,138,95,134,97,114,61"/>
 </map>

@@ -1,8 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/bondgraph.h" name="/home/runner/work/occ/occ/include/occ/core/bondgraph.h">
-<area shape="rect" id="node1" title=" " alt="" coords="219,5,390,61"/>
-<area shape="rect" id="node2" href="$graph_8h.html" title=" " alt="" coords="240,109,369,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="5,184,196,211"/>
-<area shape="rect" id="node4" title=" " alt="" coords="221,184,295,211"/>
-<area shape="rect" id="node5" title=" " alt="" coords="320,184,383,211"/>
-<area shape="rect" id="node6" title=" " alt="" coords="407,184,464,211"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="219,5,390,60"/>
+<area shape="rect" id="Node000002" href="$graph_8h.html" title=" " alt="" coords="240,108,369,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="307,60,307,94,302,94,302,60"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,181,196,207"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="273,136,147,179,146,174,271,131"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="221,181,295,207"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="299,135,275,171,271,168,295,132"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="320,181,383,207"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="315,132,338,168,334,171,310,135"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="407,181,464,207"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="327,131,403,172,401,177,324,136"/>
 </map>

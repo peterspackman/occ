@@ -1,5 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/slater/hirshfeld.h" name="/home/runner/work/occ/occ/include/occ/slater/hirshfeld.h">
-<area shape="rect" id="node1" title=" " alt="" coords="18,5,189,61"/>
-<area shape="rect" id="node2" href="$stockholder__weight_8h.html" title=" " alt="" coords="5,109,201,165"/>
-<area shape="rect" id="node3" href="$isosurface_8h.html" title=" " alt="" coords="5,213,201,269"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="18,5,189,60"/>
+<area shape="rect" id="Node000002" href="$stockholder__weight_8h.html" title=" " alt="" coords="5,108,201,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,74,106,108,101,108,101,74"/>
+<area shape="rect" id="Node000003" href="$isosurface_8h.html" title=" " alt="" coords="5,211,201,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="106,176,106,211,101,211,101,176"/>
 </map>

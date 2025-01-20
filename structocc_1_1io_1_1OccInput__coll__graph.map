@@ -1,21 +1,40 @@
 <map id="occ::io::OccInput" name="occ::io::OccInput">
-<area shape="rect" id="node1" title=" " alt="" coords="963,332,1092,359"/>
-<area shape="rect" id="node2" href="$structocc_1_1io_1_1CrystalInput.html" title=" " alt="" coords="663,56,814,83"/>
-<area shape="rect" id="node3" href="$classocc_1_1crystal_1_1SpaceGroup.html" title="This class represents a space group." alt="" coords="265,5,447,32"/>
-<area shape="rect" id="node4" href="$structocc_1_1crystal_1_1AsymmetricUnit.html" title="A class representing an asymmetric unit of a crystal structure." alt="" coords="251,56,461,83"/>
-<area shape="rect" id="node5" href="$classocc_1_1crystal_1_1UnitCell.html" title="This class represents a unit cell of a crystal lattice." alt="" coords="278,107,434,133"/>
-<area shape="rect" id="node6" href="$structocc_1_1io_1_1OutputInput.html" title=" " alt="" coords="664,107,813,133"/>
-<area shape="rect" id="node7" href="$structocc_1_1io_1_1DriverInput.html" title=" " alt="" coords="666,157,811,184"/>
-<area shape="rect" id="node8" href="$structocc_1_1io_1_1RuntimeInput.html" title=" " alt="" coords="659,208,819,235"/>
-<area shape="rect" id="node9" href="$structocc_1_1io_1_1PairInput.html" title=" " alt="" coords="674,259,803,285"/>
-<area shape="rect" id="node10" href="$structocc_1_1io_1_1BasisSetInput.html" title=" " alt="" coords="658,309,819,336"/>
-<area shape="rect" id="node11" href="$structocc_1_1io_1_1ElectronInput.html" title=" " alt="" coords="659,360,818,387"/>
-<area shape="rect" id="node12" title=" " alt="" coords="295,360,417,387"/>
-<area shape="rect" id="node13" href="$structocc_1_1io_1_1SolventInput.html" title=" " alt="" coords="661,411,816,437"/>
-<area shape="rect" id="node14" href="$structocc_1_1io_1_1MethodInput.html" title=" " alt="" coords="661,461,816,488"/>
-<area shape="rect" id="node15" href="$structocc_1_1io_1_1BeckeGridSettings.html" title=" " alt="" coords="261,461,451,488"/>
-<area shape="rect" id="node16" title=" " alt="" coords="5,461,65,488"/>
-<area shape="rect" id="node17" href="$structocc_1_1io_1_1IsosurfaceInput.html" title=" " alt="" coords="653,575,825,601"/>
-<area shape="rect" id="node18" href="$structocc_1_1io_1_1GeometryInput.html" title=" " alt="" coords="271,540,441,567"/>
-<area shape="rect" id="node19" href="$structocc_1_1io_1_1DispersionCorrectionInput.html" title=" " alt="" coords="635,626,843,667"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="963,291,1092,316"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1io_1_1DriverInput.html" title=" " alt="" coords="666,5,811,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="826,11,885,21,914,32,940,49,966,77,986,109,1002,143,1013,178,1025,244,1028,290,1023,291,1020,245,1008,180,997,145,982,111,962,80,937,53,912,37,884,26,825,16"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1io_1_1RuntimeInput.html" title=" " alt="" coords="659,55,819,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="833,63,889,74,916,84,940,100,962,121,980,146,1006,200,1021,252,1027,290,1022,291,1015,253,1001,202,976,149,958,125,937,104,913,89,887,79,832,68"/>
+<area shape="rect" id="Node000004" href="$structocc_1_1io_1_1ElectronInput.html" title=" " alt="" coords="659,104,818,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="832,113,888,123,915,134,940,148,974,181,999,221,1016,260,1025,290,1020,291,1011,262,994,223,970,184,937,152,913,138,886,129,831,118"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="295,104,417,129"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="430,114,659,114,659,119,430,119"/>
+<area shape="rect" id="Node000006" href="$structocc_1_1io_1_1GeometryInput.html" title=" " alt="" coords="271,187,441,212"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="455,187,485,185,586,180,665,180,744,186,843,202,893,212,940,232,982,260,1015,288,1011,292,979,264,937,236,892,217,842,207,743,191,665,185,586,185,485,190,455,192"/>
+<area shape="rect" id="Node000018" href="$structocc_1_1io_1_1IsosurfaceInput.html" title=" " alt="" coords="653,217,825,243"/>
+<area shape="poly" id="edge18_Node000018_Node000006" title=" " alt="" coords="455,211,486,214,653,225,652,230,485,219,455,216"/>
+<area shape="rect" id="Node000007" href="$structocc_1_1io_1_1PairInput.html" title=" " alt="" coords="674,267,803,292"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="817,283,962,295,962,301,817,288"/>
+<area shape="rect" id="Node000008" href="$structocc_1_1io_1_1MethodInput.html" title=" " alt="" coords="661,316,816,341"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="829,322,938,314,962,311,963,316,939,319,830,328"/>
+<area shape="rect" id="Node000009" href="$structocc_1_1io_1_1BeckeGridSettings.html" title=" " alt="" coords="261,316,451,341"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="465,326,661,326,661,331,465,331"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="5,316,65,341"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="79,326,261,326,261,331,79,331"/>
+<area shape="rect" id="Node000011" href="$structocc_1_1io_1_1BasisSetInput.html" title=" " alt="" coords="658,365,819,391"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="832,364,885,354,938,341,1002,314,1004,319,940,346,886,360,833,370"/>
+<area shape="rect" id="Node000012" href="$structocc_1_1io_1_1SolventInput.html" title=" " alt="" coords="661,415,816,440"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="829,413,884,400,937,378,981,347,1013,315,1017,318,985,351,940,383,886,405,830,419"/>
+<area shape="rect" id="Node000013" href="$structocc_1_1io_1_1DispersionCorrectionInput.html" title=" " alt="" coords="635,465,843,505"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="855,463,898,447,937,425,966,399,989,368,1018,315,1023,317,993,371,969,403,940,429,900,452,857,468"/>
+<area shape="rect" id="Node000014" href="$structocc_1_1io_1_1CrystalInput.html" title=" " alt="" coords="663,529,814,555"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="827,530,885,512,912,498,937,480,971,439,995,392,1012,348,1021,315,1026,317,1017,350,1000,395,975,442,940,484,915,503,887,517,828,535"/>
+<area shape="rect" id="Node000015" href="$structocc_1_1crystal_1_1AsymmetricUnit.html" title="A class representing an asymmetric unit of a crystal structure." alt="" coords="251,480,461,505"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="476,503,611,519,663,527,663,532,610,525,475,508"/>
+<area shape="rect" id="Node000016" href="$classocc_1_1crystal_1_1SpaceGroup.html" title="This class represents a space group." alt="" coords="265,529,447,555"/>
+<area shape="poly" id="edge15_Node000014_Node000016" title=" " alt="" coords="461,539,663,539,663,545,461,545"/>
+<area shape="rect" id="Node000017" href="$classocc_1_1crystal_1_1UnitCell.html" title="This class represents a unit cell of a crystal lattice." alt="" coords="278,579,434,604"/>
+<area shape="poly" id="edge16_Node000014_Node000017" title=" " alt="" coords="447,579,610,559,663,552,663,557,611,565,448,584"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="827,243,939,269,996,288,994,293,938,274,826,248"/>
+<area shape="rect" id="Node000019" href="$structocc_1_1io_1_1OutputInput.html" title=" " alt="" coords="664,579,813,604"/>
+<area shape="poly" id="edge19_Node000001_Node000019" title=" " alt="" coords="826,585,885,570,912,556,937,539,960,513,978,484,1004,419,1017,359,1023,316,1028,317,1023,360,1009,421,983,486,964,516,940,543,915,561,887,575,828,590"/>
 </map>

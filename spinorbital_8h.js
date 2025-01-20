@@ -6,7 +6,7 @@ var spinorbital_8h =
       [ "General", "spinorbital_8h.html#af7593c3db0168047bf727de310e0eeb4a0da9cfa44fd984f48640ab63a399399d", null ]
     ] ],
     [ "get_spinorbital_kind_from_string", "spinorbital_8h.html#affbc8f01fc592caa8b8095e3357c8693", null ],
-    [ "matrix_dimensions", "spinorbital_8h.html#a6b54bd00e156937a556a831d524017a6", null ],
-    [ "matrix_dimensions", "spinorbital_8h.html#aad3cab60aa741a3e00edaa626e247a30", null ],
-    [ "spinorbital_kind_to_string", "spinorbital_8h.html#a40cf6764e46ed92ca114f4858d415943", null ]
+    [ "matrix_dimensions", "spinorbital_8h.html#adb09bba283593dd336a2fbce44d4e2c2", null ],
+    [ "matrix_dimensions", "spinorbital_8h.html#aeedc0a37f48c77f349319facd5aaff08", null ],
+    [ "spinorbital_kind_to_string", "spinorbital_8h.html#acc9a0510ac1c6ace69ae9cf3da07c4a8", null ]
 ];

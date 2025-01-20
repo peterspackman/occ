@@ -1,6 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/fraction.h" name="/home/runner/work/occ/occ/include/occ/core/fraction.h">
-<area shape="rect" id="node1" title=" " alt="" coords="48,5,219,61"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,109,72,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="96,109,171,136"/>
-<area shape="rect" id="node4" title=" " alt="" coords="195,109,253,136"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="48,5,219,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,72,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,62,63,101,60,97,103,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="96,108,171,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,60,136,94,131,94,131,60"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="195,108,253,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="163,58,204,96,200,100,159,62"/>
 </map>

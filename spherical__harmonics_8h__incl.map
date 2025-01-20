@@ -1,8 +1,14 @@
 <map id="/home/runner/work/occ/occ/include/occ/sht/spherical_harmonics.h" name="/home/runner/work/occ/occ/include/occ/sht/spherical_harmonics.h">
-<area shape="rect" id="node1" title=" " alt="" coords="108,5,280,61"/>
-<area shape="rect" id="node2" href="$linear__algebra_8h.html" title=" " alt="" coords="101,184,287,211"/>
-<area shape="rect" id="node6" href="$legendre_8h.html" title=" " alt="" coords="178,109,319,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="5,259,108,285"/>
-<area shape="rect" id="node4" title=" " alt="" coords="132,259,256,285"/>
-<area shape="rect" id="node5" title=" " alt="" coords="280,259,369,285"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="108,5,280,60"/>
+<area shape="rect" id="Node000002" href="$linear__algebra_8h.html" title=" " alt="" coords="101,181,287,207"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,61,170,96,167,114,169,133,182,168,177,170,163,134,162,114,164,94,177,59"/>
+<area shape="rect" id="Node000006" href="$legendre_8h.html" title=" " alt="" coords="178,108,319,133"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="213,59,236,95,232,98,208,62"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,255,108,280"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="173,209,92,251,90,246,171,204"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="132,255,256,280"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="197,207,197,241,191,241,191,207"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="280,255,369,280"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="216,204,293,246,290,250,214,209"/>
+<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="242,135,213,172,209,169,238,132"/>
 </map>

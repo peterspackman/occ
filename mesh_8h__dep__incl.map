@@ -1,6 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/geometry/mesh.h" name="/home/runner/work/occ/occ/include/occ/geometry/mesh.h">
-<area shape="rect" id="node1" title=" " alt="" coords="139,5,331,61"/>
-<area shape="rect" id="node2" href="$convex__hull_8h.html" title=" " alt="" coords="5,109,197,165"/>
-<area shape="rect" id="node3" href="$quickhull_8h.html" title=" " alt="" coords="139,213,331,269"/>
-<area shape="rect" id="node4" href="$half__edge__mesh_8h.html" title=" " alt="" coords="272,109,464,165"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="139,5,331,60"/>
+<area shape="rect" id="Node000002" href="$convex__hull_8h.html" title=" " alt="" coords="5,108,197,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,70,138,110,135,106,187,66"/>
+<area shape="rect" id="Node000003" href="$quickhull_8h.html" title=" " alt="" coords="139,211,331,265"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="237,74,237,210,232,210,232,74"/>
+<area shape="rect" id="Node000004" href="$half__edge__mesh_8h.html" title=" " alt="" coords="272,108,464,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="282,66,335,106,331,110,279,70"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="149,169,201,208,198,213,145,173"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="324,173,271,213,268,208,321,169"/>
 </map>

@@ -17,9 +17,9 @@ var namespaceocc_1_1solvent =
       [ "molecular_surface_tension", "namespaceocc_1_1solvent_1_1smd.html#aad04f327685525a5da313fbfdf2f63b1", null ]
     ] ],
     [ "surface", "namespaceocc_1_1solvent_1_1surface.html", "namespaceocc_1_1solvent_1_1surface" ],
+    [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html", "classocc_1_1solvent_1_1ContinuumSolvationModel" ],
     [ "COSMO", "classocc_1_1solvent_1_1COSMO.html", "classocc_1_1solvent_1_1COSMO" ],
     [ "SMDSolventParameters", "structocc_1_1solvent_1_1SMDSolventParameters.html", "structocc_1_1solvent_1_1SMDSolventParameters" ],
-    [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html", "classocc_1_1solvent_1_1ContinuumSolvationModel" ],
     [ "SolvationCorrectedProcedure", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html", "classocc_1_1solvent_1_1SolvationCorrectedProcedure" ],
     [ "PointChargeList", "namespaceocc_1_1solvent.html#ad78ce13e9c04c521dc426920b5595830", null ],
     [ "from_json", "namespaceocc_1_1solvent.html#a8bdc2d131165da54fed389c3aa96ee51", null ],

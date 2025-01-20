@@ -1,5 +1,8 @@
 <map id="/home/runner/work/occ/occ/include/occ/isosurface/promolecule_density.h" name="/home/runner/work/occ/occ/include/occ/isosurface/promolecule_density.h">
-<area shape="rect" id="node1" title=" " alt="" coords="73,5,269,61"/>
-<area shape="rect" id="node2" href="$deformation__density_8h.html" title=" " alt="" coords="5,109,201,165"/>
-<area shape="rect" id="node3" href="$isosurface_8h.html" title=" " alt="" coords="73,213,269,269"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="73,5,269,60"/>
+<area shape="rect" id="Node000002" href="$deformation__density_8h.html" title=" " alt="" coords="5,108,201,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,73,123,109,119,106,144,70"/>
+<area shape="rect" id="Node000003" href="$isosurface_8h.html" title=" " alt="" coords="73,211,269,265"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="201,71,217,107,221,135,217,163,207,189,193,212,189,209,202,187,211,162,216,135,211,109,196,73"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="131,173,156,209,151,212,127,176"/>
 </map>

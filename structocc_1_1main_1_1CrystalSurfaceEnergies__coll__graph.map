@@ -1,4 +1,5 @@
 <map id="occ::main::CrystalSurfaceEnergies" name="occ::main::CrystalSurfaceEnergies">
-<area shape="rect" id="node1" title=" " alt="" coords="5,95,193,136"/>
-<area shape="rect" id="node2" href="$classocc_1_1crystal_1_1Crystal.html" title="A class representing a crystal structure." alt="" coords="24,5,175,32"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,93,193,133"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1crystal_1_1Crystal.html" title="A class representing a crystal structure." alt="" coords="24,5,175,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="102,44,102,93,97,93,97,44"/>
 </map>

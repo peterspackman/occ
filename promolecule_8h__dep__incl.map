@@ -1,8 +1,15 @@
 <map id="/home/runner/work/occ/occ/include/occ/slater/promolecule.h" name="/home/runner/work/occ/occ/include/occ/slater/promolecule.h">
-<area shape="rect" id="node1" title=" " alt="" coords="186,5,357,61"/>
-<area shape="rect" id="node2" href="$promolecule__density_8h.html" title=" " alt="" coords="69,109,265,165"/>
-<area shape="rect" id="node5" href="$hirshfeld_8h.html" title=" " alt="" coords="290,109,461,165"/>
-<area shape="rect" id="node3" href="$deformation__density_8h.html" title=" " alt="" coords="5,213,201,269"/>
-<area shape="rect" id="node4" href="$isosurface_8h.html" title=" " alt="" coords="141,317,337,373"/>
-<area shape="rect" id="node6" href="$stockholder__weight_8h.html" title=" " alt="" coords="277,213,473,269"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="186,5,357,60"/>
+<area shape="rect" id="Node000002" href="$promolecule__density_8h.html" title=" " alt="" coords="69,108,265,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="236,72,196,110,193,106,232,68"/>
+<area shape="rect" id="Node000005" href="$hirshfeld_8h.html" title=" " alt="" coords="290,108,461,163"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="310,68,350,106,346,110,307,72"/>
+<area shape="rect" id="Node000003" href="$deformation__density_8h.html" title=" " alt="" coords="5,211,201,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="145,176,122,212,118,209,141,173"/>
+<area shape="rect" id="Node000004" href="$isosurface_8h.html" title=" " alt="" coords="141,313,337,368"/>
+<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="197,173,216,210,232,264,240,312,234,313,227,265,212,212,192,175"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="151,271,205,311,202,315,148,276"/>
+<area shape="rect" id="Node000006" href="$stockholder__weight_8h.html" title=" " alt="" coords="277,211,473,265"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="378,176,378,211,373,211,373,176"/>
+<area shape="poly" id="edge7_Node000006_Node000004" title=" " alt="" coords="330,276,277,315,273,311,327,271"/>
 </map>

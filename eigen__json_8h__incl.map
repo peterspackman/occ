@@ -1,6 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/eigen_json.h" name="/home/runner/work/occ/occ/include/occ/io/eigen_json.h">
-<area shape="rect" id="node1" title=" " alt="" coords="75,5,257,61"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,109,97,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="121,109,211,136"/>
-<area shape="rect" id="node4" title=" " alt="" coords="235,109,382,136"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="75,5,257,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,97,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,62,80,102,77,97,129,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="121,108,211,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,60,169,94,163,94,163,60"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="235,108,382,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="211,58,279,99,277,103,208,62"/>
 </map>

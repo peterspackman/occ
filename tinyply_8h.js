@@ -1,11 +1,11 @@
 var tinyply_8h =
 [
-    [ "PropertyInfo", "structtinyply_1_1PropertyInfo.html", "structtinyply_1_1PropertyInfo" ],
-    [ "Buffer", "classtinyply_1_1Buffer.html", "classtinyply_1_1Buffer" ],
-    [ "PlyData", "structtinyply_1_1PlyData.html", "structtinyply_1_1PlyData" ],
-    [ "PlyProperty", "structtinyply_1_1PlyProperty.html", "structtinyply_1_1PlyProperty" ],
-    [ "PlyElement", "structtinyply_1_1PlyElement.html", "structtinyply_1_1PlyElement" ],
-    [ "PlyFile", "structtinyply_1_1PlyFile.html", "structtinyply_1_1PlyFile" ],
+    [ "tinyply::PropertyInfo", "structtinyply_1_1PropertyInfo.html", "structtinyply_1_1PropertyInfo" ],
+    [ "tinyply::Buffer", "classtinyply_1_1Buffer.html", "classtinyply_1_1Buffer" ],
+    [ "tinyply::PlyData", "structtinyply_1_1PlyData.html", "structtinyply_1_1PlyData" ],
+    [ "tinyply::PlyProperty", "structtinyply_1_1PlyProperty.html", "structtinyply_1_1PlyProperty" ],
+    [ "tinyply::PlyElement", "structtinyply_1_1PlyElement.html", "structtinyply_1_1PlyElement" ],
+    [ "tinyply::PlyFile", "structtinyply_1_1PlyFile.html", "structtinyply_1_1PlyFile" ],
     [ "Type", "tinyply_8h.html#a1c02ca67a9f151d99cac780bace69df9", [
       [ "INVALID", "tinyply_8h.html#a1c02ca67a9f151d99cac780bace69df9accc0377a8afbf50e7094f5c23a8af223", null ],
       [ "INT8", "tinyply_8h.html#a1c02ca67a9f151d99cac780bace69df9aee9d73311ff0658494edfff14c3ec1e3", null ],

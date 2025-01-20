@@ -1,8 +1,8 @@
 var grid_8h =
 [
-    [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
-    [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
-    [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
+    [ "occ::dft::AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
+    [ "occ::dft::RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
+    [ "occ::dft::MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
     [ "generate_atom_grid", "grid_8h.html#aa3f2fabc212c1f463b003557e3c38482", null ],
     [ "generate_becke_radial_grid", "grid_8h.html#a48abc2172605dbc65f9f0efb7d88b2c2", null ],
     [ "generate_gauss_chebyshev_radial_grid", "grid_8h.html#ada7d5e515dc2a7751aa8476373e59d0d", null ],

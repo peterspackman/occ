@@ -1,11 +1,11 @@
 var pair__energy_8h =
 [
-    [ "PairEnergy", "structocc_1_1interaction_1_1PairEnergy.html", "structocc_1_1interaction_1_1PairEnergy" ],
-    [ "Monomer", "structocc_1_1interaction_1_1PairEnergy_1_1Monomer.html", "structocc_1_1interaction_1_1PairEnergy_1_1Monomer" ],
-    [ "PairEnergyStore", "structocc_1_1interaction_1_1PairEnergyStore.html", "structocc_1_1interaction_1_1PairEnergyStore" ],
-    [ "LatticeConvergenceSettings", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html", "structocc_1_1interaction_1_1LatticeConvergenceSettings" ],
-    [ "LatticeEnergyResult", "structocc_1_1interaction_1_1LatticeEnergyResult.html", "structocc_1_1interaction_1_1LatticeEnergyResult" ],
-    [ "ce_model_energies", "pair__energy_8h.html#a85417b911940abf0af341367b4f2b7af", null ],
+    [ "occ::interaction::PairEnergy", "structocc_1_1interaction_1_1PairEnergy.html", "structocc_1_1interaction_1_1PairEnergy" ],
+    [ "occ::interaction::PairEnergy::Monomer", "structocc_1_1interaction_1_1PairEnergy_1_1Monomer.html", "structocc_1_1interaction_1_1PairEnergy_1_1Monomer" ],
+    [ "occ::interaction::PairEnergyStore", "structocc_1_1interaction_1_1PairEnergyStore.html", "structocc_1_1interaction_1_1PairEnergyStore" ],
+    [ "occ::interaction::LatticeConvergenceSettings", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html", "structocc_1_1interaction_1_1LatticeConvergenceSettings" ],
+    [ "occ::interaction::LatticeEnergyResult", "structocc_1_1interaction_1_1LatticeEnergyResult.html", "structocc_1_1interaction_1_1LatticeEnergyResult" ],
+    [ "ce_model_energies", "pair__energy_8h.html#aef303e926d1336bbc0b1b25573e30570", null ],
     [ "ce_model_energy", "pair__energy_8h.html#a570d7d65859b017ca8b0d7d087a1442d", null ],
     [ "converged_lattice_energies", "pair__energy_8h.html#a66529e907f6ca8c88b3532af11f69fe9", null ],
     [ "converged_xtb_lattice_energies", "pair__energy_8h.html#ae24d2dd5e52ac38e905c07de84075d26", null ],

@@ -1,7 +1,7 @@
 var wavefunction__json_8h =
 [
-    [ "JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
-    [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ],
+    [ "occ::io::JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
+    [ "occ::io::JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ],
     [ "JsonFormat", "wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3", [
       [ "JSON", "wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8", null ],
       [ "UBJSON", "wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d", null ],

@@ -6,7 +6,7 @@ var structocc_1_1crystal_1_1SurfaceCutResult =
     [ "total_below", "structocc_1_1crystal_1_1SurfaceCutResult.html#a9e103361e0330a64e673a0f8e9be2e37", null ],
     [ "total_bulk", "structocc_1_1crystal_1_1SurfaceCutResult.html#a994f96bf46e5f5521f372a609d41d9de", null ],
     [ "total_slab", "structocc_1_1crystal_1_1SurfaceCutResult.html#ac753ffbd5e7bb5e09dc2133ac6d2fcab", null ],
-    [ "unique_counts_above", "structocc_1_1crystal_1_1SurfaceCutResult.html#ad7411a6f96a93c16f2f75588a58a2fd0", null ],
+    [ "unique_counts_above", "structocc_1_1crystal_1_1SurfaceCutResult.html#a085ba0471ae136717a344fb0fa30983b", null ],
     [ "above", "structocc_1_1crystal_1_1SurfaceCutResult.html#a6a5712a2a7ca4692603165e55633020b", null ],
     [ "basis", "structocc_1_1crystal_1_1SurfaceCutResult.html#a8ce18d09bf9b24360367d31fa5d4c3db", null ],
     [ "below", "structocc_1_1crystal_1_1SurfaceCutResult.html#ada05745757a4a657b678de61a7184eb4", null ],

@@ -1,4 +1,5 @@
 <map id="occ::cg::MoleculeResult" name="occ::cg::MoleculeResult">
-<area shape="rect" id="node1" title=" " alt="" coords="5,95,180,121"/>
-<area shape="rect" id="node2" href="$structocc_1_1cg_1_1EnergyTotal.html" title=" " alt="" coords="17,5,168,32"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,93,180,119"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1cg_1_1EnergyTotal.html" title=" " alt="" coords="17,5,168,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,45,95,93,90,93,90,45"/>
 </map>

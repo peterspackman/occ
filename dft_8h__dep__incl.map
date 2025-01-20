@@ -1,6 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/dft/dft.h" name="/home/runner/work/occ/occ/include/occ/dft/dft.h">
-<area shape="rect" id="node1" title=" " alt="" coords="103,5,281,47"/>
-<area shape="rect" id="node2" href="$smd__solvation_8h.html" title=" " alt="" coords="5,95,181,151"/>
-<area shape="rect" id="node4" href="$point__functors_8h.html" title=" " alt="" coords="205,95,376,151"/>
-<area shape="rect" id="node3" href="$crystal__growth_8h.html" title=" " alt="" coords="8,199,179,255"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="103,5,281,45"/>
+<area shape="rect" id="Node000002" href="$smd__solvation_8h.html" title=" " alt="" coords="5,93,181,148"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,57,123,95,119,91,160,53"/>
+<area shape="rect" id="Node000004" href="$point__functors_8h.html" title=" " alt="" coords="205,93,376,148"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="224,53,265,91,261,95,220,57"/>
+<area shape="rect" id="Node000003" href="$crystal__growth_8h.html" title=" " alt="" coords="8,196,179,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="96,162,96,196,91,196,91,162"/>
 </map>

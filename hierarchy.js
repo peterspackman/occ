@@ -283,7 +283,7 @@ var hierarchy =
     [ "occ::core::TerminalSize", "structocc_1_1core_1_1TerminalSize.html", null ],
     [ "std::true_type", null, [
       [ "occ::core::numpy::impl::is_complex< std::complex< T > >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html", null ],
-      [ "occ::geometry::mc::impl::has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N >>(), std::declval< Eigen::Ref< FVec >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyc53da7eeae9ee1d678c974c152124f3c.html", null ]
+      [ "occ::geometry::mc::impl::has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ]
     ] ],
     [ "occ::crystal::UnitCell", "classocc_1_1crystal_1_1UnitCell.html", null ],
     [ "CLI::Validator", null, [

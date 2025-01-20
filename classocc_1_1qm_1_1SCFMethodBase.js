@@ -2,9 +2,9 @@ var classocc_1_1qm_1_1SCFMethodBase =
 [
     [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html#a047881f584211c852bd94548b4efb6ed", null ],
     [ "active_electrons", "classocc_1_1qm_1_1SCFMethodBase.html#a1e56127bd24df010a7adecfbf802de15", null ],
-    [ "atoms", "classocc_1_1qm_1_1SCFMethodBase.html#ae6d23007717fb2c2fb54fbc9e29b3df2", null ],
+    [ "atoms", "classocc_1_1qm_1_1SCFMethodBase.html#affe582efdb9a9b72f989eba355c8b03f", null ],
     [ "center_of_mass", "classocc_1_1qm_1_1SCFMethodBase.html#a8b3a0b4e1379cf640bb7a4dc4ea1db60", null ],
-    [ "frozen_electrons", "classocc_1_1qm_1_1SCFMethodBase.html#a591af3d26e8a6534d7ef4a803e405499", null ],
+    [ "frozen_electrons", "classocc_1_1qm_1_1SCFMethodBase.html#ae6960de5fec686077b6e81ed5217f56d", null ],
     [ "nuclear_electric_field_contribution", "classocc_1_1qm_1_1SCFMethodBase.html#a38ec07521e54761b6806604bdd049e9f", null ],
     [ "nuclear_electric_potential_contribution", "classocc_1_1qm_1_1SCFMethodBase.html#ab7d759281ae830e37f8d112f5d529429", null ],
     [ "nuclear_repulsion_energy", "classocc_1_1qm_1_1SCFMethodBase.html#a4431fa61df57ba4ce2325bcca31f50fd", null ],

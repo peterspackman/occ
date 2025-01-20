@@ -1,9 +1,15 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/multipole.h" name="/home/runner/work/occ/occ/include/occ/core/multipole.h">
-<area shape="rect" id="node1" title=" " alt="" coords="53,5,224,61"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,109,61,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="86,109,191,136"/>
-<area shape="rect" id="node4" href="$linear__algebra_8h.html" title=" " alt="" coords="215,109,401,136"/>
-<area shape="rect" id="node5" title=" " alt="" coords="119,184,222,211"/>
-<area shape="rect" id="node6" title=" " alt="" coords="246,184,370,211"/>
-<area shape="rect" id="node7" title=" " alt="" coords="394,184,483,211"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="53,5,224,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,61,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,62,60,101,57,97,105,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="86,108,191,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="141,60,141,94,136,94,136,60"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="215,108,401,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="192,58,274,99,272,104,189,62"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="119,181,222,207"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="287,136,206,177,204,173,285,131"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="246,181,370,207"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="311,134,311,168,305,168,305,134"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="394,181,483,207"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="330,131,407,172,404,177,328,136"/>
 </map>

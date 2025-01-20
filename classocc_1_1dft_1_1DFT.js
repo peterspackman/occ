@@ -1,7 +1,7 @@
 var classocc_1_1dft_1_1DFT =
 [
     [ "DFT", "classocc_1_1dft_1_1DFT.html#ad120202d5f6fe48cfc2aea9daa80534b", null ],
-    [ "aobasis", "classocc_1_1dft_1_1DFT.html#a70d0f6eb16cbb5fd8f0474a2d9cfdf7a", null ],
+    [ "aobasis", "classocc_1_1dft_1_1DFT.html#a7aae7c740dca1cb4e06b0dacef65441f", null ],
     [ "compute_effective_core_potential_matrix", "classocc_1_1dft_1_1DFT.html#a772912fd4df034b5f315cdd3d347bb94", null ],
     [ "compute_electronic_multipoles", "classocc_1_1dft_1_1DFT.html#a14321390683baab8da79843cd40373ff", null ],
     [ "compute_fock", "classocc_1_1dft_1_1DFT.html#a4f2d84b3185882b2fba3df62b3e042d4", null ],
@@ -24,11 +24,11 @@ var classocc_1_1dft_1_1DFT =
     [ "exact_exchange_factor", "classocc_1_1dft_1_1DFT.html#a4308079d17acb47266887d62dc137e5e", null ],
     [ "exchange_correlation_energy", "classocc_1_1dft_1_1DFT.html#ac06b1281795187215bfb3a1e09ae3e31", null ],
     [ "exchange_energy_total", "classocc_1_1dft_1_1DFT.html#a1745046d6553d3e4ffea885fa0433c36", null ],
-    [ "functionals", "classocc_1_1dft_1_1DFT.html#af8e85c53ec59876f20d8d3182dd9b958", null ],
+    [ "functionals", "classocc_1_1dft_1_1DFT.html#af4e2ab9283f337eb337ee25e2d9dceba", null ],
     [ "have_effective_core_potentials", "classocc_1_1dft_1_1DFT.html#a7fb559557c33ed2b0b82db6b6f0ff180", null ],
     [ "have_nonlocal_correlation", "classocc_1_1dft_1_1DFT.html#a7e237bbe14bf1bf96961500864178228", null ],
-    [ "hf", "classocc_1_1dft_1_1DFT.html#a457021dad1846051129e7f7183797e77", null ],
-    [ "method_string", "classocc_1_1dft_1_1DFT.html#ad5288083361af2f70c01f9605ff0b194", null ],
+    [ "hf", "classocc_1_1dft_1_1DFT.html#adfc8c9f6911b9af7a4e5abd63828a4ca", null ],
+    [ "method_string", "classocc_1_1dft_1_1DFT.html#a218d7ce69897fabc2cd576a9109473b2", null ],
     [ "nbf", "classocc_1_1dft_1_1DFT.html#aab1a405290a0252b3791d134d9b38c6a", null ],
     [ "nuclear_point_charge_interaction_energy", "classocc_1_1dft_1_1DFT.html#ad6dd3d626e56d2a501c28476f0daa44b", null ],
     [ "post_scf_nlc_correction", "classocc_1_1dft_1_1DFT.html#af02d6a465080aa7a2f8b8a1947c3d24a", null ],

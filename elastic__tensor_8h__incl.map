@@ -1,8 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/elastic_tensor.h" name="/home/runner/work/occ/occ/include/occ/core/elastic_tensor.h">
-<area shape="rect" id="node1" title=" " alt="" coords="73,5,243,61"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,109,132,136"/>
-<area shape="rect" id="node3" href="$linear__algebra_8h.html" title=" " alt="" coords="156,109,341,136"/>
-<area shape="rect" id="node4" title=" " alt="" coords="60,184,163,211"/>
-<area shape="rect" id="node5" title=" " alt="" coords="187,184,311,211"/>
-<area shape="rect" id="node6" title=" " alt="" coords="335,184,424,211"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="73,5,243,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,132,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,62,92,100,89,96,129,58"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="156,108,341,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="188,58,228,96,225,100,184,62"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="60,181,163,207"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="228,136,147,177,145,173,225,131"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="187,181,311,207"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="251,134,251,168,246,168,246,134"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="335,181,424,207"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="271,131,347,172,345,177,268,136"/>
 </map>

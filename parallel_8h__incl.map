@@ -1,5 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/parallel.h" name="/home/runner/work/occ/occ/include/occ/core/parallel.h">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,176,61"/>
-<area shape="rect" id="node2" title=" " alt="" coords="15,109,79,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="103,109,166,136"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,176,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="15,108,79,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,61,61,97,57,94,75,59"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="103,108,166,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="106,59,125,94,120,97,102,61"/>
 </map>

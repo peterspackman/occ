@@ -1,6 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/sht/legendre.h" name="/home/runner/work/occ/occ/include/occ/sht/legendre.h">
-<area shape="rect" id="node1" title=" " alt="" coords="114,5,285,61"/>
-<area shape="rect" id="node2" href="$sht_8h.html" title=" " alt="" coords="5,117,191,158"/>
-<area shape="rect" id="node3" href="$spherical__harmonics_8h.html" title=" " alt="" coords="215,109,387,165"/>
-<area shape="rect" id="node4" href="$steinhardt_8h.html" title=" " alt="" coords="200,213,401,269"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="114,5,285,60"/>
+<area shape="rect" id="Node000002" href="$sht_8h.html" title=" " alt="" coords="5,115,191,155"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,72,119,117,116,113,161,68"/>
+<area shape="rect" id="Node000003" href="$spherical__harmonics_8h.html" title=" " alt="" coords="215,108,387,163"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="238,68,276,106,272,110,234,72"/>
+<area shape="rect" id="Node000004" href="$steinhardt_8h.html" title=" " alt="" coords="200,211,401,265"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="303,176,303,211,298,211,298,176"/>
 </map>

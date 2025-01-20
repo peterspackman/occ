@@ -1,11 +1,22 @@
 <map id="/home/runner/work/occ/occ/include/occ/interaction/polarization.h" name="/home/runner/work/occ/occ/include/occ/interaction/polarization.h">
-<area shape="rect" id="node1" title=" " alt="" coords="361,5,559,61"/>
-<area shape="rect" id="node2" href="$pairinteraction_8h.html" title=" " alt="" coords="361,109,559,165"/>
-<area shape="rect" id="node3" href="$result__types_8h.html" title=" " alt="" coords="169,213,354,269"/>
-<area shape="rect" id="node5" href="$crystal__growth_8h.html" title=" " alt="" coords="248,317,419,373"/>
-<area shape="rect" id="node7" href="$interaction__json_8h.html" title=" " alt="" coords="651,213,850,269"/>
-<area shape="rect" id="node8" href="$pair__energy_8h.html" title=" " alt="" coords="429,213,627,269"/>
-<area shape="rect" id="node4" href="$interaction__mapper_8h.html" title=" " alt="" coords="5,317,224,373"/>
-<area shape="rect" id="node6" href="$occ__cg_8h.html" title=" " alt="" coords="443,317,613,373"/>
-<area shape="rect" id="node9" href="$occ__elat_8h.html" title=" " alt="" coords="637,317,808,373"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="361,5,559,60"/>
+<area shape="rect" id="Node000002" href="$pairinteraction_8h.html" title=" " alt="" coords="361,108,559,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="463,74,463,108,457,108,457,74"/>
+<area shape="rect" id="Node000003" href="$result__types_8h.html" title=" " alt="" coords="169,211,354,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="397,171,314,213,312,208,395,166"/>
+<area shape="rect" id="Node000005" href="$crystal__growth_8h.html" title=" " alt="" coords="248,313,419,368"/>
+<area shape="poly" id="edge6_Node000002_Node000005" title=" " alt="" coords="439,176,352,314,348,311,434,173"/>
+<area shape="rect" id="Node000007" href="$interaction__json_8h.html" title=" " alt="" coords="651,211,850,265"/>
+<area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="549,165,676,208,674,213,548,170"/>
+<area shape="rect" id="Node000008" href="$pair__energy_8h.html" title=" " alt="" coords="429,211,627,265"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="488,173,512,209,508,212,483,176"/>
+<area shape="rect" id="Node000004" href="$interaction__mapper_8h.html" title=" " alt="" coords="5,313,224,368"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="213,275,155,315,152,311,210,271"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="290,275,317,312,312,315,286,278"/>
+<area shape="rect" id="Node000006" href="$occ__cg_8h.html" title=" " alt="" coords="443,313,613,368"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="344,268,459,311,458,316,343,273"/>
+<area shape="poly" id="edge9_Node000008_Node000005" title=" " alt="" coords="466,274,385,316,383,311,464,269"/>
+<area shape="poly" id="edge10_Node000008_Node000006" title=" " alt="" coords="531,279,531,313,525,313,525,279"/>
+<area shape="rect" id="Node000009" href="$occ__elat_8h.html" title=" " alt="" coords="637,313,808,368"/>
+<area shape="poly" id="edge11_Node000008_Node000009" title=" " alt="" coords="592,269,673,311,671,316,590,274"/>
 </map>

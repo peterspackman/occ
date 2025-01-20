@@ -1,5 +1,7 @@
 <map id="occ::qm::SCFMethodBase" name="occ::qm::SCFMethodBase">
-<area shape="rect" id="node1" title=" " alt="" coords="41,5,227,32"/>
-<area shape="rect" id="node2" href="$classocc_1_1dft_1_1DFT.html" title=" " alt="" coords="5,80,108,107"/>
-<area shape="rect" id="node3" href="$classocc_1_1qm_1_1HartreeFock.html" title=" " alt="" coords="133,80,293,107"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="41,5,227,31"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1dft_1_1DFT.html" title=" " alt="" coords="5,79,108,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,42,71,80,68,76,110,38"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1qm_1_1HartreeFock.html" title=" " alt="" coords="133,79,293,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="159,38,202,76,198,80,155,42"/>
 </map>

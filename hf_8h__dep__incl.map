@@ -1,9 +1,16 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/hf.h" name="/home/runner/work/occ/occ/include/occ/qm/hf.h">
-<area shape="rect" id="node1" title=" " alt="" coords="219,5,397,47"/>
-<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="92,102,271,143"/>
-<area shape="rect" id="node5" href="$point__functors_8h.html" title=" " alt="" coords="205,199,376,255"/>
-<area shape="rect" id="node6" href="$electric__potential_8h.html" title=" " alt="" coords="382,95,578,151"/>
-<area shape="rect" id="node3" href="$smd__solvation_8h.html" title=" " alt="" coords="5,199,181,255"/>
-<area shape="rect" id="node4" href="$crystal__growth_8h.html" title=" " alt="" coords="8,303,179,359"/>
-<area shape="rect" id="node7" href="$isosurface_8h.html" title=" " alt="" coords="401,199,597,255"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="219,5,397,45"/>
+<area shape="rect" id="Node000002" href="$dft_8h.html" title=" " alt="" coords="92,101,271,141"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="273,56,209,103,205,98,270,51"/>
+<area shape="rect" id="Node000005" href="$point__functors_8h.html" title=" " alt="" coords="205,196,376,251"/>
+<area shape="poly" id="edge7_Node000001_Node000005" title=" " alt="" coords="308,59,296,196,290,195,302,58"/>
+<area shape="rect" id="Node000006" href="$electric__potential_8h.html" title=" " alt="" coords="382,93,578,148"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="356,50,433,91,430,96,353,54"/>
+<area shape="rect" id="Node000003" href="$smd__solvation_8h.html" title=" " alt="" coords="5,196,181,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="158,153,118,197,114,194,154,149"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="214,148,264,194,260,198,210,152"/>
+<area shape="rect" id="Node000004" href="$crystal__growth_8h.html" title=" " alt="" coords="8,299,179,353"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="96,264,96,299,91,299,91,264"/>
+<area shape="rect" id="Node000007" href="$isosurface_8h.html" title=" " alt="" coords="401,196,597,251"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="490,161,496,195,491,196,485,162"/>
 </map>

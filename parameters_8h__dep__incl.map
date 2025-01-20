@@ -1,7 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/solvent/parameters.h" name="/home/runner/work/occ/occ/include/occ/solvent/parameters.h">
-<area shape="rect" id="node1" title=" " alt="" coords="139,5,317,61"/>
-<area shape="rect" id="node2" href="$smd_8h.html" title=" " alt="" coords="5,117,227,158"/>
-<area shape="rect" id="node3" href="$solvation__correction_8h.html" title=" " alt="" coords="251,109,429,165"/>
-<area shape="rect" id="node4" href="$smd__solvation_8h.html" title=" " alt="" coords="252,213,428,269"/>
-<area shape="rect" id="node5" href="$crystal__growth_8h.html" title=" " alt="" coords="255,317,425,373"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="139,5,317,60"/>
+<area shape="rect" id="Node000002" href="$smd_8h.html" title=" " alt="" coords="5,115,227,155"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="190,72,139,117,135,113,186,68"/>
+<area shape="rect" id="Node000003" href="$solvation__correction_8h.html" title=" " alt="" coords="251,108,429,163"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="269,67,313,106,309,110,266,71"/>
+<area shape="rect" id="Node000004" href="$smd__solvation_8h.html" title=" " alt="" coords="252,211,428,265"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="343,176,343,211,337,211,337,176"/>
+<area shape="rect" id="Node000005" href="$crystal__growth_8h.html" title=" " alt="" coords="255,313,425,368"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="343,279,343,313,337,313,337,279"/>
 </map>

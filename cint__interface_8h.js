@@ -1,9 +1,9 @@
 var cint__interface_8h =
 [
-    [ "AtomInfo", "structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html", "structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo" ],
-    [ "BasisInfo", "structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo.html", "structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo" ],
-    [ "IntegralEnvironment", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment" ],
-    [ "Optimizer", "classocc_1_1qm_1_1cint_1_1Optimizer.html", "classocc_1_1qm_1_1cint_1_1Optimizer" ],
+    [ "occ::qm::cint::impl::AtomInfo", "structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html", "structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo" ],
+    [ "occ::qm::cint::impl::BasisInfo", "structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo.html", "structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo" ],
+    [ "occ::qm::cint::IntegralEnvironment", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment" ],
+    [ "occ::qm::cint::Optimizer", "classocc_1_1qm_1_1cint_1_1Optimizer.html", "classocc_1_1qm_1_1cint_1_1Optimizer" ],
     [ "Operator", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bf", [
       [ "overlap", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa9c126c20047e421bde49e44ed51ae805", null ],
       [ "nuclear", "cint__interface_8h.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa3dc183cf4b0ea0778a1819994ad6cf25", null ],

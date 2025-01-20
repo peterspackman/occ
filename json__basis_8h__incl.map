@@ -1,8 +1,14 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/json_basis.h" name="/home/runner/work/occ/occ/include/occ/io/json_basis.h">
-<area shape="rect" id="node1" title=" " alt="" coords="237,5,409,61"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,109,196,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="221,109,293,136"/>
-<area shape="rect" id="node4" href="$element_8h.html" title=" " alt="" coords="317,109,463,136"/>
-<area shape="rect" id="node6" title=" " alt="" coords="456,184,519,211"/>
-<area shape="rect" id="node5" title=" " alt="" coords="361,184,419,211"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="237,5,409,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,196,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="256,63,144,105,142,100,254,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="221,108,293,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="305,62,276,99,272,95,301,58"/>
+<area shape="rect" id="Node000004" href="$element_8h.html" title=" " alt="" coords="317,108,463,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="346,58,375,95,370,99,342,62"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="456,181,519,207"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="411,56,447,77,478,107,490,137,492,167,487,168,485,138,473,109,444,81,408,61"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="361,181,419,207"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="393,134,393,168,387,168,387,134"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="407,131,462,171,459,175,404,136"/>
 </map>

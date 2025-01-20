@@ -1,9 +1,17 @@
 <map id="/home/runner/work/occ/occ/include/occ/gto/gto.h" name="/home/runner/work/occ/occ/include/occ/gto/gto.h">
-<area shape="rect" id="node1" title=" " alt="" coords="99,5,285,47"/>
-<area shape="rect" id="node2" href="$dft_8h.html" title=" " alt="" coords="103,199,281,240"/>
-<area shape="rect" id="node6" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="107,95,277,151"/>
-<area shape="rect" id="node7" href="$density_8h.html" title=" " alt="" coords="301,95,472,151"/>
-<area shape="rect" id="node3" href="$smd__solvation_8h.html" title=" " alt="" coords="5,288,181,344"/>
-<area shape="rect" id="node5" href="$point__functors_8h.html" title=" " alt="" coords="205,288,376,344"/>
-<area shape="rect" id="node4" href="$crystal__growth_8h.html" title=" " alt="" coords="8,392,179,448"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="99,5,285,45"/>
+<area shape="rect" id="Node000002" href="$dft_8h.html" title=" " alt="" coords="103,196,281,236"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,55,114,72,97,95,89,121,97,147,119,174,148,194,145,198,116,178,92,149,84,121,92,92,110,68,134,50"/>
+<area shape="rect" id="Node000006" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="107,93,277,148"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="195,59,195,93,189,93,189,59"/>
+<area shape="rect" id="Node000007" href="$density_8h.html" title=" " alt="" coords="301,93,472,148"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="245,49,333,91,331,96,243,54"/>
+<area shape="rect" id="Node000003" href="$smd__solvation_8h.html" title=" " alt="" coords="5,284,181,339"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="164,247,123,286,119,282,160,243"/>
+<area shape="rect" id="Node000005" href="$point__functors_8h.html" title=" " alt="" coords="205,284,376,339"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="224,243,265,282,261,286,220,247"/>
+<area shape="rect" id="Node000004" href="$crystal__growth_8h.html" title=" " alt="" coords="8,387,179,441"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="96,352,96,387,91,387,91,352"/>
+<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="195,162,195,196,189,196,189,162"/>
+<area shape="poly" id="edge8_Node000007_Node000002" title=" " alt="" coords="321,156,233,198,230,193,318,152"/>
 </map>

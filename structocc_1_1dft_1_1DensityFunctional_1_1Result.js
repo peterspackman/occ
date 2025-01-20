@@ -1,7 +1,7 @@
 var structocc_1_1dft_1_1DensityFunctional_1_1Result =
 [
     [ "Result", "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a453890a7a3191a83adcce326d23dab2e", null ],
-    [ "operator+=", "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a659bf80a550d33f3d1e3766d28a55f61", null ],
+    [ "operator+=", "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a6b1d9dbd65f2e378ca90b3d2469ed8bd", null ],
     [ "weight_by", "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a0c4b7fe6cd337ad1fd81cda9e16dae57", null ],
     [ "exc", "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#afb8ac17354de8d30bcd69fe1aa3bd225", null ],
     [ "have_vsigma", "structocc_1_1dft_1_1DensityFunctional_1_1Result.html#aa97e047ba1d035aea67aeb3cc5432ed4", null ],

@@ -1,9 +1,15 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/cdiis.h" name="/home/runner/work/occ/occ/include/occ/qm/cdiis.h">
-<area shape="rect" id="node1" title=" " alt="" coords="21,5,217,47"/>
-<area shape="rect" id="node2" href="$diis_8h.html" title=" " alt="" coords="62,95,177,121"/>
-<area shape="rect" id="node3" title=" " alt="" coords="15,169,77,196"/>
-<area shape="rect" id="node4" href="$linear__algebra_8h.html" title=" " alt="" coords="101,169,287,196"/>
-<area shape="rect" id="node5" title=" " alt="" coords="5,244,108,271"/>
-<area shape="rect" id="node6" title=" " alt="" coords="132,244,256,271"/>
-<area shape="rect" id="node7" title=" " alt="" coords="280,244,369,271"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="21,5,217,45"/>
+<area shape="rect" id="Node000002" href="$diis_8h.html" title=" " alt="" coords="62,93,177,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,46,122,79,117,79,117,46"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="15,167,77,192"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="109,121,70,159,66,155,105,117"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="101,167,287,192"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="133,117,174,155,170,159,129,121"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="5,240,108,265"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="173,194,92,236,90,231,171,190"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="132,240,256,265"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="197,192,197,226,191,226,191,192"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="280,240,369,265"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="216,190,293,231,290,236,214,194"/>
 </map>

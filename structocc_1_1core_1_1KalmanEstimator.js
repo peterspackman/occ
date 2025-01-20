@@ -1,9 +1,9 @@
 var structocc_1_1core_1_1KalmanEstimator =
 [
     [ "adjust_noise", "structocc_1_1core_1_1KalmanEstimator.html#ab5b094cda229455b51e8112b1a32b6e7", null ],
-    [ "covariance", "structocc_1_1core_1_1KalmanEstimator.html#a5d670e8a4069e5530fe4600e7e801a21", null ],
+    [ "covariance", "structocc_1_1core_1_1KalmanEstimator.html#acd346d8f17e15cb3c9d72b959d45b5fd", null ],
     [ "estimate_remaining", "structocc_1_1core_1_1KalmanEstimator.html#a3cb0d374f7092af0053dccee5839f69a", null ],
-    [ "state", "structocc_1_1core_1_1KalmanEstimator.html#a018ad14805414cb860c8945d5f836a05", null ],
+    [ "state", "structocc_1_1core_1_1KalmanEstimator.html#a4b7bb1d8ef40d9bc924f9c2111138d9e", null ],
     [ "time_uncertainty", "structocc_1_1core_1_1KalmanEstimator.html#aedd483762d4884c2831bc5efafec4457", null ],
     [ "update", "structocc_1_1core_1_1KalmanEstimator.html#adb91127b54fc74fbe5f7747acc07514e", null ],
     [ "initialized", "structocc_1_1core_1_1KalmanEstimator.html#a1639662aaba5abedf3d1c95cfe90404d", null ],

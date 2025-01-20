@@ -5,12 +5,12 @@ var classocc_1_1crystal_1_1SpaceGroup =
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a9709356e7da371bfe9eada1a641b80f5", null ],
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a088a1aa6a1b7cc146e56b72b8a78fcff", null ],
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html#a667cf2536049112012106daf690a637f", null ],
-    [ "apply_all_symmetry_operations", "classocc_1_1crystal_1_1SpaceGroup.html#afdb17bd2439880e23a2ef99b85f72b6e", null ],
-    [ "apply_rotations", "classocc_1_1crystal_1_1SpaceGroup.html#a101255086a54fff6bbdfee4d9048af46", null ],
+    [ "apply_all_symmetry_operations", "classocc_1_1crystal_1_1SpaceGroup.html#a42dd600370bf39a9f0226edfdf60a3d7", null ],
+    [ "apply_rotations", "classocc_1_1crystal_1_1SpaceGroup.html#afac83c7cf8a716b16db1b23293f3ca55", null ],
     [ "has_H_R_choice", "classocc_1_1crystal_1_1SpaceGroup.html#a3216f2dfca408e7ce217319fddb33e73", null ],
     [ "number", "classocc_1_1crystal_1_1SpaceGroup.html#a07f763a7a098f648115fbe2d891469bc", null ],
     [ "reciprocal_asu", "classocc_1_1crystal_1_1SpaceGroup.html#a4fb7dcdb4f921f5b53eecf30eb6abbfb", null ],
-    [ "short_name", "classocc_1_1crystal_1_1SpaceGroup.html#a84313ed1d3e754d5321b7e8b6335732f", null ],
-    [ "symbol", "classocc_1_1crystal_1_1SpaceGroup.html#a10c71f46ef2fa8b224350e89bb3f7cd7", null ],
-    [ "symmetry_operations", "classocc_1_1crystal_1_1SpaceGroup.html#a8a61cd31774510124179834c947139ce", null ]
+    [ "short_name", "classocc_1_1crystal_1_1SpaceGroup.html#ad743296aaa4bf5e5ccdf0bedb53e73a3", null ],
+    [ "symbol", "classocc_1_1crystal_1_1SpaceGroup.html#aed742c468f30dfe809e215fab8780a28", null ],
+    [ "symmetry_operations", "classocc_1_1crystal_1_1SpaceGroup.html#a541e5c7b4aec7d4fe58ecfd7351f6ad3", null ]
 ];

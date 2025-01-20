@@ -1,6 +1,9 @@
 <map id="occ::driver::CEModelCrystalGrowthCalculator" name="occ::driver::CEModelCrystalGrowthCalculator">
-<area shape="rect" id="node1" title=" " alt="" coords="102,200,303,241"/>
-<area shape="rect" id="node2" href="$classocc_1_1driver_1_1CrystalGrowthCalculator.html" title=" " alt="" coords="107,109,298,151"/>
-<area shape="rect" id="node3" href="$structocc_1_1crystal_1_1CrystalDimers.html" title="A class representing the molecular dimers in a crystal lattice." alt="" coords="5,5,203,32"/>
-<area shape="rect" id="node4" href="$classocc_1_1crystal_1_1Crystal.html" title="A class representing a crystal structure." alt="" coords="227,5,378,32"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="79,197,280,237"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1driver_1_1CrystalGrowthCalculator.html" title=" " alt="" coords="84,108,275,148"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,162,182,197,177,197,177,162"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1crystal_1_1Crystal.html" title="A class representing a crystal structure." alt="" coords="5,5,156,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,39,164,106,160,110,99,43"/>
+<area shape="rect" id="Node000004" href="$structocc_1_1crystal_1_1CrystalDimers.html" title="A class representing the molecular dimers in a crystal lattice." alt="" coords="181,5,378,31"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="261,42,199,110,195,106,258,39"/>
 </map>

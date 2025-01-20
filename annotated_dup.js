@@ -7,36 +7,36 @@ var annotated_dup =
     ] ],
     [ "nlohmann", "namespacenlohmann.html", [
       [ "adl_serializer< occ::core::Dimer >", "structnlohmann_1_1adl__serializer_3_01occ_1_1core_1_1Dimer_01_4.html", null ],
-      [ "adl_serializer< occ::crystal::SymmetryOperation >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1SymmetryOperation_01_4.html", null ],
+      [ "adl_serializer< occ::crystal::Crystal >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1Crystal_01_4.html", null ],
       [ "adl_serializer< occ::crystal::SpaceGroup >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1SpaceGroup_01_4.html", null ],
-      [ "adl_serializer< occ::crystal::Crystal >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1Crystal_01_4.html", null ]
+      [ "adl_serializer< occ::crystal::SymmetryOperation >", "structnlohmann_1_1adl__serializer_3_01occ_1_1crystal_1_1SymmetryOperation_01_4.html", null ]
     ] ],
     [ "occ", "namespaceocc.html", [
       [ "cg", "namespaceocc_1_1cg.html", [
-        [ "SolventSurfacePartitioner", "classocc_1_1cg_1_1SolventSurfacePartitioner.html", "classocc_1_1cg_1_1SolventSurfacePartitioner" ],
-        [ "InteractionMapper", "classocc_1_1cg_1_1InteractionMapper.html", "classocc_1_1cg_1_1InteractionMapper" ],
-        [ "NeighborAtoms", "structocc_1_1cg_1_1NeighborAtoms.html", "structocc_1_1cg_1_1NeighborAtoms" ],
+        [ "ContributionPair", "structocc_1_1cg_1_1ContributionPair.html", "structocc_1_1cg_1_1ContributionPair" ],
+        [ "CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
+        [ "DimerResult", "structocc_1_1cg_1_1DimerResult.html", "structocc_1_1cg_1_1DimerResult" ],
         [ "DimerSolventTerm", "structocc_1_1cg_1_1DimerSolventTerm.html", "structocc_1_1cg_1_1DimerSolventTerm" ],
         [ "EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", "structocc_1_1cg_1_1EnergyTotal" ],
-        [ "DimerResult", "structocc_1_1cg_1_1DimerResult.html", "structocc_1_1cg_1_1DimerResult" ],
+        [ "InteractionMapper", "classocc_1_1cg_1_1InteractionMapper.html", "classocc_1_1cg_1_1InteractionMapper" ],
         [ "MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", "structocc_1_1cg_1_1MoleculeResult" ],
-        [ "CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
-        [ "SMDSettings", "structocc_1_1cg_1_1SMDSettings.html", "structocc_1_1cg_1_1SMDSettings" ],
-        [ "SMDCalculator", "classocc_1_1cg_1_1SMDCalculator.html", "classocc_1_1cg_1_1SMDCalculator" ],
-        [ "ContributionPair", "structocc_1_1cg_1_1ContributionPair.html", "structocc_1_1cg_1_1ContributionPair" ],
-        [ "SolvationContribution", "classocc_1_1cg_1_1SolvationContribution.html", "classocc_1_1cg_1_1SolvationContribution" ],
+        [ "NeighborAtoms", "structocc_1_1cg_1_1NeighborAtoms.html", "structocc_1_1cg_1_1NeighborAtoms" ],
         [ "NeighborContribution", "structocc_1_1cg_1_1NeighborContribution.html", "structocc_1_1cg_1_1NeighborContribution" ],
+        [ "SMDCalculator", "classocc_1_1cg_1_1SMDCalculator.html", "classocc_1_1cg_1_1SMDCalculator" ],
+        [ "SMDSettings", "structocc_1_1cg_1_1SMDSettings.html", "structocc_1_1cg_1_1SMDSettings" ],
+        [ "SMDSolventSurfaces", "structocc_1_1cg_1_1SMDSolventSurfaces.html", "structocc_1_1cg_1_1SMDSolventSurfaces" ],
+        [ "SolvationContribution", "classocc_1_1cg_1_1SolvationContribution.html", "classocc_1_1cg_1_1SolvationContribution" ],
         [ "SolventSurface", "structocc_1_1cg_1_1SolventSurface.html", "structocc_1_1cg_1_1SolventSurface" ],
-        [ "SMDSolventSurfaces", "structocc_1_1cg_1_1SMDSolventSurfaces.html", "structocc_1_1cg_1_1SMDSolventSurfaces" ]
+        [ "SolventSurfacePartitioner", "classocc_1_1cg_1_1SolventSurfacePartitioner.html", "classocc_1_1cg_1_1SolventSurfacePartitioner" ]
       ] ],
       [ "core", "namespaceocc_1_1core.html", [
         [ "diis", "namespaceocc_1_1core_1_1diis.html", [
           [ "DIIS", "classocc_1_1core_1_1diis_1_1DIIS.html", "classocc_1_1core_1_1diis_1_1DIIS" ]
         ] ],
         [ "graph", "namespaceocc_1_1core_1_1graph.html", [
+          [ "Graph", "classocc_1_1core_1_1graph_1_1Graph.html", "classocc_1_1core_1_1graph_1_1Graph" ],
           [ "PeriodicEdge", "structocc_1_1core_1_1graph_1_1PeriodicEdge.html", "structocc_1_1core_1_1graph_1_1PeriodicEdge" ],
-          [ "PeriodicVertex", "structocc_1_1core_1_1graph_1_1PeriodicVertex.html", "structocc_1_1core_1_1graph_1_1PeriodicVertex" ],
-          [ "Graph", "classocc_1_1core_1_1graph_1_1Graph.html", "classocc_1_1core_1_1graph_1_1Graph" ]
+          [ "PeriodicVertex", "structocc_1_1core_1_1graph_1_1PeriodicVertex.html", "structocc_1_1core_1_1graph_1_1PeriodicVertex" ]
         ] ],
         [ "numpy", "namespaceocc_1_1core_1_1numpy.html", [
           [ "impl", "namespaceocc_1_1core_1_1numpy_1_1impl.html", [
@@ -60,38 +60,38 @@ var annotated_dup =
         [ "GenSqrtInvResult", "structocc_1_1core_1_1GenSqrtInvResult.html", "structocc_1_1core_1_1GenSqrtInvResult" ],
         [ "Interpolator1D", "classocc_1_1core_1_1Interpolator1D.html", "classocc_1_1core_1_1Interpolator1D" ],
         [ "KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", "structocc_1_1core_1_1KalmanEstimator" ],
+        [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
         [ "Molecule", "classocc_1_1core_1_1Molecule.html", "classocc_1_1core_1_1Molecule" ],
         [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
         [ "PointCharge", "classocc_1_1core_1_1PointCharge.html", "classocc_1_1core_1_1PointCharge" ],
+        [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ],
         [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
-        [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
-        [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
-        [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ]
+        [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ]
       ] ],
       [ "crystal", "namespaceocc_1_1crystal.html", [
         [ "AsymmetricUnit", "structocc_1_1crystal_1_1AsymmetricUnit.html", "structocc_1_1crystal_1_1AsymmetricUnit" ],
+        [ "Crystal", "classocc_1_1crystal_1_1Crystal.html", "classocc_1_1crystal_1_1Crystal" ],
         [ "CrystalAtomRegion", "structocc_1_1crystal_1_1CrystalAtomRegion.html", "structocc_1_1crystal_1_1CrystalAtomRegion" ],
         [ "CrystalDimers", "structocc_1_1crystal_1_1CrystalDimers.html", "structocc_1_1crystal_1_1CrystalDimers" ],
-        [ "Crystal", "classocc_1_1crystal_1_1Crystal.html", "classocc_1_1crystal_1_1Crystal" ],
-        [ "SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", "structocc_1_1crystal_1_1SymmetryDimerLabeller" ],
+        [ "CrystalSurfaceGenerationParameters", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters" ],
         [ "DimerIndex", "structocc_1_1crystal_1_1DimerIndex.html", "structocc_1_1crystal_1_1DimerIndex" ],
         [ "DimerIndexHash", "structocc_1_1crystal_1_1DimerIndexHash.html", "structocc_1_1crystal_1_1DimerIndexHash" ],
         [ "DimerMappingEdge", "structocc_1_1crystal_1_1DimerMappingEdge.html", "structocc_1_1crystal_1_1DimerMappingEdge" ],
-        [ "DimerMappingVertex", "structocc_1_1crystal_1_1DimerMappingVertex.html", "structocc_1_1crystal_1_1DimerMappingVertex" ],
         [ "DimerMappingTable", "classocc_1_1crystal_1_1DimerMappingTable.html", "classocc_1_1crystal_1_1DimerMappingTable" ],
+        [ "DimerMappingVertex", "structocc_1_1crystal_1_1DimerMappingVertex.html", "structocc_1_1crystal_1_1DimerMappingVertex" ],
         [ "HKL", "structocc_1_1crystal_1_1HKL.html", "structocc_1_1crystal_1_1HKL" ],
+        [ "ReciprocalAsymmetricUnit", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit" ],
         [ "SiteIndex", "structocc_1_1crystal_1_1SiteIndex.html", "structocc_1_1crystal_1_1SiteIndex" ],
         [ "SiteIndexHash", "structocc_1_1crystal_1_1SiteIndexHash.html", "structocc_1_1crystal_1_1SiteIndexHash" ],
         [ "SiteMappingEdge", "structocc_1_1crystal_1_1SiteMappingEdge.html", "structocc_1_1crystal_1_1SiteMappingEdge" ],
-        [ "SiteMappingVertex", "structocc_1_1crystal_1_1SiteMappingVertex.html", "structocc_1_1crystal_1_1SiteMappingVertex" ],
         [ "SiteMappingTable", "classocc_1_1crystal_1_1SiteMappingTable.html", "classocc_1_1crystal_1_1SiteMappingTable" ],
-        [ "ReciprocalAsymmetricUnit", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit" ],
+        [ "SiteMappingVertex", "structocc_1_1crystal_1_1SiteMappingVertex.html", "structocc_1_1crystal_1_1SiteMappingVertex" ],
         [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html", "classocc_1_1crystal_1_1SpaceGroup" ],
-        [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],
         [ "Surface", "classocc_1_1crystal_1_1Surface.html", "classocc_1_1crystal_1_1Surface" ],
-        [ "CrystalSurfaceGenerationParameters", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html", "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters" ],
-        [ "SymmetryOperationFormat", "structocc_1_1crystal_1_1SymmetryOperationFormat.html", "structocc_1_1crystal_1_1SymmetryOperationFormat" ],
+        [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],
+        [ "SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", "structocc_1_1crystal_1_1SymmetryDimerLabeller" ],
         [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],
+        [ "SymmetryOperationFormat", "structocc_1_1crystal_1_1SymmetryOperationFormat.html", "structocc_1_1crystal_1_1SymmetryOperationFormat" ],
         [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ]
       ] ],
       [ "descriptors", "namespaceocc_1_1descriptors.html", [
@@ -102,13 +102,13 @@ var annotated_dup =
         [ "cosx", "namespaceocc_1_1dft_1_1cosx.html", [
           [ "SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange" ]
         ] ],
+        [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
+        [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
         [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
         [ "Functionals", "structocc_1_1dft_1_1Functionals.html", "structocc_1_1dft_1_1Functionals" ],
-        [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
-        [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
-        [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
         [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
         [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
+        [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
         [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ]
       ] ],
       [ "disp", "namespaceocc_1_1disp.html", [
@@ -116,9 +116,9 @@ var annotated_dup =
       ] ],
       [ "driver", "namespaceocc_1_1driver.html", [
         [ "AssignedEnergy", "structocc_1_1driver_1_1AssignedEnergy.html", "structocc_1_1driver_1_1AssignedEnergy" ],
-        [ "CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions" ],
-        [ "CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", "classocc_1_1driver_1_1CrystalGrowthCalculator" ],
         [ "CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator" ],
+        [ "CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", "classocc_1_1driver_1_1CrystalGrowthCalculator" ],
+        [ "CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions" ],
         [ "XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator" ]
       ] ],
       [ "geometry", "namespaceocc_1_1geometry.html", [
@@ -127,17 +127,17 @@ var annotated_dup =
             [ "Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge" ],
             [ "EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash" ],
             [ "has_batch_evaluate", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ],
-            [ "has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N >>(), std::declval< Eigen::Ref< FVec >>()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyc53da7eeae9ee1d678c974c152124f3c.html", null ]
+            [ "has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ]
           ] ],
           [ "LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes" ],
           [ "MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1MarchingCubes" ]
         ] ],
+        [ "Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
         [ "IcosphereMesh", "classocc_1_1geometry_1_1IcosphereMesh.html", "classocc_1_1geometry_1_1IcosphereMesh" ],
         [ "IndexCache", "structocc_1_1geometry_1_1IndexCache.html", "structocc_1_1geometry_1_1IndexCache" ],
         [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
         [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
         [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
-        [ "Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
         [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ]
       ] ],
       [ "gto", "namespaceocc_1_1gto.html", [
@@ -146,20 +146,20 @@ var annotated_dup =
         [ "MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", "structocc_1_1gto_1_1MomentaSpherical" ]
       ] ],
       [ "interaction", "namespaceocc_1_1interaction.html", [
-        [ "PairEnergy", "structocc_1_1interaction_1_1PairEnergy.html", "structocc_1_1interaction_1_1PairEnergy" ],
-        [ "PairEnergyStore", "structocc_1_1interaction_1_1PairEnergyStore.html", "structocc_1_1interaction_1_1PairEnergyStore" ],
-        [ "LatticeConvergenceSettings", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html", "structocc_1_1interaction_1_1LatticeConvergenceSettings" ],
-        [ "LatticeEnergyResult", "structocc_1_1interaction_1_1LatticeEnergyResult.html", "structocc_1_1interaction_1_1LatticeEnergyResult" ],
-        [ "CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", "structocc_1_1interaction_1_1CEParameterizedModel" ],
-        [ "CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", "structocc_1_1interaction_1_1CEMonomerCalculationParameters" ],
         [ "CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", "structocc_1_1interaction_1_1CEEnergyComponents" ],
         [ "CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", "structocc_1_1interaction_1_1CEModelInteraction" ],
+        [ "CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", "structocc_1_1interaction_1_1CEMonomerCalculationParameters" ],
+        [ "CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", "structocc_1_1interaction_1_1CEParameterizedModel" ],
+        [ "LatticeConvergenceSettings", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html", "structocc_1_1interaction_1_1LatticeConvergenceSettings" ],
+        [ "LatticeEnergyResult", "structocc_1_1interaction_1_1LatticeEnergyResult.html", "structocc_1_1interaction_1_1LatticeEnergyResult" ],
+        [ "PairEnergy", "structocc_1_1interaction_1_1PairEnergy.html", "structocc_1_1interaction_1_1PairEnergy" ],
+        [ "PairEnergyStore", "structocc_1_1interaction_1_1PairEnergyStore.html", "structocc_1_1interaction_1_1PairEnergyStore" ],
         [ "WolfParams", "structocc_1_1interaction_1_1WolfParams.html", "structocc_1_1interaction_1_1WolfParams" ]
       ] ],
       [ "io", "namespaceocc_1_1io.html", [
         [ "crystalgrower", "namespaceocc_1_1io_1_1crystalgrower.html", [
-          [ "StructureWriter", "classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html", "classocc_1_1io_1_1crystalgrower_1_1StructureWriter" ],
-          [ "NetWriter", "classocc_1_1io_1_1crystalgrower_1_1NetWriter.html", "classocc_1_1io_1_1crystalgrower_1_1NetWriter" ]
+          [ "NetWriter", "classocc_1_1io_1_1crystalgrower_1_1NetWriter.html", "classocc_1_1io_1_1crystalgrower_1_1NetWriter" ],
+          [ "StructureWriter", "classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html", "classocc_1_1io_1_1crystalgrower_1_1StructureWriter" ]
         ] ],
         [ "impl", "namespaceocc_1_1io_1_1impl.html", [
           [ "FchkScalarWriter", "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html", "structocc_1_1io_1_1impl_1_1FchkScalarWriter" ],
@@ -168,69 +168,69 @@ var annotated_dup =
         [ "kmcpp", "namespaceocc_1_1io_1_1kmcpp.html", [
           [ "InputWriter", "classocc_1_1io_1_1kmcpp_1_1InputWriter.html", "classocc_1_1io_1_1kmcpp_1_1InputWriter" ]
         ] ],
-        [ "ColumnConfiguration", "structocc_1_1io_1_1ColumnConfiguration.html", "structocc_1_1io_1_1ColumnConfiguration" ],
-        [ "RowConfiguration", "structocc_1_1io_1_1RowConfiguration.html", "structocc_1_1io_1_1RowConfiguration" ],
-        [ "Table", "classocc_1_1io_1_1Table.html", "classocc_1_1io_1_1Table" ],
-        [ "AtomData", "structocc_1_1io_1_1AtomData.html", "structocc_1_1io_1_1AtomData" ],
         [ "AdpData", "structocc_1_1io_1_1AdpData.html", "structocc_1_1io_1_1AdpData" ],
+        [ "AtomData", "structocc_1_1io_1_1AtomData.html", "structocc_1_1io_1_1AtomData" ],
+        [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
+        [ "BeckeGridSettings", "structocc_1_1io_1_1BeckeGridSettings.html", "structocc_1_1io_1_1BeckeGridSettings" ],
         [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
-        [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
         [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
+        [ "ColumnConfiguration", "structocc_1_1io_1_1ColumnConfiguration.html", "structocc_1_1io_1_1ColumnConfiguration" ],
+        [ "CrystalInput", "structocc_1_1io_1_1CrystalInput.html", "structocc_1_1io_1_1CrystalInput" ],
         [ "Cube", "classocc_1_1io_1_1Cube.html", "classocc_1_1io_1_1Cube" ],
         [ "DftbGenFormat", "classocc_1_1io_1_1DftbGenFormat.html", "classocc_1_1io_1_1DftbGenFormat" ],
+        [ "DispersionCorrectionInput", "structocc_1_1io_1_1DispersionCorrectionInput.html", "structocc_1_1io_1_1DispersionCorrectionInput" ],
+        [ "DriverInput", "structocc_1_1io_1_1DriverInput.html", "structocc_1_1io_1_1DriverInput" ],
+        [ "ECPShell", "structocc_1_1io_1_1ECPShell.html", "structocc_1_1io_1_1ECPShell" ],
+        [ "ElectronInput", "structocc_1_1io_1_1ElectronInput.html", "structocc_1_1io_1_1ElectronInput" ],
+        [ "ElectronShell", "structocc_1_1io_1_1ElectronShell.html", "structocc_1_1io_1_1ElectronShell" ],
+        [ "ElementBasis", "structocc_1_1io_1_1ElementBasis.html", "structocc_1_1io_1_1ElementBasis" ],
         [ "EngradReader", "classocc_1_1io_1_1EngradReader.html", "classocc_1_1io_1_1EngradReader" ],
         [ "FchkReader", "classocc_1_1io_1_1FchkReader.html", "classocc_1_1io_1_1FchkReader" ],
         [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html", "classocc_1_1io_1_1FchkWriter" ],
         [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
+        [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
         [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
-        [ "BeckeGridSettings", "structocc_1_1io_1_1BeckeGridSettings.html", "structocc_1_1io_1_1BeckeGridSettings" ],
+        [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
         [ "IsosurfaceMesh", "structocc_1_1io_1_1IsosurfaceMesh.html", "structocc_1_1io_1_1IsosurfaceMesh" ],
-        [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ],
-        [ "ElectronShell", "structocc_1_1io_1_1ElectronShell.html", "structocc_1_1io_1_1ElectronShell" ],
-        [ "ECPShell", "structocc_1_1io_1_1ECPShell.html", "structocc_1_1io_1_1ECPShell" ],
-        [ "ReferenceData", "structocc_1_1io_1_1ReferenceData.html", "structocc_1_1io_1_1ReferenceData" ],
-        [ "ElementBasis", "structocc_1_1io_1_1ElementBasis.html", "structocc_1_1io_1_1ElementBasis" ],
         [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
         [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
-        [ "MoldenReader", "classocc_1_1io_1_1MoldenReader.html", "classocc_1_1io_1_1MoldenReader" ],
-        [ "ElectronInput", "structocc_1_1io_1_1ElectronInput.html", "structocc_1_1io_1_1ElectronInput" ],
-        [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
-        [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
-        [ "DriverInput", "structocc_1_1io_1_1DriverInput.html", "structocc_1_1io_1_1DriverInput" ],
-        [ "MethodInput", "structocc_1_1io_1_1MethodInput.html", "structocc_1_1io_1_1MethodInput" ],
-        [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
-        [ "SolventInput", "structocc_1_1io_1_1SolventInput.html", "structocc_1_1io_1_1SolventInput" ],
-        [ "RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", "structocc_1_1io_1_1RuntimeInput" ],
-        [ "DispersionCorrectionInput", "structocc_1_1io_1_1DispersionCorrectionInput.html", "structocc_1_1io_1_1DispersionCorrectionInput" ],
-        [ "CrystalInput", "structocc_1_1io_1_1CrystalInput.html", "structocc_1_1io_1_1CrystalInput" ],
-        [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
-        [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
-        [ "OccInput", "structocc_1_1io_1_1OccInput.html", "structocc_1_1io_1_1OccInput" ],
-        [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
-        [ "PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", "structocc_1_1io_1_1PointChargeFileReader" ],
-        [ "QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", "structocc_1_1io_1_1QCSchemaBond" ],
-        [ "QCSchemaTopology", "structocc_1_1io_1_1QCSchemaTopology.html", "structocc_1_1io_1_1QCSchemaTopology" ],
-        [ "QCSchemaModel", "structocc_1_1io_1_1QCSchemaModel.html", "structocc_1_1io_1_1QCSchemaModel" ],
-        [ "QCSchemaInput", "structocc_1_1io_1_1QCSchemaInput.html", "structocc_1_1io_1_1QCSchemaInput" ],
-        [ "QCSchemaReader", "classocc_1_1io_1_1QCSchemaReader.html", "classocc_1_1io_1_1QCSchemaReader" ],
         [ "JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
         [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ],
+        [ "MethodInput", "structocc_1_1io_1_1MethodInput.html", "structocc_1_1io_1_1MethodInput" ],
+        [ "MoldenReader", "classocc_1_1io_1_1MoldenReader.html", "classocc_1_1io_1_1MoldenReader" ],
+        [ "OccInput", "structocc_1_1io_1_1OccInput.html", "structocc_1_1io_1_1OccInput" ],
+        [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
+        [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
+        [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
+        [ "PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", "structocc_1_1io_1_1PointChargeFileReader" ],
+        [ "QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", "structocc_1_1io_1_1QCSchemaBond" ],
+        [ "QCSchemaInput", "structocc_1_1io_1_1QCSchemaInput.html", "structocc_1_1io_1_1QCSchemaInput" ],
+        [ "QCSchemaModel", "structocc_1_1io_1_1QCSchemaModel.html", "structocc_1_1io_1_1QCSchemaModel" ],
+        [ "QCSchemaReader", "classocc_1_1io_1_1QCSchemaReader.html", "classocc_1_1io_1_1QCSchemaReader" ],
+        [ "QCSchemaTopology", "structocc_1_1io_1_1QCSchemaTopology.html", "structocc_1_1io_1_1QCSchemaTopology" ],
+        [ "ReferenceData", "structocc_1_1io_1_1ReferenceData.html", "structocc_1_1io_1_1ReferenceData" ],
+        [ "RowConfiguration", "structocc_1_1io_1_1RowConfiguration.html", "structocc_1_1io_1_1RowConfiguration" ],
+        [ "RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", "structocc_1_1io_1_1RuntimeInput" ],
+        [ "SolventInput", "structocc_1_1io_1_1SolventInput.html", "structocc_1_1io_1_1SolventInput" ],
+        [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
+        [ "Table", "classocc_1_1io_1_1Table.html", "classocc_1_1io_1_1Table" ],
+        [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ],
         [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ]
       ] ],
       [ "isosurface", "namespaceocc_1_1isosurface.html", [
-        [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
         [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
-        [ "InterpolatorParams", "structocc_1_1isosurface_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1InterpolatorParams" ],
+        [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
         [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
-        [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
-        [ "MCDeformationDensityFunctor", "classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html", "classocc_1_1isosurface_1_1MCDeformationDensityFunctor" ],
-        [ "ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC" ],
         [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
-        [ "MCElectricPotentialFunctor", "classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1MCElectricPotentialFunctor" ],
+        [ "ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC" ],
         [ "ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", "classocc_1_1isosurface_1_1ElectronDensityFunctor" ],
+        [ "InterpolatorParams", "structocc_1_1isosurface_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1InterpolatorParams" ],
+        [ "MCDeformationDensityFunctor", "classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html", "classocc_1_1isosurface_1_1MCDeformationDensityFunctor" ],
+        [ "MCElectricPotentialFunctor", "classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1MCElectricPotentialFunctor" ],
         [ "MCElectronDensityFunctor", "classocc_1_1isosurface_1_1MCElectronDensityFunctor.html", "classocc_1_1isosurface_1_1MCElectronDensityFunctor" ],
         [ "MCPromoleculeDensityFunctor", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor.html", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor" ],
         [ "StockholderWeightFunctor", "classocc_1_1isosurface_1_1StockholderWeightFunctor.html", "classocc_1_1isosurface_1_1StockholderWeightFunctor" ],
+        [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
         [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ]
       ] ],
       [ "main", "namespaceocc_1_1main.html", [
@@ -238,24 +238,24 @@ var annotated_dup =
           [ "AtomInterpolator", "structocc_1_1main_1_1pfimpl_1_1AtomInterpolator.html", "structocc_1_1main_1_1pfimpl_1_1AtomInterpolator" ],
           [ "InterpolatorParams", "structocc_1_1main_1_1pfimpl_1_1InterpolatorParams.html", "structocc_1_1main_1_1pfimpl_1_1InterpolatorParams" ]
         ] ],
-        [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
-        [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
-        [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
-        [ "CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", "structocc_1_1main_1_1CrystalSurfaceEnergies" ],
         [ "CGConfig", "structocc_1_1main_1_1CGConfig.html", "structocc_1_1main_1_1CGConfig" ],
+        [ "CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", "structocc_1_1main_1_1CrystalSurfaceEnergies" ],
         [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
+        [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
         [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
-        [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
-        [ "OrbitalIndex", "structocc_1_1main_1_1OrbitalIndex.html", "structocc_1_1main_1_1OrbitalIndex" ],
-        [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
-        [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
-        [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],
         [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
-        [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
-        [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
+        [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
         [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],
-        [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
+        [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
+        [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
+        [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
+        [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
+        [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
+        [ "OrbitalIndex", "structocc_1_1main_1_1OrbitalIndex.html", "structocc_1_1main_1_1OrbitalIndex" ],
+        [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
+        [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
+        [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],
         [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ]
       ] ],
       [ "qm", "namespaceocc_1_1qm.html", [
@@ -267,24 +267,24 @@ var annotated_dup =
           [ "IntegralEnvironment", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment" ],
           [ "Optimizer", "classocc_1_1qm_1_1cint_1_1Optimizer.html", "classocc_1_1qm_1_1cint_1_1Optimizer" ]
         ] ],
+        [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
         [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
         [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
+        [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
         [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
         [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
-        [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
-        [ "JKTriple", "structocc_1_1qm_1_1JKTriple.html", "structocc_1_1qm_1_1JKTriple" ],
         [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
         [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
+        [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
+        [ "JKTriple", "structocc_1_1qm_1_1JKTriple.html", "structocc_1_1qm_1_1JKTriple" ],
         [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
         [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
         [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
-        [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
         [ "SCF", "structocc_1_1qm_1_1SCF.html", "structocc_1_1qm_1_1SCF" ],
+        [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
         [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
         [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html", "classocc_1_1qm_1_1SCFMethodBase" ],
         [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
-        [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
-        [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
         [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ]
       ] ],
       [ "sht", "namespaceocc_1_1sht.html", [
@@ -293,28 +293,28 @@ var annotated_dup =
         [ "SphericalHarmonics", "classocc_1_1sht_1_1SphericalHarmonics.html", "classocc_1_1sht_1_1SphericalHarmonics" ]
       ] ],
       [ "slater", "namespaceocc_1_1slater.html", [
-        [ "StockholderWeight", "classocc_1_1slater_1_1StockholderWeight.html", "classocc_1_1slater_1_1StockholderWeight" ],
         [ "AtomInterpolator", "structocc_1_1slater_1_1AtomInterpolator.html", "structocc_1_1slater_1_1AtomInterpolator" ],
+        [ "Basis", "classocc_1_1slater_1_1Basis.html", "classocc_1_1slater_1_1Basis" ],
         [ "InterpolatorParams", "structocc_1_1slater_1_1InterpolatorParams.html", "structocc_1_1slater_1_1InterpolatorParams" ],
         [ "PromoleculeDensity", "classocc_1_1slater_1_1PromoleculeDensity.html", "classocc_1_1slater_1_1PromoleculeDensity" ],
         [ "Shell", "classocc_1_1slater_1_1Shell.html", "classocc_1_1slater_1_1Shell" ],
-        [ "Basis", "classocc_1_1slater_1_1Basis.html", "classocc_1_1slater_1_1Basis" ]
+        [ "StockholderWeight", "classocc_1_1slater_1_1StockholderWeight.html", "classocc_1_1slater_1_1StockholderWeight" ]
       ] ],
       [ "solvent", "namespaceocc_1_1solvent.html", [
         [ "surface", "namespaceocc_1_1solvent_1_1surface.html", [
           [ "Surface", "structocc_1_1solvent_1_1surface_1_1Surface.html", "structocc_1_1solvent_1_1surface_1_1Surface" ]
         ] ],
+        [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html", "classocc_1_1solvent_1_1ContinuumSolvationModel" ],
         [ "COSMO", "classocc_1_1solvent_1_1COSMO.html", "classocc_1_1solvent_1_1COSMO" ],
         [ "SMDSolventParameters", "structocc_1_1solvent_1_1SMDSolventParameters.html", "structocc_1_1solvent_1_1SMDSolventParameters" ],
-        [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html", "classocc_1_1solvent_1_1ContinuumSolvationModel" ],
         [ "SolvationCorrectedProcedure", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html", "classocc_1_1solvent_1_1SolvationCorrectedProcedure" ]
       ] ],
       [ "timing", "namespaceocc_1_1timing.html", [
         [ "StopWatch", "classocc_1_1timing_1_1StopWatch.html", "classocc_1_1timing_1_1StopWatch" ]
       ] ],
       [ "xdm", "namespaceocc_1_1xdm.html", [
-        [ "XDMAtomList", "structocc_1_1xdm_1_1XDMAtomList.html", "structocc_1_1xdm_1_1XDMAtomList" ],
-        [ "XDM", "classocc_1_1xdm_1_1XDM.html", "classocc_1_1xdm_1_1XDM" ]
+        [ "XDM", "classocc_1_1xdm_1_1XDM.html", "classocc_1_1xdm_1_1XDM" ],
+        [ "XDMAtomList", "structocc_1_1xdm_1_1XDMAtomList.html", "structocc_1_1xdm_1_1XDMAtomList" ]
       ] ],
       [ "xtb", "namespaceocc_1_1xtb.html", [
         [ "TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", "classocc_1_1xtb_1_1TbliteCalculator" ],
@@ -324,20 +324,20 @@ var annotated_dup =
     ] ],
     [ "quickhull", "namespacequickhull.html", [
       [ "ConvexHull", "classquickhull_1_1ConvexHull.html", "classquickhull_1_1ConvexHull" ],
+      [ "DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", "structquickhull_1_1DiagnosticsData" ],
       [ "HalfEdgeMesh", "classquickhull_1_1HalfEdgeMesh.html", "classquickhull_1_1HalfEdgeMesh" ],
       [ "MeshBuilder", "classquickhull_1_1MeshBuilder.html", "classquickhull_1_1MeshBuilder" ],
       [ "Plane", "classquickhull_1_1Plane.html", "classquickhull_1_1Plane" ],
       [ "Pool", "classquickhull_1_1Pool.html", "classquickhull_1_1Pool" ],
-      [ "DiagnosticsData", "structquickhull_1_1DiagnosticsData.html", "structquickhull_1_1DiagnosticsData" ],
       [ "QuickHull", "classquickhull_1_1QuickHull.html", "classquickhull_1_1QuickHull" ],
       [ "Ray", "structquickhull_1_1Ray.html", "structquickhull_1_1Ray" ]
     ] ],
     [ "tinyply", "namespacetinyply.html", [
-      [ "PropertyInfo", "structtinyply_1_1PropertyInfo.html", "structtinyply_1_1PropertyInfo" ],
       [ "Buffer", "classtinyply_1_1Buffer.html", "classtinyply_1_1Buffer" ],
       [ "PlyData", "structtinyply_1_1PlyData.html", "structtinyply_1_1PlyData" ],
-      [ "PlyProperty", "structtinyply_1_1PlyProperty.html", "structtinyply_1_1PlyProperty" ],
       [ "PlyElement", "structtinyply_1_1PlyElement.html", "structtinyply_1_1PlyElement" ],
-      [ "PlyFile", "structtinyply_1_1PlyFile.html", "structtinyply_1_1PlyFile" ]
+      [ "PlyFile", "structtinyply_1_1PlyFile.html", "structtinyply_1_1PlyFile" ],
+      [ "PlyProperty", "structtinyply_1_1PlyProperty.html", "structtinyply_1_1PlyProperty" ],
+      [ "PropertyInfo", "structtinyply_1_1PropertyInfo.html", "structtinyply_1_1PropertyInfo" ]
     ] ]
 ];

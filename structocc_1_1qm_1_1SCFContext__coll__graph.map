@@ -1,8 +1,14 @@
 <map id="occ::qm::SCFContext" name="occ::qm::SCFContext">
-<area shape="rect" id="node1" title=" " alt="" coords="192,228,349,255"/>
-<area shape="rect" id="node2" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="26,139,222,165"/>
-<area shape="rect" id="node3" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="5,13,192,39"/>
-<area shape="rect" id="node4" title=" " alt="" coords="229,13,289,39"/>
-<area shape="rect" id="node5" href="$classocc_1_1core_1_1EnergyComponents.html" title="Storage class for components of energy, separated by the dot character." alt="" coords="321,139,535,165"/>
-<area shape="rect" id="node6" title=" " alt="" coords="325,5,531,47"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="105,225,262,251"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,13,65,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="34,51,32,105,38,134,50,161,68,183,91,200,141,223,139,228,89,204,65,187,45,164,32,136,27,105,28,51"/>
+<area shape="rect" id="Node000005" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="85,137,281,163"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="56,47,87,79,124,111,162,135,159,140,120,115,83,83,52,51"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1core_1_1EnergyComponents.html" title="Storage class for components of energy, separated by the dot character." alt="" coords="305,137,520,163"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="370,170,215,228,213,223,368,165"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="309,5,516,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="415,59,415,137,410,137,410,59"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="186,177,186,225,181,225,181,177"/>
+<area shape="rect" id="Node000006" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="90,13,277,38"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="186,52,186,137,181,137,181,52"/>
 </map>

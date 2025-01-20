@@ -47,7 +47,7 @@ var namespaceocc_1_1timing =
       [ "global", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aa593d8f8f4e0489f836e07e4f4220cbf", null ],
       [ "_group_count", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a6f051406d3501a7e49a73b8fa2aef406", null ]
     ] ],
-    [ "category_name", "namespaceocc_1_1timing.html#a17d42b38ebd63b2259ea61bf2b71f540", null ],
+    [ "category_name", "namespaceocc_1_1timing.html#a138eb8fe95976467e1d833f39d8cc3c8", null ],
     [ "clear_all", "namespaceocc_1_1timing.html#a40dbb6e6c49843c36cc1960b099645fa", null ],
     [ "print_timings", "namespaceocc_1_1timing.html#a71b3a3c4467a63df8fcf8f3c2a637ddd", null ],
     [ "start", "namespaceocc_1_1timing.html#acdfa78eefea5a0155f320e07bafd913d", null ],

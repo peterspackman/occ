@@ -127,6 +127,7 @@ var menudata={children:[
 {text:"s",url:"namespacemembers_eval.html#index_s"},
 {text:"u",url:"namespacemembers_eval.html#index_u"},
 {text:"x",url:"namespacemembers_eval.html#index_x"}]}]}]},
+{text:"Concepts",url:"concepts.html"},
 {text:"Classes",url:"annotated.html",children:[
 {text:"Class List",url:"annotated.html"},
 {text:"Class Index",url:"classes.html"},
@@ -249,7 +250,7 @@ var menudata={children:[
 {text:"p",url:"functions_eval_p.html#index_p"},
 {text:"r",url:"functions_eval_r.html#index_r"},
 {text:"s",url:"functions_eval_s.html#index_s"}]},
-{text:"Related Functions",url:"functions_rela.html"}]}]},
+{text:"Related Symbols",url:"functions_rela.html"}]}]},
 {text:"Files",url:"files.html",children:[
 {text:"File List",url:"files.html"},
 {text:"File Members",url:"globals.html",children:[

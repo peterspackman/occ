@@ -1,7 +1,14 @@
 <map id="/home/runner/work/occ/occ/include/occ/geometry/pool.h" name="/home/runner/work/occ/occ/include/occ/geometry/pool.h">
-<area shape="rect" id="node1" title=" " alt="" coords="272,5,464,61"/>
-<area shape="rect" id="node2" href="$mesh_8h.html" title=" " alt="" coords="205,109,397,165"/>
-<area shape="rect" id="node4" href="$quickhull_8h.html" title=" " alt="" coords="205,317,397,373"/>
-<area shape="rect" id="node3" href="$convex__hull_8h.html" title=" " alt="" coords="5,213,197,269"/>
-<area shape="rect" id="node5" href="$half__edge__mesh_8h.html" title=" " alt="" coords="272,213,464,269"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="272,5,464,60"/>
+<area shape="rect" id="Node000002" href="$mesh_8h.html" title=" " alt="" coords="205,108,397,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="345,73,321,109,317,106,341,70"/>
+<area shape="rect" id="Node000004" href="$quickhull_8h.html" title=" " alt="" coords="205,313,397,368"/>
+<area shape="poly" id="edge7_Node000001_Node000004" title=" " alt="" coords="409,68,445,109,477,160,488,187,492,214,490,241,478,267,462,286,443,301,399,323,396,318,440,297,459,282,474,264,485,240,487,214,482,188,472,162,441,113,405,71"/>
+<area shape="rect" id="Node000003" href="$convex__hull_8h.html" title=" " alt="" coords="5,211,197,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="238,171,155,213,152,208,236,166"/>
+<area shape="poly" id="edge6_Node000002_Node000004" title=" " alt="" coords="278,176,263,211,258,238,263,265,272,289,285,312,280,314,267,292,257,266,253,238,257,210,273,173"/>
+<area shape="rect" id="Node000005" href="$half__edge__mesh_8h.html" title=" " alt="" coords="272,211,464,265"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="329,173,353,209,348,212,324,176"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="167,269,250,311,248,316,164,274"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="345,278,321,315,317,312,341,275"/>
 </map>

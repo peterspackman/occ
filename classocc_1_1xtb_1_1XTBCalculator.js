@@ -12,11 +12,11 @@ var classocc_1_1xtb_1_1XTBCalculator =
     [ "XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html#a77bfbac4b423dd9c77110a3d21b4f2b8", null ],
     [ "bond_orders", "classocc_1_1xtb_1_1XTBCalculator.html#ab1388dff108ca27b8d4ba6538f7dd455", null ],
     [ "charges", "classocc_1_1xtb_1_1XTBCalculator.html#ab255d8b7a42424f478663a8424472f1c", null ],
-    [ "gradients", "classocc_1_1xtb_1_1XTBCalculator.html#a3ae367b7bbed69011d8ea6e0fc2c6080", null ],
-    [ "lattice_vectors", "classocc_1_1xtb_1_1XTBCalculator.html#adf33be8b8f1d5107ee44b711269a5fae", null ],
+    [ "gradients", "classocc_1_1xtb_1_1XTBCalculator.html#a24fb274a031cc14539871f4b08296176", null ],
+    [ "lattice_vectors", "classocc_1_1xtb_1_1XTBCalculator.html#ad593a9d594833a1a293e08cc6053f8cc", null ],
     [ "num_atoms", "classocc_1_1xtb_1_1XTBCalculator.html#a6100ff50a65671b8dd99994f1de21418", null ],
-    [ "partial_charges", "classocc_1_1xtb_1_1XTBCalculator.html#a53a912579662d0cf1a9fc3cb6634be9d", null ],
-    [ "positions", "classocc_1_1xtb_1_1XTBCalculator.html#a89532ff7d55d2708e373f59a698e094d", null ],
+    [ "partial_charges", "classocc_1_1xtb_1_1XTBCalculator.html#a3d18aa543b8106df8b91200f1fe28116", null ],
+    [ "positions", "classocc_1_1xtb_1_1XTBCalculator.html#a737264d6fe2cb6f7819c772b6db41a1e", null ],
     [ "set_accuracy", "classocc_1_1xtb_1_1XTBCalculator.html#a14740bc1fea74dc2c9b0b177fe7329cd", null ],
     [ "set_charge", "classocc_1_1xtb_1_1XTBCalculator.html#a7ddbdbbedaaf5c5c05e21c58e2ef78b0", null ],
     [ "set_max_iterations", "classocc_1_1xtb_1_1XTBCalculator.html#ab69b1877c79c496e812d7a29e028a590", null ],
@@ -30,5 +30,5 @@ var classocc_1_1xtb_1_1XTBCalculator =
     [ "to_molecule", "classocc_1_1xtb_1_1XTBCalculator.html#a69893fea1dadbbffe4f5dcc1f72d712a", null ],
     [ "update_structure", "classocc_1_1xtb_1_1XTBCalculator.html#a11d687459eb2b261522c0f22206b3d06", null ],
     [ "update_structure", "classocc_1_1xtb_1_1XTBCalculator.html#acff1c6dc9a4ff48c321f5c793415f0eb", null ],
-    [ "virial", "classocc_1_1xtb_1_1XTBCalculator.html#a1f9119d48741c78e1f85e69199712190", null ]
+    [ "virial", "classocc_1_1xtb_1_1XTBCalculator.html#a5ffed2d3cf4b42bc50edf55561bb52ad", null ]
 ];

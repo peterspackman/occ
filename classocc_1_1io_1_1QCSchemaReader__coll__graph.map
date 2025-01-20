@@ -1,7 +1,11 @@
 <map id="occ::io::QCSchemaReader" name="occ::io::QCSchemaReader">
-<area shape="rect" id="node1" title=" " alt="" coords="165,184,354,211"/>
-<area shape="rect" id="node2" href="$structocc_1_1io_1_1QCSchemaInput.html" title=" " alt="" coords="171,95,347,121"/>
-<area shape="rect" id="node3" href="$structocc_1_1io_1_1PairInput.html" title=" " alt="" coords="5,5,135,32"/>
-<area shape="rect" id="node4" href="$structocc_1_1io_1_1QCSchemaTopology.html" title=" " alt="" coords="159,5,360,32"/>
-<area shape="rect" id="node5" href="$structocc_1_1io_1_1QCSchemaModel.html" title=" " alt="" coords="384,5,567,32"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="227,181,417,207"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1io_1_1QCSchemaInput.html" title=" " alt="" coords="234,93,410,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="325,133,325,181,319,181,319,133"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1io_1_1QCSchemaTopology.html" title=" " alt="" coords="5,5,207,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="149,33,294,91,292,96,147,38"/>
+<area shape="rect" id="Node000004" href="$structocc_1_1io_1_1QCSchemaModel.html" title=" " alt="" coords="231,5,413,31"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="325,45,325,93,319,93,319,45"/>
+<area shape="rect" id="Node000005" href="$structocc_1_1io_1_1PairInput.html" title=" " alt="" coords="437,5,567,31"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="467,39,348,95,345,91,464,34"/>
 </map>

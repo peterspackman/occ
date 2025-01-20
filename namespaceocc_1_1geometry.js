@@ -23,12 +23,12 @@ var namespaceocc_1_1geometry =
       [ "shift2B", "namespaceocc_1_1geometry_1_1constants.html#aa384f5658b6af633506bcf119cbed129", null ]
     ] ],
     [ "mc", "namespaceocc_1_1geometry_1_1mc.html", "namespaceocc_1_1geometry_1_1mc" ],
+    [ "Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
     [ "IcosphereMesh", "classocc_1_1geometry_1_1IcosphereMesh.html", "classocc_1_1geometry_1_1IcosphereMesh" ],
     [ "IndexCache", "structocc_1_1geometry_1_1IndexCache.html", "structocc_1_1geometry_1_1IndexCache" ],
     [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
     [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
     [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
-    [ "Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
     [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ],
     [ "floating_type", "namespaceocc_1_1geometry.html#acf080699dbc8adfc07ad0f98fa4b5e14", null ],
     [ "integer_type", "namespaceocc_1_1geometry.html#a2dd3b248b105650e26e3fbc372043957", null ],

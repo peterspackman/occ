@@ -1,6 +1,6 @@
 var interpolator_8h =
 [
-    [ "Interpolator1D", "classocc_1_1core_1_1Interpolator1D.html", "classocc_1_1core_1_1Interpolator1D" ],
+    [ "occ::core::Interpolator1D< T, mapping >", "classocc_1_1core_1_1Interpolator1D.html", "classocc_1_1core_1_1Interpolator1D" ],
     [ "DomainMapping", "interpolator_8h.html#af6f9457912400951cbbcec98cc5b2e35", [
       [ "Linear", "interpolator_8h.html#af6f9457912400951cbbcec98cc5b2e35acfbaf4c160987f5ac229af3f525afb36", null ],
       [ "SquareRoot", "interpolator_8h.html#af6f9457912400951cbbcec98cc5b2e35a70da9110621ed7cd7e701b83a93d129e", null ],

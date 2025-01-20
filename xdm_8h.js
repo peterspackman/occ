@@ -1,8 +1,8 @@
 var xdm_8h =
 [
-    [ "XDMAtomList", "structocc_1_1xdm_1_1XDMAtomList.html", "structocc_1_1xdm_1_1XDMAtomList" ],
-    [ "XDM", "classocc_1_1xdm_1_1XDM.html", "classocc_1_1xdm_1_1XDM" ],
-    [ "Parameters", "structocc_1_1xdm_1_1XDM_1_1Parameters.html", "structocc_1_1xdm_1_1XDM_1_1Parameters" ],
-    [ "xdm_dispersion_energy", "xdm_8h.html#a789a5e40cc60a135d18a7184c41e6e11", null ],
-    [ "xdm_dispersion_interaction_energy", "xdm_8h.html#adae97932df5d1a6d182e870c3895fdff", null ]
+    [ "occ::xdm::XDMAtomList", "structocc_1_1xdm_1_1XDMAtomList.html", "structocc_1_1xdm_1_1XDMAtomList" ],
+    [ "occ::xdm::XDM", "classocc_1_1xdm_1_1XDM.html", "classocc_1_1xdm_1_1XDM" ],
+    [ "occ::xdm::XDM::Parameters", "structocc_1_1xdm_1_1XDM_1_1Parameters.html", "structocc_1_1xdm_1_1XDM_1_1Parameters" ],
+    [ "xdm_dispersion_energy", "xdm_8h.html#a74b21052ae1b6350a3098f2403dea2b6", null ],
+    [ "xdm_dispersion_interaction_energy", "xdm_8h.html#acd14e46c74705f0a7827c57fd260c14f", null ]
 ];

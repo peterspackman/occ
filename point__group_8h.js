@@ -1,7 +1,7 @@
 var point__group_8h =
 [
-    [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
-    [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
+    [ "occ::core::SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
+    [ "occ::core::MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
     [ "MirrorType", "point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6", [
       [ "None", "point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6a6adf97f83acf6453d4a6a4b1070f3754", null ],
       [ "H", "point__group_8h.html#ab8b12b4d6899a9a9bec8c3024fa366f6ac1d9f50f86825a1a2302ec2449c17196", null ],

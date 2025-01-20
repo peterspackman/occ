@@ -1,10 +1,10 @@
 var result__types_8h =
 [
-    [ "DimerSolventTerm", "structocc_1_1cg_1_1DimerSolventTerm.html", "structocc_1_1cg_1_1DimerSolventTerm" ],
-    [ "EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", "structocc_1_1cg_1_1EnergyTotal" ],
-    [ "DimerResult", "structocc_1_1cg_1_1DimerResult.html", "structocc_1_1cg_1_1DimerResult" ],
-    [ "MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", "structocc_1_1cg_1_1MoleculeResult" ],
-    [ "CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
+    [ "occ::cg::DimerSolventTerm", "structocc_1_1cg_1_1DimerSolventTerm.html", "structocc_1_1cg_1_1DimerSolventTerm" ],
+    [ "occ::cg::EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", "structocc_1_1cg_1_1EnergyTotal" ],
+    [ "occ::cg::DimerResult", "structocc_1_1cg_1_1DimerResult.html", "structocc_1_1cg_1_1DimerResult" ],
+    [ "occ::cg::MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", "structocc_1_1cg_1_1MoleculeResult" ],
+    [ "occ::cg::CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
     [ "CGEnergies", "result__types_8h.html#a2efdad243923360f192e3e2d5d48bfb0", null ],
     [ "CGEnergyComponents", "result__types_8h.html#a3855b410636d4421f6f9f75415acae22", null ],
     [ "DimerResults", "result__types_8h.html#a999cd08c97d17040789562269d22d453", null ],

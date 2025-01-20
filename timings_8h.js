@@ -1,6 +1,6 @@
 var timings_8h =
 [
-    [ "StopWatch", "classocc_1_1timing_1_1StopWatch.html", "classocc_1_1timing_1_1StopWatch" ],
+    [ "occ::timing::StopWatch< count >", "classocc_1_1timing_1_1StopWatch.html", "classocc_1_1timing_1_1StopWatch" ],
     [ "clock_t", "timings_8h.html#a569e4ae0cf6bae02ad21601b764f6518", null ],
     [ "duration_t", "timings_8h.html#a477674a5f397a1fbcbefec4bd9b46eef", null ],
     [ "time_point_t", "timings_8h.html#ac322722ef93738b18db0c38c559f9806", null ],
@@ -47,7 +47,7 @@ var timings_8h =
       [ "global", "timings_8h.html#a089c88a4231531abae301355d6ba8c16aa593d8f8f4e0489f836e07e4f4220cbf", null ],
       [ "_group_count", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a6f051406d3501a7e49a73b8fa2aef406", null ]
     ] ],
-    [ "category_name", "timings_8h.html#a17d42b38ebd63b2259ea61bf2b71f540", null ],
+    [ "category_name", "timings_8h.html#a138eb8fe95976467e1d833f39d8cc3c8", null ],
     [ "clear_all", "timings_8h.html#a40dbb6e6c49843c36cc1960b099645fa", null ],
     [ "print_timings", "timings_8h.html#a71b3a3c4467a63df8fcf8f3c2a637ddd", null ],
     [ "start", "timings_8h.html#acdfa78eefea5a0155f320e07bafd913d", null ],

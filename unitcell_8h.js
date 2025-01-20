@@ -1,6 +1,6 @@
 var unitcell_8h =
 [
-    [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ],
+    [ "occ::crystal::UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ],
     [ "cubic_cell", "unitcell_8h.html#a78a9c35cd26a715ea7cfbee259ea95e5", null ],
     [ "hexagonal_cell", "unitcell_8h.html#a9e01d3b4dd9257ecd1fac2bfba8947c3", null ],
     [ "monoclinic_cell", "unitcell_8h.html#a1a44c3e06d68376a3160ea89a23cd97d", null ],

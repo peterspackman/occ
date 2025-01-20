@@ -1,4 +1,5 @@
 <map id="occ::crystal::SymmetryDimerLabeller" name="occ::crystal::SymmetryDimerLabeller">
-<area shape="rect" id="node1" title=" " alt="" coords="17,109,229,151"/>
-<area shape="rect" id="node2" href="$structocc_1_1crystal_1_1SymmetryOperationFormat.html" title=" " alt="" coords="5,5,241,47"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="17,108,229,148"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1crystal_1_1SymmetryOperationFormat.html" title=" " alt="" coords="5,5,241,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,59,126,108,121,108,121,59"/>
 </map>
