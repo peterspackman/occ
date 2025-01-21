@@ -105,6 +105,9 @@ $(document).ready(function(){initNavTree('structocc_1_1crystal_1_1DimerIndex.htm
 </div><!--header-->
 <div class="contents">
 
+<p>Represents a pair of sites in a crystal structure.  
+ <a href="structocc_1_1crystal_1_1DimerIndex.html#details">More...</a></p>
+
 <p><code>#include &lt;dimer_mapping_table.h&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for occ::crystal::DimerIndex:</div>
@@ -115,6 +118,7 @@ Collaboration diagram for occ::crystal::DimerIndex:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a423578a15628d78fcc60aae074e6ad5a" id="r_a423578a15628d78fcc60aae074e6ad5a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html#a423578a15628d78fcc60aae074e6ad5a">hkl_difference</a> () const</td></tr>
+<tr class="memdesc:a423578a15628d78fcc60aae074e6ad5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the <a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a> difference between the two sites.  <br /></td></tr>
 <tr class="separator:a423578a15628d78fcc60aae074e6ad5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0a7c9e9043c2a9370740b3594750d47" id="r_aa0a7c9e9043c2a9370740b3594750d47"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html#aa0a7c9e9043c2a9370740b3594750d47">operator==</a> (const <a class="el" href="structocc_1_1crystal_1_1DimerIndex.html">DimerIndex</a> &amp;other) const</td></tr>
 <tr class="separator:aa0a7c9e9043c2a9370740b3594750d47"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,11 +128,16 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a409beb07ebf1f889d50ee79b878844eb" id="r_a409beb07ebf1f889d50ee79b878844eb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1crystal_1_1SiteIndex.html">SiteIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html#a409beb07ebf1f889d50ee79b878844eb">a</a></td></tr>
+<tr class="memdesc:a409beb07ebf1f889d50ee79b878844eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">First site of the dimer.  <br /></td></tr>
 <tr class="separator:a409beb07ebf1f889d50ee79b878844eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9fb00d8d56a11ab5e882818ae7f98b2" id="r_ae9fb00d8d56a11ab5e882818ae7f98b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1crystal_1_1SiteIndex.html">SiteIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html#ae9fb00d8d56a11ab5e882818ae7f98b2">b</a></td></tr>
+<tr class="memdesc:ae9fb00d8d56a11ab5e882818ae7f98b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Second site of the dimer.  <br /></td></tr>
 <tr class="separator:ae9fb00d8d56a11ab5e882818ae7f98b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Represents a pair of sites in a crystal structure. </p>
+<p><a class="el" href="structocc_1_1crystal_1_1DimerIndex.html" title="Represents a pair of sites in a crystal structure.">DimerIndex</a> stores two <a class="el" href="structocc_1_1crystal_1_1SiteIndex.html">SiteIndex</a> objects representing the endpoints of a dimer, along with functionality to compare and analyze the relative positions. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a423578a15628d78fcc60aae074e6ad5a" name="a423578a15628d78fcc60aae074e6ad5a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a423578a15628d78fcc60aae074e6ad5a">&#9670;&#160;</a></span>hkl_difference()</h2>
 
@@ -151,6 +160,9 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Calculates the <a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a> difference between the two sites. </p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a> vector representing the difference between sites </dd></dl>
 
 </div>
 </div>
@@ -219,6 +231,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>First site of the dimer. </p>
+
 </div>
 </div>
 <a id="ae9fb00d8d56a11ab5e882818ae7f98b2" name="ae9fb00d8d56a11ab5e882818ae7f98b2"></a>
@@ -232,6 +246,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Second site of the dimer. </p>
 
 </div>
 </div>

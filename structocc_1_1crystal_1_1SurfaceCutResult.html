@@ -106,6 +106,9 @@ $(document).ready(function(){initNavTree('structocc_1_1crystal_1_1SurfaceCutResu
 </div><!--header-->
 <div class="contents">
 
+<p>Results from analyzing a crystal surface cut.  
+ <a href="structocc_1_1crystal_1_1SurfaceCutResult.html#details">More...</a></p>
+
 <p><code>#include &lt;surface.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
@@ -116,8 +119,10 @@ Public Types</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad63c9859fc9f5dae8e20b450fa6a977a" id="r_ad63c9859fc9f5dae8e20b450fa6a977a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#ad63c9859fc9f5dae8e20b450fa6a977a">SurfaceCutResult</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;)</td></tr>
+<tr class="memdesc:ad63c9859fc9f5dae8e20b450fa6a977a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor initializing the result from crystal dimers.  <br /></td></tr>
 <tr class="separator:ad63c9859fc9f5dae8e20b450fa6a977a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad5189b7d0d14df4cc165dc9f55658d0f" id="r_ad5189b7d0d14df4cc165dc9f55658d0f"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#ad5189b7d0d14df4cc165dc9f55658d0f">total_above</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;) const</td></tr>
+<tr class="memdesc:ad5189b7d0d14df4cc165dc9f55658d0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate total dimer count above the surface.  <br /></td></tr>
 <tr class="separator:ad5189b7d0d14df4cc165dc9f55658d0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e103361e0330a64e673a0f8e9be2e37" id="r_a9e103361e0330a64e673a0f8e9be2e37"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#a9e103361e0330a64e673a0f8e9be2e37">total_below</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;) const</td></tr>
 <tr class="separator:a9e103361e0330a64e673a0f8e9be2e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,7 +154,10 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a0ffde2af70ab7b57dc0a75aba73a05e9" id="r_a0ffde2af70ab7b57dc0a75aba73a05e9"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1SurfaceCutResult.html#a0ffde2af70ab7b57dc0a75aba73a05e9">cut_offset</a> {0.0}</td></tr>
 <tr class="separator:a0ffde2af70ab7b57dc0a75aba73a05e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Typedef Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Results from analyzing a crystal surface cut. </p>
+<p>Contains information about molecules and dimer counts in different regions relative to a surface cut, including those above, below, in the slab, and in the bulk. </p>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a92ff1948c9ee78b6d34fea71e24361f9" name="a92ff1948c9ee78b6d34fea71e24361f9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a92ff1948c9ee78b6d34fea71e24361f9">&#9670;&#160;</a></span>DimerCounts</h2>
 
@@ -181,6 +189,14 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Constructor initializing the result from crystal dimers. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dimers</td><td>The crystal dimers to analyze </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -199,6 +215,15 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Calculate total dimer count above the surface. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dimers</td><td>Reference crystal dimers </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Total number of dimers above the surface </dd></dl>
 
 </div>
 </div>

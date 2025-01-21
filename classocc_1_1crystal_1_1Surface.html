@@ -105,11 +105,15 @@ $(document).ready(function(){initNavTree('classocc_1_1crystal_1_1Surface.html','
 </div><!--header-->
 <div class="contents">
 
+<p>Represents and analyzes a crystal surface defined by Miller indices.  
+ <a href="classocc_1_1crystal_1_1Surface.html#details">More...</a></p>
+
 <p><code>#include &lt;surface.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad04e2f6bf7b4499e969d83dac800be4e" id="r_ad04e2f6bf7b4499e969d83dac800be4e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#ad04e2f6bf7b4499e969d83dac800be4e">Surface</a> (const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;, const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;)</td></tr>
+<tr class="memdesc:ad04e2f6bf7b4499e969d83dac800be4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a surface from Miller indices and crystal.  <br /></td></tr>
 <tr class="separator:ad04e2f6bf7b4499e969d83dac800be4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63fe34f4472ecb401d49a45650e47ab9" id="r_a63fe34f4472ecb401d49a45650e47ab9"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#a63fe34f4472ecb401d49a45650e47ab9">depth</a> () const</td></tr>
 <tr class="separator:a63fe34f4472ecb401d49a45650e47ab9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -118,6 +122,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa47e851db2ac76737dc770aa5a05f32d" id="r_aa47e851db2ac76737dc770aa5a05f32d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#aa47e851db2ac76737dc770aa5a05f32d">print</a> () const</td></tr>
 <tr class="separator:aa47e851db2ac76737dc770aa5a05f32d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45f037c499af57243668675fa0a5523c" id="r_a45f037c499af57243668675fa0a5523c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#a45f037c499af57243668675fa0a5523c">normal_vector</a> () const</td></tr>
+<tr class="memdesc:a45f037c499af57243668675fa0a5523c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the surface normal vector.  <br /></td></tr>
 <tr class="separator:a45f037c499af57243668675fa0a5523c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a983171cb592f7dcd0a6d619b617eb282" id="r_a983171cb592f7dcd0a6d619b617eb282"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#a983171cb592f7dcd0a6d619b617eb282">hkl</a> () const</td></tr>
 <tr class="separator:a983171cb592f7dcd0a6d619b617eb282"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,7 +152,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a5bf20b56fdd159a36435f5e5198b04de" id="r_a5bf20b56fdd159a36435f5e5198b04de"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Surface.html#a5bf20b56fdd159a36435f5e5198b04de">faces_are_equivalent</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;, const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;, const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;)</td></tr>
 <tr class="separator:a5bf20b56fdd159a36435f5e5198b04de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Represents and analyzes a crystal surface defined by Miller indices. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ad04e2f6bf7b4499e969d83dac800be4e" name="ad04e2f6bf7b4499e969d83dac800be4e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad04e2f6bf7b4499e969d83dac800be4e">&#9670;&#160;</a></span>Surface()</h2>
 
@@ -173,6 +180,15 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Construct a surface from Miller indices and crystal. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hkl</td><td>Miller indices defining the surface </td></tr>
+    <tr><td class="paramname">crystal</td><td>Reference crystal structure </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -525,6 +541,9 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get the surface normal vector. </p>
+<dl class="section return"><dt>Returns</dt><dd>Vector perpendicular to the surface </dd></dl>
 
 </div>
 </div>
