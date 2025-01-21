@@ -1,14 +1,20 @@
 from pathlib import Path
 import site
 import warnings
-from ._occpy import setup_logging, set_data_directory, set_num_threads
+from ._occpy import (
+    set_log_level,
+    set_log_file,
+    set_data_directory,
+    set_num_threads,
+    LogLevel,
+)
 from .core import Atom, Element, Molecule, Dimer
 from .crystal import Crystal
 from .qm import AOBasis, HartreeFock, Shell, Wavefunction
 from .dft import DFT
 
-# Set up logging first
-setup_logging(0)
+# Set up logging first, only log critical errors
+set_log_level(LogLevel.CRITICAL)
 
 # Get site-packages directory and construct path to data
 _site_packages = Path(site.getsitepackages()[0])
@@ -32,11 +38,13 @@ __all__ = [
     "Dimer",
     "Element",
     "HartreeFock",
+    "LogLevel",
     "Molecule",
     "qm",
     "set_data_directory",
     "set_num_threads",
-    "setup_logging",
+    "set_log_file",
+    "set_log_level",
     "Shell",
     "Wavefunction",
 ]

@@ -33,10 +33,10 @@ TEST_CASE("NaCl wolf sum", "[interaction,wolf]") {
   charges << 1.0, -1.0;
 
   double radius = 16.0;
-  double eta = 0.2;
+  double alpha = 0.2;
 
   auto surrounds = nacl.asymmetric_unit_atom_surroundings(radius);
-  occ::interaction::WolfParams params{radius, eta};
+  occ::interaction::WolfParameters params{radius, alpha};
   double wolf_energy = 0.0;
   occ::Mat3N cart_pos_asym =
       nacl.to_cartesian(nacl.asymmetric_unit().positions);
@@ -47,7 +47,8 @@ TEST_CASE("NaCl wolf sum", "[interaction,wolf]") {
     for (int j = 0; j < qj.rows(); j++) {
       qj(j) = charges(surrounds[i].asym_idx(j));
     }
-    wolf_energy += wolf_coulomb_energy(qi, pi, qj, surrounds[i].cart_pos);
+    wolf_energy +=
+        wolf_coulomb_energy(qi, pi, qj, surrounds[i].cart_pos, params);
   }
   fmt::print("Wolf energy (NaCl): {}\n", wolf_energy);
   REQUIRE(wolf_energy == Catch::Approx(-0.3302735899347252));

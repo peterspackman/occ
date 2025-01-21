@@ -2,7 +2,7 @@
 #include <CLI/App.hpp>
 #include <occ/cg/result_types.h>
 #include <occ/core/dimer.h>
-#include <occ/interaction/pair_energy.h>
+#include <occ/interaction/lattice_convergence_settings.h>
 
 namespace occ::main {
 

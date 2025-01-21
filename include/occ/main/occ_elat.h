@@ -1,6 +1,6 @@
 #pragma once
 #include <CLI/App.hpp>
-#include <occ/interaction/pair_energy.h>
+#include <occ/interaction/lattice_convergence_settings.h>
 
 namespace occ::main {
 

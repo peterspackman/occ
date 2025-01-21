@@ -1,9 +1,16 @@
 #include <filesystem>
 #include <fmt/os.h>
 #include <occ/driver/crystal_growth.h>
+#include <occ/interaction/ce_energy_model.h>
+#include <occ/interaction/lattice_energy.h>
+#include <occ/interaction/xtb_energy_model.h>
 #include <occ/xtb/xtb_wrapper.h>
 
 namespace fs = std::filesystem;
+using occ::interaction::CEEnergyModel;
+using occ::interaction::LatticeConvergenceSettings;
+using occ::interaction::LatticeEnergyCalculator;
+using occ::interaction::XTBEnergyModel;
 
 namespace occ::driver {
 
@@ -349,16 +356,22 @@ void CEModelCrystalGrowthCalculator::converge_lattice_energy() {
   occ::log::info("Computing crystal interactions using {} wavefunctions",
                  wfn_choice);
 
-  occ::interaction::LatticeConvergenceSettings convergence_settings;
+  LatticeConvergenceSettings convergence_settings;
   convergence_settings.model_name = opts.energy_model;
   convergence_settings.max_radius = opts.outer_radius;
   convergence_settings.wolf_sum = opts.use_wolf_sum;
   convergence_settings.crystal_field_polarization =
       opts.use_crystal_polarization;
 
-  auto result = occ::interaction::converged_lattice_energies(
-      m_crystal, inner_wavefunctions(), outer_wavefunctions(), opts.basename,
-      convergence_settings);
+  auto energy_model = std::make_unique<CEEnergyModel>(
+      m_crystal, inner_wavefunctions(), outer_wavefunctions());
+  energy_model->set_model_name(opts.energy_model);
+
+  LatticeEnergyCalculator calculator(std::move(energy_model), m_crystal,
+                                     opts.basename, convergence_settings);
+
+  auto result = calculator.compute();
+
   m_full_dimers = result.dimers;
   m_dimer_energies = result.energy_components;
 
@@ -570,8 +583,13 @@ void XTBCrystalGrowthCalculator::converge_lattice_energy() {
 
   m_full_dimers = m_crystal.symmetry_unique_dimers(opts.outer_radius);
   std::vector<interaction::CEEnergyComponents> energies;
-  auto result = occ::interaction::converged_xtb_lattice_energies(
-      m_crystal, opts.basename, convergence_settings);
+
+  LatticeEnergyCalculator calculator(
+      std::make_unique<XTBEnergyModel>(m_crystal), m_crystal, opts.basename,
+      convergence_settings);
+
+  auto result = calculator.compute();
+
   m_full_dimers = result.dimers;
 
   for (const auto &e : result.energy_components) {

@@ -80,7 +80,7 @@ CEEnergyComponents compute_pair_energy(Wavefunction wfn_a, Wavefunction wfn_b,
 int main(int argc, char *argv[]) {
   occ::timing::start(occ::timing::category::global);
   occ::timing::start(occ::timing::category::io);
-  occ::log::setup_logging(2);
+  occ::log::set_log_level(2);
   std::string symbol_a, symbol_b;
   int min_charge_cation{0}, min_charge_anion{0};
   int max_charge_cation{0}, max_charge_anion{0};
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
   // logging verbosity
   auto *verbosity_option = app.add_flag_function(
       "--verbosity{2}",
-      [](int verbosity) { occ::log::setup_logging(verbosity); },
+      [](int verbosity) { occ::log::set_log_level(verbosity); },
       "logging verbosity {0=silent,1=minimal,2=normal,3=verbose,4=debug}");
   verbosity_option->default_val(2);
   verbosity_option->run_callback_for_default();

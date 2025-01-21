@@ -4,6 +4,8 @@
 #include "python/dft_bindings.h"
 #include "python/qm_bindings.h"
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/function.h>
+#include <nanobind/stl/optional.h>
 #include <nanobind/stl/string.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
@@ -22,7 +24,22 @@ NB_MODULE(_occpy, m) {
   auto qm = register_qm_bindings(m);
   auto dft = register_dft_bindings(m);
 
-  m.def("setup_logging", [](int v) { occ::log::setup_logging(v); });
+  nb::enum_<spdlog::level::level_enum>(m, "LogLevel")
+      .value("TRACE", spdlog::level::level_enum::trace)
+      .value("DEBUG", spdlog::level::level_enum::debug)
+      .value("INFO", spdlog::level::level_enum::info)
+      .value("WARN", spdlog::level::level_enum::warn)
+      .value("ERROR", spdlog::level::level_enum::err)
+      .value("CRITICAL", spdlog::level::level_enum::critical)
+      .value("OFF", spdlog::level::level_enum::off);
+
+  m.def("set_log_level", nb::overload_cast<int>(occ::log::set_log_level));
+  m.def("set_log_level",
+        nb::overload_cast<spdlog::level::level_enum>(occ::log::set_log_level));
+  m.def("set_log_level",
+        nb::overload_cast<const std::string &>(occ::log::set_log_level));
+
+  m.def("set_log_file", occ::log::set_log_file);
   m.def("set_num_threads", [](int n) { occ::parallel::set_num_threads(n); });
   m.def("set_data_directory",
         [](const std::string &s) { occ::qm::override_basis_set_directory(s); });
@@ -36,6 +53,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.6.12";
+  m.attr("__version__") = "0.6.13";
 #endif
 }

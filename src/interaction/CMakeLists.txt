@@ -1,12 +1,17 @@
 add_library(occ_interaction
+    "${CMAKE_CURRENT_SOURCE_DIR}/ce_energy_model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/coulomb.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/disp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/interaction_json.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lattice_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy_store.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_potential.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/polarization.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_transform.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/xtb_energy_model.cpp"
     ${OCC_INTERACTION_INCLUDE_FILES}
 )
 

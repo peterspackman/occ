@@ -16,7 +16,7 @@
 int main(int argc, char *argv[]) {
   occ::timing::start(occ::timing::category::global);
   occ::timing::start(occ::timing::category::io);
-  occ::log::setup_logging(2);
+  occ::log::set_log_level(2);
 
   CLI::App app("occ - A program for quantum chemistry");
   app.allow_config_extras(CLI::config_extras_mode::error);
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   // logging verbosity
   auto *verbosity_option = app.add_flag_function(
       "--verbosity{2}",
-      [](int verbosity) { occ::log::setup_logging(verbosity); },
+      [](int verbosity) { occ::log::set_log_level(verbosity); },
       "logging verbosity {0=silent,1=minimal,2=normal,3=verbose,4=debug}");
   verbosity_option->default_val(2);
   verbosity_option->run_callback_for_default();
