@@ -114,22 +114,44 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a02e0eb51fbb5d97fae0a3d11e28a3c7d" id="r_a02e0eb51fbb5d97fae0a3d11e28a3c7d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a02e0eb51fbb5d97fae0a3d11e28a3c7d">setup_logging</a> (const std::string &amp;verbosity)</td></tr>
-<tr class="separator:a02e0eb51fbb5d97fae0a3d11e28a3c7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac85515e1e3666dd8d0c8e684764e06d3" id="r_ac85515e1e3666dd8d0c8e684764e06d3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#ac85515e1e3666dd8d0c8e684764e06d3">setup_logging</a> (int verbosity)</td></tr>
-<tr class="separator:ac85515e1e3666dd8d0c8e684764e06d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22123ccc01e9033f0fbdb926ce96b449" id="r_a22123ccc01e9033f0fbdb926ce96b449"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a22123ccc01e9033f0fbdb926ce96b449">set_log_level</a> (const std::string &amp;verbosity)</td></tr>
+<tr class="separator:a22123ccc01e9033f0fbdb926ce96b449"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65e35f9f31c50ed4cb6ad1988fca7a30" id="r_a65e35f9f31c50ed4cb6ad1988fca7a30"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a65e35f9f31c50ed4cb6ad1988fca7a30">set_log_level</a> (spdlog::level::level_enum level)</td></tr>
+<tr class="separator:a65e35f9f31c50ed4cb6ad1988fca7a30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a277e2d8c349a18e1081e2ebd14f770aa" id="r_a277e2d8c349a18e1081e2ebd14f770aa"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a277e2d8c349a18e1081e2ebd14f770aa">set_log_level</a> (int verbosity)</td></tr>
+<tr class="separator:a277e2d8c349a18e1081e2ebd14f770aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66577304c29dd81bdf616afe7012241f" id="r_a66577304c29dd81bdf616afe7012241f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a66577304c29dd81bdf616afe7012241f">set_log_file</a> (const std::string &amp;filename)</td></tr>
+<tr class="separator:a66577304c29dd81bdf616afe7012241f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>logging for debug output, warnings, errors etc. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a02e0eb51fbb5d97fae0a3d11e28a3c7d" name="a02e0eb51fbb5d97fae0a3d11e28a3c7d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02e0eb51fbb5d97fae0a3d11e28a3c7d">&#9670;&#160;</a></span>setup_logging() <span class="overload">[1/2]</span></h2>
+<a id="a66577304c29dd81bdf616afe7012241f" name="a66577304c29dd81bdf616afe7012241f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66577304c29dd81bdf616afe7012241f">&#9670;&#160;</a></span>set_log_file()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void occ::log::setup_logging </td>
+          <td class="memname">void occ::log::set_log_file </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a22123ccc01e9033f0fbdb926ce96b449" name="a22123ccc01e9033f0fbdb926ce96b449"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22123ccc01e9033f0fbdb926ce96b449">&#9670;&#160;</a></span>set_log_level() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::log::set_log_level </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>verbosity</em></td><td>)</td>
@@ -140,17 +162,35 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac85515e1e3666dd8d0c8e684764e06d3" name="ac85515e1e3666dd8d0c8e684764e06d3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac85515e1e3666dd8d0c8e684764e06d3">&#9670;&#160;</a></span>setup_logging() <span class="overload">[2/2]</span></h2>
+<a id="a277e2d8c349a18e1081e2ebd14f770aa" name="a277e2d8c349a18e1081e2ebd14f770aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a277e2d8c349a18e1081e2ebd14f770aa">&#9670;&#160;</a></span>set_log_level() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void occ::log::setup_logging </td>
+          <td class="memname">void occ::log::set_log_level </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>verbosity</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a65e35f9f31c50ed4cb6ad1988fca7a30" name="a65e35f9f31c50ed4cb6ad1988fca7a30"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a65e35f9f31c50ed4cb6ad1988fca7a30">&#9670;&#160;</a></span>set_log_level() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::log::set_log_level </td>
+          <td>(</td>
+          <td class="paramtype">spdlog::level::level_enum&#160;</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
           <td></td>
         </tr>
       </table>

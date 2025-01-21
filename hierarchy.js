@@ -91,6 +91,10 @@ var hierarchy =
     [ "occ::core::Element", "classocc_1_1core_1_1Element.html", null ],
     [ "occ::io::ElementBasis", "structocc_1_1io_1_1ElementBasis.html", null ],
     [ "occ::qm::Energy", "structocc_1_1qm_1_1Energy.html", null ],
+    [ "occ::interaction::EnergyModelBase", "classocc_1_1interaction_1_1EnergyModelBase.html", [
+      [ "occ::interaction::CEEnergyModel", "classocc_1_1interaction_1_1CEEnergyModel.html", null ],
+      [ "occ::interaction::XTBEnergyModel", "classocc_1_1interaction_1_1XTBEnergyModel.html", null ]
+    ] ],
     [ "occ::cg::EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", null ],
     [ "occ::io::EngradReader", "classocc_1_1io_1_1EngradReader.html", null ],
     [ "occ::main::EspFunctor", "structocc_1_1main_1_1EspFunctor.html", null ],
@@ -147,6 +151,7 @@ var hierarchy =
     [ "occ::io::JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", null ],
     [ "occ::core::KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", null ],
     [ "occ::interaction::LatticeConvergenceSettings", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html", null ],
+    [ "occ::interaction::LatticeEnergyCalculator", "classocc_1_1interaction_1_1LatticeEnergyCalculator.html", null ],
     [ "occ::interaction::LatticeEnergyResult", "structocc_1_1interaction_1_1LatticeEnergyResult.html", null ],
     [ "occ::geometry::IndexCache::Layer", "structocc_1_1geometry_1_1IndexCache_1_1Layer.html", null ],
     [ "occ::geometry::mc::LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", null ],
@@ -195,7 +200,11 @@ var hierarchy =
     [ "occ::io::OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", null ],
     [ "occ::io::OutputInput", "structocc_1_1io_1_1OutputInput.html", null ],
     [ "occ::interaction::PairEnergy", "structocc_1_1interaction_1_1PairEnergy.html", null ],
-    [ "occ::interaction::PairEnergyStore", "structocc_1_1interaction_1_1PairEnergyStore.html", null ],
+    [ "occ::interaction::PairEnergyStore", "classocc_1_1interaction_1_1PairEnergyStore.html", null ],
+    [ "occ::interaction::PairEnergyStoreBase", "classocc_1_1interaction_1_1PairEnergyStoreBase.html", [
+      [ "occ::interaction::FileSystemPairEnergyStore", "classocc_1_1interaction_1_1FileSystemPairEnergyStore.html", null ],
+      [ "occ::interaction::MemoryPairEnergyStore", "classocc_1_1interaction_1_1MemoryPairEnergyStore.html", null ]
+    ] ],
     [ "occ::io::PairInput", "structocc_1_1io_1_1PairInput.html", null ],
     [ "occ::dft::NonLocalCorrelationFunctional::Parameters", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html", null ],
     [ "occ::xdm::XDM::Parameters", "structocc_1_1xdm_1_1XDM_1_1Parameters.html", null ],
@@ -281,6 +290,7 @@ var hierarchy =
     [ "occ::io::Table", "classocc_1_1io_1_1Table.html", null ],
     [ "occ::xtb::TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", null ],
     [ "occ::core::TerminalSize", "structocc_1_1core_1_1TerminalSize.html", null ],
+    [ "occ::interaction::transform::TransformResult", "structocc_1_1interaction_1_1transform_1_1TransformResult.html", null ],
     [ "std::true_type", null, [
       [ "occ::core::numpy::impl::is_complex< std::complex< T > >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html", null ],
       [ "occ::geometry::mc::impl::has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ]
@@ -293,7 +303,9 @@ var hierarchy =
     [ "occ::io::VertexProperties", "structocc_1_1io_1_1VertexProperties.html", null ],
     [ "occ::isosurface::VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", null ],
     [ "occ::qm::Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", null ],
-    [ "occ::interaction::WolfParams", "structocc_1_1interaction_1_1WolfParams.html", null ],
+    [ "occ::interaction::transform::WavefunctionTransformer", "classocc_1_1interaction_1_1transform_1_1WavefunctionTransformer.html", null ],
+    [ "occ::interaction::WolfParameters", "structocc_1_1interaction_1_1WolfParameters.html", null ],
+    [ "occ::interaction::WolfSum", "classocc_1_1interaction_1_1WolfSum.html", null ],
     [ "occ::geometry::WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", null ],
     [ "occ::main::XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", null ],
     [ "occ::xdm::XDM", "classocc_1_1xdm_1_1XDM.html", null ],

@@ -3,7 +3,7 @@ var searchData=
   ['mc_5foctree_0',['mc_octree',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16afe4fdd8f2287d086d57c64978ab62a61',1,'occ::timing']]],
   ['mc_5fprimal_1',['mc_primal',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a19f7785f6d5ade0be208b72e4a6bd6a2',1,'occ::timing']]],
   ['mc_5fsurface_2',['mc_surface',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a172622eca494dac3ba8060bc574eec0b',1,'occ::timing']]],
-  ['memory_3',['Memory',['../structocc_1_1interaction_1_1PairEnergyStore.html#a75f017c3e336e303713344c00cada967a4789f23283b3a61f858b641a1bef19a3',1,'occ::interaction::PairEnergyStore']]],
+  ['memory_3',['Memory',['../classocc_1_1interaction_1_1PairEnergyStore.html#a75f017c3e336e303713344c00cada967a4789f23283b3a61f858b641a1bef19a3',1,'occ::interaction::PairEnergyStore']]],
   ['mgga_4',['MGGA',['../classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa1ed76f45b40031b7b9433783a84611c8',1,'occ::dft::DensityFunctional']]],
   ['mgga_5fc_5fbc95_5',['mgga_c_bc95',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaf163219cb159cc86db8668d0db54e866',1,'occ::dft::DensityFunctional']]],
   ['mgga_5fc_5fcc06_6',['mgga_c_cc06',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba19a2d31697bb8a7a8cb0fdf7008e35ce',1,'occ::dft::DensityFunctional']]],

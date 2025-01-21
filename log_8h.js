@@ -1,5 +1,7 @@
 var log_8h =
 [
-    [ "setup_logging", "log_8h.html#a02e0eb51fbb5d97fae0a3d11e28a3c7d", null ],
-    [ "setup_logging", "log_8h.html#ac85515e1e3666dd8d0c8e684764e06d3", null ]
+    [ "set_log_file", "log_8h.html#a66577304c29dd81bdf616afe7012241f", null ],
+    [ "set_log_level", "log_8h.html#a22123ccc01e9033f0fbdb926ce96b449", null ],
+    [ "set_log_level", "log_8h.html#a277e2d8c349a18e1081e2ebd14f770aa", null ],
+    [ "set_log_level", "log_8h.html#a65e35f9f31c50ed4cb6ad1988fca7a30", null ]
 ];

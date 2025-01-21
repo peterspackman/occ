@@ -146,15 +146,27 @@ var annotated_dup =
         [ "MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", "structocc_1_1gto_1_1MomentaSpherical" ]
       ] ],
       [ "interaction", "namespaceocc_1_1interaction.html", [
+        [ "transform", "namespaceocc_1_1interaction_1_1transform.html", [
+          [ "TransformResult", "structocc_1_1interaction_1_1transform_1_1TransformResult.html", "structocc_1_1interaction_1_1transform_1_1TransformResult" ],
+          [ "WavefunctionTransformer", "classocc_1_1interaction_1_1transform_1_1WavefunctionTransformer.html", null ]
+        ] ],
         [ "CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", "structocc_1_1interaction_1_1CEEnergyComponents" ],
+        [ "CEEnergyModel", "classocc_1_1interaction_1_1CEEnergyModel.html", "classocc_1_1interaction_1_1CEEnergyModel" ],
         [ "CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", "structocc_1_1interaction_1_1CEModelInteraction" ],
         [ "CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", "structocc_1_1interaction_1_1CEMonomerCalculationParameters" ],
         [ "CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", "structocc_1_1interaction_1_1CEParameterizedModel" ],
+        [ "EnergyModelBase", "classocc_1_1interaction_1_1EnergyModelBase.html", "classocc_1_1interaction_1_1EnergyModelBase" ],
+        [ "FileSystemPairEnergyStore", "classocc_1_1interaction_1_1FileSystemPairEnergyStore.html", "classocc_1_1interaction_1_1FileSystemPairEnergyStore" ],
         [ "LatticeConvergenceSettings", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html", "structocc_1_1interaction_1_1LatticeConvergenceSettings" ],
+        [ "LatticeEnergyCalculator", "classocc_1_1interaction_1_1LatticeEnergyCalculator.html", "classocc_1_1interaction_1_1LatticeEnergyCalculator" ],
         [ "LatticeEnergyResult", "structocc_1_1interaction_1_1LatticeEnergyResult.html", "structocc_1_1interaction_1_1LatticeEnergyResult" ],
+        [ "MemoryPairEnergyStore", "classocc_1_1interaction_1_1MemoryPairEnergyStore.html", "classocc_1_1interaction_1_1MemoryPairEnergyStore" ],
         [ "PairEnergy", "structocc_1_1interaction_1_1PairEnergy.html", "structocc_1_1interaction_1_1PairEnergy" ],
-        [ "PairEnergyStore", "structocc_1_1interaction_1_1PairEnergyStore.html", "structocc_1_1interaction_1_1PairEnergyStore" ],
-        [ "WolfParams", "structocc_1_1interaction_1_1WolfParams.html", "structocc_1_1interaction_1_1WolfParams" ]
+        [ "PairEnergyStore", "classocc_1_1interaction_1_1PairEnergyStore.html", "classocc_1_1interaction_1_1PairEnergyStore" ],
+        [ "PairEnergyStoreBase", "classocc_1_1interaction_1_1PairEnergyStoreBase.html", "classocc_1_1interaction_1_1PairEnergyStoreBase" ],
+        [ "WolfParameters", "structocc_1_1interaction_1_1WolfParameters.html", "structocc_1_1interaction_1_1WolfParameters" ],
+        [ "WolfSum", "classocc_1_1interaction_1_1WolfSum.html", "classocc_1_1interaction_1_1WolfSum" ],
+        [ "XTBEnergyModel", "classocc_1_1interaction_1_1XTBEnergyModel.html", "classocc_1_1interaction_1_1XTBEnergyModel" ]
       ] ],
       [ "io", "namespaceocc_1_1io.html", [
         [ "crystalgrower", "namespaceocc_1_1io_1_1crystalgrower.html", [

@@ -28,12 +28,13 @@ var searchData=
   ['rho_25',['rho',['../structocc_1_1dft_1_1DensityFunctional_1_1Params.html#af028612e19149c997d40173e9bcdd225',1,'occ::dft::DensityFunctional::Params']]],
   ['rho_5ffunc_26',['rho_func',['../structocc_1_1main_1_1DeformationDensityFunctor.html#a5a52d167655134c72d7853fcead00a1b',1,'occ::main::DeformationDensityFunctor']]],
   ['right_27',['right',['../structocc_1_1io_1_1ColumnConfiguration_1_1Border.html#a1545e32b7add0bb5467ef696c2237186',1,'occ::io::ColumnConfiguration::Border::right'],['../structocc_1_1io_1_1RowConfiguration_1_1Border.html#a7b69e1289f39a70c13e89174ee7194e8',1,'occ::io::RowConfiguration::Border::right']]],
-  ['rotation_28',['rotation',['../structocc_1_1interaction_1_1PairEnergy_1_1Monomer.html#a691451b8b61c564e74280ddf5ebe6d17',1,'occ::interaction::PairEnergy::Monomer']]],
-  ['rotation_5fa_29',['rotation_a',['../structocc_1_1io_1_1PairInput.html#a10fbba78c058750022b154ceea824870',1,'occ::io::PairInput::rotation_a'],['../structocc_1_1main_1_1OccPairInput.html#a33c6768c284b50523967ceda5d3d681b',1,'occ::main::OccPairInput::rotation_a']]],
-  ['rotation_5fb_30',['rotation_b',['../structocc_1_1io_1_1PairInput.html#a6d262ffdbe465d9e77b43256d9bfba9a',1,'occ::io::PairInput::rotation_b'],['../structocc_1_1main_1_1OccPairInput.html#aad26647e0e8c96799ae48ee3ba29e09d',1,'occ::main::OccPairInput::rotation_b']]],
-  ['route_5ftag_31',['route_tag',['../structocc_1_1io_1_1GaussianInputFile.html#a7cba2587e2748a36a50c477ec2f76ac0',1,'occ::io::GaussianInputFile']]],
-  ['row0_32',['row0',['../structocc_1_1geometry_1_1IndexCache.html#a891708b1f4e5ea9bfaef8319012909fe',1,'occ::geometry::IndexCache']]],
-  ['row1_33',['row1',['../structocc_1_1geometry_1_1IndexCache.html#ae6e1611067c5d8697443145ab0624889',1,'occ::geometry::IndexCache']]],
-  ['rows_34',['rows',['../structocc_1_1core_1_1TerminalSize.html#abdcc9528a21c4d0a7e6bb3684cff42b4',1,'occ::core::TerminalSize']]],
-  ['runtime_35',['runtime',['../structocc_1_1io_1_1OccInput.html#a376ccf0ea82ab03e97682fb1cee74b61',1,'occ::io::OccInput']]]
+  ['rmsd_28',['rmsd',['../structocc_1_1interaction_1_1transform_1_1TransformResult.html#aaed69d1d0ba23594ac7373624525741f',1,'occ::interaction::transform::TransformResult']]],
+  ['rotation_29',['rotation',['../structocc_1_1interaction_1_1PairEnergy_1_1Monomer.html#a691451b8b61c564e74280ddf5ebe6d17',1,'occ::interaction::PairEnergy::Monomer::rotation'],['../structocc_1_1interaction_1_1transform_1_1TransformResult.html#acf8821a7b55a3da4f72cd763821a4ef3',1,'occ::interaction::transform::TransformResult::rotation']]],
+  ['rotation_5fa_30',['rotation_a',['../structocc_1_1io_1_1PairInput.html#a10fbba78c058750022b154ceea824870',1,'occ::io::PairInput::rotation_a'],['../structocc_1_1main_1_1OccPairInput.html#a33c6768c284b50523967ceda5d3d681b',1,'occ::main::OccPairInput::rotation_a']]],
+  ['rotation_5fb_31',['rotation_b',['../structocc_1_1io_1_1PairInput.html#a6d262ffdbe465d9e77b43256d9bfba9a',1,'occ::io::PairInput::rotation_b'],['../structocc_1_1main_1_1OccPairInput.html#aad26647e0e8c96799ae48ee3ba29e09d',1,'occ::main::OccPairInput::rotation_b']]],
+  ['route_5ftag_32',['route_tag',['../structocc_1_1io_1_1GaussianInputFile.html#a7cba2587e2748a36a50c477ec2f76ac0',1,'occ::io::GaussianInputFile']]],
+  ['row0_33',['row0',['../structocc_1_1geometry_1_1IndexCache.html#a891708b1f4e5ea9bfaef8319012909fe',1,'occ::geometry::IndexCache']]],
+  ['row1_34',['row1',['../structocc_1_1geometry_1_1IndexCache.html#ae6e1611067c5d8697443145ab0624889',1,'occ::geometry::IndexCache']]],
+  ['rows_35',['rows',['../structocc_1_1core_1_1TerminalSize.html#abdcc9528a21c4d0a7e6bb3684cff42b4',1,'occ::core::TerminalSize']]],
+  ['runtime_36',['runtime',['../structocc_1_1io_1_1OccInput.html#a376ccf0ea82ab03e97682fb1cee74b61',1,'occ::io::OccInput']]]
 ];

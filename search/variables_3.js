@@ -53,5 +53,5 @@ var searchData=
   ['current_5fcell_50',['current_cell',['../structocc_1_1geometry_1_1IndexCache.html#a4e219ee98618ced57c3bdb9b9390a9f8',1,'occ::geometry::IndexCache']]],
   ['curvedness_51',['curvedness',['../structocc_1_1isosurface_1_1SurfaceCurvature.html#a588a464564ec1f635ed6ef08d5964baf',1,'occ::isosurface::SurfaceCurvature']]],
   ['cut_5foffset_52',['cut_offset',['../structocc_1_1crystal_1_1SurfaceCutResult.html#a0ffde2af70ab7b57dc0a75aba73a05e9',1,'occ::crystal::SurfaceCutResult']]],
-  ['cutoff_53',['cutoff',['../structocc_1_1interaction_1_1WolfParams.html#aa8d82e72cd76a1800c7296b28ec7164e',1,'occ::interaction::WolfParams']]]
+  ['cutoff_53',['cutoff',['../structocc_1_1interaction_1_1WolfParameters.html#aaddd0922956f7256a3a04aaaad6350fb',1,'occ::interaction::WolfParameters']]]
 ];
