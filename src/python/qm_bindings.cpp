@@ -16,12 +16,7 @@
 
 using namespace nb::literals;
 using occ::Mat;
-using occ::qm::AOBasis;
-using occ::qm::HartreeFock;
-using occ::qm::MolecularOrbitals;
-using occ::qm::SCF;
-using occ::qm::Shell;
-using occ::qm::Wavefunction;
+using namespace occ::qm;
 
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
@@ -29,7 +24,12 @@ constexpr auto G = occ::qm::SpinorbitalKind::General;
 
 nb::module_ register_qm_bindings(nb::module_ &parent) {
   auto m =
-      parent.def_submodule("qm", "Quantum mechanics functionality for OCC");
+      parent.def_submodule("qm", "Quantum chemistry functionality for OCC");
+
+  nb::enum_<SpinorbitalKind>(m, "SpinorbitalKind")
+      .value("Restricted", SpinorbitalKind::Restricted)
+      .value("Unrestricted", SpinorbitalKind::Unrestricted)
+      .value("General", SpinorbitalKind::General);
 
   nb::class_<Shell>(m, "Shell")
       .def(nb::init<occ::core::PointCharge, double>())
@@ -69,6 +69,8 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
       });
 
   nb::class_<MolecularOrbitals>(m, "MolecularOrbitals")
+      .def(nb::init<>())
+      .def_rw("kind", &MolecularOrbitals::kind)
       .def_rw("num_alpha", &MolecularOrbitals::n_alpha)
       .def_rw("num_beta", &MolecularOrbitals::n_beta)
       .def_rw("num_ao", &MolecularOrbitals::n_ao)
@@ -112,12 +114,30 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
 
   using HF = SCF<HartreeFock>;
 
+  nb::class_<SCFConvergenceSettings>(m, "SCFConvergenceSettings")
+      .def(nb::init<>())
+      .def_rw("energy_threshold", &SCFConvergenceSettings::energy_threshold)
+      .def_rw("commutator_threshold",
+              &SCFConvergenceSettings::commutator_threshold)
+      .def_rw("incremental_fock_threshold",
+              &SCFConvergenceSettings::incremental_fock_threshold)
+      .def("energy_converged", &SCFConvergenceSettings::energy_converged)
+      .def("commutator_converged",
+           &SCFConvergenceSettings::commutator_converged)
+      .def("energy_and_commutator_converged",
+           &SCFConvergenceSettings::energy_and_commutator_converged)
+      .def("start_incremental_fock",
+           &SCFConvergenceSettings::start_incremental_fock);
+
   nb::class_<HF>(m, "HF")
       .def(nb::init<HartreeFock &>())
+      .def(nb::init<HartreeFock &, SpinorbitalKind>())
+      .def_rw("convergence_settings", &HF::convergence_settings)
       .def("set_charge_multiplicity", &HF::set_charge_multiplicity)
       .def("set_initial_guess", &HF::set_initial_guess_from_wfn)
       .def("scf_kind", &HF::scf_kind)
       .def("run", &HF::compute_scf_energy)
+      .def("compute_scf_energy", &HF::compute_scf_energy)
       .def("wavefunction", &HF::wavefunction)
       .def("__repr__", [](const HF &hf) {
         return fmt::format("<SCF(HF) ({}, {} atoms)>",
@@ -140,6 +160,16 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
            &HartreeFock::compute_nuclear_attraction_matrix)
       .def("nuclear_attraction_matrix",
            &HartreeFock::compute_nuclear_attraction_matrix)
+      .def("nuclear_electric_field_contribution",
+           &HartreeFock::nuclear_electric_field_contribution)
+      .def("electronic_electric_field_contribution",
+           &HartreeFock::electronic_electric_field_contribution)
+      .def("nuclear_electric_potential_contribution",
+           &HartreeFock::nuclear_electric_potential_contribution,
+           nb::rv_policy::move)
+      .def("electronic_electric_potential_contribution",
+           &HartreeFock::electronic_electric_potential_contribution,
+           nb::rv_policy::move)
       .def("set_density_fitting_basis", &HartreeFock::set_density_fitting_basis)
       .def("kinetic_matrix", &HartreeFock::compute_kinetic_matrix)
       .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
@@ -148,13 +178,11 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
       .def("nuclear_repulsion", &HartreeFock::nuclear_repulsion_energy)
       .def(
           "scf",
-          [](HartreeFock &hf, bool unrestricted = false) {
-            if (unrestricted)
-              return HF(hf, U);
-            else
-              return HF(hf, R);
+          [](HartreeFock &hf,
+             SpinorbitalKind kind = SpinorbitalKind::Restricted) {
+            return HF(hf, kind);
           },
-          "unrestricted"_a = false)
+          "unrestricted"_a = SpinorbitalKind::Restricted)
       .def("set_precision", &HartreeFock::set_precision)
       .def("coulomb_matrix",
            [](const HartreeFock &hf, const MolecularOrbitals &mo) {

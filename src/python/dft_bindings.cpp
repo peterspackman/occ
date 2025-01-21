@@ -11,6 +11,7 @@ using occ::io::BeckeGridSettings;
 using occ::qm::AOBasis;
 using occ::qm::MolecularOrbitals;
 using occ::qm::SCF;
+using occ::qm::SpinorbitalKind;
 
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
@@ -36,10 +37,13 @@ nb::module_ register_dft_bindings(nb::module_ &parent) {
 
   nb::class_<KS>(m, "KS")
       .def(nb::init<DFT &>())
+      .def(nb::init<DFT &, SpinorbitalKind>())
+      .def_rw("convergence_settings", &KS::convergence_settings)
       .def("set_charge_multiplicity", &KS::set_charge_multiplicity)
       .def("set_initial_guess", &KS::set_initial_guess_from_wfn)
       .def("scf_kind", &KS::scf_kind)
       .def("run", &KS::compute_scf_energy)
+      .def("compute_scf_energy", &KS::compute_scf_energy)
       .def("wavefunction", &KS::wavefunction)
       .def("__repr__", [](const KS &ks) {
         return fmt::format("<SCF(KS) ({}, {} atoms)>",
@@ -53,6 +57,7 @@ nb::module_ register_dft_bindings(nb::module_ &parent) {
                     const BeckeGridSettings &>())
       .def("nuclear_attraction_matrix", &DFT::compute_nuclear_attraction_matrix)
       .def("kinetic_matrix", &DFT::compute_kinetic_matrix)
+      .def("set_density_fitting_basis", &DFT::set_density_fitting_basis)
       .def("overlap_matrix", &DFT::compute_overlap_matrix)
       .def("nuclear_repulsion", &DFT::nuclear_repulsion_energy)
       .def("set_precision", &DFT::set_precision)
@@ -63,13 +68,10 @@ nb::module_ register_dft_bindings(nb::module_ &parent) {
            })
       .def(
           "scf",
-          [](DFT &dft, bool unrestricted) {
-            if (unrestricted)
-              return KS(dft, U);
-            else
-              return KS(dft, R);
+          [](DFT &dft, SpinorbitalKind kind = SpinorbitalKind::Restricted) {
+            return KS(dft, kind);
           },
-          "unrestricted"_a = false)
+          "unrestricted"_a = SpinorbitalKind::Restricted)
       .def("__repr__", [](const DFT &dft) {
         return fmt::format("<DFT {} ({}, {} atoms)>", dft.method_string(),
                            dft.aobasis().name(), dft.atoms().size());
