@@ -24,9 +24,11 @@ public:
   Mat fock_operator(const MolecularOrbitals &mo);
 
   inline void set_integral_policy(Policy p) { m_policy = p; }
+  inline Policy integral_policy() const { return m_policy; }
 
   void set_range_separated_omega(double omega);
   void set_precision(double precision);
+  inline double precision() const { return m_precision; };
 
 private:
   inline size_t num_rows() const {

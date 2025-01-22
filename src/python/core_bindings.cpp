@@ -25,13 +25,8 @@ using occ::Mat3;
 using occ::Mat3N;
 using occ::Mat4;
 using occ::Vec3;
-using occ::core::Atom;
-using occ::core::Dimer;
-using occ::core::Element;
-using occ::core::MolecularPointGroup;
-using occ::core::Molecule;
-using occ::core::PointCharge;
-using occ::core::SymOp;
+using namespace occ::core;
+using namespace occ;
 
 nb::module_ register_core_bindings(nb::module_ &parent) {
   using namespace nb::literals;
@@ -537,6 +532,19 @@ nb::module_ register_core_bindings(nb::module_ &parent) {
       },
       "Create a multipole of specified order with components", "order"_a,
       "components"_a);
+
+  nb::class_<MatTriple>(m, "MatTriple")
+      .def(nb::init<>())
+      .def_rw("x", &MatTriple::x)
+      .def_rw("y", &MatTriple::y)
+      .def_rw("z", &MatTriple::z)
+      .def("scale_by", &MatTriple::scale_by)
+      .def("symmetrize", &MatTriple::symmetrize)
+      .def("__add__", &MatTriple::operator+)
+      .def("__sub__", &MatTriple::operator-)
+      .def("__repr__", [](const MatTriple &mt) {
+        return fmt::format("<MatTriple ({}x{})>", mt.x.rows(), mt.x.cols());
+      });
 
   m.def("eem_partial_charges", &occ::core::charges::eem_partial_charges,
         "atomic_numbers"_a, "positions"_a, "_charge"_a = 0.0);

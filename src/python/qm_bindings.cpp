@@ -8,8 +8,10 @@
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
+#include <occ/qm/chelpg.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/hf.h>
+#include <occ/qm/integral_engine.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
@@ -94,6 +96,8 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
       .def_static("load", &Wavefunction::load)
       .def("save", nb::overload_cast<const std::string &>(&Wavefunction::save))
       .def_ro("basis", &Wavefunction::basis)
+      .def("chelpg_charges",
+           [](const Wavefunction &wfn) { return chelpg_charges(wfn); })
       .def("to_fchk",
            [](Wavefunction &wfn, const std::string &filename) {
              auto writer = occ::io::FchkWriter(filename);
@@ -199,6 +203,178 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
       .def("__repr__", [](const HartreeFock &hf) {
         return fmt::format("<HartreeFock ({}, {} atoms)>", hf.aobasis().name(),
                            hf.atoms().size());
+      });
+
+  nb::class_<JKPair>(m, "JKPair")
+      .def(nb::init<>())
+      .def_rw("J", &JKPair::J)
+      .def_rw("K", &JKPair::K);
+
+  nb::class_<JKTriple>(m, "JKTriple")
+      .def(nb::init<>())
+      .def_rw("J", &JKTriple::J)
+      .def_rw("K", &JKTriple::K);
+
+  nb::enum_<cint::Operator>(m, "Operator")
+      .value("Overlap", cint::Operator::overlap)
+      .value("Nuclear", cint::Operator::nuclear)
+      .value("Kinetic", cint::Operator::kinetic)
+      .value("Coulomb", cint::Operator::coulomb)
+      .value("Dipole", cint::Operator::dipole)
+      .value("Quadrupole", cint::Operator::quadrupole)
+      .value("Octapole", cint::Operator::octapole)
+      .value("Hexadecapole", cint::Operator::hexadecapole)
+      .value("Rinv", cint::Operator::rinv);
+
+  nb::class_<IntegralEngine>(m, "IntegralEngine")
+      .def(nb::init<const AOBasis &>())
+      .def(nb::init<const std::vector<occ::core::Atom> &,
+                    const std::vector<Shell> &>())
+      .def("schwarz", &IntegralEngine::schwarz)
+      .def("set_precision", &IntegralEngine::set_precision)
+      .def("set_range_separated_omega",
+           &IntegralEngine::set_range_separated_omega)
+      .def("range_separated_omega", &IntegralEngine::range_separated_omega)
+      .def("is_spherical", &IntegralEngine::is_spherical)
+      .def("have_auxiliary_basis", &IntegralEngine::have_auxiliary_basis)
+      .def("set_auxiliary_basis",
+           nb::overload_cast<const std::vector<Shell> &, bool>(
+               &IntegralEngine::set_auxiliary_basis),
+           "basis"_a, "dummy"_a = false)
+      .def("clear_auxiliary_basis", &IntegralEngine::clear_auxiliary_basis)
+      .def("one_electron_operator", &IntegralEngine::one_electron_operator,
+           "operator"_a, "use_shellpair_list"_a = true)
+      .def("coulomb", &IntegralEngine::coulomb, "kind"_a, "mo"_a,
+           "schwarz"_a = Mat())
+      .def("coulomb_and_exchange", &IntegralEngine::coulomb_and_exchange,
+           "kind"_a, "mo"_a, "schwarz"_a = Mat())
+      .def("fock_operator", &IntegralEngine::fock_operator, "kind"_a, "mo"_a,
+           "schwarz"_a = Mat())
+      .def("point_charge_potential", &IntegralEngine::point_charge_potential,
+           "charges"_a, "alpha"_a = 1e16)
+      .def("electric_potential", &IntegralEngine::electric_potential)
+      .def("multipole", &IntegralEngine::multipole, "order"_a, "mo"_a,
+           "origin"_a = occ::Vec3::Zero())
+      .def("nbf", &IntegralEngine::nbf)
+      .def("nsh", &IntegralEngine::nsh)
+      .def("aobasis", &IntegralEngine::aobasis)
+      .def("auxbasis", &IntegralEngine::auxbasis)
+      .def("nbf_aux", &IntegralEngine::nbf_aux)
+      .def("nsh_aux", &IntegralEngine::nsh_aux)
+      .def("one_electron_operator_grad",
+           &IntegralEngine::one_electron_operator_grad, "operator"_a,
+           "use_shellpair_list"_a = true)
+      .def("fock_operator_grad", &IntegralEngine::fock_operator_grad, "kind"_a,
+           "mo"_a, "schwarz"_a = Mat())
+      .def("coulomb_grad", &IntegralEngine::coulomb_grad, "kind"_a, "mo"_a,
+           "schwarz"_a = Mat())
+      .def("coulomb_exchange_grad", &IntegralEngine::coulomb_exchange_grad,
+           "kind"_a, "mo"_a, "schwarz"_a = Mat())
+      .def("fock_operator_mixed_basis",
+           &IntegralEngine::fock_operator_mixed_basis, "density_matrix"_a,
+           "density_basis"_a, "is_shell_diagonal"_a)
+      .def("coulomb_list", &IntegralEngine::coulomb_list, "kind"_a,
+           "molecular_orbitals"_a, "schwarz"_a = Mat())
+      .def("coulomb_and_exchange_list",
+           &IntegralEngine::coulomb_and_exchange_list, "kind"_a,
+           "molecular_orbitals"_a, "schwarz"_a = Mat())
+      .def("effective_core_potential",
+           &IntegralEngine::effective_core_potential,
+           "use_shellpair_list"_a = true)
+      .def("have_effective_core_potentials",
+           &IntegralEngine::have_effective_core_potentials)
+      .def("set_effective_core_potentials",
+           &IntegralEngine::set_effective_core_potentials, "ecp_shells"_a,
+           "ecp_electrons"_a)
+      .def("rinv_operator_atom_center",
+           &IntegralEngine::rinv_operator_atom_center, "atom_index"_a,
+           "use_shellpair_list"_a = true)
+      .def("rinv_operator_grad_atom", &IntegralEngine::rinv_operator_grad_atom,
+           "atom_index"_a, "use_shellpair_list"_a = true)
+
+      .def("wolf_point_charge_potential",
+           &IntegralEngine::wolf_point_charge_potential, "charges"_a,
+           "partial_charges"_a, "alpha"_a, "cutoff_radius"_a)
+
+      .def("__repr__", [](const IntegralEngine &engine) {
+        return fmt::format("<IntegralEngine nbf={} nsh={} spherical={}>",
+                           engine.nbf(), engine.nsh(),
+                           engine.is_spherical() ? "true" : "false");
+      });
+
+  nb::enum_<OrbitalSmearing::Kind>(m, "OrbitalSmearingKind")
+      .value("None", OrbitalSmearing::Kind::None)
+      .value("Fermi", OrbitalSmearing::Kind::Fermi)
+      .value("Gaussian", OrbitalSmearing::Kind::Gaussian)
+      .value("Linear", OrbitalSmearing::Kind::Linear);
+
+  nb::class_<OrbitalSmearing>(m, "OrbitalSmearing")
+      .def(nb::init<>())
+      .def_rw("kind", &OrbitalSmearing::kind)
+      .def_rw("mu", &OrbitalSmearing::mu)
+      .def_rw("fermi_level", &OrbitalSmearing::fermi_level)
+      .def_rw("sigma", &OrbitalSmearing::sigma)
+      .def_rw("entropy", &OrbitalSmearing::entropy)
+      .def("smear_orbitals", &OrbitalSmearing::smear_orbitals)
+      .def("calculate_entropy", &OrbitalSmearing::calculate_entropy)
+      .def("ec_entropy", &OrbitalSmearing::ec_entropy)
+      .def("calculate_fermi_occupations",
+           &OrbitalSmearing::calculate_fermi_occupations)
+      .def("calculate_gaussian_occupations",
+           &OrbitalSmearing::calculate_gaussian_occupations)
+      .def("calculate_linear_occupations",
+           &OrbitalSmearing::calculate_linear_occupations)
+      .def("__repr__", [](const OrbitalSmearing &os) {
+        const char *kind_str;
+        switch (os.kind) {
+        case OrbitalSmearing::Kind::None:
+          kind_str = "None";
+          break;
+        case OrbitalSmearing::Kind::Fermi:
+          kind_str = "Fermi";
+          break;
+        case OrbitalSmearing::Kind::Gaussian:
+          kind_str = "Gaussian";
+          break;
+        case OrbitalSmearing::Kind::Linear:
+          kind_str = "Linear";
+          break;
+        }
+        return fmt::format("<OrbitalSmearing kind={} sigma={:.6f} mu={:.6f}>",
+                           kind_str, os.sigma, os.mu);
+      });
+
+  nb::enum_<IntegralEngineDF::Policy>(m, "IntegralEngineDFPolicy")
+      .value("Choose", IntegralEngineDF::Policy::Choose)
+      .value("Direct", IntegralEngineDF::Policy::Direct)
+      .value("Stored", IntegralEngineDF::Policy::Stored);
+
+  nb::class_<IntegralEngineDF>(m, "IntegralEngineDF")
+      .def(nb::init<const std::vector<occ::core::Atom> &,
+                    const std::vector<Shell> &, const std::vector<Shell> &>())
+      .def("exchange", &IntegralEngineDF::exchange)
+      .def("coulomb", &IntegralEngineDF::coulomb)
+      .def("coulomb_and_exchange", &IntegralEngineDF::coulomb_and_exchange)
+      .def("fock_operator", &IntegralEngineDF::fock_operator)
+      .def("set_integral_policy", &IntegralEngineDF::set_integral_policy)
+      .def("set_range_separated_omega",
+           &IntegralEngineDF::set_range_separated_omega)
+      .def("set_precision", &IntegralEngineDF::set_precision)
+      .def("__repr__", [](const IntegralEngineDF &engine) {
+        const char *policy_str;
+        switch (engine.integral_policy()) {
+        case IntegralEngineDF::Policy::Choose:
+          policy_str = "Choose";
+          break;
+        case IntegralEngineDF::Policy::Direct:
+          policy_str = "Direct";
+          break;
+        case IntegralEngineDF::Policy::Stored:
+          policy_str = "Stored";
+          break;
+        }
+        return fmt::format("<IntegralEngineDF policy={} precision={:.2e}>",
+                           policy_str, engine.precision());
       });
 
   return m;
