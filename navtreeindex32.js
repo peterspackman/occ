@@ -1,5 +1,9 @@
 var NAVTREEINDEX32 =
 {
+"structquickhull_1_1DiagnosticsData.html#af3c02ce754ecc18bf4bf49e943be44c4":[3,0,3,1,1],
+"structquickhull_1_1DiagnosticsData.html#afee5e9313774517c90af8c76ef6b2b8f":[1,0,3,2,0],
+"structquickhull_1_1DiagnosticsData.html#afee5e9313774517c90af8c76ef6b2b8f":[3,0,3,1,0],
+"structquickhull_1_1HalfEdgeMesh_1_1Face.html":[1,0,3,3,0],
 "structquickhull_1_1HalfEdgeMesh_1_1Face.html":[3,0,3,2,0],
 "structquickhull_1_1HalfEdgeMesh_1_1Face.html#a3eef09b5bcb1d38899d2dbd45c6a6bd7":[1,0,3,3,0,0],
 "structquickhull_1_1HalfEdgeMesh_1_1Face.html#a3eef09b5bcb1d38899d2dbd45c6a6bd7":[3,0,3,2,0,0],
@@ -245,9 +249,5 @@ var NAVTREEINDEX32 =
 "wavefunction__json_8h.html":[4,0,1,0,10,28],
 "wavefunction__json_8h.html#a03fbffee6c9f175af30275db3fe30f69":[4,0,1,0,10,28,6],
 "wavefunction__json_8h.html#a099816a1d1f5ac39efdf73b50c8f6efc":[4,0,1,0,10,28,4],
-"wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3":[4,0,1,0,10,28,2],
-"wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8":[4,0,1,0,10,28,2,0],
-"wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94":[4,0,1,0,10,28,2,4],
-"wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d":[4,0,1,0,10,28,2,1],
-"wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3a6009014cf7f117c0a14c14fdb971e9e8":[4,0,1,0,10,28,2,2]
+"wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3":[4,0,1,0,10,28,2]
 };

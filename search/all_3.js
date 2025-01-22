@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['c_0',['c',['../structocc_1_1qm_1_1MolecularOrbitals.html#aa522e0500f30141a65584a398a1994ef',1,'occ::qm::MolecularOrbitals::C'],['../structocc_1_1io_1_1CellData.html#a1080d8e83af26ddf4c752af190b81f36',1,'occ::io::CellData::c'],['../classocc_1_1crystal_1_1UnitCell.html#a367ad93388765f5f4c9d0367b01d4e5f',1,'occ::crystal::UnitCell::c()'],['../classocc_1_1slater_1_1Shell.html#af71f712dc0971a83a1635aea86aafcc3',1,'occ::slater::Shell::c()']]],
+  ['c_0',['c',['../structocc_1_1io_1_1CellData.html#a1080d8e83af26ddf4c752af190b81f36',1,'occ::io::CellData::c'],['../classocc_1_1crystal_1_1UnitCell.html#a367ad93388765f5f4c9d0367b01d4e5f',1,'occ::crystal::UnitCell::c()'],['../classocc_1_1slater_1_1Shell.html#af71f712dc0971a83a1635aea86aafcc3',1,'occ::slater::Shell::c()'],['../structocc_1_1qm_1_1MolecularOrbitals.html#aa522e0500f30141a65584a398a1994ef',1,'occ::qm::MolecularOrbitals::C']]],
   ['c1_1',['C1',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a1a2ddc2db4693cfd16d534cde5572cc1',1,'occ::core']]],
   ['c2_2',['C2',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5af1a543f5a2c5d49bc5dde298fcf716e4',1,'occ::core']]],
   ['c2h_3',['C2h',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5aa92c5ff6e57ac12e7428f0eb33d9318a',1,'occ::core']]],
@@ -280,7 +280,7 @@ var searchData=
   ['cubic_5fcell_277',['cubic_cell',['../namespaceocc_1_1crystal.html#a78a9c35cd26a715ea7cfbee259ea95e5',1,'occ::crystal']]],
   ['current_5fcell_278',['current_cell',['../structocc_1_1geometry_1_1IndexCache.html#a4e219ee98618ced57c3bdb9b9390a9f8',1,'occ::geometry::IndexCache']]],
   ['curvature_2eh_279',['curvature.h',['../curvature_8h.html',1,'']]],
-  ['curvedness_280',['curvedness',['../structocc_1_1isosurface_1_1SurfaceCurvature.html#a588a464564ec1f635ed6ef08d5964baf',1,'occ::isosurface::SurfaceCurvature::curvedness'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a4784ff286db58618b3daeccfc29fedf8a18e3943bcc5a590fe43753212fcece5b',1,'occ::main::IsosurfaceConfig::Curvedness']]],
+  ['curvedness_280',['curvedness',['../structocc_1_1main_1_1IsosurfaceConfig.html#a4784ff286db58618b3daeccfc29fedf8a18e3943bcc5a590fe43753212fcece5b',1,'occ::main::IsosurfaceConfig::Curvedness'],['../structocc_1_1isosurface_1_1SurfaceCurvature.html#a588a464564ec1f635ed6ef08d5964baf',1,'occ::isosurface::SurfaceCurvature::curvedness']]],
   ['cut_5foffset_281',['cut_offset',['../structocc_1_1crystal_1_1SurfaceCutResult.html#a0ffde2af70ab7b57dc0a75aba73a05e9',1,'occ::crystal::SurfaceCutResult']]],
   ['cutoff_282',['cutoff',['../structocc_1_1interaction_1_1WolfParameters.html#aaddd0922956f7256a3a04aaaad6350fb',1,'occ::interaction::WolfParameters']]],
   ['cvec_283',['CVec',['../namespaceocc.html#a341ac2fb4470f9a4c562ca9e01e0bb9b',1,'occ']]],
