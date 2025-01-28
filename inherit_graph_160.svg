@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1io_1_1JsonWavefunctionReader.html" target="_top" xlink:title=" ">
+<g id="a_Node000000"><a xlink:href="structocc_1_1io_1_1JsonWavefunctionWriter.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="141,-30 0,-30 0,0 141,0 141,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::io::JsonWavefunction</text>
-<text text-anchor="middle" x="70.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Reader</text>
+<text text-anchor="middle" x="70.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Writer</text>
 </a>
 </g>
 </g>

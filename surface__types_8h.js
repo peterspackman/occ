@@ -1,0 +1,46 @@
+var surface__types_8h =
+[
+    [ "PropertyKind", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cb", [
+      [ "Dnorm", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cbac38848044353478441149cd11add5ada", null ],
+      [ "Dint_norm", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba15030baf2890c763302c96101b1bd4ca", null ],
+      [ "Dext_norm", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cbae5fcf05cbc40561b9b062205df31ed6e", null ],
+      [ "Dint", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba19d37fa4afc7a979f054e52479042f1b", null ],
+      [ "Dext", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba8c92a874abd9cea9b8a190f1097db434", null ],
+      [ "FragmentPatch", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba1ace6fa15fe80702bb200551caafe8ef", null ],
+      [ "ShapeIndex", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba7162d5dd948f0c33a1b8e4dffb662e5d", null ],
+      [ "Curvedness", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba18e3943bcc5a590fe43753212fcece5b", null ],
+      [ "EEQ_ESP", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba7f7174ff4bb5bc2bae39e4fb61ad59cc", null ],
+      [ "PromoleculeDensity", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cbae967f43f155367921c6672f4d67f09ef", null ],
+      [ "ESP", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba3e30ce90c5b1d89ae09b7d4c73d8e172", null ],
+      [ "ElectronDensity", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cbad47101755289809d537b90d5f1737add", null ],
+      [ "SpinDensity", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba6df9cbe42388c5c172a8191d81a210ce", null ],
+      [ "DeformationDensity", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cbab6a4c26ef4ae489affedf8ddbbd75432", null ],
+      [ "Orbital", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba510b953097388490c29e4e4991fc369e", null ],
+      [ "GaussianCurvature", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cbaff388d6f10fc36be3526d73226b1e4d7", null ],
+      [ "MeanCurvature", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba79f52bdff2c87191fe43971be1ba0765", null ],
+      [ "CurvatureK1", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659", null ],
+      [ "CurvatureK2", "surface__types_8h.html#a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519", null ]
+    ] ],
+    [ "SurfaceKind", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726", [
+      [ "PromoleculeDensity", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726ae967f43f155367921c6672f4d67f09ef", null ],
+      [ "Hirshfeld", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a03f7d114a72c0750a68d22ddf7b72928", null ],
+      [ "EEQ_ESP", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a7f7174ff4bb5bc2bae39e4fb61ad59cc", null ],
+      [ "ElectronDensity", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726ad47101755289809d537b90d5f1737add", null ],
+      [ "ESP", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a3e30ce90c5b1d89ae09b7d4c73d8e172", null ],
+      [ "SpinDensity", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a6df9cbe42388c5c172a8191d81a210ce", null ],
+      [ "DeformationDensity", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726ab6a4c26ef4ae489affedf8ddbbd75432", null ],
+      [ "Orbital", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e", null ],
+      [ "CrystalVoid", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb", null ]
+    ] ],
+    [ "available_surface_types", "surface__types_8h.html#a245fa3a4f90b584784c01f35b671d15d", null ],
+    [ "default_properties", "surface__types_8h.html#ab16fc330a28219f949bbbe9bed9fb603", null ],
+    [ "property_from_string", "surface__types_8h.html#a82cec8a629edd7bcc651ad95d2331491", null ],
+    [ "property_requires_environment", "surface__types_8h.html#a529ef317795829ea851f9db5d7fa4d8c", null ],
+    [ "property_requires_wavefunction", "surface__types_8h.html#a3c826ad443591442e528b0116f973564", null ],
+    [ "property_to_string", "surface__types_8h.html#a380d4163da6f54871ea8cce2fc43db49", null ],
+    [ "surface_from_string", "surface__types_8h.html#a830e391f7c8f0b99b6dd6079b6c02493", null ],
+    [ "surface_properties_to_compute", "surface__types_8h.html#ae6f7648352d29bf20d093b236737e41b", null ],
+    [ "surface_requires_environment", "surface__types_8h.html#afdbaf322f650a4439d4b0663a7fd6329", null ],
+    [ "surface_requires_wavefunction", "surface__types_8h.html#aead59b74d110c97231623fa4896006ed", null ],
+    [ "surface_to_string", "surface__types_8h.html#a98487ca783bb5210cb390fb21adfd871", null ]
+];

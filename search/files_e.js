@@ -17,6 +17,7 @@ var searchData=
   ['opmatrix_2eh_14',['opmatrix.h',['../core_2opmatrix_8h.html',1,'(Global Namespace)'],['../qm_2opmatrix_8h.html',1,'(Global Namespace)']]],
   ['optimize_2eh_15',['optimize.h',['../optimize_8h.html',1,'']]],
   ['orb_2eh_16',['orb.h',['../orb_8h.html',1,'']]],
-  ['orbital_5fsmearing_2eh_17',['orbital_smearing.h',['../orbital__smearing_8h.html',1,'']]],
-  ['orca_5fjson_2eh_18',['orca_json.h',['../orca__json_8h.html',1,'']]]
+  ['orbital_5findex_2eh_17',['orbital_index.h',['../orbital__index_8h.html',1,'']]],
+  ['orbital_5fsmearing_2eh_18',['orbital_smearing.h',['../orbital__smearing_8h.html',1,'']]],
+  ['orca_5fjson_2eh_19',['orca_json.h',['../orca__json_8h.html',1,'']]]
 ];

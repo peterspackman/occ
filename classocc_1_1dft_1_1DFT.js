@@ -29,6 +29,7 @@ var classocc_1_1dft_1_1DFT =
     [ "have_nonlocal_correlation", "classocc_1_1dft_1_1DFT.html#a7e237bbe14bf1bf96961500864178228", null ],
     [ "hf", "classocc_1_1dft_1_1DFT.html#adfc8c9f6911b9af7a4e5abd63828a4ca", null ],
     [ "method_string", "classocc_1_1dft_1_1DFT.html#a218d7ce69897fabc2cd576a9109473b2", null ],
+    [ "name", "classocc_1_1dft_1_1DFT.html#a5cf94a159d805bbe14647c96ec5dc2cb", null ],
     [ "nbf", "classocc_1_1dft_1_1DFT.html#aab1a405290a0252b3791d134d9b38c6a", null ],
     [ "nuclear_point_charge_interaction_energy", "classocc_1_1dft_1_1DFT.html#ad6dd3d626e56d2a501c28476f0daa44b", null ],
     [ "post_scf_nlc_correction", "classocc_1_1dft_1_1DFT.html#af02d6a465080aa7a2f8b8a1947c3d24a", null ],

@@ -60,7 +60,8 @@ var searchData=
   ['is_5ftetragonal_57',['is_tetragonal',['../classocc_1_1crystal_1_1UnitCell.html#a0332267c007182bb80c218b373d89846',1,'occ::crystal::UnitCell']]],
   ['is_5ftriclinic_58',['is_triclinic',['../classocc_1_1crystal_1_1UnitCell.html#ae53bbb083a1b295251f52dd54454fd8c',1,'occ::crystal::UnitCell']]],
   ['isdisabled_59',['isdisabled',['../structquickhull_1_1MeshBuilder_1_1Face.html#a5ce6f99ee3649888defa8f3214e9c4a6',1,'quickhull::MeshBuilder::Face::isDisabled()'],['../structquickhull_1_1MeshBuilder_1_1HalfEdge.html#a20755694eb355665ac8cba74c23bbfa3',1,'quickhull::MeshBuilder::HalfEdge::isDisabled()']]],
-  ['isosurfacemesh_60',['isosurfacemesh',['../structocc_1_1io_1_1IsosurfaceMesh.html#a0ed6a266562987d05db95f03f2ac5f97',1,'occ::io::IsosurfaceMesh::IsosurfaceMesh(Eigen::Ref&lt; const Mat3N &gt; v, Eigen::Ref&lt; const IMat3N &gt; f)'],['../structocc_1_1io_1_1IsosurfaceMesh.html#a365d2424fca295096c0a09987fd81675',1,'occ::io::IsosurfaceMesh::IsosurfaceMesh(size_t num_vertices, size_t num_faces)'],['../structocc_1_1io_1_1IsosurfaceMesh.html#a7deb855a1fda2c3b0d77c28bd1c7a317',1,'occ::io::IsosurfaceMesh::IsosurfaceMesh()']]],
-  ['ispointonpositiveside_61',['isPointOnPositiveSide',['../classquickhull_1_1Plane.html#a81af9de8b7d41f19a378bdeda6898760',1,'quickhull::Plane']]],
-  ['iterate_5fover_5fshell_62',['iterate_over_shell',['../namespaceocc_1_1gto.html#a3ef2d30b82e02565d58a55a33da880f8',1,'occ::gto']]]
+  ['isosurface_60',['isosurface',['../classocc_1_1isosurface_1_1IsosurfaceCalculator.html#a87d243f1dcfd7212adcb28f00fe1125f',1,'occ::isosurface::IsosurfaceCalculator']]],
+  ['isosurfacecalculator_61',['IsosurfaceCalculator',['../classocc_1_1isosurface_1_1IsosurfaceCalculator.html#a0a1a461dd5e0ceacb196e12829c8d326',1,'occ::isosurface::IsosurfaceCalculator']]],
+  ['ispointonpositiveside_62',['isPointOnPositiveSide',['../classquickhull_1_1Plane.html#a81af9de8b7d41f19a378bdeda6898760',1,'quickhull::Plane']]],
+  ['iterate_5fover_5fshell_63',['iterate_over_shell',['../namespaceocc_1_1gto.html#a3ef2d30b82e02565d58a55a33da880f8',1,'occ::gto']]]
 ];

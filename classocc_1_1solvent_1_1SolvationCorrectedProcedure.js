@@ -19,6 +19,7 @@ var classocc_1_1solvent_1_1SolvationCorrectedProcedure =
     [ "compute_schwarz_ints", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a84160c5b08ad9ad401402d8030919546", null ],
     [ "frozen_electrons", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a52776113cdd6d9aaf672f525aef84b9f", null ],
     [ "have_effective_core_potentials", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a57c48514b7c7b9d2ee26f17be261f4d2", null ],
+    [ "name", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a98e22f95393c92dea94dd7d98d4e5e05", null ],
     [ "nbf", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a69c3bd110d2cb81b28f601852842cd4d", null ],
     [ "nuclear_point_charge_interaction_energy", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a08c90cd65912fc98da899656f5513082", null ],
     [ "nuclear_repulsion_energy", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#af1c4e3919a7bce67294f97976d762b68", null ],

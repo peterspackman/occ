@@ -11,10 +11,13 @@ var searchData=
   ['interpolator1d_8',['Interpolator1D',['../classocc_1_1core_1_1Interpolator1D.html',1,'occ::core']]],
   ['interpolator1d_3c_20float_2c_20occ_3a_3acore_3a_3adomainmapping_3a_3alinear_20_3e_9',['Interpolator1D&lt; float, occ::core::DomainMapping::Linear &gt;',['../classocc_1_1core_1_1Interpolator1D.html',1,'occ::core']]],
   ['interpolatorparameters_10',['InterpolatorParameters',['../structocc_1_1descriptors_1_1PromoleculeDensityShape_1_1InterpolatorParameters.html',1,'occ::descriptors::PromoleculeDensityShape']]],
-  ['interpolatorparams_11',['interpolatorparams',['../structocc_1_1isosurface_1_1InterpolatorParams.html',1,'occ::isosurface::InterpolatorParams'],['../structocc_1_1main_1_1pfimpl_1_1InterpolatorParams.html',1,'occ::main::pfimpl::InterpolatorParams'],['../structocc_1_1slater_1_1InterpolatorParams.html',1,'occ::slater::InterpolatorParams']]],
+  ['interpolatorparams_11',['interpolatorparams',['../structocc_1_1isosurface_1_1InterpolatorParams.html',1,'occ::isosurface::InterpolatorParams'],['../structocc_1_1slater_1_1InterpolatorParams.html',1,'occ::slater::InterpolatorParams'],['../structocc_1_1main_1_1pfimpl_1_1InterpolatorParams.html',1,'occ::main::pfimpl::InterpolatorParams']]],
   ['is_5fcomplex_12',['is_complex',['../structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html',1,'occ::core::numpy::impl']]],
   ['is_5fcomplex_3c_20std_3a_3acomplex_3c_20t_20_3e_20_3e_13',['is_complex&lt; std::complex&lt; T &gt; &gt;',['../structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html',1,'occ::core::numpy::impl']]],
-  ['isosurfaceconfig_14',['IsosurfaceConfig',['../structocc_1_1main_1_1IsosurfaceConfig.html',1,'occ::main']]],
-  ['isosurfaceinput_15',['IsosurfaceInput',['../structocc_1_1io_1_1IsosurfaceInput.html',1,'occ::io']]],
-  ['isosurfacemesh_16',['IsosurfaceMesh',['../structocc_1_1io_1_1IsosurfaceMesh.html',1,'occ::io']]]
+  ['isosurface_14',['Isosurface',['../structocc_1_1isosurface_1_1Isosurface.html',1,'occ::isosurface']]],
+  ['isosurfacecalculator_15',['IsosurfaceCalculator',['../classocc_1_1isosurface_1_1IsosurfaceCalculator.html',1,'occ::isosurface']]],
+  ['isosurfaceconfig_16',['IsosurfaceConfig',['../structocc_1_1main_1_1IsosurfaceConfig.html',1,'occ::main']]],
+  ['isosurfacegenerationparameters_17',['IsosurfaceGenerationParameters',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html',1,'occ::isosurface']]],
+  ['isosurfaceinput_18',['IsosurfaceInput',['../structocc_1_1io_1_1IsosurfaceInput.html',1,'occ::io']]],
+  ['isosurfaceproperties_19',['IsosurfaceProperties',['../structocc_1_1isosurface_1_1IsosurfaceProperties.html',1,'occ::isosurface']]]
 ];

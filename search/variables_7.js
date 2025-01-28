@@ -4,7 +4,7 @@ var searchData=
   ['gamma_5fpoint_5fmolecules_1',['gamma_point_molecules',['../structocc_1_1main_1_1CGConfig.html#a39f4a3d506d2798231f20e3f5c4ab6ce',1,'occ::main::CGConfig']]],
   ['gas_5fphase_5fcontribution_2',['gas_phase_contribution',['../structocc_1_1cg_1_1SMDSolventSurfaces.html#ab023455e74672fb2d8f676ce885360e2',1,'occ::cg::SMDSolventSurfaces']]],
   ['gaussian_3',['gaussian',['../structocc_1_1isosurface_1_1SurfaceCurvature.html#ae05f6a9ce4acf0a1663bf9e99bbbf464',1,'occ::isosurface::SurfaceCurvature']]],
-  ['gaussian_5fcurvature_4',['gaussian_curvature',['../structocc_1_1io_1_1IsosurfaceMesh.html#ae4f5bf750792adca29ede7731e68f4d3',1,'occ::io::IsosurfaceMesh']]],
+  ['gaussian_5fcurvature_4',['gaussian_curvature',['../structocc_1_1isosurface_1_1Isosurface.html#a708454645c3da39cdb6a8b1f9f5e477c',1,'occ::isosurface::Isosurface']]],
   ['generate_5fxyz_5ffiles_5',['generate_xyz_files',['../structocc_1_1main_1_1DimerGenerationSettings.html#a6766f5a44cbf4002cde69912ef7bd26f',1,'occ::main::DimerGenerationSettings']]],
   ['geometry_6',['geometry',['../structocc_1_1io_1_1OccInput.html#a97dafd7a784c2197440448e8e1ecebab',1,'occ::io::OccInput']]],
   ['geometry_5ffilename_7',['geometry_filename',['../structocc_1_1main_1_1DescribeConfig.html#a93a2005d18e521873a4d33499825bc5a',1,'occ::main::DescribeConfig::geometry_filename'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a7ee45184433d00970661846c5ad9d8f1',1,'occ::main::IsosurfaceConfig::geometry_filename']]],

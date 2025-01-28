@@ -28,8 +28,10 @@ var searchData=
   ['coov_25',['Coov',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a8375a9603b005fbcb5fe1670ee6848a0',1,'occ::core']]],
   ['correlation_26',['Correlation',['../classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6a3287afc1cc6cb61e6100019d1af3ab29',1,'occ::dft::DensityFunctional']]],
   ['coulomb_27',['coulomb',['../namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa13a55be71f3a6a4c9ea356833df823c4',1,'occ::qm::cint']]],
-  ['crystalvoid_28',['CrystalVoid',['../structocc_1_1main_1_1IsosurfaceConfig.html#a30f6a10307c455ced574d076fbdd4c5ea952816358b862ae659756eaacb56a8cb',1,'occ::main::IsosurfaceConfig']]],
+  ['crystalvoid_28',['CrystalVoid',['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb',1,'occ::isosurface']]],
   ['cs_29',['Cs',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a8b847cfae498e96e3fa08a56cb42b838',1,'occ::core']]],
   ['cube_5fevaluation_30',['cube_evaluation',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a90cf67127ee5cbf329f72ff49a7d4fea',1,'occ::timing']]],
-  ['curvedness_31',['Curvedness',['../structocc_1_1main_1_1IsosurfaceConfig.html#a4784ff286db58618b3daeccfc29fedf8a18e3943bcc5a590fe43753212fcece5b',1,'occ::main::IsosurfaceConfig']]]
+  ['curvaturek1_31',['CurvatureK1',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659',1,'occ::isosurface']]],
+  ['curvaturek2_32',['CurvatureK2',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519',1,'occ::isosurface']]],
+  ['curvedness_33',['Curvedness',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba18e3943bcc5a590fe43753212fcece5b',1,'occ::isosurface']]]
 ];

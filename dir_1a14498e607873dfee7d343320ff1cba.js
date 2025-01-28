@@ -6,8 +6,10 @@ var dir_1a14498e607873dfee7d343320ff1cba =
     [ "eeq_esp.h", "eeq__esp_8h.html", "eeq__esp_8h" ],
     [ "electric_potential.h", "electric__potential_8h.html", "electric__potential_8h" ],
     [ "electron_density.h", "electron__density_8h.html", "electron__density_8h" ],
-    [ "isosurface.h", "isosurface_8h.html", null ],
+    [ "isosurface.h", "isosurface_8h.html", "isosurface_8h" ],
+    [ "orbital_index.h", "orbital__index_8h.html", "orbital__index_8h" ],
     [ "promolecule_density.h", "promolecule__density_8h.html", "promolecule__density_8h" ],
     [ "stockholder_weight.h", "stockholder__weight_8h.html", "stockholder__weight_8h" ],
+    [ "surface_types.h", "surface__types_8h.html", "surface__types_8h" ],
     [ "void.h", "void_8h.html", "void_8h" ]
 ];

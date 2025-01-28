@@ -35,6 +35,7 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "have_xdm_parameters", "structocc_1_1qm_1_1Wavefunction.html#a5067ecbabf35f2c6242c5f395a58c9e0", null ],
     [ "J", "structocc_1_1qm_1_1Wavefunction.html#a100a4122899d164a9281b1f93ac8c674", null ],
     [ "K", "structocc_1_1qm_1_1Wavefunction.html#a3bf373b971cdcf5ca14c713095dfcd38", null ],
+    [ "method", "structocc_1_1qm_1_1Wavefunction.html#a9001d6c21cef7d1b62976cab5c69a4cf", null ],
     [ "mo", "structocc_1_1qm_1_1Wavefunction.html#a1c162fda464b8644782b2e76e19b3a30", null ],
     [ "nbf", "structocc_1_1qm_1_1Wavefunction.html#a75cd83c4bed82d79d403bf6e5520faa9", null ],
     [ "num_electrons", "structocc_1_1qm_1_1Wavefunction.html#a72b849ff8f21dac92038bd40531a5777", null ],

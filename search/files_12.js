@@ -26,6 +26,7 @@ var searchData=
   ['spinorbital_2eh_23',['spinorbital.h',['../spinorbital_8h.html',1,'']]],
   ['steinhardt_2eh_24',['steinhardt.h',['../steinhardt_8h.html',1,'']]],
   ['stockholder_5fweight_2eh_25',['stockholder_weight.h',['../stockholder__weight_8h.html',1,'']]],
-  ['surface_2eh_26',['surface.h',['../solvent_2surface_8h.html',1,'(Global Namespace)'],['../crystal_2surface_8h.html',1,'(Global Namespace)']]],
-  ['symmetryoperation_2eh_27',['symmetryoperation.h',['../symmetryoperation_8h.html',1,'']]]
+  ['surface_2eh_26',['surface.h',['../crystal_2surface_8h.html',1,'(Global Namespace)'],['../solvent_2surface_8h.html',1,'(Global Namespace)']]],
+  ['surface_5ftypes_2eh_27',['surface_types.h',['../surface__types_8h.html',1,'']]],
+  ['symmetryoperation_2eh_28',['symmetryoperation.h',['../symmetryoperation_8h.html',1,'']]]
 ];

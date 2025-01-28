@@ -8,6 +8,5 @@ var searchData=
   ['interaction_5fjson_2eh_5',['interaction_json.h',['../interaction__json_8h.html',1,'']]],
   ['interaction_5fmapper_2eh_6',['interaction_mapper.h',['../interaction__mapper_8h.html',1,'']]],
   ['interpolator_2eh_7',['interpolator.h',['../interpolator_8h.html',1,'']]],
-  ['isosurface_2eh_8',['isosurface.h',['../isosurface_8h.html',1,'']]],
-  ['isosurface_5fmesh_2eh_9',['isosurface_mesh.h',['../isosurface__mesh_8h.html',1,'']]]
+  ['isosurface_2eh_8',['isosurface.h',['../isosurface_8h.html',1,'']]]
 ];

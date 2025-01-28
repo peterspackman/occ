@@ -1,7 +1,16 @@
 <map id="/home/runner/work/occ/occ/include/occ/main/occ_isosurface.h" name="/home/runner/work/occ/occ/include/occ/main/occ_isosurface.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="21,5,192,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,104,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,61,71,98,66,95,89,59"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="129,108,191,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="125,59,148,95,143,98,121,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="217,5,388,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,104,141"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="234,63,99,113,97,108,232,58"/>
+<area shape="rect" id="Node000003" href="$orbital__index_8h.html" title=" " alt="" coords="129,108,290,148"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="278,62,240,100,236,96,274,58"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="366,196,429,221"/>
+<area shape="poly" id="edge8_Node000001_Node000005" title=" " alt="" coords="389,43,419,52,448,65,474,83,496,107,503,128,496,149,472,176,443,194,440,189,469,172,491,147,498,128,491,109,471,87,445,70,417,57,387,48"/>
+<area shape="rect" id="Node000006" href="$surface__types_8h.html" title=" " alt="" coords="314,108,481,148"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="331,58,370,96,367,100,328,62"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="232,196,291,221"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="224,147,248,183,244,186,220,150"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="255,146,358,188,356,193,253,150"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="366,150,295,191,292,187,363,146"/>
+<area shape="poly" id="edge7_Node000006_Node000005" title=" " alt="" coords="400,148,400,182,395,182,395,148"/>
 </map>

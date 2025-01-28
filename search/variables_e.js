@@ -19,7 +19,7 @@ var searchData=
   ['nodes_16',['nodes',['../structocc_1_1geometry_1_1LinearHashedOctree.html#a63fba487a90141d0745651c07030fc6f',1,'occ::geometry::LinearHashedOctree']]],
   ['nonorthogonal_5fterm_17',['nonorthogonal_term',['../structocc_1_1interaction_1_1CEEnergyComponents.html#a3a13086502118be5c79ef78a51f29e1c',1,'occ::interaction::CEEnergyComponents']]],
   ['normal_18',['normal',['../classquickhull_1_1Plane.html#a9c9dca8ff2c4bbec7dbce6ce12b5925b',1,'quickhull::Plane::normal'],['../structocc_1_1geometry_1_1Facet.html#a57916835a2a1a9d8781d23c89f5d2a18',1,'occ::geometry::Facet::normal']]],
-  ['normals_19',['normals',['../structocc_1_1io_1_1IsosurfaceMesh.html#a68a0a9f780f3ee19594c1b0077b86694',1,'occ::io::IsosurfaceMesh']]],
+  ['normals_19',['normals',['../structocc_1_1isosurface_1_1Isosurface.html#a32cb8c1d3814d63f4e74307392cb8468',1,'occ::isosurface::Isosurface']]],
   ['npts_20',['npts',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#ac724de28b2fcbd98895be4699e027d39',1,'occ::dft::DensityFunctional::Result::npts'],['../structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a8c2047138b2f7079ba92afc3cd30dd89',1,'occ::dft::DensityFunctional::Params::npts']]],
   ['nthreads_21',['nthreads',['../namespaceocc_1_1parallel.html#a741632208b7a212fbc58e0432ca851f6',1,'occ::parallel']]],
   ['nuclear_5fattraction_22',['nuclear_attraction',['../structocc_1_1qm_1_1Energy.html#aae897a7c7de3066fb8bc2b24e933285d',1,'occ::qm::Energy']]],

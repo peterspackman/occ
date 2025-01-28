@@ -1,5 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/isosurface/electric_potential.h" name="/home/runner/work/occ/occ/include/occ/isosurface/electric_potential.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,201,60"/>
-<area shape="rect" id="Node000002" href="$isosurface_8h.html" title=" " alt="" coords="5,108,201,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,74,106,108,101,108,101,74"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="96,5,292,60"/>
+<area shape="rect" id="Node000002" href="$isosurface_8h.html" title=" " alt="" coords="96,108,292,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,74,197,108,191,108,191,74"/>
+<area shape="rect" id="Node000003" href="$obj_8h.html" title=" " alt="" coords="5,211,183,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="157,174,116,213,112,209,154,170"/>
+<area shape="rect" id="Node000004" href="$ply_8h.html" title=" " alt="" coords="207,211,381,251"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="234,170,276,209,272,213,231,174"/>
 </map>

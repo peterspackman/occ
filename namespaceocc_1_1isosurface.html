@@ -101,6 +101,7 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1isosurface.html',''); 
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">occ::isosurface Namespace Reference</div></div>
 </div><!--header-->
@@ -127,6 +128,14 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1InterpolatorParams.html">InterpolatorParams</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1Isosurface.html">Isosurface</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1IsosurfaceCalculator.html">IsosurfaceCalculator</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html">IsosurfaceGenerationParameters</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1IsosurfaceProperties.html">IsosurfaceProperties</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html">MCDeformationDensityFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html">MCElectricPotentialFunctor</a></td></tr>
@@ -134,6 +143,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1MCElectronDensityFunctor.html">MCElectronDensityFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor.html">MCPromoleculeDensityFunctor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1isosurface_1_1OrbitalIndex.html">OrbitalIndex</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1StockholderWeightFunctor.html">StockholderWeightFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,6 +157,55 @@ Classes</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:a5c2777640a8f63915e0d79fdcc302f6c" id="r_a5c2777640a8f63915e0d79fdcc302f6c"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a5c2777640a8f63915e0d79fdcc302f6c">LinearInterpolatorFloat</a> = <a class="el" href="classocc_1_1core_1_1Interpolator1D.html">occ::core::Interpolator1D</a>&lt; float, <a class="el" href="namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35acfbaf4c160987f5ac229af3f525afb36">occ::core::DomainMapping::Linear</a> &gt;</td></tr>
 <tr class="separator:a5c2777640a8f63915e0d79fdcc302f6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0741cfba8f9bd491d0c150e4b6dba3d" id="r_ad0741cfba8f9bd491d0c150e4b6dba3d"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#ad0741cfba8f9bd491d0c150e4b6dba3d">Property</a> = std::variant&lt; <a class="el" href="namespaceocc.html#a02ba53886690b76ebea4b6b0d3168f65">FVec</a>, <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a> &gt;</td></tr>
+<tr class="separator:ad0741cfba8f9bd491d0c150e4b6dba3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a069d1c0243251e90060daf8cb7dc75fc" id="r_a069d1c0243251e90060daf8cb7dc75fc"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a069d1c0243251e90060daf8cb7dc75fc">PropertyMap</a> = ankerl::unordered_dense::map&lt; std::string, <a class="el" href="namespaceocc_1_1isosurface.html#ad0741cfba8f9bd491d0c150e4b6dba3d">Property</a> &gt;</td></tr>
+<tr class="separator:a069d1c0243251e90060daf8cb7dc75fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a54e925e1f128c403a4e138c8de1cf726" id="r_a54e925e1f128c403a4e138c8de1cf726"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a> { <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726ae967f43f155367921c6672f4d67f09ef">PromoleculeDensity</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a03f7d114a72c0750a68d22ddf7b72928">Hirshfeld</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a7f7174ff4bb5bc2bae39e4fb61ad59cc">EEQ_ESP</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726ad47101755289809d537b90d5f1737add">ElectronDensity</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a3e30ce90c5b1d89ae09b7d4c73d8e172">ESP</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a6df9cbe42388c5c172a8191d81a210ce">SpinDensity</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726ab6a4c26ef4ae489affedf8ddbbd75432">DeformationDensity</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e">Orbital</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb">CrystalVoid</a>
+<br />
+ }</td></tr>
+<tr class="separator:a54e925e1f128c403a4e138c8de1cf726"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2968d7f08d3f72b1360c452c333fa5cb" id="r_a2968d7f08d3f72b1360c452c333fa5cb"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> { <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbac38848044353478441149cd11add5ada">Dnorm</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba15030baf2890c763302c96101b1bd4ca">Dint_norm</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbae5fcf05cbc40561b9b062205df31ed6e">Dext_norm</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba19d37fa4afc7a979f054e52479042f1b">Dint</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba8c92a874abd9cea9b8a190f1097db434">Dext</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba1ace6fa15fe80702bb200551caafe8ef">FragmentPatch</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba7162d5dd948f0c33a1b8e4dffb662e5d">ShapeIndex</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba18e3943bcc5a590fe43753212fcece5b">Curvedness</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba7f7174ff4bb5bc2bae39e4fb61ad59cc">EEQ_ESP</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbae967f43f155367921c6672f4d67f09ef">PromoleculeDensity</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba3e30ce90c5b1d89ae09b7d4c73d8e172">ESP</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbad47101755289809d537b90d5f1737add">ElectronDensity</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba6df9cbe42388c5c172a8191d81a210ce">SpinDensity</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbab6a4c26ef4ae489affedf8ddbbd75432">DeformationDensity</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba510b953097388490c29e4e4991fc369e">Orbital</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbaff388d6f10fc36be3526d73226b1e4d7">GaussianCurvature</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba79f52bdff2c87191fe43971be1ba0765">MeanCurvature</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659">CurvatureK1</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519">CurvatureK2</a>
+<br />
+ }</td></tr>
+<tr class="separator:a2968d7f08d3f72b1360c452c333fa5cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -157,6 +217,32 @@ Functions</h2></td></tr>
 <tr class="separator:a83e50fe4bb35393c8c5706d07102c456"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3770fbe091fed343b7379fa56c5a96cc" id="r_a3770fbe091fed343b7379fa56c5a96cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1isosurface_1_1SurfaceCurvature.html">SurfaceCurvature</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a3770fbe091fed343b7379fa56c5a96cc">calculate_curvature</a> (const std::vector&lt; float &gt; &amp;mean, const std::vector&lt; float &gt; &amp;gaussian)</td></tr>
 <tr class="separator:a3770fbe091fed343b7379fa56c5a96cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97c3d0a1a1f5ef1230dd6db686b24200" id="r_a97c3d0a1a1f5ef1230dd6db686b24200"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1isosurface_1_1SurfaceCurvature.html">SurfaceCurvature</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a97c3d0a1a1f5ef1230dd6db686b24200">calculate_curvature</a> (const <a class="el" href="namespaceocc.html#a02ba53886690b76ebea4b6b0d3168f65">FVec</a> &amp;mean, const <a class="el" href="namespaceocc.html#a02ba53886690b76ebea4b6b0d3168f65">FVec</a> &amp;gaussian)</td></tr>
+<tr class="separator:a97c3d0a1a1f5ef1230dd6db686b24200"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a267f8184e8787dde6427b13ac51581b8" id="r_a267f8184e8787dde6427b13ac51581b8"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1isosurface_1_1OrbitalIndex.html">OrbitalIndex</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a267f8184e8787dde6427b13ac51581b8">parse_orbital_descriptions</a> (const std::string &amp;input)</td></tr>
+<tr class="separator:a267f8184e8787dde6427b13ac51581b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a380d4163da6f54871ea8cce2fc43db49" id="r_a380d4163da6f54871ea8cce2fc43db49"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a380d4163da6f54871ea8cce2fc43db49">property_to_string</a> (<a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> prop)</td></tr>
+<tr class="separator:a380d4163da6f54871ea8cce2fc43db49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98487ca783bb5210cb390fb21adfd871" id="r_a98487ca783bb5210cb390fb21adfd871"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a98487ca783bb5210cb390fb21adfd871">surface_to_string</a> (<a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a> surface)</td></tr>
+<tr class="separator:a98487ca783bb5210cb390fb21adfd871"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aead59b74d110c97231623fa4896006ed" id="r_aead59b74d110c97231623fa4896006ed"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#aead59b74d110c97231623fa4896006ed">surface_requires_wavefunction</a> (<a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a> kind)</td></tr>
+<tr class="separator:aead59b74d110c97231623fa4896006ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c826ad443591442e528b0116f973564" id="r_a3c826ad443591442e528b0116f973564"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a3c826ad443591442e528b0116f973564">property_requires_wavefunction</a> (<a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> kind)</td></tr>
+<tr class="separator:a3c826ad443591442e528b0116f973564"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdbaf322f650a4439d4b0663a7fd6329" id="r_afdbaf322f650a4439d4b0663a7fd6329"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#afdbaf322f650a4439d4b0663a7fd6329">surface_requires_environment</a> (<a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a> kind)</td></tr>
+<tr class="separator:afdbaf322f650a4439d4b0663a7fd6329"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a529ef317795829ea851f9db5d7fa4d8c" id="r_a529ef317795829ea851f9db5d7fa4d8c"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a529ef317795829ea851f9db5d7fa4d8c">property_requires_environment</a> (<a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> kind)</td></tr>
+<tr class="separator:a529ef317795829ea851f9db5d7fa4d8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a830e391f7c8f0b99b6dd6079b6c02493" id="r_a830e391f7c8f0b99b6dd6079b6c02493"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a830e391f7c8f0b99b6dd6079b6c02493">surface_from_string</a> (const std::string &amp;)</td></tr>
+<tr class="separator:a830e391f7c8f0b99b6dd6079b6c02493"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a245fa3a4f90b584784c01f35b671d15d" id="r_a245fa3a4f90b584784c01f35b671d15d"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a245fa3a4f90b584784c01f35b671d15d">available_surface_types</a> ()</td></tr>
+<tr class="separator:a245fa3a4f90b584784c01f35b671d15d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab16fc330a28219f949bbbe9bed9fb603" id="r_ab16fc330a28219f949bbbe9bed9fb603"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#ab16fc330a28219f949bbbe9bed9fb603">default_properties</a> (bool have_environment)</td></tr>
+<tr class="separator:ab16fc330a28219f949bbbe9bed9fb603"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82cec8a629edd7bcc651ad95d2331491" id="r_a82cec8a629edd7bcc651ad95d2331491"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a82cec8a629edd7bcc651ad95d2331491">property_from_string</a> (const std::string &amp;)</td></tr>
+<tr class="separator:a82cec8a629edd7bcc651ad95d2331491"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6f7648352d29bf20d093b236737e41b" id="r_ae6f7648352d29bf20d093b236737e41b"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#ae6f7648352d29bf20d093b236737e41b">surface_properties_to_compute</a> (const std::vector&lt; <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> &gt; &amp;additional_properties, bool have_environment)</td></tr>
+<tr class="separator:ae6f7648352d29bf20d093b236737e41b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a5c2777640a8f63915e0d79fdcc302f6c" name="a5c2777640a8f63915e0d79fdcc302f6c"></a>
@@ -173,7 +259,129 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ad0741cfba8f9bd491d0c150e4b6dba3d" name="ad0741cfba8f9bd491d0c150e4b6dba3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0741cfba8f9bd491d0c150e4b6dba3d">&#9670;&#160;</a></span>Property</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceocc_1_1isosurface.html#ad0741cfba8f9bd491d0c150e4b6dba3d">occ::isosurface::Property</a> = typedef std::variant&lt;<a class="el" href="namespaceocc.html#a02ba53886690b76ebea4b6b0d3168f65">FVec</a>, <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a069d1c0243251e90060daf8cb7dc75fc" name="a069d1c0243251e90060daf8cb7dc75fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a069d1c0243251e90060daf8cb7dc75fc">&#9670;&#160;</a></span>PropertyMap</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceocc_1_1isosurface.html#a069d1c0243251e90060daf8cb7dc75fc">occ::isosurface::PropertyMap</a> = typedef ankerl::unordered_dense::map&lt;std::string, <a class="el" href="namespaceocc_1_1isosurface.html#ad0741cfba8f9bd491d0c150e4b6dba3d">Property</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a2968d7f08d3f72b1360c452c333fa5cb" name="a2968d7f08d3f72b1360c452c333fa5cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2968d7f08d3f72b1360c452c333fa5cb">&#9670;&#160;</a></span>PropertyKind</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">occ::isosurface::PropertyKind</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cbac38848044353478441149cd11add5ada" name="a2968d7f08d3f72b1360c452c333fa5cbac38848044353478441149cd11add5ada"></a>Dnorm&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba15030baf2890c763302c96101b1bd4ca" name="a2968d7f08d3f72b1360c452c333fa5cba15030baf2890c763302c96101b1bd4ca"></a>Dint_norm&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cbae5fcf05cbc40561b9b062205df31ed6e" name="a2968d7f08d3f72b1360c452c333fa5cbae5fcf05cbc40561b9b062205df31ed6e"></a>Dext_norm&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba19d37fa4afc7a979f054e52479042f1b" name="a2968d7f08d3f72b1360c452c333fa5cba19d37fa4afc7a979f054e52479042f1b"></a>Dint&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba8c92a874abd9cea9b8a190f1097db434" name="a2968d7f08d3f72b1360c452c333fa5cba8c92a874abd9cea9b8a190f1097db434"></a>Dext&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba1ace6fa15fe80702bb200551caafe8ef" name="a2968d7f08d3f72b1360c452c333fa5cba1ace6fa15fe80702bb200551caafe8ef"></a>FragmentPatch&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba7162d5dd948f0c33a1b8e4dffb662e5d" name="a2968d7f08d3f72b1360c452c333fa5cba7162d5dd948f0c33a1b8e4dffb662e5d"></a>ShapeIndex&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba18e3943bcc5a590fe43753212fcece5b" name="a2968d7f08d3f72b1360c452c333fa5cba18e3943bcc5a590fe43753212fcece5b"></a>Curvedness&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba7f7174ff4bb5bc2bae39e4fb61ad59cc" name="a2968d7f08d3f72b1360c452c333fa5cba7f7174ff4bb5bc2bae39e4fb61ad59cc"></a>EEQ_ESP&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cbae967f43f155367921c6672f4d67f09ef" name="a2968d7f08d3f72b1360c452c333fa5cbae967f43f155367921c6672f4d67f09ef"></a>PromoleculeDensity&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba3e30ce90c5b1d89ae09b7d4c73d8e172" name="a2968d7f08d3f72b1360c452c333fa5cba3e30ce90c5b1d89ae09b7d4c73d8e172"></a>ESP&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cbad47101755289809d537b90d5f1737add" name="a2968d7f08d3f72b1360c452c333fa5cbad47101755289809d537b90d5f1737add"></a>ElectronDensity&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba6df9cbe42388c5c172a8191d81a210ce" name="a2968d7f08d3f72b1360c452c333fa5cba6df9cbe42388c5c172a8191d81a210ce"></a>SpinDensity&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cbab6a4c26ef4ae489affedf8ddbbd75432" name="a2968d7f08d3f72b1360c452c333fa5cbab6a4c26ef4ae489affedf8ddbbd75432"></a>DeformationDensity&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba510b953097388490c29e4e4991fc369e" name="a2968d7f08d3f72b1360c452c333fa5cba510b953097388490c29e4e4991fc369e"></a>Orbital&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cbaff388d6f10fc36be3526d73226b1e4d7" name="a2968d7f08d3f72b1360c452c333fa5cbaff388d6f10fc36be3526d73226b1e4d7"></a>GaussianCurvature&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba79f52bdff2c87191fe43971be1ba0765" name="a2968d7f08d3f72b1360c452c333fa5cba79f52bdff2c87191fe43971be1ba0765"></a>MeanCurvature&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659" name="a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659"></a>CurvatureK1&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519" name="a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519"></a>CurvatureK2&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
+<a id="a54e925e1f128c403a4e138c8de1cf726" name="a54e925e1f128c403a4e138c8de1cf726"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54e925e1f128c403a4e138c8de1cf726">&#9670;&#160;</a></span>SurfaceKind</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">occ::isosurface::SurfaceKind</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726ae967f43f155367921c6672f4d67f09ef" name="a54e925e1f128c403a4e138c8de1cf726ae967f43f155367921c6672f4d67f09ef"></a>PromoleculeDensity&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726a03f7d114a72c0750a68d22ddf7b72928" name="a54e925e1f128c403a4e138c8de1cf726a03f7d114a72c0750a68d22ddf7b72928"></a>Hirshfeld&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726a7f7174ff4bb5bc2bae39e4fb61ad59cc" name="a54e925e1f128c403a4e138c8de1cf726a7f7174ff4bb5bc2bae39e4fb61ad59cc"></a>EEQ_ESP&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726ad47101755289809d537b90d5f1737add" name="a54e925e1f128c403a4e138c8de1cf726ad47101755289809d537b90d5f1737add"></a>ElectronDensity&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726a3e30ce90c5b1d89ae09b7d4c73d8e172" name="a54e925e1f128c403a4e138c8de1cf726a3e30ce90c5b1d89ae09b7d4c73d8e172"></a>ESP&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726a6df9cbe42388c5c172a8191d81a210ce" name="a54e925e1f128c403a4e138c8de1cf726a6df9cbe42388c5c172a8191d81a210ce"></a>SpinDensity&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726ab6a4c26ef4ae489affedf8ddbbd75432" name="a54e925e1f128c403a4e138c8de1cf726ab6a4c26ef4ae489affedf8ddbbd75432"></a>DeformationDensity&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e" name="a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e"></a>Orbital&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb" name="a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb"></a>CrystalVoid&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a245fa3a4f90b584784c01f35b671d15d" name="a245fa3a4f90b584784c01f35b671d15d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a245fa3a4f90b584784c01f35b671d15d">&#9670;&#160;</a></span>available_surface_types()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::vector&lt; <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a> &gt; &amp; occ::isosurface::available_surface_types </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a76c5699ee000bfa8743cee506ac0a640" name="a76c5699ee000bfa8743cee506ac0a640"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a76c5699ee000bfa8743cee506ac0a640">&#9670;&#160;</a></span>BatchFunctor()</h2>
 
@@ -194,8 +402,36 @@ template&lt;typename F &gt; </div>
 
 </div>
 </div>
+<a id="a97c3d0a1a1f5ef1230dd6db686b24200" name="a97c3d0a1a1f5ef1230dd6db686b24200"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97c3d0a1a1f5ef1230dd6db686b24200">&#9670;&#160;</a></span>calculate_curvature() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1isosurface_1_1SurfaceCurvature.html">SurfaceCurvature</a> occ::isosurface::calculate_curvature </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a02ba53886690b76ebea4b6b0d3168f65">FVec</a> &amp;&#160;</td>
+          <td class="paramname"><em>mean</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a02ba53886690b76ebea4b6b0d3168f65">FVec</a> &amp;&#160;</td>
+          <td class="paramname"><em>gaussian</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a3770fbe091fed343b7379fa56c5a96cc" name="a3770fbe091fed343b7379fa56c5a96cc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3770fbe091fed343b7379fa56c5a96cc">&#9670;&#160;</a></span>calculate_curvature()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3770fbe091fed343b7379fa56c5a96cc">&#9670;&#160;</a></span>calculate_curvature() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -222,6 +458,24 @@ template&lt;typename F &gt; </div>
 
 </div>
 </div>
+<a id="ab16fc330a28219f949bbbe9bed9fb603" name="ab16fc330a28219f949bbbe9bed9fb603"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab16fc330a28219f949bbbe9bed9fb603">&#9670;&#160;</a></span>default_properties()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::vector&lt; <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> &gt; &amp; occ::isosurface::default_properties </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>have_environment</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a83e50fe4bb35393c8c5706d07102c456" name="a83e50fe4bb35393c8c5706d07102c456"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a83e50fe4bb35393c8c5706d07102c456">&#9670;&#160;</a></span>make_batch_functor()</h2>
 
@@ -238,6 +492,244 @@ template&lt;typename F , typename... Args&gt; </div>
           <td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a267f8184e8787dde6427b13ac51581b8" name="a267f8184e8787dde6427b13ac51581b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a267f8184e8787dde6427b13ac51581b8">&#9670;&#160;</a></span>parse_orbital_descriptions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structocc_1_1isosurface_1_1OrbitalIndex.html">OrbitalIndex</a> &gt; occ::isosurface::parse_orbital_descriptions </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>input</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a82cec8a629edd7bcc651ad95d2331491" name="a82cec8a629edd7bcc651ad95d2331491"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82cec8a629edd7bcc651ad95d2331491">&#9670;&#160;</a></span>property_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> occ::isosurface::property_from_string </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a529ef317795829ea851f9db5d7fa4d8c" name="a529ef317795829ea851f9db5d7fa4d8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a529ef317795829ea851f9db5d7fa4d8c">&#9670;&#160;</a></span>property_requires_environment()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool occ::isosurface::property_requires_environment </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a>&#160;</td>
+          <td class="paramname"><em>kind</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3c826ad443591442e528b0116f973564" name="a3c826ad443591442e528b0116f973564"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c826ad443591442e528b0116f973564">&#9670;&#160;</a></span>property_requires_wavefunction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool occ::isosurface::property_requires_wavefunction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a>&#160;</td>
+          <td class="paramname"><em>kind</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a380d4163da6f54871ea8cce2fc43db49" name="a380d4163da6f54871ea8cce2fc43db49"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a380d4163da6f54871ea8cce2fc43db49">&#9670;&#160;</a></span>property_to_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const char * occ::isosurface::property_to_string </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a>&#160;</td>
+          <td class="paramname"><em>prop</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a830e391f7c8f0b99b6dd6079b6c02493" name="a830e391f7c8f0b99b6dd6079b6c02493"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a830e391f7c8f0b99b6dd6079b6c02493">&#9670;&#160;</a></span>surface_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a> occ::isosurface::surface_from_string </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae6f7648352d29bf20d093b236737e41b" name="ae6f7648352d29bf20d093b236737e41b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6f7648352d29bf20d093b236737e41b">&#9670;&#160;</a></span>surface_properties_to_compute()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> &gt; occ::isosurface::surface_properties_to_compute </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb">PropertyKind</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>additional_properties</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>have_environment</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afdbaf322f650a4439d4b0663a7fd6329" name="afdbaf322f650a4439d4b0663a7fd6329"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdbaf322f650a4439d4b0663a7fd6329">&#9670;&#160;</a></span>surface_requires_environment()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool occ::isosurface::surface_requires_environment </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a>&#160;</td>
+          <td class="paramname"><em>kind</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aead59b74d110c97231623fa4896006ed" name="aead59b74d110c97231623fa4896006ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aead59b74d110c97231623fa4896006ed">&#9670;&#160;</a></span>surface_requires_wavefunction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool occ::isosurface::surface_requires_wavefunction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a>&#160;</td>
+          <td class="paramname"><em>kind</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a98487ca783bb5210cb390fb21adfd871" name="a98487ca783bb5210cb390fb21adfd871"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98487ca783bb5210cb390fb21adfd871">&#9670;&#160;</a></span>surface_to_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const char * occ::isosurface::surface_to_string </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726">SurfaceKind</a>&#160;</td>
+          <td class="paramname"><em>surface</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

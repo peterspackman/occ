@@ -28,7 +28,6 @@ var namespaceocc_1_1io =
     [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
     [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
     [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
-    [ "IsosurfaceMesh", "structocc_1_1io_1_1IsosurfaceMesh.html", "structocc_1_1io_1_1IsosurfaceMesh" ],
     [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
     [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
     [ "JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
@@ -51,7 +50,6 @@ var namespaceocc_1_1io =
     [ "SolventInput", "structocc_1_1io_1_1SolventInput.html", "structocc_1_1io_1_1SolventInput" ],
     [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
     [ "Table", "classocc_1_1io_1_1Table.html", "classocc_1_1io_1_1Table" ],
-    [ "VertexProperties", "structocc_1_1io_1_1VertexProperties.html", "structocc_1_1io_1_1VertexProperties" ],
     [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ],
     [ "ElementMap", "namespaceocc_1_1io.html#a2e0d0088e3a6c463309cc364c41e1aaf", null ],
     [ "PointChargeList", "namespaceocc_1_1io.html#a2032b9063a04cbcda0dca503cdbf2e7d", null ],
@@ -68,13 +66,12 @@ var namespaceocc_1_1io =
     [ "json_format", "namespaceocc_1_1io.html#a099816a1d1f5ac39efdf73b50c8f6efc", null ],
     [ "load_crystal", "namespaceocc_1_1io.html#a7fb33629fa205abb730a047f5968e93f", null ],
     [ "load_molecule", "namespaceocc_1_1io.html#a07416418ded69a01d477d8c00ef8a825", null ],
-    [ "mesh_from_vertices_faces", "namespaceocc_1_1io.html#af03fc39fad0c56f09e1d6a4598d4ca1a", null ],
     [ "molecule_from_xyz_file", "namespaceocc_1_1io.html#aaaed42365ec5e0da71939b3b8646ff6e", null ],
     [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
     [ "point_charges_from_file", "namespaceocc_1_1io.html#ac7b49e759281fa2bff63c6e075a41559", null ],
     [ "point_charges_from_string", "namespaceocc_1_1io.html#a3903e63674924c2d0b6cf6089690b474", null ],
     [ "valid_json_format_string", "namespaceocc_1_1io.html#a03fbffee6c9f175af30275db3fe30f69", null ],
-    [ "write_obj_file", "namespaceocc_1_1io.html#aec74af2b9b519a64663daa2fb77e4719", null ],
+    [ "write_obj_file", "namespaceocc_1_1io.html#a540ef2f5dcaa6e1e0fb43554bd89c18c", null ],
     [ "write_ply_file", "namespaceocc_1_1io.html#a8b8b6eb8568d47e85b96130c3c57268d", null ],
-    [ "write_ply_mesh", "namespaceocc_1_1io.html#abd4eeade13601bbdbcb78ac434cbce41", null ]
+    [ "write_ply_mesh", "namespaceocc_1_1io.html#acc79d4aa61d69bc8446855d324216a01", null ]
 ];

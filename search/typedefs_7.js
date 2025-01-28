@@ -9,8 +9,7 @@ var searchData=
   ['intenv_6',['IntEnv',['../classocc_1_1qm_1_1IntegralEngine.html#a6f28294ee07d96ac95b936c701a80464',1,'occ::qm::IntegralEngine']]],
   ['interactionlabels_7',['InteractionLabels',['../classocc_1_1io_1_1crystalgrower_1_1NetWriter.html#ac44dda08651b5a762b5eda4b4208542d',1,'occ::io::crystalgrower::NetWriter']]],
   ['interpolator_8',['interpolator',['../structocc_1_1descriptors_1_1PromoleculeDensityShape.html#a9d9d6ee67685e4f7b072418e0162a7f5',1,'occ::descriptors::PromoleculeDensityShape::Interpolator'],['../namespaceocc_1_1slater_1_1impl.html#a344d0083a38816bf7d272e697ca21264',1,'occ::slater::impl::Interpolator']]],
-  ['intvertexproperties_9',['IntVertexProperties',['../structocc_1_1io_1_1VertexProperties.html#aaf201b5b8d804106a544bb126f01d0eb',1,'occ::io::VertexProperties']]],
-  ['is_5favalanching_10',['is_avalanching',['../structocc_1_1crystal_1_1DimerIndexHash.html#a80b0c521a100238d7b24891307c0d463',1,'occ::crystal::DimerIndexHash::is_avalanching'],['../structocc_1_1crystal_1_1SiteIndexHash.html#a345ceeb008458e2a8901c46e834360a1',1,'occ::crystal::SiteIndexHash::is_avalanching']]],
-  ['ivec_11',['IVec',['../namespaceocc.html#a1c36353e752d77ead2a53790410bfaee',1,'occ']]],
-  ['ivec3_12',['IVec3',['../namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3',1,'occ']]]
+  ['is_5favalanching_9',['is_avalanching',['../structocc_1_1crystal_1_1DimerIndexHash.html#a80b0c521a100238d7b24891307c0d463',1,'occ::crystal::DimerIndexHash::is_avalanching'],['../structocc_1_1crystal_1_1SiteIndexHash.html#a345ceeb008458e2a8901c46e834360a1',1,'occ::crystal::SiteIndexHash::is_avalanching']]],
+  ['ivec_10',['IVec',['../namespaceocc.html#a1c36353e752d77ead2a53790410bfaee',1,'occ']]],
+  ['ivec3_11',['IVec3',['../namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3',1,'occ']]]
 ];

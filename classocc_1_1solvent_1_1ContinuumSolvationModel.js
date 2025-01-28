@@ -3,6 +3,7 @@ var classocc_1_1solvent_1_1ContinuumSolvationModel =
     [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a7e297a1a1386a405acdb8a0b330690f4", null ],
     [ "apparent_surface_charge", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#aa6b54352d932fdea7ff7db3ddea87b64", null ],
     [ "charge", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a60e07a2d161bc57be8e7d62ab71a0ed8", null ],
+    [ "name", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a79354428504e6c2fb5cd36b3458b5245", null ],
     [ "nuclear_charges", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a7e0c038f0522b588a42647dd4815e1a0", null ],
     [ "nuclear_positions", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a29b06ff3ddcb5f488731975b4b4d762c", null ],
     [ "num_surface_points", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a936dc1977ce7d65b0edf41bd9e7d140b", null ],

@@ -1,15 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/isosurface_mesh.h" name="/home/runner/work/occ/occ/include/occ/io/isosurface_mesh.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="148,5,360,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,196,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="208,62,134,104,132,99,206,58"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="221,108,287,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="257,60,257,94,251,94,251,60"/>
-<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="312,108,497,133"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="301,58,374,99,371,103,299,62"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="216,181,319,207"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="384,136,303,177,301,173,381,131"/>
-<area shape="rect" id="Node000006" title=" " alt="" coords="343,181,467,207"/>
-<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="407,134,407,168,402,168,402,134"/>
-<area shape="rect" id="Node000007" title=" " alt="" coords="491,181,580,207"/>
-<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="427,131,503,172,501,177,424,136"/>
+<area shape="rect" id="node1" title=" " alt="" coords="148,5,360,61"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,109,196,136"/>
+<area shape="rect" id="node3" title=" " alt="" coords="221,109,287,136"/>
+<area shape="rect" id="node4" href="$linear__algebra_8h.html" title=" " alt="" coords="312,109,497,136"/>
+<area shape="rect" id="node5" title=" " alt="" coords="216,184,319,211"/>
+<area shape="rect" id="node6" title=" " alt="" coords="343,184,467,211"/>
+<area shape="rect" id="node7" title=" " alt="" coords="491,184,606,211"/>
 </map>

@@ -16,7 +16,6 @@ var namespaceocc_1_1main =
     [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
     [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
     [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
-    [ "OrbitalIndex", "structocc_1_1main_1_1OrbitalIndex.html", "structocc_1_1main_1_1OrbitalIndex" ],
     [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
     [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
     [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],
