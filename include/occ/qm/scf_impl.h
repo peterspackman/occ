@@ -82,6 +82,7 @@ template <SCFMethod P> Wavefunction SCF<P>::wavefunction() const {
   wfn.energy.total = ctx.energy.at("total");
   wfn.T = ctx.T;
   wfn.V = ctx.V;
+  wfn.method = m_procedure.name();
   return wfn;
 }
 

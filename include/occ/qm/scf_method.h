@@ -27,6 +27,7 @@ concept SCFMethod =
       { method.total_electrons() } -> std::same_as<int>;
       { method.have_effective_core_potentials() } -> std::same_as<bool>;
       { method.usual_scf_energy() } -> std::same_as<bool>;
+      { method.name() } -> std::same_as<std::string>;
       { method.supports_incremental_fock_build() } -> std::same_as<bool>;
     };
 

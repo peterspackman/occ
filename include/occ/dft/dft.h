@@ -428,6 +428,8 @@ public:
 
   inline const auto &functionals() const { return m_funcs; }
 
+  inline std::string name() const { return method_string(); }
+
 private:
   std::string m_method_string{"svwn5"};
   occ::qm::HartreeFock m_hf;

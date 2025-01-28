@@ -1,49 +1,12 @@
 #pragma once
 #include <CLI/App.hpp>
+#include <occ/isosurface/orbital_index.h>
+#include <occ/isosurface/surface_types.h>
 #include <vector>
 
 namespace occ::main {
 
-struct OrbitalIndex {
-  enum class Reference { Absolute, HOMO, LUMO };
-
-  int offset{0};
-  Reference reference{Reference::Absolute};
-
-  int resolve(int nalpha, int nbeta) const;
-  std::string format() const;
-};
-
 struct IsosurfaceConfig {
-  enum class Surface {
-    PromoleculeDensity,
-    Hirshfeld,
-    EEQ_ESP,
-    ElectronDensity,
-    ESP,
-    SpinDensity,
-    DeformationDensity,
-    Orbital,
-    CrystalVoid
-  };
-
-  enum class Property {
-    Dnorm,
-    Dint_norm,
-    Dext_norm,
-    Dint,
-    Dext,
-    FragmentPatch,
-    ShapeIndex,
-    Curvedness,
-    EEQ_ESP,
-    PromoleculeDensity,
-    ESP,
-    ElectronDensity,
-    SpinDensity,
-    DeformationDensity,
-    Orbital
-  };
 
   std::string geometry_filename{""};
   std::string environment_filename{""};
@@ -60,11 +23,11 @@ struct IsosurfaceConfig {
   std::string kind{"promolecule_density"};
   std::string output_template{"surface{}.ply"};
   std::vector<std::string> additional_properties{};
-  std::vector<OrbitalIndex> orbital_indices{};
+  std::vector<occ::isosurface::OrbitalIndex> orbital_indices{};
   std::string orbitals_input{"homo"};
 
-  std::vector<Property> surface_properties() const;
-  Surface surface_type() const;
+  std::vector<isosurface::PropertyKind> surface_properties() const;
+  isosurface::SurfaceKind surface_type() const;
 
   bool requires_crystal() const;
   bool requires_environment() const;

@@ -1,3 +1,4 @@
+#include <occ/core/log.h>
 #include <occ/isosurface/curvature.h>
 
 namespace occ::isosurface {
@@ -27,6 +28,12 @@ FVec make_vertex_curvedness(const FVec &k1, const FVec &k2) {
 
 SurfaceCurvature calculate_curvature(const std::vector<float> &mean,
                                      const std::vector<float> &gaussian) {
+  return calculate_curvature(
+      Eigen::Map<const FVec>(mean.data(), mean.size()),
+      Eigen::Map<const FVec>(gaussian.data(), gaussian.size()));
+}
+
+SurfaceCurvature calculate_curvature(const FVec &mean, const FVec &gaussian) {
   SurfaceCurvature result;
   result.mean = Eigen::Map<const FVec>(mean.data(), mean.size());
   result.gaussian = Eigen::Map<const FVec>(gaussian.data(), gaussian.size());
@@ -54,8 +61,8 @@ SurfaceCurvature calculate_curvature(const std::vector<float> &mean,
       result.shape_index(i) = -2.0 / M_PI * std::atan((mx + mn) / (mx - mn));
     }
   }
-  fmt::print("Shape index range: {} {} {}\n", result.shape_index.minCoeff(),
-             result.shape_index.mean(), result.shape_index.maxCoeff());
+  occ::log::debug("Shape index range: {} {} {}", result.shape_index.minCoeff(),
+                  result.shape_index.mean(), result.shape_index.maxCoeff());
 
   return result;
 }

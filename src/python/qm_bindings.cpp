@@ -5,6 +5,7 @@
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/tuple.h>
 #include <nanobind/stl/vector.h>
+#include <occ/core/element.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
@@ -24,6 +25,15 @@ constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
 constexpr auto G = occ::qm::SpinorbitalKind::General;
 
+inline std::string chemical_formula_from_atoms(const std::vector<Atom> &atoms) {
+  using occ::core::Element;
+  std::vector<Element> elements;
+  elements.reserve(atoms.size());
+  for (const auto &atom : atoms) {
+    elements.push_back(Element(atom.atomic_number));
+  }
+  return occ::core::chemical_formula(elements);
+}
 nb::module_ register_qm_bindings(nb::module_ &parent) {
   auto m =
       parent.def_submodule("qm", "Quantum chemistry functionality for OCC");
@@ -80,8 +90,15 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
       .def_rw("occupied_orbital_coeffs", &MolecularOrbitals::Cocc)
       .def_rw("density_matrix", &MolecularOrbitals::D)
       .def_rw("orbital_energies", &MolecularOrbitals::energies)
-      .def("expectation_value", [](const MolecularOrbitals &mo, const Mat &op) {
-        return 2 * occ::qm::expectation(mo.kind, mo.D, op);
+      .def("expectation_value",
+           [](const MolecularOrbitals &mo, const Mat &op) {
+             return 2 * occ::qm::expectation(mo.kind, mo.D, op);
+           })
+      .def("__repr__", [](const MolecularOrbitals &mo) {
+        return fmt::format(
+            "<MolecularOrbitals kind={} nao={} nalpha={} nbeta={}>",
+            spinorbital_kind_to_string(mo.kind), mo.n_ao, mo.n_alpha,
+            mo.n_beta);
       });
 
   nb::class_<Wavefunction>(m, "Wavefunction")
@@ -110,10 +127,19 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
                     Wavefunction wfn(reader);
                     return wfn;
                   })
-      .def_static("from_molden", [](const std::string &filename) {
-        auto reader = occ::io::MoldenReader(filename);
-        Wavefunction wfn(reader);
-        return wfn;
+      .def_static("from_molden",
+                  [](const std::string &filename) {
+                    auto reader = occ::io::MoldenReader(filename);
+                    Wavefunction wfn(reader);
+                    return wfn;
+                  })
+      .def("__repr__", [](const Wavefunction &wfn) {
+        return fmt::format("<Wavefunction {} {}/{} kind={} nbf={} "
+                           "charge={}>",
+                           chemical_formula_from_atoms(wfn.atoms), wfn.method,
+                           wfn.basis.name(),
+                           spinorbital_kind_to_string(wfn.mo.kind),
+                           wfn.basis.nbf(), wfn.charge());
       });
 
   using HF = SCF<HartreeFock>;

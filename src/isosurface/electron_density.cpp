@@ -12,7 +12,7 @@ ElectronDensityFunctor::ElectronDensityFunctor(const occ::qm::Wavefunction &wfn,
 
 void ElectronDensityFunctor::set_orbital_index(int idx) {
   m_mo_index = idx;
-  if (m_mo_index >= m_wfn.mo.n_ao) {
+  if (m_mo_index >= static_cast<int>(m_wfn.mo.n_ao)) {
     std::string desc = fmt::format(
         "Invalid MO index in ElectronDensityFunctor: {} (have {} AOs)",
         m_mo_index, m_wfn.mo.n_ao);

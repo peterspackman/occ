@@ -11,11 +11,15 @@ requires-python = ">=3.10"
 authors = [
     { name = "Peter Spackman", email = "peterspackman@fastmail.com" },
 ]
+
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
 # Optional: runtime dependency specification
 dependencies = ["numpy >1.24.4"]
+
+[project.scripts]
+occpy = "occpy:run_occ_executable"
 
 [project.urls]
 Homepage = "https://github.com/peterspackman/occ"

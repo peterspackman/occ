@@ -82,32 +82,33 @@ OCC provides comprehensive functionality for ground-state single-point calculati
 ## Python API Examples
 
 ```python
-import occ
+import occpy
+from occpy import Crystal, Molecule, AOBasis, HartreeFock, DFT
+from occpy.qm import SpinorbitalKind
 
 # Set up basic configuration
-occ.setup_logging(1)  # Configure logging level
-occ.set_data_directory("/path/to/basis/sets")  # Optional: Set basis set path
+occpy.set_log_level(occpy.LogLevel.WARN)  # Configure logging level
+# occpy.set_data_directory("/path/to/basis/sets")  # Optional: Set basis set path
 
 # Load molecule from XYZ file
-mol = occ.Molecule.from_xyz_file("h2o.xyz")
+mol = Molecule.from_xyz_file("h2o.xyz")
 
-# Basic Hartree-Fock calculation
-basis = occ.AOBasis.load("6-31G", mol.atoms())
-hf = occ.HartreeFock(basis)
-scf = hf.scf(unrestricted=False)  # Restricted calculation
-scf.set_charge_multiplicity(0, 1)  # Neutral singlet
+# Basic Restricted Hartree-Fock calculation
+basis = AOBasis.load(mol.atoms(), "6-31G")
+hf = HartreeFock(basis)
+scf = hf.scf()
 energy = scf.run()
 wfn = scf.wavefunction()
 
 # DFT calculation
-dft = occ.DFT("B3LYP", basis)
-ks = dft.scf(unrestricted=False)
+dft = DFT("B3LYP", basis)
+ks = dft.scf(SpinorbitalKind.Unrestricted)
 ks.set_charge_multiplicity(0, 1)
 energy = ks.run()
 
 # Crystal structure analysis
-crystal = occ.Crystal.from_cif_file("structure.cif")
-dimers = crystal.symmetry_unique_dimers(radius=10.0)  # Get unique dimers within 10 Å
+crystal = Crystal.from_cif_file("structure.cif")
+dimers = crystal.symmetry_unique_dimers(10.0)  # Get unique dimers within 10 Å
 ```
 
 For more examples and detailed API documentation, please refer to the [documentation](docs_url_here).

@@ -2970,66 +2970,59 @@ TEST_CASE("crystal_json", "[write,read]") {
 }
 
 TEST_CASE("Write PLY mesh validation", "[io][ply]") {
-  using occ::io::IsosurfaceMesh;
-  using occ::io::VertexProperties;
+  using occ::io::write_ply_mesh;
+  using occ::isosurface::Isosurface;
   SECTION("Valid small mesh") {
-    IsosurfaceMesh mesh;
-    mesh.vertices = {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
-    mesh.faces = {0, 1, 2};
-    mesh.normals = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
+    Isosurface mesh;
+    mesh.vertices << 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f;
+    mesh.faces << 0, 1, 2;
+    mesh.normals << 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f;
 
-    VertexProperties properties;
-    properties.fprops["test_float"] = {1.0f, 2.0f, 3.0f};
-    properties.iprops["test_int"] = {1, 2, 3};
+    occ::FVec fprop;
+    fprop << 1.0f, 2.0f, 3.0f;
+    occ::IVec iprop;
+    iprop << 1, 2, 3;
+    mesh.properties.add("test_float", fprop);
+    mesh.properties.add("test_int", iprop);
 
     // Test both binary and ASCII formats
     SECTION("ASCII format") {
       std::stringstream ss;
-      REQUIRE_NOTHROW(write_ply_mesh("test.ply", mesh, properties, false));
+      REQUIRE_NOTHROW(write_ply_mesh("test.ply", mesh, false));
     }
 
     SECTION("Binary format") {
       std::stringstream ss;
-      REQUIRE_NOTHROW(write_ply_mesh("test.ply", mesh, properties, true));
+      REQUIRE_NOTHROW(write_ply_mesh("test.ply", mesh, true));
     }
   }
 
   SECTION("Error handling") {
-    IsosurfaceMesh empty_mesh;
-    VertexProperties empty_props;
+    Isosurface empty_mesh;
 
     SECTION("Empty mesh") {
-      REQUIRE_THROWS(
-          write_ply_mesh("test.ply", empty_mesh, empty_props, false));
+      REQUIRE_THROWS(write_ply_mesh("test.ply", empty_mesh, false));
     }
 
     SECTION("Mismatched property sizes") {
-      IsosurfaceMesh mesh;
-      mesh.vertices = {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-      VertexProperties bad_props;
-      bad_props.fprops["test"] = {1.0f}; // Wrong size
-      REQUIRE_THROWS(write_ply_mesh("test.ply", mesh, bad_props, false));
-    }
-
-    SECTION("Invalid file path") {
-      IsosurfaceMesh mesh;
-      mesh.vertices = {0.0f, 0.0f, 0.0f};
-      REQUIRE_THROWS(
-          write_ply_mesh("/invalid/path/test.ply", mesh, empty_props, false));
+      Isosurface mesh;
+      mesh.vertices << 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f;
+      occ::FVec bad_prop;
+      bad_prop << 1.0f;
+      mesh.properties.add("test", bad_prop); // Wrong size
+      REQUIRE_THROWS(write_ply_mesh("test.ply", mesh, false));
     }
   }
 
   SECTION("Large mesh handling") {
-    IsosurfaceMesh large_mesh;
+    Isosurface large_mesh;
     // Create a larger mesh with many vertices/faces
     const int num_vertices = 1000000;
-    large_mesh.vertices.resize(num_vertices * 3);
-    large_mesh.faces.resize((num_vertices - 2) * 3);
+    large_mesh.vertices = occ::FMat3N::Random(3, num_vertices);
+    large_mesh.faces = occ::IMat3N::Random(3, num_vertices);
+    occ::FVec prop = occ::FVec::Random(num_vertices);
+    large_mesh.properties.add("test", prop);
 
-    VertexProperties properties;
-    properties.fprops["test"] = std::vector<float>(num_vertices, 1.0f);
-
-    REQUIRE_NOTHROW(
-        write_ply_mesh("large_test.ply", large_mesh, properties, true));
+    REQUIRE_NOTHROW(write_ply_mesh("large_test.ply", large_mesh, true));
   }
-}
+};

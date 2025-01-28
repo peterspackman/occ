@@ -1,7 +1,6 @@
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
-#include <filesystem>
 #include <fmt/os.h>
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/log.h>
@@ -11,14 +10,13 @@
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/ply.h>
+#include <occ/isosurface/isosurface.h>
 #include <occ/main/occ_elastic.h>
 
-namespace fs = std::filesystem;
 using occ::core::ElasticTensor;
 using occ::crystal::Crystal;
 using occ::geometry::IcosphereMesh;
-using occ::io::IsosurfaceMesh;
-using occ::io::VertexProperties;
+using occ::isosurface::Isosurface;
 
 enum class ElasticProperty {
   YoungsModulus,
@@ -71,17 +69,18 @@ void print_averaged_properties(const ElasticTensor &tensor) {
   });
 }
 
-inline VertexProperties compute_mesh_properties(const IcosphereMesh &icosphere,
-                                                const ElasticTensor &tensor) {
+inline occ::isosurface::IsosurfaceProperties
+compute_mesh_properties(const IcosphereMesh &icosphere,
+                        const ElasticTensor &tensor) {
 
-  VertexProperties result;
+  occ::isosurface::IsosurfaceProperties result;
   const auto &verts = icosphere.vertices();
   {
     occ::FVec ym(verts.cols());
     for (int i = 0; i < verts.cols(); i++) {
       ym(i) = static_cast<float>(tensor.youngs_modulus(verts.col(i)));
     }
-    result.add_property("youngs_modulus", ym);
+    result.add("youngs_modulus", ym);
   }
 
   {
@@ -89,7 +88,7 @@ inline VertexProperties compute_mesh_properties(const IcosphereMesh &icosphere,
     for (int i = 0; i < verts.cols(); i++) {
       lc(i) = static_cast<float>(tensor.linear_compressibility(verts.col(i)));
     }
-    result.add_property("linear_compressibility", lc);
+    result.add("linear_compressibility", lc);
   }
 
   {
@@ -100,8 +99,8 @@ inline VertexProperties compute_mesh_properties(const IcosphereMesh &icosphere,
       shear_min(i) = static_cast<float>(l);
       shear_max(i) = static_cast<float>(u);
     }
-    result.add_property("shear_modulus_min", shear_min);
-    result.add_property("shear_modulus_max", shear_max);
+    result.add("shear_modulus_min", shear_min);
+    result.add("shear_modulus_max", shear_max);
   }
 
   {
@@ -112,8 +111,8 @@ inline VertexProperties compute_mesh_properties(const IcosphereMesh &icosphere,
       p_min(i) = static_cast<float>(l);
       p_max(i) = static_cast<float>(u);
     }
-    result.add_property("poissons_ratio_min", p_min);
-    result.add_property("poissons_ratio_max", p_max);
+    result.add("poissons_ratio_min", p_min);
+    result.add("poissons_ratio_max", p_max);
   }
   return result;
 }
@@ -125,16 +124,19 @@ inline void write_meshes(const ElasticTensor &tensor, int subdivisions,
 
   auto props = compute_mesh_properties(icosphere, tensor);
 
-  for (const auto &[name, vals] : props.fprops) {
+  for (const auto &[name, vals] : props.properties) {
     std::string filename = fmt::format("{}_{}.ply", basename, name);
     occ::Mat3N v = icosphere.vertices();
+    const auto &fvals = std::get<occ::FVec>(vals);
     for (int i = 0; i < v.cols(); i++) {
-      v.col(i) *= static_cast<double>(vals[i]);
+      v.col(i) *= static_cast<double>(fvals(i));
     }
-    occ::io::IsosurfaceMesh mesh(v, icosphere.faces());
-    mesh.set_normals(icosphere.vertices());
+    Isosurface mesh;
+    mesh.vertices = v.cast<float>();
+    mesh.faces = icosphere.faces();
+    mesh.normals = icosphere.vertices().cast<float>();
     occ::log::info("Writing {} surface to {}", name, filename);
-    occ::io::write_ply_mesh(filename, mesh, props, true);
+    occ::io::write_ply_mesh(filename, mesh, true);
   }
 }
 

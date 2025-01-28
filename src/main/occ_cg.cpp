@@ -174,9 +174,10 @@ inline void write_wulff(const std::string &filename,
   occ::Mat3N directions = s.crystal.unit_cell().to_cartesian(expanded_hkl_frac);
   directions.colwise().normalize();
   auto wulff = occ::geometry::WulffConstruction(directions, expanded_energies);
-  occ::io::IsosurfaceMesh mesh =
-      occ::io::mesh_from_vertices_faces(wulff.vertices(), wulff.triangles());
-  occ::io::write_ply_mesh(filename, mesh, {}, false);
+  occ::isosurface::Isosurface mesh;
+  mesh.vertices = wulff.vertices().cast<float>();
+  mesh.faces = wulff.triangles();
+  occ::io::write_ply_mesh(filename, mesh, false);
 }
 
 inline void serialize_cg_dimers(nlohmann::json &j, const Crystal &crystal,

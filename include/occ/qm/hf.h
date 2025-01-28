@@ -138,9 +138,12 @@ public:
     }
   }
 
+  inline std::string name() const { return m_method_name; }
+
 private:
   mutable std::unique_ptr<IntegralEngineDF> m_df_engine{nullptr};
   mutable occ::qm::IntegralEngine m_engine;
+  std::string m_method_name{"HF"};
 };
 
 } // namespace occ::qm

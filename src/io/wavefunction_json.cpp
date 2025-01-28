@@ -186,6 +186,9 @@ void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
     xdm.at("free volumes").get_to(wfn.xdm_free_volumes);
     xdm.at("energy").get_to(wfn.xdm_energy);
   }
+  if (J.contains("method")) {
+    J.at("method").get_to(wfn.method);
+  }
 }
 
 void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
@@ -245,6 +248,7 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
     xdm_params["energy"] = wfn.xdm_energy;
     J["xdm parameters"] = xdm_params;
   }
+  J["method"] = wfn.method;
 }
 } // namespace occ::qm
 

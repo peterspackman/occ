@@ -298,6 +298,8 @@ void Wavefunction::save(FchkWriter &fchk) {
   fchk.set_vector("Total SCF Density", density_lower_triangle);
   if (spin_density_lower_triangle.size() > 0)
     fchk.set_vector("Spin SCF Density", spin_density_lower_triangle);
+  fchk.set_method(method);
+  fchk.set_basis_name(basis.name());
   fchk.set_basis(basis);
 
   std::vector<int> shell2atom;

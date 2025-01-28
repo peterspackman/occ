@@ -33,6 +33,7 @@ target_link_libraries(occ_io
     PUBLIC 
     occ_core
     occ_crystal
+    occ_isosurface
     occ_solvent
     occ_qm
     gemmi::gemmi

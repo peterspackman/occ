@@ -149,7 +149,7 @@ public:
   void write();
 
 private:
-  std::string m_title{"fchk produced by occcpp"};
+  std::string m_title{"fchk produced by OCC"};
   std::string m_method{"unknown_method"};
   std::string m_basis_name{"unknown_basis"};
   FchkType m_type{SP};

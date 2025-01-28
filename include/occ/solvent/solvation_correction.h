@@ -92,6 +92,9 @@ public:
   }
 
   void write_surface_file(const std::string &filename);
+  inline std::string name() const {
+    return fmt::format("SMD(solvent='{}')", m_solvent_name);
+  }
 
 private:
   void initialize_surfaces();
@@ -347,7 +350,12 @@ public:
     return m_proc.template compute_nuclear_multipoles<order>(o);
   }
 
+  inline std::string name() const {
+    return fmt::format("{}+{}", m_proc.name(), m_solvation_model.name());
+  }
+
 private:
+  const std::string m_solvent_name{"water"};
   const std::vector<occ::core::Atom> &m_atoms;
   Proc &m_proc;
   ContinuumSolvationModel m_solvation_model;

@@ -48,3 +48,20 @@ __all__ = [
     "Shell",
     "Wavefunction",
 ]
+
+
+def run_occ_executable():
+    import subprocess
+    import sys
+    import os
+    from pathlib import Path
+
+    env = os.environ.copy()
+    site_packages = Path(site.getsitepackages()[0])
+    data_dir = site_packages / "share" / "occ"
+    occ_path = site_packages / "bin" / "occ"
+
+    if data_dir.exists():
+        env["OCC_DATA_PATH"] = str(data_dir)
+
+    subprocess.run([str(occ_path)] + sys.argv[1:], env=env)

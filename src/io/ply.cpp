@@ -4,36 +4,36 @@
 #include <occ/io/ply.h>
 #include <occ/io/tinyply.h>
 
+using occ::isosurface::Isosurface;
+
 namespace occ::io {
 
 // Add some utility functions
 namespace detail {
-inline void validate_mesh_data(const IsosurfaceMesh &mesh,
-                               const VertexProperties &properties) {
-  if (mesh.vertices.empty() || mesh.faces.empty()) {
-    throw std::invalid_argument("Empty mesh data");
+inline void validate_mesh_data(const Isosurface &isosurface) {
+  if (isosurface.vertices.size() == 0) {
+    throw std::invalid_argument("Isosurface has no vertex data");
   }
-  if (mesh.vertices.size() % 3 != 0 || mesh.faces.size() % 3 != 0) {
-    throw std::invalid_argument("Invalid mesh data dimensions");
+
+  if (isosurface.faces.size() == 0) {
+    throw std::invalid_argument("Isosurface has no face data");
   }
-  if (!mesh.normals.empty() && mesh.normals.size() != mesh.vertices.size()) {
+
+  if (isosurface.normals.size() != isosurface.vertices.size()) {
     throw std::invalid_argument("Normals size doesn't match vertices");
   }
 
-  const size_t vertex_count = mesh.vertices.size() / 3;
-  for (const auto &[name, prop] : properties.fprops) {
-    if (prop.size() != vertex_count) {
-      throw std::invalid_argument(fmt::format(
-          "Float property '{}' size ({}) doesn't match vertex count ({})", name,
-          prop.size(), vertex_count));
-    }
-  }
-  for (const auto &[name, prop] : properties.iprops) {
-    if (prop.size() != vertex_count) {
-      throw std::invalid_argument(fmt::format(
-          "Int property '{}' size ({}) doesn't match vertex count ({})", name,
-          prop.size(), vertex_count));
-    }
+  const size_t vertex_count = isosurface.vertices.cols();
+  for (const auto &[name, prop] : isosurface.properties.properties) {
+    std::visit(
+        [&](const auto &values) {
+          if (values.size() != vertex_count) {
+            throw std::invalid_argument(fmt::format(
+                "Property '{}' size ({}) doesn't match vertex count ({})", name,
+                values.size(), vertex_count));
+          }
+        },
+        prop);
   }
 }
 } // namespace detail
@@ -64,59 +64,73 @@ void write_ply_file(const std::string &filename,
   }
 }
 
-void write_ply_mesh(const std::string &filename, const IsosurfaceMesh &mesh,
-                    const VertexProperties &properties, bool binary) {
-  detail::validate_mesh_data(mesh, properties);
+void write_ply_mesh(const std::string &filename, const Isosurface &isosurface,
+                    bool binary) {
+  detail::validate_mesh_data(isosurface);
   occ::timing::start(occ::timing::category::io);
 
   tinyply::PlyFile ply_file;
-
-  const size_t vertex_count = mesh.vertices.size() / 3;
-  const size_t face_count = mesh.faces.size() / 3;
+  const size_t vertex_count = isosurface.vertices.cols();
+  const size_t face_count = isosurface.faces.cols();
 
   // Add vertices
   ply_file.add_properties_to_element(
       "vertex", {"x", "y", "z"}, tinyply::Type::FLOAT32, vertex_count,
-      reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
+      reinterpret_cast<const uint8_t *>(isosurface.vertices.data()),
       tinyply::Type::INVALID, 0);
 
   // Add normals if present
-  if (!mesh.normals.empty()) {
+  if (isosurface.normals.size() > 0) {
     ply_file.add_properties_to_element(
         "vertex", {"nx", "ny", "nz"}, tinyply::Type::FLOAT32, vertex_count,
-        reinterpret_cast<const uint8_t *>(mesh.normals.data()),
+        reinterpret_cast<const uint8_t *>(isosurface.normals.data()),
         tinyply::Type::INVALID, 0);
   }
 
   // Add faces
   ply_file.add_properties_to_element(
       "face", {"vertex_indices"}, tinyply::Type::UINT32, face_count,
-      reinterpret_cast<const uint8_t *>(mesh.faces.data()),
+      reinterpret_cast<const uint8_t *>(isosurface.faces.data()),
       tinyply::Type::UINT32, 3);
 
-  // Add float properties
-  for (const auto &[name, values] : properties.fprops) {
+  // Add curvature properties if present
+  if (isosurface.gaussian_curvature.size() > 0) {
     ply_file.add_properties_to_element(
-        "vertex", {name}, tinyply::Type::FLOAT32, values.size(),
-        reinterpret_cast<const uint8_t *>(values.data()),
+        "vertex", {"gaussian_curvature"}, tinyply::Type::FLOAT32, vertex_count,
+        reinterpret_cast<const uint8_t *>(isosurface.gaussian_curvature.data()),
         tinyply::Type::INVALID, 0);
   }
 
-  // Add integer properties
-  for (const auto &[name, values] : properties.iprops) {
+  if (isosurface.mean_curvature.size() > 0) {
     ply_file.add_properties_to_element(
-        "vertex", {name}, tinyply::Type::INT32, values.size(),
-        reinterpret_cast<const uint8_t *>(values.data()),
+        "vertex", {"mean_curvature"}, tinyply::Type::FLOAT32, vertex_count,
+        reinterpret_cast<const uint8_t *>(isosurface.mean_curvature.data()),
         tinyply::Type::INVALID, 0);
+  }
+
+  // Add variant properties
+  for (const auto &[name, prop] : isosurface.properties.properties) {
+    std::visit(
+        [&](const auto &values) {
+          using ValueType = std::decay_t<decltype(values)>;
+          if constexpr (std::is_same_v<ValueType, FVec>) {
+            ply_file.add_properties_to_element(
+                "vertex", {name}, tinyply::Type::FLOAT32, values.size(),
+                reinterpret_cast<const uint8_t *>(values.data()),
+                tinyply::Type::INVALID, 0);
+          } else if constexpr (std::is_same_v<ValueType, IVec>) {
+            ply_file.add_properties_to_element(
+                "vertex", {name}, tinyply::Type::INT32, values.size(),
+                reinterpret_cast<const uint8_t *>(values.data()),
+                tinyply::Type::INVALID, 0);
+          }
+        },
+        prop);
   }
 
   ply_file.get_comments().push_back("Generated by OCC");
 
-  // This is an attempt to workaround a quirk on windows
-  // where it would crash sometimes (silently i.e. no throw or segfault)
-  // when writing out this file
-  // The buffer size implications have not been thoroughly tested
-
+  // File writing with buffer
   static constexpr size_t BUFFER_SIZE = 2 * 1024 * 1024; // 2MB buffer
   std::vector<char> buffer(BUFFER_SIZE);
   std::filebuf out_fb;
@@ -129,7 +143,6 @@ void write_ply_mesh(const std::string &filename, const IsosurfaceMesh &mesh,
   }
 
   std::ostream out(&out_fb);
-
   ply_file.write(out, binary);
   out.flush();
 
@@ -141,6 +154,7 @@ void write_ply_mesh(const std::string &filename, const IsosurfaceMesh &mesh,
   if (!out_fb.close()) {
     throw std::runtime_error(fmt::format("Failed to close file: {}", filename));
   }
+
   occ::timing::stop(occ::timing::category::io);
 }
 

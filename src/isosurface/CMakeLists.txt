@@ -5,8 +5,10 @@ add_library(occ_isosurface
     "${CMAKE_CURRENT_SOURCE_DIR}/electric_potential.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/electron_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/orbital_index.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/promolecule_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/stockholder_weight.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/surface_types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/void.cpp"
     ${OCC_ISOSURFACE_INCLUDE_FILES}
 )

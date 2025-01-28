@@ -113,6 +113,7 @@ struct Wavefunction {
   void save(FchkWriter &);
   bool save(const std::string &filename);
 
+  std::string method{"SCF"};
   int num_electrons{0};
   int num_frozen_electrons{0};
   AOBasis basis;
