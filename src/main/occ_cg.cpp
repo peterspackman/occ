@@ -117,10 +117,10 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_flag("--atomic", config->crystal_is_atomic,
                "Crystal is atomic (i.e. no bonds)");
   cg->add_flag(
-      "--symmetric-solvent-contribution,--symmetric_solvent_contribution",
-      config->symmetric_solvent_contribution,
-      "Crystal growth interactions will have permutational symmetry (i.e. A->B "
-      "== B->A) (default: false)");
+      "--asymmetric-solvent-contribution,--asymmetric_solvent_contribution",
+      config->asymmetric_solvent_contribution,
+      "Crystal growth interactions will not have permutational symmetry (i.e. "
+      "A->B != B->A) (default: false)");
   cg->add_flag(
       "--gamma-point-molecules,--gamma_point_molecules",
       config->gamma_point_molecules,
@@ -327,7 +327,7 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   opts.write_debug_output_files = config.write_dump_files;
   opts.energy_model = config.lattice_settings.model_name;
   opts.xtb_solvation_model = config.xtb_solvation_model;
-  opts.use_asymmetric_partition = !config.symmetric_solvent_contribution;
+  opts.use_asymmetric_partition = config.asymmetric_solvent_contribution;
 
   // just ensure this is true for further outputs as the xtb calculation is
   // always symmetric
