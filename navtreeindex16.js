@@ -1,5 +1,8 @@
 var NAVTREEINDEX16 =
 {
+"functions_vars_q.html":[3,3,2,17],
+"functions_vars_r.html":[3,3,2,18],
+"functions_vars_s.html":[3,3,2,19],
 "functions_vars_t.html":[3,3,2,20],
 "functions_vars_u.html":[3,3,2,21],
 "functions_vars_v.html":[3,3,2,22],
@@ -246,8 +249,5 @@ var NAVTREEINDEX16 =
 "muldin_8h.html":[4,0,1,0,2,5],
 "muldin_8h.html#a26d9bda66566c34a362b22bdad581b2b":[4,0,1,0,2,5,0],
 "multipole_8h.html":[4,0,1,0,1,25],
-"multipole_8h.html#a2c13a8ff8a8712711388809ff8ca9aec":[4,0,1,0,1,25,4],
-"multipole_8h.html#a4c43c80b170febf6fb0c2e6fbaa82d9a":[4,0,1,0,1,25,3],
-"multipole_8h.html#a81996a954007c566ed079bb15a274ba4":[4,0,1,0,1,25,1],
-"multipole_8h.html#aa9090dcf8213bf9e23ac3851ed4f5e52":[4,0,1,0,1,25,2]
+"multipole_8h.html#a2c13a8ff8a8712711388809ff8ca9aec":[4,0,1,0,1,25,4]
 };
