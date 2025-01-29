@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fmt/core.h>
 #include <occ/isosurface/orbital_index.h>
 #include <sstream>
