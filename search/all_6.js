@@ -10,7 +10,7 @@ var searchData=
   ['facetenergies_7',['FacetEnergies',['../structocc_1_1main_1_1FacetEnergies.html',1,'occ::main']]],
   ['facets_8',['facets',['../classocc_1_1geometry_1_1WulffConstruction.html#a19075d0bcc50359e7e9ec6f93c9c5293',1,'occ::geometry::WulffConstruction::facets()'],['../structocc_1_1main_1_1CrystalSurfaceEnergies.html#a507c999748edd845aa56eb2d017082d6',1,'occ::main::CrystalSurfaceEnergies::facets']]],
   ['failure_5fdescription_9',['failure_description',['../classocc_1_1io_1_1CifParser.html#a330e96e6afe7dd628061b412aa3fcbab',1,'occ::io::CifParser']]],
-  ['family_10',['family',['../classocc_1_1dft_1_1DensityFunctional.html#abecc0a59a365ad908763722bcc5a9590',1,'occ::dft::DensityFunctional::family() const'],['../classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadf',1,'occ::dft::DensityFunctional::Family']]],
+  ['family_10',['family',['../classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadf',1,'occ::dft::DensityFunctional::Family'],['../classocc_1_1dft_1_1DensityFunctional.html#abecc0a59a365ad908763722bcc5a9590',1,'occ::dft::DensityFunctional::family() const']]],
   ['family_5fstring_11',['family_string',['../classocc_1_1dft_1_1DensityFunctional.html#ab946ee80dc74f2fff8c8d6ef9046fae2',1,'occ::dft::DensityFunctional']]],
   ['fb_12',['fb',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a9f0a93393fdf7a4c36153e96a4323394',1,'occ::core::opt::Bracket1D']]],
   ['fc_13',['fc',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#ac10a80b0968fdde8d4f53511d564bd15',1,'occ::core::opt::Bracket1D']]],

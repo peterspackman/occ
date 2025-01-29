@@ -65,9 +65,8 @@ var searchData=
   ['surface_5forbital_5findex_62',['surface_orbital_index',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#a7b4c6f63830b6a1dae2192f908ee59e0',1,'occ::isosurface::IsosurfaceGenerationParameters']]],
   ['surface_5frelaxed_63',['surface_relaxed',['../structocc_1_1io_1_1GMFWriter_1_1Facet.html#a28b5280c3a9a7970d9883e08d860ddd7',1,'occ::io::GMFWriter::Facet']]],
   ['surfaces_64',['surfaces',['../structocc_1_1cg_1_1SMDCalculator_1_1Result.html#aab7424ab9b02f75efa9f1bb96cd3dbe6',1,'occ::cg::SMDCalculator::Result']]],
-  ['symmetric_5fsolvent_5fcontribution_65',['symmetric_solvent_contribution',['../structocc_1_1main_1_1CGConfig.html#aca5d115c710c34fb3a49486f24a6e7ef',1,'occ::main::CGConfig']]],
-  ['symop_66',['symop',['../structocc_1_1crystal_1_1SiteMappingEdge.html#a3eb8ed328c73f4a3a1d9124f28217b47',1,'occ::crystal::SiteMappingEdge::symop'],['../structocc_1_1crystal_1_1DimerMappingEdge.html#a2cf44dbaf468790fc2f875749225898c',1,'occ::crystal::DimerMappingEdge::symop'],['../structocc_1_1crystal_1_1CrystalAtomRegion.html#a003e16655ab0d025800d4522f86da657',1,'occ::crystal::CrystalAtomRegion::symop']]],
-  ['symops_67',['symops',['../structocc_1_1io_1_1SymmetryData.html#ab81d8d8409933708266965726f717e44',1,'occ::io::SymmetryData']]],
-  ['system_68',['system',['../structocc_1_1qm_1_1Oniom.html#af6dcaf5066a40a49379e47785aa0f300',1,'occ::qm::Oniom']]],
-  ['systematic_5fabsences_5fallowed_69',['systematic_absences_allowed',['../structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#a66dfe78dd42e31c458f7299992a76041',1,'occ::crystal::CrystalSurfaceGenerationParameters']]]
+  ['symop_65',['symop',['../structocc_1_1crystal_1_1SiteMappingEdge.html#a3eb8ed328c73f4a3a1d9124f28217b47',1,'occ::crystal::SiteMappingEdge::symop'],['../structocc_1_1crystal_1_1DimerMappingEdge.html#a2cf44dbaf468790fc2f875749225898c',1,'occ::crystal::DimerMappingEdge::symop'],['../structocc_1_1crystal_1_1CrystalAtomRegion.html#a003e16655ab0d025800d4522f86da657',1,'occ::crystal::CrystalAtomRegion::symop']]],
+  ['symops_66',['symops',['../structocc_1_1io_1_1SymmetryData.html#ab81d8d8409933708266965726f717e44',1,'occ::io::SymmetryData']]],
+  ['system_67',['system',['../structocc_1_1qm_1_1Oniom.html#af6dcaf5066a40a49379e47785aa0f300',1,'occ::qm::Oniom']]],
+  ['systematic_5fabsences_5fallowed_68',['systematic_absences_allowed',['../structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#a66dfe78dd42e31c458f7299992a76041',1,'occ::crystal::CrystalSurfaceGenerationParameters']]]
 ];
