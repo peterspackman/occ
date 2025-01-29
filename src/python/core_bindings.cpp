@@ -90,6 +90,9 @@ nb::module_ register_core_bindings(nb::module_ &parent) {
       .def("elements", &Molecule::elements)
       .def_prop_ro("positions", &Molecule::positions)
       .def_prop_rw("name", &Molecule::name, &Molecule::set_name)
+      .def_prop_rw("partial_charges", &Molecule::partial_charges,
+                   &Molecule::set_partial_charges)
+      .def("esp_partial_charges", &Molecule::esp_partial_charges)
       .def("atomic_masses", &Molecule::atomic_masses)
       .def("atomic_numbers", &Molecule::atomic_numbers)
       .def("vdw_radii", &Molecule::vdw_radii)

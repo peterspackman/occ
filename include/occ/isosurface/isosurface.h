@@ -35,6 +35,8 @@ struct IsosurfaceProperties {
     properties.insert(other.properties.begin(), other.properties.end());
   }
 
+  inline size_t count() const { return properties.size(); }
+
   PropertyMap properties;
 };
 

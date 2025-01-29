@@ -21,6 +21,7 @@ public:
 
   inline int num_calls() const { return m_num_calls; }
   void set_orbital_index(int idx);
+  inline int orbital_index() const { return m_mo_index; }
 
 private:
   mutable int m_num_calls{0};

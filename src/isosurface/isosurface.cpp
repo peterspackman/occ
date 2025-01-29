@@ -44,14 +44,14 @@ template <typename F>
 Isosurface extract_surface(F &func, float isovalue, bool flip = false) {
   occ::timing::StopWatch sw;
   auto cubes = func.cubes_per_side();
-  occ::log::info("Marching cubes voxels: {}x{}x{}", cubes(0), cubes(1),
-                 cubes(2));
+  occ::log::info("Begin marching cubes with dimensions: {}x{}x{}", cubes(0),
+                 cubes(1), cubes(2));
   auto mc = occ::geometry::mc::MarchingCubes(cubes(0), cubes(1), cubes(2));
   mc.set_origin_and_side_lengths(func.origin(), func.side_length());
   mc.isovalue = isovalue;
   mc.flip_normals = (isovalue < 0.0) || flip;
   if (mc.flip_normals)
-    occ::log::info("Negative isovalue provided, will flip normals");
+    occ::log::debug("Negative isovalue provided, will flip normals");
 
   std::vector<float> vertices;
   std::vector<float> normals;
@@ -224,19 +224,19 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
   case PropertyKind::PromoleculeDensity: {
     auto func = BatchFunctor<slater::PromoleculeDensity>(m_molecule);
     func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
-    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
-                   result.maxCoeff(), result.mean());
-    occ::log::info("Computed Promoecule Density for {} vertices",
-                   func.num_calls());
+    occ::log::debug("Min {} Max {} Mean {}", result.minCoeff(),
+                    result.maxCoeff(), result.mean());
+    occ::log::debug("Computed Promoecule Density for {} vertices",
+                    func.num_calls());
     break;
   }
   case PropertyKind::ElectronDensity: {
     auto func = ElectronDensityFunctor(m_wavefunction);
     func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
-    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
-                   result.maxCoeff(), result.mean());
-    occ::log::info("Computed Electron Density for {} vertices",
-                   func.num_calls());
+    occ::log::debug("Min {} Max {} Mean {}", result.minCoeff(),
+                    result.maxCoeff(), result.mean());
+    occ::log::debug("Computed Electron Density for {} vertices",
+                    func.num_calls());
     break;
   }
   case PropertyKind::Orbital: {
@@ -252,10 +252,10 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
       func.set_orbital_index(orbital_index.resolve(m_wavefunction.mo.n_alpha,
                                                    m_wavefunction.mo.n_beta));
       func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
-      occ::log::info("Computed Orbital {} Density for {} vertices",
-                     orbital_index.format(), func.num_calls() - prev_calls);
-      occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
-                     result.maxCoeff(), result.mean());
+      occ::log::debug("Computed Orbital {} Density for {} vertices",
+                      orbital_index.format(), func.num_calls() - prev_calls);
+      occ::log::debug("Min {} Max {} Mean {}", result.minCoeff(),
+                      result.maxCoeff(), result.mean());
       prev_calls = func.num_calls();
     }
     break;
@@ -263,9 +263,9 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
   case PropertyKind::ESP: {
     auto func = ElectricPotentialFunctor(m_wavefunction);
     func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
-    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
-                   result.maxCoeff(), result.mean());
-    occ::log::info("Computed ESP (QM) for {} vertices", func.num_calls());
+    occ::log::debug("Min {} Max {} Mean {}", result.minCoeff(),
+                    result.maxCoeff(), result.mean());
+    occ::log::debug("Computed ESP (QM) for {} vertices", func.num_calls());
     break;
   }
   case PropertyKind::EEQ_ESP: {
@@ -273,16 +273,16 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
     auto m = m_molecule;
     auto q = occ::core::charges::eeq_partial_charges(m.atomic_numbers(),
                                                      m.positions(), m.charge());
-    occ::log::info("Molecule partial charges (EEQ)");
+    occ::log::debug("Molecule partial charges (EEQ)");
     for (int i = 0; i < q.rows(); i++) {
-      occ::log::info("Atom {}: {:12.5f}", i, q(i));
+      occ::log::debug("Atom {}: {:12.5f}", i, q(i));
     }
     m.set_partial_charges(q);
     auto func = ElectricPotentialFunctorPC(m);
     func.batch(vertices, result);
-    occ::log::info("Min {} Max {} Mean {}", result.minCoeff(),
-                   result.maxCoeff(), result.mean());
-    occ::log::info("Computed EEQ ESP for {} vertices", func.num_calls());
+    occ::log::debug("Min {} Max {} Mean {}", result.minCoeff(),
+                    result.maxCoeff(), result.mean());
+    occ::log::debug("Computed EEQ ESP for {} vertices", func.num_calls());
     break;
   }
   default:
@@ -339,7 +339,7 @@ void IsosurfaceCalculator::compute_isosurface() {
     int orbital_index =
         (m_params.surface_orbital_index)
             .resolve(m_wavefunction.mo.n_alpha, m_wavefunction.mo.n_beta);
-    occ::log::info("Orbital index = {}", orbital_index);
+    occ::log::info("Surface orbital index = {}", orbital_index);
     auto func =
         MCElectronDensityFunctor(m_wavefunction, separation, orbital_index);
     m_isosurface = extract_surface(func, isovalue);
@@ -350,30 +350,38 @@ void IsosurfaceCalculator::compute_isosurface() {
     throw std::runtime_error("Not implemented");
     break;
   }
-    auto curvature = occ::isosurface::calculate_curvature(
-        m_isosurface.mean_curvature, m_isosurface.gaussian_curvature);
+  }
 
-    occ::log::info("Computing atom internal/external neighbor properties");
-    compute_default_atom_surface_properties();
+  auto curvature = occ::isosurface::calculate_curvature(
+      m_isosurface.mean_curvature, m_isosurface.gaussian_curvature);
 
-    m_isosurface.properties.add("shape_index", curvature.shape_index);
-    m_isosurface.properties.add("curvedness", curvature.curvedness);
-    m_isosurface.properties.add("gaussian_curvature", curvature.gaussian);
-    m_isosurface.properties.add("mean_curvature", curvature.mean);
-    m_isosurface.properties.add("k1", curvature.k1);
-    m_isosurface.properties.add("k2", curvature.k2);
+  occ::log::debug("Computing atom internal/external neighbor properties");
+  compute_default_atom_surface_properties();
 
-    for (const auto &prop : m_params.properties) {
-      const auto s = isosurface::property_to_string(prop);
-      if (m_isosurface.properties.has_property(s))
-        continue;
-      occ::log::info("Need to compute: {}", s);
-      m_isosurface.properties.add(s, compute_surface_property(prop));
-    }
+  m_isosurface.properties.add("shape_index", curvature.shape_index);
+  m_isosurface.properties.add("curvedness", curvature.curvedness);
+  m_isosurface.properties.add("gaussian_curvature", curvature.gaussian);
+  m_isosurface.properties.add("mean_curvature", curvature.mean);
+  m_isosurface.properties.add("k1", curvature.k1);
+  m_isosurface.properties.add("k2", curvature.k2);
+
+  for (const auto &prop : m_params.properties) {
+    const auto s = isosurface::property_to_string(prop);
+    if (m_isosurface.properties.has_property(s))
+      continue;
+    occ::log::debug("Need to compute: {}", s);
+    m_isosurface.properties.add(s, compute_surface_property(prop));
   }
 }
 
-void IsosurfaceCalculator::compute() { compute_isosurface(); }
+void IsosurfaceCalculator::compute() {
+  if (!validate()) {
+    throw std::runtime_error("Invalid parameters for isosurface calculation: " +
+                             m_error_message);
+  }
+
+  compute_isosurface();
+}
 
 bool IsosurfaceCalculator::requires_crystal() const {
   return m_params.surface_kind == SurfaceKind::CrystalVoid;

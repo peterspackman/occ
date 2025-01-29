@@ -91,4 +91,19 @@ Mat evaluate_density_on_grid(const qm::Wavefunction &wfn,
   }
 }
 
+inline Mat evaluate_density_on_grid(const qm::Wavefunction &wfn,
+                                    const occ::Mat &grid_points,
+                                    int derivatives = 0) {
+  switch (derivatives) {
+  case 0:
+    return evaluate_density_on_grid<0>(wfn, grid_points);
+  case 1:
+    return evaluate_density_on_grid<1>(wfn, grid_points);
+  case 2:
+    return evaluate_density_on_grid<2>(wfn, grid_points);
+  default:
+    throw std::runtime_error("Can only evaluate density up to 2nd derivatives");
+  }
+}
+
 } // namespace occ::density

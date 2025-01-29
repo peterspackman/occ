@@ -108,6 +108,8 @@ void write_ply_mesh(const std::string &filename, const Isosurface &isosurface,
         tinyply::Type::INVALID, 0);
   }
 
+  occ::log::debug("Need to write {} properties", isosurface.properties.count());
+
   // Add variant properties
   for (const auto &[name, prop] : isosurface.properties.properties) {
     std::visit(
@@ -118,11 +120,15 @@ void write_ply_mesh(const std::string &filename, const Isosurface &isosurface,
                 "vertex", {name}, tinyply::Type::FLOAT32, values.size(),
                 reinterpret_cast<const uint8_t *>(values.data()),
                 tinyply::Type::INVALID, 0);
+            occ::log::debug("Writing float property: {}", name);
           } else if constexpr (std::is_same_v<ValueType, IVec>) {
             ply_file.add_properties_to_element(
                 "vertex", {name}, tinyply::Type::INT32, values.size(),
                 reinterpret_cast<const uint8_t *>(values.data()),
                 tinyply::Type::INVALID, 0);
+            occ::log::debug("Writing integer property: {}", name);
+          } else {
+            occ::log::warn("Skipping writing surface property: {}", name);
           }
         },
         prop);

@@ -2,6 +2,7 @@
 #include "python/core_bindings.h"
 #include "python/crystal_bindings.h"
 #include "python/dft_bindings.h"
+#include "python/isosurface_bindings.h"
 #include "python/qm_bindings.h"
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/function.h>
@@ -23,6 +24,7 @@ NB_MODULE(_occpy, m) {
   auto crystal = register_crystal_bindings(m);
   auto qm = register_qm_bindings(m);
   auto dft = register_dft_bindings(m);
+  auto iso = register_isosurface_bindings(m);
 
   nb::enum_<spdlog::level::level_enum>(m, "LogLevel")
       .value("TRACE", spdlog::level::level_enum::trace)

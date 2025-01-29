@@ -25,11 +25,11 @@ void MCElectricPotentialFunctor::update_region() {
 
   m_cube_side_length = (m_maximum_atom_pos - m_origin).array() + m_buffer;
 
-  occ::log::info("Buffer region: {:.3f} bohr", m_buffer);
-  occ::log::info("Cube side lengths: [{:.3f} {:.3f} {:.3f}] bohr",
+  occ::log::debug("Buffer region: {:.3f} bohr", m_buffer);
+  occ::log::debug("Cube side lengths: [{:.3f} {:.3f} {:.3f}] bohr",
                  m_cube_side_length(0), m_cube_side_length(1),
                  m_cube_side_length(2));
-  occ::log::info("Target separation: {:.3f} bohr", m_target_separation);
+  occ::log::debug("Target separation: {:.3f} bohr", m_target_separation);
 
   // set up bounding box to short cut if
   // we have a very anisotropic molecule
@@ -37,7 +37,7 @@ void MCElectricPotentialFunctor::update_region() {
   m_bounding_box.upper = m_maximum_atom_pos;
   m_bounding_box.upper.array() += m_buffer;
 
-  occ::log::info("Bottom left [{:.3f}, {:.3f}, {:.3f}]", m_origin(0),
+  occ::log::debug("Bottom left [{:.3f}, {:.3f}, {:.3f}]", m_origin(0),
                  m_origin(1), m_origin(2));
 }
 

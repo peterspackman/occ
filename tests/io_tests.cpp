@@ -2974,13 +2974,16 @@ TEST_CASE("Write PLY mesh validation", "[io][ply]") {
   using occ::isosurface::Isosurface;
   SECTION("Valid small mesh") {
     Isosurface mesh;
+    mesh.vertices.resize(3, 3);
     mesh.vertices << 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f;
+    mesh.faces.resize(3, 1);
     mesh.faces << 0, 1, 2;
+    mesh.normals.resize(3, 3);
     mesh.normals << 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f;
 
-    occ::FVec fprop;
+    occ::FVec fprop(3);
     fprop << 1.0f, 2.0f, 3.0f;
-    occ::IVec iprop;
+    occ::IVec iprop(3);
     iprop << 1, 2, 3;
     mesh.properties.add("test_float", fprop);
     mesh.properties.add("test_int", iprop);
@@ -3006,8 +3009,9 @@ TEST_CASE("Write PLY mesh validation", "[io][ply]") {
 
     SECTION("Mismatched property sizes") {
       Isosurface mesh;
+      mesh.vertices.resize(3, 2);
       mesh.vertices << 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f;
-      occ::FVec bad_prop;
+      occ::FVec bad_prop(1);
       bad_prop << 1.0f;
       mesh.properties.add("test", bad_prop); // Wrong size
       REQUIRE_THROWS(write_ply_mesh("test.ply", mesh, false));
@@ -3020,6 +3024,7 @@ TEST_CASE("Write PLY mesh validation", "[io][ply]") {
     const int num_vertices = 1000000;
     large_mesh.vertices = occ::FMat3N::Random(3, num_vertices);
     large_mesh.faces = occ::IMat3N::Random(3, num_vertices);
+    large_mesh.normals = occ::FMat3N::Random(3, num_vertices);
     occ::FVec prop = occ::FVec::Random(num_vertices);
     large_mesh.properties.add("test", prop);
 

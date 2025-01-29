@@ -6,6 +6,8 @@
 #include <nanobind/stl/tuple.h>
 #include <nanobind/stl/vector.h>
 #include <occ/core/element.h>
+#include <occ/gto/density.h>
+#include <occ/gto/gto.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
@@ -74,6 +76,16 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
       .def("atom_to_shell", &AOBasis::atom_to_shell)
       .def("l_max", &AOBasis::l_max)
       .def("name", &AOBasis::name)
+      .def(
+          "evaluate",
+          [](const AOBasis &basis, const occ::Mat3N &points,
+             int max_derivative = 0) {
+            if (max_derivative > 2 || max_derivative < 0)
+              throw std::runtime_error(
+                  "Invalid max derivative (must be 0, 1, 2)");
+            return occ::gto::evaluate_basis(basis, points, max_derivative);
+          },
+          "points"_a, "derivatives"_a = 0)
       .def("__repr__", [](const AOBasis &basis) {
         return fmt::format("<AOBasis ({}) nsh={} nbf={} natoms={}>",
                            basis.name(), basis.nsh(), basis.nbf(),
@@ -113,6 +125,14 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
       .def_static("load", &Wavefunction::load)
       .def("save", nb::overload_cast<const std::string &>(&Wavefunction::save))
       .def_ro("basis", &Wavefunction::basis)
+      .def(
+          "electron_density",
+          [](const Wavefunction &wfn, const occ::Mat3N &points,
+             int derivatives = 0) {
+            return occ::density::evaluate_density_on_grid(wfn, points,
+                                                          derivatives);
+          },
+          "points"_a, "derivatives"_a = 0)
       .def("chelpg_charges",
            [](const Wavefunction &wfn) { return chelpg_charges(wfn); })
       .def("to_fchk",
@@ -402,6 +422,22 @@ nb::module_ register_qm_bindings(nb::module_ &parent) {
         return fmt::format("<IntegralEngineDF policy={} precision={:.2e}>",
                            policy_str, engine.precision());
       });
+
+  using occ::gto::GTOValues;
+  nb::class_<GTOValues>(m, "GTOValues")
+      .def(nb::init<>())
+      .def("reserve", &GTOValues::reserve)
+      .def("set_zero", &GTOValues::set_zero)
+      .def_rw("phi", &GTOValues::phi)
+      .def_rw("phi_x", &GTOValues::phi_x)
+      .def_rw("phi_y", &GTOValues::phi_y)
+      .def_rw("phi_z", &GTOValues::phi_z)
+      .def_rw("phi_xx", &GTOValues::phi_xx)
+      .def_rw("phi_xy", &GTOValues::phi_xy)
+      .def_rw("phi_xz", &GTOValues::phi_xz)
+      .def_rw("phi_yy", &GTOValues::phi_yy)
+      .def_rw("phi_yz", &GTOValues::phi_yz)
+      .def_rw("phi_zz", &GTOValues::phi_zz);
 
   return m;
 }

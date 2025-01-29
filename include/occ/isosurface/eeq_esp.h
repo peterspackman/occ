@@ -10,9 +10,7 @@ public:
 
   void batch(Eigen::Ref<const FMat3N> pos, Eigen::Ref<FVec> layer) const {
     m_num_calls += layer.size();
-    Mat3N dpos = pos.cast<double>();
-    Vec esp = m_molecule.esp_partial_charges(dpos);
-    layer = esp.cast<float>();
+    layer = m_molecule.esp_partial_charges(pos.cast<double>()).cast<float>();
   }
 
   inline int num_calls() const { return m_num_calls; }

@@ -251,9 +251,9 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
 
   const auto properties_to_compute = config.surface_properties();
   if (properties_to_compute.size() > 0) {
-    occ::log::info("Properties to compute:");
+    occ::log::debug("Properties to compute:");
     for (const auto &prop : properties_to_compute) {
-      occ::log::info("{}", isosurface::property_to_string(prop));
+      occ::log::debug("  {}", isosurface::property_to_string(prop));
     }
   }
 
