@@ -12,10 +12,8 @@ using namespace occ::isosurface;
 using occ::FVec;
 using occ::IVec;
 
-nb::module_ register_isosurface_bindings(nb::module_ &parent) {
+nb::module_ register_isosurface_bindings(nb::module_ &m) {
   using namespace nb::literals;
-  auto m = parent.def_submodule("isosurface",
-                                "Isosurface evaluation functionality.");
 
   nb::enum_<SurfaceKind>(m, "SurfaceKind")
       .value("PromoleculeDensity", SurfaceKind::PromoleculeDensity)

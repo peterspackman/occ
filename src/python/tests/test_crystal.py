@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from occpy.crystal import (
+from occpy import (
     HKL,
     Crystal,
     AsymmetricUnit,
@@ -10,7 +10,7 @@ from occpy.crystal import (
     SymmetryOperation,
     SymmetryOperationFormat,
 )
-import occpy.crystal
+import occpy
 import math
 
 
@@ -205,7 +205,7 @@ def test_asymmetric_unit_constructor(acetic_asym):
 def test_crystal_acetic_acid(acetic_asym):
     """Test crystal construction and basic properties for acetic acid"""
     sg = SpaceGroup(33)
-    cell = occpy.crystal.orthorhombic_cell(13.31, 4.1, 5.75)
+    cell = occpy.orthorhombic_cell(13.31, 4.1, 5.75)
 
     crystal = Crystal(acetic_asym, sg, cell)
 
@@ -216,7 +216,7 @@ def test_crystal_acetic_acid(acetic_asym):
 def test_crystal_dimers(acetic_asym):
     """Test crystal dimer analysis"""
     sg = SpaceGroup(33)
-    cell = occpy.crystal.orthorhombic_cell(13.31, 4.1, 5.75)
+    cell = occpy.orthorhombic_cell(13.31, 4.1, 5.75)
     crystal = Crystal(acetic_asym, sg, cell)
 
     crystal_dimers = crystal.symmetry_unique_dimers(3.8)
@@ -255,7 +255,7 @@ def test_crystal_from_cif():
 def test_unit_cell_transformations(acetic_asym):
     """Test coordinate transformations between fractional and cartesian"""
     sg = SpaceGroup(33)
-    cell = occpy.crystal.orthorhombic_cell(13.31, 4.1, 5.75)
+    cell = occpy.orthorhombic_cell(13.31, 4.1, 5.75)
     crystal = Crystal(acetic_asym, sg, cell)
 
     frac_coords = np.random.rand(3, 100)
@@ -268,7 +268,7 @@ def test_unit_cell_transformations(acetic_asym):
 def test_surface_construction(acetic_asym):
     """Test surface construction from Miller indices"""
     sg = SpaceGroup(33)
-    cell = occpy.crystal.orthorhombic_cell(13.31, 4.1, 5.75)
+    cell = occpy.orthorhombic_cell(13.31, 4.1, 5.75)
     crystal = Crystal(acetic_asym, sg, cell)
 
     miller_indices = [
@@ -300,22 +300,22 @@ def test_unitcell_constructors():
 
 def test_factory_functions():
     """Test the various factory functions for creating unit cells"""
-    cubic = occpy.crystal.cubic_cell(5.0)
+    cubic = occpy.cubic_cell(5.0)
     assert cubic.is_cubic()
     assert cubic.a == pytest.approx(5.0)
     assert cubic.b == pytest.approx(5.0)
     assert cubic.c == pytest.approx(5.0)
 
-    rhomb = occpy.crystal.rhombohedral_cell(5.0, np.pi / 3)
+    rhomb = occpy.rhombohedral_cell(5.0, np.pi / 3)
     assert rhomb.is_rhombohedral()
 
-    ortho = occpy.crystal.orthorhombic_cell(2.0, 3.0, 4.0)
+    ortho = occpy.orthorhombic_cell(2.0, 3.0, 4.0)
     assert ortho.is_orthorhombic()
 
 
 def test_coordinate_transformations():
     """Test coordinate transformations between fractional and Cartesian"""
-    cell = occpy.crystal.cubic_cell(5.0)
+    cell = occpy.cubic_cell(5.0)
 
     frac_coords = np.array(
         [[0.5, 0.0], [0.5, 0.0], [0.5, 0.0]], dtype=np.float64, order="F"
@@ -329,13 +329,13 @@ def test_coordinate_transformations():
 
 def test_cell_type_checks():
     """Test methods for checking cell type"""
-    cubic = occpy.crystal.cubic_cell(5.0)
+    cubic = occpy.cubic_cell(5.0)
     assert cubic.is_cubic()
     assert not cubic.is_triclinic()
     assert cubic.is_orthogonal()
     assert cubic.cell_type() == "cubic"
 
-    triclinic = occpy.crystal.triclinic_cell(
+    triclinic = occpy.triclinic_cell(
         2.0, 3.0, 4.0, np.pi / 3, np.pi / 4, np.pi / 6
     )
     assert triclinic.is_triclinic()
@@ -345,7 +345,7 @@ def test_cell_type_checks():
 
 def test_adp_transformations():
     """Test ADP transformations"""
-    cell = occpy.crystal.orthorhombic_cell(2.0, 3.0, 4.0)
+    cell = occpy.orthorhombic_cell(2.0, 3.0, 4.0)
 
     adp = np.array(
         [
@@ -368,7 +368,7 @@ def test_adp_transformations():
 
 def test_hkl_limits():
     """Test HKL limits calculation"""
-    cell = occpy.crystal.cubic_cell(5.0)
+    cell = occpy.cubic_cell(5.0)
     limits = cell.hkl_limits(1.0)
     assert isinstance(limits.h, int)
     assert isinstance(limits.k, int)

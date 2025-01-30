@@ -36,9 +36,7 @@ inline std::string chemical_formula_from_atoms(const std::vector<Atom> &atoms) {
   }
   return occ::core::chemical_formula(elements);
 }
-nb::module_ register_qm_bindings(nb::module_ &parent) {
-  auto m =
-      parent.def_submodule("qm", "Quantum chemistry functionality for OCC");
+nb::module_ register_qm_bindings(nb::module_ &m) {
 
   nb::enum_<SpinorbitalKind>(m, "SpinorbitalKind")
       .value("Restricted", SpinorbitalKind::Restricted)

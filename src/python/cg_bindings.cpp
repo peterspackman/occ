@@ -24,8 +24,7 @@ convert_map_to_dict(const ankerl::unordered_dense::map<K, V> &map) {
   return result;
 }
 
-nb::module_ register_cg_bindings(nb::module_ &parent) {
-  auto m = parent.def_submodule("cg", "Crystal Growth functionality for OCC");
+nb::module_ register_cg_bindings(nb::module_ &m) {
 
   nb::class_<LatticeConvergenceSettings>(m, "LatticeConvergenceSettings")
       .def(nb::init<>())

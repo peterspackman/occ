@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from occpy.core import (
+from occpy import (
     Dimer,
     AveragingScheme,
     eem_partial_charges,
@@ -48,7 +48,7 @@ def oh_molecule():
 
 class TestDimer:
     def test_transform(self):
-        from occpy.core import Origin
+        from occpy import Origin
 
         nums = np.array([8, 1, 1])
         pos = np.array(

@@ -1,17 +1,7 @@
 from pathlib import Path
 import site
 import warnings
-from ._occpy import (
-    set_log_level,
-    set_log_file,
-    set_data_directory,
-    set_num_threads,
-    LogLevel,
-)
-from .core import Atom, Element, Molecule, Dimer
-from .crystal import Crystal
-from .qm import AOBasis, HartreeFock, Shell, Wavefunction
-from .dft import DFT
+from ._occpy import *
 
 # Set up logging first, only log critical errors
 set_log_level(LogLevel.CRITICAL)
@@ -25,30 +15,6 @@ if not _data_dir.exists():
     warnings.warn(f"OCC data directory not found at expected location: {_data_dir}")
 
 set_data_directory(str(_data_dir))
-
-__all__ = [
-    "Atom",
-    "AOBasis",
-    "calculate_crystal_growth_energies",
-    "core",
-    "crystal",
-    "Crystal",
-    "dft",
-    "DFT",
-    "Dimer",
-    "Element",
-    "HartreeFock",
-    "LogLevel",
-    "Molecule",
-    "qm",
-    "set_data_directory",
-    "set_num_threads",
-    "set_log_file",
-    "set_log_level",
-    "Shell",
-    "Wavefunction",
-]
-
 
 def run_occ_executable():
     import subprocess

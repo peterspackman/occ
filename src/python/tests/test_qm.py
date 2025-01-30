@@ -1,8 +1,6 @@
 import pytest
 import numpy as np
-import occpy.qm
-from occpy.qm import AOBasis, HartreeFock, SpinorbitalKind, MolecularOrbitals
-from occpy.core import Atom
+from occpy import Atom, AOBasis, HartreeFock, SpinorbitalKind, MolecularOrbitals
 
 
 @pytest.fixture

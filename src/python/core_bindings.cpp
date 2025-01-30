@@ -28,10 +28,8 @@ using occ::Vec3;
 using namespace occ::core;
 using namespace occ;
 
-nb::module_ register_core_bindings(nb::module_ &parent) {
+nb::module_ register_core_bindings(nb::module_ &m) {
   using namespace nb::literals;
-
-  auto m = parent.def_submodule("core", "Core functionality for OCC");
 
   nb::class_<Element>(m, "Element")
       .def(nb::init<const std::string &>())

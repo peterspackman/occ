@@ -14,9 +14,7 @@ using namespace nb::literals;
 using namespace occ::crystal;
 using SymmetryRelatedDimer = occ::crystal::CrystalDimers::SymmetryRelatedDimer;
 
-nb::module_ register_crystal_bindings(nb::module_ &parent) {
-  auto m = parent.def_submodule("crystal",
-                                "Crystal structure functionality for OCC");
+nb::module_ register_crystal_bindings(nb::module_ &m) {
 
   nb::class_<HKL>(m, "HKL")
       .def(nb::init<int, int, int>())

@@ -16,9 +16,7 @@ using occ::qm::SpinorbitalKind;
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
 
-nb::module_ register_dft_bindings(nb::module_ &parent) {
-  auto m = parent.def_submodule(
-      "dft", "Density Functional Theory functionality for OCC");
+nb::module_ register_dft_bindings(nb::module_ &m) {
 
   nb::class_<BeckeGridSettings>(m, "BeckeGridSettings")
       .def(nb::init<>())

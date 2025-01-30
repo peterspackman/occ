@@ -21,6 +21,7 @@ namespace nb = nanobind;
 NB_MODULE(_occpy, m) {
   // Register core submodule
   auto core = register_core_bindings(m);
+  auto cg = register_cg_bindings(m);
   auto crystal = register_crystal_bindings(m);
   auto qm = register_qm_bindings(m);
   auto dft = register_dft_bindings(m);
@@ -55,6 +56,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.7.2";
+  m.attr("__version__") = "0.7.3";
 #endif
 }
