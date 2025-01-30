@@ -25,12 +25,13 @@ inline void validate_mesh_data(const Isosurface &isosurface) {
 
   const size_t vertex_count = isosurface.vertices.cols();
   for (const auto &[name, prop] : isosurface.properties.properties) {
+    const auto name_copy = name;
     std::visit(
-        [&](const auto &values) {
+        [name_copy, vertex_count](const auto &values) {
           if (values.size() != vertex_count) {
             throw std::invalid_argument(fmt::format(
-                "Property '{}' size ({}) doesn't match vertex count ({})", name,
-                values.size(), vertex_count));
+                "Property '{}' size ({}) doesn't match vertex count ({})",
+                name_copy, values.size(), vertex_count));
           }
         },
         prop);
@@ -112,23 +113,24 @@ void write_ply_mesh(const std::string &filename, const Isosurface &isosurface,
 
   // Add variant properties
   for (const auto &[name, prop] : isosurface.properties.properties) {
+    const auto name_copy = name;
     std::visit(
-        [&](const auto &values) {
+        [name_copy, &ply_file](const auto &values) {
           using ValueType = std::decay_t<decltype(values)>;
           if constexpr (std::is_same_v<ValueType, FVec>) {
             ply_file.add_properties_to_element(
-                "vertex", {name}, tinyply::Type::FLOAT32, values.size(),
+                "vertex", {name_copy}, tinyply::Type::FLOAT32, values.size(),
                 reinterpret_cast<const uint8_t *>(values.data()),
                 tinyply::Type::INVALID, 0);
-            occ::log::debug("Writing float property: {}", name);
+            occ::log::debug("Writing float property: {}", name_copy);
           } else if constexpr (std::is_same_v<ValueType, IVec>) {
             ply_file.add_properties_to_element(
-                "vertex", {name}, tinyply::Type::INT32, values.size(),
+                "vertex", {name_copy}, tinyply::Type::INT32, values.size(),
                 reinterpret_cast<const uint8_t *>(values.data()),
                 tinyply::Type::INVALID, 0);
-            occ::log::debug("Writing integer property: {}", name);
+            occ::log::debug("Writing integer property: {}", name_copy);
           } else {
-            occ::log::warn("Skipping writing surface property: {}", name);
+            occ::log::warn("Skipping writing surface property: {}", name_copy);
           }
         },
         prop);
