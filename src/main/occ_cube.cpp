@@ -315,7 +315,7 @@ void run_cube_subcommand(CubeConfig const &config) {
   occ::timing::stop(occ::timing::category::cube_evaluation);
 
   occ::timing::start(occ::timing::category::io);
-  cube.write_data_to_file(config.output_filename);
+  cube.save(config.output_filename);
   occ::timing::stop(occ::timing::category::io);
 }
 

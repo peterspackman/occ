@@ -11,5 +11,6 @@ set(OCC_GEOMETRY_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/pool.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/quickhull.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/ray.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/volume_grid.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/wulff.h"
     PARENT_SCOPE)

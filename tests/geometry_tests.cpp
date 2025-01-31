@@ -12,6 +12,7 @@
 #include <occ/geometry/math_utils.h>
 #include <occ/geometry/morton.h>
 #include <occ/geometry/quickhull.h>
+#include <occ/geometry/volume_grid.h>
 #include <occ/geometry/wulff.h>
 #include <occ/io/obj.h>
 #include <random>
@@ -721,5 +722,123 @@ TEST_CASE("IcosphereMesh", "[icosphere]") {
         }
       }
     }
+  }
+}
+
+TEST_CASE("VolumeGrid", "[volume_grid]") {
+  SECTION("Constructor and dimensions") {
+    occ::geometry::VolumeGrid grid(2, 3, 4);
+    REQUIRE(grid.nx() == 2);
+    REQUIRE(grid.ny() == 3);
+    REQUIRE(grid.nz() == 4);
+    REQUIRE(grid.size() == 24);
+
+    std::array<size_t, 3> dims{3, 4, 5};
+    occ::geometry::VolumeGrid grid2(dims);
+    REQUIRE(grid2.dimensions() == dims);
+  }
+
+  SECTION("Data access and modification") {
+    occ::geometry::VolumeGrid grid(2, 2, 2);
+    grid(0, 0, 0) = 1.0f;
+    grid(1, 1, 1) = 2.0f;
+
+    REQUIRE(grid(0, 0, 0) == 1.0f);
+    REQUIRE(grid(1, 1, 1) == 2.0f);
+  }
+
+  SECTION("Slice access") {
+    occ::geometry::VolumeGrid grid(2, 3, 4);
+    grid(0, 0, 0) = 1.0f;
+    grid(0, 1, 2) = 2.0f;
+
+    auto slice0 = grid.slice(0);
+    REQUIRE(slice0(0, 0) == 1.0f);
+    REQUIRE(slice0(1, 2) == 2.0f);
+  }
+
+  SECTION("Zero-copy ownership transfer") {
+    std::array<size_t, 3> dims{2, 2, 2};
+    auto buffer = std::make_unique<float[]>(8);
+    for (size_t i = 0; i < 8; i++) {
+      buffer[i] = static_cast<float>(i);
+    }
+
+    float *raw_ptr = buffer.get(); // Keep original pointer for comparison
+    occ::geometry::VolumeGrid grid(std::move(buffer), dims);
+
+    REQUIRE(buffer == nullptr);
+    REQUIRE(grid.data() == raw_ptr);
+
+    REQUIRE(grid(0, 0, 0) == 0.0f);
+    REQUIRE(grid(1, 1, 1) == 7.0f);
+  }
+
+  SECTION("Move constructor") {
+    std::array<size_t, 3> dims{2, 2, 2};
+    occ::geometry::VolumeGrid grid1(dims);
+    grid1(0, 0, 0) = 1.0f;
+
+    float *original_data = grid1.data();
+    occ::geometry::VolumeGrid grid2(std::move(grid1));
+
+    REQUIRE(grid2.data() == original_data);
+    REQUIRE(grid2(0, 0, 0) == 1.0f);
+  }
+}
+
+TEST_CASE("VolumeGrid memory layout", "[volume_grid]") {
+  SECTION("Data storage order matches cube file loop structure") {
+    occ::geometry::VolumeGrid grid(2, 3, 4);
+
+    float value = 0.0f;
+    for (int x = 0; x < 2; x++) {
+      for (int y = 0; y < 3; y++) {
+        for (int z = 0; z < 4; z++) {
+          grid(x, y, z) = value++;
+        }
+      }
+    }
+
+    REQUIRE(grid(0, 0, 0) == 0.0f);
+    REQUIRE(grid(0, 0, 1) == 1.0f);
+    REQUIRE(grid(0, 0, 2) == 2.0f);
+    REQUIRE(grid(0, 0, 3) == 3.0f);
+    REQUIRE(grid(0, 1, 0) == 4.0f);
+    REQUIRE(grid(1, 0, 0) == 12.0f);
+
+    const float *raw_data = grid.data();
+    REQUIRE(raw_data[0] == grid(0, 0, 0));
+    REQUIRE(raw_data[1] == grid(0, 0, 1));
+    REQUIRE(raw_data[4] == grid(0, 1, 0));
+    REQUIRE(raw_data[12] == grid(1, 0, 0));
+  }
+
+  SECTION("Slice access matches memory layout") {
+    occ::geometry::VolumeGrid grid(2, 3, 4);
+
+    float value = 0.0f;
+    for (int x = 0; x < 2; x++) {
+      for (int y = 0; y < 3; y++) {
+        for (int z = 0; z < 4; z++) {
+          grid(x, y, z) = value++;
+        }
+      }
+    }
+
+    // Test slice at x=0
+    auto slice0 = grid.slice(0);
+    REQUIRE(slice0(0, 0) == grid(0, 0, 0)); // First element
+    REQUIRE(slice0(1, 0) == grid(0, 1, 0)); // Down one in y
+    REQUIRE(slice0(0, 1) == grid(0, 0, 1)); // Over one in z
+
+    // Test slice at x=1
+    auto slice1 = grid.slice(1);
+    REQUIRE(slice1(0, 0) == grid(1, 0, 0));
+    REQUIRE(slice1(1, 0) == grid(1, 1, 0));
+    REQUIRE(slice1(0, 1) == grid(1, 0, 1));
+
+    REQUIRE(slice0.rows() == grid.ny());
+    REQUIRE(slice0.cols() == grid.nz());
   }
 }

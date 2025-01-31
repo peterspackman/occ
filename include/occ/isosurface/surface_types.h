@@ -13,7 +13,8 @@ enum class SurfaceKind {
   SpinDensity,
   DeformationDensity,
   Orbital,
-  CrystalVoid
+  CrystalVoid,
+  VolumeData,
 };
 
 enum class PropertyKind {

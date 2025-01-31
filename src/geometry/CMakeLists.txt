@@ -5,6 +5,7 @@ add_library(occ_geometry
     "${CMAKE_CURRENT_SOURCE_DIR}/marching_cubes_data.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/morton.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/quickhull.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/volume_grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wulff.cpp"
     ${OCC_GEOMETRY_INCLUDE_FILES}
 )
