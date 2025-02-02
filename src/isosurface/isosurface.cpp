@@ -345,6 +345,11 @@ void IsosurfaceCalculator::compute_isosurface() {
     m_isosurface = extract_surface(func, isovalue);
     break;
   }
+  case SurfaceKind::VolumeGrid: {
+    auto func = VolumeGridFunctor(m_grid, separation);
+    m_isosurface = extract_surface(func, isovalue);
+    break;
+  }
 
   default: {
     throw std::runtime_error("Not implemented");
@@ -381,6 +386,10 @@ void IsosurfaceCalculator::compute() {
   }
 
   compute_isosurface();
+}
+
+bool IsosurfaceCalculator::requires_grid() const {
+  return m_params.surface_kind == SurfaceKind::VolumeGrid;
 }
 
 bool IsosurfaceCalculator::requires_crystal() const {
@@ -423,6 +432,11 @@ bool IsosurfaceCalculator::validate() {
   if (requires_environment() && !have_environment()) {
     m_error_message =
         "Surface or property requires a surrounding atom environment";
+    return false;
+  }
+
+  if (requires_grid() && !have_grid()) {
+    m_error_message = "Surfaces requires a volume grid";
     return false;
   }
   m_error_message = "";

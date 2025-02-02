@@ -14,7 +14,7 @@ enum class SurfaceKind {
   DeformationDensity,
   Orbital,
   CrystalVoid,
-  VolumeData,
+  VolumeGrid,
 };
 
 enum class PropertyKind {

@@ -10,6 +10,7 @@ add_library(occ_isosurface
     "${CMAKE_CURRENT_SOURCE_DIR}/stockholder_weight.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface_types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/void.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/volume.cpp"
     ${OCC_ISOSURFACE_INCLUDE_FILES}
 )
 

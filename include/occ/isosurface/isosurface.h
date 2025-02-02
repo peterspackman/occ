@@ -8,6 +8,7 @@
 #include <occ/isosurface/stockholder_weight.h>
 #include <occ/isosurface/surface_types.h>
 #include <occ/isosurface/void.h>
+#include <occ/isosurface/volume.h>
 
 namespace occ::isosurface {
 
@@ -69,6 +70,7 @@ public:
   void set_environment(const occ::core::Molecule &env);
   void set_wavefunction(const occ::qm::Wavefunction &wfn);
   void set_crystal(const occ::crystal::Crystal &crystal);
+  void set_volume_grid(std::shared_ptr<const geometry::VolumeGrid>);
   void set_parameters(const IsosurfaceGenerationParameters &params);
 
   bool validate();
@@ -80,12 +82,14 @@ public:
   bool requires_crystal() const;
   bool requires_wavefunction() const;
   bool requires_environment() const;
+  bool requires_grid() const;
 
   inline bool have_crystal() const { return m_crystal != std::nullopt; }
   inline bool have_wavefunction() const {
     return m_wavefunction.atoms.size() > 0;
   }
   inline bool have_environment() const { return m_molecule.size() > 0; }
+  inline bool have_grid() const { return m_grid != nullptr; }
 
   inline const std::string &error_message() const { return m_error_message; }
 
@@ -97,6 +101,7 @@ private:
   occ::core::Molecule m_molecule;
   occ::core::Molecule m_environment;
   occ::qm::Wavefunction m_wavefunction;
+  std::shared_ptr<const geometry::VolumeGrid> m_grid;
   std::optional<occ::crystal::Crystal> m_crystal;
   IsosurfaceGenerationParameters m_params;
   std::string m_error_message;
