@@ -173,6 +173,8 @@ nb::module_ register_core_bindings(nb::module_ &m) {
                   [](const std::string &contents) {
                     return occ::io::molecule_from_xyz_string(contents);
                   })
+      .def("translational_free_energy", &Molecule::translational_free_energy)
+      .def("rotational_free_energy", &Molecule::rotational_free_energy)
       .def("__repr__", [](const Molecule &mol) {
         auto com = mol.center_of_mass();
         return fmt::format("<Molecule {} @[{:.5f}, {:.5f}, {:.5f}]>",

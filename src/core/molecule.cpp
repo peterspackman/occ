@@ -148,22 +148,27 @@ double Molecule::rotational_free_energy(double temperature) const {
 }
 
 double Molecule::translational_free_energy(double temperature) const {
-  // unit is 10^-46 kg m^2
+  // Gibbs free energy, in kJ/mol
   constexpr double pressure{1.0};
-  // will need update for CODATA 2018, due to change from amu to g
+  constexpr double kB = occ::constants::boltzmann<double>;
+  constexpr double NA = occ::constants::avogadro<double>;
+  constexpr double h = occ::constants::planck<double>;
+  const double factor =
+      1.5 * std::log(2 * M_PI / (h * h)) +
+      1.5 * std::log(occ::constants::molar_mass_constant<double>) -
+      0.5 * std::log(NA) + 2.5 * std::log(kB) - std::log(1e5);
+
   double total_mass = atomic_masses().array().sum();
   double lnZt = 1.5 * std::log(total_mass) + 2.5 * std::log(temperature) -
-                std::log(pressure) + 51.104;
+                std::log(pressure) + factor;
   occ::log::debug("Translational partition function: {: 12.6f}\n", lnZt);
-  double Gt = -occ::constants::boltzmann<double> * temperature * lnZt;
-  double Gn = occ::constants::boltzmann<double> * temperature *
-              std::log(occ::constants::avogadro<double>);
+  double Gt = -kB * temperature * lnZt;
+  double Gn = kB * temperature * (std::log(NA) - 1);
 
-  // missing RT factor
-  constexpr double R = 8.31446261815324;
-  double RT = temperature * R / 1000;
+  // missing RT for Gibss vs Helmholtz
+  double RT = temperature * kB * NA / 1000;
 
-  return (Gt + Gn) * occ::constants::avogadro<double> / 1000 + RT;
+  return (Gt + Gn) * NA / 1000 + RT;
 }
 
 bool Molecule::is_comparable_to(const Molecule &other) const {

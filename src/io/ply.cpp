@@ -94,21 +94,6 @@ void write_ply_mesh(const std::string &filename, const Isosurface &isosurface,
       reinterpret_cast<const uint8_t *>(isosurface.faces.data()),
       tinyply::Type::UINT32, 3);
 
-  // Add curvature properties if present
-  if (isosurface.gaussian_curvature.size() > 0) {
-    ply_file.add_properties_to_element(
-        "vertex", {"gaussian_curvature"}, tinyply::Type::FLOAT32, vertex_count,
-        reinterpret_cast<const uint8_t *>(isosurface.gaussian_curvature.data()),
-        tinyply::Type::INVALID, 0);
-  }
-
-  if (isosurface.mean_curvature.size() > 0) {
-    ply_file.add_properties_to_element(
-        "vertex", {"mean_curvature"}, tinyply::Type::FLOAT32, vertex_count,
-        reinterpret_cast<const uint8_t *>(isosurface.mean_curvature.data()),
-        tinyply::Type::INVALID, 0);
-  }
-
   occ::log::debug("Need to write {} properties", isosurface.properties.count());
 
   // Add variant properties

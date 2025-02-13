@@ -9,6 +9,17 @@ namespace occ::dft {
 using occ::io::BeckeGridSettings;
 using occ::qm::AOBasis;
 
+enum class PartitionFunction {
+  Becke,
+  StratmannScuseria,
+};
+
+Mat calculate_atomic_grid_weights(PartitionFunction func,
+                                  const Mat &grid_points,
+                                  const Mat &atomic_positions,
+                                  const IVec &atomic_numbers,
+                                  const Mat &interatomic_distances);
+
 struct AtomGrid {
   AtomGrid() {}
   AtomGrid(size_t num_points) : points(3, num_points), weights(num_points) {}
