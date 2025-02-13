@@ -22,9 +22,15 @@ var namespaceocc_1_1isosurface =
     [ "StockholderWeightFunctor", "classocc_1_1isosurface_1_1StockholderWeightFunctor.html", "classocc_1_1isosurface_1_1StockholderWeightFunctor" ],
     [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
     [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ],
+    [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ],
     [ "LinearInterpolatorFloat", "namespaceocc_1_1isosurface.html#a5c2777640a8f63915e0d79fdcc302f6c", null ],
     [ "Property", "namespaceocc_1_1isosurface.html#ad0741cfba8f9bd491d0c150e4b6dba3d", null ],
     [ "PropertyMap", "namespaceocc_1_1isosurface.html#a069d1c0243251e90060daf8cb7dc75fc", null ],
+    [ "VolumeGridPtr", "namespaceocc_1_1isosurface.html#ab4ed3f7a9bdcebcea4304cc3bb9290f9", null ],
+    [ "GridInterpolation", "namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40e", [
+      [ "NearestPoint", "namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40eaa93453babc5efe763d5a2a1c6958d2b3", null ],
+      [ "Trilinear", "namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40ea969a7b6f1f3951ef293b3ff281dc293d", null ]
+    ] ],
     [ "PropertyKind", "namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb", [
       [ "Dnorm", "namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbac38848044353478441149cd11add5ada", null ],
       [ "Dint_norm", "namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba15030baf2890c763302c96101b1bd4ca", null ],
@@ -55,7 +61,8 @@ var namespaceocc_1_1isosurface =
       [ "SpinDensity", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a6df9cbe42388c5c172a8191d81a210ce", null ],
       [ "DeformationDensity", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726ab6a4c26ef4ae489affedf8ddbbd75432", null ],
       [ "Orbital", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e", null ],
-      [ "CrystalVoid", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb", null ]
+      [ "CrystalVoid", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb", null ],
+      [ "VolumeGrid", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726ab5f0aad924e0bfeb93c130bf1d768ac2", null ]
     ] ],
     [ "available_surface_types", "namespaceocc_1_1isosurface.html#a245fa3a4f90b584784c01f35b671d15d", null ],
     [ "BatchFunctor", "namespaceocc_1_1isosurface.html#a76c5699ee000bfa8743cee506ac0a640", null ],

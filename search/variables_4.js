@@ -4,7 +4,7 @@ var searchData=
   ['d_5fmax_1',['d_max',['../structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#ab1c1b6878e33d874775a98f98bbabdde',1,'occ::crystal::CrystalSurfaceGenerationParameters']]],
   ['d_5fmin_2',['d_min',['../structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#a56464b6cc69f054f0b39519b6e887edb',1,'occ::crystal::CrystalSurfaceGenerationParameters']]],
   ['da_3',['da',['../structocc_1_1main_1_1CubeConfig.html#a2368dc246fb9f32ca8c53fd896cba1b1',1,'occ::main::CubeConfig']]],
-  ['data_4',['data',['../classocc_1_1io_1_1Cube.html#a1bd8ac27d649d27a3079d7d9344444b6',1,'occ::io::Cube::data'],['../structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html#aabb6b31f27307905373a2bffbc8cbc02',1,'occ::qm::cint::impl::AtomInfo::data'],['../structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo.html#a4bcb15282736f1e981c1b334a8c9e6b3',1,'occ::qm::cint::impl::BasisInfo::data']]],
+  ['data_4',['data',['../structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html#aabb6b31f27307905373a2bffbc8cbc02',1,'occ::qm::cint::impl::AtomInfo::data'],['../structocc_1_1qm_1_1cint_1_1impl_1_1BasisInfo.html#a4bcb15282736f1e981c1b334a8c9e6b3',1,'occ::qm::cint::impl::BasisInfo::data']]],
   ['db_5',['db',['../structocc_1_1main_1_1CubeConfig.html#a1a5c7fdddf286c68784852d76b989b4d',1,'occ::main::CubeConfig']]],
   ['dc_6',['dc',['../structocc_1_1main_1_1CubeConfig.html#a3ee36c0b100e9c95426e76560599718e',1,'occ::main::CubeConfig']]],
   ['deg_5fper_5frad_7',['deg_per_rad',['../namespaceocc_1_1constants.html#ad15cfaf6b92331a5d83ba2b86c65434f',1,'occ::constants']]],

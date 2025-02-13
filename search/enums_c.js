@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['shellorder_0',['ShellOrder',['../namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894',1,'occ::gto']]],
-  ['source_1',['Source',['../classocc_1_1io_1_1MoldenReader.html#ac815691851c154237c9ca13b5310d227',1,'occ::io::MoldenReader']]],
-  ['spinconstraint_2',['SpinConstraint',['../namespaceocc_1_1main.html#a9154bffbc00f2a7302ceae3d043c3c2d',1,'occ::main']]],
-  ['spinorbitalkind_3',['SpinorbitalKind',['../namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4',1,'occ::qm']]],
-  ['surfacekind_4',['SurfaceKind',['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726',1,'occ::isosurface']]]
+  ['reference_0',['Reference',['../structocc_1_1isosurface_1_1OrbitalIndex.html#a7de04a530b8bbf2e95cca3ed9992f6f8',1,'occ::isosurface::OrbitalIndex']]],
+  ['rotor_1',['Rotor',['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6',1,'occ::core::rotor']]]
 ];

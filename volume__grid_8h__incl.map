@@ -1,0 +1,15 @@
+<map id="/home/runner/work/occ/occ/include/occ/geometry/volume_grid.h" name="/home/runner/work/occ/occ/include/occ/geometry/volume_grid.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="28,5,220,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,61,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,62,57,100,54,96,94,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="85,108,163,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="127,60,127,94,121,94,121,60"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="187,108,373,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="173,58,248,99,246,104,170,62"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="91,181,194,207"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="259,136,178,177,176,173,257,131"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="218,181,342,207"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="283,134,283,168,277,168,277,134"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="366,181,455,207"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="302,131,379,172,376,177,300,136"/>
+</map>

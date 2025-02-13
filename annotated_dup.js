@@ -138,6 +138,7 @@ var annotated_dup =
         [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
         [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
         [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
+        [ "VolumeGrid", "classocc_1_1geometry_1_1VolumeGrid.html", "classocc_1_1geometry_1_1VolumeGrid" ],
         [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ]
       ] ],
       [ "gto", "namespaceocc_1_1gto.html", [
@@ -246,7 +247,8 @@ var annotated_dup =
         [ "OrbitalIndex", "structocc_1_1isosurface_1_1OrbitalIndex.html", "structocc_1_1isosurface_1_1OrbitalIndex" ],
         [ "StockholderWeightFunctor", "classocc_1_1isosurface_1_1StockholderWeightFunctor.html", "classocc_1_1isosurface_1_1StockholderWeightFunctor" ],
         [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
-        [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ]
+        [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ],
+        [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ]
       ] ],
       [ "main", "namespaceocc_1_1main.html", [
         [ "pfimpl", "namespaceocc_1_1main_1_1pfimpl.html", [

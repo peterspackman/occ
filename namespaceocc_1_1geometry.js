@@ -29,6 +29,7 @@ var namespaceocc_1_1geometry =
     [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
     [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
     [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
+    [ "VolumeGrid", "classocc_1_1geometry_1_1VolumeGrid.html", "classocc_1_1geometry_1_1VolumeGrid" ],
     [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ],
     [ "floating_type", "namespaceocc_1_1geometry.html#acf080699dbc8adfc07ad0f98fa4b5e14", null ],
     [ "integer_type", "namespaceocc_1_1geometry.html#a2dd3b248b105650e26e3fbc372043957", null ],

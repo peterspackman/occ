@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['wavefunctionchoice_0',['WavefunctionChoice',['../namespaceocc_1_1driver.html#a93e7aa58c1e87808d00d580da61457db',1,'occ::driver']]]
+  ['type_0',['Type',['../namespacetinyply.html#a1c02ca67a9f151d99cac780bace69df9',1,'tinyply']]]
 ];

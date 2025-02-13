@@ -1,7 +1,3 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classocc_1_1interaction_1_1EnergyModelBase.html" title=" " alt="" coords="5,37,180,77"/>
-<area shape="rect" id="Node000001" href="$classocc_1_1interaction_1_1CEEnergyModel.html" title=" " alt="" coords="233,5,425,45"/>
-<area shape="poly" id="edge10_Node000000_Node000001" title=" " alt="" coords="193,41,232,36,233,41,194,46"/>
-<area shape="rect" id="Node000002" href="$classocc_1_1interaction_1_1XTBEnergyModel.html" title=" " alt="" coords="228,69,429,109"/>
-<area shape="poly" id="edge11_Node000000_Node000002" title=" " alt="" coords="194,68,228,73,227,78,193,74"/>
+<area shape="rect" id="Node000000" href="$structocc_1_1interaction_1_1CEParameterizedModel.html" title=" " alt="" coords="5,5,247,45"/>
 </map>

@@ -18,6 +18,11 @@ var namespaceocc_1_1dft =
     [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
     [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ],
     [ "PointChargeList", "namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9", null ],
+    [ "PartitionFunction", "namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426a", [
+      [ "Becke", "namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa18cf5657f88a943304168f3fe466545b", null ],
+      [ "StratmannScuseria", "namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67", null ]
+    ] ],
+    [ "calculate_atomic_grid_weights", "namespaceocc_1_1dft.html#a1cfad27b8982b45891f9e13a9e9e6546", null ],
     [ "generate_atom_grid", "namespaceocc_1_1dft.html#aa3f2fabc212c1f463b003557e3c38482", null ],
     [ "generate_becke_radial_grid", "namespaceocc_1_1dft.html#a48abc2172605dbc65f9f0efb7d88b2c2", null ],
     [ "generate_gauss_chebyshev_radial_grid", "namespaceocc_1_1dft.html#ada7d5e515dc2a7751aa8476373e59d0d", null ],

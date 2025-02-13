@@ -1,4 +1,0 @@
-<map id="occ::geometry::mc::impl::has_batch_evaluate&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().batch(std::declval&lt; Eigen::Ref&lt; const FMat3N &gt;&gt;(), std::declval&lt; Eigen::Ref&lt; FVec &gt;&gt;()))&gt; &gt;" name="occ::geometry::mc::impl::has_batch_evaluate&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().batch(std::declval&lt; Eigen::Ref&lt; const FMat3N &gt;&gt;(), std::declval&lt; Eigen::Ref&lt; FVec &gt;&gt;()))&gt; &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="5,80,240,195"/>
-<area shape="rect" id="node2" title=" " alt="" coords="67,5,179,32"/>
-</map>

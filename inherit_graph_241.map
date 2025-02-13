@@ -1,3 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structocc_1_1qm_1_1Wavefunction.html" title=" " alt="" coords="5,5,176,31"/>
+<area shape="rect" id="Node000000" href="$classocc_1_1qm_1_1SCFMethodBase.html" title=" " alt="" coords="5,31,192,56"/>
+<area shape="rect" id="Node000001" href="$classocc_1_1dft_1_1DFT.html" title=" " alt="" coords="269,5,371,31"/>
+<area shape="poly" id="edge14_Node000000_Node000001" title=" " alt="" coords="205,28,268,21,269,26,206,34"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1qm_1_1HartreeFock.html" title=" " alt="" coords="240,55,400,80"/>
+<area shape="poly" id="edge15_Node000000_Node000002" title=" " alt="" coords="206,52,240,56,240,61,205,58"/>
 </map>

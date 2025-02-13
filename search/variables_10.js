@@ -15,7 +15,7 @@ var searchData=
   ['phi_5fyz_12',['phi_yz',['../structocc_1_1gto_1_1GTOValues.html#adbcaf4e288e125bd8ab1bc8a573d0a3f',1,'occ::gto::GTOValues']]],
   ['phi_5fz_13',['phi_z',['../structocc_1_1gto_1_1GTOValues.html#aea3b80615fd6b93b11c2ded3b7cab6b9',1,'occ::gto::GTOValues']]],
   ['phi_5fzz_14',['phi_zz',['../structocc_1_1gto_1_1GTOValues.html#abfe6e7056ecbe5effa21538a6c82100d',1,'occ::gto::GTOValues']]],
-  ['pi_15',['pi',['../namespaceocc_1_1units.html#a028d775e813e880062aff24bec1a1b4a',1,'occ::units::PI'],['../namespaceocc_1_1constants.html#ac6930578fafd8c4b018ba281349ab2ed',1,'occ::constants::pi']]],
+  ['pi_15',['pi',['../namespaceocc_1_1constants.html#ac6930578fafd8c4b018ba281349ab2ed',1,'occ::constants::pi'],['../namespaceocc_1_1units.html#a028d775e813e880062aff24bec1a1b4a',1,'occ::units::PI']]],
   ['pi2_5f34_16',['pi2_34',['../structocc_1_1qm_1_1Shell.html#a02c63cf93dc6eaf87b5983ec19c09c94',1,'occ::qm::Shell']]],
   ['planck_17',['planck',['../namespaceocc_1_1constants.html#a09d810b3a282917f3a97b8311c389477',1,'occ::constants']]],
   ['point_5fcharge_5ffilename_18',['point_charge_filename',['../structocc_1_1io_1_1GeometryInput.html#ae5be26813872d9110d402d81adf3b0f7',1,'occ::io::GeometryInput']]],

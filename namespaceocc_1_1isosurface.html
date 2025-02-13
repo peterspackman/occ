@@ -152,6 +152,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1VoidSurfaceFunctor.html">VoidSurfaceFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1isosurface_1_1VolumeGridFunctor.html">VolumeGridFunctor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -161,6 +163,8 @@ Typedefs</h2></td></tr>
 <tr class="separator:ad0741cfba8f9bd491d0c150e4b6dba3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a069d1c0243251e90060daf8cb7dc75fc" id="r_a069d1c0243251e90060daf8cb7dc75fc"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a069d1c0243251e90060daf8cb7dc75fc">PropertyMap</a> = ankerl::unordered_dense::map&lt; std::string, <a class="el" href="namespaceocc_1_1isosurface.html#ad0741cfba8f9bd491d0c150e4b6dba3d">Property</a> &gt;</td></tr>
 <tr class="separator:a069d1c0243251e90060daf8cb7dc75fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4ed3f7a9bdcebcea4304cc3bb9290f9" id="r_ab4ed3f7a9bdcebcea4304cc3bb9290f9"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#ab4ed3f7a9bdcebcea4304cc3bb9290f9">VolumeGridPtr</a> = std::shared_ptr&lt; const <a class="el" href="classocc_1_1geometry_1_1VolumeGrid.html">occ::geometry::VolumeGrid</a> &gt;</td></tr>
+<tr class="separator:ab4ed3f7a9bdcebcea4304cc3bb9290f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -176,6 +180,7 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e">Orbital</a>
 , <br />
 &#160;&#160;<a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb">CrystalVoid</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726ab5f0aad924e0bfeb93c130bf1d768ac2">VolumeGrid</a>
 <br />
  }</td></tr>
 <tr class="separator:a54e925e1f128c403a4e138c8de1cf726"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -206,6 +211,10 @@ Enumerations</h2></td></tr>
 <br />
  }</td></tr>
 <tr class="separator:a2968d7f08d3f72b1360c452c333fa5cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bfca79de404665c574b4878df53d40e" id="r_a3bfca79de404665c574b4878df53d40e"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40e">GridInterpolation</a> { <a class="el" href="namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40eaa93453babc5efe763d5a2a1c6958d2b3">NearestPoint</a>
+, <a class="el" href="namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40ea969a7b6f1f3951ef293b3ff281dc293d">Trilinear</a>
+ }</td></tr>
+<tr class="separator:a3bfca79de404665c574b4878df53d40e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -287,7 +296,47 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ab4ed3f7a9bdcebcea4304cc3bb9290f9" name="ab4ed3f7a9bdcebcea4304cc3bb9290f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4ed3f7a9bdcebcea4304cc3bb9290f9">&#9670;&#160;</a></span>VolumeGridPtr</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceocc_1_1isosurface.html#ab4ed3f7a9bdcebcea4304cc3bb9290f9">occ::isosurface::VolumeGridPtr</a> = typedef std::shared_ptr&lt;const <a class="el" href="classocc_1_1geometry_1_1VolumeGrid.html">occ::geometry::VolumeGrid</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a3bfca79de404665c574b4878df53d40e" name="a3bfca79de404665c574b4878df53d40e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3bfca79de404665c574b4878df53d40e">&#9670;&#160;</a></span>GridInterpolation</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40e">occ::isosurface::GridInterpolation</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a3bfca79de404665c574b4878df53d40eaa93453babc5efe763d5a2a1c6958d2b3" name="a3bfca79de404665c574b4878df53d40eaa93453babc5efe763d5a2a1c6958d2b3"></a>NearestPoint&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3bfca79de404665c574b4878df53d40ea969a7b6f1f3951ef293b3ff281dc293d" name="a3bfca79de404665c574b4878df53d40ea969a7b6f1f3951ef293b3ff281dc293d"></a>Trilinear&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
 <a id="a2968d7f08d3f72b1360c452c333fa5cb" name="a2968d7f08d3f72b1360c452c333fa5cb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2968d7f08d3f72b1360c452c333fa5cb">&#9670;&#160;</a></span>PropertyKind</h2>
 
@@ -360,6 +409,7 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726ab6a4c26ef4ae489affedf8ddbbd75432" name="a54e925e1f128c403a4e138c8de1cf726ab6a4c26ef4ae489affedf8ddbbd75432"></a>DeformationDensity&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e" name="a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e"></a>Orbital&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb" name="a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb"></a>CrystalVoid&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a54e925e1f128c403a4e138c8de1cf726ab5f0aad924e0bfeb93c130bf1d768ac2" name="a54e925e1f128c403a4e138c8de1cf726ab5f0aad924e0bfeb93c130bf1d768ac2"></a>VolumeGrid&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>

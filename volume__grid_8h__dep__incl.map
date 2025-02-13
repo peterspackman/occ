@@ -1,0 +1,13 @@
+<map id="/home/runner/work/occ/occ/include/occ/geometry/volume_grid.h" name="/home/runner/work/occ/occ/include/occ/geometry/volume_grid.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="111,5,303,60"/>
+<area shape="rect" id="Node000002" href="$cube_8h.html" title=" " alt="" coords="5,115,193,155"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,71,121,117,118,113,167,68"/>
+<area shape="rect" id="Node000003" href="$volume_8h.html" title=" " alt="" coords="217,108,413,163"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="248,68,289,106,285,110,244,72"/>
+<area shape="rect" id="Node000004" href="$isosurface_8h.html" title=" " alt="" coords="217,211,413,265"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="318,176,318,211,313,211,313,176"/>
+<area shape="rect" id="Node000005" href="$obj_8h.html" title=" " alt="" coords="127,313,304,353"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="279,277,237,315,234,311,275,273"/>
+<area shape="rect" id="Node000006" href="$ply_8h.html" title=" " alt="" coords="328,313,503,353"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="356,273,397,311,393,315,352,277"/>
+</map>

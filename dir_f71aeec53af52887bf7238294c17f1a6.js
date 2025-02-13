@@ -14,5 +14,6 @@ var dir_f71aeec53af52887bf7238294c17f1a6 =
     [ "pool.h", "pool_8h.html", "pool_8h" ],
     [ "quickhull.h", "quickhull_8h.html", "quickhull_8h" ],
     [ "ray.h", "ray_8h.html", "ray_8h" ],
+    [ "volume_grid.h", "volume__grid_8h.html", "volume__grid_8h" ],
     [ "wulff.h", "wulff_8h.html", "wulff_8h" ]
 ];

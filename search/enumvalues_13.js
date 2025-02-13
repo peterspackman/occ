@@ -15,9 +15,10 @@ var searchData=
   ['sp_12',['SP',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1a77601981eba1d4d65dd94153651b0f93',1,'occ::io::FchkWriter']]],
   ['spcontractioncoefficients_13',['SPContractionCoefficients',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a302823b6829e7873d3a77fc10817b7a3',1,'occ::io::FchkReader']]],
   ['spherical_14',['spherical',['../structocc_1_1qm_1_1Shell.html#a937504c99e9ce9492392d26dac2b699dad2f2fc68c3ed408763fd65472f3d080f',1,'occ::qm::Shell::Spherical'],['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a148ea7093674697c378aa80037a48421',1,'occ::core::rotor::Spherical']]],
-  ['spindensity_15',['spindensity',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba6df9cbe42388c5c172a8191d81a210ce',1,'occ::isosurface::SpinDensity'],['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a6df9cbe42388c5c172a8191d81a210ce',1,'occ::isosurface::SpinDensity']]],
+  ['spindensity_15',['spindensity',['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a6df9cbe42388c5c172a8191d81a210ce',1,'occ::isosurface::SpinDensity'],['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba6df9cbe42388c5c172a8191d81a210ce',1,'occ::isosurface::SpinDensity']]],
   ['squareroot_16',['SquareRoot',['../namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35a70da9110621ed7cd7e701b83a93d129e',1,'occ::core']]],
   ['stability_17',['STABILITY',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1ac0ee4f662236410d78de56e32adf7a43',1,'occ::io::FchkWriter']]],
   ['steinhardt_18',['Steinhardt',['../structocc_1_1main_1_1DescribeConfig.html#ac91ac77089e90af7c50e74ac1a56bbfaa51f1f8de2cd3a22e548e17e9a419b0f8',1,'occ::main::DescribeConfig']]],
-  ['stored_19',['Stored',['../classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710da8ca3074133a77a7a6fb965a9b08ac3c2',1,'occ::qm::IntegralEngineDF']]]
+  ['stored_19',['Stored',['../classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710da8ca3074133a77a7a6fb965a9b08ac3c2',1,'occ::qm::IntegralEngineDF']]],
+  ['stratmannscuseria_20',['StratmannScuseria',['../namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67',1,'occ::dft']]]
 ];
