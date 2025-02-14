@@ -1,0 +1,11 @@
+{
+	"name": "occ-wasm-tests",
+	"version": "0.0.1",
+	"description": "WASM tests for OCC",
+	"scripts": {
+		"test": "tap test_core.js"
+	},
+	"dependencies": {
+		"tap": "^16.0.0"
+	}
+}

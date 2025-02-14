@@ -51,3 +51,38 @@ target_link_libraries(_occpy PUBLIC
 
 install(TARGETS _occpy LIBRARY DESTINATION occpy)
 endif()
+
+# Update CMakeLists.txt to add WASM target
+if(WASM_BUNDLE)
+    set(WASM_BINDING_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/wasm/core_bindings.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/occ_wasm.cpp"
+    )
+
+    add_executable(occ_wasm ${WASM_BINDING_SOURCES})
+    target_include_directories(occ_wasm PRIVATE 
+        "${CMAKE_CURRENT_SOURCE_DIR}/wasm"
+    )
+    target_compile_definitions(occ_wasm PRIVATE VERSION_INFO=${PROJECT_VERSION})
+    target_compile_features(occ_wasm PUBLIC cxx_std_20)
+    target_link_libraries(occ_wasm PUBLIC 
+        occ_main
+        embind
+    )
+
+    # Emscripten specific flags
+    set_target_properties(occ_wasm PROPERTIES
+        LINK_FLAGS "-s WASM=1 \
+                   -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
+                   -s EXPORTED_FUNCTIONS=['_malloc','_free'] \
+                   -s ALLOW_MEMORY_GROWTH=1 \
+                   -s NO_EXIT_RUNTIME=1 \
+                   -s MODULARIZE=1 \
+                   -s EXPORT_NAME='createOccModule'"
+    )
+
+    install(TARGETS occ_wasm 
+        RUNTIME DESTINATION web
+        LIBRARY DESTINATION web
+    )
+endif()
