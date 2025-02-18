@@ -322,6 +322,18 @@ void IsosurfaceCalculator::compute_isosurface() {
     m_isosurface = extract_surface(func, 0.5f); // Hirshfeld always uses 0.5
     break;
   }
+  case SurfaceKind::VDWLogSumExp: {
+      auto metric = RadiusMetric(RadiusMetric::RadiusKind::VDW);
+      auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
+      m_isosurface = extract_surface(func, 0.0f); // LSE always uses 0.0
+      break;
+  }
+  case SurfaceKind::SoftVoronoi: {
+      auto metric = RadiusMetric(RadiusMetric::RadiusKind::Unit);
+      auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
+      m_isosurface = extract_surface(func, 0.0f); // LSE always uses 0.0
+      break;
+  }
   case SurfaceKind::PromoleculeDensity: {
     auto func = MCPromoleculeDensityFunctor(m_molecule, separation);
     func.set_isovalue(isovalue);

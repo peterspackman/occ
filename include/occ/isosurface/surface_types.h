@@ -15,6 +15,8 @@ enum class SurfaceKind {
   Orbital,
   CrystalVoid,
   VolumeGrid,
+  SoftVoronoi,
+  VDWLogSumExp
 };
 
 enum class PropertyKind {
@@ -104,6 +106,10 @@ constexpr inline const char *surface_to_string(SurfaceKind surface) {
     return "spin_density";
   case SurfaceKind::CrystalVoid:
     return "void";
+  case SurfaceKind::VDWLogSumExp:
+    return "vdw_lse";
+  case SurfaceKind::SoftVoronoi:
+    return "soft_voronoi";
   default:
     return "unknown_surface";
   }
@@ -146,6 +152,10 @@ constexpr inline bool property_requires_wavefunction(PropertyKind kind) {
 constexpr inline bool surface_requires_environment(SurfaceKind kind) {
   switch (kind) {
   case SurfaceKind::Hirshfeld:
+    return true;
+  case SurfaceKind::SoftVoronoi:
+    return true;
+  case SurfaceKind::VDWLogSumExp:
     return true;
   default:
     return false;

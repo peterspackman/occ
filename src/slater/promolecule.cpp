@@ -4,6 +4,13 @@
 
 namespace occ::slater {
 
+PromoleculeDensity::PromoleculeDensity(Eigen::Ref<const IVec> nums,
+                                       Eigen::Ref<const FMat3N> pos,
+                                       const InterpolatorParams &params)
+    : m_interpolator_params(params) {
+  initialize_interpolators(nums, pos);
+}
+
 PromoleculeDensity::PromoleculeDensity(const occ::core::Molecule &mol,
                                        const InterpolatorParams &params)
     : m_interpolator_params(params) {

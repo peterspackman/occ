@@ -50,6 +50,11 @@ const ankerl::unordered_dense::map<std::string, SurfaceKind> name_to_surface{
     {"spin_density", SurfaceKind::SpinDensity},
     {"spin density", SurfaceKind::SpinDensity},
     {"spin", SurfaceKind::SpinDensity},
+
+    // LogSumExp
+    {"soft_voronoi", SurfaceKind::SoftVoronoi},
+    {"vdw_lse", SurfaceKind::VDWLogSumExp},
+
     // Promolecule Density
     {"promol", SurfaceKind::PromoleculeDensity},
     {"promolecule_density", SurfaceKind::PromoleculeDensity},

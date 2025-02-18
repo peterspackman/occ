@@ -3,6 +3,7 @@
 #include <occ/isosurface/eeq_esp.h>
 #include <occ/isosurface/electric_potential.h>
 #include <occ/isosurface/electron_density.h>
+#include <occ/isosurface/logsumexp.h>
 #include <occ/isosurface/orbital_index.h>
 #include <occ/isosurface/promolecule_density.h>
 #include <occ/isosurface/stockholder_weight.h>
