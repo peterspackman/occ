@@ -16,7 +16,9 @@ enum class SurfaceKind {
   CrystalVoid,
   VolumeGrid,
   SoftVoronoi,
-  VDWLogSumExp
+  VDWLogSumExp,
+  HSRinv,
+  HSExp,
 };
 
 enum class PropertyKind {
@@ -110,6 +112,10 @@ constexpr inline const char *surface_to_string(SurfaceKind surface) {
     return "vdw_lse";
   case SurfaceKind::SoftVoronoi:
     return "soft_voronoi";
+  case SurfaceKind::HSRinv:
+    return "hs_rinv";
+  case SurfaceKind::HSExp:
+    return "hs_exp";
   default:
     return "unknown_surface";
   }
@@ -156,6 +162,10 @@ constexpr inline bool surface_requires_environment(SurfaceKind kind) {
   case SurfaceKind::SoftVoronoi:
     return true;
   case SurfaceKind::VDWLogSumExp:
+    return true;
+  case SurfaceKind::HSRinv:
+    return true;
+  case SurfaceKind::HSExp:
     return true;
   default:
     return false;

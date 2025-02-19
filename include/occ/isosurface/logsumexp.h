@@ -15,11 +15,10 @@ public:
 
   FVec compute_distances(const FVec3 &pos, const FMat3N &points,
                          const Eigen::VectorXi &elements) const {
-    FVec distances(points.cols());
-    for (int i = 0; i < points.cols(); i++) {
-      FVec3 diff = pos - points.col(i);
+    FVec distances = (points.colwise() - pos).colwise().norm();
+    for (int i = 0; i < distances.rows(); i++) {
       float radius = m_radii(elements(i));
-      distances(i) = diff.norm() / radius;
+      distances(i) /= radius;
     }
     return distances;
   }
@@ -46,7 +45,7 @@ template <class Metric> class LogSumExpFunctor {
 public:
   LogSumExpFunctor(Metric &metric, const occ::core::Molecule &in,
                    const occ::core::Molecule &ext, float sep,
-                   float temperature = 0.01f)
+                   float temperature = 0.1f)
       : m_metric(metric), m_target_separation(sep), m_temperature(temperature) {
 
     // Convert positions to bohr and store
@@ -138,13 +137,11 @@ public:
 
 private:
   float compute_weight(const FVec3 &pos) const {
-    // Compute distances using the metric
     FVec d_in = m_metric.compute_distances(pos, m_internal_positions,
                                            m_internal_elements);
     FVec d_ext = m_metric.compute_distances(pos, m_external_positions,
                                             m_external_elements);
 
-    // Handle empty sets
     if (d_in.size() == 0)
       return 0.0f;
     if (d_ext.size() == 0)
@@ -159,25 +156,14 @@ private:
     return min_dist_ext - min_dist_in;
   }
 
-  FVec compute_distances(const FVec3 &pos, const FMat3N &points,
-                         const Eigen::VectorXi &elements) const {
-    FVec distances(points.cols());
-    for (int i = 0; i < points.cols(); i++) {
-      FVec3 diff = pos - points.col(i);
-      distances(i) = diff.norm() / m_metric.vdw_radius(elements(i));
-    }
-    return distances;
-  }
-
   float logsumexp(const FVec &x) const {
     float max_x = x.maxCoeff();
     return max_x + std::log((x.array() - max_x).exp().sum());
   }
 
   void setup_bounding_box() {
-    float buffer = 8.0f; // Same as StockholderWeightFunctor
+    float buffer = 8.0f;
 
-    // Compute bounding box from internal positions
     Eigen::Vector3f min_pos = m_internal_positions.rowwise().minCoeff();
     Eigen::Vector3f max_pos = m_internal_positions.rowwise().maxCoeff();
 

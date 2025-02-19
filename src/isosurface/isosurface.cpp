@@ -73,6 +73,41 @@ Isosurface extract_surface(F &func, float isovalue, bool flip = false) {
 }
 } // namespace
 
+float Isosurface::volume() const {
+  if (vertices.cols() == 0 || faces.cols() == 0) {
+    return 0.0f;
+  }
+
+  float total_volume = 0.0f;
+  for (int i = 0; i < faces.cols(); ++i) {
+    const auto v1 = vertices.col(faces(0, i));
+    const auto v2 = vertices.col(faces(1, i));
+    const auto v3 = vertices.col(faces(2, i));
+    total_volume += v1.dot((v2.cross(v3))) / 6.0f;
+  }
+  return std::abs(total_volume);
+}
+
+float Isosurface::surface_area() const {
+  if (vertices.cols() == 0 || faces.cols() == 0) {
+    return 0.0f;
+  }
+
+  float total_area = 0.0f;
+  for (int i = 0; i < faces.cols(); ++i) {
+    const FVec3 v1 = vertices.col(faces(0, i));
+    const FVec3 v2 = vertices.col(faces(1, i));
+    const FVec3 v3 = vertices.col(faces(2, i));
+
+    const FVec3 edge1 = v2 - v1;
+    const FVec3 edge2 = v3 - v1;
+
+    total_area += 0.5f * edge1.cross(edge2).norm();
+  }
+
+  return total_area;
+}
+
 void IsosurfaceCalculator::set_molecule(const occ::core::Molecule &mol) {
   m_molecule = mol;
 }
@@ -323,17 +358,32 @@ void IsosurfaceCalculator::compute_isosurface() {
     break;
   }
   case SurfaceKind::VDWLogSumExp: {
-      auto metric = RadiusMetric(RadiusMetric::RadiusKind::VDW);
-      auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
-      m_isosurface = extract_surface(func, 0.0f); // LSE always uses 0.0
-      break;
+    auto metric = RadiusMetric(RadiusMetric::RadiusKind::VDW);
+    auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
+    m_isosurface = extract_surface(func, 0.0f); // LSE always uses 0.0
+    break;
   }
   case SurfaceKind::SoftVoronoi: {
-      auto metric = RadiusMetric(RadiusMetric::RadiusKind::Unit);
-      auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
-      m_isosurface = extract_surface(func, 0.0f); // LSE always uses 0.0
-      break;
+    auto metric = RadiusMetric(RadiusMetric::RadiusKind::Unit);
+    auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
+    m_isosurface = extract_surface(func, 0.0f); // LSE always uses 0.0
+    break;
   }
+  case SurfaceKind::HSRinv: {
+    auto wfunc = RInvFunc{m_params.power};
+    auto func = GenericStockholderWeightFunctor(wfunc, m_molecule,
+                                                m_environment, separation);
+    m_isosurface = extract_surface(func, 0.5f);
+    break;
+  }
+  case SurfaceKind::HSExp: {
+    auto wfunc = ExpFunc{m_params.power};
+    auto func = GenericStockholderWeightFunctor(wfunc, m_molecule,
+                                                m_environment, separation);
+    m_isosurface = extract_surface(func, 0.5f);
+    break;
+  }
+
   case SurfaceKind::PromoleculeDensity: {
     auto func = MCPromoleculeDensityFunctor(m_molecule, separation);
     func.set_isovalue(isovalue);

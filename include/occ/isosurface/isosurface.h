@@ -49,12 +49,15 @@ struct Isosurface {
   FVec gaussian_curvature;
   FVec mean_curvature;
   IsosurfaceProperties properties;
+  float volume() const;
+  float surface_area() const;
 };
 
 struct IsosurfaceGenerationParameters {
   double isovalue{0.0};
   double separation{1.0}; // in Bohr by default
   double background_density{0.0};
+  float power{2.0};
   OrbitalIndex surface_orbital_index;
   std::vector<OrbitalIndex> property_orbital_indices;
   bool flip_normals{false};

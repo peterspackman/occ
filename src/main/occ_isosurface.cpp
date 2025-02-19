@@ -41,6 +41,7 @@ generate_parameter_combinations(const IsosurfaceConfig &config) {
   base.separation = config.separation;
   base.property_orbital_indices = config.orbital_indices;
   base.properties = config.surface_properties();
+  base.power = config.power;
 
   if (config.surface_type() == SurfaceKind::Orbital) {
     // Generate all combinations of orbitals and isovalues
@@ -196,6 +197,9 @@ CLI::App *add_isosurface_subcommand(CLI::App &app) {
   iso->add_option("--orbitals", config->orbitals_input,
                   "orbital indices (for orbital surfaces)");
 
+  iso->add_option("--power", config->power,
+                  "power (for hs_exp and hs_rinv surfaces)");
+
   iso->add_option("-o,--output-template", config->output_template,
                   "template for output files (use {} for index placement)");
   iso->add_option("--background-density", config->background_density,
@@ -341,6 +345,11 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
     calculator.compute();
 
     isosurface::Isosurface result = calculator.isosurface();
+    float vol = result.volume();
+    float area = result.surface_area();
+    occ::log::info("Volume:       {:.3f}", vol);
+    occ::log::info("Surface area: {:.3f}", area);
+    occ::log::info("Ratio:        {:.3f}", area / vol);
 
     // Generate output filename based on index
     std::string output_filename = format_output_filename(params, config);

@@ -18,6 +18,7 @@ struct IsosurfaceConfig {
   std::string wavefunction_filename{""};
   std::vector<double> wfn_rotation{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   std::vector<double> wfn_translation{0.0, 0.0, 0.0};
+  float power{2.0};
   int orbital_index{0};
   bool binary_output{true};
   std::string kind{"promolecule_density"};

@@ -41,6 +41,9 @@ const ankerl::unordered_dense::map<std::string, SurfaceKind> name_to_surface{
     {"hs", SurfaceKind::Hirshfeld},
     {"stockholder_weight", SurfaceKind::Hirshfeld},
     {"stockholder weight", SurfaceKind::Hirshfeld},
+    // Other HS
+    {"hs_rinv", SurfaceKind::HSRinv},
+    {"hs_exp", SurfaceKind::HSExp},
     // Orbital
     {"orbital_density", SurfaceKind::Orbital},
     {"orbital density", SurfaceKind::Orbital},
