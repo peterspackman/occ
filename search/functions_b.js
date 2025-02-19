@@ -29,5 +29,6 @@ var searchData=
   ['load_5fmolecule_26',['load_molecule',['../namespaceocc_1_1io.html#a07416418ded69a01d477d8c00ef8a825',1,'occ::io']]],
   ['load_5fnpy_27',['load_npy',['../namespaceocc_1_1core_1_1numpy.html#adc6403ac94eaf175a371507dca6f72b9',1,'occ::core::numpy']]],
   ['load_5fslaterbasis_28',['load_slaterbasis',['../namespaceocc_1_1slater.html#a9bce24e1ecc8ee07a8b183f7031ff809',1,'occ::slater']]],
-  ['load_5fwavefunction_29',['load_wavefunction',['../namespaceocc_1_1interaction.html#a09bfb2f8b77b94b050f32c8d64f97130',1,'occ::interaction']]]
+  ['load_5fwavefunction_29',['load_wavefunction',['../namespaceocc_1_1interaction.html#a09bfb2f8b77b94b050f32c8d64f97130',1,'occ::interaction']]],
+  ['logsumexpfunctor_30',['LogSumExpFunctor',['../classocc_1_1isosurface_1_1LogSumExpFunctor.html#a9cfd31caecef2fe64106f0465cceddf3',1,'occ::isosurface::LogSumExpFunctor']]]
 ];

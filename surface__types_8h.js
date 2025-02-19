@@ -31,7 +31,11 @@ var surface__types_8h =
       [ "DeformationDensity", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726ab6a4c26ef4ae489affedf8ddbbd75432", null ],
       [ "Orbital", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a510b953097388490c29e4e4991fc369e", null ],
       [ "CrystalVoid", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb", null ],
-      [ "VolumeGrid", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726ab5f0aad924e0bfeb93c130bf1d768ac2", null ]
+      [ "VolumeGrid", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726ab5f0aad924e0bfeb93c130bf1d768ac2", null ],
+      [ "SoftVoronoi", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a37981175ba7808dc449dd29a7162c217", null ],
+      [ "VDWLogSumExp", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a3687d6bd835f5dc16f3febf3293e9cd8", null ],
+      [ "HSRinv", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a67f0920ec189ae8cb64831fd777a62ca", null ],
+      [ "HSExp", "surface__types_8h.html#a54e925e1f128c403a4e138c8de1cf726a93e83e2a78cfbe40d3bfef9aebaa7cf0", null ]
     ] ],
     [ "available_surface_types", "surface__types_8h.html#a245fa3a4f90b584784c01f35b671d15d", null ],
     [ "default_properties", "surface__types_8h.html#ab16fc330a28219f949bbbe9bed9fb603", null ],

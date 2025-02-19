@@ -20,6 +20,7 @@ var structocc_1_1main_1_1IsosurfaceConfig =
     [ "orbital_indices", "structocc_1_1main_1_1IsosurfaceConfig.html#a62d09a8be28dfd3de97a2cf8cdc996d3", null ],
     [ "orbitals_input", "structocc_1_1main_1_1IsosurfaceConfig.html#a02d8e3626d22e4303fa84a1c09a56b0c", null ],
     [ "output_template", "structocc_1_1main_1_1IsosurfaceConfig.html#a110865256ab58bb4d42bbdd1af8d3817", null ],
+    [ "power", "structocc_1_1main_1_1IsosurfaceConfig.html#acfcf481b9002f8697a4c160f6a9d554f", null ],
     [ "separation", "structocc_1_1main_1_1IsosurfaceConfig.html#a17909a41863a0ef9ff3e8de68b5e7441", null ],
     [ "use_hashed_mc", "structocc_1_1main_1_1IsosurfaceConfig.html#a423a2bb9f53e953a763de2ef0ff1ae80", null ],
     [ "wavefunction_filename", "structocc_1_1main_1_1IsosurfaceConfig.html#af5b2d438eb77cf730ee9fc60b90b8e08", null ],

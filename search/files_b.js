@@ -8,5 +8,6 @@ var searchData=
   ['linear_5fhashed_5fmarching_5fcubes_2eh_5',['linear_hashed_marching_cubes.h',['../linear__hashed__marching__cubes_8h.html',1,'']]],
   ['linear_5fhashed_5foctree_2eh_6',['linear_hashed_octree.h',['../linear__hashed__octree_8h.html',1,'']]],
   ['load_5fgeometry_2eh_7',['load_geometry.h',['../load__geometry_8h.html',1,'']]],
-  ['log_2eh_8',['log.h',['../log_8h.html',1,'']]]
+  ['log_2eh_8',['log.h',['../log_8h.html',1,'']]],
+  ['logsumexp_2eh_9',['logsumexp.h',['../logsumexp_8h.html',1,'']]]
 ];

@@ -9,7 +9,7 @@ var searchData=
   ['elastictensor_6',['ElasticTensor',['../classocc_1_1core_1_1ElasticTensor.html',1,'occ::core']]],
   ['electricpotentialfunctor_7',['ElectricPotentialFunctor',['../classocc_1_1isosurface_1_1ElectricPotentialFunctor.html',1,'occ::isosurface']]],
   ['electricpotentialfunctorpc_8',['ElectricPotentialFunctorPC',['../classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html',1,'occ::isosurface']]],
-  ['electrondensityfunctor_9',['electrondensityfunctor',['../structocc_1_1main_1_1ElectronDensityFunctor.html',1,'occ::main::ElectronDensityFunctor'],['../classocc_1_1isosurface_1_1ElectronDensityFunctor.html',1,'occ::isosurface::ElectronDensityFunctor']]],
+  ['electrondensityfunctor_9',['electrondensityfunctor',['../classocc_1_1isosurface_1_1ElectronDensityFunctor.html',1,'occ::isosurface::ElectronDensityFunctor'],['../structocc_1_1main_1_1ElectronDensityFunctor.html',1,'occ::main::ElectronDensityFunctor']]],
   ['electroninput_10',['ElectronInput',['../structocc_1_1io_1_1ElectronInput.html',1,'occ::io']]],
   ['electronshell_11',['ElectronShell',['../structocc_1_1io_1_1ElectronShell.html',1,'occ::io']]],
   ['element_12',['Element',['../classocc_1_1core_1_1Element.html',1,'occ::core']]],
@@ -19,5 +19,6 @@ var searchData=
   ['energymodelbase_16',['EnergyModelBase',['../classocc_1_1interaction_1_1EnergyModelBase.html',1,'occ::interaction']]],
   ['energytotal_17',['EnergyTotal',['../structocc_1_1cg_1_1EnergyTotal.html',1,'occ::cg']]],
   ['engradreader_18',['EngradReader',['../classocc_1_1io_1_1EngradReader.html',1,'occ::io']]],
-  ['espfunctor_19',['EspFunctor',['../structocc_1_1main_1_1EspFunctor.html',1,'occ::main']]]
+  ['espfunctor_19',['EspFunctor',['../structocc_1_1main_1_1EspFunctor.html',1,'occ::main']]],
+  ['expfunc_20',['ExpFunc',['../structocc_1_1isosurface_1_1ExpFunc.html',1,'occ::isosurface']]]
 ];
