@@ -319,7 +319,10 @@ public:
   }
 
 private:
+  void init_distances();
+
   Molecule m_a, m_b;
+  double m_nearest_distance{0.0}, m_centroid_distance{0.0}, m_com_distance{0.0};
   std::string m_name{"dimer"};
   size_t m_interaction_id{0};
   ankerl::unordered_dense::map<std::string, double> m_interaction_energies;

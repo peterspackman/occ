@@ -8,23 +8,27 @@
 namespace occ::core {
 using occ::core::linalg::kabsch_rotation_matrix;
 
-Dimer::Dimer(const Molecule &a, const Molecule &b) : m_a(a), m_b(b) {}
+Dimer::Dimer(const Molecule &a, const Molecule &b) : m_a(a), m_b(b) {
+  init_distances();
+}
 
 Dimer::Dimer(const std::vector<occ::core::Atom> &a,
              const std::vector<occ::core::Atom> &b)
-    : m_a(a), m_b(b) {}
-
-double Dimer::centroid_distance() const {
-  return (m_a.centroid() - m_b.centroid()).norm();
+    : m_a(a), m_b(b) {
+  init_distances();
 }
 
-double Dimer::center_of_mass_distance() const {
-  return (m_a.center_of_mass() - m_b.center_of_mass()).norm();
+void Dimer::init_distances() {
+  m_centroid_distance = (m_a.centroid() - m_b.centroid()).norm();
+  m_com_distance = (m_a.center_of_mass() - m_b.center_of_mass()).norm();
+  m_nearest_distance = std::get<2>(m_a.nearest_atom(m_b));
 }
 
-double Dimer::nearest_distance() const {
-  return std::get<2>(m_a.nearest_atom(m_b));
-}
+double Dimer::centroid_distance() const { return m_centroid_distance; }
+
+double Dimer::center_of_mass_distance() const { return m_com_distance; }
+
+double Dimer::nearest_distance() const { return m_nearest_distance; }
 
 Vec3 Dimer::v_ab() const {
   Vec3 o_a = m_a.centroid();
