@@ -1,9 +1,12 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <occ/core/atom.h>
+#include <occ/core/molecule.h>
+#include <occ/core/multipole.h>
 #include <occ/core/util.h>
 #include <occ/dft/dft.h>
 #include <occ/dft/grid.h>
+#include <occ/dft/hirshfeld.h>
 #include <occ/dft/lebedev.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/seminumerical_exchange.h>
@@ -12,11 +15,15 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
+#include <occ/qm/wavefunction.h>
 #include <vector>
 
 // DFT
 
+using Catch::Approx;
 using occ::format_matrix;
+using occ::Mat;
+using occ::Vec;
 
 TEST_CASE("LDA (Slater) exchange energy density", "[lda]") {
   occ::dft::DensityFunctional lda("xc_lda_x");
@@ -428,4 +435,188 @@ s   3 1.0
   double expected = 0.0089406089;
   fmt::print("NLC = {} vs {}\n", result.energy, expected);
   REQUIRE(result.energy == Catch::Approx(expected));
+}
+
+// Hirshfeld charge tests
+
+namespace {
+
+occ::core::Molecule make_h2o_for_hirshfeld() {
+  occ::Vec3 O{0.0, 0.0, 0.0};
+  occ::Vec3 H1{0.0, -0.757, 0.587};
+  occ::Vec3 H2{0.0, 0.757, 0.587};
+  occ::Mat3N pos(3, 3);
+  pos << O(0), H1(0), H2(0), O(1), H1(1), H2(1), O(2), H1(2), H2(2);
+  occ::IVec atomic_numbers(3);
+  atomic_numbers << 8, 1, 1;
+  return occ::core::Molecule(atomic_numbers, pos);
+}
+
+occ::core::Molecule make_ch4_for_hirshfeld() {
+  occ::Vec3 C{0.0, 0.0, 0.0};
+  occ::Vec3 H1{0.626, 0.626, 0.626};
+  occ::Vec3 H2{-0.626, -0.626, 0.626};
+  occ::Vec3 H3{-0.626, 0.626, -0.626};
+  occ::Vec3 H4{0.626, -0.626, -0.626};
+  occ::Mat3N pos(3, 5);
+  pos << C(0), H1(0), H2(0), H3(0), H4(0), C(1), H1(1), H2(1), H3(1), H4(1),
+      C(2), H1(2), H2(2), H3(2), H4(2);
+  occ::IVec atomic_numbers(5);
+  atomic_numbers << 6, 1, 1, 1, 1;
+  return occ::core::Molecule(atomic_numbers, pos);
+}
+
+} // namespace
+
+TEST_CASE("Hirshfeld charges for water", "[hirshfeld]") {
+  auto mol = make_h2o_for_hirshfeld();
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  double energy = scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  occ::dft::HirshfeldPartition hirshfeld(basis);
+  occ::Vec charges = hirshfeld.calculate(mo);
+
+  // Expected Hirshfeld charges for water molecule with STO-3G
+  // Oxygen should be negative, hydrogens positive
+  REQUIRE(charges.size() == 3);
+  REQUIRE(charges(0) < 0);
+  REQUIRE(charges(1) > 0);
+  REQUIRE(charges(2) > 0);
+
+  auto volumes = hirshfeld.atom_volumes();
+  REQUIRE(volumes.size() == 3);
+  REQUIRE(volumes(0) > 0);
+  REQUIRE(volumes(1) > 0);
+  REQUIRE(volumes(2) > 0);
+
+  // Check conservation of charge
+  REQUIRE(charges.sum() == Approx(0.0).margin(1e-8));
+
+  fmt::print("Water Hirshfeld charges:\n{}\n", format_matrix(charges));
+  fmt::print("Water atom volumes:\n{}\n", format_matrix(volumes));
+  fmt::print("Water free atom volumes:\n{}\n",
+             format_matrix(hirshfeld.free_atom_volumes()));
+}
+
+TEST_CASE("Hirshfeld charges for methane", "[hirshfeld]") {
+  auto mol = make_ch4_for_hirshfeld();
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  double energy = scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  occ::dft::HirshfeldPartition hirshfeld(basis);
+  occ::Vec charges = hirshfeld.calculate(mo);
+
+  // Expected Hirshfeld charges for methane with STO-3G
+  // Carbon should be slightly negative, hydrogens slightly positive
+  REQUIRE(charges.size() == 5);
+
+  // Check approximate charge symmetry for hydrogens
+  auto h_charge_avg = (charges(1) + charges(2) + charges(3) + charges(4)) / 4.0;
+  REQUIRE(charges(1) == Approx(h_charge_avg).margin(1e-3));
+  REQUIRE(charges(2) == Approx(h_charge_avg).margin(1e-3));
+  REQUIRE(charges(3) == Approx(h_charge_avg).margin(1e-3));
+  REQUIRE(charges(4) == Approx(h_charge_avg).margin(1e-3));
+
+  // Check conservation of charge (allowing for slight numerical error)
+  REQUIRE(charges.sum() == Approx(0.0).margin(1e-8));
+
+  fmt::print("Methane Hirshfeld charges:\n{}\n", format_matrix(charges));
+
+  // Test the convenience function
+  occ::Vec charges2 = occ::dft::calculate_hirshfeld_charges(basis, mo);
+  REQUIRE(charges2.size() == 5);
+  REQUIRE(all_close(charges, charges2));
+}
+
+TEST_CASE("Hirshfeld multipoles for water", "[hirshfeld]") {
+  auto mol = make_h2o_for_hirshfeld();
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  double energy = scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  // Calculate multipoles up to hexadecapoles (L=4)
+  occ::dft::HirshfeldPartition hirshfeld(basis, 4);
+  auto multipoles = hirshfeld.calculate_multipoles(mo);
+
+  // Check the number of atoms
+  REQUIRE(multipoles.size() == 3);
+
+  // Check that charges match the monopole component
+  auto charges = hirshfeld.charges();
+  for (size_t i = 0; i < charges.size(); i++) {
+    REQUIRE(charges(i) == Approx(multipoles[i].components[0]));
+  }
+
+  // Verify that the dipole components for hydrogen atoms are non-zero
+  // (due to the asymmetric electron distribution)
+  REQUIRE(std::abs(multipoles[1].components[3]) >
+          0.01); // H1 z-component should be significant
+  REQUIRE(std::abs(multipoles[2].components[3]) >
+          0.01); // H2 z-component should be significant
+
+  // Check that quadrupole components follow expected symmetry for water
+  // The oxygen atom should have a negative Qzz component due to the lone pairs
+  REQUIRE(multipoles[0].components[9] < 0); // Oxygen Qzz
+
+  // Test the convenience function
+  auto multipoles2 = occ::dft::calculate_hirshfeld_multipoles(basis, mo, 4);
+  REQUIRE(multipoles2.size() == 3);
+
+  // Check that results match between class and convenience function
+  for (size_t i = 0; i < multipoles.size(); i++) {
+    for (size_t j = 0; j < multipoles[i].components.size(); j++) {
+      REQUIRE(multipoles[i].components[j] ==
+              Approx(multipoles2[i].components[j]));
+    }
+  }
+
+  fmt::print("Water Hirshfeld multipoles (oxygen atom):\n{}\n",
+             multipoles[0].to_string());
+}
+
+TEST_CASE("Hirshfeld multipoles for methane", "[hirshfeld]") {
+  auto mol = make_ch4_for_hirshfeld();
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  double energy = scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  // Calculate multipoles up to hexadecapoles (L=4)
+  occ::dft::HirshfeldPartition hirshfeld(basis, 4);
+  auto multipoles = hirshfeld.calculate_multipoles(mo);
+
+  // Check the number of atoms
+  REQUIRE(multipoles.size() == 5);
+
+  // Print all hydrogen dipole values for inspection
+  fmt::print("Hydrogen dipole Z components:\n");
+  fmt::print("H1: {}\n", multipoles[1].components[3]);
+  fmt::print("H2: {}\n", multipoles[2].components[3]);
+  fmt::print("H3: {}\n", multipoles[3].components[3]);
+  fmt::print("H4: {}\n", multipoles[4].components[3]);
+
+  // Check the magnitude of dipole components, they should be significant
+  REQUIRE(std::abs(multipoles[1].components[3]) > 0.01);
+  REQUIRE(std::abs(multipoles[2].components[3]) > 0.01);
+  REQUIRE(std::abs(multipoles[3].components[3]) > 0.01);
+  REQUIRE(std::abs(multipoles[4].components[3]) > 0.01);
+
+  // Due to the symmetric nature of methane, the carbon atom should have small
+  // dipole components Note: These might not be exactly zero due to numerical
+  // integration
+  REQUIRE(std::abs(multipoles[0].components[1]) < 0.05); // C Dx
+  REQUIRE(std::abs(multipoles[0].components[2]) < 0.05); // C Dy
+  REQUIRE(std::abs(multipoles[0].components[3]) < 0.05); // C Dz
+
+  fmt::print("Methane Hirshfeld multipoles (carbon atom):\n{}\n",
+             multipoles[0].to_string());
 }
