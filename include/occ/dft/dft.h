@@ -6,6 +6,7 @@
 #include <occ/dft/dft_method.h>
 #include <occ/dft/functional.h>
 #include <occ/dft/grid.h>
+#include <occ/dft/dft_kernels.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/range_separated_parameters.h>
 #include <occ/dft/xc_potential_matrix.h>
@@ -27,58 +28,6 @@ using occ::IVec;
 using occ::Mat3N;
 using occ::MatN4;
 using occ::Vec;
-
-namespace block = occ::qm::block;
-
-namespace impl {
-
-template <SpinorbitalKind spinorbital_kind, int derivative_order>
-void set_params(DensityFunctional::Params &params, const Mat &rho) {
-  if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
-    params.rho.col(0) = rho.col(0);
-  } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-    // correct assignment
-    params.rho.col(0) = block::a(rho.col(0));
-    params.rho.col(1) = block::b(rho.col(0));
-  }
-
-  if constexpr (derivative_order > 0) {
-    if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
-      params.sigma.col(0) = (rho.block(0, 1, rho.rows(), 3).array() *
-                             rho.block(0, 1, rho.rows(), 3).array())
-                                .rowwise()
-                                .sum();
-    } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-      const auto rho_a = block::a(rho.array());
-      const auto rho_b = block::b(rho.array());
-      const auto &dx_rho_a = rho_a.col(1);
-      const auto &dy_rho_a = rho_a.col(2);
-      const auto &dz_rho_a = rho_a.col(3);
-      const auto &dx_rho_b = rho_b.col(1);
-      const auto &dy_rho_b = rho_b.col(2);
-      const auto &dz_rho_b = rho_b.col(3);
-      params.sigma.col(0) =
-          dx_rho_a * dx_rho_a + dy_rho_a * dy_rho_a + dz_rho_a * dz_rho_a;
-      params.sigma.col(1) =
-          dx_rho_a * dx_rho_b + dy_rho_a * dy_rho_b + dz_rho_a * dz_rho_b;
-      params.sigma.col(2) =
-          dx_rho_b * dx_rho_b + dy_rho_b * dy_rho_b + dz_rho_b * dz_rho_b;
-    }
-  }
-  if constexpr (derivative_order > 1) {
-    if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
-      params.laplacian.col(0) = rho.col(4);
-      params.tau.col(0) = rho.col(5);
-    } else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
-      params.laplacian.col(0) = block::a(rho.col(4));
-      params.laplacian.col(1) = block::b(rho.col(4));
-      params.tau.col(0) = block::a(rho.col(5));
-      params.tau.col(1) = block::b(rho.col(5));
-    }
-  }
-}
-
-} // namespace impl
 
 class DFT : public qm::SCFMethodBase {
 
@@ -199,20 +148,11 @@ public:
     m_two_electron_energy = 0.0;
     m_exc_dft = 0.0;
 
-    constexpr size_t BLOCKSIZE = 64;
-    size_t num_rows_factor = 1;
-    if (spinorbital_kind == SpinorbitalKind::Unrestricted)
-      num_rows_factor = 2;
+    size_t num_rows_factor =
+        (spinorbital_kind == SpinorbitalKind::Unrestricted) ? 2 : 1;
 
     double total_density_a{0.0}, total_density_b{0.0};
     const Mat D2 = 2 * D;
-    DensityFunctional::Family family{DensityFunctional::Family::LDA};
-    if constexpr (derivative_order == 1) {
-      family = DensityFunctional::Family::GGA;
-    }
-    if constexpr (derivative_order == 2) {
-      family = DensityFunctional::Family::MGGA;
-    }
 
     std::vector<Mat> Kt(occ::parallel::nthreads, Mat::Zero(D.rows(), D.cols()));
     std::vector<double> energies(occ::parallel::nthreads, 0.0);
@@ -222,76 +162,52 @@ public:
     const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
                             ? m_funcs.polarized
                             : m_funcs.unpolarized;
+
+    occ::timing::start(occ::timing::category::dft_xc);
+
     for (const auto &atom_grid : m_atom_grids) {
       const auto &atom_pts = atom_grid.points;
       const auto &atom_weights = atom_grid.weights;
       const size_t npt_total = atom_pts.cols();
-      const size_t num_blocks = npt_total / BLOCKSIZE + 1;
+      const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
 
       auto lambda = [&](int thread_id) {
-        Mat rho_storage(num_rows_factor * BLOCKSIZE,
-                        occ::density::num_components(derivative_order));
         for (size_t block = 0; block < num_blocks; block++) {
           if (block % nthreads != thread_id)
             continue;
-          Eigen::Index l = block * BLOCKSIZE;
-          Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+
+          Eigen::Index l = block * m_blocksize;
+          Eigen::Index u =
+              std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
           Eigen::Index npt = u - l;
           if (npt <= 0)
             continue;
-          Eigen::Ref<Mat> rho = rho_storage.block(0, 0, num_rows_factor * npt,
-                                                  rho_storage.cols());
 
-          auto &k = Kt[thread_id];
           const auto &pts_block = atom_pts.middleCols(l, npt);
           const auto &weights_block = atom_weights.segment(l, npt);
           auto gto_vals =
               occ::gto::evaluate_basis(basis, pts_block, derivative_order);
-          occ::density::evaluate_density<derivative_order, spinorbital_kind>(
-              D2, gto_vals, rho);
 
-          double max_density_block = rho.col(0).maxCoeff();
-          if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
-            alpha_densities[thread_id] += rho.col(0).dot(weights_block);
-          } else if constexpr (spinorbital_kind ==
-                               SpinorbitalKind::Unrestricted) {
-            Vec rho_a_tmp = block::a(rho.col(0));
-            Vec rho_b_tmp = block::b(rho.col(0));
-            double tot_density_a = rho_a_tmp.dot(weights_block);
-            double tot_density_b = rho_b_tmp.dot(weights_block);
-            alpha_densities[thread_id] += tot_density_a;
-            beta_densities[thread_id] += tot_density_b;
-          }
-          if (max_density_block < m_density_threshold)
-            continue;
-
-          DensityFunctional::Params params(npt, family, spinorbital_kind);
-          impl::set_params<spinorbital_kind, derivative_order>(params, rho);
-
-          DensityFunctional::Result res(npt, family, spinorbital_kind);
-          for (const auto &func : funcs) {
-            res += func.evaluate(params);
-          }
-
-          Mat KK = Mat::Zero(k.rows(), k.cols());
-
-          // Weight the arrays by the grid weights
-          res.weight_by(weights_block);
-          xc_potential_matrix<spinorbital_kind, derivative_order>(
-              res, rho, gto_vals, KK, energies[thread_id]);
-          k.noalias() += KK;
+          kernels::process_grid_block<derivative_order, spinorbital_kind>(
+              D2, gto_vals, pts_block, weights_block, funcs, Kt[thread_id],
+              energies[thread_id], alpha_densities[thread_id],
+              beta_densities[thread_id], m_density_threshold);
         }
       };
-      occ::timing::start(occ::timing::category::dft_xc);
+
       occ::parallel::parallel_do(lambda);
-      occ::timing::stop(occ::timing::category::dft_xc);
     }
+
+    occ::timing::stop(occ::timing::category::dft_xc);
+
+    // Combine results from all threads
     for (size_t i = 0; i < nthreads; i++) {
       K += Kt[i];
       m_exc_dft += energies[i];
       total_density_a += alpha_densities[i];
       total_density_b += beta_densities[i];
     }
+
     occ::log::debug("Total density: alpha = {} beta = {}", total_density_a,
                     total_density_b);
 
@@ -430,6 +346,8 @@ public:
 
   inline std::string name() const { return method_string(); }
 
+  inline void set_block_size(size_t blocksize) { m_blocksize = blocksize; }
+
 private:
   std::string m_method_string{"svwn5"};
   occ::qm::HartreeFock m_hf;
@@ -443,5 +361,6 @@ private:
   mutable double m_nlc_energy{0.0};
   double m_density_threshold{1e-10};
   RangeSeparatedParameters m_rs_params;
+  size_t m_blocksize{256};
 };
 } // namespace occ::dft
