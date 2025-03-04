@@ -295,6 +295,17 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
     }
     break;
   }
+  case PropertyKind::DeformationDensity: {
+    auto func =
+        DeformationDensityFunctor(m_molecule, m_wavefunction);
+    func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
+    occ::log::debug("Min {} Max {} Mean {}", result.minCoeff(),
+                    result.maxCoeff(), result.mean());
+    occ::log::debug("Computed Deformation Density for {} vertices",
+                    func.num_calls());
+    break;
+  }
+
   case PropertyKind::ESP: {
     auto func = ElectricPotentialFunctor(m_wavefunction);
     func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);

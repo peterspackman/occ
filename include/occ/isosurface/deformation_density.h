@@ -5,6 +5,29 @@
 
 namespace occ::isosurface {
 
+class DeformationDensityFunctor {
+public:
+  DeformationDensityFunctor(
+      const occ::core::Molecule &mol, const occ::qm::Wavefunction &wfn,
+      const occ::slater::InterpolatorParams &params = {});
+
+  inline void batch(Eigen::Ref<const FMat3N> pos,
+                    Eigen::Ref<FVec> layer) const {
+    m_num_calls += layer.size();
+    m_rho.batch(pos, layer);
+    for (int i = 0; i < pos.cols(); i++) {
+      layer(i) -= m_pro(pos.col(i));
+    }
+  }
+
+  inline int num_calls() const { return m_num_calls; }
+
+private:
+  occ::slater::PromoleculeDensity m_pro;
+  ElectronDensityFunctor m_rho;
+  mutable int m_num_calls{0};
+};
+
 class MCDeformationDensityFunctor {
 public:
   MCDeformationDensityFunctor(
