@@ -2,7 +2,7 @@
 <area shape="rect" id="Node000001" title=" " alt="" coords="186,5,357,60"/>
 <area shape="rect" id="Node000002" href="$promolecule__density_8h.html" title=" " alt="" coords="69,108,265,163"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="236,72,196,110,193,106,232,68"/>
-<area shape="rect" id="Node000007" href="$hirshfeld_8h.html" title=" " alt="" coords="290,108,461,163"/>
+<area shape="rect" id="Node000007" href="$slater_2hirshfeld_8h.html" title=" " alt="" coords="290,108,461,163"/>
 <area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="310,68,350,106,346,110,307,72"/>
 <area shape="rect" id="Node000003" href="$deformation__density_8h.html" title=" " alt="" coords="5,211,201,265"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="145,176,122,212,118,209,141,173"/>

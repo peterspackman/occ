@@ -1,17 +1,21 @@
 <map id="/home/runner/work/occ/occ/include/occ/dft/functional.h" name="/home/runner/work/occ/occ/include/occ/dft/functional.h">
 <area shape="rect" id="Node000001" title=" " alt="" coords="107,5,277,60"/>
-<area shape="rect" id="Node000002" href="$dft_8h.html" title=" " alt="" coords="103,211,281,251"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="132,70,112,88,97,109,89,135,97,161,119,188,148,208,145,213,116,192,92,164,84,135,92,107,108,84,128,66"/>
-<area shape="rect" id="Node000006" href="$dft__method_8h.html" title=" " alt="" coords="107,108,277,163"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="195,74,195,108,189,108,189,74"/>
-<area shape="rect" id="Node000007" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="301,108,472,163"/>
-<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="256,64,337,106,335,110,254,69"/>
-<area shape="rect" id="Node000003" href="$smd__solvation_8h.html" title=" " alt="" coords="5,299,181,353"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="164,262,123,301,119,297,160,258"/>
-<area shape="rect" id="Node000005" href="$point__functors_8h.html" title=" " alt="" coords="205,299,376,353"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="224,258,265,297,261,301,220,262"/>
-<area shape="rect" id="Node000004" href="$crystal__growth_8h.html" title=" " alt="" coords="8,401,179,456"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="96,367,96,401,91,401,91,367"/>
-<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="195,176,195,211,189,211,189,176"/>
-<area shape="poly" id="edge8_Node000007_Node000002" title=" " alt="" coords="321,171,233,213,230,208,318,166"/>
+<area shape="rect" id="Node000002" href="$dft_8h.html" title=" " alt="" coords="103,313,281,353"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,70,92,110,48,158,32,185,24,211,24,238,36,264,49,280,65,293,104,312,101,317,62,298,45,284,31,267,19,239,19,211,27,183,43,155,88,106,138,66"/>
+<area shape="rect" id="Node000006" href="$dft__kernels_8h.html" title=" " alt="" coords="45,211,216,265"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="174,73,159,109,145,163,136,211,131,210,139,162,153,107,169,71"/>
+<area shape="rect" id="Node000007" href="$dft__method_8h.html" title=" " alt="" coords="168,108,339,163"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="217,70,240,107,235,109,213,73"/>
+<area shape="rect" id="Node000008" href="$xc__potential__matrix_8h.html" title=" " alt="" coords="291,211,461,265"/>
+<area shape="poly" id="edge10_Node000001_Node000008" title=" " alt="" coords="292,60,325,80,353,106,367,132,375,159,380,210,375,211,370,160,362,134,349,110,322,84,289,65"/>
+<area shape="rect" id="Node000003" href="$smd__solvation_8h.html" title=" " alt="" coords="5,401,181,456"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="164,365,123,403,119,399,160,361"/>
+<area shape="rect" id="Node000005" href="$point__functors_8h.html" title=" " alt="" coords="205,401,376,456"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="224,361,265,399,261,403,220,365"/>
+<area shape="rect" id="Node000004" href="$crystal__growth_8h.html" title=" " alt="" coords="8,504,179,559"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="96,470,96,504,91,504,91,470"/>
+<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="158,275,182,312,177,315,153,278"/>
+<area shape="poly" id="edge8_Node000007_Node000002" title=" " alt="" coords="251,177,243,220,230,266,207,314,202,312,226,264,238,219,246,176"/>
+<area shape="poly" id="edge9_Node000007_Node000006" title=" " alt="" coords="212,174,164,213,161,209,209,169"/>
+<area shape="poly" id="edge11_Node000008_Node000002" title=" " alt="" coords="313,274,231,316,228,311,311,269"/>
 </map>

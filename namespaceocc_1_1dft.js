@@ -9,10 +9,14 @@ var namespaceocc_1_1dft =
     [ "impl", "namespaceocc_1_1dft_1_1impl.html", [
       [ "set_params", "namespaceocc_1_1dft_1_1impl.html#a575287e1722269d11bda582e4938d0db", null ]
     ] ],
+    [ "kernels", "namespaceocc_1_1dft_1_1kernels.html", [
+      [ "process_grid_block", "namespaceocc_1_1dft_1_1kernels.html#a23f38da6be835f354e5277134b01d915", null ]
+    ] ],
     [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
     [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
     [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
     [ "Functionals", "structocc_1_1dft_1_1Functionals.html", "structocc_1_1dft_1_1Functionals" ],
+    [ "HirshfeldPartition", "classocc_1_1dft_1_1HirshfeldPartition.html", "classocc_1_1dft_1_1HirshfeldPartition" ],
     [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
     [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
     [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
@@ -23,6 +27,8 @@ var namespaceocc_1_1dft =
       [ "StratmannScuseria", "namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67", null ]
     ] ],
     [ "calculate_atomic_grid_weights", "namespaceocc_1_1dft.html#a1cfad27b8982b45891f9e13a9e9e6546", null ],
+    [ "calculate_hirshfeld_charges", "namespaceocc_1_1dft.html#ab389b094d08370dcd3dfcc71ea9e98f0", null ],
+    [ "calculate_hirshfeld_multipoles", "namespaceocc_1_1dft.html#a44d1117c9d772f1337c1aca7e9000fbf", null ],
     [ "generate_atom_grid", "namespaceocc_1_1dft.html#aa3f2fabc212c1f463b003557e3c38482", null ],
     [ "generate_becke_radial_grid", "namespaceocc_1_1dft.html#a48abc2172605dbc65f9f0efb7d88b2c2", null ],
     [ "generate_gauss_chebyshev_radial_grid", "namespaceocc_1_1dft.html#ada7d5e515dc2a7751aa8476373e59d0d", null ],

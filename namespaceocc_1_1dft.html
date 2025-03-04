@@ -118,6 +118,8 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceocc_1_1dft_1_1impl" id="r_namespaceocc_1_1dft_1_1impl"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft_1_1impl.html">impl</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceocc_1_1dft_1_1kernels" id="r_namespaceocc_1_1dft_1_1kernels"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft_1_1kernels.html">kernels</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -128,6 +130,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1Functionals.html">Functionals</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1HirshfeldPartition.html">HirshfeldPartition</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class implementing Hirshfeld atomic charge analysis.  <a href="classocc_1_1dft_1_1HirshfeldPartition.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html">MolecularGrid</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -172,6 +177,12 @@ Functions</h2></td></tr>
 <tr class="separator:a2c30408fc6ed138cc86a5f9fdbb999b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3f2fabc212c1f463b003557e3c38482" id="r_aa3f2fabc212c1f463b003557e3c38482"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aa3f2fabc212c1f463b003557e3c38482">generate_atom_grid</a> (size_t atomic_number, size_t max_angular_points=302, size_t radial_points=50)</td></tr>
 <tr class="separator:aa3f2fabc212c1f463b003557e3c38482"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab389b094d08370dcd3dfcc71ea9e98f0" id="r_ab389b094d08370dcd3dfcc71ea9e98f0"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ab389b094d08370dcd3dfcc71ea9e98f0">calculate_hirshfeld_charges</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge=0)</td></tr>
+<tr class="memdesc:ab389b094d08370dcd3dfcc71ea9e98f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld charges for a molecule.  <br /></td></tr>
+<tr class="separator:ab389b094d08370dcd3dfcc71ea9e98f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44d1117c9d772f1337c1aca7e9000fbf" id="r_a44d1117c9d772f1337c1aca7e9000fbf"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Multipole.html">occ::core::Multipole</a>&lt; 4 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a44d1117c9d772f1337c1aca7e9000fbf">calculate_hirshfeld_multipoles</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int max_multipole_order=4, int charge=0)</td></tr>
+<tr class="memdesc:a44d1117c9d772f1337c1aca7e9000fbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld multipoles for a molecule.  <br /></td></tr>
+<tr class="separator:a44d1117c9d772f1337c1aca7e9000fbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b07d66d6a706b5c97d4565076539e9c" id="r_a1b07d66d6a706b5c97d4565076539e9c"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">occ::qm::SpinorbitalKind</a> spinorbital_kind, int derivative_order&gt; </td></tr>
 <tr class="memitem:a1b07d66d6a706b5c97d4565076539e9c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a1b07d66d6a706b5c97d4565076539e9c">xc_potential_matrix</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)=delete</td></tr>
 <tr class="separator:a1b07d66d6a706b5c97d4565076539e9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -283,6 +294,105 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab389b094d08370dcd3dfcc71ea9e98f0" name="ab389b094d08370dcd3dfcc71ea9e98f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab389b094d08370dcd3dfcc71ea9e98f0">&#9670;&#160;</a></span>calculate_hirshfeld_charges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Vec occ::dft::calculate_hirshfeld_charges </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>charge</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calculate Hirshfeld charges for a molecule. </p>
+<p>Convenience function to compute Hirshfeld charges in a single call.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">basis</td><td>Basis set for the molecule </td></tr>
+    <tr><td class="paramname">mo</td><td>Molecular orbitals containing the density matrix </td></tr>
+    <tr><td class="paramname">charge</td><td>Total molecular charge </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Vec Vector of Hirshfeld charges for each atom </dd></dl>
+
+</div>
+</div>
+<a id="a44d1117c9d772f1337c1aca7e9000fbf" name="a44d1117c9d772f1337c1aca7e9000fbf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44d1117c9d772f1337c1aca7e9000fbf">&#9670;&#160;</a></span>calculate_hirshfeld_multipoles()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Multipole.html">occ::core::Multipole</a>&lt; 4 &gt; &gt; occ::dft::calculate_hirshfeld_multipoles </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>max_multipole_order</em> = <code>4</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>charge</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calculate Hirshfeld multipoles for a molecule. </p>
+<p>Convenience function to compute Hirshfeld multipoles in a single call.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">basis</td><td>Basis set for the molecule </td></tr>
+    <tr><td class="paramname">mo</td><td>Molecular orbitals containing the density matrix </td></tr>
+    <tr><td class="paramname">max_multipole_order</td><td>Maximum order of multipoles to compute (0-4) </td></tr>
+    <tr><td class="paramname">charge</td><td>Total molecular charge </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>std::vector&lt;occ::core::Multipole&lt;4&gt;&gt; Vector of Hirshfeld multipoles for each atom </dd></dl>
 
 </div>
 </div>

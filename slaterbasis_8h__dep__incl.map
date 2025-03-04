@@ -1,5 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/slater/slaterbasis.h" name="/home/runner/work/occ/occ/include/occ/slater/slaterbasis.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="21,5,192,60"/>
-<area shape="rect" id="Node000002" href="$xdm_8h.html" title=" " alt="" coords="5,108,208,148"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,74,109,108,104,108,104,74"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="111,5,281,60"/>
+<area shape="rect" id="Node000002" href="$dft_2hirshfeld_8h.html" title=" " alt="" coords="5,108,176,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,72,120,110,116,106,157,68"/>
+<area shape="rect" id="Node000003" href="$xdm_8h.html" title=" " alt="" coords="200,115,403,155"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="235,68,283,113,279,117,232,71"/>
 </map>

@@ -6,6 +6,7 @@ var namespaceocc_1_1isosurface =
     [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
     [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
     [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
+    [ "DeformationDensityFunctor", "classocc_1_1isosurface_1_1DeformationDensityFunctor.html", "classocc_1_1isosurface_1_1DeformationDensityFunctor" ],
     [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
     [ "ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC" ],
     [ "ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", "classocc_1_1isosurface_1_1ElectronDensityFunctor" ],

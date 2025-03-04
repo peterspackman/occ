@@ -22,10 +22,11 @@ var searchData=
   ['hexagonal_5fcell_19',['hexagonal_cell',['../namespaceocc_1_1crystal.html#a9e01d3b4dd9257ecd1fac2bfba8947c3',1,'occ::crystal']]],
   ['hf_20',['hf',['../classocc_1_1dft_1_1DFT.html#adfc8c9f6911b9af7a4e5abd63828a4ca',1,'occ::dft::DFT']]],
   ['hirshfeld_5fcharges_21',['hirshfeld_charges',['../classocc_1_1xdm_1_1XDM.html#a48e66594cf8a820d230cf8519ac40417',1,'occ::xdm::XDM']]],
-  ['hkl_22',['hkl',['../classocc_1_1crystal_1_1Surface.html#a983171cb592f7dcd0a6d619b617eb282',1,'occ::crystal::Surface']]],
-  ['hkl_5fdifference_23',['hkl_difference',['../structocc_1_1crystal_1_1DimerIndex.html#a423578a15628d78fcc60aae074e6ad5a',1,'occ::crystal::DimerIndex']]],
-  ['hkl_5flimits_24',['hkl_limits',['../classocc_1_1crystal_1_1UnitCell.html#a6b71f586738bdf310efd631074bb3680',1,'occ::crystal::UnitCell']]],
-  ['host_5fendian_5fchar_25',['host_endian_char',['../namespaceocc_1_1core_1_1numpy.html#ab7831056b7c8655e8fcc977123ca4a7b',1,'occ::core::numpy']]],
-  ['human_5freadable_5fsize_26',['human_readable_size',['../namespaceocc_1_1util.html#afc65a7eebcc2d86e81d9ef634fcdeb7e',1,'occ::util']]],
-  ['human_5freadable_5ftime_27',['human_readable_time',['../namespaceocc_1_1util.html#a2f34a26f41f415e9f16d0d8ffe712648',1,'occ::util']]]
+  ['hirshfeldpartition_22',['HirshfeldPartition',['../classocc_1_1dft_1_1HirshfeldPartition.html#ad2d16570342e2e92ca973cb437143736',1,'occ::dft::HirshfeldPartition']]],
+  ['hkl_23',['hkl',['../classocc_1_1crystal_1_1Surface.html#a983171cb592f7dcd0a6d619b617eb282',1,'occ::crystal::Surface']]],
+  ['hkl_5fdifference_24',['hkl_difference',['../structocc_1_1crystal_1_1DimerIndex.html#a423578a15628d78fcc60aae074e6ad5a',1,'occ::crystal::DimerIndex']]],
+  ['hkl_5flimits_25',['hkl_limits',['../classocc_1_1crystal_1_1UnitCell.html#a6b71f586738bdf310efd631074bb3680',1,'occ::crystal::UnitCell']]],
+  ['host_5fendian_5fchar_26',['host_endian_char',['../namespaceocc_1_1core_1_1numpy.html#ab7831056b7c8655e8fcc977123ca4a7b',1,'occ::core::numpy']]],
+  ['human_5freadable_5fsize_27',['human_readable_size',['../namespaceocc_1_1util.html#afc65a7eebcc2d86e81d9ef634fcdeb7e',1,'occ::util']]],
+  ['human_5freadable_5ftime_28',['human_readable_time',['../namespaceocc_1_1util.html#a2f34a26f41f415e9f16d0d8ffe712648',1,'occ::util']]]
 ];

@@ -34,6 +34,7 @@ var classocc_1_1dft_1_1DFT =
     [ "nuclear_point_charge_interaction_energy", "classocc_1_1dft_1_1DFT.html#ad6dd3d626e56d2a501c28476f0daa44b", null ],
     [ "post_scf_nlc_correction", "classocc_1_1dft_1_1DFT.html#af02d6a465080aa7a2f8b8a1947c3d24a", null ],
     [ "range_separated_parameters", "classocc_1_1dft_1_1DFT.html#a27c7379a38a9cf5228468482678178f9", null ],
+    [ "set_block_size", "classocc_1_1dft_1_1DFT.html#a26eb0b91333db93be1ad28fa5fbc74eb", null ],
     [ "set_density_fitting_basis", "classocc_1_1dft_1_1DFT.html#ab2eeda64973fe7c0b9635d290b1b911f", null ],
     [ "set_integration_grid", "classocc_1_1dft_1_1DFT.html#a59e99350356124aac0c2535fa7133492", null ],
     [ "set_method", "classocc_1_1dft_1_1DFT.html#abb30ad8fddfa487ad5973303f283e7b6", null ],
