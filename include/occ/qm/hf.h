@@ -48,6 +48,10 @@ public:
   Mat compute_fock(const MolecularOrbitals &mo,
                    const Mat &Schwarz = Mat()) const;
 
+  inline Mat3N additional_atomic_gradients(const MolecularOrbitals &mo) const {
+    return Mat3N::Zero(3, m_atoms.size());
+  }
+
   MatTriple compute_fock_gradient(const MolecularOrbitals &mo,
                                   const Mat &Schwarz = Mat()) const;
 

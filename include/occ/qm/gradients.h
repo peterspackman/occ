@@ -7,7 +7,7 @@ namespace occ::qm {
 
 namespace impl {
 
-double accumulate1(SpinorbitalKind sk, int r, Mat op, Mat D) {
+inline double accumulate1(SpinorbitalKind sk, int r, Mat op, Mat D) {
   double result = 0.0;
   switch (sk) {
   case SpinorbitalKind::Unrestricted: {
@@ -25,7 +25,7 @@ double accumulate1(SpinorbitalKind sk, int r, Mat op, Mat D) {
   return result;
 }
 
-double accumulate2(SpinorbitalKind sk, int r, Mat op, Mat D) {
+inline double accumulate2(SpinorbitalKind sk, int r, Mat op, Mat D) {
   double result = 0.0;
   switch (sk) {
   case SpinorbitalKind::Unrestricted: {
@@ -54,7 +54,8 @@ public:
       : m_proc(p), m_gradients(Mat3N::Zero(3, p.atoms().size())) {}
 
   inline Mat3N nuclear_repulsion() const {
-    return m_proc.nuclear_repulsion_gradient();
+    Mat3N result = m_proc.nuclear_repulsion_gradient();
+    return result;
   }
 
   inline Mat3N electronic(const MolecularOrbitals &mo) const {
@@ -64,10 +65,11 @@ public:
     const auto &atom_to_shell = basis.atom_to_shell();
     occ::log::info("computing atomic gradients");
 
-    Mat3N result = Mat3N::Zero(3, atoms.size());
+    Mat3N result = m_proc.additional_atomic_gradients(mo);
     auto ovlp = m_proc.compute_overlap_gradient();
     auto en = m_proc.compute_nuclear_attraction_gradient();
     auto kin = m_proc.compute_kinetic_gradient();
+    occ::log::info("computing fock gradient");
     auto f = m_proc.compute_fock_gradient(mo);
     auto hcore = en + kin;
 
@@ -116,6 +118,11 @@ public:
 
     m_gradients = nuclear_repulsion();
     m_gradients += electronic(mo);
+    for (int atom = 0; atom < m_gradients.cols(); atom++) {
+      occ::log::info("atom {:4d}: {:12.5f} {:12.5f} {:12.5f}", atom,
+                     m_gradients(0, atom), m_gradients(1, atom),
+                     m_gradients(2, atom));
+    }
     return m_gradients;
   }
 

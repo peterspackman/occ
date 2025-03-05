@@ -23,6 +23,8 @@ enum category {
   dft_xc,
   dft,
   dft_nlc,
+  dft_gradient,
+  dft_fock_gradient,
   xc_func_init,
   xc_func_end,
   rho,
@@ -48,6 +50,7 @@ enum category {
   mc_octree,
   mc_primal,
   mc_surface,
+  gradient,
   global,
   _group_count
 };

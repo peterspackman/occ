@@ -3,10 +3,11 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
+#include <occ/dft/dft_gradient_kernels.h>
+#include <occ/dft/dft_kernels.h>
 #include <occ/dft/dft_method.h>
 #include <occ/dft/functional.h>
 #include <occ/dft/grid.h>
-#include <occ/dft/dft_kernels.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/range_separated_parameters.h>
 #include <occ/dft/xc_potential_matrix.h>
@@ -316,6 +317,9 @@ public:
     return J - K;
   }
 
+  MatTriple compute_fock_gradient(const MolecularOrbitals &mo,
+                                  const Mat &Schwarz = Mat()) const;
+
   const auto &hf() const { return m_hf; }
 
   inline Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
@@ -336,6 +340,55 @@ public:
     return m_hf.electronic_electric_field_contribution(mo, pts);
   }
 
+  /**
+   * Calculate the DFT exchange-correlation contribution to the atomic gradient
+   *
+   * @param mo Molecular orbitals
+   * @return Matrix of gradients with dimensions 3 x natoms
+   */
+  Mat3N compute_xc_gradient(const MolecularOrbitals &mo,
+                            const Mat &Schwarz = Mat()) const;
+
+  inline Mat3N additional_atomic_gradients(const MolecularOrbitals &mo) const {
+    return compute_xc_gradient(mo);
+  }
+
+  /**
+   * Calculate the nuclear repulsion contribution to the atomic gradient
+   *
+   * @return Matrix of gradients with dimensions 3 x natoms
+   */
+  Mat3N nuclear_repulsion_gradient() const {
+    return m_hf.nuclear_repulsion_gradient();
+  }
+
+  /**
+   * Calculate gradients for specific DFT components
+   */
+  MatTriple compute_overlap_gradient() const {
+    return m_hf.compute_overlap_gradient();
+  }
+
+  MatTriple compute_kinetic_gradient() const {
+    return m_hf.compute_kinetic_gradient();
+  }
+
+  MatTriple compute_nuclear_attraction_gradient() const {
+    return m_hf.compute_nuclear_attraction_gradient();
+  }
+
+  MatTriple compute_rinv_gradient_for_atom(size_t atom) const {
+    return m_hf.compute_rinv_gradient_for_atom(atom);
+  }
+
+  qm::JKTriple compute_JK_gradient(const MolecularOrbitals &mo,
+                                   const Mat &Schwarz = Mat()) const;
+
+  MatTriple compute_J_gradient(const MolecularOrbitals &mo,
+                               const Mat &Schwarz = Mat()) const {
+    return m_hf.compute_J_gradient(mo, Schwarz);
+  }
+
   void update_core_hamiltonian(const MolecularOrbitals &mo, Mat &H) { return; }
 
   void set_method(const std::string &method_string);
@@ -349,6 +402,72 @@ public:
   inline void set_block_size(size_t blocksize) { m_blocksize = blocksize; }
 
 private:
+  template <int derivative_order, SpinorbitalKind spinorbital_kind>
+  Mat3N compute_xc_gradient_impl(const MolecularOrbitals &mo,
+                                 const Mat &Schwarz) const {
+    using occ::parallel::nthreads;
+    const auto &basis = m_hf.aobasis();
+    const auto &atoms = m_hf.atoms();
+    const size_t natoms = atoms.size();
+    const size_t nbf = basis.nbf();
+    const auto D = 2.0 * mo.D;
+
+    // Initialize gradient matrix (3 x natoms)
+    Mat3N gradient = Mat3N::Zero(3, natoms);
+
+    // Thread-local storage for gradients
+    std::vector<Mat3N> gradients_t(nthreads, Mat3N::Zero(3, natoms));
+
+    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
+                            ? m_funcs.polarized
+                            : m_funcs.unpolarized;
+
+    occ::timing::start(occ::timing::category::dft_gradient);
+
+    for (const auto &atom_grid : m_atom_grids) {
+      const auto &atom_pts = atom_grid.points;
+      const auto &atom_weights = atom_grid.weights;
+      const size_t npt_total = atom_pts.cols();
+      const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
+
+      auto lambda = [&](int thread_id) {
+        for (size_t block = 0; block < num_blocks; block++) {
+          if (block % nthreads != thread_id)
+            continue;
+
+          Eigen::Index l = block * m_blocksize;
+          Eigen::Index u =
+              std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
+          Eigen::Index npt = u - l;
+
+          if (npt <= 0)
+            continue;
+
+          const auto &pts_block = atom_pts.middleCols(l, npt);
+          const auto &weights_block = atom_weights.segment(l, npt);
+
+          auto gto_vals =
+              occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+
+          kernels::process_grid_block_gradient<derivative_order,
+                                               spinorbital_kind>(
+              D, gto_vals, pts_block, weights_block, funcs,
+              gradients_t[thread_id], m_density_threshold, basis);
+        }
+      };
+
+      occ::parallel::parallel_do(lambda);
+    }
+
+    // Combine results from all threads
+    for (size_t i = 0; i < nthreads; i++) {
+      gradient += gradients_t[i];
+    }
+
+    occ::timing::stop(occ::timing::category::dft_gradient);
+    return gradient;
+  }
+
   std::string m_method_string{"svwn5"};
   occ::qm::HartreeFock m_hf;
   MolecularGrid m_grid;
@@ -361,6 +480,6 @@ private:
   mutable double m_nlc_energy{0.0};
   double m_density_threshold{1e-10};
   RangeSeparatedParameters m_rs_params;
-  size_t m_blocksize{256};
+  size_t m_blocksize{25600};
 };
 } // namespace occ::dft

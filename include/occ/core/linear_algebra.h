@@ -85,6 +85,11 @@ struct MatTriple {
   MatTriple operator+(const MatTriple &rhs) const;
   MatTriple operator-(const MatTriple &rhs) const;
 
+  inline static MatTriple Zero(Eigen::Index rows, Eigen::Index cols) {
+    return MatTriple{Mat::Zero(rows, cols), Mat::Zero(rows, cols),
+                     Mat::Zero(rows, cols)};
+  }
+
   void scale_by(double fac);
   void symmetrize();
 };

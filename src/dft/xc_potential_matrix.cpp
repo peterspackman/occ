@@ -21,19 +21,22 @@ void xc_potential_matrix<Restricted, 1>(const DensityFunctional::Result &res,
                                         MatConstRef rho,
                                         const occ::gto::GTOValues &gto_vals,
                                         MatRef Vxc, double &energy) {
-  const auto &phi = gto_vals.phi;
-  const auto &phi_x = gto_vals.phi_x.array();
-  const auto &phi_y = gto_vals.phi_y.array();
-  const auto &phi_z = gto_vals.phi_z.array();
+  const auto &p = gto_vals.phi;
+  const auto &px = gto_vals.phi_x.array();
+  const auto &py = gto_vals.phi_y.array();
+  const auto &pz = gto_vals.phi_z.array();
+  const auto &vrho = res.vrho.col(0).array();
+  const auto &dx = rho.col(1).array();
+  const auto &dy = rho.col(2).array();
+  const auto &dz = rho.col(3).array();
 
   energy += rho.col(0).dot(res.exc);
   const auto &vsigma = res.vsigma.col(0).array();
-  Mat ktmp = phi.transpose() *
-             (0.5 * (phi.array().colwise() * res.vrho.col(0).array()) +
-              2 * (phi_x.colwise() * (rho.col(1).array() * vsigma)) +
-              2 * (phi_y.colwise() * (rho.col(2).array() * vsigma)) +
-              2 * (phi_z.colwise() * (rho.col(3).array() * vsigma)))
-                 .matrix();
+  Mat ktmp =
+      p.transpose() *
+      (0.5 * (p.array().colwise() * vrho) + 2 * (px.colwise() * (dx * vsigma)) +
+       2 * (py.colwise() * (dy * vsigma)) + 2 * (pz.colwise() * (dz * vsigma)))
+          .matrix();
   Vxc.noalias() += ktmp + ktmp.transpose();
 }
 

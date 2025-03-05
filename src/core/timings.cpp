@@ -49,6 +49,10 @@ const char *category_name(category cat) {
     return "DFT XC total";
   case dft_nlc:
     return "DFT NLC";
+  case dft_gradient:
+    return "DFT Gradient";
+  case dft_fock_gradient:
+    return "DFT Fock Gradient";
   case xc_func_init:
     return "DFT XC func init";
   case xc_func_end:
@@ -99,6 +103,8 @@ const char *category_name(category cat) {
     return "Marching cubes primal vertices";
   case mc_surface:
     return "Marching cubes extract";
+  case gradient:
+    return "Gradient evaluation";
   default:
     return "other";
   }
@@ -118,6 +124,8 @@ void print_timings() {
       rho,
       dft_xc,
       dft_nlc,
+      dft_gradient,
+      dft_fock_gradient,
       gto,
       ecp,
       assoc_legendre,
@@ -134,6 +142,7 @@ void print_timings() {
       mc_octree,
       mc_primal,
       mc_surface,
+      gradient,
       global,
   };
   log::info("Wall clock time by category (s)");

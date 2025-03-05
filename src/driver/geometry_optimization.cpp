@@ -118,7 +118,14 @@ std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
       break;
     }
     case MethodKind::DFT: {
-      throw std::runtime_error("Not implemented: DFT gradients");
+      if (guess_sk == U || conf_sk == U)
+        return run_method_for_optimization<DFT, U>(m, basis, config);
+      else if (guess_sk == G || conf_sk == G)
+        throw std::runtime_error(
+            "Not implemented: DFT general spinorbital gradients");
+      else
+        return run_method_for_optimization<DFT, R>(m, basis, config);
+
       break;
     }
     }

@@ -12,6 +12,7 @@
 #include <occ/dft/seminumerical_exchange.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
+#include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
@@ -619,4 +620,87 @@ TEST_CASE("Hirshfeld multipoles for methane", "[hirshfeld]") {
 
   fmt::print("Methane Hirshfeld multipoles (carbon atom):\n{}\n",
              multipoles[0].to_string());
+}
+
+TEST_CASE("LDA gradient HF", "[dft_gradient]") {
+  // Set up a water molecule and basis
+  occ::Mat3N pos(3, 2);
+  pos.setZero();
+  pos(2, 0) = 1.0;
+  occ::IVec atomic_numbers(2);
+  atomic_numbers << 1, 9;
+  occ::core::Molecule mol(atomic_numbers, pos);
+
+  // Create basis and DFT object
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "sto-3g");
+  basis.set_pure(true);
+  occ::dft::DFT dft("lda_x", basis);
+
+  // Run SCF calculation
+  occ::qm::SCF<occ::dft::DFT> scf(dft);
+  double energy = scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  // Compute fock gradient
+  auto fock_grad = dft.compute_fock_gradient(mo);
+
+  // Basic checks
+  REQUIRE(fock_grad.x.rows() == basis.nbf());
+  REQUIRE(fock_grad.y.cols() == basis.nbf());
+  REQUIRE(fock_grad.z.cols() == basis.nbf());
+
+  // Compute full gradient
+  occ::qm::GradientEvaluator<occ::dft::DFT> evaluator(dft);
+  auto gradient = evaluator(mo);
+  occ::Mat3N expected(3, 2);
+  expected << 0.0, 0.0, 0.0, 0.0, -0.0093513386, 0.0093534193;
+  fmt::print("Expected:\n{}\n", format_matrix(expected));
+  fmt::print("Found:\n{}\n", format_matrix(gradient));
+  fmt::print("Diff:\n{}\n", format_matrix(gradient - expected));
+
+  REQUIRE(occ::util::all_close(expected, gradient, 1e-3, 1e-3));
+}
+
+TEST_CASE("DFT gradient for water", "[dft_gradient]") {
+  // Set up a water molecule and basis
+  occ::Vec3 O{0.0, 0.0, 0.0};
+  occ::Vec3 H1{0.0, -0.757, 0.587};
+  occ::Vec3 H2{0.0, 0.757, 0.587};
+  occ::Mat3N pos(3, 3);
+  pos << O(0), H1(0), H2(0), O(1), H1(1), H2(1), O(2), H1(2), H2(2);
+  occ::IVec atomic_numbers(3);
+  atomic_numbers << 8, 1, 1;
+  occ::core::Molecule mol(atomic_numbers, pos);
+
+  // Create basis and DFT object
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "6-31G");
+  basis.set_pure(true);
+  occ::dft::DFT dft("b3lyp", basis);
+
+  // Run SCF calculation
+  occ::qm::SCF<occ::dft::DFT> scf(dft);
+  double energy = scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  // Compute fock gradient
+  auto fock_grad = dft.compute_fock_gradient(mo);
+
+  // Basic checks
+  REQUIRE(fock_grad.x.rows() == basis.nbf());
+  REQUIRE(fock_grad.y.cols() == basis.nbf());
+  REQUIRE(fock_grad.z.cols() == basis.nbf());
+
+  // Compute full gradient
+  occ::qm::GradientEvaluator<occ::dft::DFT> evaluator(dft);
+  auto gradient = evaluator(mo);
+  occ::Mat3N expected(3, 3);
+  expected << 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,
+      0.0211113106, -0.0211113106, 0.0121560609, -0.0060818084, -0.0060818084;
+
+  fmt::print("Expected:\n{}\n", format_matrix(expected));
+  fmt::print("Found:\n{}\n", format_matrix(gradient));
+
+  fmt::print("Diff:\n{}\n", format_matrix(gradient - expected));
+
+  REQUIRE(occ::util::all_close(expected, gradient, 1e-3, 1e-3));
 }
