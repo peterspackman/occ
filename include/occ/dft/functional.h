@@ -634,7 +634,6 @@ public:
       return "unknown family";
     }
   }
-  static int functional_id(const std::string &);
 
   bool needs_nlc_correction() const;
 
@@ -645,5 +644,8 @@ private:
   bool m_polarized{false};
   std::string m_func_name{"unknown"};
 };
+
+std::string dfid_to_string(DensityFunctional::Identifier id);
+DensityFunctional::Identifier string_to_dfid(const std::string &name);
 
 } // namespace occ::dft

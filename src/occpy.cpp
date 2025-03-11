@@ -8,6 +8,7 @@
 #include <nanobind/stl/function.h>
 #include <nanobind/stl/optional.h>
 #include <nanobind/stl/string.h>
+#include <occ/core/data_directory.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/main/occ_cg.h>
@@ -45,7 +46,7 @@ NB_MODULE(_occpy, m) {
   m.def("set_log_file", occ::log::set_log_file);
   m.def("set_num_threads", [](int n) { occ::parallel::set_num_threads(n); });
   m.def("set_data_directory",
-        [](const std::string &s) { occ::qm::override_basis_set_directory(s); });
+        [](const std::string &s) { occ::set_data_directory(s); });
 
   // Add the main calculation function
   m.def("calculate_crystal_growth_energies",

@@ -527,7 +527,7 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
     }
     log::info("{:>4d} {:>20.12f} {:>12.5e} {:>12.5e}  {:>8.2e}", iter,
               ctx.energy["total"], ediff_rel, diis_error, time_elapsed.count());
-    std::cout << std::flush;
+    log::flush();
     total_time += time_elapsed.count();
 
   } while (!convergence_settings.energy_and_commutator_converged(ediff_rel,

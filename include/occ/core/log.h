@@ -25,4 +25,14 @@ void set_log_level(int verbosity);
 
 void set_log_file(const std::string &filename);
 
+inline void flush() { spdlog::default_logger()->flush(); }
+
+inline void flush_on(spdlog::level::level_enum level) {
+  spdlog::flush_on(level);
+}
+
+inline void flush_every(std::chrono::seconds interval) {
+  spdlog::flush_every(interval);
+}
+
 } // namespace occ::log

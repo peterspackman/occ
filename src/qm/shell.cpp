@@ -1,6 +1,7 @@
 #include <cmath>
 #include <filesystem>
 #include <occ/core/constants.h>
+#include <occ/core/data_directory.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/io/json_basis.h>
@@ -10,14 +11,6 @@
 namespace fs = std::filesystem;
 
 namespace occ::qm {
-
-namespace impl {
-static std::string basis_set_directory_override{""};
-}
-
-void override_basis_set_directory(const std::string &s) {
-  impl::basis_set_directory_override = s;
-}
 
 double gint(int n, double alpha) {
   double n1_2 = 0.5 * (n + 1);
@@ -486,19 +479,11 @@ std::string canonicalize_name(const std::string &name) {
   return result;
 }
 
-std::string data_path() {
+inline std::string data_path() {
   std::string path{"."};
-  const char *data_path_env = impl::basis_set_directory_override.empty()
-                                  ? getenv("OCC_DATA_PATH")
-                                  : impl::basis_set_directory_override.c_str();
+  const char *data_path_env = get_data_directory();
   if (data_path_env) {
     path = data_path_env;
-  } else {
-#if defined(DATADIR)
-    path = std::string{DATADIR};
-#elif defined(SRCDATADIR)
-    path = std::string{SRCDATADIR};
-#endif
   }
   // validate basis_path = path + "/basis"
   std::string basis_path = path + std::string("/basis");

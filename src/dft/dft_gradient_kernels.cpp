@@ -4,35 +4,36 @@
 
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
+using occ::gto::GTOValues;
+using occ::qm::AOBasis;
+namespace block = occ::qm::block;
 
 namespace occ::dft::kernels {
 
 template <int derivative_order>
 void accumulate_gradient_contribution_R(const DensityFunctional::Result &res,
                                         MatConstRef rho,
-                                        const occ::gto::GTOValues &gto_vals,
-                                        MatRef Vx, MatRef Vy, MatRef Vz,
-                                        double fac = 1.0);
+                                        const GTOValues &gto_vals, MatRef Vx,
+                                        MatRef Vy, MatRef Vz);
+
 template <int derivative_order>
 void accumulate_gradient_contribution_U(const DensityFunctional::Result &res,
                                         MatConstRef rho,
-                                        const occ::gto::GTOValues &gto_vals,
-                                        MatRef Vxa, MatRef Vya, MatRef Vza,
-                                        MatRef Vxb, MatRef Vyb, MatRef Vzb);
+                                        const GTOValues &gto_vals, MatRef Vxa,
+                                        MatRef Vya, MatRef Vza, MatRef Vxb,
+                                        MatRef Vyb, MatRef Vzb);
 
 template <>
 inline void accumulate_gradient_contribution_R<0>(
     const DensityFunctional::Result &res, MatConstRef rho,
-    const occ::gto::GTOValues &gto_vals, MatRef Vx, MatRef Vy, MatRef Vz,
-    double fac) {
+    const GTOValues &gto_vals, MatRef Vx, MatRef Vy, MatRef Vz) {
 
-  const size_t npt = rho.rows();
   const auto &phi = gto_vals.phi;
   const auto &dx = gto_vals.phi_x;
   const auto &dy = gto_vals.phi_y;
   const auto &dz = gto_vals.phi_z;
 
-  const Vec vrho = res.vrho.col(0) * fac;
+  const Vec vrho = res.vrho.col(0);
 
   Vx.noalias() +=
       dx.transpose() * (phi.array().colwise() * vrho.array()).matrix();
@@ -45,8 +46,7 @@ inline void accumulate_gradient_contribution_R<0>(
 template <>
 inline void accumulate_gradient_contribution_R<1>(
     const DensityFunctional::Result &res, MatConstRef rho,
-    const occ::gto::GTOValues &gto_vals, MatRef Vx, MatRef Vy, MatRef Vz,
-    double fac) {
+    const GTOValues &gto_vals, MatRef Vx, MatRef Vy, MatRef Vz) {
   const auto &p = gto_vals.phi;
   const auto &px = gto_vals.phi_x;
   const auto &py = gto_vals.phi_y;
@@ -61,8 +61,8 @@ inline void accumulate_gradient_contribution_R<1>(
   const Array dy = rho.col(2).array();
   const Array dz = rho.col(3).array();
 
-  const Array vrho = res.vrho.col(0).array() * (fac * 0.5); // wv[0]
-  const Array vsigma = res.vsigma.col(0).array() * fac;
+  const Array vrho = res.vrho.col(0).array() * 0.5;
+  const Array vsigma = res.vsigma.col(0).array();
 
   Mat aow = (p.array().colwise() * vrho);
   aow.array() += px.array().colwise() * (2.0 * vsigma * dx);
@@ -95,8 +95,7 @@ inline void accumulate_gradient_contribution_R<1>(
 template <>
 inline void accumulate_gradient_contribution_R<2>(
     const DensityFunctional::Result &res, MatConstRef rho,
-    const occ::gto::GTOValues &gto_vals, MatRef Vx, MatRef Vy, MatRef Vz,
-    double fac) {
+    const GTOValues &gto_vals, MatRef Vx, MatRef Vy, MatRef Vz) {
 
   throw std::runtime_error("Not implemented: MGGA gradients");
 }
@@ -104,7 +103,7 @@ inline void accumulate_gradient_contribution_R<2>(
 template <>
 inline void accumulate_gradient_contribution_U<0>(
     const DensityFunctional::Result &res, MatConstRef rho,
-    const occ::gto::GTOValues &gto_vals, MatRef Vx_a, MatRef Vy_a, MatRef Vz_a,
+    const GTOValues &gto_vals, MatRef Vx_a, MatRef Vy_a, MatRef Vz_a,
     MatRef Vx_b, MatRef Vy_b, MatRef Vz_b) {
 
   throw std::runtime_error("Not implemented: unrestricted LDA gradients");
@@ -113,7 +112,7 @@ inline void accumulate_gradient_contribution_U<0>(
 template <>
 inline void accumulate_gradient_contribution_U<1>(
     const DensityFunctional::Result &res, MatConstRef rho,
-    const occ::gto::GTOValues &gto_vals, MatRef Vx_a, MatRef Vy_a, MatRef Vz_a,
+    const GTOValues &gto_vals, MatRef Vx_a, MatRef Vy_a, MatRef Vz_a,
     MatRef Vx_b, MatRef Vy_b, MatRef Vz_b) {
 
   throw std::runtime_error("Not implemented: unrestricted GGA gradients");
@@ -122,20 +121,19 @@ inline void accumulate_gradient_contribution_U<1>(
 template <>
 inline void accumulate_gradient_contribution_U<2>(
     const DensityFunctional::Result &res, MatConstRef rho,
-    const occ::gto::GTOValues &gto_vals, MatRef Vx_a, MatRef Vy_a, MatRef Vz_a,
+    const GTOValues &gto_vals, MatRef Vx_a, MatRef Vy_a, MatRef Vz_a,
     MatRef Vx_b, MatRef Vy_b, MatRef Vz_b) {
 
   throw std::runtime_error("Not implemented: MGGA gradients");
 }
 
 template <int derivative_order, SpinorbitalKind spinorbital_kind>
-void process_grid_block_gradient(const Mat &D,
-                                 const occ::gto::GTOValues &gto_vals,
+void process_grid_block_gradient(const Mat &D, const GTOValues &gto_vals,
                                  Eigen::Ref<const Mat3N> points_block,
                                  const Vec &weights_block,
                                  const std::vector<DensityFunctional> &funcs,
                                  Mat3N &gradient, double density_threshold,
-                                 const qm::AOBasis &basis) {
+                                 const AOBasis &basis) {
   const size_t npt = points_block.cols();
   const size_t nbf = gto_vals.phi.cols();
   const size_t natoms = gradient.cols();
@@ -206,8 +204,8 @@ void process_grid_block_gradient(const Mat &D,
   // For unrestricted case
   else if constexpr (spinorbital_kind == SpinorbitalKind::Unrestricted) {
     // Get alpha and beta blocks of the density matrix
-    const auto Da = qm::block::a(D);
-    const auto Db = qm::block::b(D);
+    const auto Da = block::a(D);
+    const auto Db = block::b(D);
 
     // Initialize gradient matrices for alpha and beta
     Mat Vx_a = Mat::Zero(nbf, nbf);
@@ -241,55 +239,37 @@ void process_grid_block_gradient(const Mat &D,
   }
 }
 
-template 
-void process_grid_block_gradient<0, R>(const Mat &D,
-                                 const occ::gto::GTOValues &gto_vals,
-                                 Eigen::Ref<const Mat3N> points_block,
-                                 const Vec &weights_block,
-                                 const std::vector<DensityFunctional> &funcs,
-                                 Mat3N &gradient, double density_threshold,
-                                 const qm::AOBasis &basis);
+template void process_grid_block_gradient<0, R>(
+    const Mat &D, const GTOValues &gto_vals,
+    Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
+    const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
+    double density_threshold, const AOBasis &basis);
 
-template 
-void process_grid_block_gradient<1, R>(const Mat &D,
-                                 const occ::gto::GTOValues &gto_vals,
-                                 Eigen::Ref<const Mat3N> points_block,
-                                 const Vec &weights_block,
-                                 const std::vector<DensityFunctional> &funcs,
-                                 Mat3N &gradient, double density_threshold,
-                                 const qm::AOBasis &basis);
+template void process_grid_block_gradient<1, R>(
+    const Mat &D, const GTOValues &gto_vals,
+    Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
+    const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
+    double density_threshold, const AOBasis &basis);
 
-template 
-void process_grid_block_gradient<2, R>(const Mat &D,
-                                 const occ::gto::GTOValues &gto_vals,
-                                 Eigen::Ref<const Mat3N> points_block,
-                                 const Vec &weights_block,
-                                 const std::vector<DensityFunctional> &funcs,
-                                 Mat3N &gradient, double density_threshold,
-                                 const qm::AOBasis &basis);
-template 
-void process_grid_block_gradient<0, U>(const Mat &D,
-                                 const occ::gto::GTOValues &gto_vals,
-                                 Eigen::Ref<const Mat3N> points_block,
-                                 const Vec &weights_block,
-                                 const std::vector<DensityFunctional> &funcs,
-                                 Mat3N &gradient, double density_threshold,
-                                 const qm::AOBasis &basis);
-template 
-void process_grid_block_gradient<1, U>(const Mat &D,
-                                 const occ::gto::GTOValues &gto_vals,
-                                 Eigen::Ref<const Mat3N> points_block,
-                                 const Vec &weights_block,
-                                 const std::vector<DensityFunctional> &funcs,
-                                 Mat3N &gradient, double density_threshold,
-                                 const qm::AOBasis &basis);
-template 
-void process_grid_block_gradient<2, U>(const Mat &D,
-                                 const occ::gto::GTOValues &gto_vals,
-                                 Eigen::Ref<const Mat3N> points_block,
-                                 const Vec &weights_block,
-                                 const std::vector<DensityFunctional> &funcs,
-                                 Mat3N &gradient, double density_threshold,
-                                 const qm::AOBasis &basis);
+template void process_grid_block_gradient<2, R>(
+    const Mat &D, const GTOValues &gto_vals,
+    Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
+    const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
+    double density_threshold, const AOBasis &basis);
+template void process_grid_block_gradient<0, U>(
+    const Mat &D, const GTOValues &gto_vals,
+    Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
+    const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
+    double density_threshold, const AOBasis &basis);
+template void process_grid_block_gradient<1, U>(
+    const Mat &D, const GTOValues &gto_vals,
+    Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
+    const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
+    double density_threshold, const AOBasis &basis);
+template void process_grid_block_gradient<2, U>(
+    const Mat &D, const GTOValues &gto_vals,
+    Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
+    const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
+    double density_threshold, const AOBasis &basis);
 
 } // namespace occ::dft::kernels

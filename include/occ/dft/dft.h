@@ -81,9 +81,7 @@ public:
 
   int density_derivative() const;
   inline double exact_exchange_factor() const {
-    return std::accumulate(
-        m_funcs.polarized.begin(), m_funcs.polarized.end(), 0.0,
-        [&](double a, const auto &v) { return a + v.exact_exchange_factor(); });
+    return m_method.exchange_factor();
   }
 
   RangeSeparatedParameters range_separated_parameters() const;
@@ -160,9 +158,7 @@ public:
     std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
     std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
 
-    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
-                            ? m_funcs.polarized
-                            : m_funcs.unpolarized;
+    const auto &funcs = m_method.functionals;
 
     occ::timing::start(occ::timing::category::dft_xc);
 
@@ -295,7 +291,7 @@ public:
   }
 
   inline bool have_nonlocal_correlation() const {
-    for (const auto &func : m_funcs.unpolarized) {
+    for (const auto &func : m_method.functionals) {
       if (func.needs_nlc_correction()) {
         return true;
       }
@@ -395,7 +391,7 @@ public:
 
   inline const std::string &method_string() const { return m_method_string; }
 
-  inline const auto &functionals() const { return m_funcs; }
+  inline const auto &functionals() const { return m_method.functionals; }
 
   inline std::string name() const { return method_string(); }
 
@@ -418,9 +414,7 @@ private:
     // Thread-local storage for gradients
     std::vector<Mat3N> gradients_t(nthreads, Mat3N::Zero(3, natoms));
 
-    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
-                            ? m_funcs.polarized
-                            : m_funcs.unpolarized;
+    const auto &funcs = m_method.functionals;
 
     occ::timing::start(occ::timing::category::dft_gradient);
 
@@ -471,7 +465,7 @@ private:
   std::string m_method_string{"svwn5"};
   occ::qm::HartreeFock m_hf;
   MolecularGrid m_grid;
-  Functionals m_funcs;
+  DFTMethod m_method;
   std::vector<AtomGrid> m_atom_grids;
   NonLocalCorrelationFunctional m_nlc;
   mutable double m_two_electron_energy{0.0};

@@ -17,7 +17,7 @@ using occ::qm::SpinorbitalKind;
 
 int DFT::density_derivative() const {
   int deriv = 0;
-  for (const auto &func : m_funcs.unpolarized) {
+  for (const auto &func : m_method.functionals) {
     deriv = std::max(deriv, func.derivative_order());
   }
   return deriv;
@@ -39,16 +39,16 @@ void DFT::set_method(const std::string &method_string) {
     occ::log::info("DFT method string: {}", method_string);
   }
   m_method_string = method_string;
-  m_funcs = parse_dft_method(method_string);
+  m_method = get_dft_method(method_string);
 
-  for (const auto &func : m_funcs.unpolarized) {
+  for (const auto &func : m_method.functionals) {
     occ::log::debug("Functional: {} {} {}, exact exchange = {}", func.name(),
                     func.kind_string(), func.family_string(),
                     func.exact_exchange_factor(), func.polarized());
   }
 
   m_rs_params = {};
-  for (const auto &func : m_funcs.unpolarized) {
+  for (const auto &func : m_method.functionals) {
     auto rs = func.range_separated_parameters();
     if (rs.omega != 0.0) {
       m_rs_params = rs;
@@ -106,7 +106,7 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
     }
   }
 
-  for (const auto &func : m_funcs.unpolarized) {
+  for (const auto &func : m_method.functionals) {
     if (func.needs_nlc_correction()) {
       m_nlc.set_integration_grid(m_hf.aobasis());
       break;

@@ -8,15 +8,12 @@ namespace occ::dft {
 DensityFunctional::DensityFunctional(DensityFunctional::Identifier id,
                                      bool polarized)
     : m_func_id(id), m_polarized(polarized) {
-  char *cstr = xc_functional_get_name(id);
-  m_func_name = std::string(cstr);
-  free(cstr);
+  m_func_name = dfid_to_string(id);
 }
 
 DensityFunctional::DensityFunctional(const std::string &name, bool polarized)
     : m_polarized(polarized), m_func_name(name) {
-  int func_id = functional_id(name);
-  m_func_id = static_cast<Identifier>(func_id);
+  m_func_id = string_to_dfid(name);
 }
 
 DensityFunctional::Result
@@ -68,13 +65,6 @@ DensityFunctional::evaluate(const Params &params) const {
   return result;
 }
 
-int DensityFunctional::functional_id(const std::string &name) {
-  int func = xc_functional_get_number(name.c_str());
-  if (func <= 0)
-    throw std::runtime_error(fmt::format("Unknown functional name {}", name));
-  return func;
-}
-
 bool DensityFunctional::needs_nlc_correction() const {
   switch (m_func_id) {
   default:
@@ -82,6 +72,23 @@ bool DensityFunctional::needs_nlc_correction() const {
   case hyb_mgga_xc_wb97m_v:
     return true;
   }
+}
+
+std::string dfid_to_string(DensityFunctional::Identifier id) {
+  char *cstr = xc_functional_get_name(id);
+  if (!cstr) {
+    return "unknown";
+  }
+  std::string result(cstr);
+  free(cstr);
+  return result;
+}
+
+DensityFunctional::Identifier string_to_dfid(const std::string &name) {
+  int func_id = xc_functional_get_number(name.c_str());
+  if (func_id <= 0)
+    throw std::runtime_error(fmt::format("Unknown functional name {}", name));
+  return static_cast<DensityFunctional::Identifier>(func_id);
 }
 
 } // namespace occ::dft

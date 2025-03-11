@@ -1,0 +1,352 @@
+{
+  "methods": {
+    "b3lyp": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b3lyp"
+        }
+      ]
+    },
+    "b3lyp-d3": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b3lyp"
+        }
+      ],
+      "dispersion": "d3zero"
+    },
+    "b3lyp-d3bj": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b3lyp"
+        }
+      ],
+      "dispersion": "d3bj"
+    },
+    "b3lyp5": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b3lyp5"
+        }
+      ]
+    },
+    "b3p86": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b3p86"
+        }
+      ]
+    },
+    "b3pw91": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b3pw91"
+        }
+      ]
+    },
+    "b86bpbe": {
+      "components": [
+        {
+          "id": "gga_x_b86_mgc"
+        },
+        {
+          "id": "gga_c_pbe"
+        }
+      ]
+    },
+    "b86bpbeh": {
+      "components": [
+        {
+          "factor": 0.75,
+          "hfx": 0.25,
+          "id": "gga_x_b86_mgc"
+        },
+        {
+          "id": "gga_c_pbe"
+        }
+      ]
+    },
+    "b97": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b97"
+        }
+      ]
+    },
+    "b971": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b97_1"
+        }
+      ]
+    },
+    "b972": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b97_2"
+        }
+      ]
+    },
+    "b973": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b97_3"
+        }
+      ]
+    },
+    "b97k": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_b97_k"
+        }
+      ]
+    },
+    "bhandh": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_bhandh"
+        }
+      ]
+    },
+    "bhandhlyp": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_bhandhlyp"
+        }
+      ]
+    },
+    "blyp": {
+      "components": [
+        {
+          "id": "gga_x_b88"
+        },
+        {
+          "id": "gga_c_lyp"
+        }
+      ]
+    },
+    "bp86": {
+      "components": [
+        {
+          "id": "gga_x_b88"
+        },
+        {
+          "id": "gga_c_p86"
+        }
+      ]
+    },
+    "bpbe": {
+      "components": [
+        {
+          "id": "gga_x_b88"
+        },
+        {
+          "id": "gga_c_pbe"
+        }
+      ]
+    },
+    "lda": {
+      "components": [
+        {
+          "id": "lda_x"
+        },
+        {
+          "id": "lda_c_vwn_3"
+        }
+      ]
+    },
+    "lsda": {
+      "components": [
+        {
+          "id": "lda_x"
+        },
+        {
+          "id": "lda_c_vwn_3"
+        }
+      ]
+    },
+    "m062x": {
+      "components": [
+        {
+          "id": "hyb_mgga_x_m06_2x"
+        },
+        {
+          "id": "mgga_c_m06_2x"
+        }
+      ]
+    },
+    "mpw3lyp": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_mpw3lyp"
+        }
+      ]
+    },
+    "mpw3pw": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_mpw3pw"
+        }
+      ]
+    },
+    "o3lyp": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_o3lyp"
+        }
+      ]
+    },
+    "pbe": {
+      "components": [
+        {
+          "id": "gga_x_pbe"
+        },
+        {
+          "id": "gga_c_pbe"
+        }
+      ]
+    },
+    "pbe-d3": {
+      "components": [
+        {
+          "id": "gga_x_pbe"
+        },
+        {
+          "id": "gga_c_pbe"
+        }
+      ],
+      "dispersion": "d3zero"
+    },
+    "pbe0": {
+      "components": [
+        {
+          "factor": 0.75,
+          "hfx": 0.25,
+          "id": "gga_x_pbe"
+        },
+        {
+          "id": "gga_c_pbe"
+        }
+      ]
+    },
+    "pbe1pbe": {
+      "components": [
+        {
+          "factor": 0.75,
+          "hfx": 0.25,
+          "id": "gga_x_pbe"
+        },
+        {
+          "id": "gga_c_pbe"
+        }
+      ]
+    },
+    "pbeh": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_pbeh"
+        }
+      ]
+    },
+    "pbepbe": {
+      "components": [
+        {
+          "id": "gga_x_pbe"
+        },
+        {
+          "id": "gga_c_pbe"
+        }
+      ]
+    },
+    "r2scan": {
+      "components": [
+        {
+          "id": "mgga_x_r2scan"
+        },
+        {
+          "id": "mgga_c_r2scan"
+        }
+      ]
+    },
+    "r2scan-3c": {
+      "basis_set": "def2-mSVP",
+      "components": [
+        {
+          "id": "mgga_x_r2scan"
+        },
+        {
+          "id": "mgga_c_r2scan"
+        }
+      ],
+      "dispersion": "d3bj",
+      "gcp": "gcp3c"
+    },
+    "svwn": {
+      "components": [
+        {
+          "id": "lda_x"
+        },
+        {
+          "id": "lda_c_vwn_3"
+        }
+      ]
+    },
+    "svwn5": {
+      "components": [
+        {
+          "id": "lda_x"
+        },
+        {
+          "id": "lda_c_vwn"
+        }
+      ]
+    },
+    "tpss": {
+      "components": [
+        {
+          "id": "mgga_x_tpss"
+        },
+        {
+          "id": "mgga_c_tpss"
+        }
+      ]
+    },
+    "vwn5": {
+      "components": [
+        {
+          "id": "lda_c_vwn"
+        }
+      ]
+    },
+    "wb97m": {
+      "components": [
+        {
+          "id": "hyb_mgga_xc_wb97m_v"
+        }
+      ],
+      "dispersion": "vv10"
+    },
+    "wb97m-v": {
+      "components": [
+        {
+          "id": "hyb_mgga_xc_wb97m_v"
+        }
+      ],
+      "dispersion": "vv10"
+    },
+    "wb97x": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_wb97x"
+        }
+      ]
+    },
+    "x3lyp": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_x3lyp"
+        }
+      ]
+    }
+  }
+}

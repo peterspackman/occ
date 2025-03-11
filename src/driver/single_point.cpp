@@ -1,4 +1,5 @@
 #include <occ/core/constants.h>
+#include <occ/core/data_directory.h>
 #include <occ/dft/dft.h>
 #include <occ/driver/method_parser.h>
 #include <occ/driver/single_point.h>
@@ -190,7 +191,7 @@ single_point_driver(const OccInput &config,
   if (!config.basis.basis_set_directory.empty()) {
     occ::log::info("Overriding environment basis set directory with: '{}'",
                    config.basis.basis_set_directory);
-    occ::qm::override_basis_set_directory(config.basis.basis_set_directory);
+    occ::set_data_directory(config.basis.basis_set_directory);
   }
   auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
   auto method_kind = method_kind_from_string(config.method.name);

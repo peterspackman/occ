@@ -172,7 +172,7 @@ inline void compute_monomer_energies(const std::string &basename,
       std::ifstream ifs(monomer_energies_path.string());
       wfn.energy = nlohmann::json::parse(ifs).get<occ::qm::Energy>();
     } else {
-      std::cout << std::flush;
+      occ::log::flush();
       qm::HartreeFock hf(wfn.basis);
       occ::interaction::CEMonomerCalculationParameters params;
       params.Schwarz = hf.compute_schwarz_ints();

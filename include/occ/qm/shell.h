@@ -1,7 +1,6 @@
 #pragma once
 #include <array>
 #include <fmt/core.h>
-#include <iostream>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/point_charge.h>
@@ -11,8 +10,6 @@
 namespace occ::qm {
 
 using occ::core::Atom;
-
-void override_basis_set_directory(const std::string &s);
 
 double gto_norm(int l, double alpha);
 

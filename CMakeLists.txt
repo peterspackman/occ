@@ -133,6 +133,7 @@ install(TARGETS occ
 
 install(DIRECTORY share/basis DESTINATION "share/occ")
 install(DIRECTORY share/solvent DESTINATION "share/occ")
+install(DIRECTORY share/methods DESTINATION "share/occ")
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FixBundle.cmake.in"

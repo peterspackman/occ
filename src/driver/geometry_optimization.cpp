@@ -1,5 +1,6 @@
 #include <LBFGS.h>
 #include <fmt/os.h>
+#include <occ/core/data_directory.h>
 #include <occ/dft/dft.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/method_parser.h>
@@ -98,7 +99,7 @@ std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
   if (!config.basis.basis_set_directory.empty()) {
     occ::log::info("Overriding environment basis set directory with: '{}'",
                    config.basis.basis_set_directory);
-    occ::qm::override_basis_set_directory(config.basis.basis_set_directory);
+    occ::set_data_directory(config.basis.basis_set_directory);
   }
   auto basis = load_basis_set_opt(m, config.basis.name, config.basis.spherical);
   auto method_kind = method_kind_from_string(config.method.name);

@@ -1,6 +1,7 @@
 add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/combinations.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/conditioning_orthogonalizer.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/data_directory.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/diis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dimer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/eem.cpp"
