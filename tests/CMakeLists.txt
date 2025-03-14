@@ -20,6 +20,10 @@ add_executable(dft_tests "${CMAKE_CURRENT_SOURCE_DIR}/dft_tests.cpp")
 target_link_libraries(dft_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(dft_tests)
 
+add_executable(disp_tests "${CMAKE_CURRENT_SOURCE_DIR}/disp_tests.cpp")
+target_link_libraries(disp_tests PRIVATE occ_disp Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(disp_tests)
+
 add_executable(geometry_tests "${CMAKE_CURRENT_SOURCE_DIR}/geometry_tests.cpp")
 target_link_libraries(geometry_tests PRIVATE occ_geometry occ_io Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(geometry_tests)

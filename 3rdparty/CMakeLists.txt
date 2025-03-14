@@ -75,6 +75,13 @@ if("${gemmi_ADDED}")
     target_include_directories(gemmi::gemmi INTERFACE "${gemmi_SOURCE_DIR}/include")
 endif()
 
+CPMAddPackage(
+    NAME dftd4_cpp
+    GITHUB_REPOSITORY "peterspackman/cpp-d4"
+    GIT_TAG main
+    VERSION "2.2.0"
+    OPTIONS "DFTD4_USE_EIGEN ON" "BUILD_SHARED_LIBS OFF"
+)
 
 CPMAddPackage(
     NAME LBFGSpp

@@ -6,6 +6,7 @@ add_library(occ_disp
 target_link_libraries(occ_disp
     PUBLIC 
     occ_core
+    dftd4::dftd4
 )
 
 target_include_directories(occ_disp PUBLIC 

@@ -19,8 +19,10 @@ inline void validate_mesh_data(const Isosurface &isosurface) {
     throw std::invalid_argument("Isosurface has no face data");
   }
 
-  if (isosurface.normals.size() != isosurface.vertices.size()) {
-    throw std::invalid_argument("Normals size doesn't match vertices");
+  if(isosurface.normals.size() > 0) {
+    if (isosurface.normals.size() != isosurface.vertices.size()) {
+      throw std::invalid_argument("Normals size doesn't match vertices");
+    }
   }
 
   const size_t vertex_count = isosurface.vertices.cols();
