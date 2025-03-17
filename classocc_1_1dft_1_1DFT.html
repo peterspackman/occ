@@ -188,6 +188,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af02d6a465080aa7a2f8b8a1947c3d24a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f2d84b3185882b2fba3df62b3e042d4" id="r_a4f2d84b3185882b2fba3df62b3e042d4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a4f2d84b3185882b2fba3df62b3e042d4">compute_fock</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>())</td></tr>
 <tr class="separator:a4f2d84b3185882b2fba3df62b3e042d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed1653afa85637acea965baa17f30bf0" id="r_aed1653afa85637acea965baa17f30bf0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#aed1653afa85637acea965baa17f30bf0">compute_fock_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
+<tr class="separator:aed1653afa85637acea965baa17f30bf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfc8c9f6911b9af7a4e5abd63828a4ca" id="r_adfc8c9f6911b9af7a4e5abd63828a4ca"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#adfc8c9f6911b9af7a4e5abd63828a4ca">hf</a> () const</td></tr>
 <tr class="separator:adfc8c9f6911b9af7a4e5abd63828a4ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a066b34d55d0057156d162c0d8af3e3bc" id="r_a066b34d55d0057156d162c0d8af3e3bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a066b34d55d0057156d162c0d8af3e3bc">compute_fock_mixed_basis</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo_bs, const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">qm::AOBasis</a> &amp;bs, bool is_shell_diagonal)</td></tr>
@@ -196,6 +198,27 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2b71b932255175f9a91f37a16fe5b467"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56e2e46322f3b102d1fc3405fede55f6" id="r_a56e2e46322f3b102d1fc3405fede55f6"><td class="memItemLeft" align="right" valign="top">Mat3N&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a56e2e46322f3b102d1fc3405fede55f6">electronic_electric_field_contribution</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const Mat3N &amp;pts) const</td></tr>
 <tr class="separator:a56e2e46322f3b102d1fc3405fede55f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3459533e627203281b8e5938090569e2" id="r_a3459533e627203281b8e5938090569e2"><td class="memItemLeft" align="right" valign="top">Mat3N&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a3459533e627203281b8e5938090569e2">compute_xc_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
+<tr class="memdesc:a3459533e627203281b8e5938090569e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate the <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a> exchange-correlation contribution to the atomic gradient.  <br /></td></tr>
+<tr class="separator:a3459533e627203281b8e5938090569e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b5f647f9f260a4374f1a7b02f39ea5e" id="r_a0b5f647f9f260a4374f1a7b02f39ea5e"><td class="memItemLeft" align="right" valign="top">Mat3N&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a0b5f647f9f260a4374f1a7b02f39ea5e">additional_atomic_gradients</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo) const</td></tr>
+<tr class="separator:a0b5f647f9f260a4374f1a7b02f39ea5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abecd200b5522867f57eedabf28a717a5" id="r_abecd200b5522867f57eedabf28a717a5"><td class="memItemLeft" align="right" valign="top">Mat3N&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#abecd200b5522867f57eedabf28a717a5">nuclear_repulsion_gradient</a> () const</td></tr>
+<tr class="memdesc:abecd200b5522867f57eedabf28a717a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate the nuclear repulsion contribution to the atomic gradient.  <br /></td></tr>
+<tr class="separator:abecd200b5522867f57eedabf28a717a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedde39eddd7a7fdd1b4b705fee0afc68" id="r_aedde39eddd7a7fdd1b4b705fee0afc68"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#aedde39eddd7a7fdd1b4b705fee0afc68">compute_overlap_gradient</a> () const</td></tr>
+<tr class="memdesc:aedde39eddd7a7fdd1b4b705fee0afc68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate gradients for specific <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a> components.  <br /></td></tr>
+<tr class="separator:aedde39eddd7a7fdd1b4b705fee0afc68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad58ab276e3c8e968fad92ab0c9b015c8" id="r_ad58ab276e3c8e968fad92ab0c9b015c8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#ad58ab276e3c8e968fad92ab0c9b015c8">compute_kinetic_gradient</a> () const</td></tr>
+<tr class="separator:ad58ab276e3c8e968fad92ab0c9b015c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a933fc8a769d515d4f200d0e32f80b158" id="r_a933fc8a769d515d4f200d0e32f80b158"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a933fc8a769d515d4f200d0e32f80b158">compute_nuclear_attraction_gradient</a> () const</td></tr>
+<tr class="separator:a933fc8a769d515d4f200d0e32f80b158"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5230dafdecc61f4f0b1bb66f102a54ab" id="r_a5230dafdecc61f4f0b1bb66f102a54ab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a5230dafdecc61f4f0b1bb66f102a54ab">compute_rinv_gradient_for_atom</a> (size_t atom) const</td></tr>
+<tr class="separator:a5230dafdecc61f4f0b1bb66f102a54ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc939b3fa13c320b32f0ac559fa020a2" id="r_adc939b3fa13c320b32f0ac559fa020a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1JKTriple.html">qm::JKTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#adc939b3fa13c320b32f0ac559fa020a2">compute_JK_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
+<tr class="separator:adc939b3fa13c320b32f0ac559fa020a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a350d41a852f53357d36d345da14f4fd4" id="r_a350d41a852f53357d36d345da14f4fd4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a350d41a852f53357d36d345da14f4fd4">compute_J_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
+<tr class="separator:a350d41a852f53357d36d345da14f4fd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45b6bac4a630b7fc16b259dc96d1a67c" id="r_a45b6bac4a630b7fc16b259dc96d1a67c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a45b6bac4a630b7fc16b259dc96d1a67c">update_core_hamiltonian</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;H)</td></tr>
 <tr class="separator:a45b6bac4a630b7fc16b259dc96d1a67c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb30ad8fddfa487ad5973303f283e7b6" id="r_abb30ad8fddfa487ad5973303f283e7b6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#abb30ad8fddfa487ad5973303f283e7b6">set_method</a> (const std::string &amp;<a class="el" href="classocc_1_1dft_1_1DFT.html#a218d7ce69897fabc2cd576a9109473b2">method_string</a>)</td></tr>
@@ -289,6 +312,32 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a0b5f647f9f260a4374f1a7b02f39ea5e" name="a0b5f647f9f260a4374f1a7b02f39ea5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b5f647f9f260a4374f1a7b02f39ea5e">&#9670;&#160;</a></span>additional_atomic_gradients()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Mat3N occ::dft::DFT::additional_atomic_gradients </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a7aae7c740dca1cb4e06b0dacef65441f" name="a7aae7c740dca1cb4e06b0dacef65441f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7aae7c740dca1cb4e06b0dacef65441f">&#9670;&#160;</a></span>aobasis()</h2>
 
@@ -413,6 +462,34 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
+<a id="aed1653afa85637acea965baa17f30bf0" name="aed1653afa85637acea965baa17f30bf0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed1653afa85637acea965baa17f30bf0">&#9670;&#160;</a></span>compute_fock_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a> occ::dft::DFT::compute_fock_gradient </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>Schwarz</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a066b34d55d0057156d162c0d8af3e3bc" name="a066b34d55d0057156d162c0d8af3e3bc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a066b34d55d0057156d162c0d8af3e3bc">&#9670;&#160;</a></span>compute_fock_mixed_basis()</h2>
 
@@ -491,6 +568,42 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
+<a id="a350d41a852f53357d36d345da14f4fd4" name="a350d41a852f53357d36d345da14f4fd4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a350d41a852f53357d36d345da14f4fd4">&#9670;&#160;</a></span>compute_J_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a> occ::dft::DFT::compute_J_gradient </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>Schwarz</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a051c35876bfb866941fdbd266685a821" name="a051c35876bfb866941fdbd266685a821"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a051c35876bfb866941fdbd266685a821">&#9670;&#160;</a></span>compute_JK()</h2>
 
@@ -527,6 +640,34 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
+<a id="adc939b3fa13c320b32f0ac559fa020a2" name="adc939b3fa13c320b32f0ac559fa020a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc939b3fa13c320b32f0ac559fa020a2">&#9670;&#160;</a></span>compute_JK_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1qm_1_1JKTriple.html">qm::JKTriple</a> occ::dft::DFT::compute_JK_gradient </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>Schwarz</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ab29646b0cb0204b75807f0a066521b25" name="ab29646b0cb0204b75807f0a066521b25"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab29646b0cb0204b75807f0a066521b25">&#9670;&#160;</a></span>compute_K_dft()</h2>
 
@@ -554,6 +695,31 @@ template&lt;int derivative_order, SpinorbitalKind spinorbital_kind = Spinorbital
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad58ab276e3c8e968fad92ab0c9b015c8" name="ad58ab276e3c8e968fad92ab0c9b015c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad58ab276e3c8e968fad92ab0c9b015c8">&#9670;&#160;</a></span>compute_kinetic_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a> occ::dft::DFT::compute_kinetic_gradient </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -628,6 +794,31 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
+<a id="a933fc8a769d515d4f200d0e32f80b158" name="a933fc8a769d515d4f200d0e32f80b158"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a933fc8a769d515d4f200d0e32f80b158">&#9670;&#160;</a></span>compute_nuclear_attraction_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a> occ::dft::DFT::compute_nuclear_attraction_gradient </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a62cdb0fee5a170bfc25154e750b81204" name="a62cdb0fee5a170bfc25154e750b81204"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a62cdb0fee5a170bfc25154e750b81204">&#9670;&#160;</a></span>compute_nuclear_attraction_matrix()</h2>
 
@@ -678,6 +869,33 @@ template&lt;unsigned int order = 1&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aedde39eddd7a7fdd1b4b705fee0afc68" name="aedde39eddd7a7fdd1b4b705fee0afc68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aedde39eddd7a7fdd1b4b705fee0afc68">&#9670;&#160;</a></span>compute_overlap_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a> occ::dft::DFT::compute_overlap_gradient </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calculate gradients for specific <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a> components. </p>
 
 </div>
 </div>
@@ -758,6 +976,32 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
+<a id="a5230dafdecc61f4f0b1bb66f102a54ab" name="a5230dafdecc61f4f0b1bb66f102a54ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5230dafdecc61f4f0b1bb66f102a54ab">&#9670;&#160;</a></span>compute_rinv_gradient_for_atom()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a> occ::dft::DFT::compute_rinv_gradient_for_atom </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>atom</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a35a5f0b71f5bd8817ee37e1f1d452764" name="a35a5f0b71f5bd8817ee37e1f1d452764"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a35a5f0b71f5bd8817ee37e1f1d452764">&#9670;&#160;</a></span>compute_schwarz_ints()</h2>
 
@@ -816,6 +1060,43 @@ template&lt;unsigned int order = 1&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3459533e627203281b8e5938090569e2" name="a3459533e627203281b8e5938090569e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3459533e627203281b8e5938090569e2">&#9670;&#160;</a></span>compute_xc_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Mat3N occ::dft::DFT::compute_xc_gradient </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>Schwarz</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calculate the <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a> exchange-correlation contribution to the atomic gradient. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mo</td><td>Molecular orbitals </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Matrix of gradients with dimensions 3 x natoms </dd></dl>
 
 </div>
 </div>
@@ -1181,6 +1462,34 @@ template&lt;unsigned int order = 1&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="abecd200b5522867f57eedabf28a717a5" name="abecd200b5522867f57eedabf28a717a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abecd200b5522867f57eedabf28a717a5">&#9670;&#160;</a></span>nuclear_repulsion_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Mat3N occ::dft::DFT::nuclear_repulsion_gradient </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calculate the nuclear repulsion contribution to the atomic gradient. </p>
+<dl class="section return"><dt>Returns</dt><dd>Matrix of gradients with dimensions 3 x natoms </dd></dl>
 
 </div>
 </div>

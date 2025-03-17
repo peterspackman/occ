@@ -19,6 +19,8 @@ var timings_8h =
       [ "dft_xc", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a902c790981c3842ae62a5571dbebba01", null ],
       [ "dft", "timings_8h.html#a089c88a4231531abae301355d6ba8c16aeed532ff5d7ed069627dfe50cb4b0db1", null ],
       [ "dft_nlc", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a37ab8fac1f89bb21eea82de1ddd71bfa", null ],
+      [ "dft_gradient", "timings_8h.html#a089c88a4231531abae301355d6ba8c16aa59a07e7c0ca3a85bd0bf11d136b55b2", null ],
+      [ "dft_fock_gradient", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a79dd5fb88f946bb1a17105367e9288f8", null ],
       [ "xc_func_init", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a36c1be49b6a17ce680ce70e584b26f93", null ],
       [ "xc_func_end", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a1bd630e82b9166acb45ec0744ec9a53d", null ],
       [ "rho", "timings_8h.html#a089c88a4231531abae301355d6ba8c16ab0c3f39107e645d0f564c38de68f202a", null ],
@@ -44,6 +46,7 @@ var timings_8h =
       [ "mc_octree", "timings_8h.html#a089c88a4231531abae301355d6ba8c16afe4fdd8f2287d086d57c64978ab62a61", null ],
       [ "mc_primal", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a19f7785f6d5ade0be208b72e4a6bd6a2", null ],
       [ "mc_surface", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a172622eca494dac3ba8060bc574eec0b", null ],
+      [ "gradient", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a604b8de8f5b9986f80b133d81f0c8de3", null ],
       [ "global", "timings_8h.html#a089c88a4231531abae301355d6ba8c16aa593d8f8f4e0489f836e07e4f4220cbf", null ],
       [ "_group_count", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a6f051406d3501a7e49a73b8fa2aef406", null ]
     ] ],

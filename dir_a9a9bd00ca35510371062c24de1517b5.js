@@ -5,6 +5,7 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "combinations.h", "combinations_8h.html", "combinations_8h" ],
     [ "conditioning_orthogonalizer.h", "conditioning__orthogonalizer_8h.html", "conditioning__orthogonalizer_8h" ],
     [ "constants.h", "constants_8h.html", "constants_8h" ],
+    [ "data_directory.h", "data__directory_8h.html", "data__directory_8h" ],
     [ "diis.h", "diis_8h.html", "diis_8h" ],
     [ "dimer.h", "dimer_8h.html", "dimer_8h" ],
     [ "eem.h", "eem_8h.html", "eem_8h" ],

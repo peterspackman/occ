@@ -151,5 +151,7 @@ var namespaceocc =
     [ "Vec3", "namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1", null ],
     [ "Vec4", "namespaceocc.html#ae89d745b26c15115153317e5d90b6e93", null ],
     [ "Vec6", "namespaceocc.html#a8165087ef72495abb134eb0a03ea6ec2", null ],
-    [ "format_matrix", "namespaceocc.html#a1628129daf6f63dc508b04725802fceb", null ]
+    [ "format_matrix", "namespaceocc.html#a1628129daf6f63dc508b04725802fceb", null ],
+    [ "get_data_directory", "namespaceocc.html#afa32fefbea02db8ab45a078cf71f067a", null ],
+    [ "set_data_directory", "namespaceocc.html#a223c31d3958c15f46692ca64b5a47e0e", null ]
 ];

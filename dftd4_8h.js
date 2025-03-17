@@ -1,4 +1,4 @@
 var dftd4_8h =
 [
-    [ "occ::disp::DFTD4Params", "structocc_1_1disp_1_1DFTD4Params.html", "structocc_1_1disp_1_1DFTD4Params" ]
+    [ "occ::disp::D4Dispersion", "classocc_1_1disp_1_1D4Dispersion.html", "classocc_1_1disp_1_1D4Dispersion" ]
 ];

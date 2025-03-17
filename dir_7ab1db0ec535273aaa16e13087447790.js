@@ -1,6 +1,7 @@
 var dir_7ab1db0ec535273aaa16e13087447790 =
 [
     [ "dft.h", "dft_8h.html", "dft_8h" ],
+    [ "dft_gradient_kernels.h", "dft__gradient__kernels_8h.html", "dft__gradient__kernels_8h" ],
     [ "dft_kernels.h", "dft__kernels_8h.html", "dft__kernels_8h" ],
     [ "dft_method.h", "dft__method_8h.html", "dft__method_8h" ],
     [ "functional.h", "functional_8h.html", "functional_8h" ],

@@ -1,6 +1,7 @@
 var classocc_1_1qm_1_1HartreeFock =
 [
     [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html#a626f4e045b22ec9fdd77167f6a6c73d1", null ],
+    [ "additional_atomic_gradients", "classocc_1_1qm_1_1HartreeFock.html#aae1cb7ecde4278b4225c3be1a334d962", null ],
     [ "aobasis", "classocc_1_1qm_1_1HartreeFock.html#a57c33ddff2d0fd65527989120cb676b8", null ],
     [ "compute_effective_core_potential_matrix", "classocc_1_1qm_1_1HartreeFock.html#ab02eb658d51353f91ee1a62a8c003e51", null ],
     [ "compute_electronic_multipoles", "classocc_1_1qm_1_1HartreeFock.html#a399dc9a86a83b8576d7f419876ca277c", null ],

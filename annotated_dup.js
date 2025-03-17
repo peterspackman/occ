@@ -105,15 +105,17 @@ var annotated_dup =
         [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
         [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
         [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
-        [ "Functionals", "structocc_1_1dft_1_1Functionals.html", "structocc_1_1dft_1_1Functionals" ],
+        [ "DFTMethod", "structocc_1_1dft_1_1DFTMethod.html", "structocc_1_1dft_1_1DFTMethod" ],
+        [ "FuncComponent", "structocc_1_1dft_1_1FuncComponent.html", "structocc_1_1dft_1_1FuncComponent" ],
         [ "HirshfeldPartition", "classocc_1_1dft_1_1HirshfeldPartition.html", "classocc_1_1dft_1_1HirshfeldPartition" ],
+        [ "MethodDefinition", "structocc_1_1dft_1_1MethodDefinition.html", "structocc_1_1dft_1_1MethodDefinition" ],
         [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
         [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
         [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
         [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ]
       ] ],
       [ "disp", "namespaceocc_1_1disp.html", [
-        [ "DFTD4Params", "structocc_1_1disp_1_1DFTD4Params.html", "structocc_1_1disp_1_1DFTD4Params" ]
+        [ "D4Dispersion", "classocc_1_1disp_1_1D4Dispersion.html", "classocc_1_1disp_1_1D4Dispersion" ]
       ] ],
       [ "driver", "namespaceocc_1_1driver.html", [
         [ "AssignedEnergy", "structocc_1_1driver_1_1AssignedEnergy.html", "structocc_1_1driver_1_1AssignedEnergy" ],

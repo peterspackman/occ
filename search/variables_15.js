@@ -15,11 +15,10 @@ var searchData=
   ['unique_5findex_12',['unique_index',['../structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html#a58cd5e96b9493e73fecc8543c11596b1',1,'occ::crystal::CrystalDimers::SymmetryRelatedDimer']]],
   ['unique_5finteraction_5fenergies_13',['unique_interaction_energies',['../structocc_1_1main_1_1CrystalSurfaceEnergies.html#a58649b6a0a8c9e5f16166d9ad1b875b3',1,'occ::main::CrystalSurfaceEnergies']]],
   ['unit_5fcell_14',['unit_cell',['../structocc_1_1io_1_1CrystalInput.html#ac7c38c56c8c868e0d9d10285cb160a86',1,'occ::io::CrystalInput']]],
-  ['unpolarized_15',['unpolarized',['../structocc_1_1dft_1_1Functionals.html#ae25438a607307e11305683933555b9e9',1,'occ::dft::Functionals']]],
-  ['upper_16',['upper',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a4141f0b20c266a527ee5d3cdefcc6a7a',1,'occ::isosurface::AxisAlignedBoundingBox']]],
-  ['use_5fasymmetric_5fpartition_17',['use_asymmetric_partition',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6d0620e67f1d034d53b640406231d8ba',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
-  ['use_5fcrystal_5fpolarization_18',['use_crystal_polarization',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ac4af5c391c9ecef826297882d32984c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
-  ['use_5fhashed_5fmc_19',['use_hashed_mc',['../structocc_1_1main_1_1IsosurfaceConfig.html#a423a2bb9f53e953a763de2ef0ff1ae80',1,'occ::main::IsosurfaceConfig']]],
-  ['use_5fwolf_5fsum_20',['use_wolf_sum',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6081c8847f494a57e98ee22db394bb20',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
-  ['use_5fxtb_21',['use_xtb',['../structocc_1_1main_1_1CGConfig.html#a094ff8304cb6532897bb2deca08924bc',1,'occ::main::CGConfig']]]
+  ['upper_15',['upper',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a4141f0b20c266a527ee5d3cdefcc6a7a',1,'occ::isosurface::AxisAlignedBoundingBox']]],
+  ['use_5fasymmetric_5fpartition_16',['use_asymmetric_partition',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6d0620e67f1d034d53b640406231d8ba',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
+  ['use_5fcrystal_5fpolarization_17',['use_crystal_polarization',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ac4af5c391c9ecef826297882d32984c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
+  ['use_5fhashed_5fmc_18',['use_hashed_mc',['../structocc_1_1main_1_1IsosurfaceConfig.html#a423a2bb9f53e953a763de2ef0ff1ae80',1,'occ::main::IsosurfaceConfig']]],
+  ['use_5fwolf_5fsum_19',['use_wolf_sum',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6081c8847f494a57e98ee22db394bb20',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
+  ['use_5fxtb_20',['use_xtb',['../structocc_1_1main_1_1CGConfig.html#a094ff8304cb6532897bb2deca08924bc',1,'occ::main::CGConfig']]]
 ];

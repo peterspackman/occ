@@ -100,26 +100,34 @@ $(document).ready(function(){initNavTree('dft__method_8h.html',''); initResizabl
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">dft_method.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="functional_8h.html">occ/dft/functional.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;ankerl/unordered_dense.h&gt;</code><br />
+<code>#include &lt;nlohmann/json.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="functional_8h.html">occ/dft/functional.h</a>&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for dft_method.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="dft__method_8h__incl.svg" width="1108" height="447"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="dft__method_8h__incl.svg" width="1451" height="447"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="dft__method_8h__dep__incl.svg" width="382" height="462"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="dft__method_8h__dep__incl.svg" width="406" height="564"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1Functionals.html">occ::dft::Functionals</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1FuncComponent.html">occ::dft::FuncComponent</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">occ::dft::MethodDefinition</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1DFTMethod.html">occ::dft::DFTMethod</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -130,11 +138,143 @@ Namespaces</h2></td></tr>
 <tr class="memdesc:namespaceocc_1_1dft"><td class="mdescLeft">&#160;</td><td class="mdescRight">functionality related to Kohn-Sham density functional theory <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a85d3cc3d9e5f9f2d739ccb6568ff6f28" id="r_a85d3cc3d9e5f9f2d739ccb6568ff6f28"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a85d3cc3d9e5f9f2d739ccb6568ff6f28">occ::dft::dfid</a> = <a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a></td></tr>
+<tr class="separator:a85d3cc3d9e5f9f2d739ccb6568ff6f28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aceeb7540b1112eec3d738fc036a7a1e7" id="r_aceeb7540b1112eec3d738fc036a7a1e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1Functionals.html">Functionals</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aceeb7540b1112eec3d738fc036a7a1e7">occ::dft::parse_dft_method</a> (const std::string &amp;method_string)</td></tr>
-<tr class="separator:aceeb7540b1112eec3d738fc036a7a1e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa623fba569469a5cf78a36d0422777cc" id="r_aa623fba569469a5cf78a36d0422777cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1DFTMethod.html">DFTMethod</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aa623fba569469a5cf78a36d0422777cc">occ::dft::get_dft_method</a> (const std::string &amp;method_string)</td></tr>
+<tr class="separator:aa623fba569469a5cf78a36d0422777cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42fcb81f45e1d3f7cc6b9ed8c044a63a" id="r_a42fcb81f45e1d3f7cc6b9ed8c044a63a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1DFTMethod.html">DFTMethod</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a42fcb81f45e1d3f7cc6b9ed8c044a63a">occ::dft::create_dft_method_from_definition</a> (const <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &amp;def, bool polarized=false)</td></tr>
+<tr class="separator:a42fcb81f45e1d3f7cc6b9ed8c044a63a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3d77f2637405f982902fe69f7a7ba26" id="r_ac3d77f2637405f982902fe69f7a7ba26"><td class="memItemLeft" align="right" valign="top">ankerl::unordered_dense::map&lt; std::string, <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ac3d77f2637405f982902fe69f7a7ba26">occ::dft::load_method_definitions</a> (const std::string &amp;filename)</td></tr>
+<tr class="separator:ac3d77f2637405f982902fe69f7a7ba26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac203cc9206e770c0f96f08d25836ee8f" id="r_ac203cc9206e770c0f96f08d25836ee8f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ac203cc9206e770c0f96f08d25836ee8f">occ::dft::export_method_definitions</a> (const std::string &amp;filename, const ankerl::unordered_dense::map&lt; std::string, <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &gt; &amp;definitions)</td></tr>
+<tr class="separator:ac203cc9206e770c0f96f08d25836ee8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc5ee98e8a8a636b46d19b34fcabd616" id="r_adc5ee98e8a8a636b46d19b34fcabd616"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dft__method_8h.html#adc5ee98e8a8a636b46d19b34fcabd616">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1dft_1_1FuncComponent.html">occ::dft::FuncComponent</a> &amp;fc)</td></tr>
+<tr class="separator:adc5ee98e8a8a636b46d19b34fcabd616"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a076bde15171269a884274745ef4a1173" id="r_a076bde15171269a884274745ef4a1173"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dft__method_8h.html#a076bde15171269a884274745ef4a1173">from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1dft_1_1FuncComponent.html">occ::dft::FuncComponent</a> &amp;fc)</td></tr>
+<tr class="separator:a076bde15171269a884274745ef4a1173"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aace096c3896de17468e276f6d8a0583e" id="r_aace096c3896de17468e276f6d8a0583e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dft__method_8h.html#aace096c3896de17468e276f6d8a0583e">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">occ::dft::MethodDefinition</a> &amp;def)</td></tr>
+<tr class="separator:aace096c3896de17468e276f6d8a0583e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6091164d2a000930f6a1fb6599619c0c" id="r_a6091164d2a000930f6a1fb6599619c0c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dft__method_8h.html#a6091164d2a000930f6a1fb6599619c0c">from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">occ::dft::MethodDefinition</a> &amp;def)</td></tr>
+<tr class="separator:a6091164d2a000930f6a1fb6599619c0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a076bde15171269a884274745ef4a1173" name="a076bde15171269a884274745ef4a1173"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a076bde15171269a884274745ef4a1173">&#9670;&#160;</a></span>from_json() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void from_json </td>
+          <td>(</td>
+          <td class="paramtype">const nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1dft_1_1FuncComponent.html">occ::dft::FuncComponent</a> &amp;&#160;</td>
+          <td class="paramname"><em>fc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6091164d2a000930f6a1fb6599619c0c" name="a6091164d2a000930f6a1fb6599619c0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6091164d2a000930f6a1fb6599619c0c">&#9670;&#160;</a></span>from_json() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void from_json </td>
+          <td>(</td>
+          <td class="paramtype">const nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">occ::dft::MethodDefinition</a> &amp;&#160;</td>
+          <td class="paramname"><em>def</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="adc5ee98e8a8a636b46d19b34fcabd616" name="adc5ee98e8a8a636b46d19b34fcabd616"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc5ee98e8a8a636b46d19b34fcabd616">&#9670;&#160;</a></span>to_json() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void to_json </td>
+          <td>(</td>
+          <td class="paramtype">nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1dft_1_1FuncComponent.html">occ::dft::FuncComponent</a> &amp;&#160;</td>
+          <td class="paramname"><em>fc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aace096c3896de17468e276f6d8a0583e" name="aace096c3896de17468e276f6d8a0583e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aace096c3896de17468e276f6d8a0583e">&#9670;&#160;</a></span>to_json() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void to_json </td>
+          <td>(</td>
+          <td class="paramtype">nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">occ::dft::MethodDefinition</a> &amp;&#160;</td>
+          <td class="paramname"><em>def</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

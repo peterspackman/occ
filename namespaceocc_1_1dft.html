@@ -129,10 +129,14 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1Functionals.html">Functionals</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1DFTMethod.html">DFTMethod</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1FuncComponent.html">FuncComponent</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1HirshfeldPartition.html">HirshfeldPartition</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class implementing Hirshfeld atomic charge analysis.  <a href="classocc_1_1dft_1_1HirshfeldPartition.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html">MolecularGrid</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,6 +151,8 @@ Classes</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:a150d1d7afb286c7d1ae56289ee2a24f9" id="r_a150d1d7afb286c7d1ae56289ee2a24f9"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9">PointChargeList</a> = std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt;</td></tr>
 <tr class="separator:a150d1d7afb286c7d1ae56289ee2a24f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85d3cc3d9e5f9f2d739ccb6568ff6f28" id="r_a85d3cc3d9e5f9f2d739ccb6568ff6f28"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a85d3cc3d9e5f9f2d739ccb6568ff6f28">dfid</a> = <a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a></td></tr>
+<tr class="separator:a85d3cc3d9e5f9f2d739ccb6568ff6f28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -157,8 +163,18 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aceeb7540b1112eec3d738fc036a7a1e7" id="r_aceeb7540b1112eec3d738fc036a7a1e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1Functionals.html">Functionals</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aceeb7540b1112eec3d738fc036a7a1e7">parse_dft_method</a> (const std::string &amp;method_string)</td></tr>
-<tr class="separator:aceeb7540b1112eec3d738fc036a7a1e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa623fba569469a5cf78a36d0422777cc" id="r_aa623fba569469a5cf78a36d0422777cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1DFTMethod.html">DFTMethod</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aa623fba569469a5cf78a36d0422777cc">get_dft_method</a> (const std::string &amp;method_string)</td></tr>
+<tr class="separator:aa623fba569469a5cf78a36d0422777cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42fcb81f45e1d3f7cc6b9ed8c044a63a" id="r_a42fcb81f45e1d3f7cc6b9ed8c044a63a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1DFTMethod.html">DFTMethod</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a42fcb81f45e1d3f7cc6b9ed8c044a63a">create_dft_method_from_definition</a> (const <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &amp;def, bool polarized=false)</td></tr>
+<tr class="separator:a42fcb81f45e1d3f7cc6b9ed8c044a63a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3d77f2637405f982902fe69f7a7ba26" id="r_ac3d77f2637405f982902fe69f7a7ba26"><td class="memItemLeft" align="right" valign="top">ankerl::unordered_dense::map&lt; std::string, <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ac3d77f2637405f982902fe69f7a7ba26">load_method_definitions</a> (const std::string &amp;filename)</td></tr>
+<tr class="separator:ac3d77f2637405f982902fe69f7a7ba26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac203cc9206e770c0f96f08d25836ee8f" id="r_ac203cc9206e770c0f96f08d25836ee8f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ac203cc9206e770c0f96f08d25836ee8f">export_method_definitions</a> (const std::string &amp;filename, const ankerl::unordered_dense::map&lt; std::string, <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &gt; &amp;definitions)</td></tr>
+<tr class="separator:ac203cc9206e770c0f96f08d25836ee8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70f0a7522541ba34eecfed52b8460f6e" id="r_a70f0a7522541ba34eecfed52b8460f6e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a70f0a7522541ba34eecfed52b8460f6e">dfid_to_string</a> (<a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a> id)</td></tr>
+<tr class="separator:a70f0a7522541ba34eecfed52b8460f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe5388e43d56ab12eb9c74a230b0a4fe" id="r_afe5388e43d56ab12eb9c74a230b0a4fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#afe5388e43d56ab12eb9c74a230b0a4fe">string_to_dfid</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:afe5388e43d56ab12eb9c74a230b0a4fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1cfad27b8982b45891f9e13a9e9e6546" id="r_a1cfad27b8982b45891f9e13a9e9e6546"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a1cfad27b8982b45891f9e13a9e9e6546">calculate_atomic_grid_weights</a> (<a class="el" href="namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426a">PartitionFunction</a> func, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;grid_points, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;atomic_positions, const IVec &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;interatomic_distances)</td></tr>
 <tr class="separator:a1cfad27b8982b45891f9e13a9e9e6546"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a029911cd55275040f0a26ee8d48581d8" id="r_a029911cd55275040f0a26ee8d48581d8"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a029911cd55275040f0a26ee8d48581d8">prune_nwchem_scheme</a> (size_t nuclear_charge, size_t max_angular, size_t num_radial, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;radii)</td></tr>
@@ -209,6 +225,20 @@ Functions</h2></td></tr>
 <div class="textblock"><p>functionality related to Kohn-Sham density functional theory </p>
 <p>part of the <a class="el" href="namespaceocc_1_1qm.html" title="quantum mechanics/quantum chemistry functionality including Hartree-Fock and more">occ::qm</a>, occ:gto, occ:io module </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="a85d3cc3d9e5f9f2d739ccb6568ff6f28" name="a85d3cc3d9e5f9f2d739ccb6568ff6f28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85d3cc3d9e5f9f2d739ccb6568ff6f28">&#9670;&#160;</a></span>dfid</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">occ::dft::dfid</a> = typedef <a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a150d1d7afb286c7d1ae56289ee2a24f9" name="a150d1d7afb286c7d1ae56289ee2a24f9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a150d1d7afb286c7d1ae56289ee2a24f9">&#9670;&#160;</a></span>PointChargeList</h2>
 
@@ -396,6 +426,80 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a42fcb81f45e1d3f7cc6b9ed8c044a63a" name="a42fcb81f45e1d3f7cc6b9ed8c044a63a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42fcb81f45e1d3f7cc6b9ed8c044a63a">&#9670;&#160;</a></span>create_dft_method_from_definition()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1dft_1_1DFTMethod.html">DFTMethod</a> occ::dft::create_dft_method_from_definition </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &amp;&#160;</td>
+          <td class="paramname"><em>def</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>polarized</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a70f0a7522541ba34eecfed52b8460f6e" name="a70f0a7522541ba34eecfed52b8460f6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70f0a7522541ba34eecfed52b8460f6e">&#9670;&#160;</a></span>dfid_to_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::dft::dfid_to_string </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a>&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac203cc9206e770c0f96f08d25836ee8f" name="ac203cc9206e770c0f96f08d25836ee8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac203cc9206e770c0f96f08d25836ee8f">&#9670;&#160;</a></span>export_method_definitions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::dft::export_method_definitions </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const ankerl::unordered_dense::map&lt; std::string, <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>definitions</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aa3f2fabc212c1f463b003557e3c38482" name="aa3f2fabc212c1f463b003557e3c38482"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa3f2fabc212c1f463b003557e3c38482">&#9670;&#160;</a></span>generate_atom_grid()</h2>
 
@@ -556,17 +660,35 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aceeb7540b1112eec3d738fc036a7a1e7" name="aceeb7540b1112eec3d738fc036a7a1e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aceeb7540b1112eec3d738fc036a7a1e7">&#9670;&#160;</a></span>parse_dft_method()</h2>
+<a id="aa623fba569469a5cf78a36d0422777cc" name="aa623fba569469a5cf78a36d0422777cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa623fba569469a5cf78a36d0422777cc">&#9670;&#160;</a></span>get_dft_method()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structocc_1_1dft_1_1Functionals.html">Functionals</a> occ::dft::parse_dft_method </td>
+          <td class="memname"><a class="el" href="structocc_1_1dft_1_1DFTMethod.html">DFTMethod</a> occ::dft::get_dft_method </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>method_string</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac3d77f2637405f982902fe69f7a7ba26" name="ac3d77f2637405f982902fe69f7a7ba26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3d77f2637405f982902fe69f7a7ba26">&#9670;&#160;</a></span>load_method_definitions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ankerl::unordered_dense::map&lt; std::string, <a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a> &gt; occ::dft::load_method_definitions </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -648,6 +770,24 @@ Functions</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afe5388e43d56ab12eb9c74a230b0a4fe" name="afe5388e43d56ab12eb9c74a230b0a4fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe5388e43d56ab12eb9c74a230b0a4fe">&#9670;&#160;</a></span>string_to_dfid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a> occ::dft::string_to_dfid </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
