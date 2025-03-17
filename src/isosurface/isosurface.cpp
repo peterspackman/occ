@@ -339,17 +339,19 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
 }
 
 void IsosurfaceCalculator::compute_isosurface() {
-  const double isovalue = m_params.isovalue;
+  double isovalue = m_params.isovalue;
   const double separation = m_params.separation;
   switch (m_params.surface_kind) {
   case SurfaceKind::ESP: {
     auto func = MCElectricPotentialFunctor(m_wavefunction, separation);
     m_isosurface = extract_surface(func, isovalue);
+    m_isosurface.description = "ESP";
     break;
   }
   case SurfaceKind::ElectronDensity: {
     auto func = MCElectronDensityFunctor(m_wavefunction, separation);
     m_isosurface = extract_surface(func, isovalue);
+    m_isosurface.description = "Electron Density";
     break;
   }
   case SurfaceKind::CrystalVoid: {
@@ -360,45 +362,56 @@ void IsosurfaceCalculator::compute_isosurface() {
       m_environment = func.molecule();
     }
     m_isosurface = extract_surface(func, isovalue, true);
+    m_isosurface.description = "Void";
     break;
   }
   case SurfaceKind::Hirshfeld: {
     auto func = StockholderWeightFunctor(m_molecule, m_environment, separation);
     func.set_background_density(m_params.background_density);
-    m_isosurface = extract_surface(func, 0.5f); // Hirshfeld always uses 0.5
+    isovalue = 0.5f;
+    m_isosurface = extract_surface(func, isovalue); // Hirshfeld always uses 0.5
+    m_isosurface.description = "Hirshfeld";
     break;
   }
   case SurfaceKind::VDWLogSumExp: {
     auto metric = RadiusMetric(RadiusMetric::RadiusKind::VDW);
     auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
-    m_isosurface = extract_surface(func, 0.0f); // LSE always uses 0.0
+    isovalue = 0.0f;
+    m_isosurface = extract_surface(func, isovalue); // LSE always uses 0.0
+    m_isosurface.description = "VDWLogSumExp";
     break;
   }
   case SurfaceKind::SoftVoronoi: {
     auto metric = RadiusMetric(RadiusMetric::RadiusKind::Unit);
     auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
-    m_isosurface = extract_surface(func, 0.0f); // LSE always uses 0.0
+    isovalue = 0.0f;
+    m_isosurface = extract_surface(func, isovalue); // LSE always uses 0.0
+    m_isosurface.description = "SoftVoronoi";
     break;
   }
   case SurfaceKind::HSRinv: {
     auto wfunc = RInvFunc{m_params.power};
     auto func = GenericStockholderWeightFunctor(wfunc, m_molecule,
                                                 m_environment, separation);
-    m_isosurface = extract_surface(func, 0.5f);
+    isovalue = 0.5f;
+    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface.description = "HS-Rinv";
     break;
   }
   case SurfaceKind::HSExp: {
     auto wfunc = ExpFunc{m_params.power};
     auto func = GenericStockholderWeightFunctor(wfunc, m_molecule,
                                                 m_environment, separation);
-    m_isosurface = extract_surface(func, 0.5f);
+    isovalue = 0.5f;
+    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface.description = "HS-Exp";
     break;
   }
-
   case SurfaceKind::PromoleculeDensity: {
     auto func = MCPromoleculeDensityFunctor(m_molecule, separation);
     func.set_isovalue(isovalue);
     m_isosurface = extract_surface(func, isovalue);
+    m_isosurface.description = "Promolecule Density";
     break;
   }
   case SurfaceKind::DeformationDensity: {
@@ -406,6 +419,7 @@ void IsosurfaceCalculator::compute_isosurface() {
         MCDeformationDensityFunctor(m_molecule, m_wavefunction, separation);
     func.set_isovalue(isovalue);
     m_isosurface = extract_surface(func, isovalue);
+    m_isosurface.description = "Deformation Density";
     break;
   }
   case SurfaceKind::Orbital: {
@@ -416,11 +430,13 @@ void IsosurfaceCalculator::compute_isosurface() {
     auto func =
         MCElectronDensityFunctor(m_wavefunction, separation, orbital_index);
     m_isosurface = extract_surface(func, isovalue);
+    m_isosurface.description = fmt::format("Orbital {}", m_params.surface_orbital_index.format());
     break;
   }
   case SurfaceKind::VolumeGrid: {
     auto func = VolumeGridFunctor(m_grid, separation);
     m_isosurface = extract_surface(func, isovalue);
+    m_isosurface.description = "Volume Grid";
     break;
   }
 
@@ -429,6 +445,10 @@ void IsosurfaceCalculator::compute_isosurface() {
     break;
   }
   }
+
+  m_isosurface.kind = surface_to_string(m_params.surface_kind);
+  m_isosurface.isovalue = isovalue;
+  m_isosurface.separation = separation;
 
   auto curvature = occ::isosurface::calculate_curvature(
       m_isosurface.mean_curvature, m_isosurface.gaussian_curvature);

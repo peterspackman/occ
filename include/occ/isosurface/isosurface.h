@@ -49,6 +49,12 @@ struct Isosurface {
   FVec gaussian_curvature;
   FVec mean_curvature;
   IsosurfaceProperties properties;
+
+  float isovalue{0.002};
+  float separation{0.2};
+  std::string kind{"Unknown"};
+  std::string description{"Isosurface"};
+
   float volume() const;
   float surface_area() const;
 };

@@ -24,6 +24,7 @@ target_link_libraries(occ_main
     occ_xtb
     occ_qm
     occ_dft
+    occ_disp
     occ_driver
     occ_solvent
     occ_interaction

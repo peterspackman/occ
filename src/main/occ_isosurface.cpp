@@ -66,22 +66,14 @@ generate_parameter_combinations(const IsosurfaceConfig &config) {
 
 std::string
 format_output_filename(const IsosurfaceGenerationParameters &params,
-                       const IsosurfaceConfig &config,
-                       int sequence_number,
+                       const IsosurfaceConfig &config, int sequence_number,
                        std::optional<std::string> label = std::nullopt) {
   if (label) {
     return fmt::format(fmt::runtime(config.output_template), *label);
   } else if (!config.has_multiple_outputs() && !label) {
     return fmt::format(fmt::runtime(config.output_template), "");
   } else {
-    std::string generated_label;
-    if (params.surface_kind == SurfaceKind::Orbital) {
-      generated_label = fmt::format("{}_{}", params.isovalue,
-                                    (params.surface_orbital_index).format());
-    } else {
-      generated_label = fmt::format("{}", sequence_number);
-    }
-    return fmt::format(fmt::runtime(config.output_template), generated_label);
+    return fmt::format(fmt::runtime(config.output_template), sequence_number);
   }
 }
 
@@ -354,7 +346,8 @@ void run_isosurface_subcommand(IsosurfaceConfig config) {
     occ::log::info("Ratio:        {:.3f}", area / vol);
 
     // Generate output filename based on index
-    std::string output_filename = format_output_filename(params, config, sequence_number++);
+    std::string output_filename =
+        format_output_filename(params, config, sequence_number++);
     occ::log::info("Writing surface to {}", output_filename);
     occ::io::write_ply_mesh(output_filename, result, config.binary_output);
   }
