@@ -84,7 +84,7 @@ OCC provides comprehensive functionality for ground-state single-point calculati
 ```python
 import occpy
 from occpy import Crystal, Molecule, AOBasis, HartreeFock, DFT
-from occpy.qm import SpinorbitalKind
+from occpy import SpinorbitalKind
 
 # Set up basic configuration
 occpy.set_log_level(occpy.LogLevel.WARN)  # Configure logging level
