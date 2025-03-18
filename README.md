@@ -2,7 +2,7 @@
 <img src="https://github.com/peterspackman/occ/raw/main/docs/static/occ.png" width=640/>
 
 [![Build & Test](https://github.com/peterspackman/occ/actions/workflows/build_test.yml/badge.svg)](https://github.com/peterspackman/occ/actions/workflows/build_test.yml)
-[![PyPI version](https://badge.fury.io/py/occ.svg)](https://badge.fury.io/py/occ)
+[![PyPI version](https://badge.fury.io/py/occpy.svg)](https://badge.fury.io/py/occpy)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/occ)](https://pypi.org/project/occ/)
 [![DOI](https://zenodo.org/badge/292276139.svg)](https://zenodo.org/doi/10.5281/zenodo.10703204)
 
