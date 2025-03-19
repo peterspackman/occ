@@ -2,8 +2,8 @@
 <img src="https://github.com/peterspackman/occ/raw/main/docs/static/occ.png" width=640/>
 
 [![Build & Test](https://github.com/peterspackman/occ/actions/workflows/build_test.yml/badge.svg)](https://github.com/peterspackman/occ/actions/workflows/build_test.yml)
-[![PyPI version](https://badge.fury.io/py/occ.svg)](https://badge.fury.io/py/occ)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/occ)](https://pypi.org/project/occ/)
+[![PyPI version](https://badge.fury.io/py/occpy.svg)](https://badge.fury.io/py/occpy)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/occpy)](https://pypi.org/project/occpy/)
 [![DOI](https://zenodo.org/badge/292276139.svg)](https://zenodo.org/doi/10.5281/zenodo.10703204)
 
 A next-generation quantum chemistry and crystallography program and library, designed for modern computational workflows.
@@ -84,7 +84,7 @@ OCC provides comprehensive functionality for ground-state single-point calculati
 ```python
 import occpy
 from occpy import Crystal, Molecule, AOBasis, HartreeFock, DFT
-from occpy.qm import SpinorbitalKind
+from occpy import SpinorbitalKind
 
 # Set up basic configuration
 occpy.set_log_level(occpy.LogLevel.WARN)  # Configure logging level
