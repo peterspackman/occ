@@ -71,14 +71,13 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
   if (settings != m_grid.settings()) {
     m_grid = MolecularGrid(m_hf.aobasis(), settings);
   }
-  occ::log::debug("start calculating atom grids... ");
-  m_atom_grids.clear();
-  for (size_t i = 0; i < atoms.size(); i++) {
-    m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
-  }
-  size_t num_grid_points = std::accumulate(
-      m_atom_grids.begin(), m_atom_grids.end(), 0.0,
-      [&](double tot, const auto &grid) { return tot + grid.points.cols(); });
+
+  occ::log::debug("start calculating grid points... ");
+
+  m_grid.populate_molecular_grid_points();
+  const auto &molecular_grid = m_grid.get_molecular_grid_points();
+
+  size_t num_grid_points = molecular_grid.num_points();
   occ::log::info("finished calculating atom grids ({} points)",
                  num_grid_points);
   occ::log::debug("Grid initialization took {} seconds",
@@ -86,19 +85,23 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
   occ::log::debug("Grid point creation took {} seconds",
                   occ::timing::total(occ::timing::grid_points));
 
+  // Write grid points to file if specified
   if (!settings.filename.empty()) {
     occ::log::info("Writing DFT grids to {}", settings.filename);
     auto grid_file = fmt::output_file(settings.filename);
     int atom_idx = 0;
-    for (const auto &grid : m_atom_grids) {
-      grid_file.print("Atom grid {} Z = {}\n", atom_idx, grid.atomic_number);
+    for (int atom_idx = 0; atom_idx < molecular_grid.num_atoms(); atom_idx++) {
+      grid_file.print("Atom grid {} Z = {}\n", atom_idx,
+                      atoms[atom_idx].atomic_number);
       grid_file.print("{:>20s} {:>20s} {:>20s} {:>20s}\n", "weight", "x", "y",
                       "z");
-      for (int i = 0; i < grid.num_points(); i++) {
-        double w = grid.weights(i);
-        double x = grid.points(0, i);
-        double y = grid.points(1, i);
-        double z = grid.points(2, i);
+      const auto points = molecular_grid.points_for_atom(atom_idx);
+      const auto weights = molecular_grid.weights_for_atom(atom_idx);
+      for (int i = 0; i < points.cols(); i++) {
+        double w = weights(i);
+        double x = points(0, i);
+        double y = points(1, i);
+        double z = points(2, i);
         grid_file.print("{: 20.12e} {: 20.12e} {: 20.12e} {: 20.12e}\n", w, x,
                         y, z);
       }
@@ -106,6 +109,7 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
     }
   }
 
+  // Set up nonlocal correlation if needed
   for (const auto &func : m_method.functionals) {
     if (func.needs_nlc_correction()) {
       m_nlc.set_integration_grid(m_hf.aobasis());

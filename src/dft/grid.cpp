@@ -583,4 +583,24 @@ AtomGrid MolecularGrid::generate_lmg_atom_grid(size_t atomic_number) {
   return result;
 }
 
+void MolecularGrid::populate_molecular_grid_points() {
+  if (m_grid_initialized) {
+    return;
+  }
+
+  occ::timing::start(occ::timing::category::grid_points);
+  occ::log::debug("Generating molecular grid points...");
+
+  std::vector<AtomGrid> atom_grids;
+  for (size_t i = 0; i < n_atoms(); i++) {
+    atom_grids.push_back(generate_partitioned_atom_grid(i));
+  }
+
+  m_grid_points.initialize_from_atom_grids(atom_grids);
+  m_grid_initialized = true;
+
+  occ::log::debug("Generated {} total grid points", m_grid_points.num_points());
+  occ::timing::stop(occ::timing::category::grid_points);
+}
+
 } // namespace occ::dft

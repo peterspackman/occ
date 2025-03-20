@@ -158,50 +158,56 @@ public:
     std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
     std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
 
-    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted) ? m_method.functionals_polarized :m_method.functionals;
+    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
+                            ? m_method.functionals_polarized
+                            : m_method.functionals;
 
-    for(const auto &func: funcs) {
-      occ::log::debug("vxc functional: {}, polarized: {}", func.name(), func.polarized());
+    for (const auto &func : funcs) {
+      occ::log::debug("vxc functional: {}, polarized: {}", func.name(),
+                      func.polarized());
     }
 
     occ::timing::start(occ::timing::category::dft_xc);
 
-    for (const auto &atom_grid : m_atom_grids) {
-      const auto &atom_pts = atom_grid.points;
-      const auto &atom_weights = atom_grid.weights;
-      const size_t npt_total = atom_pts.cols();
-      const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
+    const auto &molecular_grid = m_grid.get_molecular_grid_points();
+    const auto &all_points = molecular_grid.points();
+    const auto &all_weights = molecular_grid.weights();
+    const size_t npt_total = all_points.cols();
 
-      auto lambda = [&](int thread_id) {
-        for (size_t block = 0; block < num_blocks; block++) {
-          if (block % nthreads != thread_id)
-            continue;
+    const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
 
-          Eigen::Index l = block * m_blocksize;
-          Eigen::Index u =
-              std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
-          Eigen::Index npt = u - l;
-          if (npt <= 0)
-            continue;
+    occ::log::debug("Processing {} grid points in {} blocks", npt_total,
+                    num_blocks);
 
-          const auto &pts_block = atom_pts.middleCols(l, npt);
-          const auto &weights_block = atom_weights.segment(l, npt);
-          auto gto_vals =
-              occ::gto::evaluate_basis(basis, pts_block, derivative_order);
+    auto lambda = [&](int thread_id) {
+      for (size_t block = 0; block < num_blocks; block++) {
+        if (block % nthreads != thread_id)
+          continue;
 
-          kernels::process_grid_block<derivative_order, spinorbital_kind>(
-              D2, gto_vals, pts_block, weights_block, funcs, Kt[thread_id],
-              energies[thread_id], alpha_densities[thread_id],
-              beta_densities[thread_id], m_density_threshold);
-        }
-      };
+        Eigen::Index l = block * m_blocksize;
+        Eigen::Index u =
+            std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
+        Eigen::Index npt = u - l;
 
-      occ::parallel::parallel_do(lambda);
-    }
+        if (npt <= 0)
+          continue;
 
+        const auto &pts_block = all_points.middleCols(l, npt);
+        const auto &weights_block = all_weights.segment(l, npt);
+
+        auto gto_vals =
+            occ::gto::evaluate_basis(basis, pts_block, derivative_order);
+
+        kernels::process_grid_block<derivative_order, spinorbital_kind>(
+            D2, gto_vals, pts_block, weights_block, funcs, Kt[thread_id],
+            energies[thread_id], alpha_densities[thread_id],
+            beta_densities[thread_id], m_density_threshold);
+      }
+    };
+
+    occ::parallel::parallel_do(lambda);
     occ::timing::stop(occ::timing::category::dft_xc);
 
-    // Combine results from all threads
     for (size_t i = 0; i < nthreads; i++) {
       K += Kt[i];
       m_exc_dft += energies[i];
@@ -412,54 +418,59 @@ private:
     const size_t nbf = basis.nbf();
     const auto D = 2.0 * mo.D;
 
-    // Initialize gradient matrix (3 x natoms)
     Mat3N gradient = Mat3N::Zero(3, natoms);
 
-    // Thread-local storage for gradients
     std::vector<Mat3N> gradients_t(nthreads, Mat3N::Zero(3, natoms));
 
-    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted) ? m_method.functionals_polarized :m_method.functionals;
+    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
+                            ? m_method.functionals_polarized
+                            : m_method.functionals;
 
-    for(const auto &func: funcs) {
-      occ::log::debug("vxc functional: {}, polarized: {}", func.name(), func.polarized());
+    for (const auto &func : funcs) {
+      occ::log::debug("vxc functional: {}, polarized: {}", func.name(),
+                      func.polarized());
     }
 
     occ::timing::start(occ::timing::category::dft_gradient);
 
-    for (const auto &atom_grid : m_atom_grids) {
-      const auto &atom_pts = atom_grid.points;
-      const auto &atom_weights = atom_grid.weights;
-      const size_t npt_total = atom_pts.cols();
-      const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
+    const auto &molecular_grid = m_grid.get_molecular_grid_points();
+    const auto &all_points = molecular_grid.points();
+    const auto &all_weights = molecular_grid.weights();
+    const size_t npt_total = all_points.cols();
 
-      auto lambda = [&](int thread_id) {
-        for (size_t block = 0; block < num_blocks; block++) {
-          if (block % nthreads != thread_id)
-            continue;
+    const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
 
-          Eigen::Index l = block * m_blocksize;
-          Eigen::Index u =
-              std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
-          Eigen::Index npt = u - l;
+    occ::log::debug(
+        "Processing {} grid points in {} blocks for gradient calculation",
+        npt_total, num_blocks);
 
-          if (npt <= 0)
-            continue;
+    auto lambda = [&](int thread_id) {
+      for (size_t block = 0; block < num_blocks; block++) {
+        if (block % nthreads != thread_id)
+          continue;
 
-          const auto &pts_block = atom_pts.middleCols(l, npt);
-          const auto &weights_block = atom_weights.segment(l, npt);
+        Eigen::Index l = block * m_blocksize;
+        Eigen::Index u =
+            std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
+        Eigen::Index npt = u - l;
 
-          auto gto_vals =
-              occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+        if (npt <= 0)
+          continue;
 
-          kernels::process_grid_block_gradient<derivative_order,
-                                               spinorbital_kind>(
-              D, gto_vals, pts_block, weights_block, funcs,
-              gradients_t[thread_id], m_density_threshold, basis);
-        }
-      };
+        const auto &pts_block = all_points.middleCols(l, npt);
+        const auto &weights_block = all_weights.segment(l, npt);
 
-      occ::parallel::parallel_do(lambda);
-    }
+        auto gto_vals =
+            occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+
+        kernels::process_grid_block_gradient<derivative_order,
+                                             spinorbital_kind>(
+            D, gto_vals, pts_block, weights_block, funcs,
+            gradients_t[thread_id], m_density_threshold, basis);
+      }
+    };
+
+    occ::parallel::parallel_do(lambda);
 
     // Combine results from all threads
     for (size_t i = 0; i < nthreads; i++) {
@@ -474,7 +485,6 @@ private:
   occ::qm::HartreeFock m_hf;
   MolecularGrid m_grid;
   DFTMethod m_method;
-  std::vector<AtomGrid> m_atom_grids;
   NonLocalCorrelationFunctional m_nlc;
   mutable double m_two_electron_energy{0.0};
   mutable double m_exc_dft{0.0};
@@ -482,6 +492,6 @@ private:
   mutable double m_nlc_energy{0.0};
   double m_density_threshold{1e-10};
   RangeSeparatedParameters m_rs_params;
-  size_t m_blocksize{25600};
+  size_t m_blocksize{64};
 };
 } // namespace occ::dft
