@@ -24,10 +24,10 @@ struct MethodDefinition {
 
 struct DFTMethod {
   std::vector<DensityFunctional> functionals;
+  std::vector<DensityFunctional> functionals_polarized;
   std::string dispersion;
   std::string gcp;
   std::string basis_set;
-  bool polarized{false};
 
   double exchange_factor() const;
 

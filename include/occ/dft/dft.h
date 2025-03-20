@@ -158,7 +158,11 @@ public:
     std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
     std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
 
-    const auto &funcs = m_method.functionals;
+    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted) ? m_method.functionals_polarized :m_method.functionals;
+
+    for(const auto &func: funcs) {
+      occ::log::debug("vxc functional: {}, polarized: {}", func.name(), func.polarized());
+    }
 
     occ::timing::start(occ::timing::category::dft_xc);
 
@@ -414,7 +418,11 @@ private:
     // Thread-local storage for gradients
     std::vector<Mat3N> gradients_t(nthreads, Mat3N::Zero(3, natoms));
 
-    const auto &funcs = m_method.functionals;
+    const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted) ? m_method.functionals_polarized :m_method.functionals;
+
+    for(const auto &func: funcs) {
+      occ::log::debug("vxc functional: {}, polarized: {}", func.name(), func.polarized());
+    }
 
     occ::timing::start(occ::timing::category::dft_gradient);
 

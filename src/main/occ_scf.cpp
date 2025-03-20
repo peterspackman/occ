@@ -108,7 +108,7 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
 
   scf->add_flag_function(
       "-u,--unrestricted",
-      [&config](int count) {
+      [config](int count) {
         config->electronic.spinorbital_kind = SpinorbitalKind::Unrestricted;
       },
       "use unrestricted SCF");
@@ -175,7 +175,7 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   return scf;
 }
 
-void run_scf_subcommand(occ::io::OccInput &config) {
+void run_scf_subcommand(occ::io::OccInput config) {
 
   occ::main::print_header();
 

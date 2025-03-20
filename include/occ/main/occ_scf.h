@@ -5,6 +5,6 @@
 namespace occ::main {
 
 CLI::App *add_scf_subcommand(CLI::App &app);
-void run_scf_subcommand(occ::io::OccInput &config);
+void run_scf_subcommand(occ::io::OccInput config);
 
 } // namespace occ::main
