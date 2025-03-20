@@ -54,7 +54,7 @@ var namespaceocc_1_1main =
     [ "run_elat_subcommand", "namespaceocc_1_1main.html#a5d776aca8428505c81e246f839530216", null ],
     [ "run_isosurface_subcommand", "namespaceocc_1_1main.html#ad13bff982810ef6775e16c74aa08360b", null ],
     [ "run_pair_subcommand", "namespaceocc_1_1main.html#a608fdd74696cf1352fcd7d9ec6879158", null ],
-    [ "run_scf_subcommand", "namespaceocc_1_1main.html#af07650be8ef15ef61770377f8d14ed82", null ],
+    [ "run_scf_subcommand", "namespaceocc_1_1main.html#aa6e0de5b65ad14e7e280e4005f7291ce", null ],
     [ "run_surface_cuts_subcommand", "namespaceocc_1_1main.html#aae3df6594d05a9ba23c3faa1775bf850", null ],
     [ "to_json", "namespaceocc_1_1main.html#ae6a3ddcf8fae6544589ec5d41ef77449", null ],
     [ "to_json", "namespaceocc_1_1main.html#aba21b5380482aa5b17c8fc7a3cb6ca93", null ]

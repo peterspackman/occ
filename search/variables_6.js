@@ -22,5 +22,6 @@ var searchData=
   ['from_19',['from',['../structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html#aec3a1a796bf211aff6e8bfaed1cb164d',1,'occ::geometry::mc::impl::Edge']]],
   ['function_5ftype_20',['function_type',['../structocc_1_1io_1_1ElectronShell.html#a7e86681115ea11a7bc78d5ed55860bf4',1,'occ::io::ElectronShell']]],
   ['functional_21',['functional',['../structocc_1_1main_1_1CubeConfig.html#a20173049c429bc6ae6fdb8d47c489523',1,'occ::main::CubeConfig']]],
-  ['functionals_22',['functionals',['../structocc_1_1dft_1_1DFTMethod.html#ad39fc19e9ec2f82a1c31ceadfa8d872a',1,'occ::dft::DFTMethod']]]
+  ['functionals_22',['functionals',['../structocc_1_1dft_1_1DFTMethod.html#ad39fc19e9ec2f82a1c31ceadfa8d872a',1,'occ::dft::DFTMethod']]],
+  ['functionals_5fpolarized_23',['functionals_polarized',['../structocc_1_1dft_1_1DFTMethod.html#ac242ac1766d6a0da5b83129386ed460d',1,'occ::dft::DFTMethod']]]
 ];
