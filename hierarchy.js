@@ -183,6 +183,7 @@ var hierarchy =
     [ "occ::geometry::MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", null ],
     [ "occ::io::MoldenReader", "classocc_1_1io_1_1MoldenReader.html", null ],
     [ "occ::dft::MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", null ],
+    [ "occ::dft::MolecularGridPoints", "classocc_1_1dft_1_1MolecularGridPoints.html", null ],
     [ "occ::qm::MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", null ],
     [ "occ::core::MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", null ],
     [ "occ::core::Molecule", "classocc_1_1core_1_1Molecule.html", null ],

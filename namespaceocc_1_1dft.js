@@ -21,6 +21,7 @@ var namespaceocc_1_1dft =
     [ "HirshfeldPartition", "classocc_1_1dft_1_1HirshfeldPartition.html", "classocc_1_1dft_1_1HirshfeldPartition" ],
     [ "MethodDefinition", "structocc_1_1dft_1_1MethodDefinition.html", "structocc_1_1dft_1_1MethodDefinition" ],
     [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
+    [ "MolecularGridPoints", "classocc_1_1dft_1_1MolecularGridPoints.html", "classocc_1_1dft_1_1MolecularGridPoints" ],
     [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
     [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
     [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ],

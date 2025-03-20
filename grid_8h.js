@@ -2,6 +2,7 @@ var grid_8h =
 [
     [ "occ::dft::AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
     [ "occ::dft::RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
+    [ "occ::dft::MolecularGridPoints", "classocc_1_1dft_1_1MolecularGridPoints.html", "classocc_1_1dft_1_1MolecularGridPoints" ],
     [ "occ::dft::MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
     [ "PartitionFunction", "grid_8h.html#a2618fed7e4e7c22b65e2bb79357d426a", [
       [ "Becke", "grid_8h.html#a2618fed7e4e7c22b65e2bb79357d426aa18cf5657f88a943304168f3fe466545b", null ],
