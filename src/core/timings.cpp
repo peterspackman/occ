@@ -85,6 +85,8 @@ const char *category_name(category cat) {
     return "XDM dispersion";
   case solvent:
     return "Solvation";
+  case dma:
+    return "Distributed Multipole Analysis";
   case global:
     return "Global (total time)";
   case jkmat:
@@ -136,6 +138,7 @@ void print_timings() {
       df,
       xdm,
       solvent,
+      dma,
       isosurface_function,
       isosurface_normals,
       isosurface_properties,

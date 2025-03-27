@@ -44,6 +44,7 @@ enum category {
   fft,
   xdm,
   solvent,
+  dma,
   isosurface_function,
   isosurface_normals,
   isosurface_properties,
