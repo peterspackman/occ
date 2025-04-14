@@ -1,8 +1,15 @@
 add_library(occ_dma
+    "${CMAKE_CURRENT_SOURCE_DIR}/add_qlm.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/binomial.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dma.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dmaql0.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dmaqlm.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gauss_hermite.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/moveq.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/movez.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/quadrature.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shiftq.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/solid_harmonics.cpp"
 )
 
 target_link_libraries(occ_dma

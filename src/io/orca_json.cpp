@@ -79,11 +79,11 @@ Mat convert_mo_coefficients_from_orca_convention(const occ::qm::AOBasis &basis,
 */
 
 double normalization_factor(double alpha, int l, int m, int n) {
-  using occ::util::double_factorial;
+  using occ::util::double_factorial_2n_1;
   return std::sqrt(std::pow(4 * alpha, l + m + n) *
                    std::pow(2 * alpha / M_PI, 1.5) /
-                   (double_factorial(2 * l - 1) * double_factorial(2 * m - 1) *
-                    double_factorial(2 * n - 1)));
+                   (double_factorial_2n_1(l) * double_factorial_2n_1(m) *
+                    double_factorial_2n_1(n)));
 }
 
 OrcaJSONReader::OrcaJSONReader(const std::string &filename) {

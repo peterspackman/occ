@@ -175,7 +175,6 @@ inline occ::qm::Shell parse_molden_shell(const std::array<double, 3> &position,
                                          bool pure, std::istream &stream,
                                          std::string &line_buffer) {
   std::getline(stream, line_buffer);
-  using occ::util::double_factorial;
   occ::qm::Shell::Kind shell_kind =
       pure ? occ::qm::Shell::Kind::Spherical : occ::qm::Shell::Kind::Cartesian;
 

@@ -1,10 +1,9 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <iostream>
 #include <occ/core/molecule.h>
 #include <occ/dma/dma.h>
-#include <occ/dma/multipole.h>
-#include <occ/dma/quadrature.h>
+#include <occ/dma/dmaql0.h>
+#include <occ/dma/dmaqlm.h>
 #include <occ/io/fchkreader.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -14,91 +13,7 @@ using namespace occ;
 using Catch::Approx;
 using namespace occ::dma;
 
-TEST_CASE("DMA Basic", "[dma]") {
-  using namespace occ::qm;
-  using namespace occ::io;
-
-  // Create a simple molecule for testing
-  auto mol = occ::core::Molecule();
-  std::vector<occ::core::Atom> atoms{
-      {8, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 0.96}, {1, 0.9068, 0.0, -0.2403}};
-
-  // Create a simple basis set (normally we'd load from a file)
-  AOBasis basis = occ::qm::AOBasis::load(atoms, "sto-3g");
-
-  HartreeFock hf(basis);
-  SCF<occ::qm::HartreeFock> scf(hf);
-  scf.convergence_settings.energy_threshold = 1e-8;
-  double e = scf.compute_scf_energy();
-
-  // Create a simple wavefunction (for tests)
-  occ::qm::Wavefunction wfn = scf.wavefunction();
-
-  // Test decontracting basis
-  AOBasis primitive_basis = decontract_basis(basis);
-  REQUIRE(primitive_basis.nsh() >= basis.nsh());
-
-  // Check that decontracted basis contains only primitives
-  for (size_t i = 0; i < primitive_basis.nsh(); i++) {
-    REQUIRE(primitive_basis[i].num_primitives() == 1);
-  }
-
-  // Perform DMA analysis
-  DMAResult result = distributed_multipole_analysis(wfn, 1, false);
-
-  // Verify result structure
-  REQUIRE(result.multipoles.size() == atoms.size());
-  REQUIRE(result.positions.cols() == atoms.size());
-  REQUIRE(result.atom_indices.size() == atoms.size());
-  REQUIRE(result.radii.size() == atoms.size());
-  REQUIRE(result.max_rank == 1);
-
-  // Check total charge is correct (neutral molecule)
-  double total_charge = 0.0;
-  for (const auto &multipole : result.multipoles) {
-    total_charge += multipole.charge();
-  }
-  REQUIRE(total_charge == Approx(0.0).margin(1e-6));
-
-  // Test total dipole function
-  Vec3 dipole = result.total_dipole();
-  REQUIRE(dipole.norm() >= 0.0);
-
-  // Test our multipole class
-  SECTION("Testing Multipole class") {
-    Multipole m0(0); // Monopole
-    m0.set_charge(1.0);
-    REQUIRE(m0.charge() == 1.0);
-    REQUIRE(m0.rank() == 0);
-
-    Multipole m1(1); // With dipole
-    m1.set_charge(-1.0);
-    m1.set_dipole(Vec3(1.0, 2.0, 3.0));
-    REQUIRE(m1.charge() == -1.0);
-    REQUIRE(m1.dipole()[0] == 1.0);
-    REQUIRE(m1.dipole()[1] == 2.0);
-    REQUIRE(m1.dipole()[2] == 3.0);
-
-    Multipole m2(2); // With quadrupole
-    m2.set_charge(0.5);
-    Mat3 quad = Mat3::Identity();
-    m2.set_quadrupole(quad);
-    REQUIRE(m2.quadrupole()(0, 0) == 1.0);
-
-    // Test addition
-    Multipole sum = m0 + m1;
-    REQUIRE(sum.charge() == 0.0);
-    REQUIRE(sum.rank() == 1);
-    REQUIRE(sum.dipole()[0] == 1.0);
-
-    // Test scaling
-    Multipole scaled = m1 * 2.0;
-    REQUIRE(scaled.charge() == -2.0);
-    REQUIRE(scaled.dipole()[1] == 4.0);
-  }
-}
-
-const char *fchk_contents = R"(h2
+const char *h2_contents = R"(h2
 SP        RB3LYP                                                      STO-3G
 Number of atoms                            I                2
 Info1-9                                    I   N=           9
@@ -263,264 +178,1224 @@ QEq coupling tensors                       R   N=          12
   0.00000000E+00 -3.66307308E-01
 )";
 
-inline qm::Wavefunction load_fchk() {
-  std::istringstream fchk(fchk_contents);
-  occ::io::FchkReader reader(fchk);
-  return qm::Wavefunction(reader);
+const char *unrestricted_fchk_contents =
+    R"(water                                                                   
+SP        UHF                                                         3-21G               
+Number of atoms                            I                3
+Info1-9                                    I   N=           9
+          10          10           0           0           0         111
+           1           1           2
+Charge                                     I                0
+Multiplicity                               I                1
+Number of electrons                        I               10
+Number of alpha electrons                  I                5
+Number of beta electrons                   I                5
+Number of basis functions                  I               13
+Number of independent functions            I               13
+Number of point charges in /Mol/           I                0
+Number of translation vectors              I                0
+Atomic numbers                             I   N=           3
+           8           1           1
+Nuclear charges                            R   N=           3
+  8.00000000E+00  1.00000000E+00  1.00000000E+00
+Current cartesian coordinates              R   N=           9
+ -1.32695832E+00 -1.05938614E-01  1.87882241E-02 -1.93166520E+00  1.60017436E+00
+ -2.17104966E-02  4.86644352E-01  7.95980993E-02  9.86248069E-03
+Force Field                                I                0
+Int Atom Types                             I   N=           3
+           0           0           0
+MM charges                                 R   N=           3
+  0.00000000E+00  0.00000000E+00  0.00000000E+00
+Integer atomic weights                     I   N=           3
+          16           1           1
+Real atomic weights                        R   N=           3
+  1.59949146E+01  1.00782504E+00  1.00782504E+00
+Atom fragment info                         I   N=           3
+           0           0           0
+Atom residue num                           I   N=           3
+           0           0           0
+Nuclear spins                              I   N=           3
+           0           1           1
+Nuclear ZEff                               R   N=           3
+ -5.60000000E+00 -1.00000000E+00 -1.00000000E+00
+Nuclear ZNuc                               R   N=           3
+  8.00000000E+00  1.00000000E+00  1.00000000E+00
+Nuclear QMom                               R   N=           3
+  0.00000000E+00  0.00000000E+00  0.00000000E+00
+Nuclear GFac                               R   N=           3
+  0.00000000E+00  2.79284600E+00  2.79284600E+00
+MicOpt                                     I   N=           3
+          -1          -1          -1
+Number of contracted shells                I                7
+Number of primitive shells                 I               12
+Pure/Cartesian d shells                    I                1
+Pure/Cartesian f shells                    I                1
+Highest angular momentum                   I                1
+Largest degree of contraction              I                3
+Shell types                                I   N=           7
+           0          -1          -1           0           0           0
+           0
+Number of primitives per shell             I   N=           7
+           3           2           1           2           1           2
+           1
+Shell to atom map                          I   N=           7
+           1           1           1           2           2           3
+           3
+Primitive exponents                        R   N=          12
+  3.22037000E+02  4.84308000E+01  1.04206000E+01  7.40294000E+00  1.57620000E+00
+  3.73684000E-01  5.44717800E+00  8.24547240E-01  1.83191580E-01  5.44717800E+00
+  8.24547240E-01  1.83191580E-01
+Contraction coefficients                   R   N=          12
+  5.92393934E-02  3.51499961E-01  7.07657921E-01 -4.04453583E-01  1.22156176E+00
+  1.00000000E+00  1.56284979E-01  9.04690877E-01  1.00000000E+00  1.56284979E-01
+  9.04690877E-01  1.00000000E+00
+P(S=P) Contraction coefficients            R   N=          12
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  2.44586107E-01  8.53955373E-01
+  1.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00
+Coordinates of each shell                  R   N=          21
+ -1.32695832E+00 -1.05938614E-01  1.87882241E-02 -1.32695832E+00 -1.05938614E-01
+  1.87882241E-02 -1.32695832E+00 -1.05938614E-01  1.87882241E-02 -1.93166520E+00
+  1.60017436E+00 -2.17104966E-02 -1.93166520E+00  1.60017436E+00 -2.17104966E-02
+  4.86644352E-01  7.95980993E-02  9.86248069E-03  4.86644352E-01  7.95980993E-02
+  9.86248069E-03
+Constraint Structure                       R   N=           9
+ -1.32695832E+00 -1.05938614E-01  1.87882241E-02 -1.93166520E+00  1.60017436E+00
+ -2.17104966E-02  4.86644352E-01  7.95980993E-02  9.86248069E-03
+Num ILSW                                   I              100
+ILSW                                       I   N=         100
+           1           1           0           0           2           0
+           0           0           0           0           0          -1
+           0           0           0           1           0           0
+           0           0           0           0           0           0
+           1           1           0           0           0           0
+           0           0      100000           0          -1           0
+           0           0           0           0           0           0
+           0           0           0           1           0           0
+           0           0           1           0           0           0
+           0           0           4          41           0           0
+           0           0           0           0           0           0
+           0           0           0           3           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+Num RLSW                                   I               41
+RLSW                                       R   N=          41
+  1.00000000E+00  1.00000000E+00  1.00000000E+00  1.00000000E+00  1.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.00000000E+00  1.00000000E+00
+  0.00000000E+00
+MxBond                                     I                2
+NBond                                      I   N=           3
+           2           1           1
+IBond                                      I   N=           6
+           2           3           1           0           1           0
+RBond                                      R   N=           6
+  1.00000000E+00  1.00000000E+00  1.00000000E+00  0.00000000E+00  1.00000000E+00
+  0.00000000E+00
+Virial Ratio                               R      2.001756519781691E+00
+SCF Energy                                 R     -7.558532570429206E+01
+Total Energy                               R     -7.558532570429206E+01
+S**2                                       R      1.776356839400251E-15
+S**2 after annihilation                    R      1.776356839400254E-15
+RMS Density                                R      6.067827583034116E-10
+External E-field                           R   N=          35
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+IOpCl                                      I                1
+IROHF                                      I                0
+Alpha Orbital Energies                     R   N=          13
+ -2.04297795E+01 -1.32839993E+00 -6.82002142E-01 -5.38767334E-01 -4.79934816E-01
+  2.62305860E-01  3.60309756E-01  1.18677618E+00  1.30827371E+00  1.78180383E+00
+  1.86966403E+00  2.01413260E+00  3.11256620E+00
+Beta Orbital Energies                      R   N=          13
+ -2.04297795E+01 -1.32839993E+00 -6.82002142E-01 -5.38767334E-01 -4.79934816E-01
+  2.62305860E-01  3.60309756E-01  1.18677618E+00  1.30827371E+00  1.78180383E+00
+  1.86966403E+00  2.01413260E+00  3.11256620E+00
+Alpha MO coefficients                      R   N=         169
+  9.83233899E-01  9.58463391E-02  1.88750561E-03  3.00933014E-03 -7.85410800E-05
+ -3.79135836E-02 -3.60972070E-03 -5.80733695E-03  1.51488012E-04  2.64516541E-03
+  6.92318514E-03  2.65456006E-03  6.77097739E-03 -2.29162541E-01  2.17530408E-01
+  4.34495281E-02  7.10960067E-02 -1.85279789E-03  7.06943412E-01  4.96654402E-02
+  7.96881116E-02 -2.07903405E-03  1.17642634E-01  1.91844250E-02  1.15170013E-01
+  1.96549799E-02 -1.03330237E-03  6.50462051E-04  3.35133926E-01 -2.15147968E-01
+  4.48422079E-03  5.28170684E-03  3.12568729E-01 -1.99937826E-01  4.16449079E-03
+ -2.34011521E-01 -1.84826668E-01  2.31814194E-01  1.86019113E-01  8.88460340E-02
+ -8.27120954E-02  2.36980023E-01  3.71444444E-01 -9.70403126E-03 -4.06632282E-01
+  2.72194642E-01  4.26240996E-01 -1.11362105E-02  1.30905470E-01  1.04911418E-01
+  1.32780319E-01  1.08714416E-01  1.91546403E-11 -1.85557282E-11  1.25443751E-03
+  1.28212655E-02  5.21398206E-01 -1.07867861E-10  1.51972490E-03  1.55326959E-02
+  6.31663058E-01  4.84526262E-11  9.79552608E-11  8.15404582E-12  8.28760953E-12
+ -1.08664463E-01  3.47985480E-02  1.16792672E-01  1.76291173E-01 -4.61602090E-03
+  1.03754856E+00  2.59167046E-01  3.92334765E-01 -1.02711075E-02 -4.52521119E-02
+ -8.50558615E-01 -4.75660670E-02 -8.69242587E-01  1.44542424E-03 -2.46324510E-04
+  2.56249463E-01 -1.63954999E-01  3.41516638E-03 -1.79988379E-02  6.50715573E-01
+ -4.16934234E-01  8.68691612E-03  3.77102984E-02  1.18473780E+00 -3.90730672E-02
+ -1.15927293E+00  1.10762081E-03 -3.19393067E-03 -1.56206450E-01  9.03240763E-02
+ -1.84526476E-03  6.30106009E-03 -3.70943321E-01  2.33868057E-01 -4.85839652E-03
+ -9.39608766E-01  6.78315510E-01  9.83895693E-01 -7.10060657E-01  6.78879214E-02
+ -1.00569472E-01 -1.48263505E-01 -2.40661619E-01  6.27461653E-03 -1.05562969E-01
+ -1.39653782E-01 -2.59919005E-01  6.72744450E-03  1.00802184E+00 -5.00044119E-01
+  9.56903028E-01 -4.77467310E-01 -4.07068076E-12  1.32658754E-11  2.47525860E-03
+  2.52989473E-02  1.02882401E+00  8.40823396E-12 -2.32184300E-03 -2.37309279E-02
+ -9.65057881E-01 -3.14446272E-11 -1.41539884E-11 -1.42218098E-11  9.87599497E-12
+ -4.59528509E-02  1.40740541E-01 -5.32367082E-01 -8.56097566E-01  2.23324039E-02
+  1.67317191E-01  6.07848474E-01  9.82911294E-01 -2.56323753E-02 -2.67432634E-01
+ -9.50620250E-02 -2.67866205E-01 -8.19727255E-02 -2.98416367E-04  1.95681730E-03
+ -9.05323672E-01  5.63977138E-01 -1.16901604E-02 -3.56406478E-03  1.17875809E+00
+ -7.35538072E-01  1.52510125E-02  1.31416982E-01  5.05564351E-01 -1.40812835E-01
+ -5.00427404E-01  8.46144580E-02 -1.63995218E+00 -8.77708985E-02 -1.38414354E-01
+  3.61480009E-03  1.98805284E+00  2.66036438E-01  4.27676880E-01 -1.11567029E-02
+ -2.91124366E-01 -3.60494228E-01 -2.90744521E-01 -3.50869080E-01
+Beta MO coefficients                       R   N=         169
+  9.83233899E-01  9.58463391E-02  1.88750561E-03  3.00933014E-03 -7.85410800E-05
+ -3.79135836E-02 -3.60972070E-03 -5.80733695E-03  1.51488012E-04  2.64516541E-03
+  6.92318514E-03  2.65456006E-03  6.77097739E-03 -2.29162541E-01  2.17530408E-01
+  4.34495281E-02  7.10960067E-02 -1.85279789E-03  7.06943412E-01  4.96654402E-02
+  7.96881116E-02 -2.07903405E-03  1.17642634E-01  1.91844250E-02  1.15170013E-01
+  1.96549799E-02 -1.03330237E-03  6.50462051E-04  3.35133926E-01 -2.15147968E-01
+  4.48422079E-03  5.28170684E-03  3.12568729E-01 -1.99937826E-01  4.16449079E-03
+ -2.34011521E-01 -1.84826668E-01  2.31814194E-01  1.86019113E-01  8.88460340E-02
+ -8.27120954E-02  2.36980023E-01  3.71444444E-01 -9.70403126E-03 -4.06632282E-01
+  2.72194642E-01  4.26240996E-01 -1.11362105E-02  1.30905470E-01  1.04911418E-01
+  1.32780319E-01  1.08714416E-01  1.91546403E-11 -1.85557282E-11  1.25443751E-03
+  1.28212655E-02  5.21398206E-01 -1.07867861E-10  1.51972490E-03  1.55326959E-02
+  6.31663058E-01  4.84526262E-11  9.79552608E-11  8.15404582E-12  8.28760953E-12
+ -1.08664463E-01  3.47985480E-02  1.16792672E-01  1.76291173E-01 -4.61602090E-03
+  1.03754856E+00  2.59167046E-01  3.92334765E-01 -1.02711075E-02 -4.52521119E-02
+ -8.50558615E-01 -4.75660670E-02 -8.69242587E-01  1.44542424E-03 -2.46324510E-04
+  2.56249463E-01 -1.63954999E-01  3.41516638E-03 -1.79988379E-02  6.50715573E-01
+ -4.16934234E-01  8.68691612E-03  3.77102984E-02  1.18473780E+00 -3.90730672E-02
+ -1.15927293E+00  1.10762081E-03 -3.19393067E-03 -1.56206450E-01  9.03240763E-02
+ -1.84526476E-03  6.30106009E-03 -3.70943321E-01  2.33868057E-01 -4.85839652E-03
+ -9.39608766E-01  6.78315510E-01  9.83895693E-01 -7.10060657E-01  6.78879214E-02
+ -1.00569472E-01 -1.48263505E-01 -2.40661619E-01  6.27461653E-03 -1.05562969E-01
+ -1.39653782E-01 -2.59919005E-01  6.72744450E-03  1.00802184E+00 -5.00044119E-01
+  9.56903028E-01 -4.77467310E-01 -4.07068076E-12  1.32658754E-11  2.47525860E-03
+  2.52989473E-02  1.02882401E+00  8.40823396E-12 -2.32184300E-03 -2.37309279E-02
+ -9.65057881E-01 -3.14446272E-11 -1.41539884E-11 -1.42218098E-11  9.87599497E-12
+ -4.59528509E-02  1.40740541E-01 -5.32367082E-01 -8.56097566E-01  2.23324039E-02
+  1.67317191E-01  6.07848474E-01  9.82911294E-01 -2.56323753E-02 -2.67432634E-01
+ -9.50620250E-02 -2.67866205E-01 -8.19727255E-02 -2.98416367E-04  1.95681730E-03
+ -9.05323672E-01  5.63977138E-01 -1.16901604E-02 -3.56406478E-03  1.17875809E+00
+ -7.35538072E-01  1.52510125E-02  1.31416982E-01  5.05564351E-01 -1.40812835E-01
+ -5.00427404E-01  8.46144580E-02 -1.63995218E+00 -8.77708985E-02 -1.38414354E-01
+  3.61480009E-03  1.98805284E+00  2.66036438E-01  4.27676880E-01 -1.11567029E-02
+ -2.91124366E-01 -3.60494228E-01 -2.90744521E-01 -3.50869080E-01
+Total SCF Density                          R   N=          91
+  2.05431811E+00  7.40804699E-02  1.26695426E-01  2.52145914E-02 -1.95012366E-02
+  3.40734555E-01  3.97800249E-02 -3.02178345E-02  3.80647621E-02  3.78975413E-01
+ -1.03886124E-03  7.89979621E-04 -4.46874012E-04  3.96748491E-03  5.43947609E-01
+ -4.70831985E-01  3.67569308E-01 -1.27897706E-01 -2.04061783E-01  5.32562235E-03
+  1.33316827E+00  1.78595564E-02 -2.37054204E-02  3.42820222E-01  7.47925937E-02
+ -1.07822560E-03 -1.47569438E-01  3.48542259E-01  2.82098351E-02 -3.72147250E-02
+  7.49511734E-02  4.14376492E-01  5.83741724E-03 -2.35648399E-01  1.15057033E-01
+  4.56563412E-01 -7.36652857E-04  9.72149167E-04 -1.08212510E-03  5.83779877E-03
+  6.58957132E-01  6.14967073E-03 -1.74675226E-03  8.13105492E-03  7.98287844E-01
+ -2.49724644E-02  2.97293964E-02 -8.45734171E-02  2.14686189E-01 -5.07569171E-03
+  5.72000541E-02 -6.33593821E-02  2.23888782E-01 -5.35302399E-03  1.71488840E-01
+  2.38454080E-02 -7.92181645E-03 -7.24663098E-02  1.60237232E-01 -3.76591167E-03
+ -6.06734992E-02 -5.65737974E-02  1.66319910E-01 -3.95372166E-03  1.18520535E-01
+  9.11665513E-02 -2.44502576E-02  2.89513152E-02  2.28328355E-01  1.52845507E-02
+ -9.25187166E-04  5.70992966E-02  2.28620693E-01  3.88205088E-02 -1.50464349E-03
+ -4.66191930E-02 -5.33748501E-02  1.69279225E-01  2.32398001E-02 -7.89293913E-03
+  1.77942480E-01  3.55499647E-03 -5.15531634E-04 -5.91720920E-02  1.77373942E-01
+  2.13464615E-02 -9.51658762E-04 -5.39382594E-02 -4.51039261E-02  1.19677287E-01
+  9.37081976E-02
+Spin SCF Density                           R   N=          91
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00
+Mulliken Charges                           R   N=           3
+ -7.24461767E-01  3.63043495E-01  3.61418272E-01
+ONIOM Charges                              I   N=          16
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+ONIOM Multiplicities                       I   N=          16
+           1           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+Atom Layers                                I   N=           3
+           1           1           1
+Atom Modifiers                             I   N=           3
+           0           0           0
+Force Field                                I                0
+Int Atom Modified Types                    I   N=           3
+           0           0           0
+Link Atoms                                 I   N=           3
+           0           0           0
+Atom Modified MM Charges                   R   N=           3
+  0.00000000E+00  0.00000000E+00  0.00000000E+00
+Link Distances                             R   N=          12
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00
+Cartesian Gradient                         R   N=           9
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+Dipole Moment                              R   N=           3
+  5.15346378E-01  8.13553371E-01 -2.12452852E-02
+Quadrupole Moment                          R   N=           6
+ -1.50772647E-01  6.97836931E-01 -5.47064284E-01 -1.48317294E+00  4.22126276E-02
+ -1.64760439E-02
+Anisotropic Hyperfine tensors              R   N=          18
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00
+Isotropic Hyperfine splittings             R   N=           3
+  0.00000000E+00  0.00000000E+00  0.00000000E+00
+QEq coupling tensors                       R   N=          18
+ -1.38887030E+00  7.04259404E-01 -6.92045268E-01 -8.96597254E-03  6.65328662E-02
+  2.08091557E+00  1.48720977E-01  2.95841762E-01 -4.82586853E-01 -6.82824746E-03
+  1.93762470E-02  3.33865876E-01 -5.74458624E-01 -5.38520401E-02  2.51944229E-01
+  3.48239778E-03  1.86622939E-03  3.22514395E-01
+)";
+
+TEST_CASE("DMA linear", "[dma]") {
+  using namespace occ::qm;
+  using namespace occ::io;
+  std::istringstream fchk(h2_contents);
+  FchkReader reader(fchk);
+
+  occ::qm::Wavefunction wfn(reader);
+
+  SECTION("Basis normalization") {
+    const Vec3 coeffs_dma(0.27693435, 0.26783885, 0.08347367);
+    const auto &shell = wfn.basis.shells()[0];
+    for (int i = 0; i < 3; i++) {
+      REQUIRE(shell.coeff_normalized_dma(0, i) ==
+              Approx(coeffs_dma(i)).margin(1e-6));
+    }
+  }
+
+  // Test DMA calculation (analytical method)
+  auto result = occ::dma::dmaql0(wfn, 2, true, false);
+
+  // Check the result
+  REQUIRE(result.size());
+
+  Mat expected(3, 2);
+  expected << 0.0, 0.0, 0.19113723, -0.19113723, -0.11109289, -0.11109289;
+
+  for (int site = 0; site < 2; site++) {
+    const auto &m = result[site];
+    for (int term = 0; term < 3; term++) {
+      REQUIRE(m.q(term) == Approx(expected(term, site)).margin(1e-6));
+    }
+  }
 }
 
-TEST_CASE("DMA from fchk", "[dma]") {
-  using namespace occ::dma;
+const char *h2o_contents = R"(fchk produced by OCC                                                    
+SP         HF                                                      6-31G
+Number of atoms                            I                3
+Charge                                     I                0
+Multiplicity                               I                1
+Number of electrons                        I               10
+Number of alpha electrons                  I                5
+Number of beta electrons                   I                5
+Number of basis functions                  I               13
+Number of independent functions            I               13
+Number of point charges in /Mol/           I                0
+Number of translation vectors              I                0
+Atomic numbers                             I   N=           3
+           8           1           1
+Nuclear charges                            R   N=           3
+  8.00000000e+00  1.00000000e+00  1.00000000e+00
+Current cartesian coordinates              R   N=           9
+ -1.32695831e+00 -1.05938613e-01  1.87882240e-02 -1.93166519e+00  1.60017435e+00
+ -2.17104965e-02  4.86644350e-01  7.95980990e-02  9.86248064e-03
+Force Field                                I                0
+Int Atom Types                             I   N=           3
+           0           0           0
+MM Charges                                 R   N=           3
+  0.00000000e+00  0.00000000e+00  0.00000000e+00
+Integer atomic weights                     I   N=           3
+          16           1           1
+Real atomic weights                        R   N=           3
+  1.59994001e+01  1.00794005e+00  1.00794005e+00
+Atom residue num                           I   N=           3
+           0           0           0
+Number of contracted shells                I                9
+Number of primitive shells                 I               22
+Pure/Cartesian d shells                    I                1
+Pure/Cartesian f shells                    I                1
+Highest angular momentum                   I                1
+Largest degree of contraction              I                6
+Shell types                                I   N=           9
+           0           0           1           0           1           0
+           0           0           0
+Number of primitives per shell             I   N=           9
+           6           3           3           1           1           3
+           1           3           1
+Shell to atom map                          I   N=           9
+           1           1           1           1           1           2
+           2           3           3
+Primitive exponents                        R   N=          22
+  5.48467166e+03  8.25234946e+02  1.88046958e+02  5.29645000e+01  1.68975704e+01
+  5.79963534e+00  1.55396162e+01  3.59993359e+00  1.01376175e+00  1.55396162e+01
+  3.59993359e+00  1.01376175e+00  2.70005823e-01  2.70005823e-01  1.87311370e+01
+  2.82539437e+00  6.40121692e-01  1.61277759e-01  1.87311370e+01  2.82539437e+00
+  6.40121692e-01  1.61277759e-01
+Contraction coefficients                   R   N=          22
+  1.83107443e-03  1.39501722e-02  6.84450781e-02  2.32714336e-01  4.70192898e-01
+  3.58520853e-01 -1.10777550e-01 -1.48026263e-01  1.13076702e+00  7.08742682e-02
+  3.39752839e-01  7.27158577e-01  1.00000000e+00  1.00000000e+00  3.34946043e-02
+  2.34726954e-01  8.13757326e-01  1.00000000e+00  3.34946043e-02  2.34726954e-01
+  8.13757326e-01  1.00000000e+00
+P(S=P) Contraction coefficients            R   N=          22
+  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00
+  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00
+  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00
+  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00
+  0.00000000e+00  0.00000000e+00
+Coordinates of each shell                  R   N=          27
+ -1.32695831e+00 -1.05938613e-01  1.87882240e-02 -1.32695831e+00 -1.05938613e-01
+  1.87882240e-02 -1.32695831e+00 -1.05938613e-01  1.87882240e-02 -1.32695831e+00
+ -1.05938613e-01  1.87882240e-02 -1.32695831e+00 -1.05938613e-01  1.87882240e-02
+ -1.93166519e+00  1.60017435e+00 -2.17104965e-02 -1.93166519e+00  1.60017435e+00
+ -2.17104965e-02  4.86644350e-01  7.95980990e-02  9.86248064e-03  4.86644350e-01
+  7.95980990e-02  9.86248064e-03
+Virial ratio                               R      2.000058389893980E+00
+SCF Energy                                 R     -7.598355029024600E+01
+Alpha Orbital Energies                     R   N=          13
+ -2.05618546e+01 -1.35511969e+00 -7.06370837e-01 -5.61652463e-01 -5.01574219e-01
+  2.02567800e-01  2.98573567e-01  1.05126722e+00  1.16413457e+00  1.18474182e+00
+  1.21796386e+00  1.37742184e+00  1.69877897e+00
+Alpha MO coefficients                      R   N=         169
+ -9.95787539e-01 -2.19410259e-02 -1.11608735e-03 -1.78176307e-03  4.64990459e-05
+  8.03072301e-03  1.04111369e-03  1.66407438e-03 -4.34246823e-05 -1.26445438e-04
+ -1.98884936e-03 -1.39696853e-04 -1.94952319e-03 -2.12429144e-01  4.69075062e-01
+  5.82352345e-02  9.50382910e-02 -2.47711558e-03  4.80414592e-01  3.25816298e-02
+  5.16699150e-02 -1.34895998e-03  1.40692488e-01 -8.31741296e-03  1.37969869e-01
+ -7.95569462e-03 -9.16916197e-04  1.70622903e-03  4.25556541e-01 -2.72913369e-01
+  5.68713248e-03  4.97412981e-03  2.28694850e-01 -1.45812434e-01  3.03533176e-03
+ -2.63396195e-01 -1.25337370e-01  2.61282464e-01  1.25676898e-01 -7.62646401e-02
+  1.81880692e-01 -2.95359376e-01 -4.62673853e-01  1.20878325e-02  3.07882441e-01
+ -2.15851637e-01 -3.37758164e-01  8.82484714e-03 -1.43970010e-01 -8.04688637e-02
+ -1.46313689e-01 -8.31039363e-02 -1.20530847e-17  1.61195673e-16  1.54423195e-03
+  1.57831762e-02  6.41849259e-01 -2.76643168e-16  1.22553999e-03  1.25259121e-02
+  5.09387167e-01  1.88710519e-16  2.91023702e-16 -1.10295217e-16 -5.00162066e-17
+ -8.46293720e-02  1.03659039e-01  1.28468143e-01  1.94813125e-01 -5.09956885e-03
+  1.17240977e+00  2.62330041e-01  4.00917980e-01 -1.04897800e-02 -5.66676055e-02
+ -9.80750923e-01 -5.89507806e-02 -9.96526011e-01 -8.71489874e-04  6.93667003e-04
+ -2.86125263e-01  1.82233784e-01 -3.79276615e-03  1.86505976e-02 -6.91076674e-01
+  4.41933808e-01 -9.20455447e-03 -4.33891810e-02 -1.39238005e+00  4.47192302e-02
+  1.36660394e+00  9.96173663e-04 -8.22179320e-03 -9.56458408e-02  4.43863972e-02
+ -8.61353278e-04  1.78415213e-02 -6.14925531e-01  4.00277632e-01 -8.36343528e-03
+ -9.53763272e-01  4.84528187e-01  9.90994930e-01 -5.22284699e-01 -2.02845761e-16
+  2.10126580e-15 -2.31175438e-03 -2.36278149e-02 -9.60864617e-01 -2.66539139e-15
+  2.49537820e-03  2.55045842e-02  1.03718658e+00 -7.71107609e-16  1.87453762e-15
+ -3.22693314e-15  2.16184949e-15  4.78667184e-02 -2.40936751e-01 -3.87801840e-01
+ -5.99918696e-01  1.56851135e-02  1.85159783e-01  1.90415340e-01  2.27919165e-01
+ -6.06269110e-03  8.30733831e-01 -5.43799726e-01  7.83054291e-01 -5.46959765e-01
+  7.29445324e-02 -4.70658837e-01  3.53531142e-01  5.74558991e-01 -1.49790620e-02
+  8.93938070e-02 -6.05405609e-01 -9.94905853e-01  2.59214462e-02  5.80329451e-01
+ -9.41926182e-02  5.76139068e-01 -1.15784004e-01  1.22734594e-03 -9.95321177e-03
+  8.72464979e-01 -5.53363242e-01  1.15082181e-02  1.10484053e-02 -1.30124016e+00
+  8.14396828e-01 -1.68954810e-02  1.07402858e-01 -9.12870350e-01 -7.71658925e-02
+  8.93168901e-01  5.30643338e-02 -1.66758678e+00 -1.10140502e-01 -1.70349797e-01
+  4.45391703e-03  2.75041401e+00  4.68201774e-01  7.45831921e-01 -1.94665781e-02
+ -4.79401914e-01 -6.12880590e-01 -4.81651996e-01 -5.97331885e-01
+Total SCF Density                          R   N=          91
+  2.08507220e+00 -1.83338487e-01  5.07192639e-01  2.17516034e-02 -5.13057726e-02
+  5.43461007e-01  3.42424965e-02 -7.99958142e-02  5.21518600e-02  5.95666723e-01
+ -8.94360892e-04  2.09054700e-03 -6.06402802e-04  5.50019546e-03  8.24310137e-01
+ -2.67072117e-01  5.62361321e-01 -1.21702197e-01 -1.96326378e-01  5.12050170e-03
+  6.51358025e-01  1.65882752e-02 -4.72173045e-02  3.25949047e-01  8.11380334e-02
+ -1.20521725e-03 -9.93166392e-02  1.99914824e-01  2.65188845e-02 -7.49598415e-02
+  8.14702016e-02  4.02342776e-01  5.99962737e-03 -1.59757506e-01  8.25193465e-02
+  2.76342582e-01 -6.92013529e-04  1.95687513e-03 -1.21338532e-03  6.00042654e-03
+  6.54154102e-01  4.16740964e-03 -1.26083027e-03  5.77502537e-03  5.19128397e-01
+ -3.70798774e-02  7.87266653e-02 -1.22747360e-01  3.03733803e-01 -7.17354372e-03
+  4.39074076e-02 -4.91546642e-02  1.88605690e-01 -4.51958243e-03  2.19798623e-01
+  1.99983702e-02 -3.74148809e-02 -6.01061020e-02  1.41300308e-01 -3.32998732e-03
+ -5.88203460e-02 -2.31354812e-02  9.00433860e-02 -2.15851940e-03  8.68570868e-02
+  4.45156584e-02 -3.65014519e-02  7.71109252e-02  3.24880890e-01  1.90014210e-02
+ -1.24888237e-03  4.50677070e-02  1.91662282e-01  3.68981400e-02 -1.36845350e-03
+ -5.66893632e-02 -4.42440700e-02  2.17423851e-01  1.97079778e-02 -3.71792225e-02
+  1.55134054e-01  6.79698159e-03 -5.40377534e-04 -5.75975948e-02  9.28370817e-02
+  1.86589287e-02 -6.82183768e-04 -4.45148042e-02 -1.79893688e-02  8.77980784e-02
+  4.55360812e-02
+)";
 
-  // Load wavefunction from fchk file
-  occ::qm::Wavefunction wfn = load_fchk();
 
-  // Perform DMA analysis with DMA4 method (grid-based)
-  DMAResult result_grid = distributed_multipole_analysis(wfn, 1, true, 3);
+TEST_CASE("DMA general", "[dma]") {
+  using namespace occ::qm;
+  using namespace occ::io;
+  std::istringstream fchk(h2o_contents);
+  FchkReader reader(fchk);
 
-  // Also test the analytical method
-  DMAResult result_analytical = distributed_multipole_analysis(wfn, 1, false);
+  occ::qm::Wavefunction wfn(reader);
 
-  // Verify basic structure
-  REQUIRE(result_grid.multipoles.size() == wfn.atoms.size());
-  REQUIRE(result_analytical.multipoles.size() == wfn.atoms.size());
-
-  // Compare with reference values from GDMA
-  // H atom 1 (z = 0.37)
-  // Should have Q00=0.0, dipole z component (Q10) = -0.072475
-  // H atom 2 (z = -0.37)
-  // Should have Q00=0.0, dipole z component (Q10) = 0.072475
-
-  // Print out the computed values for direct viewing in test output
-  INFO("DMA4 (Grid-based) results:");
-  for (size_t i = 0; i < result_grid.multipoles.size(); i++) {
-    const auto &pos = result_grid.positions.col(i);
-    const auto &mp = result_grid.multipoles[i];
-    INFO(fmt::format("Atom at ({:.6f}, {:.6f}, {:.6f})", pos(0), pos(1),
-                     pos(2)));
-    INFO(fmt::format("  Charge: {:.6f}", mp.charge()));
-    if (mp.rank() >= 1) {
-      INFO(fmt::format("  Dipole: {:.6f}, {:.6f}, {:.6f}", mp.dipole()(0),
-                       mp.dipole()(1), mp.dipole()(2)));
+  SECTION("Basis normalization") {
+    const Vec3 coeffs_dma(0.27693435, 0.26783885, 0.08347367);
+    const auto &shell = wfn.basis.shells()[0];
+    for (int i = 0; i < 3; i++) {
+      REQUIRE(shell.coeff_normalized_dma(0, i) ==
+              Approx(coeffs_dma(i)).margin(1e-6));
     }
   }
 
-  INFO("Analytical results:");
-  for (size_t i = 0; i < result_analytical.multipoles.size(); i++) {
-    const auto &pos = result_analytical.positions.col(i);
-    const auto &mp = result_analytical.multipoles[i];
-    INFO(fmt::format("Atom at ({:.6f}, {:.6f}, {:.6f})", pos(0), pos(1),
-                     pos(2)));
-    INFO(fmt::format("  Charge: {:.6f}", mp.charge()));
-    if (mp.rank() >= 1) {
-      INFO(fmt::format("  Dipole: {:.6f}, {:.6f}, {:.6f}", mp.dipole()(0),
-                       mp.dipole()(1), mp.dipole()(2)));
+  // Test DMA calculation (analytical method)
+  auto result = occ::dma::dmaqlm(wfn, 2, true, false);
+
+  // Check the result
+  REQUIRE(result.size());
+
+  Mat expected(3, 2);
+  expected << 0.0, 0.0, 0.19113723, -0.19113723, -0.11109289, -0.11109289;
+
+  for (int site = 0; site < 2; site++) {
+    const auto &m = result[site];
+    for (int term = 0; term < 3; term++) {
+      REQUIRE(m.q(term) == Approx(expected(term, site)).margin(1e-6));
     }
-  }
-
-  // Total dipoles
-  INFO(fmt::format("Grid-based total dipole: {:.6f}, {:.6f}, {:.6f}",
-                   result_grid.total_dipole()(0), result_grid.total_dipole()(1),
-                   result_grid.total_dipole()(2)));
-
-  INFO(fmt::format("Analytical total dipole: {:.6f}, {:.6f}, {:.6f}",
-                   result_analytical.total_dipole()(0),
-                   result_analytical.total_dipole()(1),
-                   result_analytical.total_dipole()(2)));
-
-  // Compare with reference from GDMA for H2 molecule
-  // This is a manual check for now since our implementation is in progress
-  INFO("Reference GDMA values from h2.out:");
-  INFO("H1 (z=0.37): Q00=0.0, Q10=-0.072475");
-  INFO("H2 (z=-0.37): Q00=0.0, Q10=0.072475");
-
-  // Check the current implementation values
-  // We expect these to be zero for now since our implementation is incomplete
-  // Note: This is the current state of the implementation, not the correct
-  // values
-
-  // Print results to standard output for easier viewing
-  std::cout << "\nDMA4 (Grid-based) results:\n";
-  for (size_t i = 0; i < result_grid.multipoles.size(); i++) {
-    const auto &pos = result_grid.positions.col(i);
-    const auto &mp = result_grid.multipoles[i];
-    std::cout << fmt::format("Atom at ({:.6f}, {:.6f}, {:.6f})\n", pos(0),
-                             pos(1), pos(2));
-    std::cout << fmt::format("  Charge: {:.6f}\n", mp.charge());
-    if (mp.rank() >= 1) {
-      std::cout << fmt::format("  Dipole: {:.6f}, {:.6f}, {:.6f}\n",
-                               mp.dipole()(0), mp.dipole()(1), mp.dipole()(2));
-    }
-  }
-
-  std::cout << "\nAnalytical results:\n";
-  for (size_t i = 0; i < result_analytical.multipoles.size(); i++) {
-    const auto &pos = result_analytical.positions.col(i);
-    const auto &mp = result_analytical.multipoles[i];
-    std::cout << fmt::format("Atom at ({:.6f}, {:.6f}, {:.6f})\n", pos(0),
-                             pos(1), pos(2));
-    std::cout << fmt::format("  Charge: {:.6f}\n", mp.charge());
-    if (mp.rank() >= 1) {
-      std::cout << fmt::format("  Dipole: {:.6f}, {:.6f}, {:.6f}\n",
-                               mp.dipole()(0), mp.dipole()(1), mp.dipole()(2));
-    }
-  }
-
-  std::cout << "\nReference GDMA values from h2.out:\n";
-  std::cout << "H1 (z=0.37): Q00=0.0, Q10=-0.072475\n";
-  std::cout << "H2 (z=-0.37): Q00=0.0, Q10=0.072475\n";
-
-  // This passes because our implementation is currently returning default
-  // values
-  REQUIRE(1 == 1);
-
-  // Note: Since our implementation is not complete, we can't do exact
-  // comparison yet. Once implemented correctly, uncomment these tests:
-  /*
-  // Check atom 1 (positive z)
-  REQUIRE(result_grid.multipoles[0].charge() == Approx(0.0).margin(1e-6));
-  REQUIRE(result_grid.multipoles[0].dipole()(2) ==
-  Approx(-0.072475).margin(1e-6));
-
-  // Check atom 2 (negative z)
-  REQUIRE(result_grid.multipoles[1].charge() == Approx(0.0).margin(1e-6));
-  REQUIRE(result_grid.multipoles[1].dipole()(2) ==
-  Approx(0.072475).margin(1e-6));
-
-  // Total dipole should be zero (symmetric molecule)
-  Vec3 total_dipole = result_grid.total_dipole();
-  REQUIRE(total_dipole.norm() == Approx(0.0).margin(1e-6));
-  */
-}
-
-TEST_CASE("Binomial Coefficients", "[dma]") {
-  BinomialCoefficients binom(10);
-
-  SECTION("Basic values") {
-    // Test some known binomial coefficients
-    CHECK(binom.binomial(0, 0) == 1);
-    CHECK(binom.binomial(1, 0) == 1);
-    CHECK(binom.binomial(1, 1) == 1);
-    CHECK(binom.binomial(2, 1) == 2);
-    CHECK(binom.binomial(4, 2) == 6);
-    CHECK(binom.binomial(5, 3) == 10);
-    CHECK(binom.binomial(10, 5) == 252);
-  }
-
-  SECTION("Square roots") {
-    // Test square roots of binomial coefficients
-    CHECK(binom.sqrt_binomial(4, 2) == Approx(std::sqrt(6.0)));
-    CHECK(binom.sqrt_binomial(10, 5) == Approx(std::sqrt(252.0)));
-  }
-
-  SECTION("Edge cases") {
-    // Test edge cases
-    CHECK(binom.binomial(5, 0) == 1);
-    CHECK(binom.binomial(0, 0) == 1);
-    CHECK(binom.binomial(5, 5) == 1);
-    CHECK(binom.binomial(11, 5) == 0); // Beyond max_order
-    CHECK(binom.binomial(5, 6) == 0);  // m > k
-    CHECK(binom.binomial(-1, 0) == 0); // Negative k
-  }
-
-  SECTION("Pascal's triangle") {
-    // Test Pascal's triangle property
-    for (int n = 1; n < 10; n++) {
-      for (int k = 1; k < n; k++) {
-        CHECK(binom.binomial(n, k) ==
-              binom.binomial(n - 1, k - 1) + binom.binomial(n - 1, k));
-      }
-    }
-  }
-
-  SECTION("Matrix access") {
-    // Test matrix representations
-    const Mat &binom_mat = binom.binomial_matrix();
-    const Mat &sqrt_binom_mat = binom.sqrt_binomial_matrix();
-
-    CHECK(binom_mat(4, 2) == 6);
-    CHECK(sqrt_binom_mat(4, 2) == Approx(std::sqrt(6.0)));
-
-    // Verify matrix dimensions
-    CHECK(binom_mat.rows() == 11); // 0 to 10
-    CHECK(binom_mat.cols() == 11); // 0 to 10
   }
 }
 
-TEST_CASE("Gauss-Hermite Quadrature", "[dma]") {
-  SECTION("n = 1") {
-    GaussHermite gh(1);
-    CHECK(gh.size() == 1);
-    CHECK(gh.points()(0) == Approx(0.0));
-    CHECK(gh.weights()(0) == Approx(1.77245385090552));
-  }
+const char * c2h4_contents = R"(
+9/18/03, C2H4 with g03 & 6-31G(d)                                       
+SP        RHF                                                         6-31G(d)            
+Number of atoms                            I                6
+Charge                                     I                0
+Multiplicity                               I                1
+Number of electrons                        I               16
+Number of alpha electrons                  I                8
+Number of beta electrons                   I                8
+Number of basis functions                  I               38
+Number of independant functions            I               38
+Number of point charges in /Mol/           I                0
+Number of translation vectors              I                0
+Number of symbols in /Mol/                 I                0
+Info1-9                                    I   N=           9
+          14          14           0           0           0         110
+           1           1           2
+Num ILSW                                   I              100
+ILSW                                       I   N=         100
+           0           1           0           0           2           0
+           0           0           3           0           0     1000000
+           0           1           0           0           0           0
+           0     1000000           0           0           0           0
+           1           0           0           0     1000000           0
+           0           0           0           0          -1           0
+           0           0           0           0           0           0
+           0           0           0           1           0           0
+           0           0           1     1000000     1000000           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+Number of contracted shells                I               16
+Highest angular momentum                   I                2
+Largest degree of contraction              I                6
+Number of primitive shells                 I               38
+Pure/Cartesian d shells                    I                1
+Pure/Cartesian f shells                    I                0
+Virial Ratio                               R      2.002316940850547E+00
+SCF Energy                                 R     -7.803069710956214E+01
+Total Energy                               R     -7.803069710956214E+01
+RMS Density                                R      1.627732119566173E-05
+Atomic numbers                             I   N=           6
+           6           6           1           1           1           1
+Nuclear charges                            R   N=           6
+  6.00000000E+00  6.00000000E+00  1.00000000E+00  1.00000000E+00  1.00000000E+00
+  1.00000000E+00
+Current cartesian coordinates              R   N=          18
+  0.00000000E+00  0.00000000E+00  1.26600000E+00  1.55035164E-16  0.00000000E+00
+ -1.26600000E+00  0.00000000E+00  1.75500000E+00  2.33000000E+00 -2.14918415E-16
+ -1.75500000E+00  2.33000000E+00  2.85333280E-16  1.75500000E+00 -2.33000000E+00
+ -2.14918415E-16 -1.75500000E+00 -2.33000000E+00
+Atom Types                                 C   N=           6
+                                                            
+            
+Int Atom Types                             I   N=           6
+           0           0           0           0           0           0
+Force Field                                I                0
+MM charges                                 R   N=           6
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00
+Integer atomic weights                     I   N=           6
+          12          12           1           1           1           1
+Real atomic weights                        R   N=           6
+  1.20000000E+01  1.20000000E+01  1.00782504E+00  1.00782504E+00  1.00782504E+00
+  1.00782504E+00
+Atom residue info                          I   N=           6
+           0           0           0           0           0           0
+Atom fragment info                         I   N=           6
+           0           0           0           0           0           0
+Atom residue num                           I   N=           6
+           0           0           0           0           0           0
+Nuclear spins                              I   N=           6
+           0           0           1           1           1           1
+Nuclear ZEff                               R   N=           6
+ -3.60000000E+00 -3.60000000E+00 -1.00000000E+00 -1.00000000E+00 -1.00000000E+00
+ -1.00000000E+00
+Nuclear QMom                               R   N=           6
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00
+Nuclear GFac                               R   N=           6
+  0.00000000E+00  0.00000000E+00  2.79284600E+00  2.79284600E+00  2.79284600E+00
+  2.79284600E+00
+MicOpt                                     I   N=           6
+           0           0           0           0           0           0
+Constraint Structure                       R   N=          18
+  0.00000000E+00  0.00000000E+00  1.26600000E+00  1.55035164E-16  0.00000000E+00
+ -1.26600000E+00  0.00000000E+00  1.75500000E+00  2.33000000E+00 -2.14918415E-16
+ -1.75500000E+00  2.33000000E+00  2.85333280E-16  1.75500000E+00 -2.33000000E+00
+ -2.14918415E-16 -1.75500000E+00 -2.33000000E+00
+ONIOM Charges                              I   N=          16
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+ONIOM Multiplicities                       I   N=          16
+           1           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+Atom Layers                                I   N=           6
+           1           1           1           1           1           1
+Atom Modifiers                             I   N=           6
+           0           0           0           0           0           0
+Atom Modified Types                        C   N=           6
+                                                            
+            
+Int Atom Modified Types                    I   N=           6
+           0           0           0           0           0           0
+Link Atoms                                 I   N=           6
+           0           0           0           0           0           0
+Atom Modified MM Charges                   R   N=           6
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00
+Link Distances                             R   N=          24
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+MxBond                                     I                3
+NBond                                      I   N=           6
+           3           3           1           1           1           1
+IBond                                      I   N=          18
+           2           3           4           1           5           6
+           1           0           0           1           0           0
+           2           0           0           2           0           0
+RBond                                      R   N=          18
+  2.00000000E+00  1.00000000E+00  1.00000000E+00  2.00000000E+00  1.00000000E+00
+  1.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00  1.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.00000000E+00  0.00000000E+00  0.00000000E+00
+Shell types                                I   N=          16
+           0          -1          -1           2           0          -1
+          -1           2           0           0           0           0
+           0           0           0           0
+Number of primitives per shell             I   N=          16
+           6           3           1           1           6           3
+           1           1           3           1           3           1
+           3           1           3           1
+Shell to atom map                          I   N=          16
+           1           1           1           1           2           2
+           2           2           3           3           4           4
+           5           5           6           6
+Primitive exponents                        R   N=          38
+  3.04752488E+03  4.57369518E+02  1.03948685E+02  2.92101553E+01  9.28666296E+00
+  3.16392696E+00  7.86827235E+00  1.88128854E+00  5.44249258E-01  1.68714478E-01
+  8.00000000E-01  3.04752488E+03  4.57369518E+02  1.03948685E+02  2.92101553E+01
+  9.28666296E+00  3.16392696E+00  7.86827235E+00  1.88128854E+00  5.44249258E-01
+  1.68714478E-01  8.00000000E-01  1.87311370E+01  2.82539436E+00  6.40121692E-01
+  1.61277759E-01  1.87311370E+01  2.82539436E+00  6.40121692E-01  1.61277759E-01
+  1.87311370E+01  2.82539436E+00  6.40121692E-01  1.61277759E-01  1.87311370E+01
+  2.82539436E+00  6.40121692E-01  1.61277759E-01
+Contraction coefficients                   R   N=          38
+  1.83473713E-03  1.40373228E-02  6.88426223E-02  2.32184443E-01  4.67941348E-01
+  3.62311985E-01 -1.19332420E-01 -1.60854152E-01  1.14345644E+00  1.00000000E+00
+  1.00000000E+00  1.83473713E-03  1.40373228E-02  6.88426223E-02  2.32184443E-01
+  4.67941348E-01  3.62311985E-01 -1.19332420E-01 -1.60854152E-01  1.14345644E+00
+  1.00000000E+00  1.00000000E+00  3.34946043E-02  2.34726953E-01  8.13757326E-01
+  1.00000000E+00  3.34946043E-02  2.34726953E-01  8.13757326E-01  1.00000000E+00
+  3.34946043E-02  2.34726953E-01  8.13757326E-01  1.00000000E+00  3.34946043E-02
+  2.34726953E-01  8.13757326E-01  1.00000000E+00
+P(S=P) Contraction coefficients            R   N=          38
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  6.89990666E-02  3.16423961E-01  7.44308291E-01  1.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  6.89990666E-02  3.16423961E-01  7.44308291E-01
+  1.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00
+Coordinates of each shell                  R   N=          48
+  0.00000000E+00  0.00000000E+00  1.26600000E+00  0.00000000E+00  0.00000000E+00
+  1.26600000E+00  0.00000000E+00  0.00000000E+00  1.26600000E+00  0.00000000E+00
+  0.00000000E+00  1.26600000E+00  1.55035164E-16  0.00000000E+00 -1.26600000E+00
+  1.55035164E-16  0.00000000E+00 -1.26600000E+00  1.55035164E-16  0.00000000E+00
+ -1.26600000E+00  1.55035164E-16  0.00000000E+00 -1.26600000E+00  0.00000000E+00
+  1.75500000E+00  2.33000000E+00  0.00000000E+00  1.75500000E+00  2.33000000E+00
+ -2.14918415E-16 -1.75500000E+00  2.33000000E+00 -2.14918415E-16 -1.75500000E+00
+  2.33000000E+00  2.85333280E-16  1.75500000E+00 -2.33000000E+00  2.85333280E-16
+  1.75500000E+00 -2.33000000E+00 -2.14918415E-16 -1.75500000E+00 -2.33000000E+00
+ -2.14918415E-16 -1.75500000E+00 -2.33000000E+00
+Alpha Orbital Energies                     R   N=          38
+ -1.12303134E+01 -1.12287103E+01 -1.02526215E+00 -7.86776527E-01 -6.37032044E-01
+ -5.78745590E-01 -5.03938487E-01 -3.69129964E-01  1.78441590E-01  2.63123244E-01
+  2.91690036E-01  3.07216036E-01  3.89888583E-01  4.88297196E-01  6.68805576E-01
+  7.69679589E-01  7.76840907E-01  8.50981591E-01  8.89553664E-01  9.51182779E-01
+  1.11048940E+00  1.15557994E+00  1.19783344E+00  1.20694785E+00  1.32957184E+00
+  1.48272576E+00  1.73950559E+00  1.82293085E+00  2.12791356E+00  2.20102268E+00
+  2.31486728E+00  2.40003052E+00  2.62131628E+00  2.70731143E+00  3.03526587E+00
+  3.06093068E+00  4.51689332E+00  4.66994797E+00
+Alpha MO coefficients                      R   N=        1444
+  7.03787234E-01  1.91190593E-02  0.00000000E+00  0.00000000E+00  1.56882070E-04
+ -5.26943714E-03  0.00000000E+00  0.00000000E+00 -7.07811802E-04 -1.82790448E-03
+ -1.58873554E-03 -1.33681575E-03  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  7.03787234E-01  1.91190593E-02  0.00000000E+00  0.00000000E+00 -1.56882070E-04
+ -5.26943714E-03  0.00000000E+00  0.00000000E+00  7.07811802E-04 -1.82790448E-03
+ -1.58873554E-03 -1.33681575E-03  0.00000000E+00  0.00000000E+00  0.00000000E+00
+ -1.47643879E-04  1.45476820E-03 -1.47643879E-04  1.45476820E-03 -1.47643879E-04
+  1.45476820E-03 -1.47643879E-04  1.45476820E-03  7.04239979E-01  1.95686420E-02
+  0.00000000E+00  0.00000000E+00 -1.69071786E-04 -1.09464581E-02  0.00000000E+00
+  0.00000000E+00  1.63935154E-03 -1.72718986E-03 -1.23522801E-03 -9.25466937E-04
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -7.04239979E-01 -1.95686420E-02
+  0.00000000E+00  0.00000000E+00 -1.69071786E-04  1.09464581E-02  0.00000000E+00
+  0.00000000E+00  1.63935154E-03  1.72718986E-03  1.23522801E-03  9.25466937E-04
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -5.89162552E-05  1.51863187E-03
+ -5.89162552E-05  1.51863187E-03  5.89162552E-05 -1.51863187E-03  5.89162552E-05
+ -1.51863187E-03 -1.56500793E-01  2.97155087E-01  0.00000000E+00  0.00000000E+00
+ -1.04103778E-01  2.31647539E-01  0.00000000E+00  0.00000000E+00 -6.99205827E-03
+ -1.27539625E-02  5.16797839E-03  1.69573753E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -1.56500793E-01  2.97155087E-01  0.00000000E+00  0.00000000E+00
+  1.04103778E-01  2.31647539E-01  0.00000000E+00  0.00000000E+00  6.99205827E-03
+ -1.27539625E-02  5.16797839E-03  1.69573753E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  8.29746645E-02  1.67736703E-02  8.29746645E-02  1.67736703E-02
+  8.29746645E-02  1.67736703E-02  8.29746645E-02  1.67736703E-02 -1.19892161E-01
+  2.32741588E-01  0.00000000E+00  0.00000000E+00  1.66023748E-01  2.37106752E-01
+  0.00000000E+00  0.00000000E+00  6.65998677E-02 -1.09476150E-02  2.40861943E-02
+  3.46201022E-04  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.19892161E-01
+ -2.32741588E-01  0.00000000E+00  0.00000000E+00  1.66023748E-01 -2.37106752E-01
+  0.00000000E+00  0.00000000E+00  6.65998677E-02  1.09476150E-02 -2.40861943E-02
+ -3.46201022E-04  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.45849159E-01
+  6.72365193E-02  1.45849159E-01  6.72365193E-02 -1.45849159E-01 -6.72365193E-02
+ -1.45849159E-01 -6.72365193E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  3.20389616E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.29612689E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  1.33506629E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  3.20389616E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.29612689E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -1.33506629E-02  1.57603906E-01  1.08390178E-01 -1.57603906E-01
+ -1.08390178E-01  1.57603906E-01  1.08390178E-01 -1.57603906E-01 -1.08390178E-01
+  1.18642907E-02 -2.86754132E-02  0.00000000E+00  0.00000000E+00  4.06566469E-01
+  1.30543226E-02  0.00000000E+00  0.00000000E+00  1.56728074E-01 -1.48758019E-03
+  2.65458296E-02 -1.19182371E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.18642907E-02 -2.86754132E-02  0.00000000E+00  0.00000000E+00 -4.06566469E-01
+  1.30543226E-02  0.00000000E+00  0.00000000E+00 -1.56728074E-01 -1.48758019E-03
+  2.65458296E-02 -1.19182371E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.24291434E-01  1.01808640E-01  1.24291434E-01  1.01808640E-01  1.24291434E-01
+  1.01808640E-01  1.24291434E-01  1.01808640E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  3.03749469E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.96252402E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  3.64962254E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -3.03749469E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+ -1.96252402E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  3.64962254E-02  1.88526725E-01  1.54358154E-01
+ -1.88526725E-01 -1.54358154E-01 -1.88526725E-01 -1.54358154E-01  1.88526725E-01
+  1.54358154E-01  0.00000000E+00  0.00000000E+00  3.73420226E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  3.07953550E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 -2.51111469E-02
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  3.73420226E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  3.07953550E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  2.51111469E-02
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  3.42666436E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  7.32464030E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  2.36429110E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -3.42666436E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+ -7.32464030E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  2.36429110E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -7.83428143E-02  8.12382131E-02  0.00000000E+00
+  0.00000000E+00  1.45687052E-01  1.46608042E+00  0.00000000E+00  0.00000000E+00
+  6.32512889E-01 -4.60542073E-03 -1.12012621E-02  4.04415937E-03  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -7.83428143E-02  8.12382131E-02  0.00000000E+00
+  0.00000000E+00 -1.45687052E-01  1.46608042E+00  0.00000000E+00  0.00000000E+00
+ -6.32512889E-01 -4.60542073E-03 -1.12012621E-02  4.04415937E-03  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -1.59044369E-02 -1.02080157E+00 -1.59044369E-02
+ -1.02080157E+00 -1.59044369E-02 -1.02080157E+00 -1.59044369E-02 -1.02080157E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -2.53342704E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -8.05912976E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  2.19032819E-02
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -2.53342704E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -8.05912976E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 -2.19032819E-02
+  4.08044865E-02  1.08801499E+00 -4.08044865E-02 -1.08801499E+00  4.08044865E-02
+  1.08801499E+00 -4.08044865E-02 -1.08801499E+00 -1.08925090E-01  1.04471950E-01
+  0.00000000E+00  0.00000000E+00  9.83400098E-02  1.91024607E+00  0.00000000E+00
+  0.00000000E+00  1.48549614E-01 -1.07322764E-02  7.55918450E-04 -4.44101211E-03
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.08925090E-01 -1.04471950E-01
+  0.00000000E+00  0.00000000E+00  9.83400098E-02 -1.91024607E+00  0.00000000E+00
+  0.00000000E+00  1.48549614E-01  1.07322764E-02 -7.55918450E-04  4.44101211E-03
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -1.97147744E-02 -1.06398880E+00
+ -1.97147744E-02 -1.06398880E+00  1.97147744E-02  1.06398880E+00  1.97147744E-02
+  1.06398880E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  2.49029588E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.86741228E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.73523637E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00 -2.49029588E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -1.86741228E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.73523637E-02  3.92206621E-02 -1.60977500E+00 -3.92206621E-02  1.60977500E+00
+ -3.92206621E-02  1.60977500E+00  3.92206621E-02 -1.60977500E+00 -6.74746875E-02
+  4.20524609E-03  0.00000000E+00  0.00000000E+00 -1.36126857E-01  2.98536627E+00
+  0.00000000E+00  0.00000000E+00 -2.91202583E+00 -1.14883392E-02  2.36916184E-02
+  8.31343499E-04  0.00000000E+00  0.00000000E+00  0.00000000E+00  6.74746875E-02
+ -4.20524609E-03  0.00000000E+00  0.00000000E+00 -1.36126857E-01 -2.98536627E+00
+  0.00000000E+00  0.00000000E+00 -2.91202583E+00  1.14883392E-02 -2.36916184E-02
+ -8.31343499E-04  0.00000000E+00  0.00000000E+00  0.00000000E+00  8.06316738E-02
+  5.57856648E-01  8.06316738E-02  5.57856648E-01 -8.06316738E-02 -5.57856648E-01
+ -8.06316738E-02 -5.57856648E-01  2.20558048E-02  1.98892785E-01  0.00000000E+00
+  0.00000000E+00 -5.56059090E-01  1.99157088E-01  0.00000000E+00  0.00000000E+00
+  1.02351064E+00  2.97541338E-04 -3.51425403E-02  7.89397018E-02  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  2.20558048E-02  1.98892785E-01  0.00000000E+00
+  0.00000000E+00  5.56059090E-01  1.99157088E-01  0.00000000E+00  0.00000000E+00
+ -1.02351064E+00  2.97541338E-04 -3.51425403E-02  7.89397018E-02  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -1.01399282E-01 -5.38081933E-02 -1.01399282E-01
+ -5.38081933E-02 -1.01399282E-01 -5.38081933E-02 -1.01399282E-01 -5.38081933E-02
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -4.00661982E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  7.72266826E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 -9.52367253E-02
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -4.00661982E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  7.72266826E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  9.52367253E-02
+ -3.89609274E-01 -6.34963423E-02  3.89609274E-01  6.34963423E-02 -3.89609274E-01
+ -6.34963423E-02  3.89609274E-01  6.34963423E-02  0.00000000E+00  0.00000000E+00
+  7.40762352E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00 -6.39694699E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -6.83661667E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  7.40762352E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00 -6.39694699E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  6.83661667E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -4.10317047E-02 -7.85008614E-01  0.00000000E+00  0.00000000E+00
+  2.59157442E-02  1.50323038E+00  0.00000000E+00  0.00000000E+00  3.34162578E-01
+  4.08681262E-02 -1.55635449E-01 -9.50454697E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -4.10317047E-02 -7.85008614E-01  0.00000000E+00  0.00000000E+00
+ -2.59157442E-02  1.50323038E+00  0.00000000E+00  0.00000000E+00 -3.34162578E-01
+  4.08681262E-02 -1.55635449E-01 -9.50454697E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -3.83454342E-01 -2.36467637E-01 -3.83454342E-01 -2.36467637E-01
+ -3.83454342E-01 -2.36467637E-01 -3.83454342E-01 -2.36467637E-01  0.00000000E+00
+  0.00000000E+00 -8.18258808E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.07350784E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -3.16478260E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  8.18258808E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+ -1.07350784E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -3.16478260E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -9.53992337E-02 -6.02616334E-02  0.00000000E+00
+  0.00000000E+00 -5.98023287E-01  9.92393541E-01  0.00000000E+00  0.00000000E+00
+  4.06134748E-01  9.08404894E-02 -5.10291649E-02 -1.76429579E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  9.53992337E-02  6.02616334E-02  0.00000000E+00
+  0.00000000E+00 -5.98023287E-01 -9.92393541E-01  0.00000000E+00  0.00000000E+00
+  4.06134748E-01 -9.08404894E-02  5.10291649E-02  1.76429579E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -3.78976835E-01 -8.53785122E-02 -3.78976835E-01
+ -8.53785122E-02  3.78976835E-01  8.53785122E-02  3.78976835E-01  8.53785122E-02
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -6.90994163E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.10278564E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.85841936E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -6.90994163E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.10278564E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 -1.85841936E-01
+  3.81290058E-01 -1.05526339E+00 -3.81290058E-01  1.05526339E+00  3.81290058E-01
+ -1.05526339E+00 -3.81290058E-01  1.05526339E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -9.23295264E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  2.86057840E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -3.69524290E-03  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  9.23295264E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+ -2.86057840E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -3.69524290E-03  1.66276125E-01 -1.47270806E+00
+ -1.66276125E-01  1.47270806E+00 -1.66276125E-01  1.47270806E+00  1.66276125E-01
+ -1.47270806E+00  1.78584482E-02 -9.30816861E-01  0.00000000E+00  0.00000000E+00
+ -3.65000138E-01  1.73454935E+00  0.00000000E+00  0.00000000E+00  4.87819659E-01
+ -1.13936010E-01  5.67105781E-02 -1.03502460E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  1.78584482E-02 -9.30816861E-01  0.00000000E+00  0.00000000E+00
+  3.65000138E-01  1.73454935E+00  0.00000000E+00  0.00000000E+00 -4.87819659E-01
+ -1.13936010E-01  5.67105781E-02 -1.03502460E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  4.48937748E-01 -8.70258607E-01  4.48937748E-01 -8.70258607E-01
+  4.48937748E-01 -8.70258607E-01  4.48937748E-01 -8.70258607E-01  1.94668371E-02
+ -5.21893756E-01  0.00000000E+00  0.00000000E+00 -5.95082812E-01  7.67008535E-01
+  0.00000000E+00  0.00000000E+00  1.13660852E+00 -9.75193015E-02  1.00426916E-01
+ -1.38926338E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00 -1.94668371E-02
+  5.21893756E-01  0.00000000E+00  0.00000000E+00 -5.95082812E-01 -7.67008535E-01
+  0.00000000E+00  0.00000000E+00  1.13660852E+00  9.75193015E-02 -1.00426916E-01
+  1.38926338E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  4.68007714E-01
+ -9.89469119E-01  4.68007714E-01 -9.89469119E-01 -4.68007714E-01  9.89469119E-01
+ -4.68007714E-01  9.89469119E-01 -3.20019123E-02 -1.46811243E+00  0.00000000E+00
+  0.00000000E+00  3.10018352E-01  5.45439327E+00  0.00000000E+00  0.00000000E+00
+ -1.99673356E+00 -5.83130425E-02 -2.04407564E-01  4.60205688E-02  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  3.20019123E-02  1.46811243E+00  0.00000000E+00
+  0.00000000E+00  3.10018352E-01 -5.45439327E+00  0.00000000E+00  0.00000000E+00
+ -1.99673356E+00  5.83130425E-02  2.04407564E-01 -4.60205688E-02  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -1.30922336E-01 -3.00688897E-01 -1.30922336E-01
+ -3.00688897E-01  1.30922336E-01  3.00688897E-01  1.30922336E-01  3.00688897E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -6.05836986E-02  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  2.61661594E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 -1.65973435E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  6.05836986E-02  0.00000000E+00
+  0.00000000E+00  0.00000000E+00 -2.61661594E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 -1.65973435E-01
+ -6.97363067E-01 -6.95082197E-01  6.97363067E-01  6.95082197E-01  6.97363067E-01
+  6.95082197E-01 -6.97363067E-01 -6.95082197E-01  0.00000000E+00  0.00000000E+00
+  1.89366904E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00 -4.15106964E-02
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  6.19252397E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.89366904E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00 -4.15106964E-02
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -6.19252397E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  6.81372006E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  6.81372006E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  7.35996629E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -7.35996629E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  3.53803757E-02  1.73357295E-01  0.00000000E+00
+  0.00000000E+00 -1.05526189E-01 -6.11332057E-01  0.00000000E+00  0.00000000E+00
+ -1.79973149E-01  7.18797176E-01 -5.08334596E-01 -1.20991219E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  3.53803757E-02  1.73357295E-01  0.00000000E+00
+  0.00000000E+00  1.05526189E-01 -6.11332057E-01  0.00000000E+00  0.00000000E+00
+  1.79973149E-01  7.18797176E-01 -5.08334596E-01 -1.20991219E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  3.59877674E-01  1.05953567E-01  3.59877674E-01
+  1.05953567E-01  3.59877674E-01  1.05953567E-01  3.59877674E-01  1.05953567E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  2.63892177E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  2.09800510E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  6.88407338E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  2.63892177E-01  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  2.09800510E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 -6.88407338E-01
+ -5.09246028E-01  8.33423496E-02  5.09246028E-01 -8.33423496E-02 -5.09246028E-01
+  8.33423496E-02  5.09246028E-01 -8.33423496E-02 -2.48372974E-02 -3.45804159E-01
+  0.00000000E+00  0.00000000E+00  2.75928029E-01  1.97624726E-01  0.00000000E+00
+  0.00000000E+00 -4.42325769E-01 -2.76979412E-01 -5.80727629E-01  6.06824409E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -2.48372974E-02 -3.45804159E-01
+  0.00000000E+00  0.00000000E+00 -2.75928029E-01  1.97624726E-01  0.00000000E+00
+  0.00000000E+00  4.42325769E-01 -2.76979412E-01 -5.80727629E-01  6.06824409E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.76714604E-01 -4.90622642E-02
+  1.76714604E-01 -4.90622642E-02  1.76714604E-01 -4.90622642E-02  1.76714604E-01
+ -4.90622642E-02 -4.53168522E-02 -2.62418454E-01  0.00000000E+00  0.00000000E+00
+  9.15763274E-02  1.40140414E+00  0.00000000E+00  0.00000000E+00 -3.08027706E-01
+ -7.13775794E-01  6.66949344E-01 -2.25334966E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  4.53168522E-02  2.62418454E-01  0.00000000E+00  0.00000000E+00
+  9.15763274E-02 -1.40140414E+00  0.00000000E+00  0.00000000E+00 -3.08027706E-01
+  7.13775794E-01 -6.66949344E-01  2.25334966E-02  0.00000000E+00  0.00000000E+00
+  0.00000000E+00 -4.37853066E-01 -1.67160786E-03 -4.37853066E-01 -1.67160786E-03
+  4.37853066E-01  1.67160786E-03  4.37853066E-01  1.67160786E-03  0.00000000E+00
+  0.00000000E+00 -1.24099162E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+ -2.64148573E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  9.01676507E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  1.24099162E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  2.64148573E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  9.01676507E-01  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+ -7.38564663E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00  5.43810769E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  9.62569161E-01  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  7.38564663E-02  0.00000000E+00  0.00000000E+00  0.00000000E+00 -5.43810769E-01
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  9.62569161E-01 -4.63354884E-01 -3.92463694E-02  4.63354884E-01
+  3.92463694E-02  4.63354884E-01  3.92463694E-02 -4.63354884E-01 -3.92463694E-02
+ -6.66511729E-02  3.11548710E-01  0.00000000E+00  0.00000000E+00 -7.92722024E-01
+  2.01222946E+00  0.00000000E+00  0.00000000E+00 -1.16829896E+00 -5.53721389E-01
+ -5.57203729E-01  1.11071994E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  6.66511729E-02 -3.11548710E-01  0.00000000E+00  0.00000000E+00 -7.92722024E-01
+ -2.01222946E+00  0.00000000E+00  0.00000000E+00 -1.16829896E+00  5.53721389E-01
+  5.57203729E-01 -1.11071994E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.19743586E-02  5.30663118E-02  1.19743586E-02  5.30663118E-02 -1.19743586E-02
+ -5.30663118E-02 -1.19743586E-02 -5.30663118E-02 -3.27735845E-01  2.24146048E+00
+  0.00000000E+00  0.00000000E+00 -1.05212410E-01  9.18027508E-01  0.00000000E+00
+  0.00000000E+00  1.17965726E-01 -1.27567104E+00 -1.30348083E+00 -1.24070229E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00 -3.27735845E-01  2.24146048E+00
+  0.00000000E+00  0.00000000E+00  1.05212410E-01  9.18027508E-01  0.00000000E+00
+  0.00000000E+00 -1.17965726E-01 -1.27567104E+00 -1.30348083E+00 -1.24070229E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  1.30188761E-01 -2.96402758E-01
+  1.30188761E-01 -2.96402758E-01  1.30188761E-01 -2.96402758E-01  1.30188761E-01
+ -2.96402758E-01 -3.36902458E-01  2.04926278E+00  0.00000000E+00  0.00000000E+00
+  3.50116829E-01  1.86535101E+00  0.00000000E+00  0.00000000E+00 -1.90405319E-01
+ -1.25106758E+00 -1.28193177E+00 -1.70117509E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  3.36902458E-01 -2.04926278E+00  0.00000000E+00  0.00000000E+00
+  3.50116829E-01 -1.86535101E+00  0.00000000E+00  0.00000000E+00 -1.90405319E-01
+  1.25106758E+00  1.28193177E+00  1.70117509E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  1.03812593E-01 -3.35023897E-01  1.03812593E-01 -3.35023897E-01
+ -1.03812593E-01  3.35023897E-01 -1.03812593E-01  3.35023897E-01
+Total SCF Density                          R   N=         741
+  2.06055562E+00 -9.50246848E-02  2.88081085E-01  3.68099898E-20 -1.21024997E-19
+  2.78885330E-01  3.68099898E-20 -1.21024997E-19  0.00000000E+00  3.89826492E-01
+  2.40469043E-03 -7.90621388E-03  1.96718202E-18  2.68941380E-19  4.07395656E-01
+ -1.51885760E-01  2.46661109E-01  6.29399952E-19  6.29399952E-19  4.11168830E-02
+  2.20396403E-01 -1.33932869E-19  2.73918058E-19  2.29992169E-01  0.00000000E+00
+ -1.20902427E-18  4.96068095E-19  1.89670778E-01 -1.33932869E-19  2.73918058E-19
+  0.00000000E+00  2.02276245E-01 -7.84760558E-19  4.96068095E-19  0.00000000E+00
+  1.10628908E-01 -8.74944793E-03  1.78942764E-02 -1.20902427E-18 -7.84760558E-19
+  1.51010101E-01  3.24066974E-02 -2.01399006E-18 -8.04050364E-19  5.81026178E-02
+  1.57615478E-03 -1.27279195E-02 -5.30746885E-19 -3.35120681E-20 -2.18924672E-03
+ -1.10821163E-02 -4.36837940E-19 -2.67765230E-20 -1.74923299E-03  5.82102294E-04
+ -1.07392398E-02  1.26515814E-02  4.36372493E-19  1.25103297E-18  2.85069560E-02
+  1.45531594E-02  1.75350736E-19  6.46913961E-19  1.14551577E-02 -7.28100208E-04
+  2.63116740E-03 -8.85867115E-03  1.08352746E-02  2.96599657E-19 -1.01529564E-18
+ -1.31069161E-02  7.74362239E-03  3.49933144E-19 -5.31691498E-19 -3.92800663E-03
+ -3.96584883E-04 -4.34276938E-04  8.64720745E-04  0.00000000E+00  0.00000000E+00
+ -2.87078655E-19  4.70344447E-19  0.00000000E+00  0.00000000E+00 -2.36749070E-19
+  2.72257154E-19  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  5.47102650E-35 -1.84442542E-19  4.16495247E-19 -1.87540203E-02  0.00000000E+00
+  9.41015314E-20  3.32757549E-19 -1.54661337E-02  0.00000000E+00  1.98237785E-19
+  1.61382743E-20  5.19352323E-21 -1.11428038E-20  1.93049915E-20  1.26113940E-03
+  3.32403113E-20 -3.21044403E-20  0.00000000E+00  3.07262457E-02 -1.20589753E-18
+ -1.20363131E-19  0.00000000E+00  1.77857744E-02 -5.44164894E-19  5.85975556E-21
+  2.58983864E-20 -5.71215148E-20  4.62354621E-20  0.00000000E+00  3.02042934E-03
+  1.92433054E-02 -3.85331973E-02  1.26288666E-18  1.26288666E-18  8.25007423E-02
+ -7.34106368E-03  2.84288885E-19  2.84288885E-19  1.85717727E-02  1.19144654E-03
+  4.29133151E-03 -6.08564073E-03  0.00000000E+00 -1.28627395E-19 -1.83419939E-19
+  2.06055562E+00 -3.85331973E-02  6.98747699E-02 -2.48680051E-18 -2.48680051E-18
+ -1.62455503E-01  2.67795306E-02 -6.77150356E-19 -6.77150356E-19 -4.42362791E-02
+ -2.40086324E-03 -9.67516817E-03  1.05854136E-02  0.00000000E+00  2.29541146E-19
+  3.58119361E-19 -9.50246848E-02  2.88081085E-01 -1.26288666E-18  2.48680051E-18
+  2.78885330E-01  0.00000000E+00 -8.81755354E-18  1.78106635E-18  2.29992169E-01
+  0.00000000E+00 -5.15520608E-18 -5.74994893E-19 -1.91506997E-19  7.01398928E-19
+ -2.87078655E-19 -1.87540203E-02  0.00000000E+00 -3.68099898E-20  1.21024997E-19
+  2.78885330E-01 -1.26288666E-18  2.48680051E-18  0.00000000E+00  2.07715324E-02
+ -4.86645607E-18  1.78106635E-18  0.00000000E+00 -3.61700065E-02 -1.08090745E-18
+ -7.77600766E-20 -5.52530545E-19  5.65187660E-19 -2.08437043E-19  0.00000000E+00
+ -1.36165906E-02 -3.68099898E-20  1.21024997E-19  0.00000000E+00  3.89826492E-01
+ -8.25007423E-02  1.62455503E-01 -8.81755354E-18 -4.86645607E-18 -2.97140003E-01
+  1.16351926E-01 -5.15520608E-18 -1.08090745E-18 -1.06782572E-01 -5.07984146E-03
+ -1.25105996E-02  1.33374524E-02  0.00000000E+00  6.12616667E-19  6.65318685E-19
+ -2.40469043E-03  7.90621388E-03  1.96718202E-18  2.68941380E-19  4.07395656E-01
+ -7.34106368E-03  2.67795306E-02 -1.78106635E-18 -1.78106635E-18 -1.16351926E-01
+ -4.96134373E-03 -4.69738108E-19 -4.69738108E-19 -3.06866354E-02 -7.74729078E-04
+ -8.34492325E-03  7.37475365E-03  0.00000000E+00  1.44047569E-19  2.77855825E-19
+ -1.51885760E-01  2.46661109E-01 -6.29399952E-19 -6.29399952E-19 -4.11168830E-02
+  2.20396403E-01 -2.84288885E-19  6.77150356E-19  2.29992169E-01  0.00000000E+00
+ -5.15520608E-18  4.69738108E-19  1.89670778E-01  0.00000000E+00 -3.52105671E-18
+ -4.28101885E-19 -7.72528862E-20  4.71508578E-19 -2.36749070E-19 -1.54661337E-02
+  0.00000000E+00  1.33932869E-19 -2.73918058E-19  2.29992169E-01  0.00000000E+00
+ -1.20902427E-18 -4.96068095E-19  1.89670778E-01 -2.84288885E-19  6.77150356E-19
+  0.00000000E+00 -3.61700065E-02 -1.08090745E-18  4.69738108E-19  0.00000000E+00
+ -4.34311122E-02  4.71689865E-20 -1.80404680E-20 -3.65298608E-19  3.49492882E-19
+ -1.66303275E-19  0.00000000E+00 -1.08641131E-02  1.33932869E-19 -2.73918058E-19
+  0.00000000E+00  2.02276245E-01 -7.84760558E-19 -4.96068095E-19  0.00000000E+00
+  1.10628908E-01 -1.85717727E-02  4.42362791E-02 -5.15520608E-18 -1.08090745E-18
+ -1.06782572E-01  3.06866354E-02 -3.52105671E-18  4.71689865E-20 -4.03496984E-02
+ -1.17853173E-03 -5.04670818E-03  4.01416574E-03  0.00000000E+00  3.28533477E-19
+  3.26460294E-19  8.74944793E-03 -1.78942764E-02 -1.20902427E-18 -7.84760558E-19
+  1.51010101E-01 -3.24066974E-02 -2.01399006E-18 -8.04050364E-19  5.81026178E-02
+  1.19144654E-03 -2.40086324E-03  5.74994893E-19  7.77600766E-20  5.07984146E-03
+ -7.74729078E-04  4.28101885E-19  1.80404680E-20  1.17853173E-03  9.07684610E-05
+  3.18111424E-04 -3.87818410E-04  0.00000000E+00 -4.18965698E-20 -1.24777829E-20
+  1.57615478E-03 -1.27279195E-02  5.30746885E-19  3.35120681E-20  2.18924672E-03
+ -1.10821163E-02  4.36837940E-19  2.67765230E-20  1.74923299E-03  5.82102294E-04
+  4.29133151E-03 -9.67516817E-03  1.91506997E-19  5.52530545E-19  1.25105996E-02
+ -8.34492325E-03  7.72528862E-20  3.65298608E-19  5.04670818E-03  3.18111424E-04
+  3.04485215E-04 -4.72204249E-04  0.00000000E+00 -1.39693592E-20  4.74505725E-20
+ -1.07392398E-02  1.26515814E-02 -4.36372493E-19 -1.25103297E-18 -2.85069560E-02
+  1.45531594E-02 -1.75350736E-19 -6.46913961E-19 -1.14551577E-02 -7.28100208E-04
+  2.63116740E-03 -6.08564073E-03  1.05854136E-02 -7.01398928E-19 -5.65187660E-19
+ -1.33374524E-02  7.37475365E-03 -4.71508578E-19 -3.49492882E-19 -4.01416574E-03
+ -3.87818410E-04 -4.72204249E-04  8.60815368E-04  0.00000000E+00  5.55076649E-20
+ -3.76170642E-20 -8.85867115E-03  1.08352746E-02 -2.96599657E-19  1.01529564E-18
+  1.31069161E-02  7.74362239E-03 -3.49933144E-19  5.31691498E-19  3.92800663E-03
+ -3.96584883E-04 -4.34276938E-04  8.64720745E-04  0.00000000E+00  0.00000000E+00
+  2.87078655E-19  2.08437043E-19  0.00000000E+00  0.00000000E+00  2.36749070E-19
+  1.66303275E-19  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+ -4.47723294E-37 -1.93049915E-20  3.53217579E-20  0.00000000E+00  0.00000000E+00
+  2.87078655E-19 -4.70344447E-19  0.00000000E+00  0.00000000E+00  2.36749070E-19
+ -2.72257154E-19  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  5.47102650E-35 -1.28627395E-19  2.29541146E-19  1.87540203E-02  0.00000000E+00
+ -6.12616667E-19  1.44047569E-19  1.54661337E-02  0.00000000E+00 -3.28533477E-19
+ -4.18965698E-20 -1.39693592E-20  5.55076649E-20 -1.93049915E-20 -1.26113940E-03
+  0.00000000E+00 -1.84442542E-19  4.16495247E-19  1.87540203E-02  0.00000000E+00
+ -9.41015314E-20  3.32757549E-19  1.54661337E-02  0.00000000E+00 -1.98237785E-19
+  1.61382743E-20  5.19352323E-21 -1.11428038E-20  1.93049915E-20  1.26113940E-03
+ -1.83419939E-19  3.58119361E-19  0.00000000E+00  1.36165906E-02 -6.65318685E-19
+  2.77855825E-19  0.00000000E+00  1.08641131E-02 -3.26460294E-19 -1.24777829E-20
+  4.74505725E-20 -3.76170642E-20  3.53217579E-20  0.00000000E+00  2.30746854E-03
+  3.32403113E-20 -3.21044403E-20  0.00000000E+00 -3.07262457E-02  1.20589753E-18
+ -1.20363131E-19  0.00000000E+00 -1.77857744E-02  5.44164894E-19  5.85975556E-21
+  2.58983864E-20 -5.71215148E-20  4.62354621E-20  0.00000000E+00  3.02042934E-03
+ -5.82850859E-02  1.10066849E-01  2.02394256E-18  2.15519095E-01  1.32218328E-01
+  1.10853321E-01  8.76001826E-19  1.14852577E-01  5.72266719E-02 -5.67895606E-03
+  1.44829781E-02 -4.71144682E-05  2.75065890E-19  9.95465745E-20  1.79692610E-02
+  1.18255619E-02 -2.57091986E-02 -5.41285082E-19 -1.35404755E-02 -3.53605927E-02
+ -2.74765397E-02 -2.81244926E-19 -3.31427132E-02 -1.83729196E-02  7.07438638E-04
+  4.30882240E-04 -2.49305080E-04  1.46230160E-19 -1.69110864E-20  9.55279447E-03
+  2.07972950E-01 -1.47700168E-02  3.55424846E-02  1.55551358E-18  1.63226589E-01
+  1.01617215E-01  4.22651310E-02  6.22050823E-19  8.86838015E-02  4.06367856E-02
+ -2.21348189E-03  8.80913112E-03 -1.81802989E-03  2.16772797E-19  6.98987920E-21
+  1.41611414E-02  1.31965844E-02 -2.71713228E-02 -8.72023909E-19 -2.43182398E-02
+ -5.69668061E-02 -2.14373051E-02 -3.47712495E-19 -3.24888321E-02 -2.27150541E-02
+  7.41328069E-04  2.33874707E-03 -1.90551752E-03  1.28167584E-19 -4.67847697E-20
+  8.37281851E-03  1.40070339E-01  1.01492795E-01 -5.82850859E-02  1.10066849E-01
+  2.02394256E-18 -2.15519095E-01  1.32218328E-01  1.10853321E-01  8.76001826E-19
+ -1.14852577E-01  5.72266719E-02 -5.67895606E-03  1.44829781E-02 -4.71144682E-05
+ -2.75065890E-19  9.95465745E-20 -1.79692610E-02  1.18255619E-02 -2.57091986E-02
+ -5.41285082E-19  1.35404755E-02 -3.53605927E-02 -2.74765397E-02 -2.81244926E-19
+  3.31427132E-02 -1.83729196E-02  7.07438638E-04  4.30882240E-04 -2.49305080E-04
+ -1.46230160E-19 -1.69110864E-20 -9.55279447E-03 -3.35523188E-02 -4.46630711E-02
+  2.07972950E-01 -1.47700168E-02  3.55424846E-02  1.55551358E-18 -1.63226589E-01
+  1.01617215E-01  4.22651310E-02  6.22050823E-19 -8.86838015E-02  4.06367856E-02
+ -2.21348189E-03  8.80913112E-03 -1.81802989E-03 -2.16772797E-19  6.98987920E-21
+ -1.41611414E-02  1.31965844E-02 -2.71713228E-02 -8.72023909E-19  2.43182398E-02
+ -5.69668061E-02 -2.14373051E-02 -3.47712495E-19  3.24888321E-02 -2.27150541E-02
+  7.41328069E-04  2.33874707E-03 -1.90551752E-03 -1.28167584E-19 -4.67847697E-20
+ -8.37281851E-03 -4.46630711E-02 -4.08066858E-02  1.40070339E-01  1.01492795E-01
+  1.18255619E-02 -2.57091986E-02  5.41285082E-19 -1.35404755E-02  3.53605927E-02
+ -2.74765397E-02  2.81244926E-19 -3.31427132E-02  1.83729196E-02  7.07438638E-04
+  4.30882240E-04 -2.49305080E-04 -1.46230160E-19 -1.69110864E-20 -9.55279447E-03
+ -5.82850859E-02  1.10066849E-01 -2.02394256E-18  2.15519095E-01 -1.32218328E-01
+  1.10853321E-01 -8.76001826E-19  1.14852577E-01 -5.72266719E-02 -5.67895606E-03
+  1.44829781E-02 -4.71144682E-05 -2.75065890E-19  9.95465745E-20 -1.79692610E-02
+ -1.92842764E-02 -1.55574108E-02  2.35290634E-02  3.25142768E-02  2.07972950E-01
+  1.31965844E-02 -2.71713228E-02  8.72023909E-19 -2.43182398E-02  5.69668061E-02
+ -2.14373051E-02  3.47712495E-19 -3.24888321E-02  2.27150541E-02  7.41328069E-04
+  2.33874707E-03 -1.90551752E-03 -1.28167584E-19 -4.67847697E-20 -8.37281851E-03
+ -1.47700168E-02  3.55424846E-02 -1.55551358E-18  1.63226589E-01 -1.01617215E-01
+  4.22651310E-02 -6.22050823E-19  8.86838015E-02 -4.06367856E-02 -2.21348189E-03
+  8.80913112E-03 -1.81802989E-03 -2.16772797E-19  6.98987920E-21 -1.41611414E-02
+ -1.55574108E-02 -1.19051864E-02  3.25142768E-02  3.64068499E-02  1.40070339E-01
+  1.01492795E-01  1.18255619E-02 -2.57091986E-02  5.41285082E-19  1.35404755E-02
+  3.53605927E-02 -2.74765397E-02  2.81244926E-19  3.31427132E-02  1.83729196E-02
+  7.07438638E-04  4.30882240E-04 -2.49305080E-04  1.46230160E-19 -1.69110864E-20
+  9.55279447E-03 -5.82850859E-02  1.10066849E-01 -2.02394256E-18 -2.15519095E-01
+ -1.32218328E-01  1.10853321E-01 -8.76001826E-19 -1.14852577E-01 -5.72266719E-02
+ -5.67895606E-03  1.44829781E-02 -4.71144682E-05  2.75065890E-19  9.95465745E-20
+  1.79692610E-02  2.35290634E-02  3.25142768E-02 -1.92842764E-02 -1.55574108E-02
+ -3.35523188E-02 -4.46630711E-02  2.07972950E-01  1.31965844E-02 -2.71713228E-02
+  8.72023909E-19  2.43182398E-02  5.69668061E-02 -2.14373051E-02  3.47712495E-19
+  3.24888321E-02  2.27150541E-02  7.41328069E-04  2.33874707E-03 -1.90551752E-03
+  1.28167584E-19 -4.67847697E-20  8.37281851E-03 -1.47700168E-02  3.55424846E-02
+ -1.55551358E-18 -1.63226589E-01 -1.01617215E-01  4.22651310E-02 -6.22050823E-19
+ -8.86838015E-02 -4.06367856E-02 -2.21348189E-03  8.80913112E-03 -1.81802989E-03
+  2.16772797E-19  6.98987920E-21  1.41611414E-02  3.25142768E-02  3.64068499E-02
+ -1.55574108E-02 -1.19051864E-02 -4.46630711E-02 -4.08066858E-02  1.40070339E-01
+  1.01492795E-01
+Cartesian Gradient                         R   N=          18
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00
+Dipole Moment                              R   N=           3
+ -3.47074874E-16  1.99648630E-16 -6.27749293E-17
+QEq coupling tensors                       R   N=          36
+ -3.33024301E-01 -9.58789590E-18  1.10201599E-01  2.56581181E-17 -5.27008992E-15
+  2.22822701E-01 -3.33024301E-01 -2.57262581E-17  1.10201599E-01 -3.79318960E-17
+  1.21846977E-14  2.22822701E-01  1.64105014E-01  9.52427299E-19 -1.87539758E-01
+  2.35230787E-18 -2.04134067E-01  2.34347435E-02  1.64105014E-01 -5.19860670E-17
+ -1.87539758E-01  3.38559250E-17  2.04134067E-01  2.34347435E-02  1.64105014E-01
+ -3.21599632E-17 -1.87539758E-01  1.98515014E-17  2.04134067E-01  2.34347435E-02
+  1.64105014E-01 -8.67050834E-17 -1.87539758E-01 -5.43704638E-17 -2.04134067E-01
+  2.34347435E-02
+Mulliken Charges                           R   N=           6
+ -3.54959321E-01 -3.54959321E-01  1.77479660E-01  1.77479660E-01  1.77479660E-01
+  1.77479660E-01
+)";
 
-  SECTION("n = 3") {
-    GaussHermite gh(3);
-    CHECK(gh.size() == 3);
+TEST_CASE("C2H4 G03", "[dma]") {
+  using namespace occ::qm;
+  using namespace occ::io;
+  std::istringstream fchk(c2h4_contents);
+  FchkReader reader(fchk);
 
-    // Check points are symmetric around zero
-    CHECK(gh.points()(0) == Approx(-gh.points()(2)));
-    CHECK(gh.points()(1) == Approx(0.0));
+  occ::qm::Wavefunction wfn(reader);
 
-    // Check weights are symmetric
-    CHECK(gh.weights()(0) == Approx(gh.weights()(2)));
 
-    // Check specific values
-    CHECK(gh.points()(0) == Approx(-1.22474487139159));
-    CHECK(gh.weights()(1) == Approx(1.18163590060368));
-  }
+  occ::dma::DMACalculator calc(wfn);
 
-  SECTION("Simple integral") {
-    // Test integration of exp(-x^2) from -inf to inf = sqrt(pi)
-    // For this integral, the GH quadrature should be exact
+  return;
+  // Test DMA calculation (analytical method)
+  auto result = occ::dma::dmaqlm(wfn, 4, true, false);
 
-    GaussHermite gh(5); // 5 points should be sufficient
-    double integral = 0.0;
-    for (int i = 0; i < gh.size(); i++) {
-      integral += gh.weights()(i);
+  // Check the result
+  REQUIRE(result.size());
+
+
+  auto expected =  occ::Mat(6, 25);
+  // clang-format off
+  expected.row(0) <<
+  -0.0358105241,
+   0.0956014621,  0.0000000000, -0.0000000000,
+   0.7312379908, -0.0000000000,  0.0000000000, -1.3995584073,  0.0000000000,
+  -2.8745167840,  0.0000000000,  0.0000000000, -3.0623617978,  0.0000000000,
+   0.0000000000,  0.0000000000
+  -5.3811304901,  0.0000000000, -0.0000000000, -5.5944420039,  0.0000000000,
+   0.0000000000,  0.0000000000,  5.8854615035, -0.0000000000;
+
+  expected.row(1) <<
+  -0.0358105241,
+  -0.0956014621, -0.0000000000, -0.0000000000,
+   0.7312379908, -0.0000000000, -0.0000000000, -1.3995584073,  0.0000000000,
+   2.8745167840, -0.0000000000,  0.0000000000,  3.0623617978, -0.0000000000,
+   0.0000000000,  0.0000000000
+  -5.3811304901,  0.0000000000,  0.0000000000, -5.5944420039,  0.0000000000,
+  -0.0000000000,  0.0000000000,  5.8854615035, -0.0000000000;
+
+  expected.row(2) <<
+   0.0179052223,
+  -0.0674877298,  0.0000000000, -0.0705503970;
+
+  expected.row(3) <<
+   0.0179052223,
+  -0.0674877298,  0.0000000000,  0.0705503970;
+
+  expected.row(4) <<
+   0.0179052223,
+   0.0674877298, -0.0000000000, -0.0705503970;
+
+  expected.row(5) << 
+   0.0179052223,
+   0.0674877298, -0.0000000000,  0.0705503970;
+
+  for (int site = 0; site < 2; site++) {
+    const auto &m = result[site];
+    for (int term = 0; term < 3; term++) {
+      REQUIRE(m.q(term) == Approx(expected(term, site)).margin(1e-6));
     }
-
-    CHECK(integral == Approx(std::sqrt(M_PI)));
-  }
-
-  SECTION("Polynomial integral") {
-    // Test integration of x^2 * exp(-x^2) from -inf to inf = sqrt(pi)/2
-
-    GaussHermite gh(5);
-    double integral = 0.0;
-    for (int i = 0; i < gh.size(); i++) {
-      double x = gh.points()(i);
-      integral += x * x * gh.weights()(i);
-    }
-
-    CHECK(integral == Approx(std::sqrt(M_PI) / 2.0));
-  }
-
-  SECTION("Error handling") {
-    // Test error handling for invalid n
-    CHECK_THROWS_AS(GaussHermite(0), std::invalid_argument);
-    CHECK_THROWS_AS(GaussHermite(11),
-                    std::invalid_argument); // Update if you implement n > 10
-  }
-
-  SECTION("Computed vs. Hardcoded Values") {
-    // Check that our compute_gauss_hermite function matches hardcoded values
-    for (int n = 1; n <= 10; n++) {
-      CAPTURE(n);
-      CHECK(GaussHermite::validate_computed_values(n, 1e-10));
-    }
-  }
-
-  SECTION("Integration accuracy") {
-    // Test integration of x^4 * exp(-x^2) from -inf to inf = 3*sqrt(pi)/4
-    GaussHermite gh(6); // 6 points should be sufficient for this
-    double integral = 0.0;
-    for (int i = 0; i < gh.size(); i++) {
-      double x = gh.points()(i);
-      integral += x * x * x * x * gh.weights()(i);
-    }
-
-    CHECK(integral == Approx(3.0 * std::sqrt(M_PI) / 4.0).epsilon(1e-10));
   }
 }

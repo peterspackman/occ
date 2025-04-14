@@ -41,6 +41,7 @@ struct Shell {
   double min_exponent() const;
   void incorporate_shell_norm();
   double coeff_normalized(Eigen::Index contr_idx, Eigen::Index coeff_idx) const;
+  double coeff_normalized_dma(Eigen::Index contr_idx, Eigen::Index coeff_idx) const;
   Mat coeffs_normalized_for_libecpint() const;
   size_t size() const;
 

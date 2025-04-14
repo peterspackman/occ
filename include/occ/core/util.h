@@ -192,7 +192,45 @@ constexpr std::common_type_t<M, N> smallest_common_factor(M m, N n) {
   return smallest_common_factor(n, m % n);
 }
 
-static inline double double_factorial(int l) {
+// Generic double factorial function for any non-negative integer
+constexpr inline double double_factorial(int n) {
+  switch (n) {
+  case 0:
+  case 1:
+    return 1.0;
+  case 2:
+    return 2.0;
+  case 3:
+    return 3.0;
+  case 4:
+    return 8.0;
+  case 5:
+    return 15.0;
+  case 6:
+    return 48.0;
+  case 7:
+    return 105.0;
+  case 8:
+    return 384.0;
+  case 9:
+    return 945.0;
+  case 10:
+    return 3840.0;
+  case 11:
+    return 10395.0;
+  case 12:
+    return 46080.0;
+  default:
+    double result = 46080.0; // 12!!
+    for (int i = 13; i <= n; i += 2) {
+      result *= i;
+    }
+    return result;
+  }
+}
+
+constexpr inline double double_factorial_2n_1(int l) {
+  // for (2 * l - 1)!!
   switch (l) {
   case 0:
     return 1.0;

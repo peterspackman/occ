@@ -41,6 +41,10 @@ inline void iterate_over_shell(F &f, int l) {
         f(0, 1, 1, l); // yz
         break;
       case 3:
+        // temporary for gdma
+        //   3,0,0,2,2,1,0,1,0,1
+        //   0,3,0,1,0,2,2,0,1,1
+        //   0,0,3,0,1,0,1,2,2,1
         f(3, 0, 0, l); // xxx
         f(0, 3, 0, l); // yyy
         f(0, 0, 3, l); // zzz

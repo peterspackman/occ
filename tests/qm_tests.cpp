@@ -13,6 +13,7 @@
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/core/util.h>
 #include <vector>
 
 using Catch::Matchers::WithinAbs;
@@ -565,4 +566,24 @@ TEST_CASE("Mulliken partition", "[partitioning]") {
   double total = occ::qm::expectation(wfn.mo.kind, wfn.mo.D, wfn.V);
   fmt::print("Partitioned energy\n{}\n", format_matrix(energies));
   REQUIRE(energies.sum() == Catch::Approx(total));
+}
+
+TEST_CASE("Shell ordering", "[shell]") {
+  using occ::qm::Shell;
+  using occ::qm::AOBasis;
+  std::vector<occ::core::Atom> atoms{
+    {1, 0.0, 0.0, 0.0},
+    {1, 0.0, 0.0, 1.0}
+  };
+  std::vector<Shell> shells{
+    Shell(0, {1.0}, {{1.0}}, {0.0, 0.0, 0.0}),
+    Shell(3, {1.0}, {{1.0}}, {0.0, 0.0, 1.0}),
+  };
+  auto basis = AOBasis(atoms, shells);
+
+  auto hf = occ::qm::HartreeFock(basis);
+  auto S = hf.compute_overlap_matrix();
+  fmt::print("S\n{}\n", format_matrix(S.row(0)));
+  fmt::print("{}\n", occ::util::join(occ::gto::shell_component_labels(3), ", "));
+
 }

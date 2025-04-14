@@ -100,6 +100,7 @@ struct Wavefunction {
   occ::IVec atomic_numbers() const;
 
   Vec mulliken_charges() const;
+  Mat overlap_matrix() const;
 
   Vec electron_density(const Mat3N &points) const;
   Mat3N electron_density_gradient(const Mat3N &points) const;

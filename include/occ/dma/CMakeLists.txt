@@ -1,7 +1,16 @@
 set(HEADERS
+    add_qlm.h
+    binomial.h
     dma.h
+    dmaql0.h
+    dmaqlm.h
+    gauss_hermite.h
+    moveq.h
+    movez.h
+    mult.h
     multipole.h
-    quadrature.h
+    shiftq.h
+    solid_harmonics.h
 )
 
 set(OCC_DMA_INCLUDE_FILES ${HEADERS} PARENT_SCOPE)

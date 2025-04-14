@@ -23,7 +23,7 @@ double psi4_primitive_normalization(int n, double alpha) {
   double z = std::pow(g, tmp1);
   double normg =
       std::sqrt((pow(2.0, n) * z) /
-                (M_PI * std::sqrt(M_PI) * occ::util::double_factorial(2 * n)));
+                (M_PI * std::sqrt(M_PI) * occ::util::double_factorial_2n_1(n)));
   return normg;
 }
 
@@ -155,7 +155,7 @@ Mat Shell::coeffs_normalized_for_libecpint() const {
   }
 
   double tmp =
-      ((2.0 * M_PI / M_2_SQRTPI) * occ::util::double_factorial(2 * l)) /
+      ((2.0 * M_PI / M_2_SQRTPI) * occ::util::double_factorial_2n_1(l)) /
       std::pow(2.0, l);
   double norm = std::sqrt(1.0 / (tmp * e_sum));
 
@@ -245,6 +245,22 @@ double Shell::coeff_normalized(Eigen::Index contr_idx,
       return contraction_coefficients(contr_idx, coeff_idx) * one_over_N;
   }
   */
+}
+
+inline double dma_norm(int l, double e) {
+  constexpr double sqrt_pi3 = occ::constants::sqrt_pi_cubed<double>;
+  const double two_alpha = 2 * e;
+  const double two_alpha_to_am32 =
+      std::pow(two_alpha, l + 1) * std::sqrt(two_alpha);
+  return std::sqrt((std::pow(2, l) * two_alpha_to_am32) /
+                   (sqrt_pi3 * occ::util::double_factorial_2n_1(l)));
+}
+
+double Shell::coeff_normalized_dma(Eigen::Index contr_idx,
+                                   Eigen::Index coeff_idx) const {
+  const double e = exponents(coeff_idx);
+
+  return coeff_normalized(contr_idx, coeff_idx)  * dma_norm(static_cast<int>(l), e);
 }
 
 size_t Shell::size() const {
