@@ -2,25 +2,32 @@
 
 namespace occ::io {
 
-struct BeckeGridSettings {
-  size_t max_angular_points{302};
-  size_t min_angular_points{50};
-  size_t radial_points{65};
-  double radial_precision{1e-8};
-  bool reduced_first_row_element_grid{true};
-  std::string pruning_scheme{"nwchem"};
-  std::string filename{""};
+/**
+ * @brief Enumeration of available angular pruning schemes
+ */
+enum class PruningScheme {
+  None,   ///< No pruning (uniform angular points)
+  NWChem, ///< NWChem pruning scheme
+  NumGrid ///< NumGrid pruning scheme
+};
 
-  inline bool operator==(const BeckeGridSettings &rhs) const {
-    return (max_angular_points == rhs.max_angular_points) &&
-           (min_angular_points == rhs.min_angular_points) &&
-           (radial_points == rhs.radial_points) &&
-           (radial_precision == rhs.radial_precision);
-  }
-
-  inline bool operator!=(const BeckeGridSettings &rhs) const {
-    return !(*this == rhs);
-  }
+/**
+ * @brief Extended settings for Becke grid generation
+ *
+ */
+struct GridSettings {
+  size_t max_angular_points = 302; ///< Maximum number of angular points
+  size_t min_angular_points = 110; ///< Minimum number of angular points
+  size_t radial_points = 50; ///< Number of radial points (for some methods)
+  double radial_precision =
+      1e-12; ///< Precision for radial grid (for LMG method)
+  bool reduced_first_row_element_grid =
+      true; ///< Whether to use reduced grid for H and He
+  bool treutler_alrichs_adjustment = true;
+  PruningScheme pruning_scheme =
+      PruningScheme::NWChem; ///< Pruning scheme to use
+  inline bool operator==(const GridSettings &rhs) const = default;
+  inline bool operator!=(const GridSettings &rhs) const = default;
 };
 
 } // namespace occ::io

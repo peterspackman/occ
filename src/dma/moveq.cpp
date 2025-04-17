@@ -8,7 +8,6 @@ namespace occ::dma {
 void moveq(Eigen::Ref<const Vec3> pos, Mult &qt, const Mat3N &site_positions,
            const Vec &site_radii, const IVec &site_limits, std::vector<Mult> &q,
            int lmax) {
-
   // Constants
   constexpr double eps = 1e-6;
   const double &x = pos.x();
@@ -31,7 +30,6 @@ void moveq(Eigen::Ref<const Vec3> pos, Mult &qt, const Mat3N &site_positions,
       j = i;
     }
   }
-  fmt::print("{:12.6f}{:12.6f}{:12.6f}\n", pos.x(), pos.y(), pos.z());
 
   // Calculate (lmax+1)^2 for later use
   int lp1sq = (lmax + 1) * (lmax + 1);
@@ -55,12 +53,9 @@ void moveq(Eigen::Ref<const Vec3> pos, Mult &qt, const Mat3N &site_positions,
 
     // If very close to a site, add all multipoles directly
     if (rr(k) <= eps) {
-      fmt::print(" near\n");
-      fmt::print("{:12.6f}{:12.6f}\n", rr(k), eps);
 
       // Direct transfer of multipoles
       for (int i = t1; i < t2; i++) {
-        fmt::print("{:2d}{:2d}{:12.6f}{:12.6f}\n", k+1, i+1, q[k].q(i), qt.q(i));
         q[k].q(i) += qt.q(i);
         qt.q(i) = 0.0;
       }
@@ -70,8 +65,6 @@ void moveq(Eigen::Ref<const Vec3> pos, Mult &qt, const Mat3N &site_positions,
         return;
       }
     } else {
-      fmt::print(" else\n");
-      fmt::print("{:12.6f}{:12.6f}\n", rr(k), eps);
       // Find all sites at approximately the same distance
       std::vector<int> m{k};
 
@@ -109,7 +102,7 @@ void moveq(Eigen::Ref<const Vec3> pos, Mult &qt, const Mat3N &site_positions,
       }
 
       // Transfer higher-rank multipoles back to qt
-      t1 = t2 + 1;
+      t1 = t2;
       for (int site_idx : m) {
 
         // Call shiftq to transfer higher-rank multipoles back to qt

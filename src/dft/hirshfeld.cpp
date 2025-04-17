@@ -202,7 +202,7 @@ HirshfeldPartition::HirshfeldPartition(const occ::qm::AOBasis &basis,
       m_charge(charge) {
 
   for (size_t i = 0; i < basis.atoms().size(); i++) {
-    m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
+    m_atom_grids.push_back(m_grid.get_partitioned_atom_grid(i));
   }
 
   size_t num_grid_points = std::accumulate(

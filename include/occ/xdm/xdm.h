@@ -1,5 +1,5 @@
 #pragma once
-#include <occ/dft/grid.h>
+#include <occ/dft/molecular_grid.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/shell.h>
 #include <occ/slater/slaterbasis.h>

@@ -5,9 +5,11 @@
 #include <occ/core/multipole.h>
 #include <occ/core/util.h>
 #include <occ/dft/dft.h>
-#include <occ/dft/grid.h>
+#include <occ/dft/grid_types.h>
+#include <occ/dft/grid_utils.h>
 #include <occ/dft/hirshfeld.h>
 #include <occ/dft/lebedev.h>
+#include <occ/dft/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/seminumerical_exchange.h>
 #include <occ/gto/density.h>
@@ -277,44 +279,36 @@ TEST_CASE("Treutler-Alrichs radial grid points", "[radial]") {
 
   REQUIRE(all_close(radial.points, expected_pts, 1e-5));
   REQUIRE(all_close(radial.weights, expected_weights, 1e-5));
-  /*
-  BENCHMARK("Becke radial 10") {
-      return occ::dft::generate_becke_radial_grid(10);
-  };
+}
 
-  BENCHMARK("Becke radial 50") {
-      return occ::dft::generate_becke_radial_grid(10);
-  };
+TEST_CASE("Euler-Maclaurin radial grid points", "[radial]") {
+  auto radial = occ::dft::generate_euler_maclaurin_radial_grid(10, 1.2);
+  occ::Vec expected_pts(9);
+  occ::Vec expected_weights(9);
 
-  BENCHMARK("Becke radial 80") {
-      return occ::dft::generate_becke_radial_grid(10);
-  };
-  */
+  expected_pts << 0.0148148, 0.0750000, 0.2204082, 0.5333333, 1.2000000,
+      2.7000000, 6.5333333, 19.2000000, 97.2000000;
+
+  expected_weights << 0.7225637E-05, 0.5273438E-03, 0.1019750E-01,
+      0.1264198E+00, 0.1382400E+01, 0.1640250E+02, 0.2655921E+03, 0.8847360E+04,
+      0.2040733E+07;
+
+  fmt::print("Euler- Maclaurin radial grid found:\n{}\nexpected\n{}\n",
+             format_matrix(radial.points), format_matrix(expected_pts));
+  fmt::print("weights found:\n{}\nexpected\n{}\n",
+             format_matrix(radial.weights), format_matrix(expected_weights));
+
+  REQUIRE(all_close(radial.points, expected_pts, 1e-5));
+  REQUIRE(all_close(radial.weights, expected_weights, 1e-5));
 }
 
 TEST_CASE("Becke partitioned atom grid H2", "[grid]") {
-  auto atom = occ::dft::generate_atom_grid(1, 302, 50);
-  // fmt::print("Atom grid:\n{}\n", atom.points.transpose());
-  fmt::print("Sum weights\n{}\n", atom.weights.array().sum());
-  fmt::print("Shape: {} {}\n", atom.points.rows(), atom.points.cols());
-  fmt::print("Max weight\n{}\n", atom.weights.maxCoeff());
-
-  /*
-  BENCHMARK("Atom Carbon") {
-      return occ::dft::generate_atom_grid(6);
-  };
-
-  BENCHMARK("Atom Carbon 590") {
-      return occ::dft::generate_atom_grid(6, 590);
-  };
-*/
   std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                      {1, 0.0, 0.0, 1.39839733}};
   auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
   occ::dft::MolecularGrid mgrid(basis);
 
-  auto grid = mgrid.generate_partitioned_atom_grid(0);
-  // fmt::print("{}\n{}\n", grid.points, grid.atomic_number);
+  auto grid = mgrid.get_partitioned_atom_grid(0);
 }
 
 // Seminumerical Exchange
@@ -329,7 +323,7 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   double e = scf.compute_scf_energy();
 
-  occ::io::BeckeGridSettings settings;
+  occ::io::GridSettings settings;
   settings.max_angular_points = 50;
   settings.radial_precision = 1e-3;
   fmt::print("Construct\n");

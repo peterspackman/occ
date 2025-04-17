@@ -22,22 +22,32 @@ struct DMAResult {
     std::vector<Mult> multipoles;
 };
 
+struct DMASites {
+    inline auto size() const { return positions.cols(); }
+    inline auto num_atoms() const { return atoms.size(); }
+
+    std::vector<occ::core::Atom> atoms;
+    Mat3N positions;
+    IVec atom_indices;
+    Vec radii;
+    IVec limits;
+};
+
 class DMACalculator {
 public:
     DMACalculator(const qm::Wavefunction &wfn);
     void update_settings(const DMASettings &settings);
     inline const auto &settings() const { return m_settings; }
+    void set_radius_for_element(int atomic_number, double radius_angs);
+    void set_limit_for_element(int atomic_number, int limit);
 
     DMAResult compute_multipoles();
 
 private:
-    std::vector<occ::core::Atom> m_atoms;
-    Mat3N m_site_positions;
-    IVec m_atom_indices;
+    DMASites m_sites;
     qm::AOBasis m_basis;
     qm::MolecularOrbitals m_mo;
     DMASettings m_settings;
-    IVec m_site_limits;
 
 };
 

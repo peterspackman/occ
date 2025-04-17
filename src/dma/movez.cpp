@@ -95,13 +95,6 @@ void movez(Mult &qp, double p, const Mat3N &sites, const Vec &site_radii,
       }
     }
 
-    // Log actions if verbose
-    log::info("From {:.3f}: ranks {} to {} to be moved to site at {:.3f}", p,
-              low, site_limits(k), sites(2, m[0]));
-    if (n == 2) {
-      log::info("and site {} at {:.3f}", m[1], sites(2, m[1]));
-    }
-
     // If multiple sites at same distance, split contribution
     if (n == 2) {
       for (int i = low; i <= site_limits(k); i++) {

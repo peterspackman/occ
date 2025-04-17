@@ -1,5 +1,5 @@
 #pragma once
-#include <occ/dft/grid.h>
+#include <occ/dft/grid_types.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/shell.h>
 
@@ -25,7 +25,7 @@ public:
   NonLocalCorrelationFunctional();
   void set_parameters(const Parameters &params);
   void set_integration_grid(const qm::AOBasis &basis,
-                            const BeckeGridSettings &settings = {
+                            const GridSettings &settings = {
                                 110, 50, 50, 1e-7,
                                 false}); // don't reduce H by default
 

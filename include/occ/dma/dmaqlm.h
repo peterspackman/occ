@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <occ/dma/dma.h>
 #include <occ/dma/mult.h>
 #include <occ/qm/wavefunction.h>
 #include <vector>
@@ -22,7 +23,8 @@ namespace occ::dma {
  * methods
  * @return std::vector<Mult> Multipole moments for each site
  */
-std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
-                         bool include_nuclei = true, double bigexp = 4.0);
+std::vector<Mult> dmaqlm(const qm::AOBasis &basis,
+                         const qm::MolecularOrbitals &mo, const DMASites &sites,
+                         const DMASettings &settings = {});
 
 } // namespace occ::dma

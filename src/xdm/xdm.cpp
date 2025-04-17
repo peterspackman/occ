@@ -244,7 +244,7 @@ XDM::XDM(const occ::qm::AOBasis &basis, int charge,
          const XDM::Parameters &params)
     : m_basis(basis), m_grid(basis), m_charge(charge), m_params(params) {
   for (int i = 0; i < basis.atoms().size(); i++) {
-    m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
+    m_atom_grids.push_back(m_grid.get_partitioned_atom_grid(i));
   }
   size_t num_grid_points = std::accumulate(
       m_atom_grids.begin(), m_atom_grids.end(), 0.0,

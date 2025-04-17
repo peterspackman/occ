@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/dft/grid.h>
+#include <occ/dft/molecular_grid.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/mo.h>
 #include <vector>
@@ -11,7 +11,7 @@ namespace occ::dft::cosx {
 class SemiNumericalExchange {
 
 public:
-  SemiNumericalExchange(const qm::AOBasis &, const BeckeGridSettings & = {});
+  SemiNumericalExchange(const qm::AOBasis &, const GridSettings & = {});
   Mat compute_K(const qm::MolecularOrbitals &mo,
                 double precision = std::numeric_limits<double>::epsilon(),
                 const occ::Mat &Schwarz = occ::Mat()) const;

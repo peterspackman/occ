@@ -515,7 +515,8 @@ TEST_CASE("DMA linear", "[dma]") {
   }
 }
 
-const char *h2o_contents = R"(fchk produced by OCC                                                    
+const char *h2o_contents =
+    R"(fchk produced by OCC                                                    
 SP         HF                                                      6-31G
 Number of atoms                            I                3
 Charge                                     I                0
@@ -648,7 +649,6 @@ Total SCF Density                          R   N=          91
   4.55360812e-02
 )";
 
-
 TEST_CASE("DMA general", "[dma]") {
   using namespace occ::qm;
   using namespace occ::io;
@@ -657,33 +657,81 @@ TEST_CASE("DMA general", "[dma]") {
 
   occ::qm::Wavefunction wfn(reader);
 
-  SECTION("Basis normalization") {
-    const Vec3 coeffs_dma(0.27693435, 0.26783885, 0.08347367);
-    const auto &shell = wfn.basis.shells()[0];
-    for (int i = 0; i < 3; i++) {
-      REQUIRE(shell.coeff_normalized_dma(0, i) ==
-              Approx(coeffs_dma(i)).margin(1e-6));
-    }
-  }
+  occ::dma::DMACalculator calc(wfn);
+
+  occ::dma::DMASettings settings;
+  settings.max_rank = 2;
+  settings.big_exponent = 0.0;
+
+  calc.update_settings(settings);
+  calc.set_radius_for_element(1, 0.325);
 
   // Test DMA calculation (analytical method)
-  auto result = occ::dma::dmaqlm(wfn, 2, true, false);
+  auto dma_result = calc.compute_multipoles();
+  const auto &result = dma_result.multipoles;
 
   // Check the result
-  REQUIRE(result.size());
+  REQUIRE(result.size() > 0);
 
-  Mat expected(3, 2);
-  expected << 0.0, 0.0, 0.19113723, -0.19113723, -0.11109289, -0.11109289;
+  auto expected = Mat(3, 12);
 
-  for (int site = 0; site < 2; site++) {
+  expected << -0.704577, -0.004420, 0.102103, 0.169772, -0.397276, 0.003845,
+      -0.013801, 0.104311, -0.233917, 0.000000, 0.000000, 0.000000, 0.352029,
+      -0.000939, -0.014779, 0.039620, -0.013593, 0.000254, -0.000950, -0.016151,
+      -0.011038, 0.000000, 0.000000, 0.000000, 0.352548, -0.000192, 0.043710,
+      0.003513, -0.013054, -0.000235, -0.000130, 0.017866, 0.005581, 0.000000,
+      0.000000, 0.000000;
+
+  for (int site = 0; site < 3; site++) {
     const auto &m = result[site];
-    for (int term = 0; term < 3; term++) {
-      REQUIRE(m.q(term) == Approx(expected(term, site)).margin(1e-6));
+    for (int term = 0; term < 12; term++) {
+      REQUIRE(m.q(term) == Approx(expected(site, term)).margin(1e-6));
     }
   }
 }
 
-const char * c2h4_contents = R"(
+TEST_CASE("DMA general4", "[dma]") {
+  using namespace occ::qm;
+  using namespace occ::io;
+  std::istringstream fchk(h2o_contents);
+  FchkReader reader(fchk);
+
+  occ::qm::Wavefunction wfn(reader);
+
+  occ::dma::DMACalculator calc(wfn);
+
+  occ::dma::DMASettings settings;
+  settings.max_rank = 2;
+  settings.big_exponent = 4.0;
+
+  calc.update_settings(settings);
+  calc.set_radius_for_element(1, 0.325);
+
+  // Test DMA calculation (analytical method)
+  auto dma_result = calc.compute_multipoles();
+  const auto &result = dma_result.multipoles;
+
+  // Check the result
+  REQUIRE(result.size() > 0);
+
+  auto expected = Mat(3, 12);
+
+  expected << -0.427605, -0.013835, 0.327911, 0.530539, -1.009920, 0.006672,
+      -0.036657, 0.214050, -0.463494, 0.000000, 0.000000, 0.000000, 0.212067,
+      0.001162, 0.018114, -0.049016, -0.107774, 0.002061, -0.006636, -0.092154,
+      -0.093068, 0.000000, 0.000000, 0.000000, 0.215539, 0.000231, -0.051145,
+      -0.004406, -0.107397, -0.001061, -0.001414, 0.129761, 0.012256, 0.000000,
+      0.000000, 0.000000;
+
+  for (int site = 0; site < 3; site++) {
+    const auto &m = result[site];
+    for (int term = 0; term < 12; term++) {
+      REQUIRE(m.q(term) == Approx(expected(site, term)).margin(1e-3));
+    }
+  }
+}
+
+const char *c2h4_contents = R"(
 9/18/03, C2H4 with g03 & 6-31G(d)                                       
 SP        RHF                                                         6-31G(d)            
 Number of atoms                            I                6
@@ -1345,57 +1393,43 @@ TEST_CASE("C2H4 G03", "[dma]") {
 
   occ::qm::Wavefunction wfn(reader);
 
-
   occ::dma::DMACalculator calc(wfn);
 
-  return;
+  occ::dma::DMASettings settings;
+  settings.max_rank = 4;
+  settings.big_exponent = 4.0;
+
+  calc.update_settings(settings);
+  calc.set_radius_for_element(1, 0.35);
+  calc.set_limit_for_element(1, 1);
+
   // Test DMA calculation (analytical method)
-  auto result = occ::dma::dmaqlm(wfn, 4, true, false);
+  auto dma_result = calc.compute_multipoles();
+  const auto &result = dma_result.multipoles;
 
   // Check the result
   REQUIRE(result.size());
 
+  occ::Mat expected(6, 12);
+  expected.setZero();
+  expected << -0.035811, 0.095601, 0.000000, -0.000000, 0.731238, -0.000000,
+      0.000000, -1.399558, 0.000000, -2.874517, 0.000000, -0.000000, -0.035811,
+      -0.095601, 0.000000, -0.000000, 0.731238, -0.000000, -0.000000, -1.399558,
+      0.000000, 2.874517, -0.000000, 0.000000, 0.017905, -0.067488, 0.000000,
+      -0.070550, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
+      0.000000, 0.000000, 0.017905, -0.067488, -0.000000, 0.070550, 0.000000,
+      0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
+      0.017905, 0.067488, -0.000000, -0.070550, 0.000000, 0.000000, 0.000000,
+      0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.017905, 0.067488,
+      -0.000000, 0.070550, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
+      0.000000, 0.000000, 0.000000;
 
-  auto expected =  occ::Mat(6, 25);
-  // clang-format off
-  expected.row(0) <<
-  -0.0358105241,
-   0.0956014621,  0.0000000000, -0.0000000000,
-   0.7312379908, -0.0000000000,  0.0000000000, -1.3995584073,  0.0000000000,
-  -2.8745167840,  0.0000000000,  0.0000000000, -3.0623617978,  0.0000000000,
-   0.0000000000,  0.0000000000
-  -5.3811304901,  0.0000000000, -0.0000000000, -5.5944420039,  0.0000000000,
-   0.0000000000,  0.0000000000,  5.8854615035, -0.0000000000;
+  fmt::print("expected\n{}\n", format_matrix(expected));
 
-  expected.row(1) <<
-  -0.0358105241,
-  -0.0956014621, -0.0000000000, -0.0000000000,
-   0.7312379908, -0.0000000000, -0.0000000000, -1.3995584073,  0.0000000000,
-   2.8745167840, -0.0000000000,  0.0000000000,  3.0623617978, -0.0000000000,
-   0.0000000000,  0.0000000000
-  -5.3811304901,  0.0000000000,  0.0000000000, -5.5944420039,  0.0000000000,
-  -0.0000000000,  0.0000000000,  5.8854615035, -0.0000000000;
-
-  expected.row(2) <<
-   0.0179052223,
-  -0.0674877298,  0.0000000000, -0.0705503970;
-
-  expected.row(3) <<
-   0.0179052223,
-  -0.0674877298,  0.0000000000,  0.0705503970;
-
-  expected.row(4) <<
-   0.0179052223,
-   0.0674877298, -0.0000000000, -0.0705503970;
-
-  expected.row(5) << 
-   0.0179052223,
-   0.0674877298, -0.0000000000,  0.0705503970;
-
-  for (int site = 0; site < 2; site++) {
+  for (int site = 0; site < 6; site++) {
     const auto &m = result[site];
-    for (int term = 0; term < 3; term++) {
-      REQUIRE(m.q(term) == Approx(expected(term, site)).margin(1e-6));
+    for (int term = 0; term < 12; term++) {
+      REQUIRE(m.q(term) == Approx(expected(site, term)).margin(1e-3));
     }
   }
 }

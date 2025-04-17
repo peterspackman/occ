@@ -108,13 +108,10 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
 
   // Initialize logging
   if (use_slices) {
-    log::info("Starting Distributed Multipole Analysis for linear molecules "
-              "using slices");
-    log::info(" slice        site               separator");
+    log::debug("Starting Distributed Multipole Analysis for linear molecules "
+               "using slices");
   } else {
-    log::info("Starting Distributed Multipole Analysis for linear molecules");
-    log::info("    Atoms   Shells Primitives  Position     Multipole "
-              "contributions ...");
+    log::debug("Starting Distributed Multipole Analysis for linear molecules");
   }
 
   // Get molecule data from wavefunction
@@ -133,8 +130,6 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
   const auto &atom_to_shells = basis.atom_to_shell();
   const auto &first_bf = basis.first_bf();
 
-
-
   // Setup site data (initially just atoms)
   Mat3N sites = positions;
   std::vector<Mult> site_multipoles(n_atoms);
@@ -149,11 +144,12 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
     // Initialize multipoles at each site
     site_multipoles[i].q = Vec::Zero(max_rank + 1);
     fmt::print("{}\n", atoms[i].atomic_number);
-    for(const auto &shell_idx: atom_to_shells[i]) {
+    for (const auto &shell_idx : atom_to_shells[i]) {
       fmt::print("Shell {}\n", shell_idx);
-       const auto &sh = shells[shell_idx];
-      for(int i = 0; i < sh.num_primitives(); i++) {
-        fmt::print("{:12d} {:12.8f} {:12.8f}\n", i, sh.exponents(i), sh.coeff_normalized_dma(0, i));
+      const auto &sh = shells[shell_idx];
+      for (int i = 0; i < sh.num_primitives(); i++) {
+        fmt::print("{:12d} {:12.8f} {:12.8f}\n", i, sh.exponents(i),
+                   sh.coeff_normalized_dma(0, i));
       }
     }
   }
@@ -201,21 +197,7 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
           (site_radii(i1) + site_radii(i2));
     }
     sep(n_atoms) = 1.0e6; // Positive "infinity"
-
-    // Log slice information if verbose
-    log::info("Separator at z = {:.4f}", sep(0));
-    for (int i = 0; i < n_atoms; i++) {
-      log::info("{:4d} {:8d} {:10.4f} {:14.4f}", i, sort[i], sites(2, sort[i]),
-                sep(i + 1));
-    }
-
-    log::info("   Atoms   Shells Primitives  Position");
-    log::info("Slice     Multipole contributions ...");
-  } else {
-    log::info("    Atoms   Shells Primitives  Position     Multipole "
-              "contributions ...");
   }
-
 
   // Loop over atoms
   for (int atom_i = 0; atom_i < n_atoms; atom_i++) {
@@ -408,7 +390,6 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
             }
           };
 
-          log::info("d_block: {}", format_matrix(d_block));
           // Apply scaling for both shells
           if (l_i >= 2)
             apply_scaling(l_i, shell_i.size(), true);
@@ -447,9 +428,6 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
               const double zp = zi - p * zji;
               const double za = zi - zp;
               const double zb = zj - zp;
-
-              log::info("{:5d}{:5d} {:5d}{:5d} {:5d}{:5d} {:11.4f}", atom_i,
-                        atom_j, i_shell_idx, j_shell_idx, i_prim, j_prim, zp);
 
               // Use numerical integration to evaluate multipole integrals
               const double t = std::sqrt(1.0 / alpha_sum);
@@ -564,7 +542,6 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
                     }
                   }
 
-
                   // Move multipoles to the site in this slice
                   int site_idx = sort[slice_idx];
                   double zs = sites(2, site_idx);
@@ -661,19 +638,10 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
                       // Note the first parameter is rank limit not the
                       // multipole vector
                       addql0(std::min(nq, max_rank), f, gx, gx, gz_vec, qt);
-
-                      log::info("{:.2e} {:.2e} {:.2e} {:3d} {:3d} {:.2e} "
-                                "{:.2e} {:.2e} {:.2e}",
-                                fac, ci, cj, bf_i_idx, bf_j_idx,
-                                d_block(bf_i_idx, bf_j_idx), gx(mx), gx(my),
-                                gz_vec(0));
                     }
                   }
                 }
 
-                log::info("{} {} {} {} {} {} {}", atom_i, atom_j, i_shell_idx,
-                          j_shell_idx, i_prim, j_prim, zp);
-                log::info("{}", format_matrix(qt.q));
                 // Move multipoles to nearest site
                 movez(qt, zp, sites, site_radii, site_limits, site_multipoles,
                       max_rank);
@@ -681,12 +649,6 @@ std::vector<Mult> dmaql0(const occ::qm::Wavefunction &wfn, int max_rank,
 
               // End of primitive pairs
             }
-          }
-
-          // Debug output for multipoles at each site
-          log::info("mults");
-          for (const auto &mult : site_multipoles) {
-            log::info("{}", format_matrix(mult.q));
           }
 
           // End of shell pairs

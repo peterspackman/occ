@@ -24,7 +24,7 @@ int DFT::density_derivative() const {
 }
 
 DFT::DFT(const std::string &method, const AOBasis &basis,
-         const BeckeGridSettings &grid_settings)
+         const GridSettings &grid_settings)
     : SCFMethodBase(basis.atoms()), m_hf(basis), m_grid(basis, grid_settings) {
   update_electron_count();
   set_method(method);
@@ -66,7 +66,7 @@ void DFT::set_method(const std::string &method_string) {
   }
 }
 
-void DFT::set_integration_grid(const BeckeGridSettings &settings) {
+void DFT::set_integration_grid(const GridSettings &settings) {
   const auto &atoms = m_hf.aobasis().atoms();
   if (settings != m_grid.settings()) {
     m_grid = MolecularGrid(m_hf.aobasis(), settings);
@@ -84,30 +84,6 @@ void DFT::set_integration_grid(const BeckeGridSettings &settings) {
                   occ::timing::total(occ::timing::grid_init));
   occ::log::debug("Grid point creation took {} seconds",
                   occ::timing::total(occ::timing::grid_points));
-
-  // Write grid points to file if specified
-  if (!settings.filename.empty()) {
-    occ::log::info("Writing DFT grids to {}", settings.filename);
-    auto grid_file = fmt::output_file(settings.filename);
-    int atom_idx = 0;
-    for (int atom_idx = 0; atom_idx < molecular_grid.num_atoms(); atom_idx++) {
-      grid_file.print("Atom grid {} Z = {}\n", atom_idx,
-                      atoms[atom_idx].atomic_number);
-      grid_file.print("{:>20s} {:>20s} {:>20s} {:>20s}\n", "weight", "x", "y",
-                      "z");
-      const auto points = molecular_grid.points_for_atom(atom_idx);
-      const auto weights = molecular_grid.weights_for_atom(atom_idx);
-      for (int i = 0; i < points.cols(); i++) {
-        double w = weights(i);
-        double x = points(0, i);
-        double y = points(1, i);
-        double z = points(2, i);
-        grid_file.print("{: 20.12e} {: 20.12e} {: 20.12e} {: 20.12e}\n", w, x,
-                        y, z);
-      }
-      atom_idx++;
-    }
-  }
 
   // Set up nonlocal correlation if needed
   for (const auto &func : m_method.functionals) {

@@ -1,6 +1,7 @@
 #include <occ/core/element.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/dft/grid.h>
+#include <occ/core/units.h>
+#include <occ/dft/molecular_grid.h>
 #include <occ/dma/add_qlm.h>
 #include <occ/dma/binomial.h>
 #include <occ/dma/dma.h>
@@ -11,6 +12,7 @@
 #include <occ/gto/density.h>
 #include <occ/gto/shell_order.h>
 #include <occ/io/conversion.h>
+#include <occ/qm/hf.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <vector>
 
@@ -27,18 +29,23 @@ inline IVec3 get_powers(int bf_idx, int l) {
       result = IVec3(i, j, k);
     count++;
   };
-  occ::gto::iterate_over_shell<true, gto::ShellOrder::Gaussian>(f, l);
+  occ::gto::iterate_over_shell<true>(f, l);
   return result;
 }
 
 inline double get_normalization_factor(int l, int m, int n) {
   int angular_momenta = l + m + n;
-  using occ::util::double_factorial_2n_1;
-  double result =
-      std::sqrt(double_factorial_2n_1(angular_momenta) /
-                (double_factorial_2n_1(l) * double_factorial_2n_1(m) *
-                 double_factorial_2n_1(n)));
-  return result;
+  if (angular_momenta == 2 && ((l == 1) || (m == 1) || (n == 1))) {
+    return std::sqrt(3.0);
+  }
+  if (angular_momenta == 3 && ((l == 2) || (m == 2) || (n == 2))) {
+    return std::sqrt(5.0);
+  }
+  if (angular_momenta == 3 && ((l == 1) && (m == 1) && (n == 1))) {
+    return std::sqrt(15.0);
+  }
+
+  return 1.0;
 }
 
 // Apply scaling factors for angular momentum functions
@@ -59,27 +66,22 @@ inline double get_normalization_factor(int l, int m, int n) {
  * methods
  * @return std::vector<Mult> Multipole moments for each site
  */
-std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
-                         bool include_nuclei = true, double bigexp = 4.0) {
+std::vector<Mult> dmaqlm(const qm::AOBasis &basis,
+                         const qm::MolecularOrbitals &mo, const DMASites &sites,
+                         const DMASettings &settings) {
 
-  fmt::print("Starting Distributed Multipole Analysis\n");
-  fmt::print("    Atoms   Shells Primitives            Position     Multipole "
-             "contributions ...\n");
+  log::debug("Starting Distributed Multipole Analysis");
+  log::debug("Site radii : {}\n", format_matrix(sites.radii));
+  log::debug("Site limits: {}\n", format_matrix(sites.limits, "{}"));
 
-  // Get molecule data from wavefunction
-  const auto &atoms = wfn.atoms;
-  const auto &positions = wfn.positions();
-  const size_t n_atoms = atoms.size();
-
-  // Get density matrix
-  auto mo = occ::io::conversion::orb::to_gaussian_order(wfn.basis, wfn.mo);
-  mo.update_density_matrix();
-  const Mat D = 2 * mo.D;
-  const Vec S = wfn.overlap_matrix().diagonal().array().sqrt();
-  fmt::print("Overlap\n{}\n", format_matrix(S));
+  qm::HartreeFock hf(basis);
+  Mat bf_norm =
+      hf.compute_overlap_matrix().diagonal().array().sqrt().matrix().asDiagonal();
+  Mat D = 2 * mo.D;
+  // Transform the density matrix
+  D = bf_norm * D * bf_norm;
 
   // Get basis set information
-  const auto &basis = wfn.basis;
   const auto &shells = basis.shells();
   const auto n_shells = shells.size();
   const auto &shell_to_atom = basis.shell_to_atom();
@@ -87,36 +89,7 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
   const auto &first_bf = basis.first_bf();
 
   // Setup site data (initially just atoms)
-  Mat3N sites = positions;
-  std::vector<Mult> site_multipoles(n_atoms);
-  Vec site_radii = Vec::Ones(n_atoms) * 0.5; // Default radius of 0.5 Å
-
-  constexpr char shell_labels[] = "spdfghikmnoqrtuvwxyz";
-  fmt::print("Total number of primitives required\n");
-  // Adjust radii for hydrogens
-  int prim = 1;
-  for (size_t i = 0; i < n_atoms; i++) {
-    if (atoms[i].atomic_number == 1) {
-      site_radii(i) = 0.325; // Hydrogen atoms get smaller radius
-    }
-
-    // Initialize multipoles at each site
-    site_multipoles[i].q = Vec::Zero(max_rank * max_rank + 2 * max_rank + 1);
-    fmt::print("{}\n", core::Element(atoms[i].atomic_number).symbol());
-    for (const auto &shell_idx : atom_to_shells[i]) {
-      const auto &sh = shells[shell_idx];
-      fmt::print("Shell {}   {}\n", shell_idx + 1, shell_labels[sh.l]);
-      for (int i = 0; i < sh.num_primitives(); i++) {
-        fmt::print("{:10d}{:16.8f}{:14.8f}\n", prim, sh.exponents(i),
-                   sh.coeff_normalized_dma(0, i));
-        prim++;
-      }
-    }
-  }
-    site_radii <<    1.2283219807815948, 0.61416099039079741, 0.61416099039079741;
-    fmt::print("site_radii:{}\n", format_matrix(site_radii));
-
-  IVec site_limits = IVec::Constant(n_atoms, max_rank);
+  std::vector<Mult> site_multipoles(sites.size());
 
   // Threshold for numerical significance
   const double tol = 2.30258 * 18;
@@ -125,27 +98,32 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
   bool do_quadrature = false;
   Vec rho;
 
-  auto grid_gen = dft::MolecularGrid(basis, {});
+  dft::GridSettings grid_settings;
+  grid_settings.treutler_alrichs_adjustment = false;
+
+  auto grid_gen = dft::MolecularGrid(basis, grid_settings);
+  grid_gen.set_atomic_radii(sites.radii);
   grid_gen.populate_molecular_grid_points();
+
   const auto &grid = grid_gen.get_molecular_grid_points();
   const auto &grid_points = grid.points();
-  std::vector<int> point_to_site_map;
 
   double etol = 36.0; // Threshold for density calculation
 
   // Loop over atoms
-  for (int atom_i = 0; atom_i < n_atoms; atom_i++) {
-    const Vec3 &pos_i = positions.col(atom_i);
+  for (int atom_i = 0; atom_i < sites.atoms.size(); atom_i++) {
+    const Vec3 pos_i = sites.atoms[atom_i].position();
 
     // Initialize a Mult object to store temporary multipoles
     Mult qt;
-    qt.q = Vec::Zero(max_rank * max_rank + 2 * max_rank + 1);
+    qt.q = Vec::Zero(settings.max_rank * settings.max_rank +
+                     2 * settings.max_rank + 1);
 
     // Include nuclear charges if requested
-    if (include_nuclei) {
-      qt.Q00() = atoms[atom_i].atomic_number;
-      moveq(pos_i, qt, sites, site_radii, site_limits, site_multipoles,
-            max_rank);
+    if (settings.include_nuclei) {
+      qt.Q00() = sites.atoms[atom_i].atomic_number;
+      moveq(pos_i, qt, sites.positions, sites.radii, sites.limits,
+            site_multipoles, settings.max_rank);
     }
 
     const auto &i_shells = atom_to_shells[atom_i];
@@ -165,7 +143,7 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
       // Loop over atoms j (up to i to avoid double counting)
       for (int atom_j = 0; atom_j <= atom_i; atom_j++) {
         const bool i_equals_j = (atom_i == atom_j);
-        const Vec3 &pos_j = positions.col(atom_j);
+        const Vec3 &pos_j = sites.atoms[atom_j].position();
 
         // Calculate atom separation
         const Vec3 r_ij = pos_i - pos_j;
@@ -193,23 +171,23 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
 
           const bool i_shell_equals_j_shell = (i_shell_idx == j_shell_idx);
 
-          Vec S_block_i =
-              S.block(first_bf[i_shell_idx], 0, shell_i.size(), 1).array();
-          Vec S_block_j =
-              S.block(first_bf[j_shell_idx], 0, shell_j.size(), 1).array();
-          Mat prod = S_block_i * S_block_j.transpose();
-          // Extract density matrix block for these shells
           Mat d_block = D.block(first_bf[i_shell_idx], first_bf[j_shell_idx],
                                 shell_i.size(), shell_j.size());
 
-          d_block = D.block(first_bf[i_shell_idx], first_bf[j_shell_idx],
-                            shell_i.size(), shell_j.size())
-                        .array();
-                 //   S_block_i(0) * S_block_j(0);
-          fmt::print(" d_block sum\n{:2d}{:2d}\n{:9.5f}\n", l_i, l_j, d_block.sum());
+          for (int bf_i_idx = 0; bf_i_idx < shell_i.size(); bf_i_idx++) {
+            IVec3 i_powers = get_powers(bf_i_idx, l_i);
+            double norm_i =
+                get_normalization_factor(i_powers(0), i_powers(1), i_powers(2));
 
-          fmt::print("{:5d}{:5d}{:5d}\n", shell_i.num_primitives(), i_shell_idx,
-                     j_shell_idx);
+            // Get appropriate contraction coefficient
+            for (int bf_j_idx = 0; bf_j_idx < shell_j.size(); bf_j_idx++) {
+              IVec3 j_powers = get_powers(bf_j_idx, l_j);
+              double norm_j = get_normalization_factor(j_powers(0), j_powers(1),
+                                                       j_powers(2));
+              d_block(bf_i_idx, bf_j_idx) *= norm_i * norm_j;
+            }
+          }
+
           // Loop over primitives in shell i
           for (int i_prim = 0; i_prim < shell_i.num_primitives(); i_prim++) {
             const double alpha_i = shell_i.exponents[i_prim];
@@ -219,7 +197,6 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
             int j_prim_max =
                 i_shell_equals_j_shell ? i_prim + 1 : shell_j.num_primitives();
 
-            fmt::print("{:5d}\n", j_prim_max);
             for (int j_prim = 0; j_prim < j_prim_max; j_prim++) {
               const double alpha_j = shell_j.exponents[j_prim];
               const double alpha_sum = alpha_i + alpha_j;
@@ -243,18 +220,12 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
                 fac *= 2.0;
               }
 
-              if (alpha_i + alpha_j > bigexp) {
+              if ((alpha_i + alpha_j) > settings.big_exponent) {
                 // Use analytical method for large exponents
 
                 // P is the gaussian product center
                 const double p = alpha_j / alpha_sum;
                 const Vec3 P = origin_i + p * r_shell_ij;
-
-                fmt::print("{:5d}{:4d}{:5d}{:4d}{:5d}{:4d}   "
-                           "{:10.5f}{:10.5f}{:10.5f}\n",
-                           atom_i + 1, atom_j + 1, i_shell_idx + 1,
-                           j_shell_idx + 1, i_prim + 1, j_prim + 1, P(0), P(1),
-                           P(2));
 
                 // Get center coordinates relative to product center
                 const Vec3 A = origin_i - P;
@@ -352,62 +323,20 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
                       gy_vec(n) = gy(n, i_powers(1), j_powers(1));
                       gz_vec(n) = gz(n, i_powers(2), j_powers(2));
                     }
-                    fmt::print(
-                        "{:12.6f}{:12.6f}{:12.6f}{:12.6f}{:12.6f}{:12.6f}{:5d}{:5d}{:5d}{:5d}{:5d}{:5d}\n",
-                        fac, f, d_block(bf_i_idx, bf_j_idx), gx_vec.sum(), gy_vec.sum(), gz_vec.sum(),
-                        i_powers(0), i_powers(1), i_powers(2), j_powers(0), j_powers(1), j_powers(2));
 
                     // Add contribution to multipoles
-                    addqlm(lq, max_rank, f, gx_vec, gy_vec, gz_vec, qt);
+                    addqlm(lq, settings.max_rank, f, gx_vec, gy_vec, gz_vec,
+                           qt);
                   }
                 }
 
-                /*
-                fmt::print("{:5d}{:5d} {:5d}{:5d} {:5d}{:5d} {:11.4f} {:11.4f} "
-                          "{:11.4f} {}\n",
-                          atom_i, atom_j, i_shell_idx, j_shell_idx, i_prim,
-                          j_prim, P(0), P(1), P(2), format_matrix(qt.q));
-                */
-
-                fmt::print("{:12.6f}{:12.6f}{:12.6f}{:12.6f}{:12.6f}{:12.6f}\n",
-                           qt.q(0), qt.q(1), qt.q(2), qt.q(3), qt.q(4),
-                           qt.q(5));
                 // Move multipoles to nearest sites
-                moveq(P, qt, sites, site_radii, site_limits, site_multipoles,
-                      max_rank);
-
-                for (int site_idx = 0; site_idx < site_multipoles.size();
-                     site_idx++) {
-                  const auto &qt = site_multipoles[site_idx];
-                  fmt::print(
-                      "{:12.6f}{:12.6f}{:12.6f}{:12.6f}{:12.6f}{:12.6f}\n",
-                      qt.q(0), qt.q(1), qt.q(2), qt.q(3), qt.q(4), qt.q(5));
-                }
+                moveq(P, qt, sites.positions, sites.radii, sites.limits,
+                      site_multipoles, settings.max_rank);
 
               } else {
                 // For small exponents, use numerical integration
                 if (!do_quadrature) {
-                  // Initialize grid for integration
-                  point_to_site_map.resize(grid.num_points());
-
-                  // Assign each grid point to nearest site
-                  for (int p = 0; p < grid.num_points(); p++) {
-                    const Vec3 grid_pos = grid_points.col(p);
-                    double min_dist = std::numeric_limits<double>::max();
-                    int nearest_site = 0;
-
-                    for (int s = 0; s < n_atoms; s++) {
-                      double dist = (grid_pos - sites.col(s)).squaredNorm() /
-                                    (site_radii(s) * site_radii(s));
-                      if (dist < min_dist) {
-                        min_dist = dist;
-                        nearest_site = s;
-                      }
-                    }
-
-                    point_to_site_map[p] = nearest_site;
-                  }
-
                   // Initialize density array
                   rho = Vec::Zero(grid.num_points());
 
@@ -417,9 +346,6 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
                 // Calculate center P of overlap distribution
                 const double p = alpha_j / alpha_sum;
                 const Vec3 P = origin_i + p * r_shell_ij;
-
-                fmt::print("{:5d} {:5d} {:10.5f} {:10.5f} {:10.5f}\n", i_prim,
-                           j_prim, P(0), P(1), P(2));
 
                 // Get contraction coefficients
                 const double ci = shell_i.coeff_normalized_dma(0, i_prim);
@@ -505,63 +431,54 @@ std::vector<Mult> dmaqlm(const occ::qm::Wavefunction &wfn, int max_rank = 4,
 
   // If we did numerical integration, process the grid density
   if (do_quadrature) {
-    fmt::print("Numerical integration\n");
+
+    Mult qt;
+    qt.q = Vec::Zero(settings.max_rank * settings.max_rank +
+                     2 * settings.max_rank + 1);
     const auto &grid_weights = grid.weights();
     // Process the grid density contributions to multipoles
-    std::vector<Mult> site_contributions(n_atoms);
-    for (int site = 0; site < n_atoms; site++) {
-      site_contributions[site].q =
-          Vec::Zero(max_rank * max_rank + 2 * max_rank + 1);
-    }
+    std::vector<Mult> site_contributions(sites.size());
 
     // Initialize temporary arrays for coordinates and their powers
-    Vec ggx = Vec::Zero(max_rank + 1);
-    Vec ggy = Vec::Zero(max_rank + 1);
-    Vec ggz = Vec::Zero(max_rank + 1);
+    Vec ggx = Vec::Zero(settings.max_rank + 1);
+    Vec ggy = Vec::Zero(settings.max_rank + 1);
+    Vec ggz = Vec::Zero(settings.max_rank + 1);
 
-    // Process each grid point
-    for (int p = 0; p < grid.num_points(); p++) {
-      // Skip if density is negligible
-      if (std::abs(rho(p)) < 1e-12)
-        continue;
+    const auto &atom_blocks = grid.atom_blocks();
+    for (int site_index = 0; site_index < sites.size(); site_index++) {
+      Vec3 pos_i = sites.positions.col(site_index);
+      qt.q.setZero();
+      const auto &[p_start, num_points] = atom_blocks[site_index];
+      // Process each grid point
+      for (int p = p_start; p < p_start + num_points; p++) {
 
-      // Get site this point is assigned to
-      int site_idx = point_to_site_map[p];
+        // Calculate position relative to site
+        const Vec3 &grid_pos = grid_points.col(p);
+        const Vec3 rel_pos = grid_pos - sites.positions.col(site_index);
 
-      // Calculate position relative to site
-      const Vec3 &grid_pos = grid_points.col(p);
-      const Vec3 rel_pos = grid_pos - sites.col(site_idx);
+        // Initialize power arrays
+        ggx(0) = 1.0;
+        ggy(0) = 1.0;
+        ggz(0) = 1.0;
 
-      // Initialize power arrays
-      ggx(0) = 1.0;
-      ggy(0) = 1.0;
-      ggz(0) = 1.0;
+        // Calculate powers of coordinates
+        for (int l = 1; l <= settings.max_rank; l++) {
+          ggx(l) = ggx(l - 1) * rel_pos(0);
+          ggy(l) = ggy(l - 1) * rel_pos(1);
+          ggz(l) = ggz(l - 1) * rel_pos(2);
+        }
 
-      // Calculate powers of coordinates
-      for (int l = 1; l <= max_rank; l++) {
-        ggx(l) = ggx(l - 1) * rel_pos(0);
-        ggy(l) = ggy(l - 1) * rel_pos(1);
-        ggz(l) = ggz(l - 1) * rel_pos(2);
+        // Get grid weight
+        double weight = grid_weights(p);
+
+        // Add contribution to multipoles for this site
+        addqlm(settings.max_rank, settings.max_rank, weight * rho(p), ggx, ggy,
+               ggz, qt);
       }
 
-      // Get grid weight
-      double weight = grid_weights(p);
-      fmt::print("{:12.6f}\n", rho(p));
-
-      // Add contribution to multipoles for this site
-      addqlm(max_rank, max_rank, weight * rho(p), ggx, ggy, ggz,
-             site_contributions[site_idx]);
+      moveq(pos_i, qt, sites.positions, sites.radii, sites.limits,
+            site_multipoles, settings.max_rank);
     }
-
-    // Add grid contributions to total site multipoles
-    for (int site = 0; site < n_atoms; site++) {
-      site_multipoles[site].q += site_contributions[site].q;
-    }
-  }
-
-  fmt::print("mults\n");
-  for (const auto &mult : site_multipoles) {
-    fmt::print("{}\n", format_matrix(mult.q));
   }
 
   // Return the calculated multipoles
