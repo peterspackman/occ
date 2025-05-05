@@ -458,15 +458,17 @@ void AOBasis::merge(const AOBasis &rhs) {
 
 std::string canonicalize_name(const std::string &name) {
   auto result = name;
-  std::transform(name.begin(), name.end(), result.begin(), [](auto &c) {
-    char cc = ::tolower(c);
-    switch (cc) {
-    case '/':
-      cc = 'I';
-      break;
-    }
-    return cc;
-  });
+  if (!name.ends_with(".json")) {
+    std::transform(name.begin(), name.end(), result.begin(), [](auto &c) {
+      char cc = ::tolower(c);
+      switch (cc) {
+      case '/':
+        cc = 'I';
+        break;
+      }
+      return cc;
+    });
+  }
 
   if (result == "6-311g**") {
     result = "6-311g(d,p)";
@@ -475,6 +477,8 @@ std::string canonicalize_name(const std::string &name) {
   } else if (result == "6-31g*") {
     result = "6-31g(d)";
   }
+
+  occ::log::debug("Canonical name: {}", result);
 
   return result;
 }
@@ -506,11 +510,15 @@ inline std::string data_path() {
 AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
   std::string basis_lib_path = data_path();
 
+  std::string json_filepath;
   auto canonical_name = canonicalize_name(name);
-
-  std::string json_filepath = canonical_name + ".json";
-  if (!fs::exists(canonical_name + ".json")) {
-    json_filepath = basis_lib_path + "/" + json_filepath;
+  if (!canonical_name.ends_with(".json")) {
+      json_filepath = canonical_name + ".json";
+    if (!fs::exists(canonical_name + ".json")) {
+      json_filepath = basis_lib_path + "/" + json_filepath;
+    }
+  } else {
+      json_filepath = canonical_name;
   }
   occ::io::JsonBasisReader parser(json_filepath);
   auto element_map = parser.element_map();
