@@ -130,7 +130,11 @@ if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc
     URL "https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz"
-    OPTIONS "BUILD_TESTING OFF" "ENABLE_XHOST ${ENABLE_HOST_OPT}" "BUILD_FPIC ${WITH_PYTHON_BINDINGS}"
+    OPTIONS
+        "BUILD_TESTING OFF"
+        "ENABLE_XHOST ${ENABLE_HOST_OPT}"
+        "BUILD_FPIC ${WITH_PYTHON_BINDINGS}"
+        "CMAKE_POLICY_VERSION_MINIMUM 3.5"
 )
 add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(Libxc::xc INTERFACE xc)
