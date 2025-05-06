@@ -101,7 +101,9 @@ if("${USE_QCINT}")
 else()
     set(LIBCINT_REPOSITORY "sunqm/libcint")
 endif()
-
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(LIBCINT_BUILD_TYPE "CMAKE_BUILD_TYPE Release")
+endif ()
 CPMAddPackage(
     NAME libcint
     GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
@@ -114,7 +116,7 @@ CPMAddPackage(
         "PYPZPX ON"
         "BUILD_MARCH_NATIVE ON"
         "WITH_RANGE_COULOMB ON"
-        "CMAKE_BUILD_TYPE Release"
+        ${LIBCINT_BUILD_TYPE}
     VERSION "6.1.2"
 )
 add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
