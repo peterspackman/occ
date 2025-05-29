@@ -2,7 +2,6 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/dft/molecular_grid.h>
-#include <occ/dma/add_qlm.h>
 #include <occ/dma/gauss_hermite.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/dma/multipole_shifter.h>
@@ -290,8 +289,9 @@ void GridIntegrator::process_grid_density(
              ggy, ggz, qt);
     }
 
-    MultipoleShifter shifter(pos_i, qt, sites.positions, sites.radii, sites.limits,
-          site_multipoles, m_settings.max_rank);
+    MultipoleShifter shifter(pos_i, qt, sites.positions, sites.radii,
+                             sites.limits, site_multipoles,
+                             m_settings.max_rank);
     shifter.shift();
   }
 }
@@ -362,8 +362,9 @@ void MultipoleCalculator::process_nuclear_contributions(
                      2 * m_settings.max_rank + 1);
     qt.Q00() = m_sites.atoms[atom_i].atomic_number;
 
-    MultipoleShifter shifter(pos_i, qt, m_sites.positions, m_sites.radii, m_sites.limits,
-          site_multipoles, m_settings.max_rank);
+    MultipoleShifter shifter(pos_i, qt, m_sites.positions, m_sites.radii,
+                             m_sites.limits, site_multipoles,
+                             m_settings.max_rank);
     shifter.shift();
   }
 }
@@ -479,8 +480,9 @@ void MultipoleCalculator::process_electronic_contributions(
                     shell_i, shell_j, i_prim, j_prim, fac, d_block, P, qt);
 
                 // Move multipoles to nearest sites
-                MultipoleShifter shifter(P, qt, m_sites.positions, m_sites.radii, m_sites.limits,
-                      site_multipoles, m_settings.max_rank);
+                MultipoleShifter shifter(P, qt, m_sites.positions,
+                                         m_sites.radii, m_sites.limits,
+                                         site_multipoles, m_settings.max_rank);
                 shifter.shift();
 
               } else {

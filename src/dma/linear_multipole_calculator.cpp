@@ -4,7 +4,6 @@
 #include <occ/dma/gauss_hermite.h>
 #include <occ/dma/linear_multipole_calculator.h>
 #include <occ/dma/linear_multipole_shifter.h>
-#include <occ/dma/shiftq.h>
 #include <occ/gto/shell_order.h>
 
 namespace occ::dma {
@@ -151,7 +150,8 @@ void LinearMultipoleCalculator::process_nuclear_contributions(
     qt.q(0) = atoms[atom_i].atomic_number;
 
     // Move to nearest site
-    LinearMultipoleShifter shifter(zi, qt, m_sites, m_site_radii, m_site_limits, site_multipoles, m_settings.max_rank);
+    LinearMultipoleShifter shifter(zi, qt, m_sites, m_site_radii, m_site_limits,
+                                   site_multipoles, m_settings.max_rank);
     shifter.move_to_sites();
   }
 }
@@ -353,7 +353,7 @@ void LinearMultipoleCalculator::process_primitive_pair(
             double f =
                 -fac * ci * cj * d_block(bf_i_idx, bf_j_idx) * norm_i * norm_j;
 
-            addql0(m_settings.max_rank, f, gx, gx, gz_vec, qt);
+            addql0(std::min(nq, m_settings.max_rank), f, gx, gx, gz_vec, qt);
           }
         }
       }
@@ -361,8 +361,9 @@ void LinearMultipoleCalculator::process_primitive_pair(
       // Move multipoles to the site in this slice
       int site_idx = m_sort_indices[slice_idx];
       double zs = m_sites(2, site_idx);
-      LinearMultipoleShifter::shift_along_axis(qt, 0, m_settings.max_rank, site_multipoles[site_idx],
-             m_settings.max_rank, zp - zs);
+      LinearMultipoleShifter::shift_along_axis(qt, 0, m_settings.max_rank,
+                                               site_multipoles[site_idx],
+                                               m_settings.max_rank, zp - zs);
     }
   } else {
     // Process entire molecule at once (not using slices)
@@ -456,7 +457,8 @@ void LinearMultipoleCalculator::process_primitive_pair(
     }
 
     // Move multipoles to nearest site
-    LinearMultipoleShifter shifter(zp, qt, m_sites, m_site_radii, m_site_limits, site_multipoles, m_settings.max_rank);
+    LinearMultipoleShifter shifter(zp, qt, m_sites, m_site_radii, m_site_limits,
+                                   site_multipoles, m_settings.max_rank);
     shifter.move_to_sites();
   }
 }

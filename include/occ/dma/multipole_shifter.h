@@ -1,6 +1,8 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 #include <occ/dma/add_qlm.h>
+#include <occ/dma/binomial.h>
+#include <occ/dma/solid_harmonics.h>
 #include <vector>
 
 namespace occ::dma {
@@ -17,6 +19,15 @@ private:
   bool direct_transfer(int k, int t1, int t2);
   bool distributed_transfer(int k, int low, int t1, int t2, int lp1sq, double eps);
   bool process_site(int k, int low, int t1, int t2, int lp1sq, double eps);
+  
+  // Multipole shifting functionality (migrated from shiftq.cpp)
+  int estimate_largest_transferred_multipole(Eigen::Ref<const Vec3> pos,
+                                           const Mult &mult, int l, int m1, int m2,
+                                           double eps);
+  Mat get_cplx_sh(Eigen::Ref<const Vec3> pos, int N);
+  Mat get_cplx_mults(const Mult &mult, int l1, int m1, int N);
+  void shift_multipoles(const Mult &q1, int l1, int m1, Mult &q2, int m2,
+                        Eigen::Ref<const Vec3> pos);
 
   Eigen::Ref<const Vec3> m_pos;
   Eigen::Ref<const Vec> m_site_radii;

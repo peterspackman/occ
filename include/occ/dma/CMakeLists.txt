@@ -9,7 +9,6 @@ set(HEADERS
     multipole.h
     multipole_calculator.h
     multipole_shifter.h
-    shiftq.h
     solid_harmonics.h
 )
 
