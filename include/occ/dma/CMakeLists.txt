@@ -9,6 +9,7 @@ set(HEADERS
     movez.h
     mult.h
     multipole.h
+    multipole_calculator.h
     shiftq.h
     solid_harmonics.h
 )

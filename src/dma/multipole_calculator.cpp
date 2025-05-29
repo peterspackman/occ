@@ -328,9 +328,6 @@ void MultipoleCalculator::setup_normalized_density_matrix() {
       const auto &shell_j = shells[j_shell_idx];
       const int l_j = shell_j.l;
       
-      Mat d_block = m_normalized_density.block(first_bf[i_shell_idx], first_bf[j_shell_idx],
-                                               shell_i.size(), shell_j.size());
-      
       for (int bf_i_idx = 0; bf_i_idx < shell_i.size(); bf_i_idx++) {
         IVec3 i_powers = get_powers(bf_i_idx, l_i);
         double norm_i = get_normalization_factor(i_powers(0), i_powers(1), i_powers(2));
@@ -338,7 +335,7 @@ void MultipoleCalculator::setup_normalized_density_matrix() {
         for (int bf_j_idx = 0; bf_j_idx < shell_j.size(); bf_j_idx++) {
           IVec3 j_powers = get_powers(bf_j_idx, l_j);
           double norm_j = get_normalization_factor(j_powers(0), j_powers(1), j_powers(2));
-          d_block(bf_i_idx, bf_j_idx) *= norm_i * norm_j;
+          m_normalized_density(first_bf[i_shell_idx] + bf_i_idx, first_bf[j_shell_idx] + bf_j_idx) *= norm_i * norm_j;
         }
       }
     }
