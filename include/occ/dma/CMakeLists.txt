@@ -5,8 +5,9 @@ set(HEADERS
     dmaql0.h
     dmaqlm.h
     gauss_hermite.h
+    linear_multipole_shifter.h
+    linear_multipole_calculator.h
     moveq.h
-    movez.h
     mult.h
     multipole.h
     multipole_calculator.h

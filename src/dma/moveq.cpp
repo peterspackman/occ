@@ -119,11 +119,5 @@ bool MultipoleShifter::process_site(int k, int low, int t1, int t2, int lp1sq, d
   }
 }
 
-void moveq(Eigen::Ref<const Vec3> pos, Mult &qt, const Mat3N &site_positions,
-           const Vec &site_radii, const IVec &site_limits, std::vector<Mult> &q,
-           int lmax) {
-  MultipoleShifter shifter(pos, qt, site_positions, site_radii, site_limits, q, lmax);
-  shifter.shift();
-}
 
 } // namespace occ::dma

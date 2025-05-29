@@ -1,4 +1,3 @@
-#include <occ/dma/multipole_calculator.h>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
@@ -6,6 +5,7 @@
 #include <occ/dma/add_qlm.h>
 #include <occ/dma/gauss_hermite.h>
 #include <occ/dma/moveq.h>
+#include <occ/dma/multipole_calculator.h>
 #include <occ/gto/shell_order.h>
 #include <occ/qm/hf.h>
 
@@ -43,11 +43,9 @@ AnalyticalIntegrator::AnalyticalIntegrator(const DMASettings &settings)
     : m_settings(settings) {}
 
 void AnalyticalIntegrator::calculate_primitive_contribution(
-    const qm::Shell &shell_i, const qm::Shell &shell_j,
-    int i_prim, int j_prim, double fac,
-    const Mat &d_block, const Vec3 &P,
-    Mult &qt) const {
-  
+    const qm::Shell &shell_i, const qm::Shell &shell_j, int i_prim, int j_prim,
+    double fac, const Mat &d_block, const Vec3 &P, Mult &qt) const {
+
   const int l_i = shell_i.l;
   const int l_j = shell_j.l;
   const Vec3 &origin_i = shell_i.origin;
@@ -160,13 +158,13 @@ void AnalyticalIntegrator::calculate_primitive_contribution(
 GridIntegrator::GridIntegrator(const DMASettings &settings)
     : m_settings(settings) {}
 
-void GridIntegrator::add_primitive_to_grid(
-    const qm::Shell &shell_i, const qm::Shell &shell_j,
-    int i_prim, int j_prim, double fac,
-    const Mat &d_block, const Vec3 &P,
-    const Mat3N &grid_points, Vec &rho,
-    double etol) const {
-  
+void GridIntegrator::add_primitive_to_grid(const qm::Shell &shell_i,
+                                           const qm::Shell &shell_j, int i_prim,
+                                           int j_prim, double fac,
+                                           const Mat &d_block, const Vec3 &P,
+                                           const Mat3N &grid_points, Vec &rho,
+                                           double etol) const {
+
   const int l_i = shell_i.l;
   const int l_j = shell_j.l;
   const Vec3 &origin_i = shell_i.origin;
@@ -235,11 +233,10 @@ void GridIntegrator::add_primitive_to_grid(
         double f = -fac * ci * cj * d_block(bf_i_idx, bf_j_idx);
 
         // Calculate basis function product at grid point
-        double bf_product =
-            exp_factor * x_i_powers[i_powers[0]] *
-            y_i_powers[i_powers[1]] * z_i_powers[i_powers[2]] *
-            x_j_powers[j_powers[0]] * y_j_powers[j_powers[1]] *
-            z_j_powers[j_powers[2]];
+        double bf_product = exp_factor * x_i_powers[i_powers[0]] *
+                            y_i_powers[i_powers[1]] * z_i_powers[i_powers[2]] *
+                            x_j_powers[j_powers[0]] * y_j_powers[j_powers[1]] *
+                            z_j_powers[j_powers[2]];
 
         // Add contribution to density at this grid point
         rho(p) += f * bf_product;
@@ -252,7 +249,7 @@ void GridIntegrator::process_grid_density(
     const Vec &rho, const Mat3N &grid_points, const Vec &grid_weights,
     const std::vector<std::pair<size_t, size_t>> &atom_blocks,
     const DMASites &sites, std::vector<Mult> &site_multipoles) const {
-  
+
   Mult qt;
   qt.q = Vec::Zero(m_settings.max_rank * m_settings.max_rank +
                    2 * m_settings.max_rank + 1);
@@ -266,7 +263,7 @@ void GridIntegrator::process_grid_density(
     Vec3 pos_i = sites.positions.col(site_index);
     qt.q.setZero();
     const auto &[p_start, num_points] = atom_blocks[site_index];
-    
+
     // Process each grid point
     for (int p = p_start; p < p_start + num_points; p++) {
       // Calculate position relative to site
@@ -289,72 +286,85 @@ void GridIntegrator::process_grid_density(
       double weight = grid_weights(p);
 
       // Add contribution to multipoles for this site
-      addqlm(m_settings.max_rank, m_settings.max_rank, weight * rho(p), ggx, ggy,
-             ggz, qt);
+      addqlm(m_settings.max_rank, m_settings.max_rank, weight * rho(p), ggx,
+             ggy, ggz, qt);
     }
 
-    moveq(pos_i, qt, sites.positions, sites.radii, sites.limits,
+    MultipoleShifter shifter(pos_i, qt, sites.positions, sites.radii, sites.limits,
           site_multipoles, m_settings.max_rank);
+    shifter.shift();
   }
 }
 
 // MultipoleCalculator implementation
-MultipoleCalculator::MultipoleCalculator(const qm::AOBasis &basis, 
+MultipoleCalculator::MultipoleCalculator(const qm::AOBasis &basis,
                                          const qm::MolecularOrbitals &mo,
-                                         const DMASites &sites, 
+                                         const DMASites &sites,
                                          const DMASettings &settings)
     : m_basis(basis), m_mo(mo), m_sites(sites), m_settings(settings),
-      m_analytical(settings), m_grid(settings),
-      m_tolerance(2.30258 * 18), m_use_quadrature(false) {
+      m_analytical(settings), m_grid(settings), m_tolerance(2.30258 * 18),
+      m_use_quadrature(false) {
   setup_normalized_density_matrix();
 }
 
 void MultipoleCalculator::setup_normalized_density_matrix() {
   qm::HartreeFock hf(m_basis);
-  Mat bf_norm = hf.compute_overlap_matrix().diagonal().array().sqrt().matrix().asDiagonal();
+  Mat bf_norm = hf.compute_overlap_matrix()
+                    .diagonal()
+                    .array()
+                    .sqrt()
+                    .matrix()
+                    .asDiagonal();
   m_normalized_density = 2 * m_mo.D;
   m_normalized_density = bf_norm * m_normalized_density * bf_norm;
-  
+
   // Apply normalization factors to density matrix
   const auto &shells = m_basis.shells();
   const auto &first_bf = m_basis.first_bf();
   const auto n_shells = shells.size();
-  
+
   for (int i_shell_idx = 0; i_shell_idx < n_shells; i_shell_idx++) {
     const auto &shell_i = shells[i_shell_idx];
     const int l_i = shell_i.l;
-    
+
     for (int j_shell_idx = 0; j_shell_idx < n_shells; j_shell_idx++) {
       const auto &shell_j = shells[j_shell_idx];
       const int l_j = shell_j.l;
-      
+
       for (int bf_i_idx = 0; bf_i_idx < shell_i.size(); bf_i_idx++) {
         IVec3 i_powers = get_powers(bf_i_idx, l_i);
-        double norm_i = get_normalization_factor(i_powers(0), i_powers(1), i_powers(2));
-        
+        double norm_i =
+            get_normalization_factor(i_powers(0), i_powers(1), i_powers(2));
+
         for (int bf_j_idx = 0; bf_j_idx < shell_j.size(); bf_j_idx++) {
           IVec3 j_powers = get_powers(bf_j_idx, l_j);
-          double norm_j = get_normalization_factor(j_powers(0), j_powers(1), j_powers(2));
-          m_normalized_density(first_bf[i_shell_idx] + bf_i_idx, first_bf[j_shell_idx] + bf_j_idx) *= norm_i * norm_j;
+          double norm_j =
+              get_normalization_factor(j_powers(0), j_powers(1), j_powers(2));
+          m_normalized_density(first_bf[i_shell_idx] + bf_i_idx,
+                               first_bf[j_shell_idx] + bf_j_idx) *=
+              norm_i * norm_j;
         }
       }
     }
   }
 }
 
-void MultipoleCalculator::process_nuclear_contributions(std::vector<Mult> &site_multipoles) {
-  if (!m_settings.include_nuclei) return;
-  
+void MultipoleCalculator::process_nuclear_contributions(
+    std::vector<Mult> &site_multipoles) {
+  if (!m_settings.include_nuclei)
+    return;
+
   for (int atom_i = 0; atom_i < m_sites.atoms.size(); atom_i++) {
     const Vec3 pos_i = m_sites.atoms[atom_i].position();
-    
+
     Mult qt;
     qt.q = Vec::Zero(m_settings.max_rank * m_settings.max_rank +
                      2 * m_settings.max_rank + 1);
     qt.Q00() = m_sites.atoms[atom_i].atomic_number;
-    
-    moveq(pos_i, qt, m_sites.positions, m_sites.radii, m_sites.limits,
+
+    MultipoleShifter shifter(pos_i, qt, m_sites.positions, m_sites.radii, m_sites.limits,
           site_multipoles, m_settings.max_rank);
+    shifter.shift();
   }
 }
 
@@ -364,17 +374,18 @@ std::vector<Mult> MultipoleCalculator::calculate() {
   log::debug("Site limits: {}\n", format_matrix(m_sites.limits, "{}"));
 
   std::vector<Mult> site_multipoles(m_sites.size());
-  
+
   // Handle nuclear contributions
   process_nuclear_contributions(site_multipoles);
-  
+
   // Handle electronic contributions
   process_electronic_contributions(site_multipoles);
-  
+
   return site_multipoles;
 }
 
-void MultipoleCalculator::process_electronic_contributions(std::vector<Mult> &site_multipoles) {
+void MultipoleCalculator::process_electronic_contributions(
+    std::vector<Mult> &site_multipoles) {
   const auto &shells = m_basis.shells();
   const auto n_shells = shells.size();
   const auto &shell_to_atom = m_basis.shell_to_atom();
@@ -382,7 +393,7 @@ void MultipoleCalculator::process_electronic_contributions(std::vector<Mult> &si
   const auto &first_bf = m_basis.first_bf();
 
   double etol = 36.0; // Threshold for density calculation
-  
+
   dft::GridSettings grid_settings;
   grid_settings.treutler_alrichs_adjustment = false;
 
@@ -421,14 +432,16 @@ void MultipoleCalculator::process_electronic_contributions(std::vector<Mult> &si
           const auto &shell_j = shells[j_shell_idx];
           const bool i_shell_equals_j_shell = (i_shell_idx == j_shell_idx);
 
-          Mat d_block = m_normalized_density.block(first_bf[i_shell_idx], first_bf[j_shell_idx],
-                                                   shell_i.size(), shell_j.size());
+          Mat d_block = m_normalized_density.block(
+              first_bf[i_shell_idx], first_bf[j_shell_idx], shell_i.size(),
+              shell_j.size());
 
           // Loop over primitives in shell i
           for (int i_prim = 0; i_prim < shell_i.num_primitives(); i_prim++) {
             const double alpha_i = shell_i.exponents[i_prim];
 
-            int j_prim_max = i_shell_equals_j_shell ? i_prim + 1 : shell_j.num_primitives();
+            int j_prim_max =
+                i_shell_equals_j_shell ? i_prim + 1 : shell_j.num_primitives();
 
             for (int j_prim = 0; j_prim < j_prim_max; j_prim++) {
               const double alpha_j = shell_j.exponents[j_prim];
@@ -438,7 +451,8 @@ void MultipoleCalculator::process_electronic_contributions(std::vector<Mult> &si
               const Vec3 r_shell_ij = shell_j.origin - shell_i.origin;
               const double shell_r2 = r_shell_ij.squaredNorm();
 
-              // Skip if shell distance is too large or exponential term is negligible
+              // Skip if shell distance is too large or exponential term is
+              // negligible
               const double dum = alpha_j * alpha_i * shell_r2 / alpha_sum;
               if (dum > m_tolerance)
                 continue;
@@ -465,8 +479,9 @@ void MultipoleCalculator::process_electronic_contributions(std::vector<Mult> &si
                     shell_i, shell_j, i_prim, j_prim, fac, d_block, P, qt);
 
                 // Move multipoles to nearest sites
-                moveq(P, qt, m_sites.positions, m_sites.radii, m_sites.limits,
+                MultipoleShifter shifter(P, qt, m_sites.positions, m_sites.radii, m_sites.limits,
                       site_multipoles, m_settings.max_rank);
+                shifter.shift();
 
               } else {
                 // For small exponents, use numerical integration
@@ -475,9 +490,9 @@ void MultipoleCalculator::process_electronic_contributions(std::vector<Mult> &si
                   m_use_quadrature = true;
                 }
 
-                m_grid.add_primitive_to_grid(
-                    shell_i, shell_j, i_prim, j_prim, fac, d_block, P,
-                    grid_points, m_grid_density, etol);
+                m_grid.add_primitive_to_grid(shell_i, shell_j, i_prim, j_prim,
+                                             fac, d_block, P, grid_points,
+                                             m_grid_density, etol);
               }
             }
           }
@@ -490,7 +505,7 @@ void MultipoleCalculator::process_electronic_contributions(std::vector<Mult> &si
   if (m_use_quadrature) {
     const auto &grid_weights = grid.weights();
     const auto &atom_blocks = grid.atom_blocks();
-    
+
     m_grid.process_grid_density(m_grid_density, grid_points, grid_weights,
                                 atom_blocks, m_sites, site_multipoles);
   }
