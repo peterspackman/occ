@@ -2,8 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <occ/core/molecule.h>
 #include <occ/dma/dma.h>
-#include <occ/dma/dmaql0.h>
-#include <occ/dma/dmaqlm.h>
+#include <occ/dma/linear_multipole_calculator.h>
 #include <occ/io/fchkreader.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -498,8 +497,15 @@ TEST_CASE("DMA linear", "[dma]") {
     }
   }
 
-  // Test DMA calculation (analytical method)
-  auto result = occ::dma::dmaql0(wfn, 2, true, false);
+  // Setup settings for the linear calculator
+  LinearDMASettings settings;
+  settings.max_rank = 2;
+  settings.include_nuclei = true;
+  settings.use_slices = false;
+  
+  // Create and use the linear multipole calculator
+  LinearMultipoleCalculator calculator(wfn, settings);
+  auto result = calculator.calculate();
 
   // Check the result
   REQUIRE(result.size());

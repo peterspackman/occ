@@ -2,8 +2,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/dma/dma.h>
-#include <occ/dma/dmaql0.h>
-#include <occ/dma/dmaqlm.h>
+#include <occ/dma/multipole_calculator.h>
 #include <occ/gto/density.h>
 #include <occ/io/conversion.h>
 
@@ -63,7 +62,9 @@ DMAResult DMACalculator::compute_multipoles() {
 
   DMAResult result;
   result.max_rank = m_settings.max_rank;
-  result.multipoles = dmaqlm(m_basis, m_mo, m_sites, m_settings);
+
+  MultipoleCalculator calculator(m_basis, m_mo, m_sites, m_settings);
+  result.multipoles = calculator.calculate();
 
   return result;
 }

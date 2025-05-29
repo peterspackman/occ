@@ -1,6 +1,6 @@
 #include <cmath>
 #include <occ/dma/add_qlm.h>
-#include <occ/dma/moveq.h>
+#include <occ/dma/multipole_shifter.h>
 #include <occ/dma/shiftq.h>
 
 namespace occ::dma {
@@ -17,7 +17,7 @@ MultipoleShifter::MultipoleShifter(Eigen::Ref<const Vec3> pos, Mult &qt,
 
   for (int i = 0; i < m_num_sites; i++) {
     m_rr(i) = (m_pos - m_site_positions.col(i)).squaredNorm() /
-            (m_site_radii(i) * m_site_radii(i));
+              (m_site_radii(i) * m_site_radii(i));
 
     if (site_limits(i) > site_limits(m_site_with_highest_limit)) {
       m_site_with_highest_limit = i;
@@ -44,7 +44,6 @@ void MultipoleShifter::shift() {
   }
 }
 
-
 int MultipoleShifter::find_nearest_site_with_limit(int low, int start) const {
   int k = start;
   for (int i = 0; i < m_rr.rows(); i++) {
@@ -64,13 +63,14 @@ bool MultipoleShifter::direct_transfer(int k, int t1, int t2) {
   return m_site_limits(k) >= m_lmax;
 }
 
-bool MultipoleShifter::distributed_transfer(int k, int low, int t1, int t2, int lp1sq, double eps) {
+bool MultipoleShifter::distributed_transfer(int k, int low, int t1, int t2,
+                                            int lp1sq, double eps) {
   // Find all sites at approximately the same distance
   m_destination_sites.clear();
   m_destination_sites.push_back(k);
   for (int i = 0; i < m_num_sites; i++) {
-    if (i == k || m_rr(i) > m_rr(k) + eps || m_site_limits(i) != m_site_limits(k) ||
-        m_site_limits(i) < low) {
+    if (i == k || m_rr(i) > m_rr(k) + eps ||
+        m_site_limits(i) != m_site_limits(k) || m_site_limits(i) < low) {
       continue;
     }
     m_destination_sites.push_back(i);
@@ -110,7 +110,8 @@ bool MultipoleShifter::distributed_transfer(int k, int low, int t1, int t2, int 
   return false;
 }
 
-bool MultipoleShifter::process_site(int k, int low, int t1, int t2, int lp1sq, double eps) {
+bool MultipoleShifter::process_site(int k, int low, int t1, int t2, int lp1sq,
+                                    double eps) {
   // If very close to a site, add all multipoles directly
   if (m_rr(k) <= eps) {
     return direct_transfer(k, t1, t2);
@@ -118,6 +119,5 @@ bool MultipoleShifter::process_site(int k, int low, int t1, int t2, int lp1sq, d
     return distributed_transfer(k, low, t1, t2, lp1sq, eps);
   }
 }
-
 
 } // namespace occ::dma
