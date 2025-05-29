@@ -5,119 +5,125 @@
 
 namespace occ::dma {
 
+MultipoleShifter::MultipoleShifter(Eigen::Ref<const Vec3> pos, Mult &qt,
+                                   const Mat3N &site_positions,
+                                   const Vec &site_radii,
+                                   const IVec &site_limits,
+                                   std::vector<Mult> &q, int lmax)
+    : m_pos(pos), m_site_radii(site_radii), m_site_limits(site_limits),
+      m_site_positions(site_positions), m_qt(qt), m_q(q), m_lmax(lmax),
+      m_num_sites(site_positions.cols()), m_rr(m_num_sites) {
+  m_destination_sites.reserve(m_num_sites);
+
+  for (int i = 0; i < m_num_sites; i++) {
+    m_rr(i) = (m_pos - m_site_positions.col(i)).squaredNorm() /
+            (m_site_radii(i) * m_site_radii(i));
+
+    if (site_limits(i) > site_limits(m_site_with_highest_limit)) {
+      m_site_with_highest_limit = i;
+    }
+  }
+}
+
+void MultipoleShifter::shift() {
+  constexpr double eps = 1e-6;
+  int lp1sq = (m_lmax + 1) * (m_lmax + 1);
+  int low = 0;
+
+  while (true) {
+    int k = find_nearest_site_with_limit(low, m_site_with_highest_limit);
+    int t1 = low * low;
+    int t2 = (m_site_limits(k) + 1) * (m_site_limits(k) + 1);
+
+    bool completed = process_site(k, low, t1, t2, lp1sq, eps);
+    if (completed) {
+      return;
+    }
+
+    low = m_site_limits(k) + 1;
+  }
+}
+
+
+int MultipoleShifter::find_nearest_site_with_limit(int low, int start) const {
+  int k = start;
+  for (int i = 0; i < m_rr.rows(); i++) {
+    if (m_rr(i) < m_rr(k) && m_site_limits(i) >= low) {
+      k = i;
+    }
+  }
+  return k;
+}
+
+bool MultipoleShifter::direct_transfer(int k, int t1, int t2) {
+  for (int i = t1; i < t2; i++) {
+    m_q[k].q(i) += m_qt.q(i);
+    m_qt.q(i) = 0.0;
+  }
+
+  return m_site_limits(k) >= m_lmax;
+}
+
+bool MultipoleShifter::distributed_transfer(int k, int low, int t1, int t2, int lp1sq, double eps) {
+  // Find all sites at approximately the same distance
+  m_destination_sites.clear();
+  m_destination_sites.push_back(k);
+  for (int i = 0; i < m_num_sites; i++) {
+    if (i == k || m_rr(i) > m_rr(k) + eps || m_site_limits(i) != m_site_limits(k) ||
+        m_site_limits(i) < low) {
+      continue;
+    }
+    m_destination_sites.push_back(i);
+  }
+
+  // If multiple equidistant sites, distribute equally
+  if (m_destination_sites.size() > 1) {
+    m_qt.q.array() *= 1.0 / m_destination_sites.size();
+  }
+
+  // Shift multipoles to each site
+  for (int site_idx : m_destination_sites) {
+    // Call shiftq to transfer multipoles
+    shiftq(m_qt, low, m_site_limits(site_idx), m_q[site_idx], m_lmax,
+           m_pos - m_site_positions.col(site_idx));
+  }
+
+  // Zero out the transferred multipoles
+  for (int i = t1; i < t2; i++) {
+    m_qt.q(i) = 0.0;
+  }
+
+  // If we've reached lmax at this site, we're done
+  if (m_site_limits(k) >= m_lmax) {
+    return true;
+  }
+
+  // Transfer higher-rank multipoles back to qt
+  for (int site_idx : m_destination_sites) {
+    // Call shiftq to transfer higher-rank multipoles back to qt
+    shiftq(m_q[site_idx], m_site_limits(site_idx) + 1, m_lmax, m_qt, m_lmax,
+           m_site_positions.col(site_idx) - m_pos);
+    // Zero out transferred multipoles at the site
+    m_q[site_idx].q.segment(t2, lp1sq - t2).setZero();
+  }
+
+  return false;
+}
+
+bool MultipoleShifter::process_site(int k, int low, int t1, int t2, int lp1sq, double eps) {
+  // If very close to a site, add all multipoles directly
+  if (m_rr(k) <= eps) {
+    return direct_transfer(k, t1, t2);
+  } else {
+    return distributed_transfer(k, low, t1, t2, lp1sq, eps);
+  }
+}
+
 void moveq(Eigen::Ref<const Vec3> pos, Mult &qt, const Mat3N &site_positions,
            const Vec &site_radii, const IVec &site_limits, std::vector<Mult> &q,
            int lmax) {
-  // Constants
-  constexpr double eps = 1e-6;
-  const double &x = pos.x();
-  const double &y = pos.y();
-  const double &z = pos.z();
-
-  // Calculate squared distances to each site, normalized by site radius
-  const int ns = site_positions.cols();
-  Vec rr(ns);
-
-  // Find site with highest limit to start
-  int j = 0;
-  for (int i = 0; i < ns; i++) {
-    // Calculate squared distance normalized by site radius squared
-    rr(i) = (pos - site_positions.col(i)).squaredNorm() /
-            (site_radii(i) * site_radii(i));
-
-    // Find site with highest limit
-    if (site_limits(i) > site_limits(j)) {
-      j = i;
-    }
-  }
-
-  // Calculate (lmax+1)^2 for later use
-  int lp1sq = (lmax + 1) * (lmax + 1);
-
-  // Start with lowest rank
-  int low = 0;
-
-  // Main loop to process multipoles
-  while (true) {
-    // Find nearest site with limit >= low
-    int k = j;
-    for (int i = 0; i < ns; i++) {
-      if (rr(i) < rr(k) && site_limits(i) >= low) {
-        k = i;
-      }
-    }
-
-    // Calculate index bounds
-    int t1 = low * low;
-    int t2 = (site_limits(k) + 1) * (site_limits(k) + 1);
-
-    // If very close to a site, add all multipoles directly
-    if (rr(k) <= eps) {
-
-      // Direct transfer of multipoles
-      for (int i = t1; i < t2; i++) {
-        q[k].q(i) += qt.q(i);
-        qt.q(i) = 0.0;
-      }
-
-      // If we've reached lmax at this site, we're done
-      if (site_limits(k) >= lmax) {
-        return;
-      }
-    } else {
-      // Find all sites at approximately the same distance
-      std::vector<int> m{k};
-
-      for (int i = 0; i < ns; i++) {
-        if (i == k || rr(i) > rr(k) + eps || site_limits(i) != site_limits(k) ||
-            site_limits(i) < low) {
-          continue;
-        }
-        m.push_back(i);
-      }
-
-      // If multiple equidistant sites, distribute equally
-      if (m.size() > 1) {
-        double an = 1.0 / m.size();
-        for (int i = 0; i < qt.q.size(); i++) {
-          qt.q(i) *= an;
-        }
-      }
-
-      // Shift multipoles to each site
-      for (int site_idx : m) {
-        // Call shiftq to transfer multipoles
-        shiftq(qt, low, site_limits(site_idx), q[site_idx], lmax,
-               pos - site_positions.col(site_idx));
-      }
-
-      // Zero out the transferred multipoles
-      for (int i = t1; i < t2; i++) {
-        qt.q(i) = 0.0;
-      }
-
-      // If we've reached lmax at this site, we're done
-      if (site_limits(k) >= lmax) {
-        return;
-      }
-
-      // Transfer higher-rank multipoles back to qt
-      t1 = t2;
-      for (int site_idx : m) {
-
-        // Call shiftq to transfer higher-rank multipoles back to qt
-        shiftq(q[site_idx], site_limits(site_idx) + 1, lmax, qt, lmax,
-               site_positions.col(site_idx) - pos);
-
-        // Zero out transferred multipoles at the site
-        for (int l = t1; l < lp1sq; l++) {
-          q[site_idx].q(l) = 0.0;
-        }
-      }
-    }
-
-    // Move to next rank
-    low = site_limits(k) + 1;
-  }
+  MultipoleShifter shifter(pos, qt, site_positions, site_radii, site_limits, q, lmax);
+  shifter.shift();
 }
+
 } // namespace occ::dma

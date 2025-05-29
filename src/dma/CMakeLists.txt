@@ -8,6 +8,7 @@ add_library(occ_dma
     "${CMAKE_CURRENT_SOURCE_DIR}/moveq.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/movez.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_calculator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/shiftq.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solid_harmonics.cpp"
 )

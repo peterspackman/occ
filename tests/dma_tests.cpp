@@ -1429,7 +1429,8 @@ TEST_CASE("C2H4 G03", "[dma]") {
   for (int site = 0; site < 6; site++) {
     const auto &m = result[site];
     for (int term = 0; term < 12; term++) {
-      REQUIRE(m.q(term) == Approx(expected(site, term)).margin(1e-3));
+      CAPTURE(site, term);
+      CHECK(m.q(term) == Approx(expected(site, term)).margin(1e-3));
     }
   }
 }
