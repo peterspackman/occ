@@ -10,6 +10,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cube.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_dimers.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_describe.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_dma.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
@@ -25,6 +26,7 @@ target_link_libraries(occ_main
     occ_qm
     occ_dft
     occ_disp
+    occ_dma
     occ_driver
     occ_solvent
     occ_interaction

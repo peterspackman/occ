@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <string>
 
 namespace occ::dma {
 
@@ -7,6 +8,9 @@ struct Mult {
   Mult(int n) : q(Vec::Zero(n)) {}
   Mult() : q(Vec::Zero(121)) {}
   Vec q;
+
+
+  std::string to_string(int lm) const;
 
   // Level 0
   double &Q00() { return q(0); }

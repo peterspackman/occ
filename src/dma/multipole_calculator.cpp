@@ -151,13 +151,12 @@ void AnalyticalIntegrator::calculate_primitive_contribution(
 GridIntegrator::GridIntegrator(const DMASettings &settings)
     : m_settings(settings) {}
 
-void GridIntegrator::add_primitive_to_grid(const qm::Shell &shell_i,
-                                           const qm::Shell &shell_j, int i_prim,
-                                           int j_prim, double fac,
-                                           const Mat &d_block, const Vec3 &P,
-                                           const Mat3N &grid_points, Vec &rho,
-                                           double etol) const {
-
+template <int BlockSize = 64>
+void add_primitive_to_grid_blocked(const qm::Shell &shell_i,
+                                   const qm::Shell &shell_j, int i_prim,
+                                   int j_prim, double fac, const Mat &d_block,
+                                   const Vec3 &P, const Mat3N &grid_points,
+                                   Vec &rho, double etol) {
   const int l_i = shell_i.l;
   const int l_j = shell_j.l;
   const Vec3 &origin_i = shell_i.origin;
@@ -170,68 +169,134 @@ void GridIntegrator::add_primitive_to_grid(const qm::Shell &shell_i,
   const double ci = shell_i.coeff_normalized_dma(0, i_prim);
   const double cj = shell_j.coeff_normalized_dma(0, j_prim);
 
-  // Precompute powers of coordinates for efficiency
-  Mat3N ri_powers(3, l_i + 1);
-  Mat3N rj_powers(3, l_j + 1);
-  ri_powers.col(0).array() = 1.0;
-  rj_powers.col(0).array() = 1.0;
+  constexpr int BS = BlockSize;
+  const int max_l = std::max(l_i, l_j);
 
-  // Process grid points
-  for (int p = 0; p < grid_points.cols(); p++) {
-    const Vec3 &grid_pos = grid_points.col(p);
+  // Pre-allocate block arrays
+  Eigen::Array<double, BS, 1> block_exp_factors;
+  Eigen::Array<double, BS, 1> block_rho_contrib;
+  Eigen::Array<bool, BS, 1> block_mask;
 
-    // Calculate distance from grid point to product center
-    const double dist2 = (grid_pos - P).squaredNorm();
+  std::vector<Eigen::Array<double, BS, 3>> ri_powers_block(l_i + 1);
+  std::vector<Eigen::Array<double, BS, 3>> rj_powers_block(l_j + 1);
 
-    // Skip if too far from product center (exponential too small)
-    const double e = alpha_sum * dist2;
-    if (e > etol)
+  ri_powers_block[0].setConstant(1.0);
+  rj_powers_block[0].setConstant(1.0);
+
+  // Process grid in blocks
+  for (int block_start = 0; block_start < grid_points.cols();
+       block_start += BS) {
+    int block_end = std::min(block_start + BS, (int)grid_points.cols());
+    int actual_block_size = block_end - block_start;
+
+    int valid_count = 0;
+    for (int i = 0; i < actual_block_size; i++) {
+      int p = block_start + i;
+      const Vec3 grid_pos = grid_points.col(p);
+      double dist2 = (grid_pos - P).squaredNorm();
+      double e = alpha_sum * dist2;
+
+      if (e <= etol) {
+        block_mask(i) = true;
+        block_exp_factors(i) = std::exp(-e);
+        valid_count++;
+
+        Vec3 r_i = grid_pos - origin_i;
+        Vec3 r_j = grid_pos - origin_j;
+
+        // Store l=1 powers (displacements)
+        if (l_i >= 1) {
+          ri_powers_block[1](i, 0) = r_i(0);
+          ri_powers_block[1](i, 1) = r_i(1);
+          ri_powers_block[1](i, 2) = r_i(2);
+        }
+        if (l_j >= 1) {
+          rj_powers_block[1](i, 0) = r_j(0);
+          rj_powers_block[1](i, 1) = r_j(1);
+          rj_powers_block[1](i, 2) = r_j(2);
+        }
+      } else {
+        block_mask(i) = false;
+      }
+    }
+
+    // Skip this block if no valid points
+    if (valid_count == 0)
       continue;
 
-    // Exponential factor
-    const double exp_factor = std::exp(-e);
-
-    // Displacements from grid point to centers
-    const Vec3 r_i = grid_pos - origin_i;
-    const Vec3 r_j = grid_pos - origin_j;
-
-    // Calculate powers of coordinates
-    for (int l = 1; l <= l_i; l++) {
-      ri_powers.col(l) = ri_powers.col(l - 1).cwiseProduct(r_i);
+    for (int l = 2; l <= l_i; l++) {
+      for (int i = 0; i < actual_block_size; i++) {
+        if (block_mask(i)) {
+          ri_powers_block[l](i, 0) =
+              ri_powers_block[l - 1](i, 0) * ri_powers_block[1](i, 0);
+          ri_powers_block[l](i, 1) =
+              ri_powers_block[l - 1](i, 1) * ri_powers_block[1](i, 1);
+          ri_powers_block[l](i, 2) =
+              ri_powers_block[l - 1](i, 2) * ri_powers_block[1](i, 2);
+        }
+      }
     }
 
-    for (int l = 1; l <= l_j; l++) {
-      rj_powers.col(l) = rj_powers.col(l - 1).cwiseProduct(r_j);
+    for (int l = 2; l <= l_j; l++) {
+      for (int i = 0; i < actual_block_size; i++) {
+        if (block_mask(i)) {
+          rj_powers_block[l](i, 0) =
+              rj_powers_block[l - 1](i, 0) * rj_powers_block[1](i, 0);
+          rj_powers_block[l](i, 1) =
+              rj_powers_block[l - 1](i, 1) * rj_powers_block[1](i, 1);
+          rj_powers_block[l](i, 2) =
+              rj_powers_block[l - 1](i, 2) * rj_powers_block[1](i, 2);
+        }
+      }
     }
+
+    block_rho_contrib.head(actual_block_size).setZero();
 
     int bf_i_idx = 0;
-    double rho_tot = 0;
     gto::iterate_over_shell<true>(
         [&](int i1, int j1, int k1, int ll1) {
           int bf_j_idx = 0;
           gto::iterate_over_shell<true>(
               [&](int i2, int j2, int k2, int ll2) {
-                // Skip if density matrix element is too small
-                if (std::abs(d_block(bf_i_idx, bf_j_idx)) < 1e-12) {
-                  bf_j_idx++;
-                  return;
+                if (std::abs(d_block(bf_i_idx, bf_j_idx)) >= 1e-12) {
+                  double f = -fac * ci * cj * d_block(bf_i_idx, bf_j_idx);
+
+                  for (int i = 0; i < actual_block_size; i++) {
+                    if (block_mask(i)) {
+                      double shell_i_contrib = ri_powers_block[i1](i, 0) *
+                                               ri_powers_block[j1](i, 1) *
+                                               ri_powers_block[k1](i, 2);
+                      double shell_j_contrib = rj_powers_block[i2](i, 0) *
+                                               rj_powers_block[j2](i, 1) *
+                                               rj_powers_block[k2](i, 2);
+                      block_rho_contrib(i) += f * block_exp_factors(i) *
+                                              shell_i_contrib * shell_j_contrib;
+                    }
+                  }
                 }
-                double f = -fac * ci * cj * d_block(bf_i_idx, bf_j_idx);
-                double shell_i_contrib =
-                    ri_powers(0, i1) * ri_powers(1, j1) * ri_powers(2, k1);
-                double shell_j_contrib =
-                    rj_powers(0, i2) * rj_powers(1, j2) * rj_powers(2, k2);
-                double bf_product =
-                    exp_factor * shell_i_contrib * shell_j_contrib;
-                rho_tot += f * bf_product;
                 bf_j_idx++;
               },
               l_j);
           bf_i_idx++;
         },
         l_i);
-    rho(p) += rho_tot;
+
+    for (int i = 0; i < actual_block_size; i++) {
+      if (block_mask(i)) {
+        rho(block_start + i) += block_rho_contrib(i);
+      }
+    }
   }
+}
+
+void GridIntegrator::add_primitive_to_grid(const qm::Shell &shell_i,
+                                           const qm::Shell &shell_j, int i_prim,
+                                           int j_prim, double fac,
+                                           const Mat &d_block, const Vec3 &P,
+                                           const Mat3N &grid_points, Vec &rho,
+                                           double etol) const {
+  add_primitive_to_grid_blocked<64>(shell_i, shell_j, i_prim, j_prim, fac,
+                                    d_block, P, grid_points, rho, etol);
 }
 
 void GridIntegrator::process_grid_density(
@@ -445,15 +510,12 @@ void MultipoleCalculator::process_electronic_contributions(
           if (dum > m_tolerance)
             continue;
 
-          // Factor for exponential term
           double fac = std::exp(-dum);
 
-          // Double the factor if primitives or shells are different
           if (i_prim != j_prim || !(i_shell_equals_j_shell)) {
             fac *= 2.0;
           }
 
-          // P is the gaussian product center
           const double p = alpha_j / alpha_sum;
           const Vec3 P = shell_i.origin + p * r_shell_ij;
 
@@ -466,7 +528,6 @@ void MultipoleCalculator::process_electronic_contributions(
             m_analytical.calculate_primitive_contribution(
                 shell_i, shell_j, i_prim, j_prim, fac, d_block, P, qt);
 
-            // Move multipoles to nearest sites
             MultipoleShifter shifter(P, qt, m_sites.positions, m_sites.radii,
                                      m_sites.limits, site_multipoles,
                                      m_settings.max_rank);

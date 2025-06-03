@@ -5,7 +5,7 @@ add_library(occ_dma
     "${CMAKE_CURRENT_SOURCE_DIR}/gauss_hermite.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_multipole_shifter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/linear_multipole_calculator.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/multipole.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/mult.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_calculator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_shifter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solid_harmonics.cpp"

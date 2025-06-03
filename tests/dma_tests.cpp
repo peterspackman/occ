@@ -1439,6 +1439,8 @@ TEST_CASE("C2H4 G03", "[dma]") {
   fmt::print("expected\n{}\n", format_matrix(expected));
 
   for (int site = 0; site < 6; site++) {
+    int lm = (site < 2) ? 4 : 1;
+    fmt::print("Site: {}\n{}\n", site, result[site].to_string(lm));
     const auto &m = result[site];
     for (int term = 0; term < 12; term++) {
       CAPTURE(site, term);
