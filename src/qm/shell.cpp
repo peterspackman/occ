@@ -366,6 +366,7 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
     m_first_bf.push_back(m_nbf);
     m_nbf += shell.size();
     m_max_shell_size = std::max(m_max_shell_size, shell.size());
+    m_max_num_primitives = std::max(m_max_num_primitives, shell.num_primitives());
     int atom_idx = shell.find_atom_index(m_atoms);
     // TODO check for error
     if (atom_idx >= m_atom_to_shell_idxs.size() || atom_idx < 0) {
@@ -403,6 +404,7 @@ void AOBasis::update_bf_maps() {
   m_first_bf.clear();
   m_nbf = 0;
   m_max_shell_size = 0;
+  m_max_num_primitives = 0;
   m_bf_to_shell.clear();
   m_bf_to_atom.clear();
   size_t shell_idx = 0;
@@ -410,6 +412,7 @@ void AOBasis::update_bf_maps() {
     m_first_bf.push_back(m_nbf);
     m_nbf += shell.size();
     m_max_shell_size = std::max(m_max_shell_size, shell.size());
+    m_max_num_primitives = std::max(m_max_num_primitives, shell.num_primitives());
     int atom_idx = m_shell_to_atom_idx[shell_idx];
     for (int i = 0; i < shell.size(); i++) {
       m_bf_to_shell.push_back(shell_idx);
@@ -470,6 +473,7 @@ void AOBasis::merge(const AOBasis &rhs) {
   }
 
   m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);
+  m_max_num_primitives = std::max(m_max_num_primitives, rhs.m_max_num_primitives);
 }
 
 std::string canonicalize_name(const std::string &name) {

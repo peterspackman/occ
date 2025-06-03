@@ -5,23 +5,11 @@
 #include <occ/dma/gauss_hermite.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/dma/multipole_shifter.h>
+#include <occ/gto/gto.h>
 #include <occ/gto/shell_order.h>
 #include <occ/qm/hf.h>
 
 namespace occ::dma {
-
-// Helper functions moved from dmaqlm.cpp
-inline IVec3 get_powers(int bf_idx, int l) {
-  IVec3 result(0, 0, 0);
-  int count = 0;
-  auto f = [&result, &bf_idx, &count](int i, int j, int k, int l) {
-    if (count == bf_idx)
-      result = IVec3(i, j, k);
-    count++;
-  };
-  occ::gto::iterate_over_shell<true>(f, l);
-  return result;
-}
 
 inline double get_normalization_factor(int l, int m, int n) {
   int angular_momenta = l + m + n;
@@ -125,32 +113,38 @@ void AnalyticalIntegrator::calculate_primitive_contribution(
   const double ci = shell_i.coeff_normalized_dma(0, i_prim);
   const double cj = shell_j.coeff_normalized_dma(0, j_prim);
 
-  // Process all basis function combinations
-  for (int bf_i_idx = 0; bf_i_idx < shell_i.size(); bf_i_idx++) {
-    IVec3 i_powers = get_powers(bf_i_idx, l_i);
+  Vec gx_vec(nq + 1), gy_vec(nq + 1), gz_vec(nq + 1);
+  int bf_i_idx = 0;
+  gto::iterate_over_shell<true>(
+      [&](int i1, int j1, int k1, int ll1) {
+        int bf_j_idx = 0;
+        gto::iterate_over_shell<true>(
+            [&](int i2, int j2, int k2, int ll2) {
+              // Skip if density matrix element is too small
+              if (std::abs(d_block(bf_i_idx, bf_j_idx)) < 1e-12) {
+                bf_j_idx++;
+                return;
+              }
 
-    for (int bf_j_idx = 0; bf_j_idx < shell_j.size(); bf_j_idx++) {
-      IVec3 j_powers = get_powers(bf_j_idx, l_j);
+              double f = -fac * ci * cj * d_block(bf_i_idx, bf_j_idx);
 
-      // Skip if density matrix element is too small
-      if (std::abs(d_block(bf_i_idx, bf_j_idx)) < 1e-12)
-        continue;
+              // Create 1D vectors from tensor slices for addqlm
+              for (int n = 0; n <= nq; n++) {
+                gx_vec(n) = m_gx(n, i1, i2); // x powers from both shells
+                gy_vec(n) = m_gy(n, j1, j2); // y powers from both shells
+                gz_vec(n) = m_gz(n, k1, k2); // z powers from both shells
+              }
 
-      // Calculate prefactor (negative sign as in dmaqlm)
-      double f = -fac * ci * cj * d_block(bf_i_idx, bf_j_idx);
+              // Add contribution to multipoles
+              addqlm(lq, m_settings.max_rank, f, gx_vec, gy_vec, gz_vec, qt);
 
-      // Create 1D vectors from tensor slices for addqlm
-      Vec gx_vec(nq + 1), gy_vec(nq + 1), gz_vec(nq + 1);
-      for (int n = 0; n <= nq; n++) {
-        gx_vec(n) = m_gx(n, i_powers(0), j_powers(0));
-        gy_vec(n) = m_gy(n, i_powers(1), j_powers(1));
-        gz_vec(n) = m_gz(n, i_powers(2), j_powers(2));
-      }
+              bf_j_idx++;
+            },
+            l_j);
 
-      // Add contribution to multipoles
-      addqlm(lq, m_settings.max_rank, f, gx_vec, gy_vec, gz_vec, qt);
-    }
-  }
+        bf_i_idx++;
+      },
+      l_i);
 }
 
 // GridIntegrator implementation
@@ -176,6 +170,12 @@ void GridIntegrator::add_primitive_to_grid(const qm::Shell &shell_i,
   const double ci = shell_i.coeff_normalized_dma(0, i_prim);
   const double cj = shell_j.coeff_normalized_dma(0, j_prim);
 
+  // Precompute powers of coordinates for efficiency
+  Mat3N ri_powers(3, l_i + 1);
+  Mat3N rj_powers(3, l_j + 1);
+  ri_powers.col(0).array() = 1.0;
+  rj_powers.col(0).array() = 1.0;
+
   // Process grid points
   for (int p = 0; p < grid_points.cols(); p++) {
     const Vec3 &grid_pos = grid_points.col(p);
@@ -195,52 +195,42 @@ void GridIntegrator::add_primitive_to_grid(const qm::Shell &shell_i,
     const Vec3 r_i = grid_pos - origin_i;
     const Vec3 r_j = grid_pos - origin_j;
 
-    // Precompute powers of coordinates for efficiency
-    std::vector<double> x_i_powers(l_i + 1, 1.0);
-    std::vector<double> y_i_powers(l_i + 1, 1.0);
-    std::vector<double> z_i_powers(l_i + 1, 1.0);
-
-    std::vector<double> x_j_powers(l_j + 1, 1.0);
-    std::vector<double> y_j_powers(l_j + 1, 1.0);
-    std::vector<double> z_j_powers(l_j + 1, 1.0);
-
     // Calculate powers of coordinates
     for (int l = 1; l <= l_i; l++) {
-      x_i_powers[l] = x_i_powers[l - 1] * r_i(0);
-      y_i_powers[l] = y_i_powers[l - 1] * r_i(1);
-      z_i_powers[l] = z_i_powers[l - 1] * r_i(2);
+      ri_powers.col(l) = ri_powers.col(l - 1).cwiseProduct(r_i);
     }
 
     for (int l = 1; l <= l_j; l++) {
-      x_j_powers[l] = x_j_powers[l - 1] * r_j(0);
-      y_j_powers[l] = y_j_powers[l - 1] * r_j(1);
-      z_j_powers[l] = z_j_powers[l - 1] * r_j(2);
+      rj_powers.col(l) = rj_powers.col(l - 1).cwiseProduct(r_j);
     }
 
-    // Loop through all basis function combinations
-    for (int bf_i_idx = 0; bf_i_idx < shell_i.size(); bf_i_idx++) {
-      IVec3 i_powers = get_powers(bf_i_idx, l_i);
-
-      for (int bf_j_idx = 0; bf_j_idx < shell_j.size(); bf_j_idx++) {
-        IVec3 j_powers = get_powers(bf_j_idx, l_j);
-
-        // Skip if density matrix element is too small
-        if (std::abs(d_block(bf_i_idx, bf_j_idx)) < 1e-12)
-          continue;
-
-        // Calculate prefactor (negative sign as in dmaqlm)
-        double f = -fac * ci * cj * d_block(bf_i_idx, bf_j_idx);
-
-        // Calculate basis function product at grid point
-        double bf_product = exp_factor * x_i_powers[i_powers[0]] *
-                            y_i_powers[i_powers[1]] * z_i_powers[i_powers[2]] *
-                            x_j_powers[j_powers[0]] * y_j_powers[j_powers[1]] *
-                            z_j_powers[j_powers[2]];
-
-        // Add contribution to density at this grid point
-        rho(p) += f * bf_product;
-      }
-    }
+    int bf_i_idx = 0;
+    double rho_tot = 0;
+    gto::iterate_over_shell<true>(
+        [&](int i1, int j1, int k1, int ll1) {
+          int bf_j_idx = 0;
+          gto::iterate_over_shell<true>(
+              [&](int i2, int j2, int k2, int ll2) {
+                // Skip if density matrix element is too small
+                if (std::abs(d_block(bf_i_idx, bf_j_idx)) < 1e-12) {
+                  bf_j_idx++;
+                  return;
+                }
+                double f = -fac * ci * cj * d_block(bf_i_idx, bf_j_idx);
+                double shell_i_contrib =
+                    ri_powers(0, i1) * ri_powers(1, j1) * ri_powers(2, k1);
+                double shell_j_contrib =
+                    rj_powers(0, i2) * rj_powers(1, j2) * rj_powers(2, k2);
+                double bf_product =
+                    exp_factor * shell_i_contrib * shell_j_contrib;
+                rho_tot += f * bf_product;
+                bf_j_idx++;
+              },
+              l_j);
+          bf_i_idx++;
+        },
+        l_i);
+    rho(p) += rho_tot;
   }
 }
 
@@ -331,20 +321,27 @@ void MultipoleCalculator::setup_normalized_density_matrix() {
       const auto &shell_j = shells[j_shell_idx];
       const int l_j = shell_j.l;
 
-      for (int bf_i_idx = 0; bf_i_idx < shell_i.size(); bf_i_idx++) {
-        IVec3 i_powers = get_powers(bf_i_idx, l_i);
-        double norm_i =
-            get_normalization_factor(i_powers(0), i_powers(1), i_powers(2));
+      int bf_i_idx = 0;
+      gto::iterate_over_shell<true>(
+          [&](int i1, int j1, int k1, int ll1) {
+            double norm_i = get_normalization_factor(i1, j1, k1);
 
-        for (int bf_j_idx = 0; bf_j_idx < shell_j.size(); bf_j_idx++) {
-          IVec3 j_powers = get_powers(bf_j_idx, l_j);
-          double norm_j =
-              get_normalization_factor(j_powers(0), j_powers(1), j_powers(2));
-          m_normalized_density(first_bf[i_shell_idx] + bf_i_idx,
-                               first_bf[j_shell_idx] + bf_j_idx) *=
-              norm_i * norm_j;
-        }
-      }
+            int bf_j_idx = 0;
+            gto::iterate_over_shell<true>(
+                [&](int i2, int j2, int k2, int ll2) {
+                  double norm_j = get_normalization_factor(i2, j2, k2);
+
+                  m_normalized_density(first_bf[i_shell_idx] + bf_i_idx,
+                                       first_bf[j_shell_idx] + bf_j_idx) *=
+                      norm_i * norm_j;
+
+                  bf_j_idx++;
+                },
+                l_j);
+
+            bf_i_idx++;
+          },
+          l_i);
     }
   }
 }
@@ -370,6 +367,7 @@ void MultipoleCalculator::process_nuclear_contributions(
 }
 
 std::vector<Mult> MultipoleCalculator::calculate() {
+  occ::timing::start(occ::timing::category::dma_total);
   log::debug("Starting Distributed Multipole Analysis");
   log::debug("Site radii : {}\n", format_matrix(m_sites.radii));
   log::debug("Site limits: {}\n", format_matrix(m_sites.limits, "{}"));
@@ -382,6 +380,7 @@ std::vector<Mult> MultipoleCalculator::calculate() {
   // Handle electronic contributions
   process_electronic_contributions(site_multipoles);
 
+  occ::timing::stop(occ::timing::category::dma_total);
   return site_multipoles;
 }
 
@@ -405,98 +404,86 @@ void MultipoleCalculator::process_electronic_contributions(
   const auto &grid = grid_gen.get_molecular_grid_points();
   const auto &grid_points = grid.points();
 
-  // Loop over atoms
-  for (int atom_i = 0; atom_i < m_sites.atoms.size(); atom_i++) {
-    const Vec3 pos_i = m_sites.atoms[atom_i].position();
-    const auto &i_shells = atom_to_shells[atom_i];
+  std::vector<ProductPrimitive> grid_pair_products;
+  {
+    size_t max_num_primitives = m_basis.max_num_primitives();
+    grid_pair_products.reserve(max_num_primitives * max_num_primitives);
+  }
 
-    // Loop over shells for atom i
-    for (int i_shell_idx : i_shells) {
-      const auto &shell_i = shells[i_shell_idx];
+  for (int i_shell_idx = 0; i_shell_idx < n_shells; i_shell_idx++) {
+    const auto &shell_i = shells[i_shell_idx];
+    for (int j_shell_idx = 0; j_shell_idx <= i_shell_idx; j_shell_idx++) {
+      const auto &shell_j = shells[j_shell_idx];
+      const bool i_shell_equals_j_shell = (i_shell_idx == j_shell_idx);
+      grid_pair_products.clear();
 
-      // Loop over atoms j (up to i to avoid double counting)
-      for (int atom_j = 0; atom_j <= atom_i; atom_j++) {
-        const bool i_equals_j = (atom_i == atom_j);
-        const Vec3 &pos_j = m_sites.atoms[atom_j].position();
+      Mat d_block = m_normalized_density.block(first_bf[i_shell_idx],
+                                               first_bf[j_shell_idx],
+                                               shell_i.size(), shell_j.size());
 
-        // Calculate atom separation
-        const Vec3 r_ij = pos_i - pos_j;
-        const double r_ij_squared = r_ij.squaredNorm();
+      size_t num_analytic_p{0};
+      size_t num_grid_p{0};
 
-        const auto &j_shells = atom_to_shells[atom_j];
+      // Calculate shell separation
+      const Vec3 r_shell_ij = shell_j.origin - shell_i.origin;
+      const double shell_r2 = r_shell_ij.squaredNorm();
 
-        // Loop over shells for atom j
-        for (int j_shell_idx : j_shells) {
-          if (i_equals_j && j_shell_idx > i_shell_idx)
+      // Loop over primitives in shell i
+      for (int i_prim = 0; i_prim < shell_i.num_primitives(); i_prim++) {
+        const double alpha_i = shell_i.exponents[i_prim];
+
+        int j_prim_max =
+            i_shell_equals_j_shell ? i_prim + 1 : shell_j.num_primitives();
+
+        for (int j_prim = 0; j_prim < j_prim_max; j_prim++) {
+          const double alpha_j = shell_j.exponents[j_prim];
+          const double alpha_sum = alpha_i + alpha_j;
+
+          // Skip if shell distance is too large or exponential term is
+          // negligible
+          const double dum = alpha_j * alpha_i * shell_r2 / alpha_sum;
+          if (dum > m_tolerance)
             continue;
 
-          const auto &shell_j = shells[j_shell_idx];
-          const bool i_shell_equals_j_shell = (i_shell_idx == j_shell_idx);
+          // Factor for exponential term
+          double fac = std::exp(-dum);
 
-          Mat d_block = m_normalized_density.block(
-              first_bf[i_shell_idx], first_bf[j_shell_idx], shell_i.size(),
-              shell_j.size());
+          // Double the factor if primitives or shells are different
+          if (i_prim != j_prim || !(i_shell_equals_j_shell)) {
+            fac *= 2.0;
+          }
 
-          // Loop over primitives in shell i
-          for (int i_prim = 0; i_prim < shell_i.num_primitives(); i_prim++) {
-            const double alpha_i = shell_i.exponents[i_prim];
+          // P is the gaussian product center
+          const double p = alpha_j / alpha_sum;
+          const Vec3 P = shell_i.origin + p * r_shell_ij;
 
-            int j_prim_max =
-                i_shell_equals_j_shell ? i_prim + 1 : shell_j.num_primitives();
+          if ((alpha_i + alpha_j) > m_settings.big_exponent) {
+            // Use analytical method for large exponents
+            Mult qt;
+            qt.q = Vec::Zero(m_settings.max_rank * m_settings.max_rank +
+                             2 * m_settings.max_rank + 1);
 
-            for (int j_prim = 0; j_prim < j_prim_max; j_prim++) {
-              const double alpha_j = shell_j.exponents[j_prim];
-              const double alpha_sum = alpha_i + alpha_j;
+            m_analytical.calculate_primitive_contribution(
+                shell_i, shell_j, i_prim, j_prim, fac, d_block, P, qt);
 
-              // Calculate shell separation
-              const Vec3 r_shell_ij = shell_j.origin - shell_i.origin;
-              const double shell_r2 = r_shell_ij.squaredNorm();
+            // Move multipoles to nearest sites
+            MultipoleShifter shifter(P, qt, m_sites.positions, m_sites.radii,
+                                     m_sites.limits, site_multipoles,
+                                     m_settings.max_rank);
+            shifter.shift();
+            num_analytic_p++;
 
-              // Skip if shell distance is too large or exponential term is
-              // negligible
-              const double dum = alpha_j * alpha_i * shell_r2 / alpha_sum;
-              if (dum > m_tolerance)
-                continue;
-
-              // Factor for exponential term
-              double fac = std::exp(-dum);
-
-              // Double the factor if primitives or shells are different
-              if (i_prim != j_prim || !(i_shell_equals_j_shell)) {
-                fac *= 2.0;
-              }
-
-              // P is the gaussian product center
-              const double p = alpha_j / alpha_sum;
-              const Vec3 P = shell_i.origin + p * r_shell_ij;
-
-              if ((alpha_i + alpha_j) > m_settings.big_exponent) {
-                // Use analytical method for large exponents
-                Mult qt;
-                qt.q = Vec::Zero(m_settings.max_rank * m_settings.max_rank +
-                                 2 * m_settings.max_rank + 1);
-
-                m_analytical.calculate_primitive_contribution(
-                    shell_i, shell_j, i_prim, j_prim, fac, d_block, P, qt);
-
-                // Move multipoles to nearest sites
-                MultipoleShifter shifter(P, qt, m_sites.positions,
-                                         m_sites.radii, m_sites.limits,
-                                         site_multipoles, m_settings.max_rank);
-                shifter.shift();
-
-              } else {
-                // For small exponents, use numerical integration
-                if (!m_use_quadrature) {
-                  m_grid_density = Vec::Zero(grid.num_points());
-                  m_use_quadrature = true;
-                }
-
-                m_grid.add_primitive_to_grid(shell_i, shell_j, i_prim, j_prim,
-                                             fac, d_block, P, grid_points,
-                                             m_grid_density, etol);
-              }
+          } else {
+            // For small exponents, use numerical integration
+            if (!m_use_quadrature) {
+              m_grid_density = Vec::Zero(grid.num_points());
+              m_use_quadrature = true;
             }
+            m_grid.add_primitive_to_grid(shell_i, shell_j, i_prim, j_prim, fac,
+                                         d_block, P, grid_points,
+                                         m_grid_density, etol);
+
+            num_grid_p++;
           }
         }
       }

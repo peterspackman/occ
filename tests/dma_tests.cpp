@@ -1,5 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <occ/core/molecule.h>
 #include <occ/dma/dma.h>
 #include <occ/dma/linear_multipole_calculator.h>
@@ -502,7 +503,7 @@ TEST_CASE("DMA linear", "[dma]") {
   settings.max_rank = 2;
   settings.include_nuclei = true;
   settings.use_slices = false;
-  
+
   // Create and use the linear multipole calculator
   LinearMultipoleCalculator calculator(wfn, settings);
   auto result = calculator.calculate();
@@ -1409,9 +1410,14 @@ TEST_CASE("C2H4 G03", "[dma]") {
   calc.set_radius_for_element(1, 0.35);
   calc.set_limit_for_element(1, 1);
 
+  auto t1 = std::chrono::high_resolution_clock::now();
   // Test DMA calculation (analytical method)
   auto dma_result = calc.compute_multipoles();
   const auto &result = dma_result.multipoles;
+  auto t2 = std::chrono::high_resolution_clock::now();
+
+  auto duration = std::chrono::duration<double, std::milli>(t2 - t1);
+  occ::timing::print_timings();
 
   // Check the result
   REQUIRE(result.size());

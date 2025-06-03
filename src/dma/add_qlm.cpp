@@ -3,32 +3,36 @@
 
 namespace occ::dma {
 
-void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
-            Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz, Mult &out) {
+namespace {
+constexpr double rt2 = 1.41421356237309515;
+constexpr double rt3 = 1.73205080756887719;
+constexpr double rt5 = 2.23606797749978981;
+constexpr double rt7 = 2.64575131106459072;
+constexpr double rt11 = 3.31662479035539981;
+constexpr double rt13 = 3.60555127546398912;
+constexpr double rt17 = 4.12310562561766059;
+constexpr double rt19 = 4.35889894354067398;
+} // namespace
 
-  const double rt2 = std::sqrt(2.0);
-  const double rt3 = std::sqrt(3.0);
-  const double rt5 = std::sqrt(5.0);
-  const double rt7 = std::sqrt(7.0);
-  const double rt11 = std::sqrt(11.0);
-  const double rt13 = std::sqrt(13.0);
-  const double rt17 = std::sqrt(17.0);
-  const double rt19 = std::sqrt(19.0);
-
-  int LL = std::min(l, lmax);
-
+inline void addqlm_0(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
   //  Monopole term
   out.Q00() += f * gx(0) * gy(0) * gz(0);
-  if (LL == 0)
-    return;
+}
 
+inline void addqlm_1(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
   //  Dipole terms
   out.Q10() += f * (gx(0) * gy(0) * gz(1));
   out.Q11c() += f * (gx(1) * gy(0) * gz(0));
   out.Q11s() += f * (gx(0) * gy(1) * gz(0));
+}
 
-  if (LL == 1)
-    return;
+inline void addqlm_2(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
 
   //  Quadrupole terms
   out.Q20() += f *
@@ -40,10 +44,11 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
   out.Q22c() +=
       f * rt3 * (-gx(0) * gy(2) * gz(0) + gx(2) * gy(0) * gz(0)) / 2.0;
   out.Q22s() += f * rt3 * (2.0 * gx(1) * gy(1) * gz(0)) / 2.0;
+}
 
-  if (LL == 2)
-    return;
-
+inline void addqlm_3(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
   //  Octopole terms
   out.Q30() += f *
                (2.0 * gx(0) * gy(0) * gz(3) - 3.0 * gx(0) * gy(2) * gz(1) -
@@ -64,8 +69,11 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
                 (-3.0 * gx(1) * gy(2) * gz(0) + gx(3) * gy(0) * gz(0)) / 4.0;
   out.Q33s() += f * rt2 * rt5 *
                 (-gx(0) * gy(3) * gz(0) + 3.0 * gx(2) * gy(1) * gz(0)) / 4.0;
-  if (LL == 3)
-    return;
+}
+
+inline void addqlm_4(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
 
   //  Hexadecapole terms
   out.Q40() += f *
@@ -100,8 +108,11 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
   out.Q44s() += f * rt5 * rt7 *
                 (-4.0 * gx(1) * gy(3) * gz(0) + 4.0 * gx(3) * gy(1) * gz(0)) /
                 8.0;
-  if (LL == 4)
-    return;
+}
+
+inline void addqlm_5(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
 
   out.Q50() += f *
                (8.0 * gx(0) * gy(0) * gz(5) - 40.0 * gx(0) * gy(2) * gz(3) -
@@ -151,8 +162,11 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
                 (3.0 * gx(0) * gy(5) * gz(0) - 30.0 * gx(2) * gy(3) * gz(0) +
                  15.0 * gx(4) * gy(1) * gz(0)) /
                 16.0;
-  if (LL == 5)
-    return;
+}
+
+inline void addqlm_6(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
 
   out.Q60() += f *
                (16.0 * gx(0) * gy(0) * gz(6) - 120.0 * gx(0) * gy(2) * gz(4) -
@@ -219,8 +233,11 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
                 (-gx(0) * gy(6) * gz(0) + 15.0 * gx(2) * gy(4) * gz(0) -
                  15.0 * gx(4) * gy(2) * gz(0) + gx(6) * gy(0) * gz(0)) /
                 32.0;
-  if (LL == 6)
-    return;
+}
+
+inline void addqlm_7(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
 
   out.Q70() += f *
                (16.0 * gx(0) * gy(0) * gz(7) - 168.0 * gx(0) * gy(2) * gz(5) -
@@ -306,9 +323,11 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
                 (-gx(0) * gy(7) * gz(0) + 21.0 * gx(2) * gy(5) * gz(0) -
                  35.0 * gx(4) * gy(3) * gz(0) + 7.0 * gx(6) * gy(1) * gz(0)) /
                 32.0;
-  if (LL == 7)
-    return;
+}
 
+inline void addqlm_8(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
   out.Q80() +=
       f *
       (128.0 * gx(0) * gy(0) * gz(8) - 1792.0 * gx(0) * gy(2) * gz(6) -
@@ -421,8 +440,11 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
                 (-24.0 * gx(1) * gy(7) * gz(0) + 168.0 * gx(3) * gy(5) * gz(0) -
                  168.0 * gx(5) * gy(3) * gz(0) + 24.0 * gx(7) * gy(1) * gz(0)) /
                 128.0;
-  if (LL == 8)
-    return;
+}
+
+inline void addqlm_9(double f, Eigen::Ref<const Vec> gx,
+                     Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                     Mult &out) {
 
   out.Q90() +=
       f *
@@ -569,9 +591,11 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
                  126.0 * gx(4) * gy(5) * gz(0) - 84.0 * gx(6) * gy(3) * gz(0) +
                  9.0 * gx(8) * gy(1) * gz(0)) /
                 256.0;
-  if (LL == 9)
-    return;
+}
 
+inline void addqlm_10(double f, Eigen::Ref<const Vec> gx,
+                      Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz,
+                      Mult &out) {
   out.QA0() +=
       f *
       (256.0 * gx(0) * gy(0) * gz(10) - 5760.0 * gx(0) * gy(2) * gz(8) -
@@ -756,6 +780,54 @@ void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
                  252.0 * gx(5) * gy(5) * gz(0) - 120.0 * gx(7) * gy(3) * gz(0) +
                  10.0 * gx(9) * gy(1) * gz(0)) /
                 512.0;
+}
+
+void addqlm(int l, int lmax, double f, Eigen::Ref<const Vec> gx,
+            Eigen::Ref<const Vec> gy, Eigen::Ref<const Vec> gz, Mult &out) {
+
+  int LL = std::min(l, lmax);
+
+  addqlm_0(f, gx, gy, gz, out);
+  if (LL == 0)
+    return;
+
+  addqlm_1(f, gx, gy, gz, out);
+  if (LL == 1)
+    return;
+
+  addqlm_2(f, gx, gy, gz, out);
+  if (LL == 2)
+    return;
+
+  addqlm_3(f, gx, gy, gz, out);
+  if (LL == 3)
+    return;
+
+  addqlm_4(f, gx, gy, gz, out);
+  if (LL == 4)
+    return;
+
+  addqlm_5(f, gx, gy, gz, out);
+  if (LL == 5)
+    return;
+
+  addqlm_6(f, gx, gy, gz, out);
+  if (LL == 6)
+    return;
+
+  addqlm_7(f, gx, gy, gz, out);
+  if (LL == 7)
+    return;
+
+  addqlm_8(f, gx, gy, gz, out);
+  if (LL == 8)
+    return;
+
+  addqlm_9(f, gx, gy, gz, out);
+  if (LL == 9)
+    return;
+
+  addqlm_10(f, gx, gy, gz, out);
 }
 
 void addql0(int l, double f, Eigen::Ref<const Vec> gx, Eigen::Ref<const Vec> gy,
