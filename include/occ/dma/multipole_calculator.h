@@ -8,13 +8,6 @@
 
 namespace occ::dma {
 
-struct ProductPrimitive {
-  Vec3 center;
-  double exponent;
-  double coefficient;
-  int l{0};
-};
-
 /**
  * @brief Handles analytical calculation of multipole moments using
  * Gauss-Hermite quadrature
@@ -52,10 +45,6 @@ public:
                              const Mat &d_block, const Vec3 &P,
                              const Mat3N &grid_points, Vec &rho,
                              double etol) const;
-
-  void add_primitive_contributions(const std::vector<ProductPrimitive> &pps,
-                                   const Mat &d_block, const Mat3N &grid_points,
-                                   Vec &rho) const;
 
   /**
    * @brief Process grid density to extract multipoles

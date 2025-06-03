@@ -4,51 +4,54 @@
 #include <occ/core/molecule.h>
 #include <occ/core/timings.h>
 #include <occ/dma/mult.h>
-#include <occ/qm/wavefunction.h>
 #include <occ/qm/integral_engine.h>
+#include <occ/qm/wavefunction.h>
+#include <string>
 #include <vector>
 
 namespace occ::dma {
 
-
 struct DMASettings {
-    int max_rank{4};
-    double big_exponent{4.0};
-    bool include_nuclei{true};
+  int max_rank{4};
+  double big_exponent{4.0};
+  bool include_nuclei{true};
 };
 
 struct DMAResult {
-    int max_rank{4};
-    std::vector<Mult> multipoles;
+  int max_rank{4};
+  std::vector<Mult> multipoles;
 };
 
 struct DMASites {
-    inline auto size() const { return positions.cols(); }
-    inline auto num_atoms() const { return atoms.size(); }
+  inline auto size() const { return positions.cols(); }
+  inline auto num_atoms() const { return atoms.size(); }
 
-    std::vector<occ::core::Atom> atoms;
-    Mat3N positions;
-    IVec atom_indices;
-    Vec radii;
-    IVec limits;
+  std::vector<occ::core::Atom> atoms;
+  std::vector<std::string> name;
+  Mat3N positions;
+  IVec atom_indices;
+  Vec radii;
+  IVec limits;
 };
 
 class DMACalculator {
 public:
-    DMACalculator(const qm::Wavefunction &wfn);
-    void update_settings(const DMASettings &settings);
-    inline const auto &settings() const { return m_settings; }
-    void set_radius_for_element(int atomic_number, double radius_angs);
-    void set_limit_for_element(int atomic_number, int limit);
+  DMACalculator(const qm::Wavefunction &wfn);
+  void update_settings(const DMASettings &settings);
+  inline const auto &settings() const { return m_settings; }
+  void set_radius_for_element(int atomic_number, double radius_angs);
+  void set_limit_for_element(int atomic_number, int limit);
 
-    DMAResult compute_multipoles();
+  inline const auto &sites() const { return m_sites; }
+
+  DMAResult compute_multipoles();
+  Mult compute_total_multipoles(const DMAResult &result) const;
 
 private:
-    DMASites m_sites;
-    qm::AOBasis m_basis;
-    qm::MolecularOrbitals m_mo;
-    DMASettings m_settings;
-
+  DMASites m_sites;
+  qm::AOBasis m_basis;
+  qm::MolecularOrbitals m_mo;
+  DMASettings m_settings;
 };
 
 } // namespace occ::dma

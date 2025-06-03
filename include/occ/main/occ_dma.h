@@ -6,6 +6,7 @@ namespace occ::main {
 
 struct DMAConfig {
   std::string wavefunction_filename;
+  std::string punch_filename;
   dma::DMASettings settings;
 };
 

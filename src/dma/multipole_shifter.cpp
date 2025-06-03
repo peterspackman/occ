@@ -4,21 +4,18 @@
 
 namespace occ::dma {
 
-MultipoleShifter::MultipoleShifter(Eigen::Ref<const Vec3> pos, Mult &qt,
-                                   const Mat3N &site_positions,
-                                   const Vec &site_radii,
-                                   const IVec &site_limits,
+MultipoleShifter::MultipoleShifter(const Vec3 &pos, Mult &qt,
+                                   const DMASites &sites,
                                    std::vector<Mult> &q, int lmax)
-    : m_pos(pos), m_site_radii(site_radii), m_site_limits(site_limits),
-      m_site_positions(site_positions), m_qt(qt), m_q(q), m_lmax(lmax),
-      m_num_sites(site_positions.cols()), m_rr(m_num_sites) {
+    : m_pos(pos), m_sites(sites), m_qt(qt), m_q(q), m_lmax(lmax),
+      m_num_sites(m_sites.positions.cols()), m_rr(m_num_sites) {
   m_destination_sites.reserve(m_num_sites);
 
   for (int i = 0; i < m_num_sites; i++) {
-    m_rr(i) = (m_pos - m_site_positions.col(i)).squaredNorm() /
-              (m_site_radii(i) * m_site_radii(i));
+    m_rr(i) = (m_pos - m_sites.positions.col(i)).squaredNorm() /
+              (m_sites.radii(i) * m_sites.radii(i));
 
-    if (site_limits(i) > site_limits(m_site_with_highest_limit)) {
+    if (m_sites.limits(i) > m_sites.limits(m_site_with_highest_limit)) {
       m_site_with_highest_limit = i;
     }
   }
@@ -32,21 +29,21 @@ void MultipoleShifter::shift() {
   while (true) {
     int k = find_nearest_site_with_limit(low, m_site_with_highest_limit);
     int t1 = low * low;
-    int t2 = (m_site_limits(k) + 1) * (m_site_limits(k) + 1);
+    int t2 = (m_sites.limits(k) + 1) * (m_sites.limits(k) + 1);
 
     bool completed = process_site(k, low, t1, t2, lp1sq, eps);
     if (completed) {
       return;
     }
 
-    low = m_site_limits(k) + 1;
+    low = m_sites.limits(k) + 1;
   }
 }
 
 int MultipoleShifter::find_nearest_site_with_limit(int low, int start) const {
   int k = start;
   for (int i = 0; i < m_rr.rows(); i++) {
-    if (m_rr(i) < m_rr(k) && m_site_limits(i) >= low) {
+    if (m_rr(i) < m_rr(k) && m_sites.limits(i) >= low) {
       k = i;
     }
   }
@@ -59,7 +56,7 @@ bool MultipoleShifter::direct_transfer(int k, int t1, int t2) {
     m_qt.q(i) = 0.0;
   }
 
-  return m_site_limits(k) >= m_lmax;
+  return m_sites.limits(k) >= m_lmax;
 }
 
 bool MultipoleShifter::distributed_transfer(int k, int low, int t1, int t2,
@@ -69,7 +66,7 @@ bool MultipoleShifter::distributed_transfer(int k, int low, int t1, int t2,
   m_destination_sites.push_back(k);
   for (int i = 0; i < m_num_sites; i++) {
     if (i == k || m_rr(i) > m_rr(k) + eps ||
-        m_site_limits(i) != m_site_limits(k) || m_site_limits(i) < low) {
+        m_sites.limits(i) != m_sites.limits(k) || m_sites.limits(i) < low) {
       continue;
     }
     m_destination_sites.push_back(i);
@@ -83,8 +80,8 @@ bool MultipoleShifter::distributed_transfer(int k, int low, int t1, int t2,
   // Shift multipoles to each site
   for (int site_idx : m_destination_sites) {
     // Call shift_multipoles to transfer multipoles
-    shift_multipoles(m_qt, low, m_site_limits(site_idx), m_q[site_idx], m_lmax,
-                     m_pos - m_site_positions.col(site_idx));
+    shift_multipoles(m_qt, low, m_sites.limits(site_idx), m_q[site_idx], m_lmax,
+                     m_pos - m_sites.positions.col(site_idx));
   }
 
   // Zero out the transferred multipoles
@@ -93,15 +90,15 @@ bool MultipoleShifter::distributed_transfer(int k, int low, int t1, int t2,
   }
 
   // If we've reached lmax at this site, we're done
-  if (m_site_limits(k) >= m_lmax) {
+  if (m_sites.limits(k) >= m_lmax) {
     return true;
   }
 
   // Transfer higher-rank multipoles back to qt
   for (int site_idx : m_destination_sites) {
     // Call shift_multipoles to transfer higher-rank multipoles back to qt
-    shift_multipoles(m_q[site_idx], m_site_limits(site_idx) + 1, m_lmax, m_qt, m_lmax,
-                     m_site_positions.col(site_idx) - m_pos);
+    shift_multipoles(m_q[site_idx], m_sites.limits(site_idx) + 1, m_lmax, m_qt,
+                     m_lmax, m_sites.positions.col(site_idx) - m_pos);
     // Zero out transferred multipoles at the site
     m_q[site_idx].q.segment(t2, lp1sq - t2).setZero();
   }
@@ -121,9 +118,9 @@ bool MultipoleShifter::process_site(int k, int low, int t1, int t2, int lp1sq,
 
 // Migrated multipole shifting functionality (from shiftq.cpp)
 
-int MultipoleShifter::estimate_largest_transferred_multipole(Eigen::Ref<const Vec3> pos,
-                                           const Mult &mult, int l, int m1, int m2,
-                                           double eps) {
+int MultipoleShifter::estimate_largest_transferred_multipole(
+    const Vec3 &pos, const Mult &mult, int l, int m1, int m2,
+    double eps) {
   if (eps == 0.0 || m2 < 1)
     return m2;
   double r2 = 4.0 * pos.squaredNorm();
@@ -148,7 +145,7 @@ int MultipoleShifter::estimate_largest_transferred_multipole(Eigen::Ref<const Ve
   return n;
 }
 
-Mat MultipoleShifter::get_cplx_sh(Eigen::Ref<const Vec3> pos, int N) {
+Mat MultipoleShifter::get_cplx_sh(const Vec3 &pos, int N) {
   constexpr double RTHALF = 0.7071067811865475244;
 
   size_t num_components = (N + 1) * (N + 1) + 1;
@@ -218,8 +215,9 @@ Mat MultipoleShifter::get_cplx_mults(const Mult &mult, int l1, int m1, int N) {
   return qc;
 }
 
-void MultipoleShifter::shift_multipoles(const Mult &q1, int l1, int m1, Mult &q2, int m2,
-            Eigen::Ref<const Vec3> pos) {
+void MultipoleShifter::shift_multipoles(const Mult &q1, int l1, int m1,
+                                        Mult &q2, int m2,
+                                        const Vec3 &pos) {
   // Constants
   constexpr double RTHALF = 0.7071067811865475244;
   constexpr double eps = 0.0; // No early termination

@@ -8,6 +8,7 @@
 #include <occ/gto/gto.h>
 #include <occ/gto/shell_order.h>
 #include <occ/qm/hf.h>
+#include <random>
 
 namespace occ::dma {
 
@@ -304,10 +305,7 @@ void GridIntegrator::process_grid_density(
     const std::vector<std::pair<size_t, size_t>> &atom_blocks,
     const DMASites &sites, std::vector<Mult> &site_multipoles) const {
 
-  Mult qt;
-  qt.q = Vec::Zero(m_settings.max_rank * m_settings.max_rank +
-                   2 * m_settings.max_rank + 1);
-
+  Mult qt(m_settings.max_rank);
   // Initialize temporary arrays for coordinates and their powers
   Vec ggx = Vec::Zero(m_settings.max_rank + 1);
   Vec ggy = Vec::Zero(m_settings.max_rank + 1);
@@ -344,8 +342,7 @@ void GridIntegrator::process_grid_density(
              ggy, ggz, qt);
     }
 
-    MultipoleShifter shifter(pos_i, qt, sites.positions, sites.radii,
-                             sites.limits, site_multipoles,
+    MultipoleShifter shifter(pos_i, qt, sites, site_multipoles,
                              m_settings.max_rank);
     shifter.shift();
   }
@@ -424,8 +421,7 @@ void MultipoleCalculator::process_nuclear_contributions(
                      2 * m_settings.max_rank + 1);
     qt.Q00() = m_sites.atoms[atom_i].atomic_number;
 
-    MultipoleShifter shifter(pos_i, qt, m_sites.positions, m_sites.radii,
-                             m_sites.limits, site_multipoles,
+    MultipoleShifter shifter(pos_i, qt, m_sites, site_multipoles,
                              m_settings.max_rank);
     shifter.shift();
   }
@@ -437,7 +433,11 @@ std::vector<Mult> MultipoleCalculator::calculate() {
   log::debug("Site radii : {}\n", format_matrix(m_sites.radii));
   log::debug("Site limits: {}\n", format_matrix(m_sites.limits, "{}"));
 
-  std::vector<Mult> site_multipoles(m_sites.size());
+  std::vector<Mult> site_multipoles;
+  site_multipoles.reserve(m_sites.size());
+  for (int i = 0; i < m_sites.size(); i++) {
+    site_multipoles.push_back(Mult(m_sites.limits(i)));
+  }
 
   // Handle nuclear contributions
   process_nuclear_contributions(site_multipoles);
@@ -460,6 +460,8 @@ void MultipoleCalculator::process_electronic_contributions(
   double etol = 36.0; // Threshold for density calculation
 
   dft::GridSettings grid_settings;
+  grid_settings.max_angular_points = 590;
+  grid_settings.radial_points = 80;
   grid_settings.treutler_alrichs_adjustment = false;
 
   auto grid_gen = dft::MolecularGrid(m_basis, grid_settings);
@@ -469,18 +471,11 @@ void MultipoleCalculator::process_electronic_contributions(
   const auto &grid = grid_gen.get_molecular_grid_points();
   const auto &grid_points = grid.points();
 
-  std::vector<ProductPrimitive> grid_pair_products;
-  {
-    size_t max_num_primitives = m_basis.max_num_primitives();
-    grid_pair_products.reserve(max_num_primitives * max_num_primitives);
-  }
-
   for (int i_shell_idx = 0; i_shell_idx < n_shells; i_shell_idx++) {
     const auto &shell_i = shells[i_shell_idx];
     for (int j_shell_idx = 0; j_shell_idx <= i_shell_idx; j_shell_idx++) {
       const auto &shell_j = shells[j_shell_idx];
       const bool i_shell_equals_j_shell = (i_shell_idx == j_shell_idx);
-      grid_pair_products.clear();
 
       Mat d_block = m_normalized_density.block(first_bf[i_shell_idx],
                                                first_bf[j_shell_idx],
@@ -521,15 +516,12 @@ void MultipoleCalculator::process_electronic_contributions(
 
           if ((alpha_i + alpha_j) > m_settings.big_exponent) {
             // Use analytical method for large exponents
-            Mult qt;
-            qt.q = Vec::Zero(m_settings.max_rank * m_settings.max_rank +
-                             2 * m_settings.max_rank + 1);
+            Mult qt(m_settings.max_rank);
 
             m_analytical.calculate_primitive_contribution(
                 shell_i, shell_j, i_prim, j_prim, fac, d_block, P, qt);
 
-            MultipoleShifter shifter(P, qt, m_sites.positions, m_sites.radii,
-                                     m_sites.limits, site_multipoles,
+            MultipoleShifter shifter(P, qt, m_sites, site_multipoles,
                                      m_settings.max_rank);
             shifter.shift();
             num_analytic_p++;
