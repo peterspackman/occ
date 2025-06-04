@@ -131,8 +131,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1BasisSetInput.html">BasisSetInput</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1BeckeGridSettings.html">BeckeGridSettings</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1CellData.html">CellData</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1io_1_1CifParser.html">CifParser</a></td></tr>
@@ -168,6 +166,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GeometryInput.html">GeometryInput</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1io_1_1GMFWriter.html">GMFWriter</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extended settings for Becke grid generation.  <a href="structocc_1_1io_1_1GridSettings.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1IsosurfaceInput.html">IsosurfaceInput</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,6 +230,12 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:a71eabab10243c6e13ea9f1de9cc86868" id="r_a71eabab10243c6e13ea9f1de9cc86868"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868">PruningScheme</a> { <a class="el" href="namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a6adf97f83acf6453d4a6a4b1070f3754">None</a>
+, <a class="el" href="namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a929a60543a3d798bb289678dcbebcb2b">NWChem</a>
+, <a class="el" href="namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a5268eb265372a3bf6d86e32e9af2a1cd">NumGrid</a>
+ }</td></tr>
+<tr class="memdesc:a71eabab10243c6e13ea9f1de9cc86868"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of available angular pruning schemes.  <a href="namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868">More...</a><br /></td></tr>
+<tr class="separator:a71eabab10243c6e13ea9f1de9cc86868"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac216ed773cc0fb9fcb04e266ac5c24a3" id="r_ac216ed773cc0fb9fcb04e266ac5c24a3"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3">JsonFormat</a> { <br />
 &#160;&#160;<a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8">JSON</a>
 , <a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d">UBJSON</a>
@@ -342,6 +349,38 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><a id="ac216ed773cc0fb9fcb04e266ac5c24a3a6009014cf7f117c0a14c14fdb971e9e8" name="ac216ed773cc0fb9fcb04e266ac5c24a3a6009014cf7f117c0a14c14fdb971e9e8"></a>CBOR&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ac216ed773cc0fb9fcb04e266ac5c24a3ac3f11a091527e2df921d8d916f13c4d9" name="ac216ed773cc0fb9fcb04e266ac5c24a3ac3f11a091527e2df921d8d916f13c4d9"></a>BSON&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94" name="ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94"></a>MSGPACK&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
+<a id="a71eabab10243c6e13ea9f1de9cc86868" name="a71eabab10243c6e13ea9f1de9cc86868"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71eabab10243c6e13ea9f1de9cc86868">&#9670;&#160;</a></span>PruningScheme</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868">occ::io::PruningScheme</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Enumeration of available angular pruning schemes. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a71eabab10243c6e13ea9f1de9cc86868a6adf97f83acf6453d4a6a4b1070f3754" name="a71eabab10243c6e13ea9f1de9cc86868a6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p>No pruning (uniform angular points) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a71eabab10243c6e13ea9f1de9cc86868a929a60543a3d798bb289678dcbebcb2b" name="a71eabab10243c6e13ea9f1de9cc86868a929a60543a3d798bb289678dcbebcb2b"></a>NWChem&#160;</td><td class="fielddoc"><p>NWChem pruning scheme. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a71eabab10243c6e13ea9f1de9cc86868a5268eb265372a3bf6d86e32e9af2a1cd" name="a71eabab10243c6e13ea9f1de9cc86868a5268eb265372a3bf6d86e32e9af2a1cd"></a>NumGrid&#160;</td><td class="fielddoc"><p>NumGrid pruning scheme. </p>
+</td></tr>
 </table>
 
 </div>

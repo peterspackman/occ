@@ -112,11 +112,27 @@ var annotated_dup =
         [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
         [ "MolecularGridPoints", "classocc_1_1dft_1_1MolecularGridPoints.html", "classocc_1_1dft_1_1MolecularGridPoints" ],
         [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
+        [ "PartitionMethod", "structocc_1_1dft_1_1PartitionMethod.html", "structocc_1_1dft_1_1PartitionMethod" ],
         [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
         [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ]
       ] ],
       [ "disp", "namespaceocc_1_1disp.html", [
         [ "D4Dispersion", "classocc_1_1disp_1_1D4Dispersion.html", "classocc_1_1disp_1_1D4Dispersion" ]
+      ] ],
+      [ "dma", "namespaceocc_1_1dma.html", [
+        [ "AnalyticalIntegrator", "classocc_1_1dma_1_1AnalyticalIntegrator.html", "classocc_1_1dma_1_1AnalyticalIntegrator" ],
+        [ "BinomialCoefficients", "classocc_1_1dma_1_1BinomialCoefficients.html", "classocc_1_1dma_1_1BinomialCoefficients" ],
+        [ "DMACalculator", "classocc_1_1dma_1_1DMACalculator.html", "classocc_1_1dma_1_1DMACalculator" ],
+        [ "DMAResult", "structocc_1_1dma_1_1DMAResult.html", "structocc_1_1dma_1_1DMAResult" ],
+        [ "DMASettings", "structocc_1_1dma_1_1DMASettings.html", "structocc_1_1dma_1_1DMASettings" ],
+        [ "DMASites", "structocc_1_1dma_1_1DMASites.html", "structocc_1_1dma_1_1DMASites" ],
+        [ "GridIntegrator", "classocc_1_1dma_1_1GridIntegrator.html", "classocc_1_1dma_1_1GridIntegrator" ],
+        [ "LinearDMASettings", "structocc_1_1dma_1_1LinearDMASettings.html", "structocc_1_1dma_1_1LinearDMASettings" ],
+        [ "LinearMultipoleCalculator", "classocc_1_1dma_1_1LinearMultipoleCalculator.html", "classocc_1_1dma_1_1LinearMultipoleCalculator" ],
+        [ "LinearMultipoleShifter", "classocc_1_1dma_1_1LinearMultipoleShifter.html", "classocc_1_1dma_1_1LinearMultipoleShifter" ],
+        [ "Mult", "structocc_1_1dma_1_1Mult.html", "structocc_1_1dma_1_1Mult" ],
+        [ "MultipoleCalculator", "classocc_1_1dma_1_1MultipoleCalculator.html", "classocc_1_1dma_1_1MultipoleCalculator" ],
+        [ "MultipoleShifter", "classocc_1_1dma_1_1MultipoleShifter.html", "classocc_1_1dma_1_1MultipoleShifter" ]
       ] ],
       [ "driver", "namespaceocc_1_1driver.html", [
         [ "AssignedEnergy", "structocc_1_1driver_1_1AssignedEnergy.html", "structocc_1_1driver_1_1AssignedEnergy" ],
@@ -188,7 +204,6 @@ var annotated_dup =
         [ "AdpData", "structocc_1_1io_1_1AdpData.html", "structocc_1_1io_1_1AdpData" ],
         [ "AtomData", "structocc_1_1io_1_1AtomData.html", "structocc_1_1io_1_1AtomData" ],
         [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
-        [ "BeckeGridSettings", "structocc_1_1io_1_1BeckeGridSettings.html", "structocc_1_1io_1_1BeckeGridSettings" ],
         [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
         [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
         [ "ColumnConfiguration", "structocc_1_1io_1_1ColumnConfiguration.html", "structocc_1_1io_1_1ColumnConfiguration" ],
@@ -207,6 +222,7 @@ var annotated_dup =
         [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
         [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
         [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
+        [ "GridSettings", "structocc_1_1io_1_1GridSettings.html", "structocc_1_1io_1_1GridSettings" ],
         [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
         [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
         [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
@@ -271,6 +287,7 @@ var annotated_dup =
         [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
         [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
+        [ "DMAConfig", "structocc_1_1main_1_1DMAConfig.html", "structocc_1_1main_1_1DMAConfig" ],
         [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
         [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
         [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],

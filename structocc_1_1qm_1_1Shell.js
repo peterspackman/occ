@@ -8,6 +8,7 @@ var structocc_1_1qm_1_1Shell =
     [ "Shell", "structocc_1_1qm_1_1Shell.html#ae19150c9be126ea1c224b2b0cea91e42", null ],
     [ "Shell", "structocc_1_1qm_1_1Shell.html#ac6ebd60c7417364b314b758b7b6d381b", null ],
     [ "coeff_normalized", "structocc_1_1qm_1_1Shell.html#a166a72250ff08a60b938dd7fe01fa0b1", null ],
+    [ "coeff_normalized_dma", "structocc_1_1qm_1_1Shell.html#a7038d78e01a041709cb4c5bae223b1c1", null ],
     [ "coeffs_normalized_for_libecpint", "structocc_1_1qm_1_1Shell.html#a63bda0e76ffb995bc6e95fdba750391a", null ],
     [ "find_atom_index", "structocc_1_1qm_1_1Shell.html#af0911d009eec67ca20e6962f7ba71dbb", null ],
     [ "incorporate_shell_norm", "structocc_1_1qm_1_1Shell.html#a111f01ae54fc4c4f8a660fbd8837c0fe", null ],

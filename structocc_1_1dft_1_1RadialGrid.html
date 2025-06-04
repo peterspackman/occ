@@ -105,27 +105,38 @@ $(document).ready(function(){initNavTree('structocc_1_1dft_1_1RadialGrid.html','
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;grid.h&gt;</code></p>
+<p>Structure to hold radial grid data.  
+ <a href="structocc_1_1dft_1_1RadialGrid.html#details">More...</a></p>
+
+<p><code>#include &lt;grid_types.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a70df682a349bf9b4854a00747962d9b3" id="r_a70df682a349bf9b4854a00747962d9b3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html#a70df682a349bf9b4854a00747962d9b3">RadialGrid</a> ()</td></tr>
-<tr class="separator:a70df682a349bf9b4854a00747962d9b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52cc4bb445853078a39a1dfb78f713c0" id="r_a52cc4bb445853078a39a1dfb78f713c0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html#a52cc4bb445853078a39a1dfb78f713c0">RadialGrid</a> ()=default</td></tr>
+<tr class="memdesc:a52cc4bb445853078a39a1dfb78f713c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
+<tr class="separator:a52cc4bb445853078a39a1dfb78f713c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82dcd518d53ff732bfe4610598e54ae3" id="r_a82dcd518d53ff732bfe4610598e54ae3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html#a82dcd518d53ff732bfe4610598e54ae3">RadialGrid</a> (size_t <a class="el" href="structocc_1_1dft_1_1RadialGrid.html#a54d566252c8ab0b7de61500eedf5812a">num_points</a>)</td></tr>
+<tr class="memdesc:a82dcd518d53ff732bfe4610598e54ae3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor that pre-allocates memory.  <br /></td></tr>
 <tr class="separator:a82dcd518d53ff732bfe4610598e54ae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54d566252c8ab0b7de61500eedf5812a" id="r_a54d566252c8ab0b7de61500eedf5812a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html#a54d566252c8ab0b7de61500eedf5812a">num_points</a> () const</td></tr>
+<tr class="memdesc:a54d566252c8ab0b7de61500eedf5812a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the number of points in the grid.  <br /></td></tr>
 <tr class="separator:a54d566252c8ab0b7de61500eedf5812a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a3ee41b0c7f65417708fcdc27c911a186" id="r_a3ee41b0c7f65417708fcdc27c911a186"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html#a3ee41b0c7f65417708fcdc27c911a186">points</a></td></tr>
+<tr class="memdesc:a3ee41b0c7f65417708fcdc27c911a186"><td class="mdescLeft">&#160;</td><td class="mdescRight">Radial points (distances from the center)  <br /></td></tr>
 <tr class="separator:a3ee41b0c7f65417708fcdc27c911a186"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a265a8e9304c1700c7132b56f4a350bad" id="r_a265a8e9304c1700c7132b56f4a350bad"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html#a265a8e9304c1700c7132b56f4a350bad">weights</a></td></tr>
+<tr class="memdesc:a265a8e9304c1700c7132b56f4a350bad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Integration weights for each point.  <br /></td></tr>
 <tr class="separator:a265a8e9304c1700c7132b56f4a350bad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a70df682a349bf9b4854a00747962d9b3" name="a70df682a349bf9b4854a00747962d9b3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70df682a349bf9b4854a00747962d9b3">&#9670;&#160;</a></span>RadialGrid() <span class="overload">[1/2]</span></h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Structure to hold radial grid data. </p>
+<p>Contains the radial points and corresponding weights for numerical integration </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a52cc4bb445853078a39a1dfb78f713c0" name="a52cc4bb445853078a39a1dfb78f713c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52cc4bb445853078a39a1dfb78f713c0">&#9670;&#160;</a></span>RadialGrid() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -142,10 +153,12 @@ Public Attributes</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">default</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Default constructor. </p>
 
 </div>
 </div>
@@ -154,9 +167,6 @@ Public Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">occ::dft::RadialGrid::RadialGrid </td>
@@ -166,12 +176,15 @@ Public Attributes</h2></td></tr>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Constructor that pre-allocates memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_points</td><td>Number of grid points to allocate </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -199,6 +212,9 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Gets the number of points in the grid. </p>
+<dl class="section return"><dt>Returns</dt><dd>The number of grid points </dd></dl>
+
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
@@ -214,6 +230,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Radial points (distances from the center) </p>
+
 </div>
 </div>
 <a id="a265a8e9304c1700c7132b56f4a350bad" name="a265a8e9304c1700c7132b56f4a350bad"></a>
@@ -228,10 +246,12 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Integration weights for each point. </p>
+
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="grid_8h.html">grid.h</a></li>
+<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="grid__types_8h.html">grid_types.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

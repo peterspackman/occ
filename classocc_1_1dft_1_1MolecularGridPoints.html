@@ -104,36 +104,54 @@ $(document).ready(function(){initNavTree('classocc_1_1dft_1_1MolecularGridPoints
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;grid.h&gt;</code></p>
+<p>Class for storing and managing molecular grid points.  
+ <a href="classocc_1_1dft_1_1MolecularGridPoints.html#details">More...</a></p>
+
+<p><code>#include &lt;molecular_grid_points.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aba850d8c4238bd1bdd01d48b8a9250a7" id="r_aba850d8c4238bd1bdd01d48b8a9250a7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#aba850d8c4238bd1bdd01d48b8a9250a7">MolecularGridPoints</a> ()=default</td></tr>
+<tr class="memdesc:aba850d8c4238bd1bdd01d48b8a9250a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
 <tr class="separator:aba850d8c4238bd1bdd01d48b8a9250a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a388949c7c06f15f16f2e760471e4fdfc" id="r_a388949c7c06f15f16f2e760471e4fdfc"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a388949c7c06f15f16f2e760471e4fdfc">MolecularGridPoints</a> (const Mat3N &amp;<a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#adb0c29511a17384ba0e6a453493a03bd">points</a>, const Vec &amp;<a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#ae0b0b214d30a14086f248b1761955d00">weights</a>, const std::vector&lt; std::pair&lt; size_t, size_t &gt; &gt; &amp;<a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#acef48bc70fcab6b3a14886ce9fb2a7f9">atom_blocks</a>)</td></tr>
+<tr class="memdesc:a388949c7c06f15f16f2e760471e4fdfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from points, weights, and atom blocks.  <br /></td></tr>
 <tr class="separator:a388949c7c06f15f16f2e760471e4fdfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1342757bf5566f1707a50490de317612" id="r_a1342757bf5566f1707a50490de317612"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a1342757bf5566f1707a50490de317612">MolecularGridPoints</a> (const std::vector&lt; <a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a> &gt; &amp;atom_grids)</td></tr>
+<tr class="memdesc:a1342757bf5566f1707a50490de317612"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from a vector of atom grids.  <br /></td></tr>
 <tr class="separator:a1342757bf5566f1707a50490de317612"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1a667287bc694a3b0859b838d8b2649" id="r_af1a667287bc694a3b0859b838d8b2649"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#af1a667287bc694a3b0859b838d8b2649">initialize_from_atom_grids</a> (const std::vector&lt; <a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a> &gt; &amp;atom_grids)</td></tr>
+<tr class="memdesc:af1a667287bc694a3b0859b838d8b2649"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from a vector of atom grids.  <br /></td></tr>
 <tr class="separator:af1a667287bc694a3b0859b838d8b2649"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f0da6fc6906f90089f0e9ece7fefa52" id="r_a1f0da6fc6906f90089f0e9ece7fefa52"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a1f0da6fc6906f90089f0e9ece7fefa52">num_points</a> () const</td></tr>
+<tr class="memdesc:a1f0da6fc6906f90089f0e9ece7fefa52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the total number of grid points.  <br /></td></tr>
 <tr class="separator:a1f0da6fc6906f90089f0e9ece7fefa52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a300d3ba92a55ac51c11cd79d1217f0f3" id="r_a300d3ba92a55ac51c11cd79d1217f0f3"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a300d3ba92a55ac51c11cd79d1217f0f3">num_atoms</a> () const</td></tr>
+<tr class="memdesc:a300d3ba92a55ac51c11cd79d1217f0f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of atoms.  <br /></td></tr>
 <tr class="separator:a300d3ba92a55ac51c11cd79d1217f0f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb0c29511a17384ba0e6a453493a03bd" id="r_adb0c29511a17384ba0e6a453493a03bd"><td class="memItemLeft" align="right" valign="top">const Mat3N &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#adb0c29511a17384ba0e6a453493a03bd">points</a> () const</td></tr>
+<tr class="memdesc:adb0c29511a17384ba0e6a453493a03bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all grid points.  <br /></td></tr>
 <tr class="separator:adb0c29511a17384ba0e6a453493a03bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0b0b214d30a14086f248b1761955d00" id="r_ae0b0b214d30a14086f248b1761955d00"><td class="memItemLeft" align="right" valign="top">const Vec &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#ae0b0b214d30a14086f248b1761955d00">weights</a> () const</td></tr>
+<tr class="memdesc:ae0b0b214d30a14086f248b1761955d00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all weights.  <br /></td></tr>
 <tr class="separator:ae0b0b214d30a14086f248b1761955d00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acef48bc70fcab6b3a14886ce9fb2a7f9" id="r_acef48bc70fcab6b3a14886ce9fb2a7f9"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; std::pair&lt; size_t, size_t &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#acef48bc70fcab6b3a14886ce9fb2a7f9">atom_blocks</a> () const</td></tr>
+<tr class="memdesc:acef48bc70fcab6b3a14886ce9fb2a7f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get atom blocks info.  <br /></td></tr>
 <tr class="separator:acef48bc70fcab6b3a14886ce9fb2a7f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6719fc80ca41353a23c8bb154d0e5e53" id="r_a6719fc80ca41353a23c8bb154d0e5e53"><td class="memItemLeft" align="right" valign="top">Eigen::Ref&lt; const Mat3N &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a6719fc80ca41353a23c8bb154d0e5e53">points_for_atom</a> (size_t atom_idx) const</td></tr>
+<tr class="memdesc:a6719fc80ca41353a23c8bb154d0e5e53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get points for a specific atom.  <br /></td></tr>
 <tr class="separator:a6719fc80ca41353a23c8bb154d0e5e53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ff86e718b4a0018c3869d74646bff3c" id="r_a8ff86e718b4a0018c3869d74646bff3c"><td class="memItemLeft" align="right" valign="top">Eigen::Ref&lt; const Vec &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a8ff86e718b4a0018c3869d74646bff3c">weights_for_atom</a> (size_t atom_idx) const</td></tr>
+<tr class="memdesc:a8ff86e718b4a0018c3869d74646bff3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get weights for a specific atom.  <br /></td></tr>
 <tr class="separator:a8ff86e718b4a0018c3869d74646bff3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7acd8f1e41205f998400908805700c53" id="r_a7acd8f1e41205f998400908805700c53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a7acd8f1e41205f998400908805700c53">get_atom_grid</a> (size_t atom_idx, uint_fast8_t atomic_number) const</td></tr>
+<tr class="memdesc:a7acd8f1e41205f998400908805700c53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract an atom grid for a specific atom.  <br /></td></tr>
 <tr class="separator:a7acd8f1e41205f998400908805700c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Class for storing and managing molecular grid points. </p>
+<p>This class stores the combined grid points from multiple atom-centered grids, along with their weights and organization by atoms. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aba850d8c4238bd1bdd01d48b8a9250a7" name="aba850d8c4238bd1bdd01d48b8a9250a7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aba850d8c4238bd1bdd01d48b8a9250a7">&#9670;&#160;</a></span>MolecularGridPoints() <span class="overload">[1/3]</span></h2>
 
@@ -157,6 +175,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Default constructor. </p>
+
 </div>
 </div>
 <a id="a388949c7c06f15f16f2e760471e4fdfc" name="a388949c7c06f15f16f2e760471e4fdfc"></a>
@@ -164,9 +184,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">occ::dft::MolecularGridPoints::MolecularGridPoints </td>
@@ -192,12 +209,17 @@ Public Member Functions</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Construct from points, weights, and atom blocks. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">points</td><td>Matrix of grid points (3 x N) </td></tr>
+    <tr><td class="paramname">weights</td><td>Vector of weights (N) </td></tr>
+    <tr><td class="paramname">atom_blocks</td><td>Vector of (offset, size) pairs for each atom </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -206,9 +228,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">occ::dft::MolecularGridPoints::MolecularGridPoints </td>
@@ -218,12 +237,15 @@ Public Member Functions</h2></td></tr>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Construct from a vector of atom grids. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atom_grids</td><td>Vector of atom-centered grids </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -233,9 +255,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const std::vector&lt; std::pair&lt; size_t, size_t &gt; &gt; &amp; occ::dft::MolecularGridPoints::atom_blocks </td>
@@ -244,12 +263,11 @@ Public Member Functions</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get atom blocks info. </p>
+<p>Each pair contains the offset and size of the grid points for each atom.</p>
+<dl class="section return"><dt>Returns</dt><dd>const std::vector&lt;std::pair&lt;size_t, size_t&gt;&gt;&amp; Vector of (offset, size) pairs </dd></dl>
 
 </div>
 </div>
@@ -258,9 +276,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a> occ::dft::MolecularGridPoints::get_atom_grid </td>
@@ -280,12 +295,23 @@ Public Member Functions</h2></td></tr>
           <td></td><td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Extract an atom grid for a specific atom. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atom_idx</td><td>Index of the atom </td></tr>
+    <tr><td class="paramname">atomic_number</td><td>Atomic number to assign to the grid </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1AtomGrid.html" title="Structure to hold atom-centered grid data.">AtomGrid</a> A new <a class="el" href="structocc_1_1dft_1_1AtomGrid.html" title="Structure to hold atom-centered grid data.">AtomGrid</a> object for the specified atom </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::out_of_range</td><td>if the atom index is invalid </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -294,9 +320,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void occ::dft::MolecularGridPoints::initialize_from_atom_grids </td>
@@ -306,12 +329,15 @@ Public Member Functions</h2></td></tr>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Initialize from a vector of atom grids. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atom_grids</td><td>Vector of atom-centered grids </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -320,9 +346,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">size_t occ::dft::MolecularGridPoints::num_atoms </td>
@@ -331,12 +354,10 @@ Public Member Functions</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get the number of atoms. </p>
+<dl class="section return"><dt>Returns</dt><dd>size_t Number of atoms </dd></dl>
 
 </div>
 </div>
@@ -345,9 +366,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">size_t occ::dft::MolecularGridPoints::num_points </td>
@@ -356,12 +374,10 @@ Public Member Functions</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get the total number of grid points. </p>
+<dl class="section return"><dt>Returns</dt><dd>size_t Total number of grid points </dd></dl>
 
 </div>
 </div>
@@ -370,9 +386,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const Mat3N &amp; occ::dft::MolecularGridPoints::points </td>
@@ -381,12 +394,10 @@ Public Member Functions</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get all grid points. </p>
+<dl class="section return"><dt>Returns</dt><dd>const Mat3N&amp; Matrix of all grid points (3 x N) </dd></dl>
 
 </div>
 </div>
@@ -395,9 +406,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">Eigen::Ref&lt; const Mat3N &gt; occ::dft::MolecularGridPoints::points_for_atom </td>
@@ -407,12 +415,22 @@ Public Member Functions</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get points for a specific atom. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atom_idx</td><td>Index of the atom </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Eigen::Ref&lt;const Mat3N&gt; Reference to the atom's grid points </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::out_of_range</td><td>if the atom index is invalid </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -421,9 +439,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const Vec &amp; occ::dft::MolecularGridPoints::weights </td>
@@ -432,12 +447,10 @@ Public Member Functions</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get all weights. </p>
+<dl class="section return"><dt>Returns</dt><dd>const Vec&amp; Vector of all weights (N) </dd></dl>
 
 </div>
 </div>
@@ -446,9 +459,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">Eigen::Ref&lt; const Vec &gt; occ::dft::MolecularGridPoints::weights_for_atom </td>
@@ -458,17 +468,27 @@ Public Member Functions</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get weights for a specific atom. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atom_idx</td><td>Index of the atom </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Eigen::Ref&lt;const Vec&gt; Reference to the atom's weights </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::out_of_range</td><td>if the atom index is invalid </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="grid_8h.html">grid.h</a></li>
+<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="molecular__grid__points_8h.html">molecular_grid_points.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

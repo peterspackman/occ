@@ -102,7 +102,8 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1dft.html',''); initRes
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">occ::dft Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -124,6 +125,7 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to hold atom-centered grid data.  <a href="structocc_1_1dft_1_1AtomGrid.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DensityFunctional.html">DensityFunctional</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -139,12 +141,17 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1MethodDefinition.html">MethodDefinition</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html">MolecularGrid</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class for molecular integration grids in <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a>.  <a href="classocc_1_1dft_1_1MolecularGrid.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html">MolecularGridPoints</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class for storing and managing molecular grid points.  <a href="classocc_1_1dft_1_1MolecularGridPoints.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1NonLocalCorrelationFunctional.html">NonLocalCorrelationFunctional</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1PartitionMethod.html">PartitionMethod</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to hold radial grid data.  <a href="structocc_1_1dft_1_1RadialGrid.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1RangeSeparatedParameters.html">RangeSeparatedParameters</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,7 +168,20 @@ Enumerations</h2></td></tr>
 <tr class="memitem:a2618fed7e4e7c22b65e2bb79357d426a" id="r_a2618fed7e4e7c22b65e2bb79357d426a"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426a">PartitionFunction</a> { <a class="el" href="namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa18cf5657f88a943304168f3fe466545b">Becke</a>
 , <a class="el" href="namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67">StratmannScuseria</a>
  }</td></tr>
+<tr class="memdesc:a2618fed7e4e7c22b65e2bb79357d426a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of available partition functions for atomic weight calculation.  <a href="namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426a">More...</a><br /></td></tr>
 <tr class="separator:a2618fed7e4e7c22b65e2bb79357d426a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14030e150f120f90476ca21d1d5e665b" id="r_a14030e150f120f90476ca21d1d5e665b"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">RadialGridMethod</a> { <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6">LMG</a>
+, <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba77cea6534c4bcad9a30a10b5e13cabdd">TreutlerAlrichs</a>
+, <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba8cee0af70e8d2d88ac69efe492c97e87">MuraKnowles</a>
+, <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba18cf5657f88a943304168f3fe466545b">Becke</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba8ac9622fa8f9e2af16386dd39aacae30">GaussChebyshev</a>
+, <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba94990b9464f3ad9966403813a14e16e1">EulerMaclaurin</a>
+<br />
+ }</td></tr>
+<tr class="memdesc:a14030e150f120f90476ca21d1d5e665b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of available radial grid generation methods.  <a href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">More...</a><br /></td></tr>
+<tr class="separator:a14030e150f120f90476ca21d1d5e665b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -177,24 +197,66 @@ Functions</h2></td></tr>
 <tr class="separator:a70f0a7522541ba34eecfed52b8460f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe5388e43d56ab12eb9c74a230b0a4fe" id="r_afe5388e43d56ab12eb9c74a230b0a4fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#afe5388e43d56ab12eb9c74a230b0a4fe">string_to_dfid</a> (const std::string &amp;name)</td></tr>
 <tr class="separator:afe5388e43d56ab12eb9c74a230b0a4fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1cfad27b8982b45891f9e13a9e9e6546" id="r_a1cfad27b8982b45891f9e13a9e9e6546"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a1cfad27b8982b45891f9e13a9e9e6546">calculate_atomic_grid_weights</a> (<a class="el" href="namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426a">PartitionFunction</a> func, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;grid_points, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;atomic_positions, const IVec &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;interatomic_distances)</td></tr>
-<tr class="separator:a1cfad27b8982b45891f9e13a9e9e6546"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a029911cd55275040f0a26ee8d48581d8" id="r_a029911cd55275040f0a26ee8d48581d8"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a029911cd55275040f0a26ee8d48581d8">prune_nwchem_scheme</a> (size_t nuclear_charge, size_t max_angular, size_t num_radial, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;radii)</td></tr>
-<tr class="separator:a029911cd55275040f0a26ee8d48581d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac917154ee4170b18b3d6339435ef004c" id="r_ac917154ee4170b18b3d6339435ef004c"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ac917154ee4170b18b3d6339435ef004c">prune_numgrid_scheme</a> (size_t nuclear_charge, size_t max_angular, size_t min_angular, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;radii)</td></tr>
-<tr class="separator:ac917154ee4170b18b3d6339435ef004c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c93f1dbd05800b2e7eba53c76b31c37" id="r_a3c93f1dbd05800b2e7eba53c76b31c37"><td class="memItemLeft" align="right" valign="top">uint_fast16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a3c93f1dbd05800b2e7eba53c76b31c37">nearest_grid_level_at_or_above</a> (uint_fast16_t n)</td></tr>
+<tr class="memdesc:a3c93f1dbd05800b2e7eba53c76b31c37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the nearest Lebedev grid level at or above the requested number of points.  <br /></td></tr>
+<tr class="separator:a3c93f1dbd05800b2e7eba53c76b31c37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ee1087de2bec951deaeee34dc207792" id="r_a9ee1087de2bec951deaeee34dc207792"><td class="memItemLeft" align="right" valign="top">uint_fast16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a9ee1087de2bec951deaeee34dc207792">nearest_grid_level_below</a> (uint_fast16_t n)</td></tr>
+<tr class="memdesc:a9ee1087de2bec951deaeee34dc207792"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the nearest Lebedev grid level below the requested number of points.  <br /></td></tr>
+<tr class="separator:a9ee1087de2bec951deaeee34dc207792"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39d3943f5b0df7c453d8d8c32ae84c0e" id="r_a39d3943f5b0df7c453d8d8c32ae84c0e"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a39d3943f5b0df7c453d8d8c32ae84c0e">angular_point_count</a> (size_t level)</td></tr>
+<tr class="memdesc:a39d3943f5b0df7c453d8d8c32ae84c0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of points in a Lebedev grid.  <br /></td></tr>
+<tr class="separator:a39d3943f5b0df7c453d8d8c32ae84c0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e7880f0c92086b310c9cfb67f801641" id="r_a9e7880f0c92086b310c9cfb67f801641"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a9e7880f0c92086b310c9cfb67f801641">get_atomic_radius</a> (size_t atomic_number)</td></tr>
+<tr class="memdesc:a9e7880f0c92086b310c9cfb67f801641"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the atomic radius for a given atomic number.  <br /></td></tr>
+<tr class="separator:a9e7880f0c92086b310c9cfb67f801641"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70f62dce121c6fab7f4453e6b394ff34" id="r_a70f62dce121c6fab7f4453e6b394ff34"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a70f62dce121c6fab7f4453e6b394ff34">becke_partition</a> (const Vec &amp;w)</td></tr>
+<tr class="memdesc:a70f62dce121c6fab7f4453e6b394ff34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the Becke partition function.  <br /></td></tr>
+<tr class="separator:a70f62dce121c6fab7f4453e6b394ff34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a75a2c74a0e0e0749e0203348834597" id="r_a1a75a2c74a0e0e0749e0203348834597"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a1a75a2c74a0e0e0749e0203348834597">stratmann_scuseria_partition</a> (const Vec &amp;w)</td></tr>
+<tr class="memdesc:a1a75a2c74a0e0e0749e0203348834597"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the Stratmann-Scuseria partition function.  <br /></td></tr>
+<tr class="separator:a1a75a2c74a0e0e0749e0203348834597"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e9d07ef0c0e331145f365e099a4873c" id="r_a3e9d07ef0c0e331145f365e099a4873c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a3e9d07ef0c0e331145f365e099a4873c">calculate_interatomic_distances</a> (const Mat3N &amp;positions)</td></tr>
+<tr class="memdesc:a3e9d07ef0c0e331145f365e099a4873c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate interatomic distances.  <br /></td></tr>
+<tr class="separator:a3e9d07ef0c0e331145f365e099a4873c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59c8bf90625e774d2c48be0109605014" id="r_a59c8bf90625e774d2c48be0109605014"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a59c8bf90625e774d2c48be0109605014">calculate_atomic_grid_weights</a> (<a class="el" href="structocc_1_1dft_1_1PartitionMethod.html">PartitionMethod</a> method, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;grid_points, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;atomic_positions, const Vec &amp;radii, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;interatomic_distances)</td></tr>
+<tr class="memdesc:a59c8bf90625e774d2c48be0109605014"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Becke atomic weights for grid points.  <br /></td></tr>
+<tr class="separator:a59c8bf90625e774d2c48be0109605014"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a745a35502e5e94d8ca308186272b206f" id="r_a745a35502e5e94d8ca308186272b206f"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a745a35502e5e94d8ca308186272b206f">prune_nwchem_scheme</a> (size_t nuclear_charge, size_t max_angular, size_t num_radial, const Vec &amp;radii)</td></tr>
+<tr class="memdesc:a745a35502e5e94d8ca308186272b206f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the NWChem pruning scheme to a radial grid.  <br /></td></tr>
+<tr class="separator:a745a35502e5e94d8ca308186272b206f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac74028a17834ef26b4b6d7f6ffc1ff8f" id="r_ac74028a17834ef26b4b6d7f6ffc1ff8f"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ac74028a17834ef26b4b6d7f6ffc1ff8f">prune_numgrid_scheme</a> (size_t atomic_number, size_t max_angular, size_t min_angular, const Vec &amp;radii)</td></tr>
+<tr class="memdesc:ac74028a17834ef26b4b6d7f6ffc1ff8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the NumGrid pruning scheme to a radial grid.  <br /></td></tr>
+<tr class="separator:ac74028a17834ef26b4b6d7f6ffc1ff8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48abc2172605dbc65f9f0efb7d88b2c2" id="r_a48abc2172605dbc65f9f0efb7d88b2c2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a48abc2172605dbc65f9f0efb7d88b2c2">generate_becke_radial_grid</a> (size_t num_points, double rm=1.0)</td></tr>
+<tr class="memdesc:a48abc2172605dbc65f9f0efb7d88b2c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Becke radial grid.  <br /></td></tr>
 <tr class="separator:a48abc2172605dbc65f9f0efb7d88b2c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9520536a6dd8ed259e1e7c818bfc317f" id="r_a9520536a6dd8ed259e1e7c818bfc317f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a9520536a6dd8ed259e1e7c818bfc317f">generate_mura_knowles_radial_grid</a> (size_t num_points, size_t charge)</td></tr>
+<tr class="memdesc:a9520536a6dd8ed259e1e7c818bfc317f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Mura-Knowles radial grid.  <br /></td></tr>
 <tr class="separator:a9520536a6dd8ed259e1e7c818bfc317f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8900e894dfe2f28ad918387924d3f192" id="r_a8900e894dfe2f28ad918387924d3f192"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a8900e894dfe2f28ad918387924d3f192">generate_treutler_alrichs_radial_grid</a> (size_t num_points)</td></tr>
+<tr class="memdesc:a8900e894dfe2f28ad918387924d3f192"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Treutler-Alrichs radial grid.  <br /></td></tr>
 <tr class="separator:a8900e894dfe2f28ad918387924d3f192"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada7d5e515dc2a7751aa8476373e59d0d" id="r_ada7d5e515dc2a7751aa8476373e59d0d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ada7d5e515dc2a7751aa8476373e59d0d">generate_gauss_chebyshev_radial_grid</a> (size_t num_points)</td></tr>
+<tr class="memdesc:ada7d5e515dc2a7751aa8476373e59d0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Gauss-Chebyshev radial grid.  <br /></td></tr>
 <tr class="separator:ada7d5e515dc2a7751aa8476373e59d0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c30408fc6ed138cc86a5f9fdbb999b7" id="r_a2c30408fc6ed138cc86a5f9fdbb999b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a2c30408fc6ed138cc86a5f9fdbb999b7">generate_lmg_radial_grid</a> (double radial_precision, double alpha_max, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;alpha_min)</td></tr>
-<tr class="separator:a2c30408fc6ed138cc86a5f9fdbb999b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa3f2fabc212c1f463b003557e3c38482" id="r_aa3f2fabc212c1f463b003557e3c38482"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aa3f2fabc212c1f463b003557e3c38482">generate_atom_grid</a> (size_t atomic_number, size_t max_angular_points=302, size_t radial_points=50)</td></tr>
-<tr class="separator:aa3f2fabc212c1f463b003557e3c38482"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e215f6f737ffaa6018143b0c5b902ff" id="r_a3e215f6f737ffaa6018143b0c5b902ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a3e215f6f737ffaa6018143b0c5b902ff">generate_euler_maclaurin_radial_grid</a> (size_t num_points, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>)</td></tr>
+<tr class="memdesc:a3e215f6f737ffaa6018143b0c5b902ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Euler-Maclaurin radial grid.  <br /></td></tr>
+<tr class="separator:a3e215f6f737ffaa6018143b0c5b902ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a159cd74b910ba2119d21641aeb683755" id="r_a159cd74b910ba2119d21641aeb683755"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a159cd74b910ba2119d21641aeb683755">generate_lmg_radial_grid</a> (size_t atomic_number, double radial_precision, double alpha_max, int l_max, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;alpha_min)</td></tr>
+<tr class="memdesc:a159cd74b910ba2119d21641aeb683755"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Lindh-Malmqvist-Gagliardi (LMG) radial grid.  <br /></td></tr>
+<tr class="separator:a159cd74b910ba2119d21641aeb683755"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adfbee220b86d3fd92a242fd2be8d1768" id="r_adfbee220b86d3fd92a242fd2be8d1768"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#adfbee220b86d3fd92a242fd2be8d1768">lmg_inner</a> (const double max_error, const double alpha_inner)</td></tr>
+<tr class="memdesc:adfbee220b86d3fd92a242fd2be8d1768"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to calculate LMG inner radial boundary.  <br /></td></tr>
+<tr class="separator:adfbee220b86d3fd92a242fd2be8d1768"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb21dd4fb472004a50373c903ca95b2c" id="r_aeb21dd4fb472004a50373c903ca95b2c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aeb21dd4fb472004a50373c903ca95b2c">lmg_outer</a> (const double max_error, const double alpha_outer, const int l, const double guess)</td></tr>
+<tr class="memdesc:aeb21dd4fb472004a50373c903ca95b2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to calculate LMG outer radial boundary.  <br /></td></tr>
+<tr class="separator:aeb21dd4fb472004a50373c903ca95b2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1fe459345ca79fda03ffaa7ddf0613a" id="r_ab1fe459345ca79fda03ffaa7ddf0613a"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ab1fe459345ca79fda03ffaa7ddf0613a">lmg_h</a> (const double max_error, const int l, const double guess)</td></tr>
+<tr class="memdesc:ab1fe459345ca79fda03ffaa7ddf0613a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to calculate LMG grid spacing parameter.  <br /></td></tr>
+<tr class="separator:ab1fe459345ca79fda03ffaa7ddf0613a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b1bb46fb5a7dc21d731ba273ef4cef5" id="r_a1b1bb46fb5a7dc21d731ba273ef4cef5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a1b1bb46fb5a7dc21d731ba273ef4cef5">generate_atom_grid</a> (size_t atomic_number, const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;settings, <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">RadialGridMethod</a> method=<a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6">RadialGridMethod::LMG</a>, double alpha_max=0.0, int l_max=0, const Vec &amp;alpha_min=Vec())</td></tr>
+<tr class="memdesc:a1b1bb46fb5a7dc21d731ba273ef4cef5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate an atom-centered grid using the specified method.  <br /></td></tr>
+<tr class="separator:a1b1bb46fb5a7dc21d731ba273ef4cef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab389b094d08370dcd3dfcc71ea9e98f0" id="r_ab389b094d08370dcd3dfcc71ea9e98f0"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ab389b094d08370dcd3dfcc71ea9e98f0">calculate_hirshfeld_charges</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge=0)</td></tr>
 <tr class="memdesc:ab389b094d08370dcd3dfcc71ea9e98f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld charges for a molecule.  <br /></td></tr>
 <tr class="separator:ab389b094d08370dcd3dfcc71ea9e98f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -222,6 +284,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a13f24b9204a53c944f36e5d0a2e759af" id="r_a13f24b9204a53c944f36e5d0a2e759af"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
 <tr class="memitem:a13f24b9204a53c944f36e5d0a2e759af"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a13f24b9204a53c944f36e5d0a2e759af">xc_potential_matrix&lt; Unrestricted, 2 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
 <tr class="separator:a13f24b9204a53c944f36e5d0a2e759af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:afe5b60f5c95720630ce9b842de705f17" id="r_afe5b60f5c95720630ce9b842de705f17"><td class="memItemLeft" align="right" valign="top">const std::array&lt; uint_fast16_t, 33 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#afe5b60f5c95720630ce9b842de705f17">lebedev_grid_levels</a></td></tr>
+<tr class="memdesc:afe5b60f5c95720630ce9b842de705f17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array of available Lebedev grid levels.  <br /></td></tr>
+<tr class="separator:afe5b60f5c95720630ce9b842de705f17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>functionality related to Kohn-Sham density functional theory </p>
@@ -275,16 +343,112 @@ Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Enumeration of available partition functions for atomic weight calculation. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a2618fed7e4e7c22b65e2bb79357d426aa18cf5657f88a943304168f3fe466545b" name="a2618fed7e4e7c22b65e2bb79357d426aa18cf5657f88a943304168f3fe466545b"></a>Becke&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67" name="a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67"></a>StratmannScuseria&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a2618fed7e4e7c22b65e2bb79357d426aa18cf5657f88a943304168f3fe466545b" name="a2618fed7e4e7c22b65e2bb79357d426aa18cf5657f88a943304168f3fe466545b"></a>Becke&#160;</td><td class="fielddoc"><p>Becke's original partition function. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67" name="a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67"></a>StratmannScuseria&#160;</td><td class="fielddoc"><p>Stratmann-Scuseria partition function. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="a14030e150f120f90476ca21d1d5e665b" name="a14030e150f120f90476ca21d1d5e665b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a14030e150f120f90476ca21d1d5e665b">&#9670;&#160;</a></span>RadialGridMethod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">occ::dft::RadialGridMethod</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Enumeration of available radial grid generation methods. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6" name="a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6"></a>LMG&#160;</td><td class="fielddoc"><p>Lindh-Malmqvist-Gagliardi method. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a14030e150f120f90476ca21d1d5e665ba77cea6534c4bcad9a30a10b5e13cabdd" name="a14030e150f120f90476ca21d1d5e665ba77cea6534c4bcad9a30a10b5e13cabdd"></a>TreutlerAlrichs&#160;</td><td class="fielddoc"><p>Treutler-Alrichs method. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a14030e150f120f90476ca21d1d5e665ba8cee0af70e8d2d88ac69efe492c97e87" name="a14030e150f120f90476ca21d1d5e665ba8cee0af70e8d2d88ac69efe492c97e87"></a>MuraKnowles&#160;</td><td class="fielddoc"><p>Mura-Knowles method. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a14030e150f120f90476ca21d1d5e665ba18cf5657f88a943304168f3fe466545b" name="a14030e150f120f90476ca21d1d5e665ba18cf5657f88a943304168f3fe466545b"></a>Becke&#160;</td><td class="fielddoc"><p>Becke's transformation method. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a14030e150f120f90476ca21d1d5e665ba8ac9622fa8f9e2af16386dd39aacae30" name="a14030e150f120f90476ca21d1d5e665ba8ac9622fa8f9e2af16386dd39aacae30"></a>GaussChebyshev&#160;</td><td class="fielddoc"><p>Gauss-Chebyshev method. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a14030e150f120f90476ca21d1d5e665ba94990b9464f3ad9966403813a14e16e1" name="a14030e150f120f90476ca21d1d5e665ba94990b9464f3ad9966403813a14e16e1"></a>EulerMaclaurin&#160;</td><td class="fielddoc"><p>Gauss-Chebyshev method. </p>
+</td></tr>
 </table>
 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a1cfad27b8982b45891f9e13a9e9e6546" name="a1cfad27b8982b45891f9e13a9e9e6546"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1cfad27b8982b45891f9e13a9e9e6546">&#9670;&#160;</a></span>calculate_atomic_grid_weights()</h2>
+<a id="a39d3943f5b0df7c453d8d8c32ae84c0e" name="a39d3943f5b0df7c453d8d8c32ae84c0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39d3943f5b0df7c453d8d8c32ae84c0e">&#9670;&#160;</a></span>angular_point_count()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t occ::dft::angular_point_count </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the number of points in a Lebedev grid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">level</td><td>The Lebedev grid level </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>size_t The number of points in the grid </dd></dl>
+
+</div>
+</div>
+<a id="a70f62dce121c6fab7f4453e6b394ff34" name="a70f62dce121c6fab7f4453e6b394ff34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70f62dce121c6fab7f4453e6b394ff34">&#9670;&#160;</a></span>becke_partition()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Vec occ::dft::becke_partition </td>
+          <td>(</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>w</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply the Becke partition function. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">w</td><td>Input values to partition </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Vec Partitioned values </dd></dl>
+
+</div>
+</div>
+<a id="a59c8bf90625e774d2c48be0109605014" name="a59c8bf90625e774d2c48be0109605014"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59c8bf90625e774d2c48be0109605014">&#9670;&#160;</a></span>calculate_atomic_grid_weights()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -292,8 +456,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::dft::calculate_atomic_grid_weights </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426a">PartitionFunction</a>&#160;</td>
-          <td class="paramname"><em>func</em>, </td>
+          <td class="paramtype"><a class="el" href="structocc_1_1dft_1_1PartitionMethod.html">PartitionMethod</a>&#160;</td>
+          <td class="paramname"><em>method</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -310,8 +474,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const IVec &amp;&#160;</td>
-          <td class="paramname"><em>atomic_numbers</em>, </td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>radii</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -326,6 +490,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Calculate Becke atomic weights for grid points. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">grid_points</td><td>Grid points (3 x N) </td></tr>
+    <tr><td class="paramname">atomic_positions</td><td>Atomic positions (3 x M) </td></tr>
+    <tr><td class="paramname">radii</td><td>atomic radii (M) </td></tr>
+    <tr><td class="paramname">interatomic_distances</td><td>Matrix of interatomic distances (M x M) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Mat Matrix of weights (N x M) </dd></dl>
 
 </div>
 </div>
@@ -428,6 +604,33 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a3e9d07ef0c0e331145f365e099a4873c" name="a3e9d07ef0c0e331145f365e099a4873c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e9d07ef0c0e331145f365e099a4873c">&#9670;&#160;</a></span>calculate_interatomic_distances()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::dft::calculate_interatomic_distances </td>
+          <td>(</td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calculate interatomic distances. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">positions</td><td>Atomic positions (3 x N) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Mat Matrix of interatomic distances </dd></dl>
+
+</div>
+</div>
 <a id="a42fcb81f45e1d3f7cc6b9ed8c044a63a" name="a42fcb81f45e1d3f7cc6b9ed8c044a63a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a42fcb81f45e1d3f7cc6b9ed8c044a63a">&#9670;&#160;</a></span>create_dft_method_from_definition()</h2>
 
@@ -502,8 +705,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aa3f2fabc212c1f463b003557e3c38482" name="aa3f2fabc212c1f463b003557e3c38482"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa3f2fabc212c1f463b003557e3c38482">&#9670;&#160;</a></span>generate_atom_grid()</h2>
+<a id="a1b1bb46fb5a7dc21d731ba273ef4cef5" name="a1b1bb46fb5a7dc21d731ba273ef4cef5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b1bb46fb5a7dc21d731ba273ef4cef5">&#9670;&#160;</a></span>generate_atom_grid()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -517,14 +720,32 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>max_angular_points</em> = <code>302</code>, </td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;&#160;</td>
+          <td class="paramname"><em>settings</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>radial_points</em> = <code>50</code>&#160;</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">RadialGridMethod</a>&#160;</td>
+          <td class="paramname"><em>method</em> = <code><a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6">RadialGridMethod::LMG</a></code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>alpha_max</em> = <code>0.0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>l_max</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>alpha_min</em> = <code>Vec()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -533,6 +754,20 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Generate an atom-centered grid using the specified method. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atomic_number</td><td>Atomic number of the center atom </td></tr>
+    <tr><td class="paramname">settings</td><td>Grid generation settings </td></tr>
+    <tr><td class="paramname">method</td><td>The radial grid method to use </td></tr>
+    <tr><td class="paramname">alpha_max</td><td>Maximum exponent from basis set (optional) </td></tr>
+    <tr><td class="paramname">l_max</td><td>Maximum angular momentum from basis set (optional) </td></tr>
+    <tr><td class="paramname">alpha_min</td><td>Minimum exponents for each angular momentum (optional) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1AtomGrid.html" title="Structure to hold atom-centered grid data.">AtomGrid</a> The generated atom-centered grid </dd></dl>
 
 </div>
 </div>
@@ -562,6 +797,55 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Generate a Becke radial grid. </p>
+<p>Reference: A. D. Becke, J. Chem. Phys. 88, 2547 (1988)</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_points</td><td>Number of radial points </td></tr>
+    <tr><td class="paramname">rm</td><td>Scaling parameter </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1RadialGrid.html" title="Structure to hold radial grid data.">RadialGrid</a> The generated radial grid </dd></dl>
+
+</div>
+</div>
+<a id="a3e215f6f737ffaa6018143b0c5b902ff" name="a3e215f6f737ffaa6018143b0c5b902ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e215f6f737ffaa6018143b0c5b902ff">&#9670;&#160;</a></span>generate_euler_maclaurin_radial_grid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a> occ::dft::generate_euler_maclaurin_radial_grid </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>num_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>alpha</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a Euler-Maclaurin radial grid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_points</td><td>Number of radial points </td></tr>
+    <tr><td class="paramname">alpha</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1RadialGrid.html" title="Structure to hold radial grid data.">RadialGrid</a> The generated radial grid </dd></dl>
+
 </div>
 </div>
 <a id="ada7d5e515dc2a7751aa8476373e59d0d" name="ada7d5e515dc2a7751aa8476373e59d0d"></a>
@@ -580,10 +864,19 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Generate a Gauss-Chebyshev radial grid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_points</td><td>Number of radial points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1RadialGrid.html" title="Structure to hold radial grid data.">RadialGrid</a> The generated radial grid </dd></dl>
+
 </div>
 </div>
-<a id="a2c30408fc6ed138cc86a5f9fdbb999b7" name="a2c30408fc6ed138cc86a5f9fdbb999b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c30408fc6ed138cc86a5f9fdbb999b7">&#9670;&#160;</a></span>generate_lmg_radial_grid()</h2>
+<a id="a159cd74b910ba2119d21641aeb683755" name="a159cd74b910ba2119d21641aeb683755"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a159cd74b910ba2119d21641aeb683755">&#9670;&#160;</a></span>generate_lmg_radial_grid()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -591,6 +884,12 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a> occ::dft::generate_lmg_radial_grid </td>
           <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>atomic_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>radial_precision</em>, </td>
         </tr>
@@ -599,6 +898,12 @@ Functions</h2></td></tr>
           <td></td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>alpha_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -613,6 +918,20 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Generate a Lindh-Malmqvist-Gagliardi (LMG) radial grid. </p>
+<p>Reference: T. Helgaker, P. Jørgensen, J. Olsen, "Molecular Electronic Structure Theory", John Wiley &amp; Sons, 2000</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atomic_number</td><td>Atomic number </td></tr>
+    <tr><td class="paramname">radial_precision</td><td>Precision parameter for the radial grid </td></tr>
+    <tr><td class="paramname">alpha_max</td><td>Maximum exponent </td></tr>
+    <tr><td class="paramname">l_max</td><td>Maximum angular momentum </td></tr>
+    <tr><td class="paramname">alpha_min</td><td>Minimum exponents for each angular momentum </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1RadialGrid.html" title="Structure to hold radial grid data.">RadialGrid</a> The generated radial grid </dd></dl>
 
 </div>
 </div>
@@ -642,6 +961,17 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Generate a Mura-Knowles radial grid. </p>
+<p>Reference: M. E. Mura and P. J. Knowles, J. Chem. Phys. 104, 9848 (1996)</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_points</td><td>Number of radial points </td></tr>
+    <tr><td class="paramname">charge</td><td>Atomic number </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1RadialGrid.html" title="Structure to hold radial grid data.">RadialGrid</a> The generated radial grid </dd></dl>
+
 </div>
 </div>
 <a id="a8900e894dfe2f28ad918387924d3f192" name="a8900e894dfe2f28ad918387924d3f192"></a>
@@ -659,6 +989,43 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Generate a Treutler-Alrichs radial grid. </p>
+<p>Reference: O. Treutler and R. Ahlrichs, J. Chem. Phys. 102, 346 (1995)</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_points</td><td>Number of radial points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1RadialGrid.html" title="Structure to hold radial grid data.">RadialGrid</a> The generated radial grid </dd></dl>
+
+</div>
+</div>
+<a id="a9e7880f0c92086b310c9cfb67f801641" name="a9e7880f0c92086b310c9cfb67f801641"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e7880f0c92086b310c9cfb67f801641">&#9670;&#160;</a></span>get_atomic_radius()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::dft::get_atomic_radius </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>atomic_number</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the atomic radius for a given atomic number. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atomic_number</td><td>The atomic number </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>double The atomic radius in Bohr </dd></dl>
 
 </div>
 </div>
@@ -680,6 +1047,141 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ab1fe459345ca79fda03ffaa7ddf0613a" name="ab1fe459345ca79fda03ffaa7ddf0613a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1fe459345ca79fda03ffaa7ddf0613a">&#9670;&#160;</a></span>lmg_h()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::dft::lmg_h </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>max_error</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>guess</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Helper function to calculate LMG grid spacing parameter. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">max_error</td><td>Maximum error parameter </td></tr>
+    <tr><td class="paramname">l</td><td>Angular momentum </td></tr>
+    <tr><td class="paramname">guess</td><td>Initial guess for the spacing </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>double Grid spacing parameter </dd></dl>
+
+</div>
+</div>
+<a id="adfbee220b86d3fd92a242fd2be8d1768" name="adfbee220b86d3fd92a242fd2be8d1768"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adfbee220b86d3fd92a242fd2be8d1768">&#9670;&#160;</a></span>lmg_inner()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::dft::lmg_inner </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>max_error</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>alpha_inner</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Helper function to calculate LMG inner radial boundary. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">max_error</td><td>Maximum error parameter </td></tr>
+    <tr><td class="paramname">alpha_inner</td><td>Inner alpha parameter </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>double Inner radial boundary </dd></dl>
+
+</div>
+</div>
+<a id="aeb21dd4fb472004a50373c903ca95b2c" name="aeb21dd4fb472004a50373c903ca95b2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb21dd4fb472004a50373c903ca95b2c">&#9670;&#160;</a></span>lmg_outer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::dft::lmg_outer </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>max_error</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>alpha_outer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>guess</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Helper function to calculate LMG outer radial boundary. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">max_error</td><td>Maximum error parameter </td></tr>
+    <tr><td class="paramname">alpha_outer</td><td>Outer alpha parameter </td></tr>
+    <tr><td class="paramname">l</td><td>Angular momentum </td></tr>
+    <tr><td class="paramname">guess</td><td>Initial guess for the boundary </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>double Outer radial boundary </dd></dl>
+
+</div>
+</div>
 <a id="ac3d77f2637405f982902fe69f7a7ba26" name="ac3d77f2637405f982902fe69f7a7ba26"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac3d77f2637405f982902fe69f7a7ba26">&#9670;&#160;</a></span>load_method_definitions()</h2>
 
@@ -698,8 +1200,62 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac917154ee4170b18b3d6339435ef004c" name="ac917154ee4170b18b3d6339435ef004c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac917154ee4170b18b3d6339435ef004c">&#9670;&#160;</a></span>prune_numgrid_scheme()</h2>
+<a id="a3c93f1dbd05800b2e7eba53c76b31c37" name="a3c93f1dbd05800b2e7eba53c76b31c37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c93f1dbd05800b2e7eba53c76b31c37">&#9670;&#160;</a></span>nearest_grid_level_at_or_above()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint_fast16_t occ::dft::nearest_grid_level_at_or_above </td>
+          <td>(</td>
+          <td class="paramtype">uint_fast16_t&#160;</td>
+          <td class="paramname"><em>n</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Find the nearest Lebedev grid level at or above the requested number of points. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>Requested number of angular points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>uint_fast16_t The actual number of angular points in the Lebedev grid </dd></dl>
+
+</div>
+</div>
+<a id="a9ee1087de2bec951deaeee34dc207792" name="a9ee1087de2bec951deaeee34dc207792"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ee1087de2bec951deaeee34dc207792">&#9670;&#160;</a></span>nearest_grid_level_below()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint_fast16_t occ::dft::nearest_grid_level_below </td>
+          <td>(</td>
+          <td class="paramtype">uint_fast16_t&#160;</td>
+          <td class="paramname"><em>n</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Find the nearest Lebedev grid level below the requested number of points. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>Requested number of angular points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>uint_fast16_t The actual number of angular points in the Lebedev grid </dd></dl>
+
+</div>
+</div>
+<a id="ac74028a17834ef26b4b6d7f6ffc1ff8f" name="ac74028a17834ef26b4b6d7f6ffc1ff8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac74028a17834ef26b4b6d7f6ffc1ff8f">&#9670;&#160;</a></span>prune_numgrid_scheme()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -708,7 +1264,7 @@ Functions</h2></td></tr>
           <td class="memname">IVec occ::dft::prune_numgrid_scheme </td>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>nuclear_charge</em>, </td>
+          <td class="paramname"><em>atomic_number</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -725,7 +1281,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;&#160;</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
           <td class="paramname"><em>radii</em>&#160;</td>
         </tr>
         <tr>
@@ -736,10 +1292,22 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Apply the NumGrid pruning scheme to a radial grid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atomic_number</td><td>Atomic number </td></tr>
+    <tr><td class="paramname">max_angular</td><td>Maximum number of angular points </td></tr>
+    <tr><td class="paramname">min_angular</td><td>Minimum number of angular points </td></tr>
+    <tr><td class="paramname">radii</td><td>Radial grid points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>IVec Number of angular points for each radial point </dd></dl>
+
 </div>
 </div>
-<a id="a029911cd55275040f0a26ee8d48581d8" name="a029911cd55275040f0a26ee8d48581d8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a029911cd55275040f0a26ee8d48581d8">&#9670;&#160;</a></span>prune_nwchem_scheme()</h2>
+<a id="a745a35502e5e94d8ca308186272b206f" name="a745a35502e5e94d8ca308186272b206f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a745a35502e5e94d8ca308186272b206f">&#9670;&#160;</a></span>prune_nwchem_scheme()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -765,7 +1333,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;&#160;</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
           <td class="paramname"><em>radii</em>&#160;</td>
         </tr>
         <tr>
@@ -775,6 +1343,45 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Apply the NWChem pruning scheme to a radial grid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">nuclear_charge</td><td>Atomic number </td></tr>
+    <tr><td class="paramname">max_angular</td><td>Maximum number of angular points </td></tr>
+    <tr><td class="paramname">num_radial</td><td>Number of radial points </td></tr>
+    <tr><td class="paramname">radii</td><td>Radial grid points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>IVec Number of angular points for each radial point </dd></dl>
+
+</div>
+</div>
+<a id="a1a75a2c74a0e0e0749e0203348834597" name="a1a75a2c74a0e0e0749e0203348834597"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a75a2c74a0e0e0749e0203348834597">&#9670;&#160;</a></span>stratmann_scuseria_partition()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Vec occ::dft::stratmann_scuseria_partition </td>
+          <td>(</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>w</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply the Stratmann-Scuseria partition function. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">w</td><td>Input values to partition </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Vec Partitioned values </dd></dl>
 
 </div>
 </div>
@@ -1137,6 +1744,32 @@ template&lt;&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="afe5b60f5c95720630ce9b842de705f17" name="afe5b60f5c95720630ce9b842de705f17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe5b60f5c95720630ce9b842de705f17">&#9670;&#160;</a></span>lebedev_grid_levels</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::array&lt;uint_fast16_t, 33&gt; occ::dft::lebedev_grid_levels</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Array of available Lebedev grid levels. </p>
+<p>Each element in the array represents a valid number of Lebedev grid points. </p>
 
 </div>
 </div>

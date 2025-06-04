@@ -132,5 +132,6 @@ var searchData=
   ['hyb_5fmgga_5fxc_5ftpssh_129',['hyb_mgga_xc_tpssh',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba6356c6e61be6e1805b1db74ea65a7a2b',1,'occ::dft::DensityFunctional']]],
   ['hyb_5fmgga_5fxc_5fwb97m_5fv_130',['hyb_mgga_xc_wb97m_v',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba379ddf2837bec232fb902a35a5ce747f',1,'occ::dft::DensityFunctional']]],
   ['hyb_5fmgga_5fxc_5fx1b95_131',['hyb_mgga_xc_x1b95',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba33aee8e28c10efffeca95ee1c856f775',1,'occ::dft::DensityFunctional']]],
-  ['hyb_5fmgga_5fxc_5fxb1k_132',['hyb_mgga_xc_xb1k',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbac1b5fa54b6224664b49bc5500d192935',1,'occ::dft::DensityFunctional']]]
+  ['hyb_5fmgga_5fxc_5fxb1k_132',['hyb_mgga_xc_xb1k',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbac1b5fa54b6224664b49bc5500d192935',1,'occ::dft::DensityFunctional']]],
+  ['hydrogen_5fradius_133',['hydrogen_radius',['../structocc_1_1dma_1_1LinearDMASettings.html#a6604db142694efcab8224975d6994420',1,'occ::dma::LinearDMASettings']]]
 ];

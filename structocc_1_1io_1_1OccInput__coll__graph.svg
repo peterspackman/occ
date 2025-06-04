@@ -173,9 +173,9 @@
 <!-- Node9 -->
 <g id="Node000009" class="node">
 <title>Node9</title>
-<g id="a_Node000009"><a xlink:href="structocc_1_1io_1_1BeckeGridSettings.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="334.5,-216 191.5,-216 191.5,-197 334.5,-197 334.5,-216"/>
-<text text-anchor="middle" x="263" y="-204" font-family="Helvetica,sans-Serif" font-size="10.00">occ::io::BeckeGridSettings</text>
+<g id="a_Node000009"><a xlink:href="structocc_1_1io_1_1GridSettings.html" target="_top" xlink:title="Extended settings for Becke grid generation.">
+<polygon fill="white" stroke="#666666" points="320,-216 206,-216 206,-197 320,-197 320,-216"/>
+<text text-anchor="middle" x="263" y="-204" font-family="Helvetica,sans-Serif" font-size="10.00">occ::io::GridSettings</text>
 </a>
 </g>
 </g>
@@ -183,8 +183,8 @@
 <g id="edge8_Node000008_Node000009" class="edge">
 <title>Node9&#45;&gt;Node8</title>
 <g id="a_edge8_Node000008_Node000009"><a xlink:title=" ">
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M344.95,-206.5C391.87,-206.5 449.8,-206.5 491.94,-206.5"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="344.82,-203 334.82,-206.5 344.82,-210 344.82,-203"/>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M330.48,-206.5C379.41,-206.5 445.25,-206.5 491.83,-206.5"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="330.31,-203 320.31,-206.5 330.31,-210 330.31,-203"/>
 </a>
 </g>
 <text text-anchor="middle" x="407" y="-209.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> dft_grid</text>
@@ -202,7 +202,7 @@
 <g id="edge9_Node000009_Node000010" class="edge">
 <title>Node10&#45;&gt;Node9</title>
 <g id="a_edge9_Node000009_Node000010"><a xlink:title=" ">
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M55.52,-206.5C90.13,-206.5 146.37,-206.5 191.43,-206.5"/>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M55.16,-206.5C93.55,-206.5 158.94,-206.5 205.92,-206.5"/>
 <polygon fill="#9a32cd" stroke="#9a32cd" points="55.09,-203 45.09,-206.5 55.09,-210 55.09,-203"/>
 </a>
 </g>

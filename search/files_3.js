@@ -15,5 +15,6 @@ var searchData=
   ['dimer_5fmapping_5ftable_2eh_12',['dimer_mapping_table.h',['../dimer__mapping__table_8h.html',1,'']]],
   ['disp_2eh_13',['disp.h',['../disp_8h.html',1,'']]],
   ['distance_5fpartition_2eh_14',['distance_partition.h',['../distance__partition_8h.html',1,'']]],
-  ['draco_2eh_15',['draco.h',['../draco_8h.html',1,'']]]
+  ['dma_2eh_15',['dma.h',['../dma_8h.html',1,'']]],
+  ['draco_2eh_16',['draco.h',['../draco_8h.html',1,'']]]
 ];

@@ -17,6 +17,7 @@ var constants_8h =
     [ "speed_of_light", "constants_8h.html#a48fd22ff40e38391f5ac8dcdb14d4583", null ],
     [ "sqrt_half_pi", "constants_8h.html#abe0cd3df2f0cdabf3da261fe97c2d489", null ],
     [ "sqrt_pi", "constants_8h.html#a0ea78bac172971ee52691545e722550e", null ],
+    [ "sqrt_pi_cubed", "constants_8h.html#aa0c29176954d8173a9b586f66fc731d5", null ],
     [ "sqrt_two_pi", "constants_8h.html#a0befd8f977105f4061a2852d0393b1b5", null ],
     [ "two_pi", "constants_8h.html#af02d5dad057833bdf47f163a43f4ff59", null ]
 ];

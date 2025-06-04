@@ -12,13 +12,14 @@ var searchData=
   ['below_9',['below',['../structocc_1_1crystal_1_1SurfaceCutResult.html#ada05745757a4a657b678de61a7184eb4',1,'occ::crystal::SurfaceCutResult']]],
   ['beta_10',['beta',['../structocc_1_1dft_1_1RangeSeparatedParameters.html#aa00e2c64387bd68445c50006aacb775b',1,'occ::dft::RangeSeparatedParameters::beta'],['../structocc_1_1io_1_1CellData.html#a37b6d29a9d94590d6ecf48110d903fa8',1,'occ::io::CellData::beta']]],
   ['bf_11',['bf',['../structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html#a62bee74efc0916ada271e2f25ac8056d',1,'occ::qm::IntegralEngine::IntegralResult']]],
-  ['binary_5foutput_12',['binary_output',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#aa54237d4a9f3150aefde2a3d9d769107',1,'occ::isosurface::IsosurfaceGenerationParameters::binary_output'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a7b94e7f993cc35bacfd287f712589349',1,'occ::main::IsosurfaceConfig::binary_output']]],
-  ['bohr_5fper_5fangstrom_13',['bohr_per_angstrom',['../namespaceocc_1_1constants.html#a49eaa9fa75c7856104a77aaaf0b077a4',1,'occ::constants']]],
-  ['bohr_5fto_5fangstrom_14',['BOHR_TO_ANGSTROM',['../namespaceocc_1_1units.html#a4cd54c073c4aca586807e033f16e37b7',1,'occ::units']]],
-  ['boltzmann_15',['boltzmann',['../namespaceocc_1_1constants.html#a6a86c91b0dc4b29f21b164fd471f95fa',1,'occ::constants']]],
-  ['bond_5flength_16',['bond_length',['../structocc_1_1io_1_1QCSchemaBond.html#a6704d7eb430efde22591715facd839cc',1,'occ::io::QCSchemaBond']]],
-  ['border_17',['border',['../structocc_1_1io_1_1RowConfiguration.html#a6421accdf188fe4984471089f3b683d1',1,'occ::io::RowConfiguration::border'],['../structocc_1_1io_1_1ColumnConfiguration.html#a78437759a8f6c16669742fc43cebe647',1,'occ::io::ColumnConfiguration::border']]],
-  ['bottom_18',['bottom',['../structocc_1_1io_1_1RowConfiguration_1_1Border.html#a5e34d88b54f1dac63618d6c399f9c88b',1,'occ::io::RowConfiguration::Border']]],
-  ['buffer_19',['buffer',['../structtinyply_1_1PlyData.html#ab5bba932362f423e70eaa451592c8b2c',1,'tinyply::PlyData::buffer'],['../structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html#a50ba5e01d3e39a03d6a4ae8980a695d9',1,'occ::qm::IntegralEngine::IntegralResult::buffer']]],
-  ['bulk_20',['bulk',['../structocc_1_1crystal_1_1SurfaceCutResult.html#a71a6f5c816f7f7c4fa331685ed49d8de',1,'occ::crystal::SurfaceCutResult']]]
+  ['big_5fexponent_12',['big_exponent',['../structocc_1_1dma_1_1DMASettings.html#a35c0b50111677187c1d47b0c90c77e35',1,'occ::dma::DMASettings']]],
+  ['binary_5foutput_13',['binary_output',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#aa54237d4a9f3150aefde2a3d9d769107',1,'occ::isosurface::IsosurfaceGenerationParameters::binary_output'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a7b94e7f993cc35bacfd287f712589349',1,'occ::main::IsosurfaceConfig::binary_output']]],
+  ['bohr_5fper_5fangstrom_14',['bohr_per_angstrom',['../namespaceocc_1_1constants.html#a49eaa9fa75c7856104a77aaaf0b077a4',1,'occ::constants']]],
+  ['bohr_5fto_5fangstrom_15',['BOHR_TO_ANGSTROM',['../namespaceocc_1_1units.html#a4cd54c073c4aca586807e033f16e37b7',1,'occ::units']]],
+  ['boltzmann_16',['boltzmann',['../namespaceocc_1_1constants.html#a6a86c91b0dc4b29f21b164fd471f95fa',1,'occ::constants']]],
+  ['bond_5flength_17',['bond_length',['../structocc_1_1io_1_1QCSchemaBond.html#a6704d7eb430efde22591715facd839cc',1,'occ::io::QCSchemaBond']]],
+  ['border_18',['border',['../structocc_1_1io_1_1RowConfiguration.html#a6421accdf188fe4984471089f3b683d1',1,'occ::io::RowConfiguration::border'],['../structocc_1_1io_1_1ColumnConfiguration.html#a78437759a8f6c16669742fc43cebe647',1,'occ::io::ColumnConfiguration::border']]],
+  ['bottom_19',['bottom',['../structocc_1_1io_1_1RowConfiguration_1_1Border.html#a5e34d88b54f1dac63618d6c399f9c88b',1,'occ::io::RowConfiguration::Border']]],
+  ['buffer_20',['buffer',['../structtinyply_1_1PlyData.html#ab5bba932362f423e70eaa451592c8b2c',1,'tinyply::PlyData::buffer'],['../structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html#a50ba5e01d3e39a03d6a4ae8980a695d9',1,'occ::qm::IntegralEngine::IntegralResult::buffer']]],
+  ['bulk_21',['bulk',['../structocc_1_1crystal_1_1SurfaceCutResult.html#a71a6f5c816f7f7c4fa331685ed49d8de',1,'occ::crystal::SurfaceCutResult']]]
 ];

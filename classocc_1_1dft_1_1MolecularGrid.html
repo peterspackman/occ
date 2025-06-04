@@ -104,28 +104,48 @@ $(document).ready(function(){initNavTree('classocc_1_1dft_1_1MolecularGrid.html'
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;grid.h&gt;</code></p>
+<p>Class for molecular integration grids in <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a>.  
+ <a href="classocc_1_1dft_1_1MolecularGrid.html#details">More...</a></p>
+
+<p><code>#include &lt;molecular_grid.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aea2932a8fb3e0b25f03c449fd1794d29" id="r_aea2932a8fb3e0b25f03c449fd1794d29"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#aea2932a8fb3e0b25f03c449fd1794d29">MolecularGrid</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a> &amp;, const <a class="el" href="structocc_1_1io_1_1BeckeGridSettings.html">BeckeGridSettings</a> &amp;<a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#ab6359fde5659f8114b2b70d61b276c28">settings</a>={})</td></tr>
-<tr class="separator:aea2932a8fb3e0b25f03c449fd1794d29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08f37ee7480c0fdaff8223102bc44409" id="r_a08f37ee7480c0fdaff8223102bc44409"><td class="memItemLeft" align="right" valign="top">const auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a08f37ee7480c0fdaff8223102bc44409">n_atoms</a> () const</td></tr>
-<tr class="separator:a08f37ee7480c0fdaff8223102bc44409"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13d7903e0e297d1fe643a9ec24bb3204" id="r_a13d7903e0e297d1fe643a9ec24bb3204"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a13d7903e0e297d1fe643a9ec24bb3204">generate_partitioned_atom_grid</a> (size_t atom_idx) const</td></tr>
-<tr class="separator:a13d7903e0e297d1fe643a9ec24bb3204"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f967e92fe8bc2f8c592eb60f7330236" id="r_a9f967e92fe8bc2f8c592eb60f7330236"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a9f967e92fe8bc2f8c592eb60f7330236">generate_lmg_atom_grid</a> (size_t atomic_number)</td></tr>
-<tr class="separator:a9f967e92fe8bc2f8c592eb60f7330236"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab6359fde5659f8114b2b70d61b276c28" id="r_ab6359fde5659f8114b2b70d61b276c28"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#ab6359fde5659f8114b2b70d61b276c28">settings</a> () const</td></tr>
-<tr class="separator:ab6359fde5659f8114b2b70d61b276c28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c037649c0bbabd78c5ee5fe069a91da" id="r_a3c037649c0bbabd78c5ee5fe069a91da"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a3c037649c0bbabd78c5ee5fe069a91da">MolecularGrid</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;<a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a9f72f930ea16c988da338dfde3c12601">settings</a>=<a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a>(), <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">RadialGridMethod</a> method=<a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6">RadialGridMethod::LMG</a>)</td></tr>
+<tr class="memdesc:a3c037649c0bbabd78c5ee5fe069a91da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from AOBasis.  <br /></td></tr>
+<tr class="separator:a3c037649c0bbabd78c5ee5fe069a91da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9337f4f412c45047f9e036833d59ad56" id="r_a9337f4f412c45047f9e036833d59ad56"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a9337f4f412c45047f9e036833d59ad56">MolecularGrid</a> (const Mat3N &amp;positions, const IVec &amp;atomic_numbers, const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;<a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a9f72f930ea16c988da338dfde3c12601">settings</a>=<a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a>(), <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">RadialGridMethod</a> method=<a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6">RadialGridMethod::LMG</a>)</td></tr>
+<tr class="memdesc:a9337f4f412c45047f9e036833d59ad56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from custom positions and atomic numbers.  <br /></td></tr>
+<tr class="separator:a9337f4f412c45047f9e036833d59ad56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa70b13bfc70b8b97009746e23946ea2c" id="r_aa70b13bfc70b8b97009746e23946ea2c"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#aa70b13bfc70b8b97009746e23946ea2c">n_atoms</a> () const</td></tr>
+<tr class="memdesc:aa70b13bfc70b8b97009746e23946ea2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of atoms.  <br /></td></tr>
+<tr class="separator:aa70b13bfc70b8b97009746e23946ea2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2500385e92719c221b5734ca59d8a5df" id="r_a2500385e92719c221b5734ca59d8a5df"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a2500385e92719c221b5734ca59d8a5df">get_partitioned_atom_grid</a> (size_t atom_idx) const</td></tr>
+<tr class="memdesc:a2500385e92719c221b5734ca59d8a5df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a partitioned atom grid for a specific atom.  <br /></td></tr>
+<tr class="separator:a2500385e92719c221b5734ca59d8a5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a0ac6b89429bdefd377dbff1e2a8b33" id="r_a4a0ac6b89429bdefd377dbff1e2a8b33"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a4a0ac6b89429bdefd377dbff1e2a8b33">get_atom_grid</a> (size_t atom_idx) const</td></tr>
+<tr class="memdesc:a4a0ac6b89429bdefd377dbff1e2a8b33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate an atom grid for a specific atomic number.  <br /></td></tr>
+<tr class="separator:a4a0ac6b89429bdefd377dbff1e2a8b33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f72f930ea16c988da338dfde3c12601" id="r_a9f72f930ea16c988da338dfde3c12601"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a9f72f930ea16c988da338dfde3c12601">settings</a> () const</td></tr>
+<tr class="memdesc:a9f72f930ea16c988da338dfde3c12601"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the grid settings.  <br /></td></tr>
+<tr class="separator:a9f72f930ea16c988da338dfde3c12601"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a582314faff48e57e54468697b27644" id="r_a0a582314faff48e57e54468697b27644"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a0a582314faff48e57e54468697b27644">populate_molecular_grid_points</a> ()</td></tr>
+<tr class="memdesc:a0a582314faff48e57e54468697b27644"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate and initialize the molecular grid points.  <br /></td></tr>
 <tr class="separator:a0a582314faff48e57e54468697b27644"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7af8754b5cee18be98b6455d9a256bae" id="r_a7af8754b5cee18be98b6455d9a256bae"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html">MolecularGridPoints</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a7af8754b5cee18be98b6455d9a256bae">get_molecular_grid_points</a> () const</td></tr>
+<tr class="memdesc:a7af8754b5cee18be98b6455d9a256bae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the molecular grid points.  <br /></td></tr>
 <tr class="separator:a7af8754b5cee18be98b6455d9a256bae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a16be2af35adac5c2d39ff7f56fe05b" id="r_a9a16be2af35adac5c2d39ff7f56fe05b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#a9a16be2af35adac5c2d39ff7f56fe05b">set_atomic_radii</a> (const Vec &amp;)</td></tr>
+<tr class="separator:a9a16be2af35adac5c2d39ff7f56fe05b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abeeb16edfac7cd74978b5c1f85d093ec" id="r_abeeb16edfac7cd74978b5c1f85d093ec"><td class="memItemLeft" align="right" valign="top">const Vec &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGrid.html#abeeb16edfac7cd74978b5c1f85d093ec">atomic_radii</a> () const</td></tr>
+<tr class="separator:abeeb16edfac7cd74978b5c1f85d093ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="aea2932a8fb3e0b25f03c449fd1794d29" name="aea2932a8fb3e0b25f03c449fd1794d29"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aea2932a8fb3e0b25f03c449fd1794d29">&#9670;&#160;</a></span>MolecularGrid()</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Class for molecular integration grids in <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a>. </p>
+<p>This class manages the creation and manipulation of molecular integration grids for density functional theory calculations. It supports various grid generation methods and can work with either basis set information or user-provided data. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a3c037649c0bbabd78c5ee5fe069a91da" name="a3c037649c0bbabd78c5ee5fe069a91da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c037649c0bbabd78c5ee5fe069a91da">&#9670;&#160;</a></span>MolecularGrid() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -134,13 +154,19 @@ Public Member Functions</h2></td></tr>
           <td class="memname">occ::dft::MolecularGrid::MolecularGrid </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a> &amp;&#160;</td>
-          <td class="paramname">, </td>
+          <td class="paramname"><em>basis</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1BeckeGridSettings.html">BeckeGridSettings</a> &amp;&#160;</td>
-          <td class="paramname"><em>settings</em> = <code>{}</code>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;&#160;</td>
+          <td class="paramname"><em>settings</em> = <code><a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a>()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">RadialGridMethod</a>&#160;</td>
+          <td class="paramname"><em>method</em> = <code><a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6">RadialGridMethod::LMG</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -150,35 +176,105 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Constructor from AOBasis. </p>
+<p>Creates a molecular grid based on basis set information.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">basis</td><td>Basis set information </td></tr>
+    <tr><td class="paramname">settings</td><td>Grid settings </td></tr>
+    <tr><td class="paramname">method</td><td>Grid generation method </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a id="a9f967e92fe8bc2f8c592eb60f7330236" name="a9f967e92fe8bc2f8c592eb60f7330236"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f967e92fe8bc2f8c592eb60f7330236">&#9670;&#160;</a></span>generate_lmg_atom_grid()</h2>
+<a id="a9337f4f412c45047f9e036833d59ad56" name="a9337f4f412c45047f9e036833d59ad56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9337f4f412c45047f9e036833d59ad56">&#9670;&#160;</a></span>MolecularGrid() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a> occ::dft::MolecularGrid::generate_lmg_atom_grid </td>
+          <td class="memname">occ::dft::MolecularGrid::MolecularGrid </td>
           <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>atomic_number</em></td><td>)</td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const IVec &amp;&#160;</td>
+          <td class="paramname"><em>atomic_numbers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;&#160;</td>
+          <td class="paramname"><em>settings</em> = <code><a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a>()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">RadialGridMethod</a>&#160;</td>
+          <td class="paramname"><em>method</em> = <code><a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6">RadialGridMethod::LMG</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
+<p>Constructor from custom positions and atomic numbers. </p>
+<p>Creates a molecular grid based on user-provided atomic positions and numbers.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">positions</td><td>Atomic positions (3 x N matrix) </td></tr>
+    <tr><td class="paramname">atomic_numbers</td><td>Atomic numbers </td></tr>
+    <tr><td class="paramname">settings</td><td>Grid settings </td></tr>
+    <tr><td class="paramname">method</td><td>Grid generation method </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
-<a id="a13d7903e0e297d1fe643a9ec24bb3204" name="a13d7903e0e297d1fe643a9ec24bb3204"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a13d7903e0e297d1fe643a9ec24bb3204">&#9670;&#160;</a></span>generate_partitioned_atom_grid()</h2>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="abeeb16edfac7cd74978b5c1f85d093ec" name="abeeb16edfac7cd74978b5c1f85d093ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abeeb16edfac7cd74978b5c1f85d093ec">&#9670;&#160;</a></span>atomic_radii()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const Vec &amp; occ::dft::MolecularGrid::atomic_radii </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4a0ac6b89429bdefd377dbff1e2a8b33" name="a4a0ac6b89429bdefd377dbff1e2a8b33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a0ac6b89429bdefd377dbff1e2a8b33">&#9670;&#160;</a></span>get_atom_grid()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a> occ::dft::MolecularGrid::generate_partitioned_atom_grid </td>
+          <td class="memname"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a> occ::dft::MolecularGrid::get_atom_grid </td>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
           <td class="paramname"><em>atom_idx</em></td><td>)</td>
@@ -187,6 +283,15 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Generate an atom grid for a specific atomic number. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atomic_number</td><td>Atomic number </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1AtomGrid.html" title="Structure to hold atom-centered grid data.">AtomGrid</a> The generated atom grid </dd></dl>
+
 </div>
 </div>
 <a id="a7af8754b5cee18be98b6455d9a256bae" name="a7af8754b5cee18be98b6455d9a256bae"></a>
@@ -194,9 +299,6 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html">MolecularGridPoints</a> &amp; occ::dft::MolecularGrid::get_molecular_grid_points </td>
@@ -205,37 +307,57 @@ Public Member Functions</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get the molecular grid points. </p>
+<dl class="section return"><dt>Returns</dt><dd>const <a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html" title="Class for storing and managing molecular grid points.">MolecularGridPoints</a>&amp; The molecular grid points </dd></dl>
 
 </div>
 </div>
-<a id="a08f37ee7480c0fdaff8223102bc44409" name="a08f37ee7480c0fdaff8223102bc44409"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a08f37ee7480c0fdaff8223102bc44409">&#9670;&#160;</a></span>n_atoms()</h2>
+<a id="a2500385e92719c221b5734ca59d8a5df" name="a2500385e92719c221b5734ca59d8a5df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2500385e92719c221b5734ca59d8a5df">&#9670;&#160;</a></span>get_partitioned_atom_grid()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const auto occ::dft::MolecularGrid::n_atoms </td>
+          <td class="memname"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a> occ::dft::MolecularGrid::get_partitioned_atom_grid </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>atom_idx</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a partitioned atom grid for a specific atom. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atom_idx</td><td>Index of the atom </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1AtomGrid.html" title="Structure to hold atom-centered grid data.">AtomGrid</a> The partitioned atom grid </dd></dl>
+
+</div>
+</div>
+<a id="aa70b13bfc70b8b97009746e23946ea2c" name="aa70b13bfc70b8b97009746e23946ea2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa70b13bfc70b8b97009746e23946ea2c">&#9670;&#160;</a></span>n_atoms()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t occ::dft::MolecularGrid::n_atoms </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get the number of atoms. </p>
+<dl class="section return"><dt>Returns</dt><dd>size_t Number of atoms </dd></dl>
 
 </div>
 </div>
@@ -254,35 +376,51 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Generate and initialize the molecular grid points. </p>
+<p>This method generates the actual grid points for the molecular calculation. It is called automatically when needed, but can also be called explicitly. </p>
+
 </div>
 </div>
-<a id="ab6359fde5659f8114b2b70d61b276c28" name="ab6359fde5659f8114b2b70d61b276c28"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab6359fde5659f8114b2b70d61b276c28">&#9670;&#160;</a></span>settings()</h2>
+<a id="a9a16be2af35adac5c2d39ff7f56fe05b" name="a9a16be2af35adac5c2d39ff7f56fe05b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a16be2af35adac5c2d39ff7f56fe05b">&#9670;&#160;</a></span>set_atomic_radii()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const auto &amp; occ::dft::MolecularGrid::settings </td>
+          <td class="memname">void occ::dft::MolecularGrid::set_atomic_radii </td>
+          <td>(</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9f72f930ea16c988da338dfde3c12601" name="a9f72f930ea16c988da338dfde3c12601"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f72f930ea16c988da338dfde3c12601">&#9670;&#160;</a></span>settings()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp; occ::dft::MolecularGrid::settings </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Get the grid settings. </p>
+<dl class="section return"><dt>Returns</dt><dd>const GridSettings&amp; The grid settings </dd></dl>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="grid_8h.html">grid.h</a></li>
+<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="molecular__grid_8h.html">molecular_grid.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

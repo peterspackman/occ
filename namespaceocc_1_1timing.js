@@ -40,6 +40,7 @@ var namespaceocc_1_1timing =
       [ "fft", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a0a42fe5f2ac3f6c76f70f06a2def547d", null ],
       [ "xdm", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a7c33115a77204969afbddfe52e260d16", null ],
       [ "solvent", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16abaf639845bdbe70396a9bd527534f821", null ],
+      [ "dma", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16acb0355f57ca6985e0b69d1fd040c33c3", null ],
       [ "isosurface_function", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a5c7050e04bc3e7ac378b7d617f593a2c", null ],
       [ "isosurface_normals", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a387cf44f760d6d55fe81e768e488f21f", null ],
       [ "isosurface_properties", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a36a59ece494ec16dfe097747815e9774", null ],
@@ -47,6 +48,10 @@ var namespaceocc_1_1timing =
       [ "mc_primal", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a19f7785f6d5ade0be208b72e4a6bd6a2", null ],
       [ "mc_surface", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a172622eca494dac3ba8060bc574eec0b", null ],
       [ "gradient", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a604b8de8f5b9986f80b133d81f0c8de3", null ],
+      [ "dma_analytic", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a80e195bf08519eea1700e8452fd55b78", null ],
+      [ "dma_grid_eval", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a8cb8f3dfdbd949e8e5d3ad690f6faadd", null ],
+      [ "dma_grid_int", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16ab39ec0114bdaaecb3fd8c1c9b9afec76", null ],
+      [ "dma_total", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a5a9ddde13f05f4dc15780fd8d9f2a617", null ],
       [ "global", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aa593d8f8f4e0489f836e07e4f4220cbf", null ],
       [ "_group_count", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a6f051406d3501a7e49a73b8fa2aef406", null ]
     ] ],

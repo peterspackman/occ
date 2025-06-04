@@ -16,10 +16,10 @@
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="817,283,962,295,962,301,817,288"/>
 <area shape="rect" id="Node000008" href="$structocc_1_1io_1_1MethodInput.html" title=" " alt="" coords="661,316,816,341"/>
 <area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="829,322,938,314,962,311,963,316,939,319,830,328"/>
-<area shape="rect" id="Node000009" href="$structocc_1_1io_1_1BeckeGridSettings.html" title=" " alt="" coords="261,316,451,341"/>
-<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="465,326,661,326,661,331,465,331"/>
+<area shape="rect" id="Node000009" href="$structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation." alt="" coords="280,316,432,341"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="446,326,661,326,661,331,446,331"/>
 <area shape="rect" id="Node000010" title=" " alt="" coords="5,316,65,341"/>
-<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="79,326,261,326,261,331,79,331"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="79,326,280,326,280,331,79,331"/>
 <area shape="rect" id="Node000011" href="$structocc_1_1io_1_1BasisSetInput.html" title=" " alt="" coords="658,365,819,391"/>
 <area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="832,364,885,354,938,341,1002,314,1004,319,940,346,886,360,833,370"/>
 <area shape="rect" id="Node000012" href="$structocc_1_1io_1_1SolventInput.html" title=" " alt="" coords="661,415,816,440"/>

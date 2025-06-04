@@ -55,7 +55,7 @@ var searchData=
   ['is_5forthogonal_52',['is_orthogonal',['../classocc_1_1crystal_1_1UnitCell.html#a1264af9156ffc6eab158d8f4da410a55',1,'occ::crystal::UnitCell']]],
   ['is_5forthorhombic_53',['is_orthorhombic',['../classocc_1_1crystal_1_1UnitCell.html#a712dc3ab3478993131b6bb2560592dbb',1,'occ::crystal::UnitCell']]],
   ['is_5fperiodic_54',['is_periodic',['../classocc_1_1io_1_1DftbGenFormat.html#a927b45143bbb8eb927a0a008152313c4',1,'occ::io::DftbGenFormat']]],
-  ['is_5fpure_55',['is_pure',['../structocc_1_1qm_1_1Shell.html#a6def5bab1aae14f806c2e50c2143346e',1,'occ::qm::Shell::is_pure()'],['../classocc_1_1qm_1_1AOBasis.html#aaba639126f5c33c910555379dcad72dc',1,'occ::qm::AOBasis::is_pure()']]],
+  ['is_5fpure_55',['is_pure',['../classocc_1_1qm_1_1AOBasis.html#aaba639126f5c33c910555379dcad72dc',1,'occ::qm::AOBasis::is_pure()'],['../structocc_1_1qm_1_1Shell.html#a6def5bab1aae14f806c2e50c2143346e',1,'occ::qm::Shell::is_pure()']]],
   ['is_5frestricted_56',['is_restricted',['../structocc_1_1qm_1_1Wavefunction.html#a1db590c06712d9e41a17a70b126381d7',1,'occ::qm::Wavefunction']]],
   ['is_5frhombohedral_57',['is_rhombohedral',['../classocc_1_1crystal_1_1UnitCell.html#a972bcb15fcabd4c9910c2efccc0bf89a',1,'occ::crystal::UnitCell']]],
   ['is_5fspherical_58',['is_spherical',['../classocc_1_1qm_1_1IntegralEngine.html#a97139a28b53e9d18f007d41c7cbebaf3',1,'occ::qm::IntegralEngine']]],
@@ -65,5 +65,6 @@ var searchData=
   ['isosurface_62',['isosurface',['../classocc_1_1isosurface_1_1IsosurfaceCalculator.html#a87d243f1dcfd7212adcb28f00fe1125f',1,'occ::isosurface::IsosurfaceCalculator']]],
   ['isosurfacecalculator_63',['IsosurfaceCalculator',['../classocc_1_1isosurface_1_1IsosurfaceCalculator.html#a0a1a461dd5e0ceacb196e12829c8d326',1,'occ::isosurface::IsosurfaceCalculator']]],
   ['ispointonpositiveside_64',['isPointOnPositiveSide',['../classquickhull_1_1Plane.html#a81af9de8b7d41f19a378bdeda6898760',1,'quickhull::Plane']]],
-  ['iterate_5fover_5fshell_65',['iterate_over_shell',['../namespaceocc_1_1gto.html#a3ef2d30b82e02565d58a55a33da880f8',1,'occ::gto']]]
+  ['iterate_5fover_5fshell_65',['iterate_over_shell',['../namespaceocc_1_1gto.html#a9ea8be0c1f04965d56919cda12400520',1,'occ::gto']]],
+  ['iterate_5fover_5fshell_5fpair_66',['iterate_over_shell_pair',['../namespaceocc_1_1gto.html#ae2be263bd8cd95f3b917833c80726c7a',1,'occ::gto']]]
 ];

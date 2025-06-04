@@ -22,6 +22,7 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "multiplicity", "structocc_1_1qm_1_1Wavefunction.html#acf001664b44d7693881b72d19643a18e", null ],
     [ "n_alpha", "structocc_1_1qm_1_1Wavefunction.html#a8daf27a97832b5c52c0a0585bdb422df", null ],
     [ "n_beta", "structocc_1_1qm_1_1Wavefunction.html#ab7d7a63446003b31a1e97cff023fcd32", null ],
+    [ "overlap_matrix", "structocc_1_1qm_1_1Wavefunction.html#a935c973aab259bb713b3ff599dbed2b1", null ],
     [ "positions", "structocc_1_1qm_1_1Wavefunction.html#a2308219fe83df9f370085814447579a4", null ],
     [ "save", "structocc_1_1qm_1_1Wavefunction.html#a288032ef7130eb91c228571c27f3c1de", null ],
     [ "save", "structocc_1_1qm_1_1Wavefunction.html#a75fe338f7494dfdbc765f3230106cab8", null ],

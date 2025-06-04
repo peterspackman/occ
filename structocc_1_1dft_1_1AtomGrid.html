@@ -105,29 +105,41 @@ $(document).ready(function(){initNavTree('structocc_1_1dft_1_1AtomGrid.html','')
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;grid.h&gt;</code></p>
+<p>Structure to hold atom-centered grid data.  
+ <a href="structocc_1_1dft_1_1AtomGrid.html#details">More...</a></p>
+
+<p><code>#include &lt;grid_types.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:acbaf3d025645b6498f515df17f3674b5" id="r_acbaf3d025645b6498f515df17f3674b5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html#acbaf3d025645b6498f515df17f3674b5">AtomGrid</a> ()</td></tr>
-<tr class="separator:acbaf3d025645b6498f515df17f3674b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b6acaaebda9bcffb24d1b71f166fafd" id="r_a5b6acaaebda9bcffb24d1b71f166fafd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html#a5b6acaaebda9bcffb24d1b71f166fafd">AtomGrid</a> ()=default</td></tr>
+<tr class="memdesc:a5b6acaaebda9bcffb24d1b71f166fafd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
+<tr class="separator:a5b6acaaebda9bcffb24d1b71f166fafd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae73a8ccec3285955770ebdd8e8528f2b" id="r_ae73a8ccec3285955770ebdd8e8528f2b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html#ae73a8ccec3285955770ebdd8e8528f2b">AtomGrid</a> (size_t <a class="el" href="structocc_1_1dft_1_1AtomGrid.html#ab11fc6823ee2edefd2c64d4952732778">num_points</a>)</td></tr>
+<tr class="memdesc:ae73a8ccec3285955770ebdd8e8528f2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor that pre-allocates memory.  <br /></td></tr>
 <tr class="separator:ae73a8ccec3285955770ebdd8e8528f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab11fc6823ee2edefd2c64d4952732778" id="r_ab11fc6823ee2edefd2c64d4952732778"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html#ab11fc6823ee2edefd2c64d4952732778">num_points</a> () const</td></tr>
+<tr class="memdesc:ab11fc6823ee2edefd2c64d4952732778"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the number of points in the grid.  <br /></td></tr>
 <tr class="separator:ab11fc6823ee2edefd2c64d4952732778"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a30065460e55708aae8779a76be27b507" id="r_a30065460e55708aae8779a76be27b507"><td class="memItemLeft" align="right" valign="top">uint_fast8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html#a30065460e55708aae8779a76be27b507">atomic_number</a></td></tr>
+<tr class="memitem:a30065460e55708aae8779a76be27b507" id="r_a30065460e55708aae8779a76be27b507"><td class="memItemLeft" align="right" valign="top">uint_fast8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html#a30065460e55708aae8779a76be27b507">atomic_number</a> = 0</td></tr>
+<tr class="memdesc:a30065460e55708aae8779a76be27b507"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atomic number of the center atom.  <br /></td></tr>
 <tr class="separator:a30065460e55708aae8779a76be27b507"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b8fc99090905e8bed82283a3cd37107" id="r_a3b8fc99090905e8bed82283a3cd37107"><td class="memItemLeft" align="right" valign="top">Mat3N&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html#a3b8fc99090905e8bed82283a3cd37107">points</a></td></tr>
+<tr class="memdesc:a3b8fc99090905e8bed82283a3cd37107"><td class="mdescLeft">&#160;</td><td class="mdescRight">3D coordinates of grid points  <br /></td></tr>
 <tr class="separator:a3b8fc99090905e8bed82283a3cd37107"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa085f1b9f645b2ab72adcfbb818098cb" id="r_aa085f1b9f645b2ab72adcfbb818098cb"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html#aa085f1b9f645b2ab72adcfbb818098cb">weights</a></td></tr>
+<tr class="memdesc:aa085f1b9f645b2ab72adcfbb818098cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Integration weights for each point.  <br /></td></tr>
 <tr class="separator:aa085f1b9f645b2ab72adcfbb818098cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="acbaf3d025645b6498f515df17f3674b5" name="acbaf3d025645b6498f515df17f3674b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acbaf3d025645b6498f515df17f3674b5">&#9670;&#160;</a></span>AtomGrid() <span class="overload">[1/2]</span></h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Structure to hold atom-centered grid data. </p>
+<p>Contains the 3D points, weights, and atomic number for a grid centered at an atom </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a5b6acaaebda9bcffb24d1b71f166fafd" name="a5b6acaaebda9bcffb24d1b71f166fafd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b6acaaebda9bcffb24d1b71f166fafd">&#9670;&#160;</a></span>AtomGrid() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -144,10 +156,12 @@ Public Attributes</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">default</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Default constructor. </p>
 
 </div>
 </div>
@@ -156,9 +170,6 @@ Public Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">occ::dft::AtomGrid::AtomGrid </td>
@@ -168,12 +179,15 @@ Public Attributes</h2></td></tr>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Constructor that pre-allocates memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_points</td><td>Number of grid points to allocate </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -201,6 +215,9 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Gets the number of points in the grid. </p>
+<dl class="section return"><dt>Returns</dt><dd>The number of grid points </dd></dl>
+
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
@@ -211,10 +228,12 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint_fast8_t occ::dft::AtomGrid::atomic_number</td>
+          <td class="memname">uint_fast8_t occ::dft::AtomGrid::atomic_number = 0</td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Atomic number of the center atom. </p>
 
 </div>
 </div>
@@ -230,6 +249,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>3D coordinates of grid points </p>
+
 </div>
 </div>
 <a id="aa085f1b9f645b2ab72adcfbb818098cb" name="aa085f1b9f645b2ab72adcfbb818098cb"></a>
@@ -244,10 +265,12 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Integration weights for each point. </p>
+
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="grid_8h.html">grid.h</a></li>
+<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="grid__types_8h.html">grid_types.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

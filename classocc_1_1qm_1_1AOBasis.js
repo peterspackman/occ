@@ -26,6 +26,7 @@ var classocc_1_1qm_1_1AOBasis =
     [ "kind", "classocc_1_1qm_1_1AOBasis.html#a6fc408325d1e4a36662993b96a82ebe2", null ],
     [ "l_max", "classocc_1_1qm_1_1AOBasis.html#a2966972e37a24c6caef8fa348bbe39ad", null ],
     [ "max_ecp_shell_size", "classocc_1_1qm_1_1AOBasis.html#ac6ceb04f76ce86cf3768c465a33efd7e", null ],
+    [ "max_num_primitives", "classocc_1_1qm_1_1AOBasis.html#a00d61b3839c791aad6ae04a438c83cfb", null ],
     [ "max_shell_size", "classocc_1_1qm_1_1AOBasis.html#a0d90de12a0b9148131fc990f5c2cd11f", null ],
     [ "merge", "classocc_1_1qm_1_1AOBasis.html#ad6b6fa4033a563d388cd1427aaa55cf7", null ],
     [ "name", "classocc_1_1qm_1_1AOBasis.html#a7e70bdb2245c6f87bdadb9abc531af67", null ],

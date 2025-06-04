@@ -19,6 +19,7 @@ var namespaceocc =
       [ "speed_of_light", "namespaceocc_1_1constants.html#a48fd22ff40e38391f5ac8dcdb14d4583", null ],
       [ "sqrt_half_pi", "namespaceocc_1_1constants.html#abe0cd3df2f0cdabf3da261fe97c2d489", null ],
       [ "sqrt_pi", "namespaceocc_1_1constants.html#a0ea78bac172971ee52691545e722550e", null ],
+      [ "sqrt_pi_cubed", "namespaceocc_1_1constants.html#aa0c29176954d8173a9b586f66fc731d5", null ],
       [ "sqrt_two_pi", "namespaceocc_1_1constants.html#a0befd8f977105f4061a2852d0393b1b5", null ],
       [ "two_pi", "namespaceocc_1_1constants.html#af02d5dad057833bdf47f163a43f4ff59", null ]
     ] ],
@@ -41,6 +42,7 @@ var namespaceocc =
     [ "descriptors", "namespaceocc_1_1descriptors.html", "namespaceocc_1_1descriptors" ],
     [ "dft", "namespaceocc_1_1dft.html", "namespaceocc_1_1dft" ],
     [ "disp", "namespaceocc_1_1disp.html", "namespaceocc_1_1disp" ],
+    [ "dma", "namespaceocc_1_1dma.html", "namespaceocc_1_1dma" ],
     [ "driver", "namespaceocc_1_1driver.html", "namespaceocc_1_1driver" ],
     [ "geometry", "namespaceocc_1_1geometry.html", "namespaceocc_1_1geometry" ],
     [ "gto", "namespaceocc_1_1gto.html", "namespaceocc_1_1gto" ],
@@ -78,6 +80,8 @@ var namespaceocc =
     ] ],
     [ "util", "namespaceocc_1_1util.html", [
       [ "all_close", "namespaceocc_1_1util.html#ac088e1cd8c9929aff5275661d45734ab", null ],
+      [ "double_factorial", "namespaceocc_1_1util.html#a1e79ffb36340e78593971dd93d2da921", null ],
+      [ "double_factorial_2n_1", "namespaceocc_1_1util.html#a3f32267ddee6ad05c950e9dc95338c10", null ],
       [ "human_readable_size", "namespaceocc_1_1util.html#afc65a7eebcc2d86e81d9ef634fcdeb7e", null ],
       [ "human_readable_time", "namespaceocc_1_1util.html#a2f34a26f41f415e9f16d0d8ffe712648", null ],
       [ "index_of", "namespaceocc_1_1util.html#a9037ebd16e941e0148ed07eb1d0b9696", null ],

@@ -74,5 +74,6 @@ var searchData=
   ['mo_71',['mo',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a9438912000d031c4e60ee6964858de7a',1,'occ::timing']]],
   ['molden_72',['Molden',['../namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894a3cac3e461df0bb248fa3f1faf080ffe9',1,'occ::gto']]],
   ['mp2density_73',['MP2Density',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a624ee8b61ada97bc5f765ec432f450fb',1,'occ::io::FchkReader']]],
-  ['msgpack_74',['MSGPACK',['../namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94',1,'occ::io']]]
+  ['msgpack_74',['MSGPACK',['../namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94',1,'occ::io']]],
+  ['muraknowles_75',['MuraKnowles',['../namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba8cee0af70e8d2d88ac69efe492c97e87',1,'occ::dft']]]
 ];

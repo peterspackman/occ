@@ -19,6 +19,7 @@ var searchData=
   ['use_5fasymmetric_5fpartition_16',['use_asymmetric_partition',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6d0620e67f1d034d53b640406231d8ba',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
   ['use_5fcrystal_5fpolarization_17',['use_crystal_polarization',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ac4af5c391c9ecef826297882d32984c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
   ['use_5fhashed_5fmc_18',['use_hashed_mc',['../structocc_1_1main_1_1IsosurfaceConfig.html#a423a2bb9f53e953a763de2ef0ff1ae80',1,'occ::main::IsosurfaceConfig']]],
-  ['use_5fwolf_5fsum_19',['use_wolf_sum',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6081c8847f494a57e98ee22db394bb20',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
-  ['use_5fxtb_20',['use_xtb',['../structocc_1_1main_1_1CGConfig.html#a094ff8304cb6532897bb2deca08924bc',1,'occ::main::CGConfig']]]
+  ['use_5fslices_19',['use_slices',['../structocc_1_1dma_1_1LinearDMASettings.html#a97ba3dc1d85382b96ecc7fb690850a6b',1,'occ::dma::LinearDMASettings']]],
+  ['use_5fwolf_5fsum_20',['use_wolf_sum',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6081c8847f494a57e98ee22db394bb20',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
+  ['use_5fxtb_21',['use_xtb',['../structocc_1_1main_1_1CGConfig.html#a094ff8304cb6532897bb2deca08924bc',1,'occ::main::CGConfig']]]
 ];

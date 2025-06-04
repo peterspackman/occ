@@ -22,14 +22,14 @@ var searchData=
   ['descriptors_19',['descriptors',['../structocc_1_1main_1_1DescribeConfig.html#a8aa5d46eaf5f5ec6a5d209ab06836efc',1,'occ::main::DescribeConfig']]],
   ['determine_5fspinorbital_5fkind_20',['determine_spinorbital_kind',['../namespaceocc_1_1driver.html#af7e85c393d3f038f7e8b65afa85e6013',1,'occ::driver']]],
   ['dfid_5fto_5fstring_21',['dfid_to_string',['../namespaceocc_1_1dft.html#a70f0a7522541ba34eecfed52b8460f6e',1,'occ::dft']]],
-  ['dft_22',['DFT',['../classocc_1_1dft_1_1DFT.html#ad120202d5f6fe48cfc2aea9daa80534b',1,'occ::dft::DFT']]],
+  ['dft_22',['DFT',['../classocc_1_1dft_1_1DFT.html#a43247d9dd3a694bcb09841f6880dc242',1,'occ::dft::DFT']]],
   ['dftbgenformat_23',['DftbGenFormat',['../classocc_1_1io_1_1DftbGenFormat.html#a263ab9febc52395bb8a59172d7475607',1,'occ::io::DftbGenFormat']]],
   ['diagnosticsdata_24',['DiagnosticsData',['../structquickhull_1_1DiagnosticsData.html#afee5e9313774517c90af8c76ef6b2b8f',1,'quickhull::DiagnosticsData']]],
   ['dielectric_25',['dielectric',['../classocc_1_1solvent_1_1COSMO.html#afb30d424507c3e09a86c8242fc4253f3',1,'occ::solvent::COSMO']]],
   ['dihedral_5fgroup_26',['dihedral_group',['../namespaceocc_1_1core.html#ab561d38b11fc9c420c92a46a8dfea6ce',1,'occ::core']]],
   ['diis_27',['DIIS',['../classocc_1_1core_1_1diis_1_1DIIS.html#a6d287fa8c5c8701af4f6c67ab5dab6e5',1,'occ::core::diis::DIIS']]],
   ['dimensions_28',['dimensions',['../classocc_1_1geometry_1_1VolumeGrid.html#a928221ff590dfb1c7b1435293043dca9',1,'occ::geometry::VolumeGrid']]],
-  ['dimer_29',['dimer',['../classocc_1_1core_1_1Dimer.html#a837d475e4e66bc3f9438e0ef7c2812cf',1,'occ::core::Dimer::Dimer()=default'],['../classocc_1_1core_1_1Dimer.html#a4829e10924eb3034996a9bedc2ada54a',1,'occ::core::Dimer::Dimer(const Molecule &amp;mol_A, const Molecule &amp;mol_B)'],['../classocc_1_1core_1_1Dimer.html#af856f2a6ef28504ab31fc780cd3f846d',1,'occ::core::Dimer::Dimer(const std::vector&lt; occ::core::Atom &gt; &amp;atoms_A, const std::vector&lt; occ::core::Atom &gt; &amp;atoms_B)']]],
+  ['dimer_29',['dimer',['../classocc_1_1core_1_1Dimer.html#af856f2a6ef28504ab31fc780cd3f846d',1,'occ::core::Dimer::Dimer(const std::vector&lt; occ::core::Atom &gt; &amp;atoms_A, const std::vector&lt; occ::core::Atom &gt; &amp;atoms_B)'],['../classocc_1_1core_1_1Dimer.html#a837d475e4e66bc3f9438e0ef7c2812cf',1,'occ::core::Dimer::Dimer()=default'],['../classocc_1_1core_1_1Dimer.html#a4829e10924eb3034996a9bedc2ada54a',1,'occ::core::Dimer::Dimer(const Molecule &amp;mol_A, const Molecule &amp;mol_B)']]],
   ['dimer_5fenergies_30',['dimer_energies',['../classocc_1_1driver_1_1CrystalGrowthCalculator.html#ac5d9454c99bb4bf6df09e948c6731d19',1,'occ::driver::CrystalGrowthCalculator']]],
   ['dimer_5ffilename_31',['dimer_filename',['../classocc_1_1interaction_1_1PairEnergyStoreBase.html#af9a63a6c433f11f50cc8691586c8a59b',1,'occ::interaction::PairEnergyStoreBase::dimer_filename()'],['../classocc_1_1interaction_1_1MemoryPairEnergyStore.html#a2885f4d0fbbf51dbc8d2597272f1f337',1,'occ::interaction::MemoryPairEnergyStore::dimer_filename()'],['../classocc_1_1interaction_1_1FileSystemPairEnergyStore.html#acd7173a5d6f6c3ac1556a49e89701b13',1,'occ::interaction::FileSystemPairEnergyStore::dimer_filename()'],['../classocc_1_1interaction_1_1PairEnergyStore.html#aa87619e60c7771137bfb99b3bf13ec93',1,'occ::interaction::PairEnergyStore::dimer_filename()']]],
   ['dimer_5findex_32',['dimer_index',['../classocc_1_1crystal_1_1DimerMappingTable.html#a3c5b87f993de4e898b40b5ba05f0b22f',1,'occ::crystal::DimerMappingTable::dimer_index(const core::Dimer &amp;) const'],['../classocc_1_1crystal_1_1DimerMappingTable.html#a949138e24177098e717a3bc39ddda7cf',1,'occ::crystal::DimerMappingTable::dimer_index(const Vec3 &amp;, const Vec3 &amp;) const']]],
@@ -42,6 +42,9 @@ var searchData=
   ['disablehalfedge_39',['disableHalfEdge',['../classquickhull_1_1MeshBuilder.html#ab6b64518a6248dd25774dcbcf4eeb147',1,'quickhull::MeshBuilder']]],
   ['dispersion_5fkjmol_40',['dispersion_kjmol',['../structocc_1_1interaction_1_1CEEnergyComponents.html#a7244913e45a2e25e0a370d25d4c47ad7',1,'occ::interaction::CEEnergyComponents']]],
   ['divide_41',['divide',['../classocc_1_1core_1_1Fraction.html#a47ddb09b6a450dbd7a4831dc243385ec',1,'occ::core::Fraction']]],
-  ['dreiding_5ftype_5fhb_5fcorrection_42',['dreiding_type_hb_correction',['../namespaceocc_1_1interaction.html#a4d2be57567aaca117bf4f26cd1f07d08',1,'occ::interaction']]],
-  ['dual_43',['dual',['../structocc_1_1geometry_1_1MIndex.html#ae49b9e6b58025b6a2ef4853dcf96d2f8',1,'occ::geometry::MIndex']]]
+  ['dmacalculator_42',['DMACalculator',['../classocc_1_1dma_1_1DMACalculator.html#a6cdc52edb9e286ff9fc8fa433f24994a',1,'occ::dma::DMACalculator']]],
+  ['double_5ffactorial_43',['double_factorial',['../namespaceocc_1_1util.html#a1e79ffb36340e78593971dd93d2da921',1,'occ::util']]],
+  ['double_5ffactorial_5f2n_5f1_44',['double_factorial_2n_1',['../namespaceocc_1_1util.html#a3f32267ddee6ad05c950e9dc95338c10',1,'occ::util']]],
+  ['dreiding_5ftype_5fhb_5fcorrection_45',['dreiding_type_hb_correction',['../namespaceocc_1_1interaction.html#a4d2be57567aaca117bf4f26cd1f07d08',1,'occ::interaction']]],
+  ['dual_46',['dual',['../structocc_1_1geometry_1_1MIndex.html#ae49b9e6b58025b6a2ef4853dcf96d2f8',1,'occ::geometry::MIndex']]]
 ];

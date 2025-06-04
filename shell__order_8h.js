@@ -5,7 +5,8 @@ var shell__order_8h =
       [ "Gaussian", "shell__order_8h.html#adfb6b6abb9aeb83b8928392ee43ae894adf2160db9f5d5a7d7b6c660268b53eea", null ],
       [ "Molden", "shell__order_8h.html#adfb6b6abb9aeb83b8928392ee43ae894a3cac3e461df0bb248fa3f1faf080ffe9", null ]
     ] ],
-    [ "iterate_over_shell", "shell__order_8h.html#a3ef2d30b82e02565d58a55a33da880f8", null ],
+    [ "iterate_over_shell", "shell__order_8h.html#a9ea8be0c1f04965d56919cda12400520", null ],
+    [ "iterate_over_shell_pair", "shell__order_8h.html#ae2be263bd8cd95f3b917833c80726c7a", null ],
     [ "shell_index_cartesian", "shell__order_8h.html#ac81fa206815622f494788230b8362747", null ],
     [ "shell_index_cartesian< ShellOrder::Default >", "shell__order_8h.html#a1f3774891a924ae6969f8bbf666b652f", null ],
     [ "shell_index_cartesian< ShellOrder::Gaussian >", "shell__order_8h.html#a3ef414ace2b5e1c44c70a873a1607820", null ],

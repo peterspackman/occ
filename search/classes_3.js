@@ -19,5 +19,10 @@ var searchData=
   ['dimerresult_16',['DimerResult',['../structocc_1_1cg_1_1DimerResult.html',1,'occ::cg']]],
   ['dimersolventterm_17',['DimerSolventTerm',['../structocc_1_1cg_1_1DimerSolventTerm.html',1,'occ::cg']]],
   ['dispersioncorrectioninput_18',['DispersionCorrectionInput',['../structocc_1_1io_1_1DispersionCorrectionInput.html',1,'occ::io']]],
-  ['driverinput_19',['DriverInput',['../structocc_1_1io_1_1DriverInput.html',1,'occ::io']]]
+  ['dmacalculator_19',['DMACalculator',['../classocc_1_1dma_1_1DMACalculator.html',1,'occ::dma']]],
+  ['dmaconfig_20',['DMAConfig',['../structocc_1_1main_1_1DMAConfig.html',1,'occ::main']]],
+  ['dmaresult_21',['DMAResult',['../structocc_1_1dma_1_1DMAResult.html',1,'occ::dma']]],
+  ['dmasettings_22',['DMASettings',['../structocc_1_1dma_1_1DMASettings.html',1,'occ::dma']]],
+  ['dmasites_23',['DMASites',['../structocc_1_1dma_1_1DMASites.html',1,'occ::dma']]],
+  ['driverinput_24',['DriverInput',['../structocc_1_1io_1_1DriverInput.html',1,'occ::io']]]
 ];

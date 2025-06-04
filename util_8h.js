@@ -1,6 +1,8 @@
 var util_8h =
 [
     [ "all_close", "util_8h.html#ac088e1cd8c9929aff5275661d45734ab", null ],
+    [ "double_factorial", "util_8h.html#a1e79ffb36340e78593971dd93d2da921", null ],
+    [ "double_factorial_2n_1", "util_8h.html#a3f32267ddee6ad05c950e9dc95338c10", null ],
     [ "human_readable_size", "util_8h.html#afc65a7eebcc2d86e81d9ef634fcdeb7e", null ],
     [ "human_readable_time", "util_8h.html#a2f34a26f41f415e9f16d0d8ffe712648", null ],
     [ "index_of", "util_8h.html#a9037ebd16e941e0148ed07eb1d0b9696", null ],

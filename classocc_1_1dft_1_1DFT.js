@@ -1,6 +1,6 @@
 var classocc_1_1dft_1_1DFT =
 [
-    [ "DFT", "classocc_1_1dft_1_1DFT.html#ad120202d5f6fe48cfc2aea9daa80534b", null ],
+    [ "DFT", "classocc_1_1dft_1_1DFT.html#a43247d9dd3a694bcb09841f6880dc242", null ],
     [ "additional_atomic_gradients", "classocc_1_1dft_1_1DFT.html#a0b5f647f9f260a4374f1a7b02f39ea5e", null ],
     [ "aobasis", "classocc_1_1dft_1_1DFT.html#a7aae7c740dca1cb4e06b0dacef65441f", null ],
     [ "compute_effective_core_potential_matrix", "classocc_1_1dft_1_1DFT.html#a772912fd4df034b5f315cdd3d347bb94", null ],
@@ -46,7 +46,7 @@ var classocc_1_1dft_1_1DFT =
     [ "range_separated_parameters", "classocc_1_1dft_1_1DFT.html#a27c7379a38a9cf5228468482678178f9", null ],
     [ "set_block_size", "classocc_1_1dft_1_1DFT.html#a26eb0b91333db93be1ad28fa5fbc74eb", null ],
     [ "set_density_fitting_basis", "classocc_1_1dft_1_1DFT.html#ab2eeda64973fe7c0b9635d290b1b911f", null ],
-    [ "set_integration_grid", "classocc_1_1dft_1_1DFT.html#a59e99350356124aac0c2535fa7133492", null ],
+    [ "set_integration_grid", "classocc_1_1dft_1_1DFT.html#a8c07b286f4a496232c140112a54be356", null ],
     [ "set_method", "classocc_1_1dft_1_1DFT.html#abb30ad8fddfa487ad5973303f283e7b6", null ],
     [ "set_precision", "classocc_1_1dft_1_1DFT.html#aba711c566435ce5b9b858c6133800d02", null ],
     [ "supports_incremental_fock_build", "classocc_1_1dft_1_1DFT.html#aa42b20881dc0bdb097c9f677803305ec", null ],

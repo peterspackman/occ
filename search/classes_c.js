@@ -23,6 +23,9 @@ var searchData=
   ['momenta_20',['Momenta',['../structocc_1_1gto_1_1Momenta.html',1,'occ::gto']]],
   ['momentaspherical_21',['MomentaSpherical',['../structocc_1_1gto_1_1MomentaSpherical.html',1,'occ::gto']]],
   ['monomer_22',['Monomer',['../structocc_1_1interaction_1_1PairEnergy_1_1Monomer.html',1,'occ::interaction::PairEnergy']]],
-  ['multiplicityvalidator_23',['MultiplicityValidator',['../structocc_1_1main_1_1MultiplicityValidator.html',1,'occ::main']]],
-  ['multipole_24',['Multipole',['../structocc_1_1core_1_1Multipole.html',1,'occ::core']]]
+  ['mult_23',['Mult',['../structocc_1_1dma_1_1Mult.html',1,'occ::dma']]],
+  ['multiplicityvalidator_24',['MultiplicityValidator',['../structocc_1_1main_1_1MultiplicityValidator.html',1,'occ::main']]],
+  ['multipole_25',['Multipole',['../structocc_1_1core_1_1Multipole.html',1,'occ::core']]],
+  ['multipolecalculator_26',['MultipoleCalculator',['../classocc_1_1dma_1_1MultipoleCalculator.html',1,'occ::dma']]],
+  ['multipoleshifter_27',['MultipoleShifter',['../classocc_1_1dma_1_1MultipoleShifter.html',1,'occ::dma']]]
 ];

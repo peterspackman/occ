@@ -8,7 +8,6 @@ var namespaceocc_1_1io =
     [ "AdpData", "structocc_1_1io_1_1AdpData.html", "structocc_1_1io_1_1AdpData" ],
     [ "AtomData", "structocc_1_1io_1_1AtomData.html", "structocc_1_1io_1_1AtomData" ],
     [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
-    [ "BeckeGridSettings", "structocc_1_1io_1_1BeckeGridSettings.html", "structocc_1_1io_1_1BeckeGridSettings" ],
     [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
     [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
     [ "ColumnConfiguration", "structocc_1_1io_1_1ColumnConfiguration.html", "structocc_1_1io_1_1ColumnConfiguration" ],
@@ -27,6 +26,7 @@ var namespaceocc_1_1io =
     [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
     [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
     [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
+    [ "GridSettings", "structocc_1_1io_1_1GridSettings.html", "structocc_1_1io_1_1GridSettings" ],
     [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
     [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
     [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
@@ -60,6 +60,11 @@ var namespaceocc_1_1io =
       [ "CBOR", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a6009014cf7f117c0a14c14fdb971e9e8", null ],
       [ "BSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3ac3f11a091527e2df921d8d916f13c4d9", null ],
       [ "MSGPACK", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94", null ]
+    ] ],
+    [ "PruningScheme", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868", [
+      [ "None", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a6adf97f83acf6453d4a6a4b1070f3754", null ],
+      [ "NWChem", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a929a60543a3d798bb289678dcbebcb2b", null ],
+      [ "NumGrid", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a5268eb265372a3bf6d86e32e9af2a1cd", null ]
     ] ],
     [ "build", "namespaceocc_1_1io.html#a0b4154c8ab12aa7b60925e2a2b6acbe2", null ],
     [ "build", "namespaceocc_1_1io.html#a0b19dda27e50ff77a11e8e61654b1569", null ],
