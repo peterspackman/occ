@@ -15,7 +15,7 @@ double common_fac(int l, bool spherical) {
   }
 }
 
-Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
+Vec evaluate_decay_cutoff(const qm::AOBasis &basis, double threshold) {
   occ::log::trace("Evaluating decay cutoff (threshold = 1e-12) for AOBasis");
   occ::timing::start(occ::timing::category::gto);
   size_t natoms = basis.atoms().size();
@@ -23,7 +23,6 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
   auto atom2shell = basis.atom_to_shell();
   size_t max_shell_size = basis.max_shell_size();
   const double max_radius = 30.0;
-  const double threshold = 1e-12;
   const double increment = 0.1;
   const double min_radius = 5.0;
   const int npts = static_cast<int>((max_radius - min_radius) / increment) + 1;
@@ -66,7 +65,7 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis) {
   return result;
 }
 
-void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
+void evaluate_basis(const qm::AOBasis &basis, Mat3NConstRef grid_pts,
                     GTOValues &gto_values, int max_derivative) {
   occ::timing::start(occ::timing::category::gto);
   size_t nbf = basis.nbf();

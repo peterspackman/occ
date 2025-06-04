@@ -152,17 +152,17 @@ inline std::vector<MomentaSpherical> spherical_subshell_ordering(int l) {
   return moments;
 }
 
-void evaluate_basis(const qm::AOBasis &basis, const occ::Mat &grid_pts,
+void evaluate_basis(const qm::AOBasis &basis, Mat3NConstRef grid_pts,
                     GTOValues &gto_values, int max_derivative);
 
 inline GTOValues evaluate_basis(const qm::AOBasis &basis,
-                                const occ::Mat &grid_pts, int max_derivative) {
+                                Mat3NConstRef grid_pts, int max_derivative) {
   GTOValues gto_values;
   evaluate_basis(basis, grid_pts, gto_values, max_derivative);
   return gto_values;
 }
 
-Vec evaluate_decay_cutoff(const qm::AOBasis &basis);
+Vec evaluate_decay_cutoff(const qm::AOBasis &basis, double threshold = 1e-12);
 
 template <int angular_momentum>
 std::vector<std::array<int, angular_momentum>>
