@@ -7,7 +7,7 @@
 
 using namespace nb::literals;
 using occ::dft::DFT;
-using occ::io::BeckeGridSettings;
+using occ::io::GridSettings;
 using occ::qm::AOBasis;
 using occ::qm::MolecularOrbitals;
 using occ::qm::SCF;
@@ -18,17 +18,17 @@ constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
 
 nb::module_ register_dft_bindings(nb::module_ &m) {
 
-  nb::class_<BeckeGridSettings>(m, "BeckeGridSettings")
+  nb::class_<GridSettings>(m, "GridSettings")
       .def(nb::init<>())
-      .def_rw("max_angular_points", &BeckeGridSettings::max_angular_points)
-      .def_rw("min_angular_points", &BeckeGridSettings::min_angular_points)
-      .def_rw("radial_points", &BeckeGridSettings::radial_points)
-      .def_rw("radial_precision", &BeckeGridSettings::radial_precision)
-      .def("__repr__", [](const BeckeGridSettings &settings) {
-        return fmt::format(
-            "<BeckeGridSettings ang=({},{}) radial={}, prec={:.2g}>",
-            settings.min_angular_points, settings.max_angular_points,
-            settings.radial_points, settings.radial_precision);
+      .def_rw("max_angular_points", &GridSettings::max_angular_points)
+      .def_rw("min_angular_points", &GridSettings::min_angular_points)
+      .def_rw("radial_points", &GridSettings::radial_points)
+      .def_rw("radial_precision", &GridSettings::radial_precision)
+      .def("__repr__", [](const GridSettings &settings) {
+        return fmt::format("<GridSettings ang=({},{}) radial={}, prec={:.2g}>",
+                           settings.min_angular_points,
+                           settings.max_angular_points, settings.radial_points,
+                           settings.radial_precision);
       });
 
   using KS = SCF<DFT>;
@@ -52,7 +52,7 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
   nb::class_<DFT>(m, "DFT")
       .def(nb::init<const std::string &, const AOBasis &>())
       .def(nb::init<const std::string &, const AOBasis &,
-                    const BeckeGridSettings &>())
+                    const GridSettings &>())
       .def("nuclear_attraction_matrix", &DFT::compute_nuclear_attraction_matrix)
       .def("kinetic_matrix", &DFT::compute_kinetic_matrix)
       .def("set_density_fitting_basis", &DFT::set_density_fitting_basis)

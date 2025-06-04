@@ -6,7 +6,6 @@ set(HEADERS
     linear_multipole_shifter.h
     linear_multipole_calculator.h
     mult.h
-    multipole.h
     multipole_calculator.h
     multipole_shifter.h
     solid_harmonics.h

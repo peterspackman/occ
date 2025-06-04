@@ -2,6 +2,7 @@
 #include "python/core_bindings.h"
 #include "python/crystal_bindings.h"
 #include "python/dft_bindings.h"
+#include "python/dma_bindings.h"
 #include "python/isosurface_bindings.h"
 #include "python/qm_bindings.h"
 #include <nanobind/nanobind.h>
@@ -26,6 +27,7 @@ NB_MODULE(_occpy, m) {
   auto crystal = register_crystal_bindings(m);
   auto qm = register_qm_bindings(m);
   auto dft = register_dft_bindings(m);
+  auto dma = register_dma_bindings(m);
   auto iso = register_isosurface_bindings(m);
 
   nb::enum_<spdlog::level::level_enum>(m, "LogLevel")
@@ -57,6 +59,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.7.5";
+  m.attr("__version__") = "0.7.6";
 #endif
 }
