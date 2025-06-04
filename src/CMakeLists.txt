@@ -53,3 +53,40 @@ target_link_libraries(_occpy PUBLIC
 
 install(TARGETS _occpy LIBRARY DESTINATION occpy)
 endif()
+
+# JavaScript/WASM bindings for Emscripten
+if(ENABLE_JS_BINDINGS)
+
+set(JS_BINDING_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/core_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/qm_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
+)
+
+add_executable(occjs ${JS_BINDING_SOURCES})
+
+target_include_directories(occjs PRIVATE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/js"
+)
+
+target_compile_definitions(occjs PRIVATE VERSION_INFO=${PROJECT_VERSION})
+target_compile_features(occjs PUBLIC cxx_std_20)
+
+# Link against the core OCC libraries
+target_link_libraries(occjs PUBLIC 
+    occ_core
+    occ_qm
+    occ_gto
+    occ_io
+    occ_dft
+)
+
+# Emscripten-specific linker flags for JavaScript bindings
+set_target_properties(occjs PROPERTIES
+    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=5MB --bind"
+)
+
+# Set output file extension
+set_target_properties(occjs PROPERTIES SUFFIX ".js")
+
+endif()

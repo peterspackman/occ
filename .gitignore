@@ -10,3 +10,6 @@ tmp/
 uv.lock
 compile_commands.json
 __pycache__
+occjs.js
+occjs.wasm
+wasm/
