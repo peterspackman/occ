@@ -1,10 +1,10 @@
 [build-system]
-requires = ["scikit-build-core >=0.4.3", "cmake>3.29", "ninja; platform_system!='Windows'"]
+requires = ["scikit-build-core >=0.4.3", "cmake>3.29,<4.0", "ninja; platform_system!='Windows'"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "occpy"
-version = "0.7.5"
+version = "0.7.6"
 description = "A library for quantum chemistry"
 readme = "README.md"
 requires-python = ">=3.10"

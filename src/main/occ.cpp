@@ -6,6 +6,7 @@
 #include <occ/main/occ_cube.h>
 #include <occ/main/occ_describe.h>
 #include <occ/main/occ_dimers.h>
+#include <occ/main/occ_dma.h>
 #include <occ/main/occ_elastic.h>
 #include <occ/main/occ_elat.h>
 #include <occ/main/occ_isosurface.h>
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
   auto *cube = occ::main::add_cube_subcommand(app);
   auto *describe = occ::main::add_describe_subcommand(app);
   auto *dimers = occ::main::add_dimers_subcommand(app);
+  auto *dma = occ::main::add_dma_subcommand(app);
   auto *elastic = occ::main::add_elastic_subcommand(app);
   auto *elat = occ::main::add_elat_subcommand(app);
   auto *iso = occ::main::add_isosurface_subcommand(app);

@@ -2,6 +2,7 @@
 #include <occ/core/constants.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/parallel.h>
+#include <occ/dft/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/gto/density.h>
 
@@ -15,12 +16,12 @@ using PointsRef = Eigen::Ref<const Mat3N>;
 NonLocalCorrelationFunctional::NonLocalCorrelationFunctional() {}
 
 void NonLocalCorrelationFunctional::set_integration_grid(
-    const qm::AOBasis &basis, const BeckeGridSettings &settings) {
+    const qm::AOBasis &basis, const GridSettings &settings) {
   m_nlc_atom_grids.clear();
   MolecularGrid nlc_grid(basis, settings);
 
   for (size_t i = 0; i < basis.atoms().size(); i++) {
-    m_nlc_atom_grids.push_back(nlc_grid.generate_partitioned_atom_grid(i));
+    m_nlc_atom_grids.push_back(nlc_grid.get_partitioned_atom_grid(i));
   }
   size_t num_grid_points = std::accumulate(
       m_nlc_atom_grids.begin(), m_nlc_atom_grids.end(), 0.0,

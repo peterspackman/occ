@@ -74,12 +74,17 @@ template <unsigned int L> struct Multipole {
       total_num_multipole_components(L)};
   std::array<double, num_components> components;
 
+
+  /// The multipole rank
+  inline int rank() const {return L; }
+
   /**
    * The monopole (charge) part of this multipole expansion `q`
    *
    * \returns monopole.
    */
   double charge() const { return components[0]; }
+
 
   /**
    * The dipole part of this multipole expansion (`x y z`).

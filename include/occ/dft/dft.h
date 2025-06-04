@@ -7,7 +7,8 @@
 #include <occ/dft/dft_kernels.h>
 #include <occ/dft/dft_method.h>
 #include <occ/dft/functional.h>
-#include <occ/dft/grid.h>
+#include <occ/dft/grid_types.h>
+#include <occ/dft/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/range_separated_parameters.h>
 #include <occ/dft/xc_potential_matrix.h>
@@ -33,11 +34,11 @@ using occ::Vec;
 class DFT : public qm::SCFMethodBase {
 
 public:
-  DFT(const std::string &, const AOBasis &, const BeckeGridSettings & = {});
+  DFT(const std::string &, const qm::AOBasis &, const GridSettings & = {});
   inline const auto &aobasis() const { return m_hf.aobasis(); }
   inline auto nbf() const { return m_hf.nbf(); }
 
-  void set_integration_grid(const BeckeGridSettings & = {});
+  void set_integration_grid(const GridSettings & = {});
 
   inline void
   set_density_fitting_basis(const std::string &density_fitting_basis) {

@@ -367,6 +367,11 @@ Mat3N Wavefunction::electric_field(const Mat3N &points) const {
   return efield_e + efield_n;
 }
 
+Mat Wavefunction::overlap_matrix() const {
+  HartreeFock hf(basis);
+  return hf.compute_overlap_matrix();
+}
+
 Vec Wavefunction::mulliken_charges() const {
 
   HartreeFock hf(basis);

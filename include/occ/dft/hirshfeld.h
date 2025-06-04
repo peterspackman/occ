@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 #include <occ/core/multipole.h>
-#include <occ/dft/grid.h>
+#include <occ/dft/molecular_grid.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/shell.h>
 #include <occ/slater/slaterbasis.h>

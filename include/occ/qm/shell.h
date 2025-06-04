@@ -41,6 +41,8 @@ struct Shell {
   double min_exponent() const;
   void incorporate_shell_norm();
   double coeff_normalized(Eigen::Index contr_idx, Eigen::Index coeff_idx) const;
+  double coeff_normalized_dma(Eigen::Index contr_idx,
+                              Eigen::Index coeff_idx) const;
   Mat coeffs_normalized_for_libecpint() const;
   size_t size() const;
 
@@ -140,6 +142,8 @@ public:
 
   inline auto max_shell_size() const { return m_max_shell_size; }
   inline auto max_ecp_shell_size() const { return m_max_ecp_shell_size; }
+  inline auto max_num_primitives() const { return m_max_num_primitives; }
+
   static AOBasis load(const AtomList &atoms, const std::string &name);
 
   bool operator==(const AOBasis &rhs) const;
@@ -159,7 +163,7 @@ private:
   std::vector<std::vector<int>> m_atom_to_ecp_shell_idxs;
   std::vector<int> m_ecp_electrons;
   size_t m_nbf{0};
-  size_t m_max_shell_size{0}, m_max_ecp_shell_size{0};
+  size_t m_max_shell_size{0}, m_max_ecp_shell_size{0}, m_max_num_primitives{0};
   Shell::Kind m_kind{Shell::Kind::Cartesian};
 };
 

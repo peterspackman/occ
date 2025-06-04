@@ -13,11 +13,11 @@ using Buffer = std::vector<double>;
 using IntegralResult = qm::IntegralEngine::IntegralResult<3>;
 
 SemiNumericalExchange::SemiNumericalExchange(const qm::AOBasis &basis,
-                                             const BeckeGridSettings &settings)
+                                             const GridSettings &settings)
     : m_atoms(basis.atoms()), m_basis(basis), m_grid(m_basis, settings),
       m_engine(basis.atoms(), basis.shells()) {
   for (size_t i = 0; i < m_atoms.size(); i++) {
-    m_atom_grids.push_back(m_grid.generate_partitioned_atom_grid(i));
+    m_atom_grids.push_back(m_grid.get_partitioned_atom_grid(i));
   }
   m_overlap = m_engine.one_electron_operator(qm::IntegralEngine::Op::overlap);
   m_numerical_overlap = compute_overlap_matrix();

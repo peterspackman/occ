@@ -44,6 +44,7 @@ enum category {
   fft,
   xdm,
   solvent,
+  dma,
   isosurface_function,
   isosurface_normals,
   isosurface_properties,
@@ -51,6 +52,10 @@ enum category {
   mc_primal,
   mc_surface,
   gradient,
+  dma_analytic,
+  dma_grid_eval,
+  dma_grid_int,
+  dma_total,
   global,
   _group_count
 };

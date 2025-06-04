@@ -23,7 +23,7 @@ double psi4_primitive_normalization(int n, double alpha) {
   double z = std::pow(g, tmp1);
   double normg =
       std::sqrt((pow(2.0, n) * z) /
-                (M_PI * std::sqrt(M_PI) * occ::util::double_factorial(2 * n)));
+                (M_PI * std::sqrt(M_PI) * occ::util::double_factorial_2n_1(n)));
   return normg;
 }
 
@@ -155,7 +155,7 @@ Mat Shell::coeffs_normalized_for_libecpint() const {
   }
 
   double tmp =
-      ((2.0 * M_PI / M_2_SQRTPI) * occ::util::double_factorial(2 * l)) /
+      ((2.0 * M_PI / M_2_SQRTPI) * occ::util::double_factorial_2n_1(l)) /
       std::pow(2.0, l);
   double norm = std::sqrt(1.0 / (tmp * e_sum));
 
@@ -245,6 +245,22 @@ double Shell::coeff_normalized(Eigen::Index contr_idx,
       return contraction_coefficients(contr_idx, coeff_idx) * one_over_N;
   }
   */
+}
+
+inline double dma_norm(int l, double e) {
+  constexpr double sqrt_pi3 = occ::constants::sqrt_pi_cubed<double>;
+  const double two_alpha = 2 * e;
+  const double two_alpha_to_am32 =
+      std::pow(two_alpha, l + 1) * std::sqrt(two_alpha);
+  return std::sqrt((std::pow(2, l) * two_alpha_to_am32) /
+                   (sqrt_pi3 * occ::util::double_factorial_2n_1(l)));
+}
+
+double Shell::coeff_normalized_dma(Eigen::Index contr_idx,
+                                   Eigen::Index coeff_idx) const {
+  const double e = exponents(coeff_idx);
+
+  return coeff_normalized(contr_idx, coeff_idx)  * dma_norm(static_cast<int>(l), e);
 }
 
 size_t Shell::size() const {
@@ -350,6 +366,7 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
     m_first_bf.push_back(m_nbf);
     m_nbf += shell.size();
     m_max_shell_size = std::max(m_max_shell_size, shell.size());
+    m_max_num_primitives = std::max(m_max_num_primitives, shell.num_primitives());
     int atom_idx = shell.find_atom_index(m_atoms);
     // TODO check for error
     if (atom_idx >= m_atom_to_shell_idxs.size() || atom_idx < 0) {
@@ -387,6 +404,7 @@ void AOBasis::update_bf_maps() {
   m_first_bf.clear();
   m_nbf = 0;
   m_max_shell_size = 0;
+  m_max_num_primitives = 0;
   m_bf_to_shell.clear();
   m_bf_to_atom.clear();
   size_t shell_idx = 0;
@@ -394,6 +412,7 @@ void AOBasis::update_bf_maps() {
     m_first_bf.push_back(m_nbf);
     m_nbf += shell.size();
     m_max_shell_size = std::max(m_max_shell_size, shell.size());
+    m_max_num_primitives = std::max(m_max_num_primitives, shell.num_primitives());
     int atom_idx = m_shell_to_atom_idx[shell_idx];
     for (int i = 0; i < shell.size(); i++) {
       m_bf_to_shell.push_back(shell_idx);
@@ -454,6 +473,7 @@ void AOBasis::merge(const AOBasis &rhs) {
   }
 
   m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);
+  m_max_num_primitives = std::max(m_max_num_primitives, rhs.m_max_num_primitives);
 }
 
 std::string canonicalize_name(const std::string &name) {

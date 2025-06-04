@@ -85,6 +85,8 @@ const char *category_name(category cat) {
     return "XDM dispersion";
   case solvent:
     return "Solvation";
+  case dma:
+    return "Distributed Multipole Analysis";
   case global:
     return "Global (total time)";
   case jkmat:
@@ -105,6 +107,14 @@ const char *category_name(category cat) {
     return "Marching cubes extract";
   case gradient:
     return "Gradient evaluation";
+  case dma_analytic:
+    return "DMA analytic integration";
+  case dma_grid_eval:
+    return "DMA grid GTO evaluation";
+  case dma_grid_int:
+    return "DMA grid integration";
+  case dma_total:
+    return "DMA total";
   default:
     return "other";
   }
@@ -136,6 +146,7 @@ void print_timings() {
       df,
       xdm,
       solvent,
+      dma,
       isosurface_function,
       isosurface_normals,
       isosurface_properties,
@@ -143,6 +154,10 @@ void print_timings() {
       mc_primal,
       mc_surface,
       gradient,
+      dma_analytic,
+      dma_grid_eval,
+      dma_grid_int,
+      dma_total,
       global,
   };
   log::info("Wall clock time by category (s)");

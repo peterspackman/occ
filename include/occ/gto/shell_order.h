@@ -6,7 +6,7 @@ namespace occ::gto {
 enum ShellOrder { Default, Gaussian, Molden };
 
 template <bool cartesian, ShellOrder order = Default, typename F>
-inline void iterate_over_shell(F &f, int l) {
+inline void iterate_over_shell(F &&f, int l) {
   if constexpr (order == ShellOrder::Default) {
     if constexpr (cartesian) {
       int i, j, k;
@@ -41,6 +41,10 @@ inline void iterate_over_shell(F &f, int l) {
         f(0, 1, 1, l); // yz
         break;
       case 3:
+        // temporary for gdma
+        //   3,0,0,2,2,1,0,1,0,1
+        //   0,3,0,1,0,2,2,0,1,1
+        //   0,0,3,0,1,0,1,2,2,1
         f(3, 0, 0, l); // xxx
         f(0, 3, 0, l); // yyy
         f(0, 0, 3, l); // zzz
@@ -134,6 +138,18 @@ inline int shell_index_spherical<ShellOrder::Gaussian>(int l, int m) {
 
 template <> inline int shell_index_spherical<ShellOrder::Molden>(int l, int m) {
   return 2 * std::abs(m) + (m > 0 ? -1 : 0);
+}
+
+template <bool cartesian,
+          occ::gto::ShellOrder order = occ::gto::ShellOrder::Default,
+          typename F>
+inline void iterate_over_shell_pair(F &&f, int l_i, int l_j) {
+  iterate_over_shell<cartesian, order>(
+      [&](auto... args_i) {
+        iterate_over_shell<cartesian, order>(
+            [&](auto... args_j) { f(args_i..., args_j...); }, l_j);
+      },
+      l_i);
 }
 
 } // namespace occ::gto

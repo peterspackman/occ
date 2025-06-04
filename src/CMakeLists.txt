@@ -2,6 +2,7 @@ add_subdirectory(3rdparty)
 add_subdirectory(core)
 add_subdirectory(disp)
 add_subdirectory(crystal)
+add_subdirectory(dma)
 add_subdirectory(interaction)
 add_subdirectory(geometry)
 add_subdirectory(gto)
@@ -27,6 +28,7 @@ set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/core_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/crystal_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/dft_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/isosurface_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occpy.cpp"

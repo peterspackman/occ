@@ -94,10 +94,11 @@ constexpr unsigned int num_subshells(bool cartesian, unsigned int l) {
 
 inline double cartesian_normalization_factor(int l, int m, int n) {
   int angular_momenta = l + m + n;
-  using occ::util::double_factorial;
+  using occ::util::double_factorial_2n_1;
   double result =
-      sqrt(double_factorial(angular_momenta) /
-           (double_factorial(l) * double_factorial(m) * double_factorial(n)));
+      std::sqrt(double_factorial_2n_1(angular_momenta) /
+                (double_factorial_2n_1(l) * double_factorial_2n_1(m) *
+                 double_factorial_2n_1(n)));
   if (angular_momenta > 1) {
     result /= 2 * std::sqrt(M_PI / (2 * angular_momenta + 1));
   }

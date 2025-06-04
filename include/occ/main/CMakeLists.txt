@@ -4,6 +4,7 @@ set(OCC_MAIN_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/monomer_wavefunctions.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cube.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_dma.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.h"

@@ -1,8 +1,11 @@
 set(OCC_DFT_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/dft.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/functional.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/grid.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/grid_types.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/grid_utils.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/molecular_grid_points.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/molecular_grid.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/nonlocal_correlation.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/range_separated_parameters.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/seminumerical_exchange.h"
