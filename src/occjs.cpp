@@ -31,9 +31,6 @@ EMSCRIPTEN_BINDINGS(occ) {
     function("setNumThreads", optional_override([](int n) { 
         occ::parallel::set_num_threads(n); 
     }));
-    function("setDataDirectory", optional_override([](const std::string& s) { 
-        occ::set_data_directory(s); 
-    }));
 
     // Version information
     constant("version", std::string("0.7.6"));

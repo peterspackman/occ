@@ -47,7 +47,7 @@ async function runCoreTests(Module) {
     // Molecule tests
     suite.test('H2 molecule creation and properties', () => {
         // Create H2 molecule
-        const positions = Module.Mat3N.create(3, 2);
+        const positions = Module.Mat3N.create(2);
         positions.set(0, 0, 0.0);  // H1: (0, 0, 0)
         positions.set(1, 0, 0.0);
         positions.set(2, 0, 0.0);
@@ -72,7 +72,7 @@ async function runCoreTests(Module) {
     
     // Water molecule tests
     suite.test('Water molecule creation and properties', () => {
-        const positions = Module.Mat3N.create(3, 3);
+        const positions = Module.Mat3N.create(3);
         
         // O at origin
         positions.set(0, 0, 0.0);
@@ -105,7 +105,7 @@ async function runCoreTests(Module) {
     // Molecular transformations
     suite.test('Molecular transformations', () => {
         // Create simple molecule
-        const positions = Module.Mat3N.create(2, 3);
+        const positions = Module.Mat3N.create(2);  // 2 atoms
         positions.set(0, 0, 0.0);
         positions.set(1, 0, 0.0);
         positions.set(2, 0, 0.0);
@@ -138,15 +138,15 @@ async function runCoreTests(Module) {
     // Dimer tests
     suite.test('Dimer creation and analysis', () => {
         // Create two simple molecules
-        const pos1 = Module.Mat3N.create(1, 3);
-        pos1.set(0, 0, 0.0);
-        pos1.set(1, 0, 0.0);
-        pos1.set(2, 0, 0.0);
+        const pos1 = Module.Mat3N.create(1);  // 1 atom
+        pos1.set(0, 0, 0.0);  // x coordinate
+        pos1.set(1, 0, 0.0);  // y coordinate
+        pos1.set(2, 0, 0.0);  // z coordinate
         
-        const pos2 = Module.Mat3N.create(1, 3);
-        pos2.set(0, 0, 5.0);
-        pos2.set(1, 0, 0.0);
-        pos2.set(2, 0, 0.0);
+        const pos2 = Module.Mat3N.create(1);  // 1 atom
+        pos2.set(0, 0, 5.0);  // x coordinate
+        pos2.set(1, 0, 0.0);  // y coordinate
+        pos2.set(2, 0, 0.0);  // z coordinate
         
         const an1 = Module.IVec.fromArray([1]);
         const an2 = Module.IVec.fromArray([1]);
@@ -166,7 +166,7 @@ async function runCoreTests(Module) {
     // Point group analysis
     suite.test('Point group analysis', () => {
         // Create linear H2 molecule (D∞h symmetry)
-        const positions = Module.Mat3N.create(2, 3);
+        const positions = Module.Mat3N.create(2);
         positions.set(0, 0, 0.0);
         positions.set(1, 0, 0.0);
         positions.set(2, 0, -0.7);
@@ -187,6 +187,20 @@ async function runCoreTests(Module) {
         test.assertTrue(pointGroup.symmetryNumber >= 2, 'H2 symmetry number >= 2');
     });
     
+    // Data directory management
+    suite.test('Data directory management', () => {
+        // Test setting and getting data directory
+        const testPath = '/test/path';
+        Module.setDataDirectory(testPath);
+        const retrievedPath = Module.getDataDirectory();
+        test.assertEqual(retrievedPath, testPath, 'Data directory set and retrieved correctly');
+        
+        // Reset to empty string for other tests
+        Module.setDataDirectory('');
+        const emptyPath = Module.getDataDirectory();
+        test.assertEqual(emptyPath, '', 'Data directory cleared correctly');
+    });
+
     // Partial charges
     suite.test('Partial charge calculations', () => {
         // Create water molecule

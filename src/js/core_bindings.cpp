@@ -9,11 +9,20 @@
 #include <occ/core/molecule.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
+#include <occ/core/data_directory.h>
 #include <occ/io/xyz.h>
 
 using namespace emscripten;
 using namespace occ::core;
 using namespace occ;
+
+void set_data_directory_wrapper(std::string path) {
+    occ::set_data_directory(path);
+}
+
+std::string get_data_directory_wrapper() {
+    return std::string(occ::get_data_directory() ?: "");
+}
 
 void register_core_bindings() {
     // Eigen matrix bindings using factory functions
@@ -42,7 +51,7 @@ void register_core_bindings() {
         }))
         .function("rows", optional_override([](const Mat3N& m) { return m.rows(); }))
         .function("cols", optional_override([](const Mat3N& m) { return m.cols(); }))
-        .class_function("create", optional_override([](int rows, int cols) { 
+        .class_function("create", optional_override([](int cols) { 
             Mat3N result = Mat3N::Zero(3, cols); 
             return result; 
         }));
@@ -160,9 +169,7 @@ void register_core_bindings() {
         .function("atomicMasses", &Molecule::atomic_masses)
         .function("atomicNumbers", &Molecule::atomic_numbers)
         .function("vdwRadii", &Molecule::vdw_radii)
-        .function("molarMass", optional_override([](const Molecule& mol) {
-            return mol.molar_mass() * 1000.0; // Convert kg/mol to g/mol
-        }))
+        .function("molarMass", &Molecule::molar_mass)
         .function("atoms", &Molecule::atoms)
         .function("centerOfMass", &Molecule::center_of_mass)
         .function("centroid", &Molecule::centroid)
@@ -257,4 +264,8 @@ void register_core_bindings() {
     function("eemPartialCharges", &occ::core::charges::eem_partial_charges);
     function("eeqPartialCharges", &occ::core::charges::eeq_partial_charges);
     function("eeqCoordinationNumbers", &occ::core::charges::eeq_coordination_numbers);
+    
+    // Data directory functions
+    function("setDataDirectory", &set_data_directory_wrapper);
+    function("getDataDirectory", &get_data_directory_wrapper);
 }
