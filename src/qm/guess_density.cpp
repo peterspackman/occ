@@ -1,4 +1,9 @@
+#include "Faddeeva.hpp"
+#include "detail/three_center_kernels.h"
+#include <occ/core/log.h>
+#include <occ/core/parallel.h>
 #include <occ/qm/guess_density.h>
+#include <occ/qm/integral_engine.h>
 // modified routines from libint2
 // include/libint2/chemistry/sto3g_atomic_density.h
 
@@ -109,6 +114,57 @@ std::vector<double> minimal_basis_occupation_vector(size_t Z, bool spherical) {
                    nao, occvec.size());
   }
   return occvec;
+}
+
+Mat compute_sap_matrix(const std::vector<occ::core::Atom> &atoms,
+                       const AOBasis &basis,
+                       const std::string &sap_basis_name) {
+  occ::log::debug("Computing SAP matrix using basis: {}", sap_basis_name);
+
+  auto sap_basis = AOBasis::load_sap_basis(atoms);
+  IntegralEngine engine(basis);
+  engine.set_auxiliary_basis(sap_basis.shells(), false); // true = dummy atoms
+
+  const auto nbf = basis.nbf();
+  const auto naux = sap_basis.nbf();
+  Mat V_sap = Mat::Zero(nbf, nbf);
+
+  // Use the existing 3-center kernel to compute (ij|P) integrals
+  // where P are the SAP auxiliary functions
+
+  // Lambda to collect 3-center integrals and contract with SAP coefficients
+  auto collect_integrals = [&](const IntegralEngine::IntegralResult<3> &args) {
+    // Map buffer to matrix for this auxiliary function
+    Eigen::Map<const Mat> eri_matrix(args.buffer, args.dims[0], args.dims[1]);
+
+    // Add contribution to SAP matrix (coefficients already have correct sign)
+    V_sap.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
+        eri_matrix;
+
+    // Handle symmetry (ij) = (ji)
+    if (args.bf[0] != args.bf[1]) {
+      V_sap.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]) +=
+          eri_matrix.transpose();
+    }
+  };
+
+  // Call the 3-center kernel
+  auto lambda = [&](int thread_id) {
+    if (engine.is_spherical()) {
+      detail::three_center_aux_kernel<Shell::Kind::Spherical>(
+          collect_integrals, engine.env(), engine.aobasis(), engine.auxbasis(),
+          engine.shellpairs(), thread_id);
+    } else {
+      detail::three_center_aux_kernel<Shell::Kind::Cartesian>(
+          collect_integrals, engine.env(), engine.aobasis(), engine.auxbasis(),
+          engine.shellpairs(), thread_id);
+    }
+  };
+
+  occ::parallel::parallel_do(lambda);
+
+  occ::log::debug("SAP matrix computed with {} x {} elements", nbf, nbf);
+  return -V_sap;
 }
 
 } // namespace occ::qm::guess

@@ -12,6 +12,7 @@
 #include <occ/qm/guess_density.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/opmatrix.h>
+#include <occ/qm/orthogonalizer.h>
 #include <occ/qm/scf_convergence_settings.h>
 #include <occ/qm/scf_method.h>
 #include <occ/qm/shell.h>
@@ -20,7 +21,6 @@
 
 namespace occ::qm {
 
-constexpr auto OCC_MINIMAL_BASIS = "sto-3g";
 using qm::expectation;
 using qm::SpinorbitalKind;
 using qm::Wavefunction;
@@ -31,14 +31,14 @@ using util::is_odd;
 using PointChargeList = std::vector<occ::core::PointCharge>;
 
 struct SCFContext {
-  Mat S, T, V, H, K, X, Xinv, F, Vpc, Vecp;
-  double XtX_condition_number{0.0};
+  Mat S, T, V, H, K, F, Vpc, Vecp;
   int n_electrons{0};
   int n_frozen_electrons{0};
   int n_occ{0};
   int n_unpaired_electrons{0};
   size_t nbf{0};
   bool converged{false};
+  CanonicalOrthogonalizer orthogonalizer;
   occ::core::EnergyComponents energy;
   occ::qm::MolecularOrbitals mo;
   PointChargeList point_charges;
@@ -66,6 +66,7 @@ template <SCFMethod Procedure> struct SCF {
   void set_initial_guess_from_wfn(const Wavefunction &wfn);
 
   void compute_initial_guess();
+  void compute_sap_guess();
   void set_point_charges(const PointChargeList &charges);
 
   void update_scf_energy(bool incremental);

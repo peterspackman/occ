@@ -7,6 +7,7 @@
 #include <occ/io/json_basis.h>
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/shell.h>
+#include <occ/qm/sto3g_basis.h>
 
 namespace fs = std::filesystem;
 
@@ -85,9 +86,8 @@ Shell::Shell(const int ang, const std::vector<double> &expo,
 Shell::Shell(const occ::core::PointCharge &point_charge, double alpha)
     : l(0), origin(), exponents(1), contraction_coefficients(1, 1) {
   exponents(0) = alpha;
-  contraction_coefficients(0, 0) =
-      -point_charge.charge() /
-      (2 * constants::sqrt_pi<double> * gint(2, alpha));
+  contraction_coefficients(0, 0) = -point_charge.charge();
+  normalize_charge_distribution_primitives();
   u_coefficients = contraction_coefficients;
   const auto &pos = point_charge.position();
   origin = {pos.x(), pos.y(), pos.z()};
@@ -120,6 +120,8 @@ size_t Shell::num_contractions() const {
 }
 
 double Shell::norm() const {
+  constexpr double pi2_34 =
+      3.9685778240728024992720094621189610321284055835201069917099724937;
   double result = 0.0;
   for (Eigen::Index i = 0; i < contraction_coefficients.rows(); i++) {
     Eigen::Index j;
@@ -177,54 +179,13 @@ void Shell::incorporate_shell_norm() {
     contraction_coefficients.row(i).array() *= n;
   }
   normalize_contracted_gto(l, exponents, contraction_coefficients);
+}
 
-  // NOTE: this is taken from libint2, and is here for compatibility
-  // and consistency as the library was initially written with libint2
-  // as the integral backend.
-  // It's strange to treat s & p functions differently, but this yields
-  // consistent results with libint2 and libint2::Shell
-  /*
-  {
-      using detail::df_Kminus1;
-      using std::pow;
-      const auto sqrt_Pi_cubed = double{5.56832799683170784528481798212};
-      const auto np = num_primitives();
-      for (size_t i = 0; i < num_contractions(); i++) {
-          auto coeff = contraction_coefficients.col(i);
-          for (auto p = 0ul; p != np; ++p) {
-              if (exponents(p) != 0) {
-                  const auto two_alpha = 2 * exponents(p);
-                  const auto two_alpha_to_am32 =
-                      pow(two_alpha, l + 1) * sqrt(two_alpha);
-                  const auto normalization_factor =
-                      sqrt(pow(2, l) * two_alpha_to_am32 /
-                           (sqrt_Pi_cubed * df_Kminus1[2 * l]));
-
-                  coeff(p) *= normalization_factor;
-              }
-          }
-
-          // need to force normalization to unity?
-          if (true) {
-              // compute the self-overlap of the , scale coefficients by its
-              // inverse square root
-              double norm{0};
-              for (auto p = 0ul; p != np; ++p) {
-                  for (decltype(p) q = 0ul; q <= p; ++q) {
-                      auto gamma = exponents(p) + exponents(q);
-                      norm += (p == q ? 1 : 2) * df_Kminus1[2 * l] *
-                              sqrt_Pi_cubed * coeff(p) * coeff(q) /
-                              (pow(2, l) * pow(gamma, l + 1) * sqrt(gamma));
-                  }
-              }
-              auto normalization_factor = 1 / sqrt(norm);
-              for (auto p = 0ul; p != np; ++p) {
-                  coeff(p) *= normalization_factor;
-              }
-          }
-      }
+void Shell::normalize_charge_distribution_primitives() {
+  for (size_t i = 0; i < num_primitives(); i++) {
+    double n = 1.0 / (2 * std::sqrt(M_PI) * gint(2, exponents(i)));
+    contraction_coefficients.row(i).array() *= n;
   }
-  */
 }
 
 double Shell::coeff_normalized(Eigen::Index contr_idx,
@@ -260,7 +221,8 @@ double Shell::coeff_normalized_dma(Eigen::Index contr_idx,
                                    Eigen::Index coeff_idx) const {
   const double e = exponents(coeff_idx);
 
-  return coeff_normalized(contr_idx, coeff_idx)  * dma_norm(static_cast<int>(l), e);
+  return coeff_normalized(contr_idx, coeff_idx) *
+         dma_norm(static_cast<int>(l), e);
 }
 
 size_t Shell::size() const {
@@ -366,7 +328,8 @@ AOBasis::AOBasis(const std::vector<occ::core::Atom> &atoms,
     m_first_bf.push_back(m_nbf);
     m_nbf += shell.size();
     m_max_shell_size = std::max(m_max_shell_size, shell.size());
-    m_max_num_primitives = std::max(m_max_num_primitives, shell.num_primitives());
+    m_max_num_primitives =
+        std::max(m_max_num_primitives, shell.num_primitives());
     int atom_idx = shell.find_atom_index(m_atoms);
     // TODO check for error
     if (atom_idx >= m_atom_to_shell_idxs.size() || atom_idx < 0) {
@@ -412,7 +375,8 @@ void AOBasis::update_bf_maps() {
     m_first_bf.push_back(m_nbf);
     m_nbf += shell.size();
     m_max_shell_size = std::max(m_max_shell_size, shell.size());
-    m_max_num_primitives = std::max(m_max_num_primitives, shell.num_primitives());
+    m_max_num_primitives =
+        std::max(m_max_num_primitives, shell.num_primitives());
     int atom_idx = m_shell_to_atom_idx[shell_idx];
     for (int i = 0; i < shell.size(); i++) {
       m_bf_to_shell.push_back(shell_idx);
@@ -473,7 +437,8 @@ void AOBasis::merge(const AOBasis &rhs) {
   }
 
   m_max_shell_size = std::max(m_max_shell_size, rhs.m_max_shell_size);
-  m_max_num_primitives = std::max(m_max_num_primitives, rhs.m_max_num_primitives);
+  m_max_num_primitives =
+      std::max(m_max_num_primitives, rhs.m_max_num_primitives);
 }
 
 std::string canonicalize_name(const std::string &name) {
@@ -533,12 +498,12 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
   std::string json_filepath;
   auto canonical_name = canonicalize_name(name);
   if (!canonical_name.ends_with(".json")) {
-      json_filepath = canonical_name + ".json";
+    json_filepath = canonical_name + ".json";
     if (!fs::exists(canonical_name + ".json")) {
       json_filepath = basis_lib_path + "/" + json_filepath;
     }
   } else {
-      json_filepath = canonical_name;
+    json_filepath = canonical_name;
   }
   occ::io::JsonBasisReader parser(json_filepath);
   auto element_map = parser.element_map();
@@ -598,6 +563,79 @@ AOBasis AOBasis::load(const AtomList &atoms, const std::string &name) {
   }
   AOBasis result(atoms, shells, name, ecp_shells);
   result.set_ecp_electrons(ecp_electrons);
+  return result;
+}
+
+AOBasis AOBasis::load_minimal_basis(const AtomList &atoms) {
+  std::string basis_lib_path = data_path();
+
+  std::vector<Shell> shells = basis_sets::build_sto3g_shells(atoms);
+  std::vector<Shell> ecp_shells;
+
+  std::vector<int> ecp_electrons(atoms.size(), 0);
+  for (auto &sh : shells) {
+    sh.incorporate_shell_norm();
+  }
+  AOBasis result(atoms, shells, OCC_MINIMAL_BASIS, ecp_shells);
+  result.set_ecp_electrons(ecp_electrons);
+  return result;
+}
+
+AOBasis AOBasis::load_sap_basis(const AtomList &atoms) {
+  std::string basis_lib_path = data_path();
+
+  std::string json_filepath;
+  auto canonical_name = canonicalize_name("sap_grasp_large");
+  if (!canonical_name.ends_with(".json")) {
+    json_filepath = canonical_name + ".json";
+    if (!fs::exists(canonical_name + ".json")) {
+      json_filepath = basis_lib_path + "/" + json_filepath;
+    }
+  } else {
+    json_filepath = canonical_name;
+  }
+  occ::io::JsonBasisReader parser(json_filepath);
+  auto element_map = parser.element_map();
+
+  std::vector<Shell> shells;
+
+  int nsh = 0;
+
+  for (size_t a = 0; a < atoms.size(); ++a) {
+    std::array<double, 3> origin = {atoms[a].x, atoms[a].y, atoms[a].z};
+    const std::size_t Z = atoms[a].atomic_number;
+    if (!element_map.contains(Z)) {
+      throw std::runtime_error(fmt::format("element {} not found in basis", Z));
+    }
+    const occ::io::ElementBasis element_basis = element_map.at(Z);
+    if (!element_basis.electron_shells.empty()) {
+      for (const auto &s : element_basis.electron_shells) {
+        // handle general contractions by splitting
+        for (int i = 0; i < s.coefficients.size(); i++) {
+          shells.push_back(
+              Shell(s.angular_momentum[i % s.angular_momentum.size()],
+                    s.exponents, {s.coefficients[i]}, origin));
+          shells[nsh].normalize_charge_distribution_primitives();
+          nsh++;
+        }
+      }
+    } else {
+      std::string errmsg = fmt::format(
+          "No matching basis for element (z={}) in {}", Z, json_filepath);
+      throw std::logic_error(errmsg);
+    }
+  }
+  log::info("BEFORE CONSTRUCTOR");
+  for (size_t shell_idx = 0; shell_idx < shells.size(); shell_idx++) {
+    auto &sh = shells[shell_idx];
+    for (int i = 0; i < sh.num_primitives(); i++) {
+      log::info("{} {:12.6f} {:12.6f}", i, sh.exponents(i),
+                sh.contraction_coefficients(i, 0));
+    }
+    log::info("sum {}", sh.contraction_coefficients.sum());
+  }
+  log::info("DONE BEFORE CONSTRUCTOR");
+  AOBasis result(atoms, shells, canonical_name);
   return result;
 }
 

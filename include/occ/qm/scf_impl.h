@@ -225,19 +225,11 @@ Mat SCF<P>::compute_soad(const Mat &overlap_minbs) const {
 }
 
 template <SCFMethod P> void SCF<P>::set_conditioning_orthogonalizer() {
-  double S_condition_number_threshold =
-      1.0 / std::numeric_limits<double>::epsilon();
-  occ::core::ConditioningOrthogonalizerResult g;
   if (ctx.mo.kind == Unrestricted) {
-    g = core::conditioning_orthogonalizer(block::a(ctx.S),
-                                          S_condition_number_threshold);
+    ctx.orthogonalizer.build(block::a(ctx.S));
   } else {
-    g = core::conditioning_orthogonalizer(ctx.S, S_condition_number_threshold);
+    ctx.orthogonalizer.build(ctx.S);
   }
-
-  ctx.Xinv = g.result_inverse;
-  ctx.XtX_condition_number = g.result_condition_number;
-  ctx.X = g.result;
 }
 
 template <SCFMethod P> void SCF<P>::set_core_matrices() {
@@ -308,9 +300,7 @@ void SCF<P>::set_initial_guess_from_wfn(const Wavefunction &wfn) {
   ctx.mo = wfn.mo;
   update_occupied_orbital_count();
   set_core_matrices();
-  // F = H;
   set_conditioning_orthogonalizer();
-  // mo.update(X, F);
 }
 
 template <SCFMethod P> void SCF<P>::compute_initial_guess() {
@@ -328,7 +318,7 @@ template <SCFMethod P> void SCF<P>::compute_initial_guess() {
   if (m_procedure.have_effective_core_potentials()) {
     // use core guess
     log::info("Computing initial guess using core hamiltonian with ECPs");
-    ctx.mo.update(ctx.X, ctx.F);
+    ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, ctx.F);
     occ::timing::stop(occ::timing::category::guess);
     return;
   }
@@ -360,7 +350,7 @@ template <SCFMethod P> void SCF<P>::compute_initial_guess() {
     log::debug("Projecting minimal basis guess into atomic orbital "
                "basis...");
     const auto tstart = std::chrono::high_resolution_clock::now();
-    auto minbs = occ::qm::AOBasis::load(m_procedure.atoms(), OCC_MINIMAL_BASIS);
+    auto minbs = occ::qm::AOBasis::load_minimal_basis(m_procedure.atoms());
     minbs.set_pure(m_procedure.aobasis().is_pure());
     D_minbs = compute_soad(m_procedure.compute_overlap_matrix_for_basis(
         minbs)); // compute guess in minimal basis
@@ -368,8 +358,8 @@ template <SCFMethod P> void SCF<P>::compute_initial_guess() {
     occ::qm::MolecularOrbitals mo_minbs;
     mo_minbs.kind = ctx.mo.kind;
     mo_minbs.D = D_minbs;
-    ctx.F += m_procedure.compute_fock_mixed_basis(mo_minbs, minbs, true);
-    ctx.mo.update(ctx.X, ctx.F);
+    ctx.F += m_procedure.compute_fock_mixed_basis(mo_minbs, minbs, true); 
+    ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, ctx.F);
 
     const auto tstop = std::chrono::high_resolution_clock::now();
     const std::chrono::duration<double> time_elapsed = tstop - tstart;
@@ -378,6 +368,35 @@ template <SCFMethod P> void SCF<P>::compute_initial_guess() {
   }
   m_have_initial_guess = true;
   occ::timing::stop(occ::timing::category::guess);
+}
+
+template <SCFMethod P> void SCF<P>::compute_sap_guess() {
+  if (m_have_initial_guess)
+    return;
+
+  log::info("Computing SAP initial guess");
+
+  // Set core matrices (T, V, H)
+  set_core_matrices();
+
+  // Compute SAP potential matrix
+  Mat V_sap =
+      occ::qm::guess::compute_sap_matrix(atoms(), m_procedure.aobasis());
+  log::info("SAP potential:\n{}\n", format_matrix(V_sap));
+
+  // Form effective Hamiltonian: H_eff = H_core + V_sap
+  ctx.F = ctx.H + V_sap;
+  log::info("T:\n{}\n", format_matrix(ctx.T));
+  log::info("H:\n{}\n", format_matrix(ctx.H));
+  log::info("F:\n{}\n", format_matrix(ctx.F));
+
+  // Set up orthogonalization
+  set_conditioning_orthogonalizer();
+
+  // Diagonalize effective Hamiltonian to get initial orbitals
+  ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, ctx.F);
+
+  m_have_initial_guess = true;
 }
 
 template <SCFMethod P>
@@ -515,7 +534,7 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
     if (diis_error < next_reset_threshold || iter - last_reset_iteration >= 8)
       reset_incremental_fock_formation = true;
 
-    ctx.mo.update(ctx.X, F_diis);
+    ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, F_diis);
     D_diff = ctx.mo.D - D_last;
 
     const auto tstop = std::chrono::high_resolution_clock::now();

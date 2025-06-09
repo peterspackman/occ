@@ -9,6 +9,8 @@
 
 namespace occ::qm {
 
+constexpr auto OCC_MINIMAL_BASIS = "sto-3g";
+
 using occ::core::Atom;
 
 double gto_norm(int l, double alpha);
@@ -19,9 +21,6 @@ struct Shell {
     Cartesian,
     Spherical,
   };
-
-  constexpr static double pi2_34 =
-      3.9685778240728024992720094621189610321284055835201069917099724937;
 
   Shell(int, const std::vector<double> &expo,
         const std::vector<std::vector<double>> &contr,
@@ -40,6 +39,7 @@ struct Shell {
   double max_exponent() const;
   double min_exponent() const;
   void incorporate_shell_norm();
+  void normalize_charge_distribution_primitives();
   double coeff_normalized(Eigen::Index contr_idx, Eigen::Index coeff_idx) const;
   double coeff_normalized_dma(Eigen::Index contr_idx,
                               Eigen::Index coeff_idx) const;
@@ -145,6 +145,8 @@ public:
   inline auto max_num_primitives() const { return m_max_num_primitives; }
 
   static AOBasis load(const AtomList &atoms, const std::string &name);
+  static AOBasis load_minimal_basis(const AtomList &atoms);
+  static AOBasis load_sap_basis(const AtomList &atoms);
 
   bool operator==(const AOBasis &rhs) const;
 
