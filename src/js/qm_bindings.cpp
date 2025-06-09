@@ -337,10 +337,8 @@ void register_qm_bindings() {
                   return std::string(scf.scf_kind());
                 }))
       .function("run", optional_override([](SCF<HartreeFock> &scf) {
-                  debug_log("Starting SCF calculation");
                   try {
                     auto result = scf.compute_scf_energy();
-                    debug_log_double("SCF calculation completed, energy =", result);
                     return result;
                   } catch (const std::exception &e) {
                     debug_log("SCF calculation threw std::exception");

@@ -194,7 +194,8 @@ void register_core_bindings() {
         .class_function("fromXyzFile", optional_override([](const std::string& filename) {
             return occ::io::molecule_from_xyz_file(filename);
         }))
-        .class_function("fromXyzString", optional_override([](const std::string& contents) {
+        .class_function("fromXyzString", optional_override([](const emscripten::val& contents_val) {
+            std::string contents = contents_val.as<std::string>();
             return occ::io::molecule_from_xyz_string(contents);
         }))
         .function("translationalFreeEnergy", &Molecule::translational_free_energy)

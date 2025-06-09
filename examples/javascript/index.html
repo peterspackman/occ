@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCC WASM - Interactive Molecular Chemistry</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            min-height: 120px;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-top: 15px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        button:hover:not(:disabled) {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        button.secondary {
+            background: #6c757d;
+        }
+        button.secondary:hover:not(:disabled) {
+            background: #545b62;
+        }
+        button.success {
+            background: #28a745;
+        }
+        button.success:hover:not(:disabled) {
+            background: #1e7e34;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .status {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        textarea {
+            width: 100%;
+            height: 140px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 10px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+        .example-xyz {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            border: 1px solid #e9ecef;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 OCC WebAssembly</h1>
+        <h2>Interactive Quantum Chemistry in the Browser</h2>
+        <div class="loading" id="loadingStatus">
+            <div>Loading OCC module...</div>
+            <div style="margin-top: 10px; font-size: 14px;">
+                This may take a few seconds on first load.
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainContent" style="display: none;">
+        <div class="two-column">
+            <div>
+                <h3>🧬 Load Molecule</h3>
+                <label for="xyzInput">XYZ Coordinates:</label>
+                <textarea id="xyzInput" placeholder="Paste XYZ coordinates here or use the examples below...">3
+Water molecule
+O     0.000000     0.000000     0.000000
+H     0.757000     0.586000     0.000000
+H    -0.757000     0.586000     0.000000</textarea>
+                
+                <div class="button-group">
+                    <button onclick="loadMoleculeFromXYZ()" id="loadMolBtn">Load Molecule</button>
+                    <button onclick="loadExampleWater()" class="secondary">Water Example</button>
+                    <button onclick="loadExampleH2()" class="secondary">H₂ Example</button>
+                    <button onclick="loadExampleMethane()" class="secondary">Methane Example</button>
+                </div>
+
+                <div class="status" id="molStatus">
+                    Load a molecule to see its properties and perform calculations.
+                </div>
+            </div>
+
+            <div>
+                <h3>⚡ Quick Calculations</h3>
+                <div class="button-group">
+                    <button onclick="calculateProperties()" id="propBtn" disabled>Molecular Properties</button>
+                    <button onclick="analyzeSymmetry()" id="symBtn" disabled>Point Group</button>
+                    <button onclick="calculateCharges()" id="chargeBtn" disabled>Partial Charges</button>
+                    <button onclick="performSCF()" id="scfBtn" disabled class="success">SCF Calculation</button>
+                </div>
+
+                <div class="status" id="calcStatus">
+                    Load a molecule first to enable calculations.
+                </div>
+            </div>
+        </div>
+
+        <div class="output" id="results">
+Welcome to OCC WebAssembly! 
+
+Status: Module not loaded yet...
+</div>
+    </div>
+
+    <!-- Examples for easy access -->
+    <div class="container" id="exampleContainer" style="display: none;">
+        <h3>📚 Example Molecules</h3>
+        <div class="two-column">
+            <div>
+                <h4>Water (H₂O)</h4>
+                <div class="example-xyz">3
+Water molecule
+O     0.000000     0.000000     0.000000
+H     0.757000     0.586000     0.000000
+H    -0.757000     0.586000     0.000000</div>
+            </div>
+            <div>
+                <h4>Hydrogen (H₂)</h4>
+                <div class="example-xyz">2
+Hydrogen molecule
+H     0.000000     0.000000     0.000000
+H     0.000000     0.000000     1.400000</div>
+            </div>
+        </div>
+        <div class="two-column">
+            <div>
+                <h4>Methane (CH₄)</h4>
+                <div class="example-xyz">5
+Methane molecule
+C     0.000000     0.000000     0.000000
+H     1.089000     1.089000     1.089000
+H    -1.089000    -1.089000     1.089000
+H    -1.089000     1.089000    -1.089000
+H     1.089000    -1.089000    -1.089000</div>
+            </div>
+            <div>
+                <h4>Ammonia (NH₃)</h4>
+                <div class="example-xyz">4
+Ammonia molecule
+N     0.000000     0.000000     0.000000
+H     0.000000     0.947000     0.306000
+H     0.820000    -0.473000     0.306000
+H    -0.820000    -0.473000     0.306000</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import createOccModule from './occjs.js';
+        
+        let Module = null;
+        let currentMolecule = null;
+        
+        // Initialize the module
+        async function initializeOCC() {
+            try {
+                console.log('Loading OCC WASM module...');
+                updateResults('Loading OCC WASM module...');
+                
+                Module = await createOccModule();
+                Module.setLogLevel(Module.LogLevel.WARN);
+                
+                updateResults(`✅ OCC Module loaded successfully!
+
+Module info:
+- Version: ${Module.version || 'unknown'}
+- Available classes: ${Object.keys(Module).filter(k => typeof Module[k] === 'function').slice(0, 10).join(', ')}...
+
+🧪 Testing XYZ loading capability...`);
+
+                // Test XYZ loading immediately
+                try {
+                    const testXyz = "2\nTest H2\nH 0.0 0.0 0.0\nH 0.0 0.0 1.4";
+                    console.log('Testing XYZ loading with:', testXyz);
+                    updateResults(document.getElementById('results').textContent + '\n\nTesting XYZ string loading...');
+                    
+                    const testMol = Module.Molecule.fromXyzString(testXyz);
+                    updateResults(document.getElementById('results').textContent + '\n✅ XYZ loading works! Test molecule has ' + testMol.size() + ' atoms');
+                    
+                } catch (testError) {
+                    console.error('XYZ loading test failed:', testError);
+                    updateResults(document.getElementById('results').textContent + '\n❌ XYZ loading test failed: ' + testError.message);
+                }
+                
+                document.getElementById('loadingStatus').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('exampleContainer').style.display = 'block';
+                
+                updateStatus('molStatus', '✅ OCC module loaded successfully! Ready for calculations.', 'success');
+                
+                // Auto-load the water example
+                loadExampleWater();
+                
+            } catch (error) {
+                console.error('Error loading OCC module:', error);
+                updateStatus('molStatus', '❌ Error loading OCC module: ' + error.message, 'error');
+                updateResults('❌ Error loading OCC module: ' + error.message + '\n\nStack trace:\n' + (error.stack || 'No stack trace available'));
+            }
+        }
+
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'status';
+            if (type === 'error') element.className += ' error';
+            if (type === 'success') element.className += ' success';
+        }
+
+        function updateResults(content) {
+            document.getElementById('results').textContent = content;
+        }
+
+        function enableButtons(enabled = true) {
+            ['propBtn', 'symBtn', 'chargeBtn', 'scfBtn'].forEach(id => {
+                document.getElementById(id).disabled = !enabled;
+            });
+        }
+
+        // Load molecule from XYZ input
+        window.loadMoleculeFromXYZ = function() {
+            if (!Module) {
+                updateResults('❌ Module not loaded yet!');
+                return;
+            }
+            
+            try {
+                const xyzInput = document.getElementById('xyzInput').value.trim();
+                if (!xyzInput) {
+                    updateStatus('molStatus', '❌ Please enter XYZ coordinates', 'error');
+                    return;
+                }
+                
+                // Debug information
+                updateResults(`🔍 Debugging molecule loading...
+
+Input type: ${typeof xyzInput}
+Input length: ${xyzInput.length}
+First 100 chars: "${xyzInput.substring(0, 100)}"
+
+Attempting to load with Module.Molecule.fromXyzString...`);
+
+                console.log('Attempting to load XYZ:', {
+                    type: typeof xyzInput,
+                    length: xyzInput.length,
+                    content: xyzInput,
+                    moduleAvailable: !!Module,
+                    moleculeClassAvailable: !!Module.Molecule,
+                    fromXyzStringAvailable: !!Module.Molecule.fromXyzString
+                });
+
+                currentMolecule = Module.Molecule.fromXyzString(xyzInput);
+                
+                updateStatus('molStatus', `✅ Loaded ${currentMolecule.name || 'molecule'} with ${currentMolecule.size()} atoms`, 'success');
+                updateStatus('calcStatus', 'Molecule loaded! Click any calculation button above.', 'success');
+                enableButtons(true);
+                
+                // Show basic info immediately
+                const info = `✅ Molecule loaded successfully!
+
+Name: ${currentMolecule.name || 'Unknown'}
+Number of atoms: ${currentMolecule.size()}
+Molecular formula: ${getFormula(currentMolecule)}
+Molar mass: ${currentMolecule.molarMass().toFixed(4)} kg/mol
+
+Click the buttons above to perform calculations.`;
+                
+                updateResults(info);
+                
+            } catch (error) {
+                console.error('Error loading molecule:', error);
+                const debugInfo = `❌ Error loading molecule: ${error.message}
+
+Debug info:
+- Module available: ${!!Module}
+- Module.Molecule available: ${!!(Module && Module.Molecule)}
+- Module.Molecule.fromXyzString available: ${!!(Module && Module.Molecule && Module.Molecule.fromXyzString)}
+- Input type: ${typeof document.getElementById('xyzInput').value}
+- Input content: "${document.getElementById('xyzInput').value.substring(0, 200)}"
+
+Stack trace:
+${error.stack || 'No stack trace available'}`;
+                
+                updateResults(debugInfo);
+                updateStatus('molStatus', '❌ Error loading molecule: ' + error.message, 'error');
+                enableButtons(false);
+            }
+        };
+
+        // Example molecule loaders
+        window.loadExampleWater = function() {
+            document.getElementById('xyzInput').value = `3
+Water molecule
+O     0.000000     0.000000     0.000000
+H     0.757000     0.586000     0.000000
+H    -0.757000     0.586000     0.000000`;
+            loadMoleculeFromXYZ();
+        };
+
+        window.loadExampleH2 = function() {
+            document.getElementById('xyzInput').value = `2
+Hydrogen molecule
+H     0.000000     0.000000     0.000000
+H     0.000000     0.000000     1.400000`;
+            loadMoleculeFromXYZ();
+        };
+
+        window.loadExampleMethane = function() {
+            document.getElementById('xyzInput').value = `5
+Methane molecule
+C     0.000000     0.000000     0.000000
+H     1.089000     1.089000     1.089000
+H    -1.089000    -1.089000     1.089000
+H    -1.089000     1.089000    -1.089000
+H     1.089000    -1.089000    -1.089000`;
+            loadMoleculeFromXYZ();
+        };
+
+        // Get molecular formula
+        function getFormula(molecule) {
+            const atomCounts = {};
+            const atomicNumbers = molecule.atomicNumbers();
+            
+            for (let i = 0; i < atomicNumbers.size(); i++) {
+                const element = Module.Element.fromAtomicNumber(atomicNumbers.get(i));
+                const symbol = element.symbol;
+                atomCounts[symbol] = (atomCounts[symbol] || 0) + 1;
+            }
+            
+            return Object.entries(atomCounts)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([symbol, count]) => count > 1 ? `${symbol}${count}` : symbol)
+                .join('');
+        }
+
+        // Calculate molecular properties
+        window.calculateProperties = function() {
+            if (!currentMolecule) return;
+            
+            try {
+                const com = currentMolecule.centerOfMass();
+                const centroid = currentMolecule.centroid();
+                const mass = currentMolecule.molarMass();
+                const masses = currentMolecule.atomicMasses();
+                const atomicNumbers = currentMolecule.atomicNumbers();
+                
+                let output = `=== MOLECULAR PROPERTIES ===
+
+Basic Properties:
+Name: ${currentMolecule.name || 'Unknown'}
+Formula: ${getFormula(currentMolecule)}
+Number of atoms: ${currentMolecule.size()}
+Molar mass: ${mass.toFixed(4)} kg/mol
+
+Geometry:
+Center of mass: [${com.x().toFixed(6)}, ${com.y().toFixed(6)}, ${com.z().toFixed(6)}] Å
+Centroid: [${centroid.x().toFixed(6)}, ${centroid.y().toFixed(6)}, ${centroid.z().toFixed(6)}] Å
+
+Atomic Information:`;
+
+                for (let i = 0; i < currentMolecule.size(); i++) {
+                    const element = Module.Element.fromAtomicNumber(atomicNumbers.get(i));
+                    output += `\n  ${i+1}. ${element.symbol} - ${masses.get(i).toFixed(4)} amu`;
+                }
+
+                updateResults(output);
+                updateStatus('calcStatus', '✅ Molecular properties calculated successfully!', 'success');
+                
+            } catch (error) {
+                updateStatus('calcStatus', '❌ Error calculating properties: ' + error.message, 'error');
+            }
+        };
+
+        // Analyze point group symmetry
+        window.analyzeSymmetry = function() {
+            if (!currentMolecule) return;
+            
+            try {
+                const pointGroup = new Module.MolecularPointGroup(currentMolecule);
+                
+                const output = `=== POINT GROUP ANALYSIS ===
+
+Point Group: ${pointGroup.getPointGroupString()}
+Description: ${pointGroup.getDescription()}
+Symmetry Number: ${pointGroup.symmetryNumber}
+
+The point group describes the symmetry elements present in the molecule,
+which is important for understanding its spectroscopic and chemical properties.
+
+Higher symmetry numbers indicate more symmetric molecules, which affects:
+• Rotational entropy calculations
+• Selection rules for spectroscopic transitions
+• Degeneracy of molecular orbitals
+• Chemical reactivity patterns`;
+
+                updateResults(output);
+                updateStatus('calcStatus', '✅ Point group analysis completed!', 'success');
+                
+            } catch (error) {
+                updateStatus('calcStatus', '❌ Error analyzing symmetry: ' + error.message, 'error');
+            }
+        };
+
+        // Calculate partial charges
+        window.calculateCharges = function() {
+            if (!currentMolecule) return;
+            
+            try {
+                const positions = currentMolecule.positions();
+                const atomicNumbers = currentMolecule.atomicNumbers();
+                
+                const eemCharges = Module.eemPartialCharges(atomicNumbers, positions, 0.0);
+                const eeqCharges = Module.eeqPartialCharges(atomicNumbers, positions, 0.0);
+                
+                let output = `=== PARTIAL CHARGE ANALYSIS ===
+
+Two different charge calculation methods:
+
+EEM (Electronegativity Equilibration Method):`;
+                let eemTotal = 0;
+                for (let i = 0; i < eemCharges.size(); i++) {
+                    const element = Module.Element.fromAtomicNumber(atomicNumbers.get(i));
+                    const charge = eemCharges.get(i);
+                    eemTotal += charge;
+                    output += `\n  ${element.symbol}${i+1}: ${charge.toFixed(4)} e`;
+                }
+                output += `\n  Total: ${eemTotal.toFixed(4)} e`;
+
+                output += `\n\nEEQ (Extended Electronegativity Equilibration Method):`;
+                let eeqTotal = 0;
+                for (let i = 0; i < eeqCharges.size(); i++) {
+                    const element = Module.Element.fromAtomicNumber(atomicNumbers.get(i));
+                    const charge = eeqCharges.get(i);
+                    eeqTotal += charge;
+                    output += `\n  ${element.symbol}${i+1}: ${charge.toFixed(4)} e`;
+                }
+                output += `\n  Total: ${eeqTotal.toFixed(4)} e`;
+
+                output += `\n\nPartial charges help understand:
+• Electrostatic interactions
+• Dipole moments and polarity
+• Hydrogen bonding patterns
+• Reactive sites in molecules`;
+
+                updateResults(output);
+                updateStatus('calcStatus', '✅ Partial charges calculated successfully!', 'success');
+                
+            } catch (error) {
+                updateStatus('calcStatus', '❌ Error calculating charges: ' + error.message, 'error');
+            }
+        };
+
+        // Perform SCF calculation (for small molecules)
+        window.performSCF = function() {
+            if (!currentMolecule) return;
+            
+            updateStatus('calcStatus', '⏳ Running SCF calculation... This may take a moment.', 'info');
+            
+            // Use setTimeout to allow UI update before heavy calculation
+            setTimeout(() => {
+                try {
+                    // Only attempt SCF for very small molecules
+                    if (currentMolecule.size() > 5) {
+                        updateStatus('calcStatus', '⚠️ SCF calculations limited to molecules with ≤5 atoms in this demo', 'error');
+                        return;
+                    }
+
+                    const atoms = currentMolecule.atoms();
+                    
+                    // Create minimal STO-3G basis manually for H and first-row elements
+                    const allowedElements = [1, 6, 7, 8]; // H, C, N, O
+                    for (let i = 0; i < atoms.size(); i++) {
+                        const atomNum = atoms.get(i).atomicNumber;
+                        if (!allowedElements.includes(atomNum)) {
+                            updateStatus('calcStatus', '⚠️ SCF currently only supports H, C, N, O atoms', 'error');
+                            return;
+                        }
+                    }
+
+                    // For this demo, we'll show what an SCF calculation would produce
+                    // The actual SCF implementation requires basis set data files
+                    const output = `=== SCF CALCULATION RESULTS ===
+
+Molecule: ${currentMolecule.name || 'Unknown'}
+Method: Restricted Hartree-Fock
+Basis Set: STO-3G (minimal basis)
+
+⚠️ Note: Full SCF calculations require basis set data files.
+In a complete implementation, this would show:
+
+• SCF convergence information
+• Total electronic energy
+• Orbital energies (HOMO/LUMO)
+• Mulliken population analysis
+• Dipole moment components
+• Nuclear repulsion energy
+
+For ${currentMolecule.size()} atoms with ${getTotalElectrons(currentMolecule)} electrons:
+• Basis functions: ~${estimateBasisFunctions(currentMolecule)}
+• Expected calculation time: ~${estimateTime(currentMolecule)}
+
+This demonstrates the quantum chemistry capabilities available
+in the full OCC implementation.`;
+
+                    updateResults(output);
+                    updateStatus('calcStatus', '✅ SCF calculation overview generated!', 'success');
+                    
+                } catch (error) {
+                    updateStatus('calcStatus', '❌ Error in SCF calculation: ' + error.message, 'error');
+                }
+            }, 100);
+        };
+
+        function getTotalElectrons(molecule) {
+            const atomicNumbers = molecule.atomicNumbers();
+            let total = 0;
+            for (let i = 0; i < atomicNumbers.size(); i++) {
+                total += atomicNumbers.get(i);
+            }
+            return total;
+        }
+
+        function estimateBasisFunctions(molecule) {
+            const atomicNumbers = molecule.atomicNumbers();
+            let total = 0;
+            for (let i = 0; i < atomicNumbers.size(); i++) {
+                const atomNum = atomicNumbers.get(i);
+                if (atomNum === 1) total += 1; // H: 1s
+                else if (atomNum <= 10) total += 5; // First row: 1s, 2s, 2px, 2py, 2pz
+            }
+            return total;
+        }
+
+        function estimateTime(molecule) {
+            const n = estimateBasisFunctions(molecule);
+            if (n <= 5) return "< 1 second";
+            if (n <= 10) return "1-5 seconds";
+            return "> 5 seconds";
+        }
+
+        // Initialize when page loads
+        initializeOCC();
+    </script>
+</body>
+</html>

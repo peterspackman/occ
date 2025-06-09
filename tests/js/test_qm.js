@@ -16,16 +16,8 @@ async function runQMTests(Module) {
 
     // Create a simple H2 molecule for testing
     function createH2Molecule() {
-        const positions = Module.Mat3N.create(2);
-        positions.set(0, 0, 0.0);
-        positions.set(1, 0, 0.0);
-        positions.set(2, 0, 0.0);
-        positions.set(0, 1, 0.0);
-        positions.set(1, 1, 0.0);
-        positions.set(2, 1, 1.4);
-
-        const atomicNumbers = Module.IVec.fromArray([1, 1]);
-        const h2 = new Module.Molecule(atomicNumbers, positions);
+        const h2xyz = "2\n\nH 0.0 0.0 0.0\nH 0.0 0.0 1.4\n"
+        const h2 = Module.Molecule.fromXyzString(h2xyz);
         h2.setName("H2");
         return h2;
     }
@@ -136,7 +128,7 @@ async function runQMTests(Module) {
                 }
             }
         });
-        
+
         return Module.AOBasis.fromJson(atoms, sto3gJson);
     }
 
@@ -250,7 +242,7 @@ async function runQMTests(Module) {
         // Test convergence settings access
         const convergence = scf.convergenceSettings;
         test.assertTrue(convergence !== undefined, 'Convergence settings accessible');
-        
+
         // Test setting convergence parameters
         convergence.energyThreshold = 1e-8;
         convergence.commutatorThreshold = 1e-6;
@@ -282,13 +274,13 @@ async function runQMTests(Module) {
         // Check that SCF didn't fail
         test.assertTrue(typeof energy === 'number', 'SCF energy is a number');
         test.assertTrue(!isNaN(energy), 'SCF energy is not NaN (no error occurred)');
-        
+
         // Check energy is reasonable for H2/STO-3G
         test.assertTrue(energy < 0, 'SCF energy is negative');
         test.assertTrue(energy > -2.0, 'SCF energy not too negative');
 
         // Known approximate value for H2/STO-3G at 1.4 Angstrom
-        test.assertAlmostEqual(energy, -1.117, 1e-1, 'H2/STO-3G energy');
+        test.assertAlmostEqual(energy, -0.941480655488, 1e-8, 'H2/STO-3G energy');
     });
 
     // SCF wavefunction test
