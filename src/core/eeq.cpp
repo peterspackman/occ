@@ -103,6 +103,7 @@ Vec eeq_coordination_numbers(const IVec &atomic_numbers,
                              const Mat3N &positions) {
   const int N = atomic_numbers.rows();
   constexpr double kcn = 7.5;
+  constexpr double D3_SCALE_FACTOR = 4.0 / 3.0;
 
   Vec cn = Vec::Zero(N);
   constexpr double cutoff = 25.0;
@@ -118,8 +119,7 @@ Vec eeq_coordination_numbers(const IVec &atomic_numbers,
         continue;
       const double r = std::sqrt(r2);
 
-      const double rc = (impl::covalent[ni] + impl::covalent[nj]) *
-                        occ::units::ANGSTROM_TO_BOHR;
+      const double rc = (impl::covalent[ni] + impl::covalent[nj]) * D3_SCALE_FACTOR;
       double count = 0.5 * (1.0 + std::erf(-kcn * (r - rc) / rc));
       cn(i) += count;
       if (i != j)

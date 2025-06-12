@@ -185,8 +185,17 @@ H    -0.757000     0.586000     0.000000</textarea>
                     <button onclick="calculateProperties()" id="propBtn" disabled>Molecular Properties</button>
                     <button onclick="analyzeSymmetry()" id="symBtn" disabled>Point Group</button>
                     <button onclick="calculateCharges()" id="chargeBtn" disabled>Partial Charges</button>
-                    <button onclick="performSCF()" id="scfBtn" disabled class="success">SCF Calculation</button>
                 </div>
+                
+                <h4>🧮 SCF Calculation</h4>
+                <label for="basisSelect">Basis Set:</label>
+                <select id="basisSelect" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ced4da; border-radius: 4px;">
+                    <option value="sto-3g">STO-3G (minimal)</option>
+                    <option value="def2-tzvp" selected>def2-TZVP (triple-zeta)</option>
+                    <option value="6-31g">6-31G</option>
+                    <option value="cc-pvdz">cc-pVDZ</option>
+                </select>
+                <button onclick="performSCF()" id="scfBtn" disabled class="success" style="width: 100%;">Run SCF Calculation</button>
 
                 <div class="status" id="calcStatus">
                     Load a molecule first to enable calculations.
@@ -548,62 +557,189 @@ EEM (Electronegativity Equilibration Method):`;
             }
         };
 
-        // Perform SCF calculation (for small molecules)
+        // Perform SCF calculation with selected basis set
         window.performSCF = function() {
             if (!currentMolecule) return;
             
-            updateStatus('calcStatus', '⏳ Running SCF calculation... This may take a moment.', 'info');
+            const basisSetName = document.getElementById('basisSelect').value;
+            updateStatus('calcStatus', `⏳ Running SCF calculation with ${basisSetName}... This may take a moment.`, 'info');
             
             // Use setTimeout to allow UI update before heavy calculation
-            setTimeout(() => {
+            setTimeout(async () => {
                 try {
-                    // Only attempt SCF for very small molecules
-                    if (currentMolecule.size() > 5) {
-                        updateStatus('calcStatus', '⚠️ SCF calculations limited to molecules with ≤5 atoms in this demo', 'error');
+                    // Limit SCF for very large molecules in browser demo
+                    if (currentMolecule.size() > 10) {
+                        updateStatus('calcStatus', '⚠️ SCF calculations limited to molecules with ≤10 atoms in browser demo', 'error');
                         return;
                     }
 
                     const atoms = currentMolecule.atoms();
                     
-                    // Create minimal STO-3G basis manually for H and first-row elements
-                    const allowedElements = [1, 6, 7, 8]; // H, C, N, O
+                    // Check for supported elements
+                    const allowedElements = [1, 6, 7, 8, 9, 16, 17]; // H, C, N, O, F, S, Cl
                     for (let i = 0; i < atoms.size(); i++) {
                         const atomNum = atoms.get(i).atomicNumber;
                         if (!allowedElements.includes(atomNum)) {
-                            updateStatus('calcStatus', '⚠️ SCF currently only supports H, C, N, O atoms', 'error');
+                            const element = Module.Element.fromAtomicNumber(atomNum);
+                            updateStatus('calcStatus', `⚠️ SCF currently only supports H, C, N, O, F, S, Cl atoms. Found: ${element.symbol}`, 'error');
                             return;
                         }
                     }
 
-                    // For this demo, we'll show what an SCF calculation would produce
-                    // The actual SCF implementation requires basis set data files
+                    updateResults(`=== SCF CALCULATION ===
+
+Molecule: ${currentMolecule.name || 'Unknown'}
+Method: Restricted Hartree-Fock
+Basis Set: ${basisSetName.toUpperCase()}
+
+Initializing calculation...`);
+
+                    // Load basis set from JSON file
+                    console.log(`Loading basis set: ${basisSetName}`);
+                    
+                    let basis;
+                    if (basisSetName === 'def2-tzvp') {
+                        // Load def2-tzvp from local JSON file
+                        const response = await fetch('./def2-tzvp.json');
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch basis set file: ${response.statusText}`);
+                        }
+                        const basisDataText = await response.text();
+                        basis = Module.AOBasis.fromJson(atoms, basisDataText);
+                    } else {
+                        // Try to load built-in basis set
+                        basis = Module.AOBasis.load(atoms, basisSetName);
+                    }
+                    
+                    updateResults(document.getElementById('results').textContent + `
+✅ Basis set loaded successfully
+Number of shells: ${basis.size()}
+Number of basis functions: ${basis.nbf()}
+
+Setting up Hartree-Fock calculation...`);
+
+                    // Create Hartree-Fock object
+                    const hf = new Module.HartreeFock(basis);
+                    
+                    // Calculate nuclear repulsion energy
+                    const nuclearRepulsion = hf.nuclearRepulsion();
+                    
+                    updateResults(document.getElementById('results').textContent + `
+Nuclear repulsion energy: ${nuclearRepulsion.toFixed(8)} Hartree
+
+Calculating one-electron integrals...`);
+
+                    // Calculate one-electron integrals
+                    const overlap = hf.overlapMatrix();
+                    const kinetic = hf.kineticMatrix();
+                    const nuclear = hf.nuclearAttractionMatrix();
+                    
+                    updateResults(document.getElementById('results').textContent + `
+✅ One-electron integrals computed
+Overlap matrix: ${overlap.rows()} x ${overlap.cols()}
+Kinetic energy matrix: ${kinetic.rows()} x ${kinetic.cols()}
+Nuclear attraction matrix: ${nuclear.rows()} x ${nuclear.cols()}
+
+Starting SCF iterations...`);
+
+                    // Perform SCF calculation
+                    const scf = new Module.HartreeFockSCF(hf, Module.SpinorbitalKind.Restricted);
+                    
+                    // Set convergence criteria
+                    const convergence = scf.convergenceSettings;
+                    convergence.energyThreshold = 1e-8;
+                    convergence.commutatorThreshold = 1e-6;
+                    
+                    // Set charge and multiplicity (neutral singlet)
+                    scf.setChargeMultiplicity(0, 1);
+                    
+                    const startTime = Date.now();
+                    const totalEnergy = scf.run();
+                    const endTime = Date.now();
+                    
+                    // Get final wavefunction
+                    const wavefunction = scf.wavefunction();
+                    const mo = wavefunction.molecularOrbitals;
+                    
+                    // Get orbital energies
+                    const orbitalEnergies = mo.orbitalEnergies;
+                    let orbitalInfo = '';
+                    const numOrbitalsToShow = Math.min(10, orbitalEnergies.size());
+                    for (let i = 0; i < numOrbitalsToShow; i++) {
+                        const energy = orbitalEnergies.get(i);
+                        const occupation = i < mo.numAlpha ? "occupied" : "virtual";
+                        const eV = energy * 27.211386; // Convert to eV
+                        orbitalInfo += `\n  Orbital ${i + 1}: ${energy.toFixed(6)} Hartree (${eV.toFixed(3)} eV) - ${occupation}`;
+                    }
+                    
+                    // Calculate Mulliken charges
+                    const mullikenCharges = wavefunction.mullikenCharges();
+                    let chargeInfo = '';
+                    let totalCharge = 0;
+                    for (let i = 0; i < mullikenCharges.size(); i++) {
+                        const charge = mullikenCharges.get(i);
+                        const element = Module.Element.fromAtomicNumber(atoms.get(i).atomicNumber);
+                        totalCharge += charge;
+                        chargeInfo += `\n  ${element.symbol}${i+1}: ${charge.toFixed(6)} e`;
+                    }
+                    
                     const output = `=== SCF CALCULATION RESULTS ===
 
 Molecule: ${currentMolecule.name || 'Unknown'}
 Method: Restricted Hartree-Fock
-Basis Set: STO-3G (minimal basis)
+Basis Set: ${basisSetName.toUpperCase()}
 
-⚠️ Note: Full SCF calculations require basis set data files.
-In a complete implementation, this would show:
+✅ SCF CONVERGED!
 
-• SCF convergence information
-• Total electronic energy
-• Orbital energies (HOMO/LUMO)
-• Mulliken population analysis
-• Dipole moment components
-• Nuclear repulsion energy
+ENERGIES:
+Total energy: ${totalEnergy.toFixed(8)} Hartree
+Electronic energy: ${(totalEnergy - nuclearRepulsion).toFixed(8)} Hartree  
+Nuclear repulsion: ${nuclearRepulsion.toFixed(8)} Hartree
+Total energy: ${(totalEnergy * 627.509).toFixed(2)} kcal/mol
 
-For ${currentMolecule.size()} atoms with ${getTotalElectrons(currentMolecule)} electrons:
-• Basis functions: ~${estimateBasisFunctions(currentMolecule)}
-• Expected calculation time: ~${estimateTime(currentMolecule)}
+CALCULATION INFO:
+Number of electrons: ${mo.numAlpha + mo.numBeta}
+Alpha electrons: ${mo.numAlpha}
+Beta electrons: ${mo.numBeta}
+Basis functions: ${mo.numAo}
+Calculation time: ${endTime - startTime} ms
 
-This demonstrates the quantum chemistry capabilities available
-in the full OCC implementation.`;
+ORBITAL ENERGIES:${orbitalInfo}
+${orbitalEnergies.size() > numOrbitalsToShow ? `\n  ... and ${orbitalEnergies.size() - numOrbitalsToShow} more orbitals` : ''}
+
+HOMO energy: ${orbitalEnergies.get(mo.numAlpha - 1).toFixed(6)} Hartree (${(orbitalEnergies.get(mo.numAlpha - 1) * 27.211386).toFixed(3)} eV)
+LUMO energy: ${mo.numAlpha < orbitalEnergies.size() ? orbitalEnergies.get(mo.numAlpha).toFixed(6) + ' Hartree (' + (orbitalEnergies.get(mo.numAlpha) * 27.211386).toFixed(3) + ' eV)' : 'N/A'}
+HOMO-LUMO gap: ${mo.numAlpha < orbitalEnergies.size() ? ((orbitalEnergies.get(mo.numAlpha) - orbitalEnergies.get(mo.numAlpha - 1)) * 27.211386).toFixed(3) + ' eV' : 'N/A'}
+
+MULLIKEN CHARGES:${chargeInfo}
+Total charge: ${totalCharge.toFixed(6)} e
+
+🎉 SCF calculation completed successfully!`;
 
                     updateResults(output);
-                    updateStatus('calcStatus', '✅ SCF calculation overview generated!', 'success');
+                    updateStatus('calcStatus', `✅ SCF calculation with ${basisSetName} completed successfully!`, 'success');
                     
                 } catch (error) {
+                    console.error('SCF calculation error:', error);
+                    const errorOutput = `❌ SCF CALCULATION ERROR
+
+Error: ${error.message}
+
+This could be due to:
+• Basis set not available for this molecule
+• Convergence issues  
+• Memory limitations in the browser
+• Unsupported molecular system
+
+Debug info:
+- Module available: ${!!Module}
+- Current molecule atoms: ${currentMolecule ? currentMolecule.size() : 'none'}
+- Selected basis: ${basisSetName}
+
+Stack trace:
+${error.stack || 'No stack trace available'}`;
+                    
+                    updateResults(errorOutput);
                     updateStatus('calcStatus', '❌ Error in SCF calculation: ' + error.message, 'error');
                 }
             }, 100);

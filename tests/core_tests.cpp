@@ -545,20 +545,21 @@ TEST_CASE("EEQ water", "[charge]") {
   occ::Mat3N pos(3, 3);
   occ::IVec nums(3);
   nums << 8, 1, 1;
-  pos << -0.7021961, -1.0221932, 0.2575211, -0.0560603, 0.8467758, 0.0421215,
-      0.0099423, -0.0114887, 0.0052190;
+  pos << -0.7021961, -1.0221932, 0.2575211, 
+         -0.0560603, 0.8467758, 0.0421215,
+          0.0099423, -0.0114887, 0.0052190;
 
   auto cn = occ::core::charges::eeq_coordination_numbers(nums, pos);
   fmt::print("EEQ water coordination numbers:\n{}\n", occ::format_matrix(cn));
   occ::Vec expected(3);
-  expected << 2.0, 1.00401, 1.00401;
-  REQUIRE(occ::util::all_close(cn, expected, 1e-3, 1e-3));
+  expected << 1.989382, 0.995133, 0.994268;
+  REQUIRE(occ::util::all_close(cn, expected, 1e-5, 1e-5));
 
   auto q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
   fmt::print("EEQ water charges:\n{}\n", occ::format_matrix(q));
 
   occ::Vec expected_q(3);
-  expected_q << -0.591878, 0.296985, 0.294893;
+  expected_q << -0.592456, 0.297289, 0.295167;
   REQUIRE(occ::util::all_close(expected_q, q, 1e-5, 1e-5));
 }
 
