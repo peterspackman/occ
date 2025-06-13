@@ -110,6 +110,7 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_flag("--write-kmcpp", config->write_kmcpp_file,
                "write out an input file for kmcpp program");
   cg->add_flag("--xtb", config->use_xtb, "use xtb for interaction energies");
+  cg->add_flag("--dry-run", config->dry_run, "don't calculate any interaction energies, but calculate a net and structure file");
   cg->add_option("--xtb-solvation-model,--xtb_solvation_model",
                  config->xtb_solvation_model,
                  "solvation model for use with xtb interaction energies");
@@ -419,7 +420,10 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
 CrystalGrowthResult run_cg(CGConfig const &config) {
   CrystalGrowthResult result;
 
-  if (config.use_xtb) {
+  if(config.dry_run) {
+    result = run_cg_impl<driver::DummyCrystalGrowthCalculator>(config);
+  }
+  else if (config.use_xtb) {
     result = run_cg_impl<driver::XTBCrystalGrowthCalculator>(config);
   } else {
     result = run_cg_impl<driver::CEModelCrystalGrowthCalculator>(config);

@@ -132,6 +132,21 @@ private:
   CrystalGrowthCalculatorOptions m_options;
 };
 
+class DummyCrystalGrowthCalculator: public CrystalGrowthCalculator {
+public:
+  explicit DummyCrystalGrowthCalculator(
+      const crystal::Crystal &crystal,
+      const CrystalGrowthCalculatorOptions &options);
+
+  void init_monomer_energies() override;
+  void converge_lattice_energy() override;
+
+  cg::CrystalGrowthResult evaluate_molecular_surroundings() override;
+
+  cg::MoleculeResult process_neighbors_for_symmetry_unique_molecule(
+      int i, const std::string &molname) override;
+};
+
 class CEModelCrystalGrowthCalculator : public CrystalGrowthCalculator {
 public:
   explicit CEModelCrystalGrowthCalculator(

@@ -811,4 +811,180 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
   return dimer_energy_results;
 }
 
+DummyCrystalGrowthCalculator::DummyCrystalGrowthCalculator(
+    const crystal::Crystal &crystal,
+    const CrystalGrowthCalculatorOptions &options)
+    : CrystalGrowthCalculator(crystal, options) {}
+
+void DummyCrystalGrowthCalculator::init_monomer_energies() {
+  occ::log::info("Dummy calculator - no monomer energies to initialize");
+  // No wavefunctions needed for dummy calculator
+}
+
+void DummyCrystalGrowthCalculator::converge_lattice_energy() {
+  const auto &opts = options();
+
+  // Generate dimers using the same radius as other calculators
+  m_full_dimers = m_crystal.symmetry_unique_dimers(opts.inner_radius);
+  m_nearest_dimers = m_crystal.symmetry_unique_dimers(opts.inner_radius);
+
+  if (m_full_dimers.unique_dimers.size() < 1) {
+    occ::log::error("No dimers found using neighbour radius {:.3f}",
+                    opts.outer_radius);
+    exit(0);
+  }
+
+  // Create dummy energy components based on 1/r
+  m_dimer_energies.clear();
+  m_dimer_energies.reserve(m_full_dimers.unique_dimers.size());
+
+  for (const auto &dimer : m_full_dimers.unique_dimers) {
+    double r = dimer.nearest_distance();
+    double dummy_energy = 0.0;
+    if (r > 0 && r < opts.inner_radius) {
+      dummy_energy = 10.0 / r;
+    }
+
+    // Create dummy energy component
+    cg::PairEnergies::value_type dummy_component;
+    dummy_component.is_computed = true;
+    // Set the total energy - you may need to adjust this based on your
+    // PairEnergies structure This assumes there's a way to set the total energy
+    // value
+
+    m_dimer_energies.push_back(dummy_component);
+
+    occ::log::debug("Dummy dimer energy for distance {:.3f}: {:.3f}", r,
+                    dummy_energy);
+  }
+
+  occ::log::info("Generated {} dummy dimer energies", m_dimer_energies.size());
+}
+
+cg::MoleculeResult
+DummyCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
+    int i, const std::string &molname) {
+
+  const auto &opts = options();
+  const auto &full_neighbors = m_full_dimers.molecule_neighbors[i];
+  const auto &nearest_neighbors = m_nearest_dimers.molecule_neighbors[i];
+  auto &interactions = m_interaction_energies[i];
+  auto &interactions_crystal = m_crystal_interaction_energies[i];
+
+  // Create dummy energy values based on 1/r
+  std::vector<double> dimer_energy_vals;
+  for (size_t idx = 0; idx < m_full_dimers.unique_dimers.size(); idx++) {
+    const auto &dimer = m_full_dimers.unique_dimers[idx];
+    double r = dimer.nearest_distance();
+    double dummy_energy = 0.0;
+    if (r > 0 && r < opts.inner_radius) {
+      dummy_energy = 10.0 / r;
+    }
+    dimer_energy_vals.push_back(dummy_energy);
+  }
+
+  auto crystal_contributions = assign_interaction_terms_to_nearest_neighbours(
+      full_neighbors, dimer_energy_vals, opts.inner_radius);
+
+  interactions.reserve(full_neighbors.size());
+
+  occ::log::warn("Dummy neighbors for asymmetric molecule {}", molname);
+  occ::log::warn("nn {:>3s} {:>5s} {:>5s} {:<28s} {:>7s} {:>7s}", "id", "Rn",
+                 "Rc", "Label", "E_dummy", "E_int");
+  occ::log::warn(std::string(70, '='));
+
+  cg::MoleculeResult dimer_energy_results;
+  auto &total = dimer_energy_results.total;
+
+  // Dummy solution term
+  total.solution_term = 0.0; // No solvation for dummy calculator
+
+  size_t j = 0;
+  for (const auto &[dimer, unique_idx] : full_neighbors) {
+    auto dimer_name = dimer.name();
+    double rn = dimer.nearest_distance();
+    double rc = dimer.centroid_distance();
+    double crystal_contribution = crystal_contributions[j].energy;
+    bool is_nearest_neighbor = crystal_contributions[j].is_nn;
+
+    double dummy_energy = dimer_energy_vals[unique_idx];
+    double interaction_energy =
+        is_nearest_neighbor ? dummy_energy + crystal_contribution : 0.0;
+
+    total.crystal_energy += dummy_energy;
+
+    if (is_nearest_neighbor) {
+      total.interaction_energy += interaction_energy;
+
+      interactions.push_back(cg::DimerResult{
+          dimer,
+          true,
+          unique_idx,
+          {
+              {cg::components::crystal_nn, crystal_contribution},
+              {cg::components::crystal_total, dummy_energy},
+              {cg::components::total, interaction_energy},
+          }});
+
+      interactions_crystal.push_back(cg::DimerResult{
+          dimer,
+          true,
+          unique_idx,
+          {
+              {cg::components::crystal_total, dummy_energy},
+              {cg::components::total, dummy_energy + crystal_contribution},
+          }});
+
+      occ::log::warn(" {} {:>3d} {:>5.2f} {:>5.2f} {:<28s} {:>7.2f} {:>7.2f}",
+                     '|', unique_idx, rn, rc, dimer_name, dummy_energy,
+                     interaction_energy);
+    } else {
+      interactions.push_back(cg::DimerResult{dimer, false, unique_idx});
+      interactions_crystal.push_back(cg::DimerResult{dimer, false, unique_idx});
+
+      occ::log::debug(" {} {:>3d} {:>5.2f} {:>5.2f} {:<28s} {:>7.2f} {:>7.2f}",
+                      ' ', unique_idx, rn, rc, dimer_name, dummy_energy, 0.0);
+    }
+
+    dimer_energy_results.add_dimer_result(interactions.back());
+    j++;
+  }
+
+  return dimer_energy_results;
+}
+
+cg::CrystalGrowthResult
+DummyCrystalGrowthCalculator::evaluate_molecular_surroundings() {
+  const auto &opts = options();
+  cg::CrystalGrowthResult result;
+
+  m_solution_terms = std::vector<double>(m_molecules.size(), 0.0);
+
+  for (size_t i = 0; i < m_molecules.size(); i++) {
+    auto mol_dimer_results = process_neighbors_for_symmetry_unique_molecule(
+        i, fmt::format("{}_{}_dummy", opts.basename, i));
+
+    result.molecule_results.push_back(mol_dimer_results);
+
+    m_solution_terms[i] = mol_dimer_results.total.solution_term;
+    m_lattice_energies.push_back(mol_dimer_results.total.crystal_energy);
+
+    occ::log::info("Dummy calculation for molecule {} - energy numbers are "
+                   "largely meaningless (10.0/nearest_distance in angs)",
+                   i);
+    occ::log::info("Total interaction energy = {:.3f}",
+                   mol_dimer_results.total.interaction_energy);
+
+    if (opts.write_debug_output_files) {
+      // write neighbors file for molecule i
+      std::string neighbors_filename =
+          fmt::format("{}_{}_neighbors_dummy.xyz", opts.basename, i);
+      write_xyz_neighbors(neighbors_filename,
+                          m_full_dimers.molecule_neighbors[i]);
+    }
+  }
+
+  return result;
+}
+
 } // namespace occ::driver
