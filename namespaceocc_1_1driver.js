@@ -4,6 +4,7 @@ var namespaceocc_1_1driver =
     [ "CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator" ],
     [ "CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", "classocc_1_1driver_1_1CrystalGrowthCalculator" ],
     [ "CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions" ],
+    [ "DummyCrystalGrowthCalculator", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator" ],
     [ "XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator" ],
     [ "SolventNeighborContributionList", "namespaceocc_1_1driver.html#a878e17d57522dc762a391dec916e11ce", null ],
     [ "WavefunctionList", "namespaceocc_1_1driver.html#a683ec51892459656d664582efd64e1c6", null ],

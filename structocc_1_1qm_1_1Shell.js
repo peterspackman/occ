@@ -17,6 +17,7 @@ var structocc_1_1qm_1_1Shell =
     [ "max_exponent", "structocc_1_1qm_1_1Shell.html#a8a450cd25f6dc7dc3bc3da462e59eee7", null ],
     [ "min_exponent", "structocc_1_1qm_1_1Shell.html#af68cc4670c0a528e2e2f189a9b0c0c60", null ],
     [ "norm", "structocc_1_1qm_1_1Shell.html#a9121829c615ae2e1bf593423e33e6de6", null ],
+    [ "normalize_charge_distribution_primitives", "structocc_1_1qm_1_1Shell.html#a917017182c4bcbeb45f45e9f61d113ec", null ],
     [ "num_contractions", "structocc_1_1qm_1_1Shell.html#aaee75caa091f5b38948a1c3b5307956c", null ],
     [ "num_primitives", "structocc_1_1qm_1_1Shell.html#a20398a75f046efa94bdb77b4bce574b0", null ],
     [ "operator!=", "structocc_1_1qm_1_1Shell.html#a6836924a9204daa4021a3431fe64daa9", null ],

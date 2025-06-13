@@ -20,5 +20,6 @@ var searchData=
   ['orb_2eh_17',['orb.h',['../orb_8h.html',1,'']]],
   ['orbital_5findex_2eh_18',['orbital_index.h',['../orbital__index_8h.html',1,'']]],
   ['orbital_5fsmearing_2eh_19',['orbital_smearing.h',['../orbital__smearing_8h.html',1,'']]],
-  ['orca_5fjson_2eh_20',['orca_json.h',['../orca__json_8h.html',1,'']]]
+  ['orca_5fjson_2eh_20',['orca_json.h',['../orca__json_8h.html',1,'']]],
+  ['orthogonalizer_2eh_21',['orthogonalizer.h',['../orthogonalizer_8h.html',1,'']]]
 ];

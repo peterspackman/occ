@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['chemistry_0',['Open Computational Chemistry',['../index.html',1,'']]],
-  ['computational_20chemistry_1',['Open Computational Chemistry',['../index.html',1,'']]]
+  ['bindings_0',['JavaScript/WebAssembly Bindings',['../md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html',1,'']]]
 ];

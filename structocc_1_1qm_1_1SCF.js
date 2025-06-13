@@ -4,6 +4,7 @@ var structocc_1_1qm_1_1SCF =
     [ "atoms", "structocc_1_1qm_1_1SCF.html#a37dbd16d5150d3fb1651130dbf2a1836", null ],
     [ "charge", "structocc_1_1qm_1_1SCF.html#a92aa9a8a4d48ca21635beb356972ccf9", null ],
     [ "compute_initial_guess", "structocc_1_1qm_1_1SCF.html#a4ca25c7e1a96889ce610bb3c9fafd2cf", null ],
+    [ "compute_sap_guess", "structocc_1_1qm_1_1SCF.html#a3c7cdaa92d0d9c083773c2cac4a3fd31", null ],
     [ "compute_scf_energy", "structocc_1_1qm_1_1SCF.html#a10cf77346f1ce0b3b17d336eef3e776e", null ],
     [ "compute_soad", "structocc_1_1qm_1_1SCF.html#a7c110a720e6de0f151e6445a06bdcd74", null ],
     [ "molecular_orbitals", "structocc_1_1qm_1_1SCF.html#a9075f467ee3a658fd45a48f79d1d98c2", null ],

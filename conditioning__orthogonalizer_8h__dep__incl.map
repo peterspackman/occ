@@ -1,5 +1,8 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/conditioning_orthogonalizer.h" name="/home/runner/work/occ/occ/include/occ/core/conditioning_orthogonalizer.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,224,60"/>
-<area shape="rect" id="Node000002" href="$scf_8h.html" title=" " alt="" coords="23,108,207,148"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="117,74,117,108,112,108,112,74"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="108,5,327,60"/>
+<area shape="rect" id="Node000002" href="$orthogonalizer_8h.html" title=" " alt="" coords="5,108,264,148"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,72,153,110,149,106,183,69"/>
+<area shape="rect" id="Node000003" href="$scf_8h.html" title=" " alt="" coords="125,196,309,236"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="256,69,269,87,279,107,283,128,278,149,263,176,243,198,239,194,259,173,274,147,278,128,273,109,264,90,252,72"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="165,156,201,194,197,198,161,160"/>
 </map>

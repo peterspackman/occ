@@ -26,8 +26,9 @@ var searchData=
   ['spherical_5fharmonics_2eh_23',['spherical_harmonics.h',['../spherical__harmonics_8h.html',1,'']]],
   ['spinorbital_2eh_24',['spinorbital.h',['../spinorbital_8h.html',1,'']]],
   ['steinhardt_2eh_25',['steinhardt.h',['../steinhardt_8h.html',1,'']]],
-  ['stockholder_5fweight_2eh_26',['stockholder_weight.h',['../stockholder__weight_8h.html',1,'']]],
-  ['surface_2eh_27',['surface.h',['../solvent_2surface_8h.html',1,'(Global Namespace)'],['../crystal_2surface_8h.html',1,'(Global Namespace)']]],
-  ['surface_5ftypes_2eh_28',['surface_types.h',['../surface__types_8h.html',1,'']]],
-  ['symmetryoperation_2eh_29',['symmetryoperation.h',['../symmetryoperation_8h.html',1,'']]]
+  ['sto3g_5fbasis_2eh_26',['sto3g_basis.h',['../sto3g__basis_8h.html',1,'']]],
+  ['stockholder_5fweight_2eh_27',['stockholder_weight.h',['../stockholder__weight_8h.html',1,'']]],
+  ['surface_2eh_28',['surface.h',['../solvent_2surface_8h.html',1,'(Global Namespace)'],['../crystal_2surface_8h.html',1,'(Global Namespace)']]],
+  ['surface_5ftypes_2eh_29',['surface_types.h',['../surface__types_8h.html',1,'']]],
+  ['symmetryoperation_2eh_30',['symmetryoperation.h',['../symmetryoperation_8h.html',1,'']]]
 ];

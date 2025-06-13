@@ -26,6 +26,43 @@ var NAVTREE =
 [
   [ "occ", "index.html", [
     [ "Open Computational Chemistry", "index.html", "index" ],
+    [ "JavaScript/WebAssembly Bindings", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html", [
+      [ "Installation", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md1", [
+        [ "Prerequisites", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md2", null ],
+        [ "Build Instructions", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md3", null ]
+      ] ],
+      [ "Usage", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md4", [
+        [ "Browser (ES6 Modules)", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md5", null ],
+        [ "Node.js", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md6", null ]
+      ] ],
+      [ "API Reference", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md7", [
+        [ "Core Module", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md8", [
+          [ "Element", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md9", null ],
+          [ "Atom", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md10", null ],
+          [ "Molecule", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md11", null ],
+          [ "PointCharge", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md12", null ]
+        ] ],
+        [ "QM Module", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md13", [
+          [ "AOBasis", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md14", null ],
+          [ "MolecularOrbitals", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md15", null ],
+          [ "Wavefunction", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md16", null ],
+          [ "HartreeFock", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md17", null ],
+          [ "SCF Methods", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md18", null ]
+        ] ],
+        [ "Enums", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md19", [
+          [ "SpinorbitalKind", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md20", null ],
+          [ "LogLevel", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md21", null ]
+        ] ]
+      ] ],
+      [ "Utilities", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md22", null ],
+      [ "Performance Considerations", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md23", null ],
+      [ "Example Calculations", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md24", [
+        [ "Simple SCF Calculation", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md25", null ],
+        [ "Density Calculation", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md26", null ]
+      ] ],
+      [ "Error Handling", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md27", null ],
+      [ "Browser Compatibility", "md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md28", null ]
+    ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
       [ "Namespace Members", "namespacemembers.html", [
@@ -74,35 +111,36 @@ var NAVTREEINDEX =
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8a76ed50793263195c9179cd9d052943",
 "classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fbaeb6420dac0c4442f89d3a99b31adc1f1",
 "classocc_1_1dma_1_1LinearMultipoleShifter.html#ab207cd05fc7e0bfb89cba215805ecadb",
-"classocc_1_1interaction_1_1PairEnergyStore.html#ac561791886baacb837b0421fa1603ec4",
-"classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41afe13d89ab94aa86e9b3c3cafa908b132",
-"classocc_1_1isosurface_1_1BatchFunctor.html#adab3ef9fd4122e02e3db3a8c6174bb04",
-"classocc_1_1isosurface_1_1VoidSurfaceFunctor.html#a5293490e87eb4e2652df220a79bb873e",
-"classocc_1_1qm_1_1IntegralEngine.html#a258ba56c84633fd533b698e0142889b6",
-"classocc_1_1sht_1_1AssocLegendreP.html",
-"classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a84160c5b08ad9ad401402d8030919546",
-"classquickhull_1_1Plane.html",
-"functions_a.html",
-"linear__algebra_8h.html#a5900ded7ea60e25cf5152e4eda2fab2d",
-"namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41",
-"namespaceocc_1_1dft.html#a85d3cc3d9e5f9f2d739ccb6568ff6f28",
-"namespaceocc_1_1isosurface.html#aead59b74d110c97231623fa4896006ed",
-"namespaceocc_1_1util.html#afc65a7eebcc2d86e81d9ef634fcdeb7e",
-"quasirandom_8h.html#abeb0483db6e31121318847e734ed6cf5",
-"structocc_1_1cg_1_1SMDSettings.html#ab7d0e075a13f6aa5248265d83124fd69",
-"structocc_1_1crystal_1_1AsymmetricUnit.html#ac3169830b3e06bec810ddccae1b5ba1a",
-"structocc_1_1dft_1_1DensityFunctional_1_1Params.html#a768960af35d0a9d29448e0ec1b3f6574",
-"structocc_1_1dma_1_1Mult.html#a3b8694270e6b3e882acfb244a5d48e24",
-"structocc_1_1dma_1_1Mult.html#abe0cf2917684f415c270b195502dba91",
-"structocc_1_1geometry_1_1MIndex.html#a1066aa790017c136fda66872feea20ab",
-"structocc_1_1interaction_1_1CEParameterizedModel.html#af5cb4d8c5f9f00290ed130abe85fe4f9",
-"structocc_1_1io_1_1GMFWriter_1_1Facet.html#a28b5280c3a9a7970d9883e08d860ddd7",
-"structocc_1_1io_1_1QCSchemaInput.html#aff7d5cba0bb606d0edb9972eb03ac68e",
-"structocc_1_1main_1_1CGConfig.html#a0122d81feb84e28a7c1d500bf642572d",
-"structocc_1_1main_1_1PromolDensityFunctor.html#ac541d7300f6f120b0705f12943b811b0",
-"structocc_1_1qm_1_1SCF.html#acd529ab50dc147de066548756c94300d",
-"structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html#a28340d040dc807fe9b0bfff3f98bded4",
-"structtinyply_1_1PlyProperty.html#ab401e48dbf2cec2f9f0128441ddc6dce"
+"classocc_1_1interaction_1_1PairEnergyStore.html#a75f017c3e336e303713344c00cada967",
+"classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41ab0e6664b3c0873d9d025e23b0357c654",
+"classocc_1_1isosurface_1_1BatchFunctor.html",
+"classocc_1_1isosurface_1_1StockholderWeightFunctor.html#ad7ce370a0787cf3b069292bf063fe1de",
+"classocc_1_1qm_1_1HartreeFock.html#ab02eb658d51353f91ee1a62a8c003e51",
+"classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a806291b79ac048531c5c3d62fcf4ca07",
+"classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a24939712b567ce85d0469e6e29a2de4e",
+"classquickhull_1_1HalfEdgeMesh.html#a26c6228ea43b1e44740b0ebcacda1ba3",
+"draco_8h.html",
+"kdtree_8h.html",
+"namespacemembers_v.html",
+"namespaceocc_1_1crystal.html#a007770fccb2ec3a01d53a7e8785a8753",
+"namespaceocc_1_1io_1_1conversion_1_1orb.html#a9280cefd138aca736046dcd751248ade",
+"namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a5c7050e04bc3e7ac378b7d617f593a2c",
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a82d46150fd4e8159ad00cb17f6fc35c4",
+"structocc_1_1cg_1_1DimerSolventTerm.html#a24bd1eeb176661c6d33880240bb6638f",
+"structocc_1_1core_1_1numpy_1_1NumpyArray.html",
+"structocc_1_1crystal_1_1SymmetryDimerLabeller.html",
+"structocc_1_1dma_1_1Mult.html#a1566baa6315abb5ad285d27f6d484b82",
+"structocc_1_1dma_1_1Mult.html#a9d4c930e7b2a8ed188d56787b9460ff2",
+"structocc_1_1geometry_1_1Facet.html#a57916835a2a1a9d8781d23c89f5d2a18",
+"structocc_1_1interaction_1_1CEEnergyComponents.html#a72629eaa5a9743d9e37a4722f9eb3111",
+"structocc_1_1io_1_1DispersionCorrectionInput.html#ad0e4c4b708b9d5fae32f0b0414a5fed5",
+"structocc_1_1io_1_1OccInput.html#aac482fa4a4cc38924bea2617bda4a10f",
+"structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#a3247f00b69a7bfea888d3ee8e0a5a7f2",
+"structocc_1_1main_1_1IsosurfaceConfig.html#a3b5e762a5044012faa7a01af5b76e3da",
+"structocc_1_1qm_1_1OrbitalSmearing.html#a26515ea8a13c53b346bfdd953513c0dcafedf7ba6075fb5526a7ace0b9385528d",
+"structocc_1_1qm_1_1Wavefunction.html#a4d848ec48354a4905c7c80d491445f0b",
+"structquickhull_1_1MeshBuilder_1_1HalfEdge.html#aef566311b394e666d02075cbc083e07b",
+"volume_8h.html#a3bfca79de404665c574b4878df53d40ea969a7b6f1f3951ef293b3ff281dc293d"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

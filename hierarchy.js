@@ -28,6 +28,7 @@ var hierarchy =
     [ "occ::io::RowConfiguration::Border", "structocc_1_1io_1_1RowConfiguration_1_1Border.html", null ],
     [ "occ::core::opt::Bracket1D< Function >", "structocc_1_1core_1_1opt_1_1Bracket1D.html", null ],
     [ "tinyply::Buffer", "classtinyply_1_1Buffer.html", null ],
+    [ "occ::qm::CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", null ],
     [ "occ::interaction::CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", null ],
     [ "occ::io::CellData", "structocc_1_1io_1_1CellData.html", null ],
     [ "occ::interaction::CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", null ],
@@ -47,6 +48,7 @@ var hierarchy =
     [ "occ::crystal::CrystalDimers", "structocc_1_1crystal_1_1CrystalDimers.html", null ],
     [ "occ::driver::CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", [
       [ "occ::driver::CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", null ],
+      [ "occ::driver::DummyCrystalGrowthCalculator", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html", null ],
       [ "occ::driver::XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", null ]
     ] ],
     [ "occ::driver::CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", null ],

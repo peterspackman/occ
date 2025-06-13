@@ -1,5 +1,8 @@
 var namespaceocc_1_1qm =
 [
+    [ "basis_sets", "namespaceocc_1_1qm_1_1basis__sets.html", [
+      [ "build_sto3g_shells", "namespaceocc_1_1qm_1_1basis__sets.html#a594b7f996c8bc21e03baf9e4afc43cf8", null ]
+    ] ],
     [ "block", "namespaceocc_1_1qm_1_1block.html", [
       [ "a", "namespaceocc_1_1qm_1_1block.html#a77b7eaa8cb876bdc0422781cede06ab9", null ],
       [ "a", "namespaceocc_1_1qm_1_1block.html#aaeb6a90fa71378bfae1e55d253756ad3", null ],
@@ -16,6 +19,7 @@ var namespaceocc_1_1qm =
     ] ],
     [ "cint", "namespaceocc_1_1qm_1_1cint.html", "namespaceocc_1_1qm_1_1cint" ],
     [ "guess", "namespaceocc_1_1qm_1_1guess.html", [
+      [ "compute_sap_matrix", "namespaceocc_1_1qm_1_1guess.html#ae393d4cd0e43b1f54b1747ec4698f19a", null ],
       [ "minimal_basis_nao", "namespaceocc_1_1qm_1_1guess.html#acb0a9b7918ce5f813b34eb9e6ac97ecb", null ],
       [ "minimal_basis_occupation_vector", "namespaceocc_1_1qm_1_1guess.html#a4ade54494fd9364e06b8f76af7095ba8", null ]
     ] ],
@@ -35,6 +39,7 @@ var namespaceocc_1_1qm =
       [ "weighted_density_matrix_unrestricted", "namespaceocc_1_1qm_1_1orb.html#ac8948cbaf474d356077e062efb6c6dd8", null ]
     ] ],
     [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
+    [ "CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", "classocc_1_1qm_1_1CanonicalOrthogonalizer" ],
     [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
     [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
     [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],

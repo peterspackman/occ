@@ -46,5 +46,6 @@ var searchData=
   ['double_5ffactorial_43',['double_factorial',['../namespaceocc_1_1util.html#a1e79ffb36340e78593971dd93d2da921',1,'occ::util']]],
   ['double_5ffactorial_5f2n_5f1_44',['double_factorial_2n_1',['../namespaceocc_1_1util.html#a3f32267ddee6ad05c950e9dc95338c10',1,'occ::util']]],
   ['dreiding_5ftype_5fhb_5fcorrection_45',['dreiding_type_hb_correction',['../namespaceocc_1_1interaction.html#a4d2be57567aaca117bf4f26cd1f07d08',1,'occ::interaction']]],
-  ['dual_46',['dual',['../structocc_1_1geometry_1_1MIndex.html#ae49b9e6b58025b6a2ef4853dcf96d2f8',1,'occ::geometry::MIndex']]]
+  ['dual_46',['dual',['../structocc_1_1geometry_1_1MIndex.html#ae49b9e6b58025b6a2ef4853dcf96d2f8',1,'occ::geometry::MIndex']]],
+  ['dummycrystalgrowthcalculator_47',['DummyCrystalGrowthCalculator',['../classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html#a69f78f6a4b3e572e154dbb7c4c16fd96',1,'occ::driver::DummyCrystalGrowthCalculator']]]
 ];

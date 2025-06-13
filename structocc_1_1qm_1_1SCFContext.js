@@ -11,13 +11,11 @@ var structocc_1_1qm_1_1SCFContext =
     [ "n_occ", "structocc_1_1qm_1_1SCFContext.html#ad339f09d42d3392971ef2879c3edd275", null ],
     [ "n_unpaired_electrons", "structocc_1_1qm_1_1SCFContext.html#acd2e6195a0dbfca5ea1195b5160c7508", null ],
     [ "nbf", "structocc_1_1qm_1_1SCFContext.html#afa2429f6c89befb21706ddb1923258ee", null ],
+    [ "orthogonalizer", "structocc_1_1qm_1_1SCFContext.html#aa92d073969ce8b7af0bbce15c7599ff0", null ],
     [ "point_charges", "structocc_1_1qm_1_1SCFContext.html#ada05490f69b6ea36583dc405c73e71f8", null ],
     [ "S", "structocc_1_1qm_1_1SCFContext.html#a09d1aba781bdb4ba8ac2b846847b05fd", null ],
     [ "T", "structocc_1_1qm_1_1SCFContext.html#a57c9101266718c3a7fdbbfa9d83c8cd8", null ],
     [ "V", "structocc_1_1qm_1_1SCFContext.html#aea443467fb513876543fc272f28055ee", null ],
     [ "Vecp", "structocc_1_1qm_1_1SCFContext.html#aa16ce0aa8413b26c255509f606f2a8f7", null ],
-    [ "Vpc", "structocc_1_1qm_1_1SCFContext.html#aa1fb9b56d0f1fc79f65f473f2bb4dc45", null ],
-    [ "X", "structocc_1_1qm_1_1SCFContext.html#afe72b1024dda9f03ca565a9a3478a6e4", null ],
-    [ "Xinv", "structocc_1_1qm_1_1SCFContext.html#a7f26aef235cb03fe2c6154cda56eeb02", null ],
-    [ "XtX_condition_number", "structocc_1_1qm_1_1SCFContext.html#acd8c970e3de219e4da09b001e88838de", null ]
+    [ "Vpc", "structocc_1_1qm_1_1SCFContext.html#aa1fb9b56d0f1fc79f65f473f2bb4dc45", null ]
 ];

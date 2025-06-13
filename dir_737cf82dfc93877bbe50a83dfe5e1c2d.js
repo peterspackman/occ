@@ -17,6 +17,7 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "opmatrix.h", "qm_2opmatrix_8h.html", "qm_2opmatrix_8h" ],
     [ "orb.h", "orb_8h.html", "orb_8h" ],
     [ "orbital_smearing.h", "orbital__smearing_8h.html", "orbital__smearing_8h" ],
+    [ "orthogonalizer.h", "orthogonalizer_8h.html", "orthogonalizer_8h" ],
     [ "partitioning.h", "partitioning_8h.html", "partitioning_8h" ],
     [ "scf.h", "scf_8h.html", "scf_8h" ],
     [ "scf_convergence_settings.h", "scf__convergence__settings_8h.html", "scf__convergence__settings_8h" ],
@@ -25,5 +26,6 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "shell.h", "shell_8h.html", "shell_8h" ],
     [ "shellblock_norm.h", "shellblock__norm_8h.html", "shellblock__norm_8h" ],
     [ "spinorbital.h", "spinorbital_8h.html", "spinorbital_8h" ],
+    [ "sto3g_basis.h", "sto3g__basis_8h.html", "sto3g__basis_8h" ],
     [ "wavefunction.h", "wavefunction_8h.html", "wavefunction_8h" ]
 ];
