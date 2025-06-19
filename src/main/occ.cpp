@@ -9,6 +9,7 @@
 #include <occ/main/occ_dma.h>
 #include <occ/main/occ_elastic.h>
 #include <occ/main/occ_elat.h>
+#include <occ/main/occ_embed.h>
 #include <occ/main/occ_isosurface.h>
 #include <occ/main/occ_pair.h>
 #include <occ/main/occ_scf.h>
@@ -53,6 +54,7 @@ int main(int argc, char *argv[]) {
   auto *dma = occ::main::add_dma_subcommand(app);
   auto *elastic = occ::main::add_elastic_subcommand(app);
   auto *elat = occ::main::add_elat_subcommand(app);
+  auto *embed = occ::main::add_embed_subcommand(app);
   auto *iso = occ::main::add_isosurface_subcommand(app);
   auto *pair = occ::main::add_pair_subcommand(app);
   auto *scf = occ::main::add_scf_subcommand(app);

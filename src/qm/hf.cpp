@@ -58,12 +58,16 @@ double HartreeFock::wolf_point_charge_interaction_energy(
 
   // Pre-calculate Wolf self-terms
   const double t2 = std::erfc(alpha * rc) / rc;
+
+  const auto &atom_list = atoms();
   const double t3 = (t2 + 2 * alpha / occ::constants::sqrt_pi<double>);
 
   double total = 0.0;
+  double total_self = 0.0;
+  double total_intra = 0.0;
   // Nuclear-point charge interactions
   int i = 0;
-  for (const auto &atom : atoms()) {
+  for (const auto &atom : atom_list) {
     const auto pos_a = atom.position();
     double Z = atom.atomic_number - m_frozen_electrons[i];
     double q = partial_charges[i];
@@ -76,12 +80,22 @@ double HartreeFock::wolf_point_charge_interaction_energy(
       const double qj = pc.charge();
       total_i += qj * (std::erfc(alpha * rij) / rij - t2);
     }
+    for (int j = 0; j < atom_list.size(); j++) {
+      if (i == j)
+        continue;
+      const auto &pos_j = atom_list[j].position();
+      const double rij = (pos_j - pos_a).norm();
+      if (rij > rc)
+        continue;
+      const double qj = partial_charges[j];
+      total_intra += Z * qj * std::erf(alpha * rij) / rij;
+    }
     i++;
-    total_i -= q * t3;
+    total_self -= Z * q * t3;
     total += Z * total_i;
   }
-
-  // TODO intramolecular terms
+  total -= total_intra;
+  total += total_self;
   return total;
 }
 

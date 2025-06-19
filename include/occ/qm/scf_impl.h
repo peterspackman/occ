@@ -25,7 +25,7 @@ SCF<P>::SCF(P &procedure, SpinorbitalKind sk) : m_procedure(procedure) {
   ctx.mo.energies = Vec::Zero(rows);
   ctx.mo.n_ao = ctx.nbf;
 
-  ctx.Vpc = Mat::Zero(rows, cols);
+  ctx.V_ext = Mat::Zero(rows, cols);
   ctx.energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
   if (!m_procedure.supports_incremental_fock_build())
     convergence_settings.incremental_fock_threshold = 0.0;
@@ -245,7 +245,7 @@ template <SCFMethod P> void SCF<P>::set_core_matrices() {
       ctx.Vecp = m_procedure.compute_effective_core_potential_matrix();
     }
     if (calc_pc) {
-      ctx.Vpc = m_procedure.compute_point_charge_interaction_matrix(
+      ctx.V_ext = m_procedure.compute_point_charge_interaction_matrix(
           ctx.point_charges);
     }
     break;
@@ -263,9 +263,9 @@ template <SCFMethod P> void SCF<P>::set_core_matrices() {
       block::b(ctx.Vecp) = block::a(ctx.Vecp);
     }
     if (calc_pc) {
-      block::a(ctx.Vpc) = m_procedure.compute_point_charge_interaction_matrix(
+      block::a(ctx.V_ext) = m_procedure.compute_point_charge_interaction_matrix(
           ctx.point_charges);
-      block::b(ctx.Vpc) = block::a(ctx.Vpc);
+      block::b(ctx.V_ext) = block::a(ctx.V_ext);
     }
     break;
   }
@@ -282,15 +282,15 @@ template <SCFMethod P> void SCF<P>::set_core_matrices() {
       block::bb(ctx.Vecp) = block::aa(ctx.Vecp);
     }
     if (calc_pc) {
-      block::aa(ctx.Vpc) = m_procedure.compute_point_charge_interaction_matrix(
+      block::aa(ctx.V_ext) = m_procedure.compute_point_charge_interaction_matrix(
           ctx.point_charges);
-      block::bb(ctx.Vpc) = block::aa(ctx.Vpc);
+      block::bb(ctx.V_ext) = block::aa(ctx.V_ext);
     }
 
     break;
   }
   }
-  ctx.H = ctx.T + ctx.V + ctx.Vecp + ctx.Vpc;
+  ctx.H = ctx.T + ctx.V + ctx.Vecp + ctx.V_ext;
 }
 
 template <SCFMethod P>
@@ -409,6 +409,15 @@ void SCF<P>::set_point_charges(const PointChargeList &charges) {
   ctx.point_charges = charges;
 }
 
+template <SCFMethod P>
+void SCF<P>::set_external_potential(const Mat &V_ext) {
+  log::info("Setting external potential matrix ({}x{})", V_ext.rows(), V_ext.cols());
+  if (V_ext.rows() != ctx.V_ext.rows() || V_ext.cols() != ctx.V_ext.cols()) {
+    throw std::runtime_error("External potential matrix dimensions do not match basis");
+  }
+  ctx.V_ext = V_ext;
+}
+
 template <SCFMethod P> void SCF<P>::update_scf_energy(bool incremental) {
 
   if (!incremental) {
@@ -439,7 +448,7 @@ template <SCFMethod P> void SCF<P>::update_scf_energy(bool incremental) {
   }
   if (ctx.point_charges.size() > 0) {
     ctx.energy["electronic.point_charge"] =
-        2 * expectation(ctx.mo.kind, ctx.mo.D, ctx.Vpc);
+        2 * expectation(ctx.mo.kind, ctx.mo.D, ctx.V_ext);
   }
   m_procedure.update_scf_energy(ctx.energy, incremental);
 }
@@ -481,7 +490,7 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
     // Last iteration's energy and density
     auto ehf_last = ctx.energy["electronic"];
     D_last = ctx.mo.D;
-    ctx.H = ctx.T + ctx.V + ctx.Vecp + ctx.Vpc;
+    ctx.H = ctx.T + ctx.V + ctx.Vecp + ctx.V_ext;
     m_procedure.update_core_hamiltonian(ctx.mo, ctx.H);
     incremental = true;
 

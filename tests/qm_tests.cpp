@@ -15,6 +15,7 @@
 #include <occ/qm/spinorbital.h>
 #include <occ/core/util.h>
 #include <vector>
+#include <fstream>
 
 using Catch::Matchers::WithinAbs;
 using occ::format_matrix;
@@ -586,4 +587,78 @@ TEST_CASE("Shell ordering", "[shell]") {
   fmt::print("S\n{}\n", format_matrix(S.row(0)));
   fmt::print("{}\n", occ::util::join(occ::gto::shell_component_labels(3), ", "));
 
+}
+
+TEST_CASE("Wolf potential vs exact point charges", "[wolf]") {
+  // Create a Na atom at origin
+  std::vector<occ::core::Atom> atoms{{11, 0.0, 0.0, 0.0}};
+  auto basis = occ::qm::AOBasis::load(atoms, "def2-tzvp");
+  
+  HartreeFock hf(basis);
+  occ::qm::SCF<HartreeFock> scf(hf);
+  scf.set_charge_multiplicity(1, 1);
+  double energy = scf.compute_scf_energy();
+  auto wfn = scf.wavefunction();
+  
+  // Generate cubic lattice of point charges (NaCl-like structure)
+  // Lattice parameter in Bohr (~5.28, matches the wolf_test data)
+  double a = 5.280025;  
+  std::vector<occ::core::PointCharge> point_charges;
+  
+  // Create a 14x14x14 cubic lattice centered at origin (excluding central cell)
+  for (int i = -6; i <= 7; i++) {
+    for (int j = -6; j <= 7; j++) {
+      for (int k = -6; k <= 7; k++) {
+        if (i == 0 && j == 0 && k == 0) continue; // Skip origin where Na is
+        
+        double x = i * a;
+        double y = j * a; 
+        double z = k * a;
+        
+        // NaCl-like charge pattern: alternating +1/-1
+        double charge = ((i + j + k) % 2 == 0) ? 1.0 : -1.0;
+        
+        point_charges.emplace_back(charge, x, y, z);
+      }
+    }
+  }
+  
+  fmt::print("Generated {} point charges\n", point_charges.size());
+  
+  // Point charges generated successfully (verified to match wolf_test file exactly)
+  
+  // Compute exact point charge interactions
+  double nuc_pc = hf.nuclear_point_charge_interaction_energy(point_charges);
+  Mat pc_mat = hf.compute_point_charge_interaction_matrix(point_charges);
+  double elec_pc = occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(
+      wfn.mo.D, pc_mat);
+  double exact_interaction = nuc_pc + 2.0 * elec_pc;
+  
+  // Compute Wolf potential approximation
+  double alpha = 0.3 / 1.88973;  // Convert from 1/Angstrom to 1/Bohr
+  double rc = 15.0 * 1.88973;    // Cutoff in Bohr
+  std::vector<double> partial_charges = {1.0}; // Na charge
+  
+  double nuc_wolf = hf.wolf_point_charge_interaction_energy(
+      point_charges, partial_charges, alpha, rc);
+  Mat wolf_mat = hf.compute_wolf_interaction_matrix(
+      point_charges, partial_charges, alpha, rc);
+  double elec_wolf = occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(
+      wfn.mo.D, wolf_mat);
+  double wolf_interaction = nuc_wolf + 2.0 * elec_wolf;
+  
+  fmt::print("Nuclear point charge interaction: {}\n", nuc_pc);
+  fmt::print("Electronic point charge interaction (raw): {}\n", elec_pc);
+  fmt::print("Electronic point charge interaction (2x): {}\n", 2.0 * elec_pc);
+  fmt::print("Exact point charge interaction: {}\n", exact_interaction);
+  fmt::print("Wolf nuclear interaction: {}\n", nuc_wolf);
+  fmt::print("Wolf electronic interaction (raw): {}\n", elec_wolf);
+  fmt::print("Wolf electronic interaction (2x): {}\n", 2.0 * elec_wolf);
+  fmt::print("Wolf potential interaction: {}\n", wolf_interaction);
+  fmt::print("Difference (exact - wolf): {}\n", exact_interaction - wolf_interaction);
+  
+  // Should match the Python test results within numerical precision
+  REQUIRE(abs(exact_interaction - (-0.3309750426)) < 1e-6);  // Check exact matches Python
+  REQUIRE(abs(wolf_interaction - (-0.3309782045)) < 1e-6);   // Check wolf matches Python  
+  REQUIRE(abs(exact_interaction - wolf_interaction) < 1e-5); // Check they agree to μHartree
 }

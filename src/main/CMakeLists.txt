@@ -12,6 +12,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_describe.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_dma.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_embed.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_surface_cuts.cpp"
