@@ -16,6 +16,6 @@ var structocc_1_1qm_1_1SCFContext =
     [ "S", "structocc_1_1qm_1_1SCFContext.html#a09d1aba781bdb4ba8ac2b846847b05fd", null ],
     [ "T", "structocc_1_1qm_1_1SCFContext.html#a57c9101266718c3a7fdbbfa9d83c8cd8", null ],
     [ "V", "structocc_1_1qm_1_1SCFContext.html#aea443467fb513876543fc272f28055ee", null ],
-    [ "Vecp", "structocc_1_1qm_1_1SCFContext.html#aa16ce0aa8413b26c255509f606f2a8f7", null ],
-    [ "Vpc", "structocc_1_1qm_1_1SCFContext.html#aa1fb9b56d0f1fc79f65f473f2bb4dc45", null ]
+    [ "V_ext", "structocc_1_1qm_1_1SCFContext.html#a5a9984c92fe2c2e80718bbd9ee651d92", null ],
+    [ "Vecp", "structocc_1_1qm_1_1SCFContext.html#aa16ce0aa8413b26c255509f606f2a8f7", null ]
 ];

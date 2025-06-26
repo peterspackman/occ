@@ -292,6 +292,7 @@ var annotated_dup =
         [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
         [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
         [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],
+        [ "EmbedConfig", "structocc_1_1main_1_1EmbedConfig.html", "structocc_1_1main_1_1EmbedConfig" ],
         [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
         [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
         [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
@@ -325,12 +326,14 @@ var annotated_dup =
         [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
         [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
         [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
+        [ "PointChargeCorrectedProcedure", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html", "classocc_1_1qm_1_1PointChargeCorrectedProcedure" ],
         [ "SCF", "structocc_1_1qm_1_1SCF.html", "structocc_1_1qm_1_1SCF" ],
         [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
         [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
         [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html", "classocc_1_1qm_1_1SCFMethodBase" ],
         [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
-        [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ]
+        [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ],
+        [ "WolfSumCorrectedProcedure", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html", "classocc_1_1qm_1_1WolfSumCorrectedProcedure" ]
       ] ],
       [ "sht", "namespaceocc_1_1sht.html", [
         [ "AssocLegendreP", "classocc_1_1sht_1_1AssocLegendreP.html", "classocc_1_1sht_1_1AssocLegendreP" ],

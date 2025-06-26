@@ -5,6 +5,7 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "cint_interface.h", "cint__interface_8h.html", "cint__interface_8h" ],
     [ "ediis.h", "ediis_8h.html", "ediis_8h" ],
     [ "expectation.h", "expectation_8h.html", "expectation_8h" ],
+    [ "external_potential.h", "external__potential_8h.html", "external__potential_8h" ],
     [ "gradients.h", "gradients_8h.html", "gradients_8h" ],
     [ "guess_density.h", "guess__density_8h.html", "guess__density_8h" ],
     [ "hf.h", "hf_8h.html", "hf_8h" ],

@@ -12,5 +12,6 @@ var searchData=
   ['energy_5fcomponents_2eh_9',['energy_components.h',['../energy__components_8h.html',1,'']]],
   ['energy_5fmodel_5fbase_2eh_10',['energy_model_base.h',['../energy__model__base_8h.html',1,'']]],
   ['engrad_2eh_11',['engrad.h',['../engrad_8h.html',1,'']]],
-  ['expectation_2eh_12',['expectation.h',['../expectation_8h.html',1,'']]]
+  ['expectation_2eh_12',['expectation.h',['../expectation_8h.html',1,'']]],
+  ['external_5fpotential_2eh_13',['external_potential.h',['../external__potential_8h.html',1,'']]]
 ];

@@ -16,6 +16,7 @@ var structocc_1_1qm_1_1SCF =
     [ "set_charge_multiplicity", "structocc_1_1qm_1_1SCF.html#a8c714afb8b0ff2611ec73564a2782482", null ],
     [ "set_conditioning_orthogonalizer", "structocc_1_1qm_1_1SCF.html#a2d1b04f9956ea9910b5b340c53e1fad1", null ],
     [ "set_core_matrices", "structocc_1_1qm_1_1SCF.html#aaddffeb3b30eadff5648e95e8b0540cd", null ],
+    [ "set_external_potential", "structocc_1_1qm_1_1SCF.html#a19bf47dab9dcdf497eacda8d46cdbfe5", null ],
     [ "set_initial_guess_from_wfn", "structocc_1_1qm_1_1SCF.html#a8dec2c7b918fe15d01152e58474f84de", null ],
     [ "set_multiplicity", "structocc_1_1qm_1_1SCF.html#a94c97404efd518cc00dbd85925444faa", null ],
     [ "set_point_charges", "structocc_1_1qm_1_1SCF.html#aae7e3cf1865971a4f3e5e79a0c79a65c", null ],

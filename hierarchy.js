@@ -100,6 +100,7 @@ var hierarchy =
     [ "occ::io::ElectronShell", "structocc_1_1io_1_1ElectronShell.html", null ],
     [ "occ::core::Element", "classocc_1_1core_1_1Element.html", null ],
     [ "occ::io::ElementBasis", "structocc_1_1io_1_1ElementBasis.html", null ],
+    [ "occ::main::EmbedConfig", "structocc_1_1main_1_1EmbedConfig.html", null ],
     [ "occ::qm::Energy", "structocc_1_1qm_1_1Energy.html", null ],
     [ "occ::interaction::EnergyModelBase", "classocc_1_1interaction_1_1EnergyModelBase.html", [
       [ "occ::interaction::CEEnergyModel", "classocc_1_1interaction_1_1CEEnergyModel.html", null ],
@@ -245,6 +246,7 @@ var hierarchy =
     [ "tinyply::PlyFile", "structtinyply_1_1PlyFile.html", null ],
     [ "tinyply::PlyProperty", "structtinyply_1_1PlyProperty.html", null ],
     [ "occ::core::PointCharge", "classocc_1_1core_1_1PointCharge.html", null ],
+    [ "occ::qm::PointChargeCorrectedProcedure< Proc >", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html", null ],
     [ "occ::io::PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", null ],
     [ "quickhull::Pool< T >", "classquickhull_1_1Pool.html", null ],
     [ "quickhull::Pool< std::vector< size_t > >", "classquickhull_1_1Pool.html", null ],
@@ -337,6 +339,7 @@ var hierarchy =
     [ "occ::interaction::transform::WavefunctionTransformer", "classocc_1_1interaction_1_1transform_1_1WavefunctionTransformer.html", null ],
     [ "occ::interaction::WolfParameters", "structocc_1_1interaction_1_1WolfParameters.html", null ],
     [ "occ::interaction::WolfSum", "classocc_1_1interaction_1_1WolfSum.html", null ],
+    [ "occ::qm::WolfSumCorrectedProcedure< Proc >", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html", null ],
     [ "occ::geometry::WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", null ],
     [ "occ::main::XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", null ],
     [ "occ::xdm::XDM", "classocc_1_1xdm_1_1XDM.html", null ],

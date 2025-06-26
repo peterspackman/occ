@@ -16,6 +16,7 @@ var searchData=
   ['output_13',['output',['../structocc_1_1io_1_1OccInput.html#ab2009326cdc6598e0bf25fdad259797a',1,'occ::io::OccInput']]],
   ['output_5ffilename_14',['output_filename',['../structocc_1_1io_1_1RuntimeInput.html#aefcc04e815ddcd2a75a3d495dd27809a',1,'occ::io::RuntimeInput::output_filename'],['../structocc_1_1main_1_1CubeConfig.html#a000faddffb58c255c01e60712d0e4ac8',1,'occ::main::CubeConfig::output_filename']]],
   ['output_5fjson_5ffilename_15',['output_json_filename',['../structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a5fa73544038dacd7dc1595cd19b703b7',1,'occ::interaction::LatticeConvergenceSettings::output_json_filename'],['../structocc_1_1main_1_1DimerGenerationSettings.html#a24b7d3eee926990038f59ce7636868d5',1,'occ::main::DimerGenerationSettings::output_json_filename'],['../structocc_1_1main_1_1ElasticSettings.html#ad683d4f0b3770743840f1800d0fb0666',1,'occ::main::ElasticSettings::output_json_filename'],['../structocc_1_1main_1_1OccPairInput.html#aa3691f39734bc495702e4f82b3d6ac41',1,'occ::main::OccPairInput::output_json_filename']]],
-  ['output_5fsurface_5ffilename_16',['output_surface_filename',['../structocc_1_1io_1_1SolventInput.html#a1756d5633150709a96280ff0cd11056e',1,'occ::io::SolventInput']]],
-  ['output_5ftemplate_17',['output_template',['../structocc_1_1main_1_1IsosurfaceConfig.html#a110865256ab58bb4d42bbdd1af8d3817',1,'occ::main::IsosurfaceConfig']]]
+  ['output_5fprefix_16',['output_prefix',['../structocc_1_1main_1_1EmbedConfig.html#a05a1063415e8026fda83f287b010e401',1,'occ::main::EmbedConfig']]],
+  ['output_5fsurface_5ffilename_17',['output_surface_filename',['../structocc_1_1io_1_1SolventInput.html#a1756d5633150709a96280ff0cd11056e',1,'occ::io::SolventInput']]],
+  ['output_5ftemplate_18',['output_template',['../structocc_1_1main_1_1IsosurfaceConfig.html#a110865256ab58bb4d42bbdd1af8d3817',1,'occ::main::IsosurfaceConfig']]]
 ];

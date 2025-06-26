@@ -10,6 +10,7 @@ var dir_887d2295614e9dc3eeb401126e7efc97 =
     [ "occ_dma.h", "occ__dma_8h.html", "occ__dma_8h" ],
     [ "occ_elastic.h", "occ__elastic_8h.html", "occ__elastic_8h" ],
     [ "occ_elat.h", "occ__elat_8h.html", "occ__elat_8h" ],
+    [ "occ_embed.h", "occ__embed_8h.html", "occ__embed_8h" ],
     [ "occ_isosurface.h", "occ__isosurface_8h.html", "occ__isosurface_8h" ],
     [ "occ_pair.h", "occ__pair_8h.html", "occ__pair_8h" ],
     [ "occ_scf.h", "occ__scf_8h.html", "occ__scf_8h" ],
