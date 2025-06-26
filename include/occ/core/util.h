@@ -55,6 +55,21 @@ static inline std::string join(const std::vector<std::string> &seq,
   return res;
 }
 
+template<typename Range>
+static inline std::string join(const Range &range, const std::string &sep) {
+  std::string res;
+  auto it = std::begin(range);
+  auto end = std::end(range);
+  if (it != end) {
+    res += fmt::format("{}", *it);
+    ++it;
+    for (; it != end; ++it) {
+      res += sep + fmt::format("{}", *it);
+    }
+  }
+  return res;
+}
+
 // trim from start (in place)
 static inline void ltrim(std::string &s) {
   s.erase(s.begin(), std::find_if(s.begin(), s.end(),

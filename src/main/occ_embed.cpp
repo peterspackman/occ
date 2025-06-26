@@ -549,11 +549,11 @@ void run_embed_subcommand(const EmbedConfig &config) {
     occ::log::info("  Wolf cutoff: {:.1f} Å", config.wolf_cutoff);
   }
   if (!config.net_charges.empty()) {
-    occ::log::info("  Net charges: [{}]", fmt::join(config.net_charges, ", "));
+    occ::log::info("  Net charges: [{}]", occ::util::join(config.net_charges, ", "));
   }
   if (!config.multiplicities.empty()) {
     occ::log::info("  Multiplicities: [{}]",
-                   fmt::join(config.multiplicities, ", "));
+                   occ::util::join(config.multiplicities, ", "));
   }
   occ::log::info("  Max cycles: {}", config.max_embed_cycles);
 
