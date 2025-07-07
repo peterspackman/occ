@@ -486,11 +486,12 @@ MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
   MolecularOrbitals result = *this;
 
   auto [rows, cols] = matrix_dimensions(new_kind, n_ao);
+  fmt::print("Rows = {} cols = {}\n", rows, cols);
+  result.kind = new_kind;
   result.C = Mat::Zero(rows, cols);
-  result.energies = Vec::Zero(rows, cols);
+  result.energies = Vec::Zero(rows);
 
-  switch (new_kind) {
-  default: {
+  if(new_kind == R) {
     switch (kind) {
     case U: {
       result.C = 0.5 * (block::a(C) + block::b(C));
@@ -508,7 +509,7 @@ MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
           "impossible state in MolecularOrbitals::as_kind");
     }
   }
-  case U: {
+  else if (new_kind == U) {
     switch (kind) {
     case R: {
       block::a(result.C) = C;
@@ -529,7 +530,7 @@ MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
           "impossible state in MolecularOrbitals::as_kind");
     }
   }
-  case G: {
+  else if (new_kind == G) {
     switch (kind) {
     case R: {
       block::aa(result.C) = C;
@@ -559,7 +560,6 @@ MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
       throw std::runtime_error(
           "impossible state in MolecularOrbitals::as_kind");
     }
-  }
   }
   result.update_occupied_orbitals();
   result.update_density_matrix();

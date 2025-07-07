@@ -174,13 +174,13 @@ inline auto j_lambda_direct_u(std::vector<Mat> &JJ, const Vec &da,
         Eigen::Map<const Mat> buf_mat(args.buffer + offset, args.dims[0],
                                       args.dims[1]);
         Ja.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
-            da(i) * buf_mat;
+            (da(i) + db(i)) * buf_mat;
         Ja.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]) +=
-            da(i) * buf_mat.transpose();
+            (da(i) + db(i)) * buf_mat.transpose();
         Jb.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
-            db(i) * buf_mat;
+            (da(i) + db(i)) * buf_mat;
         Jb.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]) +=
-            db(i) * buf_mat.transpose();
+            (da(i) + db(i)) * buf_mat.transpose();
         offset += args.dims[0] * args.dims[1];
       }
     } else {
@@ -188,9 +188,9 @@ inline auto j_lambda_direct_u(std::vector<Mat> &JJ, const Vec &da,
         Eigen::Map<const Mat> buf_mat(args.buffer + offset, args.dims[0],
                                       args.dims[1]);
         Ja.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
-            da(i) * buf_mat;
+            (da(i) + db(i)) * buf_mat;
         Jb.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
-            db(i) * buf_mat;
+            (da(i) + db(i)) * buf_mat;
         offset += args.dims[0] * args.dims[1];
       }
     }
@@ -366,7 +366,7 @@ inline auto jk_lambda_direct_polarized(
     size_t offset = 0;
     // nbf x nocc
     size_t n_alpha = Cocc_a.cols();
-    size_t n_beta = Cocc_a.cols();
+    size_t n_beta = Cocc_b.cols();
     auto c3a = Cocc_a.block(args.bf[1], 0, args.dims[1], n_alpha);
     auto c3b = Cocc_b.block(args.bf[1], 0, args.dims[1], n_beta);
     Mat c3_term_a(args.dims[0], n_alpha);
@@ -382,29 +382,29 @@ inline auto jk_lambda_direct_polarized(
                                       args.dims[1]);
 
         ga(r) +=
-            2 * (Da.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
-                     .array() *
-                 buf_mat.array())
-                    .sum();
+            (Da.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
+                 .array() *
+             buf_mat.array())
+                .sum();
         gb(r) +=
-            2 * (Db.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
-                     .array() *
-                 buf_mat.array())
-                    .sum();
+            (Db.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
+                 .array() *
+             buf_mat.array())
+                .sum();
 
         c3_term_a = buf_mat * c3a;
         c3_term_b = buf_mat * c3b;
 
         ga(r) +=
-            2 * (Da.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0])
-                     .array() *
-                 buf_mat.transpose().array())
-                    .sum();
+            (Da.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0])
+                 .array() *
+             buf_mat.transpose().array())
+                .sum();
         gb(r) +=
-            2 * (Db.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0])
-                     .array() *
-                 buf_mat.transpose().array())
-                    .sum();
+            (Db.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0])
+                 .array() *
+             buf_mat.transpose().array())
+                .sum();
 
         c2_term_a = buf_mat.transpose() * c2a;
         c2_term_b = buf_mat.transpose() * c2b;
@@ -431,15 +431,15 @@ inline auto jk_lambda_direct_polarized(
         Eigen::Map<const Mat> buf_mat(args.buffer + offset, args.dims[0],
                                       args.dims[1]);
         ga(r) +=
-            2 * (Da.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
-                     .array() *
-                 buf_mat.array())
-                    .sum();
+            (Da.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
+                 .array() *
+             buf_mat.array())
+                .sum();
         gb(r) +=
-            2 * (Db.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
-                     .array() *
-                 buf_mat.array())
-                    .sum();
+            (Db.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
+                 .array() *
+             buf_mat.array())
+                .sum();
 
         c3_term_a = buf_mat * c3a;
         c3_term_b = buf_mat * c3b;
@@ -728,8 +728,6 @@ Mat direct_coulomb_operator_kernel_u(IntegralEngine &engine,
     Ja.noalias() += part_a + part_a.transpose();
     Jb.noalias() += part_b + part_b.transpose();
   }
-
-  J *= 2;
 
   occ::timing::stop(occ::timing::category::df);
   return J;
@@ -1071,15 +1069,15 @@ inline Mat stored_coulomb_kernel_u(const Mat &ints, const AOBasis &aobasis,
   Vec ga(ndf), gb(ndf);
   for (int r = 0; r < ndf; r++) {
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
-    ga(r) = 2 * (block::a(mo.D).array() * tr.array()).sum();
-    gb(r) = 2 * (block::b(mo.D).array() * tr.array()).sum();
+    ga(r) = (block::a(mo.D).array() * tr.array()).sum();
+    gb(r) = (block::b(mo.D).array() * tr.array()).sum();
   }
-  Vec da = V_LLt.solve(ga), db = V_LLt.solve(gb);
+  Vec d_total = V_LLt.solve(ga + gb);
   Mat J = Mat::Zero(rows, cols);
   for (int r = 0; r < ndf; r++) {
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
-    block::a(J) += da(r) * tr;
-    block::b(J) += db(r) * tr;
+    block::a(J) += d_total(r) * tr;
+    block::b(J) += d_total(r) * tr;
   }
   return 2 * J;
 }
