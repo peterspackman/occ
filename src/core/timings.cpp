@@ -115,6 +115,8 @@ const char *category_name(category cat) {
     return "DMA grid integration";
   case dma_total:
     return "DMA total";
+  case post_hf:
+    return "Post-HF methods";
   default:
     return "other";
   }
@@ -158,6 +160,7 @@ void print_timings() {
       dma_grid_eval,
       dma_grid_int,
       dma_total,
+      post_hf,
       global,
   };
   log::info("Wall clock time by category (s)");

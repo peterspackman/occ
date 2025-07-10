@@ -140,6 +140,8 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   // basis set
   scf->add_option("-d,--df-basis,--density_fitting_basis",
                   config->basis.df_name, "basis set");
+  scf->add_option("--ri-basis", config->basis.ri_basis, 
+                  "RI basis set for MP2 calculations");
   scf->add_flag("--spherical", config->basis.spherical,
                 "use spherical basis sets");
 

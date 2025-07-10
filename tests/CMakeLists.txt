@@ -44,6 +44,10 @@ add_executable(qm_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp")
 target_link_libraries(qm_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(qm_tests)
 
+add_executable(mp2_tests "${CMAKE_CURRENT_SOURCE_DIR}/mp2_tests.cpp")
+target_link_libraries(mp2_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(mp2_tests)
+
 add_executable(sht_tests "${CMAKE_CURRENT_SOURCE_DIR}/sht_tests.cpp")
 target_link_libraries(sht_tests PRIVATE occ_sht Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(sht_tests)
@@ -75,3 +79,4 @@ catch_discover_tests(cg_tests)
 add_executable(dma_tests "${CMAKE_CURRENT_SOURCE_DIR}/dma_tests.cpp")
 target_link_libraries(dma_tests PRIVATE occ_dma occ_io Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(dma_tests)
+

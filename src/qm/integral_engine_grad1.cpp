@@ -170,9 +170,7 @@ coulomb_kernel_grad(cint::IntegralEnvironment &env, const AOBasis &basis,
     detail::evaluate_four_center_grad<op, kind>(
         f, env, basis, shellpairs, Dnorm, Schwarz, precision, thread_id);
   };
-  occ::timing::start(occ::timing::category::fock);
-  occ::parallel::parallel_do(lambda);
-  occ::timing::stop(occ::timing::category::fock);
+  occ::parallel::parallel_do_timed(lambda, occ::timing::category::fock);
 
   for (size_t i = 1; i < nthreads; i++) {
     results[0].x.noalias() += results[i].x;
@@ -254,9 +252,7 @@ JKTriple coulomb_exchange_kernel_grad(IntEnv &env, const AOBasis &basis,
     detail::evaluate_four_center_grad<op, kind>(
         f, env, basis, shellpairs, Dnorm, Schwarz, precision, thread_id);
   };
-  occ::timing::start(occ::timing::category::fock);
-  occ::parallel::parallel_do(lambda);
-  occ::timing::stop(occ::timing::category::fock);
+  occ::parallel::parallel_do_timed(lambda, occ::timing::category::fock);
 
   for (size_t i = 1; i < nthreads; i++) {
     jmats[0].x.noalias() += jmats[i].x;

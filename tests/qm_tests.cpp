@@ -1,32 +1,33 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <fstream>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
+#include <occ/qm/integral_engine.h>
+#include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/mo_integral_engine.h>
 #include <occ/qm/oniom.h>
 #include <occ/qm/partitioning.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
-#include <occ/qm/integral_engine.h>
-#include <occ/qm/integral_engine_df.h>
-#include <occ/core/util.h>
 #include <vector>
-#include <fstream>
 
 using Catch::Matchers::WithinAbs;
 using occ::format_matrix;
 using occ::Mat;
 using occ::Mat3;
 using occ::qm::HartreeFock;
+using occ::qm::MolecularOrbitals;
 using occ::qm::SpinorbitalKind;
 using occ::util::all_close;
-using occ::qm::MolecularOrbitals;
 
 // Basis
 
@@ -75,7 +76,6 @@ TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
   occ::qm::block::b(mo_u.C) << 0.54884228, 1.21245192, 0.54884228, -1.21245192;
   mo_u.C.array() *= 0.5;
   mo_u.update_density_matrix();
-
 
   mo.Cocc = mo.C.leftCols(1);
   mo.D = mo.Cocc * mo.Cocc.transpose();
@@ -583,83 +583,82 @@ TEST_CASE("Mulliken partition", "[partitioning]") {
 }
 
 TEST_CASE("Shell ordering", "[shell]") {
-  using occ::qm::Shell;
   using occ::qm::AOBasis;
-  std::vector<occ::core::Atom> atoms{
-    {1, 0.0, 0.0, 0.0},
-    {1, 0.0, 0.0, 1.0}
-  };
+  using occ::qm::Shell;
+  std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.0}};
   std::vector<Shell> shells{
-    Shell(0, {1.0}, {{1.0}}, {0.0, 0.0, 0.0}),
-    Shell(3, {1.0}, {{1.0}}, {0.0, 0.0, 1.0}),
+      Shell(0, {1.0}, {{1.0}}, {0.0, 0.0, 0.0}),
+      Shell(3, {1.0}, {{1.0}}, {0.0, 0.0, 1.0}),
   };
   auto basis = AOBasis(atoms, shells);
 
   auto hf = occ::qm::HartreeFock(basis);
   auto S = hf.compute_overlap_matrix();
   fmt::print("S\n{}\n", format_matrix(S.row(0)));
-  fmt::print("{}\n", occ::util::join(occ::gto::shell_component_labels(3), ", "));
-
+  fmt::print("{}\n",
+             occ::util::join(occ::gto::shell_component_labels(3), ", "));
 }
 
 TEST_CASE("Wolf potential vs exact point charges", "[wolf]") {
   // Create a Na atom at origin
   std::vector<occ::core::Atom> atoms{{11, 0.0, 0.0, 0.0}};
   auto basis = occ::qm::AOBasis::load(atoms, "def2-tzvp");
-  
+
   HartreeFock hf(basis);
   occ::qm::SCF<HartreeFock> scf(hf);
   scf.set_charge_multiplicity(1, 1);
   double energy = scf.compute_scf_energy();
   auto wfn = scf.wavefunction();
-  
+
   // Generate cubic lattice of point charges (NaCl-like structure)
   // Lattice parameter in Bohr (~5.28, matches the wolf_test data)
-  double a = 5.280025;  
+  double a = 5.280025;
   std::vector<occ::core::PointCharge> point_charges;
-  
+
   // Create a 14x14x14 cubic lattice centered at origin (excluding central cell)
   for (int i = -6; i <= 7; i++) {
     for (int j = -6; j <= 7; j++) {
       for (int k = -6; k <= 7; k++) {
-        if (i == 0 && j == 0 && k == 0) continue; // Skip origin where Na is
-        
+        if (i == 0 && j == 0 && k == 0)
+          continue; // Skip origin where Na is
+
         double x = i * a;
-        double y = j * a; 
+        double y = j * a;
         double z = k * a;
-        
+
         // NaCl-like charge pattern: alternating +1/-1
         double charge = ((i + j + k) % 2 == 0) ? 1.0 : -1.0;
-        
+
         point_charges.emplace_back(charge, x, y, z);
       }
     }
   }
-  
+
   fmt::print("Generated {} point charges\n", point_charges.size());
-  
-  // Point charges generated successfully (verified to match wolf_test file exactly)
-  
+
+  // Point charges generated successfully (verified to match wolf_test file
+  // exactly)
+
   // Compute exact point charge interactions
   double nuc_pc = hf.nuclear_point_charge_interaction_energy(point_charges);
   Mat pc_mat = hf.compute_point_charge_interaction_matrix(point_charges);
   double elec_pc = occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(
       wfn.mo.D, pc_mat);
   double exact_interaction = nuc_pc + 2.0 * elec_pc;
-  
+
   // Compute Wolf potential approximation
-  double alpha = 0.3 / 1.88973;  // Convert from 1/Angstrom to 1/Bohr
-  double rc = 15.0 * 1.88973;    // Cutoff in Bohr
+  double alpha = 0.3 / 1.88973; // Convert from 1/Angstrom to 1/Bohr
+  double rc = 15.0 * 1.88973;   // Cutoff in Bohr
   std::vector<double> partial_charges = {1.0}; // Na charge
-  
+
   double nuc_wolf = hf.wolf_point_charge_interaction_energy(
       point_charges, partial_charges, alpha, rc);
-  Mat wolf_mat = hf.compute_wolf_interaction_matrix(
-      point_charges, partial_charges, alpha, rc);
+  Mat wolf_mat = hf.compute_wolf_interaction_matrix(point_charges,
+                                                    partial_charges, alpha, rc);
   double elec_wolf = occ::qm::expectation<occ::qm::SpinorbitalKind::Restricted>(
       wfn.mo.D, wolf_mat);
   double wolf_interaction = nuc_wolf + 2.0 * elec_wolf;
-  
+
   fmt::print("Nuclear point charge interaction: {}\n", nuc_pc);
   fmt::print("Electronic point charge interaction (raw): {}\n", elec_pc);
   fmt::print("Electronic point charge interaction (2x): {}\n", 2.0 * elec_pc);
@@ -668,25 +667,26 @@ TEST_CASE("Wolf potential vs exact point charges", "[wolf]") {
   fmt::print("Wolf electronic interaction (raw): {}\n", elec_wolf);
   fmt::print("Wolf electronic interaction (2x): {}\n", 2.0 * elec_wolf);
   fmt::print("Wolf potential interaction: {}\n", wolf_interaction);
-  fmt::print("Difference (exact - wolf): {}\n", exact_interaction - wolf_interaction);
-  
+  fmt::print("Difference (exact - wolf): {}\n",
+             exact_interaction - wolf_interaction);
+
   // Should match the Python test results within numerical precision
-  REQUIRE(abs(exact_interaction - (-0.3309750426)) < 1e-6);  // Check exact matches Python
-  REQUIRE(abs(wolf_interaction - (-0.3309782045)) < 1e-6);   // Check wolf matches Python  
-  REQUIRE(abs(exact_interaction - wolf_interaction) < 1e-5); // Check they agree to μHartree
+  REQUIRE(abs(exact_interaction - (-0.3309750426)) <
+          1e-6); // Check exact matches Python
+  REQUIRE(abs(wolf_interaction - (-0.3309782045)) <
+          1e-6); // Check wolf matches Python
+  REQUIRE(abs(exact_interaction - wolf_interaction) <
+          1e-5); // Check they agree to μHartree
 }
 
 TEST_CASE("DF Coulomb matrix consistency") {
   // Water molecule coordinates
   std::vector<occ::core::Atom> h2o_atoms{
-    {8, 0.0, 0.0, 0.0},
-    {1, 0.0, 1.5, 0.5},
-    {1, 0.0, -1.5, 0.5}
-  };
-  
+      {8, 0.0, 0.0, 0.0}, {1, 0.0, 1.5, 0.5}, {1, 0.0, -1.5, 0.5}};
+
   auto aobasis = occ::qm::AOBasis::load(h2o_atoms, "sto-3g");
   auto auxbasis = occ::qm::AOBasis::load(h2o_atoms, "def2-universal-jkfit");
-  
+
   SECTION("Restricted closed-shell water") {
     // Create restricted MO with 10 electrons in 5 doubly occupied orbitals
     occ::qm::MolecularOrbitals mo_r;
@@ -697,46 +697,53 @@ TEST_CASE("DF Coulomb matrix consistency") {
     mo_r.C = occ::Mat::Random(mo_r.n_ao, mo_r.n_ao);
     mo_r.update_occupied_orbitals();
     mo_r.update_density_matrix();
-    
+
     // Create integral engines
     occ::qm::IntegralEngine engine(aobasis);
-    occ::qm::IntegralEngineDF engine_df(h2o_atoms, aobasis.shells(), auxbasis.shells());
-    
+    occ::qm::IntegralEngineDF engine_df(h2o_atoms, aobasis.shells(),
+                                        auxbasis.shells());
+
     // Calculate J matrices
-    auto jk_nodf = engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted, mo_r);
-    
+    auto jk_nodf =
+        engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted, mo_r);
+
     // Test both direct and stored DF policies
     engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Direct);
     auto j_df_direct = engine_df.coulomb(mo_r);
-    
+
     engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Stored);
     auto j_df_stored = engine_df.coulomb(mo_r);
-    
+
     // Debug printing for restricted case
     fmt::print("\n=== Restricted closed-shell water (5 doubly occupied) ===\n");
-    fmt::print("J matrix dimensions - DF direct: {}x{}, DF stored: {}x{}, non-DF: {}x{}\n",
-               j_df_direct.rows(), j_df_direct.cols(),
-               j_df_stored.rows(), j_df_stored.cols(),
-               jk_nodf.J.rows(), jk_nodf.J.cols());
-    
+    fmt::print("J matrix dimensions - DF direct: {}x{}, DF stored: {}x{}, "
+               "non-DF: {}x{}\n",
+               j_df_direct.rows(), j_df_direct.cols(), j_df_stored.rows(),
+               j_df_stored.cols(), jk_nodf.J.rows(), jk_nodf.J.cols());
+
     double max_diff_df = (j_df_direct - j_df_stored).array().abs().maxCoeff();
     double max_diff_nodf = (jk_nodf.J - j_df_direct).array().abs().maxCoeff();
-    double max_diff_stored_nodf = (jk_nodf.J - j_df_stored).array().abs().maxCoeff();
-    
+    double max_diff_stored_nodf =
+        (jk_nodf.J - j_df_stored).array().abs().maxCoeff();
+
     fmt::print("Max difference DF direct vs stored: {}\n", max_diff_df);
     fmt::print("Max difference non-DF vs DF direct: {}\n", max_diff_nodf);
-    fmt::print("Max difference non-DF vs DF stored: {}\n", max_diff_stored_nodf);
-    
-    fmt::print("DF direct J(0,0): {}, DF stored J(0,0): {}, non-DF J(0,0): {}\n",
-               j_df_direct(0,0), j_df_stored(0,0), jk_nodf.J(0,0));
-    
-    // Check that DF direct and stored give nearly identical results (very tight tolerance)
+    fmt::print("Max difference non-DF vs DF stored: {}\n",
+               max_diff_stored_nodf);
+
+    fmt::print(
+        "DF direct J(0,0): {}, DF stored J(0,0): {}, non-DF J(0,0): {}\n",
+        j_df_direct(0, 0), j_df_stored(0, 0), jk_nodf.J(0, 0));
+
+    // Check that DF direct and stored give nearly identical results (very tight
+    // tolerance)
     REQUIRE(all_close(j_df_direct, j_df_stored, 1e-12, 1e-14));
-    
-    // Check that DF and non-DF give similar results (relaxed tolerance for DF approximation + random variations)
+
+    // Check that DF and non-DF give similar results (relaxed tolerance for DF
+    // approximation + random variations)
     REQUIRE(all_close(jk_nodf.J, j_df_direct, 1e-2, 1e-4));
   }
-  
+
   SECTION("Unrestricted closed-shell water (multiplicity 1)") {
     // Create unrestricted MO with 10 electrons: 5 alpha, 5 beta (closed shell)
     occ::qm::MolecularOrbitals mo_u;
@@ -744,51 +751,60 @@ TEST_CASE("DF Coulomb matrix consistency") {
     mo_u.n_ao = aobasis.nbf();
     mo_u.n_alpha = 5;
     mo_u.n_beta = 5;
-    auto [rows, cols] = occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::Unrestricted>(mo_u.n_ao);
+    auto [rows, cols] =
+        occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::Unrestricted>(
+            mo_u.n_ao);
     mo_u.C = occ::Mat::Random(rows, cols);
     mo_u.update_occupied_orbitals();
     mo_u.update_density_matrix();
-    
+
     // Create integral engines
     occ::qm::IntegralEngine engine(aobasis);
-    occ::qm::IntegralEngineDF engine_df(h2o_atoms, aobasis.shells(), auxbasis.shells());
-    
+    occ::qm::IntegralEngineDF engine_df(h2o_atoms, aobasis.shells(),
+                                        auxbasis.shells());
+
     // Calculate J matrices
-    auto jk_nodf = engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Unrestricted, mo_u);
-    
+    auto jk_nodf = engine.coulomb_and_exchange(
+        occ::qm::SpinorbitalKind::Unrestricted, mo_u);
+
     // Test both direct and stored DF policies
     engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Direct);
     auto j_df_direct = engine_df.coulomb(mo_u);
-    
+
     engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Stored);
     auto j_df_stored = engine_df.coulomb(mo_u);
-    
+
     // Debug printing for closed-shell case
     fmt::print("\n=== Closed-shell water (5α, 5β) ===\n");
-    fmt::print("J matrix dimensions - DF direct: {}x{}, DF stored: {}x{}, non-DF: {}x{}\n",
-               j_df_direct.rows(), j_df_direct.cols(),
-               j_df_stored.rows(), j_df_stored.cols(),
-               jk_nodf.J.rows(), jk_nodf.J.cols());
-    
+    fmt::print("J matrix dimensions - DF direct: {}x{}, DF stored: {}x{}, "
+               "non-DF: {}x{}\n",
+               j_df_direct.rows(), j_df_direct.cols(), j_df_stored.rows(),
+               j_df_stored.cols(), jk_nodf.J.rows(), jk_nodf.J.cols());
+
     double max_diff_df = (j_df_direct - j_df_stored).array().abs().maxCoeff();
     double max_diff_nodf = (jk_nodf.J - j_df_direct).array().abs().maxCoeff();
-    
-    double max_diff_stored_nodf = (jk_nodf.J - j_df_stored).array().abs().maxCoeff();
-    
+
+    double max_diff_stored_nodf =
+        (jk_nodf.J - j_df_stored).array().abs().maxCoeff();
+
     fmt::print("Max difference DF direct vs stored: {}\n", max_diff_df);
     fmt::print("Max difference non-DF vs DF direct: {}\n", max_diff_nodf);
-    fmt::print("Max difference non-DF vs DF stored: {}\n", max_diff_stored_nodf);
-    
-    fmt::print("DF direct J(0,0): {}, DF stored J(0,0): {}, non-DF J(0,0): {}\n",
-               j_df_direct(0,0), j_df_stored(0,0), jk_nodf.J(0,0));
-    
-    // Check that DF direct and stored give nearly identical results (very tight tolerance)
+    fmt::print("Max difference non-DF vs DF stored: {}\n",
+               max_diff_stored_nodf);
+
+    fmt::print(
+        "DF direct J(0,0): {}, DF stored J(0,0): {}, non-DF J(0,0): {}\n",
+        j_df_direct(0, 0), j_df_stored(0, 0), jk_nodf.J(0, 0));
+
+    // Check that DF direct and stored give nearly identical results (very tight
+    // tolerance)
     REQUIRE(all_close(j_df_direct, j_df_stored, 1e-12, 1e-14));
-    
-    // Check that DF and non-DF give similar results (relaxed tolerance for DF approximation + random variations)
+
+    // Check that DF and non-DF give similar results (relaxed tolerance for DF
+    // approximation + random variations)
     REQUIRE(all_close(jk_nodf.J, j_df_direct, 1e-2, 1e-4));
   }
-  
+
   SECTION("Open-shell water (multiplicity 3)") {
     // Create unrestricted MO with 10 electrons: 6 alpha, 4 beta
     occ::qm::MolecularOrbitals mo_u;
@@ -796,48 +812,252 @@ TEST_CASE("DF Coulomb matrix consistency") {
     mo_u.n_ao = aobasis.nbf();
     mo_u.n_alpha = 6;
     mo_u.n_beta = 4;
-    auto [rows, cols] = occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::Unrestricted>(mo_u.n_ao);
+    auto [rows, cols] =
+        occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::Unrestricted>(
+            mo_u.n_ao);
     mo_u.C = occ::Mat::Random(rows, cols);
     mo_u.update_occupied_orbitals();
     mo_u.update_density_matrix();
-    
+
     // Create integral engines
     occ::qm::IntegralEngine engine(aobasis);
-    occ::qm::IntegralEngineDF engine_df(h2o_atoms, aobasis.shells(), auxbasis.shells());
-    
+    occ::qm::IntegralEngineDF engine_df(h2o_atoms, aobasis.shells(),
+                                        auxbasis.shells());
+
     // Calculate J matrices
-    auto jk_nodf = engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Unrestricted, mo_u);
-    
+    auto jk_nodf = engine.coulomb_and_exchange(
+        occ::qm::SpinorbitalKind::Unrestricted, mo_u);
+
     // Test both direct and stored DF policies
     engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Direct);
     auto j_df_direct = engine_df.coulomb(mo_u);
-    
+
     engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Stored);
     auto j_df_stored = engine_df.coulomb(mo_u);
-    
+
     // Debug printing for open-shell case
     fmt::print("\n=== Open-shell water (6α, 4β) ===\n");
-    fmt::print("J matrix dimensions - DF direct: {}x{}, DF stored: {}x{}, non-DF: {}x{}\n",
-               j_df_direct.rows(), j_df_direct.cols(),
-               j_df_stored.rows(), j_df_stored.cols(),
-               jk_nodf.J.rows(), jk_nodf.J.cols());
-    
+    fmt::print("J matrix dimensions - DF direct: {}x{}, DF stored: {}x{}, "
+               "non-DF: {}x{}\n",
+               j_df_direct.rows(), j_df_direct.cols(), j_df_stored.rows(),
+               j_df_stored.cols(), jk_nodf.J.rows(), jk_nodf.J.cols());
+
     double max_diff_df = (j_df_direct - j_df_stored).array().abs().maxCoeff();
     double max_diff_nodf = (jk_nodf.J - j_df_direct).array().abs().maxCoeff();
-    
-    double max_diff_stored_nodf = (jk_nodf.J - j_df_stored).array().abs().maxCoeff();
-    
+
+    double max_diff_stored_nodf =
+        (jk_nodf.J - j_df_stored).array().abs().maxCoeff();
+
     fmt::print("Max difference DF direct vs stored: {}\n", max_diff_df);
     fmt::print("Max difference non-DF vs DF direct: {}\n", max_diff_nodf);
-    fmt::print("Max difference non-DF vs DF stored: {}\n", max_diff_stored_nodf);
-    
-    fmt::print("DF direct J(0,0): {}, DF stored J(0,0): {}, non-DF J(0,0): {}\n",
-               j_df_direct(0,0), j_df_stored(0,0), jk_nodf.J(0,0));
-    
-    // Check that DF direct and stored give nearly identical results (very tight tolerance)
+    fmt::print("Max difference non-DF vs DF stored: {}\n",
+               max_diff_stored_nodf);
+
+    fmt::print(
+        "DF direct J(0,0): {}, DF stored J(0,0): {}, non-DF J(0,0): {}\n",
+        j_df_direct(0, 0), j_df_stored(0, 0), jk_nodf.J(0, 0));
+
+    // Check that DF direct and stored give nearly identical results (very tight
+    // tolerance)
     REQUIRE(all_close(j_df_direct, j_df_stored, 1e-12, 1e-14));
-    
-    // Check that DF and non-DF give similar results (relaxed tolerance for DF approximation + random variations)
+
+    // Check that DF and non-DF give similar results (relaxed tolerance for DF
+    // approximation + random variations)
     REQUIRE(all_close(jk_nodf.J, j_df_direct, 1e-2, 1e-4));
   }
+
+  SECTION("General Hartree-Fock closed-shell water") {
+    // Create general MO with 10 electrons: complex spinors
+    occ::qm::MolecularOrbitals mo_g;
+    mo_g.kind = occ::qm::SpinorbitalKind::General;
+    mo_g.n_ao = aobasis.nbf();
+    mo_g.n_alpha =
+        5; // In GHF, n_alpha is used for total number of occupied spinors
+    mo_g.n_beta = 0; // Not used in GHF
+    auto [rows, cols] =
+        occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::General>(
+            mo_g.n_ao);
+    mo_g.C = occ::Mat::Random(rows, cols);
+    mo_g.update_occupied_orbitals();
+    mo_g.update_density_matrix();
+
+    // Create integral engines
+    occ::qm::IntegralEngine engine(aobasis);
+    occ::qm::IntegralEngineDF engine_df(h2o_atoms, aobasis.shells(),
+                                        auxbasis.shells());
+
+    // Calculate J matrices
+    auto jk_nodf =
+        engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::General, mo_g);
+
+    // Test both direct and stored DF policies
+    engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Direct);
+    auto j_df_direct = engine_df.coulomb(mo_g);
+
+    engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Stored);
+    auto j_df_stored = engine_df.coulomb(mo_g);
+
+    // Debug printing for general case
+    fmt::print("\n=== General HF water (5 occupied spinors) ===\n");
+    fmt::print("J matrix dimensions - DF direct: {}x{}, DF stored: {}x{}, "
+               "non-DF: {}x{}\n",
+               j_df_direct.rows(), j_df_direct.cols(), j_df_stored.rows(),
+               j_df_stored.cols(), jk_nodf.J.rows(), jk_nodf.J.cols());
+
+    double max_diff_df = (j_df_direct - j_df_stored).array().abs().maxCoeff();
+    double max_diff_nodf = (jk_nodf.J - j_df_direct).array().abs().maxCoeff();
+    double max_diff_stored_nodf =
+        (jk_nodf.J - j_df_stored).array().abs().maxCoeff();
+
+    fmt::print("Max difference DF direct vs stored: {}\n", max_diff_df);
+    fmt::print("Max difference non-DF vs DF direct: {}\n", max_diff_nodf);
+    fmt::print("Max difference non-DF vs DF stored: {}\n",
+               max_diff_stored_nodf);
+
+    fmt::print(
+        "DF direct J(0,0): {}, DF stored J(0,0): {}, non-DF J(0,0): {}\n",
+        j_df_direct(0, 0), j_df_stored(0, 0), jk_nodf.J(0, 0));
+
+    // Check that DF direct and stored give nearly identical results (very tight
+    // tolerance)
+    REQUIRE(all_close(j_df_direct, j_df_stored, 1e-12, 1e-14));
+
+    // Check that DF and non-DF give similar results (relaxed tolerance for DF
+    // approximation + random variations)
+    REQUIRE(all_close(jk_nodf.J, j_df_direct, 1e-2, 1e-4));
+  }
+
+  SECTION("General Hartree-Fock open-shell water") {
+    // Create general MO with 10 electrons: complex spinors, open-shell-like
+    occ::qm::MolecularOrbitals mo_g;
+    mo_g.kind = occ::qm::SpinorbitalKind::General;
+    mo_g.n_ao = aobasis.nbf();
+    mo_g.n_alpha =
+        6;           // 6 occupied spinors (can be fractionally occupied in GHF)
+    mo_g.n_beta = 0; // Not used in GHF
+    auto [rows, cols] =
+        occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::General>(
+            mo_g.n_ao);
+    mo_g.C = occ::Mat::Random(rows, cols);
+    mo_g.update_occupied_orbitals();
+    mo_g.update_density_matrix();
+
+    // Create integral engines
+    occ::qm::IntegralEngine engine(aobasis);
+    occ::qm::IntegralEngineDF engine_df(h2o_atoms, aobasis.shells(),
+                                        auxbasis.shells());
+
+    // Calculate J matrices
+    auto jk_nodf =
+        engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::General, mo_g);
+
+    // Test both direct and stored DF policies
+    engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Direct);
+    auto j_df_direct = engine_df.coulomb(mo_g);
+
+    engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Stored);
+    auto j_df_stored = engine_df.coulomb(mo_g);
+
+    // Debug printing for general open-shell case
+    fmt::print("\n=== General HF open-shell water (6 occupied spinors) ===\n");
+    fmt::print("J matrix dimensions - DF direct: {}x{}, DF stored: {}x{}, "
+               "non-DF: {}x{}\n",
+               j_df_direct.rows(), j_df_direct.cols(), j_df_stored.rows(),
+               j_df_stored.cols(), jk_nodf.J.rows(), jk_nodf.J.cols());
+
+    double max_diff_df = (j_df_direct - j_df_stored).array().abs().maxCoeff();
+    double max_diff_nodf = (jk_nodf.J - j_df_direct).array().abs().maxCoeff();
+    double max_diff_stored_nodf =
+        (jk_nodf.J - j_df_stored).array().abs().maxCoeff();
+
+    fmt::print("Max difference DF direct vs stored: {}\n", max_diff_df);
+    fmt::print("Max difference non-DF vs DF direct: {}\n", max_diff_nodf);
+    fmt::print("Max difference non-DF vs DF stored: {}\n",
+               max_diff_stored_nodf);
+
+    fmt::print(
+        "DF direct J(0,0): {}, DF stored J(0,0): {}, non-DF J(0,0): {}\n",
+        j_df_direct(0, 0), j_df_stored(0, 0), jk_nodf.J(0, 0));
+
+    // Check that DF direct and stored give nearly identical results (very tight
+    // tolerance)
+    REQUIRE(all_close(j_df_direct, j_df_stored, 1e-12, 1e-14));
+
+    // Check that DF and non-DF give similar results (relaxed tolerance for DF
+    // approximation + random variations)
+    REQUIRE(all_close(jk_nodf.J, j_df_direct, 1e-2, 1e-4));
+  }
+}
+
+TEST_CASE("Four-center integrals tensor validation", "[integrals]") {
+  // Water molecule for HF/3-21G test
+  std::vector<occ::core::Atom> atoms{
+      {8, 0.0, 0.0, 0.0},          // O
+      {1, 0.0, 1.81056, 0.0},      // H
+      {1, 1.82309, -0.453385, 0.0} // H
+  };
+
+  auto basis = occ::qm::AOBasis::load(atoms, "3-21G");
+  occ::qm::IntegralEngine engine(basis);
+
+  // Run HF to get converged density matrix
+  HartreeFock hf(basis);
+  occ::qm::SCF scf(hf);
+  double energy = scf.compute_scf_energy();
+
+  REQUIRE(scf.ctx.converged);
+
+  const auto &mo = scf.ctx.mo;
+
+  // Get K matrix from existing implementation
+  auto jk = hf.compute_JK(mo);
+  const auto &K_reference = jk.K;
+
+  // Get AO integrals tensor from our new method
+  auto ao_tensor = engine.four_center_integrals_tensor();
+
+  // Debug: Check density matrix properties
+  INFO("mo.D trace: " << mo.D.trace());
+  INFO("mo.D(0,0): " << mo.D(0, 0));
+
+  // Manually compute K matrix using symmetry-aware access
+  // The AO tensor uses 8-fold symmetry storage, so we need to use the helper
+  // function
+  const size_t n_ao = basis.nbf();
+
+  // Check a few sample AO integrals to see if they look reasonable
+  INFO("Sample AO integrals:");
+  INFO("(0,0|0,0): " << engine.get_integral_8fold_symmetry(ao_tensor, 0, 0, 0,
+                                                           0, n_ao));
+  INFO("(0,1|0,1): " << engine.get_integral_8fold_symmetry(ao_tensor, 0, 1, 0,
+                                                           1, n_ao));
+  INFO("(1,0|1,0): " << engine.get_integral_8fold_symmetry(ao_tensor, 1, 0, 1,
+                                                           0, n_ao));
+  Mat K_manual = Mat::Zero(n_ao, n_ao);
+
+  // Exchange matrix: K[μν] = D[ρσ] * (μρ|νσ)
+  // Use helper function to access integrals with proper symmetry handling
+  for (size_t mu = 0; mu < n_ao; ++mu) {
+    for (size_t nu = 0; nu < n_ao; ++nu) {
+      for (size_t rho = 0; rho < n_ao; ++rho) {
+        for (size_t sigma = 0; sigma < n_ao; ++sigma) {
+          // Get the integral value using 8-fold symmetry helper
+          double integral_val = engine.get_integral_8fold_symmetry(
+              ao_tensor, mu, rho, nu, sigma, n_ao);
+          K_manual(mu, nu) += mo.D(rho, sigma) * integral_val;
+        }
+      }
+    }
+  }
+
+  // Compare matrices
+  INFO("Reference K matrix:");
+  INFO(format_matrix(K_reference));
+  INFO("Manual K matrix:");
+  INFO(format_matrix(K_manual));
+  INFO("Diff:");
+  INFO(format_matrix(K_manual - K_reference));
+
+  // Check that matrices are close
+  REQUIRE(all_close(K_reference, K_manual, 1e-10, 1e-10));
 }

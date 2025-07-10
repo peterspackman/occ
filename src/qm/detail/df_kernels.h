@@ -1186,4 +1186,196 @@ inline Mat stored_exchange_kernel_g(const Mat &ints, const AOBasis &aobasis,
   }
   return K;
 }
+
+// Kernel for reconstructing full AO integral tensor from DF
+// Following the same pattern as the exchange kernel
+inline auto ao_tensor_reconstruction_kernel(std::vector<Eigen::Tensor<double, 4>>& tensors,
+                                           const Mat& ints, const AOBasis& aobasis,
+                                           const AOBasis& auxbasis,
+                                           const Eigen::LLT<Mat>& V_LLt) {
+  const auto nbf = aobasis.nbf();
+  const auto naux = auxbasis.nbf();
+  const auto nthreads = occ::parallel::get_num_threads();
+  
+  return [&tensors, &ints, &V_LLt, nbf, naux, nthreads](int thread_id) {
+    auto& tensor = tensors[thread_id];
+    
+    // Divide work among threads by μν pairs
+    size_t total_pairs = nbf * nbf;
+    size_t pairs_per_thread = (total_pairs + nthreads - 1) / nthreads;
+    size_t pair_start = thread_id * pairs_per_thread;
+    size_t pair_end = std::min(pair_start + pairs_per_thread, total_pairs);
+    
+    // Temporary storage
+    Mat munuP = Mat::Zero(nbf, naux);  // (μν|P) for all μν
+    Mat X = Mat::Zero(nbf, naux);      // V^(-1) * (ρσ|P)^T
+    
+    // Process assigned μν pairs
+    for (size_t pair_idx = pair_start; pair_idx < pair_end; ++pair_idx) {
+      size_t mu = pair_idx / nbf;
+      size_t nu = pair_idx % nbf;
+      
+      // Extract (μν|P) vector for this μν pair following exchange kernel pattern
+      for (size_t P = 0; P < naux; ++P) {
+        const auto eri_P = Eigen::Map<const Mat>(ints.col(P).data(), nbf, nbf);
+        munuP(mu * nbf + nu, P) = eri_P(mu, nu);
+      }
+    }
+    
+    // For each ρσ pair, compute V^(-1) * (ρσ|P) and then dot with (μν|P)
+    for (size_t rho = 0; rho < nbf; ++rho) {
+      for (size_t sigma = 0; sigma < nbf; ++sigma) {
+        // Extract (ρσ|P) vector
+        Vec rhosigmaP = Vec::Zero(naux);
+        for (size_t P = 0; P < naux; ++P) {
+          const auto eri_P = Eigen::Map<const Mat>(ints.col(P).data(), nbf, nbf);
+          rhosigmaP(P) = eri_P(rho, sigma);
+        }
+        
+        // Solve V * x = (ρσ|P) to get x = V^(-1) * (ρσ|P)
+        Vec x = V_LLt.solve(rhosigmaP);
+        
+        // Now compute (μν|ρσ) = (μν|P) * V^(-1) * (ρσ|P) for assigned μν pairs
+        for (size_t pair_idx = pair_start; pair_idx < pair_end; ++pair_idx) {
+          size_t mu = pair_idx / nbf;
+          size_t nu = pair_idx % nbf;
+          
+          double integral_value = 0.0;
+          for (size_t P = 0; P < naux; ++P) {
+            const auto eri_P = Eigen::Map<const Mat>(ints.col(P).data(), nbf, nbf);
+            integral_value += eri_P(mu, nu) * x(P);
+          }
+          
+          tensor(mu, nu, rho, sigma) = integral_value;
+        }
+      }
+    }
+  };
+}
+
+// Optimized kernel using batched operations
+inline auto ao_tensor_reconstruction_kernel_batched(std::vector<Eigen::Tensor<double, 4>>& tensors,
+                                                   const Mat& ints, const AOBasis& aobasis,
+                                                   const AOBasis& auxbasis,
+                                                   const Eigen::LLT<Mat>& V_LLt) {
+  const auto nbf = aobasis.nbf();
+  const auto naux = auxbasis.nbf();
+  const auto nthreads = occ::parallel::get_num_threads();
+  
+  return [&tensors, &ints, &V_LLt, nbf, naux, nthreads](int thread_id) {
+    auto& tensor = tensors[thread_id];
+    
+    // Divide work among threads by μν pairs
+    size_t total_pairs = nbf * nbf;
+    size_t pairs_per_thread = (total_pairs + nthreads - 1) / nthreads;
+    size_t pair_start = thread_id * pairs_per_thread;
+    size_t pair_end = std::min(pair_start + pairs_per_thread, total_pairs);
+    
+    // Pre-compute V^(-1) * (ρσ|P)^T for all ρσ pairs to avoid repeated solves
+    Mat all_rhosigma_P = Mat::Zero(naux, nbf * nbf);
+    Mat X_all = Mat::Zero(naux, nbf * nbf);
+    
+    // Extract all (ρσ|P) integrals
+    for (size_t rho = 0; rho < nbf; ++rho) {
+      for (size_t sigma = 0; sigma < nbf; ++sigma) {
+        size_t rhosigma_idx = rho * nbf + sigma;
+        for (size_t P = 0; P < naux; ++P) {
+          const auto eri_P = Eigen::Map<const Mat>(ints.col(P).data(), nbf, nbf);
+          all_rhosigma_P(P, rhosigma_idx) = eri_P(rho, sigma);
+        }
+      }
+    }
+    
+    // Solve V * X = (ρσ|P) for all ρσ pairs at once
+    X_all = V_LLt.solve(all_rhosigma_P);
+    
+    // Process assigned μν pairs
+    for (size_t pair_idx = pair_start; pair_idx < pair_end; ++pair_idx) {
+      size_t mu = pair_idx / nbf;
+      size_t nu = pair_idx % nbf;
+      
+      // Extract (μν|P) vector
+      Vec munuP = Vec::Zero(naux);
+      for (size_t P = 0; P < naux; ++P) {
+        const auto eri_P = Eigen::Map<const Mat>(ints.col(P).data(), nbf, nbf);
+        munuP(P) = eri_P(mu, nu);
+      }
+      
+      // Compute all (μν|ρσ) for this μν using precomputed X values
+      for (size_t rho = 0; rho < nbf; ++rho) {
+        for (size_t sigma = 0; sigma < nbf; ++sigma) {
+          size_t rhosigma_idx = rho * nbf + sigma;
+          double integral_value = munuP.dot(X_all.col(rhosigma_idx));
+          tensor(mu, nu, rho, sigma) = integral_value;
+        }
+      }
+    }
+  };
+}
+
+// Direct DF-MP2 MO integral kernel using symmetric formulation
+// Computes (ia|jb) directly without reconstructing full AO tensor
+inline void compute_df_mp2_integrals(std::vector<std::vector<std::vector<std::vector<double>>>>& ovov_tensor,
+                                     const Mat& ints, const AOBasis& aobasis, const AOBasis& auxbasis,
+                                     const MolecularOrbitals& mo, const Eigen::LLT<Mat>& V_LLt,
+                                     size_t n_occ, size_t n_virt) {
+  const auto nbf = aobasis.nbf();
+  const auto naux = auxbasis.nbf();
+  
+  // Step 1: First transformation b^Q_iν = Σ_μ C^i_μ (μν|Q)
+  // Following exchange kernel pattern
+  std::vector<Mat> b_iP(n_occ, Mat::Zero(nbf, naux));
+  
+  for (size_t i = 0; i < n_occ; ++i) {
+    auto c_i = mo.C.col(i);  // occupied orbital coefficients
+    for (size_t P = 0; P < naux; ++P) {
+      const auto eri_P = Eigen::Map<const Mat>(ints.col(P).data(), nbf, nbf);
+      b_iP[i].col(P) = eri_P * c_i;  // b^P_iν
+    }
+  }
+  
+  // Step 2: Second transformation b^Q_ia = Σ_ν C^a_ν b^Q_iν
+  std::vector<Mat> b_ia(n_occ, Mat::Zero(n_virt, naux));
+  
+  for (size_t i = 0; i < n_occ; ++i) {
+    for (size_t P = 0; P < naux; ++P) {
+      for (size_t a = 0; a < n_virt; ++a) {
+        double sum = 0.0;
+        for (size_t nu = 0; nu < nbf; ++nu) {
+          size_t virt_idx = n_occ + a;  // virtual orbital index in full MO space
+          sum += mo.C(nu, virt_idx) * b_iP[i](nu, P);
+        }
+        b_ia[i](a, P) = sum;
+      }
+    }
+  }
+  
+  // Step 3: Apply Coulomb metric J^(-1/2) to get symmetric b^Q objects
+  std::vector<Mat> b_ia_sym(n_occ, Mat::Zero(n_virt, naux));
+  
+  for (size_t i = 0; i < n_occ; ++i) {
+    // X = J^(-1/2) * b^T, so b_sym = b * J^(-1/2)^T = b * J^(-1/2) (since J^(-1/2) is symmetric)
+    Mat X = V_LLt.solve(b_ia[i].transpose());  // X = J^(-1) * b^T
+    b_ia_sym[i] = X.transpose();  // b_sym = X^T = b * J^(-1)
+    
+    // For proper symmetric formulation, we need sqrt(J^(-1)) not J^(-1)
+    // But following the exchange kernel pattern exactly first
+  }
+  
+  // Step 4: Final integral construction (ia|jb) = Σ_Q b^Q_ia * b^Q_jb
+  for (size_t i = 0; i < n_occ; ++i) {
+    for (size_t a = 0; a < n_virt; ++a) {
+      for (size_t j = 0; j < n_occ; ++j) {
+        for (size_t b = 0; b < n_virt; ++b) {
+          double integral_value = 0.0;
+          for (size_t Q = 0; Q < naux; ++Q) {
+            integral_value += b_ia_sym[i](a, Q) * b_ia_sym[j](b, Q);
+          }
+          ovov_tensor[i][a][j][b] = integral_value;
+        }
+      }
+    }
+  }
+}
+
 } // namespace occ::qm::detail

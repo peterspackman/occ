@@ -119,7 +119,6 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
                           const Mat &Dnorm = Mat(), const Mat &Schwarz = Mat(),
                           double precision = 1e-12, int thread_id = 0) {
   using Result = IntegralEngine::IntegralResult<4>;
-  occ::timing::start(occ::timing::category::ints4c2e);
   auto nthreads = occ::parallel::get_num_threads();
   occ::qm::cint::Optimizer opt(env, Op::coulomb, 4);
   auto buffer = std::make_unique<double[]>(env.buffer_size_2e());
@@ -174,7 +173,6 @@ void evaluate_four_center(Lambda &f, cint::IntegralEnvironment &env,
       }
     }
   }
-  occ::timing::stop(occ::timing::category::ints4c2e);
 }
 
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
@@ -217,9 +215,7 @@ Mat fock_operator_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm, Schwarz,
                                    precision, thread_id);
   };
-  occ::timing::start(occ::timing::category::fock);
-  occ::parallel::parallel_do(lambda);
-  occ::timing::stop(occ::timing::category::fock);
+  occ::parallel::parallel_do_timed(lambda, occ::timing::category::ints4c2e);
 
   Mat F = Mat::Zero(Fmats[0].rows(), Fmats[0].cols());
 
@@ -270,9 +266,7 @@ Mat coulomb_kernel(cint::IntegralEnvironment &env, const AOBasis &basis,
     evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm, Schwarz,
                                    precision, thread_id);
   };
-  occ::timing::start(occ::timing::category::fock);
-  occ::parallel::parallel_do(lambda);
-  occ::timing::stop(occ::timing::category::fock);
+  occ::parallel::parallel_do_timed(lambda, occ::timing::category::ints4c2e);
 
   Mat J = Mat::Zero(Jmats[0].rows(), Jmats[0].cols());
 
@@ -327,9 +321,7 @@ JKPair coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
     evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm, Schwarz,
                                    precision, thread_id);
   };
-  occ::timing::start(occ::timing::category::fock);
-  occ::parallel::parallel_do(lambda);
-  occ::timing::stop(occ::timing::category::fock);
+  occ::parallel::parallel_do_timed(lambda, occ::timing::category::ints4c2e);
 
   JKPair result{Mat::Zero(Jmats[0].rows(), Jmats[0].cols()),
                 Mat::Zero(Kmats[0].rows(), Kmats[0].cols())};
@@ -395,9 +387,7 @@ std::vector<JKPair> coulomb_and_exchange_kernel_list(
     detail::evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm,
                                            Schwarz, precision, thread_id);
   };
-  occ::timing::start(occ::timing::category::fock);
-  occ::parallel::parallel_do(lambda);
-  occ::timing::stop(occ::timing::category::fock);
+  occ::parallel::parallel_do_timed(lambda, occ::timing::category::fock);
 
   std::vector<JKPair> results;
   for (size_t mo_index = 0; mo_index < mos.size(); mo_index++) {
@@ -467,9 +457,7 @@ coulomb_kernel_list(cint::IntegralEnvironment &env, const AOBasis &basis,
     detail::evaluate_four_center<op, kind>(f, env, basis, shellpairs, Dnorm,
                                            Schwarz, precision, thread_id);
   };
-  occ::timing::start(occ::timing::category::fock);
-  occ::parallel::parallel_do(lambda);
-  occ::timing::stop(occ::timing::category::fock);
+  occ::parallel::parallel_do_timed(lambda, occ::timing::category::fock);
 
   std::vector<Mat> results;
   for (size_t mo_index = 0; mo_index < mos.size(); mo_index++) {
