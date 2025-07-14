@@ -101,9 +101,14 @@ if("${USE_QCINT}")
 else()
     set(LIBCINT_REPOSITORY "sunqm/libcint")
 endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LIBCINT_BUILD_TYPE "CMAKE_BUILD_TYPE Release")
 endif ()
+
+# Add compiler flags to fix the implicit function declaration error
+set(LIBCINT_C_FLAGS "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype")
+
 CPMAddPackage(
     NAME libcint
     GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
@@ -116,9 +121,19 @@ CPMAddPackage(
         "PYPZPX ON"
         "BUILD_MARCH_NATIVE ON"
         "WITH_RANGE_COULOMB ON"
+        "CMAKE_C_FLAGS ${LIBCINT_C_FLAGS}"
         ${LIBCINT_BUILD_TYPE}
     VERSION "6.1.2"
 )
+
+# Apply the flags to the target after it's created
+if(TARGET cint)
+    target_compile_options(cint PRIVATE 
+        -Wno-implicit-function-declaration
+        -Wno-deprecated-non-prototype
+    )
+endif()
+
 add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(libcint::libcint INTERFACE cint)
 target_include_directories(
