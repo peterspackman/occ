@@ -1,0 +1,147 @@
+name: Build and Test Node.js Package
+
+on:
+  push:
+    tags: "v*"
+    branches: [ main, develop ]
+    paths:
+      - 'packages/occjs/**'
+      - 'src/js/**'
+      - 'src/slater/**'
+      - 'include/occ/slater/**'
+      - 'src/occjs.cpp'
+      - 'scripts/build_wasm.sh'
+      - '.github/workflows/build_nodejs.yml'
+  pull_request:
+    paths:
+      - 'packages/occjs/**'
+      - 'src/js/**'
+      - 'src/slater/**'
+      - 'include/occ/slater/**'
+      - 'src/occjs.cpp'
+      - 'scripts/build_wasm.sh'
+      - '.github/workflows/build_nodejs.yml'
+  workflow_dispatch:
+    inputs:
+      upload_to_npm:
+        description: 'Upload to npm after building'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: '3.1.47'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build
+
+    - name: Build WASM
+      run: ./scripts/build_wasm.sh
+
+    - name: Install package dependencies
+      working-directory: packages/occjs
+      run: npm ci
+
+    - name: Build package
+      working-directory: packages/occjs
+      run: npm run build:wrapper
+
+    - name: Run tests
+      working-directory: packages/occjs
+      run: npm test
+
+    - name: Upload test coverage
+      if: matrix.node-version == '20.x'
+      uses: codecov/codecov-action@v3
+      with:
+        directory: packages/occjs/coverage
+        flags: nodejs
+        name: nodejs-coverage
+
+    - name: Upload build artifacts
+      if: matrix.node-version == '20.x'
+      uses: actions/upload-artifact@v4
+      with:
+        name: occjs-package
+        path: |
+          packages/occjs/dist/
+          !packages/occjs/dist/**/*.map
+        retention-days: 30
+
+  publish-npm:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: '3.1.47'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build
+
+    - name: Build WASM
+      run: ./scripts/build_wasm.sh
+
+    - name: Install and build package
+      working-directory: packages/occjs
+      run: |
+        npm ci
+        npm run build:wrapper
+
+    - name: Check if version changed
+      id: version
+      working-directory: packages/occjs
+      run: |
+        PACKAGE_VERSION=$(node -p "require('./package.json').version")
+        NPM_VERSION=$(npm view @occ/core version 2>/dev/null || echo "0.0.0")
+        echo "package_version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+        echo "npm_version=$NPM_VERSION" >> $GITHUB_OUTPUT
+        if [ "$PACKAGE_VERSION" != "$NPM_VERSION" ]; then
+          echo "should_publish=true" >> $GITHUB_OUTPUT
+        else
+          echo "should_publish=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Publish to npm
+      if: steps.version.outputs.should_publish == 'true'
+      working-directory: packages/occjs
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -99,7 +99,7 @@ endif()
 if("${USE_QCINT}")
     set(LIBCINT_REPOSITORY "sunqm/qcint")
 else()
-    set(LIBCINT_REPOSITORY "sunqm/libcint")
+    set(LIBCINT_REPOSITORY "peterspackman/libcint")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -107,7 +107,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND ${CMAKE_SYSTEM_NAME} STREQUA
 endif ()
 
 # Add compiler flags to fix the implicit function declaration error
-set(LIBCINT_C_FLAGS "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype")
+set(LIBCINT_C_FLAGS "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE")
 
 CPMAddPackage(
     NAME libcint

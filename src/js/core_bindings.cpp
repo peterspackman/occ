@@ -10,6 +10,7 @@
 #include <occ/core/molecule.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
+#include <occ/core/log.h>
 #include <occ/io/xyz.h>
 
 using namespace emscripten;
@@ -291,4 +292,54 @@ void register_core_bindings() {
   // Data directory functions
   function("setDataDirectory", &set_data_directory_wrapper);
   function("getDataDirectory", &get_data_directory_wrapper);
+
+  // Logging level enum
+  enum_<spdlog::level::level_enum>("LogLevel")
+      .value("TRACE", spdlog::level::trace)
+      .value("DEBUG", spdlog::level::debug)
+      .value("INFO", spdlog::level::info)
+      .value("WARN", spdlog::level::warn)
+      .value("ERROR", spdlog::level::err)
+      .value("CRITICAL", spdlog::level::critical)
+      .value("OFF", spdlog::level::off);
+
+  // Logging functions
+  function("setLogLevel", optional_override([](int level) {
+    occ::log::set_log_level(static_cast<spdlog::level::level_enum>(level));
+  }));
+  
+  function("setLogLevelString", optional_override([](const std::string& level) {
+    occ::log::set_log_level(level);
+  }));
+
+  function("registerLogCallback", optional_override([](emscripten::val callback) {
+    occ::log::register_log_callback([callback](spdlog::level::level_enum level, const std::string& message) {
+      callback(static_cast<int>(level), message);
+    });
+  }));
+
+  function("clearLogCallbacks", &occ::log::clear_log_callbacks);
+  
+  function("getBufferedLogs", optional_override([]() {
+    auto logs = occ::log::get_buffered_logs();
+    emscripten::val result = emscripten::val::array();
+    for (size_t i = 0; i < logs.size(); ++i) {
+      emscripten::val log_entry = emscripten::val::object();
+      log_entry.set("level", static_cast<int>(logs[i].first));
+      log_entry.set("message", logs[i].second);
+      result.set(i, log_entry);
+    }
+    return result;
+  }));
+
+  function("clearLogBuffer", &occ::log::clear_log_buffer);
+  function("setLogBuffering", &occ::log::set_log_buffering);
+
+  // Direct logging functions
+  function("logTrace", optional_override([](const std::string& msg) { occ::log::trace(msg); }));
+  function("logDebug", optional_override([](const std::string& msg) { occ::log::debug(msg); }));
+  function("logInfo", optional_override([](const std::string& msg) { occ::log::info(msg); }));
+  function("logWarn", optional_override([](const std::string& msg) { occ::log::warn(msg); }));
+  function("logError", optional_override([](const std::string& msg) { occ::log::error(msg); }));
+  function("logCritical", optional_override([](const std::string& msg) { occ::log::critical(msg); }));
 }

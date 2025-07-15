@@ -60,6 +60,7 @@ if(ENABLE_JS_BINDINGS)
 set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/core_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/qm_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/isosurface_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
@@ -79,6 +80,7 @@ target_link_libraries(occjs PUBLIC
     occ_gto
     occ_io
     occ_dft
+    occ_isosurface
 )
 
 # Emscripten-specific linker flags for JavaScript bindings

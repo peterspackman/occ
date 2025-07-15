@@ -1,0 +1,82 @@
+{
+  "name": "@occ/core",
+  "version": "0.7.6",
+  "description": "JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    },
+    "./wasm": {
+      "types": "./dist/wasm.d.ts",
+      "default": "./dist/occjs.wasm"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run build:wasm && npm run build:wrapper",
+    "build:wasm": "cd ../.. && ./scripts/build_wasm.sh",
+    "build:wasm:clean": "cd ../.. && rm -rf wasm && ./scripts/build_wasm.sh",
+    "build:wrapper": "node scripts/build.js",
+    "clean": "rm -rf dist src/occjs.js src/occjs.wasm",
+    "rebuild": "npm run clean && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src test --ext .js,.ts",
+    "format": "prettier --write \"src/**/*.{js,ts}\" \"test/**/*.{js,ts}\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test",
+    "docs": "typedoc",
+    "dev": "npm run build:wrapper && vitest watch",
+    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('../../wasm/src/occjs.wasm')) {console.error('WASM not built. Run: npm run build:wasm'); process.exit(1);}\"",
+    "examples": "npm run build && npx http-server . -p 8080 -o /examples/isosurface_visualization.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peterspackman/occ.git"
+  },
+  "keywords": [
+    "quantum-chemistry",
+    "crystallography",
+    "computational-chemistry",
+    "wasm",
+    "webassembly",
+    "molecular-modeling",
+    "dft",
+    "hartree-fock",
+    "scientific-computing"
+  ],
+  "author": "Peter Spackman",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/peterspackman/occ/issues"
+  },
+  "homepage": "https://github.com/peterspackman/occ#readme",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "prettier": "^3.0.0",
+    "typedoc": "^0.25.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
