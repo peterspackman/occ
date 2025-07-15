@@ -10,7 +10,8 @@ var namespaceocc_1_1driver =
     [ "WavefunctionList", "namespaceocc_1_1driver.html#a683ec51892459656d664582efd64e1c6", null ],
     [ "MethodKind", "namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5", [
       [ "HF", "namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a498ab1ea4aab0295389f6c51484cca6c", null ],
-      [ "DFT", "namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5acca8fc743f62bb262491fb02b5c0fd73", null ]
+      [ "DFT", "namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5acca8fc743f62bb262491fb02b5c0fd73", null ],
+      [ "MP2", "namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5ae7e417b5fd5de0693bf7dd10c0b8c54f", null ]
     ] ],
     [ "WavefunctionChoice", "namespaceocc_1_1driver.html#a93e7aa58c1e87808d00d580da61457db", [
       [ "GasPhase", "namespaceocc_1_1driver.html#a93e7aa58c1e87808d00d580da61457dba550806ba1cc6d56dc8f9a0c80b4c6aff", null ],

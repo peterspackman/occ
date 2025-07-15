@@ -54,6 +54,7 @@ var namespaceocc =
     [ "parallel", "namespaceocc_1_1parallel.html", [
       [ "get_num_threads", "namespaceocc_1_1parallel.html#a08a2e65baf5bddeb8b47ff560a3dc5fa", null ],
       [ "parallel_do", "namespaceocc_1_1parallel.html#a29e699938a596868fe467c12f324c3ed", null ],
+      [ "parallel_do_timed", "namespaceocc_1_1parallel.html#af206d05da3c3d87868dd07a98dfd48fd", null ],
       [ "set_num_threads", "namespaceocc_1_1parallel.html#a05c195f545581e9c98935f0295308f8f", null ],
       [ "nthreads", "namespaceocc_1_1parallel.html#a741632208b7a212fbc58e0432ca851f6", null ]
     ] ],

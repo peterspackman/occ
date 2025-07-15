@@ -52,6 +52,9 @@ var namespaceocc_1_1timing =
       [ "dma_grid_eval", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a8cb8f3dfdbd949e8e5d3ad690f6faadd", null ],
       [ "dma_grid_int", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16ab39ec0114bdaaecb3fd8c1c9b9afec76", null ],
       [ "dma_total", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a5a9ddde13f05f4dc15780fd8d9f2a617", null ],
+      [ "post_hf", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16adbf7ab5a3646172a089c7ba0fe729f4d", null ],
+      [ "mp2_tensor_transform", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aca954717ba7e27d4fb936c67f8d89739", null ],
+      [ "mp2_energy", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16af1a1b34d144c7d086fa8a321513d279d", null ],
       [ "global", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aa593d8f8f4e0489f836e07e4f4220cbf", null ],
       [ "_group_count", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a6f051406d3501a7e49a73b8fa2aef406", null ]
     ] ],

@@ -99,21 +99,24 @@ $(document).ready(function(){initNavTree('log_8h.html',''); initResizable(); });
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">log.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;spdlog/spdlog.h&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
+<code>#include &lt;functional&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for log.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="log_8h__incl.svg" width="227" height="124"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="log_8h__incl.svg" width="416" height="124"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="log_8h__dep__incl.svg" width="2914" height="887"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="log_8h__dep__incl.svg" width="2752" height="887"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -125,6 +128,11 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceocc_1_1log_1_1level" id="r_namespaceocc_1_1log_1_1level"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log_1_1level.html">occ::log::level</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a5bbe3ce7b6cf77bad16cc72d851d6b4b" id="r_a5bbe3ce7b6cf77bad16cc72d851d6b4b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a5bbe3ce7b6cf77bad16cc72d851d6b4b">occ::log::LogCallback</a> = std::function&lt; void(spdlog::level::level_enum level, const std::string &amp;message)&gt;</td></tr>
+<tr class="separator:a5bbe3ce7b6cf77bad16cc72d851d6b4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -142,6 +150,16 @@ Functions</h2></td></tr>
 <tr class="separator:ad5351942c65d96bdb0b37a77c58c2ec3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3dc13bcded1d3511a82647d75312e406" id="r_a3dc13bcded1d3511a82647d75312e406"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a3dc13bcded1d3511a82647d75312e406">occ::log::flush_every</a> (std::chrono::seconds interval)</td></tr>
 <tr class="separator:a3dc13bcded1d3511a82647d75312e406"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a4e5f1e00b9cc8c1c70da315ad29a1e" id="r_a0a4e5f1e00b9cc8c1c70da315ad29a1e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a0a4e5f1e00b9cc8c1c70da315ad29a1e">occ::log::register_log_callback</a> (const <a class="el" href="namespaceocc_1_1log.html#a5bbe3ce7b6cf77bad16cc72d851d6b4b">LogCallback</a> &amp;callback)</td></tr>
+<tr class="separator:a0a4e5f1e00b9cc8c1c70da315ad29a1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbec07d16d7f4b3e10721adce78cc55d" id="r_adbec07d16d7f4b3e10721adce78cc55d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#adbec07d16d7f4b3e10721adce78cc55d">occ::log::clear_log_callbacks</a> ()</td></tr>
+<tr class="separator:adbec07d16d7f4b3e10721adce78cc55d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad09f46f1dc45a40f0896a8706942e11" id="r_aad09f46f1dc45a40f0896a8706942e11"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; spdlog::level::level_enum, std::string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#aad09f46f1dc45a40f0896a8706942e11">occ::log::get_buffered_logs</a> ()</td></tr>
+<tr class="separator:aad09f46f1dc45a40f0896a8706942e11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f2eb616d28c01add413655cf928b31a" id="r_a7f2eb616d28c01add413655cf928b31a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a7f2eb616d28c01add413655cf928b31a">occ::log::clear_log_buffer</a> ()</td></tr>
+<tr class="separator:a7f2eb616d28c01add413655cf928b31a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecb2928fbc0d97a6514cffdf198b1d3e" id="r_aecb2928fbc0d97a6514cffdf198b1d3e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#aecb2928fbc0d97a6514cffdf198b1d3e">occ::log::set_log_buffering</a> (bool enable)</td></tr>
+<tr class="separator:aecb2928fbc0d97a6514cffdf198b1d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

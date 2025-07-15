@@ -1,7 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/parallel.h" name="/home/runner/work/occ/occ/include/occ/core/parallel.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,176,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="15,108,79,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,61,61,97,57,94,75,59"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="103,108,166,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="106,59,125,94,120,97,102,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="40,5,211,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,69,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,62,61,100,57,96,97,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="94,108,157,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="128,60,128,94,123,94,123,60"/>
+<area shape="rect" id="Node000004" href="$timings_8h.html" title=" " alt="" coords="181,108,323,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="166,58,225,98,222,102,163,62"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="175,181,241,207"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="247,135,225,171,220,168,242,132"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="265,181,324,207"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="261,132,283,168,279,171,257,135"/>
 </map>

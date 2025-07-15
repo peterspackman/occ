@@ -1,11 +1,14 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/optimize.h" name="/home/runner/work/occ/occ/include/occ/core/optimize.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="25,5,195,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,92,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,62,67,98,63,95,89,59"/>
-<area shape="rect" id="Node000003" href="$log_8h.html" title=" " alt="" coords="117,108,229,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="131,58,158,95,154,98,127,62"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="52,181,176,207"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="165,135,134,173,130,169,161,132"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="201,181,259,207"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="184,132,214,169,210,172,180,135"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="29,5,199,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,181,92,207"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,61,61,170,56,168,101,59"/>
+<area shape="rect" id="Node000003" href="$log_8h.html" title=" " alt="" coords="122,108,234,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,58,163,95,159,99,131,62"/>
+<area shape="poly" id="edge5_Node000003_Node000002" title=" " alt="" coords="158,136,83,177,81,172,156,131"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="116,181,240,207"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="181,134,181,168,175,168,175,134"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="265,181,323,207"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="198,131,265,172,262,176,195,136"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="348,181,411,207"/>
+<area shape="poly" id="edge6_Node000003_Node000006" title=" " alt="" coords="211,131,336,175,334,180,209,136"/>
 </map>

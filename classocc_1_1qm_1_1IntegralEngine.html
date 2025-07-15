@@ -101,6 +101,7 @@ $(document).ready(function(){initNavTree('classocc_1_1qm_1_1IntegralEngine.html'
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classocc_1_1qm_1_1IntegralEngine-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">occ::qm::IntegralEngine Class Reference</div></div>
 </div><!--header-->
@@ -192,6 +193,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8c544ed2ea25e443a72d56ae5e88bbb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f1a16f7266b42a2dcaaa48b6fabb1c1" id="r_a1f1a16f7266b42a2dcaaa48b6fabb1c1"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1qm_1_1JKPair.html">JKPair</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a1f1a16f7266b42a2dcaaa48b6fabb1c1">coulomb_and_exchange_list</a> (<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a>, const std::vector&lt; <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &gt; &amp;mos, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
 <tr class="separator:a1f1a16f7266b42a2dcaaa48b6fabb1c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7035da655e13ee0797a43e7e4e9b258d" id="r_a7035da655e13ee0797a43e7e4e9b258d"><td class="memItemLeft" align="right" valign="top">Eigen::Tensor&lt; double, 4 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a7035da655e13ee0797a43e7e4e9b258d">four_center_integrals_tensor</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
+<tr class="separator:a7035da655e13ee0797a43e7e4e9b258d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add65cd8402dc6f799c8893888c5a8f0b" id="r_add65cd8402dc6f799c8893888c5a8f0b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#add65cd8402dc6f799c8893888c5a8f0b">point_charge_potential</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt; &amp;charges, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>=1e16)</td></tr>
 <tr class="separator:add65cd8402dc6f799c8893888c5a8f0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab72fa71f2d1be11c91cf4d711721c280" id="r_ab72fa71f2d1be11c91cf4d711721c280"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#ab72fa71f2d1be11c91cf4d711721c280">wolf_point_charge_potential</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt; &amp;charges, const std::vector&lt; double &gt; &amp;partial_charges, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>, double cutoff_radius)</td></tr>
@@ -217,8 +220,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad209475e84d6b9169f7fc6ecea01b290"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f424044bff44e7c8f13def91db00675" id="r_a8f424044bff44e7c8f13def91db00675"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a8f424044bff44e7c8f13def91db00675">set_range_separated_omega</a> (double omega)</td></tr>
 <tr class="separator:a8f424044bff44e7c8f13def91db00675"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a274062f8337fd3cfd65324cde2679cd1" id="r_a274062f8337fd3cfd65324cde2679cd1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a274062f8337fd3cfd65324cde2679cd1">set_precision</a> (double precision)</td></tr>
+<tr class="memitem:a274062f8337fd3cfd65324cde2679cd1" id="r_a274062f8337fd3cfd65324cde2679cd1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a274062f8337fd3cfd65324cde2679cd1">set_precision</a> (double <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a0016fd01dde81c5d8dfbf0acd896c4d4">precision</a>)</td></tr>
 <tr class="separator:a274062f8337fd3cfd65324cde2679cd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0016fd01dde81c5d8dfbf0acd896c4d4" id="r_a0016fd01dde81c5d8dfbf0acd896c4d4"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a0016fd01dde81c5d8dfbf0acd896c4d4">precision</a> () const</td></tr>
+<tr class="separator:a0016fd01dde81c5d8dfbf0acd896c4d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a929a21f68bb19fbc62898b7ba9f9aa9f" id="r_a929a21f68bb19fbc62898b7ba9f9aa9f"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngine.html#a929a21f68bb19fbc62898b7ba9f9aa9f">get_integral_8fold_symmetry</a> (const Eigen::Tensor&lt; double, 4 &gt; &amp;tensor, size_t i, size_t j, size_t k, size_t l, size_t n_ao)</td></tr>
+<tr class="separator:a929a21f68bb19fbc62898b7ba9f9aa9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a9013e97ef12a5c4382fd09ba70c4859c" name="a9013e97ef12a5c4382fd09ba70c4859c"></a>
@@ -924,6 +934,84 @@ template&lt;<a class="el" href="structocc_1_1qm_1_1Shell.html#a937504c99e9ce9492
 
 </div>
 </div>
+<a id="a7035da655e13ee0797a43e7e4e9b258d" name="a7035da655e13ee0797a43e7e4e9b258d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7035da655e13ee0797a43e7e4e9b258d">&#9670;&#160;</a></span>four_center_integrals_tensor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Eigen::Tensor&lt; double, 4 &gt; occ::qm::IntegralEngine::four_center_integrals_tensor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>Schwarz</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a929a21f68bb19fbc62898b7ba9f9aa9f" name="a929a21f68bb19fbc62898b7ba9f9aa9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a929a21f68bb19fbc62898b7ba9f9aa9f">&#9670;&#160;</a></span>get_integral_8fold_symmetry()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static double occ::qm::IntegralEngine::get_integral_8fold_symmetry </td>
+          <td>(</td>
+          <td class="paramtype">const Eigen::Tensor&lt; double, 4 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>k</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>n_ao</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a08cea425ae58a64dd3bae4cf57918b59" name="a08cea425ae58a64dd3bae4cf57918b59"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a08cea425ae58a64dd3bae4cf57918b59">&#9670;&#160;</a></span>have_auxiliary_basis()</h2>
 
@@ -1213,6 +1301,31 @@ template&lt;<a class="el" href="structocc_1_1qm_1_1Shell.html#a937504c99e9ce9492
           <td></td><td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0016fd01dde81c5d8dfbf0acd896c4d4" name="a0016fd01dde81c5d8dfbf0acd896c4d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0016fd01dde81c5d8dfbf0acd896c4d4">&#9670;&#160;</a></span>precision()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::qm::IntegralEngine::precision </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

@@ -1,0 +1,7 @@
+<map id="occ::qm::MP2Components" name="occ::qm::MP2Components">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,240,196,265"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1qm_1_1MP2OrbitalInfo.html" title=" " alt="" coords="11,152,190,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,191,103,239,98,239,98,191"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="71,5,131,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,45,103,152,98,152,98,45"/>
+</map>

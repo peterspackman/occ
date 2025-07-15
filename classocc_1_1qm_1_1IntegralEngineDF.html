@@ -151,6 +151,18 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:acff67cee4175800d43c115c6fd19905b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa64426ec879bb2345eaaf25fd3ef0767" id="r_aa64426ec879bb2345eaaf25fd3ef0767"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#aa64426ec879bb2345eaaf25fd3ef0767">precision</a> () const</td></tr>
 <tr class="separator:aa64426ec879bb2345eaaf25fd3ef0767"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa6984c84f8219d581debf6da2af6c00" id="r_afa6984c84f8219d581debf6da2af6c00"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html">IntegralEngine</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#afa6984c84f8219d581debf6da2af6c00">ao_engine</a> () const</td></tr>
+<tr class="separator:afa6984c84f8219d581debf6da2af6c00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32357c25539a8faadf4f5d9de15cb300" id="r_a32357c25539a8faadf4f5d9de15cb300"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html">IntegralEngine</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#a32357c25539a8faadf4f5d9de15cb300">aux_engine</a> () const</td></tr>
+<tr class="separator:a32357c25539a8faadf4f5d9de15cb300"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd09551e4f521f811b999686c946d706" id="r_acd09551e4f521f811b999686c946d706"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#acd09551e4f521f811b999686c946d706">integral_store</a> () const</td></tr>
+<tr class="separator:acd09551e4f521f811b999686c946d706"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6b8e83d5310d1d77f53c3a6a12451fc" id="r_ab6b8e83d5310d1d77f53c3a6a12451fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#ab6b8e83d5310d1d77f53c3a6a12451fc">compute_stored_integrals</a> ()</td></tr>
+<tr class="separator:ab6b8e83d5310d1d77f53c3a6a12451fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab61a2d0d2227c6de299bb36065a8d1bd" id="r_ab61a2d0d2227c6de299bb36065a8d1bd"><td class="memItemLeft" align="right" valign="top">Eigen::Tensor&lt; double, 4 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#ab61a2d0d2227c6de299bb36065a8d1bd">four_center_integrals_tensor</a> () const</td></tr>
+<tr class="separator:ab61a2d0d2227c6de299bb36065a8d1bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb74587733adf58a345b8ad8e410812a" id="r_aeb74587733adf58a345b8ad8e410812a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1MP2Components.html">MP2Components</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#aeb74587733adf58a345b8ad8e410812a">compute_df_mp2_energy</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const Vec &amp;orbital_energies, const <a class="el" href="structocc_1_1qm_1_1MP2OrbitalSpec.html">MP2OrbitalSpec</a> &amp;orbital_spec) const</td></tr>
+<tr class="separator:aeb74587733adf58a345b8ad8e410812a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a450f7448ad7c6df8af970231a96cbd96" name="a450f7448ad7c6df8af970231a96cbd96"></a>
@@ -307,6 +319,107 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="afa6984c84f8219d581debf6da2af6c00" name="afa6984c84f8219d581debf6da2af6c00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa6984c84f8219d581debf6da2af6c00">&#9670;&#160;</a></span>ao_engine()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html">IntegralEngine</a> &amp; occ::qm::IntegralEngineDF::ao_engine </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a32357c25539a8faadf4f5d9de15cb300" name="a32357c25539a8faadf4f5d9de15cb300"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a32357c25539a8faadf4f5d9de15cb300">&#9670;&#160;</a></span>aux_engine()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classocc_1_1qm_1_1IntegralEngine.html">IntegralEngine</a> &amp; occ::qm::IntegralEngineDF::aux_engine </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aeb74587733adf58a345b8ad8e410812a" name="aeb74587733adf58a345b8ad8e410812a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb74587733adf58a345b8ad8e410812a">&#9670;&#160;</a></span>compute_df_mp2_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1qm_1_1MP2Components.html">MP2Components</a> occ::qm::IntegralEngineDF::compute_df_mp2_energy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>orbital_energies</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MP2OrbitalSpec.html">MP2OrbitalSpec</a> &amp;&#160;</td>
+          <td class="paramname"><em>orbital_spec</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab6b8e83d5310d1d77f53c3a6a12451fc" name="ab6b8e83d5310d1d77f53c3a6a12451fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6b8e83d5310d1d77f53c3a6a12451fc">&#9670;&#160;</a></span>compute_stored_integrals()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::qm::IntegralEngineDF::compute_stored_integrals </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aee5eb7b7e4932050142d507a7a628fb4" name="aee5eb7b7e4932050142d507a7a628fb4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aee5eb7b7e4932050142d507a7a628fb4">&#9670;&#160;</a></span>coulomb()</h2>
 
@@ -379,6 +492,23 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ab61a2d0d2227c6de299bb36065a8d1bd" name="ab61a2d0d2227c6de299bb36065a8d1bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab61a2d0d2227c6de299bb36065a8d1bd">&#9670;&#160;</a></span>four_center_integrals_tensor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Eigen::Tensor&lt; double, 4 &gt; occ::qm::IntegralEngineDF::four_center_integrals_tensor </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="adc193df3ebd6bdb59159dd318b7740fb" name="adc193df3ebd6bdb59159dd318b7740fb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adc193df3ebd6bdb59159dd318b7740fb">&#9670;&#160;</a></span>integral_policy()</h2>
 
@@ -390,6 +520,31 @@ Public Member Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710d">Policy</a> occ::qm::IntegralEngineDF::integral_policy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acd09551e4f521f811b999686c946d706" name="acd09551e4f521f811b999686c946d706"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd09551e4f521f811b999686c946d706">&#9670;&#160;</a></span>integral_store()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp; occ::qm::IntegralEngineDF::integral_store </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>

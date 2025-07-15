@@ -99,6 +99,7 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1log.html',''); initRes
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">occ::log Namespace Reference</div></div>
 </div><!--header-->
@@ -111,6 +112,11 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1log.html',''); initRes
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceocc_1_1log_1_1level" id="r_namespaceocc_1_1log_1_1level"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log_1_1level.html">level</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a5bbe3ce7b6cf77bad16cc72d851d6b4b" id="r_a5bbe3ce7b6cf77bad16cc72d851d6b4b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a5bbe3ce7b6cf77bad16cc72d851d6b4b">LogCallback</a> = std::function&lt; void(spdlog::level::level_enum level, const std::string &amp;message)&gt;</td></tr>
+<tr class="separator:a5bbe3ce7b6cf77bad16cc72d851d6b4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -128,10 +134,69 @@ Functions</h2></td></tr>
 <tr class="separator:ad5351942c65d96bdb0b37a77c58c2ec3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3dc13bcded1d3511a82647d75312e406" id="r_a3dc13bcded1d3511a82647d75312e406"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a3dc13bcded1d3511a82647d75312e406">flush_every</a> (std::chrono::seconds interval)</td></tr>
 <tr class="separator:a3dc13bcded1d3511a82647d75312e406"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a4e5f1e00b9cc8c1c70da315ad29a1e" id="r_a0a4e5f1e00b9cc8c1c70da315ad29a1e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a0a4e5f1e00b9cc8c1c70da315ad29a1e">register_log_callback</a> (const <a class="el" href="namespaceocc_1_1log.html#a5bbe3ce7b6cf77bad16cc72d851d6b4b">LogCallback</a> &amp;callback)</td></tr>
+<tr class="separator:a0a4e5f1e00b9cc8c1c70da315ad29a1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbec07d16d7f4b3e10721adce78cc55d" id="r_adbec07d16d7f4b3e10721adce78cc55d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#adbec07d16d7f4b3e10721adce78cc55d">clear_log_callbacks</a> ()</td></tr>
+<tr class="separator:adbec07d16d7f4b3e10721adce78cc55d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad09f46f1dc45a40f0896a8706942e11" id="r_aad09f46f1dc45a40f0896a8706942e11"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; spdlog::level::level_enum, std::string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#aad09f46f1dc45a40f0896a8706942e11">get_buffered_logs</a> ()</td></tr>
+<tr class="separator:aad09f46f1dc45a40f0896a8706942e11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f2eb616d28c01add413655cf928b31a" id="r_a7f2eb616d28c01add413655cf928b31a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#a7f2eb616d28c01add413655cf928b31a">clear_log_buffer</a> ()</td></tr>
+<tr class="separator:a7f2eb616d28c01add413655cf928b31a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecb2928fbc0d97a6514cffdf198b1d3e" id="r_aecb2928fbc0d97a6514cffdf198b1d3e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1log.html#aecb2928fbc0d97a6514cffdf198b1d3e">set_log_buffering</a> (bool enable)</td></tr>
+<tr class="separator:aecb2928fbc0d97a6514cffdf198b1d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>logging for debug output, warnings, errors etc. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="a5bbe3ce7b6cf77bad16cc72d851d6b4b" name="a5bbe3ce7b6cf77bad16cc72d851d6b4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bbe3ce7b6cf77bad16cc72d851d6b4b">&#9670;&#160;</a></span>LogCallback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceocc_1_1log.html#a5bbe3ce7b6cf77bad16cc72d851d6b4b">occ::log::LogCallback</a> = typedef std::function&lt;void(spdlog::level::level_enum level, const std::string&amp; message)&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a7f2eb616d28c01add413655cf928b31a" name="a7f2eb616d28c01add413655cf928b31a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f2eb616d28c01add413655cf928b31a">&#9670;&#160;</a></span>clear_log_buffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::log::clear_log_buffer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="adbec07d16d7f4b3e10721adce78cc55d" name="adbec07d16d7f4b3e10721adce78cc55d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adbec07d16d7f4b3e10721adce78cc55d">&#9670;&#160;</a></span>clear_log_callbacks()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::log::clear_log_callbacks </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a79b620a5ca62b9eb751d26cfcd1b3e09" name="a79b620a5ca62b9eb751d26cfcd1b3e09"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a79b620a5ca62b9eb751d26cfcd1b3e09">&#9670;&#160;</a></span>flush()</h2>
 
@@ -205,6 +270,59 @@ Functions</h2></td></tr>
 <span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aad09f46f1dc45a40f0896a8706942e11" name="aad09f46f1dc45a40f0896a8706942e11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad09f46f1dc45a40f0896a8706942e11">&#9670;&#160;</a></span>get_buffered_logs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::pair&lt; spdlog::level::level_enum, std::string &gt; &gt; occ::log::get_buffered_logs </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0a4e5f1e00b9cc8c1c70da315ad29a1e" name="a0a4e5f1e00b9cc8c1c70da315ad29a1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a4e5f1e00b9cc8c1c70da315ad29a1e">&#9670;&#160;</a></span>register_log_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::log::register_log_callback </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1log.html#a5bbe3ce7b6cf77bad16cc72d851d6b4b">LogCallback</a> &amp;&#160;</td>
+          <td class="paramname"><em>callback</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aecb2928fbc0d97a6514cffdf198b1d3e" name="aecb2928fbc0d97a6514cffdf198b1d3e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecb2928fbc0d97a6514cffdf198b1d3e">&#9670;&#160;</a></span>set_log_buffering()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::log::set_log_buffering </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>
