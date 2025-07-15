@@ -14,7 +14,7 @@ struct IndexRange {
     size_t size() const { return end - start; }
 };
 
-using Tensor4D = std::vector<std::vector<std::vector<std::vector<double>>>>;
+using Tensor4D = Eigen::Tensor<double, 4>;
 
 class MOIntegralEngine {
 public:
@@ -53,6 +53,12 @@ private:
                                 const std::array<Mat*, 4>& coeffs,
                                 const std::array<IndexRange, 4>& ranges,
                                 Tensor4D& result) const;
+
+    // Helper functions for MO transformation steps
+    Tensor4D transform_first_index(const Tensor4D& ao_tensor, size_t n_ao) const;
+    Tensor4D transform_second_index(const Tensor4D& half1, size_t n_ao) const;
+    Tensor4D transform_third_index(const Tensor4D& half2, size_t n_ao) const;
+    void transform_fourth_index(const Tensor4D& half3, size_t n_ao, Tensor4D& result) const;
 
     const IntegralEngine& m_ao_engine;
     const MolecularOrbitals& m_mo;

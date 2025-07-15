@@ -175,21 +175,16 @@ double MP2::compute_conventional_mp2_energy() {
         // Compute (ov|ov) integrals using four-step transformation
         auto ovov_tensor = m_mo_engine->compute_ovov_tensor();
         
-        // Clear pair energies for this calculation
-        m_results.pair_energies.clear();
         
         occ::log::debug("Computing MP2 energy with {} threads", occ::parallel::get_num_threads());
         
-        // Thread-local storage for results with cache line alignment
+        // Thread-local storage for results
         const int num_threads = occ::parallel::get_num_threads();
-        constexpr size_t cache_line_size = 64;
         
-        struct alignas(cache_line_size) ThreadData {
+        struct ThreadData {
             double total = 0.0;
             double same_spin = 0.0;
             double opposite_spin = 0.0;
-            std::map<std::pair<size_t,size_t>, double> pair_energies;
-            char padding[cache_line_size - sizeof(double) * 3];
         };
         
         std::vector<ThreadData> thread_data(num_threads);
@@ -203,7 +198,6 @@ double MP2::compute_conventional_mp2_energy() {
             double& local_total = local_data.total;
             double& local_same_spin = local_data.same_spin;
             double& local_opposite_spin = local_data.opposite_spin;
-            auto& local_pair_energies = local_data.pair_energies;
             
             for (size_t i = i_start; i < i_end; ++i) {
                 for (size_t j = 0; j < n_occ_active; ++j) {
@@ -215,8 +209,8 @@ double MP2::compute_conventional_mp2_energy() {
                             size_t j_full = j + m_n_frozen_core;
                             
                             // Get integrals (ia|jb) and (ib|ja) from tensor
-                            double integral_iajb = ovov_tensor[i_full][a][j_full][b];
-                            double integral_ibja = ovov_tensor[i_full][b][j_full][a];
+                            double integral_iajb = ovov_tensor(i_full, a, j_full, b);
+                            double integral_ibja = ovov_tensor(i_full, b, j_full, a);
                             
                             double eps_i = orbital_energies(i_full);
                             double eps_j = orbital_energies(j_full);
@@ -238,9 +232,6 @@ double MP2::compute_conventional_mp2_energy() {
                             
                             local_opposite_spin += opposite_spin_contrib;
                             local_same_spin += same_spin_contrib;
-                            
-                            std::pair<size_t,size_t> pair_key = (i <= j) ? std::make_pair(i, j) : std::make_pair(j, i);
-                            local_pair_energies[pair_key] += mp2_contribution;
                         }
                     }
                 }
@@ -253,9 +244,6 @@ double MP2::compute_conventional_mp2_energy() {
             total_correlation += data.total;
             same_spin_energy += data.same_spin;
             opposite_spin_energy += data.opposite_spin;
-            for (const auto& [pair_key, energy] : data.pair_energies) {
-                m_results.pair_energies[pair_key] += energy;
-            }
         }
         
     } else if (m_mo.kind == U) {

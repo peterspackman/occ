@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { loadOCC, createMolecule, moleculeFromXYZ, Elements } from '../src/index.js';
+import { createRequire } from 'module';
+
+// Create a require function to load CommonJS modules
+const require = createRequire(import.meta.url);
+
+// Load the CommonJS module
+const { loadOCC, createMolecule, moleculeFromXYZ, Elements } = require('../src/index.js');
 
 describe('Core Module Tests', () => {
   let Module;

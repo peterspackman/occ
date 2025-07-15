@@ -6,7 +6,9 @@
 #include <occ/core/dimer.h>
 #include <occ/core/eem.h>
 #include <occ/core/eeq.h>
+#include <occ/core/elastic_tensor.h>
 #include <occ/core/element.h>
+#include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
@@ -103,6 +105,22 @@ void register_core_bindings() {
                                             double val) { m(row, col) = val; }))
       .class_function("create", optional_override([](int rows, int cols) {
                         Mat result = Mat::Zero(rows, cols);
+                        return result;
+                      }));
+
+  // Mat6 typedef for 6x6 matrices  
+  class_<Mat6>("Mat6")
+      .function("rows",
+                optional_override([](const Mat6 &m) { return m.rows(); }))
+      .function("cols",
+                optional_override([](const Mat6 &m) { return m.cols(); }))
+      .function("get", optional_override([](const Mat6 &m, int row, int col) {
+                  return m(row, col);
+                }))
+      .function("set", optional_override([](Mat6 &m, int row, int col,
+                                            double val) { m(row, col) = val; }))
+      .class_function("create", optional_override([](int rows, int cols) {
+                        Mat6 result = Mat6::Zero(rows, cols);
                         return result;
                       }));
 
@@ -342,4 +360,113 @@ void register_core_bindings() {
   function("logWarn", optional_override([](const std::string& msg) { occ::log::warn(msg); }));
   function("logError", optional_override([](const std::string& msg) { occ::log::error(msg); }));
   function("logCritical", optional_override([](const std::string& msg) { occ::log::critical(msg); }));
+
+  // ElasticTensor averaging schemes
+  enum_<ElasticTensor::AveragingScheme>("AveragingScheme")
+      .value("VOIGT", ElasticTensor::AveragingScheme::Voigt)
+      .value("REUSS", ElasticTensor::AveragingScheme::Reuss)
+      .value("HILL", ElasticTensor::AveragingScheme::Hill)
+      .value("NUMERICAL", ElasticTensor::AveragingScheme::Numerical);
+
+  // ElasticTensor class
+  class_<ElasticTensor>("ElasticTensor")
+      .constructor<const Mat6&>()
+      
+      // Young's modulus methods
+      .function("youngsModulus", 
+                optional_override([](const ElasticTensor& et, const Vec3& dir) {
+                  return et.youngs_modulus(dir);
+                }))
+      
+      // Linear compressibility methods
+      .function("linearCompressibility",
+                optional_override([](const ElasticTensor& et, const Vec3& dir) {
+                  return et.linear_compressibility(dir);
+                }))
+      
+      // Shear modulus methods
+      .function("shearModulus",
+                optional_override([](const ElasticTensor& et, const Vec3& dir1, const Vec3& dir2) {
+                  return et.shear_modulus(dir1, dir2);
+                }))
+      .function("shearModulusMinMax",
+                optional_override([](const ElasticTensor& et, const Vec3& dir) {
+                  auto [min_val, max_val] = et.shear_modulus_minmax(dir);
+                  emscripten::val result = emscripten::val::object();
+                  result.set("min", min_val);
+                  result.set("max", max_val);
+                  return result;
+                }))
+      
+      // Poisson's ratio methods
+      .function("poissonRatio",
+                optional_override([](const ElasticTensor& et, const Vec3& dir1, const Vec3& dir2) {
+                  return et.poisson_ratio(dir1, dir2);
+                }))
+      .function("poissonRatioMinMax",
+                optional_override([](const ElasticTensor& et, const Vec3& dir) {
+                  auto [min_val, max_val] = et.poisson_ratio_minmax(dir);
+                  emscripten::val result = emscripten::val::object();
+                  result.set("min", min_val);
+                  result.set("max", max_val);
+                  return result;
+                }))
+      
+      // Average properties
+      .function("averageBulkModulus",
+                optional_override([](const ElasticTensor& et, ElasticTensor::AveragingScheme avg) {
+                  return et.average_bulk_modulus(avg);
+                }))
+      .function("averageShearModulus",
+                optional_override([](const ElasticTensor& et, ElasticTensor::AveragingScheme avg) {
+                  return et.average_shear_modulus(avg);
+                }))
+      .function("averageYoungsModulus",
+                optional_override([](const ElasticTensor& et, ElasticTensor::AveragingScheme avg) {
+                  return et.average_youngs_modulus(avg);
+                }))
+      .function("averagePoissonRatio",
+                optional_override([](const ElasticTensor& et, ElasticTensor::AveragingScheme avg) {
+                  return et.average_poisson_ratio(avg);
+                }))
+      
+      // Matrix access
+      .property("voigtC", &ElasticTensor::voigt_c)
+      .property("voigtS", &ElasticTensor::voigt_s);
+
+  // Helper function to generate directional data for visualization
+  function("generateDirectionalData", optional_override([](const ElasticTensor& et, 
+                                                          const std::string& property,
+                                                          int num_points) {
+    emscripten::val result = emscripten::val::array();
+    
+    // Generate points on a sphere
+    for (int i = 0; i < num_points; ++i) {
+      double theta = (static_cast<double>(i) / num_points) * 2.0 * M_PI;
+      Vec3 direction(std::cos(theta), std::sin(theta), 0.0); // For 2D visualization in xy plane
+      
+      double value = 0.0;
+      if (property == "youngs") {
+        value = et.youngs_modulus(direction);
+      } else if (property == "linear_compressibility") {
+        value = et.linear_compressibility(direction);
+      } else if (property == "shear") {
+        // Use perpendicular direction for shear
+        Vec3 shear_dir(-std::sin(theta), std::cos(theta), 0.0);
+        value = et.shear_modulus(direction, shear_dir);
+      } else if (property == "poisson") {
+        Vec3 shear_dir(-std::sin(theta), std::cos(theta), 0.0);
+        value = et.poisson_ratio(direction, shear_dir);
+      }
+      
+      emscripten::val point = emscripten::val::object();
+      point.set("x", direction.x() * value);
+      point.set("y", direction.y() * value);
+      point.set("value", value);
+      point.set("angle", theta);
+      result.set(i, point);
+    }
+    
+    return result;
+  }));
 }

@@ -654,6 +654,90 @@ TEST_CASE("Elastic tensor", "[elastic_tensor]") {
   }
 }
 
+TEST_CASE("Elastic tensor - ELATE comparison", "[elastic_tensor]") {
+  using occ::core::ElasticTensor;
+
+  // Test tensor from user with ELATE reference values
+  Eigen::Matrix<double, 6, 6> tensor;
+  tensor << 228.38, 85.741, 81.503, 0.000, -0.737, 0.000,
+           85.741, 217.47, 94.201, 0.000, -20.213, 0.000,
+           81.503, 94.201, 178.81, 0.000, -9.472, 0.000,
+           0.000, 0.000, 0.000, 35.094, 0.000, -17.851,
+           -0.737, -20.213, -9.472, 0.000, 37.778, 0.000,
+           0.000, 0.000, 0.000, -17.851, 0.000, 42.708;
+
+  ElasticTensor elastic(tensor);
+
+  SECTION("Voigt Averages - ELATE comparison") {
+    const auto avg = ElasticTensor::AveragingScheme::Voigt;
+    double bulk = elastic.average_bulk_modulus(avg);
+    double youngs = elastic.average_youngs_modulus(avg);
+    double shear = elastic.average_shear_modulus(avg);
+    double poisson = elastic.average_poisson_ratio(avg);
+    
+    fmt::print("Voigt averages (OCC vs ELATE reference):\n");
+    fmt::print("Bulk modulus: {:.3f} GPa (ELATE: 127.51 GPa)\n", bulk);
+    fmt::print("Young's modulus: {:.3f} GPa (ELATE: 126.36 GPa)\n", youngs);
+    fmt::print("Shear modulus: {:.3f} GPa (ELATE: 47.331 GPa)\n", shear);
+    fmt::print("Poisson's ratio: {:.5f} (ELATE: 0.33483)\n", poisson);
+    
+    // Test against ELATE reference values
+    REQUIRE(bulk == Approx(127.51).epsilon(1e-2));
+    REQUIRE(youngs == Approx(126.36).epsilon(1e-2));
+    REQUIRE(shear == Approx(47.331).epsilon(1e-2));
+    REQUIRE(poisson == Approx(0.33483).epsilon(1e-4));
+  }
+
+  SECTION("Reuss Averages - ELATE comparison") {
+    const auto avg = ElasticTensor::AveragingScheme::Reuss;
+    double bulk = elastic.average_bulk_modulus(avg);
+    double youngs = elastic.average_youngs_modulus(avg);
+    double shear = elastic.average_shear_modulus(avg);
+    double poisson = elastic.average_poisson_ratio(avg);
+    
+    fmt::print("Reuss averages (OCC vs ELATE reference):\n");
+    fmt::print("Bulk modulus: {:.3f} GPa (ELATE: 123.55 GPa)\n", bulk);
+    fmt::print("Young's modulus: {:.3f} GPa (ELATE: 105.5 GPa)\n", youngs);
+    fmt::print("Shear modulus: {:.3f} GPa (ELATE: 38.853 GPa)\n", shear);
+    fmt::print("Poisson's ratio: {:.5f} (ELATE: 0.35768)\n", poisson);
+    
+    // Test against ELATE reference values
+    REQUIRE(bulk == Approx(123.55).epsilon(1e-2));
+    REQUIRE(youngs == Approx(105.5).epsilon(1e-2));
+    REQUIRE(shear == Approx(38.853).epsilon(1e-2));
+    REQUIRE(poisson == Approx(0.35768).epsilon(1e-4));
+  }
+
+  SECTION("Hill Averages - ELATE comparison") {
+    const auto avg = ElasticTensor::AveragingScheme::Hill;
+    double bulk = elastic.average_bulk_modulus(avg);
+    double youngs = elastic.average_youngs_modulus(avg);
+    double shear = elastic.average_shear_modulus(avg);
+    double poisson = elastic.average_poisson_ratio(avg);
+    
+    fmt::print("Hill averages (OCC vs ELATE reference):\n");
+    fmt::print("Bulk modulus: {:.3f} GPa (ELATE: 125.53 GPa)\n", bulk);
+    fmt::print("Young's modulus: {:.3f} GPa (ELATE: 116 GPa)\n", youngs);
+    fmt::print("Shear modulus: {:.3f} GPa (ELATE: 43.092 GPa)\n", shear);
+    fmt::print("Poisson's ratio: {:.5f} (ELATE: 0.34598)\n", poisson);
+    
+    // Test against ELATE reference values
+    REQUIRE(bulk == Approx(125.53).epsilon(1e-2));
+    REQUIRE(youngs == Approx(116.0).epsilon(1e-2));
+    REQUIRE(shear == Approx(43.092).epsilon(1e-2));
+    REQUIRE(poisson == Approx(0.34598).epsilon(1e-4));
+  }
+
+  SECTION("Matrix validation") {
+    // Verify the tensor was loaded correctly
+    REQUIRE(occ::util::all_close(tensor, elastic.voigt_c(), 1e-6, 1e-6));
+    
+    // Print the tensor for verification
+    fmt::print("Input tensor:\n{}\n", occ::format_matrix(tensor));
+    fmt::print("Compliance matrix:\n{}\n", occ::format_matrix(elastic.voigt_s()));
+  }
+}
+
 TEST_CASE("Molecule label generation", "[molecule]") {
   SECTION("single molecule gets label 1A") {
     std::vector<occ::core::Molecule> molecules{water_molecule()};

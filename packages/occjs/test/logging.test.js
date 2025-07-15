@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
-import { loadOCC } from '../src/index.js';
+import { createRequire } from 'module';
+
+// Create a require function to load CommonJS modules
+const require = createRequire(import.meta.url);
+
+// Load the CommonJS module
+const { loadOCC } = require('../src/index.js');
 
 // Helper to extract enum values (Emscripten enums may be objects)
 const getEnumValue = (enumVal) => typeof enumVal === 'object' ? enumVal.value : enumVal;

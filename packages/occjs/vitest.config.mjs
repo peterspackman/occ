@@ -25,6 +25,10 @@ export default defineConfig({
       forks: {
         singleFork: true // Run tests sequentially in forks to avoid WASM conflicts
       }
+    },
+    // Allow mixed module formats
+    deps: {
+      external: [/occjs\.js$/] // Don't transform the WASM wrapper
     }
   }
 });

@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elastic Tensor Analyzer - Simple</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#059669',
+                        secondary: '#0f766e',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-800 text-center mb-8">Elastic Tensor Analyzer</h1>
+            
+            <div class="mb-8">
+                <label for="tensorInput" class="block text-sm font-semibold text-gray-700 mb-3">
+                    Elastic Stiffness Matrix (6×6, in GPa):
+                </label>
+                <textarea 
+                    id="tensorInput" 
+                    class="w-full h-32 p-3 border-2 border-gray-300 rounded-lg font-mono text-sm resize-y focus:border-primary focus:outline-none transition-colors" 
+                    placeholder="Enter 6x6 elastic stiffness matrix (Voigt notation)...
+Full matrix (6 values per row) or upper triangular format supported."></textarea>
+                <button 
+                    onclick="analyzeTensor()" 
+                    class="mt-4 bg-primary hover:bg-secondary text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Analyze Tensor
+                </button>
+            </div>
+            
+            <div id="loading" class="text-center text-gray-600 italic hidden">
+                <div class="flex items-center justify-center">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
+                    Loading OCC module...
+                </div>
+            </div>
+            
+            <div id="error" class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded hidden"></div>
+            
+            <div id="results" class="hidden">
+                <!-- Tab Navigation -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-8">
+                        <button id="tab-properties" onclick="switchTab('properties')" class="tab-button active py-2 px-1 border-b-2 border-primary font-medium text-sm text-primary">
+                            Average Properties
+                        </button>
+                        <button id="tab-plots" onclick="switchTab('plots')" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Directional Plots
+                        </button>
+                        <button id="tab-3d" onclick="switchTab('3d')" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            3D Visualization
+                        </button>
+                        <button id="tab-extrema" onclick="switchTab('extrema')" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Extrema & Eigenvalues
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Properties Tab -->
+                <div id="properties-content" class="tab-content">
+                    <div class="mb-8">
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse bg-white rounded-lg overflow-hidden shadow">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Property</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Voigt</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Reuss</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Hill</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Unit</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm text-gray-900">Bulk Modulus</td>
+                                        <td id="bulk-voigt" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td id="bulk-reuss" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td id="bulk-hill" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">GPa</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm text-gray-900">Shear Modulus</td>
+                                        <td id="shear-voigt" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td id="shear-reuss" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td id="shear-hill" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">GPa</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm text-gray-900">Young's Modulus</td>
+                                        <td id="youngs-voigt" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td id="youngs-reuss" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td id="youngs-hill" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">GPa</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm text-gray-900">Poisson's Ratio</td>
+                                        <td id="poisson-voigt" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td id="poisson-reuss" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td id="poisson-hill" class="px-6 py-4 text-sm font-semibold text-primary">-</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plots Tab -->
+                <div id="plots-content" class="tab-content hidden">
+                    <div class="mb-6">
+                        <label for="plotProperty" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Select Property to Visualize:
+                        </label>
+                        <select id="plotProperty" onchange="updatePlots()" class="w-full p-2 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none">
+                            <option value="youngs">Young's Modulus</option>
+                            <option value="linear_compressibility">Linear Compressibility</option>
+                            <option value="shear">Shear Modulus</option>
+                            <option value="poisson">Poisson's Ratio</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="plotPlane" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Select Plane:
+                        </label>
+                        <select id="plotPlane" onchange="updatePlots()" class="w-full p-2 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none">
+                            <option value="xy">XY Plane (Z = 0)</option>
+                            <option value="xz">XZ Plane (Y = 0)</option>
+                            <option value="yz">YZ Plane (X = 0)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 text-center">Directional Curve</h4>
+                            <div class="relative h-80">
+                                <canvas id="directionalChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 text-center">Polar Representation</h4>
+                            <div class="relative h-80">
+                                <canvas id="polarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D Visualization Tab -->
+                <div id="3d-content" class="tab-content hidden">
+                    <div class="mb-6">
+                        <label for="plot3dProperty" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Select Property for 3D Visualization:
+                        </label>
+                        <select id="plot3dProperty" onchange="update3DPlot()" class="w-full p-2 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none">
+                            <option value="youngs">Young's Modulus</option>
+                            <option value="linear_compressibility">Linear Compressibility</option>
+                            <option value="shear">Shear Modulus (Max)</option>
+                            <option value="poisson">Poisson's Ratio (Max)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex items-center gap-4">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Display Options:
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="showWireframe" checked onchange="update3DPlot()" class="mr-2">
+                                <span class="text-sm text-gray-700">Wireframe</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="showColorBar" checked onchange="update3DPlot()" class="mr-2">
+                                <span class="text-sm text-gray-700">Color Scale</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h4 id="3d-title" class="text-lg font-semibold text-gray-800 mb-4 text-center">3D Elastic Surface</h4>
+                        <div id="threejs-container" class="w-full h-96 bg-gray-50 rounded-lg"></div>
+                        <div class="mt-4 text-sm text-gray-600 text-center">
+                            <p>Use mouse to rotate, zoom, and pan the 3D visualization</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extrema Tab -->
+                <div id="extrema-content" class="tab-content hidden">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-primary">Eigenvalues of Stiffness Matrix</h3>
+                        <div id="eigenvalues" class="flex flex-wrap gap-3"></div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-primary">Directional Extrema</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse bg-white rounded-lg overflow-hidden shadow">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Property</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Minimum</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Maximum</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Anisotropy</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Unit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="extrema-table" class="divide-y divide-gray-200">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        
+        let Module = null;
+        let currentElasticTensor = null;
+        let directionalChart = null;
+        let polarChart = null;
+        
+        // Three.js variables
+        let scene, camera, renderer, controls;
+        let elasticSurface = null;
+        let colorScale = null;
+
+        // Load OCC module on page load
+        async function loadOCC() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+            
+            try {
+                const { default: createOccModule } = await import('../dist/occjs.js');
+                
+                Module = await createOccModule({
+                    locateFile: (filename) => {
+                        if (filename.endsWith('.wasm')) {
+                            return '../dist/occjs.wasm';
+                        }
+                        return filename;
+                    }
+                });
+                
+                console.log('OCC module loaded successfully');
+                loading.classList.add('hidden');
+                
+            } catch (err) {
+                console.error('Failed to load OCC module:', err);
+                error.textContent = 'Failed to load OCC module: ' + err.message;
+                error.classList.remove('hidden');
+                loading.classList.add('hidden');
+            }
+        }
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active', 'border-primary', 'text-primary');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-content').classList.remove('hidden');
+            
+            // Add active class to selected tab
+            const activeTab = document.getElementById('tab-' + tabName);
+            activeTab.classList.add('active', 'border-primary', 'text-primary');
+            activeTab.classList.remove('border-transparent', 'text-gray-500');
+            
+            // Update plots if switching to plots tab
+            if (tabName === 'plots' && currentElasticTensor) {
+                updatePlots();
+            }
+            
+            // Initialize/update 3D plot if switching to 3D tab
+            if (tabName === '3d' && currentElasticTensor) {
+                init3DScene();
+                update3DPlot();
+            }
+        }
+
+        function parseTensorInput(input) {
+            const lines = input.trim().split('\n').filter(line => line.trim());
+            if (lines.length !== 6) {
+                throw new Error('Elastic tensor must have exactly 6 rows');
+            }
+            
+            const matrix = [];
+            
+            // Parse each line and detect format automatically
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const values = line.trim().split(/\s+/).filter(val => val !== '').map(parseFloat);
+                
+                if (values.some(isNaN)) {
+                    throw new Error('All values must be valid numbers');
+                }
+                
+                matrix.push(values);
+            }
+            
+            // Check if it's upper triangular (6, 5, 4, 3, 2, 1 values per row)
+            const isUpperTriangular = matrix.every((row, i) => row.length === 6 - i);
+            
+            // Check if it's full matrix (6 values per row)
+            const isFullMatrix = matrix.every(row => row.length === 6);
+            
+            if (!isUpperTriangular && !isFullMatrix) {
+                throw new Error('Matrix must be either full 6x6 format (6 values per row) or upper triangular format (6,5,4,3,2,1 values per row)');
+            }
+            
+            // Convert upper triangular to full matrix
+            if (isUpperTriangular) {
+                const fullMatrix = Array(6).fill().map(() => Array(6).fill(0));
+                
+                for (let i = 0; i < 6; i++) {
+                    for (let j = 0; j < matrix[i].length; j++) {
+                        const value = matrix[i][j];
+                        const colIndex = i + j; // Column index in full matrix
+                        fullMatrix[i][colIndex] = value;
+                        fullMatrix[colIndex][i] = value; // Symmetric
+                    }
+                }
+                
+                return fullMatrix;
+            }
+            
+            return matrix;
+        }
+
+        function analyzeTensor() {
+            const error = document.getElementById('error');
+            const results = document.getElementById('results');
+            const tensorInput = document.getElementById('tensorInput').value;
+            
+            error.classList.add('hidden');
+            results.classList.add('hidden');
+            
+            if (!Module) {
+                error.textContent = 'OCC module not loaded yet. Please wait...';
+                error.classList.remove('hidden');
+                return;
+            }
+            
+            if (!tensorInput.trim()) {
+                error.textContent = 'Please enter a valid elastic tensor';
+                error.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const matrix = parseTensorInput(tensorInput);
+                
+                console.log('Available Module methods:', Object.keys(Module));
+                console.log('Mat6 available:', !!Module.Mat6);
+                console.log('Mat available:', !!Module.Mat);
+                console.log('ElasticTensor available:', !!Module.ElasticTensor);
+                
+                // Create 6x6 matrix from the input - try Mat6 first, fallback to Mat
+                let mat6;
+                if (Module.Mat6 && Module.Mat6.create) {
+                    mat6 = Module.Mat6.create(6, 6);
+                } else {
+                    console.warn('Mat6 not available, using Mat.create(6, 6)');
+                    mat6 = Module.Mat.create(6, 6);
+                }
+                for (let i = 0; i < 6; i++) {
+                    for (let j = 0; j < 6; j++) {
+                        mat6.set(i, j, matrix[i][j]);
+                    }
+                }
+                
+                console.log('Created matrix:', mat6);
+                console.log('ElasticTensor constructor:', Module.ElasticTensor);
+                
+                // Create ElasticTensor
+                const elasticTensor = new Module.ElasticTensor(mat6);
+                
+                // Store tensor for plotting
+                currentElasticTensor = elasticTensor;
+                
+                // Debug: Print matrix values to verify they were set correctly
+                console.log('Matrix verification:');
+                for (let i = 0; i < 6; i++) {
+                    const row = [];
+                    for (let j = 0; j < 6; j++) {
+                        row.push(mat6.get(i, j).toFixed(3));
+                    }
+                    console.log(`Row ${i}:`, row.join('  '));
+                }
+                
+                // Debug: Test specific elastic tensor methods
+                console.log('Testing elastic tensor methods:');
+                try {
+                    const voigtC = elasticTensor.voigtC;
+                    console.log('Voigt C matrix rows:', voigtC.rows(), 'cols:', voigtC.cols());
+                    console.log('Sample values from Voigt C:');
+                    console.log('C[0,0]:', voigtC.get(0, 0));
+                    console.log('C[0,1]:', voigtC.get(0, 1));
+                    console.log('C[1,1]:', voigtC.get(1, 1));
+                } catch (e) {
+                    console.error('Error accessing Voigt C matrix:', e);
+                }
+                
+                // Calculate and display results
+                displayResults(elasticTensor, matrix);
+                
+            } catch (err) {
+                error.textContent = 'Error analyzing tensor: ' + err.message;
+                error.classList.remove('hidden');
+            }
+        }
+
+        function displayResults(elasticTensor, matrix) {
+            // Average properties
+            const schemes = [Module.AveragingScheme.VOIGT, Module.AveragingScheme.REUSS, Module.AveragingScheme.HILL];
+            const schemeNames = ['voigt', 'reuss', 'hill'];
+            
+            console.log('=== Calculating average properties ===');
+            
+            for (let i = 0; i < schemes.length; i++) {
+                const scheme = schemes[i];
+                const name = schemeNames[i];
+                
+                try {
+                    const bulk = elasticTensor.averageBulkModulus(scheme);
+                    const shear = elasticTensor.averageShearModulus(scheme);
+                    const youngs = elasticTensor.averageYoungsModulus(scheme);
+                    const poisson = elasticTensor.averagePoissonRatio(scheme);
+                    
+                    console.log(`${name.toUpperCase()} averages:`);
+                    console.log(`  Bulk: ${bulk.toFixed(3)} GPa`);
+                    console.log(`  Shear: ${shear.toFixed(3)} GPa`);
+                    console.log(`  Young's: ${youngs.toFixed(3)} GPa`);
+                    console.log(`  Poisson: ${poisson.toFixed(5)}`);
+                    
+                    document.getElementById(`bulk-${name}`).textContent = bulk.toFixed(3);
+                    document.getElementById(`shear-${name}`).textContent = shear.toFixed(3);
+                    document.getElementById(`youngs-${name}`).textContent = youngs.toFixed(3);
+                    document.getElementById(`poisson-${name}`).textContent = poisson.toFixed(5);
+                } catch (e) {
+                    console.error(`Error calculating ${name} averages:`, e);
+                    document.getElementById(`bulk-${name}`).textContent = 'Error';
+                    document.getElementById(`shear-${name}`).textContent = 'Error';
+                    document.getElementById(`youngs-${name}`).textContent = 'Error';
+                    document.getElementById(`poisson-${name}`).textContent = 'Error';
+                }
+            }
+            
+            // Eigenvalues
+            displayEigenvalues(matrix);
+            
+            // Directional extrema
+            displayExtrema(elasticTensor);
+            
+            document.getElementById('results').classList.remove('hidden');
+        }
+
+        function displayEigenvalues(matrix) {
+            // For simplicity, just show the diagonal elements
+            // A full eigenvalue decomposition would require additional math libraries
+            const eigenvaluesDiv = document.getElementById('eigenvalues');
+            eigenvaluesDiv.innerHTML = '';
+            
+            // Simple approximation: show diagonal elements
+            const diagonals = [matrix[0][0], matrix[1][1], matrix[2][2], matrix[3][3], matrix[4][4], matrix[5][5]];
+            diagonals.sort((a, b) => a - b);
+            
+            diagonals.forEach((val, i) => {
+                const div = document.createElement('div');
+                div.className = 'bg-green-50 border border-primary px-3 py-2 rounded-lg text-sm font-medium text-primary';
+                div.innerHTML = `λ<sub>${i+1}</sub> = ${val.toFixed(1)} GPa`;
+                eigenvaluesDiv.appendChild(div);
+            });
+        }
+
+        function displayExtrema(elasticTensor) {
+            const table = document.getElementById('extrema-table');
+            table.innerHTML = '';
+            
+            // Test directions for finding extrema
+            const directions = [
+                Module.Vec3.create(1, 0, 0),  // x-axis
+                Module.Vec3.create(0, 1, 0),  // y-axis
+                Module.Vec3.create(0, 0, 1),  // z-axis
+                // Normalize diagonal directions manually
+                Module.Vec3.create(1/Math.sqrt(2), 1/Math.sqrt(2), 0),  // xy diagonal
+                Module.Vec3.create(1/Math.sqrt(2), 0, 1/Math.sqrt(2)),  // xz diagonal
+                Module.Vec3.create(0, 1/Math.sqrt(2), 1/Math.sqrt(2)),  // yz diagonal
+                Module.Vec3.create(1/Math.sqrt(3), 1/Math.sqrt(3), 1/Math.sqrt(3))   // xyz diagonal
+            ];
+            
+            // Young's modulus extrema
+            let youngsMin = Infinity, youngsMax = -Infinity;
+            directions.forEach(dir => {
+                const value = elasticTensor.youngsModulus(dir);
+                youngsMin = Math.min(youngsMin, value);
+                youngsMax = Math.max(youngsMax, value);
+            });
+            
+            // Linear compressibility extrema
+            let compMin = Infinity, compMax = -Infinity;
+            directions.forEach(dir => {
+                const value = elasticTensor.linearCompressibility(dir);
+                compMin = Math.min(compMin, value);
+                compMax = Math.max(compMax, value);
+            });
+            
+            // Add rows to table
+            addExtremaRow(table, "Young's Modulus", youngsMin, youngsMax, "GPa");
+            addExtremaRow(table, "Linear Compressibility", compMin, compMax, "TPa⁻¹");
+        }
+
+        function addExtremaRow(table, property, min, max, unit) {
+            const row = table.insertRow();
+            row.className = 'hover:bg-gray-50';
+            row.innerHTML = `
+                <td class="px-6 py-4 text-sm text-gray-900">${property}</td>
+                <td class="px-6 py-4 text-sm font-semibold text-primary">${min.toFixed(3)}</td>
+                <td class="px-6 py-4 text-sm font-semibold text-primary">${max.toFixed(3)}</td>
+                <td class="px-6 py-4 text-sm font-semibold text-primary">${(max/min).toFixed(3)}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">${unit}</td>
+            `;
+        }
+
+        // Plotting functions
+        function generateDirectionalData(elasticTensor, property, plane = 'xy', numPoints = 180) {
+            const data = [];
+            
+            // Generate numPoints + 1 to ensure we complete the full circle (0° to 360°)
+            for (let i = 0; i <= numPoints; i++) {
+                const theta = (i / numPoints) * 2 * Math.PI;
+                
+                // Create direction vector based on selected plane
+                let direction;
+                if (plane === 'xy') {
+                    direction = Module.Vec3.create(Math.cos(theta), Math.sin(theta), 0);
+                } else if (plane === 'xz') {
+                    direction = Module.Vec3.create(Math.cos(theta), 0, Math.sin(theta));
+                } else if (plane === 'yz') {
+                    direction = Module.Vec3.create(0, Math.cos(theta), Math.sin(theta));
+                }
+                
+                let valueMin = 0, valueMax = 0;
+                try {
+                    if (property === 'youngs') {
+                        valueMin = valueMax = elasticTensor.youngsModulus(direction);
+                    } else if (property === 'linear_compressibility') {
+                        valueMin = valueMax = elasticTensor.linearCompressibility(direction);
+                    } else if (property === 'shear') {
+                        // For shear modulus, get min/max in the given direction
+                        const minMax = elasticTensor.shearModulusMinMax(direction);
+                        valueMin = minMax.min;
+                        valueMax = minMax.max;
+                    } else if (property === 'poisson') {
+                        // For Poisson's ratio, get min/max in the given direction
+                        const minMax = elasticTensor.poissonRatioMinMax(direction);
+                        valueMin = minMax.min;
+                        valueMax = minMax.max;
+                    }
+                } catch (e) {
+                    console.warn('Error calculating property value:', e);
+                    valueMin = valueMax = 0;
+                }
+                
+                const angleDeg = theta * 180 / Math.PI;
+                data.push({
+                    angle: angleDeg,
+                    angleRad: theta,
+                    valueMin: valueMin,
+                    valueMax: valueMax,
+                    value: valueMax, // Use max for single value compatibility
+                    // Polar coordinates (for polar plot)
+                    polarXMin: Math.cos(theta) * valueMin,
+                    polarYMin: Math.sin(theta) * valueMin,
+                    polarXMax: Math.cos(theta) * valueMax,
+                    polarYMax: Math.sin(theta) * valueMax
+                });
+            }
+            
+            console.log(`Generated ${data.length} points for ${property} in ${plane} plane`);
+            console.log('Sample values:', data.slice(0, 5).map(d => ({ angle: d.angle.toFixed(1), value: d.value.toFixed(3) })));
+            
+            return data;
+        }
+
+        function updatePlots() {
+            if (!currentElasticTensor) {
+                console.log('No elastic tensor available for plotting');
+                return;
+            }
+            
+            const property = document.getElementById('plotProperty').value;
+            const plane = document.getElementById('plotPlane').value;
+            const data = generateDirectionalData(currentElasticTensor, property, plane);
+            
+            if (data.length === 0) {
+                console.error('No data generated for plotting');
+                return;
+            }
+            
+            // Destroy existing charts
+            if (directionalChart) {
+                directionalChart.destroy();
+            }
+            if (polarChart) {
+                polarChart.destroy();
+            }
+            
+            // Create directional curve chart (angle vs value)
+            const directionalCtx = document.getElementById('directionalChart').getContext('2d');
+            
+            // Determine if we need to show min/max curves
+            const needsMinMax = property === 'shear' || property === 'poisson';
+            
+            const datasets = [];
+            
+            if (needsMinMax) {
+                // Add maximum curve
+                datasets.push({
+                    label: `${getPropertyTitle(property)} (Maximum)`,
+                    data: data.map(d => d.valueMax),
+                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                    borderColor: 'rgba(5, 150, 105, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.1
+                });
+                
+                // Add minimum curve
+                datasets.push({
+                    label: `${getPropertyTitle(property)} (Minimum)`,
+                    data: data.map(d => d.valueMin),
+                    backgroundColor: 'rgba(220, 38, 127, 0.1)',
+                    borderColor: 'rgba(220, 38, 127, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.1
+                });
+            } else {
+                // Single curve for Young's modulus and linear compressibility
+                datasets.push({
+                    label: getPropertyTitle(property),
+                    data: data.map(d => d.value),
+                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                    borderColor: 'rgba(5, 150, 105, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    pointRadius: 0,
+                    tension: 0.1
+                });
+            }
+            
+            directionalChart = new Chart(directionalCtx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.angle.toFixed(0) + '°'),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: needsMinMax,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: `${getPropertyTitle(property)} vs Angle (${plane.toUpperCase()} plane)`
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Angle (degrees)'
+                            },
+                            min: 0,
+                            max: 360,
+                            ticks: {
+                                stepSize: 45
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: getPropertyUnit(property)
+                            },
+                            beginAtZero: property !== 'poisson' // Poisson's ratio can be negative
+                        }
+                    }
+                }
+            });
+            
+            // Create polar plot (showing directional variation as polar coordinates)
+            const polarCtx = document.getElementById('polarChart').getContext('2d');
+            
+            const polarDatasets = [];
+            
+            if (needsMinMax) {
+                // Add maximum polar curve
+                polarDatasets.push({
+                    label: 'Maximum',
+                    data: data.map(d => ({ x: d.polarXMax, y: d.polarYMax })),
+                    borderColor: 'rgba(5, 150, 105, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0
+                });
+                
+                // Add minimum polar curve
+                polarDatasets.push({
+                    label: 'Minimum',
+                    data: data.map(d => ({ x: d.polarXMin, y: d.polarYMin })),
+                    borderColor: 'rgba(220, 38, 127, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0
+                });
+            } else {
+                // Single polar curve
+                polarDatasets.push({
+                    label: 'Polar Representation',
+                    data: data.map(d => ({ x: d.polarXMax, y: d.polarYMax })),
+                    borderColor: 'rgba(5, 150, 105, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0
+                });
+            }
+            
+            polarChart = new Chart(polarCtx, {
+                type: 'line',
+                data: {
+                    datasets: polarDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: needsMinMax,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: `Polar Plot - ${getPropertyTitle(property)} (${plane.toUpperCase()} plane)`
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'center',
+                            title: {
+                                display: true,
+                                text: plane === 'xy' ? 'X' : plane === 'xz' ? 'X' : 'Y'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'center',
+                            title: {
+                                display: true,
+                                text: plane === 'xy' ? 'Y' : plane === 'xz' ? 'Z' : 'Z'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 0
+                        }
+                    }
+                }
+            });
+            
+            console.log(`Charts updated for ${property} in ${plane} plane`);
+        }
+
+        function getPropertyTitle(property) {
+            const titles = {
+                'youngs': "Young's Modulus",
+                'linear_compressibility': 'Linear Compressibility',
+                'shear': 'Shear Modulus',
+                'poisson': "Poisson's Ratio"
+            };
+            return titles[property] || property;
+        }
+
+        function getPropertyUnit(property) {
+            const units = {
+                'youngs': 'GPa',
+                'linear_compressibility': 'TPa⁻¹',
+                'shear': 'GPa',
+                'poisson': 'dimensionless'
+            };
+            return units[property] || '';
+        }
+
+        // Three.js initialization
+        function init3DScene() {
+            const container = document.getElementById('threejs-container');
+            
+            // Clear existing scene
+            if (renderer) {
+                container.removeChild(renderer.domElement);
+            }
+            
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+            
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(2, 2, 4);
+            
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+            
+            // Controls setup
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            // Add ground plane exactly like the contact shadows example
+            const PLANE_WIDTH = 10;
+            const PLANE_HEIGHT = 10;
+            const planeGeometry = new THREE.PlaneGeometry(PLANE_WIDTH, PLANE_HEIGHT).rotateX(-Math.PI / 2);
+            const planeMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: false,
+            });
+            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.position.y = -2;
+            scene.add(plane);
+            
+            // Add brighter lighting for more vibrant colors
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+            
+            // Axes helper
+            const axesHelper = new THREE.AxesHelper(1.5);
+            scene.add(axesHelper);
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                const newWidth = container.clientWidth;
+                const newHeight = container.clientHeight;
+                camera.aspect = newWidth / newHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(newWidth, newHeight);
+            });
+        }
+        
+        // Generate 3D surface data
+        function generate3DSurfaceData(elasticTensor, property, resolution = 32) {
+            const vertices = [];
+            const colors = [];
+            
+            let minValue = Infinity;
+            let maxValue = -Infinity;
+            
+            // First pass: collect all values to find min/max
+            const allData = [];
+            for (let i = 0; i <= resolution; i++) {
+                for (let j = 0; j <= resolution; j++) {
+                    const theta = (i / resolution) * Math.PI; // 0 to π
+                    const phi = (j / resolution) * 2 * Math.PI; // 0 to 2π
+                    
+                    // Convert to Cartesian direction
+                    const x = Math.sin(theta) * Math.cos(phi);
+                    const y = Math.sin(theta) * Math.sin(phi);
+                    const z = Math.cos(theta);
+                    
+                    const direction = Module.Vec3.create(x, y, z);
+                    
+                    let value = 0;
+                    try {
+                        if (property === 'youngs') {
+                            value = elasticTensor.youngsModulus(direction);
+                        } else if (property === 'linear_compressibility') {
+                            value = elasticTensor.linearCompressibility(direction);
+                        } else if (property === 'shear') {
+                            const minMax = elasticTensor.shearModulusMinMax(direction);
+                            value = minMax.max;
+                        } else if (property === 'poisson') {
+                            const minMax = elasticTensor.poissonRatioMinMax(direction);
+                            value = minMax.max;
+                        }
+                    } catch (e) {
+                        console.warn('Error calculating property value:', e);
+                        value = 0;
+                    }
+                    
+                    minValue = Math.min(minValue, value);
+                    maxValue = Math.max(maxValue, value);
+                    
+                    allData.push({ theta, phi, value, direction: [x, y, z] });
+                }
+            }
+            
+            // Second pass: generate vertices and colors
+            for (let i = 0; i <= resolution; i++) {
+                for (let j = 0; j <= resolution; j++) {
+                    const idx = i * (resolution + 1) + j;
+                    const point = allData[idx];
+                    
+                    // Normalize value
+                    const normalizedValue = (point.value - minValue) / (maxValue - minValue);
+                    
+                    // Scale the radius based on the property value
+                    const baseRadius = 1.0;
+                    const radius = baseRadius + (normalizedValue * 0.5);
+                    
+                    const vertex = new THREE.Vector3(
+                        point.direction[0] * radius,
+                        point.direction[1] * radius,
+                        point.direction[2] * radius
+                    );
+                    
+                    vertices.push(vertex);
+                    
+                    // Color based on value
+                    const color = new THREE.Color();
+                    color.setHSL(0.7 * (1 - normalizedValue), 0.8, 0.6);
+                    colors.push(color);
+                }
+            }
+            
+            return {
+                vertices,
+                colors,
+                minValue,
+                maxValue,
+                resolution,
+                property
+            };
+        }
+        
+        // Create 3D surface mesh using icosahedron geometry
+        function create3DSurface(elasticTensor, property, detail = 9) {
+            // Create an icosahedron geometry with high detail for uniform vertex distribution
+            const geometry = new THREE.IcosahedronGeometry(1, detail);
+            
+            // Get the position attribute
+            const positionAttribute = geometry.getAttribute('position');
+            const positions = positionAttribute.array;
+            const colors = [];
+            
+            let minValue = Infinity;
+            let maxValue = -Infinity;
+            
+            // First pass: calculate all values to find min/max
+            const values = [];
+            for (let i = 0; i < positions.length; i += 3) {
+                const x = positions[i];
+                const y = positions[i + 1];
+                const z = positions[i + 2];
+                
+                // Normalize the direction vector
+                const length = Math.sqrt(x * x + y * y + z * z);
+                const direction = Module.Vec3.create(x / length, y / length, z / length);
+                
+                let value = 0;
+                try {
+                    if (property === 'youngs') {
+                        value = elasticTensor.youngsModulus(direction);
+                    } else if (property === 'linear_compressibility') {
+                        value = elasticTensor.linearCompressibility(direction);
+                    } else if (property === 'shear') {
+                        const minMax = elasticTensor.shearModulusMinMax(direction);
+                        value = minMax.max;
+                    } else if (property === 'poisson') {
+                        const minMax = elasticTensor.poissonRatioMinMax(direction);
+                        value = minMax.max;
+                    }
+                } catch (e) {
+                    console.warn('Error calculating property value:', e);
+                    value = 0;
+                }
+                
+                values.push(value);
+                minValue = Math.min(minValue, value);
+                maxValue = Math.max(maxValue, value);
+            }
+            
+            // Second pass: modify positions and set colors
+            for (let i = 0; i < positions.length; i += 3) {
+                const x = positions[i];
+                const y = positions[i + 1];
+                const z = positions[i + 2];
+                
+                // Normalize the direction vector
+                const length = Math.sqrt(x * x + y * y + z * z);
+                const normalizedX = x / length;
+                const normalizedY = y / length;
+                const normalizedZ = z / length;
+                
+                const value = values[i / 3];
+                const normalizedValue = (value - minValue) / (maxValue - minValue);
+                
+                // Scale the radius based on the property value
+                const baseRadius = 1.0;
+                const radius = baseRadius + (normalizedValue * 0.5);
+                
+                // Update positions
+                positions[i] = normalizedX * radius;
+                positions[i + 1] = normalizedY * radius;
+                positions[i + 2] = normalizedZ * radius;
+                
+                // Set colors - vibrant blue to white to vibrant red colormap
+                const color = new THREE.Color();
+                if (normalizedValue < 0.5) {
+                    // Blue to white (0 to 0.5)
+                    const t = normalizedValue * 2;
+                    color.setRGB(t, t, 1);
+                } else {
+                    // White to red (0.5 to 1)
+                    const t = (normalizedValue - 0.5) * 2;
+                    color.setRGB(1, 1 - t, 1 - t);
+                }
+                colors.push(color.r, color.g, color.b);
+            }
+            
+            // Update the geometry
+            positionAttribute.needsUpdate = true;
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.computeVertexNormals();
+            
+            // Material
+            const wireframe = document.getElementById('showWireframe').checked;
+            const showColorBar = document.getElementById('showColorBar').checked;
+            
+            // Create solid mesh
+            const solidMaterial = new THREE.MeshBasicMaterial({
+                vertexColors: showColorBar,
+                transparent: wireframe,
+                opacity: wireframe ? 0.9 : 1.0,
+                color: showColorBar ? 0xffffff : 0x059669
+            });
+            
+            const solidMesh = new THREE.Mesh(geometry, solidMaterial);
+            solidMesh.castShadow = true;
+            solidMesh.receiveShadow = true;
+            
+            // Create wireframe mesh
+            const wireframeMaterial = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                wireframe: true
+            });
+            
+            const wireframeMesh = new THREE.Mesh(geometry, wireframeMaterial);
+            
+            // Create a group to hold both meshes
+            const group = new THREE.Group();
+            group.add(solidMesh);
+            if (wireframe) {
+                group.add(wireframeMesh);
+            }
+            
+            console.log(`Surface created with ${positions.length / 3} vertices, value range: ${minValue.toFixed(3)} - ${maxValue.toFixed(3)}`);
+            
+            return group;
+        }
+        
+        // Update 3D plot
+        function update3DPlot() {
+            if (!currentElasticTensor || !scene) {
+                console.log('No elastic tensor or scene available for 3D plotting');
+                return;
+            }
+            
+            const property = document.getElementById('plot3dProperty').value;
+            
+            // Update the title based on selected property
+            const title = document.getElementById('3d-title');
+            const propertyTitles = {
+                'youngs': "Young's Modulus",
+                'linear_compressibility': 'Linear Compressibility',
+                'shear': 'Shear Modulus (Max)',
+                'poisson': "Poisson's Ratio (Max)"
+            };
+            title.textContent = `3D ${propertyTitles[property]} Surface`;
+            
+            // Remove existing surface
+            if (elasticSurface) {
+                scene.remove(elasticSurface);
+            }
+            
+            // Create and add new surface using sphere geometry
+            console.log('Creating 3D surface mesh...');
+            elasticSurface = create3DSurface(currentElasticTensor, property);
+            console.log('Surface mesh created:', elasticSurface);
+            
+            if (elasticSurface) {
+                scene.add(elasticSurface);
+                console.log('Surface added to scene');
+            } else {
+                console.error('Failed to create surface mesh');
+            }
+            
+            console.log(`3D surface updated for ${property}`);
+        }
+        
+        // Make functions globally available for onclick handlers
+        window.analyzeTensor = analyzeTensor;
+        window.switchTab = switchTab;
+        window.updatePlots = updatePlots;
+        window.update3DPlot = update3DPlot;
+        
+        // Load OCC when page loads
+        window.addEventListener('load', loadOCC);
+    </script>
+</body>
+</html>

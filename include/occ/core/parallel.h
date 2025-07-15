@@ -22,7 +22,7 @@ inline int get_num_threads() { return nthreads; }
 template <typename Lambda> void parallel_do(Lambda &lambda) {
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel num_threads(nthreads)
   {
     auto thread_id = omp_get_thread_num();
     lambda(thread_id);
