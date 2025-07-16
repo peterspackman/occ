@@ -22,7 +22,11 @@ export interface Mat3 {
   cols(): number;
   get(row: number, col: number): number;
   set(row: number, col: number, val: number): void;
-  static create(rows: number, cols: number): Mat3;
+}
+
+export interface Mat3Constructor {
+  new(): Mat3;
+  create(rows: number, cols: number): Mat3;
 }
 
 export interface Mat3N {
@@ -30,21 +34,18 @@ export interface Mat3N {
   get(row: number, col: number): number;
   rows(): number;
   cols(): number;
-  static create(cols: number): Mat3N;
 }
 
 export interface IVec {
   size(): number;
   get(i: number): number;
   set(i: number, val: number): void;
-  static fromArray(array: number[]): IVec;
 }
 
 export interface Vec {
   size(): number;
   get(i: number): number;
   set(i: number, val: number): void;
-  static create(size: number): Vec;
 }
 
 export interface Mat {
@@ -52,7 +53,6 @@ export interface Mat {
   cols(): number;
   get(row: number, col: number): number;
   set(row: number, col: number, val: number): void;
-  static create(rows: number, cols: number): Mat;
 }
 
 export interface Element {
@@ -63,7 +63,6 @@ export interface Element {
   covalentRadius: number;
   atomicNumber: number;
   toString(): string;
-  static fromAtomicNumber(atomicNumber: number): Element;
 }
 
 export interface Atom {
@@ -114,8 +113,6 @@ export interface Molecule {
   translationalFreeEnergy(temperature: number, pressure: number): number;
   rotationalFreeEnergy(temperature: number): number;
   toString(): string;
-  static fromXyzFile(filename: string): Molecule;
-  static fromXyzString(contents: string): Molecule;
 }
 
 export interface Dimer {
@@ -196,8 +193,6 @@ export interface AOBasis {
   atomOffsets(): IVec;
   shellOffsets(): IVec;
   firstBasisFunctionOfShell(shell: number): number;
-  static loadFromJsonFile(molecule: Molecule, filename: string): AOBasis;
-  static loadFromJsonString(molecule: Molecule, jsonString: string): AOBasis;
 }
 
 export interface MolecularOrbitals {
@@ -257,7 +252,6 @@ export interface Cube {
   getData(): Float32Array;
   setData(data: Float32Array): void;
   saveToString(): string;
-  static loadFromString(content: string): Cube;
 }
 
 // Isosurface enums
@@ -341,7 +335,6 @@ export interface Wavefunction {
   translate(translation: Vec3): void;
   transform(matrix: Mat3): void;
   charge(): number;
-  static load(filename: string): Wavefunction;
   save(filename: string): void;
 }
 
@@ -433,7 +426,7 @@ export interface OCCModule {
 
 export interface LoadOptions {
   wasmPath?: string;
-  env?: Record<string, any>;
+  env?: Record<string, unknown>;
 }
 
 export declare function loadOCC(options?: LoadOptions): Promise<OCCModule>;

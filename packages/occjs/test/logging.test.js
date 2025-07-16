@@ -75,9 +75,15 @@ describe('Logging System Tests', () => {
       expect(warnLog).toBeDefined();
       expect(errorLog).toBeDefined();
       
-      if (infoLog) expect(infoLog.level).toBe(getEnumValue(Module.LogLevel.INFO));
-      if (warnLog) expect(warnLog.level).toBe(getEnumValue(Module.LogLevel.WARN));
-      if (errorLog) expect(errorLog.level).toBe(getEnumValue(Module.LogLevel.ERROR));
+      if (infoLog) {
+        expect(infoLog.level).toBe(getEnumValue(Module.LogLevel.INFO));
+      }
+      if (warnLog) {
+        expect(warnLog.level).toBe(getEnumValue(Module.LogLevel.WARN));
+      }
+      if (errorLog) {
+        expect(errorLog.level).toBe(getEnumValue(Module.LogLevel.ERROR));
+      }
     });
 
     it('should support multiple callbacks', () => {

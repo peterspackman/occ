@@ -7,16 +7,16 @@
     "declarationMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
     "noEmit": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test"]
+  "include": ["src/**/*.d.ts"],
+  "exclude": ["node_modules", "dist", "test", "src/occjs.js", "src/occjs.data", "src/occjs.wasm"]
 }

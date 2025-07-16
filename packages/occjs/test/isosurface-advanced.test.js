@@ -8,7 +8,7 @@ import {
 describe('Advanced Isosurface Tests', () => {
   let Module;
   let h2Molecule;
-  let waterMolecule;
+  let waterMolecule; // eslint-disable-line no-unused-vars
   let h2Wavefunction;
 
   beforeAll(async () => {

@@ -64,8 +64,7 @@ void register_cube_bindings() {
         .function("setMolecule", optional_override([](io::Cube &cube, const core::Molecule &mol) {
             cube.atoms.clear();
             for (size_t i = 0; i < mol.size(); ++i) {
-                const auto &atom = mol.atoms()[i];
-                cube.atoms.push_back(atom);
+                cube.atoms.push_back(mol.atoms()[i]);
             }
         }))
         .function("centerMolecule", &io::Cube::center_molecule)

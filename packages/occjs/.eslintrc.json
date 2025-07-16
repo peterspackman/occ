@@ -19,6 +19,10 @@
     "eqeqeq": ["error", "always"],
     "curly": ["error", "all"]
   },
+  "ignorePatterns": [
+    "src/occjs.js",
+    "dist/occjs.js"
+  ],
   "overrides": [
     {
       "files": ["**/*.ts"],

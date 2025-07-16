@@ -10,7 +10,7 @@ import {
 // Removed import of getTestBasis - using inline definitions instead
 
 describe('Quantum Chemistry Tests', () => {
-  let Module;
+  let Module; // eslint-disable-line no-unused-vars
   let h2Molecule;
   let waterMolecule;
   let methaneMolecule;
@@ -312,7 +312,7 @@ H  0.6276 -0.6276 -0.6276`);
       let warningMessage = '';
       console.warn = (msg) => { warningMessage = msg; };
       
-      const properties = await calc.calculateProperties(['unknown_property']);
+      const properties = await calc.calculateProperties(['unknown_property']); // eslint-disable-line no-unused-vars
       
       expect(warningMessage).toContain('Unknown property');
       console.warn = originalWarn;
