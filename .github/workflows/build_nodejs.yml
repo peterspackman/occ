@@ -90,6 +90,7 @@ jobs:
     - name: Build WASM module
       if: steps.check-wasm.outputs.needs_build == 'true'
       run: |
+        source $EMSDK/emsdk_env.sh
         rm -rf wasm
         ./scripts/build_wasm.sh
 
@@ -127,85 +128,20 @@ jobs:
         name: nodejs-coverage
         fail_ci_if_error: false
 
-  build-package:
-    name: Build Complete Package
-    runs-on: ubuntu-latest
-    needs: test-js
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        
-    - name: Install system dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: 'npm'
-        cache-dependency-path: packages/occjs/package-lock.json
-
-    - name: Setup Emscripten
-      uses: mymindstorm/setup-emsdk@v14
-      with:
-        version: '3.1.69'
-        actions-cache-folder: 'emsdk-cache'
-
-    - name: Cache CPM Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ${{env.CPM_SOURCE_CACHE}}
-          ${{github.workspace}}/wasm
-        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
-        restore-keys: |
-          js-build-${{ runner.os }}-
-
-    - name: Build WASM module (if needed)
-      run: |
-        if [ ! -f "wasm/src/occjs.wasm" ] || [ ! -f "wasm/src/occjs.js" ]; then
-          ./scripts/build_wasm.sh
-        fi
-        
-    - name: Install package dependencies
-      working-directory: packages/occjs
-      run: npm ci
-        
-    - name: Build complete package
-      working-directory: packages/occjs
-      run: npm run build
-        
-    - name: Test package can be required
-      working-directory: packages/occjs
-      run: |
-        node -e "
-          const occ = require('./dist/index.js');
-          console.log('Package loads successfully');
-          console.log('Available exports:', Object.keys(occ));
-        "
-        
     - name: Pack package for testing
       working-directory: packages/occjs
       run: npm pack
-        
+
     - name: Upload package artifact
       uses: actions/upload-artifact@v4
       with:
-        name: occjs-package
-        path: |
-          packages/occjs/dist/
-          packages/occjs/*.tgz
-          !packages/occjs/dist/**/*.map
+        name: occjs-package-node${{ matrix.node-version }}
+        path: packages/occjs/*.tgz
         retention-days: 30
 
   publish-npm:
     name: Publish to npm
-    needs: [test-js, build-package]
+    needs: test-js
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
     
