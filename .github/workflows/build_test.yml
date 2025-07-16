@@ -1,4 +1,4 @@
-name: Build & Test
+name: Build & Test (C++ Core)
 on:
   push:
     branches: ["main"]

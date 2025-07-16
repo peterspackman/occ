@@ -108,6 +108,22 @@ void register_core_bindings() {
                         return result;
                       }));
 
+  // Mat3 typedef for 3x3 matrices
+  class_<Mat3>("Mat3")
+      .function("rows",
+                optional_override([](const Mat3 &m) { return m.rows(); }))
+      .function("cols",
+                optional_override([](const Mat3 &m) { return m.cols(); }))
+      .function("get", optional_override([](const Mat3 &m, int row, int col) {
+                  return m(row, col);
+                }))
+      .function("set", optional_override([](Mat3 &m, int row, int col,
+                                            double val) { m(row, col) = val; }))
+      .class_function("create", optional_override([]() {
+                        Mat3 result = Mat3::Zero();
+                        return result;
+                      }));
+
   // Mat6 typedef for 6x6 matrices  
   class_<Mat6>("Mat6")
       .function("rows",
@@ -186,10 +202,13 @@ void register_core_bindings() {
   // Molecule class binding
   class_<Molecule>("Molecule")
       .constructor<const IVec &, const Mat3N &>()
+      .class_function("fromAtoms", optional_override([](const std::vector<Atom> &atoms) {
+        return Molecule(atoms);
+      }))
       .function("size", &Molecule::size)
       .function("elements", &Molecule::elements)
       .function("positions", &Molecule::positions)
-      .property("name", &Molecule::name)
+      .function("name", &Molecule::name)
       .function("setName", &Molecule::set_name)
       .function("partialCharges", &Molecule::partial_charges)
       .function("setPartialCharges", &Molecule::set_partial_charges)
@@ -200,6 +219,11 @@ void register_core_bindings() {
       .function("molarMass", &Molecule::molar_mass)
       .function("atoms", &Molecule::atoms)
       .function("centerOfMass", &Molecule::center_of_mass)
+      .function("charge", &Molecule::charge)
+      .function("setCharge", &Molecule::set_charge)
+      .function("multiplicity", &Molecule::multiplicity)
+      .function("setMultiplicity", &Molecule::set_multiplicity)
+      .function("numElectrons", &Molecule::num_electrons)
       .function("centroid", &Molecule::centroid)
       .function("rotate", select_overload<void(const Mat3 &, Molecule::Origin)>(
                               &Molecule::rotate))
@@ -469,4 +493,32 @@ void register_core_bindings() {
     
     return result;
   }));
+
+  // Float matrix types for isosurface calculations
+  class_<FMat3N>("FMat3N")
+      .function("set", optional_override([](FMat3N &m, int row, int col,
+                                            float val) { m(row, col) = val; }))
+      .function("get", optional_override([](const FMat3N &m, int row, int col) {
+                  return m(row, col);
+                }))
+      .function("rows",
+                optional_override([](const FMat3N &m) { return m.rows(); }))
+      .function("cols",
+                optional_override([](const FMat3N &m) { return m.cols(); }))
+      .class_function("create", optional_override([](int cols) {
+                        FMat3N result = FMat3N::Zero(3, cols);
+                        return result;
+                      }));
+
+  class_<FVec>("FVec")
+      .function("size",
+                optional_override([](const FVec &v) { return v.size(); }))
+      .function("get",
+                optional_override([](const FVec &v, int i) { return v(i); }))
+      .function("set", optional_override(
+                           [](FVec &v, int i, float val) { v(i) = val; }))
+      .class_function("create", optional_override([](int size) {
+                        FVec result = FVec::Zero(size);
+                        return result;
+                      }));
 }

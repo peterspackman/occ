@@ -3,8 +3,12 @@
  * Main entry point for the package
  */
 
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Cache for the loaded module
 let moduleInstance = null;
@@ -34,7 +38,7 @@ async function loadOCC(options = {}) {
       const wasmPath = options.wasmPath || path.join(__dirname, 'occjs.wasm');
       
       // Load the module factory
-      const createModule = require('./occjs.js');
+      const createModule = await import('./occjs.js');
       
       // Handle different module formats
       const moduleFactory = typeof createModule === 'function' 
@@ -47,6 +51,9 @@ async function loadOCC(options = {}) {
           if (filename.endsWith('.wasm')) {
             return wasmPath;
           }
+          if (filename.endsWith('.data')) {
+            return path.join(__dirname, 'occjs.data');
+          }
           return filename;
         },
         ...options.env
@@ -56,6 +63,10 @@ async function loadOCC(options = {}) {
       if (Module.LogLevel && Module.setLogLevel) {
         Module.setLogLevel(Module.LogLevel.WARN || 3);
       }
+
+      // Set data directory to use preloaded files
+      Module.setDataDirectory('/');
+      console.log('OCC module loaded with data directory:', Module.getDataDirectory());
 
       moduleInstance = Module;
       return Module;
@@ -131,19 +142,75 @@ const BasisSets = {
   'cc-pvqz': 'cc-pvqz'
 };
 
+// Import core QM functionality 
+import { 
+  QMCalculation, 
+  SCFSettings,
+  createQMCalculation as createQMCalc,
+  createHFCalculation,
+  createDFTCalculation,
+  createMP2Calculation,
+  createHFMP2Workflow,
+  createDFTWorkflow,
+  quickCalculation
+} from './qm/index.js';
+
+/**
+ * Main QM calculation factory with module loading
+ * @param {Object} molecule - Molecule object
+ * @param {string} basisName - Basis set name
+ * @param {Object} options - Calculation options
+ * @returns {Promise<QMCalculation>} QM calculation object
+ */
+export async function createQMCalculation(molecule, basisName, options = {}) {
+  const Module = await loadOCC();
+  return createQMCalc(molecule, basisName, options, Module);
+}
+
+/**
+ * Alias for loadOCC to match common usage patterns
+ * @param {Object} options - Configuration options
+ * @returns {Promise<Object>} The initialized OCC module
+ */
+export const createOCC = loadOCC;
+
+/**
+ * Load basis set using preloaded data
+ * @param {Object} molecule - Molecule object
+ * @param {string} basisName - Basis set name
+ * @returns {Promise<Object>} AOBasis object
+ */
+export async function loadBasisSet(molecule, basisName) {
+  const Module = await loadOCC();
+  return Module.AOBasis.load(molecule.atoms(), basisName);
+}
+
+
 // Export the main functions and constants
-module.exports = {
+export {
+  // Core module loading
   loadOCC,
+  // Molecule utilities
   moleculeFromXYZ,
   createMolecule,
   Elements,
   BasisSets,
-  
-  // Re-export some common classes/functions after loading
-  get Module() {
-    if (!moduleInstance) {
-      throw new Error('OCC module not loaded. Call loadOCC() first.');
-    }
-    return moduleInstance;
-  }
+  // Core QM functionality
+  QMCalculation,
+  SCFSettings,
+  // Calculation factories
+  createHFCalculation,
+  createDFTCalculation,
+  createMP2Calculation,
+  createHFMP2Workflow,
+  createDFTWorkflow,
+  quickCalculation
 };
+
+// Re-export some common classes/functions after loading
+export function getModule() {
+  if (!moduleInstance) {
+    throw new Error('OCC module not loaded. Call loadOCC() first.');
+  }
+  return moduleInstance;
+}

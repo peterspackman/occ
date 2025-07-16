@@ -1,5 +1,8 @@
 # @occ/core
 
+[![JavaScript Tests](https://github.com/peterspackman/occ/actions/workflows/build_nodejs.yml/badge.svg)](https://github.com/peterspackman/occ/actions/workflows/build_nodejs.yml)
+[![npm version](https://badge.fury.io/js/@occ%2Fcore.svg)](https://badge.fury.io/js/@occ%2Fcore)
+
 JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library.
 
 ## Installation
@@ -40,6 +43,44 @@ console.log(`Molar mass: ${water.molarMass()} g/mol`);
 - **Geometry Analysis**: Point groups, molecular properties, and transformations
 - **Isosurface Generation**: Electron density and promolecule density visualization
 - **Custom Logging**: Flexible logging system with callbacks and buffering
+
+## Development
+
+### Building from Source
+
+1. **Prerequisites**: Ensure you have Emscripten installed
+2. **Build WASM module**: `npm run build:wasm`
+3. **Build JavaScript wrapper**: `npm run build:wrapper`
+4. **Run tests**: `npm test`
+
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run linting
+npm run lint
+
+# Run type checking
+npm run typecheck
+```
+
+### Available Test Suites
+
+- **Core functionality**: Basic module loading and error handling
+- **Logging**: Log level management and message handling  
+- **Molecular structure**: Molecule creation and property access
+- **Quantum chemistry**: Hartree-Fock, DFT calculations, and property analysis
+- **Crystallography**: Space groups, symmetry operations, unit cells
+- **Isosurfaces**: Surface generation and cube file export
+- **Basis sets**: Built-in and custom JSON basis set loading
 
 ## Documentation
 

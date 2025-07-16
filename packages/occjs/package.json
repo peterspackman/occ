@@ -2,6 +2,7 @@
   "name": "@occ/core",
   "version": "0.7.6",
   "description": "JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.mjs",
@@ -38,6 +39,7 @@
     "docs": "typedoc",
     "dev": "npm run build:wrapper && vitest watch",
     "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('../../wasm/src/occjs.wasm')) {console.error('WASM not built. Run: npm run build:wasm'); process.exit(1);}\"",
+    "ci-check": "node scripts/ci-check.js",
     "examples": "npm run build && npx http-server . -p 8080 -o /examples/isosurface_visualization.html"
   },
   "repository": {

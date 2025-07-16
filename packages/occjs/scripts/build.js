@@ -5,8 +5,12 @@
  * Copies WASM files and prepares the distribution
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const WASM_BUILD_DIR = path.join(__dirname, '../../../wasm/src');
 const SRC_DIR = path.join(__dirname, '../src');
@@ -20,7 +24,8 @@ if (!fs.existsSync(DIST_DIR)) {
 // Files to copy
 const filesToCopy = [
   { src: path.join(WASM_BUILD_DIR, 'occjs.js'), dest: path.join(SRC_DIR, 'occjs.js') },
-  { src: path.join(WASM_BUILD_DIR, 'occjs.wasm'), dest: path.join(SRC_DIR, 'occjs.wasm') }
+  { src: path.join(WASM_BUILD_DIR, 'occjs.wasm'), dest: path.join(SRC_DIR, 'occjs.wasm') },
+  { src: path.join(WASM_BUILD_DIR, 'occjs.data'), dest: path.join(SRC_DIR, 'occjs.data') }
 ];
 
 // Copy WASM files to src for development

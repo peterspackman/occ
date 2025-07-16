@@ -1,11 +1,5 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
-import { createRequire } from 'module';
-
-// Create a require function to load CommonJS modules
-const require = createRequire(import.meta.url);
-
-// Load the CommonJS module
-const { loadOCC } = require('../src/index.js');
+import { loadOCC } from '../src/index.js';
 
 // Helper to extract enum values (Emscripten enums may be objects)
 const getEnumValue = (enumVal) => typeof enumVal === 'object' ? enumVal.value : enumVal;
@@ -242,7 +236,7 @@ describe('Logging System Tests', () => {
       const h2 = new Module.Molecule(atomicNumbers, positions);
       h2.setName("H2");
       
-      Module.logInfo(`Created molecule: ${h2.name} with ${h2.size()} atoms`);
+      Module.logInfo(`Created molecule: ${h2.name()} with ${h2.size()} atoms`);
       
       const moleculeLog = computationLogs.find(log => 
         log.message.includes("Created molecule: H2")

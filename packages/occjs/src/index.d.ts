@@ -94,7 +94,7 @@ export interface Molecule {
   size(): number;
   elements(): IVec;
   positions(): Mat3N;
-  name: string;
+  name(): string;
   setName(name: string): void;
   partialCharges(): Vec;
   setPartialCharges(charges: Vec): void;

@@ -60,7 +60,10 @@ if(ENABLE_JS_BINDINGS)
 set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/core_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/qm_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/dft_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/isosurface_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/cube_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/crystal_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
@@ -72,6 +75,7 @@ target_include_directories(occjs PRIVATE
 
 target_compile_definitions(occjs PRIVATE VERSION_INFO=${PROJECT_VERSION})
 target_compile_features(occjs PUBLIC cxx_std_20)
+target_compile_options(occjs PRIVATE -fexceptions)
 
 # Link against the core OCC libraries
 target_link_libraries(occjs PUBLIC 
@@ -85,7 +89,7 @@ target_link_libraries(occjs PUBLIC
 
 # Emscripten-specific linker flags for JavaScript bindings
 set_target_properties(occjs PROPERTIES
-    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=5MB -s DISABLE_EXCEPTION_CATCHING=0 --bind"
+    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=5MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions --bind --preload-file ${CMAKE_SOURCE_DIR}/share@/"
 )
 
 # Set output file extension

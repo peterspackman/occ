@@ -27,8 +27,10 @@ export default defineConfig({
       }
     },
     // Allow mixed module formats
-    deps: {
-      external: [/occjs\.js$/] // Don't transform the WASM wrapper
+    server: {
+      deps: {
+        external: [/occjs\.js$/] // Don't transform the WASM wrapper
+      }
     }
   }
 });

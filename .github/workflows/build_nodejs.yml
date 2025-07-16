@@ -1,9 +1,9 @@
-name: Build and Test Node.js Package
+name: JavaScript/WebAssembly Tests & Publish
 
 on:
   push:
+    branches: ["main", "develop"]
     tags: "v*"
-    branches: [ main, develop ]
     paths:
       - 'packages/occjs/**'
       - 'src/js/**'
@@ -13,6 +13,7 @@ on:
       - 'scripts/build_wasm.sh'
       - '.github/workflows/build_nodejs.yml'
   pull_request:
+    branches: ["main", "develop"]
     paths:
       - 'packages/occjs/**'
       - 'src/js/**'
@@ -29,36 +30,68 @@ on:
         type: boolean
         default: false
 
+env:
+  BUILD_TYPE: Release
+  CPM_SOURCE_CACHE: ${{github.workspace}}/cache/cpm
+  OCC_DATA_PATH: ${{github.workspace}}/share
+
 jobs:
-  build-and-test:
+  test-js:
+    name: Test JavaScript Package (Node.js ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [18, 20, 22]
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Setup Node.js
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
+
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: packages/occjs/package-lock.json
 
     - name: Setup Emscripten
       uses: mymindstorm/setup-emsdk@v14
       with:
-        version: '3.1.47'
+        version: '3.1.69'
+        actions-cache-folder: 'emsdk-cache'
 
-    - name: Install system dependencies
+    - name: Cache CPM Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{env.CPM_SOURCE_CACHE}}
+          ${{github.workspace}}/wasm
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        restore-keys: |
+          js-build-${{ runner.os }}-
+
+    - name: Check if WASM needs building
+      id: check-wasm
       run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake ninja-build
+        if [ ! -f "wasm/src/occjs.wasm" ] || [ ! -f "wasm/src/occjs.js" ]; then
+          echo "needs_build=true" >> $GITHUB_OUTPUT
+        else
+          echo "needs_build=false" >> $GITHUB_OUTPUT
+        fi
 
-    - name: Build WASM
-      run: ./scripts/build_wasm.sh
+    - name: Build WASM module
+      if: steps.check-wasm.outputs.needs_build == 'true'
+      run: |
+        rm -rf wasm
+        ./scripts/build_wasm.sh
 
     - name: Install package dependencies
       working-directory: packages/occjs
@@ -68,62 +101,158 @@ jobs:
       working-directory: packages/occjs
       run: npm run build:wrapper
 
+    - name: Run linting
+      working-directory: packages/occjs
+      run: npm run lint
+
+    - name: Run type checking
+      working-directory: packages/occjs
+      run: npm run typecheck
+
     - name: Run tests
       working-directory: packages/occjs
       run: npm test
 
+    - name: Run tests with coverage
+      if: matrix.node-version == 20
+      working-directory: packages/occjs
+      run: npm run test:coverage
+
     - name: Upload test coverage
-      if: matrix.node-version == '20.x'
-      uses: codecov/codecov-action@v3
+      if: matrix.node-version == 20
+      uses: codecov/codecov-action@v4
       with:
         directory: packages/occjs/coverage
         flags: nodejs
         name: nodejs-coverage
+        fail_ci_if_error: false
 
-    - name: Upload build artifacts
-      if: matrix.node-version == '20.x'
+  build-package:
+    name: Build Complete Package
+    runs-on: ubuntu-latest
+    needs: test-js
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: packages/occjs/package-lock.json
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: '3.1.69'
+        actions-cache-folder: 'emsdk-cache'
+
+    - name: Cache CPM Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{env.CPM_SOURCE_CACHE}}
+          ${{github.workspace}}/wasm
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        restore-keys: |
+          js-build-${{ runner.os }}-
+
+    - name: Build WASM module (if needed)
+      run: |
+        if [ ! -f "wasm/src/occjs.wasm" ] || [ ! -f "wasm/src/occjs.js" ]; then
+          ./scripts/build_wasm.sh
+        fi
+        
+    - name: Install package dependencies
+      working-directory: packages/occjs
+      run: npm ci
+        
+    - name: Build complete package
+      working-directory: packages/occjs
+      run: npm run build
+        
+    - name: Test package can be required
+      working-directory: packages/occjs
+      run: |
+        node -e "
+          const occ = require('./dist/index.js');
+          console.log('Package loads successfully');
+          console.log('Available exports:', Object.keys(occ));
+        "
+        
+    - name: Pack package for testing
+      working-directory: packages/occjs
+      run: npm pack
+        
+    - name: Upload package artifact
       uses: actions/upload-artifact@v4
       with:
         name: occjs-package
         path: |
           packages/occjs/dist/
+          packages/occjs/*.tgz
           !packages/occjs/dist/**/*.map
         retention-days: 30
 
   publish-npm:
-    needs: build-and-test
+    name: Publish to npm
+    needs: [test-js, build-package]
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: 20
         registry-url: 'https://registry.npmjs.org'
 
     - name: Setup Emscripten
       uses: mymindstorm/setup-emsdk@v14
       with:
-        version: '3.1.47'
+        version: '3.1.69'
+        actions-cache-folder: 'emsdk-cache'
 
     - name: Install system dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake ninja-build
+        sudo apt update
+        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
 
-    - name: Build WASM
-      run: ./scripts/build_wasm.sh
+    - name: Cache CPM Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{env.CPM_SOURCE_CACHE}}
+          ${{github.workspace}}/wasm
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        restore-keys: |
+          js-build-${{ runner.os }}-
+
+    - name: Build WASM module (if needed)
+      run: |
+        if [ ! -f "wasm/src/occjs.wasm" ] || [ ! -f "wasm/src/occjs.js" ]; then
+          ./scripts/build_wasm.sh
+        fi
 
     - name: Install and build package
       working-directory: packages/occjs
       run: |
         npm ci
-        npm run build:wrapper
+        npm run build
 
     - name: Check if version changed
       id: version

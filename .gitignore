@@ -24,6 +24,7 @@ yarn-error.log*
 packages/occjs/dist/
 packages/occjs/src/occjs.js
 packages/occjs/src/occjs.wasm
+packages/occjs/src/occjs.data
 packages/occjs/examples/share/
 
 # Coverage

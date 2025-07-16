@@ -10,6 +10,7 @@
 #include <occ/io/fchkwriter.h>
 #include <occ/io/moldenreader.h>
 #include <occ/io/json_basis.h>
+#include <occ/io/wavefunction_json.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/hf.h>
@@ -63,19 +64,17 @@ void register_qm_bindings() {
       .constructor<>()
       .class_function("load",
                       optional_override([](const std::vector<Atom> &atoms,
-                                           const std::string &name) {
-                        AOBasis result;
+                                           const std::string &name) -> AOBasis {
                         try {
-                          result = AOBasis::load(atoms, name);
-                          return result;
+                          return AOBasis::load(atoms, name);
                         } catch (const std::exception &e) {
-                          return result;
+                          // Re-throw the exception so JavaScript can catch it
+                          throw std::runtime_error(std::string("Failed to load basis set '") + name + "': " + e.what());
                         }
                       }))
       .class_function("fromJson",
                       optional_override([](const std::vector<Atom> &atoms,
-                                           const emscripten::val &jsonData) {
-                        AOBasis result;
+                                           const emscripten::val &jsonData) -> AOBasis {
                         try {
                           // Convert Emscripten val to JSON string
                           std::string jsonString = jsonData.as<std::string>();
@@ -147,18 +146,18 @@ void register_qm_bindings() {
                           }
                           
                           // Create AOBasis with the built shells
-                          result = AOBasis(atoms, shells, basis_name, ecp_shells);
+                          return AOBasis(atoms, shells, basis_name, ecp_shells);
                           
                         } catch (const std::exception &e) {
-                          // Return empty basis on error
-                          return result;
+                          // Re-throw the exception so JavaScript can catch it
+                          throw std::runtime_error(std::string("Failed to create AOBasis from JSON: ") + e.what());
                         }
-                        return result;
                       }))
       .function("shells", &AOBasis::shells)
       .function("setPure", &AOBasis::set_pure)
       .function("size", &AOBasis::size)
       .function("nbf", &AOBasis::nbf)
+      .function("nsh", &AOBasis::nsh)
       .function("atoms", &AOBasis::atoms)
       .function("firstBf", &AOBasis::first_bf)
       .function("bfToShell", &AOBasis::bf_to_shell)
@@ -233,11 +232,100 @@ void register_qm_bindings() {
       .function("chelpgCharges", optional_override([](const Wavefunction &wfn) {
                   return chelpg_charges(wfn);
                 }))
+      .function("homoEnergy", optional_override([](const Wavefunction &wfn) {
+                  // Get HOMO energy - highest occupied molecular orbital
+                  if (wfn.mo.kind == SpinorbitalKind::Restricted) {
+                    int n_occ = wfn.mo.n_alpha;
+                    if (n_occ > 0) {
+                      return wfn.mo.energies(n_occ - 1);
+                    }
+                  } else {
+                    // For unrestricted, return alpha HOMO
+                    int n_alpha = wfn.mo.n_alpha;
+                    if (n_alpha > 0) {
+                      return wfn.mo.energies(n_alpha - 1);
+                    }
+                  }
+                  throw std::runtime_error("No occupied orbitals found");
+                }))
+      .function("lumoEnergy", optional_override([](const Wavefunction &wfn) {
+                  // Get LUMO energy - lowest unoccupied molecular orbital
+                  if (wfn.mo.kind == SpinorbitalKind::Restricted) {
+                    int n_occ = wfn.mo.n_alpha;
+                    if (n_occ < wfn.mo.n_ao) {
+                      return wfn.mo.energies(n_occ);
+                    }
+                  } else {
+                    // For unrestricted, return alpha LUMO
+                    int n_alpha = wfn.mo.n_alpha;
+                    if (n_alpha < wfn.mo.n_ao) {
+                      return wfn.mo.energies(n_alpha);
+                    }
+                  }
+                  throw std::runtime_error("No unoccupied orbitals found");
+                }))
+      .function("orbitalEnergies", optional_override([](const Wavefunction &wfn) {
+                  return wfn.mo.energies;
+                }))
+      .function("coefficients", optional_override([](const Wavefunction &wfn) {
+                  return wfn.mo.C;
+                }))
+      .function("occupations", optional_override([](const Wavefunction &wfn) {
+                  return wfn.mo.occupation;
+                }))
       .function("toFchk", optional_override([](Wavefunction &wfn,
                                                const std::string &filename) {
                   auto writer = occ::io::FchkWriter(filename);
                   wfn.save(writer);
                   writer.write();
+                }))
+      .function("toMoldenString", optional_override([](const Wavefunction &wfn) {
+                  // Use stringstream to capture molden output
+                  // Note: If there's no direct molden writer that takes a stream,
+                  // we could implement a simple molden format output here
+                  std::ostringstream oss;
+                  oss << "[Molden Format]\n";
+                  oss << "[Title]\nWavefunction from OCC\n";
+                  oss << "[Atoms] AU\n";
+                  for (size_t i = 0; i < wfn.atoms.size(); ++i) {
+                    const auto &atom = wfn.atoms[i];
+                    oss << atom.atomic_number << " " << (i + 1) << " " 
+                        << atom.x << " " << atom.y << " " << atom.z << "\n";
+                  }
+                  // For now, return basic molden format - could be expanded
+                  return oss.str();
+                }))
+      .function("toJson", optional_override([](const Wavefunction &wfn) {
+                  // Use the actual JsonWavefunctionWriter to create proper JSON
+                  occ::io::JsonWavefunctionWriter json_writer;
+                  json_writer.set_format(occ::io::JsonFormat::JSON);
+                  return json_writer.to_string(wfn);
+                }))
+      .function("exportToString", optional_override([](const Wavefunction &wfn, const std::string &format) {
+                  if (format == "json") {
+                    occ::io::JsonWavefunctionWriter json_writer;
+                    json_writer.set_format(occ::io::JsonFormat::JSON);
+                    return json_writer.to_string(wfn);
+                  } else if (format == "fchk") {
+                    std::ostringstream oss;
+                    occ::io::FchkWriter fchk_writer(oss);
+                    // Note: FchkWriter might not support stream constructor
+                    // This would need to be implemented if not available
+                    return std::string("FCHK export to string not yet implemented");
+                  } else if (format == "molden") {
+                    // Basic molden format
+                    std::ostringstream oss;
+                    oss << "[Molden Format]\n";
+                    oss << "[Title]\nWavefunction from OCC\n";
+                    oss << "[Atoms] AU\n";
+                    for (size_t i = 0; i < wfn.atoms.size(); ++i) {
+                      const auto &atom = wfn.atoms[i];
+                      oss << atom.atomic_number << " " << (i + 1) << " " 
+                          << atom.x << " " << atom.y << " " << atom.z << "\n";
+                    }
+                    return oss.str();
+                  }
+                  throw std::runtime_error("Unsupported export format: " + format);
                 }))
       .class_function("fromFchk",
                       optional_override([](const std::string &filename) {

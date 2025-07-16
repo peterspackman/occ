@@ -1,6 +1,9 @@
 #include "js/core_bindings.h"
 #include "js/qm_bindings.h"
+#include "js/dft_bindings.h"
 #include "js/isosurface_bindings.h"
+#include "js/cube_bindings.h"
+#include "js/crystal_bindings.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <occ/core/data_directory.h>
@@ -13,7 +16,10 @@ EMSCRIPTEN_BINDINGS(occ) {
     // Register all binding modules
     register_core_bindings();
     register_qm_bindings();
+    register_dft_bindings();
     register_isosurface_bindings();
+    register_cube_bindings();
+    register_crystal_bindings();
 
     // Global utility functions
     // Note: LogLevel enum and logging functions are now registered in core_bindings.cpp

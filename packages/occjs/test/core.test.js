@@ -1,11 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { createRequire } from 'module';
-
-// Create a require function to load CommonJS modules
-const require = createRequire(import.meta.url);
-
-// Load the CommonJS module
-const { loadOCC, createMolecule, moleculeFromXYZ, Elements } = require('../src/index.js');
+import { loadOCC, createMolecule, moleculeFromXYZ, Elements } from '../src/index.js';
 
 describe('Core Module Tests', () => {
   let Module;
@@ -70,7 +64,7 @@ describe('Core Module Tests', () => {
       expect(h2.molarMass() * 1000).toBeCloseTo(2.016, 2);
       
       h2.setName("H2");
-      expect(h2.name).toBe("H2");
+      expect(h2.name()).toBe("H2");
     });
 
     it('should create water molecule using helper function', async () => {
@@ -98,7 +92,7 @@ H 0.0 0.0 0.74`;
       const h2 = await moleculeFromXYZ(xyzString);
       expect(h2.size()).toBe(2);
       // The XYZ parser might not preserve the comment as the name
-      expect(h2.name).toBeTruthy(); // Just check it has a name
+      expect(h2.name()).toBeTruthy(); // Just check it has a name
     });
 
     it('should handle molecular transformations', () => {
