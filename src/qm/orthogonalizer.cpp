@@ -33,7 +33,8 @@ void CanonicalOrthogonalizer::orthogonalize_molecular_orbitals(
     throw std::runtime_error(
         "Cannot orthogonalize MOs: basis orthogonalization not built");
   }
-  mo.update(m_X, hamiltonian); // Assuming MO has an update method that takes X and F
+  mo.update(m_X,
+            hamiltonian); // Assuming MO has an update method that takes X and F
 }
 
 } // namespace occ::qm

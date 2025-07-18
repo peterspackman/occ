@@ -7,9 +7,9 @@ namespace occ::isosurface {
 
 class DeformationDensityFunctor {
 public:
-  DeformationDensityFunctor(
-      const occ::core::Molecule &mol, const occ::qm::Wavefunction &wfn,
-      const occ::slater::InterpolatorParams &params = {});
+  DeformationDensityFunctor(const occ::core::Molecule &mol,
+                            const occ::qm::Wavefunction &wfn,
+                            const occ::slater::InterpolatorParams &params = {});
 
   inline void batch(Eigen::Ref<const FMat3N> pos,
                     Eigen::Ref<FVec> layer) const {

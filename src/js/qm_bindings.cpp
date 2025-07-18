@@ -1,15 +1,16 @@
 #include "qm_bindings.h"
 #include <emscripten/bind.h>
-#include <emscripten/val.h>
 #include <emscripten/em_js.h>
+#include <emscripten/val.h>
+#include <limits>
 #include <occ/core/atom.h>
 #include <occ/core/element.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/fchkwriter.h>
-#include <occ/io/moldenreader.h>
 #include <occ/io/json_basis.h>
+#include <occ/io/moldenreader.h>
 #include <occ/io/wavefunction_json.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/expectation.h>
@@ -19,19 +20,16 @@
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <sstream>
-#include <limits>
 
 using namespace emscripten;
 using namespace occ::qm;
 using namespace occ::core;
 
-EM_JS(void, debug_log, (const char* msg), {
-  console.log('DEBUG C++:', UTF8ToString(msg));
-});
+EM_JS(void, debug_log, (const char *msg),
+      { console.log('DEBUG C++:', UTF8ToString(msg)); });
 
-EM_JS(void, debug_log_double, (const char* msg, double val), {
-  console.log('DEBUG C++:', UTF8ToString(msg), val);
-});
+EM_JS(void, debug_log_double, (const char *msg, double val),
+      { console.log('DEBUG C++:', UTF8ToString(msg), val); });
 
 void register_qm_bindings() {
   // Vector bindings
@@ -69,90 +67,99 @@ void register_qm_bindings() {
                           return AOBasis::load(atoms, name);
                         } catch (const std::exception &e) {
                           // Re-throw the exception so JavaScript can catch it
-                          throw std::runtime_error(std::string("Failed to load basis set '") + name + "': " + e.what());
+                          throw std::runtime_error(
+                              std::string("Failed to load basis set '") + name +
+                              "': " + e.what());
                         }
                       }))
-      .class_function("fromJson",
-                      optional_override([](const std::vector<Atom> &atoms,
-                                           const emscripten::val &jsonData) -> AOBasis {
-                        try {
-                          // Convert Emscripten val to JSON string
-                          std::string jsonString = jsonData.as<std::string>();
-                          
-                          // Create a stringstream from the JSON string
-                          std::stringstream ss(jsonString);
-                          
-                          // Use JsonBasisReader to parse the stream
-                          occ::io::JsonBasisReader reader(ss);
-                          
-                          // Build AOBasis similar to the load function
-                          std::vector<Shell> shells;
-                          std::vector<Shell> ecp_shells;
-                          std::string basis_name = "json_basis";
-                          
-                          for (const auto &atom : atoms) {
-                            int atomic_number = atom.atomic_number;
-                            std::array<double, 3> pos = {atom.x, atom.y, atom.z};
-                            
-                            try {
-                              const auto &element_basis = reader.element_basis(atomic_number);
-                              
-                              // Process electron shells
-                              for (const auto &shell_data : element_basis.electron_shells) {
-                                if (shell_data.function_type != "gto") continue;
-                                
-                                for (int l : shell_data.angular_momentum) {
-                                  std::vector<std::vector<double>> coeffs;
-                                  
-                                  if (shell_data.coefficients.size() == 1) {
-                                    // Simple contraction
-                                    coeffs.push_back(shell_data.coefficients[0]);
-                                  } else {
-                                    // General contraction - split into separate shells
-                                    for (const auto &coeff_set : shell_data.coefficients) {
-                                      coeffs.clear();
-                                      coeffs.push_back(coeff_set);
-                                      Shell shell(l, shell_data.exponents, coeffs, pos);
-                                      shell.incorporate_shell_norm();
-                                      shells.push_back(shell);
-                                    }
-                                    continue;
-                                  }
-                                  
-                                  Shell shell(l, shell_data.exponents, coeffs, pos);
-                                  shell.incorporate_shell_norm();
-                                  shells.push_back(shell);
-                                }
-                              }
-                              
-                              // Process ECP shells if present
-                              for (const auto &ecp_shell_data : element_basis.ecp_shells) {
-                                for (int l : ecp_shell_data.angular_momentum) {
-                                  for (size_t i = 0; i < ecp_shell_data.coefficients.size(); ++i) {
-                                    Shell shell(l, ecp_shell_data.exponents, 
-                                               {ecp_shell_data.coefficients[i]}, pos);
-                                    shell.ecp_r_exponents = Eigen::Map<const Eigen::VectorXi>(
-                                        ecp_shell_data.r_exponents.data(), 
-                                        ecp_shell_data.r_exponents.size());
-                                    ecp_shells.push_back(shell);
-                                  }
-                                }
-                              }
-                              
-                            } catch (const std::exception &) {
-                              // Element not found in basis set - skip
-                              continue;
-                            }
-                          }
-                          
-                          // Create AOBasis with the built shells
-                          return AOBasis(atoms, shells, basis_name, ecp_shells);
-                          
-                        } catch (const std::exception &e) {
-                          // Re-throw the exception so JavaScript can catch it
-                          throw std::runtime_error(std::string("Failed to create AOBasis from JSON: ") + e.what());
+      .class_function(
+          "fromJson",
+          optional_override([](const std::vector<Atom> &atoms,
+                               const emscripten::val &jsonData) -> AOBasis {
+            try {
+              // Convert Emscripten val to JSON string
+              std::string jsonString = jsonData.as<std::string>();
+
+              // Create a stringstream from the JSON string
+              std::stringstream ss(jsonString);
+
+              // Use JsonBasisReader to parse the stream
+              occ::io::JsonBasisReader reader(ss);
+
+              // Build AOBasis similar to the load function
+              std::vector<Shell> shells;
+              std::vector<Shell> ecp_shells;
+              std::string basis_name = "json_basis";
+
+              for (const auto &atom : atoms) {
+                int atomic_number = atom.atomic_number;
+                std::array<double, 3> pos = {atom.x, atom.y, atom.z};
+
+                try {
+                  const auto &element_basis =
+                      reader.element_basis(atomic_number);
+
+                  // Process electron shells
+                  for (const auto &shell_data : element_basis.electron_shells) {
+                    if (shell_data.function_type != "gto")
+                      continue;
+
+                    for (int l : shell_data.angular_momentum) {
+                      std::vector<std::vector<double>> coeffs;
+
+                      if (shell_data.coefficients.size() == 1) {
+                        // Simple contraction
+                        coeffs.push_back(shell_data.coefficients[0]);
+                      } else {
+                        // General contraction - split into separate shells
+                        for (const auto &coeff_set : shell_data.coefficients) {
+                          coeffs.clear();
+                          coeffs.push_back(coeff_set);
+                          Shell shell(l, shell_data.exponents, coeffs, pos);
+                          shell.incorporate_shell_norm();
+                          shells.push_back(shell);
                         }
-                      }))
+                        continue;
+                      }
+
+                      Shell shell(l, shell_data.exponents, coeffs, pos);
+                      shell.incorporate_shell_norm();
+                      shells.push_back(shell);
+                    }
+                  }
+
+                  // Process ECP shells if present
+                  for (const auto &ecp_shell_data : element_basis.ecp_shells) {
+                    for (int l : ecp_shell_data.angular_momentum) {
+                      for (size_t i = 0; i < ecp_shell_data.coefficients.size();
+                           ++i) {
+                        Shell shell(l, ecp_shell_data.exponents,
+                                    {ecp_shell_data.coefficients[i]}, pos);
+                        shell.ecp_r_exponents =
+                            Eigen::Map<const Eigen::VectorXi>(
+                                ecp_shell_data.r_exponents.data(),
+                                ecp_shell_data.r_exponents.size());
+                        ecp_shells.push_back(shell);
+                      }
+                    }
+                  }
+
+                } catch (const std::exception &) {
+                  // Element not found in basis set - skip
+                  continue;
+                }
+              }
+
+              // Create AOBasis with the built shells
+              return AOBasis(atoms, shells, basis_name, ecp_shells);
+
+            } catch (const std::exception &e) {
+              // Re-throw the exception so JavaScript can catch it
+              throw std::runtime_error(
+                  std::string("Failed to create AOBasis from JSON: ") +
+                  e.what());
+            }
+          }))
       .function("shells", &AOBasis::shells)
       .function("setPure", &AOBasis::set_pure)
       .function("size", &AOBasis::size)
@@ -264,9 +271,9 @@ void register_qm_bindings() {
                   }
                   throw std::runtime_error("No unoccupied orbitals found");
                 }))
-      .function("orbitalEnergies", optional_override([](const Wavefunction &wfn) {
-                  return wfn.mo.energies;
-                }))
+      .function("orbitalEnergies",
+                optional_override(
+                    [](const Wavefunction &wfn) { return wfn.mo.energies; }))
       .function("coefficients", optional_override([](const Wavefunction &wfn) {
                   return wfn.mo.C;
                 }))
@@ -279,18 +286,20 @@ void register_qm_bindings() {
                   wfn.save(writer);
                   writer.write();
                 }))
-      .function("toMoldenString", optional_override([](const Wavefunction &wfn) {
+      .function("toMoldenString",
+                optional_override([](const Wavefunction &wfn) {
                   // Use stringstream to capture molden output
-                  // Note: If there's no direct molden writer that takes a stream,
-                  // we could implement a simple molden format output here
+                  // Note: If there's no direct molden writer that takes a
+                  // stream, we could implement a simple molden format output
+                  // here
                   std::ostringstream oss;
                   oss << "[Molden Format]\n";
                   oss << "[Title]\nWavefunction from OCC\n";
                   oss << "[Atoms] AU\n";
                   for (size_t i = 0; i < wfn.atoms.size(); ++i) {
                     const auto &atom = wfn.atoms[i];
-                    oss << atom.atomic_number << " " << (i + 1) << " " 
-                        << atom.x << " " << atom.y << " " << atom.z << "\n";
+                    oss << atom.atomic_number << " " << (i + 1) << " " << atom.x
+                        << " " << atom.y << " " << atom.z << "\n";
                   }
                   // For now, return basic molden format - could be expanded
                   return oss.str();
@@ -301,32 +310,34 @@ void register_qm_bindings() {
                   json_writer.set_format(occ::io::JsonFormat::JSON);
                   return json_writer.to_string(wfn);
                 }))
-      .function("exportToString", optional_override([](const Wavefunction &wfn, const std::string &format) {
-                  if (format == "json") {
-                    occ::io::JsonWavefunctionWriter json_writer;
-                    json_writer.set_format(occ::io::JsonFormat::JSON);
-                    return json_writer.to_string(wfn);
-                  } else if (format == "fchk") {
-                    std::ostringstream oss;
-                    occ::io::FchkWriter fchk_writer(oss);
-                    // Note: FchkWriter might not support stream constructor
-                    // This would need to be implemented if not available
-                    return std::string("FCHK export to string not yet implemented");
-                  } else if (format == "molden") {
-                    // Basic molden format
-                    std::ostringstream oss;
-                    oss << "[Molden Format]\n";
-                    oss << "[Title]\nWavefunction from OCC\n";
-                    oss << "[Atoms] AU\n";
-                    for (size_t i = 0; i < wfn.atoms.size(); ++i) {
-                      const auto &atom = wfn.atoms[i];
-                      oss << atom.atomic_number << " " << (i + 1) << " " 
-                          << atom.x << " " << atom.y << " " << atom.z << "\n";
-                    }
-                    return oss.str();
-                  }
-                  throw std::runtime_error("Unsupported export format: " + format);
-                }))
+      .function(
+          "exportToString", optional_override([](const Wavefunction &wfn,
+                                                 const std::string &format) {
+            if (format == "json") {
+              occ::io::JsonWavefunctionWriter json_writer;
+              json_writer.set_format(occ::io::JsonFormat::JSON);
+              return json_writer.to_string(wfn);
+            } else if (format == "fchk") {
+              std::ostringstream oss;
+              occ::io::FchkWriter fchk_writer(oss);
+              // Note: FchkWriter might not support stream constructor
+              // This would need to be implemented if not available
+              return std::string("FCHK export to string not yet implemented");
+            } else if (format == "molden") {
+              // Basic molden format
+              std::ostringstream oss;
+              oss << "[Molden Format]\n";
+              oss << "[Title]\nWavefunction from OCC\n";
+              oss << "[Atoms] AU\n";
+              for (size_t i = 0; i < wfn.atoms.size(); ++i) {
+                const auto &atom = wfn.atoms[i];
+                oss << atom.atomic_number << " " << (i + 1) << " " << atom.x
+                    << " " << atom.y << " " << atom.z << "\n";
+              }
+              return oss.str();
+            }
+            throw std::runtime_error("Unsupported export format: " + format);
+          }))
       .class_function("fromFchk",
                       optional_override([](const std::string &filename) {
                         auto reader = occ::io::FchkReader(filename);
@@ -389,7 +400,7 @@ void register_qm_bindings() {
       .function("overlapMatrix", &HartreeFock::compute_overlap_matrix)
       .function("overlapMatrixForBasis",
                 &HartreeFock::compute_overlap_matrix_for_basis)
-      .function("nuclearRepulsion", 
+      .function("nuclearRepulsion",
                 optional_override([](const HartreeFock &hf) {
                   return hf.nuclear_repulsion_energy();
                 }))
@@ -419,9 +430,12 @@ void register_qm_bindings() {
       .constructor<HartreeFock &>()
       .constructor<HartreeFock &, SpinorbitalKind>()
       .property("convergenceSettings", &SCF<HartreeFock>::convergence_settings)
-      .function("setChargeMultiplicity", &SCF<HartreeFock>::set_charge_multiplicity)
-      .function("setInitialGuess", &SCF<HartreeFock>::set_initial_guess_from_wfn)
-      .function("getScfKind", optional_override([](const SCF<HartreeFock> &scf) {
+      .function("setChargeMultiplicity",
+                &SCF<HartreeFock>::set_charge_multiplicity)
+      .function("setInitialGuess",
+                &SCF<HartreeFock>::set_initial_guess_from_wfn)
+      .function("getScfKind",
+                optional_override([](const SCF<HartreeFock> &scf) {
                   return std::string(scf.scf_kind());
                 }))
       .function("run", optional_override([](SCF<HartreeFock> &scf) {
@@ -437,7 +451,8 @@ void register_qm_bindings() {
                     throw;
                   }
                 }))
-      .function("computeScfEnergy", optional_override([](SCF<HartreeFock> &scf) {
+      .function("computeScfEnergy",
+                optional_override([](SCF<HartreeFock> &scf) {
                   return scf.compute_scf_energy();
                 }))
       .function("wavefunction", &SCF<HartreeFock>::wavefunction)

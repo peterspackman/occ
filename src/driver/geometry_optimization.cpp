@@ -130,7 +130,8 @@ std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
       break;
     }
     case MethodKind::MP2: {
-      throw std::runtime_error("Not implemented: MP2 gradients for geometry optimization");
+      throw std::runtime_error(
+          "Not implemented: MP2 gradients for geometry optimization");
       break;
     }
     }

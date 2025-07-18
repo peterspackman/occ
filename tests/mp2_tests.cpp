@@ -538,4 +538,3 @@ TEST_CASE("RI-MP2 H2 STO-3G energy", "[mp2][ri]") {
 
   REQUIRE_THAT(ri_corr_energy, WithinAbs(expected_corr, tolerance));
 }
-

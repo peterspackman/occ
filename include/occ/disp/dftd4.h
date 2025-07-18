@@ -26,13 +26,13 @@ private:
 
   // parameters for pbe
   dftd4::dparam m_parameters{
-      1.0,         // s6
-      0.95948085,  // s8
-      0.0,         // s10
-      1.0,         // s9
-      0.38574991,  // a1
-      4.80688534,  // a2
-      16,          // alp
+      1.0,        // s6
+      0.95948085, // s8
+      0.0,        // s10
+      1.0,        // s9
+      0.38574991, // a1
+      4.80688534, // a2
+      16,         // alp
   };
 
   dftd4::TMolecule m_tmol;

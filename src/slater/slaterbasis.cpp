@@ -205,7 +205,7 @@ SlaterBasisSetMap load_slaterbasis(const std::string &name) {
     occ::log::debug("Loading hardcoded Thakkar slater basis");
     return basis_sets::build_thakkar_basis();
   }
-  
+
   // Load from file for other basis sets
   namespace fs = std::filesystem;
   fs::path path;

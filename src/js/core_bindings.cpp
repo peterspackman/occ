@@ -9,10 +9,10 @@
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/element.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
-#include <occ/core/log.h>
 #include <occ/io/xyz.h>
 
 using namespace emscripten;
@@ -124,7 +124,7 @@ void register_core_bindings() {
                         return result;
                       }));
 
-  // Mat6 typedef for 6x6 matrices  
+  // Mat6 typedef for 6x6 matrices
   class_<Mat6>("Mat6")
       .function("rows",
                 optional_override([](const Mat6 &m) { return m.rows(); }))
@@ -202,9 +202,10 @@ void register_core_bindings() {
   // Molecule class binding
   class_<Molecule>("Molecule")
       .constructor<const IVec &, const Mat3N &>()
-      .class_function("fromAtoms", optional_override([](const std::vector<Atom> &atoms) {
-        return Molecule(atoms);
-      }))
+      .class_function("fromAtoms",
+                      optional_override([](const std::vector<Atom> &atoms) {
+                        return Molecule(atoms);
+                      }))
       .function("size", &Molecule::size)
       .function("elements", &Molecule::elements)
       .function("positions", &Molecule::positions)
@@ -347,43 +348,57 @@ void register_core_bindings() {
 
   // Logging functions
   function("setLogLevel", optional_override([](int level) {
-    occ::log::set_log_level(static_cast<spdlog::level::level_enum>(level));
-  }));
-  
-  function("setLogLevelString", optional_override([](const std::string& level) {
-    occ::log::set_log_level(level);
-  }));
+             occ::log::set_log_level(
+                 static_cast<spdlog::level::level_enum>(level));
+           }));
 
-  function("registerLogCallback", optional_override([](emscripten::val callback) {
-    occ::log::register_log_callback([callback](spdlog::level::level_enum level, const std::string& message) {
-      callback(static_cast<int>(level), message);
-    });
-  }));
+  function("setLogLevelString", optional_override([](const std::string &level) {
+             occ::log::set_log_level(level);
+           }));
+
+  function("registerLogCallback",
+           optional_override([](emscripten::val callback) {
+             occ::log::register_log_callback(
+                 [callback](spdlog::level::level_enum level,
+                            const std::string &message) {
+                   callback(static_cast<int>(level), message);
+                 });
+           }));
 
   function("clearLogCallbacks", &occ::log::clear_log_callbacks);
-  
+
   function("getBufferedLogs", optional_override([]() {
-    auto logs = occ::log::get_buffered_logs();
-    emscripten::val result = emscripten::val::array();
-    for (size_t i = 0; i < logs.size(); ++i) {
-      emscripten::val log_entry = emscripten::val::object();
-      log_entry.set("level", static_cast<int>(logs[i].first));
-      log_entry.set("message", logs[i].second);
-      result.set(i, log_entry);
-    }
-    return result;
-  }));
+             auto logs = occ::log::get_buffered_logs();
+             emscripten::val result = emscripten::val::array();
+             for (size_t i = 0; i < logs.size(); ++i) {
+               emscripten::val log_entry = emscripten::val::object();
+               log_entry.set("level", static_cast<int>(logs[i].first));
+               log_entry.set("message", logs[i].second);
+               result.set(i, log_entry);
+             }
+             return result;
+           }));
 
   function("clearLogBuffer", &occ::log::clear_log_buffer);
   function("setLogBuffering", &occ::log::set_log_buffering);
 
   // Direct logging functions
-  function("logTrace", optional_override([](const std::string& msg) { occ::log::trace(msg); }));
-  function("logDebug", optional_override([](const std::string& msg) { occ::log::debug(msg); }));
-  function("logInfo", optional_override([](const std::string& msg) { occ::log::info(msg); }));
-  function("logWarn", optional_override([](const std::string& msg) { occ::log::warn(msg); }));
-  function("logError", optional_override([](const std::string& msg) { occ::log::error(msg); }));
-  function("logCritical", optional_override([](const std::string& msg) { occ::log::critical(msg); }));
+  function("logTrace", optional_override([](const std::string &msg) {
+             occ::log::trace(msg);
+           }));
+  function("logDebug", optional_override([](const std::string &msg) {
+             occ::log::debug(msg);
+           }));
+  function("logInfo", optional_override(
+                          [](const std::string &msg) { occ::log::info(msg); }));
+  function("logWarn", optional_override(
+                          [](const std::string &msg) { occ::log::warn(msg); }));
+  function("logError", optional_override([](const std::string &msg) {
+             occ::log::error(msg);
+           }));
+  function("logCritical", optional_override([](const std::string &msg) {
+             occ::log::critical(msg);
+           }));
 
   // ElasticTensor averaging schemes
   enum_<ElasticTensor::AveragingScheme>("AveragingScheme")
@@ -394,105 +409,113 @@ void register_core_bindings() {
 
   // ElasticTensor class
   class_<ElasticTensor>("ElasticTensor")
-      .constructor<const Mat6&>()
-      
+      .constructor<const Mat6 &>()
+
       // Young's modulus methods
-      .function("youngsModulus", 
-                optional_override([](const ElasticTensor& et, const Vec3& dir) {
+      .function("youngsModulus",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir) {
                   return et.youngs_modulus(dir);
                 }))
-      
+
       // Linear compressibility methods
       .function("linearCompressibility",
-                optional_override([](const ElasticTensor& et, const Vec3& dir) {
+                optional_override([](const ElasticTensor &et, const Vec3 &dir) {
                   return et.linear_compressibility(dir);
                 }))
-      
+
       // Shear modulus methods
       .function("shearModulus",
-                optional_override([](const ElasticTensor& et, const Vec3& dir1, const Vec3& dir2) {
+                optional_override([](const ElasticTensor &et, const Vec3 &dir1,
+                                     const Vec3 &dir2) {
                   return et.shear_modulus(dir1, dir2);
                 }))
       .function("shearModulusMinMax",
-                optional_override([](const ElasticTensor& et, const Vec3& dir) {
+                optional_override([](const ElasticTensor &et, const Vec3 &dir) {
                   auto [min_val, max_val] = et.shear_modulus_minmax(dir);
                   emscripten::val result = emscripten::val::object();
                   result.set("min", min_val);
                   result.set("max", max_val);
                   return result;
                 }))
-      
+
       // Poisson's ratio methods
       .function("poissonRatio",
-                optional_override([](const ElasticTensor& et, const Vec3& dir1, const Vec3& dir2) {
+                optional_override([](const ElasticTensor &et, const Vec3 &dir1,
+                                     const Vec3 &dir2) {
                   return et.poisson_ratio(dir1, dir2);
                 }))
       .function("poissonRatioMinMax",
-                optional_override([](const ElasticTensor& et, const Vec3& dir) {
+                optional_override([](const ElasticTensor &et, const Vec3 &dir) {
                   auto [min_val, max_val] = et.poisson_ratio_minmax(dir);
                   emscripten::val result = emscripten::val::object();
                   result.set("min", min_val);
                   result.set("max", max_val);
                   return result;
                 }))
-      
+
       // Average properties
       .function("averageBulkModulus",
-                optional_override([](const ElasticTensor& et, ElasticTensor::AveragingScheme avg) {
+                optional_override([](const ElasticTensor &et,
+                                     ElasticTensor::AveragingScheme avg) {
                   return et.average_bulk_modulus(avg);
                 }))
       .function("averageShearModulus",
-                optional_override([](const ElasticTensor& et, ElasticTensor::AveragingScheme avg) {
+                optional_override([](const ElasticTensor &et,
+                                     ElasticTensor::AveragingScheme avg) {
                   return et.average_shear_modulus(avg);
                 }))
       .function("averageYoungsModulus",
-                optional_override([](const ElasticTensor& et, ElasticTensor::AveragingScheme avg) {
+                optional_override([](const ElasticTensor &et,
+                                     ElasticTensor::AveragingScheme avg) {
                   return et.average_youngs_modulus(avg);
                 }))
       .function("averagePoissonRatio",
-                optional_override([](const ElasticTensor& et, ElasticTensor::AveragingScheme avg) {
+                optional_override([](const ElasticTensor &et,
+                                     ElasticTensor::AveragingScheme avg) {
                   return et.average_poisson_ratio(avg);
                 }))
-      
+
       // Matrix access
       .property("voigtC", &ElasticTensor::voigt_c)
       .property("voigtS", &ElasticTensor::voigt_s);
 
   // Helper function to generate directional data for visualization
-  function("generateDirectionalData", optional_override([](const ElasticTensor& et, 
-                                                          const std::string& property,
-                                                          int num_points) {
-    emscripten::val result = emscripten::val::array();
-    
-    // Generate points on a sphere
-    for (int i = 0; i < num_points; ++i) {
-      double theta = (static_cast<double>(i) / num_points) * 2.0 * M_PI;
-      Vec3 direction(std::cos(theta), std::sin(theta), 0.0); // For 2D visualization in xy plane
-      
-      double value = 0.0;
-      if (property == "youngs") {
-        value = et.youngs_modulus(direction);
-      } else if (property == "linear_compressibility") {
-        value = et.linear_compressibility(direction);
-      } else if (property == "shear") {
-        // Use perpendicular direction for shear
-        Vec3 shear_dir(-std::sin(theta), std::cos(theta), 0.0);
-        value = et.shear_modulus(direction, shear_dir);
-      } else if (property == "poisson") {
-        Vec3 shear_dir(-std::sin(theta), std::cos(theta), 0.0);
-        value = et.poisson_ratio(direction, shear_dir);
-      }
-      
-      emscripten::val point = emscripten::val::object();
-      point.set("x", direction.x() * value);
-      point.set("y", direction.y() * value);
-      point.set("value", value);
-      point.set("angle", theta);
-      result.set(i, point);
-    }
-    
-    return result;
-  }));
+  function("generateDirectionalData",
+           optional_override([](const ElasticTensor &et,
+                                const std::string &property, int num_points) {
+             emscripten::val result = emscripten::val::array();
+
+             // Generate points on a sphere
+             for (int i = 0; i < num_points; ++i) {
+               double theta =
+                   (static_cast<double>(i) / num_points) * 2.0 * M_PI;
+               Vec3 direction(std::cos(theta), std::sin(theta),
+                              0.0); // For 2D visualization in xy plane
+
+               double value = 0.0;
+               if (property == "youngs") {
+                 value = et.youngs_modulus(direction);
+               } else if (property == "linear_compressibility") {
+                 value = et.linear_compressibility(direction);
+               } else if (property == "shear") {
+                 // Use perpendicular direction for shear
+                 Vec3 shear_dir(-std::sin(theta), std::cos(theta), 0.0);
+                 value = et.shear_modulus(direction, shear_dir);
+               } else if (property == "poisson") {
+                 Vec3 shear_dir(-std::sin(theta), std::cos(theta), 0.0);
+                 value = et.poisson_ratio(direction, shear_dir);
+               }
+
+               emscripten::val point = emscripten::val::object();
+               point.set("x", direction.x() * value);
+               point.set("y", direction.y() * value);
+               point.set("value", value);
+               point.set("angle", theta);
+               result.set(i, point);
+             }
+
+             return result;
+           }));
 
   // Float matrix types for isosurface calculations
   class_<FMat3N>("FMat3N")

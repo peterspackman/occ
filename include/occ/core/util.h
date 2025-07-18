@@ -55,7 +55,7 @@ static inline std::string join(const std::vector<std::string> &seq,
   return res;
 }
 
-template<typename Range>
+template <typename Range>
 static inline std::string join(const Range &range, const std::string &sep) {
   std::string res;
   auto it = std::begin(range);

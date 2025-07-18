@@ -1,8 +1,8 @@
 #pragma once
 #include <array>
-#include <vector>
-#include <string_view>
 #include <occ/slater/slaterbasis.h>
+#include <string_view>
+#include <vector>
 
 namespace occ::slater::basis_sets {
 

@@ -1,7 +1,7 @@
 #pragma once
+#include <functional>
 #include <spdlog/spdlog.h>
 #include <string>
-#include <functional>
 #include <vector>
 
 namespace occ::log {
@@ -38,16 +38,18 @@ inline void flush_every(std::chrono::seconds interval) {
 }
 
 // Callback type for log messages
-using LogCallback = std::function<void(spdlog::level::level_enum level, const std::string& message)>;
+using LogCallback = std::function<void(spdlog::level::level_enum level,
+                                       const std::string &message)>;
 
 // Register a callback to receive log messages
-void register_log_callback(const LogCallback& callback);
+void register_log_callback(const LogCallback &callback);
 
 // Clear all registered callbacks
 void clear_log_callbacks();
 
 // Get all log messages since the last clear (useful for buffering)
-std::vector<std::pair<spdlog::level::level_enum, std::string>> get_buffered_logs();
+std::vector<std::pair<spdlog::level::level_enum, std::string>>
+get_buffered_logs();
 
 // Clear the log buffer
 void clear_log_buffer();

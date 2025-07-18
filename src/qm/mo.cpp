@@ -491,7 +491,7 @@ MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
   result.C = Mat::Zero(rows, cols);
   result.energies = Vec::Zero(rows);
 
-  if(new_kind == R) {
+  if (new_kind == R) {
     switch (kind) {
     case U: {
       result.C = 0.5 * (block::a(C) + block::b(C));
@@ -508,8 +508,7 @@ MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
       throw std::runtime_error(
           "impossible state in MolecularOrbitals::as_kind");
     }
-  }
-  else if (new_kind == U) {
+  } else if (new_kind == U) {
     switch (kind) {
     case R: {
       block::a(result.C) = C;
@@ -529,8 +528,7 @@ MolecularOrbitals MolecularOrbitals::as_kind(SpinorbitalKind new_kind) const {
       throw std::runtime_error(
           "impossible state in MolecularOrbitals::as_kind");
     }
-  }
-  else if (new_kind == G) {
+  } else if (new_kind == G) {
     switch (kind) {
     case R: {
       block::aa(result.C) = C;

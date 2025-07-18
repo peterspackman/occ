@@ -5,8 +5,8 @@
 namespace occ::dma {
 
 MultipoleShifter::MultipoleShifter(const Vec3 &pos, Mult &qt,
-                                   const DMASites &sites,
-                                   std::vector<Mult> &q, int lmax)
+                                   const DMASites &sites, std::vector<Mult> &q,
+                                   int lmax)
     : m_pos(pos), m_sites(sites), m_qt(qt), m_q(q), m_lmax(lmax),
       m_num_sites(m_sites.positions.cols()), m_rr(m_num_sites) {
   m_destination_sites.reserve(m_num_sites);
@@ -119,8 +119,7 @@ bool MultipoleShifter::process_site(int k, int low, int t1, int t2, int lp1sq,
 // Migrated multipole shifting functionality (from shiftq.cpp)
 
 int MultipoleShifter::estimate_largest_transferred_multipole(
-    const Vec3 &pos, const Mult &mult, int l, int m1, int m2,
-    double eps) {
+    const Vec3 &pos, const Mult &mult, int l, int m1, int m2, double eps) {
   if (eps == 0.0 || m2 < 1)
     return m2;
   double r2 = 4.0 * pos.squaredNorm();
@@ -216,8 +215,7 @@ Mat MultipoleShifter::get_cplx_mults(const Mult &mult, int l1, int m1, int N) {
 }
 
 void MultipoleShifter::shift_multipoles(const Mult &q1, int l1, int m1,
-                                        Mult &q2, int m2,
-                                        const Vec3 &pos) {
+                                        Mult &q2, int m2, const Vec3 &pos) {
   // Constants
   constexpr double RTHALF = 0.7071067811865475244;
   constexpr double eps = 0.0; // No early termination

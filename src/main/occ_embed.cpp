@@ -126,18 +126,21 @@ std::vector<occ::core::PointCharge> create_external_charges(
       // Get the A and B molecules in the dimer for debugging
       const auto &mol_a = dimer.a();
       const auto &neighbor_mol = dimer.b();
-      
+
       occ::log::debug("Processing dimer - unique_idx: {}", unique_idx);
-      occ::log::debug("  Molecule A center: ({:.3f}, {:.3f}, {:.3f})", 
-                      mol_a.centroid()(0), mol_a.centroid()(1), mol_a.centroid()(2));
-      occ::log::debug("  Molecule B center: ({:.3f}, {:.3f}, {:.3f})", 
-                      neighbor_mol.centroid()(0), neighbor_mol.centroid()(1), neighbor_mol.centroid()(2));
-      
+      occ::log::debug("  Molecule A center: ({:.3f}, {:.3f}, {:.3f})",
+                      mol_a.centroid()(0), mol_a.centroid()(1),
+                      mol_a.centroid()(2));
+      occ::log::debug("  Molecule B center: ({:.3f}, {:.3f}, {:.3f})",
+                      neighbor_mol.centroid()(0), neighbor_mol.centroid()(1),
+                      neighbor_mol.centroid()(2));
+
       // Check if molecule A is actually our target molecule
       Vec3 mol_a_center = mol_a.centroid();
       Vec3 target_to_mol_a = mol_a_center - target_center;
-      occ::log::debug("  Distance from target to mol A: {:.3f} Bohr", target_to_mol_a.norm());
-      
+      occ::log::debug("  Distance from target to mol A: {:.3f} Bohr",
+                      target_to_mol_a.norm());
+
       // Add charges from each atom in the neighboring molecule
       auto neighbor_atoms = neighbor_mol.atoms(); // Get the atoms vector
       for (size_t atom_idx = 0; atom_idx < neighbor_mol.size(); atom_idx++) {
@@ -150,15 +153,18 @@ std::vector<occ::core::PointCharge> create_external_charges(
         if (atom_idx < asym_indices.size()) {
           int asym_idx = asym_indices[atom_idx];
           double charge = asymmetric_charges[asym_idx];
-          
+
           // Debug output for each charge
           Vec3 dist_vec = atom_pos_bohr - target_center;
           double distance_bohr = dist_vec.norm();
-          double distance_angstrom = distance_bohr / occ::units::ANGSTROM_TO_BOHR;
-          
-          occ::log::debug("    Atom {}: pos=({:.3f}, {:.3f}, {:.3f}) Bohr, asym_idx={}, charge={:.3f}, dist={:.3f} Å", 
-                         atom_idx, atom_pos_bohr(0), atom_pos_bohr(1), atom_pos_bohr(2), 
-                         asym_idx, charge, distance_angstrom);
+          double distance_angstrom =
+              distance_bohr / occ::units::ANGSTROM_TO_BOHR;
+
+          occ::log::debug("    Atom {}: pos=({:.3f}, {:.3f}, {:.3f}) Bohr, "
+                          "asym_idx={}, charge={:.3f}, dist={:.3f} Å",
+                          atom_idx, atom_pos_bohr(0), atom_pos_bohr(1),
+                          atom_pos_bohr(2), asym_idx, charge,
+                          distance_angstrom);
 
           external_charges.emplace_back(charge, atom_pos_bohr);
         }
@@ -256,49 +262,59 @@ Wavefunction perform_embedded_scf(
   if (!external_charges.empty()) {
     // Create HF procedure
     qm::HartreeFock hf(basis);
-    
+
     // Use appropriate wrapper based on configuration
     if (config.use_wolf_sum) {
       occ::log::info("Setting up SCF with Wolf sum external potential");
       qm::WolfSumCorrectedProcedure<qm::HartreeFock> wolf_hf(
-          hf, external_charges, molecular_charges, config.wolf_alpha, config.wolf_cutoff);
-      qm::SCF<qm::WolfSumCorrectedProcedure<qm::HartreeFock>> scf(wolf_hf, SpinorbitalKind::Restricted);
-      
+          hf, external_charges, molecular_charges, config.wolf_alpha,
+          config.wolf_cutoff);
+      qm::SCF<qm::WolfSumCorrectedProcedure<qm::HartreeFock>> scf(
+          wolf_hf, SpinorbitalKind::Restricted);
+
       // Set charge and multiplicity
       scf.set_charge_multiplicity(net_charge, multiplicity);
-      
+
       // Set initial guess from previous cycle if available
       if (initial_guess.has_value()) {
-        occ::log::info("Using wavefunction from previous cycle as initial guess");
+        occ::log::info(
+            "Using wavefunction from previous cycle as initial guess");
         scf.set_initial_guess_from_wfn(initial_guess.value());
       }
-      
+
       // Run SCF
       double energy = scf.compute_scf_energy();
       auto wfn = scf.wavefunction();
-      
-      occ::log::info("Embedded SCF with Wolf potential converged. Total energy: {:.8f} Hartree", energy);
+
+      occ::log::info("Embedded SCF with Wolf potential converged. Total "
+                     "energy: {:.8f} Hartree",
+                     energy);
       return wfn;
-      
+
     } else {
       occ::log::info("Setting up SCF with point charge external potential");
-      qm::PointChargeCorrectedProcedure<qm::HartreeFock> pc_hf(hf, external_charges);
-      qm::SCF<qm::PointChargeCorrectedProcedure<qm::HartreeFock>> scf(pc_hf, SpinorbitalKind::Restricted);
-      
+      qm::PointChargeCorrectedProcedure<qm::HartreeFock> pc_hf(
+          hf, external_charges);
+      qm::SCF<qm::PointChargeCorrectedProcedure<qm::HartreeFock>> scf(
+          pc_hf, SpinorbitalKind::Restricted);
+
       // Set charge and multiplicity
       scf.set_charge_multiplicity(net_charge, multiplicity);
-      
+
       // Set initial guess from previous cycle if available
       if (initial_guess.has_value()) {
-        occ::log::info("Using wavefunction from previous cycle as initial guess");
+        occ::log::info(
+            "Using wavefunction from previous cycle as initial guess");
         scf.set_initial_guess_from_wfn(initial_guess.value());
       }
-      
+
       // Run SCF
       double energy = scf.compute_scf_energy();
       auto wfn = scf.wavefunction();
-      
-      occ::log::info("Embedded SCF with point charges converged. Total energy: {:.8f} Hartree", energy);
+
+      occ::log::info("Embedded SCF with point charges converged. Total energy: "
+                     "{:.8f} Hartree",
+                     energy);
       return wfn;
     }
   } else {
@@ -311,7 +327,7 @@ Wavefunction perform_embedded_scf(
     embed_input.electronic.multiplicity = multiplicity;
     embed_input.electronic.spinorbital_kind = SpinorbitalKind::Restricted;
     embed_input.geometry.set_molecule(molecule);
-    
+
     auto wfn = occ::driver::single_point(embed_input);
     occ::log::info("Gas phase SCF converged. Total energy: {:.8f} Hartree",
                    wfn.energy.total);
@@ -485,8 +501,8 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
   occ::log::info("Energy differences (Embedded - Gas phase):");
   for (size_t i = 0; i < unique_molecules.size(); i++) {
     double energy_diff = wavefunctions[i].energy.total - gas_phase_energies[i];
-    occ::log::info("  Molecule {}: {:.8f} Hartree ({:.2f} kJ/mol)", 
-                   i, energy_diff, energy_diff * 2625.50);
+    occ::log::info("  Molecule {}: {:.8f} Hartree ({:.2f} kJ/mol)", i,
+                   energy_diff, energy_diff * 2625.50);
   }
 
   occ::log::info("Self-consistent embedding calculation completed");
@@ -536,7 +552,7 @@ CLI::App *add_embed_subcommand(CLI::App &app) {
 
 void run_embed_subcommand(const EmbedConfig &config) {
   occ::main::print_header();
-  
+
   occ::log::info("Starting embedding calculation with settings:");
   occ::log::info("  Method: {}", config.method_name);
   occ::log::info("  Basis: {}", config.basis_name);
@@ -549,7 +565,8 @@ void run_embed_subcommand(const EmbedConfig &config) {
     occ::log::info("  Wolf cutoff: {:.1f} Å", config.wolf_cutoff);
   }
   if (!config.net_charges.empty()) {
-    occ::log::info("  Net charges: [{}]", occ::util::join(config.net_charges, ", "));
+    occ::log::info("  Net charges: [{}]",
+                   occ::util::join(config.net_charges, ", "));
   }
   if (!config.multiplicities.empty()) {
     occ::log::info("  Multiplicities: [{}]",

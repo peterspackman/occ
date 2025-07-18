@@ -73,5 +73,4 @@ TEST_CASE("dftd4 dispersion", "[disp]") {
     double e = disp.energy();
     REQUIRE(e == Approx(-1.522647086484191e-02));
   }
-
 }

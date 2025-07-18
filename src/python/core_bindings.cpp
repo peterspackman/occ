@@ -12,12 +12,12 @@
 #include <occ/core/eeq.h>
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/element.h>
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/multipole.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
 #include <occ/core/quasirandom.h>
-#include <occ/core/log.h>
 #include <occ/io/xyz.h>
 #include <spdlog/spdlog.h>
 
@@ -575,64 +575,77 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .value("OFF", spdlog::level::off);
 
   // Logging functions
-  m.def("set_log_level", 
+  m.def("set_log_level",
         nb::overload_cast<spdlog::level::level_enum>(&occ::log::set_log_level),
         "Set the log level", "level"_a);
-  
-  m.def("set_log_level", 
+
+  m.def("set_log_level",
         nb::overload_cast<const std::string &>(&occ::log::set_log_level),
         "Set the log level from string", "level"_a);
-  
-  m.def("set_log_level", 
-        nb::overload_cast<int>(&occ::log::set_log_level),
+
+  m.def("set_log_level", nb::overload_cast<int>(&occ::log::set_log_level),
         "Set the log level from int", "level"_a);
 
-  m.def("register_log_callback", [](nb::object callback) {
-    occ::log::register_log_callback([callback](spdlog::level::level_enum level, const std::string& message) {
-      nb::gil_scoped_acquire gil;
-      callback(level, message);
-    });
-  }, "Register a callback function to receive log messages", "callback"_a);
+  m.def(
+      "register_log_callback",
+      [](nb::object callback) {
+        occ::log::register_log_callback(
+            [callback](spdlog::level::level_enum level,
+                       const std::string &message) {
+              nb::gil_scoped_acquire gil;
+              callback(level, message);
+            });
+      },
+      "Register a callback function to receive log messages", "callback"_a);
 
   m.def("clear_log_callbacks", &occ::log::clear_log_callbacks,
         "Clear all registered log callbacks");
-  
-  m.def("get_buffered_logs", []() {
-    auto logs = occ::log::get_buffered_logs();
-    nb::list result;
-    for (const auto& [level, message] : logs) {
-      nb::dict log_entry;
-      log_entry["level"] = level;
-      log_entry["message"] = message;
-      result.append(log_entry);
-    }
-    return result;
-  }, "Get all buffered log messages");
+
+  m.def(
+      "get_buffered_logs",
+      []() {
+        auto logs = occ::log::get_buffered_logs();
+        nb::list result;
+        for (const auto &[level, message] : logs) {
+          nb::dict log_entry;
+          log_entry["level"] = level;
+          log_entry["message"] = message;
+          result.append(log_entry);
+        }
+        return result;
+      },
+      "Get all buffered log messages");
 
   m.def("clear_log_buffer", &occ::log::clear_log_buffer,
         "Clear the log buffer");
-  
+
   m.def("set_log_buffering", &occ::log::set_log_buffering,
         "Enable or disable log buffering", "enable"_a);
 
   // Direct logging functions
-  m.def("log_trace", [](const std::string& msg) { occ::log::trace(msg); },
-        "Log a trace message", "message"_a);
-  
-  m.def("log_debug", [](const std::string& msg) { occ::log::debug(msg); },
-        "Log a debug message", "message"_a);
-  
-  m.def("log_info", [](const std::string& msg) { occ::log::info(msg); },
-        "Log an info message", "message"_a);
-  
-  m.def("log_warn", [](const std::string& msg) { occ::log::warn(msg); },
-        "Log a warning message", "message"_a);
-  
-  m.def("log_error", [](const std::string& msg) { occ::log::error(msg); },
-        "Log an error message", "message"_a);
-  
-  m.def("log_critical", [](const std::string& msg) { occ::log::critical(msg); },
-        "Log a critical message", "message"_a);
+  m.def(
+      "log_trace", [](const std::string &msg) { occ::log::trace(msg); },
+      "Log a trace message", "message"_a);
+
+  m.def(
+      "log_debug", [](const std::string &msg) { occ::log::debug(msg); },
+      "Log a debug message", "message"_a);
+
+  m.def(
+      "log_info", [](const std::string &msg) { occ::log::info(msg); },
+      "Log an info message", "message"_a);
+
+  m.def(
+      "log_warn", [](const std::string &msg) { occ::log::warn(msg); },
+      "Log a warning message", "message"_a);
+
+  m.def(
+      "log_error", [](const std::string &msg) { occ::log::error(msg); },
+      "Log an error message", "message"_a);
+
+  m.def(
+      "log_critical", [](const std::string &msg) { occ::log::critical(msg); },
+      "Log a critical message", "message"_a);
 
   return m;
 }

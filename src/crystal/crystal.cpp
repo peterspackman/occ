@@ -2,6 +2,7 @@
 #include <occ/core/kdtree.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
+#include <occ/core/molecular_symmetry.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>
 
@@ -546,6 +547,77 @@ void Crystal::update_symmetry_unique_molecules() const {
         m_symmetry_unique_molecules[mol.asymmetric_molecule_idx()].name());
   }
   m_symmetry_unique_molecules_needs_update = false;
+
+  // Ensure all UC molecules can be mapped to symmetry unique molecules
+  ensure_uc_asym_molecule_mapping();
+}
+
+void Crystal::ensure_uc_asym_molecule_mapping() const {
+  const auto &uc_molecules = unit_cell_molecules();
+  const auto &asym_molecules = m_symmetry_unique_molecules;
+  const auto &symops = symmetry_operations();
+
+  // Check each UC molecule can be mapped to an asymmetric molecule
+  for (size_t uc_idx = 0; uc_idx < uc_molecules.size(); uc_idx++) {
+    const auto &uc_mol = m_unit_cell_molecules[uc_idx];
+    int asym_mol_idx = uc_mol.asymmetric_molecule_idx();
+
+    if (asym_mol_idx < 0 || asym_mol_idx >= asym_molecules.size()) {
+      occ::log::warn("UC molecule {} has invalid asymmetric molecule index {}",
+                     uc_idx, asym_mol_idx);
+      continue;
+    }
+
+    const auto &asym_mol = asym_molecules[asym_mol_idx];
+
+    // Try each symmetry operation to map asym -> uc
+    bool found_mapping = false;
+    for (const auto &symop : symops) {
+      // Calculate transformation matrix
+      Mat3 rotation =
+          m_unit_cell.direct() * symop.rotation() * m_unit_cell.inverse();
+
+      // Try transformation with grouped permutations
+      auto result = occ::core::try_transformation_with_grouped_permutations(
+          uc_mol.asymmetric_unit_idx(), uc_mol.positions(),
+          asym_mol.asymmetric_unit_idx(), asym_mol.positions(), rotation);
+
+      if (result.success) {
+        // Check if we need to reorder the UC molecule
+        bool needs_reordering = false;
+        for (size_t i = 0; i < result.permutation.size(); i++) {
+          if (result.permutation[i] != static_cast<int>(i)) {
+            needs_reordering = true;
+            break;
+          }
+        }
+
+        if (needs_reordering) {
+          occ::log::debug(
+              "UC molecule {} requires permutation for symmetry mapping",
+              uc_idx);
+          occ::log::debug("Permutation: {}",
+                          fmt::join(result.permutation, ", "));
+
+          // Apply the permutation to reorder the UC molecule
+          m_unit_cell_molecules[uc_idx] = uc_mol.permute(result.permutation);
+          occ::log::debug(
+              "Applied permutation to UC molecule {}: RMSD = {:.6e}", uc_idx,
+              result.rmsd);
+        }
+
+        found_mapping = true;
+        break;
+      }
+    }
+
+    if (!found_mapping) {
+      occ::log::warn("UC molecule {} (asym mol {}) could not be mapped to its "
+                     "asymmetric counterpart with any symmetry operation. "
+                     "This may indicate an issue with the crystal structure.",
+                     uc_idx, asym_mol_idx);
+    }
+  }
 }
 
 CrystalDimers Crystal::symmetry_unique_dimers(double radius) const {

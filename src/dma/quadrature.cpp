@@ -310,6 +310,4 @@ bool GaussHermite::validate_computed_values(int n, double tolerance) {
   return true;
 }
 
-
-
 } // namespace occ::dma

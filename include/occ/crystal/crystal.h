@@ -579,6 +579,7 @@ private:
   void update_symmetry_unique_molecules() const;
   void update_unit_cell_connectivity() const;
   void update_unit_cell_atoms() const;
+  void ensure_uc_asym_molecule_mapping() const;
 
   bool m_enforce_gamma_point{false};
 

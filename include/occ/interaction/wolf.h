@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
-#include <occ/interaction/pair_energy.h>
 #include <occ/interaction/energy_model_base.h>
+#include <occ/interaction/pair_energy.h>
 
 namespace occ::interaction {
 

@@ -81,8 +81,7 @@ Mat calculate_interatomic_distances(const Mat3N &positions);
  */
 Mat calculate_atomic_grid_weights(PartitionMethod method,
                                   const Mat &grid_points,
-                                  const Mat &atomic_positions,
-                                  const Vec &radii,
+                                  const Mat &atomic_positions, const Vec &radii,
                                   const Mat &interatomic_distances);
 
 /**
@@ -153,11 +152,11 @@ RadialGrid generate_gauss_chebyshev_radial_grid(size_t num_points);
  * @brief Generate a Euler-Maclaurin radial grid
  *
  * @param num_points Number of radial points
- * @param alpha 
+ * @param alpha
  * @return RadialGrid The generated radial grid
  */
-RadialGrid generate_euler_maclaurin_radial_grid(size_t num_points, double alpha);
-
+RadialGrid generate_euler_maclaurin_radial_grid(size_t num_points,
+                                                double alpha);
 
 /**
  * @brief Generate a Lindh-Malmqvist-Gagliardi (LMG) radial grid
@@ -209,7 +208,7 @@ double lmg_h(const double max_error, const int l, const double guess);
 
 /**
  * @brief Generate an atom-centered grid using the specified method
- * 
+ *
  * @param atomic_number Atomic number of the center atom
  * @param settings Grid generation settings
  * @param method The radial grid method to use
@@ -218,12 +217,9 @@ double lmg_h(const double max_error, const int l, const double guess);
  * @param alpha_min Minimum exponents for each angular momentum (optional)
  * @return AtomGrid The generated atom-centered grid
  */
-AtomGrid generate_atom_grid(
-    size_t atomic_number, 
-    const GridSettings& settings,
-    RadialGridMethod method = RadialGridMethod::LMG,
-    double alpha_max = 0.0,
-    int l_max = 0,
-    const Vec& alpha_min = Vec());
+AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
+                            RadialGridMethod method = RadialGridMethod::LMG,
+                            double alpha_max = 0.0, int l_max = 0,
+                            const Vec &alpha_min = Vec());
 
 } // namespace occ::dft

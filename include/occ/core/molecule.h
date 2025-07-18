@@ -754,6 +754,20 @@ public:
 
   Vec esp_partial_charges(const occ::Mat3N &positions) const;
 
+  /**
+   * Create a new Molecule with atoms reordered according to a permutation
+   *
+   * \param permutation A vector of indices specifying the new order of atoms.
+   *                    permutation[i] gives the index of the atom in the
+   * original molecule that should be at position i in the new molecule.
+   *
+   * \returns A new Molecule with atoms reordered according to the permutation
+   *
+   * All properties (positions, atomic numbers, asymmetric unit indices, etc.)
+   * are reordered consistently. Bond connectivity is also updated.
+   */
+  Molecule permute(const std::vector<int> &permutation) const;
+
 private:
   int m_charge{0};
   int m_multiplicity{1};

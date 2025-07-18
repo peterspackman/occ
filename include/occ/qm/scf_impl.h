@@ -282,8 +282,9 @@ template <SCFMethod P> void SCF<P>::set_core_matrices() {
       block::bb(ctx.Vecp) = block::aa(ctx.Vecp);
     }
     if (calc_pc) {
-      block::aa(ctx.V_ext) = m_procedure.compute_point_charge_interaction_matrix(
-          ctx.point_charges);
+      block::aa(ctx.V_ext) =
+          m_procedure.compute_point_charge_interaction_matrix(
+              ctx.point_charges);
       block::bb(ctx.V_ext) = block::aa(ctx.V_ext);
     }
 
@@ -358,7 +359,7 @@ template <SCFMethod P> void SCF<P>::compute_initial_guess() {
     occ::qm::MolecularOrbitals mo_minbs;
     mo_minbs.kind = ctx.mo.kind;
     mo_minbs.D = D_minbs;
-    ctx.F += m_procedure.compute_fock_mixed_basis(mo_minbs, minbs, true); 
+    ctx.F += m_procedure.compute_fock_mixed_basis(mo_minbs, minbs, true);
     ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, ctx.F);
 
     const auto tstop = std::chrono::high_resolution_clock::now();
@@ -409,11 +410,12 @@ void SCF<P>::set_point_charges(const PointChargeList &charges) {
   ctx.point_charges = charges;
 }
 
-template <SCFMethod P>
-void SCF<P>::set_external_potential(const Mat &V_ext) {
-  log::info("Setting external potential matrix ({}x{})", V_ext.rows(), V_ext.cols());
+template <SCFMethod P> void SCF<P>::set_external_potential(const Mat &V_ext) {
+  log::info("Setting external potential matrix ({}x{})", V_ext.rows(),
+            V_ext.cols());
   if (V_ext.rows() != ctx.V_ext.rows() || V_ext.cols() != ctx.V_ext.cols()) {
-    throw std::runtime_error("External potential matrix dimensions do not match basis");
+    throw std::runtime_error(
+        "External potential matrix dimensions do not match basis");
   }
   ctx.V_ext = V_ext;
 }

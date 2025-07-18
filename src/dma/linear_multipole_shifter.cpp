@@ -1,7 +1,7 @@
-#include <occ/dma/linear_multipole_shifter.h>
-#include <occ/core/log.h>
 #include <algorithm>
 #include <cmath>
+#include <occ/core/log.h>
+#include <occ/dma/linear_multipole_shifter.h>
 
 namespace occ::dma {
 
@@ -33,26 +33,28 @@ void LinearMultipoleShifter::move_to_sites() {
 
   while (true) {
     // Find nearest site with sufficient limit
-    int primary_site = find_nearest_site_with_limit(low, m_site_with_highest_limit);
-    
+    int primary_site =
+        find_nearest_site_with_limit(low, m_site_with_highest_limit);
+
     // Find all sites at approximately the same distance
-    std::vector<int> equivalent_sites = find_equivalent_sites(primary_site, low);
-    
+    std::vector<int> equivalent_sites =
+        find_equivalent_sites(primary_site, low);
+
     // Process this rank range
     process_rank_range(equivalent_sites, low, m_site_limits(primary_site));
-    
+
     // If we've processed all ranks, we're done
     if (m_site_limits(primary_site) >= m_max_rank) {
       break;
     }
-    
+
     // Move to next rank range
     low = m_site_limits(primary_site) + 1;
   }
 }
 
-void LinearMultipoleShifter::shift_along_axis(const Mult &source, int l1, int m1,
-                                              Mult &destination, int m2,
+void LinearMultipoleShifter::shift_along_axis(const Mult &source, int l1,
+                                              int m1, Mult &destination, int m2,
                                               double displacement) {
   // Skip if nothing to shift
   if (l1 > m1) {
@@ -93,10 +95,11 @@ void LinearMultipoleShifter::shift_along_axis(const Mult &source, int l1, int m1
   }
 }
 
-int LinearMultipoleShifter::find_nearest_site_with_limit(int low, int start) const {
+int LinearMultipoleShifter::find_nearest_site_with_limit(int low,
+                                                         int start) const {
   int nearest = start;
   for (int i = 0; i < m_num_sites; i++) {
-    if (m_scaled_distances(i) < m_scaled_distances(nearest) && 
+    if (m_scaled_distances(i) < m_scaled_distances(nearest) &&
         m_site_limits(i) >= low) {
       nearest = i;
     }
@@ -104,57 +107,62 @@ int LinearMultipoleShifter::find_nearest_site_with_limit(int low, int start) con
   return nearest;
 }
 
-std::vector<int> LinearMultipoleShifter::find_equivalent_sites(int primary_site, 
-                                                               int low, 
-                                                               double tolerance) const {
+std::vector<int>
+LinearMultipoleShifter::find_equivalent_sites(int primary_site, int low,
+                                              double tolerance) const {
   std::vector<int> equivalent_sites;
   equivalent_sites.push_back(primary_site);
-  
+
   const double primary_distance = m_scaled_distances(primary_site);
   const int primary_limit = m_site_limits(primary_site);
-  
+
   for (int i = 0; i < m_num_sites; i++) {
-    if (i == primary_site) continue;
-    if (m_scaled_distances(i) > primary_distance + tolerance) continue;
-    if (m_site_limits(i) < low) continue;
-    if (m_site_limits(i) != primary_limit) continue;
-    
+    if (i == primary_site)
+      continue;
+    if (m_scaled_distances(i) > primary_distance + tolerance)
+      continue;
+    if (m_site_limits(i) < low)
+      continue;
+    if (m_site_limits(i) != primary_limit)
+      continue;
+
     equivalent_sites.push_back(i);
   }
-  
+
   return equivalent_sites;
 }
 
-void LinearMultipoleShifter::process_rank_range(const std::vector<int> &sites, 
+void LinearMultipoleShifter::process_rank_range(const std::vector<int> &sites,
                                                 int low, int high) {
   const int num_sites = sites.size();
-  
+
   // If multiple sites, split the contribution equally
   if (num_sites > 1) {
     for (int rank = low; rank <= high; rank++) {
       m_multipoles.q(rank) /= num_sites;
     }
   }
-  
+
   // Shift multipoles to each equivalent site
   for (int site_idx : sites) {
     const double displacement = m_position - m_site_positions(2, site_idx);
-    shift_along_axis(m_multipoles, low, high, m_site_multipoles[site_idx], 
+    shift_along_axis(m_multipoles, low, high, m_site_multipoles[site_idx],
                      m_max_rank, displacement);
   }
-  
+
   // Zero out the transferred multipoles
   for (int rank = low; rank <= high; rank++) {
     m_multipoles.q(rank) = 0.0;
   }
-  
+
   // If we haven't reached max rank, shift higher multipoles back
   if (high < m_max_rank) {
     for (int site_idx : sites) {
-      const double back_displacement = m_site_positions(2, site_idx) - m_position;
-      shift_along_axis(m_site_multipoles[site_idx], high + 1, m_max_rank, 
+      const double back_displacement =
+          m_site_positions(2, site_idx) - m_position;
+      shift_along_axis(m_site_multipoles[site_idx], high + 1, m_max_rank,
                        m_multipoles, m_max_rank, back_displacement);
-      
+
       // Zero out the transferred multipoles at the site
       for (int rank = high + 1; rank <= m_max_rank; rank++) {
         m_site_multipoles[site_idx].q(rank) = 0.0;
@@ -164,11 +172,11 @@ void LinearMultipoleShifter::process_rank_range(const std::vector<int> &sites,
 }
 
 double LinearMultipoleShifter::scaled_distance_to_site(int site_index) const {
-  return std::abs(m_site_positions(2, site_index) - m_position) / 
+  return std::abs(m_site_positions(2, site_index) - m_position) /
          m_site_radii(site_index);
 }
 
-Vec LinearMultipoleShifter::compute_displacement_powers(double displacement, 
+Vec LinearMultipoleShifter::compute_displacement_powers(double displacement,
                                                         int max_power) {
   Vec powers = Vec::Zero(max_power + 1);
   powers(0) = 1.0;
@@ -181,15 +189,15 @@ Vec LinearMultipoleShifter::compute_displacement_powers(double displacement,
 // Convenience functions that maintain the original interface
 void shiftz(const Mult &source, int l1, int m1, Mult &destination, int m2,
             double displacement) {
-  LinearMultipoleShifter::shift_along_axis(source, l1, m1, destination, m2, 
+  LinearMultipoleShifter::shift_along_axis(source, l1, m1, destination, m2,
                                            displacement);
 }
 
 void movez(Mult &multipoles, double position, const Mat3N &site_positions,
            const Vec &site_radii, const IVec &site_limits,
            std::vector<Mult> &site_multipoles, int max_rank) {
-  LinearMultipoleShifter shifter(position, multipoles, site_positions, 
-                                 site_radii, site_limits, site_multipoles, 
+  LinearMultipoleShifter shifter(position, multipoles, site_positions,
+                                 site_radii, site_limits, site_multipoles,
                                  max_rank);
   shifter.move_to_sites();
 }

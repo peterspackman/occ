@@ -4,6 +4,8 @@
 #include <catch2/matchers/catch_matchers_vector.hpp>
 #include <fmt/ostream.h>
 #include <iostream>
+#include <occ/core/molecular_symmetry.h>
+#include <occ/core/point_group.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
@@ -16,9 +18,11 @@
 
 using occ::format_matrix;
 using occ::IVec3;
+using occ::Mat3;
 using occ::Mat3N;
 using occ::MatN3;
 using occ::Vec3;
+using occ::core::Molecule;
 using occ::crystal::AsymmetricUnit;
 using occ::crystal::Crystal;
 using occ::crystal::HKL;
@@ -1286,5 +1290,169 @@ TEST_CASE("Cell shift computation", "[crystal]") {
     SymmetryOperation symop(uc_mol.asymmetric_unit_symop()(0));
     IVec3 shift = Crystal::compute_cell_shift(uc_center, asym_center, symop);
     REQUIRE(shift == uc_mol.cell_shift());
+  }
+}
+
+auto tcyety01_asym() {
+  // TCYETY01 - high symmetry cubic crystal (space group I m -3, #204)
+  // From Cambridge Structural Database
+  const std::vector<std::string> labels = {"C1", "C2", "N1"};
+
+  occ::IVec nums(3);
+  nums << 6, 6, 7; // C, C, N
+
+  occ::Mat3N positions(3, 3);
+  positions.col(0) << 0.06900, 0.50000, 0.50000; // C1
+  positions.col(1) << 0.14770, 0.50000, 0.62490; // C2
+  positions.col(2) << 0.21290, 0.50000, 0.72160; // N1
+
+  std::vector<std::string> atom_labels(labels.begin(), labels.end());
+  return AsymmetricUnit(positions, nums, atom_labels);
+}
+
+inline double rmsd(Eigen::Ref<const Mat3N> ref,
+                   Eigen::Ref<const Mat3N> target) {
+  return (target - ref).norm();
+}
+
+TEST_CASE("TCYETY01 high symmetry crystal atom ordering",
+          "[crystal][tcyety01]") {
+  // This test case ensures that high symmetry crystals maintain consistent
+  // atom ordering across symmetry-related unit cell molecules
+  AsymmetricUnit asym = tcyety01_asym();
+  SpaceGroup sg(204);                              // I m -3
+  UnitCell cell = occ::crystal::cubic_cell(9.736); // cubic unit cell
+
+  Crystal tcyety01(asym, sg, cell);
+
+  const auto &uc_molecules = tcyety01.unit_cell_molecules();
+  INFO("Got " << uc_molecules.size() << " unit cell molecules");
+
+  const auto &asym_molecules = tcyety01.symmetry_unique_molecules();
+  INFO("Got " << asym_molecules.size() << " symmetry unique molecules");
+
+  SECTION("Symmetry unique molecules") {
+    REQUIRE(asym_molecules.size() == 1);
+    REQUIRE(asym_molecules[0].size() == 10); // 10 atoms per molecule
+  }
+
+  SECTION("Bidirectional transformation mapping") {
+    // Test that unit cell molecules can be transformed to/from symmetry unique
+    // molecules without requiring permutations (after
+    // ensure_uc_asym_molecule_mapping)
+
+    const auto &asym_mol =
+        asym_molecules[0]; // Only one symmetry unique molecule
+    const auto &symops = tcyety01.symmetry_operations();
+
+    fmt::print("Testing transformations with {} symmetry operations and {} UC "
+               "molecules\n",
+               symops.size(), uc_molecules.size());
+
+    // Track which UC molecules we've successfully mapped
+    std::vector<bool> uc_molecules_mapped(uc_molecules.size(), false);
+    int num_requiring_permutation = 0;
+
+    // Test each symmetry operation to see which UC molecule it generates
+    for (size_t i = 0; i < symops.size(); i++) {
+      const auto &symop = symops[i];
+
+      // Calculate transformation matrix (same logic as calculate_transform)
+      Mat3 rotation = tcyety01.unit_cell().direct() * symop.rotation() *
+                      tcyety01.unit_cell().inverse();
+
+      // Transform asymmetric molecule
+      Mat3N asym_positions = asym_mol.positions();
+      Mat3N transformed_positions = rotation * asym_positions;
+
+      // Find which UC molecule this corresponds to
+      Vec3 transformed_centroid = transformed_positions.rowwise().mean();
+
+      for (size_t j = 0; j < uc_molecules.size(); j++) {
+        if (uc_molecules_mapped[j])
+          continue; // Skip already mapped molecules
+
+        const auto &uc_mol = uc_molecules[j];
+        Vec3 translation = uc_mol.centroid() - transformed_centroid;
+        Mat3N final_transformed = transformed_positions;
+        final_transformed.colwise() += translation;
+
+        double forward_rmsd = rmsd(uc_mol.positions(), final_transformed);
+
+        if (forward_rmsd < 1e-3) {
+          fmt::print("Symop {} ({}) -> UC molecule {} (RMSD: {:.6e})\n", i,
+                     symop.to_string(), j, forward_rmsd);
+
+          // Test reverse transformation
+          Mat3 inverse_rotation = rotation.transpose();
+          Mat3N reverse_transformed =
+              inverse_rotation * (uc_mol.positions().colwise() - translation);
+          Vec3 reverse_translation =
+              asym_mol.centroid() - reverse_transformed.rowwise().mean();
+          reverse_transformed.colwise() += reverse_translation;
+
+          double reverse_rmsd = rmsd(asym_mol.positions(), reverse_transformed);
+          fmt::print("  Reverse transform RMSD: {:.6e}\n", reverse_rmsd);
+
+          REQUIRE(reverse_rmsd < 1e-3);
+          uc_molecules_mapped[j] = true;
+        } else {
+          // Check if it would succeed with permutation (this should not be
+          // needed after ensure_uc_asym_molecule_mapping)
+          auto result = occ::core::try_transformation_with_grouped_permutations(
+              uc_mol.asymmetric_unit_idx(), uc_mol.positions(),
+              asym_mol.asymmetric_unit_idx(), asym_mol.positions(), rotation);
+
+          if (result.success) {
+            // Check if permutation is non-trivial
+            bool is_identity = true;
+            for (size_t k = 0; k < result.permutation.size(); k++) {
+              if (result.permutation[k] != static_cast<int>(k)) {
+                is_identity = false;
+                break;
+              }
+            }
+
+            if (!is_identity) {
+              fmt::print("WARNING: UC molecule {} still requires permutation "
+                         "after ensure_uc_asym_molecule_mapping\n",
+                         j);
+              fmt::print("  Symop {} ({}) would need permutation: [", i,
+                         symop.to_string());
+              for (size_t k = 0; k < result.permutation.size(); k++) {
+                fmt::print("{}{}", result.permutation[k],
+                           k == result.permutation.size() - 1 ? "" : ", ");
+              }
+              fmt::print("] (RMSD: {:.6e})\n", result.rmsd);
+              num_requiring_permutation++;
+            }
+
+            uc_molecules_mapped[j] = true;
+          }
+        }
+      }
+    }
+
+    // Debug: print which molecules weren't mapped
+    fmt::print("\nMapping summary:\n");
+    for (size_t j = 0; j < uc_molecules.size(); j++) {
+      fmt::print("UC molecule {}: {}\n", j,
+                 uc_molecules_mapped[j] ? "mapped" : "NOT MAPPED");
+    }
+
+    // Verify that every UC molecule has been successfully mapped
+    for (size_t j = 0; j < uc_molecules.size(); j++) {
+      INFO("UC molecule " << j
+                          << " should have a corresponding symmetry operation");
+      REQUIRE(uc_molecules_mapped[j]);
+    }
+
+    // Verify that no molecules require permutation
+    INFO("Number of molecules requiring permutation: "
+         << num_requiring_permutation);
+    REQUIRE(num_requiring_permutation == 0);
+
+    fmt::print("Successfully mapped all {} UC molecules without permutations\n",
+               uc_molecules.size());
   }
 }

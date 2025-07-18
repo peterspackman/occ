@@ -119,7 +119,8 @@ Vec eeq_coordination_numbers(const IVec &atomic_numbers,
         continue;
       const double r = std::sqrt(r2);
 
-      const double rc = (impl::covalent[ni] + impl::covalent[nj]) * D3_SCALE_FACTOR;
+      const double rc =
+          (impl::covalent[ni] + impl::covalent[nj]) * D3_SCALE_FACTOR;
       double count = 0.5 * (1.0 + std::erf(-kcn * (r - rc) / rc));
       cn(i) += count;
       if (i != j)

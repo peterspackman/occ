@@ -13,10 +13,10 @@
 #include <occ/io/dftb_gen.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/fchkreader.h>
-#include <occ/io/isosurface_json.h>
 #include <occ/io/fchkwriter.h>
 #include <occ/io/gaussian_input_file.h>
 #include <occ/io/gmf.h>
+#include <occ/io/isosurface_json.h>
 #include <occ/io/moldenreader.h>
 #include <occ/io/orca_json.h>
 #include <occ/io/ply.h>
@@ -3163,49 +3163,47 @@ TEST_CASE("Isosurface JSON", "[isosurface_json]") {
     surf.description = "Test isosurface for JSON export";
     surf.isovalue = 0.002f;
     surf.separation = 0.2f;
-    
+
     // Create simple triangle mesh
     surf.vertices.resize(3, 3); // 3 vertices
-    surf.vertices << 0.0f, 1.0f, 0.0f,
-                     0.0f, 0.0f, 1.0f,
-                     0.0f, 0.0f, 0.0f;
-    
+    surf.vertices << 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f;
+
     surf.faces.resize(3, 1); // 1 triangle
     surf.faces << 0, 1, 2;
-    
+
     surf.normals.resize(3, 3);
-    surf.normals << 0.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f,
-                    1.0f, 1.0f, 1.0f;
-    
+    surf.normals << 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f;
+
     // Convert to JSON
     auto json_str = occ::io::isosurface_to_json_string(surf);
     auto j = nlohmann::json::parse(json_str);
-    
+
     // Check metadata
     REQUIRE(j["kind"] == "test_surface");
     REQUIRE(j["description"] == "Test isosurface for JSON export");
-    REQUIRE_THAT(j["isovalue"].get<float>(), Catch::Matchers::WithinRel(0.002f));
-    REQUIRE_THAT(j["separation"].get<float>(), Catch::Matchers::WithinRel(0.2f));
-    
+    REQUIRE_THAT(j["isovalue"].get<float>(),
+                 Catch::Matchers::WithinRel(0.002f));
+    REQUIRE_THAT(j["separation"].get<float>(),
+                 Catch::Matchers::WithinRel(0.2f));
+
     // Check dimensions
     REQUIRE(j["numVertices"] == 3);
     REQUIRE(j["numFaces"] == 1);
-    
+
     // Check vertices (flattened array)
     auto vertices = j["vertices"];
     REQUIRE(vertices.size() == 9); // 3 vertices * 3 components
     REQUIRE_THAT(vertices[0].get<float>(), Catch::Matchers::WithinRel(0.0f));
     REQUIRE_THAT(vertices[1].get<float>(), Catch::Matchers::WithinRel(0.0f));
     REQUIRE_THAT(vertices[2].get<float>(), Catch::Matchers::WithinRel(0.0f));
-    
+
     // Check faces
     auto faces = j["faces"];
     REQUIRE(faces.size() == 3); // 1 triangle * 3 indices
     REQUIRE(faces[0] == 0);
     REQUIRE(faces[1] == 1);
     REQUIRE(faces[2] == 2);
-    
+
     // Check normals
     auto normals = j["normals"];
     REQUIRE(normals.size() == 9); // 3 vertices * 3 components

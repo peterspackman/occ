@@ -71,28 +71,28 @@ void process_grid_block(const Mat &D, const occ::gto::GTOValues &gto_vals,
 
 // Explicit template instantiations
 template void process_grid_block<0, occ::qm::SpinorbitalKind::Restricted>(
-    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>, const Vec &,
-    const std::vector<DensityFunctional> &, Mat &, double &, double &, double &,
-    double);
+    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>,
+    const Vec &, const std::vector<DensityFunctional> &, Mat &, double &,
+    double &, double &, double);
 template void process_grid_block<1, occ::qm::SpinorbitalKind::Restricted>(
-    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>, const Vec &,
-    const std::vector<DensityFunctional> &, Mat &, double &, double &, double &,
-    double);
+    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>,
+    const Vec &, const std::vector<DensityFunctional> &, Mat &, double &,
+    double &, double &, double);
 template void process_grid_block<2, occ::qm::SpinorbitalKind::Restricted>(
-    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>, const Vec &,
-    const std::vector<DensityFunctional> &, Mat &, double &, double &, double &,
-    double);
+    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>,
+    const Vec &, const std::vector<DensityFunctional> &, Mat &, double &,
+    double &, double &, double);
 template void process_grid_block<0, occ::qm::SpinorbitalKind::Unrestricted>(
-    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>, const Vec &,
-    const std::vector<DensityFunctional> &, Mat &, double &, double &, double &,
-    double);
+    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>,
+    const Vec &, const std::vector<DensityFunctional> &, Mat &, double &,
+    double &, double &, double);
 template void process_grid_block<1, occ::qm::SpinorbitalKind::Unrestricted>(
-    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>, const Vec &,
-    const std::vector<DensityFunctional> &, Mat &, double &, double &, double &,
-    double);
+    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>,
+    const Vec &, const std::vector<DensityFunctional> &, Mat &, double &,
+    double &, double &, double);
 template void process_grid_block<2, occ::qm::SpinorbitalKind::Unrestricted>(
-    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>, const Vec &,
-    const std::vector<DensityFunctional> &, Mat &, double &, double &, double &,
-    double);
+    const Mat &, const occ::gto::GTOValues &, Eigen::Ref<const Mat3N>,
+    const Vec &, const std::vector<DensityFunctional> &, Mat &, double &,
+    double &, double &, double);
 
 } // namespace occ::dft::kernels

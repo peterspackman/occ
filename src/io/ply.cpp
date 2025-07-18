@@ -1,9 +1,9 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
+#include <nlohmann/json.hpp>
 #include <occ/core/timings.h>
 #include <occ/io/ply.h>
 #include <occ/io/tinyply.h>
-#include <nlohmann/json.hpp>
 
 using occ::isosurface::Isosurface;
 
@@ -20,7 +20,7 @@ inline void validate_mesh_data(const Isosurface &isosurface) {
     throw std::invalid_argument("Isosurface has no face data");
   }
 
-  if(isosurface.normals.size() > 0) {
+  if (isosurface.normals.size() > 0) {
     if (isosurface.normals.size() != isosurface.vertices.size()) {
       throw std::invalid_argument("Normals size doesn't match vertices");
     }
@@ -133,7 +133,8 @@ void write_ply_mesh(const std::string &filename, const Isosurface &isosurface,
   metadata["separation"] = isosurface.separation;
   metadata["kind"] = isosurface.kind;
 
-  ply_file.get_comments().push_back(fmt::format("metajson {}", metadata.dump()));
+  ply_file.get_comments().push_back(
+      fmt::format("metajson {}", metadata.dump()));
 
   // File writing with buffer
   static constexpr size_t BUFFER_SIZE = 2 * 1024 * 1024; // 2MB buffer

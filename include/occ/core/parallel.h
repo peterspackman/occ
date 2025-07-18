@@ -1,7 +1,7 @@
 #pragma once
+#include <occ/core/timings.h>
 #include <thread>
 #include <vector>
-#include <occ/core/timings.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -40,7 +40,7 @@ template <typename Lambda> void parallel_do(Lambda &lambda) {
 #endif
 }
 
-template <typename Lambda> 
+template <typename Lambda>
 void parallel_do_timed(Lambda &lambda, occ::timing::category timing_category) {
   occ::timing::start(timing_category);
   parallel_do(lambda);

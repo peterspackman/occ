@@ -87,7 +87,8 @@ Mult DMACalculator::compute_total_multipoles(const DMAResult &result) const {
   std::vector<Mult> mults_result = result.multipoles;
   for (int i = 0; i < m_sites.size(); i++) {
     auto &m = mults_result[i];
-    MultipoleShifter shifter(m_sites.positions.col(i), m, total_sites, total, result.max_rank);
+    MultipoleShifter shifter(m_sites.positions.col(i), m, total_sites, total,
+                             result.max_rank);
     shifter.shift_multipoles(m, 0, m.max_rank, total[0], result.max_rank,
                              m_sites.positions.col(i) - origin);
   }
