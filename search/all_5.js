@@ -29,7 +29,7 @@ var searchData=
   ['edgedescriptor_26',['EdgeDescriptor',['../classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b',1,'occ::core::graph::Graph']]],
   ['edgehash_27',['EdgeHash',['../structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html',1,'occ::geometry::mc::impl']]],
   ['edgemap_28',['EdgeMap',['../structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a8eb069f9634b3bd11257960651c7f2b0',1,'occ::geometry::mc::LinearHashedMarchingCubes']]],
-  ['edges_29',['edges',['../classocc_1_1core_1_1graph_1_1Graph.html#ad3441b6a794d3c502e093c58ea1a1cbe',1,'occ::core::graph::Graph::Edges'],['../classocc_1_1core_1_1graph_1_1Graph.html#a53f08cbfdb25abbb4b14c6b6d53a21df',1,'occ::core::graph::Graph::edges() const']]],
+  ['edges_29',['edges',['../classocc_1_1core_1_1graph_1_1Graph.html#a53f08cbfdb25abbb4b14c6b6d53a21df',1,'occ::core::graph::Graph::edges() const'],['../classocc_1_1core_1_1graph_1_1Graph.html#ad3441b6a794d3c502e093c58ea1a1cbe',1,'occ::core::graph::Graph::Edges']]],
   ['ediff_5frel_30',['ediff_rel',['../structocc_1_1qm_1_1SCF.html#a64afa9cbf745c162febd8cd43a074a45',1,'occ::qm::SCF']]],
   ['ediis_31',['ediis',['../classocc_1_1qm_1_1EDIIS.html#a160768b0f2865af3af6e187f4a0ceff7',1,'occ::qm::EDIIS::EDIIS()'],['../structocc_1_1qm_1_1SCF.html#a76085b25ff24dd67ec49dca4f3d5f42f',1,'occ::qm::SCF::ediis'],['../classocc_1_1qm_1_1EDIIS.html',1,'occ::qm::EDIIS']]],
   ['ediis_2eh_32',['ediis.h',['../ediis_8h.html',1,'']]],

@@ -36,6 +36,7 @@ var classocc_1_1core_1_1Molecule =
     [ "nearest_atom", "classocc_1_1core_1_1Molecule.html#aa9f0777b6f5e35d1671d218a860c1335", null ],
     [ "num_electrons", "classocc_1_1core_1_1Molecule.html#a20f18ad092e40e83bd5a8afbc9e59d98", null ],
     [ "partial_charges", "classocc_1_1core_1_1Molecule.html#a21e0f6f3e1ac8fcdfd6d71bf1a9981c7", null ],
+    [ "permute", "classocc_1_1core_1_1Molecule.html#aefa68557af9e9e453a1d2280d6e12907", null ],
     [ "positions", "classocc_1_1core_1_1Molecule.html#abdc1f4e4adb8082f5efee6d6ff5574e6", null ],
     [ "principal_moments_of_inertia", "classocc_1_1core_1_1Molecule.html#a728708e614d2a572fe602e3eeaf5d014", null ],
     [ "rotate", "classocc_1_1core_1_1Molecule.html#a37f829bcc3a4ca79a385c6f9efb83398", null ],

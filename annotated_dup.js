@@ -65,6 +65,7 @@ var annotated_dup =
         [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
         [ "PointCharge", "classocc_1_1core_1_1PointCharge.html", "classocc_1_1core_1_1PointCharge" ],
         [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ],
+        [ "SymmetryMappingResult", "structocc_1_1core_1_1SymmetryMappingResult.html", "structocc_1_1core_1_1SymmetryMappingResult" ],
         [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
         [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ]
       ] ],

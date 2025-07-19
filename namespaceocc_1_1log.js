@@ -1,7 +1,7 @@
 var namespaceocc_1_1log =
 [
     [ "level", "namespaceocc_1_1log_1_1level.html", null ],
-    [ "LogCallback", "namespaceocc_1_1log.html#a5bbe3ce7b6cf77bad16cc72d851d6b4b", null ],
+    [ "LogCallback", "namespaceocc_1_1log.html#a505aab660618b761217042c24b0fe73e", null ],
     [ "clear_log_buffer", "namespaceocc_1_1log.html#a7f2eb616d28c01add413655cf928b31a", null ],
     [ "clear_log_callbacks", "namespaceocc_1_1log.html#adbec07d16d7f4b3e10721adce78cc55d", null ],
     [ "flush", "namespaceocc_1_1log.html#a79b620a5ca62b9eb751d26cfcd1b3e09", null ],

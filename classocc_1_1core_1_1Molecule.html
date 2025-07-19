@@ -316,6 +316,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a21e0f6f3e1ac8fcdfd6d71bf1a9981c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab83f314388fb60d9e0d30928748bf87" id="r_aab83f314388fb60d9e0d30928748bf87"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#aab83f314388fb60d9e0d30928748bf87">esp_partial_charges</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;<a class="el" href="classocc_1_1core_1_1Molecule.html#abdc1f4e4adb8082f5efee6d6ff5574e6">positions</a>) const</td></tr>
 <tr class="separator:aab83f314388fb60d9e0d30928748bf87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefa68557af9e9e453a1d2280d6e12907" id="r_aefa68557af9e9e453a1d2280d6e12907"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#aefa68557af9e9e453a1d2280d6e12907">permute</a> (const std::vector&lt; int &gt; &amp;permutation) const</td></tr>
+<tr class="memdesc:aefa68557af9e9e453a1d2280d6e12907"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> with atoms reordered according to a permutation.  <br /></td></tr>
+<tr class="separator:aefa68557af9e9e453a1d2280d6e12907"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Storage class for relevant information of a <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a>. </p>
@@ -1196,6 +1199,34 @@ template&lt;typename N , typename <a class="el" href="namespaceocc_1_1core.html#
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aefa68557af9e9e453a1d2280d6e12907" name="aefa68557af9e9e453a1d2280d6e12907"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aefa68557af9e9e453a1d2280d6e12907">&#9670;&#160;</a></span>permute()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> occ::core::Molecule::permute </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>permutation</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a new <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> with atoms reordered according to a permutation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">permutation</td><td>A vector of indices specifying the new order of atoms. permutation[i] gives the index of the atom in the original molecule that should be at position i in the new molecule.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A new <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> with atoms reordered according to the permutation</dd></dl>
+<p>All properties (positions, atomic numbers, asymmetric unit indices, etc.) are reordered consistently. Bond connectivity is also updated. </p>
 
 </div>
 </div>

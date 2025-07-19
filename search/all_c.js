@@ -113,7 +113,7 @@ var searchData=
   ['load_5fwavefunction_110',['load_wavefunction',['../namespaceocc_1_1interaction.html#a09bfb2f8b77b94b050f32c8d64f97130',1,'occ::interaction']]],
   ['log_111',['Log',['../namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35a2b2df24d50ce1857a720db0836d538b8',1,'occ::core']]],
   ['log_2eh_112',['log.h',['../log_8h.html',1,'']]],
-  ['logcallback_113',['LogCallback',['../namespaceocc_1_1log.html#a5bbe3ce7b6cf77bad16cc72d851d6b4b',1,'occ::log']]],
+  ['logcallback_113',['LogCallback',['../namespaceocc_1_1log.html#a505aab660618b761217042c24b0fe73e',1,'occ::log']]],
   ['loglevel_114',['LogLevel',['../md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md21',1,'']]],
   ['logsumexp_2eh_115',['logsumexp.h',['../logsumexp_8h.html',1,'']]],
   ['logsumexpfunctor_116',['logsumexpfunctor',['../classocc_1_1isosurface_1_1LogSumExpFunctor.html#a9cfd31caecef2fe64106f0465cceddf3',1,'occ::isosurface::LogSumExpFunctor::LogSumExpFunctor()'],['../classocc_1_1isosurface_1_1LogSumExpFunctor.html',1,'occ::isosurface::LogSumExpFunctor&lt; Metric &gt;']]],

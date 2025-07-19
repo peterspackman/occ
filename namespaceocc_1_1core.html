@@ -173,6 +173,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ProgressTracker.html">ProgressTracker</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html">SymmetryMappingResult</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Result of attempting a transformation with grouped permutations.  <a href="structocc_1_1core_1_1SymmetryMappingResult.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1SymOp.html">SymOp</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure/utility class for a point group symmetry operation.  <a href="structocc_1_1core_1_1SymOp.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -299,6 +302,9 @@ Functions</h2></td></tr>
 <tr class="separator:aec7ecfa2dc83b10e2e48637fdb4726e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4cc97fbc54a1356d04d6d643516f1c03" id="r_a4cc97fbc54a1356d04d6d643516f1c03"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>, <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a4cc97fbc54a1356d04d6d643516f1c03">meshgrid</a> (const Vec &amp;, const Vec &amp;)</td></tr>
 <tr class="separator:a4cc97fbc54a1356d04d6d643516f1c03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcf2553ba43ff999b49849a7fdcd1ff2" id="r_abcf2553ba43ff999b49849a7fdcd1ff2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html">SymmetryMappingResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#abcf2553ba43ff999b49849a7fdcd1ff2">try_transformation_with_grouped_permutations</a> (const IVec &amp;labels_A, const Mat3N &amp;positions_A, const IVec &amp;labels_B, const Mat3N &amp;positions_B, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;transformation, double rmsd_threshold=1e-3)</td></tr>
+<tr class="memdesc:abcf2553ba43ff999b49849a7fdcd1ff2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to find a transformation mapping from one set of atoms to another using grouped permutations based on provided labels.  <br /></td></tr>
+<tr class="separator:abcf2553ba43ff999b49849a7fdcd1ff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06bd80d9c43fa53a3494e04f9bbb79c6" id="r_a06bd80d9c43fa53a3494e04f9bbb79c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a06bd80d9c43fa53a3494e04f9bbb79c6">label_molecules_by_chemical_formula</a> (std::vector&lt; <a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a> &gt; &amp;molecules)</td></tr>
 <tr class="separator:a06bd80d9c43fa53a3494e04f9bbb79c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9090dcf8213bf9e23ac3851ed4f5e52" id="r_aa9090dcf8213bf9e23ac3851ed4f5e52"><td class="memItemLeft" align="right" valign="top">constexpr unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#aa9090dcf8213bf9e23ac3851ed4f5e52">num_unique_multipole_components</a> (int L)</td></tr>
@@ -1254,6 +1260,73 @@ template&lt;typename AtomIterator &gt; </div>
 </div><div class="memdoc">
 
 <p>translate a range of atoms </p>
+
+</div>
+</div>
+<a id="abcf2553ba43ff999b49849a7fdcd1ff2" name="abcf2553ba43ff999b49849a7fdcd1ff2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abcf2553ba43ff999b49849a7fdcd1ff2">&#9670;&#160;</a></span>try_transformation_with_grouped_permutations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html">SymmetryMappingResult</a> occ::core::try_transformation_with_grouped_permutations </td>
+          <td>(</td>
+          <td class="paramtype">const IVec &amp;&#160;</td>
+          <td class="paramname"><em>labels_A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions_A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const IVec &amp;&#160;</td>
+          <td class="paramname"><em>labels_B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions_B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;&#160;</td>
+          <td class="paramname"><em>transformation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rmsd_threshold</em> = <code>1e-3</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempts to find a transformation mapping from one set of atoms to another using grouped permutations based on provided labels. </p>
+<p>This function applies the given transformation matrix to positions B and then finds permutations within atom groups to match reference positions A. Groups are formed by the provided labels (e.g., asymmetric unit indices or atomic numbers). The transformed positions are automatically aligned by centroid.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">labels_A</td><td>The labels for reference atoms (A) </td></tr>
+    <tr><td class="paramname">positions_A</td><td>The reference positions (A) to match against </td></tr>
+    <tr><td class="paramname">labels_B</td><td>The labels for atoms to transform (B) </td></tr>
+    <tr><td class="paramname">positions_B</td><td>The positions (B) to transform and permute </td></tr>
+    <tr><td class="paramname">transformation</td><td>The transformation matrix to apply to positions_B </td></tr>
+    <tr><td class="paramname">rmsd_threshold</td><td>The RMSD threshold for considering a match (default: 1e-3) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html" title="Result of attempting a transformation with grouped permutations.">SymmetryMappingResult</a> containing success status, permutation, and RMSD </dd></dl>
 
 </div>
 </div>

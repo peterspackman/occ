@@ -29,14 +29,15 @@ var searchData=
   ['stockholderweightfunctor_26',['StockholderWeightFunctor',['../classocc_1_1isosurface_1_1StockholderWeightFunctor.html',1,'occ::isosurface']]],
   ['stopwatch_27',['StopWatch',['../classocc_1_1timing_1_1StopWatch.html',1,'occ::timing']]],
   ['structurewriter_28',['StructureWriter',['../classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html',1,'occ::io::crystalgrower']]],
-  ['surface_29',['surface',['../structocc_1_1solvent_1_1surface_1_1Surface.html',1,'occ::solvent::surface::Surface'],['../classocc_1_1crystal_1_1Surface.html',1,'occ::crystal::Surface']]],
+  ['surface_29',['surface',['../classocc_1_1crystal_1_1Surface.html',1,'occ::crystal::Surface'],['../structocc_1_1solvent_1_1surface_1_1Surface.html',1,'occ::solvent::surface::Surface']]],
   ['surfacecurvature_30',['SurfaceCurvature',['../structocc_1_1isosurface_1_1SurfaceCurvature.html',1,'occ::isosurface']]],
   ['surfacecutresult_31',['SurfaceCutResult',['../structocc_1_1crystal_1_1SurfaceCutResult.html',1,'occ::crystal']]],
   ['surfacecutsconfig_32',['SurfaceCutsConfig',['../structocc_1_1main_1_1SurfaceCutsConfig.html',1,'occ::main']]],
   ['symmetrydata_33',['SymmetryData',['../structocc_1_1io_1_1SymmetryData.html',1,'occ::io']]],
   ['symmetrydimerlabeller_34',['SymmetryDimerLabeller',['../structocc_1_1crystal_1_1SymmetryDimerLabeller.html',1,'occ::crystal']]],
-  ['symmetryoperation_35',['SymmetryOperation',['../classocc_1_1crystal_1_1SymmetryOperation.html',1,'occ::crystal']]],
-  ['symmetryoperationformat_36',['SymmetryOperationFormat',['../structocc_1_1crystal_1_1SymmetryOperationFormat.html',1,'occ::crystal']]],
-  ['symmetryrelateddimer_37',['SymmetryRelatedDimer',['../structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html',1,'occ::crystal::CrystalDimers']]],
-  ['symop_38',['SymOp',['../structocc_1_1core_1_1SymOp.html',1,'occ::core']]]
+  ['symmetrymappingresult_35',['SymmetryMappingResult',['../structocc_1_1core_1_1SymmetryMappingResult.html',1,'occ::core']]],
+  ['symmetryoperation_36',['SymmetryOperation',['../classocc_1_1crystal_1_1SymmetryOperation.html',1,'occ::crystal']]],
+  ['symmetryoperationformat_37',['SymmetryOperationFormat',['../structocc_1_1crystal_1_1SymmetryOperationFormat.html',1,'occ::crystal']]],
+  ['symmetryrelateddimer_38',['SymmetryRelatedDimer',['../structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html',1,'occ::crystal::CrystalDimers']]],
+  ['symop_39',['SymOp',['../structocc_1_1core_1_1SymOp.html',1,'occ::core']]]
 ];

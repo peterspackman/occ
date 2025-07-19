@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="classocc_1_1dma_1_1LinearMultipoleShifter.html" target="_top" xlink:title="Handles 1D multipole shifting operations along a single axis.">
+<g id="a_Node000000"><a xlink:href="classocc_1_1dma_1_1LinearMultipoleCalculator.html" target="_top" xlink:title="Calculator for distributed multipole analysis of linear molecules.">
 <polygon fill="white" stroke="#666666" points="143,-30 0,-30 0,0 143,0 143,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::dma::LinearMultipole</text>
-<text text-anchor="middle" x="71.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Shifter</text>
+<text text-anchor="middle" x="71.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Calculator</text>
 </a>
 </g>
 </g>

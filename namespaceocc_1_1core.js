@@ -39,6 +39,7 @@ var namespaceocc_1_1core =
     [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
     [ "PointCharge", "classocc_1_1core_1_1PointCharge.html", "classocc_1_1core_1_1PointCharge" ],
     [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ],
+    [ "SymmetryMappingResult", "structocc_1_1core_1_1SymmetryMappingResult.html", "structocc_1_1core_1_1SymmetryMappingResult" ],
     [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
     [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
     [ "KDTree", "namespaceocc_1_1core.html#acfa0e22cd0e47292fb5034e99d2432cb", null ],
@@ -130,6 +131,7 @@ var namespaceocc_1_1core =
     [ "to_json", "namespaceocc_1_1core.html#ab539a0fe1dedd7d494d33ba2aec7157b", null ],
     [ "total_num_multipole_components", "namespaceocc_1_1core.html#a4c43c80b170febf6fb0c2e6fbaa82d9a", null ],
     [ "translate_atoms", "namespaceocc_1_1core.html#a03ad31d684771525fec5bd1c8d0524a8", null ],
+    [ "try_transformation_with_grouped_permutations", "namespaceocc_1_1core.html#abcf2553ba43ff999b49849a7fdcd1ff2", null ],
     [ "covalent_bond_tolerance", "namespaceocc_1_1core.html#a5ab8e34cdda6bb4f9065e51d0a930d2b", null ],
     [ "max_leaf", "namespaceocc_1_1core.html#a19df90100f5a4ddba86433c350fa160a", null ],
     [ "multipole_component_names", "namespaceocc_1_1core.html#a2c13a8ff8a8712711388809ff8ca9aec", null ]

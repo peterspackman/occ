@@ -1,5 +1,7 @@
 var NAVTREEINDEX18 =
 {
+"functions.html":[4,3,0,0],
+"functions.html":[4,3,0],
 "functions_a.html":[4,3,0,1],
 "functions_b.html":[4,3,0,2],
 "functions_c.html":[4,3,0,3],
@@ -21,8 +23,8 @@ var NAVTREEINDEX18 =
 "functions_eval_r.html":[4,3,5,11],
 "functions_eval_s.html":[4,3,5,12],
 "functions_f.html":[4,3,0,6],
-"functions_func.html":[4,3,1,0],
 "functions_func.html":[4,3,1],
+"functions_func.html":[4,3,1,0],
 "functions_func_b.html":[4,3,1,1],
 "functions_func_c.html":[4,3,1,2],
 "functions_func_d.html":[4,3,1,3],
@@ -179,8 +181,8 @@ var NAVTREEINDEX18 =
 "hierarchy.html":[4,2],
 "hkl_8h.html":[5,0,1,0,2,4],
 "icosphere__mesh_8h.html":[5,0,1,0,8,2],
-"index.html":[0],
 "index.html":[],
+"index.html":[0],
 "index.html#example":[0,1],
 "index.html#welcome":[0,0],
 "index__cache_8h.html":[5,0,1,0,8,3],
@@ -247,7 +249,5 @@ var NAVTREEINDEX18 =
 "linear__algebra_8h.html#a3eed54aee57bdfb65e9acf64c9fa07f1":[5,0,1,0,1,21,7],
 "linear__algebra_8h.html#a42ba6c49f2c1fab31c69b47a36cc1da1":[5,0,1,0,1,21,37],
 "linear__algebra_8h.html#a42d884160a85b77b0c6e02723c4e42b1":[5,0,1,0,1,21,42],
-"linear__algebra_8h.html#a437f3d1ad27db4224c05f4772b08269c":[5,0,1,0,1,21,40],
-"linear__algebra_8h.html#a4490a73b347d3c4e6be5973638313726":[5,0,1,0,1,21,29],
-"linear__algebra_8h.html#a4583e9d21da96377bedd2b9755dd4c85":[5,0,1,0,1,21,43]
+"linear__algebra_8h.html#a437f3d1ad27db4224c05f4772b08269c":[5,0,1,0,1,21,40]
 };

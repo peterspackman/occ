@@ -8,7 +8,7 @@ var structocc_1_1qm_1_1MP2_1_1Results =
     [ "n_total_occ", "structocc_1_1qm_1_1MP2_1_1Results.html#add8d2aefa61fe6fd67dad52611994770", null ],
     [ "n_total_virt", "structocc_1_1qm_1_1MP2_1_1Results.html#ae163fc757ece4054c6c1c5c7e74d9a84", null ],
     [ "opposite_spin_correlation", "structocc_1_1qm_1_1MP2_1_1Results.html#a45fec8250119b0a8bd27818e1798e8ca", null ],
-    [ "pair_energies", "structocc_1_1qm_1_1MP2_1_1Results.html#a5d06a17646e20b5c14745d7f354dd493", null ],
+    [ "pair_energies", "structocc_1_1qm_1_1MP2_1_1Results.html#a10ae504158dba365d61936702aa59eec", null ],
     [ "same_spin_correlation", "structocc_1_1qm_1_1MP2_1_1Results.html#a42aa416f75f80e0fa948ff46a1c376e3", null ],
     [ "scs_mp2_correlation", "structocc_1_1qm_1_1MP2_1_1Results.html#acecbe47c2a60fd91627eb427daeec862", null ],
     [ "total_correlation", "structocc_1_1qm_1_1MP2_1_1Results.html#a0a3665247b74205e162499bb8d78a556", null ]
