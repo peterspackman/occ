@@ -73,14 +73,16 @@ jobs:
       with:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
-          ${{github.workspace}}/wasm
         key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
         restore-keys: |
           js-build-${{ runner.os }}-
 
     - name: Build WASM module
       working-directory: packages/occjs
-      run: npm run build:wasm
+      run: |
+        # Clean any stale CMake cache that might have wrong EMSDK paths
+        rm -rf ../../wasm/CMakeCache.txt ../../wasm/CMakeFiles
+        npm run build:wasm
 
     - name: Install package dependencies
       working-directory: packages/occjs
@@ -161,14 +163,16 @@ jobs:
       with:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
-          ${{github.workspace}}/wasm
         key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
         restore-keys: |
           js-build-${{ runner.os }}-
 
     - name: Build WASM module
       working-directory: packages/occjs
-      run: npm run build:wasm
+      run: |
+        # Clean any stale CMake cache that might have wrong EMSDK paths
+        rm -rf ../../wasm/CMakeCache.txt ../../wasm/CMakeFiles
+        npm run build:wasm
 
     - name: Install dependencies
       working-directory: packages/occjs
@@ -237,14 +241,16 @@ jobs:
       with:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
-          ${{github.workspace}}/wasm
         key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
         restore-keys: |
           js-build-${{ runner.os }}-
 
     - name: Build WASM module
       working-directory: packages/occjs
-      run: npm run build:wasm
+      run: |
+        # Clean any stale CMake cache that might have wrong EMSDK paths
+        rm -rf ../../wasm/CMakeCache.txt ../../wasm/CMakeFiles
+        npm run build:wasm
 
     - name: Install dependencies
       working-directory: packages/occjs
