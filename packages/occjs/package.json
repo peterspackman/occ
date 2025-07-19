@@ -1,6 +1,6 @@
 {
   "name": "@occ/core",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library",
   "type": "module",
   "main": "dist/index.js",
