@@ -78,21 +78,9 @@ jobs:
         restore-keys: |
           js-build-${{ runner.os }}-
 
-    - name: Check if WASM needs building
-      id: check-wasm
-      run: |
-        if [ ! -f "wasm/src/occjs.wasm" ] || [ ! -f "wasm/src/occjs.js" ]; then
-          echo "needs_build=true" >> $GITHUB_OUTPUT
-        else
-          echo "needs_build=false" >> $GITHUB_OUTPUT
-        fi
-
     - name: Build WASM module
-      if: steps.check-wasm.outputs.needs_build == 'true'
-      run: |
-        source $EMSDK/emsdk_env.sh
-        rm -rf wasm
-        ./scripts/build_wasm.sh
+      working-directory: packages/occjs
+      run: npm run build:wasm
 
     - name: Install package dependencies
       working-directory: packages/occjs
@@ -178,17 +166,17 @@ jobs:
         restore-keys: |
           js-build-${{ runner.os }}-
 
-    - name: Build WASM module (if needed)
-      run: |
-        if [ ! -f "wasm/src/occjs.wasm" ] || [ ! -f "wasm/src/occjs.js" ]; then
-          ./scripts/build_wasm.sh
-        fi
-
-    - name: Install and build package
+    - name: Build WASM module
       working-directory: packages/occjs
-      run: |
-        npm ci
-        npm run build
+      run: npm run build:wasm
+
+    - name: Install dependencies
+      working-directory: packages/occjs
+      run: npm ci
+
+    - name: Build package
+      working-directory: packages/occjs  
+      run: npm run build
 
     - name: Check if version changed
       id: version
@@ -210,3 +198,72 @@ jobs:
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  
+  publish-github:
+    name: Publish to GitHub Packages
+    needs: test-js
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: 'https://npm.pkg.github.com'
+        scope: '@peterspackman'
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: '3.1.69'
+        actions-cache-folder: 'emsdk-cache'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
+
+    - name: Cache CPM Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{env.CPM_SOURCE_CACHE}}
+          ${{github.workspace}}/wasm
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        restore-keys: |
+          js-build-${{ runner.os }}-
+
+    - name: Build WASM module
+      working-directory: packages/occjs
+      run: npm run build:wasm
+
+    - name: Install dependencies
+      working-directory: packages/occjs
+      run: npm ci
+
+    - name: Build package
+      working-directory: packages/occjs  
+      run: npm run build
+
+    - name: Configure package for GitHub registry
+      working-directory: packages/occjs
+      run: |
+        # Update package.json to use GitHub scope
+        npm pkg set name="@peterspackman/occ-core"
+        # Ensure publishConfig points to GitHub
+        npm pkg set publishConfig.registry="https://npm.pkg.github.com"
+
+    - name: Publish to GitHub Packages
+      working-directory: packages/occjs
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

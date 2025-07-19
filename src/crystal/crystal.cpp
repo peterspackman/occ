@@ -597,7 +597,7 @@ void Crystal::ensure_uc_asym_molecule_mapping() const {
               "UC molecule {} requires permutation for symmetry mapping",
               uc_idx);
           occ::log::debug("Permutation: {}",
-                          fmt::join(result.permutation, ", "));
+                          occ::util::join(result.permutation, ", "));
 
           // Apply the permutation to reorder the UC molecule
           m_unit_cell_molecules[uc_idx] = uc_mol.permute(result.permutation);
