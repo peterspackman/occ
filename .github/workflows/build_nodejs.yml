@@ -187,7 +187,7 @@ jobs:
       working-directory: packages/occjs
       run: |
         PACKAGE_VERSION=$(node -p "require('./package.json').version")
-        NPM_VERSION=$(npm view @occ/core version 2>/dev/null || echo "0.0.0")
+        NPM_VERSION=$(npm view @peterspackman/occjs version 2>/dev/null || echo "0.0.0")
         echo "package_version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
         echo "npm_version=$NPM_VERSION" >> $GITHUB_OUTPUT
         if [ "$PACKAGE_VERSION" != "$NPM_VERSION" ]; then
@@ -264,7 +264,7 @@ jobs:
       working-directory: packages/occjs
       run: |
         # Update package.json to use GitHub scope
-        npm pkg set name="@peterspackman/occ-core"
+        npm pkg set name="@peterspackman/occjs"
         # Ensure publishConfig points to GitHub
         npm pkg set publishConfig.registry="https://npm.pkg.github.com"
 

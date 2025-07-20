@@ -1,5 +1,5 @@
 {
-  "name": "@occ/core",
+  "name": "@peterspackman/occjs",
   "version": "0.7.7",
   "description": "JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library",
   "type": "module",
