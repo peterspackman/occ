@@ -55,7 +55,7 @@ var searchData=
   ['phi_5fyz_52',['phi_yz',['../structocc_1_1gto_1_1GTOValues.html#adbcaf4e288e125bd8ab1bc8a573d0a3f',1,'occ::gto::GTOValues']]],
   ['phi_5fz_53',['phi_z',['../structocc_1_1gto_1_1GTOValues.html#aea3b80615fd6b93b11c2ded3b7cab6b9',1,'occ::gto::GTOValues']]],
   ['phi_5fzz_54',['phi_zz',['../structocc_1_1gto_1_1GTOValues.html#abfe6e7056ecbe5effa21538a6c82100d',1,'occ::gto::GTOValues']]],
-  ['pi_55',['pi',['../namespaceocc_1_1constants.html#ac6930578fafd8c4b018ba281349ab2ed',1,'occ::constants::pi'],['../namespaceocc_1_1units.html#a028d775e813e880062aff24bec1a1b4a',1,'occ::units::PI']]],
+  ['pi_55',['pi',['../namespaceocc_1_1units.html#a028d775e813e880062aff24bec1a1b4a',1,'occ::units::PI'],['../namespaceocc_1_1constants.html#ac6930578fafd8c4b018ba281349ab2ed',1,'occ::constants::pi']]],
   ['planck_56',['planck',['../namespaceocc_1_1constants.html#a09d810b3a282917f3a97b8311c389477',1,'occ::constants']]],
   ['plane_57',['plane',['../classquickhull_1_1Plane.html#a849e5e70b8a26b33922cec3e79e426a7',1,'quickhull::Plane::Plane()'],['../classquickhull_1_1Plane.html',1,'quickhull::Plane&lt; T &gt;'],['../classquickhull_1_1Plane.html#ae390857155091f4659af5e8256492efc',1,'quickhull::Plane::Plane()']]],
   ['plane_2eh_58',['plane.h',['../plane_8h.html',1,'']]],

@@ -26,6 +26,7 @@ var namespaceocc_1_1dft =
     [ "PartitionMethod", "structocc_1_1dft_1_1PartitionMethod.html", "structocc_1_1dft_1_1PartitionMethod" ],
     [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
     [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ],
+    [ "VoronoiPartition", "classocc_1_1dft_1_1VoronoiPartition.html", "classocc_1_1dft_1_1VoronoiPartition" ],
     [ "dfid", "namespaceocc_1_1dft.html#a85d3cc3d9e5f9f2d739ccb6568ff6f28", null ],
     [ "PointChargeList", "namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9", null ],
     [ "PartitionFunction", "namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426a", [
@@ -46,6 +47,7 @@ var namespaceocc_1_1dft =
     [ "calculate_hirshfeld_charges", "namespaceocc_1_1dft.html#ab389b094d08370dcd3dfcc71ea9e98f0", null ],
     [ "calculate_hirshfeld_multipoles", "namespaceocc_1_1dft.html#a44d1117c9d772f1337c1aca7e9000fbf", null ],
     [ "calculate_interatomic_distances", "namespaceocc_1_1dft.html#a3e9d07ef0c0e331145f365e099a4873c", null ],
+    [ "calculate_voronoi_charges", "namespaceocc_1_1dft.html#ab307a36b1e74a692bcbb790c75dadba8", null ],
     [ "create_dft_method_from_definition", "namespaceocc_1_1dft.html#a42fcb81f45e1d3f7cc6b9ed8c044a63a", null ],
     [ "dfid_to_string", "namespaceocc_1_1dft.html#a70f0a7522541ba34eecfed52b8460f6e", null ],
     [ "export_method_definitions", "namespaceocc_1_1dft.html#ac203cc9206e770c0f96f08d25836ee8f", null ],

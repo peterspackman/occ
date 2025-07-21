@@ -54,6 +54,12 @@ var namespaceocc_1_1io =
     [ "ElementMap", "namespaceocc_1_1io.html#a2e0d0088e3a6c463309cc364c41e1aaf", null ],
     [ "PointChargeList", "namespaceocc_1_1io.html#a2032b9063a04cbcda0dca503cdbf2e7d", null ],
     [ "Position", "namespaceocc_1_1io.html#ab6b5ddc9e2fba0c4afd73066cced9721", null ],
+    [ "GridQuality", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd", [
+      [ "Coarse", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda1fb282a269a2bc94abc136c0511daa59", null ],
+      [ "Standard", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b", null ],
+      [ "Fine", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda5999b8900bb8b90cfa1af137d355ff14", null ],
+      [ "VeryFine", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda1cdfb5ac70bfa18db750fbc1effea5bf", null ]
+    ] ],
     [ "JsonFormat", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3", [
       [ "JSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8", null ],
       [ "UBJSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d", null ],
@@ -68,6 +74,9 @@ var namespaceocc_1_1io =
     ] ],
     [ "build", "namespaceocc_1_1io.html#a0b4154c8ab12aa7b60925e2a2b6acbe2", null ],
     [ "build", "namespaceocc_1_1io.html#a0b19dda27e50ff77a11e8e61654b1569", null ],
+    [ "get_grid_settings", "namespaceocc_1_1io.html#a6d073839ca41dcaa94a727a05838513f", null ],
+    [ "grid_quality_from_string", "namespaceocc_1_1io.html#a1c59135b334b6f9fc88cb74e39d42e7c", null ],
+    [ "grid_quality_to_string", "namespaceocc_1_1io.html#ac80751a7daf50e5d90ef35f2e0c6a95a", null ],
     [ "isosurface_to_json", "namespaceocc_1_1io.html#a3f989bea871d753f75479c1ca7d7138f", null ],
     [ "isosurface_to_json_string", "namespaceocc_1_1io.html#ab0c0de62880f19eea350f70a2e5117a2", null ],
     [ "json_format", "namespaceocc_1_1io.html#a099816a1d1f5ac39efdf73b50c8f6efc", null ],

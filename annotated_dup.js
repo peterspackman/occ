@@ -115,7 +115,8 @@ var annotated_dup =
         [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
         [ "PartitionMethod", "structocc_1_1dft_1_1PartitionMethod.html", "structocc_1_1dft_1_1PartitionMethod" ],
         [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
-        [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ]
+        [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ],
+        [ "VoronoiPartition", "classocc_1_1dft_1_1VoronoiPartition.html", "classocc_1_1dft_1_1VoronoiPartition" ]
       ] ],
       [ "disp", "namespaceocc_1_1disp.html", [
         [ "D4Dispersion", "classocc_1_1disp_1_1D4Dispersion.html", "classocc_1_1disp_1_1D4Dispersion" ]

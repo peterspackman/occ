@@ -1,13 +1,15 @@
 <map id="/home/runner/work/occ/occ/include/occ/dft/molecular_grid.h" name="/home/runner/work/occ/occ/include/occ/dft/molecular_grid.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="411,5,581,60"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="517,5,688,60"/>
 <area shape="rect" id="Node000002" href="$dft_8h.html" title=" " alt="" coords="103,115,281,155"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="405,67,250,118,248,113,403,62"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="505,60,294,111,265,118,264,113,293,105,504,55"/>
 <area shape="rect" id="Node000006" href="$dft_2hirshfeld_8h.html" title=" " alt="" coords="305,108,476,163"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="460,72,420,110,416,106,457,68"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="537,68,447,110,445,106,534,63"/>
 <area shape="rect" id="Node000007" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="500,108,705,163"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="536,68,577,106,573,110,532,72"/>
-<area shape="rect" id="Node000008" href="$xdm_8h.html" title=" " alt="" coords="729,115,932,155"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="595,61,769,113,767,118,594,66"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="605,74,605,108,600,108,600,74"/>
+<area shape="rect" id="Node000008" href="$voronoi__charges_8h.html" title=" " alt="" coords="729,108,900,163"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="671,63,761,106,758,110,669,68"/>
+<area shape="rect" id="Node000009" href="$xdm_8h.html" title=" " alt="" coords="924,115,1127,155"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="702,55,947,113,946,118,701,60"/>
 <area shape="rect" id="Node000003" href="$smd__solvation_8h.html" title=" " alt="" coords="5,211,181,265"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="166,167,121,212,117,209,162,163"/>
 <area shape="rect" id="Node000005" href="$point__functors_8h.html" title=" " alt="" coords="205,211,376,265"/>

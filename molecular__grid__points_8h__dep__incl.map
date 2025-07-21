@@ -1,15 +1,17 @@
 <map id="/home/runner/work/occ/occ/include/occ/dft/molecular_grid_points.h" name="/home/runner/work/occ/occ/include/occ/dft/molecular_grid_points.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="405,5,587,60"/>
-<area shape="rect" id="Node000002" href="$molecular__grid_8h.html" title=" " alt="" coords="411,108,581,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="499,74,499,108,493,108,493,74"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="511,5,694,60"/>
+<area shape="rect" id="Node000002" href="$molecular__grid_8h.html" title=" " alt="" coords="517,108,688,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="605,74,605,108,600,108,600,74"/>
 <area shape="rect" id="Node000003" href="$dft_8h.html" title=" " alt="" coords="103,218,281,258"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="405,170,250,220,248,215,403,164"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="505,162,294,213,265,221,264,215,293,208,504,157"/>
 <area shape="rect" id="Node000007" href="$dft_2hirshfeld_8h.html" title=" " alt="" coords="305,211,476,265"/>
-<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="460,174,420,213,416,209,457,170"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="537,171,447,213,445,208,534,166"/>
 <area shape="rect" id="Node000008" href="$seminumerical__exchange_8h.html" title=" " alt="" coords="500,211,705,265"/>
-<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="536,170,577,209,573,213,532,174"/>
-<area shape="rect" id="Node000009" href="$xdm_8h.html" title=" " alt="" coords="729,218,932,258"/>
-<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="595,164,769,215,767,220,594,169"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="605,176,605,211,600,211,600,176"/>
+<area shape="rect" id="Node000009" href="$voronoi__charges_8h.html" title=" " alt="" coords="729,211,900,265"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="671,166,761,208,758,213,669,171"/>
+<area shape="rect" id="Node000010" href="$xdm_8h.html" title=" " alt="" coords="924,218,1127,258"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="702,157,947,215,946,221,701,163"/>
 <area shape="rect" id="Node000004" href="$smd__solvation_8h.html" title=" " alt="" coords="5,313,181,368"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="166,270,121,315,117,311,162,266"/>
 <area shape="rect" id="Node000006" href="$point__functors_8h.html" title=" " alt="" coords="205,313,376,368"/>

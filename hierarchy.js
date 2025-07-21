@@ -345,6 +345,7 @@ var hierarchy =
     [ "occ::isosurface::VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", null ],
     [ "occ::geometry::VolumeGrid", "classocc_1_1geometry_1_1VolumeGrid.html", null ],
     [ "occ::isosurface::VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", null ],
+    [ "occ::dft::VoronoiPartition", "classocc_1_1dft_1_1VoronoiPartition.html", null ],
     [ "occ::qm::Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", null ],
     [ "occ::interaction::transform::WavefunctionTransformer", "classocc_1_1interaction_1_1transform_1_1WavefunctionTransformer.html", null ],
     [ "occ::interaction::WolfParameters", "structocc_1_1interaction_1_1WolfParameters.html", null ],

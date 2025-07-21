@@ -236,6 +236,13 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a71eabab10243c6e13ea9f1de9cc86868"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of available angular pruning schemes.  <a href="namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868">More...</a><br /></td></tr>
 <tr class="separator:a71eabab10243c6e13ea9f1de9cc86868"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0049c665b8184e2a6ad982ac5db8d4bd" id="r_a0049c665b8184e2a6ad982ac5db8d4bd"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a> { <a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda1fb282a269a2bc94abc136c0511daa59">Coarse</a>
+, <a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b">Standard</a>
+, <a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda5999b8900bb8b90cfa1af137d355ff14">Fine</a>
+, <a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda1cdfb5ac70bfa18db750fbc1effea5bf">VeryFine</a>
+ }</td></tr>
+<tr class="memdesc:a0049c665b8184e2a6ad982ac5db8d4bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard grid quality levels (similar to Q-Chem's SG system)  <a href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">More...</a><br /></td></tr>
+<tr class="separator:a0049c665b8184e2a6ad982ac5db8d4bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac216ed773cc0fb9fcb04e266ac5c24a3" id="r_ac216ed773cc0fb9fcb04e266ac5c24a3"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3">JsonFormat</a> { <br />
 &#160;&#160;<a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8">JSON</a>
 , <a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d">UBJSON</a>
@@ -249,6 +256,15 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a6d073839ca41dcaa94a727a05838513f" id="r_a6d073839ca41dcaa94a727a05838513f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a6d073839ca41dcaa94a727a05838513f">get_grid_settings</a> (<a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a> quality)</td></tr>
+<tr class="memdesc:a6d073839ca41dcaa94a727a05838513f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get grid settings for a specific quality level.  <br /></td></tr>
+<tr class="separator:a6d073839ca41dcaa94a727a05838513f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac80751a7daf50e5d90ef35f2e0c6a95a" id="r_ac80751a7daf50e5d90ef35f2e0c6a95a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#ac80751a7daf50e5d90ef35f2e0c6a95a">grid_quality_to_string</a> (<a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a> quality)</td></tr>
+<tr class="memdesc:ac80751a7daf50e5d90ef35f2e0c6a95a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert GridQuality enum to string.  <br /></td></tr>
+<tr class="separator:ac80751a7daf50e5d90ef35f2e0c6a95a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c59135b334b6f9fc88cb74e39d42e7c" id="r_a1c59135b334b6f9fc88cb74e39d42e7c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a1c59135b334b6f9fc88cb74e39d42e7c">grid_quality_from_string</a> (const std::string &amp;str)</td></tr>
+<tr class="memdesc:a1c59135b334b6f9fc88cb74e39d42e7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert string to GridQuality enum.  <br /></td></tr>
+<tr class="separator:a1c59135b334b6f9fc88cb74e39d42e7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f989bea871d753f75479c1ca7d7138f" id="r_a3f989bea871d753f75479c1ca7d7138f"><td class="memItemLeft" align="right" valign="top">nlohmann::json&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a3f989bea871d753f75479c1ca7d7138f">isosurface_to_json</a> (const <a class="el" href="structocc_1_1isosurface_1_1Isosurface.html">isosurface::Isosurface</a> &amp;surf)</td></tr>
 <tr class="separator:a3f989bea871d753f75479c1ca7d7138f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1275d452d99f3cc7c22a12a2b77aef52" id="r_a1275d452d99f3cc7c22a12a2b77aef52"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a1275d452d99f3cc7c22a12a2b77aef52">write_isosurface_json</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1isosurface_1_1Isosurface.html">isosurface::Isosurface</a> &amp;surf)</td></tr>
@@ -330,6 +346,40 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a0049c665b8184e2a6ad982ac5db8d4bd" name="a0049c665b8184e2a6ad982ac5db8d4bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0049c665b8184e2a6ad982ac5db8d4bd">&#9670;&#160;</a></span>GridQuality</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">occ::io::GridQuality</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Standard grid quality levels (similar to Q-Chem's SG system) </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a0049c665b8184e2a6ad982ac5db8d4bda1fb282a269a2bc94abc136c0511daa59" name="a0049c665b8184e2a6ad982ac5db8d4bda1fb282a269a2bc94abc136c0511daa59"></a>Coarse&#160;</td><td class="fielddoc"><p>Like SG-0: ~23 radial, ~170 angular points - fastest, basic accuracy. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b" name="a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b"></a>Standard&#160;</td><td class="fielddoc"><p>Like SG-1: ~50 radial, ~194 angular points - standard for LDA/GGA. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a0049c665b8184e2a6ad982ac5db8d4bda5999b8900bb8b90cfa1af137d355ff14" name="a0049c665b8184e2a6ad982ac5db8d4bda5999b8900bb8b90cfa1af137d355ff14"></a>Fine&#160;</td><td class="fielddoc"><p>Like SG-2: ~75 radial, ~302 angular points - meta-GGAs, B95/B97. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a0049c665b8184e2a6ad982ac5db8d4bda1cdfb5ac70bfa18db750fbc1effea5bf" name="a0049c665b8184e2a6ad982ac5db8d4bda1cdfb5ac70bfa18db750fbc1effea5bf"></a>VeryFine&#160;</td><td class="fielddoc"><p>Like SG-3: ~99 radial, ~590 angular points - Minnesota functionals, highest accuracy. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="ac216ed773cc0fb9fcb04e266ac5c24a3" name="ac216ed773cc0fb9fcb04e266ac5c24a3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac216ed773cc0fb9fcb04e266ac5c24a3">&#9670;&#160;</a></span>JsonFormat</h2>
 
@@ -429,6 +479,93 @@ template&lt;typename T &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6d073839ca41dcaa94a727a05838513f" name="a6d073839ca41dcaa94a727a05838513f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d073839ca41dcaa94a727a05838513f">&#9670;&#160;</a></span>get_grid_settings()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> occ::io::get_grid_settings </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a>&#160;</td>
+          <td class="paramname"><em>quality</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get grid settings for a specific quality level. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">quality</td><td>Grid quality level </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> configured for the specified quality </dd></dl>
+
+</div>
+</div>
+<a id="a1c59135b334b6f9fc88cb74e39d42e7c" name="a1c59135b334b6f9fc88cb74e39d42e7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c59135b334b6f9fc88cb74e39d42e7c">&#9670;&#160;</a></span>grid_quality_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a> occ::io::grid_quality_from_string </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convert string to GridQuality enum. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">str</td><td>String representation (case-insensitive) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>GridQuality Grid quality level </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if string is not recognized </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac80751a7daf50e5d90ef35f2e0c6a95a" name="ac80751a7daf50e5d90ef35f2e0c6a95a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac80751a7daf50e5d90ef35f2e0c6a95a">&#9670;&#160;</a></span>grid_quality_to_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::io::grid_quality_to_string </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a>&#160;</td>
+          <td class="paramname"><em>quality</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convert GridQuality enum to string. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">quality</td><td>Grid quality level </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>std::string String representation of the quality level </dd></dl>
 
 </div>
 </div>

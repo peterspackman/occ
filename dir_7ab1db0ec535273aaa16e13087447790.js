@@ -14,5 +14,6 @@ var dir_7ab1db0ec535273aaa16e13087447790 =
     [ "nonlocal_correlation.h", "nonlocal__correlation_8h.html", "nonlocal__correlation_8h" ],
     [ "range_separated_parameters.h", "range__separated__parameters_8h.html", "range__separated__parameters_8h" ],
     [ "seminumerical_exchange.h", "seminumerical__exchange_8h.html", "seminumerical__exchange_8h" ],
+    [ "voronoi_charges.h", "voronoi__charges_8h.html", "voronoi__charges_8h" ],
     [ "xc_potential_matrix.h", "xc__potential__matrix_8h.html", "xc__potential__matrix_8h" ]
 ];
