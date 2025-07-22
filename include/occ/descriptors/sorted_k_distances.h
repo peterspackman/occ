@@ -15,12 +15,11 @@
  */
 
 // Platform detection and SIMD includes
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) ||    \
-    defined(_M_ARM64)
+#if !defined(OCC_DISABLE_SIMD) && (defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64))
 #include <arm_neon.h>
 #define HAS_NEON 1
 #define HAS_AVX2 0
-#elif defined(__AVX2__) || (defined(_MSC_VER) && defined(__AVX2__))
+#elif !defined(OCC_DISABLE_SIMD) && (defined(__AVX2__) || (defined(_MSC_VER) && defined(__AVX2__)))
 #include <immintrin.h>
 #define HAS_NEON 0
 #define HAS_AVX2 1

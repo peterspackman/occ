@@ -44,6 +44,10 @@ target_link_libraries(occ_core
 )
 endif()
 
+if(NOT ENABLE_HOST_OPT)
+    target_compile_definitions(occ_core PUBLIC OCC_DISABLE_SIMD)
+endif()
+
 target_link_libraries(occ_core
     PUBLIC 
     Eigen3::Eigen 
