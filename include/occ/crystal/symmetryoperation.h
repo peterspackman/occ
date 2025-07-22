@@ -79,15 +79,17 @@ public:
   SymmetryOperation inverted() const;
 
   /**
-   * Returns an inverted copy of this symmetry operation e.g. (x,y,z) ->
+   * Returns a translated copy of this symmetry operation e.g. (x,y,z) ->
    * (x+1/2,y+1/3,z-1/3) etc.
+   *
+   * \param t The translation vector to add
+   * \param canonicalize If true, translation components are reduced to [0, 1) range
    *
    * \returns `SymmetryOperation` equivalent to this after the translation
    *
-   * \note Translation is in the range [0, 1] i.e. 4/3 will be expressed as
-   * 1/3
+   * \note If canonicalize is true, translation is in the range [0, 1] i.e. 4/3 will be expressed as 1/3
    */
-  SymmetryOperation translated(const Vec3 &) const;
+  SymmetryOperation translated(const Vec3 &t, bool canonicalize = false) const;
 
   /**
    * Is this the identity symop?

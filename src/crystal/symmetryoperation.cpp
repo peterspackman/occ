@@ -93,19 +93,34 @@ std::string encode_string(const Mat4 &seitz,
   for (int i = 0; i < 3; i++) {
     auto t = Fraction(seitz(i, 3)).limit_denominator(12);
     std::string v = "";
-    if (!(t == 0)) {
-      v += t.to_string();
-    }
+    
+    // First add the variables (x, y, z terms)
+    bool has_variable = false;
     for (int j = 0; j < 3; j++) {
       auto c = seitz(i, j);
       if (c < -0.1) {
         v += "-" + symbols.substr(j, 1);
+        has_variable = true;
       } else if (c > 0.1) {
-        if (!(t == 0))
+        if (!v.empty())  // Add + if there's already content
           v += "+";
         v += symbols.substr(j, 1);
+        has_variable = true;
       }
     }
+    
+    // Then add the translation if present
+    if (!(t == 0)) {
+      if (has_variable) {
+        // Add + or - based on sign of translation
+        if (t.cast<double>() > 0) {
+          v += "+";
+        }
+        // Negative fractions already have their sign
+      }
+      v += t.to_string();
+    }
+    
     res.push_back(fmt::format(fmt::runtime(format.fmt_string), v));
   }
   std::string result = join(res, format.delimiter);
@@ -154,9 +169,18 @@ SymmetryOperation::SymmetryOperation(const std::string &str) {
   decode_string(str, m_seitz);
 }
 
-SymmetryOperation SymmetryOperation::translated(const Vec3 &t) const {
+SymmetryOperation SymmetryOperation::translated(const Vec3 &t, bool canonicalize) const {
   SymmetryOperation result = *this;
   result.m_seitz.block(0, 3, 3, 1) += t;
+  
+  if (canonicalize) {
+    // Reduce translation components to [0, 1) range
+    // Add a large positive number to handle negative values correctly
+    for (int i = 0; i < 3; ++i) {
+      result.m_seitz(i, 3) = std::fmod(result.m_seitz(i, 3) + 10.0, 1.0);
+    }
+  }
+  
   return result;
 }
 
