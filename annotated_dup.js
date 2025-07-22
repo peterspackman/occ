@@ -96,7 +96,11 @@ var annotated_dup =
         [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ]
       ] ],
       [ "descriptors", "namespaceocc_1_1descriptors.html", [
+        [ "FastNeighborFinder", "classocc_1_1descriptors_1_1FastNeighborFinder.html", "classocc_1_1descriptors_1_1FastNeighborFinder" ],
+        [ "PointwiseDistanceDistribution", "classocc_1_1descriptors_1_1PointwiseDistanceDistribution.html", "classocc_1_1descriptors_1_1PointwiseDistanceDistribution" ],
+        [ "PointwiseDistanceDistributionConfig", "structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html", "structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig" ],
         [ "PromoleculeDensityShape", "structocc_1_1descriptors_1_1PromoleculeDensityShape.html", "structocc_1_1descriptors_1_1PromoleculeDensityShape" ],
+        [ "SortedKDistances", "classocc_1_1descriptors_1_1SortedKDistances.html", "classocc_1_1descriptors_1_1SortedKDistances" ],
         [ "Steinhardt", "classocc_1_1descriptors_1_1Steinhardt.html", "classocc_1_1descriptors_1_1Steinhardt" ]
       ] ],
       [ "dft", "namespaceocc_1_1dft.html", [

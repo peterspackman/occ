@@ -16,10 +16,11 @@ var searchData=
   ['lebedev_5fgrid_5flevels_13',['lebedev_grid_levels',['../namespaceocc_1_1dft.html#afe5b60f5c95720630ce9b842de705f17',1,'occ::dft']]],
   ['left_14',['left',['../structocc_1_1io_1_1ColumnConfiguration_1_1Border.html#a0749faab2f125909f360f02051825f35',1,'occ::io::ColumnConfiguration::Border::left'],['../structocc_1_1io_1_1RowConfiguration_1_1Border.html#a41d9f0dbc902fe450f734c0f7e0c9da0',1,'occ::io::RowConfiguration::Border::left']]],
   ['lengths_15',['lengths',['../structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#ac7482806d88b3f2fb78ff702a019e572',1,'occ::geometry::mc::MarchingCubes']]],
-  ['limits_16',['limits',['../structocc_1_1dma_1_1DMASites.html#a67724056cadc5fcd63acbfbb9fe305a4',1,'occ::dma::DMASites']]],
-  ['link0_5fcommands_17',['link0_commands',['../structocc_1_1io_1_1GaussianInputFile.html#a13b4a72b783628f6c75c2ae92770433b',1,'occ::io::GaussianInputFile']]],
-  ['list_5fsolvents_18',['list_solvents',['../structocc_1_1main_1_1CGConfig.html#ac93e90da36e44bf38d266ae92c60ef07',1,'occ::main::CGConfig']]],
-  ['listcount_19',['listCount',['../structtinyply_1_1PlyProperty.html#a99574f7f41aea686235487fe27e3dd70',1,'tinyply::PlyProperty']]],
-  ['listtype_20',['listType',['../structtinyply_1_1PlyProperty.html#ab401e48dbf2cec2f9f0128441ddc6dce',1,'tinyply::PlyProperty']]],
-  ['lower_21',['lower',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a2dab9abf817d75a7500d569f32ff6374',1,'occ::isosurface::AxisAlignedBoundingBox']]]
+  ['lexsort_16',['lexsort',['../structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#aa546383b344f0740fcbe08ad029c539b',1,'occ::descriptors::PointwiseDistanceDistributionConfig']]],
+  ['limits_17',['limits',['../structocc_1_1dma_1_1DMASites.html#a67724056cadc5fcd63acbfbb9fe305a4',1,'occ::dma::DMASites']]],
+  ['link0_5fcommands_18',['link0_commands',['../structocc_1_1io_1_1GaussianInputFile.html#a13b4a72b783628f6c75c2ae92770433b',1,'occ::io::GaussianInputFile']]],
+  ['list_5fsolvents_19',['list_solvents',['../structocc_1_1main_1_1CGConfig.html#ac93e90da36e44bf38d266ae92c60ef07',1,'occ::main::CGConfig']]],
+  ['listcount_20',['listCount',['../structtinyply_1_1PlyProperty.html#a99574f7f41aea686235487fe27e3dd70',1,'tinyply::PlyProperty']]],
+  ['listtype_21',['listType',['../structtinyply_1_1PlyProperty.html#ab401e48dbf2cec2f9f0128441ddc6dce',1,'tinyply::PlyProperty']]],
+  ['lower_22',['lower',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a2dab9abf817d75a7500d569f32ff6374',1,'occ::isosurface::AxisAlignedBoundingBox']]]
 ];

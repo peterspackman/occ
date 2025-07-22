@@ -1,0 +1,13 @@
+<map id="/home/runner/work/occ/occ/include/occ/descriptors/sorted_k_distances.h" name="/home/runner/work/occ/occ/include/occ/descriptors/sorted_k_distances.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="159,5,360,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,97,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,63,93,105,91,100,195,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="122,108,207,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="232,62,189,101,186,97,229,58"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="231,108,287,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="262,60,262,94,257,94,257,60"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="311,108,378,133"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="287,58,325,96,321,100,284,62"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="402,108,461,133"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="313,58,397,99,395,104,311,62"/>
+</map>
