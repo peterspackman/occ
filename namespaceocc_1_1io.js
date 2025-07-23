@@ -47,6 +47,7 @@ var namespaceocc_1_1io =
     [ "ReferenceData", "structocc_1_1io_1_1ReferenceData.html", "structocc_1_1io_1_1ReferenceData" ],
     [ "RowConfiguration", "structocc_1_1io_1_1RowConfiguration.html", "structocc_1_1io_1_1RowConfiguration" ],
     [ "RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", "structocc_1_1io_1_1RuntimeInput" ],
+    [ "ShelxFile", "classocc_1_1io_1_1ShelxFile.html", "classocc_1_1io_1_1ShelxFile" ],
     [ "SolventInput", "structocc_1_1io_1_1SolventInput.html", "structocc_1_1io_1_1SolventInput" ],
     [ "SymmetryData", "structocc_1_1io_1_1SymmetryData.html", "structocc_1_1io_1_1SymmetryData" ],
     [ "Table", "classocc_1_1io_1_1Table.html", "classocc_1_1io_1_1Table" ],

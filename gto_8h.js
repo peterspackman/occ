@@ -15,5 +15,7 @@ var gto_8h =
     [ "shell_component_labels", "gto_8h.html#ae0f4c6fdf0ed23a01156d3948805699b", null ],
     [ "spherical_subshell_ordering", "gto_8h.html#ab96a977721a38f84b5ba6be10551012c", null ],
     [ "spherical_to_cartesian_transformation_matrix", "gto_8h.html#a98e12baac9f4da4bf30071d6a36bfe56", null ],
+    [ "transform_density_matrix_cartesian_to_spherical", "gto_8h.html#a5ed432407e6a7c6287cacd55ab4179cd", null ],
+    [ "transform_density_matrix_spherical_to_cartesian", "gto_8h.html#a4e1cd59ef016c4de76bfe0341950de21", null ],
     [ "shell_labels", "gto_8h.html#a3e9459ef5bda25033e9c3fd20e143d15", null ]
 ];

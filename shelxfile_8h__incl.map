@@ -1,0 +1,23 @@
+<map id="/home/runner/work/occ/occ/include/occ/io/shelxfile.h" name="/home/runner/work/occ/occ/include/occ/io/shelxfile.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="459,5,671,45"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,93,196,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="459,47,182,94,181,88,458,42"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="220,93,293,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="492,48,307,95,306,89,490,43"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="317,93,503,119"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="529,48,446,89,444,85,526,43"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="527,93,602,119"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="567,46,567,79,562,79,562,46"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="627,93,703,119"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="591,43,640,82,637,87,587,48"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="727,93,786,119"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="612,43,717,86,715,91,610,48"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="811,93,873,119"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="632,43,798,90,797,95,630,48"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="221,167,324,192"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="389,121,308,163,306,158,387,116"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="348,167,472,192"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="413,119,413,153,407,153,407,119"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="496,167,585,192"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="432,116,509,158,506,162,430,121"/>
+</map>

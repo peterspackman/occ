@@ -26,6 +26,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "pc.h", "pc_8h.html", "pc_8h" ],
     [ "ply.h", "ply_8h.html", "ply_8h" ],
     [ "qcschema.h", "qcschema_8h.html", "qcschema_8h" ],
+    [ "shelxfile.h", "shelxfile_8h.html", "shelxfile_8h" ],
     [ "solvent_json.h", "solvent__json_8h.html", "solvent__json_8h" ],
     [ "tinyply.h", "tinyply_8h.html", "tinyply_8h" ],
     [ "wavefunction_json.h", "wavefunction__json_8h.html", "wavefunction__json_8h" ],

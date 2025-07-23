@@ -20,6 +20,6 @@ var classocc_1_1crystal_1_1SymmetryOperation =
     [ "seitz", "classocc_1_1crystal_1_1SymmetryOperation.html#ae618466a9af54ae7d7eba43d3eaa33a5", null ],
     [ "to_int", "classocc_1_1crystal_1_1SymmetryOperation.html#a36f45c065997cc06351555c67b28e6ca", null ],
     [ "to_string", "classocc_1_1crystal_1_1SymmetryOperation.html#a28cc909fad2e092a36ea0fea433c43c6", null ],
-    [ "translated", "classocc_1_1crystal_1_1SymmetryOperation.html#a324b96a6407e22f4e7f64a7fe376eac2", null ],
+    [ "translated", "classocc_1_1crystal_1_1SymmetryOperation.html#a7bbae0e94e6edbcd1120839f7ab5c2ff", null ],
     [ "translation", "classocc_1_1crystal_1_1SymmetryOperation.html#a60fb8d93ab3dc83902a53b5f749de89e", null ]
 ];

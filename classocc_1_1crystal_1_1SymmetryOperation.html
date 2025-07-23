@@ -129,9 +129,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a69c016843e9d1338bfd85f655bdd00a4" id="r_a69c016843e9d1338bfd85f655bdd00a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a69c016843e9d1338bfd85f655bdd00a4">inverted</a> () const</td></tr>
 <tr class="memdesc:a69c016843e9d1338bfd85f655bdd00a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an inverted copy of this symmetry operation e.g.  <br /></td></tr>
 <tr class="separator:a69c016843e9d1338bfd85f655bdd00a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a324b96a6407e22f4e7f64a7fe376eac2" id="r_a324b96a6407e22f4e7f64a7fe376eac2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a324b96a6407e22f4e7f64a7fe376eac2">translated</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;) const</td></tr>
-<tr class="memdesc:a324b96a6407e22f4e7f64a7fe376eac2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an inverted copy of this symmetry operation e.g.  <br /></td></tr>
-<tr class="separator:a324b96a6407e22f4e7f64a7fe376eac2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bbae0e94e6edbcd1120839f7ab5c2ff" id="r_a7bbae0e94e6edbcd1120839f7ab5c2ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a7bbae0e94e6edbcd1120839f7ab5c2ff">translated</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;t, bool canonicalize=false) const</td></tr>
+<tr class="memdesc:a7bbae0e94e6edbcd1120839f7ab5c2ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a translated copy of this symmetry operation e.g.  <br /></td></tr>
+<tr class="separator:a7bbae0e94e6edbcd1120839f7ab5c2ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2fb626a7ec05c2c43b1dceb6ba5e739d" id="r_a2fb626a7ec05c2c43b1dceb6ba5e739d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a2fb626a7ec05c2c43b1dceb6ba5e739d">is_identity</a> () const</td></tr>
 <tr class="memdesc:a2fb626a7ec05c2c43b1dceb6ba5e739d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is this the identity symop?  <br /></td></tr>
 <tr class="separator:a2fb626a7ec05c2c43b1dceb6ba5e739d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -714,8 +714,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a324b96a6407e22f4e7f64a7fe376eac2" name="a324b96a6407e22f4e7f64a7fe376eac2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a324b96a6407e22f4e7f64a7fe376eac2">&#9670;&#160;</a></span>translated()</h2>
+<a id="a7bbae0e94e6edbcd1120839f7ab5c2ff" name="a7bbae0e94e6edbcd1120839f7ab5c2ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7bbae0e94e6edbcd1120839f7ab5c2ff">&#9670;&#160;</a></span>translated()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -724,16 +724,33 @@ Public Member Functions</h2></td></tr>
           <td class="memname"><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a> occ::crystal::SymmetryOperation::translated </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>canonicalize</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns an inverted copy of this symmetry operation e.g. </p>
+<p>Returns a translated copy of this symmetry operation e.g. </p>
 <p>(x,y,z) -&gt; (x+1/2,y+1/3,z-1/3) etc.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>The translation vector to add </td></tr>
+    <tr><td class="paramname">canonicalize</td><td>If true, translation components are reduced to [0, 1) range</td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd><code><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html" title="Class representing a 3D symmetry operation.">SymmetryOperation</a></code> equivalent to this after the translation</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>Translation is in the range [0, 1] i.e. 4/3 will be expressed as 1/3 </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>If canonicalize is true, translation is in the range [0, 1] i.e. 4/3 will be expressed as 1/3 </dd></dl>
 
 </div>
 </div>

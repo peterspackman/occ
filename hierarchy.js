@@ -298,6 +298,7 @@ var hierarchy =
     [ "occ::dft::cosx::SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", null ],
     [ "occ::qm::Shell", "structocc_1_1qm_1_1Shell.html", null ],
     [ "occ::slater::Shell", "classocc_1_1slater_1_1Shell.html", null ],
+    [ "occ::io::ShelxFile", "classocc_1_1io_1_1ShelxFile.html", null ],
     [ "occ::sht::SHT", "classocc_1_1sht_1_1SHT.html", null ],
     [ "occ::crystal::SiteIndex", "structocc_1_1crystal_1_1SiteIndex.html", null ],
     [ "occ::crystal::SiteIndexHash", "structocc_1_1crystal_1_1SiteIndexHash.html", null ],

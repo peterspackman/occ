@@ -31,5 +31,7 @@ var namespaceocc_1_1gto =
     [ "spherical_gaussian_rotation_matrices", "namespaceocc_1_1gto.html#ac91eb2f1d2bcd07b7baa701b8ac17215", null ],
     [ "spherical_subshell_ordering", "namespaceocc_1_1gto.html#ab96a977721a38f84b5ba6be10551012c", null ],
     [ "spherical_to_cartesian_transformation_matrix", "namespaceocc_1_1gto.html#a98e12baac9f4da4bf30071d6a36bfe56", null ],
+    [ "transform_density_matrix_cartesian_to_spherical", "namespaceocc_1_1gto.html#a5ed432407e6a7c6287cacd55ab4179cd", null ],
+    [ "transform_density_matrix_spherical_to_cartesian", "namespaceocc_1_1gto.html#a4e1cd59ef016c4de76bfe0341950de21", null ],
     [ "shell_labels", "namespaceocc_1_1gto.html#a3e9459ef5bda25033e9c3fd20e143d15", null ]
 ];
