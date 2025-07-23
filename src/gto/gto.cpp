@@ -461,45 +461,104 @@ Mat cartesian_to_spherical_transformation_matrix(int l) {
 }
 
 Mat spherical_to_cartesian_transformation_matrix(int l) {
-  throw std::runtime_error(
-      "Not implemented: spherical_to_cartesian_transformation matrix "
-      "normalisation is wrong");
-  using occ::util::factorial;
-  Mat c = cartesian_to_spherical_transformation_matrix(l);
-  Mat S = Mat::Zero(num_subshells(true, l), num_subshells(true, l));
+  if (l == 0) {
+    Mat result(1, 1);
+    result(0, 0) = 1.0;
+    return result;
+  }
 
-  size_t i = 0;
-  auto lambda = [&](int lx1, int ly1, int lz1, int L1) {
-    size_t j = 0;
-    auto lambda2 = [&](int lx2, int ly2, int lz2, int L2) {
-      int lxsum = lx1 + lx2;
-      int lysum = ly1 + ly2;
-      int lzsum = lz1 + lz2;
-      if (lxsum % 2 || lysum % 2 || lzsum % 2) {
-        j++;
-        return;
-      }
-      double lhs = factorial(lxsum) / factorial(lxsum / 2) * factorial(lysum) /
-                   factorial(lysum / 2) * factorial(lzsum) /
-                   factorial(lzsum / 2);
-      double rhs =
-          std::sqrt(factorial(lx1) / factorial(2 * lx1) * factorial(ly1) /
-                    factorial(2 * ly1) * factorial(lz1) / factorial(2 * lz1) *
-                    factorial(lx2) / factorial(2 * lx2) * factorial(ly2) /
-                    factorial(2 * ly2) * factorial(lz2) / factorial(2 * lz2));
-      S(i, j) = lhs * rhs;
-      if (L1 > 1) {
-        S(i, j) /= common_fac(L1, true);
-      }
-      if (L2 > 1) {
-        S(i, j) /= common_fac(L2, true);
-      }
-      j++;
-    };
-    iterate_over_shell<true>(lambda2, l);
-    i++;
-  };
-  iterate_over_shell<true>(lambda, l);
-  return S * c.transpose();
+  Mat c2s = cartesian_to_spherical_transformation_matrix(l);
+  return c2s.transpose();
 }
+
+Mat transform_density_matrix_spherical_to_cartesian(const qm::AOBasis &basis_sph, 
+                                                    const Mat &D_sph) {
+  // Check if already cartesian
+  if (!basis_sph.is_pure()) {
+    return D_sph;
+  }
+  
+  // Create cartesian version of the basis
+  qm::AOBasis basis_cart = basis_sph;
+  basis_cart.set_pure(false);
+  
+  const auto shell2bf_sph = basis_sph.first_bf();
+  const auto shell2bf_cart = basis_cart.first_bf();
+  
+  Mat D_cart = Mat::Zero(basis_cart.nbf(), basis_cart.nbf());
+  
+  for (size_t s1 = 0; s1 < basis_sph.size(); s1++) {
+    const auto &shell_sph_1 = basis_sph[s1];
+    const auto &shell_cart_1 = basis_cart[s1];
+    size_t bf_first_sph_1 = shell2bf_sph[s1];
+    size_t bf_first_cart_1 = shell2bf_cart[s1];
+    size_t shell_size_sph_1 = shell_sph_1.size();
+    size_t shell_size_cart_1 = shell_cart_1.size();
+    int l1 = shell_sph_1.l;
+    Mat T1 = spherical_to_cartesian_transformation_matrix(l1);
+    
+    for (size_t s2 = 0; s2 < basis_sph.size(); s2++) {
+      const auto &shell_sph_2 = basis_sph[s2];
+      const auto &shell_cart_2 = basis_cart[s2];
+      size_t bf_first_sph_2 = shell2bf_sph[s2];
+      size_t bf_first_cart_2 = shell2bf_cart[s2];
+      size_t shell_size_sph_2 = shell_sph_2.size();
+      size_t shell_size_cart_2 = shell_cart_2.size();
+      int l2 = shell_sph_2.l;
+      Mat T2 = spherical_to_cartesian_transformation_matrix(l2);
+      
+      // Transform the block: D_cart = T1 * D_sph * T2^T
+      D_cart.block(bf_first_cart_1, bf_first_cart_2, shell_size_cart_1, shell_size_cart_2) =
+        T1 * D_sph.block(bf_first_sph_1, bf_first_sph_2, shell_size_sph_1, shell_size_sph_2) * T2.transpose();
+    }
+  }
+  
+  return D_cart;
+}
+
+Mat transform_density_matrix_cartesian_to_spherical(const qm::AOBasis &basis_cart, 
+                                                    const Mat &D_cart) {
+  // Check if already spherical
+  if (basis_cart.is_pure()) {
+    return D_cart;
+  }
+  
+  // Create spherical version of the basis
+  qm::AOBasis basis_sph = basis_cart;
+  basis_sph.set_pure(true);
+  
+  const auto shell2bf_cart = basis_cart.first_bf();
+  const auto shell2bf_sph = basis_sph.first_bf();
+  
+  Mat D_sph = Mat::Zero(basis_sph.nbf(), basis_sph.nbf());
+  
+  for (size_t s1 = 0; s1 < basis_cart.size(); s1++) {
+    const auto &shell_cart_1 = basis_cart[s1];
+    const auto &shell_sph_1 = basis_sph[s1];
+    size_t bf_first_cart_1 = shell2bf_cart[s1];
+    size_t bf_first_sph_1 = shell2bf_sph[s1];
+    size_t shell_size_cart_1 = shell_cart_1.size();
+    size_t shell_size_sph_1 = shell_sph_1.size();
+    int l1 = shell_cart_1.l;
+    Mat T1 = cartesian_to_spherical_transformation_matrix(l1);
+    
+    for (size_t s2 = 0; s2 < basis_cart.size(); s2++) {
+      const auto &shell_cart_2 = basis_cart[s2];
+      const auto &shell_sph_2 = basis_sph[s2];
+      size_t bf_first_cart_2 = shell2bf_cart[s2];
+      size_t bf_first_sph_2 = shell2bf_sph[s2];
+      size_t shell_size_cart_2 = shell_cart_2.size();
+      size_t shell_size_sph_2 = shell_sph_2.size();
+      int l2 = shell_cart_2.l;
+      Mat T2 = cartesian_to_spherical_transformation_matrix(l2);
+      
+      // Transform the block: D_sph = T1 * D_cart * T2^T
+      D_sph.block(bf_first_sph_1, bf_first_sph_2, shell_size_sph_1, shell_size_sph_2) =
+        T1 * D_cart.block(bf_first_cart_1, bf_first_cart_2, shell_size_cart_1, shell_size_cart_2) * T2.transpose();
+    }
+  }
+  
+  return D_sph;
+}
+
 } // namespace occ::gto

@@ -5,6 +5,7 @@
 #include <occ/dma/multipole_calculator.h>
 #include <occ/dma/multipole_shifter.h>
 #include <occ/gto/density.h>
+#include <occ/gto/gto.h>
 #include <occ/io/conversion.h>
 
 namespace occ::dma {
@@ -12,6 +13,7 @@ namespace occ::dma {
 DMACalculator::DMACalculator(const qm::Wavefunction &wfn)
     : m_basis(wfn.basis), m_mo(wfn.mo) {
 
+  // Transform to cartesian basis and density matrix
   m_basis.set_pure(false);
   m_mo.to_cartesian(wfn.basis, m_basis);
 

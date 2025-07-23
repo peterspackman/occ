@@ -192,4 +192,9 @@ cartesian_gaussian_power_index_arrays() {
 Mat cartesian_to_spherical_transformation_matrix(int l);
 Mat spherical_to_cartesian_transformation_matrix(int l);
 
+Mat transform_density_matrix_spherical_to_cartesian(const qm::AOBasis &basis_sph, 
+                                                    const Mat &D_sph);
+Mat transform_density_matrix_cartesian_to_spherical(const qm::AOBasis &basis_cart, 
+                                                    const Mat &D_cart);
+
 } // namespace occ::gto
