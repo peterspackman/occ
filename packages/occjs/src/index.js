@@ -154,6 +154,14 @@ import {
   quickCalculation
 } from './qm/index.js';
 
+// Import DMA functionality
+import { 
+  calculateDMA,
+  generatePunchFile,
+  DMAConfig,
+  DMAResult
+} from './dma.js';
+
 /**
  * Main QM calculation factory with module loading
  * @param {Object} molecule - Molecule object
@@ -203,7 +211,14 @@ export {
   createMP2Calculation,
   createHFMP2Workflow,
   createDFTWorkflow,
-  quickCalculation
+  quickCalculation,
+  // DMA functionality
+  calculateDMA,
+  generatePunchFile,
+  DMAConfig,
+  DMAResult,
+  // Wavefunction utilities
+  wavefunctionFromString
 };
 
 // Re-export some common classes/functions after loading
@@ -212,4 +227,15 @@ export function getModule() {
     throw new Error('OCC module not loaded. Call loadOCC() first.');
   }
   return moduleInstance;
+}
+
+/**
+ * Helper function to create a wavefunction from string content
+ * @param {string} content - File content (FCHK or Molden format)
+ * @param {string} format - Format type ("fchk" or "molden")
+ * @returns {Promise<Object>} Wavefunction object
+ */
+export async function wavefunctionFromString(content, format) {
+  const Module = await loadOCC();
+  return Module.Wavefunction.fromString(content, format);
 }

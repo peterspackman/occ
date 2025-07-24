@@ -1448,3 +1448,107 @@ TEST_CASE("C2H4 G03", "[dma]") {
     }
   }
 }
+
+TEST_CASE("Mult accessor functions", "[dma]") {
+  // Create a test multipole with rank 4
+  Mult mult(4);
+  
+  // Set some test values using direct access
+  mult.q(0) = 1.5;    // Q00
+  mult.q(1) = -0.3;   // Q10  
+  mult.q(2) = 0.7;    // Q11c
+  mult.q(3) = -0.2;   // Q11s
+  mult.q(4) = 0.9;    // Q20
+  mult.q(5) = 0.4;    // Q21c
+  mult.q(6) = -0.6;   // Q21s
+  mult.q(7) = 0.1;    // Q22c
+  mult.q(8) = 0.8;    // Q22s
+  mult.q(16) = 2.1;   // Q40
+  mult.q(23) = -1.2;  // Q44c
+  mult.q(24) = 0.5;   // Q44s
+  
+  SECTION("Test component_name_to_lm helper function") {
+    // Test various component name formats
+    CHECK(Mult::component_name_to_lm("charge") == std::make_pair(0, 0));
+    CHECK(Mult::component_name_to_lm("Q00") == std::make_pair(0, 0));
+    CHECK(Mult::component_name_to_lm("Q10") == std::make_pair(1, 0));
+    CHECK(Mult::component_name_to_lm("Q11c") == std::make_pair(1, 1));
+    CHECK(Mult::component_name_to_lm("Q11s") == std::make_pair(1, -1));
+    CHECK(Mult::component_name_to_lm("Q20") == std::make_pair(2, 0));
+    CHECK(Mult::component_name_to_lm("Q21c") == std::make_pair(2, 1));
+    CHECK(Mult::component_name_to_lm("Q21s") == std::make_pair(2, -1));
+    CHECK(Mult::component_name_to_lm("Q22c") == std::make_pair(2, 2));
+    CHECK(Mult::component_name_to_lm("Q22s") == std::make_pair(2, -2));
+    CHECK(Mult::component_name_to_lm("Q40") == std::make_pair(4, 0));
+    CHECK(Mult::component_name_to_lm("Q44c") == std::make_pair(4, 4));
+    CHECK(Mult::component_name_to_lm("Q44s") == std::make_pair(4, -4));
+    
+    // Test invalid names
+    CHECK(Mult::component_name_to_lm("invalid") == std::make_pair(-1, 0));
+    CHECK(Mult::component_name_to_lm("Q") == std::make_pair(-1, 0));
+    CHECK(Mult::component_name_to_lm("Q1") == std::make_pair(-1, 0));
+  }
+  
+  SECTION("Test get_multipole vs inline accessors") {
+    // Test rank 0 (monopole)
+    CHECK(mult.get_multipole(0, 0) == Approx(mult.Q00()));
+    CHECK(mult.get_multipole(0, 0) == Approx(mult.charge()));
+    
+    // Test rank 1 (dipole)
+    CHECK(mult.get_multipole(1, 0) == Approx(mult.Q10()));
+    CHECK(mult.get_multipole(1, 1) == Approx(mult.Q11c()));
+    CHECK(mult.get_multipole(1, -1) == Approx(mult.Q11s()));
+    
+    // Test rank 2 (quadrupole)
+    CHECK(mult.get_multipole(2, 0) == Approx(mult.Q20()));
+    CHECK(mult.get_multipole(2, 1) == Approx(mult.Q21c()));
+    CHECK(mult.get_multipole(2, -1) == Approx(mult.Q21s()));
+    CHECK(mult.get_multipole(2, 2) == Approx(mult.Q22c()));
+    CHECK(mult.get_multipole(2, -2) == Approx(mult.Q22s()));
+    
+    // Test rank 4 (hexadecapole)
+    CHECK(mult.get_multipole(4, 0) == Approx(mult.Q40()));
+    CHECK(mult.get_multipole(4, 4) == Approx(mult.Q44c()));
+    CHECK(mult.get_multipole(4, -4) == Approx(mult.Q44s()));
+  }
+  
+  SECTION("Test get_component vs inline accessors") {
+    // Test using component names
+    CHECK(mult.get_component("charge") == Approx(mult.charge()));
+    CHECK(mult.get_component("Q00") == Approx(mult.Q00()));
+    CHECK(mult.get_component("Q10") == Approx(mult.Q10()));
+    CHECK(mult.get_component("Q11c") == Approx(mult.Q11c()));
+    CHECK(mult.get_component("Q11s") == Approx(mult.Q11s()));
+    CHECK(mult.get_component("Q20") == Approx(mult.Q20()));
+    CHECK(mult.get_component("Q21c") == Approx(mult.Q21c()));
+    CHECK(mult.get_component("Q21s") == Approx(mult.Q21s()));
+    CHECK(mult.get_component("Q22c") == Approx(mult.Q22c()));
+    CHECK(mult.get_component("Q22s") == Approx(mult.Q22s()));
+    CHECK(mult.get_component("Q40") == Approx(mult.Q40()));
+    CHECK(mult.get_component("Q44c") == Approx(mult.Q44c()));
+    CHECK(mult.get_component("Q44s") == Approx(mult.Q44s()));
+  }
+  
+  SECTION("Test boundary conditions") {
+    // Test invalid l,m combinations
+    CHECK(mult.get_multipole(-1, 0) == 0.0);  // Negative rank
+    CHECK(mult.get_multipole(1, 2) == 0.0);   // |m| > l
+    CHECK(mult.get_multipole(1, -2) == 0.0);  // |m| > l
+    CHECK(mult.get_multipole(10, 0) == 0.0);  // Rank > max_rank
+    
+    // Test invalid component names
+    CHECK(mult.get_component("invalid") == 0.0);
+    CHECK(mult.get_component("Q99c") == 0.0);  // Beyond max rank
+    CHECK(mult.get_component("Q1x") == 0.0);   // Invalid format
+  }
+  
+  SECTION("Test modifiable accessors") {
+    // Test that we can modify values through the new accessors
+    mult.get_multipole(3, 1) = 99.9;
+    CHECK(mult.Q31c() == Approx(99.9));
+    
+    mult.get_component("Q32s") = -88.8;
+    CHECK(mult.Q32s() == Approx(-88.8));
+    CHECK(mult.get_multipole(3, -2) == Approx(-88.8));
+  }
+}

@@ -577,7 +577,7 @@ void MultipoleCalculator::process_electronic_contributions(
   };
 
   // Execute parallel computation
-  occ::parallel::parallel_do_timed(lambda, occ::timing::category::dma_total);
+  occ::parallel::parallel_do(lambda);
 
   // Reduce results from all threads
   for (int t = 0; t < nthreads; t++) {

@@ -348,6 +348,19 @@ void register_qm_bindings() {
                         auto reader = occ::io::MoldenReader(filename);
                         return Wavefunction(reader);
                       }))
+      .class_function("fromString",
+                      optional_override([](const std::string &content, const std::string &format) {
+                        std::istringstream stream(content);
+                        if (format == "fchk") {
+                          auto reader = occ::io::FchkReader(stream);
+                          return Wavefunction(reader);
+                        } else if (format == "molden") {
+                          auto reader = occ::io::MoldenReader(stream);
+                          return Wavefunction(reader);
+                        } else {
+                          throw std::runtime_error("Unsupported format for fromString: " + format);
+                        }
+                      }))
       .function("toString", optional_override([](const Wavefunction &wfn) {
                   std::string formula = "molecule"; // Simplified for now
                   return std::string("<Wavefunction ") + formula + " " +

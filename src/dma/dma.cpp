@@ -13,21 +13,29 @@ namespace occ::dma {
 DMACalculator::DMACalculator(const qm::Wavefunction &wfn)
     : m_basis(wfn.basis), m_mo(wfn.mo) {
 
-  // Transform to cartesian basis and density matrix
-  m_basis.set_pure(false);
-  m_mo.to_cartesian(wfn.basis, m_basis);
+  // Transform to cartesian basis and density matrix only if needed
+  if (wfn.basis.is_pure()) {
+    m_basis.set_pure(false);
+    m_mo.to_cartesian(wfn.basis, m_basis);
+  }
 
   m_sites.atoms = wfn.atoms;
   m_sites.positions = wfn.positions();
   const auto N = m_sites.size();
 
-  m_sites.atom_indices = IVec::LinSpaced(N, 0, N);
+  m_sites.atom_indices = IVec::LinSpaced(N, 0, N-1);
   m_sites.radii = Vec::Ones(N) * 0.65 * occ::units::ANGSTROM_TO_BOHR;
   m_sites.limits = IVec::Ones(N) * 4;
+  
   for (int i = 0; i < m_sites.size(); i++) {
-    m_sites.name.push_back(
-        core::Element(m_sites.atoms[m_sites.atom_indices(i)].atomic_number)
-            .symbol());
+    int atom_idx = m_sites.atom_indices(i);
+    if (atom_idx >= 0 && atom_idx < m_sites.atoms.size()) {
+      int atomic_number = m_sites.atoms[atom_idx].atomic_number;
+      std::string symbol = core::Element(atomic_number).symbol();
+      m_sites.name.push_back(symbol);
+    } else {
+      log::error("DMA: Invalid atom index {} for site {}", atom_idx, i);
+    }
   }
 
   log::debug("Site positions\n{}\n", format_matrix(m_sites.positions));
@@ -72,8 +80,11 @@ DMAResult DMACalculator::compute_multipoles() {
   result.max_rank = m_settings.max_rank;
 
   log::debug("Site limits: \n{}\n", format_matrix(m_sites.limits, "{}"));
+  log::debug("About to create MultipoleCalculator...");
   MultipoleCalculator calculator(m_basis, m_mo, m_sites, m_settings);
+  log::debug("MultipoleCalculator created, about to call calculate()...");
   result.multipoles = calculator.calculate();
+  log::debug("MultipoleCalculator.calculate() completed");
 
   return result;
 }

@@ -436,3 +436,18 @@ export declare function createMolecule(atomicNumbers: number[], positions: numbe
 export declare const Elements: Record<string, number>;
 export declare const BasisSets: Record<string, string>;
 export declare const Module: OCCModule;
+
+// DMA functionality exports
+export {
+  Mult,
+  DMASettings,
+  DMAResult as NativeDMAResult,
+  DMASites,
+  DMACalculator,
+  DMAOptions,
+  MultipoleComponents,
+  DMAConfig,
+  DMAResult,
+  calculateDMA,
+  generatePunchFile
+} from './dma.d.ts';

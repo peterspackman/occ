@@ -140,8 +140,9 @@ void register_core_bindings() {
                         return result;
                       }));
 
-  // Vector binding for std::vector<Atom>
+  // Vector bindings
   register_vector<Atom>("VectorAtom");
+  register_vector<std::string>("VectorString");
 
   // Element class binding
   class_<Element>("Element")

@@ -30,15 +30,7 @@ NB_MODULE(_occpy, m) {
   auto dma = register_dma_bindings(m);
   auto iso = register_isosurface_bindings(m);
 
-  nb::enum_<spdlog::level::level_enum>(m, "LogLevel")
-      .value("TRACE", spdlog::level::level_enum::trace)
-      .value("DEBUG", spdlog::level::level_enum::debug)
-      .value("INFO", spdlog::level::level_enum::info)
-      .value("WARN", spdlog::level::level_enum::warn)
-      .value("ERROR", spdlog::level::level_enum::err)
-      .value("CRITICAL", spdlog::level::level_enum::critical)
-      .value("OFF", spdlog::level::level_enum::off);
-
+  // LogLevel enum is already registered in core_bindings.cpp
   m.def("set_log_level", nb::overload_cast<int>(occ::log::set_log_level));
   m.def("set_log_level",
         nb::overload_cast<spdlog::level::level_enum>(occ::log::set_log_level));

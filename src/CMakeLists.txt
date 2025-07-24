@@ -64,6 +64,7 @@ set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/isosurface_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/cube_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/crystal_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
@@ -84,6 +85,8 @@ target_link_libraries(occjs PUBLIC
     occ_gto
     occ_io
     occ_dft
+    occ_dma
+    occ_driver
     occ_isosurface
 )
 

@@ -2,6 +2,7 @@ add_library(occ_driver
     "${CMAKE_CURRENT_SOURCE_DIR}/geometry_optimization.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_growth.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dma_driver.cpp"
     ${OCC_DRIVER_INCLUDE_FILES}
 )
 
@@ -12,6 +13,7 @@ target_link_libraries(occ_driver
     occ_xtb
     occ_dft
     occ_qm
+    occ_dma
     occ_solvent
     occ_crystal
     occ_cg

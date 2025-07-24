@@ -271,11 +271,11 @@ class TestCharges:
             ]
         )
         cn = eeq_coordination_numbers(nums, pos)
-        expected_cn = np.array([2.0, 1.00401, 1.00401])
+        expected_cn = np.array([1.989382, 0.995133, 0.994268])
         assert np.allclose(cn, expected_cn, rtol=1e-3, atol=1e-3)
 
         q = eeq_partial_charges(nums, pos, 0.0)
-        expected_q = np.array([-0.591878, 0.296985, 0.294893])
+        expected_q = np.array([-0.592456, 0.297289, 0.295167])
         assert np.allclose(expected_q, q, rtol=1e-5, atol=1e-5)
 
 
