@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { loadOCC, createMolecule, moleculeFromXYZ, Elements } from '../src/index.js';
+import { loadOCC, createMolecule, moleculeFromXYZ, Elements } from '../dist/index.js';
 
 describe('Core Module Tests', () => {
   let Module;

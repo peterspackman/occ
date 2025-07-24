@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { loadOCC } from '../src/index.js';
+import { loadOCC } from '../dist/index.js';
 
 describe('ElasticTensor Tests', () => {
   let Module;

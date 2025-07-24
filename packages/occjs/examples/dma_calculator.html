@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMA Calculator - Distributed Multipole Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .code-block { font-family: 'Courier New', monospace; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">DMA Calculator</h1>
+            <p class="text-gray-600">Distributed Multipole Analysis from Wavefunction Files</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Upload and Settings -->
+            <div class="space-y-6">
+                <!-- File Upload -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">Upload Wavefunction File</h2>
+                    <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="text-gray-600 mb-2">Drop your wavefunction file here or click to browse</p>
+                        <p class="text-sm text-gray-500">Supported formats: .fchk, .molden, .json (OCC format)</p>
+                        <p class="text-xs text-red-500 mt-2">Limit: 250 basis functions</p>
+                        <input type="file" id="fileInput" class="hidden" accept=".fchk,.molden,.json" />
+                    </div>
+                    <div id="fileInfo" class="mt-4 hidden">
+                        <p class="text-sm text-gray-600">Selected file: <span id="fileName" class="font-medium"></span></p>
+                        <button id="clearFile" class="mt-2 text-sm text-red-600 hover:text-red-700">Clear file</button>
+                    </div>
+                </div>
+
+                <!-- Settings (Hidden until file is loaded) -->
+                <div id="settingsPanel" class="bg-white rounded-lg shadow-md p-6 hidden">
+                    <h2 class="text-xl font-semibold mb-4">DMA Settings</h2>
+                    
+                    <!-- Calculate Button at the top -->
+                    <button id="calculateBtn" class="mb-6 w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium text-lg">
+                        Calculate DMA
+                    </button>
+                    
+                    <!-- Molecule Info -->
+                    <div id="moleculeInfo" class="mb-6 p-4 bg-blue-50 rounded-lg">
+                        <h3 class="text-sm font-semibold text-blue-900 mb-2">Molecule Information</h3>
+                        <div id="moleculeDetails" class="text-sm text-blue-800"></div>
+                    </div>
+                    
+                    <!-- General Settings -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium mb-3">General Settings</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Maximum Rank</label>
+                                <input type="number" id="maxRank" min="0" max="10" value="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <p class="text-xs text-gray-500 mt-1">Higher ranks capture more detailed multipole moments</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Big Exponent</label>
+                                <input type="number" id="bigExponent" min="0" max="10" step="0.1" value="4.0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <p class="text-xs text-gray-500 mt-1">Switch parameter for multipole expansion</p>
+                            </div>
+                            
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="includeNuclei" checked class="mr-2 h-4 w-4 text-blue-600 rounded">
+                                    <span class="text-sm font-medium text-gray-700">Include Nuclear Contributions</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Atom-specific Settings -->
+                    <div>
+                        <h3 class="text-lg font-medium mb-3">Atom-specific Settings</h3>
+                        <p class="text-sm text-gray-600 mb-4">Configure multipole settings for each atom type in your molecule</p>
+                        <div id="atomSettings" class="space-y-4">
+                            <!-- Dynamically populated based on molecule -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="space-y-6">
+                <!-- Status/Info -->
+                <div id="statusPanel" class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">Status</h2>
+                    <div id="statusContent" class="text-gray-600">
+                        <p>No wavefunction loaded. Please upload a file to begin.</p>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div id="resultsPanel" class="bg-white rounded-lg shadow-md p-6 hidden">
+                    <!-- Loading State -->
+                    <div id="loadingState" class="hidden">
+                        <div class="flex items-center justify-center py-12">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p class="text-gray-700">Calculating DMA...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Results Content -->
+                    <div id="resultsContent" class="hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold">DMA Results</h2>
+                            <button id="downloadBtn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors text-sm">
+                                Download Punch File
+                            </button>
+                        </div>
+                        
+                        <!-- Summary -->
+                        <div id="resultsSummary" class="mb-4 p-4 bg-gray-50 rounded">
+                            <p class="text-sm text-gray-700"></p>
+                        </div>
+                        
+                        <!-- Timing Info -->
+                        <div id="timingInfo" class="mb-4 text-sm text-gray-600"></div>
+                        
+                        <!-- Punch File Content -->
+                        <div>
+                            <h3 class="font-medium mb-2">Punch File Content</h3>
+                            <div class="relative">
+                                <pre id="punchContent" class="code-block text-xs bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto max-h-96"></pre>
+                                <button id="copyBtn" class="absolute top-2 right-2 bg-gray-700 text-gray-300 px-3 py-1 rounded text-xs hover:bg-gray-600 transition-colors">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md">
+            <h3 class="text-lg font-semibold text-red-600 mb-2">Error</h3>
+            <p id="errorMessage" class="text-gray-700 mb-4"></p>
+            <button id="closeError" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Close</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Try to load from npm package first, fallback to local build
+        let OCC = null;
+        
+        async function loadOCCModule() {
+            try {
+                // First try to load from npm package (e.g., via CDN or bundler)
+                const module = await import('@peterspackman/occjs');
+                console.log('Loaded OCC from npm package');
+                return module;
+            } catch (e) {
+                console.log('Failed to load from npm, trying local build...');
+                try {
+                    // Fallback to local build
+                    const module = await import('../dist/index.browser.js');
+                    console.log('Loaded OCC from local build');
+                    return module;
+                } catch (e2) {
+                    console.error('Failed to load OCC module from both npm and local build');
+                    throw new Error('Could not load OCC module. Please ensure either the npm package is installed or you are running from the OCC repository.');
+                }
+            }
+        }
+        
+        let currentWavefunction = null;
+        let currentFileContent = null;
+        let currentFileType = null;
+
+        // Initialize OCC module
+        async function init() {
+            console.log('Initializing OCC...');
+            try {
+                OCC = await loadOCCModule();
+                
+                // Determine the correct paths based on how the module was loaded
+                const isNpmPackage = OCC.default ? true : false;
+                const wasmPath = isNpmPackage ? undefined : '../dist/occjs.wasm';
+                const dataPath = isNpmPackage ? undefined : '../dist/occjs.data';
+                
+                await OCC.loadOCC({
+                    wasmPath: wasmPath,
+                    dataPath: dataPath
+                });
+                
+                console.log('OCC loaded successfully');
+                updateStatus('OCC module loaded. Ready to accept wavefunction files.');
+            } catch (error) {
+                console.error('Failed to load OCC module:', error);
+                showError('Failed to load OCC module: ' + error.message);
+            }
+        }
+
+        // File handling
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const clearFile = document.getElementById('clearFile');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-blue-500', 'bg-blue-50');
+            dropZone.classList.remove('border-gray-300');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            dropZone.classList.add('border-gray-300');
+        });
+        
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            dropZone.classList.add('border-gray-300');
+            
+            const file = e.dataTransfer.files[0];
+            if (file) await handleFile(file);
+        });
+        
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) await handleFile(file);
+        });
+        
+        clearFile.addEventListener('click', () => {
+            currentWavefunction = null;
+            currentFileContent = null;
+            currentFileType = null;
+            fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            updateStatus('No wavefunction loaded. Please upload a file to begin.');
+            document.getElementById('resultsPanel').classList.add('hidden');
+            document.getElementById('settingsPanel').classList.add('hidden');
+            // Show the upload dropzone again
+            document.getElementById('dropZone').style.display = 'block';
+        });
+
+        async function handleFile(file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (!['fchk', 'molden', 'json'].includes(extension)) {
+                showError('Unsupported file format. Please upload a .fchk, .molden, or .json file.');
+                return;
+            }
+            
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('hidden');
+            updateStatus('Reading file...');
+            
+            try {
+                currentFileContent = await file.text();
+                currentFileType = extension === 'json' ? 'json' : extension;
+                
+                updateStatus('Loading wavefunction...');
+                currentWavefunction = await OCC.wavefunctionFromString(currentFileContent, currentFileType);
+                
+                // Check basis function limit
+                const nbf = currentWavefunction.basis.nbf();
+                if (nbf > 250) {
+                    showError(`File has ${nbf} basis functions, which exceeds the limit of 250.`);
+                    currentWavefunction = null;
+                    return;
+                }
+                
+                updateStatus(`Wavefunction loaded successfully. ${nbf} basis functions, ${currentWavefunction.atoms.size()} atoms.`);
+                
+                // Hide the upload dropzone
+                document.getElementById('dropZone').style.display = 'none';
+                
+                // Update atom settings based on loaded molecule
+                updateAtomSettings();
+                
+                // Show settings panel
+                document.getElementById('settingsPanel').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error loading wavefunction:', error);
+                showError('Failed to load wavefunction: ' + error.message);
+                currentWavefunction = null;
+            }
+        }
+
+        function updateAtomSettings() {
+            if (!currentWavefunction) return;
+            
+            // Count atoms by element
+            const elementCounts = new Map();
+            const elementInfo = new Map();
+            
+            for (let i = 0; i < currentWavefunction.atoms.size(); i++) {
+                const atom = currentWavefunction.atoms.get(i);
+                const symbol = getElementSymbol(atom.atomicNumber);
+                elementCounts.set(symbol, (elementCounts.get(symbol) || 0) + 1);
+                elementInfo.set(symbol, atom.atomicNumber);
+            }
+            
+            // Update molecule info
+            const moleculeDetails = document.getElementById('moleculeDetails');
+            const totalAtoms = currentWavefunction.atoms.size();
+            const nbf = currentWavefunction.basis.nbf();
+            
+            let infoHTML = `<div class="grid grid-cols-2 gap-2">`;
+            infoHTML += `<div><strong>Total atoms:</strong> ${totalAtoms}</div>`;
+            infoHTML += `<div><strong>Basis functions:</strong> ${nbf}</div>`;
+            infoHTML += `<div><strong>Composition:</strong> `;
+            const composition = Array.from(elementCounts.entries())
+                .map(([elem, count]) => count > 1 ? `${elem}<sub>${count}</sub>` : elem)
+                .join(' ');
+            infoHTML += composition + '</div>';
+            infoHTML += `</div>`;
+            moleculeDetails.innerHTML = infoHTML;
+            
+            // Clear existing atom settings
+            const atomSettings = document.getElementById('atomSettings');
+            atomSettings.innerHTML = '';
+            
+            // Default settings for common elements
+            const defaultSettings = {
+                'H': { radius: 0.35, maxRank: 1 },
+                'C': { radius: 0.65, maxRank: 4 },
+                'N': { radius: 0.60, maxRank: 4 },
+                'O': { radius: 0.60, maxRank: 4 },
+                'F': { radius: 0.55, maxRank: 4 },
+                'S': { radius: 0.70, maxRank: 4 },
+                'Cl': { radius: 0.70, maxRank: 4 }
+            };
+            
+            // Add settings for each unique element
+            Array.from(elementCounts.entries()).sort().forEach(([element, count]) => {
+                const defaults = defaultSettings[element] || { radius: 0.65, maxRank: 4 };
+                
+                const div = document.createElement('div');
+                div.className = 'atom-setting bg-gray-50 p-4 rounded-lg';
+                div.dataset.element = element;
+                
+                div.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-lg font-semibold">${element}</span>
+                            <span class="text-sm text-gray-600">(${count} atom${count > 1 ? 's' : ''})</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Radius (Å)</label>
+                            <input type="number" class="radius-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                   min="0" max="2" step="0.05" value="${defaults.radius}">
+                            <p class="text-xs text-gray-500 mt-1">Site expansion radius</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Max Rank</label>
+                            <input type="number" class="limit-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                   min="0" max="10" value="${defaults.maxRank}">
+                            <p class="text-xs text-gray-500 mt-1">Maximum multipole order</p>
+                        </div>
+                    </div>
+                `;
+                
+                atomSettings.appendChild(div);
+            });
+        }
+
+        function getElementSymbol(atomicNumber) {
+            const symbols = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
+                           'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca'];
+            return symbols[atomicNumber - 1] || `Z${atomicNumber}`;
+        }
+
+
+        // Calculate DMA
+        document.getElementById('calculateBtn').addEventListener('click', async () => {
+            if (!currentWavefunction) {
+                showError('Please upload a wavefunction file first.');
+                return;
+            }
+            
+            // Show results panel with loading state
+            const resultsPanel = document.getElementById('resultsPanel');
+            const loadingState = document.getElementById('loadingState');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsPanel.classList.remove('hidden');
+            loadingState.classList.remove('hidden');
+            resultsContent.classList.add('hidden');
+            
+            // Start timing
+            const startTime = performance.now();
+            
+            try {
+                // Gather settings
+                const options = {
+                    maxRank: parseInt(document.getElementById('maxRank').value),
+                    bigExponent: parseFloat(document.getElementById('bigExponent').value),
+                    includeNuclei: document.getElementById('includeNuclei').checked,
+                    atomRadii: {},
+                    atomLimits: {}
+                };
+                
+                // Collect atom-specific settings
+                document.querySelectorAll('.atom-setting').forEach(row => {
+                    const element = row.dataset.element;
+                    const radius = parseFloat(row.querySelector('.radius-input').value);
+                    const limit = parseInt(row.querySelector('.limit-input').value);
+                    
+                    options.atomRadii[element] = radius;
+                    options.atomLimits[element] = limit;
+                });
+                
+                console.log('Starting DMA calculation with options:', options);
+                
+                // Use the imported calculateDMA function
+                const result = await OCC.calculateDMA(currentWavefunction, options);
+                
+                // Calculate elapsed time
+                const endTime = performance.now();
+                const elapsedMs = endTime - startTime;
+                
+                console.log('DMA calculation completed');
+                
+                // Display results with timing
+                await displayResults(result, elapsedMs);
+                
+            } catch (error) {
+                console.error('DMA calculation error:', error);
+                showError('DMA calculation failed: ' + error.message);
+                resultsPanel.classList.add('hidden');
+            }
+        });
+
+        async function displayResults(dmaResult, elapsedMs) {
+            const loadingState = document.getElementById('loadingState');
+            const resultsContent = document.getElementById('resultsContent');
+            const resultsSummary = document.getElementById('resultsSummary');
+            const punchContent = document.getElementById('punchContent');
+            const timingInfo = document.getElementById('timingInfo');
+            
+            // Generate summary
+            const numSites = dmaResult.sites.size();
+            const maxRank = dmaResult.result.max_rank;
+            resultsSummary.innerHTML = `
+                <p class="text-sm text-gray-700">
+                    <strong>Sites:</strong> ${numSites} |
+                    <strong>Max Rank:</strong> ${maxRank} |
+                    <strong>Total Components:</strong> ${numSites * ((maxRank + 1) * (maxRank + 2) / 2)}
+                </p>
+            `;
+            
+            // Format timing information
+            const seconds = Math.floor(elapsedMs / 1000);
+            const milliseconds = Math.round(elapsedMs % 1000);
+            timingInfo.innerHTML = `<p>Calculation completed in ${seconds}s ${milliseconds}ms</p>`;
+            
+            // Generate and display punch file
+            const punchFile = await dmaResult.toPunchFile();
+            punchContent.textContent = punchFile;
+            
+            // Hide loading, show results
+            loadingState.classList.add('hidden');
+            resultsContent.classList.remove('hidden');
+            
+            // Setup download button
+            document.getElementById('downloadBtn').onclick = () => {
+                const blob = new Blob([punchFile], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'dma.punch';
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+            
+            // Setup copy button
+            document.getElementById('copyBtn').onclick = () => {
+                navigator.clipboard.writeText(punchFile).then(() => {
+                    const btn = document.getElementById('copyBtn');
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                });
+            };
+        }
+
+        // UI Helper functions
+        function updateStatus(message) {
+            document.getElementById('statusContent').innerHTML = `<p>${message}</p>`;
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorModal').classList.remove('hidden');
+        }
+
+        document.getElementById('closeError').addEventListener('click', () => {
+            document.getElementById('errorModal').classList.add('hidden');
+        });
+
+        // Initialize on load
+        init().catch(console.error);
+    </script>
+</body>
+</html>

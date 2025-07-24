@@ -6,7 +6,7 @@ import {
   QMCalculation,
   SCFSettings,
   loadBasisSet
-} from '../src/index.js';
+} from '../dist/index.js';
 // Removed import of getTestBasis - using inline definitions instead
 
 describe('Quantum Chemistry Tests', () => {

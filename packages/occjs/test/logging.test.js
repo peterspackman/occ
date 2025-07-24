@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
-import { loadOCC } from '../src/index.js';
+import { loadOCC } from '../dist/index.js';
 
 // Helper to extract enum values (Emscripten enums may be objects)
 const getEnumValue = (enumVal) => typeof enumVal === 'object' ? enumVal.value : enumVal;

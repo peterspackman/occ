@@ -42,36 +42,48 @@ for (const file of filesToCopy) {
 
 // Copy all files from src to dist
 console.log('\nBuilding distribution...');
-const srcFiles = fs.readdirSync(SRC_DIR);
-for (const file of srcFiles) {
-  const srcPath = path.join(SRC_DIR, file);
-  const destPath = path.join(DIST_DIR, file);
+
+// Copy directories recursively
+function copyRecursive(src, dest) {
+  const exists = fs.existsSync(src);
+  const stats = exists && fs.statSync(src);
+  const isDirectory = exists && stats.isDirectory();
   
-  if (fs.statSync(srcPath).isFile()) {
-    fs.copyFileSync(srcPath, destPath);
-    console.log(`✓ Copied ${file} to dist/`);
+  if (isDirectory) {
+    if (!fs.existsSync(dest)) {
+      fs.mkdirSync(dest);
+    }
+    fs.readdirSync(src).forEach(childItemName => {
+      copyRecursive(
+        path.join(src, childItemName),
+        path.join(dest, childItemName)
+      );
+    });
+  } else {
+    fs.copyFileSync(src, dest);
   }
 }
 
-// Create ESM wrapper
+const srcItems = fs.readdirSync(SRC_DIR);
+for (const item of srcItems) {
+  const srcPath = path.join(SRC_DIR, item);
+  const destPath = path.join(DIST_DIR, item);
+  
+  if (fs.statSync(srcPath).isDirectory()) {
+    copyRecursive(srcPath, destPath);
+    console.log(`✓ Copied directory ${item}/ to dist/`);
+  } else {
+    fs.copyFileSync(srcPath, destPath);
+    console.log(`✓ Copied ${item} to dist/`);
+  }
+}
+
+// Create ESM wrapper that re-exports from index.js
 const esmWrapper = `/**
  * ESM wrapper for OCC
  */
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
-const occ = require('./index.js');
-
-export const { 
-  loadOCC, 
-  moleculeFromXYZ, 
-  createMolecule, 
-  Elements, 
-  BasisSets,
-  Module 
-} = occ;
-
-export default occ;
+export * from './index.js';
+export { default } from './index.js';
 `;
 
 fs.writeFileSync(path.join(DIST_DIR, 'index.mjs'), esmWrapper);
@@ -110,5 +122,6 @@ fs.writeFileSync(
   JSON.stringify(distPackageJson, null, 2)
 );
 console.log('✓ Created dist/package.json');
+
 
 console.log('\n✅ Build complete!');

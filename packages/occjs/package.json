@@ -9,12 +9,15 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "node": "./dist/index.js",
+      "browser": "./dist/index.browser.js",
+      "default": "./dist/index.browser.js"
     },
     "./wasm": {
-      "types": "./dist/wasm.d.ts",
       "default": "./dist/occjs.wasm"
+    },
+    "./data": {
+      "default": "./dist/occjs.data"
     }
   },
   "files": [
@@ -27,6 +30,7 @@
     "build:wasm": "cd ../.. && ./scripts/build_wasm.sh",
     "build:wasm:clean": "cd ../.. && rm -rf wasm && ./scripts/build_wasm.sh",
     "build:wrapper": "node scripts/build.js",
+    "build:bundle": "vite build --config vite.config.build.mjs",
     "clean": "rm -rf dist src/occjs.js src/occjs.wasm",
     "rebuild": "npm run clean && npm run build",
     "test": "vitest run",
@@ -40,7 +44,7 @@
     "dev": "npm run build:wrapper && vitest watch",
     "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('../../wasm/src/occjs.wasm')) {console.error('WASM not built. Run: npm run build:wasm'); process.exit(1);}\"",
     "ci-check": "node scripts/ci-check.js",
-    "examples": "npm run build && npx http-server . -p 8080 -o /examples/isosurface_visualization.html"
+    "examples": "npm run build && npx http-server . -p 8080 -o /examples/dma_calculator.html"
   },
   "repository": {
     "type": "git",
@@ -70,9 +74,11 @@
     "@vitest/coverage-v8": "^1.0.0",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
+    "path-browserify": "^1.0.1",
     "prettier": "^3.0.0",
     "typedoc": "^0.25.0",
     "typescript": "^5.0.0",
+    "url-polyfill": "^1.1.13",
     "vitest": "^1.0.0"
   },
   "engines": {

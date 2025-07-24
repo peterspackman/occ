@@ -259,15 +259,11 @@ Full matrix (6 values per row) or upper triangular format supported."></textarea
             error.classList.add('hidden');
             
             try {
-                const { default: createOccModule } = await import('../dist/occjs.js');
+                const { loadOCC: initOCC } = await import('../dist/index.browser.js');
                 
-                Module = await createOccModule({
-                    locateFile: (filename) => {
-                        if (filename.endsWith('.wasm')) {
-                            return '../dist/occjs.wasm';
-                        }
-                        return filename;
-                    }
+                Module = await initOCC({
+                    wasmPath: '../dist/occjs.wasm',
+                    dataPath: '../dist/occjs.data'
                 });
                 
                 console.log('OCC module loaded successfully');

@@ -3,7 +3,7 @@
  * Provides high-level access to DMA calculations similar to the CLI
  */
 
-import { loadOCC, getModule, createQMCalculation } from './index.js';
+// DMA module now receives the module instance to avoid multiple instances
 
 /**
  * Configuration object for DMA calculations
@@ -50,6 +50,9 @@ export class DMAConfig {
  * @returns {Promise<DMAResult>} DMA calculation results
  */
 export async function calculateDMA(wavefunction, options = {}) {
+  // Import loadOCC dynamically to avoid circular dependencies
+  // Use module-loader directly to avoid importing Node.js-specific code
+  const { loadOCC } = await import('./module-loader.js');
   const Module = await loadOCC();
   
   console.log('DMA: Starting calculation with options:', options);
@@ -119,45 +122,15 @@ export async function calculateDMA(wavefunction, options = {}) {
  * @param {DMAResult} dmaResult - DMA calculation results
  * @returns {string} Punch file content
  */
-export function generatePunchFile(dmaResult) {
+export async function generatePunchFile(dmaResult) {
+  // Import getModule dynamically to avoid circular dependencies
+  // Use module-loader directly to avoid importing Node.js-specific code
+  const { getModule } = await import('./module-loader.js');
+  const Module = getModule();
   const { result, sites } = dmaResult;
   
-  let content = "! Distributed multipoles from occjs\n";
-  content += `! Max rank: ${result.max_rank}\n`;
-  content += "\n";
-  content += "Units angstrom\n\n";
-  
-  const BOHR_TO_ANGSTROM = 0.5291772106712;
-  
-  // Write individual site multipoles
-  for (let i = 0; i < result.multipoles.size(); i++) {
-    const mult = result.multipoles.get(i);
-    const pos = [
-      sites.positions.get(0, i) * BOHR_TO_ANGSTROM,
-      sites.positions.get(1, i) * BOHR_TO_ANGSTROM,
-      sites.positions.get(2, i) * BOHR_TO_ANGSTROM
-    ];
-    
-    content += `${sites.name.get(i).padEnd(8)} ${pos[0].toFixed(8).padStart(12)} ${pos[1].toFixed(8).padStart(12)} ${pos[2].toFixed(8).padStart(12)}\n`;
-    content += `Rank ${mult.max_rank}\n`;
-    
-    // Write multipoles in order: Q00, Q10, Q11c, Q11s, Q20, etc.
-    let idx = 0;
-    for (let rank = 0; rank <= mult.max_rank; rank++) {
-      const numComponents = 2 * rank + 1;
-      let line = "";
-      for (let comp = 0; comp < numComponents; comp++) {
-        line += ` ${mult.q.get(idx++).toFixed(10).padStart(16)}`;
-        if ((comp + 1) % 3 === 0 || comp === numComponents - 1) {
-          content += line + "\n";
-          line = "";
-        }
-      }
-    }
-    content += "\n";
-  }
-  
-  return content;
+  // Use the native C++ function which handles the formatting correctly
+  return Module.generate_punch_file(result, sites);
 }
 
 /**
@@ -198,10 +171,14 @@ export class DMAResult {
   
   /**
    * Generate punch file content
-   * @returns {string} Punch file content
+   * @returns {Promise<string>} Punch file content
    */
-  toPunchFile() {
-    return generatePunchFile(this);
+  async toPunchFile() {
+    // Import getModule dynamically to avoid circular dependencies
+    // Use module-loader directly to avoid importing Node.js-specific code
+    const { getModule } = await import('./module-loader.js');
+    const Module = getModule();
+    return Module.generate_punch_file(this.result, this.sites);
   }
   
   /**

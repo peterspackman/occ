@@ -311,7 +311,7 @@ void register_qm_bindings() {
                   return json_writer.to_string(wfn);
                 }))
       .function(
-          "exportToString", optional_override([](const Wavefunction &wfn,
+          "exportToString", optional_override([](Wavefunction &wfn,
                                                  const std::string &format) {
             if (format == "json") {
               occ::io::JsonWavefunctionWriter json_writer;
@@ -320,11 +320,12 @@ void register_qm_bindings() {
             } else if (format == "fchk") {
               std::ostringstream oss;
               occ::io::FchkWriter fchk_writer(oss);
-              // Note: FchkWriter might not support stream constructor
-              // This would need to be implemented if not available
-              return std::string("FCHK export to string not yet implemented");
+              // Set up the wavefunction data in the writer
+              wfn.save(fchk_writer);
+              fchk_writer.write();
+              return oss.str();
             } else if (format == "molden") {
-              // Basic molden format
+              // Basic molden format - just atoms for now
               std::ostringstream oss;
               oss << "[Molden Format]\n";
               oss << "[Title]\nWavefunction from OCC\n";

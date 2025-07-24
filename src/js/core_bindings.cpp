@@ -39,6 +39,12 @@ void register_core_bindings() {
                 optional_override([](Vec3 &v, double val) { v.y() = val; }))
       .function("setZ",
                 optional_override([](Vec3 &v, double val) { v.z() = val; }))
+      .function("toString", optional_override([](const Vec3 &v) {
+                  return occ::format_matrix(v);
+                }))
+      .function("toStringFormatted", optional_override([](const Vec3 &v, const std::string &fmt) {
+                  return occ::format_matrix(v, fmt);
+                }))
       .class_function("Zero", optional_override([]() {
                         Vec3 result = Vec3::Zero();
                         return result;
@@ -59,6 +65,12 @@ void register_core_bindings() {
                 optional_override([](const Mat3N &m) { return m.rows(); }))
       .function("cols",
                 optional_override([](const Mat3N &m) { return m.cols(); }))
+      .function("toString", optional_override([](const Mat3N &m) {
+                  return occ::format_matrix(m);
+                }))
+      .function("toStringFormatted", optional_override([](const Mat3N &m, const std::string &fmt) {
+                  return occ::format_matrix(m, fmt);
+                }))
       .class_function("create", optional_override([](int cols) {
                         Mat3N result = Mat3N::Zero(3, cols);
                         return result;
@@ -71,6 +83,12 @@ void register_core_bindings() {
                 optional_override([](const IVec &v, int i) { return v(i); }))
       .function("set",
                 optional_override([](IVec &v, int i, int val) { v(i) = val; }))
+      .function("toString", optional_override([](const IVec &v) {
+                  return occ::format_matrix(v);
+                }))
+      .function("toStringFormatted", optional_override([](const IVec &v, const std::string &fmt) {
+                  return occ::format_matrix(v, fmt);
+                }))
       .class_function("fromArray",
                       optional_override([](const emscripten::val &jsArray) {
                         const int length = jsArray["length"].as<int>();
@@ -88,6 +106,12 @@ void register_core_bindings() {
                 optional_override([](const Vec &v, int i) { return v(i); }))
       .function("set", optional_override(
                            [](Vec &v, int i, double val) { v(i) = val; }))
+      .function("toString", optional_override([](const Vec &v) {
+                  return occ::format_matrix(v);
+                }))
+      .function("toStringFormatted", optional_override([](const Vec &v, const std::string &fmt) {
+                  return occ::format_matrix(v, fmt);
+                }))
       .class_function("create", optional_override([](int size) {
                         Vec result = Vec::Zero(size);
                         return result;
@@ -103,6 +127,12 @@ void register_core_bindings() {
                 }))
       .function("set", optional_override([](Mat &m, int row, int col,
                                             double val) { m(row, col) = val; }))
+      .function("toString", optional_override([](const Mat &m) {
+                  return occ::format_matrix(m);
+                }))
+      .function("toStringFormatted", optional_override([](const Mat &m, const std::string &fmt) {
+                  return occ::format_matrix(m, fmt);
+                }))
       .class_function("create", optional_override([](int rows, int cols) {
                         Mat result = Mat::Zero(rows, cols);
                         return result;
@@ -119,6 +149,12 @@ void register_core_bindings() {
                 }))
       .function("set", optional_override([](Mat3 &m, int row, int col,
                                             double val) { m(row, col) = val; }))
+      .function("toString", optional_override([](const Mat3 &m) {
+                  return occ::format_matrix(m);
+                }))
+      .function("toStringFormatted", optional_override([](const Mat3 &m, const std::string &fmt) {
+                  return occ::format_matrix(m, fmt);
+                }))
       .class_function("create", optional_override([]() {
                         Mat3 result = Mat3::Zero();
                         return result;
@@ -135,6 +171,12 @@ void register_core_bindings() {
                 }))
       .function("set", optional_override([](Mat6 &m, int row, int col,
                                             double val) { m(row, col) = val; }))
+      .function("toString", optional_override([](const Mat6 &m) {
+                  return occ::format_matrix(m);
+                }))
+      .function("toStringFormatted", optional_override([](const Mat6 &m, const std::string &fmt) {
+                  return occ::format_matrix(m, fmt);
+                }))
       .class_function("create", optional_override([](int rows, int cols) {
                         Mat6 result = Mat6::Zero(rows, cols);
                         return result;

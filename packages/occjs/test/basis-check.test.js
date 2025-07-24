@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { loadOCC, moleculeFromXYZ, BasisSets } from '../src/index.js';
+import { loadOCC, moleculeFromXYZ, BasisSets } from '../dist/index.js';
 
 describe('Basis Set Availability Check', () => {
   let Module;

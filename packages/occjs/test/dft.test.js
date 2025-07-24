@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll } from 'vitest';
-import { loadOCC, createMolecule, Elements } from '../src/index.js';
+import { loadOCC, createMolecule, Elements } from '../dist/index.js';
 
 describe('DFT Bindings', () => {
   let module, molecule, basis;

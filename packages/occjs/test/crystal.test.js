@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll } from 'vitest';
-import { loadOCC } from '../src/index.js';
+import { loadOCC } from '../dist/index.js';
 
 describe('Crystal Bindings', () => {
   let occ;

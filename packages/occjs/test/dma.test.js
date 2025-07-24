@@ -3,13 +3,13 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { loadOCC, moleculeFromXYZ, createQMCalculation, wavefunctionFromString } from '../src/index.js';
+import { loadOCC, moleculeFromXYZ, createQMCalculation, wavefunctionFromString } from '../dist/index.js';
 import { 
   calculateDMA, 
   generatePunchFile, 
   DMAConfig, 
   DMAResult 
-} from '../src/dma.js';
+} from '../dist/dma.js';
 
 // Test molecules - H2 molecule that matches the inline wavefunction
 const h2XYZ = `2
@@ -368,24 +368,24 @@ describe('Punch File Generation', () => {
     dmaResult = await calculateDMA(wavefunction);
   });
 
-  it('should generate punch file content', () => {
-    const punchContent = generatePunchFile(dmaResult);
+  it('should generate punch file content', async () => {
+    const punchContent = await generatePunchFile(dmaResult);
     
     expect(typeof punchContent).toBe('string');
-    expect(punchContent).toContain('! Distributed multipoles from occjs');
+    expect(punchContent).toContain('! Distributed multipoles from occ dma');
     expect(punchContent).toContain('Units angstrom');
     expect(punchContent).toContain('Rank');
   });
 
-  it('should generate punch file via DMAResult method', () => {
-    const punchContent = dmaResult.toPunchFile();
+  it('should generate punch file via DMAResult method', async () => {
+    const punchContent = await dmaResult.toPunchFile();
     
     expect(typeof punchContent).toBe('string');
-    expect(punchContent).toContain('! Distributed multipoles from occjs');
+    expect(punchContent).toContain('! Distributed multipoles from occ dma');
   });
 
-  it('should contain expected number of sites in punch file', () => {
-    const punchContent = dmaResult.toPunchFile();
+  it('should contain expected number of sites in punch file', async () => {
+    const punchContent = await dmaResult.toPunchFile();
     const rankLines = punchContent.match(/^Rank \d+$/gm);
     
     // Should have one "Rank" line per site

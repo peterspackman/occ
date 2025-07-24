@@ -3,7 +3,7 @@ import {
   loadOCC, 
   moleculeFromXYZ, 
   createQMCalculation
-} from '../src/index.js';
+} from '../dist/index.js';
 
 describe('Cube File Tests', () => {
   let Module;
