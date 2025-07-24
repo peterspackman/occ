@@ -20,10 +20,12 @@ var searchData=
   ['dimersolventterm_17',['DimerSolventTerm',['../structocc_1_1cg_1_1DimerSolventTerm.html',1,'occ::cg']]],
   ['dispersioncorrectioninput_18',['DispersionCorrectionInput',['../structocc_1_1io_1_1DispersionCorrectionInput.html',1,'occ::io']]],
   ['dmacalculator_19',['DMACalculator',['../classocc_1_1dma_1_1DMACalculator.html',1,'occ::dma']]],
-  ['dmaconfig_20',['DMAConfig',['../structocc_1_1main_1_1DMAConfig.html',1,'occ::main']]],
-  ['dmaresult_21',['DMAResult',['../structocc_1_1dma_1_1DMAResult.html',1,'occ::dma']]],
-  ['dmasettings_22',['DMASettings',['../structocc_1_1dma_1_1DMASettings.html',1,'occ::dma']]],
-  ['dmasites_23',['DMASites',['../structocc_1_1dma_1_1DMASites.html',1,'occ::dma']]],
-  ['driverinput_24',['DriverInput',['../structocc_1_1io_1_1DriverInput.html',1,'occ::io']]],
-  ['dummycrystalgrowthcalculator_25',['DummyCrystalGrowthCalculator',['../classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html',1,'occ::driver']]]
+  ['dmaconfig_20',['DMAConfig',['../structocc_1_1driver_1_1DMAConfig.html',1,'occ::driver']]],
+  ['dmadriver_21',['DMADriver',['../classocc_1_1driver_1_1DMADriver.html',1,'occ::driver']]],
+  ['dmaoutput_22',['DMAOutput',['../structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html',1,'occ::driver::DMADriver']]],
+  ['dmaresult_23',['DMAResult',['../structocc_1_1dma_1_1DMAResult.html',1,'occ::dma']]],
+  ['dmasettings_24',['DMASettings',['../structocc_1_1dma_1_1DMASettings.html',1,'occ::dma']]],
+  ['dmasites_25',['DMASites',['../structocc_1_1dma_1_1DMASites.html',1,'occ::dma']]],
+  ['driverinput_26',['DriverInput',['../structocc_1_1io_1_1DriverInput.html',1,'occ::io']]],
+  ['dummycrystalgrowthcalculator_27',['DummyCrystalGrowthCalculator',['../classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html',1,'occ::driver']]]
 ];

@@ -145,6 +145,8 @@ var annotated_dup =
         [ "CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator" ],
         [ "CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", "classocc_1_1driver_1_1CrystalGrowthCalculator" ],
         [ "CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions" ],
+        [ "DMAConfig", "structocc_1_1driver_1_1DMAConfig.html", "structocc_1_1driver_1_1DMAConfig" ],
+        [ "DMADriver", "classocc_1_1driver_1_1DMADriver.html", "classocc_1_1driver_1_1DMADriver" ],
         [ "DummyCrystalGrowthCalculator", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator" ],
         [ "XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator" ]
       ] ],
@@ -295,7 +297,6 @@ var annotated_dup =
         [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
         [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
-        [ "DMAConfig", "structocc_1_1main_1_1DMAConfig.html", "structocc_1_1main_1_1DMAConfig" ],
         [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
         [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
         [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],

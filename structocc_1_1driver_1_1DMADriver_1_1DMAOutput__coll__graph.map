@@ -1,0 +1,7 @@
+<map id="occ::driver::DMADriver::DMAOutput" name="occ::driver::DMADriver::DMAOutput">
+<area shape="rect" id="Node000001" title=" " alt="" coords="92,93,261,133"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1dma_1_1DMAResult.html" title=" " alt="" coords="5,5,167,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,39,160,91,156,95,105,42"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1dma_1_1DMASites.html" title=" " alt="" coords="191,5,343,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="248,42,197,95,193,91,245,39"/>
+</map>

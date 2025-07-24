@@ -37,6 +37,6 @@ var searchData=
   ['property_5forbital_5findices_34',['property_orbital_indices',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#a91e811f4ebdc9e35e6d58fd4cd5c1582',1,'occ::isosurface::IsosurfaceGenerationParameters']]],
   ['propertytype_35',['propertyType',['../structtinyply_1_1PlyProperty.html#a060848d5a54ad2ceebad4eed8ffa1151',1,'tinyply::PlyProperty']]],
   ['pruning_5fscheme_36',['pruning_scheme',['../structocc_1_1io_1_1GridSettings.html#a43adfd375523983981a74c981f270f82',1,'occ::io::GridSettings']]],
-  ['punch_5ffilename_37',['punch_filename',['../structocc_1_1main_1_1DMAConfig.html#a6fd2ffbab539125e72e6c9c8791a0213',1,'occ::main::DMAConfig']]],
+  ['punch_5ffilename_37',['punch_filename',['../structocc_1_1driver_1_1DMAConfig.html#a6fc852c005fc557854da3c93c09a549b',1,'occ::driver::DMAConfig']]],
   ['pure_5fspherical_38',['pure_spherical',['../structocc_1_1cg_1_1SMDSettings.html#adc34f08ec1409e88786f669e0c786ec5',1,'occ::cg::SMDSettings']]]
 ];

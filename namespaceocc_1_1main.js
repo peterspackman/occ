@@ -8,7 +8,6 @@ var namespaceocc_1_1main =
     [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
     [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
     [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
-    [ "DMAConfig", "structocc_1_1main_1_1DMAConfig.html", "structocc_1_1main_1_1DMAConfig" ],
     [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
     [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
     [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],

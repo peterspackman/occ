@@ -8,7 +8,7 @@ var searchData=
   ['ecp_5fshell_5fto_5fatom_5',['ecp_shell_to_atom',['../classocc_1_1qm_1_1AOBasis.html#af13b6d9090abf4f43e05bd77f19b1031',1,'occ::qm::AOBasis']]],
   ['ecp_5fshells_6',['ecp_shells',['../classocc_1_1qm_1_1AOBasis.html#aec72d6a0e700644f698f92904afb6c16',1,'occ::qm::AOBasis']]],
   ['ecp_5fsize_7',['ecp_size',['../classocc_1_1qm_1_1AOBasis.html#a3ef23e576b282638242c56df78e8fa66',1,'occ::qm::AOBasis']]],
-  ['edge_8',['edge',['../structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html#a38730652296facf50f3a1b310aabec5d',1,'occ::geometry::mc::impl::Edge::Edge()'],['../classocc_1_1core_1_1graph_1_1Graph.html#a80cf39bd69df2bd5d4609781064bd73e',1,'occ::core::graph::Graph::edge(EdgeDescriptor e) const'],['../classocc_1_1core_1_1graph_1_1Graph.html#ad77b2c6a0af99f33e78c858e621c1b0c',1,'occ::core::graph::Graph::edge(EdgeDescriptor e)']]],
+  ['edge_8',['edge',['../classocc_1_1core_1_1graph_1_1Graph.html#a80cf39bd69df2bd5d4609781064bd73e',1,'occ::core::graph::Graph::edge(EdgeDescriptor e) const'],['../classocc_1_1core_1_1graph_1_1Graph.html#ad77b2c6a0af99f33e78c858e621c1b0c',1,'occ::core::graph::Graph::edge(EdgeDescriptor e)'],['../structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html#a38730652296facf50f3a1b310aabec5d',1,'occ::geometry::mc::impl::Edge::Edge()']]],
   ['edges_9',['edges',['../classocc_1_1core_1_1graph_1_1Graph.html#a53f08cbfdb25abbb4b14c6b6d53a21df',1,'occ::core::graph::Graph']]],
   ['ediis_10',['EDIIS',['../classocc_1_1qm_1_1EDIIS.html#a160768b0f2865af3af6e187f4a0ceff7',1,'occ::qm::EDIIS']]],
   ['eem_5fpartial_5fcharges_11',['eem_partial_charges',['../namespaceocc_1_1core_1_1charges.html#afc8eeaf4e95310c70f599a123cb31860',1,'occ::core::charges']]],

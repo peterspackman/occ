@@ -16,5 +16,6 @@ var searchData=
   ['disp_2eh_13',['disp.h',['../disp_8h.html',1,'']]],
   ['distance_5fpartition_2eh_14',['distance_partition.h',['../distance__partition_8h.html',1,'']]],
   ['dma_2eh_15',['dma.h',['../dma_8h.html',1,'']]],
-  ['draco_2eh_16',['draco.h',['../draco_8h.html',1,'']]]
+  ['dma_5fdriver_2eh_16',['dma_driver.h',['../dma__driver_8h.html',1,'']]],
+  ['draco_2eh_17',['draco.h',['../draco_8h.html',1,'']]]
 ];

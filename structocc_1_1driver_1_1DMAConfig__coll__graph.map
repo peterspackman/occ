@@ -1,0 +1,5 @@
+<map id="occ::driver::DMAConfig" name="occ::driver::DMAConfig">
+<area shape="rect" id="Node000001" title=" " alt="" coords="7,93,177,119"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1dma_1_1DMASettings.html" title=" " alt="" coords="5,5,179,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,45,95,93,89,93,89,45"/>
+</map>
