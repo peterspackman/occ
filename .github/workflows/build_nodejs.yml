@@ -1,0 +1,275 @@
+name: JavaScript/WebAssembly Tests & Publish
+
+on:
+  push:
+    branches: ["main", "develop"]
+    tags: "v*"
+    paths:
+      - 'packages/occjs/**'
+      - 'src/js/**'
+      - 'src/slater/**'
+      - 'include/occ/slater/**'
+      - 'src/occjs.cpp'
+      - 'scripts/build_wasm.sh'
+      - '.github/workflows/build_nodejs.yml'
+  pull_request:
+    branches: ["main", "develop"]
+    paths:
+      - 'packages/occjs/**'
+      - 'src/js/**'
+      - 'src/slater/**'
+      - 'include/occ/slater/**'
+      - 'src/occjs.cpp'
+      - 'scripts/build_wasm.sh'
+      - '.github/workflows/build_nodejs.yml'
+  workflow_dispatch:
+    inputs:
+      upload_to_npm:
+        description: 'Upload to npm after building'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  BUILD_TYPE: Release
+  CPM_SOURCE_CACHE: ${{github.workspace}}/cache/cpm
+  OCC_DATA_PATH: ${{github.workspace}}/share
+
+jobs:
+  test-js:
+    name: Test JavaScript Package (Node.js ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+      fail-fast: false
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: packages/occjs/package-lock.json
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: '3.1.69'
+        actions-cache-folder: 'emsdk-cache'
+
+    - name: Cache CPM Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{env.CPM_SOURCE_CACHE}}
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        restore-keys: |
+          js-build-${{ runner.os }}-
+
+    - name: Build WASM module
+      working-directory: packages/occjs
+      run: |
+        # Clean any stale CMake cache that might have wrong EMSDK paths
+        rm -rf ../../wasm/CMakeCache.txt ../../wasm/CMakeFiles
+        npm run build:wasm
+
+    - name: Install package dependencies
+      working-directory: packages/occjs
+      run: npm ci
+
+    - name: Build package
+      working-directory: packages/occjs
+      run: npm run build:wrapper
+
+    - name: Run linting
+      working-directory: packages/occjs
+      run: npm run lint
+
+    - name: Run type checking
+      working-directory: packages/occjs
+      run: npm run typecheck
+
+    - name: Run tests
+      working-directory: packages/occjs
+      run: npm test
+
+    - name: Run tests with coverage
+      if: matrix.node-version == 20
+      working-directory: packages/occjs
+      run: npm run test:coverage
+
+    - name: Upload test coverage
+      if: matrix.node-version == 20
+      uses: codecov/codecov-action@v4
+      with:
+        directory: packages/occjs/coverage
+        flags: nodejs
+        name: nodejs-coverage
+        fail_ci_if_error: false
+
+    - name: Pack package for testing
+      working-directory: packages/occjs
+      run: npm pack
+
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: occjs-package-node${{ matrix.node-version }}
+        path: packages/occjs/*.tgz
+        retention-days: 30
+
+  publish-npm:
+    name: Publish to npm
+    needs: test-js
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: '3.1.69'
+        actions-cache-folder: 'emsdk-cache'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
+
+    - name: Cache CPM Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{env.CPM_SOURCE_CACHE}}
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        restore-keys: |
+          js-build-${{ runner.os }}-
+
+    - name: Build WASM module
+      working-directory: packages/occjs
+      run: |
+        # Clean any stale CMake cache that might have wrong EMSDK paths
+        rm -rf ../../wasm/CMakeCache.txt ../../wasm/CMakeFiles
+        npm run build:wasm
+
+    - name: Install dependencies
+      working-directory: packages/occjs
+      run: npm ci
+
+    - name: Build package
+      working-directory: packages/occjs  
+      run: npm run build
+
+    - name: Check if version changed
+      id: version
+      working-directory: packages/occjs
+      run: |
+        PACKAGE_VERSION=$(node -p "require('./package.json').version")
+        NPM_VERSION=$(npm view @peterspackman/occjs version 2>/dev/null || echo "0.0.0")
+        echo "package_version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+        echo "npm_version=$NPM_VERSION" >> $GITHUB_OUTPUT
+        if [ "$PACKAGE_VERSION" != "$NPM_VERSION" ]; then
+          echo "should_publish=true" >> $GITHUB_OUTPUT
+        else
+          echo "should_publish=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Publish to npm
+      if: steps.version.outputs.should_publish == 'true'
+      working-directory: packages/occjs
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  
+  publish-github:
+    name: Publish to GitHub Packages
+    needs: test-js
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: 'https://npm.pkg.github.com'
+        scope: '@peterspackman'
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: '3.1.69'
+        actions-cache-folder: 'emsdk-cache'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
+
+    - name: Cache CPM Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{env.CPM_SOURCE_CACHE}}
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        restore-keys: |
+          js-build-${{ runner.os }}-
+
+    - name: Build WASM module
+      working-directory: packages/occjs
+      run: |
+        # Clean any stale CMake cache that might have wrong EMSDK paths
+        rm -rf ../../wasm/CMakeCache.txt ../../wasm/CMakeFiles
+        npm run build:wasm
+
+    - name: Install dependencies
+      working-directory: packages/occjs
+      run: npm ci
+
+    - name: Build package
+      working-directory: packages/occjs  
+      run: npm run build
+
+    - name: Configure package for GitHub registry
+      working-directory: packages/occjs
+      run: |
+        # Update package.json to use GitHub scope
+        npm pkg set name="@peterspackman/occjs"
+        # Ensure publishConfig points to GitHub
+        npm pkg set publishConfig.registry="https://npm.pkg.github.com"
+
+    - name: Publish to GitHub Packages
+      working-directory: packages/occjs
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

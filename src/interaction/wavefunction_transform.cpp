@@ -46,6 +46,23 @@ WavefunctionTransformer::calculate_transform(const qm::Wavefunction &wfn,
     occ::log::debug("Test transform (symop={}) RMSD = {}\n", symop.to_string(),
                     result.rmsd);
 
+    // Debug: print positions for every transformation attempt
+    occ::log::debug("Symop {} - Reference molecule positions (target):",
+                    symop.to_string());
+    for (int j = 0; j < pos_mol.cols(); j++) {
+      occ::log::debug("  Atom {}: element={}, pos=[{:.6f}, {:.6f}, {:.6f}]", j,
+                      mol.atomic_numbers()(j), pos_mol(0, j), pos_mol(1, j),
+                      pos_mol(2, j));
+    }
+    occ::log::debug("Symop {} - Transformed wavefunction positions:",
+                    symop.to_string());
+    auto wfn_atomic_numbers = tmp.atomic_numbers();
+    for (int j = 0; j < transformed_pos.cols(); j++) {
+      occ::log::debug("  Atom {}: element={}, pos=[{:.6f}, {:.6f}, {:.6f}]", j,
+                      wfn_atomic_numbers(j), transformed_pos(0, j),
+                      transformed_pos(1, j), transformed_pos(2, j));
+    }
+
     if (result.rmsd < 1e-3) {
       occ::log::debug("Symop found: RMSD = {:12.5f}", result.rmsd);
       result.wfn = tmp;

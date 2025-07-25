@@ -1,6 +1,7 @@
 add_library(occ_descriptors
     "${CMAKE_CURRENT_SOURCE_DIR}/promolecule_shape.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/steinhardt.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pdd_amd.cpp"
     ${OCC_DESCRIPTORS_INCLUDE_FILES}
 )
 

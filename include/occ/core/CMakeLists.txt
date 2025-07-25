@@ -24,6 +24,7 @@ set(OCC_CORE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/marchingcubestables.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/meshgrid.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/molecular_symmetry.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/numpy.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/opmatrix.h"

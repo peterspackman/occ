@@ -4,8 +4,10 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <occ/core/element.h>
+#include <occ/core/log.h>
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>
+#include <occ/slater/thakkar_basis.h>
 
 namespace occ::slater {
 
@@ -198,6 +200,13 @@ void Basis::unnormalize() {
 }
 
 SlaterBasisSetMap load_slaterbasis(const std::string &name) {
+  // Use hardcoded Thakkar basis as default
+  if (name == "thakkar") {
+    occ::log::debug("Loading hardcoded Thakkar slater basis");
+    return basis_sets::build_thakkar_basis();
+  }
+
+  // Load from file for other basis sets
   namespace fs = std::filesystem;
   fs::path path;
   const char *basis_path_env = getenv("OCC_DATA_PATH");

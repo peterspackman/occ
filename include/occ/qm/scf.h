@@ -31,7 +31,7 @@ using util::is_odd;
 using PointChargeList = std::vector<occ::core::PointCharge>;
 
 struct SCFContext {
-  Mat S, T, V, H, K, F, Vpc, Vecp;
+  Mat S, T, V, H, K, F, V_ext, Vecp;
   int n_electrons{0};
   int n_frozen_electrons{0};
   int n_occ{0};
@@ -68,6 +68,7 @@ template <SCFMethod Procedure> struct SCF {
   void compute_initial_guess();
   void compute_sap_guess();
   void set_point_charges(const PointChargeList &charges);
+  void set_external_potential(const Mat &V_ext);
 
   void update_scf_energy(bool incremental);
   inline const char *scf_kind() const;

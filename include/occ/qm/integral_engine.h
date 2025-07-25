@@ -11,6 +11,7 @@
 #include <occ/qm/shell.h>
 #include <occ/qm/shellblock_norm.h>
 #include <optional>
+#include <unsupported/Eigen/CXX11/Tensor>
 #include <vector>
 
 #if HAVE_ECPINT
@@ -164,6 +165,15 @@ public:
                             const std::vector<MolecularOrbitals> &mos,
                             const Mat &Schwarz = Mat()) const;
 
+  Eigen::Tensor<double, 4>
+  four_center_integrals_tensor(const Mat &Schwarz = Mat()) const;
+
+  // Helper function to access integrals with 8-fold symmetry from canonical
+  // storage
+  static double
+  get_integral_8fold_symmetry(const Eigen::Tensor<double, 4> &tensor, size_t i,
+                              size_t j, size_t k, size_t l, size_t n_ao);
+
   Mat point_charge_potential(const std::vector<occ::core::PointCharge> &charges,
                              double alpha = 1e16);
 
@@ -232,6 +242,7 @@ public:
   }
 
   inline void set_precision(double precision) { m_precision = precision; }
+  inline double precision() const { return m_precision; }
 
 private:
   double m_precision{1e-12};

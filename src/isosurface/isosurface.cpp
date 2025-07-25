@@ -129,7 +129,8 @@ void IsosurfaceCalculator::compute_default_atom_surface_properties() {
   const auto &vertices = m_isosurface.vertices;
   const size_t N = vertices.cols();
   constexpr size_t num_results = 6;
-  FVec di_norm(N), dnorm(N);
+  FVec di_norm = FVec::Constant(N, std::numeric_limits<float>::max());
+  FVec dnorm = FVec::Constant(N, std::numeric_limits<float>::max());
   int nthreads = occ::parallel::get_num_threads();
 
   if (m_molecule.size() > 0) {
@@ -140,8 +141,9 @@ void IsosurfaceCalculator::compute_default_atom_surface_properties() {
                                            occ::core::max_leaf);
     interior_tree.index->buildIndex();
 
-    FVec di(N);
-    IVec di_idx(N), di_norm_idx(N);
+    FVec di = FVec::Constant(N, std::numeric_limits<float>::max());
+    IVec di_idx = IVec::Constant(N, -1);
+    IVec di_norm_idx = IVec::Constant(N, -1);
 
     auto fill_interior_properties = [&](int thread_id) {
       std::vector<size_t> indices(num_results);
@@ -190,8 +192,10 @@ void IsosurfaceCalculator::compute_default_atom_surface_properties() {
   }
 
   if (m_environment.size() > 0) {
-    FVec de(N), de_norm(N);
-    IVec de_idx(N), de_norm_idx(N);
+    FVec de = FVec::Constant(N, std::numeric_limits<float>::max());
+    FVec de_norm = FVec::Constant(N, std::numeric_limits<float>::max());
+    IVec de_idx = IVec::Constant(N, -1);
+    IVec de_norm_idx = IVec::Constant(N, -1);
     Eigen::Matrix3Xf outside = m_environment.positions().cast<float>();
     Eigen::VectorXf vdw_outside = m_environment.vdw_radii().cast<float>();
     occ::core::KDTree<float> exterior_tree(outside.rows(), outside,
@@ -296,8 +300,7 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
     break;
   }
   case PropertyKind::DeformationDensity: {
-    auto func =
-        DeformationDensityFunctor(m_molecule, m_wavefunction);
+    auto func = DeformationDensityFunctor(m_molecule, m_wavefunction);
     func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
     occ::log::debug("Min {} Max {} Mean {}", result.minCoeff(),
                     result.maxCoeff(), result.mean());
@@ -430,7 +433,8 @@ void IsosurfaceCalculator::compute_isosurface() {
     auto func =
         MCElectronDensityFunctor(m_wavefunction, separation, orbital_index);
     m_isosurface = extract_surface(func, isovalue);
-    m_isosurface.description = fmt::format("Orbital {}", m_params.surface_orbital_index.format());
+    m_isosurface.description =
+        fmt::format("Orbital {}", m_params.surface_orbital_index.format());
     break;
   }
   case SurfaceKind::VolumeGrid: {

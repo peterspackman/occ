@@ -367,4 +367,54 @@ void label_molecules_by_chemical_formula(
   }
 }
 
+Molecule Molecule::permute(const std::vector<int> &permutation) const {
+  if (permutation.size() != size()) {
+    throw std::runtime_error("Permutation size does not match molecule size");
+  }
+
+  // Start with a copy
+  Molecule result(*this);
+
+  // Reorder all atom-based properties using Eigen's indexing
+  result.m_atomicNumbers = m_atomicNumbers(permutation);
+  result.m_positions = m_positions(Eigen::all, permutation);
+
+  // Reorder other atom-based properties if they exist
+  if (m_uc_idx.size() > 0) {
+    result.m_uc_idx = m_uc_idx(permutation);
+  }
+  if (m_uc_shifts.cols() > 0) {
+    result.m_uc_shifts = m_uc_shifts(Eigen::all, permutation);
+  }
+  if (m_asym_idx.size() > 0) {
+    result.m_asym_idx = m_asym_idx(permutation);
+  }
+  if (m_asym_symop.size() > 0) {
+    result.m_asym_symop = m_asym_symop(permutation);
+  }
+  if (m_partial_charges.size() > 0) {
+    result.m_partial_charges = m_partial_charges(permutation);
+  }
+
+  // Reorder elements vector
+  result.m_elements.clear();
+  for (int i : permutation) {
+    result.m_elements.push_back(m_elements[i]);
+  }
+
+  // Update bonds - need to map old indices to new indices
+  result.m_bonds.clear();
+  std::vector<int> inverse_permutation(size());
+  for (size_t i = 0; i < permutation.size(); i++) {
+    inverse_permutation[permutation[i]] = i;
+  }
+  for (const auto &bond : m_bonds) {
+    result.m_bonds.push_back(
+        {static_cast<size_t>(inverse_permutation[bond.first]),
+         static_cast<size_t>(inverse_permutation[bond.second])});
+  }
+
+  return result;
+}
+
 } // namespace occ::core

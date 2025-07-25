@@ -38,10 +38,14 @@ void LatticeEnergyCalculator::report_convergence_statistics(
 
   occ::log::debug("Total polarization term:  {:.3f}",
                   total.polarization_kjmol() * 0.5);
-  occ::log::debug("Total coulomb term:       {:.3f}", total.coulomb_kjmol() * 0.5);
-  occ::log::debug("Total dispersion term:    {:.3f}", total.dispersion_kjmol() * 0.5);
-  occ::log::debug("Total repulsion term:     {:.3f}", total.repulsion_kjmol() * 0.5);
-  occ::log::debug("Total exchange term:      {:.3f}", total.exchange_kjmol() * 0.5);
+  occ::log::debug("Total coulomb term:       {:.3f}",
+                  total.coulomb_kjmol() * 0.5);
+  occ::log::debug("Total dispersion term:    {:.3f}",
+                  total.dispersion_kjmol() * 0.5);
+  occ::log::debug("Total repulsion term:     {:.3f}",
+                  total.repulsion_kjmol() * 0.5);
+  occ::log::debug("Total exchange term:      {:.3f}",
+                  total.exchange_kjmol() * 0.5);
 }
 
 CEEnergyComponents

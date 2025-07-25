@@ -17,8 +17,7 @@ template <class T>
 constexpr T e =
     T(2.7182818284590452353602874713526624977572470936999595749669676);
 
-template <class T>
-constexpr T sqrt_pi_cubed{5.56832799683170784528481798212};
+template <class T> constexpr T sqrt_pi_cubed{5.56832799683170784528481798212};
 
 template <class T>
 constexpr T angstroms_per_bohr = T(0.52917721092000002923994491662820121095);

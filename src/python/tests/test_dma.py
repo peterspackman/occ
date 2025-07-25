@@ -765,7 +765,7 @@ def test_dma_general_h2o_analytical(h2o_wavefunction):
         assert mult.num_components() == 9  # (2+1)^2
 
     total_mult = calc.compute_total_multipoles(dma_result)
-    assert abs(total_mult.charge) < 1e-6
+    assert abs(total_mult.get_component("charge")) < 1e-6
 
 
 def test_dma_general4_h2o_grid(h2o_wavefunction):
@@ -789,7 +789,7 @@ def test_dma_general4_h2o_grid(h2o_wavefunction):
         assert mult.num_components() == 9
 
     total_mult = calc.compute_total_multipoles(dma_result)
-    assert abs(total_mult.charge) < 1e-6
+    assert abs(total_mult.get_component("charge")) < 1e-6
 
 
 def test_dma_ethane_c2h4(ethane_wavefunction):
@@ -923,7 +923,7 @@ def test_dma_ethane_c2h4(ethane_wavefunction):
             )
 
     total_mult = calc.compute_total_multipoles(dma_result)
-    assert abs(total_mult.charge) < 1e-6
+    assert abs(total_mult.get_component("charge")) < 1e-6
 
 
 if __name__ == "__main__":

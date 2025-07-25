@@ -1,12 +1,14 @@
 #include <cmath>
+#include <limits>
+#include <occ/core/log.h>
 #include <occ/dma/add_qlm.h>
 #include <occ/dma/multipole_shifter.h>
 
 namespace occ::dma {
 
 MultipoleShifter::MultipoleShifter(const Vec3 &pos, Mult &qt,
-                                   const DMASites &sites,
-                                   std::vector<Mult> &q, int lmax)
+                                   const DMASites &sites, std::vector<Mult> &q,
+                                   int lmax)
     : m_pos(pos), m_sites(sites), m_qt(qt), m_q(q), m_lmax(lmax),
       m_num_sites(m_sites.positions.cols()), m_rr(m_num_sites) {
   m_destination_sites.reserve(m_num_sites);
@@ -25,9 +27,26 @@ void MultipoleShifter::shift() {
   constexpr double eps = 1e-6;
   int lp1sq = (m_lmax + 1) * (m_lmax + 1);
   int low = 0;
+  int iteration = 0;
 
   while (true) {
+    iteration++;
+    if (iteration > 100) {
+      log::error("MultipoleShifter.shift() infinite loop detected after {} iterations", iteration);
+      log::error("low={}, m_site_with_highest_limit={}", low, m_site_with_highest_limit);
+      for (int i = 0; i < m_sites.size(); i++) {
+        log::error("Site {}: limit={}", i, m_sites.limits(i));
+      }
+      break;
+    }
+    
     int k = find_nearest_site_with_limit(low, m_site_with_highest_limit);
+    
+    // Check if no valid site was found
+    if (k < 0) {
+      break;
+    }
+    
     int t1 = low * low;
     int t2 = (m_sites.limits(k) + 1) * (m_sites.limits(k) + 1);
 
@@ -41,13 +60,18 @@ void MultipoleShifter::shift() {
 }
 
 int MultipoleShifter::find_nearest_site_with_limit(int low, int start) const {
-  int k = start;
+  int k = -1;  // Initialize to invalid index
+  double min_rr = std::numeric_limits<double>::max();
+  
+  // Find the nearest site that meets the limit criteria
   for (int i = 0; i < m_rr.rows(); i++) {
-    if (m_rr(i) < m_rr(k) && m_sites.limits(i) >= low) {
+    if (m_sites.limits(i) >= low && m_rr(i) < min_rr) {
+      min_rr = m_rr(i);
       k = i;
     }
   }
-  return k;
+  
+  return k;  // Returns -1 if no valid site found
 }
 
 bool MultipoleShifter::direct_transfer(int k, int t1, int t2) {
@@ -119,8 +143,7 @@ bool MultipoleShifter::process_site(int k, int low, int t1, int t2, int lp1sq,
 // Migrated multipole shifting functionality (from shiftq.cpp)
 
 int MultipoleShifter::estimate_largest_transferred_multipole(
-    const Vec3 &pos, const Mult &mult, int l, int m1, int m2,
-    double eps) {
+    const Vec3 &pos, const Mult &mult, int l, int m1, int m2, double eps) {
   if (eps == 0.0 || m2 < 1)
     return m2;
   double r2 = 4.0 * pos.squaredNorm();
@@ -216,8 +239,7 @@ Mat MultipoleShifter::get_cplx_mults(const Mult &mult, int l1, int m1, int N) {
 }
 
 void MultipoleShifter::shift_multipoles(const Mult &q1, int l1, int m1,
-                                        Mult &q2, int m2,
-                                        const Vec3 &pos) {
+                                        Mult &q2, int m2, const Vec3 &pos) {
   // Constants
   constexpr double RTHALF = 0.7071067811865475244;
   constexpr double eps = 0.0; // No early termination

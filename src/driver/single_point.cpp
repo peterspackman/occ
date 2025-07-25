@@ -4,6 +4,9 @@
 #include <occ/driver/method_parser.h>
 #include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
+#include <occ/qm/integral_engine.h>
+#include <occ/qm/mo_integral_engine.h>
+#include <occ/qm/mp2.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/solvent/solvation_correction.h>
@@ -179,6 +182,60 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
   }
 }
 
+Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
+                            const OccInput &config) {
+  using occ::qm::MP2;
+
+  occ::log::info("{:=^72s}", "  MP2 Calculation  ");
+
+  MP2 mp2 = [&]() {
+    if (!config.basis.ri_basis.empty()) {
+      occ::log::info("Method: RI-MP2 (auxiliary basis: {})",
+                     config.basis.ri_basis);
+      auto aux_basis =
+          load_basis_set(config.geometry.molecule(), config.basis.ri_basis,
+                         config.basis.spherical);
+      return MP2(scf_wfn.basis, aux_basis, scf_wfn.mo, scf_wfn.energy.total);
+    } else {
+      occ::log::info("Method: Conventional MP2");
+      return MP2(scf_wfn.basis, scf_wfn.mo, scf_wfn.energy.total);
+    }
+  }();
+
+  // Set automatic frozen core
+  mp2.set_frozen_core_auto();
+
+  // RI-MP2 uses stored integrals
+
+  // Compute MP2 correlation energy
+  double correlation_energy = mp2.compute_correlation_energy();
+  double total_mp2_energy = scf_wfn.energy.total + correlation_energy;
+
+  occ::log::info("SCF energy:                       {: 20.12f}",
+                 scf_wfn.energy.total);
+  occ::log::info("MP2 correlation energy:           {: 20.12f}",
+                 correlation_energy);
+  occ::log::info("MP2 total energy:                 {: 20.12f}",
+                 total_mp2_energy);
+
+  const auto &results = mp2.results();
+  occ::log::debug("Same-spin correlation:            {: 20.12f}",
+                  results.same_spin_correlation);
+  occ::log::debug("Opposite-spin correlation:        {: 20.12f}",
+                  results.opposite_spin_correlation);
+  occ::log::debug("SCS-MP2 correlation energy:       {: 20.12f}",
+                  results.scs_mp2_correlation);
+  occ::log::debug("SCS-MP2 total energy:             {: 20.12f}",
+                  scf_wfn.energy.total + results.scs_mp2_correlation);
+
+  // Create modified wavefunction with MP2 energy
+  Wavefunction mp2_wfn = scf_wfn;
+  mp2_wfn.energy.total = total_mp2_energy;
+  mp2_wfn.method = "MP2";
+
+  return mp2_wfn;
+}
+
 Wavefunction
 single_point_driver(const OccInput &config,
                     const std::optional<Wavefunction> &guess = {}) {
@@ -217,6 +274,19 @@ single_point_driver(const OccInput &config,
         return run_method<DFT, R>(m, basis, config);
       break;
     }
+    case MethodKind::MP2: {
+      // MP2 requires SCF first
+      Wavefunction scf_wfn;
+      if (guess_sk == U || conf_sk == U)
+        scf_wfn = run_method<HartreeFock, U>(m, basis, config);
+      else if (guess_sk == G || conf_sk == G)
+        scf_wfn = run_method<HartreeFock, G>(m, basis, config);
+      else
+        scf_wfn = run_method<HartreeFock, R>(m, basis, config);
+
+      // Run MP2 calculation
+      return run_mp2_method(scf_wfn, config);
+    }
     default: {
       throw std::runtime_error("Unknown method kind");
     }
@@ -238,6 +308,19 @@ single_point_driver(const OccInput &config,
       else
         return run_solvated_method<DFT, R>(*guess, config);
       break;
+    }
+    case MethodKind::MP2: {
+      // MP2 with solvation: run solvated SCF first, then MP2
+      Wavefunction scf_wfn;
+      if (guess_sk == U || conf_sk == U)
+        scf_wfn = run_solvated_method<HartreeFock, U>(*guess, config);
+      else if (guess_sk == G || conf_sk == G)
+        scf_wfn = run_solvated_method<HartreeFock, G>(*guess, config);
+      else
+        scf_wfn = run_solvated_method<HartreeFock, R>(*guess, config);
+
+      // Run MP2 calculation
+      return run_mp2_method(scf_wfn, config);
     }
     default: {
       throw std::runtime_error("Unknown method kind");

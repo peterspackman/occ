@@ -1,0 +1,90 @@
+{
+  "name": "@peterspackman/occjs",
+  "version": "0.7.7",
+  "description": "JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "node": "./dist/index.js",
+      "browser": "./dist/index.browser.js",
+      "default": "./dist/index.browser.js"
+    },
+    "./wasm": {
+      "default": "./dist/occjs.wasm"
+    },
+    "./data": {
+      "default": "./dist/occjs.data"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run build:wasm && npm run build:wrapper",
+    "build:wasm": "cd ../.. && ./scripts/build_wasm.sh",
+    "build:wasm:clean": "cd ../.. && rm -rf wasm && ./scripts/build_wasm.sh",
+    "build:wrapper": "node scripts/build.js",
+    "build:bundle": "vite build --config vite.config.build.mjs",
+    "clean": "rm -rf dist src/occjs.js src/occjs.wasm",
+    "rebuild": "npm run clean && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src test --ext .js,.ts",
+    "format": "prettier --write \"src/**/*.{js,ts}\" \"test/**/*.{js,ts}\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test",
+    "docs": "typedoc",
+    "dev": "npm run build:wrapper && vitest watch",
+    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('../../wasm/src/occjs.wasm')) {console.error('WASM not built. Run: npm run build:wasm'); process.exit(1);}\"",
+    "ci-check": "node scripts/ci-check.js",
+    "examples": "npm run build && npx http-server . -p 8080 -o /examples/dma_calculator.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peterspackman/occ.git"
+  },
+  "keywords": [
+    "quantum-chemistry",
+    "crystallography",
+    "computational-chemistry",
+    "wasm",
+    "webassembly",
+    "molecular-modeling",
+    "dft",
+    "hartree-fock",
+    "scientific-computing"
+  ],
+  "author": "Peter Spackman",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/peterspackman/occ/issues"
+  },
+  "homepage": "https://github.com/peterspackman/occ#readme",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "path-browserify": "^1.0.1",
+    "prettier": "^3.0.0",
+    "typedoc": "^0.25.0",
+    "typescript": "^5.0.0",
+    "url-polyfill": "^1.1.13",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

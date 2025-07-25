@@ -85,7 +85,6 @@ void evaluate_four_center_grad(Lambda &f, IntEnv &env, const AOBasis &basis,
                                const Mat &Schwarz = Mat(),
                                double precision = 1e-12, int thread_id = 0) {
   using Result = IntegralEngine::IntegralResult<4>;
-  occ::timing::start(occ::timing::category::ints4c2e);
   auto nthreads = occ::parallel::get_num_threads();
   occ::qm::cint::Optimizer opt(env, Op::coulomb, 4, 1);
   auto buffer = std::make_unique<double[]>(env.buffer_size_2e(1));
@@ -150,7 +149,6 @@ void evaluate_four_center_grad(Lambda &f, IntEnv &env, const AOBasis &basis,
       }
     }
   }
-  occ::timing::stop(occ::timing::category::ints4c2e);
 }
 
 template <class Func>

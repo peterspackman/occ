@@ -91,7 +91,6 @@ public:
    */
   const MolecularGridPoints &get_molecular_grid_points() const;
 
-
   void set_atomic_radii(const Vec &);
   inline const Vec &atomic_radii() const { return m_atomic_radii; }
 
@@ -118,7 +117,6 @@ private:
                              const IVec &atomic_numbers);
 
   void initialize_default_radii();
-
 
   IVec m_atomic_numbers;                     ///< Atomic numbers
   Mat3N m_positions;                         ///< Atomic positions

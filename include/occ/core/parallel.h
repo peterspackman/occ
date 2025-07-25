@@ -1,4 +1,5 @@
 #pragma once
+#include <occ/core/timings.h>
 #include <thread>
 #include <vector>
 
@@ -21,7 +22,7 @@ inline int get_num_threads() { return nthreads; }
 template <typename Lambda> void parallel_do(Lambda &lambda) {
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel num_threads(nthreads)
   {
     auto thread_id = omp_get_thread_num();
     lambda(thread_id);
@@ -37,6 +38,13 @@ template <typename Lambda> void parallel_do(Lambda &lambda) {
   for (auto &thread : threads)
     thread.join();
 #endif
+}
+
+template <typename Lambda>
+void parallel_do_timed(Lambda &lambda, occ::timing::category timing_category) {
+  occ::timing::start(timing_category);
+  parallel_do(lambda);
+  occ::timing::stop(timing_category);
 }
 
 } // namespace occ::parallel

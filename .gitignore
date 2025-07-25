@@ -13,3 +13,19 @@ __pycache__
 occjs.js
 occjs.wasm
 wasm/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Package build outputs
+packages/occjs/dist/
+packages/occjs/src/occjs.js
+packages/occjs/src/occjs.wasm
+packages/occjs/src/occjs.data
+packages/occjs/examples/share/
+
+# Coverage
+coverage/

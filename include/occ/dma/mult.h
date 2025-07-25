@@ -14,6 +14,17 @@ struct Mult {
   inline int num_components() const { return (max_rank + 1) * (max_rank + 1); }
 
   std::string to_string(int lm) const;
+  
+  // Get multipole component by (l, m) pair
+  double get_multipole(int l, int m) const;
+  double& get_multipole(int l, int m);
+  
+  // Get multipole component by string name (e.g., "Q00", "Q11c", "Q21s")
+  double get_component(const std::string& name) const;
+  double& get_component(const std::string& name);
+  
+  // Helper function to convert component name to (l, m) pair
+  static std::pair<int, int> component_name_to_lm(const std::string& name);
 
   // Level 0
   OCC_ALWAYS_INLINE double &Q00() { return q(0); }

@@ -8,7 +8,8 @@ VolumeGrid::VolumeGrid(size_t x, size_t y, size_t z)
 VolumeGrid::VolumeGrid(const std::array<size_t, 3> &dims)
     : m_dims{dims}, m_data(std::make_unique<float[]>(size())) {}
 
-VolumeGrid::VolumeGrid(std::unique_ptr<float[]> buffer, const std::array<size_t, 3> &dims)
+VolumeGrid::VolumeGrid(std::unique_ptr<float[]> buffer,
+                       const std::array<size_t, 3> &dims)
     : m_dims{dims}, m_data(std::move(buffer)) {}
 
 float &VolumeGrid::operator()(size_t x, size_t y, size_t z) {

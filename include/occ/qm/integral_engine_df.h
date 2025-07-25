@@ -1,6 +1,7 @@
 #pragma once
 #include <Eigen/IterativeLinearSolvers>
 #include <occ/qm/integral_engine.h>
+#include <occ/qm/mp2_components.h>
 
 namespace occ::qm {
 
@@ -30,6 +31,20 @@ public:
   void set_precision(double precision);
   inline double precision() const { return m_precision; };
 
+  // Access to engines and stored integrals
+  inline const IntegralEngine &ao_engine() const { return m_ao_engine; }
+  inline const IntegralEngine &aux_engine() const { return m_aux_engine; }
+  inline const Mat &integral_store() const { return m_integral_store; }
+  void compute_stored_integrals();
+
+  // Compute full AO integral tensor using DF approximation
+  Eigen::Tensor<double, 4> four_center_integrals_tensor() const;
+
+  // DF-MP2 computation using stored 3-center integrals
+  MP2Components compute_df_mp2_energy(const MolecularOrbitals &mo,
+                                      const Vec &orbital_energies,
+                                      const MP2OrbitalSpec &orbital_spec) const;
+
 private:
   inline size_t num_rows() const {
     const auto &aobasis = m_ao_engine.aobasis();
@@ -49,7 +64,6 @@ private:
   size_t integral_storage_max_size() const {
     return m_ao_engine.auxbasis().nbf() * num_rows();
   }
-  void compute_stored_integrals();
 
   inline bool use_stored_integrals() const {
     if (m_policy == Policy::Choose) {

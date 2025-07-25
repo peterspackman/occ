@@ -58,7 +58,7 @@ private:
 
 using SlaterBasisSetMap = ankerl::unordered_dense::map<std::string, Basis>;
 
-SlaterBasisSetMap load_slaterbasis(const std::string &);
+SlaterBasisSetMap load_slaterbasis(const std::string &name = "thakkar");
 
 std::vector<Basis>
 slaterbasis_for_atoms(const std::vector<occ::core::Atom> &,

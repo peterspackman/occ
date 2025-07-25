@@ -6,7 +6,10 @@
 #include <occ/core/dimer.h>
 #include <occ/core/eem.h>
 #include <occ/core/eeq.h>
+#include <occ/core/elastic_tensor.h>
 #include <occ/core/element.h>
+#include <occ/core/linear_algebra.h>
+#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
@@ -36,6 +39,12 @@ void register_core_bindings() {
                 optional_override([](Vec3 &v, double val) { v.y() = val; }))
       .function("setZ",
                 optional_override([](Vec3 &v, double val) { v.z() = val; }))
+      .function("toString", optional_override([](const Vec3 &v) {
+                  return occ::format_matrix(v);
+                }))
+      .function("toStringFormatted", optional_override([](const Vec3 &v, const std::string &fmt) {
+                  return occ::format_matrix(v, fmt);
+                }))
       .class_function("Zero", optional_override([]() {
                         Vec3 result = Vec3::Zero();
                         return result;
@@ -56,6 +65,12 @@ void register_core_bindings() {
                 optional_override([](const Mat3N &m) { return m.rows(); }))
       .function("cols",
                 optional_override([](const Mat3N &m) { return m.cols(); }))
+      .function("toString", optional_override([](const Mat3N &m) {
+                  return occ::format_matrix(m);
+                }))
+      .function("toStringFormatted", optional_override([](const Mat3N &m, const std::string &fmt) {
+                  return occ::format_matrix(m, fmt);
+                }))
       .class_function("create", optional_override([](int cols) {
                         Mat3N result = Mat3N::Zero(3, cols);
                         return result;
@@ -68,6 +83,12 @@ void register_core_bindings() {
                 optional_override([](const IVec &v, int i) { return v(i); }))
       .function("set",
                 optional_override([](IVec &v, int i, int val) { v(i) = val; }))
+      .function("toString", optional_override([](const IVec &v) {
+                  return occ::format_matrix(v);
+                }))
+      .function("toStringFormatted", optional_override([](const IVec &v, const std::string &fmt) {
+                  return occ::format_matrix(v, fmt);
+                }))
       .class_function("fromArray",
                       optional_override([](const emscripten::val &jsArray) {
                         const int length = jsArray["length"].as<int>();
@@ -85,6 +106,12 @@ void register_core_bindings() {
                 optional_override([](const Vec &v, int i) { return v(i); }))
       .function("set", optional_override(
                            [](Vec &v, int i, double val) { v(i) = val; }))
+      .function("toString", optional_override([](const Vec &v) {
+                  return occ::format_matrix(v);
+                }))
+      .function("toStringFormatted", optional_override([](const Vec &v, const std::string &fmt) {
+                  return occ::format_matrix(v, fmt);
+                }))
       .class_function("create", optional_override([](int size) {
                         Vec result = Vec::Zero(size);
                         return result;
@@ -100,13 +127,64 @@ void register_core_bindings() {
                 }))
       .function("set", optional_override([](Mat &m, int row, int col,
                                             double val) { m(row, col) = val; }))
+      .function("toString", optional_override([](const Mat &m) {
+                  return occ::format_matrix(m);
+                }))
+      .function("toStringFormatted", optional_override([](const Mat &m, const std::string &fmt) {
+                  return occ::format_matrix(m, fmt);
+                }))
       .class_function("create", optional_override([](int rows, int cols) {
                         Mat result = Mat::Zero(rows, cols);
                         return result;
                       }));
 
-  // Vector binding for std::vector<Atom>
+  // Mat3 typedef for 3x3 matrices
+  class_<Mat3>("Mat3")
+      .function("rows",
+                optional_override([](const Mat3 &m) { return m.rows(); }))
+      .function("cols",
+                optional_override([](const Mat3 &m) { return m.cols(); }))
+      .function("get", optional_override([](const Mat3 &m, int row, int col) {
+                  return m(row, col);
+                }))
+      .function("set", optional_override([](Mat3 &m, int row, int col,
+                                            double val) { m(row, col) = val; }))
+      .function("toString", optional_override([](const Mat3 &m) {
+                  return occ::format_matrix(m);
+                }))
+      .function("toStringFormatted", optional_override([](const Mat3 &m, const std::string &fmt) {
+                  return occ::format_matrix(m, fmt);
+                }))
+      .class_function("create", optional_override([]() {
+                        Mat3 result = Mat3::Zero();
+                        return result;
+                      }));
+
+  // Mat6 typedef for 6x6 matrices
+  class_<Mat6>("Mat6")
+      .function("rows",
+                optional_override([](const Mat6 &m) { return m.rows(); }))
+      .function("cols",
+                optional_override([](const Mat6 &m) { return m.cols(); }))
+      .function("get", optional_override([](const Mat6 &m, int row, int col) {
+                  return m(row, col);
+                }))
+      .function("set", optional_override([](Mat6 &m, int row, int col,
+                                            double val) { m(row, col) = val; }))
+      .function("toString", optional_override([](const Mat6 &m) {
+                  return occ::format_matrix(m);
+                }))
+      .function("toStringFormatted", optional_override([](const Mat6 &m, const std::string &fmt) {
+                  return occ::format_matrix(m, fmt);
+                }))
+      .class_function("create", optional_override([](int rows, int cols) {
+                        Mat6 result = Mat6::Zero(rows, cols);
+                        return result;
+                      }));
+
+  // Vector bindings
   register_vector<Atom>("VectorAtom");
+  register_vector<std::string>("VectorString");
 
   // Element class binding
   class_<Element>("Element")
@@ -167,10 +245,14 @@ void register_core_bindings() {
   // Molecule class binding
   class_<Molecule>("Molecule")
       .constructor<const IVec &, const Mat3N &>()
+      .class_function("fromAtoms",
+                      optional_override([](const std::vector<Atom> &atoms) {
+                        return Molecule(atoms);
+                      }))
       .function("size", &Molecule::size)
       .function("elements", &Molecule::elements)
       .function("positions", &Molecule::positions)
-      .property("name", &Molecule::name)
+      .function("name", &Molecule::name)
       .function("setName", &Molecule::set_name)
       .function("partialCharges", &Molecule::partial_charges)
       .function("setPartialCharges", &Molecule::set_partial_charges)
@@ -181,6 +263,11 @@ void register_core_bindings() {
       .function("molarMass", &Molecule::molar_mass)
       .function("atoms", &Molecule::atoms)
       .function("centerOfMass", &Molecule::center_of_mass)
+      .function("charge", &Molecule::charge)
+      .function("setCharge", &Molecule::set_charge)
+      .function("multiplicity", &Molecule::multiplicity)
+      .function("setMultiplicity", &Molecule::set_multiplicity)
+      .function("numElectrons", &Molecule::num_electrons)
       .function("centroid", &Molecule::centroid)
       .function("rotate", select_overload<void(const Mat3 &, Molecule::Origin)>(
                               &Molecule::rotate))
@@ -291,4 +378,213 @@ void register_core_bindings() {
   // Data directory functions
   function("setDataDirectory", &set_data_directory_wrapper);
   function("getDataDirectory", &get_data_directory_wrapper);
+
+  // Logging level enum
+  enum_<spdlog::level::level_enum>("LogLevel")
+      .value("TRACE", spdlog::level::trace)
+      .value("DEBUG", spdlog::level::debug)
+      .value("INFO", spdlog::level::info)
+      .value("WARN", spdlog::level::warn)
+      .value("ERROR", spdlog::level::err)
+      .value("CRITICAL", spdlog::level::critical)
+      .value("OFF", spdlog::level::off);
+
+  // Logging functions
+  function("setLogLevel", optional_override([](int level) {
+             occ::log::set_log_level(
+                 static_cast<spdlog::level::level_enum>(level));
+           }));
+
+  function("setLogLevelString", optional_override([](const std::string &level) {
+             occ::log::set_log_level(level);
+           }));
+
+  function("registerLogCallback",
+           optional_override([](emscripten::val callback) {
+             occ::log::register_log_callback(
+                 [callback](spdlog::level::level_enum level,
+                            const std::string &message) {
+                   callback(static_cast<int>(level), message);
+                 });
+           }));
+
+  function("clearLogCallbacks", &occ::log::clear_log_callbacks);
+
+  function("getBufferedLogs", optional_override([]() {
+             auto logs = occ::log::get_buffered_logs();
+             emscripten::val result = emscripten::val::array();
+             for (size_t i = 0; i < logs.size(); ++i) {
+               emscripten::val log_entry = emscripten::val::object();
+               log_entry.set("level", static_cast<int>(logs[i].first));
+               log_entry.set("message", logs[i].second);
+               result.set(i, log_entry);
+             }
+             return result;
+           }));
+
+  function("clearLogBuffer", &occ::log::clear_log_buffer);
+  function("setLogBuffering", &occ::log::set_log_buffering);
+
+  // Direct logging functions
+  function("logTrace", optional_override([](const std::string &msg) {
+             occ::log::trace(msg);
+           }));
+  function("logDebug", optional_override([](const std::string &msg) {
+             occ::log::debug(msg);
+           }));
+  function("logInfo", optional_override(
+                          [](const std::string &msg) { occ::log::info(msg); }));
+  function("logWarn", optional_override(
+                          [](const std::string &msg) { occ::log::warn(msg); }));
+  function("logError", optional_override([](const std::string &msg) {
+             occ::log::error(msg);
+           }));
+  function("logCritical", optional_override([](const std::string &msg) {
+             occ::log::critical(msg);
+           }));
+
+  // ElasticTensor averaging schemes
+  enum_<ElasticTensor::AveragingScheme>("AveragingScheme")
+      .value("VOIGT", ElasticTensor::AveragingScheme::Voigt)
+      .value("REUSS", ElasticTensor::AveragingScheme::Reuss)
+      .value("HILL", ElasticTensor::AveragingScheme::Hill)
+      .value("NUMERICAL", ElasticTensor::AveragingScheme::Numerical);
+
+  // ElasticTensor class
+  class_<ElasticTensor>("ElasticTensor")
+      .constructor<const Mat6 &>()
+
+      // Young's modulus methods
+      .function("youngsModulus",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir) {
+                  return et.youngs_modulus(dir);
+                }))
+
+      // Linear compressibility methods
+      .function("linearCompressibility",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir) {
+                  return et.linear_compressibility(dir);
+                }))
+
+      // Shear modulus methods
+      .function("shearModulus",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir1,
+                                     const Vec3 &dir2) {
+                  return et.shear_modulus(dir1, dir2);
+                }))
+      .function("shearModulusMinMax",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir) {
+                  auto [min_val, max_val] = et.shear_modulus_minmax(dir);
+                  emscripten::val result = emscripten::val::object();
+                  result.set("min", min_val);
+                  result.set("max", max_val);
+                  return result;
+                }))
+
+      // Poisson's ratio methods
+      .function("poissonRatio",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir1,
+                                     const Vec3 &dir2) {
+                  return et.poisson_ratio(dir1, dir2);
+                }))
+      .function("poissonRatioMinMax",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir) {
+                  auto [min_val, max_val] = et.poisson_ratio_minmax(dir);
+                  emscripten::val result = emscripten::val::object();
+                  result.set("min", min_val);
+                  result.set("max", max_val);
+                  return result;
+                }))
+
+      // Average properties
+      .function("averageBulkModulus",
+                optional_override([](const ElasticTensor &et,
+                                     ElasticTensor::AveragingScheme avg) {
+                  return et.average_bulk_modulus(avg);
+                }))
+      .function("averageShearModulus",
+                optional_override([](const ElasticTensor &et,
+                                     ElasticTensor::AveragingScheme avg) {
+                  return et.average_shear_modulus(avg);
+                }))
+      .function("averageYoungsModulus",
+                optional_override([](const ElasticTensor &et,
+                                     ElasticTensor::AveragingScheme avg) {
+                  return et.average_youngs_modulus(avg);
+                }))
+      .function("averagePoissonRatio",
+                optional_override([](const ElasticTensor &et,
+                                     ElasticTensor::AveragingScheme avg) {
+                  return et.average_poisson_ratio(avg);
+                }))
+
+      // Matrix access
+      .property("voigtC", &ElasticTensor::voigt_c)
+      .property("voigtS", &ElasticTensor::voigt_s);
+
+  // Helper function to generate directional data for visualization
+  function("generateDirectionalData",
+           optional_override([](const ElasticTensor &et,
+                                const std::string &property, int num_points) {
+             emscripten::val result = emscripten::val::array();
+
+             // Generate points on a sphere
+             for (int i = 0; i < num_points; ++i) {
+               double theta =
+                   (static_cast<double>(i) / num_points) * 2.0 * M_PI;
+               Vec3 direction(std::cos(theta), std::sin(theta),
+                              0.0); // For 2D visualization in xy plane
+
+               double value = 0.0;
+               if (property == "youngs") {
+                 value = et.youngs_modulus(direction);
+               } else if (property == "linear_compressibility") {
+                 value = et.linear_compressibility(direction);
+               } else if (property == "shear") {
+                 // Use perpendicular direction for shear
+                 Vec3 shear_dir(-std::sin(theta), std::cos(theta), 0.0);
+                 value = et.shear_modulus(direction, shear_dir);
+               } else if (property == "poisson") {
+                 Vec3 shear_dir(-std::sin(theta), std::cos(theta), 0.0);
+                 value = et.poisson_ratio(direction, shear_dir);
+               }
+
+               emscripten::val point = emscripten::val::object();
+               point.set("x", direction.x() * value);
+               point.set("y", direction.y() * value);
+               point.set("value", value);
+               point.set("angle", theta);
+               result.set(i, point);
+             }
+
+             return result;
+           }));
+
+  // Float matrix types for isosurface calculations
+  class_<FMat3N>("FMat3N")
+      .function("set", optional_override([](FMat3N &m, int row, int col,
+                                            float val) { m(row, col) = val; }))
+      .function("get", optional_override([](const FMat3N &m, int row, int col) {
+                  return m(row, col);
+                }))
+      .function("rows",
+                optional_override([](const FMat3N &m) { return m.rows(); }))
+      .function("cols",
+                optional_override([](const FMat3N &m) { return m.cols(); }))
+      .class_function("create", optional_override([](int cols) {
+                        FMat3N result = FMat3N::Zero(3, cols);
+                        return result;
+                      }));
+
+  class_<FVec>("FVec")
+      .function("size",
+                optional_override([](const FVec &v) { return v.size(); }))
+      .function("get",
+                optional_override([](const FVec &v, int i) { return v(i); }))
+      .function("set", optional_override(
+                           [](FVec &v, int i, float val) { v(i) = val; }))
+      .class_function("create", optional_override([](int size) {
+                        FVec result = FVec::Zero(size);
+                        return result;
+                      }));
 }

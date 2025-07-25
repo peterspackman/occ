@@ -1,4 +1,5 @@
 set(OCC_DESCRIPTORS_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/promolecule_shape.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/steinhardt.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pdd_amd.h"
     PARENT_SCOPE)

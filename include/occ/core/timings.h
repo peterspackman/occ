@@ -56,6 +56,9 @@ enum category {
   dma_grid_eval,
   dma_grid_int,
   dma_total,
+  post_hf,
+  mp2_tensor_transform,
+  mp2_energy,
   global,
   _group_count
 };

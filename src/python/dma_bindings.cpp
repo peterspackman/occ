@@ -3,12 +3,15 @@
 #include <nanobind/eigen/dense.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
+#include <nanobind/stl/optional.h>
 #include <occ/core/atom.h>
+#include <occ/core/units.h>
 #include <occ/dma/dma.h>
 #include <occ/dma/linear_multipole_calculator.h>
 #include <occ/dma/linear_multipole_shifter.h>
 #include <occ/dma/mult.h>
 #include <occ/dma/multipole_calculator.h>
+#include <occ/driver/dma_driver.h>
 #include <occ/qm/wavefunction.h>
 
 using namespace nb::literals;
@@ -29,98 +32,18 @@ nb::module_ register_dma_bindings(nb::module_ &m) {
            "total number of multipole components")
       .def("to_string", &Mult::to_string, "lm"_a,
            "string representation of specific multipole component")
-      // Level 0 (monopole)
-      .def_prop_rw(
-          "Q00", [](const Mult &m) -> double { return m.Q00(); },
-          [](Mult &m, double val) { m.Q00() = val; }, "monopole moment Q00")
-      .def_prop_rw(
-          "charge", [](const Mult &m) -> double { return m.charge(); },
-          [](Mult &m, double val) { m.charge() = val; },
-          "charge (alias for Q00)")
-      // Level 1 (dipole)
-      .def_prop_rw(
-          "Q10", [](const Mult &m) -> double { return m.Q10(); },
-          [](Mult &m, double val) { m.Q10() = val; }, "dipole moment Q10")
-      .def_prop_rw(
-          "Q11c", [](const Mult &m) -> double { return m.Q11c(); },
-          [](Mult &m, double val) { m.Q11c() = val; }, "dipole moment Q11c")
-      .def_prop_rw(
-          "Q11s", [](const Mult &m) -> double { return m.Q11s(); },
-          [](Mult &m, double val) { m.Q11s() = val; }, "dipole moment Q11s")
-      // Level 2 (quadrupole)
-      .def_prop_rw(
-          "Q20", [](const Mult &m) -> double { return m.Q20(); },
-          [](Mult &m, double val) { m.Q20() = val; }, "quadrupole moment Q20")
-      .def_prop_rw(
-          "Q21c", [](const Mult &m) -> double { return m.Q21c(); },
-          [](Mult &m, double val) { m.Q21c() = val; }, "quadrupole moment Q21c")
-      .def_prop_rw(
-          "Q21s", [](const Mult &m) -> double { return m.Q21s(); },
-          [](Mult &m, double val) { m.Q21s() = val; }, "quadrupole moment Q21s")
-      .def_prop_rw(
-          "Q22c", [](const Mult &m) -> double { return m.Q22c(); },
-          [](Mult &m, double val) { m.Q22c() = val; }, "quadrupole moment Q22c")
-      .def_prop_rw(
-          "Q22s", [](const Mult &m) -> double { return m.Q22s(); },
-          [](Mult &m, double val) { m.Q22s() = val; }, "quadrupole moment Q22s")
-      // Add commonly used higher multipoles (octupole - Q3X)
-      .def_prop_rw(
-          "Q30", [](const Mult &m) -> double { return m.Q30(); },
-          [](Mult &m, double val) { m.Q30() = val; }, "octupole moment Q30")
-      .def_prop_rw(
-          "Q31c", [](const Mult &m) -> double { return m.Q31c(); },
-          [](Mult &m, double val) { m.Q31c() = val; }, "octupole moment Q31c")
-      .def_prop_rw(
-          "Q31s", [](const Mult &m) -> double { return m.Q31s(); },
-          [](Mult &m, double val) { m.Q31s() = val; }, "octupole moment Q31s")
-      .def_prop_rw(
-          "Q32c", [](const Mult &m) -> double { return m.Q32c(); },
-          [](Mult &m, double val) { m.Q32c() = val; }, "octupole moment Q32c")
-      .def_prop_rw(
-          "Q32s", [](const Mult &m) -> double { return m.Q32s(); },
-          [](Mult &m, double val) { m.Q32s() = val; }, "octupole moment Q32s")
-      .def_prop_rw(
-          "Q33c", [](const Mult &m) -> double { return m.Q33c(); },
-          [](Mult &m, double val) { m.Q33c() = val; }, "octupole moment Q33c")
-      .def_prop_rw(
-          "Q33s", [](const Mult &m) -> double { return m.Q33s(); },
-          [](Mult &m, double val) { m.Q33s() = val; }, "octupole moment Q33s")
-      // Hexadecapole (Q4X)
-      .def_prop_rw(
-          "Q40", [](const Mult &m) -> double { return m.Q40(); },
-          [](Mult &m, double val) { m.Q40() = val; }, "hexadecapole moment Q40")
-      .def_prop_rw(
-          "Q41c", [](const Mult &m) -> double { return m.Q41c(); },
-          [](Mult &m, double val) { m.Q41c() = val; },
-          "hexadecapole moment Q41c")
-      .def_prop_rw(
-          "Q41s", [](const Mult &m) -> double { return m.Q41s(); },
-          [](Mult &m, double val) { m.Q41s() = val; },
-          "hexadecapole moment Q41s")
-      .def_prop_rw(
-          "Q42c", [](const Mult &m) -> double { return m.Q42c(); },
-          [](Mult &m, double val) { m.Q42c() = val; },
-          "hexadecapole moment Q42c")
-      .def_prop_rw(
-          "Q42s", [](const Mult &m) -> double { return m.Q42s(); },
-          [](Mult &m, double val) { m.Q42s() = val; },
-          "hexadecapole moment Q42s")
-      .def_prop_rw(
-          "Q43c", [](const Mult &m) -> double { return m.Q43c(); },
-          [](Mult &m, double val) { m.Q43c() = val; },
-          "hexadecapole moment Q43c")
-      .def_prop_rw(
-          "Q43s", [](const Mult &m) -> double { return m.Q43s(); },
-          [](Mult &m, double val) { m.Q43s() = val; },
-          "hexadecapole moment Q43s")
-      .def_prop_rw(
-          "Q44c", [](const Mult &m) -> double { return m.Q44c(); },
-          [](Mult &m, double val) { m.Q44c() = val; },
-          "hexadecapole moment Q44c")
-      .def_prop_rw(
-          "Q44s", [](const Mult &m) -> double { return m.Q44s(); },
-          [](Mult &m, double val) { m.Q44s() = val; },
-          "hexadecapole moment Q44s")
+      // New accessor methods for any multipole component
+      .def("get_multipole", 
+           nb::overload_cast<int, int>(&Mult::get_multipole, nb::const_),
+           "l"_a, "m"_a,
+           "Get multipole component by quantum numbers (l, m)")
+      .def("get_component", 
+           nb::overload_cast<const std::string&>(&Mult::get_component, nb::const_),
+           "name"_a,
+           "Get multipole component by string name (e.g., 'Q21c', 'Q30')")
+      .def_static("component_name_to_lm", &Mult::component_name_to_lm,
+                  "name"_a,
+                  "Convert component name to (l, m) quantum numbers")
       .def("__repr__", [](const Mult &mult) {
         return fmt::format("<Mult max_rank={} components={}>", mult.max_rank,
                            mult.num_components());
@@ -216,6 +139,64 @@ nb::module_ register_dma_bindings(nb::module_ &m) {
       .def("__repr__", [](const LinearMultipoleCalculator &calc) {
         return fmt::format("<LinearMultipoleCalculator>");
       });
+
+  // DMA Driver bindings
+  nb::class_<occ::driver::DMAConfig>(m, "DMAConfig")
+      .def(nb::init<>())
+      .def_rw("wavefunction_filename", &occ::driver::DMAConfig::wavefunction_filename,
+              "path to wavefunction file")
+      .def_rw("punch_filename", &occ::driver::DMAConfig::punch_filename,
+              "path to punch file output (default: dma.punch)")
+      .def_rw("settings", &occ::driver::DMAConfig::settings,
+              "DMA calculation settings")
+      .def_rw("atom_radii", &occ::driver::DMAConfig::atom_radii,
+              "atom-specific radii (element symbol -> radius in Angstrom)")
+      .def_rw("atom_limits", &occ::driver::DMAConfig::atom_limits,
+              "atom-specific max ranks (element symbol -> max rank)")
+      .def_rw("write_punch", &occ::driver::DMAConfig::write_punch,
+              "whether to write punch file (default: True)")
+      .def("__repr__", [](const occ::driver::DMAConfig &config) {
+        return fmt::format("<DMAConfig wavefunction='{}' punch='{}' write_punch={}>",
+                           config.wavefunction_filename, config.punch_filename,
+                           config.write_punch ? "True" : "False");
+      });
+
+  nb::class_<occ::driver::DMADriver::DMAOutput>(m, "DMAOutput")
+      .def_rw("result", &occ::driver::DMADriver::DMAOutput::result,
+              "DMA calculation result")
+      .def_rw("sites", &occ::driver::DMADriver::DMAOutput::sites,
+              "DMA sites information")
+      .def("__repr__", [](const occ::driver::DMADriver::DMAOutput &output) {
+        return fmt::format("<DMAOutput num_sites={} max_rank={}>",
+                           output.sites.size(), output.result.max_rank);
+      });
+
+  nb::class_<occ::driver::DMADriver>(m, "DMADriver")
+      .def(nb::init<>())
+      .def(nb::init<const occ::driver::DMAConfig &>(), "config"_a)
+      .def("set_config", &occ::driver::DMADriver::set_config, "config"_a,
+           "set DMA configuration")
+      .def("config", &occ::driver::DMADriver::config, "get current configuration")
+      .def("run", nb::overload_cast<>(&occ::driver::DMADriver::run),
+           "run DMA calculation loading wavefunction from file")
+      .def("run", nb::overload_cast<const occ::qm::Wavefunction &>(&occ::driver::DMADriver::run),
+           "wavefunction"_a, "run DMA calculation with provided wavefunction")
+      .def_static("generate_punch_file", &occ::driver::DMADriver::generate_punch_file,
+                  "result"_a, "sites"_a, "generate punch file content as string")
+      .def_static("write_punch_file", &occ::driver::DMADriver::write_punch_file,
+                  "filename"_a, "result"_a, "sites"_a, "write punch file to disk")
+      .def("__repr__", [](const occ::driver::DMADriver &driver) {
+        return fmt::format("<DMADriver>");
+      });
+
+  // Convenience function for punch file generation
+  m.def("generate_punch_file", &occ::driver::DMADriver::generate_punch_file,
+        "result"_a, "sites"_a,
+        "Generate GDMA-compatible punch file content from DMA results");
+
+  m.def("write_punch_file", &occ::driver::DMADriver::write_punch_file,
+        "filename"_a, "result"_a, "sites"_a,
+        "Write GDMA-compatible punch file from DMA results");
 
   return m;
 }

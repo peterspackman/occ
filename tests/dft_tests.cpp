@@ -8,6 +8,7 @@
 #include <occ/dft/grid_types.h>
 #include <occ/dft/grid_utils.h>
 #include <occ/dft/hirshfeld.h>
+#include <occ/dft/voronoi_charges.h>
 #include <occ/dft/lebedev.h>
 #include <occ/dft/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
@@ -20,6 +21,7 @@
 #include <occ/qm/shell.h>
 #include <occ/qm/wavefunction.h>
 #include <vector>
+#include <chrono>
 
 // DFT
 
@@ -698,3 +700,69 @@ TEST_CASE("DFT gradient for water", "[dft_gradient]") {
 
   REQUIRE(occ::util::all_close(expected, gradient, 1e-3, 1e-3));
 }
+
+// Voronoi charge tests
+
+TEST_CASE("Voronoi basic functionality", "[voronoi]") {
+  auto mol = make_h2o_for_hirshfeld();
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  // Test class interface
+  occ::dft::VoronoiPartition voronoi(basis);
+  occ::Vec charges = voronoi.calculate(mo);
+  
+  // Test convenience function (should give identical results)
+  occ::Vec charges2 = occ::dft::calculate_voronoi_charges(basis, mo);
+
+  // Basic validation
+  REQUIRE(charges.size() == 3);
+  REQUIRE(charges(0) < 0);  // Oxygen negative
+  REQUIRE(charges(1) > 0);  // Hydrogens positive  
+  REQUIRE(charges(2) > 0);
+  REQUIRE(charges.sum() == Approx(0.0).margin(1e-8));  // Charge conservation
+  REQUIRE(all_close(charges, charges2));  // Class vs function consistency
+  
+  auto volumes = voronoi.atom_volumes();
+  REQUIRE(volumes.size() == 3);
+  REQUIRE((volumes.array() > 0).all());  // All volumes positive
+}
+
+TEST_CASE("Voronoi VDW scaling and temperature effects", "[voronoi]") {
+  auto mol = make_ch4_for_hirshfeld();
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  // Test pure geometric Voronoi
+  occ::dft::VoronoiPartition voronoi_geom(basis, 0, 0.1, false);
+  occ::Vec charges_geom = voronoi_geom.calculate(mo);
+  
+  // Test VDW-scaled Voronoi with optimized temperature
+  occ::dft::VoronoiPartition voronoi_vdw(basis, 0, 0.37, true);
+  occ::Vec charges_vdw = voronoi_vdw.calculate(mo);
+
+  // Basic validation for both methods
+  REQUIRE(charges_geom.size() == 5);
+  REQUIRE(charges_vdw.size() == 5);
+  REQUIRE(charges_geom.sum() == Approx(0.0).margin(1e-8));
+  REQUIRE(charges_vdw.sum() == Approx(0.0).margin(1e-8));
+  
+  // Check symmetry preservation for methane hydrogens
+  auto h_avg_geom = (charges_geom(1) + charges_geom(2) + charges_geom(3) + charges_geom(4)) / 4.0;
+  auto h_avg_vdw = (charges_vdw(1) + charges_vdw(2) + charges_vdw(3) + charges_vdw(4)) / 4.0;
+  
+  for (int i = 1; i <= 4; i++) {
+    REQUIRE(charges_geom(i) == Approx(h_avg_geom).margin(1e-2));
+    REQUIRE(charges_vdw(i) == Approx(h_avg_vdw).margin(1e-2));
+  }
+  
+  // VDW and geometric should produce different results
+  REQUIRE(!all_close(charges_geom, charges_vdw, 1e-3));
+}
+

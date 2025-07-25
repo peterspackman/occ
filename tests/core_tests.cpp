@@ -175,6 +175,96 @@ TEST_CASE("Molecule rotation & translation", "[molecule]") {
   REQUIRE(all_close(expected_pos, m.positions()));
 }
 
+TEST_CASE("Molecule permute", "[molecule]") {
+  // Create a simple molecule with 4 atoms
+  occ::Mat3N pos(3, 4);
+  occ::IVec nums(4);
+  nums << 6, 1, 1, 8;        // C, H, H, O
+  pos << 0.0, 1.0, 2.0, 3.0, // x
+      0.0, 0.0, 0.0, 0.0,    // y
+      0.0, 0.0, 0.0, 0.0;    // z
+
+  Molecule m(nums, pos);
+
+  // Set some additional properties to test they're permuted correctly
+  occ::IVec asym_idx(4);
+  asym_idx << 0, 1, 1, 2;
+  m.set_asymmetric_unit_idx(asym_idx);
+
+  // Add some bonds
+  m.add_bond(0, 1); // C-H
+  m.add_bond(0, 2); // C-H
+  m.add_bond(0, 3); // C-O
+
+  SECTION("Identity permutation") {
+    std::vector<int> perm = {0, 1, 2, 3};
+    Molecule permuted = m.permute(perm);
+
+    REQUIRE(all_close(m.positions(), permuted.positions()));
+    REQUIRE(m.atomic_numbers() == permuted.atomic_numbers());
+    REQUIRE(permuted.asymmetric_unit_idx() == asym_idx);
+  }
+
+  SECTION("Swap hydrogens") {
+    std::vector<int> perm = {0, 2, 1, 3}; // Swap H atoms
+    Molecule permuted = m.permute(perm);
+
+    // Check positions are swapped
+    REQUIRE(permuted.positions()(0, 1) == Approx(2.0));
+    REQUIRE(permuted.positions()(0, 2) == Approx(1.0));
+
+    // Check atomic numbers are swapped
+    REQUIRE(permuted.atomic_numbers()(1) == 1);
+    REQUIRE(permuted.atomic_numbers()(2) == 1);
+
+    // Check asymmetric indices are swapped
+    REQUIRE(permuted.asymmetric_unit_idx()(1) == 1);
+    REQUIRE(permuted.asymmetric_unit_idx()(2) == 1);
+
+    // Check bonds are updated correctly
+    auto bonds = permuted.bonds();
+    REQUIRE(bonds.size() == 3);
+    // Bonds should now be (0,2), (0,1), (0,3) due to the swap
+    bool found_0_1 = false, found_0_2 = false, found_0_3 = false;
+    for (const auto &bond : bonds) {
+      if ((bond.first == 0 && bond.second == 1) ||
+          (bond.first == 1 && bond.second == 0))
+        found_0_1 = true;
+      if ((bond.first == 0 && bond.second == 2) ||
+          (bond.first == 2 && bond.second == 0))
+        found_0_2 = true;
+      if ((bond.first == 0 && bond.second == 3) ||
+          (bond.first == 3 && bond.second == 0))
+        found_0_3 = true;
+    }
+    REQUIRE(found_0_1);
+    REQUIRE(found_0_2);
+    REQUIRE(found_0_3);
+  }
+
+  SECTION("Reverse order") {
+    std::vector<int> perm = {3, 2, 1, 0};
+    Molecule permuted = m.permute(perm);
+
+    // Check positions are reversed
+    REQUIRE(permuted.positions()(0, 0) == Approx(3.0));
+    REQUIRE(permuted.positions()(0, 1) == Approx(2.0));
+    REQUIRE(permuted.positions()(0, 2) == Approx(1.0));
+    REQUIRE(permuted.positions()(0, 3) == Approx(0.0));
+
+    // Check atomic numbers are reversed
+    REQUIRE(permuted.atomic_numbers()(0) == 8); // O
+    REQUIRE(permuted.atomic_numbers()(1) == 1); // H
+    REQUIRE(permuted.atomic_numbers()(2) == 1); // H
+    REQUIRE(permuted.atomic_numbers()(3) == 6); // C
+  }
+
+  SECTION("Invalid permutation size") {
+    std::vector<int> perm = {0, 1, 2}; // Too short
+    REQUIRE_THROWS(m.permute(perm));
+  }
+}
+
 // Multipole
 
 TEST_CASE("Multipole constructor", "[multipole]") {
@@ -545,9 +635,8 @@ TEST_CASE("EEQ water", "[charge]") {
   occ::Mat3N pos(3, 3);
   occ::IVec nums(3);
   nums << 8, 1, 1;
-  pos << -0.7021961, -1.0221932, 0.2575211, 
-         -0.0560603, 0.8467758, 0.0421215,
-          0.0099423, -0.0114887, 0.0052190;
+  pos << -0.7021961, -1.0221932, 0.2575211, -0.0560603, 0.8467758, 0.0421215,
+      0.0099423, -0.0114887, 0.0052190;
 
   auto cn = occ::core::charges::eeq_coordination_numbers(nums, pos);
   fmt::print("EEQ water coordination numbers:\n{}\n", occ::format_matrix(cn));
@@ -651,6 +740,89 @@ TEST_CASE("Elastic tensor", "[elastic_tensor]") {
     REQUIRE(vmin == Approx(0.067042).epsilon(1e-2));
     double vmax = elastic.poisson_ratio(d1max, d2max);
     REQUIRE(vmax == Approx(0.59507).epsilon(1e-2));
+  }
+}
+
+TEST_CASE("Elastic tensor - ELATE comparison", "[elastic_tensor]") {
+  using occ::core::ElasticTensor;
+
+  // Test tensor from user with ELATE reference values
+  Eigen::Matrix<double, 6, 6> tensor;
+  tensor << 228.38, 85.741, 81.503, 0.000, -0.737, 0.000, 85.741, 217.47,
+      94.201, 0.000, -20.213, 0.000, 81.503, 94.201, 178.81, 0.000, -9.472,
+      0.000, 0.000, 0.000, 0.000, 35.094, 0.000, -17.851, -0.737, -20.213,
+      -9.472, 0.000, 37.778, 0.000, 0.000, 0.000, 0.000, -17.851, 0.000, 42.708;
+
+  ElasticTensor elastic(tensor);
+
+  SECTION("Voigt Averages - ELATE comparison") {
+    const auto avg = ElasticTensor::AveragingScheme::Voigt;
+    double bulk = elastic.average_bulk_modulus(avg);
+    double youngs = elastic.average_youngs_modulus(avg);
+    double shear = elastic.average_shear_modulus(avg);
+    double poisson = elastic.average_poisson_ratio(avg);
+
+    fmt::print("Voigt averages (OCC vs ELATE reference):\n");
+    fmt::print("Bulk modulus: {:.3f} GPa (ELATE: 127.51 GPa)\n", bulk);
+    fmt::print("Young's modulus: {:.3f} GPa (ELATE: 126.36 GPa)\n", youngs);
+    fmt::print("Shear modulus: {:.3f} GPa (ELATE: 47.331 GPa)\n", shear);
+    fmt::print("Poisson's ratio: {:.5f} (ELATE: 0.33483)\n", poisson);
+
+    // Test against ELATE reference values
+    REQUIRE(bulk == Approx(127.51).epsilon(1e-2));
+    REQUIRE(youngs == Approx(126.36).epsilon(1e-2));
+    REQUIRE(shear == Approx(47.331).epsilon(1e-2));
+    REQUIRE(poisson == Approx(0.33483).epsilon(1e-4));
+  }
+
+  SECTION("Reuss Averages - ELATE comparison") {
+    const auto avg = ElasticTensor::AveragingScheme::Reuss;
+    double bulk = elastic.average_bulk_modulus(avg);
+    double youngs = elastic.average_youngs_modulus(avg);
+    double shear = elastic.average_shear_modulus(avg);
+    double poisson = elastic.average_poisson_ratio(avg);
+
+    fmt::print("Reuss averages (OCC vs ELATE reference):\n");
+    fmt::print("Bulk modulus: {:.3f} GPa (ELATE: 123.55 GPa)\n", bulk);
+    fmt::print("Young's modulus: {:.3f} GPa (ELATE: 105.5 GPa)\n", youngs);
+    fmt::print("Shear modulus: {:.3f} GPa (ELATE: 38.853 GPa)\n", shear);
+    fmt::print("Poisson's ratio: {:.5f} (ELATE: 0.35768)\n", poisson);
+
+    // Test against ELATE reference values
+    REQUIRE(bulk == Approx(123.55).epsilon(1e-2));
+    REQUIRE(youngs == Approx(105.5).epsilon(1e-2));
+    REQUIRE(shear == Approx(38.853).epsilon(1e-2));
+    REQUIRE(poisson == Approx(0.35768).epsilon(1e-4));
+  }
+
+  SECTION("Hill Averages - ELATE comparison") {
+    const auto avg = ElasticTensor::AveragingScheme::Hill;
+    double bulk = elastic.average_bulk_modulus(avg);
+    double youngs = elastic.average_youngs_modulus(avg);
+    double shear = elastic.average_shear_modulus(avg);
+    double poisson = elastic.average_poisson_ratio(avg);
+
+    fmt::print("Hill averages (OCC vs ELATE reference):\n");
+    fmt::print("Bulk modulus: {:.3f} GPa (ELATE: 125.53 GPa)\n", bulk);
+    fmt::print("Young's modulus: {:.3f} GPa (ELATE: 116 GPa)\n", youngs);
+    fmt::print("Shear modulus: {:.3f} GPa (ELATE: 43.092 GPa)\n", shear);
+    fmt::print("Poisson's ratio: {:.5f} (ELATE: 0.34598)\n", poisson);
+
+    // Test against ELATE reference values
+    REQUIRE(bulk == Approx(125.53).epsilon(1e-2));
+    REQUIRE(youngs == Approx(116.0).epsilon(1e-2));
+    REQUIRE(shear == Approx(43.092).epsilon(1e-2));
+    REQUIRE(poisson == Approx(0.34598).epsilon(1e-4));
+  }
+
+  SECTION("Matrix validation") {
+    // Verify the tensor was loaded correctly
+    REQUIRE(occ::util::all_close(tensor, elastic.voigt_c(), 1e-6, 1e-6));
+
+    // Print the tensor for verification
+    fmt::print("Input tensor:\n{}\n", occ::format_matrix(tensor));
+    fmt::print("Compliance matrix:\n{}\n",
+               occ::format_matrix(elastic.voigt_s()));
   }
 }
 

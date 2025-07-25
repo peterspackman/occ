@@ -132,7 +132,7 @@ private:
   CrystalGrowthCalculatorOptions m_options;
 };
 
-class DummyCrystalGrowthCalculator: public CrystalGrowthCalculator {
+class DummyCrystalGrowthCalculator : public CrystalGrowthCalculator {
 public:
   explicit DummyCrystalGrowthCalculator(
       const crystal::Crystal &crystal,

@@ -4,6 +4,7 @@
 #include "detail/multipole_kernel.h"
 #include "detail/schwarz_kernel.h"
 #include "detail/three_center_kernels.h"
+#include <chrono>
 #include <cmath>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -866,6 +867,106 @@ Vec IntegralEngine::electric_potential(const MolecularOrbitals &mo,
     }
   }
   return result;
+}
+
+Eigen::Tensor<double, 4>
+IntegralEngine::four_center_integrals_tensor(const Mat &Schwarz) const {
+  using Result = IntegralEngine::IntegralResult<4>;
+  const size_t n_ao = nbf();
+  constexpr auto op = cint::Operator::coulomb;
+  auto nthreads = occ::parallel::get_num_threads();
+
+  occ::log::info(
+      "Computing AO integrals using parallel dense tensor with {} threads",
+      nthreads);
+  occ::log::info("AO basis size: {} functions", n_ao);
+  occ::log::info(
+      "Using 8-fold symmetry storage - storing only unique integrals");
+  if (Schwarz.size() > 0) {
+    occ::log::info("Using Schwarz screening for shell pair screening");
+  }
+
+  // Create the result tensor directly
+  Eigen::Tensor<double, 4> result(n_ao, n_ao, n_ao, n_ao);
+  result.setZero();
+
+  // Lambda function to process shell quartets and store only unique integrals
+  auto f = [&result, n_ao](const Result &args) {
+    // Extract integrals from buffer and store only canonical form
+    for (auto f3 = 0, f0123 = 0; f3 != args.dims[3]; ++f3) {
+      const auto bf3 = f3 + args.bf[3];
+      for (auto f2 = 0; f2 != args.dims[2]; ++f2) {
+        const auto bf2 = f2 + args.bf[2];
+        for (auto f1 = 0; f1 != args.dims[1]; ++f1) {
+          const auto bf1 = f1 + args.bf[1];
+          for (auto f0 = 0; f0 != args.dims[0]; ++f0, ++f0123) {
+            const auto bf0 = f0 + args.bf[0];
+            const auto value = args.buffer[f0123];
+
+            // Store only if significant and in canonical form
+            if (std::abs(value) > 1e-12) {
+              // Determine canonical ordering for 8-fold symmetry
+              // Store in form where: μ <= ν and ρ <= σ and (μν) <= (ρσ)
+              size_t mu = std::min(bf0, bf1);
+              size_t nu = std::max(bf0, bf1);
+              size_t rho = std::min(bf2, bf3);
+              size_t sigma = std::max(bf2, bf3);
+
+              // Ensure (μν) <= (ρσ) by comparing composite indices
+              size_t munu = mu * n_ao + nu;
+              size_t rhosigma = rho * n_ao + sigma;
+
+              if (munu <= rhosigma) {
+                result(mu, nu, rho, sigma) = value;
+              } else {
+                result(rho, sigma, mu, nu) = value;
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Execute parallel integral computation
+  auto lambda = [&](int thread_id) {
+    if (is_spherical()) {
+      detail::evaluate_four_center<op, Shell::Kind::Spherical>(
+          f, m_env, m_aobasis, m_shellpairs, Schwarz, Mat(), m_precision,
+          thread_id);
+    } else {
+      detail::evaluate_four_center<op, Shell::Kind::Cartesian>(
+          f, m_env, m_aobasis, m_shellpairs, Schwarz, Mat(), m_precision,
+          thread_id);
+    }
+  };
+
+  occ::parallel::parallel_do_timed(lambda, occ::timing::category::ints4c2e);
+
+  occ::log::info("AO integral tensor computation completed");
+
+  return result;
+}
+
+double IntegralEngine::get_integral_8fold_symmetry(
+    const Eigen::Tensor<double, 4> &tensor, size_t i, size_t j, size_t k,
+    size_t l, size_t n_ao) {
+  // Map indices to canonical form using 8-fold symmetry
+  // Canonical form: μ <= ν and ρ <= σ and (μν) <= (ρσ)
+  size_t mu = std::min(i, j);
+  size_t nu = std::max(i, j);
+  size_t rho = std::min(k, l);
+  size_t sigma = std::max(k, l);
+
+  // Ensure (μν) <= (ρσ) by comparing composite indices
+  size_t munu = mu * n_ao + nu;
+  size_t rhosigma = rho * n_ao + sigma;
+
+  if (munu <= rhosigma) {
+    return tensor(mu, nu, rho, sigma);
+  } else {
+    return tensor(rho, sigma, mu, nu);
+  }
 }
 
 } // namespace occ::qm

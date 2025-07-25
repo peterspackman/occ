@@ -5,6 +5,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>
+#include <occ/slater/thakkar_basis.h>
 
 using occ::format_matrix;
 using occ::util::all_close;
@@ -109,4 +110,55 @@ TEST_CASE("Ag atom slater basis density") {
     fmt::print("occ:\n{}\n", format_matrix(sh.occupation(), "{}"));
   }
   REQUIRE(all_close(rho, expected, 1e-5, 1e-5));
+}
+
+TEST_CASE("Hardcoded Thakkar basis matches file-based loading") {
+  using occ::Vec;
+
+  // Get hardcoded basis (uses hardcoded when name is "thakkar")
+  auto hardcoded_basis = occ::slater::load_slaterbasis("thakkar");
+
+  // Get file-based basis (now renamed to thakkar_original.json)
+  auto file_basis = occ::slater::load_slaterbasis("thakkar_original");
+
+  // Test that both bases have the same elements
+  REQUIRE(hardcoded_basis.contains("H"));
+  REQUIRE(hardcoded_basis.contains("C"));
+  REQUIRE(hardcoded_basis.contains("N"));
+  REQUIRE(hardcoded_basis.contains("O"));
+
+  REQUIRE(file_basis.contains("H"));
+  REQUIRE(file_basis.contains("C"));
+  REQUIRE(file_basis.contains("N"));
+  REQUIRE(file_basis.contains("O"));
+
+  // Compare a few key elements
+  std::vector<std::string> test_elements = {"H", "C", "N", "O"};
+  Vec test_points = Vec::LinSpaced(20, 0.05, 3.0);
+
+  for (const auto &element : test_elements) {
+    auto hardcoded_elem = hardcoded_basis[element];
+    auto file_elem = file_basis[element];
+
+    // Compare densities
+    Vec hardcoded_rho = hardcoded_elem.rho(test_points);
+    Vec file_rho = file_elem.rho(test_points);
+
+    fmt::print("Comparing {} densities:\n", element);
+    fmt::print("Max difference: {:.2e}\n",
+               (hardcoded_rho - file_rho).cwiseAbs().maxCoeff());
+
+    REQUIRE(all_close(hardcoded_rho, file_rho, 1e-10, 1e-10));
+
+    // Compare gradients
+    Vec hardcoded_grad = hardcoded_elem.grad_rho(test_points);
+    Vec file_grad = file_elem.grad_rho(test_points);
+
+    fmt::print("Max gradient difference: {:.2e}\n",
+               (hardcoded_grad - file_grad).cwiseAbs().maxCoeff());
+
+    REQUIRE(all_close(hardcoded_grad, file_grad, 1e-10, 1e-10));
+  }
+
+  fmt::print("Hardcoded Thakkar basis matches file-based version perfectly!\n");
 }

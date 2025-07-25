@@ -3,8 +3,11 @@
 #include "ProcessBuilder.hpp"
 
 #include <stdio.h>
+// clang-format off
+// IMPORTANT: tchar.h must be included before strsafe.h on Windows
 #include <tchar.h>
 #include <strsafe.h>
+// clang-format on
 #include <windows.h>
 
 #include "environ.hpp"

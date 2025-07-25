@@ -1,14 +1,20 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/conditioning_orthogonalizer.h>
 #include <occ/core/util.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
+#include <occ/qm/hf.h>
+#include <occ/qm/mo.h>
+#include <occ/qm/integral_engine.h>
 #include <vector>
+#include "test_utils.h"
 
 using Catch::Approx;
 using occ::format_matrix;
@@ -254,4 +260,44 @@ TEST_CASE("Spherical GTO rotations") {
                    rot(1, 0) * rot(1, 0) + rot(1, 1) * rot(1, 1)) ==
             Approx(band_2(4, 4)).epsilon(1e-10));
   }
+}
+
+TEST_CASE("Density matrix transformation preserves population", "[gto][density][transformation]") {
+  // Create a simple molecule with d orbitals to test spherical->cartesian transformation
+  std::vector<occ::core::Atom> atoms{{6, 0.0, 0.0, 0.0}};  // Carbon atom
+  
+  // Use a basis set with d functions (spherical)
+  occ::qm::AOBasis basis_sph = occ::qm::AOBasis::load(atoms, "cc-pvtz");
+  basis_sph.set_pure(true);  // Ensure spherical
+  
+  // Create a simple density matrix (just identity for testing)
+  int nbf_sph = basis_sph.nbf();
+  Mat D_sph = Mat::Identity(nbf_sph, nbf_sph) * 0.1;  // Small occupation
+  
+  // Calculate overlap matrix for spherical basis
+  occ::qm::IntegralEngine eng_sph(basis_sph);
+  Mat S_sph = eng_sph.one_electron_operator(occ::qm::IntegralEngine::Op::overlap);
+  
+  // Calculate original Mulliken populations: trace(D * S)
+  double pop_original = (D_sph * S_sph).trace();
+  
+  // Transform density matrix to cartesian
+  Mat D_cart = occ::gto::transform_density_matrix_spherical_to_cartesian(basis_sph, D_sph);
+  
+  // Create cartesian basis and its overlap matrix
+  occ::qm::AOBasis basis_cart = basis_sph;
+  basis_cart.set_pure(false);
+  occ::qm::IntegralEngine eng_cart(basis_cart);
+  Mat S_cart = eng_cart.one_electron_operator(occ::qm::IntegralEngine::Op::overlap);
+  
+  // Calculate transformed Mulliken populations: trace(D_cart * S_cart)
+  double pop_transformed = (D_cart * S_cart).trace();
+  
+  // Population should be preserved
+  REQUIRE(pop_transformed == Approx(pop_original).epsilon(1e-12));
+  
+  // Also test that the density matrix dimensions changed appropriately
+  REQUIRE(D_cart.rows() == basis_cart.nbf());
+  REQUIRE(D_cart.cols() == basis_cart.nbf());
+  REQUIRE(basis_cart.nbf() > basis_sph.nbf());  // Cartesian should have more functions
 }

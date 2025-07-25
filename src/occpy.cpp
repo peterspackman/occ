@@ -32,15 +32,7 @@ NB_MODULE(_occpy, m) {
   auto iso = register_isosurface_bindings(m);
   auto intr = register_interaction_bindings(m);
 
-  nb::enum_<spdlog::level::level_enum>(m, "LogLevel")
-      .value("TRACE", spdlog::level::level_enum::trace)
-      .value("DEBUG", spdlog::level::level_enum::debug)
-      .value("INFO", spdlog::level::level_enum::info)
-      .value("WARN", spdlog::level::level_enum::warn)
-      .value("ERROR", spdlog::level::level_enum::err)
-      .value("CRITICAL", spdlog::level::level_enum::critical)
-      .value("OFF", spdlog::level::level_enum::off);
-
+  // LogLevel enum is already registered in core_bindings.cpp
   m.def("set_log_level", nb::overload_cast<int>(occ::log::set_log_level));
   m.def("set_log_level",
         nb::overload_cast<spdlog::level::level_enum>(occ::log::set_log_level));
@@ -61,6 +53,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.7.6";
+  m.attr("__version__") = "0.7.7";
 #endif
 }
