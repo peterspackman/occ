@@ -10,6 +10,7 @@ struct LatticeConvergenceSettings {
   double energy_tolerance{1.0}; // kj/mol
   bool wolf_sum{false};
   bool crystal_field_polarization{false};
+  bool write_all_pairs{false};
   std::string model_name{"ce-b3lyp"};
   std::string crystal_filename{""};
   std::string output_json_filename{""};

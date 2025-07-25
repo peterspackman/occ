@@ -123,6 +123,15 @@ public:
   Vec3 v_ab() const;
 
   /**
+   * The vector from center of mass of Molecule A to the center of mass of
+   * Molecule B.
+   *
+   * \returns a Vec3 representing the vector between the center of mass of A and
+   * the center of mass of B.
+   */
+  Vec3 v_ab_com() const;
+
+  /**
    * Vector of van der Waals radii for the atoms in this Dimer.
    *
    * \param order specify whether the radii of the atoms in Molecule A should

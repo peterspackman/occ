@@ -8,6 +8,7 @@
 #include <occ/crystal/site_mapping_table.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/unitcell.h>
+#include <occ/io/cifparser.h>
 #include <vector>
 
 namespace occ::crystal {
