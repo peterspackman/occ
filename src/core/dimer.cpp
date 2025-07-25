@@ -36,6 +36,12 @@ Vec3 Dimer::v_ab() const {
   return o_b - o_a;
 }
 
+Vec3 Dimer::v_ab_com() const {
+  Vec3 o_a = m_a.center_of_mass();
+  Vec3 o_b = m_b.center_of_mass();
+  return o_b - o_a;
+}
+
 Vec3 Dimer::centroid() const { return positions().rowwise().mean(); }
 
 std::optional<occ::Mat4> Dimer::symmetry_relation() const {

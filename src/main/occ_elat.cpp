@@ -109,10 +109,12 @@ inline void map_interactions_to_uc(const Crystal &crystal,
   }
 }
 
-inline void write_elat_json(const std::string &basename,
-                            const std::string &model,
-                            const occ::crystal::Crystal &crystal,
-                            const occ::crystal::CrystalDimers &dimers) {
+inline void
+write_elat_json(const std::string &basename, const std::string &model,
+                const occ::crystal::Crystal &crystal,
+                const occ::crystal::CrystalDimers &dimers,
+                const std::optional<occ::crystal::CrystalDimers> &uc_dimers =
+                    std::nullopt) {
   nlohmann::json j;
   j["result_type"] = "elat";
   j["title"] = basename;
@@ -183,6 +185,48 @@ inline void write_elat_json(const std::string &basename,
     }
     j["pairs"].push_back(m);
   }
+  if (uc_dimers.has_value()) {
+    j["all_pairs"] = {};
+    const occ::crystal::CrystalDimers uc_dimers_value = uc_dimers.value();
+    for (const auto &mol_pairs : uc_dimers_value.molecule_neighbors) {
+      nlohmann::json m;
+      for (const auto &[dimer, unique_idx] : mol_pairs) {
+        const auto &unique_dimer = dimers.unique_dimers[unique_idx];
+        if (unique_dimer.interaction_energy() == 0.0)
+          continue;
+
+        nlohmann::json d;
+        nlohmann::json e;
+
+        // Label generation
+        auto label = dimer_labeller(dimer);
+        d["Label"] = label;
+        d["Unique Index"] = unique_idx;
+
+        // Energy components
+        const auto &energies = unique_dimer.interaction_energies();
+        for (const auto &[k, v] : energies) {
+          e[k] = v;
+        }
+        d["energies"] = e;
+
+        // Nearest neighbor calculation based on distance threshold
+        bool is_nearest =
+            dimer.nearest_distance() <=
+            4.0; // You may want to make this threshold configurable
+        d["Nearest Neighbor"] = is_nearest;
+
+        double r = dimer.center_of_mass_distance();
+        d["r"] = r;
+        occ::Vec3 r_vec = dimer.v_ab_com();
+        d["rvec"] = std::array<double, 3>({r_vec[0], r_vec[1], r_vec[2]});
+        d["mass"] = dimer.a().molar_mass();
+
+        m.push_back(d);
+      }
+      j["all_pairs"].push_back(m);
+    }
+  }
 
   std::ofstream dest(fmt::format("{}_elat_results.json", basename));
   dest << j.dump(2);
@@ -252,6 +296,10 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
                     settings.max_radius);
     exit(0);
   }
+  std::optional<occ::crystal::CrystalDimers> uc_dimers;
+  if (settings.write_all_pairs) {
+    uc_dimers = c.unit_cell_dimers(settings.max_radius);
+  }
 
   const std::string row_fmt_string = "{:>7.3f} {:>7.3f} {:>20s} {: 8.3f} {: "
                                      "8.3f} {: 8.3f} {: 8.3f} {: 8.3f} {: "
@@ -298,7 +346,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
                  lattice_energy_result.lattice_energy);
 
   write_elat_json(basename, settings.model_name, c,
-                  lattice_energy_result.dimers);
+                  lattice_energy_result.dimers, uc_dimers);
 }
 
 namespace occ::main {
@@ -331,6 +379,8 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
       "--crystal-polarization,--crystal_polarization",
       config->crystal_field_polarization,
       "calculate polarization term using full crystal electric field");
+  elat->add_flag("--all-pairs", config->write_all_pairs,
+                 "write all pairs of interactions");
   elat->fallthrough();
   elat->callback([config]() { run_elat_subcommand(*config); });
   return elat;
