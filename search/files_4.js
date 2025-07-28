@@ -13,5 +13,6 @@ var searchData=
   ['energy_5fmodel_5fbase_2eh_10',['energy_model_base.h',['../energy__model__base_8h.html',1,'']]],
   ['engrad_2eh_11',['engrad.h',['../engrad_8h.html',1,'']]],
   ['expectation_2eh_12',['expectation.h',['../expectation_8h.html',1,'']]],
-  ['external_5fpotential_2eh_13',['external_potential.h',['../external__potential_8h.html',1,'']]]
+  ['external_5fenergy_5fmodel_2eh_13',['external_energy_model.h',['../external__energy__model_8h.html',1,'']]],
+  ['external_5fpotential_2eh_14',['external_potential.h',['../external__potential_8h.html',1,'']]]
 ];

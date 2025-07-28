@@ -1,12 +1,14 @@
 <map id="/home/runner/work/occ/occ/include/occ/interaction/energy_model_base.h" name="/home/runner/work/occ/occ/include/occ/interaction/energy_model_base.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="209,5,408,60"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="364,5,563,60"/>
 <area shape="rect" id="Node000002" href="$ce__energy__model_8h.html" title=" " alt="" coords="5,108,204,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="245,68,159,110,157,106,242,63"/>
-<area shape="rect" id="Node000003" href="$lattice__energy_8h.html" title=" " alt="" coords="209,211,408,265"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="284,73,269,109,264,135,269,162,278,187,291,209,287,212,273,189,263,163,259,135,263,107,279,71"/>
-<area shape="rect" id="Node000004" href="$wolf_8h.html" title=" " alt="" coords="277,108,476,163"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="336,70,361,106,357,109,332,73"/>
-<area shape="rect" id="Node000005" href="$xtb__energy__model_8h.html" title=" " alt="" coords="500,108,699,163"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="398,62,524,105,523,110,396,67"/>
-<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="353,176,329,212,324,209,349,173"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="357,66,199,111,197,105,356,61"/>
+<area shape="rect" id="Node000003" href="$external__energy__model_8h.html" title=" " alt="" coords="228,108,427,163"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="418,70,365,110,361,106,415,66"/>
+<area shape="rect" id="Node000004" href="$lattice__energy_8h.html" title=" " alt="" coords="432,211,631,265"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="470,73,478,117,491,162,516,209,511,212,486,164,473,118,465,74"/>
+<area shape="rect" id="Node000005" href="$wolf_8h.html" title=" " alt="" coords="500,108,699,163"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="511,66,565,106,562,110,508,70"/>
+<area shape="rect" id="Node000006" href="$xtb__energy__model_8h.html" title=" " alt="" coords="723,108,921,163"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="571,61,729,105,728,111,569,66"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="576,176,551,212,547,209,572,173"/>
 </map>

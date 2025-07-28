@@ -186,6 +186,8 @@ var annotated_dup =
         [ "CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", "structocc_1_1interaction_1_1CEMonomerCalculationParameters" ],
         [ "CEParameterizedModel", "structocc_1_1interaction_1_1CEParameterizedModel.html", "structocc_1_1interaction_1_1CEParameterizedModel" ],
         [ "EnergyModelBase", "classocc_1_1interaction_1_1EnergyModelBase.html", "classocc_1_1interaction_1_1EnergyModelBase" ],
+        [ "ExternalEnergyModel", "classocc_1_1interaction_1_1ExternalEnergyModel.html", "classocc_1_1interaction_1_1ExternalEnergyModel" ],
+        [ "ExternalEnergyOptions", "structocc_1_1interaction_1_1ExternalEnergyOptions.html", "structocc_1_1interaction_1_1ExternalEnergyOptions" ],
         [ "FileSystemPairEnergyStore", "classocc_1_1interaction_1_1FileSystemPairEnergyStore.html", "classocc_1_1interaction_1_1FileSystemPairEnergyStore" ],
         [ "LatticeConvergenceSettings", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html", "structocc_1_1interaction_1_1LatticeConvergenceSettings" ],
         [ "LatticeEnergyCalculator", "classocc_1_1interaction_1_1LatticeEnergyCalculator.html", "classocc_1_1interaction_1_1LatticeEnergyCalculator" ],

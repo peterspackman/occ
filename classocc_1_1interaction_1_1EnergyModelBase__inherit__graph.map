@@ -1,7 +1,9 @@
 <map id="occ::interaction::EnergyModelBase" name="occ::interaction::EnergyModelBase">
-<area shape="rect" id="Node000001" title=" " alt="" coords="125,5,299,45"/>
-<area shape="rect" id="Node000002" href="$classocc_1_1interaction_1_1CEEnergyModel.html" title=" " alt="" coords="5,93,197,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,56,127,95,124,91,175,52"/>
-<area shape="rect" id="Node000003" href="$classocc_1_1interaction_1_1XTBEnergyModel.html" title=" " alt="" coords="222,93,423,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="249,52,300,91,297,95,246,56"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,69,180,109"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1interaction_1_1CEEnergyModel.html" title=" " alt="" coords="233,5,425,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,63,254,43,255,48,181,68"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1interaction_1_1ExternalEnergyModel.html" title=" " alt="" coords="237,69,421,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="194,87,236,87,236,92,194,92"/>
+<area shape="rect" id="Node000004" href="$classocc_1_1interaction_1_1XTBEnergyModel.html" title=" " alt="" coords="228,133,429,173"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="181,110,255,131,254,136,179,116"/>
 </map>

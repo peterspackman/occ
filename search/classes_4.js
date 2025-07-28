@@ -21,5 +21,7 @@ var searchData=
   ['energytotal_18',['EnergyTotal',['../structocc_1_1cg_1_1EnergyTotal.html',1,'occ::cg']]],
   ['engradreader_19',['EngradReader',['../classocc_1_1io_1_1EngradReader.html',1,'occ::io']]],
   ['espfunctor_20',['EspFunctor',['../structocc_1_1main_1_1EspFunctor.html',1,'occ::main']]],
-  ['expfunc_21',['ExpFunc',['../structocc_1_1isosurface_1_1ExpFunc.html',1,'occ::isosurface']]]
+  ['expfunc_21',['ExpFunc',['../structocc_1_1isosurface_1_1ExpFunc.html',1,'occ::isosurface']]],
+  ['externalenergymodel_22',['ExternalEnergyModel',['../classocc_1_1interaction_1_1ExternalEnergyModel.html',1,'occ::interaction']]],
+  ['externalenergyoptions_23',['ExternalEnergyOptions',['../structocc_1_1interaction_1_1ExternalEnergyOptions.html',1,'occ::interaction']]]
 ];

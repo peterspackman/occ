@@ -106,12 +106,14 @@ var hierarchy =
     [ "occ::qm::Energy", "structocc_1_1qm_1_1Energy.html", null ],
     [ "occ::interaction::EnergyModelBase", "classocc_1_1interaction_1_1EnergyModelBase.html", [
       [ "occ::interaction::CEEnergyModel", "classocc_1_1interaction_1_1CEEnergyModel.html", null ],
+      [ "occ::interaction::ExternalEnergyModel", "classocc_1_1interaction_1_1ExternalEnergyModel.html", null ],
       [ "occ::interaction::XTBEnergyModel", "classocc_1_1interaction_1_1XTBEnergyModel.html", null ]
     ] ],
     [ "occ::cg::EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", null ],
     [ "occ::io::EngradReader", "classocc_1_1io_1_1EngradReader.html", null ],
     [ "occ::main::EspFunctor", "structocc_1_1main_1_1EspFunctor.html", null ],
     [ "occ::isosurface::ExpFunc", "structocc_1_1isosurface_1_1ExpFunc.html", null ],
+    [ "occ::interaction::ExternalEnergyOptions", "structocc_1_1interaction_1_1ExternalEnergyOptions.html", null ],
     [ "quickhull::HalfEdgeMesh< FloatType, IndexType >::Face", "structquickhull_1_1HalfEdgeMesh_1_1Face.html", null ],
     [ "quickhull::MeshBuilder< T >::Face", "structquickhull_1_1MeshBuilder_1_1Face.html", null ],
     [ "occ::geometry::Facet", "structocc_1_1geometry_1_1Facet.html", null ],

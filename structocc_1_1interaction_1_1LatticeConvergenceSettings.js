@@ -4,6 +4,7 @@ var structocc_1_1interaction_1_1LatticeConvergenceSettings =
     [ "crystal_field_polarization", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a5373b6b391e52ab2b5bbf70546f374c3", null ],
     [ "crystal_filename", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a6780aef2e99ac38a107f2997d4fe7189", null ],
     [ "energy_tolerance", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a53a1d6ff127f7a3fc2cc2a6d724975a2", null ],
+    [ "external_command", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#acb10f98f3c769a11a13c275ef6d8a7c9", null ],
     [ "max_radius", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#aec8ce3592bc15fdf3b4ad910bab39902", null ],
     [ "min_radius", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a75d29733555e411f81db03215bb164d7", null ],
     [ "model_name", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a6c97b85ffd5e47b2cb80f92f992b319a", null ],
