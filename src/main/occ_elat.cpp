@@ -11,6 +11,7 @@
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/interaction/ce_energy_model.h>
 #include <occ/interaction/disp.h>
+#include <occ/interaction/external_energy_model.h>
 #include <occ/interaction/lattice_energy.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
@@ -28,6 +29,7 @@ using occ::crystal::Crystal;
 using occ::crystal::SymmetryDimerLabeller;
 using occ::interaction::CEEnergyComponents;
 using occ::interaction::CEEnergyModel;
+using occ::interaction::ExternalEnergyModel;
 using occ::interaction::LatticeConvergenceSettings;
 using occ::interaction::LatticeEnergyCalculator;
 using occ::interaction::LatticeEnergyResult;
@@ -231,6 +233,11 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
 
   if (settings.model_name == "xtb") {
     energy_model = std::make_unique<XTBEnergyModel>(c);
+  } else if (settings.model_name == "external") {
+    if (settings.external_command.empty()) {
+      throw std::runtime_error("External command must be specified when using 'external' model");
+    }
+    energy_model = std::make_unique<ExternalEnergyModel>(c, settings.external_command);
   } else {
     wfns = occ::main::calculate_wavefunctions(
         basename, molecules, settings.model_name, settings.spherical_basis);
@@ -307,6 +314,7 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
 
   CLI::App *elat = app.add_subcommand("elat", "compute crystal lattice energy");
   auto config = std::make_shared<LatticeConvergenceSettings>();
+  auto use_xtb = std::make_shared<bool>(false);
 
   elat->add_option("crystal", config->crystal_filename,
                    "input crystal structure (CIF)")
@@ -331,8 +339,19 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
       "--crystal-polarization,--crystal_polarization",
       config->crystal_field_polarization,
       "calculate polarization term using full crystal electric field");
+  elat->add_flag("--xtb", *use_xtb, "use xtb for interaction energies");
+  elat->add_option("--external-command", config->external_command,
+                   "external command for energy calculations (for model=external)");
   elat->fallthrough();
-  elat->callback([config]() { run_elat_subcommand(*config); });
+  elat->callback([config, use_xtb]() { 
+    if (*use_xtb) {
+      config->model_name = "xtb";
+    }
+    if (!config->external_command.empty()) {
+      config->model_name = "external";
+    }
+    run_elat_subcommand(*config); 
+  });
   return elat;
 }
 

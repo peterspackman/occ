@@ -2,6 +2,7 @@ add_library(occ_interaction
     "${CMAKE_CURRENT_SOURCE_DIR}/ce_energy_model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/coulomb.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/disp.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/external_energy_model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/interaction_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lattice_energy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_energy.cpp"

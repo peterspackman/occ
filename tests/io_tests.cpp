@@ -17,6 +17,7 @@
 #include <occ/io/ply.h>
 #include <occ/io/qcschema.h>
 #include <occ/io/shelxfile.h>
+#include <occ/io/cifparser.h>
 
 using occ::format_matrix;
 using occ::util::all_close;
@@ -754,4 +755,103 @@ END
     INFO("R3c space group number: " << sg.number());
     REQUIRE(sg.number() > 1); // Should not be P1
   }
+}
+
+
+TEST_CASE("CIF Parser HM space group symbols", "[cif][spacegroup]") {
+  SECTION("Parse HM symbol 'P C M 21' with correct setting") {
+    const std::string test_cif = R"(data_test
+_symmetry_space_group_name_H-M     'P C M 21        '
+_symmetry_Int_Tables_number        26
+_cell_length_a                     8.290000
+_cell_length_b                     14.000000
+_cell_length_c                     7.225000
+_cell_angle_alpha                  90.000000
+_cell_angle_beta                   90.000000
+_cell_angle_gamma                  90.000000
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+C 0.46040 0.41640 0.00000 1.0000
+)";
+
+    occ::io::CifParser parser;
+    auto crystal = parser.parse_crystal_from_string(test_cif);
+    
+    REQUIRE(crystal.has_value());
+    const auto& c = crystal.value();
+    const auto& sg = c.space_group();
+    
+    // Check that the space group is correctly recognized with exact setting
+    INFO("Actual space group number: " << sg.number());
+    INFO("Actual space group symbol: " << sg.symbol());
+    REQUIRE(sg.number() == 26);
+    // Input 'P C M 21        ' should be parsed as 'P c m 21' (ba-c setting)
+    REQUIRE(sg.symbol() == "P c m 21");
+    
+    // Verify that it's the correct setting by checking symmetry operations count
+    // P c m 21 should have 4 symmetry operations
+    REQUIRE(sg.symmetry_operations().size() == 4);
+    
+    // Verify unit cell parameters
+    const auto& uc = c.unit_cell();
+    REQUIRE_THAT(uc.a(), Catch::Matchers::WithinRel(8.29, 1e-3));
+    REQUIRE_THAT(uc.b(), Catch::Matchers::WithinRel(14.0, 1e-3));
+    REQUIRE_THAT(uc.c(), Catch::Matchers::WithinRel(7.225, 1e-3));
+  }
+  
+  
+  SECTION("Parse space group 26 different settings") {
+    // Test that we get the correct setting for different orientations of space group 26
+    struct TestCase {
+      std::string hm_input;
+      std::string expected_hm;
+      std::string expected_hall;
+    };
+    
+    std::vector<TestCase> test_cases = {
+      {"'P C M 21'", "P c m 21", "P 2c -2c"},      // ba-c setting  
+      {"'P M C 21'", "P m c 21", "P 2c -2"},       // standard setting
+      {"'P 21 M A'", "P 21 m a", "P -2a 2a"},      // cab setting
+      {"'P 21 A M'", "P 21 a m", "P -2 2a"},       // -cba setting
+      {"'P B 21 M'", "P b 21 m", "P -2 -2b"},      // bca setting  
+      {"'P M 21 B'", "P m 21 b", "P -2b -2"}       // a-cb setting
+    };
+    
+    for (const auto& test_case : test_cases) {
+      std::string test_cif = fmt::format(R"(data_test
+_symmetry_space_group_name_H-M     {}
+_cell_length_a                     8.290000
+_cell_length_b                     14.000000
+_cell_length_c                     7.225000
+_cell_angle_alpha                  90.000000
+_cell_angle_beta                   90.000000
+_cell_angle_gamma                  90.000000
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+C 0.46040 0.41640 0.00000 1.0000
+)", test_case.hm_input);
+
+      occ::io::CifParser parser;
+      auto crystal = parser.parse_crystal_from_string(test_cif);
+      
+      INFO("Testing HM symbol: " << test_case.hm_input);
+      REQUIRE(crystal.has_value());
+      
+      const auto& sg = crystal->space_group();
+      REQUIRE(sg.number() == 26);
+      REQUIRE(sg.symbol() == test_case.expected_hm);
+      
+      // All should have 4 symmetry operations
+      REQUIRE(sg.symmetry_operations().size() == 4);
+    }
+  }
+  
 }
