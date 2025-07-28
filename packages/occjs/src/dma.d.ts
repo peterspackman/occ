@@ -55,7 +55,7 @@ export interface DMASettings {
   include_nuclei: boolean;
 }
 
-export interface DMAResult {
+export interface DMAResultInterface {
   max_rank: number;
   multipoles: Mult[];
 }
@@ -63,7 +63,7 @@ export interface DMAResult {
 export interface DMASites {
   size(): number;
   num_atoms(): number;
-  atoms: any[];
+  atoms: unknown[];
   name: string[];
   positions: Mat3N;
   atom_indices: IVec;
@@ -77,8 +77,8 @@ export interface DMACalculator {
   set_radius_for_element(atomic_number: number, radius_angs: number): void;
   set_limit_for_element(atomic_number: number, limit: number): void;
   sites(): DMASites;
-  compute_multipoles(): DMAResult;
-  compute_total_multipoles(result: DMAResult): Mult;
+  compute_multipoles(): DMAResultInterface;
+  compute_total_multipoles(result: DMAResultInterface): Mult;
 }
 
 // High-level JavaScript API
@@ -119,11 +119,11 @@ export declare class DMAConfig {
 }
 
 export declare class DMAResult {
-  result: DMAResult;
+  result: DMAResultInterface;
   sites: DMASites;
   total: Mult;
   
-  constructor(result: DMAResult, sites: DMASites, total: Mult);
+  constructor(result: DMAResultInterface, sites: DMASites, total: Mult);
   getSiteMultipoles(siteIndex: number): Mult;
   getTotalMultipoles(): Mult;
   getSites(): DMASites;
