@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wavefunction Calculator - Quantum Chemistry</title>
+    <title>Wavefunction Calculator with Web Worker - Quantum Chemistry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -63,6 +63,18 @@
             text-align: center;
             min-width: 40px;
         }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -71,8 +83,8 @@
         <div class="bg-white border-b border-gray-200 px-6 py-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Wavefunction Calculator</h1>
-                    <p class="text-sm text-gray-600">Quantum Chemistry Calculations from XYZ Files</p>
+                    <h1 class="text-2xl font-bold text-gray-900">Wavefunction Calculator (Web Worker)</h1>
+                    <p class="text-sm text-gray-600">Quantum Chemistry Calculations from XYZ Files - Non-blocking UI</p>
                 </div>
                 <div id="moleculeHeaderInfo" class="text-right text-sm text-gray-600 hidden">
                     <div id="moleculeName" class="font-medium text-gray-900"></div>
@@ -84,7 +96,15 @@
         <!-- Main Layout -->
         <div class="flex h-screen">
             <!-- Left Sidebar -->
-            <div class="w-80 bg-white border-r border-gray-200 p-6 space-y-6 overflow-y-auto">
+            <div class="w-1/4 bg-white border-r border-gray-200 p-6 space-y-6 overflow-y-auto">
+                <!-- Worker Status -->
+                <div id="workerStatus" class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                    <div class="flex items-center">
+                        <div class="spinner mr-2"></div>
+                        <span>Initializing Web Worker...</span>
+                    </div>
+                </div>
+
                 <!-- File Upload Section -->
                 <div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-3">Upload Molecule</h3>
@@ -102,7 +122,7 @@
                     
                     <div class="mt-3">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Or paste XYZ coordinates:</label>
-                        <textarea id="xyzInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="6" placeholder="3&#10;Water molecule&#10;O  0.000000  0.000000  0.000000&#10;H  0.757000  0.586000  0.000000&#10;H -0.757000  0.586000  0.000000"></textarea>
+                        <textarea id="xyzInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono" rows="8" placeholder="3&#10;Water molecule&#10;O  0.000000  0.000000  0.000000&#10;H  0.757000  0.586000  0.000000&#10;H -0.757000  0.586000  0.000000"></textarea>
                     </div>
                 </div>
 
@@ -130,7 +150,6 @@
                                 <option value="sto-3g">STO-3G</option>
                                 <option value="3-21g">3-21G</option>
                                 <option value="6-31g">6-31G</option>
-                                <option value="6-31g(d)">6-31G(d)</option>
                                 <option value="6-31g(d,p)" selected>6-31G(d,p)</option>
                                 <option value="def2-svp">def2-SVP</option>
                                 <option value="def2-tzvp">def2-TZVP</option>
@@ -177,8 +196,11 @@
 
                 <!-- Run Button -->
                 <div id="runPanel" class="hidden">
-                    <button id="calculateBtn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium">
+                    <button id="calculateBtn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed">
                         Run Calculation
+                    </button>
+                    <button id="cancelBtn" class="w-full mt-2 bg-red-600 text-white py-2 px-3 rounded-md hover:bg-red-700 transition-colors font-medium hidden">
+                        Cancel Calculation
                     </button>
                     <div id="statusContent" class="mt-3 text-sm text-gray-600">
                         Upload a molecule to begin.
@@ -233,6 +255,12 @@
                             <!-- Timing Info -->
                             <div id="timingInfo" class="mb-4 text-sm text-gray-600"></div>
                             
+                            <!-- Properties from Worker -->
+                            <div id="workerProperties" class="mb-6 p-4 bg-blue-50 rounded-lg hidden">
+                                <h4 class="text-md font-medium text-blue-900 mb-2">Molecular Properties</h4>
+                                <div id="propertyDetails" class="text-sm text-blue-800 space-y-1"></div>
+                            </div>
+                            
                             <!-- Wavefunction Export -->
                             <div id="wavefunctionExport" class="mb-6 p-4 bg-gray-50 rounded-lg hidden">
                                 <h4 class="text-md font-medium text-gray-900 mb-3">Export Wavefunction</h4>
@@ -246,6 +274,13 @@
                                     </button>
                                 </div>
                                 <p class="text-sm text-gray-600">Export the calculated wavefunction for use in other quantum chemistry programs or analysis tools.</p>
+                            </div>
+                            
+                            <!-- Info Panel -->
+                            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                                <h4 class="text-md font-medium text-blue-900 mb-2">About This Calculation</h4>
+                                <p class="text-sm text-blue-800 mb-2">This quantum chemistry calculation was performed entirely in your browser using WebAssembly (WASM), with no data sent to any server. The calculation ran in a Web Worker to keep the UI responsive.</p>
+                                <p class="text-sm text-blue-800">Powered by <a href="https://github.com/peterspackman/occ" target="_blank" class="font-medium underline hover:text-blue-600">OCC (Open Computational Chemistry)</a> - an open-source quantum chemistry library compiled to WASM.</p>
                             </div>
                         </div>
                     </div>
@@ -284,6 +319,12 @@
                                 <h4 class="text-md font-medium text-gray-900 mb-3">Orbital Properties</h4>
                                 <div id="energyList" class="text-sm space-y-1 max-h-60 overflow-y-auto"></div>
                             </div>
+                            
+                            <!-- Worker Info -->
+                            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                                <h4 class="text-md font-medium text-blue-900 mb-2">Matrix Data from Worker</h4>
+                                <p class="text-sm text-blue-800">Matrix data has been computed in the Web Worker and transferred back for display.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -302,59 +343,158 @@
     </div>
 
     <script type="module">
-        // Try to load from npm package first, fallback to local build
-        let OCC = null;
-        
-        async function loadOCCModule() {
-            try {
-                const module = await import('@peterspackman/occjs');
-                console.log('Loaded OCC from npm package');
-                return module;
-            } catch (e) {
-                console.log('Failed to load from npm, trying local build...');
-                try {
-                    const module = await import('../dist/index.browser.js');
-                    console.log('Loaded OCC from local build');
-                    return module;
-                } catch (e2) {
-                    console.error('Failed to load OCC module from both npm and local build');
-                    throw new Error('Could not load OCC module. Please ensure either the npm package is installed or you are running from the OCC repository.');
-                }
-            }
-        }
-        
+        let worker = null;
         let currentMolecule = null;
-        let currentCalculation = null;
+        let currentXYZData = null;
+        let currentResults = null;
         let autoScroll = true;
+        let isCalculating = false;
 
-        // Initialize OCC module
-        async function init() {
-            console.log('Initializing OCC...');
+        // Initialize Web Worker
+        async function initializeWorker() {
             try {
-                OCC = await loadOCCModule();
+                worker = new Worker('./wavefunction-worker.js', { type: 'module' });
                 
-                const isNpmPackage = OCC.default ? true : false;
-                const wasmPath = isNpmPackage ? undefined : '../dist/occjs.wasm';
-                const dataPath = isNpmPackage ? undefined : '../dist/occjs.data';
+                // Set up worker message handler
+                worker.onmessage = handleWorkerMessage;
                 
-                await OCC.loadOCC({
-                    wasmPath: wasmPath,
-                    dataPath: dataPath
+                worker.onerror = (error) => {
+                    console.error('Worker error:', error);
+                    showError('Worker error: ' + error.message);
+                    updateWorkerStatus('error', 'Worker error occurred');
+                };
+                
+                // Determine if we're using npm package or local build
+                let isNpmPackage = false;
+                let modulePath = '../dist/index.browser.js';
+                
+                try {
+                    // Try to detect if we can load npm package
+                    await import('@peterspackman/occjs');
+                    isNpmPackage = true;
+                } catch (e) {
+                    console.log('Using local build');
+                }
+                
+                // Initialize OCC in worker
+                worker.postMessage({
+                    type: 'init',
+                    data: {
+                        isNpmPackage: isNpmPackage,
+                        modulePath: modulePath,
+                        wasmPath: isNpmPackage ? undefined : '../dist/occjs.wasm',
+                        dataPath: isNpmPackage ? undefined : '../dist/occjs.data'
+                    }
                 });
                 
-                console.log('OCC loaded successfully');
-                updateStatus('OCC module loaded. Ready to accept molecules.');
-                
-                // Set up logging callback
-                setupLogging();
-                
             } catch (error) {
-                console.error('Failed to load OCC module:', error);
-                showError('Failed to load OCC module: ' + error.message);
+                console.error('Failed to initialize worker:', error);
+                showError('Failed to initialize Web Worker: ' + error.message);
+                updateWorkerStatus('error', 'Failed to initialize worker');
             }
         }
 
-        // Global log message function
+        // Handle messages from worker
+        function handleWorkerMessage(e) {
+            const { type, ...data } = e.data;
+            
+            switch(type) {
+                case 'initialized':
+                    if (data.success) {
+                        updateWorkerStatus('ready', 'Web Worker ready');
+                        updateStatus('Worker initialized. Ready to accept molecules.');
+                    } else {
+                        updateWorkerStatus('error', 'Worker initialization failed');
+                        showError('Worker initialization failed: ' + data.error);
+                    }
+                    break;
+                    
+                case 'log':
+                    addLogMessage(data.message, mapLogLevel(data.level));
+                    break;
+                    
+                case 'progress':
+                    updateStatus(data.message);
+                    if (data.stage === 'complete') {
+                        isCalculating = false;
+                        document.getElementById('calculateBtn').disabled = false;
+                        document.getElementById('calculateBtn').textContent = 'Run Calculation';
+                        document.getElementById('cancelBtn').classList.add('hidden');
+                    }
+                    break;
+                    
+                case 'result':
+                    handleCalculationResult(data);
+                    break;
+                    
+                case 'error':
+                    console.error('Worker error:', data.error);
+                    showError('Calculation error: ' + data.error);
+                    isCalculating = false;
+                    document.getElementById('calculateBtn').disabled = false;
+                    document.getElementById('calculateBtn').textContent = 'Run Calculation';
+                    document.getElementById('cancelBtn').classList.add('hidden');
+                    break;
+            }
+        }
+
+        // Map numeric log levels to CSS classes
+        function mapLogLevel(level) {
+            switch(level) {
+                case 0: // TRACE
+                case 1: // DEBUG
+                    return 'debug';
+                case 2: // INFO
+                    return 'info';
+                case 3: // WARN
+                    return 'warn';
+                case 4: // ERROR
+                case 5: // CRITICAL
+                    return 'error';
+                default:
+                    return 'info';
+            }
+        }
+
+        // Update worker status display
+        function updateWorkerStatus(status, message) {
+            const statusDiv = document.getElementById('workerStatus');
+            statusDiv.className = 'rounded-lg p-3 text-sm';
+            
+            switch(status) {
+                case 'initializing':
+                    statusDiv.className += ' bg-blue-50 border border-blue-200';
+                    statusDiv.innerHTML = '<div class="flex items-center"><div class="spinner mr-2"></div><span>' + message + '</span></div>';
+                    break;
+                case 'ready':
+                    statusDiv.className += ' bg-green-50 border border-green-200';
+                    statusDiv.innerHTML = '<div class="flex items-center"><svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg><span>' + message + '</span></div>';
+                    break;
+                case 'error':
+                    statusDiv.className += ' bg-red-50 border border-red-200';
+                    statusDiv.innerHTML = '<div class="flex items-center"><svg class="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg><span>' + message + '</span></div>';
+                    break;
+            }
+        }
+
+        // Handle calculation results from worker
+        function handleCalculationResult(data) {
+            isCalculating = false;
+            document.getElementById('calculateBtn').disabled = false;
+            document.getElementById('calculateBtn').textContent = 'Run Calculation';
+            document.getElementById('cancelBtn').classList.add('hidden');
+            
+            if (data.success) {
+                currentResults = data.results;
+                displayResults(data.results);
+                switchTab('results');
+            } else {
+                showError('Calculation failed: ' + data.error);
+                updateStatus('Calculation failed.');
+            }
+        }
+
+        // Add log message to output
         function addLogMessage(message, level = 'info') {
             const timestamp = new Date().toLocaleTimeString();
             
@@ -368,73 +508,6 @@
             
             if (autoScroll) {
                 logOutput.scrollTop = logOutput.scrollHeight;
-            }
-        }
-
-        // Set up live logging to capture OCC WASM output
-        function setupLogging() {
-            
-            // Register callback to capture OCC WASM logging
-            const Module = OCC.getModule();
-            if (Module.registerLogCallback) {
-                Module.registerLogCallback((level, message) => {
-                    // Map OCC log levels to our CSS classes
-                    let cssLevel;
-                    switch(level) {
-                        case 0: // TRACE
-                            cssLevel = 'debug';
-                            break;
-                        case 1: // DEBUG  
-                            cssLevel = 'debug';
-                            break;
-                        case 2: // INFO
-                            cssLevel = 'info';
-                            break;
-                        case 3: // WARN
-                            cssLevel = 'warn';
-                            break;
-                        case 4: // ERROR
-                        case 5: // CRITICAL
-                            cssLevel = 'error';
-                            break;
-                        default:
-                            cssLevel = 'info';
-                    }
-                    
-                    // Force immediate DOM update
-                    addLogMessage(message, cssLevel);
-                    
-                    // Force browser to repaint immediately
-                    requestAnimationFrame(() => {
-                        if (autoScroll) {
-                            logOutput.scrollTop = logOutput.scrollHeight;
-                        }
-                    });
-                });
-                
-                console.log('OCC log callback registered successfully');
-            } else {
-                console.warn('OCC log callback not available, falling back to console capture');
-                
-                // Fallback: Override console methods to capture some output
-                const originalLog = console.log;
-                const originalWarn = console.warn;
-                const originalError = console.error;
-                
-                console.log = function(...args) {
-                    addLogMessage(args.join(' '), 'info');
-                    originalLog.apply(console, args);
-                };
-                
-                console.warn = function(...args) {
-                    addLogMessage(args.join(' '), 'warn');
-                    originalWarn.apply(console, args);
-                };
-                
-                console.error = function(...args) {
-                    addLogMessage(args.join(' '), 'error');
-                    originalError.apply(console, args);
-                };
             }
         }
 
@@ -483,7 +556,8 @@
         
         clearFile.addEventListener('click', () => {
             currentMolecule = null;
-            currentCalculation = null;
+            currentXYZData = null;
+            currentResults = null;
             fileInput.value = '';
             xyzInput.value = '';
             fileInfo.classList.add('hidden');
@@ -499,8 +573,7 @@
             // Clear results
             document.getElementById('energyResults').classList.add('hidden');
             document.getElementById('wavefunctionExport').classList.add('hidden');
-            document.getElementById('matrixSection').classList.add('hidden');
-            document.getElementById('orbitalSection').classList.add('hidden');
+            document.getElementById('workerProperties').classList.add('hidden');
         });
 
         async function handleFile(file) {
@@ -526,185 +599,167 @@
 
         async function loadMoleculeFromXYZ(xyzContent) {
             try {
-                updateStatus('Creating molecule from XYZ...');
-                currentMolecule = await OCC.moleculeFromXYZ(xyzContent);
+                updateStatus('Validating XYZ data...');
+                currentXYZData = xyzContent;
                 
-                const numAtoms = currentMolecule.size();
-                updateStatus(`Molecule loaded successfully. ${numAtoms} atoms.`);
+                // Parse XYZ to get basic info for display
+                const lines = xyzContent.trim().split('\n');
+                const numAtoms = parseInt(lines[0]);
+                const moleculeName = lines[1] || 'Loaded Molecule';
                 
-                // Update molecule info
-                updateMoleculeInfo();
+                // Count atoms by element
+                const elementCounts = new Map();
+                for (let i = 2; i < 2 + numAtoms; i++) {
+                    const parts = lines[i].trim().split(/\s+/);
+                    const element = parts[0];
+                    elementCounts.set(element, (elementCounts.get(element) || 0) + 1);
+                }
                 
-                // Show progressive panels
+                // Update display
+                const formula = Array.from(elementCounts.entries())
+                    .map(([elem, count]) => count > 1 ? `${elem}${count}` : elem)
+                    .join('');
+                
+                document.getElementById('moleculeName').textContent = moleculeName;
+                document.getElementById('moleculeFormula').textContent = `${formula} (${numAtoms} atoms)`;
+                document.getElementById('moleculeHeaderInfo').classList.remove('hidden');
+                
+                updateStatus(`Molecule loaded: ${numAtoms} atoms.`);
+                
+                // Show panels
                 document.getElementById('methodPanel').classList.remove('hidden');
                 document.getElementById('scfPanel').classList.remove('hidden');
                 document.getElementById('runPanel').classList.remove('hidden');
-                
-                // Show tab navigation
                 document.getElementById('tabNavigation').classList.remove('hidden');
                 
+                currentMolecule = { numAtoms, name: moleculeName };
+                
             } catch (error) {
-                console.error('Error creating molecule:', error);
-                showError('Failed to create molecule: ' + error.message);
+                console.error('Error parsing XYZ:', error);
+                showError('Failed to parse XYZ data: ' + error.message);
                 currentMolecule = null;
+                currentXYZData = null;
             }
-        }
-
-        function updateMoleculeInfo() {
-            if (!currentMolecule) return;
-            
-            const numAtoms = currentMolecule.size();
-            
-            // Count atoms by element using atoms() method
-            const elementCounts = new Map();
-            const atoms = currentMolecule.atoms();
-            for (let i = 0; i < numAtoms; i++) {
-                const atom = atoms.get(i);
-                const atomicNumber = atom.atomicNumber;
-                const symbol = getElementSymbol(atomicNumber);
-                elementCounts.set(symbol, (elementCounts.get(symbol) || 0) + 1);
-            }
-            
-            // Update header info
-            const moleculeName = currentMolecule.name() || 'Loaded Molecule';
-            const formula = Array.from(elementCounts.entries())
-                .map(([elem, count]) => count > 1 ? `${elem}${count}` : elem)
-                .join('');
-            
-            document.getElementById('moleculeName').textContent = moleculeName;
-            document.getElementById('moleculeFormula').textContent = `${formula} (${numAtoms} atoms)`;
-            document.getElementById('moleculeHeaderInfo').classList.remove('hidden');
-        }
-
-        function getElementSymbol(atomicNumber) {
-            const symbols = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
-                           'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca'];
-            return symbols[atomicNumber - 1] || `Z${atomicNumber}`;
         }
 
         // Calculate button
         document.getElementById('calculateBtn').addEventListener('click', async () => {
-            if (!currentMolecule) {
+            if (!currentXYZData) {
                 showError('Please load a molecule first.');
+                return;
+            }
+            
+            if (!worker) {
+                showError('Web Worker not initialized.');
                 return;
             }
             
             // Clear previous results
             document.getElementById('energyResults').classList.add('hidden');
             document.getElementById('wavefunctionExport').classList.add('hidden');
-            document.getElementById('matrixSection').classList.add('hidden');
-            document.getElementById('orbitalSection').classList.add('hidden');
+            document.getElementById('workerProperties').classList.add('hidden');
             
             // Clear log and switch to output tab
             document.getElementById('logOutput').innerHTML = '';
             switchTab('output');
             
-            // Set log level and enable buffering for live capture
+            // Update UI state
+            isCalculating = true;
+            document.getElementById('calculateBtn').disabled = true;
+            document.getElementById('calculateBtn').textContent = 'Calculating...';
+            document.getElementById('cancelBtn').classList.remove('hidden');
+            
+            // Set log level
             const logLevel = parseInt(document.getElementById('logLevel').value);
-            const Module = OCC.getModule();
-            if (Module.setLogLevel) {
-                Module.setLogLevel(logLevel);
-                console.log(`Set OCC log level to ${logLevel}`);
-            }
+            worker.postMessage({
+                type: 'setLogLevel',
+                data: { level: logLevel }
+            });
             
-            // Enable log buffering if available
-            if (Module.setLogBuffering) {
-                Module.setLogBuffering(true);
-            }
+            // Get calculation parameters
+            const params = {
+                xyzData: currentXYZData,
+                method: document.getElementById('method').value,
+                basisSet: document.getElementById('basisSet').value,
+                maxIterations: parseInt(document.getElementById('maxIterations').value),
+                energyTolerance: parseFloat(document.getElementById('energyTolerance').value)
+            };
             
-            // Show calculation in progress
-            updateStatus('Calculation in progress... This may take a moment as WASM runs on the main thread.');
-            const startTime = performance.now();
+            updateStatus('Sending calculation to Web Worker...');
             
-            try {
-                const method = document.getElementById('method').value;
-                const basisSet = document.getElementById('basisSet').value;
-                const maxIterations = parseInt(document.getElementById('maxIterations').value);
-                const energyTolerance = parseFloat(document.getElementById('energyTolerance').value);
+            // Send calculation request to worker
+            worker.postMessage({
+                type: 'calculate',
+                data: params
+            });
+        });
+
+        // Cancel button
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            if (worker && isCalculating) {
+                // Terminate and restart worker
+                worker.terminate();
+                updateStatus('Calculation cancelled. Restarting worker...');
+                initializeWorker();
                 
-                updateStatus(`Running ${method.toUpperCase()} calculation with ${basisSet} basis...`);
-                console.log(`Starting ${method} calculation`);
-                console.log(`Basis set: ${basisSet}`);
-                console.log(`Max iterations: ${maxIterations}`);
-                console.log(`Energy tolerance: ${energyTolerance}`);
-                
-                // Create calculation
-                console.log('Creating QM calculation...');
-                const calc = await OCC.createQMCalculation(currentMolecule, basisSet);
-                
-                // Set up SCF settings
-                const settings = new OCC.SCFSettings()
-                    .setMaxIterations(maxIterations)
-                    .setEnergyTolerance(energyTolerance);
-                
-                let energy;
-                if (method === 'hf') {
-                    // Run HF calculation with yielding to allow UI updates
-                    console.log('Running Hartree-Fock calculation...');
-                    // Small delay to allow UI to update
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                    energy = await calc.runHF(settings);
-                    
-                } else if (method.startsWith('dft-')) {
-                    const functional = method.split('-')[1];
-                    
-                    // Run DFT calculation with yielding to allow UI updates
-                    console.log(`Running DFT calculation with ${functional} functional...`);
-                    // Small delay to allow UI to update
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                    energy = await calc.runDFT(functional, { scfSettings: settings });
-                }
-                
-                currentCalculation = calc;
-                
-                const endTime = performance.now();
-                const elapsedMs = endTime - startTime;
-                
-                console.log('Calculation completed successfully!');
-                updateStatus('Calculation completed successfully.');
-                
-                // Display results and switch to results tab
-                displayResults(calc, elapsedMs);
-                switchTab('results');
-                
-            } catch (error) {
-                console.error('Calculation failed:', error);
-                showError('Calculation failed: ' + error.message);
-                updateStatus('Calculation failed.');
+                isCalculating = false;
+                document.getElementById('calculateBtn').disabled = false;
+                document.getElementById('calculateBtn').textContent = 'Run Calculation';
+                document.getElementById('cancelBtn').classList.add('hidden');
             }
         });
 
-        function displayResults(calc, elapsedMs) {
+        function displayResults(results) {
             const energyDetails = document.getElementById('energyDetails');
             const timingInfo = document.getElementById('timingInfo');
+            const propertyDetails = document.getElementById('propertyDetails');
             
             try {
-                // Get energies
-                const totalEnergy = calc.energy;
-                
-                let energyHTML = `<div><strong>Total Energy:</strong> ${totalEnergy.toFixed(8)} Hartree</div>`;
-                energyHTML += `<div><strong>Total Energy:</strong> ${(totalEnergy * 27.2114).toFixed(6)} eV</div>`;
+                // Display energy results
+                let energyHTML = `<div><strong>Total Energy:</strong> ${results.energy.toFixed(8)} Eh</div>`;
+                energyHTML += `<div><strong>Total Energy:</strong> ${results.energyInEV.toFixed(6)} eV</div>`;
                 
                 energyDetails.innerHTML = energyHTML;
                 
                 // Format timing information
-                const seconds = Math.floor(elapsedMs / 1000);
-                const milliseconds = Math.round(elapsedMs % 1000);
+                const seconds = Math.floor(results.elapsedMs / 1000);
+                const milliseconds = Math.round(results.elapsedMs % 1000);
                 timingInfo.innerHTML = `<p>Calculation completed in ${seconds}s ${milliseconds}ms</p>`;
                 
                 // Show energy results
                 document.getElementById('energyResults').classList.remove('hidden');
                 
-                // Show wavefunction export
-                document.getElementById('wavefunctionExport').classList.remove('hidden');
+                // Display properties if available
+                if (results.properties) {
+                    let propHTML = '';
+                    if (results.properties.homo !== undefined) {
+                        propHTML += `<div><strong>HOMO:</strong> ${results.properties.homo.toFixed(6)} Eh (${(results.properties.homo * 27.2114).toFixed(3)} eV)</div>`;
+                    }
+                    if (results.properties.lumo !== undefined) {
+                        propHTML += `<div><strong>LUMO:</strong> ${results.properties.lumo.toFixed(6)} Eh (${(results.properties.lumo * 27.2114).toFixed(3)} eV)</div>`;
+                    }
+                    if (results.properties.gap !== undefined) {
+                        propHTML += `<div><strong>HOMO-LUMO Gap:</strong> ${results.properties.gap.toFixed(6)} Eh (${(results.properties.gap * 27.2114).toFixed(3)} eV)</div>`;
+                    }
+                    
+                    if (propHTML) {
+                        propertyDetails.innerHTML = propHTML;
+                        document.getElementById('workerProperties').classList.remove('hidden');
+                    }
+                }
                 
-                // Show property sections
-                document.getElementById('matrixSection').classList.remove('hidden');
-                document.getElementById('orbitalSection').classList.remove('hidden');
+                // Show wavefunction export if data available
+                if (results.wavefunctionData) {
+                    document.getElementById('wavefunctionExport').classList.remove('hidden');
+                }
                 
-                // Update displays
-                updateMatrixDisplay();
-                updateOrbitalDisplay();
+                // Show matrix section if matrices available
+                if (results.matrices) {
+                    document.getElementById('matrixSection').classList.remove('hidden');
+                    document.getElementById('orbitalSection').classList.remove('hidden');
+                    updateMatrixDisplay();
+                    updateOrbitalDisplay();
+                }
                 
             } catch (error) {
                 console.error('Error displaying results:', error);
@@ -718,10 +773,9 @@
             displayMatrix(currentMatrix);
         }
 
-
         function displayMatrix(matrixType) {
-            if (!currentCalculation || !currentCalculation.wavefunction) {
-                document.getElementById('matrixDisplay').textContent = 'No wavefunction available. Run a calculation first.';
+            if (!currentResults || !currentResults.matrices) {
+                document.getElementById('matrixDisplay').textContent = 'No matrix data available. Run a calculation first.';
                 return;
             }
             
@@ -730,156 +784,85 @@
                 const matrixStats = document.getElementById('matrixStats');
                 const exportBtn = document.getElementById('exportMatrixBtn');
                 
-                let matrix;
+                let matrixData;
                 let matrixName;
-                const wf = currentCalculation.wavefunction;
                 
-                // Get matrix from wavefunction using available API
+                // Get matrix data from results
                 switch(matrixType) {
                     case 'overlap':
                         matrixName = 'Overlap Matrix (S)';
-                        try {
-                            // Access overlap matrix through HartreeFock object
-                            const Module = OCC.getModule();
-                            const hf = new Module.HartreeFock(currentCalculation.basis);
-                            matrix = hf.overlapMatrix();
-                        } catch (e) {
-                            matrixDisplay.textContent = `${matrixName}: ${e.message}`;
-                            exportBtn.classList.add('hidden');
-                            return;
-                        }
+                        matrixData = currentResults.matrices.overlap;
                         break;
                     case 'kinetic':
                         matrixName = 'Kinetic Energy Matrix (T)';
-                        try {
-                            // Access kinetic matrix through HartreeFock object
-                            const Module = OCC.getModule();
-                            const hf = new Module.HartreeFock(currentCalculation.basis);
-                            matrix = hf.kineticMatrix();
-                        } catch (e) {
-                            matrixDisplay.textContent = `${matrixName}: ${e.message}`;
-                            exportBtn.classList.add('hidden');
-                            return;
-                        }
+                        matrixData = currentResults.matrices.kinetic;
                         break;
                     case 'nuclear':
                         matrixName = 'Nuclear Attraction Matrix (V)';
-                        try {
-                            // Access nuclear attraction matrix through HartreeFock object
-                            const Module = OCC.getModule();
-                            const hf = new Module.HartreeFock(currentCalculation.basis);
-                            matrix = hf.nuclearAttractionMatrix();
-                        } catch (e) {
-                            matrixDisplay.textContent = `${matrixName}: ${e.message}`;
-                            exportBtn.classList.add('hidden');
-                            return;
-                        }
+                        matrixData = currentResults.matrices.nuclear;
                         break;
                     case 'fock':
                         matrixName = 'Fock Matrix (F)';
-                        try {
-                            // Fock matrix needs to be computed through HartreeFock
-                            const Module = OCC.getModule();
-                            const hf = new Module.HartreeFock(currentCalculation.basis);
-                            matrix = hf.fockMatrix(wf.molecularOrbitals);
-                        } catch (e) {
-                            matrixDisplay.textContent = `${matrixName}: ${e.message}`;
-                            exportBtn.classList.add('hidden');
-                            return;
-                        }
+                        matrixData = currentResults.matrices.fock;
                         break;
                     case 'density':
                         matrixName = 'Density Matrix (P)';
-                        try {
-                            // Access density matrix from molecular orbitals
-                            matrix = wf.molecularOrbitals.densityMatrix;
-                        } catch (e) {
-                            matrixDisplay.textContent = `${matrixName}: ${e.message}`;
-                            exportBtn.classList.add('hidden');
-                            return;
-                        }
+                        matrixData = currentResults.matrices.density;
                         break;
                     case 'coefficients':
                         matrixName = 'MO Coefficients (C)';
-                        try {
-                            // Access MO coefficients from wavefunction
-                            matrix = wf.coefficients();
-                        } catch (e) {
-                            matrixDisplay.textContent = `${matrixName}: ${e.message}`;
-                            exportBtn.classList.add('hidden');
-                            return;
-                        }
+                        matrixData = currentResults.matrices.coefficients;
                         break;
                     default:
                         matrixDisplay.textContent = 'Unknown matrix type';
                         return;
                 }
                 
-                if (!matrix) {
+                if (!matrixData) {
                     matrixDisplay.textContent = `${matrixName} not available`;
                     exportBtn.classList.add('hidden');
                     return;
                 }
                 
-                const rows = matrix.rows();
-                const cols = matrix.cols();
+                const rows = matrixData.rows;
+                const cols = matrixData.cols;
                 
                 // Update stats
                 matrixStats.innerHTML = `<strong>${matrixName}</strong><br>Dimensions: ${rows} × ${cols}`;
                 
-                // Create scrollable table display for full matrix
-                let matrixHTML;
-                try {
-                    // Show full matrix - no truncation, just make it scrollable
-                    matrixHTML = `<div style="padding: 8px; font-size: 12px; color: #666; border-bottom: 1px solid #dee2e6;">Matrix size: ${rows}×${cols} (scroll to see all elements)</div>`;
-                    
-                    // Start building HTML table
-                    matrixHTML += '<div style="padding: 8px;"><table class="matrix-table">';
-                    
-                    // Add column headers
-                    matrixHTML += '<thead><tr><th>Row\\Col</th>';
-                    for (let j = 0; j < cols; j++) {
-                        matrixHTML += `<th>${j}</th>`;
-                    }
-                    matrixHTML += '</tr></thead><tbody>';
-                    
-                    // Add all data rows - no truncation
-                    for (let i = 0; i < rows; i++) {
-                        matrixHTML += '<tr>';
-                        matrixHTML += `<th class="row-header">${i}</th>`;
-                        
-                        for (let j = 0; j < cols; j++) {
-                            const value = matrix.get(i, j);
-                            const formattedValue = Math.abs(value) < 1e-10 ? '0.000000' : value.toFixed(6);
-                            matrixHTML += `<td>${formattedValue}</td>`;
-                        }
-                        matrixHTML += '</tr>';
-                    }
-                    
-                    matrixHTML += '</tbody></table></div>';
-                    
-                } catch (e) {
-                    // Fallback to text display if table creation fails
-                    console.warn('Matrix table creation failed, using text fallback:', e);
-                    let matrixText;
-                    try {
-                        if (rows > 10 || cols > 10) {
-                            matrixText = `Matrix too large (${rows}×${cols}) - showing formatted text:\n\n`;
-                            matrixText += matrix.toStringFormatted('{:8.4f}');
-                        } else {
-                            matrixText = matrix.toString();
-                        }
-                        matrixHTML = `<pre style="margin: 0; white-space: pre-wrap;">${matrixText}</pre>`;
-                    } catch (e2) {
-                        matrixHTML = `<div style="color: red;">Error displaying matrix: ${e2.message}</div>`;
-                    }
+                // Create scrollable table display
+                let matrixHTML = `<div style="padding: 8px; font-size: 12px; color: #666; border-bottom: 1px solid #dee2e6;">Matrix size: ${rows}×${cols} (scroll to see all elements)</div>`;
+                
+                // Start building HTML table
+                matrixHTML += '<div style="padding: 8px;"><table class="matrix-table">';
+                
+                // Add column headers
+                matrixHTML += '<thead><tr><th>Row\\Col</th>';
+                for (let j = 0; j < cols; j++) {
+                    matrixHTML += `<th>${j}</th>`;
                 }
+                matrixHTML += '</tr></thead><tbody>';
+                
+                // Add all data rows
+                for (let i = 0; i < rows; i++) {
+                    matrixHTML += '<tr>';
+                    matrixHTML += `<th class="row-header">${i}</th>`;
+                    
+                    for (let j = 0; j < cols; j++) {
+                        const value = matrixData.data[i][j];
+                        const formattedValue = Math.abs(value) < 1e-10 ? '0.000000' : value.toFixed(6);
+                        matrixHTML += `<td>${formattedValue}</td>`;
+                    }
+                    matrixHTML += '</tr>';
+                }
+                
+                matrixHTML += '</tbody></table></div>';
                 
                 matrixDisplay.innerHTML = matrixHTML;
                 exportBtn.classList.remove('hidden');
                 
-                // Store matrix for export
-                exportBtn.onclick = () => exportMatrix(matrix, matrixName);
+                // Store current matrix data for export
+                exportBtn.onclick = () => exportMatrix(matrixData, matrixName);
                 
             } catch (error) {
                 console.error('Error displaying matrix:', error);
@@ -887,75 +870,68 @@
             }
         }
 
-
-        async function updateOrbitalDisplay() {
-            if (!currentCalculation || !currentCalculation.wavefunction) {
-                document.getElementById('energyList').innerHTML = 'No wavefunction available. Run a calculation first.';
+        function updateOrbitalDisplay() {
+            if (!currentResults) {
+                document.getElementById('energyList').innerHTML = 'No results available.';
                 return;
             }
             
             try {
                 const energyList = document.getElementById('energyList');
-                
-                // Try to get orbital properties using the properties API from tests
-                const properties = await currentCalculation.calculateProperties(['orbitals', 'homo', 'lumo', 'gap']);
-                
                 let energyHTML = '';
-                if (properties.homo !== undefined && properties.lumo !== undefined) {
-                    energyHTML += `<div class="mb-2 p-2 bg-blue-50 rounded">
-                        <div class="flex justify-between">
+                
+                // Display HOMO/LUMO info if available
+                if (currentResults.properties) {
+                    energyHTML += `<div class="mb-2 p-2 bg-blue-50 rounded">`;
+                    if (currentResults.properties.homo !== undefined) {
+                        energyHTML += `<div class="flex justify-between">
                             <span><strong>HOMO:</strong></span>
-                            <span>${properties.homo.toFixed(6)} Ha (${(properties.homo * 27.2114).toFixed(3)} eV)</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span><strong>LUMO:</strong></span>
-                            <span>${properties.lumo.toFixed(6)} Ha (${(properties.lumo * 27.2114).toFixed(3)} eV)</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span><strong>HOMO-LUMO Gap:</strong></span>
-                            <span>${properties.gap.toFixed(6)} Ha (${(properties.gap * 27.2114).toFixed(3)} eV)</span>
-                        </div>
-                    </div>`;
-                }
-                
-                // Try to display orbital energies if available
-                if (properties.orbitals && properties.orbitals.energies) {
-                    try {
-                        const energies = properties.orbitals.energies;
-                        energyHTML += '<div class="mt-3"><strong>Orbital Energies:</strong></div>';
-                        energyHTML += '<div class="matrix-display">';
-                        // Use toString method if available
-                        if (energies.toString) {
-                            energyHTML += energies.toString();
-                        } else {
-                            energyHTML += 'Orbital energies vector toString not available';
-                        }
-                        energyHTML += '</div>';
-                    } catch (e) {
-                        energyHTML += '<div class="text-gray-600">Orbital energies display failed: ' + e.message + '</div>';
+                            <span>${currentResults.properties.homo.toFixed(6)} Eh (${(currentResults.properties.homo * 27.2114).toFixed(3)} eV)</span>
+                        </div>`;
                     }
-                } else {
-                    energyHTML += '<div class="text-gray-600">Full orbital energies display requires API verification</div>';
+                    if (currentResults.properties.lumo !== undefined) {
+                        energyHTML += `<div class="flex justify-between">
+                            <span><strong>LUMO:</strong></span>
+                            <span>${currentResults.properties.lumo.toFixed(6)} Eh (${(currentResults.properties.lumo * 27.2114).toFixed(3)} eV)</span>
+                        </div>`;
+                    }
+                    if (currentResults.properties.gap !== undefined) {
+                        energyHTML += `<div class="flex justify-between">
+                            <span><strong>HOMO-LUMO Gap:</strong></span>
+                            <span>${currentResults.properties.gap.toFixed(6)} Eh (${(currentResults.properties.gap * 27.2114).toFixed(3)} eV)</span>
+                        </div>`;
+                    }
+                    energyHTML += '</div>';
                 }
                 
-                energyList.innerHTML = energyHTML;
+                // Display orbital energies if available
+                if (currentResults.orbitalEnergies && currentResults.orbitalEnergies.length > 0) {
+                    energyHTML += '<div class="mt-3"><strong>Orbital Energies:</strong></div>';
+                    energyHTML += '<div class="bg-gray-50 p-2 rounded text-xs font-mono">';
+                    currentResults.orbitalEnergies.forEach((energy, i) => {
+                        energyHTML += `<div>Orbital ${i}: ${energy.toFixed(6)} Eh (${(energy * 27.2114).toFixed(3)} eV)</div>`;
+                    });
+                    energyHTML += '</div>';
+                }
+                
+                energyList.innerHTML = energyHTML || '<div class="text-gray-600">No orbital data available</div>';
                 
             } catch (error) {
                 console.error('Error displaying orbitals:', error);
-                document.getElementById('energyList').innerHTML = 'Orbital properties calculation failed: ' + error.message;
+                document.getElementById('energyList').innerHTML = 'Error displaying orbital properties: ' + error.message;
             }
         }
 
-        function exportMatrix(matrix, name) {
+        function exportMatrix(matrixData, name) {
             try {
-                const rows = matrix.rows();
-                const cols = matrix.cols();
+                const rows = matrixData.rows;
+                const cols = matrixData.cols;
                 
                 let csv = '';
                 for (let i = 0; i < rows; i++) {
                     const row = [];
                     for (let j = 0; j < cols; j++) {
-                        row.push(matrix.get(i, j).toString());
+                        row.push(matrixData.data[i][j].toString());
                     }
                     csv += row.join(',') + '\n';
                 }
@@ -975,45 +951,38 @@
         }
 
         function downloadWavefunctionFile() {
-            if (!currentCalculation || !currentCalculation.wavefunction) {
-                showError('No wavefunction available. Run a calculation first.');
+            if (!currentResults || !currentResults.wavefunctionData) {
+                showError('No wavefunction data available.');
                 return;
             }
             
             try {
                 const format = document.getElementById('exportFormat').value;
-                const wf = currentCalculation.wavefunction;
-                
                 let content, filename, mimeType;
                 
                 switch(format) {
                     case 'fchk':
-                        try {
-                            // Use the properly implemented FCHK export
-                            content = wf.exportToString('fchk');
-                            filename = 'wavefunction.fchk';
-                            mimeType = 'text/plain';
-                        } catch (e) {
-                            showError('FCHK export failed: ' + e.message + '. Try JSON format.');
+                        if (!currentResults.wavefunctionData.fchk) {
+                            showError('FCHK data not available.');
                             return;
                         }
+                        content = currentResults.wavefunctionData.fchk;
+                        filename = 'wavefunction.fchk';
+                        mimeType = 'text/plain';
                         break;
                         
                     case 'json':
-                        try {
-                            if (wf.toJson) {
-                                content = wf.toJson();
-                            } else if (wf.exportToString) {
-                                content = wf.exportToString('json');
-                            } else {
-                                throw new Error('JSON export not available');
-                            }
-                            filename = 'wavefunction.json';
-                            mimeType = 'application/json';
-                        } catch (e) {
-                            showError('JSON export failed: ' + e.message);
-                            return;
-                        }
+                        // Create a JSON representation of the results
+                        content = JSON.stringify({
+                            energy: currentResults.energy,
+                            energyInEV: currentResults.energyInEV,
+                            properties: currentResults.properties,
+                            numBasisFunctions: currentResults.wavefunctionData.numBasisFunctions,
+                            numAtoms: currentResults.wavefunctionData.numAtoms,
+                            calculationTime: currentResults.elapsedMs
+                        }, null, 2);
+                        filename = 'wavefunction.json';
+                        mimeType = 'application/json';
                         break;
                         
                     default:
@@ -1051,7 +1020,6 @@
                     displayMatrix(e.target.value);
                 });
             }
-
 
             // Wavefunction download
             const downloadWavefunction = document.getElementById('downloadWavefunction');
@@ -1140,10 +1108,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             setupTabListeners();
             setupOtherListeners();
+            updateWorkerStatus('initializing', 'Initializing Web Worker...');
+            initializeWorker();
         });
-        
-        // Initialize OCC module
-        init().catch(console.error);
     </script>
 </body>
 </html>

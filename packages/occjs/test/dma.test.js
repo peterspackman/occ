@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { loadOCC, moleculeFromXYZ, createQMCalculation, wavefunctionFromString } from '../dist/index.js';
+import { loadOCC, wavefunctionFromString } from '../dist/index.js';
 import { 
   calculateDMA, 
   generatePunchFile, 
@@ -12,25 +12,6 @@ import {
 } from '../dist/dma.js';
 
 // Test molecules - H2 molecule that matches the inline wavefunction
-const h2XYZ = `2
-H2 molecule
-H  0.000000  0.000000  0.699199
-H  0.000000  0.000000 -0.699199`;
-
-const waterXYZ = `3
-Water molecule
-O  0.000000  0.000000  0.000000
-H  0.000000  0.000000  1.000000
-H  0.942809  0.000000 -0.333333`;
-
-const methanolXYZ = `6
-Methanol molecule
-C  0.000000  0.000000  0.000000
-O  1.400000  0.000000  0.000000
-H  2.000000  0.500000  0.500000
-H -0.500000  0.866025  0.000000
-H -0.500000 -0.866025  0.000000
-H -0.500000  0.000000  0.866025`;
 
 // Inline H2 wavefunction file (B3LYP/STO-3G)
 const h2WavefunctionFchk = `h2
@@ -220,10 +201,9 @@ async function createWavefunction() {
 }
 
 describe('DMA Configuration', () => {
-  let Module;
   
   beforeAll(async () => {
-    Module = await loadOCC();
+    await loadOCC();
   });
 
   it('should create DMA config with default values', () => {
@@ -252,10 +232,9 @@ describe('DMA Configuration', () => {
 });
 
 describe('DMA Calculations', () => {
-  let Module;
   
   beforeAll(async () => {
-    Module = await loadOCC();
+    await loadOCC();
   });
 
   it('should perform DMA calculation on H2 molecule', async () => {
