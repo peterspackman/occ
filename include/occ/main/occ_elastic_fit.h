@@ -255,7 +255,7 @@ public:
 struct EFSettings {
   std::string json_filename;
   std::string output_file = "elastic_tensor.txt";
-  std::string potential_type = "morse";
+  std::string potential_type = "lj";
   double scale_factor = 2.0;
 };
 

@@ -23,6 +23,8 @@ inline PES construct_pes_from_json(nlohmann::json j,
                                    double scale_factor = 1.0) {
   const auto &pairs = j["all_pairs"];
   PES pes(scale_factor);
+  int discarded_count = 0;
+  double discarded_total_energy = 0.0;
 
   for (size_t mol_idx = 0; mol_idx < pairs.size(); mol_idx++) {
     const auto &mol_pairs = pairs[mol_idx];
@@ -36,6 +38,8 @@ inline PES construct_pes_from_json(nlohmann::json j,
       if (total_energy > 0.0) {
         occ::log::debug("Skipping pair with positive total energy {:.4f}",
                         total_energy);
+        discarded_count++;
+        discarded_total_energy += total_energy;
         continue;
       }
       double r0 = pair["r"];
@@ -63,6 +67,11 @@ inline PES construct_pes_from_json(nlohmann::json j,
       }
       }
     }
+  }
+
+  if (discarded_count > 0) {
+    occ::log::warn("Discarded {} pairs with positive interaction energies (total: {:.3f} kJ/mol)", 
+                   discarded_count, discarded_total_energy / 2.0);
   }
 
   return pes;
@@ -132,7 +141,7 @@ determine_potential_type(const std::string &user_preference) {
   occ::log::debug("Unrecognised user preference '{}' for potential type",
                   user_preference);
   occ::log::debug("Options are 'morse' or 'lj'"); // TODO: make generic
-  occ::log::info("Using default potential type");
+  occ::log::info("Using default potential type (Lennard-Jones)");
   return PotentialType::LJ;
 }
 
