@@ -91,7 +91,43 @@ struct LJ {
   double second_derivative() const { return 72 * eps / std::pow(r0, 2); }
 };
 
-enum class PotentialType { MORSE, LJ };
+struct LJ_A {
+  double r0;
+  double eps;
+  occ::Vec3 r_vector;
+  occ::Vec3 r_hat;
+  double r012;
+
+  LJ_A(double eps, double r0, const occ::Vec3 &r_vec)
+      : eps(eps), r0(r0), r_vector(r_vec) {
+
+    double r_norm = r_vector.norm();
+    if (std::abs(r0 - r_norm) > 1e-10) {
+      throw std::invalid_argument("Input distance vector misaligned.");
+    }
+    r_hat = r_vector / r0;
+    r012 = std::pow(r0, 12);
+  }
+
+  std::string to_string() const {
+    return fmt::format("LJ_A(eps={:.3f}, r0={:.3f})", eps, r0);
+  }
+
+  double energy(double r) const { return eps * (r012 / std::pow(r, 12)); }
+  double energy() const { return -eps; }
+
+  double first_derivative(double r) const {
+    return eps * (-12 * r012 / std::pow(r, 13));
+  }
+  double first_derivative() const { return -12 * eps / r0; }
+
+  double second_derivative(double r) const {
+    return eps * (156 * r012 / std::pow(r, 14));
+  }
+  double second_derivative() const { return 156 * eps / std::pow(r0, 2); }
+};
+
+enum class PotentialType { MORSE, LJ, LJ_A };
 
 class PotentialBase {
 public:
@@ -159,6 +195,31 @@ public:
   }
   double second_derivative() const override { return lj.second_derivative(); }
   std::string to_string() const override { return lj.to_string(); }
+};
+
+class LJ_AWrapper : public PotentialBase {
+private:
+  LJ_A lj_a;
+
+public:
+  LJ_AWrapper(double eps, double r0, const occ::Vec3 &r_vec)
+      : lj_a(eps, r0, r_vec) {
+    this->r_vector = r_vec;
+    this->r_hat = lj_a.r_hat;
+    this->r0 = r0;
+  }
+
+  double energy(double r) const override { return lj_a.energy(r); }
+  double energy() const override { return lj_a.energy(); }
+  double first_derivative(double r) const override {
+    return lj_a.first_derivative(r);
+  }
+  double first_derivative() const override { return lj_a.first_derivative(); }
+  double second_derivative(double r) const override {
+    return lj_a.second_derivative(r);
+  }
+  double second_derivative() const override { return lj_a.second_derivative(); }
+  std::string to_string() const override { return lj_a.to_string(); }
 };
 
 class PES {
@@ -256,6 +317,7 @@ struct EFSettings {
   std::string json_filename;
   std::string output_file = "elastic_tensor.txt";
   std::string potential_type = "lj";
+  bool include_positive = false;
   double scale_factor = 2.0;
 };
 

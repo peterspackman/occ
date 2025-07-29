@@ -13,6 +13,8 @@
 #include <occ/main/occ_elastic_fit.h>
 
 using occ::crystal::Crystal;
+using occ::main::EFSettings;
+using occ::main::LJ_AWrapper;
 using occ::main::LJWrapper;
 using occ::main::MorseWrapper;
 using occ::main::PES;
@@ -20,9 +22,9 @@ using occ::main::PotentialType;
 
 inline PES construct_pes_from_json(nlohmann::json j,
                                    PotentialType potential_type,
-                                   double scale_factor = 1.0) {
+                                   EFSettings settings) {
   const auto &pairs = j["all_pairs"];
-  PES pes(scale_factor);
+  PES pes(settings.scale_factor);
   int discarded_count = 0;
   double discarded_total_energy = 0.0;
 
@@ -35,14 +37,21 @@ inline PES construct_pes_from_json(nlohmann::json j,
 
       const auto &energies_json = pair["energies"];
       double total_energy = energies_json["Total"];
+      double r0 = pair["r"];
       if (total_energy > 0.0) {
-        occ::log::debug("Skipping pair with positive total energy {:.4f}",
-                        total_energy);
-        discarded_count++;
-        discarded_total_energy += total_energy;
+        if (!settings.include_positive) {
+          occ::log::debug("Skipping pair with positive total energy {:.4f}",
+                          total_energy);
+          discarded_count++;
+          discarded_total_energy += total_energy;
+          continue;
+        }
+        double eps = -1.0 * total_energy;
+        auto potential = std::make_unique<LJ_AWrapper>(eps, r0, rvec);
+        occ::log::debug("Added LJ_A potential: {}", potential->to_string());
+        pes.add_potential(std::move(potential));
         continue;
       }
-      double r0 = pair["r"];
 
       switch (potential_type) {
       case PotentialType::MORSE: {
@@ -65,12 +74,16 @@ inline PES construct_pes_from_json(nlohmann::json j,
         pes.add_potential(std::move(potential));
         break;
       }
+      case PotentialType::LJ_A: {
+        throw std::runtime_error("Should not have happened.");
+      }
       }
     }
   }
 
   if (discarded_count > 0) {
-    occ::log::warn("Discarded {} pairs with positive interaction energies (total: {:.3f} kJ/mol)", 
+    occ::log::warn("Discarded {} pairs with positive interaction energies "
+                   "(total: {:.3f} kJ/mol)",
                    discarded_count, discarded_total_energy / 2.0);
   }
 
@@ -176,7 +189,7 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
 
   Crystal crystal = j["crystal"];
 
-  PES pes = construct_pes_from_json(j, pot_type, settings.scale_factor);
+  PES pes = construct_pes_from_json(j, pot_type, settings);
 
   double elat = pes.lattice_energy(); // per mole of unit cells
   occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)", elat);
@@ -189,27 +202,31 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
 namespace occ::main {
 
 CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
-  CLI::App *morse = app.add_subcommand(
+  CLI::App *elastic_fit = app.add_subcommand(
       "elastic_fit", "fit elastic tensor from ELAT JSON results");
   auto config = std::make_shared<EFSettings>();
 
-  morse
+  elastic_fit
       ->add_option("json_file", config->json_filename, "ELAT JSON results file")
       ->required()
       ->check(CLI::ExistingFile);
 
-  morse->add_option("-o,--out", config->output_file,
-                    "Output filename for elastic tensor");
+  elastic_fit->add_option("-o,--out", config->output_file,
+                          "Output filename for elastic tensor");
 
-  morse->add_option("-s,--scale", config->scale_factor,
-                    "Factor to scale alpha by.");
+  elastic_fit->add_option("-s,--scale", config->scale_factor,
+                          "Factor to scale alpha by.");
 
-  morse->add_option("-p,--potential", config->potential_type,
-                    "Potential type to fit to. Either 'morse' or 'lj'.");
+  elastic_fit->add_option("-p,--potential", config->potential_type,
+                          "Potential type to fit to. Either 'morse' or 'lj'.");
 
-  morse->callback([config]() { run_elastic_fit_subcommand(*config); });
+  elastic_fit->add_flag("--include-positive", config->include_positive,
+                        "Whether or not to include positive "
+                        "dimer energies when fitting the elastic tensor.");
 
-  return morse;
+  elastic_fit->callback([config]() { run_elastic_fit_subcommand(*config); });
+
+  return elastic_fit;
 }
 
 void run_elastic_fit_subcommand(const EFSettings &settings) {
