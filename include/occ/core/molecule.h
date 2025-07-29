@@ -62,6 +62,18 @@ public:
            const std::vector<std::array<double, 3>> &pos);
 
   /**
+   * Construct a combined supermolecule from two molecules
+   *
+   * \param mol_a First molecule (atoms will be placed first)
+   * \param mol_b Second molecule (atoms will be placed second)
+   *
+   * Creates a new molecule containing all atoms from both input molecules.
+   * The name will be set to "mol_a + mol_b". Other properties like charges
+   * and multiplicities will be combined appropriately.
+   */
+  Molecule(const Molecule &mol_a, const Molecule &mol_b);
+
+  /**
    * Construct a Molecule from a vector of atomic numbers a vector
    * arrays of positions
    *
@@ -750,7 +762,7 @@ public:
   bool is_equivalent_to(const Molecule &rhs) const;
 
   inline void set_partial_charges(const Vec &v) { m_partial_charges = v; }
-  inline const auto &partial_charges() { return m_partial_charges; }
+  inline const auto &partial_charges() const { return m_partial_charges; }
 
   Vec esp_partial_charges(const occ::Mat3N &positions) const;
 

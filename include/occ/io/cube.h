@@ -2,6 +2,7 @@
 #include <iostream>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/parallel.h>
 #include <occ/geometry/volume_grid.h>
 #include <vector>
 
@@ -12,26 +13,41 @@ public:
   using AtomList = std::vector<core::Atom>;
 
   template <typename F> void fill_data_from_function(F &func) {
-    size_t N = steps(0) * steps(1) * steps(2);
-    Mat3N points(3, N);
-
     // Create volume grid with appropriate dimensions
     m_grid = geometry::VolumeGrid(steps(0), steps(1), steps(2));
-
-    for (int x = 0, i = 0; x < steps(0); x++) {
-      for (int y = 0; y < steps(1); y++) {
-        for (int z = 0; z < steps(2); z++, i++) {
-          points.col(i) = basis * Vec3(x, y, z) + origin;
+    
+    int num_threads = occ::parallel::get_num_threads();
+    // Chunk by z-slices for better cache locality
+    int z_per_thread = (steps(2) + num_threads - 1) / num_threads;
+    
+    auto inner_func = [&](int thread_id) {
+      int z_start = thread_id * z_per_thread;
+      int z_end = std::min(z_start + z_per_thread, steps(2));
+      if (z_start >= steps(2)) return;
+      
+      size_t chunk_size = steps(0) * steps(1) * (z_end - z_start);
+      Mat3N points(3, chunk_size);
+      Vec temp = Vec::Zero(chunk_size);
+      
+      // Generate points for this z-slice chunk
+      size_t local_idx = 0;
+      for (int z = z_start; z < z_end; z++) {
+        for (int y = 0; y < steps(1); y++) {
+          for (int x = 0; x < steps(0); x++, local_idx++) {
+            points.col(local_idx) = basis * Vec3(x, y, z) + origin;
+          }
         }
       }
-    }
-
-    // Create temporary vector for func output
-    Vec temp = Vec::Zero(N);
-    func(points, temp);
-
-    // Copy data into volume grid
-    std::copy(temp.data(), temp.data() + N, m_grid.data());
+      
+      // Process chunk
+      func(points, temp);
+      
+      // Copy results back to grid - calculate proper offset
+      size_t grid_offset = z_start * steps(0) * steps(1);
+      std::copy(temp.data(), temp.data() + chunk_size, m_grid.data() + grid_offset);
+    };
+    
+    occ::parallel::parallel_do(inner_func);
   }
 
   void center_molecule();

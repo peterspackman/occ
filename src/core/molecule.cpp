@@ -48,6 +48,70 @@ Molecule::Molecule(const std::vector<occ::core::Atom> &atoms)
   m_name = chemical_formula(m_elements);
 }
 
+Molecule::Molecule(const Molecule &mol_a, const Molecule &mol_b)
+    : m_atomicNumbers(mol_a.size() + mol_b.size()),
+      m_positions(3, mol_a.size() + mol_b.size()),
+      m_partial_charges(Vec::Zero(mol_a.size() + mol_b.size())) {
+  
+  // Combine atomic numbers and positions
+  m_atomicNumbers << mol_a.atomic_numbers(), mol_b.atomic_numbers();
+  m_positions << mol_a.positions(), mol_b.positions();
+  
+  // Combine elements
+  m_elements.reserve(mol_a.size() + mol_b.size());
+  m_elements.insert(m_elements.end(), mol_a.elements().begin(), mol_a.elements().end());
+  m_elements.insert(m_elements.end(), mol_b.elements().begin(), mol_b.elements().end());
+  
+  // Combine partial charges if they exist
+  if (mol_a.partial_charges().size() > 0 || mol_b.partial_charges().size() > 0) {
+    Vec charges_a = mol_a.partial_charges().size() > 0 ? mol_a.partial_charges() : Vec::Zero(mol_a.size());
+    Vec charges_b = mol_b.partial_charges().size() > 0 ? mol_b.partial_charges() : Vec::Zero(mol_b.size());
+    m_partial_charges << charges_a, charges_b;
+  }
+  
+  // Combine asymmetric unit indices if they exist
+  if (mol_a.asymmetric_unit_idx().size() > 0 || mol_b.asymmetric_unit_idx().size() > 0) {
+    IVec asym_a = mol_a.asymmetric_unit_idx().size() > 0 ? mol_a.asymmetric_unit_idx() : IVec::Zero(mol_a.size());
+    IVec asym_b = mol_b.asymmetric_unit_idx().size() > 0 ? mol_b.asymmetric_unit_idx() : IVec::Zero(mol_b.size());
+    m_asym_idx.resize(mol_a.size() + mol_b.size());
+    m_asym_idx << asym_a, asym_b;
+  }
+  
+  // Combine unit cell indices if they exist
+  if (mol_a.unit_cell_idx().size() > 0 || mol_b.unit_cell_idx().size() > 0) {
+    IVec uc_a = mol_a.unit_cell_idx().size() > 0 ? mol_a.unit_cell_idx() : IVec::Zero(mol_a.size());
+    IVec uc_b = mol_b.unit_cell_idx().size() > 0 ? mol_b.unit_cell_idx() : IVec::Zero(mol_b.size());
+    m_uc_idx.resize(mol_a.size() + mol_b.size());
+    m_uc_idx << uc_a, uc_b;
+  }
+  
+  // Combine unit cell shifts if they exist
+  if (mol_a.unit_cell_shift().cols() > 0 || mol_b.unit_cell_shift().cols() > 0) {
+    IMat3N shifts_a = mol_a.unit_cell_shift().cols() > 0 ? mol_a.unit_cell_shift() : IMat3N::Zero(3, mol_a.size());
+    IMat3N shifts_b = mol_b.unit_cell_shift().cols() > 0 ? mol_b.unit_cell_shift() : IMat3N::Zero(3, mol_b.size());
+    m_uc_shifts.resize(3, mol_a.size() + mol_b.size());
+    m_uc_shifts << shifts_a, shifts_b;
+  }
+  
+  // Combine asymmetric unit symop if they exist
+  if (mol_a.asymmetric_unit_symop().size() > 0 || mol_b.asymmetric_unit_symop().size() > 0) {
+    IVec symop_a = mol_a.asymmetric_unit_symop().size() > 0 ? mol_a.asymmetric_unit_symop() : IVec::Zero(mol_a.size());
+    IVec symop_b = mol_b.asymmetric_unit_symop().size() > 0 ? mol_b.asymmetric_unit_symop() : IVec::Zero(mol_b.size());
+    m_asym_symop.resize(mol_a.size() + mol_b.size());
+    m_asym_symop << symop_a, symop_b;
+  }
+  
+  // Combine charge and multiplicity appropriately
+  m_charge = mol_a.charge() + mol_b.charge();
+  m_multiplicity = mol_a.multiplicity() + mol_b.multiplicity() - 1;
+  
+  // Set name
+  m_name = mol_a.name() + " + " + mol_b.name();
+  
+  // Note: asymmetric_molecule_idx and unit_cell_molecule_idx are not meaningful 
+  // for a combined supermolecule, so we leave them as -1 (default)
+}
+
 std::vector<occ::core::Atom> Molecule::atoms() const {
   std::vector<occ::core::Atom> result(size());
   using occ::units::ANGSTROM_TO_BOHR;

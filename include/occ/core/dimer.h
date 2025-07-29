@@ -318,6 +318,14 @@ public:
     m_additional_properties = p;
   }
 
+  /**
+   * Create a supermolecule containing all atoms from both molecules A and B
+   *
+   * \param order specify whether the atoms of molecule A should be first, or those in molecule B.
+   * \returns a Molecule object representing the combined supermolecule
+   */
+  Molecule supermolecule(MoleculeOrder order = MoleculeOrder::AB) const;
+
 private:
   void init_distances();
 
