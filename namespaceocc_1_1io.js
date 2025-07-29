@@ -5,6 +5,8 @@ var namespaceocc_1_1io =
     [ "crystalgrower", "namespaceocc_1_1io_1_1crystalgrower.html", "namespaceocc_1_1io_1_1crystalgrower" ],
     [ "impl", "namespaceocc_1_1io_1_1impl.html", "namespaceocc_1_1io_1_1impl" ],
     [ "kmcpp", "namespaceocc_1_1io_1_1kmcpp.html", "namespaceocc_1_1io_1_1kmcpp" ],
+    [ "AdaptiveBounds", "structocc_1_1io_1_1AdaptiveBounds.html", "structocc_1_1io_1_1AdaptiveBounds" ],
+    [ "AdaptiveGridBounds", "classocc_1_1io_1_1AdaptiveGridBounds.html", "classocc_1_1io_1_1AdaptiveGridBounds" ],
     [ "AdpData", "structocc_1_1io_1_1AdpData.html", "structocc_1_1io_1_1AdpData" ],
     [ "AtomData", "structocc_1_1io_1_1AtomData.html", "structocc_1_1io_1_1AtomData" ],
     [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
@@ -26,7 +28,9 @@ var namespaceocc_1_1io =
     [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
     [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
     [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
+    [ "GridFileHeader", "structocc_1_1io_1_1GridFileHeader.html", "structocc_1_1io_1_1GridFileHeader" ],
     [ "GridSettings", "structocc_1_1io_1_1GridSettings.html", "structocc_1_1io_1_1GridSettings" ],
+    [ "GridSymmetryInfo", "structocc_1_1io_1_1GridSymmetryInfo.html", "structocc_1_1io_1_1GridSymmetryInfo" ],
     [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
     [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
     [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
@@ -38,6 +42,7 @@ var namespaceocc_1_1io =
     [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
     [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
     [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
+    [ "PeriodicGrid", "classocc_1_1io_1_1PeriodicGrid.html", "classocc_1_1io_1_1PeriodicGrid" ],
     [ "PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", "structocc_1_1io_1_1PointChargeFileReader" ],
     [ "QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", "structocc_1_1io_1_1QCSchemaBond" ],
     [ "QCSchemaInput", "structocc_1_1io_1_1QCSchemaInput.html", "structocc_1_1io_1_1QCSchemaInput" ],
@@ -55,6 +60,14 @@ var namespaceocc_1_1io =
     [ "ElementMap", "namespaceocc_1_1io.html#a2e0d0088e3a6c463309cc364c41e1aaf", null ],
     [ "PointChargeList", "namespaceocc_1_1io.html#a2032b9063a04cbcda0dca503cdbf2e7d", null ],
     [ "Position", "namespaceocc_1_1io.html#ab6b5ddc9e2fba0c4afd73066cced9721", null ],
+    [ "GridDataType", "namespaceocc_1_1io.html#acf6bbf5dde01cb1ce7208c847e818f5d", [
+      [ "Raw", "namespaceocc_1_1io.html#acf6bbf5dde01cb1ce7208c847e818f5da65e65c8ab0d8609ce12fc68a03cb8e00", null ],
+      [ "Indexed", "namespaceocc_1_1io.html#acf6bbf5dde01cb1ce7208c847e818f5dacccd5fd8c8f59fe9373c56b1b951780c", null ]
+    ] ],
+    [ "GridFormat", "namespaceocc_1_1io.html#a5017886cee1b6795932a19248622bfcb", [
+      [ "GeneralGrid", "namespaceocc_1_1io.html#a5017886cee1b6795932a19248622bfcbac698b6f233f0e2c6a85d9902f5fd3bf2", null ],
+      [ "PeriodicGrid", "namespaceocc_1_1io.html#a5017886cee1b6795932a19248622bfcba28908b13f6350c42f5a7d9aff8d3a7f0", null ]
+    ] ],
     [ "GridQuality", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd", [
       [ "Coarse", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda1fb282a269a2bc94abc136c0511daa59", null ],
       [ "Standard", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b", null ],
@@ -83,6 +96,7 @@ var namespaceocc_1_1io =
     [ "json_format", "namespaceocc_1_1io.html#a099816a1d1f5ac39efdf73b50c8f6efc", null ],
     [ "load_crystal", "namespaceocc_1_1io.html#a7fb33629fa205abb730a047f5968e93f", null ],
     [ "load_molecule", "namespaceocc_1_1io.html#a07416418ded69a01d477d8c00ef8a825", null ],
+    [ "make_adaptive_bounds", "namespaceocc_1_1io.html#a45be67e52d66bf3088723985f13a314d", null ],
     [ "molecule_from_xyz_file", "namespaceocc_1_1io.html#aaaed42365ec5e0da71939b3b8646ff6e", null ],
     [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
     [ "point_charges_from_file", "namespaceocc_1_1io.html#ac7b49e759281fa2bff63c6e075a41559", null ],

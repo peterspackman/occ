@@ -212,6 +212,8 @@ var annotated_dup =
         [ "kmcpp", "namespaceocc_1_1io_1_1kmcpp.html", [
           [ "InputWriter", "classocc_1_1io_1_1kmcpp_1_1InputWriter.html", "classocc_1_1io_1_1kmcpp_1_1InputWriter" ]
         ] ],
+        [ "AdaptiveBounds", "structocc_1_1io_1_1AdaptiveBounds.html", "structocc_1_1io_1_1AdaptiveBounds" ],
+        [ "AdaptiveGridBounds", "classocc_1_1io_1_1AdaptiveGridBounds.html", "classocc_1_1io_1_1AdaptiveGridBounds" ],
         [ "AdpData", "structocc_1_1io_1_1AdpData.html", "structocc_1_1io_1_1AdpData" ],
         [ "AtomData", "structocc_1_1io_1_1AtomData.html", "structocc_1_1io_1_1AtomData" ],
         [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
@@ -233,7 +235,9 @@ var annotated_dup =
         [ "GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", "structocc_1_1io_1_1GaussianInputFile" ],
         [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
         [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
+        [ "GridFileHeader", "structocc_1_1io_1_1GridFileHeader.html", "structocc_1_1io_1_1GridFileHeader" ],
         [ "GridSettings", "structocc_1_1io_1_1GridSettings.html", "structocc_1_1io_1_1GridSettings" ],
+        [ "GridSymmetryInfo", "structocc_1_1io_1_1GridSymmetryInfo.html", "structocc_1_1io_1_1GridSymmetryInfo" ],
         [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
         [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
         [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
@@ -245,6 +249,7 @@ var annotated_dup =
         [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
         [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
         [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
+        [ "PeriodicGrid", "classocc_1_1io_1_1PeriodicGrid.html", "classocc_1_1io_1_1PeriodicGrid" ],
         [ "PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", "structocc_1_1io_1_1PointChargeFileReader" ],
         [ "QCSchemaBond", "structocc_1_1io_1_1QCSchemaBond.html", "structocc_1_1io_1_1QCSchemaBond" ],
         [ "QCSchemaInput", "structocc_1_1io_1_1QCSchemaInput.html", "structocc_1_1io_1_1QCSchemaInput" ],

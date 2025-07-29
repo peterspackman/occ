@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['gamma_0',['gamma',['../structocc_1_1io_1_1CellData.html#ab6d1e9fabaaa499b49d84b2b7449166e',1,'occ::io::CellData::gamma'],['../structocc_1_1solvent_1_1SMDSolventParameters.html#a884e449aa53fd9aa97e2b2b08c536edc',1,'occ::solvent::SMDSolventParameters::gamma']]],
+  ['gamma_0',['gamma',['../structocc_1_1solvent_1_1SMDSolventParameters.html#a884e449aa53fd9aa97e2b2b08c536edc',1,'occ::solvent::SMDSolventParameters::gamma'],['../structocc_1_1io_1_1CellData.html#ab6d1e9fabaaa499b49d84b2b7449166e',1,'occ::io::CellData::gamma']]],
   ['gamma_5fpoint_5fmolecules_1',['gamma_point_molecules',['../structocc_1_1main_1_1CGConfig.html#a39f4a3d506d2798231f20e3f5c4ab6ce',1,'occ::main::CGConfig']]],
   ['gas_5fphase_5fcontribution_2',['gas_phase_contribution',['../structocc_1_1cg_1_1SMDSolventSurfaces.html#ab023455e74672fb2d8f676ce885360e2',1,'occ::cg::SMDSolventSurfaces']]],
   ['gaussian_3',['gaussian',['../structocc_1_1isosurface_1_1SurfaceCurvature.html#ae05f6a9ce4acf0a1663bf9e99bbbf464',1,'occ::isosurface::SurfaceCurvature']]],
@@ -11,5 +11,7 @@ var searchData=
   ['geometry_5ffilename_8',['geometry_filename',['../structocc_1_1main_1_1DescribeConfig.html#a93a2005d18e521873a4d33499825bc5a',1,'occ::main::DescribeConfig::geometry_filename'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a7ee45184433d00970661846c5ad9d8f1',1,'occ::main::IsosurfaceConfig::geometry_filename']]],
   ['gnorm_9',['gnorm',['../structocc_1_1io_1_1GMFWriter_1_1Facet.html#a78a95ba7ac7bcd8daa3e085560400adc',1,'occ::io::GMFWriter::Facet']]],
   ['golden_5fratio_10',['golden_ratio',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a7123ae3e082f8dc5ab43f2d2a1a81a03',1,'occ::core::opt::Bracket1D']]],
-  ['grow_5flimit_11',['grow_limit',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9',1,'occ::core::opt::Bracket1D']]]
+  ['grid_5fspacing_11',['grid_spacing',['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html#ad3e104507d489577a5920419a4f6f2d2',1,'occ::io::AdaptiveGridBounds::Parameters']]],
+  ['grid_5ftype_12',['grid_type',['../structocc_1_1io_1_1GridFileHeader.html#a2a8a6a27e772e261347b2b3c20f0c8fa',1,'occ::io::GridFileHeader']]],
+  ['grow_5flimit_13',['grow_limit',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9',1,'occ::core::opt::Bracket1D']]]
 ];

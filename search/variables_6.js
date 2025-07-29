@@ -12,7 +12,7 @@ var searchData=
   ['fill_5fvalue_9',['fill_value',['../structocc_1_1io_1_1ColumnConfiguration.html#af43f1425da1694c3fc4a1c088b15a64c',1,'occ::io::ColumnConfiguration']]],
   ['flip_5fnormals_10',['flip_normals',['../structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#a6c9a6d44678d6c456ffe161235fac275',1,'occ::geometry::mc::MarchingCubes::flip_normals'],['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#a3247f00b69a7bfea888d3ee8e0a5a7f2',1,'occ::isosurface::IsosurfaceGenerationParameters::flip_normals']]],
   ['fmt_5fstring_11',['fmt_string',['../structocc_1_1crystal_1_1SymmetryOperationFormat.html#ae150db2094b64fb50d388e7aff3e030f',1,'occ::crystal::SymmetryOperationFormat']]],
-  ['format_12',['format',['../structocc_1_1crystal_1_1SymmetryDimerLabeller.html#a8fbca63655979a9880c942665e7c4f91',1,'occ::crystal::SymmetryDimerLabeller']]],
+  ['format_12',['format',['../structocc_1_1crystal_1_1SymmetryDimerLabeller.html#a8fbca63655979a9880c942665e7c4f91',1,'occ::crystal::SymmetryDimerLabeller::format'],['../structocc_1_1main_1_1CubeConfig.html#a00138d9c47e231fa49e2cfb51c47cc9d',1,'occ::main::CubeConfig::format'],['../classocc_1_1io_1_1PeriodicGrid.html#ab2075ac9c892bea0e75d6f19e24b6c78',1,'occ::io::PeriodicGrid::format']]],
   ['formats_13',['formats',['../structocc_1_1io_1_1OutputInput.html#af459e929e5786055db51560be617f48c',1,'occ::io::OutputInput']]],
   ['forward_14',['forward',['../structocc_1_1cg_1_1ContributionPair.html#a45c8c2a5e7311d3e8d27086eeed6f295',1,'occ::cg::ContributionPair']]],
   ['frac_5fpos_15',['frac_pos',['../structocc_1_1crystal_1_1CrystalAtomRegion.html#a0bb38b9b546fe616a9b7ea045c092b4e',1,'occ::crystal::CrystalAtomRegion']]],

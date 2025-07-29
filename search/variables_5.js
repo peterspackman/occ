@@ -41,5 +41,6 @@ var searchData=
   ['extent_38',['extent',['../structocc_1_1qm_1_1Shell.html#a7b458d7e03b10d714f9aa86b79288791',1,'occ::qm::Shell']]],
   ['exterior_5fgeometry_39',['exterior_geometry',['../structocc_1_1io_1_1IsosurfaceInput.html#ae7c47fc329795792be72df8b4dfb875a',1,'occ::io::IsosurfaceInput']]],
   ['external_5fcommand_40',['external_command',['../structocc_1_1interaction_1_1LatticeConvergenceSettings.html#acb10f98f3c769a11a13c275ef6d8a7c9',1,'occ::interaction::LatticeConvergenceSettings']]],
-  ['exyz_41',['exyz',['../structocc_1_1crystal_1_1SurfaceCutResult.html#aea999ead77ad8fa6f68ac0a8342c21ea',1,'occ::crystal::SurfaceCutResult']]]
+  ['extra_5fbuffer_41',['extra_buffer',['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html#a05affbc510fc3a73c7159ddd3360f92f',1,'occ::io::AdaptiveGridBounds::Parameters']]],
+  ['exyz_42',['exyz',['../structocc_1_1crystal_1_1SurfaceCutResult.html#aea999ead77ad8fa6f68ac0a8342c21ea',1,'occ::crystal::SurfaceCutResult']]]
 ];

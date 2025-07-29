@@ -1,5 +1,6 @@
 var dir_eb006ca087d4b4837f6db1ad7c4b10da =
 [
+    [ "adaptive_grid.h", "adaptive__grid_8h.html", "adaptive__grid_8h" ],
     [ "basis_g94.h", "basis__g94_8h.html", "basis__g94_8h" ],
     [ "cifparser.h", "cifparser_8h.html", "cifparser_8h" ],
     [ "conversion.h", "conversion_8h.html", "conversion_8h" ],
@@ -24,6 +25,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "occ_input.h", "occ__input_8h.html", "occ__input_8h" ],
     [ "orca_json.h", "orca__json_8h.html", "orca__json_8h" ],
     [ "pc.h", "pc_8h.html", "pc_8h" ],
+    [ "periodic_grid.h", "periodic__grid_8h.html", "periodic__grid_8h" ],
     [ "ply.h", "ply_8h.html", "ply_8h" ],
     [ "qcschema.h", "qcschema_8h.html", "qcschema_8h" ],
     [ "shelxfile.h", "shelxfile_8h.html", "shelxfile_8h" ],
