@@ -18,7 +18,7 @@ from pet_mad.calculator import PETMADCalculator
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import argparse
-from typing import List
+from typing import List, Optional
 
 app = FastAPI(title="PET-MAD Energy Server", version="1.0.0")
 
@@ -30,6 +30,16 @@ class Molecule(BaseModel):
     elements: List[str]
     positions: List[List[float]]
     name: str = ""
+    # Optional crystal-related fields that OCC may send
+    asym_mol: Optional[int] = None  # asymmetric molecule index
+    uc_mol: Optional[int] = None    # unit cell molecule index
+    asym_atom: Optional[List[int]] = None  # asymmetric atom indices
+    uc_atom: Optional[List[int]] = None    # unit cell atom indices
+    cell_shift: Optional[List[int]] = None # cell shift vector
+    
+    class Config:
+        # Allow extra fields that aren't defined in the model
+        extra = "allow"
 
 class EnergyRequest(BaseModel):
     molecule: Molecule
@@ -62,6 +72,17 @@ async def calculate_energy(request: EnergyRequest):
         raise HTTPException(status_code=500, detail="Model not loaded")
     
     try:
+        # Print full JSON request for debugging
+        #print("\n=== Full Request JSON ===")
+        #request_dict = request.dict()
+        #print(json.dumps(request_dict, indent=2, default=str))
+        
+        # Print all keys at each level
+        #print(f"\nTop-level keys: {list(request_dict.keys())}")
+        #if 'molecule' in request_dict:
+        #    print(f"Molecule keys: {list(request_dict['molecule'].keys())}")
+        #print("========================\n")
+        
         # Extract molecule data - OCC sends positions in Bohr, convert to Angstroms
         positions = np.array(request.molecule.positions)  # Bohr from OCC
         elements = request.molecule.elements  # Element symbols

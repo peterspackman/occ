@@ -81,20 +81,30 @@ PromolDensityFunctor::PromolDensityFunctor(const AtomList &a) : atoms(a) {
 
 void PromolDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
                                       Eigen::Ref<Vec> dest) {
-  for (int pt = 0; pt < points.cols(); pt++) {
-    float result{0.0};
-    Eigen::Vector3f pos = points.col(pt).cast<float>();
-    for (const auto &[interp, interp_positions, threshold] :
-         atom_interpolators) {
-      for (int i = 0; i < interp_positions.cols(); i++) {
-        float r = (interp_positions.col(i) - pos).squaredNorm();
-        if (r > threshold)
-          continue;
-        float rho = interp(r);
-        result += rho;
+  const int num_points = points.cols();
+  const Eigen::Matrix3Xf points_f = points.cast<float>();
+  
+  // Process all atom interpolators
+  for (const auto &[interp, interp_positions, threshold] : atom_interpolators) {
+    const int num_atoms = interp_positions.cols();
+    
+    // For each atom in this interpolator group
+    for (int atom_idx = 0; atom_idx < num_atoms; atom_idx++) {
+      const Eigen::Vector3f atom_pos = interp_positions.col(atom_idx);
+      
+      // Vectorized distance calculation for all points to this atom
+      const Eigen::RowVectorXf r_squared = 
+          (points_f.colwise() - atom_pos).colwise().squaredNorm();
+      
+      // Process points that are within threshold
+      for (int pt = 0; pt < num_points; pt++) {
+        const float r_sq = r_squared(pt);
+        if (r_sq > threshold) continue;
+        
+        const float rho = interp(r_sq);
+        dest(pt) += rho;
       }
     }
-    dest(pt) += result;
   }
 }
 

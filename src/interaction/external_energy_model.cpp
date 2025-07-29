@@ -42,12 +42,12 @@ CEEnergyComponents ExternalEnergyModel::compute_energy(const core::Dimer &dimer)
   core::Molecule mol_A = dimer.a();
   core::Molecule mol_B = dimer.b();
 
-  // Create dimer molecule
-  core::Molecule dimer_mol(dimer.atomic_numbers(), dimer.positions());
+  // Create supermolecule with full molecular information
+  core::Molecule supermol = dimer.supermolecule();
   
   double e_a = m_monomer_energies[mol_A.asymmetric_molecule_idx()];
   double e_b = m_monomer_energies[mol_B.asymmetric_molecule_idx()];
-  double e_ab = compute_single_point_energy(dimer_mol);
+  double e_ab = compute_single_point_energy(supermol);
 
   CEEnergyComponents result;
   double interaction_energy = e_ab - e_a - e_b;

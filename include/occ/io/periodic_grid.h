@@ -4,6 +4,7 @@
 #include <memory>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/parallel.h>
 #include <occ/geometry/volume_grid.h>
 #include <vector>
 
@@ -109,34 +110,50 @@ private:
 // Template implementation
 template <typename F>
 void PeriodicGrid::fill_data_from_function(F &func, const IVec3 &steps) {
-    size_t N = steps.prod();
-    Mat3N points(3, N);
-    
     m_grid = geometry::VolumeGrid(steps(0), steps(1), steps(2));
     
     // For periodic grids, we don't include the redundant points
     IVec3 actual_steps = steps;
     if (is_periodic()) {
         actual_steps = steps.array() - 1;
-        N = actual_steps.prod();
     }
     
-    for (int x = 0, i = 0; x < actual_steps(0); x++) {
-        for (int y = 0; y < actual_steps(1); y++) {
-            for (int z = 0; z < actual_steps(2); z++, i++) {
-                points.col(i) = basis * Vec3(x, y, z) + origin;
+    int num_threads = occ::parallel::get_num_threads();
+    // Chunk by z-slices for better cache locality
+    int z_per_thread = (actual_steps(2) + num_threads - 1) / num_threads;
+    
+    auto inner_func = [&](int thread_id) {
+        int z_start = thread_id * z_per_thread;
+        int z_end = std::min(z_start + z_per_thread, actual_steps(2));
+        if (z_start >= actual_steps(2)) return;
+        
+        size_t chunk_size = actual_steps(0) * actual_steps(1) * (z_end - z_start);
+        Mat3N points(3, chunk_size);
+        Vec temp = Vec::Zero(chunk_size);
+        
+        // Generate points for this z-slice chunk
+        size_t local_idx = 0;
+        for (int z = z_start; z < z_end; z++) {
+            for (int y = 0; y < actual_steps(1); y++) {
+                for (int x = 0; x < actual_steps(0); x++, local_idx++) {
+                    points.col(local_idx) = basis * Vec3(x, y, z) + origin;
+                }
             }
         }
-    }
+        
+        // Process chunk
+        func(points, temp);
+        
+        // Copy results back to grid - calculate proper offset
+        size_t grid_offset = z_start * actual_steps(0) * actual_steps(1);
+        std::copy(temp.data(), temp.data() + chunk_size, m_grid.data() + grid_offset);
+    };
     
-    Vec temp = Vec::Zero(N);
-    func(points, temp);
+    occ::parallel::parallel_do(inner_func);
     
     if (is_periodic()) {
         // Need to expand the data to include redundant points
         expand_periodic_to_general();
-    } else {
-        std::copy(temp.data(), temp.data() + N, m_grid.data());
     }
 }
 

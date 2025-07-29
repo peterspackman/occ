@@ -262,4 +262,12 @@ double Dimer::interaction_energy(const std::string &key) const {
   return 0.0;
 }
 
+Molecule Dimer::supermolecule(MoleculeOrder order) const {
+  if (order == MoleculeOrder::AB) {
+    return Molecule(m_a, m_b);
+  } else {
+    return Molecule(m_b, m_a);
+  }
+}
+
 } // namespace occ::core
