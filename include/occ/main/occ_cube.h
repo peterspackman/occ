@@ -18,6 +18,18 @@ struct CubeConfig {
   std::vector<double> db;
   std::vector<double> dc;
   std::vector<double> origin;
+  
+  // Adaptive bounds parameters
+  bool adaptive_bounds{false};
+  double value_threshold{1e-6};
+  double buffer_distance{2.0};
+  
+  // Grid format options
+  std::string format{"cube"}; // cube, ggrid, pgrid
+  
+  // Crystal symmetry options
+  std::string crystal_filename{""};  // CIF file for crystal structure
+  bool unit_cell_only{false};
 };
 
 CLI::App *add_cube_subcommand(CLI::App &app);

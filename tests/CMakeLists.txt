@@ -36,6 +36,10 @@ add_executable(io_tests "${CMAKE_CURRENT_SOURCE_DIR}/io_tests.cpp")
 target_link_libraries(io_tests PRIVATE occ_io Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(io_tests)
 
+add_executable(io_periodic_grid_tests "${CMAKE_CURRENT_SOURCE_DIR}/io_periodic_grid_tests.cpp")
+target_link_libraries(io_periodic_grid_tests PRIVATE occ_io occ_dft Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(io_periodic_grid_tests)
+
 add_executable(wavefunction_io_tests "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_io_tests.cpp")
 target_link_libraries(wavefunction_io_tests PRIVATE occ_io Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(wavefunction_io_tests)
