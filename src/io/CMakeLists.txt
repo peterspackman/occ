@@ -12,6 +12,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/fchkwriter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gaussian_input_file.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gmf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic_grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/grid_settings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/json_basis.cpp"

@@ -53,6 +53,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.7.7";
+  m.attr("__version__") = "0.7.8";
 #endif
 }

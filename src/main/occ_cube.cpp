@@ -3,12 +3,18 @@
 #include <occ/core/eeq.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
+#include <occ/crystal/crystal.h>
+#include <occ/io/adaptive_grid.h>
+#include <occ/io/cifparser.h>
 #include <occ/io/cube.h>
+#include <occ/io/load_geometry.h>
+#include <occ/io/periodic_grid.h>
 #include <occ/io/xyz.h>
 #include <occ/main/occ_cube.h>
 #include <occ/main/point_functors.h>
 #include <occ/qm/wavefunction.h>
 #include <scn/scan.h>
+#include <memory>
 
 namespace fs = std::filesystem;
 using occ::IVec;
@@ -79,6 +85,20 @@ CLI::App *add_cube_subcommand(CLI::App &app) {
                    "Translation in direction C")
       ->expected(0, 3)
       ->default_val("{}");
+
+  cube->add_flag("--adaptive", config->adaptive_bounds,
+                 "Use adaptive bounds calculation");
+  cube->add_option("--threshold", config->value_threshold,
+                   "Value threshold for adaptive bounds (default=1e-8)");
+  cube->add_option("--buffer", config->buffer_distance,
+                   "Buffer distance for adaptive bounds in Angstrom (default=2.0)");
+  cube->add_option("--format", config->format,
+                   "Output format: cube, ggrid, pgrid (default=cube)");
+  
+  cube->add_option("--crystal", config->crystal_filename,
+                   "CIF file for crystal structure (enables symmetry-aware pgrid generation)");
+  cube->add_flag("--unit-cell", config->unit_cell_only,
+                 "Generate grid for unit cell only (requires --crystal)");
 
   cube->fallthrough();
   cube->callback([config]() { run_cube_subcommand(*config); });
@@ -193,9 +213,21 @@ void evaluate_custom_points(const Wavefunction &wfn, CubeConfig const &config,
   write_results(config, points, data);
 }
 
-void run_cube_subcommand(CubeConfig const &config) {
+void run_cube_subcommand(CubeConfig const &config_in) {
+  // Make a mutable copy so we can modify for convenience features
+  CubeConfig config = config_in;
   Wavefunction wfn;
   bool have_wfn{false};
+
+  // Handle crystal if requested - store for later use
+  std::unique_ptr<occ::crystal::Crystal> crystal_ptr;
+  
+  // Auto-detect CIF files
+  bool is_cif_input = occ::io::CifParser::is_likely_cif_filename(config.input_filename);
+  if (is_cif_input && config.crystal_filename.empty()) {
+    // If input is a CIF and no separate crystal file specified, use input as crystal
+    config.crystal_filename = config.input_filename;
+  }
 
   if (Wavefunction::is_likely_wavefunction_filename(config.input_filename)) {
     wfn = Wavefunction::load(config.input_filename);
@@ -206,16 +238,89 @@ void run_cube_subcommand(CubeConfig const &config) {
     occ::log::info("Num beta:         {}", wfn.mo.n_beta);
     occ::log::info("Num AOs:          {}", wfn.mo.n_ao);
     have_wfn = true;
-  } else {
+  } else if (!is_cif_input) {
     Molecule m = occ::io::molecule_from_xyz_file(config.input_filename);
     wfn.atoms = m.atoms();
   }
-
-  occ::log::info("System has {} atoms", wfn.atoms.size());
-
-  if (!config.points_filename.empty()) {
-    evaluate_custom_points(wfn, config, have_wfn);
-    return;
+  if (!config.crystal_filename.empty()) {
+    occ::log::info("Loading crystal structure from {}", config.crystal_filename);
+    crystal_ptr = std::make_unique<occ::crystal::Crystal>(occ::io::load_crystal(config.crystal_filename));
+    
+    // For crystals, we need to set up the grid to match the unit cell
+    // and atoms from the asymmetric unit
+    const auto &cell = crystal_ptr->unit_cell();
+    const auto &asym_unit = crystal_ptr->asymmetric_unit();
+    
+    // For void calculations, we need unit cell atoms + neighbors
+    if (config.property == "void" || config.property == "promolecule") {
+      // Get atoms within a buffer radius around the unit cell
+      double buffer = 6.0;  // 6 Angstrom buffer
+      const auto &uc_atoms = crystal_ptr->unit_cell_atoms();
+      occ::crystal::HKL upper = occ::crystal::HKL::minimum();
+      occ::crystal::HKL lower = occ::crystal::HKL::maximum();
+      Vec3 frac_radius = buffer * 2 / cell.lengths().array();
+      
+      for (size_t i = 0; i < uc_atoms.frac_pos.cols(); i++) {
+        const auto &pos = uc_atoms.frac_pos.col(i);
+        upper.h = std::max(upper.h, static_cast<int>(ceil(pos(0) + frac_radius(0))));
+        upper.k = std::max(upper.k, static_cast<int>(ceil(pos(1) + frac_radius(1))));
+        upper.l = std::max(upper.l, static_cast<int>(ceil(pos(2) + frac_radius(2))));
+        
+        lower.h = std::min(lower.h, static_cast<int>(floor(pos(0) - frac_radius(0))));
+        lower.k = std::min(lower.k, static_cast<int>(floor(pos(1) - frac_radius(1))));
+        lower.l = std::min(lower.l, static_cast<int>(floor(pos(2) - frac_radius(2))));
+      }
+      
+      auto slab = crystal_ptr->slab(lower, upper);
+      
+      // Convert slab atoms to wavefunction atoms (convert from Angstrom to Bohr)
+      wfn.atoms.clear();
+      for (size_t i = 0; i < slab.atomic_numbers.size(); i++) {
+        wfn.atoms.push_back(occ::core::Atom{
+          slab.atomic_numbers(i),
+          slab.cart_pos(0, i) * occ::units::ANGSTROM_TO_BOHR,
+          slab.cart_pos(1, i) * occ::units::ANGSTROM_TO_BOHR,
+          slab.cart_pos(2, i) * occ::units::ANGSTROM_TO_BOHR
+        });
+      }
+      
+      occ::log::info("Using {} atoms (unit cell + neighbors within {:.1f} Å)", 
+                     wfn.atoms.size(), buffer);
+    } else {
+      // For other properties, just use asymmetric unit atoms
+      wfn.atoms.clear();
+      for (size_t i = 0; i < asym_unit.size(); i++) {
+        // Positions in asymmetric unit are fractional, need to convert to Cartesian
+        Vec3 cart_pos = cell.direct() * asym_unit.positions.col(i);
+        wfn.atoms.push_back(occ::core::Atom{
+          asym_unit.atomic_numbers(i),
+          cart_pos(0) * occ::units::ANGSTROM_TO_BOHR,
+          cart_pos(1) * occ::units::ANGSTROM_TO_BOHR,
+          cart_pos(2) * occ::units::ANGSTROM_TO_BOHR
+        });
+      }
+    }
+    
+    occ::log::info("Crystal has {} atoms in asymmetric unit", wfn.atoms.size());
+    occ::log::info("Unit cell parameters: a={:.3f} b={:.3f} c={:.3f} alpha={:.1f} beta={:.1f} gamma={:.1f}",
+                   cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma());
+  }
+  
+  // Handle void as an alias for promolecule when using crystals
+  if (config.property == "void") {
+    if (!crystal_ptr) {
+      throw std::runtime_error("Void calculation requires a crystal structure (use --crystal)");
+    }
+    config.property = "promolecule";
+    config.unit_cell_only = true;  // Voids are typically calculated for unit cell
+    if (config.format == "cube") {
+      config.format = "pgrid";  // Default to pgrid for crystal voids
+    }
+    // Also update output filename if it ends with .cube
+    if (config.output_filename.ends_with(".cube")) {
+      config.output_filename = config.output_filename.substr(0, config.output_filename.length() - 5) + ".pgrid";
+    }
+    occ::log::info("Void calculation: using promolecule density for unit cell");
   }
 
   Cube cube;
@@ -241,16 +346,117 @@ void run_cube_subcommand(CubeConfig const &config) {
   };
   cube.atoms = wfn.atoms;
 
-  fill_values(config.steps, cube.steps);
+  // If crystal is loaded and unit cell requested, set up grid for unit cell
+  if (crystal_ptr && config.unit_cell_only) {
+    const auto &cell = crystal_ptr->unit_cell();
+    
+    // Set origin to 0,0,0 (unit cell corner)
+    cube.origin = Vec3::Zero();
+    
+    // Set basis vectors from unit cell (convert to Bohr)
+    cube.basis = cell.direct() * occ::units::ANGSTROM_TO_BOHR;
+    
+    // Set steps from config or use defaults
+    fill_values(config.steps, cube.steps);
+    if (config.steps.empty()) {
+      cube.steps = IVec3::Constant(50);  // Default 50 points per dimension
+    }
+    
+    // Divide basis by steps to get spacing
+    for (int i = 0; i < 3; i++) {
+      cube.basis.col(i) /= cube.steps(i);
+    }
+    
+    occ::log::info("Using unit cell dimensions for grid");
+  }
+  // Handle adaptive bounds if requested
+  else if (config.adaptive_bounds) {
+    occ::log::info("Using adaptive bounds calculation");
+    
+    // Convert buffer distance to Bohr
+    // Create the appropriate functor based on property
+    if (config.property == "eeqesp") {
+      EEQEspFunctor func(wfn.atoms);
+      occ::io::AdaptiveGridBounds<EEQEspFunctor>::Parameters adaptive_params;
+      adaptive_params.value_threshold = config.value_threshold;
+      adaptive_params.extra_buffer = config.buffer_distance * occ::units::ANGSTROM_TO_BOHR;
+      
+      auto bounds_calc = occ::io::make_adaptive_bounds(func, adaptive_params);
+      Molecule mol(wfn.atoms);
+      auto bounds = bounds_calc.compute(mol);
+      
+      cube.origin = bounds.origin;
+      cube.basis = bounds.basis;
+      cube.steps = bounds.steps;
+    } else if (config.property == "promolecule") {
+      PromolDensityFunctor func(wfn.atoms);
+      occ::io::AdaptiveGridBounds<PromolDensityFunctor>::Parameters adaptive_params;
+      adaptive_params.value_threshold = config.value_threshold;
+      adaptive_params.extra_buffer = config.buffer_distance * occ::units::ANGSTROM_TO_BOHR;
+      
+      auto bounds_calc = occ::io::make_adaptive_bounds(func, adaptive_params);
+      Molecule mol(wfn.atoms);
+      auto bounds = bounds_calc.compute(mol);
+      
+      cube.origin = bounds.origin;
+      cube.basis = bounds.basis;
+      cube.steps = bounds.steps;
+    } else if (config.property == "rho" || config.property == "electron_density" || 
+               config.property == "density") {
+      require_wfn(config, have_wfn);
+      ElectronDensityFunctor func(wfn);
+      func.mo_index = config.mo_number;
+      occ::io::AdaptiveGridBounds<ElectronDensityFunctor>::Parameters adaptive_params;
+      adaptive_params.value_threshold = config.value_threshold;
+      adaptive_params.extra_buffer = config.buffer_distance * occ::units::ANGSTROM_TO_BOHR;
+      
+      auto bounds_calc = occ::io::make_adaptive_bounds(func, adaptive_params);
+      Molecule mol(wfn.atoms);
+      auto bounds = bounds_calc.compute(mol);
+      
+      cube.origin = bounds.origin;
+      cube.basis = bounds.basis;
+      cube.steps = bounds.steps;
+    } else if (config.property == "esp") {
+      require_wfn(config, have_wfn);
+      EspFunctor func(wfn);
+      occ::io::AdaptiveGridBounds<EspFunctor>::Parameters adaptive_params;
+      adaptive_params.value_threshold = config.value_threshold;
+      adaptive_params.extra_buffer = config.buffer_distance * occ::units::ANGSTROM_TO_BOHR;
+      
+      auto bounds_calc = occ::io::make_adaptive_bounds(func, adaptive_params);
+      Molecule mol(wfn.atoms);
+      auto bounds = bounds_calc.compute(mol);
+      
+      cube.origin = bounds.origin;
+      cube.basis = bounds.basis;
+      cube.steps = bounds.steps;
+    } else {
+      throw std::runtime_error("Adaptive bounds not supported for property: " + config.property);
+    }
+    
+    occ::log::info("Adaptive bounds determined:");
+    occ::log::info("  Origin: [{:.3f}, {:.3f}, {:.3f}] Bohr", 
+                   cube.origin(0), cube.origin(1), cube.origin(2));
+    occ::log::info("  Steps: {} x {} x {}", cube.steps(0), cube.steps(1), cube.steps(2));
+    occ::log::info("  Spacing: [{:.3f}, {:.3f}, {:.3f}] Bohr",
+                   cube.basis(0,0), cube.basis(1,1), cube.basis(2,2));
+  } else {
+    // Use manual specification
+    fill_values(config.steps, cube.steps);
 
-  cube.basis.diagonal().array() = 0.2;
+    cube.basis.diagonal().array() = 0.2;
 
-  fill_direction(config.da, 0);
-  fill_direction(config.db, 1);
-  fill_direction(config.dc, 2);
+    fill_direction(config.da, 0);
+    fill_direction(config.db, 1);
+    fill_direction(config.dc, 2);
 
-  cube.center_molecule();
-  fill_values(config.origin, cube.origin);
+    // Don't center molecule if using crystal coordinates
+    if (!crystal_ptr) {
+      cube.center_molecule();
+    }
+    fill_values(config.origin, cube.origin);
+  }
 
   cube.name =
       fmt::format("Generated by OCC from file: {}", config.input_filename);
@@ -315,7 +521,24 @@ void run_cube_subcommand(CubeConfig const &config) {
   occ::timing::stop(occ::timing::category::cube_evaluation);
 
   occ::timing::start(occ::timing::category::io);
-  cube.save(config.output_filename);
+  
+  // Save in the requested format
+  if (config.format == "cube") {
+    cube.save(config.output_filename);
+  } else if (config.format == "ggrid" || config.format == "pgrid") {
+    // Convert to Grid format
+    auto grid_format = (config.format == "ggrid") ? 
+                       occ::io::GridFormat::GeneralGrid : 
+                       occ::io::GridFormat::PeriodicGrid;
+    
+    auto grid = occ::io::PeriodicGrid::from_cube(cube, grid_format);
+    grid.save(config.output_filename);
+    
+    occ::log::info("Saved {} file: {}", config.format, config.output_filename);
+  } else {
+    throw std::runtime_error("Unknown output format: " + config.format);
+  }
+  
   occ::timing::stop(occ::timing::category::io);
 }
 

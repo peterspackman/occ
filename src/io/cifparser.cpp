@@ -242,6 +242,10 @@ void CifParser::extract_symmetry_data(const gemmi::cif::Pair &pair) {
     occ::log::debug("Removing '_' characters from name HM");
     occ::util::remove_character_occurences(m_sym.nameHM, '_');
   }
+
+  // Remove quotes from symbols
+  remove_quotes(m_sym.nameHall);
+  remove_quotes(m_sym.nameHM);
 }
 
 std::optional<occ::crystal::Crystal>
