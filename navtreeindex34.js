@@ -1,5 +1,9 @@
 var NAVTREEINDEX34 =
 {
+"structocc_1_1io_1_1GridFileHeader.html#ae2fa5bef72fe66b08a613ed22599d267":[4,0,2,11,26,6],
+"structocc_1_1io_1_1GridSettings.html":[4,0,2,11,27],
+"structocc_1_1io_1_1GridSettings.html":[2,0,2,13,29],
+"structocc_1_1io_1_1GridSettings.html#a418d0f9e894467350cbc64ffbdca598b":[2,0,2,13,29,3],
 "structocc_1_1io_1_1GridSettings.html#a418d0f9e894467350cbc64ffbdca598b":[4,0,2,11,27,3],
 "structocc_1_1io_1_1GridSettings.html#a43adfd375523983981a74c981f270f82":[4,0,2,11,27,4],
 "structocc_1_1io_1_1GridSettings.html#a43adfd375523983981a74c981f270f82":[2,0,2,13,29,4],
@@ -245,9 +249,5 @@ var NAVTREEINDEX34 =
 "structocc_1_1io_1_1SymmetryData.html":[4,0,2,11,52],
 "structocc_1_1io_1_1SymmetryData.html#a0e076ec9966c837b08fcf05e98cfa144":[4,0,2,11,52,1],
 "structocc_1_1io_1_1SymmetryData.html#a0e076ec9966c837b08fcf05e98cfa144":[2,0,2,13,54,1],
-"structocc_1_1io_1_1SymmetryData.html#a69ac661d5874f01771b3fa6d725fa8eb":[4,0,2,11,52,4],
-"structocc_1_1io_1_1SymmetryData.html#a69ac661d5874f01771b3fa6d725fa8eb":[2,0,2,13,54,4],
-"structocc_1_1io_1_1SymmetryData.html#a7f6e162c881538624a71d68cbb0fe2cd":[2,0,2,13,54,3],
-"structocc_1_1io_1_1SymmetryData.html#a7f6e162c881538624a71d68cbb0fe2cd":[4,0,2,11,52,3],
-"structocc_1_1io_1_1SymmetryData.html#ab81d8d8409933708266965726f717e44":[4,0,2,11,52,5]
+"structocc_1_1io_1_1SymmetryData.html#a69ac661d5874f01771b3fa6d725fa8eb":[4,0,2,11,52,4]
 };

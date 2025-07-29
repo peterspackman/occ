@@ -1,5 +1,9 @@
 var NAVTREEINDEX27 =
 {
+"structocc_1_1core_1_1graph_1_1PeriodicEdge.html#af9587efa7a74482485c66301bddedf20":[4,0,2,1,1,1,4],
+"structocc_1_1core_1_1graph_1_1PeriodicVertex.html":[4,0,2,1,1,2],
+"structocc_1_1core_1_1graph_1_1PeriodicVertex.html":[2,0,2,2,2,2],
+"structocc_1_1core_1_1graph_1_1PeriodicVertex.html#a391d8c9b64501e9d9856e826f7c2b4b6":[4,0,2,1,1,2,0],
 "structocc_1_1core_1_1graph_1_1PeriodicVertex.html#a391d8c9b64501e9d9856e826f7c2b4b6":[2,0,2,2,2,2,0],
 "structocc_1_1core_1_1numpy_1_1NumpyArray.html":[4,0,2,1,2,1],
 "structocc_1_1core_1_1numpy_1_1NumpyArray.html":[2,0,2,2,4,1],
@@ -245,9 +249,5 @@ var NAVTREEINDEX27 =
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ad5189b7d0d14df4cc165dc9f55658d0f":[2,0,2,3,19,2],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ad63c9859fc9f5dae8e20b450fa6a977a":[2,0,2,3,19,1],
 "structocc_1_1crystal_1_1SurfaceCutResult.html#ad63c9859fc9f5dae8e20b450fa6a977a":[4,0,2,2,19,1],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#ada05745757a4a657b678de61a7184eb4":[4,0,2,2,19,9],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#ada05745757a4a657b678de61a7184eb4":[2,0,2,3,19,9],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#ae52c7e9b26f98e54c97913fc7ab9a868":[2,0,2,3,19,14],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#ae52c7e9b26f98e54c97913fc7ab9a868":[4,0,2,2,19,14],
-"structocc_1_1crystal_1_1SurfaceCutResult.html#aea999ead77ad8fa6f68ac0a8342c21ea":[2,0,2,3,19,13]
+"structocc_1_1crystal_1_1SurfaceCutResult.html#ada05745757a4a657b678de61a7184eb4":[4,0,2,2,19,9]
 };

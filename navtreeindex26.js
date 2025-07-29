@@ -1,5 +1,9 @@
 var NAVTREEINDEX26 =
 {
+"structocc_1_1cg_1_1DimerSolventTerm.html#a317d627eced7e5a11809881f9622f510":[2,0,2,0,4,1],
+"structocc_1_1cg_1_1DimerSolventTerm.html#acd1ca31759468a37830d965a599d3427":[4,0,2,0,3,0],
+"structocc_1_1cg_1_1DimerSolventTerm.html#acd1ca31759468a37830d965a599d3427":[2,0,2,0,4,0],
+"structocc_1_1cg_1_1EnergyTotal.html":[4,0,2,0,4],
 "structocc_1_1cg_1_1EnergyTotal.html":[2,0,2,0,5],
 "structocc_1_1cg_1_1EnergyTotal.html#a7d06a2c562a45941d6c045b4d7fe399c":[4,0,2,0,4,2],
 "structocc_1_1cg_1_1EnergyTotal.html#a7d06a2c562a45941d6c045b4d7fe399c":[2,0,2,0,5,2],
@@ -245,9 +249,5 @@ var NAVTREEINDEX26 =
 "structocc_1_1core_1_1graph_1_1PeriodicEdge.html#acb0ef406c08b57f0ff487c147a3c98c7":[4,0,2,1,1,1,6],
 "structocc_1_1core_1_1graph_1_1PeriodicEdge.html#ae8e50ecfaf5af9aedfcd9fedd142bb81":[4,0,2,1,1,1,1],
 "structocc_1_1core_1_1graph_1_1PeriodicEdge.html#ae8e50ecfaf5af9aedfcd9fedd142bb81":[2,0,2,2,2,1,1],
-"structocc_1_1core_1_1graph_1_1PeriodicEdge.html#af9587efa7a74482485c66301bddedf20":[2,0,2,2,2,1,4],
-"structocc_1_1core_1_1graph_1_1PeriodicEdge.html#af9587efa7a74482485c66301bddedf20":[4,0,2,1,1,1,4],
-"structocc_1_1core_1_1graph_1_1PeriodicVertex.html":[4,0,2,1,1,2],
-"structocc_1_1core_1_1graph_1_1PeriodicVertex.html":[2,0,2,2,2,2],
-"structocc_1_1core_1_1graph_1_1PeriodicVertex.html#a391d8c9b64501e9d9856e826f7c2b4b6":[4,0,2,1,1,2,0]
+"structocc_1_1core_1_1graph_1_1PeriodicEdge.html#af9587efa7a74482485c66301bddedf20":[2,0,2,2,2,1,4]
 };

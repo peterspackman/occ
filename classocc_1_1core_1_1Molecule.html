@@ -132,6 +132,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:adbae4a43d00f01304e8c8747a6826a04" id="r_adbae4a43d00f01304e8c8747a6826a04"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#adbae4a43d00f01304e8c8747a6826a04">Molecule</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Element.html">Element</a> &gt; &amp;els, const std::vector&lt; std::array&lt; double, 3 &gt; &gt; &amp;pos)</td></tr>
 <tr class="memdesc:adbae4a43d00f01304e8c8747a6826a04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> from a vector of <a class="el" href="classocc_1_1core_1_1Element.html" title="Utility class representing and holding data for a chemical element.">Element</a> objects, and std::array&lt;double, 3&gt; positions.  <br /></td></tr>
 <tr class="separator:adbae4a43d00f01304e8c8747a6826a04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92e892f82ce43198935626c2bf148a5d" id="r_a92e892f82ce43198935626c2bf148a5d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a92e892f82ce43198935626c2bf148a5d">Molecule</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;mol_a, const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;mol_b)</td></tr>
+<tr class="memdesc:a92e892f82ce43198935626c2bf148a5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a combined supermolecule from two molecules.  <br /></td></tr>
+<tr class="separator:a92e892f82ce43198935626c2bf148a5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e53ea6aaf46345c7bc0f66c8954f33a" id="r_a3e53ea6aaf46345c7bc0f66c8954f33a"><td class="memTemplParams" colspan="2">template&lt;typename N , typename <a class="el" href="namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6af623e75af30e62bbd73d6df5b50bb7b5">D</a> &gt; </td></tr>
 <tr class="memitem:a3e53ea6aaf46345c7bc0f66c8954f33a"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a3e53ea6aaf46345c7bc0f66c8954f33a">Molecule</a> (const std::vector&lt; N &gt; &amp;nums, const std::vector&lt; std::array&lt; <a class="el" href="namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6af623e75af30e62bbd73d6df5b50bb7b5">D</a>, 3 &gt; &gt; &amp;pos)</td></tr>
 <tr class="memdesc:a3e53ea6aaf46345c7bc0f66c8954f33a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> from a vector of atomic numbers a vector arrays of positions.  <br /></td></tr>
@@ -312,8 +315,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aad44825e77f93d4bb384ecd15ea823d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d1fa1cc54d1dd4adcfb49f9fe00ba97" id="r_a7d1fa1cc54d1dd4adcfb49f9fe00ba97"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a7d1fa1cc54d1dd4adcfb49f9fe00ba97">set_partial_charges</a> (const Vec &amp;v)</td></tr>
 <tr class="separator:a7d1fa1cc54d1dd4adcfb49f9fe00ba97"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a21e0f6f3e1ac8fcdfd6d71bf1a9981c7" id="r_a21e0f6f3e1ac8fcdfd6d71bf1a9981c7"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a21e0f6f3e1ac8fcdfd6d71bf1a9981c7">partial_charges</a> ()</td></tr>
-<tr class="separator:a21e0f6f3e1ac8fcdfd6d71bf1a9981c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8caf64360eb59d52e056a73bc346f747" id="r_a8caf64360eb59d52e056a73bc346f747"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#a8caf64360eb59d52e056a73bc346f747">partial_charges</a> () const</td></tr>
+<tr class="separator:a8caf64360eb59d52e056a73bc346f747"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab83f314388fb60d9e0d30928748bf87" id="r_aab83f314388fb60d9e0d30928748bf87"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#aab83f314388fb60d9e0d30928748bf87">esp_partial_charges</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;<a class="el" href="classocc_1_1core_1_1Molecule.html#abdc1f4e4adb8082f5efee6d6ff5574e6">positions</a>) const</td></tr>
 <tr class="separator:aab83f314388fb60d9e0d30928748bf87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aefa68557af9e9e453a1d2280d6e12907" id="r_aefa68557af9e9e453a1d2280d6e12907"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Molecule.html#aefa68557af9e9e453a1d2280d6e12907">permute</a> (const std::vector&lt; int &gt; &amp;permutation) const</td></tr>
@@ -353,7 +356,7 @@ Public Member Functions</h2></td></tr>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a053485fb0a1f14056756096c079865b3" name="a053485fb0a1f14056756096c079865b3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a053485fb0a1f14056756096c079865b3">&#9670;&#160;</a></span>Molecule() <span class="overload">[1/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a053485fb0a1f14056756096c079865b3">&#9670;&#160;</a></span>Molecule() <span class="overload">[1/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -378,7 +381,7 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a id="a42a0eaa7cdfc2a0742cf582d1cad5e25" name="a42a0eaa7cdfc2a0742cf582d1cad5e25"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a42a0eaa7cdfc2a0742cf582d1cad5e25">&#9670;&#160;</a></span>Molecule() <span class="overload">[2/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a42a0eaa7cdfc2a0742cf582d1cad5e25">&#9670;&#160;</a></span>Molecule() <span class="overload">[2/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -415,7 +418,7 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a id="a2aeaafb397bc9206faf4524c7b945511" name="a2aeaafb397bc9206faf4524c7b945511"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2aeaafb397bc9206faf4524c7b945511">&#9670;&#160;</a></span>Molecule() <span class="overload">[3/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2aeaafb397bc9206faf4524c7b945511">&#9670;&#160;</a></span>Molecule() <span class="overload">[3/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -442,7 +445,7 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a id="adbae4a43d00f01304e8c8747a6826a04" name="adbae4a43d00f01304e8c8747a6826a04"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adbae4a43d00f01304e8c8747a6826a04">&#9670;&#160;</a></span>Molecule() <span class="overload">[4/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#adbae4a43d00f01304e8c8747a6826a04">&#9670;&#160;</a></span>Molecule() <span class="overload">[4/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -479,8 +482,46 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a92e892f82ce43198935626c2bf148a5d" name="a92e892f82ce43198935626c2bf148a5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92e892f82ce43198935626c2bf148a5d">&#9670;&#160;</a></span>Molecule() <span class="overload">[5/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">occ::core::Molecule::Molecule </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>mol_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>mol_b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Construct a combined supermolecule from two molecules. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mol_a</td><td>First molecule (atoms will be placed first) </td></tr>
+    <tr><td class="paramname">mol_b</td><td>Second molecule (atoms will be placed second)</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Creates a new molecule containing all atoms from both input molecules. The name will be set to "mol_a + mol_b". Other properties like charges and multiplicities will be combined appropriately. </p>
+
+</div>
+</div>
 <a id="a3e53ea6aaf46345c7bc0f66c8954f33a" name="a3e53ea6aaf46345c7bc0f66c8954f33a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e53ea6aaf46345c7bc0f66c8954f33a">&#9670;&#160;</a></span>Molecule() <span class="overload">[5/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e53ea6aaf46345c7bc0f66c8954f33a">&#9670;&#160;</a></span>Molecule() <span class="overload">[6/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1177,8 +1218,8 @@ template&lt;typename N , typename <a class="el" href="namespaceocc_1_1core.html#
 
 </div>
 </div>
-<a id="a21e0f6f3e1ac8fcdfd6d71bf1a9981c7" name="a21e0f6f3e1ac8fcdfd6d71bf1a9981c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a21e0f6f3e1ac8fcdfd6d71bf1a9981c7">&#9670;&#160;</a></span>partial_charges()</h2>
+<a id="a8caf64360eb59d52e056a73bc346f747" name="a8caf64360eb59d52e056a73bc346f747"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8caf64360eb59d52e056a73bc346f747">&#9670;&#160;</a></span>partial_charges()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1190,7 +1231,7 @@ template&lt;typename N , typename <a class="el" href="namespaceocc_1_1core.html#
           <td class="memname">const auto &amp; occ::core::Molecule::partial_charges </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
   </td>

@@ -34,6 +34,7 @@ var classocc_1_1core_1_1Dimer =
     [ "set_name", "classocc_1_1core_1_1Dimer.html#aee8ee4d7fc83bdd82c2b40cee8f436ff", null ],
     [ "set_properties", "classocc_1_1core_1_1Dimer.html#a1ef2ad8b970537dedd2f9bfb8f4a5b0a", null ],
     [ "set_property", "classocc_1_1core_1_1Dimer.html#afddf966b635b24098f1eba1b35faf5f9", null ],
+    [ "supermolecule", "classocc_1_1core_1_1Dimer.html#a101c2412b2d10399538a739f344abac0", null ],
     [ "symmetry_relation", "classocc_1_1core_1_1Dimer.html#a4e23a9cad684f2e37f33b8f912165660", null ],
     [ "v_ab", "classocc_1_1core_1_1Dimer.html#a4df94c42d8bcff3385004dcc8182b7aa", null ],
     [ "vdw_radii", "classocc_1_1core_1_1Dimer.html#aa99b809b88c986b2b33c4e2b921f03ef", null ],

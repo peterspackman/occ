@@ -214,6 +214,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:afefb0ea21298076587ab60421cbed1cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ef2ad8b970537dedd2f9bfb8f4a5b0a" id="r_a1ef2ad8b970537dedd2f9bfb8f4a5b0a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#a1ef2ad8b970537dedd2f9bfb8f4a5b0a">set_properties</a> (const ankerl::unordered_dense::map&lt; std::string, std::string &gt; &amp;p)</td></tr>
 <tr class="separator:a1ef2ad8b970537dedd2f9bfb8f4a5b0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a101c2412b2d10399538a739f344abac0" id="r_a101c2412b2d10399538a739f344abac0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html#a101c2412b2d10399538a739f344abac0">supermolecule</a> (<a class="el" href="classocc_1_1core_1_1Dimer.html#a8cc4dd8b808d057f2cd1f73977e06aad">MoleculeOrder</a> order=<a class="el" href="classocc_1_1core_1_1Dimer.html#a8cc4dd8b808d057f2cd1f73977e06aadab86fc6b051f63d73de262d4c34e3a0a9">MoleculeOrder::AB</a>) const</td></tr>
+<tr class="memdesc:a101c2412b2d10399538a739f344abac0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a supermolecule containing all atoms from both molecules A and B.  <br /></td></tr>
+<tr class="separator:a101c2412b2d10399538a739f344abac0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Storage class for relevant information of a dimer (pair) of <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> objects. </p>
@@ -1123,6 +1126,33 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a101c2412b2d10399538a739f344abac0" name="a101c2412b2d10399538a739f344abac0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a101c2412b2d10399538a739f344abac0">&#9670;&#160;</a></span>supermolecule()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> occ::core::Dimer::supermolecule </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classocc_1_1core_1_1Dimer.html#a8cc4dd8b808d057f2cd1f73977e06aad">MoleculeOrder</a>&#160;</td>
+          <td class="paramname"><em>order</em> = <code><a class="el" href="classocc_1_1core_1_1Dimer.html#a8cc4dd8b808d057f2cd1f73977e06aadab86fc6b051f63d73de262d4c34e3a0a9">MoleculeOrder::AB</a></code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a supermolecule containing all atoms from both molecules A and B. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">order</td><td>specify whether the atoms of molecule A should be first, or those in molecule B. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> object representing the combined supermolecule </dd></dl>
 
 </div>
 </div>
