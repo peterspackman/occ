@@ -1,5 +1,5 @@
 #include <occ/isosurface/volume_calculator.h>
-#include <occ/main/point_functors.h>
+#include <occ/isosurface/point_functors.h>
 #include <occ/io/adaptive_grid.h>
 #include <occ/io/load_geometry.h>
 #include <occ/io/cifparser.h>
@@ -12,12 +12,83 @@
 
 namespace occ::isosurface {
 
-using occ::main::ElectronDensityFunctor;
-using occ::main::EspFunctor;
-using occ::main::EEQEspFunctor;
-using occ::main::PromolDensityFunctor;
-using occ::main::DeformationDensityFunctor;
-using occ::main::XCDensityFunctor;
+// Helper function to compute adaptive bounds for any functor and apply user constraints
+template<typename Functor>
+void apply_adaptive_bounds(Functor& func, const VolumeGenerationParameters& params,
+                          const std::vector<core::Atom>& atoms, VolumeData& volume) {
+    typename io::AdaptiveGridBounds<Functor>::Parameters adapt_params;
+    adapt_params.value_threshold = params.value_threshold;
+    adapt_params.extra_buffer = params.buffer_distance * occ::units::ANGSTROM_TO_BOHR;
+    
+    auto bounds_calc = io::make_adaptive_bounds(func, adapt_params);
+    core::Molecule mol(atoms);
+    auto raw_bounds = bounds_calc.compute(mol);
+    
+    // Check what user specified to determine what to preserve
+    bool user_specified_steps = !params.steps.empty();
+    bool user_specified_spacing = !params.da.empty() || !params.db.empty() || !params.dc.empty();
+    
+    if (user_specified_steps && !user_specified_spacing) {
+        // User specified steps - keep those, adjust spacing to fit adaptive bounds
+        occ::log::info("Preserving user-specified steps: {} x {} x {}", 
+                      volume.steps(0), volume.steps(1), volume.steps(2));
+        
+        // Calculate new basis vectors to fit the adaptive extent with user's steps
+        Vec3 extent = raw_bounds.max_corner() - raw_bounds.origin;
+        volume.origin = raw_bounds.origin;
+        volume.basis = Mat3::Zero();
+        volume.basis(0,0) = extent(0) / volume.steps(0);
+        volume.basis(1,1) = extent(1) / volume.steps(1);
+        volume.basis(2,2) = extent(2) / volume.steps(2);
+        
+        occ::log::info("Adjusted spacing to fit adaptive bounds: [{:.3f}, {:.3f}, {:.3f}] Bohr/step",
+                      volume.basis(0,0), volume.basis(1,1), volume.basis(2,2));
+        
+    } else if (user_specified_spacing && !user_specified_steps) {
+        // User specified spacing - keep that, adjust steps to fit adaptive bounds
+        occ::log::info("Preserving user-specified spacing");
+        
+        // Keep the user's basis vectors, calculate steps to fit adaptive bounds
+        Vec3 extent = raw_bounds.max_corner() - raw_bounds.origin;
+        volume.origin = raw_bounds.origin;
+        // volume.basis already set by user in setup_grid_parameters
+        
+        // Calculate steps needed for this extent with user's spacing
+        volume.steps(0) = std::max(1, static_cast<int>(std::ceil(extent(0) / std::abs(volume.basis(0,0)))));
+        volume.steps(1) = std::max(1, static_cast<int>(std::ceil(extent(1) / std::abs(volume.basis(1,1)))));
+        volume.steps(2) = std::max(1, static_cast<int>(std::ceil(extent(2) / std::abs(volume.basis(2,2)))));
+        
+        occ::log::info("Adjusted steps to fit adaptive bounds: {} x {} x {}",
+                      volume.steps(0), volume.steps(1), volume.steps(2));
+        
+    } else {
+        // Neither or both specified - use adaptive bounds as-is (original behavior)
+        volume.origin = raw_bounds.origin;
+        volume.basis = raw_bounds.basis;
+        volume.steps = raw_bounds.steps;
+        
+        occ::log::info("Using adaptive bounds as-is: {} x {} x {} points",
+                      volume.steps(0), volume.steps(1), volume.steps(2));
+    }
+    
+    // Log final grid information
+    occ::log::info("Grid origin: [{:.3f}, {:.3f}, {:.3f}] Bohr", 
+                  volume.origin(0), volume.origin(1), volume.origin(2));
+    
+    Vec3 corner = volume.origin + Vec3(volume.steps(0) * volume.basis(0,0),
+                                      volume.steps(1) * volume.basis(1,1), 
+                                      volume.steps(2) * volume.basis(2,2));
+    occ::log::info("Grid extent: [{:.3f}, {:.3f}, {:.3f}] to [{:.3f}, {:.3f}, {:.3f}] Bohr",
+                  volume.origin(0), volume.origin(1), volume.origin(2),
+                  corner(0), corner(1), corner(2));
+    
+    Vec3 spacing = volume.basis.diagonal();
+    occ::log::info("Final grid spacing: [{:.3f}, {:.3f}, {:.3f}] Bohr/step", 
+                  spacing(0), spacing(1), spacing(2));
+    
+    double grid_volume = std::abs(volume.basis.determinant()) * volume.steps.prod();
+    occ::log::info("Final grid volume: {:.2f} Bohr³", grid_volume);
+}
 
 // Setup methods
 void VolumeCalculator::set_wavefunction(const occ::qm::Wavefunction& wfn) {
@@ -87,6 +158,33 @@ OutputFormat VolumeCalculator::format_from_string(const std::string& name) {
         return OutputFormat::PGrid;
     }
     throw std::runtime_error("Unknown output format: " + name);
+}
+
+void VolumeCalculator::list_supported_properties() {
+    occ::log::info("Supported properties for cube generation:");
+    occ::log::info("");
+    occ::log::info("Electron density properties:");
+    occ::log::info("  electron_density, density, rho  - Total electron density (requires wavefunction)");
+    occ::log::info("  rho_alpha                       - Alpha spin density (requires wavefunction)");  
+    occ::log::info("  rho_beta                        - Beta spin density (requires wavefunction)");
+    occ::log::info("");
+    occ::log::info("Electrostatic properties:");
+    occ::log::info("  esp                             - Electrostatic potential (requires wavefunction)");
+    occ::log::info("  eeqesp                          - EEQ electrostatic potential (atomic charges only)");
+    occ::log::info("");
+    occ::log::info("Molecular properties:");
+    occ::log::info("  promolecule                     - Promolecule density (atomic densities)");
+    occ::log::info("  deformation_density             - Deformation density (requires wavefunction)");
+    occ::log::info("  xc                              - Exchange-correlation density (requires wavefunction)");
+    occ::log::info("");
+    occ::log::info("Crystal properties:");
+    occ::log::info("  void                            - Crystal void space (requires --crystal)");
+    occ::log::info("");
+    occ::log::info("Notes:");
+    occ::log::info("  - Properties marked 'requires wavefunction' need wavefunction files (owf.json, .fchk, .molden, etc.)");
+    occ::log::info("  - Properties marked 'requires --crystal' need --crystal with .cif file");
+    occ::log::info("  - Use --orbital to specify which orbital for electron density properties");
+    occ::log::info("  - Use --spin to specify alpha/beta spin components");
 }
 
 // Requirements checking (static)
@@ -212,23 +310,86 @@ void VolumeCalculator::setup_grid_parameters(VolumeData& volume, const VolumeGen
         }
     }
     
-    // Now set basis vectors based on final step counts
-    if (requires_crystal(params.property) && m_crystal.has_value()) {
-        const auto& crystal = m_crystal.value();
-        const auto& cell = crystal.unit_cell();
+    // Handle adaptive bounds if requested (only for molecular calculations, not crystals)
+    if (params.adaptive_bounds && !requires_crystal(params.property)) {
+        occ::log::info("Computing adaptive bounds for property: {}", property_to_string(params.property));
+        occ::log::info("Adaptive parameters: threshold={:.2e}, buffer={:.1f} Å", 
+                      params.value_threshold, params.buffer_distance);
         
-        // Grid basis = unit cell vectors (in Bohr) / number of steps
-        volume.basis.col(0) = cell.direct().col(0) * occ::units::ANGSTROM_TO_BOHR / volume.steps(0);
-        volume.basis.col(1) = cell.direct().col(1) * occ::units::ANGSTROM_TO_BOHR / volume.steps(1); 
-        volume.basis.col(2) = cell.direct().col(2) * occ::units::ANGSTROM_TO_BOHR / volume.steps(2);
-        
-        occ::log::info("Using crystal unit cell grid: {} x {} x {} steps", 
-                      volume.steps(0), volume.steps(1), volume.steps(2));
-        occ::log::info("Unit cell: a={:.3f} b={:.3f} c={:.3f} Å", 
-                      cell.a(), cell.b(), cell.c());
-    } else {
-        // Regular molecular calculation - use diagonal basis
-        volume.basis.diagonal().array() = 0.2; // Default 0.2 Bohr spacing
+        // Create adaptive grid based on the property
+        switch (params.property) {
+            case VolumePropertyKind::ElectronDensity:
+            case VolumePropertyKind::ElectronDensityAlpha: 
+            case VolumePropertyKind::ElectronDensityBeta: {
+                if (m_wavefunction.has_value()) {
+                    ElectronDensityFunctor func(m_wavefunction.value());
+                    func.mo_index = params.mo_number;
+                    if (params.property == VolumePropertyKind::ElectronDensityAlpha) {
+                        func.spin = SpinConstraint::Alpha;
+                    } else if (params.property == VolumePropertyKind::ElectronDensityBeta) {
+                        func.spin = SpinConstraint::Beta;
+                    }
+                    apply_adaptive_bounds(func, params, atoms, volume);
+                }
+                break;
+            }
+            case VolumePropertyKind::ElectricPotential: {
+                if (m_wavefunction.has_value()) {
+                    EspFunctor func(m_wavefunction.value());
+                    apply_adaptive_bounds(func, params, atoms, volume);
+                }
+                break;
+            }
+            case VolumePropertyKind::EEQ_ESP: {
+                EEQEspFunctor func(atoms);
+                apply_adaptive_bounds(func, params, atoms, volume);
+                break;
+            }
+            case VolumePropertyKind::PromoleculeDensity: {
+                PromolDensityFunctor func(atoms);
+                apply_adaptive_bounds(func, params, atoms, volume);
+                break;
+            }
+            case VolumePropertyKind::DeformationDensity: {
+                if (m_wavefunction.has_value()) {
+                    DeformationDensityFunctor func(m_wavefunction.value());
+                    apply_adaptive_bounds(func, params, atoms, volume);
+                }
+                break;
+            }
+            case VolumePropertyKind::XCDensity: {
+                if (m_wavefunction.has_value()) {
+                    XCDensityFunctor func(m_wavefunction.value(), params.functional);
+                    apply_adaptive_bounds(func, params, atoms, volume);
+                }
+                break;
+            }
+            default:
+                occ::log::warn("Adaptive bounds not supported for property: {}, using regular grid", 
+                              property_to_string(params.property));
+                break;
+        }
+    }
+    
+    // If adaptive bounds were not used, set basis vectors based on final step counts
+    if (!params.adaptive_bounds) {
+        if (requires_crystal(params.property) && m_crystal.has_value()) {
+            const auto& crystal = m_crystal.value();
+            const auto& cell = crystal.unit_cell();
+            
+            // Grid basis = unit cell vectors (in Bohr) / number of steps
+            volume.basis.col(0) = cell.direct().col(0) * occ::units::ANGSTROM_TO_BOHR / volume.steps(0);
+            volume.basis.col(1) = cell.direct().col(1) * occ::units::ANGSTROM_TO_BOHR / volume.steps(1); 
+            volume.basis.col(2) = cell.direct().col(2) * occ::units::ANGSTROM_TO_BOHR / volume.steps(2);
+            
+            occ::log::info("Using crystal unit cell grid: {} x {} x {} steps", 
+                          volume.steps(0), volume.steps(1), volume.steps(2));
+            occ::log::info("Unit cell: a={:.3f} b={:.3f} c={:.3f} Å", 
+                          cell.a(), cell.b(), cell.c());
+        } else {
+            // Regular molecular calculation - use diagonal basis
+            volume.basis.diagonal().array() = 0.2; // Default 0.2 Bohr spacing
+        }
     }
     
     // Apply origin if specified (assumed to be in Bohr units)
@@ -294,14 +455,14 @@ void VolumeCalculator::fill_volume_data(VolumeData& volume, const VolumeGenerati
         }
         case VolumePropertyKind::ElectronDensityAlpha: {
             ElectronDensityFunctor func(m_wavefunction.value());
-            func.spin = occ::main::SpinConstraint::Alpha;
+            func.spin = SpinConstraint::Alpha;
             func.mo_index = params.mo_number;
             func(points, values);
             break;
         }
         case VolumePropertyKind::ElectronDensityBeta: {
             ElectronDensityFunctor func(m_wavefunction.value());
-            func.spin = occ::main::SpinConstraint::Beta;
+            func.spin = SpinConstraint::Beta;
             func.mo_index = params.mo_number;
             func(points, values);
             break;
@@ -399,14 +560,14 @@ Vec VolumeCalculator::evaluate_at_points(const Mat3N& points, const VolumeGenera
         }
         case VolumePropertyKind::ElectronDensityAlpha: {
             ElectronDensityFunctor func(m_wavefunction.value());
-            func.spin = occ::main::SpinConstraint::Alpha;
+            func.spin = SpinConstraint::Alpha;
             func.mo_index = params.mo_number;
             func(points, result);
             break;
         }
         case VolumePropertyKind::ElectronDensityBeta: {
             ElectronDensityFunctor func(m_wavefunction.value());
-            func.spin = occ::main::SpinConstraint::Beta;
+            func.spin = SpinConstraint::Beta;
             func.mo_index = params.mo_number;
             func(points, result);
             break;

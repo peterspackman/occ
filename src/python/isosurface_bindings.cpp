@@ -6,6 +6,8 @@
 #include <nanobind/stl/vector.h>
 #include <occ/io/ply.h>
 #include <occ/isosurface/isosurface.h>
+#include <occ/isosurface/volume_calculator.h>
+#include <occ/isosurface/volume_data.h>
 
 using namespace occ::isosurface;
 
@@ -165,6 +167,118 @@ nb::module_ register_isosurface_bindings(nb::module_ &m) {
              return result;
            })
       .def("num_calls", &ElectricPotentialFunctorPC::num_calls);
+
+  // Volume generation bindings
+  nb::enum_<VolumePropertyKind>(m, "VolumePropertyKind")
+      .value("ElectronDensity", VolumePropertyKind::ElectronDensity)
+      .value("ElectronDensityAlpha", VolumePropertyKind::ElectronDensityAlpha)
+      .value("ElectronDensityBeta", VolumePropertyKind::ElectronDensityBeta)
+      .value("ElectricPotential", VolumePropertyKind::ElectricPotential)
+      .value("EEQ_ESP", VolumePropertyKind::EEQ_ESP)
+      .value("PromoleculeDensity", VolumePropertyKind::PromoleculeDensity)
+      .value("DeformationDensity", VolumePropertyKind::DeformationDensity)
+      .value("XCDensity", VolumePropertyKind::XCDensity)
+      .value("CrystalVoid", VolumePropertyKind::CrystalVoid);
+
+  nb::enum_<SpinConstraint>(m, "SpinConstraint")
+      .value("Total", SpinConstraint::Total)
+      .value("Alpha", SpinConstraint::Alpha)
+      .value("Beta", SpinConstraint::Beta);
+
+  nb::class_<VolumeGenerationParameters>(m, "VolumeGenerationParameters")
+      .def(nb::init<>())
+      .def_rw("property", &VolumeGenerationParameters::property)
+      .def_rw("spin", &VolumeGenerationParameters::spin)
+      .def_rw("functional", &VolumeGenerationParameters::functional)
+      .def_rw("mo_number", &VolumeGenerationParameters::mo_number)
+      .def_rw("steps", &VolumeGenerationParameters::steps)
+      .def_rw("da", &VolumeGenerationParameters::da)
+      .def_rw("db", &VolumeGenerationParameters::db)
+      .def_rw("dc", &VolumeGenerationParameters::dc)
+      .def_rw("origin", &VolumeGenerationParameters::origin)
+      .def_rw("adaptive_bounds", &VolumeGenerationParameters::adaptive_bounds)
+      .def_rw("value_threshold", &VolumeGenerationParameters::value_threshold)
+      .def_rw("buffer_distance", &VolumeGenerationParameters::buffer_distance)
+      .def_rw("crystal_filename", &VolumeGenerationParameters::crystal_filename);
+
+  nb::class_<VolumeData>(m, "VolumeData")
+      .def_ro("name", &VolumeData::name)
+      .def_ro("property", &VolumeData::property)
+      .def("nx", &VolumeData::nx)
+      .def("ny", &VolumeData::ny)
+      .def("nz", &VolumeData::nz)
+      .def("total_points", &VolumeData::total_points)
+      .def_ro("origin", &VolumeData::origin)
+      .def_ro("basis", &VolumeData::basis)
+      .def_ro("steps", &VolumeData::steps)
+      .def("get_data", [](const VolumeData &v) {
+        // Return flattened data - Python can reshape as needed
+        std::vector<double> result;
+        result.reserve(v.total_points());
+        
+        for (int i = 0; i < v.nx(); i++) {
+            for (int j = 0; j < v.ny(); j++) {
+                for (int k = 0; k < v.nz(); k++) {
+                    result.push_back(v.data(i, j, k));
+                }
+            }
+        }
+        
+        return result;
+      }, "Get volume data as flattened vector (use reshape((nx, ny, nz)) in Python)");
+
+  nb::class_<VolumeCalculator>(m, "VolumeCalculator")
+      .def(nb::init<>())
+      .def("set_wavefunction", &VolumeCalculator::set_wavefunction)
+      .def("set_molecule", &VolumeCalculator::set_molecule)
+      .def("compute_volume", &VolumeCalculator::compute_volume)
+      .def("volume_as_cube_string", &VolumeCalculator::volume_as_cube_string)
+      .def_static("compute_density_volume", &VolumeCalculator::compute_density_volume)
+      .def_static("compute_mo_volume", &VolumeCalculator::compute_mo_volume);
+
+  // Convenience functions for common volume types
+  m.def("generate_electron_density_cube", 
+        [](const occ::qm::Wavefunction &wfn, int nx, int ny, int nz) {
+          VolumeCalculator calc;
+          calc.set_wavefunction(wfn);
+          
+          VolumeGenerationParameters params;
+          params.property = VolumePropertyKind::ElectronDensity;
+          params.steps = {nx, ny, nz};
+          
+          auto volume = calc.compute_volume(params);
+          return calc.volume_as_cube_string(volume);
+        }, "wavefunction"_a, "nx"_a, "ny"_a, "nz"_a,
+        "Generate electron density cube file as string");
+
+  m.def("generate_mo_cube",
+        [](const occ::qm::Wavefunction &wfn, int mo_index, int nx, int ny, int nz) {
+          VolumeCalculator calc;
+          calc.set_wavefunction(wfn);
+          
+          VolumeGenerationParameters params;
+          params.property = VolumePropertyKind::ElectronDensity;
+          params.mo_number = mo_index;
+          params.steps = {nx, ny, nz};
+          
+          auto volume = calc.compute_volume(params);
+          return calc.volume_as_cube_string(volume);
+        }, "wavefunction"_a, "mo_index"_a, "nx"_a, "ny"_a, "nz"_a,
+        "Generate molecular orbital cube file as string");
+
+  m.def("generate_esp_cube",
+        [](const occ::qm::Wavefunction &wfn, int nx, int ny, int nz) {
+          VolumeCalculator calc;
+          calc.set_wavefunction(wfn);
+          
+          VolumeGenerationParameters params;
+          params.property = VolumePropertyKind::ElectricPotential;
+          params.steps = {nx, ny, nz};
+          
+          auto volume = calc.compute_volume(params);
+          return calc.volume_as_cube_string(volume);
+        }, "wavefunction"_a, "nx"_a, "ny"_a, "nz"_a,
+        "Generate electrostatic potential cube file as string");
 
   return m;
 }

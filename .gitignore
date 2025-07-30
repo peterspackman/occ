@@ -13,6 +13,7 @@ __pycache__
 occjs.js
 occjs.wasm
 wasm/
+examples/*
 
 # Node.js
 node_modules/
@@ -29,3 +30,5 @@ packages/occjs/examples/share/
 
 # Coverage
 coverage/
+*.cube
+*.pgrid

@@ -133,7 +133,10 @@ export async function wavefunctionFromString(content, format) {
 }
 
 
-// Export the main functions and constants
+// Re-export all bindings from the WASM module
+export * from './occjs.js';
+
+// Export the main functions and constants (including our convenience methods)
 export {
   // Core module loading
   loadOCC,

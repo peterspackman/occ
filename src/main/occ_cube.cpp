@@ -11,10 +11,10 @@
 #include <occ/io/periodic_grid.h>
 #include <occ/io/xyz.h>
 #include <occ/main/occ_cube.h>
-#include <occ/main/point_functors.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/isosurface/volume_calculator.h>
 #include <occ/isosurface/volume_data.h>
+#include <occ/isosurface/point_functors.h>
 #include <scn/scan.h>
 #include <memory>
 
@@ -27,6 +27,13 @@ using occ::core::Element;
 using occ::core::Molecule;
 using occ::io::Cube;
 using occ::qm::Wavefunction;
+using occ::isosurface::ElectronDensityFunctor;
+using occ::isosurface::EspFunctor;
+using occ::isosurface::EEQEspFunctor;
+using occ::isosurface::PromolDensityFunctor;
+using occ::isosurface::DeformationDensityFunctor;
+using occ::isosurface::XCDensityFunctor;
+using occ::isosurface::SpinConstraint;
 
 namespace occ::main {
 
@@ -93,9 +100,8 @@ CLI::App *add_cube_subcommand(CLI::App &app) {
       "spin", config->spin,
       "spin (for e.g. electron density) [alpha,beta,default=both]");
 
-  cube->add_option(
-      "--mo", config->mo_number,
-      "MO number (for e.g. electron density) [default=-1 i.e. all]");
+  cube->add_option("--orbital", config->orbitals_input,
+                   "orbital specification (e.g., 'homo', 'lumo', 'homo-1', 'lumo+2', '5', 'all') [default=all]");
   cube->add_option("--functional", config->functional,
                    "DFT functional for XC density [default=blyp]");
 
@@ -140,6 +146,9 @@ CLI::App *add_cube_subcommand(CLI::App &app) {
                    "CIF file for crystal structure (enables symmetry-aware pgrid generation)");
   cube->add_flag("--unit-cell", config->unit_cell_only,
                  "Generate grid for unit cell only (requires --crystal)");
+
+  cube->add_flag("--list-properties", config->list_properties,
+                 "List all supported properties and exit");
 
   cube->fallthrough();
   cube->callback([config]() { run_cube_subcommand(*config); });
@@ -255,6 +264,12 @@ void evaluate_custom_points(const Wavefunction &wfn, CubeConfig const &config,
 }
 
 void run_cube_subcommand(CubeConfig const &config_in) {
+  // Handle list-properties flag first
+  if (config_in.list_properties) {
+    isosurface::VolumeCalculator::list_supported_properties();
+    return;
+  }
+  
   // Make a mutable copy so we can modify for convenience features
   CubeConfig config = config_in;
   Wavefunction wfn;
@@ -276,6 +291,28 @@ void run_cube_subcommand(CubeConfig const &config_in) {
     occ::log::info("Num beta:         {}", wfn.mo.n_beta);
     occ::log::info("Num AOs:          {}", wfn.mo.n_ao);
     have_wfn = true;
+    
+    // Parse orbital specification if property uses wavefunction
+    auto property_kind = isosurface::VolumeCalculator::property_from_string(config.property);
+    if (isosurface::VolumeCalculator::requires_wavefunction(property_kind)) {
+      if (config.orbitals_input == "all") {
+        // "all" means use all orbitals (mo_number = -1, which is already the default)
+        occ::log::info("Using all orbitals for density calculation");
+      } else {
+        try {
+          auto orbital_indices = isosurface::parse_orbital_descriptions(config.orbitals_input);
+          if (orbital_indices.size() != 1) {
+            throw std::runtime_error("Cube generation supports only one orbital at a time");
+          }
+          config.mo_number = orbital_indices[0].resolve(wfn.mo.n_alpha, wfn.mo.n_beta);
+          occ::log::info("Orbital specification '{}' resolved to MO index {}", 
+                        config.orbitals_input, config.mo_number);
+        } catch (const std::exception& e) {
+          throw std::runtime_error(fmt::format("Invalid orbital specification '{}': {}", 
+                                              config.orbitals_input, e.what()));
+        }
+      }
+    }
   } else if (!is_cif_input) {
     Molecule m = occ::io::molecule_from_xyz_file(config.input_filename);
     wfn.atoms = m.atoms();
@@ -333,6 +370,9 @@ void run_cube_subcommand(CubeConfig const &config_in) {
   
   // Compute volume
   occ::log::info("Computing volume for property: {}", config.property);
+  if (config.mo_number > -1) {
+    occ::log::info("Specified MO number:    {}", config.mo_number);
+  }
   isosurface::VolumeData volume = calc.compute_volume(volume_params);
   
   // Save results in the requested format

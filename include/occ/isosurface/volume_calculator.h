@@ -85,6 +85,9 @@ public:
     static SpinConstraint spin_from_string(const std::string& name);
     static OutputFormat format_from_string(const std::string& name);
     
+    // List all supported properties
+    static void list_supported_properties();
+    
     // Requirements checking (static - no state needed)
     static bool requires_wavefunction(VolumePropertyKind property);
     static bool requires_crystal(VolumePropertyKind property);
