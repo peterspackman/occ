@@ -98,6 +98,7 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def("vdw_radii", &Molecule::vdw_radii)
       .def("molar_mass", &Molecule::molar_mass)
       .def("atoms", &Molecule::atoms)
+      .def("bonds", &Molecule::bonds)
       .def("center_of_mass", &Molecule::center_of_mass)
       .def("centroid", &Molecule::centroid)
       .def("unit_cell_molecule_idx", &Molecule::unit_cell_molecule_idx)
