@@ -266,13 +266,19 @@ var annotated_dup =
         [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ]
       ] ],
       [ "isosurface", "namespaceocc_1_1isosurface.html", [
+        [ "pfimpl", "namespaceocc_1_1isosurface_1_1pfimpl.html", [
+          [ "AtomInterpolator", "structocc_1_1isosurface_1_1pfimpl_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1pfimpl_1_1AtomInterpolator" ],
+          [ "InterpolatorParams", "structocc_1_1isosurface_1_1pfimpl_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1pfimpl_1_1InterpolatorParams" ]
+        ] ],
         [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
         [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
         [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
         [ "DeformationDensityFunctor", "classocc_1_1isosurface_1_1DeformationDensityFunctor.html", "classocc_1_1isosurface_1_1DeformationDensityFunctor" ],
+        [ "EEQEspFunctor", "structocc_1_1isosurface_1_1EEQEspFunctor.html", "structocc_1_1isosurface_1_1EEQEspFunctor" ],
         [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
         [ "ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC" ],
         [ "ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", "classocc_1_1isosurface_1_1ElectronDensityFunctor" ],
+        [ "EspFunctor", "structocc_1_1isosurface_1_1EspFunctor.html", "structocc_1_1isosurface_1_1EspFunctor" ],
         [ "ExpFunc", "structocc_1_1isosurface_1_1ExpFunc.html", "structocc_1_1isosurface_1_1ExpFunc" ],
         [ "GenericStockholderWeightFunctor", "classocc_1_1isosurface_1_1GenericStockholderWeightFunctor.html", "classocc_1_1isosurface_1_1GenericStockholderWeightFunctor" ],
         [ "InterpolatorParams", "structocc_1_1isosurface_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1InterpolatorParams" ],
@@ -286,12 +292,17 @@ var annotated_dup =
         [ "MCElectronDensityFunctor", "classocc_1_1isosurface_1_1MCElectronDensityFunctor.html", "classocc_1_1isosurface_1_1MCElectronDensityFunctor" ],
         [ "MCPromoleculeDensityFunctor", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor.html", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor" ],
         [ "OrbitalIndex", "structocc_1_1isosurface_1_1OrbitalIndex.html", "structocc_1_1isosurface_1_1OrbitalIndex" ],
+        [ "PromolDensityFunctor", "structocc_1_1isosurface_1_1PromolDensityFunctor.html", "structocc_1_1isosurface_1_1PromolDensityFunctor" ],
         [ "RadiusMetric", "classocc_1_1isosurface_1_1RadiusMetric.html", "classocc_1_1isosurface_1_1RadiusMetric" ],
         [ "RInvFunc", "structocc_1_1isosurface_1_1RInvFunc.html", "structocc_1_1isosurface_1_1RInvFunc" ],
         [ "StockholderWeightFunctor", "classocc_1_1isosurface_1_1StockholderWeightFunctor.html", "classocc_1_1isosurface_1_1StockholderWeightFunctor" ],
         [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
         [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ],
-        [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ]
+        [ "VolumeCalculator", "classocc_1_1isosurface_1_1VolumeCalculator.html", "classocc_1_1isosurface_1_1VolumeCalculator" ],
+        [ "VolumeData", "structocc_1_1isosurface_1_1VolumeData.html", "structocc_1_1isosurface_1_1VolumeData" ],
+        [ "VolumeGenerationParameters", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html", "structocc_1_1isosurface_1_1VolumeGenerationParameters" ],
+        [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ],
+        [ "XCDensityFunctor", "structocc_1_1isosurface_1_1XCDensityFunctor.html", "structocc_1_1isosurface_1_1XCDensityFunctor" ]
       ] ],
       [ "main", "namespaceocc_1_1main.html", [
         [ "pfimpl", "namespaceocc_1_1main_1_1pfimpl.html", [

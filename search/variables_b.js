@@ -11,5 +11,5 @@ var searchData=
   ['kinetic_8',['kinetic',['../structocc_1_1qm_1_1Energy.html#ad9300be23b3273cef7ded0b9fc4a4847',1,'occ::qm::Energy']]],
   ['kj_5fper_5fkcal_9',['kj_per_kcal',['../namespaceocc_1_1constants.html#a8dd58349887594a900701a39d9e04b8c',1,'occ::constants']]],
   ['kj_5fto_5fkcal_10',['KJ_TO_KCAL',['../namespaceocc_1_1units.html#a225cac13d440178e598a1854c51a13c1',1,'occ::units']]],
-  ['ks_11',['ks',['../structocc_1_1main_1_1XCDensityFunctor.html#aedb72406736ad97709a139141dd5c2f4',1,'occ::main::XCDensityFunctor']]]
+  ['ks_11',['ks',['../structocc_1_1isosurface_1_1XCDensityFunctor.html#a4b4c263ece9848967b0a306be82551ba',1,'occ::isosurface::XCDensityFunctor::ks'],['../structocc_1_1main_1_1XCDensityFunctor.html#aedb72406736ad97709a139141dd5c2f4',1,'occ::main::XCDensityFunctor::ks']]]
 ];

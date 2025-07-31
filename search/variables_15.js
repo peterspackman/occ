@@ -15,7 +15,7 @@ var searchData=
   ['unique_5findex_12',['unique_index',['../structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html#a58cd5e96b9493e73fecc8543c11596b1',1,'occ::crystal::CrystalDimers::SymmetryRelatedDimer']]],
   ['unique_5finteraction_5fenergies_13',['unique_interaction_energies',['../structocc_1_1main_1_1CrystalSurfaceEnergies.html#a58649b6a0a8c9e5f16166d9ad1b875b3',1,'occ::main::CrystalSurfaceEnergies']]],
   ['unit_5fcell_14',['unit_cell',['../structocc_1_1io_1_1CrystalInput.html#ac7c38c56c8c868e0d9d10285cb160a86',1,'occ::io::CrystalInput']]],
-  ['unit_5fcell_5fonly_15',['unit_cell_only',['../structocc_1_1main_1_1CubeConfig.html#a740c631ec4cc8e872df0afc3ac17d0d1',1,'occ::main::CubeConfig']]],
+  ['unit_5fcell_5fonly_15',['unit_cell_only',['../structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ab0b6536acd41540069de2130e70e293e',1,'occ::isosurface::VolumeGenerationParameters::unit_cell_only'],['../structocc_1_1main_1_1CubeConfig.html#a740c631ec4cc8e872df0afc3ac17d0d1',1,'occ::main::CubeConfig::unit_cell_only']]],
   ['upper_16',['upper',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a4141f0b20c266a527ee5d3cdefcc6a7a',1,'occ::isosurface::AxisAlignedBoundingBox']]],
   ['use_5fasymmetric_5fpartition_17',['use_asymmetric_partition',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6d0620e67f1d034d53b640406231d8ba',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
   ['use_5fcrystal_5fpolarization_18',['use_crystal_polarization',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ac4af5c391c9ecef826297882d32984c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],

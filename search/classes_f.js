@@ -25,7 +25,7 @@ var searchData=
   ['position_22',['Position',['../structocc_1_1geometry_1_1MIndex_1_1Position.html',1,'occ::geometry::MIndex']]],
   ['posthfmethod_23',['PostHFMethod',['../classocc_1_1qm_1_1PostHFMethod.html',1,'occ::qm']]],
   ['progresstracker_24',['ProgressTracker',['../classocc_1_1core_1_1ProgressTracker.html',1,'occ::core']]],
-  ['promoldensityfunctor_25',['PromolDensityFunctor',['../structocc_1_1main_1_1PromolDensityFunctor.html',1,'occ::main']]],
+  ['promoldensityfunctor_25',['promoldensityfunctor',['../structocc_1_1isosurface_1_1PromolDensityFunctor.html',1,'occ::isosurface::PromolDensityFunctor'],['../structocc_1_1main_1_1PromolDensityFunctor.html',1,'occ::main::PromolDensityFunctor']]],
   ['promoleculedensity_26',['PromoleculeDensity',['../classocc_1_1slater_1_1PromoleculeDensity.html',1,'occ::slater']]],
   ['promoleculedensityshape_27',['PromoleculeDensityShape',['../structocc_1_1descriptors_1_1PromoleculeDensityShape.html',1,'occ::descriptors']]],
   ['propertyinfo_28',['PropertyInfo',['../structtinyply_1_1PropertyInfo.html',1,'tinyply']]]

@@ -31,10 +31,11 @@ var searchData=
   ['correlation_28',['Correlation',['../classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6a3287afc1cc6cb61e6100019d1af3ab29',1,'occ::dft::DensityFunctional']]],
   ['coulomb_29',['coulomb',['../namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa13a55be71f3a6a4c9ea356833df823c4',1,'occ::qm::cint']]],
   ['covalent_30',['Covalent',['../classocc_1_1isosurface_1_1RadiusMetric.html#aa64744e03a919ce49762b023f568afcaa4310e172abc8f907811dfa450c053a94',1,'occ::isosurface::RadiusMetric']]],
-  ['crystalvoid_31',['CrystalVoid',['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb',1,'occ::isosurface']]],
+  ['crystalvoid_31',['crystalvoid',['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a952816358b862ae659756eaacb56a8cb',1,'occ::isosurface::CrystalVoid'],['../namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a952816358b862ae659756eaacb56a8cb',1,'occ::isosurface::CrystalVoid']]],
   ['cs_32',['Cs',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a8b847cfae498e96e3fa08a56cb42b838',1,'occ::core']]],
-  ['cube_5fevaluation_33',['cube_evaluation',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a90cf67127ee5cbf329f72ff49a7d4fea',1,'occ::timing']]],
-  ['curvaturek1_34',['CurvatureK1',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659',1,'occ::isosurface']]],
-  ['curvaturek2_35',['CurvatureK2',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519',1,'occ::isosurface']]],
-  ['curvedness_36',['Curvedness',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba18e3943bcc5a590fe43753212fcece5b',1,'occ::isosurface']]]
+  ['cube_33',['Cube',['../namespaceocc_1_1isosurface.html#aabca8c101926d142c05fd0d4fd701930aa296104f0c61a9cf39f4824d05315e12',1,'occ::isosurface']]],
+  ['cube_5fevaluation_34',['cube_evaluation',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a90cf67127ee5cbf329f72ff49a7d4fea',1,'occ::timing']]],
+  ['curvaturek1_35',['CurvatureK1',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659',1,'occ::isosurface']]],
+  ['curvaturek2_36',['CurvatureK2',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519',1,'occ::isosurface']]],
+  ['curvedness_37',['Curvedness',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba18e3943bcc5a590fe43753212fcece5b',1,'occ::isosurface']]]
 ];

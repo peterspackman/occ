@@ -7,7 +7,7 @@ var searchData=
   ['xc_5fpotential_5fmatrix_3c_20unrestricted_2c_200_20_3e_4',['xc_potential_matrix&lt; Unrestricted, 0 &gt;',['../namespaceocc_1_1dft.html#a20654cb027dfc9b307f3c12c0a4b1a9f',1,'occ::dft']]],
   ['xc_5fpotential_5fmatrix_3c_20unrestricted_2c_201_20_3e_5',['xc_potential_matrix&lt; Unrestricted, 1 &gt;',['../namespaceocc_1_1dft.html#a0f9bc77776e89d8bf4ea65677f0639a5',1,'occ::dft']]],
   ['xc_5fpotential_5fmatrix_3c_20unrestricted_2c_202_20_3e_6',['xc_potential_matrix&lt; Unrestricted, 2 &gt;',['../namespaceocc_1_1dft.html#a13f24b9204a53c944f36e5d0a2e759af',1,'occ::dft']]],
-  ['xcdensityfunctor_7',['XCDensityFunctor',['../structocc_1_1main_1_1XCDensityFunctor.html#a8149aed2e4b04ec9c57fbe775a5e321f',1,'occ::main::XCDensityFunctor']]],
+  ['xcdensityfunctor_7',['xcdensityfunctor',['../structocc_1_1main_1_1XCDensityFunctor.html#a8149aed2e4b04ec9c57fbe775a5e321f',1,'occ::main::XCDensityFunctor::XCDensityFunctor()'],['../structocc_1_1isosurface_1_1XCDensityFunctor.html#af8ef940648686a33d4bc0e003ff77571',1,'occ::isosurface::XCDensityFunctor::XCDensityFunctor()']]],
   ['xdm_8',['XDM',['../classocc_1_1xdm_1_1XDM.html#a0f66da33942a8561d21662c0bc268bb3',1,'occ::xdm::XDM']]],
   ['xdm_5fdispersion_5fenergy_9',['xdm_dispersion_energy',['../namespaceocc_1_1xdm.html#a74b21052ae1b6350a3098f2403dea2b6',1,'occ::xdm']]],
   ['xdm_5fdispersion_5finteraction_5fenergy_10',['xdm_dispersion_interaction_energy',['../namespaceocc_1_1xdm.html#acd14e46c74705f0a7827c57fd260c14f',1,'occ::xdm']]],

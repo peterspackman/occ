@@ -3,13 +3,16 @@ var namespaceocc_1_1isosurface =
     [ "impl", "namespaceocc_1_1isosurface_1_1impl.html", [
       [ "remap_vertices", "namespaceocc_1_1isosurface_1_1impl.html#a380a10dfef8ea64e1e86698d1886fd52", null ]
     ] ],
+    [ "pfimpl", "namespaceocc_1_1isosurface_1_1pfimpl.html", "namespaceocc_1_1isosurface_1_1pfimpl" ],
     [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
     [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
     [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
     [ "DeformationDensityFunctor", "classocc_1_1isosurface_1_1DeformationDensityFunctor.html", "classocc_1_1isosurface_1_1DeformationDensityFunctor" ],
+    [ "EEQEspFunctor", "structocc_1_1isosurface_1_1EEQEspFunctor.html", "structocc_1_1isosurface_1_1EEQEspFunctor" ],
     [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
     [ "ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC" ],
     [ "ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", "classocc_1_1isosurface_1_1ElectronDensityFunctor" ],
+    [ "EspFunctor", "structocc_1_1isosurface_1_1EspFunctor.html", "structocc_1_1isosurface_1_1EspFunctor" ],
     [ "ExpFunc", "structocc_1_1isosurface_1_1ExpFunc.html", "structocc_1_1isosurface_1_1ExpFunc" ],
     [ "GenericStockholderWeightFunctor", "classocc_1_1isosurface_1_1GenericStockholderWeightFunctor.html", "classocc_1_1isosurface_1_1GenericStockholderWeightFunctor" ],
     [ "InterpolatorParams", "structocc_1_1isosurface_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1InterpolatorParams" ],
@@ -23,12 +26,18 @@ var namespaceocc_1_1isosurface =
     [ "MCElectronDensityFunctor", "classocc_1_1isosurface_1_1MCElectronDensityFunctor.html", "classocc_1_1isosurface_1_1MCElectronDensityFunctor" ],
     [ "MCPromoleculeDensityFunctor", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor.html", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor" ],
     [ "OrbitalIndex", "structocc_1_1isosurface_1_1OrbitalIndex.html", "structocc_1_1isosurface_1_1OrbitalIndex" ],
+    [ "PromolDensityFunctor", "structocc_1_1isosurface_1_1PromolDensityFunctor.html", "structocc_1_1isosurface_1_1PromolDensityFunctor" ],
     [ "RadiusMetric", "classocc_1_1isosurface_1_1RadiusMetric.html", "classocc_1_1isosurface_1_1RadiusMetric" ],
     [ "RInvFunc", "structocc_1_1isosurface_1_1RInvFunc.html", "structocc_1_1isosurface_1_1RInvFunc" ],
     [ "StockholderWeightFunctor", "classocc_1_1isosurface_1_1StockholderWeightFunctor.html", "classocc_1_1isosurface_1_1StockholderWeightFunctor" ],
     [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
     [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ],
+    [ "VolumeCalculator", "classocc_1_1isosurface_1_1VolumeCalculator.html", "classocc_1_1isosurface_1_1VolumeCalculator" ],
+    [ "VolumeData", "structocc_1_1isosurface_1_1VolumeData.html", "structocc_1_1isosurface_1_1VolumeData" ],
+    [ "VolumeGenerationParameters", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html", "structocc_1_1isosurface_1_1VolumeGenerationParameters" ],
     [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ],
+    [ "XCDensityFunctor", "structocc_1_1isosurface_1_1XCDensityFunctor.html", "structocc_1_1isosurface_1_1XCDensityFunctor" ],
+    [ "AtomList", "namespaceocc_1_1isosurface.html#ae204e804e4727bc8cb19890ab2e38950", null ],
     [ "LinearInterpolatorFloat", "namespaceocc_1_1isosurface.html#a5c2777640a8f63915e0d79fdcc302f6c", null ],
     [ "Property", "namespaceocc_1_1isosurface.html#ad0741cfba8f9bd491d0c150e4b6dba3d", null ],
     [ "PropertyMap", "namespaceocc_1_1isosurface.html#a069d1c0243251e90060daf8cb7dc75fc", null ],
@@ -36,6 +45,11 @@ var namespaceocc_1_1isosurface =
     [ "GridInterpolation", "namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40e", [
       [ "NearestPoint", "namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40eaa93453babc5efe763d5a2a1c6958d2b3", null ],
       [ "Trilinear", "namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40ea969a7b6f1f3951ef293b3ff281dc293d", null ]
+    ] ],
+    [ "OutputFormat", "namespaceocc_1_1isosurface.html#aabca8c101926d142c05fd0d4fd701930", [
+      [ "Cube", "namespaceocc_1_1isosurface.html#aabca8c101926d142c05fd0d4fd701930aa296104f0c61a9cf39f4824d05315e12", null ],
+      [ "GGrid", "namespaceocc_1_1isosurface.html#aabca8c101926d142c05fd0d4fd701930a28448332007b6e39a3470abe5585aa41", null ],
+      [ "PGrid", "namespaceocc_1_1isosurface.html#aabca8c101926d142c05fd0d4fd701930a1a329a84cd80d2db9a7de79a3d353c7b", null ]
     ] ],
     [ "PropertyKind", "namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb", [
       [ "Dnorm", "namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbac38848044353478441149cd11add5ada", null ],
@@ -58,6 +72,11 @@ var namespaceocc_1_1isosurface =
       [ "CurvatureK1", "namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659", null ],
       [ "CurvatureK2", "namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519", null ]
     ] ],
+    [ "SpinConstraint", "namespaceocc_1_1isosurface.html#ae0568101b819c30a4333eec98499134c", [
+      [ "Total", "namespaceocc_1_1isosurface.html#ae0568101b819c30a4333eec98499134ca96b0141273eabab320119c467cdcaf17", null ],
+      [ "Alpha", "namespaceocc_1_1isosurface.html#ae0568101b819c30a4333eec98499134ca6132295fcf5570fb8b0a944ef322a598", null ],
+      [ "Beta", "namespaceocc_1_1isosurface.html#ae0568101b819c30a4333eec98499134ca0b87d66b88c72957dfea8c9605016442", null ]
+    ] ],
     [ "SurfaceKind", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726", [
       [ "PromoleculeDensity", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726ae967f43f155367921c6672f4d67f09ef", null ],
       [ "Hirshfeld", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a03f7d114a72c0750a68d22ddf7b72928", null ],
@@ -73,6 +92,17 @@ var namespaceocc_1_1isosurface =
       [ "VDWLogSumExp", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a3687d6bd835f5dc16f3febf3293e9cd8", null ],
       [ "HSRinv", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a67f0920ec189ae8cb64831fd777a62ca", null ],
       [ "HSExp", "namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a93e83e2a78cfbe40d3bfef9aebaa7cf0", null ]
+    ] ],
+    [ "VolumePropertyKind", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172", [
+      [ "ElectronDensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172ad47101755289809d537b90d5f1737add", null ],
+      [ "ElectronDensityAlpha", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172ae4a5648c0000e47002d5d8da523369b5", null ],
+      [ "ElectronDensityBeta", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172af748802216b517731e9d2d0d4945403e", null ],
+      [ "ElectricPotential", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a870c5ba524d749e7941206cfd1fce154", null ],
+      [ "EEQ_ESP", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a7f7174ff4bb5bc2bae39e4fb61ad59cc", null ],
+      [ "PromoleculeDensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172ae967f43f155367921c6672f4d67f09ef", null ],
+      [ "DeformationDensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172ab6a4c26ef4ae489affedf8ddbbd75432", null ],
+      [ "XCDensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a663338112696cbace1bdf50d77c7285d", null ],
+      [ "CrystalVoid", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a952816358b862ae659756eaacb56a8cb", null ]
     ] ],
     [ "available_surface_types", "namespaceocc_1_1isosurface.html#a245fa3a4f90b584784c01f35b671d15d", null ],
     [ "BatchFunctor", "namespaceocc_1_1isosurface.html#a76c5699ee000bfa8743cee506ac0a640", null ],
