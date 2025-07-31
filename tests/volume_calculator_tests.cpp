@@ -292,7 +292,7 @@ TEST_CASE("VolumeCalculator custom points evaluation", "[volume_calculator]") {
     SECTION("evaluate at custom points") {
         // Define just 2 test points instead of 3
         Mat3N points(3, 2);
-        points.col(0) = Vec3(0.0, 0.0, 0.0);   // At atom
+        points.col(0) = Vec3(0.2, 0.0, 0.0);   // Near atom (0.2 Bohr away)
         points.col(1) = Vec3(2.0, 0.0, 0.0);   // Far away
         
         Vec values = calc.evaluate_at_points(points, params);
