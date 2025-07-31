@@ -116,6 +116,7 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
       .def_ro("atoms", &Wavefunction::atoms)
       .def("mulliken_charges", &Wavefunction::mulliken_charges)
       .def("multiplicity", &Wavefunction::multiplicity)
+      .def("copy", [](const Wavefunction &self) { return Wavefunction(self); })
       .def("rotate", &Wavefunction::apply_rotation)
       .def("translate", &Wavefunction::apply_translation)
       .def("transform", &Wavefunction::apply_transformation)

@@ -98,8 +98,13 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def("vdw_radii", &Molecule::vdw_radii)
       .def("molar_mass", &Molecule::molar_mass)
       .def("atoms", &Molecule::atoms)
+      .def("bonds", &Molecule::bonds)
       .def("center_of_mass", &Molecule::center_of_mass)
       .def("centroid", &Molecule::centroid)
+      .def("unit_cell_molecule_idx", &Molecule::unit_cell_molecule_idx)
+      .def("asymmetric_unit_idx", &Molecule::asymmetric_unit_idx)
+      .def("is_equivalent_to", &Molecule::is_equivalent_to)
+      .def("cell_shift", &Molecule::cell_shift)
       .def("rotate",
            nb::overload_cast<const Eigen::Affine3d &, Molecule::Origin>(
                &Molecule::rotate),
@@ -192,7 +197,8 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def_prop_ro("center_of_mass_distance", &Dimer::center_of_mass_distance)
       .def_prop_ro("centroid_distance", &Dimer::centroid_distance)
       .def("symmetry_relation", &Dimer::symmetry_relation)
-      .def_prop_rw("name", &Dimer::name, &Dimer::set_name);
+      .def_prop_rw("name", &Dimer::name, &Dimer::set_name)
+      .def("v_ab_com", &Dimer::v_ab_com);
 
   using occ::Mat6;
   using occ::core::ElasticTensor;

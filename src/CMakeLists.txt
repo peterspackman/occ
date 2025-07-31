@@ -30,6 +30,7 @@ set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/dft_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/isosurface_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/interaction_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occpy.cpp"
 )
