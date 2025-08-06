@@ -28,6 +28,26 @@ inline PES construct_pes_from_json(nlohmann::json j,
   int discarded_count = 0;
   double discarded_total_energy = 0.0;
 
+  double max_energy = 0.0;
+  if (settings.max_to_zero) {
+    if (settings.include_positive) {
+      occ::log::warn("Can't include positive and set max to zero.");
+    }
+    for (size_t mol_idx = 0; mol_idx < pairs.size(); mol_idx++) {
+      const auto &mol_pairs = pairs[mol_idx];
+      for (const auto &pair : mol_pairs) {
+        const auto &energies_json = pair["energies"];
+        double total_energy = energies_json["Total"];
+        if (total_energy > max_energy) {
+          max_energy = total_energy;
+        }
+      }
+    }
+    occ::log::info("Shifting all pair energies down by {:.4f} kJ/mol",
+                   max_energy);
+    pes.set_shift(max_energy);
+  }
+
   for (size_t mol_idx = 0; mol_idx < pairs.size(); mol_idx++) {
     const auto &mol_pairs = pairs[mol_idx];
     for (const auto &pair : mol_pairs) {
@@ -37,6 +57,7 @@ inline PES construct_pes_from_json(nlohmann::json j,
 
       const auto &energies_json = pair["energies"];
       double total_energy = energies_json["Total"];
+      total_energy -= max_energy;
       double r0 = pair["r"];
       if (total_energy > 0.0) {
         if (!settings.include_positive) {
@@ -192,10 +213,22 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   PES pes = construct_pes_from_json(j, pot_type, settings);
 
   double elat = pes.lattice_energy(); // per mole of unit cells
-  occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)", elat);
   occ::Mat6 cij = pes.compute_voigt_elastic_tensor_analytical(crystal.volume());
-  occ::log::info("Elastic Constant Matrix: (Units=GPa)");
-  print_matrix(cij, true);
+  if (settings.max_to_zero) {
+    double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
+    occ::log::info("Original lattice energy {:.3f} kJ/(mole unit cells)",
+                   og_elat);
+    occ::log::info("Shifted lattice energy {:.3f} kJ/(mole unit cells)", elat);
+    occ::log::info("Original elastic constant matrix: (Units=GPa)");
+    print_matrix(cij, true);
+    cij *= og_elat / elat;
+    occ::log::info("Shifted elastic constant matrix: (Units=GPa)");
+    print_matrix(cij, true);
+  } else {
+    occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)", elat);
+    occ::log::info("Elastic constant matrix: (Units=GPa)");
+    print_matrix(cij, true);
+  }
   save_matrix(cij, settings.output_file);
 }
 
@@ -223,6 +256,10 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   elastic_fit->add_flag("--include-positive", config->include_positive,
                         "Whether or not to include positive "
                         "dimer energies when fitting the elastic tensor.");
+
+  elastic_fit->add_flag("--max-to-zero", config->max_to_zero,
+                        "Whether or not to shift all pair energies "
+                        "such that the maximum is zero.");
 
   elastic_fit->callback([config]() { run_elastic_fit_subcommand(*config); });
 

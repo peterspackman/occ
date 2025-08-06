@@ -226,16 +226,17 @@ class PES {
 private:
   std::vector<std::unique_ptr<PotentialBase>> m_potentials;
   double m_scale_factor;
+  double m_shift_factor;
 
 public:
   explicit PES(double scale_factor_val = 1.0)
       : m_scale_factor(scale_factor_val) {}
 
-  void add_potential(std::unique_ptr<PotentialBase> pot) {
+  inline void add_potential(std::unique_ptr<PotentialBase> pot) {
     m_potentials.push_back(std::move(pot));
   }
 
-  double lattice_energy() const {
+  inline double lattice_energy() const {
     double energy = 0.0;
     for (const auto &pot : m_potentials) {
       energy += pot->energy();
@@ -243,9 +244,14 @@ public:
     return energy / 2.0;
   }
 
-  size_t number_of_potentials() const { return m_potentials.size(); }
+  inline size_t number_of_potentials() const { return m_potentials.size(); }
 
-  occ::Mat6 compute_voigt_elastic_tensor_analytical(double volume) const {
+  inline void set_shift(double shift) { m_shift_factor = shift; }
+
+  inline double shift() const { return m_shift_factor; }
+
+  inline occ::Mat6
+  compute_voigt_elastic_tensor_analytical(double volume) const {
     occ::Mat3 C[3][3];
     for (int i = 0; i < 3; ++i) {
       for (int j = 0; j < 3; ++j) {
@@ -318,6 +324,7 @@ struct EFSettings {
   std::string output_file = "elastic_tensor.txt";
   std::string potential_type = "lj";
   bool include_positive = false;
+  bool max_to_zero = false;
   double scale_factor = 2.0;
 };
 
