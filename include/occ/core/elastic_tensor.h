@@ -55,6 +55,8 @@ public:
   double component(int i, int j, int k, int l) const;
   double &component(int i, int j, int k, int l);
 
+  Vec6 eigenvalues() const;
+
   inline double *data() { return &m_components[0][0][0][0]; }
   inline double const *data() const { return &m_components[0][0][0][0]; }
 

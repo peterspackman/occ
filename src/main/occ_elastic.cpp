@@ -170,8 +170,7 @@ void run_elastic_subcommand(const ElasticSettings &settings) {
   occ::log::info("{:-<40s}\n{}", "Voigt S matrix (GPa^-1) ",
                  format_matrix(tensor.voigt_s()));
 
-  Eigen::SelfAdjointEigenSolver<occ::Mat6> solv(tensor.voigt_c());
-  occ::Vec6 e = solv.eigenvalues();
+  occ::Vec6 e = tensor.eigenvalues();
 
   occ::log::info("{:-<40s}", "Eigenvalues of Voigt C (GPa) ");
   occ::log::info("{:12.5f} {:12.5f} {:12.5f} {:12.5f} {:12.5f} {:12.5f}", e(0),
