@@ -25,6 +25,7 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "log.h", "log_8h.html", "log_8h" ],
     [ "macros.h", "macros_8h.html", "macros_8h" ],
     [ "meshgrid.h", "meshgrid_8h.html", "meshgrid_8h" ],
+    [ "molecular_axis.h", "molecular__axis_8h.html", "molecular__axis_8h" ],
     [ "molecular_symmetry.h", "molecular__symmetry_8h.html", "molecular__symmetry_8h" ],
     [ "molecule.h", "molecule_8h.html", "molecule_8h" ],
     [ "multipole.h", "multipole_8h.html", "multipole_8h" ],

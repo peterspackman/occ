@@ -160,6 +160,12 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1KalmanEstimator.html">KalmanEstimator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html">MolecularAxisCalculator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Molecular axis calculator class.  <a href="classocc_1_1core_1_1MolecularAxisCalculator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1MolecularAxisResult.html">MolecularAxisResult</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to hold molecular axis calculation results.  <a href="structocc_1_1core_1_1MolecularAxisResult.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularPointGroup.html">MolecularPointGroup</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage class for a point group describing a <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a>.  <a href="classocc_1_1core_1_1MolecularPointGroup.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,6 +174,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1Multipole.html">Multipole</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Templated storage class for <a class="el" href="structocc_1_1core_1_1Multipole.html" title="Templated storage class for Multipole expansions.">Multipole</a> expansions.  <a href="structocc_1_1core_1_1Multipole.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1NeighcrysAxisInfo.html">NeighcrysAxisInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure for neighcrys-compatible axis file information.  <a href="structocc_1_1core_1_1NeighcrysAxisInfo.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1PointCharge.html">PointCharge</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -196,6 +205,13 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:af6f9457912400951cbbcec98cc5b2e35"><td class="mdescLeft">&#160;</td><td class="mdescRight">An enum to specify the mapping of the domain of inputs for interpolation.  <a href="namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35">More...</a><br /></td></tr>
 <tr class="separator:af6f9457912400951cbbcec98cc5b2e35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36515067f147def3d0afc6c9ffb41b2f" id="r_a36515067f147def3d0afc6c9ffb41b2f"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2f">AxisMethod</a> { <a class="el" href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2fa6adf97f83acf6453d4a6a4b1070f3754">None</a>
+, <a class="el" href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2fa13de7ccdd0b93262dd2948ef6b79b898">Neighcrys</a>
+, <a class="el" href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2fa7289016d54d51eacc2b3bbcbf9e6ce63">PCA</a>
+, <a class="el" href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2fa5884ea7e3fc089aa50746b2a6629b1bc">MOI</a>
+ }</td></tr>
+<tr class="memdesc:a36515067f147def3d0afc6c9ffb41b2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of molecular axis calculation methods.  <a href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2f">More...</a><br /></td></tr>
+<tr class="separator:a36515067f147def3d0afc6c9ffb41b2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a116490d5f388f6e526b65a85d1c7e8a5" id="r_a116490d5f388f6e526b65a85d1c7e8a5"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5">PointGroup</a> { <br />
 &#160;&#160;<a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a1a2ddc2db4693cfd16d534cde5572cc1">C1</a>
 , <a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a6fd5bce0a0270467f657066323880d96">Ci</a>
@@ -366,6 +382,40 @@ template&lt;typename NumericType &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a36515067f147def3d0afc6c9ffb41b2f" name="a36515067f147def3d0afc6c9ffb41b2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a36515067f147def3d0afc6c9ffb41b2f">&#9670;&#160;</a></span>AxisMethod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2f">occ::core::AxisMethod</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Enumeration of molecular axis calculation methods. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a36515067f147def3d0afc6c9ffb41b2fa6adf97f83acf6453d4a6a4b1070f3754" name="a36515067f147def3d0afc6c9ffb41b2fa6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p>No axis calculation. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a36515067f147def3d0afc6c9ffb41b2fa13de7ccdd0b93262dd2948ef6b79b898" name="a36515067f147def3d0afc6c9ffb41b2fa13de7ccdd0b93262dd2948ef6b79b898"></a>Neighcrys&#160;</td><td class="fielddoc"><p>Neighcrys method using 3 specified atoms. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a36515067f147def3d0afc6c9ffb41b2fa7289016d54d51eacc2b3bbcbf9e6ce63" name="a36515067f147def3d0afc6c9ffb41b2fa7289016d54d51eacc2b3bbcbf9e6ce63"></a>PCA&#160;</td><td class="fielddoc"><p>Principal component analysis. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a36515067f147def3d0afc6c9ffb41b2fa5884ea7e3fc089aa50746b2a6629b1bc" name="a36515067f147def3d0afc6c9ffb41b2fa5884ea7e3fc089aa50746b2a6629b1bc"></a>MOI&#160;</td><td class="fielddoc"><p>Moment of inertia tensor eigenvectors. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="af6f9457912400951cbbcec98cc5b2e35" name="af6f9457912400951cbbcec98cc5b2e35"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af6f9457912400951cbbcec98cc5b2e35">&#9670;&#160;</a></span>DomainMapping</h2>
 

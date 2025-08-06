@@ -13,6 +13,7 @@ var classocc_1_1qm_1_1PointChargeCorrectedProcedure =
     [ "compute_overlap_matrix_for_basis", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html#a143738c789ff5cb4262753910664aff3", null ],
     [ "compute_point_charge_interaction_matrix", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html#a2dbb4376943144b4599dd728ef802f77", null ],
     [ "compute_schwarz_ints", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html#ac275807b1c95fe0a845215a367d0028d", null ],
+    [ "frozen_electrons", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html#a6ba450c811bde1ced0e66e9a4ab4d984", null ],
     [ "have_effective_core_potentials", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html#ae9b22c362b3ef8e8b68e346e392e4596", null ],
     [ "name", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html#ab237e2e872109b1b91b0cf741a11f010", null ],
     [ "nbf", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html#aa82d6039f765cfcf01c377a3e6e11a51", null ],

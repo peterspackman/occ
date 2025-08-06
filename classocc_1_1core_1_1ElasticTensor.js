@@ -17,6 +17,7 @@ var classocc_1_1core_1_1ElasticTensor =
     [ "component", "classocc_1_1core_1_1ElasticTensor.html#aa2089bb56e71a899621a6bc3b236f918", null ],
     [ "data", "classocc_1_1core_1_1ElasticTensor.html#ab3fc715ca830d20d9f9473f4479dfbdf", null ],
     [ "data", "classocc_1_1core_1_1ElasticTensor.html#a1322d2d198365fe19faa793b8103c7b4", null ],
+    [ "eigenvalues", "classocc_1_1core_1_1ElasticTensor.html#a1395d603f899107b6c83c5056d1e1b02", null ],
     [ "linear_compressibility", "classocc_1_1core_1_1ElasticTensor.html#abb3420f8f086ccc3bf7dee2f611b438c", null ],
     [ "linear_compressibility_angular", "classocc_1_1core_1_1ElasticTensor.html#a089d7b85373c64504adaaa065091990b", null ],
     [ "poisson_ratio", "classocc_1_1core_1_1ElasticTensor.html#ae44d9adb89a43b34e0ccc0881df9d423", null ],

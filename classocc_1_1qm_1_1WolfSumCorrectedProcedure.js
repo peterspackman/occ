@@ -13,6 +13,7 @@ var classocc_1_1qm_1_1WolfSumCorrectedProcedure =
     [ "compute_overlap_matrix_for_basis", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html#adee7f173cfc965987982bf06fcc15e61", null ],
     [ "compute_point_charge_interaction_matrix", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html#a21d80f1af3a9075f5f2d65422081db54", null ],
     [ "compute_schwarz_ints", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html#adc4432d2d005ec2a4c8fa2799d881dce", null ],
+    [ "frozen_electrons", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html#a6afaec833ffa5cd966a3ed247c955cc7", null ],
     [ "have_effective_core_potentials", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html#afee38679aa4f127f625b17ff8e842c30", null ],
     [ "name", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html#a0f6ef5545400fcd60dbac38bf6cd6561", null ],
     [ "nbf", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html#a1bcb8b24ff19c1b840f9fba34cb5c3d7", null ],

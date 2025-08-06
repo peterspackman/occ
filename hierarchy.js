@@ -211,6 +211,8 @@ var hierarchy =
     [ "occ::geometry::MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", null ],
     [ "occ::qm::MOIntegralEngine", "classocc_1_1qm_1_1MOIntegralEngine.html", null ],
     [ "occ::io::MoldenReader", "classocc_1_1io_1_1MoldenReader.html", null ],
+    [ "occ::core::MolecularAxisCalculator", "classocc_1_1core_1_1MolecularAxisCalculator.html", null ],
+    [ "occ::core::MolecularAxisResult", "structocc_1_1core_1_1MolecularAxisResult.html", null ],
     [ "occ::dft::MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", null ],
     [ "occ::dft::MolecularGridPoints", "classocc_1_1dft_1_1MolecularGridPoints.html", null ],
     [ "occ::qm::MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", null ],
@@ -229,6 +231,7 @@ var hierarchy =
     [ "occ::dma::MultipoleShifter", "classocc_1_1dma_1_1MultipoleShifter.html", null ],
     [ "occ::cg::NeighborAtoms", "structocc_1_1cg_1_1NeighborAtoms.html", null ],
     [ "occ::cg::NeighborContribution", "structocc_1_1cg_1_1NeighborContribution.html", null ],
+    [ "occ::core::NeighcrysAxisInfo", "structocc_1_1core_1_1NeighcrysAxisInfo.html", null ],
     [ "nested_formatter", null, [
       [ "fmt::formatter< occ::crystal::DimerIndex >", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1DimerIndex_01_4.html", null ],
       [ "fmt::formatter< occ::crystal::HKL >", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4.html", null ],
