@@ -26,7 +26,17 @@ int DFT::density_derivative() const {
 DFT::DFT(const std::string &method, const AOBasis &basis,
          const GridSettings &grid_settings)
     : SCFMethodBase(basis.atoms()), m_hf(basis), m_grid(basis, grid_settings) {
+
   update_electron_count();
+
+  std::vector<int> frozen(basis.atoms().size(), 0);
+  int num_frozen = basis.total_ecp_electrons();
+  if (num_frozen > 0) {
+    frozen = basis.ecp_electrons();
+  }
+  set_frozen_electrons(frozen);
+  m_num_frozen = num_frozen;
+
   set_method(method);
   set_integration_grid(grid_settings);
 }
