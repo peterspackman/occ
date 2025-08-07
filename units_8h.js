@@ -11,6 +11,7 @@ var units_8h =
     [ "AU_TO_PER_CM", "units_8h.html#ad38a938470af50d5efd5fbc678bb15b7", null ],
     [ "BOHR_TO_ANGSTROM", "units_8h.html#a4cd54c073c4aca586807e033f16e37b7", null ],
     [ "EV_TO_KJ_PER_MOL", "units_8h.html#af6152c17fa3c68fec7ea231f47889bf7", null ],
+    [ "KJ_PER_MOL_PER_ANGSTROM3_TO_GPA", "units_8h.html#ad22b5bda4602a584d0512abba0ec4ee2", null ],
     [ "KJ_TO_KCAL", "units_8h.html#a225cac13d440178e598a1854c51a13c1", null ],
     [ "PI", "units_8h.html#a028d775e813e880062aff24bec1a1b4a", null ]
 ];

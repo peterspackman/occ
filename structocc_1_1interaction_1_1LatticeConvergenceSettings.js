@@ -11,5 +11,6 @@ var structocc_1_1interaction_1_1LatticeConvergenceSettings =
     [ "output_json_filename", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a5fa73544038dacd7dc1595cd19b703b7", null ],
     [ "radius_increment", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#ab6f941ca366b5ca134b2534f7096b937", null ],
     [ "spherical_basis", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a75a2e8f3f061f749ba5333ccc166af51", null ],
-    [ "wolf_sum", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#ae7706adb9809f3f4273361d8569da3bd", null ]
+    [ "wolf_sum", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#ae7706adb9809f3f4273361d8569da3bd", null ],
+    [ "write_all_pairs", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#aa98c7379fe244437d97717bfafd2d0e5", null ]
 ];
