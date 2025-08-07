@@ -263,6 +263,7 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def_prop_ro("voigt_c", &ElasticTensor::voigt_c)
       .def("component", nb::overload_cast<int, int, int, int>(
                             &ElasticTensor::component, nb::const_))
+      .def("eigenvalues", &ElasticTensor::eigenvalues)
 
       // Convenience methods for plotting
       .def(

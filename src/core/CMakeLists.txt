@@ -18,6 +18,7 @@ add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/log.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/meshgrid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/molecular_axis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecular_symmetry.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/optimize.cpp"

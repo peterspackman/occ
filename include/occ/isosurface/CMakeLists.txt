@@ -11,4 +11,6 @@ set(OCC_ISOSURFACE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/stockholder_weight.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface_types.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/void.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/volume_calculator.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/volume_data.h"
     PARENT_SCOPE)

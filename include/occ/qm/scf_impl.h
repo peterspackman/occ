@@ -162,39 +162,45 @@ Mat SCF<P>::compute_soad(const Mat &overlap_minbs) const {
   // compute the minimal basis density
   Mat D_minbs = Mat::Zero(nao, nao);
   size_t ao_offset = 0; // first AO of this atom
-  // const auto &frozen_electrons = m_procedure.frozen_electrons();
+  const auto &frozen_electrons = m_procedure.frozen_electrons();
+  size_t atom_index = 0;
+  occ::log::debug("Frozen electrons vector size: {}", frozen_electrons.size());
+  for (size_t i = 0; i < frozen_electrons.size(); i++) {
+    occ::log::debug("Atom {}: {} frozen electrons", i, frozen_electrons[i]);
+  }
   for (const auto &atom : atoms()) {
     const auto Z = atom.atomic_number;
-    // the following code might be useful for a minimal
-    // basis guess with ECPs
-    /*
-    double remaining_frozen = frozen_electrons[atom_index];
-    */
+    
+    // Handle frozen electrons for ECP atoms
+    double remaining_frozen = 0.0;
+    if (atom_index < frozen_electrons.size()) {
+      remaining_frozen = static_cast<double>(frozen_electrons[atom_index]);
+    }
 
     auto occvec = occ::qm::guess::minimal_basis_occupation_vector(Z, spherical);
 
-    // the following code might be useful for a minimal
-    // basis guess with ECPs
-    /*
-    {
-        int offset = 0;
-        while (remaining_frozen > 0.0) {
-            double r = std::max(occvec[offset], remaining_frozen);
-            occvec[offset] -= r;
-            remaining_frozen -= r;
-            offset++;
-        }
+    // Remove frozen electrons from inner shells first
+    if (remaining_frozen > 0.0) {
+      int offset = 0;
+      while (remaining_frozen > 0.0 && offset < occvec.size()) {
+        double r = std::min(occvec[offset], remaining_frozen);
+        occvec[offset] -= r;
+        remaining_frozen -= r;
+        offset++;
+      }
+      occ::log::debug("Atom {} (Z={}): removed {} frozen electrons from minimal basis occupation", 
+                     atom_index, Z, static_cast<double>(frozen_electrons[atom_index]) - remaining_frozen);
     }
 
-    occ::log::debug("Occupation vector for atom {} sum: {}",
-    atom_index, std::accumulate(occvec.begin(), occvec.end(), 0.0));
-    */
+    occ::log::debug("Occupation vector for atom {} sum: {}", 
+                   atom_index, std::accumulate(occvec.begin(), occvec.end(), 0.0));
     int bf = 0;
     for (const auto &occ : occvec) {
       D_minbs(ao_offset + bf, ao_offset + bf) = occ;
       bf++;
     }
     ao_offset += occvec.size();
+    atom_index++;
   }
 
   int c = charge();
@@ -316,10 +322,13 @@ template <SCFMethod P> void SCF<P>::compute_initial_guess() {
   occ::timing::stop(occ::timing::category::la);
 
   occ::timing::start(occ::timing::category::guess);
+  
   if (m_procedure.have_effective_core_potentials()) {
-    // use core guess
-    log::info("Computing initial guess using core hamiltonian with ECPs");
+    log::info("Using core Hamiltonian initial guess for ECP system");
+    // For ECP systems, just use the core Hamiltonian as initial guess
+    // The Fock matrix is already set to H = T + V + V_ecp + V_ext
     ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, ctx.F);
+    m_have_initial_guess = true;
     occ::timing::stop(occ::timing::category::guess);
     return;
   }
@@ -379,17 +388,16 @@ template <SCFMethod P> void SCF<P>::compute_sap_guess() {
 
   // Set core matrices (T, V, H)
   set_core_matrices();
+  
+  // Ensure correct electron counts and occupation numbers
+  update_occupied_orbital_count();
 
   // Compute SAP potential matrix
   Mat V_sap =
       occ::qm::guess::compute_sap_matrix(atoms(), m_procedure.aobasis());
-  log::info("SAP potential:\n{}\n", format_matrix(V_sap));
 
   // Form effective Hamiltonian: H_eff = H_core + V_sap
   ctx.F = ctx.H + V_sap;
-  log::info("T:\n{}\n", format_matrix(ctx.T));
-  log::info("H:\n{}\n", format_matrix(ctx.H));
-  log::info("F:\n{}\n", format_matrix(ctx.F));
 
   // Set up orthogonalization
   set_conditioning_orthogonalizer();

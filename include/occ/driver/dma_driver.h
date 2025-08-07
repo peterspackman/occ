@@ -20,8 +20,16 @@ struct DMAConfig {
     ankerl::unordered_dense::map<std::string, double> atom_radii;  // Element symbol -> radius in Angstrom
     ankerl::unordered_dense::map<std::string, int> atom_limits;    // Element symbol -> max rank
     
+    // Molecular orientation options
+    std::string axis_method{"none"};  // "none", "nc", "pca", "moi"
+    std::vector<int> axis_atoms;      // atom indices for nc method (0-based)
+    std::string oriented_xyz_filename; // output filename for oriented molecule
+    std::string axis_filename;        // output filename for neighcrys axis file
+    
     // Output options
     bool write_punch{true};
+    bool write_oriented_xyz{false};
+    bool write_axis_file{false};
 };
 
 class DMADriver {

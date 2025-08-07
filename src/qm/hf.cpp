@@ -23,10 +23,11 @@ HartreeFock::HartreeFock(const AOBasis &basis)
 
   std::vector<int> frozen(basis.atoms().size(), 0);
   int num_frozen = basis.total_ecp_electrons();
-  if (m_num_frozen > 0) {
+  if (num_frozen > 0) {
     frozen = basis.ecp_electrons();
   }
   set_frozen_electrons(frozen);
+  m_num_frozen = num_frozen;
 }
 
 double HartreeFock::nuclear_point_charge_interaction_energy(

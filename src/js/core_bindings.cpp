@@ -117,6 +117,24 @@ void register_core_bindings() {
                         return result;
                       }));
 
+  class_<Vec6>("Vec6")
+      .function("size",
+                optional_override([](const Vec6 &v) { return v.size(); }))
+      .function("get",
+                optional_override([](const Vec6 &v, int i) { return v(i); }))
+      .function("set", optional_override(
+                           [](Vec6 &v, int i, double val) { v(i) = val; }))
+      .function("toString", optional_override([](const Vec6 &v) {
+                  return occ::format_matrix(v);
+                }))
+      .function("toStringFormatted", optional_override([](const Vec6 &v, const std::string &fmt) {
+                  return occ::format_matrix(v, fmt);
+                }))
+      .class_function("create", optional_override([]() {
+                        Vec6 result = Vec6::Zero();
+                        return result;
+                      }));
+
   class_<Mat>("Mat")
       .function("rows",
                 optional_override([](const Mat &m) { return m.rows(); }))
@@ -520,7 +538,10 @@ void register_core_bindings() {
 
       // Matrix access
       .property("voigtC", &ElasticTensor::voigt_c)
-      .property("voigtS", &ElasticTensor::voigt_s);
+      .property("voigtS", &ElasticTensor::voigt_s)
+      
+      // Eigenvalues
+      .function("eigenvalues", &ElasticTensor::eigenvalues);
 
   // Helper function to generate directional data for visualization
   function("generateDirectionalData",

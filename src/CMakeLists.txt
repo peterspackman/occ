@@ -66,6 +66,7 @@ set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/cube_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/crystal_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/dma_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/volume_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
