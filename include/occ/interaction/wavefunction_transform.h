@@ -1,4 +1,5 @@
 #pragma once
+#include "occ/interaction/pairinteraction.h"
 #include <occ/crystal/crystal.h>
 #include <occ/qm/wavefunction.h>
 
@@ -7,6 +8,7 @@ namespace occ::interaction::transform {
 struct TransformResult {
   Mat3 rotation{Mat3::Identity()};
   Vec3 translation{Vec3::Zero()};
+  Wavefunction wfn;
   double rmsd{0.0};
 };
 

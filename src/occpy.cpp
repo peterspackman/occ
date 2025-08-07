@@ -3,6 +3,7 @@
 #include "python/crystal_bindings.h"
 #include "python/dft_bindings.h"
 #include "python/dma_bindings.h"
+#include "python/interaction_bindings.h"
 #include "python/isosurface_bindings.h"
 #include "python/qm_bindings.h"
 #include <nanobind/nanobind.h>
@@ -29,6 +30,7 @@ NB_MODULE(_occpy, m) {
   auto dft = register_dft_bindings(m);
   auto dma = register_dma_bindings(m);
   auto iso = register_isosurface_bindings(m);
+  auto intr = register_interaction_bindings(m);
 
   // LogLevel enum is already registered in core_bindings.cpp
   m.def("set_log_level", nb::overload_cast<int>(occ::log::set_log_level));

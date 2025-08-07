@@ -65,6 +65,7 @@ WavefunctionTransformer::calculate_transform(const qm::Wavefunction &wfn,
 
     if (result.rmsd < 1e-3) {
       occ::log::debug("Symop found: RMSD = {:12.5f}", result.rmsd);
+      result.wfn = tmp;
       return result;
     }
   }

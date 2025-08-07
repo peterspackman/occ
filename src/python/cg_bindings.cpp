@@ -3,6 +3,7 @@
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
+#include <occ/cg/interaction_mapper.h>
 #include <occ/interaction/pair_energy.h>
 #include <occ/main/occ_cg.h>
 
@@ -10,6 +11,7 @@ using namespace nb::literals;
 using occ::cg::CrystalGrowthResult;
 using occ::cg::DimerResult;
 using occ::cg::DimerSolventTerm;
+using occ::cg::InteractionMapper;
 using occ::cg::MoleculeResult;
 using occ::interaction::LatticeConvergenceSettings;
 using occ::main::CGConfig;
@@ -54,8 +56,10 @@ nb::module_ register_cg_bindings(nb::module_ &m) {
       .def_ro("total", &DimerSolventTerm::total);
 
   nb::class_<DimerResult>(m, "DimerResult")
+      .def(nb::init<occ::core::Dimer &, bool, int>())
       .def_ro("dimer", &DimerResult::dimer)
       .def_ro("unique_idx", &DimerResult::unique_idx)
+      .def("set_energy_component", &DimerResult::set_energy_component)
       .def("total_energy", &DimerResult::total_energy)
       .def("energy_component", &DimerResult::energy_component)
       .def("energy_components",
@@ -87,6 +91,12 @@ nb::module_ register_cg_bindings(nb::module_ &m) {
                            tot.crystal_energy, tot.interaction_energy,
                            tot.solution_term);
       });
+
+  nb::class_<InteractionMapper>(m, "InteractionMapper")
+      .def(nb::init<const occ::crystal::Crystal &,
+                    const occ::crystal::CrystalDimers &,
+                    occ::crystal::CrystalDimers &, bool>())
+      .def("map_interactions", &InteractionMapper::map_interactions);
 
   return m;
 }

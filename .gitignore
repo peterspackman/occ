@@ -1,4 +1,6 @@
 build/
+build-*/
+.venv/
 debug/
 CMakeLists.txt.user
 .vscode/
