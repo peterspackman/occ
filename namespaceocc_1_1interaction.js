@@ -1,5 +1,6 @@
 var namespaceocc_1_1interaction =
 [
+    [ "polarization_partitioning", "namespaceocc_1_1interaction_1_1polarization__partitioning.html", "namespaceocc_1_1interaction_1_1polarization__partitioning" ],
     [ "transform", "namespaceocc_1_1interaction_1_1transform.html", "namespaceocc_1_1interaction_1_1transform" ],
     [ "CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", "structocc_1_1interaction_1_1CEEnergyComponents" ],
     [ "CEEnergyModel", "classocc_1_1interaction_1_1CEEnergyModel.html", "classocc_1_1interaction_1_1CEEnergyModel" ],
@@ -49,5 +50,7 @@ var namespaceocc_1_1interaction =
     [ "CE5_XDM_WB97MV", "namespaceocc_1_1interaction.html#ac526e31db1b5554f038ea91b2d2b26e6", null ],
     [ "CE_B3LYP_631Gdp", "namespaceocc_1_1interaction.html#a4f908428d769bd05d401580c302528e8", null ],
     [ "CE_HF_321G", "namespaceocc_1_1interaction.html#a4d04ac6dd87227b7fcc8cb762265f883", null ],
-    [ "CE_XDM_FIT", "namespaceocc_1_1interaction.html#a2b67be4e4d79a02d1787387f8d79b95d", null ]
+    [ "CE_XDM_FIT", "namespaceocc_1_1interaction.html#a2b67be4e4d79a02d1787387f8d79b95d", null ],
+    [ "Charged_atomic_polarizibility", "namespaceocc_1_1interaction.html#aedffaacff794b904b7563fdef3361b06", null ],
+    [ "Thakkar_atomic_polarizability", "namespaceocc_1_1interaction.html#a8eb4f6f3b884efc4c2317c4e757fd4a2", null ]
 ];

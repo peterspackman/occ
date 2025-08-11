@@ -130,6 +130,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a632359a397d87a1c478039cc15959840"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:addbad8ef23e6c57bb40f66f136834200" id="r_addbad8ef23e6c57bb40f66f136834200"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1interaction_1_1CEEnergyModel.html#addbad8ef23e6c57bb40f66f136834200">coulomb_scale_factor</a> () const override</td></tr>
 <tr class="separator:addbad8ef23e6c57bb40f66f136834200"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d87bba5ce3fcc1688b14aa23deeb15f" id="r_a6d87bba5ce3fcc1688b14aa23deeb15f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1interaction_1_1CEEnergyModel.html#a6d87bba5ce3fcc1688b14aa23deeb15f">compute_total_energy</a> (<a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;components) const override</td></tr>
+<tr class="separator:a6d87bba5ce3fcc1688b14aa23deeb15f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa83b9e4730f8934d92feef328b08822d" id="r_aa83b9e4730f8934d92feef328b08822d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1interaction_1_1CEEnergyModel.html#aa83b9e4730f8934d92feef328b08822d">compute_total_electric_field_from_neighbors</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">core::Molecule</a> &amp;target_molecule, const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">core::Dimer</a> &gt; &amp;neighbor_dimers)</td></tr>
+<tr class="separator:aa83b9e4730f8934d92feef328b08822d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18a9d0a05502d2f3ee826cba2a3ae61e" id="r_a18a9d0a05502d2f3ee826cba2a3ae61e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1interaction_1_1CEEnergyModel.html#a18a9d0a05502d2f3ee826cba2a3ae61e">compute_crystal_field_polarization_energy</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">core::Molecule</a> &amp;molecule, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;crystal_field) const</td></tr>
+<tr class="separator:a18a9d0a05502d2f3ee826cba2a3ae61e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd2c26e3d401b4ffe2e91fdc733029cc" id="r_abd2c26e3d401b4ffe2e91fdc733029cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1interaction_1_1CEEnergyModel.html#abd2c26e3d401b4ffe2e91fdc733029cc">get_polarizabilities</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">core::Molecule</a> &amp;molecule) const</td></tr>
+<tr class="separator:abd2c26e3d401b4ffe2e91fdc733029cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classocc_1_1interaction_1_1EnergyModelBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classocc_1_1interaction_1_1EnergyModelBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classocc_1_1interaction_1_1EnergyModelBase.html">occ::interaction::EnergyModelBase</a></td></tr>
 <tr class="memitem:a0daf82957da7797382809dfc970bd888 inherit pub_methods_classocc_1_1interaction_1_1EnergyModelBase" id="r_a0daf82957da7797382809dfc970bd888"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1interaction_1_1EnergyModelBase.html#a0daf82957da7797382809dfc970bd888">~EnergyModelBase</a> ()=default</td></tr>
 <tr class="separator:a0daf82957da7797382809dfc970bd888 inherit pub_methods_classocc_1_1interaction_1_1EnergyModelBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,6 +178,34 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a18a9d0a05502d2f3ee826cba2a3ae61e" name="a18a9d0a05502d2f3ee826cba2a3ae61e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18a9d0a05502d2f3ee826cba2a3ae61e">&#9670;&#160;</a></span>compute_crystal_field_polarization_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::interaction::CEEnergyModel::compute_crystal_field_polarization_energy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">core::Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>molecule</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>crystal_field</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a9a837419aa43370c69bd11960d677506" name="a9a837419aa43370c69bd11960d677506"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9a837419aa43370c69bd11960d677506">&#9670;&#160;</a></span>compute_electric_field()</h2>
 
@@ -226,6 +262,62 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="aa83b9e4730f8934d92feef328b08822d" name="aa83b9e4730f8934d92feef328b08822d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa83b9e4730f8934d92feef328b08822d">&#9670;&#160;</a></span>compute_total_electric_field_from_neighbors()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> occ::interaction::CEEnergyModel::compute_total_electric_field_from_neighbors </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">core::Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>target_molecule</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">core::Dimer</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>neighbor_dimers</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6d87bba5ce3fcc1688b14aa23deeb15f" name="a6d87bba5ce3fcc1688b14aa23deeb15f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d87bba5ce3fcc1688b14aa23deeb15f">&#9670;&#160;</a></span>compute_total_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::interaction::CEEnergyModel::compute_total_energy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;&#160;</td>
+          <td class="paramname"><em>components</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented from <a class="el" href="classocc_1_1interaction_1_1EnergyModelBase.html#a3d9a0a58e1b2ee72c10a2e0062f766b2">occ::interaction::EnergyModelBase</a>.</p>
+
+</div>
+</div>
 <a id="addbad8ef23e6c57bb40f66f136834200" name="addbad8ef23e6c57bb40f66f136834200"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#addbad8ef23e6c57bb40f66f136834200">&#9670;&#160;</a></span>coulomb_scale_factor()</h2>
 
@@ -250,6 +342,24 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Implements <a class="el" href="classocc_1_1interaction_1_1EnergyModelBase.html#af49105efb05dfffb72f6ad98b1998375">occ::interaction::EnergyModelBase</a>.</p>
+
+</div>
+</div>
+<a id="abd2c26e3d401b4ffe2e91fdc733029cc" name="abd2c26e3d401b4ffe2e91fdc733029cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd2c26e3d401b4ffe2e91fdc733029cc">&#9670;&#160;</a></span>get_polarizabilities()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::interaction::CEEnergyModel::get_polarizabilities </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">core::Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>molecule</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

@@ -18,6 +18,7 @@ var namespaceocc_1_1crystal =
     [ "SiteMappingTable", "classocc_1_1crystal_1_1SiteMappingTable.html", "classocc_1_1crystal_1_1SiteMappingTable" ],
     [ "SiteMappingVertex", "structocc_1_1crystal_1_1SiteMappingVertex.html", "structocc_1_1crystal_1_1SiteMappingVertex" ],
     [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html", "classocc_1_1crystal_1_1SpaceGroup" ],
+    [ "StandardBondLengths", "classocc_1_1crystal_1_1StandardBondLengths.html", null ],
     [ "Surface", "classocc_1_1crystal_1_1Surface.html", "classocc_1_1crystal_1_1Surface" ],
     [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],
     [ "SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", "structocc_1_1crystal_1_1SymmetryDimerLabeller" ],

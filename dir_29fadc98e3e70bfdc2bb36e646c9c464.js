@@ -13,6 +13,7 @@ var dir_29fadc98e3e70bfdc2bb36e646c9c464 =
     [ "pair_potential.h", "pair__potential_8h.html", "pair__potential_8h" ],
     [ "pairinteraction.h", "pairinteraction_8h.html", "pairinteraction_8h" ],
     [ "polarization.h", "polarization_8h.html", "polarization_8h" ],
+    [ "polarization_partitioning.h", "polarization__partitioning_8h.html", "polarization__partitioning_8h" ],
     [ "wavefunction_transform.h", "wavefunction__transform_8h.html", "wavefunction__transform_8h" ],
     [ "wolf.h", "wolf_8h.html", "wolf_8h" ],
     [ "xtb_energy_model.h", "xtb__energy__model_8h.html", "xtb__energy__model_8h" ]

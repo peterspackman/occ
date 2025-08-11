@@ -91,6 +91,7 @@ var annotated_dup =
         [ "SiteMappingTable", "classocc_1_1crystal_1_1SiteMappingTable.html", "classocc_1_1crystal_1_1SiteMappingTable" ],
         [ "SiteMappingVertex", "structocc_1_1crystal_1_1SiteMappingVertex.html", "structocc_1_1crystal_1_1SiteMappingVertex" ],
         [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html", "classocc_1_1crystal_1_1SpaceGroup" ],
+        [ "StandardBondLengths", "classocc_1_1crystal_1_1StandardBondLengths.html", null ],
         [ "Surface", "classocc_1_1crystal_1_1Surface.html", "classocc_1_1crystal_1_1Surface" ],
         [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],
         [ "SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", "structocc_1_1crystal_1_1SymmetryDimerLabeller" ],
@@ -179,6 +180,10 @@ var annotated_dup =
         [ "MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", "structocc_1_1gto_1_1MomentaSpherical" ]
       ] ],
       [ "interaction", "namespaceocc_1_1interaction.html", [
+        [ "polarization_partitioning", "namespaceocc_1_1interaction_1_1polarization__partitioning.html", [
+          [ "AtomContribution", "structocc_1_1interaction_1_1polarization__partitioning_1_1AtomContribution.html", "structocc_1_1interaction_1_1polarization__partitioning_1_1AtomContribution" ],
+          [ "PairContribution", "structocc_1_1interaction_1_1polarization__partitioning_1_1PairContribution.html", "structocc_1_1interaction_1_1polarization__partitioning_1_1PairContribution" ]
+        ] ],
         [ "transform", "namespaceocc_1_1interaction_1_1transform.html", [
           [ "TransformResult", "structocc_1_1interaction_1_1transform_1_1TransformResult.html", "structocc_1_1interaction_1_1transform_1_1TransformResult" ],
           [ "WavefunctionTransformer", "classocc_1_1interaction_1_1transform_1_1WavefunctionTransformer.html", null ]
@@ -222,6 +227,7 @@ var annotated_dup =
         [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
         [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
         [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
+        [ "CifWriter", "classocc_1_1io_1_1CifWriter.html", "classocc_1_1io_1_1CifWriter" ],
         [ "ColumnConfiguration", "structocc_1_1io_1_1ColumnConfiguration.html", "structocc_1_1io_1_1ColumnConfiguration" ],
         [ "CrystalInput", "structocc_1_1io_1_1CrystalInput.html", "structocc_1_1io_1_1CrystalInput" ],
         [ "Cube", "classocc_1_1io_1_1Cube.html", "classocc_1_1io_1_1Cube" ],

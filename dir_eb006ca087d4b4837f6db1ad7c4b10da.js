@@ -3,6 +3,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "adaptive_grid.h", "adaptive__grid_8h.html", "adaptive__grid_8h" ],
     [ "basis_g94.h", "basis__g94_8h.html", "basis__g94_8h" ],
     [ "cifparser.h", "cifparser_8h.html", "cifparser_8h" ],
+    [ "cifwriter.h", "cifwriter_8h.html", "cifwriter_8h" ],
     [ "conversion.h", "conversion_8h.html", "conversion_8h" ],
     [ "core_json.h", "core__json_8h.html", "core__json_8h" ],
     [ "crystal_json.h", "crystal__json_8h.html", "crystal__json_8h" ],

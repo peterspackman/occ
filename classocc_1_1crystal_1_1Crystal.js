@@ -11,6 +11,7 @@ var classocc_1_1crystal_1_1Crystal =
     [ "gamma_point_unit_cell_molecules", "classocc_1_1crystal_1_1Crystal.html#a8d86677ab74155fe342e4a5dd196c0e2", null ],
     [ "labels", "classocc_1_1crystal_1_1Crystal.html#a1c666ab37eb2002e7f4a0cf4fd04adf3", null ],
     [ "molecule_site_mapping_table", "classocc_1_1crystal_1_1Crystal.html#aab2be058389fa10fa8ca87764ea11705", null ],
+    [ "normalize_hydrogen_bondlengths", "classocc_1_1crystal_1_1Crystal.html#a338beaccc43b8cab4dd291e40e57f344", null ],
     [ "num_sites", "classocc_1_1crystal_1_1Crystal.html#a0e4f57e59b377f98ed9529aa94c7a25e", null ],
     [ "set_connectivity_criteria", "classocc_1_1crystal_1_1Crystal.html#adc6b3aff8c5397427b2c70daf11a599b", null ],
     [ "set_gamma_point_unit_cell_molecules", "classocc_1_1crystal_1_1Crystal.html#a106b6a4dc8c12110faf2e3a12c9ded9c", null ],

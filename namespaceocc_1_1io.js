@@ -12,6 +12,7 @@ var namespaceocc_1_1io =
     [ "BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
     [ "CellData", "structocc_1_1io_1_1CellData.html", "structocc_1_1io_1_1CellData" ],
     [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
+    [ "CifWriter", "classocc_1_1io_1_1CifWriter.html", "classocc_1_1io_1_1CifWriter" ],
     [ "ColumnConfiguration", "structocc_1_1io_1_1ColumnConfiguration.html", "structocc_1_1io_1_1ColumnConfiguration" ],
     [ "CrystalInput", "structocc_1_1io_1_1CrystalInput.html", "structocc_1_1io_1_1CrystalInput" ],
     [ "Cube", "classocc_1_1io_1_1Cube.html", "classocc_1_1io_1_1Cube" ],

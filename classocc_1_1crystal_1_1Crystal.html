@@ -181,6 +181,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:adc6b3aff8c5397427b2c70daf11a599b" id="r_adc6b3aff8c5397427b2c70daf11a599b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#adc6b3aff8c5397427b2c70daf11a599b">set_connectivity_criteria</a> (bool guess=true)</td></tr>
 <tr class="memdesc:adc6b3aff8c5397427b2c70daf11a599b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify the behaviour for guessing/finding bonds.  <br /></td></tr>
 <tr class="separator:adc6b3aff8c5397427b2c70daf11a599b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a338beaccc43b8cab4dd291e40e57f344" id="r_a338beaccc43b8cab4dd291e40e57f344"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#a338beaccc43b8cab4dd291e40e57f344">normalize_hydrogen_bondlengths</a> (const ankerl::unordered_dense::map&lt; int, double &gt; &amp;custom_lengths={})</td></tr>
+<tr class="memdesc:a338beaccc43b8cab4dd291e40e57f344"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalizes hydrogen bond lengths to standard values.  <br /></td></tr>
+<tr class="separator:a338beaccc43b8cab4dd291e40e57f344"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a933e32a75af9d3e9b566ba644a85c5cd" id="r_a933e32a75af9d3e9b566ba644a85c5cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1SiteMappingTable.html">SiteMappingTable</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Crystal.html#a933e32a75af9d3e9b566ba644a85c5cd">atom_site_mapping_table</a> () const</td></tr>
 <tr class="memdesc:a933e32a75af9d3e9b566ba644a85c5cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a mapping table for atomic sites in the crystal.  <br /></td></tr>
 <tr class="separator:a933e32a75af9d3e9b566ba644a85c5cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -619,6 +622,35 @@ Static Public Member Functions</h2></td></tr>
 <p>Creates a mapping table for molecular sites in the crystal. </p>
 <p>Generates a table that maps molecular sites in the crystal to their equivalent positions under symmetry operations. This helps identify molecular symmetry relationships and equivalent molecular positions.</p>
 <dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="classocc_1_1crystal_1_1SiteMappingTable.html">SiteMappingTable</a> object containing the molecular site mappings. </dd></dl>
+
+</div>
+</div>
+<a id="a338beaccc43b8cab4dd291e40e57f344" name="a338beaccc43b8cab4dd291e40e57f344"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a338beaccc43b8cab4dd291e40e57f344">&#9670;&#160;</a></span>normalize_hydrogen_bondlengths()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::crystal::Crystal::normalize_hydrogen_bondlengths </td>
+          <td>(</td>
+          <td class="paramtype">const ankerl::unordered_dense::map&lt; int, double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>custom_lengths</em> = <code>{}</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Normalizes hydrogen bond lengths to standard values. </p>
+<p>This method adjusts the positions of hydrogen atoms to have standard bond lengths with their connected heavy atoms. This is particularly useful for crystal structures from X-ray diffraction where hydrogen positions are less accurate. Uses the existing bond graph connectivity to determine H-X bonds.</p>
+<p>Bond lengths from: Allen, F. H. Acta Cryst. (2010). B66, 380–386</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">custom_lengths</td><td>Optional map of atomic_number -&gt; bond_length overrides </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of hydrogen positions normalized </dd></dl>
 
 </div>
 </div>
