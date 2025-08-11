@@ -499,6 +499,23 @@ public:
   void set_connectivity_criteria(bool guess = true);
 
   /**
+   * \brief Normalizes hydrogen bond lengths to standard values.
+   * 
+   * This method adjusts the positions of hydrogen atoms to have standard
+   * bond lengths with their connected heavy atoms. This is particularly
+   * useful for crystal structures from X-ray diffraction where hydrogen 
+   * positions are less accurate. Uses the existing bond graph connectivity
+   * to determine H-X bonds.
+   * 
+   * Bond lengths from: Allen, F. H. Acta Cryst. (2010). B66, 380–386
+   * 
+   * \param custom_lengths Optional map of atomic_number -> bond_length overrides
+   * \return Number of hydrogen positions normalized
+   */
+  int normalize_hydrogen_bondlengths(
+    const ankerl::unordered_dense::map<int, double>& custom_lengths = {});
+
+  /**
    * \brief Creates a primitive supercell from a crystal lattice.
    *
    * Given a crystal lattice, this method constructs a new lattice that is a

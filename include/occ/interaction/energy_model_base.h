@@ -11,6 +11,7 @@ public:
   virtual Mat3N compute_electric_field(const core::Dimer &dimer) = 0;
   virtual const std::vector<Vec> &partial_charges() const = 0;
   virtual double coulomb_scale_factor() const = 0;
+  virtual void compute_total_energy(CEEnergyComponents &components) const {}
 };
 
 } // namespace occ::interaction

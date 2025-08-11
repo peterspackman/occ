@@ -18,6 +18,7 @@
 #include <occ/io/qcschema.h>
 #include <occ/io/shelxfile.h>
 #include <occ/io/cifparser.h>
+#include <occ/io/cifwriter.h>
 
 using occ::format_matrix;
 using occ::util::all_close;
@@ -854,4 +855,103 @@ C 0.46040 0.41640 0.00000 1.0000
     }
   }
   
+}
+
+TEST_CASE("CIF writer", "[io][cif][write]") {
+  SECTION("Write simple crystal to CIF") {
+    // Create simple test crystal
+    occ::crystal::AsymmetricUnit asym;
+    asym.atomic_numbers.resize(4);
+    asym.atomic_numbers << 6, 1, 1, 1; // CH3
+    
+    occ::crystal::UnitCell uc(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
+    
+    // Create positions in Cartesian then convert
+    occ::Mat3N cart_coords(3, 4);
+    cart_coords.col(0) = occ::Vec3(5.0, 5.0, 5.0); // C at center
+    cart_coords.col(1) = occ::Vec3(6.0, 5.0, 5.0); // H1
+    cart_coords.col(2) = occ::Vec3(4.5, 5.8, 5.0); // H2
+    cart_coords.col(3) = occ::Vec3(4.5, 4.2, 5.0); // H3
+    
+    asym.positions = uc.to_fractional(cart_coords);
+    asym.labels = {"C1", "H1", "H2", "H3"};
+    
+    occ::crystal::SpaceGroup sg(1);
+    occ::crystal::Crystal crystal(asym, sg, uc);
+    
+    // Write to CIF
+    occ::io::CifWriter writer;
+    std::string cif_content = writer.to_string(crystal, "Test CH3");
+    
+    // Basic checks that CIF contains expected content
+    REQUIRE(cif_content.find("_atom_site_label") != std::string::npos);
+    REQUIRE(cif_content.find("_atom_site_fract_x") != std::string::npos);
+    REQUIRE(cif_content.find("_atom_site_fract_y") != std::string::npos);
+    REQUIRE(cif_content.find("_atom_site_fract_z") != std::string::npos);
+    REQUIRE(cif_content.find("C1") != std::string::npos);
+    REQUIRE(cif_content.find("H1") != std::string::npos);
+    REQUIRE(cif_content.find("H2") != std::string::npos);
+    REQUIRE(cif_content.find("H3") != std::string::npos);
+  }
+  
+  SECTION("Write crystal with normalized hydrogens") {
+    // Create test crystal with wrong H bond lengths
+    occ::crystal::AsymmetricUnit asym;
+    asym.atomic_numbers.resize(2);
+    asym.atomic_numbers << 8, 1; // OH
+    asym.positions.resize(3, 2);
+    asym.positions.col(0) = occ::Vec3(0.5, 0.5, 0.5);
+    asym.positions.col(1) = occ::Vec3(0.5, 0.55, 0.5); // Wrong O-H distance
+    asym.labels = {"O1", "H1"};
+    
+    occ::crystal::UnitCell uc(8.0, 8.0, 12.0, 90.0, 90.0, 120.0); // Hexagonal
+    occ::crystal::SpaceGroup sg(194); // P6_3/mmc
+    occ::crystal::Crystal crystal(asym, sg, uc);
+    
+    // Normalize hydrogens first
+    int normalized = crystal.normalize_hydrogen_bondlengths();
+    REQUIRE(normalized == 1);
+    
+    // Write to CIF
+    occ::io::CifWriter writer;
+    std::string cif_content = writer.to_string(crystal, "Normalized OH");
+    
+    // Check space group is preserved
+    REQUIRE(cif_content.find("P 63/m m c") != std::string::npos);
+    
+    // Check unit cell parameters are present
+    REQUIRE(cif_content.find("8.000") != std::string::npos); // a, b
+    REQUIRE(cif_content.find("12.000") != std::string::npos); // c
+    REQUIRE(cif_content.find("120.000") != std::string::npos); // gamma
+    
+    // Check O-H bond length is normalized
+    occ::Mat3N cart_pos = crystal.to_cartesian(crystal.asymmetric_unit().positions);
+    occ::Vec3 oh_bond = cart_pos.col(1) - cart_pos.col(0);
+    CHECK_THAT(oh_bond.norm(), Catch::Matchers::WithinAbs(0.983, 0.001));
+  }
+  
+  SECTION("CIF writer file output") {
+    // Test writing to actual file
+    auto acetic = acetic_crystal();
+    
+    occ::io::CifWriter writer;
+    std::string temp_file = "/tmp/test_acetic.cif";
+    
+    // This should not throw
+    REQUIRE_NOTHROW(writer.write(temp_file, acetic, "Acetic acid test"));
+    
+    // File should exist and have content
+    std::ifstream file(temp_file);
+    REQUIRE(file.good());
+    
+    std::string line;
+    bool found_atom_site = false;
+    while (std::getline(file, line)) {
+      if (line.find("_atom_site_label") != std::string::npos) {
+        found_atom_site = true;
+        break;
+      }
+    }
+    REQUIRE(found_atom_site);
+  }
 }
