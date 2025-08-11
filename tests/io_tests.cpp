@@ -19,6 +19,7 @@
 #include <occ/io/shelxfile.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/cifwriter.h>
+#include <gemmi/cif.hpp>
 
 using occ::format_matrix;
 using occ::util::all_close;
@@ -904,7 +905,8 @@ TEST_CASE("CIF writer", "[io][cif][write]") {
     asym.positions.col(1) = occ::Vec3(0.5, 0.55, 0.5); // Wrong O-H distance
     asym.labels = {"O1", "H1"};
     
-    occ::crystal::UnitCell uc(8.0, 8.0, 12.0, 90.0, 90.0, 120.0); // Hexagonal
+    occ::crystal::UnitCell uc(8.0, 8.0, 12.0, occ::units::radians(90.0), 
+                              occ::units::radians(90.0), occ::units::radians(120.0)); // Hexagonal
     occ::crystal::SpaceGroup sg(194); // P6_3/mmc
     occ::crystal::Crystal crystal(asym, sg, uc);
     
@@ -914,15 +916,32 @@ TEST_CASE("CIF writer", "[io][cif][write]") {
     
     // Write to CIF
     occ::io::CifWriter writer;
-    std::string cif_content = writer.to_string(crystal, "Normalized OH");
+    std::string cif_content = writer.to_string(crystal, "Normalized_OH");
     
     // Check space group is preserved
     REQUIRE(cif_content.find("P 63/m m c") != std::string::npos);
     
-    // Check unit cell parameters are present
-    REQUIRE(cif_content.find("8.000") != std::string::npos); // a, b
-    REQUIRE(cif_content.find("12.000") != std::string::npos); // c
-    REQUIRE(cif_content.find("120.000") != std::string::npos); // gamma
+    // Parse the CIF content to check unit cell parameters properly
+    gemmi::cif::Document doc = gemmi::cif::read_string(cif_content);
+    REQUIRE(doc.blocks.size() > 0);
+    
+    const auto& block = doc.blocks[0];
+    
+    // Check unit cell parameters with appropriate tolerances
+    auto a_pair = block.find_pair("_cell_length_a");
+    auto b_pair = block.find_pair("_cell_length_b");
+    auto c_pair = block.find_pair("_cell_length_c");
+    auto gamma_pair = block.find_pair("_cell_angle_gamma");
+    
+    REQUIRE(a_pair != nullptr);
+    REQUIRE(b_pair != nullptr);
+    REQUIRE(c_pair != nullptr);
+    REQUIRE(gamma_pair != nullptr);
+    
+    CHECK_THAT(std::stod((*a_pair)[1]), Catch::Matchers::WithinAbs(8.0, 0.001));
+    CHECK_THAT(std::stod((*b_pair)[1]), Catch::Matchers::WithinAbs(8.0, 0.001));
+    CHECK_THAT(std::stod((*c_pair)[1]), Catch::Matchers::WithinAbs(12.0, 0.001));
+    CHECK_THAT(std::stod((*gamma_pair)[1]), Catch::Matchers::WithinAbs(120.0, 0.001));
     
     // Check O-H bond length is normalized
     occ::Mat3N cart_pos = crystal.to_cartesian(crystal.asymmetric_unit().positions);
