@@ -1,8 +1,9 @@
 #pragma once
-#include "occ/core/units.h"
 #include <CLI/App.hpp>
 #include <cmath>
 #include <occ/core/linear_algebra.h>
+#include <occ/core/log.h>
+#include <occ/core/units.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -10,6 +11,84 @@
 namespace occ::main {
 
 using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
+
+inline void print_matrix_full(const occ::Mat6 &matrix, int precision = 6,
+                              int width = 12) {
+  for (int i = 0; i < 6; ++i) {
+    std::string row;
+    for (int j = 0; j < 6; ++j) {
+      row += fmt::format("{:{}.{}f}", matrix(i, j), width, precision);
+    }
+    occ::log::info("{}", row);
+  }
+  occ::log::info("");
+}
+
+inline void print_matrix_upper_triangle(const occ::Mat6 &matrix,
+                                        int precision = 3, int width = 9) {
+
+  for (int i = 0; i < 6; ++i) {
+    std::string row;
+    for (int k = 0; k < i; ++k) {
+      row += fmt::format("{:{}}", "", width);
+    }
+    for (int j = i; j < 6; ++j) {
+      row += fmt::format("{:{}.{}f}", matrix(i, j), width, precision);
+    }
+    occ::log::info("{}", row);
+  }
+  occ::log::info("");
+}
+
+inline void print_matrix(const occ::Mat6 &matrix,
+                         bool upper_triangle_only = false, int precision = 3,
+                         int width = 9) {
+  if (upper_triangle_only) {
+    print_matrix_upper_triangle(matrix, precision, width);
+  } else {
+    print_matrix_full(matrix, precision, width);
+  }
+}
+
+inline void save_matrix(const occ::Mat &matrix, const std::string &filename,
+                        std::vector<std::string> comments = {},
+                        bool upper_triangle_only = true) {
+  std::ofstream file(filename);
+  occ::log::info("Writing matrix to file {}", filename);
+  for (const auto &comment : comments) {
+    file << "# " << comment << std::endl;
+  }
+  file << std::fixed << std::setprecision(6);
+
+  if (upper_triangle_only) {
+    int count = 0;
+    for (int i = 0; i < matrix.rows(); ++i) {
+      for (int j = i; j < matrix.cols(); ++j) {
+        file << std::setw(10) << matrix(i, j);
+        count++;
+        if (count % 3 == 0) {
+          file << std::endl;
+        } else {
+          file << " ";
+        }
+      }
+    }
+    if (count % 3 != 0) {
+      file << std::endl;
+    }
+  } else {
+    for (int i = 0; i < matrix.rows(); ++i) {
+      for (int j = 0; j < matrix.cols(); ++j) {
+        file << std::setw(10) << matrix(i, j);
+        if (j < matrix.cols() - 1)
+          file << " ";
+      }
+      file << std::endl;
+    }
+  }
+
+  file.close();
+}
 
 struct Morse {
   double D0;
@@ -130,6 +209,8 @@ struct LJ_A {
 enum class PotentialType { MORSE, LJ, LJ_A };
 
 class PotentialBase {
+  using PairIndices = std::pair<int, int>;
+
 public:
   virtual ~PotentialBase() = default;
   virtual double energy(double r) const = 0;
@@ -140,8 +221,23 @@ public:
   virtual double second_derivative() const = 0;
   virtual std::string to_string() const = 0;
 
+  inline void set_pair_indices(const PairIndices &pair_indices) {
+    m_pair_indices = pair_indices;
+  }
+
+  inline const PairIndices &pair_indices() const { return m_pair_indices; }
+
+  inline void set_uc_pair_indices(const PairIndices &uc_pair_indices) {
+    m_uc_pair_indices = uc_pair_indices;
+  }
+
+  inline const PairIndices &uc_pair_indices() const {
+    return m_uc_pair_indices;
+  }
+
   occ::Vec3 r_vector;
   occ::Vec3 r_hat;
+  PairIndices m_pair_indices, m_uc_pair_indices;
   double r0;
 };
 
@@ -250,6 +346,106 @@ public:
 
   inline double shift() const { return m_shift_factor; }
 
+  inline occ::Mat6 voigt_elastic_tensor_from_hessian(double volume) {
+    size_t n_molecules = 0;
+    for (const auto &pot : m_potentials) {
+      const auto [idx_0, idx_1] = pot->uc_pair_indices();
+      if (idx_0 > n_molecules) {
+        n_molecules = idx_0;
+      }
+      if (idx_1 > n_molecules) {
+        n_molecules = idx_1;
+      }
+    }
+    n_molecules++;
+    int dim = 3 * n_molecules;
+
+    occ::Mat6 D_ee = occ::Mat6::Zero();       // Strain-Strain
+    occ::Mat D_ei = occ::Mat::Zero(6, dim);   // Strain-Cart
+    occ::Mat D_ij = occ::Mat::Zero(dim, dim); // Cart-Cart
+
+    for (const auto &pot : m_potentials) {
+      const occ::Vec3 &r_hat = pot->r_hat;
+      const occ::Vec3 &r_vector = pot->r_vector;
+      double r = pot->r0;
+      double r2 = r * r;
+      double dU_dr = pot->first_derivative();
+      double d2U_dr2 = pot->second_derivative();
+      const auto [idx_0, idx_1] = pot->uc_pair_indices();
+
+      for (int p = 0; p < 6; p++) {
+        auto [alpha, beta] = this->voigt_notation(p);
+        for (int q = 0; q < 6; q++) {
+          auto [gamma, delta] = this->voigt_notation(q);
+
+          double term1 = (r_vector[alpha] * r_vector[beta] * r_vector[gamma] *
+                          r_vector[delta]) *
+                         d2U_dr2 / r2;
+
+          // NOTE: term2 will be zero for us by definition.
+          // double term2 = dU_dr / r *
+          //                ((alpha == gamma ? r_hat[beta] * r_hat[delta] * r2:
+          //                0) +
+          //                 (alpha == delta ? r_hat[beta] * r_hat[gamma] * r2:
+          //                 0) + (beta == gamma ? r_hat[alpha] * r_hat[delta] *
+          //                 r2: 0) + (beta == delta ? r_hat[alpha] *
+          //                 r_hat[gamma] * r2: 0));
+          // D_ee(p, q) += term1 + term2;
+
+          D_ee(p, q) += term1;
+        }
+        for (int coord = 0; coord < 3; coord++) {
+          double mixed_term =
+              d2U_dr2 * r_vector[alpha] * r_vector[beta] * r_vector[coord] / r2;
+
+          // NOTE: zero by definition.
+          // mixed_term += dU_dr / r *
+          //               ((alpha == coord ? r_vector[beta]: 0) +
+          //                (beta == coord ? r_vector[alpha]: 0));
+
+          D_ei(p, idx_0 * 3 + coord) += mixed_term;
+        }
+      }
+      for (int alpha = 0; alpha < 3; alpha++) {
+        for (int beta = 0; beta < 3; beta++) {
+          double e = d2U_dr2 * r_hat[alpha] * r_hat[beta];
+
+          // NOTE: zero by definition
+          // if (alpha == beta) {
+          //   e += dU_dr / r;
+          // }
+
+          D_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) += e;
+          D_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) += e;
+          D_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) -= e;
+          D_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) -= e;
+        }
+      }
+      for (int alpha = 0; alpha < 3; alpha++) {
+        for (int beta = 0; beta < 3; beta++) {
+        }
+      }
+    }
+    D_ee /= 2;
+    D_ei /= 2;
+    D_ij /= 2;
+    save_matrix(D_ij, "D_ij.txt",
+                {"Cartesian-cartesian Hessian as upper right triangle "
+                 "(kJ/mol/Ang**2)"});
+    save_matrix(D_ei.transpose(), "D_ei.txt",
+                {"Strain-cartesian second derivative matrix as upper right "
+                 "triangle (kJ/mol/Ang)"});
+    save_matrix(D_ee, "D_ee.txt",
+                {"Strain-strain second derivative matrix as upper right "
+                 "triangle (kJ/mol)"});
+    auto D_ij_inv = D_ij.inverse();
+    occ::Mat6 correction = D_ei * D_ij_inv * D_ei.transpose();
+    occ::Mat6 C =
+        (D_ee - correction) / volume * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
+
+    return C;
+  }
+
   inline occ::Mat6
   compute_voigt_elastic_tensor_analytical(double volume) const {
     occ::Mat3 C[3][3];
@@ -265,10 +461,10 @@ public:
       double d2V = pot->second_derivative();
       double prefactor = d2V * r * r;
 
-      for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-          for (int k = 0; k < 3; ++k) {
-            for (int l = 0; l < 3; ++l) {
+      for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+          for (int k = 0; k < 3; k++) {
+            for (int l = 0; l < 3; l++) {
               C[i][j](k, l) +=
                   prefactor * r_hat[i] * r_hat[j] * r_hat[k] * r_hat[l];
             }
@@ -277,7 +473,26 @@ public:
       }
     }
 
-    return to_voigt(C) / volume / 2.0 * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
+    return this->to_voigt(C) / volume / 2.0 * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
+  }
+
+  static std::pair<int, int> voigt_notation(int voigt) {
+    switch (voigt) {
+    case 0:
+      return {0, 0}; // xx
+    case 1:
+      return {1, 1}; // yy
+    case 2:
+      return {2, 2}; // zz
+    case 3:
+      return {1, 2}; // yz
+    case 4:
+      return {0, 2}; // xz
+    case 5:
+      return {0, 1}; // xy
+    default:
+      throw std::runtime_error("Invalid voigt index.");
+    }
   }
 
   static occ::Mat6 to_voigt(const occ::Mat3 C[3][3]) {
@@ -326,6 +541,8 @@ struct EFSettings {
   bool include_positive = false;
   bool max_to_zero = false;
   double scale_factor = 2.0;
+  double gulp_scale = 0.01;
+  std::string gulp_file{""};
 };
 
 CLI::App *add_elastic_fit_subcommand(CLI::App &app);

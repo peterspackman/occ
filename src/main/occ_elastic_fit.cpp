@@ -2,8 +2,10 @@
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
 #include <CLI/Validators.hpp>
+#include <algorithm>
 #include <fmt/os.h>
 #include <fstream>
+#include <iterator>
 #include <nlohmann/json.hpp>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
@@ -22,8 +24,10 @@ using occ::main::PotentialType;
 
 inline PES construct_pes_from_json(nlohmann::json j,
                                    PotentialType potential_type,
-                                   EFSettings settings) {
+                                   EFSettings settings,
+                                   std::vector<std::string> &gulp_strings) {
   const auto &pairs = j["all_pairs"];
+  double gs = settings.gulp_scale;
   PES pes(settings.scale_factor);
   int discarded_count = 0;
   double discarded_total_energy = 0.0;
@@ -48,17 +52,24 @@ inline PES construct_pes_from_json(nlohmann::json j,
     pes.set_shift(max_energy);
   }
 
+  ankerl::unordered_dense::set<std::string> dedup_gulp_strings;
+
   for (size_t mol_idx = 0; mol_idx < pairs.size(); mol_idx++) {
     const auto &mol_pairs = pairs[mol_idx];
     for (const auto &pair : mol_pairs) {
       const auto r_arr = pair["rvec"];
       occ::Vec3 rvec(r_arr[0], r_arr[1], r_arr[2]);
       occ::Vec3 unit_vec = rvec.normalized();
+      const std::pair<int, int> &pair_indices = pair["pair_indices"];
+      const auto [p1, p2] = pair_indices;
+      const std::pair<int, int> &uc_pair_indices = pair["pair_uc_indices"];
+      const auto [uc_p1, uc_p2] = uc_pair_indices;
 
       const auto &energies_json = pair["energies"];
       double total_energy = energies_json["Total"];
       total_energy -= max_energy;
-      double r0 = pair["r"];
+      const double r0 = pair["r"];
+      const double rl = r0 * (1 - gs), ru = r0 * (1 + gs);
       if (total_energy > 0.0) {
         if (!settings.include_positive) {
           occ::log::debug("Skipping pair with positive total energy {:.4f}",
@@ -67,9 +78,10 @@ inline PES construct_pes_from_json(nlohmann::json j,
           discarded_total_energy += total_energy;
           continue;
         }
-        double eps = -1.0 * total_energy;
+        const double eps = -1.0 * total_energy;
         auto potential = std::make_unique<LJ_AWrapper>(eps, r0, rvec);
-        occ::log::debug("Added LJ_A potential: {}", potential->to_string());
+        occ::log::debug("Added LJ_A potential: {} between pair {} {} ({} {})",
+                        potential->to_string(), p1, p2, uc_p1, uc_p2);
         pes.add_potential(std::move(potential));
         continue;
       }
@@ -77,21 +89,35 @@ inline PES construct_pes_from_json(nlohmann::json j,
       switch (potential_type) {
       case PotentialType::MORSE: {
         double D0 = -1.0 * total_energy;
-        double m = static_cast<double>(pair["mass"]); // kg / mole
+        const auto pair_masses = pair["mass"];
+        double m = std::sqrt(static_cast<double>(pair_masses[0]) *
+                             static_cast<double>(pair_masses[1])); // kg / mole
         double h = std::pow(10, 13);
         double conversion_factor = 1.6605388e-24 * std::pow(h, 2) * 6.0221418;
         double k = m * conversion_factor; // kj/mol/angstrom^2
         double alpha = sqrt(k / (2 * abs(D0)));
 
         auto potential = std::make_unique<MorseWrapper>(D0, r0, alpha, rvec);
-        occ::log::debug("Added Morse potential: {}", potential->to_string());
+        potential->set_pair_indices(pair_indices);
+        potential->set_uc_pair_indices(uc_pair_indices);
+        occ::log::debug("Added Morse potential: {} between pair {} {} ({} {})",
+                        potential->to_string(), p1, p2, uc_p1, uc_p2);
         pes.add_potential(std::move(potential));
         break;
       }
       case PotentialType::LJ: {
         double eps = -1.0 * total_energy;
         auto potential = std::make_unique<LJWrapper>(eps, r0, rvec);
-        occ::log::debug("Added LJ potential: {}", potential->to_string());
+        potential->set_pair_indices(pair_indices);
+        potential->set_uc_pair_indices(uc_pair_indices);
+        occ::log::debug("Added LJ potential: {} between pair {} {} ({} {})",
+                        potential->to_string(), p1, p2, uc_p1, uc_p2);
+
+        auto [smaller, larger] = std::minmax(uc_p1, uc_p2);
+        const std::string gulp_str =
+            fmt::format("C{} core C{} core {:12.5f} {:12.5f} {:12.5f} {:12.5f}",
+                        smaller, larger, eps, r0, rl, ru);
+        dedup_gulp_strings.insert(gulp_str);
         pes.add_potential(std::move(potential));
         break;
       }
@@ -101,6 +127,9 @@ inline PES construct_pes_from_json(nlohmann::json j,
       }
     }
   }
+  for (const auto &str : dedup_gulp_strings) {
+    gulp_strings.push_back(str);
+  }
 
   if (discarded_count > 0) {
     occ::log::warn("Discarded {} pairs with positive interaction energies "
@@ -109,59 +138,6 @@ inline PES construct_pes_from_json(nlohmann::json j,
   }
 
   return pes;
-}
-
-inline void print_matrix_full(const occ::Mat6 &matrix, int precision = 6,
-                              int width = 12) {
-  for (int i = 0; i < 6; ++i) {
-    std::string row;
-    for (int j = 0; j < 6; ++j) {
-      row += fmt::format("{:{}.{}f}", matrix(i, j), width, precision);
-    }
-    occ::log::info("{}", row);
-  }
-  occ::log::info("");
-}
-
-inline void print_matrix_upper_triangle(const occ::Mat6 &matrix,
-                                        int precision = 3, int width = 9) {
-
-  for (int i = 0; i < 6; ++i) {
-    std::string row;
-    for (int k = 0; k < i; ++k) {
-      row += fmt::format("{:{}}", "", width);
-    }
-    for (int j = i; j < 6; ++j) {
-      row += fmt::format("{:{}.{}f}", matrix(i, j), width, precision);
-    }
-    occ::log::info("{}", row);
-  }
-  occ::log::info("");
-}
-
-inline void print_matrix(const occ::Mat6 &matrix,
-                         bool upper_triangle_only = false, int precision = 3,
-                         int width = 9) {
-  if (upper_triangle_only) {
-    print_matrix_upper_triangle(matrix, precision, width);
-  } else {
-    print_matrix_full(matrix, precision, width);
-  }
-}
-
-inline void save_matrix(const occ::Mat6 &matrix, const std::string &filename) {
-  std::ofstream file(filename);
-  occ::log::info("Writing matrix to file {}", filename);
-  file << std::fixed << std::setprecision(6);
-  for (int i = 0; i < matrix.rows(); ++i) {
-    for (int j = 0; j < matrix.cols(); ++j) {
-      file << std::setw(10) << matrix(i, j);
-      if (j < matrix.cols() - 1)
-        file << " ";
-    }
-    file << "\n";
-  }
-  file.close();
 }
 
 inline PotentialType
@@ -202,34 +178,85 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   occ::log::info("Title: {}", j["title"].get<std::string>());
   occ::log::info("Model: {}", j["model"].get<std::string>());
 
+  std::vector<std::string> gulp_strings;
+  gulp_strings.push_back("conp prop phon noden hessian");
+  gulp_strings.push_back("");
+  gulp_strings.push_back("cell");
+  Crystal crystal = j["crystal"];
+  const auto &uc = crystal.unit_cell();
+  const auto &lengths = uc.lengths();
+  const auto &angles = uc.angles();
+  double cf = 180.0 / occ::units::PI;
+  std::string cry_str = fmt::format(
+      "{:7.3f} {:7.3f} {:7.3f} {:6.2f} {:6.2f} {:6.2f}", lengths[0], lengths[1],
+      lengths[2], angles[0] * cf, angles[1] * cf, angles[2] * cf);
+  gulp_strings.push_back(cry_str);
+  gulp_strings.push_back("");
+  gulp_strings.push_back("cart");
+  const auto &uc_mols = crystal.unit_cell_molecules();
+  for (const auto &mol : uc_mols) {
+    const auto &com = mol.center_of_mass();
+    const int mol_idx = mol.unit_cell_molecule_idx();
+    std::string gulp_str = fmt::format("C{} core {:12.8f} {:12.8f} {:12.8f}",
+                                       mol_idx, com[0], com[1], com[2]);
+    gulp_strings.push_back(gulp_str);
+  }
+  gulp_strings.push_back("");
+  gulp_strings.push_back("space");
+  gulp_strings.push_back("1");
+  gulp_strings.push_back("");
+
   PotentialType pot_type = determine_potential_type(settings.potential_type);
 
-  const char *type_name =
-      (pot_type == PotentialType::MORSE) ? "Morse" : "Lennard-Jones";
+  std::string type_name;
+  if (pot_type == PotentialType::MORSE) {
+    type_name = "Morse";
+    gulp_strings.push_back("morse inter kjmol");
+  } else {
+    type_name = "Lennard-Jones";
+    gulp_strings.push_back("lennard epsilon kjmol");
+  }
   occ::log::info("Using {} potential", type_name);
 
-  Crystal crystal = j["crystal"];
+  PES pes = construct_pes_from_json(j, pot_type, settings, gulp_strings);
 
-  PES pes = construct_pes_from_json(j, pot_type, settings);
+  gulp_strings.push_back("");
+  gulp_strings.push_back("output drv file");
+
+  if (!settings.gulp_file.empty()) {
+    occ::log::info("Writing coarse-grained crystal to GULP input '{}'",
+                   settings.gulp_file);
+    occ::log::warn("The coarse-grained GULP input has not been thoroughly "
+                   "tested. Use with caution.");
+    std::ofstream gulp_file(settings.gulp_file);
+    if (gulp_file.is_open()) {
+      std::copy(gulp_strings.begin(), gulp_strings.end(),
+                std::ostream_iterator<std::string>(gulp_file, "\n"));
+    }
+  }
 
   double elat = pes.lattice_energy(); // per mole of unit cells
   occ::Mat6 cij = pes.compute_voigt_elastic_tensor_analytical(crystal.volume());
+  occ::Mat6 cij2 = pes.voigt_elastic_tensor_from_hessian(crystal.volume());
+  // occ::Mat hessian = pes.construct_cartesian_hessian();
   if (settings.max_to_zero) {
     double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
     occ::log::info("Original lattice energy {:.3f} kJ/(mole unit cells)",
                    og_elat);
     occ::log::info("Shifted lattice energy {:.3f} kJ/(mole unit cells)", elat);
     occ::log::info("Original elastic constant matrix: (Units=GPa)");
-    print_matrix(cij, true);
+    occ::main::print_matrix(cij, true);
     cij *= og_elat / elat;
     occ::log::info("Shifted elastic constant matrix: (Units=GPa)");
-    print_matrix(cij, true);
+    occ::main::print_matrix(cij, true);
   } else {
     occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)", elat);
     occ::log::info("Elastic constant matrix: (Units=GPa)");
-    print_matrix(cij, true);
+    occ::main::print_matrix(cij, true);
+    occ::log::info("Elastic constant matrix from hessian: (Units=GPa)");
+    occ::main::print_matrix(cij2, true);
   }
-  save_matrix(cij, settings.output_file);
+  occ::main::save_matrix(cij, settings.output_file);
 }
 
 namespace occ::main {
@@ -252,6 +279,13 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
 
   elastic_fit->add_option("-p,--potential", config->potential_type,
                           "Potential type to fit to. Either 'morse' or 'lj'.");
+
+  elastic_fit->add_option("-g,--gulp_file", config->gulp_file,
+                          "Write coarse grained crystal as a GULP input file.");
+
+  elastic_fit->add_option(
+      "--gulp_scale", config->gulp_scale,
+      "Fraction of pair distance to set min and max cutoff for GULP.");
 
   elastic_fit->add_flag("--include-positive", config->include_positive,
                         "Whether or not to include positive "

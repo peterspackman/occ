@@ -98,7 +98,7 @@ struct CrystalAtomRegion {
     disorder_group.resize(n);
   }
 
-  /**
+  /**./fitting/fit.py
    * \brief Returns the number of atoms in the region.
    *
    * \return The size of the region, i.e., the number of atoms it contains.
