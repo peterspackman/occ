@@ -75,7 +75,7 @@ inline PES construct_pes_from_json(nlohmann::json j,
       double total_energy = energies_json["Total"];
       total_energy -= max_energy;
       const double r0 = pair["r"];
-      const double rl = r0 * (1 - gs), ru = r0 * (1 + gs);
+      const double rl = r0 - gs, ru = r0 + gs;
       if (total_energy > 0.0) {
         if (!settings.include_positive) {
           occ::log::debug("Skipping pair with positive total energy {:.4f}",
@@ -122,7 +122,7 @@ inline PES construct_pes_from_json(nlohmann::json j,
         auto [smaller, larger] = std::minmax(uc_p1, uc_p2);
         const std::string gulp_str =
             fmt::format("C{} core C{} core {:12.5f} {:12.5f} {:12.5f} {:12.5f}",
-                        smaller, larger, eps, r0, rl, ru);
+                        smaller + 1, larger + 1, eps, r0, rl, ru);
         dedup_gulp_strings.insert(gulp_str);
         pes.add_potential(std::move(potential));
         break;
@@ -206,7 +206,7 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
     const auto &com = mol.center_of_mass();
     const int mol_idx = mol.unit_cell_molecule_idx();
     std::string gulp_str = fmt::format("C{} core {:12.8f} {:12.8f} {:12.8f}",
-                                       mol_idx, com[0], com[1], com[2]);
+                                       mol_idx + 1, com[0], com[1], com[2]);
     gulp_strings.push_back(gulp_str);
   }
   gulp_strings.push_back("");
