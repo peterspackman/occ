@@ -1,5 +1,6 @@
 #pragma once
 #include <CLI/App.hpp>
+#include <Eigen/Eigenvalues>
 #include <cmath>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
@@ -11,6 +12,26 @@
 namespace occ::main {
 
 using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
+
+inline void print_cvector(const occ::CVec &vec, int per_line) {
+  std::string line;
+
+  for (Eigen::Index i = 0; i < vec.size(); ++i) {
+    std::complex<double> val = vec(i);
+
+    if (std::abs(val.real()) < 1e-10 && val.imag() != 0.0) {
+      line += fmt::format("{:7.2f}", -std::abs(val.imag()));
+    } else {
+      line += fmt::format("{:7.2f}", val.real());
+    }
+
+    // Check if we need to print the line
+    if ((i + 1) % per_line == 0 || i == vec.size() - 1) {
+      spdlog::info("{}", line);
+      line.clear();
+    }
+  }
+}
 
 inline void print_matrix_full(const occ::Mat6 &matrix, int precision = 6,
                               int width = 12) {
@@ -235,9 +256,14 @@ public:
     return m_uc_pair_indices;
   }
 
+  inline void set_pair_mass(std::pair<double, double> m) { m_pair_mass = m; }
+
+  inline const std::pair<double, double> &pair_mass() { return m_pair_mass; }
+
   occ::Vec3 r_vector;
   occ::Vec3 r_hat;
   PairIndices m_pair_indices, m_uc_pair_indices;
+  std::pair<double, double> m_pair_mass;
   double r0;
 };
 
@@ -364,6 +390,8 @@ public:
     occ::Mat D_ei = occ::Mat::Zero(6, dim);   // Strain-Cart
     occ::Mat D_ij = occ::Mat::Zero(dim, dim); // Cart-Cart
 
+    occ::Mat Mass_inv_ij = occ::Mat::Zero(dim, dim); // Dynamical Cart-Cart
+
     for (const auto &pot : m_potentials) {
       const occ::Vec3 &r_hat = pot->r_hat;
       const occ::Vec3 &r_vector = pot->r_vector;
@@ -372,6 +400,7 @@ public:
       double dU_dr = pot->first_derivative();
       double d2U_dr2 = pot->second_derivative();
       const auto [idx_0, idx_1] = pot->uc_pair_indices();
+      const auto [m0, m1] = pot->pair_mass();
 
       for (int p = 0; p < 6; p++) {
         auto [alpha, beta] = this->voigt_notation(p);
@@ -419,6 +448,15 @@ public:
           D_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) += e;
           D_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) -= e;
           D_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) -= e;
+
+          Mass_inv_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) =
+              1 / std::sqrt(m0 * m0);
+          Mass_inv_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) =
+              1 / std::sqrt(m1 * m1);
+          Mass_inv_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) =
+              1 / std::sqrt(m0 * m1);
+          Mass_inv_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) =
+              1 / std::sqrt(m1 * m0);
         }
       }
       for (int alpha = 0; alpha < 3; alpha++) {
@@ -429,15 +467,27 @@ public:
     D_ee /= 2;
     D_ei /= 2;
     D_ij /= 2;
+    occ::Mat Dyn_ij = Mass_inv_ij * D_ij;
     save_matrix(D_ij, "D_ij.txt",
                 {"Cartesian-cartesian Hessian as upper right triangle "
                  "(kJ/mol/Ang**2)"});
+    save_matrix(Mass_inv_ij, "Mass_inv_ij.txt",
+                {"Inverted mass matrix as upper right triangle "
+                 "(1/kg)"});
+    save_matrix(
+        Dyn_ij, "Dyn_ij.txt",
+        {"Dynamical cartesian-cartesian Hessian as upper right triangle "
+         "(kJ/Ang**2/kg)"});
     save_matrix(D_ei.transpose(), "D_ei.txt",
                 {"Strain-cartesian second derivative matrix as upper right "
                  "triangle (kJ/mol/Ang)"});
     save_matrix(D_ee, "D_ee.txt",
                 {"Strain-strain second derivative matrix as upper right "
                  "triangle (kJ/mol)"});
+    Eigen::EigenSolver<occ::Mat> es(Dyn_ij);
+    occ::CVec eigenvalues = es.eigenvalues();
+    occ::log::info("Phonon frequencies (cm-1):");
+    print_cvector(eigenvalues, 6);
     auto D_ij_inv = D_ij.inverse();
     occ::Mat6 correction = D_ei * D_ij_inv * D_ei.transpose();
     occ::Mat6 C =

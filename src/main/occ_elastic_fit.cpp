@@ -65,6 +65,12 @@ inline PES construct_pes_from_json(nlohmann::json j,
       const std::pair<int, int> &uc_pair_indices = pair["pair_uc_indices"];
       const auto [uc_p1, uc_p2] = uc_pair_indices;
 
+      const auto pair_masses = pair["mass"];
+      const auto pair_mass =
+          std::pair(static_cast<double>(pair_masses[0]),
+                    static_cast<double>(pair_masses[1])); // kg / mole
+      double m = std::sqrt(pair_mass.first * pair_mass.second);
+
       const auto &energies_json = pair["energies"];
       double total_energy = energies_json["Total"];
       total_energy -= max_energy;
@@ -82,6 +88,7 @@ inline PES construct_pes_from_json(nlohmann::json j,
         auto potential = std::make_unique<LJ_AWrapper>(eps, r0, rvec);
         occ::log::debug("Added LJ_A potential: {} between pair {} {} ({} {})",
                         potential->to_string(), p1, p2, uc_p1, uc_p2);
+        potential->set_pair_mass(pair_mass);
         pes.add_potential(std::move(potential));
         continue;
       }
@@ -89,9 +96,6 @@ inline PES construct_pes_from_json(nlohmann::json j,
       switch (potential_type) {
       case PotentialType::MORSE: {
         double D0 = -1.0 * total_energy;
-        const auto pair_masses = pair["mass"];
-        double m = std::sqrt(static_cast<double>(pair_masses[0]) *
-                             static_cast<double>(pair_masses[1])); // kg / mole
         double h = std::pow(10, 13);
         double conversion_factor = 1.6605388e-24 * std::pow(h, 2) * 6.0221418;
         double k = m * conversion_factor; // kj/mol/angstrom^2
@@ -100,6 +104,7 @@ inline PES construct_pes_from_json(nlohmann::json j,
         auto potential = std::make_unique<MorseWrapper>(D0, r0, alpha, rvec);
         potential->set_pair_indices(pair_indices);
         potential->set_uc_pair_indices(uc_pair_indices);
+        potential->set_pair_mass(pair_mass);
         occ::log::debug("Added Morse potential: {} between pair {} {} ({} {})",
                         potential->to_string(), p1, p2, uc_p1, uc_p2);
         pes.add_potential(std::move(potential));
@@ -110,6 +115,7 @@ inline PES construct_pes_from_json(nlohmann::json j,
         auto potential = std::make_unique<LJWrapper>(eps, r0, rvec);
         potential->set_pair_indices(pair_indices);
         potential->set_uc_pair_indices(uc_pair_indices);
+        potential->set_pair_mass(pair_mass);
         occ::log::debug("Added LJ potential: {} between pair {} {} ({} {})",
                         potential->to_string(), p1, p2, uc_p1, uc_p2);
 
@@ -178,11 +184,13 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   occ::log::info("Title: {}", j["title"].get<std::string>());
   occ::log::info("Model: {}", j["model"].get<std::string>());
 
+  Crystal crystal = j["crystal"];
+
   std::vector<std::string> gulp_strings;
   gulp_strings.push_back("conp prop phon noden hessian");
   gulp_strings.push_back("");
   gulp_strings.push_back("cell");
-  Crystal crystal = j["crystal"];
+
   const auto &uc = crystal.unit_cell();
   const auto &lengths = uc.lengths();
   const auto &angles = uc.angles();
@@ -249,6 +257,9 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
     cij *= og_elat / elat;
     occ::log::info("Shifted elastic constant matrix: (Units=GPa)");
     occ::main::print_matrix(cij, true);
+    cij2 *= og_elat / elat;
+    occ::log::info("Shifted elastic constant matrix from hessian: (Units=GPa)");
+    occ::main::print_matrix(cij2, true);
   } else {
     occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)", elat);
     occ::log::info("Elastic constant matrix: (Units=GPa)");
