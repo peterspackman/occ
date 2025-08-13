@@ -512,8 +512,10 @@ public:
     occ::CVec eigenvalues = es.eigenvalues();
     occ::log::info("Phonon frequencies (cm-1):");
     print_cvector(eigenvalues, 6);
-    auto D_ij_inv = D_ij.inverse();
-    occ::Mat6 correction = D_ei * D_ij_inv * D_ei.transpose();
+    // auto D_ij_inv = D_ij.inverse();
+    // occ::Mat6 correction = D_ei * D_ij_inv * D_ei.transpose();
+    occ::Mat X = D_ij.lu().solve(D_ei.transpose()); // D_ij * X = D_ei^T
+    occ::Mat6 correction = D_ei * X; // This gives D_ei * D_ij^(-1) * D_ei^T
     occ::Mat6 C =
         (D_ee - correction) / volume * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
 
