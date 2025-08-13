@@ -121,7 +121,7 @@ inline PES construct_pes_from_json(nlohmann::json j,
 
         auto [smaller, larger] = std::minmax(uc_p1, uc_p2);
         const std::string gulp_str =
-            fmt::format("C{} core C{} core {:12.5f} {:12.5f} {:12.5f} {:12.5f}",
+            fmt::format("X{} core X{} core {:12.5f} {:12.5f} {:12.5f} {:12.5f}",
                         smaller + 1, larger + 1, eps, r0, rl, ru);
         dedup_gulp_strings.insert(gulp_str);
         pes.add_potential(std::move(potential));
@@ -205,10 +205,19 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   for (const auto &mol : uc_mols) {
     const auto &com = mol.center_of_mass();
     const int mol_idx = mol.unit_cell_molecule_idx();
-    std::string gulp_str = fmt::format("C{} core {:12.8f} {:12.8f} {:12.8f}",
+    std::string gulp_str = fmt::format("X{} core {:12.8f} {:12.8f} {:12.8f}",
                                        mol_idx + 1, com[0], com[1], com[2]);
     gulp_strings.push_back(gulp_str);
   }
+  gulp_strings.push_back("");
+  gulp_strings.push_back("element");
+  for (const auto &mol : uc_mols) {
+    double m = mol.molar_mass() * 1000;
+    const int mol_idx = mol.unit_cell_molecule_idx();
+    std::string gulp_str = fmt::format("mass X{} {:8.4f}", mol_idx + 1, m);
+    gulp_strings.push_back(gulp_str);
+  }
+  gulp_strings.push_back("end");
   gulp_strings.push_back("");
   gulp_strings.push_back("space");
   gulp_strings.push_back("1");
