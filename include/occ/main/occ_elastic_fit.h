@@ -73,39 +73,48 @@ inline void print_matrix(const occ::Mat6 &matrix,
 
 inline void save_matrix(const occ::Mat &matrix, const std::string &filename,
                         std::vector<std::string> comments = {},
-                        bool upper_triangle_only = true) {
+                        bool upper_triangle_only = false, int width = 6) {
   std::ofstream file(filename);
   occ::log::info("Writing matrix to file {}", filename);
   for (const auto &comment : comments) {
     file << "# " << comment << std::endl;
   }
-  file << std::fixed << std::setprecision(6);
+  file << std::fixed << std::setprecision(4);
 
   if (upper_triangle_only) {
     int count = 0;
     for (int i = 0; i < matrix.rows(); ++i) {
       for (int j = i; j < matrix.cols(); ++j) {
-        file << std::setw(10) << matrix(i, j);
+        file << std::setw(12) << matrix(i, j);
         count++;
-        if (count % 3 == 0) {
+        if (count % width == 0) {
           file << std::endl;
         } else {
           file << " ";
         }
       }
     }
-    if (count % 3 != 0) {
+    if (count % width != 0) {
       file << std::endl;
     }
-  } else {
-    for (int i = 0; i < matrix.rows(); ++i) {
-      for (int j = 0; j < matrix.cols(); ++j) {
-        file << std::setw(10) << matrix(i, j);
-        if (j < matrix.cols() - 1)
-          file << " ";
+    file.close();
+    return;
+  }
+
+  int count = 0;
+  for (int i = 0; i < matrix.rows(); ++i) {
+    for (int j = 0; j < matrix.cols(); ++j) {
+      file << std::setw(12) << matrix(i, j);
+      count++;
+      if (count % width == 0) {
+        file << std::endl;
+      } else {
+        file << " ";
       }
-      file << std::endl;
     }
+  }
+  if (count % width != 0) {
+    file << std::endl;
   }
 
   file.close();
@@ -432,7 +441,8 @@ public:
           //               ((alpha == coord ? r_vector[beta]: 0) +
           //                (beta == coord ? r_vector[alpha]: 0));
 
-          D_ei(p, idx_0 * 3 + coord) += mixed_term;
+          D_ei(p, idx_0 * 3 + coord) -= mixed_term;
+          D_ei(p, idx_1 * 3 + coord) += mixed_term;
         }
       }
       for (int alpha = 0; alpha < 3; alpha++) {
@@ -469,21 +479,35 @@ public:
     D_ij /= 2;
     occ::Mat Dyn_ij = Mass_inv_ij * D_ij;
     save_matrix(D_ij, "D_ij.txt",
-                {"Cartesian-cartesian Hessian as upper right triangle "
+                {"Cartesian-cartesian Hessian "
                  "(kJ/mol/Ang**2)"});
+    save_matrix(D_ij / 96.485, "D_ij_gulp.txt",
+                {"Cartesian-cartesian Hessian"
+                 "(eV/Ang**2)"},
+                false, 3);
     save_matrix(Mass_inv_ij, "Mass_inv_ij.txt",
-                {"Inverted mass matrix as upper right triangle "
-                 "(1/kg)"});
+                {"Inverted mass matrix"
+                 "(1/kg)"},
+                false);
     save_matrix(
         Dyn_ij, "Dyn_ij.txt",
         {"Dynamical cartesian-cartesian Hessian as upper right triangle "
-         "(kJ/Ang**2/kg)"});
+         "(kJ/Ang**2/kg)"},
+        false);
     save_matrix(D_ei.transpose(), "D_ei.txt",
                 {"Strain-cartesian second derivative matrix as upper right "
-                 "triangle (kJ/mol/Ang)"});
+                 "triangle (kJ/mol/Ang)"},
+                false);
+    save_matrix(D_ei.transpose() / 96.485, "D_ei_gulp.txt",
+                {"Strain-cartesian second derivative "
+                 "(eV/Ang)"},
+                false, 3);
     save_matrix(D_ee, "D_ee.txt",
-                {"Strain-strain second derivative matrix as upper right "
-                 "triangle (kJ/mol)"});
+                {"Strain-strain second derivative matrix "
+                 "(kJ/mol)"},
+                false);
+    save_matrix(D_ee / 96.485, "D_ee_gulp.txt",
+                {"Strain-strain second derivative matrix (eV)"}, false, 3);
     Eigen::EigenSolver<occ::Mat> es(Dyn_ij);
     occ::CVec eigenvalues = es.eigenvalues();
     occ::log::info("Phonon frequencies (cm-1):");
