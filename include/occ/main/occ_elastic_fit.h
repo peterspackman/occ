@@ -11,6 +11,8 @@
 
 namespace occ::main {
 
+enum class LinearSolverType { LU, SVD, QR, LDLT };
+
 using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
 
 inline void print_cvector(const occ::CVec &vec, int per_line) {
@@ -381,7 +383,9 @@ public:
 
   inline double shift() const { return m_shift_factor; }
 
-  inline occ::Mat6 voigt_elastic_tensor_from_hessian(double volume) {
+  inline occ::Mat6 voigt_elastic_tensor_from_hessian(double volume, 
+                                                      LinearSolverType solver_type = LinearSolverType::SVD, 
+                                                      double svd_threshold = 1e-12) {
     size_t n_molecules = 0;
     for (const auto &pot : m_potentials) {
       const auto [idx_0, idx_1] = pot->uc_pair_indices();
@@ -514,7 +518,7 @@ public:
     print_cvector(eigenvalues, 6);
     // auto D_ij_inv = D_ij.inverse();
     // occ::Mat6 correction = D_ei * D_ij_inv * D_ei.transpose();
-    occ::Mat X = D_ij.lu().solve(D_ei.transpose()); // D_ij * X = D_ei^T
+    occ::Mat X = solve_linear_system(D_ij, D_ei.transpose(), solver_type, svd_threshold); // D_ij * X = D_ei^T
     occ::Mat6 correction = D_ei * X; // This gives D_ei * D_ij^(-1) * D_ei^T
     occ::Mat6 C =
         (D_ee - correction) / volume * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
@@ -571,6 +575,25 @@ public:
     }
   }
 
+  static occ::Mat solve_linear_system(const occ::Mat &A, const occ::Mat &B, 
+                                       LinearSolverType solver_type, 
+                                       double svd_threshold = 1e-12) {
+    switch (solver_type) {
+    case LinearSolverType::LU:
+      return A.lu().solve(B);
+    case LinearSolverType::SVD: {
+      Eigen::JacobiSVD<occ::Mat> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+      return svd.solve(B);
+    }
+    case LinearSolverType::QR:
+      return A.householderQr().solve(B);
+    case LinearSolverType::LDLT:
+      return A.ldlt().solve(B);
+    default:
+      throw std::runtime_error("Unknown linear solver type");
+    }
+  }
+
   static occ::Mat6 to_voigt(const occ::Mat3 C[3][3]) {
     std::unordered_map<int, int> voigt_map = {
         {0 * 3 + 0, 0}, {1 * 3 + 1, 1}, {2 * 3 + 2, 2},
@@ -619,6 +642,9 @@ struct EFSettings {
   double scale_factor = 2.0;
   double gulp_scale = 0.01;
   std::string gulp_file{""};
+  LinearSolverType solver_type = LinearSolverType::SVD;
+  std::string solver_type_str = "svd";
+  double svd_threshold = 1e-12;
 };
 
 CLI::App *add_elastic_fit_subcommand(CLI::App &app);

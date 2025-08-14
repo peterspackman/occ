@@ -161,6 +161,23 @@ determine_potential_type(const std::string &user_preference) {
   return PotentialType::LJ;
 }
 
+inline occ::main::LinearSolverType
+determine_solver_type(const std::string &user_preference) {
+  if (!user_preference.empty()) {
+    if (user_preference == "lu")
+      return occ::main::LinearSolverType::LU;
+    if (user_preference == "svd")
+      return occ::main::LinearSolverType::SVD;
+    if (user_preference == "qr")
+      return occ::main::LinearSolverType::QR;
+    if (user_preference == "ldlt")
+      return occ::main::LinearSolverType::LDLT;
+  }
+  occ::log::debug("Unrecognised solver type '{}', using SVD decomposition", user_preference);
+  occ::log::debug("Options are 'lu', 'svd', 'qr', 'ldlt'");
+  return occ::main::LinearSolverType::SVD;
+}
+
 inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   std::string filename = settings.json_filename;
   occ::log::info("Reading elat results from: {}", filename);
@@ -224,6 +241,10 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   gulp_strings.push_back("");
 
   PotentialType pot_type = determine_potential_type(settings.potential_type);
+  
+  // Parse solver type and create updated settings
+  occ::main::EFSettings updated_settings = settings;
+  updated_settings.solver_type = determine_solver_type(settings.solver_type_str);
 
   std::string type_name;
   if (pot_type == PotentialType::MORSE) {
@@ -254,7 +275,7 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
 
   double elat = pes.lattice_energy(); // per mole of unit cells
   occ::Mat6 cij = pes.compute_voigt_elastic_tensor_analytical(crystal.volume());
-  occ::Mat6 cij2 = pes.voigt_elastic_tensor_from_hessian(crystal.volume());
+  occ::Mat6 cij2 = pes.voigt_elastic_tensor_from_hessian(crystal.volume(), updated_settings.solver_type, updated_settings.svd_threshold);
   // occ::Mat hessian = pes.construct_cartesian_hessian();
   if (settings.max_to_zero) {
     double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
@@ -314,6 +335,13 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   elastic_fit->add_flag("--max-to-zero", config->max_to_zero,
                         "Whether or not to shift all pair energies "
                         "such that the maximum is zero.");
+
+  elastic_fit->add_option("--solver", config->solver_type_str,
+                          "Linear solver type for elastic tensor calculation. "
+                          "Options: 'lu', 'svd' (default), 'qr', 'ldlt'.");
+
+  elastic_fit->add_option("--svd-threshold", config->svd_threshold,
+                          "SVD threshold for pseudoinverse (when using SVD solver).");
 
   elastic_fit->callback([config]() { run_elastic_fit_subcommand(*config); });
 
