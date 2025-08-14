@@ -380,9 +380,9 @@ public:
 
   inline double shift() const { return m_shift_factor; }
 
-  inline occ::Mat6 voigt_elastic_tensor_from_hessian(double volume, 
-                                                      LinearSolverType solver_type = LinearSolverType::SVD, 
-                                                      double svd_threshold = 1e-12) {
+  inline occ::Mat6 voigt_elastic_tensor_from_hessian(
+      double volume, LinearSolverType solver_type = LinearSolverType::SVD,
+      double svd_threshold = 1e-12) {
     size_t n_molecules = 0;
     for (const auto &pot : m_potentials) {
       const auto [idx_0, idx_1] = pot->uc_pair_indices();
@@ -535,7 +535,8 @@ public:
     print_vector(phonons, 6);
     // auto D_ij_inv = D_ij.inverse();
     // occ::Mat6 correction = D_ei * D_ij_inv * D_ei.transpose();
-    occ::Mat X = solve_linear_system(D_ij, D_ei.transpose(), solver_type, svd_threshold); // D_ij * X = D_ei^T
+    occ::Mat X = solve_linear_system(D_ij, D_ei.transpose(), solver_type,
+                                     svd_threshold); // D_ij * X = D_ei^T
     occ::Mat6 correction = D_ei * X; // This gives D_ei * D_ij^(-1) * D_ei^T
     occ::Mat6 C =
         (D_ee - correction) / volume * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
@@ -592,14 +593,15 @@ public:
     }
   }
 
-  static occ::Mat solve_linear_system(const occ::Mat &A, const occ::Mat &B, 
-                                       LinearSolverType solver_type, 
-                                       double svd_threshold = 1e-12) {
+  static occ::Mat solve_linear_system(const occ::Mat &A, const occ::Mat &B,
+                                      LinearSolverType solver_type,
+                                      double svd_threshold = 1e-12) {
     switch (solver_type) {
     case LinearSolverType::LU:
       return A.lu().solve(B);
     case LinearSolverType::SVD: {
-      Eigen::JacobiSVD<occ::Mat> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+      Eigen::JacobiSVD<occ::Mat> svd(A,
+                                     Eigen::ComputeThinU | Eigen::ComputeThinV);
       return svd.solve(B);
     }
     case LinearSolverType::QR:
