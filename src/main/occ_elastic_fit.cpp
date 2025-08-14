@@ -278,33 +278,24 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   }
 
   double elat = pes.lattice_energy(); // per mole of unit cells
-  occ::Mat6 cij = pes.compute_voigt_elastic_tensor_analytical(crystal.volume());
-  occ::Mat6 cij2 = pes.voigt_elastic_tensor_from_hessian(
+  occ::Mat6 cij = pes.voigt_elastic_tensor_from_hessian(
       crystal.volume(), updated_settings.solver_type,
       updated_settings.svd_threshold);
 
   if (settings.max_to_zero) {
     double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
-    occ::log::info("Original lattice energy {:.3f} kJ/(mole unit cells)",
+    occ::log::info("Unaltered lattice energy {:.3f} kJ/(mole unit cells)",
                    og_elat);
     occ::log::info("Shifted lattice energy {:.3f} kJ/(mole unit cells)", elat);
-    occ::log::info("Original elastic constant matrix: (Units=GPa)");
-    occ::main::print_matrix(cij, true);
-    cij *= og_elat / elat;
     occ::log::info("Shifted elastic constant matrix: (Units=GPa)");
     occ::main::print_matrix(cij, true);
-    occ::log::info(
-        "Original elastic constant matrix from hessian: (Units=GPa)");
-    occ::main::print_matrix(cij2, true);
-    cij2 *= og_elat / elat;
-    occ::log::info("Shifted elastic constant matrix from hessian: (Units=GPa)");
-    occ::main::print_matrix(cij2, true);
+    cij *= og_elat / elat;
+    occ::log::info("Scaled+shifted elastic constant matrix: (Units=GPa)");
+    occ::main::print_matrix(cij, true);
   } else {
     occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)", elat);
     occ::log::info("Elastic constant matrix: (Units=GPa)");
     occ::main::print_matrix(cij, true);
-    occ::log::info("Elastic constant matrix from hessian: (Units=GPa)");
-    occ::main::print_matrix(cij2, true);
   }
   occ::main::save_matrix(cij, settings.output_file);
 }

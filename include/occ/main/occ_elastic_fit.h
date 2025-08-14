@@ -400,7 +400,7 @@ public:
     occ::Mat D_ei = occ::Mat::Zero(6, dim);   // Strain-Cart
     occ::Mat D_ij = occ::Mat::Zero(dim, dim); // Cart-Cart
 
-    occ::Mat Mass_inv_ij = occ::Mat::Zero(dim, dim); // Dynamical Cart-Cart
+    occ::Mat Mass_inv_ij = occ::Mat::Zero(dim, dim);
 
     for (const auto &pot : m_potentials) {
       const occ::Vec3 &r_hat = pot->r_hat;
@@ -539,36 +539,6 @@ public:
     return C;
   }
 
-  inline occ::Mat6
-  compute_voigt_elastic_tensor_analytical(double volume) const {
-    occ::Mat3 C[3][3];
-    for (int i = 0; i < 3; ++i) {
-      for (int j = 0; j < 3; ++j) {
-        C[i][j] = occ::Mat3::Zero();
-      }
-    }
-
-    for (const auto &pot : m_potentials) {
-      const occ::Vec3 &r_hat = pot->r_hat;
-      double r = pot->r0;
-      double d2V = pot->second_derivative();
-      double prefactor = d2V * r * r;
-
-      for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-          for (int k = 0; k < 3; k++) {
-            for (int l = 0; l < 3; l++) {
-              C[i][j](k, l) +=
-                  prefactor * r_hat[i] * r_hat[j] * r_hat[k] * r_hat[l];
-            }
-          }
-        }
-      }
-    }
-
-    return this->to_voigt(C) / volume / 2.0 * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
-  }
-
   static std::pair<int, int> voigt_notation(int voigt) {
     switch (voigt) {
     case 0:
@@ -606,44 +576,6 @@ public:
     default:
       throw std::runtime_error("Unknown linear solver type");
     }
-  }
-
-  static occ::Mat6 to_voigt(const occ::Mat3 C[3][3]) {
-    std::unordered_map<int, int> voigt_map = {
-        {0 * 3 + 0, 0}, {1 * 3 + 1, 1}, {2 * 3 + 2, 2},
-        {1 * 3 + 2, 3}, {2 * 3 + 1, 3}, {0 * 3 + 2, 4},
-        {2 * 3 + 0, 4}, {0 * 3 + 1, 5}, {1 * 3 + 0, 5}};
-
-    occ::Mat6 C_voigt = occ::Mat6::Zero();
-
-    for (int i = 0; i < 3; ++i) {
-      for (int j = 0; j < 3; ++j) {
-        for (int k = 0; k < 3; ++k) {
-          for (int l = 0; l < 3; ++l) {
-            auto alpha_it = voigt_map.find(i * 3 + j);
-            auto beta_it = voigt_map.find(k * 3 + l);
-
-            if (alpha_it == voigt_map.end() || beta_it == voigt_map.end()) {
-              throw std::runtime_error("Voigt mapping error");
-            }
-
-            int alpha = alpha_it->second;
-            int beta = beta_it->second;
-
-            double factor = 1.0;
-            if ((alpha < 3 && beta >= 3) || (alpha >= 3 && beta < 3)) {
-              factor = 0.5;
-            }
-            if (alpha >= 3 && beta >= 3) {
-              factor = 0.25;
-            }
-
-            C_voigt(alpha, beta) += factor * C[i][j](k, l);
-          }
-        }
-      }
-    }
-    return C_voigt;
   }
 };
 
