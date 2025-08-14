@@ -1,11 +1,10 @@
 #pragma once
+#include "occ/crystal/crystal.h"
 #include <CLI/App.hpp>
 #include <Eigen/Eigenvalues>
-#include <algorithm>
 #include <cmath>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
-#include <occ/core/units.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -13,111 +12,6 @@
 namespace occ::main {
 
 enum class LinearSolverType { LU, SVD, QR, LDLT };
-
-using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
-
-inline void print_vector(std::vector<double> &vec, int per_line) {
-  std::string line;
-
-  std::sort(vec.begin(), vec.end());
-
-  for (size_t i = 0; i < vec.size(); ++i) {
-    double val = vec[i];
-    line += fmt::format("{:9.3f}", val);
-    // Check if we need to print the line
-    if ((i + 1) % per_line == 0 || i == vec.size() - 1) {
-      spdlog::info("{}", line);
-      line.clear();
-    }
-  }
-}
-
-inline void print_matrix_full(const occ::Mat6 &matrix, int precision = 6,
-                              int width = 12) {
-  for (int i = 0; i < 6; ++i) {
-    std::string row;
-    for (int j = 0; j < 6; ++j) {
-      row += fmt::format("{:{}.{}f}", matrix(i, j), width, precision);
-    }
-    occ::log::info("{}", row);
-  }
-  occ::log::info("");
-}
-
-inline void print_matrix_upper_triangle(const occ::Mat6 &matrix,
-                                        int precision = 3, int width = 9) {
-
-  for (int i = 0; i < 6; ++i) {
-    std::string row;
-    for (int k = 0; k < i; ++k) {
-      row += fmt::format("{:{}}", "", width);
-    }
-    for (int j = i; j < 6; ++j) {
-      row += fmt::format("{:{}.{}f}", matrix(i, j), width, precision);
-    }
-    occ::log::info("{}", row);
-  }
-  occ::log::info("");
-}
-
-inline void print_matrix(const occ::Mat6 &matrix,
-                         bool upper_triangle_only = false, int precision = 3,
-                         int width = 9) {
-  if (upper_triangle_only) {
-    print_matrix_upper_triangle(matrix, precision, width);
-  } else {
-    print_matrix_full(matrix, precision, width);
-  }
-}
-
-inline void save_matrix(const occ::Mat &matrix, const std::string &filename,
-                        std::vector<std::string> comments = {},
-                        bool upper_triangle_only = false, int width = 6) {
-  std::ofstream file(filename);
-  occ::log::info("Writing matrix to file {}", filename);
-  for (const auto &comment : comments) {
-    file << "# " << comment << std::endl;
-  }
-  file << std::fixed << std::setprecision(4);
-
-  if (upper_triangle_only) {
-    int count = 0;
-    for (int i = 0; i < matrix.rows(); ++i) {
-      for (int j = i; j < matrix.cols(); ++j) {
-        file << std::setw(12) << matrix(i, j);
-        count++;
-        if (count % width == 0) {
-          file << std::endl;
-        } else {
-          file << " ";
-        }
-      }
-    }
-    if (count % width != 0) {
-      file << std::endl;
-    }
-    file.close();
-    return;
-  }
-
-  int count = 0;
-  for (int i = 0; i < matrix.rows(); ++i) {
-    for (int j = 0; j < matrix.cols(); ++j) {
-      file << std::setw(12) << matrix(i, j);
-      count++;
-      if (count % width == 0) {
-        file << std::endl;
-      } else {
-        file << " ";
-      }
-    }
-  }
-  if (count % width != 0) {
-    file << std::endl;
-  }
-
-  file.close();
-}
 
 struct Morse {
   double D0;
@@ -354,13 +248,14 @@ public:
 
 class PES {
 private:
+  crystal::Crystal m_crystal;
   std::vector<std::unique_ptr<PotentialBase>> m_potentials;
   double m_scale_factor;
   double m_shift_factor;
+  size_t m_n_molecules = 0;
 
 public:
-  explicit PES(double scale_factor_val = 1.0)
-      : m_scale_factor(scale_factor_val) {}
+  explicit PES(const crystal::Crystal &crystal) : m_crystal(crystal) {}
 
   inline void add_potential(std::unique_ptr<PotentialBase> pot) {
     m_potentials.push_back(std::move(pot));
@@ -378,11 +273,16 @@ public:
 
   inline void set_shift(double shift) { m_shift_factor = shift; }
 
+  inline void set_scale(double scale) { m_scale_factor = scale; }
+
   inline double shift() const { return m_shift_factor; }
 
-  inline occ::Mat6 voigt_elastic_tensor_from_hessian(
-      double volume, LinearSolverType solver_type = LinearSolverType::SVD,
-      double svd_threshold = 1e-12) {
+  inline const crystal::Crystal &crystal() const { return m_crystal; }
+
+  inline size_t num_unique_molecules() {
+    if (m_n_molecules > 0) {
+      return m_n_molecules;
+    }
     size_t n_molecules = 0;
     for (const auto &pot : m_potentials) {
       const auto [idx_0, idx_1] = pot->uc_pair_indices();
@@ -394,152 +294,17 @@ public:
       }
     }
     n_molecules++;
-    int dim = 3 * n_molecules;
-
-    occ::Mat6 D_ee = occ::Mat6::Zero();       // Strain-Strain
-    occ::Mat D_ei = occ::Mat::Zero(6, dim);   // Strain-Cart
-    occ::Mat D_ij = occ::Mat::Zero(dim, dim); // Cart-Cart
-
-    occ::Mat Mass_inv_ij = occ::Mat::Zero(dim, dim);
-
-    for (const auto &pot : m_potentials) {
-      const occ::Vec3 &r_hat = pot->r_hat;
-      const occ::Vec3 &r_vector = pot->r_vector;
-      double r = pot->r0;
-      double r2 = r * r;
-      double dU_dr = pot->first_derivative();
-      double d2U_dr2 = pot->second_derivative();
-      const auto [idx_0, idx_1] = pot->uc_pair_indices();
-      const auto [m0, m1] = pot->pair_mass();
-
-      for (int p = 0; p < 6; p++) {
-        auto [alpha, beta] = this->voigt_notation(p);
-        for (int q = 0; q < 6; q++) {
-          auto [gamma, delta] = this->voigt_notation(q);
-
-          double term1 = (r_vector[alpha] * r_vector[beta] * r_vector[gamma] *
-                          r_vector[delta]) *
-                         d2U_dr2 / r2;
-
-          // NOTE: term2 will be zero for us by definition.
-          // double term2 = dU_dr / r *
-          //                ((alpha == gamma ? r_hat[beta] * r_hat[delta] * r2:
-          //                0) +
-          //                 (alpha == delta ? r_hat[beta] * r_hat[gamma] * r2:
-          //                 0) + (beta == gamma ? r_hat[alpha] * r_hat[delta] *
-          //                 r2: 0) + (beta == delta ? r_hat[alpha] *
-          //                 r_hat[gamma] * r2: 0));
-          // D_ee(p, q) += term1 + term2;
-
-          D_ee(p, q) += term1;
-        }
-        for (int coord = 0; coord < 3; coord++) {
-          double mixed_term =
-              d2U_dr2 * r_vector[alpha] * r_vector[beta] * r_vector[coord] / r2;
-
-          // NOTE: zero by definition.
-          // mixed_term += dU_dr / r *
-          //               ((alpha == coord ? r_vector[beta]: 0) +
-          //                (beta == coord ? r_vector[alpha]: 0));
-
-          D_ei(p, idx_0 * 3 + coord) -= mixed_term;
-          D_ei(p, idx_1 * 3 + coord) += mixed_term;
-        }
-      }
-      for (int alpha = 0; alpha < 3; alpha++) {
-        for (int beta = 0; beta < 3; beta++) {
-          double e = d2U_dr2 * r_hat[alpha] * r_hat[beta];
-
-          // NOTE: zero by definition
-          // if (alpha == beta) {
-          //   e += dU_dr / r;
-          // }
-
-          D_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) += e;
-          D_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) += e;
-          D_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) -= e;
-          D_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) -= e;
-
-          Mass_inv_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) =
-              1 / std::sqrt(m0 * m0);
-          Mass_inv_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) =
-              1 / std::sqrt(m1 * m1);
-          Mass_inv_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) =
-              1 / std::sqrt(m0 * m1);
-          Mass_inv_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) =
-              1 / std::sqrt(m1 * m0);
-        }
-      }
-      for (int alpha = 0; alpha < 3; alpha++) {
-        for (int beta = 0; beta < 3; beta++) {
-        }
-      }
-    }
-    D_ee /= 2;
-    D_ei /= 2;
-    D_ij /= 2;
-    occ::Mat Dyn_ij = Mass_inv_ij.cwiseProduct(D_ij);
-    save_matrix(D_ij, "D_ij.txt",
-                {"Cartesian-cartesian Hessian "
-                 "(kJ/mol/Ang**2)"});
-    save_matrix(D_ij / 96.485, "D_ij_gulp.txt",
-                {"Cartesian-cartesian Hessian"
-                 "(eV/Ang**2)"},
-                false, 3);
-    save_matrix(Dyn_ij, "Dyn_ij.txt",
-                {"Dynamical cartesian-cartesian Hessian "
-                 "(kJ/Ang**2/kg)"},
-                false);
-    save_matrix(D_ei.transpose(), "D_ei.txt",
-                {"Strain-cartesian second derivative matrix "
-                 " (kJ/mol/Ang)"},
-                false);
-    save_matrix(D_ei.transpose() / 96.485, "D_ei_gulp.txt",
-                {"Strain-cartesian second derivative "
-                 "(eV/Ang)"},
-                false, 3);
-    save_matrix(D_ee, "D_ee.txt",
-                {"Strain-strain second derivative matrix "
-                 "(kJ/mol)"},
-                false);
-    save_matrix(D_ee / 96.485, "D_ee_gulp.txt",
-                {"Strain-strain second derivative matrix (eV)"}, false, 3);
-
-    Eigen::EigenSolver<occ::Mat> es(Dyn_ij);
-    occ::CVec eigenvalues = es.eigenvalues();
-    occ::Vec frequencies;
-    frequencies.resize(eigenvalues.size());
-    for (size_t i = 0; i < eigenvalues.size(); ++i) {
-      std::complex<double> eval = eigenvalues(i);
-      if (eval.real() < 0) {
-        frequencies(i) = -std::sqrt(-eval.real());
-      } else {
-        frequencies(i) = std::sqrt(eval.real());
-      }
-    }
-
-    const double conversion_factor =
-        std::sqrt(1e23) / (299792458.0 * 100) / (2 * occ::units::PI);
-
-    std::vector<double> phonons;
-    for (const double &f : frequencies) {
-      double p = f * conversion_factor;
-      phonons.push_back(p);
-    }
-    occ::log::info("Phonon frequencies (cm-1):");
-    print_vector(phonons, 6);
-    // auto D_ij_inv = D_ij.inverse();
-    // occ::Mat6 correction = D_ei * D_ij_inv * D_ei.transpose();
-    occ::Mat X = solve_linear_system(D_ij, D_ei.transpose(), solver_type,
-                                     svd_threshold); // D_ij * X = D_ei^T
-    occ::Mat6 correction = D_ei * X; // This gives D_ei * D_ij^(-1) * D_ei^T
-    occ::Mat6 C =
-        (D_ee - correction) / volume * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
-
-    return C;
+    m_n_molecules = n_molecules;
+    return n_molecules;
   }
 
-  static std::pair<int, int> voigt_notation(int voigt) {
+  occ::Mat6 voigt_elastic_tensor_from_hessian(
+      double volume, LinearSolverType solver_type = LinearSolverType::SVD,
+      double svd_threshold = 1e-12);
+
+  void compute_phonons(const occ::Mat &Dyn_ij);
+
+  static inline std::pair<int, int> voigt_notation(int voigt) {
     switch (voigt) {
     case 0:
       return {0, 0}; // xx
@@ -558,9 +323,10 @@ public:
     }
   }
 
-  static occ::Mat solve_linear_system(const occ::Mat &A, const occ::Mat &B,
-                                      LinearSolverType solver_type,
-                                      double svd_threshold = 1e-12) {
+  static inline occ::Mat solve_linear_system(const occ::Mat &A,
+                                             const occ::Mat &B,
+                                             LinearSolverType solver_type,
+                                             double svd_threshold = 1e-12) {
     switch (solver_type) {
     case LinearSolverType::LU:
       return A.lu().solve(B);
@@ -582,7 +348,8 @@ public:
 struct EFSettings {
   std::string json_filename;
   std::string output_file = "elastic_tensor.txt";
-  std::string potential_type = "lj";
+  std::string potential_type_str = "lj";
+  PotentialType potential_type = PotentialType::LJ;
   bool include_positive = false;
   bool max_to_zero = false;
   double scale_factor = 2.0;

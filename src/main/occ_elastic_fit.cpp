@@ -8,6 +8,7 @@
 #include <iterator>
 #include <nlohmann/json.hpp>
 #include <occ/core/log.h>
+#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/interaction/ce_energy_model.h>
@@ -16,19 +17,126 @@
 
 using occ::crystal::Crystal;
 using occ::main::EFSettings;
+using occ::main::LinearSolverType;
 using occ::main::LJ_AWrapper;
 using occ::main::LJWrapper;
 using occ::main::MorseWrapper;
 using occ::main::PES;
 using occ::main::PotentialType;
+using occ::units::degrees;
+using occ::units::EV_TO_KJ_PER_MOL;
+using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
+using occ::units::LIGHTSPEED;
+using occ::units::PI;
 
-inline PES construct_pes_from_json(nlohmann::json j,
-                                   PotentialType potential_type,
-                                   EFSettings settings,
-                                   std::vector<std::string> &gulp_strings) {
+inline void print_vector(occ::Vec &vec, int per_line) {
+  std::string line;
+
+  std::sort(vec.begin(), vec.end());
+
+  for (size_t i = 0; i < vec.size(); ++i) {
+    double val = vec(i);
+    line += fmt::format("{:9.3f}", val);
+    if ((i + 1) % per_line == 0 || i == vec.size() - 1) {
+      spdlog::info("{}", line);
+      line.clear();
+    }
+  }
+}
+
+inline void print_matrix_full(const occ::Mat6 &matrix, int precision = 6,
+                              int width = 12) {
+  for (int i = 0; i < 6; ++i) {
+    std::string row;
+    for (int j = 0; j < 6; ++j) {
+      row += fmt::format("{:{}.{}f}", matrix(i, j), width, precision);
+    }
+    occ::log::info("{}", row);
+  }
+  occ::log::info("");
+}
+
+inline void print_matrix_upper_triangle(const occ::Mat6 &matrix,
+                                        int precision = 3, int width = 9) {
+
+  for (int i = 0; i < 6; ++i) {
+    std::string row;
+    for (int k = 0; k < i; ++k) {
+      row += fmt::format("{:{}}", "", width);
+    }
+    for (int j = i; j < 6; ++j) {
+      row += fmt::format("{:{}.{}f}", matrix(i, j), width, precision);
+    }
+    occ::log::info("{}", row);
+  }
+  occ::log::info("");
+}
+
+inline void print_matrix(const occ::Mat6 &matrix,
+                         bool upper_triangle_only = false, int precision = 3,
+                         int width = 9) {
+  if (upper_triangle_only) {
+    print_matrix_upper_triangle(matrix, precision, width);
+  } else {
+    print_matrix_full(matrix, precision, width);
+  }
+}
+
+inline void save_matrix(const occ::Mat &matrix, const std::string &filename,
+                        std::vector<std::string> comments = {},
+                        bool upper_triangle_only = false, int width = 6) {
+  std::ofstream file(filename);
+  occ::log::info("Writing matrix to file {}", filename);
+  for (const auto &comment : comments) {
+    file << "# " << comment << std::endl;
+  }
+  file << std::fixed << std::setprecision(4);
+
+  if (upper_triangle_only) {
+    int count = 0;
+    for (int i = 0; i < matrix.rows(); ++i) {
+      for (int j = i; j < matrix.cols(); ++j) {
+        file << std::setw(12) << matrix(i, j);
+        count++;
+        if (count % width == 0) {
+          file << std::endl;
+        } else {
+          file << " ";
+        }
+      }
+    }
+    if (count % width != 0) {
+      file << std::endl;
+    }
+    file.close();
+    return;
+  }
+
+  int count = 0;
+  for (int i = 0; i < matrix.rows(); ++i) {
+    for (int j = 0; j < matrix.cols(); ++j) {
+      file << std::setw(12) << matrix(i, j);
+      count++;
+      if (count % width == 0) {
+        file << std::endl;
+      } else {
+        file << " ";
+      }
+    }
+  }
+  if (count % width != 0) {
+    file << std::endl;
+  }
+
+  file.close();
+}
+
+inline void build_pes_from_json(nlohmann::json j, PES &pes, EFSettings settings,
+                                std::vector<std::string> &gulp_strings) {
   const auto &pairs = j["all_pairs"];
   double gs = settings.gulp_scale;
-  PES pes(settings.scale_factor);
+  pes.set_scale(settings.scale_factor);
+  PotentialType potential_type = settings.potential_type;
   int discarded_count = 0;
   double discarded_total_energy = 0.0;
 
@@ -144,8 +252,6 @@ inline PES construct_pes_from_json(nlohmann::json j,
                    "(total: {:.3f} kJ/mol)",
                    discarded_count, discarded_total_energy / 2.0);
   }
-
-  return pes;
 }
 
 inline PotentialType
@@ -163,7 +269,7 @@ determine_potential_type(const std::string &user_preference) {
   return PotentialType::LJ;
 }
 
-inline occ::main::LinearSolverType
+inline LinearSolverType
 determine_solver_type(const std::string &user_preference) {
   if (!user_preference.empty()) {
     if (user_preference == "lu")
@@ -179,6 +285,240 @@ determine_solver_type(const std::string &user_preference) {
                   user_preference);
   occ::log::debug("Options are 'lu', 'svd', 'qr', 'ldlt'");
   return occ::main::LinearSolverType::SVD;
+}
+
+occ::Mat6 PES::voigt_elastic_tensor_from_hessian(double volume,
+                                                 LinearSolverType solver_type,
+                                                 double svd_threshold) {
+  size_t n_molecules = this->num_unique_molecules();
+  int dim = 3 * n_molecules;
+
+  occ::Mat6 D_ee = occ::Mat6::Zero();       // Strain-Strain
+  occ::Mat D_ei = occ::Mat::Zero(6, dim);   // Strain-Cart
+  occ::Mat D_ij = occ::Mat::Zero(dim, dim); // Cart-Cart
+
+  occ::Mat Mass_inv_ij = occ::Mat::Zero(dim, dim);
+
+  for (const auto &pot : m_potentials) {
+    const occ::Vec3 &r_hat = pot->r_hat;
+    const occ::Vec3 &r_vector = pot->r_vector;
+    double r = pot->r0;
+    double r2 = r * r;
+    double dU_dr = pot->first_derivative();
+    double d2U_dr2 = pot->second_derivative();
+    const auto [idx_0, idx_1] = pot->uc_pair_indices();
+    const auto [m0, m1] = pot->pair_mass();
+
+    for (int p = 0; p < 6; p++) {
+      auto [alpha, beta] = this->voigt_notation(p);
+      for (int q = 0; q < 6; q++) {
+        auto [gamma, delta] = this->voigt_notation(q);
+
+        double term1 = (r_vector[alpha] * r_vector[beta] * r_vector[gamma] *
+                        r_vector[delta]) *
+                       d2U_dr2 / r2;
+
+        // NOTE: term2 will be zero for us by definition.
+        // double term2 = dU_dr / r *
+        //                ((alpha == gamma ? r_hat[beta] * r_hat[delta] * r2:
+        //                0) +
+        //                 (alpha == delta ? r_hat[beta] * r_hat[gamma] * r2:
+        //                 0) + (beta == gamma ? r_hat[alpha] * r_hat[delta] *
+        //                 r2: 0) + (beta == delta ? r_hat[alpha] *
+        //                 r_hat[gamma] * r2: 0));
+        // D_ee(p, q) += term1 + term2;
+
+        D_ee(p, q) += term1;
+      }
+      for (int coord = 0; coord < 3; coord++) {
+        double mixed_term =
+            d2U_dr2 * r_vector[alpha] * r_vector[beta] * r_vector[coord] / r2;
+
+        // NOTE: zero by definition.
+        // mixed_term += dU_dr / r *
+        //               ((alpha == coord ? r_vector[beta]: 0) +
+        //                (beta == coord ? r_vector[alpha]: 0));
+
+        D_ei(p, idx_0 * 3 + coord) -= mixed_term;
+        D_ei(p, idx_1 * 3 + coord) += mixed_term;
+      }
+    }
+    for (int alpha = 0; alpha < 3; alpha++) {
+      for (int beta = 0; beta < 3; beta++) {
+        double e = d2U_dr2 * r_hat[alpha] * r_hat[beta];
+
+        // NOTE: zero by definition
+        // if (alpha == beta) {
+        //   e += dU_dr / r;
+        // }
+
+        D_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) += e;
+        D_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) += e;
+        D_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) -= e;
+        D_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) -= e;
+
+        Mass_inv_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) =
+            1 / std::sqrt(m0 * m0);
+        Mass_inv_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) =
+            1 / std::sqrt(m1 * m1);
+        Mass_inv_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) =
+            1 / std::sqrt(m0 * m1);
+        Mass_inv_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) =
+            1 / std::sqrt(m1 * m0);
+      }
+    }
+  }
+  D_ee /= 2;
+  D_ei /= 2;
+  D_ij /= 2;
+  occ::Mat Dyn_ij = Mass_inv_ij.cwiseProduct(D_ij);
+  occ::Mat X = solve_linear_system(D_ij, D_ei.transpose(), solver_type,
+                                   svd_threshold); // D_ij * X = D_ei^T
+  occ::Mat6 correction = D_ei * X; // This gives D_ei * D_ij^(-1) * D_ei^T
+  occ::Mat6 C = (D_ee - correction) / volume * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
+
+  save_matrix(D_ij, "D_ij.txt",
+              {"Cartesian-cartesian Hessian "
+               "(kJ/mol/Ang**2)"});
+  save_matrix(D_ei.transpose(), "D_ei.txt",
+              {"Strain-cartesian second derivative matrix "
+               " (kJ/mol/Ang)"},
+              false);
+  save_matrix(D_ee, "D_ee.txt",
+              {"Strain-strain second derivative matrix "
+               "(kJ/mol)"},
+              false);
+  save_matrix(Dyn_ij, "Dyn_ij.txt",
+              {"Dynamical cartesian-cartesian Hessian "
+               "(kJ/Ang**2/kg)"},
+              false);
+  save_matrix(D_ij / EV_TO_KJ_PER_MOL, "D_ij_gulp.txt",
+              {"Cartesian-cartesian Hessian"
+               "(eV/Ang**2)"},
+              false, 3);
+  save_matrix(D_ee / EV_TO_KJ_PER_MOL, "D_ee_gulp.txt",
+              {"Strain-strain second derivative matrix (eV)"}, false, 3);
+  save_matrix(D_ei.transpose() / EV_TO_KJ_PER_MOL, "D_ei_gulp.txt",
+              {"Strain-cartesian second derivative "
+               "(eV/Ang)"},
+              false, 3);
+
+  compute_phonons(Dyn_ij);
+
+  return C;
+}
+
+void PES::compute_phonons(const occ::Mat &Dyn_ij) {
+
+  Eigen::EigenSolver<occ::Mat> es(Dyn_ij);
+  occ::CVec eigenvalues = es.eigenvalues();
+  occ::CMat eigenvectors = es.eigenvectors();
+  occ::Vec frequencies;
+  frequencies.resize(eigenvalues.size());
+  for (size_t i = 0; i < eigenvalues.size(); ++i) {
+    std::complex<double> eval = eigenvalues(i);
+    if (eval.real() < 0) {
+      frequencies(i) = -std::sqrt(-eval.real());
+    } else {
+      frequencies(i) = std::sqrt(eval.real());
+    }
+  }
+
+  const double conversion_factor =
+      std::sqrt(1e23) / (LIGHTSPEED * 100.0) / (2.0 * PI);
+
+  frequencies *= conversion_factor;
+
+  size_t n = eigenvalues.size();
+  std::vector<int> indices(n);
+  std::iota(indices.begin(), indices.end(), 0);
+  std::sort(indices.begin(), indices.end(),
+            [&](int i, int j) { return frequencies(i) < frequencies(j); });
+  occ::Vec sorted_frequencies(n);
+  occ::Mat sorted_eigenvectors(eigenvectors.rows(), n);
+  for (size_t i = 0; i < n; ++i) {
+    sorted_frequencies(i) = frequencies(indices[i]);
+    sorted_eigenvectors.col(i) = eigenvectors.col(indices[i]).real();
+  }
+
+  occ::log::info("Phonon frequencies (cm-1):");
+  print_vector(sorted_frequencies, 6);
+
+  double amplitude = 0.5;
+  size_t n_frames = 50;
+  double period = 2.0 * PI;
+  size_t n_modes = eigenvalues.size();
+  size_t n_molecules = this->num_unique_molecules();
+  size_t n_atoms = 0;
+
+  std::vector<double> masses(n_molecules);
+  std::vector<occ::Vec3> positions(n_molecules);
+  std::vector<size_t> mol_idxs;
+  const auto &uc_mols = this->crystal().unit_cell_molecules();
+  for (const auto &mol : uc_mols) {
+    double m = mol.molar_mass();
+    const int mol_idx = mol.unit_cell_molecule_idx();
+    masses[mol_idx] = m;
+    positions[mol_idx] = mol.center_of_mass();
+    mol_idxs.push_back(mol_idx);
+    n_atoms += mol.positions().cols();
+  }
+
+  for (size_t mode = 0; mode < n_modes; mode++) {
+    double freq_cm = sorted_frequencies(mode);
+
+    std::string filename =
+        fmt::format("phonon_mode_{}_{:.2f}cm-1.xyz", mode, freq_cm);
+
+    std::ofstream xyz_file(filename);
+    if (!xyz_file.is_open()) {
+      occ::log::error("Could not open file: {}", filename);
+      continue;
+    }
+
+    occ::log::info("Generating trajectory for mode {} ({:.2f} cm-1)", mode,
+                   freq_cm);
+
+    occ::Vec mode_eigenvector = sorted_eigenvectors.col(mode);
+
+    double norm = mode_eigenvector.norm();
+    if (norm > 1e-10) {
+      mode_eigenvector /= norm;
+    }
+
+    for (size_t frame = 0; frame < n_frames; frame++) {
+      double t = static_cast<double>(frame) /
+                 (static_cast<double>(n_frames - 1)) * period;
+      double phase = std::cos(t);
+
+      xyz_file << n_atoms << std::endl;
+      xyz_file << fmt::format("# Phonon mode {} at {:.2f} cm-1, frame {}", mode,
+                              freq_cm, frame)
+               << std::endl;
+
+      for (const size_t &mol : mol_idxs) {
+        occ::Vec3 displacement;
+        displacement[0] = mode_eigenvector[3 * mol + 0] * amplitude * phase;
+        displacement[1] = mode_eigenvector[3 * mol + 1] * amplitude * phase;
+        displacement[2] = mode_eigenvector[3 * mol + 2] * amplitude * phase;
+
+        const auto &molecule = uc_mols[mol];
+        const auto &atomic_pos = molecule.positions();
+        const auto &elements = molecule.elements();
+
+        for (size_t atom_idx = 0; atom_idx < atomic_pos.cols(); atom_idx++) {
+          occ::Vec3 position = atomic_pos.col(atom_idx) + displacement;
+          xyz_file << fmt::format("{} {:12.8f} {:12.8f} {:12.8f}",
+                                  elements[atom_idx].symbol(), position[0],
+                                  position[1], position[2])
+                   << std::endl;
+        }
+      }
+    }
+
+    xyz_file.close();
+    occ::log::info("Saved trajectory: {}", filename);
+  }
 }
 
 inline void analyse_elat_results(const occ::main::EFSettings &settings) {
@@ -214,10 +554,10 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   const auto &uc = crystal.unit_cell();
   const auto &lengths = uc.lengths();
   const auto &angles = uc.angles();
-  double cf = 180.0 / occ::units::PI;
-  std::string cry_str = fmt::format(
-      "{:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f}", lengths[0],
-      lengths[1], lengths[2], angles[0] * cf, angles[1] * cf, angles[2] * cf);
+  std::string cry_str =
+      fmt::format("{:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f}",
+                  lengths[0], lengths[1], lengths[2], degrees(angles[0]),
+                  degrees(angles[1]), degrees(angles[2]));
   gulp_strings.push_back(cry_str);
   gulp_strings.push_back("");
   gulp_strings.push_back("cart");
@@ -243,15 +583,16 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   gulp_strings.push_back("1");
   gulp_strings.push_back("");
 
-  PotentialType pot_type = determine_potential_type(settings.potential_type);
-
   // Parse solver type and create updated settings
   occ::main::EFSettings updated_settings = settings;
+
+  updated_settings.potential_type =
+      determine_potential_type(settings.potential_type_str);
   updated_settings.solver_type =
       determine_solver_type(settings.solver_type_str);
 
   std::string type_name;
-  if (pot_type == PotentialType::MORSE) {
+  if (updated_settings.potential_type == PotentialType::MORSE) {
     type_name = "Morse";
     gulp_strings.push_back("morse inter kjmol");
   } else {
@@ -260,7 +601,9 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   }
   occ::log::info("Using {} potential", type_name);
 
-  PES pes = construct_pes_from_json(j, pot_type, settings, gulp_strings);
+  PES pes(crystal);
+
+  build_pes_from_json(j, pes, updated_settings, gulp_strings);
 
   gulp_strings.push_back("");
   gulp_strings.push_back("output drv file");
@@ -288,16 +631,16 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
                    og_elat);
     occ::log::info("Shifted lattice energy {:.3f} kJ/(mole unit cells)", elat);
     occ::log::info("Shifted elastic constant matrix: (Units=GPa)");
-    occ::main::print_matrix(cij, true);
+    print_matrix(cij, true);
     cij *= og_elat / elat;
     occ::log::info("Scaled+shifted elastic constant matrix: (Units=GPa)");
-    occ::main::print_matrix(cij, true);
+    print_matrix(cij, true);
   } else {
     occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)", elat);
     occ::log::info("Elastic constant matrix: (Units=GPa)");
-    occ::main::print_matrix(cij, true);
+    print_matrix(cij, true);
   }
-  occ::main::save_matrix(cij, settings.output_file);
+  save_matrix(cij, settings.output_file);
 }
 
 namespace occ::main {
@@ -318,7 +661,7 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   elastic_fit->add_option("-s,--scale", config->scale_factor,
                           "Factor to scale alpha by.");
 
-  elastic_fit->add_option("-p,--potential", config->potential_type,
+  elastic_fit->add_option("-p,--potential", config->potential_type_str,
                           "Potential type to fit to. Either 'morse' or 'lj'.");
 
   elastic_fit->add_option("-g,--gulp-file", config->gulp_file,

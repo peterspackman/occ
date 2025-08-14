@@ -13,6 +13,7 @@ constexpr double AU_TO_KELVIN = 315777.09;
 constexpr double KJ_TO_KCAL = AU_TO_KCAL_PER_MOL / AU_TO_KJ_PER_MOL;
 constexpr double PI = 3.14159265358979323846;
 constexpr double KJ_PER_MOL_PER_ANGSTROM3_TO_GPA = 1.6605388;
+constexpr double LIGHTSPEED = 299792458.0;
 
 template <typename T> constexpr auto radians(T x) { return x * PI / 180; }
 
