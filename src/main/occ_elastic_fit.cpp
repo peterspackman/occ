@@ -173,7 +173,8 @@ determine_solver_type(const std::string &user_preference) {
     if (user_preference == "ldlt")
       return occ::main::LinearSolverType::LDLT;
   }
-  occ::log::debug("Unrecognised solver type '{}', using SVD decomposition", user_preference);
+  occ::log::debug("Unrecognised solver type '{}', using SVD decomposition",
+                  user_preference);
   occ::log::debug("Options are 'lu', 'svd', 'qr', 'ldlt'");
   return occ::main::LinearSolverType::SVD;
 }
@@ -213,8 +214,8 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   const auto &angles = uc.angles();
   double cf = 180.0 / occ::units::PI;
   std::string cry_str = fmt::format(
-      "{:7.3f} {:7.3f} {:7.3f} {:6.2f} {:6.2f} {:6.2f}", lengths[0], lengths[1],
-      lengths[2], angles[0] * cf, angles[1] * cf, angles[2] * cf);
+      "{:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f} {:12.8f}", lengths[0],
+      lengths[1], lengths[2], angles[0] * cf, angles[1] * cf, angles[2] * cf);
   gulp_strings.push_back(cry_str);
   gulp_strings.push_back("");
   gulp_strings.push_back("cart");
@@ -241,10 +242,11 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   gulp_strings.push_back("");
 
   PotentialType pot_type = determine_potential_type(settings.potential_type);
-  
+
   // Parse solver type and create updated settings
   occ::main::EFSettings updated_settings = settings;
-  updated_settings.solver_type = determine_solver_type(settings.solver_type_str);
+  updated_settings.solver_type =
+      determine_solver_type(settings.solver_type_str);
 
   std::string type_name;
   if (pot_type == PotentialType::MORSE) {
@@ -275,7 +277,9 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
 
   double elat = pes.lattice_energy(); // per mole of unit cells
   occ::Mat6 cij = pes.compute_voigt_elastic_tensor_analytical(crystal.volume());
-  occ::Mat6 cij2 = pes.voigt_elastic_tensor_from_hessian(crystal.volume(), updated_settings.solver_type, updated_settings.svd_threshold);
+  occ::Mat6 cij2 = pes.voigt_elastic_tensor_from_hessian(
+      crystal.volume(), updated_settings.solver_type,
+      updated_settings.svd_threshold);
   // occ::Mat hessian = pes.construct_cartesian_hessian();
   if (settings.max_to_zero) {
     double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
@@ -340,8 +344,9 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
                           "Linear solver type for elastic tensor calculation. "
                           "Options: 'lu', 'svd' (default), 'qr', 'ldlt'.");
 
-  elastic_fit->add_option("--svd-threshold", config->svd_threshold,
-                          "SVD threshold for pseudoinverse (when using SVD solver).");
+  elastic_fit->add_option(
+      "--svd-threshold", config->svd_threshold,
+      "SVD threshold for pseudoinverse (when using SVD solver).");
 
   elastic_fit->callback([config]() { run_elastic_fit_subcommand(*config); });
 
