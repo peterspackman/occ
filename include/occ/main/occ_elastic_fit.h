@@ -1,6 +1,7 @@
 #pragma once
 #include <CLI/App.hpp>
 #include <Eigen/Eigenvalues>
+#include <algorithm>
 #include <cmath>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
@@ -15,18 +16,14 @@ enum class LinearSolverType { LU, SVD, QR, LDLT };
 
 using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
 
-inline void print_cvector(const occ::CVec &vec, int per_line) {
+inline void print_vector(std::vector<double> &vec, int per_line) {
   std::string line;
 
-  for (Eigen::Index i = 0; i < vec.size(); ++i) {
-    std::complex<double> val = vec(i);
+  std::sort(vec.begin(), vec.end());
 
-    if (std::abs(val.real()) < 1e-10 && val.imag() != 0.0) {
-      line += fmt::format("{:7.2f}", -std::abs(val.imag()));
-    } else {
-      line += fmt::format("{:7.2f}", val.real());
-    }
-
+  for (size_t i = 0; i < vec.size(); ++i) {
+    double val = vec[i];
+    line += fmt::format("{:7.2f}", val);
     // Check if we need to print the line
     if ((i + 1) % per_line == 0 || i == vec.size() - 1) {
       spdlog::info("{}", line);
@@ -481,7 +478,8 @@ public:
     D_ee /= 2;
     D_ei /= 2;
     D_ij /= 2;
-    occ::Mat Dyn_ij = Mass_inv_ij * D_ij;
+    // occ::Mat Dyn_ij = Mass_inv_ij * D_ij;
+    occ::Mat Dyn_ij = Mass_inv_ij.cwiseProduct(D_ij);
     save_matrix(D_ij, "D_ij.txt",
                 {"Cartesian-cartesian Hessian "
                  "(kJ/mol/Ang**2)"});
@@ -491,16 +489,15 @@ public:
                 false, 3);
     save_matrix(Mass_inv_ij, "Mass_inv_ij.txt",
                 {"Inverted mass matrix"
-                 "(1/kg)"},
+                 "(mol/kg)"},
                 false);
-    save_matrix(
-        Dyn_ij, "Dyn_ij.txt",
-        {"Dynamical cartesian-cartesian Hessian as upper right triangle "
-         "(kJ/Ang**2/kg)"},
-        false);
+    save_matrix(Dyn_ij, "Dyn_ij.txt",
+                {"Dynamical cartesian-cartesian Hessian "
+                 "(kJ/Ang**2/kg)"},
+                false);
     save_matrix(D_ei.transpose(), "D_ei.txt",
-                {"Strain-cartesian second derivative matrix as upper right "
-                 "triangle (kJ/mol/Ang)"},
+                {"Strain-cartesian second derivative matrix "
+                 " (kJ/mol/Ang)"},
                 false);
     save_matrix(D_ei.transpose() / 96.485, "D_ei_gulp.txt",
                 {"Strain-cartesian second derivative "
@@ -512,10 +509,30 @@ public:
                 false);
     save_matrix(D_ee / 96.485, "D_ee_gulp.txt",
                 {"Strain-strain second derivative matrix (eV)"}, false, 3);
+
     Eigen::EigenSolver<occ::Mat> es(Dyn_ij);
     occ::CVec eigenvalues = es.eigenvalues();
+    occ::Vec frequencies;
+    frequencies.resize(eigenvalues.size());
+    for (size_t i = 0; i < eigenvalues.size(); ++i) {
+      std::complex<double> eval = eigenvalues(i);
+      if (eval.real() < 0) {
+        frequencies(i) = -std::sqrt(-eval.real());
+      } else {
+        frequencies(i) = std::sqrt(eval.real());
+      }
+    }
+
+    const double conversion_factor =
+        std::sqrt(1e23) / (299792458.0 * 100) / (2 * occ::units::PI);
+
+    std::vector<double> phonons;
+    for (const double &f : frequencies) {
+      double p = f * conversion_factor;
+      phonons.push_back(p);
+    }
     occ::log::info("Phonon frequencies (cm-1):");
-    print_cvector(eigenvalues, 6);
+    print_vector(phonons, 6);
     // auto D_ij_inv = D_ij.inverse();
     // occ::Mat6 correction = D_ei * D_ij_inv * D_ei.transpose();
     occ::Mat X = solve_linear_system(D_ij, D_ei.transpose(), solver_type, svd_threshold); // D_ij * X = D_ei^T
