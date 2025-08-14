@@ -86,8 +86,9 @@ inline PES construct_pes_from_json(nlohmann::json j,
         }
         const double eps = -1.0 * total_energy;
         auto potential = std::make_unique<LJ_AWrapper>(eps, r0, rvec);
-        occ::log::debug("Added LJ_A potential: {} between pair {} {} ({} {})",
-                        potential->to_string(), p1, p2, uc_p1, uc_p2);
+        occ::log::debug(
+            "Added LJ_A potential: {:30} between pair {:4} {:4} ({:4} {:4})",
+            potential->to_string(), p1, p2, uc_p1, uc_p2);
         potential->set_pair_mass(pair_mass);
         pes.add_potential(std::move(potential));
         continue;
@@ -116,8 +117,9 @@ inline PES construct_pes_from_json(nlohmann::json j,
         potential->set_pair_indices(pair_indices);
         potential->set_uc_pair_indices(uc_pair_indices);
         potential->set_pair_mass(pair_mass);
-        occ::log::debug("Added LJ potential: {} between pair {} {} ({} {})",
-                        potential->to_string(), p1, p2, uc_p1, uc_p2);
+        occ::log::debug(
+            "Added LJ potential: {:30} between pair {:4} {:4} ({:4} {:4})",
+            potential->to_string(), p1, p2, uc_p1, uc_p2);
 
         auto [smaller, larger] = std::minmax(uc_p1, uc_p2);
         const std::string gulp_str =
@@ -280,7 +282,7 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   occ::Mat6 cij2 = pes.voigt_elastic_tensor_from_hessian(
       crystal.volume(), updated_settings.solver_type,
       updated_settings.svd_threshold);
-  // occ::Mat hessian = pes.construct_cartesian_hessian();
+
   if (settings.max_to_zero) {
     double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
     occ::log::info("Original lattice energy {:.3f} kJ/(mole unit cells)",
@@ -291,6 +293,9 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
     cij *= og_elat / elat;
     occ::log::info("Shifted elastic constant matrix: (Units=GPa)");
     occ::main::print_matrix(cij, true);
+    occ::log::info(
+        "Original elastic constant matrix from hessian: (Units=GPa)");
+    occ::main::print_matrix(cij2, true);
     cij2 *= og_elat / elat;
     occ::log::info("Shifted elastic constant matrix from hessian: (Units=GPa)");
     occ::main::print_matrix(cij2, true);
@@ -325,7 +330,7 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   elastic_fit->add_option("-p,--potential", config->potential_type,
                           "Potential type to fit to. Either 'morse' or 'lj'.");
 
-  elastic_fit->add_option("-g,--gulp_file", config->gulp_file,
+  elastic_fit->add_option("-g,--gulp-file", config->gulp_file,
                           "Write coarse grained crystal as a GULP input file.");
 
   elastic_fit->add_option(

@@ -23,7 +23,7 @@ inline void print_vector(std::vector<double> &vec, int per_line) {
 
   for (size_t i = 0; i < vec.size(); ++i) {
     double val = vec[i];
-    line += fmt::format("{:7.2f}", val);
+    line += fmt::format("{:9.3f}", val);
     // Check if we need to print the line
     if ((i + 1) % per_line == 0 || i == vec.size() - 1) {
       spdlog::info("{}", line);
@@ -478,7 +478,6 @@ public:
     D_ee /= 2;
     D_ei /= 2;
     D_ij /= 2;
-    // occ::Mat Dyn_ij = Mass_inv_ij * D_ij;
     occ::Mat Dyn_ij = Mass_inv_ij.cwiseProduct(D_ij);
     save_matrix(D_ij, "D_ij.txt",
                 {"Cartesian-cartesian Hessian "
@@ -487,10 +486,6 @@ public:
                 {"Cartesian-cartesian Hessian"
                  "(eV/Ang**2)"},
                 false, 3);
-    save_matrix(Mass_inv_ij, "Mass_inv_ij.txt",
-                {"Inverted mass matrix"
-                 "(mol/kg)"},
-                false);
     save_matrix(Dyn_ij, "Dyn_ij.txt",
                 {"Dynamical cartesian-cartesian Hessian "
                  "(kJ/Ang**2/kg)"},
