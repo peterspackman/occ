@@ -23,11 +23,14 @@ using occ::main::LJWrapper;
 using occ::main::MorseWrapper;
 using occ::main::PES;
 using occ::main::PotentialType;
+using occ::units::AVOGADRO;
+using occ::units::BOLTZMANN;
 using occ::units::degrees;
 using occ::units::EV_TO_KJ_PER_MOL;
 using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
 using occ::units::LIGHTSPEED;
 using occ::units::PI;
+using occ::units::PLANCK;
 
 inline void print_vector(occ::Vec &vec, int per_line) {
   std::string line;
@@ -424,25 +427,58 @@ void PES::compute_phonons(const occ::Mat &Dyn_ij) {
     }
   }
 
-  const double conversion_factor =
-      std::sqrt(1e23) / (LIGHTSPEED * 100.0) / (2.0 * PI);
-
-  frequencies *= conversion_factor;
+  occ::Vec freq_Hz = frequencies * std::sqrt(1e23);
+  occ::Vec freq_wavenumbers = freq_Hz / (LIGHTSPEED * 100.0) / (2.0 * PI);
 
   size_t n = eigenvalues.size();
   std::vector<int> indices(n);
   std::iota(indices.begin(), indices.end(), 0);
-  std::sort(indices.begin(), indices.end(),
-            [&](int i, int j) { return frequencies(i) < frequencies(j); });
-  occ::Vec sorted_frequencies(n);
+  std::sort(indices.begin(), indices.end(), [&](int i, int j) {
+    return freq_wavenumbers(i) < freq_wavenumbers(j);
+  });
+  occ::Vec sorted_freq_wavenumbers(n);
   occ::Mat sorted_eigenvectors(eigenvectors.rows(), n);
   for (size_t i = 0; i < n; ++i) {
-    sorted_frequencies(i) = frequencies(indices[i]);
+    sorted_freq_wavenumbers(i) = freq_wavenumbers(indices[i]);
     sorted_eigenvectors.col(i) = eigenvectors.col(indices[i]).real();
   }
 
   occ::log::info("Phonon frequencies (cm-1):");
-  print_vector(sorted_frequencies, 6);
+  print_vector(sorted_freq_wavenumbers, 6);
+
+  double temp = this->get_temperature();
+  if (temp > 0.0) {
+    double Uvib = 0;
+    double kBT = temp * BOLTZMANN * AVOGADRO / 1000;
+    double zpe = 0;
+    for (size_t freq_idx = 0; freq_idx < n; freq_idx++) {
+      double f_wavenumber = sorted_freq_wavenumbers[freq_idx];
+      double f_Hz = LIGHTSPEED / ((1 / f_wavenumber) / 100);
+      if (f_wavenumber < 1e-2) {
+        occ::log::debug(
+            "Skipping imaginary or translational phonon mode {} with "
+            "frequency {:.3f} cm-1 in Uvib calc.",
+            freq_idx, f_wavenumber);
+        continue;
+      }
+      double Uf = f_Hz * PLANCK * AVOGADRO / 1000;
+      double f_zpe = 0.5 * Uf;
+      zpe += f_zpe;
+      Uvib += f_zpe + Uf / (std::exp(Uf / kBT) - 1);
+    }
+    occ::log::info(
+        "Zero point energy                           = {:8.3f} kJ/mol", zpe);
+    occ::log::info("Vibrational energy properties at {:.2f} K: ", temp);
+    occ::log::info(
+        "Uvib (excluding rovibrations)               = {:8.3f} kJ/mol", Uvib);
+    double rovib = 3 * kBT;
+    occ::log::info(
+        "Uvib (including equipartition rovibrations) = {:8.3f} kJ/mol",
+        Uvib + rovib);
+    occ::log::info(
+        "Uvib (equipartition)                        = {:8.3f} kJ/mol",
+        6 * kBT);
+  }
 
   double amplitude = 0.5;
   size_t n_frames = 50;
@@ -464,8 +500,9 @@ void PES::compute_phonons(const occ::Mat &Dyn_ij) {
     n_atoms += mol.positions().cols();
   }
 
+  occ::log::info("Animating phonon modes:");
   for (size_t mode = 0; mode < n_modes; mode++) {
-    double freq_cm = sorted_frequencies(mode);
+    double freq_cm = sorted_freq_wavenumbers(mode);
 
     std::string filename =
         fmt::format("phonon_mode_{}_{:.2f}cm-1.xyz", mode, freq_cm);
@@ -602,6 +639,7 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   occ::log::info("Using {} potential", type_name);
 
   PES pes(crystal);
+  pes.set_temperature(settings.temperature);
 
   build_pes_from_json(j, pes, updated_settings, gulp_strings);
 
@@ -682,6 +720,9 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   elastic_fit->add_option("--solver", config->solver_type_str,
                           "Linear solver type for elastic tensor calculation. "
                           "Options: 'lu', 'svd' (default), 'qr', 'ldlt'.");
+
+  elastic_fit->add_option("-t,--temperature", config->temperature,
+                          "Temperature in Kelvin for Uvib calculation.");
 
   elastic_fit->add_option(
       "--svd-threshold", config->svd_threshold,

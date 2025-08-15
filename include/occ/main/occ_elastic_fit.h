@@ -253,6 +253,7 @@ private:
   double m_scale_factor;
   double m_shift_factor;
   size_t m_n_molecules = 0;
+  double m_temperature = 0.0;
 
 public:
   explicit PES(const crystal::Crystal &crystal) : m_crystal(crystal) {}
@@ -274,6 +275,12 @@ public:
   inline void set_shift(double shift) { m_shift_factor = shift; }
 
   inline void set_scale(double scale) { m_scale_factor = scale; }
+
+  inline void set_temperature(double temperature) {
+    m_temperature = temperature;
+  }
+
+  inline const double &get_temperature() const { return m_temperature; }
 
   inline double shift() const { return m_shift_factor; }
 
@@ -353,6 +360,7 @@ struct EFSettings {
   bool include_positive = false;
   bool max_to_zero = false;
   double scale_factor = 2.0;
+  double temperature = 0.0;
   double gulp_scale = 0.01;
   std::string gulp_file{""};
   LinearSolverType solver_type = LinearSolverType::SVD;
