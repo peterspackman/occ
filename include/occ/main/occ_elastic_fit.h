@@ -307,9 +307,9 @@ public:
 
   occ::Mat6 voigt_elastic_tensor_from_hessian(
       double volume, LinearSolverType solver_type = LinearSolverType::SVD,
-      double svd_threshold = 1e-12);
+      double svd_threshold = 1e-12, bool animate_phonons = true);
 
-  void compute_phonons(const occ::Mat &Dyn_ij);
+  void compute_phonons(const occ::Mat &Dyn_ij, bool animate = true);
 
   static inline std::pair<int, int> voigt_notation(int voigt) {
     switch (voigt) {
@@ -366,6 +366,7 @@ struct EFSettings {
   LinearSolverType solver_type = LinearSolverType::SVD;
   std::string solver_type_str = "svd";
   double svd_threshold = 1e-12;
+  bool animate_phonons = true;
 };
 
 CLI::App *add_elastic_fit_subcommand(CLI::App &app);

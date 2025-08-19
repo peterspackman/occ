@@ -292,9 +292,10 @@ determine_solver_type(const std::string &user_preference) {
 
 occ::Mat6 PES::voigt_elastic_tensor_from_hessian(double volume,
                                                  LinearSolverType solver_type,
-                                                 double svd_threshold) {
+                                                 double svd_threshold,
+                                                 bool animate_phonons) {
   size_t n_molecules = this->num_unique_molecules();
-  int dim = 3 * n_molecules;
+  size_t dim = 3 * n_molecules;
 
   occ::Mat6 D_ee = occ::Mat6::Zero();       // Strain-Strain
   occ::Mat D_ei = occ::Mat::Zero(6, dim);   // Strain-Cart
@@ -406,12 +407,12 @@ occ::Mat6 PES::voigt_elastic_tensor_from_hessian(double volume,
                "(eV/Ang)"},
               false, 3);
 
-  compute_phonons(Dyn_ij);
+  this->compute_phonons(Dyn_ij, animate_phonons);
 
   return C;
 }
 
-void PES::compute_phonons(const occ::Mat &Dyn_ij) {
+void PES::compute_phonons(const occ::Mat &Dyn_ij, bool animate) {
 
   Eigen::EigenSolver<occ::Mat> es(Dyn_ij);
   occ::CVec eigenvalues = es.eigenvalues();
@@ -446,6 +447,7 @@ void PES::compute_phonons(const occ::Mat &Dyn_ij) {
   occ::log::info("Phonon frequencies (cm-1):");
   print_vector(sorted_freq_wavenumbers, 6);
 
+  size_t n_molecules = this->num_unique_molecules();
   double temp = this->get_temperature();
   if (temp > 0.0) {
     double Uvib = 0;
@@ -471,21 +473,34 @@ void PES::compute_phonons(const occ::Mat &Dyn_ij) {
     occ::log::info("Vibrational energy properties at {:.2f} K: ", temp);
     occ::log::info(
         "Uvib (excluding rovibrations)               = {:8.3f} kJ/mol", Uvib);
-    double rovib = 3 * kBT;
+    double rovib = 3 * kBT * n_molecules;
     occ::log::info(
         "Uvib (including equipartition rovibrations) = {:8.3f} kJ/mol",
         Uvib + rovib);
+    occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} "
+                   "kJ/mol/molecule",
+                   (Uvib + rovib) / n_molecules);
+    occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} "
+                   "kBT/molecule",
+                   (Uvib + rovib) / kBT / n_molecules);
+    double equip = 6 * kBT * n_molecules;
     occ::log::info(
-        "Uvib (equipartition)                        = {:8.3f} kJ/mol",
-        6 * kBT);
+        "Uvib (equipartition)                        = {:8.3f} kJ/mol", equip);
+  }
+
+  if (!animate) {
+    return;
   }
 
   double amplitude = 0.5;
   size_t n_frames = 50;
   double period = 2.0 * PI;
   size_t n_modes = eigenvalues.size();
-  size_t n_molecules = this->num_unique_molecules();
   size_t n_atoms = 0;
+
+  occ::log::info(
+      "Animating {} phonon modes over {} frames with amplitude {} Angstroms",
+      n_modes, n_frames, amplitude);
 
   std::vector<double> masses(n_molecules);
   std::vector<occ::Vec3> positions(n_molecules);
@@ -500,7 +515,6 @@ void PES::compute_phonons(const occ::Mat &Dyn_ij) {
     n_atoms += mol.positions().cols();
   }
 
-  occ::log::info("Animating phonon modes:");
   for (size_t mode = 0; mode < n_modes; mode++) {
     double freq_cm = sorted_freq_wavenumbers(mode);
 
@@ -661,7 +675,7 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   double elat = pes.lattice_energy(); // per mole of unit cells
   occ::Mat6 cij = pes.voigt_elastic_tensor_from_hessian(
       crystal.volume(), updated_settings.solver_type,
-      updated_settings.svd_threshold);
+      updated_settings.svd_threshold, updated_settings.animate_phonons);
 
   if (settings.max_to_zero) {
     double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
@@ -706,7 +720,7 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
                           "Write coarse grained crystal as a GULP input file.");
 
   elastic_fit->add_option(
-      "--gulp_scale", config->gulp_scale,
+      "--gulp-scale", config->gulp_scale,
       "Fraction of pair distance to set min and max cutoff for GULP.");
 
   elastic_fit->add_flag("--include-positive", config->include_positive,
@@ -727,6 +741,10 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   elastic_fit->add_option(
       "--svd-threshold", config->svd_threshold,
       "SVD threshold for pseudoinverse (when using SVD solver).");
+
+  elastic_fit->add_flag_callback(
+      "--dont-animate-phonons", [&]() { config->animate_phonons = false; },
+      "Don't animate the phonons and write them to XYZ files.");
 
   elastic_fit->callback([config]() { run_elastic_fit_subcommand(*config); });
 
