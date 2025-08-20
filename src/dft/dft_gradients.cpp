@@ -6,7 +6,7 @@
 namespace occ::dft {
 
 qm::JKTriple DFT::compute_JK_gradient(const MolecularOrbitals &mo,
-                                      const Mat &Schwarz) const {
+                                      const Mat &Schwarz) {
 
   occ::timing::start(occ::timing::category::dft_fock_gradient);
   occ::log::debug("Computing DFT JK gradient");
@@ -14,15 +14,28 @@ qm::JKTriple DFT::compute_JK_gradient(const MolecularOrbitals &mo,
   MatTriple J;
   MatTriple K = MatTriple::Zero(mo.n_ao, mo.n_ao);
   double k_factor = exact_exchange_factor();
-
-  // Check for range-separated hybrid - not yet implemented
   RangeSeparatedParameters rs = range_separated_parameters();
-  if (rs.omega != 0.0) {
-    occ::log::warn("Range-separated hybrid gradient not yet implemented, using "
-                   "standard exchange");
-  }
 
-  if (k_factor > 0.0) {
+  if (rs.omega != 0.0) {
+    // Range-separated hybrid: K = (α + β) * K_short - β * K_long
+    occ::log::debug("Computing range-separated hybrid gradient with ω = {:.6f}", rs.omega);
+    
+    // Compute short-range (ω=0) JK gradients
+    auto JK_short = m_hf.compute_JK_gradient(mo, Schwarz);
+    J = JK_short.J; // Coulomb is same for both ranges
+    
+    // Compute long-range (ω=rs.omega) K gradients  
+    m_hf.set_range_separated_omega(rs.omega);
+    auto JK_long = m_hf.compute_JK_gradient(mo, Schwarz);
+    m_hf.set_range_separated_omega(0.0); // Reset omega
+    
+    // Combine: K = (α + β) * K_short - β * K_long
+    K.x = (rs.alpha + rs.beta) * JK_short.K.x - rs.beta * JK_long.K.x;
+    K.y = (rs.alpha + rs.beta) * JK_short.K.y - rs.beta * JK_long.K.y;
+    K.z = (rs.alpha + rs.beta) * JK_short.K.z - rs.beta * JK_long.K.z;
+    
+  } else if (k_factor > 0.0) {
+    // Global hybrid
     auto JK = m_hf.compute_JK_gradient(mo, Schwarz);
 
     JK.K.x *= k_factor;
@@ -41,7 +54,7 @@ qm::JKTriple DFT::compute_JK_gradient(const MolecularOrbitals &mo,
 }
 
 MatTriple DFT::compute_fock_gradient(const MolecularOrbitals &mo,
-                                     const Mat &Schwarz) const {
+                                     const Mat &Schwarz) {
   occ::timing::start(occ::timing::category::dft_fock_gradient);
   auto [J, K] = compute_JK_gradient(mo, Schwarz);
 

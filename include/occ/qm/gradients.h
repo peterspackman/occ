@@ -1,5 +1,7 @@
 #pragma once
+#include <occ/core/element.h>
 #include <occ/core/log.h>
+#include <occ/core/timings.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
 
@@ -51,26 +53,34 @@ template <typename Proc> class GradientEvaluator {
 
 public:
   explicit GradientEvaluator(Proc &p)
-      : m_proc(p), m_gradients(Mat3N::Zero(3, p.atoms().size())) {}
+      : m_proc(p), m_gradients(Mat3N::Zero(3, p.atoms().size())), m_schwarz_computed(false) {}
 
   inline Mat3N nuclear_repulsion() const {
     Mat3N result = m_proc.nuclear_repulsion_gradient();
     return result;
   }
 
-  inline Mat3N electronic(const MolecularOrbitals &mo) const {
+  inline Mat3N electronic(const MolecularOrbitals &mo) {
     const auto &atoms = m_proc.atoms();
     const auto &basis = m_proc.aobasis();
     const auto &first_bf = basis.first_bf();
     const auto &atom_to_shell = basis.atom_to_shell();
+    
+    // Compute Schwarz matrix once and cache it
+    if (!m_schwarz_computed) {
+      occ::log::debug("Computing Schwarz screening matrix for gradients");
+      m_schwarz = m_proc.compute_schwarz_ints();
+      m_schwarz_computed = true;
+    }
+    
     occ::log::info("computing atomic gradients");
 
     Mat3N result = m_proc.additional_atomic_gradients(mo);
     auto ovlp = m_proc.compute_overlap_gradient();
     auto en = m_proc.compute_nuclear_attraction_gradient();
     auto kin = m_proc.compute_kinetic_gradient();
-    occ::log::info("computing fock gradient");
-    auto f = m_proc.compute_fock_gradient(mo);
+    occ::log::info("computing fock gradient with Schwarz screening");
+    auto f = m_proc.compute_fock_gradient(mo, m_schwarz);
     auto hcore = en + kin;
 
     auto Dweighted = mo.energy_weighted_density_matrix();
@@ -116,10 +126,18 @@ public:
 
   inline const Mat3N &operator()(const MolecularOrbitals &mo) {
 
+    occ::timing::start(occ::timing::gradient);
+    
     m_gradients = nuclear_repulsion();
     m_gradients += electronic(mo);
+    
+    occ::timing::stop(occ::timing::gradient);
+    
+    // Log Cartesian gradients with atom labels
+    const auto &atoms = m_proc.atoms();
     for (int atom = 0; atom < m_gradients.cols(); atom++) {
-      occ::log::info("atom {:4d}: {:12.5f} {:12.5f} {:12.5f}", atom,
+      occ::log::info("{:2s}{:3d}: {:12.8f} {:12.8f} {:12.8f}", 
+                     core::Element(atoms[atom].atomic_number).symbol(), atom,
                      m_gradients(0, atom), m_gradients(1, atom),
                      m_gradients(2, atom));
     }
@@ -129,6 +147,8 @@ public:
 private:
   Proc &m_proc;
   Mat3N m_gradients;
+  mutable Mat m_schwarz;
+  mutable bool m_schwarz_computed;
 };
 
 } // namespace occ::qm

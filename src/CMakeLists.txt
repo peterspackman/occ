@@ -16,6 +16,7 @@ add_subdirectory(solvent)
 add_subdirectory(xdm)
 add_subdirectory(xtb)
 add_subdirectory(cg)
+add_subdirectory(opt)
 add_subdirectory(driver)
 
 add_subdirectory(isosurface)
@@ -31,6 +32,7 @@ set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/isosurface_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/interaction_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/opt_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occpy.cpp"
 )
@@ -50,6 +52,7 @@ target_compile_definitions(_occpy PRIVATE VERSION_INFO=${PROJECT_VERSION})
 target_compile_features(_occpy PUBLIC cxx_std_20)
 target_link_libraries(_occpy PUBLIC 
     occ_main
+    occ_opt
 )
 
 install(TARGETS _occpy LIBRARY DESTINATION occpy)

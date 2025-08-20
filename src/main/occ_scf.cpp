@@ -173,6 +173,44 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   scf->add_option("--chelpg,", config->chelpg_filename,
                   "Filename for CHELPG charges");
 
+  // Optimization convergence criteria
+  scf->add_option("--opt-gradient-max,--opt_gradient_max", 
+                  config->optimization.gradient_max,
+                  "Maximum gradient component for convergence (Ha/Angstrom)");
+  scf->add_option("--opt-gradient-rms,--opt_gradient_rms", 
+                  config->optimization.gradient_rms,
+                  "RMS gradient for convergence (Ha/Angstrom)");
+  scf->add_option("--opt-step-max,--opt_step_max", 
+                  config->optimization.step_max,
+                  "Maximum displacement for convergence (Angstrom)");
+  scf->add_option("--opt-step-rms,--opt_step_rms", 
+                  config->optimization.step_rms,
+                  "RMS displacement for convergence (Angstrom)");
+  scf->add_option("--opt-energy-change,--opt_energy_change", 
+                  config->optimization.energy_change,
+                  "Energy change threshold for convergence (Hartree)");
+  scf->add_flag("--opt-use-energy,--opt_use_energy", 
+                config->optimization.use_energy_criterion,
+                "Use energy change as convergence criterion");
+  scf->add_option("--opt-max-iterations,--opt_max_iterations", 
+                  config->optimization.max_iterations,
+                  "Maximum number of optimization steps");
+  scf->add_option("--opt-gradient-precision,--opt_gradient_precision", 
+                  config->optimization.gradient_integral_precision,
+                  "Final gradient integral precision");
+  scf->add_option("--opt-early-gradient-precision,--opt_early_gradient_precision", 
+                  config->optimization.early_gradient_integral_precision,
+                  "Looser gradient integral precision for early steps");
+  scf->add_option("--opt-tight-threshold,--opt_tight_threshold", 
+                  config->optimization.tight_gradient_threshold,
+                  "Energy change threshold to switch to tight gradient precision (Hartree)");
+  scf->add_flag("--opt-write-wavefunctions,--opt_write_wavefunctions", 
+                config->optimization.write_wavefunction_steps,
+                "Write wavefunction at each optimization step");
+  scf->add_flag("--frequencies,--freq", 
+                config->optimization.compute_frequencies,
+                "Compute vibrational frequencies after geometry optimization");
+
   scf->callback([config]() { run_scf_subcommand(*config); });
   return scf;
 }
@@ -198,7 +236,13 @@ void run_scf_subcommand(occ::io::OccInput config) {
 
   occ::log::info("Driver: {}", config.driver.driver);
   if (config.driver.driver == "opt") {
-    Wavefunction wfn = driver::geometry_optimization(config);
+    if (config.optimization.compute_frequencies) {
+      auto [wfn, vib_modes] = driver::geometry_optimization_with_frequencies(config, true);
+      write_output_files(config, wfn);
+    } else {
+      Wavefunction wfn = driver::geometry_optimization(config);
+      write_output_files(config, wfn);
+    }
   } else {
     // store solvent name so we can do an unsolvated calculation first
     std::string stored_solvent_name = config.solvent.solvent_name;

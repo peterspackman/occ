@@ -72,7 +72,9 @@ double MP2::compute_correlation_energy() {
   const size_t n_ao = m_mo.n_ao;
   const Vec &orbital_energies = m_mo.energies;
 
-  auto [n_occ_active, n_virt_active] = get_active_orbital_ranges();
+  auto active_ranges = get_active_orbital_ranges();
+  size_t n_occ_active = active_ranges.first;
+  size_t n_virt_active = active_ranges.second;
 
   occ::log::debug("Active space: {}/{} occupied, {}/{} virtual orbitals",
                   n_occ_active, n_occ_total, n_virt_active, n_virt_total);
@@ -127,7 +129,9 @@ std::pair<size_t, size_t> MP2::get_active_orbital_ranges() const {
 }
 
 double MP2::compute_ri_mp2_energy() {
-  auto [n_occ_active, n_virt_active] = get_active_orbital_ranges();
+  auto active_ranges = get_active_orbital_ranges();
+  size_t n_occ_active = active_ranges.first;
+  size_t n_virt_active = active_ranges.second;
   const size_t n_occ_total = n_occupied();
   const size_t n_virt_total = n_virtual();
 
@@ -162,7 +166,9 @@ double MP2::compute_ri_mp2_energy() {
 }
 
 double MP2::compute_conventional_mp2_energy() {
-  auto [n_occ_active, n_virt_active] = get_active_orbital_ranges();
+  auto active_ranges = get_active_orbital_ranges();
+  size_t n_occ_active = active_ranges.first;
+  size_t n_virt_active = active_ranges.second;
   const size_t n_occ_total = n_occupied();
 
   double same_spin_energy = 0.0;

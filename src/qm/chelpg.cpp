@@ -1,4 +1,3 @@
-#include <LBFGS.h>
 #include <fmt/os.h>
 #include <occ/core/element.h>
 #include <occ/core/log.h>

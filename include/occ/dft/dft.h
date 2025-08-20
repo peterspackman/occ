@@ -46,6 +46,15 @@ public:
   }
 
   inline void set_precision(double precision) { m_hf.set_precision(precision); }
+  
+  inline double integral_precision() const { return m_hf.integral_precision(); }
+  
+  /**
+   * @brief Create a new DFT instance with the same settings but different basis
+   * @param new_basis The new basis set to use  
+   * @return New DFT instance
+   */
+  DFT with_new_basis(const qm::AOBasis &new_basis) const;
 
   double exchange_correlation_energy() const { return m_exc_dft; }
   double exchange_energy_total() const { return m_exchange_energy; }
@@ -325,7 +334,7 @@ public:
   }
 
   MatTriple compute_fock_gradient(const MolecularOrbitals &mo,
-                                  const Mat &Schwarz = Mat()) const;
+                                  const Mat &Schwarz = Mat());
 
   const auto &hf() const { return m_hf; }
 
@@ -389,7 +398,7 @@ public:
   }
 
   qm::JKTriple compute_JK_gradient(const MolecularOrbitals &mo,
-                                   const Mat &Schwarz = Mat()) const;
+                                   const Mat &Schwarz = Mat());
 
   MatTriple compute_J_gradient(const MolecularOrbitals &mo,
                                const Mat &Schwarz = Mat()) const {

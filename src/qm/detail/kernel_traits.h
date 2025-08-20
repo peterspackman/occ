@@ -36,6 +36,21 @@ std::vector<MatTriple> initialize_result_matrices(size_t nbf, size_t nthreads) {
 }
 
 template <SpinorbitalKind sk>
+std::vector<MatSix> initialize_result_matrices_hess(size_t nbf, size_t nthreads) {
+  auto [rows, cols] = occ::qm::matrix_dimensions<sk>(nbf);
+  std::vector<MatSix> results(nthreads);
+  for (auto &r : results) {
+    r.xx = Mat::Zero(rows, cols);
+    r.yy = Mat::Zero(rows, cols);
+    r.zz = Mat::Zero(rows, cols);
+    r.xy = Mat::Zero(rows, cols);
+    r.xz = Mat::Zero(rows, cols);
+    r.yz = Mat::Zero(rows, cols);
+  }
+  return results;
+}
+
+template <SpinorbitalKind sk>
 void accumulate_operator_symmetric(const Mat &source, Mat &dest) {
   if constexpr (sk == SpinorbitalKind::Restricted) {
     dest.noalias() += (source + source.transpose());

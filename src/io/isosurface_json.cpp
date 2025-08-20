@@ -69,7 +69,9 @@ nlohmann::json isosurface_to_json(const isosurface::Isosurface &surf) {
   // Properties
   if (surf.properties.count() > 0) {
     nlohmann::json props;
-    for (const auto &[name, prop] : surf.properties.properties) {
+    for (const auto &kv : surf.properties.properties) {
+      const auto &name = kv.first;
+      const auto &prop = kv.second;
       std::visit(
           [&props, &name](const auto &values) {
             using ValueType = std::decay_t<decltype(values)>;

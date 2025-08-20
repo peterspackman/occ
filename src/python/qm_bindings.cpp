@@ -13,6 +13,7 @@
 #include <occ/io/moldenreader.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/expectation.h>
+#include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/scf.h>
@@ -245,6 +246,15 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
            [](const HartreeFock &hf, const MolecularOrbitals &mo) {
              return hf.compute_fock(mo);
            })
+      .def("compute_gradient",
+           [](HartreeFock &hf, const MolecularOrbitals &mo) {
+             GradientEvaluator<HartreeFock> grad(hf);
+             return grad(mo);
+           }, "mo"_a, "Compute atomic gradients for the given molecular orbitals")
+      .def("nuclear_repulsion_gradient",
+           [](HartreeFock &hf) {
+             return hf.nuclear_repulsion_gradient();
+           }, "Compute nuclear repulsion gradient")
       .def("__repr__", [](const HartreeFock &hf) {
         return fmt::format("<HartreeFock ({}, {} atoms)>", hf.aobasis().name(),
                            hf.atoms().size());

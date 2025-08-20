@@ -701,6 +701,58 @@ TEST_CASE("DFT gradient for water", "[dft_gradient]") {
   REQUIRE(occ::util::all_close(expected, gradient, 1e-3, 1e-3));
 }
 
+TEST_CASE("wB97X range-separated gradient for water", "[dft_gradient][wb97x]") {
+  // Water molecule geometry (same as used in reference calculations)
+  occ::Vec3 O{0.000000000, 0.000000000, 0.117176000};
+  occ::Vec3 H1{0.000000000, 0.755453000, -0.468704000};
+  occ::Vec3 H2{0.000000000, -0.755453000, -0.468704000};
+  occ::Mat3N pos(3, 3);
+  pos << O(0), H1(0), H2(0), O(1), H1(1), H2(1), O(2), H1(2), H2(2);
+  occ::IVec atomic_numbers(3);
+  atomic_numbers << 8, 1, 1;
+  occ::core::Molecule mol(atomic_numbers, pos);
+
+  // Create basis and DFT object with wB97X functional
+  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "3-21G");
+  basis.set_pure(true);  // Use spherical harmonics to match ORCA
+  occ::dft::DFT dft("wb97x", basis);
+
+  // Run SCF calculation
+  occ::qm::SCF<occ::dft::DFT> scf(dft);
+  double energy = scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  // Verify range-separated parameters are loaded
+  auto rs_params = dft.range_separated_parameters();
+  REQUIRE(rs_params.omega != 0.0); // wB97X should have omega parameter
+  fmt::print("wB97X parameters: ω={:.6f}, α={:.6f}, β={:.6f}\n", 
+             rs_params.omega, rs_params.alpha, rs_params.beta);
+
+  // Compute gradients
+  occ::qm::GradientEvaluator<occ::dft::DFT> evaluator(dft);
+  auto gradient = evaluator(mo);
+
+  // Expected gradients from ORCA 6.1.0 wB97X/3-21G NORI NOCOSX calculation
+  // Format: gradient(coord, atom) where coord=0,1,2 for x,y,z and atom=0,1,2 for O,H1,H2
+  occ::Mat3N expected(3, 3);
+  expected << -0.000000000,  0.000000000,  0.000000000,    // x: O, H1, H2
+              -0.000000000, -0.026426576,  0.026426576,    // y: O, H1, H2
+              -0.029214261,  0.014607130,  0.014607130;    // z: O, H1, H2
+
+  fmt::print("wB97X gradient calculation:\n");
+  fmt::print("Expected:\n{}\n", format_matrix(expected));
+  fmt::print("Found:\n{}\n", format_matrix(gradient));
+  fmt::print("Diff:\n{}\n", format_matrix(gradient - expected));
+
+  // Check dimensions
+  REQUIRE(gradient.rows() == 3);
+  REQUIRE(gradient.cols() == 3);
+  REQUIRE(std::isfinite(gradient.sum()));
+  
+  // Compare with ORCA reference values (allow for small differences due to integral implementations)
+  REQUIRE(occ::util::all_close(expected, gradient, 1e-3, 1e-3));
+}
+
 // Voronoi charge tests
 
 TEST_CASE("Voronoi basic functionality", "[voronoi]") {

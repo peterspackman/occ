@@ -144,6 +144,8 @@ Optional dependencies:
 
 Most dependencies are automatically handled through [CPM](https://github.com/cpm-cmake/CPM.cmake). System-installed versions of Eigen3 and libxc can be used if available.
 
+OCC's geometry optimization implementation for molecules made significant use of the code and documentation from [pyberny](https://github.com/jhrmnn/pyberny) - the files in the `opt` submodule are therefore subject to the MPL license.
+
 ### Build Instructions
 
 1. Clone the repository:

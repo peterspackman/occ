@@ -94,6 +94,24 @@ struct MatTriple {
   void symmetrize();
 };
 
+// Structure for second derivatives: ∂²/∂x_i∂x_j (symmetric, so only 6 unique components)
+struct MatSix {
+  Mat xx, yy, zz;  // ∂²/∂x∂x, ∂²/∂y∂y, ∂²/∂z∂z (diagonal terms)
+  Mat xy, xz, yz;  // ∂²/∂x∂y, ∂²/∂x∂z, ∂²/∂y∂z (off-diagonal terms)
+
+  MatSix operator+(const MatSix &rhs) const;
+  MatSix operator-(const MatSix &rhs) const;
+
+  inline static MatSix Zero(Eigen::Index rows, Eigen::Index cols) {
+    return MatSix{
+        Mat::Zero(rows, cols), Mat::Zero(rows, cols), Mat::Zero(rows, cols),
+        Mat::Zero(rows, cols), Mat::Zero(rows, cols), Mat::Zero(rows, cols)};
+  }
+
+  void scale_by(double fac);
+  void symmetrize();  // Symmetrize each individual matrix
+};
+
 template <typename Derived>
 std::string format_matrix(const Eigen::DenseBase<Derived> &matrix,
                           std::string_view fmt_str = "{:12.5f}") {

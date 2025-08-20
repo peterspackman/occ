@@ -2,6 +2,7 @@ build/
 build-*/
 .venv/
 debug/
+junk_scripts/
 CMakeLists.txt.user
 .vscode/
 tags
