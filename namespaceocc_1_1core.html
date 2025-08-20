@@ -190,6 +190,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1TerminalSize.html">TerminalSize</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Results from vibrational frequency analysis.  <a href="structocc_1_1core_1_1VibrationalModes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -346,10 +349,48 @@ Functions</h2></td></tr>
 <tr class="memitem:abeb0483db6e31121318847e734ed6cf5" id="r_abeb0483db6e31121318847e734ed6cf5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#abeb0483db6e31121318847e734ed6cf5">quasirandom_kgf</a> (size_t ndims, size_t count, size_t seed=0)</td></tr>
 <tr class="memdesc:abeb0483db6e31121318847e734ed6cf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate an D dimensional Korobov type quasi-random vector based on the generalized Fibonacci sequence.  <br /></td></tr>
 <tr class="separator:abeb0483db6e31121318847e734ed6cf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a315aadb90ab4f853b2fb3d2101ca514b" id="r_a315aadb90ab4f853b2fb3d2101ca514b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a315aadb90ab4f853b2fb3d2101ca514b">compute_vibrational_modes</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;hessian, const Vec &amp;masses, const Mat3N &amp;positions=Mat3N(), bool project_tr_rot=false)</td></tr>
+<tr class="memdesc:a315aadb90ab4f853b2fb3d2101ca514b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform vibrational frequency analysis on a Hessian matrix.  <br /></td></tr>
+<tr class="separator:a315aadb90ab4f853b2fb3d2101ca514b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77c032dde221f4d73319b5db710ade64" id="r_a77c032dde221f4d73319b5db710ade64"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a77c032dde221f4d73319b5db710ade64">compute_vibrational_modes</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;hessian, const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;molecule, bool project_tr_rot=false)</td></tr>
+<tr class="memdesc:a77c032dde221f4d73319b5db710ade64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience function for molecular vibrational analysis.  <br /></td></tr>
+<tr class="separator:a77c032dde221f4d73319b5db710ade64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c3308fae8d31755038867d0c1447bb3" id="r_a2c3308fae8d31755038867d0c1447bb3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a2c3308fae8d31755038867d0c1447bb3">mass_weighted_hessian</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;hessian, const Vec &amp;masses)</td></tr>
+<tr class="memdesc:a2c3308fae8d31755038867d0c1447bb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct mass-weighted Hessian matrix.  <br /></td></tr>
+<tr class="separator:a2c3308fae8d31755038867d0c1447bb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afebef1d58165fc3dbf4eb491ab7b35ce" id="r_afebef1d58165fc3dbf4eb491ab7b35ce"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#afebef1d58165fc3dbf4eb491ab7b35ce">mass_weighted_hessian</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;hessian, const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;molecule)</td></tr>
+<tr class="memdesc:afebef1d58165fc3dbf4eb491ab7b35ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience function for molecular mass-weighted Hessian.  <br /></td></tr>
+<tr class="separator:afebef1d58165fc3dbf4eb491ab7b35ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06a240e779eaa548375385b7238e978e" id="r_a06a240e779eaa548375385b7238e978e"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a06a240e779eaa548375385b7238e978e">eigenvalues_to_frequencies_cm</a> (const Vec &amp;eigenvalues)</td></tr>
+<tr class="memdesc:a06a240e779eaa548375385b7238e978e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert frequency eigenvalues to cm⁻¹  <br /></td></tr>
+<tr class="separator:a06a240e779eaa548375385b7238e978e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4154a71b9289a3cfad52fad1c6898dd0" id="r_a4154a71b9289a3cfad52fad1c6898dd0"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a4154a71b9289a3cfad52fad1c6898dd0">frequencies_cm_to_hartree</a> (const Vec &amp;frequencies_cm)</td></tr>
+<tr class="memdesc:a4154a71b9289a3cfad52fad1c6898dd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert frequencies from cm⁻¹ to Hartree.  <br /></td></tr>
+<tr class="separator:a4154a71b9289a3cfad52fad1c6898dd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e48a034cc5104a7adc812bcff1edc99" id="r_a9e48a034cc5104a7adc812bcff1edc99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a9e48a034cc5104a7adc812bcff1edc99">construct_translation_vectors</a> (const Vec &amp;masses)</td></tr>
+<tr class="memdesc:a9e48a034cc5104a7adc812bcff1edc99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct translational projection vectors.  <br /></td></tr>
+<tr class="separator:a9e48a034cc5104a7adc812bcff1edc99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98df51c8dcf0be97bfcddbb1d7d78998" id="r_a98df51c8dcf0be97bfcddbb1d7d78998"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a98df51c8dcf0be97bfcddbb1d7d78998">construct_rotation_vectors</a> (const Vec &amp;masses, const Mat3N &amp;positions)</td></tr>
+<tr class="memdesc:a98df51c8dcf0be97bfcddbb1d7d78998"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct rotational projection vectors.  <br /></td></tr>
+<tr class="separator:a98df51c8dcf0be97bfcddbb1d7d78998"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13a750ae978f70c638193088e39ce2d3" id="r_a13a750ae978f70c638193088e39ce2d3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a13a750ae978f70c638193088e39ce2d3">project_tr_rot_modes</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;<a class="el" href="namespaceocc_1_1core.html#a2c3308fae8d31755038867d0c1447bb3">mass_weighted_hessian</a>, const Vec &amp;masses, const Mat3N &amp;positions)</td></tr>
+<tr class="memdesc:a13a750ae978f70c638193088e39ce2d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Project out translational and rotational modes from mass-weighted Hessian.  <br /></td></tr>
+<tr class="separator:a13a750ae978f70c638193088e39ce2d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b2c2a481466519b1da41f719ac1a343" id="r_a1b2c2a481466519b1da41f719ac1a343"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a1b2c2a481466519b1da41f719ac1a343">construct_translation_vectors</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;molecule)</td></tr>
+<tr class="memdesc:a1b2c2a481466519b1da41f719ac1a343"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience functions for molecular systems.  <br /></td></tr>
+<tr class="separator:a1b2c2a481466519b1da41f719ac1a343"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab57b41033dcb227968cd3dfae9c72b90" id="r_ab57b41033dcb227968cd3dfae9c72b90"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ab57b41033dcb227968cd3dfae9c72b90">construct_rotation_vectors</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;molecule)</td></tr>
+<tr class="separator:ab57b41033dcb227968cd3dfae9c72b90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7824309e84e88df57089a81ab936385" id="r_ab7824309e84e88df57089a81ab936385"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ab7824309e84e88df57089a81ab936385">project_tr_rot_modes</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;<a class="el" href="namespaceocc_1_1core.html#a2c3308fae8d31755038867d0c1447bb3">mass_weighted_hessian</a>, const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;molecule)</td></tr>
+<tr class="separator:ab7824309e84e88df57089a81ab936385"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab539a0fe1dedd7d494d33ba2aec7157b" id="r_ab539a0fe1dedd7d494d33ba2aec7157b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ab539a0fe1dedd7d494d33ba2aec7157b">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;)</td></tr>
 <tr class="separator:ab539a0fe1dedd7d494d33ba2aec7157b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c406006d16bbbc2d540805ed9343103" id="r_a1c406006d16bbbc2d540805ed9343103"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a1c406006d16bbbc2d540805ed9343103">from_json</a> (const nlohmann::json &amp;j, <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;)</td></tr>
 <tr class="separator:a1c406006d16bbbc2d540805ed9343103"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5c48f070553f2f6bd57719768705bc8" id="r_ad5c48f070553f2f6bd57719768705bc8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ad5c48f070553f2f6bd57719768705bc8">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a> &amp;)</td></tr>
+<tr class="separator:ad5c48f070553f2f6bd57719768705bc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f197daa6f9b876aa2e0879aeab14563" id="r_a9f197daa6f9b876aa2e0879aeab14563"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a9f197daa6f9b876aa2e0879aeab14563">from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a> &amp;)</td></tr>
+<tr class="separator:a9f197daa6f9b876aa2e0879aeab14563"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -657,6 +698,103 @@ template&lt;unsigned int order = 0&gt; </div>
 
 </div>
 </div>
+<a id="a77c032dde221f4d73319b5db710ade64" name="a77c032dde221f4d73319b5db710ade64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77c032dde221f4d73319b5db710ade64">&#9670;&#160;</a></span>compute_vibrational_modes() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a> occ::core::compute_vibrational_modes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>hessian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>molecule</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>project_tr_rot</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convenience function for molecular vibrational analysis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hessian</td><td>3N×3N Hessian matrix in atomic units (Hartree/Bohr²) </td></tr>
+    <tr><td class="paramname">molecule</td><td><a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> object containing atomic masses and positions </td></tr>
+    <tr><td class="paramname">project_tr_rot</td><td>Project out translational and rotational modes (like ORCA's PROJECTTR) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1core_1_1VibrationalModes.html" title="Results from vibrational frequency analysis.">VibrationalModes</a> Complete vibrational analysis results </dd></dl>
+
+</div>
+</div>
+<a id="a315aadb90ab4f853b2fb3d2101ca514b" name="a315aadb90ab4f853b2fb3d2101ca514b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a315aadb90ab4f853b2fb3d2101ca514b">&#9670;&#160;</a></span>compute_vibrational_modes() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a> occ::core::compute_vibrational_modes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>hessian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>masses</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions</em> = <code>Mat3N()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>project_tr_rot</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Perform vibrational frequency analysis on a Hessian matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hessian</td><td>3N×3N Hessian matrix in atomic units (Hartree/Bohr²) </td></tr>
+    <tr><td class="paramname">masses</td><td>Vector of atomic masses in AMU (length N for N atoms) </td></tr>
+    <tr><td class="paramname">positions</td><td>3×N matrix of atomic positions in Bohr (optional, for projection) </td></tr>
+    <tr><td class="paramname">project_tr_rot</td><td>Project out translational and rotational modes (like ORCA's PROJECTTR) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1core_1_1VibrationalModes.html" title="Results from vibrational frequency analysis.">VibrationalModes</a> Complete vibrational analysis results </dd></dl>
+
+</div>
+</div>
 <a id="acb1efd48a3840bc7034d3586dd2e5c6d" name="acb1efd48a3840bc7034d3586dd2e5c6d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acb1efd48a3840bc7034d3586dd2e5c6d">&#9670;&#160;</a></span>conditioning_orthogonalizer()</h2>
 
@@ -682,6 +820,109 @@ template&lt;unsigned int order = 0&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab57b41033dcb227968cd3dfae9c72b90" name="ab57b41033dcb227968cd3dfae9c72b90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab57b41033dcb227968cd3dfae9c72b90">&#9670;&#160;</a></span>construct_rotation_vectors() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::core::construct_rotation_vectors </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>molecule</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a98df51c8dcf0be97bfcddbb1d7d78998" name="a98df51c8dcf0be97bfcddbb1d7d78998"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98df51c8dcf0be97bfcddbb1d7d78998">&#9670;&#160;</a></span>construct_rotation_vectors() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::core::construct_rotation_vectors </td>
+          <td>(</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>masses</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Construct rotational projection vectors. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">masses</td><td>Vector of atomic masses in AMU (length N for N atoms) </td></tr>
+    <tr><td class="paramname">positions</td><td>3×N matrix of atomic positions in Bohr </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>3N×3 matrix with rotation vectors as columns </dd></dl>
+
+</div>
+</div>
+<a id="a1b2c2a481466519b1da41f719ac1a343" name="a1b2c2a481466519b1da41f719ac1a343"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b2c2a481466519b1da41f719ac1a343">&#9670;&#160;</a></span>construct_translation_vectors() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::core::construct_translation_vectors </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>molecule</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convenience functions for molecular systems. </p>
+
+</div>
+</div>
+<a id="a9e48a034cc5104a7adc812bcff1edc99" name="a9e48a034cc5104a7adc812bcff1edc99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e48a034cc5104a7adc812bcff1edc99">&#9670;&#160;</a></span>construct_translation_vectors() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::core::construct_translation_vectors </td>
+          <td>(</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>masses</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Construct translational projection vectors. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">masses</td><td>Vector of atomic masses in AMU (length N for N atoms) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>3N×3 matrix with translation vectors as columns </dd></dl>
 
 </div>
 </div>
@@ -741,8 +982,63 @@ template&lt;unsigned int order = 0&gt; </div>
 
 </div>
 </div>
+<a id="a06a240e779eaa548375385b7238e978e" name="a06a240e779eaa548375385b7238e978e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06a240e779eaa548375385b7238e978e">&#9670;&#160;</a></span>eigenvalues_to_frequencies_cm()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Vec occ::core::eigenvalues_to_frequencies_cm </td>
+          <td>(</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>eigenvalues</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convert frequency eigenvalues to cm⁻¹ </p>
+<p>For positive eigenvalues: ν = sqrt(λ) * conversion_factor For negative eigenvalues: ν = -sqrt(-λ) * conversion_factor (imaginary frequencies)</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">eigenvalues</td><td>Eigenvalues from mass-weighted Hessian (Hartree/AMU/Bohr²) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Frequencies in cm⁻¹ </dd></dl>
+
+</div>
+</div>
+<a id="a4154a71b9289a3cfad52fad1c6898dd0" name="a4154a71b9289a3cfad52fad1c6898dd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4154a71b9289a3cfad52fad1c6898dd0">&#9670;&#160;</a></span>frequencies_cm_to_hartree()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Vec occ::core::frequencies_cm_to_hartree </td>
+          <td>(</td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>frequencies_cm</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convert frequencies from cm⁻¹ to Hartree. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">frequencies_cm</td><td>Frequencies in cm⁻¹ </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Frequencies in Hartree </dd></dl>
+
+</div>
+</div>
 <a id="a1c406006d16bbbc2d540805ed9343103" name="a1c406006d16bbbc2d540805ed9343103"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1c406006d16bbbc2d540805ed9343103">&#9670;&#160;</a></span>from_json()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c406006d16bbbc2d540805ed9343103">&#9670;&#160;</a></span>from_json() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -757,6 +1053,34 @@ template&lt;unsigned int order = 0&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9f197daa6f9b876aa2e0879aeab14563" name="a9f197daa6f9b876aa2e0879aeab14563"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f197daa6f9b876aa2e0879aeab14563">&#9670;&#160;</a></span>from_json() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::core::from_json </td>
+          <td>(</td>
+          <td class="paramtype">const nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a> &amp;&#160;</td>
           <td class="paramname">&#160;</td>
         </tr>
         <tr>
@@ -936,6 +1260,83 @@ template&lt;typename <a class="el" href="namespaceocc_1_1core.html#a116490d5f388
 
 </div>
 </div>
+<a id="afebef1d58165fc3dbf4eb491ab7b35ce" name="afebef1d58165fc3dbf4eb491ab7b35ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afebef1d58165fc3dbf4eb491ab7b35ce">&#9670;&#160;</a></span>mass_weighted_hessian() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::core::mass_weighted_hessian </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>hessian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>molecule</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convenience function for molecular mass-weighted Hessian. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hessian</td><td>3N×3N Hessian matrix in atomic units </td></tr>
+    <tr><td class="paramname">molecule</td><td><a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> object containing atomic masses </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Mass-weighted Hessian matrix </dd></dl>
+
+</div>
+</div>
+<a id="a2c3308fae8d31755038867d0c1447bb3" name="a2c3308fae8d31755038867d0c1447bb3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c3308fae8d31755038867d0c1447bb3">&#9670;&#160;</a></span>mass_weighted_hessian() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::core::mass_weighted_hessian </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>hessian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>masses</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Construct mass-weighted Hessian matrix. </p>
+<p>The mass-weighted Hessian is constructed as: H_mw[3i+a][3j+b] = H[3i+a][3j+b] / sqrt(m_i * m_j) where m_i is the mass of atom i in AMU</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hessian</td><td>3N×3N Hessian matrix in atomic units </td></tr>
+    <tr><td class="paramname">masses</td><td>Vector of atomic masses in AMU (length N for N atoms) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Mass-weighted Hessian matrix </dd></dl>
+
+</div>
+</div>
 <a id="a4cc97fbc54a1356d04d6d643516f1c03" name="a4cc97fbc54a1356d04d6d643516f1c03"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4cc97fbc54a1356d04d6d643516f1c03">&#9670;&#160;</a></span>meshgrid()</h2>
 
@@ -1098,6 +1499,79 @@ template&lt;typename <a class="el" href="namespaceocc_1_1core.html#a116490d5f388
 
 </div>
 </div>
+<a id="ab7824309e84e88df57089a81ab936385" name="ab7824309e84e88df57089a81ab936385"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7824309e84e88df57089a81ab936385">&#9670;&#160;</a></span>project_tr_rot_modes() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::core::project_tr_rot_modes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>mass_weighted_hessian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>molecule</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a13a750ae978f70c638193088e39ce2d3" name="a13a750ae978f70c638193088e39ce2d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13a750ae978f70c638193088e39ce2d3">&#9670;&#160;</a></span>project_tr_rot_modes() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::core::project_tr_rot_modes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>mass_weighted_hessian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>masses</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Project out translational and rotational modes from mass-weighted Hessian. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mass_weighted_hessian</td><td>Mass-weighted Hessian matrix </td></tr>
+    <tr><td class="paramname">masses</td><td>Vector of atomic masses in AMU (length N for N atoms) </td></tr>
+    <tr><td class="paramname">positions</td><td>3×N matrix of atomic positions in Bohr </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Projected Hessian matrix </dd></dl>
+
+</div>
+</div>
 <a id="abeb0483db6e31121318847e734ed6cf5" name="abeb0483db6e31121318847e734ed6cf5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abeb0483db6e31121318847e734ed6cf5">&#9670;&#160;</a></span>quasirandom_kgf()</h2>
 
@@ -1211,7 +1685,7 @@ template&lt;typename AtomIterator &gt; </div>
 </div>
 </div>
 <a id="ab539a0fe1dedd7d494d33ba2aec7157b" name="ab539a0fe1dedd7d494d33ba2aec7157b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab539a0fe1dedd7d494d33ba2aec7157b">&#9670;&#160;</a></span>to_json()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab539a0fe1dedd7d494d33ba2aec7157b">&#9670;&#160;</a></span>to_json() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1226,6 +1700,34 @@ template&lt;typename AtomIterator &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad5c48f070553f2f6bd57719768705bc8" name="ad5c48f070553f2f6bd57719768705bc8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5c48f070553f2f6bd57719768705bc8">&#9670;&#160;</a></span>to_json() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::core::to_json </td>
+          <td>(</td>
+          <td class="paramtype">nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a> &amp;&#160;</td>
           <td class="paramname">&#160;</td>
         </tr>
         <tr>

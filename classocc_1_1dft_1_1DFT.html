@@ -130,6 +130,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ab2eeda64973fe7c0b9635d290b1b911f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba711c566435ce5b9b858c6133800d02" id="r_aba711c566435ce5b9b858c6133800d02"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#aba711c566435ce5b9b858c6133800d02">set_precision</a> (double precision)</td></tr>
 <tr class="separator:aba711c566435ce5b9b858c6133800d02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a051922b8dc63a313cb81d7bb0606674c" id="r_a051922b8dc63a313cb81d7bb0606674c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a051922b8dc63a313cb81d7bb0606674c">integral_precision</a> () const</td></tr>
+<tr class="separator:a051922b8dc63a313cb81d7bb0606674c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61d056cc5ba37646c6d98eb5ff8695b6" id="r_a61d056cc5ba37646c6d98eb5ff8695b6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a61d056cc5ba37646c6d98eb5ff8695b6">with_new_basis</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">qm::AOBasis</a> &amp;new_basis) const</td></tr>
+<tr class="memdesc:a61d056cc5ba37646c6d98eb5ff8695b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a> instance with the same settings but different basis.  <br /></td></tr>
+<tr class="separator:a61d056cc5ba37646c6d98eb5ff8695b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac06b1281795187215bfb3a1e09ae3e31" id="r_ac06b1281795187215bfb3a1e09ae3e31"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#ac06b1281795187215bfb3a1e09ae3e31">exchange_correlation_energy</a> () const</td></tr>
 <tr class="separator:ac06b1281795187215bfb3a1e09ae3e31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1745046d6553d3e4ffea885fa0433c36" id="r_a1745046d6553d3e4ffea885fa0433c36"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a1745046d6553d3e4ffea885fa0433c36">exchange_energy_total</a> () const</td></tr>
@@ -188,8 +193,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af02d6a465080aa7a2f8b8a1947c3d24a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f2d84b3185882b2fba3df62b3e042d4" id="r_a4f2d84b3185882b2fba3df62b3e042d4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a4f2d84b3185882b2fba3df62b3e042d4">compute_fock</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>())</td></tr>
 <tr class="separator:a4f2d84b3185882b2fba3df62b3e042d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed1653afa85637acea965baa17f30bf0" id="r_aed1653afa85637acea965baa17f30bf0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#aed1653afa85637acea965baa17f30bf0">compute_fock_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
-<tr class="separator:aed1653afa85637acea965baa17f30bf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4476c7dc3b5f33f9a41417ee1940a260" id="r_a4476c7dc3b5f33f9a41417ee1940a260"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a4476c7dc3b5f33f9a41417ee1940a260">compute_fock_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>())</td></tr>
+<tr class="separator:a4476c7dc3b5f33f9a41417ee1940a260"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfc8c9f6911b9af7a4e5abd63828a4ca" id="r_adfc8c9f6911b9af7a4e5abd63828a4ca"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#adfc8c9f6911b9af7a4e5abd63828a4ca">hf</a> () const</td></tr>
 <tr class="separator:adfc8c9f6911b9af7a4e5abd63828a4ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a066b34d55d0057156d162c0d8af3e3bc" id="r_a066b34d55d0057156d162c0d8af3e3bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a066b34d55d0057156d162c0d8af3e3bc">compute_fock_mixed_basis</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo_bs, const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">qm::AOBasis</a> &amp;bs, bool is_shell_diagonal)</td></tr>
@@ -215,8 +220,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a933fc8a769d515d4f200d0e32f80b158"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5230dafdecc61f4f0b1bb66f102a54ab" id="r_a5230dafdecc61f4f0b1bb66f102a54ab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a5230dafdecc61f4f0b1bb66f102a54ab">compute_rinv_gradient_for_atom</a> (size_t atom) const</td></tr>
 <tr class="separator:a5230dafdecc61f4f0b1bb66f102a54ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc939b3fa13c320b32f0ac559fa020a2" id="r_adc939b3fa13c320b32f0ac559fa020a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1JKTriple.html">qm::JKTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#adc939b3fa13c320b32f0ac559fa020a2">compute_JK_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
-<tr class="separator:adc939b3fa13c320b32f0ac559fa020a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f4841b0816dd1da1f0d461d4ca6297e" id="r_a2f4841b0816dd1da1f0d461d4ca6297e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1JKTriple.html">qm::JKTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a2f4841b0816dd1da1f0d461d4ca6297e">compute_JK_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>())</td></tr>
+<tr class="separator:a2f4841b0816dd1da1f0d461d4ca6297e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a350d41a852f53357d36d345da14f4fd4" id="r_a350d41a852f53357d36d345da14f4fd4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a350d41a852f53357d36d345da14f4fd4">compute_J_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
 <tr class="separator:a350d41a852f53357d36d345da14f4fd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45b6bac4a630b7fc16b259dc96d1a67c" id="r_a45b6bac4a630b7fc16b259dc96d1a67c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a45b6bac4a630b7fc16b259dc96d1a67c">update_core_hamiltonian</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;H)</td></tr>
@@ -462,8 +467,8 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
-<a id="aed1653afa85637acea965baa17f30bf0" name="aed1653afa85637acea965baa17f30bf0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed1653afa85637acea965baa17f30bf0">&#9670;&#160;</a></span>compute_fock_gradient()</h2>
+<a id="a4476c7dc3b5f33f9a41417ee1940a260" name="a4476c7dc3b5f33f9a41417ee1940a260"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4476c7dc3b5f33f9a41417ee1940a260">&#9670;&#160;</a></span>compute_fock_gradient()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -483,7 +488,7 @@ template&lt;unsigned int order = 1&gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> const</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -640,8 +645,8 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
-<a id="adc939b3fa13c320b32f0ac559fa020a2" name="adc939b3fa13c320b32f0ac559fa020a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adc939b3fa13c320b32f0ac559fa020a2">&#9670;&#160;</a></span>compute_JK_gradient()</h2>
+<a id="a2f4841b0816dd1da1f0d461d4ca6297e" name="a2f4841b0816dd1da1f0d461d4ca6297e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f4841b0816dd1da1f0d461d4ca6297e">&#9670;&#160;</a></span>compute_JK_gradient()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -661,7 +666,7 @@ template&lt;unsigned int order = 1&gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> const</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1364,6 +1369,31 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
+<a id="a051922b8dc63a313cb81d7bb0606674c" name="a051922b8dc63a313cb81d7bb0606674c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a051922b8dc63a313cb81d7bb0606674c">&#9670;&#160;</a></span>integral_precision()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::dft::DFT::integral_precision </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a218d7ce69897fabc2cd576a9109473b2" name="a218d7ce69897fabc2cd576a9109473b2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a218d7ce69897fabc2cd576a9109473b2">&#9670;&#160;</a></span>method_string()</h2>
 
@@ -1769,6 +1799,34 @@ template&lt;unsigned int order = 1&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a61d056cc5ba37646c6d98eb5ff8695b6" name="a61d056cc5ba37646c6d98eb5ff8695b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61d056cc5ba37646c6d98eb5ff8695b6">&#9670;&#160;</a></span>with_new_basis()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a> occ::dft::DFT::with_new_basis </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">qm::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>new_basis</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a new <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a> instance with the same settings but different basis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">new_basis</td><td>The new basis set to use <br  />
+ </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>New <a class="el" href="classocc_1_1dft_1_1DFT.html">DFT</a> instance </dd></dl>
 
 </div>
 </div>

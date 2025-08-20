@@ -1,0 +1,14 @@
+<map id="/home/runner/work/occ/occ/include/occ/opt/dihedral_coordinate.h" name="/home/runner/work/occ/occ/include/occ/opt/dihedral_coordinate.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="109,5,279,60"/>
+<area shape="rect" id="Node000002" href="$linear__algebra_8h.html" title=" " alt="" coords="101,181,287,207"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,61,156,95,152,114,154,133,163,152,176,169,171,173,159,155,149,134,146,114,151,94,169,59"/>
+<area shape="rect" id="Node000006" href="$angle__coordinate_8h.html" title=" " alt="" coords="163,108,361,133"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="217,58,246,95,242,99,213,62"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,255,108,280"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="173,209,92,251,90,246,171,204"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="132,255,256,280"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="197,207,197,241,191,241,191,207"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="280,255,369,280"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="216,204,293,246,290,250,214,209"/>
+<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="253,136,217,173,213,169,249,132"/>
+</map>

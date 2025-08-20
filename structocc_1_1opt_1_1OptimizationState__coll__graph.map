@@ -1,0 +1,7 @@
+<map id="occ::opt::OptimizationState" name="occ::opt::OptimizationState">
+<area shape="rect" id="Node000001" title=" " alt="" coords="75,167,273,192"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1opt_1_1OptPoint.html" title=" " alt="" coords="5,5,143,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,41,169,165,164,168,86,44"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1opt_1_1ConvergenceCriteria.html" title=" " alt="" coords="167,5,381,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="274,45,263,94,253,120,237,144,222,159,205,169,202,164,219,154,233,141,248,118,258,92,269,44"/>
+</map>

@@ -6,12 +6,12 @@ var classocc_1_1dft_1_1DFT =
     [ "compute_effective_core_potential_matrix", "classocc_1_1dft_1_1DFT.html#a772912fd4df034b5f315cdd3d347bb94", null ],
     [ "compute_electronic_multipoles", "classocc_1_1dft_1_1DFT.html#a14321390683baab8da79843cd40373ff", null ],
     [ "compute_fock", "classocc_1_1dft_1_1DFT.html#a4f2d84b3185882b2fba3df62b3e042d4", null ],
-    [ "compute_fock_gradient", "classocc_1_1dft_1_1DFT.html#aed1653afa85637acea965baa17f30bf0", null ],
+    [ "compute_fock_gradient", "classocc_1_1dft_1_1DFT.html#a4476c7dc3b5f33f9a41417ee1940a260", null ],
     [ "compute_fock_mixed_basis", "classocc_1_1dft_1_1DFT.html#a066b34d55d0057156d162c0d8af3e3bc", null ],
     [ "compute_J", "classocc_1_1dft_1_1DFT.html#aefb2b6ff3b7e008988a2e2f4ff7d3cf9", null ],
     [ "compute_J_gradient", "classocc_1_1dft_1_1DFT.html#a350d41a852f53357d36d345da14f4fd4", null ],
     [ "compute_JK", "classocc_1_1dft_1_1DFT.html#a051c35876bfb866941fdbd266685a821", null ],
-    [ "compute_JK_gradient", "classocc_1_1dft_1_1DFT.html#adc939b3fa13c320b32f0ac559fa020a2", null ],
+    [ "compute_JK_gradient", "classocc_1_1dft_1_1DFT.html#a2f4841b0816dd1da1f0d461d4ca6297e", null ],
     [ "compute_K_dft", "classocc_1_1dft_1_1DFT.html#ab29646b0cb0204b75807f0a066521b25", null ],
     [ "compute_kinetic_gradient", "classocc_1_1dft_1_1DFT.html#ad58ab276e3c8e968fad92ab0c9b015c8", null ],
     [ "compute_kinetic_matrix", "classocc_1_1dft_1_1DFT.html#af779fee96a421244967a75b1510ab0ce", null ],
@@ -37,6 +37,7 @@ var classocc_1_1dft_1_1DFT =
     [ "have_effective_core_potentials", "classocc_1_1dft_1_1DFT.html#a7fb559557c33ed2b0b82db6b6f0ff180", null ],
     [ "have_nonlocal_correlation", "classocc_1_1dft_1_1DFT.html#a7e237bbe14bf1bf96961500864178228", null ],
     [ "hf", "classocc_1_1dft_1_1DFT.html#adfc8c9f6911b9af7a4e5abd63828a4ca", null ],
+    [ "integral_precision", "classocc_1_1dft_1_1DFT.html#a051922b8dc63a313cb81d7bb0606674c", null ],
     [ "method_string", "classocc_1_1dft_1_1DFT.html#a218d7ce69897fabc2cd576a9109473b2", null ],
     [ "name", "classocc_1_1dft_1_1DFT.html#a5cf94a159d805bbe14647c96ec5dc2cb", null ],
     [ "nbf", "classocc_1_1dft_1_1DFT.html#aab1a405290a0252b3791d134d9b38c6a", null ],
@@ -52,5 +53,6 @@ var classocc_1_1dft_1_1DFT =
     [ "supports_incremental_fock_build", "classocc_1_1dft_1_1DFT.html#aa42b20881dc0bdb097c9f677803305ec", null ],
     [ "update_core_hamiltonian", "classocc_1_1dft_1_1DFT.html#a45b6bac4a630b7fc16b259dc96d1a67c", null ],
     [ "update_scf_energy", "classocc_1_1dft_1_1DFT.html#ae27c4e061d8d6cdea857d96358c492cd", null ],
-    [ "usual_scf_energy", "classocc_1_1dft_1_1DFT.html#a104737a357429abc647b281804526ac6", null ]
+    [ "usual_scf_energy", "classocc_1_1dft_1_1DFT.html#a104737a357429abc647b281804526ac6", null ],
+    [ "with_new_basis", "classocc_1_1dft_1_1DFT.html#a61d056cc5ba37646c6d98eb5ff8695b6", null ]
 ];

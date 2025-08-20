@@ -122,6 +122,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html">DummyCrystalGrowthCalculator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1VibrationalAnalysisConfig.html">VibrationalAnalysisConfig</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuration options for vibrational frequency analysis.  <a href="structocc_1_1driver_1_1VibrationalAnalysisConfig.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html">XTBCrystalGrowthCalculator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -150,8 +153,12 @@ Functions</h2></td></tr>
 <tr class="separator:aac7268ab1f985e6e5fd2812789f00d41"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a617654acfd6769077617709485607412" id="r_a617654acfd6769077617709485607412"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">occ::Vec3</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a617654acfd6769077617709485607412">calculate_net_dipole</a> (const <a class="el" href="namespaceocc_1_1driver.html#a683ec51892459656d664582efd64e1c6">WavefunctionList</a> &amp;wavefunctions, const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">crystal::CrystalDimers</a> &amp;crystal_dimers)</td></tr>
 <tr class="separator:a617654acfd6769077617709485607412"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a21626a2e43fb9b4df1f2744c454131a7" id="r_a21626a2e43fb9b4df1f2744c454131a7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a21626a2e43fb9b4df1f2744c454131a7">geometry_optimization</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;)</td></tr>
-<tr class="separator:a21626a2e43fb9b4df1f2744c454131a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c3d0f87ea6ffbf435a9a2a0fb1dd595" id="r_a7c3d0f87ea6ffbf435a9a2a0fb1dd595"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a7c3d0f87ea6ffbf435a9a2a0fb1dd595">geometry_optimization</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;config)</td></tr>
+<tr class="memdesc:a7c3d0f87ea6ffbf435a9a2a0fb1dd595"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform geometry optimization.  <br /></td></tr>
+<tr class="separator:a7c3d0f87ea6ffbf435a9a2a0fb1dd595"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad489b251984fd33fdfbd881589d676a3" id="r_ad489b251984fd33fdfbd881589d676a3"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a>, <a class="el" href="structocc_1_1core_1_1VibrationalModes.html">core::VibrationalModes</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#ad489b251984fd33fdfbd881589d676a3">geometry_optimization_with_frequencies</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;config, bool run_frequencies=true)</td></tr>
+<tr class="memdesc:ad489b251984fd33fdfbd881589d676a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform geometry optimization with optional vibrational analysis.  <br /></td></tr>
+<tr class="separator:ad489b251984fd33fdfbd881589d676a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7e85c393d3f038f7e8b65afa85e6013" id="r_af7e85c393d3f038f7e8b65afa85e6013"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">qm::SpinorbitalKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#af7e85c393d3f038f7e8b65afa85e6013">determine_spinorbital_kind</a> (const std::string &amp;name, int multiplicity, <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">MethodKind</a> method_kind)</td></tr>
 <tr class="separator:af7e85c393d3f038f7e8b65afa85e6013"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a504c89def5003baf6ace3599fc4bdc8e" id="r_a504c89def5003baf6ace3599fc4bdc8e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">MethodKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a504c89def5003baf6ace3599fc4bdc8e">method_kind_from_string</a> (const std::string &amp;name)</td></tr>
@@ -160,6 +167,12 @@ Functions</h2></td></tr>
 <tr class="separator:accef768763f0a6d014a16c15da275e19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63944c06595e866576b466517b29f80a" id="r_a63944c06595e866576b466517b29f80a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a63944c06595e866576b466517b29f80a">single_point</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;)</td></tr>
 <tr class="separator:a63944c06595e866576b466517b29f80a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25908b2919227fae53cd07cf5695a03e" id="r_a25908b2919227fae53cd07cf5695a03e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">core::VibrationalModes</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a25908b2919227fae53cd07cf5695a03e">vibrational_analysis</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;config, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wfn, const <a class="el" href="structocc_1_1driver_1_1VibrationalAnalysisConfig.html">VibrationalAnalysisConfig</a> &amp;vib_config={})</td></tr>
+<tr class="memdesc:a25908b2919227fae53cd07cf5695a03e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform vibrational frequency analysis on an optimized geometry.  <br /></td></tr>
+<tr class="separator:a25908b2919227fae53cd07cf5695a03e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88f111ef255622ce8f4acf92d91293d4" id="r_a88f111ef255622ce8f4acf92d91293d4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">core::VibrationalModes</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a88f111ef255622ce8f4acf92d91293d4">vibrational_analysis</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;config, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wfn)</td></tr>
+<tr class="memdesc:a88f111ef255622ce8f4acf92d91293d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience function for standard frequency analysis.  <br /></td></tr>
+<tr class="separator:a88f111ef255622ce8f4acf92d91293d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a878e17d57522dc762a391dec916e11ce" name="a878e17d57522dc762a391dec916e11ce"></a>
@@ -349,8 +362,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a21626a2e43fb9b4df1f2744c454131a7" name="a21626a2e43fb9b4df1f2744c454131a7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a21626a2e43fb9b4df1f2744c454131a7">&#9670;&#160;</a></span>geometry_optimization()</h2>
+<a id="a7c3d0f87ea6ffbf435a9a2a0fb1dd595" name="a7c3d0f87ea6ffbf435a9a2a0fb1dd595"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c3d0f87ea6ffbf435a9a2a0fb1dd595">&#9670;&#160;</a></span>geometry_optimization()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -359,11 +372,58 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> occ::driver::geometry_optimization </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramname"><em>config</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Perform geometry optimization. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">config</td><td>Input configuration </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Optimized wavefunction </dd></dl>
+
+</div>
+</div>
+<a id="ad489b251984fd33fdfbd881589d676a3" name="ad489b251984fd33fdfbd881589d676a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad489b251984fd33fdfbd881589d676a3">&#9670;&#160;</a></span>geometry_optimization_with_frequencies()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt; <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a>, <a class="el" href="structocc_1_1core_1_1VibrationalModes.html">core::VibrationalModes</a> &gt; occ::driver::geometry_optimization_with_frequencies </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>run_frequencies</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Perform geometry optimization with optional vibrational analysis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">config</td><td>Input configuration </td></tr>
+    <tr><td class="paramname">run_frequencies</td><td>If true, compute vibrational frequencies after optimization </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pair of optimized wavefunction and vibrational modes (empty if not computed) </dd></dl>
 
 </div>
 </div>
@@ -436,6 +496,95 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a88f111ef255622ce8f4acf92d91293d4" name="a88f111ef255622ce8f4acf92d91293d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88f111ef255622ce8f4acf92d91293d4">&#9670;&#160;</a></span>vibrational_analysis() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">core::VibrationalModes</a> occ::driver::vibrational_analysis </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname"><em>wfn</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convenience function for standard frequency analysis. </p>
+<p>Uses default settings optimized for most common use cases:</p><ul>
+<li>Finite differences with acoustic sum rule</li>
+<li>Step size: 0.005 Bohr</li>
+<li>No projection of translational/rotational modes</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">config</td><td>Input configuration from OCC input file </td></tr>
+    <tr><td class="paramname">wfn</td><td>Converged wavefunction from optimization or single point </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>VibrationalModes Complete vibrational analysis results </dd></dl>
+
+</div>
+</div>
+<a id="a25908b2919227fae53cd07cf5695a03e" name="a25908b2919227fae53cd07cf5695a03e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25908b2919227fae53cd07cf5695a03e">&#9670;&#160;</a></span>vibrational_analysis() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">core::VibrationalModes</a> occ::driver::vibrational_analysis </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname"><em>wfn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1VibrationalAnalysisConfig.html">VibrationalAnalysisConfig</a> &amp;&#160;</td>
+          <td class="paramname"><em>vib_config</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Perform vibrational frequency analysis on an optimized geometry. </p>
+<p>This function computes the molecular Hessian using finite differences and performs normal mode analysis to obtain vibrational frequencies. It can be called after geometry optimization to characterize the stationary point.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">config</td><td>Input configuration from OCC input file </td></tr>
+    <tr><td class="paramname">wfn</td><td>Converged wavefunction from optimization or single point </td></tr>
+    <tr><td class="paramname">vib_config</td><td>Configuration options for vibrational analysis </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>VibrationalModes Complete vibrational analysis results </dd></dl>
 
 </div>
 </div>

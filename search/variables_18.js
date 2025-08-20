@@ -12,5 +12,8 @@ var searchData=
   ['xdm_5fmoments_9',['xdm_moments',['../structocc_1_1qm_1_1Wavefunction.html#a5df841fc2fffdab81434015d2be081b2',1,'occ::qm::Wavefunction']]],
   ['xdm_5fpolarizabilities_10',['xdm_polarizabilities',['../structocc_1_1qm_1_1Wavefunction.html#a5b3b64147fd6ae2fd88d8f0bab4493bf',1,'occ::qm::Wavefunction']]],
   ['xdm_5fvolumes_11',['xdm_volumes',['../structocc_1_1qm_1_1Wavefunction.html#aaf7128bc1ccbb72f1a7ca8d37a53129a',1,'occ::qm::Wavefunction']]],
-  ['xtb_5fsolvation_5fmodel_12',['xtb_solvation_model',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#acc9345a3f29790b7bd452f95a1c66756',1,'occ::driver::CrystalGrowthCalculatorOptions::xtb_solvation_model'],['../structocc_1_1main_1_1CGConfig.html#a8f8b28d0d3d9e32e19757d0177f42c90',1,'occ::main::CGConfig::xtb_solvation_model']]]
+  ['xtb_5fsolvation_5fmodel_12',['xtb_solvation_model',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#acc9345a3f29790b7bd452f95a1c66756',1,'occ::driver::CrystalGrowthCalculatorOptions::xtb_solvation_model'],['../structocc_1_1main_1_1CGConfig.html#a8f8b28d0d3d9e32e19757d0177f42c90',1,'occ::main::CGConfig::xtb_solvation_model']]],
+  ['xx_13',['xx',['../structocc_1_1MatSix.html#aaabdc8fa8c7debc4269bd2fda1050b51',1,'occ::MatSix']]],
+  ['xy_14',['xy',['../structocc_1_1MatSix.html#a84755709f32da98812970a1b8fb6910b',1,'occ::MatSix']]],
+  ['xz_15',['xz',['../structocc_1_1MatSix.html#a8e535dd333a9af1c216fffd0ae1db7c7',1,'occ::MatSix']]]
 ];

@@ -30,6 +30,7 @@ var classocc_1_1qm_1_1HartreeFock =
     [ "electronic_electric_field_contribution", "classocc_1_1qm_1_1HartreeFock.html#ada3af15b615fe28ede762ce094ff31ac", null ],
     [ "electronic_electric_potential_contribution", "classocc_1_1qm_1_1HartreeFock.html#a1d7f4bc70aa12e9643479e4be4ee3674", null ],
     [ "have_effective_core_potentials", "classocc_1_1qm_1_1HartreeFock.html#ac17ad4acfedab14cdc90f3ee62a86d72", null ],
+    [ "integral_precision", "classocc_1_1qm_1_1HartreeFock.html#a899f8699f34637c442d38f8f829fe582", null ],
     [ "name", "classocc_1_1qm_1_1HartreeFock.html#a4761b2af6eed429e93c1849a0701b671", null ],
     [ "nbf", "classocc_1_1qm_1_1HartreeFock.html#aa647a1c6fc2b4b81d195b87797e086fc", null ],
     [ "nuclear_point_charge_interaction_energy", "classocc_1_1qm_1_1HartreeFock.html#adeeb1044193a0875857fe6929a138e20", null ],
@@ -41,5 +42,6 @@ var classocc_1_1qm_1_1HartreeFock =
     [ "update_core_hamiltonian", "classocc_1_1qm_1_1HartreeFock.html#a71462ff1772e705ed36cfc5d8e084142", null ],
     [ "update_scf_energy", "classocc_1_1qm_1_1HartreeFock.html#aab39e5a166fb4efcb85f11d2796bf42f", null ],
     [ "usual_scf_energy", "classocc_1_1qm_1_1HartreeFock.html#a26985e1a8a73553c86f411af703ef1e0", null ],
+    [ "with_new_basis", "classocc_1_1qm_1_1HartreeFock.html#aefa831f5f31e096024f6863a65aa5e45", null ],
     [ "wolf_point_charge_interaction_energy", "classocc_1_1qm_1_1HartreeFock.html#a3fc717a310142d3b81cbc20bd5a76043", null ]
 ];

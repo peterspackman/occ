@@ -17,10 +17,12 @@ var searchData=
   ['unit_5fcell_14',['unit_cell',['../structocc_1_1io_1_1CrystalInput.html#ac7c38c56c8c868e0d9d10285cb160a86',1,'occ::io::CrystalInput']]],
   ['unit_5fcell_5fonly_15',['unit_cell_only',['../structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ab0b6536acd41540069de2130e70e293e',1,'occ::isosurface::VolumeGenerationParameters::unit_cell_only'],['../structocc_1_1main_1_1CubeConfig.html#a740c631ec4cc8e872df0afc3ac17d0d1',1,'occ::main::CubeConfig::unit_cell_only']]],
   ['upper_16',['upper',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a4141f0b20c266a527ee5d3cdefcc6a7a',1,'occ::isosurface::AxisAlignedBoundingBox']]],
-  ['use_5fasymmetric_5fpartition_17',['use_asymmetric_partition',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6d0620e67f1d034d53b640406231d8ba',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
-  ['use_5fcrystal_5fpolarization_18',['use_crystal_polarization',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ac4af5c391c9ecef826297882d32984c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
-  ['use_5fhashed_5fmc_19',['use_hashed_mc',['../structocc_1_1main_1_1IsosurfaceConfig.html#a423a2bb9f53e953a763de2ef0ff1ae80',1,'occ::main::IsosurfaceConfig']]],
-  ['use_5fslices_20',['use_slices',['../structocc_1_1dma_1_1LinearDMASettings.html#a97ba3dc1d85382b96ecc7fb690850a6b',1,'occ::dma::LinearDMASettings']]],
-  ['use_5fwolf_5fsum_21',['use_wolf_sum',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6081c8847f494a57e98ee22db394bb20',1,'occ::driver::CrystalGrowthCalculatorOptions::use_wolf_sum'],['../structocc_1_1main_1_1EmbedConfig.html#acd55ea13ed1a701cd2381a5090451e1f',1,'occ::main::EmbedConfig::use_wolf_sum']]],
-  ['use_5fxtb_22',['use_xtb',['../structocc_1_1main_1_1CGConfig.html#a094ff8304cb6532897bb2deca08924bc',1,'occ::main::CGConfig']]]
+  ['use_5facoustic_5fsum_5frule_17',['use_acoustic_sum_rule',['../structocc_1_1driver_1_1VibrationalAnalysisConfig.html#aecd2823843c59acd73945c53d8f80197',1,'occ::driver::VibrationalAnalysisConfig']]],
+  ['use_5fasymmetric_5fpartition_18',['use_asymmetric_partition',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6d0620e67f1d034d53b640406231d8ba',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
+  ['use_5fcrystal_5fpolarization_19',['use_crystal_polarization',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ac4af5c391c9ecef826297882d32984c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
+  ['use_5fenergy_5fcriterion_20',['use_energy_criterion',['../structocc_1_1io_1_1OptimizationInput.html#a282a4b58a7fe003d057bfc5a64f9fc6f',1,'occ::io::OptimizationInput::use_energy_criterion'],['../structocc_1_1opt_1_1ConvergenceCriteria.html#a56d4a1751d2405c6b5ca134b53f64fe1',1,'occ::opt::ConvergenceCriteria::use_energy_criterion']]],
+  ['use_5fhashed_5fmc_21',['use_hashed_mc',['../structocc_1_1main_1_1IsosurfaceConfig.html#a423a2bb9f53e953a763de2ef0ff1ae80',1,'occ::main::IsosurfaceConfig']]],
+  ['use_5fslices_22',['use_slices',['../structocc_1_1dma_1_1LinearDMASettings.html#a97ba3dc1d85382b96ecc7fb690850a6b',1,'occ::dma::LinearDMASettings']]],
+  ['use_5fwolf_5fsum_23',['use_wolf_sum',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6081c8847f494a57e98ee22db394bb20',1,'occ::driver::CrystalGrowthCalculatorOptions::use_wolf_sum'],['../structocc_1_1main_1_1EmbedConfig.html#acd55ea13ed1a701cd2381a5090451e1f',1,'occ::main::EmbedConfig::use_wolf_sum']]],
+  ['use_5fxtb_24',['use_xtb',['../structocc_1_1main_1_1CGConfig.html#a094ff8304cb6532897bb2deca08924bc',1,'occ::main::CGConfig']]]
 ];

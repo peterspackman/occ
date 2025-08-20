@@ -45,6 +45,7 @@ var namespaceocc_1_1qm =
     [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
     [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
     [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
+    [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html", "classocc_1_1qm_1_1HessianEvaluator" ],
     [ "IndexRange", "structocc_1_1qm_1_1IndexRange.html", "structocc_1_1qm_1_1IndexRange" ],
     [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
     [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
@@ -70,6 +71,7 @@ var namespaceocc_1_1qm =
     [ "SCFMethod", "conceptocc_1_1qm_1_1SCFMethod.html", null ],
     [ "DensityFittingMethod", "conceptocc_1_1qm_1_1DensityFittingMethod.html", null ],
     [ "PointChargeMethod", "conceptocc_1_1qm_1_1PointChargeMethod.html", null ],
+    [ "HessianMatrix", "namespaceocc_1_1qm.html#aa8bb245cfcce8ea42381f7dc22329952", null ],
     [ "PointChargeList", "namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb", null ],
     [ "Tensor4D", "namespaceocc_1_1qm.html#aaede53ed6341f3101ea1f4c5cae9b4b9", null ],
     [ "SpinorbitalKind", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4", [

@@ -8,6 +8,7 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "external_potential.h", "external__potential_8h.html", "external__potential_8h" ],
     [ "gradients.h", "gradients_8h.html", "gradients_8h" ],
     [ "guess_density.h", "guess__density_8h.html", "guess__density_8h" ],
+    [ "hessians.h", "hessians_8h.html", "hessians_8h" ],
     [ "hf.h", "hf_8h.html", "hf_8h" ],
     [ "hf_fwd.h", "hf__fwd_8h.html", null ],
     [ "integral_engine.h", "integral__engine_8h.html", "integral__engine_8h" ],

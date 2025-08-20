@@ -70,7 +70,8 @@ var annotated_dup =
         [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ],
         [ "SymmetryMappingResult", "structocc_1_1core_1_1SymmetryMappingResult.html", "structocc_1_1core_1_1SymmetryMappingResult" ],
         [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
-        [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ]
+        [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
+        [ "VibrationalModes", "structocc_1_1core_1_1VibrationalModes.html", "structocc_1_1core_1_1VibrationalModes" ]
       ] ],
       [ "crystal", "namespaceocc_1_1crystal.html", [
         [ "AsymmetricUnit", "structocc_1_1crystal_1_1AsymmetricUnit.html", "structocc_1_1crystal_1_1AsymmetricUnit" ],
@@ -152,6 +153,7 @@ var annotated_dup =
         [ "DMAConfig", "structocc_1_1driver_1_1DMAConfig.html", "structocc_1_1driver_1_1DMAConfig" ],
         [ "DMADriver", "classocc_1_1driver_1_1DMADriver.html", "classocc_1_1driver_1_1DMADriver" ],
         [ "DummyCrystalGrowthCalculator", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator" ],
+        [ "VibrationalAnalysisConfig", "structocc_1_1driver_1_1VibrationalAnalysisConfig.html", "structocc_1_1driver_1_1VibrationalAnalysisConfig" ],
         [ "XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator" ]
       ] ],
       [ "geometry", "namespaceocc_1_1geometry.html", [
@@ -255,6 +257,7 @@ var annotated_dup =
         [ "MethodInput", "structocc_1_1io_1_1MethodInput.html", "structocc_1_1io_1_1MethodInput" ],
         [ "MoldenReader", "classocc_1_1io_1_1MoldenReader.html", "classocc_1_1io_1_1MoldenReader" ],
         [ "OccInput", "structocc_1_1io_1_1OccInput.html", "structocc_1_1io_1_1OccInput" ],
+        [ "OptimizationInput", "structocc_1_1io_1_1OptimizationInput.html", "structocc_1_1io_1_1OptimizationInput" ],
         [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
         [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
         [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],
@@ -347,6 +350,18 @@ var annotated_dup =
         [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],
         [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ]
       ] ],
+      [ "opt", "namespaceocc_1_1opt.html", [
+        [ "AngleCoordinate", "classocc_1_1opt_1_1AngleCoordinate.html", "classocc_1_1opt_1_1AngleCoordinate" ],
+        [ "BernyOptimizer", "structocc_1_1opt_1_1BernyOptimizer.html", "structocc_1_1opt_1_1BernyOptimizer" ],
+        [ "BondCoordinate", "classocc_1_1opt_1_1BondCoordinate.html", "classocc_1_1opt_1_1BondCoordinate" ],
+        [ "ConvergenceCriteria", "structocc_1_1opt_1_1ConvergenceCriteria.html", "structocc_1_1opt_1_1ConvergenceCriteria" ],
+        [ "ConvergenceInfo", "structocc_1_1opt_1_1ConvergenceInfo.html", "structocc_1_1opt_1_1ConvergenceInfo" ],
+        [ "DihedralCoordinate", "classocc_1_1opt_1_1DihedralCoordinate.html", "classocc_1_1opt_1_1DihedralCoordinate" ],
+        [ "InternalCoordinates", "classocc_1_1opt_1_1InternalCoordinates.html", "classocc_1_1opt_1_1InternalCoordinates" ],
+        [ "OptimizationState", "structocc_1_1opt_1_1OptimizationState.html", "structocc_1_1opt_1_1OptimizationState" ],
+        [ "OptPoint", "structocc_1_1opt_1_1OptPoint.html", "structocc_1_1opt_1_1OptPoint" ],
+        [ "SpeciesData", "structocc_1_1opt_1_1SpeciesData.html", "structocc_1_1opt_1_1SpeciesData" ]
+      ] ],
       [ "qm", "namespaceocc_1_1qm.html", [
         [ "cint", "namespaceocc_1_1qm_1_1cint.html", [
           [ "impl", "namespaceocc_1_1qm_1_1cint_1_1impl.html", [
@@ -363,6 +378,7 @@ var annotated_dup =
         [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
         [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
         [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
+        [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html", "classocc_1_1qm_1_1HessianEvaluator" ],
         [ "IndexRange", "structocc_1_1qm_1_1IndexRange.html", "structocc_1_1qm_1_1IndexRange" ],
         [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
         [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
@@ -419,6 +435,7 @@ var annotated_dup =
         [ "TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", "classocc_1_1xtb_1_1TbliteCalculator" ],
         [ "XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html", "classocc_1_1xtb_1_1XTBCalculator" ]
       ] ],
+      [ "MatSix", "structocc_1_1MatSix.html", "structocc_1_1MatSix" ],
       [ "MatTriple", "structocc_1_1MatTriple.html", "structocc_1_1MatTriple" ]
     ] ],
     [ "quickhull", "namespacequickhull.html", [

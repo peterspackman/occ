@@ -134,8 +134,13 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac17ad4acfedab14cdc90f3ee62a86d72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af011e2eb93f9062fc349da2e43007230" id="r_af011e2eb93f9062fc349da2e43007230"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#af011e2eb93f9062fc349da2e43007230">set_density_fitting_basis</a> (const std::string &amp;)</td></tr>
 <tr class="separator:af011e2eb93f9062fc349da2e43007230"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefa831f5f31e096024f6863a65aa5e45" id="r_aefa831f5f31e096024f6863a65aa5e45"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html">HartreeFock</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#aefa831f5f31e096024f6863a65aa5e45">with_new_basis</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a> &amp;new_basis) const</td></tr>
+<tr class="memdesc:aefa831f5f31e096024f6863a65aa5e45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classocc_1_1qm_1_1HartreeFock.html">HartreeFock</a> instance with the same settings but different basis.  <br /></td></tr>
+<tr class="separator:aefa831f5f31e096024f6863a65aa5e45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a168713e4bc2cf713330c415d46f4f1fc" id="r_a168713e4bc2cf713330c415d46f4f1fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a168713e4bc2cf713330c415d46f4f1fc">set_precision</a> (double precision)</td></tr>
 <tr class="separator:a168713e4bc2cf713330c415d46f4f1fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a899f8699f34637c442d38f8f829fe582" id="r_a899f8699f34637c442d38f8f829fe582"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a899f8699f34637c442d38f8f829fe582">integral_precision</a> () const</td></tr>
+<tr class="separator:a899f8699f34637c442d38f8f829fe582"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adeeb1044193a0875857fe6929a138e20" id="r_adeeb1044193a0875857fe6929a138e20"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#adeeb1044193a0875857fe6929a138e20">nuclear_point_charge_interaction_energy</a> (const <a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">PointChargeList</a> &amp;) const</td></tr>
 <tr class="separator:adeeb1044193a0875857fe6929a138e20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3fc717a310142d3b81cbc20bd5a76043" id="r_a3fc717a310142d3b81cbc20bd5a76043"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a3fc717a310142d3b81cbc20bd5a76043">wolf_point_charge_interaction_energy</a> (const <a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">PointChargeList</a> &amp;, const std::vector&lt; double &gt; &amp;partial_charges, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>, double rc) const</td></tr>
@@ -1004,6 +1009,31 @@ template&lt;unsigned int order = 1&gt; </div>
 
 </div>
 </div>
+<a id="a899f8699f34637c442d38f8f829fe582" name="a899f8699f34637c442d38f8f829fe582"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a899f8699f34637c442d38f8f829fe582">&#9670;&#160;</a></span>integral_precision()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::qm::HartreeFock::integral_precision </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a4761b2af6eed429e93c1849a0701b671" name="a4761b2af6eed429e93c1849a0701b671"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4761b2af6eed429e93c1849a0701b671">&#9670;&#160;</a></span>name()</h2>
 
@@ -1286,6 +1316,33 @@ template&lt;unsigned int order = 1&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aefa831f5f31e096024f6863a65aa5e45" name="aefa831f5f31e096024f6863a65aa5e45"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aefa831f5f31e096024f6863a65aa5e45">&#9670;&#160;</a></span>with_new_basis()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html">HartreeFock</a> occ::qm::HartreeFock::with_new_basis </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>new_basis</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a new <a class="el" href="classocc_1_1qm_1_1HartreeFock.html">HartreeFock</a> instance with the same settings but different basis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">new_basis</td><td>The new basis set to use </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>New <a class="el" href="classocc_1_1qm_1_1HartreeFock.html">HartreeFock</a> instance </dd></dl>
 
 </div>
 </div>

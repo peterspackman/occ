@@ -8,6 +8,7 @@ var occ__input_8h =
     [ "occ::io::BasisSetInput", "structocc_1_1io_1_1BasisSetInput.html", "structocc_1_1io_1_1BasisSetInput" ],
     [ "occ::io::SolventInput", "structocc_1_1io_1_1SolventInput.html", "structocc_1_1io_1_1SolventInput" ],
     [ "occ::io::RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", "structocc_1_1io_1_1RuntimeInput" ],
+    [ "occ::io::OptimizationInput", "structocc_1_1io_1_1OptimizationInput.html", "structocc_1_1io_1_1OptimizationInput" ],
     [ "occ::io::DispersionCorrectionInput", "structocc_1_1io_1_1DispersionCorrectionInput.html", "structocc_1_1io_1_1DispersionCorrectionInput" ],
     [ "occ::io::CrystalInput", "structocc_1_1io_1_1CrystalInput.html", "structocc_1_1io_1_1CrystalInput" ],
     [ "occ::io::PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],

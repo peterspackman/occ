@@ -9,13 +9,14 @@ var searchData=
   ['dft_5fmethod_2eh_6',['dft_method.h',['../dft__method_8h.html',1,'']]],
   ['dftb_5fgen_2eh_7',['dftb_gen.h',['../dftb__gen_8h.html',1,'']]],
   ['dftd4_2eh_8',['dftd4.h',['../dftd4_8h.html',1,'']]],
-  ['diis_2eh_9',['diis.h',['../diis_8h.html',1,'']]],
-  ['dimer_2eh_10',['dimer.h',['../dimer_8h.html',1,'']]],
-  ['dimer_5flabeller_2eh_11',['dimer_labeller.h',['../dimer__labeller_8h.html',1,'']]],
-  ['dimer_5fmapping_5ftable_2eh_12',['dimer_mapping_table.h',['../dimer__mapping__table_8h.html',1,'']]],
-  ['disp_2eh_13',['disp.h',['../disp_8h.html',1,'']]],
-  ['distance_5fpartition_2eh_14',['distance_partition.h',['../distance__partition_8h.html',1,'']]],
-  ['dma_2eh_15',['dma.h',['../dma_8h.html',1,'']]],
-  ['dma_5fdriver_2eh_16',['dma_driver.h',['../dma__driver_8h.html',1,'']]],
-  ['draco_2eh_17',['draco.h',['../draco_8h.html',1,'']]]
+  ['dihedral_5fcoordinate_2eh_9',['dihedral_coordinate.h',['../dihedral__coordinate_8h.html',1,'']]],
+  ['diis_2eh_10',['diis.h',['../diis_8h.html',1,'']]],
+  ['dimer_2eh_11',['dimer.h',['../dimer_8h.html',1,'']]],
+  ['dimer_5flabeller_2eh_12',['dimer_labeller.h',['../dimer__labeller_8h.html',1,'']]],
+  ['dimer_5fmapping_5ftable_2eh_13',['dimer_mapping_table.h',['../dimer__mapping__table_8h.html',1,'']]],
+  ['disp_2eh_14',['disp.h',['../disp_8h.html',1,'']]],
+  ['distance_5fpartition_2eh_15',['distance_partition.h',['../distance__partition_8h.html',1,'']]],
+  ['dma_2eh_16',['dma.h',['../dma_8h.html',1,'']]],
+  ['dma_5fdriver_2eh_17',['dma_driver.h',['../dma__driver_8h.html',1,'']]],
+  ['draco_2eh_18',['draco.h',['../draco_8h.html',1,'']]]
 ];

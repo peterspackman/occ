@@ -9,7 +9,8 @@ var searchData=
   ['linear_5fhashed_5foctree_2eh_6',['linear_hashed_octree.h',['../linear__hashed__octree_8h.html',1,'']]],
   ['linear_5fmultipole_5fcalculator_2eh_7',['linear_multipole_calculator.h',['../linear__multipole__calculator_8h.html',1,'']]],
   ['linear_5fmultipole_5fshifter_2eh_8',['linear_multipole_shifter.h',['../linear__multipole__shifter_8h.html',1,'']]],
-  ['load_5fgeometry_2eh_9',['load_geometry.h',['../load__geometry_8h.html',1,'']]],
-  ['log_2eh_10',['log.h',['../log_8h.html',1,'']]],
-  ['logsumexp_2eh_11',['logsumexp.h',['../logsumexp_8h.html',1,'']]]
+  ['linear_5fsearch_2eh_9',['linear_search.h',['../linear__search_8h.html',1,'']]],
+  ['load_5fgeometry_2eh_10',['load_geometry.h',['../load__geometry_8h.html',1,'']]],
+  ['log_2eh_11',['log.h',['../log_8h.html',1,'']]],
+  ['logsumexp_2eh_12',['logsumexp.h',['../logsumexp_8h.html',1,'']]]
 ];

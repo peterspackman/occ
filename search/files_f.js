@@ -23,5 +23,6 @@ var searchData=
   ['promolecule_2eh_20',['promolecule.h',['../promolecule_8h.html',1,'']]],
   ['promolecule_5fdensity_2eh_21',['promolecule_density.h',['../promolecule__density_8h.html',1,'']]],
   ['promolecule_5fshape_2eh_22',['promolecule_shape.h',['../promolecule__shape_8h.html',1,'']]],
-  ['properties_2eh_23',['properties.h',['../properties_8h.html',1,'']]]
+  ['properties_2eh_23',['properties.h',['../properties_8h.html',1,'']]],
+  ['pseudoinverse_2eh_24',['pseudoinverse.h',['../pseudoinverse_8h.html',1,'']]]
 ];

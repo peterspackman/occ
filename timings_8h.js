@@ -48,6 +48,7 @@ var timings_8h =
       [ "mc_primal", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a19f7785f6d5ade0be208b72e4a6bd6a2", null ],
       [ "mc_surface", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a172622eca494dac3ba8060bc574eec0b", null ],
       [ "gradient", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a604b8de8f5b9986f80b133d81f0c8de3", null ],
+      [ "hessian", "timings_8h.html#a089c88a4231531abae301355d6ba8c16ad01e13d9a34d5f7dc3c170ce2deb2a59", null ],
       [ "dma_analytic", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a80e195bf08519eea1700e8452fd55b78", null ],
       [ "dma_grid_eval", "timings_8h.html#a089c88a4231531abae301355d6ba8c16a8cb8f3dfdbd949e8e5d3ad690f6faadd", null ],
       [ "dma_grid_int", "timings_8h.html#a089c88a4231531abae301355d6ba8c16ab39ec0114bdaaecb3fd8c1c9b9afec76", null ],

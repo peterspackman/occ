@@ -25,13 +25,14 @@ var searchData=
   ['solvent_5fsurface_2eh_22',['solvent_surface.h',['../solvent__surface_8h.html',1,'']]],
   ['sorted_5fk_5fdistances_2eh_23',['sorted_k_distances.h',['../sorted__k__distances_8h.html',1,'']]],
   ['spacegroup_2eh_24',['spacegroup.h',['../spacegroup_8h.html',1,'']]],
-  ['spherical_5fharmonics_2eh_25',['spherical_harmonics.h',['../spherical__harmonics_8h.html',1,'']]],
-  ['spinorbital_2eh_26',['spinorbital.h',['../spinorbital_8h.html',1,'']]],
-  ['standard_5fbonds_2eh_27',['standard_bonds.h',['../standard__bonds_8h.html',1,'']]],
-  ['steinhardt_2eh_28',['steinhardt.h',['../steinhardt_8h.html',1,'']]],
-  ['sto3g_5fbasis_2eh_29',['sto3g_basis.h',['../sto3g__basis_8h.html',1,'']]],
-  ['stockholder_5fweight_2eh_30',['stockholder_weight.h',['../stockholder__weight_8h.html',1,'']]],
-  ['surface_2eh_31',['surface.h',['../crystal_2surface_8h.html',1,'(Global Namespace)'],['../solvent_2surface_8h.html',1,'(Global Namespace)']]],
-  ['surface_5ftypes_2eh_32',['surface_types.h',['../surface__types_8h.html',1,'']]],
-  ['symmetryoperation_2eh_33',['symmetryoperation.h',['../symmetryoperation_8h.html',1,'']]]
+  ['species_5fdata_2eh_25',['species_data.h',['../species__data_8h.html',1,'']]],
+  ['spherical_5fharmonics_2eh_26',['spherical_harmonics.h',['../spherical__harmonics_8h.html',1,'']]],
+  ['spinorbital_2eh_27',['spinorbital.h',['../spinorbital_8h.html',1,'']]],
+  ['standard_5fbonds_2eh_28',['standard_bonds.h',['../standard__bonds_8h.html',1,'']]],
+  ['steinhardt_2eh_29',['steinhardt.h',['../steinhardt_8h.html',1,'']]],
+  ['sto3g_5fbasis_2eh_30',['sto3g_basis.h',['../sto3g__basis_8h.html',1,'']]],
+  ['stockholder_5fweight_2eh_31',['stockholder_weight.h',['../stockholder__weight_8h.html',1,'']]],
+  ['surface_2eh_32',['surface.h',['../crystal_2surface_8h.html',1,'(Global Namespace)'],['../solvent_2surface_8h.html',1,'(Global Namespace)']]],
+  ['surface_5ftypes_2eh_33',['surface_types.h',['../surface__types_8h.html',1,'']]],
+  ['symmetryoperation_2eh_34',['symmetryoperation.h',['../symmetryoperation_8h.html',1,'']]]
 ];

@@ -7,7 +7,8 @@ var searchData=
   ['integral_5fengine_5fdf_2eh_4',['integral_engine_df.h',['../integral__engine__df_8h.html',1,'']]],
   ['interaction_5fjson_2eh_5',['interaction_json.h',['../interaction__json_8h.html',1,'']]],
   ['interaction_5fmapper_2eh_6',['interaction_mapper.h',['../interaction__mapper_8h.html',1,'']]],
-  ['interpolator_2eh_7',['interpolator.h',['../interpolator_8h.html',1,'']]],
-  ['isosurface_2eh_8',['isosurface.h',['../isosurface_8h.html',1,'']]],
-  ['isosurface_5fjson_2eh_9',['isosurface_json.h',['../isosurface__json_8h.html',1,'']]]
+  ['internal_5fcoordinates_2eh_7',['internal_coordinates.h',['../internal__coordinates_8h.html',1,'']]],
+  ['interpolator_2eh_8',['interpolator.h',['../interpolator_8h.html',1,'']]],
+  ['isosurface_2eh_9',['isosurface.h',['../isosurface_8h.html',1,'']]],
+  ['isosurface_5fjson_2eh_10',['isosurface_json.h',['../isosurface__json_8h.html',1,'']]]
 ];

@@ -40,6 +40,7 @@ var namespaceocc_1_1io =
     [ "MethodInput", "structocc_1_1io_1_1MethodInput.html", "structocc_1_1io_1_1MethodInput" ],
     [ "MoldenReader", "classocc_1_1io_1_1MoldenReader.html", "classocc_1_1io_1_1MoldenReader" ],
     [ "OccInput", "structocc_1_1io_1_1OccInput.html", "structocc_1_1io_1_1OccInput" ],
+    [ "OptimizationInput", "structocc_1_1io_1_1OptimizationInput.html", "structocc_1_1io_1_1OptimizationInput" ],
     [ "OrcaJSONReader", "classocc_1_1io_1_1OrcaJSONReader.html", "classocc_1_1io_1_1OrcaJSONReader" ],
     [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
     [ "PairInput", "structocc_1_1io_1_1PairInput.html", "structocc_1_1io_1_1PairInput" ],

@@ -16,6 +16,7 @@ var classocc_1_1qm_1_1cint_1_1IntegralEnvironment =
     [ "env_data_ptr", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a7b74879f2a8e0227bd307dcb371ba9e8", null ],
     [ "four_center_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a5d8792c85e23f15a2ca6bb2acf68319e", null ],
     [ "four_center_helper_grad", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a2f284d94f891509b14211171f53844c5", null ],
+    [ "four_center_helper_hess", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#aa22aa7d462712fddb619c4961d7a7149", null ],
     [ "num_atoms", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#ada9edf4865b11217897781e3f1dd87a1", null ],
     [ "num_basis", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a4a261038765cd212475def63cbb5dc9d", null ],
     [ "print", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#acba0d6c594b226c0c1f9cb60a1253178", null ],
@@ -30,5 +31,6 @@ var classocc_1_1qm_1_1cint_1_1IntegralEnvironment =
     [ "three_center_rs_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#acc59ce84f318876c96dba63db7b09dbb", null ],
     [ "total_cgto", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a5343ced989f8fecfec53c20af6902341", null ],
     [ "two_center_helper", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#aca7e6c7950f786fb08738053f0368f30", null ],
-    [ "two_center_helper_grad", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a341e91727531a30daab3a76e4f974003", null ]
+    [ "two_center_helper_grad", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#a341e91727531a30daab3a76e4f974003", null ],
+    [ "two_center_helper_hess", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#ae270d30f6541bb44ec6ec2ba9483ab78", null ]
 ];
