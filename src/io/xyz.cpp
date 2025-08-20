@@ -1,8 +1,11 @@
 #include <filesystem>
 #include <fstream>
+#include <sstream>
+#include <fmt/format.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
+#include <occ/core/element.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/xyz.h>
 #include <scn/scan.h>
@@ -85,6 +88,28 @@ occ::core::Molecule molecule_from_xyz_string(const std::string &contents) {
   }
   XyzFileReader xyz(is);
   return occ::core::Molecule(xyz.elements, xyz.positions);
+}
+
+std::string to_xyz_string(const occ::core::Molecule &molecule) {
+  return to_xyz_string(molecule, "");
+}
+
+std::string to_xyz_string(const occ::core::Molecule &molecule, const std::string &comment) {
+  const auto &atoms = molecule.atoms();
+  const auto &positions = molecule.positions();
+  
+  std::ostringstream oss;
+  oss << atoms.size() << "\n";
+  oss << comment << "\n";
+  
+  for (size_t i = 0; i < atoms.size(); i++) {
+    const auto &atom = atoms[i];
+    oss << fmt::format("{:2s} {:12.8f} {:12.8f} {:12.8f}\n",
+                       occ::core::Element(atom.atomic_number).symbol(),
+                       positions(0, i), positions(1, i), positions(2, i));
+  }
+  
+  return oss.str();
 }
 
 } // namespace occ::io

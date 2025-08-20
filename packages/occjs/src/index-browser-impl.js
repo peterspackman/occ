@@ -89,6 +89,15 @@ import {
   DMAResult
 } from './dma.js';
 
+// Import optimization functionality
+import {
+  optimizeHF,
+  optimizeDFT,
+  computeFrequencies,
+  optimizeAndAnalyze,
+  moleculeToXYZ
+} from './optimization.js';
+
 /**
  * Main QM calculation factory with module loading
  * @param {Object} molecule - Molecule object
@@ -160,5 +169,11 @@ export {
   calculateDMA,
   generatePunchFile,
   DMAConfig,
-  DMAResult
+  DMAResult,
+  // Optimization functionality
+  optimizeHF,
+  optimizeDFT,
+  computeFrequencies,
+  optimizeAndAnalyze,
+  moleculeToXYZ
 };

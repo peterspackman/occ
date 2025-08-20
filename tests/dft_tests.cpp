@@ -28,6 +28,7 @@
 using Catch::Approx;
 using occ::format_matrix;
 using occ::Mat;
+using occ::Mat3N;
 using occ::Vec;
 
 TEST_CASE("LDA (Slater) exchange energy density", "[lda]") {
@@ -817,4 +818,5 @@ TEST_CASE("Voronoi VDW scaling and temperature effects", "[voronoi]") {
   // VDW and geometric should produce different results
   REQUIRE(!all_close(charges_geom, charges_vdw, 1e-3));
 }
+
 

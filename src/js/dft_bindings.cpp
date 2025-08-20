@@ -5,6 +5,8 @@
 #include <occ/dft/dft.h>
 #include <occ/io/grid_settings.h>
 #include <occ/qm/scf.h>
+#include <occ/qm/hessians.h>
+#include <occ/qm/gradients.h>
 
 using namespace emscripten;
 using namespace occ::dft;
@@ -53,6 +55,15 @@ void register_dft_bindings() {
                   return SCF<DFT>(dft, kind);
                 }),
                 allow_raw_pointers())
+      .function("computeGradient",
+                optional_override([](DFT &dft, const MolecularOrbitals &mo) {
+                  occ::qm::GradientEvaluator<DFT> grad(dft);
+                  return grad(mo);
+                }))
+      .function("hessianEvaluator",
+                optional_override([](DFT &dft) {
+                  return occ::qm::HessianEvaluator<DFT>(dft);
+                }))
       .function("toString", optional_override([](const DFT &dft) {
                   return std::string("<DFT ") + dft.method_string() + " (" +
                          dft.aobasis().name() + ", " +

@@ -328,6 +328,18 @@ public:
     return m_nlc_energy;
   }
 
+  // WARNING: VV10/NLC gradients are not fully tested and may not be correct.
+  // Current implementation is post-SCF only (not self-consistent) and
+  // does not include SCF response. Use with caution.
+  Mat3N compute_nlc_gradient(const MolecularOrbitals &mo) const {
+    if (!have_nonlocal_correlation()) {
+      const size_t natoms = m_hf.atoms().size();
+      return Mat3N::Zero(3, natoms);
+    }
+    auto nlc_result = m_nlc.compute_gradient(m_hf.aobasis(), mo);
+    return nlc_result.gradient;
+  }
+
   Mat compute_fock(const MolecularOrbitals &mo, const Mat &Schwarz = Mat()) {
     auto [J, K] = compute_JK(mo, Schwarz);
     return J - K;

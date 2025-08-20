@@ -98,6 +98,9 @@ Mat3N DFT::compute_xc_gradient(const MolecularOrbitals &mo,
     }
   }
 
+  // Add VV10 nonlocal correlation gradient if present
+  gradient += compute_nlc_gradient(mo);
+
   occ::timing::stop(occ::timing::category::dft_gradient);
 
   return gradient;

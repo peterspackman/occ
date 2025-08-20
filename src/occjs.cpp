@@ -1,6 +1,7 @@
 #include "js/core_bindings.h"
 #include "js/qm_bindings.h"
 #include "js/dft_bindings.h"
+#include "js/opt_bindings.h"
 #include "js/isosurface_bindings.h"
 #include "js/cube_bindings.h"
 #include "js/crystal_bindings.h"
@@ -19,6 +20,7 @@ EMSCRIPTEN_BINDINGS(occ) {
     register_core_bindings();
     register_qm_bindings();
     register_dft_bindings();
+    register_opt_bindings();
     register_isosurface_bindings();
     register_cube_bindings();
     register_crystal_bindings();
