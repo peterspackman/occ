@@ -14,6 +14,7 @@
 #include <occ/interaction/ce_energy_model.h>
 #include <occ/io/crystal_json.h>
 #include <occ/main/occ_elastic_fit.h>
+#include <stdexcept>
 
 using occ::crystal::Crystal;
 using occ::main::EFSettings;
@@ -32,19 +33,32 @@ using occ::units::LIGHTSPEED;
 using occ::units::PI;
 using occ::units::PLANCK;
 
-inline void print_vector(occ::Vec &vec, int per_line) {
+inline void print_vector(const occ::Vec &vec, int per_line) {
   std::string line;
 
-  std::sort(vec.begin(), vec.end());
+  occ::Vec sorted_vec = vec;
+  std::sort(sorted_vec.begin(), sorted_vec.end());
 
-  for (size_t i = 0; i < vec.size(); ++i) {
-    double val = vec(i);
+  for (size_t i = 0; i < sorted_vec.size(); ++i) {
+    double val = sorted_vec(i);
     line += fmt::format("{:9.3f}", val);
     if ((i + 1) % per_line == 0 || i == vec.size() - 1) {
       spdlog::info("{}", line);
       line.clear();
     }
   }
+}
+
+inline void print_matrix_full(const occ::CMat &matrix, int precision = 6,
+                              int width = 12) {
+  for (int i = 0; i < matrix.rows(); ++i) {
+    std::string row;
+    for (int j = 0; j < matrix.cols(); ++j) {
+      row += fmt::format("{:{}.{}f}", matrix(i, j).real(), width, precision);
+    }
+    occ::log::info("{}", row);
+  }
+  occ::log::info("");
 }
 
 inline void print_matrix_full(const occ::Mat6 &matrix, int precision = 6,
@@ -290,18 +304,44 @@ determine_solver_type(const std::string &user_preference) {
   return occ::main::LinearSolverType::SVD;
 }
 
-occ::Mat6 PES::voigt_elastic_tensor_from_hessian(double volume,
-                                                 LinearSolverType solver_type,
-                                                 double svd_threshold,
-                                                 bool animate_phonons) {
+inline occ::IVec3 determine_mp_shrinking_factors(
+    const std::vector<size_t> &shrinking_factors_raw) {
+  size_t n_sf = shrinking_factors_raw.size();
+  if (n_sf == 1) {
+    size_t sf = shrinking_factors_raw[0];
+    return occ::IVec3(sf, sf, sf);
+  } else if (n_sf == 3) {
+    return occ::IVec3(shrinking_factors_raw[0], shrinking_factors_raw[1],
+                      shrinking_factors_raw[2]);
+  } else {
+    throw std::runtime_error(fmt::format(
+        "Raw shrinking factor input had size {} (should be 1 or 3)", n_sf));
+  }
+}
+
+inline occ::Vec3 determine_mp_shifts(const std::vector<double> &shifts_raw) {
+  size_t n_shifts = shifts_raw.size();
+  if (n_shifts == 1) {
+    double shift = shifts_raw[0];
+    return occ::Vec3(shift, shift, shift);
+  } else if (n_shifts == 3) {
+    return occ::Vec3(shifts_raw[0], shifts_raw[1], shifts_raw[2]);
+  } else {
+    throw std::runtime_error(fmt::format(
+        "Raw shifts input had size {} (should be 1 or 3)", n_shifts));
+  }
+}
+
+occ::Mat6 PES::compute_elastic_tensor(double volume,
+                                      LinearSolverType solver_type,
+                                      double svd_threshold) {
+
   size_t n_molecules = this->num_unique_molecules();
   size_t dim = 3 * n_molecules;
 
   occ::Mat6 D_ee = occ::Mat6::Zero();       // Strain-Strain
   occ::Mat D_ei = occ::Mat::Zero(6, dim);   // Strain-Cart
   occ::Mat D_ij = occ::Mat::Zero(dim, dim); // Cart-Cart
-
-  occ::Mat Mass_inv_ij = occ::Mat::Zero(dim, dim);
 
   for (const auto &pot : m_potentials) {
     const occ::Vec3 &r_hat = pot->r_hat;
@@ -311,7 +351,6 @@ occ::Mat6 PES::voigt_elastic_tensor_from_hessian(double volume,
     double dU_dr = pot->first_derivative();
     double d2U_dr2 = pot->second_derivative();
     const auto [idx_0, idx_1] = pot->uc_pair_indices();
-    const auto [m0, m1] = pot->pair_mass();
 
     for (int p = 0; p < 6; p++) {
       auto [alpha, beta] = this->voigt_notation(p);
@@ -360,22 +399,17 @@ occ::Mat6 PES::voigt_elastic_tensor_from_hessian(double volume,
         D_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) += e;
         D_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) -= e;
         D_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) -= e;
-
-        Mass_inv_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) =
-            1 / std::sqrt(m0 * m0);
-        Mass_inv_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) =
-            1 / std::sqrt(m1 * m1);
-        Mass_inv_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) =
-            1 / std::sqrt(m0 * m1);
-        Mass_inv_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) =
-            1 / std::sqrt(m1 * m0);
       }
     }
   }
+
   D_ee /= 2;
   D_ei /= 2;
   D_ij /= 2;
-  occ::Mat Dyn_ij = Mass_inv_ij.cwiseProduct(D_ij);
+
+  occ::Mat mass_inv_ij = this->inv_mass_matrix();
+  occ::Mat Dyn_ij = mass_inv_ij.cwiseProduct(D_ij);
+
   occ::Mat X = solve_linear_system(D_ij, D_ei.transpose(), solver_type,
                                    svd_threshold); // D_ij * X = D_ei^T
   occ::Mat6 correction = D_ei * X; // This gives D_ei * D_ij^(-1) * D_ei^T
@@ -407,14 +441,141 @@ occ::Mat6 PES::voigt_elastic_tensor_from_hessian(double volume,
                "(eV/Ang)"},
               false, 3);
 
-  this->compute_phonons(Dyn_ij, animate_phonons);
-
   return C;
 }
 
-void PES::compute_phonons(const occ::Mat &Dyn_ij, bool animate) {
+void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
+                                   const occ::Vec3 shift, bool animate) {
+  MonkhorstPack mp(shrinking_factors, shift);
+  size_t n_kpoints = mp.size();
+  double weight = 1 / static_cast<double>(n_kpoints);
+  size_t n_molecules = this->num_unique_molecules();
+  const occ::Mat &inv_m_ij = this->inv_mass_matrix();
+  double temp = this->get_temperature();
 
-  Eigen::EigenSolver<occ::Mat> es(Dyn_ij);
+  double Uvib = 0;
+  double kBT = temp * BOLTZMANN * AVOGADRO / 1000;
+  double zpe = 0;
+
+  occ::log::info("Phonon frequencies (cm-1): ");
+  for (const auto &kpoint : mp) {
+    const auto &fm = this->compute_fm_at_kpoint(kpoint);
+    occ::CMat dyn = fm.cwiseProduct(inv_m_ij);
+    occ::CMat dyn_gulp = dyn / 96486.256;
+    const auto &[freqs, eigvecs] = this->compute_phonons_at_kpoint(dyn);
+    occ::log::info(" @ k-point {:8.4f} {:8.4f} {:8.4f} Weight = {:8.4f}:",
+                   kpoint[0], kpoint[1], kpoint[2], weight);
+    print_matrix_full(dyn_gulp);
+    print_vector(freqs, 6);
+    occ::log::info("");
+    for (size_t f_idx = 0; f_idx < freqs.size(); f_idx++) {
+      double f_wvn = freqs[f_idx];
+      if (f_wvn < 1e-2) {
+        occ::log::debug("Skipping imaginary or translational phonon mode with "
+                        "frequency {:.3f} cm-1 in Uvib calc.",
+                        f_wvn);
+        continue;
+      }
+      double f_Hz = LIGHTSPEED / ((1 / f_wvn) / 100);
+      double Uf = f_Hz * PLANCK * AVOGADRO / 1000;
+      double f_zpe = 0.5 * Uf;
+      zpe += f_zpe * weight;
+      if (kBT > 0.0) {
+        Uvib += f_zpe + Uf / (std::exp(Uf / kBT) - 1) * weight;
+      }
+    }
+  }
+  occ::log::info("Zero point energy                           = {:8.3f} kJ/mol",
+                 zpe);
+  if (!(kBT > 0.0)) {
+    return;
+  }
+  occ::log::info("Vibrational energy properties at {:.2f} K: ", temp);
+  occ::log::info("Uvib (excluding rovibrations)               = {:8.3f} kJ/mol",
+                 Uvib);
+  double rovib = 3 * kBT * n_molecules;
+  occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} kJ/mol",
+                 Uvib + rovib);
+  occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} "
+                 "kJ/mol/molecule",
+                 (Uvib + rovib) / n_molecules);
+  occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} "
+                 "kBT/molecule",
+                 (Uvib + rovib) / kBT / n_molecules);
+  double equip = 6 * kBT * n_molecules;
+  occ::log::info("Uvib (equipartition)                        = {:8.3f} kJ/mol",
+                 equip);
+}
+
+occ::Mat PES::inv_mass_matrix() {
+  size_t n_molecules = this->num_unique_molecules();
+  size_t dim = 3 * n_molecules;
+  occ::Mat mass_inv_ij = occ::Mat::Zero(dim, dim);
+
+  for (const auto &pot : m_potentials) {
+    const auto [idx_0, idx_1] = pot->uc_pair_indices();
+    const auto [m0, m1] = pot->pair_mass();
+
+    for (int alpha = 0; alpha < 3; alpha++) {
+      for (int beta = 0; beta < 3; beta++) {
+
+        mass_inv_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) =
+            1 / std::sqrt(m0 * m0);
+        mass_inv_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) =
+            1 / std::sqrt(m1 * m1);
+        mass_inv_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) =
+            1 / std::sqrt(m0 * m1);
+        mass_inv_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) =
+            1 / std::sqrt(m1 * m0);
+      }
+    }
+  }
+  return mass_inv_ij;
+}
+
+occ::CMat PES::compute_fm_at_kpoint(const occ::Vec3 &kp) {
+
+  size_t n_molecules = this->num_unique_molecules();
+  size_t dim = 3 * n_molecules;
+  const auto &recip = this->crystal().unit_cell().reciprocal();
+
+  occ::CMat D_ij = occ::Mat::Zero(dim, dim);
+
+  for (const auto &pot : m_potentials) {
+    const occ::Vec3 &r_hat = pot->r_hat;
+    const occ::Vec3 &r_vector = pot->r_vector;
+    auto q = recip * kp * 2 * PI;
+    std::complex<double> phase =
+        std::exp(std::complex<double>(0.0, q.dot(r_vector)));
+    double d2U_dr2 = pot->second_derivative();
+    const auto [idx_0, idx_1] = pot->uc_pair_indices();
+
+    for (int alpha = 0; alpha < 3; alpha++) {
+      for (int beta = 0; beta < 3; beta++) {
+        std::complex<double> e = d2U_dr2 * r_hat[alpha] * r_hat[beta];
+
+        // NOTE: zero by definition
+        // if (alpha == beta) {
+        //   e += dU_dr / r;
+        // }
+
+        D_ij(idx_0 * 3 + alpha, idx_0 * 3 + beta) += e;
+        D_ij(idx_1 * 3 + alpha, idx_1 * 3 + beta) += e;
+        D_ij(idx_0 * 3 + alpha, idx_1 * 3 + beta) -= e * phase;
+        D_ij(idx_1 * 3 + alpha, idx_0 * 3 + beta) -= e * phase;
+      }
+    }
+  }
+
+  D_ij /= 2;
+
+  return D_ij;
+}
+
+std::pair<occ::Vec, occ::Mat>
+PES::compute_phonons_at_kpoint(const occ::CMat &Dyn_ij) {
+
+  Eigen::ComplexEigenSolver<occ::CMat> es(Dyn_ij);
   occ::CVec eigenvalues = es.eigenvalues();
   occ::CMat eigenvectors = es.eigenvectors();
   occ::Vec frequencies;
@@ -444,58 +605,17 @@ void PES::compute_phonons(const occ::Mat &Dyn_ij, bool animate) {
     sorted_eigenvectors.col(i) = eigenvectors.col(indices[i]).real();
   }
 
-  occ::log::info("Phonon frequencies (cm-1):");
-  print_vector(sorted_freq_wavenumbers, 6);
+  return std::pair(sorted_freq_wavenumbers, sorted_eigenvectors);
+}
 
-  size_t n_molecules = this->num_unique_molecules();
-  double temp = this->get_temperature();
-  if (temp > 0.0) {
-    double Uvib = 0;
-    double kBT = temp * BOLTZMANN * AVOGADRO / 1000;
-    double zpe = 0;
-    for (size_t freq_idx = 0; freq_idx < n; freq_idx++) {
-      double f_wavenumber = sorted_freq_wavenumbers[freq_idx];
-      double f_Hz = LIGHTSPEED / ((1 / f_wavenumber) / 100);
-      if (f_wavenumber < 1e-2) {
-        occ::log::debug(
-            "Skipping imaginary or translational phonon mode {} with "
-            "frequency {:.3f} cm-1 in Uvib calc.",
-            freq_idx, f_wavenumber);
-        continue;
-      }
-      double Uf = f_Hz * PLANCK * AVOGADRO / 1000;
-      double f_zpe = 0.5 * Uf;
-      zpe += f_zpe;
-      Uvib += f_zpe + Uf / (std::exp(Uf / kBT) - 1);
-    }
-    occ::log::info(
-        "Zero point energy                           = {:8.3f} kJ/mol", zpe);
-    occ::log::info("Vibrational energy properties at {:.2f} K: ", temp);
-    occ::log::info(
-        "Uvib (excluding rovibrations)               = {:8.3f} kJ/mol", Uvib);
-    double rovib = 3 * kBT * n_molecules;
-    occ::log::info(
-        "Uvib (including equipartition rovibrations) = {:8.3f} kJ/mol",
-        Uvib + rovib);
-    occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} "
-                   "kJ/mol/molecule",
-                   (Uvib + rovib) / n_molecules);
-    occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} "
-                   "kBT/molecule",
-                   (Uvib + rovib) / kBT / n_molecules);
-    double equip = 6 * kBT * n_molecules;
-    occ::log::info(
-        "Uvib (equipartition)                        = {:8.3f} kJ/mol", equip);
-  }
-
-  if (!animate) {
-    return;
-  }
+void PES::animate_phonons(const occ::Vec &frequencies,
+                          const occ::Mat &eigenvectors) {
 
   double amplitude = 0.5;
   size_t n_frames = 50;
   double period = 2.0 * PI;
-  size_t n_modes = eigenvalues.size();
+  size_t n_modes = frequencies.size();
+  size_t n_molecules = this->num_unique_molecules();
   size_t n_atoms = 0;
 
   occ::log::info(
@@ -516,7 +636,7 @@ void PES::compute_phonons(const occ::Mat &Dyn_ij, bool animate) {
   }
 
   for (size_t mode = 0; mode < n_modes; mode++) {
-    double freq_cm = sorted_freq_wavenumbers(mode);
+    double freq_cm = frequencies(mode);
 
     std::string filename =
         fmt::format("phonon_mode_{}_{:.2f}cm-1.xyz", mode, freq_cm);
@@ -530,7 +650,7 @@ void PES::compute_phonons(const occ::Mat &Dyn_ij, bool animate) {
     occ::log::info("Generating trajectory for mode {} ({:.2f} cm-1)", mode,
                    freq_cm);
 
-    occ::Vec mode_eigenvector = sorted_eigenvectors.col(mode);
+    occ::Vec mode_eigenvector = eigenvectors.col(mode);
 
     double norm = mode_eigenvector.norm();
     if (norm > 1e-10) {
@@ -634,13 +754,15 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   gulp_strings.push_back("1");
   gulp_strings.push_back("");
 
-  // Parse solver type and create updated settings
   occ::main::EFSettings updated_settings = settings;
 
   updated_settings.potential_type =
       determine_potential_type(settings.potential_type_str);
   updated_settings.solver_type =
       determine_solver_type(settings.solver_type_str);
+  updated_settings.shrinking_factors =
+      determine_mp_shrinking_factors(settings.shrinking_factors_raw);
+  updated_settings.shift = determine_mp_shifts(settings.shift_raw);
 
   std::string type_name;
   if (updated_settings.potential_type == PotentialType::MORSE) {
@@ -673,9 +795,9 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   }
 
   double elat = pes.lattice_energy(); // per mole of unit cells
-  occ::Mat6 cij = pes.voigt_elastic_tensor_from_hessian(
-      crystal.volume(), updated_settings.solver_type,
-      updated_settings.svd_threshold, updated_settings.animate_phonons);
+  occ::Mat6 cij =
+      pes.compute_elastic_tensor(crystal.volume(), updated_settings.solver_type,
+                                 updated_settings.svd_threshold);
 
   if (settings.max_to_zero) {
     double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
@@ -693,6 +815,10 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
     print_matrix(cij, true);
   }
   save_matrix(cij, settings.output_file);
+
+  pes.phonon_density_of_states(updated_settings.shrinking_factors,
+                               updated_settings.shift,
+                               updated_settings.animate_phonons);
 }
 
 namespace occ::main {
@@ -745,6 +871,18 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   elastic_fit->add_flag_callback(
       "--dont-animate-phonons", [&]() { config->animate_phonons = false; },
       "Don't animate the phonons and write them to XYZ files.");
+
+  elastic_fit
+      ->add_option("--mp-shrinking-factors", config->shrinking_factors_raw,
+                   "Shrinking factors for Monkhorst-Pack for phonons (either 1 "
+                   "or 3 numbers).")
+      ->expected(1, 3);
+
+  elastic_fit
+      ->add_option(
+          "--mp-shift", config->shift_raw,
+          "Origin shift for Monkhorst-Pack for phonons (either 1 or 3 numbers)")
+      ->expected(1, 3);
 
   elastic_fit->callback([config]() { run_elastic_fit_subcommand(*config); });
 

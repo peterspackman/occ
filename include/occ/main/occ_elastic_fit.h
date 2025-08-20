@@ -11,6 +11,8 @@
 
 namespace occ::main {
 
+struct EFSettings;
+
 enum class LinearSolverType { LU, SVD, QR, LDLT };
 
 struct Morse {
@@ -305,11 +307,22 @@ public:
     return n_molecules;
   }
 
-  occ::Mat6 voigt_elastic_tensor_from_hessian(
-      double volume, LinearSolverType solver_type = LinearSolverType::SVD,
-      double svd_threshold = 1e-12, bool animate_phonons = true);
+  occ::Mat inv_mass_matrix();
 
-  void compute_phonons(const occ::Mat &Dyn_ij, bool animate = true);
+  occ::Mat6
+  compute_elastic_tensor(double volume,
+                         LinearSolverType solver_type = LinearSolverType::SVD,
+                         double svd_threshold = 1e-12);
+
+  occ::CMat compute_fm_at_kpoint(const occ::Vec3 &kp);
+
+  std::pair<occ::Vec, occ::Mat>
+  compute_phonons_at_kpoint(const occ::CMat &Dyn_ij);
+  void phonon_density_of_states(const occ::IVec3 &shrinking_factors,
+                                const occ::Vec3 shift, bool animate);
+
+  void animate_phonons(const occ::Vec &frequencies,
+                       const occ::Mat &eigenvectors);
 
   static inline std::pair<int, int> voigt_notation(int voigt) {
     switch (voigt) {
@@ -352,6 +365,42 @@ public:
   }
 };
 
+struct MonkhorstPack {
+  size_t shrink_x, shrink_y, shrink_z;
+  occ::Vec3 shift{0, 0, 0};
+  occ::Mat3N grid;
+
+  inline void generate_grid() {
+    size_t n_kpoints = shrink_x * shrink_y * shrink_z;
+    grid = occ::Mat3N(3, n_kpoints);
+    size_t i_point = 0;
+    for (size_t x = 0; x < shrink_x; x++) {
+      double x_point = static_cast<double>(x) / static_cast<double>(shrink_x);
+      for (size_t y = 0; y < shrink_y; y++) {
+        double y_point = static_cast<double>(y) / static_cast<double>(shrink_y);
+        for (size_t z = 0; z < shrink_z; z++) {
+          double z_point =
+              static_cast<double>(z) / static_cast<double>(shrink_z);
+          occ::Vec3 point = occ::Vec3(x_point, y_point, z_point) + shift;
+          grid.col(i_point) = point;
+          i_point++;
+        }
+      }
+    }
+  }
+
+  MonkhorstPack(const occ::IVec3 &shrinking_factors, const occ::Vec3 &shift)
+      : shrink_x(shrinking_factors[0]), shrink_y(shrinking_factors[1]),
+        shrink_z(shrinking_factors[2]), shift(shift) {
+    this->generate_grid();
+  }
+
+  inline const size_t size() const { return grid.cols(); }
+
+  inline auto begin() const { return grid.colwise().begin(); }
+  inline auto end() const { return grid.colwise().end(); }
+};
+
 struct EFSettings {
   std::string json_filename;
   std::string output_file = "elastic_tensor.txt";
@@ -367,6 +416,10 @@ struct EFSettings {
   std::string solver_type_str = "svd";
   double svd_threshold = 1e-12;
   bool animate_phonons = true;
+  std::vector<size_t> shrinking_factors_raw{1};
+  occ::IVec3 shrinking_factors{1, 1, 1};
+  std::vector<double> shift_raw{0.0};
+  occ::Vec3 shift{0.0, 0.0, 0.0};
 };
 
 CLI::App *add_elastic_fit_subcommand(CLI::App &app);
