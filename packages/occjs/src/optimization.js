@@ -223,18 +223,19 @@ export async function computeFrequencies(module, molecule, method = "HF", functi
   
   let calculator, scf, hessEvaluator;
   
+  let scfEnergy;
   if (method.toUpperCase() === "HF") {
     calculator = new module.HartreeFock(basis);
     scf = new module.HartreeFockSCF(calculator);
     scf.setChargeMultiplicity(0, 1);
-    const energy = await scf.run();
+    scfEnergy = await scf.run();
     
     hessEvaluator = calculator.hessianEvaluator();
   } else if (method.toUpperCase() === "DFT") {
     calculator = new module.DFT(functional, basis);
     scf = new module.KohnShamSCF(calculator);
     scf.setChargeMultiplicity(0, 1);
-    const energy = await scf.run();
+    scfEnergy = await scf.run();
     
     hessEvaluator = calculator.hessianEvaluator();
   } else {
@@ -265,7 +266,8 @@ export async function computeFrequencies(module, molecule, method = "HF", functi
     nModes: vibrationalModes.nModes(),
     nAtoms: vibrationalModes.nAtoms(),
     summary: vibrationalModes.summaryString(),
-    frequenciesString: vibrationalModes.frequenciesString()
+    frequenciesString: vibrationalModes.frequenciesString(),
+    scfEnergy: scfEnergy
   };
 }
 
