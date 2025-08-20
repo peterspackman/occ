@@ -16,6 +16,7 @@ var classocc_1_1dft_1_1DFT =
     [ "compute_kinetic_gradient", "classocc_1_1dft_1_1DFT.html#ad58ab276e3c8e968fad92ab0c9b015c8", null ],
     [ "compute_kinetic_matrix", "classocc_1_1dft_1_1DFT.html#af779fee96a421244967a75b1510ab0ce", null ],
     [ "compute_multipoles", "classocc_1_1dft_1_1DFT.html#aca71fbb0b484f84b53fbeeb33849ce4b", null ],
+    [ "compute_nlc_gradient", "classocc_1_1dft_1_1DFT.html#acd45ded5dbbf01ed471c418bf439a99c", null ],
     [ "compute_nuclear_attraction_gradient", "classocc_1_1dft_1_1DFT.html#a933fc8a769d515d4f200d0e32f80b158", null ],
     [ "compute_nuclear_attraction_matrix", "classocc_1_1dft_1_1DFT.html#a62cdb0fee5a170bfc25154e750b81204", null ],
     [ "compute_nuclear_multipoles", "classocc_1_1dft_1_1DFT.html#a4a8dec962a9902612816a6b3459d01d8", null ],

@@ -1,3 +1,9 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structocc_1_1interaction_1_1ExternalEnergyOptions.html" title=" " alt="" coords="5,5,189,45"/>
+<area shape="rect" id="Node000000" href="$classocc_1_1interaction_1_1EnergyModelBase.html" title=" " alt="" coords="5,69,180,109"/>
+<area shape="rect" id="Node000001" href="$classocc_1_1interaction_1_1CEEnergyModel.html" title=" " alt="" coords="233,5,425,45"/>
+<area shape="poly" id="edge11_Node000000_Node000001" title=" " alt="" coords="179,63,254,43,255,48,181,68"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1interaction_1_1ExternalEnergyModel.html" title=" " alt="" coords="237,69,421,109"/>
+<area shape="poly" id="edge12_Node000000_Node000002" title=" " alt="" coords="194,87,236,87,236,92,194,92"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1interaction_1_1XTBEnergyModel.html" title=" " alt="" coords="228,133,429,173"/>
+<area shape="poly" id="edge13_Node000000_Node000003" title=" " alt="" coords="181,110,255,131,254,136,179,116"/>
 </map>

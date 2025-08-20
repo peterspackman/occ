@@ -12,13 +12,14 @@ var searchData=
   ['geometry_5ffilename_9',['geometry_filename',['../structocc_1_1main_1_1DescribeConfig.html#a93a2005d18e521873a4d33499825bc5a',1,'occ::main::DescribeConfig::geometry_filename'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a7ee45184433d00970661846c5ad9d8f1',1,'occ::main::IsosurfaceConfig::geometry_filename']]],
   ['gnorm_10',['gnorm',['../structocc_1_1io_1_1GMFWriter_1_1Facet.html#a78a95ba7ac7bcd8daa3e085560400adc',1,'occ::io::GMFWriter::Facet']]],
   ['golden_5fratio_11',['golden_ratio',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a7123ae3e082f8dc5ab43f2d2a1a81a03',1,'occ::core::opt::Bracket1D']]],
-  ['gradient_5fcartesian_12',['gradient_cartesian',['../structocc_1_1opt_1_1OptimizationState.html#ad8ee1cd598aaf1c08414acf590d036f5',1,'occ::opt::OptimizationState']]],
-  ['gradient_5fintegral_5fprecision_13',['gradient_integral_precision',['../structocc_1_1io_1_1OptimizationInput.html#a7cc1e96bae1aedf51c90e030044333e9',1,'occ::io::OptimizationInput']]],
-  ['gradient_5fmax_14',['gradient_max',['../structocc_1_1io_1_1OptimizationInput.html#a3960ec40cd8981dda204ab2b915e4836',1,'occ::io::OptimizationInput::gradient_max'],['../structocc_1_1opt_1_1ConvergenceCriteria.html#a608abe5d01514cbf4329e36396106272',1,'occ::opt::ConvergenceCriteria::gradient_max']]],
-  ['gradient_5fmax_5fconverged_15',['gradient_max_converged',['../structocc_1_1opt_1_1ConvergenceInfo.html#ac34401af5905b82c3c71fc0cc0abfd83',1,'occ::opt::ConvergenceInfo']]],
-  ['gradient_5frms_16',['gradient_rms',['../structocc_1_1io_1_1OptimizationInput.html#a06ad87d0971ff2bc06cbd5b85802b319',1,'occ::io::OptimizationInput::gradient_rms'],['../structocc_1_1opt_1_1ConvergenceCriteria.html#a255685b358e559d0c402c11d4658ab1d',1,'occ::opt::ConvergenceCriteria::gradient_rms']]],
-  ['gradient_5frms_5fconverged_17',['gradient_rms_converged',['../structocc_1_1opt_1_1ConvergenceInfo.html#ae5a0a46c76973f1f56eac15d98d6420d',1,'occ::opt::ConvergenceInfo']]],
-  ['grid_5fspacing_18',['grid_spacing',['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html#ad3e104507d489577a5920419a4f6f2d2',1,'occ::io::AdaptiveGridBounds::Parameters']]],
-  ['grid_5ftype_19',['grid_type',['../structocc_1_1io_1_1GridFileHeader.html#a2a8a6a27e772e261347b2b3c20f0c8fa',1,'occ::io::GridFileHeader']]],
-  ['grow_5flimit_20',['grow_limit',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9',1,'occ::core::opt::Bracket1D']]]
+  ['gradient_12',['gradient',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult.html#a18a432210cc1702202df0cb4ddc214df',1,'occ::dft::NonLocalCorrelationFunctional::GradientResult']]],
+  ['gradient_5fcartesian_13',['gradient_cartesian',['../structocc_1_1opt_1_1OptimizationState.html#ad8ee1cd598aaf1c08414acf590d036f5',1,'occ::opt::OptimizationState']]],
+  ['gradient_5fintegral_5fprecision_14',['gradient_integral_precision',['../structocc_1_1io_1_1OptimizationInput.html#a7cc1e96bae1aedf51c90e030044333e9',1,'occ::io::OptimizationInput']]],
+  ['gradient_5fmax_15',['gradient_max',['../structocc_1_1io_1_1OptimizationInput.html#a3960ec40cd8981dda204ab2b915e4836',1,'occ::io::OptimizationInput::gradient_max'],['../structocc_1_1opt_1_1ConvergenceCriteria.html#a608abe5d01514cbf4329e36396106272',1,'occ::opt::ConvergenceCriteria::gradient_max']]],
+  ['gradient_5fmax_5fconverged_16',['gradient_max_converged',['../structocc_1_1opt_1_1ConvergenceInfo.html#ac34401af5905b82c3c71fc0cc0abfd83',1,'occ::opt::ConvergenceInfo']]],
+  ['gradient_5frms_17',['gradient_rms',['../structocc_1_1io_1_1OptimizationInput.html#a06ad87d0971ff2bc06cbd5b85802b319',1,'occ::io::OptimizationInput::gradient_rms'],['../structocc_1_1opt_1_1ConvergenceCriteria.html#a255685b358e559d0c402c11d4658ab1d',1,'occ::opt::ConvergenceCriteria::gradient_rms']]],
+  ['gradient_5frms_5fconverged_18',['gradient_rms_converged',['../structocc_1_1opt_1_1ConvergenceInfo.html#ae5a0a46c76973f1f56eac15d98d6420d',1,'occ::opt::ConvergenceInfo']]],
+  ['grid_5fspacing_19',['grid_spacing',['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html#ad3e104507d489577a5920419a4f6f2d2',1,'occ::io::AdaptiveGridBounds::Parameters']]],
+  ['grid_5ftype_20',['grid_type',['../structocc_1_1io_1_1GridFileHeader.html#a2a8a6a27e772e261347b2b3c20f0c8fa',1,'occ::io::GridFileHeader']]],
+  ['grow_5flimit_21',['grow_limit',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9',1,'occ::core::opt::Bracket1D']]]
 ];

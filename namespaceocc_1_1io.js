@@ -103,6 +103,8 @@ var namespaceocc_1_1io =
     [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
     [ "point_charges_from_file", "namespaceocc_1_1io.html#ac7b49e759281fa2bff63c6e075a41559", null ],
     [ "point_charges_from_string", "namespaceocc_1_1io.html#a3903e63674924c2d0b6cf6089690b474", null ],
+    [ "to_xyz_string", "namespaceocc_1_1io.html#a2d5016b74093bcb651448b585ad34a03", null ],
+    [ "to_xyz_string", "namespaceocc_1_1io.html#a635ec5a71d2923b96b606c3b149ac1a0", null ],
     [ "valid_json_format_string", "namespaceocc_1_1io.html#a03fbffee6c9f175af30275db3fe30f69", null ],
     [ "write_isosurface_json", "namespaceocc_1_1io.html#a1275d452d99f3cc7c22a12a2b77aef52", null ],
     [ "write_obj_file", "namespaceocc_1_1io.html#a540ef2f5dcaa6e1e0fb43554bd89c18c", null ],

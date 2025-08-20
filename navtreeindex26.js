@@ -1,5 +1,11 @@
 var NAVTREEINDEX26 =
 {
+"namespaceocc_1_1xdm.html#a74b21052ae1b6350a3098f2403dea2b6":[2,0,2,27,5],
+"namespaceocc_1_1xdm.html#acd14e46c74705f0a7827c57fd260c14f":[2,0,2,27,6],
+"namespaceocc_1_1xdm.html#adc1b870f50b1fd8768323a3d27429b71":[2,0,2,27,2],
+"namespaceocc_1_1xtb.html":[2,0,2,28],
+"namespaceocc_1_1xtb.html#aa9524920b7508c4f768c5d2e4f88590b":[2,0,2,28,2],
+"namespacequickhull.html":[2,0,3],
 "namespacequickhull.html#aed54901ccc77c377d9d2f94ce6a0888c":[2,0,3,9],
 "namespacequickhull_1_1mathutils.html":[2,0,3,0],
 "namespacequickhull_1_1mathutils.html#a2b8e8148b110b8abb43de34a0acadee6":[2,0,3,0,0],
@@ -243,11 +249,5 @@ var NAVTREEINDEX26 =
 "promolecule_8h.html":[5,0,1,0,17,1],
 "promolecule_8h.html#a344d0083a38816bf7d272e697ca21264":[5,0,1,0,17,1,3],
 "promolecule__density_8h.html":[5,0,1,0,12,10],
-"promolecule__shape_8h.html":[5,0,1,0,3,2],
-"properties_8h.html":[5,0,1,0,13,17],
-"properties_8h.html#a0b6643aee3051aa1eea447c1f1225282":[5,0,1,0,13,17,1],
-"properties_8h.html#a5bcdc235883e285c89c65c39072780f5":[5,0,1,0,13,17,0],
-"pseudoinverse_8h.html":[5,0,1,0,14,7],
-"pseudoinverse_8h.html#a24b3d86d38c88d9c4818c17147693e2f":[5,0,1,0,14,7,0],
-"qcschema_8h.html":[5,0,1,0,11,28]
+"promolecule__shape_8h.html":[5,0,1,0,3,2]
 };

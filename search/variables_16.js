@@ -17,5 +17,5 @@ var searchData=
   ['vtau_14',['vtau',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a96eb40c588a3e7284a7995e903a89a8b',1,'occ::dft::DensityFunctional::Result']]],
   ['vv10_5fb_15',['vv10_b',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#a44a8b6272f8badc82d97237e21f18c47',1,'occ::dft::NonLocalCorrelationFunctional::Parameters']]],
   ['vv10_5fc_16',['vv10_C',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#ad42a134595a7ffff24c624c5305e0d08',1,'occ::dft::NonLocalCorrelationFunctional::Parameters']]],
-  ['vxc_17',['Vxc',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html#ac6c7904be7f47c3596341683cf6235df',1,'occ::dft::NonLocalCorrelationFunctional::Result']]]
+  ['vxc_17',['vxc',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html#ac6c7904be7f47c3596341683cf6235df',1,'occ::dft::NonLocalCorrelationFunctional::Result::Vxc'],['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult.html#ac7c0009a653995a9125f44713d641116',1,'occ::dft::NonLocalCorrelationFunctional::GradientResult::Vxc']]]
 ];

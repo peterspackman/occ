@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1driver_1_1VibrationalAnalysisConfig.html" target="_top" xlink:title="Configuration options for vibrational frequency analysis.">
+<g id="a_Node000000"><a xlink:href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="127,-30 0,-30 0,0 127,0 127,-30"/>
-<text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::driver::Vibrational</text>
-<text text-anchor="middle" x="63.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">AnalysisConfig</text>
+<text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::driver::DMADriver</text>
+<text text-anchor="middle" x="63.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">::DMAOutput</text>
 </a>
 </g>
 </g>

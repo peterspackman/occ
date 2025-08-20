@@ -151,6 +151,7 @@ var hierarchy =
     [ "occ::io::GeometryInput", "structocc_1_1io_1_1GeometryInput.html", null ],
     [ "occ::io::GMFWriter", "classocc_1_1io_1_1GMFWriter.html", null ],
     [ "occ::qm::GradientEvaluator< Proc >", "classocc_1_1qm_1_1GradientEvaluator.html", null ],
+    [ "occ::dft::NonLocalCorrelationFunctional::GradientResult", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult.html", null ],
     [ "occ::core::graph::Graph< VertexType, EdgeType >", "classocc_1_1core_1_1graph_1_1Graph.html", null ],
     [ "occ::core::graph::Graph< SiteMappingVertex, SiteMappingEdge >", "classocc_1_1core_1_1graph_1_1Graph.html", null ],
     [ "occ::io::GridFileHeader", "structocc_1_1io_1_1GridFileHeader.html", null ],
