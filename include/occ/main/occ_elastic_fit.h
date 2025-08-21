@@ -322,7 +322,7 @@ public:
                                 const occ::Vec3 shift, bool animate);
 
   void animate_phonons(const occ::Vec &frequencies,
-                       const occ::Mat &eigenvectors);
+                       const occ::Mat &eigenvectors, const occ::Vec3 &kpoint);
 
   static inline std::pair<int, int> voigt_notation(int voigt) {
     switch (voigt) {
@@ -422,7 +422,7 @@ struct EFSettings {
   LinearSolverType solver_type = LinearSolverType::SVD;
   std::string solver_type_str = "svd";
   double svd_threshold = 1e-12;
-  bool animate_phonons = true;
+  bool animate_phonons = false;
   std::vector<size_t> shrinking_factors_raw{1};
   occ::IVec3 shrinking_factors{1, 1, 1};
   std::vector<double> shift_raw{0.0};

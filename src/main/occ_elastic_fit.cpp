@@ -457,6 +457,11 @@ void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
   double kBT = temp * BOLTZMANN * AVOGADRO / 1000;
   double zpe = 0;
 
+  std::vector<occ::Vec> all_freqs;
+  std::vector<occ::Mat> all_eigvecs;
+  all_freqs.reserve(n_kpoints);
+  all_eigvecs.reserve(n_kpoints);
+
   occ::log::info("Phonon frequencies (cm-1): ");
   for (const auto &kpoint : mp) {
     const auto &fm = this->compute_fm_at_kpoint(kpoint);
@@ -466,6 +471,7 @@ void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
     occ::log::info(" @ k-point {:8.4f} {:8.4f} {:8.4f} Weight = {:8.4f}:",
                    kpoint[0], kpoint[1], kpoint[2], weight);
     // print_matrix_full(dyn_gulp);
+    occ::log::info("");
     print_vector(freqs, 6);
     occ::log::info("");
     for (size_t f_idx = 0; f_idx < freqs.size(); f_idx++) {
@@ -484,7 +490,14 @@ void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
         Uvib += (f_zpe + Uf / (std::exp(Uf / kBT) - 1)) * weight;
       }
     }
+
+    if (!animate) {
+      continue;
+    }
+
+    this->animate_phonons(freqs, eigvecs, kpoint);
   }
+
   occ::log::info("Zero point energy                           = {:8.3f} kJ/mol",
                  zpe);
   if (!(kBT > 0.0)) {
@@ -505,6 +518,7 @@ void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
   double equip = 6 * kBT * n_molecules;
   occ::log::info("Uvib (equipartition)                        = {:8.3f} kJ/mol",
                  equip);
+  occ::log::info("");
 }
 
 occ::Mat PES::inv_mass_matrix() {
@@ -609,7 +623,8 @@ PES::compute_phonons_at_kpoint(const occ::CMat &Dyn_ij) {
 }
 
 void PES::animate_phonons(const occ::Vec &frequencies,
-                          const occ::Mat &eigenvectors) {
+                          const occ::Mat &eigenvectors,
+                          const occ::Vec3 &kpoint) {
 
   double amplitude = 0.5;
   size_t n_frames = 50;
@@ -618,9 +633,9 @@ void PES::animate_phonons(const occ::Vec &frequencies,
   size_t n_molecules = this->num_unique_molecules();
   size_t n_atoms = 0;
 
-  occ::log::info(
-      "Animating {} phonon modes over {} frames with amplitude {} Angstroms",
-      n_modes, n_frames, amplitude);
+  occ::log::info("Animating {} phonon modes over {} frames with amplitude {} "
+                 "Angstroms\n@ kpoint {:8.4f} {:8.4f} {:8.4f}",
+                 n_modes, n_frames, amplitude, kpoint[0], kpoint[1], kpoint[2]);
 
   std::vector<double> masses(n_molecules);
   std::vector<occ::Vec3> positions(n_molecules);
@@ -639,7 +654,8 @@ void PES::animate_phonons(const occ::Vec &frequencies,
     double freq_cm = frequencies(mode);
 
     std::string filename =
-        fmt::format("phonon_mode_{}_{:.2f}cm-1.xyz", mode, freq_cm);
+        fmt::format("phonon_mode_k{:.2f}-{:.2f}-{:.2f}_{}_{:.2f}cm-1.xyz",
+                    kpoint[0], kpoint[1], kpoint[2], mode, freq_cm);
 
     std::ofstream xyz_file(filename);
     if (!xyz_file.is_open()) {
@@ -663,8 +679,10 @@ void PES::animate_phonons(const occ::Vec &frequencies,
       double phase = std::cos(t);
 
       xyz_file << n_atoms << std::endl;
-      xyz_file << fmt::format("# Phonon mode {} at {:.2f} cm-1, frame {}", mode,
-                              freq_cm, frame)
+      xyz_file << fmt::format("# Phonon mode {} at {:.2f} cm-1 @ k-point "
+                              "{:8.4f} {:8.4f} {:8.4f}, frame {}",
+                              mode, freq_cm, kpoint[0], kpoint[1], kpoint[2],
+                              frame)
                << std::endl;
 
       for (const size_t &mol : mol_idxs) {
@@ -690,6 +708,7 @@ void PES::animate_phonons(const occ::Vec &frequencies,
     xyz_file.close();
     occ::log::info("Saved trajectory: {}", filename);
   }
+  occ::log::info("");
 }
 
 inline void analyse_elat_results(const occ::main::EFSettings &settings) {
@@ -868,9 +887,8 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
       "--svd-threshold", config->svd_threshold,
       "SVD threshold for pseudoinverse (when using SVD solver).");
 
-  elastic_fit->add_flag_callback(
-      "--dont-animate-phonons", [&]() { config->animate_phonons = false; },
-      "Don't animate the phonons and write them to XYZ files.");
+  elastic_fit->add_flag("--animate-phonons", config->animate_phonons,
+                        "Animate the phonons and write them to XYZ files.");
 
   elastic_fit
       ->add_option("--mp-shrinking-factors", config->shrinking_factors_raw,
