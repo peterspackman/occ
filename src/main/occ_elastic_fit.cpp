@@ -496,10 +496,10 @@ void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
   double rovib = 3 * kBT * n_molecules;
   occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} kJ/mol",
                  Uvib + rovib);
-  occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} "
+  occ::log::info("                                            = {:8.3f} "
                  "kJ/mol/molecule",
                  (Uvib + rovib) / n_molecules);
-  occ::log::info("Uvib (including equipartition rovibrations) = {:8.3f} "
+  occ::log::info("                                            = {:8.3f} "
                  "kBT/molecule",
                  (Uvib + rovib) / kBT / n_molecules);
   double equip = 6 * kBT * n_molecules;
