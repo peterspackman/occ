@@ -465,7 +465,7 @@ void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
     const auto &[freqs, eigvecs] = this->compute_phonons_at_kpoint(dyn);
     occ::log::info(" @ k-point {:8.4f} {:8.4f} {:8.4f} Weight = {:8.4f}:",
                    kpoint[0], kpoint[1], kpoint[2], weight);
-    print_matrix_full(dyn_gulp);
+    // print_matrix_full(dyn_gulp);
     print_vector(freqs, 6);
     occ::log::info("");
     for (size_t f_idx = 0; f_idx < freqs.size(); f_idx++) {
@@ -481,7 +481,7 @@ void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
       double f_zpe = 0.5 * Uf;
       zpe += f_zpe * weight;
       if (kBT > 0.0) {
-        Uvib += f_zpe + Uf / (std::exp(Uf / kBT) - 1) * weight;
+        Uvib += (f_zpe + Uf / (std::exp(Uf / kBT) - 1)) * weight;
       }
     }
   }
