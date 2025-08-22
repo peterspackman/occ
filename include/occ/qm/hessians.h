@@ -5,11 +5,13 @@
 #include <occ/qm/gradients.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/scf.h>
+#include <occ/qm/scf_convergence_settings.h>
 #include <occ/qm/shell.h>
+#include <occ/qm/wavefunction.h>
 
 namespace occ::qm {
 
-// 3N x 3N Hessian matrix for storing d²E/dR_AdR_B
+// 3N x 3N Hessian matrix for storing d2E/dR_AdR_B
 using HessianMatrix = Mat;
 
 /**
@@ -17,7 +19,7 @@ using HessianMatrix = Mat;
  *
  * The HessianEvaluator class computes the Hessian matrix, which contains
  * second derivatives of the energy with respect to nuclear coordinates:
- * H_ij = d²E/dR_i dR_j
+ * H_ij = d2E/dR_i dR_j
  *
  * Currently supports:
  * - Finite differences method with configurable step size
@@ -43,7 +45,11 @@ public:
    */
   explicit HessianEvaluator(Proc &p)
       : m_proc(p), m_hessian(HessianMatrix::Zero(3 * p.atoms().size(),
-                                                 3 * p.atoms().size())) {}
+                                                 3 * p.atoms().size())) {
+    // Set tighter SCF convergence defaults for Hessian calculations
+    m_scf_convergence_settings.energy_threshold = 1e-10;  // Default is 1e-6
+    m_scf_convergence_settings.commutator_threshold = 1e-8;  // Default is 1e-5
+  }
 
   /**
    * @brief Method for Hessian calculation
@@ -85,28 +91,47 @@ public:
    * @param use If true, use acoustic sum rule to reduce computations
    *
    * The acoustic sum rule (translational invariance) reduces the number
-   * of required displacements from 3N to 3(N-1), saving ~33% computation
-   * for a 3-atom system. Based on: d²E/dR_i dR_j = -Σ_k≠j d²E/dR_i dR_k
+   * of required displacements from 3N to 3(N-1), saving some computation
+   * for a 3-atom system. Based on: d2E/dR_i dR_j = -Σ_k≠j d2E/dR_i dR_k
    */
-  void set_use_acoustic_sum_rule(bool use) { m_use_acoustic_sum_rule = use; }
+  inline void set_use_acoustic_sum_rule(bool use) { m_use_acoustic_sum_rule = use; }
 
   /**
    * @brief Get the current step size for finite differences
    * @return Step size in Bohr
    */
-  double step_size() const { return m_step_size; }
+  inline double step_size() const { return m_step_size; }
 
   /**
    * @brief Check if acoustic sum rule is enabled
    * @return True if acoustic sum rule optimization is enabled
    */
-  bool use_acoustic_sum_rule() const { return m_use_acoustic_sum_rule; }
+  inline bool use_acoustic_sum_rule() const { return m_use_acoustic_sum_rule; }
 
   /**
    * @brief Get the current calculation method
    * @return The Hessian calculation method
    */
-  Method method() const { return m_method; }
+  inline Method method() const { return m_method; }
+
+  /**
+   * @brief Set the SCF convergence settings for displaced calculations
+   * @param settings SCF convergence settings to use
+   *
+   * By default, Hessian calculations use tighter convergence criteria
+   * (energy_threshold=1e-10, commutator_threshold=1e-8) for improved accuracy.
+   */
+  void set_scf_convergence_settings(const SCFConvergenceSettings &settings) {
+    m_scf_convergence_settings = settings;
+  }
+
+  /**
+   * @brief Get the current SCF convergence settings
+   * @return The SCF convergence settings used for displaced calculations
+   */
+  const SCFConvergenceSettings &scf_convergence_settings() const {
+    return m_scf_convergence_settings;
+  }
 
   /**
    * @brief Compute the nuclear repulsion contribution to the Hessian
@@ -166,19 +191,21 @@ public:
 
   /**
    * @brief Compute the full molecular Hessian
-   * @param mo Molecular orbitals from converged SCF calculation
+   * @param wfn Wavefunction from converged SCF calculation
    * @return Complete Hessian matrix including nuclear and electronic
    * contributions
    *
    * This is the main interface for computing the Hessian. The method used
    * depends on the configuration (set_method, set_step_size, etc.).
+   * The wavefunction provides both the molecular orbitals for the reference
+   * calculation and the charge/multiplicity for displaced calculations.
    */
-  const HessianMatrix &operator()(const MolecularOrbitals &mo) {
+  const HessianMatrix &operator()(const Wavefunction &wfn) {
     occ::timing::start(occ::timing::hessian);
 
     // Compute Hessian based on selected method
     if (m_method == Method::FiniteDifferences) {
-      m_hessian = compute_finite_differences(mo);
+      m_hessian = compute_finite_differences(wfn);
     } else {
       throw std::runtime_error("Selected Hessian method not implemented");
     }
@@ -202,7 +229,7 @@ public:
 private:
   /**
    * @brief Compute Hessian using finite differences of gradients
-   * @param mo Molecular orbitals
+   * @param wfn Wavefunction containing molecular orbitals and system information
    * @return Hessian matrix computed via finite differences
    *
    * Uses central finite differences:
@@ -210,8 +237,9 @@ private:
    *
    * When acoustic sum rule is enabled, only 3(N-1) displacements are computed
    * and the remaining elements are derived from translational invariance.
+   * The wavefunction is used as initial guess for displaced calculations.
    */
-  HessianMatrix compute_finite_differences(const MolecularOrbitals &mo) {
+  HessianMatrix compute_finite_differences(const Wavefunction &wfn) {
 
     const auto &atoms = m_proc.atoms();
     const auto &basis = m_proc.aobasis();
@@ -219,21 +247,35 @@ private:
     size_t ndof = 3 * natom;
     HessianMatrix result = HessianMatrix::Zero(ndof, ndof);
 
-    size_t ndispl = m_use_acoustic_sum_rule ? 3 * (natom - 1) : ndof;
+    // First, perform a reference SCF calculation with the same tight convergence
+    // settings that will be used for displaced geometries
+    occ::log::debug("Computing reference SCF with tight convergence settings");
+    occ::qm::SCF<Proc> scf_reference(m_proc, wfn.mo.kind);
+    scf_reference.set_charge_multiplicity(wfn.charge(), wfn.multiplicity());
+    scf_reference.set_initial_guess_from_wfn(wfn);
+    scf_reference.convergence_settings = m_scf_convergence_settings;
+    scf_reference.compute_scf_energy();
+    
+    // Use this tightly converged wavefunction as the reference
+    Wavefunction wfn_reference = scf_reference.wavefunction();
+
+    size_t num_displacements = m_use_acoustic_sum_rule ? 3 * (natom - 1) : ndof;
 
     occ::log::info("Computing finite differences Hessian with h = {:.2e} Bohr",
                    m_step_size);
     if (m_use_acoustic_sum_rule) {
       occ::log::info("Translation invariance used");
-      occ::log::info("Number of displacements: {} - {}", ndof, ndof - ndispl);
+      occ::log::info("Number of displacements: {} - {}", ndof,
+                     ndof - num_displacements);
     } else {
       occ::log::info("Computing all {} Cartesian displacements", ndof);
     }
-    occ::log::info("This requires {} SCF calculations + gradients", 2 * ndispl);
+    occ::log::info("This requires {} SCF calculations + gradients",
+                   2 * num_displacements);
 
     // Loop over independent degrees of freedom (possibly reduced by acoustic
     // sum rule)
-    for (size_t dof_B = 0; dof_B < ndispl; dof_B++) {
+    for (size_t dof_B = 0; dof_B < num_displacements; dof_B++) {
       size_t B = dof_B / 3; // atom index
       int j = dof_B % 3;    // coordinate index (0=x, 1=y, 2=z)
 
@@ -251,7 +293,17 @@ private:
       basis_forward.set_pure(
           basis.is_pure()); // Preserve spherical/Cartesian setting
       Proc hf_forward = m_proc.with_new_basis(basis_forward);
-      occ::qm::SCF<Proc> scf_forward(hf_forward);
+      occ::qm::SCF<Proc> scf_forward(hf_forward, wfn_reference.mo.kind);
+      
+      // Set charge and multiplicity from reference wavefunction
+      scf_forward.set_charge_multiplicity(wfn_reference.charge(), wfn_reference.multiplicity());
+      
+      // Use reference wavefunction as initial guess for faster convergence
+      scf_forward.set_initial_guess_from_wfn(wfn_reference);
+      
+      // Apply configured SCF convergence settings for Hessian calculations
+      scf_forward.convergence_settings = m_scf_convergence_settings;
+      
       scf_forward.compute_scf_energy();
       occ::qm::MolecularOrbitals mo_forward = scf_forward.ctx.mo;
 
@@ -273,7 +325,17 @@ private:
       basis_backward.set_pure(
           basis.is_pure()); // Preserve spherical/Cartesian setting
       Proc hf_backward = m_proc.with_new_basis(basis_backward);
-      occ::qm::SCF<Proc> scf_backward(hf_backward);
+      occ::qm::SCF<Proc> scf_backward(hf_backward, wfn_reference.mo.kind);
+      
+      // Set charge and multiplicity from reference wavefunction
+      scf_backward.set_charge_multiplicity(wfn_reference.charge(), wfn_reference.multiplicity());
+      
+      // Use reference wavefunction as initial guess for faster convergence
+      scf_backward.set_initial_guess_from_wfn(wfn_reference);
+      
+      // Apply configured SCF convergence settings for Hessian calculations
+      scf_backward.convergence_settings = m_scf_convergence_settings;
+      
       scf_backward.compute_scf_energy();
       occ::qm::MolecularOrbitals mo_backward = scf_backward.ctx.mo;
 
@@ -328,6 +390,7 @@ private:
   double m_step_size{0.005};                  // Default: 0.005 Bohr
   bool m_use_acoustic_sum_rule{true};         // Default: use optimization
   Method m_method{Method::FiniteDifferences}; // Default: finite differences
+  SCFConvergenceSettings m_scf_convergence_settings; // SCF settings for displaced calculations
 };
 
 } // namespace occ::qm

@@ -72,7 +72,7 @@ Mat compute_hessian_for_method(const Molecule &m, const occ::qm::AOBasis &basis,
   occ::log::info("  Acoustic sum rule: {}", hess_eval.use_acoustic_sum_rule() ? "enabled" : "disabled");
   
   // Compute Hessian using the provided wavefunction
-  Mat hessian = hess_eval(wfn.mo);
+  Mat hessian = hess_eval(wfn);
   
   occ::log::info("Hessian computation completed");
   occ::log::debug("Hessian matrix dimensions: {}x{}", hessian.rows(), hessian.cols());

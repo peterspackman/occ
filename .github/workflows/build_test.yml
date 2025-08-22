@@ -41,7 +41,7 @@ jobs:
             name: "windows-x86_64"
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install Dependencies Linux
       if: startsWith(runner.os, 'Linux')
@@ -112,9 +112,9 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
     - name: Download Artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         path: binaries
         pattern: occ-binaries-*

@@ -99,7 +99,7 @@ def main():
         # Compute Hessian matrix using convenience method
         hess_evaluator = hf.hessian_evaluator()
         hess_evaluator.set_step_size(0.005)  # Step size in Bohr
-        hessian = hess_evaluator(wfn.molecular_orbitals)
+        hessian = hess_evaluator(wfn)
         
         # Compute vibrational modes
         vib_modes = occ.compute_vibrational_modes(hessian, final_mol)
