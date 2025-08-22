@@ -444,8 +444,8 @@ occ::Mat6 PES::compute_elastic_tensor(double volume,
   return C;
 }
 
-void PES::phonon_density_of_states(const occ::IVec3 &shrinking_factors,
-                                   const occ::Vec3 shift, bool animate) {
+void PES::phonons(const occ::IVec3 &shrinking_factors, const occ::Vec3 shift,
+                  bool animate) {
   MonkhorstPack mp(shrinking_factors, shift);
   size_t n_kpoints = mp.size();
   double weight = 1 / static_cast<double>(n_kpoints);
@@ -835,9 +835,8 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   }
   save_matrix(cij, settings.output_file);
 
-  pes.phonon_density_of_states(updated_settings.shrinking_factors,
-                               updated_settings.shift,
-                               updated_settings.animate_phonons);
+  pes.phonons(updated_settings.shrinking_factors, updated_settings.shift,
+              updated_settings.animate_phonons);
 }
 
 namespace occ::main {

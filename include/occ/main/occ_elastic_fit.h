@@ -318,8 +318,8 @@ public:
 
   std::pair<occ::Vec, occ::Mat>
   compute_phonons_at_kpoint(const occ::CMat &Dyn_ij);
-  void phonon_density_of_states(const occ::IVec3 &shrinking_factors,
-                                const occ::Vec3 shift, bool animate);
+  void phonons(const occ::IVec3 &shrinking_factors, const occ::Vec3 shift,
+               bool animate);
 
   void animate_phonons(const occ::Vec &frequencies,
                        const occ::Mat &eigenvectors, const occ::Vec3 &kpoint);
