@@ -122,6 +122,17 @@ jobs:
       working-directory: packages/occjs
       run: npm pack
 
+    - name: Upload WASM build artifacts
+      if: matrix.node-version == 20 && (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')))
+      uses: actions/upload-artifact@v4
+      with:
+        name: wasm-build
+        path: |
+          packages/occjs/src/occ_js.js
+          packages/occjs/src/occ_js.wasm
+          packages/occjs/dist/
+        retention-days: 30
+
     - name: Upload package artifact
       if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
       uses: actions/upload-artifact@v4
@@ -148,40 +159,19 @@ jobs:
         node-version: 20
         registry-url: 'https://registry.npmjs.org'
 
-    - name: Setup Emscripten
-      uses: mymindstorm/setup-emsdk@v14
+    - name: Download WASM build artifacts
+      uses: actions/download-artifact@v4
       with:
-        version: '3.1.69'
-        actions-cache-folder: 'emsdk-cache'
-
-    - name: Install system dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
-
-    - name: Cache CPM Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ${{env.CPM_SOURCE_CACHE}}
-        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
-        restore-keys: |
-          js-build-${{ runner.os }}-
-
-    - name: Build WASM module
-      working-directory: packages/occjs
-      run: |
-        # Clean any stale CMake cache that might have wrong EMSDK paths
-        rm -rf ../../wasm/CMakeCache.txt ../../wasm/CMakeFiles
-        npm run build:wasm
+        name: wasm-build
+        path: packages/occjs/
 
     - name: Install dependencies
       working-directory: packages/occjs
       run: npm ci
 
-    - name: Build package
+    - name: Build package (wrapper only)
       working-directory: packages/occjs  
-      run: npm run build
+      run: npm run build:wrapper
 
     - name: Check if version changed
       id: version
@@ -226,40 +216,19 @@ jobs:
         registry-url: 'https://npm.pkg.github.com'
         scope: '@peterspackman'
 
-    - name: Setup Emscripten
-      uses: mymindstorm/setup-emsdk@v14
+    - name: Download WASM build artifacts
+      uses: actions/download-artifact@v4
       with:
-        version: '3.1.69'
-        actions-cache-folder: 'emsdk-cache'
-
-    - name: Install system dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y python3-numpy libpthread-stubs0-dev ninja-build cmake
-
-    - name: Cache CPM Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ${{env.CPM_SOURCE_CACHE}}
-        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
-        restore-keys: |
-          js-build-${{ runner.os }}-
-
-    - name: Build WASM module
-      working-directory: packages/occjs
-      run: |
-        # Clean any stale CMake cache that might have wrong EMSDK paths
-        rm -rf ../../wasm/CMakeCache.txt ../../wasm/CMakeFiles
-        npm run build:wasm
+        name: wasm-build
+        path: packages/occjs/
 
     - name: Install dependencies
       working-directory: packages/occjs
       run: npm ci
 
-    - name: Build package
+    - name: Build package (wrapper only)
       working-directory: packages/occjs  
-      run: npm run build
+      run: npm run build:wrapper
 
     - name: Configure package for GitHub registry
       working-directory: packages/occjs
