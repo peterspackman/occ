@@ -29,7 +29,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_BUILD: ${{matrix.pyver}}-*
           CIBW_ARCHS_LINUX: auto64
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v5
-      - uses: pypa/cibuildwheel@v3
+      - uses: pypa/cibuildwheel@v3.1.4
         env:
            CIBW_PLATFORM: pyodide
       - name: Upload artifacts
