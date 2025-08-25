@@ -571,123 +571,120 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
   const int nsh_aux = m_auxbasis.size();
   assert(D.cols() == D.rows() && D.cols() == nbf_aux);
 
-  occ::parallel::thread_local_storage<Mat> F_local(Mat::Zero(nbf, nbf));
-
-  // construct the 2-electron repulsion integrals engine
+  // Follow the same pattern as normal Fock matrix calculation
+  // Build a list of shell quartets to process  
+  struct ShellQuartet {
+    int s1, s2, s3, s4;
+    double s12_deg, s34_deg;
+  };
+  
+  std::vector<ShellQuartet> quartets;
   auto shell2bf = m_aobasis.first_bf();
   auto shell2bf_D = m_auxbasis.first_bf();
 
-  // Calculate total number of shell quartets for parallel_for
-  size_t total_quartets = 0;
+  // Collect all shell quartets 
   for (int s1 = 0; s1 != nsh; ++s1) {
     for (int s2 = 0; s2 <= s1; ++s2) {
       for (int s3 = 0; s3 < nsh_aux; ++s3) {
         int s4_begin = is_shell_diagonal ? s3 : 0;
         int s4_fence = is_shell_diagonal ? s3 + 1 : nsh_aux;
-        total_quartets += (s4_fence - s4_begin);
+        
+        for (int s4 = s4_begin; s4 != s4_fence; ++s4) {
+          double s12_deg = (s1 == s2) ? 1.0 : 2.0;
+          double s34_deg = (s3 == s4) ? 1.0 : 2.0;
+          quartets.push_back({s1, s2, s3, s4, s12_deg, s34_deg});
+        }
       }
     }
   }
 
-  occ::parallel::parallel_for(size_t(0), total_quartets, [&](size_t idx) {
+  // Thread-local storage for Fock matrices
+  occ::parallel::thread_local_storage<Mat> F_local(Mat::Zero(nbf, nbf));
+  
+  // Thread-local storage for optimizer and buffer
+  occ::parallel::thread_local_storage<occ::qm::cint::Optimizer> opt_local(
+    [this]() { return occ::qm::cint::Optimizer(m_env, Op::coulomb, 4); }
+  );
+  
+  occ::parallel::thread_local_storage<std::unique_ptr<double[]>> buffer_local(
+    [this]() { return std::make_unique<double[]>(m_env.buffer_size_2e()); }
+  );
+
+  // Process quartets in parallel with proper load balancing
+  occ::parallel::parallel_for(size_t(0), quartets.size(), [&](size_t idx) {
     auto &F = F_local.local();
-    occ::qm::cint::Optimizer opt(m_env, Op::coulomb, 4);
-    auto buffer = std::make_unique<double[]>(m_env.buffer_size_2e());
-
-    // Convert linear index back to s1,s2,s3,s4
-    size_t current_idx = 0;
-    bool found = false;
+    auto &opt = opt_local.local();
+    auto &buffer = buffer_local.local();
     
-    for (int s1 = 0; s1 != nsh && !found; ++s1) {
-      int bf1_first = shell2bf[s1];
-      int n1 = m_aobasis[s1].size();
+    const auto &q = quartets[idx];
+    int bf1_first = shell2bf[q.s1];
+    int bf2_first = shell2bf[q.s2]; 
+    int bf3_first = shell2bf_D[q.s3];
+    int bf4_first = shell2bf_D[q.s4];
+    
+    int n1 = m_aobasis[q.s1].size();
+    int n2 = m_aobasis[q.s2].size();
+    int n3 = D_bs[q.s3].size(); 
+    int n4 = D_bs[q.s4].size();
 
-      for (int s2 = 0; s2 <= s1 && !found; ++s2) {
-        int bf2_first = shell2bf[s2];
-        int n2 = m_aobasis[s2].size();
+    std::array<int, 4> dims;
+    
+    // First integral: (s1 s2 | s3 s4)
+    if (q.s3 >= q.s4) {
+      double s1234_deg = q.s12_deg * q.s34_deg;
+      std::array<int, 4> idxs{q.s1, q.s2, q.s3 + nsh, q.s4 + nsh};
+      if (spherical) {
+        dims = m_env.four_center_helper<op, Sph>(
+            idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
+      } else {
+        dims = m_env.four_center_helper<op, Cart>(
+            idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
+      }
 
-        for (int s3 = 0; s3 < nsh_aux && !found; ++s3) {
-          int bf3_first = shell2bf_D[s3];
-          int n3 = D_bs[s3].size();
-
-          int s4_begin = is_shell_diagonal ? s3 : 0;
-          int s4_fence = is_shell_diagonal ? s3 + 1 : nsh_aux;
-
-          for (int s4 = s4_begin; s4 != s4_fence; ++s4) {
-            if (current_idx == idx) {
-              found = true;
-
-              int bf4_first = shell2bf_D[s4];
-              int n4 = D_bs[s4].size();
-
-              // compute the permutational degeneracy
-              double s12_deg = (s1 == s2) ? 1.0 : 2.0;
-
-              std::array<int, 4> dims;
-              if (s3 >= s4) {
-                double s34_deg = (s3 == s4) ? 1.0 : 2.0;
-                double s1234_deg = s12_deg * s34_deg;
-                std::array<int, 4> idxs{s1, s2, s3 + nsh, s4 + nsh};
-                if (spherical) {
-                  dims = m_env.four_center_helper<op, Sph>(
-                      idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
-                } else {
-                  dims = m_env.four_center_helper<op, Cart>(
-                      idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
-                }
-
-                if (dims[0] >= 0) {
-                  const auto *buf_1234 = buffer.get();
-                  for (auto f4 = 0, f1234 = 0; f4 != n4; ++f4) {
-                    const auto bf4 = f4 + bf4_first;
-                    for (auto f3 = 0; f3 != n3; ++f3) {
-                      const auto bf3 = f3 + bf3_first;
-                      for (auto f2 = 0; f2 != n2; ++f2) {
-                        const auto bf2 = f2 + bf2_first;
-                        for (auto f1 = 0; f1 != n1; ++f1, ++f1234) {
-                          const auto bf1 = f1 + bf1_first;
-
-                          const auto value = buf_1234[f1234];
-                          const auto value_scal_by_deg = value * s1234_deg;
-                          F(bf1, bf2) += 2.0 * D(bf3, bf4) * value_scal_by_deg;
-                        }
-                      }
-                    }
-                  }
-                }
+      if (dims[0] >= 0) {
+        const auto *buf_1234 = buffer.get();
+        for (auto f4 = 0, f1234 = 0; f4 != n4; ++f4) {
+          const auto bf4 = f4 + bf4_first;
+          for (auto f3 = 0; f3 != n3; ++f3) {
+            const auto bf3 = f3 + bf3_first;
+            for (auto f2 = 0; f2 != n2; ++f2) {
+              const auto bf2 = f2 + bf2_first;
+              for (auto f1 = 0; f1 != n1; ++f1, ++f1234) {
+                const auto bf1 = f1 + bf1_first;
+                const auto value = buf_1234[f1234];
+                const auto value_scal_by_deg = value * s1234_deg;
+                F(bf1, bf2) += 2.0 * D(bf3, bf4) * value_scal_by_deg;
               }
-
-              std::array<int, 4> idxs{s1, s3 + nsh, s2, s4 + nsh};
-              if (spherical) {
-                dims = m_env.four_center_helper<op, Sph>(
-                    idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
-              } else {
-                dims = m_env.four_center_helper<op, Cart>(
-                    idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
-              }
-              if (dims[0] >= 0) {
-                const auto *buf_1324 = buffer.get();
-
-                for (auto f4 = 0, f1324 = 0; f4 != n4; ++f4) {
-                  const auto bf4 = f4 + bf4_first;
-                  for (auto f2 = 0; f2 != n2; ++f2) {
-                    const auto bf2 = f2 + bf2_first;
-                    for (auto f3 = 0; f3 != n3; ++f3) {
-                      const auto bf3 = f3 + bf3_first;
-                      for (auto f1 = 0; f1 != n1; ++f1, ++f1324) {
-                        const auto bf1 = f1 + bf1_first;
-
-                        const auto value = buf_1324[f1324];
-                        const auto value_scal_by_deg = value * s12_deg;
-                        F(bf1, bf2) -= D(bf3, bf4) * value_scal_by_deg;
-                      }
-                    }
-                  }
-                }
-              }
-              break;
             }
-            current_idx++;
+          }
+        }
+      }
+    }
+
+    // Second integral: (s1 s3 | s2 s4)  
+    std::array<int, 4> idxs{q.s1, q.s3 + nsh, q.s2, q.s4 + nsh};
+    if (spherical) {
+      dims = m_env.four_center_helper<op, Sph>(
+          idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
+    } else {
+      dims = m_env.four_center_helper<op, Cart>(
+          idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
+    }
+    
+    if (dims[0] >= 0) {
+      const auto *buf_1324 = buffer.get();
+      for (auto f4 = 0, f1324 = 0; f4 != n4; ++f4) {
+        const auto bf4 = f4 + bf4_first;
+        for (auto f2 = 0; f2 != n2; ++f2) {
+          const auto bf2 = f2 + bf2_first;
+          for (auto f3 = 0; f3 != n3; ++f3) {
+            const auto bf3 = f3 + bf3_first;
+            for (auto f1 = 0; f1 != n1; ++f1, ++f1324) {
+              const auto bf1 = f1 + bf1_first;
+              const auto value = buf_1324[f1324];
+              const auto value_scal_by_deg = value * q.s12_deg;
+              F(bf1, bf2) -= D(bf3, bf4) * value_scal_by_deg;
+            }
           }
         }
       }
