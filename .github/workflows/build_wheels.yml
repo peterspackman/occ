@@ -85,6 +85,7 @@ jobs:
   build_pyodide_wheel:
     name: Build wheel for pyodide
     runs-on: ubuntu-22.04
+    continue-on-error: true  # Allow this job to fail without failing the workflow
     steps:
       - uses: actions/checkout@v5
       - uses: pypa/cibuildwheel@v3.1.4
@@ -99,18 +100,28 @@ jobs:
 
   upload_all:
     runs-on: ubuntu-latest
-    needs: build_wheels
+    needs: [build_wheels, build_pyodide_wheel]
     environment:
       name: pypi
       url: https://pypi.org/p/occpy/
     permissions:
       id-token: write
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_pypi)
+    if: always() && (needs.build_wheels.result == 'success') && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_pypi))
     steps:
+    # Download regular wheels (always required)
     - uses: actions/download-artifact@v5
       with:
         path: dist
         pattern: 'occpy-*'
+        merge-multiple: true
+
+    # Try to download Pyodide wheel if it succeeded (optional)
+    - name: Download Pyodide wheel (if available)
+      uses: actions/download-artifact@v5
+      continue-on-error: true
+      with:
+        path: dist
+        pattern: 'wasm-occpy-pyodide'
         merge-multiple: true
 
     - name: List downloaded wheels

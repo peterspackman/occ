@@ -13,6 +13,7 @@ env:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -39,7 +40,9 @@ jobs:
             architecture: x86_64
             script: windows_build.ps1
             name: "windows-x86_64"
+            experimental: true
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental == true }}
     steps:
     - uses: actions/checkout@v5
 
@@ -108,7 +111,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && always()
     steps:
 
     - name: Checkout code

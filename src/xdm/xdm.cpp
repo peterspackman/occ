@@ -40,61 +40,83 @@ xdm_dispersion_interaction_energy(const XDMAtomList &atom_info_a,
 
   using occ::Vec3;
 
+  // Generate atom pair interactions for parallel processing
+  std::vector<std::pair<int, int>> atom_pairs;
+  for (int i = 0; i < num_atoms_a; i++) {
+    for (int j = 0; j < num_atoms_b; j++) {
+      atom_pairs.emplace_back(i, j);
+    }
+  }
+
+  // Use thread-local storage for accumulating results
+  occ::parallel::thread_local_storage<Mat3N> forces_a_local(Mat3N::Zero(3, num_atoms_a));
+  occ::parallel::thread_local_storage<Mat3N> forces_b_local(Mat3N::Zero(3, num_atoms_b));
+  occ::parallel::thread_local_storage<double> edisp_local(0.0);
+
+  occ::parallel::parallel_for(size_t(0), atom_pairs.size(), [&](size_t pair_idx) {
+    auto &forces_a = forces_a_local.local();
+    auto &forces_b = forces_b_local.local();
+    auto &edisp = edisp_local.local();
+    
+    const int i = atom_pairs[pair_idx].first;
+    const int j = atom_pairs[pair_idx].second;
+    
+    Vec3 pi = {atoms_a[i].x, atoms_a[i].y, atoms_a[i].z};
+    Vec3 pj = {atoms_b[j].x, atoms_b[j].y, atoms_b[j].z};
+    Vec3 v_ij = pj - pi;
+    double pol_i = polarizabilities_a(i);
+    double pol_j = polarizabilities_b(j);
+    double factor = pol_i * pol_j / (moments_a(0, i) * pol_j + moments_b(0, j) * pol_i);
+    double rij = v_ij.norm();
+
+    if (rij < 1e-15) return;
+
+    double rij2 = rij * rij;
+    double rij4 = rij2 * rij2;
+    double rij6 = rij4 * rij2;
+    double rij8 = rij4 * rij4;
+    double rij10 = rij4 * rij6;
+
+    double c6 = factor * moments_a(0, i) * moments_b(0, j);
+    double c8 = 1.5 * factor * (moments_a(0, i) * moments_b(1, j) + moments_a(1, i) * moments_b(0, j));
+    double c10 = 2.0 * factor * (moments_a(0, i) * moments_b(2, j) + moments_a(2, i) * moments_b(0, j)) +
+                 4.2 * factor * moments_a(1, i) * moments_b(1, j);
+    double rc = (std::sqrt(c8 / c6) + std::sqrt(std::sqrt(c10 / c6)) + std::sqrt(c10 / c8)) / 3;
+    double rvdw = params.a1 * rc + params.a2 * occ::units::ANGSTROM_TO_BOHR;
+    double rvdw2 = rvdw * rvdw;
+    double rvdw4 = rvdw2 * rvdw2;
+    double rvdw6 = rvdw4 * rvdw2;
+    double rvdw8 = rvdw4 * rvdw4;
+    double rvdw10 = rvdw4 * rvdw6;
+
+    occ::log::debug("{:>3d} {:>3d} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f}",
+                    i, j, rij, c6, c8, c10, rc, rvdw);
+
+    edisp -= c6 / (rvdw6 + rij6) + c8 / (rvdw8 + rij8) + c10 / (rvdw10 + rij10);
+
+    double c6_com = 6.0 * c6 * rij4 / ((rvdw6 + rij6) * (rvdw6 + rij6));
+    double c8_com = 8.0 * c8 * rij6 / ((rvdw8 + rij8) * (rvdw8 + rij8));
+    double c10_com = 10.0 * c10 * rij8 / ((rvdw10 + rij10) * (rvdw10 + rij10));
+    
+    forces_a.col(i) += (c6_com + c8_com + c10_com) * v_ij;
+    forces_b.col(j) -= (c6_com + c8_com + c10_com) * v_ij;
+  });
+
+  // Reduce results from all threads
   Mat3N forces_a = Mat3N::Zero(3, num_atoms_a);
   Mat3N forces_b = Mat3N::Zero(3, num_atoms_b);
   double edisp = 0.0;
-  for (int i = 0; i < num_atoms_a; i++) {
-    Vec3 pi = {atoms_a[i].x, atoms_a[i].y, atoms_a[i].z};
-    double pol_i = polarizabilities_a(i);
-
-    for (int j = 0; j < num_atoms_b; j++) {
-      Vec3 pj = {atoms_b[j].x, atoms_b[j].y, atoms_b[j].z};
-      Vec3 v_ij = pj - pi;
-      double pol_j = polarizabilities_b(j);
-      double factor =
-          pol_i * pol_j / (moments_a(0, i) * pol_j + moments_b(0, j) * pol_i);
-      double rij = v_ij.norm();
-
-      double rij2 = rij * rij;
-      double rij4 = rij2 * rij2;
-      double rij6 = rij4 * rij2;
-      double rij8 = rij4 * rij4;
-      double rij10 = rij4 * rij6;
-
-      double c6 = factor * moments_a(0, i) * moments_b(0, j);
-      double c8 = 1.5 * factor *
-                  (moments_a(0, i) * moments_b(1, j) +
-                   moments_a(1, i) * moments_b(0, j));
-      double c10 = 2.0 * factor *
-                       (moments_a(0, i) * moments_b(2, j) +
-                        moments_a(2, i) * moments_b(0, j)) +
-                   4.2 * factor * moments_a(1, i) * moments_b(1, j);
-      double rc = (std::sqrt(c8 / c6) + std::sqrt(std::sqrt(c10 / c6)) +
-                   std::sqrt(c10 / c8)) /
-                  3;
-      double rvdw = params.a1 * rc + params.a2 * occ::units::ANGSTROM_TO_BOHR;
-      double rvdw2 = rvdw * rvdw;
-      double rvdw4 = rvdw2 * rvdw2;
-      double rvdw6 = rvdw4 * rvdw2;
-      double rvdw8 = rvdw4 * rvdw4;
-      double rvdw10 = rvdw4 * rvdw6;
-
-      occ::log::debug("{:>3d} {:>3d} {:12.6f} {:12.6f} {:12.6f} {:12.6f} "
-                      "{:12.6f} {:12.6f}",
-                      i, j, rij, c6, c8, c10, rc, rvdw);
-      if (rij < 1e-15)
-        continue;
-      edisp -=
-          c6 / (rvdw6 + rij6) + c8 / (rvdw8 + rij8) + c10 / (rvdw10 + rij10);
-
-      double c6_com = 6.0 * c6 * rij4 / ((rvdw6 + rij6) * (rvdw6 + rij6));
-      double c8_com = 8.0 * c8 * rij6 / ((rvdw8 + rij8) * (rvdw8 + rij8));
-      double c10_com =
-          10.0 * c10 * rij8 / ((rvdw10 + rij10) * (rvdw10 + rij10));
-      forces_a.col(i) += (c6_com + c8_com + c10_com) * v_ij;
-      forces_b.col(j) -= (c6_com + c8_com + c10_com) * v_ij;
-    }
+  
+  for (const auto &forces_a_thread : forces_a_local) {
+    forces_a += forces_a_thread;
   }
+  for (const auto &forces_b_thread : forces_b_local) {
+    forces_b += forces_b_thread;
+  }
+  for (const auto &edisp_thread : edisp_local) {
+    edisp += edisp_thread;
+  }
+  
   return {edisp, forces_a, forces_b};
 }
 
@@ -114,59 +136,77 @@ std::pair<double, Mat3N> xdm_dispersion_energy(const XDMAtomList &atom_info,
     occ::log::debug("{:20.12f} {:20.12f} {:20.12f}", volume(i), volume_free(i),
                     polarizabilities(i));
   }
-  Mat3N forces = Mat3N::Zero(3, num_atoms);
-  double edisp = 0.0;
+
+  // Generate atom pairs for parallel processing
+  std::vector<std::pair<int, int>> atom_pairs;
   for (int i = 0; i < num_atoms; i++) {
-    Vec3 pi = {atoms[i].x, atoms[i].y, atoms[i].z};
-    double pol_i = polarizabilities(i);
-    for (int j = i; j < num_atoms; j++) {
-      Vec3 pj = {atoms[j].x, atoms[j].y, atoms[j].z};
-      Vec3 v_ij = pj - pi;
-      double pol_j = polarizabilities(j);
-      double factor =
-          pol_i * pol_j / (moments(0, i) * pol_j + moments(0, j) * pol_i);
-      double rij = v_ij.norm();
-
-      double rij2 = rij * rij;
-      double rij4 = rij2 * rij2;
-      double rij6 = rij4 * rij2;
-      double rij8 = rij4 * rij4;
-      double rij10 = rij4 * rij6;
-
-      double c6 = factor * moments(0, i) * moments(0, j);
-      double c8 =
-          1.5 * factor *
-          (moments(0, i) * moments(1, j) + moments(1, i) * moments(0, j));
-      double c10 =
-          2.0 * factor *
-              (moments(0, i) * moments(2, j) + moments(2, i) * moments(0, j)) +
-          4.2 * factor * moments(1, i) * moments(1, j);
-      double rc = (std::sqrt(c8 / c6) + std::sqrt(std::sqrt(c10 / c6)) +
-                   std::sqrt(c10 / c8)) /
-                  3;
-      double rvdw = params.a1 * rc + params.a2 * occ::units::ANGSTROM_TO_BOHR;
-      double rvdw2 = rvdw * rvdw;
-      double rvdw4 = rvdw2 * rvdw2;
-      double rvdw6 = rvdw4 * rvdw2;
-      double rvdw8 = rvdw4 * rvdw4;
-      double rvdw10 = rvdw4 * rvdw6;
-
-      occ::log::debug("{:>3d} {:>3d} {:12.6f} {:12.6f} {:12.6f} {:12.6f} "
-                      "{:12.6f} {:12.6f}",
-                      i, j, rij, c6, c8, c10, rc, rvdw);
-      if (rij < 1e-15)
-        continue;
-      edisp -=
-          c6 / (rvdw6 + rij6) + c8 / (rvdw8 + rij8) + c10 / (rvdw10 + rij10);
-
-      double c6_com = 6.0 * c6 * rij4 / ((rvdw6 + rij6) * (rvdw6 + rij6));
-      double c8_com = 8.0 * c8 * rij6 / ((rvdw8 + rij8) * (rvdw8 + rij8));
-      double c10_com =
-          10.0 * c10 * rij8 / ((rvdw10 + rij10) * (rvdw10 + rij10));
-      forces.col(i) += (c6_com + c8_com + c10_com) * v_ij;
-      forces.col(j) -= (c6_com + c8_com + c10_com) * v_ij;
+    for (int j = i + 1; j < num_atoms; j++) {
+      atom_pairs.emplace_back(i, j);
     }
   }
+
+  // Use thread-local storage for accumulating results
+  occ::parallel::thread_local_storage<Mat3N> forces_local(Mat3N::Zero(3, num_atoms));
+  occ::parallel::thread_local_storage<double> edisp_local(0.0);
+
+  occ::parallel::parallel_for(size_t(0), atom_pairs.size(), [&](size_t pair_idx) {
+    auto &forces = forces_local.local();
+    auto &edisp = edisp_local.local();
+    
+    const int i = atom_pairs[pair_idx].first;
+    const int j = atom_pairs[pair_idx].second;
+    
+    Vec3 pi = {atoms[i].x, atoms[i].y, atoms[i].z};
+    Vec3 pj = {atoms[j].x, atoms[j].y, atoms[j].z};
+    Vec3 v_ij = pj - pi;
+    double pol_i = polarizabilities(i);
+    double pol_j = polarizabilities(j);
+    double factor = pol_i * pol_j / (moments(0, i) * pol_j + moments(0, j) * pol_i);
+    double rij = v_ij.norm();
+
+    if (rij < 1e-15) return;
+
+    double rij2 = rij * rij;
+    double rij4 = rij2 * rij2;
+    double rij6 = rij4 * rij2;
+    double rij8 = rij4 * rij4;
+    double rij10 = rij4 * rij6;
+
+    double c6 = factor * moments(0, i) * moments(0, j);
+    double c8 = 1.5 * factor * (moments(0, i) * moments(1, j) + moments(1, i) * moments(0, j));
+    double c10 = 2.0 * factor * (moments(0, i) * moments(2, j) + moments(2, i) * moments(0, j)) +
+                 4.2 * factor * moments(1, i) * moments(1, j);
+    double rc = (std::sqrt(c8 / c6) + std::sqrt(std::sqrt(c10 / c6)) + std::sqrt(c10 / c8)) / 3;
+    double rvdw = params.a1 * rc + params.a2 * occ::units::ANGSTROM_TO_BOHR;
+    double rvdw2 = rvdw * rvdw;
+    double rvdw4 = rvdw2 * rvdw2;
+    double rvdw6 = rvdw4 * rvdw2;
+    double rvdw8 = rvdw4 * rvdw4;
+    double rvdw10 = rvdw4 * rvdw6;
+
+    occ::log::debug("{:>3d} {:>3d} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f}",
+                    i, j, rij, c6, c8, c10, rc, rvdw);
+
+    edisp -= c6 / (rvdw6 + rij6) + c8 / (rvdw8 + rij8) + c10 / (rvdw10 + rij10);
+
+    double c6_com = 6.0 * c6 * rij4 / ((rvdw6 + rij6) * (rvdw6 + rij6));
+    double c8_com = 8.0 * c8 * rij6 / ((rvdw8 + rij8) * (rvdw8 + rij8));
+    double c10_com = 10.0 * c10 * rij8 / ((rvdw10 + rij10) * (rvdw10 + rij10));
+    
+    forces.col(i) += (c6_com + c8_com + c10_com) * v_ij;
+    forces.col(j) -= (c6_com + c8_com + c10_com) * v_ij;
+  });
+
+  // Reduce results from all threads
+  Mat3N forces = Mat3N::Zero(3, num_atoms);
+  double edisp = 0.0;
+  for (const auto &forces_thread : forces_local) {
+    forces += forces_thread;
+  }
+  for (const auto &edisp_thread : edisp_local) {
+    edisp += edisp_thread;
+  }
+  
   return {edisp, forces};
 }
 
@@ -306,84 +346,103 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
   // constexpr double density_tolerance = 1e-10;
   constexpr int max_derivative{2};
   
-  // Use TBB-based thread-local storage
+  // Build list of all grid blocks across all atoms for proper parallelization
+  struct GridBlock {
+    size_t atom_idx;
+    size_t start_idx;
+    size_t end_idx;
+    const Mat3N* points;
+    const Vec* weights;
+  };
+  
+  std::vector<GridBlock> all_blocks;
+  for (size_t atom_idx = 0; atom_idx < m_atom_grids.size(); ++atom_idx) {
+    const auto &atom_grid = m_atom_grids[atom_idx];
+    const size_t npt_total = atom_grid.points.cols();
+    const size_t num_blocks = (npt_total + BLOCKSIZE - 1) / BLOCKSIZE; // Fix off-by-one
+    
+    for (size_t block = 0; block < num_blocks; ++block) {
+      size_t start = block * BLOCKSIZE;
+      size_t end = std::min(npt_total, (block + 1) * BLOCKSIZE);
+      if (start < end) {
+        all_blocks.push_back({atom_idx, start, end, &atom_grid.points, &atom_grid.weights});
+      }
+    }
+  }
+  
+  // Use thread-local storage for results and pre-allocated working matrices
   occ::parallel::thread_local_storage<Vec> tl_hirshfeld_charges(Vec::Zero(num_atoms));
   occ::parallel::thread_local_storage<Vec> tl_volumes(Vec::Zero(num_atoms));
   occ::parallel::thread_local_storage<Vec> tl_free_volumes(Vec::Zero(num_atoms));
   occ::parallel::thread_local_storage<Mat> tl_moments(Mat::Zero(3, num_atoms));
   occ::parallel::thread_local_storage<double> tl_num_electrons(0.0);
   occ::parallel::thread_local_storage<double> tl_num_electrons_promol(0.0);
+  
+  // Pre-allocate working matrices in thread-local storage to avoid repeated allocations
+  occ::parallel::thread_local_storage<occ::gto::GTOValues> tl_gto_vals([this]() {
+    occ::gto::GTOValues gto_vals;
+    gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, 2);
+    return gto_vals;
+  });
+  occ::parallel::thread_local_storage<Mat> tl_hirshfeld_weights([&]() { return Mat::Zero(BLOCKSIZE, num_atoms); });
+  occ::parallel::thread_local_storage<Mat> tl_r([&]() { return Mat::Zero(BLOCKSIZE, num_atoms); });
+  occ::parallel::thread_local_storage<Mat> tl_rho([&]() { 
+    return Mat::Zero(num_rows_factor * BLOCKSIZE, occ::density::num_components(max_derivative)); 
+  });
 
-  for (const auto &atom_grid : m_atom_grids) {
-    const auto &atom_pts = atom_grid.points;
-    const auto &atom_weights = atom_grid.weights;
-    const size_t npt_total = atom_pts.cols();
-    const size_t num_blocks = npt_total / BLOCKSIZE + 1;
+  // Now parallelize over ALL blocks from ALL atoms - much better load balancing!
+  occ::parallel::parallel_for(size_t(0), all_blocks.size(), [&](size_t block_idx) {
+    const auto &block = all_blocks[block_idx];
+    const size_t npt = block.end_idx - block.start_idx;
+    
+    auto &gto_vals = tl_gto_vals.local();
+    auto &hirshfeld_charges = tl_hirshfeld_charges.local();
+    auto &volume = tl_volumes.local();
+    auto &volume_free = tl_free_volumes.local();
+    auto &moments = tl_moments.local();
+    auto &num_e = tl_num_electrons.local();
+    auto &num_e_promol = tl_num_electrons_promol.local();
+    
+    // Reuse pre-allocated matrices (just resize the view, no new allocation)
+    auto &hirshfeld_weights = tl_hirshfeld_weights.local();
+    auto &r = tl_r.local();
+    auto &rho = tl_rho.local();
+    
+    const auto &pts_block = block.points->middleCols(block.start_idx, npt);
+    const auto &weights_block = block.weights->segment(block.start_idx, npt);
+    
+    // Resize views to current block size (no allocation, just changes matrix dimensions)
+    hirshfeld_weights.conservativeResize(npt, num_atoms);
+    r.conservativeResize(npt, num_atoms);  
+    rho.conservativeResize(num_rows_factor * npt, occ::density::num_components(max_derivative));
+    
+    occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
+    if (unrestricted) {
+      occ::density::evaluate_density<max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
+          mo.D, gto_vals, rho);
+    } else {
+      occ::density::evaluate_density<max_derivative, occ::qm::SpinorbitalKind::Restricted>(
+          mo.D, gto_vals, rho);
+    }
 
-    // Use TBB-based thread-local storage for temporary variables
-    occ::parallel::thread_local_storage<occ::gto::GTOValues> gto_vals_local(
-      [this]() {
-        occ::gto::GTOValues gto_vals;
-        gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, 2);
-        return gto_vals;
-      }
-    );
-
-    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
-      auto &gto_vals = gto_vals_local.local();
-      auto &hirshfeld_charges = tl_hirshfeld_charges.local();
-      auto &volume = tl_volumes.local();
-      auto &volume_free = tl_free_volumes.local();
-      auto &moments = tl_moments.local();
-      auto &num_e = tl_num_electrons.local();
-      auto &num_e_promol = tl_num_electrons_promol.local();
-      
-      Eigen::Index l = block * BLOCKSIZE;
-      Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
-      Eigen::Index npt = u - l;
-      if (npt <= 0)
-        return;
-        
-      Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
-      Mat r = Mat::Zero(npt, num_atoms);
-      Mat rho = Mat::Zero(num_rows_factor * npt,
-                          occ::density::num_components(max_derivative));
-      const auto &pts_block = atom_pts.middleCols(l, npt);
-      const auto &weights_block = atom_weights.segment(l, npt);
-      occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
-      if (unrestricted) {
-        occ::density::evaluate_density<
-            max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
-            mo.D, gto_vals, rho);
-      } else {
-        occ::density::evaluate_density<max_derivative,
-                                       occ::qm::SpinorbitalKind::Restricted>(
-            mo.D, gto_vals, rho);
-      }
-
-      for (int i = 0; i < num_atoms; i++) {
-        const auto &sb = m_slater_basis[i];
-        occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
-        r.col(i) = (pts_block.colwise() - pos).colwise().norm();
-        const auto &ria = r.col(i).array();
-        // currently the hirsfheld weights array just holds the free
-        // atom density
-        hirshfeld_weights.col(i) = sb.rho(r.col(i));
-        volume_free(i) += (hirshfeld_weights.col(i).array() *
-                           weights_block.array() * ria * ria * ria)
-                              .sum();
-      }
-      if (unrestricted) {
-        impl::xdm_moment_kernel_unrestricted(
-            r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
-            volume, moments, num_e, num_e_promol);
-      } else {
-        impl::xdm_moment_kernel_restricted(
-            r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
-            volume, moments, num_e, num_e_promol);
-      }
-    });
-  }
+    for (int i = 0; i < num_atoms; i++) {
+      const auto &sb = m_slater_basis[i];
+      occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
+      r.col(i) = (pts_block.colwise() - pos).colwise().norm();
+      const auto &ria = r.col(i).array();
+      hirshfeld_weights.col(i) = sb.rho(r.col(i));
+      volume_free(i) += (hirshfeld_weights.col(i).array() *
+                         weights_block.array() * ria * ria * ria).sum();
+    }
+    
+    if (unrestricted) {
+      impl::xdm_moment_kernel_unrestricted(r, rho, weights_block, hirshfeld_weights, 
+                                           hirshfeld_charges, volume, moments, num_e, num_e_promol);
+    } else {
+      impl::xdm_moment_kernel_restricted(r, rho, weights_block, hirshfeld_weights, 
+                                         hirshfeld_charges, volume, moments, num_e, num_e_promol);
+    }
+  });
 
   m_hirshfeld_charges = Vec::Zero(num_atoms);
   const auto &ecp_electrons = m_basis.ecp_electrons();
