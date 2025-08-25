@@ -95,6 +95,7 @@ const distPackageJson = {
   name: packageJson.name,
   version: packageJson.version,
   description: packageJson.description,
+  type: 'module',
   main: 'index.js',
   types: 'index.d.ts',
   module: 'index.mjs',

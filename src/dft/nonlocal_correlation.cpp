@@ -64,16 +64,13 @@ vv10_kernel(ArrayConstRef rho, ArrayConstRef grad_rho, PointsRef points,
   Array W = Array::Zero(rho.rows());
 
   occ::timing::start(occ::timing::category::dft_nlc);
-  int num_threads = occ::parallel::get_num_threads();
 
-  auto kernel = [&](int thread_id) {
-    for (int i = 0; i < points.cols(); i++) {
-      if ((i % num_threads) != thread_id)
-        continue;
+  // Use TBB parallel_for instead of round-robin scheduling
+  auto kernel = [&](size_t i) {
       // TODO lift screening outside loops
       // Refactor F, U, W to copy to avoid false sharing?
       if (rho(i) < 1e-8)
-        continue;
+        return;
 
       double k = kappa(i);
       double f = rho_weighted(i) / (2 * k * k * k);
@@ -95,9 +92,8 @@ vv10_kernel(ArrayConstRef rho, ArrayConstRef grad_rho, PointsRef points,
       F(i) = f * -1.5;
       U(i) = u;
       W(i) = w;
-    }
   };
-  occ::parallel::parallel_do(kernel);
+  occ::parallel::parallel_for(size_t(0), size_t(points.cols()), kernel);
   occ::timing::stop(occ::timing::category::dft_nlc);
 
   Vec exc = (beta + 0.5 * F);
@@ -145,14 +141,11 @@ vv10_kernel_gradient(ArrayConstRef rho, ArrayConstRef grad_rho, PointsRef points
   Array W = Array::Zero(rho.rows());
 
   occ::timing::start(occ::timing::category::dft_nlc);
-  int num_threads = occ::parallel::get_num_threads();
 
-  auto kernel = [&](int thread_id) {
-    for (int i = 0; i < points.cols(); i++) {
-      if ((i % num_threads) != thread_id)
-        continue;
+  // Use TBB parallel_for instead of round-robin scheduling
+  auto kernel = [&](size_t i) {
       if (rho(i) < 1e-8)
-        continue;
+        return;
 
       double k = kappa(i);
       double f = rho_weighted(i) / (2 * k * k * k);
@@ -175,9 +168,8 @@ vv10_kernel_gradient(ArrayConstRef rho, ArrayConstRef grad_rho, PointsRef points
       F(i) = f * -1.5;
       U(i) = u;
       W(i) = w;
-    }
   };
-  occ::parallel::parallel_do(kernel);
+  occ::parallel::parallel_for(size_t(0), size_t(points.cols()), kernel);
   occ::timing::stop(occ::timing::category::dft_nlc);
 
   Vec exc = (beta + 0.5 * F);

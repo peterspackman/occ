@@ -95,8 +95,15 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
       return T(basis);
   }();
 
-  if (!config.basis.df_name.empty())
+  if (!config.basis.df_name.empty()) {
     proc.set_density_fitting_basis(config.basis.df_name);
+    // Set DF policy based on input configuration
+    if (config.method.use_direct_df_kernels) {
+      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
+    } else {
+      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+    }
+  }
 
   occ::log::info("Spinorbital kind: {}", spinorbital_kind_to_string(SK));
 
@@ -149,8 +156,15 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
 
   if constexpr (std::is_same<T, DFT>::value) {
     DFT ks(config.method.name, wfn.basis, config.method.dft_grid);
-    if (!config.basis.df_name.empty())
+    if (!config.basis.df_name.empty()) {
       ks.set_density_fitting_basis(config.basis.df_name);
+      // Set DF policy based on input configuration
+      if (config.method.use_direct_df_kernels) {
+        ks.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
+      } else {
+        ks.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+      }
+    }
     ks.set_system_charge(config.electronic.charge);
     SolvationCorrectedProcedure<DFT> proc_solv(ks, config.solvent.solvent_name,
                                                config.solvent.radii_scaling);
@@ -166,8 +180,15 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
   } else {
     T proc(wfn.basis);
     proc.set_system_charge(config.electronic.charge);
-    if (!config.basis.df_name.empty())
+    if (!config.basis.df_name.empty()) {
       proc.set_density_fitting_basis(config.basis.df_name);
+      // Set DF policy based on input configuration
+      if (config.method.use_direct_df_kernels) {
+        proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
+      } else {
+        proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+      }
+    }
     SolvationCorrectedProcedure<T> proc_solv(proc, config.solvent.solvent_name,
                                              config.solvent.radii_scaling);
     SCF<SolvationCorrectedProcedure<T>> scf(proc_solv, SK);

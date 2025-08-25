@@ -46,6 +46,11 @@ target_link_libraries(occ_core
 )
 endif()
 
+target_link_libraries(occ_core
+    PUBLIC
+    TBB::tbb
+)
+
 if(NOT ENABLE_HOST_OPT)
     target_compile_definitions(occ_core PUBLIC OCC_DISABLE_SIMD)
 endif()

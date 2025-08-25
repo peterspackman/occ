@@ -1,4 +1,5 @@
 #include <occ/core/log.h>
+#include <occ/core/parallel.h>
 #include <occ/core/progress.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
@@ -8,6 +9,8 @@
 #include <occ/interaction/pair_energy_store.h>
 #include <occ/interaction/polarization_partitioning.h>
 #include <occ/interaction/wolf.h>
+#include <atomic>
+#include <mutex>
 
 namespace occ::interaction {
 
@@ -102,40 +105,56 @@ LatticeEnergyResult LatticeEnergyCalculator::compute() {
     }
     occ::core::ProgressTracker progress(dimers_to_compute);
 
-    // Compute energies for this radius
-    size_t current_dimer = 0;
-    size_t computed_dimers = 0;
-
-    for (const auto &dimer : dimers) {
-      sw.start();
-      const auto &a = dimer.a();
-      const auto &b = dimer.b();
-      std::string dimer_name = dimer.name();
-
-      if (dimer.nearest_distance() <= current_radius &&
-          !converged_energies[current_dimer].is_computed) {
-
-        if (!store.load(current_dimer, dimer,
-                        converged_energies[current_dimer])) {
-          // Compute new energy
-          converged_energies[current_dimer] =
-              m_energy_model->compute_energy(dimer);
-          store.save(current_dimer, dimer, converged_energies[current_dimer]);
-
+    // Create a vector of dimers that need computation for parallel processing
+    struct DimerTask {
+      size_t index;
+      const occ::core::Dimer* dimer;
+    };
+    
+    std::vector<DimerTask> tasks_to_compute;
+    for (size_t i = 0; i < dimers.size(); i++) {
+      if (dimers[i].nearest_distance() <= current_radius &&
+          !converged_energies[i].is_computed) {
+        tasks_to_compute.push_back({i, &dimers[i]});
+      }
+    }
+    
+    // Parallel computation of energies with real-time progress updates using TBB
+    if (!tasks_to_compute.empty()) {
+      std::atomic<size_t> computed_dimers{0};
+      std::mutex progress_mutex;
+      
+      occ::parallel::parallel_for(size_t(0), tasks_to_compute.size(), [&](size_t task_idx) {
+        const auto& task = tasks_to_compute[task_idx];
+        size_t dimer_idx = task.index;
+        const auto& dimer = *task.dimer;
+        
+        if (!store.load(dimer_idx, dimer, converged_energies[dimer_idx])) {
+          // Compute new energy - TBB handles nested parallelism automatically
+          converged_energies[dimer_idx] = m_energy_model->compute_energy(dimer);
+          // Ensure total energy is properly computed with model scaling factors
+          m_energy_model->compute_total_energy(converged_energies[dimer_idx]);
+          store.save(dimer_idx, dimer, converged_energies[dimer_idx]);
+          
           if (m_settings.wolf_sum) {
-            charge_energies[current_dimer] =
+            charge_energies[dimer_idx] =
                 coulomb_interaction_energy_asym_charges(
                     dimer, m_wolf_sum->asymmetric_charges());
           }
         }
-
-        progress.update(computed_dimers, dimers_to_compute,
-                        fmt::format("E[{}|{}]: {}", a.asymmetric_molecule_idx(),
-                                    b.asymmetric_molecule_idx(), dimer_name));
-        computed_dimers++;
-      }
-      current_dimer++;
-      sw.stop();
+        
+        // Update progress with mutex protection
+        {
+          std::lock_guard<std::mutex> lock(progress_mutex);
+          size_t current_progress = computed_dimers.fetch_add(1) + 1;
+          const auto &a = dimer.a();
+          const auto &b = dimer.b();
+          std::string dimer_name = dimer.name();
+          progress.update(current_progress, dimers_to_compute,
+                          fmt::format("E[{}|{}]: {}", a.asymmetric_molecule_idx(),
+                                      b.asymmetric_molecule_idx(), dimer_name));
+        }
+      });
     }
 
     CEEnergyComponents total =

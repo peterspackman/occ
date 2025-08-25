@@ -48,8 +48,15 @@ run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
       return T(basis);
   }();
 
-  if (!config.basis.df_name.empty())
+  if (!config.basis.df_name.empty()) {
     proc.set_density_fitting_basis(config.basis.df_name);
+    // Set DF policy based on input configuration
+    if (config.method.use_direct_df_kernels) {
+      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
+    } else {
+      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+    }
+  }
 
   occ::log::info("Spinorbital kind: {}", spinorbital_kind_to_string(SK));
 

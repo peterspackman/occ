@@ -118,38 +118,44 @@ void PeriodicGrid::fill_data_from_function(F &func, const IVec3 &steps) {
         actual_steps = steps.array() - 1;
     }
     
-    int num_threads = occ::parallel::get_num_threads();
-    // Chunk by z-slices for better cache locality
-    int z_per_thread = (actual_steps(2) + num_threads - 1) / num_threads;
+    // Use TBB thread-local storage for efficient memory reuse
+    occ::parallel::thread_local_storage<Mat3N> tl_points;
+    occ::parallel::thread_local_storage<Vec> tl_temp;
     
-    auto inner_func = [&](int thread_id) {
-        int z_start = thread_id * z_per_thread;
-        int z_end = std::min(z_start + z_per_thread, actual_steps(2));
-        if (z_start >= actual_steps(2)) return;
+    // Let TBB handle work distribution with automatic load balancing
+    // Process z-slices individually for optimal granularity and cache locality
+    occ::parallel::parallel_for(0, actual_steps(2), [&](int z) {
+        const size_t slice_size = actual_steps(0) * actual_steps(1);
         
-        size_t chunk_size = actual_steps(0) * actual_steps(1) * (z_end - z_start);
-        Mat3N points(3, chunk_size);
-        Vec temp = Vec::Zero(chunk_size);
+        // Get thread-local storage, resize if needed
+        auto& points = tl_points.local();
+        auto& temp = tl_temp.local();
         
-        // Generate points for this z-slice chunk
+        if (points.cols() < slice_size) {
+            points.resize(3, slice_size);
+        }
+        if (temp.size() < slice_size) {
+            temp.resize(slice_size);
+        }
+        
+        // Generate points for this z-slice
         size_t local_idx = 0;
-        for (int z = z_start; z < z_end; z++) {
-            for (int y = 0; y < actual_steps(1); y++) {
-                for (int x = 0; x < actual_steps(0); x++, local_idx++) {
-                    points.col(local_idx) = basis * Vec3(x, y, z) + origin;
-                }
+        for (int y = 0; y < actual_steps(1); y++) {
+            for (int x = 0; x < actual_steps(0); x++, local_idx++) {
+                points.col(local_idx) = basis * Vec3(x, y, z) + origin;
             }
         }
         
-        // Process chunk
-        func(points, temp);
+        // Process slice (only use the needed portion)
+        auto points_view = points.leftCols(slice_size);
+        auto temp_view = temp.head(slice_size);
+        temp_view.setZero();
+        func(points_view, temp_view);
         
-        // Copy results back to grid - calculate proper offset
-        size_t grid_offset = z_start * actual_steps(0) * actual_steps(1);
-        std::copy(temp.data(), temp.data() + chunk_size, m_grid.data() + grid_offset);
-    };
-    
-    occ::parallel::parallel_do(inner_func);
+        // Copy results back to grid
+        size_t grid_offset = z * actual_steps(0) * actual_steps(1);
+        std::copy(temp_view.data(), temp_view.data() + slice_size, m_grid.data() + grid_offset);
+    });
     
     if (is_periodic()) {
         // Need to expand the data to include redundant points

@@ -44,6 +44,7 @@ struct MethodInput {
   GridSettings dft_grid;
   double integral_precision{1e-12};
   double orbital_smearing_sigma{0.0};
+  bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
 };
 
 struct BasisSetInput {

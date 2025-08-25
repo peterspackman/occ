@@ -54,8 +54,15 @@ Mat compute_hessian_for_method(const Molecule &m, const occ::qm::AOBasis &basis,
       return T(basis);
   }();
 
-  if (!config.basis.df_name.empty())
+  if (!config.basis.df_name.empty()) {
     proc.set_density_fitting_basis(config.basis.df_name);
+    // Set DF policy based on input configuration
+    if (config.method.use_direct_df_kernels) {
+      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
+    } else {
+      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+    }
+  }
 
   occ::log::debug("Spinorbital kind: {}", spinorbital_kind_to_string(SK));
   occ::log::trace("Setting integral precision: {}", config.method.integral_precision);

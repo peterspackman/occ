@@ -122,6 +122,9 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   scf->add_option("--integral-precision,--integral_precision",
                   config->method.integral_precision,
                   "cutoff for integral screening");
+  scf->add_flag("--use-direct-df-kernels,--use_direct_df_kernels",
+                config->method.use_direct_df_kernels,
+                "use direct density fitting kernels instead of stored integrals");
   // dft grid
   scf->add_option("--dft-grid-max-angular,--dft_grid_max_angular",
                   config->method.dft_grid.max_angular_points,

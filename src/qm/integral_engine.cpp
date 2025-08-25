@@ -561,7 +561,6 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
                                               bool is_shell_diagonal) {
   set_auxiliary_basis(D_bs.shells(), false);
   constexpr Op op = Op::coulomb;
-  auto nthreads = occ::parallel::get_num_threads();
 
   constexpr auto Sph = ShellKind::Spherical;
   constexpr auto Cart = ShellKind::Cartesian;
@@ -572,50 +571,93 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
   const int nsh_aux = m_auxbasis.size();
   assert(D.cols() == D.rows() && D.cols() == nbf_aux);
 
-  std::vector<Mat> Fmats(nthreads, Mat::Zero(nbf, nbf));
+  occ::parallel::thread_local_storage<Mat> F_local(Mat::Zero(nbf, nbf));
 
   // construct the 2-electron repulsion integrals engine
   auto shell2bf = m_aobasis.first_bf();
   auto shell2bf_D = m_auxbasis.first_bf();
 
-  auto lambda = [&](int thread_id) {
-    auto &F = Fmats[thread_id];
+  // Calculate total number of shell quartets for parallel_for
+  size_t total_quartets = 0;
+  for (int s1 = 0; s1 != nsh; ++s1) {
+    for (int s2 = 0; s2 <= s1; ++s2) {
+      for (int s3 = 0; s3 < nsh_aux; ++s3) {
+        int s4_begin = is_shell_diagonal ? s3 : 0;
+        int s4_fence = is_shell_diagonal ? s3 + 1 : nsh_aux;
+        total_quartets += (s4_fence - s4_begin);
+      }
+    }
+  }
+
+  occ::parallel::parallel_for(size_t(0), total_quartets, [&](size_t idx) {
+    auto &F = F_local.local();
     occ::qm::cint::Optimizer opt(m_env, Op::coulomb, 4);
     auto buffer = std::make_unique<double[]>(m_env.buffer_size_2e());
 
-    // loop over permutationally-unique set of shells
-    for (int s1 = 0, s1234 = 0; s1 != nsh; ++s1) {
-      int bf1_first = shell2bf[s1];  // first basis function in this shell
-      int n1 = m_aobasis[s1].size(); // number of basis functions in this shell
+    // Convert linear index back to s1,s2,s3,s4
+    size_t current_idx = 0;
+    bool found = false;
+    
+    for (int s1 = 0; s1 != nsh && !found; ++s1) {
+      int bf1_first = shell2bf[s1];
+      int n1 = m_aobasis[s1].size();
 
-      for (int s2 = 0; s2 <= s1; ++s2) {
+      for (int s2 = 0; s2 <= s1 && !found; ++s2) {
         int bf2_first = shell2bf[s2];
         int n2 = m_aobasis[s2].size();
 
-        for (int s3 = 0; s3 < nsh_aux; ++s3) {
+        for (int s3 = 0; s3 < nsh_aux && !found; ++s3) {
           int bf3_first = shell2bf_D[s3];
           int n3 = D_bs[s3].size();
 
           int s4_begin = is_shell_diagonal ? s3 : 0;
           int s4_fence = is_shell_diagonal ? s3 + 1 : nsh_aux;
 
-          for (int s4 = s4_begin; s4 != s4_fence; ++s4, ++s1234) {
-            if (s1234 % nthreads != thread_id)
-              continue;
+          for (int s4 = s4_begin; s4 != s4_fence; ++s4) {
+            if (current_idx == idx) {
+              found = true;
 
-            int bf4_first = shell2bf_D[s4];
-            int n4 = D_bs[s4].size();
+              int bf4_first = shell2bf_D[s4];
+              int n4 = D_bs[s4].size();
 
-            // compute the permutational degeneracy (i.e. #
-            // of equivalents) of the given shell set
-            double s12_deg = (s1 == s2) ? 1.0 : 2.0;
+              // compute the permutational degeneracy
+              double s12_deg = (s1 == s2) ? 1.0 : 2.0;
 
-            std::array<int, 4> dims;
-            if (s3 >= s4) {
-              double s34_deg = (s3 == s4) ? 1.0 : 2.0;
-              double s1234_deg = s12_deg * s34_deg;
-              // auto s1234_deg = s12_deg;
-              std::array<int, 4> idxs{s1, s2, s3 + nsh, s4 + nsh};
+              std::array<int, 4> dims;
+              if (s3 >= s4) {
+                double s34_deg = (s3 == s4) ? 1.0 : 2.0;
+                double s1234_deg = s12_deg * s34_deg;
+                std::array<int, 4> idxs{s1, s2, s3 + nsh, s4 + nsh};
+                if (spherical) {
+                  dims = m_env.four_center_helper<op, Sph>(
+                      idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
+                } else {
+                  dims = m_env.four_center_helper<op, Cart>(
+                      idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
+                }
+
+                if (dims[0] >= 0) {
+                  const auto *buf_1234 = buffer.get();
+                  for (auto f4 = 0, f1234 = 0; f4 != n4; ++f4) {
+                    const auto bf4 = f4 + bf4_first;
+                    for (auto f3 = 0; f3 != n3; ++f3) {
+                      const auto bf3 = f3 + bf3_first;
+                      for (auto f2 = 0; f2 != n2; ++f2) {
+                        const auto bf2 = f2 + bf2_first;
+                        for (auto f1 = 0; f1 != n1; ++f1, ++f1234) {
+                          const auto bf1 = f1 + bf1_first;
+
+                          const auto value = buf_1234[f1234];
+                          const auto value_scal_by_deg = value * s1234_deg;
+                          F(bf1, bf2) += 2.0 * D(bf3, bf4) * value_scal_by_deg;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+
+              std::array<int, 4> idxs{s1, s3 + nsh, s2, s4 + nsh};
               if (spherical) {
                 dims = m_env.four_center_helper<op, Sph>(
                     idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
@@ -623,73 +665,44 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
                 dims = m_env.four_center_helper<op, Cart>(
                     idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
               }
-
               if (dims[0] >= 0) {
-                const auto *buf_1234 = buffer.get();
-                for (auto f4 = 0, f1234 = 0; f4 != n4; ++f4) {
+                const auto *buf_1324 = buffer.get();
+
+                for (auto f4 = 0, f1324 = 0; f4 != n4; ++f4) {
                   const auto bf4 = f4 + bf4_first;
-                  for (auto f3 = 0; f3 != n3; ++f3) {
-                    const auto bf3 = f3 + bf3_first;
-                    for (auto f2 = 0; f2 != n2; ++f2) {
-                      const auto bf2 = f2 + bf2_first;
-                      for (auto f1 = 0; f1 != n1; ++f1, ++f1234) {
+                  for (auto f2 = 0; f2 != n2; ++f2) {
+                    const auto bf2 = f2 + bf2_first;
+                    for (auto f3 = 0; f3 != n3; ++f3) {
+                      const auto bf3 = f3 + bf3_first;
+                      for (auto f1 = 0; f1 != n1; ++f1, ++f1324) {
                         const auto bf1 = f1 + bf1_first;
 
-                        const auto value = buf_1234[f1234];
-                        const auto value_scal_by_deg = value * s1234_deg;
-                        F(bf1, bf2) += 2.0 * D(bf3, bf4) * value_scal_by_deg;
+                        const auto value = buf_1324[f1324];
+                        const auto value_scal_by_deg = value * s12_deg;
+                        F(bf1, bf2) -= D(bf3, bf4) * value_scal_by_deg;
                       }
                     }
                   }
                 }
               }
+              break;
             }
-
-            std::array<int, 4> idxs{s1, s3 + nsh, s2, s4 + nsh};
-            if (spherical) {
-              dims = m_env.four_center_helper<op, Sph>(
-                  idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
-            } else {
-              dims = m_env.four_center_helper<op, Cart>(
-                  idxs, opt.optimizer_ptr(), buffer.get(), nullptr);
-            }
-            if (dims[0] < 0)
-              continue;
-
-            const auto *buf_1324 = buffer.get();
-
-            for (auto f4 = 0, f1324 = 0; f4 != n4; ++f4) {
-              const auto bf4 = f4 + bf4_first;
-              for (auto f2 = 0; f2 != n2; ++f2) {
-                const auto bf2 = f2 + bf2_first;
-                for (auto f3 = 0; f3 != n3; ++f3) {
-                  const auto bf3 = f3 + bf3_first;
-                  for (auto f1 = 0; f1 != n1; ++f1, ++f1324) {
-                    const auto bf1 = f1 + bf1_first;
-
-                    const auto value = buf_1324[f1324];
-                    const auto value_scal_by_deg = value * s12_deg;
-                    F(bf1, bf2) -= D(bf3, bf4) * value_scal_by_deg;
-                  }
-                }
-              }
-            }
+            current_idx++;
           }
         }
       }
     }
-  }; // thread lambda
+  });
 
-  occ::parallel::parallel_do(lambda);
-
-  // accumulate contributions from all threads
-  for (size_t i = 1; i != nthreads; ++i) {
-    Fmats[0] += Fmats[i];
+  // Reduce results from all threads
+  Mat F_result = Mat::Zero(nbf, nbf);
+  for (const auto &F_thread : F_local) {
+    F_result += F_thread;
   }
 
   clear_auxiliary_basis();
   // symmetrize the result and return
-  return 0.5 * (Fmats[0] + Fmats[0].transpose());
+  return 0.5 * (F_result + F_result.transpose());
 }
 
 Mat IntegralEngine::schwarz() const {
@@ -928,20 +941,21 @@ IntegralEngine::four_center_integrals_tensor(const Mat &Schwarz) const {
     }
   };
 
-  // Execute parallel integral computation
-  auto lambda = [&](int thread_id) {
-    if (is_spherical()) {
-      detail::evaluate_four_center<op, Shell::Kind::Spherical>(
-          f, m_env, m_aobasis, m_shellpairs, Schwarz, Mat(), m_precision,
-          thread_id);
-    } else {
-      detail::evaluate_four_center<op, Shell::Kind::Cartesian>(
-          f, m_env, m_aobasis, m_shellpairs, Schwarz, Mat(), m_precision,
-          thread_id);
-    }
-  };
-
-  occ::parallel::parallel_do_timed(lambda, occ::timing::category::ints4c2e);
+  // Execute parallel integral computation using TBB
+  occ::timing::start(occ::timing::category::ints4c2e);
+  
+  // Compute density norm matrix for screening (empty for now)
+  Mat Dnorm;
+  
+  if (is_spherical()) {
+    detail::evaluate_four_center_tbb<op, Shell::Kind::Spherical>(
+        f, m_env, m_aobasis, m_shellpairs, Dnorm, Schwarz, m_precision);
+  } else {
+    detail::evaluate_four_center_tbb<op, Shell::Kind::Cartesian>(
+        f, m_env, m_aobasis, m_shellpairs, Dnorm, Schwarz, m_precision);
+  }
+  
+  occ::timing::stop(occ::timing::category::ints4c2e);
 
   occ::log::info("AO integral tensor computation completed");
 

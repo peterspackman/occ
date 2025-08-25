@@ -285,7 +285,6 @@ const Mat3N &XDM::forces(const occ::qm::MolecularOrbitals &mo) {
 }
 
 void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
-  int nthreads = occ::parallel::get_num_threads();
   if (m_density_matrix.size() != 0 &&
       occ::util::all_close(mo.D, m_density_matrix)) {
     return;
@@ -306,12 +305,14 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
 
   // constexpr double density_tolerance = 1e-10;
   constexpr int max_derivative{2};
-  std::vector<Vec> tl_hirshfeld_charges(nthreads, Vec::Zero(num_atoms));
-  std::vector<Vec> tl_volumes(nthreads, Vec::Zero(num_atoms));
-  std::vector<Vec> tl_free_volumes(nthreads, Vec::Zero(num_atoms));
-  std::vector<Mat> tl_moments(nthreads, Mat::Zero(3, num_atoms));
-  std::vector<double> tl_num_electrons(nthreads, 0.0);
-  std::vector<double> tl_num_electrons_promol(nthreads, 0.0);
+  
+  // Use TBB-based thread-local storage
+  occ::parallel::thread_local_storage<Vec> tl_hirshfeld_charges(Vec::Zero(num_atoms));
+  occ::parallel::thread_local_storage<Vec> tl_volumes(Vec::Zero(num_atoms));
+  occ::parallel::thread_local_storage<Vec> tl_free_volumes(Vec::Zero(num_atoms));
+  occ::parallel::thread_local_storage<Mat> tl_moments(Mat::Zero(3, num_atoms));
+  occ::parallel::thread_local_storage<double> tl_num_electrons(0.0);
+  occ::parallel::thread_local_storage<double> tl_num_electrons_promol(0.0);
 
   for (const auto &atom_grid : m_atom_grids) {
     const auto &atom_pts = atom_grid.points;
@@ -319,64 +320,69 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
     const size_t npt_total = atom_pts.cols();
     const size_t num_blocks = npt_total / BLOCKSIZE + 1;
 
-    auto lambda = [&](int thread_id) {
-      occ::gto::GTOValues gto_vals;
-      gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, 2);
-      auto &hirshfeld_charges = tl_hirshfeld_charges[thread_id];
-      auto &volume = tl_volumes[thread_id];
-      auto &volume_free = tl_free_volumes[thread_id];
-      auto &moments = tl_moments[thread_id];
-      auto &num_e = tl_num_electrons[thread_id];
-      auto &num_e_promol = tl_num_electrons_promol[thread_id];
-      for (size_t block = 0; block < num_blocks; block++) {
-        if (block % nthreads != thread_id)
-          continue;
-        Eigen::Index l = block * BLOCKSIZE;
-        Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
-        Eigen::Index npt = u - l;
-        if (npt <= 0)
-          continue;
-        Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
-        Mat r = Mat::Zero(npt, num_atoms);
-        Mat rho = Mat::Zero(num_rows_factor * npt,
-                            occ::density::num_components(max_derivative));
-        const auto &pts_block = atom_pts.middleCols(l, npt);
-        const auto &weights_block = atom_weights.segment(l, npt);
-        occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
-        if (unrestricted) {
-          occ::density::evaluate_density<
-              max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
-              mo.D, gto_vals, rho);
-        } else {
-          occ::density::evaluate_density<max_derivative,
-                                         occ::qm::SpinorbitalKind::Restricted>(
-              mo.D, gto_vals, rho);
-        }
-
-        for (int i = 0; i < num_atoms; i++) {
-          const auto &sb = m_slater_basis[i];
-          occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
-          r.col(i) = (pts_block.colwise() - pos).colwise().norm();
-          const auto &ria = r.col(i).array();
-          // currently the hirsfheld weights array just holds the free
-          // atom density
-          hirshfeld_weights.col(i) = sb.rho(r.col(i));
-          volume_free(i) += (hirshfeld_weights.col(i).array() *
-                             weights_block.array() * ria * ria * ria)
-                                .sum();
-        }
-        if (unrestricted) {
-          impl::xdm_moment_kernel_unrestricted(
-              r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
-              volume, moments, num_e, num_e_promol);
-        } else {
-          impl::xdm_moment_kernel_restricted(
-              r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
-              volume, moments, num_e, num_e_promol);
-        }
+    // Use TBB-based thread-local storage for temporary variables
+    occ::parallel::thread_local_storage<occ::gto::GTOValues> gto_vals_local(
+      [this]() {
+        occ::gto::GTOValues gto_vals;
+        gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, 2);
+        return gto_vals;
       }
-    };
-    occ::parallel::parallel_do(lambda);
+    );
+
+    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
+      auto &gto_vals = gto_vals_local.local();
+      auto &hirshfeld_charges = tl_hirshfeld_charges.local();
+      auto &volume = tl_volumes.local();
+      auto &volume_free = tl_free_volumes.local();
+      auto &moments = tl_moments.local();
+      auto &num_e = tl_num_electrons.local();
+      auto &num_e_promol = tl_num_electrons_promol.local();
+      
+      Eigen::Index l = block * BLOCKSIZE;
+      Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+      Eigen::Index npt = u - l;
+      if (npt <= 0)
+        return;
+        
+      Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
+      Mat r = Mat::Zero(npt, num_atoms);
+      Mat rho = Mat::Zero(num_rows_factor * npt,
+                          occ::density::num_components(max_derivative));
+      const auto &pts_block = atom_pts.middleCols(l, npt);
+      const auto &weights_block = atom_weights.segment(l, npt);
+      occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
+      if (unrestricted) {
+        occ::density::evaluate_density<
+            max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
+            mo.D, gto_vals, rho);
+      } else {
+        occ::density::evaluate_density<max_derivative,
+                                       occ::qm::SpinorbitalKind::Restricted>(
+            mo.D, gto_vals, rho);
+      }
+
+      for (int i = 0; i < num_atoms; i++) {
+        const auto &sb = m_slater_basis[i];
+        occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
+        r.col(i) = (pts_block.colwise() - pos).colwise().norm();
+        const auto &ria = r.col(i).array();
+        // currently the hirsfheld weights array just holds the free
+        // atom density
+        hirshfeld_weights.col(i) = sb.rho(r.col(i));
+        volume_free(i) += (hirshfeld_weights.col(i).array() *
+                           weights_block.array() * ria * ria * ria)
+                              .sum();
+      }
+      if (unrestricted) {
+        impl::xdm_moment_kernel_unrestricted(
+            r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
+            volume, moments, num_e, num_e_promol);
+      } else {
+        impl::xdm_moment_kernel_restricted(
+            r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
+            volume, moments, num_e, num_e_promol);
+      }
+    });
   }
 
   m_hirshfeld_charges = Vec::Zero(num_atoms);
@@ -393,13 +399,24 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
   m_volume = Vec::Zero(num_atoms);
   m_volume_free = Vec::Zero(num_atoms);
 
-  for (size_t i = 0; i < nthreads; i++) {
-    m_hirshfeld_charges += tl_hirshfeld_charges[i];
-    m_volume += tl_volumes[i];
-    m_volume_free += tl_free_volumes[i];
-    m_moments += tl_moments[i];
-    num_electrons += tl_num_electrons[i];
-    num_electrons_promol += tl_num_electrons_promol[i];
+  // Reduce results from thread-local storage
+  for (const auto &charges : tl_hirshfeld_charges) {
+    m_hirshfeld_charges += charges;
+  }
+  for (const auto &vol : tl_volumes) {
+    m_volume += vol;
+  }
+  for (const auto &vol_free : tl_free_volumes) {
+    m_volume_free += vol_free;
+  }
+  for (const auto &mom : tl_moments) {
+    m_moments += mom;
+  }
+  for (const auto &ne : tl_num_electrons) {
+    num_electrons += ne;
+  }
+  for (const auto &ne_promol : tl_num_electrons_promol) {
+    num_electrons_promol += ne_promol;
   }
 
   occ::log::debug("Num electrons {:20.12f}, promolecule {:20.12f}\n",

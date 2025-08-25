@@ -16,6 +16,12 @@ void HartreeFock::set_density_fitting_basis(
       atoms(), m_engine.aobasis().shells(), dfbasis.shells());
 }
 
+void HartreeFock::set_density_fitting_policy(IntegralEngineDF::Policy policy) {
+  if (m_df_engine) {
+    m_df_engine->set_integral_policy(policy);
+  }
+}
+
 HartreeFock::HartreeFock(const AOBasis &basis)
     : SCFMethodBase(basis.atoms()), m_engine(basis) {
 

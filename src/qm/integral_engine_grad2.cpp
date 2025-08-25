@@ -28,15 +28,11 @@ MatSix one_electron_operator_hess_kernel(const AOBasis &basis, IntEnv &env,
   result.xz = Mat::Zero(nbf, nbf);
   result.yz = Mat::Zero(nbf, nbf);
 
-  std::vector<MatSix> results;
-  results.push_back(result);
+  // Use TBB thread-local storage instead of thread-indexed arrays
+  occ::parallel::thread_local_storage<MatSix> tl_results([&result]() { return result; });
 
-  for (size_t i = 1; i < nthreads; i++) {
-    results.push_back(results[0]);
-  }
-
-  auto f = [&results](const Result &args) {
-    auto &result = results[args.thread];
+  auto f = [&tl_results](const Result &args) {
+    auto &local_result = tl_results.local();
     const auto num_elements = args.dims[0] * args.dims[1];
     
     // MatSix has 6 components: xx, yy, zz, xy, xz, yz
@@ -47,33 +43,33 @@ MatSix one_electron_operator_hess_kernel(const AOBasis &basis, IntEnv &env,
         tmpxz(args.buffer + num_elements * 4, args.dims[0], args.dims[1]),
         tmpyz(args.buffer + num_elements * 5, args.dims[0], args.dims[1]);
 
-    result.xx.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpxx;
-    result.yy.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpyy;
-    result.zz.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpzz;
-    result.xy.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpxy;
-    result.xz.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpxz;
-    result.yz.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpyz;
+    local_result.xx.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpxx;
+    local_result.yy.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpyy;
+    local_result.zz.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpzz;
+    local_result.xy.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpxy;
+    local_result.xz.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpxz;
+    local_result.yz.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpyz;
   };
 
-  auto lambda = [&](int thread_id) {
+  occ::parallel::parallel_for(size_t(0), size_t(nthreads), [&](size_t thread_id) {
     if (shellpairs.size() > 0) {
       detail::evaluate_two_center_with_shellpairs_hess<op, kind>(
-          f, env, basis, shellpairs, thread_id);
+          f, env, basis, shellpairs, int(thread_id));
     } else {
-      detail::evaluate_two_center_hess<op, kind>(f, env, basis, thread_id);
+      detail::evaluate_two_center_hess<op, kind>(f, env, basis, int(thread_id));
     }
-  };
-  occ::parallel::parallel_do(lambda);
+  });
 
-  for (auto i = 1; i < nthreads; ++i) {
-    results[0].xx.noalias() += results[i].xx;
-    results[0].yy.noalias() += results[i].yy;
-    results[0].zz.noalias() += results[i].zz;
-    results[0].xy.noalias() += results[i].xy;
-    results[0].xz.noalias() += results[i].xz;
-    results[0].yz.noalias() += results[i].yz;
+  // Reduce thread-local results
+  for (const auto &local_result : tl_results) {
+    result.xx += local_result.xx;
+    result.yy += local_result.yy;
+    result.zz += local_result.zz;
+    result.xy += local_result.xy;
+    result.xz += local_result.xz;
+    result.yz += local_result.yz;
   }
-  return results[0];
+  return result;
 }
 
 MatSix
@@ -162,31 +158,37 @@ coulomb_kernel_hess(cint::IntegralEnvironment &env, const AOBasis &basis,
 
   const auto nbf = basis.nbf();
 
-  auto results = detail::initialize_result_matrices_hess<sk>(nbf, nthreads);
+  // Use TBB thread-local storage instead of thread-indexed arrays
+  auto zero_result = detail::initialize_result_matrices_hess<sk>(nbf, 1)[0];
+  occ::parallel::thread_local_storage<MatSix> tl_results([&zero_result]() { return zero_result; });
+  
   Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
 
   const auto &D = mo.D;
-  auto f = [&D, &results](const Result &args) {
-    auto &dest = results[args.thread];
+  auto f = [&D, &tl_results](const Result &args) {
+    auto &dest = tl_results.local();
     detail::four_center_inner_loop_hess(detail::delegate_j_hess<sk>, args, D, dest);
   };
-  auto lambda = [&](int thread_id) {
+  
+  occ::timing::start(occ::timing::category::fock);
+  occ::parallel::parallel_for(size_t(0), size_t(nthreads), [&](size_t thread_id) {
     detail::evaluate_four_center_hess<op, kind>(
-        f, env, basis, shellpairs, Dnorm, Schwarz, precision, thread_id);
-  };
-  occ::parallel::parallel_do_timed(lambda, occ::timing::category::fock);
+        f, env, basis, shellpairs, Dnorm, Schwarz, precision, int(thread_id));
+  });
+  occ::timing::stop(occ::timing::category::fock);
 
-  for (size_t i = 1; i < nthreads; i++) {
-    results[0].xx.noalias() += results[i].xx;
-    results[0].yy.noalias() += results[i].yy;
-    results[0].zz.noalias() += results[i].zz;
-    results[0].xy.noalias() += results[i].xy;
-    results[0].xz.noalias() += results[i].xz;
-    results[0].yz.noalias() += results[i].yz;
+  // Reduce thread-local results
+  for (const auto &local_result : tl_results) {
+    zero_result.xx += local_result.xx;
+    zero_result.yy += local_result.yy;
+    zero_result.zz += local_result.zz;
+    zero_result.xy += local_result.xy;
+    zero_result.xz += local_result.xz;
+    zero_result.yz += local_result.yz;
   }
 
-  results[0].scale_by(-2.0);
-  return results[0];
+  zero_result.scale_by(-2.0);
+  return zero_result;
 }
 
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
@@ -201,32 +203,38 @@ exchange_kernel_hess(cint::IntegralEnvironment &env, const AOBasis &basis,
 
   const auto nbf = basis.nbf();
 
-  auto results = detail::initialize_result_matrices_hess<sk>(nbf, nthreads);
+  // Use TBB thread-local storage instead of thread-indexed arrays
+  auto zero_result = detail::initialize_result_matrices_hess<sk>(nbf, 1)[0];
+  occ::parallel::thread_local_storage<MatSix> tl_results([&zero_result]() { return zero_result; });
+  
   Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
 
   const auto &D = mo.D;
-  auto f = [&D, &results](const Result &args) {
-    auto &dest = results[args.thread];
+  auto f = [&D, &tl_results](const Result &args) {
+    auto &dest = tl_results.local();
     detail::four_center_inner_loop_hess(detail::delegate_k_hess<sk>, args, D, dest);
   };
-  auto lambda = [&](int thread_id) {
+  
+  occ::timing::start(occ::timing::category::fock);
+  occ::parallel::parallel_for(size_t(0), size_t(nthreads), [&](size_t thread_id) {
     detail::evaluate_four_center_hess<op, kind>(
-        f, env, basis, shellpairs, Dnorm, Schwarz, precision, thread_id);
-  };
-  occ::parallel::parallel_do_timed(lambda, occ::timing::category::fock);
+        f, env, basis, shellpairs, Dnorm, Schwarz, precision, int(thread_id));
+  });
+  occ::timing::stop(occ::timing::category::fock);
 
-  for (size_t i = 1; i < nthreads; i++) {
-    results[0].xx.noalias() += results[i].xx;
-    results[0].yy.noalias() += results[i].yy;
-    results[0].zz.noalias() += results[i].zz;
-    results[0].xy.noalias() += results[i].xy;
-    results[0].xz.noalias() += results[i].xz;
-    results[0].yz.noalias() += results[i].yz;
+  // Reduce thread-local results
+  for (const auto &local_result : tl_results) {
+    zero_result.xx += local_result.xx;
+    zero_result.yy += local_result.yy;
+    zero_result.zz += local_result.zz;
+    zero_result.xy += local_result.xy;
+    zero_result.xz += local_result.xz;
+    zero_result.yz += local_result.yz;
   }
 
   // Exchange has positive sign (opposite to Coulomb)
-  results[0].scale_by(2.0);
-  return results[0];
+  zero_result.scale_by(2.0);
+  return zero_result;
 }
 
 MatSix IntegralEngine::exchange_hess(SpinorbitalKind sk,

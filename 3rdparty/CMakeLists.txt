@@ -12,6 +12,22 @@ CPMAddPackage(
     VERSION "1.x"
 )
 
+if(NOT "${USE_SYSTEM_TBB}")
+
+set(TBB_OPTIONS "")
+list(APPEND TBB_OPTIONS "TBB_TEST OFF")
+list(APPEND TBB_OPTIONS "TBB_STRICT OFF")
+list(APPEND TBB_OPTIONS "TBB_DISABLE_HWLOC_AUTOMATIC_SEARCH ON")
+list(APPEND TBB_OPTIONS "BUILD_SHARED_LIBS OFF")
+
+CPMAddPackage(
+    NAME oneTBB
+    GITHUB_REPOSITORY "uxlfoundation/oneTBB"
+    VERSION "2022.2.0"
+    OPTIONS ${TBB_OPTIONS}
+)
+endif()
+
 CPMAddPackage(
     NAME unordered_dense
     GITHUB_REPOSITORY "martinus/unordered_dense"

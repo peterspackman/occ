@@ -1,5 +1,6 @@
 #pragma once
 #include "kernel_traits.h"
+#include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/integral_engine.h>
 
@@ -182,6 +183,91 @@ four_center_inner_loop(Func &store,
       }
     }
   }
+}
+
+template <Op op, ShellKind kind, typename Lambda>
+void evaluate_four_center_tbb(Lambda &f, IntEnv &env, const AOBasis &basis,
+                              const ShellPairList &shellpairs,
+                              const Mat &Dnorm = Mat(),
+                              const Mat &Schwarz = Mat(),
+                              double precision = 1e-12) {
+  using Result = IntegralEngine::IntegralResult<4>;
+  
+  // Build a list of shell quartets to process - following original gradient kernel pattern
+  struct ShellQuartet {
+    size_t p, q, r, s;
+    bool swap_pq; // Whether this represents the QP|RS case
+  };
+  
+  std::vector<ShellQuartet> quartets;
+  const auto &first_bf = basis.first_bf();
+  const auto do_schwarz_screen = Schwarz.cols() != 0 && Schwarz.rows() != 0;
+  
+  // First pass: collect all shell quartets that pass screening
+  // Follow the exact pattern from the original gradient kernel
+  for (size_t p = 0; p < basis.size(); p++) {
+    for (const auto q : shellpairs[p]) {
+      const double norm_pq = do_schwarz_screen ? Dnorm(p, q) : 0.0;
+      for (size_t r = 0; r < basis.size(); r++) {
+        for (const auto s : shellpairs[r]) {
+          const double norm_pqr =
+              do_schwarz_screen ? max_of(Dnorm(p, r), Dnorm(q, r), norm_pq)
+                                : 0.0;
+          const double norm_pqrs =
+              do_schwarz_screen
+                  ? max_of(Dnorm(p, s), Dnorm(q, s), Dnorm(r, s), norm_pqr)
+                  : 0.0;
+          if (do_schwarz_screen &&
+              norm_pqrs * Schwarz(p, q) * Schwarz(r, s) < precision)
+            continue;
+          
+          // Add PQ|RS case
+          quartets.push_back({p, q, r, s, false});
+          
+          // Add QP|RS case if p != q
+          if (p != q) {
+            quartets.push_back({q, p, r, s, true});
+          }
+        }
+      }
+    }
+  }
+  
+  // Thread-local storage for optimizer and buffer (for gradients)
+  occ::parallel::thread_local_storage<occ::qm::cint::Optimizer> opt_local(
+    [&env]() { return occ::qm::cint::Optimizer(env, Op::coulomb, 4, 1); }
+  );
+  
+  occ::parallel::thread_local_storage<std::unique_ptr<double[]>> buffer_local(
+    [&env]() { return std::make_unique<double[]>(env.buffer_size_2e(1)); }
+  );
+  
+  // Process quartets in parallel with dynamic load balancing
+  occ::parallel::parallel_for(size_t(0), quartets.size(),
+    [&](size_t idx) {
+      auto &opt = opt_local.local();
+      auto &buffer = buffer_local.local();
+      
+      const auto &quartet = quartets[idx];
+      std::array<int, 4> shell_idx = {
+        static_cast<int>(quartet.p), static_cast<int>(quartet.q),
+        static_cast<int>(quartet.r), static_cast<int>(quartet.s)
+      };
+      std::array<int, 4> bf = {
+        first_bf[quartet.p], first_bf[quartet.q],
+        first_bf[quartet.r], first_bf[quartet.s]
+      };
+      
+      Result args{
+        0, shell_idx, bf,
+        env.four_center_helper_grad<Op::coulomb, kind>(
+            shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr),
+        buffer.get()
+      };
+      
+      if (args.dims[0] > -1)
+        f(args);
+    });
 }
 
 } // namespace occ::qm::detail

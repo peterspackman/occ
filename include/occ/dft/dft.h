@@ -45,6 +45,10 @@ public:
     m_hf.set_density_fitting_basis(density_fitting_basis);
   }
 
+  inline void set_density_fitting_policy(qm::IntegralEngineDF::Policy policy) {
+    m_hf.set_density_fitting_policy(policy);
+  }
+
   inline void set_precision(double precision) { m_hf.set_precision(precision); }
   
   inline double integral_precision() const { return m_hf.integral_precision(); }
@@ -163,10 +167,7 @@ public:
     double total_density_a{0.0}, total_density_b{0.0};
     const Mat D2 = 2 * D;
 
-    std::vector<Mat> Kt(occ::parallel::nthreads, Mat::Zero(D.rows(), D.cols()));
-    std::vector<double> energies(occ::parallel::nthreads, 0.0);
-    std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
-    std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
+    // Use TBB thread-local storage for better work-stealing performance
 
     const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
                             ? m_method.functionals_polarized
@@ -189,18 +190,22 @@ public:
     occ::log::debug("Processing {} grid points in {} blocks", npt_total,
                     num_blocks);
 
-    auto lambda = [&](int thread_id) {
-      for (size_t block = 0; block < num_blocks; block++) {
-        if (block % nthreads != thread_id)
-          continue;
+    // Use TBB for dynamic load balancing
+    occ::parallel::thread_local_storage<Mat> Kt_local(
+        [&D]() { return Mat::Zero(D.rows(), D.cols()); }
+    );
+    occ::parallel::thread_local_storage<double> energies_local{0.0};
+    occ::parallel::thread_local_storage<double> alpha_densities_local{0.0};
+    occ::parallel::thread_local_storage<double> beta_densities_local{0.0};
 
+    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
         Eigen::Index l = block * m_blocksize;
         Eigen::Index u =
             std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
         Eigen::Index npt = u - l;
 
         if (npt <= 0)
-          continue;
+          return;
 
         const auto &pts_block = all_points.middleCols(l, npt);
         const auto &weights_block = all_weights.segment(l, npt);
@@ -208,22 +213,30 @@ public:
         auto gto_vals =
             occ::gto::evaluate_basis(basis, pts_block, derivative_order);
 
+        auto &local_K = Kt_local.local();
+        auto &local_energy = energies_local.local();
+        auto &local_alpha = alpha_densities_local.local();
+        auto &local_beta = beta_densities_local.local();
+
         kernels::process_grid_block<derivative_order, spinorbital_kind>(
-            D2, gto_vals, pts_block, weights_block, funcs, Kt[thread_id],
-            energies[thread_id], alpha_densities[thread_id],
-            beta_densities[thread_id], m_density_threshold);
-      }
-    };
+            D2, gto_vals, pts_block, weights_block, funcs, local_K,
+            local_energy, local_alpha, local_beta, m_density_threshold);
+    });
 
-    occ::parallel::parallel_do(lambda);
-    occ::timing::stop(occ::timing::category::dft_xc);
-
-    for (size_t i = 0; i < nthreads; i++) {
-      K += Kt[i];
-      m_exc_dft += energies[i];
-      total_density_a += alpha_densities[i];
-      total_density_b += beta_densities[i];
+    // Combine results from all threads
+    for (const auto &local_K : Kt_local) {
+        K += local_K;
     }
+    for (const auto &local_energy : energies_local) {
+        m_exc_dft += local_energy;
+    }
+    for (const auto &local_alpha : alpha_densities_local) {
+        total_density_a += local_alpha;
+    }
+    for (const auto &local_beta : beta_densities_local) {
+        total_density_b += local_beta;
+    }
+    occ::timing::stop(occ::timing::category::dft_xc);
 
     occ::log::debug("Total density: alpha = {} beta = {}", total_density_a,
                     total_density_b);
@@ -442,7 +455,8 @@ private:
 
     Mat3N gradient = Mat3N::Zero(3, natoms);
 
-    std::vector<Mat3N> gradients_t(nthreads, Mat3N::Zero(3, natoms));
+    // Use TBB thread-local storage for better work-stealing performance
+    occ::parallel::thread_local_storage<Mat3N> gradients_local(Mat3N::Zero(3, natoms));
 
     const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
                             ? m_method.functionals_polarized
@@ -466,18 +480,15 @@ private:
         "Processing {} grid points in {} blocks for gradient calculation",
         npt_total, num_blocks);
 
-    auto lambda = [&](int thread_id) {
-      for (size_t block = 0; block < num_blocks; block++) {
-        if (block % nthreads != thread_id)
-          continue;
-
+    // Use TBB parallel_for for better load balancing
+    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
         Eigen::Index l = block * m_blocksize;
         Eigen::Index u =
             std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
         Eigen::Index npt = u - l;
 
         if (npt <= 0)
-          continue;
+          return;
 
         const auto &pts_block = all_points.middleCols(l, npt);
         const auto &weights_block = all_weights.segment(l, npt);
@@ -485,18 +496,17 @@ private:
         auto gto_vals =
             occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
 
+        auto &local_gradient = gradients_local.local();
+
         kernels::process_grid_block_gradient<derivative_order,
                                              spinorbital_kind>(
             D, gto_vals, pts_block, weights_block, funcs,
-            gradients_t[thread_id], m_density_threshold, basis);
-      }
-    };
-
-    occ::parallel::parallel_do(lambda);
+            local_gradient, m_density_threshold, basis);
+    });
 
     // Combine results from all threads
-    for (size_t i = 0; i < nthreads; i++) {
-      gradient += gradients_t[i];
+    for (const auto &local_gradient : gradients_local) {
+      gradient += local_gradient;
     }
 
     occ::timing::stop(occ::timing::category::dft_gradient);

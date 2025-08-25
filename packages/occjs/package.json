@@ -1,6 +1,6 @@
 {
   "name": "@peterspackman/occjs",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library",
   "type": "module",
   "main": "dist/index.js",

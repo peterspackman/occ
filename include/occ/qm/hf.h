@@ -31,6 +31,7 @@ public:
   }
 
   void set_density_fitting_basis(const std::string &);
+  void set_density_fitting_policy(IntegralEngineDF::Policy policy);
   
   /**
    * @brief Create a new HartreeFock instance with the same settings but different basis

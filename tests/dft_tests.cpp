@@ -572,7 +572,7 @@ TEST_CASE("Hirshfeld multipoles for water", "[hirshfeld]") {
   for (size_t i = 0; i < multipoles.size(); i++) {
     for (size_t j = 0; j < multipoles[i].components.size(); j++) {
       REQUIRE(multipoles[i].components[j] ==
-              Approx(multipoles2[i].components[j]));
+              Approx(multipoles2[i].components[j]).epsilon(1e-12).margin(1e-12));
     }
   }
 

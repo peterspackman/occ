@@ -160,9 +160,9 @@ void VoronoiPartition::compute_voronoi_weights(
   constexpr int max_derivative{1}; // Only need density, not derivatives
 
   // Thread-local storage for parallel accumulation
-  std::vector<Vec> tl_voronoi_charges(nthreads, Vec::Zero(num_atoms));
-  std::vector<Vec> tl_atom_volumes(nthreads, Vec::Zero(num_atoms));
-  std::vector<double> tl_num_electrons(nthreads, 0.0);
+  occ::parallel::thread_local_storage<Vec> tl_voronoi_charges(Vec::Zero(num_atoms));
+  occ::parallel::thread_local_storage<Vec> tl_atom_volumes(Vec::Zero(num_atoms));  
+  occ::parallel::thread_local_storage<double> tl_num_electrons(0.0);
 
   // Convert atom positions to Bohr for distance calculations
   Mat3N atom_positions(3, num_atoms);
@@ -178,74 +178,67 @@ void VoronoiPartition::compute_voronoi_weights(
     const size_t npt_total = atom_pts.cols();
     const size_t num_blocks = npt_total / BLOCKSIZE + 1;
 
-    auto lambda = [&](int thread_id) {
+    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
       occ::gto::GTOValues gto_vals;
       gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, max_derivative);
-      auto &voronoi_charges = tl_voronoi_charges[thread_id];
-      auto &atom_volumes = tl_atom_volumes[thread_id];
-      auto &num_e = tl_num_electrons[thread_id];
+      auto &voronoi_charges = tl_voronoi_charges.local();
+      auto &atom_volumes = tl_atom_volumes.local();
+      auto &num_e = tl_num_electrons.local();
 
-      for (size_t block = 0; block < num_blocks; block++) {
-        if (block % nthreads != thread_id)
-          continue;
+      Eigen::Index l = block * BLOCKSIZE;
+      Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+      Eigen::Index npt = u - l;
+      if (npt <= 0)
+        return;
 
-        Eigen::Index l = block * BLOCKSIZE;
-        Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
-        Eigen::Index npt = u - l;
-        if (npt <= 0)
-          continue;
+      Mat voronoi_weights = Mat::Zero(npt, num_atoms);
+      Mat r = Mat::Zero(npt, num_atoms);
+      Mat rho = Mat::Zero(num_rows_factor * npt,
+                          occ::density::num_components(max_derivative));
 
-        Mat voronoi_weights = Mat::Zero(npt, num_atoms);
-        Mat r = Mat::Zero(npt, num_atoms);
-        Mat rho = Mat::Zero(num_rows_factor * npt,
-                            occ::density::num_components(max_derivative));
+      const auto &pts_block = atom_pts.middleCols(l, npt);
+      const auto &weights_block = atom_weights.segment(l, npt);
 
-        const auto &pts_block = atom_pts.middleCols(l, npt);
-        const auto &weights_block = atom_weights.segment(l, npt);
+      occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
 
-        occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
+      if (unrestricted) {
+        occ::density::evaluate_density<
+            max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
+            mo.D, gto_vals, rho);
+      } else {
+        occ::density::evaluate_density<max_derivative,
+                                       occ::qm::SpinorbitalKind::Restricted>(
+            mo.D, gto_vals, rho);
+      }
 
-        if (unrestricted) {
-          occ::density::evaluate_density<
-              max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
-              mo.D, gto_vals, rho);
-        } else {
-          occ::density::evaluate_density<max_derivative,
-                                         occ::qm::SpinorbitalKind::Restricted>(
-              mo.D, gto_vals, rho);
-        }
+      // Compute Voronoi weights for each grid point
+      Eigen::VectorXi atomic_numbers(num_atoms);
+      for (size_t i = 0; i < num_atoms; i++) {
+        atomic_numbers(i) = atoms[i].atomic_number;
+      }
+      for (int j = 0; j < npt; j++) {
+        Vec3 point = pts_block.col(j);
+        Vec weights =
+            compute_voronoi_weights(point, atom_positions, atomic_numbers);
+        voronoi_weights.row(j) = weights.transpose();
+      }
 
-        // Compute Voronoi weights for each grid point
-        Eigen::VectorXi atomic_numbers(num_atoms);
-        for (size_t i = 0; i < num_atoms; i++) {
-          atomic_numbers(i) = atoms[i].atomic_number;
-        }
-        for (int j = 0; j < npt; j++) {
-          Vec3 point = pts_block.col(j);
-          Vec weights =
-              compute_voronoi_weights(point, atom_positions, atomic_numbers);
-          voronoi_weights.row(j) = weights.transpose();
-        }
+      // Compute distances for volume calculation
+      for (int i = 0; i < num_atoms; i++) {
+        Vec3 pos = atom_positions.col(i);
+        r.col(i) = (pts_block.colwise() - pos).colwise().norm();
+      }
 
-        // Compute distances for volume calculation
-        for (int i = 0; i < num_atoms; i++) {
-          Vec3 pos = atom_positions.col(i);
-          r.col(i) = (pts_block.colwise() - pos).colwise().norm();
-        }
-
-        if (unrestricted) {
-          impl::voronoi_kernel_unrestricted(r, rho, weights_block,
-                                            voronoi_weights, voronoi_charges,
-                                            atom_volumes, num_e);
-        } else {
-          impl::voronoi_kernel_restricted(r, rho, weights_block,
+      if (unrestricted) {
+        impl::voronoi_kernel_unrestricted(r, rho, weights_block,
                                           voronoi_weights, voronoi_charges,
                                           atom_volumes, num_e);
-        }
+      } else {
+        impl::voronoi_kernel_restricted(r, rho, weights_block,
+                                        voronoi_weights, voronoi_charges,
+                                        atom_volumes, num_e);
       }
-    };
-
-    occ::parallel::parallel_do(lambda);
+    });
   }
 
   // Initialize charges with nuclear charges
@@ -261,10 +254,17 @@ void VoronoiPartition::compute_voronoi_weights(
   double num_electrons{0.0};
   m_atom_volumes = Vec::Zero(num_atoms);
 
-  for (size_t i = 0; i < nthreads; i++) {
-    m_voronoi_charges += tl_voronoi_charges[i];
-    m_atom_volumes += tl_atom_volumes[i];
-    num_electrons += tl_num_electrons[i];
+  // Reduce thread-local results
+  for (const auto& local_charges : tl_voronoi_charges) {
+    m_voronoi_charges += local_charges;
+  }
+  
+  for (const auto& local_volumes : tl_atom_volumes) {
+    m_atom_volumes += local_volumes;
+  }
+  
+  for (const auto& local_electrons : tl_num_electrons) {
+    num_electrons += local_electrons;
   }
 
   occ::log::debug("Voronoi analysis: electrons in molecule = {:.6f}",

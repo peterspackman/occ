@@ -40,39 +40,31 @@ public:
 
     Mat3N pos_frac = m_crystal.to_fractional(pos.cast<double>().array() *
                                              occ::units::BOHR_TO_ANGSTROM);
-    int num_threads = occ::parallel::get_num_threads();
-    auto inner_func = [&](int thread_id) {
-      int total_elements = pos.cols();
-      int block_size = total_elements / num_threads;
-      int start_index = thread_id * block_size;
-      int end_index = start_index + block_size;
-      if (thread_id == num_threads - 1) {
-        end_index = total_elements;
+    
+    // Use TBB parallel_for with automatic load balancing
+    // Each point processed independently for optimal work distribution
+    occ::parallel::parallel_for(0, int(pos.cols()), [&](int pt) {
+      if ((pos_frac.col(pt).array() > 1.0).any() ||
+          (pos_frac.col(pt).array() < 0.0).any()) {
+        layer(pt) = 10;
+        return;
       }
-      for (int pt = start_index; pt < end_index; pt++) {
-        if ((pos_frac.col(pt).array() > 1.0).any() ||
-            (pos_frac.col(pt).array() < 0.0).any()) {
-          layer(pt) = 10;
-          continue;
-        }
-        Eigen::Vector3f p = pos.col(pt);
-        m_num_calls++;
-        float tot = 0.0;
+      Eigen::Vector3f p = pos.col(pt);
+      m_num_calls++;
+      float tot = 0.0;
 
-        for (const auto &[interp, interp_positions, threshold, interior] :
-             m_atom_interpolators) {
-          for (int i = 0; i < interp_positions.cols(); i++) {
-            float r = (interp_positions.col(i) - p).squaredNorm();
-            if (r > threshold)
-              continue;
-            float rho = interp(r);
-            tot += rho;
-          }
+      for (const auto &[interp, interp_positions, threshold, interior] :
+           m_atom_interpolators) {
+        for (int i = 0; i < interp_positions.cols(); i++) {
+          float r = (interp_positions.col(i) - p).squaredNorm();
+          if (r > threshold)
+            continue;
+          float rho = interp(r);
+          tot += rho;
         }
-        layer(pt) = tot;
       }
-    };
-    occ::parallel::parallel_do(inner_func);
+      layer(pt) = tot;
+    });
   }
 
   OCC_ALWAYS_INLINE Eigen::Vector3f normal(float x, float y, float z) const {

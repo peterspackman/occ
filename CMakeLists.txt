@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
 set(PROJECT_VERSION_MAJOR "0")
 set(PROJECT_VERSION_MINOR "8")
-set(PROJECT_VERSION_PATCH "1")
+set(PROJECT_VERSION_PATCH "2")
 
 project(occ
     VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
@@ -36,8 +36,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" OFF)
     option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" OFF)
+    option(USE_SYSTEM_TBB "Use TBB installed on system" OFF)
     option(USE_QCINT "Use SIMD optimised qcint rather than libcint" OFF)
-    option(USE_OPENMP "Use OpenMP for threading rather than std::thread" ON)
     option(GG_NO_PRAGMA "Define the __GG_NO_PRAGMA macro" OFF)
     option(EMSCRIPTEN "Using emscripten" OFF)
     option(ENABLE_JS_BINDINGS "Build JavaScript/WASM bindings using Emscripten" OFF)
@@ -76,13 +76,19 @@ if("${USE_SYSTEM_BLAS}")
     find_package(BLAS REQUIRED)
 endif()
 
+if("${USE_SYSTEM_TBB}" AND NOT EMSCRIPTEN)
+    find_package(TBB CONFIG REQUIRED)
+endif()
+
 if(${EMSCRIPTEN})
 message(STATUS "Emscripten build flags")
-# Set compiler and linker flags for pthreads
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -s USE_PTHREADS=1")
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -s USE_PTHREADS=1")
+# Disable system TBB for Emscripten builds (we'll use the built-in one)
+set(USE_SYSTEM_TBB OFF CACHE BOOL "System TBB is disabled for Emscripten builds" FORCE)
 
-# Set Emscripten-specific options
+# Set Emscripten-specific compile flags (serial build)
+add_compile_options(-Wno-unused-command-line-argument -matomics -mbulk-memory)
+
+# Set Emscripten-specific linker flags
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s NO_EXIT_RUNTIME=1")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ALLOW_MEMORY_GROWTH=1")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s STACK_SIZE=5MB")

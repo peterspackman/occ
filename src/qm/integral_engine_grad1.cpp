@@ -18,48 +18,102 @@ template <Op op, ShellKind kind = ShellKind::Cartesian>
 MatTriple one_electron_operator_grad_kernel(const AOBasis &basis, IntEnv &env,
                                             const ShellPairList &shellpairs) {
   using Result = IntegralEngine::IntegralResult<2>;
-  auto nthreads = occ::parallel::get_num_threads();
   const auto nbf = basis.nbf();
   MatTriple result;
   result.x = Mat::Zero(nbf, nbf);
   result.y = Mat::Zero(nbf, nbf);
   result.z = Mat::Zero(nbf, nbf);
 
-  std::vector<MatTriple> results;
-  results.push_back(result);
+  occ::parallel::thread_local_storage<MatTriple> results_local(
+      [nbf]() {
+        MatTriple r;
+        r.x = Mat::Zero(nbf, nbf);
+        r.y = Mat::Zero(nbf, nbf);
+        r.z = Mat::Zero(nbf, nbf);
+        return r;
+      });
 
-  for (size_t i = 1; i < nthreads; i++) {
-    results.push_back(results[0]);
-  }
-
-  auto f = [&results](const Result &args) {
-    auto &result = results[args.thread];
+  auto f = [&results_local](const Result &args) {
+    auto &result = results_local.local();
     const auto num_elements = args.dims[0] * args.dims[1];
     Eigen::Map<const Mat> tmpx(args.buffer, args.dims[0], args.dims[1]),
         tmpy(args.buffer + num_elements, args.dims[0], args.dims[1]),
         tmpz(args.buffer + num_elements * 2, args.dims[0], args.dims[1]);
 
-    result.x.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpx;
-    result.y.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpy;
-    result.z.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = tmpz;
+    result.x.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) += tmpx;
+    result.y.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) += tmpy;
+    result.z.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) += tmpz;
   };
 
-  auto lambda = [&](int thread_id) {
-    if (shellpairs.size() > 0) {
-      detail::evaluate_two_center_with_shellpairs_grad<op, kind>(
-          f, env, basis, shellpairs, thread_id);
-    } else {
-      detail::evaluate_two_center_grad<op, kind>(f, env, basis, thread_id);
-    }
-  };
-  occ::parallel::parallel_do(lambda);
+  if (shellpairs.size() > 0) {
+    // Use TBB for better load balancing with shell pairs
+    const auto nsh = basis.size();
+    occ::parallel::parallel_for(size_t(0), nsh, [&](size_t p) {
+      IntEnv thread_env = env;
+      occ::qm::cint::Optimizer opt(thread_env, op, 2, 1);
+      auto bufsize = thread_env.buffer_size_1e(op, 1);
+      auto buffer = std::make_unique<double[]>(bufsize);
+      const auto &first_bf = basis.first_bf();
+      
+      int bf1 = first_bf[p];
+      for (const auto &q : shellpairs[p]) {
+        int bf2 = first_bf[q];
+        std::array<int, 2> idxs{static_cast<int>(p), static_cast<int>(q)};
+        Result args{0,
+                    idxs,
+                    {bf1, bf2},
+                    thread_env.two_center_helper_grad<op, kind>(
+                        idxs, opt.optimizer_ptr(), buffer.get(), nullptr),
+                    buffer.get()};
+        if (args.dims[0] > -1)
+          f(args);
 
-  for (auto i = 1; i < nthreads; ++i) {
-    results[0].x.noalias() += results[i].x;
-    results[0].y.noalias() += results[i].y;
-    results[0].z.noalias() += results[i].z;
+        if (p != q) {
+          std::array<int, 2> idxs2{static_cast<int>(q), static_cast<int>(p)};
+          Result args2{0,
+                       idxs2,
+                       {bf2, bf1},
+                       thread_env.two_center_helper_grad<op, kind>(
+                           idxs2, opt.optimizer_ptr(), buffer.get(), nullptr),
+                       buffer.get()};
+          if (args2.dims[0] > -1)
+            f(args2);
+        }
+      }
+    });
+  } else {
+    // Use TBB for better load balancing without shell pairs
+    const auto nsh = basis.size();
+    occ::parallel::parallel_for_2d(size_t(0), nsh, size_t(0), nsh, [&](size_t p, size_t q) {
+      if (q > p) return;  // Only lower triangle
+      
+      IntEnv thread_env = env;
+      occ::qm::cint::Optimizer opt(thread_env, op, 2, 1);
+      auto bufsize = thread_env.buffer_size_1e(op, 1);
+      auto buffer = std::make_unique<double[]>(bufsize);
+      const auto &first_bf = basis.first_bf();
+      
+      int bf1 = first_bf[p];
+      int bf2 = first_bf[q];
+      std::array<int, 2> idxs{static_cast<int>(p), static_cast<int>(q)};
+      Result args{0,
+                  idxs,
+                  {bf1, bf2},
+                  thread_env.two_center_helper_grad<op, kind>(
+                      idxs, opt.optimizer_ptr(), buffer.get(), nullptr),
+                  buffer.get()};
+      if (args.dims[0] > -1)
+        f(args);
+    });
   }
-  return results[0];
+
+  // Reduce thread-local results
+  for (const auto &local_result : results_local) {
+    result.x.noalias() += local_result.x;
+    result.y.noalias() += local_result.y;
+    result.z.noalias() += local_result.z;
+  }
+  return result;
 }
 
 MatTriple
@@ -153,33 +207,47 @@ coulomb_kernel_grad(cint::IntegralEnvironment &env, const AOBasis &basis,
                     const MolecularOrbitals &mo, double precision = 1e-12,
                     const Mat &Schwarz = Mat()) {
   using Result = IntegralEngine::IntegralResult<4>;
-  auto nthreads = occ::parallel::get_num_threads();
   constexpr Op op = Op::coulomb;
 
   const auto nbf = basis.nbf();
-
-  auto results = detail::initialize_result_matrices<sk>(nbf, nthreads);
   Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
-
   const auto &D = mo.D;
-  auto f = [&D, &results](const Result &args) {
-    auto &dest = results[args.thread];
+
+  // Use TBB-based thread-local storage
+  occ::parallel::thread_local_storage<MatTriple> results_local(
+    [nbf]() {
+      MatTriple r;
+      r.x = Mat::Zero(nbf, nbf);
+      r.y = Mat::Zero(nbf, nbf);
+      r.z = Mat::Zero(nbf, nbf);
+      return r;
+    }
+  );
+
+  auto f = [&D, &results_local](const Result &args) {
+    auto &dest = results_local.local();
     detail::four_center_inner_loop(detail::delegate_j_grad<sk>, args, D, dest);
   };
-  auto lambda = [&](int thread_id) {
-    detail::evaluate_four_center_grad<op, kind>(
-        f, env, basis, shellpairs, Dnorm, Schwarz, precision, thread_id);
-  };
-  occ::parallel::parallel_do_timed(lambda, occ::timing::category::fock);
 
-  for (size_t i = 1; i < nthreads; i++) {
-    results[0].x.noalias() += results[i].x;
-    results[0].y.noalias() += results[i].y;
-    results[0].z.noalias() += results[i].z;
+  occ::timing::start(occ::timing::category::fock);
+  detail::evaluate_four_center_tbb<op, kind>(
+      f, env, basis, shellpairs, Dnorm, Schwarz, precision);
+  occ::timing::stop(occ::timing::category::fock);
+
+  // Reduce thread-local results
+  MatTriple result;
+  result.x = Mat::Zero(nbf, nbf);
+  result.y = Mat::Zero(nbf, nbf);
+  result.z = Mat::Zero(nbf, nbf);
+  
+  for (const auto &local_result : results_local) {
+    result.x.noalias() += local_result.x;
+    result.y.noalias() += local_result.y;
+    result.z.noalias() += local_result.z;
   }
 
-  results[0].scale_by(-2.0);
-  return results[0];
+  result.scale_by(-2.0);
+  return result;
 }
 
 MatTriple IntegralEngine::coulomb_grad(SpinorbitalKind sk,
@@ -229,43 +297,68 @@ JKTriple coulomb_exchange_kernel_grad(IntEnv &env, const AOBasis &basis,
                                       double precision = 1e-12,
                                       const Mat &Schwarz = Mat()) {
   using Result = IntegralEngine::IntegralResult<4>;
-  auto nthreads = occ::parallel::get_num_threads();
   constexpr Op op = Op::coulomb;
 
   const auto nbf = basis.nbf();
-
-  auto jmats = detail::initialize_result_matrices<sk>(nbf, nthreads);
-  auto kmats = detail::initialize_result_matrices<sk>(nbf, nthreads);
   Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
-
   const auto &D = mo.D;
-  auto f = [&D, &jmats, &kmats](const Result &args) {
-    auto &dest_j = jmats[args.thread];
-    detail::four_center_inner_loop(detail::delegate_j_grad<sk>, args, D,
-                                   dest_j);
 
-    auto &dest_k = kmats[args.thread];
-    detail::four_center_inner_loop(detail::delegate_k_grad<sk>, args, D,
-                                   dest_k);
-  };
-  auto lambda = [&](int thread_id) {
-    detail::evaluate_four_center_grad<op, kind>(
-        f, env, basis, shellpairs, Dnorm, Schwarz, precision, thread_id);
-  };
-  occ::parallel::parallel_do_timed(lambda, occ::timing::category::fock);
+  // Use TBB-based thread-local storage for J and K matrices
+  occ::parallel::thread_local_storage<MatTriple> jmats_local(
+    [nbf]() {
+      MatTriple r;
+      r.x = Mat::Zero(nbf, nbf);
+      r.y = Mat::Zero(nbf, nbf);
+      r.z = Mat::Zero(nbf, nbf);
+      return r;
+    }
+  );
+  occ::parallel::thread_local_storage<MatTriple> kmats_local(
+    [nbf]() {
+      MatTriple r;
+      r.x = Mat::Zero(nbf, nbf);
+      r.y = Mat::Zero(nbf, nbf);
+      r.z = Mat::Zero(nbf, nbf);
+      return r;
+    }
+  );
 
-  for (size_t i = 1; i < nthreads; i++) {
-    jmats[0].x.noalias() += jmats[i].x;
-    jmats[0].y.noalias() += jmats[i].y;
-    jmats[0].z.noalias() += jmats[i].z;
-    kmats[0].x.noalias() += kmats[i].x;
-    kmats[0].y.noalias() += kmats[i].y;
-    kmats[0].z.noalias() += kmats[i].z;
+  auto f = [&D, &jmats_local, &kmats_local](const Result &args) {
+    auto &dest_j = jmats_local.local();
+    detail::four_center_inner_loop(detail::delegate_j_grad<sk>, args, D, dest_j);
+
+    auto &dest_k = kmats_local.local();
+    detail::four_center_inner_loop(detail::delegate_k_grad<sk>, args, D, dest_k);
+  };
+
+  occ::timing::start(occ::timing::category::fock);
+  detail::evaluate_four_center_tbb<op, kind>(
+      f, env, basis, shellpairs, Dnorm, Schwarz, precision);
+  occ::timing::stop(occ::timing::category::fock);
+
+  // Reduce thread-local results
+  MatTriple jmat, kmat;
+  jmat.x = Mat::Zero(nbf, nbf);
+  jmat.y = Mat::Zero(nbf, nbf);
+  jmat.z = Mat::Zero(nbf, nbf);
+  kmat.x = Mat::Zero(nbf, nbf);
+  kmat.y = Mat::Zero(nbf, nbf);
+  kmat.z = Mat::Zero(nbf, nbf);
+
+  for (const auto &local_j : jmats_local) {
+    jmat.x.noalias() += local_j.x;
+    jmat.y.noalias() += local_j.y;
+    jmat.z.noalias() += local_j.z;
+  }
+  for (const auto &local_k : kmats_local) {
+    kmat.x.noalias() += local_k.x;
+    kmat.y.noalias() += local_k.y;
+    kmat.z.noalias() += local_k.z;
   }
 
-  jmats[0].scale_by(-2.0);
-  kmats[0].scale_by(0.5);
-  return {jmats[0], kmats[0]};
+  jmat.scale_by(-2.0);
+  kmat.scale_by(0.5);
+  return {jmat, kmat};
 }
 
 JKTriple IntegralEngine::coulomb_exchange_grad(SpinorbitalKind sk,
