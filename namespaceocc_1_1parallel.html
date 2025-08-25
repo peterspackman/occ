@@ -98,6 +98,7 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1parallel.html',''); in
 
 <div class="header">
   <div class="summary">
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">occ::parallel Namespace Reference</div></div>
@@ -107,18 +108,43 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1parallel.html',''); in
 <p>main module for functionaliity parallelism - threads etc.  
 <a href="namespaceocc_1_1parallel.html#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a02331d2d0c473690c8cf5bd86f6a7d8f" id="r_a02331d2d0c473690c8cf5bd86f6a7d8f"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a02331d2d0c473690c8cf5bd86f6a7d8f"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a02331d2d0c473690c8cf5bd86f6a7d8f">thread_local_storage</a> = tbb::enumerable_thread_specific&lt; T &gt;</td></tr>
+<tr class="separator:a02331d2d0c473690c8cf5bd86f6a7d8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ac23077d93c110577ef48296a478a4d67" id="r_ac23077d93c110577ef48296a478a4d67"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; tbb::global_control &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#ac23077d93c110577ef48296a478a4d67">get_tbb_control</a> ()</td></tr>
+<tr class="separator:ac23077d93c110577ef48296a478a4d67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a364fb957477a3c5a79498450f6b16cb8" id="r_a364fb957477a3c5a79498450f6b16cb8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a364fb957477a3c5a79498450f6b16cb8">shutdown_tbb</a> ()</td></tr>
+<tr class="separator:a364fb957477a3c5a79498450f6b16cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05c195f545581e9c98935f0295308f8f" id="r_a05c195f545581e9c98935f0295308f8f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a05c195f545581e9c98935f0295308f8f">set_num_threads</a> (int threads)</td></tr>
 <tr class="separator:a05c195f545581e9c98935f0295308f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a08a2e65baf5bddeb8b47ff560a3dc5fa" id="r_a08a2e65baf5bddeb8b47ff560a3dc5fa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a08a2e65baf5bddeb8b47ff560a3dc5fa">get_num_threads</a> ()</td></tr>
 <tr class="separator:a08a2e65baf5bddeb8b47ff560a3dc5fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29e699938a596868fe467c12f324c3ed" id="r_a29e699938a596868fe467c12f324c3ed"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
-<tr class="memitem:a29e699938a596868fe467c12f324c3ed"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a29e699938a596868fe467c12f324c3ed">parallel_do</a> (Lambda &amp;lambda)</td></tr>
-<tr class="separator:a29e699938a596868fe467c12f324c3ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af206d05da3c3d87868dd07a98dfd48fd" id="r_af206d05da3c3d87868dd07a98dfd48fd"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
-<tr class="memitem:af206d05da3c3d87868dd07a98dfd48fd"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#af206d05da3c3d87868dd07a98dfd48fd">parallel_do_timed</a> (Lambda &amp;lambda, <a class="el" href="namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16">occ::timing::category</a> timing_category)</td></tr>
-<tr class="separator:af206d05da3c3d87868dd07a98dfd48fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e38c30c9f7b2b7ec1d9ccd2c484257b" id="r_a0e38c30c9f7b2b7ec1d9ccd2c484257b"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
+<tr class="memitem:a0e38c30c9f7b2b7ec1d9ccd2c484257b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a0e38c30c9f7b2b7ec1d9ccd2c484257b">parallel_for</a> (size_t begin, size_t end, Lambda &amp;&amp;lambda, size_t grainsize=0)</td></tr>
+<tr class="separator:a0e38c30c9f7b2b7ec1d9ccd2c484257b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0f9aecc698fbc92f606cb925d555c14" id="r_ae0f9aecc698fbc92f606cb925d555c14"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Lambda , typename Reduction &gt; </td></tr>
+<tr class="memitem:ae0f9aecc698fbc92f606cb925d555c14"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#ae0f9aecc698fbc92f606cb925d555c14">parallel_reduce</a> (size_t begin, size_t end, T init, Lambda &amp;&amp;lambda, Reduction &amp;&amp;reduction, size_t grainsize=0)</td></tr>
+<tr class="separator:ae0f9aecc698fbc92f606cb925d555c14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa577e5b59dadf58db817965191dd7dd1" id="r_aa577e5b59dadf58db817965191dd7dd1"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
+<tr class="memitem:aa577e5b59dadf58db817965191dd7dd1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#aa577e5b59dadf58db817965191dd7dd1">parallel_for_2d</a> (size_t rows_begin, size_t rows_end, size_t cols_begin, size_t cols_end, Lambda &amp;&amp;lambda, size_t row_grainsize=0, size_t col_grainsize=0)</td></tr>
+<tr class="separator:aa577e5b59dadf58db817965191dd7dd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0cb8318e10ce354068d0bcb4c965ff82" id="r_a0cb8318e10ce354068d0bcb4c965ff82"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
+<tr class="memitem:a0cb8318e10ce354068d0bcb4c965ff82"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a0cb8318e10ce354068d0bcb4c965ff82">parallel_invoke</a> (Lambda &amp;&amp;lambda1, Lambda &amp;&amp;lambda2)</td></tr>
+<tr class="separator:a0cb8318e10ce354068d0bcb4c965ff82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a835209610df2c4fa910802ea005100ac" id="r_a835209610df2c4fa910802ea005100ac"><td class="memTemplParams" colspan="2">template&lt;typename... Lambdas&gt; </td></tr>
+<tr class="memitem:a835209610df2c4fa910802ea005100ac"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a835209610df2c4fa910802ea005100ac">parallel_invoke</a> (Lambdas &amp;&amp;...lambdas)</td></tr>
+<tr class="separator:a835209610df2c4fa910802ea005100ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad83222eb06c54cee774a6f1c0d332e48" id="r_ad83222eb06c54cee774a6f1c0d332e48"><td class="memTemplParams" colspan="2">template&lt;typename T , typename WorkItems , typename ProcessFunc , typename CombineFunc &gt; </td></tr>
+<tr class="memitem:ad83222eb06c54cee774a6f1c0d332e48"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#ad83222eb06c54cee774a6f1c0d332e48">parallel_accumulate</a> (const WorkItems &amp;items, T init_value, ProcessFunc &amp;&amp;process, CombineFunc &amp;&amp;combine)</td></tr>
+<tr class="separator:ad83222eb06c54cee774a6f1c0d332e48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9386d3e31e2c8fb074653eeaac3f93d" id="r_aa9386d3e31e2c8fb074653eeaac3f93d"><td class="memTemplParams" colspan="2">template&lt;typename T , typename ProcessFunc , typename CombineFunc &gt; </td></tr>
+<tr class="memitem:aa9386d3e31e2c8fb074653eeaac3f93d"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#aa9386d3e31e2c8fb074653eeaac3f93d">parallel_accumulate_indexed</a> (size_t num_items, T init_value, ProcessFunc &amp;&amp;process, CombineFunc &amp;&amp;combine)</td></tr>
+<tr class="separator:aa9386d3e31e2c8fb074653eeaac3f93d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -127,7 +153,24 @@ Variables</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>main module for functionaliity parallelism - threads etc. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="a02331d2d0c473690c8cf5bd86f6a7d8f" name="a02331d2d0c473690c8cf5bd86f6a7d8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02331d2d0c473690c8cf5bd86f6a7d8f">&#9670;&#160;</a></span>thread_local_storage</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceocc_1_1parallel.html#a02331d2d0c473690c8cf5bd86f6a7d8f">occ::parallel::thread_local_storage</a> = typedef tbb::enumerable_thread_specific&lt;T&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
 <a id="a08a2e65baf5bddeb8b47ff560a3dc5fa" name="a08a2e65baf5bddeb8b47ff560a3dc5fa"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a08a2e65baf5bddeb8b47ff560a3dc5fa">&#9670;&#160;</a></span>get_num_threads()</h2>
 
@@ -153,8 +196,117 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a29e699938a596868fe467c12f324c3ed" name="a29e699938a596868fe467c12f324c3ed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a29e699938a596868fe467c12f324c3ed">&#9670;&#160;</a></span>parallel_do()</h2>
+<a id="ac23077d93c110577ef48296a478a4d67" name="ac23077d93c110577ef48296a478a4d67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac23077d93c110577ef48296a478a4d67">&#9670;&#160;</a></span>get_tbb_control()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt; tbb::global_control &gt; &amp; occ::parallel::get_tbb_control </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad83222eb06c54cee774a6f1c0d332e48" name="ad83222eb06c54cee774a6f1c0d332e48"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad83222eb06c54cee774a6f1c0d332e48">&#9670;&#160;</a></span>parallel_accumulate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename WorkItems , typename ProcessFunc , typename CombineFunc &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">T occ::parallel::parallel_accumulate </td>
+          <td>(</td>
+          <td class="paramtype">const WorkItems &amp;&#160;</td>
+          <td class="paramname"><em>items</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>init_value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ProcessFunc &amp;&amp;&#160;</td>
+          <td class="paramname"><em>process</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">CombineFunc &amp;&amp;&#160;</td>
+          <td class="paramname"><em>combine</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa9386d3e31e2c8fb074653eeaac3f93d" name="aa9386d3e31e2c8fb074653eeaac3f93d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9386d3e31e2c8fb074653eeaac3f93d">&#9670;&#160;</a></span>parallel_accumulate_indexed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename ProcessFunc , typename CombineFunc &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">T occ::parallel::parallel_accumulate_indexed </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>num_items</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>init_value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ProcessFunc &amp;&amp;&#160;</td>
+          <td class="paramname"><em>process</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">CombineFunc &amp;&amp;&#160;</td>
+          <td class="paramname"><em>combine</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0e38c30c9f7b2b7ec1d9ccd2c484257b" name="a0e38c30c9f7b2b7ec1d9ccd2c484257b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e38c30c9f7b2b7ec1d9ccd2c484257b">&#9670;&#160;</a></span>parallel_for()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,10 +314,142 @@ Variables</h2></td></tr>
 template&lt;typename Lambda &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void occ::parallel::parallel_do </td>
+          <td class="memname">void occ::parallel::parallel_for </td>
           <td>(</td>
-          <td class="paramtype">Lambda &amp;&#160;</td>
-          <td class="paramname"><em>lambda</em></td><td>)</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>begin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Lambda &amp;&amp;&#160;</td>
+          <td class="paramname"><em>lambda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>grainsize</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa577e5b59dadf58db817965191dd7dd1" name="aa577e5b59dadf58db817965191dd7dd1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa577e5b59dadf58db817965191dd7dd1">&#9670;&#160;</a></span>parallel_for_2d()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Lambda &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::parallel::parallel_for_2d </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>rows_begin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>rows_end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>cols_begin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>cols_end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Lambda &amp;&amp;&#160;</td>
+          <td class="paramname"><em>lambda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>row_grainsize</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>col_grainsize</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0cb8318e10ce354068d0bcb4c965ff82" name="a0cb8318e10ce354068d0bcb4c965ff82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0cb8318e10ce354068d0bcb4c965ff82">&#9670;&#160;</a></span>parallel_invoke() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Lambda &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::parallel::parallel_invoke </td>
+          <td>(</td>
+          <td class="paramtype">Lambda &amp;&amp;&#160;</td>
+          <td class="paramname"><em>lambda1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Lambda &amp;&amp;&#160;</td>
+          <td class="paramname"><em>lambda2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a835209610df2c4fa910802ea005100ac" name="a835209610df2c4fa910802ea005100ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a835209610df2c4fa910802ea005100ac">&#9670;&#160;</a></span>parallel_invoke() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Lambdas&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::parallel::parallel_invoke </td>
+          <td>(</td>
+          <td class="paramtype">Lambdas &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>lambdas</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -173,25 +457,49 @@ template&lt;typename Lambda &gt; </div>
 
 </div>
 </div>
-<a id="af206d05da3c3d87868dd07a98dfd48fd" name="af206d05da3c3d87868dd07a98dfd48fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af206d05da3c3d87868dd07a98dfd48fd">&#9670;&#160;</a></span>parallel_do_timed()</h2>
+<a id="ae0f9aecc698fbc92f606cb925d555c14" name="ae0f9aecc698fbc92f606cb925d555c14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0f9aecc698fbc92f606cb925d555c14">&#9670;&#160;</a></span>parallel_reduce()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Lambda &gt; </div>
+template&lt;typename T , typename Lambda , typename Reduction &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void occ::parallel::parallel_do_timed </td>
+          <td class="memname">T occ::parallel::parallel_reduce </td>
           <td>(</td>
-          <td class="paramtype">Lambda &amp;&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>begin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>init</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Lambda &amp;&amp;&#160;</td>
           <td class="paramname"><em>lambda</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16">occ::timing::category</a>&#160;</td>
-          <td class="paramname"><em>timing_category</em>&#160;</td>
+          <td class="paramtype">Reduction &amp;&amp;&#160;</td>
+          <td class="paramname"><em>reduction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>grainsize</em> = <code>0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -217,6 +525,31 @@ template&lt;typename Lambda &gt; </div>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>threads</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a364fb957477a3c5a79498450f6b16cb8" name="a364fb957477a3c5a79498450f6b16cb8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a364fb957477a3c5a79498450f6b16cb8">&#9670;&#160;</a></span>shutdown_tbb()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::parallel::shutdown_tbb </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>

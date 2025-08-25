@@ -99,18 +99,29 @@ $(document).ready(function(){initNavTree('parallel_8h.html',''); initResizable()
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">parallel.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="timings_8h.html">occ/core/timings.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;memory&gt;</code><br />
+<code>#include &lt;<a class="el" href="timings_8h.html">occ/core/timings.h</a>&gt;</code><br />
 <code>#include &lt;thread&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
+<code>#include &lt;tbb/blocked_range.h&gt;</code><br />
+<code>#include &lt;tbb/blocked_range2d.h&gt;</code><br />
+<code>#include &lt;tbb/enumerable_thread_specific.h&gt;</code><br />
+<code>#include &lt;tbb/global_control.h&gt;</code><br />
+<code>#include &lt;tbb/parallel_for.h&gt;</code><br />
+<code>#include &lt;tbb/parallel_invoke.h&gt;</code><br />
+<code>#include &lt;tbb/parallel_reduce.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for parallel.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="parallel_8h__incl.svg" width="334" height="212"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="parallel_8h__incl.svg" width="1920" height="227"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -126,18 +137,43 @@ Namespaces</h2></td></tr>
 <tr class="memdesc:namespaceocc_1_1parallel"><td class="mdescLeft">&#160;</td><td class="mdescRight">main module for functionaliity parallelism - threads etc. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a02331d2d0c473690c8cf5bd86f6a7d8f" id="r_a02331d2d0c473690c8cf5bd86f6a7d8f"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a02331d2d0c473690c8cf5bd86f6a7d8f"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a02331d2d0c473690c8cf5bd86f6a7d8f">occ::parallel::thread_local_storage</a> = tbb::enumerable_thread_specific&lt; T &gt;</td></tr>
+<tr class="separator:a02331d2d0c473690c8cf5bd86f6a7d8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ac23077d93c110577ef48296a478a4d67" id="r_ac23077d93c110577ef48296a478a4d67"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; tbb::global_control &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#ac23077d93c110577ef48296a478a4d67">occ::parallel::get_tbb_control</a> ()</td></tr>
+<tr class="separator:ac23077d93c110577ef48296a478a4d67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a364fb957477a3c5a79498450f6b16cb8" id="r_a364fb957477a3c5a79498450f6b16cb8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a364fb957477a3c5a79498450f6b16cb8">occ::parallel::shutdown_tbb</a> ()</td></tr>
+<tr class="separator:a364fb957477a3c5a79498450f6b16cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05c195f545581e9c98935f0295308f8f" id="r_a05c195f545581e9c98935f0295308f8f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a05c195f545581e9c98935f0295308f8f">occ::parallel::set_num_threads</a> (int threads)</td></tr>
 <tr class="separator:a05c195f545581e9c98935f0295308f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a08a2e65baf5bddeb8b47ff560a3dc5fa" id="r_a08a2e65baf5bddeb8b47ff560a3dc5fa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a08a2e65baf5bddeb8b47ff560a3dc5fa">occ::parallel::get_num_threads</a> ()</td></tr>
 <tr class="separator:a08a2e65baf5bddeb8b47ff560a3dc5fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29e699938a596868fe467c12f324c3ed" id="r_a29e699938a596868fe467c12f324c3ed"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
-<tr class="memitem:a29e699938a596868fe467c12f324c3ed"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a29e699938a596868fe467c12f324c3ed">occ::parallel::parallel_do</a> (Lambda &amp;lambda)</td></tr>
-<tr class="separator:a29e699938a596868fe467c12f324c3ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af206d05da3c3d87868dd07a98dfd48fd" id="r_af206d05da3c3d87868dd07a98dfd48fd"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
-<tr class="memitem:af206d05da3c3d87868dd07a98dfd48fd"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#af206d05da3c3d87868dd07a98dfd48fd">occ::parallel::parallel_do_timed</a> (Lambda &amp;lambda, <a class="el" href="namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16">occ::timing::category</a> timing_category)</td></tr>
-<tr class="separator:af206d05da3c3d87868dd07a98dfd48fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e38c30c9f7b2b7ec1d9ccd2c484257b" id="r_a0e38c30c9f7b2b7ec1d9ccd2c484257b"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
+<tr class="memitem:a0e38c30c9f7b2b7ec1d9ccd2c484257b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a0e38c30c9f7b2b7ec1d9ccd2c484257b">occ::parallel::parallel_for</a> (size_t begin, size_t end, Lambda &amp;&amp;lambda, size_t grainsize=0)</td></tr>
+<tr class="separator:a0e38c30c9f7b2b7ec1d9ccd2c484257b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0f9aecc698fbc92f606cb925d555c14" id="r_ae0f9aecc698fbc92f606cb925d555c14"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Lambda , typename Reduction &gt; </td></tr>
+<tr class="memitem:ae0f9aecc698fbc92f606cb925d555c14"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#ae0f9aecc698fbc92f606cb925d555c14">occ::parallel::parallel_reduce</a> (size_t begin, size_t end, T init, Lambda &amp;&amp;lambda, Reduction &amp;&amp;reduction, size_t grainsize=0)</td></tr>
+<tr class="separator:ae0f9aecc698fbc92f606cb925d555c14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa577e5b59dadf58db817965191dd7dd1" id="r_aa577e5b59dadf58db817965191dd7dd1"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
+<tr class="memitem:aa577e5b59dadf58db817965191dd7dd1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#aa577e5b59dadf58db817965191dd7dd1">occ::parallel::parallel_for_2d</a> (size_t rows_begin, size_t rows_end, size_t cols_begin, size_t cols_end, Lambda &amp;&amp;lambda, size_t row_grainsize=0, size_t col_grainsize=0)</td></tr>
+<tr class="separator:aa577e5b59dadf58db817965191dd7dd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0cb8318e10ce354068d0bcb4c965ff82" id="r_a0cb8318e10ce354068d0bcb4c965ff82"><td class="memTemplParams" colspan="2">template&lt;typename Lambda &gt; </td></tr>
+<tr class="memitem:a0cb8318e10ce354068d0bcb4c965ff82"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a0cb8318e10ce354068d0bcb4c965ff82">occ::parallel::parallel_invoke</a> (Lambda &amp;&amp;lambda1, Lambda &amp;&amp;lambda2)</td></tr>
+<tr class="separator:a0cb8318e10ce354068d0bcb4c965ff82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a835209610df2c4fa910802ea005100ac" id="r_a835209610df2c4fa910802ea005100ac"><td class="memTemplParams" colspan="2">template&lt;typename... Lambdas&gt; </td></tr>
+<tr class="memitem:a835209610df2c4fa910802ea005100ac"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#a835209610df2c4fa910802ea005100ac">occ::parallel::parallel_invoke</a> (Lambdas &amp;&amp;...lambdas)</td></tr>
+<tr class="separator:a835209610df2c4fa910802ea005100ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad83222eb06c54cee774a6f1c0d332e48" id="r_ad83222eb06c54cee774a6f1c0d332e48"><td class="memTemplParams" colspan="2">template&lt;typename T , typename WorkItems , typename ProcessFunc , typename CombineFunc &gt; </td></tr>
+<tr class="memitem:ad83222eb06c54cee774a6f1c0d332e48"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#ad83222eb06c54cee774a6f1c0d332e48">occ::parallel::parallel_accumulate</a> (const WorkItems &amp;items, T init_value, ProcessFunc &amp;&amp;process, CombineFunc &amp;&amp;combine)</td></tr>
+<tr class="separator:ad83222eb06c54cee774a6f1c0d332e48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9386d3e31e2c8fb074653eeaac3f93d" id="r_aa9386d3e31e2c8fb074653eeaac3f93d"><td class="memTemplParams" colspan="2">template&lt;typename T , typename ProcessFunc , typename CombineFunc &gt; </td></tr>
+<tr class="memitem:aa9386d3e31e2c8fb074653eeaac3f93d"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1parallel.html#aa9386d3e31e2c8fb074653eeaac3f93d">occ::parallel::parallel_accumulate_indexed</a> (size_t num_items, T init_value, ProcessFunc &amp;&amp;process, CombineFunc &amp;&amp;combine)</td></tr>
+<tr class="separator:aa9386d3e31e2c8fb074653eeaac3f93d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>

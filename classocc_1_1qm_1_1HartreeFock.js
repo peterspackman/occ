@@ -36,6 +36,7 @@ var classocc_1_1qm_1_1HartreeFock =
     [ "nuclear_point_charge_interaction_energy", "classocc_1_1qm_1_1HartreeFock.html#adeeb1044193a0875857fe6929a138e20", null ],
     [ "range_separated_omega", "classocc_1_1qm_1_1HartreeFock.html#ab9677090d7e348386c5dea31a77cde7a", null ],
     [ "set_density_fitting_basis", "classocc_1_1qm_1_1HartreeFock.html#af011e2eb93f9062fc349da2e43007230", null ],
+    [ "set_density_fitting_policy", "classocc_1_1qm_1_1HartreeFock.html#a91c2a2885110639679d4fa9db1e52ff2", null ],
     [ "set_precision", "classocc_1_1qm_1_1HartreeFock.html#a168713e4bc2cf713330c415d46f4f1fc", null ],
     [ "set_range_separated_omega", "classocc_1_1qm_1_1HartreeFock.html#ab746d024c030138a208fb9a890e5df5e", null ],
     [ "supports_incremental_fock_build", "classocc_1_1qm_1_1HartreeFock.html#a847dfb051f3ea54f9dab5e40dd625b0a", null ],

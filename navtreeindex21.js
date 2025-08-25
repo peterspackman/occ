@@ -1,5 +1,9 @@
 var NAVTREEINDEX21 =
 {
+"internal__coordinates_8h.html":[5,0,1,0,14,4],
+"internal__coordinates_8h.html#a30e5d256775cb0b382a3dfca1b749c2c":[5,0,1,0,14,4,3],
+"internal__coordinates_8h.html#aa7ca28835ba3af35c757e9858d99ad4a":[5,0,1,0,14,4,2],
+"interpolator_8h.html":[5,0,1,0,1,17],
 "interpolator_8h.html#aec7ecfa2dc83b10e2e48637fdb4726e8":[5,0,1,0,1,17,2],
 "interpolator_8h.html#af6f9457912400951cbbcec98cc5b2e35":[5,0,1,0,1,17,1],
 "interpolator_8h.html#af6f9457912400951cbbcec98cc5b2e35a2b2df24d50ce1857a720db0836d538b8":[5,0,1,0,1,17,1,2],
@@ -245,9 +249,5 @@ var NAVTREEINDEX21 =
 "multipole_8h.html#a4c43c80b170febf6fb0c2e6fbaa82d9a":[5,0,1,0,1,28,3],
 "multipole_8h.html#a81996a954007c566ed079bb15a274ba4":[5,0,1,0,1,28,1],
 "multipole_8h.html#aa9090dcf8213bf9e23ac3851ed4f5e52":[5,0,1,0,1,28,2],
-"multipole__calculator_8h.html":[5,0,1,0,6,7],
-"multipole__shifter_8h.html":[5,0,1,0,6,8],
-"namespaceEigen.html":[2,0,0],
-"namespaceEigen.html#a6a1ccae7032893da57e3a905a6e2bf0a":[2,0,0,0],
-"namespaceEigen.html#acafa7906b609fc09d79248632b59b9f8":[2,0,0,1]
+"multipole__calculator_8h.html":[5,0,1,0,6,7]
 };
