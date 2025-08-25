@@ -1,6 +1,5 @@
 #pragma once
 #include "kernel_traits.h"
-#include <mutex>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/integral_engine.h>
@@ -14,25 +13,7 @@ using IntEnv = cint::IntegralEnvironment;
 using ShellKind = Shell::Kind;
 using Op = cint::Operator;
 
-// Legacy function - now unused, kept for compatibility
-template <Op op, ShellKind kind, typename Lambda>
-void evaluate_two_center(Lambda &f, cint::IntegralEnvironment &env,
-                         const AOBasis &basis, int thread_id = 0) {
-  // This function is deprecated - use TBB-based parallel_for in
-  // one_electron_operator_kernel instead
-}
-
-// Legacy function - now unused, kept for compatibility
-template <Op op, ShellKind kind, typename Lambda>
-void evaluate_two_center_with_shellpairs(Lambda &f,
-                                         cint::IntegralEnvironment &env,
-                                         const AOBasis &basis,
-                                         const ShellPairList &shellpairs,
-                                         int thread_id = 0) {
-  // This function is deprecated - use TBB-based parallel_for in
-  // one_electron_operator_kernel instead
-}
-
+// Two-center integral evaluation
 template <Op op, ShellKind kind = ShellKind::Cartesian>
 Mat one_electron_operator_kernel(const AOBasis &basis,
                                  cint::IntegralEnvironment &env,
