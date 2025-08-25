@@ -164,7 +164,8 @@ H  0.6276 -0.6276 -0.6276`);
       calc.wavefunction = null;
       
       // Run with 2 threads (if available)
-      Module.setNumThreads(Math.min(2, navigator.hardwareConcurrency || 2));
+      const hardwareConcurrency = (typeof globalThis !== 'undefined' && globalThis.navigator) ? globalThis.navigator.hardwareConcurrency : undefined;
+      Module.setNumThreads(Math.min(2, hardwareConcurrency || 2));
       const start2 = performance.now();
       const energy2 = await calc.runHF();
       const time2 = performance.now() - start2;

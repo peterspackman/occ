@@ -17,21 +17,20 @@
 namespace occ::parallel {
 inline int nthreads = 1;
 
-// Use a static pointer to ensure proper lifetime management
-inline tbb::global_control *get_tbb_control() {
+// Proper TBB global control management
+inline std::unique_ptr<tbb::global_control>& get_tbb_control() {
   static std::unique_ptr<tbb::global_control> control;
-  return control.get();
+  return control;
 }
 
 inline void shutdown_tbb() {
-  static std::unique_ptr<tbb::global_control> control;
-  control.reset();
+  get_tbb_control().reset();
 }
 
 inline void set_num_threads(int threads) {
   nthreads = threads;
   // Reset any existing control before creating a new one
-  static std::unique_ptr<tbb::global_control> control;
+  auto& control = get_tbb_control();
   control.reset(new tbb::global_control(
       tbb::global_control::max_allowed_parallelism, nthreads));
 }
@@ -43,8 +42,18 @@ template <typename Lambda>
 void parallel_for(size_t begin, size_t end, Lambda &&lambda,
                   size_t grainsize = 0) {
   if (grainsize == 0) {
-    // Auto-partition based on number of threads
-    grainsize = std::max(size_t(1), (end - begin) / (nthreads * 4));
+    // Improved grain size calculation for better load balancing
+    const size_t range_size = end - begin;
+    if (range_size <= nthreads) {
+      // Small range: execute serially
+      grainsize = range_size;
+    } else {
+      // Use work-stealing friendly grain size: more chunks than threads
+      // but not too small to avoid overhead
+      const size_t min_grain = 100;  // Minimum work per chunk
+      const size_t max_chunks = nthreads * 8;  // Allow work stealing
+      grainsize = std::max(min_grain, range_size / max_chunks);
+    }
   }
   tbb::parallel_for(tbb::blocked_range<size_t>(begin, end, grainsize),
                     [&lambda](const tbb::blocked_range<size_t> &range) {
