@@ -23,7 +23,6 @@ if(EMSCRIPTEN)
 else()
     list(APPEND TBB_OPTIONS "TBB_DISABLE_HWLOC_AUTOMATIC_SEARCH OFF")
 endif()
-list(APPEND TBB_OPTIONS "BUILD_SHARED_LIBS ON")
 
 # Windows MinGW-specific workarounds for TBB compilation issues
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

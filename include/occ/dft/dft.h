@@ -161,13 +161,8 @@ public:
     m_two_electron_energy = 0.0;
     m_exc_dft = 0.0;
 
-    size_t num_rows_factor =
-        (spinorbital_kind == SpinorbitalKind::Unrestricted) ? 2 : 1;
-
     double total_density_a{0.0}, total_density_b{0.0};
     const Mat D2 = 2 * D;
-
-    // Use TBB thread-local storage for better work-stealing performance
 
     const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
                             ? m_method.functionals_polarized
@@ -185,57 +180,58 @@ public:
     const auto &all_weights = molecular_grid.weights();
     const size_t npt_total = all_points.cols();
 
-    const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
+    occ::log::debug("Processing {} grid points with adaptive blocking", npt_total);
 
-    occ::log::debug("Processing {} grid points in {} blocks", npt_total,
-                    num_blocks);
-
-    // Use TBB for dynamic load balancing
-    occ::parallel::thread_local_storage<Mat> Kt_local(
-        [&D]() { return Mat::Zero(D.rows(), D.cols()); }
+    // Consolidated thread-local storage with better alignment
+    struct ThreadLocalData {
+      Mat K_local;
+      double energy_local{0.0};
+      double alpha_density_local{0.0};
+      double beta_density_local{0.0};
+      
+      ThreadLocalData(size_t rows, size_t cols) : K_local(Mat::Zero(rows, cols)) {}
+    };
+    
+    occ::parallel::thread_local_storage<ThreadLocalData> thread_data(
+        [K_rows, K_cols]() { return ThreadLocalData(K_rows, K_cols); }
     );
-    occ::parallel::thread_local_storage<double> energies_local{0.0};
-    occ::parallel::thread_local_storage<double> alpha_densities_local{0.0};
-    occ::parallel::thread_local_storage<double> beta_densities_local{0.0};
 
-    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
-        Eigen::Index l = block * m_blocksize;
-        Eigen::Index u =
-            std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
-        Eigen::Index npt = u - l;
+    // Let TBB determine optimal grain size based on work complexity
+    const size_t min_points_per_chunk = std::max(size_t(32), nbf / 4);
+    const size_t max_chunks = nthreads * 8; // Allow good work stealing
+    size_t adaptive_grain = std::max(min_points_per_chunk, 
+                                   npt_total / max_chunks);
 
-        if (npt <= 0)
-          return;
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
+        [&](const tbb::blocked_range<size_t> &range) {
+            const size_t l = range.begin();
+            const size_t u = range.end();
+            const size_t npt = u - l;
 
-        const auto &pts_block = all_points.middleCols(l, npt);
-        const auto &weights_block = all_weights.segment(l, npt);
+            if (npt == 0) return;
 
-        auto gto_vals =
-            occ::gto::evaluate_basis(basis, pts_block, derivative_order);
+            const auto &pts_block = all_points.middleCols(l, npt);
+            const auto &weights_block = all_weights.segment(l, npt);
 
-        auto &local_K = Kt_local.local();
-        auto &local_energy = energies_local.local();
-        auto &local_alpha = alpha_densities_local.local();
-        auto &local_beta = beta_densities_local.local();
+            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, derivative_order);
+            auto &data = thread_data.local();
 
-        kernels::process_grid_block<derivative_order, spinorbital_kind>(
-            D2, gto_vals, pts_block, weights_block, funcs, local_K,
-            local_energy, local_alpha, local_beta, m_density_threshold);
-    });
+            kernels::process_grid_block<derivative_order, spinorbital_kind>(
+                D2, gto_vals, pts_block, weights_block, funcs, 
+                data.K_local, data.energy_local, data.alpha_density_local, 
+                data.beta_density_local, m_density_threshold);
+        }
+    );
 
-    // Combine results from all threads
-    for (const auto &local_K : Kt_local) {
-        K += local_K;
+    // Efficient reduction with vectorized operations where possible
+    for (const auto &data : thread_data) {
+        K.noalias() += data.K_local;
+        m_exc_dft += data.energy_local;
+        total_density_a += data.alpha_density_local;
+        total_density_b += data.beta_density_local;
     }
-    for (const auto &local_energy : energies_local) {
-        m_exc_dft += local_energy;
-    }
-    for (const auto &local_alpha : alpha_densities_local) {
-        total_density_a += local_alpha;
-    }
-    for (const auto &local_beta : beta_densities_local) {
-        total_density_b += local_beta;
-    }
+    
     occ::timing::stop(occ::timing::category::dft_xc);
 
     occ::log::debug("Total density: alpha = {} beta = {}", total_density_a,
@@ -455,9 +451,6 @@ private:
 
     Mat3N gradient = Mat3N::Zero(3, natoms);
 
-    // Use TBB thread-local storage for better work-stealing performance
-    occ::parallel::thread_local_storage<Mat3N> gradients_local(Mat3N::Zero(3, natoms));
-
     const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
                             ? m_method.functionals_polarized
                             : m_method.functionals;
@@ -474,39 +467,43 @@ private:
     const auto &all_weights = molecular_grid.weights();
     const size_t npt_total = all_points.cols();
 
-    const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
+    occ::log::debug("Processing {} grid points for gradient with adaptive blocking", npt_total);
 
-    occ::log::debug(
-        "Processing {} grid points in {} blocks for gradient calculation",
-        npt_total, num_blocks);
+    // Thread-local storage for gradients
+    occ::parallel::thread_local_storage<Mat3N> gradients_local(
+        [natoms]() { return Mat3N::Zero(3, natoms); }
+    );
 
-    // Use TBB parallel_for for better load balancing
-    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
-        Eigen::Index l = block * m_blocksize;
-        Eigen::Index u =
-            std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
-        Eigen::Index npt = u - l;
+    // Adaptive grain size for gradient computation (typically needs larger chunks)
+    const size_t min_points_per_chunk = std::max(size_t(64), nbf / 2);
+    const size_t max_chunks = nthreads * 6; // Slightly fewer chunks for gradient work
+    size_t adaptive_grain = std::max(min_points_per_chunk, 
+                                   npt_total / max_chunks);
 
-        if (npt <= 0)
-          return;
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
+        [&](const tbb::blocked_range<size_t> &range) {
+            const size_t l = range.begin();
+            const size_t u = range.end();
+            const size_t npt = u - l;
 
-        const auto &pts_block = all_points.middleCols(l, npt);
-        const auto &weights_block = all_weights.segment(l, npt);
+            if (npt == 0) return;
 
-        auto gto_vals =
-            occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+            const auto &pts_block = all_points.middleCols(l, npt);
+            const auto &weights_block = all_weights.segment(l, npt);
 
-        auto &local_gradient = gradients_local.local();
+            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+            auto &local_gradient = gradients_local.local();
 
-        kernels::process_grid_block_gradient<derivative_order,
-                                             spinorbital_kind>(
-            D, gto_vals, pts_block, weights_block, funcs,
-            local_gradient, m_density_threshold, basis);
-    });
+            kernels::process_grid_block_gradient<derivative_order, spinorbital_kind>(
+                D, gto_vals, pts_block, weights_block, funcs,
+                local_gradient, m_density_threshold, basis);
+        }
+    );
 
-    // Combine results from all threads
+    // Efficient gradient reduction
     for (const auto &local_gradient : gradients_local) {
-      gradient += local_gradient;
+        gradient.noalias() += local_gradient;
     }
 
     occ::timing::stop(occ::timing::category::dft_gradient);
